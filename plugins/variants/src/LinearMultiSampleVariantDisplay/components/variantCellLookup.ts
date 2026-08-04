@@ -1,3 +1,5 @@
+import { drawnCellHeightPx } from './shaders/variant.js.generated.ts'
+
 // The per-region cell arrays a (feature, row) -> cell lookup needs. A structural
 // subset of the placed payload, so any `Placed<ShippedRegionData>` satisfies it.
 //
@@ -84,10 +86,11 @@ export function findCellIndex(
  * The rows whose drawn cell covers content-Y `contentY`, nearest the cursor
  * first.
  *
- * Row r occupies [r*rowHeight, r*rowHeight + max(rowHeight, 2)) — the 2px floor
- * mirrors `max(u.rowHeight, 2.0)` in shaders/variant.slang and
- * Canvas2DVariantRenderer. For rowHeight >= 2 that is exactly one row and the
- * band collapses; only sub-pixel rows stack several under one drawn pixel.
+ * Row r occupies [r*rowHeight, r*rowHeight + drawnCellHeightPx(rowHeight)) —
+ * the 2px floor is variant.slang's, generated into TS (adr-051), so what is
+ * painted and what is pickable are one rule. For rowHeight >= 2 that is exactly
+ * one row and the band collapses; only sub-pixel rows stack several under one
+ * drawn pixel.
  *
  * `nearest` is the row whose own band contains the cursor, which is also the
  * last one painted there, so preferring it makes the pick both cursor-anchored
@@ -95,7 +98,7 @@ export function findCellIndex(
  * sub-pixel rows hoverable when the nearest row happens to have no cell.
  */
 export function rowsUnderCursor(contentY: number, rowHeight: number) {
-  const drawnHeight = Math.max(rowHeight, 2)
+  const drawnHeight = drawnCellHeightPx(rowHeight)
   const nearest = Math.floor(contentY / rowHeight)
   const lowest = Math.floor((contentY - drawnHeight) / rowHeight) + 1
   return { nearest, lowest: Math.max(lowest, 0) }

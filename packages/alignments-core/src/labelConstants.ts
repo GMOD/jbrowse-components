@@ -2,11 +2,27 @@ import {
   TRIANGLE_H as INDICATOR_TRIANGLE_H,
   TRIANGLE_HW as INDICATOR_TRIANGLE_HW,
 } from './indicatorTriangle.generated.ts'
-import { LABEL_CHAR_W, LABEL_PAD } from './insertionLabel.generated.ts'
+import {
+  INSERTION_SERIF_MIN_PX_PER_BP,
+  LABEL_CHAR_W,
+  LABEL_PAD,
+  LONG_INSERTION_MIN_LENGTH,
+  LONG_INSERTION_TEXT_THRESHOLD_PX,
+  MIN_HEIGHT_FOR_TEXT,
+} from './insertionLabel.generated.ts'
+import { insertionBarWidthPx } from './insertionWidth.generated.ts'
 
-export const LONG_INSERTION_MIN_LENGTH = 10
-export const LONG_INSERTION_TEXT_THRESHOLD_PX = 15
-export const MIN_HEIGHT_FOR_TEXT = 5
+// The insertion thresholds are insertion.slang's, generated in by
+// `pnpm gen:shaders` — re-exported here because this module is the vocabulary
+// every consumer imports (plugin-alignments, plugin-maf, plugin-variants).
+// INSERTION_SERIF_MIN_PX_PER_BP is the zoom below which a small insertion's
+// serif caps are dropped; the others gate which of the three markers is drawn.
+export {
+  INSERTION_SERIF_MIN_PX_PER_BP,
+  LONG_INSERTION_MIN_LENGTH,
+  LONG_INSERTION_TEXT_THRESHOLD_PX,
+  MIN_HEIGHT_FOR_TEXT,
+}
 // Min px-per-bp before per-base text (mismatch letters, small-insertion `(N)`
 // labels, clip summaries) is drawn. Shared by plugin-alignments and plugin-maf
 // so the two displays reveal these labels at the same zoom.
@@ -112,41 +128,26 @@ export function getInsertionType(
   return 'small'
 }
 
-// The short bar a 'long' insertion draws. Also the fallback width for a 'large'
-// insertion whose count label can't be drawn (row too short, see
-// insertionBarWidth), so it shrinks to this instead of an empty wide box.
-function longInsertionBarWidth(len: number, pxPerBp: number) {
-  return Math.min(5, (len * pxPerBp) / 3)
-}
-
-// SYNC: mirrors the rectW logic in
-// plugins/alignments LinearAlignmentsDisplay/shaders/slang/insertion.slang
-// (vs_main). Single source of truth for an insertion's box width, shared by the
-// GPU shader (via that mirror), the Canvas2D/SVG renderer, hit-testing (both
-// alignments and MAF), and SNP-letter shadowing. insertionWidth.test.ts pins
-// this against the shader.
+// Single source of truth for an insertion marker's width, shared by the GPU
+// shader, the Canvas2D/SVG renderer, hit-testing (both alignments and MAF), and
+// SNP-letter shadowing. The rule itself is `insertion.slang`'s — generated in
+// via its `//! js-export-out` (adr-051), which is what lets a package that
+// can't depend on plugin-alignments still run the shader's own arithmetic.
+// This wrapper exists only for the default: `featureHeight` falls back to
+// MIN_HEIGHT_FOR_TEXT so width-only callers (hit-testing) that don't track row
+// height get the labelled width.
 //
 // `featureHeight` is the marker's drawn pixel height. A 'large' insertion only
 // earns the wide count-label box when the row is tall enough to actually draw
 // the count (>= MIN_HEIGHT_FOR_TEXT); in compact/super-compact pileups it shrinks
 // to the same noticeable bar a 'long' insertion uses, instead of a wide empty
-// box. Defaults to MIN_HEIGHT_FOR_TEXT so width-only callers (hit-testing) that
-// don't track row height get the labelled width.
+// box.
 export function insertionBarWidth(
   len: number,
   pxPerBp: number,
   featureHeight = MIN_HEIGHT_FOR_TEXT,
 ) {
-  const type = getInsertionType(len, pxPerBp)
-  if (type === 'large') {
-    return featureHeight >= MIN_HEIGHT_FOR_TEXT
-      ? textWidthForNumber(len)
-      : longInsertionBarWidth(len, pxPerBp)
-  }
-  if (type === 'long') {
-    return longInsertionBarWidth(len, pxPerBp)
-  }
-  return 1
+  return insertionBarWidthPx(len, pxPerBp, featureHeight)
 }
 
 // Shared tooltip body for an insertion, used by both plugin-alignments and
@@ -157,9 +158,6 @@ export function formatInsertionLabel(length: number, sequence?: string) {
     ? `Insertion (${length}bp): ${sequence}`
     : `Insertion (${length}bp)`
 }
-
-// Below this zoom (px per bp), small-insertion serif caps are not drawn.
-export const INSERTION_SERIF_MIN_PX_PER_BP = 3
 
 // Draw one insertion marker centered on `xCenter`: a box whose width follows
 // insertionBarWidth (1px small / short bar long / number-label-width large) plus

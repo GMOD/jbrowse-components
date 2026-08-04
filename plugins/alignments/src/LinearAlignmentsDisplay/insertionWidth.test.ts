@@ -6,9 +6,14 @@ import {
   textWidthForNumber,
 } from './constants.ts'
 
-// Replicates insertion.slang's rectW calculation exactly (the small branch is
-// a hard 1.0 there, not min(pxPerBp, 1)). If the shader logic changes, this
-// must be updated in lockstep, and any mismatch with insertionBarWidth fails.
+// The retirement gate for insertion.slang's `//! js-export` (adr-051).
+//
+// `shaderRectWidthPx` below was the hand-written mirror of the shader's rectW
+// that labelConstants.ts used to run — kept verbatim as a fixture. The width is
+// now generated from insertion.slang and written straight into
+// @jbrowse/alignments-core (`//! js-export-out`), so this sweep proves the
+// generated rule reproduces the retired one before the retired one stops being
+// read. Note the small branch is a hard 1.0, not min(pxPerBp, 1).
 function shaderRectWidthPx(
   length: number,
   pxPerBp: number,

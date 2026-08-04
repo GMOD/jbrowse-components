@@ -1,3 +1,8 @@
+import {
+  snapCellEdgePx,
+  snappedCellWidthPx,
+} from './shaders/variant.js.generated.ts'
+
 /**
  * Snap a cell's horizontal extent to the same grid `shaders/variant.slang` uses,
  * so the Canvas2D backend and the SVG export (which goes through it) land on the
@@ -8,19 +13,12 @@
  * `x1`/`x2` are the cell's reference span mapped to block screen space, either
  * order (reversed blocks hand them back swapped).
  *
- * The odd-looking `canvasWidth / 2` offset is not decoration: the shader snaps
- * in *clip* space, where `clipX / pxSize` evaluates to `px - canvasWidth / 2`
- * (clip spans 2 units across `canvasWidth` px). Rounding that and converting
- * back therefore lands on whole pixels only when `canvasWidth` is even, and on
- * half-pixels when it is odd. Reproducing the offset rather than calling
- * `Math.round` is what makes this parity instead of an approximation.
+ * Both rules are the shader's own, generated into TS (adr-051): the odd-looking
+ * half-canvas offset inside `snapCellEdgePx` — which is what makes this parity
+ * rather than an approximation to `Math.round` — and the 2px floor.
  */
 export function snapVariantCellX(x1: number, x2: number, canvasWidth: number) {
-  const half = canvasWidth / 2
-  const lo = Math.floor(Math.min(x1, x2) - half + 0.5) + half
-  const hi = Math.floor(Math.max(x1, x2) - half + 0.5) + half
-  // 2px floor so a lone cell in a sparse matrix stays visible. Mirrors
-  // `max(..., cx1 + 2.0 * pxSize)` in shaders/variant.slang and the floor in
-  // variantCellSpan.ts / variantCellLookup.ts — keep in sync.
-  return { x: lo, width: Math.max(2, hi - lo) }
+  const lo = snapCellEdgePx(Math.min(x1, x2), canvasWidth)
+  const hi = snapCellEdgePx(Math.max(x1, x2), canvasWidth)
+  return { x: lo, width: snappedCellWidthPx(lo, hi) }
 }

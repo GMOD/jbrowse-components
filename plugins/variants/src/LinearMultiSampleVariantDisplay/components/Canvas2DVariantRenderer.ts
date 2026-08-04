@@ -5,6 +5,7 @@ import {
 } from '@jbrowse/render-core/canvas2dUtils'
 import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 
+import { drawnCellHeightPx } from './shaders/variant.js.generated.ts'
 import { snapVariantCellX } from './snapVariantCellX.ts'
 import { drawVariantShape } from './variantShape.ts'
 
@@ -29,10 +30,9 @@ export function drawVariantBlocks(
   state: VariantRenderState,
 ) {
   const { canvasWidth, canvasHeight, rowHeight, scrollTop } = state
-  // 2px-min row height so a lone cell in a sparse matrix stays visible (matches
-  // the 2px min width). Mirrors max(u.rowHeight, 2.0) in shaders/variant.slang +
-  // variantHitTest.ts.
-  const drawnRowHeight = Math.max(rowHeight, 2)
+  // The painted cell height, floored at 2px — variant.slang's own rule,
+  // generated into TS (adr-051), so the hit test cannot disagree with it.
+  const drawnRowHeight = drawnCellHeightPx(rowHeight)
 
   forEachClippedBlock(
     ctx,

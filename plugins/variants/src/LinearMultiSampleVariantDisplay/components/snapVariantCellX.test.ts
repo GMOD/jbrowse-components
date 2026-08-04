@@ -1,9 +1,11 @@
 import { snapVariantCellX } from './snapVariantCellX.ts'
 
-// The reference implementation is the shader (shaders/variant.slang vs_main),
-// which snaps in clip space. Reproduced here in the shader's own terms so the
-// parity claim is checked against the actual formula rather than against
-// snapVariantCellX restated.
+// `shaderSnap` is the shader as it was *before* the snap moved into px space to
+// be `//! js-export`ed (adr-051): the original clip-space rounding, kept as the
+// fixture. So this is both the retirement gate for the hand-written
+// snapVariantCellX and the proof that the px-space factoring did not move a
+// pixel — clip and px round-trip exactly here, since the half-canvas offset is
+// an integer well inside float32's exact range.
 function shaderSnap(x1: number, x2: number, canvasWidth: number) {
   const toClip = (px: number) => (px / canvasWidth) * 2 - 1
   const toPx = (clip: number) => ((clip + 1) / 2) * canvasWidth

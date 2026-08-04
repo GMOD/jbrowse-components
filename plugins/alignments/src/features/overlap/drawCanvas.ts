@@ -3,11 +3,7 @@ import {
   pileupRowOffCanvas,
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
-import {
-  FADE_HI_PX,
-  FADE_LO_PX,
-  OVERLAP_ALPHA,
-} from '../../LinearAlignmentsDisplay/shaders/slang/overlap.iface.generated.ts'
+import { overlapAlpha } from '../../LinearAlignmentsDisplay/shaders/slang/overlap.js.generated.ts'
 
 import type {
   DrawBlock,
@@ -16,19 +12,12 @@ import type {
 import type { OverlapsUploadData } from './types.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
-// Mild dark tint at full strength; the px-width fade scales it down for narrow
-// overlaps so the underlying read color shows through. OVERLAP_ALPHA /
-// FADE_LO_PX / FADE_HI_PX come from overlap.generated.ts (overlap.slang is the
-// source of truth), so this Canvas2D path can't drift from the shader.
-
-function smoothstep(e0: number, e1: number, x: number) {
-  const t = Math.max(0, Math.min(1, (x - e0) / (e1 - e0)))
-  return t * t * (3 - 2 * t)
-}
-
-// Mild semi-transparent dark tint over each intra-chain overlap interval,
-// matching overlap.slang. Hidden under ~3px rows like the GPU pass, and faded
-// out for sub-pixel-narrow overlaps so they vanish when zoomed out.
+// Mild semi-transparent dark tint over each intra-chain overlap interval, so
+// the overlapped span darkens the reads underneath rather than blacking them
+// out. Hidden under ~3px rows like the GPU pass, and faded out for
+// sub-pixel-narrow overlaps so they vanish when zoomed out — `overlapAlpha` is
+// overlap.slang's own fade, generated into TS (adr-051), replacing a local
+// re-implementation of `smoothstep` applied to the same two constants.
 export function drawOverlaps(
   ctx: Ctx2D,
   region: OverlapsUploadData,
@@ -53,7 +42,7 @@ export function drawOverlaps(
       // at the smaller edge and use the absolute width
       const left = Math.min(x1, x2)
       const w = Math.abs(x2 - x1)
-      const alpha = OVERLAP_ALPHA * smoothstep(FADE_LO_PX, FADE_HI_PX, w)
+      const alpha = overlapAlpha(w)
       if (w > 0 && alpha > 0) {
         ctx.fillStyle = `rgba(0,0,0,${alpha})`
         ctx.fillRect(left, y, w, fH)

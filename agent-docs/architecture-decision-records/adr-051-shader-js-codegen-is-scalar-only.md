@@ -106,15 +106,47 @@ the hand-written twin it replaces, because the twin is at least reviewable.
 
 Two mechanics follow from the findings above:
 
-- **A synthesized compute wrapper.** Slang eliminates code no entry point
-  reaches, so asking for a module's WGSL directly yields nothing. The driver
-  generates a throwaway `[shader("compute")]` entry calling each exported
-  function, compiles that, and lifts the bodies.
+- **A synthesized compute wrapper, for module files only.** Slang eliminates
+  code no entry point reaches, so asking for a module's WGSL directly yields
+  nothing. The driver generates a throwaway `[shader("compute")]` entry calling
+  each exported function, compiles that, and lifts the bodies. A shader that has
+  its own entry points needs none of this — it already keeps the functions alive
+  and cannot be `import`ed anyway, so the twin is lifted from the WGSL that
+  shader's normal compile already produced.
 - **Shaders factor the px-space decision out of the clip-space conversion.**
   `snapBoxCenterY` became `yPxToClipY(snapBoxCenterYPx(...))`;
   `extendToMinWidthX` became a unit conversion over `extendToMinWidthPx`. The
   shader API is unchanged, and the *decision* is now exportable. Any future
   shared decision should be authored in this shape.
+
+Lifting from a whole shader means the WGSL also carries the vertex and fragment
+support code — `vec4` math, `ptr<function, Uniforms>` params, texture samples.
+Those functions are **parked with the reason they were refused** rather than
+vetoing the file, and the reason is re-thrown the moment an export turns out to
+name or call one. The hard-error property is unchanged where it matters: nothing
+is emitted for a function that was not fully understood.
+
+**Integer types are tracked, not just TypeScript ones.** `u32` and `i32` are
+both `number` in TS but behave differently under the bitwise operators: JS
+coerces to *signed* int32, so a `u32` at or above 2³¹ comes back negative and
+`>>` shifts in sign bits rather than zeros. The emitter therefore carries the
+WGSL type of every parameter, local and expression, emits `>>>` for an unsigned
+shift and `(… ) >>> 0` after the other unsigned operators, and **refuses** where
+it cannot infer signedness rather than picking one. That is what makes flag
+words and packed colors — `(flags & 8u) != 0u`, `(packed >> 24u) & 255u` —
+transliterable at all.
+
+Two escape hatches mirror the ones `export-consts` already had:
+
+- **`//! js-export-out: <path>`** writes the twin to a repo-relative path
+  instead of beside the shader, for a Canvas2D consumer in a package that cannot
+  depend on the shader's own. `insertionBarWidthPx` lands in
+  `@jbrowse/alignments-core`, which plugin-alignments, plugin-maf, plugin-canvas
+  and plugin-variants all read.
+- **Imported `static const`s resolve.** The constant evaluator now reads the
+  modules a shader `import`s, so a pass can write `CURVE_SEGMENTS * 6u` where it
+  previously had to spell `48u` under a comment explaining that the codegen
+  could not follow the identifier.
 
 **Retirement is gated by a differential test.** The hand-written twin is kept
 verbatim as a fixture, swept against the generated function over the inputs
@@ -131,6 +163,48 @@ the no-GPU path this all exists for.
 | `alignmentsUniforms.slang` | `frequencyAlpha` | `rendererTypes.ts` — a copy under "Same formula as frequencyAlpha() in alignmentsUniforms.slang"; backs `frequencyFade`, which every fading pass routes through |
 | `syntenyTypes.slang` | `isCigarKind`, `isMarkerKind` | `Canvas2DSyntenyRenderer` — `kind >= KIND_CIGAR_MATCH` and `kind === KIND_MARKER`, re-spelled inline |
 | `pointGlyph.slang` | `crispSquareTopLeftPx` (+ `SMALL_POINT_MAX_DIAMETER` via `export-consts`) | `pointMarker.ts` — the `Math.floor(v + 0.5)` snap and a re-typed `3` |
+| `alignmentsUniforms.slang` | `arcYFraction`, `arcYOffsetPx` | `arcYScale.ts` — a copy tagged "must stay byte-identical", feeding both the arc draw and the insert-size ruler ticks |
+| `syntenyTypes.slang` | `fillShade`, `hoverDarken`, `thinWidthFade` | `Canvas2DSyntenyRenderer` — the ×5/0.35 hover boost, the 0.7 darkening, and the sub-pixel density fade with `WIDTH_FADE_FLOOR` re-typed as a local const |
+| `hic.slang` | `mapHicCount` | `colorRamp.ts` — "Mirrors the logic in hic.slang's fragment shader"; first export lifted from an entry-point shader |
+| `read.slang` | `insertGradientT` | `colorUtils.ts` — the insert-size gradient ramp, under a `SYNC:` on `IS_GRADIENT_SPAN_FRAC` |
+| `insertion.slang` | `insertionBarWidthPx` (+ the four thresholds via `export-consts`) | `@jbrowse/alignments-core` `labelConstants.ts` — the insertion marker's width, read by two plugins' renderers and three hit tests |
+| `read.slang` | `showChevron` | `features/read/drawCanvas.ts` — "Mirror of read.slang `showChev`"; the first export needing bit operations |
+| `gap.slang` | `intronAlpha` | `rendererTypes.ts` — a hand-expanded smoothstep, under a "keep these in sync" comment on *each* side |
+| `rowRect.slang` | `drawnRowHeightPx`, `rowBandOffsetPx` (+ `MIN_DRAWN_ROW_PX`) | `plugins/canvas` `rowBand.ts` — the row band the painter, the indel glyphs and the hover box all inset from |
+| `variant.slang` | `drawnCellHeightPx` | `Canvas2DVariantRenderer` + `variantCellLookup` — `Math.max(rowHeight, 2)` twice, so a cell could paint taller than it picks |
+| `manhattan.slang` | `INDEX_GLYPH_SCALE` via `export-consts` | `Canvas2DManhattanRenderer` — a re-typed `1.6`, previously guarded by a test that scraped the `.slang` with a regex |
+| `variant.slang` | `snapCellEdgePx`, `snappedCellWidthPx` | `snapVariantCellX.ts` — the half-canvas-offset pixel snap, which is parity rather than an approximation to `Math.round` only because someone worked the clip-space algebra out by hand |
+| `overlap.slang` | `overlapAlpha` | `features/overlap/drawCanvas.ts` — the constants were already shared; the `smoothstep` between them was hand-written |
+| `continuation.slang` | `markerDirection`, `strandMatchesEdge` | `Canvas2DFeatureRenderer` — edge-marker sign arithmetic, "kept in agreement by eye" |
+| `syntenyTypes.slang` | `KIND_CIGAR_MIN`, `KIND_MARKER` via `export-consts` | `syntenyColors.ts` — the CIGAR kinds now number themselves off the shader's boundary, so staying contiguous above it is structural |
+
+### A vector signature is usually a scalar decision in a wrapper
+
+The first round of this work assumed vector support was the next unlock, because
+the obvious remaining candidates all returned a `float3`/`float4`. Working
+through them one at a time says otherwise. In every case examined so far, the
+part the two backends must agree on was already scalar, and the vector part was
+a **color-space or packaging conversion each backend should keep doing its own
+way**:
+
+| Candidate | Signature | What was actually shared |
+| --- | --- | --- |
+| synteny `shadeFill` | `float4 → float4` | `fillShade` + `hoverDarken`, two scalars; the blend around them is 0-1 floats on the GPU and 0-255 bytes inside an `rgba()` string on Canvas2D |
+| read `insertSizeGradientColor` | `float3` | `insertGradientT`, the ramp position; the lerp is per-backend |
+| hic's fragment `t` | inside `fs_main` | `mapHicCount`, already scalar, just not in a function |
+| synteny `computeCorners` | struct in, struct out | `bpRel * bpPerPxInv + panPx` per corner — the struct is packaging |
+| read `hueRampHalfSat` | `float3` | nothing: the JS twin emits `hsl(...)` and never has three channels |
+| `unpackRGBA` | `u32 → float4` | nothing: `abgrRed/Green/Blue/Alpha` already exist in `@jbrowse/core/util`, are on the public ABI, and are correct |
+
+So the recipe for a "needs vectors" function is the same one the shaders already
+follow for clip space: **split the scalar decision out, export that, leave the
+conversion**. It is also the better outcome — a verbatim vector lift would hand
+the Canvas2D path a `float4` it has to unpack and requantize, and that adapter
+code is itself a hand-written twin.
+
+Vector support is therefore **not** blocked-and-valuable, it is unproven. Build
+it when a function turns up whose *decision* is genuinely vector-valued, not
+because a signature has a `3` in it.
 
 ### Deliberately not exported
 
@@ -142,8 +216,8 @@ and the two implementations have to be *meant* to agree:
 - **`normalizeScore` / `scoreToY` (wiggle)** — the shader's own comment records a
   deliberate divergence from JS `makeScoreNormalizer` on a degenerate
   (`min == max`) domain: JS returns 0, the shader avoids NaN. Unifying them is a
-  product decision, not a codegen one. (`wiggle.slang` is also not a module, so
-  `js-export` does not reach it yet — see below.)
+  product decision, not a codegen one. `js-export` reaches `wiggle.slang` now,
+  so this is a choice rather than a limitation.
 - **`sBlend` / `yCurve` (synteny)** — exported as a **test oracle**, not as
   production code. The Canvas2D path deliberately draws one `bezierCurveTo`
   rather than tessellating, and `syntenyRibbonPath.ts` carries an algebraic proof
@@ -154,11 +228,20 @@ and the two implementations have to be *meant* to agree:
 
 ## Consequences
 
-- Six drift sites retired across four plugins; `SYNC:`-tagged sites went 27 → 26
-  (the synteny `shadeFill` mirror remains, and needs vector support).
-- **`js-export` currently only reaches `module` files.** A shader with entry
-  points can't be `import`ed by the synthesized wrapper. The fix is small — lift
-  from the WGSL `compileOne` already produces — and is what wiggle would need.
+- Six drift sites retired in the first round, twenty-nine more since (twenty-two
+  functions and nine constants, five of them crossing a package boundary);
+  `SYNC:`-tagged sites went 27 → 10, and six of the ones removed were **stale**
+  — they named `read.slang` branches deleted when read classification moved to
+  the CPU. Everything left is classified in
+  [handoffs/shader-js-codegen.md](../handoffs/shader-js-codegen.md).
+- The `SYNC:` tags were never the whole inventory. Grepping TS for `.slang`
+  turns up as many untagged "Mirrors X.slang" comments, and that is where
+  `mapHicCount`, `intronAlpha`, `showChevron`, `rowBandPx`, `overlapAlpha` and
+  the continuation sign arithmetic all came from.
+- **`js-export` reaches every shader**, module or not. `//! js-export-out` puts
+  the twin where a cross-package consumer can import it.
+- Constants resolve through imports, so `VERTS_PER_INSTANCE` can be derived from
+  the module constant that actually determines it.
 - Generated JS is float64 where the shader is float32. This is not bit-exact and
   is not meant to be — CPU float64 is *more* accurate, the previous hand-written
   twins were also float64, and the backends already diverge deliberately. Parity
@@ -172,9 +255,13 @@ and the two implementations have to be *meant* to agree:
   have no shader counterpart at all (the Canvas2D-only sequence display, MAF's
   overlay painters, labels, SVG-export-only highlight boxes), and most of the
   rest is loop scaffolding and style caching rather than shader-mirrored math.
-  Extending the subset to vectors would reach the color/alpha functions
-  (`frequencyFade`, `intronAlpha`, `mapHicCount`, `unpackRGBA`, synteny's
-  `shadeFill`) — the largest remaining cluster — and is the natural next step.
   Reducing canvas LOC generally is a *different* job: keep promoting recurring
   loop pieces into `canvas2dUtils.ts`, as `forEachClippedBlock` / `fillBpSpan` /
   `makeCellLeftMapper` already were.
+- One consumer changed behavior rather than just its source: synteny's
+  `resolveInstanceFill` now rounds to 8 bits instead of truncating with `| 0`.
+  Truncation biased every channel down by up to a full unit where the GPU
+  rounds, and it turned the generator's float32 constants (0.35 arrives as
+  0.34999999403953552) into whole-step errors wherever a product landed on an
+  exact integer. Any consumer taking a generated float into byte space should
+  round for the same two reasons.

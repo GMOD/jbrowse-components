@@ -7,6 +7,7 @@
 // are conventionally pre-transformed (e.g. -log10 p), so we only do linear Y
 // mapping — no log branch here.
 //! targets: wgsl, glsl
+//! export-consts: INDEX_GLYPH_SCALE
 
 import hpmath;
 import colorPack;

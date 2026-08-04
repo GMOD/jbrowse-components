@@ -6,6 +6,11 @@ import {
   hashString,
 } from '@jbrowse/synteny-core'
 
+import {
+  KIND_CIGAR_MIN,
+  KIND_MARKER,
+} from '../LinearSyntenyDisplay/shaders/syntenyTypes.generated.ts'
+
 import type { SyntenyColorBy } from '@jbrowse/synteny-core'
 
 // Per-instance kind tag. Determines how the color for an instance is derived
@@ -13,18 +18,21 @@ import type { SyntenyColorBy } from '@jbrowse/synteny-core'
 // scheme. Emitted by the worker once during geometry build; colors are
 // recomputed on the main thread whenever colorBy changes, so a color-scheme
 // toggle never triggers an RPC refetch.
-// SYNC: the shaders only test BASE-vs-CIGAR via `isCigarKind` (kind >= 3) in
-// syntenyTypes.slang. The CIGAR kinds must stay contiguous and above the
-// non-CIGAR kinds, with KIND_CIGAR_MATCH as the boundary.
+//
+// The shaders only ever test BASE-vs-CIGAR (`isCigarKind`, i.e. kind >= the
+// boundary) and marker-vs-not, so those two numbers are the shader's and are
+// generated in (adr-051). The rest are numbered off the boundary here, which is
+// what keeps the CIGAR kinds contiguous and above it by construction rather
+// than by a comment asking for it.
 export const KIND_BASE = 0
-export const KIND_MARKER = 2
-// Boundary constant only — the `isCigar = kind >= KIND_CIGAR_MATCH` threshold.
-// Never emitted as an instance kind: buildSyntenyGeometry paints matches as
-// KIND_BASE (transparent mode) or leaves them to the pass-1 base (colored mode).
-export const KIND_CIGAR_MATCH = 3
-export const KIND_CIGAR_I = 4
-export const KIND_CIGAR_D = 5
-export const KIND_CIGAR_N = 6
+export { KIND_MARKER }
+// Boundary only — the `isCigar = kind >= KIND_CIGAR_MATCH` threshold. Never
+// emitted as an instance kind: buildSyntenyGeometry paints matches as KIND_BASE
+// (transparent mode) or leaves them to the pass-1 base (colored mode).
+export const KIND_CIGAR_MATCH = KIND_CIGAR_MIN
+export const KIND_CIGAR_I = KIND_CIGAR_MIN + 1
+export const KIND_CIGAR_D = KIND_CIGAR_MIN + 2
+export const KIND_CIGAR_N = KIND_CIGAR_MIN + 3
 
 const STRAND_POS = cssColorToABGR(colorSchemes.strand.posColor)
 const STRAND_NEG = cssColorToABGR(colorSchemes.strand.negColor)

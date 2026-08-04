@@ -8,16 +8,18 @@ import { appendPointMarker } from '@jbrowse/wiggle-core'
 
 import { GLYPH_INDEX, GLYPH_INSERTION } from '../ManhattanRPC/rpcTypes.ts'
 import { scoreToY } from './manhattanRenderingBackendTypes.ts'
+import { INDEX_GLYPH_SCALE } from './shaders/manhattan.iface.generated.ts'
 
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
-// Must match INDEX_GLYPH_SCALE in manhattan.slang: LocusZoom draws the
-// index/lead SNP visibly larger than the other points. Exported so
-// glyphContract.test.ts can pin the two against each other.
-export const INDEX_GLYPH_SCALE = 1.6
+// LocusZoom draws the index/lead SNP visibly larger than the other points. The
+// factor is manhattan.slang's, generated in by `pnpm gen:shaders`, and
+// re-exported here because this module is where the Canvas2D draw path looks
+// for it.
+export { INDEX_GLYPH_SCALE }
 
 // Pure draw entry point — used both by on-screen streaming render and SVG
 // export. No per-region builder layer (the rpcDataMap entries are already

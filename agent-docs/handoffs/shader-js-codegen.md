@@ -1,0 +1,169 @@
+---
+name: shader-js-codegen
+description: State of `//! js-export` — generating the Canvas2D/SVG twin of a shader's scalar decisions from slangc's WGSL. What is exported, what the survey of the remaining hand-sync sites found (including that vector support is not the unlock it looked like), and the residue. Read before adding an export or extending the emitter.
+---
+
+# Shader → JS codegen
+
+The *why*, including everything deliberately not built, is
+[ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-scalar-only.md)
+— read it first, this file assumes it.
+
+## What exists
+
+| Path | What |
+| --- | --- |
+| `packages/shader-tools/src/shader-codegen/wgslToJs.ts` | tokenizer + recursive-descent parser + emitter for the scalar subset of slangc's WGSL |
+| `packages/shader-tools/src/shader-codegen/wgslToJs.test.ts` | weighted toward the *refusals* |
+| `parseDirectives.ts` | `//! js-export:`, `//! js-export-out:`, and the constant evaluator (which resolves through `import`s) |
+| `build-shaders.ts` `writeJsExports` | lifts from the shader's own WGSL, or from a synthesized compute wrapper for `module` files |
+| `*.js.generated.ts` | the generated twins — never hand-edit |
+| `hpmathParity` / `alphaShaderParity` / `syntenyShaderParity` / `pointMarkerParity` / `hicShaderParity` / `insertionWidth` / `rowBand` / `drawCanvas` tests | the retirement gates |
+
+Thirteen shaders export today; the table is in ADR-051.
+
+## Verified facts, do not re-derive
+
+- **slangc's CPU targets do not support graphics stages.** `-target c` on a
+  vertex entry errors (`'max' not available in 'vertex' stage`); `-target cpp`
+  **segfaults** (exit 139). Both work on a `[shader("compute")]` entry. This is
+  why module files get a synthesized compute wrapper.
+- **Slang DCEs anything no entry point reaches.** For a module that means the
+  wrapper is the only way to get WGSL at all. For a shader with entry points it
+  means an exported function must be *called from the draw path* or it will not
+  be in the output — the error message says so.
+- **A whole shader's WGSL parses partially, on purpose.** Its stage support code
+  (`vec4` math, `ptr<function, Uniforms>`, texture samples) is parked with the
+  reason it was refused; the reason is re-thrown only if an export reaches it.
+- **The regeneration touches ~85 `.generated.ts` files whenever a widely-imported
+  `.slang` changes length, and the only delta is GLSL `#line` debug numbers.**
+  Word-diff before assuming a semantic change.
+- **Generated JS is float64, the shader is float32 — but the *literals* are
+  float32.** `0.35` comes back as `0.34999999403953552`. Harmless in float space;
+  it bites a consumer that truncates into byte space, which is why synteny's fill
+  now rounds. Parity tests use `toBeCloseTo`, never bit equality.
+- **Integer signedness is tracked and refused-on-doubt.** `u32` and `i32` are
+  both `number` in TS, so the emitter carries the WGSL type: `>>>` for an
+  unsigned shift, `>>> 0` after the other unsigned bitwise operators, and a hard
+  error where it cannot infer which. Don't "simplify" that away — the values
+  that need it (packed ABGR colors, flag words) are exactly the ones at or above
+  2³¹ where JS's signed coercion silently changes the answer.
+- **A `SYNC:` tag can be stale.** Six in `colorUtils.ts` / `colorSchemes.ts` /
+  `insertSizeStats.ts` named `read.slang` branches (`chainHasSupp`,
+  `colorSuppChains`, `isOrientationScheme`, `insertSizeColor`) that were deleted
+  when read classification moved to the CPU. Grep the counterpart before
+  trusting a tag, and before counting one.
+- **Not every mirror is worth converting.** `computeCorners` is `a*b+c`; the
+  comments around it document a *convention*, and converting would cost four
+  calls per instance in a 500k-instance loop. The test is whether a hand-written
+  twin could plausibly drift *and* the difference would be hard to see —
+  `snapCellEdgePx`'s half-canvas offset passes it, a multiply-add does not.
+
+## The load-bearing finding
+
+**A vector or struct signature is usually a scalar decision in a wrapper.** The
+previous handoff called vector support "the big one". Working the candidates
+one at a time found the opposite: in every case, the part both backends must
+agree on was already scalar, and the vector part was a color-space or packaging
+conversion each backend should keep doing its own way. The table is in ADR-051
+§"A vector signature is usually a scalar decision in a wrapper".
+
+So the recipe below is the job, and vector support is unproven rather than
+blocked. Build it when a function turns up whose *decision* is genuinely
+vector-valued.
+
+The gap that **was** real turned out to be integer semantics, not vectors:
+`showChevron` reads packed flag bits, and the emitter could not have
+transliterated `(flags & 8u) != 0u` correctly without knowing signedness. That
+is built now (see the type-tracking note above), and it is what the color
+functions would have needed first anyway.
+
+## Adding a function to the export set
+
+1. Find the scalar decision. If the natural signature takes a `Uniforms` struct,
+   returns clip space, or returns a color, **split it**: pure scalar core, thin
+   wrapper the shader's own call sites keep using. `snapBoxCenterYPx` /
+   `snapBoxCenterY` and `fillShade` / `shadeFill` are the pattern.
+2. Add the name to `//! js-export:`. Cross-package consumer? Add
+   `//! js-export-out: <repo-relative path>` — it redirects, so there is exactly
+   one generated file.
+3. `pnpm gen:shaders`. A typo names the candidates; a non-scalar signature names
+   the function and the offending type; a dead function says so.
+4. Wire the consumer, keeping the hand-written twin **as a test fixture**.
+5. Sweep generated-vs-retired over the inputs where it historically broke, then
+   delete the fixture. Copy `hicShaderParity.test.ts`.
+6. Cross-package consumers outside the `js-export-out` package need an entry in
+   that package's `exports` map (hand-maintained; `generateExports.mjs` is
+   `@jbrowse/core`-only).
+
+**Step 4 is not optional.** The generator's whole value is that it can't drift;
+that only holds if each retirement was proved once.
+
+## The residue: 10 `SYNC:` sites, classified
+
+Ordered by what it would take to close them. **The tags were never the whole
+inventory** — `grep -rn '\.slang' --include='*.ts'` turns up as many untagged
+"Mirrors X.slang" comments, and that is where `mapHicCount`, `intronAlpha`,
+`showChevron`, `rowBandPx`, `overlapAlpha`, the variant cell snap and the
+continuation sign arithmetic all came from. Run that grep first.
+
+### Considered and deliberately not converted
+
+- **`computeCorners`** (synteny ×2, dotplot ×1). The expression is
+  `bpRel * bpPerPxInv + panPx` — a fused multiply-add whose drift risk is
+  essentially nil, since any change to it breaks every ribbon visibly and at
+  once. What those comments actually document is the *panPx convention* (why a
+  fetch-time base is subtracted, and why that keeps a single Float32 sub-pixel),
+  which is prose, not a formula. Converting would put four function calls per
+  instance into `projectCorners`, whose own comment records that per-instance
+  allocation there once dominated a pick-index profile at 500k instances. Not
+  worth it; leave the comments, they are earning their keep.
+- **`compute.ts` linked-read pair ordering**. TS↔TS, not shader-coupled:
+  `LINKED_READ_COLOR_PAIR_*` are defined equal to `PAIR_DIRECTION_NUM`. Deriving
+  one from the other closes it without any codegen.
+
+### Genuinely per-backend, leave them
+
+- **`hermiteEdges` / `sBlend` / `yCurve`** — the bezier-vs-tessellation
+  equivalence, already checked numerically by `syntenyShaderParity.test.ts`.
+  This is the *test oracle* shape: reach for it whenever two implementations are
+  meant to differ but must stay equivalent. It is a stronger claim than a `SYNC:`
+  tag and it is often the right answer.
+- **`perpW` (synteny fill/stroke split, pick engine)** — the shader measures a
+  per-fragment width from two edges' own foreshortenings; Canvas2D measures a
+  whole-ribbon one from the corners. Different quantities, each right for the
+  decision it feeds. Only the fade curve applied to them is shared, and that is
+  now `thinWidthFade`.
+- **`instanceInterleave` ↔ the instance layout** — buffer packing, not math.
+  `assertVertexInputs.ts` is the mechanism that covers this class.
+- **`syntenyFillPad.test.ts`** — a test asserting a geometry pad; the shader side
+  is `thinRibbonPad`, which takes a `Corners` struct.
+
+## Still not to be done
+
+- **Do not transpile a vertex or fragment stage.** `chevron.slang` is the
+  standing counter-example: a 12-vertex `SV_VertexID` switch with 1px AA
+  extrusion and an `OFFSCREEN` culling sentinel. You would get padded clip-space
+  triangles that must be undone to recover the polyline `ctx.stroke()` wants.
+  Full argument in ADR-051.
+- **Do not chase `fwidth`/`ddx`/`ddy`.** No pixel quad exists on the CPU. This is
+  the real ceiling, and it is the right one: derivatives are *rasterization*
+  math, which each backend should do its own way — Canvas2D's native AA is the
+  equivalent.
+- **Do not unify a deliberate divergence.** `normalizeScore` vs JS
+  `makeScoreNormalizer` disagree on a degenerate (`min == max`) domain *on
+  purpose*, and the AA compensations (`WIGGLE_FUDGE_FACTOR`, the variant-matrix
+  `f2`, synteny's centerline stroke) are per-backend by design. Generating a twin
+  silently picks a side of a product decision.
+- **Do not assume already-scalar means harvestable.** Several scalar functions
+  have no Canvas2D consumer at all (`discExpand`, `getGeno`, `getWord`). ADR-051
+  catalogues them so the survey doesn't get redone.
+
+## Related
+
+- [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-scalar-only.md)
+  — the decision, the rejected alternatives, the export table.
+- [ADR-005](../architecture-decision-records/adr-005-shader-codegen-slang.md) —
+  Slang codegen generally.
+- [reference/GPU_RENDERING.md](../reference/GPU_RENDERING.md) §"Keeping the two
+  backends in parity" — where this sits among the other parity mechanisms.

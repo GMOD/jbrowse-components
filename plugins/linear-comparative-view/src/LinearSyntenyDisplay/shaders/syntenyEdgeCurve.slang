@@ -12,10 +12,9 @@
 
 import syntenyTypes;
 
-// SYNC: CURVE_SEGMENTS (8) * 6 verts. The codegen parses this constant out of
-// the source and cannot resolve an imported identifier, so the segment count is
-// spelled literally here; syntenyCurveSegments.test.ts pins the two together.
-public static const uint VERTS_PER_INSTANCE = 48u;
+// One trapezoid per curve segment, 6 verts each. The codegen resolves
+// CURVE_SEGMENTS through the import, so the count follows syntenyTypes.
+public static const uint VERTS_PER_INSTANCE = CURVE_SEGMENTS * 6u;
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
 [shader("vertex")]

@@ -2,12 +2,45 @@
 // bounding-box quad; the fragment shader uses an SDF to carve the inversion
 // triangle glyph out of the quad when shapeType != RECT.
 //! targets: wgsl, glsl
+//! js-export: drawnCellHeightPx, snapCellEdgePx, snappedCellWidthPx
 
 import hpmath;
 import colorPack;
 
 
 public static const uint VERTS_PER_INSTANCE = 6u;
+
+// Height a cell is painted at. The 2px floor keeps a lone cell in a sparse
+// matrix visible (matching the 2px min width) rather than fading to a sub-pixel
+// sliver, while preserving draw order for variant priority.
+//
+// `//! js-export`ed: the Canvas2D draw and the hit test both need the same
+// band, and both spelled `Math.max(rowHeight, 2)` under comments naming this
+// one. A cell painted taller than it hit-tests is unclickable along its bottom
+// edge — a difference nothing but a user would notice.
+float drawnCellHeightPx(float rowHeight) {
+  return max(rowHeight, 2.0);
+}
+
+// Snap a cell edge to the pixel grid, `//! js-export`ed because the Canvas2D
+// backend and the SVG export both have to land on the pixels the GPU already
+// drew — at genome-wide zoom every variant is thinner than 1px, so a half-pixel
+// disagreement is not a corner case there, it is every cell.
+//
+// The half-canvas offset is not decoration. Clip space is 2 units across
+// `canvasWidth` px, so the shader's natural `floor(clipX / pxSize + 0.5)` rounds
+// about the canvas *centre*: whole pixels when the width is even, half pixels
+// when it is odd. A plain round() on the CPU would agree only half the time.
+float snapCellEdgePx(float xPx, float canvasWidth) {
+  float half = canvasWidth * 0.5;
+  return floor(xPx - half + 0.5) + half;
+}
+
+// A snapped cell paints at least 2px wide, so a lone variant in a sparse matrix
+// stays visible rather than collapsing to a sliver.
+float snappedCellWidthPx(float x1Px, float x2Px) {
+  return max(2.0, x2Px - x1Px);
+}
 
 struct CellInstance {
   uint2 startEnd  : ATTR0;
@@ -53,29 +86,28 @@ VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
   float loClip = min(clipX1, clipX2);
   float hiClip = max(clipX1, clipX2);
 
-  // Pixel-snap + 2px floor. Mirrored on the CPU by snapVariantCellX.ts, which
-  // the Canvas2D backend and the SVG export both call — snapping here only
-  // would put exports half a pixel off the on-screen render at sub-pixel scale.
+  // Pixel-snap + 2px floor, in px space (see snapCellEdgePx) so the CPU runs the
+  // identical rounding. clipX/pxSize is already `px - canvasWidth/2`, so adding
+  // the half-width back is all the conversion this needs.
   float pxSize = 2.0 / u.canvasWidth;
-  float cx1 = floor(loClip / pxSize + 0.5) * pxSize;
-  float cx2 = max(floor(hiClip / pxSize + 0.5) * pxSize, cx1 + 2.0 * pxSize);
+  float halfW = u.canvasWidth * 0.5;
+  float x1Px = snapCellEdgePx(loClip / pxSize + halfW, u.canvasWidth);
+  float wPx = snappedCellWidthPx(
+    x1Px, snapCellEdgePx(hiClip / pxSize + halfW, u.canvasWidth));
+  float cx1 = (x1Px - halfW) * pxSize;
+  float cx2 = (x1Px + wPx - halfW) * pxSize;
 
   // fractional y keeps subpixel rows smooth (no rounding = no discrete jumps
-  // during resize); max(...,2) is the minimum quad height so a lone cell in a
-  // sparse matrix stays visible (matches the 2px min width) rather than fading
-  // to a sub-pixel sliver, while preserving draw order for variant priority.
-  // 2px-min mirrored in Canvas2DVariantRenderer.ts (draw) +
-  // variantHitTest.ts (hit-test) — keep in sync.
+  // during resize); the floor is drawnCellHeightPx, below.
   float yTop = float(inst.rowIndex) * u.rowHeight - u.scrollTop;
-  float yBot = yTop + max(u.rowHeight, 2.0);
+  float yBot = yTop + drawnCellHeightPx(u.rowHeight);
   float cyTop = yPxToClipY(yTop, u.canvasHeight);
   float cyBot = yPxToClipY(yBot, u.canvasHeight);
 
   float2 q = quadLocal(vid);
   float lx = q.x, ly = q.y;
 
-  float wPx = (cx2 - cx1) * u.canvasWidth * 0.5;
-  float hPx = max(u.rowHeight, 2.0);
+  float hPx = drawnCellHeightPx(u.rowHeight);
 
   VsOut o;
   o.position = float4(lerp(cx1, cx2, lx), lerp(cyBot, cyTop, ly), 0.0, 1.0);

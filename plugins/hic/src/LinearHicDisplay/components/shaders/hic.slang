@@ -2,6 +2,7 @@
 // rendered at 45° into a triangle above the axis. Color comes from sampling
 // a 256×1 palette texture with `t = normalized count (optionally log)`.
 //! targets: wgsl, glsl
+//! js-export: mapHicCount
 
 import diagonalGrid;
 import hpmath;
@@ -54,15 +55,27 @@ VsOut vs_main(HicInstance inst, uint vid : SV_VertexID) {
   return o;
 }
 
+// Contact count -> the [0,1] point on the ramp that colors it. Split out of
+// fs_main so `//! js-export` can lift it: the Canvas2D and SVG paths sample the
+// same 256-entry ramp and have to land on the same entry the GPU does.
+//
+// Both floors are load-bearing and mirrored in countStats.ts. log2(1) is 0, so
+// a colorMaxScore at or below 1 would divide by zero; a zero colorMaxScore
+// would make the linear branch 0/0 = NaN. Neither is hypothetical — an empty
+// or single-contact block produces both.
+float mapHicCount(float count, float colorMaxScore, bool useLogScale) {
+  float t;
+  if (useLogScale) {
+    t = log2(max(count, 1.0)) / log2(max(colorMaxScore, 2.0));
+  } else {
+    t = count / max(colorMaxScore, 0.001);
+  }
+  return clamp(t, 0.0, 1.0);
+}
+
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
-  float t;
-  if (u.useLogScale == 1u) {
-    t = log2(max(fragIn.count, 1.0)) / log2(max(u.colorMaxScore, 2.0));
-  } else {
-    t = fragIn.count / max(u.colorMaxScore, 0.001);
-  }
-  t = clamp(t, 0.0, 1.0);
+  float t = mapHicCount(fragIn.count, u.colorMaxScore, u.useLogScale == 1u);
   float4 c = colorRamp.SampleLevel(float2(t, 0.5), 0.0);
   return float4(c.rgb * c.a, c.a);
 }

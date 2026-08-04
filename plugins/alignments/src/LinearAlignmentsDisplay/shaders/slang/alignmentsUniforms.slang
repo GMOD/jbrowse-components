@@ -10,7 +10,7 @@
 // The sub-pixel frequency lerp is a pure scalar decision both backends must
 // make identically; rendererTypes.ts imports the generated twin rather than
 // re-deriving it (adr-051).
-//! js-export: frequencyAlpha
+//! js-export: frequencyAlpha, arcYFraction, arcYOffsetPx
 //! consts-out: packages/alignments-core/src/indicatorTriangle.generated.ts
 module alignmentsUniforms;
 
@@ -333,19 +333,36 @@ public float3 arcMarkerColorByIndex(uint idx, Uniforms u) {
   return arcColorByIndex(idx, u);
 }
 
+// Where `yBp` plots within the arcs band, as a fraction in [0, inf).
+// `useLog` picks a base-2 log scale (read cloud, so small inserts spread near
+// the baseline instead of collapsing) over linear (arc mode, where yBp is a
+// genomic radius); the linear branch guards a zero domain so it yields 0, not
+// +inf.
+//
+// This and `arcYOffsetPx` below are `//! js-export`ed under the names the JS
+// path already used: arcYScale.ts held a hand-written copy that had to stay
+// byte-identical, feeding both the Canvas2D/SVG arc draw and the insert-size
+// ruler ticks, so a tick label and the arc plotting its value came from two
+// separately-maintained spellings of one formula.
+public float arcYFraction(uint yBp, float arcsYDomainBp, bool useLog) {
+  if (useLog) {
+    return log2(max(1.0, float(yBp))) / log2(max(2.0, arcsYDomainBp));
+  }
+  return arcsYDomainBp > 0.0 ? float(yBp) / arcsYDomainBp : 0.0;
+}
+
+// Distance from the band's zero anchor to where `yBp` plots, clamped to the
+// band.
+public float arcYOffsetPx(uint yBp, float arcsYDomainBp, bool useLog,
+                          float availH) {
+  return min(availH, arcYFraction(yBp, arcsYDomainBp, useLog) * availH);
+}
+
 // Read cloud/arc flat-line Y offset (unsigned px) within an `availH`-tall band.
-// arcsYLog picks a base-2 log scale (read cloud, so small inserts spread
-// near the baseline instead of collapsing) vs linear (arc mode, yBp is a genomic
-// radius); the linear branch guards a zero domain so it yields 0, not +inf.
-// Shared by arc.slang (flat line + dome apex) and arcMarker.slang so a read cloud
-// endpoint square lands exactly on its flat line. SYNC: must stay byte-identical
-// to arcYFraction() in arcYScale.ts (the JS/Canvas2D path) — the golden values
-// in arcYScale.test.ts pin this formula on both sides.
+// Shared by arc.slang (flat line + dome apex) and arcMarker.slang so a read
+// cloud endpoint square lands exactly on its flat line.
 public float arcBandDestY(uint yBp, float availH, Uniforms u) {
-  float frac = (u.arcsYLog > 0.5)
-    ? log2(max(1.0, float(yBp))) / log2(max(2.0, u.arcsYDomainBp))
-    : (u.arcsYDomainBp > 0.0 ? float(yBp) / u.arcsYDomainBp : 0.0);
-  return min(availH, frac * availH);
+  return arcYOffsetPx(yBp, u.arcsYDomainBp, u.arcsYLog > 0.5, availH);
 }
 
 // Interbase-histogram / indicator clip-kind palette: 1=insertion 2=softclip

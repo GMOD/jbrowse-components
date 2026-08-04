@@ -76,8 +76,9 @@ export type InsertSizeClass = 'long' | 'short' | 'normal'
 // classifier (colorUtils.ts) and the arc/read-cloud classifier (arcs/compute.ts)
 // so the two can't drift. `absInsert` is |TLEN|; 0 means unset (single-end /
 // unpaired) and classifies as 'normal', never 'short' — otherwise an unpaired
-// read in a mixed dataset (stats defined) would paint as a short insert. The GPU
-// twin (insertSizeColor in read.slang) mirrors this via its `is > 0` guard.
+// read in a mixed dataset (stats defined) would paint as a short insert. There
+// is no GPU twin: read.slang consumes the resulting category and no longer
+// applies thresholds of its own.
 export function classifyInsertSize(
   absInsert: number,
   band: InsertSizeBand | undefined,

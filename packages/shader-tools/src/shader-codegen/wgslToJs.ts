@@ -19,6 +19,13 @@
 // transliterator that silently guesses is strictly worse than the hand-written
 // twin it replaces — the twin is at least reviewable. Anything outside the
 // subset throws at `pnpm gen:shaders`, naming the construct and the line.
+//
+// "Every gap" means every gap *an export reaches*. A whole shader's WGSL — as
+// opposed to a module's — also carries its vertex/fragment support code: vec4
+// math, `ptr<function, Uniforms>` params, texture samples. Those functions are
+// parked with the reason they were refused, and the reason is re-thrown the
+// moment an exported function turns out to call one. Nothing is emitted for a
+// function that was not fully understood.
 
 // ---------------------------------------------------------------------------
 // Tokenizer
@@ -136,36 +143,52 @@ type Expr =
   | { k: 'call'; name: string; args: Expr[]; line: number }
 
 type Stmt =
-  | { k: 'var'; name: string; tsType: string; init?: Expr }
+  | { k: 'var'; name: string; type: WgslType; init?: Expr }
   | { k: 'assign'; name: string; value: Expr }
   | { k: 'if'; cond: Expr; thenBody: Stmt[]; else?: Stmt[] }
   | { k: 'return'; value?: Expr }
   | { k: 'expr'; e: Expr }
 
+/**
+ * The WGSL type is carried, not just the TypeScript one, because `u32` and
+ * `i32` are both `number` in TS and yet behave differently under the bitwise
+ * operators: JS coerces to *signed* int32, so a `u32` above 2^31 comes back
+ * negative and `>>` shifts in sign bits. Knowing which one an expression is is
+ * what lets the emitter re-normalize instead of guessing.
+ */
+export type WgslType = 'f32' | 'u32' | 'i32' | 'bool'
+
 export interface WgslParam {
   name: string
-  tsType: string
+  type: WgslType
 }
 
 export interface WgslFn {
   name: string
   params: WgslParam[]
-  returnType: string
+  returnType: WgslType | 'void'
   body: Stmt[]
-  /** entry points (`@compute` / `@vertex` / `@fragment`) are parsed then dropped */
-  isEntry: boolean
+}
+
+/** A function outside the subset, kept only so a reference to it can explain itself. */
+export interface WgslRefusal {
+  name: string
+  reason: string
+}
+
+export interface WgslModule {
+  fns: WgslFn[]
+  refused: WgslRefusal[]
 }
 
 const STAGE_ATTRS = new Set(['compute', 'vertex', 'fragment'])
 
 // Scalar types only. A vector type is a real gap, not a bug — it reports itself,
 // so the emitter's coverage is always explicit rather than assumed.
-const SCALAR_TYPES: Record<string, string> = {
-  f32: 'number',
-  u32: 'number',
-  i32: 'number',
-  bool: 'boolean',
-}
+const SCALAR_TYPES = new Set<string>(['f32', 'u32', 'i32', 'bool'])
+
+const tsTypeOf = (t: WgslType | 'void') =>
+  t === 'bool' ? 'boolean' : t === 'void' ? 'void' : 'number'
 
 // Every WGSL builtin this emitter knows it does *not* handle. Listing them
 // explicitly is what stops an unsupported builtin from being mistaken for a
@@ -306,17 +329,17 @@ class Parser {
     this.skipBalanced('{', '}')
   }
 
-  private parseType() {
+  private parseType(): WgslType {
     const t = this.next()
-    const ts = t.kind === 'ident' ? SCALAR_TYPES[t.text] : undefined
-    if (ts === undefined) {
+    if (t.kind !== 'ident' || !SCALAR_TYPES.has(t.text)) {
       this.unsupported(t, `type '${t.text}'`)
     }
-    return ts
+    return t.text as WgslType
   }
 
-  parseModule(): WgslFn[] {
+  parseModule(): WgslModule {
     const fns: WgslFn[] = []
+    const refused: WgslRefusal[] = []
     while (this.pos < this.toks.length) {
       const attrs = this.skipAttributes()
       if (this.pos >= this.toks.length) {
@@ -326,7 +349,22 @@ class Parser {
         if (attrs.some(a => STAGE_ATTRS.has(a))) {
           this.skipFn()
         } else {
-          fns.push(this.parseFn(false))
+          // Park a function we can't read rather than rejecting the file. Only
+          // what an export *reaches* has to be in the subset, and a whole
+          // shader's WGSL is mostly stage support code no export ever calls;
+          // `emitJsTwins` re-throws this reason if one turns out to be reached.
+          const start = this.pos
+          try {
+            fns.push(this.parseFn())
+          } catch (e) {
+            this.pos = start
+            const name = this.peek(1)?.text ?? '<anonymous>'
+            this.skipFn()
+            refused.push({
+              name,
+              reason: e instanceof Error ? e.message : String(e),
+            })
+          }
         }
       } else if (this.at('struct')) {
         this.next()
@@ -344,10 +382,10 @@ class Parser {
         this.unsupported(t, `module-scope declaration '${t.text}'`)
       }
     }
-    return fns
+    return { fns, refused }
   }
 
-  private parseFn(isEntry: boolean): WgslFn {
+  private parseFn(): WgslFn {
     this.expect('fn')
     const name = this.next().text
     this.expect('(')
@@ -356,18 +394,18 @@ class Parser {
       this.skipAttributes()
       const pname = this.next().text
       this.expect(':')
-      params.push({ name: pname, tsType: this.parseType() })
+      params.push({ name: pname, type: this.parseType() })
       if (!this.eat(',')) {
         break
       }
     }
     this.expect(')')
-    let returnType = 'void'
+    let returnType: WgslType | 'void' = 'void'
     if (this.eat('->')) {
       this.skipAttributes()
       returnType = this.parseType()
     }
-    return { name, params, returnType, body: this.parseBlock(), isEntry }
+    return { name, params, returnType, body: this.parseBlock() }
   }
 
   private parseBlock(): Stmt[] {
@@ -385,10 +423,14 @@ class Parser {
     if (t.text === 'var' || t.text === 'let') {
       this.next()
       const name = this.next().text
-      const tsType = this.eat(':') ? this.parseType() : 'number'
+      // A `let` with an inferred type: slangc always annotates `var`, and an
+      // un-annotated binding is only ever an f32 temporary in the output seen
+      // so far. Anything relying on its being an integer would have to be
+      // written by slangc as an explicit `u32(...)`, which types itself.
+      const type = this.eat(':') ? this.parseType() : 'f32'
       const init = this.eat('=') ? this.parseExpr() : undefined
       this.expect(';')
-      return { k: 'var', name, tsType, init }
+      return { k: 'var', name, type, init }
     }
     if (t.text === 'if') {
       this.next()
@@ -436,12 +478,19 @@ class Parser {
     return { k: 'expr', e }
   }
 
-  // Precedence climbing, lowest binding first.
+  // Precedence climbing, lowest binding first. C's ordering, which is WGSL's
+  // and JS's — and moot for the output anyway, since every binary node is
+  // emitted fully parenthesized. It has to be right for *reading* slangc's
+  // WGSL, which is not fully parenthesized.
   private static readonly LEVELS = [
     ['||'],
     ['&&'],
+    ['|'],
+    ['^'],
+    ['&'],
     ['==', '!='],
     ['<', '>', '<=', '>='],
+    ['<<', '>>'],
     ['+', '-'],
     ['*', '/', '%'],
   ]
@@ -463,13 +512,14 @@ class Parser {
 
   private parseUnary(): Expr {
     const t = this.peek()!
-    if (t.text === '-' || t.text === '!') {
+    if (t.text === '-' || t.text === '!' || t.text === '~') {
       this.next()
       return { k: 'unary', op: t.text, e: this.parseUnary() }
     }
-    if (t.text === '&' || t.text === '*' || t.text === '~') {
-      // Pointer take/deref (slangc emits these for uniform/`inout` params) and
-      // bitwise-not. Real gaps, not things to guess at.
+    if (t.text === '&' || t.text === '*') {
+      // Pointer take/deref — slangc emits these for uniform / `inout` params,
+      // and a struct behind one is outside the subset anyway. A real gap, not
+      // something to guess at.
       this.unsupported(t, `unary '${t.text}'`)
     }
     return this.parsePrimary()
@@ -577,20 +627,135 @@ const HELPERS: Record<string, string> = {
 }
 const HELPER_BUILTINS = new Set(['clamp', 'mix', 'step', 'fract', 'smoothstep'])
 
+// Operators where WGSL's semantics and JS's diverge on integers. JS coerces
+// both operands to *signed* int32 and returns a signed int32, so on a `u32`
+// every one of these needs re-normalizing with `>>> 0`, and `>>` has to become
+// `>>>` or it shifts in sign bits. On an `i32` the JS behavior is already right.
+const BITWISE_OPS = new Set(['&', '|', '^', '<<', '>>'])
+
+const COMPARISON_OPS = new Set(['==', '!=', '<', '>', '<=', '>=', '&&', '||'])
+
+// Builtins returning their operand's type rather than a fixed one, so an
+// integer stays an integer through them.
+const VALUE_PRESERVING_BUILTINS = new Set([
+  'abs',
+  'ceil',
+  'clamp',
+  'floor',
+  'max',
+  'min',
+  'round',
+  'sign',
+  'trunc',
+])
+
+// ...and the ones that are float-valued whatever they are handed.
+const FLOAT_BUILTINS = new Set([
+  'exp',
+  'fract',
+  'log',
+  'log2',
+  'mix',
+  'pow',
+  'smoothstep',
+  'sqrt',
+  'step',
+])
+
 class Emitter {
   readonly usedHelpers = new Set<string>()
 
   private renames: Map<string, string>
   private moduleFns: ReadonlySet<string>
+  private returnTypes: ReadonlyMap<string, WgslType | 'void'>
+  private scopeTypes: ReadonlyMap<string, WgslType> = new Map()
 
-  constructor(renames: Map<string, string>, moduleFns: ReadonlySet<string>) {
+  constructor(
+    renames: Map<string, string>,
+    moduleFns: ReadonlySet<string>,
+    returnTypes: ReadonlyMap<string, WgslType | 'void'>,
+  ) {
     this.renames = renames
     this.moduleFns = moduleFns
+    this.returnTypes = returnTypes
   }
 
   /** Swap in the current function's local scope before emitting its body. */
-  setScope(renames: Map<string, string>) {
+  setScope(renames: Map<string, string>, types: ReadonlyMap<string, WgslType>) {
     this.renames = renames
+    this.scopeTypes = types
+  }
+
+  /**
+   * The WGSL type of an expression, where the emitter can tell. `undefined`
+   * means "don't know", and every caller that needs to know refuses instead of
+   * assuming — a wrong guess about signedness is a silent wrong answer for
+   * exactly the packed-flag values this exists to read.
+   */
+  private typeOf(e: Expr): WgslType | undefined {
+    switch (e.k) {
+      case 'num': {
+        // slangc suffixes its integer literals; a bare one is a float.
+        const suffix = /[fhuil]$/.exec(e.text)?.[0]
+        return suffix === 'u'
+          ? 'u32'
+          : suffix === 'i' || suffix === 'l'
+            ? 'i32'
+            : 'f32'
+      }
+      case 'ident': {
+        return e.name === 'true' || e.name === 'false'
+          ? 'bool'
+          : this.scopeTypes.get(e.name)
+      }
+      case 'unary': {
+        return e.op === '!' ? 'bool' : this.typeOf(e.e)
+      }
+      case 'bin': {
+        if (COMPARISON_OPS.has(e.op)) {
+          return 'bool'
+        }
+        return this.typeOf(e.l) ?? this.typeOf(e.r)
+      }
+      case 'call': {
+        if (SCALAR_TYPES.has(e.name)) {
+          return e.name as WgslType
+        }
+        if (FLOAT_BUILTINS.has(e.name)) {
+          return 'f32'
+        }
+        // min/max/abs/clamp and friends return their operand type; `select`
+        // returns the type of the values it chooses between, not the condition.
+        if (VALUE_PRESERVING_BUILTINS.has(e.name)) {
+          return e.args.map(a => this.typeOf(a)).find(t => t !== undefined)
+        }
+        if (e.name === 'select') {
+          return this.typeOf(e.args[0]!) ?? this.typeOf(e.args[1]!)
+        }
+        const ret = this.returnTypes.get(e.name)
+        return ret === 'void' ? undefined : ret
+      }
+    }
+  }
+
+  /** The operand type a bitwise operator acts on, or a refusal naming why. */
+  private intTypeFor(e: Expr & { k: 'bin' }): 'u32' | 'i32' {
+    // The shift count may legitimately be a different type from the value, so
+    // the left operand decides; only fall back to the right for `a & b` shapes
+    // where the left is an opaque call.
+    const t =
+      this.typeOf(e.l) ??
+      (e.op === '<<' || e.op === '>>' ? undefined : this.typeOf(e.r))
+    if (t !== 'u32' && t !== 'i32') {
+      throw new Error(
+        `wgslToJs: cannot tell whether the left operand of '${e.op}' is signed ` +
+          `(inferred ${t ?? 'nothing'}). JS bitwise operators coerce to signed ` +
+          `int32, so emitting one without knowing would silently change any ` +
+          `value at or above 2^31. Annotate the shader-side local, or extend ` +
+          `the inference in wgslToJs.ts.`,
+      )
+    }
+    return t
   }
 
   rename(name: string) {
@@ -615,13 +780,38 @@ class Emitter {
         return this.id(e.name)
       }
       case 'unary': {
+        if (e.op === '~') {
+          // Same signedness story as the binary operators below.
+          const t = this.typeOf(e.e)
+          if (t !== 'u32' && t !== 'i32') {
+            throw new Error(
+              `wgslToJs: cannot tell whether the operand of '~' is signed ` +
+                `(inferred ${t ?? 'nothing'}).`,
+            )
+          }
+          return t === 'u32'
+            ? `((~${this.expr(e.e)}) >>> 0)`
+            : `(~${this.expr(e.e)})`
+        }
         return `${e.op}${this.expr(e.e)}`
       }
       case 'bin': {
-        // WGSL and JS agree on every operator in this subset for f32 operands.
         // Parenthesized unconditionally: slangc's output is already fully
         // parenthesized where it matters, and re-deriving precedence here is a
         // silent-wrongness risk for no readability gain.
+        if (BITWISE_OPS.has(e.op)) {
+          const t = this.intTypeFor(e)
+          const op = e.op === '>>' && t === 'u32' ? '>>>' : e.op
+          const raw = `${this.expr(e.l)} ${op} ${this.expr(e.r)}`
+          // `>>>` already yields an unsigned result; the rest need coercing
+          // back, or a color at or above 2^31 comes out negative.
+          return op === '>>>'
+            ? `(${raw})`
+            : t === 'u32'
+              ? `((${raw}) >>> 0)`
+              : `(${raw})`
+        }
+        // WGSL and JS agree on the arithmetic and comparison operators.
         return `(${this.expr(e.l)} ${e.op} ${this.expr(e.r)})`
       }
       case 'call': {
@@ -680,7 +870,7 @@ class Emitter {
         case 'var': {
           out.push(
             s.init === undefined
-              ? `${indent}let ${this.id(s.name)}: ${s.tsType}`
+              ? `${indent}let ${this.id(s.name)}: ${tsTypeOf(s.type)}`
               : `${indent}let ${this.id(s.name)} = ${this.expr(s.init)}`,
           )
           break
@@ -732,20 +922,42 @@ function buildRenames(names: Iterable<string>, reserved?: ReadonlySet<string>) {
   const taken = new Map<string, string>()
   const all = [...names]
   for (const n of all) {
-    const stripped = n.replace(/_\d+$/, '')
+    const stripped = demangle(n)
     const prior = taken.get(stripped)
     if ((prior !== undefined && prior !== n) || reserved?.has(stripped)) {
       return new Map<string, string>()
     }
     taken.set(stripped, n)
   }
-  return new Map(all.map(n => [n, n.replace(/_\d+$/, '')]))
+  return new Map(all.map(n => [n, demangle(n)]))
 }
 
-function collectIdents(fn: WgslFn, into: Set<string>) {
+const demangle = (name: string) => name.replace(/_\d+$/, '')
+
+/** Every name this function declares — parameters and locals — with its type. */
+function collectDeclared(fn: WgslFn) {
+  const into = new Map<string, WgslType>()
   for (const p of fn.params) {
-    into.add(p.name)
+    into.set(p.name, p.type)
   }
+  const walk = (list: Stmt[]) => {
+    for (const s of list) {
+      if (s.k === 'var') {
+        into.set(s.name, s.type)
+      } else if (s.k === 'if') {
+        walk(s.thenBody)
+        if (s.else) {
+          walk(s.else)
+        }
+      }
+    }
+  }
+  walk(fn.body)
+  return into
+}
+
+/** Every name this function calls — builtins included; the caller sorts them out. */
+function collectCalls(fn: WgslFn, into: Set<string>) {
   const walkExpr = (e: Expr) => {
     if (e.k === 'unary') {
       walkExpr(e.e)
@@ -753,6 +965,7 @@ function collectIdents(fn: WgslFn, into: Set<string>) {
       walkExpr(e.l)
       walkExpr(e.r)
     } else if (e.k === 'call') {
+      into.add(e.name)
       for (const a of e.args) {
         walkExpr(a)
       }
@@ -761,7 +974,6 @@ function collectIdents(fn: WgslFn, into: Set<string>) {
   const walk = (list: Stmt[]) => {
     for (const s of list) {
       if (s.k === 'var') {
-        into.add(s.name)
         if (s.init) {
           walkExpr(s.init)
         }
@@ -783,13 +995,56 @@ function collectIdents(fn: WgslFn, into: Set<string>) {
   walk(fn.body)
 }
 
-export function parseWgsl(wgsl: string): WgslFn[] {
+export function parseWgsl(wgsl: string): WgslModule {
   return new Parser(tokenize(wgsl)).parseModule()
 }
 
 /**
+ * Resolve one `//! js-export` name to the mangled name slangc gave it. The exact
+ * name wins over the demangled one, so a base name two overloads share can still
+ * be exported by picking one explicitly.
+ */
+function resolveExport(
+  want: string,
+  fns: readonly WgslFn[],
+  refused: readonly WgslRefusal[],
+) {
+  if (fns.some(f => f.name === want)) {
+    return want
+  }
+  const hits = fns.filter(f => demangle(f.name) === want)
+  if (hits.length === 1) {
+    return hits[0]!.name
+  }
+  if (hits.length > 1) {
+    throw new Error(
+      `//! js-export: '${want}' is ambiguous — slangc emitted ` +
+        `${hits.map(f => f.name).join(' and ')}. Name one of those instead.`,
+    )
+  }
+  const blocked = refused.find(
+    r => r.name === want || demangle(r.name) === want,
+  )
+  if (blocked) {
+    throw new Error(
+      `//! js-export: '${want}' is outside the supported scalar subset. ` +
+        blocked.reason,
+    )
+  }
+  throw new Error(
+    `//! js-export names a function absent from the compiled WGSL: ` +
+      `${want}. Present: ` +
+      [...new Set(fns.map(f => demangle(f.name)))].sort().join(', ') +
+      `. (In a shader with entry points, slangc drops any function no entry ` +
+      `point reaches — an export must be called from the draw path.)`,
+  )
+}
+
+/**
  * Emit a TS module exposing `exported` (named by their Slang identifiers).
- * Transitively-reachable helpers come along as module-private functions.
+ * Transitively-reachable helpers come along as module-private functions;
+ * everything else in the WGSL — including the stage support code a whole
+ * shader carries — is left out entirely.
  */
 export function emitJsTwins(
   baseName: string,
@@ -797,39 +1052,77 @@ export function emitJsTwins(
   exported: readonly string[],
   headerLines: readonly string[],
 ): string {
-  const fns = parseWgsl(wgsl).filter(f => !f.isEntry)
+  const { fns, refused } = parseWgsl(wgsl)
+  const byName = new Map(fns.map(f => [f.name, f]))
 
-  const moduleFns = new Set(fns.map(f => f.name))
-  const fnRenames = buildRenames(moduleFns)
-  const fnShort = (n: string) => fnRenames.get(n) ?? n
-  const reserved = new Set([...moduleFns].map(fnShort))
+  // Exported functions keep the name the directive asked for — a consumer
+  // imports that spelling — so they are resolved first and the rest of the
+  // naming works around them.
+  const roots = exported.map(n => resolveExport(n, fns, refused))
+  const exportNames = new Map(roots.map((n, i) => [n, exported[i]!]))
 
-  const byShortName = new Map(fns.map(f => [fnShort(f.name), f]))
-  const missing = exported.filter(n => !byShortName.has(n))
-  if (missing.length > 0) {
-    throw new Error(
-      `//! js-export names function(s) absent from the compiled WGSL: ` +
-        `${missing.join(', ')}. Present: ` +
-        [...byShortName.keys()].sort().join(', '),
-    )
+  const needed = new Set<string>()
+  const visit = (name: string, root: string) => {
+    if (needed.has(name)) {
+      return
+    }
+    needed.add(name)
+    const calls = new Set<string>()
+    collectCalls(byName.get(name)!, calls)
+    for (const callee of calls) {
+      const blocked = refused.find(r => r.name === callee)
+      if (blocked) {
+        throw new Error(
+          `//! js-export: '${root}' reaches ${demangle(callee)}(), which is ` +
+            `outside the supported scalar subset. ${blocked.reason}`,
+        )
+      }
+      if (byName.has(callee)) {
+        visit(callee, root)
+      }
+    }
+  }
+  for (const r of roots) {
+    visit(r, exportNames.get(r)!)
   }
 
-  const em = new Emitter(fnRenames, moduleFns)
-  const bodies = fns.map(f => {
-    // Locals resolve per function, and never onto a name a module function
-    // already holds — that would turn a call into a reference to the local.
-    const locals = new Set<string>()
-    collectIdents(f, locals)
-    em.setScope(new Map([...fnRenames, ...buildRenames(locals, reserved)]))
-    const short = (n: string) => em.rename(n)
-    const exp = exported.includes(fnShort(f.name)) ? 'export ' : ''
-    const params = f.params.map(p => `${short(p.name)}: ${p.tsType}`).join(', ')
-    return [
-      `${exp}function ${fnShort(f.name)}(${params}): ${f.returnType} {`,
-      ...em.stmts(f.body, '  '),
-      '}',
-    ].join('\n')
-  })
+  // Private helpers demangle only where that stays injective *and* clear of
+  // every exported name; otherwise the whole set keeps its mangled spelling
+  // rather than one silently aliasing another.
+  const privateRenames = buildRenames(
+    [...needed].filter(n => !exportNames.has(n)),
+    new Set(exported),
+  )
+  const fnRenames = new Map([...privateRenames, ...exportNames])
+  const fnName = (n: string) => fnRenames.get(n) ?? n
+  const reserved = new Set([...needed].map(fnName))
+
+  const em = new Emitter(
+    fnRenames,
+    needed,
+    new Map(fns.map(f => [f.name, f.returnType])),
+  )
+  const bodies = fns
+    .filter(f => needed.has(f.name))
+    .map(f => {
+      // Locals resolve per function, and never onto a name a module function
+      // already holds — that would turn a call into a reference to the local.
+      const declared = collectDeclared(f)
+      em.setScope(
+        new Map([...fnRenames, ...buildRenames(declared.keys(), reserved)]),
+        declared,
+      )
+      const short = (n: string) => em.rename(n)
+      const exp = exportNames.has(f.name) ? 'export ' : ''
+      const params = f.params
+        .map(p => `${short(p.name)}: ${tsTypeOf(p.type)}`)
+        .join(', ')
+      return [
+        `${exp}function ${fnName(f.name)}(${params}): ${tsTypeOf(f.returnType)} {`,
+        ...em.stmts(f.body, '  '),
+        '}',
+      ].join('\n')
+    })
 
   const helpers = [...em.usedHelpers].sort().map(h => HELPERS[h]!)
   return [

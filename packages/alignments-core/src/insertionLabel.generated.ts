@@ -4,3 +4,11 @@
 export const LABEL_CHAR_W = 6
 
 export const LABEL_PAD = 10
+
+export const LONG_INSERTION_MIN_LENGTH = 10
+
+export const LONG_INSERTION_TEXT_THRESHOLD_PX = 15
+
+export const MIN_HEIGHT_FOR_TEXT = 5
+
+export const INSERTION_SERIF_MIN_PX_PER_BP = 3

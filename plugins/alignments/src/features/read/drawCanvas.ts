@@ -1,15 +1,11 @@
 import { readColorFromCategoryIndex } from '../../LinearAlignmentsDisplay/colorUtils.ts'
-import { ColorScheme } from '../../LinearAlignmentsDisplay/constants.ts'
 import {
   bpToScreenX,
   pileupRowOffCanvas,
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
-import {
-  CHEVRON_DIRLESS_MIN_WIDTH_PX,
-  CHEVRON_PX,
-  PAIR_MIN_SPAN_PX,
-} from '../../LinearAlignmentsDisplay/shaders/slang/read.iface.generated.ts'
+import { CHEVRON_PX } from '../../LinearAlignmentsDisplay/shaders/slang/read.iface.generated.ts'
+import { showChevron as shaderShowChevron } from '../../LinearAlignmentsDisplay/shaders/slang/read.js.generated.ts'
 
 import type {
   DrawBlock,
@@ -38,17 +34,16 @@ interface DrawReadsRegion {
   segmentEdgeFlags: Uint8Array
 }
 
-// Chevron geometry + gating. CHEVRON_PX / CHEVRON_DIRLESS_MIN_WIDTH_PX /
-// PAIR_MIN_SPAN_PX are imported from read.generated.ts (read.slang is the
-// source of truth), so this Canvas2D path can't drift from the shader. The
-// shader draws an arrowhead protruding past the read's leading (fwd) / trailing
-// (rev) edge once the row is tall enough and zoomed in enough. Direction-
-// uninformative reads (normal scheme, mate unmapped, mate on another
-// chromosome) need extra width before the arrow appears, and paired reads whose
-// mates have collapsed on screen drop the arrow entirely. Read-edge clipping
-// that the shader's edgeFlags handle is covered here by the per-block scissor
-// clip: drawing the arrowhead at the true genomic edge means a region-clipped
-// edge falls outside the clip and is suppressed automatically.
+// Chevron geometry + gating. An arrowhead protrudes past the read's leading
+// (fwd) / trailing (rev) edge once the row is tall enough and zoomed in enough;
+// direction-uninformative reads need extra width before it appears, and paired
+// reads whose mates have collapsed on screen drop it entirely. That whole gate
+// is read.slang's, generated into TS below, and CHEVRON_PX (the geometry) comes
+// from the same shader — so nothing here can drift from what the GPU draws.
+//
+// Read-edge clipping that the shader's edgeFlags handle is covered here by the
+// per-block scissor clip: drawing the arrowhead at the true genomic edge means
+// a region-clipped edge falls outside the clip and is suppressed automatically.
 const OUTLINE_STYLE = 'rgba(0,0,0,0.3)'
 const OUTLINE_WIDTH = 0.5
 
@@ -60,8 +55,10 @@ export interface ChevronFrame {
   featureHeight: number
 }
 
-// Mirror of read.slang `showChev`. Exported so drawCanvas.test.ts can pin it
-// against the shader predicate.
+// The gate itself is read.slang's `showChevron`, generated into TS (adr-051) —
+// this only unpacks the frame-level inputs the draw loop carries as an object.
+// It was a hand-written mirror, and an arrow the GPU draws but Canvas2D doesn't
+// is a difference between the screen and the SVG export.
 export function showChevron(
   f: ChevronFrame,
   flags: number,
@@ -69,18 +66,15 @@ export function showChevron(
   insertSize: number,
   widthPx: number,
 ) {
-  const baseShow = (f.chainMode || f.pxPerBp > 0.1) && f.featureHeight >= 3
-  const dirMoot =
-    f.colorScheme === ColorScheme.normal ||
-    (flags & 8) !== 0 ||
-    interchrom !== 0
-  const isPaired = (flags & 1) !== 0
-  const pairTooTight =
-    isPaired && Math.abs(insertSize) * f.pxPerBp < PAIR_MIN_SPAN_PX
-  return (
-    baseShow &&
-    !pairTooTight &&
-    (!dirMoot || widthPx > CHEVRON_DIRLESS_MIN_WIDTH_PX)
+  return shaderShowChevron(
+    f.chainMode,
+    f.pxPerBp,
+    f.featureHeight,
+    f.colorScheme,
+    flags,
+    interchrom,
+    insertSize,
+    widthPx,
   )
 }
 

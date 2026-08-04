@@ -10,7 +10,6 @@ import {
 } from '../shared/types.ts'
 import { ColorScheme } from './constants.ts'
 import {
-  IS_GRADIENT_SPAN_FRAC,
   RC_FWD_STRAND,
   RC_INTERCHROM,
   RC_LONG_INSERT,
@@ -34,6 +33,7 @@ import {
   RC_TAG,
   RC_UNMAPPED_MATE,
 } from './shaders/slang/read.iface.generated.ts'
+import { insertGradientT } from './shaders/slang/read.js.generated.ts'
 
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 import type { ColorPalette, RGBColor } from './shaders/colors.ts'
@@ -238,7 +238,6 @@ export function readColorCategory(
 
   // Opt-in legacy behavior: paint paired supplementary chains a flat
   // supplementary color (hides the discordant-pair signal; off by default).
-  // SYNC: mirror of the `u.colorSuppChains == 1` branch in read.slang.
   if (isChain && hasSupp && isPaired && opts.colorSupplementaryChains) {
     return 'supplementary'
   }
@@ -249,14 +248,12 @@ export function readColorCategory(
   // color (pair orientation, insert size, …): a flat override would hide the
   // discordant-pair signal, and the split is already shown by arcs/clip marks.
   if (isChain && hasSupp && !isPaired) {
-    // SYNC: `(inst.chainHasSupp > 1u) ? -1 : 1` in read.slang. Only reachable
-    // with chainSupp 1 or 2 — buildChainMetadata writes the split markers (3/4)
-    // for paired chains only.
+    // Only reachable with chainSupp 1 or 2 — buildChainMetadata writes the
+    // split markers (3/4) for paired chains only.
     const primaryStrand = chainSupp > CHAIN_FILL_SUPP_PRIMARY_FWD ? -1 : 1
-    // Omitted follows the `flipStrandLongReadChains` config default (true). The
-    // GPU side has no default of its own — the uniform is always written from
-    // the same resolved config value — so this is the one place the fallback
-    // lives.
+    // Omitted follows the `flipStrandLongReadChains` config default (true).
+    // Nothing downstream has a default of its own, so this is the one place the
+    // fallback lives.
     const flip = opts.flipStrandLongReadChains ?? true
     return strandCategory(flip ? strand * primaryStrand : strand)
   }
@@ -266,7 +263,6 @@ export function readColorCategory(
   // chain a dedicated inversion hue, distinct from the RR-pair blue so the two
   // are tellable apart. Co-linear paired splits keep their per-scheme
   // pair-orientation color.
-  // SYNC: mirror of the `chainHasSupp == 3u` branch in read.slang.
   if (
     splitsUnderOrientationScheme &&
     chainSupp === CHAIN_FILL_SPLIT_INVERSION
@@ -276,7 +272,7 @@ export function readColorCategory(
 
   // Same as above but for a same-strand (co-linear) split — a deletion / tandem-
   // dup junction. Its own color (the supplementary yellow), reserving magenta
-  // for the more specific inversion case. SYNC: `chainHasSupp == 4u` in read.slang.
+  // for the more specific inversion case.
   if (splitsUnderOrientationScheme && chainSupp === CHAIN_FILL_SPLIT_DELETION) {
     return 'splitDeletion'
   }
@@ -293,7 +289,7 @@ export function readColorCategory(
   }
 
   // Mate on another chromosome: orientation/insert size are meaningless, so one
-  // distinct bucket instead of an LR/RL/etc hue (mirrors read.slang).
+  // distinct bucket instead of an LR/RL/etc hue.
   if (data.readInterchrom[i] === 1 && isOrientationScheme) {
     return 'interchrom'
   }
@@ -366,10 +362,11 @@ export function readColorCategory(
 
 // Gradient fill for the insert-size-gradient scheme: lerp from the neutral
 // (normal) color toward the long/short endpoint by outlier severity. The ramp
-// reaches full color IS_GRADIENT_SPAN_FRAC of the 6σ band past the threshold
-// (≈3σ, i.e. center±6σ) so a moderate outlier already reads as clearly colored
-// rather than near-neutral. SYNC: IS_GRADIENT_SPAN_FRAC and this math mirror
-// insertSizeGradientColor in read.slang (the shader is the source of the const).
+// position is the shader's own — `insertGradientT` is generated from read.slang
+// (adr-051), where it reaches full color IS_GRADIENT_SPAN_FRAC of the 6σ band
+// past the threshold (≈3σ, i.e. center±6σ) so a moderate outlier already reads
+// as clearly colored rather than near-neutral. A degenerate band gives t=0,
+// which lerps to the neutral color the explicit guard here used to return.
 // `stats` is required, not optional: this is only reachable for the longInsert /
 // shortInsert categories, and classifyInsertSize can only produce those from a
 // defined band.
@@ -379,20 +376,12 @@ function gradientInsertColor(
   stats: InsertSizeBand,
   palette: ColorPalette,
 ) {
-  const span = (stats.upper - stats.lower) * IS_GRADIENT_SPAN_FRAC
-  return span > 0
-    ? cat === 'longInsert'
-      ? lerpRgb255(
-          palette.colorPairLR,
-          palette.colorLongInsert,
-          Math.min((insertSize - stats.upper) / span, 1),
-        )
-      : lerpRgb255(
-          palette.colorPairLR,
-          palette.colorShortInsert,
-          Math.min((stats.lower - insertSize) / span, 1),
-        )
-    : rgb255(palette.colorPairLR)
+  const isLong = cat === 'longInsert'
+  return lerpRgb255(
+    palette.colorPairLR,
+    isLong ? palette.colorLongInsert : palette.colorShortInsert,
+    insertGradientT(insertSize, stats.lower, stats.upper, isLong),
+  )
 }
 
 // The one place a category becomes a CSS color. The dynamic categories

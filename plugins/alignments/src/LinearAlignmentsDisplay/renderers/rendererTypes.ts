@@ -1,6 +1,7 @@
 import { makeCellLeftMapper } from '@jbrowse/render-core/canvas2dUtils'
 
 import { frequencyAlpha } from '../shaders/slang/alignmentsUniforms.js.generated.ts'
+import { intronAlpha } from '../shaders/slang/gap.js.generated.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
@@ -321,25 +322,12 @@ export function makePileupCellMapper(
 }
 
 // Introns (skip/N gaps) draw as 1px centerlines; once reads get compact the
-// per-row centerlines pack together into a solid smear. Fade them toward
-// `INTRON_MIN_ALPHA` as `featureHeight` shrinks so dense splice pileups stay
-// legible. Full opacity at the default height (7px); only the compact end
-// fades. Mirrored in gap.slang — keep the smoothstep bounds and floor in sync.
-const INTRON_FADE_MIN_PX = 1
-const INTRON_FADE_MAX_PX = 4
-const INTRON_MIN_ALPHA = 0.25
-export function intronAlpha(featureHeight: number) {
-  const t = Math.min(
-    1,
-    Math.max(
-      0,
-      (featureHeight - INTRON_FADE_MIN_PX) /
-        (INTRON_FADE_MAX_PX - INTRON_FADE_MIN_PX),
-    ),
-  )
-  const smooth = t * t * (3 - 2 * t)
-  return INTRON_MIN_ALPHA + (1 - INTRON_MIN_ALPHA) * smooth
-}
+// per-row centerlines pack together into a solid smear, so they fade as the
+// read height shrinks. The curve is gap.slang's — generated in by
+// `pnpm gen:shaders` (adr-051), where the two used to be a hand-expanded
+// smoothstep and a `smoothstep()` call under matching "keep these in sync"
+// comments. Re-exported here because this is where the draw path imports it.
+export { intronAlpha }
 
 // Canvas Y for a pileup row index, mirroring shader-side `pileupY()` in
 // alignmentsUniforms.slang. Single source of truth for the row → canvas-Y

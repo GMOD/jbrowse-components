@@ -195,22 +195,6 @@ export function makeHicFillStyleLut(ramp: Uint8Array) {
   }
 }
 
-// Map a contact count into [0, 1] for color-ramp sampling. Mirrors the logic
-// in hic.slang's fragment shader so Canvas2D + SVG rendering stay consistent
-// with the GPU path.
-// colorMaxScore: the saturation point chosen by the model's `colorMaxScore`
-// getter (95th percentile, maxScore, or maxScore/20 depending on settings).
-export function mapHicCount(
-  count: number,
-  colorMaxScore: number,
-  useLogScale: boolean,
-) {
-  if (useLogScale) {
-    const m = Math.max(colorMaxScore, 2)
-    return Math.max(
-      0,
-      Math.min(1, Math.log2(Math.max(count, 1)) / Math.log2(m)),
-    )
-  }
-  return Math.max(0, Math.min(1, count / Math.max(colorMaxScore, 0.001)))
-}
+// The count -> ramp-coordinate mapping that used to live here is now generated
+// from hic.slang itself: `mapHicCount` in ./shaders/hic.js.generated.ts, via
+// `//! js-export`. See adr-051 and hicShaderParity.test.ts.

@@ -17,6 +17,10 @@ import {
   snapBoxHeightPx,
 } from '@jbrowse/render-core/shaders/hpmath'
 
+import {
+  markerDirection,
+  strandMatchesEdge,
+} from '../passes/shaders/continuation.js.generated.ts'
 import { computeOverlayRect, overlayItemRect } from './highlightUtils.ts'
 import { computeLabelExtraWidth } from './labelPositioning.ts'
 import {
@@ -308,7 +312,10 @@ function strokeChevron(
 // `edgeSide` (+1 = right edge, -1 = left) is the only thing that differs between
 // the two edges: every direction below is expressed as `edgeSide × …`, so the
 // pair is one piece of arithmetic instead of two hand-mirrored copies whose signs
-// have to be kept in agreement by eye. Mirrors continuation.slang's edgeSide.
+// have to be kept in agreement by eye. The two decisions that arithmetic turns
+// on — which way the marker points, and whether that is out of this edge — are
+// continuation.slang's own, generated into TS (adr-051), so the shader and this
+// are not two such copies either.
 function drawEdgeMarker(
   ctx: Ctx2D,
   args: {
@@ -322,13 +329,11 @@ function drawEdgeMarker(
   },
 ) {
   const { edgeX, edgeSide, strand, cy, halfH } = args
-  // A strand-less feature has no direction of its own, so it points out of
-  // whichever edge it ran past — the marker still reads as "keeps going that way".
-  const dir = strand === 0 ? edgeSide : strand
+  const dir = markerDirection(strand, edgeSide)
   // A chevron pointing OUT of this edge sits with its apex on the anchor. One
   // pointing back inward is shifted a triangle-width inward, so its apex rather
   // than its base lands there and the whole glyph stays inside the scissor.
-  const apexInset = dir === edgeSide ? 0 : CONT_TRI_W_PX
+  const apexInset = CONT_TRI_W_PX * (1 - strandMatchesEdge(strand, edgeSide))
   for (let p = 0; p < 2; p++) {
     const anchorX =
       edgeX - edgeSide * (CONT_EDGE_MARGIN_PX + CONT_TRI_GAP_PX * p)

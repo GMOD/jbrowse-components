@@ -28,6 +28,7 @@
 // features running well past the viewport — the zoomed-in case the marker is
 // meant for — qualify.
 //! targets: wgsl, glsl
+//! js-export: markerDirection, strandMatchesEdge
 //! export-consts: CONT_TRI_W_PX, CONT_TRI_HALF_H_PX, CONT_EDGE_MARGIN_PX, CONT_TRI_GAP_PX, CONT_MIN_OVERHANG_PX
 
 import hpmath;
@@ -60,6 +61,28 @@ struct VsOut {
 
 // Off-clip vertex; the GPU culls any triangle that contains it.
 static const float4 OFFSCREEN = float4(2.0, 2.0, 0.0, 1.0);
+
+// Which way a continuation marker points, and whether that is out of this edge.
+//
+// `edgeSide` is +1 for the right edge, -1 for the left; `screenStrand` is the
+// rect's strand already flipped for a reversed block. A strand-less feature has
+// no direction of its own, so it points out of whichever edge it ran past — the
+// marker still reads as "keeps going that way".
+//
+// `//! js-export`ed because the Canvas2D twin expresses every direction as
+// `edgeSide × …` for the same reason this does — to have one piece of sign
+// arithmetic rather than a left and a right copy — and two such expressions,
+// one per backend, is the thing that had to be kept in agreement by eye.
+public float markerDirection(float screenStrand, float edgeSide) {
+  return screenStrand == 0.0 ? edgeSide : screenStrand;
+}
+
+// 1 when the marker points OUT of this edge (apex sits on the anchor), 0 when
+// it points back inward (apex shifted a triangle-width in, so the whole glyph
+// stays inside the scissor).
+public float strandMatchesEdge(float screenStrand, float edgeSide) {
+  return max(0.0, markerDirection(screenStrand, edgeSide) * edgeSide);
+}
 
 [shader("vertex")]
 VsOut vs_main(ContinuationInstance inst, uint vid : SV_VertexID) {
@@ -117,14 +140,11 @@ VsOut vs_main(ContinuationInstance inst, uint vid : SV_VertexID) {
   // anchor: the back (flat edge) of the triangle, always margin+gap*pair px inside
   float anchorX = edgeX - edgeSide * (marginClip + gapClip * pairIndex);
   // Genomic strand → screen direction, so a reversed block's markers point the
-  // way its glyphs run. For strand=0 fall back to outward so strand-less
-  // features still show markers.
+  // way its glyphs run.
   float screenStrand = flipX(inst.strand, u);
-  float effectiveStrand = screenStrand == 0.0 ? edgeSide : screenStrand;
-  // 1 when strand points toward this edge, 0 when it points away
-  float strandMatchesEdge = max(0.0, effectiveStrand * edgeSide);
-  float apexX = anchorX - edgeSide * triWClip * (1.0 - strandMatchesEdge);
-  float baseX = anchorX - edgeSide * triWClip * strandMatchesEdge;
+  float matches = strandMatchesEdge(screenStrand, edgeSide);
+  float apexX = anchorX - edgeSide * triWClip * (1.0 - matches);
+  float baseX = anchorX - edgeSide * triWClip * matches;
 
   float sx;
   float sy;

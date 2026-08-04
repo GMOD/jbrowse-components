@@ -7,8 +7,11 @@ import {
 import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
 
 import {
+  fillShade,
+  hoverDarken,
   isCigarKind,
   isMarkerKind,
+  thinWidthFade,
 } from './shaders/syntenyTypes.js.generated.ts'
 import { SyntenyGeometryCache } from './syntenyGeometryCache.ts'
 import { pickFeatureAtPoint } from './syntenyPickEngine.ts'
@@ -32,11 +35,6 @@ import type {
 import type { CanvasLike } from './syntenyRibbonPath.ts'
 
 export type { CanvasLike } from './syntenyRibbonPath.ts'
-
-// SYNC: mirrors WIDTH_FADE_FLOOR in syntenyTypes.slang — keeps a lone
-// sub-pixel ribbon faintly locatable instead of fading all the way to
-// invisible on a whole-genome view with no minAlignmentLength filter.
-const WIDTH_FADE_FLOOR = 0.15
 
 // Memoized `rgba()` text plus last-assigned tracking for one draw pass.
 // Building the strings is the dominant per-instance cost in the draw loop — a
@@ -102,11 +100,21 @@ interface ResolvedFill {
 
 // Displayed fill for one instance, from its packed color + hover state. A few
 // arithmetic ops rather than a per-color Map lookup — the draw loop runs this
-// once per on-screen instance. `shade` doubles as the CIGAR white-blend factor
-// and the BASE output alpha (identical expression in both branches).
-// SYNC: mirrors shadeFill() in syntenyTypes.slang — CIGAR pre-blends with white
-// at the (hover-boosted) alpha so indels fade against the page; BASE darkens by
-// 0.7 and boosts alpha ×5 (capped 0.35) on hover.
+// once per on-screen instance.
+//
+// `fillShade` and `hoverDarken` are the shader's own — generated from
+// syntenyTypes.slang, where they were factored out of shadeFill() precisely so
+// this function could call them (adr-051). What is left here is the conversion
+// the two backends genuinely do differently: the shader blends 0-1 floats and
+// lets the rasterizer quantize, this builds the 0-255 bytes an `rgba()` string
+// needs. `shade` doubles as the CIGAR white-blend factor and the BASE output
+// alpha, the same way it does in the shader.
+//
+// Rounding, not truncating: quantizing to 8 bits is what the GPU does at the
+// end of the fragment stage, and `| 0` biased every channel down by up to a
+// full unit. It also keeps the float32 constants the generator emits (0.35
+// arrives as 0.34999999403953552) from tipping a product that lands on an exact
+// integer — 255 * 0.35 — down a whole step.
 function resolveInstanceFill(
   packed: number,
   isCigar: boolean,
@@ -114,20 +122,20 @@ function resolveInstanceFill(
   alpha: number,
 ): ResolvedFill {
   const pa = abgrAlpha(packed) / 255
-  const darken = isHovered ? 0.7 : 1
-  const shade = isHovered ? Math.min(pa * alpha * 5, 0.35) : pa * alpha
+  const darken = hoverDarken(isHovered)
+  const shade = fillShade(pa, alpha, isHovered)
   const r = abgrRed(packed) * darken
   const g = abgrGreen(packed) * darken
   const b = abgrBlue(packed) * darken
   const white = 255 * (1 - shade)
   return isCigar
     ? {
-        r: (r * shade + white) | 0,
-        g: (g * shade + white) | 0,
-        b: (b * shade + white) | 0,
+        r: Math.round(r * shade + white),
+        g: Math.round(g * shade + white),
+        b: Math.round(b * shade + white),
         a: pa,
       }
-    : { r: r | 0, g: g | 0, b: b | 0, a: shade }
+    : { r: Math.round(r), g: Math.round(g), b: Math.round(b), a: shade }
 }
 
 // Draws in logical (CSS-px) coordinates with yTop baked into the y values, so
@@ -211,12 +219,13 @@ export function drawSyntenyTrack(
     // slope; above it we fill the silhouette. The same perpW<1 boundary gates
     // pickability (syntenyPickEngine.pickFeatureAtPoint via ribbonPerpWidth), so a
     // ribbon is clickable exactly when it's drawn as a solid fill.
-    // SYNC: perpFactor and the BASE alpha fade (×widthFade, floored at
-    // WIDTH_FADE_FLOOR, gated by fadeThinAlignments) mirror fillCoverage's
-    // perpFactor/widthFade — a lone thin ribbon stays a faint locatable line
-    // while a whole-genome tangle fades instead of stacking hard
-    // full-opacity lines. CIGAR keeps full alpha (indel detail stays solid; the
-    // shader likewise skips the density fade for CIGAR in fillCoverage).
+    // The BASE alpha fade is the shader's own `thinWidthFade` — a lone thin
+    // ribbon stays a faint locatable line while a whole-genome tangle fades
+    // instead of stacking hard full-opacity lines. CIGAR keeps full alpha
+    // (indel detail stays solid), as it does in fillCoverage. What is NOT
+    // shared is `perpW` itself: fillCoverage measures a per-fragment width from
+    // the two edges' own foreshortenings, this measures the whole ribbon's from
+    // its corners, and each is right for the decision it feeds.
     // Deliberate divergence: the clicked outline is drawn only on the fill
     // branch. The GPU edge pass has no thinness gate, but a sub-pixel ribbon's
     // two side edges coincide, so outlining one here would just overstrike the
@@ -226,10 +235,8 @@ export function drawSyntenyTrack(
     if (perpW < 1) {
       const xt = (c.sx1 + c.sx2) * 0.5
       const xb = (c.sx3 + c.sx4) * 0.5
-      const widthFade = fadeThinAlignments
-        ? Math.max(perpW, WIDTH_FADE_FLOOR)
-        : 1
-      style.stroke(ctx, r, g, b, isCigar ? fa : fa * widthFade)
+      const widthFade = thinWidthFade(perpW, fadeThinAlignments && !isCigar)
+      style.stroke(ctx, r, g, b, fa * widthFade)
       strokeCenterline(ctx, xt, xb, yTop, height, drawCurves)
     } else {
       style.fill(ctx, r, g, b, fa)

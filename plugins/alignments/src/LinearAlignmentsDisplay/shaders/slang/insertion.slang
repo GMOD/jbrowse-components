@@ -1,8 +1,10 @@
 // Insertion pass: renders up to 3 rects per instance — the insertion bar
 // (or numeric label box when long + zoomed), plus top/bottom serifs.
 //! targets: wgsl, glsl
-//! export-consts: LABEL_CHAR_W, LABEL_PAD
+//! export-consts: LABEL_CHAR_W, LABEL_PAD, LONG_INSERTION_MIN_LENGTH, LONG_INSERTION_TEXT_THRESHOLD_PX, MIN_HEIGHT_FOR_TEXT, INSERTION_SERIF_MIN_PX_PER_BP
 //! consts-out: packages/alignments-core/src/insertionLabel.generated.ts
+//! js-export: insertionBarWidthPx
+//! js-export-out: packages/alignments-core/src/insertionWidth.generated.ts
 
 import alignmentsUniforms;
 import colorPack;
@@ -10,7 +12,11 @@ import hpmath;
 
 
 public static const uint VERTS_PER_INSTANCE = 18u;
-// SYNC(@jbrowse/alignments-core labelConstants.ts)
+// The four thresholds that decide which of the three insertion markers gets
+// drawn, and whether its serif caps do. Exported to @jbrowse/alignments-core
+// (see consts-out) because the Canvas2D/SVG renderer, the hit test and
+// plugin-maf all classify insertions against them; they used to be re-typed
+// there under a SYNC tag.
 static const uint  LONG_INSERTION_MIN_LENGTH = 10u;
 static const float LONG_INSERTION_TEXT_THRESHOLD_PX = 15.0;
 static const float INSERTION_SERIF_MIN_PX_PER_BP = 3.0;
@@ -41,6 +47,30 @@ float textWidth(uint num) {
   return LABEL_CHAR_W * 5.0 + LABEL_PAD;
 }
 
+// The insertion marker's width in CSS px — three cases, in order of how much
+// room the marker has earned:
+//
+//   large: wide enough for the count label, and in a row tall enough to draw it
+//   long:  a short noticeable bar, capped at 5px
+//   small: a 1px tick
+//
+// `//! js-export`ed to @jbrowse/alignments-core (see js-export-out), because
+// this width is not just the shader's: the Canvas2D/SVG renderer, hit-testing
+// in both plugin-alignments and plugin-maf, and SNP-letter shadowing all have
+// to agree on exactly where an insertion marker's edges are. It was a
+// hand-written mirror in labelConstants.ts, with these three thresholds
+// re-typed alongside it.
+float insertionBarWidthPx(uint length, float pxPerBp, float featHeight) {
+  float insWPx = float(length) * pxPerBp;
+  bool isLong = length >= LONG_INSERTION_MIN_LENGTH;
+  bool isLarge = isLong
+    && insWPx >= LONG_INSERTION_TEXT_THRESHOLD_PX
+    && featHeight >= MIN_HEIGHT_FOR_TEXT;
+  if (isLarge) { return textWidth(length); }
+  if (isLong)  { return min(5.0, insWPx / 3.0); }
+  return 1.0;
+}
+
 [shader("vertex")]
 ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   ColorVsOut o;
@@ -51,18 +81,7 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float cx = bpToClipX(inst.position, u);
 
   bool isLong = inst.length >= LONG_INSERTION_MIN_LENGTH;
-  float insWPx = float(inst.length) * pxPerBp;
-  bool canText = insWPx >= LONG_INSERTION_TEXT_THRESHOLD_PX;
-  // A 'large' insertion only earns the wide count-label box when the row is tall
-  // enough to draw the count; in compact/super-compact pileups it shrinks to the
-  // narrow 'long' bar instead of a wide empty box. SYNC(insertionBarWidth).
-  bool tallEnoughForText = u.featHeight >= MIN_HEIGHT_FOR_TEXT;
-  bool isLarge = isLong && canText && tallEnoughForText;
-
-  float rectW;
-  if (isLarge)      { rectW = textWidth(inst.length); }
-  else if (isLong)  { rectW = min(5.0, insWPx / 3.0); }
-  else              { rectW = 1.0; }
+  float rectW = insertionBarWidthPx(inst.length, pxPerBp, u.featHeight);
 
   float onePx = 2.0 / u.canvasW;
   float rectWClip = rectW * 2.0 / u.canvasW;

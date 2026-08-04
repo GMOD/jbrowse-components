@@ -15,6 +15,8 @@
 // `viewportWidth` (CSS px vs device px), which only moves the min-width floor —
 // see GpuMafRenderer's note. That is a uniform-write decision, not a reason for
 // two shaders.
+//! export-consts: MIN_DRAWN_ROW_PX
+//! js-export: drawnRowHeightPx, rowBandOffsetPx
 module rowRect;
 
 import colorPack;
@@ -59,13 +61,26 @@ public struct RowBand {
   public float offset;  // inset from the row's top, negative once floored
 };
 
-// Mirror of `rowBand` / `drawnRowHeight` in rowBand.ts, which the Canvas2D
-// painter, the indel glyphs and the hover box all inset from. Keep the two in
-// step: a row drawn here and hit-tested there must be the same band.
+// The band a row's rects occupy, as two scalars so `//! js-export` can lift
+// them: rowBand.ts is the Canvas2D painter's, the indel glyphs' and the hover
+// box's definition of the same band, and a row drawn here but hit-tested there
+// has to land in the same place. The struct below is only packaging for the
+// vertex stage.
+//
+// Centered, so a floored band overhangs its row evenly on both sides rather
+// than pushing every row down.
+public float drawnRowHeightPx(float rowHeight, float rowProportion) {
+  return max(rowHeight * rowProportion, MIN_DRAWN_ROW_PX);
+}
+
+public float rowBandOffsetPx(float rowHeight, float rowProportion) {
+  return (rowHeight - drawnRowHeightPx(rowHeight, rowProportion)) * 0.5;
+}
+
 public RowBand rowBandPx(float rowHeight, float rowProportion) {
   RowBand band;
-  band.height = max(rowHeight * rowProportion, MIN_DRAWN_ROW_PX);
-  band.offset = (rowHeight - band.height) * 0.5;
+  band.height = drawnRowHeightPx(rowHeight, rowProportion);
+  band.offset = rowBandOffsetPx(rowHeight, rowProportion);
   return band;
 }
 

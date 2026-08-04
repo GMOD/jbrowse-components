@@ -54,11 +54,11 @@ describe('arcMarkerColorPalette (read-cloud endpoint squares)', () => {
   })
 })
 
-// arcYFraction is the JS half of a formula whose other half lives in arc.slang's
-// evalArcPoint (the GPU path) — they cannot import each other, so the two are
-// kept in lockstep only by the "byte-identical" comment. These golden values
-// pin the JS behavior so a change to it is visible and can be mirrored into the
-// shader, and vice versa.
+// arcYFraction is no longer a JS half of anything: it is generated from
+// alignmentsUniforms.slang, which is where the GPU path reads it too (adr-051).
+// These golden values predate that and are kept as the behavior pin — they now
+// assert the shader's own formula, so an edit to it that changes a plotted
+// height fails here rather than silently moving the ruler ticks off the arcs.
 describe('arcYFraction', () => {
   describe('linear (arc mode)', () => {
     it('maps yBp as a plain fraction of the domain', () => {

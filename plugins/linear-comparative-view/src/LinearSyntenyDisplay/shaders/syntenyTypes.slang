@@ -19,7 +19,8 @@
 // The two kind predicates are pure scalar decisions the Canvas2D renderer and
 // the CPU pick engine must make identically; both import the generated twins
 // rather than re-spelling the thresholds (adr-051).
-//! js-export: isCigarKind, isMarkerKind
+//! js-export: isCigarKind, isMarkerKind, fillShade, hoverDarken, thinWidthFade
+//! export-consts: KIND_CIGAR_MIN, KIND_MARKER
 module syntenyTypes;
 
 // Re-exported so every synteny pass gets `screenToClip` (and the rest of
@@ -47,19 +48,20 @@ public struct Instance {
   public float kind              : ATTR7;
 };
 
-// First CIGAR kind. Emitted kinds are KIND_BASE (0), KIND_MARKER (2), and the
-// per-CIGAR indel tiles KIND_CIGAR_I/D/N (4/5/6); KIND_CIGAR_MATCH (=3) is only
-// this boundary, never an emitted instance. The shaders need just the
-// BASE-vs-CIGAR split (kind >= 3), not the exact kind. SYNC: mirrors
-// KIND_CIGAR_MATCH (=3) in syntenyColors.ts; CIGAR kinds stay contiguous above.
+// First CIGAR kind, and the source of truth for the boundary: syntenyColors.ts
+// derives `KIND_CIGAR_MATCH` from this via `//! export-consts`, and numbers the
+// CIGAR kinds contiguously above it. Emitted kinds are KIND_BASE (0),
+// KIND_MARKER (2), and the per-CIGAR indel tiles I/D/N (4/5/6) — the boundary
+// itself is never an emitted instance. The shaders need only the
+// BASE-vs-CIGAR split, not the exact kind.
 public static const float KIND_CIGAR_MIN = 3.0;
 
 // Distinguishes indel tiles from whole-feature BASE instances for shading only
 // (white pre-blend, no density width-fade); both share the same smoothstep AA.
 public bool isCigarKind(float kind) { return kind >= KIND_CIGAR_MIN; }
 
-// KIND_MARKER (=2 in syntenyColors.ts): a periodic "location marker" tick — a
-// zero-width vertical line emitted across large matches for visual context.
+// The "location marker" tick: a periodic zero-width vertical line emitted
+// across large matches for visual context.
 // Rendered as a fixed 1px line at its own packed alpha, not subject to the
 // sub-pixel width fade (which would zero a zero-width quad) or global alpha.
 public static const float KIND_MARKER = 2.0;
@@ -72,6 +74,16 @@ public bool isMarkerKind(float kind) { return abs(kind - KIND_MARKER) < 0.5; }
 // nearly blank instead of merely de-emphasized. Keeps a single thin ribbon
 // faintly locatable; dense overlaps still read brighter via alpha blend.
 public static const float WIDTH_FADE_FLOOR = 0.15;
+
+// The fade curve itself, as both backends apply it: identity unless the ribbon
+// is a fadeable BASE one, then its perpendicular width floored and capped.
+// `applies` is passed in rather than derived from `kind` because the two
+// callers reach the same answer by different routes — the fragment shader tests
+// the kind it was handed, while Canvas2D has already `continue`d past markers
+// and knows `isCigar` — and because the decision is a product one either way.
+public float thinWidthFade(float perpW, bool applies) {
+  return applies ? clamp(perpW, WIDTH_FADE_FLOOR, 1.0) : 1.0;
+}
 
 // Per-view `panPx` + `bpPerPxInv`. `panPx = (base - offsetPx*bpPerPx)/bpPerPx`
 // (computed float64 on the main thread from a SMALL delta — see
@@ -185,18 +197,13 @@ float perpCoverage(float2 localPos, float edge0, float edge1, float pf0,
   float expand = max(0.5 - 0.5 * perpW, 0.0);
   dL += expand;
   dR += expand;
-  // Density-honest sub-pixel fade, BASE ribbons only: a lone thin alignment
-  // fades by its perpendicular width so a whole-genome tangle declutters instead
-  // of reading as hard full-opacity lines; dense overlaps still accumulate via
-  // alpha blend. CIGAR indel tiles and zero-width markers skip it (widthFade=1);
-  // BASE opts out via fadeThinAlignments so a genuinely sparse whole-genome
-  // comparison isn't washed out.
-  // SYNC: Canvas2DSyntenyRenderer's sub-pixel branch scales its centerline
-  // stroke alpha by the equivalent max(perpW, WIDTH_FADE_FLOOR).
-  float widthFade =
-    (isCigarKind(kind) || isMarkerKind(kind) || fadeThinAlignments < 0.5)
-      ? 1.0
-      : clamp(perpW, WIDTH_FADE_FLOOR, 1.0);
+  // Density-honest sub-pixel fade, BASE ribbons only — see thinWidthFade. The
+  // per-fragment perpW here and the whole-ribbon one Canvas2D measures from the
+  // corners are deliberately different quantities; the fade curve applied to
+  // them is not, so only that is shared.
+  float widthFade = thinWidthFade(
+    perpW,
+    !isCigarKind(kind) && !isMarkerKind(kind) && fadeThinAlignments >= 0.5);
   // Per-edge AA, one output pixel each (aaHalf; see aaHalfPx). dL/dR are
   // constructed as TRUE perpendicular distances — each divided by its own edge's
   // foreshortening — so the ramp width is a known constant at every slope rather
@@ -260,11 +267,27 @@ float fillCoverage(float2 localPos, float edge0, float edge1,
   return cx * cy;
 }
 
+// How far a fill is faded, and how much hover darkens it. These two scalars are
+// the whole of what the Canvas2D twin has to reproduce from shadeFill below —
+// the rest is the channel blend, and the two backends spell that in different
+// spaces (0-1 floats here, 0-255 bytes inside an `rgba()` string there). Per
+// adr-051 the exportable thing is the decision, not the conversion, so they are
+// factored out here and lifted into TS by `//! js-export`.
+//
+// One expression covers both fill branches: BASE writes `fillShade` straight
+// out as its alpha, CIGAR uses it as the white pre-blend factor. They were
+// separately-spelled but identical before, which is exactly the shape that
+// drifts.
+public float fillShade(float colorAlpha, float displayAlpha, bool isHovered) {
+  float a = colorAlpha * displayAlpha;
+  return isHovered ? min(a * 5.0, 0.35) : a;
+}
+
+public float hoverDarken(bool isHovered) { return isHovered ? 0.7 : 1.0; }
+
 // Fill fragment output: feature color with hover darkening + alpha boost, with
 // coverage folded into the alpha (straight, not premultiplied — the HAL's
 // default blend is src-alpha / one-minus-src-alpha).
-// SYNC: 0.7 darkening + 5x alpha boost capped at 0.35 must match
-// Canvas2DSyntenyRenderer.ts's hover branch.
 // CIGAR kinds are indel quads drawn over a visible base block. Non-hovered
 // indels are pre-blended with white at u.alpha and output fully opaque, so
 // they visually fade like they're over a white background while still fully
@@ -279,23 +302,17 @@ float4 shadeFill(float4 color, float featureId, float coverage, float kind,
   }
   bool isHovered = u.hoveredFeatureId > 0.0
     && abs(featureId - u.hoveredFeatureId) < 0.5;
+  float shade = fillShade(color.a, u.alpha, isHovered);
+  float darken = hoverDarken(isHovered);
   if (isCigarKind(kind)) {
     // Pre-blend with white so the indel fades against white regardless of what
-    // the base block drew. blendAlpha mirrors the original alpha formula so
-    // hover (min(u.alpha*5, 0.35)) and normal (u.alpha) match origin/main.
-    // Apply 0.7 darkening inside the blend — same order as the original formula
-    // (darken first, then blend with white) so the hover color is identical.
-    float blendAlpha = isHovered
-      ? min(color.a * u.alpha * 5.0, 0.35)
-      : color.a * u.alpha;
-    float darken = isHovered ? 0.7 : 1.0;
-    rgb = rgb * darken * blendAlpha + float3(1.0, 1.0, 1.0) * (1.0 - blendAlpha);
+    // the base block drew, at the same alpha the BASE branch would have used.
+    // Darkening applies inside the blend — darken first, then blend with white
+    // — so the hovered color matches what the pre-shader renderer produced.
+    rgb = rgb * darken * shade + float3(1.0, 1.0, 1.0) * (1.0 - shade);
     return float4(rgb, color.a * coverage);
   }
-  float baseAlpha = color.a * u.alpha;
-  rgb *= isHovered ? 0.7 : 1.0;
-  float finalAlpha = isHovered ? min(baseAlpha * 5.0, 0.35) : baseAlpha;
-  return float4(rgb, finalAlpha * coverage);
+  return float4(rgb * darken, shade * coverage);
 }
 
 // Clicked-feature outline: a 1 CSS px line, i.e. half-max STROKE_HALF_PX either

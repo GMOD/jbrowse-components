@@ -329,15 +329,21 @@ touching either path, preserve whichever of these the display uses:
   `//! js-export: fnA, fnB` emits `<base>.js.generated.ts` — TypeScript twins
   transliterated from slangc's own WGSL, so the Canvas2D and SVG paths run the
   shader's math rather than a hand-port of it. `hpmath.slang` exports
-  `snapBoxHeightPx` / `snapBoxCenterYPx` / `extendToMinWidthPx` this way. The
-  subset is **scalar only** (no vectors, swizzles, loops or indexing) and every
-  gap throws at `pnpm gen:shaders`; a shared decision is authored as a pure
-  px-in/px-out function with the clip-space conversion wrapped *around* it, which
-  is what makes it exportable. Retire the hand-written twin only behind a
-  differential sweep — `hpmathParity.test.ts` is the pattern.
+  `snapBoxHeightPx` / `snapBoxCenterYPx` / `extendToMinWidthPx` this way;
+  `hic.slang` its count→ramp mapping, `insertion.slang` its marker width (to
+  another package, via `//! js-export-out:`). The subset is **scalar only** (no
+  vectors, swizzles, loops or indexing) and every gap an export reaches throws at
+  `pnpm gen:shaders`. That is less limiting than it sounds: a color- or
+  struct-returning function is nearly always a scalar decision inside a
+  packaging wrapper, so authoring it as a pure scalar core with the conversion
+  wrapped *around* it is what makes it exportable — and is the better shape
+  anyway. Retire the hand-written twin only behind a differential sweep —
+  `hicShaderParity.test.ts` is the pattern.
   [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-scalar-only.md)
   covers why this stops at scalars and why a vertex/fragment stage is never
-  transpiled.
+  transpiled;
+  [handoffs/shader-js-codegen.md](../handoffs/shader-js-codegen.md) is the
+  working state and the remaining hand-sync sites.
 - **One draw helper, both consumers.** Marker/glyph geometry and color math that
   both paths (or the on-screen overlay + SVG export) need lives in one function:
   `drawMafInsertionMarker`, `appendPointMarker` (wiggle scatter + Manhattan),
@@ -351,10 +357,16 @@ touching either path, preserve whichever of these the display uses:
   `Record<LayerId, …>` in *both* renderers (alignments' `PILEUP_LAYERS` →
   `GPU_PILEUP_PASS` and a Canvas2D draw-fn map). The exhaustive Record makes a
   half-added layer a compile error; `coverageParity.test.ts` cross-checks output.
-- **`SYNC:` comments anchor formulas.** Where a value must match across files
-  (synteny's `WIDTH_FADE_FLOOR`, the 0.7-darken / ×5-cap-0.35 hover shade), a
-  `SYNC:`/`mirrors` comment names the counterpart. Grep the tag before editing
-  either side.
+- **`SYNC:` comments anchor formulas** — the fallback, not a mechanism. Where a
+  value must match across files and none of the above applies, a
+  `SYNC:`/`mirrors` comment names the counterpart; grep the tag before editing
+  either side. Before adding one, check whether the thing being mirrored is a
+  constant (`export-consts`), a scalar decision (`js-export`), or an equivalence
+  two implementations must preserve while staying different (a numeric oracle
+  test, as `syntenyShaderParity.test.ts` does for the bezier). Also grep the
+  counterpart before trusting an existing tag — five named shader branches that
+  had been deleted. The 11 remaining are classified in
+  [handoffs/shader-js-codegen.md](../handoffs/shader-js-codegen.md).
 
 **Intentional divergences — do NOT "fix" these into parity.** The two backends
 legitimately differ where GPU rasterization is watertight but Canvas2D

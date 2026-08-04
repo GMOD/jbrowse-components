@@ -1,5 +1,6 @@
 // Gap pass: deletion (rect) or skip (1px centerline) per CIGAR D/N op.
 //! targets: wgsl, glsl
+//! js-export: intronAlpha
 
 import alignmentsUniforms;
 import colorPack;
@@ -9,6 +10,24 @@ import hpmath;
 public static const uint VERTS_PER_INSTANCE = 6u;
 static const uint GAP_DELETION = 0u;
 static const uint GAP_SKIP     = 1u;
+
+// Introns (skip/N gaps) draw as 1px centerlines; once reads get compact the
+// per-row centerlines pack together into a solid smear. Fade them toward
+// INTRON_MIN_ALPHA as the read height shrinks so dense splice pileups stay
+// legible — full opacity at the default 7px, fading only at the compact end.
+//
+// `//! js-export`ed: the Canvas2D path draws the same centerlines and had this
+// open-coded, down to a hand-expanded smoothstep, under comments on both sides
+// asking the next person to keep the bounds and the floor in step.
+static const float INTRON_FADE_MIN_PX = 1.0;
+static const float INTRON_FADE_MAX_PX = 4.0;
+static const float INTRON_MIN_ALPHA   = 0.25;
+
+float intronAlpha(float featHeight) {
+  return INTRON_MIN_ALPHA
+    + (1.0 - INTRON_MIN_ALPHA)
+      * smoothstep(INTRON_FADE_MIN_PX, INTRON_FADE_MAX_PX, featHeight);
+}
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
@@ -48,10 +67,7 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
     float halfPx = 1.0 / u.canvasH;
     yTop = mid + halfPx;
     yBot = mid - halfPx;
-    // Fade introns toward 0.25 as reads get compact so dense splice pileups
-    // stay legible. Mirrors intronAlpha() in renderers/rendererTypes.ts — keep
-    // the smoothstep bounds (1..4 px) and floor (0.25) in sync.
-    alpha = 0.25 + 0.75 * smoothstep(1.0, 4.0, u.featHeight);
+    alpha = intronAlpha(u.featHeight);
   }
   if (inst.gapType == GAP_DELETION) {
     float widthPx = float(inst.endOff - inst.startOff) * u.pxPerBp;

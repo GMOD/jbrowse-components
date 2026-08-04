@@ -25,6 +25,27 @@ describe('parseVertsPerInstance', () => {
     expect(parseVertsPerInstance(src)).toBe(258)
   })
 
+  test('resolves a constant declared in an imported module', () => {
+    // Before this, a pass wanting `CURVE_SEGMENTS * 6u` had to spell `48u` and
+    // carry a SYNC comment, because only the shader's own text was searched.
+    const module = 'public static const uint CURVE_SEGMENTS = 8u;'
+    const shader =
+      'public static const uint VERTS_PER_INSTANCE = CURVE_SEGMENTS * 6u;'
+    expect(parseVertsPerInstance(shader, [module])).toBe(48)
+    expect(() => parseVertsPerInstance(shader)).toThrow(
+      /unknown identifier CURVE_SEGMENTS/,
+    )
+  })
+
+  test('the shader’s own declaration shadows the imported one', () => {
+    const module = 'public static const uint N = 8u;'
+    const shader = [
+      'static const uint N = 3u;',
+      'static const uint VERTS_PER_INSTANCE = N * 2u;',
+    ].join('\n')
+    expect(parseVertsPerInstance(shader, [module])).toBe(6)
+  })
+
   test('undefined when the shader declares none', () => {
     expect(parseVertsPerInstance('static const float X = 1.0;')).toBeUndefined()
   })

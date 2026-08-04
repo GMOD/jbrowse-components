@@ -29,9 +29,9 @@ export interface ColorSchemeDef {
   // Color depends on the read's MATE (insert size / pair orientation), so an
   // unmapped mate (tlen=0) or inter-chromosomal mate needs its own color bucket
   // rather than a misleading insert/orientation hue. Drives `orientationSchemes`
-  // in colorUtils.ts. SYNC: the shader twin `isOrientationScheme` (read.slang)
-  // hard-codes the same membership (Slang can't read this registry) — keep the
-  // two in step.
+  // in colorUtils.ts, and that is now the only reader: read.slang used to
+  // hard-code the same membership for its own classification, and no longer
+  // classifies at all.
   mateAware?: boolean
   // Meaningful only for paired-end data, so toggling "view as pairs" auto-
   // switches these on/off (see PAIRING_COLOR_SCHEMES in the model). Broader than

@@ -46,7 +46,7 @@ test('strips slangc name mangling but keeps it when ambiguous', () => {
   const ambiguous = parseWgsl(
     `fn f_0( x_0 : f32) -> f32 { return x_0; }
      fn f_1( x_0 : f32) -> f32 { return x_0 + 1.0f; }`,
-  )
+  ).fns
   expect(ambiguous.map(f => f.name)).toStrictEqual(['f_0', 'f_1'])
   expect(
     emit(
@@ -98,12 +98,135 @@ test('drops literal type suffixes and emits helpers only when used', () => {
 test('entry points are skipped, not parsed', () => {
   // Their stage builtins (`vec3<u32>`) are outside the scalar subset by
   // construction; parsing them would reject a module for a type nothing reads.
-  const fns = parseWgsl(
+  const { fns, refused } = parseWgsl(
     `fn keep_0( x_0 : f32) -> f32 { return x_0; }
      @compute @workgroup_size(1, 1, 1)
      fn probe(@builtin(global_invocation_id) tid_0 : vec3<u32>) { return; }`,
   )
   expect(fns.map(f => f.name)).toStrictEqual(['keep_0'])
+  expect(refused).toStrictEqual([])
+})
+
+// A whole shader's WGSL (as opposed to a module's) arrives with its vertex and
+// fragment support code attached. That code is outside the subset by
+// construction and no export reaches it, so it must not veto the file — but it
+// must still veto an export that turns out to call it.
+describe('lifting from a shader with entry points', () => {
+  const SHADER = `
+    struct Uniforms_std140_0 { @align(16) zero_0 : f32, };
+    @binding(1) @group(0) var<uniform> u_0 : Uniforms_std140_0;
+    fn unpackRGBA_0( packed_0 : u32) -> vec4<f32> {
+      return vec4<f32>(f32(packed_0), 0.0f, 0.0f, 1.0f);
+    }
+    fn bpToClipX_0( bp_0 : u32,  u_1 : ptr<function, Uniforms_std140_0>) -> f32 {
+      return f32(bp_0) * (*u_1).zero_0;
+    }
+    fn mapCount_0( count_0 : f32,  maxScore_0 : f32) -> f32 {
+      return clamp(count_0 / max(maxScore_0, 0.001f), 0.0f, 1.0f);
+    }
+    @vertex
+    fn vs_main(@location(0) pos_0 : vec2<f32>) -> @builtin(position) vec4<f32> {
+      return vec4<f32>(pos_0, 0.0f, 1.0f);
+    }`
+
+  test('parks the unreadable stage code instead of rejecting the file', () => {
+    const { fns, refused } = parseWgsl(SHADER)
+    expect(fns.map(f => f.name)).toStrictEqual(['mapCount_0'])
+    expect(refused.map(r => r.name)).toStrictEqual([
+      'unpackRGBA_0',
+      'bpToClipX_0',
+    ])
+  })
+
+  test('emits only what the export reaches', () => {
+    const out = emit(SHADER, ['mapCount'])
+    expect(out).toContain('export function mapCount(')
+    expect(out).not.toContain('unpackRGBA')
+    expect(out).not.toContain('bpToClipX')
+    expect(evaluate(out, 'mapCount')(5, 10)).toBe(0.5)
+  })
+
+  test('re-throws the refusal when an export names a parked function', () => {
+    expect(() => emit(SHADER, ['unpackRGBA'])).toThrow(/vec4/)
+  })
+
+  test('re-throws the refusal when an export *calls* a parked function', () => {
+    expect(() =>
+      emit(
+        `${SHADER}
+         fn wrap_0( bp_0 : u32) -> f32 { return bpToClipX_0(bp_0, x_0); }`,
+        ['wrap'],
+      ),
+    ).toThrow(/wrap.*bpToClipX.*ptr/s)
+  })
+
+  test('tells you a dead function was eliminated before WGSL existed', () => {
+    expect(() => emit(SHADER, ['neverCalled'])).toThrow(
+      /no entry point reaches/,
+    )
+  })
+})
+
+// JS bitwise operators coerce to *signed* int32, so a `u32` at or above 2^31
+// comes back negative and `>>` shifts in sign bits. These are the cases where a
+// transliteration that ignored signedness would be silently wrong — packed ABGR
+// colors and flag words live right in that range.
+describe('bit operations', () => {
+  test('masks a flag word and renormalizes to unsigned', () => {
+    const out = emit(
+      `fn f_0( flags_0 : u32) -> bool { return (flags_0 & 8u) != 0u; }`,
+      ['f'],
+    )
+    const f = evaluate(out, 'f')
+    expect(f(8)).toBe(true)
+    expect(f(9)).toBe(true)
+    expect(f(1)).toBe(false)
+    // The top bit set: a signed result would be negative, and `!= 0` still
+    // happens to work — but the value must be right for anything that uses it.
+    expect(f(0xffffffff)).toBe(true)
+  })
+
+  test('a u32 shift-right is >>>, not >>', () => {
+    const out = emit(
+      `fn f_0( packed_0 : u32) -> u32 { return (packed_0 >> 24u) & 255u; }`,
+      ['f'],
+    )
+    // 0xff000000 >> 24 is -1 in JS; >>> 24 is 255. This is the alpha byte of
+    // every packed color in the tree.
+    expect(evaluate(out, 'f')(0xff000000)).toBe(255)
+    expect(evaluate(out, 'f')(0x7f123456)).toBe(0x7f)
+  })
+
+  test('an i32 shift-right keeps its sign', () => {
+    const out = emit(`fn f_0( v_0 : i32) -> i32 { return v_0 >> 1i; }`, ['f'])
+    expect(out).toContain('>> 1')
+    expect(out).not.toContain('>>>')
+    expect(evaluate(out, 'f')(-8)).toBe(-4)
+  })
+
+  test('a u32 OR above 2^31 stays positive', () => {
+    const out = emit(
+      `fn f_0( a_0 : u32) -> u32 { return a_0 | 2147483648u; }`,
+      ['f'],
+    )
+    expect(evaluate(out, 'f')(1)).toBe(2147483649)
+  })
+
+  test('refuses a shift whose operand type it cannot infer', () => {
+    // `textureLoad` is unknown to the emitter, so the left operand's signedness
+    // is unknown — emitting either `>>` or `>>>` would be a guess.
+    expect(() =>
+      emit(`fn f_0( a_0 : f32) -> f32 { return textureLoad(a_0) >> 1u; }`, [
+        'f',
+      ]),
+    ).toThrow(/signed/)
+  })
+
+  test('refuses a bitwise op on a float', () => {
+    expect(() =>
+      emit(`fn f_0( a_0 : f32) -> f32 { return a_0 & 1u; }`, ['f']),
+    ).toThrow(/signed/)
+  })
 })
 
 test.each([

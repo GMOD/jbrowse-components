@@ -2,6 +2,7 @@
 // segment. Verts 0..5 draw the body rectangle; 6..8 draw a chevron tip
 // clipped to the segment's leading (fwd) or trailing (rev) edge.
 //! targets: wgsl, glsl
+//! js-export: insertGradientT, showChevron
 //! export-consts: CS_NORMAL, CS_STRAND, CS_MAPQ, CS_INSERT_SIZE, CS_FIRST_OF_PAIR, CS_PAIR_ORIENT, CS_IS_AND_ORIENT, CS_MODIFICATIONS, CS_TAG, CS_IS_GRADIENT, RC_SUPPLEMENTARY, RC_SPLIT_INVERSION, RC_SPLIT_DELETION, RC_UNMAPPED_MATE, RC_INTERCHROM, RC_FWD_STRAND, RC_REV_STRAND, RC_NO_STRAND, RC_NON_SPLIT, RC_PAIR_LR, RC_PAIR_RL, RC_PAIR_RR, RC_PAIR_LL, RC_LONG_INSERT, RC_SHORT_INSERT, RC_NORMAL_INSERT, RC_PLAIN, RC_MAPQ, RC_TAG, RC_NO_TAG_VALUE, RC_MOD_FWD, RC_MOD_REV, CHEVRON_PX, CHEVRON_DIRLESS_MIN_WIDTH_PX, PAIR_MIN_SPAN_PX, IS_GRADIENT_SPAN_FRAC
 
 import alignmentsUniforms;
@@ -140,21 +141,59 @@ float3 categoryPaletteColor(uint cat, Uniforms u) {
   return unpackRGBA(u.colorPairLR).xyz;
 }
 
-// Insert-size bands lerp toward their endpoint under the gradient scheme. The
-// category already says which endpoint, so the thresholds live only on the CPU
-// (classifyInsertSize) — this just picks the ramp. Ramp reaches full color
-// IS_GRADIENT_SPAN_FRAC of the 6s band past the threshold. Mirrors
-// gradientInsertColor in colorUtils.ts, which takes the same category.
+// How far along the gradient an outlier insert size sits: 0 at the band edge,
+// 1 once it is IS_GRADIENT_SPAN_FRAC of the 6s band past it. The thresholds
+// themselves live on the CPU (classifyInsertSize); by the time this runs the
+// category has already decided which end we are ramping toward.
+//
+// This is the whole of what the Canvas2D path needs from the gradient — the
+// lerp below is a color-space conversion each backend does its own way — so it
+// is `//! js-export`ed and gradientInsertColor in colorUtils.ts calls it
+// instead of re-deriving the ramp. Returning 0 for a degenerate band paints the
+// same neutral color the early return used to: a lerp at t=0 IS the base.
+float insertGradientT(float is, float lower, float upper, bool isLong) {
+  float span = (upper - lower) * IS_GRADIENT_SPAN_FRAC;
+  if (span <= 0.0) { return 0.0; }
+  float d = isLong ? (is - upper) : (lower - is);
+  return clamp(d / span, 0.0, 1.0);
+}
+
+// Insert-size bands lerp toward their endpoint under the gradient scheme.
 float3 insertSizeGradientColor(uint cat, float is, Uniforms u) {
+  bool isLong = cat == RC_LONG_INSERT;
   float3 base = unpackRGBA(u.colorPairLR).xyz;
-  float span = (u.insertUpper - u.insertLower) * IS_GRADIENT_SPAN_FRAC;
-  if (span <= 0.0) { return base; }
-  if (cat == RC_LONG_INSERT) {
-    float t = clamp((is - u.insertUpper) / span, 0.0, 1.0);
-    return lerp(base, unpackRGBA(u.colorLongInsert).xyz, t);
-  }
-  float t = clamp((u.insertLower - is) / span, 0.0, 1.0);
-  return lerp(base, unpackRGBA(u.colorShortInsert).xyz, t);
+  float3 endpoint =
+    unpackRGBA(isLong ? u.colorLongInsert : u.colorShortInsert).xyz;
+  return lerp(base, endpoint,
+              insertGradientT(is, u.insertLower, u.insertUpper, isLong));
+}
+
+// --- direction markers ---
+
+// Whether a read draws its strand arrowhead.
+//
+// Base gate: tall rows, and either chain mode (long reads stay wide even when
+// zoomed out) or >0.1 px/bp. Direction-uninformative reads (normal scheme, mate
+// unmapped, or mate on another chromosome) additionally require enough
+// on-screen width, so their arrows disappear when zoomed out far instead of
+// cluttering the view. Paired reads whose mates have collapsed together on
+// screen drop the arrow entirely — at that zoom it is noise.
+//
+// `//! js-export`ed: features/read/drawCanvas.ts carried a five-argument copy
+// of exactly this, under a "Mirror of read.slang `showChev`" comment, and an
+// arrow drawn by one backend but not the other is a difference between what is
+// on screen and what an SVG export contains.
+bool showChevron(bool chainMode, float pxPerBp, float featHeight,
+                 uint colorScheme, uint flags, uint interchrom,
+                 float insertSize, float featWPx) {
+  bool baseShow = (chainMode || pxPerBp > 0.1) && featHeight >= 3.0;
+  bool dirMoot = colorScheme == CS_NORMAL
+      || (flags & 8u) != 0u
+      || interchrom != 0u;
+  bool isPaired = (flags & 1u) != 0u;
+  bool pairTooTight = isPaired && abs(insertSize) * pxPerBp < PAIR_MIN_SPAN_PX;
+  return baseShow && !pairTooTight
+      && (!dirMoot || featWPx > CHEVRON_DIRLESS_MIN_WIDTH_PX);
 }
 
 float3 getReadColor(Instance inst, Uniforms u) {
@@ -192,21 +231,9 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float featWPx = (sx2 - sx1) * u.canvasW * 0.5;
   o.featSize = float2(featWPx, u.featHeight);
 
-  // Base gate: tall rows, and either chain mode (long reads stay wide even when
-  // zoomed out) or >0.1 px/bp. Direction-uninformative reads (normal scheme,
-  // mate unmapped, or mate on another chromosome) additionally require enough
-  // on-screen width, so their arrows disappear when zoomed out far instead of
-  // cluttering the view.
-  bool baseShow = (u.chainMode == 1 || u.pxPerBp > 0.1) && u.featHeight >= 3.0;
-  bool dirMoot = u.colorScheme == CS_NORMAL
-      || (inst.flags & 8u) != 0u
-      || inst.interchrom != 0u;
-  // Paired reads whose mates have collapsed together on screen: arrows are noise.
-  bool isPaired = (inst.flags & 1u) != 0u;
-  bool pairTooTight = isPaired
-      && abs(inst.insertSize) * u.pxPerBp < PAIR_MIN_SPAN_PX;
-  bool showChev = baseShow && !pairTooTight
-      && (!dirMoot || featWPx > CHEVRON_DIRLESS_MIN_WIDTH_PX);
+  bool showChev = showChevron(
+    u.chainMode == 1, u.pxPerBp, u.featHeight, u.colorScheme,
+    inst.flags, inst.interchrom, inst.insertSize, featWPx);
 
   float sx, sy, lx, ly;
   float ef = 0.0;

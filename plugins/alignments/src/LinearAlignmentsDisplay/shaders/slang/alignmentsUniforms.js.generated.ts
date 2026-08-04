@@ -7,3 +7,20 @@
 export function frequencyAlpha(base: number, freq: number): number {
   return (base + (freq * (1.0 - base)))
 }
+
+export function arcYFraction(yBp: number, arcsYDomainBp: number, useLog: boolean): number {
+  if (useLog) {
+    return (Math.log2(Math.max(1.0, (yBp))) / Math.log2(Math.max(2.0, arcsYDomainBp)))
+  }
+  let _S1: number
+  if ((arcsYDomainBp > 0.0)) {
+    _S1 = ((yBp) / arcsYDomainBp)
+  } else {
+    _S1 = 0.0
+  }
+  return _S1
+}
+
+export function arcYOffsetPx(yBp: number, arcsYDomainBp: number, useLog: boolean, availH: number): number {
+  return Math.min(availH, (arcYFraction(yBp, arcsYDomainBp, useLog) * availH))
+}

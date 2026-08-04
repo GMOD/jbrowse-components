@@ -257,8 +257,11 @@ describe('drawReads visible-row-band cull', () => {
   })
 })
 
-// Independent reimplementation of read.slang `showChev`, kept separate so a
-// change to one side of the SYNC contract trips this grid.
+// Retirement gate for the hand-written mirror of read.slang's chevron gate
+// (adr-051). `showChevron` in drawCanvas.ts spelled the whole predicate out;
+// it now unpacks the frame and calls the shader's own, generated into TS. This
+// independent reimplementation stays as the fixture the generated one is swept
+// against — every combination of the five inputs that changes the answer.
 function shaderShowChev(
   f: ChevronFrame,
   flags: number,

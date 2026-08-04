@@ -1,8 +1,28 @@
 import { MIN_DRAWN_ROW_PX, drawnRowHeight, rowBand } from './rowBand.ts'
 
-// These pin the geometry rowRect.slang's `rowBandPx` mirrors. The shader can't
-// import this module, so the two agree by review; a change here that isn't made
-// there shows up as blocks painted somewhere other than where they hit-test.
+// These pin the band geometry, which is now rowRect.slang's own — generated
+// into TS and re-exported by rowBand.ts (adr-051). They used to be a review
+// gate between two spellings; they are now the behavior pin on the one
+// spelling, and they read the same either way.
+//
+// The retirement sweep is below: `retiredRowBand` is the TS the shader replaced.
+
+function retiredRowBand(rowHeight: number, rowProportion: number) {
+  const height = Math.max(rowHeight * rowProportion, 1)
+  return { height, offset: (rowHeight - height) / 2 }
+}
+
+test('the generated band matches the hand-written twin it replaced', () => {
+  // Sub-pixel rows through tall ones, at every proportion the display offers,
+  // so the floor is crossed from both sides at each.
+  for (const rowHeight of [0, 0.1, 0.25, 0.5, 0.99, 1, 1.5, 4, 20, 100]) {
+    for (const rowProportion of [0.1, 0.25, 0.5, 0.75, 0.9, 1]) {
+      expect(rowBand(rowHeight, rowProportion)).toStrictEqual(
+        retiredRowBand(rowHeight, rowProportion),
+      )
+    }
+  }
+})
 
 test('a row taller than a pixel is its own proportion of the row', () => {
   expect(rowBand(20, 1)).toEqual({ height: 20, offset: 0 })

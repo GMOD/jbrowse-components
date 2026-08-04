@@ -1,7 +1,8 @@
 import { prepareCanvas } from '@jbrowse/render-core/canvas2dUtils'
 import { Canvas2DGlobalRenderingBackend } from '@jbrowse/render-core/globalRenderingBackend'
 
-import { makeHicFillStyleLut, mapHicCount } from './colorRamp.ts'
+import { makeHicFillStyleLut } from './colorRamp.ts'
+import { mapHicCount } from './shaders/hic.js.generated.ts'
 
 import type {
   HicDrawState,

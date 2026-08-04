@@ -4,10 +4,45 @@
 // Scalar twins of syntenyTypes.slang, transliterated from slangc's WGSL so
 // the Canvas2D and SVG paths run the shader's own math. See adr-051.
 
+function _clamp(x: number, lo: number, hi: number) {
+  return Math.min(Math.max(x, lo), hi)
+}
+
 export function isCigarKind(kind: number): boolean {
   return (kind >= 3.0)
 }
 
 export function isMarkerKind(kind: number): boolean {
   return (Math.abs((kind - 2.0)) < 0.5)
+}
+
+export function fillShade(colorAlpha: number, displayAlpha: number, isHovered: boolean): number {
+  let a = (colorAlpha * displayAlpha)
+  let _S1: number
+  if (isHovered) {
+    _S1 = Math.min((a * 5.0), 0.34999999403953552)
+  } else {
+    _S1 = a
+  }
+  return _S1
+}
+
+export function hoverDarken(isHovered: boolean): number {
+  let _S2: number
+  if (isHovered) {
+    _S2 = 0.69999998807907104
+  } else {
+    _S2 = 1.0
+  }
+  return _S2
+}
+
+export function thinWidthFade(perpW: number, applies: boolean): number {
+  let _S3: number
+  if (applies) {
+    _S3 = _clamp(perpW, 0.15000000596046448, 1.0)
+  } else {
+    _S3 = 1.0
+  }
+  return _S3
 }

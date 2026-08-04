@@ -4,9 +4,10 @@
 // blacking them out. The tint fades with on-screen width so wide/zoomed-in
 // overlaps read clearly while sub-pixel overlaps (zoomed out) disappear.
 // Row-height gating happens at the draw call (featureHeight >= 3).
-// Source of truth for the overlap tint constants: features/overlap/drawCanvas.ts
-// (Canvas2D) imports the exported values, so the two paths cannot drift.
+// Source of truth for the overlap tint: features/overlap/drawCanvas.ts (Canvas2D)
+// runs the generated `overlapAlpha` below, so the two paths cannot drift.
 //! targets: wgsl, glsl
+//! js-export: overlapAlpha
 //! export-consts: OVERLAP_ALPHA, FADE_LO_PX, FADE_HI_PX
 
 import alignmentsUniforms;
@@ -24,6 +25,13 @@ static const float OVERLAP_ALPHA = 0.4;
 static const float FADE_LO_PX = 1.5;
 static const float FADE_HI_PX = 12.0;
 
+// Tint strength for an overlap of this on-screen width. `//! js-export`ed:
+// drawCanvas.ts had the same product of a constant and a smoothstep, plus its
+// own hand-written `smoothstep`, which is two chances to drift over one number.
+float overlapAlpha(float pxWidth) {
+  return OVERLAP_ALPHA * smoothstep(FADE_LO_PX, FADE_HI_PX, pxWidth);
+}
+
 struct Instance {
   uint  startOff : ATTR0;
   uint  endOff   : ATTR1;
@@ -40,8 +48,7 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 
   // Clip-space width → CSS px (clip spans [-1,1] across canvasW). flipX doesn't
   // change width, so it's safe to measure before flipping.
-  float pxWidth = (sx2 - sx1) * 0.5 * u.canvasW;
-  float alpha = OVERLAP_ALPHA * smoothstep(FADE_LO_PX, FADE_HI_PX, pxWidth);
+  float alpha = overlapAlpha((sx2 - sx1) * 0.5 * u.canvasW);
   if (alpha <= 0.0) { return discardVertex(); }
 
   float2 yy = pileupY(inst.y, u);

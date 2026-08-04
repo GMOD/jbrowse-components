@@ -47,6 +47,8 @@
     "./shaders/hpmath": "./src/shaders/hpmath.js.generated.ts",
     "./shaders/pointGlyph": "./src/shaders/pointGlyph.js.generated.ts",
     "./shaders/pointGlyphConsts": "./src/shaders/pointGlyph.generated.ts",
+    "./shaders/rowRect": "./src/shaders/rowRect.js.generated.ts",
+    "./shaders/rowRectConsts": "./src/shaders/rowRect.generated.ts",
     "./slangPass": "./src/slangPass.ts",
     "./useRenderingBackend": "./src/useRenderingBackend.ts",
     "./useTabVisibilityRerender": "./src/useTabVisibilityRerender.ts"

@@ -19,14 +19,28 @@ export interface JsExportFn {
 
 const SLANG_SCALARS = new Set(['float', 'uint', 'int', 'bool'])
 
+// Statement keywords that can open a line looking like a function signature.
+const SLANG_KEYWORDS = new Set(['else', 'do', 'return'])
+
 // Every module-scope `(public)? static const <type> NAME = <expr>;`, keyed by
 // name with the raw right-hand side as the value.
-function parseConstDecls(source: string) {
+//
+// `imported` holds the sources of the modules the shader `import`s, resolved by
+// the driver. Slang sees those constants, so this has to as well — otherwise a
+// shader that wants `CURVE_SEGMENTS * 6u` has to spell the product literally
+// and keep it in step by hand, which is the exact drift this file exists to
+// remove. The local source wins on a name collision, matching Slang's shadowing.
+function parseConstDecls(source: string, imported: readonly string[] = []) {
   const constRe =
     /^\s*(?:public\s+)?static\s+const\s+(?:float|int|uint)\s+(\w+)\s*=\s*([^;]+);/gm
   const decls = new Map<string, string>()
-  for (let m = constRe.exec(source); m; m = constRe.exec(source)) {
-    decls.set(m[1]!, m[2]!.trim())
+  for (const src of [source, ...imported]) {
+    constRe.lastIndex = 0
+    for (let m = constRe.exec(src); m; m = constRe.exec(src)) {
+      if (!decls.has(m[1]!)) {
+        decls.set(m[1]!, m[2]!.trim())
+      }
+    }
   }
   return decls
 }
@@ -77,8 +91,11 @@ function evalConstExpr(
 
 // Resolves `(public)? static const uint VERTS_PER_INSTANCE`, the per-instance
 // vertex count `slangPass()` reads off the generated module.
-export function parseVertsPerInstance(source: string) {
-  const decls = parseConstDecls(source)
+export function parseVertsPerInstance(
+  source: string,
+  imported: readonly string[] = [],
+) {
+  const decls = parseConstDecls(source, imported)
   const expr = decls.get('VERTS_PER_INSTANCE')
   if (expr === undefined) {
     return undefined
@@ -97,7 +114,10 @@ export function parseVertsPerInstance(source: string) {
 // in the file is an error: silently omitting it moved the failure to whichever
 // TS file imported the missing export, or (worse, when a whole group was
 // misspelled) to no failure at all.
-export function parseExportedConsts(source: string) {
+export function parseExportedConsts(
+  source: string,
+  imported: readonly string[] = [],
+) {
   const directive = /^\/\/!\s*export-consts:\s*(.+)/m.exec(source)
   if (!directive) {
     return undefined
@@ -106,7 +126,7 @@ export function parseExportedConsts(source: string) {
     .split(',')
     .map(s => s.trim())
     .filter(Boolean)
-  const decls = parseConstDecls(source)
+  const decls = parseConstDecls(source, imported)
   const missing = names.filter(n => !decls.has(n))
   if (missing.length > 0) {
     throw new Error(
@@ -124,9 +144,10 @@ export function parseExportedConsts(source: string) {
 
 // `//! js-export: fnA, fnB` — emit TS twins of these Slang functions so the
 // Canvas2D/SVG path runs the shader's own math instead of a hand-written copy.
-// Named functions must be `public` (a module-private one isn't visible to the
-// synthesized wrapper the driver compiles) and must live in the scalar subset
-// `wgslToJs.ts` supports; both failures are reported at `pnpm gen:shaders`.
+// Named functions must live in the scalar subset `wgslToJs.ts` supports, and in
+// a `module` file must additionally be `public` — a module-private one isn't
+// visible to the synthesized wrapper the driver compiles. Both failures are
+// reported at `pnpm gen:shaders`.
 export function parseJsExports(source: string) {
   const directive = /^\/\/!\s*js-export:\s*(.+)/m.exec(source)
   if (!directive) {
@@ -139,16 +160,23 @@ export function parseJsExports(source: string) {
   if (names.length === 0) {
     throw new Error(`//! js-export names no functions`)
   }
-  // Slang's `public <returnType> <name>(<params>)`. Parsing the signature here
+  // Slang's `[public] <returnType> <name>(<params>)`. Parsing the signature here
   // (rather than just the name) is what lets the driver synthesize a wrapper
   // entry point that references each function, so slangc emits its body instead
   // of dead-code-eliminating it. A typo then fails at codegen with the
   // candidate list rather than as an "absent from the compiled WGSL" error
-  // after a slangc round-trip.
+  // after a slangc round-trip. `public` is optional because a shader with entry
+  // points has no wrapper to be visible to — its own draw path keeps the
+  // function alive — and marking a function in such a file `public` is noise.
   const declared = new Map<string, JsExportFn>()
   const fnRe =
-    /^\s*public\s+([A-Za-z_]\w*)\s+([A-Za-z_]\w*)\s*\(([^)]*)\)\s*\{/gm
+    /^\s*(?:public\s+)?([A-Za-z_]\w*)\s+([A-Za-z_]\w*)\s*\(([^)]*)\)\s*\{/gm
   for (let m = fnRe.exec(source); m; m = fnRe.exec(source)) {
+    // `else if (...) {` reads as a two-identifier signature. Nothing downstream
+    // would resolve it, but it would sit in the "Declared:" list a typo prints.
+    if (SLANG_KEYWORDS.has(m[1]!)) {
+      continue
+    }
     const paramTypes = m[3]!
       .split(',')
       .map(s => s.trim())
@@ -224,5 +252,17 @@ export function parseLayoutOut(source: string) {
 // to be re-typed there by hand under a SYNC comment.
 export function parseConstsOut(source: string) {
   const match = /^\/\/!\s*consts-out:\s*(\S+)/m.exec(source)
+  return match ? match[1]! : undefined
+}
+
+// `//! js-export-out: <repo-relative path>` — the same escape hatch again, for
+// `js-export`. It *redirects* rather than adding: the twin is one file either
+// way, and writing a byte-identical copy next to the shader as well would leave
+// an artifact nothing imports. Reach for it when the function's Canvas2D
+// consumer is in a package that can't depend on the shader's own — the
+// insertion bar width is shared by plugin-alignments, plugin-maf and the
+// worker-side hit test, so it lives in alignments-core.
+export function parseJsExportOut(source: string) {
+  const match = /^\/\/!\s*js-export-out:\s*(\S+)/m.exec(source)
   return match ? match[1]! : undefined
 }
