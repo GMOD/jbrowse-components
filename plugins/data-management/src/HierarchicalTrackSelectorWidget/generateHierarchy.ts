@@ -31,7 +31,6 @@ export function generateHierarchy({
       : source.categories
 
     let currLevel: NodeWithChildren = root
-    let nestingLevel = 0
     let categoryPath = ''
 
     for (let i = 0; i < categories.length; i++) {
@@ -57,7 +56,6 @@ export function generateHierarchy({
         categoryMap.set(category, existing)
       }
       currLevel = existing
-      nestingLevel = i + 1
     }
 
     // push order is fine — sortedTreeChildren() re-groups tracks before
@@ -69,7 +67,8 @@ export function generateHierarchy({
       description,
       conf,
       children: [],
-      nestingLevel: nestingLevel + 1,
+      // one level below its deepest category (or level 1 at the group root)
+      nestingLevel: categories.length + 1,
       type: 'track' as const,
     })
   }
