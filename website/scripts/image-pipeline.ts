@@ -196,6 +196,24 @@ export function commitScreenshot(
   }
 }
 
+// PNG color type 3 is "indexed-color", i.e. what pngquant writes. It is the byte
+// after the bit depth in IHDR, which is the first chunk and always at a fixed
+// offset: 8-byte signature, then the chunk's 4-byte length and 4-byte type, then
+// width, height, bit depth. Read straight rather than shelling out to identify —
+// this runs once per figure in a 288-spec sweep.
+function isPalettePng(file: string) {
+  const head = Buffer.alloc(26)
+  const fd = fs.openSync(file, 'r')
+  try {
+    if (fs.readSync(fd, head, 0, head.length, 0) < head.length) {
+      return false
+    }
+  } finally {
+    fs.closeSync(fd)
+  }
+  return head.subarray(12, 16).toString('latin1') === 'IHDR' && head[25] === 3
+}
+
 // Lossily quantize a PNG in place with pngquant. These captures are flat-color
 // UI screenshots with small palettes, so quantization shrinks them ~50-60% with
 // no perceptible quality loss — worth it for a static site served over the
@@ -212,20 +230,40 @@ export function commitScreenshot(
 // so an unchanged spec re-renders byte-for-byte. Bonus: it also shrinks the files
 // (~40% on chrome-heavy captures) since the dither noise was pure entropy.
 //
-// TWO PASSES, because the strict one silently gives up on exactly the figures
-// that need it most. pngquant fails (leaving the PNG untouched) when it cannot
-// hit the quality floor in 256 colors, and the images that defeat it are the
-// dense ones: a whole-genome ribbon stack drawn at a low per-feature alpha
+// A LADDER OF FLOORS, because the strict pass silently gives up on exactly the
+// figures that need it most. pngquant fails (leaving the PNG untouched) when it
+// cannot hit the quality floor in 256 colors, and the images that defeat it are
+// the dense ones: a whole-genome ribbon stack drawn at a low per-feature alpha
 // blends tens of thousands of hairlines into a huge palette of near-white
 // tints, which is both incompressible and unquantizable at 90. Those shipped
-// unoptimized at 6-8 MB while every flat UI capture around them was under 1 MB
+// unoptimized at 4-8 MB while every flat UI capture around them was under 1 MB
 // — the site serves static/img directly, with no resizing layer, so that is
-// what a reader downloads. The 70 floor is only ever reached by an image the 90
-// floor refused, so nothing that quantizes cleanly today changes; on the
-// figures that need it, it is 8.5 MB -> 3.0 MB at RMSE 1.6%, with no banding
-// visible in the ribbons.
+// what a reader downloads. Each floor is only ever reached by an image the one
+// above it refused, so nothing that quantizes cleanly today changes.
+//
+// The floor is a give-up threshold, not a quality dial: on the ribbon stacks,
+// 60, 50 and 40 all produce the byte-identical palette, and the only thing the
+// number decides is whether pngquant writes it. So a floor that is too high
+// buys no fidelity — it just ships the 4 MB original. Measured on the two
+// figures that reach the bottom rung, orthofinder_synteny/vertebrates
+// (3.8 -> 1.3 MB, RMSE 1.6%) and wheat (5.5 -> 1.4 MB, RMSE 1.8%), which is the
+// same error band the 70 rung was already accepted at, with no banding visible
+// in the ribbons.
+//
+// vertebrates is why 60 is here: it quantized at 70 until its per-link alpha was
+// raised from 0.15 to 0.3, which moved it one rung down and, with only two rungs,
+// off the ladder — a figure tripling in bytes with nothing in the diff to say so.
 export function optimizePng(file: string) {
-  for (const quality of ['90-100', '70-100']) {
+  // Quantizing an already-quantized PNG is not a no-op: pngquant re-derives a
+  // palette from the palette, so a second call spends another RMSE budget and
+  // writes different bytes. In a regen the input is always a fresh TrueColor
+  // render, but this is also the one-liner you reach for to re-optimize a
+  // committed figure after changing the ladder, and there a double call would
+  // quietly compound the loss.
+  if (isPalettePng(file)) {
+    return
+  }
+  for (const quality of ['90-100', '70-100', '60-100']) {
     try {
       execFileSync(
         'pngquant',
