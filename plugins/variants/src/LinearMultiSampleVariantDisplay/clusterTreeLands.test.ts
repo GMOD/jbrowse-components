@@ -3,8 +3,6 @@ import { createStopToken } from '@jbrowse/core/util/stopToken'
 import { runGenotypeClustering } from '../shared/runGenotypeClustering.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
-import type { ReducedModel } from '../shared/clusterModelTypes.ts'
-
 const SOURCES = [{ name: 'S0' }, { name: 'S1' }, { name: 'S2' }]
 
 // hclust's `order` is exactly the leaf order of the newick it returns, so leaf
@@ -23,7 +21,7 @@ async function cluster() {
   const { display } = createTestEnvironment().createDisplay()
   display.setSources(SOURCES)
   await runGenotypeClustering({
-    model: display as unknown as ReducedModel,
+    model: display,
     rpcManager: { call: async () => RPC_RESULT },
     sessionId: 'session-1',
     regions,
