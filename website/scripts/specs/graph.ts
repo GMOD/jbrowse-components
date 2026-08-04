@@ -2185,7 +2185,7 @@ export const graphSpecs: ScreenshotSpec[] = [
     viewportHeight: 1580,
     hideTooltip: true,
     // One ring in each half, on the same segment (review: "we may want to circle
-    // entries in the lineargenomeview/linearsyntenyview and the correspondance
+    // entries in the lineargenomeview/linearsyntenyview and the correspondence
     // in graphgenomeview"). The shared hue already says they are the same
     // object, but only to a reader who thinks to compare two panes 700px apart;
     // the pair of rings is what makes the reader look.

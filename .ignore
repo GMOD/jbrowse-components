@@ -54,3 +54,6 @@ plugins/canvas/src/LinearMultiRowFeatureDisplay/applyRowGroups.test.ts
 website/scripts/specs/maf.ts
 scripts/build_great_ape_chr16.sh
 scripts/build_orthofinder_synteny.sh
+packages/browser-test-utils/src/reviewVerdicts.test.ts
+packages/core/src/util/color/randomColor.test.ts
+website/scripts/screenshot-review.json
