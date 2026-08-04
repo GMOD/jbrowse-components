@@ -20,6 +20,7 @@ import configSchemaFactory from './configSchema.ts'
 import stateModelFactory from './model.ts'
 import { makeEmptyPileupData } from './testUtils.ts'
 
+import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // Builds a real LinearAlignmentsDisplay so the cross-feature coupling that
@@ -469,7 +470,10 @@ describe('openContextMenu atomic state and stale-read reset', () => {
 // feature behind an id.
 describe('the feature-details lookup', () => {
   // One read, id 'read1', spanning 1000-5000 of a loaded ctgA region.
-  function seedOneRead(display: ReturnType<typeof createDisplay>) {
+  function seedOneRead(
+    display: ReturnType<typeof createDisplay>,
+    overrides: Partial<PileupDataResult> = {},
+  ) {
     display.setRpcData(0, {
       groups: [
         {
@@ -483,6 +487,7 @@ describe('the feature-details lookup', () => {
             readYs: new Uint16Array([0]),
             readFlags: new Uint16Array([0]),
             readMapqs: new Uint8Array([60]),
+            ...overrides,
           },
         },
       ],
@@ -546,6 +551,25 @@ describe('the feature-details lookup', () => {
     await display.selectFeatureById('read1')
 
     expect(call).not.toHaveBeenCalled()
+  })
+
+  // `getFeatureInfoById` reports the worker's own normalized strand, not a
+  // second derivation from SAM_FLAG_REVERSE. The two agree for BAM/CRAM, but a
+  // PAF/synteny block (LGVSyntenyDisplay pushes those through this same model)
+  // carries a real `strand` and no flags at all — so the flag read named every
+  // reverse-strand block `(+)` in the hover tooltip and in `featureUnderMouse`.
+  test.each([
+    ['a BAM read (strand and SAM_FLAG_REVERSE agree)', 16, -1],
+    ['a synteny block (real strand, no flags)', 0, -1],
+    ['a forward read', 0, 1],
+  ])('reports the feature strand for %s', (_label, flags, strand) => {
+    const display = createDisplay()
+    seedOneRead(display, {
+      readFlags: new Uint16Array([flags]),
+      readStrands: new Int8Array([strand]),
+    })
+
+    expect(display.getFeatureInfoById('read1')?.strand).toBe(strand)
   })
 
   // Offering menu items from the id means a lookup can now come back empty

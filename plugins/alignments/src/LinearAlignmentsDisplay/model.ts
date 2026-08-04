@@ -2182,15 +2182,20 @@ export default function stateModelFactory(
             return undefined
           }
           const { idx, rpcData, start, end } = hit
-          const flags = rpcData.readFlags[idx]
           return {
             id: featureId,
             name: rpcData.readNames[idx] ?? '',
             start,
             end,
-            flags,
+            flags: rpcData.readFlags[idx],
             mapq: rpcData.readMapqs[idx],
-            strand: flags !== undefined && flags & 16 ? -1 : 1,
+            // The worker's own normalized strand, not a re-derivation from
+            // SAM_FLAG_REVERSE. Identical for BAM/CRAM (whose `strand` IS that
+            // flag), but a PAF/synteny block carries a real strand and no flags
+            // at all — so the flag read reported every reverse-strand block as
+            // `(+)` in the hover tooltip and in `featureUnderMouse`. Same
+            // reasoning as `strandKey` in shared/groupFeatures.ts.
+            strand: rpcData.readStrands[idx] ?? 1,
             refName: region.refName,
             assemblyName: region.assemblyName,
           }

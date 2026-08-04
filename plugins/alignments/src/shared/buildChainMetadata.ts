@@ -1,7 +1,6 @@
 import {
   SAM_FLAG_FIRST_IN_PAIR,
   SAM_FLAG_PAIRED,
-  SAM_FLAG_REVERSE,
   SAM_FLAG_SUPPLEMENTARY,
   splitJunctionKind,
 } from '@jbrowse/alignments-core'
@@ -73,7 +72,12 @@ function summarizeChain(chain: ChainFeatureData[]) {
     if (isSupplementary(f)) {
       hasSupp = true
     } else {
-      primaryStrand = f.flags & SAM_FLAG_REVERSE ? -1 : 1
+      // `f.strand`, not a second derivation from SAM_FLAG_REVERSE: the two agree
+      // for BAM/CRAM (whose strand IS that flag) but only `strand` is populated
+      // for a source that carries no flags, and `mate0Primary`/`mate1Primary`
+      // below already read it — one field per question, so the three can't
+      // disagree about which way this primary points.
+      primaryStrand = f.strand === -1 ? -1 : 1
       primaryPairOrientation = f.pairOrientation
       if (isFirstInPair(f)) {
         mate0Primary = f.strand

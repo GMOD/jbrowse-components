@@ -1,4 +1,6 @@
 import {
+  SAM_FLAG_MATE_UNMAPPED,
+  SAM_FLAG_SUPPLEMENTARY,
   countSnpsAtPosition,
   formatInsertionLabel,
   interbaseDepthAt,
@@ -137,7 +139,7 @@ function getPairTypeDescriptions({
   insertSizeStats?: InsertSizeBand
   nextRef: string
 }): string[] {
-  if (flags & 8) {
+  if (flags & SAM_FLAG_MATE_UNMAPPED) {
     return ['Unmapped mate']
   }
   if (interchrom === 1) {
@@ -196,7 +198,7 @@ export function formatChainTooltip(
     }),
   )
 
-  if (flags & 2048) {
+  if (flags & SAM_FLAG_SUPPLEMENTARY) {
     lines.push('Supplementary alignment')
   }
 

@@ -1,3 +1,9 @@
+import {
+  SAM_FLAG_MATE_UNMAPPED,
+  SAM_FLAG_PAIRED,
+  SAM_FLAG_REVERSE,
+  SAM_FLAG_SECOND_IN_PAIR,
+} from '@jbrowse/alignments-core'
 import { abgrToCssRgba, normalizedRgbToCss } from '@jbrowse/core/util/colorBits'
 
 import { COLOR_SCHEMES } from '../shared/colorSchemes.ts'
@@ -226,7 +232,7 @@ export function readColorCategory(
 
   const chainSupp = data.readChainHasSupp?.[i] ?? CHAIN_FILL_NO_SUPP
   const hasSupp = chainSupp !== CHAIN_FILL_NO_SUPP
-  const isPaired = (flags & 1) !== 0
+  const isPaired = (flags & SAM_FLAG_PAIRED) !== 0
   // Both split markers only apply to paired chains, and only under a scheme that
   // encodes orientation — otherwise the split hue would displace the scheme the
   // user picked (insert size, tag, modifications).
@@ -277,9 +283,9 @@ export function readColorCategory(
     return 'splitDeletion'
   }
 
-  // unmapped mate (flag 8) — its own color for orientation-aware schemes (tlen=0
+  // unmapped mate — its own color for orientation-aware schemes (tlen=0
   // would miscolor as "short insert"), or normal scheme in linked-read mode.
-  const mateUnmapped = (flags & 8) !== 0
+  const mateUnmapped = (flags & SAM_FLAG_MATE_UNMAPPED) !== 0
   const isOrientationScheme = orientationSchemes.has(colorScheme)
   if (
     mateUnmapped &&
@@ -315,7 +321,7 @@ export function readColorCategory(
       // opposite of the fragment, so invert only it. Read1 and single-end reads
       // represent the fragment strand directly (must match firstOfPairStrandKey
       // in groupFeatures.ts — the shader no longer derives this).
-      const isSecond = (flags & 128) !== 0
+      const isSecond = (flags & SAM_FLAG_SECOND_IN_PAIR) !== 0
       return strandCategory(isSecond ? -strand : strand)
     }
 
@@ -342,7 +348,7 @@ export function readColorCategory(
     }
 
     case ColorScheme.modifications:
-      return (flags & 16) !== 0 ? 'modRev' : 'modFwd'
+      return (flags & SAM_FLAG_REVERSE) !== 0 ? 'modRev' : 'modFwd'
 
     case ColorScheme.tag:
       // A read this scheme resolved no color for — the tag is absent, or under

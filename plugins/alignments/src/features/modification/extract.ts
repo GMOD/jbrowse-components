@@ -1,3 +1,4 @@
+import { SAM_FLAG_SECOND_IN_PAIR } from '@jbrowse/alignments-core'
 import {
   CIGAR_D,
   CIGAR_EQ,
@@ -236,7 +237,7 @@ export function extractBisulfite(
   const cigarOps = parseCigar2(cigarString)
   const flags = getFlags(feature)
   const isReverse = strand === -1
-  const isSecondOfPair = (flags & 128) !== 0
+  const isSecondOfPair = (flags & SAM_FLAG_SECOND_IN_PAIR) !== 0
 
   // Bisulfite converts only the read's own template strand. That strand is
   // reverse XOR second-of-pair (IGV's rule). On it we read genomic C as read
