@@ -7,6 +7,11 @@ guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 ---
 
+**TL;DR:** build a five-strain _E. coli_ graph with pggb, then load its linear
+projections (synteny, pangenome variants, whole-genome MAF, depth and per-strain
+presence) as ordinary JBrowse tracks on the K12 axis, and draw the graph itself
+beside them.
+
 A pangenome graph collapses many genomes into one structure: shared sequence is
 a single path that every sample walks, and where samples differ the path
 branches. [pggb](https://github.com/pangenome/pggb),
@@ -31,6 +36,14 @@ welcome your [feedback](/contact).
 - `samtools`, `bedGraphToBigWig` (UCSC kentUtils)
 - `python3`, htslib (`bgzip`, `tabix`), `unzip`
 - `node`, for the [JBrowse CLI](/docs/cli)
+
+On Debian/Ubuntu, `apt install samtools tabix unzip python3` covers four of
+those. Docker installs from
+[docs.docker.com](https://docs.docker.com/engine/install/); the NCBI `datasets`
+CLI and `bedGraphToBigWig` are each a
+[single-binary download](https://hgdownload.soe.ucsc.edu/admin/exe/); and `node`
+comes from [nodejs.org](https://nodejs.org/). Everything else runs inside the
+pggb image.
 
 ## The linear projections
 
@@ -219,8 +232,8 @@ zcat ecoli_pggb_untangle.pif.gz | awk -F'\t' 'substr($1,1,1)=="q"' \
   | cut -f1,3,4,8,9 | sort -k4,4n
 ```
 
-In this graph that is `chr:3,941,447-3,946,786` on K12 — the _rrnC_ operon —
-where Sakai, NCTC86 and IAI39 each land twice.
+In this graph that is `chr:3,941,447-3,946,786` on K12, the _rrnC_ operon, where
+Sakai, NCTC86 and IAI39 each land twice.
 
 <Figure caption="An rRNA operon in the graph, K12 between NCTC86 and Sakai. Each strain's window holds both of its copies, and both send a ribbon to the one K12 span carrying rrsC, rrlC and rrfC: seqwish collapsed the copies into one set of nodes, so the graph has one place where each genome has two." src="/img/pangenome/pggb_untangle.png" />
 
@@ -328,6 +341,7 @@ and rename the PanSN names to `sample.chr` so the MAF display can split each
 row's species off on the `.`:
 
 ```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/reroot_maf.py
 # reroot_maf.py keeps K12-containing blocks, puts K12 first (+ strand), sorts by
 # K12 position, and gives each K12 row in a repeat-collapsed block its own block
 python3 reroot_maf.py pggb/*.smooth.maf ecoli_pggb.maf
@@ -353,9 +367,15 @@ assuming the crop is dead code.
 
 Then convert the MAF to the tabix-indexed BED the
 [`MafTabixAdapter`](/docs/config/maftabixadapter) reads, one line per block
-carrying that block's rows:
+carrying that block's rows. The usual converter for this is
+[maf2bed](https://github.com/cmdcolin/maf2bed), which picks the reference row by
+assembly name; it is not used here because it emits one line per block, and
+`reroot_maf.py` above has just split a repeat-collapsed block into one line per
+reference copy. `maf_to_bed.py` takes row 0 as the reference, so it keeps that
+split:
 
 ```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/maf_to_bed.py
 python3 maf_to_bed.py ecoli_pggb.maf ecoli_pggb.maf.bed
 bgzip ecoli_pggb.maf.bed
 tabix -p bed ecoli_pggb.maf.bed.gz
@@ -368,6 +388,7 @@ bacterial pangenome, and UPGMA over `1 - estimated.identity` turns that into the
 Newick the track reads as `nhLocation`:
 
 ```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/odgi_similarity_to_newick.py
 in_pggb odgi similarity -i "/data/$og" -D '#' -p 1 > ecoli_pggb_similarity.tsv
 python3 odgi_similarity_to_newick.py ecoli_pggb_similarity.tsv ecoli_pggb.nh
 ```
@@ -603,9 +624,9 @@ coordinates. The walk agrees with the `odgi extract` route
 the ones `gfa_nodes_to_bed.py` derives from the extracted subgraph. It reads P
 and W lines, so a graph carrying walks rather than paths indexes the same way.
 
-Two decisions in that walk are worth knowing before you trust the output. When a
-path reaches the same segment twice, **the first visit wins**: a node draws as
-one tube at one x, so recording both would claim reference the segment does not
+Two decisions in that walk decide what the output can be trusted for. When a
+path reaches the same segment twice, the first visit wins: a node draws as one
+tube at one x, so recording both would claim reference the segment does not
 occupy, and a collapsed repeat stays visible as depth instead. And a segment the
 reference path never visits is placed **on its own carrier's coordinates**,
 which is the same asymmetry rGFA has, and is why a reference query reaches it
@@ -642,9 +663,19 @@ the assembly that contributed the segment first.
 
 Rows want a narrower window than the sweep above. A row draws what a strain
 takes _instead of_ the reference, so it is read segment by segment, and at 17 bp
-per segment a kilobase leaves each one a few pixels wide.
+per segment a kilobase leaves each one a few pixels wide. The index says how
+narrow: `tabix ecoli_pggb.segs.bed.gz` returns 32 backbone segments over this
+460 bp, 172 over 3 kb and 1,261 over 10 kb.
 
-<Figure caption="460 bp at the ycbF/pyrD boundary, the same graph in both layouts under the same MAF lane. Left, Sample rows, in the MAF's five rows and the same order: the top row is the K12 backbone with each segment's length on it, and below it each strain's marks are the segments it takes instead of the reference. The MAF row above says the same thing base by base — CFT073 has columns only where its contig reaches. Right, the same nodes force-directed, which is where the bubbles those rows flatten are visible as bubbles." src="/img/pangenome/pggb_locus_sample_rows.png" links="Sample rows=pangenome/pggb_locus_sample_rows_rows,Force-directed=pangenome/pggb_locus_sample_rows_force" />
+A row's bar is drawn over the **reference it replaces**, never over its own
+sequence length — an insertion adds bp that a reference axis has no room for, so
+length lives in the tooltip instead. That is why CFT073's row carries one long
+bar labelled `93 bp` running off the left edge: its segment links to
+`K12:1,004,686` inside the window and to `K12:997,574` 7.1 kb upstream of it, so
+93 bp of CFT073 stands in for 7.1 kb of K12 and the bar is that 7.1 kb. It is a
+deletion, not a loop, and most of it is outside the frame.
+
+<Figure caption="460 bp at the ycbF/pyrD boundary, the same graph in both layouts under the same MAF lane. Left, Sample rows, in the MAF's five rows and the same order: the top row is the K12 backbone with each segment's length on it, and below it each strain's marks are the segments it takes instead of the reference. The MAF row above says the same thing base by base, since CFT073 has columns only where its contig reaches. Right, the same nodes force-directed, which is where the bubbles those rows flatten are visible as bubbles." src="/img/pangenome/pggb_locus_sample_rows.png" links="Sample rows=pangenome/pggb_locus_sample_rows_rows,Force-directed=pangenome/pggb_locus_sample_rows_force" />
 
 #### Where this stops, and what to do instead
 
@@ -715,6 +746,15 @@ way, so the track needs no color configuration and cannot drift from the graph.
 Nodes the reference path never visits are the alternate alleles. They have no
 K12 position, so they are absent from the linear track.
 
+One of them is worth naming, because a cut graph always has ends and this one
+has a conspicuous one: the dark 93 bp node hanging off the green-to-yellow
+junction in the force pane. It is where CFT073 rejoins, and it has a single end
+here because `odgi extract -E` was given `K12#1#chr:1004500-1004900`. In the
+whole graph that segment links to `K12:1,004,686` **and** to `K12:997,574`, so
+CFT073 carries 93 bp where K12 carries 7.1 kb; the far anchor is 7 kb outside
+the cut and went with it. A one-sided node in any extracted subgraph means this
+— sequence continuing past the window, not a dead end in the graph.
+
 <Figure caption="One slice of the five-strain graph drawn both ways, under a linear view of the same locus. Left, anchored on the graph's K12 path: both panels share an axis and the Depth colors, so the backbone row is the node strip above it and the green-to-yellow step, where the fifth strain rejoins the shared sequence, is at the same x in both. Right, force-directed: the same nodes and colors with nothing holding them to the axis. The alternate alleles have no K12 coordinate either way, and their drawn width is a visibility floor rather than their length in bp, which the node tooltip gives." src="/img/pangenome/local_subgraph.png" links="Anchored=pangenome/local_subgraph_anchored,Force-directed=pangenome/local_subgraph_force" />
 
 ### Drawing the haplotype paths
@@ -767,7 +807,7 @@ in_pggb bash -c "odgi extract -i /data/$og -r K12#1#chr:4166800-4167300 -d 500 -
 
 The cut is six segments, and `odgi paths -L` on it lists nine path intervals
 over them: two copies each in Sakai, CFT073, NCTC86 and IAI39, one in K12. That
-is the collapse stated directly — nine locations across five chromosomes are one
+is the collapse stated directly: nine locations across five chromosomes are one
 run of segments. The picture of it is
 [the untangle figure above](#the-same-picture-read-out-of-the-graph), which is
 the same operon in coordinate space; the graph drawing of a six-node chain adds

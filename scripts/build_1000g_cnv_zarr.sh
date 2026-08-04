@@ -8,14 +8,40 @@
 # lab's per-sample copy-number estimates.
 #
 # Usage:
-#   bash scripts/build_1000g_cnv_zarr.sh                      # the tutorial's window
-#   bash scripts/build_1000g_cnv_zarr.sh --whole-genome       # every main contig
+#   bash build_1000g_cnv_zarr.sh                              # the tutorial's window
+#   bash build_1000g_cnv_zarr.sh --whole-genome               # every main contig
+#
+# Runs either from a checkout or on its own: downloaded by itself it fetches the
+# converter beside its output and installs the converter's two npm packages
+# there, so no clone of this repository is needed.
 set -euo pipefail
 
+HERE=$(cd "$(dirname "$0")" && pwd)
+RAW=https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts
 TRACKDB=https://raw.githubusercontent.com/KiddLab/kmer_1KG/master/kmer-1kg.trackDb.txt
 BW_BASE=https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv
-OUT=${OUT:-test_data/1000g_cnv/qm2_cn_1kb.zarr}
-SAMPLES=${SAMPLES:-test_data/1000g_cnv/samples.tsv}
+
+# Downloaded on its own this fetches the converter beside itself; in a checkout
+# both are already there.
+HELPERS=(build_signal_zarr.ts)
+for h in "${HELPERS[@]}"; do
+  [ -f "$HERE/$h" ] || curl -fsSL -o "$HERE/$h" "$RAW/$h"
+done
+
+# The converter imports two npm packages and nothing else. A checkout resolves
+# them from the workspace; on its own it needs them installed next to it.
+(cd "$HERE" && node --input-type=module -e 'await import("@gmod/bbi")') 2>/dev/null ||
+  npm install --silent --no-save --prefix "$HERE" @gmod/bbi generic-filehandle2
+
+# In a checkout the default output is the store this repository commits;
+# standalone it is a build directory under the working directory.
+if [ -d "$(dirname "$HERE")/test_data/1000g_cnv" ]; then
+  OUT=${OUT:-test_data/1000g_cnv/qm2_cn_1kb.zarr}
+  SAMPLES=${SAMPLES:-test_data/1000g_cnv/samples.tsv}
+else
+  OUT=${OUT:-1000g_cnv_build/qm2_cn_1kb.zarr}
+  SAMPLES=${SAMPLES:-1000g_cnv_build/samples.tsv}
+fi
 
 mkdir -p "$(dirname "$SAMPLES")"
 
@@ -39,7 +65,7 @@ else
   REGIONS=(--region chr17:35000000-37500000 --region chr4:68000000-69000000)
 fi
 
-node scripts/build_signal_zarr.ts \
+node "$HERE/build_signal_zarr.ts" \
   --samples "$SAMPLES" \
   --out "$OUT" \
   "${REGIONS[@]}" \

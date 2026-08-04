@@ -21,6 +21,10 @@ reference are direct alignments and row order is a real choice.
 - `samtools`, htslib (`bgzip`, `tabix`), `wget`
 - `node`, for the [JBrowse CLI](/docs/cli)
 
+On Debian/Ubuntu, `apt install samtools tabix wget last-align` covers the
+aligner and the file tools; jcvi installs with `pip install jcvi` and `node`
+comes from [nodejs.org](https://nodejs.org/).
+
 ## Three genomes from one ortholog table
 
 Like [All-vs-all synteny](/docs/tutorials/allvsall_synteny), a linear synteny

@@ -23,6 +23,13 @@ To build the tracks:
 - `minimap2` and `samtools`, for the
   [FGF4 synteny half](#the-retrocopy-itself-as-sequence)
 
+On Debian/Ubuntu, `apt install bcftools samtools minimap2 tabix curl python3`
+covers it. The packaged `bcftools` is linked against libcurl, so it can read the
+remote callsets. Everything the scripts write is a local file, so
+[JBrowse Desktop](/docs/quickstart_desktop) opens the result by path with no web
+server; on JBrowse Web the same files go in through **Add track** or a
+`config.json`.
+
 ## The variant
 
 Schall and Kidd genotyped long-read-discovered structural variants across the

@@ -16,9 +16,12 @@ second half packs the same values into one Zarr store.
 ## Prerequisites
 
 - a JBrowse instance to paste a track into (see the
-  [web quickstart](/docs/quickstart_web))
-- `node` and a checkout of this repository, to
-  [build a Zarr store](#build-the-store)
+  [web quickstart](/docs/quickstart_web), or the
+  [desktop quickstart](/docs/quickstart_desktop): every file here is a URL, so
+  Desktop needs nothing hosted)
+- `node` 24 or newer, to [build a Zarr store](#build-the-store); the converter
+  is one downloadable file and pulls its own two npm packages, so nothing is
+  cloned
 - QuicK-mer2 and a 30x alignment, to add
   [samples of your own](#your-own-samples)
 
@@ -134,12 +137,18 @@ The track above stops at 104 individuals because that is about where one BigWig
 per sample stops being pleasant, and size is not the reason.
 [`measure_signal_latency.ts`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/measure_signal_latency.ts)
 counts what filling this tutorial's window costs each way, by wrapping `fetch`
-around the same readers the browser uses:
+around the same readers the browser uses. It takes the same `name`/`group`/`url`
+TSV as the converter, so the sample list the
+[build script](#reproduce-it-end-to-end) writes drives it directly:
 
 ```bash
-node scripts/measure_signal_latency.ts \
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/measure_signal_latency.ts
+npm install @gmod/bbi generic-filehandle2
+
+awk -F'\t' '$2=="PUR"' 1000g_cnv_build/samples.tsv > pur.tsv   # the 104 rows above
+
+node measure_signal_latency.ts --samples pur.tsv \
   --region chr17:36,080,000-36,270,000 \
-  --config test_data/config_demo.json --track pur_copynumber_1000g \
   --zarr https://jbrowse.org/code/jb2/main/test_data/1000g_cnv/qm2_cn_1kb.zarr
 ```
 
@@ -223,10 +232,14 @@ with the cohort, because the sample axis is inside the chunk.
 [`build_signal_zarr.ts`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_signal_zarr.ts)
 turns a list of BigWigs into one store. It takes a TSV of `name` and `url`, with
 an optional `group` column between them (here the population, which labels the
-rows and groups them in the clustering sidebar):
+rows and groups them in the clustering sidebar). It imports two npm packages and
+nothing else, so it runs on its own:
 
 ```bash
-node scripts/build_signal_zarr.ts \
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_signal_zarr.ts
+npm install @gmod/bbi generic-filehandle2
+
+node build_signal_zarr.ts \
   --samples samples.tsv \
   --out qm2_cn_1kb.zarr \
   --region chr17:35000000-37500000 \
@@ -288,13 +301,13 @@ estimate of that genome as a check.
 [`build_1000g_cnv_zarr.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_1000g_cnv_zarr.sh)
 derives the full 2504-sample list from the Kidd lab `trackDb` and runs the
 converter over it, so nothing above depends on a hand-written sample list. It
-calls the converter by repo-relative path, so run it from a checkout:
+fetches the converter and installs its two packages beside its own output, so
+one download is the whole setup:
 
 ```bash
-git clone https://github.com/GMOD/jbrowse-components
-cd jbrowse-components && pnpm install
-bash scripts/build_1000g_cnv_zarr.sh                # the tutorial's window
-bash scripts/build_1000g_cnv_zarr.sh --whole-genome # every main contig
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_1000g_cnv_zarr.sh
+bash build_1000g_cnv_zarr.sh                # the tutorial's window, into ./1000g_cnv_build
+bash build_1000g_cnv_zarr.sh --whole-genome # every main contig
 ```
 
 ## See also

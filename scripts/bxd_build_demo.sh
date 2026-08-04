@@ -2,21 +2,21 @@
 #
 # Reproducibly build the BXD systems-genetics demo from
 # website/docs/tutorials/bxd_qtl.md: the 198-strain chromosome painting plus two
-# single-marker QTL scans (coat color, peaking at Tyrp1 on chr4, and the subtler
-# brain-weight peak on chr19), then wire up a runnable JBrowse.
+# GeneNetwork QTL scans (coat color, whose chr4 peak interval holds Tyrp1, and
+# brain weight), then wire up a runnable JBrowse.
 #
-# It downloads the GeneNetwork BXD consensus genotypes and the rqtl/qtl2data BXD
-# phenotypes, builds the painting BED and both GWAS tables with the two Python
-# helpers, downloads JBrowse, and writes a config.json with mm10 (from
-# jbrowse.org), both Manhattan tracks, the painting, and a default session on
-# chr4.
+# It downloads the GeneNetwork BXD consensus genotypes, builds the painting BED
+# with one Python helper, fetches both QTL scans already computed from
+# GeneNetwork's mapping API, downloads JBrowse, and writes a config.json with
+# mm10 (from jbrowse.org), both Manhattan tracks, the painting, and a default
+# session on chr4.
 #
 # Everything is pinned (fixed source URLs, fixed trait IDs: 11280 coat color,
 # 10672 brain weight), so re-running reproduces the same tracks.
 #
-# Requires: curl, python3 (numpy + scipy for the scan, pandas to pull a trait
-#           column), bgzip/tabix (htslib), and node (JBrowse CLI, fetched via npx
-#           unless `jbrowse` is on PATH).
+# Requires: curl, jq (reshaping GeneNetwork's scan), python3 (the painting's
+#           run-length encoding), bgzip/tabix (htslib), and node (JBrowse CLI,
+#           fetched via npx unless `jbrowse` is on PATH).
 # Usage:    bash scripts/bxd_build_demo.sh [outdir]
 #
 set -euo pipefail
@@ -25,7 +25,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"   # so the .py helper
 
 # Sibling helpers this script runs, fetched next to it when absent, so a bare
 # `curl -fO` of this one file behaves the same as a repo checkout.
-HELPERS=(bxd_geno_to_painting_bed.py bxd_qtl_scan.py)
+HELPERS=(bxd_geno_to_painting_bed.py)
 for h in "${HELPERS[@]}"; do
   [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
     "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
@@ -36,10 +36,10 @@ mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 APP=jbrowse2   # relative to $OUTDIR, so the [ -f ] guard resolves after the cd
 
-# ── Source data (GeneNetwork genotypes + rqtl phenotypes), skip if present ────
-[ -f BXD.geno ]      || curl -fL -o BXD.geno https://gn1.genenetwork.org/genotypes/BXD.geno
-[ -f bxd_pheno.csv ] || curl -fL -o bxd_pheno.csv \
-  https://raw.githubusercontent.com/rqtl/qtl2data/master/BXD/bxd_pheno.csv
+# ── Source data (GeneNetwork consensus genotypes), skip if present ───────────
+# The phenotypes are not downloaded: GeneNetwork maps them itself, and the scans
+# below are fetched already computed rather than recomputed here.
+[ -f BXD.geno ] || curl -fsSL -o BXD.geno https://gn1.genenetwork.org/genotypes/BXD.geno
 
 # ── Set up JBrowse (uses an installed `jbrowse`, else the CLI via npx) ────────
 if command -v jbrowse >/dev/null 2>&1; then
@@ -55,20 +55,24 @@ python3 "$SCRIPT_DIR/bxd_geno_to_painting_bed.py" BXD.geno bxd_painting.bed
   | bgzip > "$APP"/bxd_painting.bed.gz
 tabix -f -p bed "$APP"/bxd_painting.bed.gz
 
-# ── Two single-marker QTL scans off the SAME genotype matrix ─────────────────
-# trait 11280 = coat color (peaks at Tyrp1, chr4); 10672 = brain weight (chr19).
-# Pull each trait column out of bxd_pheno.csv as a `strain,value` file, then scan.
+# ── QTL scans, downloaded from GeneNetwork rather than recomputed ────────────
+# GeneNetwork is a mapping service: it runs GEMMA, a linear mixed model that
+# accounts for the relatedness among BXD strains, and serves the whole per-marker
+# scan over its API. Recomputing one here with a plain regression would ignore
+# that relatedness and answer a different question, so this only reshapes.
+# 11280 = coat color (a Mendelian-scale peak on chr4); 10672 = brain weight.
+GN='https://genenetwork.org/api/v_pre1/mapping?db=BXDPublish&method=gemma'
 scan() {  # <trait_id> <out_stem>
-  python3 - "$1" "$2.pheno.csv" <<'PY'
-import sys
-import pandas as pd
-tid, out = sys.argv[1], sys.argv[2]
-df = pd.read_csv('bxd_pheno.csv', comment='#')  # skips the leading # metadata lines
-df[['id', tid]].dropna().to_csv(out, index=False, header=['strain', 'value'])
-PY
-  python3 "$SCRIPT_DIR/bxd_qtl_scan.py" BXD.geno "$2.pheno.csv" "$2.tsv"
-  (head -1 "$2.tsv"; tail -n +2 "$2.tsv" | sort -k1,1 -k2,2n) | bgzip > "$APP/$2.tsv.gz"
+  [ -f "$2.json" ] || curl -fsSL -o "$2.json" "$GN&trait_id=$1"
+  {
+    printf '#chrom\tstart\tend\tname\tscore\tstrand\tlod\n'
+    jq -r '.[0][] | [ "chr" + (.chr|tostring), ((.Mb*1000000)|round),
+                      ((.Mb*1000000)|round + 1), .name, ".", ".",
+                      (.lod_score*10000|round/10000) ] | @tsv' "$2.json" |
+      sort -k1,1 -k2,2n
+  } | bgzip > "$APP/$2.tsv.gz"
   tabix -f -p bed "$APP/$2.tsv.gz"
+  echo "$2: $(jq -r '.[0] | max_by(.lod_score) | "peak \(.name) chr\(.chr):\(.Mb)Mb LOD \(.lod_score*100|round/100)"' "$2.json")"
 }
 scan 11280 bxd_gwas_coatcolor
 scan 10672 bxd_gwas_brainweight
@@ -106,13 +110,13 @@ cat > "$APP"/config.json <<'JSON'
     {
       "type": "GWASTrack",
       "trackId": "bxd_gwas_coatcolor_mm10",
-      "name": "BXD QTL: coat color (peak at Tyrp1, chr4)",
+      "name": "BXD QTL: coat color (GEMMA, Tyrp1, chr4)",
       "assemblyNames": ["mm10"],
       "category": ["GeneNetwork / BXD"],
       "adapter": {
         "type": "GWASAdapter",
-        "bedGzLocation": { "uri": "bxd_gwas_coatcolor.tsv.gz" },
-        "index": { "location": { "uri": "bxd_gwas_coatcolor.tsv.gz.tbi" } }
+        "uri": "bxd_gwas_coatcolor.tsv.gz",
+        "scoreColumn": "lod"
       },
       "displays": [
         {
@@ -124,13 +128,13 @@ cat > "$APP"/config.json <<'JSON'
     {
       "type": "GWASTrack",
       "trackId": "bxd_gwas_brainweight_mm10",
-      "name": "BXD QTL: brain weight (subtler peak, chr19)",
+      "name": "BXD QTL: brain weight (GEMMA)",
       "assemblyNames": ["mm10"],
       "category": ["GeneNetwork / BXD"],
       "adapter": {
         "type": "GWASAdapter",
-        "bedGzLocation": { "uri": "bxd_gwas_brainweight.tsv.gz" },
-        "index": { "location": { "uri": "bxd_gwas_brainweight.tsv.gz.tbi" } }
+        "uri": "bxd_gwas_brainweight.tsv.gz",
+        "scoreColumn": "lod"
       },
       "displays": [
         {
@@ -180,8 +184,8 @@ JSON
 
 echo
 echo "Built $APP/config.json with mm10, the 198-strain chromosome painting, and"
-echo "two QTL scans (coat color on chr4, brain weight on chr19). It opens on chr4"
-echo "with the coat-color Manhattan over the painting; right-click the painting"
-echo "near the peak and pick \"Sort rows by color here\" to reveal the B/D split."
-echo "Add the brain-weight track and jump to chr19 for the subtler peak. Serve it:"
+echo "GeneNetwork's GEMMA scans for both traits. It opens on chr4 with the"
+echo "coat-color Manhattan over the painting; right-click the painting near the"
+echo "peak and pick \"Sort rows by color here\" to reveal the B/D split. Add the"
+echo "brain-weight track for the second trait, loaded the same way. Serve it:"
 echo "  npx --yes serve $(pwd)/$APP"

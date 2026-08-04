@@ -146,7 +146,7 @@ unnamed. Rather than editing the file, name them on the adapter with the
 
 The tumor and normal BAM files at the C-GIAB FTP are large and slow to access
 remotely, and lack `MD` tags (which JBrowse uses to display SNP positions
-without re-fetching the reference). We download them with `samtools view`, write
+without re-fetching the reference). Download them with `samtools view`, write
 them out as CRAM, and compute whole-genome coverage with megadepth:
 
 ```bash
@@ -176,7 +176,7 @@ matches your reads; each writes files that load straight into JBrowse.
 
 ### PacBio HiFi: HiFiCNV
 
-The reads here are PacBio HiFi, so we call copy number with
+The reads here are PacBio HiFi, so copy number is called with
 [HiFiCNV](https://github.com/PacificBiosciences/HiFiCNV), PacBio's somatic CNV
 caller. Given the tumor alignment, the reference, and a small-variant VCF whose
 allele depths drive the allele-frequency track, it writes a depth bigWig, a
@@ -224,7 +224,7 @@ carries HiFiCNV's segmented integer copy number and the CNV VCF its discrete
 calls. Read them against the benchmark CNV BED, which holds the absolute copy
 number for each interval.
 
-For the allelic panel we use **B-allele frequency** rather than HiFiCNV's own
+The allelic panel here is **B-allele frequency** rather than HiFiCNV's own
 `maf.bw`. HiFiCNV folds its track to `min(AF, 1-AF)`, so a region that has lost
 one parental copy collapses onto a single band near 0. Unfolded BAF keeps the
 two bands apart, and that mirrored split is the shape most cancer-genomics
@@ -342,9 +342,9 @@ free disk and 32 GB of RAM, and the alignment and copy-number steps take hours.
 
 ## Walkthroughs
 
-Once your JBrowse 2 instance is live, we can explore the loaded data three
-complementary ways: the SV inspector for whole-genome triage, the linear genome
-view for read-level detail and copy number, and the dotplot/synteny views for
+Once your JBrowse 2 instance is live, the loaded data reads three complementary
+ways: the SV inspector for whole-genome triage, the linear genome view for
+read-level detail and copy number, and the dotplot/synteny views for
 chromosome-scale rearrangements in the assembly.
 
 A
@@ -373,8 +373,8 @@ the circular overview), see the
 
 ### Walkthrough: a small deletion in CUZD1
 
-For small to medium SVs, the linear genome view is usually all we need. We use
-the **search** (magnifying glass) button in the SV inspector to find a specific
+For small to medium SVs the linear genome view is usually enough. Use the
+**search** (magnifying glass) button in the SV inspector to find a specific
 call, for example `SV_85`, a heterozygous deletion that affects two exons of the
 CUZD1 gene.
 
@@ -432,7 +432,7 @@ drops to 0; a single-copy loss only halves depth. This deletion sits within a
 larger single-copy-loss arm (`CNA_14`, 0+1), so it reads as a deeper notch in an
 already-reduced baseline.
 
-We can load the tumor and matched normal per-base coverage as one
+Load the tumor and matched normal per-base coverage as one
 [multi-quantitative track](/docs/user_guides/multiquantitative_track), one row
 per sample. Set an explicit score range from the track menu rather than
 autoscaling, so both rows are drawn on the same scale.
@@ -496,7 +496,7 @@ comparing tumor and normal coverage.
 ### Walkthrough: synteny and dotplot views of the tumor assembly
 
 Showing the tumor assembly side-by-side with the reference can make complex SVs
-easier to read than the alignment track alone. We open a dotplot view from the
+easier to read than the alignment track alone. Open a dotplot view from the
 start screen, set the de novo assembly as one axis and GRCh38 as the other, and
 pick the matching synteny track.
 
@@ -544,17 +544,12 @@ If you hit a problem not covered above, please file an issue on the
 
 ## Next steps
 
-Now that you've explored the C-GIAB HG008 dataset, you can:
-
-- Load your own SV data by replacing the C-GIAB VCF and BAM files with your own
-  calls and sequencing data.
-- Customize track displays with different color schemes (pair orientation,
-  insert size), read filtering (discordant pairs, soft-clipped), and display
-  modes (pileup, read arc, linked reads) to find the visualization that best
-  highlights your findings.
-
-For more on customizing JBrowse 2, see the
-[SV visualization guide](/docs/user_guides/sv_visualization).
+Nothing above is specific to C-GIAB. Swap the VCF, the CRAMs and the assembly
+for your own and the same tracks, walkthroughs and callers apply. The
+[SV visualization guide](/docs/user_guides/sv_visualization) covers the display
+options the walkthroughs reach for: the color schemes (pair orientation, insert
+size), the read filters (discordant pairs, soft-clipped), and the display modes
+(pileup, read arcs, linked reads).
 
 ## See also
 

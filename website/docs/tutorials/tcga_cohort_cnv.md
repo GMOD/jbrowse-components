@@ -14,7 +14,9 @@ vertical stripes down the stack.
 ## Prerequisites
 
 - A JBrowse 2 instance to add tracks to (see the
-  [web quickstart](/docs/quickstart_web)) and the [JBrowse CLI](/docs/cli)
+  [web quickstart](/docs/quickstart_web), or the
+  [desktop quickstart](/docs/quickstart_desktop), which loads these tracks by
+  URL with nothing to host) and the [JBrowse CLI](/docs/cli)
 - These files, hosted; the whole 1104-tumor cohort is a few MB of segment calls:
 
 | File                                                                             | What                              |
@@ -119,10 +121,10 @@ similarity" action in the track menu (see [](/docs/user_guides/clustering) for
 the mechanic). Here, clustering turns a noisy stack of 1104 tumors into blocks
 of shared copy-number profile.
 
-- **A vertical stripe** is one locus called the same way across many rows: blue
-  for recurrent loss, red for recurrent gain.
-- **A whole row tending red or blue** is one heavily aneuploid tumor, and
-  clustering pulls those rows together into a band.
+A vertical stripe is one locus called the same way across many rows, blue for
+recurrent loss and red for recurrent gain. A whole row tending red or blue is
+one heavily aneuploid tumor, and clustering pulls those rows together into a
+band.
 
 Zooming to a single locus turns the stripe back into per-tumor calls, and
 clustering on just that window sorts the cohort into its copy-number classes
@@ -203,6 +205,7 @@ the same tally once per value of a clinical column and writes each group its own
 gain and loss column:
 
 ```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/cnv_recurrence.py
 python3 cnv_recurrence.py tcga_brca_cnv.bed.gz by_subtype.bedGraph \
   --groups tcga_brca_clinical.tsv:subtype
 ```
@@ -248,15 +251,14 @@ the four subtypes would look alike. The pin is tighter here than on the pooled
 track above, at 70 rather than 100, because each row carries one signed
 direction and so only ever fills the half of its axis on that side.
 
-Two things this file does not do:
+Gain and loss stay separate columns rather than collapsing to one signed value
+per subtype. They are not redundant: at the edge of the 17q amplicon the HER2+
+group is gained and lost at nearly the same rate, and a single net value would
+draw that as roughly nothing right beside ERBB2.
 
-- **Gain and loss stay separate columns**, rather than collapsing to one signed
-  value per subtype. They are not redundant: at the edge of the 17q amplicon,
-  the HER2+ group is gained and lost at nearly the same rate, and a single net
-  value would draw that as roughly nothing right beside ERBB2.
-- **Small groups are dropped**, at `--min-group` tumors (20 by default), since a
-  percentage over a handful of tumors moves in visible steps and reads as
-  signal. The script names each group it skipped and how big it was.
+Small groups are dropped, at `--min-group` tumors (20 by default), since a
+percentage over a handful of tumors moves in visible steps and reads as signal.
+The script names each group it skipped and how big it was.
 
 Point `--groups` at any other column for a different split; `histology` and
 `stage` come from harmonized GDC fields and so work for any TCGA project, while
@@ -284,7 +286,8 @@ hosted copies:
 which summarizes recurrence with
 [`cnv_recurrence.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/cnv_recurrence.py).
 It needs `curl`, `python3`, and `bgzip` + `tabix` from
-[htslib](http://www.htslib.org/).
+[htslib](http://www.htslib.org/), which on Debian/Ubuntu is
+`apt install curl python3 tabix`.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_tcga_cohort_cnv.sh
@@ -301,23 +304,23 @@ any other project id (`TCGA-OV`, `TCGA-LUAD`, ...) for a different cohort, and
 pass a third argument to group the recurrence by a different clinical column,
 since `subtype` is breast specific.
 
-Three of its steps decide whether the resulting track loads correctly:
+Three of its steps decide whether the resulting track loads correctly. The first
+is that it takes only open-access files: the GDC's **Masked Copy Number
+Segment** files (Affymetrix SNP 6.0, already harmonized to GRCh38, germline CNV
+probes removed) need no dbGaP application. The query also filters to
+`Primary Tumor`, since TCGA banks a matched blood normal per case that would
+double the row count and add no somatic signal.
 
-**It takes only open-access files.** The GDC's **Masked Copy Number Segment**
-files (Affymetrix SNP 6.0, already harmonized to GRCh38, germline CNV probes
-removed) need no dbGaP application. The query also filters to `Primary Tumor`,
-since TCGA banks a matched blood normal per case that would double the row count
-and add no somatic signal.
+The second is the reshape of `.seg` into BED. Two conversions matter, and
+getting either wrong misplaces every feature: `.seg` names contigs bare (`1`),
+so the script adds the `chr` prefix, and `.seg` starts are 1-based inclusive
+against BED's 0-based half-open, so it subtracts 1. It also keeps one file per
+barcode, since the replicate aliquots a few cases carry would otherwise land in
+the same row and paint over each other (2 of 1106 files here, leaving 1104
+tumors).
 
-**It reshapes `.seg` into BED.** Two conversions matter, and getting either
-wrong misplaces every feature: `.seg` names contigs bare (`1`), so the script
-adds the `chr` prefix, and `.seg` starts are 1-based inclusive against BED's
-0-based half-open, so it subtracts 1. It also keeps one file per barcode, since
-the replicate aliquots a few cases carry would otherwise land in the same row
-and paint over each other (2 of 1106 files here, leaving 1104 tumors).
-
-**It carries `Segment_Mean` through unchanged.** JBrowse plots what the caller
-called; nothing here re-normalizes it.
+The third is that `Segment_Mean` is carried through unchanged. JBrowse plots
+what the caller called; nothing here re-normalizes it.
 
 The recurrence step is separately runnable as
 [`cnv_recurrence.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/cnv_recurrence.py),
@@ -348,7 +351,7 @@ Counts below are open files for TCGA-BRCA, checked against the API:
 - **Methylation** (Beta Value arrays, 1238 files) is probe-level with genomic
   coordinates, and loads the same way with beta as the color field.
 
-**Splice junction quantification is not open access** at the GDC, so a cohort
+Splice junction quantification is not open access at the GDC, so a cohort
 splicing view needs controlled-access RNA-seq and a dbGaP application. For open
 splicing data, look outside TCGA (GTEx and recount3 publish junction summaries).
 

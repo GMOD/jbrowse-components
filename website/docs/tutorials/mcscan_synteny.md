@@ -27,6 +27,10 @@ so each also needs a BED per genome mapping gene ids to coordinates.
 - A running JBrowse instance (the [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
 
+On Debian/Ubuntu, `apt install samtools tabix wget last-align` covers the
+aligner and the file tools; jcvi installs with `pip install jcvi` and `node`
+comes from [nodejs.org](https://nodejs.org/).
+
 ## Why MCScan rather than a whole-genome aligner
 
 Unlike [pairwise minimap2](/docs/tutorials/synteny_visualization), which aligns

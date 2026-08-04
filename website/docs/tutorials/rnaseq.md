@@ -9,13 +9,14 @@ tutorial_category: Transcriptomics & proteins
 BAM/CRAM CIGAR `N` skips automatically, with no extra configuration, and can
 color reads by fragment strand for strand-specific libraries.
 
-Every screenshot has a live link, built from JBrowse's
-[session-spec URL format](/docs/urlparams#session-spec), so you can open the
-same view yourself.
+## Prerequisites
 
-The [Jupyter differential-expression example](/docs/jbrowse_jupyter) takes a DE
-table straight to a gene track colored by call, and is available as a Colab
-notebook.
+- nothing to install to read along: every figure loads hosted data
+- for your own reads, an aligned, sorted and indexed BAM or CRAM from a spliced
+  aligner, plus a JBrowse instance to load it into (the
+  [web quickstart](/docs/quickstart_web), or the
+  [desktop quickstart](/docs/quickstart_desktop), which opens a local BAM with
+  no hosting step)
 
 ## What RNA-seq looks like in the genome browser
 
@@ -138,4 +139,7 @@ strand-specific BigWig produced by your aligner), load it separately as a
 - [](/docs/user_guides/alignments_track)
 - [](/docs/user_guides/quantitative_track)
 - [Gene tracks](/docs/user_guides/gene_track)
+- [JBrowse Jupyter / anywidget](/docs/jbrowse_jupyter), whose
+  differential-expression example takes a DE table straight to a gene track
+  colored by call, in a notebook
 - [Gallery: alignments and long reads](/gallery/#alignments)

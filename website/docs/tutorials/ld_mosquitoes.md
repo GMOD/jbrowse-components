@@ -33,7 +33,7 @@ through [`PlinkLDTabixAdapter`](/docs/config/plinkldtabixadapter).
 <Figure src="/img/ld/anopheles_2la.png" caption="Ag1000G chromosome arm 2L, the same window and settings throughout. Each population's r² heatmap sits above its own karyotype lane, one row per mosquito: 297 from Cameroon, 69 from Gabon. r² fills the published 2La extent in the Cameroon panel, whose lane shows both arrangements segregating. The Gabon panel is empty over that span, and its lane is nearly all standard homozygotes. Both panels carry a separate block at the low-coordinate end of the arm."/>
 
 The heatmap's block comes out at the published breakpoint coordinates, so its
-edges can be checked against them by eye — and against the karyotype lane below
+edges can be checked against them by eye, and against the karyotype lane below
 it, whose cells are drawn at those same coordinates from a different file.
 
 The Gabon panel is a control, not a second example. That population is not
@@ -109,13 +109,13 @@ is left on its default, `skip`, which colors the whole lane with the reference
 color and paints only alt cells on top. The lane is then a solid grey field with
 the carriers' blocks on it, and a standard-arrangement mosquito is grey rather
 than blank. The alternative, `draw`, paints a grey cell per row at the call's
-span instead — the same information, but as a rectangle striped by the gaps
-between rows, which reads as a texture rather than as background.
+span instead. That is the same information, but as a rectangle striped by the
+gaps between rows, which reads as a texture rather than as background.
 
 There is no `rowHeight` here, because it is a display model property rather than
 a config slot: rows divide the lane's height between them, so the lane height is
 the row height. 297 mosquitoes in a 297-pixel lane get a pixel each. That is
-also why one track per population rather than one track holding both — the
+also why each population is its own track rather than both being one: the
 display draws a row for every sample in the file and has no sample filter, so
 the file is the row set, and at a one-pixel row the sidebar has no space for a
 text label, leaving the track header as the only place a population name can go.
@@ -150,22 +150,22 @@ to doubt.
 ## Will your locus show up at all?
 
 A blank or washed-out triangle usually means the locus was never going to show.
-Four checks, all cheap, and the [reproduce script](#reproduce-it-end-to-end)
-prints the numbers for each:
+Four checks are worth running first, all of them cheap, and the
+[reproduce script](#reproduce-it-end-to-end) prints the numbers for each:
 
-- **Is there variation left?** A sweep that went to fixation leaves almost no
-  common variants to correlate. Compare common-variant density at your locus
-  against a neutral window in the same panel.
-- **Is the feature segregating in this panel?** Compare long-range LD inside a
+- Is there variation left? A sweep that went to fixation leaves almost no common
+  variants to correlate. Compare common-variant density at your locus against a
+  neutral window in the same panel.
+- Is the feature segregating in this panel? Compare long-range LD inside a
   candidate span against an equally distant control. A population fixed for
   either arrangement can never show a block.
-- **Is the background already high?** A bottlenecked panel can show a healthy
+- Is the background already high? A bottlenecked panel can show a healthy
   inside/outside ratio while its whole arm renders red. Read the absolute
   background, not only the ratio.
-- **Is the feature really two alleles?** r² is a two-allele statistic. Where
-  several haplotypes segregate at one locus they fragment the correlation, which
-  is why insecticide-resistance alleles at _Vgsc_ produce no block in this data
-  even though the sweep is real.
+- Is the feature really two alleles? r² is a two-allele statistic. Where several
+  haplotypes segregate at one locus they fragment the correlation, which is why
+  insecticide-resistance alleles at _Vgsc_ produce no block in this data even
+  though the sweep is real.
 
 ## Pick the metric before you blame the data
 

@@ -11,16 +11,25 @@ and PacBio basecallers write. This tutorial follows one dataset, HG002 nanopore
 reads over an imprinting center, from per-read calls to an aggregate profile to
 the two parental alleles pulled apart.
 
+## Prerequisites
+
+- nothing to install to read along: every figure loads hosted data
+- for your own data, long reads whose BAM or CRAM already carries `MM`/`ML`
+  modification tags, which modern ONT and PacBio basecallers write by default,
+  plus a JBrowse instance to load them into (the
+  [web quickstart](/docs/quickstart_web), or the
+  [desktop quickstart](/docs/quickstart_desktop), which opens a local modBAM
+  with no hosting step)
+- [modkit](https://github.com/nanoporetech/modkit/releases) for the aggregate
+  section only, a single-binary download from its releases page
+
+## The locus
+
 The locus is the SNRPN / Prader-Willi imprinting center on chr15, where one
 parental allele is methylated and the other is not. That makes it a dataset with
 its own control: whatever the views show has to come out as two populations, not
 one intermediate blur, and both the reads and the aggregate profile have to
 agree on which allele is which.
-
-Everything below is hosted, so the figures open live and nothing needs
-installing. To do the same with your own data you need long reads whose BAM or
-CRAM already carries `MM`/`ML` modification tags, which modern ONT and PacBio
-basecallers write by default.
 
 ## Per-read methylation from the alignments
 
@@ -120,14 +129,12 @@ for producing `HP`-tagged reads.
 
 ## Choosing between the two approaches
 
-| Approach                         | Best for                                                                                     |
-| -------------------------------- | -------------------------------------------------------------------------------------------- |
-| Per-read BAM/CRAM coloring       | Haplotype-aware methylation, allele-specific methylation, individual read inspection         |
-| bedMethyl MultiQuantitativeTrack | Whole-genome methylation overview, comparing tumor vs normal, fast loading at any zoom level |
-
-Keep the bedMethyl track for fast, whole-genome navigation to regions of
-interest, then drop the per-read BAM or CRAM below it for single-molecule and
-[allele-specific](#splitting-the-alleles-apart) detail once you are there.
+The two are complements rather than alternatives. Keep the bedMethyl track for
+fast, whole-genome navigation to regions of interest, since it stays quick at
+any zoom and is what a tumor-versus-normal comparison reads off. Then drop the
+per-read BAM or CRAM below it once you are there, for single-molecule and
+[allele-specific](#splitting-the-alleles-apart) detail, which only the reads
+carry.
 
 To compare two samples rather than two alleles, run `modkit dmr` on their
 per-sample pileups and load its BED output as a `FeatureTrack` beside the

@@ -7,6 +7,10 @@ guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 ---
 
+**TL;DR:** one `cactus-pangenome` run over five _E. coli_ strains emits the
+graph, a VCF, an odgi and a HAL, which become four JBrowse tracks on the K12
+axis: synteny, pangenome variants, a whole-genome MAF, and depth.
+
 [Minigraph-Cactus](https://github.com/ComparativeGenomicsToolkit/cactus/blob/master/doc/pangenome.md)
 (`cactus-pangenome`) builds a pangenome graph reference-first.
 [minigraph](https://github.com/lh3/minigraph) lays down a backbone from the
@@ -33,6 +37,13 @@ beta plugin. We welcome your [feedback](/contact).
 - `bedGraphToBigWig` (UCSC kentUtils), htslib (`bgzip`, `tabix`), `unzip`,
   `wget`
 - `node`, for the [JBrowse CLI](/docs/cli)
+
+On Debian/Ubuntu, `apt install tabix unzip wget` covers three of those. Docker
+installs from [docs.docker.com](https://docs.docker.com/engine/install/); the
+NCBI `datasets` CLI and `bedGraphToBigWig` are each a
+[single-binary download](https://hgdownload.soe.ucsc.edu/admin/exe/); and `node`
+comes from [nodejs.org](https://nodejs.org/). Everything else runs inside the
+cactus image.
 
 ## Cactus against pggb
 
@@ -235,6 +246,7 @@ out as `K12.chr`, `Sakai.chr`, and so on, which is exactly the `sample.contig`
 naming the MAF display splits each species off on:
 
 ```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/maf_to_bed.py
 in_cactus hal2maf --refGenome K12 --noAncestors /data/mc/ecoli.full.hal /data/ecoli_cactus.maf
 python3 maf_to_bed.py ecoli_cactus.maf ecoli_cactus.maf.bed
 bgzip ecoli_cactus.maf.bed
@@ -243,7 +255,11 @@ tabix -p bed ecoli_cactus.maf.bed.gz
 
 [`maf_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/maf_to_bed.py)
 writes one line per block, carrying that block's rows, which a
-[`MafTabixAdapter`](/docs/config/maftabixadapter) reads:
+[`MafTabixAdapter`](/docs/config/maftabixadapter) reads. Because `hal2maf` has
+already rooted every block on K12,
+[maf2bed](https://github.com/cmdcolin/maf2bed) converts this MAF just as well
+and streams while it does it, which matters at whole-genome scale; see
+[producing the tabix BED](/docs/config_guides/maf_track#producing-the-tabix-bed-from-a-maf).
 
 ```json
 {

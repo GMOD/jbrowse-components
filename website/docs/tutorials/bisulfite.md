@@ -21,8 +21,10 @@ CHG, and CHH each selectable. No MM/ML tags and no methylation caller.
 - [bwameth](https://github.com/brentp/bwa-meth) and
   [samtools](http://www.htslib.org/)
 - htslib (`bgzip`, `tabix`), and `node` for the [JBrowse CLI](/docs/cli)
-- [MethylDackel](https://github.com/dpryan79/MethylDackel) and UCSC's
-  `bedGraphToBigWig`, for the optional aggregate track only
+- [MethylDackel](https://github.com/dpryan79/MethylDackel), for the
+  [conversion-rate check](#check-the-conversion-rate-first) and the optional
+  aggregate track
+- UCSC's `bedGraphToBigWig`, for the optional aggregate track only
 
 ## What bisulfite data looks like
 
@@ -91,6 +93,23 @@ If you skipped trimming, pass the raw
 `DRR029742_1.fastq.gz DRR029742_2.fastq.gz` instead. Bismark is an equally
 common aligner, especially in the plant community. JBrowse reads Bismark BAMs
 the same way.)
+
+### Check the conversion rate
+
+An unconverted cytosine is indistinguishable from a methylated one, so the
+library's conversion rate is worth having before reading anything off the track.
+The chloroplast is unmethylated, which makes it the control:
+
+```bash
+MethylDackel extract --CHH -r NC_000932.1 -o conversion tair10.fa arabidopsis_wgbs.bam
+
+# MethylDackel bedGraph: chrom start end pct nMethylated nUnmethylated
+awk 'NR > 1 { m += $5; u += $6 }
+     END { printf "conversion %.2f%%\n", 100 * u / (m + u) }' conversion_CHH.bedGraph
+```
+
+Modern libraries convert above 99%, and the
+[reproduce script](#reproduce-it-end-to-end) prints this.
 
 ### (Optional) Aggregate methylation calling
 
@@ -230,13 +249,10 @@ what makes the CHG and CHH rows a plant-specific readout.
 Type `NC_003070.9:4,398,000-4,412,000` into the location box to reach a window
 on chromosome 1 that carries one of each: the expressed gene AT1G12930 on the
 left, and a silenced element on the right (the AT1G12935 pseudogene and the
-repeat sequence around it). This run's own MethylDackel calls, as the methylated
-fraction of all calls in each context:
-
-| Region                                   | CpG | CHG  | CHH  |
-| ---------------------------------------- | --- | ---- | ---- |
-| AT1G12930 gene body, 4,398,322-4,405,669 | 31% | 0.4% | 0.5% |
-| Silenced element, 4,406,000-4,410,000    | 89% | 69%  | 27%  |
+repeat sequence around it). The gene body is methylated in CpG only; the
+silenced element is methylated in all three contexts. The
+[reproduce script](#reproduce-it-end-to-end) prints the fraction per context for
+both regions, so the figure can be checked against this run's own numbers.
 
 <Figure caption="TAIR10 genes, the aggregate MethylDackel track (one 0-100% row per context), and three copies of the same WGBS pileup colored by CpG, CHG, and CHH. AT1G12930 on the left is red in CpG only, at both levels. The silenced element on the right is red in all three." src="/img/methylation/arabidopsis_wgbs_contexts.png" />
 
@@ -254,9 +270,12 @@ npx --yes serve arabidopsis_wgbs_build/jbrowse2 # then open the printed URL
 It downloads the TAIR10 reference and the DRR029742 WGBS run, trims and
 bisulfite-aligns them with bwameth, downloads JBrowse, and writes a
 `config.json` with the assembly, the gene models, and the per-read pileup
-pre-colored Bisulfite / CpG, opening on the window above. The aggregate
-MethylDackel track is left out, so it needs everything under
-[What you need](#prerequisites) except MethylDackel and `bedGraphToBigWig`.
+pre-colored Bisulfite / CpG, opening on the window above.
+
+With MethylDackel on `PATH` it also prints the conversion rate and the
+per-context fraction over both regions, and skips both with a warning if it is
+not. The aggregate bigWig track is left out either way, so `bedGraphToBigWig` is
+the one prerequisite the script never needs.
 
 On Debian/Ubuntu, `apt install wget samtools tabix` covers several of those.
 bwameth, Trim Galore, and the NCBI `datasets` CLI install from their own

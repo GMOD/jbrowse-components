@@ -20,6 +20,13 @@ To build the tracks:
 - `bcftools` built with libcurl, `curl`, `python3`, and htslib (`tabix`)
 - `samtools` built with libcurl, for the copy-number section
 
+On Debian/Ubuntu, `apt install bcftools samtools tabix curl python3` covers it.
+The packaged `bcftools` and `samtools` are linked against libcurl, so both can
+read the remote callset and CRAMs. Everything the scripts write is a local file,
+so [JBrowse Desktop](/docs/quickstart_desktop) opens the result by path with no
+web server; on JBrowse Web the same files go in through **Add track** or a
+`config.json`.
+
 ## The gene and the question
 
 _CYP1A2_ is a drug-metabolizing cytochrome P450 in which dogs carry a nonsense

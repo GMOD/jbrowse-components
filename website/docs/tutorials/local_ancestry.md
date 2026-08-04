@@ -25,6 +25,13 @@ To build the tracks:
 - `bcftools` built with libcurl, `curl`, `python3`, and htslib (`bgzip`,
   `tabix`)
 
+On Debian/Ubuntu, `apt install bcftools tabix curl python3 default-jre` covers
+all of it, and the packaged `bcftools` is linked against libcurl, so it can
+slice the panel over HTTP. `flare.jar` is a single download from FLARE's
+[releases page](https://github.com/browning-lab/flare/releases). The painted BED
+the build writes is a local file, so [JBrowse Desktop](/docs/quickstart_desktop)
+opens it by path with no web server.
+
 ## The dataset and the question
 
 The Saarloos Wolfdog and the Czechoslovakian Wolfdog are both 20th-century

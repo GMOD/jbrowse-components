@@ -22,6 +22,12 @@ To build the tracks:
 - `bedGraphToBigWig` from the UCSC utilities, or deepTools
 - a JBrowse instance to load the finished BigWigs into
 
+`bedGraphToBigWig` is a
+[single static binary from UCSC](https://hgdownload.soe.ucsc.edu/admin/exe/);
+the split-the-BAM route instead wants `pip install deeptools sinto`. The
+[reproduce script](#reproduce-it-end-to-end) needs neither, since it does its
+own binning.
+
 ## What a genome browser adds
 
 A UMAP answers how much of a gene each cell type made. It cannot show where in
@@ -43,18 +49,19 @@ gene body instead, and the rest of this page applies unchanged.
 Clustering and labeling stay upstream, in Seurat, scanpy, or whatever produced
 the annotation. This page starts from a barcode-to-label table and the BAM.
 
-Two decisions determine whether the rows can be compared to each other.
+Two decisions determine whether the rows can be compared to each other, and both
+are about what goes into a row rather than how it is drawn.
 
-**Duplicates.** Cell Ranger flags PCR duplicates of the same UMI with the
-standard `0x400` flag. Keeping them makes a row's height track amplification
+The first is duplicates. Cell Ranger flags PCR duplicates of the same UMI with
+the standard `0x400` flag. Keeping them makes a row's height track amplification
 rather than expression, so filter them out. Restricting to uniquely mapped reads
 (`MAPQ` 255, which is what STAR emits inside Cell Ranger) drops the multimappers
 that would otherwise pile onto paralogs.
 
-**Normalization.** Cell types differ in cell count and in sequencing depth, so
-each pooled track needs scaling (CPM is the usual choice) before one row's
-height means anything next to another's. Without it a tall row can just mean
-more cells went into it.
+The second is normalization. Cell types differ in cell count and in sequencing
+depth, so each pooled track needs scaling (CPM is the usual choice) before one
+row's height means anything next to another's. Without it a tall row can just
+mean more cells went into it.
 
 Coverage must also be splice-aware: an RNA read spanning an intron carries an
 `N` in its CIGAR, and counting that as covered fills in introns that no read
@@ -96,19 +103,19 @@ cells-by-bins Zarr matrix instead of one file per cell.
 <Figure caption="The nine pseudobulk rows at LYZ above the 4390 cells they are a sum over, ordered by cell type and colored to match. The monocyte and dendritic blocks are solid; the lymphocyte blocks are speckle, one UMI per cell." src="/img/scrna/percell_lyz.png" />
 
 The speckle is the point. Above, the lymphocyte rows look like a low flat line
-next to the monocyte peak, which reads as silence. Per cell it is not silence: a
-third of those cells carry exactly one UMI of a monocyte gene, which is ambient
-RNA in the droplet rather than transcription in the cell. Summing hides that;
-one row per cell shows it.
+next to the monocyte peak, which reads as silence. Per cell it is not silence:
+many of those cells carry a single UMI of a monocyte gene, which is ambient RNA
+in the droplet rather than transcription in the cell. Summing hides that; one
+row per cell shows it.
 
-Two settings make this legible and skipping either one wastes the figure.
+Two settings make this legible, and skipping either one wastes the figure.
 
-**Order the rows by cell type.** 4390 rows in a few hundred pixels is well under
-a pixel each, so the picture is a raster rather than readable rows, and the only
+Order the rows by cell type. 4390 rows in a few hundred pixels is well under a
+pixel each, so the picture is a raster rather than readable rows, and the only
 way a block means anything is if the cells in it are adjacent. The `group` on
 each row seeds that, and it also drives the sidebar tree.
 
-**Pin the score axis.** With autoscale the maximum is whatever the home cell
+Then pin the score axis. With autoscale the maximum is whatever the home cell
 type reached, which at LYZ is hundreds of UMIs in a single monocyte. Every
 single-UMI cell then renders white and the ambient signal disappears. A pinned
 `minScore: 0` and a low `maxScore` puts one UMI a visible fraction up the ramp

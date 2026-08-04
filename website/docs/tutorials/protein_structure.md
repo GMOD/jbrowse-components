@@ -116,18 +116,18 @@ ClinVar missense variant lands in a functional domain or is buried in the core.
 
 Linking a genome position to a residue takes two steps.
 
-**Genome to protein position.** The plugins use
-[g2p_mapper](https://github.com/cmdcolin/g2p_mapper) on the transcript's CDS
-subfeatures to build the `g2p`/`p2g` lookups, handling strand and CDS phase.
-Intronic and UTR positions are skipped, and each codon maps to one residue.
-Codons that straddle an exon boundary have several genomic pieces, so
-highlighting uses their enclosing span.
+Genome to protein position comes from
+[g2p_mapper](https://github.com/cmdcolin/g2p_mapper), which the plugins run over
+the transcript's CDS subfeatures to build the `g2p`/`p2g` lookups, handling
+strand and CDS phase. Intronic and UTR positions are skipped, and each codon
+maps to one residue. Codons that straddle an exon boundary have several genomic
+pieces, so highlighting uses their enclosing span.
 
-**Protein position to structure residue.** A structure file carries its own
-sequence, which frequently is not the translation of the transcript you launched
-from: PDB entries are often a construct, a fragment, a different isoform, or a
-different species, and residues can be missing or modified. When the two
-sequences are identical the positions map one to one.
+Protein position to structure residue is the harder half. A structure file
+carries its own sequence, which frequently is not the translation of the
+transcript you launched from: PDB entries are often a construct, a fragment, a
+different isoform, or a different species, and residues can be missing or
+modified. When the two sequences are identical the positions map one to one.
 
 When they differ, the launch dialog says so ("Transcript and structure sequences
 differ, will run Smith-Waterman alignment") and the plugin aligns them in the

@@ -59,6 +59,34 @@ phylogenetic tree):
 The BigMaf form swaps the adapter for a single `bigBedLocation`, and may also
 carry the two optional sub-adapters below.
 
+## Producing the tabix BED from a MAF
+
+`MafTabixAdapter` reads a BED whose sixth column packs every row of an alignment
+block as comma-separated `src:start:size:strand:srcSize:seq`, with the first
+three columns giving that block's interval on the reference.
+[maf2bed](https://github.com/cmdcolin/maf2bed) writes it. It takes the assembly
+to use as the reference, so a `hg38.chr1` row becomes a `chr1` line and every
+other species rides in column 6:
+
+```bash
+cargo install maf2bed
+
+export LC_ALL=C  # sort and tabix have to agree on collation
+maf2bed hg38 < file.maf | sort -k1,1 -k2,2n | bgzip > file.bed.gz
+tabix -p bed file.bed.gz
+```
+
+It streams, so a whole-genome MAF costs no more memory than a small one, and it
+reads from a pipe (`pigz -dc file.maf.gz | maf2bed hg38 | ...`). Without a Rust
+toolchain,
+[`maf2bed.pl`](https://github.com/GMOD/jbrowse-plugin-mafviewer/blob/master/bin/maf2bed.pl)
+is the same conversion in Perl and its output is interchangeable.
+
+Every block has to be rooted on the assembly you name, which a MAF from
+`hal2maf --refGenome <name>` or from UCSC already is. A MAF whose blocks are
+rooted on different genomes, as `pggb -M` produces, needs re-rooting first; see
+[](/docs/tutorials/pangenome_ecoli#whole-genome-alignment-maf-projection).
+
 ## Sub-adapters: summary and CDS frames
 
 Two optional sub-adapters hang off the MAF **adapter**, alongside the main

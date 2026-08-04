@@ -12,6 +12,13 @@ alignments for every genome, so you can turn one on in a linear genome view and
 launch a two-panel linear synteny view from any chain block. JBrowse resolves
 the mate genome on demand, so the second assembly needs no setup.
 
+## Prerequisites
+
+- nothing to install: this is a click-path through a hosted site, and no data,
+  config or second assembly is prepared by hand
+
+## The hosted configs
+
 [genomes.jbrowse.org](https://genomes.jbrowse.org) hosts a ready-made JBrowse
 config for every UCSC genome, and each one already carries UCSC's pairwise
 liftOver alignments to the other genomes, so any pair UCSC has a chain file for
@@ -50,16 +57,16 @@ the whole block's endpoints. A reverse-strand block adds another checkbox,
 still reads left to right. **Submit** opens a two-panel synteny view on that
 position, with the liftOver track drawn as ribbons between the panels.
 
-<Figure caption="The four steps, from the hg38-to-mm39 liftOver track around SHH to the finished comparison: right-click a chain block, confirm how the target panel is framed, and the view that opens below the linear genome view it was launched from — 302 kb of human chr7 against the 311 kb of mouse chr5 it aligns to, one ribbon per chain block. The human panel arrives carrying the gene track that view had on and the mouse panel opens empty; the last frame adds the mouse genes plus RepeatMasker on both sides, where SHH sits opposite mouse Shh across the ribbons while the two RepeatMasker bands share no pattern." src="/img/genomes_synteny/launch_sequence.png" />
+<Figure caption="The four steps, from the hg38-to-mm39 liftOver track around SHH to the finished comparison: right-click a chain block, confirm how the target panel is framed, and the view that opens below the linear genome view it was launched from: 302 kb of human chr7 against the 311 kb of mouse chr5 it aligns to, one ribbon per chain block. The human panel arrives carrying the gene track that view had on and the mouse panel opens empty; the last frame adds the mouse genes plus RepeatMasker on both sides, where SHH sits opposite mouse Shh across the ribbons while the two RepeatMasker bands share no pattern." src="/img/genomes_synteny/launch_sequence.png" />
 
 The panel for the assembly you launched from opens with the tracks that view had
 on, which is why the human side arrives with its genes already; **Copy this
 view's tracks into its panel** in the dialog turns that off. Nothing in the
 launching view says what the mouse panel should show, so that one opens empty,
-and its tracks come from its own track selector — the view header's
-track-selector button lists one per panel. On genomes.jbrowse.org the mouse
-panel offers the same **NCBI RefSeq - RefSeq Curated** and **RepeatMasker** as
-the human one, because naming mm39 also brought in the mm39 hub's tracks.
+and its tracks come from its own track selector, whose button in the view header
+lists one per panel. On genomes.jbrowse.org the mouse panel offers the same
+**NCBI RefSeq - RefSeq Curated** and **RepeatMasker** as the human one, because
+naming mm39 also brought in the mm39 hub's tracks.
 
 Set the ribbon coloring to **Strand** from the palette button in the synteny
 track header.

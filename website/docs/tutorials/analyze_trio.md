@@ -20,6 +20,11 @@ To build the tracks:
 - Java 8+, for hap-ibd
 - `python3`, `node`, and htslib (`bgzip`, `tabix`)
 
+On Debian/Ubuntu, `apt install tabix python3 default-jre` covers most of it;
+`node` comes from [nodejs.org](https://nodejs.org/), and `hap-ibd.jar` is a
+single download from its
+[releases page](https://github.com/browning-lab/hap-ibd/releases).
+
 ## The trio VCF
 
 A trio is a mother, father, and child sequenced together. A phased VCF tags each

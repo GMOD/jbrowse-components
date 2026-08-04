@@ -26,6 +26,7 @@ mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 
 FQ=https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR029/DRR029742/DRR029742
+PLASTID=NC_000932.1  # TAIR10 chloroplast, the unmethylated conversion control
 
 # ── Reference + annotation (TAIR10, via the NCBI datasets CLI) ────────────────
 if [ ! -f tair10.fa ]; then
@@ -44,6 +45,44 @@ if [ ! -f arabidopsis_wgbs.bam ]; then
   bwameth.py --reference tair10.fa -t "$THREADS" DRR029742_1_val_1.fq.gz DRR029742_2_val_2.fq.gz \
     | samtools sort -@"$THREADS" -o arabidopsis_wgbs.bam -
   samtools index arabidopsis_wgbs.bam
+fi
+
+# ── Bisulfite conversion rate, from the chloroplast ───────────────────────────
+# The plastid genome is unmethylated, so any cytosine still read as C there is a
+# cytosine the conversion missed. That non-conversion rate is the floor under
+# every methylation number from this library, and it lands almost entirely in
+# CHH: true CHH methylation is a few percent, so a conversion failure and a real
+# CHH call are the same observation. Reported before any methylation figure is
+# read, and cheap because the plastid is 154 kb.
+if command -v MethylDackel >/dev/null 2>&1; then
+  if [ ! -f conversion_CHH.bedGraph ]; then
+    MethylDackel extract --CHH -r "$PLASTID" -o conversion tair10.fa arabidopsis_wgbs.bam
+  fi
+  # MethylDackel bedGraph: chrom start end pct nMethylated nUnmethylated
+  awk 'NR > 1 { m += $5; u += $6 }
+       END { if (m + u == 0) { print "conversion rate: no plastid coverage"; exit }
+             printf "bisulfite conversion rate: %.2f%% (non-conversion %.2f%%, %d plastid CHH calls)\n",
+                    100 * u / (m + u), 100 * m / (m + u), m + u }' conversion_CHH.bedGraph
+  # Per-context methylation over the two regions the tutorial contrasts, so the
+  # gene-body-vs-silencing reading is a number from this run rather than a claim.
+  if [ ! -f locus_CpG.bedGraph ]; then
+    MethylDackel extract --CHG --CHH -r NC_003070.9:4398000-4410500 \
+      -o locus tair10.fa arabidopsis_wgbs.bam
+  fi
+  for ctx in CpG CHG CHH; do
+    awk -v ctx="$ctx" '
+      NR > 1 {
+        if ($2 >= 4398322 && $3 <= 4405669) { gm += $5; gu += $6 }
+        else if ($2 >= 4406000 && $3 <= 4410000) { sm += $5; su += $6 }
+      }
+      END {
+        printf "%-4s gene body AT1G12930 %6s   silenced element %6s\n", ctx,
+               (gm + gu ? sprintf("%.1f%%", 100 * gm / (gm + gu)) : "n/a"),
+               (sm + su ? sprintf("%.1f%%", 100 * sm / (sm + su)) : "n/a")
+      }' "locus_$ctx.bedGraph"
+  done
+else
+  echo "MethylDackel not on PATH: skipping the conversion-rate and locus checks" >&2
 fi
 
 # ── Set up JBrowse (uses an installed `jbrowse`, else the CLI via npx) ────────

@@ -15,7 +15,9 @@ clinical column you point `groupBy` at.
 ## Prerequisites
 
 - A JBrowse 2 instance to add tracks to (see the
-  [web quickstart](/docs/quickstart_web)) and the [JBrowse CLI](/docs/cli)
+  [web quickstart](/docs/quickstart_web), or the
+  [desktop quickstart](/docs/quickstart_desktop), which loads these tracks by
+  URL with nothing to host) and the [JBrowse CLI](/docs/cli)
 - Both files, hosted:
 
 | File                                                        | What                                  |
@@ -33,13 +35,13 @@ multi-sample file, one column per tumor:
 chr3   179234297 .   A   G    GENE=PIK3CA;HGVSP=p.H1047R... GT:AD:DP  0/1:81,29:110     0/0
 ```
 
-Two things about that matrix are worth knowing before reading any figure off it.
-`0/0` means the tumor's MAF reports no mutation here, which is an absence of a
-call and not a proven reference base: a MAF carries no coverage record for sites
-its caller did not call. And every somatic call is written het, because a MAF
-gives no ploidy and a subclonal call at high allele fraction is not a
-homozygote. The read counts behind each call are kept in `AD`/`DP`, so the
-variant popup shows what the caller saw.
+Two conventions in that matrix bear on any figure read off it. `0/0` means the
+tumor's MAF reports no mutation here, which is an absence of a call and not a
+proven reference base: a MAF carries no coverage record for sites its caller did
+not call. And every somatic call is written het, because a MAF gives no ploidy
+and a subclonal call at high allele fraction is not a homozygote. The read
+counts behind each call are kept in `AD`/`DP`, so the variant popup shows what
+the caller saw.
 
 `INFO/CSQ` re-encodes the MAF's own VEP columns (`Consequence`, `IMPACT`,
 `HGVSp_Short`, SIFT, PolyPhen), which is what lets the track color cells by
@@ -228,7 +230,7 @@ survive and the private columns go. See
 [filtering by allele frequency and missingness](/docs/user_guides/multivariant_track#filtering-by-allele-frequency-and-missingness)
 for the sliders themselves.
 
-Two things to keep in mind. The threshold is an **allele** frequency over called
+Two things to keep in mind. The threshold is an allele frequency over called
 alleles, and each somatic call here is one alt allele out of two, so a mutation
 carried by 10% of the cohort sits at 0.05. And a tumor suppressor is the case
 where this filter has little to keep: CDH1's truncating mutations are spread
@@ -256,7 +258,8 @@ which merges the MAFs with
 and assembles the clinical table with
 [`tcga_clinical_tsv.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/tcga_clinical_tsv.py).
 It needs `curl`, `python3`, and `bgzip` + `tabix` from
-[htslib](http://www.htslib.org/).
+[htslib](http://www.htslib.org/), which on Debian/Ubuntu is
+`apt install curl python3 tabix`.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_tcga_cohort_mutations.sh
@@ -272,30 +275,29 @@ in 7.7 MB, plus a 140 KB clinical table. Swap in any other project id
 `--no-receptors` to `tcga_clinical_tsv.py` for a non-breast project, whose
 receptor columns would come back empty.
 
-Three of its steps decide whether the resulting track is correct:
+Four of its steps decide whether the resulting track is correct. It takes only
+open-access files: the GDC's Masked Somatic Mutation MAFs are the aliquot-merged
+ensemble calls with germline and other risky sites masked out, and need no dbGaP
+application.
 
-**It takes only open-access files.** The GDC's Masked Somatic Mutation MAFs are
-the aliquot-merged ensemble calls with germline and other risky sites masked
-out, and need no dbGaP application.
-
-**It picks the cohort out of the MAFs, not out of the file query.** A GDC file
-query can only filter on what a _case_ has, so asking for `Primary Tumor` keeps
-a case's metastasis MAF as readily as its primary one, and the manifest's
+It picks the cohort out of the MAFs rather than out of the file query. A GDC
+file query can only filter on what a _case_ has, so asking for `Primary Tumor`
+keeps a case's metastasis MAF as readily as its primary one, and the manifest's
 `cases.samples.submitter_id` names whichever sample of the case comes first,
 which for most TCGA cases is the matched blood normal. Which tumor a MAF is of
 is in the file, so the merge step filters on the sample-type code of the barcode
 it reads there (`01`, primary solid tumor), the same tumors the
 [copy-number cohort](/docs/tutorials/tcga_cohort_cnv) paints.
 
-**It anchors indels off the MAF's own `CONTEXT` column.** A MAF writes a
-deletion as its deleted bases against a `-` alt, where VCF needs both alleles to
-share a flanking base that no coordinate column carries. That base is in
-`CONTEXT`, the reference sequence the caller recorded around the call, so no
-reference FASTA is fetched and nothing has to be kept in sync with one. The
-conversion is checked against the reference allele each row also states, and a
-row whose context cannot support it is reported rather than silently misplaced.
+It anchors indels off the MAF's own `CONTEXT` column. A MAF writes a deletion as
+its deleted bases against a `-` alt, where VCF needs both alleles to share a
+flanking base that no coordinate column carries. That base is in `CONTEXT`, the
+reference sequence the caller recorded around the call, so no reference FASTA is
+fetched and nothing has to be kept in sync with one. The conversion is checked
+against the reference allele each row also states, and a row whose context
+cannot support it is reported rather than silently misplaced.
 
-**It keeps one MAF per sample barcode.** A few cases were sequenced twice under
+And it keeps one MAF per sample barcode. A few cases were sequenced twice under
 the same barcode, and merging both aliquots would make one tumor look mutated
 wherever either run called something. Sample names are truncated to the sample
 barcode, which is also what the copy-number cohort partitions its rows by, so

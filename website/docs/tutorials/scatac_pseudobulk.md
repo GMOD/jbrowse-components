@@ -19,6 +19,12 @@ To build the tracks:
   or a Seurat/Signac object in R
 - a JBrowse instance to load the finished BigWigs into
 
+The pseudobulk tool follows from whichever of those you have:
+`pip install snapatac2` for the AnnData route, `pip install deeptools sinto` for
+the barcoded-BAM route, and `bedGraphToBigWig` is a
+[single static binary from UCSC](https://hgdownload.soe.ucsc.edu/admin/exe/) for
+the fragments-file route. ArchR and Signac install from R.
+
 ## Why pseudobulk
 
 One ATAC cell contributes only a few thousand fragments, so a coverage track of
@@ -47,14 +53,11 @@ BigWigs it writes can also be viewed inline through the
 
 Clustering and cell-type labeling stay upstream, in Cell Ranger ATAC, ArchR,
 Signac, or SnapATAC2. This tutorial starts from what those produce and does
-three things with it:
-
-- **pseudobulk**: split fragments by label, pool, normalize, and bin each group
-  into a BigWig
-- **load**: point one `MultiWiggleAdapter` at the whole set, so N cell types
-  stay one track with one config, one height, and one shared score axis
-- **read it**: stacked rows, row clustering, and the rendering modes that suit
-  many rows
+three things with it: pseudobulks, by splitting fragments by label and pooling,
+normalizing and binning each group into a BigWig; loads the whole set through
+one `MultiWiggleAdapter`, so N cell types stay one track with one config, one
+height and one shared score axis; and reads it, through stacked rows, row
+clustering, and the rendering modes that suit many rows.
 
 ## Generating per-group BigWigs
 

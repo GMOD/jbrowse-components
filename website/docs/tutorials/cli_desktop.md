@@ -157,9 +157,9 @@ jbrowse-desktop myproject/config.json
 
 <Figure src="/img/desktop-cli-config.png" caption="A CLI-built folder opened in JBrowse Desktop by path, with no start screen and no Add track form. The session name, the assembly, and the My reads and My variants labels all come from the commands above (this one was built from the bundled volvox sample files)."/>
 
-(Prefer the GUI for a one-off file? Desktop's **Add track** picker still works.
-This CLI route is best when you want a scripted, repeatable setup, or the same
-config on both Desktop and the web.)
+Desktop's **Add track** picker still works for a one-off file. The CLI route
+here is the one to reach for when you want a scripted, repeatable setup, or the
+same config on both Desktop and the web.
 
 :::caution
 

@@ -79,7 +79,7 @@
     {
       "type": "GWASTrack",
       "trackId": "bxd_gwas_coatcolor_mm10",
-      "name": "BXD QTL: coat color (peak at Tyrp1, chr4)",
+      "name": "BXD QTL: coat color (GEMMA, Tyrp1, chr4)",
       "assemblyNames": ["mm10"],
       "category": ["GeneNetwork / BXD"],
       "adapter": {
@@ -93,7 +93,8 @@
             "uri": "https://jbrowse.org/demos/bxd/bxd_gwas_coatcolor.tsv.gz.tbi",
             "locationType": "UriLocation"
           }
-        }
+        },
+        "scoreColumn": "lod"
       },
       "displays": [
         {
@@ -105,7 +106,7 @@
     {
       "type": "GWASTrack",
       "trackId": "bxd_gwas_brainweight_mm10",
-      "name": "BXD QTL: brain weight (chr19)",
+      "name": "BXD QTL: brain weight (GEMMA)",
       "assemblyNames": ["mm10"],
       "category": ["GeneNetwork / BXD"],
       "adapter": {
@@ -119,7 +120,8 @@
             "uri": "https://jbrowse.org/demos/bxd/bxd_gwas_brainweight.tsv.gz.tbi",
             "locationType": "UriLocation"
           }
-        }
+        },
+        "scoreColumn": "lod"
       },
       "displays": [
         {

@@ -22,7 +22,16 @@ Nothing is needed to read along. To rebuild the data:
   [minimap2](https://github.com/lh3/minimap2)
 - `bedGraphToBigWig` from the
   [UCSC utilities](https://hgdownload.soe.ucsc.edu/admin/exe/)
+- `python3`, for `sv_multihop.py`
 - a GRCh38 FASTA, and roughly 40 GB of free disk
+
+On Debian/Ubuntu, `apt install samtools minimap2 python3` covers three of those;
+`bedGraphToBigWig` is a single static binary from UCSC and `node`, for the CLI,
+comes from [nodejs.org](https://nodejs.org/). `sv_multihop.py` is one file:
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/sv_multihop.py
+```
 
 ## The datasets
 
@@ -50,7 +59,9 @@ SplitThreader made this concrete in SK-BR-3
 ([Nattestad et al. 2018](https://doi.org/10.1101/gr.231100.117)): searching the
 SV graph for short paths between fusion partners found a KLHDC2-SNTB1 fusion
 that required three variants across three chromosomes. The same search applies
-to any somatic SV callset, and `scripts/sv_multihop.py` runs it.
+to any somatic SV callset, and
+[`sv_multihop.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/sv_multihop.py)
+runs it.
 
 ## Finding the chains
 
@@ -59,7 +70,7 @@ endpoint of one lands close enough to an endpoint of the other that a single
 read could carry both:
 
 ```bash
-python3 scripts/sv_multihop.py chains COLO829.wf-somatic-sv.vcf.gz --min-hops 3
+python3 sv_multihop.py chains COLO829.wf-somatic-sv.vcf.gz --min-hops 3
 ```
 
 ```
@@ -124,7 +135,7 @@ backbone, polishes it into a consensus with the rest, aligns that consensus back
 to the reference, and realigns the reads to it.
 
 ```bash
-python3 scripts/sv_multihop.py derive \
+python3 sv_multihop.py derive \
   --aln COLO829_tumor.ht.cram --ref GRCh38.fa \
   --loci chr10:58717464,chr12:72273112,chr3:25359111 \
   --out der3_RARB --name der3_RARB_BICC1_TRHDE
@@ -161,7 +172,7 @@ lands in derivative coordinates, clipped where a junction cut it and flipped
 where a segment is inverted:
 
 ```bash
-python3 scripts/sv_multihop.py derive ... --genes ncbiRefSeq.gff.gz
+python3 sv_multihop.py derive ... --genes ncbiRefSeq.gff.gz
 ```
 
 ```
@@ -246,7 +257,8 @@ of one event.
 builds everything above from public sources:
 
 ```bash
-bash scripts/build_cancer_sv_demo.sh
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_cancer_sv_demo.sh
+bash build_cancer_sv_demo.sh    # builds ./cancer_sv_build/jbrowse2
 npx --yes serve cancer_sv_build/jbrowse2
 ```
 

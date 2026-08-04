@@ -25,7 +25,9 @@ To build the track:
 
 On Debian/Ubuntu, `apt install bcftools tabix curl python3` covers it. The
 packaged `bcftools` is linked against libcurl, so it can read the remote
-callset.
+callset. Everything the scripts write is a local file, so
+[JBrowse Desktop](/docs/quickstart_desktop) opens the result by path with no web
+server.
 
 ## Scanning for a locus
 

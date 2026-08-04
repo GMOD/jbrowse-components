@@ -14,12 +14,16 @@ haplotype blocks that drive it.
 
 ## Prerequisites
 
-- `python3` with `pandas`, `numpy`, and `scipy`
-- htslib (`bgzip`, `tabix`)
+- `curl` and `jq`, to fetch and reshape GeneNetwork's QTL scan
+- `python3` and htslib (`bgzip`, `tabix`), for the painting
 - A JBrowse instance to add the tracks to (see the
   [web quickstart](/docs/quickstart_web), or the
   [desktop quickstart](/docs/quickstart_desktop) to add the built files with no
   hosting step)
+
+On Debian/Ubuntu, `apt install curl jq python3 tabix` covers it. No statistical
+package is needed: the QTL scan is
+[downloaded already computed](#track-2-the-qtl-manhattan) rather than run here.
 
 ## The BXD panel
 
@@ -141,66 +145,58 @@ the [assemblies configuration guide](/docs/config_guides/assemblies).
 
 ## Track 2: the QTL Manhattan
 
-To map a trait, score every marker for how well its B/D genotype predicts the
-phenotype. This demo uses a single-marker regression of the phenotype on the 0/1
-(B/D) genotype, converting each marker's t-statistic to a `-log10(p)` (a
-simplification of the GEMMA mixed model GeneNetwork itself runs). Those are the
-same B/D calls the painting draws, so the peak and the painting come from one
-genotype matrix. Real BXD phenotypes and the mm10 marker map are in the
-[`rqtl/qtl2data/BXD`](https://github.com/rqtl/qtl2data/tree/master/BXD) dataset.
+GeneNetwork maps these traits itself, so the scan is a download rather than a
+computation: its API serves the whole per-marker result of a GEMMA run, the
+mixed model that accounts for how closely the BXD strains are related.
 
-Write the scan out as a tabix'd BED-like table with a `neg_log_pvalue` column:
-
-```
-#chrom  start     end       name        score strand neg_log_pvalue
-chr4    80750000  80750001  rs3708061   .     .      51.9
-```
-
-The
-[`bxd_qtl_scan.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/bxd_qtl_scan.py)
-script runs the regression on the same `.geno` plus a two-column `strain,value`
-phenotype file. Build that file by pulling one trait column out of the qtl2data
-[`bxd_pheno.csv`](https://github.com/rqtl/qtl2data/tree/master/BXD): its columns
-are GeneNetwork trait IDs (described in `bxd_phenocovar.csv`, where ID `11280`
-is the "Hair coat color" scale scored across the most strains), and its first
-column, `id`, holds the strain names:
+Fetch a trait's scan by its GeneNetwork id and reshape it with `jq`. Each record
+carries a marker, its mm10 position in Mb, a LOD score and a p-value:
 
 ```bash
-python3 - <<'PY'
-import pandas as pd
-df = pd.read_csv('bxd_pheno.csv', comment='#')  # skips the leading # metadata lines
-df[['id', '11280']].dropna().to_csv(
-    'coat_color.pheno.csv', index=False, header=['strain', 'value'])
-PY
-```
+GN='https://genenetwork.org/api/v_pre1/mapping?db=BXDPublish&method=gemma'
+curl -fsSL "$GN&trait_id=11280" -o coat_color.json   # 11280 = coat color
 
-Then run the scan (the phenotype file's header line is skipped automatically):
-
-```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/bxd_qtl_scan.py
-python3 bxd_qtl_scan.py BXD.geno coat_color.pheno.csv bxd_gwas_coatcolor.tsv
-(head -1 bxd_gwas_coatcolor.tsv; tail -n +2 bxd_gwas_coatcolor.tsv | sort -k1,1 -k2,2n) \
-  | bgzip > bxd_gwas_coatcolor.tsv.gz
+{
+  printf '#chrom\tstart\tend\tname\tscore\tstrand\tlod\n'
+  jq -r '.[0][] | [ "chr" + (.chr|tostring), ((.Mb*1000000)|round),
+                    ((.Mb*1000000)|round + 1), .name, ".", ".",
+                    (.lod_score*10000|round/10000) ] | @tsv' coat_color.json |
+    sort -k1,1 -k2,2n
+} | bgzip > bxd_gwas_coatcolor.tsv.gz
 tabix -p bed bxd_gwas_coatcolor.tsv.gz
 ```
 
-A `GWASTrack`/`GWASAdapter` reads that column and renders the Manhattan plot. It
-expects a pre-computed `-log10(p)` value in the column named by
-[`scoreColumn`](/docs/config/gwasadapter/#slot-scorecolumn) (that slot page
-shows its default name), so a file matching it needs no extra slots. For a
-differently-named or raw-p-value column, set `scoreColumn` and
-[`scoreTransform`](/docs/config/gwasadapter/#slot-scoretransform). See the
+Trait ids are the numbers in a GeneNetwork trait's own URL, and
+[`bxd_phenocovar.csv`](https://github.com/rqtl/qtl2data/tree/master/BXD) in the
+qtl2data BXD release lists them with their descriptions. `11280` is the hair
+coat color scale, scored across more strains than most.
+
+That writes a tabix'd BED-like table, one line per marker:
+
+```
+#chrom  start     end       name        score strand lod
+chr4    81304223  81304224  rs3708061   .     .      48.1126
+```
+
+A `GWASTrack`/`GWASAdapter` reads one column of that file as the Manhattan
+score. It defaults to a pre-computed `-log10(p)` in a column called
+`neg_log_pvalue`, so a LOD column needs
+[`scoreColumn`](/docs/config/gwasadapter/#slot-scorecolumn) naming it.
+[`scoreTransform`](/docs/config/gwasadapter/#slot-scoretransform) stays at its
+default, since a LOD is already on the scale the plot draws; it is what a raw or
+natural-log p-value column would need. See the
 [GWAS track guide](/docs/config_guides/gwas_track).
 
-```json
+```json addtrack
 {
   "type": "GWASTrack",
   "trackId": "bxd_gwas_coatcolor_mm10",
-  "name": "BXD QTL: coat color (peak at Tyrp1, chr4)",
+  "name": "BXD QTL: coat color (GEMMA, Tyrp1, chr4)",
   "assemblyNames": ["mm10"],
   "adapter": {
     "type": "GWASAdapter",
-    "uri": "https://jbrowse.org/demos/bxd/bxd_gwas_coatcolor.tsv.gz"
+    "uri": "bxd_gwas_coatcolor.tsv.gz",
+    "scoreColumn": "lod"
   },
   "displays": [
     {
@@ -212,19 +208,20 @@ differently-named or raw-p-value column, set `scoreColumn` and
 
 ## Reading the result
 
-Scanning ~21,000 markers against BXD coat color puts the tallest peak on chr4,
-over _Tyrp1_ (the coat-color gene). To line the painting up with the peak,
-right-click the painting at that column and pick the "Sort rows by color here"
-option (a saved session can bake the same sort in through the display's
-`sortRowsBy` position). Rows then order by their B/D genotype at the peak, so
-the clean B/D split directly beneath it is exactly the contrast the scan scores,
-and it breaks up into mixed B/D blocks away from the locus.
+The coat-color scan puts a plateau of tied markers on chr4, whose interval
+contains _Tyrp1_. To line the painting up with it, right-click the painting at
+that column and pick the "Sort rows by color here" option (a saved session can
+bake the same sort in through the display's `sortRowsBy` position). Rows then
+order by their B/D genotype at the peak, so the clean B/D split directly beneath
+it is exactly the contrast the scan scores, and it breaks up into mixed B/D
+blocks away from the locus.
 
 <Figure src="/img/qtl/bxd_painting_sorted.png" caption="The context menu that triggers the sort, over the painting it produces: sorted by genotype at the peak, the strains resolve into a clean, wide red-over-blue split directly beneath the Manhattan peak."/>
 
 <Figure src="/img/qtl/bxd_tyrp1_locus.png" caption="The whole of chr4 (~156 Mb): the coat-color association rises to a peak at ~80 Mb over Tyrp1, and the haplotype painting (sorted by genotype at that peak) resolves into a clean D (red) over B (blue) split at the gene."/>
 
-A second scan in the demo config maps brain weight to a subtler QTL on chr19.
+The demo config carries a second trait, brain weight (`10672`), loaded the same
+way from the same API.
 
 Open the whole demo live in the
 [JBrowse BXD demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_bxd.json),
@@ -235,9 +232,7 @@ or click the **Open in JBrowse** link under any figure above.
 Every step above is wrapped in one script,
 [`bxd_build_demo.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/bxd_build_demo.sh),
 which paints the genotypes with
-[`bxd_geno_to_painting_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/bxd_geno_to_painting_bed.py)
-and scans them with
-[`bxd_qtl_scan.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/bxd_qtl_scan.py):
+[`bxd_geno_to_painting_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/bxd_geno_to_painting_bed.py):
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/bxd_build_demo.sh
@@ -245,12 +240,12 @@ bash bxd_build_demo.sh            # builds ./bxd_demo/jbrowse2
 npx --yes serve bxd_demo/jbrowse2 # then open the printed URL
 ```
 
-It downloads JBrowse and the GeneNetwork/rqtl source files, builds the painting
-and both QTL scans next to it (coat color, trait `11280`, peaking on chr4, plus
-brain weight, trait `10672`, the subtler chr19 peak), and writes a `config.json`
-that opens on mm10 chr4 with the coat-color scan over the painting. It needs
-`python3` (with `pandas`, `numpy`, `scipy`) and htslib (`bgzip`, `tabix`) on
-your `PATH`.
+It downloads JBrowse and the GeneNetwork consensus genotypes, builds the
+painting, fetches both traits' scans from GeneNetwork's mapping API (coat color,
+trait `11280`, and brain weight, `10672`), and writes a `config.json` that opens
+on mm10 chr4 with the coat-color scan over the painting. It prints each scan's
+peak marker and LOD as it goes, so the figures can be checked against the data.
+It needs `curl`, `jq`, `python3` and htslib (`bgzip`, `tabix`) on your `PATH`.
 
 ## See also
 
