@@ -3,6 +3,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import {
+  PENDING_DISPLAYS,
   waitForDisplayPhases,
   waitForDisplaysDone,
 } from '@jbrowse/browser-test-utils'
@@ -228,12 +229,51 @@ async function waitForLoadingOverlayGone(page: Page, timeout: number) {
 // All four are best-effort: a timeout proceeds to the capture, because the
 // pixel comparison (and `assertNonBlank`) is the real assertion and a loud
 // wrong image beats an opaque wait error.
+//
+// Which is exactly why each one is re-checked afterwards. Swallowing the timeout
+// makes "settled" and "gave up" indistinguishable, so a blank capture cannot be
+// attributed: a display that never painted and a display that painted nothing
+// look identical at this call site. The returned list names the signals still
+// unsettled at capture time, and the caller puts it in the failure message —
+// turning "looks blank" into either "blank after the waits genuinely settled"
+// (a display reporting done with nothing drawn — a real bug) or "blank because
+// we stopped waiting" (slowness). Those are different defects and were being
+// reported as one.
 async function waitForCaptureSettled(page: Page) {
   await waitForLoadingOverlayGone(page, 30000)
   await waitForDisplayPhases(page, 30000)
   await waitForDisplaysDone(page, 30000)
   await waitForMorphIdle(page)
+
+  return page
+    .evaluate(pendingSelector => {
+      const unsettled: string[] = []
+      if (document.querySelectorAll('[data-testid="loading-overlay"]').length) {
+        unsettled.push('loading-overlay')
+      }
+      if (document.querySelector('[data-display-phase="loading"]')) {
+        unsettled.push('display-phase=loading')
+      }
+      const pending = document.querySelectorAll(pendingSelector)
+      if (pending.length) {
+        unsettled.push(
+          `${pending.length} display(s) never reported done: ` +
+            [...pending]
+              .map(e => e.getAttribute('data-testid'))
+              .join(', '),
+        )
+      }
+      return unsettled
+    }, PENDING_DISPLAYS)
+    .catch(() => [] as string[])
 }
+
+// Suffix for a failure message: what was still unsettled when we gave up waiting.
+const unsettledNote = (unsettled: string[]) =>
+  unsettled.length === 0
+    ? ' (all capture waits settled, so this is a display that reported ready ' +
+      'with nothing drawn, not a slow one)'
+    : ` (capture waits did NOT settle: ${unsettled.join('; ')})`
 
 export async function pageSnapshot(page: Page, name: string, threshold = 0.1) {
   // Every full-page golden is prefixed `fullpage_`; a redundant `-fullpage`
@@ -311,11 +351,14 @@ export async function canvasSnapshot(
   if (!el) {
     throw new Error(`Canvas element not found: ${selector}`)
   }
-  await waitForCaptureSettled(page)
+  const unsettled = await waitForCaptureSettled(page)
 
   const screenshot = await el.screenshot({ type: 'png' })
   if (assertContent) {
-    assertNonBlank(analyzeCanvasPng(screenshot), `${name} (${selector})`)
+    assertNonBlank(
+      analyzeCanvasPng(screenshot),
+      `${name} (${selector})${unsettledNote(unsettled)}`,
+    )
   }
   const result = compareImages(name, screenshot, targetedThreshold(threshold))
   if (!result.passed) {

@@ -149,18 +149,56 @@ drifted — and its 163 pairs beat the pre-fix best of 149, so the wait fix does
 not merely stop the gate lying about coverage, it *raises* coverage, because
 fewer tests fail before their screenshot.
 
-What still varies is **capture reliability, and it tracks machine load, not the
-code**. The residual failure mode is `assertNonBlank` on **webgl** captures (17
-of run 1's 20 failures): the headed real-GPU browser returns blank frames under
-contention. The gate now reports that as lost coverage and fails, instead of
-absorbing it silently — which is the whole point of the fix, and why five of six
-runs exit 1 while none of them found real drift.
+What still varies is **capture reliability** — `assertNonBlank` failures. Those
+were initially written off here as machine-load contention. **That was wrong, and
+the instrumentation says so.**
 
-**This may not be the CI failure mode at all.** These runs used webgl on the real
-GPU, headed. GitHub runners have none, so CI uses `--swiftshader` headless, which
-removes precisely the contention that produced the blank frames — while adding
-software-raster slowness and the ~29 MB/context leak (ADR-024). Measure there
-before assuming CI inherits this flakiness.
+## The blank captures are not a slowness problem
+
+Every wait in `waitForCaptureSettled` swallows its own timeout, which left
+"settled" and "gave up waiting" indistinguishable and made a blank capture
+unattributable. Each wait's post-condition is now re-checked afterwards
+(`PENDING_DISPLAYS` is exported from browser-test-utils for exactly this) and the
+verdict goes into the failure message.
+
+One instrumented full run, 9 test failures, 16 blank captures:
+
+**16 of 16 read "all capture waits settled". Zero were attributed to a wait that
+expired.**
+
+So at capture time the loading overlay was down, no display was in its `loading`
+phase, every display had reported `canvasDrawn`, and morph was clear — and the
+canvas was still empty. **No amount of additional waiting can fix that**, which
+means the README's "idle machine" precondition is treating a symptom. Load
+changes how often it happens, not whether it can.
+
+Two more facts that reshape the story:
+
+- **Both backends blank.** 7 webgl, 2 canvas2d. It is not a GPU-driver or
+  headed-compositor story, so the plan to "measure under swiftshader instead"
+  would not have settled it either.
+- It appears to violate a documented invariant — ARCHITECTURE/`agent-docs`
+  CLAUDE.md: *"The render callback returns `true` only when real content was
+  drawn, or the loading scrim stays up."* A display reporting drawn over an empty
+  canvas is that invariant failing intermittently.
+
+### Leading hypothesis for the webgl half, not yet proven
+
+`preserveDrawingBuffer` appears **nowhere in the tree**, so every WebGL context
+takes the default `false` — under which the drawing buffer is cleared once
+composited, and any readback after a frame boundary returns empty. That fits all
+of it: content genuinely drawn, every readiness signal true, blank pixels,
+timing-sensitive, unfixable by waiting.
+
+It also makes an uncomfortable prediction worth checking before trusting the
+fix above: **more waiting makes a webgl readback *more* likely to land after the
+buffer was cleared, not less.** `waitForCaptureSettled` added up to 60s of it.
+The run-to-run failure counts (pre-fix 11/18/15, post-fix 20/2/0/6/3/14) are too
+noisy to confirm or refute that, and it needs a deliberate test rather than
+another sweep.
+
+The canvas2d blanks need a separate explanation — Canvas2D has no drawing buffer
+to clear — so expect two causes, not one.
 
 **A stable drift percentage does not mean a stable failure.**
 `fullpage_methylation_snapshot` came in at exactly 37.98% in two runs hours
@@ -171,15 +209,17 @@ determinism from a repeated number; check whether the pair was compared at all.
 
 ## Next, in order
 
-1. **Consecutive clean runs on a genuinely idle machine.** One clean run is not
-   the README's bar. Load must be low for the whole run, not just at its start —
-   the `load=` column is start-of-run, which is why run 1's 11.5 looks out of
-   order against run 4's 27.4: it was rising through a concurrent build.
-2. **Measure in the CI configuration, which is not this one.** These runs used
-   webgl on the real GPU (headed). GitHub runners have none, so CI uses
-   `--swiftshader` — that is what `pnpm test:browser:gate` passes, and it removes
-   real-GPU contention as a variable while adding software-raster slowness and
-   the ~29 MB/context leak (ADR-024).
+1. **Fix the blank captures — this is the gating item, and it is not about
+   machine load.** Test the `preserveDrawingBuffer` hypothesis first: it is one
+   context-creation flag, and either a readback taken inside the same frame or
+   `preserveDrawingBuffer: true` for the test build would settle it. Then chase
+   the canvas2d half separately. Do **not** spend another round chasing quiet
+   machines — 16/16 says waiting is not the lever.
+2. **Only then, consecutive clean runs**, and in the CI configuration
+   (`--swiftshader` headless, per `pnpm test:browser:gate`) rather than the real
+   GPU used here. Note the `load=` column is start-of-run, which is why run 1's
+   11.5 looks out of order against run 4's 27.4 — it was rising through a
+   concurrent build.
 3. Then restore `f3cb3b962b`'s job without `continue-on-error`, scoped by
    `--filter` to the deterministic suites.
 

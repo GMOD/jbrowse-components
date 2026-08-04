@@ -13,6 +13,7 @@ export {
 } from './docLinks.ts'
 export { encodeSessionSpec, sessionSpecQuery } from './session.ts'
 export {
+  PENDING_DISPLAYS,
   delay,
   waitForDisplayPhases,
   waitForDisplaysDone,

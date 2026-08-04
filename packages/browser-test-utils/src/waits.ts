@@ -106,7 +106,12 @@ export async function waitForQuiescent(
 // id". Bases come in three shapes: `display-<displayId>` (BaseLinearDisplay,
 // alignments, maf), `<name>-display` (wiggle, variant, hic, ld, manhattan,
 // arc, pileup, …), and synteny's `synteny_canvas`.
-const PENDING_DISPLAYS = [
+// Exported so a caller can re-check the post-condition after the wait and say
+// whether it actually settled or merely timed out. `waitForDisplaysDone` (like
+// its neighbours) swallows its own timeout on purpose, which leaves "every
+// display painted" and "we gave up waiting" indistinguishable at the call site —
+// and that ambiguity is what makes a blank capture unattributable.
+export const PENDING_DISPLAYS = [
   '[data-testid^="display-"]:not([data-testid$="-done"])',
   '[data-testid$="-display"]',
   '[data-testid="synteny_canvas"]',
