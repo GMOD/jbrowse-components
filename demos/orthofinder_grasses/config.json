@@ -105,7 +105,9 @@
             ["grasses_orthogroups"]
           ],
           "colorBy": "reference",
-          "autoDiagonalize": true
+          "autoDiagonalize": true,
+          "sameScale": true,
+          "collapseEmptyRows": true
         }
       }
     ]

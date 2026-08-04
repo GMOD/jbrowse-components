@@ -96,6 +96,63 @@ for f in scripts:
                 print(f"FAIL invalid PY heredoc in {f}: {e}")
                 failed = True
 
+    # A `python3 - "$A" "$B" <<'PY'` heredoc reading sys.argv[3] raises
+    # IndexError, and a fixed-tuple unpack of the wrong width raises ValueError.
+    # Either one dies at the point the script reaches it, which in these
+    # pipelines is after the download/align/OrthoFinder step it sits behind, so
+    # the cost of finding it at runtime is the whole expensive part of the run.
+    # Both are decidable here whenever every argument is definitely one word.
+    for m in re.finditer(
+            r"python3 - (?P<args>[^\n]*?)<<'(?P<tag>\w+)'[^\n]*\n(?P<body>.*?)\n(?P=tag)\b",
+            src, re.S):
+        # One word per argument, except an unquoted $VAR, which splits into an
+        # unknown number and makes the count a lower bound rather than a total.
+        # A leading VAR=value is the environment, not an argument.
+        words, exact = 0, True
+        for tok in re.findall(r'"[^"]*"|\S+', m.group("args")):
+            if re.match(r"^\w+=", tok):
+                continue
+            if not tok.startswith('"') and "$" in tok:
+                exact = False
+            else:
+                words += 1
+        try:
+            tree = ast.parse(m.group("body"))
+        except SyntaxError:
+            continue  # already reported above
+        # `a, b, c = sys.argv[1:]` wants exactly three; a starred element makes
+        # it a minimum instead.
+        wanted = None
+        for node in ast.walk(tree):
+            if (isinstance(node, ast.Assign)
+                    and isinstance(node.targets[0], ast.Tuple)
+                    and ast.unparse(node.value).replace(" ", "") == "sys.argv[1:]"):
+                elts = node.targets[0].elts
+                starred = any(isinstance(e, ast.Starred) for e in elts)
+                wanted = (len(elts) - 1, None) if starred else (len(elts), len(elts))
+        # and every constant sys.argv[N] needs at least N arguments
+        top = max((node.slice.value for node in ast.walk(tree)
+                   if isinstance(node, ast.Subscript)
+                   and ast.unparse(node.value).replace(" ", "") == "sys.argv"
+                   and isinstance(node.slice, ast.Constant)
+                   and isinstance(node.slice.value, int)), default=0)
+        lo, hi = wanted if wanted else (top, None)
+        lo = max(lo, top)
+        where = f"{f}: `python3 - {m.group('args').strip()}<<'{m.group('tag')}'`"
+        reads = f"{lo}" if hi == lo else f"{lo} or more"
+        if exact and not lo <= words <= (hi if hi is not None else words):
+            print(f"FAIL argument count in {where}: passes {words}, "
+                  f"heredoc reads {reads}")
+            failed = True
+        elif not exact and hi is not None and words >= hi:
+            # An unquoted $VAR is how these scripts pass a list ($NAMES), so it
+            # contributes at least one word and the definite arguments alone
+            # already fill a fixed-width unpack. Passing a var that may be empty
+            # into one means quoting it or unpacking with a starred element.
+            print(f"FAIL argument count in {where}: passes {words} before "
+                  f"word-splitting, heredoc unpacks exactly {hi}")
+            failed = True
+
 # The standalone .py helpers the build scripts invoke (not heredocs) — a syntax
 # error here would break a pipeline step but is otherwise unchecked.
 helpers = sorted(glob.glob("scripts/*.py"))
