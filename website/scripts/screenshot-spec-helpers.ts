@@ -240,6 +240,38 @@ export const HG008_DEPTH_TRACK = {
     },
   },
 }
+// The copy-number lane, and the answer to "the raw depths are hard to
+// interpret" (reviewer). Depth is a per-bin read count: on a 1 Mb view it is a
+// cloud a hundred points deep, and reading a copy-number step out of it means
+// eyeballing where the cloud's centre moved. This is the same event already
+// segmented — BIC-seq2's tumour-vs-normal log2 copy ratio, taken from the New
+// York Genome Center's somatic pipeline run on this exact pair and published by
+// C-GIAB, so the segmentation and the normalization are theirs and not ours
+// (see [[feedback-visualizer-not-methods]]; scripts/build_sv_visualization_cgiab.sh
+// carries the two-line derivation). 196 segments genome-wide, which is why it
+// loads as a plain 6 KB bedGraph rather than a bigWig.
+//
+// The baseline is at +0.44, not 0: BIC-seq2 normalizes on total read counts and
+// HG008-T is hypodiploid, so the balanced state sits above zero. Shown as
+// published rather than re-centred; the STEPS are what the figures read, and
+// each one lands where the benchmark says — chr3 p to q is -0.53 to +0.42
+// (CN 1 to CN 2, log2(2/1) = 1.0 apart), chr18 flips the same distance over
+// SMAD4, and KRAS's tandem duplication is +1.07 against the +0.45 beside it,
+// which is log2(3/2).
+export const HG008_BICSEQ2_TRACK = {
+  type: 'QuantitativeTrack',
+  trackId: 'hg008_bicseq2',
+  name: 'HG008-T copy ratio, segmented (NYGC BIC-seq2, log2 T/N)',
+  assemblyNames: ['GRCh38_GIABv3'],
+  adapter: {
+    type: 'BedGraphAdapter',
+    bedGraphLocation: {
+      uri: 'https://jbrowse.org/demos/cgiab/HG008-T_bicseq2_log2ratio.bedgraph',
+      locationType: 'UriLocation',
+    },
+  },
+}
+
 export const HG008_BAF_TRACK = {
   type: 'QuantitativeTrack',
   trackId: 'hg008_baf',

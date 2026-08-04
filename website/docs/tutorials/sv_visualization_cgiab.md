@@ -249,6 +249,37 @@ carries HiFiCNV's segmented integer copy number and the CNV VCF its discrete
 calls. Read them against the benchmark CNV BED, which holds the absolute copy
 number for each interval.
 
+#### A segmented copy ratio beside the depth
+
+Depth is a read count per bin, so a whole-chromosome view of it is a cloud
+hundreds of points deep and a copy-number step is wherever that cloud's centre
+moves. The segmented form of the same measurement is easier to read and does not
+have to be computed here. C-GIAB publishes the New York Genome Center's somatic
+pipeline run on this exact tumor/normal pair, and its
+[BIC-seq2](https://doi.org/10.1073/pnas.1110574108) output is one log2
+tumor-versus-normal copy ratio per segment, so both the normalization and the
+segmentation come from a published pipeline rather than from this tutorial.
+Reshaping it into a bedGraph is one line, and a whole-genome segmentation is
+small enough to need no index:
+
+```bash
+NYGC=https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NYGC-somatic-pipeline_20240412/GRCh38-GIABv3
+curl -fL -O "$NYGC/HG008-T--HG008-N.bicseq2.txt"
+
+# chrom, start, end, log2 copy ratio; the file is 1-based, bedGraph is not
+awk 'NR>1 {printf "%s\t%d\t%d\t%.4f\n", $1, $2-1, $3, $9}' \
+  HG008-T--HG008-N.bicseq2.txt > HG008-T_bicseq2_log2ratio.bedgraph
+
+jbrowse add-track HG008-T_bicseq2_log2ratio.bedgraph --out $OUT --category "CNV" --load move
+```
+
+Plot it as a **line (step)** over a fixed range, which also keeps a homozygous
+deletion (no reads, so no finite ratio) from setting the axis for the whole
+chromosome. The balanced baseline sits above zero rather than on it, because
+BIC-seq2 normalizes on total read counts and this genome is hypodiploid. It is
+shown as published rather than re-centred, and it is the steps that get read
+against the benchmark's absolute copy numbers.
+
 The allelic panel here is **B-allele frequency** rather than HiFiCNV's own
 `maf.bw`. HiFiCNV folds its track to `min(AF, 1-AF)`, so a region that has lost
 one parental copy collapses onto a single band near 0. Unfolded BAF keeps the
@@ -262,7 +293,7 @@ over a fixed 0 to 1 range: the value is one point per het site and the spread is
 the entire signal, so a line rendering would average the two LOH bands back to
 0.5 and erase the event.
 
-<Figure caption="Chromosome 3, the two-panel copy-number view over the benchmark CNV calls: the HiFiCNV depth track above B-allele frequency. The p-arm is a single-copy loss with loss-of-heterozygosity (depth halves, BAF splits into two bands at 0 and 1); the q-arm is balanced (flat depth, one BAF band at 0.5)." src="/img/sv_cgiab/cnv_depth_baf.png" />
+<Figure caption="Chromosome 3 over the benchmark CNV calls: BIC-seq2's segmented log2 copy ratio, the HiFiCNV depth it summarizes, and B-allele frequency. The p-arm is a single-copy loss with loss-of-heterozygosity (the copy-ratio segment steps down, depth halves, BAF splits into two bands at 0 and 1); the q-arm is balanced (one segment, flat depth, one BAF band at 0.5)." src="/img/sv_cgiab/cnv_depth_baf.png" />
 
 #### Keep the BAF track off bigWig summaries
 
@@ -614,7 +645,7 @@ chromosome with the depth track above the BAF:
 The q-arm event is invisible to depth alone, which is why the two tracks are
 read together.
 
-<Figure caption="Chromosome 17 with the HiFiCNV depth track (top) over the BAF track (middle) over the benchmark CNV calls. The p-arm (covering TP53) is a single-copy loss with LOH (CNA_20, CN 1, 1+0): depth halved, BAF split to 0 and 1. The q-arm is copy-neutral LOH (CNA_21, CN 2, 2+0): depth flat, yet the BAF is still split, invisible to depth alone." src="/img/sv_cgiab/cnv_chr17_loh.png" />
+<Figure caption="Chromosome 17: the segmented copy ratio, the HiFiCNV depth, the BAF, and the benchmark CNV calls. The p-arm (covering TP53) is a single-copy loss with LOH (CNA_20, CN 1, 1+0): the segment steps down, BAF splits to 0 and 1. The q-arm is copy-neutral LOH (CNA_21, CN 2, 2+0): copy ratio and depth are flat across it, yet the BAF is still split, the one event neither copy-number lane can see." src="/img/sv_cgiab/cnv_chr17_loh.png" />
 
 The depth and BAF combinations read as a compact decision table:
 
@@ -643,13 +674,13 @@ imbalance of a 2+1 gain rather than the full drop of a complete haplotype loss.
 Because the event is a couple of megabases rather than an arm, zoom to it: at
 whole-chromosome scale it is a handful of pixels wide.
 
-<Figure caption="KRAS on chr12: the HiFiCNV depth track over the BAF track over the CNV calls. Over the tandem duplication (SV_101, CN 3, 2+1) depth steps up and the BAF separates into bands at 1/3 and 2/3, against the single 0.5 band of the balanced flanks." src="/img/sv_cgiab/driver_kras_gain.png" />
+<Figure caption="KRAS on chr12: the segmented copy ratio over the HiFiCNV depth over the BAF, above the CNV calls. Over the tandem duplication (SV_101, CN 3, 2+1) the copy-ratio segment rises above its flanks by what three copies against two predicts, its edges landing on the called boundaries, while the BAF separates into bands at 1/3 and 2/3 against the single 0.5 band of the balanced flanks." src="/img/sv_cgiab/driver_kras_gain.png" />
 
 `SMAD4` on 18q is lost with LOH (`CNA_48`, CN 1, 0+1), the mirror image of the
 TP53 event. Here the balanced p-arm is in the same picture, so the contrast is
 read within one chromosome rather than against a second figure.
 
-<Figure caption="Chromosome 18: the HiFiCNV depth track over the BAF track over the CNV calls. CNA_48 (single-copy loss with LOH over SMAD4) runs from ~30 Mb to the telomere: depth halves against the CN 2 p-arm beside it, and the BAF spreads off the single band the p-arm holds." src="/img/sv_cgiab/driver_smad4_loh.png" />
+<Figure caption="Chromosome 18: the segmented copy ratio over the HiFiCNV depth over the BAF, above the CNV calls. CNA_48 (single-copy loss with LOH over SMAD4) runs from ~30 Mb to the telomere: the copy ratio steps down against the CN 2 p-arm beside it, depth halves, and the BAF spreads off the single band the p-arm holds." src="/img/sv_cgiab/driver_smad4_loh.png" />
 
 See also the
 [multi-quantitative track guide](/docs/user_guides/multiquantitative_track) for

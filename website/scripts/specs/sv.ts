@@ -4,6 +4,7 @@ import {
   HG00151_ONT_1000G_ADAPTER,
   HG002_NANOPORE_HP_TRACK,
   HG008_BAF_TRACK,
+  HG008_BICSEQ2_TRACK,
   HG008_DEPTH_TRACK,
   HG008_T_PACBIO_BAM,
   VOLVOX,
@@ -17,6 +18,25 @@ import {
 } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
+
+// MANE Select 1.4, as a session track on the C-GIAB assembly: one curated
+// transcript per gene, in a bigBed, so a whole-chromosome window is a small
+// ranged read rather than the 40 MB of GFF the UCSC RefSeq track's chr17 slice
+// is. Used by the chr17 figure to put one named gene under a chromosome-wide
+// copy-number lane.
+const MANE_TRACK = {
+  type: 'FeatureTrack',
+  trackId: 'mane_hg38',
+  name: 'TP53 (MANE Select, NCBI RefSeq 1.4)',
+  assemblyNames: ['GRCh38_GIABv3'],
+  adapter: {
+    type: 'BigBedAdapter',
+    bigBedLocation: {
+      uri: 'https://ftp.ncbi.nlm.nih.gov/refseq/MANE/trackhub/data/release_1.4/MANE.GRCh38.v1.4.refseq.bb',
+      locationType: 'UriLocation',
+    },
+  },
+}
 
 // straight from the menu's own label table, so the click path and the boxes
 // drawn on it can't drift from the radio they point at
@@ -1098,13 +1118,32 @@ export const svSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'sv_cgiab/cnv_depth_baf',
     url: cgiabUrl({
-      sessionTracks: [HG008_DEPTH_TRACK, HG008_BAF_TRACK],
+      sessionTracks: [HG008_BICSEQ2_TRACK, HG008_DEPTH_TRACK, HG008_BAF_TRACK],
       views: [
         {
           type: 'LinearGenomeView',
           assembly: 'GRCh38_GIABv3',
           loc: 'chr3',
           tracks: [
+            {
+              trackId: 'hg008_bicseq2',
+              type: 'LinearWiggleDisplay',
+              // step, not scatter: 196 segments genome-wide, so every value is
+              // a plateau and the reader's question is where the plateau moves
+              defaultRendering: 'line',
+              useBicolor: false,
+              displayCrossHatches: true,
+              // fixed, and the same range on all four figures, so a step means
+              // the same thing from one to the next. Autoscale cannot do that
+              // here: a homozygous deletion has no reads, so BIC-seq2 writes
+              // -8.79 for it and one such segment (chr17:53.93 Mb, the
+              // benchmark's CN 0) flattens every other step on the chromosome
+              // into a hairline. That segment clips off the bottom instead,
+              // which is what an unbounded value should do.
+              minScore: -2,
+              maxScore: 1.5,
+              height: 90,
+            },
             {
               trackId: 'hg008_depth',
               type: 'LinearWiggleDisplay',
@@ -1145,7 +1184,7 @@ export const svSpecs: ScreenshotSpec[] = [
     viewportWidth: 1500,
     // taller so the benchmark CNV-calls track below the two wiggles is fully in
     // frame and each wiggle has room
-    viewportHeight: 740,
+    viewportHeight: 840,
     settleMs: 30000,
   },
 
@@ -1333,7 +1372,7 @@ export const svSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'sv_cgiab/driver_kras_gain',
     url: cgiabUrl({
-      sessionTracks: [HG008_DEPTH_TRACK, HG008_BAF_TRACK],
+      sessionTracks: [HG008_BICSEQ2_TRACK, HG008_DEPTH_TRACK, HG008_BAF_TRACK],
       views: [
         {
           type: 'LinearGenomeView',
@@ -1364,6 +1403,25 @@ export const svSpecs: ScreenshotSpec[] = [
                   name: 'KRAS',
                 },
               ],
+            },
+            {
+              trackId: 'hg008_bicseq2',
+              type: 'LinearWiggleDisplay',
+              // step, not scatter: 196 segments genome-wide, so every value is
+              // a plateau and the reader's question is where the plateau moves
+              defaultRendering: 'line',
+              useBicolor: false,
+              displayCrossHatches: true,
+              // fixed, and the same range on all four figures, so a step means
+              // the same thing from one to the next. Autoscale cannot do that
+              // here: a homozygous deletion has no reads, so BIC-seq2 writes
+              // -8.79 for it and one such segment (chr17:53.93 Mb, the
+              // benchmark's CN 0) flattens every other step on the chromosome
+              // into a hairline. That segment clips off the bottom instead,
+              // which is what an unbounded value should do.
+              minScore: -2,
+              maxScore: 1.5,
+              height: 90,
             },
             {
               trackId: 'hg008_depth',
@@ -1400,7 +1458,7 @@ export const svSpecs: ScreenshotSpec[] = [
     viewportWidth: 1500,
     // tall enough for the gene track + both wiggles + the CN-labeled CNV calls
     // track to all fit (the gene track pushes the CNV calls down)
-    viewportHeight: 880,
+    viewportHeight: 980,
     settleMs: 20000,
     // No arrow annotation. It existed only because featureHighlights was pinned
     // to the wrong end coordinate and so drew nothing (see the highlight above),
@@ -1424,15 +1482,65 @@ export const svSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'sv_cgiab/cnv_chr17_loh',
     url: cgiabUrl({
-      sessionTracks: [HG008_DEPTH_TRACK, HG008_BAF_TRACK],
+      sessionTracks: [
+        MANE_TRACK,
+        HG008_BICSEQ2_TRACK,
+        HG008_DEPTH_TRACK,
+        HG008_BAF_TRACK,
+      ],
       views: [
         {
           type: 'LinearGenomeView',
           assembly: 'GRCh38_GIABv3',
           loc: 'chr17:1-83,257,441',
-          // overlay the long track names on the tracks instead of a label row
-          trackLabels: 'offset',
+          // labels on their own row, not overlaid: `offset` puts each track's
+          // name box over the top-left of its own canvas, which on a whole
+          // chromosome is the first 10 Mb — and the gene this figure was asked
+          // to show sits at 7.7 Mb, under the box
           tracks: [
+            {
+              // one gene, filtered to it: the caption says this arm covers TP53
+              // and the figure was only asserting it (reviewer: "this isn't
+              // really showing anything like a specific gene").
+              //
+              // MANE rather than the config's own UCSC RefSeq track, which was
+              // tried first and drew nothing: its chr17 slice is 40 MB of GFF,
+              // mostly per-transcript `description` prose, and a whole-
+              // chromosome fetch of it does not land inside the capture. MANE
+              // is one curated transcript per gene in a bigBed, so the same
+              // window is a small ranged read. The jexl filter is what leaves
+              // the single glyph; forceLoad because the density gate runs on
+              // the region's byte size, before any filter.
+              trackId: 'mane_hg38',
+              type: 'LinearBasicDisplay',
+              // on the MANE Select accession, not on "TP53": the symbol lives
+              // in the bigBed's geneName2 column, and filtering on it (or on
+              // the gene parent the adapter is meant to aggregate into) leaves
+              // the lane empty, so the accession is the field that is actually
+              // there. The track's name carries the symbol instead.
+              jexlFiltersSetting: ["jexl:get(feature,'name')=='NM_000546.6'"],
+              forceLoad: true,
+              height: 50,
+            },
+            {
+              trackId: 'hg008_bicseq2',
+              type: 'LinearWiggleDisplay',
+              // step, not scatter: 196 segments genome-wide, so every value is
+              // a plateau and the reader's question is where the plateau moves
+              defaultRendering: 'line',
+              useBicolor: false,
+              displayCrossHatches: true,
+              // fixed, and the same range on all four figures, so a step means
+              // the same thing from one to the next. Autoscale cannot do that
+              // here: a homozygous deletion has no reads, so BIC-seq2 writes
+              // -8.79 for it and one such segment (chr17:53.93 Mb, the
+              // benchmark's CN 0) flattens every other step on the chromosome
+              // into a hairline. That segment clips off the bottom instead,
+              // which is what an unbounded value should do.
+              minScore: -2,
+              maxScore: 1.5,
+              height: 90,
+            },
             {
               trackId: 'hg008_depth',
               type: 'LinearWiggleDisplay',
@@ -1468,7 +1576,7 @@ export const svSpecs: ScreenshotSpec[] = [
     readyText: 'chr17',
     readyTimeout: 90000,
     viewportWidth: 1500,
-    viewportHeight: 640,
+    viewportHeight: 940,
     settleMs: 20000,
   },
 
@@ -1481,7 +1589,7 @@ export const svSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'sv_cgiab/driver_smad4_loh',
     url: cgiabUrl({
-      sessionTracks: [HG008_DEPTH_TRACK, HG008_BAF_TRACK],
+      sessionTracks: [HG008_BICSEQ2_TRACK, HG008_DEPTH_TRACK, HG008_BAF_TRACK],
       views: [
         {
           type: 'LinearGenomeView',
@@ -1491,6 +1599,25 @@ export const svSpecs: ScreenshotSpec[] = [
           // label row (reviewer)
           trackLabels: 'offset',
           tracks: [
+            {
+              trackId: 'hg008_bicseq2',
+              type: 'LinearWiggleDisplay',
+              // step, not scatter: 196 segments genome-wide, so every value is
+              // a plateau and the reader's question is where the plateau moves
+              defaultRendering: 'line',
+              useBicolor: false,
+              displayCrossHatches: true,
+              // fixed, and the same range on all four figures, so a step means
+              // the same thing from one to the next. Autoscale cannot do that
+              // here: a homozygous deletion has no reads, so BIC-seq2 writes
+              // -8.79 for it and one such segment (chr17:53.93 Mb, the
+              // benchmark's CN 0) flattens every other step on the chromosome
+              // into a hairline. That segment clips off the bottom instead,
+              // which is what an unbounded value should do.
+              minScore: -2,
+              maxScore: 1.5,
+              height: 90,
+            },
             {
               trackId: 'hg008_depth',
               type: 'LinearWiggleDisplay',
@@ -1525,7 +1652,7 @@ export const svSpecs: ScreenshotSpec[] = [
     readyText: 'chr18',
     readyTimeout: 90000,
     viewportWidth: 1500,
-    viewportHeight: 640,
+    viewportHeight: 780,
     settleMs: 20000,
   },
 

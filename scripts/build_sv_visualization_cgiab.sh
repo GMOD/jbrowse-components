@@ -52,6 +52,7 @@
 #     carries the --maf VCF's sample column, not the --bam one. The figures use
 #     the unfolded BAF bigWig below instead of that folded maf.bw.)
 #   HG008-T_baf.bcftools.bw
+#   HG008-T_bicseq2_log2ratio.bedgraph
 #   HG008T_<ver>.pif.gz(.tbi)  (from `jbrowse make-pif HG008T_<ver>.paf`)
 #   HG008T_<ver>.fasta.gz(.fai,.gzi)  (NIST ships it BGZF; just samtools faidx)
 #   GRCh38_HG008-T-<BENCH_VER>_somatic-CNV_PASS.draftbenchmark.calls.bed
@@ -196,6 +197,28 @@ for v in hificnv.*.vcf.gz; do
   [ -f "$v.tbi" ] || tabix -p vcf "$v"
   jb add-track "$v" --category "CNV" --load copy --force --out "$APP"
 done
+
+# ── CNV: NYGC's BIC-seq2 segmented log2 copy ratio ────────────────────────────
+# The lane the copy-number figures read, and the cheapest step in this script: a
+# 20 KB download and one awk. Depth is a read count per bin, so a whole-
+# chromosome view of it is a cloud and a copy-number step is wherever the cloud's
+# centre moved; this is the same event already segmented, by the New York Genome
+# Center's somatic pipeline run on this exact tumour/normal pair and published by
+# C-GIAB. The normalization and the segmentation are theirs, which is the whole
+# reason to take it rather than fit our own baseline to the depth track.
+#
+# Read as published, not re-centred: BIC-seq2 normalizes on total read counts and
+# HG008-T is hypodiploid, so its balanced state sits above 0. The steps are what
+# the figures read, and each lands where the V0.5 benchmark says it should.
+BICSEQ_BG=HG008-T_bicseq2_log2ratio.bedgraph
+if [ ! -f "$BICSEQ_BG" ]; then
+  NYGC=$FTP/data_somatic/HG008/Liss_lab/analysis/NYGC-somatic-pipeline_20240412/GRCh38-GIABv3
+  [ -f HG008-T--HG008-N.bicseq2.txt ] || curl -fL -O "$NYGC/HG008-T--HG008-N.bicseq2.txt"
+  # col 9 is log2.copyRatio; the file is 1-based and bedGraph is not
+  awk 'NR>1 {printf "%s\t%d\t%d\t%.4f\n", $1, $2-1, $3, $9}' \
+    HG008-T--HG008-N.bicseq2.txt > "$BICSEQ_BG"
+fi
+jb add-track "$BICSEQ_BG" --category "CNV" --load copy --force --out "$APP"
 
 # ── B-allele frequency: unfolded, over germline het sites ────────────────────
 # The allelic panel of the depth/BAF figure. NOT HiFiCNV's own maf.bw: that one

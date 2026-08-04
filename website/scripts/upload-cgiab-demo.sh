@@ -31,6 +31,7 @@ HERE=$(cd "$(dirname "$0")/.." && pwd)   # website/ (holds rclone.conf)
 EXPECTED=(
   HG008-T.hificnv.depth.bw
   HG008-T_baf.bcftools.bw
+  HG008-T_bicseq2_log2ratio.bedgraph
   HG008T_v3.2.pif.gz
   HG008T_v3.2.pif.gz.tbi
   HG008T_v3.2.fasta.gz
