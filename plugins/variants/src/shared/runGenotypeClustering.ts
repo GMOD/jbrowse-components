@@ -57,7 +57,17 @@ export async function runGenotypeClustering({
         statusCallback,
       },
     )
-    model.setLayoutAndPendingClusterTree(
+    // Layout and tree land together, immediately. They used to be split, with
+    // the tree held until the next cellData arrived, because `layout` was an
+    // RPC input: a clustering run refetched, and during that window the cells
+    // on screen were still in the old order while the tree already showed the
+    // new one. Row order is not a fetch input any more (see the plugin's
+    // CLAUDE.md) — the worker names its rows and `rowRemap` places them onto
+    // screen rows, re-derived from `sources` the moment `layout` changes — so
+    // there is no window left to defer across. Deferring anyway meant the tree
+    // waited on a refetch that no longer happens, and a
+    // `runClustering: true` display drew no dendrogram at all.
+    model.setLayoutAndClusterTree(
       applyClusterOrder({
         sourcesBase,
         layout: model.layout,

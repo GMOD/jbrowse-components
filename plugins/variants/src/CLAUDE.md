@@ -55,6 +55,12 @@ Render input → the subclass `renderState` getter.
   focused clade is genuinely fewer cells to compute. Same split maf makes
   (`subtreeFilter` + `placeMafRegionData`); multi-wiggle makes it by passing
   sources as a structural arg and re-encoding from `gpuProps()`.
+  **Nothing may wait on the refetch this removed.** The cluster tree did: it was
+  stashed as `pendingClusterTree` and promoted in `setCellData`, so once a
+  reorder stopped refetching it was never promoted and a `runClustering: true`
+  display drew no dendrogram — silently, because the rows were still clustered.
+  It applies immediately now, which is safe for the same reason: `rowRemap` is
+  derived from `sources`, so the cells re-place in the tick the layout changes.
 - The cell arrays stay in the **worker's** row numbering, because they are
   sorted by `(featureIndex, rowIndex)` and `findCellIndex` binary-searches that.
   Placement writes a second array; the hit test converts its one query row

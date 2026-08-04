@@ -410,15 +410,10 @@ export default function MultiSampleVariantBaseModelF(
         // refetch sources on every viewport change. This counter is its
         // dedicated user-reload signal.
         reloadCount: 0,
-        pendingClusterTree: undefined as string | undefined,
       }))
       .actions(self => ({
         setCellData(data: CellDataResult | undefined) {
           self.cellData = data
-          if (self.pendingClusterTree !== undefined) {
-            self.clusterTree = self.pendingClusterTree
-            self.pendingClusterTree = undefined
-          }
         },
         setContextMenuFeature(feature?: Feature) {
           self.contextMenuFeature = feature
@@ -736,15 +731,7 @@ export default function MultiSampleVariantBaseModelF(
         setShowBranchLength(arg: boolean) {
           setConf(self, 'showBranchLength', arg)
         },
-        // Sets `layout` and stashes the cluster tree as pending — the tree
-        // only applies once the matching cellData arrives, see `setCellData`.
-        // Distinct from the mixin's `setLayoutAndClusterTree` (which applies
-        // the tree immediately) so the rendered tree never references rows
-        // that don't yet have data.
-        setLayoutAndPendingClusterTree(layout: Source[], tree: string) {
-          self.layout = layout
-          self.pendingClusterTree = tree
-        },
+
         setRunClustering(arg?: boolean) {
           self.runClustering = arg
         },

@@ -31,7 +31,7 @@ function makeModel(overrides: Partial<ReducedModel> = {}): ReducedModel {
     renderingMode: 'alleleCount',
     setClusterTree: jest.fn(),
     setLayout: jest.fn(),
-    setLayoutAndPendingClusterTree: jest.fn(),
+    setLayoutAndClusterTree: jest.fn(),
     clearLayout: jest.fn(),
     ...overrides,
   }
@@ -71,7 +71,7 @@ describe('runGenotypeClustering', () => {
         renderingMode: 'alleleCount',
       }),
     )
-    expect(model.setLayoutAndPendingClusterTree).toHaveBeenCalledWith(
+    expect(model.setLayoutAndClusterTree).toHaveBeenCalledWith(
       [
         { name: 'sampleC', sampleName: 'sampleC' },
         { name: 'sampleA', sampleName: 'sampleA' },
@@ -125,7 +125,7 @@ describe('runGenotypeClustering', () => {
     })
 
     expect(rpcManager.call).not.toHaveBeenCalled()
-    expect(model.setLayoutAndPendingClusterTree).not.toHaveBeenCalled()
+    expect(model.setLayoutAndClusterTree).not.toHaveBeenCalled()
   })
 
   it('expands sources into per-haplotype rows before laying out, in phased mode', async () => {
@@ -154,7 +154,7 @@ describe('runGenotypeClustering', () => {
       statusCallback: jest.fn(),
     })
 
-    expect(model.setLayoutAndPendingClusterTree).toHaveBeenCalledWith(
+    expect(model.setLayoutAndClusterTree).toHaveBeenCalledWith(
       [
         { name: 'sampleB HP1', sampleName: 'sampleB', HP: 1 },
         { name: 'sampleB HP0', sampleName: 'sampleB', HP: 0 },
@@ -200,7 +200,7 @@ describe('runGenotypeClustering', () => {
       'MultiSampleVariantClusterGenotypeMatrix',
       expect.objectContaining({ sources: model.sourcesBase }),
     )
-    expect(model.setLayoutAndPendingClusterTree).toHaveBeenCalledWith(
+    expect(model.setLayoutAndClusterTree).toHaveBeenCalledWith(
       [
         { name: 'sampleB', sampleName: 'sampleB' },
         { name: 'sampleA', sampleName: 'sampleA' },
