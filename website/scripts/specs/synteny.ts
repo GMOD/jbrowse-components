@@ -85,7 +85,7 @@ const SHH_PANEL_TRACKS = {
       trackId: 'hg38-rmsk',
       displayMode: 'compact',
       showLabels: 'none',
-      height: 85,
+      height: 72,
     },
   ],
   mm39: [
@@ -98,7 +98,7 @@ const SHH_PANEL_TRACKS = {
       trackId: 'mm39-rmsk',
       displayMode: 'compact',
       showLabels: 'none',
-      height: 85,
+      height: 72,
     },
   ],
 }
@@ -275,9 +275,13 @@ function launchFromSelectionParts(): ScreenshotSpec[] {
     {
       ...base,
       name: 'multiway_synteny/ecoli_launch_dialog',
-      // the dialog centers in the viewport, so this is its height plus the lanes
-      // it is launched from
-      viewportHeight: 620,
+      // The dialog centers in the viewport and MUI caps its paper at the
+      // viewport minus 64px, past which the content scrolls — so this is sized
+      // for the whole dialog, buttons included. At 620 the action row was below
+      // that cap and the frame cut it off mid-button, which since the launch
+      // grew a second way out ("Replace current view" beside "Open in new
+      // view") is the row worth showing.
+      viewportHeight: 760,
       actions: [...select, ...openDialog],
     },
     {
@@ -289,30 +293,30 @@ function launchFromSelectionParts(): ScreenshotSpec[] {
       actions: [
         ...select,
         ...openDialog,
-        { type: 'click', text: 'Submit' },
+        // "Replace current view", the dialog's other way out: the launched view
+        // takes the linear view's slot, so the frame is the result rather than
+        // mostly the source. (This used to be Submit followed by a click on
+        // close_view, which is the same two steps done by hand.)
+        //
+        // This click is where the run's `[mobx-state-tree] ... no longer part of
+        // a state tree` warns come from (plus `[findParentThat] node has no
+        // parent`), and they are benign. Replacing destroys the LGV subtree
+        // while its observer components are still mounted — React unmounts in
+        // the commit after the action — so MobX's staleness check re-evaluates
+        // their dependencies across the dead nodes: `view.height` walks tracks →
+        // displays. MST's livelinessChecking defaults to 'warn', so nothing
+        // throws and the reads feed a render that never commits. They carry
+        // `Action: '/session.replaceView()'` because MST leaves that action
+        // context set while MobX flushes reactions at the end of the action, and
+        // they print interleaved under other specs' [n/total] lines because the
+        // generator runs four browsers at once — the `[name] browser[warn]:`
+        // prefix is the attribution, not the counter above them.
+        { type: 'click', text: 'Replace current view' },
         {
           type: 'waitForSelector',
           selector: '[data-testid="synteny_canvas_done"]',
         },
         { type: 'delay', ms: 4000 },
-        // Close the linear view it was launched from, so the frame is the
-        // result rather than mostly the source.
-        //
-        // This click is where the run's `[mobx-state-tree] ... no longer part of
-        // a state tree` warns come from (plus `[findParentThat] node has no
-        // parent`), and they are benign. `session.removeView` destroys the LGV
-        // subtree while its observer components are still mounted — React
-        // unmounts in the commit after the action — so MobX's staleness check
-        // re-evaluates their dependencies across the dead nodes: `view.height`
-        // walks tracks → displays. MST's livelinessChecking defaults to 'warn',
-        // so nothing throws and the reads feed a render that never commits. They
-        // carry `Action: '/session.removeView()'` because MST leaves that action
-        // context set while MobX flushes reactions at the end of the action, and
-        // they print interleaved under other specs' [n/total] lines because the
-        // generator runs four browsers at once — the `[name] browser[warn]:`
-        // prefix is the attribution, not the counter above them.
-        { type: 'click', selector: '[data-testid="close_view"]' },
-        { type: 'delay', ms: 3000 },
         // No color legend and no palette menu (reviewer). The launched view
         // already draws the PAF's CIGAR (cigarMode defaults to 'full', and
         // all_vs_all.paf is built with `minimap2 -c`), so the wedges inside

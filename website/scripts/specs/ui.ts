@@ -751,7 +751,10 @@ export const uiSpecs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Linear read vs ref' },
       { type: 'click', text: 'Linear read vs ref' },
       { type: 'waitForText', text: 'Set window size' },
-      { type: 'click', text: 'Submit' },
+      // "Open in new view", not "Replace current view": this figure wants the
+      // read-vs-ref panel UNDER the pileup it was launched from, since the
+      // insertion the reader is being pointed at is visible in both
+      { type: 'click', text: 'Open in new view' },
       { type: 'waitForText', text: 'Reference sequence' },
       { type: 'delay', ms: 1000 },
       { type: 'click', selector: '[aria-label="View options"]' },
@@ -1891,14 +1894,6 @@ export const uiSpecs: ScreenshotSpec[] = [
           // the display puts them. Unclustered the same window is 127 rows of
           // scattered red with no block in it.
           runClustering: true,
-          // the clustered ORDER is what this figure uses; a dendrogram over
-          // 5px rows whose labels are all sub-pixel is decoration. It is also
-          // the only way to keep `StaleTreeHint` off the figure, because three
-          // Roadmap epigenome names carry parentheses and `@gmod/hclust`'s
-          // `toNewick` emits leaf labels unquoted, so those three parse back as
-          // a different name and `treeDescribesRows` (correctly) refuses to
-          // position the tree. Fixing the quoting is the real answer.
-          showTree: false,
           height: 700,
         },
       ],
