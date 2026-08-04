@@ -334,6 +334,18 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
               // 320 left half the lane empty: this slice is ~20x, so the reads
               // stack about 10 deep and the rest was white
               type: 'LinearAlignmentsDisplay',
+              // Link supplementary alignments (review: "view as pairs/link supp
+              // reads likely can be toggled too"). VIEW AS PAIRS has nothing to
+              // act on -- these are ONT reads and not one of the 38 in this
+              // window carries the paired flag -- but LINK SUPPLEMENTARY does:
+              // 18 of them carry an SA tag, 10 supplementary alignments land
+              // here, and 18 of the 22 SA segments map back into 2.5-2.6 Mb, so
+              // the chains are local. `linkedReads: 'normal'` is the one setting
+              // behind both menu items; on unpaired reads it chains a read's own
+              // supplementary segments. That says something the CIGAR deletion
+              // cannot: which reads cross the prophage boundary in one piece and
+              // which are split at it.
+              linkedReads: 'normal',
               height: 210,
             },
             {
@@ -341,6 +353,15 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
               type: 'LinearWiggleDisplay',
               height: 100,
             },
+            // The MAF the graph induces, over the same window (review: "a maf
+            // track of the different species in the graph if there is rgfa or
+            // maf available"). There is: ecoli_pggb_maf, the same track
+            // pangenome/maf draws whole-genome. Here it is the third independent
+            // statement of one event -- the reads' deletion, the depth track's
+            // 5 -> 1 step, and now the four non-K12 rows going blank across
+            // exactly the prophage. Each comes from a different file and none of
+            // them is the others' summary.
+            { trackId: 'ecoli_pggb_maf', type: 'LinearMafDisplay' },
           ],
         },
       ],
@@ -352,8 +373,9 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     readySelector: displayReady('pileup-display'),
     readyTimeout: 120000,
     viewportWidth: 1000,
-    // gene lane + the pileup with its coverage band + the depth wiggle
-    viewportHeight: 690,
+    // gene lane + the pileup with its coverage band + the depth wiggle + the
+    // MAF's five rows and its coverage band
+    viewportHeight: 865,
     settleMs: 20000,
     hideTooltip: true,
     actions: [

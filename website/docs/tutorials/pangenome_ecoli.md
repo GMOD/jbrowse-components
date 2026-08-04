@@ -498,7 +498,7 @@ are nanopore reads from _E. coli_ E146
 carbapenem-resistant clinical isolate that is not one of the five, mapped
 straight onto K12 with `minimap2 -ax map-ont`:
 
-<Figure caption="Nanopore reads from an unrelated E. coli isolate over one K12 depth trough, with the depth curve below. Coverage stops dead at the edges of the cryptic prophage CPZ-55, and reads long enough to cross the element carry it as a single labelled deletion. The graph projection bottoms out over the same span, so the trough, the coverage hole and the deletion are one event in three encodings." src="/img/pangenome/long_reads.png" />
+<Figure caption="Nanopore reads from an unrelated E. coli isolate over one K12 depth trough, with the graph's depth curve and its MAF below. Coverage stops dead at the edges of the cryptic prophage CPZ-55, and reads long enough to cross the element carry it as a single labelled deletion; the reads are drawn with supplementary segments linked, so a read split at the boundary is joined to its other half rather than read as two. The depth curve steps 5 to 1 over the same span and all four non-K12 MAF rows go blank across it. Four files, one event." src="/img/pangenome/long_reads.png" />
 
 Nothing in that picture came from the pangenome graph, which is what makes it a
 check on the projection rather than a restatement of it. It also shows the thing

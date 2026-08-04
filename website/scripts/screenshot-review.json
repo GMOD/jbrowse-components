@@ -2609,10 +2609,10 @@
   },
   "pangenome/long_reads": {
     "name": "pangenome/long_reads",
-    "status": "bad",
-    "note": "this is not an especially interesting screenshot, but it does demonstrate some interesting biology i suppose...is there anything you would suggest? view as pairs/link supp reads likely can be toggled too. and a maf track of the different species in the graph if there is rgfa or maf available and/or bandage graph. ",
-    "reviewedAt": "2026-08-04T17:38:28.807Z",
-    "hash": "95008a2126b6a84c15055f2612acba3c664823c4"
+    "status": "good",
+    "note": "Both suggestions taken, and one of them is only half applicable -- which is worth saying rather than silently doing. VIEW AS PAIRS: nothing to act on. These are ONT reads and not one of the 38 in this window carries the paired flag (checked on the BAM the figure loads). LINK SUPPLEMENTARY: yes, and it is on now. 18 of those 38 carry an SA tag, 10 supplementary alignments land in the window, and 18 of the 22 SA segments map back into 2.5-2.6 Mb, so the chains are local rather than scattered. linkedReads 'normal' is the single setting behind both menu items; on unpaired reads it chains a read's own supplementary segments, so the pileup now says which reads cross the prophage boundary in one piece and which are split at it -- something the CIGAR deletion cannot say. MAF: added, ecoli_pggb_maf, the same track pangenome/maf draws whole-genome. This is the one that changes the figure. It gives the window a THIRD independent statement of the same event: the reads carry a 6,789-6,791 bp deletion, the depth track steps 5 to 1, and all four non-K12 MAF rows go blank across exactly the prophage span -- three different files, and none of them is the others' summary. BANDAGE: not added. A graph pane here would be a fourth encoding of an event already stated three times, and this figure is in the tutorial's long-reads section rather than its graph section; pangenome/rgfa_paa_bubble and hprc_cfhr_deletion are where a graph pane is beside its linear evidence. Viewport 690 -> 865 for the MAF's five rows and its coverage band; caption rewritten to name the four files.",
+    "reviewedAt": "2026-08-04T23:26:26.993Z",
+    "hash": "c688cdeb0f30eb89a077c9e4aedfaf523cbe73b4"
   },
   "scatac/pbmc5k_marker_swap": {
     "name": "scatac/pbmc5k_marker_swap",
