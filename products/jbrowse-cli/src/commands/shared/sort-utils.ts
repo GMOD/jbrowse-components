@@ -68,7 +68,13 @@ function createSortCommandForStdin(sortColumn: number): {
   command: string
   pathArg: string
 } {
-  const tmpFile = fileSync({ prefix: 'jbrowse-sort' }).name
+  // discardDescriptor: we only want the path — the shell below opens the file
+  // itself, so tmp's own handle would just be a descriptor left open for the
+  // life of the process
+  const tmpFile = fileSync({
+    prefix: 'jbrowse-sort',
+    discardDescriptor: true,
+  }).name
   // trap on EXIT removes the temp file whether or not the sort pipeline
   // succeeds (a bare `&& rm` leaks the file when the pipeline fails)
   return {

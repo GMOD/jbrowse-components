@@ -1,6 +1,7 @@
 import { parseArgs } from 'node:util'
 
 import {
+  isRecord,
   printHelp,
   readConfigFile,
   readJsonFile,
@@ -105,9 +106,19 @@ export async function run(args: string[]) {
 }
 
 async function readDefaultSessionFile(defaultSessionFile: string) {
-  const session =
+  const contents =
     await readJsonFile<Record<string, unknown>>(defaultSessionFile)
-  // return top-level "session" if it exists, such as in files created by
+  // unwrap the top-level "session" if it exists, such as in files created by
   // "File -> Export session"
-  return session.session ?? session
+  const session = contents.session ?? contents
+  // spreading a string or an array here silently wrote a defaultSession of
+  // numeric keys, so say what is wrong with the file instead
+  if (!isRecord(session)) {
+    throw new Error(
+      `${defaultSessionFile} does not contain a session object${
+        contents.session === undefined ? '' : ' under its "session" key'
+      }`,
+    )
+  }
+  return session
 }

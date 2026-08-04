@@ -1,3 +1,4 @@
+import fs from 'node:fs'
 import path from 'node:path'
 import { Readable } from 'node:stream'
 
@@ -12,6 +13,13 @@ import { ixIxxStream } from 'ixixx'
 import { supported } from '../../types/common.ts'
 
 import type { Track } from '@jbrowse/text-indexing-core'
+
+// every index artifact lands in <outLocation>/trix, so the directory is created
+// here rather than by each caller: --dryrun goes nowhere near indexDriver and so
+// no longer leaves an empty trix/ behind
+function ensureTrixDir(outLocation: string) {
+  fs.mkdirSync(path.join(outLocation, 'trix'), { recursive: true })
+}
 
 export async function runIxIxx({
   readStream,
@@ -65,6 +73,7 @@ export async function indexDriver({
   assemblyNames: string[]
   prefixSize?: number
 }): Promise<void> {
+  ensureTrixDir(outLocation)
   const readStream = Readable.from(
     indexFiles({
       tracks: trackConfigs,

@@ -9,10 +9,9 @@ import {
   addAssemblyToConfig,
   enhanceAssembly,
   getAssembly,
-  isSequenceType,
   loadOrCreateConfig,
+  parseSequenceType,
   resolveTargetPath,
-  validateSequenceType,
 } from './utils.ts'
 
 export async function run(args?: string[]) {
@@ -156,15 +155,12 @@ export async function run(args?: string[]) {
   }
 
   validateLoadOption(runFlags.load)
-  validateSequenceType(runFlags.type)
+  const type = parseSequenceType(runFlags.type)
 
   const argsSequence = positionals[0]
   requirePositional(argsSequence, 'sequence', usage)
   const output = runFlags.target || runFlags.out || '.'
-  const flags = {
-    ...runFlags,
-    type: isSequenceType(runFlags.type) ? runFlags.type : undefined,
-  }
+  const flags = { ...runFlags, type }
 
   debug(`Sequence location is: ${argsSequence}`)
 

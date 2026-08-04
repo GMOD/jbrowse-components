@@ -1,8 +1,5 @@
-import {
-  getAssemblyNames,
-  getTrackConfigs,
-  parseCommaSeparatedString,
-} from './config-utils.ts'
+import { parseCommaSeparatedString } from '../../utils.ts'
+import { getAssemblyNames, getTrackConfigs } from './config-utils.ts'
 
 import type { Assembly, Config } from '../../base.ts'
 

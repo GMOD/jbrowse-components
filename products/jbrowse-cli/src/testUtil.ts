@@ -1,7 +1,8 @@
-import { readFileSync, realpathSync, rmSync } from 'node:fs'
-import { mkdir, mkdtemp, open } from 'node:fs/promises'
+import { createReadStream, readFileSync, realpathSync, rmSync } from 'node:fs'
+import { mkdir, mkdtemp } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
+import { Readable } from 'node:stream'
 
 import { main as nativeMain } from './index.ts'
 
@@ -190,9 +191,14 @@ interface MockFetchResponse {
   body?: ReadableStream<Uint8Array>
 }
 
-export async function openWebStream(filePath: string) {
-  const handle = await open(filePath, 'r')
-  return handle.readableWebStream() as ReadableStream<Uint8Array>
+// a FileHandle's readableWebStream does not close the handle, so the descriptor
+// leaked until GC noticed it and printed a "Closing file descriptor N on garbage
+// collection" warning at whatever point in the run that happened to be. A read
+// stream closes itself at EOF.
+export function openWebStream(filePath: string) {
+  return Readable.toWeb(
+    createReadStream(filePath),
+  ) as ReadableStream<Uint8Array>
 }
 
 type MockFetchHandler =

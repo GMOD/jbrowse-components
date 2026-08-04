@@ -1,15 +1,15 @@
+import { parseCommaSeparatedString, writeJsonFile } from '../../utils.ts'
 import { createTrixAdapter } from './adapter-utils.ts'
 import {
   formatDryRun,
   getAssemblyNames,
   getTrackConfigs,
   loadConfigForIndexing,
-  parseCommaSeparatedString,
   prepareIndexDriverFlags,
-  writeConf,
 } from './config-utils.ts'
 import { indexDriver } from './indexing-utils.ts'
 
+import type { TrixTextSearchAdapter } from '../../base.ts'
 import type { TextIndexFlags } from './index.ts'
 
 export async function aggregateIndex(flags: TextIndexFlags): Promise<void> {
@@ -31,10 +31,12 @@ export async function aggregateIndex(flags: TextIndexFlags): Promise<void> {
     out,
   )
 
-  const aggregateTextSearchAdapters = config.aggregateTextSearchAdapters ?? []
-  const asms = getAssemblyNames(config, assemblies)
+  const existing = config.aggregateTextSearchAdapters ?? []
 
-  for (const asm of asms) {
+  // sequential, not Promise.all: each assembly's indexer owns the progress bar
+  // and streams whole files through ixIxx
+  const written: TrixTextSearchAdapter[] = []
+  for (const asm of getAssemblyNames(config, assemblies)) {
     const trackConfigs = getTrackConfigs(
       config,
       parseCommaSeparatedString(tracks),
@@ -49,41 +51,41 @@ export async function aggregateIndex(flags: TextIndexFlags): Promise<void> {
 
     if (dryrun) {
       console.log(formatDryRun(trackConfigs))
-    } else {
-      const trixConf = createTrixAdapter(asm, [asm])
-      const idx = aggregateTextSearchAdapters.findIndex(
-        x => x.textSearchAdapterId === trixConf.textSearchAdapterId,
-      )
-      if (idx !== -1 && !force) {
-        console.log(
-          `Note: ${asm} has already been indexed with this configuration, use --force to overwrite this assembly. Skipping for now`,
-        )
-        continue
-      }
-
-      await indexDriver({
-        trackConfigs,
-        outLocation,
-        name: asm,
-        assemblyNames: [asm],
-        ...prepareIndexDriverFlags({ attributes, exclude, quiet, prefixSize }),
-      })
-
-      if (idx === -1) {
-        aggregateTextSearchAdapters.push(trixConf)
-      } else {
-        aggregateTextSearchAdapters[idx] = trixConf
-      }
+      continue
     }
+
+    const trixConf = createTrixAdapter(asm, [asm])
+    if (
+      !force &&
+      existing.some(x => x.textSearchAdapterId === trixConf.textSearchAdapterId)
+    ) {
+      console.log(
+        `Note: ${asm} has already been indexed with this configuration, use --force to overwrite this assembly. Skipping for now`,
+      )
+      continue
+    }
+
+    await indexDriver({
+      trackConfigs,
+      outLocation,
+      name: asm,
+      assemblyNames: [asm],
+      ...prepareIndexDriverFlags({ attributes, exclude, quiet, prefixSize }),
+    })
+    written.push(trixConf)
   }
 
   if (!dryrun) {
-    writeConf(
-      {
-        ...config,
-        aggregateTextSearchAdapters,
-      },
-      configPath,
-    )
+    await writeJsonFile(configPath, {
+      ...config,
+      // upsert by adapter id: a Map keyed on it keeps the first occurrence's
+      // position while the last value wins, so re-indexing an assembly replaces
+      // its adapter in place and a new one lands at the end
+      aggregateTextSearchAdapters: [
+        ...new Map(
+          [...existing, ...written].map(a => [a.textSearchAdapterId, a]),
+        ).values(),
+      ],
+    })
   }
 }

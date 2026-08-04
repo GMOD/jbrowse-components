@@ -1,12 +1,9 @@
-import fs from 'node:fs'
-import os from 'node:os'
-import path from 'node:path'
 import { parseArgs } from 'node:util'
 
 import cors from 'cors'
 import express, { json, static as serveStatic } from 'express'
 
-import { debug, printHelp } from '../../utils.ts'
+import { printHelp } from '../../utils.ts'
 import {
   generateKey,
   parsePort,
@@ -88,19 +85,10 @@ export async function run(args?: string[]) {
   app.use(cors())
   app.use(json({ limit: bodySizeLimit }))
 
+  // the key lives only in this process and in the startup URL printed below. It
+  // used to also be written to os.tmpdir()/jbrowse-admin-<key>, which nothing
+  // ever read and which published the key in a filename any local user can list
   const key = generateKey()
-  const keyPath = path.join(os.tmpdir(), `jbrowse-admin-${key}`)
-
-  try {
-    fs.writeFileSync(keyPath, key)
-    debug(`Admin key stored at ${keyPath}`)
-  } catch (error) {
-    console.error(
-      `Failed to write admin key to ${keyPath}:`,
-      error instanceof Error ? error.message : error,
-    )
-    // Continue anyway, as this is not critical
-  }
 
   const serverRef: { current: Server | null } = { current: null }
 
@@ -118,5 +106,5 @@ export async function run(args?: string[]) {
     }
   })
 
-  startServer({ app, port, key, outFile, keyPath, serverRef })
+  startServer({ app, port, key, outFile, serverRef })
 }

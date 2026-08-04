@@ -231,3 +231,32 @@ test('allows valid configPath in updateConfig', async () => {
     await killExpress({ stdout })
   })
 })
+
+// the config payload used to be read before the key was checked, and express 5
+// leaves req.body undefined when no JSON body was parsed — so an unauthorized
+// request with no body threw a TypeError and got a 500 instead of a 401
+test('rejects an unauthorized updateConfig with no body', async () => {
+  await runInTmpDir(async () => {
+    const { stdout } = await runCommand(['admin-server', '--port', '9100'])
+    const response = await fetch('http://localhost:9100/updateConfig', {
+      method: 'POST',
+    })
+    expect(response.status).toBe(401)
+    expect(await response.text()).toBe('Error: Invalid admin key')
+    await killExpress({ stdout })
+  })
+})
+
+test('rejects an updateConfig with a valid key but no config', async () => {
+  await runInTmpDir(async () => {
+    const { stdout } = await runCommand(['admin-server', '--port', '9101'])
+    const response = await fetch('http://localhost:9101/updateConfig', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminKey: getAdminKey(stdout) }),
+    })
+    expect(response.status).toBe(400)
+    expect(await response.text()).toBe('Error: Missing config in request body')
+    await killExpress({ stdout })
+  })
+})

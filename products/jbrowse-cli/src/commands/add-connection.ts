@@ -1,4 +1,3 @@
-import path from 'node:path'
 import { parseArgs } from 'node:util'
 
 import {
@@ -15,11 +14,11 @@ import {
   saveConfigAndReport,
 } from './shared/config-operations.ts'
 
-import type { Config } from '../base.ts'
+import type { Config, Connection } from '../base.ts'
 
 function resolveURL(location: string) {
   try {
-    return new URL(location).href
+    return new URL(location)
   } catch (error) {
     throw new Error(`The location ${location} provided is not a valid URL`, {
       cause: error,
@@ -27,11 +26,15 @@ function resolveURL(location: string) {
   }
 }
 
-function determineConnectionType(url: string) {
-  if (path.basename(url) === 'hub.txt') {
+// a hub.txt filename and a jbrowse/data path are the two conventions we can
+// recognize. Both are read off the URL's path rather than the whole href, so a
+// query string can't fake one and a host that happens to be named hub.txt can't
+// be mistaken for a hub file.
+function determineConnectionType(url: URL) {
+  if (url.pathname.endsWith('/hub.txt')) {
     return 'UCSCTrackHubConnection'
   }
-  if (url.includes('jbrowse/data')) {
+  if (url.pathname.includes('jbrowse/data')) {
     return 'JBrowse1Connection'
   }
   return 'custom'
@@ -150,31 +153,30 @@ export async function run(args?: string[]) {
     connectionId ||
     [configType, assemblyNames, Date.now()].filter(Boolean).join('-')
 
-  const connectionConfig = {
+  // each known connection type stores the URL under its own location slot; a
+  // custom type carries no location, so its --config must supply one
+  const locationField = {
+    UCSCTrackHubConnection: 'hubTxtLocation',
+    JBrowse1Connection: 'dataDirLocation',
+  }[configType]
+
+  // a JBrowse 1 connection serves exactly one assembly, so it falls back to the
+  // config's first (the assemblies list is known non-empty by here)
+  const defaultAssemblyNames =
+    configType === 'JBrowse1Connection'
+      ? [configContents.assemblies[0]!.name]
+      : undefined
+
+  const connectionConfig: Connection = {
     type: configType,
     name: name || id,
-    ...(configType === 'UCSCTrackHubConnection'
-      ? {
-          hubTxtLocation: {
-            uri: url,
-            locationType: 'UriLocation',
-          },
-        }
-      : {}),
-    ...(configType === 'JBrowse1Connection'
-      ? {
-          dataDirLocation: {
-            uri: url,
-            locationType: 'UriLocation',
-          },
-        }
-      : {}),
+    ...(locationField && {
+      [locationField]: { uri: url.href, locationType: 'UriLocation' },
+    }),
     connectionId: id,
     assemblyNames: assemblyNames
       ? parseCommaSeparatedString(assemblyNames)
-      : configType === 'JBrowse1Connection'
-        ? [configContents.assemblies[0]?.name]
-        : undefined,
+      : defaultAssemblyNames,
     ...configObj,
   }
 

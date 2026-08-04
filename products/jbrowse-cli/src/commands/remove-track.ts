@@ -65,13 +65,13 @@ export async function run(args?: string[]) {
 
   const config: Config = await readConfigFile(target)
 
-  const trackExists = config.tracks?.some(({ trackId: id }) => id === trackId)
-  config.tracks = config.tracks?.filter(({ trackId: id }) => id !== trackId)
+  const tracks = config.tracks ?? []
+  const remaining = tracks.filter(track => track.trackId !== trackId)
 
-  if (!trackExists) {
+  if (remaining.length === tracks.length) {
     console.log(`No track found with trackId: ${trackId}`)
   } else {
-    await writeJsonFile(target, config)
+    await writeJsonFile(target, { ...config, tracks: remaining })
     console.log(`Removed track with trackId: ${trackId} from ${target}`)
   }
 }

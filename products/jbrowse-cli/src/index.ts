@@ -142,6 +142,12 @@ export async function main(args: string[]) {
     // command's actual position (rather than a hardcoded index 0) keeps this
     // correct when a global flag precedes the command, e.g. `jbrowse -v create`
     const commandArgs = args.slice(args.indexOf(commandName) + 1)
+    // ...but that slice drops a help flag written before the command, so
+    // `jbrowse --help create` used to run create with no args and fail on the
+    // missing positional instead of printing its help
+    if (flags.help && !commandArgs.some(a => a === '--help' || a === '-h')) {
+      commandArgs.push('--help')
+    }
     await command.run(commandArgs)
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)

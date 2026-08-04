@@ -2,7 +2,12 @@ import crypto from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
 
-import { debug, resolveConfigPath, writeJsonFile } from '../../utils.ts'
+import {
+  debug,
+  isRecord,
+  resolveConfigPath,
+  writeJsonFile,
+} from '../../utils.ts'
 import { createDefaultConfig } from '../add-assembly/utils.ts'
 
 import type { Express, Request, Response } from 'express'
@@ -53,6 +58,27 @@ export async function setupConfigFile({
   return { outFile, baseDir }
 }
 
+// express types req.body as `any`, and express 5 leaves it undefined when no
+// JSON body was parsed. Every read goes through here so a missing or non-object
+// body yields no properties instead of throwing, and nothing downstream sees
+// `any`.
+function requestBody(req: Request): Record<string, unknown> {
+  const body: unknown = req.body
+  return isRecord(body) ? body : {}
+}
+
+// body and query values are untrusted input: a repeated query param arrives as
+// an array, a nested one as an object, and neither is a key or a path
+function asString(value: unknown) {
+  return typeof value === 'string' ? value : undefined
+}
+
+// a discriminated union rather than { isValid, configPath? }, so a caller that
+// checked the flag has configPath without asserting it is there
+type ParamValidation =
+  | { ok: true; configPath: string }
+  | { ok: false; error: string }
+
 function validateAndExtractParams({
   req,
   key,
@@ -63,38 +89,39 @@ function validateAndExtractParams({
   key: string
   baseDir: string
   outFile: string
-}): { isValid: boolean; configPath?: string; error?: string } {
-  const { body } = req
-  const queryAdminKey = req.query.adminKey
-  const adminKey =
-    body?.adminKey ||
-    (typeof queryAdminKey === 'string' ? queryAdminKey : undefined)
+}): ParamValidation {
+  const body = requestBody(req)
+  const adminKey = asString(body.adminKey) || asString(req.query.adminKey)
 
   if (adminKey !== key) {
-    return { isValid: false, error: 'Invalid admin key' }
+    return { ok: false, error: 'Invalid admin key' }
   }
 
-  const queryConfig = req.query.config
-  const configPathParam =
-    body?.configPath ||
-    (typeof queryConfig === 'string' ? queryConfig : undefined)
-
-  try {
-    const configPath = configPathParam
-      ? path.normalize(path.join(baseDir, configPathParam))
-      : outFile
-
-    const normalizedBaseDir = path.normalize(baseDir)
-    const relPath = path.relative(normalizedBaseDir, configPath)
-
-    if (relPath.startsWith('..') || path.isAbsolute(relPath)) {
-      return { isValid: false, error: 'Cannot perform directory traversal' }
-    }
-
-    return { isValid: true, configPath }
-  } catch (error) {
-    return { isValid: false, error: 'Failed to validate config path' }
+  // a configPath that is there but is not a string (a JSON number, an object, a
+  // repeated query param) is a malformed request, not an absent one — it must not
+  // silently fall through to writing the default config
+  const rawConfigPath = body.configPath || req.query.config
+  const configPathParam = asString(rawConfigPath)
+  if (rawConfigPath !== undefined && configPathParam === undefined) {
+    return { ok: false, error: 'Failed to validate config path' }
   }
+
+  const configPath = configPathParam
+    ? path.normalize(path.join(baseDir, configPathParam))
+    : outFile
+
+  const relPath = path.relative(path.normalize(baseDir), configPath)
+
+  if (relPath.startsWith('..') || path.isAbsolute(relPath)) {
+    return { ok: false, error: 'Cannot perform directory traversal' }
+  }
+
+  return { ok: true, configPath }
+}
+
+function sendText(res: Response, status: number, body: string) {
+  res.status(status).setHeader('Content-Type', 'text/plain')
+  res.send(body)
 }
 
 export function setupRoutes({
@@ -111,71 +138,59 @@ export function setupRoutes({
   serverRef: ServerRef
 }): void {
   app.get('/', (_req: Request, res: Response) => {
-    res.setHeader('Content-Type', 'text/plain')
-    res.send('JBrowse Admin Server')
+    sendText(res, 200, 'JBrowse Admin Server')
   })
 
   app.post('/updateConfig', (req: Request, res: Response) => {
-    const { body } = req
-    const config = body.config
-
+    // the key is checked before the payload is touched: reading req.body first
+    // turned a request with no JSON body (express 5 leaves body undefined) into
+    // a TypeError and a 500 rather than the 401 it had earned
     const validation = validateAndExtractParams({ req, key, baseDir, outFile })
-    if (!validation.isValid) {
-      res.status(401).setHeader('Content-Type', 'text/plain')
-      res.send(`Error: ${validation.error}`)
+    if (!validation.ok) {
+      sendText(res, 401, `Error: ${validation.error}`)
       return
     }
 
+    const config = requestBody(req).config
     if (config === undefined) {
-      res.status(400).setHeader('Content-Type', 'text/plain')
-      res.send('Error: Missing config in request body')
+      sendText(res, 400, 'Error: Missing config in request body')
       return
     }
 
     try {
-      fs.writeFileSync(validation.configPath!, JSON.stringify(config, null, 2))
-      res.setHeader('Content-Type', 'text/plain')
-      res.send('Config updated successfully')
-    } catch (error) {
-      res.status(500).setHeader('Content-Type', 'text/plain')
-      res.send('Error: Failed to update config')
+      fs.writeFileSync(validation.configPath, JSON.stringify(config, null, 2))
+      sendText(res, 200, 'Config updated successfully')
+    } catch {
+      sendText(res, 500, 'Error: Failed to update config')
     }
   })
 
   app.get('/config', (req: Request, res: Response) => {
     const validation = validateAndExtractParams({ req, key, baseDir, outFile })
-    if (!validation.isValid) {
-      res.status(401).setHeader('Content-Type', 'text/plain')
-      res.send(`Error: ${validation.error}`)
+    if (!validation.ok) {
+      sendText(res, 401, `Error: ${validation.error}`)
       return
     }
 
     try {
-      if (fs.existsSync(validation.configPath!)) {
-        const config = fs.readFileSync(validation.configPath!, 'utf8')
-        res.setHeader('Content-Type', 'text/plain')
-        res.send(config)
+      if (fs.existsSync(validation.configPath)) {
+        sendText(res, 200, fs.readFileSync(validation.configPath, 'utf8'))
       } else {
-        res.status(404).setHeader('Content-Type', 'text/plain')
-        res.send('Error: Config file not found')
+        sendText(res, 404, 'Error: Config file not found')
       }
     } catch (error) {
       console.error('Error reading config:', error)
-      res.status(500).setHeader('Content-Type', 'text/plain')
-      res.send('Error: Failed to read config')
+      sendText(res, 500, 'Error: Failed to read config')
     }
   })
 
   app.post('/shutdown', (req: Request, res: Response) => {
-    const { body } = req
-    if (body?.adminKey !== key) {
-      res.status(401).setHeader('Content-Type', 'text/plain')
-      res.send('Error: Invalid admin key')
+    if (asString(requestBody(req).adminKey) !== key) {
+      sendText(res, 401, 'Error: Invalid admin key')
       return
     }
 
-    res.setHeader('Content-Type', 'text/plain')
-    res.send('Server shutting down')
+    sendText(res, 200, 'Server shutting down')
 
     setImmediate(() => {
       if (serverRef.current) {
@@ -190,14 +205,12 @@ export function startServer({
   port,
   key,
   outFile,
-  keyPath,
   serverRef,
 }: {
   app: Express
   port: number
   key: string
   outFile: string
-  keyPath: string
   serverRef: ServerRef
 }): void {
   const server = app.listen(port, () => {
@@ -225,12 +238,6 @@ export function startServer({
   const shutdownHandler = () => {
     console.log('\nShutting down admin server...')
     server.close(() => {
-      try {
-        fs.unlinkSync(keyPath)
-        debug(`Removed admin key file: ${keyPath}`)
-      } catch (error) {
-        // Ignore errors when cleaning up
-      }
       process.exit(0)
     })
   }

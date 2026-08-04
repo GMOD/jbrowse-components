@@ -94,6 +94,68 @@ function coarsePieces({
       }))
 }
 
+// A PIF row carries exactly ONE alignment string — `cg:Z:`, in the orientation
+// of the perspective it is indexed under. A minimap2 `cs:Z:` is folded into that
+// CIGAR and never emitted, for two reasons:
+//
+//  - `cs` has its own orientation, and reorienting it means reversing op order
+//    AND reverse-complementing the spelled-out bases. Keeping an unflipped `cs`
+//    beside a flipped `cg` is silently wrong rather than merely lossy:
+//    `SyntenyFeature.forEachMismatch` prefers `cs`, so a row from
+//    `minimap2 -c --cs` (which emits both tags) drew every indel with reversed
+//    sense from the query perspective.
+//  - `csToCigar` yields `=`/`X`, so folding a `cs` in is strictly MORE
+//    informative than minimap2's own M-style `cg` — which is why `cs` wins when
+//    a row carries both. The substituted base letters are the only thing lost;
+//    mismatch positions survive as `X`.
+//
+// Returns the rewritten optional-tag list and where the surviving alignment
+// string sits in it (-1 when the row carries none).
+function foldCsIntoCg(tags: string[]) {
+  const csIdx = tags.findIndex(f => f.startsWith('cs:Z'))
+  if (csIdx === -1) {
+    return { tags, cigarIdx: tags.findIndex(f => f.startsWith('cg:Z')) }
+  }
+  const folded = `cg:Z:${csToCigar(tags[csIdx]!.slice(5))}`
+  const rewritten = tags.flatMap((f, i) =>
+    i === csIdx ? [folded] : f.startsWith('cg:Z') ? [] : [f],
+  )
+  return { tags: rewritten, cigarIdx: rewritten.indexOf(folded) }
+}
+
+// Coarse identity must match the fine tier exactly, or coloring jumps at the
+// zoom where the view switches tiers. So it is written off the SAME function the
+// adapters read the fine tier with (de:f: tag, then odgi's id:f:, then
+// num_matches/block_len) rather than a private copy of that chain — a copy is
+// what previously skipped the id:f: rung. A CIGAR recompute is deliberately not
+// in the chain at all: a cg (M-style) CIGAR folds mismatches into M, so it would
+// report ~0 divergence (spurious 100% identity) for a divergent alignment.
+//
+// When the row's own de:f: is what the reader lands on, that string is passed
+// through byte-for-byte rather than recomputed: a round trip through toFixed(6)
+// would silently truncate a 7-decimal tag and drift the two tiers apart by the
+// exact mechanism this is guarding against.
+function coarseDivergence(
+  tags: string[],
+  numMatches: number,
+  blockLen: number,
+) {
+  const rawDe = tags.find(f => f.startsWith('de:f:'))?.slice(5)
+  const identity = pafIdentity({
+    de: rawDe,
+    id: tags.find(f => f.startsWith('id:f:'))?.slice(5),
+    numMatches,
+    blockLen,
+  })
+  return rawDe !== undefined && 1 - +rawDe === identity
+    ? rawDe
+    : (1 - identity).toFixed(6)
+}
+
+function pifRow(fields: (string | number | undefined)[]) {
+  return `${fields.join('\t')}\n`
+}
+
 function processLine(
   line: string,
   coarseSplitGap: number | undefined,
@@ -110,136 +172,98 @@ function processLine(
     return ''
   }
   stats.rows++
+  // rest[0]=num_matches, rest[1]=block_len, rest[2]=mapq, rest[3+]=optional tags
   const [c1, l1, s1, e1, strand, c2, l2, s2, e2, ...rest] = parts
   addPanSNSample(stats, c1!)
   addPanSNSample(stats, c2!)
-  // rest[0]=num_matches, rest[1]=block_len, rest[2]=mapq, rest[3+]=optional tags
 
-  // A PIF row carries exactly ONE alignment string — `cg:Z:`, in the
-  // orientation of the perspective it is indexed under. A minimap2 `cs:Z:` is
-  // folded into that CIGAR and never emitted, for two reasons:
-  //
-  //  - `cs` has its own orientation, and reorienting it means reversing op
-  //    order AND reverse-complementing the spelled-out bases. Keeping an
-  //    unflipped `cs` beside a flipped `cg` is silently wrong rather than
-  //    merely lossy: `SyntenyFeature.forEachMismatch` prefers `cs`, so a row
-  //    from `minimap2 -c --cs` (which emits both tags) drew every indel with
-  //    reversed sense from the query perspective.
-  //  - `csToCigar` yields `=`/`X`, so folding a `cs` in is strictly MORE
-  //    informative than minimap2's own M-style `cg` — which is why `cs` wins
-  //    when a row carries both. The substituted base letters are the only
-  //    thing lost; mismatch positions survive as `X`.
-  const csIdx = rest.findIndex(f => f.startsWith('cs:Z'))
-  const cgIdx = rest.findIndex(f => f.startsWith('cg:Z'))
-  let cigarIdx = cgIdx
-  if (csIdx !== -1) {
-    rest[csIdx] = `cg:Z:${csToCigar(rest[csIdx]!.slice(5))}`
-    cigarIdx = csIdx
-    if (cgIdx !== -1) {
-      rest.splice(cgIdx, 1)
-      if (cgIdx < csIdx) {
-        cigarIdx--
-      }
-    }
-  }
+  const { tags, cigarIdx } = foldCsIntoCg(rest)
+  const cigar = cigarIdx === -1 ? undefined : tags[cigarIdx]!.slice(5)
 
-  const tRow = `${[`t${c2}`, l2, s2, e2, strand, c1, l1, s1, e1, ...rest].join('\t')}\n`
+  // the t-row keeps the CIGAR as PAF spelled it (target perspective); the q-row
+  // re-orients it for the query perspective it is indexed under
+  const queryTags =
+    cigar === undefined
+      ? tags
+      : tags.map((f, i) =>
+          i === cigarIdx
+            ? `cg:Z:${strand === '-' ? flipCigar(cigar) : swapIndelCigar(cigar)}`
+            : f,
+        )
 
-  const CIGAR = rest[cigarIdx]
-  const cigarStr = CIGAR ? CIGAR.slice(5) : undefined
-  if (cigarStr) {
-    rest[cigarIdx] = `cg:Z:${
-      strand === '-' ? flipCigar(cigarStr) : swapIndelCigar(cigarStr)
-    }`
-  }
-  const qRow = `${[`q${c1}`, l1, s1, e1, strand, c2, l2, s2, e2, ...rest].join('\t')}\n`
+  const fineRows =
+    pifRow([`t${c2}`, l2, s2, e2, strand, c1, l1, s1, e1, ...tags]) +
+    pifRow([`q${c1}`, l1, s1, e1, strand, c2, l2, s2, e2, ...queryTags])
 
   if (coarseSplitGap === undefined) {
-    return tRow + qRow
+    return fineRows
   }
 
-  const numMatches = +rest[0]!
-  const blockLen = +rest[1]!
-  const mapq = rest[2]
+  const numMatches = +tags[0]!
+  const blockLen = +tags[1]!
+  const mapq = tags[2]
   // Every optional tag except the alignment string itself rides along, so a
   // click on a coarse ribbon shows the same attributes as the same alignment
   // does zoomed in (rustybam's tags, minimap2's tp/cm/s1, odgi's id). Only the
   // CIGAR is dropped — dropping it is the entire point of the tier — and de:f:,
   // which is rewritten below. No `cs:Z:` can reach here: it was folded into the
   // cg above, since a PIF row carries one alignment string.
-  const passthrough = rest
+  const passthrough = tags
     .slice(3)
     .filter(f => !f.startsWith('cg:Z:') && !f.startsWith('de:f:'))
-  // Coarse identity must match the fine tier exactly, or coloring jumps at the
-  // zoom where the view switches tiers. So it is written off the SAME function
-  // the adapters read the fine tier with (de:f: tag, then odgi's id:f:, then
-  // num_matches/block_len) rather than a private copy of that chain — a copy is
-  // what previously skipped the id:f: rung. A CIGAR recompute is deliberately not
-  // in the chain at all: a cg (M-style) CIGAR folds mismatches into M, so it
-  // would report ~0 divergence (spurious 100% identity) for a divergent
-  // alignment.
-  //
-  // When the row's own de:f: is what the reader lands on, that string is passed
-  // through byte-for-byte rather than recomputed: a round trip through toFixed(6)
-  // would silently truncate a 7-decimal tag and drift the two tiers apart by the
-  // exact mechanism this is guarding against.
-  const rawDe = rest.find(f => f.startsWith('de:f:'))?.slice(5)
-  const identity = pafIdentity({
-    de: rawDe,
-    id: rest.find(f => f.startsWith('id:f:'))?.slice(5),
-    numMatches,
-    blockLen,
-  })
-  const de =
-    rawDe !== undefined && 1 - +rawDe === identity
-      ? rawDe
-      : (1 - identity).toFixed(6)
-  let coarseRows = ''
-  for (const piece of coarsePieces({
-    cigar: cigarStr,
-    strand: strand!,
-    tstart: +s2!,
-    tend: +e2!,
-    qstart: +s1!,
-    qend: +e1!,
-    numMatches,
-    blockLen,
-    splitGap: coarseSplitGap,
-  })) {
-    coarseRows += `${[
-      `T${c2}`,
-      l2,
-      piece.tstart,
-      piece.tend,
-      strand,
-      c1,
-      l1,
-      piece.qstart,
-      piece.qend,
-      piece.numMatches,
-      piece.blockLen,
-      mapq,
-      ...passthrough,
-      `de:f:${de}`,
-    ].join('\t')}\n`
-    coarseRows += `${[
-      `Q${c1}`,
-      l1,
-      piece.qstart,
-      piece.qend,
-      strand,
-      c2,
-      l2,
-      piece.tstart,
-      piece.tend,
-      piece.numMatches,
-      piece.blockLen,
-      mapq,
-      ...passthrough,
-      `de:f:${de}`,
-    ].join('\t')}\n`
-  }
-  return tRow + qRow + coarseRows
+  const de = coarseDivergence(tags, numMatches, blockLen)
+
+  return (
+    fineRows +
+    coarsePieces({
+      cigar,
+      strand: strand!,
+      tstart: +s2!,
+      tend: +e2!,
+      qstart: +s1!,
+      qend: +e1!,
+      numMatches,
+      blockLen,
+      splitGap: coarseSplitGap,
+    })
+      .flatMap(piece => {
+        const tail = [
+          piece.numMatches,
+          piece.blockLen,
+          mapq,
+          ...passthrough,
+          `de:f:${de}`,
+        ]
+        const { tstart, tend, qstart, qend } = piece
+        return [
+          pifRow([
+            `T${c2}`,
+            l2,
+            tstart,
+            tend,
+            strand,
+            c1,
+            l1,
+            qstart,
+            qend,
+            ...tail,
+          ]),
+          pifRow([
+            `Q${c1}`,
+            l1,
+            qstart,
+            qend,
+            strand,
+            c2,
+            l2,
+            tstart,
+            tend,
+            ...tail,
+          ]),
+        ]
+      })
+      .join('')
+  )
 }
 
 function makePifTransform(

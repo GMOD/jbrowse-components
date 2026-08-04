@@ -1,8 +1,11 @@
-import fs from 'node:fs'
 import path from 'node:path'
 
 import { supported } from '../../types/common.ts'
-import { parseCommaSeparatedString, resolveConfigPath } from '../../utils.ts'
+import {
+  parseCommaSeparatedString,
+  readConfigFile,
+  resolveConfigPath,
+} from '../../utils.ts'
 
 import type { Config, Track } from '../../base.ts'
 
@@ -35,31 +38,15 @@ export function prepareIndexDriverFlags(flags: {
   }
 }
 
-export function readConf(configPath: string): Config {
-  return JSON.parse(fs.readFileSync(configPath, 'utf8'))
-}
-
-export function writeConf(obj: Config, configPath: string): void {
-  fs.writeFileSync(configPath, JSON.stringify(obj, null, 2))
-}
-
 export async function loadConfigForIndexing(
   target: string | undefined,
   out: string | undefined,
 ) {
   const configPath = await resolveConfigPath(target, out)
-  const outLocation = path.dirname(configPath)
-  const config = readConf(configPath)
-  ensureTrixDir(outLocation)
-  return { config, configPath, outLocation }
-}
-
-export function ensureTrixDir(outLocation: string): string {
-  const trixDir = path.join(outLocation, 'trix')
-  if (!fs.existsSync(trixDir)) {
-    fs.mkdirSync(trixDir, { recursive: true })
-  }
-  return trixDir
+  // readConfigFile, not a bare readFileSync: run from the wrong directory, this
+  // is the error the user sees, and it should name the config.json it looked for
+  const config = await readConfigFile<Config>(configPath)
+  return { config, configPath, outLocation: path.dirname(configPath) }
 }
 
 export function getAssemblyNames(
@@ -137,5 +124,3 @@ export function getTrackConfigs(
 }
 
 export { sanitizeForFilename as sanitizeNameForPath } from '@jbrowse/text-indexing-core'
-
-export { parseCommaSeparatedString } from '../../utils.ts'

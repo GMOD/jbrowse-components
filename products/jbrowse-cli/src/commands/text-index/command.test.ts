@@ -172,7 +172,7 @@ test('indexes a local gz gff3 file', async () => {
 test('indexes a remote gz gff3 file', async () => {
   await runInTmpDir(async ctx => {
     mockGlobalFetch(async () => ({
-      body: await openWebStream(dataDir('volvox.sort.gff3.gz')),
+      body: openWebStream(dataDir('volvox.sort.gff3.gz')),
     }))
     fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
     await runCommand([
@@ -187,7 +187,7 @@ test('indexes a remote gz gff3 file', async () => {
 test('indexes a remote non-gz gff3 file', async () => {
   await runInTmpDir(async ctx => {
     mockGlobalFetch(async () => ({
-      body: await openWebStream(dataDir('au9_scaffold_subset_sync.gff3')),
+      body: openWebStream(dataDir('au9_scaffold_subset_sync.gff3')),
     }))
     fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
     await runCommand([
@@ -219,10 +219,10 @@ test('indexes multiple remote gff3 file', async () => {
   await runInTmpDir(async ctx => {
     mockGlobalFetch(async url => {
       if (url.includes('volvox.sort.gff3.gz')) {
-        return { body: await openWebStream(dataDir('volvox.sort.gff3.gz')) }
+        return { body: openWebStream(dataDir('volvox.sort.gff3.gz')) }
       }
       return {
-        body: await openWebStream(dataDir('au9_scaffold_subset_sync.gff3')),
+        body: openWebStream(dataDir('au9_scaffold_subset_sync.gff3')),
       }
     })
     fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
@@ -238,7 +238,7 @@ test('indexes multiple remote gff3 file', async () => {
 test('indexes a remote and a local file', async () => {
   await runInTmpDir(async ctx => {
     mockGlobalFetch(async () => ({
-      body: await openWebStream(dataDir('au9_scaffold_subset_sync.gff3')),
+      body: openWebStream(dataDir('au9_scaffold_subset_sync.gff3')),
     }))
     const gff3File = dataDir('volvox.sort.gff3.gz')
     fs.copyFileSync(gff3File, path.join(ctx.dir, path.basename(gff3File)))
@@ -445,5 +445,46 @@ describe('real HTTP server integration', () => {
       expect(fs.existsSync(ixxLoc(ctx.dir))).toBe(true)
       verifyIxxFiles(ctx.dir)
     })
+  })
+})
+
+// --dryrun only prints what it would index, so it must not touch disk
+test('dryrun does not create a trix directory', async () => {
+  await runInTmpDir(async ctx => {
+    fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
+    const gff3File = dataDir('volvox.sort.gff3.gz')
+    fs.copyFileSync(gff3File, path.join(ctx.dir, path.basename(gff3File)))
+
+    const { stdout } = await runCommand(['text-index', '--dryrun'])
+    expect(stdout).toContain('Gff3TabixAdapter')
+    expect(fs.existsSync(path.join(ctx.dir, 'trix'))).toBe(false)
+  })
+})
+
+// --out/--target take either the install dir or its config.json everywhere else;
+// the --file path used to mkdir config.json/trix and die with ENOTDIR
+test('indexes a file list when --out names the config.json', async () => {
+  await runInTmpDir(async ctx => {
+    fs.cpSync(volvoxDir, ctx.dir, { recursive: true, force: true })
+    fs.rmSync(path.join(ctx.dir, 'trix'), { recursive: true, force: true })
+
+    const { error } = await runCommand([
+      'text-index',
+      '--file',
+      'volvox.sort.gff3.gz',
+      '--out',
+      path.join(ctx.dir, 'config.json'),
+    ])
+    expect(error).toBeUndefined()
+    expect(fs.existsSync(ixLoc(ctx.dir, 'volvox.sort.gff3.gz'))).toBe(true)
+  })
+})
+
+// a missing config.json is the most common mistake, so it must say which one it
+// looked for rather than leaking a bare readFileSync ENOENT
+test('reports the missing config when there is none to index', async () => {
+  await runInTmpDir(async () => {
+    const { error } = await runCommand(['text-index'])
+    expect(error?.message).toContain('No JBrowse config found at')
   })
 })

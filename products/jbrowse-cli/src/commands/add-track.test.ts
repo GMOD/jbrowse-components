@@ -980,3 +980,20 @@ test('does not warn when the assemblyName matches the config', async () => {
     expect(warnings).toBe('')
   })
 })
+
+// resolveConfigPath used to stat the --out path and let a bare ENOENT escape,
+// which hid the message that says which config.json was looked for
+test('reports the missing config when --out names a nonexistent directory', async () => {
+  await runInTmpDir(async () => {
+    const { error } = await runCommand([
+      'add-track',
+      simpleBam,
+      '--load',
+      'copy',
+      '--out',
+      'not/a/real/dir',
+    ])
+    expect(error?.message).toContain('No JBrowse config found at')
+    expect(error?.message).toContain(path.join('not', 'a', 'real', 'dir'))
+  })
+})

@@ -331,6 +331,26 @@ test('can specify a refNameAliases file', async () => {
   })
 })
 
+// a URL sequence makes --load an error, so there is no load mode to copy a local
+// aliases file with. Rewriting its location to a bare basename then pointed the
+// config at a file nothing ever put there.
+test('keeps a local refNameAliases path when there is no --load mode', async () => {
+  await runInTmpDir(async ctx => {
+    const aliases = dataDir('simple.aliases')
+    await runCommand([
+      'add-assembly',
+      'https://example.com/data/simple.2bit',
+      '--refNameAliases',
+      aliases,
+    ])
+
+    expect(
+      readConf(ctx).assemblies[0].refNameAliases.adapter.location.uri,
+    ).toBe(aliases)
+    expect(fs.existsSync(ctxDir(ctx, 'simple.aliases'))).toBe(false)
+  })
+})
+
 test('can specify a refNameAliases file type custom', async () => {
   await runInTmpDir(async ctx => {
     await runCommand([

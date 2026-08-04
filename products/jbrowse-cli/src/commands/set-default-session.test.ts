@@ -5,7 +5,13 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
-import { dataDir, readConf, runCommand, runInTmpDir } from '../testUtil.ts'
+import {
+  ctxDir,
+  dataDir,
+  readConf,
+  runCommand,
+  runInTmpDir,
+} from '../testUtil.ts'
 
 const { copyFile, rename } = fs.promises
 
@@ -97,5 +103,27 @@ test('adds a default session from a file', async () => {
     )
     await runCommand(['set-default-session', '--session', simpleDefaultSession])
     expect(readConf(ctx)).toMatchSnapshot()
+  })
+})
+
+// the session (or its "session" key) has to be an object: spreading a string or
+// an array silently wrote a defaultSession of numeric character keys
+test.each([
+  ['{"session":"oops"}', 'under its "session" key'],
+  ['["not","an","object"]', 'does not contain a session object'],
+])('rejects a session file that is not an object (%s)', async (body, msg) => {
+  await runInTmpDir(async ctx => {
+    fs.copyFileSync(dataDir('test_config.json'), ctxDir(ctx, 'config.json'))
+    fs.writeFileSync(ctxDir(ctx, 'bad.json'), body)
+    const before = readConf(ctx)
+    const { error } = await runCommand([
+      'set-default-session',
+      '--session',
+      'bad.json',
+    ])
+    expect(error?.message).toContain(msg)
+    // the config is left exactly as it was, rather than gaining a
+    // defaultSession of numeric character keys
+    expect(readConf(ctx)).toEqual(before)
   })
 })

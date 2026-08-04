@@ -35,6 +35,13 @@ export function requirePositional(
   }
 }
 
+// a JSON object, as opposed to a string/number/array/null. Parsed JSON reaches
+// several commands as `unknown`, and the failure mode of not checking is that
+// spreading a string yields an object of numeric keys.
+export function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
 export function ignoreNotFound<T>(promise: Promise<T>) {
   return promise.catch((err: unknown) => {
     if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
@@ -53,9 +60,13 @@ export function debug(message: string) {
 export async function resolveConfigPath(target?: string, out?: string) {
   const output = target || out || '.'
   // stat (not lstat) so a symlinked install directory resolves to its
-  // config.json rather than being treated as the config file itself
-  const stat = await fsPromises.stat(output)
-  return stat.isDirectory() ? path.join(output, 'config.json') : output
+  // config.json rather than being treated as the config file itself. A path
+  // that isn't there at all is resolved from its name instead of rejected here,
+  // so the caller's readConfigFile reports which config was missing and how to
+  // make one rather than this leaking a bare stat ENOENT
+  const stat = await ignoreNotFound(fsPromises.stat(output))
+  const isDir = stat ? stat.isDirectory() : !output.endsWith('.json')
+  return isDir ? path.join(output, 'config.json') : output
 }
 
 export async function readJsonFile<T>(location: string): Promise<T> {
@@ -247,43 +258,65 @@ export async function fetchReleaseArchive(
 const EOCD_SIG = 0x06054b50 // end of central directory
 const CDH_SIG = 0x02014b50 // central directory header
 
-// Extracts a ZIP archive (a JBrowse web build) into destPath. Walks the central
-// directory for accurate per-entry offsets/sizes (which stays correct even when
-// local headers use data descriptors), then inflates each entry with the
-// built-in node:zlib. Replaces the `decompress` dependency and its large,
-// unmaintained transitive tree without pulling in a new one.
-export async function extractZip(archive: Buffer, destPath: string) {
+interface ZipEntry {
+  name: string
+  method: number
+  compressedSize: number
+  localOffset: number
+}
+
+// Walks the central directory rather than the local headers, because its
+// offsets/sizes stay accurate even when a local header defers them to a data
+// descriptor. Yielding entries keeps the pointer arithmetic in one place, so
+// everything downstream works in terms of entries.
+function* centralDirectoryEntries(archive: Buffer): Generator<ZipEntry> {
   const eocd = findEndOfCentralDirectory(archive)
   const entryCount = archive.readUInt16LE(eocd + 10)
   let ptr = archive.readUInt32LE(eocd + 16)
 
-  const writes: Promise<void>[] = []
   for (let i = 0; i < entryCount; i++) {
     if (archive.readUInt32LE(ptr) !== CDH_SIG) {
       throw new Error('Corrupt ZIP: bad central directory header')
     }
-    const method = archive.readUInt16LE(ptr + 10)
-    const compressedSize = archive.readUInt32LE(ptr + 20)
     const nameLen = archive.readUInt16LE(ptr + 28)
     const extraLen = archive.readUInt16LE(ptr + 30)
     const commentLen = archive.readUInt16LE(ptr + 32)
-    const localOffset = archive.readUInt32LE(ptr + 42)
-    const name = archive.toString('utf8', ptr + 46, ptr + 46 + nameLen)
-    ptr += 46 + nameLen + extraLen + commentLen
-
-    // directory entries (trailing slash) carry no file data; files below create
-    // their own parent dirs
-    if (!name.endsWith('/')) {
-      // the local header's name/extra lengths can differ from the central one
-      const localNameLen = archive.readUInt16LE(localOffset + 26)
-      const localExtraLen = archive.readUInt16LE(localOffset + 28)
-      const dataStart = localOffset + 30 + localNameLen + localExtraLen
-      const raw = archive.subarray(dataStart, dataStart + compressedSize)
-      const data = method === 0 ? raw : zlib.inflateRawSync(raw)
-      writes.push(writeZipEntry(destPath, name, data))
+    yield {
+      name: archive.toString('utf8', ptr + 46, ptr + 46 + nameLen),
+      method: archive.readUInt16LE(ptr + 10),
+      compressedSize: archive.readUInt32LE(ptr + 20),
+      localOffset: archive.readUInt32LE(ptr + 42),
     }
+    ptr += 46 + nameLen + extraLen + commentLen
   }
-  await Promise.all(writes)
+}
+
+function inflateEntry(
+  archive: Buffer,
+  { localOffset, compressedSize, method }: ZipEntry,
+) {
+  // the local header's name/extra lengths can differ from the central one, so
+  // the data offset has to be computed from the local header
+  const nameLen = archive.readUInt16LE(localOffset + 26)
+  const extraLen = archive.readUInt16LE(localOffset + 28)
+  const dataStart = localOffset + 30 + nameLen + extraLen
+  const raw = archive.subarray(dataStart, dataStart + compressedSize)
+  return method === 0 ? raw : zlib.inflateRawSync(raw)
+}
+
+// Extracts a ZIP archive (a JBrowse web build) into destPath with the built-in
+// node:zlib. Replaces the `decompress` dependency and its large, unmaintained
+// transitive tree without pulling in a new one.
+export async function extractZip(archive: Buffer, destPath: string) {
+  await Promise.all(
+    [...centralDirectoryEntries(archive)]
+      // directory entries (trailing slash) carry no file data; the files below
+      // create their own parent dirs
+      .filter(entry => !entry.name.endsWith('/'))
+      .map(entry =>
+        writeZipEntry(destPath, entry.name, inflateEntry(archive, entry)),
+      ),
+  )
 }
 
 async function writeZipEntry(destPath: string, name: string, data: Buffer) {
@@ -309,39 +342,35 @@ function findEndOfCentralDirectory(archive: Buffer) {
   throw new Error('Corrupt ZIP: no end-of-central-directory record')
 }
 
+// help text is authored as one long string where \n\n is a paragraph break and a
+// bare \n is insignificant whitespace, so unfold it back into paragraphs
+function paragraphs(text: string) {
+  return text.split('\n\n').map(p => p.replaceAll('\n', ' '))
+}
+
+// greedily pack words into lines no wider than `width`. A word longer than the
+// width gets a line to itself rather than being broken.
+function wrapParagraph(paragraph: string, width: number): string[] {
+  return paragraph.length <= width
+    ? [paragraph]
+    : paragraph.split(' ').reduce<string[]>((lines, word) => {
+        const last = lines.at(-1)
+        return last !== undefined && last.length + 1 + word.length <= width
+          ? [...lines.slice(0, -1), `${last} ${word}`]
+          : [...lines, word]
+      }, [])
+}
+
 function wrapText(text: string, width: number, indent: string) {
-  // Normalize: join single \n into spaces, preserve \n\n as paragraph breaks
-  const normalized = text
-    .replaceAll('\n\n', '\0')
-    .replaceAll('\n', ' ')
-    .replaceAll('\u{0}', '\n\n')
-  const lines = []
-  for (const line of normalized.split('\n')) {
-    if (line.length <= width) {
-      lines.push(line)
-    } else {
-      const words = line.split(' ')
-      let current = ''
-      for (const word of words) {
-        if (current.length + word.length + 1 <= width) {
-          current += (current ? ' ' : '') + word
-        } else {
-          if (current) {
-            lines.push(current)
-          }
-          current = word
-        }
-      }
-      if (current) {
-        lines.push(current)
-      }
-    }
-  }
-  // indent continuation lines, but leave blank paragraph-separator lines empty
-  // rather than filling them with trailing indent whitespace
-  return lines
-    .map((line, i) => (i === 0 || !line ? line : indent + line))
-    .join('\n')
+  return (
+    paragraphs(text)
+      // a blank line separates paragraphs
+      .flatMap((p, i) => (i === 0 ? [] : ['']).concat(wrapParagraph(p, width)))
+      // indent continuation lines, but leave the blank separators empty rather
+      // than filling them with trailing indent whitespace
+      .map((line, i) => (i === 0 || !line ? line : indent + line))
+      .join('\n')
+  )
 }
 
 // the subset of a parseArgs option definition that printHelp renders (the
@@ -351,6 +380,31 @@ interface HelpOption {
   description?: string
   choices?: readonly string[]
   default?: string | boolean
+}
+
+// one rendered `-x, --name  description [choices: ...] [default: ...]` line, with
+// the description wrapped under the name column
+function formatOption(
+  name: string,
+  opt: HelpOption,
+  termWidth: number,
+): string {
+  const prefix = opt.short ? `  -${opt.short}, ` : ' '.repeat(6)
+  const namePadded = `--${name}`.padEnd(22, ' ')
+  const indent = ' '.repeat(prefix.length + namePadded.length + 1)
+
+  const desc = [
+    // every command declares a bare help flag; give it uniform wording so the
+    // rendered `-h, --help` line is never blank
+    opt.description ?? (name === 'help' ? 'Show help' : ''),
+    opt.choices && ` [choices: ${opt.choices.join(', ')}]`,
+    opt.default !== undefined && ` [default: ${opt.default}]`,
+  ]
+    .filter(Boolean)
+    .join('')
+
+  const wrapped = desc ? wrapText(desc, termWidth - indent.length, indent) : ''
+  return `${prefix}${namePadded} ${wrapped}`.trimEnd()
 }
 
 export function printHelp({
@@ -367,33 +421,18 @@ export function printHelp({
   usage?: string
 }) {
   const termWidth = process.stdout.columns || 80
-  console.log(wrapText(description, termWidth, ''))
-  console.log(`\nUsage: ${usage || 'jbrowse <command> [options]'}`)
-  console.log('\nOptions:')
-  for (const [name, opt] of Object.entries(options)) {
-    const prefix = opt.short ? `  -${opt.short}, ` : ' '.repeat(6)
-    const namePadded = `--${name}`.padEnd(22, ' ')
-    const indent = ' '.repeat(prefix.length + namePadded.length + 1)
-    const descWidth = termWidth - indent.length
-
-    // every command declares a bare help flag; give it uniform wording so the
-    // rendered `-h, --help` line is never blank
-    let desc = opt.description ?? (name === 'help' ? 'Show help' : '')
-    if (opt.choices) {
-      desc += ` [choices: ${opt.choices.join(', ')}]`
-    }
-    if (opt.default !== undefined) {
-      desc += ` [default: ${opt.default}]`
-    }
-
-    const wrapped = desc ? wrapText(desc, descWidth, indent) : ''
-    console.log(`${`${prefix}${namePadded} ${wrapped}`.trimEnd()}\n`)
-  }
-  if (notes) {
-    console.log(`Notes:\n\n${wrapText(notes, termWidth, '')}\n`)
-  }
-  if (examples.length) {
-    console.log('Examples:\n')
-    console.log(examples.join('\n'))
-  }
+  console.log(
+    [
+      wrapText(description, termWidth, ''),
+      `\nUsage: ${usage || 'jbrowse <command> [options]'}`,
+      '\nOptions:',
+      // a blank line after each option, so long wrapped descriptions stay
+      // visually separated
+      ...Object.entries(options).map(
+        ([name, opt]) => `${formatOption(name, opt, termWidth)}\n`,
+      ),
+      ...(notes ? [`Notes:\n\n${wrapText(notes, termWidth, '')}\n`] : []),
+      ...(examples.length ? ['Examples:\n', examples.join('\n')] : []),
+    ].join('\n'),
+  )
 }

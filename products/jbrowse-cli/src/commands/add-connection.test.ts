@@ -131,3 +131,17 @@ test('can use --force to overwrite an existing connection', async () => {
     expect(readConf(ctx).connections).toMatchSnapshot()
   })
 })
+
+// the connection type is inferred from the URL's path, not the whole href: a
+// query string used to hide a hub.txt filename from path.basename, and to fake a
+// jbrowse/data path that wasn't in the path at all
+test.each([
+  ['https://mysite.com/path/to/hub.txt?token=1', 'UCSCTrackHubConnection'],
+  ['https://mysite.com/data?p=jbrowse/data', 'custom'],
+])('infers the connection type from the URL path (%s)', async (url, type) => {
+  await runInTmpDir(async ctx => {
+    await copyConf(ctx)
+    await runCommand(['add-connection', url, '--connectionId', 'testId'])
+    expect(readConf(ctx).connections[0].type).toBe(type)
+  })
+})

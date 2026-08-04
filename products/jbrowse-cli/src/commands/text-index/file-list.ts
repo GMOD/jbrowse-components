@@ -1,7 +1,6 @@
 import path from 'node:path'
 
 import {
-  ensureTrixDir,
   formatDryRun,
   prepareIndexDriverFlags,
   sanitizeNameForPath,
@@ -24,14 +23,17 @@ export async function indexFileList(flags: TextIndexFlags): Promise<void> {
     dryrun,
   } = flags
   validateFileInput(file)
-  const outFlag = target || out || '.'
+  // --out/--target names either the install directory or its config.json, as
+  // every other command accepts; the trix output goes beside the config, and
+  // pointing at the config.json used to mkdir config.json/trix and fail ENOTDIR
+  const outArg = target || out || '.'
+  const outLocation = outArg.endsWith('.json') ? path.dirname(outArg) : outArg
 
   const trackConfigs = prepareFileTrackConfigs(file, fileId)
 
   if (dryrun) {
     console.log(formatDryRun(trackConfigs))
   } else {
-    ensureTrixDir(outFlag)
     const name =
       trackConfigs.length > 1
         ? 'aggregate'
@@ -39,7 +41,7 @@ export async function indexFileList(flags: TextIndexFlags): Promise<void> {
 
     await indexDriver({
       trackConfigs,
-      outLocation: outFlag,
+      outLocation,
       name,
       assemblyNames: [],
       ...prepareIndexDriverFlags({ attributes, exclude, quiet, prefixSize }),

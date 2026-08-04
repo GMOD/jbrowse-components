@@ -5,6 +5,7 @@ import { isURL } from '../../types/common.ts'
 import {
   debug,
   ignoreNotFound,
+  isRecord,
   parseCommaSeparatedString,
   readInlineOrFileJson,
   readJsonFile,
@@ -33,17 +34,23 @@ const sequenceTypes = new Set<SequenceType>([
   'custom',
 ])
 
-export function isSequenceType(t: string | undefined): t is SequenceType {
+function isSequenceType(t: string | undefined): t is SequenceType {
   return sequenceTypes.has(t as SequenceType)
 }
 
 // parseArgs does not enforce the `choices` declared on --type, so an
 // unrecognized value would otherwise be silently dropped and the type guessed
-// from the file extension, masking a user typo
-export function validateSequenceType(type?: string): void {
-  if (type !== undefined && !isSequenceType(type)) {
+// from the file extension, masking a user typo. Returning the narrowed value
+// (rather than validating and leaving the caller to re-test the same string)
+// keeps the check and the narrowing in one place.
+export function parseSequenceType(type?: string): SequenceType | undefined {
+  if (type === undefined) {
+    return undefined
+  }
+  if (!isSequenceType(type)) {
     throw new Error(`--type must be one of: ${[...sequenceTypes].join(', ')}`)
   }
+  return type
 }
 
 interface AssemblyFlags {
@@ -81,23 +88,24 @@ function basenameWithoutFastaExt(p: string) {
   return path.basename(p).replace(fastaExtRegex, '')
 }
 
-export function guessSequenceType(sequence: string) {
-  const s = sequence.toLowerCase()
-  if (fastaRegex.test(s)) {
-    return 'indexedFasta'
+// extension → sequence type, tried in order. The plain-fasta pattern is anchored
+// at the end so it cannot claim a .fa.gz out from under the bgzip one.
+const seqTypeByExtension: [RegExp, SequenceType][] = [
+  [fastaRegex, 'indexedFasta'],
+  [bgzipFastaRegex, 'bgzipFasta'],
+  [/\.2bit$/i, 'twoBit'],
+  [/\.chrom\.sizes$/i, 'chromSizes'],
+  [/\.json$/i, 'custom'],
+]
+
+export function guessSequenceType(sequence: string): SequenceType {
+  const byExtension = seqTypeByExtension.find(([regex]) =>
+    regex.test(sequence),
+  )?.[1]
+  if (byExtension) {
+    return byExtension
   }
-  if (bgzipFastaRegex.test(s)) {
-    return 'bgzipFasta'
-  }
-  if (s.endsWith('.2bit')) {
-    return 'twoBit'
-  }
-  if (s.endsWith('.chrom.sizes')) {
-    return 'chromSizes'
-  }
-  if (s.endsWith('.json')) {
-    return 'custom'
-  }
+  // a custom adapter can also be given as inline JSON, which has no extension
   if (isValidJSON(sequence)) {
     return 'custom'
   }
@@ -239,11 +247,12 @@ export async function resolveTargetPath(output: string): Promise<string> {
   return finalStat?.isDirectory() ? path.join(output, 'config.json') : output
 }
 
-async function resolveRefNameAliasAdapter(runFlags: AssemblyFlags) {
+async function resolveRefNameAliasAdapter(
+  refNameAliases: string,
+  runFlags: AssemblyFlags,
+) {
   if (runFlags.refNameAliasesType === 'custom') {
-    const config = await readInlineOrFileJson<{ type: string }>(
-      runFlags.refNameAliases!,
-    )
+    const config = await readInlineOrFileJson<{ type: string }>(refNameAliases)
     if (!config.type) {
       throw new Error(
         `No "type" specified in refNameAliases adapter "${JSON.stringify(config)}"`,
@@ -252,16 +261,20 @@ async function resolveRefNameAliasAdapter(runFlags: AssemblyFlags) {
     debug(`Adding custom refNameAliases config: ${JSON.stringify(config)}`)
     return config
   }
-  const location = mapLocationForFiles(runFlags.refNameAliases!, runFlags.load)
+  // rewriting the path to a bare basename is only right when a load mode is
+  // going to copy the file next to config.json. With no --load — which a URL
+  // sequence forces, since --load with a URL is an error — the file stays where
+  // the user pointed at it, rather than the config naming a basename that
+  // nothing ever put there
+  const location = mapLocationForFiles(
+    refNameAliases,
+    runFlags.load ?? 'inPlace',
+  )
   debug(`refName aliases file location: ${location}`)
   return {
     type: 'RefNameAliasAdapter',
     location: { uri: location, locationType: 'UriLocation' },
   }
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 // --config is merged shallowly, except for `sequence`: the generated
@@ -293,10 +306,10 @@ export async function enhanceAssembly(
 ): Promise<{ assembly: Assembly; filesToLoad: string[] }> {
   const { refNameAliases, refNameAliasesType } = runFlags
 
-  // a non-custom refNameAliases points at a local aliases file whose location
-  // is rewritten to a bare basename by mapLocationForFiles, so the file itself
-  // must be loaded into the config dir alongside the sequence. Custom aliases
-  // are embedded inline (no file), and URLs are referenced in place.
+  // a non-custom refNameAliases points at a local aliases file; under a --load
+  // mode its location is rewritten to a bare basename, so the file itself must
+  // be loaded into the config dir alongside the sequence. Custom aliases are
+  // embedded inline (no file), and URLs are referenced in place.
   const filesToLoad =
     refNameAliases && refNameAliasesType !== 'custom' && !isURL(refNameAliases)
       ? [refNameAliases]
@@ -313,7 +326,9 @@ export async function enhanceAssembly(
       }),
       ...(runFlags.displayName && { displayName: runFlags.displayName }),
       ...(refNameAliases && {
-        refNameAliases: { adapter: await resolveRefNameAliasAdapter(runFlags) },
+        refNameAliases: {
+          adapter: await resolveRefNameAliasAdapter(refNameAliases, runFlags),
+        },
       }),
     },
     filesToLoad,
