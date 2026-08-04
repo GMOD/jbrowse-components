@@ -58,9 +58,10 @@
 # canids, and the same ratio -- depth over the element against that dog's own
 # flank depth -- can be taken from it. That is a different measurement (only at
 # variant sites, and only where a variant was called) so the script checks it
-# against the fifteen rather than assuming: per 5 kb window it comes out at
-# r = 0.97 with no bias, which is what earns the second painting over the whole
-# collection.
+# against the fifteen rather than assuming: over the shared windows it comes out
+# at r = 0.92 with no bias, which is what earns the second painting over the
+# whole collection. The script prints the value it measures, so read that rather
+# than this line; 0.97 here was the pre-sliding window's number and outlived it.
 #
 # Requires: samtools (>= 1.10, with libcurl support), bcftools (with libcurl),
 #           htslib (bgzip, tabix), curl, python3, awk.
