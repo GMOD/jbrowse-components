@@ -5,11 +5,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { GRADIENT_LEGEND_SVG_AREA_WIDTH, checkboxItem } from '@jbrowse/core/ui'
-import {
-  getContainingView,
-  getRpcSessionId,
-  getSession,
-} from '@jbrowse/core/util'
+import { getRpcSessionId, getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   GlobalDataDisplayMixin,
@@ -46,7 +42,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
   LegendItem,
-  LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 import type React from 'react'
 
@@ -370,7 +365,7 @@ export default function sharedModelFactory(
        * the main thread so resize doesn't trigger a worker re-fetch.
        */
       get yScalar() {
-        const view = getContainingView(self) as LinearGenomeViewModel
+        const view = self.lgv
         return computeTriangleYScalar({
           squashToHeight: self.squashToHeight,
           displayHeight: this.ldCanvasHeight,
@@ -407,7 +402,7 @@ export default function sharedModelFactory(
       // fields (signedLD, uniformW) ride with the payload instead — see
       // LDUploadData.
       get renderState(): LDRenderState {
-        const view = getContainingView(self) as LinearGenomeViewModel
+        const view = self.lgv
         const { scale, viewOffsetX } = self.renderTransform
         const canvasWidth = Math.round(
           view.dynamicBlocks.totalWidthPxWithoutBorders,
@@ -440,7 +435,7 @@ export default function sharedModelFactory(
       // already in screen order (`RenderLDDataRPC/reversedRegions.ts`), so the
       // index axis and the genomic x agree.
       get connectorLineCoords(): ConnectorCoord[] {
-        const view = getContainingView(self) as LinearGenomeViewModel
+        const view = self.lgv
         const { assemblyManager } = getSession(self)
         const assembly = assemblyManager.get(view.assemblyNames[0]!)
         const { scale, viewOffsetX } = self.renderTransform
@@ -770,7 +765,7 @@ export default function sharedModelFactory(
         if (self.isMinimized) {
           return
         }
-        const view = getContainingView(self) as LinearGenomeViewModel
+        const view = self.lgv
         if (!view.initialized) {
           return
         }

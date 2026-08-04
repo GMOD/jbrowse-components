@@ -1,8 +1,11 @@
 import { computeSvgReady } from '@jbrowse/core/svg/svgReady'
+import { getContainingView } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import RegionTooLargeMixin from '../../shared/RegionTooLargeMixin.ts'
 import FetchMixin from './FetchMixin.ts'
+
+import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
 
 /**
  * Rendering-agnostic foundation for any display holding a single global
@@ -48,7 +51,20 @@ export default function GlobalFetchMixin() {
        */
       reloadCounter: 0,
     }))
-    .views(() => ({
+    .views(self => ({
+      /**
+       * #getter
+       * The containing LinearGenomeView, typed once so no consumer repeats the
+       * `getContainingView` cast. Same getter, same name, as
+       * `MultiRegionDisplayMixin`'s — declared in both rather than hoisted into
+       * the `RegionTooLargeMixin` they share, because that mixin is named for
+       * the byte gate and a display composes exactly one of these two families,
+       * so the pair can never shadow each other. See the note there for why the
+       * name is `lgv` and not `view`.
+       */
+      get lgv(): LinearGenomeViewModel {
+        return getContainingView(self) as LinearGenomeViewModel
+      },
       /**
        * #getter
        * This family's answer to the shared freshness question every display

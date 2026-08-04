@@ -97,10 +97,7 @@ import type {
 } from './rowIdentityModes.ts'
 import type { Region, UriLocation } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type {
-  ExportSvgDisplayOptions,
-  LinearGenomeViewModel,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * Zoom at which the GPU encoder stops encoding every base and starts
@@ -607,14 +604,6 @@ export default function stateModelFactory(
          */
         get conf(): LinearMafDisplayConfig {
           return self.configuration
-        },
-        /**
-         * #getter
-         * The containing LGV, typed once here so views/actions don't each repeat
-         * the `getContainingView(self) as LinearGenomeViewModel` cast.
-         */
-        get lgv(): LinearGenomeViewModel {
-          return getContainingView(self) as LinearGenomeViewModel
         },
       }))
       .views(self => ({

@@ -5,11 +5,7 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import {
-  getContainingView,
-  getSession,
-  openFeatureWidget,
-} from '@jbrowse/core/util'
+import { getSession, openFeatureWidget } from '@jbrowse/core/util'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
@@ -69,10 +65,7 @@ import type { MultiRowSource, RowGroup } from './sourcesLogic.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type {
-  ExportSvgDisplayOptions,
-  LinearGenomeViewModel,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 import type React from 'react'
 
 export interface MultiRowHit {
@@ -529,7 +522,7 @@ export default function stateModelFactory(
        * Render state passed to the GPU/Canvas2D backend each frame.
        */
       get renderState(): MultiRowRenderState {
-        const view = getContainingView(self) as LinearGenomeViewModel
+        const view = self.lgv
         return {
           // trackWidthPx, not view.width: the track container subtracts the 2px
           // outline, and the render blocks scissored against this come from the
@@ -594,7 +587,7 @@ export default function stateModelFactory(
         if (!self.sources[targetRow]) {
           return undefined
         }
-        const view = getContainingView(self) as LinearGenomeViewModel
+        const view = self.lgv
         const p = view.pxToBp(mouseX)
         if (p.oob) {
           return undefined

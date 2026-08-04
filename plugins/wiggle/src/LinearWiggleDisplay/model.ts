@@ -6,7 +6,7 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
@@ -45,15 +45,10 @@ import type { LinearWiggleDisplayConfigSchema } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type {
-  ExportSvgDisplayOptions,
-  LinearGenomeViewModel,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 import type { WiggleRenderingBackend } from '@jbrowse/wiggle-core'
 
 export type { Region } from '@jbrowse/core/util'
-
-type LGV = LinearGenomeViewModel
 
 const WiggleComponent = lazy(() => import('./components/WiggleComponent.tsx'))
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
@@ -188,7 +183,7 @@ export default function stateModelFactory(
        * #getter
        */
       get renderState() {
-        const view = getContainingView(self) as LGV
+        const view = self.lgv
         return makeWiggleRenderState(self, {
           width: view.trackWidthPx,
           // inset by the scalebar label gutter at top and bottom so the plot
@@ -270,7 +265,7 @@ export default function stateModelFactory(
        * #action
        */
       fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
-        const view = getContainingView(self) as LGV
+        const view = self.lgv
         const { adapterConfig } = self
         const { bpPerPx } = view
         const sessionId = getRpcSessionId(self)

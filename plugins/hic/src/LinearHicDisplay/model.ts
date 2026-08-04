@@ -5,11 +5,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { GRADIENT_LEGEND_SVG_AREA_WIDTH } from '@jbrowse/core/ui'
-import {
-  getContainingView,
-  getRpcSessionId,
-  getSession,
-} from '@jbrowse/core/util'
+import { getRpcSessionId, getSession } from '@jbrowse/core/util'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   GlobalDataDisplayMixin,
@@ -37,10 +33,7 @@ import type {
 } from './components/hicRenderingBackendTypes.ts'
 import type { HicTrackConfigModel } from './configSchema.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type {
-  ExportSvgDisplayOptions,
-  LinearGenomeViewModel,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 import type React from 'react'
 
 /**
@@ -105,14 +98,6 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       availableResolutions: undefined as number[] | undefined,
     }))
     .views(self => ({
-      /**
-       * #getter
-       * the containing LGV, typed once here so downstream getters don't repeat
-       * the `getContainingView` cast
-       */
-      get view(): LinearGenomeViewModel {
-        return getContainingView(self) as LinearGenomeViewModel
-      },
       /**
        * #getter
        */
@@ -261,7 +246,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         if (!avail?.length) {
           return -1
         }
-        const bpPerPx = Math.max(1, self.view.bpPerPx)
+        const bpPerPx = Math.max(1, self.lgv.bpPerPx)
         // sorted ascending by setAvailableResolutions, so the last match is the
         // largest qualifying binsize
         const idx = avail.findLastIndex(binSize => binSize <= 2 * bpPerPx)
@@ -283,7 +268,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         return computeTriangleYScalar({
           squashToHeight: self.squashToHeight,
           displayHeight: self.height,
-          triangleWidth: self.view.totalWidthPxWithoutBorders,
+          triangleWidth: self.lgv.totalWidthPxWithoutBorders,
         })
       },
     }))
@@ -384,7 +369,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         const { scale, viewOffsetX } = self.renderTransform
         return {
           yScalar: self.yScalar,
-          canvasWidth: self.view.totalWidthPx,
+          canvasWidth: self.lgv.totalWidthPx,
           canvasHeight: self.height,
           colorMaxScore: self.colorMaxScore,
           useLogScale: self.useLogScale,
@@ -588,7 +573,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         if (self.isMinimized) {
           return
         }
-        const view = self.view
+        const view = self.lgv
         if (!view.initialized) {
           return
         }

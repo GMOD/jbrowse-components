@@ -17,7 +17,7 @@ export interface ManhattanDisplayModel extends WiggleGpuDisplayModel<
   ManhattanRenderingBackend,
   ManhattanRpcResult
 > {
-  view: LinearGenomeViewModel
+  lgv: LinearGenomeViewModel
   renderBlocks: RenderBlock[]
   regionRefNames: ReadonlyMap<number, string>
   flatbushes: ReadonlyMap<number, Flatbush>

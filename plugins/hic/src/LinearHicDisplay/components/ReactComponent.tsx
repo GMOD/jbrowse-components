@@ -93,8 +93,8 @@ const HicCanvas = observer(function HicCanvas({
   model: LinearHicDisplayModel
   canvasRef: (node: HTMLCanvasElement | null) => void
 }) {
-  const { height, yScalar, view } = model
-  const width = view.totalWidthPx
+  const { height, yScalar, lgv } = model
+  const width = lgv.totalWidthPx
   const [hover, setHover] = useState<Hover>()
 
   return (

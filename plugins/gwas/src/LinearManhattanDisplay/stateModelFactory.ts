@@ -7,12 +7,7 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import {
-  getContainingView,
-  getSession,
-  openFeatureWidget,
-  toLocale,
-} from '@jbrowse/core/util'
+import { getSession, openFeatureWidget, toLocale } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
@@ -52,10 +47,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type {
-  ExportSvgDisplayOptions,
-  LinearGenomeViewModel,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 
 const LinearManhattanDisplayComponent = lazy(
   () => import('./components/LinearManhattanDisplayComponent.tsx'),
@@ -112,14 +104,6 @@ export function stateModelFactory(
         showLdLegend: true,
       }))
       .views(self => ({
-        /**
-         * #getter
-         * the containing LGV, typed once here so downstream getters don't repeat
-         * the `getContainingView` cast
-         */
-        get view(): LinearGenomeViewModel {
-          return getContainingView(self) as LinearGenomeViewModel
-        },
         /**
          * #getter
          */
@@ -248,7 +232,7 @@ export function stateModelFactory(
          * points.
          */
         get renderState(): ManhattanRenderState {
-          const view = self.view
+          const view = self.lgv
           const canvasWidth = view.trackWidthPx
           const canvasHeight = self.height - 2 * YSCALEBAR_LABEL_OFFSET
           return resolveRenderState(self.domain, domainY => ({
@@ -265,7 +249,7 @@ export function stateModelFactory(
          * once rather than rebuilding per event.
          */
         get regionRefNames(): ReadonlyMap<number, string> {
-          const view = self.view
+          const view = self.lgv
           return new Map(
             view.visibleRegions.map(r => [r.displayedRegionIndex, r.refName]),
           )
@@ -306,7 +290,7 @@ export function stateModelFactory(
           // rpcDataMap keeps buffered regions that may have scrolled off-screen,
           // and the top hit can live in one of them — resolving via visible
           // regions alone would drop it and stall the LD auto-index autorun.
-          const view = self.view
+          const view = self.lgv
           const refName =
             bestIdx === -1 ? undefined : view.displayedRegions[bestIdx]?.refName
           return refName ? `${refName}:${bestPos + 1}` : undefined
@@ -335,7 +319,7 @@ export function stateModelFactory(
          * known here.
          */
         get indexSnpOffscreen(): boolean {
-          return isIndexSnpOffscreen(self.indexSnp, self.view.visibleRegions)
+          return isIndexSnpOffscreen(self.indexSnp, self.lgv.visibleRegions)
         },
       }))
       .actions(self => ({

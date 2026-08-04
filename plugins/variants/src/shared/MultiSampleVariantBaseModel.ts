@@ -8,7 +8,6 @@ import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/rendere
 import {
   SimpleFeature,
   getContainingTrack,
-  getContainingView,
   getSession,
   openFeatureWidget,
 } from '@jbrowse/core/util'
@@ -1346,7 +1345,7 @@ export default function MultiSampleVariantBaseModelF(
           if (cellDataMode !== 'matrix' || self.loadedBpPerPx === undefined) {
             return true
           }
-          const view = getContainingView(self) as LinearGenomeViewModel
+          const view = self.lgv
           return view.bpPerPx === self.loadedBpPerPx
         },
 
@@ -1411,7 +1410,7 @@ export default function MultiSampleVariantBaseModelF(
           if (self.isMinimized || !self.sourcesBase) {
             return
           }
-          const view = getContainingView(self) as LinearGenomeViewModel
+          const view = self.lgv
           const regions = fetchRegionsForMode(view, cellDataMode)
           if (regions.length === 0) {
             return

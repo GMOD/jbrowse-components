@@ -7,7 +7,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { checkboxItem } from '@jbrowse/core/ui'
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
@@ -56,13 +56,8 @@ import type { MultiLinearWiggleDisplayConfigModel } from './configSchema.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type {
-  ExportSvgDisplayOptions,
-  LinearGenomeViewModel,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 import type { WiggleRenderingBackend } from '@jbrowse/wiggle-core'
-
-type LGV = LinearGenomeViewModel
 
 const MultiWiggleComponent = lazy(
   () => import('./components/MultiWiggleComponent.tsx'),
@@ -226,7 +221,7 @@ export default function stateModelFactory(
       },
 
       get renderState() {
-        const view = getContainingView(self) as LGV
+        const view = self.lgv
         return makeWiggleRenderState(self, {
           width: view.trackWidthPx,
           // Full height, no YSCALEBAR_LABEL_OFFSET inset (unlike single-wiggle):
@@ -400,7 +395,7 @@ export default function stateModelFactory(
         fetchNeeded(
           needed: { region: Region; displayedRegionIndex: number }[],
         ) {
-          const view = getContainingView(self) as LGV
+          const view = self.lgv
           // Always fetch the full (unfiltered, un-reordered) source list. A
           // subtree filter or reorder only affects client-side rendering
           // (gpuProps re-upload) and the autoscale domain — never what's

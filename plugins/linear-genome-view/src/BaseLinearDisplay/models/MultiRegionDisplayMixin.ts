@@ -82,6 +82,29 @@ export default function MultiRegionDisplayMixin() {
       .views(self => ({
         /**
          * #getter
+         * The containing LinearGenomeView, typed once for every display in this
+         * family so no consumer repeats the `getContainingView` cast — the cast
+         * `getContainingView` needs (it is view-type-agnostic) but which this
+         * mixin has already committed to, since everything below reads
+         * `visibleRegions` / `bufferedVisibleRegions` / `bpPerPx` off it.
+         *
+         * Three displays had each invented this getter under two names before it
+         * was hoisted (`view` on HiC and Manhattan, `lgv` on MAF) while ~35 other
+         * sites repeated the cast inline. `lgv` rather than `view` because a
+         * display's containing view is not always an LGV — the comparative
+         * displays' `view` is a synteny or dotplot view — so the name says which
+         * one this is.
+         *
+         * Components and structural helpers keep calling `getContainingView`:
+         * they take duck-typed model shapes that deliberately don't carry the
+         * whole MST instance type, so there is no `lgv` on them to read.
+         */
+        get lgv(): LinearGenomeViewModel {
+          return getContainingView(self) as LinearGenomeViewModel
+        },
+
+        /**
+         * #getter
          * The render-lifecycle precondition for every LGV display (overrides
          * `RenderLifecycleMixin`'s default-true hook): don't run the upload/render
          * callbacks until the view is measured. Before that, `renderBlocks` →
@@ -92,8 +115,7 @@ export default function MultiRegionDisplayMixin() {
          * The render-lifecycle twin of `autorunOnReadyView`.
          */
         get canRender() {
-          const view = getContainingView(self) as LinearGenomeViewModel
-          return view.initialized
+          return this.lgv.initialized
         },
 
         /**
@@ -113,7 +135,7 @@ export default function MultiRegionDisplayMixin() {
          * and for the resolution-staleness gap.
          */
         get viewportWithinLoadedData() {
-          const view = getContainingView(self) as LinearGenomeViewModel
+          const view = this.lgv
           return view.initialized
             ? view.visibleRegions.every(block =>
                 isBlockCovered(
@@ -161,8 +183,7 @@ export default function MultiRegionDisplayMixin() {
          * then issue an empty-blocks render that clears the canvas.
          */
         get renderBlocks() {
-          const view = getContainingView(self) as LinearGenomeViewModel
-          return buildRenderBlocks(view.visibleRegions)
+          return buildRenderBlocks(this.lgv.visibleRegions)
         },
       }))
       // `dataCurrent` and `svgReady` sit in their own blocks, after everything

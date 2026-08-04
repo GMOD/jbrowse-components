@@ -5,11 +5,7 @@ import {
   getConf,
   setConf,
 } from '@jbrowse/core/configuration'
-import {
-  getContainingTrack,
-  getContainingView,
-  getSession,
-} from '@jbrowse/core/util'
+import { getContainingTrack, getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   copyFeatureInfo,
@@ -39,7 +35,6 @@ import { getSyntenyGroupByMenuItem, getSyntenyShowMenuItem } from './menus.ts'
 
 import type { LGVSyntenyDisplayConfigModel } from './configSchemaF.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { LodMode } from '@jbrowse/synteny-core'
 
 const LaunchSyntenyViewDialog = lazy(
@@ -148,7 +143,7 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
          * it again without a refetch.
          */
         get hiddenGroupKeys(): ReadonlySet<string> {
-          const view = getContainingView(self) as LinearGenomeViewModel
+          const view = self.lgv
           const assemblyName = view.assemblyNames[0]
           return this.hideSelfAlignments &&
             self.groupBy?.type === 'mateAssembly' &&
@@ -176,7 +171,7 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
          */
         get lodTier() {
           return resolveLodTier({
-            bpPerPx: (getContainingView(self) as LinearGenomeViewModel).bpPerPx,
+            bpPerPx: self.lgv.bpPerPx,
             coarseBpPerPxThreshold: getCoarseBpPerPxThreshold(self.parentTrack),
             lodMode: self.lodMode,
           })
@@ -267,7 +262,7 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
             // The anchor panel opens on the view's own assembly, which is what
             // the features were fetched against — more dependable than the
             // feature's own `assemblyName` field, which not every adapter sets.
-            const view = getContainingView(self) as LinearGenomeViewModel
+            const view = self.lgv
             const anchorAssembly = view.assemblyNames[0]
             const track = getContainingTrack(self)
             if (

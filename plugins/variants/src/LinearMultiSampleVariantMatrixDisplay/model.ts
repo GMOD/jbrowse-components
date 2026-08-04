@@ -1,5 +1,5 @@
 import { setConf } from '@jbrowse/core/configuration'
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.ts'
@@ -14,10 +14,7 @@ import type {
   VariantMatrixUploadData,
 } from './components/variantMatrixRenderingBackendTypes.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type {
-  ExportSvgDisplayOptions,
-  LinearGenomeViewModel,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * #stateModel LinearMultiSampleVariantMatrixDisplay
@@ -85,7 +82,7 @@ export default function stateModelFactory(
         // exists is the render callback's gate (it already passes `null` data),
         // not a nullable state.
         get renderState() {
-          const view = getContainingView(self) as LinearGenomeViewModel
+          const view = self.lgv
           return {
             // Same rounded width the canvas, hit-test, and connector lines use,
             // so cells/lines/clicks stay pixel-aligned.
@@ -104,7 +101,7 @@ export default function stateModelFactory(
          * key off this so columns/lines/clicks stay pixel-aligned.
          */
         get columnGeometry() {
-          const view = getContainingView(self) as LinearGenomeViewModel
+          const view = self.lgv
           const n = self.featuresVolatile?.length
           return {
             n: n ?? 0,
@@ -122,7 +119,7 @@ export default function stateModelFactory(
          * dropped rather than pinned to the left edge.
          */
         get connectorLineCoords(): ConnectorCoord[] {
-          const view = getContainingView(self) as LinearGenomeViewModel
+          const view = self.lgv
           const { assemblyManager } = getSession(self)
           const assembly = assemblyManager.get(view.assemblyNames[0]!)
           const features = self.featuresVolatile
@@ -155,7 +152,7 @@ export default function stateModelFactory(
          * (`orderByScreenPosition`), so nothing here has to invert a mirror.
          */
         connectorLineAtScreenX(screenX: number): ConnectorCoord | undefined {
-          const view = getContainingView(self) as LinearGenomeViewModel
+          const view = self.lgv
           const { assemblyManager } = getSession(self)
           const assembly = assemblyManager.get(view.assemblyNames[0]!)
           const features = self.featuresVolatile

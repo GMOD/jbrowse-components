@@ -8,7 +8,6 @@ import {
   addAndShowTrack,
   dedupe,
   getContainingTrack,
-  getContainingView,
   getSession,
   isSessionWithAddTracks,
   makeTrackId,
@@ -39,13 +38,8 @@ import type { SequenceHover } from './components/sequenceHover.ts'
 import type { LinearReferenceSequenceDisplayConfigModel } from './configSchema.ts'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type {
-  ExportSvgDisplayOptions,
-  LinearGenomeViewModel,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
-
-type LGV = LinearGenomeViewModel
 
 const ZOOMED_OUT_BP_PER_PX = 10
 const ROW_HEIGHT_PX = 15
@@ -146,7 +140,7 @@ export function modelFactory(
        */
       get colorState() {
         const { palette: sessionPalette } = getSession(self)
-        const view = getContainingView(self) as LGV
+        const view = self.lgv
         const palette = buildColorPalette(sessionPalette, view.colorByCDS)
         return { palette, textColors: buildTextColors(palette, sessionPalette) }
       },
@@ -183,7 +177,7 @@ export function modelFactory(
        * the view is too zoomed out to show individual bases
        */
       get zoomedOut() {
-        const view = getContainingView(self) as LGV
+        const view = self.lgv
         return view.bpPerPx > ZOOMED_OUT_BP_PER_PX
       },
       /**
@@ -230,7 +224,7 @@ export function modelFactory(
        * everything the Canvas2D backend needs to paint a frame
        */
       get renderState(): DrawSequenceState {
-        const view = getContainingView(self) as LGV
+        const view = self.lgv
         const { palette, textColors } = self.colorState
         return {
           bpPerPx: view.bpPerPx,
@@ -316,7 +310,7 @@ export function modelFactory(
                 sequenceAdapter: getConf(track, 'adapter'),
               },
             },
-            getContainingView(self) as LGV,
+            self.lgv,
           )
         }
       },
@@ -393,7 +387,7 @@ export function modelFactory(
        * between rows.
        */
       hoverAt(offsetX: number, offsetY: number): SequenceHover | undefined {
-        const view = getContainingView(self) as LGV
+        const view = self.lgv
         const bp = self.zoomedOut ? undefined : view.pxToBp(offsetX)
         if (bp && !bp.oob) {
           // basePaintedAt, not bp.coord0: this indexes the fetched sequence, so

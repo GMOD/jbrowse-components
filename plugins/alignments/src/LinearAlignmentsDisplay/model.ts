@@ -163,10 +163,7 @@ import type {
   ExportSvgDisplayOptions,
   FetchContext,
   HeightMode,
-  LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
-
-type LGV = LinearGenomeViewModel
 
 function getSequenceAdapter(session: AbstractSessionModel, region: Region) {
   return getSequenceAdapterConfig(
@@ -1095,7 +1092,7 @@ export default function stateModelFactory(
           if (!self.showCoverage) {
             return undefined
           }
-          const view = getContainingView(self) as LGV
+          const view = self.lgv
           if (!view.initialized) {
             return undefined
           }
@@ -1952,7 +1949,7 @@ export default function stateModelFactory(
          * assignment for every section on every scroll frame.
          */
         get sashimiArcSections(): SashimiArcSection[] {
-          const view = getContainingView(self) as LGV
+          const view = self.lgv
           if (
             !self.showSashimiArcs ||
             !self.showCoverage ||
@@ -2118,7 +2115,7 @@ export default function stateModelFactory(
          * #getter
          */
         get visibleLabels() {
-          const view = getContainingView(self) as LGV
+          const view = self.lgv
           if (!view.initialized) {
             return []
           }
@@ -2152,7 +2149,7 @@ export default function stateModelFactory(
          * the canvas would repaint the whole pileup each move.
          */
         get highlightBoxes() {
-          const view = getContainingView(self) as LGV
+          const view = self.lgv
           const chainIds = this.highlightChainIds
           const ids =
             chainIds.length > 0
@@ -2344,7 +2341,7 @@ export default function stateModelFactory(
          * #getter
          */
         get renderState() {
-          const view = getContainingView(self) as LGV
+          const view = self.lgv
           const palette = self.colorPalette
           return {
             scrollTop: self.scrollTop,
@@ -2692,7 +2689,7 @@ export default function stateModelFactory(
            * #action
            */
           setSortedBy(type: string, tag?: string) {
-            const view = getContainingView(self) as LGV
+            const view = self.lgv
             const { centerLineInfo } = view
             // basePair / insertion / softclip / hardclip / tag use sortPos
             // to pick which reads to sort first; position / strand ignore
@@ -2764,7 +2761,7 @@ export default function stateModelFactory(
             tag?: string
           }) {
             const { type, pos, refName, tag } = arg
-            const view = getContainingView(self) as LGV
+            const view = self.lgv
             const assemblyName = view.assemblyNames[0]
             if (assemblyName) {
               this.setSortSlot({ type, pos, refName, assemblyName, tag })
@@ -3599,10 +3596,7 @@ export default function stateModelFactory(
           // reset-to-default, or a session-default change flipping a track that
           // follows the default) so fixed/fit resume from the height the user was
           // seeing, not the stale slot.
-          addDisposer(
-            self,
-            installGrowExitBake(self, getContainingView(self) as LGV),
-          )
+          addDisposer(self, installGrowExitBake(self, self.lgv))
 
           // The scroll clamp (the shrink autorun and the bound on setScrollTop)
           // is TrackHeightMixin's, earned by overriding `scrollableHeight`.
