@@ -149,10 +149,18 @@ export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
     return this.seqIdToOriginalRefName[refId]
   }
 
-  // Long reads get their wrapper reused across fetches so the NUMERIC_CIGAR
-  // memoized on it survives a pan instead of being rebuilt per read. Measured
-  // worth ~13% of the extract pass on long-read CRAM — see the note on
-  // CramSlightlyLazyFeature.NUMERIC_CIGAR, which is the only thing this retains.
+  // Long reads get their wrapper reused across fetches so what is memoized on it
+  // survives a pan instead of being rebuilt per read. Measured worth ~13% of the
+  // extract pass on long-read CRAM back when the wrapper retained a rebuilt
+  // NUMERIC_CIGAR — ~2 MB across a 37-read ONT slice.
+  //
+  // It retains far less now: the render path reads `clipLengthAtStartOfRead`,
+  // which is memoized as a *number*, and NUMERIC_CIGAR is built only if a
+  // consumer asks for the packed form. So this is worth re-measuring — it may
+  // now be carrying its own bookkeeping for a memo of 8 bytes per read, in which
+  // case deleting it is simpler and frees the LRU's retention of the records
+  // themselves. Left in place because that has not been measured, not because it
+  // is known to still pay.
   private getOrCacheFeature(record: CramRecord) {
     let feat = this.ultraLongFeatureCache.get(record.uniqueId)
     if (!feat) {

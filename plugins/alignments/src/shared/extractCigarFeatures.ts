@@ -53,12 +53,18 @@ export interface MismatchFeature extends Feature {
   readonly clipLengthAtStartOfRead: number
 
   // OPTIONAL — a performance hint, never a requirement. The packed
-  // `(len << 4) | opIndex` CIGAR: BAM and CRAM already hold it in that form
-  // straight out of the binary record, so handing it over saves consumers a
-  // parse. A source that has only the text `CIGAR` omits it and renders
-  // identically — `packedCigarOps` (features/alignedBaseWalk.ts) parses the
-  // string instead. Anything reading this MUST go through that helper, or the
-  // hint silently becomes a requirement.
+  // `(len << 4) | opIndex` CIGAR. A source that has only the text `CIGAR` omits
+  // it and renders identically — `packedCigarOps` (features/alignedBaseWalk.ts)
+  // parses the string instead. Anything reading this MUST go through that
+  // helper, or the hint silently becomes a requirement.
+  //
+  // It is only free for BAM, where the packed array *is* the on-disk layout and
+  // `@gmod/bam` hands out a zero-copy view of it. CRAM stores no CIGAR at all:
+  // every element is reconstructed from the read features, ~7,000 of them for a
+  // 49kb ONT read. So CramSlightlyLazyFeature builds this lazily and keeps it
+  // off the render path — `clipLengthAtStartOfRead`, the one CIGAR value the
+  // render path wants per read, comes from `CramRecord.getLeadingClipLength()`
+  // in O(1) instead. Don't "optimize" that back into an eager NUMERIC_CIGAR.
   readonly NUMERIC_CIGAR?: ArrayLike<number>
 }
 

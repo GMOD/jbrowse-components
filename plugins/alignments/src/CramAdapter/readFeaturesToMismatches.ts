@@ -25,25 +25,30 @@ import type { MismatchCallback } from '@jbrowse/cigar-utils'
 const NO_BASES = ''
 
 // Pure readFeatures→mismatch walk backing CramSlightlyLazyFeature.forEachMismatch
-// (extracted so it's unit-testable with plain fixtures, like
-// readFeaturesToNumericCIGAR). refPos is read-relative; windowStart/windowEnd are
-// passed already converted to that space, or ±Infinity for no clip.
+// (extracted so it's unit-testable with plain fixtures). refPos is
+// read-relative; windowStart/windowEnd are passed already converted to that
+// space, or ±Infinity for no clip.
 //
 // Reads cram-js's columnar read features rather than `record.readFeatures`,
 // which rebuilds an array of ~64-byte objects on every access. Only the
 // insertion branches touch a payload string, and only inside the window.
+//
+// Quality comes in as the record's slice-wide column plus its offset into it,
+// not as `record.qualityScores` — that getter builds a fresh ~104-byte subarray
+// view on every access, and this is called once per read per render pass. It is
+// the same pair cram-js's own forEachMismatch takes, for the same reason.
 export function readFeaturesToMismatches(
   arena: ReadFeatureArena | undefined,
   featureStart: number,
   featureCount: number,
   featStart: number,
-  qual: ArrayLike<number> | null | undefined,
+  qualColumn: Uint8Array | undefined,
+  qualStart: number,
   wLo: number,
   wHi: number,
   callback: MismatchCallback,
 ) {
   if (arena !== undefined) {
-    const hasQual = !!qual
     const { codes, pos, refPos, num, refCodes, subCodes } = arena
     const end = featureStart + featureCount
     let insertedBases = ''
@@ -97,10 +102,10 @@ export function readFeaturesToMismatches(
               rPos,
               1,
               subCode === 0 ? 'N' : String.fromCharCode(subCode),
-              // arena pos is 0-based as of @gmod/cram v10, so it indexes qual
-              // directly; the old `- 1` read one base early and returned
-              // undefined for a substitution at the first base of a read
-              hasQual ? qual[pos[i]!]! : -1,
+              // arena pos is 0-based as of @gmod/cram v10, so it indexes the
+              // record's own scores directly; the old `- 1` read one base early
+              // and returned undefined for a substitution at the read's first base
+              qualColumn === undefined ? -1 : qualColumn[qualStart + pos[i]!]!,
               refCharCode,
               0,
             )

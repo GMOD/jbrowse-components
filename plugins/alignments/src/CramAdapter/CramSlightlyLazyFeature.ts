@@ -1,12 +1,10 @@
-import {
-  clipLengthAtStartOfReadNumeric,
-  numericCigarToString,
-} from '@jbrowse/cigar-utils'
+import { CIGAR_HARD_CLIP, CIGAR_SOFT_CLIP } from '@gmod/cram'
+import { numericCigarToString } from '@jbrowse/cigar-utils'
 
 import { collectMismatches } from '../shared/collectMismatches.ts'
 import { convertTagsToPlainArrays } from '../shared/util.ts'
+import { packCigar } from './packCigar.ts'
 import { readFeaturesToMismatches } from './readFeaturesToMismatches.ts'
-import { readFeaturesToNumericCIGAR } from './readFeaturesToNumericCIGAR.ts'
 
 import type { MismatchFeature } from '../shared/extractCigarFeatures.ts'
 import type CramAdapter from './CramAdapter.ts'
@@ -23,6 +21,8 @@ export default class CramSlightlyLazyFeature implements MismatchFeature {
   ) {}
 
   private numericCigar?: ArrayLike<number>
+
+  private clipStart?: number
 
   get name() {
     return this.record.readName
@@ -101,34 +101,63 @@ export default class CramSlightlyLazyFeature implements MismatchFeature {
     return this.record.getReadBases()
   }
 
-  // packed CIGAR array, each entry (length << 4) | opIndex.
+  // packed CIGAR array, each entry (length << 4) | opIndex — see packCigar.ts
+  // for why only the packing lives on this side.
   //
-  // The one derived value here worth memoizing, and only in combination with the
-  // adapter's ultra-long feature LRU: the render path builds it once per read
-  // (via clipLengthAtStartOfRead), so the memo does nothing within a single
-  // extraction — it pays off when the LRU hands the same wrapper back after a
-  // pan (interleaved A/B on volvox-inv-pbsim, 109 reads / 37 over 5kb: 8.4ms
-  // with wrappers rebuilt vs 7.3ms reused, ~13%).
+  // Genuinely lazy, and off the render path entirely: nothing builds it unless a
+  // consumer asks for the packed form (per-base colouring, the details panel).
+  // That is the difference between CRAM and BAM here — BAM's packed CIGAR is the
+  // on-disk layout and `@gmod/bam` hands out a zero-copy view of it, so the
+  // `NUMERIC_CIGAR` hint really is free there. CRAM has no CIGAR at all, so
+  // every element of this array is manufactured, and for a 49kb ONT read that is
+  // ~7,000 operations built and retained on demand.
   //
-  // `fields`, `CIGAR` and `tags` were measured the same way and are deliberately
-  // *not* memoized: `fields` and `CIGAR` are read 0 times per read on the render
-  // path (only toJSON/details touch them, once), and re-spreading `tags` on each
-  // of its ~3 reads per read beats installing a per-instance copy.
+  // Still memoized, because a consumer that asks once usually asks again, and
+  // the adapter's ultra-long feature LRU keeps it across a pan.
+  //
+  // `fields`, `CIGAR` and `tags` were measured and are deliberately *not*
+  // memoized: `fields` and `CIGAR` are read 0 times per read on the render path
+  // (only toJSON/details touch them, once), and re-spreading `tags` on each of
+  // its ~3 reads per read beats installing a per-instance copy.
   get NUMERIC_CIGAR() {
-    this.numericCigar ??= readFeaturesToNumericCIGAR(
-      this.record.readFeatureArena,
-      this.record.readFeatureStart,
-      this.record.readFeatureCount,
-      this.record.start,
-      this.record.readLength,
-    )
+    this.numericCigar ??= packCigar(this.record)
     return this.numericCigar
   }
 
-  // start-clip length off NUMERIC_CIGAR so the render path never builds the
-  // full CIGAR string. Equivalent to getClip(CIGAR, strand).
+  // Start-clip length, walked straight off the record rather than read out of
+  // NUMERIC_CIGAR.
+  //
+  // This is the one CIGAR value the render path actually wants, and it is a
+  // single operation: the first, or the last on the reverse strand. Reading it
+  // out of the packed array meant manufacturing the whole array — ~7,000
+  // operations for a long ONT read — to look at one of them, and then retaining
+  // it. The walk allocates nothing and the memo below is a number rather than an
+  // array, so the LRU still pays off across a pan at 8 bytes instead of ~2 MB
+  // per ONT slice.
+  //
+  // Semantics must match clipLengthAtStartOfReadNumeric exactly, including that
+  // it inspects only that one operation: a read whose CIGAR is `5H4S…` clips 5,
+  // not 9.
   get clipLengthAtStartOfRead() {
-    return clipLengthAtStartOfReadNumeric(this.NUMERIC_CIGAR, this.strand)
+    if (this.clipStart === undefined) {
+      if (this.strand === -1) {
+        // the last operation, which needs the read bases every earlier one
+        // consumed — see the note next to getLeadingClipLength in @gmod/cram
+        // for why that cannot be answered from the end of the record alone.
+        // Still allocates nothing.
+        let lastOp = -1
+        let lastLen = 0
+        this.record.forEachCigarOp((op, length) => {
+          lastOp = op
+          lastLen = length
+        })
+        this.clipStart =
+          lastOp === CIGAR_SOFT_CLIP || lastOp === CIGAR_HARD_CLIP ? lastLen : 0
+      } else {
+        this.clipStart = this.record.getLeadingClipLength()
+      }
+    }
+    return this.clipStart
   }
 
   get CIGAR() {
@@ -223,12 +252,16 @@ export default class CramSlightlyLazyFeature implements MismatchFeature {
         : windowStart - featStart
     const wHi =
       windowEnd === undefined ? Number.POSITIVE_INFINITY : windowEnd - featStart
+    // the quality column and this record's offset into it, rather than
+    // `qualRaw` — that getter builds a fresh subarray view per call, and this
+    // runs once per read per render pass
     readFeaturesToMismatches(
       this.record.readFeatureArena,
       this.record.readFeatureStart,
       this.record.readFeatureCount,
       featStart,
-      this.qualRaw,
+      this.record.qualityColumn,
+      this.record.qualityStart,
       wLo,
       wHi,
       callback,

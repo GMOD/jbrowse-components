@@ -1,24 +1,32 @@
-import { arenaFromReadFeatures } from '@gmod/cram'
+import { CramRecord, arenaFromReadFeatures } from '@gmod/cram'
 import { numericCigarToString } from '@jbrowse/cigar-utils'
 
-import { readFeaturesToNumericCIGAR } from './readFeaturesToNumericCIGAR.ts'
+import { TYPED_CIGAR_MIN_OPS, packCigar } from './packCigar.ts'
 
 import type { ReadFeature } from '@gmod/cram'
 
-// pack plain fixture features into a one-record arena, the shape the walk reads
-function numericOf(
+// The CIGAR *walk* is @gmod/cram's CramRecord.forEachCigarOp, tested there
+// against an independent generator and against samtools output — including the
+// htslib edge cases this file used to own ('b' verbatim bases, trailing
+// insertions with no trailing matches, c2#pad's insertions either side of a
+// deletion, a Q between two single-base insertions, xx#minimal's zero-length
+// ops). What is left here is the packing, which is this repo's memory decision.
+
+// build a bare record with just the fields the CIGAR walk reads
+function makeRecord(
   readFeatures: ReadFeature[],
   alignmentStart: number,
   readLen: number,
 ) {
   const arena = arenaFromReadFeatures(readFeatures)
-  return readFeaturesToNumericCIGAR(
-    arena,
-    0,
-    arena.length,
-    alignmentStart,
-    readLen,
-  )
+  return Object.assign(Object.create(CramRecord.prototype), {
+    flags: 0,
+    start: alignmentStart,
+    readLength: readLen,
+    readFeatureArena: arena,
+    readFeatureStart: 0,
+    readFeatureCount: arena.length,
+  }) as CramRecord
 }
 
 function cigarOf(
@@ -26,7 +34,9 @@ function cigarOf(
   alignmentStart: number,
   readLen: number,
 ) {
-  return numericCigarToString(numericOf(readFeatures, alignmentStart, readLen))
+  return numericCigarToString(
+    packCigar(makeRecord(readFeatures, alignmentStart, readLen)),
+  )
 }
 
 test('cram read features to CIGAR', () => {
@@ -36,95 +46,12 @@ test('cram read features to CIGAR', () => {
   ).toMatchSnapshot()
 })
 
-test("'b' verbatim bases align as matches (one M column per base)", () => {
-  // Documents 'b' semantics: data is a decoded base string ("ACGT" = 4 match
-  // columns), then a 2bp deletion, then 6 trailing matches to fill readLength.
-  expect(
-    cigarOf(
-      [
-        { code: 'b', data: 'ACGT', pos: 0, refPos: 0 },
-        { code: 'D', data: 2, pos: 4, refPos: 4 },
-      ],
-      0,
-      10,
-    ),
-  ).toBe('4M2D6M')
-})
-
-test('trailing single-base insertions are not dropped when remaining=0', () => {
-  // 3M then two 'i' insertions consuming all readLen=5 bases → remaining=0
-  // bug: original `if (remaining && insLen)` silently dropped the insertions
-  expect(
-    cigarOf(
-      [
-        { code: 'i', data: 'A', pos: 2, refPos: 2 },
-        { code: 'i', data: 'C', pos: 3, refPos: 2 },
-      ],
-      -1,
-      5,
-    ),
-  ).toBe('3M2I')
-})
-
-// The features of htslib's c2#pad s4, whose CIGAR samtools gives as 4M1I1D1I4M.
-// bug: flushing the pending 'i' only on a match region merged the two
-// insertions across the deletion and emitted them after it, as 4M1D2I4M
-test('single-base insertions either side of a deletion stay separate', () => {
-  expect(
-    cigarOf(
-      [
-        { code: 'i', data: 'A', pos: 4, refPos: 4 },
-        { code: 'D', data: 1, pos: 5, refPos: 4 },
-        { code: 'i', data: 'C', pos: 5, refPos: 5 },
-      ],
-      0,
-      10,
-    ),
-  ).toBe('4M1I1D1I4M')
-})
-
-// q/Q report where a quality score sits in the *read*, so a Q following an
-// insertion carries a refPos behind it — see RF_POSITIONAL in @gmod/cram.
-// bug: letting Q through flushed the pending insertion and gave 2M1I1I2M
-test('a Q between two single-base insertions does not split them', () => {
-  expect(
-    cigarOf(
-      [
-        { code: 'i', data: 'A', pos: 2, refPos: 2 },
-        { code: 'Q', data: 36, pos: 2, refPos: 1 },
-        { code: 'i', data: 'C', pos: 3, refPos: 2 },
-      ],
-      0,
-      5,
-    ),
-  ).toBe('2M2I1M')
-})
-
-// htslib's xx#minimal a1 (two hard clips, samtools gives 10H) and a2 (hard
-// clips around a zero-length insertion and deletion, samtools gives 5H10M5H)
-test('zero-length ops are dropped and same-op runs merge', () => {
-  expect(
-    cigarOf(
-      [
-        { code: 'H', data: 5, pos: 0, refPos: 3 },
-        { code: 'H', data: 5, pos: 0, refPos: 3 },
-      ],
-      3,
-      0,
-    ),
-  ).toBe('10H')
-  expect(
-    cigarOf(
-      [
-        { code: 'H', data: 5, pos: 0, refPos: 3 },
-        { code: 'I', data: '', pos: 0, refPos: 3 },
-        { code: 'D', data: 0, pos: 10, refPos: 13 },
-        { code: 'H', data: 5, pos: 10, refPos: 13 },
-      ],
-      3,
-      10,
-    ),
-  ).toBe('5H10M5H')
+test('packs each op as (length << 4) | opIndex', () => {
+  const packed = packCigar(
+    makeRecord([{ code: 'D', data: 2, pos: 4, refPos: 4 }], 0, 10),
+  )
+  // 4M 2D 6M, with M=0 and D=2 in the SAM op numbering
+  expect(Array.from(packed)).toEqual([(4 << 4) | 0, (2 << 4) | 2, (6 << 4) | 0])
 })
 
 // A long read crosses TYPED_CIGAR_MIN_OPS and comes back as a Uint32Array
@@ -138,10 +65,12 @@ test('a long read switches to a Uint32Array without changing the CIGAR', () => {
     many.push({ code: 'D', data: 2, pos: 0 + i * 5, refPos: 0 + i * 7 })
   }
   // few enough features to stay under the cutoff, so both branches get exercised
-  const short = numericOf(many.slice(0, 3), 0, 500)
-  const long = numericOf(many, 0, 500)
+  const short = packCigar(makeRecord(many.slice(0, 3), 0, 500))
+  const long = packCigar(makeRecord(many, 0, 500))
 
+  expect(short.length).toBeLessThan(TYPED_CIGAR_MIN_OPS)
   expect(Array.isArray(short)).toBe(true)
+  expect(long.length).toBeGreaterThanOrEqual(TYPED_CIGAR_MIN_OPS)
   expect(long).toBeInstanceOf(Uint32Array)
 
   // the first deletion sits at the alignment start, so it leads; each later one

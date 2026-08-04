@@ -37,6 +37,7 @@ function collect(readFeatures: ReadFeature[], qual?: Uint8Array) {
     arena.length,
     0,
     qual,
+    0,
     Number.NEGATIVE_INFINITY,
     Number.POSITIVE_INFINITY,
     cb,

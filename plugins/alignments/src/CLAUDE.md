@@ -44,9 +44,17 @@ it, resolving one region's mismatches against another's sequence. Covered by
 
 ## CRAM read-feature walks
 
-`readFeaturesToNumericCIGAR` / `readFeaturesToMismatches` must agree with
-cram-js's own `getCigarString()`: gate on `RF_POSITIONAL[code]` (q/Q are read
-positions, not alignment positions), flush a pending insertion run before
-**any** other op, and drop zero-length ops / merge same-op runs. To check a
-change, sweep the cram-js fixtures and diff the numeric walk against
-`record.getCigarString()`.
+CRAM stores no CIGAR — it is reconstructed from the read features, and the
+reconstruction is subtle: gate on `RF_POSITIONAL[code]` (q/Q are read positions,
+not alignment positions), flush a pending insertion run before **any** other op,
+drop zero-length ops and merge same-op runs. That walk lives in cram-js as
+`CramRecord.forEachCigarOp`, where it is cross-checked against samtools output;
+`packCigar.ts` here only packs it into `(length << 4) | op`. Don't reintroduce a
+second walk on this side.
+
+`readFeaturesToMismatches` is still a walk of our own, because it emits this
+repo's mismatch vocabulary (`MISMATCH_TYPE` and friends) rather than anything
+cram-js could name. It has to stay consistent with cram-js's `forEachMismatch`
+on the same points as above; to check a change, sweep the cram-js fixtures and
+diff against `record.getMismatches()`, allowing for the two known differences in
+shape (soft-clip `length` 0 vs 1, deletion `bases` `''` vs `'*'`).
