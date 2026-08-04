@@ -1,4 +1,8 @@
-import { navigateWithSessionSpec, waitForDataLoaded } from './helpers.ts'
+import {
+  navigateWithSessionSpec,
+  waitForDataLoaded,
+  waitForDisplayPaint,
+} from './helpers.ts'
 import { dualSnapshot } from './snapshot.ts'
 
 import type { TestCase } from './types.ts'
@@ -48,7 +52,10 @@ async function snapshotViewBody(
   },
 ) {
   await navigateWithSessionSpec(page, spec, config)
-  await page.waitForSelector(waitSelector, { timeout })
+  // not a bare waitForSelector: a display gated on region size mounts no canvas
+  // at all, and the difference between "still loading" and "never will" is worth
+  // saying out loud — see waitForDisplayPaint
+  await waitForDisplayPaint(page, waitSelector, timeout)
   await waitForDataLoaded(page, timeout)
   await dualSnapshot(page, `${snapshot}-canvas`, snapshotSelector, threshold, {
     assertContent,

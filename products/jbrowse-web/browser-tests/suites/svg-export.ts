@@ -10,6 +10,7 @@ import {
   findByText,
   navigateWithSessionSpec,
   waitForDataLoaded,
+  waitForDisplayPaint,
   waitForLoadingToComplete,
 } from '../helpers.ts'
 import { snapshotConfig } from '../snapshot.ts'
@@ -297,9 +298,7 @@ const suite: TestSuite = {
             },
           ],
         })
-        await page.waitForSelector('[data-testid$="-done"]', {
-          timeout: 60000,
-        })
+        await waitForDisplayPaint(page, '[data-testid$="-done"]', 60000)
         await waitForLoadingToComplete(page)
 
         const svg = await exportSvgAndSave(
@@ -339,9 +338,7 @@ const suite: TestSuite = {
             },
           ],
         })
-        await page.waitForSelector('[data-testid$="-done"]', {
-          timeout: 60000,
-        })
+        await waitForDisplayPaint(page, '[data-testid$="-done"]', 60000)
         await waitForLoadingToComplete(page)
 
         const svg = await exportSvgAndSave(

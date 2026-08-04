@@ -1,4 +1,8 @@
-import { navigateToUrl, waitForDataLoaded } from '../helpers.ts'
+import {
+  navigateToUrl,
+  waitForDataLoaded,
+  waitForDisplayPaint,
+} from '../helpers.ts'
 import { dualSnapshot } from '../snapshot.ts'
 import { lgvSnapshotTest } from '../suiteHelpers.ts'
 
@@ -22,9 +26,7 @@ const suite: TestSuite = {
           'config=test_data/cfam2/config.json&sessionName=Test%20Session',
         )
 
-        await page.waitForSelector('[data-testid$="-done"] canvas', {
-          timeout: 60000,
-        })
+        await waitForDisplayPaint(page, '[data-testid$="-done"] canvas', 60000)
         await waitForDataLoaded(page)
         await dualSnapshot(
           page,

@@ -6,6 +6,7 @@ import {
   navigateWithSessionSpec,
   waitForDataLoaded,
   waitForElementCount,
+  waitForDisplayPaint,
 } from '../helpers.ts'
 import { dualSnapshot, pageSnapshot } from '../snapshot.ts'
 import { lgvSnapshotTest, viewSnapshotTest } from '../suiteHelpers.ts'
@@ -176,11 +177,10 @@ const localDemos: TestSuite = {
           'config=test_data/config_dotplot.json&sessionName=Demo%20Test',
         )
 
-        await page.waitForSelector(
+        await waitForDisplayPaint(
+          page,
           '[data-testid="dotplot_webgl_canvas_done"]',
-          {
-            timeout: 60000,
-          },
+          60000,
         )
         await waitForDataLoaded(page)
         await dualSnapshot(
@@ -269,9 +269,20 @@ const localDemos: TestSuite = {
       config: demoConfig,
       assembly: 'hg38',
       // 0.1x-downsampled nanopore amplicon reads at the EGFR locus on hg38
-      // (the full-coverage track causes OOM, so we use the downsampled one)
-      loc: 'chr7:55,000,000-56,000,000',
-      tracks: ['nanopore_targeted_alignments_0.1'],
+      // (the full-coverage track causes OOM, so we use the downsampled one).
+      //
+      // The reads sit in chr7:55,172,985-55,198,837 — EGFR's kinase-domain
+      // exons — and that footprint IS the file, so every window covering it
+      // estimates the same ~11.4 Mb and trips CramAdapter's 3 MB fetchSizeLimit.
+      // There is no zoom level that both shows the amplicon and stays under the
+      // gate, so this opens force-loaded. Without it the display mounts
+      // TooLargeMessage in place of its canvas and the test waits for a
+      // paint-complete id that is never coming: it had never passed, and no
+      // golden was ever written.
+      loc: 'chr7:55,172,900-55,199,000',
+      tracks: [
+        { trackId: 'nanopore_targeted_alignments_0.1', forceLoad: true },
+      ],
       doneTestId: 'pileup-display-done',
     }),
     viewSnapshotTest({

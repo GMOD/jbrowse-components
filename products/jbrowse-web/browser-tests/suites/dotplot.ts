@@ -4,6 +4,7 @@ import {
   navigateToUrl,
   navigateWithSessionSpec,
   waitForDataLoaded,
+  waitForDisplayPaint,
 } from '../helpers.ts'
 import { dualSnapshot } from '../snapshot.ts'
 
@@ -290,11 +291,10 @@ const suite: TestSuite = {
           'config=test_data/config_dotplot.json&sessionName=Test%20Session',
         )
 
-        await page.waitForSelector(
+        await waitForDisplayPaint(
+          page,
           '[data-testid="dotplot_webgl_canvas_done"]',
-          {
-            timeout: 60000,
-          },
+          60000,
         )
         await waitForDataLoaded(page)
         await dualSnapshot(

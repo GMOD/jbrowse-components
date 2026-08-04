@@ -208,6 +208,92 @@ export async function waitForDisplay(
   await page.waitForSelector(`[data-testid^="display-${trackId}"]`, { timeout })
 }
 
+// A display that is reporting the region-size gate, found by walking the session
+// across nested views (a synteny or breakpoint view's panels).
+interface GatedDisplay {
+  trackId: string
+  reason: string
+}
+
+// Wait for a display's paint-complete element, and fail the moment the gate
+// makes that impossible instead of sitting out the timeout.
+//
+// A display whose region is too large mounts TooLargeMessage INSTEAD of its
+// canvas body, so the paint-complete test-id never appears — and the plain wait
+// reports `Waiting for selector … failed`, which is the same sentence a broken
+// adapter, an unreachable host and a renamed test-id all produce. That cost a
+// real diagnosis: the Nanopore EGFR demo test asked for a 1 Mb window on an
+// alignments track, was gated at 11.4 Mb against CramAdapter's 3 MB default, and
+// had never passed once — no golden was ever written, and nothing in the failure
+// said why.
+//
+// The race is on the MODEL, not on a banner appearing or on a grace period.
+// `regionTooLarge` is terminal by construction (the fetch autoruns hold off
+// while it is true, so the display has stopped, not slowed), which makes "this
+// will never paint" a fact to read rather than an interval to guess at.
+export async function waitForDisplayPaint(
+  page: Page,
+  selector: string,
+  timeout = 60000,
+) {
+  const gated = await page
+    .waitForFunction(
+      (sel: string) => {
+        if (document.querySelector(sel)) {
+          return { done: true, gated: [] }
+        }
+        interface LiveView {
+          views?: LiveView[]
+          tracks?: {
+            configuration?: { trackId?: string }
+            displays?: {
+              regionTooLarge?: boolean
+              regionTooLargeReason?: string
+            }[]
+          }[]
+        }
+        const out: { trackId: string; reason: string }[] = []
+        const walk = (views: LiveView[] | undefined) => {
+          for (const v of views ?? []) {
+            for (const t of v.tracks ?? []) {
+              for (const d of t.displays ?? []) {
+                if (d.regionTooLarge) {
+                  out.push({
+                    trackId: t.configuration?.trackId ?? '?',
+                    reason: d.regionTooLargeReason ?? '',
+                  })
+                }
+              }
+            }
+            walk(v.views)
+          }
+        }
+        walk(
+          (window as unknown as { JBrowseSession?: { views?: LiveView[] } })
+            .JBrowseSession?.views,
+        )
+        return out.length > 0 ? { done: false, gated: out } : null
+      },
+      { timeout, polling: 200 },
+      selector,
+    )
+    .then(handle => handle.jsonValue() as Promise<{ gated: GatedDisplay[] }>)
+    .catch(() => {
+      throw new Error(`timed out waiting for ${selector}`)
+    })
+
+  if (gated.gated.length > 0) {
+    const detail = gated.gated
+      .map(g => `${g.trackId}${g.reason ? ` (${g.reason})` : ''}`)
+      .join(', ')
+    throw new Error(
+      `region too large — the display never mounted its canvas, so ${selector} ` +
+        `will never appear: ${detail}. Zoom the spec's loc in, or open the track ` +
+        `as { trackId, forceLoad: true } to render it regardless.`,
+    )
+  }
+}
+
 // Wait until at least `count` elements match `selector` — used by tests that
 // add a second view/display and must wait for it to mount before snapshotting.
 export async function waitForElementCount(

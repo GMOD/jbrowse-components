@@ -3,6 +3,7 @@ import {
   navigateToUrl,
   navigateWithSessionSpec,
   waitForDataLoaded,
+  waitForDisplayPaint,
 } from '../helpers.ts'
 import { dualSnapshot } from '../snapshot.ts'
 import { lgvSnapshotTest, viewSnapshotTest } from '../suiteHelpers.ts'
@@ -106,9 +107,11 @@ const identityLegendTest: TestCase = {
       },
       'test_data/grape_peach_synteny/config.json',
     )
-    await page.waitForSelector('[data-testid="synteny_canvas_done"]', {
-      timeout: 60000,
-    })
+    await waitForDisplayPaint(
+      page,
+      '[data-testid="synteny_canvas_done"]',
+      60000,
+    )
     await waitForDataLoaded(page, 60000)
 
     // full-page capture records the legend

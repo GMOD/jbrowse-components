@@ -2,7 +2,11 @@ import { Buffer } from 'node:buffer'
 
 import { PNG } from 'pngjs'
 
-import { navigateWithSessionSpec, waitForDataLoaded } from '../helpers.ts'
+import {
+  navigateWithSessionSpec,
+  waitForDataLoaded,
+  waitForDisplayPaint,
+} from '../helpers.ts'
 import { viewSnapshotTest } from '../suiteHelpers.ts'
 
 import type { TestSuite } from '../types.ts'
@@ -57,9 +61,7 @@ async function capture(page: Page, loc: string) {
     },
     CONFIG,
   )
-  await page.waitForSelector('[data-testid="hic-display-done"]', {
-    timeout: 60000,
-  })
+  await waitForDisplayPaint(page, '[data-testid="hic-display-done"]', 60000)
   await waitForDataLoaded(page, 60000)
   const el = await page.waitForSelector(CANVAS, { timeout: 60000 })
   return chromaProfile(await el!.screenshot())
