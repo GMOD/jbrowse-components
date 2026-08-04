@@ -149,7 +149,11 @@ gate is derived and opt-in; arc's `ArcFetchModel` enables it like every other
 byte-gated display (see [the region-too-large
 gate](#the-region-too-large-gate-summary)).
 
-**The non-LGV views are a third shape, not a row in that table.** Both
+**The non-LGV views are a third shape, not a row in that table** — deliberately,
+and not a migration nobody finished; folding them onto `FetchMixin` was proposed
+and rejected in
+[ADR-054](architecture-decision-records/adr-054-comparative-displays-keep-their-own-fetch.md),
+which is the thing to read before re-proposing it. Both
 comparative displays (`LinearSyntenyDisplay`, `DotplotDisplay`) compose
 `BaseDisplay` + `SyntenyFetchStateMixin` (`@jbrowse/synteny-core`) and own their
 fetch in a bare autorun. Neither gets `FetchMixin`'s cancel/stale machinery,

@@ -63,4 +63,5 @@ action needed under current workloads), **Proposed** (not yet decided).
 | [051](adr-051-shader-js-codegen-is-scalar-only.md) | Accepted | Generate the Canvas2D twin of a shader's scalar decision functions from slangc's WGSL; never transpile the vertex or fragment stage |
 | [052](adr-052-slot-name-safety-is-a-write-guard.md) | Accepted | Slot-name safety is a runtime guard on the single write funnel, not codegen extending a compile-time guard that structurally cannot cover the surface |
 | [053](adr-053-alignments-layout-stays-on-the-main-thread.md) | Accepted | Pileup/chain row layout stays on the main thread; the packing cost it is blamed for is separable and is the thing to attack |
+| [054](adr-054-comparative-displays-keep-their-own-fetch.md) | Rejected | The comparative displays don't compose `FetchMixin`; the third fetch shape is structural, and everything drift-prone they share with the LGV families is already shared as plain functions |
 <!-- END GENERATED ADR INDEX -->

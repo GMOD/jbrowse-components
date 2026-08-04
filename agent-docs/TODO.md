@@ -22,25 +22,35 @@ is exactly what the browser gate cannot see — it is a canvas-vs-GPU
 every golden image is wrong. What validates that half is launching the app with
 track outlines on and off and looking, then regenerating in its own commit.
 
-## Fold the non-LGV fetches onto `FetchMixin`
+## Give the comparative displays a cancel and a retry
 
-`LinearSyntenyDisplay` and `DotplotDisplay` fetch outside `FetchMixin`: their own
-`loading`/`refetching` derivations, no `fetchCanceled`/`cancelFetchByUser`, no
-`reload()`. The autorun skeleton itself is no longer duplicated — both install
-`installComparativeFetchAutorun` (`@jbrowse/synteny-core`), which owns the token
-rotation, debounce, loading/error flags and staleness discipline.
+`LinearSyntenyDisplay` and `DotplotDisplay` are the only displays with no way to
+stop a slow load or retry a failed one. Every LGV display has both.
 
-The shape: a `SignatureFetchMixin` = `FetchMixin` + `loadedFetchKey` volatile +
-overridable `currentFetchKey` + `dataCurrent`, with
-`installComparativeFetchAutorun` folded onto it the way
-`installGlobalFetchAutorun` sits on `GlobalFetchMixin`.
-That makes the display-stacks table in
-[ARCHITECTURE.md](ARCHITECTURE.md#display-stacks) three rows that all compose
-`FetchMixin`, instead of two rows and a footnote.
+This is what is left of the old "fold the non-LGV fetches onto `FetchMixin`"
+entry, which
+[ADR-054](architecture-decision-records/adr-054-comparative-displays-keep-their-own-fetch.md)
+rejected — read it before re-proposing the fold. The short version: it retires
+neither stop-token machine (`createStopTokenRotation` has a third consumer that
+`FetchMixin` structurally cannot host), most of what it would add is per-region
+machinery these single-RPC fetches don't use, and the two getters worth hoisting
+read `self.error`, which that mixin cannot see without a third declaration of
+`BaseDisplay`'s five status members — the trap ADR-041 records.
 
-**Read `@jbrowse/synteny-core`'s `SyntenyFetchStateMixin` first** — both displays
-compose it for `fetching` / `loadedFetchKey` / `assembliesSwapped`, so decide
-whether this is that mixin growing into `FetchMixin` or a separate move.
+**None of that blocks the feature**, which was the only user-visible thing the
+fold was buying:
+
+- `fetchCanceled` volatile + `cancelFetch`/`reload` actions on
+  `SyntenyFetchStateMixin` (`@jbrowse/synteny-core`), alongside the `fetching` /
+  `loadedFetchKey` / `assembliesSwapped` it already owns.
+- `installComparativeFetchAutorun` reads `void self.reloadCounter` in the same
+  place it reads `currentFetchKey`, and skips the run while `fetchCanceled` — the
+  unconditional-read rule from `installGlobalFetchAutorun` applies, or reload
+  dies the moment the gate goes false.
+- `LoadingOverlay` already takes `canceled` / `onCancel` / `onRetry`;
+  `LinearSyntenyRendering.tsx` passes none of them. Dotplot's
+  `DisplayStatusOverlays.tsx` renders a bare `LoadingProgress` and needs the
+  overlay proper, or its own buttons.
 
 ## Alignments / canvas
 
