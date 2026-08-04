@@ -511,25 +511,68 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   // ones worth reading are the tall ones, which are also the ones most
   // overdrawn. On a circle a chord's length is its span and the crossings sit in
   // the middle, away from the chromosome names.
-  {
-    mode: 'url',
-    name: 'cancer_sv/k562_starfusion_triage',
-    viewportHeight: 900,
-    viewportWidth: 1100,
+  //
+  // TWO circles, side by side, not one (review: "i still think it would be
+  // useful to make a multi-part figure. the circular view is generally not that
+  // strong on its own"). Triage is a narrowing, and one circle can only show the
+  // wide end of it. The second is the same track on a circle of chr9 and chr22
+  // alone -- which is what a reader does next, and is a `displayedRegionNames`
+  // change rather than a new file. On it the reciprocal pair is two chords
+  // across an otherwise empty circle, the artefact tail is gone with chrM, and
+  // the chord ends land on 9q34 and 22q11 where the next two figures work.
+  //
+  // Not a filtered circle, which would have been the other way to narrow:
+  // ChordVariantDisplay has four config slots (onChordClick and three stroke
+  // colors) and no `jexlFilters`, so support is expressible as a COLOR here and
+  // not as a filter. That is also why the left circle carries the color
+  // expression and the right one still does -- the two red chords are the same
+  // two on both.
+  ...(
+    [
+      [
+        'cancer_sv/k562_fusion_circle_all',
+        HG38_MAIN_CHROMS,
+        'All 44 calls, every chromosome',
+      ],
+      [
+        'cancer_sv/k562_fusion_circle_pair',
+        ['chr9', 'chr22'],
+        'The same track on chr9 and chr22 alone',
+      ],
+    ] as const
+  ).map(([name, regions, label]) => ({
+    mode: 'url' as const,
+    name,
+    // square-ish, so two of them side by side is one wide frame rather than two
+    // tall ones with the drawing floating in the middle
+    viewportHeight: 800,
+    viewportWidth: 760,
     url: sessionSpec(CONFIG, {
       views: [
         {
           type: 'CircularView',
           assembly: 'hg38',
-          displayedRegionNames: HG38_MAIN_CHROMS,
+          displayedRegionNames: regions,
           // the circle auto-fits its container, so this is the drawing's size
-          height: 820,
+          height: 720,
           tracks: [
             { trackId: 'K562_star_fusion', strokeColor: FUSION_ARC_COLOR },
           ],
         },
       ],
     }),
+    annotations: [
+      { type: 'text' as const, x: 24, y: 56, fontSize: 20, text: label },
+    ],
+  })),
+  {
+    mode: 'compose',
+    name: 'cancer_sv/k562_starfusion_triage',
+    parts: [
+      'cancer_sv/k562_fusion_circle_all',
+      'cancer_sv/k562_fusion_circle_pair',
+    ],
+    direction: 'horizontal',
   },
 
   // BCR beside ABL1 in one row, the way FusionInspector lays a fusion out: two

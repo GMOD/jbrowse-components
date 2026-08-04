@@ -2406,10 +2406,10 @@
   },
   "cancer_sv/k562_starfusion_triage": {
     "name": "cancer_sv/k562_starfusion_triage",
-    "status": "bad",
-    "note": "i still think it would be useful to make a multi-part figure. the circular view is generally not that strong on its own. previous notes: are there any further things we should render?  NOTHING FURTHER TO RENDER, and it stays a solo figure. The circle is the whole 44-call output at the triage step, before a locus is chosen; the two loci it triages into are the next two figures. Its companion k562_cn_amplicon gained mate-direction ticks this pass (see that item), which is where the extra rendering went.",
-    "reviewedAt": "2026-08-04T17:41:55.366Z",
-    "hash": "9f20537510b2eab8ae3394c552f556885c1e49ed"
+    "status": "good",
+    "note": "Multi-part now, and the second part is the triage step rather than a restatement of the first. Two circles side by side: the 44 calls over every chromosome, then the SAME track with only chr9 and chr22 displayed. That is a displayedRegionNames change, not a new file and not a different track -- which is the point, since narrowing a circle is what a reader does next. On the right circle the artefact tail goes with chrM and what is left is the reciprocal pair as two red chords across an otherwise empty circle, their ends on 9q34 and 22q11, which is exactly where the next two figures work. Each half carries a label so the pair reads without the caption. WHY NOT A FILTERED CIRCLE, which was the other way to narrow: ChordVariantDisplay has four config slots -- onChordClick and three stroke colors -- and no jexlFilters, so junction-read support is expressible here as a COLOR and not as a filter. Both halves therefore keep the same strokeColor expression and the two red chords are the same two on both. That limitation is now in the prose rather than being something a reader has to discover. WHY NOT THE OTHER PAIRINGS: a zoomed linear view of the pair is k562_bcr_abl_split and the copy-number context is k562_cn_amplicon, both immediately below on the same page, so composing either in would republish a figure a reader is about to scroll to. Figure links point at the two PART specs, since a compose has no session of its own.",
+    "reviewedAt": "2026-08-04T23:31:37.905Z",
+    "hash": "0858158a2add552a22c7bb2e1a5d05c2a7db8a54"
   },
   "desktop-add-track-steps": {
     "name": "desktop-add-track-steps",
