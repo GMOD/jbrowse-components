@@ -420,9 +420,23 @@ python3 odgi_similarity_to_newick.py ecoli_pggb_similarity.tsv ecoli_pggb.nh
 <Figure caption="The graph's whole-genome alignment projected onto K12 across 60 kb: the coverage band on top, then one row per strain (K12 first), each colored where it differs from K12, with the variant calls above. A blank row is a strain with no alignment to K12 there, so accessory structure and SNP divergence read in one picture." src="/img/pangenome/maf.png" />
 
 `samples` still names and labels the rows, so a tree that fails to build leaves
-the track working. Insertions have no reference span to sit on, so they draw as
-numbered boxes labelled with the bases the allele adds beyond K12. The
-[MAF track guide](/docs/user_guides/maf_track) covers the conservation band,
+the track working.
+
+The numbered purple boxes in the variant lane are insertion markers, and the
+number on one is how many bases that strain's allele adds beyond K12. They need
+a marker because an insertion consumes no reference: the record spans a single
+base, so without one it would draw at the width of a SNP whatever its length.
+Each strain carrying an insertion at this point has its own record, of its own
+length, rather than all of them sharing one.
+
+Nothing in the alignment below corresponds to those markers, and the two lanes
+are not disagreeing. A MAF can carry an insertion, as columns the reference row
+gaps through, and the display draws those with the same marker. Here the strains
+stop aligning to K12 at that coordinate instead, so the inserted sequence falls
+between alignment blocks rather than inside one, and the alignment says the same
+thing by leaving those rows blank.
+
+The [MAF track guide](/docs/user_guides/maf_track) covers the conservation band,
 per-row identity, and codon view, all derived from the alignment with no extra
 files.
 
