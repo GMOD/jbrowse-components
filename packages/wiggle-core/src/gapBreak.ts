@@ -49,28 +49,21 @@ export function gapBreakLimit({
 
 /**
  * #api
- * The default for {@link gapBreakLimit}'s `multiple`. Deliberately far out:
- * a hole worth breaking on runs orders of magnitude past the mean, not a couple
- * of multiples, so the threshold's job is to sit well clear of ordinary spacing
- * variation rather than to track it closely.
+ * Default `multiple` for the wiggle interpolated line — the `maxGapMultiple`
+ * config slot's default, so a track can override or disable it with 0.
  *
- * Calibrated against the LD recombination curve at the LCT locus, which is the
- * least forgiving series either caller has — 1401 MAF-filtered SNPs over 3.1 Mb,
- * spacing that is not uniform but a heavy right tail (median 996 bp against a
- * 2354 bp mean, i.e. dense stretches and sparse ones in the same window, with no
- * bimodal split between "typical" and "hole" to aim at). There:
+ * Deliberately far out. A hole worth breaking on runs orders of magnitude past
+ * the mean, not a couple of multiples, so this only has to sit clear of ordinary
+ * spacing variation rather than track it closely. BigWig data makes that easy:
+ * bbi's reduced zoom levels emit fixed-width summary bins, so the series tiles.
+ * Measured on volvox_microarray.bw over the range its docs figure renders, at
+ * three zooms: 500 bins, every gap exactly 1.0x the mean, no break at any
+ * threshold. What is left to catch is a stretch bbi emitted no bin for at all
+ * (unmappable, uncovered), which is hundreds of times the bin width.
  *
- *   5x  -> 47 breaks, the curve shatters into dots wherever the local density
- *          runs below the global average — a first guess at this constant, and
- *          plainly wrong once rendered
- *   10x -> 17 breaks, still reads as dashed
- *   20x -> 2 breaks, exactly the two longest bridged spans (73 kb and 67 kb;
- *          the next one down is 44 kb, so this sits in a real gap in the tail
- *          rather than slicing through a run of comparable spans)
- *
- * BigWig bins, the other caller, tile the genome and so sit at 1x with the
- * occasional skipped bin near 2x; 20x clears those with room to spare and still
- * catches an unmappable stretch, which is hundreds of times the bin width. So
- * the loose end of the range serves both, where the tight end served neither.
+ * Not shared with the LD recombination curve, which calibrates its own — see
+ * RECOMBINATION_GAP_MULTIPLE there. The two callers plot different kinds of
+ * series (tiled bins vs an irregular point process), so one number serving both
+ * meant retuning for one silently retuned the other.
  */
 export const DEFAULT_GAP_BREAK_MULTIPLE = 20

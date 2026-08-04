@@ -48,6 +48,21 @@ describe('gapBreakLimit', () => {
     )
   })
 
+  // bbi's reduced zoom levels emit fixed-width summary bins, so a wiggle series
+  // tiles: every gap sits at exactly 1x the mean. Measured on
+  // volvox_microarray.bw (500 bins, max gap 1.0x) at three zooms, which is why
+  // the wiggle default can be enabled for every track without touching one that
+  // has no holes.
+  test('uniformly tiled bins never break, at any multiple', () => {
+    const limit = gapBreakLimit({
+      first: 50,
+      last: 49_950,
+      count: 500,
+      multiple: DEFAULT_GAP_BREAK_MULTIPLE,
+    })
+    expect(100).toBeLessThanOrEqual(limit)
+  })
+
   // The default has to clear the sporadic non-tiling bins reduced BigWig data is
   // full of (a bin or two skipped, so ~2-3x the mean) while still catching an
   // unmappable stretch, which runs orders of magnitude past it.
