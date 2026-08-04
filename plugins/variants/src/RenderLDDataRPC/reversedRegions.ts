@@ -11,61 +11,48 @@ function regionIndexOf(snp: LDSnp, regions: Region[]) {
   )
 }
 
-// Reverse order[from..to] in place (inclusive).
-function reverseRange(order: Uint32Array, from: number, to: number) {
-  for (let a = from, b = to; a < b; a++, b--) {
-    const t = order[a]!
-    order[a] = order[b]!
-    order[b] = t
-  }
-}
-
-// Runs of consecutive SNPs sharing a region, as [start, end] inclusive index
-// pairs. SNPs arrive grouped by region (the adapter is queried region by
-// region) and ascending within each, so a region's SNPs are one contiguous run.
-function regionRuns(snps: LDSnp[], regions: Region[]) {
-  const runs: { region: number; from: number; to: number }[] = []
-  for (let i = 0; i < snps.length; i++) {
-    const region = regionIndexOf(snps[i]!, regions)
-    const last = runs.at(-1)
-    if (last?.region === region) {
-      last.to = i
-    } else {
-      runs.push({ region, from: i, to: i })
-    }
-  }
-  return runs
-}
-
 /**
  * Screen order of the SNP index axis. Every LD consumer — the two renderers'
  * `boundaries[]` walk, `hitTest`, the connector lines' matrix anchor, labels —
- * reads columns in `snps[]` array order, so a reversed displayed region (bp
- * running leftward under a ruler that also runs leftward) is expressed by
- * reversing that region's run of SNPs. That is the index-space form of hic's
- * `mirrorUInRegion` (`plugins/hic/src/regionOffsets.ts`) and shares its one
- * load-bearing property: the reflection maps each region **onto itself**, so
- * region layout is untouched and mixed orientations work. Mirroring the whole
- * triangle instead would re-reverse the regions, which `horizontallyFlip()`
- * has already reversed in `displayedRegions`.
+ * reads columns in `snps[]` array order, so the axis is expressed by putting
+ * that array in the order the view draws it: regions in the order `regions`
+ * lists them, and inside a **reversed** region bp running the other way. That is
+ * the index-space form of hic's `mirrorUInRegion`
+ * (`plugins/hic/src/regionOffsets.ts`) and of the variant matrix's
+ * `orderByScreenPosition`, and it shares their one load-bearing property: the
+ * reflection maps each region **onto itself**, so region layout is untouched and
+ * mixed orientations work. Mirroring the whole triangle instead would re-reverse
+ * the regions, which `horizontallyFlip()` has already reversed in
+ * `displayedRegions`.
  *
- * Returns undefined when nothing is reversed, so the common case copies
- * nothing.
+ * Derived from `regions` and each SNP's position, never from the order the fetch
+ * arrived in. `getFeaturesInMultipleRegions` merges the per-region queries and
+ * emits them as they land, so neither the order of the per-region groups nor
+ * their contiguity is guaranteed — a collapsed minus-strand gene (regions listed
+ * descending, every one reversed) hands its SNPs back ascending, i.e. in exactly
+ * the opposite order to the one being drawn. That is the same mismatch that
+ * crossed every connector line on the variant matrix.
+ *
+ * A SNP inside no region has no place on the axis and sorts after the placed
+ * ones rather than leading them. Returns undefined when the fetch order is
+ * already the screen order, so the common case copies nothing.
  */
 export function getDisplayOrder(snps: LDSnp[], regions: Region[]) {
-  if (!regions.some(r => r.reversed)) {
-    return undefined
-  }
-  const order = new Uint32Array(snps.length)
-  for (let i = 0; i < snps.length; i++) {
-    order[i] = i
-  }
-  for (const run of regionRuns(snps, regions)) {
-    if (regions[run.region]?.reversed) {
-      reverseRange(order, run.from, run.to)
+  const keyed = snps.map((snp, arrival) => {
+    const region = regionIndexOf(snp, regions)
+    return {
+      arrival,
+      // unplaceable sorts last
+      rank: region === -1 ? regions.length : region,
+      pos: regions[region]?.reversed ? -snp.start : snp.start,
     }
-  }
-  return order
+  })
+  keyed.sort(
+    (a, b) => a.rank - b.rank || a.pos - b.pos || a.arrival - b.arrival,
+  )
+  return keyed.every((k, i) => k.arrival === i)
+    ? undefined
+    : Uint32Array.from(keyed, k => k.arrival)
 }
 
 /**

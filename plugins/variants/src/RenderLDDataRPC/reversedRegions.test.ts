@@ -164,6 +164,49 @@ describe('reversed LD regions', () => {
     )
   })
 
+  // The shape that broke the variant matrix, in LD's terms. Collapsing the
+  // introns of a minus-strand gene lists the regions descending and marks every
+  // one reversed, while `getFeaturesInMultipleRegions` merges the per-region
+  // fetches and hands the SNPs back ascending. So the runs arrive in the
+  // opposite order to the one the view draws them in, and reversing each run in
+  // place is not enough.
+  test('screen order comes from the regions array, not the fetch order', async () => {
+    const regions = [region('a', true, 2000), region('a', true, 0)]
+    const arrivedAscending = [
+      snp('a', 100),
+      snp('a', 250),
+      snp('a', 2100),
+      snp('a', 2250),
+    ]
+    const rev = await run(regions, arrivedAscending, false)
+
+    expect(rev.snps.map(s => s.start)).toEqual([2250, 2100, 250, 100])
+  })
+
+  // the fragmentation the run-grouping this replaced could not survive: one
+  // interloper between two SNPs of the same region split it into two runs, and
+  // each was reflected on its own
+  test('a region interrupted in the fetch is still reflected as one', async () => {
+    const rev = await run(
+      [region('a', true, 0), region('a', false, 2000)],
+      [snp('a', 100), snp('a', 2100), snp('a', 250), snp('a', 2250)],
+      false,
+    )
+
+    expect(rev.snps.map(s => s.start)).toEqual([250, 100, 2100, 2250])
+  })
+
+  test('a SNP inside no region sorts after the placed ones', async () => {
+    const regions = [region('a', true, 0)]
+    const rev = await run(
+      regions,
+      [snp('a', 100), snp('a', 5000), snp('a', 250)],
+      false,
+    )
+
+    expect(rev.snps.map(s => s.start)).toEqual([250, 100, 5000])
+  })
+
   test('reversing one region of two leaves the other alone', async () => {
     const snps = [
       ...POSITIONS.map(p => snp('a', p)),
