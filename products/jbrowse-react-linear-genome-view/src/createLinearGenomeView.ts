@@ -4,6 +4,7 @@ import { getEnv, isFeature } from '@jbrowse/core/util'
 import { fetchHub } from '@jbrowse/core/util/fetchHub'
 import { isSequenceUri, makeAssembly } from '@jbrowse/core/util/makeAssembly'
 import { guessTrackConf } from '@jbrowse/core/util/tracks'
+import { registerLocalFiles, resolveLocalFileUris } from '@jbrowse/product-core'
 import { autorun } from 'mobx'
 import { createRoot } from 'react-dom/client'
 
@@ -13,8 +14,10 @@ import { destroyViewState } from './destroyViewState.ts'
 
 import type { ViewModel } from './createModel/createModel.ts'
 import type { ViewStateOptions } from './createViewState.ts'
+import type { BlobLocation } from '@jbrowse/core/util'
 import type { HubConfig } from '@jbrowse/core/util/fetchHub'
 import type { LooseTrackInput } from '@jbrowse/core/util/tracks'
+import type { LocalFileInput } from '@jbrowse/product-core'
 
 type Tracks = NonNullable<ViewStateOptions['tracks']>
 type TrackConf = Record<string, unknown>
@@ -41,19 +44,28 @@ export function withAssemblyName(track: TrackConf, assemblyName?: string) {
 }
 
 // Expand any loose entries (bare URL, or { uri, index? }) into full track
-// configs using core's guessTrackConf; full configs pass through unchanged. The
-// view model carries the pluginManager whose format plugins drive the guess.
+// configs using core's guessTrackConf; full configs only get the assembly name
+// stamped on. The view model carries the pluginManager whose format plugins
+// drive the guess.
 function resolveTracks(
   tracks: TrackInput[],
   viewState: ViewModel,
   assemblyName?: string,
+  localFiles?: Record<string, BlobLocation>,
 ): Tracks {
   const { pluginManager } = getEnv(viewState)
-  return tracks.map(track =>
-    isLooseTrack(track)
+  return tracks.map(track => {
+    const conf = isLooseTrack(track)
       ? guessTrackConf(track, pluginManager, assemblyName)
-      : track,
-  )
+      : // full configs are stamped here too, not just in the build() catalog
+        // seed: a config that first appears through setTracks/addTrack never
+        // passes through that seed, and would otherwise reach addTrackConf with
+        // no assemblyNames and silently fail to display
+        withAssemblyName(track, assemblyName)
+    // after the guess, so the adapter has already derived its index sibling
+    // from the uri string and both get swapped for blobs together
+    return localFiles ? resolveLocalFileUris(conf, localFiles) : conf
+  })
 }
 
 /**
@@ -74,6 +86,15 @@ export interface CreateLinearGenomeViewOptions {
   defaultSession?: SessionSnapshot
   /** e.g. `chr1:1-1000` or a gene name; ignored when a `defaultSession` positions the view */
   location?: string
+  /**
+   * In-memory files, `name -> bytes`, that `tracks` may then refer to by that
+   * name as if it were a URL — for a host whose data lives in a process rather
+   * than at a URL (a notebook kernel, an R session), with no web server and no
+   * CORS. They are read by byte range, so register an index under its
+   * conventional sibling name (`peaks.bed.gz` + `peaks.bed.gz.tbi`) and the
+   * file stays indexed: only the bytes the current view needs are touched.
+   */
+  localFiles?: LocalFileInput
   /** merged with any search adapters the resolved hub already provides */
   aggregateTextSearchAdapters?: SearchAdapters
   internetAccounts?: ViewStateOptions['internetAccounts']
@@ -99,6 +120,12 @@ export interface LinearGenomeViewController {
   setTracks(tracks: TrackInput[]): void
   addTrack(track: TrackInput): void
   removeTrack(trackId: string): void
+  /**
+   * Register more in-memory files (see the `localFiles` option), for a host
+   * whose data arrives after mount — a notebook cell that just finished
+   * computing. Existing names are kept, so this only ever adds.
+   */
+  addLocalFiles(files: LocalFileInput): void
   /**
    * Unmount the view and tear the engine down — React root, RPC worker threads,
    * and the MST tree's autoruns. The controller is unusable afterwards.
@@ -195,6 +222,10 @@ export function createLinearGenomeView(
   let location = opts.location
   // the resolved assembly name, stamped onto tracks guessed from a bare URL
   let assemblyName: string | undefined
+  // registered once and kept across rebuilds: each registration pushes a File
+  // into core's process-global blobMap, so re-registering per rebuild would
+  // grow it without bound
+  let localFiles = registerLocalFiles(opts.localFiles ?? {})
 
   let root = createRoot(el)
   let disposers: (() => void)[] = []
@@ -244,7 +275,12 @@ export function createLinearGenomeView(
       // pluginManager the build creates, so they are resolved just below
       tracks: tracks
         .filter((track): track is TrackConf => !isLooseTrack(track))
-        .map(track => withAssemblyName(track, assemblyName)),
+        .map(track =>
+          resolveLocalFileUris(
+            withAssemblyName(track, assemblyName),
+            localFiles,
+          ),
+        ),
       aggregateTextSearchAdapters: mergeSearchAdapters(
         resolved.aggregateTextSearchAdapters,
         opts.aggregateTextSearchAdapters,
@@ -263,7 +299,10 @@ export function createLinearGenomeView(
     // a defaultSession owns the initial track layout; without one, open the
     // configured tracks so they actually display
     if (!hasSession) {
-      reconcileTracks(viewState, resolveTracks(tracks, viewState, assemblyName))
+      reconcileTracks(
+        viewState,
+        resolveTracks(tracks, viewState, assemblyName, localFiles),
+      )
     }
     if (onLocationChange) {
       disposers.push(
@@ -340,15 +379,25 @@ export function createLinearGenomeView(
     setTracks(next) {
       tracks = next
       if (current) {
-        reconcileTracks(current, resolveTracks(next, current, assemblyName))
+        reconcileTracks(
+          current,
+          resolveTracks(next, current, assemblyName, localFiles),
+        )
       }
     },
     addTrack(track) {
       tracks = [...tracks, track]
       if (current) {
-        const [conf] = resolveTracks([track], current, assemblyName)
+        const [conf] = resolveTracks([track], current, assemblyName, localFiles)
         openTrack(current.session, conf)
       }
+    },
+    addLocalFiles(files) {
+      // registering is what mints the blobIds, so only the new names pay for it
+      const fresh = Object.fromEntries(
+        Object.entries(files).filter(([name]) => !localFiles[name]),
+      )
+      localFiles = { ...localFiles, ...registerLocalFiles(fresh) }
     },
     removeTrack(trackId) {
       // loose specs have no trackId until resolved; a full config matching the

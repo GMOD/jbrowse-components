@@ -34,8 +34,21 @@ function featureTrack(trackId: string) {
   }
 }
 
+// same shape, minus assemblyNames — what a host that leaves the assembly to the
+// view sends
+function unstampedTrack(trackId: string) {
+  const { assemblyNames, ...rest } = featureTrack(trackId)
+  return rest
+}
+
 const shownIds = (view: { tracks: { configuration: { trackId: string } }[] }) =>
   view.tracks.map(t => t.configuration.trackId).sort()
+
+const assemblyNamesOf = (
+  session: { getTrackById: (id: string) => unknown },
+  trackId: string,
+) =>
+  (session.getTrackById(trackId) as { assemblyNames: string[] }).assemblyNames
 
 test('a full-config track seeds the catalog, not sessionTracks (no shadow copy)', async () => {
   const el = document.createElement('div')
@@ -87,6 +100,31 @@ test('addTrack/removeTrack toggle a single track', async () => {
   expect(shownIds(view)).toEqual([])
   controller.destroy()
 })
+
+// Hosts (R htmlwidgets, anywidget, vanilla JS) hand over track configs without
+// an assemblyNames, leaving it to the view — which knows the resolved name even
+// when the assembly arrived as a hub name it had to fetch. That stamping has to
+// cover the tracks that arrive after mount too: those never pass through the
+// build() catalog seed, so before this they reached addTrackConf bare and
+// silently never displayed.
+test('assemblyNames is stamped onto full configs arriving after mount', async () => {
+  const el = document.createElement('div')
+  const controller = createLinearGenomeView(el, { assembly, tracks: [] })
+  const state = await controller.whenReady()
+  const { session } = state
+
+  controller.addTrack(unstampedTrack('t1'))
+  expect(assemblyNamesOf(session, 't1')).toEqual(['volvox'])
+
+  controller.setTracks([unstampedTrack('t1'), unstampedTrack('t2')])
+  expect(assemblyNamesOf(session, 't2')).toEqual(['volvox'])
+  expect(shownIds(session.view)).toEqual(['t1', 't2'])
+  controller.destroy()
+})
+
+// (that an explicit assemblyNames survives the stamp is withAssemblyName's own
+// test — asserting it here would need a track pinned to an assembly this view
+// has never heard of, which is just a resolution error in disguise)
 
 // React unmount does not own the engine: without an explicit teardown the MST
 // tree stays alive with its autoruns running and its RPC worker pool orphaned,
