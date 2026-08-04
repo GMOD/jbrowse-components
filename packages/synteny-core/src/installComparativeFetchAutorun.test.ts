@@ -73,8 +73,10 @@ const TestDisplay = types
 
 // isSessionModel duck-types on rpcManager + configuration; that plus
 // assemblyManager is the whole session surface the skeleton touches.
-// getRpcSessionId walks up for an `rpcSessionId` but stops *before* the root,
-// so the session cannot be the root node — hence the wrapper.
+// The session sits under a root wrapper because that is the real tree shape.
+// It used to be load-bearing for a different reason — getRpcSessionId walked up
+// for an `rpcSessionId` but stopped *before* the root, so a session that WAS
+// the root threw — which is fixed; the wrapper stays only for realism.
 const TestSession = types
   .model('TestSession', {
     display: types.late(() => TestDisplay),

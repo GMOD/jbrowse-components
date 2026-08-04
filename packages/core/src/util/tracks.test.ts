@@ -1,6 +1,9 @@
+import { types } from '@jbrowse/mobx-state-tree'
+
 import {
   findFileHandleIds,
   getFileName,
+  getRpcSessionId,
   getTrackName,
   pickDisplayForView,
   stripFileExtension,
@@ -352,5 +355,53 @@ describe('stripFileExtension', () => {
 
   test('handles a bare compression suffix', () => {
     expect(stripFileExtension('volvox.gz')).toBe('volvox')
+  })
+})
+
+describe('getRpcSessionId', () => {
+  const Leaf = types.model('Leaf', { id: types.identifier })
+
+  test('finds an rpcSessionId on an ancestor', () => {
+    const Mid = types
+      .model('Mid', { leaf: Leaf })
+      .volatile(() => ({ rpcSessionId: 'mid-session' }))
+    const Root = types.model('Root', { mid: Mid })
+    const root = Root.create({ mid: { leaf: { id: 'l' } } })
+    expect(getRpcSessionId(root.mid.leaf)).toBe('mid-session')
+  })
+
+  test('the highest declaring node wins, not the nearest', () => {
+    const Inner = types
+      .model('Inner', { leaf: Leaf })
+      .volatile(() => ({ rpcSessionId: 'inner-session' }))
+    const Outer = types
+      .model('Outer', { inner: Inner })
+      .volatile(() => ({ rpcSessionId: 'outer-session' }))
+    const Root = types.model('Root', { outer: Outer })
+    const root = Root.create({ outer: { inner: { leaf: { id: 'l' } } } })
+    expect(getRpcSessionId(root.outer.inner.leaf)).toBe('outer-session')
+  })
+
+  // the walk used to stop *before* the root, so a tree whose only declaring
+  // node was the root threw as if none existed at all
+  test('reads an rpcSessionId declared on the root itself', () => {
+    const Root = types
+      .model('Root', { leaf: Leaf })
+      .volatile(() => ({ rpcSessionId: 'root-session' }))
+    const root = Root.create({ leaf: { id: 'l' } })
+    expect(getRpcSessionId(root.leaf)).toBe('root-session')
+  })
+
+  test('reads an rpcSessionId on the node itself', () => {
+    const Self = types
+      .model('Self', {})
+      .volatile(() => ({ rpcSessionId: 'self-session' }))
+    expect(getRpcSessionId(Self.create({}))).toBe('self-session')
+  })
+
+  test('throws when nothing in the tree declares one', () => {
+    const Root = types.model('Root', { leaf: Leaf })
+    const root = Root.create({ leaf: { id: 'l' } })
+    expect(() => getRpcSessionId(root.leaf)).toThrow(/rpcSessionId/)
   })
 })
