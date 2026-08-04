@@ -18,7 +18,13 @@
 // node's type stripping refuses, and @jbrowse/core only resolves from a package
 // that depends on it. esbuild's stdin+resolveDir gives us both without writing a
 // scratch entry file into someone else's package (this is a shared worktree).
-import { mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import {
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -308,13 +314,22 @@ writeFileSync(bundlePath, bundle.text)
 
 // The bundle prints one JSON line. Import it and capture that, rather than
 // spawning: a child process would just add a serialization hop.
+//
+// The bundle is ~14MB (it carries every core plugin), so the temp dir has to go
+// afterwards — this runs on every `pnpm autogen`, and leaving it behind put 21
+// copies in /tmp over one afternoon of iterating. try/finally, so a bundle that
+// throws on import doesn't leak one either.
 const originalLog = console.log
 let payload = ''
-console.log = (...args: unknown[]) => {
-  payload += args.join(' ')
+try {
+  console.log = (...args: unknown[]) => {
+    payload += args.join(' ')
+  }
+  await import(pathToFileURL(bundlePath).href)
+} finally {
+  console.log = originalLog
+  rmSync(dir, { recursive: true, force: true })
 }
-await import(pathToFileURL(bundlePath).href)
-console.log = originalLog
 
 const schema = JSON.parse(payload) as Record<string, any>
 writeFileSync(
