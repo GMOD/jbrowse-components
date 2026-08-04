@@ -12,18 +12,24 @@ import stateModelFactory from './model.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
-import type { CircularViewModel } from '@jbrowse/plugin-circular-view'
 
+// `chordTrack` is the ChordVariantDisplay: the display is what the
+// onChordClick config slot is read from, and it passes itself as `track`
 function defaultOnChordClick(feature: Feature, chordTrack: object) {
   const session = getSession(chordTrack)
   try {
+    const view = getContainingView(chordTrack)
+    const assemblyName = view.assemblyNames?.[0]
+    if (!assemblyName) {
+      return
+    }
     session.setSelection(feature)
-    const view = getContainingView(chordTrack) as CircularViewModel
+    // the containing view's parent is the SvInspectorView when the circle is
+    // the inspector's, and session.views otherwise
     const parentView = getParent<{
-      type: string
-      spreadsheetView: { id: string }
+      type?: string
+      spreadsheetView?: { id: string }
     }>(view)
-    const assemblyName = view.assemblyNames[0]!
     launchBreakpointSplitView({
       session,
       feature,
@@ -32,7 +38,7 @@ function defaultOnChordClick(feature: Feature, chordTrack: object) {
       // so a chord click and a row click don't stack two of them. Other
       // circular views get a fresh view per click
       stableViewId:
-        parentView.type === 'SvInspectorView'
+        parentView.type === 'SvInspectorView' && parentView.spreadsheetView
           ? breakpointSplitViewId(parentView.spreadsheetView.id, assemblyName)
           : undefined,
     })

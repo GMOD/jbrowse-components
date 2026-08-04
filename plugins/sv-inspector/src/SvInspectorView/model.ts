@@ -5,6 +5,8 @@ import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import { autorun, untracked } from 'mobx'
 
+import { featureRefNames } from './featureRefNames.ts'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { CircularViewStateModel } from '@jbrowse/plugin-circular-view'
@@ -15,6 +17,9 @@ interface SvInspectorViewInit {
   uri: string
   fileType?: string
 }
+
+/** height of the "show only regions with data" bar above the circular view */
+export const circularViewOptionsBarHeight = 52
 
 /**
  * #stateModel SvInspectorView
@@ -49,7 +54,8 @@ function SvInspectorViewF(pluginManager: PluginManager) {
   const minHeight = 400
   const defaultHeight = 550
   const headerHeight = 52
-  const borderWidth = 1
+  // the ResizeHandle `bar` that sits between the two subviews
+  const dividerWidth = 4
   return types
     .compose(
       'SvInspectorView',
@@ -113,19 +119,11 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       /**
        * #volatile
        */
-      width: 800,
-      /**
-       * #volatile
-       */
       SpreadsheetViewReactComponent: SpreadsheetViewType.ReactComponent,
       /**
        * #volatile
        */
       CircularViewReactComponent: CircularViewType.ReactComponent,
-      /**
-       * #volatile
-       */
-      circularViewOptionsBarHeight: 52,
     }))
     .views(self => ({
       /**
@@ -162,26 +160,14 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       */
-      get featuresAdapterConfigSnapshot() {
-        return {
-          type: 'FromConfigAdapter',
-          features: this.features,
-        }
-      },
-      /**
-       * #getter
+       * every refName the features' chords land on, both ends included
        */
       get featureRefNames() {
         return [
           ...new Set(
             this.features
-              .flatMap(f => [
-                f.refName,
-                (f.INFO as { CHR2?: string } | undefined)?.CHR2,
-                (f.mate as { refName?: string } | undefined)?.refName,
-              ])
-              .filter((f): f is string => !!f),
+              .flatMap(f => featureRefNames(f))
+              .filter(f => f !== undefined),
           ),
         ]
       },
@@ -219,34 +205,36 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       },
       /**
        * #getter
+       * undefined until the sheet has an assembly to resolve coordinates
+       * against, which is also when the paired circular view has nothing to
+       * draw the chords on
        */
       get featuresCircularTrackConfiguration() {
-        const trackId = this.variantTrackId
-        return {
-          type: 'VariantTrack',
-          trackId,
-          name: 'features from tabular data',
-          adapter: this.featuresAdapterConfigSnapshot,
-          assemblyNames: [this.assemblyName!],
-          displays: [
-            {
-              type: 'ChordVariantDisplay',
-              displayId: `${trackId}-chord-display`,
-              onChordClick:
-                'jexl:defaultOnChordClick(feature, track, pluginManager)',
-            },
-          ],
-        }
+        const { assemblyName, variantTrackId: trackId } = this
+        return assemblyName
+          ? {
+              type: 'VariantTrack',
+              trackId,
+              name: 'features from tabular data',
+              adapter: {
+                type: 'FromConfigAdapter',
+                features: this.features,
+              },
+              assemblyNames: [assemblyName],
+              displays: [
+                {
+                  type: 'ChordVariantDisplay',
+                  displayId: `${trackId}-chord-display`,
+                  onChordClick:
+                    'jexl:defaultOnChordClick(feature, track, pluginManager)',
+                },
+              ],
+            }
+          : undefined
       },
     }))
 
     .actions(self => ({
-      /**
-       * #action
-       */
-      setWidth(newWidth: number) {
-        self.width = newWidth
-      },
       /**
        * #action
        */
@@ -266,10 +254,16 @@ function SvInspectorViewF(pluginManager: PluginManager) {
        * #action
        * move the divider between the two subviews. Stored as a fraction so the
        * width binding can reapply it, rather than resizing the subviews directly
-       * and having the next parent resize overwrite it
+       * and having the next parent resize overwrite it.
+       *
+       * The delta accumulates onto the fraction rather than being read back off
+       * spreadsheetView.width: the binding writes a rounded, divider-adjusted
+       * width there, so a round trip through it lost a pixel on every drag
+       * frame and the divider crept left even while the pointer was still
        */
       resizeSpreadsheetWidth(distance: number) {
-        const fraction = (self.spreadsheetView.width + distance) / self.width
+        const fraction =
+          self.spreadsheetWidthFraction + distance / (self.width - dividerWidth)
         self.spreadsheetWidthFraction = Math.min(Math.max(fraction, 0.2), 0.8)
       },
 
@@ -326,11 +320,14 @@ function SvInspectorViewF(pluginManager: PluginManager) {
           autorun(
             () => {
               if (self.showCircularView) {
+                // the two subviews plus the divider have to add up to our own
+                // width, or the flex row overflows and squeezes the circle
+                const available = self.width - dividerWidth
                 const spreadsheetWidth = Math.round(
-                  self.width * self.spreadsheetWidthFraction,
+                  available * self.spreadsheetWidthFraction,
                 )
-                self.spreadsheetView.setWidth(spreadsheetWidth - borderWidth)
-                self.circularView.setWidth(self.width - spreadsheetWidth)
+                self.spreadsheetView.setWidth(spreadsheetWidth)
+                self.circularView.setWidth(available - spreadsheetWidth)
               } else {
                 self.spreadsheetView.setWidth(self.width)
               }
@@ -345,7 +342,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
             () => {
               self.spreadsheetView.setHeight(self.height - headerHeight)
               self.circularView.setHeight(
-                self.height - headerHeight - self.circularViewOptionsBarHeight,
+                self.height - headerHeight - circularViewOptionsBarHeight,
               )
             },
             {
@@ -389,16 +386,15 @@ function SvInspectorViewF(pluginManager: PluginManager) {
           self,
           autorun(
             () => {
-              const { assemblyName, circularView, variantTrackId } = self
+              const { circularView, variantTrackId } = self
+              const conf = self.featuresCircularTrackConfiguration
               // hideTrack reads circularView.tracks internally; avoid tracking
               // that dependency to prevent re-triggering on our own track changes
               untracked(() => {
                 circularView.hideTrack(variantTrackId)
               })
-              if (assemblyName) {
-                circularView.addTrackConf(
-                  self.featuresCircularTrackConfiguration,
-                )
+              if (conf) {
+                circularView.addTrackConf(conf)
               }
             },
             { name: 'SvInspectorView track configuration binding' },

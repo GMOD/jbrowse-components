@@ -130,6 +130,33 @@ test('dragging the divider survives a parent resize', async () => {
   expect(view.spreadsheetView.width / 2000).toBeCloseTo(dragged / 1000, 2)
 }, 40000)
 
+// Regression: the drag delta used to be applied to spreadsheetView.width, which
+// the width binding writes back rounded and short by the divider. Each frame of
+// a drag therefore lost a pixel, so the divider crept left on its own — a
+// pointermove stream commits ~60 of these a second
+test('a zero-distance drag leaves the divider where it is', async () => {
+  const view = await loadedSvInspector()
+  view.setWidth(1000)
+  const before = view.spreadsheetView.width
+
+  for (let i = 0; i < 60; i++) {
+    view.resizeSpreadsheetWidth(0)
+  }
+  expect(view.spreadsheetView.width).toBe(before)
+}, 40000)
+
+// and the divider tracks the pointer 1:1 rather than trailing it
+test('dragging moves the divider by the distance dragged', async () => {
+  const view = await loadedSvInspector()
+  view.setWidth(1000)
+  const before = view.spreadsheetView.width
+
+  for (let i = 0; i < 10; i++) {
+    view.resizeSpreadsheetWidth(-10)
+  }
+  expect(view.spreadsheetView.width).toBe(before - 100)
+}, 40000)
+
 // Regression: SvInspector clears its own init synchronously after forwarding it
 // to the child spreadsheet (which caches the file location synchronously). So a
 // snapshot taken before the async load finishes carries no init on either node,

@@ -2,6 +2,8 @@ import { LabeledCheckbox } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
+import { circularViewOptionsBarHeight } from '../model.ts'
+
 import type { SvInspectorViewModel } from '../model.ts'
 
 const useStyles = makeStyles()(theme => ({
@@ -20,7 +22,7 @@ const CircularViewOptions = observer(function CircularViewOptions({
   return (
     <div
       className={classes.circularViewOptions}
-      style={{ height: svInspector.circularViewOptionsBarHeight }}
+      style={{ height: circularViewOptionsBarHeight }}
     >
       <LabeledCheckbox
         checked={svInspector.onlyDisplayRelevantRegionsInCircularView}

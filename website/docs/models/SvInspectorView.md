@@ -53,12 +53,11 @@ the whole surface.
 ## Volatiles
 
 <!-- prettier-ignore -->
-| Member | Description |
-| --- | --- |
-| <span id="volatile-width">**width**</span><br><code>width: 800</code> |  |
-| <span id="volatile-spreadsheetviewreactcomponent">**SpreadsheetViewReactComponent**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>SpreadsheetViewReactComponent: SpreadsheetViewType.ReactCompone…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>SpreadsheetViewReactComponent: SpreadsheetViewType.ReactComponent</code></pre></dialog></span> |  |
-| <span id="volatile-circularviewreactcomponent">**CircularViewReactComponent**</span><br><code>CircularViewReactComponent: CircularViewType.ReactComponent</code> |  |
-| <span id="volatile-circularviewoptionsbarheight">**circularViewOptionsBarHeight**</span><br><code>circularViewOptionsBarHeight: 52</code> |  |
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="volatile-spreadsheetviewreactcomponent">**SpreadsheetViewReactComponent**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>SpreadsheetViewReactComponent: SpreadsheetViewType.ReactCompone…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>SpreadsheetViewReactComponent: SpreadsheetViewType.ReactComponent</code></pre></dialog></span> |  | SvInspectorView |
+| <span id="volatile-circularviewreactcomponent">**CircularViewReactComponent**</span><br><code>CircularViewReactComponent: CircularViewType.ReactComponent</code> |  | SvInspectorView |
+| <span id="volatile-width">**width**</span><br><code>width: 800</code> |  | [BaseViewModel](../baseviewmodel#volatile-width) |
 
 ## Getters
 
@@ -69,12 +68,11 @@ the whole surface.
 | <span id="getter-assemblyname">**assemblyName**</span><br><code>string &#124; undefined</code> |  |
 | <span id="getter-showcircularview">**showCircularView**</span><br><code>boolean</code> | gated on the same condition the spreadsheet renders its grid on, so the circle never appears alongside the import form |
 | <span id="getter-features">**features**</span><br><code>SimpleFeatureSerialized[]</code> |  |
-| <span id="getter-featuresadapterconfigsnapshot">**featuresAdapterConfigSnapshot**</span><br><code>{ type: string; features: SimpleFeatureSerialized[]; }</code> |  |
-| <span id="getter-featurerefnames">**featureRefNames**</span><br><code>string[]</code> |  |
+| <span id="getter-featurerefnames">**featureRefNames**</span><br><code>string[]</code> | every refName the features' chords land on, both ends included |
 | <span id="getter-canonicalfeaturerefnameset">**canonicalFeatureRefNameSet**</span><br><code>Set&lt;string&gt;</code> |  |
 | <span id="getter-circulardisplayedregions">**circularDisplayedRegions**</span><br><code>BasicRegion[] &#124; undefined</code> | the regions the paired circular view should show. An empty relevant-set means the features aren't parsed yet, so show everything rather than an empty circle |
 | <span id="getter-varianttrackid">**variantTrackId**</span><br><code>string</code> |  |
-| <span id="getter-featurescirculartrackconfiguration">**featuresCircularTrackConfiguration**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ type: string; trackId: string; name: string; adapter: {…}; as…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ type: string; trackId: string; name: string; adapter: {…}; assemblyNames: string[]; displays: { type: string; displayId: string; onChordClick: string; renderer: { ...; }; }[]; }</code></pre></dialog></span> |  |
+| <span id="getter-featurescirculartrackconfiguration">**featuresCircularTrackConfiguration**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ type: string; trackId: string; name: string; adapter: {…}; as…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ type: string; trackId: string; name: string; adapter: {…}; assemblyNames: string[]; displays: { type: string; displayId: string; onChordClick: string; }[]; } &#124; undefined</code></pre></dialog></span> | undefined until the sheet has an assembly to resolve coordinates against, which is also when the paired circular view has nothing to draw the chords on |
 
 ## Methods
 
@@ -88,11 +86,11 @@ the whole surface.
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
-| <span id="action-setwidth">**setWidth**</span><br><code>(newWidth: number) =&gt; void</code> |  | SvInspectorView |
 | <span id="action-setheight">**setHeight**</span><br><code>(newHeight: number) =&gt; number</code> |  | SvInspectorView |
 | <span id="action-setonlydisplayrelevantregionsincircularview">**setOnlyDisplayRelevantRegionsInCircularView**</span><br><code>(val: boolean) =&gt; void</code> |  | SvInspectorView |
-| <span id="action-resizespreadsheetwidth">**resizeSpreadsheetWidth**</span><br><code>(distance: number) =&gt; void</code> | move the divider between the two subviews. Stored as a fraction so the width binding can reapply it, rather than resizing the subviews directly and having the next parent resize overwrite it | SvInspectorView |
+| <span id="action-resizespreadsheetwidth">**resizeSpreadsheetWidth**</span><br><code>(distance: number) =&gt; void</code> | move the divider between the two subviews. Stored as a fraction so the width binding can reapply it, rather than resizing the subviews directly and having the next parent resize overwrite it.<br><br>The delta accumulates onto the fraction rather than being read back off spreadsheetView.width: the binding writes a rounded, divider-adjusted width there, so a round trip through it lost a pixel on every drag frame and the divider crept left even while the pointer was still | SvInspectorView |
 | <span id="action-setinit">**setInit**</span><br><code>(init?: SvInspectorViewInit &#124; undefined) =&gt; void</code> |  | SvInspectorView |
 | <span id="action-resizeheight">**resizeHeight**</span><br><code>(distance: number) =&gt; number</code> |  | SvInspectorView |
 | <span id="action-setdisplayname">**setDisplayName**</span><br><code>(name: string) =&gt; void</code> |  | [BaseViewModel](../baseviewmodel#action-setdisplayname) |
+| <span id="action-setwidth">**setWidth**</span><br><code>(newWidth: number) =&gt; void</code> | <span data-pagefind-ignore>width is an important attribute of the view model, when it becomes set, it often indicates when the app can start drawing to it. certain views like lgv are strict about this because if it tries to draw before it knows the width it should draw to, it may start fetching data for regions it doesn't need to<br><br>setWidth is updated by a ResizeObserver generally, the views often need to know how wide they are to properly draw genomic regions</span> | [BaseViewModel](../baseviewmodel#action-setwidth) |
 | <span id="action-setminimized">**setMinimized**</span><br><code>(flag: boolean) =&gt; void</code> |  | [BaseViewModel](../baseviewmodel#action-setminimized) |

@@ -56,7 +56,12 @@ const SvInspectorView = observer(function SvInspectorView({
           </>
         ) : null}
       </div>
-      <ResizeHandle bar onDrag={distance => model.resizeHeight(distance)} />
+      <ResizeHandle
+        bar
+        onDrag={distance => {
+          model.resizeHeight(distance)
+        }}
+      />
     </div>
   )
 })
