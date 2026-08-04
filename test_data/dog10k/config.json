@@ -584,19 +584,6 @@
       "adapter": {
         "type": "BedTabixAdapter",
         "disableGeneHeuristic": true,
-        "columnNames": [
-          "chrom",
-          "chromStart",
-          "chromEnd",
-          "name",
-          "score",
-          "strand",
-          "thickStart",
-          "thickEnd",
-          "itemRgb",
-          "sample",
-          "ancestry"
-        ],
         "uri": "dog10k_wolfdog_ancestry.chr1.bed.gz"
       },
       "displays": [

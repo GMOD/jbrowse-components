@@ -133,8 +133,11 @@ export const trioSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'trio-hapibd-painting',
-    // sized to the content: the rest of the viewport was page background
-    viewportHeight: 329,
+    // sized to the content: the rest of the viewport was page background. The
+    // track carries no color legend (the four row labels already are the key,
+    // so the display sets showLegend: false), which is why this is shorter than
+    // the legend-bearing paintings and why the gate below is the canvas.
+    viewportHeight: 305,
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg38',
       loc: 'chr1:1-248,956,422',
@@ -147,8 +150,9 @@ export const trioSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'chr1',
-    // gate on the data-driven color legend (see trio-ancestry note)
-    readySelector: '[data-testid="multirow-color-legend"]',
+    // this painting has no legend to gate on, so wait for the canvas the
+    // painting is drawn into
+    readySelector: '[data-testid="multirow_canvas"]',
     readyTimeout: 60000,
     settleMs: 3000,
   },
@@ -270,5 +274,8 @@ export const trioSpecs: ScreenshotSpec[] = [
     readyText: 'chr1',
     readyTimeout: 60000,
     settleMs: 28000,
+    // sized to the content: the painting carries no color legend, so the
+    // default 800 left ~200 px of page background under the variant track
+    viewportHeight: 598,
   })),
 ]

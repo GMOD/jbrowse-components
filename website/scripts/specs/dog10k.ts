@@ -399,8 +399,10 @@ export const dog10kSpecs: ScreenshotSpec[] = [
       assembly: 'UU_Cfam_GSD_1.0',
       loc: 'chr1:1-123,556,469',
       // the 7.9 Mb wolf block on Saarloos 1 hap1 that the genotype figure
-      // dissects, marked in-app so the two figures are visibly the same place
-      highlight: ['chr1:105,310,984-113,248,953'],
+      // dissects, marked in-app so the two figures are visibly the same place.
+      // Read off the committed BED, not eyeballed:
+      //   tabix dog10k_wolfdog_ancestry.chr1.bed.gz chr1:107935000-108005000
+      highlight: ['chr1:105,310,741-113,251,574'],
       tracks: [
         {
           trackId: 'dog10k_wolfdog_ancestry',
@@ -418,6 +420,43 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     settleMs: 3000,
     // all 22 haplotype rows plus the color legend, no page background below
+    viewportHeight: 665,
+  },
+
+  // The same 22 rows reordered by ancestry similarity across the visible
+  // chromosome (`runClustering`, the session form of the track menu's
+  // Clustering -> Cluster rows by similarity) rather than by the config's
+  // breed-grouped `rowOrder`. This is the figure that carries the page's three
+  // read-offs at once, because the order is derived rather than asserted: the
+  // wolf-richest haplotypes collect at the top (six of the eight Saarloos
+  // haplotypes are the top six rows, the few-founders expectation), while the
+  // Tamaskan's two haplotypes fall at the dog end of the order with the German
+  // Shepherd control (not adjacent to it — Czechoslovakian 2, at 0.016 wolf,
+  // sits between them), and the Shiloh Shepherd's land up among the wolfdogs. No
+  // `highlight` here: the block dissected by the genotype figure belongs to the
+  // breed-ordered panel above, and marking it twice reads as two claims.
+  {
+    mode: 'url',
+    name: 'dog10k-wolfdog-ancestry-clustered',
+    url: lgvSession(DOG_CONFIG, {
+      assembly: 'UU_Cfam_GSD_1.0',
+      loc: 'chr1:1-123,556,469',
+      tracks: [
+        {
+          trackId: 'dog10k_wolfdog_ancestry',
+          type: 'LinearMultiRowFeatureDisplay',
+          height: 460,
+          runClustering: true,
+        },
+      ],
+    }),
+    readyText: 'chr1',
+    // the dendrogram only mounts once the clustering RPC returns a tree, so it
+    // is the real signal that the reordering happened (a settle alone can
+    // capture the pre-cluster order)
+    readySelector: '[data-testid="tree_sidebar_dendrogram"]',
+    readyTimeout: 120000,
+    settleMs: 5000,
     viewportHeight: 665,
   },
 

@@ -9,7 +9,8 @@ labels.tsv is two columns, "<sampleName><TAB><row label>". Every sample listed
 gets two rows, "<label> hap1" and "<label> hap2"; samples not listed are
 skipped, and the file's order sets the track's row order.
 
-Output columns (matching the BedTabixAdapter columnNames in the track config):
+Output columns, named by the `#`-header line the BedTabixAdapter reads, so the
+track config does not have to repeat them as `columnNames`:
   chrom start end name score strand thickStart thickEnd itemRgb sample ancestry
 where `sample` is the row label the display partitions on and `itemRgb` colors
 each block directly (the BED itemRgb column).
@@ -92,7 +93,10 @@ for key in list(runs):
     flush(key, chrom)
 
 out.sort(key=lambda r: (r[9], int(r[1])))
+header = ('#chrom\tchromStart\tchromEnd\tname\tscore\tstrand\t'
+          'thickStart\tthickEnd\titemRgb\tsample\tancestry\n')
 with open(out_bed, 'w') as fh:
+    fh.write(header)
     for r in out:
         fh.write('\t'.join(r) + '\n')
 

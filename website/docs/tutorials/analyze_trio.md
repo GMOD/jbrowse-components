@@ -1,7 +1,9 @@
 ---
 title: Phased trio analysis (1000 Genomes)
 sidebar_label: Phased trio (1000 Genomes)
-description: Examine inheritance patterns and variant phasing in a trio dataset
+description:
+  Paint a child's inherited haplotype blocks from hap-ibd IBD segments, one row
+  per parental copy, and read the crossovers off the track
 guide_category: Tutorials
 tutorial_category: Population genomics
 ---
@@ -31,7 +33,7 @@ A trio is a mother, father, and child sequenced together. A phased VCF tags each
 variant with the haplotype it sits on (`0|1` vs `1|0`), so you can follow which
 copy of the genome it came from.
 
-We'll use a pre-built phased VCF from the 1000 Genomes Project, the
+This page uses a pre-built phased VCF from the 1000 Genomes Project, the
 Kinh-Vietnamese trio HG02024, chr1 only:
 
 - [VCF](https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz)
@@ -117,7 +119,7 @@ them:
 (The roles come from the 1000 Genomes pedigree line
 `VN049 HG02024 HG02026 HG02025`: father HG02026, mother HG02025.) Within one
 child haplotype, the matching _parental_ copy flips between the parent's copy 1
-and copy 2 at each crossover. Those flips are what we're after.
+and copy 2 at each crossover. Those flips are what the track below paints.
 
 Don't paint the raw segments, though. hap-ibd's output has gaps, plus short
 spurious segments from the statistical phasing, so collapse it into clean blocks
@@ -146,9 +148,13 @@ two copies in blues and the mother's in reds via `itemRgb`. Feed it
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/hapibd_to_bed.py
 python3 hapibd_to_bed.py trio.ibd.gz HG02024 HG02026 HG02025 trio.hapibd.bed
-sort -k1,1 -k2,2n trio.hapibd.bed | bgzip > trio.hapibd.bed.gz
+jbrowse sort-bed trio.hapibd.bed | bgzip > trio.hapibd.bed.gz
 tabix -p bed trio.hapibd.bed.gz
 ```
+
+[`sort-bed`](/docs/cli#jbrowse-sort-bed) keeps the `#`-header line on top and
+sorts the rest under `LC_ALL=C`, so the adapter can read the column names off
+the file and the order does not shift with your locale.
 
 Load the result as a `FeatureTrack` using a `LinearMultiRowFeatureDisplay`. That
 display draws one row per distinct value of `partitionField`, so pointing it at
@@ -166,29 +172,24 @@ painted with it automatically. Drop this into the `tracks` array of your
   "adapter": {
     "type": "BedTabixAdapter",
     "disableGeneHeuristic": true,
-    "columnNames": [
-      "chrom",
-      "chromStart",
-      "chromEnd",
-      "name",
-      "score",
-      "strand",
-      "thickStart",
-      "thickEnd",
-      "itemRgb",
-      "parenthap"
-    ],
     "uri": "trio.hapibd.bed.gz"
   },
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",
       "partitionField": "parenthap",
+      "showLegend": false,
       "rowOrder": ["Father hap1", "Father hap2", "Mother hap1", "Mother hap2"]
     }
   ]
 }
 ```
+
+The adapter needs no `columnNames`: the BED's `#`-header line already names its
+columns, and `parenthap` is the one the display partitions on.
+[`showLegend`](/docs/config/linearmultirowfeaturedisplay/#slot-showlegend) is
+off because here the color and the row label carry the same four categories, so
+a color key would only repeat the sidebar.
 
 ## Reading the painted crossovers
 
@@ -229,7 +230,7 @@ The maternal chromosome does the same thing at its own boundaries. Near
 chr1:55.8 Mb the child's maternal haplotype steps between the mother's two
 copies:
 
-<Figure caption="Maternal crossover at chr1:55,753,613, in a 400 kb window. Same idea in a different palette: the painting steps from Mother hap2 (pink) to Mother hap1 (red), the green frame ties Child hap2 to Mother hap2 on the left, orange ties it to Mother hap1 on the right." src="/img/trio-crossover-maternal.png"/>
+<Figure caption="Maternal crossover at chr1:55,753,613, in a 400 kb window. Same idea in a different palette: the painting steps from Mother hap2 (salmon) to Mother hap1 (dark red), the green frame ties Child hap2 to Mother hap2 on the left, orange ties it to Mother hap1 on the right." src="/img/trio-crossover-maternal.png"/>
 
 The painting is the clean summary. The genotypes underneath switch between the
 two parental copies far more often than real crossovers do, so the painted

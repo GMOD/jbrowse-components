@@ -63,7 +63,7 @@ is a plain text or VCF file you can open and check:
 ```
 Dog10K sample table ──> wolves.txt, dogs.txt, targets.txt, refpanel.txt
 Dog10K phased BCF ────> chr1.ref.vcf.gz + chr1.gt.vcf.gz   (bcftools view -r)
-                        chr1.map                            (uniform 1 cM/Mb)
+                        chr1.map                            (Campbell, canFam4)
                               │
                               v  FLARE
                         wolfdog_chr1.anc.vcf.gz   per-marker AN1/AN2 calls
@@ -78,27 +78,16 @@ Dog10K phased BCF ────> chr1.ref.vcf.gz + chr1.gt.vcf.gz   (bcftools vie
 
 ### Who goes in which panel
 
-The sample table carries a breed and a category per animal, which is enough to
-derive every list:
-
-```bash
-# wolves.txt: European gray wolves, matching both breeds' founder populations
-awk -F'\t' '$3=="Wolf" && ($2=="Greece"||$2=="Sweden"||$2=="Russia"||
-  $2=="Portugal"||$2=="Europe"||$2=="Eurasia"){print $1}' keep.tsv > wolves.txt
-
-# dogs.txt: one dog from every breed, minus the targets and both wolfdog breeds
-awk -F'\t' '$3=="Breed_Dogs" && $2 !~ /Wolfdog|Shiloh|Tamaskan/ {print $1"\t"$2}' \
-  keep.tsv | grep -v -F -f targets.txt | sort -t$'\t' -k2,2 -u | cut -f1 > dogs.txt
-```
+The sample table carries a breed and a category per animal, which is enough for
+the build script to derive every list: European gray wolves for the wolf panel,
+matching both breeds' founder populations, and one dog from every breed the
+collection has for the dog panel, minus the targets and both wolfdog breeds.
 
 The panels decide what the colors mean, so this is the step that matters most,
-and breadth is the part worth getting right. One dog from each of 318 breeds
-reads as "generic dog"; an earlier version of this took the first 60 breeds by
-name, which is everything from Affenpinscher to Cocker Spaniel and no shepherd
-at all, leaving the targets' own dog background unrepresented. Rerunning with
-the full panel dropped the German Shepherd control from 0.4% wolf to 0.0% and
-left the wolfdogs where they were. FLARE reads the two lists as one `ref-panel`
-file:
+and breadth is the part worth getting right. The dog panel has to include the
+shepherd breeds in particular: leave the targets' own dog background
+unrepresented and ordinary dog haplotypes have nowhere to go but the wolf panel.
+FLARE reads the two lists as one `ref-panel` file:
 
 ```
 CLUPGR000001	Wolf
@@ -109,42 +98,35 @@ AFGH000001	Dog
 
 ### Slicing the panel
 
-The panel is a single 6 GB BCF. `bcftools` reads it over HTTP by range request,
-so a chromosome costs a chromosome, not the whole file:
-
-```bash
-bcftools view -r chr1 -S all.txt --force-samples -Oz -o chr1.subset.vcf.gz \
-  https://kiddlabshare.med.umich.edu/dog10K/phased-imputation-panel/AutoAndXPAR.Dog10K.phased.bcf
-```
-
-That subset then splits into `chr1.ref.vcf.gz` (the two panels) and
-`chr1.gt.vcf.gz` (the targets: four Saarloos, four Czechoslovakian Wolfdogs, and
-the German Shepherd, Shiloh Shepherd, and Tamaskan controls).
+The panel is a single 6 GB BCF, and `bcftools` reads it over HTTP by range
+request, so a chromosome costs a chromosome rather than the whole file. That
+subset splits into `chr1.ref.vcf.gz` (the two panels) and `chr1.gt.vcf.gz` (the
+targets: four Saarloos, four Czechoslovakian Wolfdogs, and the German Shepherd,
+Shiloh Shepherd, and Tamaskan controls).
 
 ### The genetic map
 
-FLARE requires one, and the published dog maps are on canFam3.1 while this panel
-is phased on `UU_Cfam_GSD_1.0`. The build script therefore generates a uniform 1
-cM/Mb map, close to the dog genome-wide average. Block boundaries are
-approximate as a result, which is worth remembering when reading a single
-boundary rather than the overall mosaic.
+FLARE requires one, and it is worth using a real one: the map is what converts
+"these markers disagree" into "a recombination happened here", so a uniform
+cM/Mb stand-in asserts a constant rate the genome does not have and puts every
+boundary at the wrong place by a little. The older published dog maps are all on
+canFam3.1 while this panel is phased on `UU_Cfam_GSD_1.0`, but the Campbell
+pedigree map has since been transitioned onto this assembly, which skips any
+liftover. The build script downloads it and reshapes its `POS`/`rate`/`Map(cM)`
+columns into the four PLINK columns FLARE reads.
 
 ### Running FLARE
 
-```bash
-java -jar flare.jar \
-  ref=chr1.ref.vcf.gz ref-panel=refpanel.txt gt=chr1.gt.vcf.gz \
-  map=chr1.map out=wolfdog_chr1 seed=42
-```
-
-Check `wolfdog_chr1.global.anc.gz` before painting anything. It is the
-per-sample summary, and on chr1 it already sorts the targets:
+FLARE takes the two panel VCFs, the `ref-panel` file, and the map, and writes
+`wolfdog_chr1.anc.vcf.gz` plus a summary. Check `wolfdog_chr1.global.anc.gz`
+before painting anything. It is the per-sample summary, and on chr1 it already
+sorts the targets:
 
 ```
 SAMPLE          Wolf    Dog
-SAAR000001      0.443   0.557
-CZEC000003      0.295   0.705
-SHIL000001      0.216   0.784
+SAAR000001      0.444   0.556
+CZEC000003      0.276   0.724
+SHIL000001      0.22    0.78
 TMSK000001      0.033   0.967
 GRSD000002      0       1
 ```
@@ -158,11 +140,13 @@ collapses each haplotype's run of identical calls into one BED9 line, taking row
 labels from a two-column `labels.tsv` and coloring by ancestry via `itemRgb`:
 
 ```
-chr1	11579924	11605808	Wolf	0	.	11579924	11605808	230,159,0	Czechoslovakian 1 hap1	Wolf
+#chrom	chromStart	chromEnd	name	score	strand	thickStart	thickEnd	itemRgb	sample	ancestry
+chr1	49135137	57939479	Wolf	0	.	49135137	57939479	230,159,0	Czechoslovakian 1 hap1	Wolf
 ```
 
 The last two columns are the ones the display needs: the row this block belongs
-to, and the ancestry it was called.
+to, and the ancestry it was called. The `#`-header line names them for the
+adapter, so the track config below carries no `columnNames`.
 
 ## Loading it as a multi-row track
 
@@ -180,19 +164,6 @@ config: a BED carrying `itemRgb` is painted with it automatically.
   "adapter": {
     "type": "BedTabixAdapter",
     "disableGeneHeuristic": true,
-    "columnNames": [
-      "chrom",
-      "chromStart",
-      "chromEnd",
-      "name",
-      "score",
-      "strand",
-      "thickStart",
-      "thickEnd",
-      "itemRgb",
-      "sample",
-      "ancestry"
-    ],
     "uri": "dog10k_wolfdog_ancestry.chr1.bed.gz"
   },
   "displays": [
@@ -233,27 +204,28 @@ elsewhere is signal rather than an artifact of the panels.
 
 Read the rows on block length as well as on colored fraction. The build script
 prints both, one line per animal, as a count of wolf blocks with their median
-and longest:
-
-```
-Wolf blocks per animal on chr1 (count, median kb, longest kb):
-```
+and longest.
 
 The Tamaskan behaves like a dog that merely looks like a wolf. Its wolf
-assignments are short flecks on the same noise floor the German Shepherd sits
-on, with nothing approaching the length a recent cross would leave. Appearance
-carries no ancestry.
+assignments are short flecks, well under a megabase and nothing approaching the
+length a recent cross would leave, against a German Shepherd control that takes
+no wolf at all on this chromosome. Appearance carries no ancestry.
 
 The Shiloh Shepherd does not. Its wolf blocks run to megabases, a length
-distribution much closer to a Czechoslovakian Wolfdog than to the Tamaskan.
-Stated carefully: it agrees with the Dog10K paper's observation that this
-individual shares more doubleton sites with wolves than any other breed dog, but
-the same paper's D-statistics find no significant excess of wolf allele sharing
-over German Shepherd Dogs. Only one Shiloh Shepherd exists in the collection,
-and both a single sample and a single chromosome are thin evidence. Read it as a
-lead to follow, not a settled result, and note the shape of the disagreement: a
-genome-wide sharing fraction and a block-length distribution are different
-measurements, and this is the sort of case where they diverge.
+distribution closer to a Czechoslovakian Wolfdog than to the Tamaskan. The
+Dog10K paper's own D-statistics find no significant excess of wolf allele
+sharing in this breed over German Shepherd Dogs, and the collection holds a
+single Shiloh Shepherd, painted here on a single chromosome.
+
+Those readings are all row-order arguments, so let the display derive the order
+instead of taking it from the config. The track menu's **Clustering** →
+**Cluster rows by similarity** reorders the rows by how alike their painting is
+across the region in view, and draws the tree it built beside them:
+
+<Figure caption="The same 22 haplotype rows, reordered by ancestry similarity across chr1 instead of grouped by breed. The wolf-richest haplotypes collect at the top, where six of the eight Saarloos rows land together. The Tamaskan's two haplotypes fall at the dog end of the order, down with the German Shepherd control, while the Shiloh Shepherd's sit up among the wolfdogs." src="/img/dog10k-wolfdog-ancestry-clustered.png" />
+
+Nothing in that order was declared: the same clustering that puts the Saarloos
+haplotypes together puts the Tamaskan next to the control.
 
 ## Checking a block against the genotypes
 
@@ -314,3 +286,9 @@ plus its index and the genotype slice the second figure uses.
   [Genome sequencing of 2000 canids by the Dog10K consortium advances the understanding of demography, genome function and architecture](https://doi.org/10.1186/s13059-023-03023-7)
 - Browning et al. (2023).
   [Fast, accurate local ancestry inference with FLARE](https://doi.org/10.1016/j.ajhg.2023.02.010)
+- Campbell et al. (2016).
+  [A pedigree-based map of recombination in the domestic dog genome](https://doi.org/10.1534/g3.116.034678),
+  the genetic map used here, in the
+  [canFam4 transition](https://doi.org/10.5281/zenodo.17095604) published with
+  Wang et al. (2025),
+  [Fine-scale recombination rates inferred using the canFam4 assembly](https://doi.org/10.1007/s00335-025-10178-0)

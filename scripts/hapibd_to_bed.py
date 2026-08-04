@@ -20,10 +20,12 @@ Usage: hapibd_to_bed.py <trio.ibd.gz> <child> <father> <mother> <out.bed>
 hap-ibd .ibd columns (tab-separated):
   sample1  hap1  sample2  hap2  chrom  start  end  cM
 
-Output columns (matching the BedTabixAdapter in analyze_trio.md):
+Output columns, named by the `#`-header line the BedTabixAdapter reads, so the
+track config does not have to repeat them as `columnNames`:
   chrom chromStart chromEnd name score strand thickStart thickEnd itemRgb parenthap
 
-Then: sort -k1,1 -k2,2n out.bed | bgzip > trio.hapibd.bed.gz && tabix -p bed ...
+Then: (head -1 out.bed; tail -n +2 out.bed | sort -k1,1 -k2,2n) \
+        | bgzip > trio.hapibd.bed.gz && tabix -p bed ...
 """
 import gzip
 import sys
@@ -144,7 +146,12 @@ for child_hap in (1, 2):
             ]
         )
 
+header = (
+    "#chrom\tchromStart\tchromEnd\tname\tscore\tstrand\t"
+    "thickStart\tthickEnd\titemRgb\tparenthap\n"
+)
 with open(out_bed, "w") as fh:
+    fh.write(header)
     for r in out:
         fh.write("\t".join(r) + "\n")
 

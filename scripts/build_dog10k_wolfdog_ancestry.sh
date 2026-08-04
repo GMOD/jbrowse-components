@@ -111,16 +111,21 @@ bcftools view -S targets.txt --force-samples \
   -Oz -o "$CHROM.gt.vcf.gz" "$CHROM.subset.vcf.gz"
 
 # ── Genetic map ─────────────────────────────────────────────────────────────
-# The published dog genetic maps are on canFam3.1, and Dog10K phased this panel
-# on UU_Cfam_GSD_1.0, so this uses a uniform 1 cM/Mb map (close to the dog
-# genome-wide average). Block boundaries are therefore approximate.
-LAST=$(bcftools query -f '%POS\n' "$CHROM.subset.vcf.gz" | tail -1)
-python3 - "$CHROM" "$LAST" > "$CHROM.map" <<'PY'
-import sys
-chrom, last = sys.argv[1], int(sys.argv[2])
-for bp in range(1, last + 1_000_000, 1_000_000):
-    print('%s\t.\t%.6f\t%d' % (chrom, bp / 1e6, bp))
-PY
+# The Campbell pedigree map, as transitioned onto this panel's own assembly by
+# Wang et al. 2025 (Zenodo 10.5281/zenodo.17095604, CC-BY-4.0). A map built on
+# canFam4 is what lets a block boundary mean something: the older published dog
+# maps are all on canFam3.1, and a uniform cM/Mb stand-in asserts a constant
+# recombination rate the genome does not have.
+# Its columns are POS / rate(cM/Mb) / Map(cM); FLARE wants PLINK's
+# chrom / marker / cM / bp, so this is a reshape, not a computation.
+MAPDIR=campbell_sex_average_canFam4
+[ -f "$MAPDIR.tar.gz" ] || curl -fsSL -o "$MAPDIR.tar.gz" \
+  "https://zenodo.org/records/17095604/files/$MAPDIR.tar.gz?download=1"
+[ -d "$MAPDIR" ] || tar xzf "$MAPDIR.tar.gz"
+awk -v c="$CHROM" 'NR>1 && $1 ~ /^[0-9]+$/ {printf "%s\t.\t%s\t%s\n", c, $3, $1}' \
+  "$MAPDIR/${MAPDIR}_${CHROM}_map.txt" > "$CHROM.map"
+awk -v c="$CHROM" 'NR==1{f=$3} END{printf "map: %d markers spanning %.1f cM on %s\n", NR, $3-f, c}' \
+  "$CHROM.map"
 
 # ── FLARE ───────────────────────────────────────────────────────────────────
 [ -f flare.jar ] || curl -fsSL -o flare.jar \
@@ -137,8 +142,14 @@ zcat "wolfdog_$CHROM.global.anc.gz"
 # ── Painted BED ─────────────────────────────────────────────────────────────
 python3 "$SCRIPT_DIR/flare_anc_to_bed.py" "wolfdog_$CHROM.anc.vcf.gz" labels.tsv \
   "dog10k_wolfdog_ancestry.$CHROM.bed"
-sort -k1,1 -k2,2n "dog10k_wolfdog_ancestry.$CHROM.bed" \
-  | bgzip > "dog10k_wolfdog_ancestry.$CHROM.bed.gz"
+# `jbrowse sort-bed` does exactly this, but this script is otherwise node-free,
+# so the pipeline is inline rather than pulling in the CLI: keep the `#`-header
+# line (it names the columns for the BedTabixAdapter) on top, and sort the rest
+# under LC_ALL=C so the order does not shift with the caller's locale.
+{ grep '^#' "dog10k_wolfdog_ancestry.$CHROM.bed"
+  grep -v '^#' "dog10k_wolfdog_ancestry.$CHROM.bed" \
+    | LC_ALL=C sort -t"$(printf '\t')" -k1,1 -k2,2n
+} | bgzip > "dog10k_wolfdog_ancestry.$CHROM.bed.gz"
 tabix -f -p bed "dog10k_wolfdog_ancestry.$CHROM.bed.gz"
 
 echo

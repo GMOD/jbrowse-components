@@ -51,8 +51,7 @@ fi
 
 # ── Chromosome-painting BED (one row per strain) ─────────────────────────────
 python3 "$SCRIPT_DIR/bxd_geno_to_painting_bed.py" BXD.geno bxd_painting.bed
-(head -1 bxd_painting.bed; tail -n +2 bxd_painting.bed | sort -k1,1 -k2,2n) \
-  | bgzip > "$APP"/bxd_painting.bed.gz
+jb sort-bed bxd_painting.bed | bgzip > "$APP"/bxd_painting.bed.gz
 tabix -f -p bed "$APP"/bxd_painting.bed.gz
 
 # ── QTL scans, downloaded from GeneNetwork rather than recomputed ────────────
@@ -160,7 +159,11 @@ cat > "$APP"/config.json <<'JSON'
           "type": "LinearMultiRowFeatureDisplay",
           "displayId": "bxd_chromosome_painting_mm10-LinearMultiRowFeatureDisplay",
           "partitionField": "sample",
-          "showTree": true
+          "legend": [
+            { "label": "B (C57BL/6J)", "color": "rgb(65,105,225)" },
+            { "label": "D (DBA/2J)", "color": "rgb(220,60,50)" },
+            { "label": "H (heterozygous)", "color": "rgb(150,150,150)" }
+          ]
         }
       ]
     }

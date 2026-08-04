@@ -37,8 +37,8 @@ tutorial visualizes: a trait scan on top, and the B/D blocks underneath it.
 This tutorial builds two JBrowse tracks from the same BXD panel, on mm10:
 
 - a chromosome-painting track (the
-  [multi-row feature display](/docs/tutorials/chromhmm)) showing each strain's B
-  and D blocks, and
+  [multi-row feature display](/docs/user_guides/multirow_feature_track)) showing
+  each strain's B and D blocks, and
 - a QTL Manhattan track ([plugins/gwas](/docs/config_guides/gwas_track)) from a
   single-marker scan of a real BXD phenotype.
 
@@ -71,6 +71,13 @@ Download it from
 (please cite
 [Wang et al. 2016, _Nat Commun_ 7:10464](https://doi.org/10.1038/ncomms10464)).
 
+Its own header describes what the columns are: "198 BXD strains and ... the
+reciprocal F1s", of which "191 are independent, whereas 7 are substrains". The
+painting below skips the F1 columns. An F1 is heterozygous at every marker by
+construction, so its row is a solid band of `H` that says something about the
+cross rather than about any strain's recombination, and the QTL scan is computed
+over the strains rather than the F1s.
+
 On JBrowse Desktop, add the `.bed.gz`/`.tsv.gz` files you build through **Add
 track** with no hosting step needed
 ([desktop quickstart](/docs/quickstart_desktop)).
@@ -85,25 +92,27 @@ same-genotype markers (run-length encoding), coloring `B`/`D`/`H` and writing
 the strain name into an extra `sample` column:
 
 ```
-#chrom  chromStart  chromEnd   name     score strand thickStart thickEnd itemRgb      sample  genotype
-chr1    3001490     20291558   BXD1_B   0     .      3001490    20291558 65,105,225   BXD1    B
-chr1    20291558    53451539   BXD1_D   0     .      20291558   53451539 220,60,50    BXD1    D
-chr1    53451539    69355875   BXD1_B   0     .      53451539   69355875 65,105,225   BXD1    B
+#chrom  chromStart  chromEnd   name  score strand thickStart thickEnd itemRgb      sample  genotype
+chr1    3001490     20291558   B     0     .      3001490    20291558 65,105,225   BXD1    B
+chr1    20291558    53451539   D     0     .      20291558   53451539 220,60,50    BXD1    D
+chr1    53451539    69355875   B     0     .      53451539   69355875 65,105,225   BXD1    B
 ```
 
 The
 [`bxd_geno_to_painting_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/bxd_geno_to_painting_bed.py)
 script does exactly this run-length encoding. Run it on the downloaded `.geno`,
-then sort, `bgzip`, and `tabix` the result (the `#`-header line names the
-columns for the adapter):
+then sort, `bgzip`, and `tabix` the result:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/bxd_geno_to_painting_bed.py
 python3 bxd_geno_to_painting_bed.py BXD.geno bxd_painting.bed
-(head -1 bxd_painting.bed; tail -n +2 bxd_painting.bed | sort -k1,1 -k2,2n) \
-  | bgzip > bxd_painting.bed.gz
+jbrowse sort-bed bxd_painting.bed | bgzip > bxd_painting.bed.gz
 tabix -p bed bxd_painting.bed.gz
 ```
+
+[`sort-bed`](/docs/cli#jbrowse-sort-bed) keeps the `#`-header line on top and
+sorts the rest under `LC_ALL=C`, so the adapter can read the column names off
+the file and the order does not shift with your locale.
 
 Then configure a `FeatureTrack` whose `LinearMultiRowFeatureDisplay` partitions
 on the `sample` column and colors each block from its `itemRgb` field. Both
@@ -125,7 +134,11 @@ the [assemblies configuration guide](/docs/config_guides/assemblies).
     {
       "type": "LinearMultiRowFeatureDisplay",
       "partitionField": "sample",
-      "showTree": true
+      "legend": [
+        { "label": "B (C57BL/6J)", "color": "rgb(65,105,225)" },
+        { "label": "D (DBA/2J)", "color": "rgb(220,60,50)" },
+        { "label": "H (heterozygous)", "color": "rgb(150,150,150)" }
+      ]
     }
   ]
 }
@@ -137,8 +150,11 @@ the [assemblies configuration guide](/docs/config_guides/assemblies).
   automatically
   ([`color`](/docs/config/linearmultirowfeaturedisplay/#slot-color)), so every
   block gets its genotype color straight from the file.
-- `showTree: true` adds a clustering sidebar that groups strains by genotype
-  similarity, and related substrains and F1s fall next to each other.
+- [`legend`](/docs/config/linearmultirowfeaturedisplay/#slot-legend) names the
+  two parents the colors stand for. Which strain a block came from is the row
+  label, so the color is free to carry the genotype, and that mapping is a
+  semantic the BED itself does not record. Its entries also drive the track
+  menu's **Categories** toggles, so hiding `H` isolates the B/D contrast.
 - `disableGeneHeuristic: true` keeps the BED adapter from reading each block as
   a gene, since the `thickStart`/`thickEnd` columns would otherwise trip its
   BED12 transcript detection.
@@ -219,6 +235,20 @@ blocks away from the locus.
 <Figure src="/img/qtl/bxd_painting_sorted.png" caption="The context menu that triggers the sort, over the painting it produces: sorted by genotype at the peak, the strains resolve into a clean, wide red-over-blue split directly beneath the Manhattan peak."/>
 
 <Figure src="/img/qtl/bxd_tyrp1_locus.png" caption="The whole of chr4 (~156 Mb): the coat-color association rises to a peak at ~80 Mb over Tyrp1, and the haplotype painting (sorted by genotype at that peak) resolves into a clean D (red) over B (blue) split at the gene."/>
+
+### Ordering the rows by the whole chromosome instead
+
+Sorting keys every row on one column and lets the rest of the chromosome fall
+where it may. The track menu's **Clustering** → **Cluster rows by similarity**
+keys them on the whole visible region instead, and draws the tree it built down
+the left-hand side. A session can trigger it declaratively with
+`runClustering: true`, the same way `sortRowsBy` bakes in a sort.
+
+<Figure src="/img/qtl/bxd_painting_clustered.png" caption="The same painting and scan, with the strains ordered by their genotype similarity across the whole of chr4 rather than at the peak. Strains sharing long stretches of the chromosome are neighbors, so the mosaic collects into wide blocks and the dendrogram at the left shows how they nest."/>
+
+Clustering is computed over the region in view, so this is chr4 similarity, not
+a genome-wide relatedness: pan somewhere else and the same menu item gives a
+different order.
 
 The demo config carries a second trait, brain weight (`10672`), loaded the same
 way from the same API.

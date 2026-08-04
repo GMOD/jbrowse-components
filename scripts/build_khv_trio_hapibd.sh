@@ -60,17 +60,20 @@ java -jar hap-ibd.jar \
   map=plink.chr1.GRCh38.map \
   out=trio min-seed=1.0 min-output=1.0
 
-# ── Collapse IBD segments into the painted BED9 (father blues, mother reds) ──
-python3 "$SCRIPT_DIR/hapibd_to_bed.py" trio.ibd.gz "$CHILD" "$FATHER" "$MOTHER" trio.hapibd.bed
-sort -k1,1 -k2,2n trio.hapibd.bed | bgzip > trio.hapibd.bed.gz
-tabix -f -p bed trio.hapibd.bed.gz
-
 # ── Set up JBrowse (uses an installed `jbrowse`, else the CLI via npx) ───────
 if command -v jbrowse >/dev/null 2>&1; then
   jb() { jbrowse "$@"; }
 else
   jb() { npx -y @jbrowse/cli "$@"; }
 fi
+
+# ── Collapse IBD segments into the painted BED9 (father blues, mother reds) ──
+# `sort-bed` keeps the `#`-header line on top (it names the columns for the
+# BedTabixAdapter) and sorts under LC_ALL=C, so the order does not shift with
+# the caller's locale.
+python3 "$SCRIPT_DIR/hapibd_to_bed.py" trio.ibd.gz "$CHILD" "$FATHER" "$MOTHER" trio.hapibd.bed
+jb sort-bed trio.hapibd.bed | bgzip > trio.hapibd.bed.gz
+tabix -f -p bed trio.hapibd.bed.gz
 
 APP=jbrowse2
 [ -f "$APP/index.html" ] || jb create "$APP"

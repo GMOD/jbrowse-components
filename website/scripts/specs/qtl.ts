@@ -45,6 +45,34 @@ const paintingSortPanel = () =>
     ],
   })
 
+// Same painting, ordered by the whole visible chromosome instead of by one
+// column. `runClustering` is the declarative one-shot trigger (the session-
+// expressible form of the track menu's "Cluster rows by similarity"), and it
+// clusters over the view's CONTENT BLOCKS — so on whole-chr4 the distance is the
+// chr4 mosaic, not a genome-wide relatedness. Do not caption it as recovering
+// substrain pairs: on 731 chr4 markers BXD65a/BXD65b are only 0.949 identical
+// while ~1% of random strain pairs exceed 0.993, so one chromosome cannot
+// separate substrains from the tail of ordinary pairs.
+const paintingClusteredPanel = () =>
+  lgvSession('test_data/config_bxd.json', {
+    assembly: 'mm10',
+    loc: 'chr4',
+    tracks: [
+      {
+        trackId: 'bxd_gwas_coatcolor_mm10',
+        type: 'LinearManhattanDisplay',
+        height: 140,
+      },
+      {
+        trackId: 'bxd_chromosome_painting_mm10',
+        type: 'LinearMultiRowFeatureDisplay',
+        height: 420,
+        runClustering: true,
+        forceLoad: true,
+      },
+    ],
+  })
+
 export const qtlSpecs: ScreenshotSpec[] = [
   // Whole chr4 with the Tyrp1 gene position marked. The association is a broad
   // plateau (RI-panel LD extends for many Mb), so the gene sits under the
@@ -132,5 +160,21 @@ export const qtlSpecs: ScreenshotSpec[] = [
       },
       { type: 'box', anchor: { text: 'Sort rows by color here' } },
     ],
+  },
+
+  // The clustered counterpart of the sorted panel above, same track set and
+  // same height so the two are directly comparable.
+  {
+    mode: 'url',
+    name: 'qtl/bxd_painting_clustered',
+    url: paintingClusteredPanel(),
+    // wait on the dendrogram itself, not a timeout: it only mounts once the
+    // clustering RPC has returned a tree, which also implies the painting's
+    // features finished loading (the RPC clusters over them)
+    readySelector: '[data-testid="tree_sidebar_dendrogram"]',
+    readyTimeout: 180000,
+    viewportHeight: 840,
+    settleMs: 8000,
+    hideTooltip: true,
   },
 ]

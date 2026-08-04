@@ -4695,18 +4695,6 @@
       "adapter": {
         "type": "BedTabixAdapter",
         "disableGeneHeuristic": true,
-        "columnNames": [
-          "chrom",
-          "chromStart",
-          "chromEnd",
-          "name",
-          "score",
-          "strand",
-          "thickStart",
-          "thickEnd",
-          "itemRgb",
-          "parenthap"
-        ],
         "bedGzLocation": {
           "uri": "https://jbrowse.org/demos/kgp-trio/HG02024_VN049_KHVTrio.chr1.hapibd.bed.gz",
           "locationType": "UriLocation"
@@ -4723,7 +4711,7 @@
           "type": "LinearMultiRowFeatureDisplay",
           "displayId": "HG02024_VN049_KHVTrio.chr1.hapibd-LinearMultiRowFeatureDisplay",
           "partitionField": "parenthap",
-          "color": "jexl:'rgb('+get(feature,'itemRgb')+')'",
+          "showLegend": false,
           "rowOrder": [
             "Father hap1",
             "Father hap2",
