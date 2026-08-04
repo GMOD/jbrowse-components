@@ -31,6 +31,7 @@ export {
   isVerdictStale,
   loadReport,
   saveReport,
+  updateReport,
 } from './reviewVerdicts.ts'
 
 export type { TestServerOptions } from './server.ts'

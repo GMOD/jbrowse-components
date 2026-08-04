@@ -89,7 +89,6 @@
     "config/jest",
     "agent-docs",
     "jest.config.js",
-    "website/scripts/flip-review.mjs",
     "products/jbrowse-web/browser-tests/memsticky.ts",
     "products/jbrowse-web/browser-tests/memprofile.ts",
     "products/jbrowse-web/browser-tests/memstress.ts",

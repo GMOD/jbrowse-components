@@ -11,7 +11,7 @@ import {
   loadReport,
   readMainPng,
   reportPath,
-  saveReport,
+  updateReport,
   websiteRoot,
 } from './screenshot-review-lib.ts'
 import { screenshotLiveUrls, specs } from './screenshot-specs.ts'
@@ -27,8 +27,12 @@ function buildSpecPayload() {
   const report = loadReport()
   return collectScreenshots(specs).map(shot => {
     const verdict = report[shot.name]
+    // the hash of the PNG as the reviewer is about to see it. It rides along so
+    // the page can say which pixels a verdict was formed against — both to
+    // cache-bust the <img> and as the precondition on the write.
+    const currentHash = imageHash(shot.name)
     // an approval/denial only resurfaces once the reviewed image changes
-    const stale = isVerdictStale(verdict, imageHash(shot.name))
+    const stale = isVerdictStale(verdict, currentHash)
     const liveUrl = screenshotLiveUrls[shot.name]
     // a compose figure has no session of its own; its parts carry the live
     // links, which is also what `<Figure links=...>` publishes for it
@@ -40,19 +44,37 @@ function buildSpecPayload() {
       })),
       verdict,
       stale,
+      imageHash: currentHash ?? null,
       ...(liveUrl ? { liveUrl } : {}),
     }
   })
 }
 
+// A verdict body is a name, a status and a note; a megabyte is already orders
+// of magnitude more than the longest note anyone has typed.
+const maxBodyBytes = 1024 * 1024
+
 function readBody(req: http.IncomingMessage): Promise<string> {
-  return new Promise(resolve => {
+  return new Promise((resolve, reject) => {
     let data = ''
     req.on('data', chunk => {
       data += chunk
+      if (data.length > maxBodyBytes) {
+        req.destroy()
+        reject(new Error('request body too large'))
+      }
     })
     req.on('end', () => {
       resolve(data)
+    })
+    // A request that errors or is aborted never fires 'end'. Without these the
+    // promise stays pending for the life of the process, and an 'error' with no
+    // listener is an unhandled error event that takes the server down — which,
+    // if it lands mid-write, is exactly how the report gets truncated. 'close'
+    // fires after 'end' too, but rejecting a settled promise is a no-op.
+    req.on('error', reject)
+    req.on('close', () => {
+      reject(new Error('request closed before its body ended'))
     })
   })
 }
@@ -143,10 +165,34 @@ function parseName(body: unknown): string | undefined {
     : undefined
 }
 
-function parseVerdictBody(
-  raw: string,
-):
-  | { name: string; status: 'good' | 'bad' | 'answered'; note: string }
+// What the client had in hand when it composed the write: `ifReviewedAt` is the
+// verdict's `reviewedAt` it last saw, `ifImageHash` the sha1 of the PNG it
+// actually rendered. `null` means "there was none", and an absent field opts out
+// of that check (curl and scripts, which have nothing stale to revert). Anything
+// else is a malformed body rather than a silent opt-out.
+type Precondition = string | null | undefined
+
+function parsePrecondition(
+  body: object,
+  field: 'ifReviewedAt' | 'ifImageHash',
+): { ok: true; value: Precondition } | { ok: false } {
+  if (!(field in body)) {
+    return { ok: true, value: undefined }
+  }
+  const v = (body as Record<string, unknown>)[field]
+  return typeof v === 'string' || v === null
+    ? { ok: true, value: v }
+    : { ok: false }
+}
+
+function parseVerdictBody(raw: string):
+  | {
+      name: string
+      status: 'good' | 'bad' | 'answered'
+      note: string
+      ifReviewedAt: Precondition
+      ifImageHash: Precondition
+    }
   | undefined {
   const body: unknown = JSON.parse(raw)
   const name = parseName(body)
@@ -161,12 +207,67 @@ function parseVerdictBody(
   ) {
     return undefined
   }
+  const pre = parsePrecondition(body, 'ifReviewedAt')
+  const img = parsePrecondition(body, 'ifImageHash')
+  if (!pre.ok || !img.ok) {
+    return undefined
+  }
   const note = 'note' in body && typeof body.note === 'string' ? body.note : ''
-  return { name, status: body.status, note }
+  return {
+    name,
+    status: body.status,
+    note,
+    ifReviewedAt: pre.value,
+    ifImageHash: img.value,
+  }
 }
 
-function parseNameBody(raw: string): string | undefined {
-  return parseName(JSON.parse(raw))
+function parseNameBody(
+  raw: string,
+): { name: string; ifReviewedAt: Precondition } | undefined {
+  const body: unknown = JSON.parse(raw)
+  const name = parseName(body)
+  if (name === undefined || typeof body !== 'object' || body === null) {
+    return undefined
+  }
+  const pre = parsePrecondition(body, 'ifReviewedAt')
+  return pre.ok ? { name, ifReviewedAt: pre.value } : undefined
+}
+
+// True when the entry moved underneath the client since it loaded — another
+// review server, flip-review.ts, a hand edit, a branch switch. Writing anyway
+// would silently revert that change, which is what a page left open for an
+// afternoon does every time its note textarea loses focus.
+function isConflict(stored: Verdict | undefined, ifReviewedAt: Precondition) {
+  return (
+    ifReviewedAt !== undefined && (stored?.reviewedAt ?? null) !== ifReviewedAt
+  )
+}
+
+// True when the PNG moved under the reviewer — a regen landed after their page
+// rendered. The verdict precondition cannot see this: nothing about the verdict
+// changed, only the picture it would be recorded against. Left unchecked, the
+// reviewer approves the image they are looking at and the server stamps the
+// hash of the one that replaced it, which reads afterwards as a considered
+// approval of pixels nobody ever saw.
+function isImageConflict(name: string, ifImageHash: Precondition) {
+  return ifImageHash !== undefined && (imageHash(name) ?? null) !== ifImageHash
+}
+
+function sendConflict(
+  res: http.ServerResponse,
+  name: string,
+  current: Verdict | undefined,
+  reason: 'verdict' | 'image',
+) {
+  const hash = imageHash(name)
+  sendJson(res, 409, {
+    error: 'changed since your page loaded',
+    reason,
+    current: current ?? null,
+    stale: isVerdictStale(current, hash),
+    imageHash: hash ?? null,
+  })
 }
 
 async function handleVerdict(
@@ -174,18 +275,35 @@ async function handleVerdict(
   res: http.ServerResponse,
 ) {
   const parsed = parseVerdictBody(await readBody(req))
-  if (parsed) {
-    const report = loadReport()
-    const verdict: Verdict = {
-      ...parsed,
-      reviewedAt: new Date().toISOString(),
-      hash: imageHash(parsed.name),
-    }
-    report[parsed.name] = verdict
-    saveReport(report)
-    sendJson(res, 200, verdict)
-  } else {
+  if (!parsed) {
     sendJson(res, 400, { error: 'invalid verdict body' })
+    return
+  }
+  const { ifReviewedAt, ifImageHash, ...fields } = parsed
+  // The report is loaded, checked and written inside one lock: reading it out
+  // here first would reopen the lost-update window the lock exists to close.
+  // The image check belongs in here too — the PNG is hashed under the same lock
+  // that stamps the hash, so a regen cannot slip between the two.
+  const outcome = updateReport(report => {
+    const stored = report[fields.name]
+    if (isConflict(stored, ifReviewedAt)) {
+      return { conflict: 'verdict' as const, current: stored }
+    }
+    if (isImageConflict(fields.name, ifImageHash)) {
+      return { conflict: 'image' as const, current: stored }
+    }
+    const verdict: Verdict = {
+      ...fields,
+      reviewedAt: new Date().toISOString(),
+      hash: imageHash(fields.name),
+    }
+    report[fields.name] = verdict
+    return { conflict: false as const, verdict }
+  })
+  if (outcome.conflict) {
+    sendConflict(res, fields.name, outcome.current, outcome.conflict)
+  } else {
+    sendJson(res, 200, outcome.verdict)
   }
 }
 
@@ -193,16 +311,24 @@ async function handleClearVerdict(
   req: http.IncomingMessage,
   res: http.ServerResponse,
 ) {
-  const name = parseNameBody(await readBody(req))
-  if (name) {
-    const report = loadReport()
-    if (report[name]) {
-      delete report[name]
-      saveReport(report)
-    }
-    sendJson(res, 200, { name, cleared: true })
-  } else {
+  const parsed = parseNameBody(await readBody(req))
+  if (!parsed) {
     sendJson(res, 400, { error: 'invalid body' })
+    return
+  }
+  const { name, ifReviewedAt } = parsed
+  const outcome = updateReport(report => {
+    const stored = report[name]
+    if (isConflict(stored, ifReviewedAt)) {
+      return { conflict: true as const, current: stored }
+    }
+    delete report[name]
+    return { conflict: false as const }
+  })
+  if (outcome.conflict) {
+    sendConflict(res, name, outcome.current, 'verdict')
+  } else {
+    sendJson(res, 200, { name, cleared: true })
   }
 }
 
@@ -332,6 +458,12 @@ const PAGE = /* html */ `<!doctype html>
   button.clear { border-color: ButtonBorder; color: GrayText; }
   .note { width: 100%; padding: 6px 9px; border: 1px solid ButtonBorder; border-radius: 6px; font-size: 13px; background: Field; color: FieldText; font-family: inherit; resize: vertical; }
   .reviewedAt { font-size: 11px; color: GrayText; }
+  /* a write that did not land, or one rejected because the entry moved. Empty
+     for the overwhelmingly common case where it just worked. */
+  .cardmsg { font-size: 13px; font-weight: 500; }
+  .cardmsg:empty { display: none; }
+  .cardmsg.error { color: #b91c1c; }
+  .cardmsg.warn { color: #b45309; }
 </style>
 </head>
 <body>
@@ -510,8 +642,11 @@ function card(spec) {
   const v = spec.verdict
   const status = v ? v.status : 'none'
   const cls = spec.stale ? 'stale' : status
+  // The hash rides in the URL so the browser refetches exactly when the pixels
+  // change and caches otherwise. Without it a regen leaves the reviewer looking
+  // at a cached image while judging the one now on disk.
   const currentImg = spec.exists
-    ? '<img src="/img/' + spec.name + '.png" onclick="window.open(this.src)" />'
+    ? '<img src="/img/' + spec.name + '.png?v=' + esc(spec.imageHash || '') + '" onclick="window.open(this.src)" />'
     : '<div class="missing">⚠ image file missing — regenerate it</div>'
   const mainImg = spec.existsOnMain
     ? '<img src="/img-main/' + spec.name + '.png" onclick="window.open(this.src)" />'
@@ -537,58 +672,195 @@ function card(spec) {
         (v ? '<button class="clear" onclick="clearVerdict(this)">clear</button>' : '') +
         (v ? '<span class="reviewedAt">' + new Date(v.reviewedAt).toLocaleString() + '</span>' : '') +
       '</div>' +
+      '<div class="' + msgClass(spec.name) + '">' + esc(messageText(spec.name)) + '</div>' +
     '</div>' +
   '</div>'
 }
 
 const cardEl = btn => btn.closest('.card')
+const cardOf = name =>
+  [...document.querySelectorAll('.card')].find(c => c.dataset.name === name)
 
-async function postVerdict(name, status, note) {
-  await fetch('/api/verdict', {
+// Per-card outcome message: a write that failed, or one rejected because the
+// entry moved on disk. Kept outside \`data\` so a re-render reproduces it.
+const cardMessages = new Map()
+const messageText = name => (cardMessages.get(name) || {}).text || ''
+const msgClass = name =>
+  'cardmsg' + (cardMessages.has(name) ? ' ' + cardMessages.get(name).kind : '')
+
+function setMessage(name, text, kind) {
+  if (text) {
+    cardMessages.set(name, { text, kind })
+  } else {
+    cardMessages.delete(name)
+  }
+}
+
+// Update the message in place, for the paths that must not re-render (a note
+// textarea's own save — re-rendering there would put back the stored note and
+// throw away what the reviewer just typed).
+function paintMessage(name) {
+  const el = cardOf(name)
+  const box = el && el.querySelector('.cardmsg')
+  if (box) {
+    box.textContent = messageText(name)
+    box.className = msgClass(name)
+  }
+}
+
+// What this tab had in hand, sent with every write so the server can reject one
+// composed against state that has since moved. null means "there was none",
+// which is a precondition worth stating too: it catches a tab that would
+// otherwise resurrect an entry another process deleted. The image hash is the
+// half that matters most — it is what makes an approval mean "I looked at these
+// pixels" rather than "I clicked while these pixels were the current ones".
+const precondition = spec => (spec.verdict ? spec.verdict.reviewedAt : null)
+const imgPrecondition = spec => spec.imageHash || null
+
+// Never let a write that did not land look like one that did. Throws on
+// failure; returns { conflict: true, ... } when the server refused because the
+// entry changed underneath us.
+async function readWriteResponse(res) {
+  const body = await res.json().catch(() => null)
+  if (res.status === 409) {
+    return {
+      conflict: true,
+      reason: body ? body.reason : 'verdict',
+      current: body && body.current ? body.current : undefined,
+      stale: !!(body && body.stale),
+      imageHash: body ? body.imageHash : null,
+    }
+  }
+  if (!res.ok) {
+    throw new Error((body && body.error) || 'HTTP ' + res.status)
+  }
+  return { conflict: false, body: body }
+}
+
+async function postJson(url, payload) {
+  return readWriteResponse(await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, status, note }),
+    body: JSON.stringify(payload),
+  }))
+}
+
+function postVerdict(spec, status, note) {
+  return postJson('/api/verdict', {
+    name: spec.name,
+    status,
+    note,
+    ifReviewedAt: precondition(spec),
+    ifImageHash: imgPrecondition(spec),
   })
 }
+
+// Take on what the server says is on disk, so the next write carries a
+// precondition that will actually match. Adopting the image hash also swaps the
+// <img> URL, so the re-render puts the new picture in front of the reviewer
+// instead of leaving the old one cached in place.
+function adoptRemote(spec, result) {
+  spec.verdict = result.current
+  spec.stale = result.stale
+  spec.imageHash = result.imageHash
+}
+
+const conflictText = result =>
+  result.reason === 'image'
+    ? 'Not saved — this figure was regenerated since the page loaded, so the ' +
+      'image you just judged is not the one on disk. The new one is above; ' +
+      'look again before deciding.'
+    : 'Not saved — this entry changed elsewhere since the page loaded (now: ' +
+      (result.current ? result.current.status : 'cleared') +
+      '). The card is back in sync; act again if you still want to.'
 
 async function setVerdict(btn, status) {
   const el = cardEl(btn)
   const name = el.dataset.name
   const note = el.querySelector('.note').value
-  await postVerdict(name, status, note)
   const spec = data.find(s => s.name === name)
-  if (spec) {
-    // verdict was just recorded against the current image, so it's no longer stale
-    spec.verdict = { name, status, note, reviewedAt: new Date().toISOString() }
-    spec.stale = false
+  if (!spec) {
+    return
+  }
+  try {
+    const result = await postVerdict(spec, status, note)
+    if (result.conflict) {
+      adoptRemote(spec, result)
+      setMessage(name, conflictText(result), 'warn')
+    } else {
+      // adopt the server's own verdict: it carries the reviewedAt the next
+      // write has to match and the image hash this tab cannot compute. It was
+      // recorded against the current image, so it is not stale.
+      spec.verdict = result.body
+      spec.stale = false
+      setMessage(name, '')
+    }
+  } catch (err) {
+    setMessage(name, 'Not saved — ' + err.message, 'error')
   }
   justActed.add(name)
   updateCard(name)
 }
 
 // Persist note edits on their own so a reason typed after Approve/Deny is saved
-// without needing to click the button again. Deliberately does not re-render, so
-// the input keeps focus while you type.
+// without needing to click the button again. Deliberately does not re-render:
+// the reviewer's text stays exactly as they left it whatever the outcome.
 async function saveNote(input) {
   const name = cardEl(input).dataset.name
   const spec = data.find(s => s.name === name)
-  if (spec && spec.verdict) {
-    spec.verdict = { ...spec.verdict, note: input.value }
-    await postVerdict(name, spec.verdict.status, input.value)
+  if (!spec) {
+    return
   }
+  if (!spec.verdict) {
+    // a note has nothing to attach to until there is a verdict; say so rather
+    // than dropping the words silently, as this used to
+    setMessage(name, 'Note not saved yet — approve or deny and it goes with the verdict.', 'warn')
+    paintMessage(name)
+    return
+  }
+  // A note save carries the image precondition too, because the server restamps
+  // the verdict's hash from the current PNG on every write: without it, typing a
+  // note would quietly re-bless a figure that had been regenerated since, and
+  // clear its 'changed since review' flag with nobody having looked.
+  try {
+    const result = await postVerdict(spec, spec.verdict.status, input.value)
+    if (result.conflict) {
+      adoptRemote(spec, result)
+      setMessage(name, conflictText(result) + ' Your note text is still here — blur again to save it.', 'warn')
+      // re-render on this path only: it swaps in the image that is actually on
+      // disk, and updateCard carries the typed note across for us
+      updateCard(name)
+      return
+    }
+    spec.verdict = result.body
+    setMessage(name, '')
+  } catch (err) {
+    setMessage(name, 'Note not saved — ' + err.message, 'error')
+  }
+  paintMessage(name)
 }
 
 async function clearVerdict(btn) {
   const name = cardEl(btn).dataset.name
-  await fetch('/api/verdict/clear', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name }),
-  })
   const spec = data.find(s => s.name === name)
-  if (spec) {
-    spec.verdict = undefined
-    spec.stale = false
+  if (!spec) {
+    return
+  }
+  try {
+    const result = await postJson('/api/verdict/clear', {
+      name,
+      ifReviewedAt: precondition(spec),
+    })
+    if (result.conflict) {
+      adoptRemote(spec, result)
+      setMessage(name, conflictText(result), 'warn')
+    } else {
+      spec.verdict = undefined
+      spec.stale = false
+      setMessage(name, '')
+    }
+  } catch (err) {
+    setMessage(name, 'Not cleared — ' + err.message, 'error')
   }
   updateCard(name)
 }
@@ -657,9 +929,14 @@ function render() {
 // acting on one card never wipes unsaved note text typed into other cards.
 function updateCard(name) {
   const spec = data.find(s => s.name === name)
-  const el = [...document.querySelectorAll('.card')].find(c => c.dataset.name === name)
+  const el = cardOf(name)
   if (spec && el) {
+    // Carry the textarea's live value across the swap. On a write that landed
+    // this is exactly what was saved anyway; on one that failed or conflicted
+    // it is the difference between "try again" and losing the words typed.
+    const typed = el.querySelector('.note').value
     el.outerHTML = card(spec)
+    cardOf(name).querySelector('.note').value = typed
   }
   renderCounts()
 }

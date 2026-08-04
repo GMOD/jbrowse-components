@@ -137,11 +137,22 @@ export function trailingBackgroundPx(file: string): number | null {
   return count === rows.length ? 0 : count
 }
 
-// copyFileSync (not rename) because tmp and static/img may be on different
-// filesystems.
+// copyFileSync (not rename) because tmpPath and static/img may be on different
+// filesystems. But copying straight onto outputPath leaves a window where the
+// file on disk is half old and half new, and these PNGs are read while a regen
+// runs: the review server serves them to the reviewer and sha1s them to stamp a
+// verdict, and a hash taken of a half-written capture pins a verdict that can
+// never match again. So stage beside the output — same directory, therefore
+// same filesystem — and rename, which no reader can observe partway through.
 function moveIntoPlace(tmpPath: string, outputPath: string) {
-  fs.copyFileSync(tmpPath, outputPath)
-  fs.rmSync(tmpPath, { force: true })
+  const staging = `${outputPath}.${process.pid}.tmp`
+  try {
+    fs.copyFileSync(tmpPath, staging)
+    fs.renameSync(staging, outputPath)
+  } finally {
+    fs.rmSync(staging, { force: true })
+    fs.rmSync(tmpPath, { force: true })
+  }
 }
 
 export type CommitResult =

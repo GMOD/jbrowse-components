@@ -46,11 +46,16 @@ jq -r '[to_entries[]|select(.value.status=="bad")]|.[]|"\(.value.name)\t\(.value
   downscale first: `convert static/img/<name>.png -resize 1100x /tmp/x.png`,
   then Read `/tmp/x.png`. Whole-genome/many-row figures (470-way, dotplots,
   whole-chromosome coverage) are the worst offenders.
-- Mark a verdict in `screenshot-review.json`: `status:"good"` + a fresh sha1 of
-  the PNG (`isVerdictStale` only re-surfaces a `bad` verdict whose stored hash
-  still matches the committed PNG — a changed PNG makes the note stop applying).
-  Compute it with
-  `crypto.createHash('sha1').update(fs.readFileSync(path)).digest('hex')`.
+- Mark a verdict with
+  `node scripts/flip-review.ts good|answered|remove <name> "<note>"`, which
+  stamps a fresh sha1 of the PNG for you (`isVerdictStale` only re-surfaces a
+  `bad` verdict whose stored hash still matches the committed PNG — a changed
+  PNG makes the note stop applying). **Never write the file directly** — no jq
+  pipeline, no editor, no hand-rolled read-modify-write. Both it and the review
+  server rewrite the whole map, so an unlocked write drops every verdict
+  recorded since it read, and a reviewer is usually running the server while you
+  work. `flip-review.ts` and the server share one lock (`updateReport` in
+  `@jbrowse/browser-test-utils`); anything outside it does not.
 - Housekeeping after structural edits:
   - Changed a **gallery** spec's URL, or added/removed/renamed a spec →
     `pnpm gen:gallery-links` (CI gate: `pnpm autogen --check`).

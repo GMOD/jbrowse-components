@@ -7,6 +7,7 @@ import {
   hashFile,
   loadReport as loadReportFile,
   saveReport as saveReportFile,
+  updateReport as updateReportFile,
 } from '@jbrowse/browser-test-utils'
 
 import type { ScreenshotSpec } from './screenshot-specs.ts'
@@ -384,4 +385,13 @@ export function loadReport(): Record<string, Verdict> {
 
 export function saveReport(report: Record<string, Verdict>) {
   saveReportFile(reportPath, report)
+}
+
+// Read-modify-write under a cross-process lock. Every writer of a verdict goes
+// through this rather than loadReport/saveReport, which are for readers and for
+// whole-report rewrites respectively.
+export function updateReport<T>(
+  mutate: (report: Record<string, Verdict>) => T,
+): T {
+  return updateReportFile(reportPath, mutate)
 }
