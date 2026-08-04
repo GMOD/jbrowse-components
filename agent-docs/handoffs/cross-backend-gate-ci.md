@@ -239,6 +239,32 @@ there is no tight reproducer to substitute — the blanks are spread thinly acro
 many different captures rather than concentrated in one. **Stop running
 whole-suite A/Bs against this.**
 
+### Blank captures are now re-taken (and the timeout mode is what is left)
+
+A blank is detectable — `assertNonBlank` is that detector — so it is now
+re-taken up to 3 times before being believed, on both paths that can report one.
+This does not blunt the gate: a display that draws nothing is blank on every
+attempt and still fails; only a transient capture recovers. The counts print in
+the run summary (`Blank re-captures: N (M recovered, …)`) because a silent retry
+is how a real regression would hide.
+
+**The retry deliberately does not re-run `waitForCaptureSettled` between
+attempts.** The first version did, and it was actively harmful: 10 passed / 8
+failed against a baseline of 18 / 0 on the same filter and machine minutes
+apart. It can add ~100 s per retry, and `assertCanvasHasContent` is called
+mid-test by callers who have *not* finished loading, so page-wide waits change
+what that helper means. A 250 ms delay and a re-take is all a transient miss
+needs, and re-measures at 18 / 0. **Always baseline a change to this suite
+against HEAD on the same filter — the run-to-run variance will otherwise hide a
+regression this large.**
+
+The retry also settles render-vs-capture for free when it fires: a second
+screenshot of the same page, no reload, isolates the capture from the render.
+
+**It has not fired yet.** The two most recent full runs produced *zero* blank
+captures — the failure mode has shifted to timeouts (below). So the blank
+machinery is instrumented and waiting rather than proven.
+
 ### There are (at least) two failure modes, not one
 
 Counting them together is part of why the numbers were so noisy:
@@ -291,9 +317,17 @@ determinism from a repeated number; check whether the pair was compared at all.
 
 ## Next, in order
 
-1. **Read the self-report verdict off the next run that blanks.** It is already
-   wired on both paths and costs nothing until something fails; no experiment
-   needs designing. Then fix whichever side it names.
+1. **Attribute the TIMEOUT mode, which is now the dominant one.** The last two
+   full runs produced zero blanks and 4–5 timeouts each: a display never reports
+   `-done` inside 60 s. Apply exactly the move that worked for blanks — when the
+   wait expires, report what state the display is actually in (`data-display-phase`,
+   whether the wrapper exists at all, whether an error banner is up) instead of
+   an opaque timeout. `waits.ts` already notes the likely shape: a display in a
+   terminal `tooLarge`/`renderError` state renders no wrapper and so can never
+   report done, which would read as a timeout forever.
+2. **Read the blank self-report verdict off the next run that blanks.** Already
+   wired on both paths, costs nothing until something fails, no experiment to
+   design. Then fix whichever side it names.
 
    Do **not** spend another round chasing quiet machines (34/34 says waiting on
    app state is not the lever), do **not** retry `preserveDrawingBuffer` (tested,
