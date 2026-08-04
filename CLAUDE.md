@@ -19,6 +19,13 @@ Background lives in `agent-docs/` (start at `ARCHITECTURE.md`, then
   resolve only through `resolveConf`, never `getConf`.
 - In React, `autorun` inside `useEffect` to track observables (prefer over
   `reaction`).
+- **An `autorun` must do its own reads. MST actions run untracked**, so
+  factoring the body of one into an action — the obvious way to share it with a
+  menu item or a flush-on-teardown path — leaves the autorun with no
+  dependencies: it fires exactly once and then never again, silently. Same trap
+  for the argument order `self.someAction(getSnapshot(self))`, which works only
+  because the snapshot is taken before the action is entered. Duplicate the
+  reads instead and say why.
 - A duck-typed `interface XSelf` extends **`IStateTreeNode`**, never
   `IAnyStateTreeNode` — the latter resolves through `STNValue<any, …>` to `any`,
   so extending it silently turns off checking for every member you just
