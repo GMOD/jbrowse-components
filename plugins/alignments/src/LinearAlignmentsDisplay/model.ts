@@ -32,10 +32,15 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
   callEachRegion,
+  installClearHoverOnViewportChange,
   installGrowExitBake,
 } from '@jbrowse/plugin-linear-genome-view'
-import { domainFromStats, getNiceDomain } from '@jbrowse/wiggle-core'
-import { autorun, observable, reaction } from 'mobx'
+import {
+  ScoreScaleMixin,
+  domainFromStats,
+  getNiceDomain,
+} from '@jbrowse/wiggle-core'
+import { autorun, observable } from 'mobx'
 
 import {
   arcColorLegendCategory,
@@ -359,6 +364,9 @@ export default function stateModelFactory(
         TrackHeightMixin(),
         HeightModeMixin(),
         MultiRegionDisplayMixin(),
+        // The coverage band's score axis, shared with the wiggle family so the
+        // wiggle-core score menu / SetMinMaxDialog consume this model directly.
+        ScoreScaleMixin(),
         // Track-menu settings are config slots (read via getConf, written via
         // configuration.setSlot) so an edit survives hide/retick and a config
         // default can be set declaratively. The plain MST fields below are the
@@ -723,57 +731,11 @@ export default function stateModelFactory(
           return self.showBezierConnections && !this.isChainMode
         },
       }))
-      // Canonical ScoreScaleModel shape (shared with wiggle/manhattan) so the
-      // coverage band reuses wiggle-core's score menu + SetMinMaxDialog with no
-      // adapter shim. minScore/maxScore are raw (sentinels intact) for the
-      // dialog; *Config strip the sentinels for domain bounds. Kept in its own
-      // block so later getters reference them via `self`.
-      .views(self => ({
-        /**
-         * #getter
-         */
-        get scaleType() {
-          return getConf(self, 'scaleType')
-        },
-        /**
-         * #getter
-         */
-        get autoscaleType() {
-          return getConf(self, 'autoscale')
-        },
-        /**
-         * #getter
-         */
-        get minScore() {
-          return getConf(self, 'minScore')
-        },
-        /**
-         * #getter
-         */
-        get maxScore() {
-          return getConf(self, 'maxScore')
-        },
-        /**
-         * #getter
-         */
-        get minScoreBound() {
-          const v = getConf(self, 'minScore')
-          return v !== Number.MIN_VALUE ? v : undefined
-        },
-        /**
-         * #getter
-         */
-        get maxScoreBound() {
-          const v = getConf(self, 'maxScore')
-          return v !== Number.MAX_VALUE ? v : undefined
-        },
-        /**
-         * #getter
-         */
-        get numStdDev() {
-          return getConf(self, 'numStdDev')
-        },
-
+      // The coverage band's score axis (scaleType / autoscale / min-max + their
+      // setters) is `ScoreScaleMixin`, composed above — the same one the wiggle
+      // family composes, so the shared score menu and SetMinMaxDialog take this
+      // model with no adapter shim and the two can't drift.
+      .views(() => ({
         /**
          * #getter
          * Group keys that `groupOrder` drops, so a display can hide a lane its
@@ -2058,39 +2020,16 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * Target track height for `grow` mode: the full laid-out content height
-         * (coverage + pileup + arcs), capped at the `growMaxHeight` slot so a
-         * deep pileup doesn't grow the track to thousands of px (a taller pileup
-         * fits to the cap and scrolls the remainder). Independent of
-         * `self.height` (in grow mode reads use the configured `featureHeight`,
-         * not the fitted pitch), so the grow autorun that writes it back can't
-         * feed back on itself. `setHeight` floors it to MIN_DISPLAY_HEIGHT.
+         * HeightModeMixin's grow hook: the full laid-out content height
+         * (coverage + pileup + arcs), before the `growMaxHeight` cap. Independent
+         * of `self.height` — `laidOutByGroup` fits to `growMaxHeight` in grow
+         * mode (not the reactive `height`), and `featureHeight` is the configured
+         * value there rather than the fitted pitch — which is what lets the
+         * mixin's `height` return it without cycling. `grownHeight`, the `height`
+         * override and the grow-aware `resizeHeight` all come from the mixin.
          */
-        get grownHeight() {
-          return Math.min(this.sections.contentHeight, self.growMaxHeight)
-        },
-
-        /**
-         * #getter
-         */
-        // In grow mode the track height follows the laid-out content
-        // (`grownHeight`) reactively — no autorun writes the height config slot,
-        // so a settled relayout never churns the persisted session nor bakes a
-        // momentary height. Fixed/fit read the slot (fit shrinks features to fill
-        // it via the fittedHeightPx autorun). `grownHeight` is height-independent
-        // in grow mode because `laidOutByGroup` fits to `growMaxHeight` there (not
-        // the reactive `height`) and featureHeight is the configured value (not the
-        // fitted pitch), so returning it here can't cycle. Guarded on
-        // `view.initialized`: grownHeight transitively reads view-geometry getters
-        // that throw before the view is measured, and unlike the former autorun
-        // (whose MobX error-boundary swallowed the pre-init throw) a getter would
-        // propagate it into render/hydration. Overrides TrackHeightMixin.height
-        // (mirrors canvas).
-        get height(): number {
-          const view = getContainingView(self) as LGV
-          return self.autoHeight && view.initialized
-            ? this.grownHeight
-            : self.fitTargetHeight
+        get growTargetHeight() {
+          return this.sections.contentHeight
         },
 
         /**
@@ -2379,7 +2318,14 @@ export default function stateModelFactory(
               scrollTop: self.scrollTop,
               canvasHeight: self.height,
             }),
-            canvasWidth: view.width,
+            // trackWidthPx, not view.width: the track container subtracts the
+            // 2px outline, and the render blocks scissored against this come
+            // from the same buildRenderBlocks every other display uses — so a
+            // view.width-wide canvas overhangs its own container and the
+            // rightmost column of pileup is clipped away by paint containment.
+            // (SVG export has no outline; renderSvg.tsx overrides this field
+            // with the shell's view.width, per LgvSvgBodyProps.)
+            canvasWidth: view.trackWidthPx,
             canvasHeight: self.height,
             selectedFeatureId: self.selectedFeatureId,
             // Chain selection is only valid in 'normal' linked-reads mode.
@@ -2514,6 +2460,7 @@ export default function stateModelFactory(
       }))
       .actions(self => {
         const superSetError = self.setError
+        const superSetHeightMode = self.setHeightMode
         function addModification(modType: string) {
           if (!self.detectedModifications.has(modType)) {
             self.detectedModifications.set(
@@ -2540,10 +2487,14 @@ export default function stateModelFactory(
             setConf(self, 'showCoverage', true)
           }
         }
-        // The other half. Without it, hiding coverage left "Show sashimi arcs"
-        // ticked over a display drawing none — and the worker skips the junction
-        // scan entirely when the band is off (`runCoveragePipeline`), so the
-        // arcs the checkbox advertised had no data behind them either.
+        /**
+         * #action
+         * The other half of the sashimi/coverage tie. Without it, hiding coverage
+         * left "Show sashimi arcs" ticked over a display drawing none — and the
+         * worker skips the junction scan entirely when the band is off
+         * (`runCoveragePipeline`), so the arcs the checkbox advertised had no
+         * data behind them either.
+         */
         function setShowCoverage(show: boolean) {
           setConf(self, 'showCoverage', show)
           if (!show) {
@@ -2602,20 +2553,6 @@ export default function stateModelFactory(
           clearDisplaySpecificData() {
             self.rpcDataMap.clear()
             self.scrollTop = 0
-          },
-
-          /**
-           * #action
-           */
-          setScrollTop(scrollTop: number) {
-            // clamp here (like the variant model) so a resize that shrinks
-            // scrollableHeight while scrollTop sits at the old bottom can't
-            // strand it past the content — no native overflow container to
-            // self-correct
-            const next = Math.max(0, Math.min(scrollTop, self.scrollableHeight))
-            if (self.scrollTop !== next) {
-              self.scrollTop = next
-            }
           },
 
           /**
@@ -2880,34 +2817,6 @@ export default function stateModelFactory(
 
           /**
            * #action
-           */
-          setScaleType(val: string) {
-            setConf(self, 'scaleType', val)
-          },
-
-          /**
-           * #action
-           */
-          setAutoscale(val?: string) {
-            setConf(self, 'autoscale', val)
-          },
-
-          /**
-           * #action
-           */
-          setMinScore(val?: number) {
-            setConf(self, 'minScore', val)
-          },
-
-          /**
-           * #action
-           */
-          setMaxScore(val?: number) {
-            setConf(self, 'maxScore', val)
-          },
-
-          /**
-           * #action
            * Set the per-read pixel size. The track-sizing mode is a mostly
            * independent axis (changed via setHeightMode): grow keeps growing at
            * the new size. Fit is the exception — it derives the size, so a chosen
@@ -2932,21 +2841,18 @@ export default function stateModelFactory(
 
           /**
            * #action
-           * Set the track-height strategy by writing the unified `heightMode`
-           * slot; the modes are mutually exclusive by construction. Entering a
-           * non-`fixed` mode (fit or grow) resets the transient state a uniform
-           * fit/grow contradicts — per-group height overrides (a drag opts a
-           * group out) and the scroll offset (neither fit nor grow scrolls) —
-           * tied to the explicit user action so a track that merely inherits the
-           * mode from a session-wide default keeps its overrides. The driving
-           * autoruns then keep `featureHeight` (fit) or `height` (grow) sized as
-           * the display/data change.
+           * The two pieces of transient state a uniform fit/grow contradicts
+           * that HeightModeMixin can't know about. The slot write and the scroll
+           * reset are its `setHeightMode`, captured as super above.
            */
           setHeightMode(mode: HeightMode) {
-            setConf(self, 'heightMode', mode)
+            superSetHeightMode(mode)
+            // Per-group height overrides are a drag opting one lane out of a
+            // uniform fit/grow, so they go with the mode flip. Tied to the
+            // explicit user action: a track that merely inherits the mode from a
+            // session-wide default keeps its overrides.
             if (mode !== 'fixed') {
               self.groupMaxHeightOverrides.clear()
-              self.scrollTop = 0
             }
             // Seed the fitted pitch in the SAME transaction as the mode flip, so
             // the first render already draws reads at the fit height. Otherwise
@@ -3642,68 +3548,20 @@ export default function stateModelFactory(
             installGrowExitBake(self, getContainingView(self) as LGV),
           )
 
-          // Keep scrollTop inside the content by construction. Any geometry
-          // change — band resize, group collapse/expand/drag, show/hide
-          // coverage or pileup, read-connection mode, fit — can shrink
-          // scrollableHeight below the current offset, and there's no native
-          // overflow container to self-correct. Re-clamping reactively here
-          // means individual actions never have to remember to do it.
-          addDisposer(
-            self,
-            autorun(
-              () => {
-                if (self.scrollTop > self.scrollableHeight) {
-                  self.setScrollTop(self.scrollableHeight)
-                }
-              },
-              { name: 'AlignmentsClampScroll' },
-            ),
-          )
+          // The scroll clamp (the shrink autorun and the bound on setScrollTop)
+          // is TrackHeightMixin's, earned by overriding `scrollableHeight`.
 
-          // Drop a lingering hover tooltip/highlight when the view zooms. A
-          // wheel-zoom leaves the cursor stationary (no mousemove to refresh
-          // it), so the tooltip would pin to a now-wrong bp and re-render every
-          // zoom frame. `reaction` tracks only bpPerPx; its effect is untracked
-          // by construction, so reading the hover state to guard the clear can't
-          // couple it back (setting a hover never self-clears).
+          // Drop a lingering hover tooltip/highlight whenever the content moves
+          // under a stationary cursor. Shared with the canvas display: see
+          // installClearHoverOnViewportChange for why zoom is not the only axis.
           addDisposer(
             self,
-            reaction(
-              () => (getContainingView(self) as LGV).bpPerPx,
-              () => {
-                if (
-                  self.featureIdUnderMouse !== undefined ||
-                  self.mouseoverExtraInformation !== undefined
-                ) {
-                  self.clearMouseoverState()
-                }
-              },
-            ),
+            installClearHoverOnViewportChange(self, () => {
+              self.clearMouseoverState()
+            }),
           )
         },
       }))
-      .actions(self => {
-        const superResizeHeight = self.resizeHeight
-        return {
-          /**
-           * #action
-           * A manual drag-resize means the user wants a fixed height; leave grow
-           * mode first, otherwise the grow autorun snaps the height back on the
-           * next relayout and the drag appears to do nothing (mirrors canvas).
-           * Read the displayed (grown) height before flipping and write
-           * `grown + distance` directly — the grow-exit bake skips when the slot
-           * is written during the exit, so this delta isn't clobbered.
-           */
-          resizeHeight(distance: number) {
-            if (self.autoHeight) {
-              const grown = self.height
-              self.setHeightMode('fixed')
-              return self.setHeight(grown + distance) - grown
-            }
-            return superResizeHeight(distance)
-          },
-        }
-      })
   )
 }
 

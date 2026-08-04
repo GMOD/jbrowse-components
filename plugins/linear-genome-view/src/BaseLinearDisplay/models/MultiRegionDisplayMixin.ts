@@ -13,6 +13,7 @@ import { autorun, observable, untracked } from 'mobx'
 
 import RegionTooLargeMixin from '../../shared/RegionTooLargeMixin.ts'
 import FetchMixin from './FetchMixin.ts'
+import { assertDisplayContract } from './assertDisplayContract.ts'
 import { serializeRpcProps } from './rpcPropsCacheKey.ts'
 
 import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
@@ -369,6 +370,12 @@ export default function MultiRegionDisplayMixin() {
          * ClearHoverOnRegionTooLarge)
          */
         afterAttach() {
+          // Dev-only: the contracts no type expresses (this hook not being
+          // chained to super, `isCacheValid`/`rpcProps` being views). Runs
+          // before anything is installed so a double-install is reported rather
+          // than merely happening.
+          assertDisplayContract(self)
+
           // Clear loaded data whenever the displayed-regions list changes,
           // through the same `onDisplayedRegionsChange` helper the two displays
           // outside this family (LD, arc) use — one spelling of the trigger, so

@@ -12,8 +12,12 @@ and don't re-litigate the layering.
   misreads the escaping error as an invalid track and drops it. Use
   `autorunOnReadyView` for any view-dependent autorun.
 - **A display's own `afterAttach` must not `superAfterAttach()`.** Our MST fork
-  auto-chains lifecycle hooks, so calling it installs everything twice. Regular
-  actions still use super-capture.
+  auto-chains lifecycle hooks, so calling it installs everything twice.
+  `assertDisplayContract` reports it in dev. Regular actions still use
+  super-capture.
+- **`HeightModeMixin()` composes after `TrackHeightMixin()`**, whose `height` and
+  `resizeHeight` it overrides — `types.compose` gives the later argument the
+  collision. Nothing checks this one yet.
 - **A super-captured view is called bare**, so a base must not reach siblings
   off `this`. Move the overridable view into its own later `.views()` block,
   placed after everything it reads.
@@ -23,9 +27,9 @@ and don't re-litigate the layering.
 MobX runs an action inside `untracked`, so declaring either in `.actions()`
 makes its reads register no dependency and the caller silently keeps a stale
 answer. It regresses quietly, because each caller independently reads something
-that moves in lockstep — it has bitten twice. Pinned by a
-`getMembers(display).actions` assertion per display family; add the same lines
-for a new fetching display.
+that moves in lockstep — it has bitten twice. `assertDisplayContract` checks it
+in dev for every display composing the mixin, so a new fetching display needs no
+per-family `getMembers` test.
 
 Only these two method-shaped hooks are exposed; a getter can't regress this way,
 which is why the byte gate's opt-in is the `byteGateEnabled` getter.
@@ -36,6 +40,19 @@ observables may register no dependency — an early return _without_ fetching
 breaks the wake chain and must supply its own.
 
 Every field `rpcProps()` **returns** becomes a cache key, and only those.
+
+## Scroll and height are hooks, not per-display policy
+
+A display that scrolls its own canvas overrides `scrollableHeight`
+(`TrackHeightMixin`) and gets the clamped `setScrollTop` plus the shrink-clamp
+autorun. One that grows to its content overrides `growTargetHeight`
+(`HeightModeMixin`) and gets `grownHeight`, the reactive `height`,
+`setHeightMode` and the grow-aware `resizeHeight`. Neither hook may read the
+reactive `height` getter — in grow mode it *is* `grownHeight`, so that's a
+computed cycle; read `fitTargetHeight`/`growMaxHeight`.
+
+Hover belongs with them: `installClearHoverOnViewportChange` tracks all three
+axes content can move on (`bpPerPx`, `offsetPx`, `scrollTop`), not just zoom.
 
 ## The three readiness axes — don't collapse them
 

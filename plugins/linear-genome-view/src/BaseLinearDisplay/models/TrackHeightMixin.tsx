@@ -1,5 +1,7 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
-import { types } from '@jbrowse/mobx-state-tree'
+import { clamp } from '@jbrowse/core/util'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import { autorun } from 'mobx'
 
 import { MIN_DISPLAY_HEIGHT } from './const.ts'
 
@@ -15,6 +17,15 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
  * auto-fit mode declare `height` as a `maybeNumber` slot (default `undefined`)
  * and override the `height` getter to fall back to their computed content
  * height when unset.
+ *
+ * It also owns the **internal vertical scroll** every canvas display that
+ * scrolls its own content shares: the `scrollTop` volatile, a `setScrollTop`
+ * clamped against the overridable `scrollableHeight` hook, and the autorun that
+ * re-clamps when the content shrinks. Four displays (alignments, canvas, MAF,
+ * multi-sample variants) each carried their own copy of the last two, with four
+ * copies of the same "a virtual-scrolled canvas has no overflow container to
+ * self-correct" paragraph; a display now opts into all of it by overriding one
+ * getter.
  */
 export default function TrackHeightMixin<
   TConf extends { configuration: AnyConfigurationModel } = {
@@ -46,13 +57,36 @@ export default function TrackHeightMixin<
       get height() {
         return getConf(self as unknown as TConf, 'height') as number
       },
+      /**
+       * #getter
+       * Overridable hook: how far this display's content can scroll past its
+       * viewport, in px. `Infinity` (the default) means "this display doesn't
+       * scroll internally" — `setScrollTop` then never clamps and the re-clamp
+       * autorun below is inert, so a non-scrolling display pays nothing and,
+       * crucially, never evaluates a getter that would read view geometry.
+       *
+       * A display that scrolls a canvas overrides this with `max(0, contentHeight
+       * - viewportHeight)`, and gets the clamped setter plus the shrink autorun
+       * for free. It is the single "does it scroll, and by how much" answer: the
+       * wheel handler (`useVirtualScrollWheel`) and `VerticalScrollbar` read the
+       * same getter.
+       */
+      get scrollableHeight(): number {
+        return Number.POSITIVE_INFINITY
+      },
     }))
     .actions(self => ({
       /**
        * #action
+       * Clamped into `[0, scrollableHeight]`, so no caller has to remember the
+       * bound. Unbounded for a display that leaves `scrollableHeight` at its
+       * `Infinity` default.
        */
       setScrollTop(scrollTop: number) {
-        self.scrollTop = scrollTop
+        const next = clamp(scrollTop, 0, self.scrollableHeight)
+        if (self.scrollTop !== next) {
+          self.scrollTop = next
+        }
       },
       /**
        * #action
@@ -76,6 +110,34 @@ export default function TrackHeightMixin<
         const newHeight = Math.max(oldHeight + distance, MIN_DISPLAY_HEIGHT)
         setConf(self as unknown as TConf, 'height', newHeight)
         return newHeight - oldHeight
+      },
+    }))
+    .actions(self => ({
+      afterAttach() {
+        // Keep scrollTop inside the content by construction. Any geometry change
+        // — a shorter track, a smaller row height, a group collapse, a filter, a
+        // drag-resize — can drop the scroll extent below the current offset, and
+        // a virtual-scrolled canvas has no overflow container to self-correct.
+        // Enforcing the bound reactively here is what lets every
+        // geometry-changing action stay ignorant of it.
+        //
+        // Deliberately reads nothing but `scrollableHeight`: for a display that
+        // leaves the hook at `Infinity` the body registers no dependency at all,
+        // so this stays inert (and view-free) on the ten displays that don't
+        // scroll. The `isFinite` test is what makes that true — `Infinity` is
+        // never exceeded, but the comparison alone would still read `scrollTop`.
+        addDisposer(
+          self,
+          autorun(
+            () => {
+              const max = self.scrollableHeight
+              if (Number.isFinite(max) && self.scrollTop > max) {
+                self.setScrollTop(max)
+              }
+            },
+            { name: 'TrackHeightClampScroll' },
+          ),
+        )
       },
     }))
 }

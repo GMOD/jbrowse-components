@@ -427,35 +427,60 @@ rules out; tracked in OTHER_IDEAS.md §"Deferred architecture-review items".
 
 ## Correctness surfaces nothing mechanical protects
 
-### Ordering is the contract, in four places
+### Ordering is the contract, in five places
 
-**Status:** Open (each has a test, none has a type).
+**Status:** Partly closed (2026-08). Three of the five now report themselves in
+dev; two remain silent.
 
-One failure shape recurs: behavior depends on an order no type and no runtime
-check can see, and getting it wrong is silent.
+One failure shape recurs: behavior depends on an order no type can see, and
+getting it wrong is silent. The fix shape is equally uniform — make the order
+report itself at attach, the move `makeSettingsLoopGuard` already applied to the
+`rpcProps` loop trap. `assertDisplayContract` (called from
+`MultiRegionDisplayMixin.afterAttach`) is that generalization. It
+`console.error`s rather than throws, deliberately: an error escaping
+`afterAttach` is read by the session loader as an invalid track and the display
+is dropped, which would hide the very violation being reported.
+
+**Now checked** (dev-only, no false positives possible):
 
 - **`CanvasFeatureGateMixin()` must compose after `MultiRegionDisplayMixin()`.**
-  Both define `derivedRegionTooLargeEnabled` and the later wins, so swapping them
-  switches the whole size gate off with no error
-  ([REGION_TOO_LARGE.md](REGION_TOO_LARGE.md)).
+  Both define `gateFoldedIntoFetch` and the later wins, so swapping them switches
+  the whole size gate off with no error ([REGION_TOO_LARGE.md](REGION_TOO_LARGE.md)).
+  The gate mixin's own `afterAttach` reads its opt-in back and reports if the
+  base's `false` won — local to the mixin, so no generic checker needs to know
+  what canvas is.
+- **A display's `afterAttach` must not chain to super.** The MST fork auto-chains
+  lifecycle hooks, so capturing and calling it double-installs all five autoruns
+  (`models/afterAttachAutoChain.test.ts`). A `WeakSet` of nodes the foundation's
+  hook has already run on catches the re-entry.
+- **`isCacheValid` / `rpcProps` must be `.views()`, not `.actions()`.** MobX runs
+  actions untracked, so the reads register no dependency and callers keep a stale
+  answer. Was a hand-copied `getMembers(display).actions` assertion per display
+  family; now checked once for every display that composes the foundation,
+  including ones not yet written.
+
+**Still silent:**
+
+- **`HeightModeMixin()` must compose after `TrackHeightMixin()`**, which it
+  overrides `height` and `resizeHeight` on. Not yet checked — unlike the gate
+  case there is no opt-in flag to read back, since both members are legitimately
+  defined on both sides.
 - **`installGlobalFetchAutorun` must read its triggers above the `shouldFetch`
   gate.** MobX rebuilds the dep set per run, so a read under the gate drops out
   of it. Arc shipped a dead `reload()` from exactly this (ARCHITECTURE.md §"The
-  global-fetch trigger list must be read unconditionally").
+  global-fetch trigger list must be read unconditionally"). This one is a *shape*,
+  not a state, so no attach-time read can see it.
 - **A display that omits `rpcProps()` gets no settings invalidation, silently.**
   `rpcPropsCacheKey` returns `''` and `SettingsInvalidate` is never installed —
   correct for `LinearReferenceSequenceDisplay`, indistinguishable from an
-  omission for everyone else.
-- **A display's `afterAttach` must not chain to super.** The MST fork auto-chains
-  lifecycle hooks, so capturing and calling it double-installs all five autoruns
-  (`models/afterAttachAutoChain.test.ts`).
+  omission for everyone else. Checkable only behind an explicit opt-out
+  (`noSettingsInvalidation: true`), which the simplified model shapes in
+  `fetchLifecycle.test.ts` / `fetchAutorun.test.ts` would also have to declare —
+  otherwise the check is console noise in the test suite rather than a signal.
 
-**Retire when** each order becomes explicit data: a `deps()` callback the
-global-fetch helper reads unconditionally, a required `rpcProps` (or an explicit
-`noSettingsInvalidation: true`) on the fetch foundations, and a dev-mode
-`afterAttach` assertion that warns when a display composing the gate mixin still
-resolves `derivedRegionTooLargeEnabled` false. `makeSettingsLoopGuard` is this
-move already applied to the `rpcProps` loop trap. Generalize it.
+**Retire when** the remaining three become explicit data: a `deps()` callback the
+global-fetch helper reads unconditionally, a required `rpcProps` (or the explicit
+opt-out above), and a marker the height mixins can compare composition order on.
 
 ### LDDisplay is multi-region on the fetch side and single-region on the axis
 

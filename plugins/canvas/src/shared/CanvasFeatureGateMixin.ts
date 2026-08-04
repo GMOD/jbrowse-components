@@ -10,6 +10,11 @@ import type { RegionDensityStats } from '../LinearBasicDisplay/baseModelHelpers.
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
+// This ESM package builds without @types/node, but consuming bundlers still
+// string-replace `process.env.NODE_ENV`, so keep the reference and give it a
+// minimal module-scoped type for tsc.
+declare const process: { env: { NODE_ENV?: string } }
+
 /**
  * The members a composing display provides that this gate reads but doesn't own:
  * the config (via `getConf`) and the two `RegionTooLargeMixin` names the density
@@ -247,6 +252,24 @@ export default function CanvasFeatureGateMixin() {
       // opt-in: a new canvas feature display can't forget it and silently gate a
       // reused displayedRegionIndex against a prior chromosome's stats.
       afterAttach() {
+        // Compose-order self-check. Both this mixin and `RegionTooLargeMixin`
+        // (via MultiRegionDisplayMixin) declare `gateFoldedIntoFetch`, and
+        // `types.compose` resolves the collision to the later argument — so
+        // composing this one FIRST silently switches the entire size gate off
+        // with no error anywhere. Reading our own opt-in back is the whole test:
+        // if it isn't true, the base's `false` won.
+        if (
+          process.env.NODE_ENV !== 'production' &&
+          !self.gateFoldedIntoFetch
+        ) {
+          console.error(
+            '[jbrowse display contract] CanvasFeatureGateMixin() must be ' +
+              'composed AFTER MultiRegionDisplayMixin(): the later .compose() ' +
+              'argument wins on `gateFoldedIntoFetch`, and the region-too-large ' +
+              'gate is currently disabled for this display. See ' +
+              'agent-docs/reference/REGION_TOO_LARGE.md.',
+          )
+        }
         onDisplayedRegionsChange(
           self,
           () => {

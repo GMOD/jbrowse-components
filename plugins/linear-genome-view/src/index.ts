@@ -119,6 +119,7 @@ export {
   getHeightModeOptions,
   heightModeLabel,
   heightModeMenuItems,
+  installClearHoverOnViewportChange,
   installGlobalFetchAutorun,
   installGrowExitBake,
   onDisplayedRegionsChange,

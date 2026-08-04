@@ -7,7 +7,6 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import {
   SimpleFeature,
-  clamp,
   getContainingTrack,
   getContainingView,
   getSession,
@@ -15,13 +14,7 @@ import {
 } from '@jbrowse/core/util'
 import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import {
-  addDisposer,
-  cast,
-  getEnv,
-  isAlive,
-  types,
-} from '@jbrowse/mobx-state-tree'
+import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
@@ -34,7 +27,6 @@ import {
   filterRowsBySubtree,
 } from '@jbrowse/tree-sidebar'
 import deepEqual from 'fast-deep-equal'
-import { autorun } from 'mobx'
 
 import { sortSourcesAroundVariant } from './anchoredHaplotypeSort.ts'
 import {
@@ -1374,13 +1366,9 @@ export default function MultiSampleVariantBaseModelF(
         },
       }))
       .actions(self => ({
-        // Clamp into the valid range so a row-height shrink or a display-resize
-        // (which lowers scrollableHeight while scrollTop sits at the old bottom)
-        // can't strand scrollTop past the content. The matrix display has no DOM
-        // overflow container to self-correct it, so the clamp must live here.
-        setScrollTop(scrollTop: number) {
-          self.scrollTop = clamp(scrollTop, 0, self.scrollableHeight)
-        },
+        // `setScrollTop` and the re-clamp autorun are TrackHeightMixin's, earned
+        // by overriding `scrollableHeight` above — the matrix display has no DOM
+        // overflow container to self-correct a stranded offset.
 
         clearDisplaySpecificData() {
           // hasPhased / sampleInfo / featuresVolatile are derived from cellData
@@ -1448,19 +1436,6 @@ export default function MultiSampleVariantBaseModelF(
       }))
       .actions(self => ({
         afterAttach() {
-          // Keep scrollTop within the content by construction. A row-height
-          // shrink or a display drag-resize lowers scrollableHeight, and the
-          // matrix display scrolls a canvas with no native overflow container
-          // to self-correct — so re-clamp reactively here rather than making
-          // every geometry-changing action remember to call setScrollTop.
-          addDisposer(
-            self,
-            autorun(() => {
-              if (self.scrollTop > self.scrollableHeight) {
-                self.setScrollTop(self.scrollableHeight)
-              }
-            }),
-          )
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           ;(async () => {
             try {

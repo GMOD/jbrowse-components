@@ -47,6 +47,11 @@ the size must read `configuredFeatureHeight`. `fittedHeightPx` is a **pitch**,
 `featureHeight` a **body**; the volatile bridging them breaks a MobX cycle, so
 don't collapse it.
 
+Grow mode is `HeightModeMixin`'s in full — this display supplies only
+`growTargetHeight` (the stacked-sections height) and super-captures
+`setHeightMode` for the two resets the mixin can't know about. The scroll clamp
+is `TrackHeightMixin`'s, off `scrollableHeight`.
+
 ## Context menu: build items from the id, not the feature
 
 `contextMenuFeature` arrives a round trip after the click. Gate items on

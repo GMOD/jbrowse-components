@@ -11,7 +11,7 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { clamp, getContainingView, getSession } from '@jbrowse/core/util'
+import { getContainingView, getSession } from '@jbrowse/core/util'
 import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
@@ -1039,15 +1039,10 @@ export default function stateModelFactory(
           setConf(self, 'height', newHeight)
           return newHeight - oldHeight
         },
-        /**
-         * #action
-         * Scroll the rows area, clamped to the content. Nothing self-corrects a
-         * stranded offset here: the rows are a fixed-size canvas painted at
-         * `-scrollTop`, not a DOM overflow container.
-         */
-        setScrollTop(scrollTop: number) {
-          self.scrollTop = clamp(scrollTop, 0, self.scrollableHeight)
-        },
+        // `setScrollTop` and the re-clamp autorun are TrackHeightMixin's, earned
+        // by overriding `scrollableHeight` above — nothing self-corrects a
+        // stranded offset here, since the rows are a fixed-size canvas painted
+        // at `-scrollTop`, not a DOM overflow container.
       }))
       .views(self => ({
         get spatialIndex() {
@@ -2036,20 +2031,6 @@ export default function stateModelFactory(
         // afterAttachAutoChain.test.ts). Calling it explicitly would double-install
         // the mixin's fetch autoruns.
         async afterAttach() {
-          // Keep scrollTop inside the content by construction. Anything that
-          // shrinks the scroll extent — a shorter track, a smaller row height,
-          // a subtree filter, hiding the alignments — would otherwise strand it
-          // past the last row, and a virtual-scrolled canvas has no overflow
-          // container to self-correct. One autorun instead of asking every
-          // geometry-changing action to remember.
-          addDisposer(
-            self,
-            autorun(() => {
-              if (self.scrollTop > self.scrollableHeight) {
-                self.setScrollTop(self.scrollableHeight)
-              }
-            }),
-          )
           try {
             const { setupTreeDrawingAutorun } =
               await import('@jbrowse/tree-sidebar')

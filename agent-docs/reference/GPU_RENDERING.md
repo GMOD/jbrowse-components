@@ -461,22 +461,28 @@ methods:
   LinearWiggleDisplay config + model. Composed **wholesale** by GC-content's
   `LinearGCContentDisplay`. The config schema is reused more widely (Manhattan
   extends it); the model factory is not.
-- `WiggleScoreConfigMixin([...slots])` / `WiggleCommonMixin` — score/color config
-  pieces composed à la carte by displays that build their own model.
+- `WiggleScoreConfigMixin()` / `WiggleCommonMixin()` — score/color config pieces
+  composed à la carte by displays that build their own model. The score *axis*
+  alone (`scaleType` / `autoscale` / min-max + setters, i.e. the `ScoreScaleModel`
+  interface) is `ScoreScaleMixin` in `@jbrowse/wiggle-core`, which
+  `WiggleScoreConfigMixin` composes and which the alignments coverage band
+  composes directly — that band wants the axis and none of the color/resolution
+  config, and hand-wrote an identical copy of it until 2026-08.
 
 GWAS's Manhattan does **not** compose `linearWiggleDisplayModelFactory`. It builds
 its own model — `BaseDisplay` + `TrackHeightMixin()` + `MultiRegionDisplayMixin()`
-+ `WiggleScoreConfigMixin()` (no args) — pulls score utilities and
++ `WiggleScoreConfigMixin()` — pulls score utilities and
 `makeScoreSubMenu` from `@jbrowse/wiggle-core`, and extends
 `linearWiggleDisplayConfigSchema` as its `baseConfiguration`. It ships its own
 `GetManhattanData` RPC (per-feature points, not pre-binned density), implements
-its own `ManhattanRenderingBackend` with its own pass, and is zoom-independent by
-**never setting `loadedBpPerPx`** — the `isCacheValid` it inherits from
-`WiggleScoreConfigMixin` short-circuits to `true` whenever `loadedBpPerPx` is
-`undefined`, rather than by overriding `isCacheValid`. (The first fetch still
-fires: `FetchVisibleRegions` gates it on `isBlockCovered` — empty `loadedRegions`
-⇒ not covered ⇒ fetch — and only consults `isCacheValid` for covered blocks, so
-an always-`true` `isCacheValid` suppresses only *re*-fetches.)
+its own `ManhattanRenderingBackend` with its own pass, and is zoom-independent:
+it overrides `isCacheValid` to a bare `return true` rather than relying on the
+inherited strict-`bpPerPx` version short-circuiting on an unset `loadedBpPerPx`,
+which would quietly make "never call `setLoadedBpPerPx`" a precondition of
+correct caching. (The first fetch still fires: `FetchVisibleRegions` gates it on
+`isBlockCovered` — empty `loadedRegions` ⇒ not covered ⇒ fetch — and only
+consults `isCacheValid` for covered blocks, so an always-`true` `isCacheValid`
+suppresses only *re*-fetches.)
 
 ### Three upload patterns
 

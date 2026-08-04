@@ -244,6 +244,31 @@ covers the whole view, so there is no spatial or signature axis to compare. It
 still runs the shared `computeSvgReady` / `awaitSvgReady` export gate
 ([reference/SVG_EXPORT.md](reference/SVG_EXPORT.md)).
 
+### Cross-cutting mixins, orthogonal to the fetch foundation
+
+Three concerns cut across the table above, and each is one mixin with one
+overridable hook. Composing the mixin *is* the opt-in; a display that doesn't
+override the hook pays nothing.
+
+| Concern | Mixin | The display supplies |
+| --- | --- | --- |
+| Internal vertical scroll | `TrackHeightMixin` | `scrollableHeight` (default `Infinity` = doesn't scroll). Brings the clamped `setScrollTop` and the autorun that re-clamps when content shrinks |
+| Track-height strategy | `HeightModeMixin` | `growTargetHeight` (default = the raw slot). Brings `heightMode`/`autoHeight`/`fitHeightToDisplay`, `grownHeight`, the reactive `height` override, `setHeightMode`, and the grow-aware `resizeHeight` |
+| Score axis | `ScoreScaleMixin` (`@jbrowse/wiggle-core`) | nothing — the config slots. Brings `scaleType` / `autoscaleType` / `minScore` / `maxScore` / `*Bound` / `numStdDev` and their setters, i.e. the whole `ScoreScaleModel` interface the shared score menu and `SetMinMaxDialog` consume |
+
+Each replaced a policy that had been written out per display — four copies of the
+scroll clamp, two character-identical copies of grow mode, two implementations of
+the score axis. **The interface existed before the implementation in all three
+cases** (`ScoreScaleModel`, `installGrowExitBake`'s structural param,
+`useVirtualScrollWheel`'s opts), which is the tell worth generalizing: a
+duck-typed contract that several displays satisfy by hand is a mixin that hasn't
+been written yet.
+
+`HeightModeMixin` must compose **after** `TrackHeightMixin` — it overrides that
+mixin's `height` and `resizeHeight`, and `types.compose` resolves a collision to
+the later argument. Same hazard as the canvas gate mixin; see [ordering is the
+contract](reference/ARCHITECTURAL_LIMITS.md#ordering-is-the-contract-in-five-places).
+
 `LinearCanvasBaseDisplay` (plugins/canvas) is **not** a peer of these. It is a
 canvas-feature *specialization layered on `MultiRegionDisplayMixin`*, and only
 `LinearBasicDisplay` + `LinearVariantDisplay` extend it. Everything else —
@@ -862,6 +887,18 @@ region and refetches stale ones.
 - Don't put fetch-result derivatives (`cellData`, `sampleInfo`, etc.) into
   `rpcProps()`; it is an infinite fetch loop. See
   [the trap](#rpcprops-loop-trap-and-how-to-break-it).
+- Don't re-implement a cross-cutting mixin's policy in a display. `scrollTop`
+  clamping, grow-mode height and the score axis each arrive by overriding one
+  hook (see [Cross-cutting
+  mixins](#cross-cutting-mixins-orthogonal-to-the-fetch-foundation)); a
+  hand-rolled copy is how four displays came to hold four spellings of the same
+  scroll clamp.
+- Don't clear a hover on `bpPerPx` alone. Content moves under a stationary
+  cursor on three axes — zoom, `offsetPx` (a side-scroll or locstring pan fires
+  no pointer event at all), and the display's own `scrollTop` — and a sticky
+  canvas gets no `mousemove`/`mouseleave` for any of them. Use
+  `installClearHoverOnViewportChange`, which is a `reaction` precisely so its
+  effect can read hover state without setting a hover re-firing it.
 - Don't diverge the two render backends. Import shader constants into TS rather
   than retyping them, put shared glyph geometry/color math in one draw helper, and
   keep multi-layer order/gating in one exhaustively-keyed registry. And don't go

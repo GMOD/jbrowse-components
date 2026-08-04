@@ -52,6 +52,7 @@ export {
   makeSetMinMaxScoreItem,
 } from './scoreMenuItems.ts'
 export type { ScoreScaleModel } from './scoreMenuItems.ts'
+export { ScoreScaleMixin } from './ScoreScaleMixin.ts'
 export { default as YScaleBar } from './YScaleBar.tsx'
 export { default as YScaleBarOverlay } from './YScaleBarOverlay.tsx'
 

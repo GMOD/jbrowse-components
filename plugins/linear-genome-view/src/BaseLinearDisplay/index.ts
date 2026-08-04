@@ -19,6 +19,7 @@ export type { DisplayChromeOverlays } from './components/chromeOverlays.ts'
 export { default as DisplayErrorBar } from './components/DisplayErrorBar.tsx'
 export { default as DisplayLoadingOverlay } from './components/DisplayLoadingOverlay.tsx'
 export { default as TrackHeightMixin } from './models/TrackHeightMixin.tsx'
+export { installClearHoverOnViewportChange } from './models/installClearHoverOnViewportChange.ts'
 export {
   default as HeightModeMixin,
   installGrowExitBake,

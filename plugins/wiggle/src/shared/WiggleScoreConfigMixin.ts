@@ -5,6 +5,7 @@ import {
   getEnv,
 } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
+import { ScoreScaleMixin } from '@jbrowse/wiggle-core'
 
 import type {
   AnyConfigurationModel,
@@ -48,19 +49,27 @@ export const RESOLUTION_STEP = 2
  * NOT include rpcDataMap or autoscale domain computation — those live in
  * WiggleCommonMixin, which composes this. Displays that own their own
  * rpcDataMap type (e.g. LinearManhattanDisplay) should compose this instead.
+ *
+ * The score *axis* itself (scaleType / autoscale / min-max and their setters) is
+ * `ScoreScaleMixin`, composed in below and shared with the alignments coverage
+ * band, which wants that axis and none of the color/resolution config here.
  */
 export function WiggleScoreConfigMixin() {
   return types
-    .model('WiggleScoreConfigMixin', {
-      /**
-       * #property
-       */
-      resolution: types.stripDefault(types.number, 1),
-      /**
-       * #property
-       */
-      displayCrossHatches: types.stripDefault(types.boolean, false),
-    })
+    .compose(
+      'WiggleScoreConfigMixin',
+      ScoreScaleMixin(),
+      types.model({
+        /**
+         * #property
+         */
+        resolution: types.stripDefault(types.number, 1),
+        /**
+         * #property
+         */
+        displayCrossHatches: types.stripDefault(types.boolean, false),
+      }),
+    )
     .volatile(() => ({
       /**
        * #volatile
@@ -85,24 +94,6 @@ export function WiggleScoreConfigMixin() {
        */
       get bicolorPivot(): number {
         return getConf(confNode(self), 'bicolorPivot')
-      },
-      /**
-       * #getter
-       */
-      get scaleType(): string {
-        return getConf(confNode(self), 'scaleType')
-      },
-      /**
-       * #getter
-       */
-      get autoscaleType(): string {
-        return getConf(confNode(self), 'autoscale')
-      },
-      /**
-       * #getter
-       */
-      get numStdDev(): number {
-        return getConf(confNode(self), 'numStdDev')
       },
       /**
        * #getter
@@ -153,32 +144,6 @@ export function WiggleScoreConfigMixin() {
       get isDensityMode(): boolean {
         return false
       },
-      /**
-       * #getter
-       */
-      get minScore(): number {
-        return getConf(confNode(self), 'minScore')
-      },
-      /**
-       * #getter
-       */
-      get maxScore(): number {
-        return getConf(confNode(self), 'maxScore')
-      },
-      /**
-       * #getter
-       */
-      get minScoreBound(): number | undefined {
-        const val: number = getConf(confNode(self), 'minScore')
-        return val === Number.MIN_VALUE ? undefined : val
-      },
-      /**
-       * #getter
-       */
-      get maxScoreBound(): number | undefined {
-        const val: number = getConf(confNode(self), 'maxScore')
-        return val === Number.MAX_VALUE ? undefined : val
-      },
     }))
     .actions(self => ({
       /**
@@ -205,12 +170,6 @@ export function WiggleScoreConfigMixin() {
       /**
        * #action
        */
-      setScaleType(scaleType: string) {
-        setConf(confNode(self), 'scaleType', scaleType)
-      },
-      /**
-       * #action
-       */
       setBicolorPivot(val?: number) {
         setConf(confNode(self), 'bicolorPivot', val)
       },
@@ -228,18 +187,6 @@ export function WiggleScoreConfigMixin() {
        */
       setNegColor(color?: string) {
         setConf(confNode(self), 'negColor', color)
-      },
-      /**
-       * #action
-       */
-      setMinScore(val?: number) {
-        setConf(confNode(self), 'minScore', val)
-      },
-      /**
-       * #action
-       */
-      setMaxScore(val?: number) {
-        setConf(confNode(self), 'maxScore', val)
       },
       /**
        * #action
@@ -264,12 +211,6 @@ export function WiggleScoreConfigMixin() {
        */
       setLineWidth(val?: number) {
         setConf(confNode(self), 'lineWidth', val)
-      },
-      /**
-       * #action
-       */
-      setAutoscale(val?: string) {
-        setConf(confNode(self), 'autoscale', val)
       },
     }))
     .views(self => ({

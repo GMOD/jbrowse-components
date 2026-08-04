@@ -58,7 +58,10 @@ function snpBaseFromCigar(cigarHit: CigarHitResult | undefined) {
 // canvas is a borderless leaf element), so no canvas ref or rect math is needed.
 export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   const view = getContainingView(model) as LinearGenomeViewModel
-  const width = view.initialized ? view.width : undefined
+  // trackWidthPx, matching renderState.canvasWidth — the CSS width of the canvas
+  // element and the width its backing store is sized to must agree, or the whole
+  // pileup draws at the wrong horizontal scale.
+  const width = view.initialized ? view.trackWidthPx : undefined
 
   // Tracks the currently-active pan drag. Starting a new pan aborts the
   // previous and unmount aborts in-flight. Doubles as the "is dragging"

@@ -25,11 +25,12 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
   autorunOnReadyView,
+  installClearHoverOnViewportChange,
   installGrowExitBake,
   onDisplayedRegionsChange,
 } from '@jbrowse/plugin-linear-genome-view'
 import { createRegionUploadSync } from '@jbrowse/render-core/regionUploadSync'
-import { autorun, observable, toJS, untracked } from 'mobx'
+import { observable, toJS, untracked } from 'mobx'
 
 import {
   FEATURE_DEFAULT_COLOR,
@@ -132,7 +133,6 @@ import type {
 import type {
   ExportSvgDisplayOptions,
   FetchContext,
-  HeightMode,
   LegendItem,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -1627,33 +1627,14 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
-        // Target track height for the persistent `grow` mode: `naturalContentHeight`
-        // capped at the `growMaxHeight` slot so a dense track doesn't grow to
-        // thousands of px (content past the cap scrolls). Shared slot + `grownHeight`
-        // getter name with the alignments display. Height-independent
-        // (naturalContentHeight reads the config-slot `fitTargetHeight`, not the
-        // reactive `height` getter), so the `height` getter below can return it in
-        // grow mode without cycling.
-        get grownHeight() {
-          return Math.min(this.naturalContentHeight, self.growMaxHeight)
-        },
-
-        /**
-         * #getter
-         */
-        // In grow mode the track height follows the laid-out content
-        // (`grownHeight`) reactively — no autorun writes the height config slot,
-        // so a settled zoom never churns the persisted session nor bakes a
-        // momentary height. Fixed/fit read the slot directly (fit scales content
-        // to fill it). Guarded on `view.initialized`: `grownHeight` transitively
-        // reads view-geometry getters that throw before the view is measured, and
-        // unlike the former autorun (whose MobX error-boundary swallowed the
-        // pre-init throw) a getter would propagate it into render/hydration — so
-        // pre-init we fall back to the slot. Overrides TrackHeightMixin.height.
-        get height(): number {
-          return self.autoHeight && getView(self).initialized
-            ? this.grownHeight
-            : self.fitTargetHeight
+        // HeightModeMixin's grow hook: what the laid-out stack wants before the
+        // `growMaxHeight` cap. Height-independent (naturalContentHeight reads the
+        // config-slot `fitTargetHeight`, not the reactive `height` getter), which
+        // is what lets the mixin's `height` return it in grow mode without
+        // cycling. `grownHeight`, the `height` override and the grow-aware
+        // `resizeHeight` all come from the mixin.
+        get growTargetHeight() {
+          return this.naturalContentHeight
         },
 
         /**
@@ -2240,24 +2221,9 @@ export default function baseStateModelFactory(
           setConf(self, 'displayMode', value)
         },
 
-        /**
-         * #action
-         */
-        // Set the track-height strategy by writing the unified `heightMode` slot;
-        // mutual exclusion is inherent to the single enum. The `laidOutDataMap`
-        // getter does the actual fit reactively.
-        setHeightMode(mode: HeightMode) {
-          setConf(self, 'heightMode', mode)
-          // Entering a non-fixed mode (grow/fit) resets a leftover scrollTop that
-          // a reconfigured height contradicts: it can strand the sticky GPU canvas
-          // at an out-of-range offset (fit usually has no scroll extent — except
-          // an extreme stack floored at fitMinScale; grow can remove overflow,
-          // leaving the old offset painting clipped/blank until a DOM scroll event
-          // syncs it). Mirrors the alignments setHeightMode.
-          if (mode !== 'fixed') {
-            self.setScrollTop(0)
-          }
-        },
+        // `setHeightMode` (write the slot, drop a contradicted scroll offset) is
+        // HeightModeMixin's; the `laidOutDataMap` getter does the actual fit
+        // reactively and needs no extra teardown here.
 
         /**
          * #action
@@ -2507,29 +2473,6 @@ export default function baseStateModelFactory(
         }
       })
       .actions(self => {
-        const superResizeHeight = self.resizeHeight
-        return {
-          /**
-           * #action
-           * A manual drag-resize means the user wants a fixed height; leave grow
-           * mode first, otherwise the reactive `height` getter re-derives
-           * grownHeight on the next layout change and the drag appears to do
-           * nothing. Read the displayed (grown) height before flipping and write
-           * `grown + distance` directly — the grow-exit bake skips when the slot
-           * is written during the exit, so this delta isn't clobbered (a plain
-           * `superResizeHeight` would read the stale slot post-flip and lose it).
-           */
-          resizeHeight(distance: number) {
-            if (self.autoHeight) {
-              const grown = self.height
-              self.setHeightMode('fixed')
-              return self.setHeight(grown + distance) - grown
-            }
-            return superResizeHeight(distance)
-          },
-        }
-      })
-      .actions(self => {
         return {
           /**
            * #action
@@ -2549,28 +2492,9 @@ export default function baseStateModelFactory(
             // seeing, not the stale slot.
             addDisposer(self, installGrowExitBake(self, getView(self)))
 
-            // Keep scrollTop within the content whenever the scroll extent
-            // shrinks. The morph autorun already clamps on a layout change, but
-            // a manual drag-resize that grows the display (raising the viewport
-            // past the old scroll bottom) has no layout change to trigger it,
-            // and the sticky canvas has no native overflow container to
-            // self-correct. Enforcing the bound reactively here means no
-            // geometry-changing action has to remember to re-clamp.
-            addDisposer(
-              self,
-              autorun(
-                () => {
-                  const view = getView(self)
-                  if (!view.initialized) {
-                    return
-                  }
-                  if (self.scrollTop > self.scrollableHeight) {
-                    self.setScrollTop(self.scrollableHeight)
-                  }
-                },
-                { name: 'CanvasClampScroll' },
-              ),
-            )
+            // The scroll clamp (both the shrink autorun and the bound on
+            // setScrollTop) is TrackHeightMixin's, earned by overriding
+            // `scrollableHeight`.
 
             // Reset scroll to the top on an actual region-list change
             // (chromosome navigation) — not on same-region zoom/pan, which must
@@ -2616,22 +2540,13 @@ export default function baseStateModelFactory(
             )
 
             // Clear hover when the viewport moves under a stationary cursor
-            // (pan, zoom, internal vertical scroll). The canvas is sticky, so
-            // the cursor can stay over it while content shifts underneath — no
-            // mousemove/mouseleave fires, and without this the previously
-            // hovered feature's tooltip stays pinned at the cursor.
+            // (pan, zoom, internal vertical scroll). Shared with the alignments
+            // display; see installClearHoverOnViewportChange.
             addDisposer(
               self,
-              autorun(
-                () => {
-                  const view = getView(self)
-                  void self.scrollTop
-                  void view.bpPerPx
-                  void view.offsetPx
-                  self.clearHover()
-                },
-                { name: 'CanvasClearHoverOnViewportChange' },
-              ),
+              installClearHoverOnViewportChange(self, () => {
+                self.clearHover()
+              }),
             )
 
             // Drive the feature-Y transition. When laidOutDataMap re-packs at

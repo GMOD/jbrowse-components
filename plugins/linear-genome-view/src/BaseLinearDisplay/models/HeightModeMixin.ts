@@ -1,7 +1,9 @@
-import { getConf, resolveConf } from '@jbrowse/core/configuration'
+import { getConf, resolveConf, setConf } from '@jbrowse/core/configuration'
+import { getContainingView } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import { reaction } from 'mobx'
 
+import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
 import type { HeightMode } from './heightMode.ts'
 import type { ResolvableDisplay } from '@jbrowse/core/configuration'
 import type { IReactionDisposer } from 'mobx'
@@ -14,16 +16,26 @@ import type { IReactionDisposer } from 'mobx'
 // passed one — it only ever resolved to its own default.
 const confNode = (self: object) => self as ResolvableDisplay
 
+// The `TrackHeightMixin` members this one drives. Composed before it by every
+// user (the `height` and `resizeHeight` overrides below depend on that order),
+// so they are really there — this is again about what the *mixin* can see.
+const heightHost = (self: object) =>
+  self as {
+    setHeight: (height: number) => number
+    setScrollTop: (scrollTop: number) => void
+    setHeightMode: (mode: HeightMode) => void
+  }
+
 /**
  * #stateModel HeightModeMixin
  * #category display
  *
- * The resolved track-height views every display with a promotable `heightMode`
+ * The whole track-height strategy every display with a promotable `heightMode`
  * config slot shares (the canvas feature display, the alignments display), so the
  * fixed/grow/fit vocabulary is identical by construction rather than by two call
- * sites that happen to agree. Each display layers its own `grownHeight` and
- * `height` override on top — those differ (canvas fits a feature stack, alignments
- * a grouped pileup) — but the flags below are pure functions of the slot.
+ * sites that happen to agree. What differs between the two — canvas fits a
+ * feature stack, alignments a grouped pileup — is exactly one getter,
+ * `growTargetHeight`.
  *
  * `heightMode` is the single source of truth (resolved through the promotable
  * session-default cascade); `autoHeight`/`fitHeightToDisplay` are plain-flag
@@ -32,6 +44,17 @@ const confNode = (self: object) => self as ResolvableDisplay
  * `height` getter: in grow mode `height` returns the content-derived grown height,
  * so routing the layout through it would make that height depend on itself (a MobX
  * computed cycle). In fixed/fit mode `fitTargetHeight` equals `height`.
+ *
+ * **Grow mode lives here in full.** A display supplies one getter —
+ * `growTargetHeight`, the height its laid-out content wants — and gets
+ * `grownHeight` (that, capped at `growMaxHeight`), the reactive `height`
+ * override, the drag-resize that leaves grow first, and the `setHeightMode`
+ * base. Both users previously carried character-identical copies of the last
+ * three, comments included.
+ *
+ * Must be composed **after** `TrackHeightMixin`: it overrides that mixin's
+ * `height` getter and `resizeHeight` action, and `types.compose` resolves a
+ * collision to the later argument.
  */
 export default function HeightModeMixin() {
   return types
@@ -81,6 +104,91 @@ export default function HeightModeMixin() {
        */
       get fitHeightToDisplay(): boolean {
         return self.heightMode === 'fit'
+      },
+      /**
+       * #getter
+       * Overridable hook: the height this display's laid-out content wants, in
+       * px, before the `growMaxHeight` cap. Canvas answers with its settled
+       * feature stack, alignments with its stacked-sections height. The default
+       * is the raw slot, so a display that composes this without answering just
+       * behaves as if it were fixed.
+       *
+       * **It must not read the reactive `height` getter**, directly or through a
+       * layout that does — in grow mode `height` returns `grownHeight`, so that
+       * is a MobX computed cycle. Read `fitTargetHeight`/`growMaxHeight`
+       * instead; both users do, and say so.
+       */
+      get growTargetHeight(): number {
+        return self.fitTargetHeight
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Target track height for `grow`: what the content wants, capped so a
+       * deep stack doesn't grow the track to thousands of px (the remainder
+       * scrolls). What `installGrowExitBake` bakes into the slot on exit.
+       */
+      get grownHeight(): number {
+        return Math.min(self.growTargetHeight, self.growMaxHeight)
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * In grow mode the track height follows the laid-out content reactively —
+       * no autorun writes the height config slot, so a settled relayout never
+       * churns the persisted session nor bakes a momentary height. Fixed/fit
+       * read the slot (fit shrinks content to fill it).
+       *
+       * Guarded on `view.initialized`: `growTargetHeight` transitively reads
+       * view-geometry getters that throw before the view is measured, and unlike
+       * an autorun (whose MobX error boundary would swallow the pre-init throw)
+       * a getter propagates it into render/hydration. Overrides
+       * `TrackHeightMixin.height`.
+       */
+      get height(): number {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        return self.autoHeight && view.initialized
+          ? self.grownHeight
+          : self.fitTargetHeight
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * Set the track-height strategy by writing the unified `heightMode` slot;
+       * the modes are mutually exclusive by construction. Entering a non-`fixed`
+       * mode drops a leftover scroll offset that the reconfigured height
+       * contradicts — neither fit nor grow generally scrolls, and a sticky canvas
+       * left at an out-of-range offset paints clipped or blank with no DOM scroll
+       * event to resync it. Displays with more transient state to reset
+       * super-capture this.
+       */
+      setHeightMode(mode: HeightMode) {
+        setConf(confNode(self), 'heightMode', mode)
+        if (mode !== 'fixed') {
+          heightHost(self).setScrollTop(0)
+        }
+      },
+      /**
+       * #action
+       * Drag-resize. A manual drag means the user wants a fixed height, so leave
+       * grow first — otherwise the reactive `height` getter re-derives
+       * `grownHeight` on the next relayout and the drag appears to do nothing.
+       * The displayed (grown) height is read *before* the flip and written as
+       * `displayed + distance`, which is also why `installGrowExitBake` skips
+       * when the slot moved during the exit: re-baking would clobber this delta.
+       * Overrides `TrackHeightMixin.resizeHeight`.
+       */
+      resizeHeight(distance: number) {
+        const displayed = self.autoHeight
+          ? self.grownHeight
+          : self.fitTargetHeight
+        if (self.autoHeight) {
+          heightHost(self).setHeightMode('fixed')
+        }
+        return heightHost(self).setHeight(displayed + distance) - displayed
       },
     }))
 }
