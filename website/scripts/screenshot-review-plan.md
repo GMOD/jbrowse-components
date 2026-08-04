@@ -125,6 +125,34 @@ tolerance ball for "did this figure move".
 
 ## Useful facts learned (durable, not tied to any one session)
 
+- **"Did MY change move this figure" cannot be answered by diffing the PNG.**
+  A forced regen rewrites figures other agents' landed commits already moved, so
+  a whole-image diff says "changed" for nearly everything — measured:
+  `variants/population_1000genomes` differed from HEAD by 59k pixels while
+  containing not one pixel of the color the change was about. Counting the
+  color a change introduces is much better, and is what to reach for first, but
+  it is blind in the other direction: a legend or label **text** edit moves no
+  colored pixels at all and reads as "unchanged". Neither measure decides it on
+  its own. What does is a structural claim about which specs can possibly be
+  affected — "only a display that draws an insertion marker gets the Insertions
+  section" — with the pixel count used to confirm it. Then revert the rest,
+  because sweeping them in puts another agent's work under your commit message.
+  Two traps in the counting itself, both hit for real:
+  - **numpy `int16` overflows on a squared channel difference** (255² = 65025
+    wraps negative), which passes any `< threshold` test and matches every
+    figure in the tree. Cast to `int32`.
+  - **A tolerance ball catches near colors.** `chromhmm_hoxa_9celltype`'s
+    ChromHMM state color `#cf0bc6` sits inside a distance-900 ball around
+    `#c000c0`, and antialiasing along a solid bar's edge lands inside a ball
+    around any paler shade of it. Match exactly for "is this color used at
+    all"; keep the ball only for "did this figure move".
+- **A legend that gains a section can outgrow its lane.** Adding one to the
+  multi-sample variant display pushed it past the 120px `height` the
+  `pangenome/maf` spec gave the track, and the last swatch was sliced in half by
+  the track boundary — invisible in the run's own reports, since the clipping is
+  inside the display rather than below the fold. Long item labels ellipsize
+  rather than wrap, so the tail of a label is lost silently too. Look at the
+  legend after a change that adds to it.
 - **Point at a graph node by NAME, never by pixel.**
   `anchor: { view, graphNode: 's2037' }` works on a click, a rightclick, a hover
   and on any annotation; it resolves through the view's own `nodePositions` and
