@@ -7,6 +7,7 @@ import {
 } from '@mui/material/styles'
 
 import * as convert from '../color-bits/convert.ts'
+import { cssColorToNormalizedRgb } from '../colorBits.ts'
 import { namedColorToHex } from './cssColorsLevel4.ts'
 
 /**
@@ -138,6 +139,48 @@ function oklchToHex(lightness: number, chroma: number, hue: number) {
         .padStart(2, '0'),
     )
     .join('')}`
+}
+
+/**
+ * #api
+ * Move a color's OKLCH lightness by `lightnessShift` and scale its chroma,
+ * holding its hue.
+ *
+ * For extending a categorical palette past its length. Cycling a nine-color
+ * list over a 24-chromosome karyotype repeats the color outright; cycling it
+ * with a lightness shift per lap gives the hue back as a variant still told
+ * apart from the original — tab20's construction, which pairs a light and a
+ * dark of each hue.
+ *
+ * SHIFT rather than a fixed lightness, and SCALE rather than a fixed chroma,
+ * because a categorical palette is uneven on purpose: category10's brown and
+ * its red are 5 degrees apart in hue and are told apart by chroma alone, so
+ * re-lighting both to one (lightness, chroma) makes them the same color.
+ * Keeping each color's own relative chroma keeps brown reading as brown.
+ *
+ * In OKLCH rather than through `lighten`/`darken`, which work in sRGB, where
+ * the same coefficient moves a yellow and a blue by visibly different amounts:
+ * a lap has to read as one tone across the whole palette or it reads as noise.
+ *
+ * @param color - CSS color to transform
+ * @param lightnessShift - added to its OKLCH lightness (which is 0 - 1)
+ * @param chromaScale - multiplies its OKLCH chroma; the result is reduced at
+ *  constant hue if that lands out of gamut
+ * @returns A CSS hex color string
+ */
+export function relight(
+  color: string,
+  lightnessShift: number,
+  chromaScale = 1,
+) {
+  const [lightness, chroma, hue] = convert.xyzd50ToOklch(
+    ...convert.srgbToXyzd50(...cssColorToNormalizedRgb(color)),
+  )
+  return oklchToHex(
+    Math.max(0, Math.min(1, lightness + lightnessShift)),
+    chroma * chromaScale,
+    hue,
+  )
 }
 
 /**

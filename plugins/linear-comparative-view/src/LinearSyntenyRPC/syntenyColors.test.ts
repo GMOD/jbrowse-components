@@ -1,3 +1,4 @@
+import { category10 } from '@jbrowse/core/ui/colors'
 import { colorSchemes } from '@jbrowse/synteny-core'
 
 import {
@@ -116,6 +117,28 @@ describe('chromosome painting', () => {
     expect(new Set(colorsFor(chromosomes)).size).toBe(12)
   })
 
+  // The colors are category10's, not a ramp's: an even hue circle at one
+  // saturation is collision-free too and was rejected by figure review as a
+  // rainbow. The first lap is the palette untouched.
+  test('the first nine are the palette itself', () => {
+    const palette = category10.filter(hex => hex.toLowerCase() !== '#7f7f7f')
+    expect(colorsFor(chromosomes).slice(0, 9)).toEqual(
+      palette.map(hex => abgrOfHex(hex)),
+    )
+  })
+
+  // Nine colors, more than nine chromosomes: a lap re-lights the same hue
+  // rather than repeating it, so chr10 is a deep chr1 and not a second chr1.
+  test('a lap re-lights the palette instead of repeating it', () => {
+    const colors = colorsFor(chromosomes)
+    expect(colors[9]).not.toBe(colors[0])
+    // same hue, darker: every channel of the deep lap is below the base blue's
+    const [base, lap] = [colors[0]!, colors[9]!]
+    for (const shift of [0, 8, 16]) {
+      expect((lap >>> shift) & 0xff).toBeLessThan((base >>> shift) & 0xff)
+    }
+  })
+
   test('a chromosome the order does not list still gets a color', () => {
     // an alias, a scaffold, or an assembly still loading: the hash fallback
     expect(colorsFor(['chrZ'])).toHaveLength(12)
@@ -130,9 +153,10 @@ describe('chromosome painting', () => {
 })
 
 // A refName list is not a chromosome list: rice's has 30 entries for 12
-// chromosomes. An even spread over the circle divides by that 30 and paints
-// every chromosome inside the first 132 degrees, which is one wash rather than
-// twelve colors — the stride does not care how long the tail of scaffolds is.
+// chromosomes, two organelles and sixteen scaffolds. So a position picks a
+// palette entry rather than a fraction of the list — spreading N colors over
+// those 30 entries painted all twelve chromosomes inside one eighth of the
+// range, which is a wash rather than twelve colors.
 test('scaffolds after the chromosomes do not compress the palette', () => {
   const chromosomes = Array.from({ length: 12 }, (_, i) => `chr${i + 1}`)
   const withScaffolds = [

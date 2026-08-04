@@ -1,4 +1,5 @@
 import { category10 } from '@jbrowse/core/ui/colors'
+import { relight } from '@jbrowse/core/util/color'
 import { cssColorToABGR, packAbgr } from '@jbrowse/core/util/colorBits'
 import {
   colorSchemes,
@@ -46,9 +47,8 @@ const MARKER_COLOR = packAbgr(0, 0, 0, 64)
 // dropped: a grey synteny ribbon reads as "uncolored/broken", and a genome
 // whose sole (or hashed) chromosome lands on that slot paints the whole view
 // muddy grey — the exact failure a single-contig assembly named "chr" hits.
-const nameColorPalette = category10
-  .filter(hex => hex.toLowerCase() !== '#7f7f7f')
-  .map(hex => cssColorToABGR(hex))
+const nameColorHexes = category10.filter(hex => hex.toLowerCase() !== '#7f7f7f')
+const nameColorPalette = nameColorHexes.map(hex => cssColorToABGR(hex))
 
 // Precomputed 256-bin LUTs mapping a normalized [0,1] value to packed ABGR.
 // The ramp math lives in @jbrowse/synteny-core so the dotplot view evaluates
@@ -131,34 +131,59 @@ function createColorFunction(
 // Chromosome painting: a color per query/target refName.
 //
 // BY POSITION IN THE ASSEMBLY when the caller knows the chromosome order, which
-// the display does — it reads the anchor assembly's own refName list. Each
-// position takes the next hue on the golden angle, at the same 70%/50% the
-// reference-position ramps elsewhere on the site use, so every chromosome gets
-// its own well-separated color and neighbours never come out as neighbouring
-// hues.
+// the display does — it reads the anchor assembly's own refName list. So the
+// palette is handed out rather than hashed into, and a genome cannot paint two
+// of its chromosomes the same color the way the hash below does: it buckets a
+// name into nine slots, so ten or more chromosomes RE-USE colors, and by the
+// birthday bound long before that — twelve rice chromosomes into nine slots is
+// a guaranteed three-way collision, which is what a figure review saw ("there
+// might be some unexpected color re-use").
 //
-// The golden angle rather than an even spread over the circle, and that is not
-// decoration: a refName list is not a chromosome list. Rice's chrom.sizes has 30
-// entries — 12 chromosomes, two organelles and sixteen scaffolds — so `i/N*360`
-// squeezed all twelve chromosomes into the first 132 degrees and painted the
-// whole figure red through green. A stride does not care how long the list is.
-// It repeats only after 144 entries (137.5 x 144 = 55 turns exactly), which no
-// karyotype reaches.
+// The hash stays as the fallback for the case the order genuinely is not
+// available: an assembly still loading, or a refName the assembly does not list
+// (a scaffold under an alias). There a stable arbitrary color beats no color.
 //
-// The hash below cannot do this and could not be made to. It buckets a name into
-// nine slots, so any genome with ten or more chromosomes RE-USES colors, and by
-// the birthday bound it re-uses them long before that: twelve rice chromosomes
-// into nine slots is a guaranteed three-way collision, which is what review saw
-// ("there might be some unexpected color re-use"). Widening the palette only
-// moves the threshold — chicken has 40 chromosomes — so the fix has to be an
-// assignment rather than a bigger bucket list.
+// THE COLORS ARE THE PALETTE'S, not a ramp's. This spent a round as the next hue
+// on the golden angle at a fixed HSL 70%/50%, which is collision-free for any
+// karyotype and was rejected on sight by figure review ("the previous palette is
+// better"): an even hue circle at one saturation is a rainbow, and a five-genome
+// synteny figure drawn in one is a hundred thousand ribbons of pure red, green,
+// blue and magenta. category10's nine are uneven on purpose — that is what makes
+// them read as a set.
 //
-// It stays as the fallback for the case the order genuinely is not available: an
-// assembly still loading, or a refName the assembly does not list (a scaffold
-// under an alias). There a stable arbitrary color beats no color.
-// 360 x (1 - 1/phi). Successive multiples of it never bunch up, which is what
-// makes it the standard way to hand out colors when the count is not known.
-const GOLDEN_ANGLE_DEG = 137.50776405003785
+// Nine do not cover a karyotype, so each LAP around the list re-lights the same
+// hues (see `relight`): chromosome 10 is a deep version of chromosome 1's blue,
+// chromosome 19 a pale one. Three laps is 27 colors, past every karyotype these
+// figures anchor on (human 24, rice 12, bread wheat 21), and a fourth lap starts
+// the tones again rather than fading to nothing — a repeat 27 positions away is
+// one no reader is comparing.
+//
+// This is not the weaker option for distinguishability, which is what the ramp
+// was reached for. Closest pair in OKLab over 24 positions: 0.077 for the laps
+// below, 0.019 for the golden angle at HSL 70%/50% — the even hue circle is
+// even in HSL's hue, and HSL's hue is not perceptually even.
+const PALETTE_LAP_TONES = [
+  // lap 0 is the palette color itself, untouched
+  undefined,
+  // deep before pale, because these ribbons are drawn at a low alpha over white
+  // (the OrthoFinder figures run at 0.06) and a pale color at 0.06 is a color a
+  // reader cannot see. Chroma held, and the gamut takes what it must down here.
+  { lightnessShift: -0.17, chromaScale: 1 },
+  // pale. Chroma comes down with lightness: held at full, the light lap's reds
+  // and pinks all pin against the top of the sRGB gamut and converge there.
+  { lightnessShift: 0.18, chromaScale: 0.8 },
+]
+
+function paletteColorAt(position: number) {
+  const hex = nameColorHexes[position % nameColorHexes.length]!
+  const lap =
+    PALETTE_LAP_TONES[
+      Math.floor(position / nameColorHexes.length) % PALETTE_LAP_TONES.length
+    ]
+  return cssColorToABGR(
+    lap ? relight(hex, lap.lightnessShift, lap.chromaScale) : hex,
+  )
+}
 
 function nameColorFunction(
   names: readonly string[],
@@ -176,9 +201,7 @@ function nameColorFunction(
       c =
         position === undefined
           ? nameColorPalette[hashString(name) % nameColorPalette.length]!
-          : cssColorToABGR(
-              `hsl(${(position * GOLDEN_ANGLE_DEG) % 360},70%,50%)`,
-            )
+          : paletteColorAt(position)
       colorCache.set(name, c)
     }
     return c
