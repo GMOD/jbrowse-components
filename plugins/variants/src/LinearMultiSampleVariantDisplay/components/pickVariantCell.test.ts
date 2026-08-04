@@ -25,7 +25,7 @@ function build({
   return {
     cellFeatureIndices: Uint32Array.from(all.map(c => c.feature)),
     cellWorkerRowIndices: Uint32Array.from(all.map(c => c.row)),
-    cellCarriesAlt: Uint8Array.from(all.map(c => (c.carriesAlt ? 1 : 0))),
+    cellAltDosage: Uint8Array.from(all.map(c => (c.carriesAlt ? 1 : 0))),
     numCells: all.length,
     refCellCount: refCells.length,
     featurePositions: Uint32Array.from(features.flat()),

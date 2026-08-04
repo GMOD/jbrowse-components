@@ -50,7 +50,7 @@ function regularCellData(rowNames: string[]): CellDataResult {
         cellRowIndices: Uint32Array.from(rowNames.map((_, r) => r)),
         cellColors: Uint32Array.from(rowNames.map((_, r) => 0xff0000 + r)),
         cellShapeTypes: new Uint8Array(numCells),
-        cellCarriesAlt: new Uint8Array(numCells).fill(1),
+        cellAltDosage: new Uint8Array(numCells).fill(1),
         cellFeatureIndices: new Uint32Array(numCells),
         numCells,
         refCellCount: 0,

@@ -1,5 +1,8 @@
 import { set1 } from '@jbrowse/core/ui/colors'
 import { clamp } from '@jbrowse/core/util'
+import { abgrBlue, abgrGreen, abgrRed } from '@jbrowse/core/util/colorBits'
+
+import { getCachedABGR } from './variantWebglUtils.ts'
 
 export const GENOTYPE_SPLITTER = /[/|]/
 
@@ -58,6 +61,46 @@ export const OTHER_ALT_COLOR = 'hsl(0,100%,20%)'
 export function getAltColorForDosage(dosage: number) {
   const lightness = 80 - dosage * 50
   return `hsl(${ALT_COLOR_HUE},${ALT_COLOR_SATURATION}%,${lightness}%)`
+}
+
+// How far toward white a zero-dosage insertion marker would be mixed. Kept well
+// under 1 because the marker's bp-count label is drawn in white on top of it: at
+// this ceiling a het bar is still dark enough to read that label against, which
+// a straight lightness ramp to the cells' 80% would not be.
+const INSERTION_PALE_MIX = 0.45
+
+/**
+ * The insertion marker's fill at a given alt dosage (the 0-255 byte the cells
+ * carry): full strength for a hom or haploid alt, paler for a het, so the glyph
+ * carries the zygosity its own geometry takes away. A marker is drawn only when
+ * it is WIDER than the cell it belongs to (literally `variantCellSpanPx`'s
+ * `drawsMarker`), so it covers the dosage-shaded cell underneath completely —
+ * before this, every insertion looked homozygous.
+ *
+ * Mixed toward white with integer math rather than lightened in HSL: the base is
+ * a theme value and may be any color, and mixing keeps whatever hue the theme
+ * picked. The only parse is `getCachedABGR`, the cache every cell color already
+ * goes through; the arithmetic and the string are cheap enough that the draw
+ * loop just skips the call when the dosage matches the previous marker.
+ *
+ * Single source of truth — the marker and its legend swatches both come from
+ * here, so the key cannot drift from the glyph.
+ */
+export function getInsertionColorForDosage(
+  insertionColor: string,
+  dosageByte: number,
+) {
+  // full dosage returns the theme string itself, so a hom marker is
+  // byte-identical to what the pileup and MAF paint
+  if (dosageByte >= 255) {
+    return insertionColor
+  }
+  const base = getCachedABGR(insertionColor)
+  const t = ((255 - dosageByte) * INSERTION_PALE_MIX) / 255
+  const r = abgrRed(base)
+  const g = abgrGreen(base)
+  const b = abgrBlue(base)
+  return `rgb(${(r + (255 - r) * t) | 0},${(g + (255 - g) * t) | 0},${(b + (255 - b) * t) | 0})`
 }
 
 // Sample-metadata keys that are internal row plumbing (identity, haplotype

@@ -343,7 +343,8 @@ describe('insertion glyph inputs', () => {
     // haplotype has the inserted sequence.
     const r = run(insertion)
     expect(r.numCells).toBe(2)
-    expect([...r.cellCarriesAlt].reduce((a, b) => a + b, 0)).toBe(1)
+    // one haplotype at full dosage, one at zero
+    expect([...r.cellAltDosage].sort((a, b) => a - b)).toEqual([0, 255])
   })
 })
 
@@ -732,8 +733,8 @@ describe('featureGenotypeMap records every genotype, not only painted ones', () 
   })
 })
 
-describe('computeVariantCells cellCarriesAlt', () => {
-  // `cellCarriesAlt` is what gates the insertion-glyph overlay, so a cell whose
+describe('computeVariantCells cellAltDosage', () => {
+  // `cellAltDosage` is what gates the insertion-glyph overlay, so a cell whose
   // sample has no call at the site must be 0 or the figure claims that haplotype
   // carries the inserted sequence. It cannot be read back off the resolved cell
   // color: allele-count mode blends its no-call shade through colord and hands
@@ -775,17 +776,17 @@ describe('computeVariantCells cellCarriesAlt', () => {
     })
     const byRow = new Map<number, number>()
     for (let i = 0; i < result.numCells; i++) {
-      byRow.set(result.cellRowIndices[i]!, result.cellCarriesAlt[i]!)
+      byRow.set(result.cellRowIndices[i]!, result.cellAltDosage[i]!)
     }
     return byRow
   }
 
   test('a no-call cell does not carry the alt (allele-count mode)', () => {
     const byRow = carriesAltByRow(feature, sources, 'alleleCount')
-    expect(byRow.get(0)).toBe(1) // S1 `1`   — haploid alt
+    expect(byRow.get(0)).toBe(255) // S1 `1`   — haploid alt is FULL dosage
     expect(byRow.get(1)).toBe(0) // S2 `.`   — haploid no-call
     expect(byRow.get(2)).toBe(0) // S3 `./.` — diploid no-call
-    expect(byRow.get(3)).toBe(1) // S4 `0/1`
+    expect(byRow.get(3)).toBe(128) // S4 `0/1` — het, so a paler marker
     expect(byRow.get(4)).toBe(0) // S5 `0/0` — reference
   })
 
@@ -812,12 +813,14 @@ describe('computeVariantCells cellCarriesAlt', () => {
       ],
       'phased',
     )
-    expect(byRow.get(0)).toBe(1) // S1 `1`   — haploid alt
+    // Always full strength in phased mode: a row is one haplotype, so zygosity
+    // is the pattern down a sample's rows rather than a shade.
+    expect(byRow.get(0)).toBe(255) // S1 `1`   — haploid alt
     expect(byRow.get(1)).toBe(0) // S2 `.`   — haploid no-call
     expect(byRow.get(2)).toBe(0) // S3 `.|.`
     expect(byRow.get(3)).toBe(0) // S3 `.|.`
     expect(byRow.get(4)).toBe(0) // S4 `0|1` HP0 — reference haplotype
-    expect(byRow.get(5)).toBe(1) // S4 `0|1` HP1
+    expect(byRow.get(5)).toBe(255) // S4 `0|1` HP1
   })
 
   // A half-called genotype does carry the sequence on the allele that was
@@ -838,7 +841,9 @@ describe('computeVariantCells cellCarriesAlt', () => {
       ],
       'alleleCount',
     )
-    expect(byRow.get(0)).toBe(1) // `./1`
+    // `.` counts toward the denominator: the sample carries the sequence on the
+    // one haplotype that was called, which is half dosage.
+    expect(byRow.get(0)).toBe(128) // `./1`
     expect(byRow.get(1)).toBe(0) // `./0`
   })
 })

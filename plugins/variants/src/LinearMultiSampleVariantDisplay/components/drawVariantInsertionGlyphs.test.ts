@@ -1,6 +1,8 @@
 import { insertionBarWidth } from '@jbrowse/alignments-core'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 
+import { getInsertionColorForDosage } from '../../shared/constants.ts'
+
 import { drawVariantInsertionGlyphs } from './drawVariantInsertionGlyphs.ts'
 
 import type { VariantInsertionGlyphData } from './drawVariantInsertionGlyphs.ts'
@@ -75,7 +77,7 @@ function data(
 ): VariantInsertionGlyphData {
   return {
     cellRowIndices: Uint32Array.from([1, 0]),
-    cellCarriesAlt: Uint8Array.from([0, 1]),
+    cellAltDosage: Uint8Array.from([0, 255]),
     cellFeatureIndices: Uint32Array.from([0, 0]),
     featurePositions: Uint32Array.from([10, 11]),
     featureInsertedBp: Int32Array.from([INSERTED]),
@@ -89,6 +91,7 @@ function data(
 // plugin-maf paint their insertions with -- the point of passing it in rather
 // than hardcoding one here.
 const INSERTION_COLOR = resolvePalette().insertion
+const HET_COLOR = getInsertionColorForDosage(INSERTION_COLOR, 128)
 
 function draw(
   region: VariantInsertionGlyphData,
@@ -128,7 +131,7 @@ test('widens the alt-carrying cell to a bar sized by the inserted bp', () => {
 // Widening a reference cell would claim that haplotype carries the sequence, so
 // only row 0 above is drawn. Same for a no-call.
 test('leaves reference and no-call cells alone', () => {
-  const { calls } = draw(data({ cellCarriesAlt: Uint8Array.from([0, 0]) }))
+  const { calls } = draw(data({ cellAltDosage: Uint8Array.from([0, 0]) }))
   expect(calls).toEqual([])
 })
 
@@ -150,7 +153,7 @@ test('a labelled marker does not leave white behind for the next one', () => {
   const { calls, texts } = draw(
     data({
       cellRowIndices: Uint32Array.from([2, 0, 1]),
-      cellCarriesAlt: Uint8Array.from([0, 1, 1]),
+      cellAltDosage: Uint8Array.from([0, 255, 255]),
       cellFeatureIndices: Uint32Array.from([0, 0, 0]),
       numCells: 3,
       refCellCount: 1,
@@ -162,6 +165,33 @@ test('a labelled marker does not leave white behind for the next one', () => {
     INSERTION_COLOR,
     INSERTION_COLOR,
   ])
+})
+
+// The marker is by definition wider than the cell it belongs to, so it covers
+// the dosage-shaded cell underneath -- without this every insertion read as
+// homozygous. In phased mode a row is one haplotype and dosage is always 255,
+// so only allele-count mode ever draws the pale form.
+test('a het draws paler than a hom, and the hom is the theme color itself', () => {
+  const het = draw(data({ cellAltDosage: Uint8Array.from([0, 128]) }))
+  expect(het.calls.map(c => c.fillStyle)).toEqual([HET_COLOR])
+  expect(HET_COLOR).not.toBe(INSERTION_COLOR)
+  expect(draw(data()).calls.map(c => c.fillStyle)).toEqual([INSERTION_COLOR])
+})
+
+// Two markers at the same dosage must not each reassign fillStyle, and two at
+// different dosages must each get their own -- the loop tracks the dosage the
+// context reflects rather than recomputing per cell.
+test('mixed dosages in one row each get their own shade', () => {
+  const { calls } = draw(
+    data({
+      cellRowIndices: Uint32Array.from([2, 0, 1]),
+      cellAltDosage: Uint8Array.from([0, 255, 128]),
+      cellFeatureIndices: Uint32Array.from([0, 0, 0]),
+      numCells: 3,
+      refCellCount: 1,
+    }),
+  )
+  expect(calls.map(c => c.fillStyle)).toEqual([INSERTION_COLOR, HET_COLOR])
 })
 
 test('draws nothing for a SNP or a deletion', () => {

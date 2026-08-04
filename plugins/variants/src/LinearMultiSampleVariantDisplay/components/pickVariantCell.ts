@@ -5,7 +5,7 @@ import { HIT_TOLERANCE_PX } from './variantHitTest.ts'
 import type { CellLookupData } from './variantCellLookup.ts'
 
 export interface PickCellData extends CellLookupData {
-  cellCarriesAlt: Uint8Array
+  cellAltDosage: Uint8Array
   featurePositions: Uint32Array
   featureInsertedBp: Int32Array
 }
@@ -83,7 +83,7 @@ export function pickVariantCell({
         const genomicEnd = data.featurePositions[featureIndex * 2 + 1]!
         const len = genomicEnd - genomicStart
         if (len < bestLen) {
-          const insertedBp = data.cellCarriesAlt[cellIndex]
+          const insertedBp = data.cellAltDosage[cellIndex]
             ? data.featureInsertedBp[featureIndex]!
             : 0
           const { left, width } = variantCellSpanPx({

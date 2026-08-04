@@ -62,11 +62,18 @@ export function isNoCall(genotype: string) {
   return true
 }
 
-// Whether a genotype carries a called non-reference allele — the fact the
-// insertion-glyph pass and the cell buckets key off ("does this haplotype
-// actually have the extra sequence"). The mirror of `isNoCall`'s scan: allele
-// indices carry no leading zeros, so a digit 1-9 anywhere means some allele in
-// the call is non-reference. Allocation-free, for the per-genotype hot path.
+// What fraction of a genotype's alleles are non-reference, as a 0-255 byte.
+//
+// Two jobs in one number, which is why it is a byte rather than a flag. Zero is
+// "no alt here", the gate the insertion-glyph pass and the hit test already
+// keyed on; above zero it is the dosage that shades the marker, so a het draws
+// a paler bar than a hom — the same thing `getAltColorForDosage` does to the
+// cells underneath.
+//
+// 255 for a haploid alt, matching `readAltDosages`' ploidy-invariance: one
+// allele out of one is full dosage, not half. A `.` allele counts toward the
+// denominator, so `./1` is half — the sample carries the sequence on the one
+// haplotype that was called.
 //
 // **This has to be answered from the genotype, never from the resolved cell
 // color.** The tempting `color !== NO_CALL_COLOR` test holds only for the
@@ -76,14 +83,33 @@ export function isNoCall(genotype: string) {
 // string-equal to the `hsl(...)` literal — and every no-call cell in
 // allele-count mode was flagged alt-carrying. That is how `pangenome/maf`
 // painted an insertion marker on a row the VCF calls `.` for.
-export function genotypeCarriesAlt(genotype: string) {
-  for (let i = 0; i < genotype.length; i++) {
-    const c = genotype.charCodeAt(i)
-    if (c >= 49 && c <= 57) {
-      return true
+export function altDosageByte(genotype: string) {
+  let alt = 0
+  let total = 0
+  let alleleIsAlt = false
+  let inAllele = false
+  for (let i = 0; i <= genotype.length; i++) {
+    const c = i < genotype.length ? genotype.charCodeAt(i) : 47
+    // '/' or '|' ends an allele; so does the end of the string
+    if (c === 47 || c === 124) {
+      if (inAllele) {
+        total++
+        if (alleleIsAlt) {
+          alt++
+        }
+      }
+      alleleIsAlt = false
+      inAllele = false
+    } else {
+      inAllele = true
+      // any digit 1-9 makes the allele non-reference: allele indices carry no
+      // leading zeros, so "10" is alt and "0" is not
+      if (c >= 49 && c <= 57) {
+        alleleIsAlt = true
+      }
     }
   }
-  return false
+  return total === 0 ? 0 : Math.round((255 * alt) / total)
 }
 
 // '' means "draw no cell here" — the same sentinel getAlleleColor returns, so

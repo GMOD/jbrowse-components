@@ -37,11 +37,12 @@ export interface VariantCellData {
   cellRowIndices: Uint32Array
   cellColors: Uint32Array
   cellShapeTypes: Uint8Array
-  // 1 where the cell's genotype carries a non-reference allele. Reference and
-  // no-call cells are 0: the insertion-glyph pass widens only the haplotypes
-  // that actually have the extra sequence, and widening a reference cell would
-  // claim every sample carries it.
-  cellCarriesAlt: Uint8Array
+  // Fraction of the cell's genotype that is non-reference, as a 0-255 byte (see
+  // `altDosageByte`). Reference and no-call cells are 0: the insertion-glyph
+  // pass widens only the haplotypes that actually have the extra sequence, and
+  // widening a reference cell would claim every sample carries it. Above zero it
+  // also shades the marker, so a het draws paler than a hom.
+  cellAltDosage: Uint8Array
   numCells: number
   featureGenotypeMap: Record<string, VariantFeatureGenotypes>
   cellFeatureIndices: Uint32Array
@@ -134,7 +135,7 @@ export function computeVariantCells({
   const rowIndices = new Uint32Array(maxCells)
   const colors = new Uint32Array(maxCells)
   const shapeTypes = new Uint8Array(maxCells)
-  const carriesAlt = new Uint8Array(maxCells)
+  const altDosage = new Uint8Array(maxCells)
   const featureIndices = new Uint32Array(maxCells)
   const featureIdList: string[] = []
   const insertedBp = new Int32Array(filteredVariants.length)
@@ -154,7 +155,7 @@ export function computeVariantCells({
     colorAbgr: number,
     shape: number,
     isReference: boolean,
-    isAlt: boolean,
+    dosage: number,
     featureIdx: number,
   ) {
     const ci = isReference ? refEnd++ : --nonRefStart
@@ -167,7 +168,7 @@ export function computeVariantCells({
     rowIndices[ci] = rowIndex
     colors[ci] = colorAbgr
     shapeTypes[ci] = shape
-    carriesAlt[ci] = isAlt ? 1 : 0
+    altDosage[ci] = dosage
     featureIndices[ci] = featureIdx
   }
 
@@ -190,9 +191,9 @@ export function computeVariantCells({
     const s = shapeTypes[a]!
     shapeTypes[a] = shapeTypes[b]!
     shapeTypes[b] = s
-    const t = carriesAlt[a]!
-    carriesAlt[a] = carriesAlt[b]!
-    carriesAlt[b] = t
+    const t = altDosage[a]!
+    altDosage[a] = altDosage[b]!
+    altDosage[b] = t
     const f = featureIndices[a]!
     featureIndices[a] = featureIndices[b]!
     featureIndices[b] = f
@@ -285,16 +286,18 @@ export function computeVariantCells({
                 ),
                 shape,
                 isRefCell,
-                isAltCell,
+                // per haplotype in this mode, so a drawn marker is full
+                // strength; the rows carry the zygosity
+                isAltCell ? 255 : 0,
                 featureIdx,
               )
             }
           } else if (isNoCall(genotype)) {
             // A missing unphased call (`./.`, `.`) is a no-call, not unphased
             // data — draw it as no-call rather than the black "Unphased" fill.
-            addCell(start, end, j, noCallAbgr, shape, false, false, featureIdx)
+            addCell(start, end, j, noCallAbgr, shape, false, 0, featureIdx)
           } else {
-            addCell(start, end, j, BLACK_ABGR, shape, false, false, featureIdx)
+            addCell(start, end, j, BLACK_ABGR, shape, false, 0, featureIdx)
           }
         }
       } else {
@@ -324,7 +327,7 @@ export function computeVariantCells({
               style.abgr,
               shape,
               style.isRef,
-              style.isAlt,
+              style.altDosage,
               featureIdx,
             )
           }
@@ -353,7 +356,7 @@ export function computeVariantCells({
               style.abgr,
               shape,
               style.isRef,
-              style.isAlt,
+              style.altDosage,
               featureIdx,
             )
           }
@@ -400,7 +403,7 @@ export function computeVariantCells({
     rowIndices.copyWithin(refCellCount, nonRefStart, maxCells)
     colors.copyWithin(refCellCount, nonRefStart, maxCells)
     shapeTypes.copyWithin(refCellCount, nonRefStart, maxCells)
-    carriesAlt.copyWithin(refCellCount, nonRefStart, maxCells)
+    altDosage.copyWithin(refCellCount, nonRefStart, maxCells)
     featureIndices.copyWithin(refCellCount, nonRefStart, maxCells)
   }
 
@@ -447,7 +450,7 @@ export function computeVariantCells({
     cellRowIndices: trim ? rowIndices.slice(0, numCells) : rowIndices,
     cellColors: trim ? colors.slice(0, numCells) : colors,
     cellShapeTypes: trim ? shapeTypes.slice(0, numCells) : shapeTypes,
-    cellCarriesAlt: trim ? carriesAlt.slice(0, numCells) : carriesAlt,
+    cellAltDosage: trim ? altDosage.slice(0, numCells) : altDosage,
     numCells,
     refCellCount,
     featureGenotypeMap,

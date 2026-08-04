@@ -1,7 +1,7 @@
 import { BLACK_ABGR, NO_CALL_COLOR, REFERENCE_COLOR } from './constants.ts'
 import { getAlleleColor } from './drawAlleleCount.ts'
 import {
-  genotypeCarriesAlt,
+  altDosageByte,
   getPhasedColor,
   isNoCall,
   isPhasedOrHaploid,
@@ -19,6 +19,9 @@ export interface VariantCellStyle {
   abgr: number
   isRef: boolean
   isAlt: boolean
+  // 0-255 alt dosage; 0 for ref and no-call. Gates the insertion marker and
+  // shades it, so a het bar draws paler than a hom one (see `altDosageByte`).
+  altDosage: number
 }
 
 // Only alt-carrying cells take a per-variant override color; ref and no-call
@@ -45,6 +48,10 @@ function styleFromColor(
     ),
     isRef,
     isAlt,
+    // Per HAPLOTYPE here, not per sample: a phased row either carries the allele
+    // or does not, and zygosity is already readable as the pattern across a
+    // sample's rows. So a drawn marker is always full strength in this mode.
+    altDosage: isAlt ? 255 : 0,
   }
 }
 
@@ -62,12 +69,13 @@ function styleFromColor(
  * `getAlleleColor` has already applied `overrideColor`, including to the
  * secondary-alt case, so nothing re-applies it here.
  *
- * `isAlt` comes from the genotype, not from the color: this mode's dosage
- * shades, its no-call blend and any override are all colord output, so none of
- * them is string-equal to a `NO_CALL_COLOR` / `REFERENCE_COLOR` constant.
- * `isRef` can stay on the color because "was this painted with the reference
- * fill" is exactly what decides the paint-order bucket, and `getAlleleColor`
- * returns that constant by identity for an all-reference call.
+ * `altDosage` (and so `isAlt`) comes from the genotype, not from the color: this
+ * mode's dosage shades, its no-call blend and any override are all colord
+ * output, so none of them is string-equal to a `NO_CALL_COLOR` /
+ * `REFERENCE_COLOR` constant. `isRef` can stay on the color because "was this
+ * painted with the reference fill" is exactly what decides the paint-order
+ * bucket, and `getAlleleColor` returns that constant by identity for an
+ * all-reference call.
  */
 export function buildAlleleCountStyle(
   genotype: string,
@@ -85,10 +93,12 @@ export function buildAlleleCountStyle(
     return null
   }
   const isRef = color === REFERENCE_COLOR
+  const altDosage = isRef ? 0 : altDosageByte(genotype)
   return {
     abgr: getCachedABGR(color),
     isRef,
-    isAlt: !isRef && genotypeCarriesAlt(genotype),
+    isAlt: altDosage > 0,
+    altDosage,
   }
 }
 
@@ -129,8 +139,13 @@ export function buildPhasedStyles(
   // A missing unphased call (`./.`, `.`) is a no-call, not unphased data — draw
   // it as no-call rather than the black "Unphased" fill.
   const style: VariantCellStyle = isNoCall(genotype)
-    ? { abgr: getCachedABGR(NO_CALL_COLOR), isRef: false, isAlt: false }
-    : { abgr: BLACK_ABGR, isRef: false, isAlt: false }
+    ? {
+        abgr: getCachedABGR(NO_CALL_COLOR),
+        isRef: false,
+        isAlt: false,
+        altDosage: 0,
+      }
+    : { abgr: BLACK_ABGR, isRef: false, isAlt: false, altDosage: 0 }
   out.fill(style)
   return out
 }

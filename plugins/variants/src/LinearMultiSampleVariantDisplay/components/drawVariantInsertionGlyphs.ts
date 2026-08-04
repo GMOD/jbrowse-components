@@ -8,6 +8,7 @@ import {
   makeBpMapper,
 } from '@jbrowse/render-core/canvas2dUtils'
 
+import { getInsertionColorForDosage } from '../../shared/constants.ts'
 import { drawnCellHeightPx } from './shaders/variant.js.generated.ts'
 import { variantCellSpanPx } from './variantCellSpan.ts'
 
@@ -27,7 +28,7 @@ const FONT = '10px sans-serif'
  */
 export interface VariantInsertionGlyphData {
   cellRowIndices: Uint32Array
-  cellCarriesAlt: Uint8Array
+  cellAltDosage: Uint8Array
   cellFeatureIndices: Uint32Array
   featurePositions: Uint32Array
   featureInsertedBp: Int32Array
@@ -105,7 +106,7 @@ export function markersForBlock(
  * and MAF's.
  *
  * Only cells whose genotype carries a non-reference allele widen
- * (`cellCarriesAlt`), because widening a reference or no-call cell would claim
+ * (`cellAltDosage`), because widening a reference or no-call cell would claim
  * that haplotype has the sequence.
  *
  * Markers take one category color, `insertionColor` — the caller passes the
@@ -162,21 +163,30 @@ export function drawVariantInsertionGlyphs(
       // zoomed out past the point an insertion outgrows its cell — skips the
       // per-cell walk entirely instead of running it to draw nothing.
       if (anyMarker) {
-        // Every marker is the same purple, so the fill is set once outside the
-        // loop rather than per cell (this pass repaints on every scroll and
-        // pan). The label below is the only thing that changes it, and it sets
-        // it back.
-        ctx.fillStyle = insertionColor
+        // The dosage the context's fillStyle currently reflects, so a run of
+        // markers at the same dosage neither rebuilds the color string nor
+        // reassigns fillStyle. -1 is "not a marker color" — the label below
+        // sets it back to that. A real callset has two or three distinct
+        // dosages, so the recompute is skipped for nearly every marker.
+        let currentDosage = -1
         // Reference cells never carry the alt, so the scan starts at the
         // non-reference bucket (see VariantInsertionGlyphData.refCellCount).
         for (let i = region.refCellCount; i < region.numCells; i++) {
           const featureIdx = region.cellFeatureIndices[i]!
-          if (region.cellCarriesAlt[i] && drawsMarker[featureIdx]) {
+          const dosage = region.cellAltDosage[i]!
+          if (dosage && drawsMarker[featureIdx]) {
             // Y-cull as the block painter does
             const y = region.cellRowIndices[i]! * rowHeight - scrollTop
             if (y + drawnRowHeight >= 0 && y <= canvasHeight) {
               const xCenter = markerXCenter[featureIdx]!
               const inserted = region.featureInsertedBp[featureIdx]!
+              if (dosage !== currentDosage) {
+                ctx.fillStyle = getInsertionColorForDosage(
+                  insertionColor,
+                  dosage,
+                )
+                currentDosage = dosage
+              }
               drawInsertionMarker(
                 ctx,
                 xCenter,
@@ -191,11 +201,10 @@ export function drawVariantInsertionGlyphs(
               ) {
                 ctx.fillStyle = 'white'
                 ctx.fillText(String(inserted), xCenter, y + drawnRowHeight / 2)
-                // Restore, because the marker fill is now hoisted out of this
-                // loop: when every marker set its own color a label could leave
-                // `white` behind harmlessly, and now it would paint the next
-                // marker with it.
-                ctx.fillStyle = insertionColor
+                // The label is the only thing that changes the fill mid-loop,
+                // so record that the context no longer holds a marker color
+                // rather than paying a restore the next marker may not need.
+                currentDosage = -1
               }
             }
           }

@@ -7,6 +7,7 @@ import {
   UNPHASED_COLOR,
   capitalizeFirst,
   getAltColorForDosage,
+  getInsertionColorForDosage,
 } from './constants.ts'
 import { PHASE_SET_COLOR } from './getPhasedColor.ts'
 import { CONSEQUENCE_IMPACT_JEXL, IMPACT_TIERS } from './variantConsequence.ts'
@@ -251,17 +252,38 @@ export function getVariantLegendSections({
     // cells are colored by SV type. The label names what the number means, not
     // just the color: the review that prompted this reported the marker as "the
     // text like 5593", so the unexplained thing was the count, not the box.
+    //
+    // Two swatches in allele-count mode, where one row is a whole sample and the
+    // bar's shade is the only thing left saying how many copies it carries —
+    // the marker covers the dosage-shaded cell underneath. Phased mode needs
+    // one: a row there is a single haplotype, which either carries the allele or
+    // does not, so zygosity reads as the pattern down a sample's rows. Same
+    // split the genotype items already make ("Reference" vs "Homozygous
+    // reference"), and both shades come from `getInsertionColorForDosage` so the key
+    // cannot drift from the glyph.
     ...(insertionColor
       ? [
           {
             id: 'insertions',
             title: 'Insertions',
-            items: [
-              {
-                color: insertionColor,
-                label: 'Insertion (label is length in bp)',
-              },
-            ],
+            items:
+              renderingMode === 'phased'
+                ? [
+                    {
+                      color: insertionColor,
+                      label: 'Insertion (label is length in bp)',
+                    },
+                  ]
+                : [
+                    {
+                      color: insertionColor,
+                      label: 'Insertion, homozygous (label is length in bp)',
+                    },
+                    {
+                      color: getInsertionColorForDosage(insertionColor, 128),
+                      label: 'Insertion, heterozygous',
+                    },
+                  ],
           },
         ]
       : []),

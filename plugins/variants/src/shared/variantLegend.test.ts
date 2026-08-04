@@ -1,4 +1,8 @@
-import { NO_CALL_COLOR, REFERENCE_COLOR } from './constants.ts'
+import {
+  NO_CALL_COLOR,
+  REFERENCE_COLOR,
+  getInsertionColorForDosage,
+} from './constants.ts'
 import { PHASE_SET_COLOR } from './getPhasedColor.ts'
 import { CONSEQUENCE_IMPACT_JEXL } from './variantConsequence.ts'
 import {
@@ -277,14 +281,38 @@ describe('getVariantLegendSections insertion marker', () => {
     expect(getVariantLegendSections(base).map(s => s.id)).toEqual(['genotypes'])
   })
 
-  test('its own section, carrying the color the glyph is painted with', () => {
+  // Allele-count mode: one row is a whole sample, and the marker covers the
+  // dosage-shaded cell it widens, so the bar's shade is the only thing left
+  // saying how many copies the sample carries. Both swatches come from
+  // getInsertionColorForDosage, so the key cannot drift from the glyph.
+  test('allele-count mode keys both the hom and the het shade', () => {
     const sections = getVariantLegendSections({
       ...base,
       insertionColor: '#800080',
     })
     expect(sections.map(s => s.id)).toEqual(['genotypes', 'insertions'])
-    const insertions = sections.find(s => s.id === 'insertions')!
-    expect(insertions.items).toEqual([
+    expect(sections.find(s => s.id === 'insertions')!.items).toEqual([
+      {
+        color: '#800080',
+        label: 'Insertion, homozygous (label is length in bp)',
+      },
+      {
+        color: getInsertionColorForDosage('#800080', 128),
+        label: 'Insertion, heterozygous',
+      },
+    ])
+  })
+
+  // Phased mode needs one swatch: a row is a single haplotype, which either
+  // carries the allele or does not, so zygosity reads as the pattern down a
+  // sample's rows and every marker is full strength.
+  test('phased mode keys one shade, since rows carry the zygosity', () => {
+    const sections = getVariantLegendSections({
+      ...base,
+      renderingMode: 'phased',
+      insertionColor: '#800080',
+    })
+    expect(sections.find(s => s.id === 'insertions')!.items).toEqual([
       { color: '#800080', label: 'Insertion (label is length in bp)' },
     ])
   })

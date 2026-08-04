@@ -553,7 +553,7 @@ export async function executeVariantCellData({
         rest.cellRowIndices.buffer,
         rest.cellColors.buffer,
         rest.cellShapeTypes.buffer,
-        rest.cellCarriesAlt.buffer,
+        rest.cellAltDosage.buffer,
         rest.cellFeatureIndices.buffer,
         rest.featureIndexData,
         rest.featurePositions.buffer,

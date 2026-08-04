@@ -49,7 +49,7 @@ function cellData(insertedBp: number): CellDataResult {
         cellRowIndices: Uint32Array.from([0]),
         cellColors: Uint32Array.from([0xff0000]),
         cellShapeTypes: new Uint8Array(1),
-        cellCarriesAlt: Uint8Array.from([1]),
+        cellAltDosage: Uint8Array.from([1]),
         cellFeatureIndices: new Uint32Array(1),
         numCells: 1,
         refCellCount: 0,
@@ -118,10 +118,5 @@ test('the swatch is the palette color the overlay paints with', () => {
   const section = setup(7833)
     .legendSections()
     .find(s => s.id === 'insertions')
-  expect(section!.items).toEqual([
-    {
-      color: resolvePalette().insertion,
-      label: 'Insertion (label is length in bp)',
-    },
-  ])
+  expect(section!.items[0]!.color).toBe(resolvePalette().insertion)
 })
