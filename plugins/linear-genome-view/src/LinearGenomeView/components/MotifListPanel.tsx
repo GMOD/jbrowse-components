@@ -1,44 +1,20 @@
 import { useState } from 'react'
 
-import { SubmitForm } from '@jbrowse/core/ui'
 import { isPalindromic, parseMotifList, pluralize } from '@jbrowse/core/util'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import SearchPanelForm from './SearchPanelForm.tsx'
 import StrandCheckboxes from './StrandCheckboxes.tsx'
 import { DEFAULT_MOTIFS } from './defaultMotifs.ts'
 import { addReferenceScanTrack } from './searchModes.ts'
 
 import type { SequenceSearchModeProps } from './searchModes.ts'
-import type { ParsedMotif } from '@jbrowse/core/util'
-
-// Reconstructs the single-line REBASE text parseMotifList produced a motif
-// from, so each motif can be sent to its own track's adapter unmodified.
-function motifToLine(motif: ParsedMotif) {
-  const site =
-    motif.cutOffset === undefined
-      ? motif.site
-      : motif.site.slice(0, motif.cutOffset) +
-        '^' +
-        motif.site.slice(motif.cutOffset)
-  return `${motif.name}\t${site}`
-}
-
-const useStyles = makeStyles()({
-  dialogContent: {
-    width: '34em',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 12,
-  },
-})
 
 const MotifListPanel = observer(function MotifListPanel({
   model,
   handleClose,
 }: SequenceSearchModeProps) {
-  const { classes } = useStyles()
   const [text, setText] = useState(DEFAULT_MOTIFS)
   const [searchForward, setSearchForward] = useState(true)
   const [searchReverse, setSearchReverse] = useState(true)
@@ -75,7 +51,7 @@ const MotifListPanel = observer(function MotifListPanel({
         name: `Motif ${motif.name}`,
         adapter: {
           type: 'MotifListAdapter',
-          motifs: motifToLine(motif),
+          motifs: motif.line,
           searchForward,
           searchReverse,
         },
@@ -85,14 +61,9 @@ const MotifListPanel = observer(function MotifListPanel({
   }
 
   return (
-    <SubmitForm
-      contentClassName={classes.dialogContent}
-      onSubmit={() => {
-        handleSubmitCombined()
-      }}
-      onCancel={() => {
-        handleClose()
-      }}
+    <SearchPanelForm
+      onSubmit={handleSubmitCombined}
+      handleClose={handleClose}
       submitDisabled={!canSubmit}
       submitText="Launch as one track"
       actions={
@@ -146,7 +117,7 @@ const MotifListPanel = observer(function MotifListPanel({
           All motifs are palindromic, so each match covers both strands.
         </Typography>
       ) : null}
-    </SubmitForm>
+    </SearchPanelForm>
   )
 })
 

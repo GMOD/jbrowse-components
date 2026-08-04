@@ -153,13 +153,10 @@ export default function SequenceFeatureHoverHighlightExtensionF(
 | `LaunchView-LinearSyntenyView` | async | single | Programmatically launch a linear synteny view |
 | `LaunchView-SpreadsheetView` | async | single | Programmatically launch a spreadsheet view |
 | `LaunchView-SvInspectorView` | async | single | Programmatically launch the SV inspector view |
-| `LinearGenomeView-crisprGuidePanel` | sync | single | Replace the CRISPR guide RNA panel of the sequence search dialog |
 | `LinearGenomeView-HighlightSVGComponent` | sync | list | Add an SVG highlight overlay in the LGV SVG export |
-| `LinearGenomeView-motifListPanel` | sync | single | Replace the motif list panel of the sequence search dialog |
 | `LinearGenomeView-OverviewScalebarComponent` | sync | list | Add a component to the overview scalebar |
 | `LinearGenomeView-ScalebarHighlightComponent` | sync | list | Add a highlight component to the scalebar |
 | `LinearGenomeView-searchResultSelected` | async | single | Invoked when a search result is selected |
-| `LinearGenomeView-sequenceSearchPanel` | sync | single | Replace the sequence-pattern panel of the sequence search dialog |
 | `LinearGenomeView-TracksContainerComponent` | sync | list | Add a component into the LGV tracks container |
 | `LinearSyntenyView-ImportFormSyntenyOptions` | sync | list | Add options to the linear synteny view import form |
 | `LinearSyntenyView-SyntenyFileFormats` | sync | list | Add synteny file formats to the linear synteny import form |

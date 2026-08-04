@@ -1,29 +1,19 @@
 import { useState } from 'react'
 
-import { LabeledCheckbox, SubmitForm } from '@jbrowse/core/ui'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { LabeledCheckbox } from '@jbrowse/core/ui'
 import { TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import SearchPanelForm from './SearchPanelForm.tsx'
 import StrandCheckboxes from './StrandCheckboxes.tsx'
 import { addReferenceScanTrack } from './searchModes.ts'
 
 import type { SequenceSearchModeProps } from './searchModes.ts'
 
-const useStyles = makeStyles()({
-  dialogContent: {
-    width: '34em',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 12,
-  },
-})
-
 const SequencePatternPanel = observer(function SequencePatternPanel({
   model,
   handleClose,
 }: SequenceSearchModeProps) {
-  const { classes } = useStyles()
   const [value, setValue] = useState('')
   const [caseInsensitive, setCaseInsensitive] = useState(true)
   const [searchForward, setSearchForward] = useState(true)
@@ -54,14 +44,9 @@ const SequencePatternPanel = observer(function SequencePatternPanel({
   }
 
   return (
-    <SubmitForm
-      contentClassName={classes.dialogContent}
-      onSubmit={() => {
-        handleSubmit()
-      }}
-      onCancel={() => {
-        handleClose()
-      }}
+    <SearchPanelForm
+      onSubmit={handleSubmit}
+      handleClose={handleClose}
       submitDisabled={!canSubmit}
     >
       <TextField
@@ -92,7 +77,7 @@ const SequencePatternPanel = observer(function SequencePatternPanel({
           label="Case insensitive"
         />
       </StrandCheckboxes>
-    </SubmitForm>
+    </SearchPanelForm>
   )
 })
 

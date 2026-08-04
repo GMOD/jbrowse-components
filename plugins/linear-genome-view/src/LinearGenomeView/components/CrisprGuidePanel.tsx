@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
-import { SubmitForm } from '@jbrowse/core/ui'
+import { LabeledCheckbox } from '@jbrowse/core/ui'
+import { IUPAC_MOTIF_REGEX } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   MenuItem,
@@ -11,18 +12,13 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import SearchPanelForm from './SearchPanelForm.tsx'
 import StrandCheckboxes from './StrandCheckboxes.tsx'
 import { addReferenceScanTrack } from './searchModes.ts'
 
 import type { SequenceSearchModeProps } from './searchModes.ts'
 
 const useStyles = makeStyles()({
-  dialogContent: {
-    width: '34em',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 12,
-  },
   row: {
     display: 'flex',
     gap: 12,
@@ -37,26 +33,48 @@ const useStyles = makeStyles()({
   },
 })
 
-// PAM 3' of the protospacer for Cas9-type enzymes, 5' for Cas12a; cutOffset is
-// the bp from the PAM-proximal end of the protospacer to the predicted cut.
+// PAM 3' of the protospacer for Cas9-type enzymes, 5' for Cas12a. The two cut
+// offsets are bp from the PAM-proximal end of the protospacer to each strand's
+// cut: equal for a blunt cutter, staggered for Cas12a, which leaves a 5-nt 5'
+// overhang.
 const ENZYME_PRESETS: Record<
   string,
-  { pam: string; guideLength: number; pamLocation: string; cutOffset: number }
+  {
+    pam: string
+    guideLength: number
+    pamLocation: string
+    cutOffset: number
+    cutOffsetBottom: number
+  }
 > = {
-  SpCas9: { pam: 'NGG', guideLength: 20, pamLocation: '3prime', cutOffset: 3 },
+  SpCas9: {
+    pam: 'NGG',
+    guideLength: 20,
+    pamLocation: '3prime',
+    cutOffset: 3,
+    cutOffsetBottom: 3,
+  },
   SaCas9: {
     pam: 'NNGRRT',
     guideLength: 21,
     pamLocation: '3prime',
     cutOffset: 3,
+    cutOffsetBottom: 3,
   },
   'Cas12a (Cpf1)': {
     pam: 'TTTV',
     guideLength: 23,
     pamLocation: '5prime',
     cutOffset: 18,
+    cutOffsetBottom: 23,
   },
 }
+
+// The one filter preset the panel offers. The adapter's slots are a free GC
+// range plus a poly-T flag; these are the conventional cutoffs, named in the
+// checkbox label so the numbers aren't hidden behind a word like "usable".
+const GC_FILTER = { minGcPercent: 40, maxGcPercent: 60 }
+const NO_FILTER = { minGcPercent: 0, maxGcPercent: 100 }
 
 const DEFAULT_ENZYME = 'SpCas9'
 const DEFAULT_PRESET = ENZYME_PRESETS[DEFAULT_ENZYME]!
@@ -75,8 +93,14 @@ const CrisprGuidePanel = observer(function CrisprGuidePanel({
   const [cutOffsetStr, setCutOffsetStr] = useState(
     String(DEFAULT_PRESET.cutOffset),
   )
+  // presets carry this; Custom is treated as a blunt cutter, so the panel does
+  // not grow a second offset field for a case config can express directly
+  const [cutOffsetBottom, setCutOffsetBottom] = useState(
+    DEFAULT_PRESET.cutOffsetBottom,
+  )
   const [searchForward, setSearchForward] = useState(true)
   const [searchReverse, setSearchReverse] = useState(true)
+  const [filterQuality, setFilterQuality] = useState(false)
 
   const guideLength = Number(guideLengthStr)
   const cutOffset = Number(cutOffsetStr)
@@ -86,15 +110,20 @@ const CrisprGuidePanel = observer(function CrisprGuidePanel({
   const cutOffsetValid = Number.isInteger(cutOffset)
   // each PAM position must be a single IUPAC code (one base); other characters
   // would leak into the match regex and break the fixed-length placement
-  const pamValid = /^[ACGTRYSWKMBDHVN]+$/.test(pam)
+  const pamValid = IUPAC_MOTIF_REGEX.test(pam)
   const canSubmit =
     pamValid &&
     guideLengthValid &&
     cutOffsetValid &&
     (searchForward || searchReverse)
 
+  // a staggered cutter shows both offsets, e.g. "cut 18/23 bp from PAM"
+  const cutSummary =
+    cutOffsetBottom === cutOffset
+      ? cutOffset
+      : `${cutOffset}/${cutOffsetBottom}`
   const presetSummary = ENZYME_PRESETS[enzyme]
-    ? `PAM ${pam} · ${guideLength} bp guide · cut ${cutOffset} bp from PAM`
+    ? `PAM ${pam} · ${guideLength} bp guide · cut ${cutSummary} bp from PAM`
     : 'Set a custom PAM and geometry below'
 
   function applyPreset(name: string) {
@@ -105,6 +134,7 @@ const CrisprGuidePanel = observer(function CrisprGuidePanel({
       setPamLocation(preset.pamLocation)
       setGuideLengthStr(String(preset.guideLength))
       setCutOffsetStr(String(preset.cutOffset))
+      setCutOffsetBottom(preset.cutOffsetBottom)
     }
   }
 
@@ -121,22 +151,20 @@ const CrisprGuidePanel = observer(function CrisprGuidePanel({
         guideLength,
         pamLocation,
         cutOffset,
+        cutOffsetBottom: enzyme === 'Custom' ? cutOffset : cutOffsetBottom,
         searchForward,
         searchReverse,
+        excludePolyT: filterQuality,
+        ...(filterQuality ? GC_FILTER : NO_FILTER),
       },
     })
     handleClose()
   }
 
   return (
-    <SubmitForm
-      contentClassName={classes.dialogContent}
-      onSubmit={() => {
-        handleSubmit()
-      }}
-      onCancel={() => {
-        handleClose()
-      }}
+    <SearchPanelForm
+      onSubmit={handleSubmit}
+      handleClose={handleClose}
       submitDisabled={!canSubmit}
     >
       <TextField
@@ -214,7 +242,15 @@ const CrisprGuidePanel = observer(function CrisprGuidePanel({
         setSearchForward={setSearchForward}
         setSearchReverse={setSearchReverse}
       />
-    </SubmitForm>
+      <LabeledCheckbox
+        size="small"
+        checked={filterQuality}
+        onChange={val => {
+          setFilterQuality(val)
+        }}
+        label="Keep only guides with 40-60% GC and no poly-T run"
+      />
+    </SearchPanelForm>
   )
 })
 

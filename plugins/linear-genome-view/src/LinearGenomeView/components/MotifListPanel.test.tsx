@@ -22,7 +22,7 @@ test('every prefilled enzyme has a cut position inside its site', () => {
     expect(m.cutOffset).toBeDefined()
     expect(m.cutOffset).toBeLessThanOrEqual(m.site.length)
   }
-  expect(motifs.find(m => m.name === 'EcoRI')).toEqual({
+  expect(motifs.find(m => m.name === 'EcoRI')).toMatchObject({
     name: 'EcoRI',
     site: 'GAATTC',
     cutOffset: 1,
