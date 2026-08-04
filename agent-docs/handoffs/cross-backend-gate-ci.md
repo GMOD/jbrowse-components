@@ -130,22 +130,37 @@ opaque wait error, and `assertNonBlank` is still the backstop.
 
 ## After both fixes (same day, same build)
 
+Six consecutive runs, same build, same machine, load varying with other work:
+
 | Run | load at start | tests | pairs compared | over threshold | uncompared | exit |
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | 11.5 | 292 / 20 | 131 | 1 | 32 | 1 |
 | 2 | 21.0 | 310 / 2 | 159 | 0 | 4 | 1 |
 | 3 | 7.5 | **312 / 0** | **163** | **0** | **0** | **0** |
+| 4 | 27.4 | 306 / 6 | 151 | 0 | 12 | 1 |
+| 5 | 33.9 | 309 / 3 | 157 | 0 | 6 | 1 |
+| 6 | 37.1 | 298 / 14 | 141 | 0 | 18 | 1 |
 
-Run 3 is the first fully clean run: every test passed, every snapshot compared by
-both backends, nothing drifted. Note 163 > the pre-fix best of 149 — the wait fix
-does not merely stop the gate lying about coverage, it *raises* coverage, because
-fewer tests now fail before their screenshot.
+**The drift comparison itself is clean: zero over-threshold in runs 2–6**, five
+consecutive, comparing 141–163 pairs each, across loads from 7.5 to 37. The one
+drift failure in the whole set is run 1's methylation, discussed below. Run 3 is
+the first fully clean run — every test passed, every snapshot compared, nothing
+drifted — and its 163 pairs beat the pre-fix best of 149, so the wait fix does
+not merely stop the gate lying about coverage, it *raises* coverage, because
+fewer tests fail before their screenshot.
 
-The three rows track machine load rather than anything in the code, and the
-residual failure mode is `assertNonBlank` on **webgl** captures (17 of run 1's 20
-failures) — the headed real-GPU browser returning blank frames under contention.
-That is an environment property, not a gate defect, and it is the reason the
-README says *idle*.
+What still varies is **capture reliability, and it tracks machine load, not the
+code**. The residual failure mode is `assertNonBlank` on **webgl** captures (17
+of run 1's 20 failures): the headed real-GPU browser returns blank frames under
+contention. The gate now reports that as lost coverage and fails, instead of
+absorbing it silently — which is the whole point of the fix, and why five of six
+runs exit 1 while none of them found real drift.
+
+**This may not be the CI failure mode at all.** These runs used webgl on the real
+GPU, headed. GitHub runners have none, so CI uses `--swiftshader` headless, which
+removes precisely the contention that produced the blank frames — while adding
+software-raster slowness and the ~29 MB/context leak (ADR-024). Measure there
+before assuming CI inherits this flakiness.
 
 **A stable drift percentage does not mean a stable failure.**
 `fullpage_methylation_snapshot` came in at exactly 37.98% in two runs hours
@@ -157,7 +172,9 @@ determinism from a repeated number; check whether the pair was compared at all.
 ## Next, in order
 
 1. **Consecutive clean runs on a genuinely idle machine.** One clean run is not
-   the README's bar. Load must be low for the whole run, not just at its start.
+   the README's bar. Load must be low for the whole run, not just at its start —
+   the `load=` column is start-of-run, which is why run 1's 11.5 looks out of
+   order against run 4's 27.4: it was rising through a concurrent build.
 2. **Measure in the CI configuration, which is not this one.** These runs used
    webgl on the real GPU (headed). GitHub runners have none, so CI uses
    `--swiftshader` — that is what `pnpm test:browser:gate` passes, and it removes
