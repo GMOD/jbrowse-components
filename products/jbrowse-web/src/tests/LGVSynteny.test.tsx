@@ -39,13 +39,42 @@ test('nav to synteny from right click', async () => {
     fireEvent.mouseMove(canvas, { clientX: 200, clientY: 3 })
     fireEvent.contextMenu(canvas, { clientX: 200, clientY: 3 })
     fireEvent.click(await findByText('Launch synteny view for this position'))
-    fireEvent.click(await findByText('Submit'))
+    fireEvent.click(await findByText('Open in new view'))
     await waitFor(() => {
       const v = session.views[1] as LinearSyntenyViewModel | undefined
       expect(v?.initialized).toBe(true)
       expect(v?.views[0]?.coarseVisibleLocStrings).toBe('ctgA:29,223..34,670')
     }, delay)
     expectCanvasMatch(await findByTestId('synteny_canvas_done', ...opts))
+  })
+}, 60000)
+
+// The other way out of the same dialog. A launch is anchored on the locus the
+// launching view is already showing, so appending leaves two views of one place
+// stacked — this puts the synteny view in the LGV's slot instead. Asserted on
+// session.views, since "the LGV is gone" is the whole difference.
+test('replacing the launching view with the synteny view', async () => {
+  await mockConsoleWarn(async () => {
+    const user = userEvent.setup()
+    const { session, view, findByTestId, findByText } = await createView()
+
+    await view.navToLocString('ctgA:30,222..33,669')
+    await user.click(await findByTestId(hts('volvox_ins.paf'), ...opts))
+
+    const display = await findByTestId('pileup-display-done', ...opts)
+    const canvas = findCanvasIn(display)
+    fireEvent.mouseMove(canvas, { clientX: 200, clientY: 3 })
+    fireEvent.contextMenu(canvas, { clientX: 200, clientY: 3 })
+    fireEvent.click(await findByText('Launch synteny view for this position'))
+    fireEvent.click(await findByText('Replace current view'))
+
+    await waitFor(() => {
+      expect(session.views.map(v => v.type)).toEqual(['LinearSyntenyView'])
+      const v = session.views[0] as LinearSyntenyViewModel | undefined
+      expect(v?.initialized).toBe(true)
+      expect(v?.views[0]?.coarseVisibleLocStrings).toBe('ctgA:29,223..34,670')
+    }, delay)
+    await findByTestId('synteny_canvas_done', ...opts)
   })
 }, 60000)
 
@@ -110,7 +139,7 @@ test('nav to synteny from right click, with launch connection plugin', async () 
     fireEvent.mouseMove(canvas, { clientX: 200, clientY: 3 })
     fireEvent.contextMenu(canvas, { clientX: 200, clientY: 3 })
     fireEvent.click(await findByText('Launch synteny view for this position'))
-    fireEvent.click(await findByText('Submit'))
+    fireEvent.click(await findByText('Open in new view'))
     await waitFor(() => {
       const v = session.views[1] as LinearSyntenyViewModel | undefined
       expect(v?.initialized).toBe(true)
@@ -258,7 +287,7 @@ test('launch a multi-panel synteny view from a region selection', async () => {
     // click away rather than opt-in per panel
     await findByText('volvox_ins', ...opts)
     await findByText('volvox_del', ...opts)
-    fireEvent.click(await findByText('Submit'))
+    fireEvent.click(await findByText('Open in new view'))
 
     await waitFor(() => {
       const v = session.views[1] as LinearSyntenyViewModel | undefined

@@ -7,7 +7,11 @@ import { findPosInCigar } from './findPosInCigar.ts'
 
 import type { LinearSyntenyViewInit } from '../LinearSyntenyView/types.ts'
 import type { SyntenyMate } from '../syntenyMate.ts'
-import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
+import type {
+  AbstractSessionModel,
+  AbstractViewModel,
+  Feature,
+} from '@jbrowse/core/util'
 import type { TrackInit } from '@jbrowse/plugin-linear-genome-view'
 
 // The clicked block's genomic span, used to clip the launched synteny view to
@@ -273,13 +277,17 @@ export function buildSyntenyViewSpec({
 
 export function launchSyntenyViewForFeatures({
   session,
+  replacing,
   ...rest
 }: BuildSyntenyViewSpecArgs & {
   session: AbstractSessionModel
+  // the launching view, when the dialog's "Replace current view" was used
+  replacing?: AbstractViewModel
 }) {
   launchSyntenyView({
     session,
     viewType: 'LinearSyntenyView',
+    replacing,
     ...buildSyntenyViewSpec(rest),
   })
 }

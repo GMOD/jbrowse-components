@@ -5,6 +5,7 @@ import {
   assembleLocString,
   getBpDisplayStr,
   isAbortException,
+  isSessionWithViewReplacement,
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -28,6 +29,7 @@ import {
   CopySourceTracksCheckbox,
   DEFAULT_WINDOW_SIZE,
   FlipInvertedTargetsCheckbox,
+  ReplaceCurrentViewButton,
   WindowSizeField,
 } from './launchOptionFields.tsx'
 import {
@@ -40,7 +42,11 @@ import {
 
 import type { MateDiscovery } from './discoverMates.ts'
 import type { PanelRow } from './panelOrder.ts'
-import type { AbstractSessionModel, Region } from '@jbrowse/core/util'
+import type {
+  AbstractSessionModel,
+  AbstractViewModel,
+  Region,
+} from '@jbrowse/core/util'
 import type { TrackInit } from '@jbrowse/plugin-linear-genome-view'
 
 // The panel list is one row per aligning assembly, so an all-vs-all locus can
@@ -117,6 +123,7 @@ export default function LaunchSyntenyViewForRegionDialog({
   region,
   tracks,
   anchorTracks = [],
+  sourceView,
   discoverMatesFor,
   handleClose,
 }: {
@@ -125,6 +132,9 @@ export default function LaunchSyntenyViewForRegionDialog({
   tracks: { trackId: string; name: string }[]
   // the launching view's own tracks, for the panel that opens on its assembly
   anchorTracks?: TrackInit[]
+  // the launching view itself, which the dialog offers to put the result in
+  // place of
+  sourceView?: AbstractViewModel
   discoverMatesFor: (trackId: string) => MateDiscovery
   handleClose: () => void
 }) {
@@ -176,31 +186,48 @@ export default function LaunchSyntenyViewForRegionDialog({
     }
   }, [discoverMatesFor, trackId, region.assemblyName])
   const { anchorIndex, mates } = launchOrder(rows ?? [])
+  const canReplace = !!sourceView && isSessionWithViewReplacement(session)
+  const launchDisabled = windowSize === undefined || !mates.length
+  const launch = (replacing?: AbstractViewModel) => {
+    if (windowSize !== undefined && mates.length) {
+      launchSyntenyViewForFeatures({
+        features: mates.map(row => row.feature),
+        anchorAssembly: region.assemblyName,
+        anchorIndex,
+        anchorTracks: copySourceTracks ? anchorTracks : undefined,
+        windowSize,
+        flipReversedMates,
+        collapseEmptyRows,
+        trackId,
+        session,
+        region,
+        replacing,
+      })
+      handleClose()
+    }
+  }
 
   return (
     <SubmitDialog
       open
       title="Launch synteny view for region"
-      submitDisabled={windowSize === undefined || !mates.length}
+      submitDisabled={launchDisabled}
+      submitText={canReplace ? 'Open in new view' : undefined}
+      actions={
+        canReplace ? (
+          <ReplaceCurrentViewButton
+            disabled={launchDisabled}
+            onClick={() => {
+              launch(sourceView)
+            }}
+          />
+        ) : null
+      }
       onCancel={() => {
         handleClose()
       }}
       onSubmit={() => {
-        if (windowSize !== undefined && mates.length) {
-          launchSyntenyViewForFeatures({
-            features: mates.map(row => row.feature),
-            anchorAssembly: region.assemblyName,
-            anchorIndex,
-            anchorTracks: copySourceTracks ? anchorTracks : undefined,
-            windowSize,
-            flipReversedMates,
-            collapseEmptyRows,
-            trackId,
-            session,
-            region,
-          })
-          handleClose()
-        }
+        launch()
       }}
     >
       {/* the size, because a rubberband can cover a whole chromosome without

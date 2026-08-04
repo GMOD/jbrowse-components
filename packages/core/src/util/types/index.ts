@@ -282,6 +282,29 @@ export function isSessionModelWithConfigEditing(
   return isSessionModel(t) && 'editConfiguration' in t
 }
 
+/**
+ * abstract interface for a session that can swap one of its views for a new one
+ * of another type, in the slot the old view occupied.
+ *
+ * Separate from AbstractViewContainer rather than an optional member on it: the
+ * single-view embedded products implement addView by destructively replacing
+ * their one view, which is the same words for a different contract — there is
+ * no slot and nothing to name. Only a real multi-view container can offer this,
+ * and the guard is what a launcher asks before offering it.
+ */
+export interface SessionWithViewReplacement extends AbstractSessionModel {
+  replaceView(
+    view: AbstractViewModel,
+    typeName: string,
+    initialState?: Record<string, unknown>,
+  ): AbstractViewModel
+}
+export function isSessionWithViewReplacement(
+  t: unknown,
+): t is SessionWithViewReplacement {
+  return isSessionModel(t) && 'replaceView' in t
+}
+
 /** abstract interface for a session allows adding tracks */
 export interface SessionWithAddTracks extends AbstractSessionModel {
   // returns the added config, or undefined if it was invalid (surfaced as a

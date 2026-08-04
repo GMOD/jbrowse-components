@@ -1,4 +1,6 @@
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import { isSessionWithViewReplacement } from '@jbrowse/core/util'
+
+import type { AbstractSessionModel, AbstractViewModel } from '@jbrowse/core/util'
 
 // Both synteny LaunchView handlers do the same two things: reject a spec with
 // fewer than two views, then open the view with its assembled init block. Kept
@@ -13,14 +15,23 @@ export function launchSyntenyView<T extends { views: unknown[] }>({
   viewType,
   init,
   id,
+  replacing,
 }: {
   session: AbstractSessionModel
   viewType: string
   init: T
   id?: string
+  // The view this launch came out of, when the launcher offered to swap it for
+  // the result instead of appending below it. A session that can't replace a
+  // view (the single-view embedded products) falls back to appending, so a
+  // caller never has to ask twice.
+  replacing?: AbstractViewModel
 }) {
   if (init.views.length < 2) {
     throw new Error(`${viewType} requires at least 2 views to be specified`)
   }
-  return session.addView(viewType, { id, init })
+  const initialState = { id, init }
+  return replacing && isSessionWithViewReplacement(session)
+    ? session.replaceView(replacing, viewType, initialState)
+    : session.addView(viewType, initialState)
 }

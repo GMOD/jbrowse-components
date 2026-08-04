@@ -1,6 +1,7 @@
 import { LabeledCheckbox, NumberTextField } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { HelpTooltip } from '@jbrowse/synteny-core'
+import { Button } from '@mui/material'
 
 // The option fields the launch dialogs carry: the pairwise launch (one clicked
 // alignment) and the region launch (every assembly a locus aligns to) ask the
@@ -145,6 +146,40 @@ export function CollapsePanelsCheckbox({
         </span>
       }
     />
+  )
+}
+
+// The second way out of a launch dialog: put the synteny view in the slot the
+// launching view occupies instead of appending it below. A launch is anchored on
+// the assembly and locus the source view is already showing, so keeping both
+// leaves two views of the same place stacked — and the synteny view, being twice
+// as tall, opens mostly below the fold.
+//
+// A button rather than a checkbox, matching CollapseIntronsDialog, which offers
+// the same choice on the same terms: the two outcomes are different enough to
+// name, and neither is the setting the other is a variation of.
+//
+// `type="button"` because SubmitForm renders this inside its <form>, where an
+// unset type means submit and the click would run BOTH actions.
+export function ReplaceCurrentViewButton({
+  disabled,
+  onClick,
+}: {
+  disabled?: boolean
+  onClick: () => void
+}) {
+  return (
+    <Button
+      type="button"
+      variant="contained"
+      color="primary"
+      disabled={disabled}
+      onClick={() => {
+        onClick()
+      }}
+    >
+      Replace current view
+    </Button>
   )
 }
 

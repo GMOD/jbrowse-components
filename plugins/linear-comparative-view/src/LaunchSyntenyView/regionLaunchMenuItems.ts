@@ -9,7 +9,11 @@ import { makeMateDiscovery } from './discoverMates.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { AbstractSessionModel, Region } from '@jbrowse/core/util'
+import type {
+  AbstractSessionModel,
+  AbstractViewModel,
+  Region,
+} from '@jbrowse/core/util'
 import type { TrackInit } from '@jbrowse/plugin-linear-genome-view'
 
 const LaunchSyntenyViewForRegionDialog = lazy(
@@ -107,6 +111,7 @@ export function syntenyRegionMenuItems({
   session,
   openTrackIds,
   anchorTracks,
+  sourceView,
 }: {
   label: string
   region: Region | undefined
@@ -115,6 +120,8 @@ export function syntenyRegionMenuItems({
   // the launching view's own tracks, offered to the panel that opens on its
   // assembly (the region's). Resolved by the caller, which has the view
   anchorTracks: TrackInit[]
+  // the launching view, which the dialog offers to swap for the launched one
+  sourceView?: AbstractViewModel
 }): MenuItem[] {
   const roi = region ? toWholeBpRegion(region) : undefined
   const tracks = roi
@@ -133,6 +140,7 @@ export function syntenyRegionMenuItems({
                 region: roi,
                 tracks: tracks.map(({ trackId, name }) => ({ trackId, name })),
                 anchorTracks,
+                sourceView,
                 discoverMatesFor: (trackId: string) =>
                   makeMateDiscovery({
                     session,

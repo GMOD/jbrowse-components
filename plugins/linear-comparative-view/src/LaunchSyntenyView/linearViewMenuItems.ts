@@ -59,6 +59,7 @@ export default function LinearViewMenuItemsF(pluginManager: PluginManager) {
                   track => getConf(track, 'trackId') as string,
                 ),
                 anchorTracks: anchorPanelTracks(self.tracks),
+                sourceView: self,
               })
             return {
               views: {

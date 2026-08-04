@@ -304,6 +304,10 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
                       // can open on this view's tracks too — this chain track
                       // excluded, since it becomes the ribbon band
                       anchorTracks: anchorPanelTracks(view.tracks),
+                      // ...and so the launched view can take this one's place
+                      // rather than stacking below it, showing the same locus
+                      // twice
+                      sourceView: view,
                       feature,
                     },
                   ])

@@ -77,6 +77,17 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
         const idx = self.views.findIndex(v => v.id === id)
         self.views = cast(reorder(self.views, idx, direction))
       }
+      // The body of removeView, callable from replaceView below — an action
+      // can't reach a sibling action through `self` from inside the same
+      // .actions() block, since neither is attached yet.
+      const detach = (view: IBaseViewModel) => {
+        for (const [, widget] of self.activeWidgets) {
+          if (widget.view?.id === view.id) {
+            self.hideWidget(widget)
+          }
+        }
+        self.views.remove(view)
+      }
       return {
         /**
          * #action
@@ -117,14 +128,41 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
 
         /**
          * #action
+         * swap `view` for a new view of `typeName`, in the slot it occupied.
+         *
+         * The launchers that build a view out of one you are already looking at
+         * — collapse introns, launch synteny view — otherwise append, leaving
+         * the source view above the thing it produced and a stack of two views
+         * showing the same locus. This is the "replace" half of that offer, and
+         * a slot swap rather than remove-then-add so the new view lands where
+         * the reader was looking instead of at the bottom of the session.
+         *
+         * The slot is `session.views`, which is the classic stack's order. In
+         * workspaces mode the panel the old view sat in is not preserved: the
+         * new view arrives unassigned and dockview's reconcile homes it to the
+         * active panel (see app-core's reconcilePanelAssignments), which is the
+         * same panel only when the replaced view was in the active one.
+         */
+        replaceView(
+          view: IBaseViewModel,
+          typeName: string,
+          initialState = {},
+        ) {
+          // read before the removal, which is what makes the index stale
+          const idx = self.views.indexOf(view)
+          detach(view)
+          // a view already gone from the session appends, rather than throwing
+          // or silently dropping the launch
+          const at = idx === -1 ? self.views.length : idx
+          self.views.splice(at, 0, { ...initialState, type: typeName })
+          return self.views[at]!
+        },
+
+        /**
+         * #action
          */
         removeView(view: IBaseViewModel) {
-          for (const [, widget] of self.activeWidgets) {
-            if (widget.view?.id === view.id) {
-              self.hideWidget(widget)
-            }
-          }
-          self.views.remove(view)
+          detach(view)
         },
 
         /**
