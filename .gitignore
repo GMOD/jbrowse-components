@@ -62,7 +62,14 @@ test_data/hprc/*.paf.gz.tbi
 !test_data/hprc/hprc-v1.1-mc-grch38-chr20.synteny.paf.gz
 !test_data/hprc/hprc-v1.1-mc-grch38-chr20.synteny.paf.gz.tbi
 test_data/volvox/*.og
-.claude
+# Local agent settings stay untracked, but the jbrowse-authoring skill is a
+# shared tool (its validate-config.mjs is what the FAQ tells people to run), so
+# it is committed. Re-including a path needs its parent directories un-ignored
+# first — git never descends into an excluded directory.
+.claude/*
+!.claude/skills/
+.claude/skills/*
+!.claude/skills/jbrowse-authoring/
 
 # component_tests install npm packages without a committed lockfile (see
 # .github/workflows/push.yml); yarn.lock here is a local-only generated artifact

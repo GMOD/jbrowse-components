@@ -120,6 +120,24 @@ const GENERATORS: Generator[] = [
       'products/*/README.md',
     ],
   },
+  {
+    // The config-slot manifest the jbrowse-authoring skill's validator checks
+    // against, read out of the live ConfigurationSchema objects. It rides
+    // autogen so a new slot (or a renamed one) can't leave the validator
+    // reporting a correct config as broken — which is the failure that makes a
+    // checker worth ignoring. Also emits references/config-types.md, the
+    // human/agent-readable index of every registered type.
+    name: 'config schema manifest',
+    argv: [
+      'node',
+      '--experimental-strip-types',
+      '.claude/skills/jbrowse-authoring/scripts/generate-schema.ts',
+    ],
+    diffPaths: [
+      '.claude/skills/jbrowse-authoring/scripts/config-schema.json',
+      '.claude/skills/jbrowse-authoring/references/config-types.md',
+    ],
+  },
 ]
 
 function run(argv: string[], extra: string[] = []) {

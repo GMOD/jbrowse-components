@@ -1,0 +1,4793 @@
+{
+  "adapters": {
+    "CytobandAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"CytobandAdapter\""
+        },
+        {
+          "name": "cytobandLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        }
+      ],
+      "shorthandKeys": []
+    },
+    "CramAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"CramAdapter\""
+        },
+        {
+          "name": "fetchSizeLimit",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "cramLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "craiLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        }
+      ],
+      "shorthandKeys": [
+        "uri",
+        "baseUri"
+      ]
+    },
+    "BamAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"BamAdapter\""
+        },
+        {
+          "name": "bamLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "index",
+          "type": "BamIndexConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "indexType",
+              "type": "(JexlString | IndexType)"
+            },
+            {
+              "name": "location",
+              "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+            }
+          ]
+        },
+        {
+          "name": "fetchSizeLimit",
+          "type": "(JexlString | number)"
+        }
+      ],
+      "shorthandKeys": [
+        "uri",
+        "baseUri",
+        "csi"
+      ]
+    },
+    "SamAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"SamAdapter\""
+        },
+        {
+          "name": "samLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "samText",
+          "type": "(JexlString | string)"
+        }
+      ],
+      "shorthandKeys": [
+        "uri",
+        "baseUri"
+      ]
+    },
+    "HtsgetBamAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"HtsgetBamAdapter\""
+        },
+        {
+          "name": "htsgetBase",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "htsgetTrackId",
+          "type": "(JexlString | string)"
+        }
+      ],
+      "shorthandKeys": []
+    },
+    "BigBedAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"BigBedAdapter\""
+        },
+        {
+          "name": "bigBedLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "scoreColumn",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "aggregateField",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "disableGeneHeuristic",
+          "type": "(JexlString | boolean)"
+        }
+      ],
+      "shorthandKeys": [
+        "uri",
+        "baseUri"
+      ]
+    },
+    "BedAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"BedAdapter\""
+        },
+        {
+          "name": "bedLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "columnNames",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "scoreColumn",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "autoSql",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "colRef",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "colStart",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "colEnd",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "disableGeneHeuristic",
+          "type": "(JexlString | boolean)"
+        }
+      ],
+      "shorthandKeys": [
+        "uri",
+        "baseUri"
+      ]
+    },
+    "BedpeAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"BedpeAdapter\""
+        },
+        {
+          "name": "bedpeLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "columnNames",
+          "type": "(JexlString | string[])"
+        }
+      ],
+      "shorthandKeys": [
+        "uri",
+        "baseUri"
+      ]
+    },
+    "StarFusionAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"StarFusionAdapter\""
+        },
+        {
+          "name": "starFusionLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        }
+      ],
+      "shorthandKeys": [
+        "uri",
+        "baseUri"
+      ]
+    },
+    "BedTabixAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"BedTabixAdapter\""
+        },
+        {
+          "name": "bedGzLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "index",
+          "type": "TabixIndexConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "indexType",
+              "type": "(JexlString | IndexType)"
+            },
+            {
+              "name": "location",
+              "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+            }
+          ]
+        },
+        {
+          "name": "columnNames",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "scoreColumn",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "autoSql",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "disableGeneHeuristic",
+          "type": "(JexlString | boolean)"
+        }
+      ],
+      "shorthandKeys": [
+        "uri",
+        "baseUri",
+        "csi"
+      ]
+    },
+    "BedGraphAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"BedGraphAdapter\""
+        },
+        {
+          "name": "bedGraphLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "columnNames",
+          "type": "(JexlString | string[])"
+        }
+      ],
+      "shorthandKeys": [
+        "uri",
+        "baseUri"
+      ]
+    },
+    "BedGraphTabixAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"BedGraphTabixAdapter\""
+        },
+        {
+          "name": "bedGraphGzLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "index",
+          "type": "BedGraphTabixIndexConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "indexType",
+              "type": "(JexlString | IndexType)"
+            },
+            {
+              "name": "location",
+              "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+            }
+          ]
+        },
+        {
+          "name": "columnNames",
+          "type": "(JexlString | string[])"
+        }
+      ],
+      "shorthandKeys": [
+        "uri",
+        "baseUri",
+        "csi"
+      ]
+    },
+    "FromConfigAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"FromConfigAdapter\""
+        },
+        {
+          "name": "adapterId",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "features",
+          "type": "(JexlString | frozen)"
+        }
+      ],
+      "shorthandKeys": []
+    },
+    "FromConfigRegionsAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"FromConfigRegionsAdapter\""
+        },
+        {
+          "name": "adapterId",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "features",
+          "type": "(JexlString | frozen)"
+        }
+      ],
+      "shorthandKeys": []
+    },
+    "FromConfigSequenceAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"FromConfigSequenceAdapter\""
+        },
+        {
+          "name": "adapterId",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "features",
+          "type": "(JexlString | frozen)"
+        }
+      ],
+      "shorthandKeys": []
+    },
+    "RefNameAliasAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"RefNameAliasAdapter\""
+        },
+        {
+          "name": "location",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "refNameColumn",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "refNameColumnHeaderName",
+          "type": "(JexlString | string)"
+        }
+      ],
+      "shorthandKeys": [
+        "uri",
+        "baseUri"
+      ]
+    },
+    "NcbiSequenceReportAliasAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"NcbiSequenceReportAliasAdapter\""
+        },
+        {
+          "name": "location",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "useNameOverride",
+          "type": "(JexlString | boolean)"
+        }
+      ],
+      "shorthandKeys": [
+        "uri",
+        "baseUri"
+      ]
+    },
+    "GtfAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"GtfAdapter\""
+        },
+        {
+          "name": "gtfLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "aggregateField",
+          "type": "(JexlString | string)"
+        }
+      ],
+      "shorthandKeys": [
+        "uri",
+        "baseUri"
+      ]
+    },
+    "GtfTabixAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"GtfTabixAdapter\""
+        },
+        {
+          "name": "gtfGzLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "index",
+          "type": "GtfTabixIndexConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "indexType",
+              "type": "(JexlString | IndexType)"
+            },
+            {
+              "name": "location",
+              "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+            }
+          ]
+        },
+        {
+          "name": "dontRedispatch",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "aggregateField",
+          "type": "(JexlString | string)"
+        }
+      ],
+      "shorthandKeys": [
+        "uri",
+        "baseUri",
+        "csi"
+      ]
+    },
+    "Gff3TabixAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"Gff3TabixAdapter\""
+        },
+        {
+          "name": "gffGzLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "index",
+          "type": "Gff3TabixIndexConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "indexType",
+              "type": "(JexlString | IndexType)"
+            },
+            {
+              "name": "location",
+              "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+            }
+          ]
+        },
+        {
+          "name": "dontRedispatch",
+          "type": "(JexlString | string[])"
+        }
+      ],
+      "shorthandKeys": [
+        "uri",
+        "baseUri",
+        "csi"
+      ]
+    },
+    "Gff3Adapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"Gff3Adapter\""
+        },
+        {
+          "name": "gffLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        }
+      ],
+      "shorthandKeys": [
+        "uri",
+        "baseUri"
+      ]
+    },
+    "NCListAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"NCListAdapter\""
+        },
+        {
+          "name": "rootUrlTemplate",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "refNames",
+          "type": "(JexlString | string[])"
+        }
+      ],
+      "shorthandKeys": []
+    },
+    "SPARQLAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"SPARQLAdapter\""
+        },
+        {
+          "name": "endpoint",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "queryTemplate",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "refNamesQueryTemplate",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "refNames",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "additionalQueryParams",
+          "type": "(JexlString | string[])"
+        }
+      ],
+      "shorthandKeys": []
+    },
+    "TwoBitAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"TwoBitAdapter\""
+        },
+        {
+          "name": "twoBitLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "chromSizesLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        }
+      ],
+      "shorthandKeys": [
+        "uri",
+        "baseUri",
+        "chromSizes"
+      ]
+    },
+    "BgzipFastaAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"BgzipFastaAdapter\""
+        },
+        {
+          "name": "fastaLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "faiLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "metadataLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "gziLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        }
+      ],
+      "shorthandKeys": [
+        "uri",
+        "baseUri"
+      ]
+    },
+    "ChromSizesAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"ChromSizesAdapter\""
+        },
+        {
+          "name": "chromSizesLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        }
+      ],
+      "shorthandKeys": [
+        "uri",
+        "baseUri"
+      ]
+    },
+    "IndexedFastaAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"IndexedFastaAdapter\""
+        },
+        {
+          "name": "fastaLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "faiLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "metadataLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        }
+      ],
+      "shorthandKeys": [
+        "uri",
+        "baseUri"
+      ]
+    },
+    "UnindexedFastaAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"UnindexedFastaAdapter\""
+        },
+        {
+          "name": "rewriteRefNames",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "fastaLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "metadataLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        }
+      ],
+      "shorthandKeys": [
+        "uri",
+        "baseUri"
+      ]
+    },
+    "SequenceSearchAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"SequenceSearchAdapter\""
+        },
+        {
+          "name": "search",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "sequenceAdapter",
+          "type": "(JexlString | frozen)"
+        },
+        {
+          "name": "searchForward",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "searchReverse",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "caseInsensitive",
+          "type": "(JexlString | boolean)"
+        }
+      ],
+      "shorthandKeys": []
+    },
+    "CrisprGuideAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"CrisprGuideAdapter\""
+        },
+        {
+          "name": "sequenceAdapter",
+          "type": "(JexlString | frozen)"
+        },
+        {
+          "name": "pam",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "guideLength",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "pamLocation",
+          "type": "(JexlString | PamLocation)"
+        },
+        {
+          "name": "cutOffset",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "searchForward",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "searchReverse",
+          "type": "(JexlString | boolean)"
+        }
+      ],
+      "shorthandKeys": []
+    },
+    "MotifListAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"MotifListAdapter\""
+        },
+        {
+          "name": "motifs",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "sequenceAdapter",
+          "type": "(JexlString | frozen)"
+        },
+        {
+          "name": "searchForward",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "searchReverse",
+          "type": "(JexlString | boolean)"
+        }
+      ],
+      "shorthandKeys": []
+    },
+    "VcfAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"VcfAdapter\""
+        },
+        {
+          "name": "vcfLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "samplesTsvLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        }
+      ],
+      "shorthandKeys": [
+        "uri",
+        "baseUri"
+      ]
+    },
+    "VcfTabixAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"VcfTabixAdapter\""
+        },
+        {
+          "name": "vcfGzLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "index",
+          "type": "VcfIndexConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "indexType",
+              "type": "(JexlString | IndexType)"
+            },
+            {
+              "name": "location",
+              "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+            }
+          ]
+        },
+        {
+          "name": "samplesTsvLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "fetchSizeLimit",
+          "type": "(JexlString | number)"
+        }
+      ],
+      "shorthandKeys": [
+        "uri",
+        "baseUri",
+        "csi"
+      ]
+    },
+    "SplitVcfTabixAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"SplitVcfTabixAdapter\""
+        },
+        {
+          "name": "vcfGzLocationMap",
+          "type": "(JexlString | frozen)"
+        },
+        {
+          "name": "indexLocationMap",
+          "type": "(JexlString | frozen)"
+        },
+        {
+          "name": "indexType",
+          "type": "(JexlString | IndexType)"
+        },
+        {
+          "name": "samplesTsvLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        }
+      ],
+      "shorthandKeys": []
+    },
+    "PlinkLDAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"PlinkLDAdapter\""
+        },
+        {
+          "name": "ldLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        }
+      ],
+      "shorthandKeys": [
+        "uri",
+        "baseUri"
+      ]
+    },
+    "PlinkLDTabixAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"PlinkLDTabixAdapter\""
+        },
+        {
+          "name": "ldLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "index",
+          "type": "PlinkLDTabixIndexConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "indexType",
+              "type": "(JexlString | IndexType)"
+            },
+            {
+              "name": "location",
+              "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+            }
+          ]
+        }
+      ],
+      "shorthandKeys": []
+    },
+    "MultiWiggleAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"MultiWiggleAdapter\""
+        },
+        {
+          "name": "subadapters",
+          "type": "(JexlString | frozen)"
+        },
+        {
+          "name": "bigWigs",
+          "type": "(JexlString | frozen)"
+        }
+      ],
+      "shorthandKeys": []
+    },
+    "BigWigAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"BigWigAdapter\""
+        },
+        {
+          "name": "bigWigLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "source",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "resolutionMultiplier",
+          "type": "(JexlString | number)"
+        }
+      ],
+      "shorthandKeys": [
+        "uri",
+        "baseUri"
+      ]
+    },
+    "GCContentAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"GCContentAdapter\""
+        },
+        {
+          "name": "sequenceAdapter",
+          "type": "(JexlString | frozen)"
+        },
+        {
+          "name": "windowSize",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "windowDelta",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "gcMode",
+          "type": "(JexlString | gcMode)"
+        }
+      ],
+      "shorthandKeys": []
+    },
+    "BgzipTaffyAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"BgzipTaffyAdapter\""
+        },
+        {
+          "name": "samples",
+          "type": "(JexlString | frozen)"
+        },
+        {
+          "name": "tafGzLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "taiLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "nhLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "annotationAdapter",
+          "type": "(JexlString | frozen)"
+        }
+      ],
+      "shorthandKeys": []
+    },
+    "BigMafAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"BigMafAdapter\""
+        },
+        {
+          "name": "samples",
+          "type": "(JexlString | frozen)"
+        },
+        {
+          "name": "bigBedLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "nhLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "summaryAdapter",
+          "type": "(JexlString | frozen)"
+        },
+        {
+          "name": "annotationAdapter",
+          "type": "(JexlString | frozen)"
+        }
+      ],
+      "shorthandKeys": []
+    },
+    "MafTabixAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"MafTabixAdapter\""
+        },
+        {
+          "name": "samples",
+          "type": "(JexlString | frozen)"
+        },
+        {
+          "name": "bedGzLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "refAssemblyName",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "index",
+          "type": "IndexConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "location",
+              "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+            },
+            {
+              "name": "indexType",
+              "type": "(JexlString | IndexType)"
+            }
+          ]
+        },
+        {
+          "name": "nhLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "annotationAdapter",
+          "type": "(JexlString | frozen)"
+        }
+      ],
+      "shorthandKeys": []
+    },
+    "HicAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"HicAdapter\""
+        },
+        {
+          "name": "hicLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        }
+      ],
+      "shorthandKeys": [
+        "uri",
+        "baseUri"
+      ]
+    },
+    "AllVsAllPAFAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"AllVsAllPAFAdapter\""
+        },
+        {
+          "name": "assemblyNames",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "pafLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "assemblyNameToPanSN",
+          "type": "(JexlString | frozen)"
+        }
+      ],
+      "shorthandKeys": []
+    },
+    "AllVsAllIndexedPAFAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"AllVsAllIndexedPAFAdapter\""
+        },
+        {
+          "name": "assemblyNames",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "pifGzLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "assemblyNameToPanSN",
+          "type": "(JexlString | frozen)"
+        },
+        {
+          "name": "coarseBpPerPxThreshold",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "index",
+          "type": "TabixIndexConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "indexType",
+              "type": "(JexlString | IndexType)"
+            },
+            {
+              "name": "location",
+              "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+            }
+          ]
+        }
+      ],
+      "shorthandKeys": [
+        "uri",
+        "baseUri",
+        "csi"
+      ]
+    },
+    "PAFAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"PAFAdapter\""
+        },
+        {
+          "name": "assemblyNames",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "targetAssembly",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "queryAssembly",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "pafLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        }
+      ],
+      "shorthandKeys": [
+        "uri",
+        "baseUri"
+      ]
+    },
+    "PairwiseIndexedPAFAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"PairwiseIndexedPAFAdapter\""
+        },
+        {
+          "name": "assemblyNames",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "targetAssembly",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "queryAssembly",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "pifGzLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "coarseBpPerPxThreshold",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "index",
+          "type": "TabixIndexConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "indexType",
+              "type": "(JexlString | IndexType)"
+            },
+            {
+              "name": "location",
+              "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+            }
+          ]
+        }
+      ],
+      "shorthandKeys": [
+        "uri",
+        "baseUri",
+        "csi"
+      ]
+    },
+    "DeltaAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"DeltaAdapter\""
+        },
+        {
+          "name": "assemblyNames",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "targetAssembly",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "queryAssembly",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "deltaLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        }
+      ],
+      "shorthandKeys": [
+        "uri",
+        "baseUri"
+      ]
+    },
+    "ChainAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"ChainAdapter\""
+        },
+        {
+          "name": "assemblyNames",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "targetAssembly",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "queryAssembly",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "chainLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        }
+      ],
+      "shorthandKeys": [
+        "uri",
+        "baseUri"
+      ]
+    },
+    "MCScanAnchorsAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"MCScanAnchorsAdapter\""
+        },
+        {
+          "name": "mcscanAnchorsLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "bed1Location",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "bed2Location",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "assemblyNames",
+          "type": "(JexlString | string[])"
+        }
+      ],
+      "shorthandKeys": [
+        "uri",
+        "baseUri",
+        "csi",
+        "bed1",
+        "bed2",
+        "chromSizes",
+        "localPath"
+      ]
+    },
+    "MCScanBlocksAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"MCScanBlocksAdapter\""
+        },
+        {
+          "name": "mcscanBlocksLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "blockAssemblies",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "bedLocations",
+          "type": "(JexlString | frozen)"
+        },
+        {
+          "name": "assemblyNames",
+          "type": "(JexlString | string[])"
+        }
+      ],
+      "shorthandKeys": []
+    },
+    "MCScanSimpleAnchorsAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"MCScanSimpleAnchorsAdapter\""
+        },
+        {
+          "name": "mcscanSimpleAnchorsLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "bed1Location",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "bed2Location",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "assemblyNames",
+          "type": "(JexlString | string[])"
+        }
+      ],
+      "shorthandKeys": [
+        "uri",
+        "baseUri",
+        "csi",
+        "bed1",
+        "bed2",
+        "chromSizes",
+        "localPath"
+      ]
+    },
+    "MashMapAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"MashMapAdapter\""
+        },
+        {
+          "name": "assemblyNames",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "targetAssembly",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "queryAssembly",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "outLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        }
+      ],
+      "shorthandKeys": [
+        "uri",
+        "baseUri"
+      ]
+    },
+    "BlastTabularAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"BlastTabularAdapter\""
+        },
+        {
+          "name": "assemblyNames",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "targetAssembly",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "queryAssembly",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "blastTableLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "columns",
+          "type": "(JexlString | string)"
+        }
+      ],
+      "shorthandKeys": []
+    },
+    "GWASAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"GWASAdapter\""
+        },
+        {
+          "name": "bedGzLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "index",
+          "type": "TabixIndexConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "indexType",
+              "type": "(JexlString | IndexType)"
+            },
+            {
+              "name": "location",
+              "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+            }
+          ]
+        },
+        {
+          "name": "columnNames",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "scoreColumn",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "autoSql",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "disableGeneHeuristic",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "scoreTransform",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "ldAdapter",
+          "type": "(JexlString | frozen)"
+        }
+      ],
+      "shorthandKeys": []
+    }
+  },
+  "tracks": {
+    "FeatureTrack": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"FeatureTrack\""
+        },
+        {
+          "name": "trackId",
+          "type": "identifier"
+        },
+        {
+          "name": "name",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "assemblyNames",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "description",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "category",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "metadata",
+          "type": "(JexlString | frozen)"
+        },
+        {
+          "name": "rpcDriverName",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "adapter",
+          "type": "(CytobandAdapterConfigurationSchema | CramAdapterConfigurationSchema | BamAdapterConfigurationSchema | SamAdapterConfigurationSchema | HtsgetBamAdapterConfigurationSchema | BigBedAdapterConfigurationSchema | BedAdapterConfigurationSchema | BedpeAdapterConfigurationSchema | StarFusionAdapterConfigurationSchema | BedTabixAdapterConfigurationSchema | BedGraphAdapterConfigurationSchema | BedGraphTabixAdapterConfigurationSchema | FromConfigAdapterConfigurationSchema | FromConfigRegionsAdapterConfigurationSchema | FromConfigSequenceAdapterConfigurationSchema | RefNameAliasAdapterConfigurationSchema | NcbiSequenceReportAliasAdapterConfigurationSchema | GtfAdapterConfigurationSchema | GtfTabixAdapterConfigurationSchema | Gff3TabixAdapterConfigurationSchema | Gff3AdapterConfigurationSchema | NCListAdapterConfigurationSchema | SPARQLAdapterConfigurationSchema | TwoBitAdapterConfigurationSchema | BgzipFastaAdapterConfigurationSchema | ChromSizesAdapterConfigurationSchema | IndexedFastaAdapterConfigurationSchema | UnindexedFastaAdapterConfigurationSchema | SequenceSearchAdapterConfigurationSchema | CrisprGuideAdapterConfigurationSchema | MotifListAdapterConfigurationSchema | VcfAdapterConfigurationSchema | VcfTabixAdapterConfigurationSchema | SplitVcfTabixAdapterConfigurationSchema | PlinkLDAdapterConfigurationSchema | PlinkLDTabixAdapterConfigurationSchema | MultiWiggleAdapterConfigurationSchema | BigWigAdapterConfigurationSchema | GCContentAdapterConfigurationSchema | BgzipTaffyAdapterConfigurationSchema | BigMafAdapterConfigurationSchema | MafTabixAdapterConfigurationSchema | HicAdapterConfigurationSchema | AllVsAllPAFAdapterConfigurationSchema | AllVsAllIndexedPAFAdapterConfigurationSchema | PAFAdapterConfigurationSchema | PairwiseIndexedPAFAdapterConfigurationSchema | DeltaAdapterConfigurationSchema | ChainAdapterConfigurationSchema | MCScanAnchorsAdapterConfigurationSchema | MCScanBlocksAdapterConfigurationSchema | MCScanSimpleAnchorsAdapterConfigurationSchema | MashMapAdapterConfigurationSchema | BlastTabularAdapterConfigurationSchema | GWASAdapterConfigurationSchema)"
+        },
+        {
+          "name": "textSearching",
+          "type": "textSearchingConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "indexingAttributes",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "indexingFeatureTypesToExclude",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "textSearchAdapter",
+              "type": "(JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema)"
+            }
+          ]
+        },
+        {
+          "name": "displays",
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LinearMultiSampleVariantMatrixDisplayConfigurationSchema | LDDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | MultiLinearWiggleDisplayConfigurationSchema | LinearGCContentDisplayConfigurationSchema | LinearGCContentTrackDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearArcDisplayConfigurationSchema | LinearPairedArcDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema)[]"
+        },
+        {
+          "name": "formatDetails",
+          "type": "FormatDetailsConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "feature",
+              "type": "(JexlString | frozen)"
+            },
+            {
+              "name": "subfeatures",
+              "type": "(JexlString | frozen)"
+            },
+            {
+              "name": "depth",
+              "type": "(JexlString | number)"
+            },
+            {
+              "name": "maxDepth",
+              "type": "(JexlString | number)"
+            }
+          ]
+        },
+        {
+          "name": "formatAbout",
+          "type": "FormatAboutConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "config",
+              "type": "(JexlString | frozen)"
+            },
+            {
+              "name": "hideUris",
+              "type": "(JexlString | boolean)"
+            }
+          ]
+        }
+      ],
+      "displayTypes": [
+        "LinearBasicDisplay",
+        "LinearMultiRowFeatureDisplay",
+        "LinearArcDisplay"
+      ]
+    },
+    "AlignmentsTrack": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"AlignmentsTrack\""
+        },
+        {
+          "name": "trackId",
+          "type": "identifier"
+        },
+        {
+          "name": "name",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "assemblyNames",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "description",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "category",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "metadata",
+          "type": "(JexlString | frozen)"
+        },
+        {
+          "name": "rpcDriverName",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "adapter",
+          "type": "(CytobandAdapterConfigurationSchema | CramAdapterConfigurationSchema | BamAdapterConfigurationSchema | SamAdapterConfigurationSchema | HtsgetBamAdapterConfigurationSchema | BigBedAdapterConfigurationSchema | BedAdapterConfigurationSchema | BedpeAdapterConfigurationSchema | StarFusionAdapterConfigurationSchema | BedTabixAdapterConfigurationSchema | BedGraphAdapterConfigurationSchema | BedGraphTabixAdapterConfigurationSchema | FromConfigAdapterConfigurationSchema | FromConfigRegionsAdapterConfigurationSchema | FromConfigSequenceAdapterConfigurationSchema | RefNameAliasAdapterConfigurationSchema | NcbiSequenceReportAliasAdapterConfigurationSchema | GtfAdapterConfigurationSchema | GtfTabixAdapterConfigurationSchema | Gff3TabixAdapterConfigurationSchema | Gff3AdapterConfigurationSchema | NCListAdapterConfigurationSchema | SPARQLAdapterConfigurationSchema | TwoBitAdapterConfigurationSchema | BgzipFastaAdapterConfigurationSchema | ChromSizesAdapterConfigurationSchema | IndexedFastaAdapterConfigurationSchema | UnindexedFastaAdapterConfigurationSchema | SequenceSearchAdapterConfigurationSchema | CrisprGuideAdapterConfigurationSchema | MotifListAdapterConfigurationSchema | VcfAdapterConfigurationSchema | VcfTabixAdapterConfigurationSchema | SplitVcfTabixAdapterConfigurationSchema | PlinkLDAdapterConfigurationSchema | PlinkLDTabixAdapterConfigurationSchema | MultiWiggleAdapterConfigurationSchema | BigWigAdapterConfigurationSchema | GCContentAdapterConfigurationSchema | BgzipTaffyAdapterConfigurationSchema | BigMafAdapterConfigurationSchema | MafTabixAdapterConfigurationSchema | HicAdapterConfigurationSchema | AllVsAllPAFAdapterConfigurationSchema | AllVsAllIndexedPAFAdapterConfigurationSchema | PAFAdapterConfigurationSchema | PairwiseIndexedPAFAdapterConfigurationSchema | DeltaAdapterConfigurationSchema | ChainAdapterConfigurationSchema | MCScanAnchorsAdapterConfigurationSchema | MCScanBlocksAdapterConfigurationSchema | MCScanSimpleAnchorsAdapterConfigurationSchema | MashMapAdapterConfigurationSchema | BlastTabularAdapterConfigurationSchema | GWASAdapterConfigurationSchema)"
+        },
+        {
+          "name": "textSearching",
+          "type": "textSearchingConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "indexingAttributes",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "indexingFeatureTypesToExclude",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "textSearchAdapter",
+              "type": "(JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema)"
+            }
+          ]
+        },
+        {
+          "name": "displays",
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LinearMultiSampleVariantMatrixDisplayConfigurationSchema | LDDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | MultiLinearWiggleDisplayConfigurationSchema | LinearGCContentDisplayConfigurationSchema | LinearGCContentTrackDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearArcDisplayConfigurationSchema | LinearPairedArcDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema)[]"
+        },
+        {
+          "name": "formatDetails",
+          "type": "FormatDetailsConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "feature",
+              "type": "(JexlString | frozen)"
+            },
+            {
+              "name": "subfeatures",
+              "type": "(JexlString | frozen)"
+            },
+            {
+              "name": "depth",
+              "type": "(JexlString | number)"
+            },
+            {
+              "name": "maxDepth",
+              "type": "(JexlString | number)"
+            }
+          ]
+        },
+        {
+          "name": "formatAbout",
+          "type": "FormatAboutConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "config",
+              "type": "(JexlString | frozen)"
+            },
+            {
+              "name": "hideUris",
+              "type": "(JexlString | boolean)"
+            }
+          ]
+        }
+      ],
+      "displayTypes": [
+        "LinearAlignmentsDisplay"
+      ]
+    },
+    "SyntenyTrack": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"SyntenyTrack\""
+        },
+        {
+          "name": "trackId",
+          "type": "identifier"
+        },
+        {
+          "name": "name",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "assemblyNames",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "description",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "category",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "metadata",
+          "type": "(JexlString | frozen)"
+        },
+        {
+          "name": "rpcDriverName",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "adapter",
+          "type": "(CytobandAdapterConfigurationSchema | CramAdapterConfigurationSchema | BamAdapterConfigurationSchema | SamAdapterConfigurationSchema | HtsgetBamAdapterConfigurationSchema | BigBedAdapterConfigurationSchema | BedAdapterConfigurationSchema | BedpeAdapterConfigurationSchema | StarFusionAdapterConfigurationSchema | BedTabixAdapterConfigurationSchema | BedGraphAdapterConfigurationSchema | BedGraphTabixAdapterConfigurationSchema | FromConfigAdapterConfigurationSchema | FromConfigRegionsAdapterConfigurationSchema | FromConfigSequenceAdapterConfigurationSchema | RefNameAliasAdapterConfigurationSchema | NcbiSequenceReportAliasAdapterConfigurationSchema | GtfAdapterConfigurationSchema | GtfTabixAdapterConfigurationSchema | Gff3TabixAdapterConfigurationSchema | Gff3AdapterConfigurationSchema | NCListAdapterConfigurationSchema | SPARQLAdapterConfigurationSchema | TwoBitAdapterConfigurationSchema | BgzipFastaAdapterConfigurationSchema | ChromSizesAdapterConfigurationSchema | IndexedFastaAdapterConfigurationSchema | UnindexedFastaAdapterConfigurationSchema | SequenceSearchAdapterConfigurationSchema | CrisprGuideAdapterConfigurationSchema | MotifListAdapterConfigurationSchema | VcfAdapterConfigurationSchema | VcfTabixAdapterConfigurationSchema | SplitVcfTabixAdapterConfigurationSchema | PlinkLDAdapterConfigurationSchema | PlinkLDTabixAdapterConfigurationSchema | MultiWiggleAdapterConfigurationSchema | BigWigAdapterConfigurationSchema | GCContentAdapterConfigurationSchema | BgzipTaffyAdapterConfigurationSchema | BigMafAdapterConfigurationSchema | MafTabixAdapterConfigurationSchema | HicAdapterConfigurationSchema | AllVsAllPAFAdapterConfigurationSchema | AllVsAllIndexedPAFAdapterConfigurationSchema | PAFAdapterConfigurationSchema | PairwiseIndexedPAFAdapterConfigurationSchema | DeltaAdapterConfigurationSchema | ChainAdapterConfigurationSchema | MCScanAnchorsAdapterConfigurationSchema | MCScanBlocksAdapterConfigurationSchema | MCScanSimpleAnchorsAdapterConfigurationSchema | MashMapAdapterConfigurationSchema | BlastTabularAdapterConfigurationSchema | GWASAdapterConfigurationSchema)"
+        },
+        {
+          "name": "textSearching",
+          "type": "textSearchingConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "indexingAttributes",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "indexingFeatureTypesToExclude",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "textSearchAdapter",
+              "type": "(JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema)"
+            }
+          ]
+        },
+        {
+          "name": "displays",
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LinearMultiSampleVariantMatrixDisplayConfigurationSchema | LDDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | MultiLinearWiggleDisplayConfigurationSchema | LinearGCContentDisplayConfigurationSchema | LinearGCContentTrackDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearArcDisplayConfigurationSchema | LinearPairedArcDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema)[]"
+        },
+        {
+          "name": "formatDetails",
+          "type": "FormatDetailsConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "feature",
+              "type": "(JexlString | frozen)"
+            },
+            {
+              "name": "subfeatures",
+              "type": "(JexlString | frozen)"
+            },
+            {
+              "name": "depth",
+              "type": "(JexlString | number)"
+            },
+            {
+              "name": "maxDepth",
+              "type": "(JexlString | number)"
+            }
+          ]
+        },
+        {
+          "name": "formatAbout",
+          "type": "FormatAboutConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "config",
+              "type": "(JexlString | frozen)"
+            },
+            {
+              "name": "hideUris",
+              "type": "(JexlString | boolean)"
+            }
+          ]
+        }
+      ],
+      "displayTypes": [
+        "DotplotDisplay",
+        "LinearSyntenyDisplay",
+        "LGVSyntenyDisplay"
+      ]
+    },
+    "ReferenceSequenceTrack": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"ReferenceSequenceTrack\""
+        },
+        {
+          "name": "trackId",
+          "type": "identifier"
+        },
+        {
+          "name": "adapter",
+          "type": "(CytobandAdapterConfigurationSchema | CramAdapterConfigurationSchema | BamAdapterConfigurationSchema | SamAdapterConfigurationSchema | HtsgetBamAdapterConfigurationSchema | BigBedAdapterConfigurationSchema | BedAdapterConfigurationSchema | BedpeAdapterConfigurationSchema | StarFusionAdapterConfigurationSchema | BedTabixAdapterConfigurationSchema | BedGraphAdapterConfigurationSchema | BedGraphTabixAdapterConfigurationSchema | FromConfigAdapterConfigurationSchema | FromConfigRegionsAdapterConfigurationSchema | FromConfigSequenceAdapterConfigurationSchema | RefNameAliasAdapterConfigurationSchema | NcbiSequenceReportAliasAdapterConfigurationSchema | GtfAdapterConfigurationSchema | GtfTabixAdapterConfigurationSchema | Gff3TabixAdapterConfigurationSchema | Gff3AdapterConfigurationSchema | NCListAdapterConfigurationSchema | SPARQLAdapterConfigurationSchema | TwoBitAdapterConfigurationSchema | BgzipFastaAdapterConfigurationSchema | ChromSizesAdapterConfigurationSchema | IndexedFastaAdapterConfigurationSchema | UnindexedFastaAdapterConfigurationSchema | SequenceSearchAdapterConfigurationSchema | CrisprGuideAdapterConfigurationSchema | MotifListAdapterConfigurationSchema | VcfAdapterConfigurationSchema | VcfTabixAdapterConfigurationSchema | SplitVcfTabixAdapterConfigurationSchema | PlinkLDAdapterConfigurationSchema | PlinkLDTabixAdapterConfigurationSchema | MultiWiggleAdapterConfigurationSchema | BigWigAdapterConfigurationSchema | GCContentAdapterConfigurationSchema | BgzipTaffyAdapterConfigurationSchema | BigMafAdapterConfigurationSchema | MafTabixAdapterConfigurationSchema | HicAdapterConfigurationSchema | AllVsAllPAFAdapterConfigurationSchema | AllVsAllIndexedPAFAdapterConfigurationSchema | PAFAdapterConfigurationSchema | PairwiseIndexedPAFAdapterConfigurationSchema | DeltaAdapterConfigurationSchema | ChainAdapterConfigurationSchema | MCScanAnchorsAdapterConfigurationSchema | MCScanBlocksAdapterConfigurationSchema | MCScanSimpleAnchorsAdapterConfigurationSchema | MashMapAdapterConfigurationSchema | BlastTabularAdapterConfigurationSchema | GWASAdapterConfigurationSchema)"
+        },
+        {
+          "name": "displays",
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LinearMultiSampleVariantMatrixDisplayConfigurationSchema | LDDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | MultiLinearWiggleDisplayConfigurationSchema | LinearGCContentDisplayConfigurationSchema | LinearGCContentTrackDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearArcDisplayConfigurationSchema | LinearPairedArcDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema)[]"
+        },
+        {
+          "name": "name",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "sequenceType",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "description",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "metadata",
+          "type": "(JexlString | frozen)"
+        },
+        {
+          "name": "formatAbout",
+          "type": "FormatAboutConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "config",
+              "type": "(JexlString | frozen)"
+            },
+            {
+              "name": "hideUris",
+              "type": "(JexlString | boolean)"
+            }
+          ]
+        }
+      ],
+      "displayTypes": [
+        "LinearReferenceSequenceDisplay",
+        "LinearGCContentDisplay"
+      ]
+    },
+    "VariantTrack": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"VariantTrack\""
+        },
+        {
+          "name": "trackId",
+          "type": "identifier"
+        },
+        {
+          "name": "name",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "assemblyNames",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "description",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "category",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "metadata",
+          "type": "(JexlString | frozen)"
+        },
+        {
+          "name": "rpcDriverName",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "adapter",
+          "type": "(CytobandAdapterConfigurationSchema | CramAdapterConfigurationSchema | BamAdapterConfigurationSchema | SamAdapterConfigurationSchema | HtsgetBamAdapterConfigurationSchema | BigBedAdapterConfigurationSchema | BedAdapterConfigurationSchema | BedpeAdapterConfigurationSchema | StarFusionAdapterConfigurationSchema | BedTabixAdapterConfigurationSchema | BedGraphAdapterConfigurationSchema | BedGraphTabixAdapterConfigurationSchema | FromConfigAdapterConfigurationSchema | FromConfigRegionsAdapterConfigurationSchema | FromConfigSequenceAdapterConfigurationSchema | RefNameAliasAdapterConfigurationSchema | NcbiSequenceReportAliasAdapterConfigurationSchema | GtfAdapterConfigurationSchema | GtfTabixAdapterConfigurationSchema | Gff3TabixAdapterConfigurationSchema | Gff3AdapterConfigurationSchema | NCListAdapterConfigurationSchema | SPARQLAdapterConfigurationSchema | TwoBitAdapterConfigurationSchema | BgzipFastaAdapterConfigurationSchema | ChromSizesAdapterConfigurationSchema | IndexedFastaAdapterConfigurationSchema | UnindexedFastaAdapterConfigurationSchema | SequenceSearchAdapterConfigurationSchema | CrisprGuideAdapterConfigurationSchema | MotifListAdapterConfigurationSchema | VcfAdapterConfigurationSchema | VcfTabixAdapterConfigurationSchema | SplitVcfTabixAdapterConfigurationSchema | PlinkLDAdapterConfigurationSchema | PlinkLDTabixAdapterConfigurationSchema | MultiWiggleAdapterConfigurationSchema | BigWigAdapterConfigurationSchema | GCContentAdapterConfigurationSchema | BgzipTaffyAdapterConfigurationSchema | BigMafAdapterConfigurationSchema | MafTabixAdapterConfigurationSchema | HicAdapterConfigurationSchema | AllVsAllPAFAdapterConfigurationSchema | AllVsAllIndexedPAFAdapterConfigurationSchema | PAFAdapterConfigurationSchema | PairwiseIndexedPAFAdapterConfigurationSchema | DeltaAdapterConfigurationSchema | ChainAdapterConfigurationSchema | MCScanAnchorsAdapterConfigurationSchema | MCScanBlocksAdapterConfigurationSchema | MCScanSimpleAnchorsAdapterConfigurationSchema | MashMapAdapterConfigurationSchema | BlastTabularAdapterConfigurationSchema | GWASAdapterConfigurationSchema)"
+        },
+        {
+          "name": "textSearching",
+          "type": "textSearchingConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "indexingAttributes",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "indexingFeatureTypesToExclude",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "textSearchAdapter",
+              "type": "(JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema)"
+            }
+          ]
+        },
+        {
+          "name": "displays",
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LinearMultiSampleVariantMatrixDisplayConfigurationSchema | LDDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | MultiLinearWiggleDisplayConfigurationSchema | LinearGCContentDisplayConfigurationSchema | LinearGCContentTrackDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearArcDisplayConfigurationSchema | LinearPairedArcDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema)[]"
+        },
+        {
+          "name": "formatDetails",
+          "type": "FormatDetailsConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "feature",
+              "type": "(JexlString | frozen)"
+            },
+            {
+              "name": "subfeatures",
+              "type": "(JexlString | frozen)"
+            },
+            {
+              "name": "depth",
+              "type": "(JexlString | number)"
+            },
+            {
+              "name": "maxDepth",
+              "type": "(JexlString | number)"
+            }
+          ]
+        },
+        {
+          "name": "formatAbout",
+          "type": "FormatAboutConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "config",
+              "type": "(JexlString | frozen)"
+            },
+            {
+              "name": "hideUris",
+              "type": "(JexlString | boolean)"
+            }
+          ]
+        }
+      ],
+      "displayTypes": [
+        "ChordVariantDisplay",
+        "LinearVariantDisplay",
+        "LinearMultiSampleVariantDisplay",
+        "LinearMultiSampleVariantMatrixDisplay",
+        "LDDisplay",
+        "LinearPairedArcDisplay"
+      ]
+    },
+    "LDTrack": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"LDTrack\""
+        },
+        {
+          "name": "trackId",
+          "type": "identifier"
+        },
+        {
+          "name": "name",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "assemblyNames",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "description",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "category",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "metadata",
+          "type": "(JexlString | frozen)"
+        },
+        {
+          "name": "rpcDriverName",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "adapter",
+          "type": "(CytobandAdapterConfigurationSchema | CramAdapterConfigurationSchema | BamAdapterConfigurationSchema | SamAdapterConfigurationSchema | HtsgetBamAdapterConfigurationSchema | BigBedAdapterConfigurationSchema | BedAdapterConfigurationSchema | BedpeAdapterConfigurationSchema | StarFusionAdapterConfigurationSchema | BedTabixAdapterConfigurationSchema | BedGraphAdapterConfigurationSchema | BedGraphTabixAdapterConfigurationSchema | FromConfigAdapterConfigurationSchema | FromConfigRegionsAdapterConfigurationSchema | FromConfigSequenceAdapterConfigurationSchema | RefNameAliasAdapterConfigurationSchema | NcbiSequenceReportAliasAdapterConfigurationSchema | GtfAdapterConfigurationSchema | GtfTabixAdapterConfigurationSchema | Gff3TabixAdapterConfigurationSchema | Gff3AdapterConfigurationSchema | NCListAdapterConfigurationSchema | SPARQLAdapterConfigurationSchema | TwoBitAdapterConfigurationSchema | BgzipFastaAdapterConfigurationSchema | ChromSizesAdapterConfigurationSchema | IndexedFastaAdapterConfigurationSchema | UnindexedFastaAdapterConfigurationSchema | SequenceSearchAdapterConfigurationSchema | CrisprGuideAdapterConfigurationSchema | MotifListAdapterConfigurationSchema | VcfAdapterConfigurationSchema | VcfTabixAdapterConfigurationSchema | SplitVcfTabixAdapterConfigurationSchema | PlinkLDAdapterConfigurationSchema | PlinkLDTabixAdapterConfigurationSchema | MultiWiggleAdapterConfigurationSchema | BigWigAdapterConfigurationSchema | GCContentAdapterConfigurationSchema | BgzipTaffyAdapterConfigurationSchema | BigMafAdapterConfigurationSchema | MafTabixAdapterConfigurationSchema | HicAdapterConfigurationSchema | AllVsAllPAFAdapterConfigurationSchema | AllVsAllIndexedPAFAdapterConfigurationSchema | PAFAdapterConfigurationSchema | PairwiseIndexedPAFAdapterConfigurationSchema | DeltaAdapterConfigurationSchema | ChainAdapterConfigurationSchema | MCScanAnchorsAdapterConfigurationSchema | MCScanBlocksAdapterConfigurationSchema | MCScanSimpleAnchorsAdapterConfigurationSchema | MashMapAdapterConfigurationSchema | BlastTabularAdapterConfigurationSchema | GWASAdapterConfigurationSchema)"
+        },
+        {
+          "name": "textSearching",
+          "type": "textSearchingConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "indexingAttributes",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "indexingFeatureTypesToExclude",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "textSearchAdapter",
+              "type": "(JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema)"
+            }
+          ]
+        },
+        {
+          "name": "displays",
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LinearMultiSampleVariantMatrixDisplayConfigurationSchema | LDDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | MultiLinearWiggleDisplayConfigurationSchema | LinearGCContentDisplayConfigurationSchema | LinearGCContentTrackDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearArcDisplayConfigurationSchema | LinearPairedArcDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema)[]"
+        },
+        {
+          "name": "formatDetails",
+          "type": "FormatDetailsConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "feature",
+              "type": "(JexlString | frozen)"
+            },
+            {
+              "name": "subfeatures",
+              "type": "(JexlString | frozen)"
+            },
+            {
+              "name": "depth",
+              "type": "(JexlString | number)"
+            },
+            {
+              "name": "maxDepth",
+              "type": "(JexlString | number)"
+            }
+          ]
+        },
+        {
+          "name": "formatAbout",
+          "type": "FormatAboutConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "config",
+              "type": "(JexlString | frozen)"
+            },
+            {
+              "name": "hideUris",
+              "type": "(JexlString | boolean)"
+            }
+          ]
+        }
+      ],
+      "displayTypes": [
+        "LDTrackDisplay"
+      ]
+    },
+    "QuantitativeTrack": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"QuantitativeTrack\""
+        },
+        {
+          "name": "trackId",
+          "type": "identifier"
+        },
+        {
+          "name": "name",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "assemblyNames",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "description",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "category",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "metadata",
+          "type": "(JexlString | frozen)"
+        },
+        {
+          "name": "rpcDriverName",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "adapter",
+          "type": "(CytobandAdapterConfigurationSchema | CramAdapterConfigurationSchema | BamAdapterConfigurationSchema | SamAdapterConfigurationSchema | HtsgetBamAdapterConfigurationSchema | BigBedAdapterConfigurationSchema | BedAdapterConfigurationSchema | BedpeAdapterConfigurationSchema | StarFusionAdapterConfigurationSchema | BedTabixAdapterConfigurationSchema | BedGraphAdapterConfigurationSchema | BedGraphTabixAdapterConfigurationSchema | FromConfigAdapterConfigurationSchema | FromConfigRegionsAdapterConfigurationSchema | FromConfigSequenceAdapterConfigurationSchema | RefNameAliasAdapterConfigurationSchema | NcbiSequenceReportAliasAdapterConfigurationSchema | GtfAdapterConfigurationSchema | GtfTabixAdapterConfigurationSchema | Gff3TabixAdapterConfigurationSchema | Gff3AdapterConfigurationSchema | NCListAdapterConfigurationSchema | SPARQLAdapterConfigurationSchema | TwoBitAdapterConfigurationSchema | BgzipFastaAdapterConfigurationSchema | ChromSizesAdapterConfigurationSchema | IndexedFastaAdapterConfigurationSchema | UnindexedFastaAdapterConfigurationSchema | SequenceSearchAdapterConfigurationSchema | CrisprGuideAdapterConfigurationSchema | MotifListAdapterConfigurationSchema | VcfAdapterConfigurationSchema | VcfTabixAdapterConfigurationSchema | SplitVcfTabixAdapterConfigurationSchema | PlinkLDAdapterConfigurationSchema | PlinkLDTabixAdapterConfigurationSchema | MultiWiggleAdapterConfigurationSchema | BigWigAdapterConfigurationSchema | GCContentAdapterConfigurationSchema | BgzipTaffyAdapterConfigurationSchema | BigMafAdapterConfigurationSchema | MafTabixAdapterConfigurationSchema | HicAdapterConfigurationSchema | AllVsAllPAFAdapterConfigurationSchema | AllVsAllIndexedPAFAdapterConfigurationSchema | PAFAdapterConfigurationSchema | PairwiseIndexedPAFAdapterConfigurationSchema | DeltaAdapterConfigurationSchema | ChainAdapterConfigurationSchema | MCScanAnchorsAdapterConfigurationSchema | MCScanBlocksAdapterConfigurationSchema | MCScanSimpleAnchorsAdapterConfigurationSchema | MashMapAdapterConfigurationSchema | BlastTabularAdapterConfigurationSchema | GWASAdapterConfigurationSchema)"
+        },
+        {
+          "name": "textSearching",
+          "type": "textSearchingConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "indexingAttributes",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "indexingFeatureTypesToExclude",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "textSearchAdapter",
+              "type": "(JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema)"
+            }
+          ]
+        },
+        {
+          "name": "displays",
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LinearMultiSampleVariantMatrixDisplayConfigurationSchema | LDDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | MultiLinearWiggleDisplayConfigurationSchema | LinearGCContentDisplayConfigurationSchema | LinearGCContentTrackDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearArcDisplayConfigurationSchema | LinearPairedArcDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema)[]"
+        },
+        {
+          "name": "formatDetails",
+          "type": "FormatDetailsConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "feature",
+              "type": "(JexlString | frozen)"
+            },
+            {
+              "name": "subfeatures",
+              "type": "(JexlString | frozen)"
+            },
+            {
+              "name": "depth",
+              "type": "(JexlString | number)"
+            },
+            {
+              "name": "maxDepth",
+              "type": "(JexlString | number)"
+            }
+          ]
+        },
+        {
+          "name": "formatAbout",
+          "type": "FormatAboutConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "config",
+              "type": "(JexlString | frozen)"
+            },
+            {
+              "name": "hideUris",
+              "type": "(JexlString | boolean)"
+            }
+          ]
+        }
+      ],
+      "displayTypes": [
+        "LinearWiggleDisplay"
+      ]
+    },
+    "MultiQuantitativeTrack": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"MultiQuantitativeTrack\""
+        },
+        {
+          "name": "trackId",
+          "type": "identifier"
+        },
+        {
+          "name": "name",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "assemblyNames",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "description",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "category",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "metadata",
+          "type": "(JexlString | frozen)"
+        },
+        {
+          "name": "rpcDriverName",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "adapter",
+          "type": "(CytobandAdapterConfigurationSchema | CramAdapterConfigurationSchema | BamAdapterConfigurationSchema | SamAdapterConfigurationSchema | HtsgetBamAdapterConfigurationSchema | BigBedAdapterConfigurationSchema | BedAdapterConfigurationSchema | BedpeAdapterConfigurationSchema | StarFusionAdapterConfigurationSchema | BedTabixAdapterConfigurationSchema | BedGraphAdapterConfigurationSchema | BedGraphTabixAdapterConfigurationSchema | FromConfigAdapterConfigurationSchema | FromConfigRegionsAdapterConfigurationSchema | FromConfigSequenceAdapterConfigurationSchema | RefNameAliasAdapterConfigurationSchema | NcbiSequenceReportAliasAdapterConfigurationSchema | GtfAdapterConfigurationSchema | GtfTabixAdapterConfigurationSchema | Gff3TabixAdapterConfigurationSchema | Gff3AdapterConfigurationSchema | NCListAdapterConfigurationSchema | SPARQLAdapterConfigurationSchema | TwoBitAdapterConfigurationSchema | BgzipFastaAdapterConfigurationSchema | ChromSizesAdapterConfigurationSchema | IndexedFastaAdapterConfigurationSchema | UnindexedFastaAdapterConfigurationSchema | SequenceSearchAdapterConfigurationSchema | CrisprGuideAdapterConfigurationSchema | MotifListAdapterConfigurationSchema | VcfAdapterConfigurationSchema | VcfTabixAdapterConfigurationSchema | SplitVcfTabixAdapterConfigurationSchema | PlinkLDAdapterConfigurationSchema | PlinkLDTabixAdapterConfigurationSchema | MultiWiggleAdapterConfigurationSchema | BigWigAdapterConfigurationSchema | GCContentAdapterConfigurationSchema | BgzipTaffyAdapterConfigurationSchema | BigMafAdapterConfigurationSchema | MafTabixAdapterConfigurationSchema | HicAdapterConfigurationSchema | AllVsAllPAFAdapterConfigurationSchema | AllVsAllIndexedPAFAdapterConfigurationSchema | PAFAdapterConfigurationSchema | PairwiseIndexedPAFAdapterConfigurationSchema | DeltaAdapterConfigurationSchema | ChainAdapterConfigurationSchema | MCScanAnchorsAdapterConfigurationSchema | MCScanBlocksAdapterConfigurationSchema | MCScanSimpleAnchorsAdapterConfigurationSchema | MashMapAdapterConfigurationSchema | BlastTabularAdapterConfigurationSchema | GWASAdapterConfigurationSchema)"
+        },
+        {
+          "name": "textSearching",
+          "type": "textSearchingConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "indexingAttributes",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "indexingFeatureTypesToExclude",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "textSearchAdapter",
+              "type": "(JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema)"
+            }
+          ]
+        },
+        {
+          "name": "displays",
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LinearMultiSampleVariantMatrixDisplayConfigurationSchema | LDDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | MultiLinearWiggleDisplayConfigurationSchema | LinearGCContentDisplayConfigurationSchema | LinearGCContentTrackDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearArcDisplayConfigurationSchema | LinearPairedArcDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema)[]"
+        },
+        {
+          "name": "formatDetails",
+          "type": "FormatDetailsConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "feature",
+              "type": "(JexlString | frozen)"
+            },
+            {
+              "name": "subfeatures",
+              "type": "(JexlString | frozen)"
+            },
+            {
+              "name": "depth",
+              "type": "(JexlString | number)"
+            },
+            {
+              "name": "maxDepth",
+              "type": "(JexlString | number)"
+            }
+          ]
+        },
+        {
+          "name": "formatAbout",
+          "type": "FormatAboutConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "config",
+              "type": "(JexlString | frozen)"
+            },
+            {
+              "name": "hideUris",
+              "type": "(JexlString | boolean)"
+            }
+          ]
+        }
+      ],
+      "displayTypes": [
+        "MultiLinearWiggleDisplay"
+      ]
+    },
+    "GCContentTrack": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"GCContentTrack\""
+        },
+        {
+          "name": "trackId",
+          "type": "identifier"
+        },
+        {
+          "name": "name",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "assemblyNames",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "description",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "category",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "metadata",
+          "type": "(JexlString | frozen)"
+        },
+        {
+          "name": "rpcDriverName",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "adapter",
+          "type": "(CytobandAdapterConfigurationSchema | CramAdapterConfigurationSchema | BamAdapterConfigurationSchema | SamAdapterConfigurationSchema | HtsgetBamAdapterConfigurationSchema | BigBedAdapterConfigurationSchema | BedAdapterConfigurationSchema | BedpeAdapterConfigurationSchema | StarFusionAdapterConfigurationSchema | BedTabixAdapterConfigurationSchema | BedGraphAdapterConfigurationSchema | BedGraphTabixAdapterConfigurationSchema | FromConfigAdapterConfigurationSchema | FromConfigRegionsAdapterConfigurationSchema | FromConfigSequenceAdapterConfigurationSchema | RefNameAliasAdapterConfigurationSchema | NcbiSequenceReportAliasAdapterConfigurationSchema | GtfAdapterConfigurationSchema | GtfTabixAdapterConfigurationSchema | Gff3TabixAdapterConfigurationSchema | Gff3AdapterConfigurationSchema | NCListAdapterConfigurationSchema | SPARQLAdapterConfigurationSchema | TwoBitAdapterConfigurationSchema | BgzipFastaAdapterConfigurationSchema | ChromSizesAdapterConfigurationSchema | IndexedFastaAdapterConfigurationSchema | UnindexedFastaAdapterConfigurationSchema | SequenceSearchAdapterConfigurationSchema | CrisprGuideAdapterConfigurationSchema | MotifListAdapterConfigurationSchema | VcfAdapterConfigurationSchema | VcfTabixAdapterConfigurationSchema | SplitVcfTabixAdapterConfigurationSchema | PlinkLDAdapterConfigurationSchema | PlinkLDTabixAdapterConfigurationSchema | MultiWiggleAdapterConfigurationSchema | BigWigAdapterConfigurationSchema | GCContentAdapterConfigurationSchema | BgzipTaffyAdapterConfigurationSchema | BigMafAdapterConfigurationSchema | MafTabixAdapterConfigurationSchema | HicAdapterConfigurationSchema | AllVsAllPAFAdapterConfigurationSchema | AllVsAllIndexedPAFAdapterConfigurationSchema | PAFAdapterConfigurationSchema | PairwiseIndexedPAFAdapterConfigurationSchema | DeltaAdapterConfigurationSchema | ChainAdapterConfigurationSchema | MCScanAnchorsAdapterConfigurationSchema | MCScanBlocksAdapterConfigurationSchema | MCScanSimpleAnchorsAdapterConfigurationSchema | MashMapAdapterConfigurationSchema | BlastTabularAdapterConfigurationSchema | GWASAdapterConfigurationSchema)"
+        },
+        {
+          "name": "textSearching",
+          "type": "textSearchingConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "indexingAttributes",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "indexingFeatureTypesToExclude",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "textSearchAdapter",
+              "type": "(JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema)"
+            }
+          ]
+        },
+        {
+          "name": "displays",
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LinearMultiSampleVariantMatrixDisplayConfigurationSchema | LDDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | MultiLinearWiggleDisplayConfigurationSchema | LinearGCContentDisplayConfigurationSchema | LinearGCContentTrackDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearArcDisplayConfigurationSchema | LinearPairedArcDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema)[]"
+        },
+        {
+          "name": "formatDetails",
+          "type": "FormatDetailsConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "feature",
+              "type": "(JexlString | frozen)"
+            },
+            {
+              "name": "subfeatures",
+              "type": "(JexlString | frozen)"
+            },
+            {
+              "name": "depth",
+              "type": "(JexlString | number)"
+            },
+            {
+              "name": "maxDepth",
+              "type": "(JexlString | number)"
+            }
+          ]
+        },
+        {
+          "name": "formatAbout",
+          "type": "FormatAboutConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "config",
+              "type": "(JexlString | frozen)"
+            },
+            {
+              "name": "hideUris",
+              "type": "(JexlString | boolean)"
+            }
+          ]
+        }
+      ],
+      "displayTypes": [
+        "LinearGCContentTrackDisplay"
+      ]
+    },
+    "MafTrack": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"MafTrack\""
+        },
+        {
+          "name": "trackId",
+          "type": "identifier"
+        },
+        {
+          "name": "name",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "assemblyNames",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "description",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "category",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "metadata",
+          "type": "(JexlString | frozen)"
+        },
+        {
+          "name": "rpcDriverName",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "adapter",
+          "type": "(CytobandAdapterConfigurationSchema | CramAdapterConfigurationSchema | BamAdapterConfigurationSchema | SamAdapterConfigurationSchema | HtsgetBamAdapterConfigurationSchema | BigBedAdapterConfigurationSchema | BedAdapterConfigurationSchema | BedpeAdapterConfigurationSchema | StarFusionAdapterConfigurationSchema | BedTabixAdapterConfigurationSchema | BedGraphAdapterConfigurationSchema | BedGraphTabixAdapterConfigurationSchema | FromConfigAdapterConfigurationSchema | FromConfigRegionsAdapterConfigurationSchema | FromConfigSequenceAdapterConfigurationSchema | RefNameAliasAdapterConfigurationSchema | NcbiSequenceReportAliasAdapterConfigurationSchema | GtfAdapterConfigurationSchema | GtfTabixAdapterConfigurationSchema | Gff3TabixAdapterConfigurationSchema | Gff3AdapterConfigurationSchema | NCListAdapterConfigurationSchema | SPARQLAdapterConfigurationSchema | TwoBitAdapterConfigurationSchema | BgzipFastaAdapterConfigurationSchema | ChromSizesAdapterConfigurationSchema | IndexedFastaAdapterConfigurationSchema | UnindexedFastaAdapterConfigurationSchema | SequenceSearchAdapterConfigurationSchema | CrisprGuideAdapterConfigurationSchema | MotifListAdapterConfigurationSchema | VcfAdapterConfigurationSchema | VcfTabixAdapterConfigurationSchema | SplitVcfTabixAdapterConfigurationSchema | PlinkLDAdapterConfigurationSchema | PlinkLDTabixAdapterConfigurationSchema | MultiWiggleAdapterConfigurationSchema | BigWigAdapterConfigurationSchema | GCContentAdapterConfigurationSchema | BgzipTaffyAdapterConfigurationSchema | BigMafAdapterConfigurationSchema | MafTabixAdapterConfigurationSchema | HicAdapterConfigurationSchema | AllVsAllPAFAdapterConfigurationSchema | AllVsAllIndexedPAFAdapterConfigurationSchema | PAFAdapterConfigurationSchema | PairwiseIndexedPAFAdapterConfigurationSchema | DeltaAdapterConfigurationSchema | ChainAdapterConfigurationSchema | MCScanAnchorsAdapterConfigurationSchema | MCScanBlocksAdapterConfigurationSchema | MCScanSimpleAnchorsAdapterConfigurationSchema | MashMapAdapterConfigurationSchema | BlastTabularAdapterConfigurationSchema | GWASAdapterConfigurationSchema)"
+        },
+        {
+          "name": "textSearching",
+          "type": "textSearchingConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "indexingAttributes",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "indexingFeatureTypesToExclude",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "textSearchAdapter",
+              "type": "(JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema)"
+            }
+          ]
+        },
+        {
+          "name": "displays",
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LinearMultiSampleVariantMatrixDisplayConfigurationSchema | LDDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | MultiLinearWiggleDisplayConfigurationSchema | LinearGCContentDisplayConfigurationSchema | LinearGCContentTrackDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearArcDisplayConfigurationSchema | LinearPairedArcDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema)[]"
+        },
+        {
+          "name": "formatDetails",
+          "type": "FormatDetailsConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "feature",
+              "type": "(JexlString | frozen)"
+            },
+            {
+              "name": "subfeatures",
+              "type": "(JexlString | frozen)"
+            },
+            {
+              "name": "depth",
+              "type": "(JexlString | number)"
+            },
+            {
+              "name": "maxDepth",
+              "type": "(JexlString | number)"
+            }
+          ]
+        },
+        {
+          "name": "formatAbout",
+          "type": "FormatAboutConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "config",
+              "type": "(JexlString | frozen)"
+            },
+            {
+              "name": "hideUris",
+              "type": "(JexlString | boolean)"
+            }
+          ]
+        }
+      ],
+      "displayTypes": [
+        "LinearMafDisplay"
+      ]
+    },
+    "HicTrack": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"HicTrack\""
+        },
+        {
+          "name": "trackId",
+          "type": "identifier"
+        },
+        {
+          "name": "name",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "assemblyNames",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "description",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "category",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "metadata",
+          "type": "(JexlString | frozen)"
+        },
+        {
+          "name": "rpcDriverName",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "adapter",
+          "type": "(CytobandAdapterConfigurationSchema | CramAdapterConfigurationSchema | BamAdapterConfigurationSchema | SamAdapterConfigurationSchema | HtsgetBamAdapterConfigurationSchema | BigBedAdapterConfigurationSchema | BedAdapterConfigurationSchema | BedpeAdapterConfigurationSchema | StarFusionAdapterConfigurationSchema | BedTabixAdapterConfigurationSchema | BedGraphAdapterConfigurationSchema | BedGraphTabixAdapterConfigurationSchema | FromConfigAdapterConfigurationSchema | FromConfigRegionsAdapterConfigurationSchema | FromConfigSequenceAdapterConfigurationSchema | RefNameAliasAdapterConfigurationSchema | NcbiSequenceReportAliasAdapterConfigurationSchema | GtfAdapterConfigurationSchema | GtfTabixAdapterConfigurationSchema | Gff3TabixAdapterConfigurationSchema | Gff3AdapterConfigurationSchema | NCListAdapterConfigurationSchema | SPARQLAdapterConfigurationSchema | TwoBitAdapterConfigurationSchema | BgzipFastaAdapterConfigurationSchema | ChromSizesAdapterConfigurationSchema | IndexedFastaAdapterConfigurationSchema | UnindexedFastaAdapterConfigurationSchema | SequenceSearchAdapterConfigurationSchema | CrisprGuideAdapterConfigurationSchema | MotifListAdapterConfigurationSchema | VcfAdapterConfigurationSchema | VcfTabixAdapterConfigurationSchema | SplitVcfTabixAdapterConfigurationSchema | PlinkLDAdapterConfigurationSchema | PlinkLDTabixAdapterConfigurationSchema | MultiWiggleAdapterConfigurationSchema | BigWigAdapterConfigurationSchema | GCContentAdapterConfigurationSchema | BgzipTaffyAdapterConfigurationSchema | BigMafAdapterConfigurationSchema | MafTabixAdapterConfigurationSchema | HicAdapterConfigurationSchema | AllVsAllPAFAdapterConfigurationSchema | AllVsAllIndexedPAFAdapterConfigurationSchema | PAFAdapterConfigurationSchema | PairwiseIndexedPAFAdapterConfigurationSchema | DeltaAdapterConfigurationSchema | ChainAdapterConfigurationSchema | MCScanAnchorsAdapterConfigurationSchema | MCScanBlocksAdapterConfigurationSchema | MCScanSimpleAnchorsAdapterConfigurationSchema | MashMapAdapterConfigurationSchema | BlastTabularAdapterConfigurationSchema | GWASAdapterConfigurationSchema)"
+        },
+        {
+          "name": "textSearching",
+          "type": "textSearchingConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "indexingAttributes",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "indexingFeatureTypesToExclude",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "textSearchAdapter",
+              "type": "(JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema)"
+            }
+          ]
+        },
+        {
+          "name": "displays",
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LinearMultiSampleVariantMatrixDisplayConfigurationSchema | LDDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | MultiLinearWiggleDisplayConfigurationSchema | LinearGCContentDisplayConfigurationSchema | LinearGCContentTrackDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearArcDisplayConfigurationSchema | LinearPairedArcDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema)[]"
+        },
+        {
+          "name": "formatDetails",
+          "type": "FormatDetailsConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "feature",
+              "type": "(JexlString | frozen)"
+            },
+            {
+              "name": "subfeatures",
+              "type": "(JexlString | frozen)"
+            },
+            {
+              "name": "depth",
+              "type": "(JexlString | number)"
+            },
+            {
+              "name": "maxDepth",
+              "type": "(JexlString | number)"
+            }
+          ]
+        },
+        {
+          "name": "formatAbout",
+          "type": "FormatAboutConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "config",
+              "type": "(JexlString | frozen)"
+            },
+            {
+              "name": "hideUris",
+              "type": "(JexlString | boolean)"
+            }
+          ]
+        }
+      ],
+      "displayTypes": [
+        "LinearHicDisplay"
+      ]
+    },
+    "GWASTrack": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"GWASTrack\""
+        },
+        {
+          "name": "trackId",
+          "type": "identifier"
+        },
+        {
+          "name": "name",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "assemblyNames",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "description",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "category",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "metadata",
+          "type": "(JexlString | frozen)"
+        },
+        {
+          "name": "rpcDriverName",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "adapter",
+          "type": "(CytobandAdapterConfigurationSchema | CramAdapterConfigurationSchema | BamAdapterConfigurationSchema | SamAdapterConfigurationSchema | HtsgetBamAdapterConfigurationSchema | BigBedAdapterConfigurationSchema | BedAdapterConfigurationSchema | BedpeAdapterConfigurationSchema | StarFusionAdapterConfigurationSchema | BedTabixAdapterConfigurationSchema | BedGraphAdapterConfigurationSchema | BedGraphTabixAdapterConfigurationSchema | FromConfigAdapterConfigurationSchema | FromConfigRegionsAdapterConfigurationSchema | FromConfigSequenceAdapterConfigurationSchema | RefNameAliasAdapterConfigurationSchema | NcbiSequenceReportAliasAdapterConfigurationSchema | GtfAdapterConfigurationSchema | GtfTabixAdapterConfigurationSchema | Gff3TabixAdapterConfigurationSchema | Gff3AdapterConfigurationSchema | NCListAdapterConfigurationSchema | SPARQLAdapterConfigurationSchema | TwoBitAdapterConfigurationSchema | BgzipFastaAdapterConfigurationSchema | ChromSizesAdapterConfigurationSchema | IndexedFastaAdapterConfigurationSchema | UnindexedFastaAdapterConfigurationSchema | SequenceSearchAdapterConfigurationSchema | CrisprGuideAdapterConfigurationSchema | MotifListAdapterConfigurationSchema | VcfAdapterConfigurationSchema | VcfTabixAdapterConfigurationSchema | SplitVcfTabixAdapterConfigurationSchema | PlinkLDAdapterConfigurationSchema | PlinkLDTabixAdapterConfigurationSchema | MultiWiggleAdapterConfigurationSchema | BigWigAdapterConfigurationSchema | GCContentAdapterConfigurationSchema | BgzipTaffyAdapterConfigurationSchema | BigMafAdapterConfigurationSchema | MafTabixAdapterConfigurationSchema | HicAdapterConfigurationSchema | AllVsAllPAFAdapterConfigurationSchema | AllVsAllIndexedPAFAdapterConfigurationSchema | PAFAdapterConfigurationSchema | PairwiseIndexedPAFAdapterConfigurationSchema | DeltaAdapterConfigurationSchema | ChainAdapterConfigurationSchema | MCScanAnchorsAdapterConfigurationSchema | MCScanBlocksAdapterConfigurationSchema | MCScanSimpleAnchorsAdapterConfigurationSchema | MashMapAdapterConfigurationSchema | BlastTabularAdapterConfigurationSchema | GWASAdapterConfigurationSchema)"
+        },
+        {
+          "name": "textSearching",
+          "type": "textSearchingConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "indexingAttributes",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "indexingFeatureTypesToExclude",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "textSearchAdapter",
+              "type": "(JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema)"
+            }
+          ]
+        },
+        {
+          "name": "displays",
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LinearMultiSampleVariantMatrixDisplayConfigurationSchema | LDDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | MultiLinearWiggleDisplayConfigurationSchema | LinearGCContentDisplayConfigurationSchema | LinearGCContentTrackDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearArcDisplayConfigurationSchema | LinearPairedArcDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema)[]"
+        },
+        {
+          "name": "formatDetails",
+          "type": "FormatDetailsConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "feature",
+              "type": "(JexlString | frozen)"
+            },
+            {
+              "name": "subfeatures",
+              "type": "(JexlString | frozen)"
+            },
+            {
+              "name": "depth",
+              "type": "(JexlString | number)"
+            },
+            {
+              "name": "maxDepth",
+              "type": "(JexlString | number)"
+            }
+          ]
+        },
+        {
+          "name": "formatAbout",
+          "type": "FormatAboutConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "config",
+              "type": "(JexlString | frozen)"
+            },
+            {
+              "name": "hideUris",
+              "type": "(JexlString | boolean)"
+            }
+          ]
+        }
+      ],
+      "displayTypes": [
+        "LinearManhattanDisplay"
+      ]
+    }
+  },
+  "displays": {
+    "LinearBasicDisplay": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"LinearBasicDisplay\""
+        },
+        {
+          "name": "displayId",
+          "type": "identifier"
+        },
+        {
+          "name": "maxFeatureScreenDensity",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "fetchSizeLimit",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "forceLoad",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "height",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "mouseover",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "jexlFilters",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "maxHeight",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "growMaxHeight",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "heightMode",
+          "type": "(JexlString | (heightMode | undefined))"
+        },
+        {
+          "name": "showLabels",
+          "type": "(JexlString | showLabels)"
+        },
+        {
+          "name": "maxLabelFeatureDensity",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "maxDescriptionFeatureDensity",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "color",
+          "type": "(JexlString | (string | undefined))"
+        },
+        {
+          "name": "connectorColor",
+          "type": "(JexlString | (string | undefined))"
+        },
+        {
+          "name": "utrColor",
+          "type": "(JexlString | (string | undefined))"
+        },
+        {
+          "name": "outlineColor",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "featureHeight",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "displayMode",
+          "type": "(JexlString | (displayMode | undefined))"
+        },
+        {
+          "name": "geneGlyphMode",
+          "type": "(JexlString | geneGlyphMode)"
+        },
+        {
+          "name": "subfeatureLabels",
+          "type": "(JexlString | (subfeatureLabels | undefined))"
+        },
+        {
+          "name": "displayDirectionalChevrons",
+          "type": "(JexlString | (boolean | undefined))"
+        },
+        {
+          "name": "transcriptTypes",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "containerTypes",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "subParts",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "impliedUTRs",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "labels",
+          "type": "CanvasFeatureLabelsConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "name",
+              "type": "(JexlString | string)"
+            },
+            {
+              "name": "description",
+              "type": "(JexlString | string)"
+            }
+          ]
+        }
+      ],
+      "legacyKeys": [
+        "renderer",
+        "autoHeight",
+        "color1",
+        "color2",
+        "color3",
+        "outline"
+      ],
+      "aliases": [
+        "LinearFeatureDisplay"
+      ]
+    },
+    "LinearMultiRowFeatureDisplay": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"LinearMultiRowFeatureDisplay\""
+        },
+        {
+          "name": "displayId",
+          "type": "identifier"
+        },
+        {
+          "name": "maxFeatureScreenDensity",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "fetchSizeLimit",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "forceLoad",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "height",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "mouseover",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "jexlFilters",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "partitionField",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "lengthField",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "color",
+          "type": "(JexlString | (string | undefined))"
+        },
+        {
+          "name": "sampleColorMap",
+          "type": "(JexlString | frozen)"
+        },
+        {
+          "name": "rowOrder",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "rowHeight",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "rowProportion",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "showLegend",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "legend",
+          "type": "(JexlString | frozen)"
+        },
+        {
+          "name": "rowGroups",
+          "type": "(JexlString | frozen)"
+        },
+        {
+          "name": "showTree",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showBranchLength",
+          "type": "(JexlString | boolean)"
+        }
+      ]
+    },
+    "LinearAlignmentsDisplay": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"LinearAlignmentsDisplay\""
+        },
+        {
+          "name": "displayId",
+          "type": "identifier"
+        },
+        {
+          "name": "maxFeatureScreenDensity",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "fetchSizeLimit",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "forceLoad",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "height",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "mouseover",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "jexlFilters",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "featureHeight",
+          "type": "(JexlString | (number | undefined))"
+        },
+        {
+          "name": "heightMode",
+          "type": "(JexlString | (heightMode | undefined))"
+        },
+        {
+          "name": "readConnectionsLineWidth",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "showSashimiLabels",
+          "type": "(JexlString | (boolean | undefined))"
+        },
+        {
+          "name": "maxHeight",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "growMaxHeight",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "colorBy",
+          "type": "(JexlString | (frozen | undefined))"
+        },
+        {
+          "name": "filterBy",
+          "type": "(JexlString | frozen)"
+        },
+        {
+          "name": "groupBy",
+          "type": "(JexlString | frozen)"
+        },
+        {
+          "name": "collapseGroupRows",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "autoscale",
+          "type": "(JexlString | Coverage autoscale type)"
+        },
+        {
+          "name": "minScore",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "maxScore",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "scaleType",
+          "type": "(JexlString | Coverage scale type)"
+        },
+        {
+          "name": "numStdDev",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "mismatchAlpha",
+          "type": "(JexlString | (boolean | undefined))"
+        },
+        {
+          "name": "showLowFreqMismatches",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showLegend",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "sortedBy",
+          "type": "(JexlString | frozen)"
+        },
+        {
+          "name": "largeFeaturesFirst",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showOutline",
+          "type": "(JexlString | frozen)"
+        },
+        {
+          "name": "linkedReads",
+          "type": "(JexlString | (LinkedReadsMode | undefined))"
+        },
+        {
+          "name": "showBezierConnections",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showCoverage",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showPileup",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "coverageHeight",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "showMismatches",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showInterbaseIndicators",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "drawSingletons",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "drawProperPairs",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showOnlySplitAlignments",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "flipStrandLongReadChains",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "colorSupplementaryChains",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "drawInter",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "drawLongRange",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "arcColorByType",
+          "type": "(JexlString | ArcColorByType)"
+        },
+        {
+          "name": "readConnections",
+          "type": "(JexlString | (ReadConnectionsMode | undefined))"
+        },
+        {
+          "name": "readConnectionsDown",
+          "type": "(JexlString | (boolean | undefined))"
+        },
+        {
+          "name": "showSashimiArcs",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "sashimiArcsMode",
+          "type": "(JexlString | (SashimiArcsMode | undefined))"
+        },
+        {
+          "name": "minSashimiScore",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "sashimiArcsHeight",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "readConnectionsHeight",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "showSoftClipping",
+          "type": "(JexlString | (boolean | undefined))"
+        }
+      ],
+      "aliases": [
+        "LinearPileupDisplay",
+        "LinearSNPCoverageDisplay",
+        "LinearReadArcsDisplay",
+        "LinearReadCloudDisplay"
+      ]
+    },
+    "ChordVariantDisplay": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"ChordVariantDisplay\""
+        },
+        {
+          "name": "displayId",
+          "type": "identifier"
+        },
+        {
+          "name": "onChordClick",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "strokeColor",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "strokeColorSelected",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "strokeColorHover",
+          "type": "(JexlString | string)"
+        }
+      ],
+      "legacyKeys": [
+        "renderer"
+      ]
+    },
+    "DotplotDisplay": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"DotplotDisplay\""
+        },
+        {
+          "name": "displayId",
+          "type": "identifier"
+        }
+      ]
+    },
+    "LinearSyntenyDisplay": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"LinearSyntenyDisplay\""
+        },
+        {
+          "name": "displayId",
+          "type": "identifier"
+        }
+      ]
+    },
+    "LGVSyntenyDisplay": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"LGVSyntenyDisplay\""
+        },
+        {
+          "name": "displayId",
+          "type": "identifier"
+        },
+        {
+          "name": "maxFeatureScreenDensity",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "fetchSizeLimit",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "forceLoad",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "height",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "mouseover",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "jexlFilters",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "featureHeight",
+          "type": "(JexlString | (number | undefined))"
+        },
+        {
+          "name": "heightMode",
+          "type": "(JexlString | (heightMode | undefined))"
+        },
+        {
+          "name": "readConnectionsLineWidth",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "showSashimiLabels",
+          "type": "(JexlString | (boolean | undefined))"
+        },
+        {
+          "name": "maxHeight",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "growMaxHeight",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "colorBy",
+          "type": "(JexlString | (frozen | undefined))"
+        },
+        {
+          "name": "filterBy",
+          "type": "(JexlString | frozen)"
+        },
+        {
+          "name": "groupBy",
+          "type": "(JexlString | frozen)"
+        },
+        {
+          "name": "collapseGroupRows",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "autoscale",
+          "type": "(JexlString | Coverage autoscale type)"
+        },
+        {
+          "name": "minScore",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "maxScore",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "scaleType",
+          "type": "(JexlString | Coverage scale type)"
+        },
+        {
+          "name": "numStdDev",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "mismatchAlpha",
+          "type": "(JexlString | (boolean | undefined))"
+        },
+        {
+          "name": "showLowFreqMismatches",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showLegend",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "sortedBy",
+          "type": "(JexlString | frozen)"
+        },
+        {
+          "name": "largeFeaturesFirst",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showOutline",
+          "type": "(JexlString | frozen)"
+        },
+        {
+          "name": "linkedReads",
+          "type": "(JexlString | (LinkedReadsMode | undefined))"
+        },
+        {
+          "name": "showBezierConnections",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showCoverage",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showPileup",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "coverageHeight",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "showMismatches",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showInterbaseIndicators",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "drawSingletons",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "drawProperPairs",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showOnlySplitAlignments",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "flipStrandLongReadChains",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "colorSupplementaryChains",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "drawInter",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "drawLongRange",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "arcColorByType",
+          "type": "(JexlString | ArcColorByType)"
+        },
+        {
+          "name": "readConnections",
+          "type": "(JexlString | (ReadConnectionsMode | undefined))"
+        },
+        {
+          "name": "readConnectionsDown",
+          "type": "(JexlString | (boolean | undefined))"
+        },
+        {
+          "name": "showSashimiArcs",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "sashimiArcsMode",
+          "type": "(JexlString | (SashimiArcsMode | undefined))"
+        },
+        {
+          "name": "minSashimiScore",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "sashimiArcsHeight",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "readConnectionsHeight",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "showSoftClipping",
+          "type": "(JexlString | (boolean | undefined))"
+        },
+        {
+          "name": "hideSelfAlignments",
+          "type": "(JexlString | boolean)"
+        }
+      ]
+    },
+    "LinearReferenceSequenceDisplay": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"LinearReferenceSequenceDisplay\""
+        },
+        {
+          "name": "displayId",
+          "type": "identifier"
+        },
+        {
+          "name": "height",
+          "type": "(JexlString | (number | undefined))"
+        },
+        {
+          "name": "showForward",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showReverse",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showTranslation",
+          "type": "(JexlString | boolean)"
+        }
+      ]
+    },
+    "LinearVariantDisplay": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"LinearVariantDisplay\""
+        },
+        {
+          "name": "displayId",
+          "type": "identifier"
+        },
+        {
+          "name": "maxFeatureScreenDensity",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "fetchSizeLimit",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "forceLoad",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "height",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "mouseover",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "jexlFilters",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "maxHeight",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "growMaxHeight",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "heightMode",
+          "type": "(JexlString | (heightMode | undefined))"
+        },
+        {
+          "name": "showLabels",
+          "type": "(JexlString | showLabels)"
+        },
+        {
+          "name": "maxLabelFeatureDensity",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "maxDescriptionFeatureDensity",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "color",
+          "type": "(JexlString | (string | undefined))"
+        },
+        {
+          "name": "connectorColor",
+          "type": "(JexlString | (string | undefined))"
+        },
+        {
+          "name": "utrColor",
+          "type": "(JexlString | (string | undefined))"
+        },
+        {
+          "name": "outlineColor",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "featureHeight",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "displayMode",
+          "type": "(JexlString | (displayMode | undefined))"
+        },
+        {
+          "name": "geneGlyphMode",
+          "type": "(JexlString | geneGlyphMode)"
+        },
+        {
+          "name": "subfeatureLabels",
+          "type": "(JexlString | (subfeatureLabels | undefined))"
+        },
+        {
+          "name": "displayDirectionalChevrons",
+          "type": "(JexlString | (boolean | undefined))"
+        },
+        {
+          "name": "transcriptTypes",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "containerTypes",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "subParts",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "impliedUTRs",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "labels",
+          "type": "CanvasFeatureLabelsConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "name",
+              "type": "(JexlString | string)"
+            },
+            {
+              "name": "description",
+              "type": "(JexlString | string)"
+            }
+          ]
+        }
+      ],
+      "legacyKeys": [
+        "renderer",
+        "autoHeight",
+        "color1",
+        "color2",
+        "color3",
+        "outline"
+      ]
+    },
+    "LinearMultiSampleVariantDisplay": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"LinearMultiSampleVariantDisplay\""
+        },
+        {
+          "name": "displayId",
+          "type": "identifier"
+        },
+        {
+          "name": "maxFeatureScreenDensity",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "fetchSizeLimit",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "forceLoad",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "height",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "mouseover",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "jexlFilters",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "showReferenceAlleles",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showSidebarLabels",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "lineZoneHeight",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "rowHeight",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "showTree",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showBranchLength",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "renderingMode",
+          "type": "(JexlString | RenderingMode)"
+        },
+        {
+          "name": "featureColor",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "minorAlleleFrequencyFilter",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "maxMissingnessFilter",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "colorBy",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "groupBy",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "referenceDrawingMode",
+          "type": "(JexlString | ReferenceDrawingMode)"
+        },
+        {
+          "name": "showInsertionGlyphs",
+          "type": "(JexlString | boolean)"
+        }
+      ],
+      "aliases": [
+        "MultiLinearVariantDisplay"
+      ]
+    },
+    "LinearMultiSampleVariantMatrixDisplay": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"LinearMultiSampleVariantMatrixDisplay\""
+        },
+        {
+          "name": "displayId",
+          "type": "identifier"
+        },
+        {
+          "name": "maxFeatureScreenDensity",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "fetchSizeLimit",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "forceLoad",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "height",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "mouseover",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "jexlFilters",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "showReferenceAlleles",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showSidebarLabels",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "lineZoneHeight",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "rowHeight",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "showTree",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showBranchLength",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "renderingMode",
+          "type": "(JexlString | RenderingMode)"
+        },
+        {
+          "name": "featureColor",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "minorAlleleFrequencyFilter",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "maxMissingnessFilter",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "colorBy",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "groupBy",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "referenceDrawingMode",
+          "type": "(JexlString | ReferenceDrawingMode)"
+        }
+      ],
+      "aliases": [
+        "LinearVariantMatrixDisplay"
+      ]
+    },
+    "LDDisplay": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"LDDisplay\""
+        },
+        {
+          "name": "displayId",
+          "type": "identifier"
+        },
+        {
+          "name": "maxFeatureScreenDensity",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "fetchSizeLimit",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "forceLoad",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "height",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "mouseover",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "jexlFilters",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "minorAlleleFrequencyFilter",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "lengthCutoffFilter",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "lineZoneHeight",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "ldMetric",
+          "type": "(JexlString | LDMetric)"
+        },
+        {
+          "name": "showLegend",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showLDTriangle",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showRecombination",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "recombinationZoneHeight",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "squashToHeight",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "hweFilterThreshold",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "callRateFilter",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "showVerticalGuides",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showLabels",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "tickHeight",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "useGenomicPositions",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "signedLD",
+          "type": "(JexlString | boolean)"
+        }
+      ]
+    },
+    "LDTrackDisplay": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"LDTrackDisplay\""
+        },
+        {
+          "name": "displayId",
+          "type": "identifier"
+        },
+        {
+          "name": "maxFeatureScreenDensity",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "fetchSizeLimit",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "forceLoad",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "height",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "mouseover",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "jexlFilters",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "minorAlleleFrequencyFilter",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "lengthCutoffFilter",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "lineZoneHeight",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "ldMetric",
+          "type": "(JexlString | LDMetric)"
+        },
+        {
+          "name": "showLegend",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showLDTriangle",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showRecombination",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "recombinationZoneHeight",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "squashToHeight",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "hweFilterThreshold",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "callRateFilter",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "showVerticalGuides",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showLabels",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "tickHeight",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "useGenomicPositions",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "signedLD",
+          "type": "(JexlString | boolean)"
+        }
+      ]
+    },
+    "LinearWiggleDisplay": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"LinearWiggleDisplay\""
+        },
+        {
+          "name": "displayId",
+          "type": "identifier"
+        },
+        {
+          "name": "defaultRendering",
+          "type": "(JexlString | Rendering type)"
+        },
+        {
+          "name": "height",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "useBicolor",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "color",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "posColor",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "negColor",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "bicolorPivot",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "minScore",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "maxScore",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "scaleType",
+          "type": "(JexlString | Scale type)"
+        },
+        {
+          "name": "autoscale",
+          "type": "(JexlString | Autoscale type)"
+        },
+        {
+          "name": "numStdDev",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "numQuantile",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "scatterPointSize",
+          "type": "(JexlString | (number | undefined))"
+        },
+        {
+          "name": "lineWidth",
+          "type": "(JexlString | (number | undefined))"
+        },
+        {
+          "name": "maxGapMultiple",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "minimalTicks",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "summaryScoreMode",
+          "type": "(JexlString | Score type)"
+        }
+      ]
+    },
+    "MultiLinearWiggleDisplay": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"MultiLinearWiggleDisplay\""
+        },
+        {
+          "name": "displayId",
+          "type": "identifier"
+        },
+        {
+          "name": "posColor",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "negColor",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "bicolorPivot",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "minScore",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "maxScore",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "scaleType",
+          "type": "(JexlString | Scale type)"
+        },
+        {
+          "name": "autoscale",
+          "type": "(JexlString | Autoscale type)"
+        },
+        {
+          "name": "numStdDev",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "numQuantile",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "scatterPointSize",
+          "type": "(JexlString | (number | undefined))"
+        },
+        {
+          "name": "lineWidth",
+          "type": "(JexlString | (number | undefined))"
+        },
+        {
+          "name": "maxGapMultiple",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "height",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "summaryScoreMode",
+          "type": "(JexlString | Score type)"
+        },
+        {
+          "name": "defaultRendering",
+          "type": "(JexlString | Rendering)"
+        },
+        {
+          "name": "minimalTicks",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showTree",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showBranchLength",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showRowSeparators",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showLegend",
+          "type": "(JexlString | boolean)"
+        }
+      ]
+    },
+    "LinearGCContentDisplay": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"LinearGCContentDisplay\""
+        },
+        {
+          "name": "displayId",
+          "type": "identifier"
+        },
+        {
+          "name": "defaultRendering",
+          "type": "(JexlString | Rendering type)"
+        },
+        {
+          "name": "height",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "useBicolor",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "color",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "posColor",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "negColor",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "bicolorPivot",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "minScore",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "maxScore",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "scaleType",
+          "type": "(JexlString | Scale type)"
+        },
+        {
+          "name": "autoscale",
+          "type": "(JexlString | Autoscale type)"
+        },
+        {
+          "name": "numStdDev",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "numQuantile",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "scatterPointSize",
+          "type": "(JexlString | (number | undefined))"
+        },
+        {
+          "name": "lineWidth",
+          "type": "(JexlString | (number | undefined))"
+        },
+        {
+          "name": "maxGapMultiple",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "minimalTicks",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "summaryScoreMode",
+          "type": "(JexlString | Score type)"
+        },
+        {
+          "name": "windowSize",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "windowDelta",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "gcMode",
+          "type": "(JexlString | gcMode)"
+        }
+      ]
+    },
+    "LinearGCContentTrackDisplay": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"LinearGCContentTrackDisplay\""
+        },
+        {
+          "name": "displayId",
+          "type": "identifier"
+        },
+        {
+          "name": "defaultRendering",
+          "type": "(JexlString | Rendering type)"
+        },
+        {
+          "name": "height",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "useBicolor",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "color",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "posColor",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "negColor",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "bicolorPivot",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "minScore",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "maxScore",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "scaleType",
+          "type": "(JexlString | Scale type)"
+        },
+        {
+          "name": "autoscale",
+          "type": "(JexlString | Autoscale type)"
+        },
+        {
+          "name": "numStdDev",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "numQuantile",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "scatterPointSize",
+          "type": "(JexlString | (number | undefined))"
+        },
+        {
+          "name": "lineWidth",
+          "type": "(JexlString | (number | undefined))"
+        },
+        {
+          "name": "maxGapMultiple",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "minimalTicks",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "summaryScoreMode",
+          "type": "(JexlString | Score type)"
+        },
+        {
+          "name": "windowSize",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "windowDelta",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "gcMode",
+          "type": "(JexlString | gcMode)"
+        }
+      ]
+    },
+    "LinearMafDisplay": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"LinearMafDisplay\""
+        },
+        {
+          "name": "displayId",
+          "type": "identifier"
+        },
+        {
+          "name": "maxFeatureScreenDensity",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "fetchSizeLimit",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "forceLoad",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "height",
+          "type": "(JexlString | (number | undefined))"
+        },
+        {
+          "name": "mouseover",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "jexlFilters",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "rowHeight",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "rowProportion",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "showAllLetters",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "mismatchRendering",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showAsUpperCase",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showTree",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showBranchLength",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showCoverage",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showAlignments",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "coverageHeight",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "showConservation",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "conservationHeight",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "conservationMode",
+          "type": "(JexlString | MafConservationMode)"
+        },
+        {
+          "name": "rowIdentityMode",
+          "type": "(JexlString | RowIdentityMode)"
+        },
+        {
+          "name": "rowIdentityAutoZoom",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showAnnotations",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showTranslation",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "colorByChromosome",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showInversions",
+          "type": "(JexlString | boolean)"
+        }
+      ]
+    },
+    "LinearHicDisplay": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"LinearHicDisplay\""
+        },
+        {
+          "name": "displayId",
+          "type": "identifier"
+        },
+        {
+          "name": "maxFeatureScreenDensity",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "fetchSizeLimit",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "forceLoad",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "height",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "mouseover",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "jexlFilters",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "colorScheme",
+          "type": "(JexlString | HicColorScheme)"
+        },
+        {
+          "name": "showLegend",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "resolutionBias",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "useLogScale",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "useColorPercentile",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showResolutionControls",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "selectedNormalization",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "squashToHeight",
+          "type": "(JexlString | boolean)"
+        }
+      ]
+    },
+    "LinearArcDisplay": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"LinearArcDisplay\""
+        },
+        {
+          "name": "displayId",
+          "type": "identifier"
+        },
+        {
+          "name": "maxFeatureScreenDensity",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "fetchSizeLimit",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "forceLoad",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "height",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "mouseover",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "jexlFilters",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "color",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "thickness",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "label",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "arcHeight",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "caption",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "displayMode",
+          "type": "(JexlString | DisplayMode)"
+        }
+      ],
+      "legacyKeys": [
+        "renderer"
+      ]
+    },
+    "LinearPairedArcDisplay": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"LinearPairedArcDisplay\""
+        },
+        {
+          "name": "displayId",
+          "type": "identifier"
+        },
+        {
+          "name": "maxFeatureScreenDensity",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "fetchSizeLimit",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "forceLoad",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "height",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "mouseover",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "jexlFilters",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "color",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "lineWidth",
+          "type": "(JexlString | (number | undefined))"
+        }
+      ]
+    },
+    "LinearManhattanDisplay": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"LinearManhattanDisplay\""
+        },
+        {
+          "name": "displayId",
+          "type": "identifier"
+        },
+        {
+          "name": "defaultRendering",
+          "type": "(JexlString | Rendering type)"
+        },
+        {
+          "name": "height",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "useBicolor",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "color",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "posColor",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "negColor",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "bicolorPivot",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "minScore",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "maxScore",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "scaleType",
+          "type": "(JexlString | Scale type)"
+        },
+        {
+          "name": "autoscale",
+          "type": "(JexlString | Autoscale type)"
+        },
+        {
+          "name": "numStdDev",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "numQuantile",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "scatterPointSize",
+          "type": "(JexlString | (number | undefined))"
+        },
+        {
+          "name": "lineWidth",
+          "type": "(JexlString | (number | undefined))"
+        },
+        {
+          "name": "maxGapMultiple",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "minimalTicks",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "summaryScoreMode",
+          "type": "(JexlString | Score type)"
+        },
+        {
+          "name": "colorBy",
+          "type": "(JexlString | GwasColorBy)"
+        }
+      ]
+    }
+  },
+  "textSearchAdapters": {
+    "JBrowse1TextSearchAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"JBrowse1TextSearchAdapter\""
+        },
+        {
+          "name": "textSearchAdapterId",
+          "type": "identifier"
+        },
+        {
+          "name": "namesIndexLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "tracks",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "assemblyNames",
+          "type": "(JexlString | string[])"
+        }
+      ]
+    },
+    "TrixTextSearchAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"TrixTextSearchAdapter\""
+        },
+        {
+          "name": "textSearchAdapterId",
+          "type": "identifier"
+        },
+        {
+          "name": "ixFilePath",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "ixxFilePath",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "metaFilePath",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "tracks",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "assemblyNames",
+          "type": "(JexlString | string[])"
+        }
+      ]
+    }
+  },
+  "connections": {
+    "UCSCTrackHubConnection": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"UCSCTrackHubConnection\""
+        },
+        {
+          "name": "connectionId",
+          "type": "identifier"
+        },
+        {
+          "name": "name",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "assemblyNames",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "hubTxtLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        }
+      ]
+    },
+    "JB2TrackHubConnection": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"JB2TrackHubConnection\""
+        },
+        {
+          "name": "connectionId",
+          "type": "identifier"
+        },
+        {
+          "name": "name",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "assemblyNames",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "configJsonLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        }
+      ]
+    },
+    "JBrowse1Connection": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"JBrowse1Connection\""
+        },
+        {
+          "name": "connectionId",
+          "type": "identifier"
+        },
+        {
+          "name": "name",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "assemblyNames",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "dataDirLocation",
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        }
+      ]
+    }
+  }
+}

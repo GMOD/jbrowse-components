@@ -501,6 +501,45 @@ compares all the ways to preset a view (URL, config, embedded props, session
 spec), and the cookbook has a
 [config to URL](/docs/cookbook#from-config-to-a-url) walkthrough.
 
+### My track loads but my setting has no effect
+
+Most likely the setting is spelled slightly wrong, or is written in a format
+from an older JBrowse version. **A config key JBrowse does not recognize is
+ignored rather than reported** — the track still appears, so the only symptom is
+that your color, height, or filter does nothing.
+
+The repo carries a checker for exactly this. From a clone of
+[jbrowse-components](https://github.com/GMOD/jbrowse-components):
+
+```bash
+node .claude/skills/jbrowse-authoring/scripts/validate-config.mjs myconfig.json
+```
+
+```
+error: tracks[0].adapter.bamLocatoin: unknown slot "bamLocatoin" — did you mean "bamLocation"?
+error: tracks[0].assemblyNames: assembly "hg19" is not defined in this config — did you mean "hg38"?
+error: defaultSession.views[0].init.tracks[0]: trackId "sample_bem" is not defined in this config
+```
+
+It reads the config-slot definitions out of JBrowse itself, so it knows every
+track, display, and adapter type and the slots each one accepts. Two levels:
+
+- **error** — JBrowse accepts it and silently does the wrong thing: an unknown
+  slot, a track pointing at an assembly the config never defines, a
+  `defaultSession` naming a `trackId` that does not exist, a duplicate
+  `trackId`.
+- **warning** — JBrowse will tell you itself on load, or handles it: a type name
+  it does not know (which is expected if a plugin registers it), or a legacy key
+  a migration rewrites.
+
+Types your plugins register are not known to the checker, so those come through
+as warnings. Add `--json` for machine-readable output; it exits non-zero when
+there are errors, so it can gate a deploy.
+
+The same directory is a [Claude Code
+skill](https://docs.claude.com/en/docs/claude-code/skills) covering how to write
+a config and session from scratch, if you are authoring one with an AI assistant.
+
 ## Behavior and design
 
 ### Why do all the tracks need an assembly specified
