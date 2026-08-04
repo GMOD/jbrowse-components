@@ -345,7 +345,11 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readyText: '2,554,000',
+    // gate on the pileup actually having drawn, not on the locus text: the
+    // testid flips only once model.canvasDrawn is true, so a missing or empty
+    // BAM fails the capture instead of quietly yielding a blank lane. readyText
+    // on the window would have matched before a single read rendered.
+    readySelector: '[data-testid="pileup-display-done"]',
     readyTimeout: 120000,
     viewportWidth: 1000,
     // gene lane + the pileup with its coverage band + the depth wiggle
