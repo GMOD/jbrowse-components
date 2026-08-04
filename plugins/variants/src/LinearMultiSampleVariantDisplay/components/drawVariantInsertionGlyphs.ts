@@ -1,9 +1,9 @@
 import {
+  INSERTION_COLOR,
   MIN_HEIGHT_FOR_TEXT,
   drawInsertionMarker,
   getInsertionType,
 } from '@jbrowse/alignments-core'
-import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import {
   forEachClippedBlock,
   makeBpMapper,
@@ -28,7 +28,6 @@ const FONT = '10px sans-serif'
  */
 export interface VariantInsertionGlyphData {
   cellRowIndices: Uint32Array
-  cellColors: Uint32Array
   cellCarriesAlt: Uint8Array
   cellFeatureIndices: Uint32Array
   featurePositions: Uint32Array
@@ -58,12 +57,25 @@ export interface VariantInsertionGlyphData {
  * `@jbrowse/alignments-core` so the bar geometry stays identical to the pileup's
  * and MAF's.
  *
- * Two rules keep it honest. Only cells whose genotype carries a non-reference
- * allele widen (`cellCarriesAlt`), because widening a reference or no-call cell
- * would claim that haplotype has the sequence. And each marker keeps its cell's
- * own genotype color rather than the alignments insertion purple, since the color
- * is what says which allele the haplotype carries; the marker only supplies
- * length.
+ * Only cells whose genotype carries a non-reference allele widen
+ * (`cellCarriesAlt`), because widening a reference or no-call cell would claim
+ * that haplotype has the sequence.
+ *
+ * Markers are `INSERTION_COLOR`, the same purple the pileup and the multi-row
+ * feature display use. They used to take the cell's own genotype color, on the
+ * reasoning that the color is what says which allele the haplotype carries and
+ * the marker only supplies length. That does not survive the geometry: the bar
+ * is `insertionBarWidth` wide where the cell under it is the 2px floor, so at 60
+ * bp/px a 7.8kb insertion paints ~130px across a row of OTHER records' cells. In
+ * genotype coloring those neighbours are the same dark blue, so the marker was
+ * invisible against them and only its white label survived — a number floating
+ * in a solid field, which is exactly what a docs review reported. A category
+ * color is also what the equivalent glyph in `drawMultiRowIndelGlyphs` already
+ * uses, over rows whose features carry per-feature colors of their own.
+ *
+ * The dosage that fill used to carry is not lost with it: the record's own cell
+ * is still drawn at its reference span underneath, and every mode reports the
+ * genotype on hover.
  *
  * Shared by the on-screen overlay and the SVG export.
  */
@@ -127,12 +139,11 @@ export function drawVariantInsertionGlyphs(
       // zoomed out past the point an insertion outgrows its cell — skips the
       // per-cell walk entirely instead of running it to draw nothing.
       if (anyMarker) {
-        // One-entry memo of the abgr -> CSS string conversion. Genotype colors
-        // come from a tiny fixed palette and the cells arrive feature-major, so
-        // consecutive markers usually share one — and this pass repaints on
-        // every scroll and pan, where an allocation per marker is per frame.
-        let lastAbgr = -1
-        let lastCss = ''
+        // Every marker is the same purple, so the fill is set once outside the
+        // loop rather than per cell (this pass repaints on every scroll and
+        // pan). The label below is the only thing that changes it, and it sets
+        // it back.
+        ctx.fillStyle = INSERTION_COLOR
         // Reference cells never carry the alt, so the scan starts at the
         // non-reference bucket (see VariantInsertionGlyphData.refCellCount).
         for (let i = region.refCellCount; i < region.numCells; i++) {
@@ -143,12 +154,6 @@ export function drawVariantInsertionGlyphs(
             if (y + drawnRowHeight >= 0 && y <= canvasHeight) {
               const xCenter = markerXCenter[featureIdx]!
               const inserted = region.featureInsertedBp[featureIdx]!
-              const abgr = region.cellColors[i]!
-              if (abgr !== lastAbgr) {
-                lastAbgr = abgr
-                lastCss = abgrToCssRgba(abgr)
-              }
-              ctx.fillStyle = lastCss
               drawInsertionMarker(
                 ctx,
                 xCenter,
@@ -163,7 +168,11 @@ export function drawVariantInsertionGlyphs(
               ) {
                 ctx.fillStyle = 'white'
                 ctx.fillText(String(inserted), xCenter, y + drawnRowHeight / 2)
-                // No restore: every marker sets fillStyle before it draws.
+                // Restore, because the marker fill is now hoisted out of this
+                // loop: when every marker set its own color a label could leave
+                // `white` behind harmlessly, and now it would paint the next
+                // marker with it.
+                ctx.fillStyle = INSERTION_COLOR
               }
             }
           }

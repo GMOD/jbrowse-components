@@ -1,5 +1,4 @@
-import { insertionBarWidth } from '@jbrowse/alignments-core'
-import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
+import { INSERTION_COLOR, insertionBarWidth } from '@jbrowse/alignments-core'
 
 import { drawVariantInsertionGlyphs } from './drawVariantInsertionGlyphs.ts'
 
@@ -45,9 +44,6 @@ function mockCtx() {
   return { ctx: ctx as unknown as Ctx2D, calls, texts }
 }
 
-const ALT_BLUE = 0xffff0000
-const REF_GREY = 0xffcccccc
-
 // 100bp over 1000px => 10px/bp.
 const block: VariantRenderBlock = {
   displayedRegionIndex: 0,
@@ -78,7 +74,6 @@ function data(
 ): VariantInsertionGlyphData {
   return {
     cellRowIndices: Uint32Array.from([1, 0]),
-    cellColors: Uint32Array.from([REF_GREY, ALT_BLUE]),
     cellCarriesAlt: Uint8Array.from([0, 1]),
     cellFeatureIndices: Uint32Array.from([0, 0]),
     featurePositions: Uint32Array.from([10, 11]),
@@ -113,7 +108,7 @@ test('widens the alt-carrying cell to a bar sized by the inserted bp', () => {
       y: 0,
       w: BAR,
       h: 20,
-      fillStyle: abgrToCssRgba(ALT_BLUE),
+      fillStyle: INSERTION_COLOR,
     },
   ])
 })
@@ -125,14 +120,35 @@ test('leaves reference and no-call cells alone', () => {
   expect(calls).toEqual([])
 })
 
-test('the marker keeps the cell genotype color, not the alignments purple', () => {
-  // the color is what says which allele the haplotype carries; the marker only
-  // supplies length, so it must not repaint over that
-  const RED = 0xff0000ff
-  const { calls } = draw(
-    data({ cellColors: Uint32Array.from([REF_GREY, RED]) }),
+// The marker used to take the cell's own genotype color. The bar is
+// `insertionBarWidth` wide where its cell is the 2px floor, so it paints across
+// a row of OTHER records' cells -- which in genotype coloring are the same dark
+// blue, leaving the marker invisible and only its white label showing. Same
+// category color as the pileup and drawMultiRowIndelGlyphs.
+test('markers are the shared insertion purple, whatever the cells are colored', () => {
+  const { calls } = draw(data())
+  expect(calls.map(c => c.fillStyle)).toEqual([INSERTION_COLOR])
+})
+
+// The fill is hoisted out of the per-cell loop now that every marker shares it,
+// so the label's `white` has to be put back. Two labelled markers in one row:
+// without the restore the second draws white.
+test('a labelled marker does not leave white behind for the next one', () => {
+  const { calls, texts } = draw(
+    data({
+      cellRowIndices: Uint32Array.from([2, 0, 1]),
+      cellCarriesAlt: Uint8Array.from([0, 1, 1]),
+      cellFeatureIndices: Uint32Array.from([0, 0, 0]),
+      numCells: 3,
+      refCellCount: 1,
+    }),
   )
-  expect(calls[0]!.fillStyle).toBe(abgrToCssRgba(RED))
+  // both markers labelled, so the first one's fillStyle change is exercised
+  expect(texts).toHaveLength(2)
+  expect(calls.map(c => c.fillStyle)).toEqual([
+    INSERTION_COLOR,
+    INSERTION_COLOR,
+  ])
 })
 
 test('draws nothing for a SNP or a deletion', () => {
