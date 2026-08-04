@@ -23,6 +23,7 @@ import {
   getVariantSvType,
 } from '../shared/variantSvType.ts'
 import { groupFeaturesByRegion } from './groupFeaturesByRegion.ts'
+import { orderByGenomicPosition } from './orderByGenomicPosition.ts'
 
 import type { VariantCellData } from '../LinearMultiSampleVariantDisplay/components/computeVariantCells.ts'
 import type { MatrixCellData } from '../LinearMultiSampleVariantMatrixDisplay/components/computeVariantMatrixCells.ts'
@@ -410,6 +411,17 @@ export async function executeVariantCellData({
           report,
         }),
     )
+    if (mode === 'matrix') {
+      // The list order is the column order here, and the display mirrors it for
+      // a flipped view, so it has to be genomic-ascending or the connector lines
+      // cross. Regular mode draws each variant at its own genomic position and
+      // doesn't care.
+      filteredVariants = orderByGenomicPosition(
+        filteredVariants,
+        regions,
+        v => v.feature,
+      )
+    }
   }
 
   const {

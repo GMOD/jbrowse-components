@@ -56,6 +56,12 @@ export default function stateModelFactory(
          * index, but a flipped view runs the ruler right-to-left, so columns are
          * mirrored to `numFeatures-1-i` to keep them and the genome connector
          * lines from crossing. Mixed forward/reversed regions don't flip.
+         *
+         * "Genomic-ascending" is a guarantee the worker makes
+         * (`orderByGenomicPosition`), not a property of the fetch: the per-region
+         * queries are merged in arrival order, so before that a multi-region
+         * flipped view — a minus-strand gene with its introns collapsed — mirrored
+         * an order that was already roughly descending and crossed every line.
          */
         get flipped(): boolean {
           const view = getContainingView(self) as LinearGenomeViewModel
