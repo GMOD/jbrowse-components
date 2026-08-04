@@ -68,6 +68,7 @@ export function createViewStateFromProps(opts: CreateAppOptions) {
     plugins,
     makeWorkerInstance,
     onChange,
+    onPluginsUpdated,
     views,
     session,
     sessionName = 'session',
@@ -88,6 +89,7 @@ export function createViewStateFromProps(opts: CreateAppOptions) {
     session,
     plugins,
     onChange,
+    onPluginsUpdated,
     makeWorkerInstance,
   })
 }

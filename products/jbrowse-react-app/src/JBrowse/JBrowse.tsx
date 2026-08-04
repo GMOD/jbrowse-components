@@ -4,6 +4,7 @@ import JBrowseApp from '../JBrowseApp/index.ts'
 import { createViewStateFromProps } from '../createViewStateFromProps.ts'
 
 import type { ViewModel } from '../createModel.ts'
+import type { CreateViewStateOptions } from '../createViewState.ts'
 import type { Config, PluginInput, SessionSnapshot } from '../types.ts'
 import type { IJsonPatch } from '@jbrowse/mobx-state-tree'
 import type { Ref } from 'react'
@@ -28,6 +29,10 @@ export interface JBrowseProps {
   plugins?: PluginInput[]
   makeWorkerInstance?: () => Worker
   onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
+  // called when the plugin set changes (the plugin store, addSessionPlugin).
+  // Hands back the plugins to load and the session to restore, so the host can
+  // loadPlugins + remount; without it the change is only reported to the user.
+  onPluginsUpdated?: CreateViewStateOptions['onPluginsUpdated']
 
   // declarative description of the session to open: the views to show, each
   // with its own type and view-type `init` blob. mirrors a config.json's

@@ -15,6 +15,7 @@ export type { CreateAppOptions, JBrowseAppController } from './createApp.ts'
 export { default as createModel } from './createModel.ts'
 export { default as createViewState } from './createViewState.ts'
 export type { CreateViewStateOptions } from './createViewState.ts'
+export type { PluginsUpdate } from './rootModel/rootModel.ts'
 export { useCreateViewState } from './useCreateViewState.ts'
 // tear down an engine the host built and is discarding — React unmount alone
 // leaves its RPC workers and autoruns running

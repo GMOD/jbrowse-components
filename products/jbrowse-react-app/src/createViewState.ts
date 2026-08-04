@@ -2,6 +2,7 @@ import { onPatch } from '@jbrowse/mobx-state-tree'
 
 import createModel from './createModel.ts'
 
+import type { PluginsUpdate } from './rootModel/rootModel.ts'
 import type { Config, PluginInput, SessionSnapshot } from './types.ts'
 import type { IJsonPatch } from '@jbrowse/mobx-state-tree'
 
@@ -18,10 +19,27 @@ export interface CreateViewStateOptions {
   session?: SessionSnapshot
   onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
   makeWorkerInstance?: () => Worker
+  /**
+   * Called when something changes the plugin set — the plugin store widget,
+   * `session.addSessionPlugin`. A plugin set can only change by rebuilding the
+   * plugin manager, which this app can't do for itself (it never fetches
+   * plugins, and it doesn't own the React tree it's mounted into), so it hands
+   * you what a rebuild needs: `await loadPlugins(plugins)`, then remount with
+   * the new `plugins` and the given `session` so the user lands where they
+   * were. Without this, the change is only reported to the user.
+   */
+  onPluginsUpdated?: (args: PluginsUpdate) => void
 }
 
 export default function createViewState(opts: CreateViewStateOptions) {
-  const { config, plugins = [], session, onChange, makeWorkerInstance } = opts
+  const {
+    config,
+    plugins = [],
+    session,
+    onChange,
+    onPluginsUpdated,
+    makeWorkerInstance,
+  } = opts
   const { defaultSession = { name: 'NewSession' } } = config
   const { model, pluginManager } = createModel({
     runtimePlugins: plugins,
@@ -37,6 +55,10 @@ export default function createViewState(opts: CreateViewStateOptions) {
 
   pluginManager.setRootModel(stateTree)
   pluginManager.configure()
+
+  if (onPluginsUpdated) {
+    stateTree.setPluginsUpdatedCallback(onPluginsUpdated)
+  }
 
   // A jbrowse-web config.json names its plugins in `config.plugins`, and that
   // app fetches them itself. This one can't: fetching is async and this

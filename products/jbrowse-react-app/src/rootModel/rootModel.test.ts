@@ -152,3 +152,50 @@ test('adds menus', () => {
   )
   expect(resolveMenus(root.menus())).toMatchSnapshot()
 })
+
+// An embedded component cannot rebuild its own plugin manager: it never fetches
+// plugins (loadPlugins is the host's call) and it doesn't own the React tree it
+// is mounted into. It used to answer a plugin change with
+// window.location.reload(), which reloads the *host's* page and, with no
+// autosave behind it, loses the session outright.
+describe('a plugin-set change', () => {
+  const pluginDef = { name: 'Some', url: 'https://example.com/some.umd.js' }
+
+  test('hands the host what it needs to rebuild, exactly once', () => {
+    const root = getRootModel().create({
+      jbrowse: { ...mainThreadConfig.jbrowse, plugins: [pluginDef] },
+      session: { name: 'my session' },
+    })
+    const onPluginsUpdated = jest.fn()
+    root.setPluginsUpdatedCallback(onPluginsUpdated)
+
+    root.setPluginsUpdated()
+
+    expect(onPluginsUpdated).toHaveBeenCalledTimes(1)
+    const [update] = onPluginsUpdated.mock.calls[0]!
+    // the plugins to loadPlugins, and the session to hand back so the user
+    // lands where they were
+    expect(update.plugins).toEqual([pluginDef])
+    expect(update.session.name).toBe('my session')
+
+    // pluginsUpdated latches true and the root lives on, so a later session
+    // edit must not ask the host to rebuild a second time
+    root.session!.setName('renamed')
+    expect(onPluginsUpdated).toHaveBeenCalledTimes(1)
+  })
+
+  test('tells the user when the host has no hook, instead of reloading', () => {
+    const root = getRootModel().create({
+      ...mainThreadConfig,
+      session: { name: 'my session' },
+    })
+    const notify = jest.spyOn(root.session, 'notify')
+
+    root.setPluginsUpdated()
+
+    expect(notify).toHaveBeenCalledWith(
+      expect.stringContaining('take effect'),
+      'info',
+    )
+  })
+})
