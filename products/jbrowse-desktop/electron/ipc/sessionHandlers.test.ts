@@ -7,68 +7,33 @@
  */
 
 import fs from 'node:fs'
-import os from 'node:os'
 import path from 'node:path'
-
-import { ipcMain } from 'electron'
 
 import { getLegacyThumbnailPath, getThumbnailPath } from '../paths.ts'
 import { registerSessionHandlers } from './sessionHandlers.ts'
+import { captureHandlers, makeTestPaths } from './testUtil.ts'
 
 import type { AppPaths } from '../paths.ts'
-import type { IpcChannels } from './channels.ts'
-import type { IpcMainInvokeEvent } from 'electron'
+import type { SessionSnap } from './channels.ts'
 
 jest.mock('electron', () => ({
   ipcMain: { handle: jest.fn() },
   shell: { showItemInFolder: jest.fn() },
 }))
 
-type Handler = Parameters<typeof ipcMain.handle>[1]
-
-// every handler under test ignores its event argument
-const NO_EVENT = {} as IpcMainInvokeEvent
-
-// registerSessionHandlers hands each handler to ipcMain.handle, so capture them
-// there and invoke one the way the renderer's ipcRenderer.invoke would
-function registerAndCapture(paths: AppPaths) {
-  const captured = new Map<string, Handler>()
-  jest.mocked(ipcMain.handle).mockImplementation((channel, handler) => {
-    captured.set(channel, handler)
-  })
-  // null window: captureThumbnail skips, which is what a headless test wants
-  registerSessionHandlers(paths, () => null)
-  return <K extends keyof IpcChannels>(
-    channel: K,
-    ...args: IpcChannels[K]['args']
-  ) => captured.get(channel)!(NO_EVENT, ...args)
-}
-
-function makePaths(dir: string): AppPaths {
-  return {
-    userData: dir,
-    recentSessionsPath: path.join(dir, 'recent_sessions.json'),
-    globalPluginsPath: path.join(dir, 'globalPlugins.json'),
-    quickstartDir: path.join(dir, 'quickstart'),
-    thumbnailDir: path.join(dir, 'thumbnails'),
-    faiDir: path.join(dir, 'fai'),
-    autosaveDir: path.join(dir, 'autosaved'),
-    jbrowseDocDir: path.join(dir, 'JBrowse'),
-    defaultSavePath: path.join(dir, 'JBrowse', 'untitled.jbrowse'),
-  }
-}
-
 let dir: string
 let paths: AppPaths
-let invoke: ReturnType<typeof registerAndCapture>
+let invoke: ReturnType<typeof captureHandlers>
 let consoleError: jest.SpyInstance
 
 beforeEach(() => {
-  dir = fs.mkdtempSync(path.join(fs.realpathSync(os.tmpdir()), 'jb-sessions-'))
-  paths = makePaths(dir)
+  ;({ dir, paths } = makeTestPaths())
   fs.mkdirSync(paths.thumbnailDir, { recursive: true })
   fs.writeFileSync(paths.recentSessionsPath, '[]')
-  invoke = registerAndCapture(paths)
+  // null window: captureThumbnail skips, which is what a headless test wants
+  invoke = captureHandlers(() => {
+    registerSessionHandlers(paths, () => null)
+  })
   consoleError = jest.spyOn(console, 'error').mockImplementation(() => {})
 })
 
@@ -150,4 +115,166 @@ test('loadSession names the file when it is gone', async () => {
   await expect(
     invoke('loadSession', path.join(dir, 'missing.jbrowse')),
   ).rejects.toThrow(/no longer exists/)
+})
+
+// recent_sessions.json is rewritten whole with no file locking, so every
+// read-modify-write goes through one promise chain. These are the interleavings
+// that chain exists to prevent — without it each handler reads the same starting
+// list and the last write wins, silently dropping the others.
+describe('concurrent access to recent_sessions.json', () => {
+  test('two saves racing each other both survive', async () => {
+    const a = path.join(dir, 'a.jbrowse')
+    const b = path.join(dir, 'b.jbrowse')
+
+    await Promise.all([
+      invoke('saveSession', a, {
+        assemblies: [],
+        defaultSession: { name: 'A' },
+      }),
+      invoke('saveSession', b, {
+        assemblies: [],
+        defaultSession: { name: 'B' },
+      }),
+    ])
+
+    const rows = JSON.parse(
+      fs.readFileSync(paths.recentSessionsPath, 'utf8'),
+    ) as { path: string; name?: string }[]
+    expect(rows.map(r => r.name).toSorted()).toEqual(['A', 'B'])
+    // and each session file landed too
+    expect(fs.existsSync(a)).toBe(true)
+    expect(fs.existsSync(b)).toBe(true)
+  })
+
+  test('a save racing a delete of a different session does not resurrect it', async () => {
+    const kept = writeSession('kept.jbrowse')
+    const doomed = path.join(dir, 'doomed.jbrowse')
+    fs.writeFileSync(doomed, '{}')
+    fs.writeFileSync(
+      paths.recentSessionsPath,
+      JSON.stringify([
+        { path: kept, updated: 1, name: 'kept' },
+        { path: doomed, updated: 1, name: 'doomed' },
+      ]),
+    )
+
+    await Promise.all([
+      invoke('saveSession', kept, {
+        assemblies: [],
+        defaultSession: { name: 'kept' },
+      }),
+      invoke('deleteSessions', [doomed]),
+    ])
+
+    const rows = JSON.parse(
+      fs.readFileSync(paths.recentSessionsPath, 'utf8'),
+    ) as { path: string }[]
+    expect(rows.map(r => r.path)).toEqual([kept])
+    expect(fs.existsSync(doomed)).toBe(false)
+  })
+
+  test('a failing update does not block the ones queued behind it', async () => {
+    // renameSession rejects for a session that is not in the list; the save
+    // behind it still has to run
+    const later = path.join(dir, 'later.jbrowse')
+
+    const results = await Promise.allSettled([
+      invoke('renameSession', path.join(dir, 'absent.jbrowse'), 'nope'),
+      invoke('saveSession', later, {
+        assemblies: [],
+        defaultSession: { name: 'later' },
+      }),
+    ])
+
+    expect(results[0].status).toBe('rejected')
+    expect(results[1].status).toBe('fulfilled')
+    const rows = JSON.parse(
+      fs.readFileSync(paths.recentSessionsPath, 'utf8'),
+    ) as { name?: string }[]
+    expect(rows.map(r => r.name)).toEqual(['later'])
+  })
+})
+
+test('renameSession renames both the list entry and the session file', async () => {
+  const sessionPath = writeSession('c.jbrowse')
+
+  await invoke('renameSession', sessionPath, 'A better name')
+
+  const rows = JSON.parse(
+    fs.readFileSync(paths.recentSessionsPath, 'utf8'),
+  ) as {
+    name?: string
+  }[]
+  expect(rows[0]!.name).toBe('A better name')
+  const snap = JSON.parse(fs.readFileSync(sessionPath, 'utf8')) as {
+    defaultSession: { name: string }
+  }
+  expect(snap.defaultSession.name).toBe('A better name')
+})
+
+test('createInitialAutosaveFile writes the snapshot and lists it', async () => {
+  fs.mkdirSync(paths.autosaveDir, { recursive: true })
+
+  const autosavePath = await invoke('createInitialAutosaveFile', {
+    assemblies: [],
+    defaultSession: { name: 'Fresh' },
+  })
+
+  expect(autosavePath.startsWith(paths.autosaveDir)).toBe(true)
+  expect(
+    (JSON.parse(fs.readFileSync(autosavePath, 'utf8')) as SessionSnap)
+      .defaultSession?.name,
+  ).toBe('Fresh')
+  expect(await invoke('listSessions')).toEqual([
+    {
+      path: autosavePath,
+      updated: expect.any(Number),
+      name: 'Fresh',
+      isAutosave: true,
+    },
+  ])
+})
+
+test('loadThumbnail migrates a legacy-named thumbnail on first read', async () => {
+  const sessionPath = path.join(dir, 'd.jbrowse')
+  const legacy = getLegacyThumbnailPath(paths, sessionPath)
+  fs.writeFileSync(legacy, 'data:image/png;base64,LEGACY')
+
+  expect(await invoke('loadThumbnail', sessionPath)).toBe(
+    'data:image/png;base64,LEGACY',
+  )
+  // moved, not copied, so the next read hits the current name directly
+  expect(fs.existsSync(legacy)).toBe(false)
+  expect(fs.readFileSync(getThumbnailPath(paths, sessionPath), 'utf8')).toBe(
+    'data:image/png;base64,LEGACY',
+  )
+})
+
+test('loadThumbnail returns undefined when there is no thumbnail at all', async () => {
+  expect(
+    await invoke('loadThumbnail', path.join(dir, 'never-saved.jbrowse')),
+  ).toBeUndefined()
+})
+
+test('reset clears the list, autosaves and thumbnails, and the global plugins', async () => {
+  fs.mkdirSync(paths.autosaveDir, { recursive: true })
+  const autosave = path.join(paths.autosaveDir, '1.json')
+  const thumbnail = path.join(paths.thumbnailDir, 'x.data')
+  fs.writeFileSync(autosave, '{}')
+  fs.writeFileSync(thumbnail, 'data:')
+  fs.writeFileSync(paths.recentSessionsPath, '[{"path":"a","updated":1}]')
+  // a global plugin loads into every session, so one that crashes on load makes
+  // the app unusable; a reset that left it installed would come back to it
+  fs.writeFileSync(paths.globalPluginsPath, '[{"name":"Crasher"}]')
+
+  await invoke('reset')
+
+  expect(JSON.parse(fs.readFileSync(paths.recentSessionsPath, 'utf8'))).toEqual(
+    [],
+  )
+  expect(JSON.parse(fs.readFileSync(paths.globalPluginsPath, 'utf8'))).toEqual(
+    [],
+  )
+  expect(fs.existsSync(autosave)).toBe(false)
+  expect(fs.existsSync(thumbnail)).toBe(false)
 })
