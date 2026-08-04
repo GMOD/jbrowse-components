@@ -125,6 +125,21 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
       { type: 'hover', from: { x: 950, y: 60 } },
       { type: 'delay', ms: 2000 },
     ],
+    // The figure's one finding, said on the figure. Without it this is 133
+    // columns of blue and grey with nothing telling a reader which row to read,
+    // which is what it was denied for. Anchored to the row's own gutter label
+    // (an SVG <text>, see shared/components/SvgSampleRowLabels.tsx) rather than
+    // to a fraction of the display height, because the matrix sits under a
+    // connector band whose height is not the spec's to know.
+    annotations: [
+      {
+        type: 'text',
+        text: "NCTC86: K12's allele at nearly every column",
+        fontSize: 18,
+        anchor: { text: 'NCTC86', alignX: 'right' },
+        dx: 12,
+      },
+    ],
   },
 
   // The two builders' depth curves in one frame, which is the comparison both

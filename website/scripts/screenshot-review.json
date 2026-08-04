@@ -2595,10 +2595,10 @@
   },
   "pangenome_cactus/variants": {
     "name": "pangenome_cactus/variants",
-    "status": "bad",
-    "note": "not a very interesting screenshot, consider deleting",
-    "reviewedAt": "2026-08-04T17:35:24.530Z",
-    "hash": "f9f19e496c01809fea91088b61a03018b96e4ddb"
+    "status": "good",
+    "note": "Kept, and given the one thing it was missing: something that says which row to read. It is the only picture in the tutorial's 'Pangenome variants projection' section, and that section is about a display choice (LinearMultiSampleVariantMatrixDisplay on the vg deconstruct VCF), so deleting it leaves the one step of the Cactus path with no picture. The window is also load-bearing -- chr:800,000-806,000 is deliberately the same 6 kb the MAF figure below draws base by base, so the reader gets one stretch in two projections. WHAT WAS ACTUALLY WRONG is that the finding was invisible: 133 columns of blue and grey with nothing pointing at NCTC86. Measured on the hosted VCF over that window (tabix + a per-sample genotype count): CFT073 carries an alt at 70 of the 133 records, IAI39 at 86, Sakai at 55, and NCTC86 at 3. That is the figure. A label now sits on NCTC86's row saying it, anchored to the row's own gutter label -- an SVG <text> in shared/components/SvgSampleRowLabels.tsx -- rather than to a fraction of the display height, since the matrix sits under a connector band whose height the spec has no business knowing. Caption updated to name the labeled row.",
+    "reviewedAt": "2026-08-04T22:45:34.636Z",
+    "hash": "9278b41eb1598a7e4ad04ef213acd162ad3807c1"
   },
   "pangenome/hprc_repeat_classes": {
     "name": "pangenome/hprc_repeat_classes",
