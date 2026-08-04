@@ -1,4 +1,4 @@
-import { displayReady, sessionSpec } from '../screenshot-spec-helpers.ts'
+import { sessionSpec } from '../screenshot-spec-helpers.ts'
 import { ECOLI_DEMO_BASE } from './demoBase.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
@@ -105,13 +105,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    // Scoped to this display AND to its real doneness. `-done` alone is
-    // canvasDrawn, i.e. first paint, which flips on an empty canvas while the
-    // fetch is still in flight; `data-display-phase` covers the whole fetch.
-    // Both attributes sit on the same DisplayChrome div, so one selector says
-    // "the variant matrix specifically, finished". readyText on the locus
-    // matched the ruler, which paints before any genotype does.
-    readySelector: displayReady('variant-matrix-display'),
+    readySelector: '[data-testid="variant-matrix-display-done"]',
     readyTimeout: 90000,
     viewportWidth: 1000,
     // fits the gene lane plus the whole 260px matrix and the genotype legend;
@@ -225,9 +219,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    // as above: the multiwiggle specifically, finished. The track name matched
-    // as soon as the lane's header rendered, which is before either curve.
-    readySelector: displayReady('multi-wiggle-display'),
+    readySelector: '[data-testid="multi-wiggle-display-done"]',
     readyTimeout: 90000,
     viewportWidth: 1000,
     // the gene lane plus the whole 300px two-row stack, with room for the

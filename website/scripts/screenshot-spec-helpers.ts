@@ -286,38 +286,6 @@ export const CGIAB_ASM_PIF_TRACK = {
   },
 }
 
-// Wait for ONE display to be genuinely finished, by the testid it passes to
-// DisplayChrome (`pileup-display`, `variant-matrix-display`, ...) with no
-// `-done` suffix — this adds it.
-//
-// Two attributes have to agree, and using either alone is a real bug:
-//
-//   `<testid>-done`             is `canvasDrawn`, i.e. FIRST PAINT. It flips on
-//                               an empty canvas while the fetch is still in
-//                               flight, so it cannot say "finished".
-//   `data-display-phase=ready`  is the model's own state and covers the whole
-//                               fetch — but it is on EVERY display, so alone it
-//                               matches whichever one finished first (usually
-//                               the gene track, not the subject of the figure).
-//
-// Together they mean "this display specifically, finished". The catch, and the
-// reason this is a helper rather than a snippet to copy: the two attributes are
-// not always on the same element. DisplayChromeBase carries both for most
-// displays, so they AND on one element; the alignments display derives its
-// chrome testid from `displayId` and puts `pileup-display-done` on an inner
-// div, so there they must be related with `:has()`. Getting that wrong matches
-// nothing and fails the capture, which is a slow way to learn it. The selector
-// list below accepts either arrangement.
-//
-// Prefer this over `readyText`, which matches chrome that paints BEFORE the
-// data does (a locus in the ruler, a track name in a lane header) and so lets a
-// missing track capture a blank frame instead of failing.
-export function displayReady(testid: string) {
-  const done = `[data-testid="${testid}-done"]`
-  const ready = '[data-display-phase="ready"]'
-  return `${ready}${done}, ${ready}:has(${done})`
-}
-
 export function sessionSpec(config: string, session: object) {
   return `?config=${config}&session=${encodeSessionSpec(session)}&sessionName=Screenshot`
 }
