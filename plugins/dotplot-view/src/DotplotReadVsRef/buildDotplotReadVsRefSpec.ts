@@ -23,6 +23,9 @@ export interface DotplotReadVsRefSpec {
 
 export interface BuildDotplotReadVsRefArgs {
   feature: Feature
+  // Extra genomic context drawn either side of each aligned segment on the
+  // horizontal axis, same meaning as the linear read-vs-ref launcher's.
+  windowSize: number
   trackAssembly: string
   // Plot area the initial bpPerPx is sized against. The dotplot itself has not
   // been laid out yet, so the caller passes the geometry it will come up in.
@@ -38,13 +41,14 @@ export interface BuildDotplotReadVsRefArgs {
 // returned spec, mirroring linear-comparative-view's buildReadVsRefSpec.
 export function buildDotplotReadVsRefSpec({
   feature,
+  windowSize,
   trackAssembly,
   plotWidth,
   plotHeight,
   getCanonicalRefName,
   now,
 }: BuildDotplotReadVsRefArgs): DotplotReadVsRefSpec {
-  const { features, totalLength, readName, seq } = buildReadVsRefFeatures(
+  const { features, totalLength, readName } = buildReadVsRefFeatures(
     feature.toJSON(),
     getCanonicalRefName,
   )
@@ -58,11 +62,11 @@ export function buildDotplotReadVsRefSpec({
   const assemblyNames = [trackAssembly, readAssembly]
 
   // Size hview's bpPerPx from the regions it actually draws, so overlap
-  // merging in gatherOverlaps is reflected exactly.
+  // merging and start-clamping in gatherOverlaps are reflected exactly.
   const hviewRegions = gatherOverlaps(
     features.map(f => ({
-      start: f.start,
-      end: f.end,
+      start: Math.max(0, f.start - windowSize),
+      end: f.end + windowSize,
       refName: f.refName,
       assemblyName: trackAssembly,
     })),
@@ -76,7 +80,12 @@ export function buildDotplotReadVsRefSpec({
       readName,
       readAssembly,
       totalLength,
-      seq,
+      // No bases: a dotplot draws no sequence track, and the assembly's region
+      // comes from the feature's start/end (mergeFeaturesToRegions), not from
+      // the string. Carrying a whole ONT read's SEQ here would only bloat the
+      // session snapshot. The linear launcher, which does render the read
+      // sequence, passes it.
+      seq: undefined,
       trackId: seqTrackId,
       uniqueId: seqTrackId,
     }),

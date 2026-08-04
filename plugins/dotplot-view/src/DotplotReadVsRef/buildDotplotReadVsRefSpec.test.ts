@@ -17,6 +17,7 @@ function constNow() {
 }
 
 const baseArgs = {
+  windowSize: 0,
   trackAssembly: 'hg38',
   plotWidth: 750,
   plotHeight: 550,
@@ -53,7 +54,7 @@ describe('buildDotplotReadVsRefSpec', () => {
     expect(vview.bpPerPx).toBeCloseTo(110 / 550)
   })
 
-  it('registers the read as a temporary assembly both axes can resolve', () => {
+  it('registers a temporary assembly the read axis resolves against, with no bases', () => {
     const spec = buildDotplotReadVsRefSpec({
       ...baseArgs,
       feature: makeFeature({
@@ -70,10 +71,11 @@ describe('buildDotplotReadVsRefSpec', () => {
     })
     const readAssembly = 'read1_assembly_1700000000000'
     expect(spec.temporaryAssembly.name).toBe(readAssembly)
-    expect(spec.temporaryAssembly.sequence.adapter.features[0]!.seq).toBe(
-      'ACGTACGT',
-    )
     expect(spec.viewSpec.assemblyNames).toEqual(['hg38', readAssembly])
+    // a dotplot draws no sequence track; the region still spans the read
+    const seqFeature = spec.temporaryAssembly.sequence.adapter.features[0]!
+    expect(seqFeature.seq).toBe('')
+    expect(seqFeature).toMatchObject({ start: 0, end: 8, refName: 'read1' })
   })
 
   it('canonicalizes refNames so the horizontal axis resolves against the fasta', () => {
@@ -131,5 +133,28 @@ describe('buildDotplotReadVsRefSpec', () => {
     expect(hview.displayedRegions).toHaveLength(1)
     // chr1:1000-1050 and chr1:1025-1075 merge to 1000..1075 = 75bp
     expect(hview.bpPerPx).toBeCloseTo(75 / 750)
+  })
+
+  it('windowSize pads each aligned segment, clamped at zero', () => {
+    // the same genomic-context option the linear launcher offers; the dotplot
+    // had no way to ask for it before the two shared a dialog
+    const spec = buildDotplotReadVsRefSpec({
+      ...baseArgs,
+      windowSize: 500,
+      feature: makeFeature({
+        refName: 'chr1',
+        start: 10,
+        end: 100,
+        strand: 1,
+        CIGAR: '90M',
+        flags: 0,
+        name: 'r',
+        tags: {},
+      }),
+    })
+    const { hview } = spec.viewSpec as {
+      hview: { displayedRegions: { start: number; end: number }[] }
+    }
+    expect(hview.displayedRegions[0]).toMatchObject({ start: 0, end: 600 })
   })
 })

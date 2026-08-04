@@ -52,6 +52,8 @@ export {
   withContextMenuFeature,
 } from './LinearAlignmentsDisplay/menus/index.ts'
 export type { CollapseGroupRowsModel } from './LinearAlignmentsDisplay/menus/index.ts'
+export { queueReadVsRefDialog } from './ReadVsRefDialog/index.ts'
+export type { ReadVsRefLaunchArgs } from './ReadVsRefDialog/index.ts'
 export {
   isRegisteredColorScheme,
   pickColorOptions,

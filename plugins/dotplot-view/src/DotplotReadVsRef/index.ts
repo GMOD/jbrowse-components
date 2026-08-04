@@ -1,8 +1,12 @@
 import { pushLaunchViewMenuItem } from '@jbrowse/core/ui'
-import { withContextMenuFeature } from '@jbrowse/plugin-alignments'
+import { getContainingTrack } from '@jbrowse/core/util'
+import {
+  queueReadVsRefDialog,
+  withContextMenuFeature,
+} from '@jbrowse/plugin-alignments'
 import AddIcon from '@mui/icons-material/Add'
 
-import { onClick } from './DotplotReadVsRef.ts'
+import { launchDotplotReadVsRef } from './DotplotReadVsRef.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
@@ -29,6 +33,7 @@ export default function DotplotReadVsRefMenuItem(pluginManager: PluginManager) {
                 contextMenuItems() {
                   const featureId = self.contextMenuFeatureId
                   const feature = self.contextMenuFeature
+                  const track = getContainingTrack(self)
                   const items = superContextMenuItems()
                   if (featureId !== undefined) {
                     pushLaunchViewMenuItem(items, {
@@ -40,7 +45,12 @@ export default function DotplotReadVsRefMenuItem(pluginManager: PluginManager) {
                           featureId,
                           feature,
                           feat => {
-                            onClick(feat, self)
+                            queueReadVsRefDialog({
+                              node: self,
+                              track,
+                              feature: feat,
+                              onSubmit: launchDotplotReadVsRef,
+                            })
                           },
                         )
                       },

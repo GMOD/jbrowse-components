@@ -1,15 +1,16 @@
-import { lazy } from 'react'
-
 import { pushLaunchViewMenuItem } from '@jbrowse/core/ui'
-import { getContainingTrack, getSession } from '@jbrowse/core/util'
-import { withContextMenuFeature } from '@jbrowse/plugin-alignments'
+import { getContainingTrack } from '@jbrowse/core/util'
+import {
+  queueReadVsRefDialog,
+  withContextMenuFeature,
+} from '@jbrowse/plugin-alignments'
 import AddIcon from '@mui/icons-material/Add'
+
+import { launchLinearReadVsRef } from './launchLinearReadVsRef.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { PluggableElementType } from '@jbrowse/core/pluggableElementTypes'
 import type DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
-
-const ReadVsRefDialog = lazy(() => import('./LinearReadVsRef.tsx'))
 
 function isDisplay(elt: { name: string }): elt is DisplayType {
   return elt.name === 'LinearAlignmentsDisplay'
@@ -41,14 +42,12 @@ export default function LinearReadVsRefMenuItemF(pm: PluginManager) {
                   icon: AddIcon,
                   onClick: () => {
                     withContextMenuFeature(self, featureId, feature, feat => {
-                      getSession(self).queueDialog(handleClose => [
-                        ReadVsRefDialog,
-                        {
-                          track,
-                          feature: feat,
-                          handleClose,
-                        },
-                      ])
+                      queueReadVsRefDialog({
+                        node: self,
+                        track,
+                        feature: feat,
+                        onSubmit: launchLinearReadVsRef,
+                      })
                     })
                   },
                 })
