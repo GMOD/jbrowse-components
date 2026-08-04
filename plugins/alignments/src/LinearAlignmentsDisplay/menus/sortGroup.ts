@@ -129,6 +129,7 @@ export function getSortByMenuItem(
           SortByTagDialog,
           {
             handleClose,
+            initialTag: sortTag,
             onSubmit: (tag: string) => {
               model.setSortedBy('tag', tag)
             },

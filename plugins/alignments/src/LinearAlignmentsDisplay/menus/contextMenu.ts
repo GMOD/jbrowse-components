@@ -92,6 +92,9 @@ interface ContextMenuModel
   // Genomic column under the right-click, anchoring the read menu's "sort at the
   // clicked position" items. Captured into the onClicks like contextMenuBlock.
   contextMenuGenomicPos: number | undefined
+  // The active ordering, read only to pre-fill the tag dialog so this entry
+  // point and the track menu's "Tag..." open with the same field filled.
+  sortedBy?: { type: string; tag?: string }
   selectFeature: (feature: Feature) => void
 }
 
@@ -459,6 +462,10 @@ export function getContextMenuItems(
                 SortByTagDialog,
                 {
                   handleClose,
+                  initialTag:
+                    self.sortedBy?.type === 'tag'
+                      ? self.sortedBy.tag
+                      : undefined,
                   onSubmit: (tag: string) => {
                     self.setSortedByAtPosition({
                       type: 'tag',

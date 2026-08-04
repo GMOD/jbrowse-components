@@ -58,8 +58,11 @@ function Bitmask(props: { flag?: number; setFlag: (arg: number) => void }) {
       <TextField
         value={flag}
         onChange={event => {
+          // Whole numbers only. `Number.isFinite` let "1.5" and "1e3" through:
+          // the field then showed 1.5 while every `flag & (1 << i)` below read
+          // it as 1, so the checkboxes and the number disagreed.
           const n = Number(event.target.value)
-          if (Number.isFinite(n) && n >= 0) {
+          if (Number.isInteger(n) && n >= 0) {
             setFlag(n)
           }
         }}
@@ -220,7 +223,14 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
 
   const handleSubmit = () => {
     const tagFilters = [
-      ...(tag !== '' ? [{ tag, value: tagValue }] : []),
+      // A named tag with the value box left alone means "reads that carry this
+      // tag", which is what `*` spells (see filterTagValue) — and what the
+      // box's own placeholder offers. Storing the literal '' instead compared
+      // every read's value against the empty string, so naming a tag and
+      // tabbing straight to Submit emptied the track with nothing to say why.
+      // A '' a config or session stored deliberately still means "the tag's
+      // value is empty"; only what this dialog writes changes.
+      ...(tag !== '' ? [{ tag, value: tagValue === '' ? '*' : tagValue }] : []),
       ...otherTagFilters,
     ]
     model.setFilterBy({

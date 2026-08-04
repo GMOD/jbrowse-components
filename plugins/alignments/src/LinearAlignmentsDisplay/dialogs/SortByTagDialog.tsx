@@ -9,12 +9,19 @@ import { COMMON_READ_TAGS } from '../../shared/commonTags.ts'
 // Decoupled from where the sort anchors: the track menu passes an onSubmit that
 // sorts at the center line, the read right-click menu one that sorts at the
 // clicked column. The dialog only collects the tag name.
+//
+// `initialTag` is the tag currently sorted on, so reopening tweaks the sort
+// rather than resetting it — the same pre-fill ColorByTagDialog and
+// GroupByDialog do from their own slots. This one can't read it off a model
+// (it deliberately takes no model), so both call sites pass it in; without it
+// the menu row reads "Tag (HP)..." and opens an empty field.
 const SortByTagDialog = observer(function SortByTagDialog(props: {
   onSubmit: (tag: string) => void
   handleClose: () => void
+  initialTag?: string
 }) {
-  const { onSubmit, handleClose } = props
-  const [tag, setTag] = useState<string | undefined>()
+  const { onSubmit, handleClose, initialTag } = props
+  const [tag, setTag] = useState<string | undefined>(initialTag)
   return (
     <SubmitDialog
       open
@@ -31,6 +38,7 @@ const SortByTagDialog = observer(function SortByTagDialog(props: {
       <Typography>Pick or enter a tag to sort by</Typography>
       <TagTextField
         autoFocus
+        defaultValue={initialTag}
         quickPicks={COMMON_READ_TAGS}
         onValueChange={setTag}
         data-testid="sort-tag-name"
