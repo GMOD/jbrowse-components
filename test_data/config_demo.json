@@ -1879,7 +1879,6 @@
       "assemblyNames": ["hg19"],
       "adapter": {
         "type": "HicAdapter",
-        "resolutionMultiplier": 10,
         "hicLocation": {
           "uri": "https://jbrowse.org/genomes/hg19/intra_nofrag_30.hic",
           "locationType": "UriLocation"
