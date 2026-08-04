@@ -542,6 +542,64 @@ describe('setSubschema', () => {
   })
 })
 
+describe('setSlot', () => {
+  // A misspelled slot name used to be completely silent: the assignment landed
+  // on an undeclared property, so nothing threw, nothing persisted, and the
+  // matching read went on returning the default. The compile-time guard on
+  // `setConf` only covers writes whose schema is concrete, and a mixin or a
+  // widened factory erases that, so this runtime check is what covers the rest.
+  test('throws for a slot the schema does not declare', () => {
+    const schema = ConfigurationSchema('WithScalar', {
+      count: { type: 'integer', defaultValue: 1 },
+    })
+    const node = schema.create(undefined, { pluginManager })
+    expect(() =>{  node.setSlot('cuont', 2); }).toThrow(
+      /WithScalar has no config slot "cuont"/,
+    )
+    expect(readConfObject(node, 'count')).toBe(1)
+  })
+
+  test('the error names the valid slots', () => {
+    const schema = ConfigurationSchema('Named', {
+      alpha: { type: 'integer', defaultValue: 1 },
+      beta: { type: 'integer', defaultValue: 2 },
+    })
+    const node = schema.create(undefined, { pluginManager })
+    expect(() =>{  node.setSlot('gamma', 3); }).toThrow(/Valid slots: alpha, beta/)
+  })
+
+  test('a slot inherited from baseConfiguration is accepted', () => {
+    // mergeSchemaDefinition folds the base's slots into the derived schema's
+    // modelDefinition, so the membership check sees them. If it ever stopped
+    // doing that, every inherited-slot write in the repo would start throwing.
+    const base = ConfigurationSchema('Base', {
+      inherited: { type: 'integer', defaultValue: 1 },
+    })
+    const derived = ConfigurationSchema(
+      'Derived',
+      { own: { type: 'integer', defaultValue: 2 } },
+      { baseConfiguration: base },
+    )
+    const node = derived.create(undefined, { pluginManager })
+    node.setSlot('inherited', 10)
+    node.setSlot('own', 20)
+    expect(readConfObject(node, 'inherited')).toBe(10)
+    expect(readConfObject(node, 'own')).toBe(20)
+  })
+
+  test('an Object.prototype member is not mistaken for a slot', () => {
+    // the check is Object.hasOwn, not `in` — `'toString' in modelDefinition` is
+    // true for the plain object modelDefinition is built as
+    const schema = ConfigurationSchema('Proto', {
+      count: { type: 'integer', defaultValue: 1 },
+    })
+    const node = schema.create(undefined, { pluginManager })
+    expect(() =>{  node.setSlot('toString', 2); }).toThrow(
+      /Proto has no config slot "toString"/,
+    )
+  })
+})
+
 describe('schema definition entry classification', () => {
   test('a slot definition missing its type throws a specific error', () => {
     expect(() =>

@@ -256,7 +256,26 @@ function makeConfigurationSchemaModel<
       },
       // generic slot setter the config editor's slot facade routes through. A
       // slot is a bare value-union property, so this is a plain assignment.
+      //
+      // The membership check is the only diagnostic an unknown slot name gets.
+      // Without it the assignment lands on an undeclared property: nothing
+      // throws, nothing persists, and the matching read keeps returning the
+      // default — the one config mistake that is silent at every layer. The
+      // compile-time guard on `setConf` catches this only where the schema is
+      // concrete, which measurably it often is not (a mixin or a widened
+      // factory erases it, see scripts/audit-config-read-types.ts), so the
+      // check has to be here to cover every write. `modelDefinition` already
+      // has base-schema slots merged in, so an inherited slot passes.
       setSlot(slotName: string, value: unknown) {
+        if (!Object.hasOwn(modelDefinition, slotName)) {
+          throw new Error(
+            `${modelName} has no config slot "${slotName}". Valid slots: ${Object.keys(
+              modelDefinition,
+            )
+              .sort()
+              .join(', ')}`,
+          )
+        }
         self[slotName] = value
       },
     }))
