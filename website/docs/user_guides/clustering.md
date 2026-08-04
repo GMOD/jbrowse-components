@@ -53,6 +53,10 @@ drawn in the sidebar.
   alone.
 - Click any internal node to filter the track down to that clade. Click it again
   to clear, or use **Clear subtree filter**.
+- A chip at the top of the sidebar names the locus the tree was computed from.
+  Navigating away from that region marks it, since the tree still describes the
+  region it was run on rather than the one on screen. Re-run clustering, or reset
+  the row order, to bring the two back together.
 
 ## Encoding a clustering result in a session URL
 
