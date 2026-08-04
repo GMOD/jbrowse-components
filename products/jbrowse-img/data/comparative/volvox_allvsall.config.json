@@ -1,0 +1,58 @@
+{
+  "assemblies": [
+    {
+      "name": "volvox_ins",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "volvox_ins-refseq",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "localPath": "volvox_ins.chrom.sizes"
+          }
+        }
+      }
+    },
+    {
+      "name": "volvox_del",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "volvox_del-refseq",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "localPath": "volvox_del.chrom.sizes"
+          }
+        }
+      }
+    },
+    {
+      "name": "volvox",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "volvox-refseq",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "localPath": "volvox.chrom.sizes"
+          }
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "SyntenyTrack",
+      "trackId": "volvox_ava",
+      "name": "volvox all-vs-all",
+      "assemblyNames": ["volvox_ins", "volvox_del", "volvox"],
+      "adapter": {
+        "type": "AllVsAllPAFAdapter",
+        "pafLocation": {
+          "localPath": "volvox_all_vs_all.paf"
+        },
+        "assemblyNames": ["volvox_ins", "volvox_del", "volvox"]
+      }
+    }
+  ]
+}

@@ -186,3 +186,24 @@ test('three-assembly synteny renders from a config + session-spec JSON', async (
   assert.ok(svg.includes('<svg'), 'output should be SVG')
   assert.ok(svg.includes('<image'), 'synteny should rasterize ribbon layers')
 })
+
+// One AllVsAllPAFAdapter track lists every assembly its file covers and backs
+// every band of the stack — each level hands the adapter that level's pair, and
+// the adapter serves the matching comparison. This is what the all-vs-all and
+// multiway synteny tutorials build. Placing such a track on only the first
+// matching level left every band below the top one empty.
+test('one all-vs-all track draws every band of a three-assembly stack', async () => {
+  const config = path.join(
+    __dirname,
+    '../data/comparative/volvox_allvsall.config.json',
+  )
+  const svg = await renderRegion({ mode: 'synteny', config, width: 800 })
+  assert.ok(svg.includes('<svg'), 'output should be SVG')
+  // each drawn band rasterizes to its own <image>; two levels means two
+  const images = svg.match(/<image/g) ?? []
+  assert.equal(
+    images.length,
+    2,
+    `expected a ribbon band per level, got ${images.length}`,
+  )
+})

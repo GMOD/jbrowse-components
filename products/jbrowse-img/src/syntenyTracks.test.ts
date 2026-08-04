@@ -87,4 +87,40 @@ describe('syntenyTrackLevels', () => {
     )
     warn.mockRestore()
   })
+
+  // One AllVsAllPAFAdapter / MCScanBlocksAdapter track lists every assembly its
+  // file covers and backs every band of the stack — each level hands it that
+  // level's pair. This is what the multiway and all-vs-all synteny tutorials
+  // build, and matching only the first level left every band below the top one
+  // empty.
+  test('a track covering every assembly backs every level', () => {
+    const data: Config = {
+      ...threeWay,
+      tracks: [synteny('all_vs_all', ['hg38', 'hs1', 'mm39'])],
+    }
+    expect(syntenyTrackLevels(data)).toEqual([['all_vs_all'], ['all_vs_all']])
+  })
+
+  test('a multi-assembly track sits alongside the pairwise ones it overlaps', () => {
+    const data: Config = {
+      ...threeWay,
+      tracks: [...threeWay.tracks, synteny('all', ['hg38', 'hs1', 'mm39'])],
+    }
+    expect(syntenyTrackLevels(data)).toEqual([
+      ['hg38_hs1', 'all'],
+      ['hs1_mm39', 'all'],
+    ])
+  })
+
+  // A track that covers only some adjacent pairs lands on just those
+  test('a partial multi-assembly track only backs the pairs it covers', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+    const data: Config = {
+      ...threeWay,
+      tracks: [synteny('hg38_hs1_only', ['hg38', 'hs1'])],
+    }
+    expect(syntenyTrackLevels(data)).toEqual([['hg38_hs1_only'], []])
+    expect(warn).not.toHaveBeenCalled()
+    warn.mockRestore()
+  })
 })
