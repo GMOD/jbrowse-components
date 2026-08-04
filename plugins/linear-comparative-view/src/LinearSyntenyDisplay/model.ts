@@ -1,7 +1,11 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { computeSvgReady } from '@jbrowse/core/svg/svgReady'
-import { findParentThatIs, getContainingView } from '@jbrowse/core/util'
+import {
+  findParentThatIs,
+  getContainingView,
+  getSession,
+} from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import { sharedBackendKey } from '@jbrowse/render-core/keyedUploadSync'
 import {
@@ -543,7 +547,30 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           colorBy: this.effectiveColorBy,
           trackColor: this.trackColor,
           opacityByIdentity,
+          nameOrder: this.paintedChromosomeOrder,
         })
+      },
+      /**
+       * #getter
+       * The chromosome order the chromosome-painting modes color by: the
+       * refNames of whichever of this level's two assemblies `effectiveColorBy`
+       * resolved to, in the assembly's own order. Undefined for every other
+       * mode, and while the assembly is still loading — the color function
+       * falls back to its hash there.
+       *
+       * It has to come from the assembly rather than from the features, because
+       * a color must not change with which chromosomes happen to be in view.
+       */
+      get paintedChromosomeOrder(): readonly string[] | undefined {
+        const colorBy = this.effectiveColorBy
+        if (colorBy !== 'query' && colorBy !== 'target') {
+          return undefined
+        }
+        const level = colorBy === 'query' ? this.level : this.level + 1
+        const assemblyName = this.view.views[level]?.assemblyNames[0]
+        return assemblyName === undefined
+          ? undefined
+          : getSession(self).assemblyManager.get(assemblyName)?.refNames
       },
       /**
        * #getter

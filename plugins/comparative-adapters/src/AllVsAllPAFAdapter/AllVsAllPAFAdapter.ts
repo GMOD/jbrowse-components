@@ -13,6 +13,7 @@ import {
 import { panSNContig } from '../pansn.ts'
 import {
   assemblyByPanSNPrefix,
+  createReciprocalDedupe,
   assemblyForPanSNName,
   resolvePanSNPrefix,
   sideDraws,
@@ -109,6 +110,9 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllP
       // same-sample (paralogy) record — e.g. a segmental duplication — has BOTH
       // sides on the anchor, so it draws at each of its two loci with a distinct
       // id (index*2 + side).
+      // Records are walked in file order, so which of a reciprocal pair is kept
+      // is a property of the file rather than of when a read landed.
+      const isDuplicate = createReciprocalDedupe()
       for (const { index, flip } of sidesByContig.get(qref) ?? []) {
         const r = records[index]!
         const side = orientPafRecord(r, flip)
@@ -116,7 +120,8 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllP
 
         if (
           sideDraws(side, anchorPrefix, targetPrefix) &&
-          doesIntersect2(qstart, qend, start, end)
+          doesIntersect2(qstart, qend, start, end) &&
+          !isDuplicate(side)
         ) {
           const { extra, strand } = r
           observer.next(

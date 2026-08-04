@@ -82,3 +82,86 @@ describe("computeSyntenyColors colorBy:'track'", () => {
     expect(other[0]).not.toBe(colors[0])
   })
 })
+
+// Chromosome painting used to bucket a refName into nine category10 slots, so a
+// genome with ten or more chromosomes re-used colors — twelve rice chromosomes
+// is a guaranteed three-way collision, which is what a figure review saw. Given
+// the assembly's own chromosome order there is a color per chromosome.
+describe('chromosome painting', () => {
+  const chromosomes = Array.from({ length: 12 }, (_, i) => `chr${i + 1}`)
+  const colorsFor = (nameOrder?: readonly string[]) =>
+    chromosomes.map(
+      name =>
+        computeSyntenyColors({
+          instanceData: {
+            kinds: new Uint8Array([KIND_BASE]),
+            instanceFeatureIdx: new Uint32Array([0]),
+            instanceCount: 1,
+          },
+          featureData: {
+            strands: new Int8Array([1]),
+            refNames: [name],
+            mateRefNames: [name],
+            identities: new Float32Array([-1]),
+            mappingQuals: new Float32Array([-1]),
+            meanIdentities: new Float32Array([-1]),
+          },
+          colorBy: 'query',
+          trackColor: '#000',
+          nameOrder,
+        })[0]!,
+    )
+
+  test('twelve chromosomes get twelve colors', () => {
+    expect(new Set(colorsFor(chromosomes)).size).toBe(12)
+  })
+
+  test('a chromosome the order does not list still gets a color', () => {
+    // an alias, a scaffold, or an assembly still loading: the hash fallback
+    expect(colorsFor(['chrZ'])).toHaveLength(12)
+    expect(colorsFor(['chrZ']).every(c => c !== 0)).toBe(true)
+  })
+
+  // The defect, kept as a test so the fallback is not silently made the default
+  // again: without an order, nine slots hold twelve names.
+  test('without an order the hash re-uses colors', () => {
+    expect(new Set(colorsFor()).size).toBeLessThan(12)
+  })
+})
+
+// A refName list is not a chromosome list: rice's has 30 entries for 12
+// chromosomes. An even spread over the circle divides by that 30 and paints
+// every chromosome inside the first 132 degrees, which is one wash rather than
+// twelve colors — the stride does not care how long the tail of scaffolds is.
+test('scaffolds after the chromosomes do not compress the palette', () => {
+  const chromosomes = Array.from({ length: 12 }, (_, i) => `chr${i + 1}`)
+  const withScaffolds = [
+    ...chromosomes,
+    ...Array.from({ length: 18 }, (_, i) => `scaffold${i}`),
+  ]
+  const hues = chromosomes.map(
+    name =>
+      computeSyntenyColors({
+        instanceData: {
+          kinds: new Uint8Array([KIND_BASE]),
+          instanceFeatureIdx: new Uint32Array([0]),
+          instanceCount: 1,
+        },
+        featureData: {
+          strands: new Int8Array([1]),
+          refNames: [name],
+          mateRefNames: [name],
+          identities: new Float32Array([-1]),
+          mappingQuals: new Float32Array([-1]),
+          meanIdentities: new Float32Array([-1]),
+        },
+        colorBy: 'query',
+        trackColor: '#000',
+        nameOrder: withScaffolds,
+      })[0]!,
+  )
+  expect(new Set(hues).size).toBe(12)
+  // packed ABGR: the blue byte is the high one. A ramp that never leaves
+  // red-through-green leaves it at zero for every chromosome.
+  expect(hues.some(c => (c >>> 16) & 0xff)).toBe(true)
+})

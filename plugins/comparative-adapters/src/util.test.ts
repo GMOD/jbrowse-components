@@ -1,4 +1,4 @@
-import { parseBed, resolveCoarseTier } from './util.ts'
+import { createReciprocalDedupe, parseBed, resolveCoarseTier } from './util.ts'
 
 describe('parseBed', () => {
   test('reads a scored, stranded row', () => {
@@ -50,5 +50,66 @@ describe('resolveCoarseTier', () => {
     expect(resolveCoarseTier({ hasCoarseTier: false, lodMode: 'coarse' })).toBe(
       false,
     )
+  })
+})
+
+describe('createReciprocalDedupe', () => {
+  // The E. coli wfmash pair that prompted this: one homology, aligned from
+  // either end, so the two sides differ by 4 bp on the anchor and 513 on the
+  // mate over 134 kb. Both are anchored on K12 when K12 is the row being drawn,
+  // so without this the band paints the ribbon twice.
+  const k12ToCft = {
+    refName: 'K12#1#chr',
+    start: 4362432,
+    end: 4496576,
+    mateRefName: 'CFT073#1#chr',
+    mateStart: 4971470,
+    mateEnd: 5115529,
+  }
+  const cftToK12 = {
+    refName: 'K12#1#chr',
+    start: 4362436,
+    end: 4496063,
+    mateRefName: 'CFT073#1#chr',
+    mateStart: 4971408,
+    mateEnd: 5115000,
+  }
+
+  test('drops the second statement of one homology', () => {
+    const isDuplicate = createReciprocalDedupe()
+    expect(isDuplicate(k12ToCft)).toBe(false)
+    expect(isDuplicate(cftToK12)).toBe(true)
+  })
+
+  test('keeps a second alignment of the same contigs at another locus', () => {
+    const isDuplicate = createReciprocalDedupe()
+    expect(isDuplicate(k12ToCft)).toBe(false)
+    expect(isDuplicate({ ...k12ToCft, start: 100_000, end: 234_144 })).toBe(
+      false,
+    )
+  })
+
+  // Paralogy: the same span of the anchor aligned to two different places on
+  // the mate is two homologies, not one stated twice, and only agreement on
+  // BOTH spans makes a duplicate.
+  test('keeps two mates of one anchor span', () => {
+    const isDuplicate = createReciprocalDedupe()
+    expect(isDuplicate(k12ToCft)).toBe(false)
+    expect(
+      isDuplicate({ ...k12ToCft, mateStart: 100_000, mateEnd: 244_059 }),
+    ).toBe(false)
+  })
+
+  test('keeps everything in a file with one direction per pair', () => {
+    const isDuplicate = createReciprocalDedupe()
+    for (let i = 0; i < 5; i++) {
+      expect(
+        isDuplicate({
+          ...k12ToCft,
+          start: i * 200_000,
+          end: i * 200_000 + 134_144,
+        }),
+      ).toBe(false)
+    }
   })
 })

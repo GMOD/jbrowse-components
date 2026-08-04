@@ -295,6 +295,97 @@ export function sideDraws(
 }
 
 /**
+ * Fraction of the shorter of two intervals that they share. 1 when one contains
+ * the other, 0 when they are disjoint.
+ */
+function overlapFraction(
+  aStart: number,
+  aEnd: number,
+  bStart: number,
+  bEnd: number,
+) {
+  const overlap = Math.min(aEnd, bEnd) - Math.max(aStart, bStart)
+  const shorter = Math.min(aEnd - aStart, bEnd - bStart)
+  return shorter > 0 ? Math.max(0, overlap) / shorter : 0
+}
+
+/**
+ * How much two sides must agree, on BOTH of their spans, to be one homology
+ * stated twice. Reciprocal alignments are the same aligner run from either end,
+ * so they agree to within a few bases over hundreds of kb — the E. coli wfmash
+ * pair that prompted this differs by 4 bp on one side and 513 on the other,
+ * over 134 kb. Nothing short of near-identity on both sides qualifies, which is
+ * what keeps real paralogy (same pair of contigs, different loci) out of it.
+ */
+const RECIPROCAL_OVERLAP = 0.9
+
+/**
+ * An all-vs-all mapping contains a record per ORDERED pair, so A-vs-B and
+ * B-vs-A are both in the file — two alignments of one homology, computed from
+ * either end and therefore not byte-identical. Both are anchored on A when A is
+ * the row being drawn, so a synteny band paints the same ribbon twice: at the
+ * default alpha two coats composite to 0.36 where every other synteny figure
+ * sits at 0.2, which is how this was noticed ("the polygons are oddly darker
+ * than expected ... plotted twice from all-vs-all").
+ *
+ * Drawing both is not more information — it is the same statement in two
+ * coordinates — and it makes a band's colour a function of how the file was
+ * generated rather than of what aligned. So one of each pair is dropped, by
+ * near-identity on both spans rather than by direction: a file holding only one
+ * direction per pair (minimap2 `-X`, or a curated PAF) has no pairs to drop and
+ * is untouched, which a "keep only the canonical direction" rule could not
+ * promise.
+ *
+ * Returns a stateful predicate — call it once per side, in a deterministic
+ * order, and it answers whether that side is a restatement of one already
+ * accepted.
+ */
+export function createReciprocalDedupe() {
+  const kept = new Map<
+    string,
+    { start: number; end: number; mateStart: number; mateEnd: number }[]
+  >()
+  return function isDuplicate(side: {
+    refName: string
+    start: number
+    end: number
+    mateRefName: string
+    mateStart: number
+    mateEnd: number
+  }) {
+    const key = `${side.refName}\u0000${side.mateRefName}`
+    const seen = kept.get(key)
+    if (
+      seen?.some(
+        p =>
+          overlapFraction(p.start, p.end, side.start, side.end) >=
+            RECIPROCAL_OVERLAP &&
+          overlapFraction(
+            p.mateStart,
+            p.mateEnd,
+            side.mateStart,
+            side.mateEnd,
+          ) >= RECIPROCAL_OVERLAP,
+      )
+    ) {
+      return true
+    }
+    const entry = {
+      start: side.start,
+      end: side.end,
+      mateStart: side.mateStart,
+      mateEnd: side.mateEnd,
+    }
+    if (seen) {
+      seen.push(entry)
+    } else {
+      kept.set(key, [entry])
+    }
+    return false
+  }
+}
+
+/**
  * Minimal structural view of `@gmod/tabix`'s `TabixIndexedFile.getLines`, so
  * this signature needn't name the concrete class.
  */

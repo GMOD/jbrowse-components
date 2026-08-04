@@ -30,21 +30,26 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
   // pairwise aligner and the graph's own input alignment put the backbone and
   // IAI39's inversions in the same places.
   //
-  // ALPHA 0.1, half the default, because this file inks every correspondence
-  // TWICE. wfmash maps all-to-all in both directions, so K12->Sakai and
-  // Sakai->K12 are both in the PAF and describe the same spans (measured on the
-  // published pif: 4.379 Mb of the K12 axis from one direction, 4.381 Mb from
-  // the other, block starts within ~100 bp of each other). Two 0.2 ribbons
-  // composite to #FFA3A3 where the minimap2 figure's one draws #FFCCCC, which
-  // is the whole "these polygons are darker than the other synteny figures".
-  // The minimap2 all_vs_all.paf is upper-triangular — each unordered pair once —
-  // so at 0.1 per record the two figures put the same ink on the same
-  // correspondence. If that file is ever rebuilt one-directional, put this back
-  // to the default.
+  // DEFAULT ALPHA, and the reason is worth keeping because this figure carried
+  // the workaround for a year. wfmash maps all-to-all in both directions, so
+  // K12->Sakai and Sakai->K12 are both in the PAF and describe the same spans
+  // (measured on the published pif: 4.379 Mb of the K12 axis from one
+  // direction, 4.381 Mb from the other, block starts within ~100 bp of each
+  // other), and the adapter used to union both perspectives of the anchor. Two
+  // 0.2 ribbons composite to #FFA3A3 where the minimap2 figure's one draws
+  // #FFCCCC — "these polygons are darker than the other synteny figures", twice
+  // in review. This spec answered it with alpha 0.1, which is half the ink for
+  // twice the ribbons and only looks right while the file stays reciprocal.
   //
-  // Not a density difference, whatever this comment used to say: over the
+  // AllVsAll{,Indexed}PAFAdapter now drops the second statement of a homology
+  // (createReciprocalDedupe), so a band is one ribbon at the alpha every other
+  // synteny figure uses, and the minimap2 stack beside it — whose all_vs_all.paf
+  // is upper-triangular, each unordered pair once — needs no compensation to be
+  // comparable.
+  //
+  // Not a density difference, whatever an older comment said: over the
   // K12/Sakai band past the 10 kb cutoff minimap2 keeps 119 records and wfmash
-  // 41 (21 of them the mirror of the other 20).
+  // 41 (21 of them the mirror of the other 20, which is what is dropped).
   {
     mode: 'url',
     name: 'pangenome/pggb_synteny',
@@ -69,7 +74,6 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
           ],
           drawCurves: false,
           colorBy: 'default',
-          alpha: 0.1,
           minAlignmentLength: 10000,
           levelHeights: [110, 110, 110, 110],
           // same as the minimap2 stack: no row carries a track, so each one

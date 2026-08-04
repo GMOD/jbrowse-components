@@ -9,6 +9,7 @@ import { panSNContig, panSNPrefixes } from '../pansn.ts'
 import {
   assemblyByPanSNPrefix,
   assemblyForPanSNName,
+  createReciprocalDedupe,
   hasCoarseTierPrefix,
   makeIndexedSyntenyFeature,
   readPifLines,
@@ -177,6 +178,12 @@ export default class AllVsAllIndexedPAFAdapter extends BaseFeatureDataAdapter<Al
       // Aggregated, a multi-haplotype anchor reads as one Σbytes bar.
       const slot = createStatusFanOut(statusCallback)
       const stopTokenCheck = createStopTokenChecker(stopToken)
+      // Collected rather than emitted from the read callbacks, because the
+      // reciprocal-pair dedupe below has to see a DETERMINISTIC order to choose
+      // the same side of a pair on every run: the reads above are a Promise.all
+      // over every (seqid, letter) and which one lands first is a property of
+      // the network. Sorted by (letter, fileOffset), so the file decides.
+      const rows: { letter: string; fileOffset: number; line: PifLine }[] = []
       await Promise.all(
         seqs.flatMap(seq =>
           letters.map(letter =>
@@ -189,31 +196,47 @@ export default class AllVsAllIndexedPAFAdapter extends BaseFeatureDataAdapter<Al
               stopTokenCheck,
               lineCallback: (parsed, fileOffset) => {
                 if (drawsHere(parsed, anchorPrefix, targetPrefix)) {
-                  observer.next(
-                    makeIndexedSyntenyFeature({
-                      line: parsed,
-                      fileOffset,
-                      assemblyName,
-                      refName: qref,
-                      mate: {
-                        // The mate (columns 6/8/9) is a full PanSN name, no
-                        // tier letter; split it into sample + contig.
-                        start: parsed.mateStart,
-                        end: parsed.mateEnd,
-                        refName: panSNContig(parsed.mateName),
-                        assemblyName: assemblyForPanSNName(
-                          asmByPrefix,
-                          parsed.mateName,
-                        ),
-                      },
-                    }),
-                  )
+                  rows.push({ letter, fileOffset, line: parsed })
                 }
               },
             }),
           ),
         ),
       )
+      rows.sort(
+        (a, b) =>
+          a.letter.localeCompare(b.letter) || a.fileOffset - b.fileOffset,
+      )
+
+      const isDuplicate = createReciprocalDedupe()
+      for (const { fileOffset, line } of rows) {
+        const side = {
+          refName: line.indexedRefName,
+          start: line.indexedStart,
+          end: line.indexedEnd,
+          mateRefName: line.mateName,
+          mateStart: line.mateStart,
+          mateEnd: line.mateEnd,
+        }
+        if (!isDuplicate(side)) {
+          observer.next(
+            makeIndexedSyntenyFeature({
+              line,
+              fileOffset,
+              assemblyName,
+              refName: qref,
+              mate: {
+                // The mate (columns 6/8/9) is a full PanSN name, no tier
+                // letter; split it into sample + contig.
+                start: line.mateStart,
+                end: line.mateEnd,
+                refName: panSNContig(line.mateName),
+                assemblyName: assemblyForPanSNName(asmByPrefix, line.mateName),
+              },
+            }),
+          )
+        }
+      }
 
       observer.complete()
     })

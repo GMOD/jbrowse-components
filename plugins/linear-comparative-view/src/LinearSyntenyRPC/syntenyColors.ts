@@ -83,6 +83,7 @@ function createColorFunction(
   colorBy: SyntenyColorBy,
   d: ColorInputs,
   trackColor: string,
+  nameOrder?: readonly string[],
 ): (index: number) => number {
   switch (colorBy) {
     // One flat color for every alignment in this track, so overlaid tracks are
@@ -106,28 +107,70 @@ function createColorFunction(
     case 'strand':
       return index => (d.strands[index] === -1 ? STRAND_NEG : STRAND_POS)
     case 'query':
-      return nameColorFunction(d.refNames)
+      return nameColorFunction(d.refNames, nameOrder)
     case 'target':
-      return nameColorFunction(d.mateRefNames)
+      return nameColorFunction(d.mateRefNames, nameOrder)
     // 'reference' is resolved to 'query'/'target' per-level in the display
     // before it reaches here (see LinearSyntenyDisplay effectiveColorBy); this
     // arm only guards the type union and colors by query as a safe fallback.
     case 'reference':
-      return nameColorFunction(d.refNames)
+      return nameColorFunction(d.refNames, nameOrder)
     case 'default':
       return () => DEFAULT_COLOR
   }
 }
 
-// Hash a per-feature name (query or target refName) to a stable category10
-// color, cached so repeated names don't re-hash.
-function nameColorFunction(names: readonly string[]) {
+// Chromosome painting: a color per query/target refName.
+//
+// BY POSITION IN THE ASSEMBLY when the caller knows the chromosome order, which
+// the display does — it reads the anchor assembly's own refName list. Each
+// position takes the next hue on the golden angle, at the same 70%/50% the
+// reference-position ramps elsewhere on the site use, so every chromosome gets
+// its own well-separated color and neighbours never come out as neighbouring
+// hues.
+//
+// The golden angle rather than an even spread over the circle, and that is not
+// decoration: a refName list is not a chromosome list. Rice's chrom.sizes has 30
+// entries — 12 chromosomes, two organelles and sixteen scaffolds — so `i/N*360`
+// squeezed all twelve chromosomes into the first 132 degrees and painted the
+// whole figure red through green. A stride does not care how long the list is.
+// It repeats only after 144 entries (137.5 x 144 = 55 turns exactly), which no
+// karyotype reaches.
+//
+// The hash below cannot do this and could not be made to. It buckets a name into
+// nine slots, so any genome with ten or more chromosomes RE-USES colors, and by
+// the birthday bound it re-uses them long before that: twelve rice chromosomes
+// into nine slots is a guaranteed three-way collision, which is what review saw
+// ("there might be some unexpected color re-use"). Widening the palette only
+// moves the threshold — chicken has 40 chromosomes — so the fix has to be an
+// assignment rather than a bigger bucket list.
+//
+// It stays as the fallback for the case the order genuinely is not available: an
+// assembly still loading, or a refName the assembly does not list (a scaffold
+// under an alias). There a stable arbitrary color beats no color.
+// 360 x (1 - 1/phi). Successive multiples of it never bunch up, which is what
+// makes it the standard way to hand out colors when the count is not known.
+const GOLDEN_ANGLE_DEG = 137.50776405003785
+
+function nameColorFunction(
+  names: readonly string[],
+  nameOrder?: readonly string[],
+) {
+  const orderOf = nameOrder?.length
+    ? new Map(nameOrder.map((n, i) => [n, i]))
+    : undefined
   const colorCache = new Map<string, number>()
   return (index: number) => {
     const name = names[index]!
     let c = colorCache.get(name)
     if (c === undefined) {
-      c = nameColorPalette[hashString(name) % nameColorPalette.length]!
+      const position = orderOf?.get(name)
+      c =
+        position === undefined
+          ? nameColorPalette[hashString(name) % nameColorPalette.length]!
+          : cssColorToABGR(
+              `hsl(${(position * GOLDEN_ANGLE_DEG) % 360},70%,50%)`,
+            )
       colorCache.set(name, c)
     }
     return c
@@ -162,6 +205,7 @@ export function computeSyntenyColors({
   colorBy,
   trackColor,
   opacityByIdentity,
+  nameOrder,
 }: {
   instanceData: InstanceInputs
   featureData: ColorInputs
@@ -169,9 +213,19 @@ export function computeSyntenyColors({
   // the display's slot in the view's track palette; only read by colorBy:'track'
   trackColor: string
   opacityByIdentity?: boolean
+  // Chromosome order of the assembly the chromosome-painting modes key on, so a
+  // ribbon's color can be that chromosome's position rather than a hash bucket.
+  // Only the display knows it — the assembly's refName list is a session fact,
+  // not something in the feature data — so it is passed in rather than derived.
+  nameOrder?: readonly string[]
 }) {
   const { kinds, instanceFeatureIdx, instanceCount } = instanceData
-  const colorFn = createColorFunction(colorBy, featureData, trackColor)
+  const colorFn = createColorFunction(
+    colorBy,
+    featureData,
+    trackColor,
+    nameOrder,
+  )
   const { I: colorI, D: colorD, N: colorN } = buildIndelColors(colorBy)
   const { identities } = featureData
   const out = new Uint32Array(instanceCount)

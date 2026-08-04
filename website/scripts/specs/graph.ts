@@ -306,8 +306,22 @@ const ECOLI_REGION = {
   end: 4100000,
 }
 const SEGMENT_LABEL = 's1277'
-// ~2x the segment's own span, so its label is a comfortable right-click target
-const SEGMENT_WINDOW = 'chr:4,054,000-4,066,000'
+// EXACTLY what the right-click launch cuts, which is the segment's own span
+// padded by half its length either side (subgraphRegionFromFeature): s1277 is
+// 4,056,624-4,063,560, so the cut is 4,053,156-4,067,028. It was a round 12 kb
+// before, picked to make the label a comfortable right-click target, and it
+// still is — but stating the launch's own region here is what lets the two
+// frames share a colour ramp, since the graph's ramp runs over `loadedRegion`
+// and the lane's jexl runs over these same numbers. A window that merely
+// contained the region gave the same segment two different hues in the two
+// frames, which is the correspondence review asked for and could not get.
+const SEGMENT_LAUNCH_REGION = {
+  refName: 'chr',
+  assemblyName: 'K12',
+  start: 4053156,
+  end: 4067028,
+}
+const SEGMENT_WINDOW = 'chr:4,053,156-4,067,028'
 
 // The paa island, the one locus the all-vs-all synteny tutorial builds a figure
 // around (multiway_synteny/ecoli_one_vs_all: three of four strains have no
@@ -378,14 +392,38 @@ const PAA_WINDOW = `chr:${PAA_RAMP_DOMAIN.start}-${PAA_RAMP_DOMAIN.end}`
 // Each partner window is that block's own scale applied to K12's, so the three
 // rows cover the same sequence and the ribbons run level.
 //
-// 100 kb, zoomed out per review from the 50 kb this used to draw. At 50 kb the
-// Sakai band arrived in the last 4% of the row and the rest of it was white,
-// which reads as a row with no data rather than as a strain that lacks the
-// island; at 100 kb its block is half the row and the island is visibly what it
-// stops short of.
-const PAA_SYNTENY_WINDOW = 'chr:1,420,000-1,520,000'
-const PAA_NCTC86_WINDOW = 'chr:1,683,100-1,784,700'
-const PAA_SAKAI_WINDOW = 'chr:1,932,400-2,038,800'
+// 145 kb, and each widening has been for the same reason: a gap needs FLANKS on
+// both sides or it reads as a row with no data. At 50 kb Sakai's block arrived
+// in the last 4% of the row. At 100 kb (chr:1,420,000-1,520,000) it was half the
+// row — but the window opened 250 bp after Sakai's LEFT block ended, so the left
+// half was still white with nothing to say why, which is what review saw next
+// ("very little synteny between k12 and sakai, only visible on right side of
+// screen. might need to zoom out to see more?").
+//
+// Where the blocks actually end, off the index rather than by eye
+// (`tabix ecoli_pggb_ava.pif.gz 'qK12#1#chr:1330000-1560000'`, K12 coordinates):
+//
+//     NCTC86  ...-1,412,016   1,435,000-...     rejoins 11 kb left of the island
+//     Sakai   ...-1,419,704   1,474,096-...     rejoins 6 kb past its right edge
+//     CFT073  ...-1,412,240   1,477,560-...
+//     IAI39   ...-1,412,032   1,533,072-...
+//
+// So 1,400,000 puts every left flank in frame and 1,545,000 every right one, and
+// the figure's three rows read as one shared break at ~1,412,000 that NCTC86
+// closes immediately and Sakai only after the island.
+const PAA_SYNTENY_WINDOW = 'chr:1,400,000-1,545,000'
+// K12's window carried onto each partner through its own blocks, so a row
+// covers the sequence the row above it does. Each partner's two blocks sit at
+// different offsets from K12 — that difference IS the island and what else K12
+// carries there — so the left edge comes from the left block and the right edge
+// from the right one, and the rows are not the same number of bp:
+//
+//     NCTC86  left  +286,393 (K12 1,314,480 <-> 1,600,873)  1,400,000 -> 1,686,393
+//             right +263,409 (K12 1,435,000 <-> 1,698,409)  1,545,000 -> 1,808,409
+//     Sakai   left  +501,157 (K12 1,315,000 <-> 1,816,157)  1,400,000 -> 1,901,157
+//             right +515,969 (K12 1,474,096 <-> 1,990,065)  1,545,000 -> 2,060,969
+const PAA_NCTC86_WINDOW = 'chr:1,686,000-1,808,500'
+const PAA_SAKAI_WINDOW = 'chr:1,901,000-2,061,000'
 // One gene lane per strain row, all three the same shape (review: "ideally all
 // three lineargenomeviews would have a gene track"). Genes only, compact and
 // without descriptions, because three of these plus the segments lane sit over
@@ -1982,18 +2020,13 @@ export const graphSpecs: ScreenshotSpec[] = [
           // starts at its right edge.
           tracks: [[ECOLI_AVA_TRACK], [ECOLI_AVA_TRACK]],
           drawCurves: true,
-          // ALPHA 0.1, half the default, for the same reason
-          // pangenome/pggb_synteny takes it: this file inks every
-          // correspondence TWICE. wfmash maps all-to-all in both directions, so
-          // the K12<->NCTC86 alignment is in the PAF as a qK12 record and again
-          // as a tK12 one, and the adapter unions both perspectives of the
-          // anchor. Over this window that is two ribbons per band covering the
-          // same span, and two 0.2 ribbons composite to #FFA3A3 where every
-          // other synteny figure's one draws #FFCCCC (review: "the polygons are
-          // oddly darker than expected ... other synteny figs lighter
-          // red/pink"). At 0.1 the band is #FFCFCF, so the gene lanes and the
-          // pale indel wedges inside it stay legible.
-          alpha: 0.1,
+          // Default alpha. This spec used to halve it, because wfmash maps
+          // all-to-all in both directions and the adapter unioned both
+          // perspectives of the anchor, so every band was two ribbons over one
+          // span — the "polygons are oddly darker than expected" of two review
+          // rounds. AllVsAll{,Indexed}PAFAdapter drops the second statement of a
+          // homology now (createReciprocalDedupe), so the compensation would be
+          // half the ink for one ribbon.
           levelHeights: [150, 150],
           views: [
             {
@@ -2095,7 +2128,14 @@ export const graphSpecs: ScreenshotSpec[] = [
           loc: SEGMENT_WINDOW,
           tracks: [
             { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 110 },
-            ECOLI_SEGMENTS_TRACK,
+            {
+              trackId: ECOLI_SEGMENTS_TRACK,
+              type: 'LinearBasicDisplay',
+              // the same ramp over the same numbers the graph below is coloured
+              // by, so s1275/s1276/s1277/s1278 are the same colour in both
+              // frames and the clicked segment can be found in the drawing
+              color: referencePositionColor(SEGMENT_LAUNCH_REGION),
+            },
           ],
         },
       ],
@@ -2177,14 +2217,25 @@ export const graphSpecs: ScreenshotSpec[] = [
           },
           { type: 'waitForSelector', selector: TOOLBAR_READY },
           { type: 'click', text: 'Uniform' },
-          // Rainbow rather than Stable rank, per review ("consider using rainbow
-          // coloring for the segments?"). Rank is two colors on a 16-node
-          // neighbourhood — reference and not — so the arms all painted alike and
-          // the only thing telling one segment from the next was its length
-          // label. Rainbow gives each segment its own hue, which is what makes
-          // the chain readable as a sequence of distinct segments, and it is
-          // Bandage's own default.
-          { type: 'click', text: 'Rainbow' },
+          // REFERENCE POSITION, not Rainbow, and this is a correction rather
+          // than a preference. Rainbow was taken for an earlier review ("consider
+          // using rainbow coloring for the segments?") because Stable rank is two
+          // colours on a 16-node neighbourhood and the arms all painted alike.
+          // It does give every segment its own hue — but the hue is the node's
+          // INDEX in the fetched node list (GeometryBuilder's 'rainbow' case), so
+          // it means nothing, it changes when the window changes, and nothing
+          // outside the pane can reproduce it. That last part is what the next
+          // review round hit: "the lineargenomeview doesnt seem to be using
+          // rainbow", and with rainbow it never could.
+          //
+          // Reference position is the rainbow that survives all three. It is a
+          // hue ramp along the same coordinates the lane above is drawn on, so
+          // the lane can be painted with the identical jexl and the clicked
+          // segment is the same colour in both frames. What it costs is the
+          // off-reference arms, which go charcoal because they have no reference
+          // position — which is what they are, and what every HPRC figure on the
+          // site already says.
+          { type: 'click', text: 'Reference position' },
           { type: 'delay', ms: 2000 },
           // close the linear view it was launched from, so this frame is the
           // subgraph rather than mostly its source. The window it cut stays
@@ -3577,6 +3628,16 @@ export const graphSpecs: ScreenshotSpec[] = [
           // `CFT073 chr:…`, which names the strain and its coordinates.
           layoutMode: 'force',
           colorScheme: 'stable-rank',
+          // NOT layoutQuality 4, and that is the measured answer to review's
+          // "are you sure you can't iterate it more times for better layout?".
+          // You can — 4 is as far as FMMM goes, 120 + 60 iterations — and here
+          // it is worse: rendered, the extra budget spreads this 11-node cut
+          // until zoom-to-fit lands at 265% and the 58 kb CFT073 arm runs off
+          // both edges of the pane. More iterations minimise FMMM's energy, not
+          // the drawing's aspect ratio. What WAS wrong is the floor: the view
+          // defaulted to quality 1 where Bandage's own default is 2
+          // (program/settings.cpp), and that is fixed in the plugin rather than
+          // pinned per figure.
         },
       ],
     }),
