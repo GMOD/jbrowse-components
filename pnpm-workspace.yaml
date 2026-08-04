@@ -13,7 +13,6 @@ overrides:
 blockExoticSubdeps: true
 allowBuilds:
   canvas: true
-  core-js-pure: true
   electron: true
   electron-chromedriver: true
   esbuild: true
