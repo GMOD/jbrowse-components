@@ -48,8 +48,13 @@ const FacetedSelector = observer(function FacetedSelector({
   const h = height * frac
   const w = width * frac
   // a persisted panel width wider than the current window would leave the data
-  // pane with no room, so the saved value is clamped against the container
-  const panelWidth = Math.min(faceted.panelWidth, w - MIN_PANEL_WIDTH)
+  // pane with no room, so the saved value is clamped against the container. The
+  // outer max keeps a window too narrow for both panes from handing the filter
+  // pane a negative width, which would make the data pane wider than `w`
+  const panelWidth = Math.max(
+    0,
+    Math.min(faceted.panelWidth, w - MIN_PANEL_WIDTH),
+  )
 
   return (
     <>

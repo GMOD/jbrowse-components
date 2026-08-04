@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { DEFAULT_COL_WIDTH } from './facetedTableStyles.ts'
 
@@ -9,6 +9,11 @@ const MIN_COL_WIDTH = 50
 export function useColumnResize(initialWidths: Record<string, number>) {
   const [overrides, setOverrides] = useState<Record<string, number>>({})
   const colWidths = { ...initialWidths, ...overrides }
+  // a drag listens on the document, so it outlives the header cell it started
+  // from; held here so closing the dialog mid-drag detaches it rather than
+  // leaving a listener resizing a column nobody is looking at
+  const endDragRef = useRef<() => void>(undefined)
+  useEffect(() => () => endDragRef.current?.(), [])
 
   function onResizeStart(colId: string, e: React.MouseEvent) {
     e.preventDefault()
@@ -22,7 +27,12 @@ export function useColumnResize(initialWidths: Record<string, number>) {
     function onMouseUp() {
       document.removeEventListener('mousemove', onMouseMove)
       document.removeEventListener('mouseup', onMouseUp)
+      endDragRef.current = undefined
     }
+    // a second mousedown without an intervening mouseup would otherwise strand
+    // the first drag's listeners
+    endDragRef.current?.()
+    endDragRef.current = onMouseUp
     document.addEventListener('mousemove', onMouseMove)
     document.addEventListener('mouseup', onMouseUp)
   }
