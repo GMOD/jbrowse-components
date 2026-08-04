@@ -1,4 +1,4 @@
-import { sessionSpec } from '../screenshot-spec-helpers.ts'
+import { displayReady, sessionSpec } from '../screenshot-spec-helpers.ts'
 import { ECOLI_DEMO_BASE } from './demoBase.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
@@ -349,7 +349,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     // testid flips only once model.canvasDrawn is true, so a missing or empty
     // BAM fails the capture instead of quietly yielding a blank lane. readyText
     // on the window would have matched before a single read rendered.
-    readySelector: '[data-testid="pileup-display-done"]',
+    readySelector: displayReady('pileup-display'),
     readyTimeout: 120000,
     viewportWidth: 1000,
     // gene lane + the pileup with its coverage band + the depth wiggle

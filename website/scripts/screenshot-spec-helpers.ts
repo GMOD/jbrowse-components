@@ -286,6 +286,36 @@ export const CGIAB_ASM_PIF_TRACK = {
   },
 }
 
+// Wait for ONE display to be finished, by the testid it passes to DisplayChrome
+// (`pileup-display`, `variant-matrix-display`, ...) with no `-done` suffix.
+//
+// MOST SPECS DO NOT NEED THIS. `settlePass` already runs `waitForDisplayPhases`
+// then `waitForDisplaysDone` on every capture, so a bare
+// `[data-testid="…-done"]` — the form nearly every spec here uses — is normally
+// enough, and generate-screenshots.ts says so at `settlePass`.
+//
+// Reach for this only where the display's FETCH MAY START LATE. The global gate
+// is "no element is at data-display-phase=loading", which is trivially true in
+// the window before a display has entered `loading` at all — so a big remote
+// track (hprc2's 2.3 GB VCF is the worked example, with its own note in that
+// file) can sail through it and be captured empty. Pairing `-done` with
+// `data-display-phase=ready` on the display itself closes that window: the
+// phase covers the whole fetch, where `-done` is `canvasDrawn`, i.e. first
+// paint, which an empty canvas reaches on its own.
+//
+// The catch this exists to hide: the two attributes are not always on the same
+// element. DisplayChromeBase carries both for most displays, so they AND on one
+// element; the alignments display derives its chrome testid from `displayId`
+// and puts `pileup-display-done` on an inner div, so there they have to be
+// related with `:has()`. Each form matches nothing in the other's case, and the
+// symptom is a capture that times out rather than an error at authoring time.
+// The selector list below accepts either arrangement.
+export function displayReady(testid: string) {
+  const done = `[data-testid="${testid}-done"]`
+  const ready = '[data-display-phase="ready"]'
+  return `${ready}${done}, ${ready}:has(${done})`
+}
+
 export function sessionSpec(config: string, session: object) {
   return `?config=${config}&session=${encodeSessionSpec(session)}&sessionName=Screenshot`
 }
