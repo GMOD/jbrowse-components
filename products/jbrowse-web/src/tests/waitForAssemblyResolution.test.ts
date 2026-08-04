@@ -143,6 +143,45 @@ test('concurrent waiters share the one resolution attempt', async () => {
   expect(calls).toBe(1)
 })
 
+// An unresolvable assembly used to reach the adapter as an empty refName map,
+// so the fetch found nothing and the track drew blank with nothing to say why.
+// Now that the wait ends on events rather than a clock, "not resolved" is a real
+// answer and gets reported as one.
+test('requireAssembly names the assembly it could not resolve', async () => {
+  const session = setup()
+  await expect(
+    session.assemblyManager.requireAssembly('nope'),
+  ).rejects.toThrow(/assembly "nope" could not be resolved/)
+})
+
+test('requireAssembly returns a loaded assembly when there is one', async () => {
+  const session = setup()
+  const asm = await session.assemblyManager.requireAssembly('volvox')
+  expect(asm.name).toBe('volvox')
+  expect(asm.initialized).toBe(true)
+})
+
+test('getRefNameMapForAdapter surfaces the failure instead of an empty map', async () => {
+  const session = setup()
+  await expect(
+    session.assemblyManager.getRefNameMapForAdapter({}, 'nope', {
+      sessionId: 'test',
+    }),
+  ).rejects.toThrow(/could not be resolved/)
+})
+
+// The other half of the contract: no assembly named at all is not a failure,
+// it is nothing to rename. Every RPC that carries regions without an
+// assemblyName depends on this staying quiet.
+test('getRefNameMapForAdapter with no assembly name is still an empty map', async () => {
+  const session = setup()
+  await expect(
+    session.assemblyManager.getRefNameMapForAdapter({}, undefined, {
+      sessionId: 'test',
+    }),
+  ).resolves.toEqual({})
+})
+
 test('waitForAssembly rejects an empty name rather than waiting on nothing', async () => {
   const session = setup()
   await expect(session.assemblyManager.waitForAssembly('')).rejects.toThrow(

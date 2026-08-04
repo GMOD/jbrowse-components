@@ -384,6 +384,37 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
 
       /**
        * #method
+       * {@link waitForAssembly}, but a name that cannot be resolved is an error
+       * rather than an `undefined` for the caller to interpret.
+       *
+       * For callers whose result is silently *wrong* without the assembly, not
+       * merely absent: a refName map is the obvious one, since an empty map
+       * means an adapter gets queried with un-renamed refNames, finds nothing,
+       * and the track draws blank with nothing to say why. Failing here instead
+       * puts the name in front of the user, who is the only one who can add the
+       * assembly or fix the track.
+       *
+       * Worth using only because the wait is causal now. It used to give up
+       * after a fixed ten seconds, where "not resolved" could equally mean "not
+       * resolved yet" and throwing would have been a race; today it returns
+       * only once every handler and connection that could supply the name has
+       * finished, so there is a real answer to report.
+       */
+      async requireAssembly(assemblyName: string) {
+        const assembly = await this.waitForAssembly(assemblyName)
+        if (!assembly) {
+          throw new Error(
+            `assembly "${assemblyName}" could not be resolved: it is not one of this session's assemblies and nothing supplied it`,
+          )
+        }
+        return assembly
+      },
+
+      /**
+       * #method
+       * The refName map for an adapter under `assemblyName`. Throws if the
+       * assembly cannot be resolved — see {@link requireAssembly}. No
+       * `assemblyName` at all is not a failure, just nothing to rename.
        */
       async getRefNameMapForAdapter(
         adapterConf: AdapterConf,
@@ -391,8 +422,8 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
         opts: AssemblyBaseOpts,
       ) {
         if (assemblyName) {
-          const asm = await this.waitForAssembly(assemblyName)
-          return asm?.getRefNameMapForAdapter(adapterConf, opts) ?? {}
+          const asm = await this.requireAssembly(assemblyName)
+          return asm.getRefNameMapForAdapter(adapterConf, opts)
         }
         return {}
       },

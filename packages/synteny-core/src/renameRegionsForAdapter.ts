@@ -60,8 +60,13 @@ export async function getAdapterToCanonicalRefNameMap({
   const assemblyNames = [...new Set(regions.map(r => r.assemblyName))]
   const inverse: Record<string, string> = {}
   for (const name of assemblyNames) {
+    // require, not wait: the region named this assembly, so an unresolvable
+    // name is a rename that cannot be done rather than one that is not needed.
+    // An empty map here leaves the worker unable to map the adapter's contigs
+    // back to canonical names, so the synteny track draws nothing and says
+    // nothing about why. Only an unnamed assembly is a legitimate no-op.
     const assembly = name
-      ? await assemblyManager.waitForAssembly(name)
+      ? await assemblyManager.requireAssembly(name)
       : undefined
     // canonical -> adapter; invert so the worker can go adapter -> canonical
     const forward = assembly

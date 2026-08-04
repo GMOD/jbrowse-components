@@ -92,15 +92,22 @@ export async function renameRegionsIfNeeded<
     Object.fromEntries(
       await Promise.all(
         uniqueAssemblyNames.map(async name => {
-          // resolve the assembly once via waitForAssembly (which awaits both
+          // resolve the assembly once via requireAssembly (which awaits both
           // registration and load) and derive the refName map AND
           // getSeqAdapterRefName from this single loaded handle. A synchronous
           // assemblyManager.get() here could miss an assembly still being
           // registered, leaving getSeqAdapterRefName undefined so
           // originalRefName (used by CRAM/BAM to fetch reference bases) falls
           // back to the canonical name instead of the FASTA name.
+          //
+          // require, not wait: a region names an assembly, so failing to
+          // resolve it is not "nothing to rename", it is renaming that cannot
+          // be done. Substituting an empty map leaves the adapter querying
+          // un-renamed refNames, which finds nothing and draws an empty track
+          // with no indication that the assembly is what is missing. Only an
+          // unnamed assembly is a legitimate no-op.
           const assembly = name
-            ? await assemblyManager.waitForAssembly(name)
+            ? await assemblyManager.requireAssembly(name)
             : undefined
           return [
             name,

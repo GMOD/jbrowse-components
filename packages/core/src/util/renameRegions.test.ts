@@ -17,7 +17,7 @@ function mockAssemblyManager({
   seqAdapterRefNameMap?: Record<string, string>
 }) {
   return {
-    waitForAssembly: async () => ({
+    requireAssembly: async () => ({
       getRefNameMapForAdapter: async () => refNameMap,
       getSeqAdapterRefName: (canonical: string) =>
         seqAdapterRefNameMap?.[canonical] ?? canonical,
@@ -75,12 +75,42 @@ test('renameRegionsIfNeeded leaves originalRefName as canonical when names are n
   expect(r.originalRefName).toBe('chr1')
 })
 
-test('renameRegionsIfNeeded passes regions through unchanged when the assembly is not found', async () => {
-  // waitForAssembly resolves undefined (assembly never registered) → both the
-  // refName map and getSeqAdapterRefName are absent, so the region is untouched
+// Same footgun the singular-`region` guard below exists for, one case over: a
+// region that names an assembly nobody can supply used to pass through with an
+// empty refName map, so the adapter was queried with un-renamed refNames, found
+// nothing, and the track drew blank with no indication that the assembly was
+// what was missing. requireAssembly reports it instead.
+//
+// This only became the right behavior once the resolution wait was causal.
+// While it gave up after a fixed ten seconds, "not resolved" could equally mean
+// "not resolved yet" and throwing would have been a race.
+test('renameRegionsIfNeeded reports an assembly that cannot be resolved', async () => {
+  await expect(
+    renameRegionsIfNeeded(
+      {
+        requireAssembly: () =>
+          Promise.reject(
+            new Error('assembly "chr1asm" could not be resolved: ...'),
+          ),
+      } as unknown as AssemblyManager,
+      { adapterConfig: {}, sessionId: 'test', regions: [region] },
+    ),
+  ).rejects.toThrow(/could not be resolved/)
+})
+
+// but a region with no assemblyName at all is nothing to rename, not a failure
+test('renameRegionsIfNeeded leaves an unnamed assembly alone', async () => {
   const result = await renameRegionsIfNeeded(
-    { waitForAssembly: async () => undefined } as unknown as AssemblyManager,
-    { adapterConfig: {}, sessionId: 'test', regions: [region] },
+    {
+      requireAssembly: () => {
+        throw new Error('should not be consulted for an unnamed assembly')
+      },
+    } as unknown as AssemblyManager,
+    {
+      adapterConfig: {},
+      sessionId: 'test',
+      regions: [{ ...region, assemblyName: '' }],
+    },
   )
   expect(result.regions[0]!.refName).toBe('chr1')
   expect(result.regions[0]!.originalRefName).toBeUndefined()
