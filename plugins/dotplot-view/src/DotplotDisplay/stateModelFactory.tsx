@@ -293,13 +293,17 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
     .actions(self => ({
       /**
        * #action
+       * Commits a fetch result, tagged with the key it was fetched for. The
+       * loading flags are deliberately NOT touched here: this runs as
+       * `installComparativeFetchAutorun`'s `commit`, whose `finally` clears
+       * `fetching` and the status line under the same staleness guard. Clearing
+       * them here too meant one of the two comparative displays wrote
+       * `fetching` directly instead of through `setFetching`, for no effect the
+       * skeleton wasn't about to have anyway.
        */
       setRpcData(data: DotplotRpcData, fetchKey: string) {
         self.rpcData = data
         self.loadedFetchKey = fetchKey
-        self.fetching = false
-        self.statusMessage = undefined
-        self.statusProgress = undefined
       },
       setWarnings(w: { message: string; effect: string }[]) {
         self.fetchWarnings = w
@@ -320,9 +324,8 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
           console.error(error)
         }
         self.error = error
-        self.fetching = false
-        self.statusMessage = undefined
-        self.statusProgress = undefined
+        // fetching/status stay with the skeleton, same as setRpcData above:
+        // its `finally` clears them on every exit an error can reach it by.
       },
     }))
     .actions(self => ({

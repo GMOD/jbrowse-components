@@ -569,10 +569,28 @@ export default function stateModelFactory(pm: PluginManager) {
 
         /**
          * #getter
-         * DotplotDisplays under each track, indexed to match `tracks`.
+         * Every DotplotDisplay under this view's tracks. Filtered by `type`
+         * rather than taken as `tracks[i].displays[0]`: `showTrack` only ever
+         * builds one view-compatible display, but a hand-written or legacy
+         * session snapshot is hydrated verbatim, and an empty or foreign
+         * `displays` array put an `undefined` into this list that every
+         * consumer below dereferences — `settled`, `displayError` and
+         * `geometryByDisplayKey` all crash the view on it. Same spelling as
+         * the synteny level's `linearSyntenyDisplays`.
+         *
+         * Not index-aligned with `tracks`, so a consumer that wants a display's
+         * track reads `display.parentTrack` rather than `tracks[i]`.
          */
         get dotplotDisplays() {
-          return self.tracks.map(t => t.displays[0] as DotplotDisplayModel)
+          const out: DotplotDisplayModel[] = []
+          for (const track of self.tracks) {
+            for (const display of track.displays) {
+              if (display.type === 'DotplotDisplay') {
+                out.push(display as DotplotDisplayModel)
+              }
+            }
+          }
+          return out
         },
         /**
          * #getter

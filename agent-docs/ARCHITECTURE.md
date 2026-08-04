@@ -154,7 +154,8 @@ comparative displays (`LinearSyntenyDisplay`, `DotplotDisplay`) compose
 `BaseDisplay` + `SyntenyFetchStateMixin` (`@jbrowse/synteny-core`) and own their
 fetch in a bare autorun. Neither gets `FetchMixin`'s cancel/stale machinery,
 `RegionTooLargeMixin` or `loadedRegions`; instead the pieces are shared à la
-carte — the mixin holds `fetching` / `loadedFetchKey` / `assembliesSwapped`,
+carte — the mixin holds `fetching` / `loadedFetchKey` / `assembliesSwapped` plus
+the overridable `fetchInert` hook (see "the on-screen twin" under SVG export),
 `createStopTokenRotation` (core) does latest-wins token rotation plus the
 `isCurrent()` guard every post-await write is gated on, and the debounce is
 `leadingEdgeDebounce`, the same scheduler `installGlobalFetchAutorun` uses.
@@ -614,11 +615,22 @@ has empty shapes.
 first-load overlay is `!ready && !error`, and `ready` means "a fetch landed" — so
 a resting state that never fetches spins it forever, for the same reason and with
 less excuse than the export, since the user is looking at it. Answer it once and
-read that one getter from all three places, as `LinearSyntenyDisplay.fetchInert`
+read that one getter everywhere, as `LinearSyntenyDisplay.fetchInert`
 (`isMinimized || !connectedViews`) does for its fetch autorun's gate, its
 `loading`, and its `svgReady` `extraTerminal`. Deriving the export's terminal set
 separately from the overlay's is how they drift: synteny's `svgReady` named both
 states while `loading` named neither.
+
+**The reader you will forget is the one outside the display.** Those three are
+all display-local, so a fourth — `displaysSettled` (`@jbrowse/synteny-core`),
+which both comparative views' `settled` gate and so their `*_canvas_done` testid
+run through — went on demanding `dataCurrent` from a display whose
+`loadedFetchKey` can never be set. That is why `fetchInert` is an overridable
+hook on `SyntenyFetchStateMixin` (default `false`) rather than a getter each
+display invents: a cross-display consumer can only read a name the mixin
+declares. Default `false` is the strict answer, so a display that grows an inert
+state and forgets to declare it hangs (diagnosable) rather than reporting done
+with nothing drawn.
 
 ## `rpcProps()` / `gpuProps()` pattern
 

@@ -1,4 +1,3 @@
-import { getConf } from '@jbrowse/core/configuration'
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -10,13 +9,13 @@ import { asSyntenyModel } from '../../LinearSyntenyView/model.ts'
 import LevelSyntenyCanvas from '../../LinearSyntenyViewHelper/LevelSyntenyCanvas.tsx'
 
 import type { LinearComparativeViewModel } from '../model.ts'
-import type { AbstractTrackModel } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // The structural surface of the display objects this file consumes. We
 // don't depend on the full BaseDisplayModel typing because `levels` is an
 // MST array of pluggable types late-resolved at runtime.
 interface TrackDisplay {
+  id: string
   height: number
   RenderingComponent: React.FC<{ model: TrackDisplay }>
 }
@@ -124,24 +123,25 @@ const Overlays = observer(function Overlays({
   const { classes } = useStyles()
   const levelImpl = model.levels[level]!
 
+  // The same list the level uploads and renders geometry for, rather than a
+  // second walk over `tracks` taking `displays[0]`: those two disagree the
+  // moment a track carries anything but exactly one synteny display, and then
+  // a ribbon paints on the shared canvas with no overlay to hover or
+  // right-click it (or the reverse). Keyed by display id for the same reason.
   return (
     <>
-      {(levelImpl.tracks as AbstractTrackModel[]).map(track => {
-        const display = track.displays[0] as TrackDisplay | undefined
-        const trackId = getConf(track, 'trackId') as string
-        return display ? (
-          <div
-            className={classes.overlay}
-            key={trackId}
-            style={{
-              height: display.height,
-              overflow: 'hidden',
-            }}
-          >
-            <display.RenderingComponent model={display} />
-          </div>
-        ) : null
-      })}
+      {(levelImpl.linearSyntenyDisplays as TrackDisplay[]).map(display => (
+        <div
+          className={classes.overlay}
+          key={display.id}
+          style={{
+            height: display.height,
+            overflow: 'hidden',
+          }}
+        >
+          <display.RenderingComponent model={display} />
+        </div>
+      ))}
     </>
   )
 })

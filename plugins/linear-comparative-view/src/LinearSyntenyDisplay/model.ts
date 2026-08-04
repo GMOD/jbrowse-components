@@ -93,7 +93,7 @@ export interface FeatPos {
 
 // The worker sizes its viewport cull in px at fetch time, so zooming out by
 // ~2x can leave features missing beyond the previous cull window. Bucketing
-// bpPerPx on log2 lets the fetch autorun refire once per half-decade of zoom
+// bpPerPx on log2 lets the fetch autorun refire once per doubling of zoom
 // instead of on every settled zoom.
 function bucketBpPerPx(bpPerPx: number) {
   return Math.floor(Math.log2(Math.max(bpPerPx, 1)))
@@ -379,13 +379,14 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       },
       /**
        * #getter
-       * The two states where the fetch autorun deliberately never runs:
+       * Overrides `SyntenyFetchStateMixin`'s default-false hook with the two
+       * states where this display's fetch autorun deliberately never runs:
        * minimized, or a level whose two rows aren't both showing regions. A
        * display in one of them draws nothing (`renderParams` is undefined for
        * exactly the same pair) and has no data coming, so anything waiting on
        * data has to treat it as terminal rather than wait forever. One getter
-       * because three places answer it — the autorun's own gate, the loading
-       * overlay, and the SVG export.
+       * because four places answer it — the autorun's own gate, the loading
+       * overlay, the SVG export, and (through the mixin) `displaysSettled`.
        */
       get fetchInert() {
         return self.isMinimized || !this.connectedViews
@@ -675,7 +676,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * Stable key over the log2 zoom bucket of both connected views. The
        * fetch autorun tracks this (a computed compares its string output)
        * instead of raw bpPerPx, so it only refetches when zoom crosses a
-       * half-decade rather than on every settled zoom within a bucket.
+       * doubling rather than on every settled zoom within a bucket.
        */
       get bpPerPxBucketKey() {
         const connected = this.connectedViews

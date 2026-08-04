@@ -24,10 +24,18 @@ const DotplotWarnings = observer(function DotplotWarnings({
 
   // Read through dotplotDisplays (typed) rather than tracks[i].displays[0]
   // (pluggable, so `any`), and resolve the track name here instead of in the
-  // dialog. Index-aligned with tracks by construction.
-  const rows: TrackWarning[] = model.dotplotDisplays.flatMap((display, i) =>
+  // dialog. The name comes off the display's own `parentTrack`, not
+  // `tracks[i]`: `dotplotDisplays` filters by display type, so pairing it with
+  // `tracks` positionally would label a warning with the wrong track's name the
+  // moment the two lists differ in length.
+  const rows: TrackWarning[] = model.dotplotDisplays.flatMap(display =>
     display.warnings.length
-      ? [{ name: getConf(model.tracks[i], 'name'), warnings: display.warnings }]
+      ? [
+          {
+            name: getConf(display.parentTrack, 'name'),
+            warnings: display.warnings,
+          },
+        ]
       : [],
   )
   const warningKey = rows.flatMap(r => r.warnings.map(w => w.message)).join('|')

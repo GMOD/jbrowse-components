@@ -17,8 +17,9 @@ import { types } from '@jbrowse/mobx-state-tree'
  * `loading`/`refetching`/`dataCurrent` themselves stay on each display: they
  * need `ready` (which display holds its data in a different field) and
  * `currentFetchKey` (whose inputs are view-specific), neither of which an
- * empty-model mixin can see. The three are one-liners over what's here, written
- * identically in both.
+ * empty-model mixin can see. `refetching`/`dataCurrent` are one-liners over
+ * what's here and are written identically in both; `loading` is not — synteny
+ * subtracts `fetchInert` (below) and dotplot has no inert state to subtract.
  */
 export function SyntenyFetchStateMixin() {
   return types
@@ -49,6 +50,32 @@ export function SyntenyFetchStateMixin() {
        */
       assembliesSwapped: false,
     }))
+    .views(() => ({
+      /**
+       * #getter
+       * Overridable hook, default false: the states where this display's fetch
+       * autorun deliberately never runs, so it holds no data and none is
+       * coming. Anything waiting on data has to treat those as terminal rather
+       * than wait forever — which is why the answer lives in one place and is
+       * read by the autorun's own gate, the loading overlay, the SVG export's
+       * `extraTerminal`, and `displaysSettled` below.
+       *
+       * `displaysSettled` is the reason this is a mixin hook rather than a
+       * display-local getter: it is the one reader outside the display, and
+       * without the hook it demanded `dataCurrent` from a display whose
+       * `loadedFetchKey` can never be set — wedging the view's `settled` gate,
+       * and with it the `*_canvas_done` testid screenshot capture waits on.
+       *
+       * Default false is the strict answer, so a display that grows an inert
+       * state and forgets to say so keeps waiting for data (diagnosable) rather
+       * than reporting done without it (silently wrong). Dotplot leaves it:
+       * its `prepare` bails only before the view is initialized, which the
+       * view's own `canvasDrawn`/`canRender` gate already covers.
+       */
+      get fetchInert(): boolean {
+        return false
+      },
+    }))
     .actions(self => ({
       /**
        * #action
@@ -71,13 +98,26 @@ export function SyntenyFetchStateMixin() {
 // the held data is stale yet no fetch is in flight, so loading/refetching alone
 // would report done on content drawn against the old viewport.
 //
+// `fetchInert` short-circuits that, and must: a display that will never fetch
+// can never set `loadedFetchKey`, so `dataCurrent` is false forever and the
+// whole view would never settle on account of a display that is drawing nothing
+// by design. Same terminal-state rule the SVG export's `extraTerminal` and the
+// loading overlay already answer off that one getter.
+//
 // Vacuously true on an empty list, which is correct for a level or axis that
 // legitimately has no display — the caller is responsible for not asking while
 // its init has yet to add them (both gate on `initPending` for that).
 export function displaysSettled(
-  displays: { loading: boolean; refetching: boolean; dataCurrent: boolean }[],
+  displays: {
+    loading: boolean
+    refetching: boolean
+    dataCurrent: boolean
+    fetchInert: boolean
+  }[],
 ) {
-  return displays.every(d => !d.loading && !d.refetching && d.dataCurrent)
+  return displays.every(
+    d => d.fetchInert || (!d.loading && !d.refetching && d.dataCurrent),
+  )
 }
 
 // Both displays detect the same misconfiguration — the file's chromosome names
