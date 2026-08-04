@@ -1,0 +1,454 @@
+// Checks a JBrowse config (or a saved session file) against the generated
+// config-slot manifest.
+//
+// Why this exists at all, given MST type-checks a config on load: **MST models
+// ignore snapshot keys they do not declare**. Write `bamLocatoin`, or a
+// `renderers: {...}` block from an older config, and nothing anywhere reports
+// it — the track loads, appears, and the setting silently does nothing. That is
+// the check no other layer performs, and it is the mistake config authors
+// (human or agent) make most.
+//
+// Pure: no filesystem, no process exit. The command wrapper owns both.
+
+import { configManifest } from './configManifest.generated.ts'
+
+import type {
+  ConfigManifest,
+  Problem,
+  SlotEntry,
+  TypeEntry,
+  TypeGroup,
+  ValidationResult,
+} from './types.ts'
+
+// ---------------------------------------------------------------- suggestions
+
+function editDistance(a: string, b: string) {
+  // Two rolling rows rather than the full matrix; these are short identifiers
+  // and this runs once per unknown key.
+  let prev = Array.from({ length: b.length + 1 }, (_, i) => i)
+  for (let i = 1; i <= a.length; i++) {
+    const row = [i]
+    for (let j = 1; j <= b.length; j++) {
+      row[j] = Math.min(
+        prev[j]! + 1,
+        row[j - 1]! + 1,
+        prev[j - 1]! + (a[i - 1] === b[j - 1] ? 0 : 1),
+      )
+    }
+    prev = row
+  }
+  return prev[b.length]!
+}
+
+// The nearest candidate, if it is near enough to be worth naming. The threshold
+// scales with length so `uri` doesn't match every other three-letter slot while
+// a longer typo still resolves.
+function suggest(word: string, candidates: string[]) {
+  const limit = Math.max(2, Math.floor(word.length / 3))
+  let best: string | undefined
+  let bestScore = Infinity
+  for (const candidate of candidates) {
+    const score = editDistance(word.toLowerCase(), candidate.toLowerCase())
+    if (score < bestScore) {
+      bestScore = score
+      best = candidate
+    }
+  }
+  return bestScore <= limit ? best : undefined
+}
+
+function didYouMean(word: string, candidates: string[]) {
+  const hit = suggest(word, candidates)
+  return hit ? ` — did you mean "${hit}"?` : ''
+}
+
+// ------------------------------------------------------------------ reporting
+
+class Report {
+  problems: Problem[] = []
+  notes: string[] = []
+
+  error(where: string, message: string) {
+    this.problems.push({ level: 'error', where, message })
+  }
+
+  warn(where: string, message: string) {
+    this.problems.push({ level: 'warning', where, message })
+  }
+
+  note(message: string) {
+    this.notes.push(message)
+  }
+
+  result(): ValidationResult {
+    return {
+      problems: this.problems,
+      notes: this.notes,
+      errorCount: this.problems.filter(p => p.level === 'error').length,
+      warningCount: this.problems.filter(p => p.level === 'warning').length,
+    }
+  }
+}
+
+// ------------------------------------------------------------------- checking
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+// Keys a schema entry accepts as input: what it declares, plus the shorthands
+// normalizeSnapshot expands — an adapter written with `uri` never mentions
+// `bamLocation`, and both forms are correct.
+function acceptedKeys(entry: { slots: SlotEntry[]; shorthandKeys?: string[] }) {
+  return [...entry.slots.map(s => s.name), ...(entry.shorthandKeys ?? [])]
+}
+
+function checkSlots(
+  obj: Record<string, unknown>,
+  entry: {
+    slots: SlotEntry[]
+    shorthandKeys?: string[]
+    legacyKeys?: string[]
+  },
+  where: string,
+  report: Report,
+) {
+  const accepted = acceptedKeys(entry)
+  const legacyKeys = entry.legacyKeys ?? []
+  for (const key of Object.keys(obj)) {
+    if (accepted.includes(key)) {
+      continue
+    }
+    // A legacy key is consumed by the schema's own preProcessSnapshot and
+    // lifted into current slots, so the config does load — but it is stale, and
+    // whether every setting inside it survived the lift is worth a look.
+    if (legacyKeys.includes(key)) {
+      report.warn(
+        `${where}.${key}`,
+        `"${key}" is a legacy key that a migration rewrites into current slots — the config loads, but check the settings inside it landed`,
+      )
+      continue
+    }
+    report.error(
+      `${where}.${key}`,
+      `unknown slot "${key}"${didYouMean(key, accepted)} — JBrowse ignores keys it does not declare, so this setting silently does nothing`,
+    )
+  }
+  // Recurse into sub-schemas the config actually filled in. One it omits is
+  // fine: the sub-schema supplies its own defaults.
+  for (const slot of entry.slots) {
+    const value = obj[slot.name]
+    if (slot.subSlots && isRecord(value)) {
+      checkSlots(
+        value,
+        { slots: slot.subSlots },
+        `${where}.${slot.name}`,
+        report,
+      )
+    }
+  }
+}
+
+// Resolves a `type` against one of the manifest's groups.
+//
+// An unrecognized type is a WARNING, never an error, and the line is drawn
+// there deliberately:
+//
+//   error   = JBrowse accepts the config and silently does the wrong thing
+//   warning = JBrowse will complain by itself when the config loads
+//
+// An unknown type is loud — MST throws "Unknown track type" on load, so the
+// author finds out either way. It is also frequently not wrong: a plugin
+// registers types this manifest never saw. An unknown *slot* has neither
+// property, which is why that one is the error.
+function resolveType(
+  obj: Record<string, unknown>,
+  group: TypeGroup,
+  groupLabel: string,
+  where: string,
+  report: Report,
+): TypeEntry | undefined {
+  const typeName = obj.type
+  if (typeof typeName !== 'string') {
+    report.error(
+      where,
+      `missing "type" — expected one of the ${groupLabel} types`,
+    )
+    return undefined
+  }
+  const entry =
+    group[typeName] ??
+    // An old type name a current type still answers to. baseTrackConfig
+    // canonicalizes it before validation and sessionMigrations restores the
+    // settings that made the old type distinct, so this is supported config —
+    // check it against the type that absorbed it.
+    Object.values(group).find(candidate =>
+      candidate.aliases?.includes(typeName),
+    )
+  if (entry) {
+    return entry
+  }
+  report.warn(
+    where,
+    `${groupLabel} type "${typeName}" is not registered by the core plugins${didYouMean(typeName, Object.keys(group))} — it may come from a plugin`,
+  )
+  return undefined
+}
+
+function checkAdapter(
+  adapter: unknown,
+  manifest: ConfigManifest,
+  where: string,
+  report: Report,
+) {
+  if (!isRecord(adapter)) {
+    report.error(where, 'missing "adapter"')
+    return
+  }
+  const entry = resolveType(
+    adapter,
+    manifest.adapters,
+    'adapter',
+    `${where}.type`,
+    report,
+  )
+  if (entry) {
+    checkSlots(adapter, entry, where, report)
+  }
+}
+
+// `displayDefaults: {color: 'green'}` is a track-level shorthand
+// (expandTrackConfigShorthand.ts) routing each key to whichever of the track's
+// display types declares it, so its keys check against the union of those
+// displays' slots rather than the track's own.
+function checkDisplayDefaults(
+  defaults: unknown,
+  trackEntry: TypeEntry,
+  manifest: ConfigManifest,
+  where: string,
+  report: Report,
+) {
+  if (!isRecord(defaults)) {
+    report.error(where, 'displayDefaults must be an object of display settings')
+    return
+  }
+  const accepted = (trackEntry.displayTypes ?? []).flatMap(
+    name => manifest.displays[name]?.slots.map(slot => slot.name) ?? [],
+  )
+  if (accepted.length === 0) {
+    return
+  }
+  for (const key of Object.keys(defaults)) {
+    if (!accepted.includes(key)) {
+      report.error(
+        `${where}.${key}`,
+        `no display of this track declares "${key}"${didYouMean(key, accepted)}`,
+      )
+    }
+  }
+}
+
+interface Ctx {
+  assemblyNames: Set<string>
+  seenTrackIds: Set<string>
+}
+
+function checkTrack(
+  track: Record<string, unknown>,
+  index: number,
+  manifest: ConfigManifest,
+  report: Report,
+  ctx: Ctx,
+) {
+  const where = `tracks[${index}]`
+  const entry = resolveType(
+    track,
+    manifest.tracks,
+    'track',
+    `${where}.type`,
+    report,
+  )
+
+  const trackId = track.trackId
+  if (typeof trackId !== 'string' || !trackId) {
+    report.error(`${where}.trackId`, 'missing "trackId"')
+  } else if (ctx.seenTrackIds.has(trackId)) {
+    report.error(
+      `${where}.trackId`,
+      `duplicate trackId "${trackId}" — a later track with the same id shadows the earlier one`,
+    )
+  } else {
+    ctx.seenTrackIds.add(trackId)
+  }
+
+  const names = track.assemblyNames
+  if (!Array.isArray(names) || names.length === 0) {
+    report.error(`${where}.assemblyNames`, 'missing "assemblyNames"')
+  } else {
+    for (const name of names) {
+      if (typeof name === 'string' && !ctx.assemblyNames.has(name)) {
+        report.error(
+          `${where}.assemblyNames`,
+          `assembly "${name}" is not defined in this config${didYouMean(name, [...ctx.assemblyNames])}`,
+        )
+      }
+    }
+  }
+
+  if (entry) {
+    // displayDefaults is a shorthand no track schema declares, so it is
+    // exempted from the track's own slot check and validated on its own terms.
+    checkSlots(
+      track,
+      {
+        ...entry,
+        shorthandKeys: [...(entry.shorthandKeys ?? []), 'displayDefaults'],
+      },
+      where,
+      report,
+    )
+    if (track.displayDefaults !== undefined) {
+      checkDisplayDefaults(
+        track.displayDefaults,
+        entry,
+        manifest,
+        `${where}.displayDefaults`,
+        report,
+      )
+    }
+  }
+  checkAdapter(track.adapter, manifest, `${where}.adapter`, report)
+
+  if (Array.isArray(track.displays)) {
+    for (const [i, display] of track.displays.entries()) {
+      if (!isRecord(display)) {
+        continue
+      }
+      const displayWhere = `${where}.displays[${i}]`
+      const displayEntry = resolveType(
+        display,
+        manifest.displays,
+        'display',
+        `${displayWhere}.type`,
+        report,
+      )
+      if (displayEntry) {
+        checkSlots(display, displayEntry, displayWhere, report)
+      }
+    }
+  }
+}
+
+function checkAssembly(
+  assembly: Record<string, unknown>,
+  index: number,
+  manifest: ConfigManifest,
+  report: Report,
+) {
+  const where = `assemblies[${index}]`
+  if (typeof assembly.name !== 'string' || !assembly.name) {
+    report.error(`${where}.name`, 'missing assembly "name"')
+  }
+  const sequence = assembly.sequence
+  if (!isRecord(sequence)) {
+    report.error(`${where}.sequence`, 'missing "sequence" track')
+    return
+  }
+  checkAdapter(sequence.adapter, manifest, `${where}.sequence.adapter`, report)
+}
+
+// A view's `init` names tracks and an assembly by id. Nothing validates those at
+// load: a trackId that does not exist simply fails to open, which reads as a
+// rendering bug rather than a typo.
+function checkSession(session: unknown, report: Report, ctx: Ctx) {
+  if (!isRecord(session) || !Array.isArray(session.views)) {
+    return
+  }
+  for (const [i, view] of session.views.entries()) {
+    if (!isRecord(view) || !isRecord(view.init)) {
+      continue
+    }
+    const init = view.init
+    const where = `defaultSession.views[${i}].init`
+    if (
+      typeof init.assembly === 'string' &&
+      !ctx.assemblyNames.has(init.assembly)
+    ) {
+      report.error(
+        `${where}.assembly`,
+        `assembly "${init.assembly}" is not defined in this config${didYouMean(init.assembly, [...ctx.assemblyNames])}`,
+      )
+    }
+    if (Array.isArray(init.tracks)) {
+      for (const [j, entry] of init.tracks.entries()) {
+        const trackId =
+          typeof entry === 'string' ? entry : (entry)?.trackId
+        if (typeof trackId !== 'string') {
+          report.error(`${where}.tracks[${j}]`, 'track entry has no trackId')
+        } else if (!ctx.seenTrackIds.has(trackId)) {
+          report.error(
+            `${where}.tracks[${j}]`,
+            `trackId "${trackId}" is not defined in this config${didYouMean(trackId, [...ctx.seenTrackIds])}`,
+          )
+        }
+      }
+    }
+  }
+}
+
+export function validateConfig(
+  config: unknown,
+  manifest: ConfigManifest = configManifest,
+): ValidationResult {
+  const report = new Report()
+  if (!isRecord(config)) {
+    report.error('', 'config is not a JSON object')
+    return report.result()
+  }
+  if (Array.isArray(config.plugins) && config.plugins.length > 0) {
+    report.note(
+      `config declares ${config.plugins.length} plugin(s); the types and slots they register are not in the manifest and cannot be checked`,
+    )
+  }
+
+  const assemblies = (
+    Array.isArray(config.assemblies)
+      ? config.assemblies
+      : isRecord(config.assembly)
+        ? [config.assembly]
+        : []
+  ).filter(isRecord)
+  if (assemblies.length === 0) {
+    report.error('assemblies', 'no assemblies — a config needs at least one')
+  }
+
+  const ctx: Ctx = {
+    // An assembly's `aliases` are usable wherever its name is — a track can say
+    // `assemblyNames: ['vvx']` against an assembly named volvox that lists vvx
+    // as an alias. Leaving them out reports working configs as broken.
+    assemblyNames: new Set(
+      assemblies
+        .flatMap(a => [a.name, ...(Array.isArray(a.aliases) ? a.aliases : [])])
+        .filter((n): n is string => typeof n === 'string'),
+    ),
+    seenTrackIds: new Set(),
+  }
+
+  for (const [i, assembly] of assemblies.entries()) {
+    checkAssembly(assembly, i, manifest, report)
+  }
+
+  const tracks = Array.isArray(config.tracks)
+    ? config.tracks.filter(isRecord)
+    : []
+  for (const [i, track] of tracks.entries()) {
+    checkTrack(track, i, manifest, report, ctx)
+  }
+
+  // Tracks are registered before the session is checked, so a session may
+  // reference any track in the file regardless of declaration order.
+  checkSession(config.defaultSession, report, ctx)
+
+  return report.result()
+}

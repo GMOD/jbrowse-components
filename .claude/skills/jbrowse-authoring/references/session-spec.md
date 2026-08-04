@@ -33,8 +33,8 @@ A `TrackInit` is a `trackId` string, or an object that also sets initial state:
 ```
 
 `displaySnapshot` is how you set a per-track height or color at launch — those
-live on the *display*, not the track, and a menu can't reach them before the view
-exists.
+live on the _display_, not the track, and a menu can't reach them before the
+view exists.
 
 `init` is applied once when the view attaches and then cleared. It is a launch
 instruction, not persistent state, so a saved session never carries it.
@@ -69,25 +69,29 @@ The JSON is the session, not the config:
 ```json
 {
   "views": [
-    { "type": "LinearGenomeView",
-      "assembly": "hg38", "loc": "chr1:1-100000", "tracks": ["my_track"] }
+    {
+      "type": "LinearGenomeView",
+      "assembly": "hg38",
+      "loc": "chr1:1-100000",
+      "tracks": ["my_track"]
+    }
   ],
   "sessionAssemblies": [],
   "sessionTracks": [],
-  "layout": { }
+  "layout": {}
 }
 ```
 
 Note the shape difference: on a **view spec** the `init` fields sit flat on the
 view, rather than nested under `init`. Top-level keys:
 
-| key | meaning |
-|---|---|
-| `views` | the views to open; each needs `type`, plus the `init` fields flat |
+| key                 | meaning                                                                           |
+| ------------------- | --------------------------------------------------------------------------------- |
+| `views`             | the views to open; each needs `type`, plus the `init` fields flat                 |
 | `sessionAssemblies` | assemblies defined by the spec itself — with these, no `config=` is needed at all |
-| `sessionTracks` | tracks defined by the spec, for data not in the config |
-| `layout` | workspace arrangement (see below) |
-| `sessionName` | name for the session |
+| `sessionTracks`     | tracks defined by the spec, for data not in the config                            |
+| `layout`            | workspace arrangement (see below)                                                 |
+| `sessionName`       | name for the session                                                              |
 
 `sessionAssemblies` + `sessionTracks` are what let a link carry data the hosted
 config has never heard of — the route for showing someone your own file on a
@@ -105,8 +109,8 @@ jbrowse://open?url=<uri-encoded JBrowse Web url>
 
 Desktop parses the link, loads the config it names, and runs the same
 `loadSessionSpec`. Only `http(s)` inner URLs are accepted, and the user gets a
-confirmation dialog naming the destination — it is a native dialog, so this route
-is human-in-the-loop by construction and cannot be driven headlessly.
+confirmation dialog naming the destination — it is a native dialog, so this
+route is human-in-the-loop by construction and cannot be driven headlessly.
 
 ## Door 4 — embedded
 

@@ -100,9 +100,10 @@ const GENERATORS: Generator[] = [
     // (DISPLAY_TYPES, which needs the whole-repo DisplayType scan generate.ts
     // does, FILE_TYPES, and PROMOTABLE_SLOTS in display_defaults.md).
     //
-    // api-docs/example-gaps.txt is the #example coverage list. It rides this
-    // same diff so a type documented without a usable example shows up as a
-    // `+ Name` line in the PR rather than as a console.warn nothing reads.
+    // api-docs/coverage-gaps.txt is the doc-coverage list (missing #example,
+    // blank slot descriptions, ...). It rides this same diff so a type
+    // documented thinly shows up as a `+ Name` line in the PR rather than as a
+    // console.warn nothing reads.
     //
     // The `*/README.md` globs cover writeApiReadmes, which mirrors each
     // package's `#api` exports into its README between API_DOCS markers.
@@ -114,27 +115,26 @@ const GENERATORS: Generator[] = [
       'website/docs/api',
       'website/docs/config_guides',
       'website/docs/user_guides',
-      'website/scripts/api-docs/example-gaps.txt',
+      'website/scripts/api-docs/coverage-gaps.txt',
       'packages/*/README.md',
       'plugins/*/README.md',
       'products/*/README.md',
     ],
   },
   {
-    // The config-slot manifest the jbrowse-authoring skill's validator checks
-    // against, read out of the live ConfigurationSchema objects. It rides
-    // autogen so a new slot (or a renamed one) can't leave the validator
-    // reporting a correct config as broken — which is the failure that makes a
-    // checker worth ignoring. Also emits references/config-types.md, the
-    // human/agent-readable index of every registered type.
+    // The config-slot manifest `jbrowse validate` checks against, read out of
+    // the live ConfigurationSchema objects. It rides autogen so a new slot (or a
+    // renamed one) can't leave the validator reporting a correct config as
+    // broken — the failure that makes a checker worth ignoring. Also emits the
+    // jbrowse-authoring skill's config-types.md index.
     name: 'config schema manifest',
     argv: [
       'node',
       '--experimental-strip-types',
-      '.claude/skills/jbrowse-authoring/scripts/generate-schema.ts',
+      'scripts/generateConfigManifest.ts',
     ],
     diffPaths: [
-      '.claude/skills/jbrowse-authoring/scripts/config-schema.json',
+      'products/jbrowse-cli/src/commands/validate/configManifest.generated.ts',
       '.claude/skills/jbrowse-authoring/references/config-types.md',
     ],
   },

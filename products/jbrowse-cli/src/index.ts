@@ -15,6 +15,7 @@ import { run as sortBedRun } from './commands/sort-bed.ts'
 import { run as sortGffRun } from './commands/sort-gff.ts'
 import { run as textIndexRun } from './commands/text-index/index.ts'
 import { run as upgradeRun } from './commands/upgrade.ts'
+import { run as validateRun } from './commands/validate/index.ts'
 import { version } from './version.ts'
 
 // single source of truth for both dispatch and the global help listing, so a
@@ -38,6 +39,12 @@ const registry: {
     name: 'add-track',
     summary: 'Add a track to a JBrowse 2 configuration',
     run: addTrackRun,
+  },
+  {
+    name: 'validate',
+    summary:
+      'Check a configuration for errors, including ones JBrowse accepts silently',
+    run: validateRun,
   },
   {
     name: 'text-index',
