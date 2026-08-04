@@ -355,14 +355,21 @@ among them — and `height` is written on *every resize-handle drag frame*
 taller re-ran the whole worker pipeline once the drag settled. Grow-mode exit
 (`installGrowExitBake`) and the fit bake hit the same path.
 
-Two rules when auditing that list. A slot that reaches the worker through a
-*separate* top-level `rpcProps` field must still invalidate through that field —
-`maxFeatureScreenDensity` rides as `maxFeatureDensity`, which is `undefined`
-while nothing gates, so excluding the slot alone would strand a track at a budget
-the user just raised. And `fetchSizeLimit`/`forceLoad` must stay in the payload:
-the byte budget itself (`resolvedByteLimit()`) is added at the RPC *call site* and
-so is not a cache key, leaving those slots as what makes raising the limit
-refetch. `loadedRegions`, not `rpcDataMap`, is the signal when measuring — the
+Two rules when auditing that list. A slot the worker reads must invalidate
+through *something* — either the slot itself or a top-level `rpcProps` field
+derived from it — or a track strands at a budget the user just raised. And a
+**resolved, viewport-dependent** budget must go the other way: added at the RPC
+*call site*, never in `rpcProps`, with the slot it resolves from left in the
+payload to carry the invalidation. Both gate budgets work that way now —
+`resolvedByteLimit()` behind `fetchSizeLimit`/`forceLoad`, and
+`maxFeatureDensity` behind `maxFeatureScreenDensity`. The density one was a cache
+key until 2026-08-04, and because `gateActive` folds in `AUTO_FORCE_LOAD_BP` it
+flipped `undefined ↔ number` at 20 kb of visible span: zooming across that floor
+fired `SettingsInvalidate` and blanked the whole display, for data identical on
+both sides of it. See
+[REGION_TOO_LARGE.md](REGION_TOO_LARGE.md) § "Neither worker budget may be an RPC
+cache key" for why nothing is left unguarded by that.
+`loadedRegions`, not `rpcDataMap`, is the signal when measuring — the
 canvas base keeps fetched features through a settings clear on purpose. Guarded by
 the `SettingsInvalidate keys on the payload, not the reads` suite in
 `fetchAutorun.test.ts`.

@@ -160,6 +160,28 @@ point of the derived gate. The density axis reads the 500 ms-debounced
 mid-zoom. The split is deliberate; don't unify it without deciding which
 property you're giving up.
 
+**Neither worker budget may be an RPC cache key.** Both `resolvedByteLimit()` and
+canvas's `maxFeatureDensity` are resolved values that swing on the viewport —
+`gateActive` folds in `AUTO_FORCE_LOAD_BP`, so both go undefined the instant the
+span drops under 20 kb. Canvas passes them as call-site arguments to
+`RenderFeatureData` / `MultiRowGetFeatures`; they are deliberately **not** in
+`rpcProps()`. `maxFeatureDensity` used to be, and that made zooming across the
+floor a full `SettingsInvalidate` → `clearAllRpcData()` → refetch, blanking the
+display at exactly the zoom people settle a gene at, for data identical on both
+sides of it. The *slots* the budgets resolve from — `fetchSizeLimit`,
+`forceLoad`, `maxFeatureScreenDensity` — stay in the payload, so a real settings
+change still invalidates.
+
+Losing the floor as an invalidation trigger loses no protection. A region the
+worker rejected stores nothing, so `isCacheValid` is already false for it and it
+refetches on its own once the gate releases. Zooming back *out* re-gates from the
+live main-thread verdict — `densityStatsPerRegion` is committed on every
+successful fetch regardless of budget, and the byte estimate survives a
+no-budget fetch — with the worker re-gating whenever a fetch actually happens,
+which is the moment a download would occur and so the moment the gate is for.
+Pinned by "gate budgets are not RPC cache keys" in
+`LinearBasicDisplay/fetchAutorun.test.ts`.
+
 ## Opt-in hooks
 
 Most displays override none of these.

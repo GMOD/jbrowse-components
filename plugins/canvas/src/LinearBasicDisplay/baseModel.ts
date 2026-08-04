@@ -282,12 +282,14 @@ export default function baseStateModelFactory(
         TrackHeightMixin(),
         HeightModeMixin(),
         MultiRegionDisplayMixin(),
-        // The whole byte + feature-density region-too-large gate: the model-side
+        // The feature-density axis of the region-too-large gate: the model-side
         // sibling of DisplayChrome. Supplies densityStatsPerRegion,
-        // userFeatureDensityLimit, resolvedByteLimit(), maxFeatureDensity,
-        // observedMaxDensity/visibleFeatureDensityPerPx, the dual-axis
-        // raiseForceLoadLimits, and commit/clear helpers — folded into the
-        // feature fetch below. Same instance the multi-row display composes.
+        // observedMaxDensity/visibleFeatureDensityPerPx, the `densityTooLarge`
+        // override and the worker's `maxFeatureDensity` budget, plus the
+        // commit/clear helpers — folded into the feature fetch below. The byte
+        // axis and its `resolvedByteLimit()` budget are RegionTooLargeMixin's,
+        // reached through MultiRegionDisplayMixin above. Same instance the
+        // multi-row display composes.
         CanvasFeatureGateMixin(),
         types.model({
           /**
@@ -949,14 +951,23 @@ export default function baseStateModelFactory(
           //   maxLabelFeatureDensity/maxDescriptionFeatureDensity
           //                                the two rungs of the main-thread
           //                                `showLabels` auto gate
-          //   maxFeatureScreenDensity      reaches the worker as the separate
-          //                                `maxFeatureDensity` field below, which
-          //                                is undefined while nothing gates — so
-          //                                that field, not this slot, is the
-          //                                honest cache axis
-          // fetchSizeLimit/forceLoad deliberately STAY: the byte budget itself
-          // (`resolvedByteLimit()`) is added at the call site and so is not a
-          // cache key, leaving these as what makes raising the limit refetch.
+          // Both gate budgets — `resolvedByteLimit()` and `maxFeatureDensity` —
+          // are added at the CALL SITE, not here, so neither is a cache key. Both
+          // are resolved values that go undefined the moment nothing may gate,
+          // and `gateActive` folds in `AUTO_FORCE_LOAD_BP`: as cache keys they
+          // made zooming across the 20 kb floor a full `clearAllRpcData()` +
+          // refetch, blanking the display at exactly the zoom people settle a
+          // gene at, for data identical on both sides of it. The slots they
+          // resolve from — fetchSizeLimit/forceLoad/maxFeatureScreenDensity —
+          // deliberately STAY in the snapshot, so a config change to either
+          // budget still refetches. Losing the floor as a trigger loses nothing:
+          // a region the worker rejected stores no data, so `isCacheValid` is
+          // already false for it, and zooming back OUT re-gates from the live
+          // main-thread verdict (`densityStatsPerRegion` is committed on every
+          // successful fetch regardless of budget, and the byte estimate
+          // survives) with the worker re-gating whenever a fetch actually
+          // happens — which is the moment a download would occur, and so the
+          // moment the gate is for.
           const {
             showLabels: _l,
             displayMode: _dm,
@@ -966,7 +977,6 @@ export default function baseStateModelFactory(
             growMaxHeight: _gmh,
             maxLabelFeatureDensity: _mlfd,
             maxDescriptionFeatureDensity: _mdfd,
-            maxFeatureScreenDensity: _mfsd,
             ...rest
           } = getConfigSnapshotWithPromotables(self)
           return {
@@ -985,7 +995,6 @@ export default function baseStateModelFactory(
                   : rest.subfeatureLabels,
               jexlFilters: self.activeFilters(),
             } as DisplayConfig,
-            maxFeatureDensity: self.maxFeatureDensity,
             colorByCDS: self.colorByCDS,
             showAminoAcids: self.showAminoAcids,
             // Only isolate once the collection is applied; collecting (ctrl+
@@ -2375,11 +2384,16 @@ export default function baseStateModelFactory(
           result: RenderFeatureDataResult
         }
 
+        // Both gate budgets arrive as arguments rather than through
+        // `rpcProps()`: they are resolved values that swing on the viewport, and
+        // as cache keys they invalidated the whole display at the force-load
+        // floor. See the note in `rpcProps`.
         async function fetchFeaturesForRegion(
           region: Region,
           displayedRegionIndex: number,
           bpPerPx: number,
           byteLimit: number | undefined,
+          maxFeatureDensity: number | undefined,
           stopToken: StopToken,
         ): Promise<RegionFetch> {
           const sessionId = getRpcSessionId(self)
@@ -2399,6 +2413,7 @@ export default function baseStateModelFactory(
               region,
               bpPerPx,
               byteLimit,
+              maxFeatureDensity,
               stopToken,
               // keyed by region so concurrent per-region fetches aggregate
               // into one bar (FetchMixin.setRegionStatus) instead of each
@@ -2453,7 +2468,11 @@ export default function baseStateModelFactory(
           ) {
             const view = getView(self)
             const bpPerPx = view.bpPerPx
+            // Both gate budgets, read once for the whole batch. Not in
+            // `rpcProps()` — see the note there for why they must not be cache
+            // keys.
             const byteLimit = self.resolvedByteLimit()
+            const maxFeatureDensity = self.maxFeatureDensity
             // captured here, not at commit time: the gate rescales the estimate
             // from the span it was measured over, and a mid-fetch zoom would
             // otherwise anchor it to the wrong one
@@ -2474,6 +2493,7 @@ export default function baseStateModelFactory(
                   displayedRegionIndex,
                   bpPerPx,
                   byteLimit,
+                  maxFeatureDensity,
                   ctx.stopToken,
                 ),
               )

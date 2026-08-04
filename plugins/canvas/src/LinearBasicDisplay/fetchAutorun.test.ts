@@ -657,6 +657,45 @@ describe('adapter fetchSizeLimit in the byte gate', () => {
   })
 })
 
+// Neither gate budget may be an RPC cache key. They are resolved values that
+// swing on the viewport — `gateActive` folds in AUTO_FORCE_LOAD_BP, so both go
+// undefined the instant the span drops under 20 kb — and as cache keys that made
+// `SettingsInvalidate` fire `clearAllRpcData()` at that one zoom, blanking and
+// refetching the display for data identical on both sides of the floor. They ride
+// as call-site arguments now; the config slots they resolve from stay in the
+// payload, so a real settings change still invalidates.
+describe('gate budgets are not RPC cache keys', () => {
+  it('keeps the cache key stable across the force-load floor', () => {
+    const { display, view } = createLargeDisplay()
+
+    view.zoomTo(62.5)
+    expect(view.visibleBp).toBeGreaterThan(20_000)
+    expect(display.resolvedByteLimit()).toBeDefined()
+    expect(display.maxFeatureDensity).toBeDefined()
+    const above = display.rpcPropsCacheKey
+
+    view.zoomTo(20)
+    expect(view.visibleBp).toBeLessThan(20_000)
+    // both budgets have gone undefined — the whole point of the floor
+    expect(display.resolvedByteLimit()).toBeUndefined()
+    expect(display.maxFeatureDensity).toBeUndefined()
+    expect(display.rpcPropsCacheKey).toBe(above)
+  })
+
+  it('still invalidates when the slot a budget resolves from changes', () => {
+    const { display, view } = createLargeDisplay()
+    view.zoomTo(62.5)
+    const before = display.rpcPropsCacheKey
+
+    display.configuration.setSlot('maxFeatureScreenDensity', 42)
+    expect(display.rpcPropsCacheKey).not.toBe(before)
+
+    const afterDensity = display.rpcPropsCacheKey
+    display.configuration.setSlot('fetchSizeLimit', 12_345)
+    expect(display.rpcPropsCacheKey).not.toBe(afterDensity)
+  })
+})
+
 // Derived regionTooLarge: stays a pure function of the cached density stats
 // and byte estimate at the current bpPerPx. These tests pin down the behavior
 // the imperative path used to get wrong (banner flicker on small zoom, refetch
@@ -1283,11 +1322,12 @@ describe('SettingsInvalidate keys on the payload, not the reads', () => {
     expect(display.loadedRegions.size).toBe(1)
   })
 
-  // `maxFeatureScreenDensity` is excluded from displayConfig, but it must still
-  // invalidate — it reaches the worker as the separate `maxFeatureDensity`
-  // field, which is `undefined` while nothing gates. That field, not the raw
-  // slot, is the honest cache axis: excluding the slot without it would silently
-  // strand a track at a density budget the user just raised.
+  // The resolved `maxFeatureDensity` rides at the call site, not in the payload
+  // (it swings on the viewport — see "gate budgets are not RPC cache keys"), so
+  // the raw `maxFeatureScreenDensity` slot is what has to carry the
+  // invalidation. Without it a track would silently strand at a density budget
+  // the user just raised. Both halves are asserted below: the refetch, and that
+  // the new budget actually reaches the worker.
   it('a density-budget change still refetches while the gate is active', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockResolvedValue(makeFeatureData())
@@ -1380,10 +1420,10 @@ describe('byte estimate anchoring across an in-flight zoom', () => {
       expect(display.isLoading).toBe(true)
     })
 
-    // User zooms in while the fetch is outstanding, staying above
-    // AUTO_FORCE_LOAD_BP: crossing that floor flips `maxFeatureDensity` to
-    // undefined, and since it rides in `rpcProps`, SettingsInvalidate would
-    // supersede this fetch instead of letting it commit.
+    // User zooms in while the fetch is outstanding. Kept above
+    // AUTO_FORCE_LOAD_BP so the zoom is unambiguously about the anchoring this
+    // test is here for: the gate budgets no longer ride in `rpcProps`, so
+    // crossing the floor mid-flight wouldn't supersede the fetch either way.
     view.zoomTo(500)
     expect(view.visibleBp).toBeLessThan(issuedSpanBp / 2)
     expect(view.visibleBp).toBeGreaterThan(20_000)
