@@ -24,7 +24,8 @@
 // the file on every prose tweak. The list changes only when a figure crosses the
 // threshold, which is the event worth reviewing.
 //
-// Run `pnpm check-captions` to rewrite the list, `--check` to verify it in CI.
+// Run `pnpm check-captions` to rewrite the list. CI runs `--check` through the
+// root `pnpm check-docs`, alongside the other docs validators.
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 

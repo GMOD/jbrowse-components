@@ -24,7 +24,8 @@
 // A line that trips this on purpose can suppress it with `<!-- menu-path-ok -->`
 // on the same line, matching check-wiki-titles.ts.
 //
-// Run: `pnpm check-menu-paths`.
+// Run: `pnpm check-menu-paths`, or the root `pnpm check-docs`, which is how CI
+// reaches it.
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 

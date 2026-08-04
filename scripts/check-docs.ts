@@ -66,6 +66,16 @@ const VALIDATORS: Validator[] = [
     },
   },
   {
+    name: 'menu paths use the → separator',
+    argv: web('check-menu-paths.ts'),
+  },
+  {
+    // Ratchets a tracked list, like check-spec-recipes above: `--check` fails
+    // when a caption newly runs long, the bare run records the current set.
+    name: 'no new over-length figure captions',
+    argv: web('check-captions.ts', '--check'),
+  },
+  {
     name: 'tutorial build scripts are valid',
     argv: ['python3', 'scripts/check-build-scripts.py'],
   },
