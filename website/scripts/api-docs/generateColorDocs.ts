@@ -115,7 +115,7 @@ export function writeColorDocs({ check = false } = {}) {
   for (const file of COLOR_SOURCES) {
     collectColors(file, groups)
   }
-  return rewriteGroupedMarkerBlocks(
+  const { stale, seen } = rewriteGroupedMarkerBlocks(
     'COLOR_TABLE',
     (group, file) => {
       const rows = groups[group]
@@ -127,7 +127,19 @@ export function writeColorDocs({ check = false } = {}) {
       return renderTable(rows)
     },
     { check },
-  ).stale
+  )
+  // A tagged group no page renders is a silent no-op — the tag exists so a color
+  // documents itself, so an unrendered group means either a typo or a table
+  // nobody ever pulled in. Checked the same way the #fileFormat groups are; it
+  // was not, and `#color maf` sat unrendered as a result.
+  for (const group of Object.keys(groups)) {
+    if (!seen.has(group)) {
+      throw new Error(
+        `#color group "${group}" is not rendered by any doc — no <!-- COLOR_TABLE ${group} START --> marker found`,
+      )
+    }
+  }
+  return stale
 }
 
 // Run as a script: `node docs/generateColorDocs.ts [--check]`. The guard keeps

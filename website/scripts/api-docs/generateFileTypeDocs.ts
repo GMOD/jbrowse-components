@@ -1,11 +1,10 @@
-import fs from 'fs'
-
 import {
   getAllFiles,
   jsDocText,
   markdownTable,
   parsePipeTags,
   parseSourceFileSyntactic,
+  readSourceIfPresent,
   rewriteGroupedMarkerBlocks,
   rewriteMarkerBlock,
   tableCell,
@@ -63,7 +62,8 @@ function tagValue(comment: string, tag: string) {
 // statement.
 function collectFormats(files: string[], groups: Record<string, Row[]>) {
   for (const file of files) {
-    if (!fs.readFileSync(file, 'utf8').includes('#fileFormat')) {
+    const text = readSourceIfPresent(file)
+    if (!text?.includes('#fileFormat')) {
       continue
     }
     const visit = (node: Node) => {
@@ -86,7 +86,7 @@ function collectFormats(files: string[], groups: Record<string, Row[]>) {
       }
       node.forEachChild(visit)
     }
-    visit(parseSourceFileSyntactic(file))
+    visit(parseSourceFileSyntactic(file, text))
   }
 }
 

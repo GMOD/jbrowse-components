@@ -143,14 +143,18 @@ function seedReadme(root: string) {
   return section(`# ${name ?? root}`, description) + '\n'
 }
 
+const BLOCK_RE = new RegExp(`${README_START}[\\s\\S]*?${README_END}`)
+
 // Mirror each package's `#api` exports into its README, between managed markers
 // so regeneration is idempotent and never touches hand-written README prose. The
 // block is appended once (replaced in place thereafter). Packages without a
 // README get a minimal one seeded from package.json so the block has a home.
 //
-// Returns the paths written: these sit outside the doc directories, so they have
-// to be handed to the run's oxfmt sweep explicitly or a regenerated README ships
-// unformatted.
+// A README that already carries the markers but whose package no longer exports
+// anything `#api`-tagged has its block removed rather than left behind: nothing
+// else would ever revisit that file, so dropping the last tag off a package
+// would otherwise leave its README documenting exports that no longer exist,
+// with no diff and no warning to say so.
 export function writeApiReadmes(byGroup: Record<string, ApiGroup>) {
   const byPackage: Record<string, ApiExport[]> = {}
   for (const grp of Object.values(byGroup)) {
@@ -161,19 +165,37 @@ export function writeApiReadmes(byGroup: Record<string, ApiGroup>) {
       }
     }
   }
-  return Object.entries(byPackage).map(([root, exports]) => {
+  for (const [root, exports] of Object.entries(byPackage)) {
     const readmePath = `${root}/README.md`
     const existing = fs.existsSync(readmePath)
       ? fs.readFileSync(readmePath, 'utf8')
       : seedReadme(root)
     const block = `${README_START}\n\n${renderReadmeSection(exports)}\n\n${README_END}`
-    const re = new RegExp(`${README_START}[\\s\\S]*?${README_END}`)
     writeDoc(
       readmePath,
-      re.test(existing)
-        ? existing.replace(re, block)
+      BLOCK_RE.test(existing)
+        ? existing.replace(BLOCK_RE, block)
         : `${existing.trimEnd()}\n\n${block}\n`,
     )
-    return readmePath
-  })
+  }
+  for (const readmePath of readmesWithApiBlock()) {
+    if (!byPackage[readmePath.replace(/\/README\.md$/, '')]) {
+      const existing = fs.readFileSync(readmePath, 'utf8')
+      writeDoc(readmePath, `${existing.replace(BLOCK_RE, '').trimEnd()}\n`)
+    }
+  }
+}
+
+// Every `<workspace>/<name>/README.md` already carrying the managed block.
+function readmesWithApiBlock() {
+  return ['packages', 'plugins', 'products'].flatMap(workspace =>
+    fs
+      .readdirSync(workspace, { withFileTypes: true })
+      .filter(e => e.isDirectory())
+      .map(e => `${workspace}/${e.name}/README.md`)
+      .filter(
+        p =>
+          fs.existsSync(p) && fs.readFileSync(p, 'utf8').includes(README_START),
+      ),
+  )
 }

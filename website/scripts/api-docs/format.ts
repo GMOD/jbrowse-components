@@ -6,11 +6,21 @@ import { promisify } from 'util'
 
 // Generated pages are written raw and formatted in one `formatWithOxfmt` sweep
 // at the end of the run (see generate.ts). Every path written here has to appear
-// in that sweep, so a page can't ship unformatted — the package READMEs
-// writeApiReadmes touches live outside the doc directories and are collected for
-// exactly that reason.
+// in that sweep or a page ships unformatted and `pnpm format` fights the next
+// regen, so the sweep is fed from this list rather than from a hardcoded set of
+// directories: the marker-block generators splice tables into hand-written
+// guides anywhere under website/docs, and the package READMEs writeApiReadmes
+// touches are outside website/docs entirely.
+const written = new Set<string>()
+
 export function writeDoc(file: string, content: string) {
   fs.writeFileSync(file, content)
+  written.add(file)
+}
+
+// Every path written this run, for the caller that formats them.
+export function writtenDocs() {
+  return [...written]
 }
 
 // Run the repo formatter over already-written files. Generated markdown is
@@ -29,8 +39,13 @@ export function writeDoc(file: string, content: string) {
 // the old prettier shell-out only found its binary via the PATH an npm script
 // sets, so running `node generate.ts` directly spawned ENOENT and silently
 // formatted nothing.
+//
+// Resolved from the repo root rather than from `import.meta.url`: every path
+// this generator touches is already cwd-relative, so this adds no assumption —
+// and it keeps `import.meta` out of a module util.ts imports, which jest
+// transforms to CJS and cannot parse.
 export async function formatWithOxfmt(paths: string[]) {
-  const require = createRequire(import.meta.url)
+  const require = createRequire(path.join(process.cwd(), 'package.json'))
   const bin = path.join(
     path.dirname(require.resolve('oxfmt/package.json')),
     'bin',

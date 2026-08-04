@@ -12,6 +12,7 @@ import {
   exampleCell,
   exampleSection,
   filterUnseenByName,
+  headerGaps,
   lookupByIdOrName,
   mapByKey,
   markdownTable,
@@ -21,7 +22,6 @@ import {
   section,
   stripComposedBlock,
   suffixCategory,
-  warnHeaderGaps,
   withHeaders,
 } from './util.ts'
 
@@ -400,9 +400,8 @@ export function writeModelDocs(
       renderModel(model, ancestors, configNames),
     )
   }
-  return warnHeaderGaps({
+  return headerGaps({
     items: withHeader,
-    kind: 'models',
     getName: m => m.header.name,
     hasExample: m => m.header.examples.length > 0,
     isGeneralCategory: m =>

@@ -151,7 +151,7 @@ to be written — `createBaseTrackConfig(pluginManager)`,
 `pluginManager.getDisplayType('LinearWiggleDisplay')!.configSchema` (resolved by
 the quoted name) all link. Each config page then renders an "Inherited config
 slots" section reproducing every base slot in full, so the page is
-self-contained; an unresolved base prints a warning at generation time.
+self-contained; an unresolved base is listed in `coverage-gaps.txt`.
 
 ## Adding examples with `#example`
 
@@ -225,19 +225,34 @@ heading to stay subordinate.
 | `#getter` / `#method` / `#action` | After the member's code block (`**Example:**`)  |
 | `#api`                            | After the type signature (`#### Example usage`) |
 
-### Coverage is tracked in `example-gaps.txt`
+### Coverage is tracked in `coverage-gaps.txt`
 
 A type with no `#example` gets a page that lists its slots and never shows one
 being used, which is the whole point of the page for anyone arriving from a
-`#slot-` deep link. `generate.ts` writes every such name to
-**`example-gaps.txt`**, which is committed, so adding a bare type is a `+ Name`
-line in the PR diff attributable to the change that caused it, and filling one
-in is a `-` line. The `Check config/model/api docs are up to date` step in
-`push.yml` diffs it alongside the generated pages, so the list can't go stale.
+`#slot-` deep link. A slot with neither a JSDoc body nor an in-object
+`description` renders a name and a type over an empty cell. `generate.ts` writes
+every such gap to **`coverage-gaps.txt`**, which is committed, so adding one is
+a `+ Name` line in the PR diff attributable to the change that caused it, and
+filling one in is a `-` line. The `Check config/model/api docs are up to date`
+step in `push.yml` diffs it alongside the generated pages, so the list can't go
+stale.
 
-This replaces relying on the `N/M configs have no #example` warning the
-generators still print: that fails nothing and scrolls past in a CI log, which
-is how 40 config pages and 90 model pages came to be bare.
+The file carries one section per gap kind, each naming the tag that clears it:
+missing `#example` (configs, models), blank slot descriptions,
+`General`-category fallbacks, members the structural pass can't see, unresolved
+`baseConfiguration` references, and adapters whose example defaulted to
+`FeatureTrack`. A section stays in the file at `(0)` so a regression is a `+`
+line under a heading that was already there.
+
+This replaces relying on `console.warn`: a warning fails nothing and scrolls
+past in a CI log, which is how 40 config pages and 90 model pages came to be
+bare, and how 101 slots came to render an empty Description cell.
+
+**One gap is fatal instead of tracked.** A slot a `#config` schema declares but
+never tags with `#slot` is absent from its page entirely rather than rendered
+thinly — the failure mode that hid `configuration.shareURL` when its comment
+used `/*` instead of `/**`. The count is zero and the fix is local and
+unambiguous, so `generate.ts` throws rather than listing it.
 
 Base/shared schemas (`BaseLinearDisplay`, `SharedVariantDisplay`, ...) are
 excluded by design — they are never named in a config, so an example on one
@@ -292,11 +307,11 @@ discovered in `parseTaggedComment`. Every one of them is stripped from the
 rendered prose, and every one is recognized only when it **heads** its comment
 line — a mention inside a sentence is prose, not a tag.
 
-| Tag                     | On                                 | Effect                                                                                                                                                                                                                                                                                      |
-| ----------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `#category <word>`      | `#config` / `#stateModel`          | Overrides the name-suffix heuristic that buckets the page in the sidebar (`Adapter`, `Display`, `View`, …). A camelCase word becomes a title-cased label. `*Mixin` model names always bucket under `Mixin` regardless.                                                                      |
-| `#trackType <Type>`     | an adapter's `#config`             | The track type the adapter's `#example` is wrapped in, so the page shows the full config a reader pastes rather than a bare adapter snapshot. Also links the adapter to its track and that track's displays under **Related links**. Defaults to `FeatureTrack` with a warning.             |
-| `#gotcha <text>`        | `#config`                          | A footgun a reader configuring this type has to know but would not infer from the slot list. Renders as a `:::caution` callout directly under the example, and can be pulled into a guide with a `GOTCHA` marker. Runs to the next tag or the next blank line, so it may wrap across lines. |
-| `#fileFormat`           | an adapter's `#config`             | Opts the adapter into a `FILE_TYPES` table (above).                                                                                                                                                                                                                                         |
-| `#displayFoundation`    | a display's `#stateModel`          | Opts the display into the `DISPLAY_FOUNDATIONS` table (above) as a user of the named foundation.                                                                                                                                                                                            |
-| `#displayFoundationDef` | a foundation mixin's `#stateModel` | Declares the foundation and what it brings.                                                                                                                                                                                                                                                 |
+| Tag                     | On                                 | Effect                                                                                                                                                                                                                                                                                                              |
+| ----------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `#category <word>`      | `#config` / `#stateModel`          | Overrides the name-suffix heuristic that buckets the page in the sidebar (`Adapter`, `Display`, `View`, …). A camelCase word becomes a title-cased label. `*Mixin` model names always bucket under `Mixin` regardless.                                                                                              |
+| `#trackType <Type>`     | an adapter's `#config`             | The track type the adapter's `#example` is wrapped in, so the page shows the full config a reader pastes rather than a bare adapter snapshot. Also links the adapter to its track and that track's displays under **Related links**. Defaults to `FeatureTrack`, and is listed in `coverage-gaps.txt` when it does. |
+| `#gotcha <text>`        | `#config`                          | A footgun a reader configuring this type has to know but would not infer from the slot list. Renders as a `:::caution` callout directly under the example, and can be pulled into a guide with a `GOTCHA` marker. Runs to the next tag or the next blank line, so it may wrap across lines.                         |
+| `#fileFormat`           | an adapter's `#config`             | Opts the adapter into a `FILE_TYPES` table (above).                                                                                                                                                                                                                                                                 |
+| `#displayFoundation`    | a display's `#stateModel`          | Opts the display into the `DISPLAY_FOUNDATIONS` table (above) as a user of the named foundation.                                                                                                                                                                                                                    |
+| `#displayFoundationDef` | a foundation mixin's `#stateModel` | Declares the foundation and what it brings.                                                                                                                                                                                                                                                                         |

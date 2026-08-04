@@ -15,9 +15,11 @@ import {
   codeCell,
   collectTransitive,
   docPage,
+  escapeRegExp,
   exampleCell,
   exampleSection,
   filterUnseenByName,
+  headerGaps,
   lookupByIdOrName,
   mapByKey,
   markdownTable,
@@ -29,7 +31,6 @@ import {
   section,
   stripPropertyName,
   suffixCategory,
-  warnHeaderGaps,
   withHeaders,
 } from './util.ts'
 
@@ -490,7 +491,7 @@ function stateModelLine(name: string, id: string, links: DisplayLinkContext) {
 // description that happens to start similarly (e.g. "used to load bgzip-
 // compressed, tabix-indexed VCF files" survives — it names no config).
 function stripNameTautology(docs: string, name: string) {
-  const esc = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const esc = escapeRegExp(name)
   const re = new RegExp(
     `^\\s*(?:configuration(?: schema)? (?:for|of)(?: the)? ${esc}|${esc} configuration(?: schema)?)\\.?[^\\S\\n]*(?:\\n|$)`,
     'i',
@@ -927,7 +928,10 @@ function trimSlotCode(value: string) {
 // The anchor other pages link a slot by (the promotable-settings table in
 // `user_guides/display_defaults.md`), kept as an explicit `<span id>` on the
 // row: lowercased, with any dots in a nested slot name (e.g.
-// `index.indexType`) dropped rather than kept as separators.
+// `index.indexType`) dropped rather than kept as separators. Every link to a
+// slot goes through this, including the ones writePromotableSlotDocs emits —
+// spelling the anchor out a second time there meant a dotted slot name would
+// have linked somewhere that doesn't exist.
 function slotAnchor(name: string) {
   return `slot-${name.toLowerCase().replace(/\./g, '')}`
 }
@@ -1016,59 +1020,50 @@ function slotRow(item: Item) {
   return `| ${cells.join(' | ')} |`
 }
 
-// Warn once per config that declares a `baseConfiguration` we couldn't link to a
+// One entry per config that declares a `baseConfiguration` we couldn't link to a
 // documented #config. Driven off the full config set rather than per-render-pass
-// base chains, so each unresolved derivation is reported exactly once and always
+// base chains, so each unresolved derivation is listed exactly once and always
 // attributed to the config that actually declares it (not a page that inherits
 // it transitively).
-function warnUnresolvedBases(configs: ConfigWithHeader[], index: ConfigIndex) {
-  for (const config of configs) {
-    if (config.derives && !resolveBase(config, index)) {
-      const codeLine = config.derives.code.replace(/\s+/g, ' ').trim()
-      console.warn(
-        `${config.header.name}: baseConfiguration "${codeLine}" could not be resolved to a documented #config`,
-      )
-    }
-  }
+function unresolvedBases(configs: ConfigWithHeader[], index: ConfigIndex) {
+  return configs
+    .filter(config => config.derives && !resolveBase(config, index))
+    .map(
+      config =>
+        `${config.header.name} (${config.derives!.code.replace(/\s+/g, ' ').trim()})`,
+    )
 }
 
 // An adapter page wraps its #example in a full track config of its #trackType.
 // Without the tag we fall back to FeatureTrack, which is wrong for e.g.
-// alignments/variant/sequence adapters — warn so the author adds the tag.
-function warnAdaptersMissingTrackType(configs: ConfigWithHeader[]) {
-  for (const config of configs) {
-    const isAdapter =
-      configCategory(config.header.name, config.header.category) === 'Adapter'
-    // only when an example would actually be wrapped: an author who wrote the
-    // full track config by hand hits wrapAdapterExample's `alreadyFull` guard
-    // and keeps their own `type`, so no default was applied and there is
-    // nothing to warn about (MotifListAdapter was flagged on exactly this)
-    const wouldWrap = config.header.examples.some(
-      ex => wrapAdapterExample(ex.content) !== ex.content,
-    )
-    if (isAdapter && wouldWrap && !config.header.trackType) {
-      console.warn(
-        `${config.header.name}: adapter has an #example but no #trackType — its full-config example defaulted to FeatureTrack`,
+// alignments/variant/sequence adapters, so the page shows a config that would
+// not work — list it so the author adds the tag.
+function adaptersMissingTrackType(configs: ConfigWithHeader[]) {
+  return configs
+    .filter(config => {
+      const isAdapter =
+        configCategory(config.header.name, config.header.category) === 'Adapter'
+      // only when an example would actually be wrapped: an author who wrote the
+      // full track config by hand hits wrapAdapterExample's `alreadyFull` guard
+      // and keeps their own `type`, so no default was applied and there is
+      // nothing to flag (MotifListAdapter was caught on exactly this)
+      const wouldWrap = config.header.examples.some(
+        ex => wrapAdapterExample(ex.content) !== ex.content,
       )
-    }
-  }
+      return isAdapter && wouldWrap && !config.header.trackType
+    })
+    .map(config => config.header.name)
 }
 
 // A slot with neither a JSDoc comment nor an in-object `description` renders a
-// blank Description cell — a name and a type with no explanation. Warn with the
-// full `Config.slot` list so the gaps are an actionable to-do, mirroring the
-// #example coverage warning.
-function warnSlotsMissingDescription(configs: ConfigWithHeader[]) {
-  const missing = configs.flatMap(c =>
+// blank Description cell — a name and a type with no explanation. Listed as
+// `Config.slot` so each gap names the exact place to fix.
+function slotsMissingDescription(configs: ConfigWithHeader[]) {
+  return configs.flatMap(c =>
     c.slots
       .filter(s => !(s.docs || slotMetaFor(s).meta.description))
       .map(s => `${c.header.name}.${s.name}`),
   )
-  if (missing.length) {
-    console.warn(
-      `${missing.length} config slots have no description: ${missing.join(', ')}`,
-    )
-  }
 }
 
 // Group every documented adapter by the track type it declares via #trackType,
@@ -1129,7 +1124,7 @@ export function writePromotableSlotDocs(
       const page = `/docs/config/${cfg.header.id}`
       const trackType = displayToTrackType.get(cfg.header.name)!
       const links = slots.map(
-        slot => `[\`${slot}\`](${page}/#slot-${slot.toLowerCase()})`,
+        slot => `[\`${slot}\`](${page}/#${slotAnchor(slot)})`,
       )
       return `| ${trackType} | [](${page}) | ${links.join(', ')} |`
     })
@@ -1166,9 +1161,6 @@ export function writeConfigDocs(
     modelNames,
     extendedBy,
   }
-  warnUnresolvedBases(withHeader, index)
-  warnAdaptersMissingTrackType(withHeader)
-  warnSlotsMissingDescription(withHeader)
   for (const cfg of withHeader) {
     writeDoc(
       `${dir}/${cfg.header.name}.md`,
@@ -1177,7 +1169,7 @@ export function writeConfigDocs(
   }
   // A base/shared schema is exempt from the #example gap: it is never named in
   // a config, so an example on it would teach a type nobody can write. Listing
-  // them made the warning a 40-name wall that read as noise, which is how ~17
+  // them made the list a 40-name wall that read as noise, which is how ~17
   // genuinely pasteable adapters and displays stayed bare. Their route to a
   // usable shape is the Extended by links, not an example of their own.
   //
@@ -1185,12 +1177,16 @@ export function writeConfigDocs(
   // from but that *is* itself writable — it carries a DisplayType registration —
   // is a real gap, and exempting it would hide the one thing this list exists to
   // surface.
-  return warnHeaderGaps({
-    items: withHeader.filter(c => !isBaseSchema(c.header, links)),
-    kind: 'configs',
-    getName: c => c.header.name,
-    hasExample: c => c.header.examples.length > 0,
-    isGeneralCategory: c =>
-      configCategory(c.header.name, c.header.category) === 'General',
-  })
+  return {
+    ...headerGaps({
+      items: withHeader.filter(c => !isBaseSchema(c.header, links)),
+      getName: c => c.header.name,
+      hasExample: c => c.header.examples.length > 0,
+      isGeneralCategory: c =>
+        configCategory(c.header.name, c.header.category) === 'General',
+    }),
+    noDescription: slotsMissingDescription(withHeader),
+    unresolvedBase: unresolvedBases(withHeader, index),
+    adapterNoTrackType: adaptersMissingTrackType(withHeader),
+  }
 }

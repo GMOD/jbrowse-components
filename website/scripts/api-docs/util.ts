@@ -5,6 +5,8 @@ import { promisify } from 'util'
 
 import * as ts from 'typescript'
 
+import { writeDoc } from './format.ts'
+
 const exec2 = promisify(exec)
 
 const cwd = `${process.cwd()}/`
@@ -154,8 +156,11 @@ export function extractWithComment(
       })
     }
   }
-  reportBlindSpots(blindSpots)
-  reportConfigSlotGaps(slotGaps)
+  assertNoUntaggedSlots(slotGaps)
+  return {
+    // `<file> <name>` per gap, for the committed coverage list
+    blindSpots: blindSpots.map(s => `${repoRelative(s.filename)} ${s.name}`),
+  }
 
   function visit(node: ts.Node, isStateModel: boolean, isConfig: boolean) {
     const link = displayTrackLink(node)
@@ -249,21 +254,30 @@ function collectUntaggedSlots(node: ts.Node, gaps: ConfigSlotGap[]) {
   }
 }
 
-function reportConfigSlotGaps(gaps: ConfigSlotGap[]) {
+// Fatal, not a warning. A slot a `#config` schema declares but never tags is
+// absent from the generated page entirely — the failure mode that hid
+// `configuration.shareURL` when its comment used `/*` instead of `/**`. The
+// count is zero, and the fix is unambiguous and local, so the only way it stays
+// zero is if adding one stops the build rather than printing a line nobody
+// reads. Everything with a real backlog goes in the committed coverage list
+// instead; this is the one that can be held at zero.
+function assertNoUntaggedSlots(gaps: ConfigSlotGap[]) {
   if (gaps.length) {
-    console.warn(
-      `${gaps.length} config slot(s) in a #config schema have no #slot tag, so they are silently missing from the generated docs. Add a /** #slot */ comment (a single-star /* comment is ignored):`,
-    )
     const byFile = new Map<string, ConfigSlotGap[]>()
     for (const gap of gaps) {
       const file = repoRelative(gap.filename)
       byFile.set(file, [...(byFile.get(file) ?? []), gap])
     }
-    for (const [file, list] of byFile) {
-      console.warn(
-        `  ${file}: ${list.map(g => `${g.schema}.${g.slot}`).join(', ')}`,
-      )
-    }
+    throw new Error(
+      `${gaps.length} config slot(s) in a #config schema have no #slot tag, so they are silently missing from the generated docs. Add a /** #slot */ comment (a single-star /* comment is ignored):\n${[
+        ...byFile,
+      ]
+        .map(
+          ([file, list]) =>
+            `  ${file}: ${list.map(g => `${g.schema}.${g.slot}`).join(', ')}`,
+        )
+        .join('\n')}`,
+    )
   }
 }
 
@@ -329,22 +343,6 @@ function isUndocumentedLocal(
   const decl = symbol?.valueDeclaration ?? symbol?.declarations?.[0]
   const doc = decl ? getOwnJSDocText(decl) : ''
   return !MEMBER_TAGS.some(t => containsTag(doc, t))
-}
-
-function reportBlindSpots(blindSpots: BlindSpot[]) {
-  if (blindSpots.length) {
-    const byFile = new Map<string, BlindSpot[]>()
-    for (const spot of blindSpots) {
-      const file = repoRelative(spot.filename)
-      byFile.set(file, [...(byFile.get(file) ?? []), spot])
-    }
-    console.warn(
-      `${blindSpots.length} undocumented member(s) the autogen can't auto-detect (untagged shorthand returns of local functions). Add a #getter/#method/#action tag to the local declaration to document:`,
-    )
-    for (const [file, spots] of byFile) {
-      console.warn(`  ${file}: ${spots.map(s => s.name).join(', ')}`)
-    }
-  }
 }
 
 const MEMBER_TAGS = [
@@ -497,27 +495,51 @@ function typeSignature(
 // Longer than this and a signature stops being read and starts being skipped.
 const MAX_SIGNATURE = 180
 
-// The innermost `<...>` / `{...}` group in a type string, or undefined. Already
-// elided groups (`<…>`, `{…}`) are atomic: skipped when scanning, so the next
-// pass finds the group that encloses them. The `>` of a `=>` is not a bracket.
-function innermostGroup(sig: string, open: string, close: string) {
-  const elided = `${open}…${close}`
+// Collapse `<...>` / `{...}` groups from the inside out until the string fits,
+// in one left-to-right pass. A stack of partial results reaches every group in
+// post-order — innermost first, leftmost among those — which is exactly the
+// order a repeated "find the innermost group, elide it, rescan" loop reaches
+// them in, so the output is unchanged.
+//
+// The rescan is what made this worth rewriting. Each pass skipped over the run
+// of already-elided groups to its left before finding the next one, so the cost
+// was quadratic in the number of groups; MST's expanded model types print at up
+// to 250KB, and shortening ~3600 of them was 22% of a `pnpm gendocs` run — more
+// than building the whole TypeScript program.
+//
+// The `>` of a `=>` is not a bracket, and an `open` that never closes is not a
+// group: its text goes back verbatim.
+function elideGroups(sig: string, open: string, close: string, max: number) {
+  let length = sig.length
+  const enclosing: string[] = []
+  let out = ''
   for (let i = 0; i < sig.length; i++) {
-    if (sig.startsWith(elided, i)) {
-      i += 2
-    } else if (sig[i] === open) {
-      for (let j = i + 1; j < sig.length; j++) {
-        if (sig.startsWith(elided, j)) {
-          j += 2
-        } else if (sig[j] === open) {
-          break
-        } else if (sig[j] === close && !(close === '>' && sig[j - 1] === '=')) {
-          return { start: i + 1, end: j }
-        }
+    const c = sig[i]!
+    if (c === open) {
+      enclosing.push(out)
+      out = ''
+    } else if (
+      c === close &&
+      enclosing.length &&
+      !(close === '>' && sig[i - 1] === '=')
+    ) {
+      const inner = out
+      out = enclosing.pop()!
+      if (length > max) {
+        length -= inner.length - 1
+        out += `${open}…${close}`
+      } else {
+        // once it fits, every enclosing group is emitted whole
+        out += `${open}${inner}${close}`
       }
+    } else {
+      out += c
     }
   }
-  return undefined
+  while (enclosing.length) {
+    out = `${enclosing.pop()!}${open}${out}`
+  }
+  return out
 }
 
 // Split a type on its top-level `|`, ignoring the ones nested inside brackets —
@@ -559,13 +581,9 @@ export function elideSignature(sig: string, max = MAX_SIGNATURE) {
   for (const [open, close] of [
     ['<', '>'],
     ['{', '}'],
-  ]) {
-    while (out.length > max) {
-      const group = innermostGroup(out, open!, close!)
-      if (!group) {
-        break
-      }
-      out = `${out.slice(0, group.start)}…${out.slice(group.end)}`
+  ] as const) {
+    if (out.length > max) {
+      out = elideGroups(out, open, close, max)
     }
   }
   if (out.length > max) {
@@ -1168,14 +1186,34 @@ export function removeComments(string: string) {
 // Parse a source file syntactically (no type checker / program), for the
 // marker-block generators (color/jexl) that only read JSDoc text and
 // string-literal initializers — keeping them independent of the file's heavy
-// runtime imports (e.g. theme.ts's MUI).
-export function parseSourceFileSyntactic(file: string) {
+// runtime imports (e.g. theme.ts's MUI). `text` lets a caller that already read
+// the file hand it over instead of paying a second read.
+export function parseSourceFileSyntactic(file: string, text?: string) {
   return ts.createSourceFile(
     file,
-    fs.readFileSync(file, 'utf8'),
+    text ?? fs.readFileSync(file, 'utf8'),
     ts.ScriptTarget.Latest,
     true,
   )
+}
+
+// Read a file from the getAllFiles() list, or undefined if it is gone. That list
+// is a snapshot, and a run spends ~15s in its TypeScript pass before the
+// text-scanning generators walk it — long enough for a scratch file another
+// process created and removed to still be on the list. `getAllFiles` already
+// drops what `git ls-files` reports but the worktree lacks; this covers the file
+// that disappears after that check, which otherwise takes the whole run down at
+// the last step, with every page already written and the format sweep never
+// reached. Only ENOENT is swallowed — any other read error is a real problem.
+export function readSourceIfPresent(file: string) {
+  try {
+    return fs.readFileSync(file, 'utf8')
+  } catch (e) {
+    if ((e as NodeJS.ErrnoException).code === 'ENOENT') {
+      return undefined
+    }
+    throw e
+  }
 }
 
 // Transitive closure of a node's documented parents — model composition or
@@ -1422,64 +1460,29 @@ export function assertSingleHeader({
   }
 }
 
-// Logs a coverage-gap warning shared by both generators' write*Docs entry
-// points, e.g. "6/102 configs have no #example: Foo, Bar" or
-// "8/95 models resolved to the General category: Foo, Bar". Silent when
-// `items` is empty, so a fully-covered run prints nothing.
-function warnCoverageGap<T>({
+// The two coverage gaps both generators report after writing their pages: which
+// headers carry no #example, and which fell back to the General category.
+// Shared so the two passes can't diverge on what counts as a gap.
+//
+// Returned rather than warned. A console.warn fails nothing and scrolls past in
+// a CI log, which is how 40 config pages and 90 model pages came to be bare —
+// the driver commits these to a tracked file so each one is a reviewable line in
+// the PR diff instead.
+export function headerGaps<T>({
   items,
-  total,
-  kind,
-  reason,
-  getName,
-}: {
-  items: T[]
-  total: number
-  kind: string
-  reason: string
-  getName: (item: T) => string
-}) {
-  if (items.length) {
-    console.warn(
-      `${items.length}/${total} ${kind} ${reason}: ${items.map(getName).join(', ')}`,
-    )
-  }
-}
-
-// The two coverage warnings both generators emit after writing their pages:
-// which headers carry no #example, and which fell back to the General category.
-// Shared so the reason strings can't drift between the config and model passes.
-export function warnHeaderGaps<T>({
-  items,
-  kind,
   getName,
   hasExample,
   isGeneralCategory,
 }: {
   items: T[]
-  kind: string
   getName: (item: T) => string
   hasExample: (item: T) => boolean
   isGeneralCategory: (item: T) => boolean
 }) {
-  const noExample = items.filter(item => !hasExample(item))
-  warnCoverageGap({
-    items: noExample,
-    total: items.length,
-    kind,
-    reason: 'have no #example',
-    getName,
-  })
-  warnCoverageGap({
-    items: items.filter(isGeneralCategory),
-    total: items.length,
-    kind,
-    reason: 'resolved to the General category (consider adding #category)',
-    getName,
-  })
-  // returned so the driver can commit the list — a console.warn alone fails
-  // nothing and scrolls past, which is how these gaps accumulated
-  return noExample.map(getName)
+  return {
+    noExample: items.filter(item => !hasExample(item)).map(getName),
+    general: items.filter(isGeneralCategory).map(getName),
+  }
 }
 
 // Narrow a by-file record to the entries that actually carry a #config/#stateModel
@@ -1665,6 +1668,15 @@ export function listDocs(dir: string): string[] {
   })
 }
 
+// Quote a string for literal use inside a RegExp. The marker generators build
+// their patterns out of names read from the docs and the source (a COLOR_TABLE
+// group, a GOTCHA config name), which are authored text and so can hold regex
+// metacharacters — a placeholder name in a doc *about* the marker syntax is how
+// `pnpm gendocs` once died on `<ConfigName>`.
+export function escapeRegExp(s: string) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
 // Collapse the whitespace a formatter adds when it pads markdown table columns,
 // so a freshness (--check) comparison sees the block's *content* and not its
 // formatting (a committed table may be padded; the generators emit them
@@ -1706,7 +1718,7 @@ export function rewriteMarkerBlock(
           stale.push(file)
         }
       } else if (updated !== original) {
-        fs.writeFileSync(file, updated)
+        writeDoc(file, updated)
       }
     }
   }
@@ -1737,7 +1749,9 @@ export function rewriteGroupedMarkerBlocks(
       seen.add(group!)
       const startMarker = `<!-- ${marker} ${group} START -->`
       const endMarker = `<!-- ${marker} ${group} END -->`
-      const re = new RegExp(`${startMarker}[\\s\\S]*?${endMarker}`)
+      const re = new RegExp(
+        `${escapeRegExp(startMarker)}[\\s\\S]*?${escapeRegExp(endMarker)}`,
+      )
       const full = `${startMarker}\n\n${render(group!, file)}\n\n${endMarker}`
       updated = updated.replace(re, () => full)
     }
@@ -1749,7 +1763,7 @@ export function rewriteGroupedMarkerBlocks(
         stale.push(file)
       }
     } else if (updated !== original) {
-      fs.writeFileSync(file, updated)
+      writeDoc(file, updated)
     }
   }
   return { stale, seen }
