@@ -273,9 +273,13 @@ track it was copied from. This is `getComputedStyle` at that boundary, and
 `fromDisplayTypeDefaults` is what lets the UI say so rather than silently
 materializing a session preference into a track config.
 
-Resolves through the open display when the track is open, and from the display
-config alone when it isn't — an unopened track has no display state, but "what
-would this render as" still has an answer.
+Resolves from the display _config_ alone, whether or not the track is open.
+Everything the cascade takes is on the config node: it is the same node an open
+display's `configuration` points at (the hydration cache makes it stable), its
+`type` is the display type the session-wide tier is keyed on (every display
+schema is `explicitlyTyped` under the display type's own name), and the session
+is passed in. So an unopened track — which has no display state at all — still
+has an answer to "what would this render as", by the same code path.
 
 **Writes every promotable slot, including the ones sitting at `promotedBase`,
 and that is the decision — don't "align" it with the share bake.** The bake

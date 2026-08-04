@@ -300,6 +300,33 @@ indistinguishable at runtime from the broken spelling.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/util.ts)
 
+### relight
+
+Move a color's OKLCH lightness by `lightnessShift` and scale its chroma, holding
+its hue.
+
+For extending a categorical palette past its length. Cycling a nine-color list
+over a 24-chromosome karyotype repeats the color outright; cycling it with a
+lightness shift per lap gives the hue back as a variant still told apart from
+the original — tab20's construction, which pairs a light and a dark of each hue.
+
+SHIFT rather than a fixed lightness, and SCALE rather than a fixed chroma,
+because a categorical palette is uneven on purpose: category10's brown and its
+red are 5 degrees apart in hue and are told apart by chroma alone, so
+re-lighting both to one (lightness, chroma) makes them the same color. Keeping
+each color's own relative chroma keeps brown reading as brown.
+
+In OKLCH rather than through `lighten`/`darken`, which work in sRGB, where the
+same coefficient moves a yellow and a blue by visibly different amounts: a lap
+has to read as one tone across the whole palette or it reads as noise.
+
+```js
+// type signature
+(color: string, lightnessShift: number, chromaScale?: number) => string
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/color/index.ts)
+
 ### resolveConf
 
 Reads a `promotable` slot through the display-type-default cascade — the track's
@@ -373,9 +400,13 @@ track it was copied from. This is `getComputedStyle` at that boundary, and
 `fromDisplayTypeDefaults` is what lets the UI say so rather than silently
 materializing a session preference into a track config.
 
-Resolves through the open display when the track is open, and from the display
-config alone when it isn't — an unopened track has no display state, but "what
-would this render as" still has an answer.
+Resolves from the display _config_ alone, whether or not the track is open.
+Everything the cascade takes is on the config node: it is the same node an open
+display's `configuration` points at (the hydration cache makes it stable), its
+`type` is the display type the session-wide tier is keyed on (every display
+schema is `explicitlyTyped` under the display type's own name), and the session
+is passed in. So an unopened track — which has no display state at all — still
+has an answer to "what would this render as", by the same code path.
 
 **Writes every promotable slot, including the ones sitting at `promotedBase`,
 and that is the decision — don't "align" it with the share bake.** The bake
