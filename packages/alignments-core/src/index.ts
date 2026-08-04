@@ -39,14 +39,9 @@ export {
   visitCsOps,
 } from '@jbrowse/cigar-utils'
 export type { ClipMismatch, Mismatch } from '@jbrowse/cigar-utils'
-export { buildReadVsRefFeatures } from './buildReadVsRefFeatures.ts'
-export type {
-  ReadVsRefFeature,
-  ReadVsRefFeatures,
-  ReadVsRefMate,
-} from './buildReadVsRefFeatures.ts'
 export { buildReadVsRefTemporaryAssembly } from './buildReadVsRefTemporaryAssembly.ts'
 export type { ReadVsRefTemporaryAssembly } from './buildReadVsRefTemporaryAssembly.ts'
+export { buildReadVsRefNames } from './readVsRefNaming.ts'
 export { getTag } from './getTag.ts'
 export {
   isAbnormalPairDirection,
@@ -60,6 +55,9 @@ export type {
   SplitJunctionKind,
 } from './orientation.ts'
 export { InstanceBuilder } from './InstanceBuilder.ts'
+// SAM flags and the SA-tag split-read decomposition live in @jbrowse/cigar-utils
+// (pure SAM/CIGAR parsing, no framework deps). Re-exported here so consumers
+// that already depend on this package keep one import site.
 export {
   SAM_FLAG_DUPLICATE,
   SAM_FLAG_FAILS_QC,
@@ -73,9 +71,16 @@ export {
   SAM_FLAG_SECOND_IN_PAIR,
   SAM_FLAG_SUPPLEMENTARY,
   SAM_FLAG_UNMAPPED,
+  buildReadVsRefFeatures,
   samFlagDescriptions,
   samFlagLabels,
-} from './samFlags.ts'
+} from '@jbrowse/cigar-utils'
+export type {
+  ReadVsRefFeature,
+  ReadVsRefFeatures,
+  ReadVsRefInput,
+  ReadVsRefMate,
+} from '@jbrowse/cigar-utils'
 export {
   CANVAS2D_COVERAGE,
   coverageLayout,

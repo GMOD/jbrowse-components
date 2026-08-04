@@ -1,0 +1,131 @@
+import {
+  buildReadVsRefNames,
+  buildReadVsRefTemporaryAssembly,
+} from '@jbrowse/alignments-core'
+import { buildReadVsRefFeatures } from '@jbrowse/cigar-utils'
+import { gatherOverlaps, sum } from '@jbrowse/core/util'
+
+import type { ReadVsRefTemporaryAssembly } from '@jbrowse/alignments-core'
+import type { Feature } from '@jbrowse/core/util'
+
+export interface DotplotReadVsRefSpec {
+  temporaryAssembly: ReadVsRefTemporaryAssembly
+  viewSpec: {
+    type: 'DotplotView'
+    displayName: string
+    assemblyNames: string[]
+    hview: unknown
+    vview: unknown
+    viewTrackConfigs: unknown[]
+    tracks: unknown[]
+  }
+}
+
+export interface BuildDotplotReadVsRefArgs {
+  feature: Feature
+  trackAssembly: string
+  // Plot area the initial bpPerPx is sized against. The dotplot itself has not
+  // been laid out yet, so the caller passes the geometry it will come up in.
+  plotWidth: number
+  plotHeight: number
+  getCanonicalRefName: (refName: string) => string | undefined
+  // Injected for testability. Production passes Date.now.
+  now: () => number
+}
+
+// Pure spec builder for "Dotplot of read vs ref". All session/MST side-effects
+// (addTemporaryAssembly, addView) are performed by the caller against the
+// returned spec, mirroring linear-comparative-view's buildReadVsRefSpec.
+export function buildDotplotReadVsRefSpec({
+  feature,
+  trackAssembly,
+  plotWidth,
+  plotHeight,
+  getCanonicalRefName,
+  now,
+}: BuildDotplotReadVsRefArgs): DotplotReadVsRefSpec {
+  const { features, totalLength, readName, seq } = buildReadVsRefFeatures(
+    feature.toJSON(),
+    getCanonicalRefName,
+  )
+  const {
+    readAssembly,
+    seqTrackId,
+    syntenyTrackId,
+    syntenyTrackName,
+    displayName,
+  } = buildReadVsRefNames({ readName, trackAssembly, stamp: now() })
+  const assemblyNames = [trackAssembly, readAssembly]
+
+  // Size hview's bpPerPx from the regions it actually draws, so overlap
+  // merging in gatherOverlaps is reflected exactly.
+  const hviewRegions = gatherOverlaps(
+    features.map(f => ({
+      start: f.start,
+      end: f.end,
+      refName: f.refName,
+      assemblyName: trackAssembly,
+    })),
+  )
+
+  return {
+    // The synthetic read assembly must be registered for the DotplotView to
+    // initialize (assembliesInitialized gates on every assemblyName resolving);
+    // it is torn down by DotplotView.beforeDestroy via removeTemporaryAssembly.
+    temporaryAssembly: buildReadVsRefTemporaryAssembly({
+      readName,
+      readAssembly,
+      totalLength,
+      seq,
+      trackId: seqTrackId,
+      uniqueId: seqTrackId,
+    }),
+    viewSpec: {
+      type: 'DotplotView',
+      displayName,
+      assemblyNames,
+      hview: {
+        offsetPx: 0,
+        bpPerPx: sum(hviewRegions.map(r => r.end - r.start)) / plotWidth,
+        displayedRegions: hviewRegions,
+      },
+      vview: {
+        offsetPx: 0,
+        bpPerPx: totalLength / plotHeight,
+        minimumBlockWidth: 0,
+        displayedRegions: [
+          {
+            assemblyName: readAssembly,
+            start: 0,
+            end: totalLength,
+            refName: readName,
+          },
+        ],
+      },
+      viewTrackConfigs: [
+        {
+          type: 'SyntenyTrack',
+          assemblyNames,
+          adapter: {
+            type: 'FromConfigAdapter',
+            features,
+          },
+          trackId: syntenyTrackId,
+          name: syntenyTrackName,
+        },
+      ],
+      tracks: [
+        {
+          configuration: syntenyTrackId,
+          type: 'SyntenyTrack',
+          displays: [
+            {
+              type: 'DotplotDisplay',
+              configuration: `${syntenyTrackId}-DotplotDisplay`,
+            },
+          ],
+        },
+      ],
+    },
+  }
+}

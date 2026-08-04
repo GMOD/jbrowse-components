@@ -5,7 +5,14 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { AXIS_LABEL_FONT, tickKey, tickLabel, truncateRefName } from './util.ts'
+import {
+  AXIS_LABEL_FONT,
+  AXIS_TITLE_FONT,
+  fitAxisTitle,
+  tickKey,
+  tickLabel,
+  truncateRefName,
+} from './util.ts'
 
 import type { DotplotViewModel } from '../model.ts'
 import type { Tick } from './util.ts'
@@ -28,6 +35,44 @@ const useStyles = makeStyles()(() => ({
 // Tick lines are 4px (minor) or 6px (major) long in the cross-axis direction.
 function tickLen(tick: Tick) {
   return tick.type === 'major' ? 6 : 4
+}
+
+// The assembly name centered along an axis. Elided to the axis' own length —
+// centered text in an SVG sized to the plot is otherwise clipped at both ends,
+// and the read-vs-ref dotplot's synthetic assembly name (a read name plus an
+// `_assembly_<timestamp>` uniquifier) routinely runs past it. Full name on hover.
+function AxisTitle({
+  title,
+  availablePx,
+  x,
+  y,
+  transform,
+  dominantBaseline,
+  fill,
+}: {
+  title: string
+  availablePx: number
+  x: number
+  y: number
+  transform?: string
+  dominantBaseline?: 'hanging'
+  fill: { fill: string }
+}) {
+  const text = fitAxisTitle(title, availablePx)
+  return (
+    <text
+      x={x}
+      y={y}
+      transform={transform}
+      textAnchor="middle"
+      fontSize={AXIS_TITLE_FONT}
+      dominantBaseline={dominantBaseline}
+      {...fill}
+    >
+      {text === title ? null : <title>{title}</title>}
+      {text}
+    </text>
+  )
 }
 
 // hue for axis text (fill) and tick lines (stroke); both are the primary text
@@ -121,16 +166,14 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
           ) : null}
         </Fragment>
       ))}
-      <text
+      <AxisTitle
+        title={hview.assemblyNames.join(',')}
+        availablePx={viewWidth}
         y={borderY - 12}
         x={viewWidth / 2}
-        textAnchor="middle"
-        fontSize={11}
         dominantBaseline="hanging"
-        {...fill}
-      >
-        {hview.assemblyNames.join(',')}
-      </text>
+        fill={fill}
+      />
     </>
   )
 })
@@ -213,16 +256,14 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
           </Fragment>
         )
       })}
-      <text
+      <AxisTitle
+        title={vview.assemblyNames.join(',')}
+        availablePx={viewHeight}
         y={viewHeight / 2}
         x={12}
         transform={`rotate(-90,12,${viewHeight / 2})`}
-        textAnchor="middle"
-        fontSize={11}
-        {...fill}
-      >
-        {vview.assemblyNames.join(',')}
-      </text>
+        fill={fill}
+      />
     </>
   )
 })

@@ -1,33 +1,12 @@
-import {
-  featurizeSA,
-  getClip,
-  getLengthSansClipping,
-} from '@jbrowse/cigar-utils'
+import { buildReadVsRefFeatures } from '@jbrowse/cigar-utils'
 import { getSession } from '@jbrowse/core/util'
-
-import { getStringTag } from './util.ts'
 
 import type { AlignmentFeatureSerialized } from './util.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-export interface ReducedFeature {
-  refName: string
-  start: number
-  clipLengthAtStartOfRead: number
-  end: number
-  strand: number
-  seqLength?: number
-  syntenyId?: number
-  uniqueId: string
-  mate: {
-    refName: string
-    start: number
-    end: number
-    syntenyId?: number
-    uniqueId?: string
-  }
-}
-
+// The split read's segments, ordered along the read — the same SA-tag
+// decomposition the "read vs ref" launchers draw, reused here to list the
+// junctions between adjacent segments.
 export async function getSAFeatures({
   view,
   feature,
@@ -36,42 +15,21 @@ export async function getSAFeatures({
   feature: AlignmentFeatureSerialized
 }) {
   const { assemblyManager } = getSession(view)
-  const { CIGAR: cigar, strand: origStrand = 1, name: readName } = feature
-  if (cigar === undefined) {
+  if (feature.CIGAR === undefined) {
     throw new Error('feature missing CIGAR')
   }
-  if (readName === undefined) {
+  if (feature.name === undefined) {
     throw new Error('feature missing name')
   }
-  const SA = getStringTag('SA', feature) ?? ''
-  const clipLengthAtStartOfRead = getClip(cigar, origStrand)
 
-  // get the canonical refname for the read because if the read.get('refName')
-  // is chr1 and the actual fasta refName is 1 then no tracks can be opened on
-  // the top panel of the linear read vs ref
+  // Canonical refNames: if the read's refName is chr1 and the actual fasta
+  // refName is 1, no track can be opened on the split view this panel links to.
   const assembly = await assemblyManager.waitForAssembly(view.assemblyNames[0]!)
   if (!assembly) {
     throw new Error('assembly not found')
   }
 
-  const suppAlns = featurizeSA(SA, feature.uniqueId, origStrand, readName, true)
-
-  const feat = {
-    ...feature,
-    clipLengthAtStartOfRead,
-    strand: 1,
-    mate: {
-      refName: readName,
-      start: clipLengthAtStartOfRead,
-      end: clipLengthAtStartOfRead + getLengthSansClipping(cigar),
-    },
-  }
-  return ([feat, ...suppAlns] as ReducedFeature[])
-    .map((f, i) => ({
-      ...f,
-      refName: assembly.getCanonicalRefName2(f.refName),
-      syntenyId: i,
-      mate: { ...f.mate, syntenyId: i, uniqueId: `${f.uniqueId}_mate` },
-    }))
-    .toSorted((a, b) => a.clipLengthAtStartOfRead - b.clipLengthAtStartOfRead)
+  return buildReadVsRefFeatures(feature, refName =>
+    assembly.getCanonicalRefName(refName),
+  ).features
 }

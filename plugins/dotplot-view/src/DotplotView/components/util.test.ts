@@ -1,5 +1,9 @@
+import { measureText } from '@jbrowse/core/util'
+
 import {
+  AXIS_TITLE_FONT,
   axisBorderPx,
+  fitAxisTitle,
   getBlockLabelKeysToHide,
   makeTicks,
   tickKey,
@@ -56,6 +60,29 @@ describe('truncateRefName', () => {
 
   test('long names are middle-elided, keeping prefix and suffix', () => {
     expect(truncateRefName('scaffold_1234')).toBe('scaf…1234')
+  })
+})
+
+describe('fitAxisTitle', () => {
+  test('a title that fits is left alone', () => {
+    expect(fitAxisTitle('hg38', 400)).toBe('hg38')
+  })
+
+  test('a read-vs-ref synthetic assembly name is elided to fit its axis', () => {
+    // <36-char ONT read id>_assembly_<13-digit stamp>: ~230px at font 11,
+    // wider than a short axis, and centered text clips at both ends.
+    const title = `0f2a1b3c-4d5e-6f70-8192-a3b4c5d6e7f8_assembly_1700000000000`
+    const fitted = fitAxisTitle(title, 120)
+    expect(fitted).not.toBe(title)
+    expect(fitted).toContain('…')
+    expect(measureText(fitted, AXIS_TITLE_FONT)).toBeLessThanOrEqual(120)
+    // both ends survive: the read id's head and the stamp's tail
+    expect(fitted.startsWith('0f2a')).toBe(true)
+    expect(fitted.endsWith('0000')).toBe(true)
+  })
+
+  test('an axis with essentially no room still yields a nameable stub', () => {
+    expect(fitAxisTitle('a_long_assembly_name', 1)).toBe('a_lo…name')
   })
 })
 

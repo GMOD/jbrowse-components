@@ -1,8 +1,9 @@
 import {
-  buildReadVsRefFeatures,
+  buildReadVsRefNames,
   buildReadVsRefTemporaryAssembly,
 } from '@jbrowse/alignments-core'
-import { gatherOverlaps, truncateMiddle } from '@jbrowse/core/util'
+import { buildReadVsRefFeatures } from '@jbrowse/cigar-utils'
+import { gatherOverlaps } from '@jbrowse/core/util'
 
 import type { ReadVsRefTemporaryAssembly } from '@jbrowse/alignments-core'
 import type { Feature } from '@jbrowse/core/util'
@@ -52,23 +53,15 @@ export function buildReadVsRefSpec(args: BuildReadVsRefArgs): ReadVsRefSpec {
     totalLength,
     readName,
     seq: featSeq,
-  } = buildReadVsRefFeatures(feature)
+  } = buildReadVsRefFeatures(feature.toJSON(), getCanonicalRefName)
 
-  const stamp = now()
-  const readAssembly = `${readName}_assembly_${stamp}`
-  const syntenyTrackId = `track-${stamp}`
-  const shortName = truncateMiddle(readName)
-  const syntenyTrackName = `${shortName}_vs_${trackAssembly}`
-  const seqTrackId = `${readName}_${stamp}`
-
-  // features are already sorted along the read; assign canonical refNames and
-  // pair each alignment with its mate via a shared syntenyId.
-  for (const [idx, f] of features.entries()) {
-    f.refName = getCanonicalRefName(f.refName) ?? f.refName
-    f.syntenyId = idx
-    f.mate.syntenyId = idx
-    f.mate.uniqueId = `${f.uniqueId}_mate`
-  }
+  const {
+    readAssembly,
+    seqTrackId,
+    syntenyTrackId,
+    syntenyTrackName,
+    displayName,
+  } = buildReadVsRefNames({ readName, trackAssembly, stamp: now() })
 
   // The synteny adapter feature store carries both sides of each alignment
   // so the read assembly can be drawn against itself in the lower panel.
@@ -98,7 +91,7 @@ export function buildReadVsRefSpec(args: BuildReadVsRefArgs): ReadVsRefSpec {
     }),
     viewSpec: {
       type: 'LinearSyntenyView',
-      displayName: `${shortName} vs ${trackAssembly}`,
+      displayName,
       showColorLegend: false,
       views: [
         {

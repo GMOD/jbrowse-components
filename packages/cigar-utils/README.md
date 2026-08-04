@@ -8,6 +8,30 @@ Pure CIGAR / MD / mismatch parsers and types — no rendering or framework deps
 
 Auto-generated from `#api` JSDoc tags in this package. Do not edit by hand.
 
+### buildReadVsRefFeatures
+
+Decompose one alignment record plus its SA tag into the segments of the split
+read, ordered along the read. The layer above `featurizeSA`: it folds the record
+itself in as one more segment, in the same normalized read coordinate space the
+SA entries are put in, and pairs each segment with a `mate` describing its span
+on the read.
+
+This is what the "read vs ref" launchers (linear synteny + dotplot) draw against
+a synthetic read assembly, and what the alignments feature-detail widget lists
+split-read junctions from.
+
+`getCanonicalRefName` resolves each segment's refName against the reference
+assembly's aliases: a BAM whose header says `chr1` against a FASTA whose refName
+is `1` otherwise yields regions no track can be opened on. Optional only because
+a caller may not have the assembly in hand; pass it when you do.
+
+```js
+// type signature
+(feature: ReadVsRefInput, getCanonicalRefName?: ((refName: string) => string | undefined) | undefined) => ReadVsRefFeatures
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/buildReadVsRefFeatures.ts)
+
 ### featurizeSAEntries
 
 featurizeSA over pre-split entries (see splitSA). Lets a caller filter the

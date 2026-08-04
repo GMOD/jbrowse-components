@@ -225,9 +225,9 @@ describe('buildReadVsRefSpec', () => {
     const feature = makeFeature({
       refName: 'chr1',
       start: 0,
-      end: 50,
+      end: 8,
       strand: 1,
-      CIGAR: '50M',
+      CIGAR: '8M',
       flags: 0,
       name: 'r',
       seq: 'ACGTACGT',

@@ -57,12 +57,33 @@ export function truncateRefName(refName: string) {
     : refName
 }
 
+// The assembly title parked along each axis, centered on the plot's own length.
+export const AXIS_TITLE_FONT = 11
+
+// Middle-elide the axis title to the length of the axis it runs along. It is
+// centered with textAnchor="middle" inside an SVG exactly the plot's size, so an
+// over-long title is clipped at *both* ends — which for the read-vs-ref
+// dotplot's synthetic `<readname>_assembly_<timestamp>` axis loses the read name
+// itself, the only part worth reading. The full string stays on hover.
+export function fitAxisTitle(title: string, availablePx: number) {
+  const fullPx = measureText(title, AXIS_TITLE_FONT)
+  if (fullPx <= availablePx) {
+    return title
+  }
+  // Proportional estimate off the measured full width rather than a per-char
+  // constant, so a wide-glyph name is not over-trusted.
+  const maxChars = Math.floor((title.length * availablePx) / fullPx)
+  return maxChars <= LABEL_SIDE_CHARS * 2 + 1
+    ? truncateRefName(title)
+    : `${title.slice(0, Math.ceil((maxChars - 1) / 2))}…${title.slice(-Math.floor((maxChars - 1) / 2))}`
+}
+
 // Fixed px an axis needs beyond its widest label: the 7px tick-label inset
 // (labels anchor at border - 7) plus the rotated assembly title parked at x=12.
 // The floor keeps room for that title on a short-label axis (e.g. self-vs-self
 // "ctgA").
 const BORDER_CHROME = 25
-const MIN_BORDER = 50
+export const MIN_BORDER = 50
 
 // Approximate px footprint of a block label along its axis. Two labels closer
 // than this collide, so a region spanning fewer than this many px can't own an

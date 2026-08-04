@@ -127,7 +127,9 @@ function dragToHighlight(a: PxToBpResult, b: PxToBpResult): HighlightType {
 }
 
 // stripDefault baselines: a snapshot omits these unless the user changed them
-const defaultHeight = 600
+// (exported so a launcher building a DotplotView snapshot can size its initial
+// bpPerPx against the height the view will actually come up at)
+export const defaultHeight = 600
 const defaultLineWidth = 2.5
 
 // Floor for the resize handle. Below this the axis borders (which floor at
