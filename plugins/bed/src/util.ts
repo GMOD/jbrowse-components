@@ -154,9 +154,13 @@ export function makeBlocks({
 export function parseNamesFromHeader(header: string) {
   const defs = header.split(/\n|\r\n|\r/).filter(Boolean)
   const defline = defs.at(-1)
+  // Strip the comment marker if there is one, rather than assuming it: a
+  // header kept for tabix with `-S N` instead of `#` is a bare row, and
+  // chopping its first character would rename its first column rather than
+  // fail to find one.
   return defline?.includes('\t')
     ? defline
-        .slice(1)
+        .replace(/^#/, '')
         .split('\t')
         .map(f => f.trim())
     : undefined

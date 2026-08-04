@@ -133,3 +133,59 @@ export async function readTabixLinesRedispatched(
   )
   return redispatch ? read(redispatch.start, redispatch.end) : lines
 }
+
+/**
+ * Minimal structural view of the `@gmod/tabix` calls a header read needs, kept
+ * structural for the same reason as {@link TabixLineSource}.
+ */
+interface TabixHeaderSource {
+  getHeader(): Promise<string>
+  getMetadata(): Promise<{ skipLines?: number }>
+}
+
+/**
+ * The header lines of a tabix-indexed file, however that file kept them.
+ *
+ * `getHeader()` alone is not that: it returns only lines beginning with the
+ * index's meta character (`#`). A header that is a plain row — which is what
+ * `tabix -S N` exists for, and what PLINK `.ld`, bedGraph and BED deflines
+ * routinely are — comes back as the empty string, even though the index records
+ * N in `skipLines`.
+ *
+ * An adapter that stops at `getHeader()` therefore cannot tell "this file has
+ * no header" from "this file's header is not commented", and quietly falls back
+ * to an assumed column layout. That has cost real information more than once: a
+ * PLINK LD file lost its D' column, so `ldMetric: 'dprime'` silently served r²,
+ * and a bedGraph loses the names of its value columns. Nothing errors, because
+ * the assumed layout parses.
+ *
+ * When the index declares skipped lines, this reads them off the front of the
+ * file — one range request, and `unzip` tolerates the partial block at the end
+ * of a fixed-size read. A read that fails is left to throw: an adapter that
+ * cannot reach the file has a real problem to report, and falling back to the
+ * assumed layout is how this went unnoticed in the first place.
+ */
+export async function readTabixHeaderLines(
+  file: TabixHeaderSource,
+  filehandle: {
+    read: (length: number, position: number) => Promise<Uint8Array>
+  },
+): Promise<string[]> {
+  const commented = await file.getHeader()
+  if (commented) {
+    return commented.split(/\r?\n/).filter(Boolean)
+  }
+  const { skipLines = 0 } = await file.getMetadata()
+  if (skipLines <= 0) {
+    return []
+  }
+  // dynamic, like fetchAndMaybeUnzip: only a file that actually has a
+  // skip-line header should pull bgzf + pako in
+  const { unzip } = await import('@gmod/bgzf-filehandle')
+  const buf = await filehandle.read(65536, 0)
+  return new TextDecoder()
+    .decode(await unzip(buf))
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .slice(0, skipLines)
+}

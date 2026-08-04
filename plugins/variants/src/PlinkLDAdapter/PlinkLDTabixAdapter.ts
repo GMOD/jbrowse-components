@@ -1,12 +1,11 @@
 import { TabixIndexedFile } from '@gmod/tabix'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { withStopTokenSignal } from '@jbrowse/core/util/stopToken'
-import { unzip } from '@jbrowse/core/util/unzip'
+import { readTabixHeaderLines } from '@jbrowse/core/util/tabix'
 import {
   DEFAULT_PLINK_LD_HEADER,
   parsePlinkLDHeader,
   parsePlinkLDLine,
-  resolvePlinkLDHeader,
 } from '@jbrowse/ld-core'
 
 import { PlinkLDAdapterBase } from './PlinkLDAdapterBase.ts'
@@ -18,16 +17,6 @@ import type { PlinkLDHeader, PlinkLDRecord } from '@jbrowse/ld-core'
 interface Config {
   ld: TabixIndexedFile
   header: PlinkLDHeader
-}
-
-// One 64 KB range request off the front of the file — the same read
-// BgzipTaffyAdapter makes for its own header line, and `unzip` tolerates the
-// partial block at the end of it.
-async function readFirstLine(fh: {
-  read: (length: number, position: number) => Promise<Uint8Array>
-}) {
-  const buf = await fh.read(65536, 0)
-  return new TextDecoder().decode(await unzip(buf)).split('\n', 1)[0] ?? ''
 }
 
 export default class PlinkLDTabixAdapter extends PlinkLDAdapterBase<Config> {
@@ -48,31 +37,20 @@ export default class PlinkLDTabixAdapter extends PlinkLDAdapterBase<Config> {
     // The column layout decides whether the file's D' column is found at all,
     // so `ldMetric: 'dprime'` lives or dies here.
     //
-    // A commented header (`#CHR_A …`) comes back from getHeader() and is
-    // resolved from its content, which is safe because the meta character
-    // already proved it is not data.
-    //
-    // A plink `.ld` more often carries a BARE header row and is indexed
-    // `tabix -S 1`. getHeader() returns only lines starting with the meta
-    // character, so it reports nothing — while the index says, in `skipLines`,
-    // that the first line is a header. Ask the index rather than inferring from
-    // the line's content: `skipLines` is a statement by the file's own index,
-    // where "does this look like a header" is a guess, and it is a guess that
-    // misfires on a headerless file whose chromosome column reads `CHR1`.
-    //
-    // Neither branch can do worse than the old headerless default: an
-    // unreadable or unparseable header falls back to it, which is what every
-    // `-S 1` file got before.
-    const headerLine = await ld.getHeader()
+    // Every line readTabixHeaderLines returns is a header by declaration —
+    // either the index's meta character marked it, or the index's skipLines
+    // counted it — so it is parsed as one rather than pattern-matched. Content
+    // matching is a guess, and it is one that misfires on a headerless file
+    // whose chromosome column reads `CHR1`. The last line is the column
+    // defline; a commented preamble may sit above it.
+    const defline = (await readTabixHeaderLines(ld, filehandle)).at(-1)
     let header = DEFAULT_PLINK_LD_HEADER
-    if (headerLine) {
-      header = resolvePlinkLDHeader(headerLine).header
-    } else if (((await ld.getMetadata()).skipLines ?? 0) > 0) {
+    if (defline) {
       try {
-        header = parsePlinkLDHeader(await readFirstLine(filehandle))
+        header = parsePlinkLDHeader(defline)
       } catch {
-        // declared header, unreadable or unrecognizable: the default layout
-        // still finds the position and r² columns
+        // a declared header this does not recognize: the default layout still
+        // finds the position and r² columns
       }
     }
 

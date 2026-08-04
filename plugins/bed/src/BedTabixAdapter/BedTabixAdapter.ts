@@ -11,7 +11,7 @@ import {
   createStopTokenChecker,
   withStopTokenSignal,
 } from '@jbrowse/core/util/stopToken'
-import { unzip } from '@jbrowse/core/util/unzip'
+import { readTabixHeaderLines } from '@jbrowse/core/util/tabix'
 
 import { bedFeatureLocus, featureData, parseNamesFromHeader } from '../util.ts'
 
@@ -124,29 +124,17 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
     if (columnNames.length) {
       return columnNames
     }
-    return (
-      parseNamesFromHeader(await this.getHeader()) ??
-      (await this.parseSkipLineHeader())
+    // readTabixHeaderLines covers both ways a tabix file keeps a header: a
+    // `#`-commented block, which getHeader() returns, and a plain row skipped
+    // via `tabix -S N`, which it does not.
+    return parseNamesFromHeader(
+      (
+        await readTabixHeaderLines(
+          this.bed,
+          openLocation(this.bedGzLoc, this.pluginManager),
+        )
+      ).join('\n'),
     )
-  }
-
-  // When a tabix file uses skipLines (not #-comment) for its header,
-  // getHeader() returns empty. Read the raw first bgzf block to recover names.
-  private async parseSkipLineHeader(): Promise<string[] | undefined> {
-    const { skipLines } = await this.configure()
-    if (!skipLines) {
-      return undefined
-    }
-    const buf = await openLocation(this.bedGzLoc, this.pluginManager).read(
-      65536,
-      0,
-    )
-    const text = new TextDecoder().decode(await unzip(buf))
-    const lines = text.split(/\n|\r\n|\r/).filter(Boolean)
-    const defline = lines[skipLines - 1]
-    return defline?.includes('\t')
-      ? defline.split('\t').map(f => f.trim())
-      : undefined
   }
 
   public getFeatures(query: Region, opts?: BaseOptions) {

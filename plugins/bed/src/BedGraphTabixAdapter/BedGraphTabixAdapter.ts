@@ -4,6 +4,7 @@ import { downloadStatus, updateStatus } from '@jbrowse/core/util'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { withStopTokenSignal } from '@jbrowse/core/util/stopToken'
+import { readTabixHeaderLines } from '@jbrowse/core/util/tabix'
 
 import { makeBedGraphFeature } from '../bedGraphUtil.ts'
 import { parseNamesFromHeader } from '../util.ts'
@@ -29,14 +30,18 @@ export default class BedGraphTabixAdapter extends BaseFeatureDataAdapter<BedGrap
     const location = this.getConf(['index', 'location'])
     const indexType = this.getConf(['index', 'indexType'])
 
+    const filehandle = openLocation(bedGraphGzLocation, pm)
     const bedGraph = new TabixIndexedFile({
-      filehandle: openLocation(bedGraphGzLocation, pm),
+      filehandle,
       ...openTabixIndexFilehandle(location, indexType, pm),
       chunkCacheSize: 50 * 2 ** 20,
     })
     const columnNames = this.getConf('columnNames')
 
-    const header = await bedGraph.getHeader()
+    // Not bedGraph.getHeader(): that returns only a `#`-commented header, so a
+    // file whose header is a plain row skipped via `tabix -S 1` reported none
+    // and quietly lost the names of its value columns.
+    const header = (await readTabixHeaderLines(bedGraph, filehandle)).join('\n')
     return {
       columnNames,
       bedGraph,
