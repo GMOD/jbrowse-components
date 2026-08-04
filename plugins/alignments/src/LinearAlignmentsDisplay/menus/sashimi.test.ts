@@ -22,6 +22,7 @@ function makeModel() {
     setShowSashimiArcs(v: boolean) {
       this.showSashimiArcs = v
     },
+    showSashimiArcsDisplayTypeDefault: control(),
     showSashimiLabels: false,
     setShowSashimiLabels() {},
     showSashimiLabelsDisplayTypeDefault: control(),
@@ -104,5 +105,16 @@ describe('sashimi menu', () => {
       i => 'label' in i && i.label === 'Show labels',
     )
     expect(endAdornmentOf(showLabels)).toBeDefined()
+  })
+
+  test('"Show sashimi arcs" carries one too', () => {
+    // It gates everything below it and was the one control in its own submenu
+    // with no pin, so "show sashimi arcs by default for every track" was the
+    // single thing this menu couldn't express.
+    const model = makeModel()
+    const toggle = getSashimiMenuItem(model).subMenu.find(
+      i => 'label' in i && i.label === 'Show sashimi arcs',
+    )
+    expect(endAdornmentOf(toggle)).toBeDefined()
   })
 })

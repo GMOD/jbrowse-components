@@ -68,13 +68,13 @@ export const READ_CONNECTIONS_MODES = ['off', 'arc', 'cloud'] as const
 export type ReadConnectionsMode = (typeof READ_CONNECTIONS_MODES)[number]
 
 // Sashimi junction-arc placement, owned by sashimi alone (decoupled from the
-// paired-end `readConnectionsDown`). Defined in the compute layer (it drives the
-// arc-assignment algorithm) and re-exported here for the display-layer model and
+// paired-end `readConnectionsDown`). Defined next to the side-assignment
+// algorithm it selects and re-exported here for the display-layer model and
 // menus. 'auto' is the default.
 export {
   SASHIMI_ARCS_MODES,
   type SashimiArcsMode,
-} from '../features/sashimi/computeOverlay.ts'
+} from '../features/sashimi/junctions.ts'
 
 // Default supporting-read floor for a sashimi junction: hide single-read
 // junctions, which are dominated by alignment noise and unreadable at the 1px

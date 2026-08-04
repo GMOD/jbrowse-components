@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
@@ -16,10 +16,8 @@ import {
 import { bandScreenTop } from './sectionScreen.ts'
 import { formatSashimiTooltip } from './tooltipUtils.ts'
 
-import type {
-  SashimiArc,
-  SashimiSide,
-} from '../../features/sashimi/computeOverlay.ts'
+import type { SashimiArc } from '../../features/sashimi/computeOverlay.ts'
+import type { SashimiSide } from '../../features/sashimi/junctions.ts'
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -51,7 +49,7 @@ const SashimiSubBand = observer(function SashimiSubBand({
   groupKey: string
   screenTop: number
   selectedArcKey: string | null
-  onSelect: (key: string | null) => void
+  onSelect: (key: string) => void
 }) {
   const [hoveredArcKey, setHoveredArcKey] = useState<string | null>(null)
   const palette = usePalette()
@@ -78,34 +76,56 @@ const SashimiSubBand = observer(function SashimiSubBand({
         const arcKey = sashimiArcKey(arc)
         const selKey = sashimiSelectionKey(groupKey, arc)
         const isSelected = selKey === selectedArcKey
-        const wide = isSelected || arcKey === hoveredArcKey
         return (
-          <path
-            key={arcKey}
-            d={arc.d}
-            // Selection recolors to the palette's primary text color, which
-            // inverts with the palette — the old hardcoded '#333' vanished
-            // against the dark-mode track background.
-            stroke={isSelected ? palette.text.primary : arc.stroke}
-            strokeWidth={wide ? arc.strokeWidth + 2 : arc.strokeWidth}
-            fill="none"
-            style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
-            onMouseEnter={() => {
-              setHoveredArcKey(arcKey)
-              model.setMouseoverExtraInformation(formatSashimiTooltip(arc))
-            }}
-            onMouseLeave={() => {
-              setHoveredArcKey(null)
-              model.clearMouseoverState()
-            }}
-            onClick={() => {
-              onSelect(isSelected ? null : selKey)
-              openSashimiWidget(model, arc)
-            }}
-          />
+          <Fragment key={arcKey}>
+            {/* Selection outline, painted UNDER the arc so the junction keeps
+                its strand tint while you inspect it — recoloring the stroke
+                itself threw away the one thing the color encodes, at exactly
+                the moment the detail widget is asking about that junction. The
+                palette color inverts with the theme; the old hardcoded '#333'
+                vanished against the dark-mode track background. */}
+            {isSelected ? (
+              <path
+                d={arc.d}
+                stroke={palette.text.primary}
+                strokeWidth={arc.strokeWidth + 4}
+                fill="none"
+                style={{ pointerEvents: 'none' }}
+              />
+            ) : null}
+            <path
+              d={arc.d}
+              stroke={arc.stroke}
+              strokeWidth={
+                arcKey === hoveredArcKey ? arc.strokeWidth + 2 : arc.strokeWidth
+              }
+              fill="none"
+              style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
+              onMouseEnter={() => {
+                setHoveredArcKey(arcKey)
+                model.setMouseoverExtraInformation(formatSashimiTooltip(arc))
+              }}
+              onMouseLeave={() => {
+                setHoveredArcKey(null)
+                model.clearMouseoverState()
+              }}
+              // Select AND open, always — selection marks the junction the
+              // detail widget is showing, so a second click on the same arc is
+              // idempotent rather than deselecting it while reopening the
+              // widget that says it's selected.
+              onClick={() => {
+                onSelect(selKey)
+                openSashimiWidget(model, arc)
+              }}
+            />
+          </Fragment>
         )
       })}
-      <SashimiArcLabels arcs={arcs} show={model.showSashimiLabels} />
+      <SashimiArcLabels
+        arcs={arcs}
+        show={model.showSashimiLabels}
+        palette={palette}
+      />
     </svg>
   )
 })

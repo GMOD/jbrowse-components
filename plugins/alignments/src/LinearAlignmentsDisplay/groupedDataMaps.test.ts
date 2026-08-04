@@ -2,7 +2,7 @@ import { SimpleFeature } from '@jbrowse/core/util'
 
 import { partitionFeatures } from '../shared/groupFeatures.ts'
 import {
-  groupsWithSashimiDownArcs,
+  buildSashimiDownKeys,
   buildChainIdMap,
   buildRawDataByGroup,
   buildReadIdIndexMap,
@@ -296,7 +296,8 @@ function junctionData(junctions: [number, number, number][]): PileupDataResult {
   return {
     sashimiX1: new Uint32Array(junctions.map(j => j[0])),
     sashimiX2: new Uint32Array(junctions.map(j => j[1])),
-    sashimiCounts: junctions.map(j => j[2]),
+    sashimiCounts: new Uint32Array(junctions.map(j => j[2])),
+    sashimiStrands: new Int8Array(junctions.length),
   } as unknown as PileupDataResult
 }
 
@@ -306,17 +307,33 @@ const crossing: [number, number, number][] = [
   [300, 700, 2],
 ]
 
-// The display-wide question ("is the strip reserved at all") is this set being
-// non-empty — how `model.sashimiDownArcLanes` is read by `belowCoverageBandsInput`.
-function anyLane(...args: Parameters<typeof groupsWithSashimiDownArcs>) {
-  return groupsWithSashimiDownArcs(...args).size > 0
+// Every region of these fixtures is on one chromosome; the per-refName partition
+// itself is covered in features/sashimi/junctions.test.ts.
+function downKeys(
+  rpcDataMap: Parameters<typeof buildSashimiDownKeys>[0],
+  minSashimiScore: number,
+  mode: 'up' | 'down' | 'auto',
+) {
+  return buildSashimiDownKeys(rpcDataMap, {
+    minSashimiScore,
+    mode,
+    refNameFor: () => 'chr1',
+  })
+}
+
+// The lanes the strip is reserved for: the keys whose set is non-empty, which is
+// how `model.sashimiDownArcLanes` reads this for `belowCoverageBandsInput`.
+function lanes(...args: Parameters<typeof downKeys>) {
+  return [...downKeys(...args)]
+    .filter(([, down]) => down.size > 0)
+    .map(([key]) => key)
 }
 
 test('auto reserves the strip only while a crossing pair survives the score filter', () => {
   const m = new Map([[0, grouped([{ key: '', data: junctionData(crossing) }])]])
-  expect(anyLane(m, 0, 'auto')).toBe(true)
+  expect(lanes(m, 0, 'auto')).toEqual([''])
   // filtering the 2-read junction leaves nothing to cross => nothing goes down
-  expect(anyLane(m, 5, 'auto')).toBe(false)
+  expect(lanes(m, 5, 'auto')).toEqual([])
 })
 
 test('auto ignores nested + disjoint junctions', () => {
@@ -336,7 +353,7 @@ test('auto ignores nested + disjoint junctions', () => {
       ]),
     ],
   ])
-  expect(anyLane(m, 0, 'auto')).toBe(false)
+  expect(lanes(m, 0, 'auto')).toEqual([])
 })
 
 test('auto pools a group across regions, but not across groups', () => {
@@ -344,7 +361,7 @@ test('auto pools a group across regions, but not across groups', () => {
     [0, grouped([{ key: '+', data: junctionData([crossing[0]!]) }])],
     [1, grouped([{ key: '+', data: junctionData([crossing[1]!]) }])],
   ])
-  expect(anyLane(split, 0, 'auto')).toBe(true)
+  expect(lanes(split, 0, 'auto')).toEqual(['+'])
   // same two junctions, but each group assigns sides alone => neither crosses
   const perGroup = new Map([
     [
@@ -355,12 +372,12 @@ test('auto pools a group across regions, but not across groups', () => {
       ]),
     ],
   ])
-  expect(anyLane(perGroup, 0, 'auto')).toBe(false)
+  expect(lanes(perGroup, 0, 'auto')).toEqual([])
 })
 
 // A lane with no junction must be named as not needing the
 // strip, so `computeStackedSections` can drop it rather than leaving dead space.
-test('groupsWithSashimiDownArcs: names only the lanes needing the strip', () => {
+test('buildSashimiDownKeys: names only the lanes needing the strip', () => {
   const m = new Map([
     [
       0,
@@ -371,15 +388,12 @@ test('groupsWithSashimiDownArcs: names only the lanes needing the strip', () => 
       ]),
     ],
   ])
-  expect([...groupsWithSashimiDownArcs(m, 2, 'down')]).toEqual(['has'])
-  expect([...groupsWithSashimiDownArcs(m, 0, 'down')]).toEqual([
-    'has',
-    'filtered',
-  ])
-  expect(groupsWithSashimiDownArcs(m, 0, 'up').size).toBe(0)
+  expect(lanes(m, 2, 'down')).toEqual(['has'])
+  expect(lanes(m, 0, 'down')).toEqual(['has', 'filtered'])
+  expect(lanes(m, 0, 'up')).toEqual([])
 })
 
-test('groupsWithSashimiDownArcs: auto names only the lane whose junctions cross', () => {
+test('buildSashimiDownKeys: auto names only the lane whose junctions cross', () => {
   const m = new Map([
     [
       0,
@@ -395,14 +409,32 @@ test('groupsWithSashimiDownArcs: auto names only the lane whose junctions cross'
       ]),
     ],
   ])
-  expect([...groupsWithSashimiDownArcs(m, 0, 'auto')]).toEqual(['crossing'])
+  expect(lanes(m, 0, 'auto')).toEqual(['crossing'])
 })
 
-test('groupsWithSashimiDownArcs: a hidden lane is never named', () => {
+test('buildSashimiDownKeys: the keys name the junctions the overlay will look up', () => {
+  // The set is the whole sashimi side decision — the layout reserves off its
+  // size and `computeSashimiArcs` places each arc off its membership, so a lane
+  // has to name WHICH junction goes down, not just that one does.
+  const m = new Map([[0, grouped([{ key: '', data: junctionData(crossing) }])]])
+  expect([...downKeys(m, 0, 'auto').get('')!]).toEqual(['chr1:300:700'])
+})
+
+test('buildSashimiDownKeys: a hidden lane is never named', () => {
   const m = new Map([
-    [0, grouped([{ key: 'self', data: junctionData([[100, 700, 9]]) }])],
+    [
+      0,
+      grouped([
+        { key: 'shown', data: junctionData([[100, 700, 3]]) },
+        { key: 'self', data: junctionData(crossing) },
+      ]),
+    ],
   ])
-  expect(groupsWithSashimiDownArcs(m, 0, 'down', new Set(['self'])).size).toBe(
-    0,
-  )
+  const keys = buildSashimiDownKeys(m, {
+    minSashimiScore: 0,
+    mode: 'down',
+    refNameFor: () => 'chr1',
+    hidden: new Set(['self']),
+  })
+  expect([...keys.keys()]).toEqual(['shown'])
 })

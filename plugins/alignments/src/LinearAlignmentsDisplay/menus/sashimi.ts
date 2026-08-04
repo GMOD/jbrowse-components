@@ -1,5 +1,4 @@
 import {
-  checkboxItem,
   makeSizeMenu,
   promotableRadioItem,
   promotableToggleItem,
@@ -25,6 +24,7 @@ const SASHIMI_MODE_OPTIONS: { value: SashimiArcsMode; label: string }[] = [
 interface SashimiModel {
   showSashimiArcs: boolean
   setShowSashimiArcs: (show: boolean) => void
+  showSashimiArcsDisplayTypeDefault: DisplayTypeDefaultControl
   showSashimiLabels: boolean
   setShowSashimiLabels: (show: boolean) => void
   showSashimiLabelsDisplayTypeDefault: DisplayTypeDefaultControl
@@ -42,8 +42,13 @@ interface SashimiModel {
 // revealed only when the arcs are on (never shown disabled).
 export function getSashimiMenuItem(model: SashimiModel) {
   const subMenu: MenuItem[] = [
-    checkboxItem('Show sashimi arcs', model.showSashimiArcs, () => {
-      model.setShowSashimiArcs(!model.showSashimiArcs)
+    promotableToggleItem({
+      label: 'Show sashimi arcs',
+      checked: model.showSashimiArcs,
+      onToggle: () => {
+        model.setShowSashimiArcs(!model.showSashimiArcs)
+      },
+      displayTypeDefault: model.showSashimiArcsDisplayTypeDefault,
     }),
     ...(model.showSashimiArcs
       ? [

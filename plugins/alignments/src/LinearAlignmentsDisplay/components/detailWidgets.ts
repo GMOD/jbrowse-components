@@ -111,6 +111,10 @@ export function openSashimiWidget(
     // anyway so a re-tinted junction (a fetch that shifts which strand leads)
     // reads as a new selection rather than silently reusing the old one.
     uniqueId: `sashimi-${arc.refName}-${arc.start}-${arc.end}-${arc.strand}`,
+    // Named like its siblings (openIndicatorWidget, openCigarWidget) so the
+    // widget has a heading; without one it opened titled by nothing, leaving the
+    // bare `type: 'skip'` to explain what had been clicked.
+    name: 'Splice junction',
     type: 'skip',
     refName: arc.refName,
     start: arc.start,

@@ -77,9 +77,18 @@ both layouts, so it would fragment layout.
 On-screen and SVG export share `drawAlignmentBlocks`; don't reintroduce SVG-only
 draw functions. Sashimi and linked-read bezier arcs are interactive SVG overlays
 that each share one geometry source with the export — don't port them into
-`drawAlignmentBlocks`. Sashimi's source is a model computed because the math
+`drawAlignmentBlocks`. Sashimi's source is a model computed because the geometry
 depends on pan/zoom but **not** `scrollTop`, and recomputing per scroll frame
-re-ran an O(n²) side assignment.
+re-projected every junction.
+
+**Which sub-band a sashimi arc draws in is decided once**, in genomic bp, by
+`sashimiDownKeysByGroup` (→ `features/sashimi/junctions.ts`), and read by both
+the layout that reserves the strip and the geometry that fills it. Don't
+re-derive it in screen space next to the arc math: the down sub-band renders at
+`sashimiArcsHeight` whether or not the layout reserved it, so two passes that
+disagree in the under-reserving direction paint arcs over the pileup. Junction
+identity is `junctionKey` — refName included, because two chromosomes in view
+share nothing but a bp number line.
 
 `computeArcBand` is the single source of truth for the arc band and is decoupled
 from `showCoverage` — don't reintroduce a `covH > 0` gate. Arc and sashimi

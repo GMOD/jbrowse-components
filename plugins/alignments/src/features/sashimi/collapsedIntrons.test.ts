@@ -1,4 +1,5 @@
 import { computeSashimiArcs } from './computeOverlay.ts'
+import { downJunctionKeys, mergeJunctions } from './junctions.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 
@@ -77,10 +78,23 @@ function collapsedOpts(
     bpToScreenX: projectionOver(regions),
     coverageHeight: 100,
     sashimiArcsHeight: 40,
-    mode: 'up' as const,
     minSashimiScore: 0,
+    downJunctionKeys: new Set<string>(),
     ...overrides,
   }
+}
+
+// The side assignment the display would hand these regions in 'auto': merged in
+// genomic bp over every loaded region, exactly as `buildSashimiDownKeys` does it
+// for the layout. Used where a test is about the two agreeing.
+function autoDownKeys(perRegion: PileupDataResult[]) {
+  return downJunctionKeys(
+    mergeJunctions(
+      perRegion.map(data => ({ refName: 'chr1', data })),
+      0,
+    ).values(),
+    'auto',
+  )
 }
 
 // [1200,2000] and [2000,3000] are the two collapsed introns; [1200,3000] skips
@@ -152,19 +166,36 @@ test('a flipped (minus-strand) gene keeps arcs in screen order', () => {
 })
 
 test('flipped regions still split a crossing pair across bands in auto mode', () => {
-  // The reversed projection is monotonic-decreasing, and interleaving survives
-  // any monotonic map, so 'auto' must reach the same decision it would on the
-  // forward strand. Before screen-order normalization it read the flipped pair
-  // as non-interleaving and left both arcs on 'up'.
+  // Sides are assigned in genomic bp, so the reversed projection can't change
+  // the decision — which is the point: the strip the layout reserved off the
+  // same genomic scan is the strip these arcs draw into. (Screen-space
+  // assignment had to normalize the flipped pair by hand, and before it did, it
+  // read them as non-interleaving and left both arcs on 'up'.)
   const crossing = junctions([
     [1200, 3000, 20],
     [2000, 3200, 20],
   ])
   const arcs = computeSashimiArcs(
-    collapsedOpts([crossing], FLIPPED_EXONS, { mode: 'auto' }),
+    collapsedOpts([crossing], FLIPPED_EXONS, {
+      downJunctionKeys: autoDownKeys([crossing]),
+    }),
   )
   const byStart = new Map(arcs.map(a => [a.start, a.side]))
   expect(byStart.get(1200)).not.toBe(byStart.get(2000))
+})
+
+test('a junction the layout never reserved for is drawn up, not into the pileup', () => {
+  // The down sub-band renders at `sashimiArcsHeight` whether or not the layout
+  // reserved it, so an arc placed down without a strip paints over the pileup.
+  // Sides come from the layout's own set, so the only junctions that go down are
+  // ones it reserved for — an unlisted junction takes the side that needs no
+  // strip.
+  const arcs = computeSashimiArcs(
+    collapsedOpts([junctions([ADJACENT_A])], EXONS, {
+      downJunctionKeys: new Set(['chr1:9999:99999']),
+    }),
+  )
+  expect(arcs.map(a => a.side)).toEqual(['up'])
 })
 
 test('a flanking region that clips only some supporting reads cannot lower the count', () => {

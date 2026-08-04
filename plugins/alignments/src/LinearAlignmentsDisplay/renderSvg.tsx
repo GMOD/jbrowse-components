@@ -131,7 +131,7 @@ function AlignmentsSvgBody({
             drawAlignmentLabels(ctx, labels, contrastMap, palette)
           }}
         />
-        <SashimiArcsSvg model={model} />
+        <SashimiArcsSvg model={model} palette={palette} />
         <PileupBezierArcsSvg model={model} view={view} />
       </SvgClipRect>
       {model.showCoverage && coverageTicks ? (

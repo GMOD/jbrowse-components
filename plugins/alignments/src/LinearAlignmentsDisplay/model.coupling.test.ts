@@ -736,6 +736,78 @@ describe('sashimi score filter releases the reserved band', () => {
     expect(display.belowCoverageBands.hasSashimiBand).toBe(false)
     expect(display.coverageDisplayHeight).toBe(display.coverageHeight)
   })
+
+  // The reserved strip and the arcs drawn into it come off one set of junction
+  // keys (`sashimiDownKeysByGroup`), so the lane naming the strip has to name
+  // WHICH junction claimed it — the overlay places each arc by looking itself up
+  // in that same set.
+  test('auto: the lane names the junction the overlay will draw below', () => {
+    const display = createDisplay()
+    display.setShowSashimiArcs(true)
+    display.setSashimiArcsMode('auto')
+    display.setMinSashimiScore(0)
+    seedCrossingJunctions(display)
+    display.setLoadedRegion(0, {
+      refName: 'ctgA',
+      start: 0,
+      end: 10000,
+      assemblyName: 'volvox',
+    })
+
+    expect([...display.sashimiDownArcLanes]).toEqual([''])
+    // heaviest-first: the 20-read junction claims 'up', the 2-read one drops
+    expect([...display.sashimiDownKeysByGroup.get('')!]).toEqual([
+      'ctgA:300:700',
+    ])
+  })
+
+  // Junctions on different chromosomes occupy disjoint screen ranges, so they
+  // cannot visually collide and 'auto' has nothing to resolve. Pooling them onto
+  // one bp number line read them as interleaving and reserved a strip below
+  // every lane's coverage that no arc was ever bound for.
+  test('auto: two chromosomes in view do not cross each other', () => {
+    const display = createDisplay()
+    display.setShowSashimiArcs(true)
+    display.setSashimiArcsMode('auto')
+    display.setMinSashimiScore(0)
+    const junction = (start: number, end: number): PileupDataResult => ({
+      ...makeEmptyPileupData(),
+      sashimiX1: new Uint32Array([start]),
+      sashimiX2: new Uint32Array([end]),
+      sashimiStrands: new Int8Array([0]),
+      sashimiCounts: new Uint32Array([20]),
+    })
+    // interleaving as bare numbers (10k < 30k < 50k < 70k), but one per chrom
+    display.setRpcData(0, {
+      groups: [{ key: '', label: '', data: junction(10_000, 50_000) }],
+    })
+    display.setRpcData(1, {
+      groups: [{ key: '', label: '', data: junction(30_000, 70_000) }],
+    })
+    display.setLoadedRegion(0, {
+      refName: 'ctgA',
+      start: 0,
+      end: 100_000,
+      assemblyName: 'volvox',
+    })
+    display.setLoadedRegion(1, {
+      refName: 'ctgB',
+      start: 0,
+      end: 100_000,
+      assemblyName: 'volvox',
+    })
+
+    expect(display.belowCoverageBands.hasSashimiBand).toBe(false)
+
+    // the same two spans on ONE chromosome do interleave and claim the strip
+    display.setLoadedRegion(1, {
+      refName: 'ctgA',
+      start: 0,
+      end: 100_000,
+      assemblyName: 'volvox',
+    })
+    expect(display.belowCoverageBands.hasSashimiBand).toBe(true)
+  })
 })
 
 // `renderState.sections` is built from `sections`, which reads `groupOrder` and

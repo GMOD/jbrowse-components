@@ -5,6 +5,7 @@ import {
 } from '@jbrowse/core/ui/theme'
 
 import { computeSashimiArcs } from './computeOverlay.ts'
+import { junctionKey } from './junctions.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ComputeSashimiArcsOpts } from './computeOverlay.ts'
@@ -26,6 +27,14 @@ function makeData(counts: number[]): PileupDataResult {
   } as unknown as PileupDataResult
 }
 
+// Side assignment is `junctions.ts`'s job (one decision, shared with the layout
+// that reserves the strip) — here it is an input, so these tests are about
+// geometry alone. `down('chr1', 100, 300)` reads as "this junction was sent
+// down"; the default is every arc up.
+function down(...junctions: [string, number, number][]) {
+  return new Set(junctions.map(j => junctionKey(...j)))
+}
+
 const baseOpts = (
   rpcData: PileupDataResult,
   minSashimiScore: number,
@@ -35,8 +44,8 @@ const baseOpts = (
   bpToScreenX: (_refName: string, bp: number) => bp,
   coverageHeight: 100,
   sashimiArcsHeight: 40,
-  mode: 'up',
   minSashimiScore,
+  downJunctionKeys: down(),
 })
 
 test('shows all arcs when minSashimiScore is 0', () => {
@@ -73,6 +82,29 @@ test('wider junctions get taller arcs (span-scaled nesting)', () => {
   expect(arcs[1]!.labelY).toBeGreaterThan(arcs[2]!.labelY)
 })
 
+test('an arc rises to the band fraction it asks for, not 3/4 of it', () => {
+  // The apex of a symmetric cubic is 3/4 of the way to its interior controls, so
+  // placing those AT the requested height drew the arc 3/4 as tall: the top 29%
+  // of a dragged `sashimiArcsHeight` was unreachable and MAX_ARC_FRAC's 0.95
+  // landed at 0.7125. A 100kb junction (>= SPAN_REF_MAX_BP) pins MAX_ARC_FRAC.
+  const data = {
+    sashimiX1: new Uint32Array([100]),
+    sashimiX2: new Uint32Array([100_100]),
+    sashimiCounts: new Uint32Array([5]),
+    sashimiStrands: new Int8Array([0]),
+  } as unknown as PileupDataResult
+  const arc = computeSashimiArcs({
+    ...baseOpts(data, 0),
+    downJunctionKeys: down(['chr1', 100, 100_100]),
+  })[0]!
+  // down band: baseline 0, so the apex IS 0.95 of the 40px strip
+  expect(arc.side).toBe('down')
+  expect(arc.labelY).toBeCloseTo(0.95 * 40)
+  // and the control points sit 1/3 further out to put it there
+  const ctrl = Number(/C \S+ (\S+),/.exec(arc.d)![1])
+  expect(ctrl).toBeCloseTo(arc.labelY / 0.75)
+})
+
 test('suppresses the count label on sub-pixel-narrow junctions', () => {
   const data = {
     sashimiX1: new Uint32Array([100, 100]),
@@ -100,26 +132,6 @@ test('suppresses the count label when the digits, not the span, overflow', () =>
   expect(showByStart.get(500)).toBe(false)
 })
 
-test('auto splits crossing junctions in a reversed displayed region', () => {
-  // A reversed region projects a junction's start to the LARGER screen x, so the
-  // raw left/right come back flipped. The same crossing pair as the forward-
-  // strand test above must still split — before the screen-order normalization,
-  // `crosses` read the flipped pair as non-interleaving and left both on 'up'.
-  const data = {
-    sashimiX1: new Uint32Array([100, 200]),
-    sashimiX2: new Uint32Array([300, 400]),
-    sashimiCounts: new Uint32Array([5, 5]),
-    sashimiStrands: new Int8Array([0, 0]),
-  } as unknown as PileupDataResult
-  const arcs = computeSashimiArcs({
-    ...baseOpts(data, 0),
-    mode: 'auto',
-    bpToScreenX: (_refName: string, bp: number) => 1000 - bp,
-  })
-  const byStart = new Map(arcs.map(a => [a.start, a.side]))
-  expect(byStart.get(100)).not.toBe(byStart.get(200))
-})
-
 test('tints arcs with the read-alignment strand colors', () => {
   // Each arc reuses the matching read strand color, so a junction reads the same
   // hue as the reads supporting it; 0 (no read carried a strand tag) is neutral.
@@ -136,26 +148,34 @@ test('tints arcs with the read-alignment strand colors', () => {
   expect(strokeByStart.get(500)).toBe(colorNostrand)
 })
 
-test('up/down modes force every arc to one side', () => {
-  const data = makeData([5, 5, 5])
-  const up = computeSashimiArcs({ ...baseOpts(data, 0), mode: 'up' })
-  const down = computeSashimiArcs({ ...baseOpts(data, 0), mode: 'down' })
-  expect(up.every(a => a.side === 'up')).toBe(true)
-  expect(down.every(a => a.side === 'down')).toBe(true)
-})
-
-test('auto splits crossing junctions onto opposite sides', () => {
-  // Two interleaving junctions (100-300 and 200-400) cross, so auto pulls them
-  // apart; a disjoint third (500-600) can share a side.
+test('places each arc on the side its junction key was assigned', () => {
   const data = {
     sashimiX1: new Uint32Array([100, 200, 500]),
     sashimiX2: new Uint32Array([300, 400, 600]),
     sashimiCounts: new Uint32Array([5, 5, 5]),
     sashimiStrands: new Int8Array([0, 0, 0]),
   } as unknown as PileupDataResult
-  const arcs = computeSashimiArcs({ ...baseOpts(data, 0), mode: 'auto' })
-  const byStart = new Map(arcs.map(a => [a.start, a.side]))
-  expect(byStart.get(100)).not.toBe(byStart.get(200))
+  const arcs = computeSashimiArcs({
+    ...baseOpts(data, 0),
+    downJunctionKeys: down(['chr1', 200, 400]),
+  })
+  expect(new Map(arcs.map(a => [a.start, a.side]))).toEqual(
+    new Map([
+      [100, 'up'],
+      [200, 'down'],
+      [500, 'up'],
+    ]),
+  )
+})
+
+test('a junction key naming another refName does not pull this arc down', () => {
+  // The keys carry a refName precisely so two chromosomes on screen at once
+  // can't be confused for one another.
+  const arcs = computeSashimiArcs({
+    ...baseOpts(makeData([5]), 0),
+    downJunctionKeys: down(['chr2', 100, 200]),
+  })
+  expect(arcs[0]!.side).toBe('up')
 })
 
 test('dedupes a junction shared across same-refName regions (collapsed introns)', () => {
@@ -179,6 +199,7 @@ test('dedupes a junction shared across same-refName regions (collapsed introns)'
     sashimiStrands: new Int8Array([0]),
   } as unknown as PileupDataResult
   const arcs = computeSashimiArcs({
+    ...baseOpts(region0, 0),
     rpcDataMap: new Map([
       [0, region0],
       [1, region1],
@@ -187,11 +208,6 @@ test('dedupes a junction shared across same-refName regions (collapsed introns)'
       { refName: 'chr1', displayedRegionIndex: 0 },
       { refName: 'chr1', displayedRegionIndex: 1 },
     ],
-    bpToScreenX: (_refName: string, bp: number) => bp,
-    coverageHeight: 100,
-    sashimiArcsHeight: 40,
-    mode: 'up',
-    minSashimiScore: 0,
   })
   expect(arcs).toHaveLength(1)
   expect(arcs[0]!.score).toBe(8)
@@ -211,6 +227,7 @@ test('a shared junction whose copies disagree on strand still renders once', () 
       sashimiStrands: new Int8Array([strand]),
     }) as unknown as PileupDataResult
   const arcs = computeSashimiArcs({
+    ...baseOpts(region(5, -1), 0),
     rpcDataMap: new Map([
       [0, region(5, -1)],
       [1, region(8, 1)],
@@ -219,11 +236,6 @@ test('a shared junction whose copies disagree on strand still renders once', () 
       { refName: 'chr1', displayedRegionIndex: 0 },
       { refName: 'chr1', displayedRegionIndex: 1 },
     ],
-    bpToScreenX: (_refName: string, bp: number) => bp,
-    coverageHeight: 100,
-    sashimiArcsHeight: 40,
-    mode: 'up',
-    minSashimiScore: 0,
   })
   expect(arcs).toHaveLength(1)
   expect(arcs[0]!.score).toBe(8)
@@ -241,32 +253,4 @@ test('a coverage band too short for its scalebar margins flattens, never inverts
   })
   expect(arcs[0]!.labelY).toBe(0)
   expect(arcs[0]!.d).toBe('M 100 0 C 100 0, 200 0, 200 0')
-})
-
-test('auto keeps shared-start (nested) junctions on the same side', () => {
-  // Same donor, two acceptors (100-300, 100-500) — common in alternative
-  // splicing. These nest concentrically rather than interleave, so auto must
-  // NOT split them across bands the way it does for a true crossing.
-  const data = {
-    sashimiX1: new Uint32Array([100, 100]),
-    sashimiX2: new Uint32Array([300, 500]),
-    sashimiCounts: new Uint32Array([5, 5]),
-    sashimiStrands: new Int8Array([0, 0]),
-  } as unknown as PileupDataResult
-  const arcs = computeSashimiArcs({ ...baseOpts(data, 0), mode: 'auto' })
-  expect(arcs.every(a => a.side === 'up')).toBe(true)
-})
-
-test('auto puts the heavier of two crossing junctions on the upper band', () => {
-  // 100-300 (light) and 200-400 (heavy) cross; the heavier claims 'up'.
-  const data = {
-    sashimiX1: new Uint32Array([100, 200]),
-    sashimiX2: new Uint32Array([300, 400]),
-    sashimiCounts: new Uint32Array([5, 50]),
-    sashimiStrands: new Int8Array([0, 0]),
-  } as unknown as PileupDataResult
-  const arcs = computeSashimiArcs({ ...baseOpts(data, 0), mode: 'auto' })
-  const byStart = new Map(arcs.map(a => [a.start, a.side]))
-  expect(byStart.get(200)).toBe('up')
-  expect(byStart.get(100)).toBe('down')
 })

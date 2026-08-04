@@ -1,4 +1,7 @@
-import { hasCrossingSpans } from '../features/sashimi/computeOverlay.ts'
+import {
+  downJunctionKeys,
+  mergeJunctions,
+} from '../features/sashimi/junctions.ts'
 import { compareGroupKeys } from '../shared/groupFeatures.ts'
 import { getOrCreate } from '../shared/util.ts'
 
@@ -6,6 +9,7 @@ import type {
   GroupedAlignmentsResult,
   PileupDataResult,
 } from '../RenderAlignmentDataRPC/types.ts'
+import type { RegionJunctions } from '../features/sashimi/junctions.ts'
 import type { SashimiArcsMode } from './constants.ts'
 
 // The one place the `rpcDataMap` → groups nested walk is spelled. Every scan
@@ -33,65 +37,77 @@ export function* eachGroup(
 
 const NOTHING_HIDDEN: ReadonlySet<string> = new Set()
 
-// Which group keys put a junction in the strip below coverage, i.e. which lanes
-// that strip is worth reserving for — so a grouping where only one lane has
-// junctions doesn't hand every other lane an empty strip (the arc band's
-// `hasArcs` does the same for read connections). 'up' never reserves; 'down'
-// reserves for any surviving junction; 'auto' only splits an arc down when
-// junctions cross (see `hasCrossingSpans`), so a score filter that leaves no
-// crossing pair frees the strip entirely and the survivors reclaim it. The
-// display-wide question — is the strip reserved at all — is this set being
-// non-empty (`model.sashimiDownArcLanes`).
+export interface SashimiSidesOpts {
+  minSashimiScore: number
+  mode: SashimiArcsMode
+  // refName of the region each `rpcDataMap` key was fetched from — the display
+  // reads it off `loadedRegions`, which is keyed the same way and updates with
+  // the fetch, not with pan. Required rather than defaulted: without it every
+  // chromosome on screen shares one bp number line, and junctions on different
+  // ones read as interleaving.
+  refNameFor: (displayedRegionIndex: number) => string
+  hidden?: ReadonlySet<string>
+}
+
+// Per group, which of its junctions land in the strip below coverage, keyed by
+// `junctionKey`. Two questions come off this one scan:
+//
+//   - the LAYOUT asks whether a lane needs the strip reserved at all (a
+//     non-empty set), so a grouping where only one lane has junctions doesn't
+//     hand every other lane an empty strip — the arc band's `hasArcs` does the
+//     same for read connections;
+//   - the OVERLAY asks which side to draw each arc on, by looking its junction
+//     up in the matching group's set.
+//
+// Sharing the set is what makes those agree. They used to be separate passes
+// over overlapping data (this one genomic and per-loaded-region, the geometry's
+// screen-space and per-visible-region), and the down sub-band renders at
+// `sashimiArcsHeight` whether or not the layout reserved it — so any
+// disagreement in the under-reserving direction painted arcs over the pileup.
 //
 // Deliberately genomic-bp, over every *loaded* region, so the layout keeps
 // depending only on `rpcDataMap` — projecting to screen px would make the pileup
-// re-lay-out on every pan frame. Interleaving survives any monotonic projection,
-// so within a region this matches the screen-space assignment `computeSashimiArcs`
-// runs; it only ever over-reserves (loaded ⊇ visible).
-export function groupsWithSashimiDownArcs(
+// re-lay-out on every pan frame, and would flip an arc between bands as regions
+// scroll in and out of view. Interleaving survives any monotonic projection, so
+// this is the same answer a screen-space assignment reaches.
+export function buildSashimiDownKeys(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
-  minSashimiScore: number,
-  mode: SashimiArcsMode,
-  hidden?: ReadonlySet<string>,
+  opts: SashimiSidesOpts,
 ) {
-  const out = new Set<string>()
-  if (mode !== 'up') {
-    for (const [key, spans] of sashimiSpansByGroup(
-      rpcDataMap,
-      minSashimiScore,
-      hidden,
-    )) {
-      // 'down' reserves for any surviving junction; 'auto' only for a lane whose
-      // junctions cross, since that's the only case it sends one downward.
-      if (mode === 'down' ? spans.length > 0 : hasCrossingSpans(spans)) {
-        out.add(key)
-      }
-    }
+  const { minSashimiScore, mode, refNameFor, hidden } = opts
+  const out = new Map<string, ReadonlySet<string>>()
+  for (const [key, regions] of sashimiRegionsByGroup(
+    rpcDataMap,
+    refNameFor,
+    hidden,
+  )) {
+    // 'auto' pools a group's junctions across its regions before assigning
+    // sides, so the merge pools the same way — a pair interleaving across two
+    // collapsed-intron regions of one group still reserves the strip.
+    const merged = mergeJunctions(regions, minSashimiScore)
+    out.set(key, downJunctionKeys(merged.values(), mode))
   }
   return out
 }
 
-// Each group's surviving junctions as screen-order spans. 'auto' pools a group's
-// junctions across its regions before assigning sides, so this pools the same
-// way — a pair interleaving across two collapsed-intron regions of one group
-// still reserves the strip.
-function sashimiSpansByGroup(
+// Each group's per-region sashimi arrays, tagged with the refName they were
+// fetched from.
+function sashimiRegionsByGroup(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
-  minSashimiScore: number,
+  refNameFor: (displayedRegionIndex: number) => string,
   hidden?: ReadonlySet<string>,
 ) {
-  const spansByGroup = new Map<string, { left: number; right: number }[]>()
-  for (const { key, data } of eachGroup(rpcDataMap, hidden)) {
-    const spans = getOrCreate(spansByGroup, key, () => [])
-    for (const [i, count] of data.sashimiCounts.entries()) {
-      if (count >= minSashimiScore) {
-        const start = data.sashimiX1[i]!
-        const end = data.sashimiX2[i]!
-        spans.push({ left: Math.min(start, end), right: Math.max(start, end) })
-      }
-    }
+  const byGroup = new Map<string, RegionJunctions[]>()
+  for (const { displayedRegionIndex, key, data } of eachGroup(
+    rpcDataMap,
+    hidden,
+  )) {
+    getOrCreate(byGroup, key, () => []).push({
+      refName: refNameFor(displayedRegionIndex),
+      data,
+    })
   }
-  return spansByGroup
+  return byGroup
 }
 
 // A group's stable identity: its sort key and human-readable label.

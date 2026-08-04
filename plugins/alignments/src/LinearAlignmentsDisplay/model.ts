@@ -97,7 +97,7 @@ import {
   buildChainIdMap,
   buildRawDataByGroup,
   buildReadIdIndexMap,
-  groupsWithSashimiDownArcs,
+  buildSashimiDownKeys,
   hasNamedGroups,
   orderedGroups,
 } from './groupedDataMaps.ts'
@@ -501,8 +501,21 @@ export default function stateModelFactory(
           )
         },
         /** #getter */
+        // Sentinel promotable slot: a track pins arcs on/off explicitly, else
+        // follows the session-wide default, falling back to on.
         get showSashimiArcs(): boolean {
-          return getConf(self, 'showSashimiArcs')
+          return resolveConf(self, 'showSashimiArcs')
+        },
+        /**
+         * #getter
+         * "make the current sashimi on/off state the default for all tracks"
+         * control (pin) for the submenu's own checkbox.
+         */
+        get showSashimiArcsDisplayTypeDefault() {
+          return makeCurrentValueDisplayTypeDefaultControl(
+            self,
+            'showSashimiArcs',
+          )
         },
         /** #getter */
         // Sentinel promotable slot (like linkedReads/readConnections): a track
@@ -1294,20 +1307,46 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * Per group, which junctions draw in the strip below coverage (by
+         * `junctionKey`). The single sashimi side decision: `sashimiDownArcLanes`
+         * reads it to reserve the strip and `sashimiArcSections` reads it to
+         * place each arc, so the space reserved and the arcs drawn into it can't
+         * disagree. Memoized because the 'auto' assignment is O(junctions²) per
+         * lane.
+         *
+         * refNames come from `loadedRegions` — keyed by displayedRegionIndex
+         * like `rpcDataMap` and updated by the fetch, not by pan — so this stays
+         * a tier-1 (fetch) derivation and the pileup doesn't re-lay-out as the
+         * user scrolls. A region whose entry hasn't landed yet (the fetch sets
+         * `rpcDataMap` and `loadedRegions` in separate actions, so one reaction
+         * cycle sees the first without the second) falls back to a key unique to
+         * that region rather than a shared '': two regions we can't yet prove
+         * share a chromosome must not pool onto one bp number line, which is the
+         * whole reason the refName is in the key.
+         */
+        get sashimiDownKeysByGroup() {
+          return buildSashimiDownKeys(self.rpcDataMap, {
+            minSashimiScore: self.minSashimiScore,
+            mode: self.sashimiArcsMode,
+            refNameFor: i => self.loadedRegions.get(i)?.refName ?? `#${i}`,
+            hidden: self.hiddenGroupKeys,
+          })
+        },
+
+        /**
+         * #getter
          * Group keys whose junctions land in the strip below coverage, i.e. the
-         * lanes that strip is reserved for. One memoized scan for both questions
-         * asked of it: `belowCoverageBandsInput` only needs whether any lane
-         * wants the strip, `sections` needs which — and the 'auto' mode's
-         * crossing test is O(junctions²) per lane, so running it twice was the
-         * whole scan twice.
+         * lanes that strip is reserved for. `belowCoverageBandsInput` only needs
+         * whether any lane wants the strip, `sections` needs which.
          */
         get sashimiDownArcLanes() {
-          return groupsWithSashimiDownArcs(
-            self.rpcDataMap,
-            self.minSashimiScore,
-            self.sashimiArcsMode,
-            self.hiddenGroupKeys,
-          )
+          const out = new Set<string>()
+          for (const [key, down] of this.sashimiDownKeysByGroup) {
+            if (down.size > 0) {
+              out.add(key)
+            }
+          }
+          return out
         },
 
         /**
@@ -1923,6 +1962,8 @@ export default function stateModelFactory(
           }
           const byGroup = self.rawDataByGroup
           const empty = new Map<number, PileupDataResult>()
+          const noDownKeys: ReadonlySet<string> = new Set()
+          const downKeys = self.sashimiDownKeysByGroup
           const bpToScreenX = makeBpToScreenX(view)
           return this.sections.sections.map(sec => {
             const arcs = computeSashimiArcs({
@@ -1931,8 +1972,8 @@ export default function stateModelFactory(
               bpToScreenX,
               coverageHeight: self.coverageHeight,
               sashimiArcsHeight: self.sashimiArcsHeight,
-              mode: self.sashimiArcsMode,
               minSashimiScore: self.minSashimiScore,
+              downJunctionKeys: downKeys.get(sec.groupKey) ?? noDownKeys,
             })
             // Ascending score so high-count arcs paint over low-count ones — and,
             // since overlapping hit targets resolve to the last-painted path, so

@@ -523,8 +523,16 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        * #slot
        */
       showSashimiArcs: {
-        type: 'boolean',
-        defaultValue: true,
+        type: 'maybeBoolean',
+        // Promotable sentinel like the two sashimi settings it gates: `undefined`
+        // is the inherit signal and `promotedBase` the value it resolves to, so a
+        // track can pin arcs OFF over a session-wide ON. It was the one control
+        // in its own submenu with no pin — "show sashimi arcs by default for
+        // every track" was the single thing the menu couldn't express. Read
+        // through the resolved `showSashimiArcs` getter (resolveConf), never raw.
+        defaultValue: undefined,
+        promotedBase: true,
+        promotable: true,
         description: 'Draw sashimi (splice-junction) arcs',
       },
       /**

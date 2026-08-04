@@ -3085,7 +3085,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showSashimiArcs",
-          "type": "(JexlString | boolean)"
+          "type": "(JexlString | (boolean | undefined))"
         },
         {
           "name": "sashimiArcsMode",
@@ -3358,7 +3358,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showSashimiArcs",
-          "type": "(JexlString | boolean)"
+          "type": "(JexlString | (boolean | undefined))"
         },
         {
           "name": "sashimiArcsMode",

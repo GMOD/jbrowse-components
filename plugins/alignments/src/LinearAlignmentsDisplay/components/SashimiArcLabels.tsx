@@ -2,19 +2,30 @@ import { SASHIMI_LABEL_FONT_SIZE } from '../../features/sashimi/computeOverlay.t
 import { sashimiArcKey } from './sashimiArcs.ts'
 
 import type { SashimiArc } from '../../features/sashimi/computeOverlay.ts'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
 // Read-count label at a sashimi arc's apex, shared by the on-screen overlay and
-// the SVG export so the two can't drift. The white halo (paint-order: stroke)
-// keeps the count legible over both the arc and the coverage histogram behind
-// it — the SVG equivalent of MISO sashimi_plot's white text background box.
+// the SVG export so the two can't drift. The halo (paint-order: stroke) keeps
+// the count legible over both the arc and the coverage histogram behind it — the
+// SVG equivalent of MISO sashimi_plot's white text background box.
+//
+// Both colors come from the palette rather than the hardcoded #222-on-#fff this
+// used to draw: in dark mode that pair inverted into a glaring white blob on the
+// dark track background, the same way the selection stroke's old '#333' vanished
+// into it. Painting `background.paper` behind `text.primary` is the halo's
+// intent — "the surface this sits on" — in either mode.
 function SashimiArcLabel({
   x,
   y,
   score,
+  color,
+  haloColor,
 }: {
   x: number
   y: number
   score: number
+  color: string
+  haloColor: string
 }) {
   return (
     <text
@@ -23,8 +34,8 @@ function SashimiArcLabel({
       textAnchor="middle"
       dominantBaseline="central"
       fontSize={SASHIMI_LABEL_FONT_SIZE}
-      fill="#222"
-      stroke="#fff"
+      fill={color}
+      stroke={haloColor}
       strokeWidth={2.5}
       paintOrder="stroke"
       style={{ pointerEvents: 'none', userSelect: 'none' }}
@@ -43,9 +54,11 @@ function SashimiArcLabel({
 export default function SashimiArcLabels({
   arcs,
   show,
+  palette,
 }: {
   arcs: SashimiArc[]
   show: boolean
+  palette: JBrowsePalette
 }) {
   return show
     ? arcs
@@ -56,6 +69,8 @@ export default function SashimiArcLabels({
             x={arc.labelX}
             y={arc.labelY}
             score={arc.score}
+            color={palette.text.primary}
+            haloColor={palette.background.paper}
           />
         ))
     : null

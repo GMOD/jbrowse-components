@@ -1,7 +1,5 @@
-import type {
-  SashimiArc,
-  SashimiSide,
-} from '../../features/sashimi/computeOverlay.ts'
+import type { SashimiArc } from '../../features/sashimi/computeOverlay.ts'
+import type { SashimiSide } from '../../features/sashimi/junctions.ts'
 
 // One entry of the model's `sashimiArcSections`: a group's arcs already split
 // into the two sub-bands, with each band's content-space top. Named here rather
