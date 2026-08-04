@@ -8,9 +8,10 @@ description: A screenshot-review backlog pass (29 bad to 12) plus the insertion-
 Worked the `bad`-status backlog in `website/scripts/screenshot-review.json` from
 29 entries down to 12. Two commits landed:
 
-- **`655b077da5`** `docs(website): work the screenshot-review backlog, and give
+- **`77ba5314d5`** `docs(website): work the screenshot-review backlog, and give
   two figures a scale to read against` — 17 verdicts flipped, specs + docs +
-  PNGs.
+  PNGs. (Written as `655b077da5`; another agent rebased it minutes later, which
+  is routine in this worktree — find it by message, not by hash.)
 - **`60136cdede`** `fix(variants): give multi-sample insertion markers the
   shared insertion purple` — code only. **Its figures are deliberately NOT
   committed**; see the open bug below.
