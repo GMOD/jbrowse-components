@@ -292,13 +292,10 @@ describe('getVariantLegendSections insertion marker', () => {
     })
     expect(sections.map(s => s.id)).toEqual(['genotypes', 'insertions'])
     expect(sections.find(s => s.id === 'insertions')!.items).toEqual([
-      {
-        color: '#800080',
-        label: 'Insertion, homozygous (label is length in bp)',
-      },
+      { color: '#800080', label: 'Homozygous' },
       {
         color: getInsertionColorForDosage('#800080', 128),
-        label: 'Insertion, heterozygous',
+        label: 'Heterozygous',
       },
     ])
   })
@@ -313,7 +310,7 @@ describe('getVariantLegendSections insertion marker', () => {
       insertionColor: '#800080',
     })
     expect(sections.find(s => s.id === 'insertions')!.items).toEqual([
-      { color: '#800080', label: 'Insertion (label is length in bp)' },
+      { color: '#800080', label: 'Insertion' },
     ])
   })
 

@@ -125,7 +125,11 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
               // tier. Keeping the filter would now drop real indels instead.
               trackId: 'ecoli_pggb_variants',
               type: 'LinearMultiSampleVariantDisplay',
-              height: 120,
+              // 4 strain rows would fit in 120, but the legend now carries an
+              // Insertions section as well as the genotype key and clipped out
+              // of the lane at that height -- the het swatch and its label were
+              // cut in half by the track boundary.
+              height: 170,
             },
             { trackId: 'ecoli_pggb_maf', type: 'LinearMafDisplay' },
           ],
@@ -136,7 +140,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     viewportWidth: 1000,
     // the variant lane plus one MAF row per sample and the coverage band
-    viewportHeight: 660,
+    viewportHeight: 710,
     settleMs: 15000,
     hideTooltip: true,
     actions: [

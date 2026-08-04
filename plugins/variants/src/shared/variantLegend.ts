@@ -265,23 +265,19 @@ export function getVariantLegendSections({
       ? [
           {
             id: 'insertions',
-            title: 'Insertions',
+            // The number's meaning rides on the title rather than on every
+            // item: as an item label it ran past the legend box and ellipsized
+            // to "Insertion, homozygous (label is l...", losing exactly the
+            // thing the entry exists to say.
+            title: 'Insertions (number = bp)',
             items:
               renderingMode === 'phased'
-                ? [
-                    {
-                      color: insertionColor,
-                      label: 'Insertion (label is length in bp)',
-                    },
-                  ]
+                ? [{ color: insertionColor, label: 'Insertion' }]
                 : [
-                    {
-                      color: insertionColor,
-                      label: 'Insertion, homozygous (label is length in bp)',
-                    },
+                    { color: insertionColor, label: 'Homozygous' },
                     {
                       color: getInsertionColorForDosage(insertionColor, 128),
-                      label: 'Insertion, heterozygous',
+                      label: 'Heterozygous',
                     },
                   ],
           },
