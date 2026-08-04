@@ -254,10 +254,22 @@ export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
         const chrId = this.refNameToId(refName)
         return chrId !== undefined
           ? cram.index.getEntriesForRange(chrId, start, end)
-          : Promise.resolve([{ sliceBytes: 0 }])
+          : Promise.resolve([])
       }),
     )
 
-    return sum(blockResults.flat().map(a => a.sliceBytes))
+    // De-duplicate slices before summing. Adjacent regions routinely overlap
+    // the same .crai slice, and it is downloaded once — counting it per region
+    // inflated the estimate for exactly the multi-region queries this gates.
+    // Keyed on where the slice lives, since a slice is identified by its
+    // container plus its offset within that container's blocks.
+    const slices = new Map<string, number>()
+    for (const entry of blockResults.flat()) {
+      slices.set(
+        `${entry.containerStart}:${entry.sliceStart}`,
+        entry.sliceBytes,
+      )
+    }
+    return sum([...slices.values()])
   }
 }

@@ -62,13 +62,40 @@ export function getTickDisplayStr(totalBp: number, bpPerPx: number) {
 
 interface VirtualOffset {
   blockPosition: number
+  dataPosition?: number
 }
 
 interface Block {
   minv: VirtualOffset
   maxv: VirtualOffset
+  /**
+   * Bytes this block's fetch actually reads. @gmod/tabix and @gmod/bam compute
+   * it from an `endPosition` that `clampChunkEnds` has tightened down to the
+   * next known BGZF block boundary, so it is materially smaller than the
+   * full-block padding the fallback below has to assume.
+   */
+  fetchedSize?: () => number
 }
 
+/**
+ * Index-only estimate of the bytes a fetch of these regions would download.
+ *
+ * Prefers each block's own `fetchedSize()`. The fallback —
+ * `maxv + 65535 - minv` — has to pad by a whole maximum-size BGZF block,
+ * because the compressed length of the block at `maxv` is not recorded in the
+ * index; it is what this did for every block before the parsers exposed a
+ * tightened figure, and it over-estimates.
+ *
+ * Blocks are also de-duplicated across regions. Two adjacent regions routinely
+ * resolve to the same chunk, and it is downloaded once, so counting it twice
+ * inflated the estimate for exactly the multi-region queries this gates.
+ *
+ * Note @gmod/tabix's own `TabixIndexedFile.bytesForRegions` is strictly better
+ * still — it runs the chunk merger over the combined set, so it also collapses
+ * *overlapping* blocks rather than only identical ones — and every tabix
+ * adapter in this repo calls that instead. This remains for other index shapes
+ * and for plugins outside the repo, which reach it through `@jbrowse/core/util`.
+ */
 export async function bytesForRegions(
   regions: Region[],
   index: {
@@ -82,11 +109,19 @@ export async function bytesForRegions(
   const blockResults = await Promise.all(
     regions.map(r => index.blocksForRange(r.refName, r.start, r.end)),
   )
+  const seen = new Map<string, Block>()
+  for (const block of blockResults.flat()) {
+    const { minv, maxv } = block
+    seen.set(
+      `${minv.blockPosition}:${minv.dataPosition ?? 0}-${maxv.blockPosition}:${maxv.dataPosition ?? 0}`,
+      block,
+    )
+  }
   return sum(
-    blockResults
-      .flat()
-      .map(
-        block => block.maxv.blockPosition + 65535 - block.minv.blockPosition,
-      ),
+    [...seen.values()].map(block =>
+      block.fetchedSize
+        ? block.fetchedSize()
+        : block.maxv.blockPosition + 65535 - block.minv.blockPosition,
+    ),
   )
 }
