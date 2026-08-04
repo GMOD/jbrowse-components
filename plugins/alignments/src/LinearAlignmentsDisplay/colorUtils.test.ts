@@ -1,3 +1,6 @@
+import { SimpleFeature } from '@jbrowse/core/util'
+
+import { partitionFeatures } from '../shared/groupFeatures.ts'
 import { getReadColor, readColorCategory, rgb255 } from './colorUtils.ts'
 import { ColorScheme } from './constants.ts'
 import { makeTestPalette } from './testUtils.ts'
@@ -398,5 +401,47 @@ describe('getReadColor maps each category to its palette color', () => {
         palette,
       ),
     ).toBe('hsl(42,50%,50%)')
+  })
+})
+
+// The `firstOfPairStrand` COLOR scheme and the `firstOfPairStrand` GROUPING
+// dimension have to answer the same question about the same read: a read painted
+// reverse belongs in the reverse section. They used to spell the fragment-strand
+// rule twice under a comment promising they matched — this one read `strand`,
+// the group key read SAM_FLAG_REVERSE — which agrees on every BAM and disagrees
+// on a flagless synteny block. Both now call the shared `firstOfPairStrand`, and
+// this pins that end to end rather than trusting the comment.
+describe('firstOfPairStrand: color and grouping agree', () => {
+  function feat(strand: number, flags: number) {
+    return new SimpleFeature({
+      uniqueId: 'r',
+      refName: 'ctgA',
+      start: 0,
+      end: 100,
+      strand,
+      flags,
+    })
+  }
+
+  test.each([
+    ['read1 forward', 1, 0x40],
+    ['read1 reverse', -1, 0x40],
+    // read2 maps opposite its fragment, so a reverse read2 is a forward fragment
+    ['read2 reverse', -1, 0x10 | 0x80],
+    ['read2 forward', 1, 0x80],
+    // no SAM flags at all: a PAF/synteny block, where the flag read reported
+    // every reverse block as a forward fragment
+    ['synteny reverse block', -1, 0],
+    ['synteny forward block', 1, 0],
+  ])('%s', (_label, strand, flags) => {
+    const category = readColorCategory(
+      0,
+      makeData({ strand, flags }),
+      ColorScheme.firstOfPairStrand,
+    )
+    const groups = partitionFeatures([feat(strand, flags)], {
+      type: 'firstOfPairStrand',
+    })
+    expect(groups[0]!.key).toBe(category === 'revStrand' ? '-' : '+')
   })
 })

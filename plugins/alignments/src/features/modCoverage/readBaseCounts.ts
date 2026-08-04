@@ -1,4 +1,3 @@
-import { SAM_FLAG_REVERSE } from '@jbrowse/alignments-core'
 import {
   CIGAR_D,
   CIGAR_EQ,
@@ -10,7 +9,7 @@ import {
   parseCigar2,
 } from '@jbrowse/cigar-utils'
 
-import { getFlags } from '../../shared/util.ts'
+import { getStrand } from '../../shared/util.ts'
 
 import type { StrandBaseCounts } from '../../shared/calculateModificationCounts.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -36,7 +35,7 @@ export function computeReadBaseCounts(
     const cigar = f.get('CIGAR') as string | undefined
     if (seq && cigar) {
       const start = f.get('start')
-      const fwd = (getFlags(f) & SAM_FLAG_REVERSE) === 0
+      const fwd = getStrand(f) !== -1
       const ops = parseCigar2(cigar)
       let readPos = 0
       let refPos = 0

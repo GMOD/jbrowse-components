@@ -1,8 +1,6 @@
 import {
   SAM_FLAG_MATE_UNMAPPED,
   SAM_FLAG_PAIRED,
-  SAM_FLAG_REVERSE,
-  SAM_FLAG_SECOND_IN_PAIR,
 } from '@jbrowse/alignments-core'
 import { abgrToCssRgba, normalizedRgbToCss } from '@jbrowse/core/util/colorBits'
 
@@ -14,6 +12,7 @@ import {
   CHAIN_FILL_SPLIT_INVERSION,
   CHAIN_FILL_SUPP_PRIMARY_FWD,
 } from '../shared/types.ts'
+import { firstOfPairStrand } from '../shared/util.ts'
 import { ColorScheme } from './constants.ts'
 import {
   RC_FWD_STRAND,
@@ -316,14 +315,12 @@ export function readColorCategory(
     case ColorScheme.insertSizeGradient:
       return insertSizeCategory(data.readInsertSizes[i]!, data.insertSizeStats)
 
-    case ColorScheme.firstOfPairStrand: {
-      // Fragment strand inferred from the first mate: read2 (0x80) reports the
-      // opposite of the fragment, so invert only it. Read1 and single-end reads
-      // represent the fragment strand directly (must match firstOfPairStrandKey
-      // in groupFeatures.ts — the shader no longer derives this).
-      const isSecond = (flags & SAM_FLAG_SECOND_IN_PAIR) !== 0
-      return strandCategory(isSecond ? -strand : strand)
-    }
+    // Fragment strand inferred from the first mate, through the shared rule
+    // `firstOfPairStrandKey` (groupFeatures.ts) also calls — so the color a read
+    // paints and the section it groups into agree by construction rather than by
+    // two copies of the same arithmetic. The shader doesn't derive this at all.
+    case ColorScheme.firstOfPairStrand:
+      return strandCategory(firstOfPairStrand(strand, flags))
 
     case ColorScheme.pairOrientation: {
       // Only SPLIT alignments show strand coloring (via the chained-supplementary
@@ -347,8 +344,11 @@ export function readColorCategory(
           : insert
     }
 
+    // The read's own strand decides which of the two modification hues it
+    // paints; `strand` is already resolved above, so this asks the same field
+    // every other branch of this switch does.
     case ColorScheme.modifications:
-      return (flags & SAM_FLAG_REVERSE) !== 0 ? 'modRev' : 'modFwd'
+      return strand === -1 ? 'modRev' : 'modFwd'
 
     case ColorScheme.tag:
       // A read this scheme resolved no color for — the tag is absent, or under

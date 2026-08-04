@@ -72,7 +72,9 @@ export function extractModifications(
   feature: Feature,
   readIndex: number,
   featureStart: number,
-  strand: number,
+  // Already normalized by `getStrand`, which is why nothing here has to
+  // re-narrow it for `getModPositions`.
+  strand: -1 | 0 | 1,
   colorBy: ColorBy | undefined,
   detectedModifications: Set<string>,
   seenModTypes: Map<string, ModificationType>,
@@ -91,8 +93,7 @@ export function extractModifications(
     return
   }
   const cigarOps = parseCigar2(cigarString)
-  const fstrand = strand as -1 | 0 | 1
-  const modifications = getModPositions(mmTag, seq, fstrand)
+  const modifications = getModPositions(mmTag, seq, strand)
   const probabilities = getModProbabilities(feature)
 
   // One pass over the parsed MM types:
@@ -125,7 +126,7 @@ export function extractModifications(
       modifications,
       probabilities,
       cigarOps,
-      fstrand,
+      strand,
     )
     mods.forEach(({ prob, type, base }, refPos) => {
       // twoColor renders every call, painting low-confidence ones in the
@@ -155,7 +156,7 @@ export function extractModifications(
     probabilities,
     cigarOps,
     seq,
-    fstrand,
+    fstrand: strand,
     flen: feature.get('end') - feature.get('start'),
   }
 }

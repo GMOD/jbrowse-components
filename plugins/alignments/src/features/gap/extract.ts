@@ -1,3 +1,5 @@
+import { getStrand } from '../../shared/util.ts'
+
 import type { GapData } from '../../shared/webglRpcTypes.ts'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -14,7 +16,7 @@ import type { Feature } from '@jbrowse/core/util'
  */
 export function getEffectiveStrand(feature: Feature) {
   const tags = feature.get('tags') as Record<string, string> | undefined
-  const fstrand = feature.get('strand') ?? 0
+  const fstrand = getStrand(feature)
   const xs = tags?.XS ?? tags?.TS
   const ts = tags?.ts
   if (xs === '+') {

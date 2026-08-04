@@ -107,6 +107,10 @@ export default class SamRecordFeature implements MismatchFeature {
     return this.record.flags
   }
 
+  // The one sanctioned place SAM_FLAG_REVERSE becomes a strand: an adapter's
+  // feature class DEFINES `strand` for a SAM-flavoured record. Everything
+  // downstream reads the result via `shared/util.ts`'s getStrand — a flagless
+  // source (PAF/synteny) rides the same pipeline and has no reverse bit to read.
   get strand() {
     return this.flags & SAM_FLAG_REVERSE ? -1 : 1
   }

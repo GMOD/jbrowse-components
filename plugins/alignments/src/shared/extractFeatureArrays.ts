@@ -15,6 +15,7 @@ import {
 } from './extractCigarFeatures.ts'
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
 import { isFillUnmarkedMode } from './types.ts'
+import { getStrand } from './util.ts'
 
 import type { PerBaseLetterEntry } from '../features/perBaseLetter/types.ts'
 import type { PerBaseQualityEntry } from '../features/perBaseQuality/types.ts'
@@ -99,7 +100,9 @@ export function extractFeatureArrays<T extends FeatureData>(
     report?.()
     const feature = featuresArray[readIndex]!
     const featureStart = feature.get('start')
-    const strand = feature.get('strand')!
+    // Resolved once, through the one accessor, and handed to every extractor
+    // below — so no per-feature pass can re-derive strand from a SAM flag.
+    const strand = getStrand(feature)
 
     features.push(buildFeatureData(feature))
 

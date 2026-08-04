@@ -1,3 +1,4 @@
+import { SAM_FLAG_SECOND_IN_PAIR } from '@jbrowse/alignments-core'
 import { getContrastText } from '@jbrowse/core/ui/palette'
 
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
@@ -11,8 +12,50 @@ export const defaultFilterFlags = {
 // A feature's SAM bitwise flags, defaulting to 0 for features that carry none
 // (e.g. PAF/synteny). The cast is centralized here so the ~half-dozen flag reads
 // across the worker and feature extractors don't each re-spell it.
+//
+// `flags` answers the SAM-only questions — paired, supplementary, secondary,
+// first/second-in-pair, mate-unmapped. It must NOT answer "which way does this
+// point": see getStrand.
 export function getFlags(feature: Feature) {
   return (feature.get('flags') as number | undefined) ?? 0
+}
+
+/**
+ * A feature's strand, normalized to -1 / 0 / 1. THE source of strand for
+ * everything downstream of an adapter — never re-derive it from
+ * `SAM_FLAG_REVERSE`.
+ *
+ * Strand is a universal `Feature` concept and every source populates it;
+ * SAM flags are a format-specific bitfield that only SAM-flavoured sources
+ * have. BAM/CRAM/SAM define `strand` FROM the reverse flag inside their own
+ * feature classes (e.g. `SamRecordFeature.strand`), which is the one place that
+ * conversion belongs. A PAF/synteny block — which LGVSyntenyDisplay pushes
+ * through this same pipeline — carries a real strand and no flags at all, so
+ * `getFlags` returns 0 and any flag-derived strand reports it forward.
+ *
+ * Every strand bug this plugin has had was a `SAM_FLAG_REVERSE` read outside an
+ * adapter, agreeing with `strand` on the BAMs under test and disagreeing on
+ * synteny. Reading it here means a new call site cannot make that choice.
+ */
+export function getStrand(feature: Feature): -1 | 0 | 1 {
+  const strand = feature.get('strand')
+  return strand === -1 ? -1 : strand === 1 ? 1 : 0
+}
+
+/**
+ * The FRAGMENT's strand, inferred from the first mate: read2 maps opposite the
+ * fragment, so its strand is inverted; read1 and single-end reads report the
+ * fragment strand directly.
+ *
+ * One implementation, deliberately shared by the two consumers that are
+ * REQUIRED to agree — the `firstOfPairStrand` color scheme (colorUtils's
+ * `readColorCategory`) and its grouping twin (`firstOfPairStrandKey`). They used
+ * to spell the rule twice under a comment promising they matched, and drifted:
+ * one read `strand`, the other `SAM_FLAG_REVERSE`, so a flagless feature
+ * grouped forward while it painted reverse.
+ */
+export function firstOfPairStrand(strand: number, flags: number) {
+  return flags & SAM_FLAG_SECOND_IN_PAIR ? -strand : strand
 }
 
 // A feature's mapping quality; 255 is the SAM spec's "unavailable" sentinel.

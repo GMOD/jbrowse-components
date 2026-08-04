@@ -1,15 +1,26 @@
+import { SAM_FLAG_REVERSE } from '@jbrowse/alignments-core'
+
 import { computeReadBaseCounts } from './readBaseCounts.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 
-// Minimal Feature stub: only the fields computeReadBaseCounts reads.
+// Minimal Feature stub: only the fields computeReadBaseCounts reads. `strand` is
+// derived from the reverse flag rather than taken as its own input, because that
+// is what an adapter feature does (SamRecordFeature.strand) — a stub carrying
+// one without the other is a shape no source produces, and it would let a
+// strand read and a flag read disagree here in a way they never can in practice.
 function read(over: {
   start: number
   seq: string
   CIGAR: string
   flags?: number
 }): Feature {
-  const fields: Record<string, unknown> = { flags: 0, ...over }
+  const flags = over.flags ?? 0
+  const fields: Record<string, unknown> = {
+    ...over,
+    flags,
+    strand: flags & SAM_FLAG_REVERSE ? -1 : 1,
+  }
   return { get: (k: string) => fields[k] } as unknown as Feature
 }
 

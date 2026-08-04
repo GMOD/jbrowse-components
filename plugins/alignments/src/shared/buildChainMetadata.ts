@@ -72,12 +72,11 @@ function summarizeChain(chain: ChainFeatureData[]) {
     if (isSupplementary(f)) {
       hasSupp = true
     } else {
-      // `f.strand`, not a second derivation from SAM_FLAG_REVERSE: the two agree
-      // for BAM/CRAM (whose strand IS that flag) but only `strand` is populated
-      // for a source that carries no flags, and `mate0Primary`/`mate1Primary`
-      // below already read it — one field per question, so the three can't
-      // disagree about which way this primary points.
-      primaryStrand = f.strand === -1 ? -1 : 1
+      // `f.strand` — already normalized by getStrand upstream — not a second
+      // derivation from SAM_FLAG_REVERSE, which only a SAM-flavoured source
+      // carries. `mate0Primary`/`mate1Primary` below read the same field, so the
+      // three can't disagree about which way this primary points.
+      primaryStrand = f.strand
       primaryPairOrientation = f.pairOrientation
       if (isFirstInPair(f)) {
         mate0Primary = f.strand

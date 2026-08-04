@@ -1,5 +1,4 @@
 import {
-  SAM_FLAG_REVERSE,
   SAM_FLAG_SECONDARY,
   SAM_FLAG_SECOND_IN_PAIR,
   SAM_FLAG_SUPPLEMENTARY,
@@ -8,7 +7,13 @@ import {
 import { featureChainKey } from './chainGroupingKey.ts'
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
 import { GROUP_BY_LABELS } from './groupByLabels.ts'
-import { getFlags, getMappingQuality, getOrCreate } from './util.ts'
+import {
+  firstOfPairStrand,
+  getFlags,
+  getMappingQuality,
+  getOrCreate,
+  getStrand,
+} from './util.ts'
 
 import type { GroupBy, GroupByType } from './types.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -28,29 +33,32 @@ interface GroupKey {
   label: string
 }
 
-// Keyed off `strand`, not SAM_FLAG_REVERSE: BAM/CRAM features derive `strand`
-// from that very flag, so reads group identically, while synteny (PAF) features
-// carry a real `strand` and no flags at all — reading the flag collapsed every
-// synteny block into one "Forward strand" section.
-function strandKey(feature: Feature): GroupKey {
-  return feature.get('strand') === -1
-    ? { key: '-', label: 'Reverse strand' }
-    : { key: '+', label: 'Forward strand' }
+// The two buckets every strand-flavoured dimension splits into. `-1` is reverse
+// and everything else (including the unstranded 0) is forward, so a feature with
+// no strand lands in an existing section rather than opening a third.
+function strandGroup(strand: number, fwd: string, rev: string): GroupKey {
+  return strand === -1 ? { key: '-', label: rev } : { key: '+', label: fwd }
 }
 
-// Strand of the fragment as inferred from the first-of-pair read. Read2 maps to
-// the opposite of its own strand so both mates land in the same group; read1 and
-// unpaired/single-end reads represent the fragment strand directly (only read2
-// is inverted, so a single-end read groups by its own strand rather than being
-// mis-flipped as if it were a second mate).
+// Keyed off `strand`, not SAM_FLAG_REVERSE — see getStrand. BAM/CRAM features
+// derive `strand` from that very flag, so reads group identically, while synteny
+// (PAF) features carry a real `strand` and no flags at all; reading the flag
+// collapsed every synteny block into one "Forward strand" section.
+function strandKey(feature: Feature): GroupKey {
+  return strandGroup(getStrand(feature), 'Forward strand', 'Reverse strand')
+}
+
+// Strand of the fragment as inferred from the first-of-pair read, via the shared
+// `firstOfPairStrand` rule — the same call the `firstOfPairStrand` COLOR scheme
+// makes, so the section a read groups into and the color it paints can't
+// disagree. They did: this read SAM_FLAG_REVERSE while the color read `strand`,
+// which agree on a BAM and not on a flagless synteny block.
 function firstOfPairStrandKey(feature: Feature): GroupKey {
-  const flags = getFlags(feature)
-  const reverse = !!(flags & SAM_FLAG_REVERSE)
-  const isRead2 = !!(flags & SAM_FLAG_SECOND_IN_PAIR)
-  const fwd = isRead2 ? reverse : !reverse
-  return fwd
-    ? { key: '+', label: 'First-of-pair forward' }
-    : { key: '-', label: 'First-of-pair reverse' }
+  return strandGroup(
+    firstOfPairStrand(getStrand(feature), getFlags(feature)),
+    'First-of-pair forward',
+    'First-of-pair reverse',
+  )
 }
 
 function tagKey(feature: Feature, tag: string): GroupKey {

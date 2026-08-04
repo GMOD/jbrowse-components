@@ -4,6 +4,8 @@ import {
 } from '@jbrowse/alignments-core'
 import { SimpleFeature } from '@jbrowse/core/util'
 
+import { getStrand } from './util.ts'
+
 import type { Feature } from '@jbrowse/core/util'
 
 // The subset of paired-read fields needed to build a read+mate feature. A live
@@ -58,7 +60,11 @@ export function getMateFields(feature: Feature): MateFields | undefined {
     refName: feature.get('refName'),
     start: feature.get('start'),
     end: feature.get('end'),
-    strand: feature.get('strand'),
+    // The read's OWN strand (the mate's comes from the mate-reverse flag
+    // below), so it goes through the one accessor like every other read-strand
+    // read. `computeMateFields` keeps it optional because its other caller
+    // normalizes a serialized detail object rather than a Feature.
+    strand: getStrand(feature),
     flags: feature.get('flags'),
     nextRef: feature.get('next_ref'),
     nextPos: feature.get('next_pos'),

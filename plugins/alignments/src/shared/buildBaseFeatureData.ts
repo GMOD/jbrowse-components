@@ -1,6 +1,6 @@
 import { pairDirection } from '@jbrowse/alignments-core'
 
-import { getFlags, getMappingQuality } from './util.ts'
+import { getFlags, getMappingQuality, getStrand } from './util.ts'
 
 import type { ChainFeatureData, FeatureData } from './webglRpcTypes.ts'
 import type { PairDirection } from '@jbrowse/alignments-core'
@@ -23,7 +23,6 @@ function pairOrientationToNum(pairOrientation: string | undefined) {
 }
 
 export function buildBaseFeatureData(feature: Feature): FeatureData {
-  const strand = feature.get('strand')
   return {
     id: feature.id(),
     name: feature.get('name') ?? '',
@@ -38,7 +37,9 @@ export function buildBaseFeatureData(feature: Feature): FeatureData {
     pairOrientation: pairOrientationToNum(
       feature.get('pair_orientation') as string | undefined,
     ),
-    strand: strand === -1 ? -1 : strand === 1 ? 1 : 0,
+    // The normalization lives in getStrand, so `readStrands` and every
+    // feature-side strand read resolve it identically.
+    strand: getStrand(feature),
   }
 }
 

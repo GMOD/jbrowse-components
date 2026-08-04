@@ -1,5 +1,30 @@
 # plugins/alignments
 
+## Strand comes from `strand`; `flags` answers everything else
+
+This pipeline serves two kinds of feature: SAM-flavoured records (BAM/CRAM/SAM)
+and flagless ones — PAF/synteny blocks, which `LGVSyntenyDisplay` pushes through
+the same worker, layout and renderers. `getFlags` returns **0** for the latter.
+
+So each question has exactly one field:
+
+- **which way does it point** → `getStrand(feature)`, or `readStrands[i]` /
+  `FeatureData.strand` downstream. Universal, always populated.
+- **paired / supplementary / secondary / first-in-pair / mate-unmapped** →
+  `getFlags(feature)` or `readFlags[i]`. SAM-only, and meaninglessly 0 on a
+  synteny block — which is the right answer, since it has no mate.
+
+`SAM_FLAG_REVERSE` may only be converted to a strand inside an adapter's feature
+class (`SamRecordFeature.strand`), which is what _defines_ `strand` for a SAM
+record. Every strand bug this plugin has had was that conversion done somewhere
+else: it agrees with `strand` on every BAM under test and disagrees on synteny,
+so it survives review and ships. Three shipped at once — the read tooltip's
+`(+)`/`(-)`, the first-of-pair group key, and the chain primary's strand.
+
+Rules that need a strand AND a flag (`firstOfPairStrand`) live in
+`shared/util.ts` and are called by both consumers, so a "these must match"
+comment never stands in for actually sharing the code.
+
 ## Adapter hot path (BAM/CRAM)
 
 `extractFeatureArrays` calls `feature.get(...)` per read, so keep work out of
