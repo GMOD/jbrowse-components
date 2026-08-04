@@ -4,9 +4,18 @@ function getSearchParams() {
   return new URLSearchParams(window.location.search)
 }
 
+// history.replaceState fires no event, so a write below has to notify readers
+// itself. popstate alone covers only back/forward, which nothing here does: the
+// Loader's ?config= is cleared by the very setter defined here, and with no
+// notification it would keep reading the stale value and stay on the loading
+// screen (the "fall back to the start screen" error path never arrived).
+const listeners = new Set<() => void>()
+
 function subscribe(callback: () => void) {
+  listeners.add(callback)
   window.addEventListener('popstate', callback)
   return () => {
+    listeners.delete(callback)
     window.removeEventListener('popstate', callback)
   }
 }
@@ -17,6 +26,11 @@ function updateUrl(params: URLSearchParams) {
     ? `${window.location.pathname}?${newSearch}`
     : window.location.pathname
   window.history.replaceState(null, '', newUrl)
+  // copied: a listener may unsubscribe (React drops the subscription when the
+  // re-render this triggers unmounts the reader) while we are iterating
+  for (const listener of [...listeners]) {
+    listener()
+  }
 }
 
 export function readQueryParams<T extends string>(keys: T[]) {
