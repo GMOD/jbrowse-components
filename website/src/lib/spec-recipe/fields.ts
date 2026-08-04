@@ -322,6 +322,28 @@ export const trackFields: Record<string, FieldRecipe> = {
           note: 'Loads the region even past the byte-size limit, which can be slow.',
         }
       : undefined,
+  // The two ways a multi-row display derives its row order, as opposed to a
+  // `layout`/`rowOrder` that states one outright. They are easy to confuse, so
+  // each note says what the order is computed FROM: clustering uses the whole
+  // region in view, the sort uses a single column.
+  runClustering: value =>
+    value === true
+      ? {
+          path: `${TRACK_MENU} → Clustering → Cluster rows by similarity`,
+          note: 'Orders the rows by how alike they are across the region in view, and draws the tree it built beside them. It clusters over what is displayed, so the same menu item somewhere else gives a different order.',
+        }
+      : undefined,
+  sortRowsBy: value => {
+    const at = asRecord(value)
+    const refName = asString(at?.refName)
+    const pos = at?.pos
+    return refName && typeof pos === 'number'
+      ? {
+          path: 'Right-click the track at the column to sort on → Sort rows by color here',
+          note: `Reorders the rows by the value each one carries at a single position (${refName}:${pos.toLocaleString('en-US')} in this figure), which is how a painting is lined up under a peak. "Reset row order" in the same menu undoes it.`,
+        }
+      : undefined
+  },
 }
 
 const TRACK_LABELS: Record<string, string> = {

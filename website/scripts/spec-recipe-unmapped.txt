@@ -49,7 +49,6 @@ rowHeight
 rowIdentityAutoZoom
 rowIdentityMode
 rowProportion
-runClustering
 scaleType
 scatterPointSize
 showColorLegend
@@ -62,7 +61,6 @@ showLegend
 showResolutionControls
 showTree
 sideBySide
-sortRowsBy
 sortedBy
 strokeColor
 subtreeFilter
