@@ -225,6 +225,16 @@ exist yet, or from a `vs_main` body that grows a second decision worth naming.
   whole-ribbon one from the corners. Different quantities, each right for the
   decision it feeds. Only the fade curve applied to them is shared, and that is
   now `thinWidthFade`.
+
+  What the CPU side *does* have to keep in step is the renderer's `perpW < 1`
+  against the pick engine's — both call the same `ribbonPerpWidth`, so only the
+  **threshold** can drift, and drifting it produces ribbons you can see but not
+  click. That is now `syntenyPickRenderAgreement.test.ts`, which drives both
+  real implementations over a sweep across the boundary and compares their
+  verdicts rather than restating `< 1`. Mutation-checked: moving one side to
+  `< 2` fails it. **This is the shape to reach for whenever two implementations
+  are tied by a `SYNC:` comment but must agree exactly** — cheaper than codegen,
+  and it works where the two measure genuinely different quantities.
 - **`instanceInterleave` ↔ the instance layout** — buffer packing, not math.
   `assertVertexInputs.ts` is the mechanism that covers this class.
 - **`syntenyFillPad.test.ts`** — a test asserting a geometry pad; the shader side
