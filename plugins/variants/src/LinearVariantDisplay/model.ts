@@ -11,7 +11,7 @@ import {
   SV_TYPE_COLOR_JEXL,
 } from '../shared/variantSvType.ts'
 
-import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { LinearVariantDisplayConfigModel } from './configSchema.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
@@ -42,7 +42,7 @@ import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
  * ```
  */
 export default function stateModelFactory(
-  configSchema: AnyConfigurationSchemaType,
+  configSchema: LinearVariantDisplayConfigModel,
 ) {
   return linearCanvasBaseDisplayStateModelFactory(configSchema)
     .props({
