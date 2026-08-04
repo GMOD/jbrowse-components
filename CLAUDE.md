@@ -35,9 +35,14 @@ Background lives in `agent-docs/` (start at `ARCHITECTURE.md`, then
 
 - Run `pnpm test <directory>`, not the full suite. Lint with `--fix`.
 - **`pnpm autogen` rewrites every generated-and-committed artifact** and is the
-  one answer to any "X is out of date" CI failure. It owns `*.generated.ts`
-  shaders (via `.slang`), `package.json` `exports` maps, and
-  `tsconfig.build.esm.json` `references` — never hand-edit those.
+  answer to almost any "X is out of date" CI failure. It owns `package.json`
+  `exports` maps, `tsconfig.build.esm.json` `references`, and the doc tables
+  built from JSDoc tags — never hand-edit those.
+- **Shaders are the one exception: `pnpm gen:shaders`, not `autogen`.**
+  `*.generated.ts` is compiled from `.slang` by its own script, checked by its
+  own CI job (Shaders), and `scripts/autogen.ts` has no shader generator — so
+  `pnpm autogen` on a stale-shader failure rewrites nothing and looks like the
+  check is wrong. Edit the `.slang`, never the generated module.
 - Two TypeScript versions on purpose: `typescript` 6.x for lint, aliased
   `typescript7` for `pnpm typecheck`. Don't unify them.
 - `@jbrowse/core/util`'s exports are the ABI external plugins resolve against.
