@@ -274,7 +274,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     note: 'Hides splice junctions supported by fewer reads than this.',
   })),
   maxHeight: numberField(n => ({
-    path: `${TRACK_MENU} → Show... → Set max layout height... → ${n}`,
+    path: `${TRACK_MENU} → Read height → Set max layout height... → ${n}`,
   })),
   // Two inline sliders under the multi-sample variant "Filter by..." submenu
   // (labels verified in shared/multiSampleVariantMenuItems.ts). Both re-fetch

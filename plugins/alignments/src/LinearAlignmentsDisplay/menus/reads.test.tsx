@@ -11,8 +11,7 @@ afterEach(cleanup)
 
 const noPin: DisplayTypeDefaultControl = { active: false, toggle: () => {} }
 
-// Only the fields "Show..." reads. `getMaxHeightMenuItem`'s getSession call is
-// inside its onClick, so the row builds fine without a tree.
+// Only the fields "Show..." reads.
 function makeModel(overrides?: Partial<{ canCollapseGroupRows: boolean }>) {
   return {
     showLegend: false,
@@ -40,8 +39,6 @@ function makeModel(overrides?: Partial<{ canCollapseGroupRows: boolean }>) {
     canCollapseGroupRows: false,
     collapseGroupRows: false,
     setCollapseGroupRows: jest.fn(),
-    maxHeight: 1200,
-    setMaxHeight: jest.fn(),
     ...overrides,
   }
 }
@@ -50,18 +47,6 @@ function subMenuOf(model: ReturnType<typeof makeModel>) {
   return getReadsMenuItem(model).subMenu as MenuItem[]
 }
 
-// Where each label sits in DOM order. A header renders as a plain `li` and a
-// row as `role="menuitem"`, so the list is walked rather than queried by role —
-// the point of these specs is the interleaving of the two.
-function rowFinder(root: Element) {
-  const text = [...root.querySelectorAll('li')].map(el => el.textContent)
-  return (label: string) => text.findIndex(t => t.startsWith(label))
-}
-
-// Renders the rows through the real CascadingMenu rather than asserting on the
-// item objects: the headers only pay off if they actually land between the right
-// rows once MUI has laid the list out, and the same pass computes the shared
-// trailing column that the pins and "?" buttons claim.
 function renderRows(items: MenuItem[]) {
   return render(
     <ThemeProvider theme={createJBrowseTheme()}>
@@ -77,35 +62,30 @@ function renderRows(items: MenuItem[]) {
   )
 }
 
-test('the rows are grouped under headers, in order', () => {
-  const { baseElement } = renderRows(subMenuOf(makeModel()))
-  const at = rowFinder(baseElement)
-
-  expect(at('Layers')).toBeGreaterThanOrEqual(0)
-  expect(at('Show legend')).toBeGreaterThan(at('Layers'))
-  expect(at('Read detail')).toBeGreaterThan(at('Show pileup'))
-  expect(at('Show mismatches')).toBeGreaterThan(at('Read detail'))
-  expect(at('Which reads')).toBeGreaterThan(at('Show soft clipping'))
-  expect(at('Show proper pairs')).toBeGreaterThan(at('Which reads'))
-  expect(at('Set max layout height...')).toBeGreaterThan(
-    at('Show only split alignments'),
-  )
-})
-
-// A header is a label, not a row — it must not be clickable or steal the
-// checkbox column, or the grouping costs more than it buys.
-test('the headers are inert', () => {
-  const model = makeModel()
-  const { getByText } = renderRows(subMenuOf(model))
-  for (const header of ['Layers', 'Read detail', 'Which reads']) {
-    fireEvent.click(getByText(header))
+// The invariant this menu is kept to. It is the longest submenu in the track
+// menu, and what makes a long menu unreadable is rows that aren't the same kind
+// of thing — an action, a header, a divider — not the row count. Both attempts
+// at structure here (subHeader groups, a divider before the row cap) were
+// reverted; the row cap moved to "Read height" instead. A new row that isn't a
+// checkbox belongs in another menu, and this fails if one lands.
+test('every row is a checkbox — no actions, headers or dividers', () => {
+  for (const item of subMenuOf(makeModel({ canCollapseGroupRows: true }))) {
+    expect(item.type).toBe('checkbox')
   }
-  expect(model.setShowLegend).not.toHaveBeenCalled()
-  expect(model.setShowMismatches).not.toHaveBeenCalled()
-  expect(model.setDrawProperPairs).not.toHaveBeenCalled()
 })
 
-test('the toggles still fire from their groups', () => {
+// The same shape once MUI has laid it out: nothing renders as a bare label or a
+// rule, so the eye never has to skip a row while scanning.
+test('renders as an unbroken list of menu rows', () => {
+  const { baseElement } = renderRows(subMenuOf(makeModel()))
+  const rows = [...baseElement.querySelectorAll('li')]
+  expect(rows.length).toBeGreaterThan(0)
+  for (const row of rows) {
+    expect(row.getAttribute('role')).toBe('menuitem')
+  }
+})
+
+test('the toggles fire against the model', () => {
   const model = makeModel()
   const { getByText } = renderRows(subMenuOf(model))
   fireEvent.click(getByText('Show legend'))
@@ -116,13 +96,9 @@ test('the toggles still fire from their groups', () => {
   expect(model.setDrawProperPairs).toHaveBeenCalledWith(false)
 })
 
-// The collapse row is conditional, so the "Layers" group has to hold it without
-// the later headers drifting into the wrong group.
-test('the conditional collapse row joins Layers, not Read detail', () => {
-  const { baseElement } = renderRows(
-    subMenuOf(makeModel({ canCollapseGroupRows: true })),
-  )
-  const at = rowFinder(baseElement)
-  expect(at('Collapse groups to one row')).toBeGreaterThan(at('Show pileup'))
-  expect(at('Collapse groups to one row')).toBeLessThan(at('Read detail'))
+// The row cap is sizing, so it left this menu for "Read height" — where the
+// read size and the fixed/grow/fit modes already live.
+test('the row cap is not here', () => {
+  const { queryByText } = renderRows(subMenuOf(makeModel()))
+  expect(queryByText('Set max layout height...')).toBeNull()
 })

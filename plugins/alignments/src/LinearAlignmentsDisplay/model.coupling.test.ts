@@ -272,6 +272,9 @@ describe('setLinkedReads color scheme preservation', () => {
 // menu. Guards against reintroducing the always-shown disabled stub.
 interface MenuNode {
   label?: string
+  // 'checkbox' | 'radio' | 'subMenu' | 'divider' | 'subHeader' | undefined —
+  // read by the specs that assert a submenu holds one kind of row
+  type?: string
   disabled?: boolean
   disabledHelpText?: string
   onClick?: () => void
@@ -343,6 +346,29 @@ describe('pileup-only menus grey out when the pileup is hidden', () => {
       expect(findMenu(display.trackMenuItems(), label)?.disabled).toBeFalsy()
     },
   )
+})
+
+// "Show..." is the longest submenu in the track menu, so it is kept to one kind
+// of row: a long list is hard to scan when the rows aren't alike, not when there
+// are many. The row cap was the one action among the checkboxes, and it is
+// sizing, so it closes "Read height" — beside the read size and the
+// fixed/grow/fit modes — instead.
+describe('the row cap sits with the other sizing controls', () => {
+  test('"Read height" offers it and "Show..." does not', () => {
+    const display = createDisplay()
+    const items = display.trackMenuItems()
+    const show = findMenu(items, 'Show...')?.subMenu ?? []
+    const height = findMenu(items, 'Read height')?.subMenu ?? []
+    expect(hasMenuLabel(height, 'Set max layout height...')).toBe(true)
+    expect(hasMenuLabel(show, 'Set max layout height...')).toBe(false)
+  })
+
+  test('"Show..." is checkboxes end to end', () => {
+    const display = createDisplay()
+    const show = findMenu(display.trackMenuItems(), 'Show...')?.subMenu ?? []
+    expect(show.length).toBeGreaterThan(0)
+    expect(show.map(i => i.type)).toEqual(show.map(() => 'checkbox'))
+  })
 })
 
 // Chain layout is handed neither `sortedBy` nor `largeFeaturesFirst` — its rows

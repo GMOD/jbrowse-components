@@ -1,7 +1,6 @@
 import { checkboxItem } from '@jbrowse/core/ui'
 import {
   collapseGroupRowsItems,
-  getMaxHeightMenuItem,
   groupByRadioMenuItem,
   pickGroupByOptions,
 } from '@jbrowse/plugin-alignments'
@@ -75,8 +74,6 @@ interface ShowModel extends CollapseGroupRowsModel {
   setShowMismatches: (show: boolean) => void
   showInterbaseIndicators: boolean
   setShowInterbaseIndicators: (show: boolean) => void
-  maxHeight: number
-  setMaxHeight: (height?: number) => void
 }
 
 // Visibility of the rendering layers, mirroring the alignments "Show..." menu
@@ -85,6 +82,9 @@ interface ShowModel extends CollapseGroupRowsModel {
 // indicators are real, while the read-category toggles there (proper pairs,
 // singletons, split alignments, soft clipping, base-quality fade) have no
 // meaning for PAF and are omitted rather than shown as dead checkboxes.
+//
+// Toggles only, like its twin — the row cap lives in the shared feature-height
+// menu, which this display also builds.
 export function getSyntenyShowMenuItem(model: ShowModel) {
   return {
     label: 'Show...',
@@ -146,8 +146,6 @@ export function getSyntenyShowMenuItem(model: ShowModel) {
             'needs "Show coverage" on.',
         },
       ),
-      { type: 'divider' as const },
-      getMaxHeightMenuItem(model),
     ] satisfies MenuItem[],
   }
 }

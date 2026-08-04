@@ -14,6 +14,30 @@ import type { HeightMode } from '@jbrowse/plugin-linear-genome-view'
 const SetFeatureHeightDialog = lazy(
   () => import('../dialogs/SetFeatureHeightDialog.tsx'),
 )
+const SetMaxHeightDialog = lazy(
+  () => import('../dialogs/SetMaxHeightDialog.tsx'),
+)
+
+interface MaxHeightModel {
+  maxHeight: number
+  setMaxHeight: (height?: number) => void
+}
+
+// The pileup row cap: how tall the stack may grow before reads are dropped.
+// Sizing, so it belongs to this menu — it used to sit in "Show...", where it was
+// the one action among a dozen checkboxes and the only reason that menu needed a
+// divider. Still exported because it's the same helper on both displays.
+export function getMaxHeightMenuItem(model: MaxHeightModel) {
+  return {
+    label: 'Set max layout height...',
+    onClick: () => {
+      getSession(model).queueDialog(handleClose => [
+        SetMaxHeightDialog,
+        { model, handleClose },
+      ])
+    },
+  }
+}
 
 const PRESETS = Object.values(COMPACTNESS_PRESETS)
 
@@ -32,7 +56,7 @@ export {
 // absorbs overflow — so picking a size never changes the mode and vice versa.
 // Each group reads as a plain "pick one". `configuredFeatureHeight` drives the
 // size group; `heightMode` the mode group.
-interface FeatureHeightModel extends ResolvableDisplay {
+interface FeatureHeightModel extends ResolvableDisplay, MaxHeightModel {
   configuredFeatureHeight: number
   heightMode: HeightMode
   setFeatureHeight: (height?: number) => void
@@ -99,6 +123,10 @@ export function getFeatureHeightMenuItem(
       // construction. The `fixed` mode is its own row — not folded into the size
       // presets — so this group stays a plain, complete "pick one".
       ...heightModeMenuItems(model, noun),
+      // The row cap is the third sizing axis (how many rows, vs how tall each
+      // read and how the track absorbs them), so it closes this menu rather
+      // than sitting among the "Show..." checkboxes.
+      getMaxHeightMenuItem(model),
     ],
   }
 }

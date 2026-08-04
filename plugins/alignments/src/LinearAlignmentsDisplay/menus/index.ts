@@ -11,11 +11,12 @@ export {
   NORMAL_PITCH,
   featureSpacingForHeight,
   getFeatureHeightMenuItem,
+  getMaxHeightMenuItem,
 } from './featureSize.ts'
 export { getFiltersMenuItem } from './filters.ts'
 export { collapseGroupRowsItems, groupByRadioMenuItem } from './groupByMenu.ts'
 export type { CollapseGroupRowsModel } from './groupByMenu.ts'
 export { getReadConnectionsMenuItem } from './readConnections.ts'
-export { getMaxHeightMenuItem, getReadsMenuItem } from './reads.ts'
+export { getReadsMenuItem } from './reads.ts'
 export { getSashimiMenuItem } from './sashimi.ts'
 export { getGroupByMenuItem, getSortByMenuItem } from './sortGroup.ts'

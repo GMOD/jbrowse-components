@@ -1,7 +1,4 @@
-import { lazy } from 'react'
-
 import { checkboxItem, promotableToggleItem } from '@jbrowse/core/ui'
-import { getSession } from '@jbrowse/core/util'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { collapseGroupRowsItems } from './groupByMenu.ts'
@@ -10,31 +7,7 @@ import type { CollapseGroupRowsModel } from './groupByMenu.ts'
 import type { DisplayTypeDefaultControl } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
-const SetMaxHeightDialog = lazy(
-  () => import('../dialogs/SetMaxHeightDialog.tsx'),
-)
-
-interface MaxHeightModel {
-  maxHeight: number
-  setMaxHeight: (height?: number) => void
-}
-
-// The pileup row cap is a plain layout limit with no read-specific meaning, so
-// it's shared with the synteny display's own "Show..." menu rather than
-// re-spelled there (the dialog stays lazy behind this helper).
-export function getMaxHeightMenuItem(model: MaxHeightModel) {
-  return {
-    label: 'Set max layout height...',
-    onClick: () => {
-      getSession(model).queueDialog(handleClose => [
-        SetMaxHeightDialog,
-        { model, handleClose },
-      ])
-    },
-  }
-}
-
-interface ReadsModel extends MaxHeightModel, CollapseGroupRowsModel {
+interface ReadsModel extends CollapseGroupRowsModel {
   showLegend: boolean
   setShowLegend: (show: boolean | undefined) => void
   showCoverage: boolean
@@ -62,22 +35,20 @@ interface ReadsModel extends MaxHeightModel, CollapseGroupRowsModel {
 // Visibility of the rendering layers. Sashimi and read-connection controls live
 // in their own menus.
 //
-// The rows are grouped under subHeaders (the pattern `getFeatureHeightMenuItem`
-// already uses to separate its two radio groups) because this is the longest
-// submenu in the track menu and holds three genuinely different kinds of thing:
-// which bands are drawn, how a read's bases are painted, and which reads are
-// fetched at all. As one flat list — with pins on two rows and help "?" on five
-// — it read as an undifferentiated wall. The headers cost two rows and hide
-// nothing; splitting the third group into its own submenu instead would put the
-// read-category toggles a hop deeper, and they were deliberately kept out of
-// "Filter by..." because they read as visibility (see filters.ts).
+// **Toggles only, and flat.** This is the longest submenu in the track menu, so
+// it is the one that goes unreadable first — and what makes a long menu hard to
+// scan is rows that aren't the same kind of thing, not the row count. Adding
+// subHeaders to group it was tried and reverted: it bought three groups at the
+// cost of four more rows and two more row kinds, which is the opposite trade.
+// The row cap moved to "Read height" for the same reason — it was the one
+// action among the checkboxes. Anything new here should be a checkbox, or it
+// belongs in another menu.
 export function getReadsMenuItem(model: ReadsModel) {
   return {
     label: 'Show...',
     icon: VisibilityIcon,
     type: 'subMenu' as const,
     subMenu: [
-      { type: 'subHeader' as const, label: 'Layers' },
       checkboxItem('Show legend', model.showLegend, () => {
         model.setShowLegend(!model.showLegend)
       }),
@@ -90,7 +61,6 @@ export function getReadsMenuItem(model: ReadsModel) {
       // Only while grouping is in effect, so it sits next to the pileup toggle
       // it modifies rather than in the Group-by dimension list.
       ...collapseGroupRowsItems(model),
-      { type: 'subHeader' as const, label: 'Read detail' },
       checkboxItem('Show mismatches', model.showMismatches, () => {
         model.setShowMismatches(!model.showMismatches)
       }),
@@ -132,7 +102,6 @@ export function getReadsMenuItem(model: ReadsModel) {
       // Which reads populate the pileup. These change what's fetched (they also
       // thin the coverage histogram), but they read as visibility toggles, so
       // they live in "Show..." rather than a filter submenu.
-      { type: 'subHeader' as const, label: 'Which reads' },
       checkboxItem(
         'Show proper pairs',
         model.drawProperPairs,
@@ -176,9 +145,6 @@ export function getReadsMenuItem(model: ReadsModel) {
             'read name, so it applies to a plain pileup too.',
         },
       ),
-      // The one action in a menu of toggles, so a divider rather than a header.
-      { type: 'divider' as const },
-      getMaxHeightMenuItem(model),
     ] satisfies MenuItem[],
   }
 }
