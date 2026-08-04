@@ -13,8 +13,11 @@ export default function AllVsAllPAFAdapterF(pluginManager: PluginManager) {
         configSchema,
         adapterMetadata: {
           category: 'Synteny adapters',
+          // a .paf is claimed by PAFAdapter, and an all-vs-all one is
+          // indistinguishable by name; read as pairwise it attributes one
+          // genome's contigs to another rather than merely dropping them
+          alsoReads: /\.paf(\.gz)?$/i,
         },
-
         getAdapterClass: () =>
           import('./AllVsAllPAFAdapter.ts').then(r => r.default),
       }),

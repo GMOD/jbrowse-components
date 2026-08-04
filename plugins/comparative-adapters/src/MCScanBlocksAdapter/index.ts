@@ -13,8 +13,10 @@ export default function MCScanBlocksAdapterF(pluginManager: PluginManager) {
         configSchema,
         adapterMetadata: {
           category: 'Synteny adapters',
+          // no guesser claims .blocks at all, so without this the file resolves
+          // to UNKNOWN and the adapter has to be found by name
+          alsoReads: /\.blocks$/i,
         },
-
         getAdapterClass: () =>
           import('./MCScanBlocksAdapter.ts').then(r => r.default),
       }),

@@ -13,6 +13,9 @@ export default function BlastTabularAdapterF(pluginManager: PluginManager) {
         configSchema,
         adapterMetadata: {
           category: 'Synteny adapters',
+          // blast -outfmt 6 has no settled extension; .out in particular is
+          // claimed by MashMapAdapter
+          alsoReads: /\.(tsv|tab|blast|out)(\.gz)?$/i,
         },
         getAdapterClass: () =>
           import('./BlastTabularAdapter.ts').then(r => r.default),

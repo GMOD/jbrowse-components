@@ -201,3 +201,76 @@ test('TextIndexingConfig adds a trimmed value on Enter and de-duplicates', () =>
     ),
   ).toHaveLength(1)
 })
+
+// The extension guess is first-match-wins, so where two adapters read one
+// extension the loser is reachable only by knowing its name in a dropdown of
+// every adapter JBrowse has. A `.paf` resolves to the pairwise PAFAdapter, and
+// an all-vs-all file read that way attributes one genome's contigs to another,
+// so the form has to say the other reading exists — on the field, since nobody
+// opens a dropdown they have no reason to think holds a better answer.
+test('a file two adapters can read says so on the adapter field', () => {
+  const { model } = getSession()
+  model.setTrackData({ uri: 'all_vs_all.paf', locationType: 'UriLocation' })
+  const { getByText } = render(<ConfirmTrack model={model} />)
+
+  expect(
+    getByText(/This file can also be read as.*All-vs-all PAF adapter/),
+  ).toBeTruthy()
+})
+
+test('the alternative is also pulled to the top of the dropdown', async () => {
+  const { model } = getSession()
+  model.setTrackData({ uri: 'all_vs_all.paf', locationType: 'UriLocation' })
+  const { getByRole, findByRole } = render(<ConfirmTrack model={model} />)
+
+  fireEvent.mouseDown(getByRole('combobox', { name: 'Adapter type' }))
+  const listbox = within(await findByRole('listbox'))
+  expect(listbox.getByText('Also reads this file')).toBeTruthy()
+  // picking it re-guesses through the existing adapterHint path
+  fireEvent.click(listbox.getAllByText('All-vs-all PAF adapter')[0]!)
+  expect(model.trackAdapter?.type).toBe('AllVsAllPAFAdapter')
+})
+
+// the ordinary case, which is nearly every file: only a handful of adapters
+// declare a pattern, and an unambiguous extension must not grow a second line
+test('an unambiguous file says nothing extra', () => {
+  const { model } = getSession()
+  model.setTrackData({ uri: 'test.bam', locationType: 'UriLocation' })
+  const { queryByText } = render(<ConfirmTrack model={model} />)
+
+  expect(queryByText(/can also be read as/)).toBeNull()
+})
+
+// the adapter that IS the alternative must not offer itself
+test('the chosen adapter is not listed as an alternative to itself', () => {
+  const { model } = getSession()
+  model.setTrackData({ uri: 'all_vs_all.paf', locationType: 'UriLocation' })
+  model.setAdapterHint('AllVsAllPAFAdapter')
+  const { queryByText } = render(<ConfirmTrack model={model} />)
+
+  expect(queryByText(/can also be read as/)).toBeNull()
+})
+
+// .blocks is claimed by no guesser at all, so the file resolves to UNKNOWN.
+// That path renders the prompt plus the dropdown, and is where naming the
+// adapter matters most: there is otherwise nothing on screen pointing at it.
+test('an unclaimed extension still names the adapter that reads it', () => {
+  const { model } = getSession()
+  model.setTrackData({ uri: 'grape.blocks', locationType: 'UriLocation' })
+  const { getByText } = render(<ConfirmTrack model={model} />)
+
+  expect(
+    getByText(/can also be read as.*MCScan multi-genome blocks adapter/),
+  ).toBeTruthy()
+})
+
+test('an all-vs-all PIF is offered alongside the pairwise guess', () => {
+  const { model } = getSession()
+  model.setTrackData({ uri: 'ava.pif.gz', locationType: 'UriLocation' })
+  const { getByText } = render(<ConfirmTrack model={model} />)
+
+  expect(model.trackAdapter?.type).toBe('PairwiseIndexedPAFAdapter')
+  expect(
+    getByText(/can also be read as.*All-vs-all indexed PAF adapter/),
+  ).toBeTruthy()
+})

@@ -199,6 +199,32 @@ recognizes the file and `undefined` when it doesn't. Delegating by hand is easy
 to get subtly wrong: dropping the optional `file` argument on the way through
 hides it from every guesser registered before yours.
 
+The chain is first-match-wins, so it returns exactly one adapter and cannot
+express "or this other one". Where two adapters genuinely read the same
+extension, the one the chain does not pick declares that on its own registration
+instead, and the "Add track" form offers it alongside the guess:
+
+```typescript
+new AdapterType({
+  name: 'AllVsAllPAFAdapter',
+  displayName: 'All-vs-all PAF adapter',
+  configSchema,
+  adapterMetadata: {
+    category: 'Synteny adapters',
+    // a .paf is claimed by PAFAdapter, and an all-vs-all one is
+    // indistinguishable by name
+    alsoReads: /\.paf(\.gz)?$/i,
+  },
+  getAdapterClass: () => import('./AllVsAllPAFAdapter.ts').then(r => r.default),
+})
+```
+
+`alsoReads` is a form hint only. It does not enter this extension point, so a
+file still resolves to one adapter headlessly, from the CLI, and in every
+existing guesser. It also covers an extension no guesser claims at all, where
+the file resolves to `UNKNOWN` and the adapter would otherwise have to be found
+by name.
+
 ### Core-guessTrackTypeForLocation
 
 type: synchronous

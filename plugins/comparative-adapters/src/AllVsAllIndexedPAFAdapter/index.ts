@@ -16,6 +16,9 @@ export default function AllVsAllIndexedPAFAdapterF(
         configSchema,
         adapterMetadata: {
           category: 'Synteny adapters',
+          // a .pif.gz is claimed by PairwiseIndexedPAFAdapter; same file name,
+          // same ambiguity as the unindexed pair above
+          alsoReads: /\.pif\.gz$/i,
         },
         getAdapterClass: () =>
           import('./AllVsAllIndexedPAFAdapter.ts').then(r => r.default),
