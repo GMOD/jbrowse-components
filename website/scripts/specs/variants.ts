@@ -292,6 +292,24 @@ export const variantsSpecs: ScreenshotSpec[] = [
     readySelector: '[data-testid="variant-matrix-display-done"]',
     readyTimeout: 120000,
     settleMs: 15000,
+    // Close the TOP lane's genotype key. Both lanes draw the same five entries
+    // over the same palette, and each copy hides the right ~13% of its own
+    // matrix — in a figure whose whole argument is how the two textures differ
+    // across the window, that is the comparison paying for the same legend
+    // twice. The one on the well-genotyped lane stays, where four categories
+    // are actually in play; the lane above it is a wall of one color that the
+    // caption names in words.
+    //
+    // A click rather than a session prop because `showLegend` is volatile on
+    // MultiSampleVariantBaseModel — legend visibility is deliberately not
+    // session state, so a spec cannot set it. `actions` run after
+    // `readySelector`, so the button exists, and the generator re-waits the
+    // display phases and re-asserts render-settled afterwards.
+    //
+    // The first match IS the top lane: FloatingLegend portals into its own
+    // TrackContainer's overlay node (TrackOverlayPortal), so the two legends sit
+    // in track order rather than in mount order.
+    actions: [{ type: 'click', selector: '[title="Hide legend"]' }],
     // Narrower than the 1500 default: the matrix reads as a texture rather than
     // as per-column detail, so it loses nothing, and the figure is then not
     // twice the page width when both lanes are in it.
