@@ -272,7 +272,7 @@ and the two implementations have to be *meant* to agree:
 
 - Six drift sites retired in the first round, forty-five more since
   (twenty-eight functions and nineteen constants, sixteen of them crossing a
-  package boundary); `SYNC:`-tagged sites went 27 → 9, and six of the ones removed were
+  package boundary); `SYNC:`-tagged sites went 27 → 8, and six of the ones removed were
   **stale** — they named `read.slang` branches deleted when read classification
   moved to the CPU. Everything left is classified in
   [handoffs/shader-js-codegen.md](../handoffs/shader-js-codegen.md).

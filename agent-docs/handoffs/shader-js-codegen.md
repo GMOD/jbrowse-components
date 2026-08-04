@@ -138,7 +138,7 @@ functions would have needed first anyway.
 **Step 4 is not optional.** The generator's whole value is that it can't drift;
 that only holds if each retirement was proved once.
 
-## The residue: 9 `SYNC:` sites, classified
+## The residue: 8 `SYNC:` sites, classified
 
 Ordered by what it would take to close them. **The tags were never the whole
 inventory** — `grep -rn '\.slang' --include='*.ts'` turns up as many untagged
