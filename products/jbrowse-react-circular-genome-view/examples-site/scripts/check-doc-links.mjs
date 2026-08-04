@@ -1,8 +1,10 @@
 // Validate + suggest links in this examples-site:
 //   node scripts/check-doc-links.mjs
-// Fails (exit 1) on any link to a generated doc page that no longer exists, and
-// on any site-internal `../<page>/#<section>` cross-link whose page or section
-// no longer exists (these break silently on a rename).
+// Fails (exit 1) on any link to a generated doc page that no longer exists, on
+// any site-internal `../<page>/#<section>` cross-link whose page or section no
+// longer exists (these break silently on a rename), and on any section with no
+// src/docs/<slug>.md (which renders as a demo with no explanation, and is
+// likewise silent).
 // Then prints suggested reference links for config `type:`s used in examples
 // that aren't linked anywhere in the prose yet. Shared impl lives in
 // @jbrowse/browser-test-utils so every product's script stays identical.
@@ -12,6 +14,7 @@ import { fileURLToPath } from 'url'
 import {
   findBrokenCrossLinks,
   findBrokenDocLinks,
+  findMissingDocs,
   suggestDocLinks,
 } from '@jbrowse/browser-test-utils'
 
@@ -37,6 +40,20 @@ for (const b of brokenCross) {
   )
 }
 
+const { missing, orphans } = findMissingDocs({
+  docsDir: path.join(src, 'docs'),
+  pages,
+})
+for (const m of missing) {
+  console.log(
+    `NO DOC ${m.slug}  (section of page "${m.page}")\n` +
+      `       expected ${path.relative(root, m.expected)}`,
+  )
+}
+for (const o of orphans) {
+  console.log(`ORPHAN src/docs/${o}.md  (no section with that slug renders it)`)
+}
+
 const suggestions = suggestDocLinks({
   exampleDirs: [path.join(src, 'examples')],
   referenceDir,
@@ -52,8 +69,10 @@ if (suggestions.length) {
   }
 }
 
-const brokenCount = broken.length + brokenCross.length
+const failures = broken.length + brokenCross.length + missing.length
 console.log(
-  `\n${brokenCount} broken link(s), ${suggestions.length} suggestion(s)`,
+  `\n${broken.length + brokenCross.length} broken link(s), ` +
+    `${missing.length} missing doc(s), ${orphans.length} orphan(s), ` +
+    `${suggestions.length} suggestion(s)`,
 )
-process.exit(brokenCount ? 1 : 0)
+process.exit(failures ? 1 : 0)

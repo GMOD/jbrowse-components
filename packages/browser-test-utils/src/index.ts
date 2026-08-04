@@ -8,6 +8,7 @@ export {
   buildDocIndex,
   findBrokenCrossLinks,
   findBrokenDocLinks,
+  findMissingDocs,
   suggestDocLinks,
 } from './docLinks.ts'
 export { encodeSessionSpec, sessionSpecQuery } from './session.ts'
@@ -38,5 +39,6 @@ export type {
   BrokenLink,
   DocPage,
   DocSuggestion,
+  MissingDoc,
 } from './docLinks.ts'
 export type { Verdict } from './reviewVerdicts.ts'

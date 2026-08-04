@@ -27,6 +27,15 @@ block is repeated verbatim, give it a one-line pointer to the page that explains
 it (`// see the Pan and zoom page for why this listener is non-passive`) instead
 of repeating the reasoning five times.
 
+`scripts/check-duplication.mjs` (run by `pnpm check-links`) holds that rule up
+from the other side: two top-level blocks with the same name in two example
+files must be identical once comments are stripped. It exists because the cost
+of the rule is drift — a pan-handler fix has to land in five files, and the file
+that gets missed is a page teaching a bug with nothing to say so. A block that
+genuinely differs per page goes in the script's `DIVERGES` map **with a reason**.
+Keep that list short: if it starts growing, the shared surface has outgrown
+copy-paste and the answer is a different rule argued here, not more entries.
+
 The one allowed exception is **bulk data**: a `*.json` fixture may be imported,
 because inlining a 72 KB config would bury the code the page is about. Data
 only, never code.
@@ -48,10 +57,15 @@ literal, never `?raw` a private helper of this site.
   number — it is that a display started rendering a Material component that
   isn't behind either provider. Raising the budget quietly makes the prose
   false. Background: `agent-docs/handoffs/byo-no-mui.md`.
+- **Every section needs `src/docs/<slug>.md`.** `ExampleSection` renders nothing
+  when the file is absent, so a page can ship as a title, a one-line lead and
+  400 lines of source with no explanation — which is how this site's own lead
+  page went out. `pnpm check-links` now fails on a missing doc and on an orphan
+  one (prose whose section was renamed out from under it).
 - The demo runs in the browser, so verify with `pnpm build && pnpm smoke` (one
   headless page per example) rather than reasoning about it. `pnpm typecheck` is
-  `astro check`, and `pnpm check-links` validates doc references and internal
-  cross-links.
+  `astro check`, and `pnpm check-links` validates doc references, internal
+  cross-links, doc coverage and the duplication rule above.
 - This site is in `push.yml` twice: the deploy loop and the
   `examples_site_smoke` matrix. Both enumerate sites by name, so a new site is
   invisible to CI until it is added to both.

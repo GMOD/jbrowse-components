@@ -191,6 +191,46 @@ export function findBrokenCrossLinks({
   return broken
 }
 
+export interface MissingDoc {
+  // the section slug with no prose file
+  slug: string
+  // the page that holds it, for the error message
+  page: string
+  // the src/docs/<slug>.md path that should exist
+  expected: string
+}
+
+// Every section renders `src/docs/<section-slug>.md` above its demo, and
+// ExampleSection renders nothing at all when the file is absent. So a page can
+// ship with a title, a one-line lead and several hundred lines of source and no
+// explanation, and nothing says so — which is how the build-your-own site's own
+// lead page went out with no prose. Cheap to check, invisible otherwise.
+//
+// Orphans are reported too: a doc whose section was renamed stops being
+// rendered and silently becomes dead prose.
+export function findMissingDocs({
+  docsDir,
+  pages,
+}: {
+  docsDir: string
+  pages: { slug: string; sections: { slug: string }[] }[]
+}): { missing: MissingDoc[]; orphans: string[] } {
+  const present = new Set(
+    listMarkdown(docsDir).map(f => f.replace(/\.md$/, '')),
+  )
+  const missing = pages.flatMap(p =>
+    p.sections
+      .filter(s => !present.has(s.slug))
+      .map(s => ({
+        slug: s.slug,
+        page: p.slug,
+        expected: path.join(docsDir, `${s.slug}.md`),
+      })),
+  )
+  const sections = new Set(pages.flatMap(p => p.sections.map(s => s.slug)))
+  return { missing, orphans: [...present].filter(d => !sections.has(d)) }
+}
+
 export interface DocSuggestion {
   file: string
   // the config `type` value found, e.g. 'BigWigAdapter'
