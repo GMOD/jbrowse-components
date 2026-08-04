@@ -55,9 +55,16 @@
 #   HG008T_<ver>.pif.gz(.tbi)  (from `jbrowse make-pif HG008T_<ver>.paf`)
 #   HG008T_<ver>.fasta.gz(.fai,.gzi)  (NIST ships it BGZF; just samtools faidx)
 #   GRCh38_HG008-T-<BENCH_VER>_somatic-CNV_PASS.draftbenchmark.calls.bed
-#   config.json  (website/scripts/cgiab-demo-config.json, not jbrowse2/config.json
-#     -- the latter points at local --load copy paths that do not exist on S3)
+#   config.json  (demos/cgiab/config.json, which is kept byte-identical to what
+#     jbrowse.org/demos/cgiab/ serves -- NOT jbrowse2/config.json, whose
+#     --load copy paths are local and do not exist on S3. The older
+#     website/scripts/cgiab-demo-config.json predates demos/ being checked in and
+#     is stale; it still points the tumor reads at the 118 GB NCBI BAM rather
+#     than the rehosted slice.)
 # Then regenerate the tutorial figures: cd website && pnpm screenshots --filter sv_cgiab
+#
+# A config-only change (e.g. the BAF track's resolutionMultiplier) needs no
+# rebuild and no data upload: copy demos/cgiab/config.json alone and invalidate.
 #
 set -euo pipefail
 
@@ -214,11 +221,77 @@ if [ ! -f "$BAF_BW" ]; then
     | LC_COLLATE=C sort -k1,1 -k2,2n > baf.bedgraph
   bedGraphToBigWig baf.bedgraph "$REF.chrom.sizes" "$BAF_BW"
 fi
-jb add-track "$BAF_BW" --category "CNV" --load copy --force --out "$APP"
+# add-track-json rather than add-track, because the settings that make this
+# track legible are not things add-track can express. A bigWig zoom level carries
+# only min/avg/max per bin: a fair summary of read depth, a meaningless one for
+# BAF, whose per-bin values are a distribution. Every summary bin over an LOH arm
+# comes back min 0 / max 1 / avg noise, and the default whiskers rendering paints
+# all three as one solid full-height wash. resolutionMultiplier scales the
+# bases-per-bin the adapter asks for; the finest zoom level in this file reduces
+# at 2560 bp and bbi takes a zoom level when reductionLevel <= 2*basesPerSpan, so
+# 0.001 keeps the fetch on raw per-site values out to ~1.28 Mbp/px. That covers
+# every single-chromosome view (whole chr1 is ~190 kbp/px, 1.4 MB of raw points);
+# whole-genome view still summarizes, which is what the Wakhan track below is for.
+cp -f "$BAF_BW" "$APP/$BAF_BW"
+cat > baf_track.json <<JSON
+{
+  "type": "QuantitativeTrack",
+  "trackId": "HG008-T_baf",
+  "name": "HG008-T B-allele frequency (BAF)",
+  "category": ["CNV"],
+  "assemblyNames": ["$REF_BUILD"],
+  "adapter": {
+    "type": "BigWigAdapter",
+    "uri": "$BAF_BW",
+    "resolutionMultiplier": 0.001
+  },
+  "displayDefaults": {
+    "defaultRendering": "scatter",
+    "scatterPointSize": 1,
+    "minScore": 0,
+    "maxScore": 1
+  }
+}
+JSON
+jb add-track-json baf_track.json --update --out "$APP"
 
 # ── CNV: published Wakhan haplotype-specific copy-number/LOH segments ─────────
+# copynumbers_segments.bed is long format, one row per haplotype
+# (chr/start/end/copynumber_state/coverage/haplotype). Its last #-header line is
+# tab-separated, so BedAdapter names those columns with no columnNames slot, and
+# partitioning on haplotype paints one row per parental copy. That is the same
+# allelic state the BAF track carries but as segments, so it reads identically at
+# every zoom. copynumber_state is one parental copy rather than the total, so 1 is
+# the expected state and a 0 row is the lost haplotype that makes an arm LOH.
 WAKHAN=$FTP/data_somatic/HG008/Liss_lab/analysis/$WAKHAN_RUN/bed_output
-jb add-track "$WAKHAN/HG008_HiFi_copynumbers_segments.bed" --category "CNV" --force --out "$APP"
+cat > wakhan_track.json <<JSON
+{
+  "type": "FeatureTrack",
+  "trackId": "hg008_wakhan_haplotype",
+  "name": "HG008-T Wakhan copy number per haplotype",
+  "category": ["CNV"],
+  "assemblyNames": ["$REF_BUILD"],
+  "adapter": {
+    "type": "BedAdapter",
+    "uri": "$WAKHAN/HG008_HiFi_copynumbers_segments.bed"
+  },
+  "displays": [
+    {
+      "type": "LinearMultiRowFeatureDisplay",
+      "displayId": "hg008_wakhan_haplotype-LinearMultiRowFeatureDisplay",
+      "partitionField": "haplotype",
+      "color": "jexl:get(feature,'copynumber_state')<0.5?'#2166ac':get(feature,'copynumber_state')<1.5?'#bdbdbd':get(feature,'copynumber_state')<2.5?'#f4a582':'#b2182b'",
+      "legend": [
+        { "label": "Haplotype lost (0)", "color": "#2166ac" },
+        { "label": "One copy (1)", "color": "#bdbdbd" },
+        { "label": "Duplicated (2)", "color": "#f4a582" },
+        { "label": "Amplified (3+)", "color": "#b2182b" }
+      ]
+    }
+  ]
+}
+JSON
+jb add-track-json wakhan_track.json --update --out "$APP"
 jb add-track "$WAKHAN/HG008_HiFi_loh_segments.bed" --category "CNV" --force --out "$APP"
 
 # ── T2T tumor assembly (v3.2) -> GRCh38 (minimap2), for synteny/dotplot ───────

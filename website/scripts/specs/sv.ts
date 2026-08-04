@@ -1126,10 +1126,11 @@ export const svSpecs: ScreenshotSpec[] = [
               // one band at 0.5. Scatter (not line) because the value is one
               // point per germline het site, and the whole signal IS the
               // spread — a line would average the two LOH bands into a
-              // meaningless 0.5 and erase the event.
+              // meaningless 0.5 and erase the event. The raw fetch that keeps
+              // those bands apart is HG008_BAF_TRACK's resolutionMultiplier, not
+              // a display setting; see the note on that const.
               defaultRendering: 'scatter',
               scatterPointSize: 1,
-              resolution: 10,
               minScore: 0,
               maxScore: 1,
               height: 140,
@@ -1380,12 +1381,11 @@ export const svSpecs: ScreenshotSpec[] = [
             {
               trackId: 'hg008_baf',
               type: 'LinearWiggleDisplay',
-              // raw 0..1 BAF scatter with default whisker summary preserving the
-              // per-bin spread; resolution:10 makes it fine-grained so the 2+1
-              // gain's band-split is legible
+              // raw 0..1 BAF scatter. The 2+1 gain's band-split at 1/3 and 2/3
+              // reads here because HG008_BAF_TRACK's resolutionMultiplier keeps
+              // the fetch off the bigWig zoom levels; see the note on that const.
               defaultRendering: 'scatter',
               scatterPointSize: 2,
-              resolution: 10,
               minScore: 0,
               maxScore: 1,
               height: 140,
@@ -1449,11 +1449,13 @@ export const svSpecs: ScreenshotSpec[] = [
               type: 'LinearWiggleDisplay',
               // raw 0..1 BAF scatter: BOTH arms split off the 0.5 het line — the
               // p-arm (loss+LOH) and the q-arm (copy-neutral LOH) — which is the
-              // whole point of the figure. resolution:10 keeps bins fine enough
-              // that the split reads at chromosome scale.
+              // whole point of the figure. Nothing in this chromosome is
+              // balanced, so the 0.5 reference band comes from cnv_depth_baf's
+              // chr3 q-arm. At this zoom the split only survives because
+              // HG008_BAF_TRACK's resolutionMultiplier keeps the fetch off the
+              // bigWig zoom levels, whose per-bin min/avg/max paints one wash.
               defaultRendering: 'scatter',
               scatterPointSize: 1,
-              resolution: 10,
               minScore: 0,
               maxScore: 1,
               height: 140,
@@ -1505,11 +1507,12 @@ export const svSpecs: ScreenshotSpec[] = [
               trackId: 'hg008_baf',
               type: 'LinearWiggleDisplay',
               // raw 0..1 BAF scatter: the 18q LOH splits het SNPs into upper
-              // and lower bands off the 0.5 het line. resolution:10 keeps bins
-              // fine enough that the split reads at chromosome scale.
+              // and lower bands off the 0.5 het line, against the balanced p-arm
+              // beside it. At this zoom the split only survives because
+              // HG008_BAF_TRACK's resolutionMultiplier keeps the fetch off the
+              // bigWig zoom levels.
               defaultRendering: 'scatter',
               scatterPointSize: 1,
-              resolution: 10,
               minScore: 0,
               maxScore: 1,
               height: 140,

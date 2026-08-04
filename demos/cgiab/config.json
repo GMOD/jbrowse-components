@@ -192,32 +192,6 @@
     },
     {
       "type": "QuantitativeTrack",
-      "trackId": "HG008_log2ratio_calibrated",
-      "name": "HG008 log2 ratio (BAF-calibrated to diploid)",
-      "category": ["CNV"],
-      "assemblyNames": ["GRCh38_GIABv3"],
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "HG008_log2ratio.calibrated.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "displays": [
-        {
-          "type": "LinearWiggleDisplay",
-          "displayId": "HG008_log2ratio_calibrated-LinearWiggleDisplay",
-          "defaultRendering": "scatter",
-          "summaryScoreMode": "avg",
-          "scatterPointSize": 1,
-          "minScore": -2,
-          "maxScore": 2,
-          "height": 120
-        }
-      ]
-    },
-    {
-      "type": "QuantitativeTrack",
       "trackId": "HG008-T_baf",
       "name": "HG008-T B-allele frequency (BAF)",
       "category": ["CNV"],
@@ -227,7 +201,8 @@
         "bigWigLocation": {
           "uri": "HG008-T_baf.bcftools.bw",
           "locationType": "UriLocation"
-        }
+        },
+        "resolutionMultiplier": 0.001
       },
       "displays": [
         {
@@ -359,23 +334,64 @@
           "color": "jexl:get(feature,'cn')<1?'#2166ac':get(feature,'cn')<2?'#92c5de':get(feature,'cn')<3?'#e0e0e0':get(feature,'cn')<4?'#f4a582':'#b2182b'",
           "legend": [
             {
-              "label": "CN 0 (homozygous loss)",
+              "label": "CNVkit CN 0",
               "color": "#2166ac"
             },
             {
-              "label": "CN 1 (loss)",
+              "label": "CNVkit CN 1",
               "color": "#92c5de"
             },
             {
-              "label": "CN 2 (diploid)",
+              "label": "CNVkit CN 2",
               "color": "#e0e0e0"
             },
             {
-              "label": "CN 3 (gain)",
+              "label": "CNVkit CN 3",
               "color": "#f4a582"
             },
             {
-              "label": "CN 4+ (amplification)",
+              "label": "CNVkit CN 4+",
+              "color": "#b2182b"
+            }
+          ]
+        }
+      ],
+      "description": "Per-clone CNVkit integer copy number for eight HG008-T single-cell-derived clonal lines. CNVkit centers log2 on each sample's own median, so these integers are relative to the clone's modal state, not absolute: HG008-T is hypodiploid, so its balanced regions land on CN 3 here rather than CN 2. Read them against the benchmark CNV track, whose total_copy_number is absolute."
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hg008_wakhan_haplotype",
+      "name": "HG008-T Wakhan copy number per haplotype",
+      "category": ["CNV"],
+      "assemblyNames": ["GRCh38_GIABv3"],
+      "adapter": {
+        "type": "BedAdapter",
+        "bedLocation": {
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIH_HiFi_Wakhan-CNA_20240308/bed_output/HG008_HiFi_copynumbers_segments.bed",
+          "locationType": "UriLocation"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearMultiRowFeatureDisplay",
+          "displayId": "hg008_wakhan_haplotype-LinearMultiRowFeatureDisplay",
+          "partitionField": "haplotype",
+          "color": "jexl:get(feature,'copynumber_state')<0.5?'#2166ac':get(feature,'copynumber_state')<1.5?'#bdbdbd':get(feature,'copynumber_state')<2.5?'#f4a582':'#b2182b'",
+          "legend": [
+            {
+              "label": "Haplotype lost (0)",
+              "color": "#2166ac"
+            },
+            {
+              "label": "One copy (1)",
+              "color": "#bdbdbd"
+            },
+            {
+              "label": "Duplicated (2)",
+              "color": "#f4a582"
+            },
+            {
+              "label": "Amplified (3+)",
               "color": "#b2182b"
             }
           ]
