@@ -1206,15 +1206,15 @@
     "name": "multiway_synteny/ecoli_pangenome",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-01T14:09:43.528Z",
-    "hash": "80fd2ba8831d479f8e479eee629b2dd7aead4968"
+    "reviewedAt": "2026-08-04T08:04:59.730Z",
+    "hash": "86ca002bf085f4b9c772f14d034e579b4f7beb3c"
   },
   "multiway_synteny/grape_peach_cacao": {
     "name": "multiway_synteny/grape_peach_cacao",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-01T14:09:43.631Z",
-    "hash": "46427787c5e719f58d84aca79a8308d3d06bbc7a"
+    "status": "bad",
+    "note": "the previous palette on origin/main is better. not sure if there are ways to go back to that",
+    "reviewedAt": "2026-08-04T08:05:44.143Z",
+    "hash": "a17c632eb62553981f6d061b3d67779a0cf858bf"
   },
   "search_feature_highlight": {
     "name": "search_feature_highlight",
@@ -1484,10 +1484,10 @@
   },
   "multiway_synteny/ecoli_one_vs_all": {
     "name": "multiway_synteny/ecoli_one_vs_all",
-    "status": "good",
-    "note": "RESOLVED as asked: the same locus is now drawn as a graph. The four-strain minigraph rGFA holds K-12's paa island as one 21.8 kb segment (s502), and the paths index says NCTC86 is the only strain whose walk goes through it (>s502>s2388>s504>s505) while Sakai/CFT073/IAI39 detour through 4.5-5.5 kb alternates - the same reading as this figure's lanes, off the graph instead of off the PAF. New figure pangenome/rgfa_paa_bubble (force-directed/Bandage layout, segments lane and nodes on one reference-position ramp) plus a 'The same gap, drawn as a graph' section in allvsall_synteny.md. It runs on a gfatools slice (ecoli_paa_subgraph.gfa, now built by scripts/build_ecoli_pangenome_graph.sh and hosted with the other demo assets) rather than the in-app launch: the tabix cut expands one hop off the region and a link is indexed at its reference-side endpoint, so CFT073's and IAI39's arms - which leave at s501 and rejoin at s506 - came in as 43 bp/558 bp stubs with nothing behind them. This figure itself is unchanged.",
-    "reviewedAt": "2026-07-30T07:10:36.077Z",
-    "hash": "ebb0761283df71446e7324035120ec8eb635c37b"
+    "status": "bad",
+    "note": "I don't see the graph in this screenshot. should be combined figure? previous agent notes: RESOLVED as asked: the same locus is now drawn as a graph. The four-strain minigraph rGFA holds K-12's paa island as one 21.8 kb segment (s502), and the paths index says NCTC86 is the only strain whose walk goes through it (>s502>s2388>s504>s505) while Sakai/CFT073/IAI39 detour through 4.5-5.5 kb alternates - the same reading as this figure's lanes, off the graph instead of off the PAF. New figure pangenome/rgfa_paa_bubble (force-directed/Bandage layout, segments lane and nodes on one reference-position ramp) plus a 'The same gap, drawn as a graph' section in allvsall_synteny.md. It runs on a gfatools slice (ecoli_paa_subgraph.gfa, now built by scripts/build_ecoli_pangenome_graph.sh and hosted with the other demo assets) rather than the in-app launch: the tabix cut expands one hop off the region and a link is indexed at its reference-side endpoint, so CFT073's and IAI39's arms - which leave at s501 and rejoin at s506 - came in as 43 bp/558 bp stubs with nothing behind them. This figure itself is unchanged.",
+    "reviewedAt": "2026-08-04T08:04:57.414Z",
+    "hash": "e74ca9b3f1f137d068a5d6cafcb313e1c7aabfca"
   },
   "popgen/genotype_matrix_in2lt": {
     "name": "popgen/genotype_matrix_in2lt",
@@ -1573,10 +1573,10 @@
   },
   "multiway_synteny/ecoli_stx_island": {
     "name": "multiway_synteny/ecoli_stx_island",
-    "status": "good",
-    "note": "FIXED (arrow): the anchored arrow head landed on the stx2B label itself; dx -45 / dy -28 stops it short so the boxed label stays readable. Regenerated.",
-    "reviewedAt": "2026-08-01T13:26:49.163Z",
-    "hash": "16feebfcc7bd6009df9de148bb82c1192bf9b99f"
+    "status": "bad",
+    "note": "move the text annotation to the right side of screen",
+    "reviewedAt": "2026-08-04T08:05:18.495Z",
+    "hash": "f58a1d92b88dd0566d4a8650cbcf47bcbca6ce31"
   },
   "cookbook_color_by_type": {
     "name": "cookbook_color_by_type",
@@ -1940,8 +1940,8 @@
     "name": "multiway_synteny/ecoli_one_vs_all_whole_genome",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-01T14:59:54.851Z",
-    "hash": "e85a6420b6f0edd3deb270a84f9418683a2431f8"
+    "reviewedAt": "2026-08-04T08:04:57.499Z",
+    "hash": "7fefe744a1f8eff3756ddb6f71ac254d2d4007f5"
   },
   "pangenome/hprc_mhc_bandage": {
     "name": "pangenome/hprc_mhc_bandage",
@@ -2045,8 +2045,8 @@
     "name": "pangenome/hprc_graph_vs_callset",
     "status": "good",
     "note": "HEIGHT DONE, and the 'alt vs other alt' point is right and is a variants-plugin question rather than a spec one. HEIGHT: 520 -> 340, and the frame is 1420 rather than 1600. 464 haplotype rows do not fit in any height a figure can afford, so the lane is a texture either way; the extra 180 px bought more of the same texture and took it off the graph pane, which is the half this figure is about. WHY 'OTHER ALT ALLELE' IS EVERYWHERE, which is the real content of the note: the display keys a cell on whether the genotype is the FIRST ALT of the record or a different one, and on a graph-derived callset that is close to arbitrary. vcfwave decomposition leaves a site with many long alleles, and which of them ALT[0] is comes from the order vg deconstruct wrote them, so blue means 'carries the allele that happens to be listed first' and red means 'carries one of the others'. On SNPs, where the scheme was designed, multiallelic sites are rare and red is a genuine flag; here red is the common case and says nothing about WHICH allele. The scheme that would say something is per-site allele identity or allele length, i.e. color by which alt rather than by first-vs-rest, and that is a change to the multi-sample variant display's cell coloring (plugins/variants), not to this figure. Flagged rather than done, and deliberately so this round: another change is in flight in that plugin. BANDAGE COMPARISON: answered under pangenome/graph_resolution.",
-    "reviewedAt": "2026-08-04T04:30:08.593Z",
-    "hash": "2c32b05c86184678c712702fc1c3843aab8ac6db"
+    "reviewedAt": "2026-08-04T08:09:52.068Z",
+    "hash": "47d80840edaf296e1b858bfa43f618f70ea28211"
   },
   "pangenome/hprc_mhc_anchored": {
     "name": "pangenome/hprc_mhc_anchored",
@@ -2337,9 +2337,9 @@
   "pangenome/graph_context": {
     "name": "pangenome/graph_context",
     "status": "good",
-    "note": "this is frankly pretty chaotic screenshot. any improvements you'd suggest? might want to use different colors for the different annotation boxes so it is clear what the correspondence is across the left and right panels.",
-    "reviewedAt": "2026-08-04T00:23:21.108Z",
-    "hash": "3712b721daae5259bea48121f41d7bccf5f2085a"
+    "note": "",
+    "reviewedAt": "2026-08-04T08:09:37.722Z",
+    "hash": "26a9c61107bbeb7a761d57f0667fa154be50bdf2"
   },
   "dog10k-size-fst-scan": {
     "name": "dog10k-size-fst-scan",
@@ -2372,7 +2372,7 @@
   "pangenome/pggb_haplotype_paths": {
     "name": "pangenome/pggb_haplotype_paths",
     "status": "bad",
-    "note": "we reviewed this previously but the concern is still the same, only deletion really shows paths clearly, the edges between nodes are two small to see the paths, so we need a better solution, even coloring the length of the nodes using the per-sample colors. previous notes: this is kind of cool but it is hard to see which nodes follow which paths,and i think it is just an artifact that the deletion path shows more of the individual paths since it uses dashed line. is there any further improvement we can make? REWORKED, new locus and new hosted cut. The old window was the 561 bp chr:1,004,500 subgraph, which is flat by construction: pggb cuts a segment at every SNP, so every allele in it is a 1 bp stub and the path strokes were specks on a grey line. The figure is now the IS5 bubble at K12 chr:1,299,400-1,300,800, two arms of 1,199 bp and 0 bp, with the four strains that skip the element drawn as four strokes on the arc the view labels \"1.2 kb deletion\" and K12 the one colour missing from it -- carriage stated as an absence, which is the reading the section is about. Same locus pggb_locus_graph opens from the index, deliberately: the tabix cut rebuilds segments and links only, so it has no P lines and this setting has nothing to draw there, which is exactly what the file route is still for. New hosted file ecoli_pggb_is5.gfa (odgi extract -E, 20 segments/26 links/5 paths), uploaded to the demo bucket and emitted by build_ecoli_pangenome_graph.sh; the tutorial carries the same odgi command. FORCE with bubbleSpread open, and both halves were measured rather than picked: under the anchored layout the deletion arc bows out by 0.35x the drawn length of the backbone it bypasses (bowAround, ALONG_FRACTION), which at 1,199 bp is deeper than the two-row anchored pane and the arc drew off the bottom of it -- the zoom-to-fit sizes on node positions and does not see the arc. Under FMMM at Bandage proportional scale the 1,199 bp node snakes across the frame and crosses everything; wide shrinks it to the smallest thing in the drawing because the 1 bp alleles inflate to 10x mean. Open is the one that leaves the IS5 bubble the largest lens. THE DASHED-LINE READING IS RIGHT, and it is a plugin limit rather than a spec one. drawPaths draws one offset stroke per path along an EDGE, so how many of the five resolve is a function of how long that edge is drawn: the 1.2 kb deletion is one long edge and shows all five, while the 1 bp SNP bubbles are edges a few px long and show a speck. Four levers tried, all measured: bubbleSpread 'wide' floors the 1 bp alleles to 10x mean, which drops zoom-to-fit to 12% and makes every ribbon smaller including the deletion's; 'compress' pulls the deletion arc towards the mean and the five strokes pile up; contigThickness 26 fattens the nodes without lengthening any edge; linearLayout re-arranges without helping. What DOES work is zoom: the view's `scale`/`translateX`/`translateY` are settable from a session spec, and at 110% the five colours separate on the ordinary connectors too -- but at that zoom two bubbles fill the pane. So the real fixes are a plugin change (draw path carriage along NODES, not only edges) or a narrower hosted cut, and the second means uploading another odgi extract to the demo bucket. Flagged rather than done.",
+    "note": "we reviewed this previously but the concern is still the same, only deletion really shows paths clearly, the edges between nodes are two small to see the paths, so we need a better solution, even coloring the length of the nodes using the per-sample colors. previous notes: this is kind of cool but it is hard to see which nodes follow which paths,and i think it is just an artifact that the deletion path shows more of the individual paths since it uses dashed line. is there any further improvement we can make? REWORKED, new locus and new hosted cut. The old window was the 561 bp chr:1,004,500 subgraph, which is flat by construction: pggb cuts a segment at every SNP, so every allele in it is a 1 bp stub and the path strokes were specks on a grey line. The figure is now the IS5 bubble at K12 chr:1,299,400-1,300,800, two arms of 1,199 bp and 0 bp, with the four strains that skip the element drawn as four strokes on the arc the view labels \"1.2 kb deletion\" and K12 the one colour missing from it -- carriage stated as an absence, which is the reading the section is about. Same locus pggb_locus_graph opens from the index, deliberately: the tabix cut rebuilds segments and links only, so it has no P lines and this setting has nothing to draw there, which is exactly what the file route is still for. New hosted file ecoli_pggb_is5.gfa (odgi extract -E, 20 segments/26 links/5 paths), uploaded to the demo bucket and emitted by build_ecoli_pangenome_graph.sh; the tutorial carries the same odgi command. FORCE with bubbleSpread open, and both halves were measured rather than picked: under the anchored layout the deletion arc bows out by 0.35x the drawn length of the backbone it bypasses (bowAround, ALONG_FRACTION), which at 1,199 bp is deeper than the two-row anchored pane and the arc drew off the bottom of it -- the zoom-to-fit sizes on node positions and does not see the arc. Under FMMM at Bandage proportional scale the 1,199 bp node snakes across the frame and crosses everything; wide shrinks it to the smallest thing in the drawing because the 1 bp alleles inflate to 10x mean. Open is the one that leaves the IS5 bubble the largest lens. THE DASHED-LINE READING IS RIGHT, and it is a plugin limit rather than a spec one. drawPaths draws one offset stroke per path along an EDGE, so how many of the five resolve is a function of how long that edge is drawn: the 1.2 kb deletion is one long edge and shows all five, while the 1 bp SNP bubbles are edges a few px long and show a speck. Four levers tried, all measured: bubbleSpread 'wide' floors the 1 bp alleles to 10x mean, which drops zoom-to-fit to 12% and makes every ribbon smaller including the deletion's; 'compress' pulls the deletion arc towards the mean and the five strokes pile up; contigThickness 26 fattens the nodes without lengthening any edge; linearLayout re-arranges without helping. What DOES work is zoom: the view's `scale`/`translateX`/`translateY` are settable from a session spec, and at 110% the five colours separate on the ordinary connectors too -- but at that zoom two bubbles fill the pane. So the real fixes are a plugin change (draw path carriage along NODES, not only edges) or a narrower hosted cut, and the second means uploading another odgi extract to the demo bucket. Flagged rather than done. DONE, and it is the plugin change the last pass flagged rather than a spec edit. drawPaths now colors the NODES too: a node is split lengthwise into one lane per path IN THE GRAPH, in the legend's own order, and a path that does not visit it leaves its lane empty. The slot is what makes it readable, since an absence lands at the same height on every node, so which strain skips a segment is a gap in a fixed place instead of a stroke to be found. On this cut the 1,199 bp arm is now a single K12-colored lane against a five-colour backbone, which states the carriage outright where the old drawing left it to be inferred from an arc four strains take; the 1 bp bubbles show which strain takes which side, which was the original complaint. Three things worth recording. The lanes divide the node's existing width rather than inflating it, so turning paths on does not re-weight the drawing against its edges. `thickness` reaches the shader in SCREEN px while a point is in world units, so the sideways shift placing a lane is converted back — the first render had it in world units and the lanes fanned apart with zoom, caught by looking at the picture and now pinned by a test. And it is gated at 16 paths and a 1.2 px lane: past either, sixteen-plus colours down one node is not a reading and the node keeps its scheme colour, which is why the HPRC figures (hundreds of paths) are untouched. Published as graphgenomeviewer 9ff482d262b2 and the three test_data/graphgenomeview pins bumped to it; the tutorial and the spec-recipe entry follow the renamed switch ('Draw paths', no longer 'Draw paths on edges'). The rest of the pangenome/ sweep was reverted: --filter implies --force, and every other figure came back 0.02-4% different by raw AE with the diff being nothing but glyph and edge antialiasing outlines, which the publish cannot explain.",
     "reviewedAt": "2026-08-03T23:19:28.288Z",
     "hash": "a8974992388fbcda87abc956dbfe2ecc7a2afe96"
   },

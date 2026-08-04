@@ -1868,14 +1868,18 @@ export const graphSpecs: ScreenshotSpec[] = [
           layoutMode: 'force',
           layoutQuality: 4,
           // A floor, where the sibling graph figures compress, and the two are
-          // not interchangeable. This one is about carriage rather than bubble
-          // shape, and carriage is drawn on EDGES as one offset stroke per path:
-          // the 1.2 kb deletion arc has to stay long for five ribbons to
-          // separate along it and for the one magenta IAI39 stroke to be the
-          // only thing on it. A floor lifts the 1 bp alleles and leaves that arc
-          // proportional; 'compress' pulls it towards the mean and the five
-          // strokes crowd into the colour pile-up drawPaths is prone to, which
-          // states the opposite of what the figure is for. Rendered both.
+          // not interchangeable. This one is about carriage, which is now drawn
+          // along the NODES as well: each is split into five lanes in the
+          // legend's order, and a strain that skips a node leaves its lane
+          // empty (review: "the edges between nodes are too small to see the
+          // paths ... even coloring the length of the nodes using the
+          // per-sample colors"). The 1,199 bp arm is a single K12 lane, which
+          // is the finding stated outright rather than inferred from the arc
+          // four strains take. A floor is still what keeps the 1 bp alleles
+          // from clamping to stubs whose lanes have no length to run along;
+          // 'compress' pulls the deletion arc towards the mean and the strokes
+          // on it crowd into the colour pile-up drawPaths is prone to. Rendered
+          // both.
           bubbleSpread: 'open',
           colorScheme: 'grey',
           referencePath: 'K12',

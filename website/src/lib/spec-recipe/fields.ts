@@ -487,8 +487,8 @@ export const viewFields: Record<string, FieldRecipe> = {
   drawPaths: value =>
     typeof value === 'boolean'
       ? {
-          path: `${GRAPH_SETTINGS} → Draw paths on edges (${value ? 'on' : 'off'})`,
-          note: 'Draws one stroke per P/W record across every edge it crosses, keyed by sample. Needs a GFA that states its paths: an rGFA and an indexed cut both carry segments and links only.',
+          path: `${GRAPH_SETTINGS} → Draw paths (${value ? 'on' : 'off'})`,
+          note: 'Colors every node and connector by the P/W records through it, one lane per path in legend order, so a path that skips a node leaves its lane empty. Needs a GFA that states its paths: an rGFA and an indexed cut both carry segments and links only.',
         }
       : undefined,
   // the select lists the GFA's own path names, so the figure's value IS the
