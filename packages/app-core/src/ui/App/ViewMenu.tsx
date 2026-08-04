@@ -35,25 +35,27 @@ const ViewMenu = observer(function ViewMenu({
   const { moveViewToNewTab, moveViewToSplitRight } = useDockview()
   const usePanel =
     session.effectiveUseWorkspaces && isSessionWithDockviewLayout(session)
-  const viewCount = usePanel
-    ? (session.getPanelContainingView(model.id)?.viewIds.length ?? 0)
-    : session.views.length
+  // The views this move is relative to: in a workspace, the ones sharing this
+  // view's panel; in the classic stack, all of them. `session.views` is the
+  // order either way, so the mode decides the SCOPE of a move and nothing else
+  // — there is one implementation of "move a view" again.
+  const scopeIds = usePanel
+    ? session.getPanelContainingView(model.id)?.viewIds.slice()
+    : undefined
+  const viewCount = scopeIds?.length ?? session.views.length
 
-  const classicMoves: Record<ReorderDirection, (id: string) => void> = {
+  const moves: Record<
+    ReorderDirection,
+    (id: string, scopeIds?: string[]) => void
+  > = {
     top: session.moveViewToTop,
     up: session.moveViewUp,
     down: session.moveViewDown,
     bottom: session.moveViewToBottom,
   }
 
-  // In workspace mode the panel's own view-id list is the order that renders;
-  // in classic mode it's session.views. Same four directions either way.
   const moveView = (direction: ReorderDirection) => {
-    if (usePanel) {
-      session.moveViewInPanel(model.id, direction)
-    } else {
-      classicMoves[direction](model.id)
-    }
+    moves[direction](model.id, scopeIds)
   }
 
   // Give this view a home of its own: its own tab beside the rest, or its own

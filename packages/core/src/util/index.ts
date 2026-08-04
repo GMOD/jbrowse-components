@@ -210,7 +210,12 @@ export { matchTrackId } from './matchTrackId.ts'
 export { drawImageOntoCanvasContext } from './offscreenCanvasPonyfill.ts'
 export { isElectron, isNode, rIC } from './environment.ts'
 export { isObject } from './objectUtils.ts'
-export { type ReorderDirection, reorder } from './reorder.ts'
+export {
+  type ReorderDirection,
+  applyOrderWithin,
+  reorder,
+  reorderWithin,
+} from './reorder.ts'
 export { getStr } from './getStr.ts'
 export { measureGridWidth, resolveSelectedIds } from './dataGridUtils.ts'
 export { isRpcResult } from './rpc.ts'

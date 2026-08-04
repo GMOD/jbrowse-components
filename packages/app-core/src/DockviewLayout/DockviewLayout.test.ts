@@ -109,40 +109,6 @@ describe('DockviewLayoutMixin', () => {
     })
   })
 
-  describe('view ordering within panel', () => {
-    function threeViews() {
-      const session = createTestSession()
-      session.assignViewToPanel('panel-1', 'view-1')
-      session.assignViewToPanel('panel-1', 'view-2')
-      session.assignViewToPanel('panel-1', 'view-3')
-      return session
-    }
-
-    it.each([
-      ['up', 'view-2', ['view-2', 'view-1', 'view-3']],
-      ['down', 'view-2', ['view-1', 'view-3', 'view-2']],
-      ['top', 'view-3', ['view-3', 'view-1', 'view-2']],
-      ['bottom', 'view-1', ['view-2', 'view-3', 'view-1']],
-      // already at the end it moves toward: a no-op, not a wrap
-      ['up', 'view-1', ['view-1', 'view-2', 'view-3']],
-      ['down', 'view-3', ['view-1', 'view-2', 'view-3']],
-    ] as const)('moveViewInPanel %s on %s', (direction, viewId, expected) => {
-      const session = threeViews()
-      session.moveViewInPanel(viewId, direction)
-      expect(session.getViewIdsForPanel('panel-1')).toEqual(expected)
-    })
-
-    it('is a no-op for a view in no panel', () => {
-      const session = threeViews()
-      session.moveViewInPanel('view-elsewhere', 'top')
-      expect(session.getViewIdsForPanel('panel-1')).toEqual([
-        'view-1',
-        'view-2',
-        'view-3',
-      ])
-    })
-  })
-
   describe('active panel', () => {
     it('starts with no active panel', () => {
       const session = createTestSession()

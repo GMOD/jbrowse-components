@@ -1,7 +1,8 @@
 import {
+  applyOrderWithin,
   localStorageGetBoolean,
   localStorageSetBoolean,
-  reorder,
+  reorderWithin,
 } from '@jbrowse/core/util'
 import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
@@ -73,9 +74,23 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
       },
     }))
     .actions(self => {
-      const move = (id: string, direction: ReorderDirection) => {
+      // `scopeIds` narrows the move to a subset of the stack: in a tabbed
+      // workspace "move this view up" means up past the previous view IN THIS
+      // PANEL, and the view that happens to precede it in `self.views` may be
+      // in another panel, where moving past it would look like a no-op. Omitted
+      // (the classic stack) every view is in scope and this is a plain reorder.
+      const move = (
+        id: string,
+        direction: ReorderDirection,
+        scopeIds?: string[],
+      ) => {
         const idx = self.views.findIndex(v => v.id === id)
-        self.views = cast(reorder(self.views, idx, direction))
+        const scope = scopeIds && new Set(scopeIds)
+        self.views = cast(
+          reorderWithin(self.views, idx, direction, v =>
+            scope ? scope.has(v.id) : true,
+          ),
+        )
       }
       // The body of removeView, callable from replaceView below — an action
       // can't reach a sibling action through `self` from inside the same
@@ -92,27 +107,42 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
         /**
          * #action
          */
-        moveViewDown(id: string) {
-          move(id, 'down')
+        moveViewDown(id: string, scopeIds?: string[]) {
+          move(id, 'down', scopeIds)
         },
         /**
          * #action
          */
-        moveViewUp(id: string) {
-          move(id, 'up')
+        moveViewUp(id: string, scopeIds?: string[]) {
+          move(id, 'up', scopeIds)
         },
         /**
          * #action
          */
-        moveViewToTop(id: string) {
-          move(id, 'top')
+        moveViewToTop(id: string, scopeIds?: string[]) {
+          move(id, 'top', scopeIds)
         },
 
         /**
          * #action
          */
-        moveViewToBottom(id: string) {
-          move(id, 'bottom')
+        moveViewToBottom(id: string, scopeIds?: string[]) {
+          move(id, 'bottom', scopeIds)
+        },
+
+        /**
+         * #action
+         * Put the named views into the given relative order, leaving views not
+         * named in their own slots.
+         *
+         * `session.views` is the one ordering, so this is how a channel that
+         * states an order in some other vocabulary gets it applied: a session
+         * spec's `layout` names views per panel, top to bottom, and that used to
+         * be honoured by the panel assignment array's order. Now the assignment
+         * carries membership only, so the layout says it here instead, once.
+         */
+        orderViews(ids: string[]) {
+          self.views = cast(applyOrderWithin(self.views, ids, v => v.id))
         },
 
         /**
@@ -137,17 +167,18 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
          * a slot swap rather than remove-then-add so the new view lands where
          * the reader was looking instead of at the bottom of the session.
          *
-         * The slot is `session.views`, which is the classic stack's order. In
-         * workspaces mode the panel the old view sat in is not preserved: the
+         * The slot is `session.views`, which is the order views render in under
+         * both layout modes (a panel assignment says which panel a view is in,
+         * not where in it), so the swap lands in place either way.
+         *
+         * WHICH panel is a separate question and this does not answer it: the
          * new view arrives unassigned and dockview's reconcile homes it to the
-         * active panel (see app-core's reconcilePanelAssignments), which is the
-         * same panel only when the replaced view was in the active one.
+         * active panel, the same panel only when the replaced view was in the
+         * active one. In practice it is, since clicking into a view activates
+         * its panel, and the launch that offers a replace is a click on that
+         * view's own menu.
          */
-        replaceView(
-          view: IBaseViewModel,
-          typeName: string,
-          initialState = {},
-        ) {
+        replaceView(view: IBaseViewModel, typeName: string, initialState = {}) {
           // read before the removal, which is what makes the index stale
           const idx = self.views.indexOf(view)
           detach(view)

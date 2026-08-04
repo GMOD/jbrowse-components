@@ -23,14 +23,23 @@ export function createPanelId() {
   return `panel-${createElementId()}`
 }
 
+/**
+ * The views a panel renders, in `session.views` order.
+ *
+ * **`session.views` is the one ordering of views; a panel assignment says which
+ * panel a view is in, not where in it.** This used to read the order off the
+ * assignment array, which made the two properties independent and put the same
+ * fact in two places — so "move this view up" had two implementations picked by
+ * layout mode, and an operation underneath that fork (replaceView, which puts a
+ * new view where an old one was) could not express itself to whichever ordering
+ * happened to be live. Ordering here, grouping there, and each is stated once.
+ */
 export function getViewsForPanel(
   panelId: string,
   session: DockviewSessionType & SessionWithDockviewLayout,
 ): AbstractViewModel[] {
-  return session.getViewIdsForPanel(panelId).flatMap(id => {
-    const view = session.views.find(v => v.id === id)
-    return view ? [view] : []
-  })
+  const ids = new Set(session.getViewIdsForPanel(panelId))
+  return session.views.filter(v => ids.has(v.id))
 }
 
 /**
@@ -113,6 +122,15 @@ export function getPanelPosition(
     : undefined
 }
 
+// Every viewId the layout names, in the order it reads: depth-first over
+// children, then each panel's own list.
+function flattenLayoutViewIds(node: DockviewLayoutNode): string[] {
+  return [
+    ...(node.viewIds ?? []),
+    ...(node.children ?? []).flatMap(child => flattenLayoutViewIds(child)),
+  ]
+}
+
 /**
  * Build dockview panels/groups from a nested init layout (e.g. from URL
  * params), assigning each node's views to its panel. Returns the first panel's
@@ -176,6 +194,13 @@ export function applyInitLayout(
   }
 
   processNode(initLayout, undefined, undefined)
+
+  // The layout states an order too: its panels read left to right / top to
+  // bottom, and each panel lists its views top to bottom. That used to land in
+  // the assignment arrays, which are membership-only now, so it lands in
+  // `session.views` instead, which is the one ordering. A layout that agrees
+  // with the views array (the usual case) is a no-op here.
+  session.orderViews(flattenLayoutViewIds(initLayout))
 
   // 'tabs' children share one group's space, so there is nothing to distribute
   const splitDirection =

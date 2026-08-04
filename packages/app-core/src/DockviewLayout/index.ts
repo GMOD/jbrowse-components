@@ -1,7 +1,5 @@
-import { reorder } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import type { ReorderDirection } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type { SerializedDockview } from 'dockview-react'
 
@@ -40,7 +38,12 @@ export function DockviewLayoutMixin() {
       ),
       /**
        * #property
-       * Maps panel IDs to arrays of view IDs (for stacking views within a panel)
+       * Which panel each view is in, as panelId -> viewIds.
+       *
+       * Membership only. The ORDER views render in is `session.views`, in both
+       * layout modes (see getViewsForPanel), so this array's order carries no
+       * meaning and nothing should read it as one. Two arrays each claiming to
+       * be the order is what made "move this view up" need two implementations.
        */
       panelViewAssignments: types.stripDefault(
         types.map(types.array(types.string)),
@@ -122,7 +125,9 @@ export function DockviewLayoutMixin() {
 
       /**
        * #action
-       * Assign a view to a panel (adds to the panel's view stack)
+       * Put a view in a panel. Appends, but the position within the list is not
+       * the render order (see the property's own note), so there is nothing to
+       * choose here.
        */
       assignViewToPanel(panelId: string, viewId: string) {
         const existing = self.panelViewAssignments.get(panelId)
@@ -155,23 +160,6 @@ export function DockviewLayoutMixin() {
        */
       removePanel(panelId: string) {
         self.panelViewAssignments.delete(panelId)
-      },
-
-      /**
-       * #action
-       * Reorder a view within its panel's view stack. The workspace-mode
-       * counterpart of the session's `moveViewUp`/`moveViewToTop`/... family,
-       * which reorder `session.views` itself — here the panel's own view-id
-       * list is the order that renders, so that is what moves.
-       */
-      moveViewInPanel(viewId: string, direction: ReorderDirection) {
-        const loc = self.getPanelContainingView(viewId)
-        if (loc) {
-          self.panelViewAssignments.set(
-            loc.panelId,
-            reorder(loc.viewIds, loc.idx, direction),
-          )
-        }
       },
     }))
 }

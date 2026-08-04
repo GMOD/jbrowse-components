@@ -6,6 +6,35 @@ views live in which panel** (`panelViewAssignments`), because "a panel holds a
 stack of JBrowse views" is our concept, not dockview's. Everything hard in
 `ui/App/useDockviewController.ts` is keeping those two consistent.
 
+## `session.views` is the order; a panel assignment is the grouping
+
+One ordering, both layout modes. `getViewsForPanel` reads a panel's membership
+off `panelViewAssignments` and then renders those views **in `session.views`
+order**, so the assignment array's own order carries no meaning and nothing may
+read it as one.
+
+It used to. Two arrays each claiming to be the order meant one user intent
+needed two implementations picked by mode — `moveViewUp`/`ToTop`/... reordering
+`session.views` for the classic stack, `moveViewInPanel` reordering the
+assignment for a workspace — and any operation _below_ that fork could not
+express itself to whichever ordering happened to be live. `replaceView` (put a
+new view where an old one was) was the first to hit it, and the fix was not a
+third case but deleting the second ordering.
+
+So the mode now decides the **scope** of a move and nothing else:
+`reorderWithin(views, idx, direction, inScope)` moves past the previous view _in
+this panel_, leaving out-of-scope views pinned in their slots. `ViewMenu` passes
+the panel's members as the scope, or nothing at all in the classic stack.
+
+An order arriving in another vocabulary lands in `session.views` too: a session
+spec's `layout` lists views per panel, top to bottom, and `applyInitLayout`
+applies that with `orderViews` rather than leaving it implicit in the
+assignment.
+
+What this does **not** unify is _which_ panel a replacement lands in. A new view
+arrives unassigned and reconcile homes it to the active panel, which is the
+replaced view's panel only because clicking into a view activates its panel.
+
 ## dockview's layout event is a microtask; its panel events are not
 
 `onDidLayoutChange` is an `AsapEvent`, which `queueMicrotask`s its fire.

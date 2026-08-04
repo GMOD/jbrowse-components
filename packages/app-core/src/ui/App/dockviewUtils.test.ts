@@ -1,4 +1,5 @@
-import { types } from '@jbrowse/mobx-state-tree'
+import { applyOrderWithin } from '@jbrowse/core/util'
+import { cast, types } from '@jbrowse/mobx-state-tree'
 
 import { DockviewLayoutMixin } from '../../DockviewLayout/index.ts'
 import {
@@ -6,6 +7,7 @@ import {
   createPanelConfig,
   createPanelId,
   getPanelPosition,
+  getViewsForPanel,
   layoutsEqual,
   rearrangePanelsWithDirection,
   reconcilePanelAssignments,
@@ -14,15 +16,23 @@ import {
 import type { DockviewApi } from 'dockview-react'
 
 // `views` stands in for the session's real view list: reconcile only ever reads
-// ids off it, so a bare id model is the whole surface it needs
-const TestSessionModel = types.compose(
-  'TestSession',
-  types.model({
-    name: types.string,
-    views: types.array(types.model({ id: types.identifier })),
-  }),
-  DockviewLayoutMixin(),
-)
+// ids off it, so a bare id model is the whole surface it needs. `orderViews`
+// calls the same pure permutation MultipleViewsSessionMixin's does, so this
+// double cannot drift from the real action's behaviour.
+const TestSessionModel = types
+  .compose(
+    'TestSession',
+    types.model({
+      name: types.string,
+      views: types.array(types.model({ id: types.identifier })),
+    }),
+    DockviewLayoutMixin(),
+  )
+  .actions(self => ({
+    orderViews(ids: string[]) {
+      self.views = cast(applyOrderWithin(self.views, ids, v => v.id))
+    },
+  }))
 
 function createSession(viewIds: string[] = []) {
   return TestSessionModel.create({
@@ -355,5 +365,33 @@ describe('rearrangePanelsWithDirection', () => {
       direction: 'right',
     })
     expect(panels.size).toBe(2)
+  })
+})
+
+// The invariant the two orderings collapsed into: a panel says WHICH views it
+// holds, `session.views` says in what order they render. Assign them to the
+// panel back to front and the panel still renders them in views order.
+describe('one ordering', () => {
+  it('getViewsForPanel renders in session.views order, not assignment order', () => {
+    const session = createSession(['v1', 'v2', 'v3'])
+    session.assignViewToPanel('panel-1', 'v3')
+    session.assignViewToPanel('panel-1', 'v1')
+
+    expect(
+      getViewsForPanel('panel-1', session as unknown as SessionArg),
+    ).toEqual([session.views[0], session.views[2]])
+  })
+
+  it('a layout that states an order applies it to session.views', () => {
+    const session = createSession(['v1', 'v2'])
+    const { api } = createFakeApi()
+    applyInitLayout(api, session as unknown as SessionArg, {
+      direction: 'horizontal',
+      children: [{ viewIds: ['v2'] }, { viewIds: ['v1'] }],
+    })
+
+    // the layout reads v2 then v1, so that is the order now; nothing has to
+    // consult the assignment arrays to find it out
+    expect(session.views.map(v => v.id)).toEqual(['v2', 'v1'])
   })
 })
