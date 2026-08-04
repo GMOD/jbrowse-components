@@ -49,7 +49,7 @@ export default class BamAdapter extends BaseSamAdapter<BamAdapterConfig> {
     // BamFile.getHeaderPre parses the .bai/.csi before reading the header
     // block, so this one await covers the whole "Downloading index" phase
     const { bam } = this.configure()
-    return (await bam.getHeader({ onProgress })) ?? []
+    return bam.getHeader({ onProgress })
   }
 
   async getHeader(_opts?: BaseOptions) {

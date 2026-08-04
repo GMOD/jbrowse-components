@@ -705,8 +705,8 @@ importers:
   plugins/alignments:
     dependencies:
       '@gmod/bam':
-        specifier: ^7.6.2
-        version: 7.6.2
+        specifier: ^7.7.0
+        version: 7.7.0
       '@gmod/cram':
         specifier: ^10.2.0
         version: 10.2.0
@@ -4257,8 +4257,8 @@ packages:
   '@gmod/abortable-promise-cache@3.0.4':
     resolution: {integrity: sha512-kxRJj5fyRKFuZDp/YvnHeadYCV2EEUKyH2T4a2Iz9O7T/thOWWHUDiiD/Mg6WZP/RNNDIcfSHl/xVHHy/+j8qg==}
 
-  '@gmod/bam@7.6.2':
-    resolution: {integrity: sha512-ijAJ4WFO20nvjjxhFRoJTA7RBGKOC+ApHT7G9FKPRx4U8/hVwQjjsZZMcMNs5RWq8utIXaTrMx+UXD6mE6TX6A==}
+  '@gmod/bam@7.7.0':
+    resolution: {integrity: sha512-Ng4SnmP9i9t9NoS08K1uDlx7GwvG8kjxFgPRFT4LiRuX460R4gUTIqhpiCKKW67kxMsQRctyKzS/qSJJqaLpFw==}
 
   '@gmod/bbi@10.0.1':
     resolution: {integrity: sha512-pMhKd3HQPNBXrY1XwW5M1IHoXBa6PzM1/YMVtMB9E8I/hkUHJxcvpvj8xwZYBPc/vjzaLRrFek7FNAX009GcbQ==}
@@ -12178,7 +12178,7 @@ snapshots:
 
   '@gmod/abortable-promise-cache@3.0.4': {}
 
-  '@gmod/bam@7.6.2':
+  '@gmod/bam@7.7.0':
     dependencies:
       '@gmod/bgzf-filehandle': 6.3.1
       '@jbrowse/quick-lru': 7.3.5
