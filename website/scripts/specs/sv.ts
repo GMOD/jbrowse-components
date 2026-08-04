@@ -1046,6 +1046,7 @@ export const svSpecs: ScreenshotSpec[] = [
     // directly as copy number).
     url: cgiabUrl({
       sessionTracks: [
+        HG008_BICSEQ2_TRACK,
         {
           type: 'MultiQuantitativeTrack',
           trackId: 'hg008_cnv_indexcov_chr5',
@@ -1084,6 +1085,22 @@ export const svSpecs: ScreenshotSpec[] = [
           trackLabels: 'offset',
           tracks: [
             {
+              trackId: 'hg008_bicseq2',
+              type: 'LinearWiggleDisplay',
+              // step, not scatter: 196 segments genome-wide, so every value is
+              // a plateau and the reader's question is where the plateau moves
+              defaultRendering: 'line',
+              useBicolor: false,
+              displayCrossHatches: true,
+              // same fixed range as the other CNV figures, so a step means the
+              // same thing across the tutorial. A homozygous deletion has no
+              // finite ratio (BIC-seq2 writes it as a large negative) and clips
+              // off the bottom rather than setting the axis for everything else.
+              minScore: -2,
+              maxScore: 1.5,
+              height: 90,
+            },
+            {
               trackId: 'hg008_cnv_indexcov_chr5',
               type: 'MultiLinearWiggleDisplay',
               defaultRendering: 'multiscatter',
@@ -1102,6 +1119,9 @@ export const svSpecs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     // wider viewport so the whole-chromosome CNV + bed track aren't cut off
     viewportWidth: 1800,
+    // the segmented lane(90) + the coverage rows(200) + the bed calls + chrome;
+    // sized rather than left to the default, which now leaves blank below
+    viewportHeight: 690,
     settleMs: 15000,
   },
 
@@ -1219,6 +1239,7 @@ export const svSpecs: ScreenshotSpec[] = [
     name: 'sv_cgiab/driver_cdkn2a_deletion',
     url: cgiabUrl({
       sessionTracks: [
+        HG008_BICSEQ2_TRACK,
         {
           // tumor over normal, one row each on a shared fixed scale
           type: 'MultiQuantitativeTrack',
@@ -1299,6 +1320,22 @@ export const svSpecs: ScreenshotSpec[] = [
               geneGlyphMode: 'longestCoding',
             },
             {
+              trackId: 'hg008_bicseq2',
+              type: 'LinearWiggleDisplay',
+              // step, not scatter: 196 segments genome-wide, so every value is
+              // a plateau and the reader's question is where the plateau moves
+              defaultRendering: 'line',
+              useBicolor: false,
+              displayCrossHatches: true,
+              // same fixed range as the other CNV figures, so a step means the
+              // same thing across the tutorial. A homozygous deletion has no
+              // finite ratio (BIC-seq2 writes it as a large negative) and clips
+              // off the bottom rather than setting the axis for everything else.
+              minScore: -2,
+              maxScore: 1.5,
+              height: 90,
+            },
+            {
               // multirowxy: one filled profile per sample, stacked on the fixed
               // 0..80 range set above rather than each row's own autoscale.
               trackId: 'hg008_tn_perbase',
@@ -1354,7 +1391,7 @@ export const svSpecs: ScreenshotSpec[] = [
     viewportWidth: 1500,
     // 800 framed the 120px HiFiCNV depth lane this replaced; the two-row
     // coverage track is 280
-    viewportHeight: 960,
+    viewportHeight: 1060,
     settleMs: 30000,
   },
 

@@ -192,6 +192,32 @@
     },
     {
       "type": "QuantitativeTrack",
+      "trackId": "HG008-T_bicseq2",
+      "name": "HG008-T copy ratio, segmented (NYGC BIC-seq2, log2 T/N)",
+      "category": ["CNV"],
+      "assemblyNames": ["GRCh38_GIABv3"],
+      "adapter": {
+        "type": "BedGraphAdapter",
+        "bedGraphLocation": {
+          "uri": "HG008-T_bicseq2_log2ratio.bedgraph",
+          "locationType": "UriLocation"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearWiggleDisplay",
+          "displayId": "HG008-T_bicseq2-LinearWiggleDisplay",
+          "defaultRendering": "line",
+          "useBicolor": false,
+          "displayCrossHatches": true,
+          "minScore": -2,
+          "maxScore": 1.5,
+          "height": 90
+        }
+      ]
+    },
+    {
+      "type": "QuantitativeTrack",
       "trackId": "HG008-T_baf",
       "name": "HG008-T B-allele frequency (BAF)",
       "category": ["CNV"],
