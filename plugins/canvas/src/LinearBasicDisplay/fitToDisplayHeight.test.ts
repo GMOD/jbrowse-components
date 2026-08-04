@@ -8,6 +8,7 @@ import {
 } from '../RenderFeatureDataRPC/testUtils.ts'
 import { computeLaidOutData, maxBottom, packedContentHeight } from './layout.ts'
 import { createTestEnvironment } from './testEnv.ts'
+import { rowGeometrySignature } from './yMorph.ts'
 
 import type {
   FeatureDataResult,
@@ -817,6 +818,73 @@ describe('canvas display fit escalation ladder', () => {
   // evaluates the callback against nothing and throws. That used to happen inside
   // the squeeze floor, i.e. inside the fit layout every consumer reads, so a track
   // configured this way went blank the moment it was switched to fit.
+  // What the Y-morph does across the ladder, pinned because it is the visible
+  // half of fit mode and nothing else states it. `CanvasYMorph` animates rows only
+  // while `rowGeometrySignature` holds still; a changed signature snaps, on the
+  // reasoning that rescaled rows have nothing comparable to ease between.
+  //
+  // So: crossing a rung boundary SNAPS — the reservation changes, names or
+  // descriptions appear or vanish, and every row restructures at once. That is
+  // the jump you see at the moment the ladder changes rung. Staying within a rung
+  // morphs, but only while the fit scale is pinned: at `bodies` (squeezing) and in
+  // every compact mode (grow-to-fill), the scale tracks content height, so it
+  // moves whenever the content does and the morph is unavailable.
+  //
+  // This is a description, not an endorsement — if boundaries should ease instead,
+  // this test is what says which transitions change.
+  it('snaps across a rung boundary and morphs within one', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view } = createDisplay()
+    display.setShowLabels('nameAndDescription')
+    display.setRpcData(0, labeledStackedRegionData(10, 10), view.bpPerPx, ctgA)
+    display.setHeightMode('fit')
+
+    const signature = () =>
+      rowGeometrySignature({
+        displayMode: display.displayMode,
+        renderedShowLabels: display.renderedShowLabels,
+        renderedShowDescriptions: display.renderedShowDescriptions,
+        fitScale: display.fitScale,
+      })
+    const at = (h: number) => {
+      display.setHeight(h)
+      return { level: display.fitStage.level, sig: signature() }
+    }
+
+    const fullH = maxBottom(display.baseLaidOutDataMap)
+    const labelsH = maxBottom(display.fitLabelsOnlyLayout)
+    const bodiesH = maxBottom(display.fitBodiesOnlyLayout)
+    expect(fullH).toBeGreaterThan(labelsH)
+    expect(labelsH).toBeGreaterThan(bodiesH)
+
+    // Either side of the full/labels boundary: different rungs, different
+    // signature — the descriptions that vanish are exactly what rescaled the rows.
+    const inFull = at(Math.round(fullH) + 10)
+    const inLabels = at(Math.round(fullH) - 10)
+    expect(inFull.level).toBe('full')
+    expect(inLabels.level).toBe('labels')
+    expect(inLabels.sig).not.toBe(inFull.sig)
+
+    // ...and the labels/bodies boundary, where the names go.
+    const inBodies = at(Math.round(labelsH) - 10)
+    expect(inBodies.level).toBe('bodies')
+    expect(inBodies.sig).not.toBe(inLabels.sig)
+
+    // Within a rung, with the scale pinned at 1 (normal display mode never grows),
+    // the signature holds — so a zoom re-pack at this height eases rather than
+    // jumping. This is the case the morph exists for.
+    expect(at(Math.round(fullH) + 40).sig).toBe(inFull.sig)
+    expect(display.fitScale).toBe(1)
+
+    // At `bodies` the squeeze is active, so the scale — and with it the morph
+    // gate — moves with the track height rather than holding.
+    const squeezedA = at(Math.round(bodiesH) - 40)
+    const squeezedB = at(Math.round(bodiesH) - 44)
+    expect(squeezedA.level).toBe('bodies')
+    expect(display.fitScale).toBeLessThan(1)
+    expect(squeezedB.sig).not.toBe(squeezedA.sig)
+  })
+
   it('lays out under fit mode with a per-feature featureHeight callback', () => {
     const { createDisplay } = createTestEnvironment()
     const { display, view } = createDisplay()
