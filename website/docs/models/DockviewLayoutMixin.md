@@ -49,7 +49,4 @@ contain multiple views stacked vertically.
 | <span id="action-assignviewtopanel">**assignViewToPanel**</span><br><code>(panelId: string, viewId: string) =&gt; void</code> | Assign a view to a panel (adds to the panel's view stack) |
 | <span id="action-removeviewfrompanel">**removeViewFromPanel**</span><br><code>(viewId: string) =&gt; void</code> | Remove a view from its panel |
 | <span id="action-removepanel">**removePanel**</span><br><code>(panelId: string) =&gt; void</code> | Remove a panel and all its view assignments |
-| <span id="action-moveviewupinpanel">**moveViewUpInPanel**</span><br><code>(viewId: string) =&gt; void</code> | Move a view up within its panel's view stack |
-| <span id="action-moveviewdowninpanel">**moveViewDownInPanel**</span><br><code>(viewId: string) =&gt; void</code> | Move a view down within its panel's view stack |
-| <span id="action-moveviewtotopinpanel">**moveViewToTopInPanel**</span><br><code>(viewId: string) =&gt; void</code> | Move a view to the top of its panel's view stack |
-| <span id="action-moveviewtobottominpanel">**moveViewToBottomInPanel**</span><br><code>(viewId: string) =&gt; void</code> | Move a view to the bottom of its panel's view stack |
+| <span id="action-moveviewinpanel">**moveViewInPanel**</span><br><code>(viewId: string, direction: ReorderDirection) =&gt; void</code> | Reorder a view within its panel's view stack. The workspace-mode counterpart of the session's `moveViewUp`/`moveViewToTop`/... family, which reorder `session.views` itself — here the panel's own view-id list is the order that renders, so that is what moves. |
