@@ -168,6 +168,28 @@ supposed to involve. The segment sizes are the other check, and the reason this
 wants long reads: a route assembled from read-length pieces is an aligner
 splitting one short read across the genome.
 
+### A fold-back on one chromosome
+
+The der(3) path visits three chromosomes, which is the easy case to read. The
+harder and more common one is an allele that visits a single chromosome twice.
+COLO829 has one on chr9, where the tumour reads run out at 28,031,837 and resume
+inverted from 28,059,142: the arm turns around and continues backwards, which is
+a fold-back. A second call anchors 28 bp from the first, the pattern repeated
+breakage-fusion-bridge cycles leave behind.
+
+<Figure caption="Top: the candidate list at the chr9 fold-back anchors. The path labels name the same chromosome twice, once inverted, which is the fold-back written out. Bottom: the top path drawn, with two windows of chr9 on the reference panel and the allele below. The ribbons cross instead of running parallel, which is what a segment returning inverted looks like, and the track under the allele names the interval each arm came from." src="/img/cancer_sv/foldback_reconstruction.png" />
+
+More than one row here means more than one allele, unlike the der(3) window
+where a single row was the whole answer. Reads reaching the anchors from
+different directions describe different routes through the same breakpoints.
+
+The window is deliberately narrower than the event. Reconstruction reads SA
+tags, so the arm a read returns from does not have to be on screen to be
+reconstructed, and asking for the whole event at this depth is more alignment
+than the track will fetch: the pileup then renders as `force load` with no reads
+behind it, and the reconstruction correctly reports that nothing in the window
+is supported.
+
 ## Reconstructing the allele's sequence
 
 The candidates above are structure. `derive` builds the allele's **sequence**,

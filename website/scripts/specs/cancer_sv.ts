@@ -286,6 +286,63 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     ],
   },
 
+  // The same menu on a different class of event, because the der(3) figure
+  // above is one allele and says nothing about whether the reconstruction
+  // generalizes. This locus is a fold-back: chr9 runs out at 28,031,837 and
+  // resumes INVERTED from 28,059,142, so the allele visits one chromosome twice
+  // in opposite orientations and the reference panel shows two windows of chr9
+  // rather than three chromosomes.
+  //
+  // COLO829's calls put a second fold-back 28 bp away (28,031,865 <-> 28,034,469),
+  // which is what a breakage-fusion-bridge cycle leaves behind: successive
+  // breaks re-anchor at the same point. The picker therefore has two rows here,
+  // and they are genuinely two alleles rather than one counted twice -- the
+  // contrast the der(3) figure cannot make, since there one row is the whole
+  // answer.
+  {
+    mode: 'url',
+    name: 'cancer_sv/foldback_reconstruction',
+    viewportHeight: 576,
+    viewportWidth: 1300,
+    url: lgvSession(CONFIG, {
+      assembly: 'hg38',
+      // Only the anchors, not the far side each fold-back returns from. The
+      // reconstruction reads SA tags, so the returning arm does not have to be
+      // fetched to be reconstructed -- and it must not be: 200x ONT over the
+      // whole 40 kb event exceeds the track's byte budget, the pileup renders
+      // as `force load` with no reads behind it, and the picker then correctly
+      // reports that nothing in the window is supported.
+      loc: 'chr9:28,030,000-28,036,000',
+      tracks: [
+        { ...GENE_TRACK, height: 60 },
+        {
+          trackId: TUMOUR,
+          showSoftClipping: true,
+          height: 260,
+          ...SUPER_COMPACT,
+        },
+      ],
+    }),
+    stages: [
+      {
+        actions: [
+          trackMenuIcon(TUMOUR),
+          { type: 'click', text: 'Launch view' },
+          { type: 'click', text: 'Reconstruct derivative allele...' },
+          {
+            type: 'waitForSelector',
+            selector: '[data-testid="derivative-path-candidates"]',
+            timeout: 60000,
+          },
+        ],
+      },
+      {
+        actions: [{ type: 'click', text: 'Draw it' }],
+        viewportHeight: 1112,
+      },
+    ],
+  },
+
   // The reconstruction: the derivative contig on the bottom row against the
   // three reference loci on the top. The two templated inserts are 199 bp and
   // 183 bp, so they are thin ribbons between two thick chr3 arms -- the second
