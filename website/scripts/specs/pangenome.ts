@@ -1,4 +1,4 @@
-import { sessionSpec } from '../screenshot-spec-helpers.ts'
+import { displayReady, sessionSpec } from '../screenshot-spec-helpers.ts'
 import { ECOLI_DEMO_BASE } from './demoBase.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
@@ -355,8 +355,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     // NOT on one element and cannot be ANDed directly — that selector matches
     // nothing and the capture fails. `:has()` relates them instead: a display
     // chrome that is finished AND contains a drawn pileup.
-    readySelector:
-      '[data-display-phase="ready"]:has([data-testid="pileup-display-done"])',
+    readySelector: displayReady('pileup-display'),
     readyTimeout: 120000,
     viewportWidth: 1000,
     // gene lane + the pileup with its coverage band + the depth wiggle
