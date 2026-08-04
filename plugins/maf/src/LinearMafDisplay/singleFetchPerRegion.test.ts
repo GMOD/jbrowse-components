@@ -217,6 +217,44 @@ describe('LinearMafDisplay alignment fetch count', () => {
     ])
     expect(alignmentCalls(mockRpcCall)).toHaveLength(2)
   })
+
+  // `subtreeFilter` is a fetch argument, but as a SET: the worker turns it into
+  // `new Set(...)` and places nothing by it, so order is unobservable to the
+  // fetch. The cache key is a JSON string though, so an unsorted array put the
+  // order back in — re-picking the same clade after a re-cluster hands
+  // `setSubtreeFilter` the same names in the tree's new leaf order and
+  // refetched every loaded region for identical data. ARCHITECTURE.md, "Row
+  // order is not a fetch input".
+  it('keys the subtree filter on the set, not the order it was picked in', async () => {
+    const { createDisplay, mockRpcCall } = createMafTestEnvironment({
+      assemblyEnd: 50_000,
+      viewRegionEnd: 10_000,
+    })
+    mockRpcCall.mockImplementation(() =>
+      Promise.resolve(makeMafResult(HG38_MM10)),
+    )
+    const { display } = createDisplay()
+    await settle(display)
+
+    display.setSubtreeFilter(['mm10', 'hg38'])
+    await settle(display)
+    const afterFirstPick = alignmentCalls(mockRpcCall).length
+
+    // same clade, opposite leaf order — a re-place at most, never a refetch
+    display.setSubtreeFilter(['hg38', 'mm10'])
+    await settle(display)
+    expect(alignmentCalls(mockRpcCall)).toHaveLength(afterFirstPick)
+
+    // ...and the payload itself carries the sorted set, so the bytes sent and
+    // the key they are cached under are the one expression
+    const last = alignmentCalls(mockRpcCall).at(-1)
+    expect(last?.[2].subtreeFilter).toEqual(['hg38', 'mm10'])
+
+    // a genuine membership change still invalidates
+    display.setSubtreeFilter(['hg38'])
+    await settle(display)
+    expect(alignmentCalls(mockRpcCall).length).toBeGreaterThan(afterFirstPick)
+  })
 })
 
 describe('LinearMafDisplay row placement', () => {

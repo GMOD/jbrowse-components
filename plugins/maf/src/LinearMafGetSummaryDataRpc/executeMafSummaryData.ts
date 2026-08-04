@@ -4,7 +4,12 @@ import { subscribeToObservable } from '../util/observableUtils.ts'
 import type { BaseMafRpcArgs, MafSummaryRecord, Sample } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-export type LinearMafGetSummaryDataArgs = BaseMafRpcArgs
+export interface LinearMafGetSummaryDataArgs extends BaseMafRpcArgs {
+  // The display's subtree filter, as a SET — same contract as the detail path's
+  // arg of the same name. Records for species outside it are dropped here
+  // rather than shipped and discarded by the client's `rowIndexBySrc` lookup.
+  subtreeFilter?: string[]
+}
 
 export interface LinearMafGetSummaryDataResult {
   samples: Sample[]
@@ -38,7 +43,14 @@ export async function executeMafSummaryData({
   pluginManager: PluginManager
   args: LinearMafGetSummaryDataArgs
 }): Promise<LinearMafGetSummaryDataResult> {
-  const { regions, adapterConfig, sessionId, stopToken, statusCallback } = args
+  const {
+    regions,
+    adapterConfig,
+    sessionId,
+    stopToken,
+    statusCallback,
+    subtreeFilter,
+  } = args
   const region = regions[0]!
   const { adapter, samples, treeNewick } = await loadMafSamplesAdapter(
     pluginManager,
@@ -46,6 +58,10 @@ export async function executeMafSummaryData({
     adapterConfig,
   )
 
+  // Rows outside the active subtree are dropped here rather than shipped and
+  // hidden, exactly as the detail path does. `samples` stays the full set so
+  // the sidebar tree and "clear filter" still see every genome.
+  const visible = subtreeFilter?.length ? new Set(subtreeFilter) : undefined
   const records: MafSummaryRecord[] = []
   const obs = adapter.getSummaryFeatures?.(region, {
     stopToken,
@@ -53,7 +69,9 @@ export async function executeMafSummaryData({
   })
   if (obs) {
     await subscribeToObservable(obs, record => {
-      records.push(record)
+      if (!visible || visible.has(record.src)) {
+        records.push(record)
+      }
     })
   }
   return {

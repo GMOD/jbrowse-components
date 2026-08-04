@@ -29,6 +29,25 @@ test('a failed CoreGetInfo lands in the error phase, not a permanent scrim', asy
   expect(display.svgReady).toBe(true)
 })
 
+// The throw is only one of the ways the prerequisite fails. A CoreGetInfo that
+// *resolves* carrying no binsize list leaves `effectiveResolution` undefined
+// just as thoroughly, with no exception to catch — so it needs its own
+// `setError` or it is the same permanent scrim + hung export.
+test.each([
+  ['an empty resolution list', { norms: ['KR'], resolutions: [] }],
+  ['no resolution list at all', { norms: ['KR'] }],
+])('%s is terminal, not a permanent scrim', async (_label, info) => {
+  const { createDisplay, mockRpcCall } = createTestEnvironment()
+  mockRpcCall.mockResolvedValue(info)
+  const { display } = createDisplay()
+  await flush()
+
+  expect(display.effectiveResolution).toBeUndefined()
+  expect(`${display.error}`).toContain('resolutions')
+  expect(display.displayPhase).toBe('error')
+  expect(display.svgReady).toBe(true)
+})
+
 test('retry re-reads the header instead of dropping back onto the scrim', async () => {
   const { createDisplay, mockRpcCall } = createTestEnvironment()
   mockRpcCall.mockRejectedValue(new Error('transient'))

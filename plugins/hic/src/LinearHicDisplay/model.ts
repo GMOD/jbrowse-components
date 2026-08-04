@@ -666,10 +666,23 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
             if (norms) {
               self.setAvailableNormalizations(norms)
             }
-            if (resolutions) {
+            // An empty (or absent) binsize list is terminal for the same reason
+            // a thrown CoreGetInfo is, and needs saying just as loudly: it
+            // leaves `effectiveResolution` undefined, so `shouldFetch` is false
+            // forever with no error set — the display would sit on the loading
+            // scrim and `svgReady` would never settle, hanging the whole view's
+            // export on an unbounded `awaitSvgReady`. Every resting state that
+            // never fetches has to be terminal (ARCHITECTURE.md, "SVG export").
+            if (resolutions?.length) {
               self.setAvailableResolutions(resolutions)
               // No initial selection needed — `effectiveResolution` derives
               // the binsize from bpPerPx + `resolutionBias` on every fetch.
+            } else {
+              self.setError(
+                new Error(
+                  'No contact-matrix resolutions found in this .hic file',
+                ),
+              )
             }
           }
         } catch (e) {

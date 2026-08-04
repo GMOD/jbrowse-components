@@ -231,6 +231,15 @@ canvas-feature *specialization layered on `MultiRegionDisplayMixin`*, and only
 wiggle, Manhattan, alignments, MAF, and even the canvas plugin's own
 `LinearMultiRowFeatureDisplay` — composes `MultiRegionDisplayMixin` directly.
 
+**Two more displays are in that first row without naming it**, because they
+extend another plugin's whole model rather than the mixin: `LGVSyntenyDisplay`
+extends `LinearAlignmentsDisplay` (and is the one in-tree case of extending
+`rpcProps()` by super-capture across a plugin boundary, to add the resolved PIF
+tier), and both GC-content state models extend `LinearWiggleDisplay`. That
+inheritance carries the hooks with it — which is the thing to check before
+leaving one alone, since what you inherit may not be the mixin's default (see
+"Per-region zoom-staleness" on `isCacheValid`).
+
 Arc is the one display class that draws **neither** GPU canvas nor Canvas2D: its
 components emit JSX `<path>` elements, on screen and in SVG export alike. So it
 composes no `RenderLifecycleMixin`, and instead of `DisplayChrome` it renders
@@ -536,12 +545,19 @@ and model-scoped clip ids — is in
 must be terminal.** A correct `dataCurrent` says whether held data is current; it
 cannot say whether data will ever arrive. So read a display's fetch gate and ask
 what leaves it false indefinitely — a user toggle inside it (LD's
-`showLDTriangle`), a failed prerequisite whose error went to a session snackbar
-instead of `setError` (HiC's `CoreGetInfo`), a static "zoom in" mode (sequence).
-Each such state has to reach `svgReady` through `error`, `regionTooLarge`, or
-`svgReadyExtraTerminal`, or one track hangs the whole view's export with the
-dialog spinner up and nothing said. Minimized tracks are the one case already
-handled for you — `SVGLinearGenomeView` filters them out.
+`showLDTriangle`), an unmet prerequisite (HiC's `shouldFetch` needs an
+`effectiveResolution`, which `CoreGetInfo` supplies), a static "zoom in" mode
+(sequence). Each such state has to reach `svgReady` through `error`,
+`regionTooLarge`, or `svgReadyExtraTerminal`, or one track hangs the whole
+view's export with the dialog spinner up and nothing said. Minimized tracks are
+the one case already handled for you — `SVGLinearGenomeView` filters them out.
+
+**Enumerate every way the prerequisite fails, not just the throw.** HiC now
+`setError`s from `fetchHicInfo`'s `catch` — but a `CoreGetInfo` that *resolves*
+carrying no binsize list leaves `effectiveResolution` undefined just as
+thoroughly, with no exception to catch, so the empty list needs its own
+`setError`. A gate on a fetched value has as many resting states as that value
+has empty shapes.
 
 **The on-screen twin: the same states are terminal for the loading overlay.** A
 first-load overlay is `!ready && !error`, and `ready` means "a fetch landed" — so
@@ -691,19 +707,30 @@ scalars fed to an encoder.
 ### Theme-derived render inputs are session getters, not pushed volatiles
 
 Color palettes are a pure function of the active theme, so derive them in a model
-getter — `buildColorPaletteFromTheme(getSession(self).theme)` — that `gpuProps()`
-/ `renderState` read directly. Do **not** stage them in a volatile that a React
+getter — `<plugin builder>(getSession(self).palette)` — that `gpuProps()` /
+`renderState` read directly. Do **not** stage them in a volatile that a React
 `useEffect` pushes in via a `setColorPalette` action: the effect runs only on
 mount, so SVG export and RPC — neither of which has a component — see a null
 palette and render blank. As a getter the value is always present and MobX
 recomputes it only when the theme changes: same re-encode invalidation, no mount
-dependency. This applies equally to alignments, MAF, and the reference sequence
-display.
+dependency. The three in tree, each with its own builder over the same session
+input: `buildColorPaletteFromPalette` (alignments), `getMafColorPalette` (MAF),
+`buildColorPalette` (reference sequence).
 
-`session.theme` is the resolved MUI `Theme`, required on
-`AbstractSessionModel`. Embedded products without `ThemeManagerSessionMixin`
-supply a minimal `get theme()` = `createJBrowseTheme(getConf(self, 'theme'))`.
-SVG export still overrides the palette with the *export* theme (`opts.theme`).
+**Read `session.palette`, not `session.theme`.** Both are required on
+`AbstractSessionModel` and both resolve from the same `resolvePalette` call, so
+they cannot disagree — but they are for different consumers, and only one is a
+render input:
+
+- `palette` (`JBrowsePalette`) is what *rendering* reads: plain color strings,
+  no toolkit, serializable, so it crosses the RPC boundary and works headless.
+- `theme` is the resolved MUI `Theme`, for the components that are MUI.
+
+Embedded products without `ThemeManagerSessionMixin` supply both off a
+`themeOptions` getter (`EmbeddedSessionThemeMixin`), which is also what the
+canvas display puts in `rpcProps()` so worker-baked colors honor the config
+`theme` slot. SVG export still overrides the palette with the *export* theme —
+`resolvePalette({ configTheme: opts?.theme })`.
 
 ## Per-region zoom-staleness
 
@@ -731,10 +758,21 @@ under zoom. The exceptions are for zoom-dependent *content*, not coords:
   equality, same rule as wiggle. The *regular* variant display draws each variant
   at its genomic position and keeps the default.
 
-Those are the only four *zoom*-dependent overrides. Other displays either leave
-the default `() => true` or override on presence alone (`LinearMultiRowFeatureDisplay`
-returns `rpcDataMap.has(idx)`, so a too-large region — marked loaded but holding
-no data — refetches the moment the gate releases).
+Those are the only four *zoom*-dependent overrides. The rest fall into two other
+shapes:
+
+- **Presence alone.** `LinearMultiRowFeatureDisplay` returns
+  `rpcDataMap.has(idx)`, so a too-large region — marked loaded but holding no
+  data — refetches the moment the gate releases. Canvas folds the same
+  presence test in ahead of its peptide-threshold compare.
+- **Overriding back to `true`.** `isCacheValid` is inherited, so a display that
+  composes a *wiggle* mixin inherits wiggle's strict-`bpPerPx` version whether or
+  not its data is zoom-dependent. `LinearManhattanDisplay` is 1:1 with its SNPs
+  and doesn't downsample, so it states `return true` outright rather than relying
+  on that version short-circuiting on an unset `loadedBpPerPx` — which quietly
+  made "never call `setLoadedBpPerPx`" a precondition of correct caching. Check
+  what you inherit before leaving the hook alone.
+
 `MultiRegionDisplayMixin`'s `FetchVisibleRegions` autorun calls the override per
 region and refetches stale ones.
 

@@ -258,15 +258,22 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #getter
-       * The track's adapter config verbatim, which is what
-       * `BaseTrackModel.adapterConfig` hands every other consumer of this
-       * track. Byte-identical on purpose: the worker's adapter cache is keyed
-       * on the config, so the two decorative keys this used to add — `name`,
-       * duplicating the adapter's own `type`, and `assemblyNames`, read off
-       * the display's config schema, which declares no such slot and so always
-       * answered `undefined` — bought a second parse of the same file, one
-       * adapter for the ribbons and another for everything reading the track
-       * plainly (LGVSyntenyDisplay, the region launch's mate discovery).
+       * The track's adapter config verbatim. The **body is now identical to
+       * `BaseDisplayModel.adapterConfig`** — this override survives only to
+       * narrow the return to `Record<string, unknown>` for the RPC arg, and to
+       * hold the note below where someone would go to re-add a key.
+       *
+       * Byte-identical is the point: the worker's adapter cache keys on the
+       * config object, so a key the adapter never reads still forks the cache.
+       * The two decorative keys this used to add — `name`, duplicating the
+       * adapter's own `type`, and `assemblyNames`, read off the display's
+       * config schema, which declares no such slot and so always answered
+       * `undefined` — bought a second parse of the same file: one adapter for
+       * the ribbons and another for everything reading the track plainly
+       * (LGVSyntenyDisplay, the region launch's mate discovery). Both keys were
+       * inert at the adapter, which is exactly why nothing caught it. A
+       * worker-side value that doesn't belong to the adapter goes as a sibling
+       * RPC arg, the way `sequenceAdapter` does.
        */
       get adapterConfig(): Record<string, unknown> {
         return getConf(self.parentTrack, 'adapter')

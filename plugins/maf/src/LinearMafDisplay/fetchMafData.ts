@@ -6,12 +6,19 @@ import type { MafWireRegionData } from '../LinearMafRenderer/mafRenderingBackend
 import type { MafFrameRecord, MafSummaryRecord, Sample } from '../types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Region, RpcStatus } from '@jbrowse/core/util'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { FetchContext } from '@jbrowse/plugin-linear-genome-view'
 
-interface MafFetchSelf extends IAnyStateTreeNode {
+// `IStateTreeNode`, not `IAnyStateTreeNode`: the latter resolves to `any` and
+// would turn off checking for every member below — including `subtreeFilterSet`,
+// whose whole job is to be the one expression the payload and the cache key
+// share. See the root CLAUDE.md.
+interface MafFetchSelf extends IStateTreeNode {
   adapterConfig: AnyConfigurationModel
-  subtreeFilter?: readonly string[] | undefined
+  // The sorted-set form, never the raw `subtreeFilter` node: this is also what
+  // `rpcProps()` returns, so the payload and the cache key it is stored under
+  // are one expression. See the getter for why the sort is load-bearing.
+  subtreeFilterSet: string[] | undefined
   annotationDataActive: boolean
   annotationAdapterConfig: Record<string, unknown> | undefined
   fetchRegions: (
@@ -172,7 +179,7 @@ export function fetchMafAlignmentData(self: MafFetchSelf, needed: Needed) {
         // Row set, not row order: the worker ships only these genomes and
         // scores coverage over them. Placement is the client's (see
         // `placeMafRegionData`), so nothing order-dependent is sent.
-        subtreeFilter: self.subtreeFilter?.slice(),
+        subtreeFilter: self.subtreeFilterSet,
         stopToken: ctx.stopToken,
         statusCallback: self.makeRegionStatusCallback(displayedRegionIndex),
       }),
@@ -199,6 +206,12 @@ export function fetchMafSummaryData(self: MafFetchSelf, needed: Needed) {
       rpcManager.call(sessionId, 'LinearMafGetSummaryData', {
         adapterConfig: self.adapterConfig,
         regions: [region],
+        // Same row set as the detail path. It has to be sent even though the
+        // records are small: `subtreeFilter` is an `rpcProps()` cache key, so
+        // narrowing the clade already discards every loaded region — a summary
+        // fetch that ignored the filter would re-download byte-identical rows
+        // and then drop the same ones client-side.
+        subtreeFilter: self.subtreeFilterSet,
         stopToken: ctx.stopToken,
         statusCallback: self.makeRegionStatusCallback(displayedRegionIndex),
       }),

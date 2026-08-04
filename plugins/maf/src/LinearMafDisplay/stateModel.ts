@@ -691,6 +691,29 @@ export default function stateModelFactory(
             ? filterRowsBySubtree(base, self.subtreeFilter)
             : undefined
         },
+
+        /**
+         * #getter
+         * `subtreeFilter` as the worker sees it: a **set**, sorted, and a plain
+         * array. The one expression both the RPC payload (`fetchMafData`) and
+         * the cache key (`rpcProps`) read, so the bytes sent and the key they
+         * are cached under cannot drift apart.
+         *
+         * Sorted because the key is a JSON string while the worker consumes the
+         * value as `new Set(...)` and places rows by species name — so order is
+         * unobservable to the fetch but would still move the key. Re-picking the
+         * same clade after a re-cluster hands `setSubtreeFilter` the same names
+         * in the tree's new leaf order, which refetched every loaded region for
+         * identical data. ARCHITECTURE.md, "Row order is not a fetch input".
+         *
+         * Copied out of the MST node for the same reason: the key is a JSON
+         * string and an MST node's serialization is not this module's to depend
+         * on.
+         */
+        get subtreeFilterSet(): string[] | undefined {
+          const filter = self.subtreeFilter
+          return filter?.length ? [...filter].sort() : undefined
+        },
       }))
       .views(self => ({
         /**
@@ -1125,9 +1148,7 @@ export default function stateModelFactory(
           // `framesDataMap` for the loaded regions (the frames piggyback on the
           // same fetch pass).
           return {
-            // Copied to a plain array, since the key is a JSON string and an MST
-            // node's serialization is not this module's to depend on.
-            subtreeFilter: self.subtreeFilter?.slice(),
+            subtreeFilter: self.subtreeFilterSet,
             annotationDataActive: self.annotationDataActive,
           }
         },

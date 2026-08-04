@@ -3108,7 +3108,12 @@ export default function stateModelFactory(
                   type: 'insertSizeAndOrientation',
                 })
               }
-              self.invalidateLoadedRegions()
+              // No explicit invalidation here: `linkedReads` is an `rpcProps()`
+              // key, so `SettingsInvalidate` runs `clearAllRpcData` — a superset
+              // of `invalidateLoadedRegions` — when this action ends. That is
+              // also what refetches the mode changes this branch doesn't cover
+              // (normal ↔ chain), so an invalidation spelled out here could only
+              // ever be the redundant half.
             }
           },
 

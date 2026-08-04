@@ -254,6 +254,14 @@ export default function FetchMixin() {
       runFetch: flow(function* (work: (ctx: FetchContext) => Promise<void>) {
         if (self.activeStopToken) {
           stopStopToken(self.activeStopToken)
+          // Drop the superseded fetch's per-region status entries with it.
+          // `regionStatuses` is keyed by displayedRegionIndex, so a supersede
+          // that needs fewer regions than the one it replaced would otherwise
+          // leave the extra keys in the aggregate for its whole duration and
+          // report a progress fraction mixed from two fetches. Every caller
+          // that reaches here via `cancelFetch` already cleared them; this
+          // covers a direct `runFetch` over a live one.
+          self.resetStatus()
         }
         const stopToken = createStopToken()
         const gen = self.fetchGeneration
