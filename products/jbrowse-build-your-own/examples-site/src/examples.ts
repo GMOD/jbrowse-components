@@ -8,7 +8,9 @@ export { section } from './exampleModel.ts'
 // Ordered as a build, not a catalogue: most pages add one thing to the page
 // before them, and the sidebar groups follow that arc. The first two run the
 // other way -- pan and zoom is the point of a genome browser, so it leads,
-// and One track follows to show the bare view it's built from.
+// and One track follows to show the bare view it's built from. The last one
+// turns around: every page up to it is about getting data onto the screen, and
+// that one is about getting a click back off it.
 export const pages: ExamplePage[] = [
   {
     slug: 'pan-and-zoom',
@@ -38,14 +40,14 @@ export const pages: ExamplePage[] = [
     slug: 'bring-your-own-overlays',
     title: 'Bring your own overlays',
     description:
-      "Loading, errors, and the too-large gate are drawn by five swappable components. Replace them and JBrowse's own displays stop rendering Material UI entirely, so nothing has to match a theme you did not choose.",
+      "Loading, errors, the too-large gate, and the controls in a track's corner are drawn by swappable components. Replace them and JBrowse's own displays render no Material UI at all — not one element, checked on every build.",
     group: 'Making it yours',
     sections: [
       {
         slug: 'bring-your-own-overlays',
         title: 'Plain overlays, no MUI',
         description:
-          'The same three tracks, drawing their status states with dependency-free markup.',
+          'The same three tracks, drawing their status states and corner controls with dependency-free markup.',
       },
     ],
   },
@@ -58,6 +60,14 @@ export const pages: ExamplePage[] = [
     sections: [
       { slug: 'add-the-chrome-you-want', title: 'A ruler and some labels' },
     ],
+  },
+  {
+    slug: 'your-own-feature-details',
+    title: 'Your own feature details',
+    description:
+      'The other direction: getting data back out. Click a gene and the display writes it to the session selection — read that one field and the panel is yours to draw.',
+    group: 'Making it yours',
+    sections: [{ slug: 'your-own-feature-details', title: 'Click a gene' }],
   },
 ]
 

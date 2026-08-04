@@ -73,7 +73,8 @@ view.setInit({
     <p>
       From there every page in the sidebar adds exactly one thing. By the last
       one you have a browser with pan, zoom, three kinds of track, your own
-      status overlays and your own ruler.
+      status overlays, your own ruler, and clicks coming back out into a panel
+      you wrote.
     </p>
 
     <h2>What you actually save</h2>
@@ -95,8 +96,11 @@ view.setInit({
     </p>
     <p>
       Bundle size is the smaller half of the argument. The larger half is that
-      no CSS-in-JS is injected into your page and nothing on screen has to be
-      talked out of looking like a Material widget.
+      nothing on screen has to be talked out of looking like a Material widget:
+      with both plain sets installed, JBrowse's own unforked wiggle, feature and
+      alignments displays render <strong>no Material UI at all</strong>. That is
+      checked rather than asserted — <code>pnpm smoke</code> in this site counts what
+      each page renders and fails if the number moves.
     </p>
 
     <h2>What you do not get rid of</h2>

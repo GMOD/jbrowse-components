@@ -2,6 +2,7 @@ import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 
 import { setConf } from '@jbrowse/core/configuration'
 import { PaletteProvider } from '@jbrowse/core/ui/PaletteContext'
+import { isFeature } from '@jbrowse/core/util/simpleFeature'
 import { normalizeWheelDelta } from '@jbrowse/core/util/wheelZoom'
 import {
   DisplayChromeOverlayProvider,
@@ -12,54 +13,22 @@ import {
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
-// A display draws two kinds of UI that are not data. Its *status states* --
-// loading scrim, error bar, too-large banner, render error -- go through five
-// swappable components, and the *controls in its bottom-right corner* (track
-// sizing, and on this page's Genes track the isoform notice) go through one
-// more. By default both are JBrowse's own, which are Material UI.
+// Every page before this one puts pixels on screen. This one gets data back
+// out: click a gene and the panel on the right fills in.
 //
-// Two providers replace them for everything below, so the stock wiggle, feature
-// and alignments displays here render no Material UI at all. Toggle the switch
-// and watch the error bar change from a Material `<Alert>` to plain markup, and
-// the corner buttons with it.
+// Note what is NOT below: an onClick. The display already handles the click --
+// hit-testing the canvas, re-fetching the full feature by id, descending into
+// the clicked subfeature -- and finishes by writing the result to
+// `session.selection`. So the whole integration is one observer that reads that
+// field. You never register a handler, and you never have to know how a click
+// lands on a feature drawn into a canvas.
 //
-// The third track points at a URL that does not exist. That is deliberate: the
-// error state is the easiest one to hold still and look at.
-//
-// Two seams, for two different problems:
-//
-//   these providers   -- reach.  Redirect JBrowse's own displays, which import
-//                        DisplayChrome and TrackControl directly and so cannot
-//                        be redirected at the import level. MUI still ends up
-//                        in the bundle; nothing on screen renders it.
-//   DisplayChromeBase -- weight. Takes `overlays` as a prop and imports no
-//                        toolkit at all, so MUI never enters the graph.
-//                        Available when you write your own display component.
-//
-// Self-contained: the parts from the earlier pages are repeated here rather
-// than imported, so this file runs on its own.
+// Self-contained, like every page here: nothing below is imported from the rest
+// of this site, so you can copy the file and run it.
 
 const volvox = {
   name: 'volvox',
   uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
-}
-
-const wiggleTrack = {
-  type: 'QuantitativeTrack',
-  trackId: 'volvox_microarray',
-  name: 'Microarray signal',
-  assemblyNames: ['volvox'],
-  adapter: {
-    type: 'BigWigAdapter',
-    uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox_microarray.bw',
-  },
-  displayDefaults: {
-    defaultRendering: 'xyplot',
-    height: 100,
-    color: '#3a7ca5',
-    minScore: 0,
-    maxScore: 1000,
-  },
 }
 
 const featureTrack = {
@@ -71,33 +40,21 @@ const featureTrack = {
     type: 'Gff3TabixAdapter',
     uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
   },
-  displayDefaults: { height: 120 },
+  displayDefaults: { height: 180 },
 }
 
-const brokenTrack = {
-  type: 'QuantitativeTrack',
-  trackId: 'volvox_broken',
-  name: 'A track that fails to load',
-  assemblyNames: ['volvox'],
-  adapter: {
-    type: 'BigWigAdapter',
-    uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/does-not-exist.bw',
-  },
-  displayDefaults: { height: 80 },
-}
-
-const trackIds = ['volvox_microarray', 'volvox_genes', 'volvox_broken']
+const PANEL_WIDTH = 260
 
 function makeView() {
   const state = createViewState({
     assembly: volvox,
-    tracks: [wiggleTrack, featureTrack, brokenTrack],
+    tracks: [featureTrack],
   })
   const { view } = state.session
   view.setInit({
     assembly: volvox.name,
     loc: 'ctgA:1..20,000',
-    tracks: trackIds,
+    tracks: ['volvox_genes'],
   })
   // see the Pan and zoom page: scroll-to-zoom is a session preference, shared
   // with any display that scrolls vertically inside itself
@@ -166,8 +123,7 @@ const TrackRow = observer(function TrackRow({
 })
 
 // see the Pan and zoom page for why the wheel listener is native and
-// non-passive, for what `scrollZoom` decides, and for why shift+wheel is left
-// to whatever is under the cursor
+// non-passive, and for what `scrollZoom` decides
 function wheelPanZoom(
   view: BrowserView,
   el: HTMLElement,
@@ -200,8 +156,12 @@ function wheelPanZoom(
 
 const HINT_LINGER_MS = 1200
 
-// how far a press has to travel before it counts as a pan rather than a click;
-// see the Pan and zoom page
+// This threshold is what makes this page work at all. A press that has not
+// travelled this far stays a click, so the display underneath still gets it and
+// still selects a feature; only past it does the gesture become a pan and
+// capture the pointer. Capture on pointerdown instead and every click is
+// retargeted at the panning div, so nothing is ever selectable again. See the
+// Pan and zoom page for the rest of that story.
 const DRAG_THRESHOLD_PX = 4
 
 function usePanZoom(
@@ -242,8 +202,7 @@ function usePanZoom(
     props: {
       onPointerDown(event: React.PointerEvent<HTMLDivElement>) {
         // see the Pan and zoom page for both halves of this: why a press on a
-        // control (here, the track-sizing button each display draws in its
-        // corner) must not start a drag, and why the pointer is captured on
+        // control must not start a drag, and why the pointer is captured on
         // move rather than here
         if (
           event.target instanceof Element &&
@@ -310,30 +269,108 @@ function ZoomHint({ show }: { show: boolean }) {
   )
 }
 
-const TrackStack = observer(function TrackStack({
-  view,
+// Fields the panel promotes to a header line, so the rest of the table is the
+// track's own attributes rather than coordinates repeated in two places.
+const POSITION_FIELDS = new Set([
+  'refName',
+  'start',
+  'end',
+  'strand',
+  'type',
+  'name',
+  'uniqueId',
+])
+
+/**
+ * `feature.toJSON()` is a plain object -- the parsed GFF3 attributes for this
+ * track, whatever they happen to be. Nested values (`subfeatures` is the one
+ * every gene has) are skipped rather than stringified; showing a transcript
+ * tree is its own UI, and this page is about where the data arrives, not about
+ * rendering all of it.
+ */
+function attributeRows(data: Record<string, unknown>) {
+  return Object.entries(data)
+    .filter(
+      ([key, value]) =>
+        !POSITION_FIELDS.has(key) &&
+        value !== undefined &&
+        value !== null &&
+        typeof value !== 'object',
+    )
+    .map(([key, value]) => [key, String(value)] as const)
+}
+
+/**
+ * The whole integration with JBrowse: read `session.selection`.
+ *
+ * It is a volatile MobX field holding whatever was last selected anywhere in
+ * the session, so it is typed `unknown` on purpose -- a circular view selects
+ * chords, an arc display selects paired features. `isFeature` is the narrowing
+ * JBrowse itself uses, and it is what makes reading this field safe rather than
+ * a cast.
+ *
+ * JBrowse's own click path also queues its `BaseFeatureWidget` into
+ * `session.widgets`. Nothing here renders the drawer that would show it, so it
+ * costs nothing: a widget's React component is lazy, so an unrendered widget
+ * never loads, and Material UI never enters the graph on account of it.
+ */
+const FeatureDetails = observer(function FeatureDetails({
+  session,
 }: {
-  view: BrowserView
+  session: BrowserSession
 }) {
-  const ref = useViewWidth(view)
-  const { hint, props } = usePanZoom(view, ref)
+  const { selection } = session
+  if (!isFeature(selection)) {
+    return (
+      <div style={{ fontSize: '0.85rem', opacity: 0.7, padding: 12 }}>
+        Click a gene.
+      </div>
+    )
+  }
+  const data = selection.toJSON()
+  const strand = data.strand === -1 ? '−' : data.strand === 1 ? '+' : ''
   return (
-    <div
-      ref={ref}
-      {...props}
-      style={{
-        position: 'relative',
-        overflow: 'hidden',
-        touchAction: 'none',
-        cursor: 'grab',
-      }}
-    >
-      <ZoomHint show={hint} />
-      {isViewReady(view)
-        ? trackIds.map(trackId => (
-            <TrackRow key={trackId} view={view} trackId={trackId} />
-          ))
-        : null}
+    <div style={{ fontSize: '0.8rem', padding: 12 }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'baseline',
+          justifyContent: 'space-between',
+          gap: 8,
+        }}
+      >
+        <strong style={{ fontSize: '0.95rem' }}>
+          {data.name ?? data.type ?? 'Feature'}
+        </strong>
+        <button
+          type="button"
+          style={{ font: 'inherit', cursor: 'pointer' }}
+          onClick={() => {
+            session.clearSelection()
+          }}
+        >
+          Clear
+        </button>
+      </div>
+      <div style={{ opacity: 0.75, paddingTop: 2 }}>
+        {data.refName}:{data.start.toLocaleString()}-{data.end.toLocaleString()}{' '}
+        {strand}
+      </div>
+      <dl
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'auto 1fr',
+          gap: '2px 10px',
+          margin: '10px 0 0',
+        }}
+      >
+        {attributeRows(data).map(([key, value]) => (
+          <div key={key} style={{ display: 'contents' }}>
+            <dt style={{ opacity: 0.7 }}>{key}</dt>
+            <dd style={{ margin: 0, wordBreak: 'break-word' }}>{value}</dd>
+          </div>
+        ))}
+      </dl>
     </div>
   )
 })
@@ -380,12 +417,8 @@ function useSiteMode() {
 
 /**
  * Write the mode onto the session's config theme, and read the resolved colors
- * back off the session.
- *
- * One write rather than two. The config theme is what the display ships to the
- * renderer, so the feature labels baked there follow it, and `session.palette`
- * is derived from the same slot, so what React draws follows it too. Setting
- * only a React-side palette would leave the labels behind.
+ * back off the session. See the Bring your own overlays page for why this is
+ * one write rather than two.
  */
 function useSitePalette(session: BrowserSession) {
   const mode = useSiteMode()
@@ -395,52 +428,51 @@ function useSitePalette(session: BrowserSession) {
   return session.palette
 }
 
-// The palette is NOT what the checkbox swaps. JBrowse's stock displays read it
-// for their own content colours (the feature display wants a highlight colour),
-// so a feature track needs it whatever the overlays are. See the previous page.
-
-const BringYourOwnOverlays = observer(function BringYourOwnOverlays() {
-  const [plain, setPlain] = useState(true)
+const YourOwnFeatureDetails = observer(function YourOwnFeatureDetails() {
   const { view, session } = useMemo(() => makeView(), [])
+  const ref = useViewWidth(view)
+  const { hint, props } = usePanZoom(view, ref)
   const palette = useSitePalette(session)
 
-  const stack = (
-    <PaletteProvider palette={palette}>
-      <TrackStack view={view} />
-    </PaletteProvider>
-  )
-
   return (
-    <div>
-      <label
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 6,
-          fontSize: '0.85rem',
-          paddingBottom: 8,
-        }}
-      >
-        <input
-          type="checkbox"
-          checked={plain}
-          onChange={event => {
-            setPlain(event.target.checked)
-          }}
-        />
-        Draw the status states and corner controls with my own markup
-      </label>
-      {plain ? (
-        <DisplayChromeOverlayProvider value={plainChromeOverlays}>
-          <TrackControlProvider value={plainTrackControl}>
-            {stack}
-          </TrackControlProvider>
-        </DisplayChromeOverlayProvider>
-      ) : (
-        stack
-      )}
-    </div>
+    <PaletteProvider palette={palette}>
+      <DisplayChromeOverlayProvider value={plainChromeOverlays}>
+        <TrackControlProvider value={plainTrackControl}>
+          <div style={{ display: 'flex' }}>
+            <div
+              ref={ref}
+              {...props}
+              style={{
+                flex: 1,
+                minWidth: 0,
+                position: 'relative',
+                overflow: 'hidden',
+                touchAction: 'none',
+                cursor: 'grab',
+              }}
+            >
+              <ZoomHint show={hint} />
+              {isViewReady(view) ? (
+                <TrackRow view={view} trackId="volvox_genes" />
+              ) : null}
+            </div>
+            <div
+              style={{
+                width: PANEL_WIDTH,
+                flex: 'none',
+                borderLeft: '1px solid',
+                borderColor:
+                  'color-mix(in srgb, currentColor 25%, transparent)',
+                overflow: 'auto',
+              }}
+            >
+              <FeatureDetails session={session} />
+            </div>
+          </div>
+        </TrackControlProvider>
+      </DisplayChromeOverlayProvider>
+    </PaletteProvider>
   )
 })
 
-export default BringYourOwnOverlays
+export default YourOwnFeatureDetails

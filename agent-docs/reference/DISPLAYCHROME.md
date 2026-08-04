@@ -206,6 +206,37 @@ canvas-basic and LinearVariant already compose `DisplayContainer` explicitly, so
 for them it's now a matter of moving the legend and deleting one wrapper element
 — no getter indirection in the way.)
 
+## The bring-your-own seams
+
+Two of them, and they answer different questions. Both default to *undefined*
+rather than to a component set, so a display rendering outside any provider
+(unit tests, SVG export, breakpoint-split-view's `overlayUtils`) keeps JBrowse's
+own look — a plain default would degrade those invisibly.
+
+| what                                  | provider                        | plain set              | rendered by             |
+| ------------------------------------- | ------------------------------- | ---------------------- | ----------------------- |
+| the five `displayPhase` states        | `DisplayChromeOverlayProvider`  | `plainChromeOverlays`  | `DisplayChromeBase`     |
+| the bottom-right ambient controls     | `TrackControlProvider`          | `plainTrackControl`    | each display's own body |
+
+They stay separate because `DisplayChromeBase` takes its overlay set as a *prop*
+and never renders a track control; folding the two would put entries in
+`DisplayChromeOverlays` that the chrome ignores.
+
+**Reach vs weight.** Both providers are *reach*: they redirect what stock
+displays render, but `DisplayChrome`/`TrackControl` still reference MUI, so it
+stays in the bundle. *Weight* is only available to code writing its own display
+component — `DisplayChromeBase` + a `TrackControlComponent` of its own import no
+toolkit at all. `pnpm measure-chrome-bundle` measures the first half of that and
+CI re-checks it.
+
+Every ambient corner control (`TrackHeightIndicator`, canvas's
+`GeneGlyphControl` and `SoloSelectionChip`) is a thin wrapper that *describes*
+itself as `TrackControlProps` — an icon **name**, never an element, because an
+element would drag an icon package back into every display — and renders
+`TrackControl`. Add a new corner control that way, not by importing MUI
+directly; `products/jbrowse-build-your-own`'s smoke test counts rendered MUI
+elements per page and a direct import shows up there as a regression.
+
 ## Load-bearing gotchas
 
 Three things get cited here. Two are load-bearing, one is not, and conflating

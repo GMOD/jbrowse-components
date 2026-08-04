@@ -11,6 +11,60 @@ import { examples } from '../src/examples.ts'
 
 const here = path.dirname(fileURLToPath(import.meta.url))
 
+// How many Material UI elements each page renders. This whole site is an
+// argument about that number, so it is measured rather than claimed — the same
+// reason the landing page's bundle figures come out of
+// `pnpm measure-chrome-bundle` instead of a comment.
+//
+// **Zero is the bar** for every page that installs both plain sets
+// (`plainChromeOverlays` for the status states, `plainTrackControl` for the
+// corner controls). Those pages render JBrowse's own stock wiggle, feature and
+// alignments displays, unforked, and nothing Material reaches the screen.
+//
+// `a-stack-of-tracks` is the deliberate exception: it comes before the page that
+// introduces the swap, so it shows what a stock display looks like out of the
+// box. Its three are the ambient bottom-right controls — every display with a
+// `heightMode` slot draws a track-sizing button, and the feature display adds
+// the isoform-collapse notice while genes are collapsed.
+//
+// Exact equality, in both directions. A new Material widget appearing in a
+// display's render path has to be noticed here; so does one disappearing,
+// because that is the moment the prose needs rewriting too.
+const MUI_BUDGET = {
+  'pan-and-zoom': 0,
+  'one-track': 0,
+  'a-stack-of-tracks': 3,
+  'bring-your-own-overlays': 0,
+  'add-the-chrome-you-want': 0,
+  'your-own-feature-details': 0,
+}
+
+// Count the outermost MUI-classed elements (an icon button and the svg inside it
+// are one control, not two) and report what they were, since the label is the
+// only thing that says which control appeared.
+async function muiBudget(page, slug) {
+  const expected = MUI_BUDGET[slug]
+  if (expected === undefined) {
+    return [`no MUI_BUDGET entry for ${slug} — add one to scripts/smoke.mjs`]
+  }
+  const found = await page.evaluate(() =>
+    [...document.querySelectorAll('[class*="Mui"]')]
+      .filter(el => !el.parentElement?.closest('[class*="Mui"]'))
+      .map(
+        el =>
+          el.getAttribute('aria-label') ??
+          el.textContent.trim().slice(0, 40) ??
+          el.tagName.toLowerCase(),
+      ),
+  )
+  return found.length === expected
+    ? []
+    : [
+        `renders ${found.length} Material UI element(s), expected ${expected}:\n` +
+          found.map(f => `           - ${f}`).join('\n'),
+      ]
+}
+
 // Every page here drives the view with a pan handler of its own, and a pan
 // handler that captures the pointer on pointerdown quietly eats every click
 // inside it: pointer capture retargets the click at the capturing element, so
@@ -64,7 +118,13 @@ const failures = await smokeExamplesSite({
   slugs: examples.filter(e => !e.skipSmoke).map(e => e.slug),
   // no workerSlug: every demo here runs main-thread RPC, so there is no worker
   // spawn to guard
-  check: page => clicksReachTheTrack(page),
+  //
+  // The census runs before the click: opening one of those bottom-right menus
+  // mounts a Material popover, which would land in the count.
+  check: async (page, slug) => [
+    ...(await muiBudget(page, slug)),
+    ...(await clicksReachTheTrack(page)),
+  ],
   log: m => {
     console.log(m)
   },

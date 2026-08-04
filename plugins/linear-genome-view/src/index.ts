@@ -77,11 +77,16 @@ export type {
   LegendSection,
   RenderTransform,
   RenderTransformInputs,
+  TrackControlComponent,
+  TrackControlIcon,
+  TrackControlOption,
+  TrackControlProps,
 } from './BaseLinearDisplay/index.ts'
 
 export {
   BaseLinearDisplayComponent,
   BlockMsg,
+  BottomRightIndicators,
   DisplayChrome,
   DisplayChromeBase,
   DisplayChromeOverlayProvider,
@@ -99,6 +104,8 @@ export {
   MultiRegionDisplayMixin,
   StaleViewportRescaleMixin,
   TooLargeMessage,
+  TrackControl,
+  TrackControlProvider,
   TrackHeightIndicator,
   TrackHeightMixin,
   autorunOnReadyView,
@@ -115,6 +122,7 @@ export {
   installGlobalFetchAutorun,
   installGrowExitBake,
   onDisplayedRegionsChange,
+  plainTrackControl,
   viewportMatchesLastDrawn,
 } from './BaseLinearDisplay/index.ts'
 export type {

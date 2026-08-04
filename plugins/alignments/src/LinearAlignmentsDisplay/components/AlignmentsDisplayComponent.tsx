@@ -6,9 +6,9 @@ import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import {
+  BottomRightIndicators,
   DisplayChrome,
   TrackHeightIndicator,
-  TrackOverlayPortal,
 } from '@jbrowse/plugin-linear-genome-view'
 import { Link } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -26,19 +26,6 @@ const useStyles = makeStyles()(theme => ({
     textAlign: 'left',
     width: '100%',
     minHeight: '100%',
-  },
-  // Anchor row for the ambient bottom-right indicators (height switcher, plus
-  // the max-layout-height notice when it applies) so they lay out as one row
-  // instead of stacking on top of each other.
-  bottomRight: {
-    position: 'absolute',
-    bottom: 2,
-    right: 2,
-    zIndex: 3,
-    display: 'flex',
-    alignItems: 'center',
-    gap: 4,
-    pointerEvents: 'auto',
   },
   maxHeight: {
     display: 'flex',
@@ -139,45 +126,32 @@ const AlignmentsDisplayComponent = observer(
         {({ canvasRef, canvas }) => (
           <>
             <PileupBody model={model} canvasRef={canvasRef} canvas={canvas} />
-            {/* portaled above the inter-region padding masks, which otherwise
-             stripe across these in collapsed-introns / multi-region views, and
-             claims the press so an embedder's own pointer-capturing pan can't
-             swallow the click that opens these — see BottomRightIndicators,
-             which does both for canvas displays */}
-            <TrackOverlayPortal>
-              <div
-                className={classes.bottomRight}
-                data-gesture-owner="true"
-                onPointerDown={event => {
-                  event.stopPropagation()
+            <BottomRightIndicators>
+              {pileupTruncated ? (
+                <div className={classes.maxHeight}>
+                  <span>Max layout height reached</span>
+                  <Link
+                    component="button"
+                    variant="caption"
+                    underline="hover"
+                    onClick={() => {
+                      model.setMaxHeight(SHOW_ALL_MAX_HEIGHT)
+                    }}
+                  >
+                    Show all alignments
+                  </Link>
+                </div>
+              ) : null}
+              <TrackHeightIndicator
+                heightMode={model.heightMode}
+                hasOverflow={model.scrollableHeight > 0}
+                scrollZoom={view.scrollZoom}
+                noun="read"
+                onSetHeightMode={mode => {
+                  model.setHeightMode(mode)
                 }}
-              >
-                {pileupTruncated ? (
-                  <div className={classes.maxHeight}>
-                    <span>Max layout height reached</span>
-                    <Link
-                      component="button"
-                      variant="caption"
-                      underline="hover"
-                      onClick={() => {
-                        model.setMaxHeight(SHOW_ALL_MAX_HEIGHT)
-                      }}
-                    >
-                      Show all alignments
-                    </Link>
-                  </div>
-                ) : null}
-                <TrackHeightIndicator
-                  heightMode={model.heightMode}
-                  hasOverflow={model.scrollableHeight > 0}
-                  scrollZoom={view.scrollZoom}
-                  noun="read"
-                  onSetHeightMode={mode => {
-                    model.setHeightMode(mode)
-                  }}
-                />
-              </div>
-            </TrackOverlayPortal>
+              />
+            </BottomRightIndicators>
             <Suspense fallback={null}>
               <TooltipComponent
                 model={model}

@@ -1,0 +1,16 @@
+---
+import YourOwnFeatureDetails from '../examples/YourOwnFeatureDetails.tsx'
+import YourOwnFeatureDetailsCode from '../examples/YourOwnFeatureDetails.tsx?raw'
+import { getPage, section } from '../examples.ts'
+import Layout from '../layouts/ExampleLayout.astro'
+import Section from '../layouts/ExampleSection.astro'
+
+const page = getPage('your-own-feature-details')
+const sec = section(page, 'your-own-feature-details')
+---
+
+<Layout page={page}>
+  <Section {...sec} code={YourOwnFeatureDetailsCode}>
+    <YourOwnFeatureDetails client:only="react" />
+  </Section>
+</Layout>

@@ -1,7 +1,5 @@
 import { pluralize } from '@jbrowse/core/util'
-import FilterAltIcon from '@mui/icons-material/FilterAlt'
-
-import StatusChip from './StatusChip.tsx'
+import { TrackControl } from '@jbrowse/plugin-linear-genome-view'
 
 // Bottom-right badge for the show-only list. While the user is collecting
 // (ctrl/cmd+click or the right-click "Add to show-only list" item) it shows the
@@ -28,23 +26,24 @@ export default function SoloSelectionChip({
     return null
   }
   const counted = `${count} ${pluralize(count, featureNoun)}`
-  return applied ? (
-    <StatusChip
-      icon={<FilterAltIcon />}
-      label={`Showing ${counted}`}
-      tooltip={`Clear the show-only list to show all ${pluralize(2, featureNoun)} again`}
-      onDelete={() => {
-        onClear()
-      }}
-    />
-  ) : (
-    <StatusChip
-      icon={<FilterAltIcon />}
-      label={`${count} selected`}
-      tooltip={`Show only these ${counted}`}
-      onClick={() => {
-        onApply()
-      }}
+  return (
+    <TrackControl
+      icon="filter"
+      label={applied ? `Showing ${counted}` : `${count} selected`}
+      tooltip={
+        applied
+          ? `Clear the show-only list to show all ${pluralize(2, featureNoun)} again`
+          : `Show only these ${counted}`
+      }
+      // Applied, the chip reports rather than acts: the only thing left to do is
+      // the (×). While collecting, pressing it is what isolates the view.
+      onClick={
+        applied
+          ? undefined
+          : () => {
+              onApply()
+            }
+      }
       onDelete={() => {
         onClear()
       }}

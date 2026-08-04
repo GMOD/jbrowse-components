@@ -1,37 +1,9 @@
-import { useState } from 'react'
-
-import { CascadingMenu, CascadingMenuButton } from '@jbrowse/core/ui'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
-import UnfoldLessIcon from '@mui/icons-material/UnfoldLess'
+import { TrackControl } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import { GENE_GLYPH_MODE_OPTIONS } from '../geneGlyphMode.ts'
-import StatusChip from './StatusChip.tsx'
 
 import type { GeneGlyphMode } from '../geneGlyphMode.ts'
-
-// The chip sits on the display's bottom edge, so open the menu upward (its
-// bottom-left corner anchored to the chip's top-left).
-const anchorOrigin = { vertical: 'top', horizontal: 'left' } as const
-const transformOrigin = { vertical: 'bottom', horizontal: 'left' } as const
-
-// Subtle bordered look for the ambient bottom-right track-state buttons (shared
-// with TrackHeightIndicator), so the dismissed isoform button reads as one quiet
-// system rather than a bright control.
-const useStyles = makeStyles()(theme => ({
-  button: {
-    padding: 2,
-    background: theme.palette.background.paper,
-    border: `1px solid ${theme.palette.divider}`,
-    borderRadius: 3,
-    '& svg': {
-      fontSize: 14,
-    },
-    '&:hover': {
-      background: theme.palette.action.hover,
-    },
-  },
-}))
 
 // The chip carries the (×) to minimize itself; the minimized icon button has no
 // (×), so its tooltip drops that clause.
@@ -54,11 +26,12 @@ function getTooltip(
 // 'auto' too, where the collapse is a zoom-driven decision the user never made
 // and would otherwise have no cue for.
 //
-// Two looks for the same control. Until dismissed it's a loud text chip
-// ("Longest isoform") whose (×) is a passive acknowledgement; dismissing shrinks
-// it to the quiet always-there icon button (it never removes the control, so
-// re-opening the menu is one click away). Both open the same Auto / All /
-// Longest-coding options as the track menu's "Gene glyph" radio.
+// Two looks for the same control, and the only difference between them is
+// whether it carries a label. Until dismissed it's a loud text chip ("Longest
+// isoform") whose (×) is a passive acknowledgement; dismissing shrinks it to the
+// quiet always-there icon (it never removes the control, so re-opening the menu
+// is one click away). Both open the same Auto / All / Longest-coding options as
+// the track menu's "Gene glyph" radio.
 const GeneGlyphControl = observer(function GeneGlyphControl({
   collapsed,
   dismissed,
@@ -72,63 +45,26 @@ const GeneGlyphControl = observer(function GeneGlyphControl({
   onSetGeneGlyphMode: (value: GeneGlyphMode) => void
   onDismiss: () => void
 }) {
-  const { classes } = useStyles()
-  const [anchorEl, setAnchorEl] = useState<Element | null>(null)
-  const menuItems = GENE_GLYPH_MODE_OPTIONS.map(option => ({
-    label: option.label,
-    type: 'radio' as const,
-    checked: geneGlyphMode === option.value,
-    // One-shot pick from this ambient button, not a settings row to linger
-    // on like the track menu's radio group — dismiss like TrackHeightIndicator.
-    keepMenuOpen: false,
-    onClick: () => {
-      onSetGeneGlyphMode(option.value)
-    },
-  }))
   // The loud "Longest isoform" chip only makes sense while transcripts are
   // actually collapsed; in any other mode (or once dismissed) the control
-  // stays reachable as the quiet icon button so the user can switch back.
-  // Whether the control belongs on screen at all is the caller's call (it mounts
-  // this only when the display offers a `geneGlyphNotice`).
-  return dismissed || !collapsed ? (
-    <CascadingMenuButton
-      size="small"
-      className={classes.button}
-      stopPropagation
+  // stays reachable as the quiet icon. Whether the control belongs on screen at
+  // all is the caller's call (it mounts this only when the display offers a
+  // `geneGlyphNotice`).
+  const noticeShowing = collapsed && !dismissed
+  return (
+    <TrackControl
+      icon="isoform"
       tooltip={getTooltip(geneGlyphMode, collapsed, dismissed)}
-      menuItems={menuItems}
-    >
-      <UnfoldLessIcon />
-    </CascadingMenuButton>
-  ) : (
-    <>
-      <StatusChip
-        icon={<UnfoldLessIcon />}
-        label="Longest isoform"
-        tooltip={getTooltip(geneGlyphMode, collapsed, dismissed)}
-        onClick={event => {
-          // don't let the click bubble to the track/view (drag-select, deselect)
-          event.stopPropagation()
-          setAnchorEl(event.currentTarget)
-        }}
-        onDelete={() => {
-          onDismiss()
-        }}
-      />
-      <CascadingMenu
-        open={Boolean(anchorEl)}
-        anchorEl={anchorEl}
-        anchorOrigin={anchorOrigin}
-        transformOrigin={transformOrigin}
-        onClose={() => {
-          setAnchorEl(null)
-        }}
-        onMenuItemClick={callback => {
-          callback()
-        }}
-        menuItems={menuItems}
-      />
-    </>
+      label={noticeShowing ? 'Longest isoform' : undefined}
+      onDelete={noticeShowing ? onDismiss : undefined}
+      options={GENE_GLYPH_MODE_OPTIONS.map(option => ({
+        label: option.label,
+        selected: geneGlyphMode === option.value,
+        onSelect: () => {
+          onSetGeneGlyphMode(option.value)
+        },
+      }))}
+    />
   )
 })
 

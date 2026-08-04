@@ -25,12 +25,6 @@ export function canvasEdgeFlags(
   }
 }
 
-// Overlay stacking. The overflow indicator sits on top of the canvas, label
-// overlays, and amino-acid overlay (all of which sit at default z-index inside
-// the scroll container). Keep above MUI's tooltip floor (1500) is unnecessary
-// because the indicator's tooltip is itself MUI-managed.
-export const OVERFLOW_INDICATOR_Z_INDEX = 999
-
 // Drawing dimensions (in pixels) — authored in the shared pass-library shaders,
 // re-exported here so display-side modules import them from one place. Sourced
 // from `passes/constants.ts`, NOT `passes/index.ts`: this module is eager (layout

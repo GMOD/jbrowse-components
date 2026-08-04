@@ -6,6 +6,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useVirtualScrollWheel } from '@jbrowse/core/util/useVirtualScrollWheel'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import {
+  BottomRightIndicators,
   DisplayChrome,
   TrackHeightIndicator,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -14,7 +15,6 @@ import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import { MORPH_DURATION_MS } from '../yMorph.ts'
-import BottomRightIndicators from './BottomRightIndicators.tsx'
 import { CanvasFeatureRenderer } from './CanvasFeatureRenderer.ts'
 import FeatureTooltip from './FeatureTooltip.tsx'
 import GeneGlyphControl from './GeneGlyphControl.tsx'
@@ -33,6 +33,11 @@ import type { LinearCanvasBaseDisplayModel } from '../baseModel.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
+
+// Right-edge width the VerticalScrollbar overlay claims while the content
+// overflows, so the bottom-right indicators don't render underneath it. A shade
+// wider than the scrollbar's own track, which keeps a hairline between them.
+const SCROLLBAR_WIDTH = 14
 
 // The model type is the real MST instance (`LinearCanvasBaseDisplayModel`): the
 // display registers this component from index.ts, so nothing imports it back into
@@ -406,7 +411,9 @@ const FeatureBody = observer(function FeatureBody({
         controlsId={canvasId}
       />
 
-      <BottomRightIndicators hasOverflow={model.hasOverflow}>
+      <BottomRightIndicators
+        scrollbarWidth={model.hasOverflow ? SCROLLBAR_WIDTH : 0}
+      >
         <SoloSelectionChip
           count={model.soloFeatureCount}
           applied={model.soloApplied}

@@ -1,0 +1,71 @@
+import { TrackOverlayPortal } from '../../LinearGenomeView/TrackOverlayPortal.tsx'
+
+import type { ReactNode } from 'react'
+
+// Single anchor point for every bottom-right overlay a display draws for itself
+// (track sizing, overflow expand/restore, isoform-collapse notice, ...) so they
+// lay out as one row instead of each picking their own position and colliding.
+// Children are self-gating (each renders null when inactive); an all-null flex
+// container has no size, so there's no need to also track "is anything visible"
+// here — callers just render every indicator unconditionally.
+//
+// Lives here rather than in one display's plugin because the two things it does
+// beyond layout are both contracts, and a display that re-rolled the row would
+// silently opt out of them:
+//
+// - **Portaled above the inter-region padding masks.** A display's tree is
+//   sealed in a `contain:strict` stacking context that the masks paint over, so
+//   in collapsed-introns / multi-region views the region separators would stripe
+//   straight across these chips no matter what z-index they carry.
+// - **Claims the press.** An embedder that pans the view with its own pointer
+//   handler sits above this row; if it captures the pointer on pointerdown, the
+//   click that opens these menus is retargeted at the embedder's element and
+//   never arrives. JBrowse's own pan skips `button` targets, so the marker is
+//   for everyone else's — see the build-your-own examples site, whose pan
+//   handler is exactly that shape.
+//
+// The z-index matters only in the un-portaled fallback (no TrackContainer, i.e.
+// a display mounted standalone by an embedder). There this row is an ordinary
+// sibling of the display body, and it has to win against overlays inside it —
+// `VerticalScrollbar` sits at 10.
+const OVERFLOW_INDICATOR_Z_INDEX = 999
+
+function BottomRightIndicators({
+  scrollbarWidth = 0,
+  children,
+}: {
+  /**
+   * How much of the display's right edge its own scrollbar occupies *right
+   * now* — 0 when nothing is overflowing. Keeps the indicators from rendering
+   * underneath it. Displays that scroll with a native overflow container pass
+   * that container's scrollbar width; displays drawing `VerticalScrollbar` pass
+   * its track width.
+   */
+  scrollbarWidth?: number
+  children: ReactNode
+}) {
+  return (
+    <TrackOverlayPortal>
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 2,
+          right: scrollbarWidth + 2,
+          zIndex: OVERFLOW_INDICATOR_Z_INDEX,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 4,
+          pointerEvents: 'auto',
+        }}
+        data-gesture-owner="true"
+        onPointerDown={event => {
+          event.stopPropagation()
+        }}
+      >
+        {children}
+      </div>
+    </TrackOverlayPortal>
+  )
+}
+
+export default BottomRightIndicators

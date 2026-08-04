@@ -67,3 +67,15 @@ export type {
 export { default as TooLargeMessage } from '../shared/TooLargeMessage.tsx'
 export { default as FloatingLegend } from './components/FloatingLegend.tsx'
 export { default as TrackHeightIndicator } from './components/TrackHeightIndicator.tsx'
+export { default as BottomRightIndicators } from './components/BottomRightIndicators.tsx'
+export {
+  default as TrackControl,
+  TrackControlProvider,
+} from './components/trackControl/TrackControl.tsx'
+export { default as plainTrackControl } from './components/trackControl/plainTrackControl.tsx'
+export type {
+  TrackControlComponent,
+  TrackControlIcon,
+  TrackControlOption,
+  TrackControlProps,
+} from './components/trackControl/types.ts'

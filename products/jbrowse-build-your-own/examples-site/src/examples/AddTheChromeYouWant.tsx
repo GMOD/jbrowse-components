@@ -6,13 +6,16 @@ import { chooseGridPitch } from '@jbrowse/core/util/chooseGridPitch'
 import { normalizeWheelDelta } from '@jbrowse/core/util/wheelZoom'
 import {
   DisplayChromeOverlayProvider,
+  TrackControlProvider,
   plainChromeOverlays,
+  plainTrackControl,
 } from '@jbrowse/plugin-linear-genome-view'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
-// The end of the arc: pan, zoom, three kinds of track, your own status
-// overlays, your own ruler, your own track labels.
+// Pan, zoom, three kinds of track, your own status overlays, your own ruler,
+// your own track labels. Everything the browser draws is now either data or
+// yours. The page after this one goes the other way, and reads a click back out.
 //
 // The labels are a plain flex row next to each track, which is the cheapest
 // thing that works. JBrowse's own label layer does more (drag to reorder, a
@@ -394,6 +397,78 @@ const TrackLabel = observer(function TrackLabel({
 })
 
 /**
+ * Drag the bar under a track to resize it. Two model calls:
+ *
+ * - `display.resizeHeight(deltaPx)` is the whole resize. It clamps to the
+ *   display's minimum, and it also knows what a manual drag *means*: a display
+ *   in grow-to-fit mode is pinned to fixed height first, so the drag isn't
+ *   immediately undone by the next relayout.
+ * - `display.setResizing(true/false)` brackets the gesture. Displays whose row
+ *   geometry is a function of track height restretch every row per frame, and
+ *   use this to sit an expensive layer out of the drag. Skipping it costs you
+ *   correctness nowhere and frames somewhere.
+ *
+ * The delta is derived from the last committed pointer position rather than
+ * from where the press started, so a drag that runs into the minimum height
+ * doesn't bank a debt the pointer has to pay back on the way up.
+ *
+ * `data-gesture-owner` is the marker the pan handler above tests for. Without
+ * it, dragging this bar would pan the view sideways instead — a plain
+ * `stopPropagation` would not do, since that handler runs on the same pointer
+ * events this one needs.
+ */
+const RESIZE_HANDLE_HEIGHT = 4
+
+const TrackResizeHandle = observer(function TrackResizeHandle({
+  view,
+  trackId,
+}: {
+  view: BrowserView
+  trackId: string
+}) {
+  const lastY = useRef(0)
+  const track = view.tracks.find(t => t.configuration.trackId === trackId)
+  if (!track) {
+    return null
+  }
+  const display = track.activeDisplay
+  return (
+    <div
+      data-gesture-owner="true"
+      aria-label={`Resize ${trackId}`}
+      style={{
+        height: RESIZE_HANDLE_HEIGHT,
+        cursor: 'row-resize',
+        // or the browser turns a touch-drag into a scroll and the pointer
+        // stream never reaches this handler
+        touchAction: 'none',
+        background: 'color-mix(in srgb, currentColor 20%, transparent)',
+      }}
+      onPointerDown={event => {
+        event.preventDefault()
+        lastY.current = event.clientY
+        display.setResizing(true)
+        event.currentTarget.setPointerCapture(event.pointerId)
+      }}
+      onPointerMove={event => {
+        if (!event.currentTarget.hasPointerCapture(event.pointerId)) {
+          return
+        }
+        display.resizeHeight(event.clientY - lastY.current)
+        lastY.current = event.clientY
+      }}
+      onPointerUp={event => {
+        event.currentTarget.releasePointerCapture(event.pointerId)
+        display.setResizing(false)
+      }}
+      onPointerCancel={() => {
+        display.setResizing(false)
+      }}
+    />
+  )
+})
+
+/**
  * The page around this demo has a light/dark toggle. JBrowse needs to be told,
  * because a display paints no background of its own: its labels are drawn
  * straight onto whatever is behind them, so light-theme text on a dark page is
@@ -463,39 +538,44 @@ const AddTheChromeYouWant = observer(function AddTheChromeYouWant() {
   return (
     <PaletteProvider palette={palette}>
       <DisplayChromeOverlayProvider value={plainChromeOverlays}>
-        <div style={{ display: 'flex' }}>
-          <div style={{ width: LABEL_WIDTH, flex: 'none' }}>
-            <div style={{ height: RULER_HEIGHT }} />
-            {tracks.map(t => (
-              <TrackLabel
-                key={t.id}
-                view={view}
-                trackId={t.id}
-                label={t.label}
-              />
-            ))}
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <Ruler view={view} />
-            <div
-              ref={ref}
-              {...props}
-              style={{
-                position: 'relative',
-                overflow: 'hidden',
-                touchAction: 'none',
-                cursor: 'grab',
-              }}
-            >
-              <ZoomHint show={hint} />
-              {isViewReady(view)
-                ? trackIds.map(id => (
-                    <TrackRow key={id} view={view} trackId={id} />
-                  ))
-                : null}
+        <TrackControlProvider value={plainTrackControl}>
+          <div style={{ display: 'flex' }}>
+            <div style={{ width: LABEL_WIDTH, flex: 'none' }}>
+              <div style={{ height: RULER_HEIGHT }} />
+              {tracks.map(t => (
+                // one spacer per resize bar, so a label stays level with its
+                // track as the stack grows
+                <div key={t.id}>
+                  <TrackLabel view={view} trackId={t.id} label={t.label} />
+                  <div style={{ height: RESIZE_HANDLE_HEIGHT }} />
+                </div>
+              ))}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <Ruler view={view} />
+              <div
+                ref={ref}
+                {...props}
+                style={{
+                  position: 'relative',
+                  overflow: 'hidden',
+                  touchAction: 'none',
+                  cursor: 'grab',
+                }}
+              >
+                <ZoomHint show={hint} />
+                {isViewReady(view)
+                  ? trackIds.map(id => (
+                      <div key={id}>
+                        <TrackRow view={view} trackId={id} />
+                        <TrackResizeHandle view={view} trackId={id} />
+                      </div>
+                    ))
+                  : null}
+              </div>
             </div>
           </div>
-        </div>
+        </TrackControlProvider>
       </DisplayChromeOverlayProvider>
     </PaletteProvider>
   )
