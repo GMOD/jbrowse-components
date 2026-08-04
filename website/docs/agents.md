@@ -53,8 +53,8 @@ error: defaultSession.views[0].init.tracks[0]: trackId "sample_bem" is not defin
 
 `--json` gives machine-readable output, and a non-zero exit means errors, so an
 agent can loop on it. Errors are things JBrowse accepts and silently gets wrong;
-warnings are things it will complain about itself. Full description in the
-[FAQ](/docs/faq#my-track-loads-but-my-setting-has-no-effect).
+warnings are things it will complain about itself. Full description in
+[](/docs/faq#my-track-loads-but-my-setting-has-no-effect).
 
 A validator beats a manual here. An agent that has read every page can still
 invent a slot name; one that can check its work recovers from having done so.
