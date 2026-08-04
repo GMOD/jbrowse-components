@@ -1,11 +1,17 @@
 import { useState } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
-import { ErrorMessage, SubmitDialog } from '@jbrowse/core/ui'
 import {
+  ErrorMessage,
+  ReplaceCurrentViewButton,
+  SubmitDialog,
+} from '@jbrowse/core/ui'
+import {
+  addOrReplaceView,
   getContainingView,
   getSession,
   isSessionWithAddTracks,
+  isSessionWithViewReplacement,
   toLocale,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -19,7 +25,7 @@ import {
   derivativePathLabel,
 } from './buildDerivativeVsRefSpec.ts'
 
-import type { AbstractTrackModel } from '@jbrowse/core/util'
+import type { AbstractTrackModel, AbstractViewModel } from '@jbrowse/core/util'
 import type { DerivativeCandidate } from '@jbrowse/plugin-alignments'
 
 const useStyles = makeStyles()(theme => ({
@@ -124,8 +130,9 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
   const candidates = ranked.slice(0, MAX_SHOWN)
   const [selected, setSelected] = useState(0)
   const [error, setError] = useState<unknown>()
+  const canReplace = isSessionWithViewReplacement(getSession(track))
 
-  async function onSubmit() {
+  async function onSubmit(replace = false) {
     try {
       const candidate = candidates[selected]
       if (!candidate) {
@@ -136,6 +143,9 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
         width: number
         tracks?: ViewTrack[]
       }
+      // Read off the launching view BEFORE it may be swapped out: replacing
+      // destroys it, and this list is what the reference panel opens with.
+      const carried = refPanelTrackIds(view)
       const [trackAssembly] = getConf(track, 'assemblyNames') as string[]
       const assembly = await session.assemblyManager.waitForAssembly(
         trackAssembly!,
@@ -155,13 +165,15 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
           rand: () => Math.random(),
         })
       session.addTemporaryAssembly?.(temporaryAssembly)
-      const created = session.addView('LinearSyntenyView', viewSpec) as {
-        views?: SyntenyPanel[]
-      }
+      const created = addOrReplaceView({
+        session,
+        typeName: 'LinearSyntenyView',
+        initialState: viewSpec,
+        replacing: replace ? (view as AbstractViewModel) : undefined,
+      }) as { views?: SyntenyPanel[] }
       const [refPanel, derivativePanel] = created.views ?? []
       // the launching view's own tracks go onto the reference panel only: the
       // derivative panel is a synthetic assembly no configured track names
-      const carried = refPanelTrackIds(view)
       if (refPanel && carried.length > 0) {
         showWhenMeasured(refPanel, () => {
           for (const trackId of carried) {
@@ -193,8 +205,23 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
     <SubmitDialog
       open
       title="Reconstruct derivative allele"
-      submitText="Draw it"
+      // The dialog's own verb, with the destination named now that there are
+      // two of them. The reconstruction is anchored on the window the pileup is
+      // already showing, so putting it in that view's place is as reasonable an
+      // outcome as adding it below, the same offer the synteny and read-vs-ref
+      // launches make.
+      submitText={canReplace ? 'Draw in new view' : 'Draw it'}
       submitDisabled={candidates.length === 0}
+      actions={
+        canReplace ? (
+          <ReplaceCurrentViewButton
+            disabled={candidates.length === 0}
+            onClick={() => {
+              void onSubmit(true)
+            }}
+          />
+        ) : null
+      }
       onCancel={() => {
         handleClose()
       }}
