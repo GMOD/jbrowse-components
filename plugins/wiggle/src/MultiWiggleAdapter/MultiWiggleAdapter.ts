@@ -3,7 +3,7 @@ import {
   aggregateQuantitativeStats,
   blankStats,
 } from '@jbrowse/core/data_adapters/BaseAdapter/stats'
-import { SimpleFeature } from '@jbrowse/core/util'
+import { SimpleFeature, createStatusFanOut } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { merge } from 'rxjs'
 import { map } from 'rxjs/operators'
@@ -205,15 +205,26 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
   // Every visible region in one call per subtrack: each subadapter is its own
   // file, so handing it all the regions lets it coalesce reads across them
   // (BigWig does — see fetchRegionRaws). `raws` is aligned to `regions`.
+  //
+  // The subtracks download concurrently and all report the same phase
+  // ("Downloading wiggle data"), so each gets its own createStatusFanOut slot
+  // rather than the caller's raw statusCallback — otherwise the last writer wins
+  // and the first file to finish blanks the label while the other 39 are still
+  // going. Aggregated, N subtracks read as one Σbytes bar. Same idiom as
+  // BaseFeatureDataAdapter.getFeaturesInMultipleRegions.
   public async getMultiSourceFeatureArraysMulti(
     regions: Region[],
     opts: WiggleOptions = {},
   ): Promise<{ source: string; raws: RawFeatureArrays[] }[]> {
     const adapters = await this.getFilteredAdapters(opts.sources)
+    const slot = createStatusFanOut(opts.statusCallback)
     return Promise.all(
       adapters.map(async ({ source, dataAdapter }) => ({
         source,
-        raws: await fetchRegionRaws(dataAdapter, regions, opts),
+        raws: await fetchRegionRaws(dataAdapter, regions, {
+          ...opts,
+          statusCallback: slot(),
+        }),
       })),
     )
   }

@@ -5,7 +5,7 @@ import { executeRenderMultiWiggleData } from './executeRenderMultiWiggleData.ts'
 
 import type { RawFeatureArrays, WiggleDataResult } from '../util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { Region } from '@jbrowse/core/util'
+import type { Region, StatusCallback } from '@jbrowse/core/util'
 
 jest.mock('@jbrowse/core/data_adapters/getFeatureAdapter')
 
@@ -35,6 +35,7 @@ function scoresOf(result: WiggleDataResult, name: string) {
 async function run(args: {
   sources?: { name: string }[]
   bicolorPivot?: number
+  statusCallback?: StatusCallback
 }) {
   // no cast: rpcResult carries its value type, so `value` arrives as the
   // WiggleDataResult[] the RpcRegistry declares for RenderMultiWiggleData
@@ -147,6 +148,68 @@ describe('plain feature adapter fallback', () => {
     expect(scoresOf(results[0]!, 'a')).toEqual([1])
     expect(scoresOf(results[0]!, 'b')).toEqual([])
     expect(scoresOf(results[1]!, 'b')).toEqual([3])
+  })
+
+  // A plain bedGraph pointed at a MultiQuantitativeTrack has no source column,
+  // so every feature comes back with `source: undefined`. Grouping used to
+  // stringify that into a subtrack literally named "undefined", which reached
+  // the tooltip as `undefined: 5`.
+  it('names a source-less feature group with the empty string, not "undefined"', async () => {
+    const anon = (start: number, score: number) =>
+      new SimpleFeature({
+        uniqueId: `anon-${start}`,
+        refName: 'chr1',
+        start,
+        end: start + 10,
+        score,
+      })
+    jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
+      getFeaturesArray: jest.fn().mockResolvedValue([anon(0, 5), anon(10, 6)]),
+    } as never)
+
+    const results = await run({})
+
+    expect(results[0]!.sources.map(s => s.name)).toEqual([''])
+    expect(scoresOf(results[0]!, '')).toEqual([5, 6])
+  })
+
+  // The regions download at once through one status field, so each gets its own
+  // fan-out slot: unslotted, the last writer won and the first region to finish
+  // blanked the label while the rest were still downloading.
+  it('aggregates concurrent per-region download progress into one bar', async () => {
+    const slots: StatusCallback[] = []
+    const getFeaturesArray = jest
+      .fn()
+      .mockImplementation(
+        (_region: unknown, opts: { statusCallback?: StatusCallback }) => {
+          slots.push(opts.statusCallback!)
+          return Promise.resolve([])
+        },
+      )
+    jest
+      .mocked(getFeatureAdapterOrThrow)
+      .mockResolvedValue({ getFeaturesArray } as never)
+
+    const seen: unknown[] = []
+    await run({
+      statusCallback: s => {
+        seen.push(s)
+      },
+    })
+
+    // both regions were handed a callback, and not the same one
+    expect(slots).toHaveLength(2)
+    expect(slots[0]).not.toBe(slots[1])
+
+    seen.length = 0
+    slots[0]!({ message: 'Downloading wiggle data', current: 10, total: 100 })
+    slots[1]!({ message: 'Downloading wiggle data', current: 30, total: 200 })
+    // summed, not last-writer-wins
+    expect(seen.at(-1)).toEqual({
+      message: 'Downloading wiggle data',
+      current: 40,
+      total: 300,
+    })
   })
 
   it("keeps the caller's source order ahead of newly-discovered ones", async () => {

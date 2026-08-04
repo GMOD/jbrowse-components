@@ -1,5 +1,5 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
-import { groupBy, updateStatus } from '@jbrowse/core/util'
+import { createStatusFanOut, updateStatus } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
   checkStopTokenThrottled,
@@ -7,7 +7,11 @@ import {
 } from '@jbrowse/core/util/stopToken'
 import { collectWiggleTransferables } from '@jbrowse/wiggle-core'
 
-import { featuresToRaw, processFeaturesFromArrays } from '../util.ts'
+import {
+  featuresToRaw,
+  groupFeaturesBySource,
+  processFeaturesFromArrays,
+} from '../util.ts'
 
 import type { RawFeatureArrays, SourceInfo, WiggleDataResult } from '../util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -20,6 +24,12 @@ interface FetchOpts {
   resolution: number
   sources?: SourceInfo[]
   stopToken?: StopToken
+  // Reaches the per-subtrack adapters so a multiwiggle gets the same
+  // determinate byte progress a single-source wiggle does. The fan-out that
+  // keeps N concurrent subtracks from clobbering each other lives in the
+  // adapters (MultiWiggleAdapter, getFallbackSourceArrays below), not here —
+  // this executor doesn't know how many files there are.
+  statusCallback?: StatusCallback
 }
 
 // Multi-source wiggle adapters fan out to inner adapters themselves and expose
@@ -55,15 +65,22 @@ function unionSourcesByName(
 // per-source arrays by grouping features on their `source` field, mirroring the
 // pre-webgl renderMultiWiggle path. A source is listed once it appears in any
 // region, with empty arrays for the regions it's missing from.
+//
+// The regions download concurrently under one status field, so each gets its
+// own createStatusFanOut slot (see MultiWiggleAdapter for the same idiom).
 async function getFallbackSourceArrays(
   dataAdapter: BaseFeatureDataAdapter,
   regions: Region[],
   opts: FetchOpts,
 ): Promise<{ source: string; raws: RawFeatureArrays[] }[]> {
+  const slot = createStatusFanOut(opts.statusCallback)
   const groupsPerRegion = await Promise.all(
     regions.map(async region => {
-      const features = await dataAdapter.getFeaturesArray(region, opts)
-      return groupBy(features, f => `${f.get('source')}`)
+      const features = await dataAdapter.getFeaturesArray(region, {
+        ...opts,
+        statusCallback: slot(),
+      })
+      return groupFeaturesBySource(features)
     }),
   )
   const sources = [
@@ -128,7 +145,13 @@ export async function executeRenderMultiWiggleData({
     'Downloading wiggle data',
     statusCallback,
     () => {
-      const opts = { bpPerPx, resolution, sources: sourcesArg, stopToken }
+      const opts = {
+        bpPerPx,
+        resolution,
+        sources: sourcesArg,
+        stopToken,
+        statusCallback,
+      }
       return isMulti
         ? dataAdapter.getMultiSourceFeatureArraysMulti(regions, opts)
         : getFallbackSourceArrays(dataAdapter, regions, opts)

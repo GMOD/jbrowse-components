@@ -5,7 +5,7 @@ import MultiWiggleAdapter from './MultiWiggleAdapter.ts'
 import configSchema from './configSchema.ts'
 
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Feature } from '@jbrowse/core/util'
+import type { Feature, StatusCallback } from '@jbrowse/core/util'
 
 // getSources strips dataAdapter before returning — these tests only exercise
 // metadata flow, never call into dataAdapter. One named stub avoids per-call
@@ -622,6 +622,43 @@ describe('MultiWiggleAdapter.getMultiSourceFeatureArraysMulti', () => {
     expect(fastA).not.toHaveBeenCalled()
     expect(fastB).toHaveBeenCalledTimes(1)
     expect(result.map(r => r.source)).toEqual(['b'])
+  })
+
+  // 40 bigwigs downloading at once share one status field: unslotted, the last
+  // writer won and the first file to finish blanked the label while the rest
+  // were still going, so a multiwiggle showed no determinate progress at all.
+  it('gives each subtrack its own status slot so progress aggregates', async () => {
+    const slots: StatusCallback[] = []
+    const fast = jest
+      .fn()
+      .mockImplementation(
+        (_region: unknown, opts: { statusCallback?: StatusCallback }) => {
+          slots.push(opts.statusCallback!)
+          return Promise.resolve(makeRaw(1))
+        },
+      )
+    const adapter = makeAdapter({ getFeatureArrays: fast }, ['a', 'b'])
+
+    const seen: unknown[] = []
+    await adapter.getMultiSourceFeatureArraysMulti([region], {
+      bpPerPx: 1,
+      resolution: 1,
+      statusCallback: s => {
+        seen.push(s)
+      },
+    })
+
+    expect(slots).toHaveLength(2)
+    expect(slots[0]).not.toBe(slots[1])
+
+    seen.length = 0
+    slots[0]!({ message: 'Downloading wiggle data', current: 5, total: 50 })
+    slots[1]!({ message: 'Downloading wiggle data', current: 20, total: 40 })
+    expect(seen.at(-1)).toEqual({
+      message: 'Downloading wiggle data',
+      current: 25,
+      total: 90,
+    })
   })
 
   it('returns raw arrays unchanged — bicolor split happens at the executor', async () => {

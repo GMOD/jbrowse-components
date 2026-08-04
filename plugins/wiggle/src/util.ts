@@ -1,3 +1,5 @@
+import { groupBy } from '@jbrowse/core/util'
+
 import type { SourceInfo, WiggleFeatureArrays } from '@jbrowse/wiggle-core'
 
 export {
@@ -90,6 +92,29 @@ export interface WiggleFeatureUnderMouse {
 // uses real source names; single just needs a stable label so it fits the
 // shared { sources: [...] } shape.
 export const SINGLE_WIGGLE_SOURCE_NAME = 'default'
+
+// Bucket features by their `source` field, for the adapters that carry several
+// sources in one file (bedMethyl, a bedGraph with a source column) and are used
+// directly as a MultiQuantitativeTrack's adapter.
+//
+// A feature with no source lands under `''`, not under the `"undefined"` a bare
+// `groupBy(f => `${f.get('source')}`)` produces — that string reached the UI as
+// a real subtrack name, so a plain bedGraph pointed at a MultiQuantitativeTrack
+// showed `undefined: 5` in its tooltip. Empty rather than a placeholder word
+// because every consumer already treats a falsy source as unnamed: the tooltip
+// drops the `name: ` prefix and the row label renders nothing.
+//
+// Shared by the render executor and the clustering score matrix so the two
+// agree on what an un-annotated feature is called — they key their outputs off
+// the same source list.
+export function groupFeaturesBySource<T extends { get: (key: string) => unknown }>(
+  features: T[],
+) {
+  return groupBy(features, f => {
+    const source = f.get('source')
+    return source === undefined || source === null ? '' : `${source}`
+  })
+}
 
 // Raw per-feature typed arrays returned by adapters' fast path. Display-side
 // concerns (bicolor pos/neg split) happen in processFeaturesFromArrays at the

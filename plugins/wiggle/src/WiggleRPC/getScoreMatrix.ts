@@ -1,6 +1,8 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
-import { groupBy } from '@jbrowse/core/util'
+import { createStatusFanOut } from '@jbrowse/core/util'
 import { checkStopTokenThrottled } from '@jbrowse/core/util/stopToken'
+
+import { groupFeaturesBySource } from '../util.ts'
 
 import type { GetScoreMatrixArgs } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -46,12 +48,27 @@ export async function getScoreMatrix({
     rows[name] = new Float32Array(totalWidth)
   }
 
+  // Fetched together rather than one region at a time: clustering a
+  // collapsed-intron or whole-genome view otherwise paid N serial round trips
+  // for what the render path already batches. Each region gets its own status
+  // slot so the concurrent downloads aggregate into one bar instead of
+  // clobbering the shared field. Binning stays sequential below — it writes into
+  // one shared `rows` and has to stay interruptible.
+  const slot = createStatusFanOut(args.statusCallback)
+  const featsPerRegion = await Promise.all(
+    regions.map(region =>
+      dataAdapter.getFeaturesArray(region, {
+        ...args,
+        statusCallback: slot(),
+      }),
+    ),
+  )
+
   for (const [i, region] of regions.entries()) {
     const w = widths[i]!
     const colOffset = offsets[i]!
     const regionStart = region.start
-    const feats = await dataAdapter.getFeaturesArray(region, args)
-    const groups = groupBy(feats, f => f.get('source')!)
+    const groups = groupFeaturesBySource(featsPerRegion[i]!)
 
     for (const { name } of sources) {
       const arr = rows[name]!
