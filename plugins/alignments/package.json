@@ -31,7 +31,7 @@
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@gmod/bam": "^7.7.0",
+    "@gmod/bam": "^7.7.1",
     "@gmod/cram": "^10.2.0",
     "@jbrowse/alignments-core": "workspace:^",
     "@jbrowse/cigar-utils": "workspace:^",
