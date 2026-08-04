@@ -16,7 +16,12 @@ Two supporting habits came out of the pass and are worth keeping:
 - **Every dataset should carry a built-in control** — something in the same
   figure, from the same pipeline, that ought to come out negative. The German
   Shepherd row in the wolfdog painting and the wolf rows in the SV panel are
-  what make those figures self-validating.
+  what make those figures self-validating. The 2026-08-04 rebuild of the
+  wolfdog painting added the other half of that: a POSITIVE control (eight gray
+  wolves held out of the wolf panel and painted like any target) and a
+  219-breed sweep that is neither, so the subject has a scale on both sides
+  rather than only a floor. Two of the eight positives came out wrong, which is
+  the argument for having them.
 - **End on checking the inference against the raw data.** Both Dog10K tutorials
   close by putting the underlying genotypes under the derived track. It is the
   step that separates a figure you can trust from a figure that merely looks
@@ -106,10 +111,12 @@ breed-labeled `layout`), so each of these is roughly an hour:
   ancestry per position across the eight wolfdogs as a quantitative track.
   Compelling if a depleted region lands on something known, but with eight
   animals the noise is real: describe it, do not call it selection. Measured
-  cost, so nobody starts it blind: about 6 minutes per chromosome (roughly one
-  minute of remote slicing, the rest FLARE), so ~3.5 hours for the sweep. The
-  local-ancestry tutorial's numbers are chr1 only and say so; the sweep is what
-  would let it quote genome-wide fractions.
+  cost, so nobody starts it blind, and RE-MEASURED 2026-08-04 after the target
+  set grew from 11 animals to 243: chr1 now takes about 15 minutes (4 of remote
+  slicing for 591 samples, the rest FLARE at 16 threads). chr1 is ~6% of the
+  autosomes, so the sweep is on the order of 4-5 hours rather than the ~3.5 the
+  11-animal run implied. The local-ancestry tutorial's numbers are chr1 only and
+  say so; the sweep is what would let it quote genome-wide fractions.
 
 _DENR_ and _CYP1A2_ are done (see above).
 

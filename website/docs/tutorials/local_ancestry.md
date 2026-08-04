@@ -2,8 +2,8 @@
 title: Local ancestry (Dog10K)
 sidebar_label: Local ancestry (Dog10K)
 description:
-  Paint wolf-derived haplotype blocks in two wolfdog breeds from the Dog10K
-  phased panel
+  Paint wolf-derived haplotype blocks in two wolfdog breeds, against 219 other
+  breeds and eight held-out wolves, from the Dog10K phased panel
 guide_category: Tutorials
 tutorial_category: Population genomics
 ---
@@ -97,6 +97,16 @@ The panels decide what the colors mean, so this is the step that matters most,
 and breadth is the part worth getting right. The dog panel has to include the
 shepherd breeds in particular: leave the targets' own dog background
 unrepresented and ordinary dog haplotypes have nowhere to go but the wolf panel.
+
+An animal cannot be in a panel and painted against it, so both directions of
+that get handled explicitly. The eight gray wolves are **removed from the wolf
+panel** before the run — a target matched against itself paints solid by
+construction and says nothing. The sweep is the same problem in reverse: each
+swept animal comes out of the dog panel, but its **breed** does not, because the
+targets are drawn from breeds with several sequenced animals and the panel takes
+one of the others. That is what makes a flat-dog painting of a Chow Chow or an
+Alaskan Malamute a result rather than an artifact of a missing panel entry.
+
 FLARE reads the two lists as one `ref-panel` file:
 
 ```
@@ -143,8 +153,13 @@ TMSK000001      0.033   0.967     Tamaskan
 GRSD000002      0       1         German Shepherd Dog
 ```
 
-Of the 219 swept breeds, 193 come in under 1% wolf on this chromosome, which is
-what makes the wolfdogs' 15-45% a distance rather than an assertion.
+Of the 219 swept breeds, 193 come in under 1% wolf on this chromosome, which
+gives the wolfdogs' fractions a scale to be read against: seven of the eight
+land between 15% and 45%. The eighth, Czechoslovakian 2, is at 1.5% with no
+block over 0.8 Mb, which puts it inside the range the sweep occupies. That is
+not a failure of the inference — both breeds have been bred back to dogs for
+decades, so how much wolf an individual carries varies, and the unit here is the
+animal rather than the breed.
 
 ### Collapsing calls into blocks
 
@@ -233,10 +248,14 @@ rather than about the animals. The build script prints a second, cruder
 measurement beside FLARE's: the fraction of chr1 sites where the two panels are
 nearly fixed for different alleles at which the animal carries the wolf one. The
 two Swedish wolves score 0.92 and 0.92 there, the highest of all eight, against
-0.06 for the German Shepherd. FLARE matches whole haplotypes against the panel
-and those two have no close match in it; the allele count does not care about
-haplotypes and says plainly that they are wolves. Where a painting and the raw
-alleles disagree, the painting is the model's answer.
+0.06 for the German Shepherd. So the alleles say plainly that they are wolves
+while the painting says half dog, and this tutorial does not resolve which part
+of the inference gives way — the two measurements ask different questions, one
+about alleles one at a time and one about whole haplotypes matched against a
+panel of twenty-eight. What it does settle is which way to read the
+disagreement: where a painting and the raw alleles disagree, the painting is the
+model's answer, and the reason to run the cruder measurement at all is that it
+has no model to be the answer of.
 
 ### What the two wolf-like breeds do
 
@@ -294,8 +313,8 @@ A painted block is an inference, and the genotypes it was inferred from are
 right there in the panel. The window worth checking is not the middle of a block
 but its **edge**: inside a block, a wolf-called haplotype carrying wolf alleles
 is barely a claim, while at an edge the painting says the wolf alleles stop at a
-coordinate, and either they do or they do not. The 1.5 Mb highlighted above holds
-three such edges.
+coordinate, and either they do or they do not. Nine of the sixty-four haplotypes
+end a wolf block inside the 1.5 Mb highlighted above.
 
 Underneath the gene track and the painting, the same window's phased genotypes go
 in as a matrix, filtered to the markers that carry ancestry information at all —
@@ -313,17 +332,49 @@ description of the 32 animals in the file. Without the filter the lane draws
 every common site in 1.5 Mb, nearly all of them shared between wolves and dogs,
 and the figure is a wall of salt-and-pepper.
 
-<Figure caption="1.5 Mb of chr1 spanning three wolf-block edges. Top: the genes in the window. Middle: FLARE's painting for 32 named animals. Bottom: their phased genotypes at the 49 markers that separate the panels, one column per marker, orange for the wolf allele. Gray wolves carry them throughout, the German Shepherd lineage almost nowhere, and a wolfdog's row stops where its block edge is." src="/img/dog10k-wolfdog-block-genotypes.png" />
+<Figure caption="1.5 Mb of chr1 spanning nine wolf-block edges. Top: the genes in the window. Middle: FLARE's painting for 32 named animals. Bottom: their phased genotypes at the 49 markers separating the panels, one column per marker, orange for the wolf allele. A wolfdog's row carries the markers up to its painted edge and none after it; a sweep breed's short block is only half-carried on its wolf side." src="/img/dog10k-wolfdog-block-genotypes.png" />
 
 The matrix draws one column per marker rather than placing each at its
 coordinate, so a run of carriers reads as a band instead of as speckle; the lines
 above the rows tie each column back to where it actually is, which is how a
 column is matched to the block edge in the painting above it.
 
+The build script does the same comparison as a count, one line per edge, so the
+figure is not the only place the claim lives:
+
+```
+Wolf alleles carried either side of a painted block edge:
+  Thai Ridgeback hap1        edge 112,044,711   wolf side     n/a   dog side    4/49
+  Saarloos 2 hap2            edge 112,136,175   wolf side     3/5   dog side    6/44
+  Chow Chow hap2             edge 112,453,902   wolf side   13/23   dog side    0/26
+  Tamaskan hap2              edge 112,563,501   wolf side   16/23   dog side    0/26
+  Czechoslovakian 4 hap1     edge 112,576,175   wolf side   23/23   dog side    0/26
+  Saarloos 3 hap1            edge 112,576,175   wolf side   23/23   dog side    0/26
+  Kai Ken hap1               edge 112,846,876   wolf side   13/23   dog side    0/26
+  Caucasian Ovcharka hap2    edge 113,109,578   wolf side   19/36   dog side    1/13
+  Saarloos 1 hap1            edge 113,251,574   wolf side   41/43   dog side     0/6
+```
+
+**The long blocks hold at their edges and the short ones do not.** Both wolfdog
+haplotypes ending at 112,576,175 carry every one of the 23 markers before it and
+none of the 26 after; Saarloos 1 hap1 carries 41 of 43 and then none. The sweep
+breeds' edges sit in the same window under the same markers and are nothing like
+as sharp: the Chow Chow and the Kai Ken carry 13 of 23 on the side the painting
+calls wolf, and the Thai Ridgeback's block ends before the first marker, so
+nothing in the window supports it at all.
+
+That is the block-length argument from the previous section arriving as a
+second, independent measurement. A boundary left by a recent cross is a real
+boundary in the genotypes; a short assignment in an ordinary breed is a stretch
+where the model had little to go on, and it is worth knowing which of the two a
+given block is before building anything on it. Saarloos 2 hap2's edge, at 3 of 5
+then 6 of 44, is the honest middle: a real drop, but not one you would put a
+coordinate on.
+
 This is the check worth running on any local-ancestry call before building
 anything on top of it: the painting is a summary, and the summary should be
 visible in the raw genotypes. It is also how you would follow up the Shiloh
-Shepherd's blocks.
+Shepherd's blocks, or the Great Anglo-French Tricolour Hound's.
 
 ## Repartitioning the same display
 

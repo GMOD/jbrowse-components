@@ -371,12 +371,14 @@ rm -f named.chk.bcf named.chk.order
 # sample subset, so they stay panel-wide estimates and do not describe the
 # thirty-two samples the file ends up holding — which is why AC/AF/AN are
 # dropped rather than left to be read as the same thing.
+BLOCK_START=112000000
+BLOCK_END=113500000
 if [ "$CHROM" = chr1 ]; then
   cut -f1 named.tsv > block.samples
   { awk '{print $1"\twolf"}' wolves.txt
     awk '{print $1"\tdog"}' dogs.txt; } > afgroups.txt
   tabix -f -p vcf "$CHROM.subset.vcf.gz"
-  bcftools view -r chr1:112000000-113500000 -Ou "$CHROM.subset.vcf.gz" \
+  bcftools view -r "chr1:$BLOCK_START-$BLOCK_END" -Ou "$CHROM.subset.vcf.gz" \
     | bcftools +fill-tags -Ou -- -S afgroups.txt -t AF \
     | bcftools view -S block.samples --force-samples -Ou \
     | bcftools annotate -x INFO/AC,INFO/AF,INFO/AN,INFO/NS \
@@ -384,8 +386,72 @@ if [ "$CHROM" = chr1 ]; then
   tabix -f -p vcf dog10k_wolfdog_chr1_block.vcf.gz
   echo
   echo "Wrote $(pwd)/dog10k_wolfdog_chr1_block.vcf.gz (the marker figure's window)."
-  echo "Markers the figure keeps (AF_wolf >= 0.8 and AF_dog <= 0.15):"
-  bcftools query -f '%POS\t%INFO/AF_wolf\t%INFO/AF_dog\n' \
-    dog10k_wolfdog_chr1_block.vcf.gz \
-    | awk '$2>=0.8 && $3<=0.15 {n++} END {print "  "n" markers"}'
+
+  # Does the painting hold at its own edges? For every haplotype whose wolf
+  # block ENDS inside the window, count the figure's markers carried on each
+  # side of the coordinate the painting put that edge at. This is the claim the
+  # figure makes, so it is a printed number rather than a reading off the
+  # picture, and it is the one that could come out wrong: carriage running on
+  # past the edge, or stopping well short of it, would say the boundary is the
+  # model's rather than the data's. Both inputs are already on disk by here.
+  python3 - "$BLOCK_START" "$BLOCK_END" <<'EDGES'
+import gzip
+import sys
+
+lo, hi = int(sys.argv[1]), int(sys.argv[2])
+
+# wolf blocks ending strictly inside the window, keyed by the BED's own row
+# label ("<animal> hapN") -- the label is what ties this to a row in the figure
+edges = {}
+with open('dog10k_wolfdog_named.chr1.bed') as fh:
+    for line in fh:
+        if line.startswith('#'):
+            continue
+        f = line.rstrip('\n').split('\t')
+        if f[10] == 'Wolf' and lo < int(f[2]) < hi:
+            edges[f[9]] = int(f[2])
+
+sample_of = {}
+with open('named.tsv') as fh:
+    for line in fh:
+        sample, label = line.rstrip('\n').split('\t')
+        sample_of[label] = sample
+
+ids, markers = None, []
+with gzip.open('dog10k_wolfdog_chr1_block.vcf.gz', 'rt') as fh:
+    for line in fh:
+        if line.startswith('##'):
+            continue
+        f = line.rstrip('\n').split('\t')
+        if line.startswith('#CHROM'):
+            ids = f[9:]
+            continue
+        info = dict(kv.split('=', 1) for kv in f[7].split(';') if '=' in kv)
+        if 'AF_wolf' not in info or 'AF_dog' not in info:
+            continue
+        if (float(info['AF_wolf'].split(',')[0]) >= 0.8
+                and float(info['AF_dog'].split(',')[0]) <= 0.15):
+            markers.append((int(f[1]), f[9:]))
+
+
+def frac(v):
+    return '%d/%d' % (sum(v), len(v)) if v else 'n/a'
+
+
+print('Markers the figure keeps (AF_wolf >= 0.8, AF_dog <= 0.15): %d'
+      % len(markers))
+print('\nWolf alleles carried either side of a painted block edge:')
+for row, edge in sorted(edges.items(), key=lambda kv: kv[1]):
+    animal, _, hap = row.rpartition(' hap')
+    sample = sample_of.get(animal)
+    if sample is None or sample not in ids:
+        continue
+    col, h = ids.index(sample), int(hap) - 1
+    before, after = [], []
+    for pos, gts in markers:
+        carried = gts[col].replace('/', '|').split('|')[h] == '1'
+        (after if pos >= edge else before).append(carried)
+    print('  %-26s edge %11s   wolf side %7s   dog side %7s'
+          % (row, format(edge, ','), frac(before), frac(after)))
+EDGES
 fi

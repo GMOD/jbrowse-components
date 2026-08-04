@@ -151,10 +151,10 @@
   },
   "multisv": {
     "name": "multisv",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-03T13:14:53.629Z",
-    "hash": "60dedb99e9c03837116b3d00cc9bd6e382ea4532"
+    "status": "bad",
+    "note": "I like my older screenshot with the large chr19 inversion. it doesnt have biological meaning potentially but it is cool. this new screenshot can be added as a new spec addition to to the old one but no replace please. work it into a separate tutorial if needed, not gallery either. i also dont quite understand the 'story' of the new screenshot. what is it? is there biology?",
+    "reviewedAt": "2026-08-04T20:21:16.685Z",
+    "hash": "36b2696f86ad447e7a8a00bf5753138e924a1164"
   },
   "breakpoint_split_view": {
     "name": "breakpoint_split_view",
@@ -178,9 +178,9 @@
   },
   "inverted_duplication": {
     "name": "inverted_duplication",
-    "status": "answered",
-    "note": "updated review request: is there any other sample that has the structural variant and does have orthogonal sequencing? if there is any orthogonal sequencing e.g. nanopore or pacbio it might make powerful completementary viz. previous agent notes NOT POSSIBLE FOR THIS EVENT, and that is checkable rather than a judgement. HGSV_2721 is a singleton in the ensemble callset (AC=1, N_HET=1 of 3202 genomes), so HG02768 is the only sample that carries it; and HG02768 is not in the 1000 Genomes ONT consortium release -- listing s3://1000g-ont PROCESSED_DATA/ALIGNED_TO_HG38/MINIMAP2_ALIGNED_BAMS/ gives 500 samples and HG02768 is not among them (HG02763 and HG02772 are the nearest ids). So there is no orthogonal long-read data of this locus in this individual to put beside the short reads. The site already carries the figure this idea describes, one event over: inversion_long_read is HG00151 chr1:197,787,660-197,788,855, the same 1KGP ensemble call with that sample's 1000G ONT minimap2 reads, where single reads span the inversion and split at both breakpoints instead of triangulating it from pair orientation. If the pairing is wanted at THIS locus it needs a different variant -- a non-singleton inversion or INVdup whose carriers intersect the 500 ONT samples -- which is a data-selection change, not a spec edit. STILL NOT POSSIBLE, and the answer is now checked against long-read cohorts rather than only against this sample's absence. Two sources exist and both say no. (1) 1KGP PacBio WGS (s3://1000g-ont/1KGP_PacBio_WGS) is 140 genomes, all GM/NA ids -- HG02768 is not among them -- and its integrated callset (disco_truvari_collapsed.deduped.vcf.gz) is assembly-based INS/DEL only: it contains no INV records anywhere on chr1, so it cannot even be asked who carries this one. (2) The 500 1000G-ONT samples DO have per-sample Sniffles v2.6.2 calls, which do emit INV and DUP. Queried all 500 at chr1:39,655,000-39,665,000 (hg38, the figure's window): zero INV or DUP calls in any of them. So there is no long-read genome, in either cohort, that carries this event and could be put beside the short reads. The site already carries the figure this idea describes one event over -- inversion_long_read, HG00151 chr1:197,787,660-197,788,855, the same 1KGP ensemble call with that sample's ONT reads spanning the inversion. Pairing THIS locus still needs a different variant, i.e. a data-selection change.",
-    "reviewedAt": "2026-08-03T22:39:29.181Z",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-04T20:18:43.699Z",
     "hash": "45181d33d678a9ee64bd400e29eef3fa082ead4a"
   },
   "sv_cgiab/translocation_sv_inspector_view": {
@@ -497,9 +497,9 @@
   "read_vs_ref_insertion": {
     "name": "read_vs_ref_insertion",
     "status": "good",
-    "note": "FIXED in the pipeline, not the spec: the before/after was identical because the only difference was text antialiasing. Chrome self-updates under the generator, and the 25.3 -> 25.4 puppeteer bump shifted glyph metrics fractionally, repainting every character's outline — 0.545% of pixels here, just over the 0.5% gate, so the PNG was rewritten with no visible change (five other figures landed at 0.505-0.513%, i.e. a coin flip). pngDiffFraction now erodes the thresholded difference by a pixel before measuring it: one-pixel glyph fringes vanish (this figure drops to 0.131%), a real change survives (a figure with changed menu contents only falls 5.0% -> 3.8%). The noise rewrite was reverted, so no spec needs its own lowered sensitivity.",
-    "reviewedAt": "2026-07-29T21:21:26.988Z",
-    "hash": "4779ca26ab2825d5a69eca2f54f47ed2d3504e5a"
+    "note": "",
+    "reviewedAt": "2026-08-04T20:11:24.046Z",
+    "hash": "7a970554b30dcbd56a0066f9032d3445dabdf0ac"
   },
   "recent_tracks": {
     "name": "recent_tracks",
@@ -997,8 +997,8 @@
     "name": "jbrowse-img/hg38_hs1_mm39_synteny",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-25T17:13:07.046Z",
-    "hash": "1f6778c27f2c966d159c1723bb93f67bf0713b7e"
+    "reviewedAt": "2026-08-04T20:18:45.204Z",
+    "hash": "56b6df1d49a503858541c87ffc325f75c094c927"
   },
   "jbrowse-img/methylation": {
     "name": "jbrowse-img/methylation",
@@ -1011,15 +1011,15 @@
     "name": "jbrowse-img/hs1_mm39_synteny",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-25T17:13:10.644Z",
-    "hash": "b3bb3d7201e69a9bbb2156d7caf1ace7a9fa0add"
+    "reviewedAt": "2026-08-04T20:18:49.205Z",
+    "hash": "fb3f6d08a95f56a40bad90144cd3cc915d1ccc89"
   },
   "jbrowse-img/grape_peach_synteny": {
     "name": "jbrowse-img/grape_peach_synteny",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-25T17:13:04.663Z",
-    "hash": "61be4abbcff627cfc41c4a1d1067242f776e2eb6"
+    "reviewedAt": "2026-08-04T20:18:43.756Z",
+    "hash": "85219174156082fa741896fc1921b44f9aba481f"
   },
   "jbrowse-img/gene_track": {
     "name": "jbrowse-img/gene_track",
@@ -1162,10 +1162,10 @@
   },
   "sv_cgiab/driver_cdkn2a_deletion": {
     "name": "sv_cgiab/driver_cdkn2a_deletion",
-    "status": "good",
-    "note": "Highlight removed and regenerated. The homozygous drop-out across CDKN2A needs no pointer, and the band spanned the p16INK4a transcript (chr9:21,967,752-21,975,132), which runs 3 kb past the deletion right breakpoint at 21,972,343 and tinted recovered coverage.",
-    "reviewedAt": "2026-07-27T18:30:00.000Z",
-    "hash": "a7d1d24feba5e7bf4c02c24d17a8449164bee258"
+    "status": "bad",
+    "note": "is copy number 0 diploid in the new segmentation track? somewhat unclear. might consider making copy number 2 the full diploid unless there is a reason not to. consider zooming out a bit too. ",
+    "reviewedAt": "2026-08-04T20:12:38.413Z",
+    "hash": "bf8f4f42715d23bddea95ab8f2d504b6f859d777"
   },
   "maf_codon_tooltip": {
     "name": "maf_codon_tooltip",
@@ -1594,9 +1594,9 @@
   },
   "ld/lct_lactase": {
     "name": "ld/lct_lactase",
-    "status": "answered",
-    "note": "ALREADY OUT OF THE GALLERY, and checked rather than remembered: src/lib/gallery.ts has one LD card and its spec is ld/lct_pooled_vs_panel, so there is no gallery entry pointing here to remove. What remains is two documentation uses, and neither is a dupe of the pooled-vs-panel figure. In tutorials/ld_human.md it is the page's first LD picture, where the ClinVar rs4988235 lane and the recombination curve set the block up; the pooled-vs-panel figure comes later and is about a different claim (that r2 in a pooled multi-population callset averages the block away). In config_guides/variant_track.md it is the LD track's own config example. It is also the tutorial-card thumb for ld_human (gen-tutorial-thumbs.ts), which crops better as one triangle than as two stacked lanes. Deleting the figure would leave the tutorial's opening section and the config guide without a picture and would need a new thumb; deleting the gallery card is already done. Say if you want it gone from ld_human.md as well and I will rework that section around the pooled-vs-panel figure.",
-    "reviewedAt": "2026-08-04T18:48:17.302Z",
+    "status": "bad",
+    "note": "\"Say if you want it gone from ld_human.md as well and I will rework that section around the pooled-vs-panel figure.\" yes i think it can probably get removed. we have to pooled vs panel. unless you think this works on its own. i dunno. ALREADY OUT OF THE GALLERY, and checked rather than remembered: src/lib/gallery.ts has one LD card and its spec is ld/lct_pooled_vs_panel, so there is no gallery entry pointing here to remove. What remains is two documentation uses, and neither is a dupe of the pooled-vs-panel figure. In tutorials/ld_human.md it is the page's first LD picture, where the ClinVar rs4988235 lane and the recombination curve set the block up; the pooled-vs-panel figure comes later and is about a different claim (that r2 in a pooled multi-population callset averages the block away). In config_guides/variant_track.md it is the LD track's own config example. It is also the tutorial-card thumb for ld_human (gen-tutorial-thumbs.ts), which crops better as one triangle than as two stacked lanes. Deleting the figure would leave the tutorial's opening section and the config guide without a picture and would need a new thumb; deleting the gallery card is already done. Say if you want it gone from ld_human.md as well and I will rework that section around the pooled-vs-panel figure.",
+    "reviewedAt": "2026-08-04T20:19:33.100Z",
     "hash": "adfb909821ef76986892177d7d749ac1d5d04bb7"
   },
   "ld/mapt_17q21_inversion": {
@@ -1654,10 +1654,10 @@
   },
   "multisv_svtype": {
     "name": "multisv_svtype",
-    "status": "good",
-    "note": "DONE: heightMode 'fit' on the RefSeq lane, so the whole gene stack sits inside the 140px lane instead of four labeled rows with the fifth sliced against the lane border and the rest behind an internal scrollbar. At 5Mb the fit ladder lands on its 'bodies' rung, so the names go: tried a 220px lane to get them back and it still dropped them, just with 90px of whitespace added, because the labeled stack does not fit any lane height this figure can afford. The lane now reads as where in the window the genes are, which is what a 5Mb SV-type figure can use it for.",
-    "reviewedAt": "2026-08-03T13:14:55.719Z",
-    "hash": "c7046e2dcb34a0cbaa65d8c4617c5df669118e01"
+    "status": "bad",
+    "note": "restore the old screenshot, and then, like notes on multisv, make this a new tutorial. consider combining this figure with the new multisv since it is same data and region. DONE: heightMode 'fit' on the RefSeq lane, so the whole gene stack sits inside the 140px lane instead of four labeled rows with the fifth sliced against the lane border and the rest behind an internal scrollbar. At 5Mb the fit ladder lands on its 'bodies' rung, so the names go: tried a 220px lane to get them back and it still dropped them, just with 90px of whitespace added, because the labeled stack does not fit any lane height this figure can afford. The lane now reads as where in the window the genes are, which is what a 5Mb SV-type figure can use it for.",
+    "reviewedAt": "2026-08-04T20:21:46.400Z",
+    "hash": "4689bde0c34576b23c21d1e531babcc1127fce5d"
   },
   "scatac/alb_hepatocyte": {
     "name": "scatac/alb_hepatocyte",
@@ -1966,10 +1966,10 @@
   },
   "genomes_synteny/launch_sequence": {
     "name": "genomes_synteny/launch_sequence",
-    "status": "good",
-    "note": "FIXED: the 4th panel is the finished view — NCBI RefSeq Curated over RepeatMasker in BOTH panels (hg38-ncbiRefSeqCurated/hg38-rmsk and mm39-ncbiRefSeqCurated/mm39-rmsk, which the hub connection the mate assembly pulls in does list), compact repeats at declared per-track heights. Not the ~30 UI actions the previous note priced, in two steps. (1) That stage now DECLARES its own session instead of clicking one together, via a new `url` on a ScreenshotStage: captureEachStage navigates and re-gates on the stage's own readySelector and declared views. Zero clicks in that frame, and the per-track heights only a spec can set are what make it fill its grid cell. (2) The app-side half: a synteny launch now carries the launching view's tracks onto the panel for its assembly (anchorPanelTracks + the dialog's \"Copy this view's tracks into its panel\"), so panel 3 shows what the launch really hands you — the human panel already carrying the gene track, the mouse panel empty because nothing in the source view speaks for it — and panel 4 is the step that remains. The height unknown the previous note raised is answered by panel 3 keeping the source LGV on screen (the minimize moved into the stage that no longer exists as a click), so both bottom frames fill 888px with neither padded. Caption and the prose under it rewritten to match. PROVENANCE for whoever diffs this PNG: most of the changed pixels are not this figure's edit. The last corpus sweep was 2026-07-26 and ~300 commits have touched plugins/ and packages/ since, so a figure regenerated now also picks up that accumulated chrome and text drift — routine between `Bump snaps` sweeps, and the rest of the corpus will move the same way at the next one. Ruled out as the cause: the browser. The same spec renders byte-identically under Chrome 147.0.7727.57 and 151.0.7922.47, and the system package's .47 -> .71 roll changed nothing either (CHROME_PATH now exists on findChromeExecutable to re-run that A/B).",
-    "reviewedAt": "2026-08-02T22:59:41.702406Z",
-    "hash": "ac0df1c28c32918c3e73b6e337bbef205f6a32ed"
+    "status": "bad",
+    "note": "please try to use showCurves and transparent indels in last screenshot. also we might want a different gene where the insertions and deletions are more 'clearly' assigninable to a single transposon insertion",
+    "reviewedAt": "2026-08-04T20:18:23.527Z",
+    "hash": "c6711e8bb64ca2022f0d1fe2a897d75861247917"
   },
   "desktop-blat-results": {
     "name": "desktop-blat-results",
@@ -2050,10 +2050,10 @@
   },
   "pangenome/hprc_mhc_anchored": {
     "name": "pangenome/hprc_mhc_anchored",
-    "status": "good",
-    "note": "DONE, both asks, and the circles are model-anchored rather than drawn at a measured position. Each half now carries a red caption saying it is the same subgraph (force-directed / anchored on hg38), and both ring THE SAME TWO NODES: s101145+, 12,021 bp of GRCh38 backbone, and s396436+, the 12,253 bp allele over it. They are the two longest nodes in the cut, so the graph writes 12 kb and 12.3 kb beside them in both layouts and the rings do not have to carry the identification. Picked with probe-graph-nodes.ts and anchored by segment id, so either layout can put them where it likes. Needed --force: two rings and a pill are under 0.5% of the frame.",
-    "reviewedAt": "2026-08-04T00:36:28.412Z",
-    "hash": "7c778e87d028481191ebe5257923e78dc76eebdd"
+    "status": "bad",
+    "note": "you can consider drawing an arrow from left panel to right panel",
+    "reviewedAt": "2026-08-04T20:09:59.397Z",
+    "hash": "405c032435d4df93a7e97561801a212b8c99483c"
   },
   "pangenome/hprc_mhc_sample_rows": {
     "name": "pangenome/hprc_mhc_sample_rows",
@@ -2065,9 +2065,9 @@
   "pangenome/hprc_node_menu": {
     "name": "pangenome/hprc_node_menu",
     "status": "good",
-    "note": "IT IS THE RIGHT NODE, and the frame now says so. Checked against the graph's own indexes rather than by eye: the ringed node is s318599, 1,775 bp of HG01433 hap 2 (CM086511.1:32,520,440-32,522,215 in hprc-v2.0-mc-grch38.links.bed.gz), which is the '1.8 kb' the drawing labels it. It is BLACK because the Color dropdown is on Reference position and an allele has no reference position — black is that ramp's 'off-reference', not a colour it failed to get. The green 12 kb node beside it is s101145, chr6:32,517,416-32,529,437, and that is exactly the band in the linear view: s318599's two links land on s101144 (ends 32,517,416) and s101146 (starts 32,529,437), so the interval it attaches ACROSS is s101145, and Highlight in hg38 writes that. So a black node producing a green node's span is the figure's whole subject, and nothing in the frame joined them. FIXED: a callout on the node states both numbers from the graph — 'HG01433.2 allele: 1.8 kb / where hg38 has 12 kb (HLA-DRB5)' — placed in the empty corner opposite the menu. The gene is not decoration: s101145 is chr6:32,517,416-32,529,437 and HLA-DRB5 is chr6:32,517,353-32,530,287, so this haplotype takes 1.8 kb where the reference carries the DRB5 gene, which is the DR51-haplotype presence/absence. Caption says the same.",
-    "reviewedAt": "2026-08-04T03:06:18.116Z",
-    "hash": "a77732ee937b5138e81f6257c1d8f05cbcd78f7b"
+    "note": "",
+    "reviewedAt": "2026-08-04T20:22:00.171Z",
+    "hash": "5a4d64bf4a85907890f5fa73a771790adfd22dec"
   },
   "pangenome/pggb_synteny": {
     "name": "pangenome/pggb_synteny",
@@ -2148,10 +2148,10 @@
   },
   "pangenome/rgfa_strain_launch": {
     "name": "pangenome/rgfa_strain_launch",
-    "status": "good",
-    "note": "ITERATIONS: MEASURED, AND THE ANSWER IS NO FOR THIS FIGURE. 4 is as far as FMMM goes (120+60 against the engine default's 30+20, BandageNG layout/graphlayoutworker.cpp), and rendered at 4 this 11-node cut spreads until zoom-to-fit lands at 265% and the 58 kb CFT073 arm runs off both edges of the pane. More iterations minimise FMMM's energy, not the drawing's aspect ratio. What WAS wrong is the floor, and it is fixed in the plugin rather than pinned per figure: layoutQuality defaulted to 1 where BandageNG's own default is 2 (program/settings.cpp, IntSetting(2,0,4)), i.e. one step below the tool we vendor, for no recorded reason. Rendered at 2 as well before changing it. RAINBOW: answered on rgfa_segment_neighbourhood, which is the figure that has a linear lane beside the graph -- rainbow's hue is the node's index in the fetched node list, so it is unreproducible by construction, and that figure now colours both panes by reference position instead. LAUNCH ON THE WHOLE GRAPH: the per-node route already exists and is documented one section up -- right-click a node for 'Linear genome view (this node)' or 'Open in <assembly>', which is what pangenome/hprc_node_menu and pangenome/rgfa_hover_sync draw. A drag-select over a FORCE drawing would not be a region: the marquee would collect nodes, and a set of nodes has no contiguous span on a donor to open. The window this menu opens on is the one the reader rubberbanded in the linear view to make the graph in the first place, so 'the entire graph' is that selection, not the genome.",
-    "reviewedAt": "2026-08-04T04:30:58.492Z",
-    "hash": "af64533fa6ae210c2ecc76165baa47abcf9d1fb6"
+    "status": "bad",
+    "note": "This figure is unfortunately just a little chaotic. it is unclear what the path the lineargenomeview takes through this graph. might consider rainbow coloring to help. previous notes: ITERATIONS: MEASURED, AND THE ANSWER IS NO FOR THIS FIGURE. 4 is as far as FMMM goes (120+60 against the engine default's 30+20, BandageNG layout/graphlayoutworker.cpp), and rendered at 4 this 11-node cut spreads until zoom-to-fit lands at 265% and the 58 kb CFT073 arm runs off both edges of the pane. More iterations minimise FMMM's energy, not the drawing's aspect ratio. What WAS wrong is the floor, and it is fixed in the plugin rather than pinned per figure: layoutQuality defaulted to 1 where BandageNG's own default is 2 (program/settings.cpp, IntSetting(2,0,4)), i.e. one step below the tool we vendor, for no recorded reason. Rendered at 2 as well before changing it. RAINBOW: answered on rgfa_segment_neighbourhood, which is the figure that has a linear lane beside the graph -- rainbow's hue is the node's index in the fetched node list, so it is unreproducible by construction, and that figure now colours both panes by reference position instead. LAUNCH ON THE WHOLE GRAPH: the per-node route already exists and is documented one section up -- right-click a node for 'Linear genome view (this node)' or 'Open in <assembly>', which is what pangenome/hprc_node_menu and pangenome/rgfa_hover_sync draw. A drag-select over a FORCE drawing would not be a region: the marquee would collect nodes, and a set of nodes has no contiguous span on a donor to open. The window this menu opens on is the one the reader rubberbanded in the linear view to make the graph in the first place, so 'the entire graph' is that selection, not the genome.",
+    "reviewedAt": "2026-08-04T20:11:06.900Z",
+    "hash": "1d4270f309b92574df89eb7dc13add7bec34c4e9"
   },
   "pangenome/rgfa_hover_sync": {
     "name": "pangenome/rgfa_hover_sync",
@@ -2212,15 +2212,15 @@
   "dog10k-wolfdog-block-genotypes": {
     "name": "dog10k-wolfdog-block-genotypes",
     "status": "answered",
-    "note": "DONE, all three asks. ZOOMED OUT 15 kb -> 1.5 Mb, and the window is picked for its EDGES rather than for sitting inside a block: three wolfdog haplotypes end a wolf block in it (Saarloos 3 hap1 and Czechoslovakian 4 hap1 at 112.58 Mb, Saarloos 1 hap1 at 113.25 Mb). That is the answer to 'what is it supposed to show' -- inside a block, a wolf-called haplotype carrying wolf alleles is barely a claim; at an edge the painting says the alleles stop at a coordinate and either they do or they don't. 49 markers now rather than 21. GENE TRACK added on top (NCBI RefSeq, canFam4). MORE DOGS: 60 rows -> 64, but the composition changed more than the count -- the 12 Greek wolves are gone and the rows are now the same 32 named animals as the painting above, in the same order, so the reader counts down from the top in one track and reads the other. The painting is in the frame for the first time (at 15 kb it was a stack of solid stripes; at 1.5 Mb the edges are visible in it), deliberately under the label threshold so the 32 names are spent once, on the matrix. Data rebuilt by the same script.",
-    "reviewedAt": "2026-08-04T20:04:11.233Z",
+    "note": "DONE, all three asks. ZOOMED OUT 15 kb -> 1.5 Mb, and the window is picked for its EDGES rather than for sitting inside a block: NINE of the 64 haplotypes end a wolf block in it. That is the answer to 'what is it supposed to show' -- inside a block, a wolf-called haplotype carrying wolf alleles is barely a claim; at an edge the painting says the alleles stop at a coordinate and either they do or they don't. 49 markers now rather than 21. The build script counts the markers carried each side of every edge, so the figure is not the only place the claim lives, and the count says something better than 'the edges line up': three of the four WOLFDOG edges are exact (23/23 wolf alleles then 0/26 for both haplotypes ending at 112,576,175; 41/43 then 0/6 for Saarloos 1 hap1), the five sweep-breed edges are not (Chow Chow and Kai Ken 13/23 on their wolf side, Thai Ridgeback's block ends before the first marker), and the fourth wolfdog edge is the honest middle at 3/5 then 6/44. Long blocks hold at their boundaries and short ones do not -- the page's block-length argument arriving as an independent measurement. GENE TRACK added on top (NCBI RefSeq, canFam4). MORE DOGS: rows are now the same 32 named animals as the painting above, in the same order, so the two tracks are read against each other by counting down from the top. The painting is in the frame for the first time (at 15 kb it was a stack of solid stripes), deliberately under the label threshold so the 32 names are spent once.",
+    "reviewedAt": "2026-08-04T20:36:53.790Z",
     "hash": "ed41f6a49f653ae41799549511b0d5a01d0657d5"
   },
   "dog10k-wolfdog-ancestry": {
     "name": "dog10k-wolfdog-ancestry",
-    "status": "answered",
-    "note": "REBUILT into the companion of the 486-row spectrum rather than a second copy of it: 64 labelled rows (32 animals), ordered by descending chr1 wolf fraction straight out of FLARE's per-sample output, so the order is not an editorial choice. Membership: the 24 named animals plus the 8 sweep breeds with the most wolf, i.e. the ones that clustered out are chosen by the data. Not deleted, because the spectrum figure has no room for labels and this is the only place the animals are named. Two things it now shows that the 22-row version could not. (1) Two of the eight held-out gray wolves -- the Swedish museum specimens -- paint about half DOG. That is the method, not the animals: the build script now prints a FLARE-independent count (fraction of chr1 sites where the panels are nearly fixed apart at which the animal carries the wolf allele) and those two score 0.92, the highest of all eight, against 0.06 for the German Shepherd. Called out in the tutorial as a limitation. (2) The sweep found a breed dog with a wolfdog-scale block: the Great Anglo-French Tricolour Hound, 11.4 Mb on one haplotype, where every other swept breed stops at 2.4 Mb. Named in the prose as unresolved (one long block in one animal is also what a phasing error looks like).",
-    "reviewedAt": "2026-08-04T20:03:59.492Z",
+    "status": "bad",
+    "note": "unclear why dog10k-wolfdog-ancestry-clustered  has all dogs but this one does not? also unclear the significance of the highlighted region, if needed, a red box text annotation should highlight what is trying to be shown.",
+    "reviewedAt": "2026-08-04T20:16:46.655Z",
     "hash": "63b0ac1d3e726a44c86bda023ac8d075c2689013"
   },
   "mcscan_anchors": {
@@ -2385,10 +2385,10 @@
   },
   "tcga/mutations_cdh1_histology": {
     "name": "tcga/mutations_cdh1_histology",
-    "status": "good",
-    "note": "if it helps, add compact clinvar or cosmic track that echoes what is being shown in the multisamplevariantdisplay. consider using collapse introns also. BOTH DONE, and the two together are most of why this figure reads better. CLINVAR, not COSMIC: the 1000 Genomes config this figure runs on already declares ClinVar's NCBI VCF with a CLNSIG color jexl, so the lane costs nothing and comes out red/orange/blue by clinical significance; COSMIC's coding mutation file is registration-gated and cannot be hosted beside a public demo. It is a collapsed one-row LinearVariantDisplay, so it is the germline record of the gene the cohort is mutating somatically, at the same coordinates as the matrix columns. COLLAPSE INTRONS: driven through the app rather than written as a region list -- the spec right-clicks CDH1, takes the menu item and replaces the view, so the exon intervals come out of the live feature and no coordinate in the spec can drift from the transcript the lane draws. It does more than save width: with introns in frame every private intronic call takes a column of the matrix and paints it MODIFIER grey, so the coding mutations were spread thin among them. Collapsed, every column is exonic and the connector fan lands in one bundle per exon. The 'Introns collapsed' toast is hidden at capture. Prose rewritten around the three things that travel (collapse introns, lineZoneHeight, a ClinVar lane), and the config example now matches the figure (450/130 and histology, not the stale 1900/subtype).",
-    "reviewedAt": "2026-08-02T20:05:56.611Z",
-    "hash": "bcc5b3c25dbc5a47155871c771b19433dfdea0ec"
+    "status": "bad",
+    "note": "the clinvar track makes this a bit chaotic. not sure it is helping here, might remove. text annotation box that explains the majority of mutations are in the lobular might help also",
+    "reviewedAt": "2026-08-04T20:13:57.472Z",
+    "hash": "85d14a053327db773af63e50f0a06a1d8b93f620"
   },
   "scrna/ms4a1_bcell": {
     "name": "scrna/ms4a1_bcell",
@@ -2546,9 +2546,9 @@
   },
   "orthofinder_synteny/vertebrates": {
     "name": "orthofinder_synteny/vertebrates",
-    "status": "answered",
-    "note": "NO NOTE ON THIS ONE, so I tested the one setting that could plausibly be behind it and it is worse. The frame's obvious oddity is that the four lower rows sit in the middle third while human spans the full width — that is `sameScale: true`, i.e. row length IS genome size (3.1 Gb against 0.9-1.5 Gb). Rendered the alternative: with independent scales every row fills the frame, autoDiagonalize reorders each one against a different partner, and the result is a full-width hairball with no bundles and no diagonals anywhere — the vertical bundling the upper bands have now is a product of the shared scale. Reverted, nothing changed. The bottom band's density is not a settings problem and was measured in an earlier round: past the teleost genome duplication a gar linkage group's best zebrafish partner accounts for 33% of its links (79% chicken->frog, 50% human->chicken), so no ordering makes it diagonal and dropping every multi-copy expansion still leaves ~13k of ~17.8k links. If the complaint is something else in the frame, say which part and I will take it.",
-    "reviewedAt": "2026-08-04T18:20:37.179Z",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-04T20:22:00.071Z",
     "hash": "bde101b4e526e261bc877db15569dfdc2c8dbabc"
   },
   "orthofinder_synteny/wheat": {
@@ -2658,9 +2658,23 @@
   },
   "dog10k-wolfdog-ancestry-clustered": {
     "name": "dog10k-wolfdog-ancestry-clustered",
-    "status": "answered",
-    "note": "DONE, 22 haplotype rows -> 486. FLARE re-run from scratch (scripts/build_dog10k_wolfdog_ancestry.sh) over 243 targets: one dog from each of the 219 breeds the collection sequenced 4+ of, the 8 wolfdogs, Shiloh + Tamaskan, the German Shepherd lineage, and 8 European gray wolves HELD OUT of the wolf panel so something in the frame says what a correct all-wolf call looks like. The sweep is picked on how well a breed was sequenced and nothing about the breed, so a breed that comes out carrying wolf is found rather than nominated. Clustered, 1100px, ~2.3px a row -- under the 6px a row label needs, which is deliberate: this figure is WHERE everything falls and dog10k-wolfdog-ancestry is now WHO, at 64 labelled rows of the same run. Kept rather than deleted for exactly that reason; they no longer do the same job. Numbers: 193 of the 219 swept breeds come in under 1% wolf on chr1, the wolfdogs 15-45%, so the wolfdogs' fraction is now a distance rather than an assertion.",
-    "reviewedAt": "2026-08-04T20:03:47.443Z",
+    "status": "bad",
+    "note": "I can't see the \"sidebar label colors\" if they are being rendered,  because they exactly match the colors used in the track. try to fix this somehow. also i dont want the tree 'context' (the chr1:1,123...) text to be displayed. that is just like...extra info for the track menu maybe. previous notes: DONE, 22 haplotype rows -> 486. FLARE re-run from scratch (scripts/build_dog10k_wolfdog_ancestry.sh) over 243 targets: one dog from each of the 219 breeds the collection sequenced 4+ of, the 8 wolfdogs, Shiloh + Tamaskan, the German Shepherd lineage, and 8 European gray wolves HELD OUT of the wolf panel so something in the frame says what a correct all-wolf call looks like. The sweep is picked on how well a breed was sequenced and nothing about the breed, so a breed that comes out carrying wolf is found rather than nominated. Clustered, 1100px, ~2.3px a row -- under the 6px a row label needs, which is deliberate: this figure is WHERE everything falls and dog10k-wolfdog-ancestry is now WHO, at 64 labelled rows of the same run. Kept rather than deleted for exactly that reason; they no longer do the same job. Numbers: 193 of the 219 swept breeds come in under 1% wolf on chr1, the wolfdogs 15-45%, so the wolfdogs' fraction is now a distance rather than an assertion.",
+    "reviewedAt": "2026-08-04T20:16:49.343Z",
     "hash": "00bad703281017dbf0c68a2e71ef04ca2d53694c"
+  },
+  "hic/overlay_controls": {
+    "name": "hic/overlay_controls",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-04T20:18:23.600Z",
+    "hash": "99d6ff72efa136d6c0b8277b8143fc46dcbd184c"
+  },
+  "hic/two_regions": {
+    "name": "hic/two_regions",
+    "status": "bad",
+    "note": "we may want a whole genome overview also",
+    "reviewedAt": "2026-08-04T20:18:33.354Z",
+    "hash": "180a3202af64b33e771bdb5690152cf0efe68306"
   }
 }

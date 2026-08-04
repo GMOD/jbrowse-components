@@ -385,7 +385,8 @@ export const dog10kSpecs: ScreenshotSpec[] = [
       loc: 'chr1:1-123,556,469',
       // the window the genotype figure below dissects, marked in-app so the two
       // figures are visibly the same place. Read off the committed BED, not
-      // eyeballed: three of these rows end a wolf block inside it.
+      // eyeballed: nine of these 64 rows end a wolf block inside it, which is
+      // what that figure is about.
       highlight: ['chr1:112,000,000-113,500,000'],
       tracks: [
         {
@@ -423,7 +424,10 @@ export const dog10kSpecs: ScreenshotSpec[] = [
   // cross leaves blocks. Against 219 breeds picked on how well the collection
   // sequenced them and nothing else, the same picture also shows what a dog with
   // no such cross looks like — 193 of the 219 come in under 1% wolf on this
-  // chromosome — so the wolfdogs' 15-45% is a distance rather than an assertion,
+  // chromosome — so the seven wolfdogs at 15-45% have a scale to be read
+  // against rather than an assertion (the eighth, Czechoslovakian 2 at 1.5% with
+  // no block over 0.8 Mb, sits inside the sweep's own range: the unit here is the
+  // animal, not the breed),
   // and the handful of breeds that do carry something are found by the sweep
   // instead of being nominated.
   //
@@ -466,11 +470,22 @@ export const dog10kSpecs: ScreenshotSpec[] = [
   //
   // 1.5 Mb, not the 15 kb this figure used to frame, per review ("we may want to
   // zoom out at a minimum, add gene track"). The window is chosen for its EDGES:
-  // Saarloos 3 hap1 and Czechoslovakian 4 hap1 end a wolf block at 112.58 Mb and
-  // Saarloos 1 hap1 at 113.25 Mb, while other rows run wolf or dog straight
-  // through. Inside a single block the figure could only show that a wolf-called
-  // haplotype carries wolf alleles; at an edge there is something to be wrong
-  // about, and 49 markers rather than 21 to be wrong with.
+  // nine of the 64 haplotypes end a wolf block inside it, while the rest run wolf
+  // or dog straight through. Inside a single block the figure could only show
+  // that a wolf-called haplotype carries wolf alleles; at an edge there is
+  // something to be wrong about, and 49 markers rather than 21 to be wrong with.
+  //
+  // The build script counts the markers carried either side of each of those
+  // nine edges, and the answer is why the window is worth the height. Three of
+  // the four wolfdog edges are exact: 23/23 wolf alleles then 0/26 for both
+  // haplotypes ending at 112,576,175, and 41/43 then 0/6 for Saarloos 1 hap1 at
+  // 113,251,574. The five sweep-breed edges are not — the Chow Chow and the Kai
+  // Ken carry 13 of 23 on their wolf side, and the Thai Ridgeback's block ends
+  // before the first marker. Long blocks hold at their boundaries and short ones
+  // do not, which is the length argument the page makes, checked rather than
+  // asserted. Do not re-caption this as "the edges line up": the fourth wolfdog
+  // edge (Saarloos 2 hap2, 3/5 then 6/44) is a real drop and not a coordinate,
+  // and dropping that half of it would overstate the figure.
   //
   // Three tracks, top to bottom, deliberately: the genes the window sits on, the
   // painting's call, and the genotypes the call was inferred from. The painting
