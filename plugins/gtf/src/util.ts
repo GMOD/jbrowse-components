@@ -1,4 +1,4 @@
-import { doesIntersect2, max, min } from '@jbrowse/core/util'
+import { doesIntersect2 } from '@jbrowse/core/util'
 
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
@@ -121,18 +121,7 @@ function parseGtfLine(line: string): FeatureLoc {
   }
 }
 
-// a transcript with no explicit line carries only the gene/transcript-level
-// attributes needed for grouping and display, not its children's exon fields
-const SYNTHESIZED_TRANSCRIPT_ATTRS = ['gene_id', 'transcript_id', 'gene_name']
-
 function synthesizeTranscript(child: FeatureLoc): FeatureLoc {
-  const attributes: Record<string, string[]> = {}
-  for (const key of SYNTHESIZED_TRANSCRIPT_ATTRS) {
-    const value = child.attributes[key]
-    if (value) {
-      attributes[key] = value
-    }
-  }
   return {
     seq_name: child.seq_name,
     source: child.source,
@@ -142,8 +131,39 @@ function synthesizeTranscript(child: FeatureLoc): FeatureLoc {
     score: null,
     strand: child.strand,
     frame: null,
-    attributes,
+    // seeded from the first child, then narrowed by narrowToCommonAttributes as
+    // the rest arrive
+    attributes: { ...child.attributes },
     child_features: [],
+  }
+}
+
+/**
+ * Keep only the attributes a synthesized transcript's children agree on,
+ * dropping any key that is missing from `child` or carries a different value
+ * there. Transcript- and gene-level tags (`transcript_id`, `gene_id`,
+ * `gene_name`, biotypes, StringTie's `ref_gene_name`, …) repeat identically on
+ * every line of a transcript and survive; per-line tags (`exon_number`,
+ * `exon_id`, a CDS-only `protein_id`) differ or are absent and are dropped.
+ *
+ * Deriving the set this way rather than from a fixed whitelist is what lets any
+ * `aggregateField` work: a hardcoded list silently failed to aggregate whenever
+ * the configured field wasn't one of the three names it happened to enumerate.
+ */
+function narrowToCommonAttributes(
+  attributes: Record<string, string[]>,
+  child: FeatureLoc,
+) {
+  for (const key of Object.keys(attributes)) {
+    const mine = attributes[key]!
+    const theirs = child.attributes[key]
+    if (
+      theirs === undefined ||
+      theirs.length !== mine.length ||
+      theirs.some((v, i) => v !== mine[i])
+    ) {
+      delete attributes[key]
+    }
   }
 }
 
@@ -178,10 +198,16 @@ export function parseGtf<R extends GtfLineRecord>(
 ): ParsedGtfRecord<R>[] {
   const topLevel: ParsedGtfRecord<R>[] = []
   const byTranscript = new Map<string, ParsedGtfRecord<R>>()
+  // transcripts with no explicit line of their own, whose attributes are still
+  // being narrowed down to what their children agree on
+  const synthesized = new Set<string>()
   for (const record of records) {
-    // tabix-read lines retain the trailing \r of CRLF files (unlike the
-    // plaintext path, which trims it); left in, it corrupts the final
-    // attribute value, e.g. transcript_id "t1"\r
+    // defensive: both of today's line sources already drop a CRLF terminator
+    // (@gmod/tabix trims it in its line reader "matching htslib's", and the
+    // plaintext path's parseLineByLine trims each line), so this normally does
+    // nothing. It stays because an untrimmed \r is silent — on a line with no
+    // trailing ';' it lands inside the last attribute value, corrupting the
+    // transcript_id that drives both grouping and the feature name
     const line = record.line.endsWith('\r')
       ? record.line.slice(0, -1)
       : record.line
@@ -200,6 +226,7 @@ export function parseGtf<R extends GtfLineRecord>(
           feature.end = Math.max(feature.end, existing.feature.end)
           existing.feature = feature
           existing.record = record
+          synthesized.delete(transcriptId)
         } else {
           feature.child_features = []
           const parsed = { feature, record }
@@ -208,10 +235,17 @@ export function parseGtf<R extends GtfLineRecord>(
         }
       } else {
         let transcript = byTranscript.get(transcriptId)
-        if (!transcript) {
+        if (transcript) {
+          // an explicit transcript line's own attributes are authoritative, so
+          // only a synthesized one gets narrowed against this child
+          if (synthesized.has(transcriptId)) {
+            narrowToCommonAttributes(transcript.feature.attributes, feature)
+          }
+        } else {
           transcript = { feature: synthesizeTranscript(feature), record }
           topLevel.push(transcript)
           byTranscript.set(transcriptId, transcript)
+          synthesized.add(transcriptId)
         }
         transcript.feature.child_features!.push([feature])
         transcript.feature.start = Math.min(
@@ -241,12 +275,31 @@ export function parseGtfToFeatures<R extends GtfLineRecord>(
 }
 
 /**
- * GTF has no spanning gene line, so a gene is synthesized by grouping transcript
- * features that share `aggregateField` (e.g. gene_name) and spanning them. Any
+ * GTF has no spanning gene line, so a gene is synthesized by grouping related
+ * transcript features and spanning them. Any
  * explicit `gene` line is dropped, since the parser leaves it childless and the
  * synthesized parent supersedes it; a childless `transcript` line is dropped too
  * (e.g. AUGUSTUS emits a bare `transcript` line whose 9th column has no parseable
- * attributes). Features without the aggregate field pass through unchanged.
+ * attributes).
+ *
+ * Grouping is keyed by `gene_id` where a transcript carries one, falling back to
+ * the aggregate value; `aggregateField` supplies the gene's display `name`. The
+ * two are separate because neither alone works:
+ *
+ * - `gene_name` (the default aggregate field, and the only one suitable as a
+ *   label) is not unique within a reference sequence. A GENCODE chromosome holds
+ *   hundreds of separate genes named `U6`, `Y_RNA` or `5S_rRNA`, and keying on
+ *   the name alone fused all of them into one feature spanning the whole
+ *   chromosome. `gene_id` is unique per gene by the GTF spec, so it splits those
+ *   back apart while still merging the transcripts that really do share a gene.
+ * - Plenty of GTFs carry `gene_id` and no `gene_name` at all — UCSC's
+ *   `genePredToGtf` emits `gene_id "TP53"; transcript_id "NM_000546";` and
+ *   nothing else, and AUGUSTUS is the same shape. Keying only on the aggregate
+ *   value left those with no gene model whatsoever: every transcript passed
+ *   through bare. Keying on `gene_id` gives them genes, named by the `gene_id`
+ *   when there's no better label.
+ *
+ * A feature with neither key still passes through unchanged.
  */
 export function aggregateGtfFeatures({
   feats,
@@ -264,40 +317,68 @@ export function aggregateGtfFeatures({
   idPrefix: string
 }): SimpleFeatureSerialized[] {
   const out: SimpleFeatureSerialized[] = []
-  const parentAggregation: Record<string, SimpleFeatureSerialized[]> = {}
+  const parentAggregation = new Map<
+    string,
+    { name: string | undefined; subfeatures: SimpleFeatureSerialized[] }
+  >()
   for (const feat of feats) {
     const childlessTranscript =
       feat.type === 'transcript' && !feat.subfeatures?.length
     if (feat.type !== 'gene' && !childlessTranscript) {
       const aggr = feat[aggregateField]
-      if (typeof aggr === 'string' && aggr.length > 0) {
-        ;(parentAggregation[aggr] ??= []).push(feat)
+      const geneId = feat.gene_id
+      const name =
+        typeof aggr === 'string' && aggr.length > 0 ? aggr : undefined
+      const key =
+        typeof geneId === 'string' && geneId.length > 0 ? geneId : name
+      if (key !== undefined) {
+        let group = parentAggregation.get(key)
+        if (group) {
+          // a transcript that carries the aggregate value names the gene even
+          // when the first one grouped under this key didn't
+          group.name ??= name
+        } else {
+          group = { name, subfeatures: [] }
+          parentAggregation.set(key, group)
+        }
+        group.subfeatures.push(feat)
       } else if (doesIntersect2(feat.start, feat.end, regionStart, regionEnd)) {
-        // passthrough features (no aggregate field) must be clipped to the
-        // original query too, else a redispatch's expanded fetch leaks features
-        // outside the view (aggregated genes are already intersection-checked)
+        // passthrough features (neither a gene_id nor an aggregate value) must
+        // be clipped to the original query too, else a redispatch's expanded
+        // fetch leaks features outside the view (aggregated genes are already
+        // intersection-checked)
         out.push(feat)
       }
     }
   }
 
-  for (const [name, subfeatures] of Object.entries(parentAggregation)) {
-    const start = min(subfeatures.map(f => f.start))
-    const end = max(subfeatures.map(f => f.end))
+  for (const [key, { name, subfeatures }] of parentAggregation) {
+    let start = Number.POSITIVE_INFINITY
+    let end = Number.NEGATIVE_INFINITY
+    for (const f of subfeatures) {
+      if (f.start < start) {
+        start = f.start
+      }
+      if (f.end > end) {
+        end = f.end
+      }
+    }
     if (doesIntersect2(start, end, regionStart, regionEnd)) {
       out.push({
         type: 'gene',
         subfeatures,
         strand: subfeatures[0]!.strand,
-        name,
+        // falls back to the grouping key, so a gene_id-only file (UCSC,
+        // AUGUSTUS) still gets a labeled gene rather than an unnamed one
+        name: name ?? key,
         start,
         end,
         refName,
         // stable across fetch windows: the same gene keeps one id while panning,
         // unlike a subfeature-derived id where the "first" transcript (and thus
         // the id) shifts with whatever the current window happened to pull in.
-        // aggregation groups by name within a ref, so refName+name is unique
-        uniqueId: `${idPrefix}-${refName}-gene-${name}`,
+        // the grouping key is unique within a ref, so refName+key is unique
+        uniqueId: `${idPrefix}-${refName}-gene-${key}`,
       })
     }
   }

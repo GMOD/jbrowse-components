@@ -5,13 +5,10 @@ import {
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { downloadStatus } from '@jbrowse/core/util'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
-import {
-  calculateRedispatchRange,
-  doesIntersect2,
-} from '@jbrowse/core/util/range'
+import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
-import { readTabixLines } from '@jbrowse/core/util/tabix'
+import { readTabixLinesRedispatched } from '@jbrowse/core/util/tabix'
 import { parseRecords } from 'gff-nostream'
 
 import type { Gff3TabixAdapterConfig } from './configSchema.ts'
@@ -71,32 +68,12 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter<Gff3TabixAd
     return ObservableCreate<Feature>(async observer => {
       try {
         const { gff, dontRedispatchSet } = await this.configure(opts)
-        const fetchLines = (region: Region) =>
-          readTabixLines(
-            gff,
-            region.refName,
-            region.start,
-            region.end,
-            opts.statusCallback,
-            opts.stopToken,
-          )
-
-        let lines = await fetchLines(query)
-
-        // a feature found in the query (e.g. a gene) may extend beyond it; if
-        // so, refetch the union of the query and the feature bounds once so
-        // parent/child relationships resolve fully. dontRedispatch types
-        // (chromosome, region, ...) are excluded from the bounds so one
-        // chromosome-spanning feature can't force a whole-chromosome refetch.
-        const redispatch = calculateRedispatchRange(
-          lines,
+        const lines = await readTabixLinesRedispatched(
+          gff,
+          query,
           dontRedispatchSet,
-          query.start,
-          query.end,
+          opts,
         )
-        if (redispatch) {
-          lines = await fetchLines({ ...query, ...redispatch })
-        }
 
         // emit only top-level features intersecting the original query. the
         // byte offset stays on our own record and is used purely to mint a

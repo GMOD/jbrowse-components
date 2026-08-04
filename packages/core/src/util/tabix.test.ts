@@ -1,5 +1,5 @@
 import { createStopToken, stopStopToken } from './stopToken.ts'
-import { readTabixLines } from './tabix.ts'
+import { readTabixLines, readTabixLinesRedispatched } from './tabix.ts'
 
 // A stand-in for @gmod/tabix's TabixIndexedFile that records the opts it was
 // handed and emits two lines. The point of these tests is the cancellation
@@ -122,5 +122,89 @@ describe('readTabixLines', () => {
     const source = fakeSource()
     await readTabixLines(source, 'ctgA', 0, 100)
     expect(source.seen[0]!.signal?.aborted).toBe(false)
+  })
+})
+
+// A source whose lines are fixed per call, so a test can make the first read
+// return a feature that overhangs the query and watch what the second read asks
+// for. Records the (start, end) of every read.
+function overhangingSource(
+  lines: { type: string; start: number; end: number }[],
+) {
+  const reads: [number | undefined, number | undefined][] = []
+  return {
+    reads,
+    getLines: async (
+      _refName: string,
+      start: number | undefined,
+      end: number | undefined,
+      opts: {
+        lineCallback: (l: string, o: number, s: number, e: number) => void
+      },
+    ) => {
+      reads.push([start, end])
+      for (const [i, f] of lines.entries()) {
+        opts.lineCallback(
+          `ctgA\tsrc\t${f.type}\t1\t2\t.\t+\t.\t`,
+          i,
+          f.start,
+          f.end,
+        )
+      }
+      await Promise.resolve()
+    },
+  }
+}
+
+describe('readTabixLinesRedispatched', () => {
+  it('reads once when nothing overhangs the query', async () => {
+    const source = overhangingSource([{ type: 'gene', start: 20, end: 80 }])
+    const lines = await readTabixLinesRedispatched(
+      source,
+      { refName: 'ctgA', start: 0, end: 100 },
+      new Set(),
+    )
+    expect(source.reads).toEqual([[0, 100]])
+    expect(lines).toHaveLength(1)
+  })
+
+  it('re-reads the union of the query and an overhanging feature', async () => {
+    const source = overhangingSource([{ type: 'gene', start: 50, end: 5000 }])
+    await readTabixLinesRedispatched(
+      source,
+      { refName: 'ctgA', start: 100, end: 200 },
+      new Set(),
+    )
+    expect(source.reads).toEqual([
+      [100, 200],
+      [50, 5000],
+    ])
+  })
+
+  it('expands exactly once, never chasing the second read', async () => {
+    // the expanded read returns the same overhanging line, so a loop would keep
+    // going; the contract is two reads per query at most
+    const source = overhangingSource([{ type: 'gene', start: 50, end: 5000 }])
+    await readTabixLinesRedispatched(
+      source,
+      { refName: 'ctgA', start: 100, end: 200 },
+      new Set(),
+    )
+    expect(source.reads).toHaveLength(2)
+  })
+
+  it('leaves a dontRedispatch type out of the bounds', async () => {
+    const source = overhangingSource([
+      { type: 'chromosome', start: 0, end: 1_000_000 },
+      { type: 'gene', start: 120, end: 180 },
+    ])
+    const lines = await readTabixLinesRedispatched(
+      source,
+      { refName: 'ctgA', start: 100, end: 200 },
+      new Set(['chromosome']),
+    )
+    expect(source.reads).toEqual([[100, 200]])
+    // the chromosome line is still returned, just not allowed to widen the read
+    expect(lines).toHaveLength(2)
   })
 })

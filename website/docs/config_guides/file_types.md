@@ -151,18 +151,28 @@ intended for small files. Prefer the tabix or BigBed forms for large datasets.
 GTF files have no spanning gene line and often no transcript line, so the GTF
 adapters build the gene model from the per-feature lines: lines sharing a
 `transcript_id` are grouped under a transcript (synthesized if absent, per the
-Cufflinks/StringTie convention), and transcripts are then grouped into a gene
-via the [`aggregateField`](/docs/config/gtftabixadapter/#slot-aggregatefield)
-slot. If your file keys genes on a different attribute (e.g. `gene_id`), set
-`aggregateField` accordingly:
+Cufflinks/StringTie convention), and transcripts sharing a `gene_id` are grouped
+into a gene.
+
+The gene's label comes from the
+[`aggregateField`](/docs/config/gtftabixadapter/#slot-aggregatefield) slot
+(default `gene_name`), falling back to the `gene_id` when the file has no such
+attribute — so files that carry only a `gene_id`, like UCSC `genePredToGtf` or
+AUGUSTUS output, still get gene models. Point `aggregateField` at whichever
+attribute holds your display name:
 
 ```json
 "adapter": {
   "type": "GtfTabixAdapter",
   "uri": "https://example.com/genes.gtf.gz",
-  "aggregateField": "gene_id"
+  "aggregateField": "ref_gene_name"
 }
 ```
+
+Grouping keys on `gene_id` rather than the label because gene names are not
+unique within a reference sequence — a GENCODE chromosome holds hundreds of
+separate genes named `U6` or `Y_RNA`, and merging them by name would produce one
+gene feature spanning the chromosome.
 
 To use the tabix form, sort and index the file first. `jbrowse sort-gff` works
 on GTF too (GTF shares GFF's refName/start column layout):

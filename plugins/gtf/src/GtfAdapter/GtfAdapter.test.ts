@@ -56,7 +56,8 @@ test('can instantiate new GtfAdapter and check for demo data', async () => {
   })
   const featuresArray = await firstValueFrom(features.pipe(toArray()))
   const featuresJsonArray = featuresArray.map(f => f.toJSON())
-  // ENSVPAT00000000407
+  // gene ENSVPAG00000000407 over transcript ENSVPAT00000000407. this Ensembl
+  // pseudogene has no gene_name, so it groups (and is labeled) by gene_id
   expect(featuresArray.length).toEqual(1)
   expect(featuresJsonArray).toMatchSnapshot()
 })

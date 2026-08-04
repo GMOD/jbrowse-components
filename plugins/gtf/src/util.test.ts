@@ -1,4 +1,9 @@
-import { aggregateGtfFeatures, featureData, parseGtf } from './util.ts'
+import {
+  aggregateGtfFeatures,
+  featureData,
+  parseGtf,
+  parseGtfToFeatures,
+} from './util.ts'
 
 import type { FeatureLoc } from './util.ts'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
@@ -29,8 +34,10 @@ test('keeps a comma inside an attribute value intact', () => {
 })
 
 test('strips CRLF carriage returns so the final attribute is not corrupted', () => {
-  // tabix-read CRLF lines carry a trailing \r; without a trailing ';' it lands
-  // inside transcript_id, which drives both grouping and the feature name
+  // guards the parser itself, not either adapter: today's line sources both
+  // trim the CRLF terminator upstream, but a \r that does get through lands
+  // inside transcript_id (on a line with no trailing ';'), which drives both
+  // grouping and the feature name
   const gtf =
     'ctgA\ttest\texon\t1\t100\t.\t+\t.\tgene_id "g1"; transcript_id "t1"\r'
   const [transcript] = parse(gtf)
@@ -91,6 +98,131 @@ test('clips passthrough features (no aggregate field) to the query region', () =
     regionEnd: 300,
   })
   expect(out.map(f => f.uniqueId)).toEqual(['in'])
+})
+
+test('keeps distinct genes that share a gene_name apart', () => {
+  // a GENCODE chromosome carries hundreds of separate genes named U6/Y_RNA;
+  // grouping on the name alone fused them into one feature spanning the whole
+  // chromosome, so the gene_id has to split them back apart
+  const gtf = [
+    'chr1\ttest\texon\t100\t200\t.\t+\t.\tgene_id "G1"; transcript_id "t1"; gene_name "U6";',
+    'chr1\ttest\texon\t10000000\t10000100\t.\t+\t.\tgene_id "G2"; transcript_id "t2"; gene_name "U6";',
+  ].join('\n')
+  const out = aggregateGtfFeatures({
+    feats: parseGtfToFeatures(
+      gtf.split('\n').map(line => ({ line })),
+      (_r, i) => `id-${i}`,
+    ),
+    aggregateField: 'gene_name',
+    refName: 'chr1',
+    idPrefix: 'test',
+    regionStart: 0,
+    regionEnd: Number.MAX_SAFE_INTEGER,
+  })
+  expect(out).toHaveLength(2)
+  // both keep the shared display name, but span only their own locus
+  expect(out.map(f => f.name)).toEqual(['U6', 'U6'])
+  expect(out.map(f => [f.start, f.end])).toEqual([
+    [99, 200],
+    [9999999, 10000100],
+  ])
+  // ids are keyed on the gene_id, so the two never collide
+  expect(new Set(out.map(f => f.uniqueId)).size).toBe(2)
+})
+
+test('still merges the transcripts that really do share a gene', () => {
+  const gtf = [
+    'chr1\ttest\texon\t100\t200\t.\t+\t.\tgene_id "G1"; transcript_id "t1"; gene_name "ABC";',
+    'chr1\ttest\texon\t300\t400\t.\t+\t.\tgene_id "G1"; transcript_id "t2"; gene_name "ABC";',
+  ].join('\n')
+  const out = aggregateGtfFeatures({
+    feats: parseGtfToFeatures(
+      gtf.split('\n').map(line => ({ line })),
+      (_r, i) => `id-${i}`,
+    ),
+    aggregateField: 'gene_name',
+    refName: 'chr1',
+    idPrefix: 'test',
+    regionStart: 0,
+    regionEnd: Number.MAX_SAFE_INTEGER,
+  })
+  expect(out).toHaveLength(1)
+  expect(out[0]!.name).toBe('ABC')
+  expect(out[0]!.subfeatures).toHaveLength(2)
+})
+
+test('builds a gene from a file with gene_id but no gene_name', () => {
+  // UCSC's genePredToGtf emits `gene_id "TP53"; transcript_id "NM_000546";` and
+  // nothing more, as does AUGUSTUS. Keying only on the default aggregate field
+  // left these with no gene model at all — every transcript passed through bare
+  const gtf = [
+    'chr17\thg19_refGene\texon\t100\t200\t.\t-\t.\tgene_id "TP53"; transcript_id "NM_000546";',
+    'chr17\thg19_refGene\texon\t300\t400\t.\t-\t.\tgene_id "TP53"; transcript_id "NM_001126112";',
+  ].join('\n')
+  const out = aggregateGtfFeatures({
+    feats: parseGtfToFeatures(
+      gtf.split('\n').map(line => ({ line })),
+      (_r, i) => `id-${i}`,
+    ),
+    aggregateField: 'gene_name',
+    refName: 'chr17',
+    idPrefix: 'test',
+    regionStart: 0,
+    regionEnd: Number.MAX_SAFE_INTEGER,
+  })
+  expect(out).toHaveLength(1)
+  expect(out[0]!.type).toBe('gene')
+  // no better label available, so the gene_id doubles as the display name
+  expect(out[0]!.name).toBe('TP53')
+  expect(out[0]!.subfeatures).toHaveLength(2)
+  expect([out[0]!.start, out[0]!.end]).toEqual([99, 400])
+})
+
+test('a transcript carrying the aggregate value names a gene the first left unnamed', () => {
+  const gtf = [
+    'chr1\ttest\texon\t100\t200\t.\t+\t.\tgene_id "G1"; transcript_id "t1";',
+    'chr1\ttest\texon\t300\t400\t.\t+\t.\tgene_id "G1"; transcript_id "t2"; gene_name "ABC";',
+  ].join('\n')
+  const out = aggregateGtfFeatures({
+    feats: parseGtfToFeatures(
+      gtf.split('\n').map(line => ({ line })),
+      (_r, i) => `id-${i}`,
+    ),
+    aggregateField: 'gene_name',
+    refName: 'chr1',
+    idPrefix: 'test',
+    regionStart: 0,
+    regionEnd: Number.MAX_SAFE_INTEGER,
+  })
+  expect(out).toHaveLength(1)
+  expect(out[0]!.name).toBe('ABC')
+})
+
+test('a synthesized transcript carries the attributes its children agree on', () => {
+  // exon_number differs per line and must not surface on the transcript, while
+  // an arbitrary transcript-level tag must — a fixed whitelist of three names
+  // meant a custom aggregateField (StringTie's ref_gene_name here) never
+  // aggregated for files with no explicit transcript line
+  const gtf = [
+    'chr1\ttest\texon\t100\t200\t.\t+\t.\tgene_id "G1"; transcript_id "t1"; ref_gene_name "ABC"; exon_number "1";',
+    'chr1\ttest\texon\t300\t400\t.\t+\t.\tgene_id "G1"; transcript_id "t1"; ref_gene_name "ABC"; exon_number "2";',
+  ].join('\n')
+  const [transcript] = parse(gtf)
+  const feat = featureData(transcript!)
+  expect(feat.ref_gene_name).toBe('ABC')
+  expect(feat.gene_id).toBe('G1')
+  expect(feat.exon_number).toBeUndefined()
+})
+
+test('an explicit transcript line keeps its own attributes', () => {
+  // narrowing applies only to synthesized transcripts: an explicit line is
+  // authoritative even where its children disagree with it
+  const gtf = [
+    'chr1\ttest\ttranscript\t100\t400\t.\t+\t.\tgene_id "G1"; transcript_id "t1"; tsl "1";',
+    'chr1\ttest\texon\t100\t200\t.\t+\t.\tgene_id "G1"; transcript_id "t1"; exon_number "1";',
+  ].join('\n')
+  const [transcript] = parse(gtf)
+  expect(featureData(transcript!).tsl).toBe('1')
 })
 
 test('uses an explicit transcript line as the container for its children', () => {

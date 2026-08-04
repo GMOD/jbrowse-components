@@ -51,4 +51,4 @@ surface.
 | Slot | Description |
 | --- | --- |
 | <span id="slot-gtflocation">**gtfLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.gtf', locationType: 'UriLocation' }</code> | path to gtf file, also allows for gzipped gtf |
-| <span id="slot-aggregatefield">**aggregateField**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'gene_name'</code> | field used to aggregate multiple transcripts into a single parent gene feature |
+| <span id="slot-aggregatefield">**aggregateField**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'gene_name'</code> | attribute naming the parent gene that transcripts are aggregated into. transcripts are grouped by gene_id where the file has one (gene names are not unique within a reference), so this is the gene label, and the grouping key only for files with no gene_id |

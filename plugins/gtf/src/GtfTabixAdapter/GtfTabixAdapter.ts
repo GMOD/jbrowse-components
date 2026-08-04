@@ -5,9 +5,8 @@ import {
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { SimpleFeature, downloadStatus } from '@jbrowse/core/util'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
-import { calculateRedispatchRange } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { readTabixLines } from '@jbrowse/core/util/tabix'
+import { readTabixLinesRedispatched } from '@jbrowse/core/util/tabix'
 
 import { aggregateGtfFeatures, parseGtfToFeatures } from '../util.ts'
 
@@ -68,33 +67,12 @@ export default class GtfTabixAdapter extends BaseFeatureDataAdapter<GtfTabixAdap
     return ObservableCreate<Feature>(async observer => {
       try {
         const { gtf, dontRedispatchSet } = await this.configure(opts)
-        const fetchLines = (region: Region) =>
-          readTabixLines(
-            gtf,
-            region.refName,
-            region.start,
-            region.end,
-            opts.statusCallback,
-            opts.stopToken,
-          )
-
-        let lines = await fetchLines(query)
-
-        // gene/transcript lines span their children, so if a feature extends
-        // past the query, refetch the union of the query and the feature bounds
-        // once to pull in child features (exon/CDS) that fall outside it.
-        // dontRedispatch types (chromosome, region, ...) are excluded from the
-        // bounds so one chromosome-spanning feature can't force a
-        // whole-chromosome refetch.
-        const redispatch = calculateRedispatchRange(
-          lines,
+        const lines = await readTabixLinesRedispatched(
+          gtf,
+          query,
           dontRedispatchSet,
-          query.start,
-          query.end,
+          opts,
         )
-        if (redispatch) {
-          lines = await fetchLines({ ...query, ...redispatch })
-        }
 
         const feats = parseGtfToFeatures(
           lines,

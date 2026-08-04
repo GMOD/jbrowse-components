@@ -10,7 +10,8 @@ Auto-generated config schema for the current JBrowse release — see the
 
 ## Example usage
 
-The `uri` shorthand auto-resolves the `.tbi` index:
+The `uri` shorthand auto-resolves the `.tbi` index; add `csi: true` for a `.csi`
+index instead:
 
 ```js
 {
@@ -53,4 +54,4 @@ surface.
 | <span id="slot-indexindextype">**index.indexType**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (TBI, CSI) = <code>'TBI'</code> |  |
 | <span id="slot-indexlocation">**index.location**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.gtf.gz.tbi', locationType: 'UriLocation' }</code> |  |
 | <span id="slot-dontredispatch">**dontRedispatch**</span><br>`stringArray` = <code>[ 'chromosome', 'region', 'contig', 'supercontig', 'scaffold' ]</code> | the GtfTabixAdapter has to "redispatch" if it fetches a region and features it finds inside that region extend outside the region we requested. you can disable this for certain feature types to avoid fetching e.g. the entire chromosome<br><br>the defaults are the whole-sequence records the common annotation sources emit: `region` (NCBI), `supercontig`/`scaffold` (Ensembl, for non-chromosomal sequences), plus `chromosome` and `contig`. They span an entire reference and have no children, so letting one expand the fetch would pull a whole chromosome to gain nothing |
-| <span id="slot-aggregatefield">**aggregateField**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'gene_name'</code> | field used to aggregate multiple transcripts into a single parent gene feature |
+| <span id="slot-aggregatefield">**aggregateField**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'gene_name'</code> | attribute naming the parent gene that transcripts are aggregated into. transcripts are grouped by gene_id where the file has one (gene names are not unique within a reference), so this is the gene label, and the grouping key only for files with no gene_id |

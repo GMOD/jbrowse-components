@@ -1,4 +1,5 @@
 import { downloadStatus } from './progress.ts'
+import { calculateRedispatchRange } from './range.ts'
 import { withStopTokenSignal } from './stopToken.ts'
 
 import type { StatusCallback } from './progress.ts'
@@ -95,4 +96,40 @@ export function readTabixLines(
       }),
     ),
   ).then(() => lines)
+}
+
+/**
+ * Read a region's tabix lines, then — if any feature found there extends past
+ * the query — read once more over the union of the query and those feature
+ * bounds, so a parent line's children (a gene's exons, a transcript's CDS)
+ * outside the original window are pulled in and the parent/child tree resolves
+ * fully. Types in `dontRedispatchSet` are excluded from the bounds, so one
+ * chromosome-spanning record can't force a whole-chromosome refetch.
+ *
+ * Exactly one expansion happens: the second read's own overhang is not chased,
+ * which bounds the work at two reads per query.
+ *
+ * Shared by the GFF3 and GTF tabix adapters, which differ only in how they
+ * parse the returned lines.
+ */
+export async function readTabixLinesRedispatched(
+  file: TabixLineSource,
+  // the region's locus only — kept structural, like TabixLineSource above, so
+  // this module stays free of the `types` barrel and its MST models
+  query: { refName: string; start: number; end: number },
+  dontRedispatchSet: Set<string>,
+  opts: { statusCallback?: StatusCallback; stopToken?: StopToken } = {},
+): Promise<TabixLine[]> {
+  const { statusCallback, stopToken } = opts
+  const read = (start: number, end: number) =>
+    readTabixLines(file, query.refName, start, end, statusCallback, stopToken)
+
+  const lines = await read(query.start, query.end)
+  const redispatch = calculateRedispatchRange(
+    lines,
+    dontRedispatchSet,
+    query.start,
+    query.end,
+  )
+  return redispatch ? read(redispatch.start, redispatch.end) : lines
 }

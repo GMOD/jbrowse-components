@@ -11,7 +11,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * used to load bgzip-compressed, tabix-indexed GTF files
  *
  * #example
- * The `uri` shorthand auto-resolves the `.tbi` index:
+ * The `uri` shorthand auto-resolves the `.tbi` index; add `csi: true` for a
+ * `.csi` index instead:
  * ```js
  * {
  *   type: 'GtfTabixAdapter',
@@ -29,8 +30,9 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
           baseUri: snap.baseUri,
         },
         index: {
+          indexType: snap.csi ? 'CSI' : 'TBI',
           location: {
-            uri: `${snap.uri}.tbi`,
+            uri: `${snap.uri}.${snap.csi ? 'csi' : 'tbi'}`,
             baseUri: snap.baseUri,
           },
         },
@@ -101,7 +103,7 @@ const GtfTabixAdapter = ConfigurationSchema(
     aggregateField: {
       type: 'string',
       description:
-        'field used to aggregate multiple transcripts into a single parent gene feature',
+        'attribute naming the parent gene that transcripts are aggregated into. transcripts are grouped by gene_id where the file has one (gene names are not unique within a reference), so this is the gene label, and the grouping key only for files with no gene_id',
       defaultValue: 'gene_name',
     },
   },
@@ -113,12 +115,13 @@ const GtfTabixAdapter = ConfigurationSchema(
      *
      *
      * preprocessor to allow minimal config, assumes tbi index at
-     * yourfile.gtf.gz.tbi:
+     * yourfile.gtf.gz.tbi (or .csi if csi:true):
      *
      * ```json
      * {
      *   "type": "GtfTabixAdapter",
-     *   "uri": "yourfile.gtf.gz"
+     *   "uri": "yourfile.gtf.gz",
+     *   "csi": true
      * }
      * ```
      */
