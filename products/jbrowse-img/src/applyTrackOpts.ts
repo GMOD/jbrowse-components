@@ -1,9 +1,5 @@
-import path from 'node:path'
-
-import { trackTypeForFlag } from './makeConfigs.ts'
 import { trackMatches, trackName } from './trackFields.ts'
 
-import type { Entry } from './parseArgv.ts'
 import type { AssertNever, AssertTrue, Covers, Track } from './types.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'
@@ -37,12 +33,12 @@ export type TrackDisplay =
 // instance exists, and gate each modifier to the track types it applies to.
 export type Category = 'alignments' | 'wiggle' | 'feature' | 'variant' | 'hic'
 
-// The ONE track-type -> category table. A track already in the config
-// (referenced by --track from a --hub/--config) is keyed by its config `type`
-// directly; a track-type CLI flag (--bam, --bigwig, …) resolves through
-// makeConfigs' flag -> track type map first, so the two paths can't disagree and
-// adding a file type stays a single edit. Anything unlisted (FeatureTrack and
-// friends) drives a feature display.
+// The one track-type -> category table, keyed by the config track's own `type`.
+// Every track reaches the view through the config — a hosted one named by
+// --track, and a `--bam`/`--bigwig` file whose config readData built — so the
+// category is read off the config for both rather than derived a second way from
+// the CLI flag. Anything unlisted (FeatureTrack and friends) drives a feature
+// display.
 const categoryByTrackType: Record<string, Category> = {
   AlignmentsTrack: 'alignments',
   QuantitativeTrack: 'wiggle',
@@ -52,18 +48,15 @@ const categoryByTrackType: Record<string, Category> = {
   HicTrack: 'hic',
 }
 
-export function categoryForTrackType(type: string | undefined): Category {
-  return (
-    (type === undefined ? undefined : categoryByTrackType[type]) ?? 'feature'
-  )
-}
-
 export function configTrackCategory(
   tracks: Track[],
   trackId: string,
 ): Category {
   const type = tracks.find(t => t.trackId === trackId)?.type
-  return categoryForTrackType(typeof type === 'string' ? type : undefined)
+  return (
+    (typeof type === 'string' ? categoryByTrackType[type] : undefined) ??
+    'feature'
+  )
 }
 
 // Resolve a user's --track token to a real trackId in the config. Hosted
@@ -691,20 +684,4 @@ export function applyDisplayOpts(
       `Failed to open track "${trackId}"${displayType ? ` with display "${displayType}"` : ''}`,
     )
   }
-}
-
-// A track-type CLI flag (--bam file.bam, --bigwig sig.bw, …): the file's
-// basename is the trackId readData built, and the flag name selects the display
-// category via the track type that flag opens. Thin wrapper over applyDisplayOpts.
-export function applyTrackOpts(trackEntry: Entry, view: LinearGenomeViewModel) {
-  const [flag, [track, ...opts]] = trackEntry
-  if (!track) {
-    throw new Error('invalid command line args')
-  }
-  applyDisplayOpts(
-    view,
-    path.basename(track),
-    categoryForTrackType(trackTypeForFlag(flag)),
-    opts,
-  )
 }

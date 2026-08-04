@@ -13,7 +13,6 @@ import { autorun, when } from 'mobx'
 
 import {
   applyDisplayOpts,
-  applyTrackOpts,
   configTrackCategory,
   resolveTrackId,
 } from './applyTrackOpts.ts'
@@ -267,7 +266,6 @@ async function addInitView<T extends InitView>(
 const renderLinear: ModeRenderer = async ({ model, data, opts, width }) => {
   const {
     loc,
-    trackList = [],
     showTracks = [],
     session: sessionParam,
     defaultSession,
@@ -319,30 +317,38 @@ const renderLinear: ModeRenderer = async ({ model, data, opts, width }) => {
   }
 
   // Hosted trackIds from --track (present in a --hub/--config config) go first,
-  // so they land above the file-type (--bam/--gffgz/--hic/...) tracks added
-  // below — argv order top-to-bottom, same convention as every other stacked
-  // view in this CLI (synteny levels, multi-way assemblies). The token is
-  // resolved to a real trackId (accepting the assembly-name-prefix shorthand),
-  // then the display category comes from that track's own type so modifiers
-  // (height:, color:, …) route to the right display slots.
-  for (const [, [trackInput, ...displayOpts]] of showTracks) {
-    if (trackInput) {
-      const trackId = resolveTrackId(
-        data.tracks,
-        trackInput,
-        data.assembly.name,
-      )
-      applyDisplayOpts(
-        view,
-        trackId,
-        configTrackCategory(data.tracks, trackId),
-        displayOpts,
-      )
-    }
-  }
-
-  for (const track of trackList) {
-    applyTrackOpts(track, view)
+  // so they land above the file-type (--bam/--gffgz/--hic/...) tracks readData
+  // built — argv order top-to-bottom, same convention as every other stacked
+  // view in this CLI (synteny levels, multi-way assemblies). A --track token is
+  // resolved to a real trackId (accepting the assembly-name-prefix shorthand);
+  // a file flag's id was already assigned when its config was built. Both then
+  // take the same path: the display category comes from the track's own type in
+  // the config, so modifiers (height:, color:, …) route to the right display
+  // slots whichever way the track got there.
+  const toOpen = [
+    ...showTracks.flatMap(([, [trackInput, ...opts]]) =>
+      trackInput
+        ? [
+            {
+              trackId: resolveTrackId(
+                data.tracks,
+                trackInput,
+                data.assembly.name,
+              ),
+              opts,
+            },
+          ]
+        : [],
+    ),
+    ...(data.openTracks ?? []),
+  ]
+  for (const { trackId, opts } of toOpen) {
+    applyDisplayOpts(
+      view,
+      trackId,
+      configTrackCategory(data.tracks, trackId),
+      opts,
+    )
   }
 
   const svg = await renderLinearToSvg(view, {

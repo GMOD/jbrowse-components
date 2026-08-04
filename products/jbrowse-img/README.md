@@ -480,11 +480,17 @@ exits, so a warning would scroll past and leave you with a wrong image. The
 
 **All tracks**
 
-| Modifier        | Example                | Description                                          |
-| --------------- | ---------------------- | ---------------------------------------------------- |
-| `height:N`      | `height:400`           | Track height in pixels                               |
-| `force:true`    | `force:true`           | Render even if region is too large                   |
-| `display:value` | `display:multivariant` | Pick a non-default display for the track (see below) |
+| Modifier        | Example                | Description                                           |
+| --------------- | ---------------------- | ----------------------------------------------------- |
+| `height:N`      | `height:400`           | Track height in pixels                                |
+| `force:true`    | `force:true`           | Render even if region is too large                    |
+| `display:value` | `display:multivariant` | Pick a non-default display for the track (see below)  |
+| `name:label`    | `name:"Tumor"`         | Track label (defaults to the filename)                |
+| `index:path`    | `index:reads.bam.csi`  | Index file, when it isn't `<file>.bai`/`.tbi`/`.crai` |
+
+A track is identified by its filename, so two inputs sharing one —
+`--bam tumor/sample.bam --bam normal/sample.bam` — would both be labelled
+`sample.bam`. Both render, but pass `name:` to tell them apart in the figure.
 
 By default each track uses its primary display. `display:value` selects an
 alternate one. These friendly aliases are recognized (any other value is passed

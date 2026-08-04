@@ -100,14 +100,6 @@ const fileTypes: Record<string, FileType> = {
 
 export const trackTypes = Object.keys(fileTypes)
 
-// The JBrowse track type a CLI file-type flag opens (`bam` -> AlignmentsTrack).
-// applyTrackOpts reads this rather than keeping its own flag -> display-category
-// map: the two agreed only by hand, so adding a file type here meant remembering
-// to add it there as well or the new flag silently drove a feature display.
-export function trackTypeForFlag(flag: string) {
-  return fileTypes[flag]?.trackType
-}
-
 // Comparison/synteny adapters. Each maps a CLI file type to its adapter type,
 // the fileLocation slot that adapter reads from, and which of the two stacked
 // assemblies the file's QUERY coordinates belong to.

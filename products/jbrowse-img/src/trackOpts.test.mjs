@@ -1,4 +1,6 @@
 import { strict as assert } from 'node:assert'
+import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 import { test } from 'node:test'
 import { fileURLToPath } from 'node:url'
@@ -123,4 +125,33 @@ test('wiggle score modifiers all produce a valid display snapshot', async () => 
     ],
   })
   assert.ok(svg.includes('<svg'), 'output should be SVG')
+})
+
+// Track ids are file basenames, so two inputs sharing one (the everyday
+// tumor/sample.bam + normal/sample.bam) both wanted the same id: the second
+// showTrack found the first already open and handed it back, so only ONE of the
+// two files was ever drawn — and which one won came down to config order. The
+// pair is copied into two directories under one name to reproduce that exactly.
+test('two inputs sharing a basename both render', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'jbimg-dup-'))
+  const copies = ['a', 'b'].map((sub, i) => {
+    const src = i === 0 ? sortedBam : bam
+    const dest = path.join(dir, sub)
+    fs.mkdirSync(dest)
+    fs.copyFileSync(src, path.join(dest, 'sample.bam'))
+    fs.copyFileSync(`${src}.bai`, path.join(dest, 'sample.bam.bai'))
+    return path.join(dest, 'sample.bam')
+  })
+  const render = async trackList =>
+    renderRegion({ fasta, loc: 'ctgA:1-2000', noRasterize: true, trackList })
+  const track = file => ['bam', [file, 'force:true', 'height:100']]
+
+  const one = await render([track(copies[0])])
+  const both = await render(copies.map(track))
+  // the second track's reads roughly double the drawn output; before the fix
+  // `both` came out no larger than `one` because only one track existed
+  assert.ok(
+    both.length > one.length * 1.5,
+    `expected two tracks' worth of output, got ${both.length} vs ${one.length} for one`,
+  )
 })

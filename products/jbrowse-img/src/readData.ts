@@ -11,7 +11,7 @@ import {
 import { modifierValue } from './parseArgv.ts'
 import { STDIN_ARG, readTextInput } from './util.ts'
 
-import type { Assembly, Config, Opts, Track } from './types.ts'
+import type { Assembly, Config, OpenTrack, Opts, Track } from './types.ts'
 
 // how to name an input in an error message
 function inputName(file: string) {
@@ -90,6 +90,26 @@ function readTrackArray(file: string): Track[] {
     resolveLocalPaths(track, baseDir)
   }
   return tracks
+}
+
+// A track's id is its file's basename, so two inputs that share one — the
+// everyday `--bam tumor/sample.bam --bam normal/sample.bam` — collided: the
+// second `showTrack` found the first already open and handed it back, so only
+// one of the two files was ever drawn, and which one won came down to config
+// order. Suffix the later ones so both render. The display NAME still defaults
+// to the basename for both, hence the pointer at `name:`.
+function uniqueTrackId(used: Set<string>, base: string) {
+  let id = base
+  for (let i = 2; used.has(id); i++) {
+    id = `${base}-${i}`
+  }
+  if (id !== base) {
+    console.warn(
+      `Warning: more than one track is named "${base}"; opening this one as "${id}". Pass name:<label> to tell them apart.`,
+    )
+  }
+  used.add(id)
+  return id
 }
 
 // `configObject` is a config already fetched off the network (from --hub or a
@@ -195,7 +215,11 @@ export function readData(
   configData.tracks.push(...syntenyTracks)
 
   // Regular (non-synteny) tracks attach to the primary assembly; synteny tracks
-  // are built per-level in buildComparative above.
+  // are built per-level in buildComparative above. Each one is recorded in
+  // `openTracks` under the id it actually got, so the renderer opens exactly
+  // what was built instead of recomputing the id from the filename.
+  const openTracks: OpenTrack[] = []
+  const usedTrackIds = new Set(configData.tracks.map(t => t.trackId))
   for (const [type, opts] of trackList) {
     const [file, ...rest] = opts
     const index = modifierValue(rest, 'index')
@@ -204,28 +228,23 @@ export function readData(
       continue
     } else if (!file) {
       throw new Error('no file specified')
-    } else if (type === 'multiwig') {
-      configData.tracks.push(
-        makeMultiWiggleTrackConfig(
-          readMultiWiggleSources(file),
-          file,
-          configData.assembly,
-          name,
-        ),
-      )
-    } else {
-      const trackConfig = makeTrackConfig(
-        type,
-        file,
-        index,
-        configData.assembly,
-        name,
-      )
-      if (trackConfig) {
-        configData.tracks.push(trackConfig)
-      }
+    }
+    const trackConfig =
+      type === 'multiwig'
+        ? makeMultiWiggleTrackConfig(
+            readMultiWiggleSources(file),
+            file,
+            configData.assembly,
+            name,
+          )
+        : makeTrackConfig(type, file, index, configData.assembly, name)
+    if (trackConfig) {
+      trackConfig.trackId = uniqueTrackId(usedTrackIds, trackConfig.trackId)
+      configData.tracks.push(trackConfig)
+      openTracks.push({ trackId: trackConfig.trackId, opts: rest })
     }
   }
+  configData.openTracks = openTracks
 
   if (!defaultSession) {
     // don't use defaultSession from config.json file, can result in assembly

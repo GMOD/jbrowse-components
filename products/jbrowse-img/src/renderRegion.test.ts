@@ -345,6 +345,69 @@ describe('readData', () => {
     ).toThrow(/expected a JSON array of tracks/)
   })
 
+  // Track ids are file basenames, so `--bam tumor/sample.bam --bam
+  // normal/sample.bam` produced two configs with one id: showTrack found the
+  // first already open and handed it back, so only one file was ever drawn.
+  test('two inputs sharing a basename get distinct trackIds', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+    const result = readData({
+      fasta: '/ref.fa',
+      trackList: [
+        ['bam', ['tumor/sample.bam']],
+        ['bam', ['normal/sample.bam']],
+        ['bam', ['relapse/sample.bam']],
+      ],
+    })
+    expect(result.tracks.map(t => t.trackId)).toEqual([
+      'sample.bam',
+      'sample.bam-2',
+      'sample.bam-3',
+    ])
+    expect(warn).toHaveBeenCalledTimes(2)
+    warn.mockRestore()
+  })
+
+  test('a file basename colliding with a --tracks trackId is suffixed too', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'jbimg-'))
+    const tracksFile = path.join(dir, 'tracks.json')
+    fs.writeFileSync(
+      tracksFile,
+      JSON.stringify([{ type: 'FeatureTrack', trackId: 'reads.bam' }]),
+    )
+    const result = readData({
+      fasta: '/ref.fa',
+      tracks: tracksFile,
+      trackList: [['bam', ['a/reads.bam']]],
+    })
+    expect(result.tracks.map(t => t.trackId)).toEqual([
+      'reads.bam',
+      'reads.bam-2',
+    ])
+    expect(result.openTracks).toEqual([{ trackId: 'reads.bam-2', opts: [] }])
+    warn.mockRestore()
+  })
+
+  // openTracks is what the renderer opens, so it must name the ids actually
+  // assigned and carry each track's modifiers in argv order
+  test('openTracks records the assigned id and the modifiers, in order', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+    const result = readData({
+      fasta: '/ref.fa',
+      trackList: [
+        ['bam', ['a/sample.bam', 'height:200', 'color:strand']],
+        ['bam', ['b/sample.bam']],
+        ['bigwig', ['signal.bw', 'height:50']],
+      ],
+    })
+    expect(result.openTracks).toEqual([
+      { trackId: 'sample.bam', opts: ['height:200', 'color:strand'] },
+      { trackId: 'sample.bam-2', opts: [] },
+      { trackId: 'signal.bw', opts: ['height:50'] },
+    ])
+    warn.mockRestore()
+  })
+
   test('resolves localPath in a tracks file relative to that file', () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'jbimg-'))
     const tracksFile = path.join(dir, 'tracks.json')

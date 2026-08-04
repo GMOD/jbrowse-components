@@ -103,10 +103,23 @@ export interface TextSearchAdapter {
   [key: string]: unknown
 }
 
+// A track built from a track-type CLI flag (--bam, --bigwig, …), paired with the
+// display modifiers that followed the filename. readData assigns the trackId
+// while building the config — it is the only place that can see two inputs
+// competing for one basename — so the renderer opens what was actually built
+// rather than re-deriving an id the config may not use.
+export interface OpenTrack {
+  trackId: string
+  opts: string[]
+}
+
 export interface Config {
   assemblies: Assembly[]
   assembly: Assembly
   tracks: Track[]
+  // Tracks to open in a linear view, in argv order. Undefined for a config that
+  // readData didn't build from track flags.
+  openTracks?: OpenTrack[]
   // Trix (or other) text-search adapters, e.g. from a --hub config, that let
   // --loc navigate by gene name. Passed through to createViewState.
   aggregateTextSearchAdapters?: TextSearchAdapter[]

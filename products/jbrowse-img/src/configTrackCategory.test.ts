@@ -1,5 +1,6 @@
-import { categoryForTrackType, configTrackCategory } from './applyTrackOpts.ts'
-import { trackTypeForFlag, trackTypes } from './makeConfigs.ts'
+import { configTrackCategory } from './applyTrackOpts.ts'
+import { trackTypes } from './makeConfigs.ts'
+import { readData } from './readData.ts'
 
 import type { Track } from './types.ts'
 
@@ -25,16 +26,20 @@ test('unknown or missing trackId falls back to feature', () => {
 })
 
 // A CLI file-type flag used to carry its own hand-written category map, parallel
-// to (and independently editable from) the config-track-type one. It now derives
-// through makeConfigs' flag -> track type map, so this pins the composed result:
-// a new --flag with no category entry shows up here rather than silently driving
-// a feature display.
+// to (and independently editable from) this one. A flag's track now goes into
+// the config like any other and its category is read back off that, so this
+// walks every flag through the real path: a new --flag whose track type has no
+// category entry shows up here rather than silently driving a feature display.
 test('every CLI file-type flag resolves to its display category', () => {
   const byFlag = Object.fromEntries(
-    trackTypes.map(flag => [
-      flag,
-      categoryForTrackType(trackTypeForFlag(flag)),
-    ]),
+    trackTypes.map(flag => {
+      const file = flag === 'multiwig' ? 'a.bw,b.bw' : `input.${flag}`
+      const data = readData({
+        fasta: '/ref.fa',
+        trackList: [[flag, [file]]],
+      })
+      return [flag, configTrackCategory(data.tracks, file)]
+    }),
   )
   expect(byFlag).toEqual({
     bam: 'alignments',
