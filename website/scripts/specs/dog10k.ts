@@ -408,6 +408,34 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     settleMs: 3000,
     // all 64 haplotype rows plus the color legend, no page background below
     viewportHeight: 905,
+    // The in-app highlight alone did not say what it was for — "unclear the
+    // significance of the highlighted region, if needed, a red box text
+    // annotation should highlight what is trying to be shown" (review). Both
+    // callouts anchor on the locus and the track rather than on measured pixels,
+    // so they follow the band if the window or the row count ever moves.
+    annotations: [
+      {
+        type: 'box',
+        anchor: {
+          track: 'dog10k_wolfdog_named',
+          locus: 'chr1:112,000,000-113,500,000',
+        },
+      },
+      {
+        type: 'text',
+        anchor: {
+          track: 'dog10k_wolfdog_named',
+          locus: 'chr1:112,000,000',
+          alignX: 'left',
+          fracY: 0.18,
+          dx: -24,
+        },
+        textAlign: 'end',
+        maxWidth: 430,
+        fontSize: 15,
+        text: 'The 1.5 Mb the genotype figure below checks:\nnine of these rows end a wolf block inside it',
+      },
+    ],
   },
 
   // The spectrum: the same inference over 243 animals — one dog from each of the

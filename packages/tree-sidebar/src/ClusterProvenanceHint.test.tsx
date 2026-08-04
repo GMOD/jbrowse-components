@@ -22,6 +22,7 @@ jest.mock('@jbrowse/core/util', () => ({
 }))
 
 const CLUSTERED_AT = { refName: 'ctgA', start: 1000, end: 2000 }
+const ELSEWHERE = { refName: 'ctgB', start: 1000, end: 2000 }
 
 // Only the slice the hint reads; the rest of TreeSidebarModel is the sidebar's
 // canvas plumbing. `hierarchy` stands in for a positioned tree — the hint gates
@@ -47,13 +48,15 @@ function draw(props: Partial<TreeSidebarModel> = {}) {
   return { view, chip: view.queryByTestId('cluster_provenance_hint') }
 }
 
+// The chip draws in the drifted state only, so every test that wants to see one
+// has to move the view off the clustered region first.
 beforeEach(() => {
-  mockVisibleBlocks = [CLUSTERED_AT]
+  mockVisibleBlocks = [ELSEWHERE]
 })
 
 describe('ClusterProvenanceHint', () => {
   it('names the locus the tree was computed from', () => {
-    expect(draw().chip?.textContent).toBe('ctgA:1,001..2,000')
+    expect(draw().chip?.textContent).toBe('⚠ ctgA:1,001..2,000')
   })
 
   it('carries the settings in the tooltip, where there is room for them', () => {
@@ -84,18 +87,18 @@ describe('ClusterProvenanceHint', () => {
   })
 
   describe('drift', () => {
-    it('stays quiet while the clustered region is still in view', () => {
-      const { chip } = draw()
-      expect(chip?.textContent).not.toContain('⚠')
-      expect(chip?.getAttribute('title')).toContain(
-        'Clustering reads only the region in view',
-      )
+    // THE CONTRACT: quiet means absent, not a quiet chip. "Clustered on what you
+    // are looking at" is what a reader already assumes, and stating it costs a
+    // line of text over the first row of every captured figure. The locus stays
+    // reachable through `clusterProvenanceMenuItems`.
+    it('draws nothing at all while the clustered region is still in view', () => {
+      mockVisibleBlocks = [CLUSTERED_AT]
+      expect(draw().chip).toBeNull()
     })
 
     // The point of the whole component: row names don't change when you pan, so
     // the dendrogram stays drawn over a locus it was never computed at.
     it('marks the chip once the view has moved off the clustered region', () => {
-      mockVisibleBlocks = [{ refName: 'ctgB', start: 1000, end: 2000 }]
       const { chip } = draw()
       expect(chip?.textContent).toContain('⚠')
       expect(chip?.getAttribute('title')).toContain(
@@ -104,16 +107,18 @@ describe('ClusterProvenanceHint', () => {
     })
 
     // Ordinary panning and zooming inside the clustered locus must not trip it,
-    // or the warning becomes noise and stops being read.
-    it('does not mark a nudge or a zoom-out', () => {
+    // or the warning becomes noise and stops being read. Now that the quiet
+    // state draws nothing, "does not trip" is the stronger assertion that the
+    // frame stays clean.
+    it('draws nothing for a nudge or a zoom-out', () => {
       mockVisibleBlocks = [{ refName: 'ctgA', start: 1001, end: 2001 }]
       const nudged = draw()
-      expect(nudged.chip?.textContent).not.toContain('⚠')
+      expect(nudged.chip).toBeNull()
       // both renders share document.body, so the first has to go before the
       // second is queried for
       nudged.view.unmount()
       mockVisibleBlocks = [{ refName: 'ctgA', start: 0, end: 9000 }]
-      expect(draw().chip?.textContent).not.toContain('⚠')
+      expect(draw().chip).toBeNull()
     })
   })
 

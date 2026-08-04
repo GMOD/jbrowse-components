@@ -1,6 +1,9 @@
 import { checkboxItem } from '@jbrowse/core/ui'
 import AccountTreeIcon from '@mui/icons-material/AccountTree'
 
+import { describeClusterProvenance } from './clusterProvenance.ts'
+
+import type { ClusterProvenance } from './clusterProvenance.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 interface BranchLengthMenuModel {
@@ -59,8 +62,45 @@ export function clearSubtreeFilterMenuItems(
     : []
 }
 
+interface ClusterProvenanceMenuModel {
+  clusterProvenance?: ClusterProvenance
+}
+
+// "Clustered on <locus>", or nothing when the tree was supplied rather than
+// computed (maf's `.nh`) — spread, don't insert.
+//
+// This is where the locus lives now. `ClusterProvenanceHint` used to put it on
+// screen in both of its states, and the quiet one is text over the rows stating
+// what a viewer already assumes; the chip now draws only when the view has
+// drifted off the clustered span, which is the case that is silently wrong. The
+// information itself still has to be reachable, because "which region is this
+// tree from" has no other answer once the chip is gone and a dendrogram beside
+// the wrong locus looks exactly like one beside the right locus.
+//
+// Disabled because it is a fact and not an action; `disabledHelpText` carries
+// the full sentence (`describeClusterProvenance`) that the label abbreviates.
+export function clusterProvenanceMenuItems(
+  self: ClusterProvenanceMenuModel,
+): MenuItem[] {
+  const provenance = self.clusterProvenance
+  return provenance
+    ? [
+        {
+          label: describeClusterProvenance(provenance),
+          disabled: true,
+          disabledHelpText:
+            'Clustering reads only the region in view, so this tree describes that region and not the whole track',
+          onClick: () => {},
+        },
+      ]
+    : []
+}
+
 interface ClusteringMenuModel
-  extends BranchLengthMenuModel, SubtreeFilterMenuModel {
+  extends
+    BranchLengthMenuModel,
+    ClusterProvenanceMenuModel,
+    SubtreeFilterMenuModel {
   clusterTree?: string
   setShowTree: (arg: boolean) => void
 }
@@ -109,6 +149,7 @@ export function clusteringMenuItem(
     subMenu: [
       runItem,
       ...extraItems,
+      ...clusterProvenanceMenuItems(self),
       ...(showTreeToggle && treeApplies
         ? [
             checkboxItem(

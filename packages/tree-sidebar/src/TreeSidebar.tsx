@@ -48,10 +48,20 @@ const useStyles = makeStyles()(theme => ({
       opacity: 1,
     },
   },
+  // OPAQUE, not the 0.8 it used to be. The rendering canvas runs the full track
+  // width and the sidebar overlays its left edge, so a translucent panel let a
+  // fifth of the painting through behind the dendrogram — and since that
+  // painting is a categorical color per row, what came through was a clean
+  // vertical band in the track's own palette, one tint per row, sitting exactly
+  // where a group swatch would sit. Reviewers read it as a legend they could not
+  // decode ("I can't see the sidebar label colors, they exactly match the colors
+  // used in the track"). The data behind the panel was never legible at 20%
+  // anyway; the cost of hiding it is the left ~5% of the view, and the benefit is
+  // that the gutter now means nothing unless something is drawn in it.
   panel: {
     position: 'absolute',
     left: 0,
-    background: alpha(theme.palette.background.paper, 0.8),
+    background: theme.palette.background.paper,
   },
 }))
 

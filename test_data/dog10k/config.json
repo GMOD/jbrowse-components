@@ -583,7 +583,7 @@
     {
       "type": "FeatureTrack",
       "trackId": "dog10k_wolfdog_ancestry",
-      "name": "Local ancestry, 243 canids (FLARE, chr1): gray wolf vs breed dog",
+      "name": "Local ancestry, all 243 canids: 219 breeds, 8 wolfdogs, 8 wolves (FLARE, chr1)",
       "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "BedTabixAdapter",
@@ -602,7 +602,7 @@
     {
       "type": "FeatureTrack",
       "trackId": "dog10k_wolfdog_named",
-      "name": "Local ancestry, named animals (FLARE, chr1)",
+      "name": "Local ancestry, the 32 named animals of the 243 (FLARE, chr1)",
       "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "BedTabixAdapter",

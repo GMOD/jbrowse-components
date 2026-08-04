@@ -49,6 +49,7 @@ export { useClusterRun } from './useClusterRun.ts'
 export { TreeSidebarMixin } from './TreeSidebarMixin.ts'
 export {
   clearSubtreeFilterMenuItems,
+  clusterProvenanceMenuItems,
   clusteringMenuItem,
   treeBranchLengthMenuItem,
 } from './treeMenuItems.ts'

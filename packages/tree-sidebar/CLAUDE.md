@@ -68,9 +68,15 @@ positioned" (multi-wiggle overlay) by testing `root` against the rows itself —
 `treeDescribesRows` gates the dendrogram on row **names**, and names don't
 change when you pan — so the tree stays drawn over a different locus, or a
 different chromosome, looking exactly as authoritative as where it was computed.
-`clusterProvenance` records the regions and the settings a run used;
-`ClusterProvenanceHint` shows the locus on screen and `SvgTreeSidebar` captions
-the export, which is the copy that ends up under a figure.
+`clusterProvenance` records the regions and the settings a run used.
+`SvgTreeSidebar` captions the export, which is the copy that ends up under a
+figure; `clusterProvenanceMenuItems` puts the locus in the Clustering submenu;
+and `ClusterProvenanceHint` draws on screen **only when the view has drifted off
+the clustered span**. It used to draw in the quiet state too, and that is text
+over the first row of every captured figure stating what a reader already
+assumes ("i dont want the tree 'context' text to be displayed", review). Drift
+is an overlap fraction rather than an equality test, which is what makes the
+quiet state safe to drop: the chip appearing now always means something.
 
 The invariant is not that it is present but that it is never **wrong**: it may
 only describe the tree currently loaded. So every write touching `clusterTree`
