@@ -78,8 +78,8 @@ describe('getGenotypeMatrix (genotypes-Record path)', () => {
       ],
       sources,
     )
-    expect([...rows.HG001!]).toEqual([0, 1])
-    expect([...rows.HG002!]).toEqual([2, NaN])
+    expect([...rows.get('HG001')!]).toEqual([0, 1])
+    expect([...rows.get('HG002')!]).toEqual([2, NaN])
   })
 
   // A multiallelic site spends one column per ALT so that carrying allele 1 and
@@ -90,8 +90,8 @@ describe('getGenotypeMatrix (genotypes-Record path)', () => {
       [makeFeature('v1', { HG001: '1/2', HG002: '0/2' }, ['T', 'G'])],
       sources,
     )
-    expect([...rows.HG001!]).toEqual([1, 1])
-    expect([...rows.HG002!]).toEqual([0, 1])
+    expect([...rows.get('HG001')!]).toEqual([1, 1])
+    expect([...rows.get('HG002')!]).toEqual([0, 1])
   })
 
   test('homozygotes for different alts are not the same point', async () => {
@@ -99,8 +99,8 @@ describe('getGenotypeMatrix (genotypes-Record path)', () => {
       [makeFeature('v1', { HG001: '1/1', HG002: '2/2' }, ['T', 'G'])],
       sources,
     )
-    expect([...rows.HG001!]).toEqual([2, 0])
-    expect([...rows.HG002!]).toEqual([0, 2])
+    expect([...rows.get('HG001')!]).toEqual([2, 0])
+    expect([...rows.get('HG002')!]).toEqual([0, 2])
   })
 
   test('a biallelic site still costs exactly one column', async () => {
@@ -111,8 +111,8 @@ describe('getGenotypeMatrix (genotypes-Record path)', () => {
       ],
       sources,
     )
-    expect([...rows.HG001!]).toEqual([1, 2])
-    expect([...rows.HG002!]).toEqual([2, 0])
+    expect([...rows.get('HG001')!]).toEqual([1, 2])
+    expect([...rows.get('HG002')!]).toEqual([2, 0])
   })
 
   test('marks a sample absent from the VCF missing', async () => {
@@ -120,15 +120,17 @@ describe('getGenotypeMatrix (genotypes-Record path)', () => {
       [makeFeature('v1', { HG001: '0/1' })],
       [{ name: 'HG001' }, { name: 'GHOST' }],
     )
-    expect([...rows.GHOST!]).toEqual([NaN])
+    expect([...rows.get('GHOST')!]).toEqual([NaN])
   })
 
-  test('emits one row per source, keyed by source name', async () => {
+  // In `sources` order, which is the contract the cluster order is indices into
+  // — see ClusterMatrix.
+  test('emits one row per source, keyed by source name in source order', async () => {
     const rows = await build(
       [makeFeature('v1', { HG001: '0/1', HG002: '0/1' })],
       sources,
     )
-    expect(Object.keys(rows)).toEqual(['HG001', 'HG002'])
+    expect([...rows.keys()]).toEqual(['HG001', 'HG002'])
   })
 })
 
@@ -148,8 +150,8 @@ describe('getGenotypeMatrix (processGenotypes fast path)', () => {
       genotypes.map((g, i) => makeVcfFeature(`v${i}`, sampleNames, g)),
       sources,
     )
-    expect([...viaCallback.HG001!]).toEqual([...viaRecord.HG001!])
-    expect([...viaCallback.HG002!]).toEqual([...viaRecord.HG002!])
+    expect([...viaCallback.get('HG001')!]).toEqual([...viaRecord.get('HG001')!])
+    expect([...viaCallback.get('HG002')!]).toEqual([...viaRecord.get('HG002')!])
   })
 
   test('a skipped sample does not shift the samples after it', async () => {
@@ -164,8 +166,8 @@ describe('getGenotypeMatrix (processGenotypes fast path)', () => {
       ],
       sources,
     )
-    expect([...rows.HG001!]).toEqual([NaN])
-    expect([...rows.HG002!]).toEqual([2])
+    expect([...rows.get('HG001')!]).toEqual([NaN])
+    expect([...rows.get('HG002')!]).toEqual([2])
   })
 
   test('a skipped sample does not inherit the previous feature call', async () => {
@@ -180,8 +182,8 @@ describe('getGenotypeMatrix (processGenotypes fast path)', () => {
       ],
       sources,
     )
-    expect([...rows.HG001!]).toEqual([2, NaN])
-    expect([...rows.HG002!]).toEqual([1, 1])
+    expect([...rows.get('HG001')!]).toEqual([2, NaN])
+    expect([...rows.get('HG002')!]).toEqual([1, 1])
   })
 
   test('keeps rows aligned to the feature order', async () => {
@@ -193,7 +195,7 @@ describe('getGenotypeMatrix (processGenotypes fast path)', () => {
       ],
       sources,
     )
-    expect([...rows.HG001!]).toEqual([1, 2, 0])
-    expect([...rows.HG002!]).toEqual([0, 1, 2])
+    expect([...rows.get('HG001')!]).toEqual([1, 2, 0])
+    expect([...rows.get('HG002')!]).toEqual([0, 1, 2])
   })
 })

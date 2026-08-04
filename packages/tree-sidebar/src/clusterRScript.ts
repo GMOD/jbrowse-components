@@ -1,5 +1,15 @@
 type NumericRow = Iterable<number>
-export type ClusterMatrix = Record<string, NumericRow>
+
+// A Map, not a Record, because the row order IS the contract: `order` comes back
+// as indices into it and every caller maps those straight into its own source
+// list. A plain object cannot carry that — it hoists integer-like keys ahead of
+// the rest, so rows named "1", "2", "10" (numbered bigWigs, numeric VCF sample
+// IDs, a numeric partition field) arrived at the clusterer in numeric order and
+// the indices it returned pointed at the wrong sources. What made that expensive
+// to notice is that it fails twice over: the rows reorder to the wrong
+// identities, and the tree's leaf names then disagree with them, so
+// `treeDescribesRows` refuses to draw the dendrogram that would have shown it.
+export type ClusterMatrix = Map<string, NumericRow>
 
 // A genotype matrix marks a no-call with NaN, which neither R nor a TSV reader
 // understands. `NA` is the value both do: R's `dist()` drops that column from
@@ -18,21 +28,24 @@ function formatRow(row: NumericRow, separator: string) {
 // user to paste back. Shared by the wiggle and variant "manual clustering"
 // dialogs, which build byte-identical scripts.
 export function generateClusterRScript(matrix: ClusterMatrix, method: string) {
-  const rows = Object.values(matrix)
-  return String.raw`inputMatrix<-matrix(c(${rows
-    .map(val => formatRow(val, ','))
-    .join(',\n')}
-),nrow=${rows.length},byrow=TRUE)
-rownames(inputMatrix)<-c(${Object.keys(matrix)
-    .map(key => `'${key}'`)
-    .join(',')})
+  const values: string[] = []
+  const names: string[] = []
+  for (const [name, row] of matrix) {
+    values.push(formatRow(row, ','))
+    names.push(`'${name}'`)
+  }
+  return String.raw`inputMatrix<-matrix(c(${values.join(',\n')}
+),nrow=${matrix.size},byrow=TRUE)
+rownames(inputMatrix)<-c(${names.join(',')})
 resultClusters<-hclust(dist(inputMatrix), method='${method}')
 cat(resultClusters$order,sep='\n')`
 }
 
 // Serialize the matrix to a name-prefixed TSV (one row per source).
 export function matrixToTsv(matrix: ClusterMatrix) {
-  return Object.entries(matrix)
-    .map(([key, val]) => `${key}\t${formatRow(val, '\t')}`)
-    .join('\n')
+  const lines: string[] = []
+  for (const [name, row] of matrix) {
+    lines.push(`${name}\t${formatRow(row, '\t')}`)
+  }
+  return lines.join('\n')
 }

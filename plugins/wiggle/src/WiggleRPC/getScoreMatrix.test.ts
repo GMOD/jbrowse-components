@@ -1,16 +1,19 @@
+import PluginManager from '@jbrowse/core/PluginManager'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { SimpleFeature } from '@jbrowse/core/util'
 
 import { getScoreMatrix } from './getScoreMatrix.ts'
 
 import type { GetScoreMatrixArgs } from './types.ts'
-import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 
 jest.mock('@jbrowse/core/data_adapters/getFeatureAdapter')
 
-const pm = {} as unknown as PluginManager
+// Both are real rather than cast stubs: getFeatureAdapterOrThrow is mocked, so
+// neither is read, and a real one costs nothing.
+const pm = new PluginManager()
+const adapterConfig = ConfigurationSchema('MultiWiggleAdapter', {}).create({})
 
 function feat(source: string, start: number, end: number, score: number) {
   return new SimpleFeature({
@@ -38,7 +41,7 @@ function callArgs({
 }) {
   return {
     sessionId: 'sid',
-    adapterConfig: {} as unknown as AnyConfigurationModel,
+    adapterConfig,
     regions,
     bpPerPx,
     sources: sources.map(name => ({ name, source: name })),
@@ -75,7 +78,7 @@ describe('getScoreMatrix', () => {
       sources: ['a'],
       bpPerPx: 10,
     })
-    expect(Array.from(rows.a!)).toEqual([7, 7, 7, 7, 7, 0, 0, 0, 0, 0])
+    expect(Array.from(rows.get('a')!)).toEqual([7, 7, 7, 7, 7, 0, 0, 0, 0, 0])
   })
 
   // A bedGraph/bedMethyl subtrack (the modkit use-case) has base-resolution
@@ -90,7 +93,7 @@ describe('getScoreMatrix', () => {
       sources: ['a'],
       bpPerPx: 10,
     })
-    expect(Array.from(rows.a!)).toEqual([0, 0, 3, 0, 0, 0, 0, 5, 0, 0])
+    expect(Array.from(rows.get('a')!)).toEqual([0, 0, 3, 0, 0, 0, 0, 5, 0, 0])
   })
 
   it('leaves a source with no features an all-zero row', async () => {
@@ -100,8 +103,8 @@ describe('getScoreMatrix', () => {
       sources: ['a', 'b'],
       bpPerPx: 50,
     })
-    expect(Array.from(rows.a!)).toEqual([4, 4])
-    expect(Array.from(rows.b!)).toEqual([0, 0])
+    expect(Array.from(rows.get('a')!)).toEqual([4, 4])
+    expect(Array.from(rows.get('b')!)).toEqual([0, 0])
   })
 
   // Every visible block contributes a segment; a whole-genome or
@@ -114,7 +117,7 @@ describe('getScoreMatrix', () => {
       sources: ['a'],
       bpPerPx: 50,
     })
-    expect(Array.from(rows.a!)).toEqual([1, 1, 2, 2])
+    expect(Array.from(rows.get('a')!)).toEqual([1, 1, 2, 2])
   })
 
   it('clips a feature hanging off either end of its region', async () => {
@@ -124,7 +127,7 @@ describe('getScoreMatrix', () => {
       sources: ['a'],
       bpPerPx: 10,
     })
-    expect(Array.from(rows.a!)).toEqual([9, 9, 9, 0, 0])
+    expect(Array.from(rows.get('a')!)).toEqual([9, 9, 9, 0, 0])
   })
 
   // Several features per column is the norm for base-resolution data at any
@@ -143,7 +146,7 @@ describe('getScoreMatrix', () => {
       sources: ['a'],
       bpPerPx: 10,
     })
-    expect(Array.from(rows.a!)).toEqual([4, 100])
+    expect(Array.from(rows.get('a')!)).toEqual([4, 100])
   })
 })
 
@@ -188,9 +191,9 @@ describe('getScoreMatrix multi-source adapter', () => {
       'b',
     ])
 
-    expect(Array.from(rows.a!)).toEqual([1, 0, 2, 2])
+    expect(Array.from(rows.get('a')!)).toEqual([1, 0, 2, 2])
     // sub-column feature in region 0 column 0, nothing in region 1
-    expect(Array.from(rows.b!)).toEqual([8, 0, 0, 0])
+    expect(Array.from(rows.get('b')!)).toEqual([8, 0, 0, 0])
   })
 
   it('leaves a subtrack the adapter did not report an all-zero row', async () => {
@@ -209,7 +212,7 @@ describe('getScoreMatrix multi-source adapter', () => {
       }),
     })
 
-    expect(Array.from(rows.a!)).toEqual([3, 3])
-    expect(Array.from(rows.ghost!)).toEqual([0, 0])
+    expect(Array.from(rows.get('a')!)).toEqual([3, 3])
+    expect(Array.from(rows.get('ghost')!)).toEqual([0, 0])
   })
 })

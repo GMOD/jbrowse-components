@@ -94,10 +94,11 @@ export async function getPhasedGenotypeMatrix({
   // sample absent) has to be NaN rather than a value on the allele scale — see
   // genotypeMatrixEncoding.ts.
   const numFeatures = filteredVariants.length
-  const rows: Record<string, Float32Array> = {}
+  // Map, keyed in `rowSpecs` order — see getGenotypeMatrix.
+  const rows = new Map<string, Float32Array>()
   const rowArrays = rowSpecs.map(spec => {
     const arr = new Float32Array(numFeatures)
-    rows[spec.name] = arr
+    rows.set(spec.name, arr)
     return arr
   })
 

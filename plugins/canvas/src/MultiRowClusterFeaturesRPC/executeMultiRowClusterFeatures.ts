@@ -67,12 +67,14 @@ export async function executeMultiRowClusterFeatures({
   }
 
   const matrix = buildMultiRowMatrix({ sources, regions, features })
-  // clusterObject keys rows by name and returns `order` as indices into the
-  // key insertion order — build the object in `sources` order so those indices
-  // map straight back through buildClusteredLayout(sourcesWithoutLayout, ...).
-  const data: Record<string, number[]> = {}
+  // `order` comes back as indices into the matrix's key order, so build it in
+  // `sources` order to map straight back through
+  // buildClusteredLayout(sourcesWithoutLayout, ...). A Map because that is the
+  // only container that keeps the order for every row name a partition field can
+  // produce — see ClusterMatrix.
+  const data = new Map<string, number[]>()
   for (let i = 0; i < sources.length; i++) {
-    data[sources[i]!] = matrix[i]!
+    data.set(sources[i]!, matrix[i]!)
   }
   return clusterMatrix({ data, statusCallback, stopTokenCheck })
 }

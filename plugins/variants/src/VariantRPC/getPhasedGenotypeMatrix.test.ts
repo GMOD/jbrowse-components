@@ -57,7 +57,7 @@ describe('getPhasedGenotypeMatrix', () => {
       sources: [{ name: 'HG001' }, { name: 'HG002' }],
       sampleInfo: { HG001: diploid, HG002: diploid },
     })
-    expect(Object.keys(rows)).toEqual([
+    expect([...rows.keys()]).toEqual([
       'HG001 HP0',
       'HG001 HP1',
       'HG002 HP0',
@@ -71,8 +71,8 @@ describe('getPhasedGenotypeMatrix', () => {
       sources: [{ name: 'HG001' }],
       sampleInfo: { HG001: diploid },
     })
-    expect([...rows['HG001 HP0']!]).toEqual([0])
-    expect([...rows['HG001 HP1']!]).toEqual([1])
+    expect([...rows.get('HG001 HP0')!]).toEqual([0])
+    expect([...rows.get('HG001 HP1')!]).toEqual([1])
   })
 
   test('collapses every alt to one indicator', async () => {
@@ -84,8 +84,8 @@ describe('getPhasedGenotypeMatrix', () => {
       sources: [{ name: 'HG001' }],
       sampleInfo: { HG001: diploid },
     })
-    expect([...rows['HG001 HP0']!]).toEqual([1])
-    expect([...rows['HG001 HP1']!]).toEqual([1])
+    expect([...rows.get('HG001 HP0')!]).toEqual([1])
+    expect([...rows.get('HG001 HP1')!]).toEqual([1])
   })
 
   test('marks an unphased call missing on both haplotypes', async () => {
@@ -94,8 +94,8 @@ describe('getPhasedGenotypeMatrix', () => {
       sources: [{ name: 'HG001' }, { name: 'HG002' }],
       sampleInfo: { HG001: diploid, HG002: diploid },
     })
-    expect([...rows['HG001 HP0']!]).toEqual([NaN])
-    expect([...rows['HG001 HP1']!]).toEqual([NaN])
+    expect([...rows.get('HG001 HP0')!]).toEqual([NaN])
+    expect([...rows.get('HG001 HP1')!]).toEqual([NaN])
   })
 
   test('keeps the called side of a partially uncalled genotype', async () => {
@@ -104,8 +104,8 @@ describe('getPhasedGenotypeMatrix', () => {
       sources: [{ name: 'HG001' }, { name: 'HG002' }],
       sampleInfo: { HG001: diploid, HG002: diploid },
     })
-    expect([...rows['HG001 HP0']!]).toEqual([NaN])
-    expect([...rows['HG001 HP1']!]).toEqual([1])
+    expect([...rows.get('HG001 HP0')!]).toEqual([NaN])
+    expect([...rows.get('HG001 HP1')!]).toEqual([1])
   })
 
   test('honors per-sample ploidy', async () => {
@@ -117,8 +117,8 @@ describe('getPhasedGenotypeMatrix', () => {
         HG002: { isPhased: true, maxPloidy: 3 },
       },
     })
-    expect(Object.keys(rows)).toHaveLength(5)
-    expect([...rows['HG002 HP2']!]).toEqual([1])
+    expect([...rows.keys()]).toHaveLength(5)
+    expect([...rows.get('HG002 HP2')!]).toEqual([1])
   })
 
   test('marks a sample absent from the VCF missing', async () => {
@@ -127,8 +127,8 @@ describe('getPhasedGenotypeMatrix', () => {
       sources: [{ name: 'HG001' }, { name: 'MISSING_SAMPLE' }],
       sampleInfo: { HG001: diploid, MISSING_SAMPLE: diploid },
     })
-    expect([...rows['MISSING_SAMPLE HP0']!]).toEqual([NaN])
-    expect([...rows['MISSING_SAMPLE HP1']!]).toEqual([NaN])
+    expect([...rows.get('MISSING_SAMPLE HP0')!]).toEqual([NaN])
+    expect([...rows.get('MISSING_SAMPLE HP1')!]).toEqual([NaN])
   })
 
   test('a source already naming one haplotype yields just that row', async () => {
@@ -144,9 +144,9 @@ describe('getPhasedGenotypeMatrix', () => {
       ],
       sampleInfo: { HG001: diploid, HG002: diploid },
     })
-    expect(Object.keys(rows)).toEqual(['HG001 HP1', 'HG002 HP0'])
-    expect([...rows['HG001 HP1']!]).toEqual([1])
-    expect([...rows['HG002 HP0']!]).toEqual([1])
+    expect([...rows.keys()]).toEqual(['HG001 HP1', 'HG002 HP0'])
+    expect([...rows.get('HG001 HP1')!]).toEqual([1])
+    expect([...rows.get('HG002 HP0')!]).toEqual([1])
   })
 
   // `sampleInfo` is keyed by the bare VCF sample identity, and so is the
@@ -160,8 +160,8 @@ describe('getPhasedGenotypeMatrix', () => {
       sources: [{ name: 'renamed', sampleName: 'HG001' }],
       sampleInfo: { HG001: { isPhased: true, maxPloidy: 3 } },
     })
-    expect(Object.keys(rows)).toEqual(['HG001 HP0', 'HG001 HP1', 'HG001 HP2'])
-    expect([...rows['HG001 HP2']!]).toEqual([1])
+    expect([...rows.keys()]).toEqual(['HG001 HP0', 'HG001 HP1', 'HG001 HP2'])
+    expect([...rows.get('HG001 HP2')!]).toEqual([1])
   })
 
   test('keeps rows aligned to the feature order', async () => {
@@ -174,8 +174,8 @@ describe('getPhasedGenotypeMatrix', () => {
       sources: [{ name: 'HG001' }],
       sampleInfo: { HG001: diploid },
     })
-    expect([...rows['HG001 HP0']!]).toEqual([0, 1, 0])
-    expect([...rows['HG001 HP1']!]).toEqual([1, 1, 1])
+    expect([...rows.get('HG001 HP0')!]).toEqual([0, 1, 0])
+    expect([...rows.get('HG001 HP1')!]).toEqual([1, 1, 1])
   })
 })
 
@@ -199,12 +199,12 @@ describe('getPhasedGenotypeMatrix mixed ploidy', () => {
       ],
       sampleInfo: { FEMALE: diploid, MALE: haploid },
     })
-    expect(rows['FEMALE HP0']![0]).toBe(0)
-    expect(rows['FEMALE HP1']![0]).toBe(1)
+    expect(rows.get('FEMALE HP0')![0]).toBe(0)
+    expect(rows.get('FEMALE HP1')![0]).toBe(1)
     // the haploid call is real data on HP0 — not missing, and not unphased
-    expect(rows['MALE HP0']![0]).toBe(1)
+    expect(rows.get('MALE HP0')![0]).toBe(1)
     // and says nothing about a haplotype the sample does not have
-    expect(rows['MALE HP1']![0]).toBeNaN()
+    expect(rows.get('MALE HP1')![0]).toBeNaN()
   })
 
   test('a haploid reference call is 0, distinct from missing', async () => {
@@ -216,7 +216,7 @@ describe('getPhasedGenotypeMatrix mixed ploidy', () => {
       ],
       sampleInfo: { MALE: haploid, OTHER: haploid },
     })
-    expect(rows['MALE HP0']![0]).toBe(0)
-    expect(rows['OTHER HP0']![0]).toBeNaN()
+    expect(rows.get('MALE HP0')![0]).toBe(0)
+    expect(rows.get('OTHER HP0')![0]).toBeNaN()
   })
 })

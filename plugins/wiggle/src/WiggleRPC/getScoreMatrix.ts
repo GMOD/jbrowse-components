@@ -174,9 +174,15 @@ export async function getScoreMatrix({
   const invBpPerPx = 1 / bpPerPx
   const { segments, totalWidth } = buildSegments(regions, invBpPerPx)
 
-  const rows: Record<string, Float32Array> = {}
+  // Keyed in `sources` order and kept that way: the cluster `order` comes back
+  // as indices into this map and buildClusteredLayout maps them into the
+  // caller's source list (see ClusterMatrix).
+  // Float32Array<ArrayBuffer>, not the ArrayBufferLike default: these buffers
+  // are handed to postMessage as transferables, and naming the non-shared buffer
+  // here is what lets the RPC method transfer them without a cast.
+  const rows = new Map<string, Float32Array<ArrayBuffer>>()
   for (const { name } of sources) {
-    rows[name] = new Float32Array(totalWidth)
+    rows.set(name, new Float32Array(totalWidth))
   }
 
   const data = await fetchMatrixData(dataAdapter, regions, args)
@@ -186,7 +192,7 @@ export async function getScoreMatrix({
   // sequential — it writes into the shared matrix and has to stay interruptible.
   const counts = new Int32Array(totalWidth)
   for (const { name } of sources) {
-    const sums = rows[name]!
+    const sums = rows.get(name)!
     counts.fill(0)
     for (const [i, seg] of segments.entries()) {
       if (data.kind === 'raw') {

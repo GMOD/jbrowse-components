@@ -11,7 +11,12 @@ function setup() {
   const env = createTestEnvironment()
   env.mockRpcCall.mockImplementation((_sid: string, method: string) => {
     if (method === 'MultiWiggleGetScoreMatrix') {
-      return Promise.resolve({ a: [1, 2], b: [3, 4] })
+      return Promise.resolve(
+        new Map([
+          ['a', [1, 2]],
+          ['b', [3, 4]],
+        ]),
+      )
     }
     return Promise.resolve(
       method === 'MultiWiggleClusterScoreMatrix'
@@ -51,7 +56,7 @@ test('the manual tab offers no downloads until the matrix arrives', async () => 
   await loadSources(display)
 
   // hold the matrix so the pre-arrival state is observable at all
-  let deliver = (matrix: Record<string, number[]>) => {
+  let deliver = (matrix: Map<string, number[]>) => {
     void matrix
   }
   mockRpcCall.mockImplementation((_sid: string, method: string) =>
@@ -71,7 +76,12 @@ test('the manual tab offers no downloads until the matrix arrives', async () => 
 
   // an empty cluster.R is worse than no button
   expect(rscript().disabled).toBe(true)
-  deliver({ a: [1, 2], b: [3, 4] })
+  deliver(
+    new Map([
+      ['a', [1, 2]],
+      ['b', [3, 4]],
+    ]),
+  )
   await waitFor(() => {
     expect(rscript().disabled).toBe(false)
   })

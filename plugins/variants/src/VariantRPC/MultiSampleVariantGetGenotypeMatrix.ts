@@ -7,8 +7,9 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     MultiSampleVariantGetGenotypeMatrix: {
       args: GetGenotypeMatrixArgs
-      // NaN marks a no-call; see genotypeMatrixEncoding.ts
-      return: Record<string, Float32Array>
+      // NaN marks a no-call; see genotypeMatrixEncoding.ts. A Map because the
+      // row order is what the cluster order indexes into (see ClusterMatrix).
+      return: Map<string, Float32Array>
     }
   }
 }

@@ -26,7 +26,7 @@ test('serializes row names that carry newick metacharacters', async () => {
     'NA18536 HP0',
   ]
   const { order, tree } = await clusterMatrix({
-    data: Object.fromEntries(names.map((n, i) => [n, [i, i * 2]])),
+    data: new Map(names.map((n, i) => [n, [i, i * 2]])),
   })
 
   expect(leafNames(parseNewick(tree))).toHaveLength(names.length)
@@ -37,9 +37,26 @@ test('serializes row names that carry newick metacharacters', async () => {
   expect(leafNames(parseNewick(tree))).toEqual(order.map(i => names[i]))
 })
 
+// The other way the same invariant breaks, and the reason the matrix is a Map:
+// a plain object hoists integer-like keys into numeric order, so the rows a
+// caller built as 10, 2, 1 reached hclust as 1, 2, 10 and the indices it handed
+// back pointed at the wrong sources. Reachable from numbered bigWig filenames,
+// numeric VCF sample IDs, or a numeric partition field.
+test('keeps numeric-looking row names in the caller order', async () => {
+  const names = ['10', '2', '1']
+  const { order, tree } = await clusterMatrix({
+    data: new Map(names.map((n, i) => [n, [i, i * 2]])),
+  })
+  expect(leafNames(parseNewick(tree))).toEqual(order.map(i => names[i]))
+})
+
 test('leaves a plain row name unquoted', async () => {
   const { tree } = await clusterMatrix({
-    data: { GM12878: [0, 0], K562: [1, 1], HepG2: [5, 5] },
+    data: new Map([
+      ['GM12878', [0, 0]],
+      ['K562', [1, 1]],
+      ['HepG2', [5, 5]],
+    ]),
   })
   expect(tree).not.toContain("'")
   expect(new Set(leafNames(parseNewick(tree)))).toEqual(

@@ -8,7 +8,7 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     MultiWiggleGetScoreMatrix: {
       args: GetScoreMatrixArgs
-      return: Record<string, Float32Array>
+      return: Map<string, Float32Array<ArrayBuffer>>
     }
   }
 }
@@ -28,9 +28,10 @@ export class MultiWiggleGetScoreMatrix extends RpcMethodTypeWithFiltersAndRename
       args: { ...deserializedArgs, stopTokenCheck },
       pluginManager: this.pluginManager,
     })
-    return rpcResult(
-      matrix,
-      Object.values(matrix).map(arr => arr.buffer as ArrayBuffer),
-    )
+    const buffers: ArrayBuffer[] = []
+    for (const arr of matrix.values()) {
+      buffers.push(arr.buffer)
+    }
+    return rpcResult(matrix, buffers)
   }
 }

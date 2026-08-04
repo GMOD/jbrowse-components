@@ -116,8 +116,8 @@ export function readAltDosages(
 // call, so it contributes nothing to that site's term in the distance. This is
 // the standard treatment in genotype PCA / GRM work. A site with no calls at
 // all imputes to 0, i.e. drops out entirely.
-export function imputeMissingToSiteMean(rows: Record<string, Float32Array>) {
-  const arrays = Object.values(rows)
+export function imputeMissingToSiteMean(rows: Map<string, Float32Array>) {
+  const arrays = [...rows.values()]
   const numRows = arrays.length
   const numSites = arrays[0]?.length ?? 0
   if (numRows === 0 || numSites === 0) {
