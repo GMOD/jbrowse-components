@@ -1,5 +1,4 @@
 import {
-  INSERTION_COLOR,
   MIN_HEIGHT_FOR_TEXT,
   drawInsertionMarker,
   getInsertionType,
@@ -59,6 +58,14 @@ function regionWithDeltas(data: MultiRowRegionData | undefined) {
  * theirs), and a deletion gets the line-across-the-span idiom from the same
  * vocabulary.
  *
+ * `insertionColor` is passed in rather than imported for the same reason
+ * `drawMafInsertions` and `drawVariantInsertionGlyphs` take it: the caller has
+ * the theme and this does not. It must be `palette.insertion`, which is what
+ * the pileup paints, not alignments-core's `INSERTION_COLOR` — that constant is
+ * the theme-agnostic fallback in `DEFAULT_CIGAR_OP_DRAW_COLORS` for worker code
+ * with no theme to read, and it is a different purple. Hardcoding it here meant
+ * a custom theme moved the pileup and left these glyphs behind.
+ *
  * Shared by the on-screen overlay and the SVG export. It is an overlay rather
  * than part of the Canvas2D block painter because the blocks may have been drawn
  * by the GPU backend, which this deliberately does not touch: a positioned mark
@@ -69,6 +76,7 @@ export function drawMultiRowIndelGlyphs(
   regions: { get(key: number): MultiRowRegionData | undefined },
   renderBlocks: RenderBlock[],
   state: MultiRowRenderState,
+  insertionColor: string,
 ) {
   const {
     canvasWidth,
@@ -140,7 +148,7 @@ export function drawMultiRowIndelGlyphs(
             // reader still lacks is the magnitude, i.e. the label below.
             const barWidth = insertionBarWidth(delta, pxPerBp, h)
             if (barWidth > Math.abs(xb - xa)) {
-              ctx.fillStyle = INSERTION_COLOR
+              ctx.fillStyle = insertionColor
               drawInsertionMarker(ctx, xCenter, top, h, delta, pxPerBp)
             }
             if (getInsertionType(delta, pxPerBp) === 'large' && labelFits) {

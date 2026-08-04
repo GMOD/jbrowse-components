@@ -1,4 +1,5 @@
-import { INSERTION_COLOR, insertionBarWidth } from '@jbrowse/alignments-core'
+import { insertionBarWidth } from '@jbrowse/alignments-core'
+import { resolvePalette } from '@jbrowse/core/ui/palette'
 
 import { drawMultiRowIndelGlyphs } from './drawMultiRowIndelGlyphs.ts'
 
@@ -92,16 +93,25 @@ const wide: MultiRowRegionData = {
 
 const DELTA = 5000
 const BAR = insertionBarWidth(DELTA, 10, 20)
+// The theme's insertion color, which is also what plugin-alignments' pileup
+// paints -- the point of passing it in rather than hardcoding one here.
+const INSERTION_COLOR = resolvePalette().insertion
 
 function draw(
   region: MultiRowRegionData,
   overrides?: Partial<MultiRowRenderState>,
 ) {
   const { ctx, calls, texts } = mockCtx()
-  drawMultiRowIndelGlyphs(ctx, new Map([[0, region]]), [block], {
-    ...state,
-    ...overrides,
-  })
+  drawMultiRowIndelGlyphs(
+    ctx,
+    new Map([[0, region]]),
+    [block],
+    {
+      ...state,
+      ...overrides,
+    },
+    INSERTION_COLOR,
+  )
   return { calls, texts }
 }
 

@@ -1,4 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
+import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
   SvgClipRect,
@@ -93,6 +94,10 @@ function MultiRowSvgBody({
               self.rpcDataMap,
               self.renderBlocks,
               state,
+              // From the user-selected export theme rather than the live
+              // on-screen palette, so a light export of a dark session stays
+              // light — plugin-maf's rule for the same glyph.
+              resolvePalette({ configTheme: opts?.theme }).insertion,
             )
           }}
         />

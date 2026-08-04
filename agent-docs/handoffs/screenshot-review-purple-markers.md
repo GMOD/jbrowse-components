@@ -62,11 +62,23 @@ pileup on the main thread paints `palette.insertion` (#800080, via
 `drawVariantInsertionGlyphs` takes the color as an argument now — the overlay
 from `usePalette()`, the SVG export from the export theme.
 
-**Still out of step: plugin-canvas' `drawMultiRowIndelGlyphs`**, which hardcodes
-`INSERTION_COLOR` through the same two main-thread call sites (overlay +
-`renderSvg`) and could take the palette exactly the way the variants one now
-does. Left alone only because another agent had five files open in that
-directory at the time.
+plugin-canvas' `drawMultiRowIndelGlyphs` had the same hardcoded constant through
+the same two main-thread call sites and now takes the palette the same way. **No
+figure regenerated for it, and none needed to**: an exact-match scan of every
+committed PNG found zero pixels of `#c000c0` anywhere in the tree, because the
+only spec that ever drew these glyphs (`ecoli_minigraph_paths`) was retired —
+see the "NO FIGURE" note in `scripts/specs/graph.ts`. The change is covered by
+`drawMultiRowIndelGlyphs.test.ts` and by nothing on screen.
+
+Two traps in that scan, both hit:
+
+- **`chromhmm_hoxa_9celltype` looks like a false positive and is one.** Its
+  ChromHMM state color `#cf0bc6` sits inside a distance-900 ball around
+  `#c000c0`. For an "is this color used at all" audit, match exactly; keep the
+  tolerance ball for "did this figure move".
+- **numpy `int16` overflows on a squared channel difference** (255² = 65025
+  wraps negative), which passes any `< threshold` test and matched all 283
+  figures. Cast to `int32`.
 
 ## The MAF lane showing no insertion is the data, not a bug
 

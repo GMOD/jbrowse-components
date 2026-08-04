@@ -1,3 +1,4 @@
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { getContainingView } from '@jbrowse/core/util'
 import { OverlayCanvas } from '@jbrowse/render-core'
 import { observer } from 'mobx-react'
@@ -20,6 +21,7 @@ const MultiRowIndelGlyphOverlay = observer(function MultiRowIndelGlyphOverlay({
   model: LinearMultiRowFeatureDisplayModel
 }) {
   const view = getContainingView(model) as LinearGenomeViewModel
+  const palette = usePalette()
   const { indelGlyphRegions, renderBlocks, renderState, height } = model
   return indelGlyphRegions ? (
     <OverlayCanvas
@@ -31,6 +33,7 @@ const MultiRowIndelGlyphOverlay = observer(function MultiRowIndelGlyphOverlay({
           indelGlyphRegions,
           renderBlocks,
           renderState,
+          palette.insertion,
         )
       }}
     />
