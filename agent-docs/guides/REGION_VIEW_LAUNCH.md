@@ -157,6 +157,35 @@ graph track's own menu; synteny has no track-menu equivalent.
 
 ## Gotchas
 
+- **A CIGAR-less alignment is still clipped to the selection, by interpolation.**
+  `resolveSpans` (`buildSyntenyViewSpec.ts`) walks the CIGAR when there is one
+  and interpolates across the block when there is not — which is not a lesser
+  approximation of the walk, it is the geometry the block is already *drawn*
+  with (no per-base correspondence is known, so the ribbon is a straight
+  quadrilateral between the two blocks' corners). Framing on the whole block
+  instead, which is what this did, ignored the selection outright: a rubberband
+  over one gene of a megabase-long asm5 block opened the whole megabase on both
+  sides with no sign of it. Not an edge case — a PAF from minimap2 without `-c`
+  carries no `cg`, and neither do MashMap, MCScan or the coarse PIF tier. The
+  discovery RPC states no `lodMode`, and the PIF adapters read fine on no stated
+  mode, so the *region* launch always has CIGARs off a tiered PIF; the pairwise
+  right-click launch is where a coarse feature can reach this.
+- **A mate that is not a declared assembly is dropped from the launch, and the
+  dialog has to say so.** `assemblyForPanSNName` falls back to the bare PanSN
+  sample name when the config declares no assembly for it, so an all-vs-all file
+  hands back mates the display happily draws (tested, deliberate — you need only
+  load the assembly you are viewing) and the launch cannot open a panel on.
+  `pickMatesForRegion` therefore returns `{ mates, unconfigured }`: reporting
+  those as "nothing aligns to this region" contradicts the lanes the user can
+  see drawn in the track they just launched from. The sibling failure — the
+  *anchor's* own name not matching a PanSN prefix — is now an adapter error
+  (`noPanSNMatchError`, `plugins/comparative-adapters/src/util.ts`) rather than a
+  configured track that draws nothing and reports nothing: both all-vs-all
+  adapters answer `hasDataForRefName` with `true` unconditionally, so nothing
+  filters it out. The prefixes are the one thing no add-track form or config
+  editor lists, so the error carries them. Verified against every hosted E. coli
+  demo file before shipping the throw — `tabix -l <url> | cut -c2- | cut -d'#' -f1
+  | sort -u` is the check.
 - **A launch RPC that does not rename its region silently opens an empty view.**
   Fixed in the graph plugin (`GetSubgraph` now extends
   `RpcMethodTypeWithRenameRegion`), but read this before writing the next

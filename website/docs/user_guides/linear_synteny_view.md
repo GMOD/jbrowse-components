@@ -67,7 +67,12 @@ be an open track:
   pair that alignment describes. Its **Use CIGAR to map the current visible
   region to the target** option walks the alignment to find the interval that
   actually matches what you are looking at, rather than framing on the whole
-  block's endpoints. Worked through in [](/docs/tutorials/genomes_synteny).
+  block's endpoints. An alignment carrying no CIGAR — a PAF written without
+  minimap2's `-c`, MashMap, MCScan, the coarse tier of a PIF — offers the same
+  option as **Clip the panels to the current visible region**, estimating the
+  target interval by interpolating across the block, which is the straight line
+  its ribbon is already drawn as. Worked through in
+  [](/docs/tutorials/genomes_synteny).
 - The same **Linear synteny view (visible region)** entry sits in the view's
   hamburger menu under **Launch view**, for when the region you want is the
   whole view and there is nothing to select.

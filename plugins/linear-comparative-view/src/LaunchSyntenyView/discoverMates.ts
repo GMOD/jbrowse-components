@@ -2,12 +2,14 @@ import { readConfObject } from '@jbrowse/core/configuration'
 
 import { pickMatesForRegion } from './pickMatesForRegion.ts'
 
-import type { MateCandidate } from './pickMatesForRegion.ts'
+import type { MateDiscoveryResult } from './pickMatesForRegion.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel, Feature, Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
-export type MateDiscovery = (stopToken: StopToken) => Promise<MateCandidate[]>
+export type MateDiscovery = (
+  stopToken: StopToken,
+) => Promise<MateDiscoveryResult>
 
 // Which assemblies a region aligns to, and on which alignment each.
 //

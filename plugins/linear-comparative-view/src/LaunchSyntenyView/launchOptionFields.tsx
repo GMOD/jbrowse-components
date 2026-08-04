@@ -16,6 +16,46 @@ const useStyles = makeStyles()({
   },
 })
 
+// Narrow both panels to the slice of the alignment the user is looking at,
+// rather than framing them on the whole block's endpoints. Offered by the
+// pairwise launch, where the clicked block can be far wider than the view.
+//
+// Two labels because the two ways of resolving that slice are worth telling
+// apart: with a CIGAR the alignment is walked base by base, and without one the
+// block is interpolated across — which is all its straight ribbon claims anyway,
+// but is an estimate rather than a mapping and shouldn't be worded as one.
+export function ClipToRegionCheckbox({
+  hasCigar,
+  checked,
+  onChange,
+}: {
+  hasCigar: boolean
+  checked: boolean
+  onChange: (checked: boolean) => void
+}) {
+  const { classes } = useStyles()
+  return (
+    <LabeledCheckbox
+      className={classes.formControl}
+      size="small"
+      checked={checked}
+      onChange={val => {
+        onChange(val)
+      }}
+      label={
+        hasCigar ? (
+          'Use CIGAR to map the current visible region to the target'
+        ) : (
+          <span>
+            Clip the panels to the current visible region{' '}
+            <HelpTooltip help="This alignment carries no CIGAR, so the matching interval on the target is estimated by interpolating across the block — the same straight line its ribbon is drawn as" />
+          </span>
+        )
+      }
+    />
+  )
+}
+
 export function FlipInvertedTargetsCheckbox({
   checked,
   onChange,

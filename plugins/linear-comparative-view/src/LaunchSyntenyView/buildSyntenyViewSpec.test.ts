@@ -154,34 +154,82 @@ test('a zero-width mapping still spans at least one base', () => {
   ).toEqual(['ctgA:1,001', 'ctgB:5,001'])
 })
 
-test('no CIGAR (coarse tier) ignores the region and uses the whole block', () => {
-  expect(
-    locs(
-      buildSyntenyViewSpec({
-        features: [
-          new SimpleFeature({
-            uniqueId: 'f1',
-            assemblyName: 'volvox',
-            refName: 'ctgA',
-            start: 1000,
-            end: 2000,
-            strand: 1,
-            mate: {
-              assemblyName: 'volvox2',
-              refName: 'ctgB',
-              start: 5000,
-              end: 6000,
-            },
-          }),
-        ],
-        windowSize: 0,
-        trackId: 't1',
-        anchorAssembly: 'volvox',
-        region: { start: 1200, end: 1400 },
-        flipReversedMates: false,
-      }),
-    ),
-  ).toEqual(['ctgA:1,001..2,000', 'ctgB:5,001..6,000'])
+// A block with no CIGAR (a PAF written without minimap2's `-c`, MashMap, MCScan,
+// the coarse PIF tier) is drawn as a straight ribbon between its two corners, so
+// the region maps onto it by interpolation — the same answer the picture gives.
+// Framing on the whole block instead ignored the selection outright.
+describe('no CIGAR', () => {
+  function noCigarFeature({
+    strand = 1,
+    mateStart = 5000,
+    mateEnd = 6000,
+  }: { strand?: number; mateStart?: number; mateEnd?: number } = {}) {
+    return new SimpleFeature({
+      uniqueId: 'f1',
+      assemblyName: 'volvox',
+      refName: 'ctgA',
+      start: 1000,
+      end: 2000,
+      strand,
+      mate: {
+        assemblyName: 'volvox2',
+        refName: 'ctgB',
+        start: mateStart,
+        end: mateEnd,
+      },
+    })
+  }
+
+  const args = {
+    windowSize: 0,
+    trackId: 't1',
+    anchorAssembly: 'volvox',
+    flipReversedMates: false,
+  }
+
+  test('the region maps onto the block proportionally', () => {
+    // 1200-1400 is 20%-40% along a 1000bp block, and the mate is half as long,
+    // so it lands 100-200bp into a mate that starts at 5000
+    expect(
+      locs(
+        buildSyntenyViewSpec({
+          ...args,
+          features: [noCigarFeature({ mateEnd: 5500 })],
+          region: { start: 1200, end: 1400 },
+        }),
+      ),
+    ).toEqual(['ctgA:1,201..1,400', 'ctgB:5,101..5,200'])
+  })
+
+  test('a reverse-strand block interpolates from the mate end backwards', () => {
+    expect(
+      locs(
+        buildSyntenyViewSpec({
+          ...args,
+          features: [noCigarFeature({ strand: -1, mateEnd: 5500 })],
+          region: { start: 1200, end: 1400 },
+        }),
+      ),
+    ).toEqual(['ctgA:1,201..1,400', 'ctgB:5,301..5,400'])
+  })
+
+  test('a region wider than the block still uses the whole block', () => {
+    expect(
+      locs(
+        buildSyntenyViewSpec({
+          ...args,
+          features: [noCigarFeature()],
+          region: { start: 0, end: 100000 },
+        }),
+      ),
+    ).toEqual(['ctgA:1,001..2,000', 'ctgB:5,001..6,000'])
+  })
+
+  test('no region at all is still the whole block', () => {
+    expect(
+      locs(buildSyntenyViewSpec({ ...args, features: [noCigarFeature()] })),
+    ).toEqual(['ctgA:1,001..2,000', 'ctgB:5,001..6,000'])
+  })
 })
 
 // The multi-way launch: one anchor panel plus one panel per mate at the locus,

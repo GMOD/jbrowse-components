@@ -8,7 +8,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 
 import LaunchSyntenyViewForRegionDialog from './LaunchSyntenyViewForRegionDialog.tsx'
 
-import type { MateCandidate } from './pickMatesForRegion.ts'
+import type { MateDiscoveryResult } from './pickMatesForRegion.ts'
 import type { AbstractSessionModel, Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
@@ -19,21 +19,51 @@ const region: Region = {
   end: 50000,
 }
 
-function mates(...assemblyNames: string[]): MateCandidate[] {
-  return assemblyNames.map(assemblyName => ({
-    assemblyName,
-    feature: new SimpleFeature({
-      uniqueId: assemblyName,
-      refName: 'ctgA',
-      start: 0,
-      end: 100,
-      mate: { refName: 'ctgB', start: 0, end: 100, assemblyName },
-    }),
-  }))
+function mates(...assemblyNames: string[]): MateDiscoveryResult {
+  return {
+    mates: assemblyNames.map(assemblyName => ({
+      assemblyName,
+      feature: new SimpleFeature({
+        uniqueId: assemblyName,
+        refName: 'ctgA',
+        start: 0,
+        end: 100,
+        mate: { refName: 'ctgB', start: 0, end: 100, assemblyName },
+      }),
+    })),
+    unconfigured: [],
+  }
+}
+
+// One mate whose alignment covers the middle of the selection, on the minus
+// strand and against a mate contig far from where the anchor sits.
+function invertedMate(): MateDiscoveryResult {
+  return {
+    unconfigured: [],
+    mates: [
+      {
+        assemblyName: 'volvox_inv',
+        feature: new SimpleFeature({
+          uniqueId: 'volvox_inv',
+          refName: 'ctgA',
+          start: 10000,
+          end: 20000,
+          strand: -1,
+          CIGAR: '10000=',
+          mate: {
+            refName: 'ctgZ',
+            start: 800000,
+            end: 810000,
+            assemblyName: 'volvox_inv',
+          },
+        }),
+      },
+    ],
+  }
 }
 
 function renderDialog(
-  discoverMates: (stopToken: StopToken) => Promise<MateCandidate[]>,
+  discoverMates: (stopToken: StopToken) => Promise<MateDiscoveryResult>,
 ) {
   return renderDialogFor(
     [{ trackId: 't1', name: 'all vs all' }],
@@ -45,7 +75,7 @@ function renderDialogFor(
   tracks: { trackId: string; name: string }[],
   discoverMatesFor: (
     trackId: string,
-  ) => (stopToken: StopToken) => Promise<MateCandidate[]>,
+  ) => (stopToken: StopToken) => Promise<MateDiscoveryResult>,
 ) {
   return render(
     <ThemeProvider theme={createJBrowseTheme()}>
@@ -68,7 +98,7 @@ test('dismissing the dialog stops the discovery it started', () => {
   const { unmount } = renderDialog(stopToken => {
     captured = stopToken
     // never settles: the fetch is still in flight when the dialog closes
-    return new Promise<MateCandidate[]>(() => {})
+    return new Promise<MateDiscoveryResult>(() => {})
   })
 
   expect(captured).toBeDefined()
@@ -126,6 +156,73 @@ test('the region size is stated alongside the locstring', async () => {
   ).toBeTruthy()
 })
 
+// The assembly name alone says nothing about where in that assembly the
+// selection lands, which is what decides whether a panel is worth opening. The
+// locus shown is resolved exactly as the launch resolves it — clipped through
+// the CIGAR — so it is a preview of the panel rather than the whole block.
+test('each mate row shows the locus its panel will open on', async () => {
+  renderDialog(() => Promise.resolve(invertedMate()))
+  expect(await screen.findByText('ctgZ:800,001..810,000 (-)')).toBeTruthy()
+})
+
+// A whole-chromosome selection makes this a long wait, and a bare spinner in a
+// dialog that has just changed dataset says nothing about what it is doing.
+test('the discovery in flight says what it is waiting on', () => {
+  renderDialog(() => new Promise<MateDiscoveryResult>(() => {}))
+  expect(
+    screen.getByText(/Finding assemblies that align to this region/),
+  ).toBeTruthy()
+})
+
+// An all-vs-all file holds every sample it was built with, and only the ones the
+// track declares an assembly for can become a panel. Reporting the rest as
+// "nothing aligns here" contradicts the lanes the user can see drawn in the
+// track they launched from, which is where they clicked.
+describe('mates with no declared assembly', () => {
+  test('the empty case says they aligned rather than that nothing did', async () => {
+    renderDialog(() =>
+      Promise.resolve({ mates: [], unconfigured: ['HG002#1', 'HG005#2'] }),
+    )
+    expect(
+      await screen.findByText(
+        /all vs all aligns here only to HG002#1, HG005#2, which this track declares no assembly for/,
+      ),
+    ).toBeTruthy()
+    expect(screen.queryByText(/Nothing in/)).toBeNull()
+  })
+
+  test('alongside real panels they are a note, not the whole message', async () => {
+    renderDialog(() =>
+      Promise.resolve({
+        ...mates('volvox_ins'),
+        unconfigured: ['HG002#1'],
+      }),
+    )
+    expect(await screen.findByLabelText('volvox_ins')).toBeTruthy()
+    expect(
+      screen.getByText(/HG002#1 also align here, but this track declares no/),
+    ).toBeTruthy()
+  })
+
+  // a locus on a 90-haplotype file would otherwise spill the dialog
+  test('a long list is capped with a count', async () => {
+    renderDialog(() =>
+      Promise.resolve({
+        mates: [],
+        unconfigured: ['a', 'b', 'c', 'd', 'e', 'f', 'g'],
+      }),
+    )
+    expect(await screen.findByText(/a, b, c, d, e, and 2 more/)).toBeTruthy()
+  })
+
+  test('none of them means the plain message', async () => {
+    renderDialog(() => Promise.resolve({ mates: [], unconfigured: [] }))
+    expect(
+      await screen.findByText('Nothing in all vs all aligns to this region'),
+    ).toBeTruthy()
+  })
+})
+
 // The dataset list is session-wide and can run to dozens, so it is a field here
 // rather than a menu of them — which only works if picking one refetches the
 // panels, since the panel list is what that dataset aligns to.
@@ -161,7 +258,7 @@ test('switching dataset stops the discovery in flight', async () => {
     trackId => stopToken => {
       tokens[trackId] = stopToken
       return trackId === 't1'
-        ? new Promise<MateCandidate[]>(() => {})
+        ? new Promise<MateDiscoveryResult>(() => {})
         : Promise.resolve(mates('volvox_del'))
     },
   )

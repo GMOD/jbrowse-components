@@ -11,6 +11,7 @@ import {
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { PluggableElementType } from '@jbrowse/core/pluggableElementTypes'
 import type ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
+import type { Region } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const VISIBLE_LABEL = 'Linear synteny view (visible region)'
@@ -43,24 +44,30 @@ export default function LinearViewMenuItemsF(pluginManager: PluginManager) {
           (self: LinearGenomeViewModel) => {
             const superMenuItems = self.menuItems
             const superLaunchMenuItems = self.rubberBandLaunchMenuItems
-            // the dialog's dataset list is session-wide, so what is open here is
-            // what sorts it — see launchableTracks
-            const openTrackIds = () =>
-              self.tracks.map(track => getConf(track, 'trackId') as string)
-            // and what is open here is also what the launched view's own panel
-            // for this assembly opens with — read at menu time, so it is the
-            // track list as of the launch rather than as of the extend()
+            // The two entries differ only in their label and which region they
+            // read; everything else about the offer is the view's current state,
+            // resolved at menu time so it is what is open as of the launch
+            // rather than as of the extend(). `openTrackIds` sorts the dialog's
+            // session-wide dataset list (see launchableTracks) and the tracks
+            // are what the launched view's panel for this assembly opens with.
+            const menuItemsFor = (label: string, region: Region | undefined) =>
+              syntenyRegionMenuItems({
+                label,
+                region,
+                session: getSession(self),
+                openTrackIds: self.tracks.map(
+                  track => getConf(track, 'trackId') as string,
+                ),
+                anchorTracks: anchorPanelTracks(self.tracks),
+              })
             return {
               views: {
                 menuItems() {
                   const items = superMenuItems()
-                  for (const item of syntenyRegionMenuItems({
-                    label: VISIBLE_LABEL,
-                    region: widestRegion(self.dynamicBlocks.contentBlocks),
-                    session: getSession(self),
-                    openTrackIds: openTrackIds(),
-                    anchorTracks: anchorPanelTracks(self.tracks),
-                  })) {
+                  for (const item of menuItemsFor(
+                    VISIBLE_LABEL,
+                    widestRegion(self.dynamicBlocks.contentBlocks),
+                  )) {
                     pushLaunchViewMenuItem(items, item)
                   }
                   return items
@@ -71,18 +78,15 @@ export default function LinearViewMenuItemsF(pluginManager: PluginManager) {
                 rubberBandLaunchMenuItems() {
                   return [
                     ...superLaunchMenuItems(),
-                    ...syntenyRegionMenuItems({
-                      label: SELECTION_LABEL,
-                      region: widestRegion(
+                    ...menuItemsFor(
+                      SELECTION_LABEL,
+                      widestRegion(
                         self.getSelectedRegions(
                           self.leftOffset,
                           self.rightOffset,
                         ),
                       ),
-                      session: getSession(self),
-                      openTrackIds: openTrackIds(),
-                      anchorTracks: anchorPanelTracks(self.tracks),
-                    }),
+                    ),
                   ]
                 },
               },

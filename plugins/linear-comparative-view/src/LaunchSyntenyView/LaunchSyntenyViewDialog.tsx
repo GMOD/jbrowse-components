@@ -1,10 +1,10 @@
 import { useState } from 'react'
 
-import { LabeledCheckbox, SubmitDialog } from '@jbrowse/core/ui'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { SubmitDialog } from '@jbrowse/core/ui'
 
 import { launchSyntenyViewForFeatures } from './buildSyntenyViewSpec.ts'
 import {
+  ClipToRegionCheckbox,
   CopySourceTracksCheckbox,
   DEFAULT_WINDOW_SIZE,
   FlipInvertedTargetsCheckbox,
@@ -14,13 +14,6 @@ import {
 import type { RegionOfInterest } from './buildSyntenyViewSpec.ts'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 import type { TrackInit } from '@jbrowse/plugin-linear-genome-view'
-
-const useStyles = makeStyles()({
-  formControl: {
-    margin: 10,
-    border: '1px solid #ccc',
-  },
-})
 
 // The pairwise launch: one clicked alignment, one target panel. Launching every
 // assembly a locus aligns to is the region-anchored flow instead — see
@@ -44,7 +37,6 @@ export default function LaunchSyntenyViewDialog({
   trackId: string
   handleClose: () => void
 }) {
-  const { classes } = useStyles()
   const inverted = feature.get('strand') === -1
   const hasCIGAR = !!feature.get('CIGAR')
   const [flipReversedMates, setFlipReversedMates] = useState(inverted)
@@ -77,15 +69,13 @@ export default function LaunchSyntenyViewDialog({
         }
       }}
     >
-      {region && hasCIGAR ? (
-        <LabeledCheckbox
-          className={classes.formControl}
-          size="small"
+      {region ? (
+        <ClipToRegionCheckbox
+          hasCigar={hasCIGAR}
           checked={useRegionOfInterest}
           onChange={val => {
             setUseRegionOfInterest(val)
           }}
-          label="Use CIGAR to map the current visible region to the target"
         />
       ) : null}
       {inverted ? (

@@ -83,7 +83,7 @@ direction. **Manual** is where you pick each axis, and a synteny file, by hand.
 <Figure caption="The 26695 vs J99 alignment, 26695 on the X-axis and J99 on the Y-axis. The backbone runs anti-diagonal because the two assemblies were deposited in opposite orientations, and the pieces sitting off it are the rearrangements between the strains." src="/img/sv_synteny/dotplot.png" />
 
 To open any of those pieces at base resolution, drag a box across it, then
-right-click inside the box and choose **Linear synteny view of selection**.
+right-click inside the box and choose **Linear synteny view**.
 
 ## Stacking the three strains
 
@@ -195,10 +195,7 @@ from [nodejs.org](https://nodejs.org/).
 
 ## References
 
-Diesh, C., Stevens, G. J., Xie, P., et al. (2024).
-[Setting Up the JBrowse 2 Genome Browser](https://doi.org/10.1002/cpz1.1120).
-_Current Protocols_, _4_(8), e1120.
-
-Diesh, C., Stevens, G. J., Xie, P., et al. (2023).
-[JBrowse 2: A Modular Genome Browser with Views of Synteny and Structural Variation](https://doi.org/10.1186/s13059-023-02914-z).
-_Genome Biology_, _24_(1), 74.
+- Diesh et al. (2024).
+  [Setting Up the JBrowse 2 Genome Browser](https://doi.org/10.1002/cpz1.1120)
+- Diesh et al. (2023).
+  [JBrowse 2: A Modular Genome Browser with Views of Synteny and Structural Variation](https://doi.org/10.1186/s13059-023-02914-z)

@@ -1,4 +1,4 @@
-import { canLaunchSyntenyForMate } from './buildSyntenyViewSpec.ts'
+import { canLaunchSyntenyForMate } from './canLaunchSyntenyForMate.ts'
 
 describe('canLaunchSyntenyForMate', () => {
   const trackAssemblyNames = ['volvox', 'volvox_del2']

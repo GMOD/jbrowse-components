@@ -42,7 +42,7 @@ function names(
     region,
     trackAssemblyNames: TRACK_ASSEMBLIES,
     anchorAssembly,
-  }).map(m => m.assemblyName)
+  }).mates.map(m => m.assemblyName)
 }
 
 test('one panel per mate assembly, in the track declaration order', () => {
@@ -65,7 +65,7 @@ test('the widest alignment wins when an assembly has several at the locus', () =
     trackAssemblyNames: TRACK_ASSEMBLIES,
     anchorAssembly: 'K12',
   })
-  expect(picked.map(m => m.feature.id())).toEqual(['wide'])
+  expect(picked.mates.map(m => m.feature.id())).toEqual(['wide'])
 })
 
 // overlap is measured against the region, not against the alignment's own
@@ -81,7 +81,7 @@ test('overlap is measured against the region, not the alignment length', () => {
     trackAssemblyNames: TRACK_ASSEMBLIES,
     anchorAssembly: 'K12',
   })
-  expect(picked.map(m => m.feature.id())).toEqual(['covering'])
+  expect(picked.mates.map(m => m.feature.id())).toEqual(['covering'])
 })
 
 test('the self lane is dropped', () => {
@@ -101,6 +101,45 @@ test('a mate that is not a declared assembly is dropped', () => {
   ).toEqual([])
 })
 
+// Dropped, but not silently: an all-vs-all file holds every sample it was built
+// with, so a locus can draw a dozen lanes in the track and offer no panel at
+// all. Reporting that as "nothing aligns here" contradicts what the user is
+// looking at, so the names come back for the dialog to say otherwise.
+test('the mates with no declared assembly are reported, deduped and sorted', () => {
+  expect(
+    pickMatesForRegion({
+      features: [
+        feat({ id: 'x', start: 1000, end: 2000, mateAssembly: 'sampleZ' }),
+        feat({ id: 'y', start: 1000, end: 1500, mateAssembly: 'sampleZ' }),
+        feat({ id: 'z', start: 1000, end: 2000, mateAssembly: 'sampleA' }),
+        feat({ id: 'ok', start: 1000, end: 2000, mateAssembly: 'Sakai' }),
+      ],
+      region,
+      trackAssemblyNames: TRACK_ASSEMBLIES,
+      anchorAssembly: 'K12',
+    }),
+  ).toMatchObject({
+    mates: [{ assemblyName: 'Sakai' }],
+    unconfigured: ['sampleA', 'sampleZ'],
+  })
+})
+
+// the self lane is not "unconfigured" — it is deliberately excluded, and naming
+// the anchor's own assembly as something that cannot open a panel would be
+// nonsense next to the anchor row
+test('the dropped self lane is not reported as unconfigured', () => {
+  expect(
+    pickMatesForRegion({
+      features: [
+        feat({ id: 'self', start: 1000, end: 2000, mateAssembly: 'K12' }),
+      ],
+      region,
+      trackAssemblyNames: TRACK_ASSEMBLIES,
+      anchorAssembly: 'K12',
+    }).unconfigured,
+  ).toEqual([])
+})
+
 // A track declaring one assembly twice is a genome against its own paralogy, so
 // its self lane is the comparison rather than noise beside one. The pairwise
 // right-click launch always allowed it; dropping it here left the region launch
@@ -114,6 +153,6 @@ test('a self-alignment track keeps its own lane, once', () => {
       region,
       trackAssemblyNames: ['K12', 'K12'],
       anchorAssembly: 'K12',
-    }).map(m => m.assemblyName),
+    }).mates.map(m => m.assemblyName),
   ).toEqual(['K12'])
 })

@@ -11,7 +11,7 @@ import { allSessionTracks } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
 import { anchorPanelTracks } from '../LaunchSyntenyView/anchorPanelTracks.ts'
-import { canLaunchSyntenyForMate } from '../LaunchSyntenyView/buildSyntenyViewSpec.ts'
+import { canLaunchSyntenyForMate } from '../LaunchSyntenyView/canLaunchSyntenyForMate.ts'
 import { getMate } from '../syntenyMate.ts'
 
 import type { SyntenyFeatureDetailModel } from './types.ts'

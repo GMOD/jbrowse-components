@@ -19,7 +19,10 @@ import {
   Typography,
 } from '@mui/material'
 
-import { launchSyntenyViewForFeatures } from './buildSyntenyViewSpec.ts'
+import {
+  launchSyntenyViewForFeatures,
+  resolvedMateSpan,
+} from './buildSyntenyViewSpec.ts'
 import {
   CollapsePanelsCheckbox,
   CopySourceTracksCheckbox,
@@ -44,7 +47,7 @@ import type { TrackInit } from '@jbrowse/plugin-linear-genome-view'
 // produce a dozen; at MUI's default checkbox padding that list alone is taller
 // than the rest of the dialog. Rows are compacted to a single text line each
 // (small checkbox, no vertical margin) so the whole list stays readable at once.
-const useStyles = makeStyles()({
+const useStyles = makeStyles()(theme => ({
   panels: {
     margin: 10,
     maxHeight: 260,
@@ -58,7 +61,56 @@ const useStyles = makeStyles()({
     flex: 1,
     margin: 0,
   },
-})
+  // outside the checkbox's own label, so the row's accessible name stays the
+  // assembly — the locus is what the panel will show, not what it is
+  panelLocus: {
+    marginRight: theme.spacing(1),
+    whiteSpace: 'nowrap',
+    color: theme.palette.text.secondary,
+  },
+  progress: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+  },
+}))
+
+// The mate interval a row's panel will open on, unpadded. Unpadded because the
+// window size is a live field further down the dialog and this is meant to say
+// where in the mate assembly the region lands, not to restate that arithmetic;
+// the anchor row contributes nothing, since its locus is the dialog's own title
+// line. The strand is spelled out rather than left to the locstring's `[rev]`,
+// which means "this panel opens flipped" and so depends on the checkbox below.
+function PanelLocus({
+  row,
+  region,
+  className,
+}: {
+  row: PanelRow
+  region: Region
+  className?: string
+}) {
+  const span =
+    row.kind === 'anchor' ? undefined : resolvedMateSpan(row.feature, region)
+  return span ? (
+    <Typography variant="body2" className={className}>
+      {assembleLocString({
+        refName: span.refName,
+        start: span.start,
+        end: span.end,
+      })}
+      {span.reversed ? ' (-)' : ''}
+    </Typography>
+  ) : null
+}
+
+// A locus on an all-vs-all file can reach dozens of samples the config declares
+// no assembly for, so the list is capped rather than spilling the dialog.
+function nameList(names: string[], max = 5) {
+  const shown = names.slice(0, max)
+  const rest = names.length - shown.length
+  return `${shown.join(', ')}${rest > 0 ? `, and ${rest} more` : ''}`
+}
 
 export default function LaunchSyntenyViewForRegionDialog({
   session,
@@ -79,6 +131,7 @@ export default function LaunchSyntenyViewForRegionDialog({
   const { classes } = useStyles()
   const [trackId, setTrackId] = useState(tracks[0]!.trackId)
   const [rows, setRows] = useState<PanelRow[] | undefined>()
+  const [unconfigured, setUnconfigured] = useState<string[]>([])
   const [error, setError] = useState<unknown>()
   const [flipReversedMates, setFlipReversedMates] = useState(true)
   const [collapseEmptyRows, setCollapseEmptyRows] = useState(true)
@@ -100,14 +153,16 @@ export default function LaunchSyntenyViewForRegionDialog({
     const stopToken = createStopToken()
     let alive = true
     setRows(undefined)
+    setUnconfigured([])
     setError(undefined)
     discoverMatesFor(trackId)(stopToken)
-      .then(candidates => {
+      .then(result => {
         if (alive) {
           // seeded once from the fetch rather than derived every render,
           // because from here on the list is the user's: they reorder it and
           // uncheck rows
-          setRows(toPanelRows(region.assemblyName, candidates))
+          setRows(toPanelRows(region.assemblyName, result.mates))
+          setUnconfigured(result.unconfigured)
         }
       })
       .catch((e: unknown) => {
@@ -186,12 +241,27 @@ export default function LaunchSyntenyViewForRegionDialog({
         so the order decides which comparisons the view shows.
       </Typography>
       {error ? <ErrorMessage error={error} /> : null}
-      {!rows && !error ? <CircularProgress size={20} /> : null}
-      {/* names the dataset rather than saying "this dataset": with the selector
-       above, the fix is to try another one */}
+      {/* named, not a bare spinner: this is a feature fetch over the whole
+       selection, which for a visible-region launch at chromosome zoom is a long
+       enough wait to want to know what is being waited on */}
+      {!rows && !error ? (
+        <div className={classes.progress}>
+          <CircularProgress size={20} />
+          <Typography variant="body2">
+            Finding assemblies that align to this region...
+          </Typography>
+        </div>
+      ) : null}
+      {/* Names the dataset rather than saying "this dataset": with the selector
+       above, the fix is to try another one — unless the dataset does align here
+       and simply reaches nothing openable, which is a different problem with a
+       different fix, and saying "nothing aligns" for it contradicts the lanes
+       the user can see drawn in the track they launched from. */}
       {rows && !mates.length ? (
         <Typography variant="body2">
-          Nothing in {track.name} aligns to this region
+          {unconfigured.length > 0
+            ? `${track.name} aligns here only to ${nameList(unconfigured)}, which this track declares no assembly for. A panel can only open on an assembly JBrowse has loaded.`
+            : `Nothing in ${track.name} aligns to this region`}
         </Typography>
       ) : null}
       <div className={classes.panels}>
@@ -222,6 +292,16 @@ export default function LaunchSyntenyViewForRegionDialog({
                   : row.assemblyName
               }
             />
+            {/* Where this panel will actually open, resolved the same way the
+             launch resolves it — the assembly name alone says nothing about
+             which contig the region reaches, whether the match is inverted, or
+             that a mate's alignment stops short of the selection. The anchor
+             row's own locus is the line at the top of the dialog. */}
+            <PanelLocus
+              row={row}
+              region={region}
+              className={classes.panelLocus}
+            />
             <IconButton
               size="small"
               aria-label={`Move ${row.assemblyName} up`}
@@ -245,6 +325,15 @@ export default function LaunchSyntenyViewForRegionDialog({
           </div>
         ))}
       </div>
+      {/* Why the list is shorter than the lanes drawn in the track this was
+       launched from: an all-vs-all file carries every sample it was built with,
+       and only the ones the track declares an assembly for can be a panel. */}
+      {unconfigured.length > 0 && mates.length > 0 ? (
+        <Typography variant="body2">
+          {nameList(unconfigured)} also align here, but this track declares no
+          assembly for them, so they get no panel.
+        </Typography>
+      ) : null}
       {/* an all-vs-all locus can list a dozen assemblies, all checked, and
        picking two of them out is otherwise ten clicks of unchecking */}
       {rows && rows.length > 3 ? (

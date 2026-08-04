@@ -80,6 +80,8 @@ test('what comes back is reduced to one panel per declared mate assembly', async
     // not a declared assembly of the track: a one-vs-all PanSN sample label
     feature('HG002#1'),
   ])
-  const mates = await discover(createStopToken())
+  const { mates, unconfigured } = await discover(createStopToken())
   expect(mates.map(m => m.assemblyName)).toEqual(['volvox_ins'])
+  // it aligned here, it just cannot be a panel — the dialog says which
+  expect(unconfigured).toEqual(['HG002#1'])
 })

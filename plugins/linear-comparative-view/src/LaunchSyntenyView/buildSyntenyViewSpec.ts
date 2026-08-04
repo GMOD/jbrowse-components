@@ -24,19 +24,6 @@ function stringField(feature: Feature, key: string) {
   return typeof val === 'string' ? val : undefined
 }
 
-// A synteny view can be launched against any assembly the track spans, i.e. one
-// of the track's declared assemblyNames. This is static config, so it holds
-// whether or not the assembly is loaded yet — an unloaded one resolves on demand
-// (e.g. via a connection) when the view opens. A one-vs-all mate that is only a
-// PanSN sample label rather than a listed assembly is absent from assemblyNames,
-// so the launch option stays hidden for it.
-export function canLaunchSyntenyForMate(
-  trackAssemblyNames: string[],
-  mateAssembly: string | undefined,
-) {
-  return mateAssembly !== undefined && trackAssemblyNames.includes(mateAssembly)
-}
-
 // Given a CIGAR-walked offset `mateX` along the mate axis, place it back on
 // genomic coordinates. The mate's genomic span is mate.start..mate.end. For
 // forward-strand alignments we walk forward from mate.start; for reverse
@@ -51,13 +38,26 @@ function mateOffsetToGenomic(
 }
 
 // The two spans one alignment contributes: its slice of the anchor axis and the
-// matching slice of its mate. With a region of interest and a CIGAR, both sides
-// are narrowed to the visible slice of the alignment — the feature axis
-// directly, the mate axis by walking the CIGAR — otherwise the whole block is
-// used. Offsets past either end of the CIGAR are capped by findPosInCigar, and a
+// matching slice of its mate. Without a region of interest the whole block is
+// used; with one, both sides are narrowed to the slice the user asked for — the
+// feature axis directly, the mate axis by walking the CIGAR.
+//
+// Offsets past either end of the CIGAR are capped by findPosInCigar, and a
 // region starting left of the feature yields a negative offset that breaks the
 // walk immediately, so the result is always clipped to the block without needing
 // an explicit intersection.
+//
+// **An alignment with no CIGAR is still clipped**, by interpolating across the
+// block instead of walking it. That is not a lesser approximation of the walk —
+// it is exactly the geometry such a block is *drawn* with: no per-base
+// correspondence is known, so the ribbon is a straight quadrilateral between the
+// two blocks' corners, and reading the mate position off that straight edge is
+// the same answer the picture gives. CIGAR-less blocks are the common case, not
+// an edge one: a PAF from minimap2 without `-c` carries no `cg` tag, and neither
+// do MashMap, MCScan or the coarse PIF tier. Framing every panel on the whole
+// block instead meant a rubberband over one gene of a megabase-long asm5 block
+// opened the whole megabase, on both sides, with no sign the selection had been
+// ignored.
 function resolveSpans({
   feature,
   mate,
@@ -70,31 +70,68 @@ function resolveSpans({
   const cigar = stringField(feature, 'CIGAR')
   const strand = feature.get('strand')
   const featStart = feature.get('start')
-  let spans: {
-    featStart: number
-    featEnd: number
-    mateStart: number
-    mateEnd: number
+  const featEnd = feature.get('end')
+  if (!region) {
+    return {
+      featStart,
+      featEnd,
+      mateStart: mate.start,
+      mateEnd: mate.end,
+    }
   }
-  if (region && cigar) {
+  if (cigar) {
     const p = parseCigar2(cigar)
     const [fStartX, mStartX] = findPosInCigar(p, region.start - featStart)
     const [fEndX, mEndX] = findPosInCigar(p, region.end - featStart)
-    spans = {
+    return {
       featStart: featStart + fStartX,
       featEnd: featStart + fEndX,
       mateStart: mateOffsetToGenomic(mate, mStartX, strand),
       mateEnd: mateOffsetToGenomic(mate, mEndX, strand),
     }
-  } else {
-    spans = {
-      featStart,
-      featEnd: feature.get('end'),
-      mateStart: mate.start,
-      mateEnd: mate.end,
-    }
   }
-  return spans
+  // clamped to the block first, so a selection wider than the alignment (or
+  // starting left of it) lands back on the block's own ends rather than
+  // extrapolating off either side of the mate
+  const clamp = (x: number) => Math.min(Math.max(x, featStart), featEnd)
+  const lo = clamp(region.start)
+  const hi = clamp(region.end)
+  const featLen = featEnd - featStart
+  const mateLen = mate.end - mate.start
+  // a zero-length block has no interior to interpolate across; both ends map to
+  // the mate's own start, which the caller widens to one base
+  const mateOffset = (x: number) =>
+    featLen > 0 ? ((x - featStart) / featLen) * mateLen : 0
+  return {
+    featStart: lo,
+    featEnd: hi,
+    mateStart: mateOffsetToGenomic(mate, mateOffset(lo), strand),
+    mateEnd: mateOffsetToGenomic(mate, mateOffset(hi), strand),
+  }
+}
+
+/**
+ * Where one alignment's panel will open, before window padding — the same
+ * resolution the launch itself runs, so the region dialog's panel list can
+ * preview the view it is about to build instead of restating the whole block.
+ * `undefined` for a feature with no mate, which is not a panel.
+ */
+export function resolvedMateSpan(
+  feature: Feature,
+  region: RegionOfInterest | undefined,
+) {
+  const mate = getMate(feature)
+  if (!mate) {
+    return undefined
+  }
+  const { mateStart, mateEnd } = resolveSpans({ feature, mate, region })
+  return {
+    refName: mate.refName,
+    // a reverse-strand walk counts down, so the two ends arrive swapped
+    start: Math.floor(Math.min(mateStart, mateEnd)),
+    end: Math.ceil(Math.max(mateStart, mateEnd)),
+    reversed: feature.get('strand') === -1,
+  }
 }
 
 // Pad a span by windowSize and render it as a locstring. assembleLocString is
