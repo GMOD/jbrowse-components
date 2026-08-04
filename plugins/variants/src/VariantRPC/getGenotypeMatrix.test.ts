@@ -11,8 +11,12 @@ jest.mock('@jbrowse/core/data_adapters/getFeatureAdapter', () => ({
 
 // A feature carrying only the genotypes Record: the fallback path, taken by any
 // adapter that isn't @gmod/vcf-backed.
-function makeFeature(id: string, genotypes: Record<string, string>): Feature {
-  const data: Record<string, unknown> = { genotypes }
+function makeFeature(
+  id: string,
+  genotypes: Record<string, string>,
+  ALT: string[] = ['T'],
+): Feature {
+  const data: Record<string, unknown> = { genotypes, ALT }
   return {
     id: () => id,
     get: (key: string) => data[key],
@@ -27,8 +31,9 @@ function makeVcfFeature(
   sampleNames: string[],
   genotypes: Record<string, string>,
   skip: string[] = [],
+  ALT: string[] = ['T'],
 ): Feature {
-  const data: Record<string, unknown> = { genotypes, sampleNames }
+  const data: Record<string, unknown> = { genotypes, sampleNames, ALT }
   return {
     id: () => id,
     get: (key: string) => data[key],
@@ -77,13 +82,37 @@ describe('getGenotypeMatrix (genotypes-Record path)', () => {
     expect([...rows.HG002!]).toEqual([2, NaN])
   })
 
-  test('counts any alt toward the dosage', async () => {
+  // A multiallelic site spends one column per ALT so that carrying allele 1 and
+  // carrying allele 2 are different points — a single "any alt" dosage made two
+  // homozygotes for different alleles identical. See readAltDosages.
+  test('gives a multiallelic site one column per alt', async () => {
     const rows = await build(
-      [makeFeature('v1', { HG001: '1/2', HG002: '0/2' })],
+      [makeFeature('v1', { HG001: '1/2', HG002: '0/2' }, ['T', 'G'])],
       sources,
     )
-    expect([...rows.HG001!]).toEqual([2])
-    expect([...rows.HG002!]).toEqual([1])
+    expect([...rows.HG001!]).toEqual([1, 1])
+    expect([...rows.HG002!]).toEqual([0, 1])
+  })
+
+  test('homozygotes for different alts are not the same point', async () => {
+    const rows = await build(
+      [makeFeature('v1', { HG001: '1/1', HG002: '2/2' }, ['T', 'G'])],
+      sources,
+    )
+    expect([...rows.HG001!]).toEqual([2, 0])
+    expect([...rows.HG002!]).toEqual([0, 2])
+  })
+
+  test('a biallelic site still costs exactly one column', async () => {
+    const rows = await build(
+      [
+        makeFeature('v1', { HG001: '0/1', HG002: '1/1' }),
+        makeFeature('v2', { HG001: '1/1', HG002: '0/0' }),
+      ],
+      sources,
+    )
+    expect([...rows.HG001!]).toEqual([1, 2])
+    expect([...rows.HG002!]).toEqual([2, 0])
   })
 
   test('marks a sample absent from the VCF missing', async () => {

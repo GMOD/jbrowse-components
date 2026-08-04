@@ -17,6 +17,101 @@
 
 export const MISSING = Number.NaN
 
+// Per-ALT-allele dosage on a diploid scale, written into
+// `out[outOffset .. outOffset + numAlts)`: slot j carries
+// 2 * (calls of allele j+1) / (called alleles), and every slot is MISSING when
+// nothing was called.
+//
+// This replaced `classifyGenotypeDosage`'s *class* — 0 all-ref, 1 any mix, 2
+// all-alt — which is a genotype category rather than a quantity. Under a
+// Euclidean metric a class is wrong three ways, and the encoding fixes them in
+// order of how badly they bite:
+//
+//   - **Which alt was carried was unrepresentable.** A class, and a single
+//     scalar dosage too, only counts non-ref alleles: at a multiallelic site
+//     `1|1` and `2|2` both score "all alt" and land on the same point, though
+//     they share no allele at all. One slot per ALT separates them — `1|1` is
+//     (2,0) and `2|2` is (0,2) — and keeps the ordering that matters, so a pair
+//     sharing one allele (`1|1` vs `1|2`) sits closer than a pair sharing none.
+//   - **Polyploid genotypes collapsed.** `0/1/1` and `0/0/1` both scored 1
+//     despite carrying different numbers of alt alleles; they now score 1.33 and
+//     0.67.
+//   - **Mixed ploidy is why this is a fraction, not a raw count.** A haploid alt
+//     (`1`, routine on chrX non-PAR and chrM, and per the plugin's CLAUDE.md a
+//     case every genotype consumer has to agree on) carries one alt allele but
+//     is fully alt, so a raw count would score it 1 and make it the twin of a
+//     diploid het. Dividing by the called alleles is ploidy-invariant, so `1`
+//     and `1/1` and `1/1/1` all land on 2 the way they should.
+//
+// A biallelic site has numAlts === 1 and therefore exactly one column, so the
+// overwhelmingly common case costs no extra width and is unchanged to the bit:
+// 0/0 -> 0, 0/1 -> 1, 1/1 -> 2, and haploid 0 -> 0, 1 -> 2.
+//
+// Two deliberate limits:
+//   - Only the *called* alleles count, so a partial call `./1` reads as 2 (of
+//     what could be read, all of it was alt) rather than as a het. This is the
+//     same "use what was observed" stance the site-mean imputation below takes;
+//     a partly-called genotype is not evidence of a reference allele.
+//   - An allele index past `numAlts` (a GT referencing an allele the ALT column
+//     doesn't list, i.e. a malformed record) still counts toward the ploidy
+//     denominator but claims no slot, rather than writing out of bounds.
+//
+// Char-code parsed rather than split() because this runs once per
+// (sample x variant), which is 10^8+ on real panels. Multi-character allele
+// indices like "10" are accumulated digit by digit.
+export function readAltDosages(
+  val: string,
+  start: number,
+  end: number,
+  out: Float32Array,
+  outOffset: number,
+  numAlts: number,
+) {
+  for (let j = 0; j < numAlts; j++) {
+    out[outOffset + j] = 0
+  }
+  let called = 0
+  let alleleIdx = 0
+  let alleleCalled = false
+  let started = false
+  for (let i = start; i < end; i++) {
+    const c = val.charCodeAt(i)
+    if (c === 47 /* / */ || c === 124 /* | */) {
+      if (alleleCalled) {
+        called++
+        if (alleleIdx >= 1 && alleleIdx <= numAlts) {
+          out[outOffset + alleleIdx - 1]!++
+        }
+      }
+      alleleIdx = 0
+      alleleCalled = false
+      started = false
+    } else {
+      started = true
+      if (c !== 46 /* . */) {
+        alleleCalled = true
+        alleleIdx = alleleIdx * 10 + (c - 48) /* 0 */
+      }
+    }
+  }
+  if (started && alleleCalled) {
+    called++
+    if (alleleIdx >= 1 && alleleIdx <= numAlts) {
+      out[outOffset + alleleIdx - 1]!++
+    }
+  }
+  if (called === 0) {
+    for (let j = 0; j < numAlts; j++) {
+      out[outOffset + j] = MISSING
+    }
+  } else {
+    const scale = 2 / called
+    for (let j = 0; j < numAlts; j++) {
+      out[outOffset + j]! *= scale
+    }
+  }
+}
+
 // Replace every no-call with its site's mean across the samples that do have a
 // call, so it contributes nothing to that site's term in the distance. This is
 // the standard treatment in genotype PCA / GRM work. A site with no calls at

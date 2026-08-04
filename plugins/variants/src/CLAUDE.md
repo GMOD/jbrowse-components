@@ -37,7 +37,7 @@ prefers declarative iteration.
   picks a matrix for a mode. Re-inlining either drifts labels from rendered
   rows.
 
-## Mixed ploidy: four consumers, one contract
+## Mixed ploidy: five consumers, one contract
 
 Expansion is per-sample max ploidy, and mixed-ploidy files are routine (1000G
 chrX non-PAR). Both cell loops, `readPhasedAlleleIndicators`, and
@@ -45,6 +45,28 @@ chrX non-PAR). Both cell loops, `readPhasedAlleleIndicators`, and
 triploid file** (draw nothing, don't read past the end) and that **haploid is
 phased** (`isPhasedOrHaploid`, not `includes('|')`). **A new fixture for
 anything phased should mix ploidies.**
+
+`readAltDosages` is the fifth, and its contract is **ploidy-invariance**: it
+writes `2 * calls(allele) / called`, so a haploid alt (`1`) is 2 like `1/1`, not
+1 like a het.
+
+## The unphased matrix is one column per ALT, not one per site
+
+`readAltDosages` replaced `classifyGenotypeDosage`'s 0/1/2 _class_ in
+`getGenotypeMatrix`. A class is a category, not a quantity: it made `0/1/1` and
+`0/0/1` identical, and — worse — it could not say _which_ alt was carried, so at
+a multiallelic site `1|1` and `2|2` landed on the same point despite sharing no
+allele. Each site therefore contributes `ALT.length` columns, summed into
+`colOffsets` in a pre-pass so the rows stay one pre-sized Float32Array.
+
+**A biallelic site is one column and is bit-identical to the old encoding**
+(0/0→0, 0/1→1, 1/1→2, haploid 1→2), so an ordinary VCF neither widens nor
+reorders. Only multiallelic sites cost extra width.
+
+`classifyGenotypeDosage` itself stays: the anchored haplotype sort buckets rows
+by genotype category and wants exactly a category. Phased mode keeps its binary
+per-haplotype indicator (`readPhasedAlleleIndicators`) and so still collapses
+two alts — the anchored sort is the exact-allele tool there.
 
 ## Settings: classify by invalidation tier
 
