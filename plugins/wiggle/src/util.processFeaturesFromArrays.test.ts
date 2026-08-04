@@ -206,6 +206,62 @@ describe('processFeaturesFromArrays', () => {
     expect(result.hasSummaryScores).toBe(true)
   })
 
+  // Same aliasing rule as the pos/neg split: a copy that would be identical is
+  // two more buffers to allocate and to hand postMessage, per source per region.
+  test('summary arrays that never diverge alias the scores', () => {
+    const result = processFeaturesFromArrays(
+      {
+        starts: new Int32Array([0, 100]),
+        ends: new Int32Array([100, 200]),
+        scores: new Float32Array([5, 10]),
+        minScores: new Float32Array([5, 10]),
+        maxScores: new Float32Array([5, 10]),
+        count: 2,
+      },
+      0,
+    )
+
+    expect(result.hasSummaryScores).toBe(false)
+    expect(result.featureMinScores).toBe(result.featureScores)
+    expect(result.featureMaxScores).toBe(result.featureScores)
+  })
+
+  // featuresToRaw feeds the fallback (non-typed-array) adapters — bedGraph,
+  // bedMethyl in a multi-wiggle. Reporting `undefined` rather than two copies of
+  // `scores` is what lets processFeaturesFromArrays take the aliasing path.
+  test('featuresToRaw omits min/max when no feature carries a summary', () => {
+    const raw = featuresToRaw([
+      { get: (k: string) => ({ start: 0, end: 10, score: 5 })[k] },
+      { get: (k: string) => ({ start: 10, end: 20, score: 7 })[k] },
+    ])
+
+    expect(raw.minScores).toBeUndefined()
+    expect(raw.maxScores).toBeUndefined()
+    const result = processFeaturesFromArrays(raw, 0)
+    expect(result.featureMinScores).toBe(result.featureScores)
+  })
+
+  test('featuresToRaw materializes min/max when any feature is a summary', () => {
+    const raw = featuresToRaw([
+      { get: (k: string) => ({ start: 0, end: 10, score: 5 })[k] },
+      {
+        get: (k: string) =>
+          ({
+            start: 10,
+            end: 20,
+            score: 7,
+            summary: true,
+            minScore: 3,
+            maxScore: 9,
+          })[k],
+      },
+    ])
+
+    // the non-summary feature backfills from its own score, not zero
+    expect(Array.from(raw.minScores!)).toEqual([5, 3])
+    expect(Array.from(raw.maxScores!)).toEqual([5, 9])
+  })
+
   test('empty input produces empty arrays', () => {
     const result = processFeaturesFromArrays(
       {

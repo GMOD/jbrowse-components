@@ -142,7 +142,6 @@ describe('makeWhiskersLayers', () => {
     const result = makeWhiskersLayers({
       data: summaryData,
       ...base,
-      isDensityMode: false,
       isScatter: false,
       isFilled: false,
     })
@@ -162,7 +161,6 @@ describe('makeWhiskersLayers', () => {
       posColor,
       negColor,
       pivot: 6,
-      isDensityMode: false,
       isScatter: false,
       isFilled: true,
     })
@@ -182,17 +180,6 @@ describe('makeWhiskersLayers', () => {
     const result = makeWhiskersLayers({
       data: noSummaryData,
       ...base,
-      isDensityMode: false,
-      isScatter: false,
-    })
-    expect(result).toHaveLength(1)
-  })
-
-  test('returns single layer in density mode', () => {
-    const result = makeWhiskersLayers({
-      data: summaryData,
-      ...base,
-      isDensityMode: true,
       isScatter: false,
     })
     expect(result).toHaveLength(1)
@@ -202,7 +189,6 @@ describe('makeWhiskersLayers', () => {
     const result = makeWhiskersLayers({
       data: summaryData,
       ...base,
-      isDensityMode: false,
       isScatter: true,
     })
     expect(result).toHaveLength(3)
@@ -218,7 +204,6 @@ describe('makeWhiskersLayers', () => {
       posColor,
       negColor,
       pivot: 6,
-      isDensityMode: false,
       isScatter: false,
       isFilled: false,
     })
@@ -243,7 +228,6 @@ describe('makeWhiskersLayers', () => {
       posColor,
       negColor,
       pivot: 100,
-      isDensityMode: false,
       isScatter: false,
       isFilled: false,
     })

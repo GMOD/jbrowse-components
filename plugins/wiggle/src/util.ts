@@ -175,8 +175,15 @@ export function processFeaturesFromArrays(
         hasSummaryScores = true
       }
     }
-    featureMinScores = mins
-    featureMaxScores = maxs
+    // Kept only when they actually diverge. An adapter can hand back summary
+    // arrays that never do (every bin one base wide, or a fallback adapter that
+    // fills them unconditionally), and holding onto the copies then spends two
+    // extra buffers on the postMessage transfer for values already sitting in
+    // `featureScores` — the same aliasing the pos/neg split below applies.
+    if (hasSummaryScores) {
+      featureMinScores = mins
+      featureMaxScores = maxs
+    }
   }
 
   // Counted with the same `>= pivot` predicate splitSide partitions on, so a
@@ -241,21 +248,30 @@ export function featuresToRaw(
   const starts = new Int32Array(n)
   const ends = new Int32Array(n)
   const scores = new Float32Array(n)
-  const minScores = new Float32Array(n)
-  const maxScores = new Float32Array(n)
+  // Most adapters on this path (bedGraph, bedMethyl) carry no summary data at
+  // all. Reporting `undefined` there rather than two arrays that duplicate
+  // `scores` is what lets processFeaturesFromArrays alias instead of
+  // materializing, so it's worth one cheap pre-pass over already-built feature
+  // objects: the alternative costs two more arrays per source per region, and
+  // transfers them.
+  const hasSummary = features.some(f => f.get('summary'))
+  const minScores = hasSummary ? new Float32Array(n) : undefined
+  const maxScores = hasSummary ? new Float32Array(n) : undefined
 
   for (const [i, feature] of features.entries()) {
     starts[i] = feature.get('start') as number
     ends[i] = feature.get('end') as number
     const score = (feature.get('score') as number | undefined) ?? 0
     scores[i] = score
-    const summary = feature.get('summary')
-    minScores[i] = summary
-      ? ((feature.get('minScore') as number | undefined) ?? score)
-      : score
-    maxScores[i] = summary
-      ? ((feature.get('maxScore') as number | undefined) ?? score)
-      : score
+    if (minScores && maxScores) {
+      const summary = feature.get('summary')
+      minScores[i] = summary
+        ? ((feature.get('minScore') as number | undefined) ?? score)
+        : score
+      maxScores[i] = summary
+        ? ((feature.get('maxScore') as number | undefined) ?? score)
+        : score
+    }
   }
 
   return { starts, ends, scores, minScores, maxScores, count: n }

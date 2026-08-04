@@ -1,7 +1,11 @@
+import { SimpleFeature } from '@jbrowse/core/util'
+import { of } from 'rxjs'
+
 import MultiWiggleAdapter from './MultiWiggleAdapter.ts'
 import configSchema from './configSchema.ts'
 
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Feature } from '@jbrowse/core/util'
 
 // getSources strips dataAdapter before returning — these tests only exercise
 // metadata flow, never call into dataAdapter. One named stub avoids per-call
@@ -636,5 +640,92 @@ describe('MultiWiggleAdapter.getMultiSourceFeatureArraysMulti', () => {
     })
     expect(result[0]!.raws[0]!.count).toBe(2)
     expect(Array.from(result[0]!.raws[0]!.scores)).toEqual([3, -2])
+  })
+})
+
+// disambiguateSources renames a colliding entry AFTER its subadapter was built
+// from the original config, so the subadapter keeps stamping the pre-rename
+// `source` on every feature it emits. getFeatures has to correct that: the
+// score-matrix clustering groups on feature.get('source') while keying its rows
+// off the disambiguated names, so both rows came back empty (#5598 follow-up).
+describe('MultiWiggleAdapter.getFeatures source stamping', () => {
+  const region = {
+    refName: 'chr1',
+    start: 0,
+    end: 100,
+    assemblyName: 'hg38',
+  }
+
+  function collect(adapter: MultiWiggleAdapter) {
+    return new Promise<Feature[]>((resolve, reject) => {
+      const out: Feature[] = []
+      adapter.getFeatures(region).subscribe({
+        next: f => out.push(f),
+        error: reject,
+        complete: () => {
+          resolve(out)
+        },
+      })
+    })
+  }
+
+  // both files are `sample.bw`, so disambiguateSources grows them to
+  // cond1/sample and cond2/sample while each BigWigAdapter still says 'sample'
+  function makeAdapter(emittedSource: string | undefined) {
+    const mockGetSubAdapter = jest.fn().mockImplementation(
+      async (conf: { source?: string }) =>
+        ({
+          dataAdapter: {
+            id: conf.source ?? 'mock',
+            getFeatures: () =>
+              of(
+                new SimpleFeature({
+                  uniqueId: 'f1',
+                  refName: 'chr1',
+                  start: 0,
+                  end: 10,
+                  score: 1,
+                  ...(emittedSource === undefined
+                    ? {}
+                    : { source: emittedSource }),
+                }),
+              ),
+          },
+        }) as any,
+    )
+    return new MultiWiggleAdapter(
+      configSchema.create({
+        bigWigs: [
+          'https://example.com/cond1/sample.bw',
+          'https://example.com/cond2/sample.bw',
+        ],
+      }),
+      mockGetSubAdapter,
+    )
+  }
+
+  it('restamps features carrying the pre-disambiguation source', async () => {
+    const feats = await collect(makeAdapter('sample'))
+    expect(feats.map(f => f.get('source'))).toEqual([
+      'cond1/sample',
+      'cond2/sample',
+    ])
+    // uniqueIds must diverge too, or the two subtracks collide downstream
+    expect(new Set(feats.map(f => f.id())).size).toBe(2)
+  })
+
+  it('still stamps adapters that set no source at all', async () => {
+    const feats = await collect(makeAdapter(undefined))
+    expect(feats.map(f => f.get('source'))).toEqual([
+      'cond1/sample',
+      'cond2/sample',
+    ])
+  })
+
+  it('passes an already-correct feature through untouched', async () => {
+    const adapter = makeAdapter('cond1/sample')
+    const feats = await collect(adapter)
+    // the cond1 subadapter's feature needs no wrapping, so it keeps its own id
+    expect(feats.find(f => f.get('source') === 'cond1/sample')!.id()).toBe('f1')
   })
 })

@@ -80,7 +80,10 @@ export interface MultiWiggleHitModel {
   effectiveRowHeight: number
   sources: VisibleSource[]
   rpcDataMap: ReadonlyMap<number, WiggleDataResult>
-  summaryScoreMode: string
+  // the resolved mode, never the raw `summaryScoreMode` slot: density draws
+  // averages whatever the slot says, and the tooltip has to report what the
+  // plot (and the track menu's radio) actually shows
+  effectiveSummaryScoreMode: string
   isOverlay: boolean
   showTree: boolean
   hierarchy?: unknown
@@ -107,7 +110,7 @@ export function findMultiWiggleHit(
     effectiveRowHeight,
     sources,
     rpcDataMap,
-    summaryScoreMode,
+    effectiveSummaryScoreMode,
     isOverlay,
   } = model
   if (sources.length === 0 || offsetX < treeSidebarRightEdge(model)) {
@@ -119,7 +122,13 @@ export function findMultiWiggleHit(
   }
   const { data, bp, region } = hit
   return isOverlay
-    ? findOverlayHit(data, sources, bp, region.refName, summaryScoreMode)
+    ? findOverlayHit(
+        data,
+        sources,
+        bp,
+        region.refName,
+        effectiveSummaryScoreMode,
+      )
     : findRowHit(
         data,
         sources,
@@ -127,6 +136,6 @@ export function findMultiWiggleHit(
         offsetY,
         effectiveRowHeight,
         region.refName,
-        summaryScoreMode,
+        effectiveSummaryScoreMode,
       )
 }

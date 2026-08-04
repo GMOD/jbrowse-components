@@ -45,7 +45,6 @@ function sourceLayers({
       posColor,
       negColor,
       pivot,
-      isDensityMode,
       isScatter: scatter,
       isFilled: filled,
     })

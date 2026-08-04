@@ -40,11 +40,16 @@ const WiggleComponent = observer(function WiggleComponent({
 
   const computeHit = useCallback(
     (offsetX: number) => {
-      const { rpcDataMap, summaryScoreMode } = model
+      const { rpcDataMap, effectiveSummaryScoreMode } = model
       const hit = hitTestMouse(view.visibleRegions, rpcDataMap, offsetX)
       const source = hit?.data.sources[0]
       return source
-        ? findSourceHit(source, hit.bp, hit.region.refName, summaryScoreMode)
+        ? findSourceHit(
+            source,
+            hit.bp,
+            hit.region.refName,
+            effectiveSummaryScoreMode,
+          )
         : undefined
     },
     [model, view],

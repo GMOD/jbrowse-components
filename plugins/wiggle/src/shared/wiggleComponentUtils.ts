@@ -231,14 +231,17 @@ function whiskerBandSides(
 // rendering splits each band by sign into solid-color layers. Line/scatter don't
 // overpaint, so they keep the bands whole (a split would break line continuity
 // at pivot crossings) and color per instance; scatter draws back-to-front, so
-// its layer order is reversed. Collapses to just the avg layer in density mode or
-// when the data carries no summary variation.
+// its layer order is reversed. Collapses to just the avg layer when the data
+// carries no summary variation.
+//
+// Density never reaches here: `sourceLayers` gates the whole whiskers branch on
+// `!isDensityMode` and falls through to the avg split, so this doesn't take (or
+// re-decide) that flag.
 export function makeWhiskersLayers({
   data,
   posColor,
   negColor,
   pivot,
-  isDensityMode,
   isScatter,
   isFilled,
 }: {
@@ -246,31 +249,16 @@ export function makeWhiskersLayers({
   posColor: [number, number, number]
   negColor: [number, number, number]
   pivot: number
-  isDensityMode: boolean
   isScatter: boolean
   isFilled: boolean
 }): WiggleLayer[] {
   const { featurePositions, numFeatures } = data
-  const avg = {
-    featurePositions,
-    featureScores: data.featureScores,
-    numFeatures,
-    color: posColor,
-    colorsAbgr: bandColorsAbgr(
-      data.featureScores,
-      numFeatures,
-      pivot,
-      posColor,
-      negColor,
-      noTint,
-      noTint,
-    ),
-  }
-  if (isDensityMode || !data.hasSummaryScores) {
-    return [avg]
-  }
 
-  if (isFilled) {
+  // Handled ahead of the avg layer, not after it: this branch returns the split
+  // sides and never reads `avg`, so building `avg` first spent a
+  // Uint32Array(numFeatures) plus a full pass per source per region on every
+  // xyplot render — the default rendering under the default summary mode.
+  if (isFilled && data.hasSummaryScores) {
     // Each band's positive and negative tints, ordered max..avg..min. Lightest at
     // the extreme (max above the pivot, min below), darkening toward the pivot.
     const bands = [
@@ -303,6 +291,25 @@ export function makeWhiskersLayers({
       ...sides.map(s => s.pos),
       ...[...sides].reverse().map(s => s.neg),
     ].filter(l => l !== undefined)
+  }
+
+  const avg = {
+    featurePositions,
+    featureScores: data.featureScores,
+    numFeatures,
+    color: posColor,
+    colorsAbgr: bandColorsAbgr(
+      data.featureScores,
+      numFeatures,
+      pivot,
+      posColor,
+      negColor,
+      noTint,
+      noTint,
+    ),
+  }
+  if (!data.hasSummaryScores) {
+    return [avg]
   }
 
   const layers = [
@@ -531,7 +538,14 @@ export function makeWiggleRenderState(
     renderingType: renderingTypeToInt(self.renderingType),
     canvasWidth: width,
     canvasHeight: height,
-    numRows,
+    // Floored at 1: a source list that filters to empty (a subtree filter
+    // naming nothing present) leaves numRows 0 while buildSourceRenderData
+    // still falls back to the payload's sources and uploads instances. The
+    // Canvas2D path routes its divide through getRowHeight, but the shader's
+    // bare `canvasHeight / numRows` has no such guard — row 0's `rowIndex *
+    // inf` is NaN, so the GPU backend silently drew nothing where Canvas2D drew
+    // a row. Flooring here is the one place both backends read.
+    numRows: Math.max(1, numRows),
     scatterPointSize: self.scatterPointSize,
     lineWidth: self.lineWidth,
     // bars pivot around, and density fades from, the bicolor threshold

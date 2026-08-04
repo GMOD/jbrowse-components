@@ -15,6 +15,10 @@ export interface MultiWiggleDisplayModel
   sourcesWithoutLayout: { name: string }[]
   domain: [number, number] | undefined
   scaleType: string
+  // WiggleGpuProps above carries the raw `summaryScoreMode` slot (the encoder
+  // wants it verbatim); the hit/tooltip path reads the resolved one, which is
+  // what density actually draws
+  effectiveSummaryScoreMode: string
   isOverlay: boolean
   isDensityMode: boolean
   numSources: number

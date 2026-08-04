@@ -238,6 +238,13 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
     })
   }
 
+  // UNUSED in-tree as of the client-side autoscale move: the wiggle displays
+  // derive their domain from the rendered arrays (WiggleCommonMixin's
+  // visibleScoreStats), so nothing calls these two or computeStatsFromView
+  // above except their own tests. Kept because they override
+  // BaseFeatureDataAdapter's much slower feature-walking versions and are part
+  // of the adapter surface an external plugin can call. Delete together with
+  // computeStatsFromView if that stops being worth carrying.
   public async getRegionQuantitativeStats(
     region: Region,
     opts?: WiggleOptions,

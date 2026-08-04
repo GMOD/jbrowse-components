@@ -179,11 +179,18 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
           const { source, dataAdapter } = adp
           return dataAdapter.getFeatures(region, opts).pipe(
             map(f => {
-              // BigWigAdapter sets source, so avoid expensive wrapping when possible
-              if (f.get('source')) {
+              // Compared, not just tested for presence: disambiguateSources
+              // renames a colliding entry AFTER its subadapter was built from
+              // the original config, so a BigWigAdapter keeps stamping the
+              // pre-disambiguation `source` slot. Two files sharing a basename
+              // would then emit every feature under one name — which is what
+              // the score-matrix clustering groups on, leaving both rows empty.
+              // BigWigAdapter normally matches on the first compare, so this
+              // still skips the wrapping in the common case.
+              if (f.get('source') === source) {
                 return f
               }
-              // Fallback for adapters that don't set source
+              // Fallback for adapters that don't set source, and rename path
               const data = f.toJSON()
               data.uniqueId = `${source}-${f.id()}`
               data.source = source
@@ -211,6 +218,9 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     )
   }
 
+  // UNUSED in-tree, same as BigWigAdapter's pair: autoscale is computed
+  // client-side from the rendered arrays now (WiggleCommonMixin), so these only
+  // fan out to subadapters for external callers.
   public async getRegionQuantitativeStats(
     region: Region,
     opts?: WiggleOptions,

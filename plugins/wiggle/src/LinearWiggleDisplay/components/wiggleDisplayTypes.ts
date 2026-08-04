@@ -11,7 +11,10 @@ import type { WiggleGpuDisplayModel } from '@jbrowse/wiggle-core'
 export interface WiggleDisplayModel extends WiggleGpuDisplayModel {
   domain: [number, number] | undefined
   scaleType: string
-  summaryScoreMode: string
+  // the resolved mode, never the raw `summaryScoreMode` slot: density draws
+  // averages whatever the slot says, and the tooltip has to report what the
+  // plot (and the track menu's radio) actually shows
+  effectiveSummaryScoreMode: string
   isDensityMode: boolean
   scoreRamp: ScoreRamp | undefined
   featureUnderMouse?: WiggleFeatureUnderMouse

@@ -270,7 +270,7 @@ describe('findMultiWiggleHit', () => {
           { sources: [makeSource('s1', [{ start: 0, end: 100, score: 5 }])] },
         ],
       ]),
-      summaryScoreMode: 'avg',
+      effectiveSummaryScoreMode: 'avg',
       isOverlay: false,
       showTree: false,
       treeAreaWidth: 0,
