@@ -793,32 +793,13 @@ function haplotypeGeneLane(trackId: string) {
   }
 }
 
-// UCSC's RepeatMasker on each of the two human assemblies the CHM13 figure
-// draws, as session tracks: neither is in the fixture config, and both panes
-// need one for the two to be comparable. hg38's is jbrowse.org's own tabix'd
-// copy (the host every other lane in these figures reads); hs1 has no copy
-// there, so it comes off hgdownload's bigBed, which answers ranged reads with
-// CORS in well under a second.
-const HG38_RMSK_TRACK = {
-  type: 'FeatureTrack',
-  trackId: 'hg38_rmsk_ucsc',
-  name: 'RepeatMasker (hg38)',
-  assemblyNames: ['hg38'],
-  adapter: {
-    type: 'BedTabixAdapter',
-    bedGzLocation: {
-      uri: 'https://jbrowse.org/ucsc/hg38/rmsk.bed.gz',
-      locationType: 'UriLocation',
-    },
-    index: {
-      location: {
-        uri: 'https://jbrowse.org/ucsc/hg38/rmsk.bed.gz.csi',
-        locationType: 'UriLocation',
-      },
-      indexType: 'CSI',
-    },
-  },
-}
+// UCSC's RepeatMasker on CHM13, as a session track: the fixture config carries
+// no repeat annotation, and hs1 has no copy on jbrowse.org, so it comes off
+// hgdownload's bigBed, which answers ranged reads with CORS in well under a
+// second. (The note further down ruling hgdownload out is about a whole-file GET
+// of hs1.2bit; this is a handful of index reads over a 180 kb window.) There was
+// a matching hg38 lane beside it until this round — see repeatLane for the
+// measurement that retired it.
 const HS1_RMSK_TRACK = {
   type: 'FeatureTrack',
   trackId: 'hs1_rmsk_ucsc',
@@ -833,17 +814,51 @@ const HS1_RMSK_TRACK = {
   },
 }
 
-// A repeat lane is read as a density, not as a list of elements: collapsed, so
-// the whole annotation is one strip whose coverage of the axis is the thing to
-// compare between the two panes, and no labels, because 171 repeat names over
-// 180 kb is a wall of small print that says nothing the strip does not.
+// A repeat lane as a LIST OF ELEMENTS, not as a density strip (review: "the
+// repeatmasker track is not very interesting unfortunately and looks sort of
+// glitchy even, just being collapsed layout. its also too zoomed in to tell if
+// this amount of repeat is significant compared to background"). Both halves of
+// that are right, and the second one is what decides the first.
+//
+// A collapsed strip is a density read, and a density read is the one thing this
+// annotation cannot support here. Measured from the two files the lanes
+// themselves load: the CHM13 allele is 84.6% repeat, its own left and right
+// flanks are 79.0% and 70.4%, and 50 kb bins across the megabase CHM13 adds to
+// chr17 run 70-92% throughout. So there is no local contrast to see — the allele
+// is not repeat-dense against its neighbourhood, it sits in a subtelomere that
+// is repeat-dense end to end. The contrast that IS real is between assemblies
+// (GRCh38's last 650 kb of chr17 is 37.5% repeat, the megabase CHM13 adds is
+// ~80%), and two panes at 30 bp/px and 180 bp/px cannot be compared by eye
+// whatever the layout — which is what made the strip read as a glitch rather
+// than as a measurement. Drawing that one needs a repeat-density quantitative
+// track, i.e. a file to build and host, not a display setting.
+//
+// What the annotation CAN say without a density read is what the sequence is
+// made of, and that is a per-element statement: 48 LINE elements cover 116 kb of
+// the allele's 142 kb, 34 of them over 4 kb and the longest a 13.6 kb L1MD. In
+// normal layout those are individual long bars stacked in rows, which is the
+// picture of a subtelomere built out of L1 — and it is the mechanism the lane
+// was added for, since that is the sequence a BAC-and-Sanger reference had no
+// way to place. Labels stay off: 171 repeat names over 180 kb is a wall of small
+// print, and the classes are the caption's business.
 function repeatLane(trackId: string) {
   return {
     trackId,
     type: 'LinearBasicDisplay',
-    displayMode: 'collapsed',
+    displayMode: 'normal',
     showLabels: 'none',
-    height: 34,
+    // LINE red, everything else grey, off the class the bigBed writes into the
+    // name after a '#' (`L1MD1#LINE/L1`). Two colors rather than one per class:
+    // the finding is that one class builds this interval, so a per-class palette
+    // would spend a legend on the four that do not. It is also what lets the
+    // labels stay off — a bar's color says its class without a name on it.
+    color:
+      "jexl:includes(get(feature,'name'),'#LINE') ? 'rgb(200,60,45)' : 'rgb(158,158,158)'",
+    // grow, not a fixed band: 171 elements over 180 kb pack into more rows than
+    // any number picked in advance, and a band an element short shows a
+    // scrollbar over the one row a reader would have to scroll to see.
+    heightMode: 'grow',
+    height: 90,
   }
 }
 
@@ -1404,7 +1419,24 @@ function graphResolutionPartSpecs(): ScreenshotSpec[] {
     // Shared by both halves now, where each used to need its own. See the
     // GraphGenomeView props below for what changed.
     bubbleSpread = 'compress',
-    layoutQuality = 1,
+    // 3 (60 + 40 FMMM iterations), and both halves take it — review: "the
+    // bandage graph just looks very jagged here". This was pinned at 1 (15 + 10)
+    // from before the plugin raised its own default to Bandage's 2, and 25
+    // iterations is not enough to straighten a chain: the pggb cut is 53 nodes
+    // of which 33 are 1 bp, so the drawing is essentially one long path, and an
+    // under-relaxed path keeps the kink at every joint it started with. That IS
+    // the jaggedness — not the alt arms, which are the same 18 nodes either way.
+    // At 3 the same cut draws as a smooth arc and the beads read as beads.
+    //
+    // It is not "more is better": on this figure 4 (120 + 60) relaxes the arc
+    // into a hockey stick that leaves half the pane empty, and the note against
+    // pangenome/rgfa_strain_launch records 4 spreading an 11-node cut off both
+    // edges. 3 is where this pair of cuts stops improving. The minigraph half
+    // takes it too, unasked, because it was the same under-relaxation: at 1 its
+    // 16.4 kb backbone segment ran diagonally across the 4.4 kb one it joins,
+    // and at 3 the five backbone segments lie end to end with the stubs hanging
+    // off them, which is what the half is for.
+    layoutQuality = 3,
     region = RESOLUTION_REGION,
     bandCut = true,
   }: {
@@ -1540,7 +1572,10 @@ function graphResolutionPartSpecs(): ScreenshotSpec[] {
       trackId: PGGB_SEGMENTS_TRACK,
       sessionTrack: PGGB_SEGMENTS_SESSION_TRACK,
       label: 'pggb\na node at every variant',
-      labelOffset: { dx: 110, dy: -250 },
+      // inside the arc, which is where this cut leaves its whitespace. Up and
+      // right was the empty corner when the same cut drew as a kinked rope; the
+      // relaxed arc runs through that corner and under the box.
+      labelOffset: { dx: 0, dy: 20 },
     }),
   ]
 }
@@ -2850,22 +2885,18 @@ export const graphSpecs: ScreenshotSpec[] = [
   // top pane cannot show it. Bottom: that node on CHM13's own chr17, where it is
   // an ordinary interval and the same segments track draws it as one feature.
   //
-  // A REPEATMASKER LANE ON BOTH PANES, which is what the two panes are otherwise
+  // A REPEATMASKER LANE ON THE CHM13 PANE, which is what the figure is otherwise
   // missing (review: "there is no gene in this region, but if some other track
   // would help potentially explain why this was missed in hg38 e.g. repeats can
   // add that"). There is no gene, and there is no assembly gap either -- UCSC's
   // hg38 `gap` track has one record past 82.5 Mb on chr17 and it is the terminal
   // 10 kb telomere, so this is a real insertion allele rather than a hole GRCh38
-  // never closed. What the lanes do show is the mechanism: the two are the same
-  // UCSC RepeatMasker annotation and the CHM13 interval is nearly solid where the
-  // GRCh38 window it attaches to is sparse, almost all of it LINE/L1.
+  // never closed. What the lane shows is the mechanism: the inserted 142 kb is
+  // 48 LINE elements covering 116 kb of it, 34 of them over 4 kb -- a stack of
+  // L1, which is the sequence a BAC-and-Sanger reference had no way to place.
   //
-  // The hs1 lane is hgdownload's bigBed, which the note below rules out for the
-  // 2bit and does not rule out here: that failure was a whole-file GET of a
-  // multi-gigabyte sequence file, where this is a handful of ranged index reads
-  // over a 180 kb window, and hgdownload serves those with CORS in well under a
-  // second. The hg38 lane is jbrowse.org's own tabix'd copy, which is what the
-  // rest of these figures read.
+  // ONE lane, where there were two, and not a collapsed density strip: see
+  // repeatLane for the measurement that decided both.
   //
   // The bottom pane's gene lane is GONE with it, for the reason the top pane
   // never had one: `jbrowse.org/ucsc/hs1/hs1.gff.gz` has nothing in this window,
@@ -2887,7 +2918,7 @@ export const graphSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'pangenome/hprc_chm13_allele',
     url: sessionSpec(HPRC_CONFIG, {
-      sessionTracks: [HG38_RMSK_TRACK, HS1_RMSK_TRACK],
+      sessionTracks: [HS1_RMSK_TRACK],
       views: [
         {
           type: 'LinearGenomeView',
@@ -2918,7 +2949,12 @@ export const graphSpecs: ScreenshotSpec[] = [
               jexlFiltersSetting: ['jexl:feature.longestAlleleLength>100000'],
               height: 60,
             },
-            repeatLane(HG38_RMSK_TRACK.trackId),
+            // no repeat lane on THIS pane, where there used to be one on each.
+            // Two lanes is a comparison, and the comparison was the part that
+            // could not be read (see repeatLane): 41 elements scattered over
+            // 30 kb here against a near-solid strip over 180 kb there is a
+            // difference in bp/px before it is a difference in repeat. The lane
+            // below stands on its own as what the inserted sequence is made of.
             hprcSegmentsLane(CHM13_REGION),
           ],
         },
@@ -2957,7 +2993,9 @@ export const graphSpecs: ScreenshotSpec[] = [
     // view's nodePositions, so a shorter settle can capture before there are any
     settleMs: 14000,
     viewportWidth: 1000,
-    viewportHeight: 1380,
+    // +115 over the 1380 this was: the repeat lane grows to its own row count
+    // (see repeatLane), which is 8 rows here rather than the 5 a 90px band held.
+    viewportHeight: 1495,
     hideTooltip: true,
     annotations: [
       {

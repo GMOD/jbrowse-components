@@ -13,30 +13,47 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // the local build (bare ?config=, prefixed with localhost by the generator) so
 // the current LinearMultiSampleVariantMatrixDisplay code runs, not the older
 // released one the remote config was authored against. `maxMissingnessFilter`
-// is the no-call ceiling config slot (1 = keep every variant); the before/after
-// pair below bakes two values into two otherwise byte-identical sessions so the
-// compose figure shows exactly which columns the filter drops. Inline display
-// props fold into the display snapshot (normalizeTrackInit) and real config
-// slots route onto the display config, so `maxMissingnessFilter` sets the slot.
-const POTATO_CONFIG = 'https://jbrowse.org/genomes/potato/config.json'
-function potatoMissingnessMatrix(maxMissingnessFilter: number) {
-  return sessionSpec(POTATO_CONFIG, {
-    views: [
-      {
-        type: 'LinearGenomeView',
-        assembly: 'Stuberosum_448_v4.03',
-        loc: 'ST4.03ch01:23,700,000-26,100,000',
-        tracks: [
-          {
-            trackId: 'tetraploid_vcf',
-            type: 'LinearMultiSampleVariantMatrixDisplay',
-            height: 300,
-            maxMissingnessFilter,
-          },
-        ],
+// is the no-call ceiling config slot (1 = keep every variant).
+//
+// ONE SESSION, TWO LANES, not two screenshots stacked (review: "can consider
+// making this a single screenshot with a copy of the track duplicated ... the
+// height of each display can be e.g. 300 each, so very vertically compact").
+// The compose this replaces paid for the contrast twice over: two app bars, two
+// overviews, two search boxes and two rulers, ~420px of identical chrome, for
+// two matrices that already sat on the same window at the same scale. Duplicated
+// into one view they share all of that, the figure loses a third of its height,
+// and the two lanes are on one ruler rather than on two that happen to agree.
+//
+// It takes two session tracks rather than the config's `tetraploid_vcf` twice
+// because showTrackGeneric dedupes a view's tracks by trackId — a second
+// `{ trackId: 'tetraploid_vcf' }` returns the lane already open instead of
+// adding one. Same adapter, absolute URIs (a sessionTrack's relative uri would
+// resolve against the page, not against the potato config), so the two lanes are
+// the same bytes read with two ceilings. Their names carry the ceiling, which is
+// also what retires the two text overlays the halves used to be labelled with.
+const POTATO_BASE = 'https://jbrowse.org/genomes/potato/'
+const POTATO_CONFIG = `${POTATO_BASE}config.json`
+function potatoTrack(trackId: string, name: string) {
+  return {
+    type: 'VariantTrack',
+    trackId,
+    name,
+    assemblyNames: ['Stuberosum_448_v4.03'],
+    adapter: {
+      type: 'VcfTabixAdapter',
+      vcfGzLocation: {
+        uri: `${POTATO_BASE}out.vcf.gz`,
+        locationType: 'UriLocation',
       },
-    ],
-  })
+      index: {
+        location: {
+          uri: `${POTATO_BASE}out.vcf.gz.tbi`,
+          locationType: 'UriLocation',
+        },
+        indexType: 'TBI',
+      },
+    },
+  }
 }
 
 export const variantsSpecs: ScreenshotSpec[] = [
@@ -233,69 +250,54 @@ export const variantsSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Before/after max-missingness filter, over the tetraploid potato matrix.
-  // "Before": the ceiling at 1 keeps every variant, so columns with many
-  // no-call (missing) genotypes stay in the matrix.
+  // Before/after max-missingness filter over the tetraploid potato matrix, as
+  // two lanes of one view: the ceiling at 1 keeps every variant, so the columns
+  // with many no-call (missing) genotypes stay in the top lane, and at 0.1 every
+  // variant whose no-call fraction exceeds 10% is gone from the bottom one. Same
+  // bytes, same window, same scale — only the ceiling differs, so the columns
+  // that vanish are exactly the high-missingness ones.
   {
     mode: 'url',
-    name: 'variants/potato_missingness_before',
-    url: potatoMissingnessMatrix(1),
-    readySelector: '[data-testid="variant-matrix-display-done"]',
-    readyTimeout: 120000,
-    settleMs: 15000,
-    // equal width/height for the two parts give a clean top/bottom stack in
-    // compose. Narrower and shorter than the 1500x560 default so the stacked
-    // figure isn't twice the page width — the matrix reads as a texture, not as
-    // per-column detail, so it loses nothing.
-    viewportWidth: 1100,
-    viewportHeight: 510,
-    // label only, no explanation: what the ceiling DOES is caption prose, not
-    // paint over the matrix. Big enough to read at the figure's on-page size,
-    // and left of the centered session title so it covers no app chrome.
-    annotations: [
-      {
-        type: 'text',
-        x: 180,
-        y: 56,
-        maxWidth: 460,
-        fontSize: 22,
-        text: 'Max missingness 1.0 (default)',
-      },
-    ],
-  },
-
-  // "After": drop the ceiling to 0.1, so any variant whose no-call fraction
-  // exceeds 10% is hidden. Same window and layout — only the filter differs, so
-  // the columns that vanish are exactly the high-missingness ones.
-  {
-    mode: 'url',
-    name: 'variants/potato_missingness_after',
-    url: potatoMissingnessMatrix(0.1),
-    readySelector: '[data-testid="variant-matrix-display-done"]',
-    readyTimeout: 120000,
-    settleMs: 15000,
-    viewportWidth: 1100,
-    viewportHeight: 510,
-    annotations: [
-      {
-        type: 'text',
-        x: 180,
-        y: 56,
-        maxWidth: 460,
-        fontSize: 22,
-        text: 'Max missingness 0.1',
-      },
-    ],
-  },
-
-  // Stack the two panels (unfiltered over filtered) into one before/after figure
-  // for the docs. Each part opens live on its own via its declarative session.
-  {
-    mode: 'compose',
     name: 'variants/potato_missingness',
-    parts: [
-      'variants/potato_missingness_before',
-      'variants/potato_missingness_after',
-    ],
+    url: sessionSpec(POTATO_CONFIG, {
+      sessionTracks: [
+        potatoTrack('potato_missingness_1', 'Max missingness 1.0 (default)'),
+        potatoTrack('potato_missingness_01', 'Max missingness 0.1'),
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'Stuberosum_448_v4.03',
+          loc: 'ST4.03ch01:23,700,000-26,100,000',
+          // Inline display props fold into the display snapshot
+          // (normalizeTrackInit) and real config slots route onto the display
+          // config, so `maxMissingnessFilter` sets the slot.
+          tracks: [
+            {
+              trackId: 'potato_missingness_1',
+              type: 'LinearMultiSampleVariantMatrixDisplay',
+              height: 300,
+              maxMissingnessFilter: 1,
+            },
+            {
+              trackId: 'potato_missingness_01',
+              type: 'LinearMultiSampleVariantMatrixDisplay',
+              height: 300,
+              maxMissingnessFilter: 0.1,
+            },
+          ],
+        },
+      ],
+    }),
+    readySelector: '[data-testid="variant-matrix-display-done"]',
+    readyTimeout: 120000,
+    settleMs: 15000,
+    // Narrower than the 1500 default: the matrix reads as a texture rather than
+    // as per-column detail, so it loses nothing, and the figure is then not
+    // twice the page width when both lanes are in it.
+    viewportWidth: 1100,
+    // 300 + 300 of matrix, their two track headers, and the ~185px of app bar,
+    // overview, navigation row and ruler the two lanes now share once.
+    viewportHeight: 830,
   },
 ]

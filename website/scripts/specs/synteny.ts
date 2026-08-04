@@ -656,11 +656,23 @@ export const syntenySpecs: ScreenshotSpec[] = [
             // 0.9-1.5 Gb of the four below it, with gar and zebrafish (0.90 and
             // 1.35) the pair the bottom band is really about.
             sameScale: true,
-            // see the grasses spec below for why these four settings; the three
+            // see the grasses spec below for why these settings; the three
             // OrthoFinder figures are the same picture on different genomes
             collapseEmptyRows: true,
             levelHeights: [180, 180, 180, 180],
-            alpha: 0.15,
+            // 0.3, twice what the grasses and wheat figures take (review:
+            // "increase opacity"). Alpha is a per-link constant and the picture
+            // is what the links pile up into, so the value that reads is set by
+            // how collinear the genomes are, not by the figure being one of a
+            // set. The grasses are five grass genomes: a rice chromosome's
+            // orthologs land almost entirely on one partner, the links arrive as
+            // tight bundles and 0.15 saturates them. These five span ~430 My and
+            // a teleost genome duplication, so the same 0.15 spread the same
+            // number of links over the whole band and every one of them came out
+            // as background — the lower bands in particular read as a grey wash
+            // with a few strong diagonals on it. At 0.3 a single ortholog is
+            // visible and the bundles are solid without flooding their bands.
+            alpha: 0.3,
             drawCurves: false,
           },
         ],

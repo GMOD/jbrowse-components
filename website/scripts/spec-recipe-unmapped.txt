@@ -59,6 +59,7 @@ showHighlightChips
 showIntraviewLinks
 showLabels
 showLegend
+showResolutionControls
 showTree
 sideBySide
 sortRowsBy
@@ -69,4 +70,5 @@ transcriptId
 uniprotId
 uri
 useBicolor
+useColorPercentile
 zoomToBaseLevel

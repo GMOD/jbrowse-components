@@ -54,7 +54,7 @@ potato callset below is dominated by no-call (yellow) columns until the ceiling
 is lowered to 0.1, which drops every variant with more than 10% missing
 genotypes and leaves the well-genotyped sites.
 
-<Figure src="/img/variants/potato_missingness.png" links="No filter=variants/potato_missingness_before,Max missingness 0.1=variants/potato_missingness_after" caption="Tetraploid potato multi-sample VCF as a genotype matrix. Top: the default missingness ceiling keeps every variant, and no-call (yellow) columns dominate. Bottom: a 0.1 ceiling drops variants with more than 10% no-call genotypes, so the remaining columns are the well-genotyped homozygous-reference, heterozygous, and homozygous-alt sites." />
+<Figure src="/img/variants/potato_missingness.png" caption="One tetraploid potato multi-sample VCF opened twice in the same view as a genotype matrix, on one ruler. Top: the default missingness ceiling keeps every variant, and no-call (yellow) columns dominate. Bottom: a 0.1 ceiling drops variants with more than 10% no-call genotypes, so the remaining columns are the well-genotyped homozygous-reference, heterozygous, and homozygous-alt sites." />
 
 Either filter can be preset so the track loads already filtered, with the
 [`minorAlleleFrequencyFilter`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-minorallelefrequencyfilter)

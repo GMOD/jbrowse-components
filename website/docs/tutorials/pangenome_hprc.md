@@ -511,7 +511,7 @@ the same way `hg38` asks for `GRCh38#0#chr17`. This replaces the track
 }
 ```
 
-<Figure caption="One donor node, on both coordinate systems. Top: the GRCh38 window, its bubble lane cut to bubbles holding an allele over 100 kb, with the banded bubble a 1,023 bp reference span. Middle: the graph cut from that window, where the boxed node is 142.2 kb of CHM13 sequence attached at a 75 bp anchor. Bottom: that node on hs1's own chr17, an ordinary interval drawn by the same segments track. Both linear panes carry UCSC's RepeatMasker: the CHM13-only sequence is a near-continuous run of it, almost all LINE/L1." src="/img/pangenome/hprc_chm13_allele.png" />
+<Figure caption="One donor node, on both coordinate systems. Top: the GRCh38 window, its bubble lane cut to bubbles holding an allele over 100 kb, with the banded bubble a 1,023 bp reference span. Middle: the graph cut from that window, where the boxed node is 142.2 kb of CHM13 sequence attached at a 75 bp anchor. Bottom: that node on hs1's own chr17, an ordinary interval drawn by the same segments track. The CHM13 pane carries UCSC's RepeatMasker with LINE elements in red: the inserted sequence is tiled by long L1, which is the kind of sequence a BAC-and-Sanger reference had no way to place." src="/img/pangenome/hprc_chm13_allele.png" />
 
 CHM13 entered this graph at rank 61, after sixty haplotypes, so most of what it
 carries was already in the graph and little is credited to it:
