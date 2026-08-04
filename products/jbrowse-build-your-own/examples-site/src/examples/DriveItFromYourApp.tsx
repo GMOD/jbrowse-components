@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 
 import { setConf } from '@jbrowse/core/configuration'
 import { PaletteProvider } from '@jbrowse/core/ui/PaletteContext'
@@ -402,12 +402,15 @@ const LocationBox = observer(function LocationBox({
  * Neither needs a range check. The view clamps to `minBpPerPx`/`maxBpPerPx`,
  * which it derives from the assembly, so "zoom out" at the whole-genome end is
  * a no-op rather than an error.
+ *
+ * Not an `observer`, unlike most components here, and the rule is worth being
+ * exact about: `observer` re-renders on the observables a component reads *while
+ * rendering*. This one reads `bpPerPx` inside a click handler, which runs long
+ * after the render and always sees the current value. Wrapping it would buy a
+ * subscription that changes nothing. `TrackToggles` below reads `view.tracks` in
+ * its body, so it does need one.
  */
-const ZoomButtons = observer(function ZoomButtons({
-  view,
-}: {
-  view: BrowserView
-}) {
+function ZoomButtons({ view }: { view: BrowserView }) {
   return (
     <div style={{ display: 'flex', gap: 4 }}>
       <button
@@ -430,7 +433,7 @@ const ZoomButtons = observer(function ZoomButtons({
       </button>
     </div>
   )
-})
+}
 
 /**
  * Show and hide tracks.
@@ -486,8 +489,13 @@ const TrackToggles = observer(function TrackToggles({
  * synchronous while `navToLocString` is not -- so the tracks are up before the
  * navigation resolves, and they fetch once, for the destination, rather than
  * once for here and again for there.
+ *
+ * The `.catch` logs rather than showing the reader anything, which is the
+ * opposite of `LocationBox` above and is deliberate: these locstrings are your
+ * own, so one that fails to resolve is a bug in your list rather than something
+ * a user mistyped. Not an `observer` -- see `ZoomButtons`.
  */
-const Bookmarks = observer(function Bookmarks({ view }: { view: BrowserView }) {
+function Bookmarks({ view }: { view: BrowserView }) {
   return (
     <div style={{ display: 'flex', gap: 4, fontSize: '0.85rem' }}>
       {bookmarks.map(({ label, loc }) => (
@@ -510,7 +518,7 @@ const Bookmarks = observer(function Bookmarks({ view }: { view: BrowserView }) {
       ))}
     </div>
   )
-})
+}
 
 /**
  * The page around this demo has a light/dark toggle. JBrowse needs to be told,
@@ -566,7 +574,7 @@ function useSitePalette(session: BrowserSession) {
 }
 
 const DriveItFromYourApp = observer(function DriveItFromYourApp() {
-  const { view, session } = useMemo(() => makeView(), [])
+  const [{ view, session }] = useState(makeView)
   const ref = useViewWidth(view)
   const { hint, props } = usePanZoom(view, ref)
   const palette = useSitePalette(session)

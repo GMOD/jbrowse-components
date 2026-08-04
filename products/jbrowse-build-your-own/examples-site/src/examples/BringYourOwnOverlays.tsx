@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 
 import { setConf } from '@jbrowse/core/configuration'
 import { PaletteProvider } from '@jbrowse/core/ui/PaletteContext'
@@ -401,7 +401,7 @@ function useSitePalette(session: BrowserSession) {
 
 const BringYourOwnOverlays = observer(function BringYourOwnOverlays() {
   const [plain, setPlain] = useState(true)
-  const { view, session } = useMemo(() => makeView(), [])
+  const [{ view, session }] = useState(makeView)
   const palette = useSitePalette(session)
 
   const stack = (

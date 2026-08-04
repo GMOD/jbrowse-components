@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 
 import { setConf } from '@jbrowse/core/configuration'
 import { PaletteProvider } from '@jbrowse/core/ui/PaletteContext'
@@ -384,7 +384,7 @@ function useSitePalette(session: BrowserSession) {
 // through `PaletteProvider` and Material UI is not involved.
 
 const StackOfTracks = observer(function StackOfTracks() {
-  const { view, session } = useMemo(() => makeView(), [])
+  const [{ view, session }] = useState(makeView)
   const palette = useSitePalette(session)
   return (
     <PaletteProvider palette={palette}>

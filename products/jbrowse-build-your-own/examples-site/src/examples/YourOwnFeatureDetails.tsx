@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 
 import { setConf } from '@jbrowse/core/configuration'
 import { PaletteProvider } from '@jbrowse/core/ui/PaletteContext'
@@ -429,7 +429,7 @@ function useSitePalette(session: BrowserSession) {
 }
 
 const YourOwnFeatureDetails = observer(function YourOwnFeatureDetails() {
-  const { view, session } = useMemo(() => makeView(), [])
+  const [{ view, session }] = useState(makeView)
   const ref = useViewWidth(view)
   const { hint, props } = usePanZoom(view, ref)
   const palette = useSitePalette(session)

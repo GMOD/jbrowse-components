@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useMemo, useRef } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
@@ -52,6 +52,14 @@ const wiggleTrack = {
  *
  * No `makeWorkerInstance`, so RPC runs on the main thread. That is one fewer
  * moving piece for a demo; a real app passes a worker.
+ *
+ * Call it from `useState`'s lazy initializer rather than `useMemo`. React
+ * guarantees a `useState` initializer runs once per mounted component, and
+ * documents `useMemo` as a performance hint it is allowed to discard -- and
+ * discarding this one would build a second engine and lose wherever the user
+ * had panned to. Neither hook makes construction happen *only* once (StrictMode
+ * runs both twice in dev, by design), so keep it to construction: a view that
+ * has not been given a width yet has nothing to draw and nothing to undo.
  */
 function makeView() {
   const state = createViewState({
@@ -162,7 +170,7 @@ const TrackRow = observer(function TrackRow({
 })
 
 const OneTrack = observer(function OneTrack() {
-  const view = useMemo(() => makeView(), [])
+  const [view] = useState(makeView)
   const ref = useViewWidth(view)
 
   return (

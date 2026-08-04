@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 
 import { normalizeWheelDelta } from '@jbrowse/core/util/wheelZoom'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
@@ -348,7 +348,7 @@ function ZoomHint({ show }: { show: boolean }) {
 }
 
 const PanAndZoom = observer(function PanAndZoom() {
-  const view = useMemo(() => makeView(), [])
+  const [view] = useState(makeView)
   // `makeView` turns this on, because a browser that owns its area of the page
   // should zoom the way a map does. Uncheck to see the other mode.
   const ref = useViewWidth(view)
