@@ -3148,6 +3148,25 @@ export const graphSpecs: ScreenshotSpec[] = [
         anchor: { view: 1, graphNode: CHM13_NODE },
         strokeWidth: 3,
       },
+      // The repeat lane's color key, on the lane. Two colors and no labels is a
+      // deliberate trade (see repeatLane) but it leaves the bottom pane reading
+      // as an abstract pattern until the caption is reached, which is the
+      // "not very interesting / glitchy" half of the review. Anchored to the
+      // track at the top of its own band rather than placed by pixel, so it
+      // stays on the lane as the lane grows to its row count.
+      {
+        type: 'text',
+        text: 'red = LINE, nearly all L1',
+        fontSize: 18,
+        anchor: {
+          view: 2,
+          track: HS1_RMSK_TRACK.trackId,
+          fracY: 0,
+          alignX: 'left',
+        },
+        dx: 150,
+        dy: 20,
+      },
     ],
   },
   // The measurement the figure above could not make. hprc_chm13_allele says what
