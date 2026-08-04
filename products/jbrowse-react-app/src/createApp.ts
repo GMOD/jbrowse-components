@@ -9,6 +9,7 @@ import { destroyViewState } from './destroyViewState.ts'
 import type { ManagedView } from './JBrowse/index.ts'
 import type { ViewModel } from './createModel.ts'
 import type { CreateAppOptions } from './createViewStateFromProps.ts'
+import type { SessionSnapshot } from './types.ts'
 
 export type { CreateAppOptions, ManagedView }
 
@@ -17,6 +18,15 @@ export interface JBrowseAppController {
   readonly viewState: ViewModel
   /** open another view after launch, same `{ type, init }` shape as `views` */
   addView(view: ManagedView): void
+  /** close a view opened at launch or by `addView`; unknown ids are ignored */
+  removeView(id: string): void
+  /**
+   * Replace the whole session — a snapshot from {@link decodeSession}, or one
+   * you stored. The counterpart of the `session` mount option, for the state
+   * that arrives after mount: a URL the user pasted, a saved view they picked.
+   * Pass nothing to return to the `views` the app launched with.
+   */
+  setSession(session?: SessionSnapshot): void
   /**
    * Unmount the app and tear the engine down — React root, RPC worker threads,
    * and the MST tree's autoruns. The controller is unusable afterwards.
@@ -48,6 +58,22 @@ export function createApp(
     },
     addView(view) {
       viewState.session.addView(view.type, { id: view.id, init: view.init })
+    },
+    removeView(id) {
+      const view = viewState.session.views.find(
+        (v: { id: string }) => v.id === id,
+      )
+      if (view) {
+        viewState.session.removeView(view)
+      }
+    },
+    setSession(session) {
+      if (session) {
+        viewState.setSession(session)
+      } else {
+        // back to the app's own starting state, which `views` defined
+        viewState.setDefaultSession()
+      }
     },
     destroy() {
       // unmount first: destroying the tree out from under a mounted observer

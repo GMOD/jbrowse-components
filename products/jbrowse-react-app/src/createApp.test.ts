@@ -102,3 +102,64 @@ test('destroy is idempotent', () => {
     controller.destroy()
   }).not.toThrow()
 })
+
+// `session` is a mount option, but the state a host wants to apply often arrives
+// later — a URL the user pasted, a saved view they picked from a list. Without
+// this the only way to swap it is to destroy the app and build another.
+test('setSession replaces the session after launch', () => {
+  const controller = createApp(mount(), {
+    assemblies,
+    views: [{ type: 'LinearGenomeView' }],
+  })
+
+  controller.setSession({
+    name: 'restored',
+    views: [{ id: 'v', type: 'CircularView' }],
+  })
+
+  const { session } = controller.viewState
+  expect(session.name).toBe('restored')
+  expect(session.views).toHaveLength(1)
+  expect(session.views[0]!.type).toBe('CircularView')
+
+  controller.destroy()
+})
+
+test('setSession with nothing returns to the launch views', () => {
+  const controller = createApp(mount(), {
+    assemblies,
+    sessionName: 'launch',
+    views: [{ type: 'LinearGenomeView' }],
+  })
+  controller.setSession({ name: 'restored' })
+
+  controller.setSession()
+
+  const { session } = controller.viewState
+  expect(session.name).toMatch(/^launch /)
+  expect(session.views).toHaveLength(1)
+  expect(session.views[0]!.type).toBe('LinearGenomeView')
+
+  controller.destroy()
+})
+
+test('removeView closes a view, and ignores an unknown id', () => {
+  const controller = createApp(mount(), {
+    assemblies,
+    views: [
+      { type: 'LinearGenomeView', id: 'keep' },
+      { type: 'CircularView', id: 'drop' },
+    ],
+  })
+
+  controller.removeView('drop')
+  expect(controller.viewState.session.views).toHaveLength(1)
+  expect(controller.viewState.session.views[0]!.id).toBe('keep')
+
+  expect(() => {
+    controller.removeView('never-existed')
+  }).not.toThrow()
+  expect(controller.viewState.session.views).toHaveLength(1)
+
+  controller.destroy()
+})
