@@ -27,9 +27,15 @@ const SetColorDialog = observer(function SetColorDialog({
       submitText="Close"
       onCancel={handleClose}
       onSubmit={handleClose}
+      // Reset only what this dialog is showing. A display that hides the UTR
+      // picker (variants — openSetColorDialog(false)) has no UTRs to color, so
+      // clearing that slot here would silently undo a config-authored value
+      // through a control the user can't see.
       onReset={() => {
         model.setFeatureColor(undefined)
-        model.setUtrColor(undefined)
+        if (showUtrColor) {
+          model.setUtrColor(undefined)
+        }
       }}
     >
       <Typography>Feature color</Typography>
