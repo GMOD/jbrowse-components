@@ -80,7 +80,13 @@ const LevelSection = observer(function LevelSection({
 
   return (
     <>
-      <div className={classes.wrapper}>
+      {/* The band's height comes from the level, not from what happens to be
+        drawn in it: the canvas is absolutely positioned and the legend floats,
+        so the only in-flow children are the per-track overlays. A level with no
+        synteny track is a legal state (the import form launches one, and hiding
+        the last track reaches it too), and without this the band reserved 0px
+        while its canvas still painted level.height over the genome row below. */}
+      <div className={classes.wrapper} style={{ height: level.height }}>
         <div className={classes.container}>
           <LevelSyntenyCanvas model={level} />
           <Overlays model={model} level={levelIdx} />
