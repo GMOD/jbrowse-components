@@ -264,6 +264,20 @@ export function getColorByMenuItem(
     displayTypeDefault: pin,
   } = options
   const mods = includeModifications ? modModel(model) : undefined
+  // Everything above the header picks the read fill scheme — the radios and the
+  // Paired end / Modifications / Bisulfite submenus alike. Everything below
+  // refines coloring without selecting a scheme: the arcs and read cloud have
+  // their own axis, and the supplementary modifiers ride whatever scheme is
+  // chosen. The two kinds are indistinguishable otherwise — both render as a
+  // submenu arrow — so one header carries the whole distinction. Absent when
+  // neither refinement is offered, so a curated menu (synteny) stays a plain
+  // radio list.
+  const refinements = [
+    ...(arcColor ? [arcColorItem(arcColor)] : []),
+    ...(supplementaryColoring
+      ? [supplementaryItem(supplementaryColoring)]
+      : []),
+  ]
   return {
     label: 'Color by...',
     type: 'subMenu' as const,
@@ -273,9 +287,11 @@ export function getColorByMenuItem(
       ...(includeTagOption ? [tagItem(model, pin)] : []),
       ...(includePairedEnd ? [pairedEndItem(model, pin)] : []),
       ...(mods ? modificationsItems(mods, pin) : []),
-      ...(arcColor ? [arcColorItem(arcColor)] : []),
-      ...(supplementaryColoring
-        ? [supplementaryItem(supplementaryColoring)]
+      ...(refinements.length
+        ? [
+            { type: 'subHeader' as const, label: 'Additional coloring' },
+            ...refinements,
+          ]
         : []),
     ] satisfies MenuItem[],
   }

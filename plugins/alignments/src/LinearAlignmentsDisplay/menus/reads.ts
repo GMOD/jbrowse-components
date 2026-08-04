@@ -61,12 +61,23 @@ interface ReadsModel extends MaxHeightModel, CollapseGroupRowsModel {
 
 // Visibility of the rendering layers. Sashimi and read-connection controls live
 // in their own menus.
+//
+// The rows are grouped under subHeaders (the pattern `getFeatureHeightMenuItem`
+// already uses to separate its two radio groups) because this is the longest
+// submenu in the track menu and holds three genuinely different kinds of thing:
+// which bands are drawn, how a read's bases are painted, and which reads are
+// fetched at all. As one flat list — with pins on two rows and help "?" on five
+// — it read as an undifferentiated wall. The headers cost two rows and hide
+// nothing; splitting the third group into its own submenu instead would put the
+// read-category toggles a hop deeper, and they were deliberately kept out of
+// "Filter by..." because they read as visibility (see filters.ts).
 export function getReadsMenuItem(model: ReadsModel) {
   return {
     label: 'Show...',
     icon: VisibilityIcon,
     type: 'subMenu' as const,
     subMenu: [
+      { type: 'subHeader' as const, label: 'Layers' },
       checkboxItem('Show legend', model.showLegend, () => {
         model.setShowLegend(!model.showLegend)
       }),
@@ -79,6 +90,7 @@ export function getReadsMenuItem(model: ReadsModel) {
       // Only while grouping is in effect, so it sits next to the pileup toggle
       // it modifies rather than in the Group-by dimension list.
       ...collapseGroupRowsItems(model),
+      { type: 'subHeader' as const, label: 'Read detail' },
       checkboxItem('Show mismatches', model.showMismatches, () => {
         model.setShowMismatches(!model.showMismatches)
       }),
@@ -120,6 +132,7 @@ export function getReadsMenuItem(model: ReadsModel) {
       // Which reads populate the pileup. These change what's fetched (they also
       // thin the coverage histogram), but they read as visibility toggles, so
       // they live in "Show..." rather than a filter submenu.
+      { type: 'subHeader' as const, label: 'Which reads' },
       checkboxItem(
         'Show proper pairs',
         model.drawProperPairs,
@@ -163,6 +176,8 @@ export function getReadsMenuItem(model: ReadsModel) {
             'read name, so it applies to a plain pileup too.',
         },
       ),
+      // The one action in a menu of toggles, so a divider rather than a header.
+      { type: 'divider' as const },
       getMaxHeightMenuItem(model),
     ] satisfies MenuItem[],
   }
