@@ -72,43 +72,44 @@ function addSpan(
   }
 }
 
-function addRawArrays(
+// What one source has in one region, in whichever form its adapter serves it:
+// typed arrays from a multi-source adapter, plain features from one carrying
+// several sources in a single file. Neither is converted into the other — a
+// conversion here would allocate a second copy of data already in memory — so
+// the binning below just takes whichever it was handed.
+type RegionValues = RawFeatureArrays | Feature[]
+
+function addValues(
   sums: Float32Array,
   counts: Int32Array,
   seg: Segment,
   invBpPerPx: number,
-  raw: RawFeatureArrays,
+  values: RegionValues,
 ) {
-  const { starts, ends, scores, count } = raw
-  for (let i = 0; i < count; i++) {
-    addSpan(sums, counts, seg, invBpPerPx, starts[i]!, ends[i]!, scores[i]!)
+  if (Array.isArray(values)) {
+    for (const feat of values) {
+      addSpan(
+        sums,
+        counts,
+        seg,
+        invBpPerPx,
+        feat.get('start'),
+        feat.get('end'),
+        feat.get('score') ?? 0,
+      )
+    }
+  } else {
+    const { starts, ends, scores, count } = values
+    for (let i = 0; i < count; i++) {
+      addSpan(sums, counts, seg, invBpPerPx, starts[i]!, ends[i]!, scores[i]!)
+    }
   }
 }
 
-function addFeatures(
-  sums: Float32Array,
-  counts: Int32Array,
-  seg: Segment,
-  invBpPerPx: number,
-  features: Feature[],
-) {
-  for (const feat of features) {
-    addSpan(
-      sums,
-      counts,
-      seg,
-      invBpPerPx,
-      feat.get('start'),
-      feat.get('end'),
-      feat.get('score') ?? 0,
-    )
-  }
-}
-
-// Per-source values for every region, in whichever form the adapter serves them.
-type MatrixData =
-  | { kind: 'raw'; bySource: Map<string, RawFeatureArrays[]> }
-  | { kind: 'features'; perRegion: Map<string, Feature[]>[] }
+// Every source's values, keyed by source and indexed by region — one shape from
+// both fetch paths, so the binning loop reads them the same way and only the
+// fetch knows which adapter it was.
+type MatrixData = Map<string, RegionValues[]>
 
 async function fetchMatrixData(
   dataAdapter: BaseFeatureDataAdapter,
@@ -126,10 +127,7 @@ async function fetchMatrixData(
       regions,
       args,
     )
-    return {
-      kind: 'raw',
-      bySource: new Map(perSource.map(p => [p.source, p.raws])),
-    }
+    return new Map(perSource.map(p => [p.source, p.raws]))
   }
 
   // An adapter carrying several sources in one file (bedMethyl, a bedGraph with
@@ -137,17 +135,28 @@ async function fetchMatrixData(
   // each region on its own status slot so the concurrent downloads aggregate
   // into one bar instead of clobbering the shared field.
   const slot = createStatusFanOut(args.statusCallback)
-  const perRegion = await Promise.all(
-    regions.map(async region =>
-      groupFeaturesBySource(
-        await dataAdapter.getFeaturesArray(region, {
-          ...args,
-          statusCallback: slot(),
-        }),
-      ),
+  const featuresPerRegion = await Promise.all(
+    regions.map(region =>
+      dataAdapter.getFeaturesArray(region, {
+        ...args,
+        statusCallback: slot(),
+      }),
     ),
   )
-  return { kind: 'features', perRegion }
+  // Grouped straight into the by-source shape. A source missing from a region
+  // leaves a hole rather than an empty array, which the binning loop skips.
+  const bySource: MatrixData = new Map()
+  for (const [i, features] of featuresPerRegion.entries()) {
+    for (const [name, group] of groupFeaturesBySource(features)) {
+      let perRegion = bySource.get(name)
+      if (!perRegion) {
+        perRegion = []
+        bySource.set(name, perRegion)
+      }
+      perRegion[i] = group
+    }
+  }
+  return bySource
 }
 
 export async function getScoreMatrix({
@@ -185,7 +194,7 @@ export async function getScoreMatrix({
     rows.set(name, new Float32Array(totalWidth))
   }
 
-  const data = await fetchMatrixData(dataAdapter, regions, args)
+  const valuesBySource = await fetchMatrixData(dataAdapter, regions, args)
 
   // One counts array reused across sources, not one per row: each row is
   // averaged before the next starts, so only one is ever live. Binning stays
@@ -193,18 +202,12 @@ export async function getScoreMatrix({
   const counts = new Int32Array(totalWidth)
   for (const { name } of sources) {
     const sums = rows.get(name)!
+    const perRegion = valuesBySource.get(name)
     counts.fill(0)
     for (const [i, seg] of segments.entries()) {
-      if (data.kind === 'raw') {
-        const raw = data.bySource.get(name)?.[i]
-        if (raw) {
-          addRawArrays(sums, counts, seg, invBpPerPx, raw)
-        }
-      } else {
-        const features = data.perRegion[i]!.get(name)
-        if (features) {
-          addFeatures(sums, counts, seg, invBpPerPx, features)
-        }
+      const values = perRegion?.[i]
+      if (values) {
+        addValues(sums, counts, seg, invBpPerPx, values)
       }
     }
     // A column nothing covered stays 0 rather than becoming NaN.

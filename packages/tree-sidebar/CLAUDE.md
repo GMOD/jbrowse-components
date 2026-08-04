@@ -22,10 +22,10 @@ those straight into its own source list (`buildClusteredLayout`,
 `applyClusterOrder`). A plain object cannot carry that: it hoists integer-like
 keys ahead of the rest, so rows a caller built as `10, 2, 1` reached hclust as
 `1, 2, 10` and the indices it returned named the wrong sources. Reachable from
-numbered bigWig filenames, numeric VCF sample IDs, or a numeric partition
-field — and it fails twice over, because the tree's leaf names then disagree
-with the reordered rows and `treeDescribesRows` declines to draw the dendrogram
-that would have shown it.
+numbered bigWig filenames, numeric VCF sample IDs, or a numeric partition field
+— and it fails twice over, because the tree's leaf names then disagree with the
+reordered rows and `treeDescribesRows` declines to draw the dendrogram that
+would have shown it.
 
 So build the matrix in row order and keep it in a `Map` the whole way — through
 the RPC return type too, since `generateClusterRScript` writes the same order

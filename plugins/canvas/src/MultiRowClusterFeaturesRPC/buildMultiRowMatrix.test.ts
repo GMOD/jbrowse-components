@@ -2,6 +2,13 @@ import { buildMultiRowMatrix } from './buildMultiRowMatrix.ts'
 
 import type { MatrixFeature } from './buildMultiRowMatrix.ts'
 
+// The matrix is keyed by source, and its key order is `sources` order — the
+// contract the cluster `order` indexes back into. These tests read it
+// positionally, which asserts that order as a side effect.
+function buildRows(args: Parameters<typeof buildMultiRowMatrix>[0]) {
+  return [...buildMultiRowMatrix(args).values()]
+}
+
 const RED = [255, 0, 0]
 const BLUE = [0, 0, 255]
 const GAP = [-255, -255, -255]
@@ -23,7 +30,7 @@ const PALETTE_FILLER: MatrixFeature[] = Array.from({ length: 13 }, (_, i) => ({
 
 describe('continuous palettes: rgb channels', () => {
   test('rows in `sources` order; bins carry rgb channels; gaps are -255', () => {
-    const matrix = buildMultiRowMatrix({
+    const matrix = buildRows({
       sources: ['s1', 's2', 's3'],
       regions: [{ start: 0, end: 10 }],
       maxBins: 4, // midpoints at 1.25, 3.75, 6.25, 8.75
@@ -43,7 +50,7 @@ describe('continuous palettes: rgb channels', () => {
   })
 
   test('later feature on a row wins the bin (paint order)', () => {
-    const [row] = buildMultiRowMatrix({
+    const [row] = buildRows({
       sources: ['s1'],
       regions: [{ start: 0, end: 10 }],
       maxBins: 2, // midpoints at 2.5, 7.5
@@ -57,7 +64,7 @@ describe('continuous palettes: rgb channels', () => {
   })
 
   test('bins split across regions proportional to width', () => {
-    const matrix = buildMultiRowMatrix({
+    const matrix = buildRows({
       sources: ['s1'],
       regions: [
         { start: 0, end: 10 },
@@ -73,7 +80,7 @@ describe('continuous palettes: rgb channels', () => {
   })
 
   test('features only cover bins in their own region (same-coord chromosomes)', () => {
-    const matrix = buildMultiRowMatrix({
+    const matrix = buildRows({
       sources: ['s1', 's2'],
       // two regions with the SAME genomic coords, e.g. chr1:0-10 and chr2:0-10
       regions: [
@@ -102,7 +109,7 @@ describe('continuous palettes: rgb channels', () => {
   // whatever order they arrive in — and this is the property a continuous
   // palette needs that no categorical encoding can provide.
   test('similar colors are closer than dissimilar ones regardless of insertion order', () => {
-    const [seenFirst, seenMid, seenLast] = buildMultiRowMatrix({
+    const [seenFirst, seenMid, seenLast] = buildRows({
       sources: ['seenFirst', 'seenMid', 'seenLast'],
       regions: [{ start: 0, end: 10 }],
       maxBins: 2,
@@ -141,7 +148,7 @@ describe('continuous palettes: rgb channels', () => {
   // least as far from any color as the two extremes are from each other, and
   // strictly farther than any color from a mid-tone.
   test('a gap sits outside the color cube', () => {
-    const [black, white, gray, absent] = buildMultiRowMatrix({
+    const [black, white, gray, absent] = buildRows({
       sources: ['black', 'white', 'gray', 'absent'],
       regions: [{ start: 0, end: 10 }],
       maxBins: 2,
@@ -176,7 +183,7 @@ describe('categorical palettes: one channel per color', () => {
   // three-category painting clustered partly on where its palette happens to sit
   // in the color cube. As categories every pair is sqrt(2) per bin apart.
   test('three categories are equidistant, which the rgb encoding is not', () => {
-    const [red, blue, purple] = buildMultiRowMatrix({
+    const [red, blue, purple] = buildRows({
       sources: ['red', 'blue', 'purple'],
       regions: [{ start: 0, end: 10 }],
       maxBins: 2,
@@ -197,7 +204,7 @@ describe('categorical palettes: one channel per color', () => {
   })
 
   test('each bin is a one-hot over the colors plus a gap slot', () => {
-    const [s1, s2] = buildMultiRowMatrix({
+    const [s1, s2] = buildRows({
       sources: ['s1', 's2'],
       regions: [{ start: 0, end: 10 }],
       maxBins: 4,
@@ -221,7 +228,7 @@ describe('categorical palettes: one channel per color', () => {
   })
 
   test('distance counts mismatched bins', () => {
-    const [same, oneOff] = buildMultiRowMatrix({
+    const [same, oneOff] = buildRows({
       sources: ['same', 'oneOff'],
       regions: [{ start: 0, end: 10 }],
       maxBins: 4, // midpoints 1.25, 3.75, 6.25, 8.75
@@ -236,7 +243,7 @@ describe('categorical palettes: one channel per color', () => {
   })
 
   test('absent is a category: two absent rows agree, and absence is no farther than any other mismatch', () => {
-    const [painted, absentA, absentB] = buildMultiRowMatrix({
+    const [painted, absentA, absentB] = buildRows({
       sources: ['painted', 'absentA', 'absentB'],
       regions: [{ start: 0, end: 10 }],
       maxBins: 2,
@@ -258,7 +265,7 @@ describe('categorical palettes: one channel per color', () => {
 
   test('switches to rgb once the palette outgrows the categorical ceiling', () => {
     const build = (numColors: number) =>
-      buildMultiRowMatrix({
+      buildRows({
         sources: ['s1'],
         regions: [{ start: 0, end: 10 }],
         maxBins: 1,

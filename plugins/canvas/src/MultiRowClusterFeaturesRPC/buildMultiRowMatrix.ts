@@ -39,10 +39,11 @@ const GAP_CHANNEL = -255
 // (at the limit, bins × 13).
 const MAX_CATEGORICAL_COLORS = 12
 
-// Build a rows × (bins × channels) numeric matrix for hierarchical clustering.
-// Rows are the `sources` (in the given order — the cluster `order` result
-// indexes back into it); each bin's channels encode the color of the feature
-// covering that bin's midpoint on that row.
+// Build a rows × (bins × channels) numeric matrix for hierarchical clustering,
+// keyed by source in the given order — which is the order the cluster `order`
+// result indexes back into, so the name travels with its row rather than being
+// re-associated by position downstream. Each bin's channels encode the color of
+// the feature covering that bin's midpoint on that row.
 //
 // The color is the encoding, not a rendering detail: a painting's color IS the
 // per-bin value of the row (a `color` jexl over some feature field, or a BED
@@ -83,7 +84,7 @@ export function buildMultiRowMatrix({
   regions: { start: number; end: number }[]
   features: MatrixFeature[]
   maxBins?: number
-}): number[][] {
+}): Map<string, number[]> {
   const totalWidth =
     regions.reduce((a, r) => a + Math.max(0, r.end - r.start), 0) || 1
   const bins: Bin[] = []
@@ -139,7 +140,8 @@ export function buildMultiRowMatrix({
     return rgb
   }
 
-  return sources.map(name => {
+  const matrix = new Map<string, number[]>()
+  for (const name of sources) {
     const intervals = byRow.get(name) ?? []
     const row = new Array<number>(bins.length * channels)
     if (categorical) {
@@ -173,6 +175,7 @@ export function buildMultiRowMatrix({
         row[o + 2] = b
       }
     }
-    return row
-  })
+    matrix.set(name, row)
+  }
+  return matrix
 }
