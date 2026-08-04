@@ -136,33 +136,32 @@ Where the variation does fit the representation, they agree:
 The track above stops at 104 individuals because that is about where one BigWig
 per sample stops being pleasant, and size is not the reason.
 [`measure_signal_latency.ts`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/measure_signal_latency.ts)
-counts what filling this tutorial's window costs each way, by wrapping `fetch`
-around the same readers the browser uses. It takes the same `name`/`group`/`url`
-TSV as the converter, so the sample list the
+counts what filling this tutorial's window costs each way at panel scale, all
+2504 BigWigs against a store holding those same 2504 samples, by wrapping
+`fetch` around the same readers the browser uses. It takes the same
+`name`/`group`/`url` TSV as the converter, so the sample list the
 [build script](#reproduce-it-end-to-end) writes drives it directly:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/measure_signal_latency.ts
 npm install @gmod/bbi generic-filehandle2
 
-awk -F'\t' '$2=="PUR"' 1000g_cnv_build/samples.tsv > pur.tsv   # the 104 rows above
-
-node measure_signal_latency.ts --samples pur.tsv \
+node measure_signal_latency.ts --samples 1000g_cnv_build/samples.tsv \
   --region chr17:36,080,000-36,270,000 \
   --zarr https://jbrowse.org/code/jb2/main/test_data/1000g_cnv/qm2_cn_1kb.zarr
 ```
 
-Against the hosted files, the 104 BigWigs answer that window in 625 requests and
-2.01 MB, about six requests per file, and take 1.8 seconds at a median range
-request of 25 ms. The Zarr store answers the same window for all 2504
-individuals in 3 requests and 0.22 MB, and takes 0.2 seconds: two metadata reads
-plus one chunk of 2504 samples by 256 bins.
+Against the hosted files, one BigWig per sample answers that window in 15,048
+requests and 48.39 MB, six requests per file, and takes 24.5 seconds at a median
+range request of 25 ms. The store answers it in 3 requests and 0.22 MB, and
+takes 0.2 seconds: two metadata reads plus one chunk of 2504 samples by 256
+bins.
 
-Two megabytes is not the problem. The request count is. Every BigWig needs a few
+The bytes are not the problem. The request count is. Every BigWig needs a few
 reads to find where a region's values live before it can read them, and those
 reads happen once per file and wait on each other, so the cost is a round trip
-times the number of files. The full panel is 24 times the files, and the times
-above scale with whatever that round trip is on your own network.
+times the number of files. The times above scale with whatever that round trip
+is on your own network.
 
 The fix is a format that answers the same question in a couple of requests: one
 array of samples by bins, stored so that a single read covers every sample at
@@ -220,8 +219,7 @@ store sitting beside `config.json` needs no absolute URL.
 <Figure caption="All 2504 individuals of the 1000 Genomes panel over the CCL3L1 window, clustered, from a single Zarr store. Every population is present, so the classes the 104-sample figure hints at are filled in." src="/img/cnv1000g/zarr_cohort.png" />
 
 That figure is the whole panel, and it cost the three requests measured above:
-the group metadata, the array metadata, and one chunk. One BigWig per sample
-would be six requests each, about 15,000 for the panel. The three do not grow
+the group metadata, the array metadata, and one chunk. The three do not grow
 with the cohort, because the sample axis is inside the chunk.
 
 ## Build the store
