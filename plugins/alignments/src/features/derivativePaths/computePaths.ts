@@ -104,29 +104,33 @@ function totalSpan(chain: SegAln[]) {
 // The same allele read from its other end: reverse the segment order and flip
 // every strand. Two reads crossing one molecule in opposite directions describe
 // exactly this pair, and an allele and its reverse complement are the SAME
-// allele, so without folding them together one event turns up as two candidates
-// at half the support each. (Observed on COLO829's der(3): two 13-read rows for
-// one 26-read event.) The SA segments this reads are not strand-normalized into
-// the read's reference orientation, so the two orientations really do both
-// occur in one fetch.
+// allele, so the two have to be folded together before anything is counted. The
+// SA segments this reads are not strand-normalized into the read's reference
+// orientation, so both readings really do occur in one fetch: on COLO829's
+// der(3), 16 reads describe it one way and 10 the other.
 function reverseComplementChain(chain: SegAln[]): SegAln[] {
   return [...chain].reverse().map(seg => ({ ...seg, strand: -seg.strand }))
 }
 
-// Fold each chain onto one of its two readings. Both are equally true, so the
-// rule only has to be stable and unsurprising: present the allele starting from
-// the lower of the two reference coordinates it could begin at. Picking by
-// signature order instead would be stable but arbitrary, and it read COLO829's
-// der(3) backwards from the orientation every published description uses.
+// Fold each chain onto one of its two readings, so that two reads crossing one
+// molecule in opposite directions land in one group.
 //
-// The signature comparison is the last resort, for a path whose two ends start
-// at the same coordinate; without it the choice could depend on which direction
-// happened to be sequenced more, and the grouping would stop converging.
-function orientationRank(chain: SegAln[], signature: string) {
-  const first = chain[0]!
-  return [first.refName, first.start, signature] as const
-}
-
+// The choice is made from the SIGNATURES, i.e. from junctions alone, for the
+// same reason the signature itself excludes the outer edges: those edges are
+// where a read happens to start and stop, so any rule that consults them is
+// answering a question about the read rather than about the allele. Ranking by
+// the first segment's start — the obvious "present it from its lower coordinate"
+// rule — does exactly that, and it splits an allele in two: a read covering a
+// long stretch of the first arm ranks its forward reading lower, a read that
+// clips early in that arm but runs far down the last one ranks its reverse
+// reading lower, and the two are then counted as separate events. On COLO829's
+// der(3) that reported one 26-read allele as a 16-read and a 10-read candidate,
+// which is the bug the folding was added to prevent (`realReads.colo829.test.ts`
+// pins the merged count against the records themselves).
+//
+// Which of the two readings wins is arbitrary — an allele and its reverse
+// complement are the same allele — so the presentation orientation is chosen
+// separately, per candidate, in `orientForDisplay`.
 function canonicalize(chain: SegAln[], tolerance: number) {
   const forward = { signature: pathSignature(chain, tolerance), chain }
   const reversed = reverseComplementChain(chain)
@@ -134,14 +138,25 @@ function canonicalize(chain: SegAln[], tolerance: number) {
     signature: pathSignature(reversed, tolerance),
     chain: reversed,
   }
-  const a = orientationRank(forward.chain, forward.signature)
-  const b = orientationRank(reverse.chain, reverse.signature)
-  for (let i = 0; i < a.length; i++) {
-    if (a[i]! !== b[i]!) {
-      return a[i]! < b[i]! ? forward : reverse
-    }
+  return forward.signature <= reverse.signature ? forward : reverse
+}
+
+// Which end to show the allele from. Cosmetic by construction: it runs on the
+// group's representative AFTER the grouping is settled, so unlike the rule it
+// replaces it cannot move a read from one candidate to another, and it is free
+// to consult the read extent the signature deliberately ignores.
+//
+// The rule is "start from the lower of the two reference coordinates the allele
+// could begin at", which reads COLO829's der(3) in the orientation its published
+// description and `sv_multihop.py derive` both use.
+function orientForDisplay(chain: SegAln[]) {
+  const reversed = reverseComplementChain(chain)
+  const a = chain[0]!
+  const b = reversed[0]!
+  if (a.refName !== b.refName) {
+    return a.refName < b.refName ? chain : reversed
   }
-  return forward
+  return a.start <= b.start ? chain : reversed
 }
 
 // Turn one chain into the candidate's drawable segments. Interior segments are
@@ -224,13 +239,14 @@ export function computeDerivativePaths(
     const representative = group.chains.reduce((best, chain) =>
       totalSpan(chain) > totalSpan(best) ? chain : best,
     )
-    const segments = segmentsFromChain(representative, flank)
+    const oriented = orientForDisplay(representative)
+    const segments = segmentsFromChain(oriented, flank)
     candidates.push({
       segments,
       readCount: group.chains.length,
       locString: derivativeLocString(segments),
       refNames: [...new Set(segments.map(seg => seg.refName))],
-      extendsOffScreen: representative.some(seg => !seg.onScreen),
+      extendsOffScreen: oriented.some(seg => !seg.onScreen),
     })
   }
 

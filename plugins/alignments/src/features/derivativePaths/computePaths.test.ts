@@ -84,8 +84,8 @@ describe('computeDerivativePaths', () => {
   it('folds a chain and its reverse complement into one candidate', () => {
     // A read crossing the molecule from its other end describes the same allele
     // backwards: segments in reverse order, every strand flipped. Counting the
-    // two separately reported COLO829's der(3) as two 13-read candidates rather
-    // than one 26-read one.
+    // two separately reported COLO829's der(3) as a 16-read and a 10-read
+    // candidate rather than one 26-read one.
     const reversed = [...der3Chain()]
       .reverse()
       .map(seg => ({ ...seg, strand: -seg.strand }))
@@ -94,6 +94,27 @@ describe('computeDerivativePaths', () => {
     })
     expect(candidates).toHaveLength(1)
     expect(candidates[0]!.readCount).toBe(4)
+  })
+
+  it('groups one allele however far each read runs into its outer arms', () => {
+    // Both reads cross the same three junctions; they differ only in how much
+    // of the first and last chr3 arm they reach, which is what varies read to
+    // read. `deep` covers a long stretch of the first arm, `shallow` clips
+    // early there and instead runs far down the last one — so the two disagree
+    // about which of their own readings starts at the lower coordinate. Any
+    // orientation rule that asks THAT question puts them in different groups
+    // and reports one allele twice, which is what COLO829's der(3) did
+    // (realReads.colo829.test.ts holds the records).
+    const deep = der3Chain()
+    const shallow = der3Chain()
+    shallow[0] = seg('chr3', 25_358_000, 25_359_568, 1, 0)
+    shallow[3] = seg('chr3', 25_340_000, 25_359_111, -1, 33_126)
+    expect(deep[0]!.start < deep[3]!.start).toBe(true)
+    expect(shallow[0].start > shallow[3].start).toBe(true)
+
+    const candidates = computeDerivativePaths({ chains: [deep, shallow] })
+    expect(candidates).toHaveLength(1)
+    expect(candidates[0]!.readCount).toBe(2)
   })
 
   it('picks the same orientation whichever direction is more common', () => {
