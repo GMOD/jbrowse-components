@@ -7,7 +7,7 @@ import {
   SVGView,
   defaultTextHeight,
   labelOffset,
-  totalHeight,
+  renderViewTracks,
   trackLabelLeftOffset,
 } from '@jbrowse/plugin-linear-genome-view'
 
@@ -42,35 +42,22 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
   // separates the view from the one above) plus a ruler, stacked above its
   // track bodies. `offset` is where those bodies start within the view.
   const offset = headerHeight + rulerHeight
-  // Minimized tracks are dropped (as the standalone LGV export does) so reserved
-  // height, rendered bodies, label width, and overlay offsets stay in sync and a
-  // collapsed track doesn't export as a full-height panel.
-  const visibleTracksByView = views.map(v => v.tracks.filter(t => !t.minimized))
-  const displayResults = await Promise.all(
-    visibleTracksByView.map(tracks =>
-      Promise.all(
-        tracks.map(async track => {
-          const d = track.displays[0]!
-          return { track, result: await d.renderSvg({ ...opts, theme }) }
-        }),
-      ),
+  // renderViewTracks drops minimized tracks (as the standalone LGV export does,
+  // so a collapsed track doesn't export as a full-height panel) and measures
+  // each row only once its displays have settled — which is what keeps the
+  // reserved height, the rendered bodies and the ribbon anchors below in sync.
+  // See the orderings it documents.
+  const rowTracks = await Promise.all(
+    views.map(view =>
+      renderViewTracks({ view, opts, theme, textHeight, trackLabels }),
     ),
   )
+  const heights = rowTracks.map(r => r.tracksHeight + offset)
 
-  // Reserved *after* those awaits, not before: a display whose height follows
-  // its data (grow mode — the alignments stack, the multi-row feature display)
-  // only reaches its final height once renderSvg's readiness wait resolves, and
-  // both SVGTracks and getTrackOffsets re-read `displays[0].height` later still.
-  // Measuring up front sized each view for the pre-fetch height, so the taller
-  // bodies overlapped the view below and ran off the bottom of the canvas —
-  // while the overlay anchors, resolved after, tracked the real ones.
-  const tracksHeights = visibleTracksByView.map(tracks =>
-    totalHeight(tracks, textHeight, trackLabels),
-  )
-  const heights = tracksHeights.map(h => h + offset)
-
+  // one gutter for the whole export, wide enough for the widest label in any
+  // view, so the stacked views stay aligned with each other
   const trackLabelOffset = trackLabelLeftOffset({
-    tracks: visibleTracksByView.flat(),
+    tracks: rowTracks.flatMap(r => r.tracks),
     trackLabels,
     fontSize,
     session,
@@ -92,7 +79,7 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
       // The tracks of this view, keyed by trackId, in the coordinate space of
       // the overlay group below — which is why they carry the view's own top.
       trackOffsets: getTrackOffsets(
-        visibleTracksByView[idx]!,
+        rowTracks[idx]!.tracks,
         textOffset,
         top + offset,
       ),
@@ -118,13 +105,13 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
           >
             <SVGView
               view={view}
-              displayResults={displayResults[idx]!}
+              displayResults={rowTracks[idx]!.displayResults}
               fontSize={fontSize}
               textHeight={textHeight}
               trackLabels={trackLabels}
               trackLabelOffset={trackLabelOffset}
               contentTop={rulerHeight}
-              tracksHeight={tracksHeights[idx]!}
+              tracksHeight={rowTracks[idx]!.tracksHeight}
               showGridlines={showGridlines}
               leftBuffer={exportMargin}
             />

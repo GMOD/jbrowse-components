@@ -1,16 +1,16 @@
 import { exportMargin } from '@jbrowse/core/svg/constants'
 import { awaitViewInitialized } from '@jbrowse/core/svg/svgReady'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
-import { getSession, max } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 
 import SVGGridlines from './SVGGridlines.tsx'
 import SVGHeader from './SVGHeader.tsx'
 import SVGHighlightsOverlay from './SVGHighlightsOverlay.tsx'
 import SVGTracks from './SVGTracks.tsx'
+import { renderViewTracks } from './renderViewTracks.ts'
 import {
   defaultTextHeight,
   getHeaderLayout,
-  totalHeight,
   trackLabelLeftOffset,
 } from './util.ts'
 
@@ -35,51 +35,33 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   } = opts
   const session = getSession(model)
   const theme = session.getActiveThemeOptions?.(themeName)
-  const { width, pinnedTracks, unpinnedTracks, effectiveShowCytobands } = model
-  const visibleTracks = [...pinnedTracks, ...unpinnedTracks].filter(
-    t => !t.minimized,
-  )
+  const { width, effectiveShowCytobands } = model
   const { tracksTop } = getHeaderLayout({
     fontSize,
     showCytobands: effectiveShowCytobands,
     rulerHeight,
   })
 
-  // deliberately read before the awaits below, since it is an input to them.
-  // That is why `svgLegendWidth` is specified as a function of the *settings*
-  // and not of the loaded data — see LinearHicDisplay's implementation.
-  const legendWidth = max(
-    visibleTracks.map(track => track.displays[0]!.svgLegendWidth?.() ?? 0),
-    0,
-  )
-
-  // Every display's `renderSvg` owns its own readiness wait — block
-  // renderers await their byte estimate inside
-  // `renderBaseLinearDisplaySvg`, GPU renderers await their data/layout
-  // inside their own `renderSvg` implementations.
-  const displayResults = await Promise.all(
-    visibleTracks.map(async track => ({
-      track,
-      result: await track.displays[0]!.renderSvg({
-        ...opts,
-        theme,
-        legendWidth,
-      }),
-    })),
-  )
-
-  // Reserved *after* those awaits, not before: a display whose height is
-  // derived from its data (LinearMultiRowFeatureDisplay is `nrow *
-  // effectiveRowHeight`) only reaches its final height once `renderSvg`'s
-  // readiness wait resolves. SVGTracks re-reads `displays[0].height` when it
-  // lays the tracks out, which happens later still, so measuring up front left
-  // the canvas sized for the pre-fetch height and the taller track bodies ran
-  // off the bottom of the export.
-  const tracksHeight = totalHeight(visibleTracks, textHeight, trackLabels)
+  // owns the two orderings this used to spell out by hand: legendWidth before
+  // the awaits, tracksHeight after them. Every display's `renderSvg` owns its
+  // own readiness wait — block renderers await their byte estimate inside
+  // `renderBaseLinearDisplaySvg`, GPU renderers await their data/layout inside
+  // their own `renderSvg` implementations.
+  const { tracks, displayResults, tracksHeight, legendWidth } =
+    await renderViewTracks({
+      view: model,
+      opts,
+      theme,
+      textHeight,
+      trackLabels,
+      // the standalone export is the one with room to give: it widens its
+      // canvas below so a legend sits beside the plot rather than over it
+      reserveLegendWidth: true,
+    })
   const height = tracksHeight + tracksTop + exportMargin
 
   const trackLabelOffset = trackLabelLeftOffset({
-    tracks: visibleTracks,
+    tracks,
     trackLabels,
     fontSize,
     session,

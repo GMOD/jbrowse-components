@@ -5,7 +5,7 @@ import { getSession } from '@jbrowse/core/util'
 import {
   SVGView,
   defaultTextHeight,
-  totalHeight,
+  renderViewTracks,
   trackLabelLeftOffset,
 } from '@jbrowse/plugin-linear-genome-view'
 import { SVGColorByLegend } from '@jbrowse/synteny-core'
@@ -39,30 +39,26 @@ export async function renderToSvg(
   const themeVar = session.getActiveThemeOptions?.(themeName)
   const { width, views, levels } = model
 
-  // each view is a header (assembly label + ruler) stacked above its tracks.
-  // Minimized tracks are dropped (as the standalone LGV export does) so the
-  // reserved height and the rendered bodies stay in sync and a collapsed track
-  // doesn't export as a full-height panel.
+  // each view is a header (assembly label + ruler) stacked above its tracks
   const headerHeight = fontSize + rulerHeight
-  const visibleTracksByView = views.map(v => v.tracks.filter(t => !t.minimized))
 
   // each display's renderSvg owns its own readiness wait (LGV track displays
   // await their byte estimate internally, renderSyntenyDisplaySvg awaits
   // featureData/error), so no outer when() gate is needed here. The genome-view
   // track results and the ribbon levels are independent, so let both fan out
   // concurrently rather than blocking one behind the other.
-  const [displayResults, renderings] = await Promise.all([
+  const [rowTracks, renderings] = await Promise.all([
+    // renderViewTracks drops minimized tracks and measures each row only once
+    // its displays have settled — see the orderings it documents
     Promise.all(
-      visibleTracksByView.map(tracks =>
-        Promise.all(
-          tracks.map(async track => {
-            const d = track.displays[0]!
-            return {
-              track,
-              result: await d.renderSvg({ ...opts, theme: themeVar }),
-            }
-          }),
-        ),
+      views.map(view =>
+        renderViewTracks({
+          view,
+          opts,
+          theme: themeVar,
+          textHeight,
+          trackLabels,
+        }),
       ),
     ),
     Promise.all(
@@ -89,18 +85,10 @@ export async function renderToSvg(
     ),
   ])
 
-  // Reserved *after* those awaits, not before: a display whose height follows
-  // its data (grow mode — the alignments stack, the multi-row feature display)
-  // only reaches its final height once renderSvg's readiness wait resolves, and
-  // SVGTracks re-reads `displays[0].height` later still. Measuring up front
-  // sized each row for the pre-fetch height and let the taller bodies run into
-  // the ribbon band below them. Same rule as the standalone LGV export.
-  const tracksHeights = visibleTracksByView.map(tracks =>
-    totalHeight(tracks, textHeight, trackLabels),
-  )
-
+  // one gutter for the whole export, wide enough for the widest label in any
+  // row, so the rows stay vertically aligned with each other
   const trackLabelOffset = trackLabelLeftOffset({
-    tracks: visibleTracksByView.flat(),
+    tracks: rowTracks.flatMap(r => r.tracks),
     trackLabels,
     fontSize,
     session,
@@ -114,20 +102,20 @@ export async function renderToSvg(
   const rows = views.flatMap((view, i) => {
     const viewRow = {
       key: view.id,
-      height: headerHeight + tracksHeights[i]!,
+      height: headerHeight + rowTracks[i]!.tracksHeight,
       // the assembly label floats in the `fontSize` band above the ruler (see
       // SVGView), which is why the group starts that far down
       node: (
         <g transform={`translate(${exportMargin} ${fontSize})`}>
           <SVGView
             view={view}
-            displayResults={displayResults[i]!}
+            displayResults={rowTracks[i]!.displayResults}
             fontSize={fontSize}
             textHeight={textHeight}
             trackLabels={trackLabels}
             trackLabelOffset={trackLabelOffset}
             contentTop={rulerHeight}
-            tracksHeight={tracksHeights[i]!}
+            tracksHeight={rowTracks[i]!.tracksHeight}
             showGridlines={showGridlines}
             leftBuffer={exportMargin}
           />

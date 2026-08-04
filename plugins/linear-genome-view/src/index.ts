@@ -210,4 +210,9 @@ export {
   trackBoxOffsets,
   trackLabelLeftOffset,
 } from './LinearGenomeView/svgcomponents/util.ts'
+export { renderViewTracks } from './LinearGenomeView/svgcomponents/renderViewTracks.ts'
+export type {
+  SvgExportTrack,
+  ViewTracksSvg,
+} from './LinearGenomeView/svgcomponents/renderViewTracks.ts'
 export type { SvgDisplayResult } from './LinearGenomeView/svgcomponents/util.ts'
