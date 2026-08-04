@@ -429,9 +429,16 @@ Every projection above re-plots a genome the graph was built from. This one does
 not: it takes a sample that is not in the graph at all and maps its short reads
 through the whole pangenome, then flattens the result onto K12.
 
-That is what the graph buys over a plain K12 reference. A read spanning an
-allele K12 lacks has a path in the graph to sit on, so it places there instead
-of piling up mismatches or failing to map against the reference alone.
+That is what the graph buys over a plain K12 reference, and the surjection step
+bounds how much of it a K12-anchored pileup can show. A read over an allele K12
+lacks does place in the graph, on whichever strain's path carries it, but that
+alignment has no K12 coordinate for `vg surject` to project onto, so it leaves
+surjection unmapped and the filter below drops it. The depth and presence tracks
+above are where that sequence is accounted for instead.
+
+What reaches the BAM is the other half of the benefit: reads over sequence K12
+does carry, where the graph let a divergent read follow a non-reference path
+through a bubble rather than spend the difference on mismatches and soft clips.
 
 `--giraffe` wrote the indexes for this during the build. `vg giraffe` maps
 against the graph and emits a GAM, and `vg surject` projects that graph
@@ -471,8 +478,8 @@ The result is a plain BAM, so it needs no pangenome-aware track type:
 ```
 
 Stack it over the variant and MAF projections and the pileup reads against the
-graph it came out of: where the depth curve dips, the reads that still place
-there are the ones the graph rescued. The
+graph it came out of, at the loci where this isolate is far enough from K12 for
+the difference to be worth a graph. The
 [alignments track guide](/docs/user_guides/alignments_track) covers coloring and
 sorting the pileup.
 
