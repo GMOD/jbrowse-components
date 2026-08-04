@@ -21,13 +21,17 @@ what makes the polyploid case readable.
   [DIAMOND](https://github.com/bbuchfink/diamond)
 - `python3`, htslib (`bgzip`, `tabix`), `wget`
 - `node`, for the [JBrowse CLI](/docs/cli)
+- The
+  [NCBI datasets CLI](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/command-line-tools/)
+  (`datasets` and `dataformat`), for the `wheat` set only
 - A running JBrowse instance (the [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
 
-OrthoFinder bundles its own DIAMOND, so one install covers both:
-[bioconda](https://bioconda.github.io/) has `orthofinder` directly, and the
-project also publishes a `davidemms/orthofinder` container with the same bundle.
-Without root, [Apptainer](https://apptainer.org/) runs that container rootless:
+OrthoFinder bundles its own DIAMOND, so one install covers the first bullet:
+[bioconda](https://bioconda.github.io/) has `orthofinder`, and the project
+publishes a `davidemms/orthofinder` container with the same bundle. Without
+root, [Apptainer](https://apptainer.org/) runs that container as a shim on
+`PATH`, which is all the script below expects:
 
 ```bash
 apptainer pull orthofinder.sif docker://davidemms/orthofinder:latest
@@ -37,9 +41,6 @@ exec apptainer exec --bind "$PWD" ~/orthofinder.sif orthofinder "$@"
 EOF
 chmod +x ~/.local/bin/orthofinder
 ```
-
-`orthofinder` on `PATH` finds the container's own bundled DIAMOND automatically,
-so the script below needs no further changes.
 
 ## Orthology where alignment runs out
 
@@ -51,10 +52,9 @@ orthogroups without reference to where those genes sit, so a table of
 orthogroups is a synteny track for a human against a zebrafish, where a
 whole-genome aligner produces an empty file.
 
-What that costs is stated plainly: nothing in an orthogroup asserts synteny. Any
-collinearity you see in the ribbons is a property of the genomes rather than of
-the method, which is the opposite of an MCScan track, where collinearity is what
-the input file is made of.
+Nothing in an orthogroup asserts synteny. Any collinearity in the ribbons is a
+property of the genomes rather than of the method, which is the opposite of an
+MCScan track, where collinearity is what the input file is made of.
 
 ## Three genome sets
 
@@ -66,7 +66,7 @@ still fall into chromosome-scale blocks. The teleost genome duplication shows up
 as a matter of counting: a human chromosome answers to one or two chicken
 chromosomes, and to more zebrafish ones.
 
-<Figure caption="Five vertebrate genomes stacked on OrthoFinder orthogroups: human, chicken, frog, spotted gar, zebrafish. One vertebrates_orthogroups track backs all four bands. autoDiagonalize has reordered each row's chromosomes, and Color by → Reference anchors every band on the row above it. The bands get denser downward: chicken against frog is close to one chromosome to one chromosome, gar against zebrafish is not." src="/img/orthofinder_synteny/vertebrates.png" />
+<Figure caption="Five vertebrate genomes stacked on OrthoFinder orthogroups: human, chicken, frog, spotted gar, zebrafish. One vertebrates_orthogroups track backs all four bands. autoDiagonalize has reordered each row's chromosomes; Color by → Reference anchors every band on the row above. Chicken against frog is nearly one chromosome to one; gar against zebrafish, past the teleost duplication, is the dense band." src="/img/orthofinder_synteny/vertebrates.png" />
 
 Every band draws one line per ortholog, so a band resolves into wedges only
 where a chromosome's orthologs mostly land on one chromosome of the row below.
@@ -106,6 +106,31 @@ hexaploid's and draws a one-to-one correspondence between the two as a wedge.
 
 <Figure caption="Six wheat-lineage genomes stacked on OrthoFinder orthogroups, in evolutionary order: Aegilops tauschii, bread wheat, durum, wild emmer, Triticum urartu, T. timopheevii. All six rows are on one genomic scale, so a row's length is its genome size: the two diploid donors against the hexaploid they built and the tetraploids in between." src="/img/orthofinder_synteny/wheat.png" />
 
+## Reading one chromosome out of the stack
+
+The track lists every genome in the set, so any pair of them opens as a two-row
+view with no second file. This one puts Aegilops tauschii's seven chromosomes
+over bread wheat 4A alone, with **Color by → Query** painting each link by the
+tauschii chromosome it leaves rather than by the single chromosome they all
+arrive at.
+
+<Figure caption="Aegilops tauschii's seven D-genome chromosomes over bread wheat chromosome 4A, from the same wheat_orthogroups track as the six-row figure. Color by → Query gives each tauschii chromosome its own color. 4A resolves into three blocks: 4D over most of its length, then 5D and 7D at the distal end." src="/img/orthofinder_synteny/wheat_4a.png" />
+
+Those blocks are the 4AL/5AL and 4AL/7BS translocation pair, RFLP-mapped in
+[Devos et al. 1995](https://doi.org/10.1007/BF00220890) and revisited against
+the reference assemblies in
+[Dvorak et al. 2018](https://doi.org/10.1007/s00122-018-3165-8). The four
+uninvolved D-genome chromosomes reach 4A only as scattered singletons, and
+nothing was aligned to draw any of it: the input is orthogroup membership and
+each gene's position.
+
+The rest of the stack dates the two events. The 4AL/5AL exchange happened at the
+diploid level and the 4AL/7BS one in polyploid wheat, so the diploid A-genome
+donor row should carry the first and not the second, and T. timopheevii, a
+tetraploid formed independently of the durum and bread wheat lineage, is the row
+to check that against: the same two-row view with two other assemblies named in
+it.
+
 ## The conversion
 
 `Orthogroups.tsv` is already one row per orthogroup and one column per genome.
@@ -118,9 +143,8 @@ python3 orthogroups_to_blocks.py Orthogroups.tsv -o rice.blocks \
   --bed rice=rice.bed --bed maize=maize.bed --bed sorghum=sorghum.bed
 ```
 
-The header row is the column order, so `blockAssemblies` is read off the file
-rather than reconstructed from the order the proteomes were passed to
-OrthoFinder. The script prints the list to paste into the track config.
+The script prints the column order it read off the header row, which is what
+`blockAssemblies` has to be.
 
 ### What to do with a duplicated gene
 
@@ -136,12 +160,13 @@ correct answer. Three treatments:
 
 `first` is what a one-line `awk` reduction does, and it is the one to avoid: it
 draws a confident link chosen by file order, and it hides duplication precisely
-where a reader is looking for it. `expand` writes one row per copy, so every
-direct link (the reference column against another) is in the table. Rows are
-paired by index across columns rather than multiplied out, so an orthogroup
-costs rows equal to its largest cell and a gene family cannot blow the table up.
-A cell with more genes than `--max-copies` is a family rather than a set of
-copies, and contributes nothing.
+where a reader is looking for it. `expand` writes one row per copy, pairing
+copies by index across columns rather than multiplying them out, so an
+orthogroup costs rows equal to its largest cell and a gene family cannot blow
+the table up. Every copy of every gene appears; between two columns that are
+both duplicated, only the index-aligned pairs are written. A cell with more
+genes than `--max-copies` is a family rather than a set of copies, and
+contributes nothing.
 
 ### Making the ids resolve
 
@@ -173,21 +198,31 @@ One track backs every band of the stack, the same as the
   "adapter": {
     "type": "MCScanBlocksAdapter",
     "uri": "rice.blocks.gz",
-    "blockAssemblies": ["rice", "sorghum", "maize"],
+    "blockAssemblies": ["maize", "rice", "sorghum"],
     "bedLocations": [
+      { "uri": "maize.bed.gz" },
       { "uri": "rice.bed.gz" },
-      { "uri": "sorghum.bed.gz" },
-      { "uri": "maize.bed.gz" }
+      { "uri": "sorghum.bed.gz" }
     ],
-    "assemblyNames": ["rice", "sorghum", "maize"]
+    "assemblyNames": ["maize", "rice", "sorghum"]
   }
 }
 ```
 
-Column 0 is the reference the table is anchored on, so
-[direct vs transitive pairs](/docs/tutorials/multiway_synteny#direct-vs-transitive-pairs)
-applies here too: put the reference in the middle of the stack and every band is
-direct.
+The two lists are not the same list. `blockAssemblies` and `bedLocations` are
+positional against the table's own columns, which follow OrthoFinder's proteome
+scan (alphabetical by filename here) and not the order the proteomes were passed
+to it; the track's `assemblyNames` is the set of genomes, in whatever order.
+Take the column order from what the conversion printed, or every gene lookup
+reads the wrong genome's BED and the track loads with no error and draws
+nothing.
+
+Unlike a
+[jcvi `.blocks` table](/docs/tutorials/multiway_synteny#direct-vs-transitive-pairs),
+no column anchors this one. An orthogroup is a set, so any two columns filled on
+a row are a direct statement about that pair, and a row with nothing in column 0
+is kept like any other. Row order in the stack is free, and the genome the file
+is named after is only a filename.
 
 ### Assemblies without sequence
 
@@ -215,13 +250,16 @@ synteny track and a stacked default session.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_orthofinder_synteny.sh
-bash build_orthofinder_synteny.sh vertebrates   # or: grasses
+bash build_orthofinder_synteny.sh vertebrates   # or: grasses, wheat
 npx --yes serve -S orthofinder_vertebrates_build/jbrowse2  # then open the printed URL
 ```
 
-The OrthoFinder step is the long one: five proteomes is 25 DIAMOND searches, so
-allow a while on first run. Everything is guarded on its output file, so a
-re-run picks up where it stopped.
+The OrthoFinder step is the long one: it searches every proteome against every
+other, so a five-genome set is 25 DIAMOND runs and wheat's six is 36. Everything
+is guarded on its output file, so a re-run picks up where it stopped. The
+`wheat` set is the one that needs the NCBI datasets CLI, to name T.
+timopheevii's chromosomes from its
+[sequence report](/docs/config/ncbisequencereportaliasadapter).
 
 A tagged `jbrowse-web` release (what `jbrowse create` fetches, and what
 `/code/jb2/latest/` on this site serves) may not yet include the fix a

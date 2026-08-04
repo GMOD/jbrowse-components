@@ -70,7 +70,7 @@ OUTDIR="${2:-orthofinder_${SET}_build}"
 # GCF_902167145.1, GCF_000005505.3, GCF_000263155.2), so those two sets could
 # switch. Wheat cannot: NCBI holds four of its six assemblies under names other
 # than Ensembl's, and T. timopheevii (GCA_963921465.1) carries no NCBI
-# annotation at all. A switch is also not a swap of download lines — different
+# annotation at all. A switch is also not a swap of download lines: different
 # gene models mean a different OrthoFinder run and a re-upload of every demo
 # file.
 ALIASES=""
@@ -159,7 +159,7 @@ for name, length in sorted(regions, key=lambda r: -r[1])[:keep]:
     print(f"{name}\t{length}")
 PY
 
-  # One BED row per gene, named by the bare Ensembl gene id — the same id the
+  # One BED row per gene, named by the bare Ensembl gene id, the same id the
   # proteome step below writes into the FASTA headers, which is what makes the
   # orthogroup table resolve against these BEDs. The trailing .NN strip mirrors
   # the one the proteome step applies to the FASTA header's gene: tag: most
@@ -215,10 +215,15 @@ if ! ls proteomes/OrthoFinder/Results_*/Orthogroups/Orthogroups.tsv >/dev/null 2
 fi
 ORTHOGROUPS=$(ls -d proteomes/OrthoFinder/Results_*/Orthogroups/Orthogroups.tsv | tail -1)
 
-# ── Orthogroups.tsv -> reference-anchored .blocks table ──────────────────────
+# ── Orthogroups.tsv -> .blocks table ─────────────────────────────────────────
 # One --bed per column, so the script reports how many ids each one resolves
 # rather than leaving a table that loads and draws nothing.
-REFERENCE=$(echo "$NAMES" | head -1)
+#
+# TABLE is named after the first genome by convention only. Unlike a jcvi
+# .blocks file this table has no reference column: an orthogroup is a set of
+# genes, so any two columns present on a row are a direct statement about that
+# pair and no column anchors the others.
+TABLE=$(echo "$NAMES" | head -1).blocks
 BEDARGS=$(echo "$NAMES" | awk '{printf " --bed %s=%s.bed", $1, $1}')
 # shellcheck disable=SC2086  # BEDARGS is a built argument list, not one word
 # The column order in Orthogroups.tsv follows OrthoFinder's own proteome
@@ -226,11 +231,12 @@ BEDARGS=$(echo "$NAMES" | awk '{printf " --bed %s=%s.bed", $1, $1}')
 # does not have to match $NAMES. orthogroups_to_blocks.py prints the order it
 # actually used on stdout for exactly this reason: blockAssemblies/bedLocations
 # below must be positionally aligned with the .blocks file's own columns,
-# not with $NAMES.
+# not with $NAMES. It prints them space-separated, so every consumer below
+# splits on whitespace.
 BLOCK_ASSEMBLIES=$(python3 "$SCRIPT_DIR/orthogroups_to_blocks.py" "$ORTHOGROUPS" \
-  -o "$REFERENCE.blocks" $BEDARGS)
+  -o "$TABLE" $BEDARGS)
 
-gzip -kf "$REFERENCE.blocks"
+gzip -kf "$TABLE"
 for name in $NAMES; do gzip -kf "$name.bed"; done
 
 # ── How one-to-one is each adjacent pair? ────────────────────────────────────
@@ -246,12 +252,13 @@ for name in $NAMES; do gzip -kf "$name.bed"; done
 # partners, so no left-to-right ordering of either row can make that band
 # diagonal and a dense band is the correct answer rather than a rendering
 # problem. Chromosomes under 100 links (unplaced scaffolds) are left out.
-python3 - "$BLOCK_ASSEMBLIES" $NAMES <<'PY'
+python3 - "$BLOCK_ASSEMBLIES" "$TABLE" $NAMES <<'PY'
 import collections
 import sys
 
-cols = sys.argv[1].split(',')
-names = sys.argv[2:]
+cols = sys.argv[1].split()
+table = sys.argv[2]
+names = sys.argv[3:]
 beds = {}
 for n in names:
     d = {}
@@ -259,7 +266,7 @@ for n in names:
         p = line.split('\t')
         d[p[3].strip()] = p[0]
     beds[n] = d
-rows = [l.rstrip('\n').split('\t') for l in open(f'{names[0]}.blocks')]
+rows = [l.rstrip('\n').split('\t') for l in open(table)]
 
 
 def share(a, b):
@@ -301,7 +308,7 @@ fi
 [ -f "$APP/index.html" ] || jb create "$APP"
 
 # The table + BEDs must sit beside config.json (add-track-json won't copy them)
-cp "$REFERENCE.blocks.gz" "$APP"/
+cp "$TABLE.gz" "$APP"/
 for name in $NAMES; do cp "$name.bed.gz" "$APP"/; done
 
 # One assembly per genome, names and lengths only
@@ -356,8 +363,13 @@ fi
 # on Aegilops tauschii here, "Region 0..651661114 cannot be stored in a tbi
 # index"). CSI has no such ceiling and costs nothing on the smaller genomes.
 for name in $NAMES; do
-  gunzip -c "$name.gff3.gz" | jb sort-gff | bgzip > "$name.sorted.gff3.gz"
-  tabix -f -C -p gff "$name.sorted.gff3.gz"
+  # guarded like every other download/derive step: sorting and indexing a wheat
+  # GFF3 is the longest step after OrthoFinder itself, and a re-run redoing it
+  # is what "picks up where it stopped" is supposed to avoid
+  if [ ! -f "$name.sorted.gff3.gz.csi" ]; then
+    gunzip -c "$name.gff3.gz" | jb sort-gff | bgzip > "$name.sorted.gff3.gz"
+    tabix -f -C -p gff "$name.sorted.gff3.gz"
+  fi
   # --indexFile: add-track's own index-file inference only looks for .tbi
   jb add-track "$name.sorted.gff3.gz" -a "$name" --name "$name genes" \
     --trackId "${name}_genes" --indexFile "$name.sorted.gff3.gz.csi" \
@@ -368,11 +380,11 @@ done
 # blockAssemblies/bedLocations use $BLOCK_ASSEMBLIES (the .blocks file's own
 # column order); assemblyNames and the session below use $NAMES (the display
 # row order), which need not be the same list order.
-python3 - "$SET" "$REFERENCE" "$BLOCK_ASSEMBLIES" "$NAMES" <<'PY' > blocks_track.json
+python3 - "$SET" "$TABLE" "$BLOCK_ASSEMBLIES" "$NAMES" <<'PY' > blocks_track.json
 import json
 import sys
 
-set_name, reference, block_assemblies_str, names_str = sys.argv[1:]
+set_name, table, block_assemblies_str, names_str = sys.argv[1:]
 block_assemblies = block_assemblies_str.split()
 names = names_str.split()
 print(json.dumps({
@@ -382,7 +394,7 @@ print(json.dumps({
     "assemblyNames": names,
     "adapter": {
         "type": "MCScanBlocksAdapter",
-        "uri": f"{reference}.blocks.gz",
+        "uri": f"{table}.gz",
         "blockAssemblies": block_assemblies,
         "bedLocations": [{"uri": f"{n}.bed.gz"} for n in block_assemblies],
         "assemblyNames": names,
@@ -409,6 +421,15 @@ print(json.dumps({
             "tracks": [[track]] * (len(names) - 1),
             "colorBy": "reference",
             "autoDiagonalize": True,
+            # one bp/px down the whole stack, so a row's drawn length is its
+            # genome size and the size differences between the genomes (which
+            # for the wheat set is the subject) are visible rather than
+            # normalized away by fitting each row to the pane
+            "sameScale": True,
+            # no row carries a track, so each would otherwise spend ~90px on a
+            # "No tracks active" block; a row is one click from expanding, and
+            # the reclaimed height goes to the ribbons
+            "collapseEmptyRows": True,
         },
     }],
 }, indent=2))

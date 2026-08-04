@@ -730,14 +730,15 @@ export const syntenySpecs: ScreenshotSpec[] = [
             // gene pair, so a band's legibility is entirely how far apart its
             // crossings are drawn.
             levelHeights: [180, 180, 180, 180],
-            // 0.06, well under the 0.2 default. That default is tuned for
-            // alignment ribbons with area; an orthogroup link is a hairline at
-            // whole-genome zoom, and tens of thousands of them at 0.2 saturate
-            // into one wash where a dense chromosome-to-chromosome bundle and a
-            // lone scattered ortholog paint the same. At 0.06 only overlap
-            // accumulates color, so the bundles are the visible thing and the
-            // singletons stay background. 0.12 was rendered too and still
-            // filled its bands.
+            // Under the 0.2 default, which is tuned for alignment ribbons with
+            // area; an orthogroup link is a hairline at whole-genome zoom, and
+            // tens of thousands of them at 0.2 saturate into one wash where a
+            // dense chromosome-to-chromosome bundle and a lone scattered
+            // ortholog paint the same. Lower, only overlap accumulates color,
+            // so the bundles are the visible thing and the singletons stay
+            // background. These grass chromosomes are near one-to-one, so the
+            // links arrive as tight bundles and this is as high as it can go;
+            // the vertebrates figure takes twice it, for the opposite reason.
             alpha: 0.15,
             // Straight chords, though this is the one case the drawCurves
             // docstring recommends itself for. Rendered both: the bezier version
@@ -823,6 +824,67 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // row's scalebar in half, which is the row that names timopheevii's
     // sequences; 1165 cleared it but left a dead strip under the frame.
     viewportHeight: 1140,
+  },
+
+  // orthofinder_synteny.md: the 4A translocations, out of the same wheat demo
+  // and the same one orthogroup track as the six-row figure above. Two rows:
+  // all seven Aegilops tauschii chromosomes over bread wheat 4A alone. The
+  // whole D genome is on the top row on purpose - the content is that only
+  // three of its seven chromosomes reach 4A at all, which a row pre-filtered to
+  // those three would assert rather than show.
+  {
+    mode: 'url',
+    name: 'orthofinder_synteny/wheat_4a',
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/orthofinder_wheat/config.json',
+      ),
+      {
+        views: [
+          {
+            type: 'LinearSyntenyView',
+            views: [
+              // the seven chromosomes, named rather than left as the whole
+              // assembly: the demo's ChromSizesAdapter also carries 23 unplaced
+              // scaffolds, which spend a fifth of the row's width on sequences
+              // that draw nothing
+              { assembly: 'tauschii', loc: '1D 2D 3D 4D 5D 6D 7D' },
+              { assembly: 'wheat', loc: '4A' },
+            ],
+            tracks: [['wheat_orthogroups']],
+            // by the TOP row's chromosome (colorBy 'query' paints views[level],
+            // 'target' views[level+1]), so each donor chromosome carries its own
+            // color down into 4A. 'reference' - what the other three OrthoFinder
+            // figures use to keep a chromosome one color across several bands -
+            // degenerates here: one band, and every link lands on the same
+            // single bottom-row chromosome, so it paints the figure one color.
+            colorBy: 'query',
+            // off. The three segments are the figure, and their order along 4A
+            // is a fact about 4A; reordering and flipping the top row to
+            // straighten the ribbons would rewrite the thing being shown.
+            autoDiagonalize: false,
+            // and no sameScale either: 4A is one chromosome against a 4.2 Gb
+            // genome, so a shared bp/px draws it as a sixth of the frame. Each
+            // row fitted to the pane puts 4A across the full width, which is
+            // what separates its three segments.
+            collapseEmptyRows: true,
+            levelHeights: [430],
+            // 0.5, well over the 0.15 the whole-genome wheat figure takes. That
+            // one is drawing every D-genome link against every A/B/D partner;
+            // this is one chromosome's worth, a twentieth as many ribbons over
+            // a taller band, and at 0.15 the two translocated bundles read as
+            // smoke beside the native one.
+            alpha: 0.5,
+            drawCurves: false,
+          },
+        ],
+      },
+    ),
+    readySelector: '[data-testid="synteny_canvas_done"]',
+    readyTimeout: 120000,
+    settleMs: 15000,
+    // two collapsed scalebar rows and one 430px band
+    viewportHeight: 640,
   },
   {
     mode: 'url',

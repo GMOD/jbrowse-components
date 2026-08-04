@@ -586,12 +586,37 @@ check("an orthogroup present in one genome only is dropped",
 check("a gene the BED does not have is not counted as an answer",
       og.orthogroup_rows(dup, "expand", 4, [None, {"Zm01b"}, None]),
       [["Os01g1", "Zm01b", "Sb01g"]])
+# an orthogroup is a set, not a reference-anchored row: unlike a jcvi .blocks
+# table no column anchors the others, so a pair that skips column 0 is a row
+check("a row survives without column 0, which anchors nothing",
+      og.orthogroup_rows(["", "B1", "C1"], "expand", 4, [None] * 3),
+      [[".", "B1", "C1"]])
 # the header row is the column order, which is what blockAssemblies must be
 check("column_names drops the proteome file's extensions",
       og.column_names(["rice.pep.fa", "maize.pep"], {}), ["rice", "maize"])
 check("column_names applies --assembly to the raw or stripped name",
       og.column_names(["rice.pep.fa", "Zm-B73.pep"], {"Zm-B73": "maize"}),
       ["rice", "maize"])
+
+# The one line on stdout is a contract: build_orthofinder_synteny.sh captures it
+# and hands it to three consumers, which position blockAssemblies/bedLocations
+# and index the table's columns. A comma-splitting consumer against this
+# space-separated line raised ValueError and, under `set -e`, killed the build
+# after the OrthoFinder run had already finished. Pin the separator here.
+d = tempfile.mkdtemp()
+src = os.path.join(d, "Orthogroups.tsv")
+with open(src, "w") as fh:
+    fh.write("Orthogroup\tmaize.fa\trice.fa\n"
+             "OG0000000\tZm01a, Zm01b\tOs01g1\n")
+sys.argv = ["orthogroups_to_blocks.py", src, "-o", os.path.join(d, "out.blocks")]
+stdout = io.StringIO()
+with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(io.StringIO()):
+    og.main()
+check("the column order goes to stdout whitespace-separated, one line",
+      stdout.getvalue().split("\n")[:2], ["maize rice", ""])
+check("the .blocks columns are in that order, not the caller's",
+      open(os.path.join(d, "out.blocks")).read().splitlines(),
+      ["Zm01a\tOs01g1", "Zm01b\tOs01g1"])
 
 if failed:
     sys.exit(1)
