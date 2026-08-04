@@ -164,7 +164,9 @@ Read counts rank the candidates; they do not decide them. Reads mismapped into a
 repeat produce a confident-looking path, which is why the output is a proposal
 to look at rather than a call: check that the reads run through each junction
 instead of clipping at it, and that the segments land in the genes the event is
-supposed to involve.
+supposed to involve. The segment sizes are the other check, and the reason this
+wants long reads: a route assembled from read-length pieces is an aligner
+splitting one short read across the genome.
 
 ## Reconstructing the allele's sequence
 

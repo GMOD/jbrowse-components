@@ -32,6 +32,10 @@ const useStyles = makeStyles()(theme => ({
   detail: {
     color: theme.palette.text.secondary,
   },
+  caveat: {
+    color: theme.palette.text.secondary,
+    marginTop: theme.spacing(1),
+  },
 }))
 
 interface ViewTrack {
@@ -204,6 +208,11 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
               orientation the reads cross it. Drawing one opens it as a synteny
               view, one ribbon per segment, so the reconstruction can be read
               against the reference it came from.
+            </Typography>
+            <Typography className={classes.caveat}>
+              Read counts rank these paths; they do not vouch for them. The size
+              beside each is the check: a route whose segments are all about one
+              read long is an aligner splitting a short read, not an allele.
             </Typography>
             <RadioGroup
               // the real result of the reconstruction pass, so a screenshot
