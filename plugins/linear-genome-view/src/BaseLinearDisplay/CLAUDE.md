@@ -15,8 +15,8 @@ and don't re-litigate the layering.
   auto-chains lifecycle hooks, so calling it installs everything twice.
   `assertDisplayContract` reports it in dev. Regular actions still use
   super-capture.
-- **`HeightModeMixin()` composes after `TrackHeightMixin()`**, whose `height` and
-  `resizeHeight` it overrides — `types.compose` gives the later argument the
+- **`HeightModeMixin()` composes after `TrackHeightMixin()`**, whose `height`
+  and `resizeHeight` it overrides — `types.compose` gives the later argument the
   collision. Nothing checks this one yet.
 - **A super-captured view is called bare**, so a base must not reach siblings
   off `this`. Move the overridable view into its own later `.views()` block,
@@ -48,7 +48,7 @@ A display that scrolls its own canvas overrides `scrollableHeight`
 autorun. One that grows to its content overrides `growTargetHeight`
 (`HeightModeMixin`) and gets `grownHeight`, the reactive `height`,
 `setHeightMode` and the grow-aware `resizeHeight`. Neither hook may read the
-reactive `height` getter — in grow mode it *is* `grownHeight`, so that's a
+reactive `height` getter — in grow mode it _is_ `grownHeight`, so that's a
 computed cycle; read `fitTargetHeight`/`growMaxHeight`.
 
 Hover belongs with them: `installClearHoverOnViewportChange` tracks all three

@@ -21,9 +21,9 @@ import type {
   DotplotViewModel,
   ExportSvgOptions,
 } from '../DotplotView/model.ts'
+import type { DotplotDisplayConfigSchema } from './configSchema.ts'
 import type { DotplotInstanceData } from './dotplotRenderingBackendTypes.ts'
 import type { DotplotRpcData } from './types.ts'
-import type { DotplotDisplayConfigSchema } from './configSchema.ts'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LodTier, SyntenyColorBy } from '@jbrowse/synteny-core'

@@ -7,8 +7,8 @@ import { types } from '@jbrowse/mobx-state-tree'
 import sharedLDConfigFactory from './SharedLDConfigSchema.ts'
 import sharedModelFactory from './shared.ts'
 
-import type PluginManager from '@jbrowse/core/PluginManager'
 import type { LDDisplayConfigSchema } from './SharedLDConfigSchema.ts'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 const LazyLDDisplayComponent = lazy(
   () => import('./components/LDDisplayComponent.tsx'),

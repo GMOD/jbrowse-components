@@ -41,8 +41,8 @@ import {
 import type { SatisfiesComponentContract } from '../shared/componentContract.ts'
 import type { WiggleDataResult } from '../util.ts'
 import type { WiggleDisplayModel } from './components/wiggleDisplayTypes.ts'
-import type PluginManager from '@jbrowse/core/PluginManager'
 import type { LinearWiggleDisplayConfigSchema } from './configSchema.ts'
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {

@@ -32,9 +32,10 @@ from the other side: two top-level blocks with the same name in two example
 files must be identical once comments are stripped. It exists because the cost
 of the rule is drift — a pan-handler fix has to land in five files, and the file
 that gets missed is a page teaching a bug with nothing to say so. A block that
-genuinely differs per page goes in the script's `DIVERGES` map **with a reason**.
-Keep that list short: if it starts growing, the shared surface has outgrown
-copy-paste and the answer is a different rule argued here, not more entries.
+genuinely differs per page goes in the script's `DIVERGES` map **with a
+reason**. Keep that list short: if it starts growing, the shared surface has
+outgrown copy-paste and the answer is a different rule argued here, not more
+entries.
 
 The one allowed exception is **bulk data**: a `*.json` fixture may be imported,
 because inlining a 72 KB config would bury the code the page is about. Data

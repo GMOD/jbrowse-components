@@ -6,10 +6,7 @@ import {
 import type { MultiRowSource } from './sourcesLogic.ts'
 import type { Region, RpcStatus } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
-import type {
-  ClusterProvenance,
-  RpcMethodCaller,
-} from '@jbrowse/tree-sidebar'
+import type { ClusterProvenance, RpcMethodCaller } from '@jbrowse/tree-sidebar'
 
 type MultiRowClusterCaller = RpcMethodCaller<'MultiRowClusterFeatures'>
 

@@ -7,12 +7,12 @@ Full model: `agent-docs/reference/CONFIG_PATTERN.md` and
   catches slot-name typos, where `readConfObject`'s loose overload launders them
   into `any`. Don't switch readers to make a slot-name error go away.
 - **`setSlot` throws on a name the schema doesn't declare**, which is what makes
-  a misspelled *write* diagnosable at all — the compile-time guard on `setConf`
+  a misspelled _write_ diagnosable at all — the compile-time guard on `setConf`
   only covers writes whose schema is concrete, and a mixin or a widened factory
   erases that. Don't weaken it to a warning: the failure it replaces was an
   assignment to an undeclared property, silent at every layer. Note this is a
-  different check from the read-side one that was tried and reverted (below);
-  a write always targets a live node, so it has no snapshot ambiguity.
+  different check from the read-side one that was tried and reverted (below); a
+  write always targets a live node, so it has no snapshot ambiguity.
 - **`resolveConf` is the only thing that walks a promotable slot's cascade.**
   `getConf` stays raw. Never paper over the resulting compile error with
   `?? someDefault` — that silences the check and bypasses the cascade.
@@ -51,7 +51,7 @@ rescue this — don't retry it in any form.** Guards in
 **A widened `baseConfiguration` poisons the whole schema**, since
 `ConfigurationSlotName` recurses through `GetBase` — so a schema that takes its
 base from `pluginManager.getDisplayType(…).configSchema` has unchecked reads of
-its *own* slots, and no downstream annotation can recover them. Import the base
+its _own_ slots, and no downstream annotation can recover them. Import the base
 schema directly instead. gccontent hit exactly this.
 
 `node scripts/audit-config-read-types.ts` is the other half: the narrowing test
@@ -59,12 +59,12 @@ proves the machinery works on a concrete schema, this counts how many real call
 sites reach it (150 of 833 in source do not, baselined in
 `scripts/configReadTypeGaps.txt`; run with `--write` to re-baseline). Note the
 baseline groups by file, which hides that many per-display gaps are reads
-against the *track* schema and so unreachable by narrowing the display. **The
-signal is the read's return type, not the config node's** — `AnyConfigurationModel`
-is a real object type rather than `any`, so a widened holder looks concrete while
-`ConfigurationSlotName` of it has already degraded to `string`. A
-`@ts-expect-error` probe on the mixin idiom compiles clean; only the `any` return
-gives it away.
+against the _track_ schema and so unreachable by narrowing the display. **The
+signal is the read's return type, not the config node's** —
+`AnyConfigurationModel` is a real object type rather than `any`, so a widened
+holder looks concrete while `ConfigurationSlotName` of it has already degraded
+to `string`. A `@ts-expect-error` probe on the mixin idiom compiles clean; only
+the `any` return gives it away.
 
 ## Frozen tracks + hydration
 

@@ -3,8 +3,8 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import SharedModelF from './shared.tsx'
 
-import type PluginManager from '@jbrowse/core/PluginManager'
 import type { LinearGCContentDisplayConfigSchema } from './index.ts'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * #stateModel LinearGCContentTrackDisplay

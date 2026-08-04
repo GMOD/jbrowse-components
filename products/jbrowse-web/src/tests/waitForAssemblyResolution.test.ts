@@ -149,9 +149,9 @@ test('concurrent waiters share the one resolution attempt', async () => {
 // answer and gets reported as one.
 test('requireAssembly names the assembly it could not resolve', async () => {
   const session = setup()
-  await expect(
-    session.assemblyManager.requireAssembly('nope'),
-  ).rejects.toThrow(/assembly "nope" could not be resolved/)
+  await expect(session.assemblyManager.requireAssembly('nope')).rejects.toThrow(
+    /assembly "nope" could not be resolved/,
+  )
 })
 
 test('requireAssembly returns a loaded assembly when there is one', async () => {

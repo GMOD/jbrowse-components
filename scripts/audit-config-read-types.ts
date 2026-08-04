@@ -197,7 +197,7 @@ function main() {
       '#   - a read against a TRACK schema (`trackId`, `assemblyNames`, `adapter`,',
       '#     often via getContainingTrack/parentTrack). Grouped under the display',
       '#     file that happens to contain it, so it LOOKS like display debt; naming',
-      '#     the display factory\'s schema cannot reach it. Check before estimating.',
+      "#     the display factory's schema cannot reach it. Check before estimating.",
       '#   - a factory that left its `configSchema` param at AnyConfigurationSchemaType.',
       '#     Usually one line, unless its base schema is itself widened — a base',
       '#     taken from `pluginManager.getDisplayType(…).configSchema` poisons the',

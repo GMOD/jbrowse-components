@@ -553,9 +553,9 @@ describe('setSlot', () => {
       count: { type: 'integer', defaultValue: 1 },
     })
     const node = schema.create(undefined, { pluginManager })
-    expect(() =>{  node.setSlot('cuont', 2); }).toThrow(
-      /WithScalar has no config slot "cuont"/,
-    )
+    expect(() => {
+      node.setSlot('cuont', 2)
+    }).toThrow(/WithScalar has no config slot "cuont"/)
     expect(readConfObject(node, 'count')).toBe(1)
   })
 
@@ -565,7 +565,9 @@ describe('setSlot', () => {
       beta: { type: 'integer', defaultValue: 2 },
     })
     const node = schema.create(undefined, { pluginManager })
-    expect(() =>{  node.setSlot('gamma', 3); }).toThrow(/Valid slots: alpha, beta/)
+    expect(() => {
+      node.setSlot('gamma', 3)
+    }).toThrow(/Valid slots: alpha, beta/)
   })
 
   test('a slot inherited from baseConfiguration is accepted', () => {
@@ -594,9 +596,9 @@ describe('setSlot', () => {
       count: { type: 'integer', defaultValue: 1 },
     })
     const node = schema.create(undefined, { pluginManager })
-    expect(() =>{  node.setSlot('toString', 2); }).toThrow(
-      /Proto has no config slot "toString"/,
-    )
+    expect(() => {
+      node.setSlot('toString', 2)
+    }).toThrow(/Proto has no config slot "toString"/)
   })
 })
 

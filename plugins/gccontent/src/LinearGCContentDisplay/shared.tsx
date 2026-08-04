@@ -8,8 +8,8 @@ import { toLocale } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 
-import type PluginManager from '@jbrowse/core/PluginManager'
 import type { LinearGCContentDisplayConfigSchema } from './index.ts'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 const WINDOW_SIZE_DEFAULT = 100
 const WINDOW_DELTA_DEFAULT = 100
