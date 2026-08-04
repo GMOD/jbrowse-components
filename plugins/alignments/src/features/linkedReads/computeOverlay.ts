@@ -84,7 +84,11 @@ export function enumerateBezierPairs(
 interface Opts {
   pairs: LinkedPair[]
   displayedRegions: { refName: string; reversed?: boolean }[]
-  bpToScreenX: (refName: string, bp: number) => number | undefined
+  bpToScreenX: (
+    refName: string,
+    bp: number,
+    displayedRegionIndex?: number,
+  ) => number | undefined
   featureHeight: number
   featureSpacing: number
   pileupTopOffset: number
@@ -133,8 +137,11 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
     if (!r1 || !r2) {
       continue
     }
-    const sx1 = bpToScreenX(r1.refName, c.bp1)
-    const sx2 = bpToScreenX(r2.refName, c.bp2)
+    // Region index, not just refName: the two ends of a pair can sit in two
+    // different displayed regions that share a refName, and resolving by name
+    // alone would draw both ends in the first of them (a zero-length arc).
+    const sx1 = bpToScreenX(r1.refName, c.bp1, e1.displayedRegionIndex)
+    const sx2 = bpToScreenX(r2.refName, c.bp2, e2.displayedRegionIndex)
     if (sx1 === undefined || sx2 === undefined) {
       continue
     }

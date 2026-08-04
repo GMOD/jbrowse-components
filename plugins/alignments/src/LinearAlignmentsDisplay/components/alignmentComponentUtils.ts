@@ -20,10 +20,27 @@ import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type React from 'react'
 
+// `bpToPx` matches a region on refName AND coordinate containment, so disjoint
+// windows on one chromosome (collapsed introns, two loci on one chrom) already
+// disambiguate themselves. OVERLAPPING ones do not: two displayed regions whose
+// coordinate ranges intersect — a foldback laid out in derivative order, where
+// the same arm appears twice — both contain the endpoint, and the first always
+// wins. The connector for the second copy then lands back on the first, drawing
+// a zero-length arc where the interesting junction was.
+//
+// So `displayedRegionIndex` is a preference, not a constraint: pinning it picks
+// the right copy when several match, and falling back to the plain lookup keeps
+// an endpoint that spills past its own region's edge (reads are fetched by
+// overlap, so a read's far end can sit outside the region that returned it)
+// resolving exactly as it does today.
 export function makeBpToScreenX(view: LinearGenomeViewModel) {
   const { offsetPx } = view
-  return (refName: string, bp: number) => {
-    const r = view.bpToPx({ refName, coord: bp })
+  return (refName: string, bp: number, displayedRegionIndex?: number) => {
+    const r =
+      (displayedRegionIndex === undefined
+        ? undefined
+        : view.bpToPx({ refName, coord: bp, displayedRegionIndex })) ??
+      view.bpToPx({ refName, coord: bp })
     return r === undefined ? undefined : r.offsetPx - offsetPx
   }
 }
