@@ -417,12 +417,14 @@ python3 odgi_similarity_to_newick.py ecoli_pggb_similarity.tsv ecoli_pggb.nh
 }
 ```
 
-<Figure caption="The graph's whole-genome alignment projected onto K12 across 60 kb: the coverage band on top, then one row per strain (K12 first), each colored where it differs from K12, with the variant calls above. A blank row is a strain with no alignment to K12 there, so accessory structure and SNP divergence read in one picture. Numbered boxes are insertions, labeled with the bases the allele adds beyond K12." src="/img/pangenome/maf.png" />
+<Figure caption="The graph's whole-genome alignment projected onto K12 across 60 kb: the coverage band on top, then one row per strain (K12 first), each colored where it differs from K12, with the variant calls above. A blank row is a strain with no alignment to K12 there, so accessory structure and SNP divergence read in one picture." src="/img/pangenome/maf.png" />
 
 `samples` still names and labels the rows, so a tree that fails to build leaves
-the track working. The [MAF track guide](/docs/user_guides/maf_track) covers the
-conservation band, per-row identity, and codon view, all derived from the
-alignment with no extra files.
+the track working. Insertions have no reference span to sit on, so they draw as
+numbered boxes labelled with the bases the allele adds beyond K12. The
+[MAF track guide](/docs/user_guides/maf_track) covers the conservation band,
+per-row identity, and codon view, all derived from the alignment with no extra
+files.
 
 ## Pangenome depth projection (core vs accessory)
 
@@ -482,7 +484,7 @@ are nanopore reads from _E. coli_ E146
 carbapenem-resistant clinical isolate that is not one of the five, mapped
 straight onto K12 with `minimap2 -ax map-ont`:
 
-<Figure caption="Nanopore reads from an unrelated E. coli isolate over one K12 depth trough, with the depth curve below. Coverage stops dead at the edges of the cryptic prophage CPZ-55 and resumes after it, and the reads long enough to cross the whole element carry it as a single deletion, each labelled with its length in bp. The graph projection below bottoms out over exactly the same span, so the trough, the coverage hole and the deletion are one event in three encodings." src="/img/pangenome/long_reads.png" />
+<Figure caption="Nanopore reads from an unrelated E. coli isolate over one K12 depth trough, with the depth curve below. Coverage stops dead at the edges of the cryptic prophage CPZ-55, and reads long enough to cross the element carry it as a single labelled deletion. The graph projection bottoms out over the same span, so the trough, the coverage hole and the deletion are one event in three encodings." src="/img/pangenome/long_reads.png" />
 
 Nothing in that picture came from the pangenome graph, which is what makes it a
 check on the projection rather than a restatement of it. It also shows the thing
@@ -516,7 +518,7 @@ in_pggb odgi degree -i "/data/$og" -b /data/depth_windows.bed \
 bedGraphToBigWig ecoli_pggb_degree.bedgraph chrom.sizes ecoli_pggb_degree.bw
 ```
 
-<Figure caption="The two graph-shape curves over the whole K12 chromosome. On top, odgi depth: a plateau near the strain count over core sequence, troughs at 1 over K12-private accessory stretches, and spikes above the strain count over the collapsed rRNA operons, which each path walks several times. Below it, odgi degree: mean node degree, near 2 where every path walks the same nodes and higher wherever paths enter and leave. The two disagree where a window is fully covered and still branched, which is what depth alone cannot say." src="/img/pangenome/depth.png" />
+<Figure caption="The two graph-shape curves over the whole K12 chromosome. On top, odgi depth: a plateau near the strain count over core sequence, troughs at 1 over K12-private accessory stretches, and spikes above the strain count over the collapsed rRNA operons. Below, odgi degree: mean node degree, near 2 where every path walks the same nodes and higher wherever paths enter and leave. They disagree where a window is fully covered and still branched, which is what depth alone cannot say." src="/img/pangenome/depth.png" />
 
 ### Per-strain presence
 
@@ -702,7 +704,7 @@ bar labelled `93 bp` running off the left edge: its segment links to
 93 bp of CFT073 stands in for 7.1 kb of K12 and the bar is that 7.1 kb. It is a
 deletion, not a loop, and most of it is outside the frame.
 
-<Figure caption="460 bp at the ycbF/pyrD boundary, the same graph in both layouts under the same MAF lane. Left, Sample rows, in the MAF's five rows and the same order: the top row is the K12 backbone with each segment's length on it, and below it each strain's marks are the segments it takes instead of the reference. The MAF row above says the same thing base by base, since CFT073 has columns only where its contig reaches. Right, the same nodes force-directed, which is where the bubbles those rows flatten are visible as bubbles." src="/img/pangenome/pggb_locus_sample_rows.png" links="Sample rows=pangenome/pggb_locus_sample_rows_rows,Force-directed=pangenome/pggb_locus_sample_rows_force" />
+<Figure caption="460 bp at the ycbF/pyrD boundary, the same graph in both layouts under the same MAF lane. Left, Sample rows in the MAF's five rows and order: the top row is the K12 backbone, and below it each strain's marks are the segments it takes instead. The MAF row above says the same thing base by base. Right, the same nodes force-directed, where the bubbles those rows flatten are visible as bubbles." src="/img/pangenome/pggb_locus_sample_rows.png" links="Sample rows=pangenome/pggb_locus_sample_rows_rows,Force-directed=pangenome/pggb_locus_sample_rows_force" />
 
 #### Where this stops, and what to do instead
 
@@ -725,11 +727,13 @@ Finally, a segment carried by several assemblies draws on one row: sample rows
 put it on the first path that walks it, and the others are listed in the node
 popup.
 
-<Figure caption="One stretch of K12 at the colanic acid cluster, cut from the two graphs this build produces, each over the window its own graph can draw. Both lanes are the same 28 kb colored by reference position, so a node and its block are one color. Left, the minigraph rGFA over three whole backbone segments: thirteen nodes, a chain with the alternate segments of 2-154 bp hanging off it. Right, the pggb graph over the 300 bp banded on its ruler: fifty-three nodes, one at every variant, the off-reference ones drawn dark, and one hue throughout because all of it sits inside that band. Two comparable panes, two orders of magnitude apart in span. The node and edge counts are in each header." src="/img/pangenome/graph_resolution.png" links="minigraph=pangenome/graph_resolution_minigraph,pggb=pangenome/graph_resolution_pggb" />
+<Figure caption="One stretch of K12 at the colanic acid cluster, cut from the two graphs this build produces, each over the window its own graph can draw. Left, the minigraph rGFA over three whole backbone segments: thirteen nodes, a chain with alternate segments of 2-154 bp hanging off it. Right, the pggb graph over the 300 bp banded on its ruler: fifty-three nodes, one at every variant. Two comparable panes, two orders of magnitude apart in span." src="/img/pangenome/graph_resolution.png" links="minigraph=pangenome/graph_resolution_minigraph,pggb=pangenome/graph_resolution_pggb" />
 
-That is the trade in one picture, and it is why the two graphs are worth
-building side by side: browse the rGFA whole-genome, and open the pggb graph
-where you want every base.
+Both panes are colored by reference position over the same 28 kb, so a node and
+the block it came from take one color, and each pane's header carries its node
+and edge counts. That is the trade in one picture, and it is why the two graphs
+are worth building side by side: browse the rGFA whole-genome, and open the pggb
+graph where you want every base.
 
 When the graph is too large to index, cut a window offline and open that file
 instead, [below](#a-window-as-a-file).
@@ -768,7 +772,9 @@ tabix -p bed ecoli_pggb_subgraph_nodes.bed.gz
 The BED's `itemRgb` is the view's own viridis **Depth** ramp sampled the same
 way, so the track needs no color configuration and cannot drift from the graph.
 Nodes the reference path never visits are the alternate alleles. They have no
-K12 position, so they are absent from the linear track.
+K12 position, so they are absent from the linear track, and in the graph their
+drawn width is a visibility floor rather than their length in bp, which the node
+tooltip gives.
 
 One of them is worth naming, because a cut graph always has ends and this one
 has a conspicuous one: the dark 93 bp node hanging off the green-to-yellow
@@ -779,7 +785,7 @@ CFT073 carries 93 bp where K12 carries 7.1 kb; the far anchor is 7 kb outside
 the cut and went with it. A one-sided node in any extracted subgraph means the
 same thing: sequence continuing past the window, not a dead end in the graph.
 
-<Figure caption="One slice of the five-strain graph drawn both ways, under a linear view of the same locus. Left, anchored on the graph's K12 path: both panels share an axis and the Depth colors, so the backbone row is the node strip above it and the green-to-yellow step, where the fifth strain rejoins the shared sequence, is at the same x in both. Right, force-directed: the same nodes and colors with nothing holding them to the axis. The alternate alleles have no K12 coordinate either way, and their drawn width is a visibility floor rather than their length in bp, which the node tooltip gives." src="/img/pangenome/local_subgraph.png" links="Anchored=pangenome/local_subgraph_anchored,Force-directed=pangenome/local_subgraph_force" />
+<Figure caption="One slice of the five-strain graph drawn both ways, under a linear view of the same locus. Left, anchored on the graph's K12 path: both panels share an axis and the Depth colors, so the green-to-yellow step where the fifth strain rejoins the shared sequence sits at the same x in both. Right, force-directed: the same nodes and colors with nothing holding them to the axis." src="/img/pangenome/local_subgraph.png" links="Anchored=pangenome/local_subgraph_anchored,Force-directed=pangenome/local_subgraph_force" />
 
 ### Drawing the haplotype paths
 

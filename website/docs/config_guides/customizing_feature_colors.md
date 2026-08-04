@@ -98,6 +98,40 @@ and has no external imports. If it does import other modules, use the template.
 For embedded components, see the
 [inline plugins example](https://jbrowse.org/storybook/lgv/with-inline-plugins/).
 
+## Reading the type list off the file
+
+A lookup-table callback keyed on `feature.type` is only as good as its keys, and
+a pipeline's own documentation is not always an accurate list of what it emits.
+The [cookbook](/docs/cookbook#colors) has the `awk` one-liner that counts the
+types in a GFF3; this section works one file through end to end.
+
+The
+[EBI mobilome annotation pipeline](https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline)
+emits a flat GFF whose column 3 carries mobile element types rather than genes,
+so with no callback the whole mobilome paints in one default color. MGnify
+publishes one per representative genome, alongside the genome FASTA and its
+`.fai`, under
+[`mgnify_genomes`](https://ftp.ebi.ac.uk/pub/databases/metagenomics/mgnify_genomes/)
+(`<accession>_mobilome.gff`). A single table separates the element classes and
+greys the passenger CDSs back so the elements read first:
+
+```json
+{
+  "color": "jexl:{prophage:'#8e44ad',viral_sequence:'#9b59b6',plasmid:'#2980b9',insertion_sequence:'#e67e22',terminal_inverted_repeat_element:'#d35400',inverted_repeat_element:'#d35400',integron:'#16a085',conjugative_integron:'#1abc9c',attC_site:'#0e6655',compositional_outlier:'#c0392b',direct_repeat:'#7f8c8d',CDS:'#bdc3c7'}[feature.type] || 'gray'"
+}
+```
+
+The repeat flanks appear under two names because that pipeline renamed the type
+across releases, and a file carries whichever name the release that produced it
+used. That is the usual reason a key is missing, and the reason to read the
+types off the file you have rather than off the pipeline's current docs.
+
+These GFFs carry their sequence inline after a `##FASTA` marker, which is most
+of their size. `Gff3Adapter` reads them as-is and stops at the sequence, so a
+whole-file track needs no preparation. Cut the file at that marker for a
+`bgzip`/`tabix` indexed track instead, since the sequence lines are not
+tab-delimited and tabix has no way to skip them.
+
 ## See also
 
 - [](/docs/config_guides/jexl)

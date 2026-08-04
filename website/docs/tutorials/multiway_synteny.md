@@ -180,7 +180,7 @@ unless run with `--no_strip_names` (which is why the
 [script](#reproduce-it-end-to-end) passes it). Spot-check a few ids from each
 side against each other before loading.
 
-## Set up the three assemblies
+## Setting up the three assemblies
 
 The stacked view has one row per genome, so grape, peach, and cacao must each be
 a JBrowse assembly whose name matches an entry in the track's `assemblyNames`.
@@ -327,7 +327,7 @@ direct.
 
 The same track dropped into a plain linear genome view (as an
 `LGVSyntenyDisplay`) draws every pair at once rather than one, so a grape row
-shows both its peach and its cacao links; **Group by... > Mate assembly** splits
+shows both its peach and its cacao links; **Group by... → Mate assembly** splits
 them into a lane per genome. That is the one-genome reading of the same table:
 no second row to frame, and a lane per genome that has an ortholog there.
 

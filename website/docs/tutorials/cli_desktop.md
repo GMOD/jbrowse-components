@@ -25,8 +25,7 @@ files) that you can open directly in JBrowse Desktop _or_ serve on the web.
 
 It works in both places because the CLI records each file by a path _relative_
 to `config.json`: Desktop resolves those paths against the folder on disk, and a
-web server resolves them against the served config's URL. So one scriptable,
-reproducible setup is portable across both apps.
+web server resolves them against the served config's URL.
 
 ## Install the CLI
 
@@ -176,8 +175,8 @@ or moved to another machine.
 
 The same config and data work on the web too. The relative paths resolve against
 the served config's URL instead of a local folder. JBrowse Web is a separate
-app, though, so serving `myproject/` on its own only hosts the files, so you
-still need the browser app. Two ways to get there:
+app, though: serving `myproject/` on its own hosts the files but not the browser
+that reads them. Two ways to get there:
 
 - Build into a JBrowse Web install: run `jbrowse create jbrowse2` first and pass
   `--out jbrowse2` on the commands above, so the app and your config live in one

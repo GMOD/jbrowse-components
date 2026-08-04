@@ -190,7 +190,7 @@ two agree at r = 0.92 with no bias. That painting is in the config as
 dogs have CRAMs is an accident of what the share published, so the picture
 invites a question about those breeds that the data cannot answer.
 
-<Figure caption="Copy number over CYP1A2 and 185 kb around it, each window colored by its rounded call, grey being two copies. Above, named animals: four wolves and every Golden Retriever, Labrador Retriever and Boxer in the collection. Below, all 1,987 canids, clustered on their profiles. Every Golden is expanded, every Boxer stays grey, the Labradors split; the blue blocks to the right are deletions a few percent of the collection carries. CpG islands are drawn above: the white stripe through both lanes is a window dropped as unmeasurable, over the island beneath it." src="/img/dog10k-cyp1a2-cohort-copy-number.png" />
+<Figure caption="Copy number over CYP1A2 and 185 kb around it, each window colored by its rounded call, grey being two copies. Above, named animals: four wolves and three whole breeds. Below, all 1,987 canids clustered on their profiles, where the blue blocks to the right are deletions a few percent of them carry. The white stripe through both lanes is a window dropped as unmeasurable, over the CpG island beneath it." src="/img/dog10k-cyp1a2-cohort-copy-number.png" />
 
 The upper lane is whole groups, not picked animals: every Golden Retriever,
 Labrador Retriever and Boxer in the collection, plus the four wolves the figure

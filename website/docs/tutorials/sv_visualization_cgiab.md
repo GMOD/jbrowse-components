@@ -2,9 +2,10 @@
 title: Structural variants (Cancer GIAB)
 sidebar_label: SVs (Cancer GIAB)
 description:
-  Load and inspect structural variants from real cancer sequencing data
+  Build a tumor/normal HiFi site from raw reads, and read its benchmark SV and
+  CNV calls against the alignments that support them
 guide_category: Tutorials
-tutorial_category: Structural variation
+tutorial_category: Cancer genomics
 ---
 
 **TL;DR:** load the Cancer Genome in a Bottle HG008 cancer tumor/normal PacBio
@@ -722,7 +723,7 @@ allele-specific views.
 If you hit a problem not covered above, please file an issue on the
 [JBrowse 2 GitHub repository](https://github.com/GMOD/jbrowse-components/issues).
 
-## Next steps
+## Where to go next
 
 Nothing above is specific to C-GIAB. Swap the VCF, the CRAMs and the assembly
 for your own and the same tracks, walkthroughs and callers apply. The

@@ -31,15 +31,17 @@ A UMAP answers how much of a gene each cell type made. It cannot show where in
 the gene the reads landed, and that is the part a browser puts back: which end,
 which exons, which annotated transcript the pile actually agrees with.
 
-<Figure caption="Nine per-cell-type BigWigs from the 10x 5k PBMC dataset, loaded as one MultiQuantitativeTrack, over nine marker loci in one discontinuous view: the 3' end of IL7R, CD8A, GNLY, MS4A1, LYZ, FCGR3A, FCER1A, LILRA4 and PPBP, in the same order as the rows they mark. The signal walks down the diagonal, and each column's pile sits at the 3' end of its gene rather than across it. Log scale, because LYZ in monocytes is an order of magnitude above IL7R in CD4 T cells and the rows share one axis." src="/img/scrna/marker_panel.png" />
+<Figure caption="Nine per-cell-type BigWigs from the 10x 5k PBMC dataset, loaded as one MultiQuantitativeTrack, over nine marker loci in one discontinuous view: the 3' end of IL7R, CD8A, GNLY, MS4A1, LYZ, FCGR3A, FCER1A, LILRA4 and PPBP, in the same order as the rows they mark. The signal walks down the diagonal, one marker per row." src="/img/scrna/marker_panel.png" />
 
 The pile at one end is not a defect. 10x 3' chemistry sequences the 3' end of
 each transcript, so a coverage track of that library is a spike near the
-polyadenylation site and very little else. Reading a marker gene means comparing
-the heights of those spikes across rows, which is the same comparison a dot plot
-makes, drawn on the coordinate where the reads actually are. Full-length
-chemistries (Smart-seq, and 5' kits to a lesser degree) spread coverage over the
-gene body instead, and the rest of this page applies unchanged.
+polyadenylation site and very little else. The figure is on a log scale because
+the rows share one axis and LYZ in monocytes is an order of magnitude above IL7R
+in CD4 T cells. Reading a marker gene means comparing the heights of those
+spikes across rows, which is the same comparison a dot plot makes, drawn on the
+coordinate where the reads actually are. Full-length chemistries (Smart-seq, and
+5' kits to a lesser degree) spread coverage over the gene body instead, and the
+rest of this page applies unchanged.
 
 ## Generating per-cell-type BigWigs
 
@@ -257,7 +259,7 @@ usually produces.
 - [MultiWiggleAdapter config](/docs/config/multiwiggleadapter)
 - [](/docs/user_guides/clustering)
 
-## Sources
+## References
 
 - [10x Genomics 5k PBMC v3](https://www.10xgenomics.com/datasets/5-k-peripheral-blood-mononuclear-cells-pbm-cs-from-a-healthy-donor-v-3-chemistry-3-standard-3-0-2),
   the dataset this page pseudobulks

@@ -34,27 +34,17 @@ instead we merge them into a single file with an extra `cellType` column and let
 the multi-row feature display split that one track back into a labeled sub-row
 per cell type. Every row shares one config, one adapter, and one fetch.
 
-<Figure src="/img/chromhmm_hoxa_9celltype.png" caption="The nine UCSC ENCODE Broad epigenomes over the HOXA cluster as a single multi-row track, with hg19 RefSeq genes above. Each row is one cell type, each block is painted by the file's own itemRgb, and the state key on the right is derived from the data. H1-hESC holds the cluster in Polycomb-repressed states while the differentiated lines carry active promoter, enhancer and transcription over the genes each of them uses."/>
+<Figure src="/img/chromhmm_hoxa_9celltype.png" caption="The nine UCSC ENCODE Broad epigenomes over the HOXA cluster as a single multi-row track, one row per cell type, with hg19 RefSeq genes above. H1-hESC holds the cluster in Polycomb-repressed states while the differentiated lines carry active promoter, enhancer and transcription over the genes each of them uses."/>
 
-## Reproduce it end to end
+## What the merged file holds
 
-One script does the whole path,
-[`build_chromhmm_multirow.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_chromhmm_multirow.sh):
-
-```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_chromhmm_multirow.sh
-bash build_chromhmm_multirow.sh         # builds ./chromhmm_build/jbrowse2
-npx --yes serve chromhmm_build/jbrowse2 # then open the printed URL
-```
-
-It downloads the nine
+The nine
 [UCSC ENCODE Broad HMM](http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHmm/)
-15-state segmentation BEDs (hg19, one per cell type), merges them into a single
-`cellType`-tagged BED, bgzips and tabixes it, downloads JBrowse, and writes the
-`config.json` described below, opening on the HOXA cluster.
-
-Two properties of the merged file matter for loading it. Each line is standard
-BED9 plus one trailing string field, the cell-type label that becomes a row:
+15-state segmentation BEDs (hg19, one per cell type) concatenate into a single
+`cellType`-tagged BED, which [the build script](#reproduce-it-end-to-end) does
+in one pass. Two properties of that merged file matter for loading it. Each line
+is standard BED9 plus one trailing string field, the cell-type label that
+becomes a row:
 
 ```
 #chrom  chromStart  chromEnd  name               score  strand  thickStart  thickEnd  itemRgb      cellType
@@ -67,10 +57,10 @@ column names from the data rather than from the config. `tabix -p bed` keeps `#`
 lines as the header, and the script writes the defline outside the coordinate
 sort so it stays first.
 
-The merge output is already coordinate-sorted, so indexing it is just `bgzip`
-plus `tabix -p bed`: JBrowse fetches any region on demand, with no bigBed
-conversion, no autoSql schema, and no chrom.sizes file. To skip the build
-entirely, the finished 9-cell-type file is also hosted as a bigBed at
+The merged output is coordinate-sorted, so indexing it is just `bgzip` plus
+`tabix -p bed`: JBrowse fetches any region on demand, with no bigBed conversion,
+no autoSql schema, and no chrom.sizes file. To skip the build entirely, the
+finished 9-cell-type file is also hosted as a bigBed at
 `https://jbrowse.org/demos/chromhmm/wgEncodeBroadHmm.multirow.bb`, which carries
 the same column names in its embedded autoSql.
 
@@ -136,10 +126,9 @@ automatically, so every block gets its ChromHMM state color straight from the
 file; set the [`color`](/docs/config/linearmultirowfeaturedisplay/#slot-color)
 slot only to override that.
 
-**Using JBrowse Desktop?** These steps work unchanged. Desktop opens
-`wgEncodeBroadHmm.multirow.bed.gz` straight from your local disk (point `uri` at
-the local path), no web server needed. See the
-[desktop quickstart](/docs/quickstart_desktop).
+These steps work unchanged on [JBrowse Desktop](/docs/quickstart_desktop), which
+opens `wgEncodeBroadHmm.multirow.bed.gz` straight from local disk with no web
+server; point `uri` at the local path.
 
 ## Read it
 
@@ -184,6 +173,21 @@ At that row count `rowOrder` is 127 lines of config whose only job is to keep
 related tissues adjacent, which is exactly what **Cluster rows by similarity**
 derives from the data. Leave `rowOrder` out and cluster instead when the
 grouping you want depends on the locus rather than on a fixed publication order.
+
+## Reproduce it end to end
+
+One script does the whole path,
+[`build_chromhmm_multirow.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_chromhmm_multirow.sh):
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_chromhmm_multirow.sh
+bash build_chromhmm_multirow.sh         # builds ./chromhmm_build/jbrowse2
+npx --yes serve chromhmm_build/jbrowse2 # then open the printed URL
+```
+
+It downloads the nine segmentation BEDs, merges them into the `cellType`-tagged
+BED above, bgzips and tabixes it, downloads JBrowse, and writes the
+`config.json` from the section above, opening on the HOXA cluster.
 
 ## See also
 

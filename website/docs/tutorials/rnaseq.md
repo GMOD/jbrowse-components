@@ -30,16 +30,18 @@ at each position, and the reference gene annotation (an NCBI GFF) sits above it.
 
 <Figure caption="RNA-seq reads over ACTB: the coverage histogram (top), strand-colored splice arcs, the spliced read pileup, and the NCBI RefSeq gene model." src="/img/rnaseq/basic.png" />
 
-## Read depth reflects expression level
+## Read coverage and read height
 
-The more reads that stack up over a region, the more highly expressed it is. The
-coverage histogram along the top of the track is JBrowse's running per-position
-read count, so tall coverage flags a highly-transcribed gene.
+The histogram along the top of the track is JBrowse's running per-position read
+count over the reads in the pileup below it. It is raw depth, not an expression
+estimate: comparing genes or libraries by it takes the transcript-length and
+library-size normalization a counts pipeline does, which the browser does not
+apply.
 
 Pick **Read height** → **Compact** in the track menu to pack the full read stack
 into view:
 
-<Figure caption="Compact read height packing the full read stack over a gene. Coverage depth broadly tracks expression level." src="/img/rnaseq/compact_stacked.png" />
+<Figure caption="ACTB under compact read height: the whole read stack fits the track, under the per-position coverage histogram and the hg19 NCBI RefSeq gene model." src="/img/rnaseq/compact_stacked.png" />
 
 ## Spliced reads, CIGAR strings, and splice arcs
 
@@ -47,17 +49,15 @@ RNA is spliced before sequencing, so a read mapped back to the genome can skip
 across the introns that were removed. A spliced aligner like
 [STAR](https://github.com/alexdobin/STAR) records this by split-mapping the read
 (part aligns to one exon, part to the next) and encoding the skip in the read's
-CIGAR string. (CIGAR is the SAM/BAM field describing how a read aligns to the
-reference.)
+CIGAR string, the SAM/BAM field describing how a read aligns to the reference.
 
 A real spliced read from the ACTB pileup above (reads here are 51 bp) has a
-CIGAR like:
+CIGAR like this, spaced out for readability:
 
 ```
 18M 95N 33M
 ```
 
-(CIGAR strings normally have no spaces, but are spaced here for readability.)
 That means 18 bp (`M`, match) aligned to one exon, a 95 bp skip (`N`) across the
 intron, and 33 bp (`M`) aligned to the next. Every `N` in a read's CIGAR is one
 skipped intron.
@@ -69,9 +69,9 @@ splice events and blue arcs are reverse-strand.
 
 If you zoom into the pileup back at Normal read height, you can see each spliced
 read on its own: its two exon-aligned ends show up as grey boxes joined by a
-thin teal line across the skipped intron. That teal connector is a per-read
-thing, separate from the red/blue strand-colored arcs above. Mouse over any read
-to inspect it.
+thin teal line across the skipped intron. The teal connector is drawn per read,
+separate from the red/blue arcs above, which aggregate every read crossing a
+junction. Mouse over any read to inspect it.
 
 ## Strand-specific RNA-seq
 
@@ -125,12 +125,8 @@ JBrowse. If you don't have `hg38` set up yet, add it first (see the
 the BAM, align reads with a spliced aligner such as STAR, then run
 `samtools sort` and `samtools index` so the `.bai` sits beside the BAM.
 
-JBrowse computes the splice arcs and per-read splicing shown above from the
-CIGAR strings automatically, with no extra configuration. To color reads by
-fragment strand, open the track menu's color-scheme options and choose **First
-of pair strand**. See the
-[alignments track config guide](/docs/config_guides/alignments_track) for
-adapter and display options. For a precomputed coverage signal (e.g. a
+See the [alignments track config guide](/docs/config_guides/alignments_track)
+for adapter and display options. For a precomputed coverage signal (e.g. a
 strand-specific BigWig produced by your aligner), load it separately as a
 [quantitative track](/docs/user_guides/quantitative_track).
 

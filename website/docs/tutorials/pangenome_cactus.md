@@ -278,7 +278,11 @@ row per sample:
 }
 ```
 
-<Figure caption="The graph's variant calls over 6 kb of K12, one column per variant and one row per strain. Grey is a call matching K12, blue an alternate allele, dark red a second alternate at a multi-allelic site. NCTC86's row is grey almost throughout while the other three break up, so one strain tracks the reference across this window and the others do not. The band above ties each column back to its position, which the matrix drops in order to give every variant the same width." src="/img/pangenome_cactus/variants.png" />
+<Figure caption="The graph's variant calls over 6 kb of K12, one column per variant and one row per strain, with the band above tying each column back to its position. NCTC86's row is grey almost throughout while the other three break up, so one strain tracks the reference across this window and the others do not." src="/img/pangenome_cactus/variants.png" />
+
+Grey in the matrix is a call matching K12, blue an alternate allele, and dark
+red a second alternate at a multi-allelic site. Every variant gets the same
+width, which is what the band above is tying back to a position.
 
 This is the same 6 kb the MAF figure below draws base by base, so the two are
 one window in two projections: the alignment rows there, and the genotypes
@@ -387,9 +391,11 @@ What it counts is path **steps**, not strains, so a repeat the graph folded onto
 one run of nodes reads above the strain count: every path carrying several
 copies walks that run several times. That is where the two builders part company
 on identical input, and it is the one difference between them visible in a
-single frame.
+single frame. seqwish folds the rRNA copies together, so the pggb curve runs
+above the strain count there; the reference-first graph keeps them apart and its
+curve never exceeds the strain count anywhere on the chromosome.
 
-<Figure caption="odgi depth over the rrnC operon, the same command over the same K12 windows against each builder's graph, on one fixed axis. The pggb row steps up to twice the strain count across the operon the gene lane names (rrsC, rrlC, rrfC); the Minigraph-Cactus row does not move. seqwish folds the rRNA copies onto one run of nodes that each path then walks repeatedly, and depth counts every walk. The reference-first graph keeps the copies apart, so its curve does not exceed the strain count anywhere on the chromosome." src="/img/pangenome_cactus/builders.png" />
+<Figure caption="odgi depth over the rrnC operon, the same command over the same K12 windows against each builder's graph, on one fixed axis. The pggb row steps up to twice the strain count across the operon the gene lane names (rrsC, rrlC, rrfC); the Minigraph-Cactus row does not move." src="/img/pangenome_cactus/builders.png" />
 
 So read the aggregate curve as relative rather than as an exact strain tally on
 a graph that collapses repeats. On this one it is a tally, and that is a

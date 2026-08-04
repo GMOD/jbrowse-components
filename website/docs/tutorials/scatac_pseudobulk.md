@@ -94,7 +94,7 @@ type. Nothing else in the workflow changes.
 
 Every route ends the same way, one `.bw` per cell type, and the rest of this
 page does not care which produced them. The tools are linked under
-[Sources](#sources):
+[References](#references):
 
 - **An `ArchRProject`**: `getGroupBW(groupBy = "CellType", tileSize = 25)`
   groups cells, sums their Tn5 insertions and writes one BigWig per group.
@@ -290,7 +290,7 @@ cell count rather than its accessibility.
 - [](/docs/tutorials/chromhmm), many cell types in one track from a single file
   rather than one file each
 
-## Sources
+## References
 
 Pseudobulk / coverage tools:
 

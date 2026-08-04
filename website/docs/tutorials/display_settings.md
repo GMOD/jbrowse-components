@@ -28,8 +28,10 @@ scheme, display type, score range, and so on) live in two places:
   track's _initial_ state when a particular link or embedded view loads, and
   override the `config.json` defaults.
 
-Both use the same setting names. The per-session settings are a per-session
-override of the fields you can bake in as defaults.
+Both use the same setting names, so a session entry is a per-session override of
+the fields you can bake in as defaults. Use `displayDefaults` for settings
+everyone should always get, and a session spec for a link or embedded view that
+should open in one specific state.
 
 ## Finding a setting's name
 
@@ -99,10 +101,11 @@ with `trackId` plus the display settings written directly alongside it:
 }
 ```
 
-URL-encoded onto the end of a JBrowse link. Append this query string to your own
-JBrowse instance's base URL (e.g. `https://jbrowse.org/code/jb2/latest/`), and
-swap `config` and the `trackId` values for ones in your config. `volvox_sv_cram`
-here is an example track from the bundled volvox demo data:
+That JSON is URL-encoded onto the end of a JBrowse link. Append the query string
+below to your own instance's base URL (e.g.
+`https://jbrowse.org/code/jb2/latest/`), swapping `config` and the `trackId`
+values for ones in your config; `volvox_sv_cram` is an example track from the
+bundled volvox demo data:
 
 ```
 ?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-10000","type":"LinearGenomeView","tracks":[{"trackId":"volvox_sv_cram","height":250,"showSoftClipping":true,"linkedReads":"normal","colorBy":{"type":"insertSizeAndOrientation"}}]}]}
@@ -164,13 +167,6 @@ function GenomeBrowser() {
 
 See [embedding the linear genome view](/docs/tutorials/embed_linear_genome_view)
 for the full embedded setup.
-
-## Which wins?
-
-When both are present, the per-session settings override the `config.json`
-defaults for that session. Use `displayDefaults` for settings everyone should
-always get, and per-session settings for a link or embedded view that should
-open in a specific state.
 
 ## See also
 

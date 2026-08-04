@@ -57,7 +57,7 @@ the whole block's endpoints. A reverse-strand block adds another checkbox,
 still reads left to right. **Submit** opens a two-panel synteny view on that
 position, with the liftOver track drawn as ribbons between the panels.
 
-<Figure caption="The four steps, from the hg38-to-mm39 liftOver track around SHH to the finished comparison: right-click a chain block, confirm how the target panel is framed, and the view that opens below the linear genome view it was launched from: 302 kb of human chr7 against the 311 kb of mouse chr5 it aligns to, one ribbon per chain block. The human panel arrives carrying the gene track that view had on and the mouse panel opens empty; the last frame adds the mouse genes plus RepeatMasker on both sides, where SHH sits opposite mouse Shh across the ribbons while the two RepeatMasker bands share no pattern." src="/img/genomes_synteny/launch_sequence.png" />
+<Figure caption="The four steps, from the hg38-to-mm39 liftOver track around SHH to the finished comparison: right-click a chain block, confirm how the target panel is framed, then the synteny view opens below the view it was launched from, 302 kb of human chr7 against the 311 kb of mouse chr5, one ribbon per chain block. The last frame adds the mouse genes and RepeatMasker on both sides: SHH sits opposite mouse Shh across the ribbons, while the two RepeatMasker bands share no pattern." src="/img/genomes_synteny/launch_sequence.png" />
 
 The panel for the assembly you launched from opens with the tracks that view had
 on, which is why the human side arrives with its genes already; **Copy this
@@ -67,9 +67,9 @@ and its tracks come from its own track selector, whose button in the view header
 lists one per panel. On genomes.jbrowse.org the mouse panel offers the same
 **NCBI RefSeq - RefSeq Curated** and **RepeatMasker** as the human one, because
 naming mm39 also brought in the mm39 hub's gene, repeat and gap tracks. The rest
-of that hub is not loaded with them; open it from **File** &rarr; **Open
-connection** as a JBrowse 2 hub at `https://jbrowse.org/ucsc/mm39/config.json`
-when you want its conservation or expression tracks too.
+of that hub is not loaded with them; open it from **File → Open connection** as
+a JBrowse 2 hub at `https://jbrowse.org/ucsc/mm39/config.json` when you want its
+conservation or expression tracks too.
 
 Set the ribbon coloring to **Strand** from the palette button in the synteny
 track header.

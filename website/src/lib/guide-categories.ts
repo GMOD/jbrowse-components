@@ -50,10 +50,17 @@ export const DEVELOPER_CATEGORIES = [
 // (pages/docs/tutorials/index.astro) and the user guide index, so the two
 // groupings of the same pages can't drift. A tutorial with no category, or one
 // not listed here, falls into TUTORIAL_FALLBACK rather than vanishing.
+// 'Cancer genomics' is split out from 'Structural variation' rather than
+// widened into it: the tumor pages are not all SV work (a somatic point-mutation
+// matrix is not structural variation, which is what filed it under 'Population
+// genomics' before), and the SV pages are not all cancer (the 1000 Genomes
+// inversion and copy-number panels are germline). One axis each keeps both
+// headings true of everything under them.
 export const TUTORIAL_CATEGORIES = [
   'Getting started',
   'Synteny & comparative genomics',
   'Structural variation',
+  'Cancer genomics',
   'Population genomics',
   'Epigenomics & single cell',
   'Transcriptomics & proteins',

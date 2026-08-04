@@ -4,7 +4,7 @@ description:
   Read somatic point mutations across a thousand tumors as a genotype matrix,
   grouped by clinical annotation
 guide_category: Tutorials
-tutorial_category: Population genomics
+tutorial_category: Cancer genomics
 ---
 
 **TL;DR:** turn a TCGA project's open-access somatic MAFs into one multi-sample
@@ -198,13 +198,13 @@ columns are one tumor wide. That is why the whole-genome view of this track is
 not worth opening, and why the figures here are all gene-scale. The GDC's open
 mutation calls are exome only, so there is no intergenic signal to see.
 
-## The same mechanic on other columns
+## Point the same slots at another column
 
 Point the slots at `subtype` instead and the rows band by receptor status, which
 is where the cohort's other well-known contrast lives
 ([TCGA 2012](https://doi.org/10.1038/nature11412)):
 
-<Figure caption="TP53's exons with rows grouped and colored by receptor subtype, introns collapsed. The triple-negative band is visibly the dense one; the much larger HR+/HER2- band above it is sparse. Bands run HR+/HER2-, HER2+, triple-negative, unknown from the top, named by the color strip in the gutter, and the cells are missense (orange) and truncating (red) calls spread the length of the coding sequence rather than piled on a codon." src="/img/tcga/mutations_tp53_subtype.png" />
+<Figure caption="TP53's exons with rows grouped and colored by receptor subtype, introns collapsed, the bands running HR+/HER2-, HER2+, triple-negative and unknown from the top. The triple-negative band is visibly the dense one and the much larger HR+/HER2- band above it is sparse, with the calls spread the length of the coding sequence rather than piled on a codon." src="/img/tcga/mutations_tp53_subtype.png" />
 
 The bottom band is the tumors whose receptor calls do not resolve a subtype, a
 gap in the annotation rather than a fourth subtype. Hovering a column in the
@@ -216,7 +216,7 @@ on two hotspots (H1047R in the kinase domain, E542K/E545K in the helical one) in
 the HR+/HER2- band rather than spreading, so its connector fan comes off a
 couple of points where TP53's and CDH1's land in exon after exon.
 
-## Clustering instead of grouping
+## Cluster the rows instead of grouping them
 
 **Clustering → Cluster rows by genotype...** in the track menu is the other
 arrangement (see [](/docs/user_guides/clustering) for the mechanic). It orders
@@ -226,7 +226,7 @@ the clinical bands while it is on, so the two readings are alternatives: use it
 when the question is which tumors share a mutation, and `groupBy` when the
 question is which clinical group carries it.
 
-## Thinning the matrix down to recurrent mutations
+## Thin the matrix down to recurrent mutations
 
 The track menu's **Filter by... Minor allele frequency** slider (and its
 [`minorAlleleFrequencyFilter`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-minorallelefrequencyfilter)
@@ -244,7 +244,7 @@ along the gene rather than piled on one codon, so a threshold high enough to
 isolate a hotspot empties the window the histology figure above is built on.
 Recurrence filtering is for hotspot genes.
 
-## Using your own cohort
+## Use your own cohort
 
 Nothing here is TCGA specific past the clinical columns. Any MAF collection
 reshapes with the same step, and

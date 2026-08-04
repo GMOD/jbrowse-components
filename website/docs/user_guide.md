@@ -71,11 +71,15 @@ How to drive JBrowse once it is running. New here? Start with the
 
 ### Structural variation
 
-- [](/docs/tutorials/sv_visualization_cgiab)
 - [](/docs/tutorials/sv_multisamples)
 - [](/docs/tutorials/population_cnv)
+
+### Cancer genomics
+
+- [](/docs/tutorials/sv_visualization_cgiab)
 - [](/docs/tutorials/tcga_cohort_cnv)
 - [](/docs/tutorials/cancer_sv)
+- [](/docs/tutorials/tcga_cohort_mutations)
 
 ### Population genomics
 
@@ -87,7 +91,6 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/tutorials/dog10k_lof)
 - [](/docs/tutorials/dog10k_selection)
 - [](/docs/tutorials/local_ancestry)
-- [](/docs/tutorials/tcga_cohort_mutations)
 - [](/docs/tutorials/dog10k_svs)
 
 ### Epigenomics & single cell

@@ -3,7 +3,7 @@ title: CNV cohort (TCGA)
 description:
   Plot somatic copy number across a thousand tumors, one row per sample
 guide_category: Tutorials
-tutorial_category: Structural variation
+tutorial_category: Cancer genomics
 ---
 
 **TL;DR:** stack every tumor in a TCGA cohort as its own row of a
@@ -49,7 +49,7 @@ kind: every primary tumor in a TCGA project stacked as its own row, so a
 copy-number change shared across the cohort reads as a vertical stripe running
 down hundreds of samples.
 
-<Figure caption="TCGA-BRCA copy number across all 1104 primary tumors, one 1px row per tumor, clustered by profile, under the cohort's own gain (red, up) and loss (blue, down) frequency per 100kb. Recurrent events read as vertical stripes through the stack, each under a peak in the frequency track; whole rows tending red or blue are the heavily aneuploid tumors that clustering groups together. Four recurrent loci are labeled." src="/img/tcga/cohort_cnv_genome.png" />
+<Figure caption="TCGA-BRCA copy number across all 1104 primary tumors, one 1px row per tumor, clustered by profile, under the cohort's own gain (red, up) and loss (blue, down) frequency per 100kb. Recurrent events read as vertical stripes through the stack, each under a peak in the frequency track." src="/img/tcga/cohort_cnv_genome.png" />
 
 ## Load it into JBrowse
 
@@ -264,7 +264,7 @@ Point `--groups` at any other column for a different split; `histology` and
 `stage` come from harmonized GDC fields and so work for any TCGA project, while
 `subtype` is breast specific.
 
-## Using your own cohort
+## Use your own cohort
 
 Nothing here is TCGA-specific. Any caller that emits per-sample segments works;
 the track config above only needs a BED with a sample column and a numeric
@@ -339,16 +339,15 @@ serves both tracks.
 
 ## Where to go next
 
-The same one-row-per-sample pattern carries to other GDC open-access data.
-Counts below are open files for TCGA-BRCA, checked against the API:
+The same one-row-per-sample pattern carries to other GDC open-access data:
 
-- **Allele-specific copy number** (ASCAT, 2257 files) is the closest extension.
-  It reports major and minor allele copy number separately, so it shows
-  loss-of-heterozygosity, which the plain segment file above cannot: a
+- **Allele-specific copy number** (ASCAT, open access at the GDC) is the closest
+  extension. It reports major and minor allele copy number separately, so it
+  shows loss-of-heterozygosity, which the plain segment file above cannot: a
   copy-neutral LOH region looks balanced by total copy number but has lost a
   parental allele. Same `.seg` shape, same display, only the coloring expression
   changes.
-- **Methylation** (Beta Value arrays, 1238 files) is probe-level with genomic
+- **Methylation** (Beta Value arrays, open access) is probe-level with genomic
   coordinates, and loads the same way with beta as the color field.
 
 Splice junction quantification is not open access at the GDC, so a cohort

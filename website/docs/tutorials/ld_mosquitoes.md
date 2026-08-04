@@ -137,7 +137,7 @@ karyotype breakdown per population, which is the independent check on the
 heatmaps: the panel that shows a block is the one segregating both arrangements,
 and the flat one is near-fixed for the standard arrangement.
 
-## Will your locus show up at all?
+## When a locus has no block to show
 
 A blank or washed-out triangle usually means the locus was never going to show.
 The [reproduce script](#reproduce-it-end-to-end) prints the numbers behind each

@@ -6,9 +6,10 @@ description:
 ---
 
 Short, copy-paste recipes for the `config.json` settings people reach for most.
-Every example uses the `volvox` sample data JBrowse ships
-([`test_data/volvox`](https://github.com/GMOD/jbrowse-components/tree/main/test_data/volvox)).
-For the full reference, see the [config guide](/docs/config_guide).
+Most run against the `volvox` sample data JBrowse ships
+([`test_data/volvox`](https://github.com/GMOD/jbrowse-components/tree/main/test_data/volvox));
+the synteny recipes and every figure use real datasets. For the full reference,
+see the [config guide](/docs/config_guide).
 
 ## The smallest config
 
@@ -149,8 +150,8 @@ JBrowse expands these at load time, so you write only what matters:
   [using jexl callbacks](/docs/config_guides/jexl).
 
 The same objects work in `config.json`, in a `session=spec-…` URL, and in an
-embedded `createViewState`. The app writes them back out too: **About ▸ Copy
-config** on a track, or **File ▸ Export session** for the whole view.
+embedded `createViewState`. The app writes them back out too: **About → Copy
+config** on a track, or **File → Export session** for the whole view.
 
 ## Applying a recipe from the CLI
 
@@ -231,7 +232,9 @@ property on it: `feature.type`, `feature.strand` (`1`/`-1`/`0`),
 `feature.score`, `feature.name`, `feature.start`/`end`, `feature.refName`, and
 `feature.parent`. VCF `INFO` fields parse as arrays, so index them
 (`feature.INFO.SVTYPE[0]`), and BAM/CRAM tags come from `getTag(feature, 'HP')`.
-The full list is in [using jexl callbacks](/docs/config_guides/jexl).
+The full list is in [using jexl callbacks](/docs/config_guides/jexl). Wrap a
+callback in `log(...)` to print what it returns for each feature to the browser
+console.
 
 ### More ways to set `color`
 
@@ -270,8 +273,9 @@ instance, carries a `repClass` column:
 <Figure caption="UCSC RepeatMasker over a 17q21 window with the lookup table above: every repeat takes the color of its repClass, and classes not in the table fall through to gray." src="/img/cookbook_color_by_type.png"/>
 
 A lookup table is only as good as its keys, and an annotation pipeline's own
-documentation is not always an accurate list of what it emits. Read the types
-out of the file itself before writing the table:
+documentation is not always an accurate list of what it emits, since a pipeline
+can rename a type between releases. Read the types out of the file itself before
+writing the table:
 
 ```bash
 awk -F'\t' '/^##FASTA/{exit} !/^#/{print $3}' annotations.gff |
@@ -284,37 +288,8 @@ counts DNA as feature types and buries the real ones under thousands of rows.
 
 Any type missing from the table falls through to `|| 'gray'`, so gray is the
 signal to go back and check that list.
-
-The
-[EBI mobilome annotation pipeline](https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline)
-is a worked case. Its GFF is flat, and column 3 carries mobile element types
-rather than genes, so the whole mobilome paints in the one default color. MGnify
-publishes one of these per representative genome, alongside the genome FASTA and
-its `.fai`, under
-[`mgnify_genomes`](https://ftp.ebi.ac.uk/pub/databases/metagenomics/mgnify_genomes/)
-(`<accession>_mobilome.gff`). A single table separates the element classes and
-greys the passenger CDSs back so the elements read first:
-
-```json
-{
-  "color": "jexl:{prophage:'#8e44ad',viral_sequence:'#9b59b6',plasmid:'#2980b9',insertion_sequence:'#e67e22',terminal_inverted_repeat_element:'#d35400',inverted_repeat_element:'#d35400',integron:'#16a085',conjugative_integron:'#1abc9c',attC_site:'#0e6655',compositional_outlier:'#c0392b',direct_repeat:'#7f8c8d',CDS:'#bdc3c7'}[feature.type] || 'gray'"
-}
-```
-
-The repeat flanks appear under two names because that pipeline has renamed the
-type across releases, and a file is annotated with whichever name the release
-that produced it used. That is the usual reason a key is missing, and the reason
-to read the types out of the file you actually have rather than from the
-pipeline's current documentation.
-
-These are the GFFs with the inline `##FASTA` block noted above, which is most of
-their size. `Gff3Adapter` reads them as-is and stops at the sequence, so a
-whole-file track needs no preparation. Cut the file at that marker if you want a
-`bgzip`/`tabix` indexed track instead, since the sequence lines are not
-tab-delimited and tabix has no way to skip them.
-
-Wrap a callback in `log(...)` to print what it returns for each feature to the
-browser console.
+[Reading the type list off the file](/docs/config_guides/customizing_feature_colors#reading-the-type-list-off-the-file)
+works one of these through end to end.
 
 ## Labels, tooltips & details {#labels-tooltips-details}
 
@@ -369,7 +344,7 @@ changes:
 | `volvox-bed12.bed.gz` | `BedTabixAdapter`  |
 | `volvox.bb`           | `BigBedAdapter`    |
 
-For a **small, unindexed** file, use the plaintext adapter (`Gff3Adapter`,
+For a small, unindexed file, use the plaintext adapter (`Gff3Adapter`,
 `BedAdapter`, `VcfAdapter`), which reads the whole file into memory.
 [](/docs/config_guides/file_types) has the full extension-to-adapter table.
 
@@ -491,10 +466,10 @@ fetched. See [alignments tracks](/docs/config_guides/alignments_track).
 ```
 
 Setting `color` puts the track in single-color mode. Left alone, a wiggle is
-**bicolor**: scores above `bicolorPivot` draw upward in `posColor`, and scores
-below it draw downward in `negColor`. Set `color` or `posColor`/`negColor`,
-never both. A wiggle colors per signal rather than per feature, so the color
-callbacks above don't apply here.
+bicolor: scores above `bicolorPivot` draw upward in `posColor`, and scores below
+it draw downward in `negColor`. Set `color` or `posColor`/`negColor`, never
+both. A wiggle colors per signal rather than per feature, so the color callbacks
+above don't apply here.
 
 [`defaultRendering`](/docs/config/linearwiggledisplay/#slot-defaultrendering)
 picks the plot: `xyplot`, `line`, `scatter` (good for BAF or CN points), or
@@ -582,7 +557,7 @@ linear-synteny views. Pick the adapter matching your aligner: `PAFAdapter` for
 minimap2/wfmash, `DeltaAdapter` for MUMmer, `ChainAdapter` for liftOver/lastz.
 
 Getting the two assemblies backwards is the most common mistake here. minimap2
-takes its inputs **target first** (`minimap2 grape.fa peach.fa` makes grape the
+takes its inputs target first (`minimap2 grape.fa peach.fa` makes grape the
 target), so name them explicitly instead of tracking the order yourself:
 
 ```json
@@ -602,8 +577,8 @@ target), so name them explicitly instead of tracking the order yourself:
 
 The query draws on the dotplot's horizontal axis, and on the top row in linear
 synteny. The target draws on the vertical axis and the bottom row. Both
-assemblies must already exist in `assemblies`. **If the track loads blank**, it
-is almost always because the two are swapped: flip `queryAssembly` and
+assemblies must already exist in `assemblies`. If the track loads blank, it is
+almost always because the two are swapped: flip `queryAssembly` and
 `targetAssembly`. See the
 [synteny track guide](/docs/config_guides/synteny_track) and the
 [synteny visualization tutorial](/docs/tutorials/synteny_visualization).
@@ -763,7 +738,7 @@ https://host/jbrowse2/?config=config.json&assembly=volvox&loc=ctgA:1-50000&track
 - `loc` is a region, or a gene name if you've run `jbrowse text-index`
 - `tracks` is a comma-separated list of `trackId`s to turn on
 
-A link like this starts a **fresh** view and ignores any `defaultSession`. Add
+A link like this starts a fresh view and ignores any `defaultSession`. Add
 `&extendSession=true` to keep the existing session and change only the location.
 
 To set how a track _looks_, give it a `displaySnapshot`, which takes the same

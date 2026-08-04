@@ -42,8 +42,8 @@ one in principle: [](/docs/jbrowser)'s `JBrowseRApp` takes both runtime plugins
 and a `views` list, while [anywidget](/docs/jbrowse_jupyter)'s `JBrowseApp` has
 no plugin loading yet.
 
-The approach is described in our
-[_Proteins in the Genome Browser_ paper](https://doi.org/10.1016/j.jmb.2026.169645)
+The approach is described in
+[_Proteins in the Genome Browser_](https://doi.org/10.1016/j.jmb.2026.169645)
 (_Journal of Molecular Biology_, 2026).
 
 ## Where both plugins are already loaded
@@ -106,15 +106,37 @@ without such IDs won't resolve a structure.
 
 Launching from a gene keeps the two views linked: hovering a genomic position
 highlights the matching residue on the structure and its sequence alignment, and
-hovering the structure highlights the genomic position. This lets you read a
-coding variant straight onto the folded protein, for example to see whether a
-ClinVar missense variant lands in a functional domain or is buried in the core.
+hovering the structure highlights the genomic position.
 
 <Figure caption="A connected session on human TP53 (UniProt P04637). The genome view (left) shows the NCBI RefSeq gene models and ClinVar variants, while the protein view (right) shows the AlphaFold structure together with the genome-to-structure sequence alignment and per-residue tracks (pLDDT confidence, domains, helices, hydrophobicity). Hovering a variant in the genome highlights the matching residue on the structure." src="/img/protein/connected.png" />
 
-### How positions are mapped
+### Sharing a connected view as a URL
 
-Linking a genome position to a residue takes two steps.
+A connected view can also be built declaratively as a session-spec URL, useful
+for demo links and embedded apps. The
+[TP53 example above](#where-both-plugins-are-already-loaded) is the short form:
+a UniProt accession plus a transcript ID, and the plugin derives the AlphaFold
+structure, finds the transcript in the `connectedView` tracks at `loc`, and
+translates its CDS to align against the structure. The explicit form takes a
+structure `url`, feature, and protein sequence instead, for a transcript no
+loaded track serves. See the parameters and further example URLs in the
+[protein3d developer docs](https://github.com/GMOD/jbrowse-plugin-protein3d/blob/main/DEVELOPERS.md#connected-genome--protein-view).
+
+## Viewing a multiple sequence alignment
+
+Right-click a gene and launch the MSA view to load a precomputed alignment and
+phylogenetic tree, or run a fresh NCBI BLAST query. As with the structure view,
+genomic positions map onto alignment columns, so you can relate variants to
+residues conserved across species.
+
+See the
+[MSAView user guide](https://github.com/GMOD/JBrowseMSA/blob/main/docs/user_guide.md)
+for details.
+
+## How positions are mapped
+
+Both views map positions the same way, and linking a genome position to a
+residue takes two steps.
 
 Genome to protein position comes from
 [g2p_mapper](https://github.com/cmdcolin/g2p_mapper), which the plugins run over
@@ -150,32 +172,10 @@ When you open a structure of your own, the transcript picker uses this same
 comparison, listing isoforms whose translation exactly matches the structure
 sequence ahead of those that do not.
 
-The MSA view maps positions the same way: genome to protein position with
-g2p_mapper, then that position to a column of the matching alignment row, which
-is where the row's gaps get taken into account.
-
-### Sharing a connected view as a URL
-
-A connected view can also be built declaratively as a session-spec URL, useful
-for demo links and embedded apps. The
-[TP53 example above](#where-both-plugins-are-already-loaded) is the short form:
-a UniProt accession plus a transcript ID, and the plugin derives the AlphaFold
-structure, finds the transcript in the `connectedView` tracks at `loc`, and
-translates its CDS to align against the structure. The explicit form takes a
-structure `url`, feature, and protein sequence instead, for a transcript no
-loaded track serves. See the parameters and further example URLs in the
-[protein3d developer docs](https://github.com/GMOD/jbrowse-plugin-protein3d/blob/main/DEVELOPERS.md#connected-genome--protein-view).
-
-## Viewing a multiple sequence alignment
-
-Right-click a gene and launch the MSA view to load a precomputed alignment and
-phylogenetic tree, or run a fresh NCBI BLAST query. As with the structure view,
-genomic positions map onto alignment columns, so you can relate variants to
-residues conserved across species.
-
-See the
-[MSAView user guide](https://github.com/GMOD/JBrowseMSA/blob/main/docs/user_guide.md)
-for details.
+In the MSA view the second step is a column lookup rather than an alignment:
+genome to protein position with g2p_mapper, then that position to a column of
+the matching alignment row, which is where the row's gaps get taken into
+account.
 
 ## See also
 

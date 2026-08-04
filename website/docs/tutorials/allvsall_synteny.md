@@ -71,7 +71,7 @@ EOF
 ```
 
 `gff3` pulls each strain's annotation down in the same call, and
-[gene tracks](#add-gene-tracks) use it further below.
+[gene tracks](#adding-gene-tracks) use it further below.
 
 Those five FASTAs become the JBrowse assemblies as-is. The PanSN names exist
 only inside the PAF, so make a separate concatenated copy for minimap2 rather
@@ -98,7 +98,7 @@ between two different loci in one genome is not a self-diagonal. That is what
 lets the [one-vs-all](#one-strain-against-all-the-others) mode below draw a
 strain's own repeats (rRNA operons, IS elements) as its own lane.
 
-## Set up the five assemblies
+## Setting up the five assemblies
 
 The stacked view has one row per strain, so each strain FASTA must be a JBrowse
 assembly whose name matches an entry in the track's `assemblyNames`. Compress
@@ -316,7 +316,7 @@ to stack is a direct alignment rather than a transitive link.
 The gaps in those ribbons are where the strains differ. Sakai's largest carry
 its prophage Shiga-toxin genes, and CFT073's are its own pathogenicity islands.
 
-## Add gene tracks
+## Adding gene tracks
 
 A gap is an absence of ribbon, so it reports that the strains differ without
 saying what they differ by. The annotations downloaded alongside each genome
@@ -371,7 +371,7 @@ lists in `assemblyNames`, since the view needs a real assembly to open a row
 for.
 
 All those alignments land in one pileup, so nothing says which strain each block
-came from. The track menu's **Group by... > Mate assembly** splits them into one
+came from. The track menu's **Group by... → Mate assembly** splits them into one
 labelled lane per sample, and a gap becomes attributable to the strain that has
 it. Each lane is a single row. Where several alignments cover the same base, as
 an IS element that hits a dozen loci in the other strain does, the lane shades
@@ -382,9 +382,8 @@ one row** to stack every lane instead, or expand one lane from its label.
 One of those lanes is the assembly you are viewing, and it can never hold a
 self-alignment, since `minimap2 -X` skipped each genome's own diagonal. All that
 draws there is K-12's internal paralogy, the IS-element copies that hit a dozen
-loci apiece, which reads as missing data rather than as a result. **Group
-by... > Hide self-alignment lane** drops it, and the figures below have it
-ticked.
+loci apiece, which reads as missing data rather than as a result. **Group by...
+→ Hide self-alignment lane** drops it, and the figures below have it ticked.
 
 A synteny track in a plain view renders through the same display as a read
 pileup, so the rest of that menu is the one you already know from alignments:
@@ -397,7 +396,7 @@ the file, so the figure below carries a second pane: the same window in the
 pangenome graph of these strains, where the island is a segment and the strains
 that skip it take an arm around it.
 
-<Figure caption="Above, one track with one lane per strain: K-12 against every other sample in the file, grouped by mate assembly, with the K-12 lane hidden. The shaded band is K-12's phenylacetate (paa) operon, and Sakai, CFT073 and IAI39 all stop at its left edge where NCTC86 runs straight through. Below, the same window as a graph: the ringed node is the 21.8 kb segment carrying the operon, and the short arm beside it is the detour the other three take." src="/img/multiway_synteny/ecoli_one_vs_all.png" />
+<Figure caption="Above, one track with one lane per strain: K-12 against every other sample in the file, grouped by mate assembly, K-12's own lane hidden. The shaded band is K-12's phenylacetate (paa) operon, and Sakai, CFT073 and IAI39 all stop at its left edge where NCTC86 runs through. Below, the same window as a graph: the ringed node is the 21.8 kb segment carrying the operon, and the short arm beside it is the detour the other three take." src="/img/multiway_synteny/ecoli_one_vs_all.png" />
 
 The same mode zoomed out to the whole chromosome gives a per-strain overview of
 where each one diverges. Because a synteny view's rows are ordinary linear
@@ -407,7 +406,7 @@ the whole PAF is in memory on every pan; for a real pangenome, index it first
 with [make-pif](#large-files-index-with-make-pif) so each screen is a tabix
 range query instead:
 
-<Figure caption="The one-vs-all lanes on the K-12 row of the five-strain stack, both drawn from the same PAF and colored by strand. The white gaps in the lanes are where a strain breaks from the K-12 backbone. IAI39 sits directly below K-12 so its band is the K-12/IAI39 comparison: the blue stretches in its lane and the blue crossings in the band under them are the same inversions, once as a strand flip and once as a ribbon." src="/img/multiway_synteny/ecoli_one_vs_all_whole_genome.png" />
+<Figure caption="The one-vs-all lanes on the K-12 row of the five-strain stack, both drawn from the same PAF and colored by strand. White gaps in the lanes are where a strain breaks from the K-12 backbone. IAI39 sits directly below K-12, so the blue stretches in its lane and the blue crossings in the band under them are the same inversions, once as a strand flip and once as a ribbon." src="/img/multiway_synteny/ecoli_one_vs_all_whole_genome.png" />
 
 ### The same gap, drawn as a graph
 
@@ -422,7 +421,7 @@ the [graph genome view](/docs/user_guides/graph_genome_view) opens a window of
 it beside the alignment. Against the ribbons rather than the lanes, the same
 event reads twice over:
 
-<Figure caption="Above, the phenylacetate operon window with NCTC86 over K12 and Sakai under it, each row carrying its own genes and both bands from the all-vs-all PAF. The NCTC86 band runs unbroken across the island; the Sakai band breaks before it and resumes 6 kb past its right edge, with alignment on both flanks so the gap is the event rather than the edge of the data. Below, the same window as a graph: the island is the one long green node, and the detour the other strains take is the short arm beside it. The two rings are the same segment, s502, once as a block in K-12's segments lane and once as that node." src="/img/pangenome/rgfa_paa_bubble.png" />
+<Figure caption="Above, the phenylacetate operon window with NCTC86 over K12 and Sakai under it, each row carrying its own genes and both bands from the all-vs-all PAF. The NCTC86 band runs unbroken across the island; the Sakai band breaks before it and resumes 6 kb past its right edge, with alignment on both flanks, so the gap is the event rather than the edge of the data. Below, the same window as a graph: the two rings mark one segment, s502, as a block in K-12's segments lane and as the long node carrying the island." src="/img/pangenome/rgfa_paa_bubble.png" />
 
 ### From a lane to a stack, for one locus
 
@@ -450,7 +449,7 @@ falls, and the palette button's **Show color legend** names the colors. **CIGAR
 display mode** in the view menu switches between colored indels, transparent
 ones, and none.
 
-<Figure caption="Rubberband-select an 8 kb window of the shared backbone, then Launch → Linear synteny view. The dialog lists the four strains that align there, all checked, in the order their rows will stack, and the launched view is those five rows with a band between each neighbouring pair, each row collapsed to its ruler until you add tracks to it. At this zoom the CIGAR shows: the wedges inside the ribbons are the insertions and deletions." src="/img/multiway_synteny/ecoli_launch_from_selection.png" links="Selection=multiway_synteny/ecoli_launch_selection,Dialog=multiway_synteny/ecoli_launch_dialog,Result=multiway_synteny/ecoli_launch_result" />
+<Figure caption="Rubberband-select an 8 kb window of the shared backbone, then Launch → Linear synteny view. The dialog lists the four strains that align there, all checked, in the order their rows will stack; the launched view is those five rows with a band between each neighbouring pair, each row collapsed to its ruler until tracks are added. The wedges inside the ribbons are the CIGAR's insertions and deletions." src="/img/multiway_synteny/ecoli_launch_from_selection.png" links="Selection=multiway_synteny/ecoli_launch_selection,Dialog=multiway_synteny/ecoli_launch_dialog,Result=multiway_synteny/ecoli_launch_result" />
 
 ## Reproduce it end to end
 
@@ -475,7 +474,7 @@ For a whole-genome pangenome, swap the `add-track` step for the `make-pif` +
 `AllVsAllIndexedPAFAdapter` path from
 [Large files](#large-files-index-with-make-pif).
 
-## Where to take it next
+## Where to go next
 
 The same track works in **Add → Dotplot view**, which shows whole-genome
 structure (inversions, translocations) that the stacked ribbons compress into

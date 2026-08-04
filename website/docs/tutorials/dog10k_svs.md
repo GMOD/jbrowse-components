@@ -195,11 +195,13 @@ Schall and Kidd report two deletions in adjacent introns of _DENR_ in the
 Mastiff clade, each removing a SINEC2A1 repeat with an intact poly(A) tail and
 target-site duplications. Both SINEs are present in the `UU_Cfam_GSD_1.0`
 reference, which is a German Shepherd, so "deletion" here means the repeat is
-absent in that dog. Dimorphic SINE and LINE-1 variants like these make up over
-45% of all deletions in the callset, which is why a dog SV panel looks nothing
-like a SNV panel.
+absent in that dog: grey in the matrix below is homozygous reference, with the
+repeat on both chromosomes, light blue heterozygous, and dark blue homozygous
+for the deletion. Dimorphic SINE and LINE-1 variants like these make up over 45%
+of all deletions in the callset, which is why a dog SV panel looks nothing like
+a SNV panel.
 
-<Figure caption="Two SINEC2A1 deletions in adjacent DENR introns, one column each, every animal of every breed in the panel. The window holds the whole gene and the lines above the matrix tie each column back to the intron it sits in. Grey is homozygous reference, meaning the repeat is present on both chromosomes; light blue heterozygous; dark blue homozygous for the deletion, meaning the repeat is gone. The Mastiff-clade breeds carry both repeats, the Labrador Retrievers have lost both, and the Greek wolves have lost the left one entirely while a third of them still carry the right one." src="/img/dog10k-denr-sine-deletions.png" />
+<Figure caption="Two SINEC2A1 deletions in adjacent DENR introns, one column each, every animal of every breed in the panel. The window holds the whole gene, and the lines above the matrix tie each column back to the intron it sits in. The Mastiff-clade breeds carry both repeats, the Labrador Retrievers have lost both, and the Greek wolves have lost the left one entirely while a third of them still carry the right one." src="/img/dog10k-denr-sine-deletions.png" />
 
 This contrasts with the Collie eye anomaly figure. That deletion was long, rare,
 and confined to one clade. These are short, common, and it is the reference that

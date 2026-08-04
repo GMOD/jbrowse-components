@@ -49,7 +49,7 @@ real _Arabidopsis thaliana_ data, from SRA reads to a colored browser view.
 
 ### Get the reference and reads
 
-We use the TAIR10 reference and one wild-type Col-0 WGBS run
+This page uses the TAIR10 reference and one wild-type Col-0 WGBS run
 ([`DRR029742`](https://www.ebi.ac.uk/ena/browser/view/DRR029742), paired-end 150
 bp, HiSeq 2500). The `datasets download` writes a zip with the genome nested a
 few directories deep, so unzip it and rename the `.fna` to `tair10.fa`:
@@ -216,9 +216,9 @@ The Aggregate methylation row in the figures is the optional MethylDackel track
 from the section above. Load it too if you built the bigWigs, or leave it out.
 The per-read coloring stands on its own.
 
-**Using JBrowse Desktop?** Every step here works identically on Desktop, which
-opens `tair10.fa`, the BAM, and the bigWigs straight from your local disk with
-no web server. See the [desktop quickstart](/docs/quickstart_desktop).
+Every step here works identically on
+[JBrowse Desktop](/docs/quickstart_desktop), which opens `tair10.fa`, the BAM,
+and the bigWigs straight from local disk with no web server.
 
 ## Color the reads
 
