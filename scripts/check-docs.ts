@@ -66,6 +66,13 @@ const VALIDATORS: Validator[] = [
     },
   },
   {
+    // The only check on slot VALUES. A retired enum value or a dropped slot
+    // survives both checks above (shape and CLI round-trip) and MST itself,
+    // which stores an unknown displayDefaults key verbatim without warning.
+    name: 'doc config slots and values match their schemas',
+    argv: web('check-doc-slots.ts'),
+  },
+  {
     name: 'menu paths use the → separator',
     argv: web('check-menu-paths.ts'),
   },
