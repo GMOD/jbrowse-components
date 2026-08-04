@@ -1,112 +1,124 @@
 ---
 name: screenshot-review-purple-markers
-description: A screenshot-review backlog pass (29 bad to 12) plus the insertion-marker color change it produced, and the stray-marker-on-a-no-call-row bug that regenerating the figures uncovered. Read before picking up the review backlog or touching drawVariantInsertionGlyphs.
+description: A screenshot-review backlog pass and the two insertion-marker bugs it produced, both now fixed and their figures landed. Read before picking up the review backlog or touching drawVariantInsertionGlyphs.
 ---
 
-# Screenshot review pass + insertion marker color, 2026-08-04 (handoff)
+# Screenshot review pass + insertion markers, 2026-08-04 (handoff)
 
-Worked the `bad`-status backlog in `website/scripts/screenshot-review.json` from
-29 entries down to 12. Two commits landed:
+Worked the `bad`-status backlog in `website/scripts/screenshot-review.json`. Six
+commits landed; **find them by message, not by hash** — agents rebase each other
+in this worktree routinely, and one of these hashes was already rewritten once.
 
-- **`77ba5314d5`** `docs(website): work the screenshot-review backlog, and give
-  two figures a scale to read against` — 17 verdicts flipped, specs + docs +
-  PNGs. (Written as `655b077da5`; another agent rebased it minutes later, which
-  is routine in this worktree — find it by message, not by hash.)
-- **`60136cdede`** `fix(variants): give multi-sample insertion markers the
-  shared insertion purple` — code only. **Its figures are deliberately NOT
-  committed**; see the open bug below.
+- `docs(website): work the screenshot-review backlog, and give two figures a
+  scale to read against` — 17 verdicts flipped, specs + docs + PNGs.
+- `fix(variants): give multi-sample insertion markers the shared insertion
+  purple` — the marker stopped taking its cell's genotype color.
+- `fix(variants): stop calling every no-call cell alt-carrying in dosage mode` —
+  the marker-on-a-no-call-row bug (below).
+- `fix(variants): paint insertion markers the theme's insertion color, as the
+  pileup does` — the color the first fix picked was the wrong one.
+- `docs(website): regenerate the three figures the insertion-marker fixes move`
+- `docs(pangenome): say what the numbered boxes are, and why the MAF lane is
+  quiet`
 
-Nothing is left uncommitted. The `pangenome_ecoli.md` prose written for the new
-figure is parked at the end of this file instead — it names purple bars, so
-committing it against the old PNG would have published a mismatch, and leaving
-it dirty in a shared worktree invites another agent's `git add -A`.
+Nothing is left uncommitted.
 
 The living process doc is still
 `website/scripts/screenshot-review-plan.md` — regen commands, the build-vs-dev
 render paths, `flip-review.ts`. This file is one pass's findings, not a
 replacement for it.
 
-## THE OPEN BUG: a marker on a row with no call
+## The two insertion-marker bugs, both closed
 
-**`pangenome/maf` paints an insertion marker on NCTC86's row where the VCF has
-no call.** This is pre-existing and was invisible until `60136cdede`: the marker
-used to take its cell's own color, so a marker wrongly drawn on a no-call cell
-was olive-on-olive against the no-call band.
+**A marker on a row with no call.** `pangenome/maf` painted an insertion marker
+on NCTC86's row at `chr:4,579,961`, where three strains carry the insertion and
+NCTC86 is `.`. Pre-existing, and invisible until the marker went purple: it used
+to take its cell's own color, so one wrongly drawn on a no-call cell was
+olive-on-olive.
 
-Measured, at the `chr:4,579,961` column of
-`https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb.vcf.gz`:
+The cause was **not** the row-indexing hazard the first pass suspected. The
+overlay and the canvas both read `model.perRegionCellMap`, the same *placed*
+payload, so they cannot disagree about rows — that lead is dead, don't re-derive
+it. It was `cellCarriesAlt`, computed as
+`isAlt = !isRef && color !== NO_CALL_COLOR`. That test holds only for
+`getPhasedColor`, which returns the `NO_CALL_COLOR` / `REFERENCE_COLOR`
+constants by identity. `getAlleleColor` — allele-count mode, the default, and
+what this figure uses — blends its no-call shade by dosage through colord and
+returns a hex, so `.` came back `#bfaa40` and **every no-call cell in the
+default coloring mode was flagged alt-carrying**. `genotypeCarriesAlt` (a
+digit-1-to-9 scan, the mirror of `isNoCall`) answers it from the genotype now.
 
-```
-4579961  CFT073  ALT1  inserted=7833
-4579961  IAI39   ALT1  inserted=7823
-4579961  Sakai   ALT1  inserted=7817      NCTC86 = "." in every one
-```
+**Durable rule: never derive a cell fact from a resolved color string.** The
+phased path gets away with it because its color function returns the constants;
+nothing else does. `styleFromColor`'s doc says so now.
 
-Checked per sample against the allele that sample carries (not `ALT[1]` blindly
-— an earlier pass of this check missed multiallelic records and has to be
-written as a per-GT-index lookup), over `chr:4,577,500-4,582,000`: every record
-biallelic, NCTC86 carries no insertion allele anywhere in that window.
+**The wrong purple.** The first fix used `INSERTION_COLOR` from alignments-core
+and its commit message called it "the same purple the pileup uses". It is not.
+`INSERTION_COLOR` (#c000c0) is the theme-agnostic fallback in
+`DEFAULT_CIGAR_OP_DRAW_COLORS`, for worker code with no theme to read; the
+pileup on the main thread paints `palette.insertion` (#800080, via
+`alignmentComponentUtils` and `drawAlignmentLabels`), and so does plugin-maf's
+`drawMafInsertions`. This very figure was drawing the same event in two purples.
+`drawVariantInsertionGlyphs` takes the color as an argument now — the overlay
+from `usePalette()`, the SVG export from the export theme.
 
-The render disagrees. Row bands in `static/img/pangenome/maf.png` are 60 image
-px from y=656 (CFT073 656-716, IAI39 716-776, NCTC86 776-836, Sakai 836-896,
-confirmed against the gutter label centres). At x≈1280-1360 **all four** bands
-are purple. Sampling one pixel per band against `git show HEAD:` for the same
-file: CFT073/IAI39/Sakai were `(38,89,115)` hom-alt before and are `(192,0,192)`
-after; **NCTC86 was `(191,170,64)` no-call before and is `(192,0,192)` after.**
+**Still out of step: plugin-canvas' `drawMultiRowIndelGlyphs`**, which hardcodes
+`INSERTION_COLOR` through the same two main-thread call sites (overlay +
+`renderSvg`) and could take the palette exactly the way the variants one now
+does. Left alone only because another agent had five files open in that
+directory at the time.
 
-Three carriers, four markers.
+## The MAF lane showing no insertion is the data, not a bug
 
-**The gate is not the cause.** `getPhasedColor` returns `NO_CALL_COLOR` for a
-`.` allele (`plugins/variants/src/shared/getPhasedColor.ts:88`), and
-`computeVariantCells` sets `isAltCell = !isRefCell && c !== NO_CALL_COLOR`, so
-`cellCarriesAlt` is 0 for those cells. The existing test `leaves reference and
-no-call cells alone` passes. Note a haploid `.` takes the
-`isPhasedOrHaploid` branch rather than the `isNoCall` one, since
-`isPhasedOrHaploid` is `!genotype.includes('/')` — worth keeping in mind, but it
-still lands on `NO_CALL_COLOR`.
+The review asked why the marker has no counterpart in the MAF lane below it. The
+obvious answer — "a MAF projected onto a reference can't represent inserted
+sequence" — is wrong, and the codebase disproves it: `computeVisibleInsertions`
+walks reference-gap columns and draws the same marker.
 
-**Untested lead: row indexing.** `drawVariantInsertionGlyphs` reads
-`region.cellRowIndices[i]` off `model.insertionGlyphRegions`, while
-`Canvas2DVariantRenderer.ts:53` reads the identical expression off the payload
-it is handed. `placeVariantRows` permutes `cellRowIndices` from the worker's
-canonical numbering into screen rows and returns a *new* payload. If the overlay
-is handed the unplaced one and the cell renderer the placed one, markers sit on
-canonical rows while cells sit on screen rows. That is exactly the hazard
-`plugins/variants/src/CLAUDE.md` warns about ("The cell arrays stay in the
-worker's row numbering… Placement writes a second array"). **Verify before
-acting on it** — it was not confirmed, and it does not obviously explain four
-bands from three markers.
-
-Three figures are held (reverted, not committed) until this is settled, because
-each would publish a claim the data does not support:
-
-```
-website/static/img/pangenome/maf.png
-website/static/img/pangenome/hprc_graph_vs_callset.png
-website/static/img/hprc2/mhc_clustered.png
-```
-
-They are the only three the change actually moves; see the sweep-hygiene note
-below.
+Measured on `ecoli_pggb.maf.bed.gz` (`tabix` + splitting field 6 on `,`; each
+row is `name:start:len:strand:srcSize:seq`): the three strains stop aligning to
+K12 at exactly `4,579,961` — `block4717` carries **only** the K12 row — so their
+inserted sequence falls between alignment blocks rather than as gap columns
+inside one. The nearest real ref gap, in `block4715`, is 72 bp, which is 1.2 px
+at 60 kb. The blank MAF rows and the variant lane's markers are the same event
+said two ways. This is now in `pangenome_ecoli.md` next to the figure. (Related:
+`reference-maf-block-edge-gaps-not-deletions`.)
 
 ## Sweep hygiene: test the pixels, not the file list
 
-`node scripts/generate-screenshots.ts --affected` selected 89 specs for the
-variants change and rewrote 15. **Only 3 of the 15 had anything to do with it.**
-The other 12 (`top_level_menus`, `protein/connected` at 48.85%, the
-SV-inspector import forms, six `jbrowse-img` renders) were other agents' commits
-already baked into the build — drift, not this change.
+`--affected` selected 89 specs for the first variants change and rewrote 15, of
+which **3** had anything to do with it. Narrowing to "every spec whose session
+carries a `LinearMultiSampleVariantDisplay`" still rewrote 14, of which the same
+3 were real. Get that list by importing the specs rather than grepping:
 
-The discriminator is cheap and worth reusing: count pixels near the color the
-change introduces, current file vs `git show HEAD:<path>`.
-
-```python
-purple = (((r-192)**2 + g**2 + (b-192)**2) < 900)   # INSERTION_COLOR #c000c0
+```bash
+node --input-type=module -e "
+const { specs } = await import('./scripts/screenshot-specs.ts')
+for (const s of specs) {
+  if (JSON.stringify(s).includes('LinearMultiSampleVariantDisplay')) console.log(s.name)
+}"
 ```
 
-Zero delta on twelve, tens of thousands on three. Revert the rest — sweeping
-them in misattributes another agent's work to your commit, and the shared
-worktree makes that easy to do by accident.
+Then discriminate on pixels: count pixels near the color the change introduces,
+current file vs `git show HEAD:<path>`.
+
+```python
+ins = ((r - 128) ** 2 + g * g + (b - 128) ** 2) < 900   # palette.insertion #800080
+```
+
+Zero delta on eleven, thousands on three. Revert the rest — sweeping them in
+misattributes another agent's work to your commit, and the shared worktree makes
+that easy to do by accident.
+
+`screenshot-review.json` is the one file that **cannot** be split this way: it is
+rewritten wholesale under one lock, so whoever commits it carries every verdict
+written in that window, including the human reviewer's live ones. Say so in the
+commit message rather than pretending they are yours.
+
+Also worth knowing: a *phased* display is unaffected by the no-call bug, and
+`renderingMode` is often auto-detected (`detectPhased`) rather than set in the
+spec — so a static grep for `'phased'` over the specs will mislabel figures like
+`hprc2/mhc_clustered`. The pixel test is the oracle, not the spec text.
 
 ## Done, and the reasoning worth keeping
 
@@ -178,10 +190,15 @@ two landmarks are an allele and the reference stretch it replaces, so the force
 layout draws them touching and the pane's own caption sat on top of the second
 ring. Render and look before believing an offset.
 
-## Still open: 12 `bad` entries
+## Still open
 
-`pangenome/maf` is blocked on the bug above. The rest, with what is actually
-being asked:
+13 `bad` entries as of this writing, but the reviewer writes new ones while you
+work — **extract the live list, don't trust this table**:
+
+```bash
+jq -r '[to_entries[]|select(.value.status=="bad")]|.[]|"\(.value.name)\t\(.value.note)"' \
+  website/scripts/screenshot-review.json
+```
 
 | Entry | The ask |
 | --- | --- |
@@ -192,48 +209,13 @@ being asked:
 | `pangenome/rgfa_strain_launch` | chaotic; unclear what path the LGV takes through the graph |
 | `genomes_synteny/launch_sequence` | `showCurves` + transparent indels on the last frame; find a gene whose indels are clearly one transposon insertion |
 | `cancer_sv/k562_starfusion_triage` | circular view is weak alone, make it multi-part |
+| `cancer_sv/derivative_autogenerated` | can it load reads across the derived regions, or run minimap2 in wasm against the derived contig; floated as an external plugin idea, not a request |
+| `dog10k-igf1-haplotype` | improvements invited; what complementary tracks would tell a better story |
 | `hic/two_regions` | add a whole-genome overview |
 | `hic/faint_contacts` | consider deleting |
 | `pangenome_cactus/variants` | consider deleting |
 | `orthofinder_synteny/wheat_4a` | are you happy with it; improvements invited |
 
-Extract the live list rather than trusting this table:
-
-```bash
-jq -r '[to_entries[]|select(.value.status=="bad")]|.[]|"\(.value.name)\t\(.value.note)"' \
-  website/scripts/screenshot-review.json
-```
-
 Write verdicts only through `node scripts/flip-review.ts good|answered|remove
 <name> "<note>"` — never `jq`, never an editor. `remove` deletes the entry
 outright; if you mean "this is settled", that is `good` or `answered`.
-
-## Parked prose for `pangenome_ecoli.md`
-
-Land this with the regenerated `pangenome/maf.png`, replacing the two sentences
-that currently begin "Insertions have no reference span to sit on". It answers
-the review note the figure was denied on ("still dont understand this figure and
-the text like 5593… also it is not shown in the MAF display which means it is
-inconsistent"). Re-check the third paragraph against the fixed render first —
-the count of carrying strains is the thing the open bug is about.
-
-```markdown
-`samples` still names and labels the rows, so a tree that fails to build leaves
-the track working.
-
-The purple bars in the variant lane are insertion markers, and the number on one
-is how many bases that strain's allele adds beyond K12. They need a marker
-because an insertion consumes no reference: the record spans a single base, so
-without one it would draw at the same width as a SNP whatever its length. Three
-strains carry one at the same point here, of slightly different lengths, which
-is three separate records rather than one.
-
-Nothing in the alignment below them corresponds, and that is not an
-inconsistency between the two lanes. A MAF projected onto K12 can only draw what
-has K12 coordinates, and inserted sequence by definition has none; what the
-alignment shows at such a point is the strains that do align there.
-
-The [MAF track guide](/docs/user_guides/maf_track) covers the conservation band,
-per-row identity, and codon view, all derived from the alignment with no extra
-files.
-```
