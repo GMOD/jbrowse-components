@@ -258,7 +258,24 @@ const HOVERED_ALLELE = 's2037'
 // The off-reference allele pangenome/hprc_node_menu right-clicks, named rather
 // than measured — see HOVERED_ALLELE. `node scripts/probe-graph-nodes.ts
 // pangenome/hprc_node_menu` prints the cut's ids with their lengths and ranks.
+//
+// It is 1,775 bp of HG01433 hap 2 (`CM086511.1:32,520,440-32,522,215` in the
+// links index), and the two backbone segments it hangs off are s101144, ending
+// at chr6:32,517,416, and s101146, starting at 32,529,437 — so the interval it
+// attaches across is the 12,021 bp s101145, which is what **Highlight in hg38**
+// writes into the linear view. That is also, near exactly, HLA-DRB5
+// (chr6:32,517,353-32,530,287), the gene present only on DR51 haplotypes.
+//
+// Which is why the frame needs the callout below (review: "it looks like this is
+// highlighting a 'black' node, instead of the green one, which is, afaict, the
+// reference path"). Under the reference-position ramp black means "no reference
+// position", i.e. this IS the allele the figure is about, and the green 12 kb
+// node beside it is the reference segment the highlight lands on. Nothing in the
+// frame joined the two, so a ring on a black node over a band 12 kb wide read as
+// the wrong node being ringed.
 const HPRC_ALLELE = 's318599'
+const HPRC_ALLELE_LABEL =
+  'HG01433.2 allele: 1.8 kb\nwhere hg38 has 12 kb (HLA-DRB5)'
 
 // K12's genes, so the linear half of a launch figure says which genes the
 // clicked segment covers rather than being a lane of anonymous blocks. Hosted
@@ -735,6 +752,60 @@ function haplotypeGeneLane(trackId: string) {
     geneGlyphMode: 'longestCoding',
     displayMode: 'compact',
     height: 70,
+  }
+}
+
+// UCSC's RepeatMasker on each of the two human assemblies the CHM13 figure
+// draws, as session tracks: neither is in the fixture config, and both panes
+// need one for the two to be comparable. hg38's is jbrowse.org's own tabix'd
+// copy (the host every other lane in these figures reads); hs1 has no copy
+// there, so it comes off hgdownload's bigBed, which answers ranged reads with
+// CORS in well under a second.
+const HG38_RMSK_TRACK = {
+  type: 'FeatureTrack',
+  trackId: 'hg38_rmsk_ucsc',
+  name: 'RepeatMasker (hg38)',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'BedTabixAdapter',
+    bedGzLocation: {
+      uri: 'https://jbrowse.org/ucsc/hg38/rmsk.bed.gz',
+      locationType: 'UriLocation',
+    },
+    index: {
+      location: {
+        uri: 'https://jbrowse.org/ucsc/hg38/rmsk.bed.gz.csi',
+        locationType: 'UriLocation',
+      },
+      indexType: 'CSI',
+    },
+  },
+}
+const HS1_RMSK_TRACK = {
+  type: 'FeatureTrack',
+  trackId: 'hs1_rmsk_ucsc',
+  name: 'RepeatMasker (T2T-CHM13v2.0)',
+  assemblyNames: ['hs1'],
+  adapter: {
+    type: 'BigBedAdapter',
+    bigBedLocation: {
+      uri: 'https://hgdownload.soe.ucsc.edu/gbdb/hs1/t2tRepeatMasker/chm13v2.0_rmsk.bb',
+      locationType: 'UriLocation',
+    },
+  },
+}
+
+// A repeat lane is read as a density, not as a list of elements: collapsed, so
+// the whole annotation is one strip whose coverage of the axis is the thing to
+// compare between the two panes, and no labels, because 171 repeat names over
+// 180 kb is a wall of small print that says nothing the strip does not.
+function repeatLane(trackId: string) {
+  return {
+    trackId,
+    type: 'LinearBasicDisplay',
+    displayMode: 'collapsed',
+    showLabels: 'none',
+    height: 34,
   }
 }
 
@@ -2691,8 +2762,28 @@ export const graphSpecs: ScreenshotSpec[] = [
   // that window, where the boxed node is 142 kb of CHM13 attached at a 75 bp
   // anchor -- an insertion the reference has no coordinates for, which is why the
   // top pane cannot show it. Bottom: that node on CHM13's own chr17, where it is
-  // an ordinary interval with RefSeq genes over it and the same segments track
-  // draws it as one feature.
+  // an ordinary interval and the same segments track draws it as one feature.
+  //
+  // A REPEATMASKER LANE ON BOTH PANES, which is what the two panes are otherwise
+  // missing (review: "there is no gene in this region, but if some other track
+  // would help potentially explain why this was missed in hg38 e.g. repeats can
+  // add that"). There is no gene, and there is no assembly gap either -- UCSC's
+  // hg38 `gap` track has one record past 82.5 Mb on chr17 and it is the terminal
+  // 10 kb telomere, so this is a real insertion allele rather than a hole GRCh38
+  // never closed. What the lanes do show is the mechanism: the two are the same
+  // UCSC RepeatMasker annotation and the CHM13 interval is nearly solid where the
+  // GRCh38 window it attaches to is sparse, almost all of it LINE/L1.
+  //
+  // The hs1 lane is hgdownload's bigBed, which the note below rules out for the
+  // 2bit and does not rule out here: that failure was a whole-file GET of a
+  // multi-gigabyte sequence file, where this is a handful of ranged index reads
+  // over a 180 kb window, and hgdownload serves those with CORS in well under a
+  // second. The hg38 lane is jbrowse.org's own tabix'd copy, which is what the
+  // rest of these figures read.
+  //
+  // The bottom pane's gene lane is GONE with it, for the reason the top pane
+  // never had one: `jbrowse.org/ucsc/hs1/hs1.gff.gz` has nothing in this window,
+  // so it was 70 px of empty lane under a caption about a 142 kb insertion.
   //
   // `resolveContributors` matches a node's PanSN sample against the session's
   // assembly *names*, so the assembly has to be named `CHM13` for the node menu to
@@ -2710,9 +2801,18 @@ export const graphSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'pangenome/hprc_chm13_allele',
     url: sessionSpec(HPRC_CONFIG, {
+      sessionTracks: [HG38_RMSK_TRACK, HS1_RMSK_TRACK],
       views: [
         {
           type: 'LinearGenomeView',
+          // Which pane is which, in the app rather than over it (review: "might
+          // want text annotation toward the top that says HG38 and text
+          // annotation at the bottom that says T2T-CHM13v2.0"). A view header
+          // falls back to its assembly names, which read `hg38` and
+          // `Human (T2T-CHM13v2.0/hs1)` and are easy to miss between three
+          // panes; naming all three, graph included, leaves no `Untitled view`
+          // in the middle of the stack.
+          displayName: 'hg38 (GRCh38) — no coordinates for this sequence',
           assembly: 'hg38',
           loc: CHM13_WINDOW,
           highlight: [{ ...CHM13_BUBBLE, color: 'rgba(60,65,72,0.10)' }],
@@ -2732,11 +2832,13 @@ export const graphSpecs: ScreenshotSpec[] = [
               jexlFiltersSetting: ['jexl:feature.longestAlleleLength>100000'],
               height: 60,
             },
+            repeatLane(HG38_RMSK_TRACK.trackId),
             hprcSegmentsLane(CHM13_REGION),
           ],
         },
         {
           type: 'GraphGenomeView',
+          displayName: 'HPRC release 2 graph, cut to that window',
           loadedTrackId: SEGMENTS_TRACK,
           loadedRegion: CHM13_REGION,
           layoutMode: 'force',
@@ -2744,19 +2846,14 @@ export const graphSpecs: ScreenshotSpec[] = [
         },
         {
           type: 'LinearGenomeView',
+          displayName: 'T2T-CHM13v2.0 (hs1) — an ordinary interval',
           assembly: 'hs1',
           loc: CHM13_ALLELE_WINDOW,
           // the node's own span, drawn by the app from its coordinates rather
           // than painted over the capture
           highlight: [{ ...CHM13_ALLELE, color: 'rgba(60,65,72,0.10)' }],
           tracks: [
-            {
-              trackId: 'hs1_ncbiRefSeq_ucsc',
-              type: 'LinearBasicDisplay',
-              geneGlyphMode: 'longestCoding',
-              displayMode: 'compact',
-              height: 70,
-            },
+            repeatLane(HS1_RMSK_TRACK.trackId),
             // the same lane as the pane above, deliberately: a display's config
             // is per track, so a second color here would repaint the first pane
             // too. It needs no second color anyway -- the ramp's other branch
@@ -3268,11 +3365,26 @@ export const graphSpecs: ScreenshotSpec[] = [
     // says which node: a context menu opens AT the cursor, so it covers the thing
     // it was opened on, and in a force drawing there is no row label to fall back
     // on.
+    //
+    // The label is what the ring alone could not say (see HPRC_ALLELE): both
+    // numbers are the graph's own, so the frame states that a 1.8 kb node ringed
+    // in black produced a 12 kb band, rather than leaving the mismatch to be read
+    // as the wrong node being ringed. Placed up and left of the node, which is
+    // the empty corner of this drawing; the menu takes the other side.
     annotations: [
       {
         type: 'circle',
         anchor: { view: 1, graphNode: HPRC_ALLELE },
         radius: 22,
+      },
+      {
+        type: 'text',
+        text: HPRC_ALLELE_LABEL,
+        anchor: { view: 1, graphNode: HPRC_ALLELE },
+        dx: -120,
+        dy: -170,
+        maxWidth: 230,
+        fontSize: 16,
       },
       { type: 'box', anchor: { text: 'Highlight in hg38' } },
     ],

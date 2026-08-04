@@ -429,7 +429,7 @@ At HPRC scale the same answer comes from `minigraph --call` over the assemblies,
 from the `.gbz` and vg, or from the [callset](#the-variant-callset) at that
 site.
 
-<Figure caption="Right-clicking one haplotype's allele (circled), over the band Highlight in hg38 left in the linear view above. The menu works in the GRCh38 interval the allele attaches to, not the haplotype's own coordinates: that assembly is not loaded, and no session loads all 464. The band stays until it is removed, so the answer survives letting go of the mouse." src="/img/pangenome/hprc_node_menu.png" />
+<Figure caption="Right-clicking one haplotype's allele (circled), over the band Highlight in hg38 left in the linear view above. The ringed node is black because the drawing is colored by reference position and an allele has none; the band it produces is the 12 kb backbone segment it attaches across, which here is HLA-DRB5. The menu works in that GRCh38 interval, not the haplotype's own coordinates: that assembly is not loaded, and no session loads all 464. The band stays until it is removed, so the answer survives letting go of the mouse." src="/img/pangenome/hprc_node_menu.png" />
 
 The lanes above combine into one route: rubberband a locus into a graph,
 right-click an allele to put the linear view on its GRCh38 interval, then read
@@ -512,7 +512,7 @@ the same way `hg38` asks for `GRCh38#0#chr17`. This replaces the track
 }
 ```
 
-<Figure caption="One donor node, on both coordinate systems. Top: the GRCh38 window, its bubble lane cut to bubbles holding an allele over 100 kb, with the banded bubble a 1,023 bp reference span. Middle: the graph cut from that window, where the boxed node is 142.2 kb of CHM13 sequence attached at a 75 bp anchor. Bottom: that node on hs1's own chr17, an interval with RefSeq genes over it, drawn by the same segments track." src="/img/pangenome/hprc_chm13_allele.png" />
+<Figure caption="One donor node, on both coordinate systems. Top: the GRCh38 window, its bubble lane cut to bubbles holding an allele over 100 kb, with the banded bubble a 1,023 bp reference span. Middle: the graph cut from that window, where the boxed node is 142.2 kb of CHM13 sequence attached at a 75 bp anchor. Bottom: that node on hs1's own chr17, an ordinary interval drawn by the same segments track. Both linear panes carry UCSC's RepeatMasker: the CHM13-only sequence is a near-continuous run of it, almost all LINE/L1." src="/img/pangenome/hprc_chm13_allele.png" />
 
 CHM13 entered this graph at rank 61, after sixty haplotypes, so most of what it
 carries was already in the graph and little is credited to it:
