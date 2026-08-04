@@ -41,6 +41,7 @@ export interface PreferencesDialogSession {
   stickyViewHeaders: boolean
   setStickyViewHeaders: (sticky: boolean) => void
   effectiveUseWorkspaces: boolean
+  defaultUseWorkspaces: boolean
   setUseWorkspacesPreference: (useWorkspaces: boolean) => void
   resetUseWorkspaces: () => void
   animationMode: AnimationMode
@@ -60,14 +61,12 @@ export interface PreferencesDialogSession {
 // differently: `head` both tags the change row and routes its reset, so a row
 // always reverts through the same descriptor that produced it. The
 // preference-override map (animationMode, scrollZoom, promoted display-type
-// defaults) is enumerated separately by the session.
+// defaults) is enumerated separately by the session, minus these heads — a
+// subsystem reports the *resolved* state, which is what its reset reverts.
 interface PreferenceSubsystem {
   head: string
-  // the change row when this subsystem differs from its default, else
-  // undefined. Omitted when the session's override map already reports the row
-  // (useWorkspaces) and this entry exists only to route its reset, which has to
-  // clear the session property as well as the override.
-  change?: (session: PreferencesDialogSession) => TrackConfigChange | undefined
+  // the change row when this subsystem differs from its default, else undefined
+  change: (session: PreferencesDialogSession) => TrackConfigChange | undefined
   reset: (session: PreferencesDialogSession) => void
 }
 
@@ -94,11 +93,29 @@ const PREFERENCE_SUBSYSTEMS: PreferenceSubsystem[] = [
   },
   {
     head: 'useWorkspaces',
+    // the resolved flag against the admin default, not the override map's view
+    // of it: a session-scoped value (a spec `layout`, "move view to a tab")
+    // writes no override, so the map reported nothing to reset while
+    // `resetUseWorkspaces` would plainly have turned workspaces back off —
+    // leaving the confirmation empty and its Reset button disabled
+    change: s =>
+      s.effectiveUseWorkspaces === s.defaultUseWorkspaces
+        ? undefined
+        : {
+            path: ['useWorkspaces'],
+            from: s.defaultUseWorkspaces,
+            to: s.effectiveUseWorkspaces,
+          },
     reset: s => {
       s.resetUseWorkspaces()
     },
   },
 ]
+
+// heads the subsystems above own outright: their row states the resolved value,
+// so the session's override-map row for the same key would double-report it
+// (and disagree with it whenever the two layers differ)
+const SUBSYSTEM_HEADS = new Set(PREFERENCE_SUBSYSTEMS.map(p => p.head))
 
 // every preference that currently differs from its default, so the confirmation
 // dialog shows the full effect of a reset: the session override map plus each
@@ -107,8 +124,10 @@ function collectPreferenceChanges(
   session: PreferencesDialogSession,
 ): TrackConfigChange[] {
   return [
-    ...session.getPreferenceChanges(),
-    ...PREFERENCE_SUBSYSTEMS.map(p => p.change?.(session)).filter(
+    ...session
+      .getPreferenceChanges()
+      .filter(c => !SUBSYSTEM_HEADS.has(c.path[0]!)),
+    ...PREFERENCE_SUBSYSTEMS.map(p => p.change(session)).filter(
       c => c !== undefined,
     ),
   ]

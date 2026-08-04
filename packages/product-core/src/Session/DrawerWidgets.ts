@@ -18,6 +18,22 @@ import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 const minDrawerWidth = 128
 const minMainWidth = 150
 
+// The one clamp both resize paths share. `drawerWidth` is a
+// `types.refinement(types.integer, >= minDrawerWidth)`, so the two things this
+// does are load-bearing rather than cosmetic — MST throws on an assignment that
+// misses either bound:
+//
+// - Rounded, because a drag delta is fractional whenever `clientX` is (browser
+//   zoom, fractional devicePixelRatio, pen/touch), and ResizeHandle passes that
+//   delta straight through.
+// - The minimum applied *last*, because a window narrower than
+//   minDrawerWidth + minMainWidth has no width satisfying both bounds. The
+//   floor has to win there; the drawer simply crowds the main area.
+function clampDrawerWidth(width: number) {
+  const max = window.innerWidth - minMainWidth
+  return Math.max(minDrawerWidth, Math.min(Math.round(width), max))
+}
+
 /**
  * #stateModel DrawerWidgetSessionMixin
  */
@@ -93,8 +109,7 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
        * #action
        */
       updateDrawerWidth(drawerWidth: number) {
-        const max = window.innerWidth - minMainWidth
-        self.drawerWidth = Math.min(Math.max(drawerWidth, minDrawerWidth), max)
+        self.drawerWidth = clampDrawerWidth(drawerWidth)
         return self.drawerWidth
       },
 
@@ -106,11 +121,7 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
           distance *= -1
         }
         const oldDrawerWidth = self.drawerWidth
-        const max = window.innerWidth - minMainWidth
-        self.drawerWidth = Math.min(
-          Math.max(oldDrawerWidth - distance, minDrawerWidth),
-          max,
-        )
+        self.drawerWidth = clampDrawerWidth(oldDrawerWidth - distance)
         return oldDrawerWidth - self.drawerWidth
       },
 

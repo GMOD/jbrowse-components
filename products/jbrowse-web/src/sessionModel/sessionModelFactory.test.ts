@@ -333,6 +333,41 @@ describe('JBrowseWebSessionModel', () => {
     })
   })
 
+  describe('themeName persistence', () => {
+    beforeEach(() => {
+      localStorage.clear()
+    })
+
+    // The stored value is the user's raw selection, not the `themeName` getter,
+    // which coerces a currently-unregistered name to 'default'.
+    //
+    // Regression: the web session ran a second autorun writing the *coerced*
+    // value to the same key. Loading a session whose stored theme came from a
+    // plugin that isn't present overwrote the selection with 'default' at
+    // attach, so it could never resolve again once that plugin came back. The
+    // clobber only shows up on this path — after load the coerced value is a
+    // computed that doesn't change, so its autorun never re-fires.
+    it('keeps a stored theme from an absent plugin instead of coercing it away', () => {
+      localStorage.setItem('themeName', 'someThemeFromAPlugin')
+
+      // reload with the theme's plugin missing: renders with the fallback...
+      const session = createTestSession()
+      expect(session.themeName).toBe('default')
+      // ...but the selection itself is still on disk
+      expect(localStorage.getItem('themeName')).toBe('someThemeFromAPlugin')
+
+      // so once the plugin providing it is present again, it resolves
+      const withPlugin = createTestSession({
+        jbrowseConfig: {
+          configuration: {
+            extraThemes: { someThemeFromAPlugin: { name: 'From a plugin' } },
+          },
+        },
+      })
+      expect(withPlugin.themeName).toBe('someThemeFromAPlugin')
+    })
+  })
+
   describe('numberGrouping applies to the formatter', () => {
     // BaseSession's afterAttach pushes the config default into the module-level
     // formatter, PreferencesSessionMixin's re-applies it after loading stored

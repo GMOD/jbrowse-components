@@ -4,17 +4,16 @@ import {
   DockviewLayoutMixin,
 } from '@jbrowse/app-core'
 import { getConf } from '@jbrowse/core/configuration'
-import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
 import {
   restoreFileHandles,
   restoreFileHandlesFromSnapshot,
 } from '@jbrowse/core/util/tracks'
 import {
-  addDisposer,
   cast,
   flow,
   getParent,
   getSnapshot,
+  isAlive,
   types,
 } from '@jbrowse/mobx-state-tree'
 import {
@@ -28,7 +27,6 @@ import {
   finalizeSession,
   trackActionItems,
 } from '@jbrowse/product-core'
-import { autorun } from 'mobx'
 
 import { WebSessionConnectionsMixin } from '../SessionConnections.ts'
 
@@ -87,11 +85,7 @@ export function BaseWebSessionModel({
         types.frozen<PluginDefinition & { name: string }>(),
       ),
     })
-    .volatile((/* self */) => ({
-      /**
-       * #volatile
-       */
-      sessionThemeName: localStorageGetItem('themeName') ?? 'default',
+    .volatile(() => ({
       /**
        * #volatile
        */
@@ -246,25 +240,28 @@ export function BaseWebSessionModel({
     }))
     .actions(self => ({
       afterAttach() {
-        addDisposer(
-          self,
-          autorun(
-            function sessionLocalStorageAutorun() {
-              localStorageSetItem('themeName', self.themeName)
-            },
-            { name: 'SessionLocalStorage' },
-          ),
-        )
+        // themeName is persisted by ThemeManagerSessionMixin's own autorun,
+        // which writes the *raw* selection rather than the `themeName` getter's
+        // coerced one — a second writer here overwrote it with 'default'
+        // whenever the chosen theme wasn't currently registered, permanently
+        // losing the selection instead of restoring it once the plugin
+        // providing that theme loads again.
+        //
+        // The IndexedDB round-trip below outlives a session swap (setSession
+        // destroys this node), so the result lands on a dead node unless the
+        // write is gated on liveness.
         restoreFileHandlesFromSnapshot(getSnapshot(self), false)
           .then(results => {
             const failed = results.filter(r => !r.success)
-            if (failed.length > 0) {
+            if (failed.length > 0 && isAlive(self)) {
               self.setPendingFileHandleIds(failed.map(f => f.handleId))
             }
           })
           .catch((err: unknown) => {
             console.error('Error restoring file handles:', err)
-            self.notifyError(`Error restoring file handles: ${err}`, err)
+            if (isAlive(self)) {
+              self.notifyError(`Error restoring file handles: ${err}`, err)
+            }
           })
       },
       restorePendingFileHandles: flow(function* restorePendingFileHandles() {

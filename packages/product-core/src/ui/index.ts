@@ -12,4 +12,5 @@ export type {
   PreferencesDialogSession,
   PreferencesPanelDescriptor,
 } from './PreferencesDialog.tsx'
+export { default as WidgetBody } from './WidgetBody.tsx'
 export { default as WidgetHeading } from './WidgetHeading.tsx'

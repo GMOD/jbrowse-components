@@ -92,6 +92,7 @@ export {
   ModalWidget,
   ModalWidgetAppBar,
   PreferencesDialog,
+  WidgetBody,
   WidgetHeading,
   drawerGridTemplateColumns,
 } from './ui/index.ts'

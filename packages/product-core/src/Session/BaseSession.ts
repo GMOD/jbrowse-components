@@ -217,6 +217,17 @@ export function BaseSessionModel<
     .views(self => ({
       /**
        * #method
+       * the admin/embedder `configuration.preferences` value for a key, ignoring
+       * any runtime override — i.e. what a reset falls back to. Exposed rather
+       * than inlined because "differs from the default" is a question the
+       * Preferences reset diff asks about settings this map doesn't hold (see
+       * `defaultUseWorkspaces`).
+       */
+      getPreferenceDefault(key: string): unknown {
+        return getConf(self, ['preferences', key])
+      },
+      /**
+       * #method
        * resolved value of a user preference: a runtime override if the user set
        * one, otherwise the admin/embedder `configuration.preferences` default.
        * The override map is empty unless the product loads it (web/desktop).
@@ -224,7 +235,7 @@ export function BaseSessionModel<
       getPreference(key: string): unknown {
         const override = self.preferencesOverrides.get(key)
         return override === undefined
-          ? getConf(self, ['preferences', key])
+          ? this.getPreferenceDefault(key)
           : override
       },
       /**
@@ -263,7 +274,7 @@ export function BaseSessionModel<
               to: value,
             } as TrackConfigChange)
           } else {
-            const dflt = getConf(self, ['preferences', key])
+            const dflt = this.getPreferenceDefault(key)
             if (value !== dflt) {
               changes.push({
                 path: [key],

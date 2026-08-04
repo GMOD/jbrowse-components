@@ -60,6 +60,17 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
           self.useWorkspaces ?? self.getPreference('useWorkspaces') === true
         )
       },
+      /**
+       * #getter
+       * what `effectiveUseWorkspaces` becomes after `resetUseWorkspaces` — the
+       * admin default, with both this session's own value and the user's
+       * override out of the way. The Preferences reset diff needs this rather
+       * than the override map, which can't see a session-scoped value (a spec
+       * `layout`, a "move view to a tab") and so reported nothing to reset.
+       */
+      get defaultUseWorkspaces(): boolean {
+        return self.getPreferenceDefault('useWorkspaces') === true
+      },
     }))
     .actions(self => {
       const move = (id: string, direction: ReorderDirection) => {

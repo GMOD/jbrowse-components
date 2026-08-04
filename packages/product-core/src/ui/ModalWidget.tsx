@@ -1,12 +1,11 @@
-import { Suspense } from 'react'
-
-import { Dialog, LoadingEllipses, PluggableComponent } from '@jbrowse/core/ui'
+import { Dialog } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getEnv } from '@jbrowse/mobx-state-tree'
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import ModalWidgetAppBar from './ModalWidgetAppBar.tsx'
+import WidgetBody from './WidgetBody.tsx'
 
 import type { SessionWithWidgets } from '@jbrowse/core/util'
 
@@ -53,22 +52,9 @@ const ModalWidget = observer(function ModalWidget({
         />
       }
     >
-      <Suspense fallback={<LoadingEllipses />}>
-        <Paper className={classes.paper}>
-          <PluggableComponent
-            pluginManager={pluginManager}
-            name="Core-replaceWidget"
-            component={
-              pluginManager.getWidgetType(visibleWidget.type).ReactComponent
-            }
-            props={{
-              model: visibleWidget,
-              session,
-              toolbarHeight: 0,
-            }}
-          />
-        </Paper>
-      </Suspense>
+      <Paper className={classes.paper}>
+        <WidgetBody session={session} widget={visibleWidget} />
+      </Paper>
     </Dialog>
   ) : null
 })
