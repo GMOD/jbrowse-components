@@ -48,29 +48,32 @@ function writeSessionParam(value: string) {
 
 export default function SessionInUrl() {
   // undefined while the URL is being decoded, null once there is nothing to
-  // restore — so the app isn't built with an empty session first and replaced
-  const [session, setSession] = useState<SessionSnapshot | null>()
+  // restore — so the app isn't built with an empty session first and replaced.
+  // With no session in the URL there is nothing to decode, so start at null
+  // rather than rendering nothing and setting it from the effect below.
+  const [session, setSession] = useState<SessionSnapshot | null | undefined>(
+    () => (readSessionParam() ? undefined : null),
+  )
   const [viewState, setViewState] = useState<ViewModel | null>(null)
   const [status, setStatus] = useState('')
 
   useEffect(() => {
     const param = readSessionParam()
-    if (param) {
-      decodeSession(param)
-        .then(snap => {
-          setSession(snap)
-          setStatus(`restored "${snap.name}" from the URL`)
-        })
-        .catch((e: unknown) => {
-          // a truncated or hand-edited link shouldn't strand the user on a
-          // blank app: fall back to the declarative views and say so
-          console.error(e)
-          setSession(null)
-          setStatus(`could not restore the session in the URL: ${e}`)
-        })
-    } else {
-      setSession(null)
+    if (!param) {
+      return
     }
+    decodeSession(param)
+      .then(snap => {
+        setSession(snap)
+        setStatus(`restored "${snap.name}" from the URL`)
+      })
+      .catch((e: unknown) => {
+        // a truncated or hand-edited link shouldn't strand the user on a
+        // blank app: fall back to the declarative views and say so
+        console.error(e)
+        setSession(null)
+        setStatus(`could not restore the session in the URL: ${e}`)
+      })
   }, [])
 
   if (session === undefined) {

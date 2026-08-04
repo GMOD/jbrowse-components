@@ -426,7 +426,7 @@ const TrackResizeHandle = observer(function TrackResizeHandle({
   view: BrowserView
   trackId: string
 }) {
-  const lastY = useRef(0)
+  const lastYRef = useRef(0)
   const track = view.tracks.find(t => t.configuration.trackId === trackId)
   if (!track) {
     return null
@@ -446,7 +446,7 @@ const TrackResizeHandle = observer(function TrackResizeHandle({
       }}
       onPointerDown={event => {
         event.preventDefault()
-        lastY.current = event.clientY
+        lastYRef.current = event.clientY
         display.setResizing(true)
         event.currentTarget.setPointerCapture(event.pointerId)
       }}
@@ -454,8 +454,8 @@ const TrackResizeHandle = observer(function TrackResizeHandle({
         if (!event.currentTarget.hasPointerCapture(event.pointerId)) {
           return
         }
-        display.resizeHeight(event.clientY - lastY.current)
-        lastY.current = event.clientY
+        display.resizeHeight(event.clientY - lastYRef.current)
+        lastYRef.current = event.clientY
       }}
       onPointerUp={event => {
         event.currentTarget.releasePointerCapture(event.pointerId)

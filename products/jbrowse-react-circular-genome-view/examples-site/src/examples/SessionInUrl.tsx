@@ -51,30 +51,33 @@ function writeSessionParam(value: string) {
 
 export default function SessionInUrl() {
   // undefined while the URL is being decoded, so the view isn't built with an
-  // empty session first and then replaced
-  const [state, setState] = useState<ViewState>()
+  // empty session first and then replaced. With no session to decode there is
+  // nothing to wait for, so build the normal starting state right here rather
+  // than rendering nothing and setting it from the effect below.
+  const [state, setState] = useState<ViewState | undefined>(() =>
+    readSessionParam() ? undefined : createViewState({ assembly, tracks }),
+  )
   const [status, setStatus] = useState('')
 
   useEffect(() => {
     const param = readSessionParam()
-    if (param) {
-      decodeSession(param)
-        .then(session => {
-          // `session` is the slot for a snapshot whose shape is only known at
-          // runtime; `defaultSession` is for one you author and want checked
-          setState(createViewState({ assembly, tracks, session }))
-          setStatus(`restored "${session.name}" from the URL`)
-        })
-        .catch((e: unknown) => {
-          // a truncated or hand-edited link shouldn't strand the user on a
-          // blank view: fall back to the normal starting state and say so
-          console.error(e)
-          setState(createViewState({ assembly, tracks }))
-          setStatus(`could not restore the session in the URL: ${e}`)
-        })
-    } else {
-      setState(createViewState({ assembly, tracks }))
+    if (!param) {
+      return
     }
+    decodeSession(param)
+      .then(session => {
+        // `session` is the slot for a snapshot whose shape is only known at
+        // runtime; `defaultSession` is for one you author and want checked
+        setState(createViewState({ assembly, tracks, session }))
+        setStatus(`restored "${session.name}" from the URL`)
+      })
+      .catch((e: unknown) => {
+        // a truncated or hand-edited link shouldn't strand the user on a
+        // blank view: fall back to the normal starting state and say so
+        console.error(e)
+        setState(createViewState({ assembly, tracks }))
+        setStatus(`could not restore the session in the URL: ${e}`)
+      })
   }, [])
 
   return state ? (

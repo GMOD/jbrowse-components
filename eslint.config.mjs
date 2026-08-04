@@ -344,6 +344,17 @@ export default defineConfig(
       'no-restricted-syntax': ['error', noMockFromSrc, noReadableFromWeb],
     },
   },
+  // Style rules can't apply to codegen output: the transpiler emits `1.0` for a
+  // float literal and nests Math.max to mirror the shader's own two-argument
+  // max, and autofixing either edits a file `pnpm gen:shaders` immediately
+  // overwrites — the Shaders CI job diffs it.
+  {
+    files: ['**/*.generated.ts'],
+    rules: {
+      'unicorn/no-zero-fractions': 'off',
+      'unicorn/prefer-flat-math-min-max': 'off',
+    },
+  },
   // Guards against regressions in the SVG-export pipeline. See
   // agent-docs/ARCHITECTURE.md "SVG export pipeline (single source of truth)".
   // Heavy draw paths must go through paintLayer; clipPath wrappers must use

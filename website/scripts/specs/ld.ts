@@ -588,7 +588,7 @@ export const ldSpecs: ScreenshotSpec[] = [
       sessionTracks: [
         agLdTrack(
           'ag1000g_2l_cmgam_r2',
-          'Cameroon, r\u00b2',
+          'Cameroon, r\u00B2',
           'ag1000g_2L_CMgam.ld.gz',
         ),
         {

@@ -655,9 +655,9 @@ if (
   fileURLToPath(import.meta.url) === path.resolve(process.argv[1])
 ) {
   const args = process.argv.slice(2)
-  const refFlag = args.findIndex(a => a === '--since')
+  const refFlag = args.indexOf('--since')
   const ref = refFlag === -1 ? 'HEAD' : (args[refFlag + 1] ?? 'HEAD')
-  const filesFlag = args.findIndex(a => a === '--files')
+  const filesFlag = args.indexOf('--files')
   const explicit =
     filesFlag === -1
       ? undefined

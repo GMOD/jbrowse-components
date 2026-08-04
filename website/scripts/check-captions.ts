@@ -92,9 +92,11 @@ if (check) {
   const removed = [...committed].filter(e => !current.has(e))
   if (added.length > 0) {
     console.error(
-      `${added.length} caption(s) newly past ${MAX_CAPTION} characters:\n` +
-        added.map(e => `  + ${e}`).join('\n') +
-        `\n\nTrim to the tracks and the one visual takeaway, moving the legend ` +
+      `${added.length} caption(s) newly past ${MAX_CAPTION} characters:\n${added
+        .map(e => `  + ${e}`)
+        .join(
+          '\n',
+        )}\n\nTrim to the tracks and the one visual takeaway, moving the legend ` +
         `into the prose that introduces the figure. If the figure is ` +
         `multi-panel and genuinely needs the length, run \`pnpm check-captions\` ` +
         `to record it.`,
@@ -103,9 +105,9 @@ if (check) {
   }
   if (removed.length > 0) {
     console.log(
-      `${removed.length} caption(s) trimmed under ${MAX_CAPTION}:\n` +
-        removed.map(e => `  - ${e}`).join('\n') +
-        `\n\nRun \`pnpm check-captions\` to hold the gain.`,
+      `${removed.length} caption(s) trimmed under ${MAX_CAPTION}:\n${removed
+        .map(e => `  - ${e}`)
+        .join('\n')}\n\nRun \`pnpm check-captions\` to hold the gain.`,
     )
     process.exit(1)
   }

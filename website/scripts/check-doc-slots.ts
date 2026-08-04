@@ -179,15 +179,18 @@ function checkProse(
   inv: Inventory,
   report: (line: number, msg: string) => void,
 ) {
-  const withoutFences = text.replace(/```[\s\S]*?```/g, m =>
-    m.replace(/[^\n]/g, ' '),
+  const withoutFences = text.replaceAll(/```[\s\S]*?```/g, m =>
+    m.replaceAll(/[^\n]/g, ' '),
   )
   for (const para of withoutFences.split(/\n\s*\n/)) {
     const link = /\/docs\/config\/([a-z0-9]+)\/?#(slot-[a-z0-9.]+)/.exec(para)
     if (!link) {
       continue
     }
-    const legal = inv.enumByAnchor.get(`${link[1]}#${link[2]}`)
+    // both groups are required by the pattern, so a match has them
+    const schema = link[1]!
+    const anchor = link[2]!
+    const legal = inv.enumByAnchor.get(`${schema}#${anchor}`)
     if (!legal) {
       continue
     }
@@ -203,7 +206,7 @@ function checkProse(
       }
       report(
         text.slice(0, text.indexOf(para)).split('\n').length,
-        `prose lists values for \`${link[2].replace('slot-', '')}\` but ` +
+        `prose lists values for \`${anchor.replace('slot-', '')}\` but ` +
           `\`${token}\` is not one of them (${[...legal].sort().join(', ')})`,
       )
     }
@@ -250,11 +253,11 @@ function assertInventoryParsed(
   }
   if (problems.length) {
     console.error(
-      'check-doc-slots could not read docs/config/ properly, so it would ' +
-        'have passed without checking anything:\n' +
-        problems.join('\n') +
-        '\n\nThe generated slot-table format probably changed. Fix SLOT_ROW in ' +
-        'this file to match it again.',
+      `check-doc-slots could not read docs/config/ properly, so it would ` +
+        `have passed without checking anything:\n${problems.join(
+          '\n',
+        )}\n\nThe generated slot-table format probably changed. Fix SLOT_ROW in ` +
+        `this file to match it again.`,
     )
     process.exit(1)
   }
@@ -296,8 +299,9 @@ function checkObject(
         ...new Set(decls.flatMap(d => [...(d.enumValues ?? [])])),
       ].sort()
       report(
-        `\`${key}\`: "${value}" is not a legal value` +
-          (legal.length ? ` (expected one of ${legal.join(', ')})` : ''),
+        `\`${key}\`: "${value}" is not a legal value${
+          legal.length ? ` (expected one of ${legal.join(', ')})` : ''
+        }`,
       )
     }
     if (inDisplayDefaults && !inv.displaySlots.has(key)) {

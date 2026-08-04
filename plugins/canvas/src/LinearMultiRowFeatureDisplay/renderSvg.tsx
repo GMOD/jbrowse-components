@@ -22,8 +22,10 @@ import type {
   LgvSvgBodyProps,
 } from '@jbrowse/plugin-linear-genome-view'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
-import type { ClusterProvenance } from '@jbrowse/tree-sidebar'
-import type { ClusterHierarchyNode } from '@jbrowse/tree-sidebar'
+import type {
+  ClusterProvenance,
+  ClusterHierarchyNode,
+} from '@jbrowse/tree-sidebar'
 
 // Duck-typed slice of the display the export reads, mirroring
 // LinearBasicDisplay's RenderSvgModel: it decouples renderSvg from the full MST
