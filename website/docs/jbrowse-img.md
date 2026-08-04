@@ -477,13 +477,29 @@ Instead of extra `--flags`, per-track settings use a colon-based syntax that
 follows the track file argument, e.g. `--bam reads.bam color:tag:RG height:400`.
 This is the full list of available modifiers.
 
+Modifiers are grouped below by the track types they apply to. Passing one to a
+track type it does not apply to (say `sashimi:up` on a BigWig) prints a warning
+naming the types it does work on, rather than doing nothing quietly.
+
+A modifier **value** the modifier can't use — `arcs:upp`, `height:8o`,
+`coverage:ture` — is an error, not a warning: the tool writes one figure and
+exits, so a warning would scroll past and leave you with a wrong image. The
+`true|false` modifiers (`coverage`, `softClipping`, `force`, `crosshatch`,
+`fill`) also read bare, so `coverage` on its own means `coverage:true`.
+
 **All tracks**
 
-| Modifier        | Example                | Description                                          |
-| --------------- | ---------------------- | ---------------------------------------------------- |
-| `height:N`      | `height:400`           | Track height in pixels                               |
-| `force:true`    | `force:true`           | Render even if region is too large                   |
-| `display:value` | `display:multivariant` | Pick a non-default display for the track (see below) |
+| Modifier        | Example                | Description                                           |
+| --------------- | ---------------------- | ----------------------------------------------------- |
+| `height:N`      | `height:400`           | Track height in pixels                                |
+| `force:true`    | `force:true`           | Render even if region is too large                    |
+| `display:value` | `display:multivariant` | Pick a non-default display for the track (see below)  |
+| `name:label`    | `name:"Tumor"`         | Track label (defaults to the filename)                |
+| `index:path`    | `index:reads.bam.csi`  | Index file, when it isn't `<file>.bai`/`.tbi`/`.crai` |
+
+A track is identified by its filename, so two inputs sharing one —
+`--bam tumor/sample.bam --bam normal/sample.bam` — would both be labelled
+`sample.bam`. Both render, but pass `name:` to tell them apart in the figure.
 
 By default each track uses its primary display. `display:value` selects an
 alternate one. These friendly aliases are recognized (any other value is passed
@@ -540,6 +556,9 @@ Available `color:type` values:
 | `tag:<TAG>`                | Color by any BAM tag, e.g. `color:tag:HP`, `color:tag:RG` |
 
 **Feature tracks (GFF3/BED/BigBed)**
+
+`heightMode:` also applies to VCF tracks, which use the same canvas display
+base.
 
 | Modifier                            | Example                 | Description                                                                                                                                                                                                       |
 | ----------------------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
