@@ -61,4 +61,5 @@ action needed under current workloads), **Proposed** (not yet decided).
 | [049](adr-049-region-bound-wrapper-stays.md) | Accepted | Keep the per-read `RegionBoundBamFeature` wrapper — `recordClass` moved the wrapper from retained to transient, which is where the cost actually was; eliminating the transient one would change the adapter→extractor contract for ~1% |
 | [050](adr-050-track-containers-are-not-view-types.md) | Accepted | A track list that is not a view is addressed by id through its view (`trackContainerFor`), not registered as a hidden view type |
 | [051](adr-051-shader-js-codegen-is-scalar-only.md) | Accepted | Generate the Canvas2D twin of a shader's scalar decision functions from slangc's WGSL; never transpile the vertex or fragment stage |
+| [052](adr-052-slot-name-safety-is-a-write-guard.md) | Accepted | Slot-name safety is a runtime guard on the single write funnel, not codegen extending a compile-time guard that structurally cannot cover the surface |
 <!-- END GENERATED ADR INDEX -->
