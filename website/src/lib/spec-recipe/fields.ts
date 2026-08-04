@@ -446,6 +446,16 @@ export const viewFields: Record<string, FieldRecipe> = {
           path: `Synteny view menu → Show curved lines (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
+  // An action rather than a checkbox (LinearSyntenyView's `showMenuItems`), so
+  // only a `true` has a click-path: it re-fits every row to one shared bp/px,
+  // and there is no un-checking it — you'd re-navigate instead.
+  sameScale: value =>
+    value === true
+      ? {
+          path: 'Synteny view menu → Show all regions at same scale',
+          note: 'Row length becomes genome size, which is what makes the rows comparable.',
+        }
+      : undefined,
   // How the view got there at all, which is the step a reader with only the
   // figure is missing: a graph view is launched from a segments track rather
   // than added empty. The item is the plugin's own

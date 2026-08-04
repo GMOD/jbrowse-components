@@ -1,4 +1,9 @@
-import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core'
+// Deliberately the `/constants` entry, not the `@jbrowse/wiggle-core` barrel:
+// this package is worker/math-side and the barrel re-exports React components
+// (CrossHatches, SetMinMaxDialog, the menu builders), so the barrel would drag
+// React + MUI into every consumer of alignments-core. The type imports below
+// are erased, so they can keep using the barrel.
+import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 
 import type { ScoreStats, YScaleTicks } from '@jbrowse/wiggle-core'
 
@@ -785,4 +790,4 @@ export function computeSNPCoverage(
   return { positions, yOffsets, heights, colorTypes, relDepths, count }
 }
 
-export { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core'
+export { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
