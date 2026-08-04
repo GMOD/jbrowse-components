@@ -219,15 +219,25 @@ export interface ReadColorOpts {
 // This is the ONLY implementation of that precedence. read.slang consumes the
 // baked category (see buildReadColorCategories) and paints it; it no longer
 // re-derives these rules, so there is nothing left to keep in sync.
+// Defaults are declared once, here in the signature, rather than at each read:
+// `flipStrandLongReadChains` mirrors its config-slot default (true), and the
+// other two are off. Destructured rather than kept as an `opts?` object because
+// the chain branches below read the fields unguarded — that only type-checked
+// via TypeScript narrowing `opts` non-null through the aliased `isChain`
+// condition, so moving or rewording that one `const` would silently have made
+// them unsafe dereferences.
 export function readColorCategory(
   i: number,
   data: ReadColorData,
   colorScheme: number,
-  opts?: ReadColorOpts,
+  {
+    chainMode: isChain = false,
+    flipStrandLongReadChains = true,
+    colorSupplementaryChains = false,
+  }: ReadColorOpts = {},
 ): ReadColorCategory {
   const flags = data.readFlags[i]!
   const strand = data.readStrands[i]!
-  const isChain = opts?.chainMode === true
 
   const chainSupp = data.readChainHasSupp?.[i] ?? CHAIN_FILL_NO_SUPP
   const hasSupp = chainSupp !== CHAIN_FILL_NO_SUPP
@@ -243,7 +253,7 @@ export function readColorCategory(
 
   // Opt-in legacy behavior: paint paired supplementary chains a flat
   // supplementary color (hides the discordant-pair signal; off by default).
-  if (isChain && hasSupp && isPaired && opts.colorSupplementaryChains) {
+  if (isChain && hasSupp && isPaired && colorSupplementaryChains) {
     return 'supplementary'
   }
 
@@ -256,11 +266,9 @@ export function readColorCategory(
     // Only reachable with chainSupp 1 or 2 — buildChainMetadata writes the
     // split markers (3/4) for paired chains only.
     const primaryStrand = chainSupp > CHAIN_FILL_SUPP_PRIMARY_FWD ? -1 : 1
-    // Omitted follows the `flipStrandLongReadChains` config default (true).
-    // Nothing downstream has a default of its own, so this is the one place the
-    // fallback lives.
-    const flip = opts.flipStrandLongReadChains ?? true
-    return strandCategory(flip ? strand * primaryStrand : strand)
+    return strandCategory(
+      flipStrandLongReadChains ? strand * primaryStrand : strand,
+    )
   }
 
   // Paired split read whose supplementary segment maps opposite-strand to its

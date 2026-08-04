@@ -295,6 +295,17 @@ describe('readColorCategory', () => {
         ColorScheme.strand,
       ),
     ).toBe('fwdStrand')
+    // Turning the framing off keeps the segment's own strand. The assertion
+    // above omits the option and relies on it defaulting ON, so the two together
+    // pin the default rather than just one side of the flag.
+    expect(
+      readColorCategory(
+        0,
+        makeData({ chainHasSupp: 2, flags: 0, strand: 1 }),
+        ColorScheme.strand,
+        { ...chainOpts, flipStrandLongReadChains: false },
+      ),
+    ).toBe('fwdStrand')
   })
 
   test('unmapped mate and inter-chromosomal apply to orientation schemes', () => {
