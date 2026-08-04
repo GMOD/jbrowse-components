@@ -186,10 +186,49 @@ base-cell encode and stopped at the encode boundary, while a sibling getter kept
 doing a full per-cell scan at the same zooms. When something here gets faster,
 check the overlays computing alongside it before declaring the zoom level cheap.
 
+A sixth pass has since landed on the same theme. `paintedBpRange` had been
+applied to three Canvas2D painters and to nothing else, so every marker overlay
+(`computeVisibleInsertions` / `Deletions` / `EmptyLines` / `Inversions` /
+`Labels`) still walked the whole **buffered** region while `visibleRegions`
+covers only what is on screen. `eachVisibleRegion` now yields `bpLo`/`bpHi` —
+the marker-side twin of `paintedBpRange` — and each helper skips a block before
+walking it; `drawMafBlocks`, the one painter the earlier pass missed, took the
+`paintedBpRange` bound it should have had. Three cheaper things went with it:
+
+- **`blockHasRefGap`.** A block whose `endBp - startBp` equals its column count
+  has no reference-gap column, so no row of it can carry an insertion. 66% of
+  blocks in `test_data/ce11.26way.chrI_subset.bed.gz` qualify, and the insertion
+  overlay had been re-deriving that per row by walking every column to find
+  nothing.
+- **`makeRowFlank` builds its per-block edge sets lazily.** Eager was two `Set`s
+  per block of the buffered region — ~85k sets a frame — most for blocks the
+  now-culled walk never asks about.
+- **The inversion consensus is a memoized computed** (`inversionConsensus`),
+  like `sourceChromRanks` before it. It is deliberately over every *loaded*
+  region so it stays put while panning, which is exactly what makes recomputing
+  it per frame the wrong place for it.
+
+Measured on a synthetic ce11-26-way shape (54k blocks, 26 rows, 360kb buffered /
+180kb visible): insertions 463ms -> 168ms, deletions 1.39s -> 0.72s.
+
+`findRowHoverAtBp` and the codon spine's `locateRefPos` scanned the block list
+linearly; both now use `blockIndexAtBp`, since blocks are disjoint and
+ascending. The codon one was the worse of the two — three scans per codon over
+the whole buffered region.
+
+**Still on the table, and the next real step:** the insertion and deletion walks
+are *pan-independent*. `(anchorBp, rowIndex, length)` does not change when the
+view moves — only the bp->px mapping does — so the walks could be a per-region
+memoized computed off `rpcDataMap` (block-major, with a per-block offset index
+so the bp cull still works) and the per-frame cost would drop to one pass over
+the events. Order 400k events x 12 bytes ~= 5MB per region held while loaded.
+Not attempted here because the insertion geometry is shared with the hover
+hit-test, so it is the one walk worth being careful with.
+
 What remains un-decimated on the main thread is bounded by block size, not span —
-`drawMafBlocks` (Canvas2D fallback + SVG export) and `findRowHoverAtBp` both
-walk a whole block, so they are yet another thing a megabase block makes
-quadratic and nothing a normal one troubles.
+`drawMafBlocks` (Canvas2D fallback + SVG export) still walks a whole block once
+it is in range, so it is yet another thing a megabase block makes quadratic and
+nothing a normal one troubles.
 
 The default render path — GPU base cells plus the worker-packed coverage band —
 is in good shape. The identity plot, conservation band and color-by-chromosome

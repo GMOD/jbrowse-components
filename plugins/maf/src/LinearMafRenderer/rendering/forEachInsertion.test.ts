@@ -1,7 +1,21 @@
-import { forEachInsertion } from './forEachInsertion.ts'
+import { blockHasRefGap, forEachInsertion } from './forEachInsertion.ts'
+
+import type { MafBlock } from '../mafRenderingBackendTypes.ts'
 
 const enc = new TextEncoder()
 const b = (s: string) => enc.encode(s)
+
+// A block as the worker builds it: `endBp` is `startBp` plus the count of
+// non-gap reference bytes.
+function block(ref: string, startBp = 100): MafBlock {
+  return {
+    startBp,
+    endBp: startBp + ref.replaceAll('-', '').length,
+    refSeqBytes: b(ref),
+    rows: [],
+    empties: [],
+  }
+}
 
 function runs(ref: string, aln: string, startBp = 100) {
   const out: {
@@ -55,4 +69,16 @@ test('alignment shorter than the reference truncates at the shared length', () =
   // alignment overruns/underruns are clamped to min length; here the sample is
   // shorter than the reference so the trailing ref columns emit nothing
   expect(runs('ACGT', 'AC')).toEqual([])
+})
+
+// The block-level skip the insertion overlay gates on. It has to agree with the
+// walk for every row of the block, so pin it against the walk itself: a block
+// it calls gap-free must produce no run for any conceivable sample row.
+test('blockHasRefGap matches whether the walk can emit anything', () => {
+  expect(blockHasRefGap(block('ACGT'))).toBe(false)
+  expect(blockHasRefGap(block('AC--T'))).toBe(true)
+  // a gap-free block emits nothing even for a fully-inserted sample row
+  expect(runs('ACGT', 'CCCC')).toEqual([])
+  // ...and a block with a gap does, which is why the skip has to be exact
+  expect(runs('AC--T', 'ACGGT')).toHaveLength(1)
 })

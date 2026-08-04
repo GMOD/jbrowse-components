@@ -48,7 +48,10 @@ import {
 import { computeVisibleDeletions } from './components/computeVisibleDeletions.ts'
 import { computeVisibleEmptyLines } from './components/computeVisibleEmptyLines.ts'
 import { computeVisibleInsertions } from './components/computeVisibleInsertions.ts'
-import { computeVisibleInversions } from './components/computeVisibleInversions.ts'
+import {
+  computeVisibleInversions,
+  consensusStrandByRowChr,
+} from './components/computeVisibleInversions.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { computeVisibleSummaryBars } from './components/computeVisibleSummaryBars.ts'
 import { identityRgb } from './components/drawRowIdentity.ts'
@@ -614,6 +617,34 @@ export default function stateModelFactory(
           return getContainingView(self) as LinearGenomeViewModel
         },
       }))
+      .views(self => ({
+        /**
+         * #getter
+         * Which sample row IS the reference — the worker's own answer
+         * (`referenceSampleId`, resolved from the block whose sequence the row
+         * carries), with the view's assembly name as the fallback before any
+         * region has landed.
+         *
+         * The view's assembly name is only coincidentally the MAF's name for
+         * the reference: a MAF-tabix track sets `refAssemblyName` on the
+         * adapter precisely when the two differ, and a bigMaf/TAF file names
+         * its reference by whatever db name it was built with. Reading it here
+         * rather than in each consumer is what keeps the codon conservation
+         * band's excluded row and the per-base band's (computed in the worker)
+         * the same row.
+         *
+         * Any loaded region answers — a track has one reference species — so
+         * this takes the first that names one.
+         */
+        get referenceSampleId(): string | undefined {
+          for (const region of self.rpcDataMap.values()) {
+            if (region.refSampleId !== undefined) {
+              return region.refSampleId
+            }
+          }
+          return self.lgv.assemblyNames[0]
+        },
+      }))
       // The derived, self-releasing too-large banner is opt-in via
       // `byteGateEnabled` below: `fetchRegions` then measures the region set
       // before it downloads, and afterAttach clears the estimate on chromosome
@@ -754,11 +785,15 @@ export default function stateModelFactory(
          * non-reference species to row 0 — reading `sources[0]` there would
          * enumerate codons in the wrong frame. Falls back to the worker's canonical
          * first row (pre-reorder) when the reference isn't itself a listed sample.
+         *
+         * The reference is `referenceSampleId` — the row the worker saw carrying
+         * the reference sequence — not the view's assembly name, which is a
+         * different string whenever the MAF names its reference differently.
          */
         get defaultCodonSpecies(): string | undefined {
-          const refAssembly = self.lgv.assemblyNames[0]
+          const refSrc = self.referenceSampleId
           const rows = self.sourcesVolatile
-          return rows.find(s => s.name === refAssembly)?.name ?? rows[0]?.name
+          return rows.find(s => s.name === refSrc)?.name ?? rows[0]?.name
         },
         /**
          * #getter
@@ -1378,6 +1413,23 @@ export default function stateModelFactory(
             : undefined
         },
       }))
+      .views(self => ({
+        /**
+         * #getter
+         * The orientation each (row, source chromosome) is measured against for
+         * the inversion indicator (`consensusStrandByRowChr`). A memoized
+         * computed for the same reason as `sourceChromRanks`: it walks every
+         * block × row of every *loaded* region — deliberately, so the consensus
+         * stays put as the user scrolls within loaded data — while its only
+         * consumer runs on every pan and zoom. Empty when the indicator is off,
+         * so a track that never shows inversions pays nothing.
+         */
+        get inversionConsensus(): ReadonlyMap<string, number> {
+          return self.showInversions
+            ? consensusStrandByRowChr(self.rpcDataMap)
+            : new Map<string, number>()
+        },
+      }))
       .views(self => {
         // The block-overlay helpers all take this same bundle.
         const overlayParams = () => ({
@@ -1421,7 +1473,10 @@ export default function stateModelFactory(
            */
           get visibleInversions() {
             return self.rowsVisible && self.showInversions
-              ? computeVisibleInversions(overlayParams())
+              ? computeVisibleInversions({
+                  ...overlayParams(),
+                  consensus: self.inversionConsensus,
+                })
               : []
           },
         }
@@ -1694,19 +1749,19 @@ export default function stateModelFactory(
          * else the band is blank.
          */
         get visibleCodonConservation(): CodonConservationBar[] {
-          const refAssembly = self.lgv.assemblyNames[0]
+          const refSrc = self.referenceSampleId
           return self.codonConservationActive
             ? computeCodonConservation(self.locatedCodons, {
-                // Exclude the *reference assembly's* row (matching the per-base
-                // band's worker-side `refRowIndex`), not the anchor's:
+                // Exclude the *reference's* row (matching the per-base band's
+                // worker-side `refSampleId`), not the anchor's:
                 // `defaultCodonSpecies` falls back to row 0 when the reference
                 // isn't a listed sample, which would wrongly drop a real species
                 // from the denominator. `-1` when the reference isn't a visible
                 // row.
                 refRowIndex:
-                  refAssembly === undefined
+                  refSrc === undefined
                     ? -1
-                    : (self.rowIndexBySrc.get(refAssembly) ?? -1),
+                    : (self.rowIndexBySrc.get(refSrc) ?? -1),
               })
             : []
         },

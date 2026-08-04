@@ -52,11 +52,14 @@ export function computeVisibleLabels(
 
   const hp2 = h / 2
 
-  for (const { data: regionData, bpToPx } of eachVisibleRegion(
+  for (const { data: regionData, bpToPx, bpLo, bpHi } of eachVisibleRegion(
     view,
     rpcDataMap,
   )) {
     for (const block of regionData.blocks) {
+      if (block.endBp <= bpLo || block.startBp >= bpHi) {
+        continue
+      }
       const refSeqBytes = block.refSeqBytes
 
       for (const row of block.rows) {

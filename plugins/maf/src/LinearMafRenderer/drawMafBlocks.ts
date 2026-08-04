@@ -3,6 +3,7 @@ import {
   makeBpMapper,
 } from '@jbrowse/render-core/canvas2dUtils'
 
+import { paintedBpRange } from '../LinearMafDisplay/components/paintedBpRange.ts'
 import {
   rowBandGeometry,
   visibleRowRange,
@@ -60,7 +61,7 @@ export function drawMafBlocks(
     canvasWidth,
     canvasHeight,
     block => regions.get(block.displayedRegionIndex),
-    (regionData, renderBlock) => {
+    (regionData, renderBlock, clip) => {
       const renderingContext = {
         ctx,
         h,
@@ -70,8 +71,17 @@ export function drawMafBlocks(
       }
 
       const rowFlank = makeRowFlank(regionData.blocks)
+      // Blocks the render block can't paint are skipped whole, rather than
+      // indexed and walked column by column for the scissor to discard. The
+      // fetched region is the buffered one, so on a typical view that is about
+      // half of them — the same bound the identity, conservation and
+      // source-chromosome painters already apply.
+      const { bpLo, bpHi } = paintedBpRange(renderBlock, clip)
       for (let i = 0; i < regionData.blocks.length; i++) {
         const mafBlock = regionData.blocks[i]!
+        if (mafBlock.endBp <= bpLo || mafBlock.startBp >= bpHi) {
+          continue
+        }
         const { refSeqBytes, startBp: blockStartBp } = mafBlock
         // Once per block, not per row: the map is a property of the block's
         // reference, and rebuilding it per row would put the O(columns x rows)

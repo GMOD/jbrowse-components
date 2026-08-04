@@ -6,24 +6,25 @@ import {
 } from './visibleRegionGeometry.ts'
 
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
-import type { MafOverlayParams } from './visibleRegionGeometry.ts'
-
-/**
- * Unlike the other block overlays, this one iterates *every* loaded region
- * rather than looking regions up by index: the consensus strand each inversion
- * is measured against is computed across all loaded data, so it stays stable
- * while the user scrolls within it. Hence a real map, not the structural
- * `RegionDataMap`.
- */
-interface ComputeVisibleInversionsParams extends MafOverlayParams {
-  rpcDataMap: ReadonlyMap<number, MafRegionData>
-}
+import type { MafOverlayParams, PxSpan } from './visibleRegionGeometry.ts'
 
 export interface InversionMarker {
   xLeft: number
   width: number
   rowTop: number
   h: number
+}
+
+interface ComputeVisibleInversionsParams extends MafOverlayParams {
+  /**
+   * The orientation each (row, source chromosome) is measured against, from
+   * `consensusStrandByRowChr` over *all* loaded regions. Passed in rather than
+   * derived here: that walk covers every block × row the display holds — the
+   * buffered region, so far more than is on screen — while this runs on every
+   * pan and zoom. The model memoizes it (`inversionConsensus`), the same move
+   * `sourceChromRanks` made for color-by-source-chromosome.
+   */
+  consensus: ReadonlyMap<string, number>
 }
 
 // Inversions are scored per (display row, source chromosome): a scaffold's
@@ -38,9 +39,11 @@ function rowChrKey(rowIndex: number, chr: string) {
 /**
  * Length-weighted consensus strand for each (row, source chromosome) across all
  * loaded blocks, so the consensus is stable as the user scrolls within loaded
- * data. `+1` when forward bases are at least as many as reverse, else `−1`.
+ * data — hence a real map of every loaded region rather than the structural
+ * `RegionDataMap` the visible-region walks take. `+1` when forward bases are at
+ * least as many as reverse, else `−1`.
  */
-function consensusStrandByRowChr(
+export function consensusStrandByRowChr(
   rpcDataMap: ReadonlyMap<number, MafRegionData>,
 ): Map<string, number> {
   const totals = new Map<string, { fwd: number; rev: number }>()
@@ -50,13 +53,16 @@ function consensusStrandByRowChr(
       for (const row of block.rows) {
         if (row.strand !== undefined && row.chr !== undefined) {
           const key = rowChrKey(row.rowIndex, row.chr)
-          const t = totals.get(key) ?? { fwd: 0, rev: 0 }
+          let t = totals.get(key)
+          if (t === undefined) {
+            t = { fwd: 0, rev: 0 }
+            totals.set(key, t)
+          }
           if (row.strand === -1) {
             t.rev += len
           } else {
             t.fwd += len
           }
-          totals.set(key, t)
         }
       }
     }
@@ -73,8 +79,8 @@ function consensusStrandByRowChr(
 export function computeVisibleInversions(
   params: ComputeVisibleInversionsParams,
 ): InversionMarker[] {
-  const { view, rpcDataMap, rowHeight, rowProportion, scrollTop } = params
-  const consensus = consensusStrandByRowChr(rpcDataMap)
+  const { view, rpcDataMap, rowHeight, rowProportion, scrollTop, consensus } =
+    params
   const markers: InversionMarker[] = []
   const { h, offset } = rowBandGeometry(rowHeight, rowProportion, scrollTop)
   const { firstRow, endRow } = visibleRowRange(
@@ -83,22 +89,32 @@ export function computeVisibleInversions(
     params.viewportHeight,
   )
 
-  for (const { data: regionData, bpToPx } of eachVisibleRegion(
+  for (const { data: regionData, bpToPx, bpLo, bpHi } of eachVisibleRegion(
     view,
     rpcDataMap,
   )) {
     for (const block of regionData.blocks) {
+      if (block.endBp <= bpLo || block.startBp >= bpHi) {
+        continue
+      }
+      // Resolved once per block, not per inverted row: every row of a block
+      // spans the same reference extent.
+      let span: PxSpan | undefined
       for (const row of block.rows) {
-        const onScreen = row.rowIndex >= firstRow && row.rowIndex < endRow
-        const inverted =
+        // The row test comes first: it is two comparisons, while the inversion
+        // test builds a key string and hits a map, and with a pinned row height
+        // most rows of a deep alignment are scrolled off screen.
+        if (
+          row.rowIndex >= firstRow &&
+          row.rowIndex < endRow &&
           row.strand !== undefined &&
           row.chr !== undefined &&
           row.strand !== consensus.get(rowChrKey(row.rowIndex, row.chr))
-        if (onScreen && inverted) {
-          const { xLeft, width } = bpSpanPx(bpToPx, block.startBp, block.endBp)
+        ) {
+          span ??= bpSpanPx(bpToPx, block.startBp, block.endBp)
           markers.push({
-            xLeft,
-            width,
+            xLeft: span.xLeft,
+            width: span.width,
             rowTop: offset + rowHeight * row.rowIndex,
             h,
           })

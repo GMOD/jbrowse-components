@@ -1,4 +1,7 @@
-import { forEachInsertion } from '../../LinearMafRenderer/rendering/forEachInsertion.ts'
+import {
+  blockHasRefGap,
+  forEachInsertion,
+} from '../../LinearMafRenderer/rendering/forEachInsertion.ts'
 import {
   eachVisibleRegion,
   rowBandGeometry,
@@ -77,11 +80,18 @@ export function computeVisibleInsertions(
     params.viewportHeight,
   )
 
-  for (const { data: regionData, bpToPx } of eachVisibleRegion(
+  for (const { data: regionData, bpToPx, bpLo, bpHi } of eachVisibleRegion(
     view,
     rpcDataMap,
   )) {
     for (const block of regionData.blocks) {
+      if (
+        block.endBp <= bpLo ||
+        block.startBp >= bpHi ||
+        !blockHasRefGap(block)
+      ) {
+        continue
+      }
       for (const row of block.rows) {
         if (row.rowIndex >= firstRow && row.rowIndex < endRow) {
           const rowTop = offset + rowHeight * row.rowIndex

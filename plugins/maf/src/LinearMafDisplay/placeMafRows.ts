@@ -41,5 +41,9 @@ export function placeMafRegionData(
     }
     return { ...block, rows, empties }
   })
-  return { blocks, coverage: data.coverage }
+  return {
+    blocks,
+    coverage: data.coverage,
+    refSampleId: data.refSampleId,
+  }
 }

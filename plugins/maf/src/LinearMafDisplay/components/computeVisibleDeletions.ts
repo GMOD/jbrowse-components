@@ -61,13 +61,16 @@ export function computeVisibleDeletions(
   )
 
   if (h >= MIN_HEIGHT_FOR_TEXT) {
-    for (const { data: regionData, bpToPx } of eachVisibleRegion(
+    for (const { data: regionData, bpToPx, bpLo, bpHi } of eachVisibleRegion(
       view,
       rpcDataMap,
     )) {
       const rowFlank = makeRowFlank(regionData.blocks)
       for (let i = 0; i < regionData.blocks.length; i++) {
         const block = regionData.blocks[i]!
+        if (block.endBp <= bpLo || block.startBp >= bpHi) {
+          continue
+        }
         for (const row of block.rows) {
           if (row.rowIndex >= firstRow && row.rowIndex < endRow) {
             const rowTop = offset + rowHeight * row.rowIndex

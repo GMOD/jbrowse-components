@@ -42,6 +42,43 @@ export interface LinearMafGetAlignmentDataResult {
 }
 
 /**
+ * Which sample the block's reference sequence came from — the row whose own
+ * alignment IS the reference, found by sequence identity.
+ *
+ * Structural on purpose. The obvious answer, `region.assemblyName`, is the
+ * *view's* name for the reference and only coincidentally the MAF's: a
+ * MAF-tabix track sets `refAssemblyName` on the adapter precisely when the two
+ * differ, and a bigMaf/TAF file names its reference by whatever db name it was
+ * built with. Where they differed the name matched no row, so nothing was
+ * excluded from the conservation denominator and the reference's guaranteed
+ * self-match inflated every position — an all-divergent column read `1/N`
+ * instead of 0.
+ *
+ * Cheap despite comparing sequences: all three adapters set the feature's `seq`
+ * to the reference row's own `seq` (see `selectReferenceSequenceString`, the
+ * first `s` line, and TAF's `row0`), so the first candidate is the same string
+ * *object* and the comparison is a pointer check. Insertion order into
+ * `alignments` is stanza order, reference first, so a second species that
+ * happens to be byte-identical across the block cannot win.
+ *
+ * Undefined when no row matches — a malformed stanza with no resolvable
+ * reference — leaving the caller its `region.assemblyName` fallback.
+ */
+export function referenceSampleId(
+  alignments: Record<string, AlignmentRecord>,
+  refSeq: string,
+) {
+  if (refSeq) {
+    for (const sampleId in alignments) {
+      if (alignments[sampleId]!.seq === refSeq) {
+        return sampleId
+      }
+    }
+  }
+  return undefined
+}
+
+/**
  * Fetch MAF alignment features for a single region. Returns raw
  * `MafWireRegionData` (one or more blocks; each carries its own ref seq + rows,
  * named by species rather than placed at a screen row —
@@ -85,6 +122,10 @@ export async function executeMafAlignmentData({
     alignments: Record<string, AlignmentRecord>
     empties: Record<string, EmptyRecord>
   }[] = []
+  // The sample id of the row the block's reference sequence came from, resolved
+  // from the first block that names one (all blocks of a track share a
+  // reference species). See `referenceSampleId`.
+  let refSampleId: string | undefined
   const discoveredOrder = new Map<string, number>()
   const discover = (sampleId: string) => {
     if (!discoveredOrder.has(sampleId)) {
@@ -99,6 +140,8 @@ export async function executeMafAlignmentData({
         AlignmentRecord
       >
       const empties = feature.get('empties') as Record<string, EmptyRecord>
+      const refSeq = feature.get('seq') as string
+      refSampleId ??= referenceSampleId(alignments, refSeq)
       for (const sampleId in alignments) {
         discover(sampleId)
       }
@@ -109,7 +152,7 @@ export async function executeMafAlignmentData({
       }
       rawBlocks.push({
         startBp: feature.get('start'),
-        refSeqBytes: enc.encode(feature.get('seq') as string),
+        refSeqBytes: enc.encode(refSeq),
         alignments,
         empties,
       })
@@ -174,23 +217,24 @@ export async function executeMafAlignmentData({
   // filter above), so coverage over them is automatically scoped to the visible
   // subtree — no separate row filtering needed.
   //
-  // The reference assembly is normally listed as a sample, so it self-matches
-  // at every column. Identify it from the queried `region.assemblyName` (the
-  // same signal `selectReferenceSequenceString` uses as `query.assemblyName`)
-  // so the conservation metric can exclude it. Identity runs over all rows when
-  // the reference isn't among them.
+  // The reference is normally listed as a sample, so it self-matches at every
+  // column; `referenceSampleId` names its row so the conservation metric can
+  // exclude it. `region.assemblyName` is the fallback for a file whose blocks
+  // resolved no reference at all; identity runs over every row when neither
+  // names one.
+  const refRowId = refSampleId ?? region.assemblyName
   const coverage = buildMafCoverageRegion(
     blocks,
     region.start,
     region.end,
-    isVisible(region.assemblyName) ? region.assemblyName : undefined,
+    isVisible(refRowId) ? refRowId : undefined,
   )
 
   // rpcResult wraps value + transfer list; the RPC framework unwraps it before
   // returning to the caller, whose type is the RpcRegistry
   // `LinearMafGetAlignmentData.return` declaration. Hence no return annotation
   // on this function and no cast here.
-  const regionData: MafWireRegionData = { blocks, coverage }
+  const regionData: MafWireRegionData = { blocks, coverage, refSampleId }
   const result: LinearMafGetAlignmentDataResult = {
     samples,
     treeNewick,

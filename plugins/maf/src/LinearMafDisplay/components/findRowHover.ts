@@ -1,5 +1,6 @@
 import { insertionBarWidth } from '@jbrowse/alignments-core'
 
+import { blockIndexAtBp } from '../../LinearMafRenderer/blockAtBp.ts'
 import { forEachDeletion } from '../../LinearMafRenderer/rendering/forEachDeletion.ts'
 import { forEachInsertion } from '../../LinearMafRenderer/rendering/forEachInsertion.ts'
 import { rowFlankAt } from '../../LinearMafRenderer/rendering/rowFlank.ts'
@@ -195,10 +196,11 @@ function emptyHit(e: MafEmptyRow): EmptyHit {
  * base it abuts (within its narrow marker box), matching plugin-alignments; a
  * gap cell falls through to the deletion run that covers it. Returns undefined
  * when no block covers the bp or the row is absent. Blocks are genomically
- * disjoint and sorted, so the first covering
- * block is authoritative. `gposFrac` is the fractional cursor coordinate (its
- * integer floor selects the cell; the fraction enables px-accurate insertion
- * hit-testing).
+ * disjoint and sorted, so `blockIndexAtBp` binary-searches the one covering
+ * block — this runs on every mousemove against the *buffered* region, which is
+ * tens of thousands of blocks on a fine-grained multiz. `gposFrac` is the
+ * fractional cursor coordinate (its integer floor selects the cell; the
+ * fraction enables px-accurate insertion hit-testing).
  */
 export function findRowHoverAtBp(
   region: MafRegionData,
@@ -208,28 +210,24 @@ export function findRowHoverAtBp(
   bpPerPx: number,
 ): RowHit | undefined {
   const targetBp = Math.floor(gposFrac)
-  for (let i = 0; i < region.blocks.length; i++) {
-    const block = region.blocks[i]!
-    if (block.startBp > targetBp) {
-      break
-    }
-    if (targetBp < block.endBp) {
-      const row = block.rows.find(r => r.rowIndex === rowIndex)
-      if (row) {
-        return (
-          insertionHitInRow(block, row, gposFrac, bpPerPx, showAsUpperCase) ??
-          cellHitInRow(block, row, targetBp, showAsUpperCase) ??
-          deletionHitInRow(
-            block,
-            row,
-            targetBp,
-            rowFlankAt(region.blocks, i, rowIndex),
-          )
-        )
-      }
-      const empty = block.empties.find(e => e.rowIndex === rowIndex)
-      return empty ? emptyHit(empty) : undefined
-    }
+  const i = blockIndexAtBp(region.blocks, targetBp)
+  if (i === -1) {
+    return undefined
   }
-  return undefined
+  const block = region.blocks[i]!
+  const row = block.rows.find(r => r.rowIndex === rowIndex)
+  if (row) {
+    return (
+      insertionHitInRow(block, row, gposFrac, bpPerPx, showAsUpperCase) ??
+      cellHitInRow(block, row, targetBp, showAsUpperCase) ??
+      deletionHitInRow(
+        block,
+        row,
+        targetBp,
+        rowFlankAt(region.blocks, i, rowIndex),
+      )
+    )
+  }
+  const empty = block.empties.find(e => e.rowIndex === rowIndex)
+  return empty ? emptyHit(empty) : undefined
 }

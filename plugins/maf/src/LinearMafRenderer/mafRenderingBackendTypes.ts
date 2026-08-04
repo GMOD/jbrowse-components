@@ -78,6 +78,16 @@ export interface MafWireBlock {
 export interface MafWireRegionData {
   blocks: MafWireBlock[]
   coverage: MafCoverageRegion
+  /**
+   * The sample whose row the reference sequence came from, resolved by the
+   * worker (`referenceSampleId`) rather than assumed to be the view's assembly
+   * name. Shipped because the conservation metric excludes the reference's
+   * trivial self-match, and the two bands compute that metric in different
+   * places — the per-base one in the worker, the codon one on the client — so
+   * they have to agree on which row is the reference. Undefined when no block
+   * resolved one.
+   */
+  refSampleId?: string
 }
 
 // Placed counterparts: `rowIndex` is the on-screen row, valid only against the
@@ -140,6 +150,8 @@ export interface MafCoverageRegion {
 export interface MafRegionData {
   blocks: MafBlock[]
   coverage: MafCoverageRegion
+  /** see `MafWireRegionData.refSampleId` — placement doesn't touch it */
+  refSampleId?: string
 }
 
 // Inputs to `buildInstanceBuffer` — derived from theme + user toggles on

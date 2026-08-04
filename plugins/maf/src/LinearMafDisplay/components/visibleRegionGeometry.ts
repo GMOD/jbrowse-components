@@ -108,16 +108,44 @@ export function visibleRowRange(
 export type BpToPx = (bp: number) => number
 
 /**
+ * Screen-px slack added to each side of a region's genomic span before blocks
+ * are culled against it. A marker is anchored inside its block but *drawn*
+ * around that anchor — an insertion bar and its `(N)` label extend past the
+ * cell boundary, an inversion outline is 2px wide — so a block just off-screen
+ * can still paint onto the edge pixel. Wide enough to cover the widest of
+ * those; the bound only has to be conservative, since anything it lets through
+ * is clipped by the canvas as before.
+ */
+const CULL_SLACK_PX = 16
+
+/**
  * Walk the visible regions that have data in `dataMap`, yielding each region's
- * data alongside its `bpToPx` mapper and `displayedRegionIndex` (the latter lets
- * a caller correlate a second per-region map — e.g. codon translation reads both
- * the alignment and the frames map).
+ * data alongside its `bpToPx` mapper, `displayedRegionIndex` (which lets a
+ * caller correlate a second per-region map — e.g. codon translation reads both
+ * the alignment and the frames map), and the genomic bounds worth walking.
+ *
+ * `[bpLo, bpHi)` is the region's *visible* span, padded by `CULL_SLACK_PX`. It
+ * matters because the per-region data is the **buffered** region — half a
+ * screen of extra blocks each side — while `visibleRegions` covers only what is
+ * on screen. A helper that walks a whole region therefore does roughly twice
+ * the work it can show, once per frame. Testing `block.endBp > bpLo &&
+ * block.startBp < bpHi` first skips those blocks before their columns are
+ * walked. This is the marker-side twin of `paintedBpRange`, which does the same
+ * job for the Canvas2D painters (they bound against a render block's clip
+ * rather than a visible region).
  */
 export function* eachVisibleRegion<T>(
   view: VisibleRegionsView,
   dataMap: { get(idx: number): T | undefined },
-): Generator<{ data: T; bpToPx: BpToPx; displayedRegionIndex: number }> {
+): Generator<{
+  data: T
+  bpToPx: BpToPx
+  displayedRegionIndex: number
+  bpLo: number
+  bpHi: number
+}> {
   const scale = 1 / view.bpPerPx
+  const slack = CULL_SLACK_PX * view.bpPerPx + 1
   for (const vr of view.visibleRegions) {
     const data = dataMap.get(vr.displayedRegionIndex)
     if (data === undefined) {
@@ -125,7 +153,13 @@ export function* eachVisibleRegion<T>(
     }
     const bpToPx: BpToPx = bp =>
       vr.screenStartPx + bpOffsetInRegion(vr, bp) * scale
-    yield { data, bpToPx, displayedRegionIndex: vr.displayedRegionIndex }
+    yield {
+      data,
+      bpToPx,
+      displayedRegionIndex: vr.displayedRegionIndex,
+      bpLo: vr.start - slack,
+      bpHi: vr.end + slack,
+    }
   }
 }
 

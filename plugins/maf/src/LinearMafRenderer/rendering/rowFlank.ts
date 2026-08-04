@@ -84,10 +84,27 @@ export function rowFlankAt(
  * non-alignment gets.
  */
 export function makeRowFlank(blocks: MafBlock[]) {
-  const edges = blocks.map(block => {
+  // Filled on first use rather than up front. Every caller now skips the
+  // buffered region's off-screen blocks before asking (`computeVisibleDeletions`
+  // by visible span, `drawMafBlocks` by render-block clip), and eagerly indexing
+  // was the one part of the pass that ignored that: two `Set`s per block, so on
+  // the UCSC ce11 26-way shape ~85k sets and a million inserts per frame, most
+  // of them for blocks nothing then looked at. A block's edges are still built
+  // at most once per pass, so the walk-everything case costs what it did.
+  interface BlockEdges {
+    startsAligned: Set<number>
+    endsAligned: Set<number>
+  }
+  const edges = new Array<BlockEdges | undefined>(blocks.length)
+
+  function edgesAt(blockIndex: number): BlockEdges {
+    const cached = edges[blockIndex]
+    if (cached !== undefined) {
+      return cached
+    }
     const startsAligned = new Set<number>()
     const endsAligned = new Set<number>()
-    for (const { rowIndex, alignmentBytes } of block.rows) {
+    for (const { rowIndex, alignmentBytes } of blocks[blockIndex]!.rows) {
       if (isAligned(alignmentBytes[0])) {
         startsAligned.add(rowIndex)
       }
@@ -95,8 +112,10 @@ export function makeRowFlank(blocks: MafBlock[]) {
         endsAligned.add(rowIndex)
       }
     }
-    return { startsAligned, endsAligned }
-  })
+    const entry = { startsAligned, endsAligned }
+    edges[blockIndex] = entry
+    return entry
+  }
 
   return function rowFlank(blockIndex: number, rowIndex: number): RowFlank {
     const block = blocks[blockIndex]!
@@ -106,11 +125,11 @@ export function makeRowFlank(blocks: MafBlock[]) {
       boundedLeft:
         prev !== undefined &&
         prev.endBp === block.startBp &&
-        edges[blockIndex - 1]!.endsAligned.has(rowIndex),
+        edgesAt(blockIndex - 1).endsAligned.has(rowIndex),
       boundedRight:
         next !== undefined &&
         next.startBp === block.endBp &&
-        edges[blockIndex + 1]!.startsAligned.has(rowIndex),
+        edgesAt(blockIndex + 1).startsAligned.has(rowIndex),
     }
   }
 }

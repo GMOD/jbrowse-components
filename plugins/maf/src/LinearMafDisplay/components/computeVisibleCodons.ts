@@ -1,5 +1,6 @@
 import { codonTable } from '@jbrowse/core/util'
 
+import { blockIndexAtBp } from '../../LinearMafRenderer/blockAtBp.ts'
 import { DASH, LOWER_BIT, SPACE } from '../../util/asciiBytes.ts'
 import {
   bpSpanPx,
@@ -219,22 +220,24 @@ interface RefColLoc {
 /**
  * Resolve an absolute reference position to the block containing it and the
  * alignment column of that base within the block. Blocks are disjoint reference
- * ranges (`refColumns.length` reference bases starting at `startBp`), so at most
- * one contains `p`; returns undefined when no fetched block covers it.
+ * ranges (`refColumns.length` reference bases starting at `startBp`, which is
+ * what `endBp` records), so at most one contains `p` and `blockIndexAtBp`
+ * binary-searches it; returns undefined when no fetched block covers it. The
+ * scan this replaced ran three times per codon over the whole buffered region,
+ * so it was quadratic in the block count on a fine-grained multiz.
  */
 function locateRefPos(
   blocks: MafBlock[],
   refColumnsPerBlock: Int32Array[],
   p: number,
 ): RefColLoc | undefined {
-  for (let bi = 0; bi < blocks.length; bi++) {
-    const g = p - blocks[bi]!.startBp
-    const cols = refColumnsPerBlock[bi]!
-    if (g >= 0 && g < cols.length) {
-      return { blockIdx: bi, col: cols[g]! }
-    }
+  const bi = blockIndexAtBp(blocks, p)
+  if (bi === -1) {
+    return undefined
   }
-  return undefined
+  const g = p - blocks[bi]!.startBp
+  const cols = refColumnsPerBlock[bi]!
+  return g < cols.length ? { blockIdx: bi, col: cols[g]! } : undefined
 }
 
 /** Codon type resolved to per-block columns. */
