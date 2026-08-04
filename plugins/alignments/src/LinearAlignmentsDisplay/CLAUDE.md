@@ -57,6 +57,13 @@ inside an `onClick` gets nothing, `closeContextMenu` ran first.
 
 ## Layout and draw paths
 
+Chain layout is handed **neither `sortedBy` nor `largeFeaturesFirst`** — its
+rows are chains, ordered by chain distance. Every ordering/row control curates
+itself out in chain mode (`canCollapseGroupRows`, `offeredGroupByTypes`, the
+"Sort by..." gate and the context menu's `sort` flag); a new one that doesn't is
+a silent no-op, and a tag sort additionally refetches for `sortTagValues`
+nothing reads.
+
 Layout is main-thread because a read spanning a region boundary must share one
 row, and each worker sees one region. **Don't reintroduce a levels /
 right-edge-only array** in `placeRect` — features arrive out of start order in

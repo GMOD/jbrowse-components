@@ -3,11 +3,15 @@ import { getGroupByMenuItem } from './sortGroup.ts'
 import type { GroupByType } from '../../shared/types.ts'
 import type { GroupByMenuModel } from './sortGroup.ts'
 
-function makeModel(opts?: { type?: GroupByType; isChainMode?: boolean }) {
+function makeModel(opts?: {
+  type?: GroupByType
+  tag?: string
+  isChainMode?: boolean
+}) {
   const setGroupBy = jest.fn()
   const model = {
     isChainMode: opts?.isChainMode ?? false,
-    groupBy: opts?.type ? { type: opts.type } : undefined,
+    groupBy: opts?.type ? { type: opts.type, tag: opts.tag } : undefined,
     setGroupBy,
   }
   return { model: model as unknown as GroupByMenuModel, setGroupBy }
@@ -91,6 +95,15 @@ test('a stored hidden dimension falls back to None', () => {
 test('grouping by tag checks the Tag... radio', () => {
   const items = radios(makeModel({ type: 'tag' }).model)
   expect(items.filter(i => i.checked).map(i => i.label)).toEqual(['Tag...'])
+})
+
+// Like the sort and color menus' tag rows — otherwise the tag being grouped on
+// is invisible without reopening the dialog.
+test('the tag radio names the tag being grouped on', () => {
+  const items = radios(makeModel({ type: 'tag', tag: 'RG' }).model)
+  expect(items.filter(i => i.checked).map(i => i.label)).toEqual([
+    'Tag (RG)...',
+  ])
 })
 
 // No radio carries helpText: the menu reserves a help column across every row as

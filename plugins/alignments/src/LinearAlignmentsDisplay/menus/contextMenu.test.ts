@@ -260,6 +260,22 @@ test('no "Sort by" submenu without a clicked position', () => {
   )
 })
 
+// Chain layout is handed no `sortedBy`, so the display curates every
+// position-anchored sort out — the read submenu here alongside the hit ones,
+// and the track menu's "Sort by..." alongside both.
+test('sort: false drops the read "Sort by" but keeps the rest', () => {
+  const model = makeModel({
+    contextMenuFeature: makeFeature({ name: 'readABC' }),
+    contextMenuGenomicPos: 150,
+  })
+  const labels = getContextMenuItems(model, { sort: false }).map(
+    i => (i as { label?: string }).label,
+  )
+  expect(labels).not.toContain('Sort by')
+  expect(labels).toContain('Open feature details')
+  expect(labels).toContain('Copy')
+})
+
 // The menu opens on the id and grows the rest when the fetch lands. Everything
 // answerable from the id has to be in that first paint — the details item and
 // the position sort, which reads only the clicked block and column. Anything

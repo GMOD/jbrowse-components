@@ -345,6 +345,42 @@ describe('pileup-only menus grey out when the pileup is hidden', () => {
   )
 })
 
+// Chain layout is handed neither `sortedBy` nor `largeFeaturesFirst` — its rows
+// are chains — so every ordering control has to curate itself out the way
+// `canCollapseGroupRows` already does, or a sort is a silent no-op (and a tag
+// sort refetches the region for values nothing reads).
+describe('ordering controls in chain mode', () => {
+  test('"Sort by..." greys out, naming chain mode as the reason', () => {
+    const display = createDisplay()
+    display.setLinkedReads('off')
+    expect(display.canSortReads).toBe(true)
+
+    display.setLinkedReads('normal')
+    expect(display.canSortReads).toBe(false)
+    const item = findMenu(display.trackMenuItems(), 'Sort by...')
+    expect(item?.disabled).toBe(true)
+    expect(item?.disabledHelpText).toMatch(/View as pairs/)
+  })
+
+  test('the context menu drops its position-anchored sorts too', () => {
+    const display = createDisplay()
+    display.openContextMenu({
+      anchor: { left: 0, top: 0 },
+      block: { refName: 'ctgA', start: 0, end: 100, rpcData: undefined },
+      genomicPos: 50,
+      featureId: 'read1',
+    })
+    expect(hasMenuLabel(display.contextMenuItems(), 'Sort by')).toBe(true)
+
+    display.setLinkedReads('normal')
+    expect(hasMenuLabel(display.contextMenuItems(), 'Sort by')).toBe(false)
+    // the rest of the menu is untouched — only the ordering rows go
+    expect(
+      hasMenuLabel(display.contextMenuItems(), 'Open feature details'),
+    ).toBe(true)
+  })
+})
+
 // Proper-pair / singleton visibility reads as a "Show..." toggle, so it lives in
 // the Show menu (not Read connections, not the filter submenu). "Filter by..."
 // wraps the flag/tag dialog.

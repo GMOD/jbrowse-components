@@ -397,11 +397,19 @@ export function getHitMenuItems(
 // Right-click menu over the pileup: the hit items above, plus mate-view,
 // filter, copy and feature-detail actions for the read itself. Split out of the
 // model to mirror trackMenuItems (menus/index.ts).
-export function getContextMenuItems(self: ContextMenuModel): MenuItem[] {
+//
+// `sort` false drops every position-anchored sort, the same option
+// `getHitMenuItems` takes — for chain mode, whose rows are chains and whose
+// layout is handed no `sortedBy` at all, so the items would set a slot nothing
+// reads (the track menu's "Sort by..." is gated on the same condition).
+export function getContextMenuItems(
+  self: ContextMenuModel,
+  { sort = true }: { sort?: boolean } = {},
+): MenuItem[] {
   const feat = self.contextMenuFeature
   const featureId = self.contextMenuFeatureId
   const block = self.contextMenuBlock
-  const items = getHitMenuItems(self)
+  const items = getHitMenuItems(self, { sort })
 
   // Split on what each item actually needs. The id says "the cursor is over a
   // read" the moment the menu opens; the feature says which read, an RPC later.
@@ -424,7 +432,7 @@ export function getContextMenuItems(self: ContextMenuModel): MenuItem[] {
     // them before the onClick fires). Only the position-anchored criteria
     // appear here; "start location" / "longest reads first" are whole-pileup
     // orderings with no clicked position to anchor on.
-    if (block && self.contextMenuGenomicPos !== undefined) {
+    if (sort && block && self.contextMenuGenomicPos !== undefined) {
       const pos = self.contextMenuGenomicPos
       const { refName } = block
       items.push({

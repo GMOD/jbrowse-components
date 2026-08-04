@@ -1072,6 +1072,23 @@ export default function stateModelFactory(
         },
 
         /**
+         * #getter
+         * Whether an explicit read ordering can take effect, and so whether the
+         * ordering controls are live: there has to be a pileup to order, and
+         * chain layout is handed neither `sortedBy` nor `largeFeaturesFirst`
+         * (`buildLaidOutChainMap` takes neither) because its rows are chains,
+         * ordered by chain distance. The sibling of `canCollapseGroupRows`, and
+         * read by both surfaces that can set an ordering — the track menu's
+         * "Sort by..." and the context menu's position-anchored sorts — so the
+         * two can't answer it differently. Without it a chain-mode sort was a
+         * silent no-op, and the tag mode additionally refetched the region to
+         * extract `sortTagValues` (it is in `rpcProps`) that nothing reads.
+         */
+        get canSortReads() {
+          return self.showPileup && !self.isChainMode
+        },
+
+        /**
          * #method
          * Whether a stacked group's pileup is collapsed to just its coverage.
          */
@@ -3541,9 +3558,13 @@ export default function stateModelFactory(
               displayTypeDefault: (colorBy: ColorBy) =>
                 makeDisplayTypeDefaultControl(self, 'colorBy', colorBy),
             }),
+            // Both reasons an ordering can't take effect live in
+            // `canSortReads`; only the copy naming the one in force is here.
             getSortByMenuItem(self, {
-              disabled: !self.showPileup,
-              disabledHelpText: 'Turn on "Show pileup" to sort reads',
+              disabled: !self.canSortReads,
+              disabledHelpText: self.isChainMode
+                ? 'Chain rows are ordered by chain — turn off "View as pairs / link supplementary alignments" to sort reads'
+                : 'Turn on "Show pileup" to sort reads',
             }),
             getFiltersMenuItem(self),
             getGroupByMenuItem(self),
@@ -3562,7 +3583,9 @@ export default function stateModelFactory(
          * #method
          */
         contextMenuItems() {
-          return getContextMenuItems(self)
+          // Same gate as the track menu's "Sort by...": these write the same
+          // slot, so they can't be offered where it is ignored.
+          return getContextMenuItems(self, { sort: self.canSortReads })
         },
       }))
       // The derived, self-releasing too-large banner is opt-in via

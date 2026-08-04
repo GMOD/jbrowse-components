@@ -78,6 +78,13 @@ describe('sort menu radio selection', () => {
     },
   )
 
+  // Like the color menu's tag radio: the tag in use is otherwise invisible
+  // without reopening the dialog.
+  test('the tag radio names the tag being sorted on', () => {
+    const model = makeModel({ sortedBy: { ...sorted('tag'), tag: 'HP' } })
+    expect(checkedLabel(model)).toEqual(['Tag (HP)...'])
+  })
+
   test('exactly one radio is ever checked', () => {
     for (const model of [
       makeModel(),

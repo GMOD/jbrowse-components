@@ -188,13 +188,23 @@ function pairedEndItem(
 // ready display with zero detected types falls through to bisulfite only.
 // Bisulfite is reference-based, so it applies to any alignments display
 // regardless of MM/ML tags.
+//
+// It also shows whenever it is the ACTIVE scheme, whatever detection returned.
+// Detection is per-fetch volatile state, so a track colored by modifications —
+// from a saved session, a config, or a session-wide default — that lands on a
+// region whose reads carry no MM/ML calls otherwise dropped the only row that
+// could read as checked, leaving every radio in Color by... blank and no way
+// back to the modification settings without first navigating elsewhere.
 function modificationsItems(
   model: ModificationsModel,
   displayTypeDefault: ColorByMenuOptions['displayTypeDefault'],
 ): MenuItem[] {
   const detecting = !model.modificationsReady && !model.regionTooLarge
+  const active = model.colorBy.type === 'modifications'
+  const detected =
+    model.modificationsReady && model.detectedModificationTypes.length > 0
   return [
-    ...(model.modificationsReady && model.detectedModificationTypes.length
+    ...(active || detected
       ? [modificationsMenu(model, displayTypeDefault)]
       : []),
     ...(detecting

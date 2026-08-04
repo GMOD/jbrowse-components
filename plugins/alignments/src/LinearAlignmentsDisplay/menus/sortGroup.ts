@@ -86,6 +86,11 @@ export function getSortByMenuItem(
   // rule `checkedType` applies to the group-by radios.
   const stored = getSortMode(model)
   const mode = modes.includes(stored) ? stored : 'position'
+  // Name the tag once one is picked ("Tag (HP)..."), like the color menu's tag
+  // radio: tag is the only mode whose choice has a parameter, and it was
+  // otherwise invisible without reopening the dialog.
+  const sortTag =
+    model.sortedBy?.type === 'tag' ? model.sortedBy.tag : undefined
   // Rows that only write an ordering keep the menu open by their radio type;
   // `tag` opens a dialog, so it passes false — the one asymmetry in the group,
   // and the only thing spelled out per row.
@@ -118,7 +123,7 @@ export function getSortByMenuItem(
     }),
     tag: radio(
       'tag',
-      'Tag...',
+      sortTag ? `Tag (${sortTag})...` : 'Tag...',
       () => {
         getSession(model).queueDialog(handleClose => [
           SortByTagDialog,
@@ -168,8 +173,11 @@ export type GroupByMenuModel = GroupByDialogModel & {
 // against what it was handed, so a stored-but-unoffered dimension ticks "None"
 // here without this call site restating the rule.
 export function getGroupByMenuItem(model: GroupByMenuModel) {
+  const { groupBy } = model
+  // Named like the sort and color menus' tag rows once a tag is picked.
+  const groupTag = groupBy?.type === 'tag' ? groupBy.tag : undefined
   return groupByRadioMenuItem({
-    current: model.groupBy?.type,
+    current: groupBy?.type,
     options: pickGroupByOptions(...offeredGroupByTypes(model.isChainMode)),
     onSelect: type => {
       model.setGroupBy({ type })
@@ -180,7 +188,7 @@ export function getGroupByMenuItem(model: GroupByMenuModel) {
     extra: [
       {
         type: 'tag',
-        label: 'Tag...',
+        label: groupTag ? `Tag (${groupTag})...` : 'Tag...',
         onClick: () => {
           getSession(model).queueDialog(handleClose => [
             GroupByDialog,

@@ -435,6 +435,23 @@ describe('color by modifications menu', () => {
     other.colorBy = { type: 'modifications' }
     expect(byLabel(other, 'Cytosine context')).toBeFalsy()
   })
+
+  // Detection is per-fetch volatile state, so a track colored by modifications
+  // can land on a region whose reads carry no MM/ML calls. Dropping the submenu
+  // then left the whole Color by... menu with nothing checked.
+  test('the submenu stays while it is the active scheme, with nothing detected', () => {
+    const model = makeModModel([])
+    model.colorBy = { type: 'modifications' }
+    expect(byLabel(model, BY_TYPE)).toBeTruthy()
+    expect(allItems(model).some(i => 'checked' in i && i.checked)).toBe(true)
+  })
+
+  test('a ready display with no detected types and another scheme active omits it', () => {
+    const model = makeModModel([])
+    model.colorBy = { type: 'normal' }
+    expect(byLabel(model, BY_TYPE)).toBeFalsy()
+    expect(byLabel(model, 'Bisulfite / EM-seq')).toBeTruthy()
+  })
 })
 
 // A display that composes the alignments state model (LGVSyntenyDisplay does)
