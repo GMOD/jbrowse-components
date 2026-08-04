@@ -133,7 +133,11 @@ const LDCanvas = observer(function LDCanvas({
   const width = view.totalWidthPxWithoutBorders
   const {
     showLegend,
-    ldMetric,
+    // the metric the loaded values ACTUALLY are, not the one asked for. A
+    // pre-computed file with no D' column downgrades a 'dprime' request to r²,
+    // and the cell ramp already follows the data (`d.metric`), so a label off
+    // the config would name a statistic that is not on screen.
+    effectiveLdMetric,
     lineZoneHeight,
     squashToHeight,
     ldCanvasHeight,
@@ -264,13 +268,13 @@ const LDCanvas = observer(function LDCanvas({
           item={hoveredItem}
           x={mousePosition.x}
           y={mousePosition.y}
-          ldMetric={ldMetric}
+          ldMetric={effectiveLdMetric}
           signedLD={signedLD}
         />
       ) : null}
       {showLegend ? (
         <LDColorLegend
-          ldMetric={ldMetric}
+          ldMetric={effectiveLdMetric}
           signedLD={signedLD}
           idSuffix={model.id}
         />

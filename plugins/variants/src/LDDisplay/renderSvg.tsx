@@ -39,7 +39,7 @@ function LdSvgBody({
   const { rpcData } = self
 
   const {
-    ldMetric,
+    effectiveLdMetric,
     showLegend,
     showRecombination,
     lineZoneHeight,
@@ -127,7 +127,7 @@ function LdSvgBody({
       </SvgClipRect>
       {showLegend ? (
         <LDSVGColorLegend
-          ldMetric={ldMetric}
+          ldMetric={effectiveLdMetric}
           width={visibleWidth}
           signedLD={signedLD}
           idSuffix={self.id}
