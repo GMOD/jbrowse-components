@@ -45,7 +45,11 @@ const Rubberband = observer(function Rubberband({
         ref={ref}
         onMouseDown={range.mouseDown}
         onMouseMove={range.mouseMove}
-        onMouseOut={range.mouseOut}
+        // mouseleave, not mouseout, matching the other useRangeSelect instance
+        // (TracksContainer): mouseout bubbles from every child, so crossing a
+        // refName or coordinate label inside the scalebar cleared the guide and
+        // the next mousemove put it straight back
+        onMouseLeave={range.mouseOut}
       >
         {ControlComponent}
       </div>

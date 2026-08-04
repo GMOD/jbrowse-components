@@ -32,7 +32,7 @@ const MiniControls = observer(function MiniControls({
   model: LinearGenomeViewModel
 }) {
   const { classes } = useStyles()
-  const { id, hideHeader, scalebarOnly } = model
+  const { id, scalebarOnly } = model
   const { focusedViewId } = getSession(model)
   return (
     <Paper className={classes.background}>
@@ -66,12 +66,11 @@ const MiniControls = observer(function MiniControls({
             )}
           </IconButton>
         </Tooltip>
-        {hideHeader ? (
-          <>
-            <ZoomButton model={model} direction="out" small />
-            <ZoomButton model={model} direction="in" small />
-          </>
-        ) : null}
+        {/* the header's own zoom controls are gone whenever this renders (its
+        only mount is the `hideHeader` branch of LinearGenomeViewContainer), so
+        these are unconditional rather than re-testing hideHeader */}
+        <ZoomButton model={model} direction="out" small />
+        <ZoomButton model={model} direction="in" small />
       </Paper>
     </Paper>
   )

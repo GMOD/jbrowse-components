@@ -230,6 +230,11 @@ function resolveNavEndpoint({
   return { index, offset: side === 'left' ? leftEdge : rightEdge }
 }
 
+// Widget id of the hierarchical track selector. One id, shared by the two
+// helpers below, since `isTrackSelectorVisible` identifies the widget by id
+// rather than by holding a reference to it.
+const TRACK_SELECTOR_WIDGET_ID = 'hierarchicalTrackSelector'
+
 /**
  * Add (or reuse) the hierarchical track-selector widget for this view. Returns
  * the widget alongside the (narrowed) session so callers can show/hide it.
@@ -239,12 +244,28 @@ function openTrackSelectorWidget(self: IAnyStateTreeNode) {
   if (isSessionModelWithWidgets(session)) {
     const selector = session.addWidget(
       'HierarchicalTrackSelectorWidget',
-      'hierarchicalTrackSelector',
+      TRACK_SELECTOR_WIDGET_ID,
       { view: self },
     )
     return { session, selector }
   }
   throw new Error('session does not support widgets')
+}
+
+/**
+ * Whether the track selector is the drawer widget on screen right now. One
+ * spelling for the `isTrackSelectorOpen` getter (which lights up the header
+ * button) and for `toggleTrackSelector` (which decides hide-vs-show) — the
+ * `!minimized` term is exactly the kind of thing that goes into one of two
+ * hand-written copies and not the other.
+ */
+function isTrackSelectorVisible(self: IAnyStateTreeNode) {
+  const session = getSession(self)
+  return (
+    isSessionModelWithWidgets(session) &&
+    session.visibleWidget?.id === TRACK_SELECTOR_WIDGET_ID &&
+    !session.minimized
+  )
 }
 
 /**
@@ -797,12 +818,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #method
        * rendered height of a single track, collapsing to a fixed height when
        * minimized. Shared by trackHeights and getTrackYOffset so the two can't
-       * disagree.
+       * disagree. Reads `activeDisplay` — the display TrackContainer actually
+       * mounts — rather than re-picking `displays[0]`, so the view's height math
+       * can't diverge from what is on screen.
        */
       trackHeight(track: (typeof self.tracks)[number]) {
         return track.minimized
           ? MINIMIZED_TRACK_HEIGHT
-          : track.displays[0].height
+          : track.activeDisplay.height
       },
 
       /**
@@ -1289,9 +1312,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       toggleTrackSelector() {
         const { session, selector } = openTrackSelectorWidget(self)
-        const isVisible =
-          session.visibleWidget?.id === selector.id && !session.minimized
-        if (isVisible) {
+        if (isTrackSelectorVisible(self)) {
           session.hideWidget(selector)
         } else {
           session.showWidget(selector)
@@ -1610,12 +1631,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get isTrackSelectorOpen() {
-        const session = getSession(self)
-        return (
-          isSessionModelWithWidgets(session) &&
-          session.visibleWidget?.id === 'hierarchicalTrackSelector' &&
-          !session.minimized
-        )
+        return isTrackSelectorVisible(self)
       },
     }))
     .views(self => ({
