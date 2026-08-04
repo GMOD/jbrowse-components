@@ -1,3 +1,5 @@
+import { DEFAULT_GAP_BREAK_MULTIPLE } from '@jbrowse/wiggle-core'
+
 import { processFeaturesFromArrays } from '../util.ts'
 import { buildSourceRenderData } from './buildSourceRenderData.ts'
 
@@ -29,6 +31,7 @@ const baseGpuProps: WiggleGpuProps = {
   renderingType: 'xyplot',
   isDensityMode: false,
   bicolorPivot: 0,
+  maxGapMultiple: DEFAULT_GAP_BREAK_MULTIPLE,
 }
 
 describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () => {
@@ -128,5 +131,56 @@ describe('buildSourceRenderData pos/neg coloring', () => {
     expect(pos!.color).toEqual(neg!.color)
     expect(pos!.rowIndex).toBe(0)
     expect(neg!.rowIndex).toBe(0)
+  })
+})
+
+// The interpolated line is the only rendering that connects across bins, so it
+// is the only one that needs a hole threshold. Computed once per layer here so
+// the Canvas2D draw and the GPU instance encoding read the same number rather
+// than each deriving one.
+describe('buildSourceRenderData gapLimitBp', () => {
+  // 3 features 10bp wide starting every 100bp: centers 5, 105, 205, so the mean
+  // center spacing is 100 and the default multiple puts the limit at 500.
+  function spacedData(): WiggleDataResult {
+    const arrays = processFeaturesFromArrays(
+      {
+        starts: new Int32Array([0, 100, 200]),
+        ends: new Int32Array([10, 110, 210]),
+        scores: new Float32Array([1, 2, 3]),
+        minScores: undefined,
+        maxScores: undefined,
+        count: 3,
+      },
+      0,
+    )
+    return { sources: [{ name: 'default', ...arrays }] }
+  }
+
+  test('set from the mean point spacing for linecenter', () => {
+    const [layer] = buildSourceRenderData(spacedData(), {
+      ...baseGpuProps,
+      renderingType: 'linecenter',
+    })
+    expect(layer!.gapLimitBp).toBe(100 * DEFAULT_GAP_BREAK_MULTIPLE)
+  })
+
+  test('left unset for renderings that never bridge bins', () => {
+    for (const renderingType of ['xyplot', 'line', 'scatter', 'density']) {
+      const [layer] = buildSourceRenderData(spacedData(), {
+        ...baseGpuProps,
+        renderingType,
+        isDensityMode: renderingType === 'density',
+      })
+      expect(layer!.gapLimitBp).toBeUndefined()
+    }
+  })
+
+  test('maxGapMultiple 0 keeps one connected line', () => {
+    const [layer] = buildSourceRenderData(spacedData(), {
+      ...baseGpuProps,
+      renderingType: 'linecenter',
+      maxGapMultiple: 0,
+    })
+    expect(layer!.gapLimitBp).toBe(Number.POSITIVE_INFINITY)
   })
 })

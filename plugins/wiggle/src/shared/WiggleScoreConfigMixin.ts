@@ -124,6 +124,14 @@ export function WiggleScoreConfigMixin() {
       },
       /**
        * #getter
+       * Interpolated-line gap threshold, as a multiple of the track's own mean
+       * point spacing (see gapBreakLimit). 0 keeps one connected line.
+       */
+      get maxGapMultiple(): number {
+        return getConf(confNode(self), 'maxGapMultiple')
+      },
+      /**
+       * #getter
        */
       get summaryScoreMode(): string {
         return getConf(confNode(self), 'summaryScoreMode')

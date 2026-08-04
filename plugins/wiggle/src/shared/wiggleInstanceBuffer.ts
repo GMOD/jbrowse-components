@@ -29,6 +29,11 @@ export function interleaveInstances(
     // colorAbgr when absent.
     const colorsAbgr = source.colorsAbgr
     const n = source.numFeatures
+    // Center-to-center distance past which the center-line treats the span as a
+    // hole. Read off the layer rather than recomputed here, so the sentinel this
+    // writes and the break drawLineCenter takes are one decision, not two that
+    // can drift (see buildSourceRenderData's layerGapLimitBp).
+    const gapLimitBp = source.gapLimitBp ?? Number.POSITIVE_INFINITY
     for (let i = 0; i < n; i++) {
       const pi = i * 2
       const score = scores[i]!
@@ -36,25 +41,40 @@ export function interleaveInstances(
       const currEnd = positions[pi + 1]!
       const prevAdj = i > 0 && positions[pi - 1] === currStart
       const nextAdj = i < n - 1 && positions[pi + 2] === currEnd
+      // A hole ahead of this feature is encoded exactly like the source start:
+      // NO_PREV_START collapses the capsule, so the run restarts here instead of
+      // one chord spanning the hole. Only the center-line pass reads
+      // prevStartEnd/prevScoreLine, so this costs the other modes nothing.
+      const prevLinked =
+        i > 0 &&
+        (currStart + currEnd) / 2 -
+          (positions[pi - 2]! + positions[pi - 1]!) / 2 <=
+          gapLimitBp
       u32[off + FIELD_OFFSET_F32.startEnd] = currStart
       u32[off + FIELD_OFFSET_F32.startEnd + 1] = currEnd
       f32[off + FIELD_OFFSET_F32.score] = score
       // Center-line pass (RENDERING_TYPE_LINE_CENTER) draws one segment per
       // feature from the previous feature's bp midpoint to this one's. It
-      // connects *every* consecutive pair within a source — NOT only bp-adjacent
-      // ones — so sporadic non-tiling bins (small gaps in reduced BigWig data)
-      // don't dash the line. prevStartEnd carries the previous feature's span
+      // connects consecutive pairs regardless of bp-adjacency, so the sporadic
+      // non-tiling bins reduced BigWig data is full of don't dash the line —
+      // only a hole past `gapLimitBp` breaks the run. prevStartEnd carries the
+      // previous feature's span
       // (the shader averages it in clip space, exactly as it does the current
       // feature's, so the joint lands on one point); prevScoreLine the previous
       // real score (prevScore is zeroed at gaps for the step-line, so the
       // center-line needs its own). NO_PREV_START (0xffffffff, larger than any
-      // genomic coord) marks the source start so the shader collapses that first
-      // quad to nothing. Both unused by other modes.
-      u32[off + FIELD_OFFSET_F32.prevStartEnd] =
-        i > 0 ? positions[pi - 2]! : 0xffffffff
-      u32[off + FIELD_OFFSET_F32.prevStartEnd + 1] =
-        i > 0 ? positions[pi - 1]! : 0
-      f32[off + FIELD_OFFSET_F32.prevScoreLine] = i > 0 ? scores[i - 1]! : 0
+      // genomic coord) marks the source start — or a hole wider than
+      // gapLimitBp — so the shader collapses that quad to nothing. Both unused
+      // by other modes.
+      u32[off + FIELD_OFFSET_F32.prevStartEnd] = prevLinked
+        ? positions[pi - 2]!
+        : 0xffffffff
+      u32[off + FIELD_OFFSET_F32.prevStartEnd + 1] = prevLinked
+        ? positions[pi - 1]!
+        : 0
+      f32[off + FIELD_OFFSET_F32.prevScoreLine] = prevLinked
+        ? scores[i - 1]!
+        : 0
       // The shader's line pass draws three segments per feature:
       //   v0–v1: vertical at startX from prevScore → score (transition in)
       //   v2–v3: horizontal at score across [startX, endX]

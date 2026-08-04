@@ -10,6 +10,7 @@ function makeSource(
   scores: number[],
   starts: number[],
   ends: number[],
+  gapLimitBp?: number,
 ): SourceRenderData {
   const positions = new Uint32Array(scores.length * 2)
   for (let i = 0; i < scores.length; i++) {
@@ -22,6 +23,7 @@ function makeSource(
     numFeatures: scores.length,
     color: [1, 0, 0],
     rowIndex: 0,
+    gapLimitBp,
   }
 }
 
@@ -203,5 +205,41 @@ describe('interleaveInstances', () => {
       expect(readInstance(buf, 1).prevStart).toBe(a)
       expect(readInstance(buf, 1).prevEnd).toBe(b)
     })
+  })
+})
+
+// The center-line connects consecutive pairs regardless of bp-adjacency, so a
+// hole is the only thing that may break the run — encoded as the same
+// NO_PREV_START the source start uses, which collapses that capsule in the
+// shader. buildSourceRenderData supplies the threshold so this and
+// drawLineCenter break in the same places.
+describe('interleaveInstances center-line gap breaks', () => {
+  // bins at 0..10, 10..20, then a hole, then 1000..1010
+  const starts = [0, 10, 1000]
+  const ends = [10, 20, 1010]
+  const scores = [1, 2, 3]
+
+  test('a gap past gapLimitBp restarts the run', () => {
+    const buf = interleaveInstances([makeSource(scores, starts, ends, 50)], 3)
+    // the in-run feature still links to its predecessor
+    expect(readInstance(buf, 1).prevStart).toBe(0)
+    expect(readInstance(buf, 1).prevScoreLine).toBe(1)
+    // the one across the hole does not
+    expect(readInstance(buf, 2).prevStart).toBe(NO_PREV_START)
+    expect(readInstance(buf, 2).prevScoreLine).toBe(0)
+  })
+
+  test('a gap within gapLimitBp stays connected', () => {
+    const buf = interleaveInstances([makeSource(scores, starts, ends, 5000)], 3)
+    expect(readInstance(buf, 2).prevStart).toBe(10)
+    expect(readInstance(buf, 2).prevScoreLine).toBe(2)
+  })
+
+  // Every other rendering shares this buffer but never reads prevStartEnd, and
+  // buildSourceRenderData leaves the limit unset for them.
+  test('no limit means one connected run, as before', () => {
+    const buf = interleaveInstances([makeSource(scores, starts, ends)], 3)
+    expect(readInstance(buf, 2).prevStart).toBe(10)
+    expect(readInstance(buf, 2).prevScoreLine).toBe(2)
   })
 })

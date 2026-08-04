@@ -36,6 +36,13 @@ export interface SourceRenderData {
   // then tinted. When present it overrides `color` per feature in both backends;
   // `color` stays the single-color fallback (and the legend/first-color source).
   colorsAbgr?: Uint32Array
+  // Center-to-center bp distance past which the interpolated (linecenter) line
+  // treats the span as a hole and starts a new run instead of drawing a chord
+  // across it. Computed once per layer by buildSourceRenderData (see
+  // gapBreakLimit) precisely so the two backends can't derive different numbers
+  // — the Canvas2D path reads it directly, the GPU path has it baked into the
+  // instance buffer as a NO_PREV_START sentinel. `undefined` never breaks.
+  gapLimitBp?: number
 }
 
 export interface WiggleRenderingBackend {

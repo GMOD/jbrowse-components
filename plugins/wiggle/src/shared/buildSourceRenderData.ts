@@ -1,7 +1,9 @@
 import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
+import { gapBreakLimit } from '@jbrowse/wiggle-core'
 
 import { getEffectiveScores } from '../util.ts'
 import {
+  RENDERING_TYPE_LINE_CENTER,
   RENDERING_TYPE_XYPLOT,
   isOverlayMode,
   isScatterMode,
@@ -101,6 +103,35 @@ export interface WiggleGpuProps {
   // and a change refetches), but the whiskers bands are colored on the main
   // thread and need the same threshold.
   bicolorPivot: number
+  // How many mean point spacings apart two interpolated-line points may be
+  // before the span counts as a hole (see gapBreakLimit). Lives in gpuProps,
+  // not the render state, because the break is baked into the instance buffer
+  // at encode time — so a change re-fires the per-region autorun and re-uploads
+  // rather than needing a shader uniform.
+  maxGapMultiple: number
+}
+
+// The center-to-center bp distance at which the interpolated line stops
+// connecting. Both backends read the single number computed here rather than
+// deriving their own, so an encoded break and a drawn break can't disagree.
+// Only linecenter connects across bins at all, so every other rendering leaves
+// it undefined and pays nothing.
+function layerGapLimitBp(
+  featurePositions: Uint32Array,
+  numFeatures: number,
+  multiple: number,
+  isLineCenter: boolean,
+) {
+  if (!isLineCenter || numFeatures < 3) {
+    return undefined
+  }
+  const last = (numFeatures - 1) * 2
+  return gapBreakLimit({
+    first: (featurePositions[0]! + featurePositions[1]!) / 2,
+    last: (featurePositions[last]! + featurePositions[last + 1]!) / 2,
+    count: numFeatures,
+    multiple,
+  })
 }
 
 export function buildSourceRenderData(
@@ -115,9 +146,12 @@ export function buildSourceRenderData(
     renderingType,
     isDensityMode,
     bicolorPivot,
+    maxGapMultiple,
   } = gpuProps
   const overlay = isOverlayMode(renderingType)
   const scatter = isScatterMode(renderingType)
+  const lineCenter =
+    renderingTypeToInt(renderingType) === RENDERING_TYPE_LINE_CENTER
   // Filled bars (xyplot, incl. multi-row/overlay variants) need whiskers split
   // by sign for correct back-to-front stacking; line/scatter/density don't.
   const filled = renderingTypeToInt(renderingType) === RENDERING_TYPE_XYPLOT
@@ -156,7 +190,16 @@ export function buildSourceRenderData(
         pivot: bicolorPivot,
       })
       for (const layer of layers) {
-        result.push({ ...layer, rowIndex: row })
+        result.push({
+          ...layer,
+          rowIndex: row,
+          gapLimitBp: layerGapLimitBp(
+            layer.featurePositions,
+            layer.numFeatures,
+            maxGapMultiple,
+            lineCenter,
+          ),
+        })
       }
     }
   }

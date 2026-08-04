@@ -107,9 +107,9 @@ export const SINGLE_WIGGLE_SOURCE_NAME = 'default'
 // Shared by the render executor and the clustering score matrix so the two
 // agree on what an un-annotated feature is called — they key their outputs off
 // the same source list.
-export function groupFeaturesBySource<T extends { get: (key: string) => unknown }>(
-  features: T[],
-) {
+export function groupFeaturesBySource<
+  T extends { get: (key: string) => unknown },
+>(features: T[]) {
   return groupBy(features, f => {
     const source = f.get('source')
     return source === undefined || source === null ? '' : `${source}`

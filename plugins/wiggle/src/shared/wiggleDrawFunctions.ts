@@ -258,9 +258,16 @@ export function drawLine({
 }
 
 // Point-to-point line: connects the score at each feature's bp midpoint to its
-// neighbor's, instead of the stepped bar-tops drawLine traces. Connects every
-// consecutive pair within the layer (moveTo only at the first), so sporadic
-// non-tiling bins in reduced data don't dash the line.
+// neighbor's, instead of the stepped bar-tops drawLine traces. Connects
+// consecutive pairs regardless of bp-adjacency, so sporadic non-tiling bins in
+// reduced data don't dash the line — only a hole wider than `gapLimitBp` breaks
+// the run, and that threshold is the layer's own (see buildSourceRenderData), so
+// this and the GPU's NO_PREV_START encoding break in the same places.
+//
+// A break opens a new subpath with a zero-length segment rather than a bare
+// moveTo: under the round caps this mode already sets, that paints a dot, which
+// is what the shader's collapsed capsule draws at the same spot. Without it an
+// isolated point between two holes would vanish on Canvas2D and show on the GPU.
 export function drawLineCenter({
   ctx,
   source,
@@ -289,12 +296,14 @@ export function drawLineCenter({
   const positions = source.featurePositions
   const scores = source.featureScores
   const { screenStartPx, screenEndPx, reversed, start, end } = block
+  const gapLimitBp = source.gapLimitBp ?? Number.POSITIVE_INFINITY
   let lastAbgr = NO_COLOR
   let penX = 0
   let penY = 0
   for (let i = 0; i < n; i++) {
+    const pi = i * 2
     const x1 = bpToScreenPx(
-      positions[i * 2]!,
+      positions[pi]!,
       start,
       end,
       screenStartPx,
@@ -302,7 +311,7 @@ export function drawLineCenter({
       reversed,
     )
     const x2 = bpToScreenPx(
-      positions[i * 2 + 1]!,
+      positions[pi + 1]!,
       start,
       end,
       screenStartPx,
@@ -311,6 +320,13 @@ export function drawLineCenter({
     )
     const cx = (x1 + x2) / 2
     const cy = scoreToY(scores[i]!) + rowTop
+    // Measured in bp, not px: the GPU encodes the same break from bp positions,
+    // and a px comparison would drift from it wherever a block is clipped.
+    const linked =
+      i > 0 &&
+      (positions[pi]! + positions[pi + 1]!) / 2 -
+        (positions[pi - 2]! + positions[pi - 1]!) / 2 <=
+        gapLimitBp
     // Each segment runs from the previous midpoint to this one and takes this
     // instance's color, same as the shader's per-feature capsule.
     if (colorsAbgr) {
@@ -319,16 +335,21 @@ export function drawLineCenter({
         if (lastAbgr !== NO_COLOR) {
           ctx.stroke()
           ctx.beginPath()
-          ctx.moveTo(penX, penY)
+          if (linked) {
+            ctx.moveTo(penX, penY)
+          }
         }
         ctx.strokeStyle = abgrToCssRgba(c)
         lastAbgr = c
       }
     }
-    if (i > 0) {
+    if (linked) {
       ctx.lineTo(cx, cy)
     } else {
+      // zero-length subpath = a round-capped dot, matching the shader's
+      // collapsed capsule; the next linked point extends it into a line
       ctx.moveTo(cx, cy)
+      ctx.lineTo(cx, cy)
     }
     penX = cx
     penY = cy

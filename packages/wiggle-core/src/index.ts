@@ -72,3 +72,5 @@ export type {
 export { type WiggleGpuDisplayModel } from './displayModel.ts'
 
 export { collectWiggleTransferables } from './transferables.ts'
+
+export { DEFAULT_GAP_BREAK_MULTIPLE, gapBreakLimit } from './gapBreak.ts'

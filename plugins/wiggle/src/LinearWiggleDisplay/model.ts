@@ -239,6 +239,7 @@ export default function stateModelFactory(
           isDensityMode: self.isDensityMode,
           renderingType: self.renderingType,
           bicolorPivot: self.bicolorPivot,
+          maxGapMultiple: self.maxGapMultiple,
         }
       },
     }))

@@ -1,6 +1,10 @@
 import { getFillProps, getStrokeProps, maxFinite } from '@jbrowse/core/util'
 import { bpOffsetInRegion } from '@jbrowse/core/util/Base1DUtils'
-import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core'
+import {
+  DEFAULT_GAP_BREAK_MULTIPLE,
+  YSCALEBAR_LABEL_OFFSET,
+  gapBreakLimit,
+} from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
 const FILL_COLOR = 'rgba(59, 130, 246, 0.2)'
@@ -56,17 +60,15 @@ const RecombinationTrack = observer(function RecombinationTrack({
   // (unmeasured); maxFinite ignores them so one gap can't blow up the scale.
   const maxValue = maxFinite(recombination.values, 0.1)
 
-  // Build SVG path for the recombination line
-  const points: string[] = []
-  let firstX: number | undefined
-  let lastX: number | undefined
   // Number of SNPs = number of recombination values + 1 (n-1 values for n SNPs)
   const numSnps = recombination.values.length + 1
 
+  const plotted: [number, number][] = []
   for (let i = 0; i < recombination.values.length; i++) {
     const value = recombination.values[i]!
-    // Skip unmeasured (NaN) pairs: the line bridges the gap rather than drawing a
-    // spurious spike, and the index-based x still aligns with the SNP columns.
+    // Skip unmeasured (NaN) pairs rather than plotting a spurious spike. One or
+    // two skipped in a row is jitter the line should span; a long run of them is
+    // a hole, which `runs` below breaks on.
     if (!Number.isFinite(value)) {
       continue
     }
@@ -78,21 +80,53 @@ const RecombinationTrack = observer(function RecombinationTrack({
       // Uniform positioning: midpoint at (i + 1) / numSnps
       x = ((i + 1) * width) / numSnps
     }
-    const y = topPadding + plotHeight * (1 - value / maxValue)
-    firstX ??= x
-    lastX = x
-    points.push(
-      `${points.length === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`,
-    )
+    plotted.push([x, topPadding + plotHeight * (1 - value / maxValue)])
   }
 
-  if (points.length < 2 || firstX === undefined || lastX === undefined) {
+  if (plotted.length < 2) {
     return null
   }
 
-  // Create area path (fill under the line)
+  // Split into runs at the holes. Without this the curve joined the two sides of
+  // a long unmeasured stretch with one straight diagonal — a shape that reads as
+  // a real trend across a span where nothing was measured at all. Measured in px
+  // (the space this strip is laid out in) against the curve's own mean point
+  // spacing, so it holds whether x came from genomic positions or from the
+  // uniform index layout, where a run of k skipped pairs is k times the pitch.
+  // Same rule the wiggle plugin's interpolated line uses; see gapBreakLimit.
+  const gapLimitPx = gapBreakLimit({
+    first: plotted[0]![0],
+    last: plotted.at(-1)![0],
+    count: plotted.length,
+    multiple: DEFAULT_GAP_BREAK_MULTIPLE,
+  })
+  const runs: [number, number][][] = [[]]
+  for (const [i, point] of plotted.entries()) {
+    if (i > 0 && point[0] - plotted[i - 1]![0] > gapLimitPx) {
+      runs.push([])
+    }
+    runs.at(-1)!.push(point)
+  }
+
+  const draw = ([x, y]: [number, number]) => `${x.toFixed(1)} ${y.toFixed(1)}`
+  // A single-point run still emits its zero-length segment so the round cap
+  // paints it as a dot — otherwise an isolated measurement between two holes
+  // disappears entirely.
+  const linePath = runs
+    .map(run => `M ${draw(run[0]!)} ${run.map(p => `L ${draw(p)}`).join(' ')}`)
+    .join(' ')
+
+  // Each run closes its own area, so the fill stops at the hole instead of
+  // sweeping under it.
   const baseY = topPadding + plotHeight
-  const areaPath = `${points.join(' ')} L ${lastX.toFixed(1)} ${baseY.toFixed(1)} L ${firstX.toFixed(1)} ${baseY.toFixed(1)} Z`
+  const areaPath = runs
+    .map(
+      run =>
+        `M ${run[0]![0].toFixed(1)} ${baseY.toFixed(1)} ` +
+        `${run.map(p => `L ${draw(p)}`).join(' ')} ` +
+        `L ${run.at(-1)![0].toFixed(1)} ${baseY.toFixed(1)} Z`,
+    )
+    .join(' ')
 
   // For SVG export, use getFillProps/getStrokeProps to separate alpha into opacity
   if (exportSVG) {
@@ -100,10 +134,11 @@ const RecombinationTrack = observer(function RecombinationTrack({
       <g>
         <path d={areaPath} {...getFillProps(FILL_COLOR)} />
         <path
-          d={points.join(' ')}
+          d={linePath}
           fill="none"
           {...getStrokeProps(STROKE_COLOR)}
           strokeWidth={1.5}
+          strokeLinecap="round"
         />
       </g>
     )
@@ -122,10 +157,11 @@ const RecombinationTrack = observer(function RecombinationTrack({
     >
       <path d={areaPath} fill={FILL_COLOR} />
       <path
-        d={points.join(' ')}
+        d={linePath}
         fill="none"
         stroke={STROKE_COLOR}
         strokeWidth={1.5}
+        strokeLinecap="round"
       />
     </svg>
   )

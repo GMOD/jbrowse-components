@@ -599,3 +599,66 @@ describe('per-instance colors reach every Canvas2D draw fn', () => {
     expect(mock.strokeStyles).toEqual(['rgb(128,128,128)'])
   })
 })
+
+// The interpolated line bridges non-adjacent bins on purpose (sporadic gaps in
+// reduced BigWig data must not dash it), so only a hole past the layer's
+// gapLimitBp breaks the run. The threshold is computed once in
+// buildSourceRenderData and carried on the layer, so these breaks land in the
+// same places the GPU's NO_PREV_START encoding puts them.
+describe('drawLineCenter gap breaks', () => {
+  const centerState = {
+    ...lineState,
+    renderingType: RENDERING_TYPE_LINE_CENTER,
+  }
+  // block maps 1000bp onto 800px, so 1bp = 0.8px. Centers at 50, 150 and 700bp
+  // => 40, 120 and 560px. The last gap is 550bp, the first 100bp.
+  function drawWithLimit(gapLimitBp?: number) {
+    const mock = createMockCanvas()
+    drawWiggleToCtx(
+      mock.ctx as unknown as CanvasRenderingContext2D,
+      {
+        rpcDataMap: new Map([
+          [
+            0,
+            [
+              {
+                ...makeSource([5, 5, 5], [0, 100, 650], [100, 200, 750]),
+                gapLimitBp,
+              },
+            ],
+          ],
+        ]),
+        encode: (s: SourceRenderData[]) => s,
+      },
+      [lineBlock],
+      centerState,
+    )
+    return mock.ctx
+  }
+
+  test('no limit connects every consecutive pair (previous behavior)', () => {
+    const ctx = drawWithLimit()
+    const moves = ctx.moveTo.mock.calls as [number, number][]
+    const lines = ctx.lineTo.mock.calls as [number, number][]
+    // one moveTo to open, then a segment to each subsequent midpoint
+    expect(moves).toHaveLength(1)
+    expect(moves[0]![0]).toBeCloseTo(40)
+    expect(lines.map(l => l[0])).toEqual([40, 120, 560])
+  })
+
+  test('a hole past the limit restarts the run instead of drawing a chord', () => {
+    // 300bp limit: the 100bp gap stays connected, the 550bp one breaks
+    const ctx = drawWithLimit(300)
+    const moves = ctx.moveTo.mock.calls as [number, number][]
+    const lines = ctx.lineTo.mock.calls as [number, number][]
+    expect(moves.map(m => m[0])).toEqual([40, 560])
+    // no segment spans 120 -> 560; the second run opens with its own dot
+    expect(lines.map(l => l[0])).toEqual([40, 120, 560])
+    expect(lines.at(-1)).toEqual(moves.at(-1))
+  })
+
+  test('a limit wider than every gap leaves the line whole', () => {
+    const ctx = drawWithLimit(10_000)
+    expect(ctx.moveTo.mock.calls).toHaveLength(1)
+  })
+})

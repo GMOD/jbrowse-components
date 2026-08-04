@@ -1,3 +1,5 @@
+import { DEFAULT_GAP_BREAK_MULTIPLE } from '@jbrowse/wiggle-core'
+
 import { buildSourceRenderData } from '../../shared/buildSourceRenderData.ts'
 import {
   SINGLE_WIGGLE_SOURCE_NAME,
@@ -76,6 +78,7 @@ function singleGpuProps(
     negColor: m.negColor,
     summaryScoreMode: m.summaryScoreMode,
     isDensityMode: m.isDensityMode,
+    maxGapMultiple: DEFAULT_GAP_BREAK_MULTIPLE,
     renderingType: m.renderingType,
     bicolorPivot: m.bicolorPivot,
   }
