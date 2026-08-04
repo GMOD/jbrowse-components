@@ -2,6 +2,8 @@ import { useLayoutEffect } from 'react'
 
 import { alpha, useTheme } from '@mui/material'
 
+import { searchTokens } from './searchTokens.ts'
+
 import type { RefObject } from 'react'
 
 const HIGHLIGHT_NAME = 'jbrowse-search'
@@ -30,20 +32,29 @@ function getTextNodes(root: Element): Text[] {
   return nodes
 }
 
-// Pure DOM scan: every non-overlapping, case-insensitive match of queryLower
-// within root becomes a Range. queryLower is assumed already lowercased and
+// Pure DOM scan: every case-insensitive match of any token within root becomes
+// a Range. Tokens come from searchTokens, so they are already lowercased and
 // non-empty (an empty needle would match at every offset and never advance).
-function collectMatchRanges(root: Element, queryLower: string): Range[] {
+//
+// Per token, not per query, because that is what the search itself matches: a
+// row is a hit when every token appears somewhere in it, in any field, so
+// "e coli" finds Escherichia coli — a string the whole query is not a substring
+// of. Highlighting the raw query left every multi-word search with no highlight
+// at all. Ranges from different tokens may overlap; the CSS Highlight API
+// unions them.
+export function collectMatchRanges(root: Element, tokens: string[]): Range[] {
   const ranges: Range[] = []
   for (const textNode of getTextNodes(root)) {
     const textLower = textNode.textContent.toLowerCase()
-    let idx = textLower.indexOf(queryLower)
-    while (idx !== -1) {
-      const range = new Range()
-      range.setStart(textNode, idx)
-      range.setEnd(textNode, idx + queryLower.length)
-      ranges.push(range)
-      idx = textLower.indexOf(queryLower, idx + queryLower.length)
+    for (const token of tokens) {
+      let idx = textLower.indexOf(token)
+      while (idx !== -1) {
+        const range = new Range()
+        range.setStart(textNode, idx)
+        range.setEnd(textNode, idx + token.length)
+        ranges.push(range)
+        idx = textLower.indexOf(token, idx + token.length)
+      }
     }
   }
   return ranges
@@ -62,10 +73,10 @@ export function useSearchHighlight(
     if (typeof CSS !== 'undefined') {
       setHighlightStyle(alpha(theme.palette.textHighlight.main, 0.45))
       const container = containerRef.current
-      const queryLower = query.trim().toLowerCase()
-      if (container && queryLower) {
+      const tokens = searchTokens(query)
+      if (container && tokens.length) {
         const highlight = new Highlight()
-        for (const range of collectMatchRanges(container, queryLower)) {
+        for (const range of collectMatchRanges(container, tokens)) {
           highlight.add(range)
         }
         CSS.highlights.set(HIGHLIGHT_NAME, highlight)
