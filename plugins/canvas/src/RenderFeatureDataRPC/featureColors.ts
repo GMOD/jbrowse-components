@@ -12,3 +12,15 @@ export const UTR_DEFAULT_COLOR = '#357089'
 // writes it and the getter that recognizes it must share this one string.
 export const STRAND_COLOR_JEXL =
   "jexl:get(feature,'strand')==1?'tomato':get(feature,'strand')==-1?'cornflowerblue':'goldenrod'"
+
+// The "color by attribute" expression: a per-value random color, so each
+// distinct value of the attribute gets its own stable color. Like
+// STRAND_COLOR_JEXL this IS compared against the stored slot value — the
+// `colorByAttribute` getter reads the attribute name back out of it — so the
+// dialog that writes it and anything else producing one must agree on the shape.
+// Generic, so the return type is the exact template rather than `string`: that
+// is what lets a caller outside this package pin its own copy against this one
+// at compile time (see @jbrowse/img's applyTrackOpts).
+export function attributeColorJexl<T extends string>(attribute: T) {
+  return `jexl:randomColor(get(feature,'${attribute}'))` as const
+}

@@ -293,6 +293,24 @@ describe('color routing', () => {
     )
   })
 
+  // the canvas analogue of alignments' `color:tag:X`: color by a per-feature
+  // value rather than a fixed scheme. `colorByAttribute` reads the name back out
+  // of this expression, so the shape has to be the one the display writes.
+  test('color:attribute:<name> builds the per-attribute expression', () => {
+    for (const category of ['feature', 'variant'] as const) {
+      const { snap } = buildDisplaySnapshot(category, [
+        'color:attribute:gene_biotype',
+      ])
+      expect(snap.color).toBe("jexl:randomColor(get(feature,'gene_biotype'))")
+    }
+  })
+
+  test('color:attribute with no attribute name rejects', () => {
+    expect(() => buildDisplaySnapshot('feature', ['color:attribute'])).toThrow(
+      /Missing color:attribute value/,
+    )
+  })
+
   test('color warns on a hic track, which has no color slot of either kind', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
     const { snap } = buildDisplaySnapshot('hic', ['color:red'])

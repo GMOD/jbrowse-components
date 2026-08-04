@@ -2,9 +2,13 @@ import { trackMatches, trackName } from './trackFields.ts'
 
 import type { AssertNever, AssertTrue, Covers, Track } from './types.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'
+import type {
+  COMPACTNESS_PRESETS,
+  LinearAlignmentsDisplayModel,
+} from '@jbrowse/plugin-alignments'
 import type {
   STRAND_COLOR_JEXL,
+  attributeColorJexl,
   LinearBasicDisplayModel,
 } from '@jbrowse/plugin-canvas'
 import type { LinearHicDisplayModel } from '@jbrowse/plugin-hic'
@@ -101,15 +105,28 @@ export function resolveTrackId(
 }
 
 // Per-read height for the alignments compactness presets (spacing is derived
-// from the height in the display, not stored). Mirrors COMPACTNESS_PRESETS in
-// plugin-alignments (kept local to avoid a cross-plugin value import for three
-// stable numbers); the canvas feature display expresses the same idea through
-// its `displayMode` config slot instead.
+// from the height in the display, not stored). The canvas feature display
+// expresses the same idea through its `displayMode` config slot instead.
+//
+// Duplicated rather than value-imported for the same reason as
+// STRAND_COLOR_JEXL_LOCAL below — plugin-alignments is a devDependency here,
+// used for display types alone. The assertion under it is the drift protection
+// the old "three stable numbers" comment relied on a human for: every upstream
+// preset must be present with that preset's exact featureHeight, so a renamed,
+// added or resized preset fails the build.
 const ALIGNMENTS_COMPACTNESS = {
   normal: 7,
   compact: 3,
   'super-compact': 1,
-}
+} as const
+
+export type AssertCompactnessMatchesUpstream = AssertTrue<
+  typeof ALIGNMENTS_COMPACTNESS extends {
+    [K in keyof typeof COMPACTNESS_PRESETS]: (typeof COMPACTNESS_PRESETS)[K]['featureHeight']
+  }
+    ? true
+    : false
+>
 
 // What `color:strand` writes into the canvas displays' `color` slot. That slot
 // holds a CSS color or a jexl expression, and `colorByMode` reports 'strand'
@@ -124,6 +141,28 @@ const ALIGNMENTS_COMPACTNESS = {
 // string. Same trade as ALIGNMENTS_COMPACTNESS above.
 const STRAND_COLOR_JEXL_LOCAL =
   "jexl:get(feature,'strand')==1?'tomato':get(feature,'strand')==-1?'cornflowerblue':'goldenrod'" satisfies typeof STRAND_COLOR_JEXL
+
+// The other expression those displays read back rather than treat as opaque:
+// `colorByAttribute` pulls the attribute name out of it with a regex. Pinned the
+// same way — upstream's is generic so its return type is the exact template, and
+// `satisfies` on the whole function type fails if that template changes.
+const attributeColorJexlLocal = (<T extends string>(attribute: T) =>
+  `jexl:randomColor(get(feature,'${attribute}'))` as const) satisfies typeof attributeColorJexl
+
+// The canvas displays' `color` slot holds a CSS color or a jexl expression. Two
+// named modes map onto the exact expressions the display reads back; anything
+// else is passed through as a literal color.
+function canvasColor(value: string, arg: string | undefined) {
+  if (value === 'strand') {
+    return STRAND_COLOR_JEXL_LOCAL
+  } else if (value === 'attribute') {
+    return attributeColorJexlLocal(
+      parseStr('color:attribute', arg ?? '', 'attribute name'),
+    )
+  } else {
+    return value
+  }
+}
 
 // The `heightMode` config-slot values, pinned to the upstream union so a mode
 // added or renamed there fails the build here rather than leaving the CLI
@@ -510,35 +549,33 @@ const modifiers: Record<string, Modifier> = {
   // `color:` asks the same question of every track type, but each display
   // answers it through a different slot, so this routes rather than writing one
   // key. Alignments pick a color SCHEME (`colorBy`, with an optional tag);
-  // wiggle and the canvas-based displays take a `color` string. `color:strand`
-  // means the same thing everywhere: alignments have a scheme by that name, and
-  // for canvas it is the exact jexl `colorByMode` reads back as strand mode.
+  // wiggle and the canvas-based displays take a `color` string. The named modes
+  // line up across track types: `color:strand` colors by strand everywhere it
+  // applies, and `color:attribute:X` is the canvas analogue of alignments'
+  // `color:tag:X` — color by a per-feature value rather than a fixed scheme.
   color: {
     on: ALL,
-    apply: (r, v, tag, category) => {
+    apply: (r, v, arg, category) => {
       const value = parseStr('color', v, 'color scheme or CSS color')
       if (category === 'alignments') {
-        r.snap.colorBy = { type: value, tag }
+        r.snap.colorBy = { type: value, tag: arg }
       } else if (category === 'hic') {
-        // The hic display has no color slot of either kind
+        // the hic display has no color slot of either kind
         console.warn(
           'Warning: track option "color" has no effect on a hic track',
         )
-      } else {
-        // Wiggle: render in one solid color. The bicolor default routes through
+      } else if (category === 'wiggle') {
+        // Render in one solid color. The bicolor default routes through
         // pos/negColor and ignores `color`; the display config's own
         // `colorImpliesSolid` preProcessSnapshot turns bicolor off for a bare
         // `color`, so don't restate it here — that would also override an
         // explicit `useBicolor` from the JSON escape hatch.
-        //
-        // Feature/variant: the same `color` slot on LinearCanvasBaseDisplay,
-        // which takes a CSS color or a jexl expression. A jexl with more than
-        // one colon can't survive this modifier's `split(':')`, so anything
-        // beyond the strand built-in goes through the JSON escape hatch.
-        r.snap.color =
-          value === 'strand' && category !== 'wiggle'
-            ? STRAND_COLOR_JEXL_LOCAL
-            : value
+        r.snap.color = value
+      } else {
+        // Feature/variant: LinearCanvasBaseDisplay's `color`. A jexl with more
+        // than one colon can't survive this modifier's `split(':')`, so beyond
+        // the two named modes an expression goes through the JSON escape hatch.
+        r.snap.color = canvasColor(value, arg)
       }
     },
   },

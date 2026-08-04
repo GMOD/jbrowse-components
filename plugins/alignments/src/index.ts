@@ -39,6 +39,10 @@ export {
   linearAlignmentsDisplayStateModelFactory,
 } from './LinearAlignmentsDisplay/index.ts'
 export type { LinearAlignmentsDisplayModel } from './LinearAlignmentsDisplay/model.ts'
+// The fixed read-height presets, exported so a caller that writes `featureHeight`
+// without going through the menu can use the same three numbers. @jbrowse/img
+// pins its own copy against this one's literal types, so the two cannot drift.
+export { COMPACTNESS_PRESETS } from './LinearAlignmentsDisplay/menus/compactnessPresets.ts'
 export {
   collapseGroupRowsItems,
   copyFeatureInfo,

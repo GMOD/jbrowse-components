@@ -122,6 +122,28 @@ test('color:strand splits a feature track by strand', async () => {
   )
 })
 
+// The canvas analogue of alignments' color:tag:X — one stable color per distinct
+// value of the attribute, via the same randomColor jexl the display's own
+// "Color by attribute" dialog writes.
+test('color:attribute:<name> gives each attribute value its own color', async () => {
+  const plain = fillCounts(await renderGff())
+  const byType = fillCounts(await renderGff('color:attribute:type'))
+  assert.equal(
+    plain[GOLDENROD],
+    134,
+    'baseline paints every feature the one goldenrod default',
+  )
+  assert.equal(
+    byType[GOLDENROD],
+    undefined,
+    'no feature should still carry the default color',
+  )
+  assert.ok(
+    Object.keys(byType).length > Object.keys(plain).length + 5,
+    `expected a color per feature type, got ${Object.keys(byType).length}`,
+  )
+})
+
 test('color:<css color> repaints a variant track', async () => {
   const vcf = path.join(volvox, 'volvox.filtered.vcf.gz')
   const render = (...opts) =>

@@ -6,6 +6,8 @@ import { getEnv } from '@jbrowse/mobx-state-tree'
 import { TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { attributeColorJexl } from '../../RenderFeatureDataRPC/featureColors.ts'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -35,9 +37,7 @@ const ColorByAttributeDialog = observer(function ColorByAttributeDialog({
 }) {
   const [attribute, setAttribute] = useState(initialAttribute)
   const trimmed = attribute.trim()
-  const expression = trimmed
-    ? `jexl:randomColor(get(feature,'${trimmed}'))`
-    : ''
+  const expression = trimmed ? attributeColorJexl(trimmed) : ''
   const jexl = getEnv<{ pluginManager: PluginManager }>(model).pluginManager
     .jexl
   const error = expression ? jexlError(expression, jexl) : undefined
