@@ -109,7 +109,58 @@ function buildInventory() {
       }
     }
   }
+  assertInventoryParsed(declsBySlot, displaySlots)
   return { declsBySlot, displaySlots, schemaCount }
+}
+
+// A regex over generated markdown degrades SILENTLY: if the table format shifts,
+// fewer rows match, the inventory shrinks, and every doc passes because nothing
+// is known to be checkable any more. That is not hypothetical — the first
+// version of this file matched only the linked ``[`stringEnum`](…)`` spelling
+// and so knew nothing about any `maybeStringEnum` / `stringArray` slot, which
+// read as "no schema defines this" rather than as a parse failure.
+//
+// So pin a few canaries: slots whose kind is stable and which between them
+// cover both row spellings and both enum flavours. If the generator's format
+// moves, this fails loudly and names the parser as the thing to fix, rather than
+// letting the gate go quiet.
+function assertInventoryParsed(
+  declsBySlot: Map<string, { kind: string; enumValues?: Set<string> }[]>,
+  displaySlots: Set<string>,
+) {
+  const problems: string[] = []
+  const canaries: [string, string][] = [
+    ['autoscale', 'stringEnum'], // linked spelling
+    ['displayMode', 'maybeStringEnum'], // bare spelling
+    ['jexlFilters', 'stringArray'], // bare, non-enum
+    ['height', 'number'], // linked, non-enum
+    ['showSoftClipping', 'maybeBoolean'], // linked, promotable
+  ]
+  for (const [name, kind] of canaries) {
+    if (!declsBySlot.get(name)?.some(d => d.kind === kind)) {
+      problems.push(`  expected a \`${kind}\` declaration of \`${name}\``)
+    }
+  }
+  // guards against a wholesale parse failure that still happens to catch the
+  // canaries; the real numbers are ~300 slots over ~110 schemas
+  if (declsBySlot.size < 200) {
+    problems.push(`  only ${declsBySlot.size} slot names parsed, expected 200+`)
+  }
+  if (displaySlots.size < 50) {
+    problems.push(
+      `  only ${displaySlots.size} display slots parsed, expected 50+`,
+    )
+  }
+  if (problems.length) {
+    console.error(
+      'check-doc-slots could not read docs/config/ properly, so it would ' +
+        'have passed without checking anything:\n' +
+        problems.join('\n') +
+        '\n\nThe generated slot-table format probably changed. Fix SLOT_ROW in ' +
+        'this file to match it again.',
+    )
+    process.exit(1)
+  }
 }
 
 // Could this declaration hold this literal string?
