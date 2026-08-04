@@ -20,6 +20,18 @@ and [progressiveCactus](https://github.com/ComparativeGenomicsToolkit/cactus)
 build these graphs, and [odgi](https://github.com/pangenome/odgi) manipulates
 them.
 
+A bacterial pangenome is often built the other way, from annotations rather than
+from sequence: [Panaroo](https://github.com/gtonkinhill/panaroo),
+[Roary](https://sanger-pathogens.github.io/Roary/) and
+[PPanGGOLiN](https://github.com/labgem/PPanGGOLiN) cluster genes across
+assemblies and report which genomes carry each cluster, split into a core and an
+accessory set. That answers a gene-level question this page's tracks answer at
+the base level, and the two do not fully overlap. A gene cluster no reference
+carries has no reference coordinate, so it cannot be drawn on the K12 axis at
+all, while the projections here place every base of the graph that K12 shares.
+Use the gene-level tools for the gene table, and these for where the sequence
+sits.
+
 :::caution Experimental
 
 The graph view is a beta plugin, and this tutorial covers experimental ideas. We
