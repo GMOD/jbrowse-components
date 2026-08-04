@@ -41,3 +41,5 @@ export function configSchemaFactory() {
     },
   )
 }
+
+export type DotplotDisplayConfigSchema = ReturnType<typeof configSchemaFactory>

@@ -27,7 +27,7 @@ import { getCigarOpAtInstance, getTooltip } from './components/util.ts'
 import type { SyntenyGeometry } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 import type { ClickCoord } from './components/util.ts'
-import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { LinearSyntenyDisplayConfigSchema } from './configSchemaF.ts'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -156,7 +156,7 @@ function getFeatureAtIndex(data: SyntenyFeatureData, i: number): FeatPos {
  * }
  * ```
  */
-function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
+function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
   return types
     .compose(
       'LinearSyntenyDisplay',

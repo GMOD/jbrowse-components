@@ -34,4 +34,8 @@ function configSchemaFactory() {
   )
 }
 
+export type LinearSyntenyDisplayConfigSchema = ReturnType<
+  typeof configSchemaFactory
+>
+
 export default configSchemaFactory

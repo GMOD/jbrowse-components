@@ -23,7 +23,7 @@ import type {
 } from '../DotplotView/model.ts'
 import type { DotplotInstanceData } from './dotplotRenderingBackendTypes.ts'
 import type { DotplotRpcData } from './types.ts'
-import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { DotplotDisplayConfigSchema } from './configSchema.ts'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LodTier, SyntenyColorBy } from '@jbrowse/synteny-core'
@@ -33,7 +33,7 @@ import type { ThemeOptions } from '@mui/material'
  * #stateModel DotplotDisplay
  * #category display
  */
-export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
+export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
   return types
     .compose(
       'DotplotDisplay',
