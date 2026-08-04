@@ -1,10 +1,7 @@
 import { addDisposer, addMiddleware, getPath } from '@jbrowse/mobx-state-tree'
 
 import type { LinearGenomeViewModel } from './model.ts'
-import type {
-  IAnyStateTreeNode,
-  IMiddlewareEvent,
-} from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode, IMiddlewareEvent } from '@jbrowse/mobx-state-tree'
 
 /**
  * The single source of truth for which LinearGenomeView actions can be
@@ -62,7 +59,7 @@ interface LinkableViews {
  * sync. Used by linear-comparative-view and breakpoint-split-view.
  */
 export function installLinkedViewSync(
-  self: IAnyStateTreeNode & LinkableViews,
+  self: IStateTreeNode & LinkableViews,
   syncActions: readonly SyncableViewAction[],
 ) {
   addDisposer(

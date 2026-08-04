@@ -7,7 +7,7 @@ import { findSubfeatureById } from '../baseModelHelpers.ts'
 
 import type { SequenceHoverPosition } from '@jbrowse/core/BaseFeatureWidget'
 import type { Feature } from '@jbrowse/core/util'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 // The core feature sequence panel, wired to a canvas display: the painting
 // ships only slim render arrays, so the full feature (with its subfeatures, on
@@ -20,7 +20,7 @@ const FeatureSequenceDialog = observer(function FeatureSequenceDialog({
   assemblyName,
   handleClose,
 }: {
-  model: IAnyStateTreeNode & {
+  model: IStateTreeNode & {
     setSequenceHoverPosition: (pos: SequenceHoverPosition | undefined) => void
     fetchFullFeature: (
       featureId: string,

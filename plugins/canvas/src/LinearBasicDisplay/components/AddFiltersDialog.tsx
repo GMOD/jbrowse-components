@@ -3,13 +3,13 @@ import { getEnv } from '@jbrowse/mobx-state-tree'
 import { observer } from 'mobx-react'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const AddFiltersDialog = observer(function AddFiltersDialog({
   model,
   handleClose,
 }: {
-  model: IAnyStateTreeNode & {
+  model: IStateTreeNode & {
     activeFilters: () => string[]
     setJexlFilters: (arg?: string[]) => void
   }

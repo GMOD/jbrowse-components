@@ -1,4 +1,4 @@
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
  * The RPC cache key both display families invalidate on: the display's
@@ -20,7 +20,7 @@ import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
  * `.views()` chains.
  */
 export function serializeRpcProps(
-  self: IAnyStateTreeNode & { rpcProps?: () => unknown },
+  self: IStateTreeNode & { rpcProps?: () => unknown },
 ) {
   const { rpcProps } = self
   return rpcProps ? JSON.stringify(rpcProps.call(self)) : ''

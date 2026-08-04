@@ -27,7 +27,7 @@ import { getSlotDefinition } from './slotFacade.ts'
 import { isUsableValue } from './slotShape.ts'
 
 import type { AnyConfigurationModel } from './types.ts'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
  * Everything the cascade needs to read a promotable slot: the display type it
@@ -42,7 +42,7 @@ import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
  * nothing to a display but a config slot, which `setConf` reaches through
  * `configuration`.
  */
-export type ResolvableDisplay = IAnyStateTreeNode & {
+export type ResolvableDisplay = IStateTreeNode & {
   type: string
   configuration: AnyConfigurationModel
 }

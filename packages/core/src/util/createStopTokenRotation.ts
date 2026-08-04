@@ -5,7 +5,7 @@ import { createStopToken, stopStopToken } from './stopToken.ts'
 
 import type { RpcStatus } from './progress.ts'
 import type { StopToken } from './stopToken.ts'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 interface StatusReporter {
   setStatusMessage: (status?: RpcStatus) => void
@@ -46,9 +46,7 @@ export interface ActiveFetch {
  * `installComparativeFetchAutorun`, which wraps this with their shared
  * debounce/flags/commit skeleton) and the multi-sample-variant sources fetch.
  */
-export function createStopTokenRotation(
-  self: IAnyStateTreeNode & StatusReporter,
-) {
+export function createStopTokenRotation(self: IStateTreeNode & StatusReporter) {
   let currentStopToken: StopToken | undefined
   // One window for this display, reopened per fetch so each new fetch reports
   // its first status immediately. Without it these displays wrote an observable

@@ -1,7 +1,7 @@
 import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 // A keyed lookup of refNames — satisfied by both Set<string> and
 // Map<string, ...> (e.g. BpRegionIndex.entries).
@@ -80,7 +80,7 @@ export async function detectAssembliesSwapped({
  * the session's assemblyManager.
  */
 export function detectDisplayAssembliesSwapped(
-  self: IAnyStateTreeNode & { adapterConfig: Record<string, unknown> },
+  self: IStateTreeNode & { adapterConfig: Record<string, unknown> },
   topAssembly: string | undefined,
   bottomAssembly: string | undefined,
 ) {

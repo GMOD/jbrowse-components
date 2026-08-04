@@ -3,7 +3,10 @@ import HighlightIcon from '@mui/icons-material/Highlight'
 
 import type { GridBookmarkModel } from './GridBookmarkWidget/model.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type {
+  IAnyStateTreeNode,
+  IStateTreeNode,
+} from '@jbrowse/mobx-state-tree'
 
 // get-or-create the singleton GridBookmark widget and bring it to front
 export function activateBookmarkWidget(node: IAnyStateTreeNode) {
@@ -52,7 +55,7 @@ export function toggleHighlightsMenuItem(self: IAnyStateTreeNode): MenuItem {
 // single checkbox for the interactive chip (link icon + context menu) drawn on
 // each band. Disabled while highlights are hidden
 export function toggleHighlightChipsMenuItem(
-  self: IAnyStateTreeNode & ChipToggleableView,
+  self: IStateTreeNode & ChipToggleableView,
 ): MenuItem {
   const session = getSession(self)
   return {

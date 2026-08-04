@@ -30,7 +30,7 @@ import type {
 } from './util/index.ts'
 import type {
   IAnyModelType,
-  IAnyStateTreeNode,
+  IStateTreeNode,
   IAnyType,
 } from '@jbrowse/mobx-state-tree'
 import type { ComponentType } from 'react'
@@ -149,7 +149,7 @@ function logCallbackError(name: string, error: unknown) {
 // a feature-detail widget carries trackId/trackType (undefined when the
 // producing track was closed), which is what lets a panel scope itself to a
 // track
-type FeatureWidgetModel = IAnyStateTreeNode & {
+type FeatureWidgetModel = IStateTreeNode & {
   trackId?: string
   trackType?: string
 }

@@ -53,7 +53,7 @@ import type {
 // assemblyNames in the config editor did not invalidate it. The reads are
 // per-view-change, not per-feature, so MobX's own computed caching is enough.
 export function getTrackAssemblyNames(
-  track: IAnyStateTreeNode & { configuration: AnyConfigurationModel },
+  track: IStateTreeNode & { configuration: AnyConfigurationModel },
 ) {
   return getConfAssemblyNames(track.configuration)
 }

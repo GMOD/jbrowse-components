@@ -29,7 +29,7 @@ import { fetchTrackData } from './fetchTrackData.ts'
 import type { AnyConfigurationModel } from '../../../configuration/index.ts'
 import type { Region } from '../../../util/index.ts'
 import type { FileTypeExporter } from '../saveTrackFileTypes/types.ts'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const useStyles = makeStyles()({
   root: { width: '80em' },
@@ -66,7 +66,7 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
   model,
   handleClose,
 }: {
-  model: IAnyStateTreeNode & {
+  model: IStateTreeNode & {
     configuration: AnyConfigurationModel
     saveTrackFileFormatOptions: () => Record<string, FileTypeExporter>
   }

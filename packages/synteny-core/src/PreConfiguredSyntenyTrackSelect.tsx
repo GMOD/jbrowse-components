@@ -9,7 +9,7 @@ import { pickSyntenyTrackId } from './getSyntenyTracks.ts'
 
 import type { ImportFormSyntenyModel } from './SelectorTypes.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
  * Pre-configured track picker shared by the synteny and dotplot import forms: a
@@ -26,7 +26,7 @@ const PreConfiguredSyntenyTrackSelect = observer(
     emptyState,
     children,
   }: {
-    model: IAnyStateTreeNode & ImportFormSyntenyModel
+    model: IStateTreeNode & ImportFormSyntenyModel
     tracks: AnyConfigurationModel[]
     rowIndex: number
     emptyState: React.ReactNode

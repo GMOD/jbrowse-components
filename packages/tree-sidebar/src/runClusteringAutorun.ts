@@ -6,7 +6,7 @@ import { autorun } from 'mobx'
 
 import type { RpcStatus } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // Declarative counterpart to a "Cluster ..." -> "Run clustering" dialog,
@@ -36,7 +36,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // call's return value, so a callback landing after the `finally` would otherwise
 // set a status with no run behind it and pin the chip up for good.
 export function setupRunClusteringAutorun(
-  self: IAnyStateTreeNode & {
+  self: IStateTreeNode & {
     runClustering?: boolean
     setRunClustering: (arg?: boolean) => void
     setStatusMessage: (status?: RpcStatus) => void

@@ -10,7 +10,7 @@ import { attributeColorJexl } from '../../RenderFeatureDataRPC/featureColors.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 // jexl compile error for the generated expression, or undefined when it parses.
 // An attribute name containing a quote or backslash produces a malformed
@@ -29,7 +29,7 @@ const ColorByAttributeDialog = observer(function ColorByAttributeDialog({
   handleClose,
   initialAttribute = '',
 }: {
-  model: IAnyStateTreeNode & {
+  model: IStateTreeNode & {
     setFeatureColor: (arg?: string) => void
   }
   handleClose: () => void

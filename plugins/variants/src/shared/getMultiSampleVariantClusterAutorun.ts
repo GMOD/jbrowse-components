@@ -6,13 +6,13 @@ import { runGenotypeClustering } from './runGenotypeClustering.ts'
 
 import type { ReducedModel } from './clusterModelTypes.ts'
 import type { RpcStatus } from '@jbrowse/core/util'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 // The multi-sample-variant "Cluster rows by genotype" flavor of the shared
 // declarative-clustering autorun: fires once on `runClustering: true` and runs
 // the real genotype-matrix RPC over the current view regions.
 export function getMultiSampleVariantClusterAutorun(
-  self: IAnyStateTreeNode &
+  self: IStateTreeNode &
     ReducedModel & {
       clusteringReady: boolean
       runClustering?: boolean
