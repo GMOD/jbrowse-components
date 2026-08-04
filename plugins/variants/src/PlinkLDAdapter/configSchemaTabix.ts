@@ -12,10 +12,19 @@ import { types } from '@jbrowse/mobx-state-tree'
  *
  * ```bash
  * plink --bfile study --r2 --out study
- * (head -1 study.ld; tail -n +2 study.ld | sort -k1,1 -k2,2n) > study.sorted.ld
+ * { printf '#'; head -1 study.ld; tail -n +2 study.ld | sort -k1,1 -k2,2n; } \
+ *   > study.sorted.ld
  * bgzip study.sorted.ld
- * tabix -s 1 -b 2 -e 2 -S 1 study.sorted.ld.gz
+ * tabix -s 1 -b 2 -e 2 study.sorted.ld.gz
  * ```
+ *
+ * Comment the header with `#` rather than counting it with `tabix -S 1`. Both
+ * keep it out of the data, but only the commented form is what `tabix -H`
+ * prints and what readers ask for first, so a `-S 1` header is easy to miss —
+ * and missing it means missing the `DP` column, which is what makes D'
+ * available instead of only r². (Not `-c C`: that makes `C` the meta character,
+ * so every `chr1`-style data row would read as a comment.) A file already
+ * indexed with `-S 1` still loads.
  *
  * Expected columns: CHR_A BP_A SNP_A CHR_B BP_B SNP_B R2
  * Optional columns: DP (D'), MAF_A, MAF_B

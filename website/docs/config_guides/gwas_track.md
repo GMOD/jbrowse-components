@@ -73,16 +73,25 @@ genome-wide LD, bgzip and tabix the file so only pairs in the visible region are
 fetched, then use [`PlinkLDTabixAdapter`](/docs/config/plinkldtabixadapter):
 
 ```bash
-# Preserve the header, sort remaining lines by CHR_A then BP_A
-(head -1 study.ld; tail -n +2 study.ld | sort -k1,1 -k2,2n) > study.sorted.ld
+# Comment the header with '#', then sort the remaining lines by CHR_A, BP_A
+{ printf '#'; head -1 study.ld; tail -n +2 study.ld | sort -k1,1 -k2,2n; } \
+  > study.sorted.ld
 
 bgzip study.sorted.ld
-# -S 1: skip the first line (the PLINK header 'CHR_A ...'). Prefer this over
-# -c C, which skips every line starting with 'C' and so would drop all data
-# rows in a file with 'chr1'-style chromosome names
 # BP positions in PLINK output are 1-based, matching tabix's default
-tabix -s 1 -b 2 -e 2 -S 1 study.sorted.ld.gz
+tabix -s 1 -b 2 -e 2 study.sorted.ld.gz
 ```
+
+The `#` is worth the extra step. tabix keeps a header two ways: commented with
+the meta character, or counted with `-S 1`. Only the commented form is what
+`tabix -H` prints and what most readers, JBrowse included, ask for first, so a
+`-S 1` file's header is easy for a tool to miss entirely — which costs you the
+`DP` column, and with it the option of drawing D' rather than r². Don't reach
+for `-c C` to mark the header instead: that makes the meta character `C`, and
+every `chr1`-style data row would be read as a comment.
+
+A file already indexed with `-S 1` still loads; JBrowse reads the header either
+way.
 
 ## GWASAdapter
 

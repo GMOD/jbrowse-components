@@ -222,11 +222,16 @@ build_track() { # pop minmaf grid tag
   "$PLINK" --bfile common --allow-extra-chr --keep "keep.$1.txt" \
     --extract "grid.$4.snplist" --keep-allele-order "${LD_FLAGS[@]}" \
     --out "$4" >/dev/null 2>&1
-  # tabix needs the A-side sorted; the header row is kept and skipped with -S 1
-  { head -1 "$4.ld" | awk '{$1=$1}1' OFS='\t'
+  # tabix needs the A-side sorted. The header is COMMENTED rather than counted
+  # with -S 1: both keep it out of the data, but only a commented header is what
+  # `tabix -H` prints and what readers ask for first, so an -S 1 header is easy
+  # to miss — and missing it drops the DP column, which is what makes D'
+  # available rather than only r². Not -c C, which would make C the meta
+  # character and read every chr-prefixed data row as a comment.
+  { head -1 "$4.ld" | awk '{$1="#"$1}1' OFS='\t'
     tail -n +2 "$4.ld" | awk '{$1=$1}1' OFS='\t' | sort -k1,1 -k2,2n
   } | bgzip > "$4.ld.gz"
-  tabix -s 1 -b 2 -e 2 -S 1 -f "$4.ld.gz"
+  tabix -s 1 -b 2 -e 2 -f "$4.ld.gz"
   echo "  $4: $(wc -l < "grid.$4.snplist") SNPs, $(( $(zcat "$4.ld.gz" | wc -l) - 1 )) pairs, $(du -h "$4.ld.gz" | cut -f1)"
 }
 
