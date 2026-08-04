@@ -638,6 +638,18 @@
           }
         ]
       }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "ecoli_e146_ont",
+      "name": "E146 nanopore reads (vs K12)",
+      "assemblyNames": [
+        "K12"
+      ],
+      "adapter": {
+        "type": "BamAdapter",
+        "uri": "ecoli_e146_ont.bam"
+      }
     }
   ],
   "plugins": [
