@@ -40,8 +40,10 @@ import { autorun, observable, reaction } from 'mobx'
 import {
   arcColorLegendCategory,
   computeArcsByGroup,
+  computeReadChains,
 } from '../features/arcs/compute.ts'
 import { anyArcsDrawn } from '../features/arcs/types.ts'
+import { computeDerivativePaths } from '../features/derivativePaths/computePaths.ts'
 import {
   bezierConnectionLegendItems,
   enumerateBezierPairs,
@@ -122,6 +124,7 @@ import type {
   PileupDataResult,
 } from '../RenderAlignmentDataRPC/types'
 import type { ArcsUploadData } from '../features/arcs/types.ts'
+import type { DerivativeCandidate } from '../features/derivativePaths/computePaths.ts'
 import type { IndicatorHitResult } from '../features/indicator/types.ts'
 import type { ModificationHitResult } from '../features/modification/hitTest.ts'
 import type { CigarHitResult, ResolvedBlock } from '../shared/hitTestTypes.ts'
@@ -1567,6 +1570,52 @@ export default function stateModelFactory(
             settings,
             self.hiddenGroupKeys,
           )
+        },
+
+        /**
+         * #getter
+         * Derivative-allele paths the reads in view describe, most-supported
+         * first. Each read's SA chain is already an ordered, oriented list of
+         * reference intervals — a derivative path — so the proposal is a
+         * grouping of those chains rather than any new analysis.
+         *
+         * Deliberately NOT gated on `readConnections`: this reads the chains,
+         * not the arcs, and a user who wants a reconstruction should not first
+         * have to turn on a display option that draws something else.
+         */
+        get derivativePathCandidates(): DerivativeCandidate[] {
+          if (self.rpcDataMap.size === 0) {
+            return []
+          }
+          const regionInfos = [...self.loadedRegions.entries()]
+            .filter(([idx]) => self.rpcDataMap.has(idx))
+            .map(([displayedRegionIndex, r]) => ({
+              refName: r.refName,
+              start: r.start,
+              end: r.end,
+              displayedRegionIndex,
+            }))
+          const firstRegion = self.loadedRegions.values().next().value
+          const assembly = firstRegion
+            ? getSession(self).assemblyManager.get(firstRegion.assemblyName)
+            : undefined
+          // same normalizer the arcs use: an SA tag names refNames in the BAM's
+          // own spelling, and a path whose segments disagree with the view's
+          // refNames navigates nowhere
+          const canonicalRefName = assembly?.initialized
+            ? (refName: string) => assembly.getCanonicalRefName2(refName)
+            : undefined
+          // Per group, then concatenated. Grouping (by HP tag, by strand, ...)
+          // partitions reads for display and says nothing about which molecule
+          // carries which junction, so it must not partition the evidence: a
+          // path supported by four reads in two lanes is still supported by
+          // four. Chaining within a group loses nothing, because a segment
+          // sitting in another lane is named by the read's own SA tag and
+          // `unpairedReadChain` folds it in from there.
+          const chains = [...this.rawDataByGroup.values()].flatMap(byRegion =>
+            computeReadChains(byRegion, regionInfos, canonicalRefName),
+          )
+          return computeDerivativePaths({ chains })
         },
       }))
       .views(self => ({

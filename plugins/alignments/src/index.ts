@@ -65,6 +65,10 @@ export type { GroupByType } from './shared/types.ts'
 // have to be reachable from this entry or tsc names them by source path in
 // consumers' .d.ts — see scripts/check-declaration-leaks.ts.
 export type { ArcsUploadData } from './features/arcs/types.ts'
+export type {
+  DerivativeCandidate,
+  DerivativeSegment,
+} from './features/derivativePaths/computePaths.ts'
 export type { IndicatorHitResult } from './features/indicator/types.ts'
 export type { LinkedPair } from './features/linkedReads/compute.ts'
 export type { ModificationHitResult } from './features/modification/hitTest.ts'

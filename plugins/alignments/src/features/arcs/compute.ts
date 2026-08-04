@@ -246,7 +246,7 @@ function getArcColorType(args: {
   }
 }
 
-interface SegAln {
+export interface SegAln {
   refName: string
   start: number
   end: number
@@ -522,6 +522,48 @@ function unpairedReadChain(
     }
   }
   return [...byPos.values()].sort((a, b) => a.clipAtStart - b.clipAtStart)
+}
+
+/**
+ * #api
+ * Every fetched read's complete segment chain, in read order. Routed through
+ * the same `resolveReadGroup` skeleton the arcs use, so the secondary filter,
+ * the readId dedup and the mate partition are applied identically and the two
+ * cannot disagree about which segments belong to one read.
+ *
+ * The arc path turns each chain into junction arcs; `derivativePaths` reads the
+ * chains themselves to propose a derivative allele. Sharing the builder is what
+ * keeps the proposal's segment ORDER and ORIENTATION honest: read order is not
+ * genomic order across an inversion, and `unpairedReadChain` is where that is
+ * already resolved.
+ *
+ * Chains of one segment are dropped: a read with no junction describes no
+ * rearrangement.
+ */
+export function computeReadChains(
+  rpcDataMap: ReadonlyMap<number, PileupDataResult>,
+  regions: RegionInfo[],
+  canonicalRefName?: (refName: string) => string,
+): SegAln[][] {
+  const ctx: ArcChainContext = {
+    // Not the user's off-screen-mate setting: a derivative path is exactly the
+    // thing whose segments leave the current view, so the SA walk always runs.
+    // It gates arc EMISSION, and this builds no arcs.
+    drawLongRange: true,
+    canonicalRefName: canonicalRefName ?? (refName => refName),
+  }
+  const chains: SegAln[][] = []
+  for (const entries of groupReadsByName(rpcDataMap, regions).values()) {
+    chains.push(
+      ...resolveReadGroup<ReadEntry, SegAln[]>(entries, {
+        chainMate: segs => [unpairedReadChain(segs, ctx)],
+        // A mate link joins two mates of one fragment; it is not a junction on
+        // a single molecule, so it contributes no segment to a path.
+        mateLink: () => [],
+      }).filter(chain => chain.length > 1),
+    )
+  }
+  return chains
 }
 
 // The junction between two read-adjacent segments: the first segment's
