@@ -137,7 +137,17 @@ export default function CanvasFeatureGateMixin() {
        * so the verdict shares the layout cadence and doesn't flicker mid-zoom.
        */
       get visibleFeatureDensityPerPx() {
-        return self.observedMaxDensity(gateView(self).coarseBpPerPx)
+        const view = gateView(self)
+        // Nothing is on screen before the view has a width, so there is no
+        // density to observe — and asking anyway throws rather than returning
+        // an empty list, because `visibleRegions` walks the dynamic blocks and
+        // those read `width`. Reached during `afterAttach` (TrackHeightMixin's
+        // scroll clamp runs its autorun body straight away), which is before
+        // the view is measured.
+        if (!view.initialized) {
+          return 0
+        }
+        return self.observedMaxDensity(view.coarseBpPerPx)
       },
     }))
     .views(self => ({
