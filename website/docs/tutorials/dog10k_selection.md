@@ -43,7 +43,8 @@ column nor a p-value. `GWASAdapter` takes the column to read as the score
 ([`scoreColumn`](/docs/config/gwasadapter/#slot-scorecolumn)) and the transform
 to apply to it
 ([`scoreTransform`](/docs/config/gwasadapter/#slot-scoretransform)) as separate
-settings, so a differentiation statistic loads with no reshaping:
+settings, so a differentiation statistic loads with no reshaping. Fst is already
+on the scale the plot draws, so only the column has to be named:
 
 ```json
 {
@@ -55,8 +56,7 @@ settings, so a differentiation statistic loads with no reshaping:
     "type": "GWASAdapter",
     "uri": "dog10k_size_fst.bed.gz",
     "columnNames": ["chrom", "chromStart", "chromEnd", "name", "fst", "sites"],
-    "scoreColumn": "fst",
-    "scoreTransform": "none"
+    "scoreColumn": "fst"
   }
 }
 ```

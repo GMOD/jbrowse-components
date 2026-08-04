@@ -57,6 +57,11 @@ the whole block's endpoints. A reverse-strand block adds another checkbox,
 still reads left to right. **Submit** opens a two-panel synteny view on that
 position, with the liftOver track drawn as ribbons between the panels.
 
+The figure below walks those steps on a second pair, **hg38 to Mouse (mm39)
+liftOver** around _SHH_, because a cross-species target is where the tracks each
+panel ends up with are worth following. Every click is the same on the hs1 track
+this page opened with.
+
 <Figure caption="The four steps, from the hg38-to-mm39 liftOver track around SHH to the finished comparison: right-click a chain block, confirm how the target panel is framed, then the synteny view opens below the view it was launched from, 302 kb of human chr7 against the 311 kb of mouse chr5, one ribbon per chain block. The last frame adds the mouse genes and RepeatMasker on both sides: SHH sits opposite mouse Shh across the ribbons, while the two RepeatMasker bands share no pattern." src="/img/genomes_synteny/launch_sequence.png" />
 
 The panel for the assembly you launched from opens with the tracks that view had

@@ -121,7 +121,7 @@ splits a run into the four files above:
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/mcscanx_to_anchors.py
 python3 mcscanx_to_anchors.py --gff xyz.gff --collinearity xyz.collinearity \
-  --species at=grape --species pp=peach --strand-gff3 peach=peach.gff3.gz
+  --species vv=grape --species pp=peach --strand-gff3 peach=peach.gff3.gz
 ```
 
 That writes `grape.bed`, `peach.bed`, `grape.peach.anchors` and
@@ -132,7 +132,7 @@ to match the track's `assemblyNames`.
 Two options decide whether the result draws:
 
 - `--chr-prefix peach=Pp0` prepends to the refNames, and `--keep-chr-tag` leaves
-  MCScanX's tag on them. The tag is stripped by default (`at1` becomes `1`),
+  MCScanX's tag on them. The tag is stripped by default (`vv1` becomes `1`),
   because it is a requirement of MCScanX rather than a name the assembly knows,
   and BED column 1 has to match the assembly byte for byte.
 - `--strand-gff3 peach=peach.gff3.gz` recovers strand from the annotation the

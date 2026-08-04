@@ -9,7 +9,7 @@ tutorial_category: Structural variation
 ---
 
 **TL;DR:** take one large chr19 inversion out of the 1000 Genomes ensemble SV
-callset, cluster its genotypes across 3,202 samples, and then check the call
+callset, order its genotypes across 3,202 samples, and then check the call
 against the read orientation at both breakpoints rather than trusting it.
 Everything runs on a hosted demo, so no data download is needed.
 
@@ -27,10 +27,13 @@ re-analysis produced a comprehensive SV callset
 includes deletions, insertions, inversions, and translocations with per-sample
 genotypes across all 3,202 individuals.
 
-`HGSV_72999` is a roughly 730 kb inversion spanning chr19:41,797,752-42,527,236.
-It is an imprecise, manually-flagged call that overlaps neighboring complex
-(CPX) events, which is what makes it worth following: a call like this is a
-claim to be checked against the reads, not a result to read off.
+`HGSV_73318` is a roughly 1.1 Mb inversion spanning chr19:46,275,880-47,396,219.
+Its FILTER column is `ManualLQ` and its INFO carries `IMPRECISE`, and a complex
+(CPX) call sits on its left breakpoint, which is what makes it worth following:
+a call like this is a claim to be checked against the reads, not a result to
+read off. Its own frequency fields say so too. `AC=1527` of `AN=6404` is a
+common allele, and every one of those copies is in a heterozygote, with
+`N_HOMALT=0` across all 3,202 samples.
 
 The tracks are added with the usual `jbrowse add-track` workflow. The callset is
 bgzip-compressed and tabix-indexed, and the alignment tracks stream the
@@ -39,7 +42,7 @@ published high-coverage CRAMs directly from the 1000 Genomes FTP.
 In the track selector, enable the 1KGP 2022 Illumina ensemble SV callset under
 **1000 Genomes → SV callsets**, listed by its file name
 **1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf**, then navigate to
-`chr19:41,700,000-42,000,000` to start at the left breakpoint region.
+`chr19:42,749,096-47,802,386`, the window the figures below use.
 
 Everything below works the same in [JBrowse Desktop](/docs/quickstart_desktop),
 which is the better fit for your own VCF and BAM files.
@@ -52,12 +55,15 @@ so the inversion is a wide bar rather than a tick. Clicking it opens the feature
 details panel, whose **SAMPLES** section lists every sample with its genotype,
 read depth, and other per-sample fields.
 
-Rows arrive in the callset's own order, which encodes nothing, so run
-**Clustering → Cluster rows by genotype...** in the track menu. That groups
-ref/ref, het, and hom-alt samples into contiguous bands and turns the
-inversion's cohort frequency into something readable at a glance.
+Rows arrive in the callset's own order, which encodes nothing. Right-click the
+inversion and pick **Sort by genotype**: rows order by their genotype at that
+call first, then by how far each row keeps matching the rows to either side of
+it, so the carriers gather into one block that frays outward where the shared
+haplotype around the call ends. The track menu's **Clustering → Cluster rows by
+genotype...** is the other arrangement, keying every row on the whole window
+rather than on one call and drawing the dendrogram it built.
 
-<Figure caption="chr19 region containing the large inversion shown in the 1KGP SV callset alongside pileup tracks from multiple samples. The track selector panel on the right shows the 1000 Genomes track categories, and enabling 1000 Genomes → Alignments adds coverage and pileup panels per sample." src="/img/multisv.png" />
+<Figure caption="The 1KGP ensemble SV callset in the multi-sample variant display across 5 Mb of chr19, one row per sample, sorted by genotype at the inversion, with the NCBI RefSeq genes below. Each call is drawn at its real genomic span, so the inversion is the wide pale-blue block at the right with its heterozygous carriers gathered at the top of the stack, and the legend names the four genotype states." src="/img/multisv.png" />
 
 Setting the display's cell coloring to **SV type** paints each alt-carrying cell
 by its variant's structural-variant class, so the whole window becomes a map of
@@ -74,9 +80,10 @@ region holds more than one call and they are not independent.
 The genotypes are the caller's answer. The reads are what it read, and they are
 in the demo too, so the call can be checked rather than accepted.
 
-Zoom to one breakpoint (roughly chr19:41,797,752 and chr19:42,527,236) and
-enable pair-orientation coloring on a BAM track from the track menu. At the
-junction you will see:
+Zoom to one breakpoint (chr19:46,275,880 and chr19:47,396,219) and enable
+pair-orientation coloring on a BAM track from the track menu. Pick a carrier to
+open: the feature details panel's **SAMPLES** section is where to read one off,
+since at this call every carrier is heterozygous. At the junction you will see:
 
 - Green (LL) pairs, both mates mapping to the forward strand, and dark blue (RR)
   pairs, both mates mapping to the reverse strand, clustered at the junction.

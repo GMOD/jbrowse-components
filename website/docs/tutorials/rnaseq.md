@@ -63,9 +63,12 @@ intron, and 33 bp (`M`) aligned to the next. Every `N` in a read's CIGAR is one
 skipped intron.
 
 On the fly, JBrowse finds every read whose CIGAR contains a skip and draws each
-one as an arc. It also checks the splice signal (the GT/AG dinucleotides
-flanking the intron) to figure out the strand, so red arcs are forward-strand
-splice events and blue arcs are reverse-strand.
+one as an arc. The arc takes its color from the transcript strand the aligner
+recorded on the read, in the `XS`, `TS` or `ts` tag: red for forward, blue for
+reverse. A read carrying none of those tags is drawn in the no-strand color
+instead, so a BAM aligned by STAR without `--outSAMstrandField intronMotif`
+gives arcs of one neutral color. The track in the figure above is named
+`(BAM,XS)` for that reason.
 
 If you zoom into the pileup back at Normal read height, you can see each spliced
 read on its own: its two exon-aligned ends show up as grey boxes joined by a
@@ -75,11 +78,12 @@ junction. Mouse over any read to inspect it.
 
 ## Strand-specific RNA-seq
 
-The strand colors on the arcs above are inferred from the splice-site motif. A
-_strand-specific_ library (like this one) also records which strand each read's
-transcript came from. That matters wherever genes sit close together or overlap
-on opposite strands, since without strand information you can't tell which gene
-a read belongs to.
+The strand colors on the arcs above come from a per-read tag the aligner wrote
+from the splice-site motif. A _strand-specific_ library (like this one) records
+the strand a different way, in which mate of the pair the read is, so it carries
+the answer for every read rather than only for spliced ones. That matters
+wherever genes sit close together or overlap on opposite strands, since without
+strand information you can't tell which gene a read belongs to.
 
 The surfeit locus is a tightly-packed gene cluster with genes alternating
 strands (RPL7A, SURF1, SURF2, SURF4). Open the track menu and pick **Color by...

@@ -150,10 +150,10 @@ unnamed. Rather than editing the file, name them on the adapter with the
   "type": "FeatureTrack",
   "trackId": "hg008t_somatic_cnv",
   "name": "HG008-T somatic CNV",
-  "assemblyNames": ["hg38"],
+  "assemblyNames": ["GRCh38_GIABv3"],
   "adapter": {
     "type": "BedAdapter",
-    "uri": ".../GRCh38_HG008-T-V0.5_somatic-CNV_PASS.draftbenchmark.calls.bed",
+    "uri": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIST_HG008-T_somatic-stvar-CNV_DraftBenchmark_V0.5-20260318/GRCh38_HG008-T-V0.5_somatic-CNV_PASS.draftbenchmark.calls.bed",
     "columnNames": [
       "chrom",
       "start",

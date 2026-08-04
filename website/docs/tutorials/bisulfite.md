@@ -239,10 +239,10 @@ read.
 Plants run two unrelated methylation programs, and the three contexts are what
 tell them apart:
 
-| Program                         | CpG | CHG | CHH | Effect on the locus                                                                              |
-| ------------------------------- | --- | --- | --- | ------------------------------------------------------------------------------------------------ |
-| Gene body methylation (gbM)     | yes | no  | no  | None obvious, the gene stays transcribed. Maintained by MET1, depleted at the TSS and the 5' end |
-| Transposon and repeat silencing | yes | yes | yes | Heterochromatin, transcriptionally off. CMT3 maintains CHG, RdDM and CMT2 maintain CHH           |
+| Program                         | CpG | CHG | CHH | Effect on the locus                                                                             |
+| ------------------------------- | --- | --- | --- | ----------------------------------------------------------------------------------------------- |
+| Gene body methylation (gbM)     | yes | no  | no  | None obvious, the gene stays transcribed. Maintained by MET1, depleted at both ends of the gene |
+| Transposon and repeat silencing | yes | yes | yes | Heterochromatin, transcriptionally off. CMT3 maintains CHG, RdDM and CMT2 maintain CHH          |
 
 So red in the CpG row alone is gene body methylation, and red in all three rows
 is silencing. A mammalian dataset only ever populates the first column, which is

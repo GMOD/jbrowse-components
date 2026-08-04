@@ -527,8 +527,8 @@ tabix https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.links.bed.gz \
 ### What kind of sequence GRCh38 was missing
 
 The lane above says the inserted sequence is tiled by L1, but at 180 bp/px it
-cannot say whether that is unusual — a subtelomere is repeat-dense either way.
-To answer that you need the same measurement on both assemblies at the same
+cannot say whether that is unusual, since a subtelomere is repeat-dense either
+way. To answer that you need the same measurement on both assemblies at the same
 scale, which is a quantitative track rather than a display setting. This one is
 the fraction of each 5 kb bin covered by one RepeatMasker class, one lane per
 class, on GRCh38 and CHM13 alike:
@@ -591,13 +591,13 @@ all Satellite). Pin `minScore`/`maxScore` to 0 and 1 rather than autoscaling, or
 each row rescales to its own maximum and the comparison the track exists for
 disappears.
 
-<Figure caption="Repeat density by class over the last 650 kb of chr17 in each assembly, on the same 0-1 scale. Top: GRCh38, where LINE and SINE run at about the same level. Bottom: CHM13's own last 650 kb, where the LINE row is near-saturated and the SINE row is lower than GRCh38's. The sequence the older reference was missing is not generically repetitive — it is an L1 field, and it holds less Alu than the reference sequence it continues." src="/img/pangenome/hprc_repeat_classes.png" />
+<Figure caption="Repeat density by class over the last 650 kb of chr17 in each assembly, on the same 0-1 scale. Top: GRCh38, where LINE and SINE run at about the same level. Bottom: CHM13's own last 650 kb, where the LINE row is near-saturated and the SINE row is lower than GRCh38's. The sequence the older reference was missing is not generically repetitive: it is an L1 field, and it holds less Alu than the reference sequence it continues." src="/img/pangenome/hprc_repeat_classes.png" />
 
 Each pane is its own assembly's last 650 kb, not a lifted-over interval: there
 is no lift-over for sequence one of them does not have, so what is being
 compared is what each assembly ends the chromosome with. Over those two windows
 `build_repeat_density.sh` reports LINE at 13.71% against 70.05%, SINE at 13.58%
-against 10.53%, and total repeat at 37.22% against 76.37% — so a single density
+against 10.53%, and total repeat at 37.22% against 76.37%, so a single density
 lane would have shown the doubling and hidden that one class went up fivefold
 while another went down.
 
@@ -927,7 +927,7 @@ property of the data. Both scripts need htslib (`bgzip`, `tabix`) on your
 `PATH`.
 
 The [repeat-density lanes](#what-kind-of-sequence-grch38-was-missing) are their
-own script, and the only one here that touches neither the graph nor HPRC — it
+own script, and the only one here that touches neither the graph nor HPRC. It
 reads UCSC's RepeatMasker for the two assemblies and bins it:
 
 ```bash

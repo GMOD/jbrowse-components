@@ -242,7 +242,7 @@ one row each. No subadapter list and no second file:
 }
 ```
 
-<Figure caption="Gain (red) and loss (blue) frequency per 100kb across all 23 chromosomes, tallied separately for each receptor subtype and drawn one row per signal. 17q gain is confined to the HER2+ row, 5q loss and 10p gain to the triple-negative row, and 16q loss is the event the triple-negative row is missing; 1q and 8q gain are in every row. The bottom row of each block is the tumors whose receptor calls do not resolve a subtype." src="/img/tcga/cohort_cnv_recurrence_subtype.png" />
+<Figure caption="Gain (red) and loss (blue) frequency per 100kb across the 22 autosomes and chrX, tallied separately for each receptor subtype and drawn one row per signal. 17q gain is confined to the HER2+ row, 5q loss and 10p gain to the triple-negative row, and 16q loss is the event the triple-negative row is missing; 1q and 8q gain are in every row. The bottom row of each block is the tumors whose receptor calls do not resolve a subtype." src="/img/tcga/cohort_cnv_recurrence_subtype.png" />
 
 The rows can only be read against each other because
 [`minScore`](/docs/config/multilinearwiggledisplay/#slot-minscore)/[`maxScore`](/docs/config/multilinearwiggledisplay/#slot-maxscore)
