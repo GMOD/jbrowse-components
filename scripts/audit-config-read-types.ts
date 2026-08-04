@@ -1,0 +1,241 @@
+/**
+ * Reports every config read/write whose TYPE CHECKING IS OFF, and fails when the
+ * count grows.
+ *
+ * `getConf` / `resolveConf` / `setConf` derive both halves of their safety from
+ * the schema attached to `model.configuration`:
+ *
+ *   - the **slot name** is constrained to `ConfigurationSlotName<Schema>`, a
+ *     finite union of literals, so a typo is a compile error — and a typo is the
+ *     one config mistake with no runtime diagnostic either (`setSlot` assigns to
+ *     an undeclared property: nothing throws, nothing persists, and the matching
+ *     read keeps returning the default);
+ *   - the **value type** comes from `ConfigurationSlotValue<Schema, Slot>`.
+ *
+ * Both collapse the moment the schema widens to `AnyConfigurationSchemaType` —
+ * `ConfigurationSlotName` degrades to `never`/`string` and the value to `any`.
+ * That happens wherever a mixin casts its own `self` to a config holder
+ * (`confNode(self)`, `host(self)`) because a mixin's `self` genuinely doesn't
+ * know the composing display's schema. The cast is load-bearing; what is not
+ * acceptable is *not knowing how much of the codebase it covers*.
+ *
+ * `configTypeNarrowing.test.ts` guards that the machinery narrows correctly on a
+ * concrete schema. This is the other half: how many real call sites reach it.
+ *
+ * Committed as a baseline rather than a `console.warn`, for the reason the
+ * api-docs gap files already state: a warning fails nothing and scrolls past in
+ * a CI log.
+ *
+ * Run: `node scripts/audit-config-read-types.ts [--write]`
+ */
+import fs from 'fs'
+import path from 'path'
+
+import ts from 'typescript'
+
+const REPO_ROOT = path.join(import.meta.dirname, '..')
+const BASELINE = path.join(import.meta.dirname, 'configReadTypeGaps.txt')
+
+// Build the program from the root tsconfig rather than importing the api-docs
+// helper: that module lives under a looser tsconfig, and importing it drags it
+// into the strict program where it doesn't compile. Parsing the config here also
+// means this audit sees exactly the file set `pnpm typecheck` does, which is the
+// set whose types we are making claims about.
+function createProgram() {
+  const configPath = path.join(REPO_ROOT, 'tsconfig.json')
+  const read = ts.readConfigFile(configPath, f => ts.sys.readFile(f))
+  const parsed = ts.parseJsonConfigFileContent(read.config, ts.sys, REPO_ROOT)
+  const program = ts.createProgram(parsed.fileNames, parsed.options)
+  const roots = new Set(parsed.fileNames.map(f => path.resolve(f)))
+  return {
+    program,
+    sources: program
+      .getSourceFiles()
+      .filter(
+        sf => !sf.isDeclarationFile && roots.has(path.resolve(sf.fileName)),
+      ),
+  }
+}
+
+// The four config accessors. `readConfObject` takes a config node directly
+// rather than a model with `.configuration`, and has a deliberate loose overload
+// for dynamic paths, so it is reported separately and not part of the gate.
+const READERS = new Set(['getConf', 'resolveConf', 'readConfObject'])
+const WRITERS = new Set(['setConf'])
+
+type Bucket = 'source' | 'test'
+
+interface Gap {
+  file: string
+  line: number
+  callee: string
+  slot: string
+  bucket: Bucket
+}
+
+// Test fixtures build configs by hand off `ConfigurationSchema(...)` locals or
+// read through `AnyConfigurationModel` on purpose; they are listed for
+// completeness but kept out of the gate, because tightening them buys no
+// production safety and would only push people toward casts.
+function bucketFor(file: string): Bucket {
+  return /\.test\.tsx?$|[/\\]tests?[/\\]|testEnv\.ts$|testUtils\.ts$/.test(file)
+    ? 'test'
+    : 'source'
+}
+
+// Whether this read reached a concrete schema.
+//
+// Two signals don't work, and both are worth naming so they aren't retried. The
+// *parameter* type is useless: `SLOT` is inferred from the string literal you
+// passed, so the instantiated parameter is always that literal even when the
+// constraint behind it is a bare `string`. The *config node* type is nearly as
+// bad: `AnyConfigurationModel` is a real object type, not `any`, so a widened
+// holder looks concrete while `ConfigurationSlotName` of it has already degraded
+// to `string` and admits any name — verified with a `@ts-expect-error` probe on
+// the mixin idiom, which compiled clean.
+//
+// The honest signal is the read's own return type. `ConfigurationSlotValue`
+// bottoms out at `any` for exactly the widened case, which is the same thing
+// `configTypeNarrowing.test.ts` asserts against with its `Equal<T, any>` check.
+// Slot name and value type widen together, so this catches both.
+function readIsChecked(type: ts.Type) {
+  return (type.flags & ts.TypeFlags.Any) === 0
+}
+
+function main() {
+  const write = process.argv.includes('--write')
+  const gaps: Gap[] = []
+  let total = 0
+
+  {
+    const { program, sources } = createProgram()
+    const checker = program.getTypeChecker()
+
+    for (const sf of sources) {
+      if (sf.fileName.includes('/node_modules/')) {
+        continue
+      }
+      const visit = (node: ts.Node): void => {
+        if (ts.isCallExpression(node) && ts.isIdentifier(node.expression)) {
+          const callee = node.expression.text
+          const isRead = READERS.has(callee)
+          if (isRead || WRITERS.has(callee)) {
+            total++
+            const slotArg = node.arguments[1]
+            // a dynamic or array-path slot is out of scope: the loose overload
+            // is deliberate there (config editor slot facade, nested paths)
+            const isLiteralSlot = slotArg && ts.isStringLiteral(slotArg)
+            const slot = isLiteralSlot ? slotArg.text : '<dynamic>'
+            const { line } = sf.getLineAndCharacterOfPosition(node.getStart())
+            const file = path.relative(process.cwd(), sf.fileName)
+
+            // Only the readers carry a signal. `setConf` returns void, so
+            // there is nothing to inspect — but it widens with its siblings (the
+            // constraint is the same `ConfigurationSlotName`), so a holder whose
+            // reads are unchecked has unchecked writes too, and the reads are
+            // what this counts.
+            if (isLiteralSlot && isRead) {
+              if (!readIsChecked(checker.getTypeAtLocation(node))) {
+                gaps.push({
+                  file,
+                  line: line + 1,
+                  callee,
+                  slot,
+                  bucket: bucketFor(file),
+                })
+              }
+            }
+          }
+        }
+        ts.forEachChild(node, visit)
+      }
+      visit(sf)
+    }
+
+    gaps.sort((a, b) =>
+      a.file === b.file ? a.line - b.line : a.file.localeCompare(b.file),
+    )
+
+    const byFile = new Map<string, Gap[]>()
+    for (const g of gaps) {
+      const list = byFile.get(g.file)
+      if (list) {
+        list.push(g)
+      } else {
+        byFile.set(g.file, [g])
+      }
+    }
+
+    const sourceGaps = gaps.filter(g => g.bucket === 'source')
+    const lines = [
+      '# Config reads whose slot name and value type are NOT checked.',
+      '#',
+      '# Generated by `node scripts/audit-config-read-types.ts --write`.',
+      '# Each entry is a read that returned `any`, which happens exactly when the',
+      '# schema behind it widened to AnyConfigurationSchemaType. Both halves go at',
+      '# once: the value is `any`, AND `ConfigurationSlotName` degrades to `string`',
+      '# so a typo in the quoted slot name compiles. A slot-name typo is the one',
+      '# config mistake with no runtime diagnostic either — `setSlot` assigns to an',
+      '# undeclared property, so nothing throws, nothing persists, and the matching',
+      '# read keeps returning the default.',
+      '#',
+      '# Three populations, and they want different things:',
+      '#',
+      '#   - a MIXIN casting its own `self` to a widened config holder. Load-bearing',
+      '#     as written (a mixin cannot know the composing schema) and the reason a',
+      '#     per-display generated accessor module would pay for itself: generated',
+      '#     next to the concrete schema, it can name it.',
+      '#   - a `frozen`/`maybeFrozen` slot, which is `any` BY DESIGN — the escape',
+      '#     hatch for arbitrary JSON. Accepted; it will never leave this list.',
+      '#   - a factory that left its `configSchema` param at AnyConfigurationSchemaType.',
+      '#     Fixable in one line by naming the concrete schema type, which is the',
+      '#     lever CONFIG_PATTERN.md points at.',
+      '#',
+      `# ${sourceGaps.length} unchecked in source, ${gaps.length - sourceGaps.length} in tests,`,
+      `# of ${total} total config accessor calls. The gate counts source only.`,
+      '',
+      ...[...byFile].flatMap(([file, list]) => [
+        `${file}  (${list.length})${list[0]!.bucket === 'test' ? '  [test]' : ''}`,
+        ...list.map(g => `  ${g.line}\t${g.callee}('${g.slot}')`),
+      ]),
+    ]
+    const body = `${lines.join('\n')}\n`
+
+    if (write) {
+      fs.writeFileSync(BASELINE, body)
+      console.log(
+        `wrote ${BASELINE}: ${gaps.length} unchecked of ${total} calls`,
+      )
+      return 0
+    }
+
+    const previous = fs.existsSync(BASELINE)
+      ? fs.readFileSync(BASELINE, 'utf8')
+      : ''
+    const prevCount = Number(
+      /# (\d+) unchecked in source/.exec(previous)?.[1] ??
+        Number.POSITIVE_INFINITY,
+    )
+    console.log(
+      `${sourceGaps.length} unchecked in source (+${gaps.length - sourceGaps.length} in tests) of ${total} config accessor calls`,
+    )
+    if (sourceGaps.length > prevCount) {
+      console.error(
+        `\nUnchecked config slot names grew from ${prevCount} to ${gaps.length}.\n` +
+          `A new call site is reading config through a widened schema, so its\n` +
+          `slot name is unchecked and a typo there fails silently at runtime.\n` +
+          `Type the model's configSchema param to its concrete type, or — if it\n` +
+          `is genuinely a mixin — run with --write and say why in the commit.`,
+      )
+      return 1
+    }
+    if (sourceGaps.length < prevCount) {
+      console.log(
+        `Improved (${prevCount} -> ${sourceGaps.length}); re-run with --write to lower the baseline.`,
+      )
+    }
+    return 0
+  }
+}
+
+process.exitCode = main()

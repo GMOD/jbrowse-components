@@ -40,6 +40,16 @@ reclaims its own slots by redeclaring the `configuration` prop. **Generic
 threading does not rescue this — don't retry it in any form.** Guards in
 `configTypeNarrowing.test.ts` (checked by `pnpm typecheck`, not jest).
 
+`node scripts/audit-config-read-types.ts` is the other half: the narrowing test
+proves the machinery works on a concrete schema, this counts how many real call
+sites reach it (157 of 837 in source do not, baselined in
+`scripts/configReadTypeGaps.txt`; run with `--write` to re-baseline). **The
+signal is the read's return type, not the config node's** — `AnyConfigurationModel`
+is a real object type rather than `any`, so a widened holder looks concrete while
+`ConfigurationSlotName` of it has already degraded to `string`. A
+`@ts-expect-error` probe on the mixin idiom compiles clean; only the `any` return
+gives it away.
+
 ## Frozen tracks + hydration
 
 The hydration cache on `PluginManager` is load-bearing, not an optimization:
