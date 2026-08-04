@@ -30,8 +30,7 @@ export function pairSyntenyTrackIds(data: Config, a: string, b: string) {
 
 // Group synteny track ids by level. Level i sits between assembly i and i+1, so
 // a track is placed at the level whose adjacent assembly pair it compares.
-// Returns one entry per level (assemblies - 1); tracks matching no pair fall
-// back to level 0.
+// Returns one entry per level (assemblies - 1).
 export function syntenyTrackLevels(data: Config) {
   const order = data.assemblies.map(asm => asm.name)
   const levels: string[][] = order.slice(1).map(() => [])
@@ -40,7 +39,22 @@ export function syntenyTrackLevels(data: Config) {
       (name, i) =>
         i < order.length - 1 && comparesPair(track, name, order[i + 1]!),
     )
-    levels[level === -1 ? 0 : level]!.push(track.trackId)
+    if (level !== -1) {
+      levels[level]!.push(track.trackId)
+    } else if (!track.assemblyNames?.length) {
+      // Nothing to place it by. The first gap is the only guess available, and
+      // in the common two-assembly case it is the only gap there is.
+      levels[0]?.push(track.trackId)
+    } else {
+      // It names a pair, and that pair is not adjacent in the stack: an A-vs-C
+      // alignment in an A/B/C view. Level 0 would draw it between A and B,
+      // mapping coordinates through an assembly it knows nothing about, so skip
+      // it the way the dotplot skips comparisons outside its two axes. A config
+      // holding every pairwise alignment is the ordinary way to hit this.
+      console.warn(
+        `Warning: skipping synteny track "${track.trackId}" (${track.assemblyNames.join(' vs ')}) — those assemblies are not stacked next to each other`,
+      )
+    }
   }
   return levels
 }

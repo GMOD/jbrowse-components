@@ -16,18 +16,6 @@ type WiggleDisplayModel = Instance<
   ReturnType<typeof linearWiggleDisplayModelFactory>
 >
 
-// The concrete display models jb2export can drive (one per supported track
-// type). Typing this union — rather than the loose
-// `view.tracks[number].displays[number]`, whose pluggable element type permits
-// any property access — is what lets tsc catch a residual action call to a
-// method that exists on no display (e.g. a renamed raiseForceLoadLimits).
-export type TrackDisplay =
-  | LinearAlignmentsDisplayModel
-  | LinearBasicDisplayModel
-  | LinearVariantDisplayModel
-  | LinearHicDisplayModel
-  | WiggleDisplayModel
-
 // Display category: which display a track opens with, and so which snapshot keys
 // are meaningful for it. Lets us build the right snapshot before the display
 // instance exists, and gate each modifier to the track types it applies to.

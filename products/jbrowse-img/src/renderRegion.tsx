@@ -455,6 +455,29 @@ const renderCircular: ModeRenderer = async ctx => {
   return svg
 }
 
+// Options only renderLinear reads. A comparative or circular view takes its
+// tracks from its own init (or --spec), so a --track/--refseq passed to one is
+// dropped; --loc positions the sub-views of a comparative view but means nothing
+// to a circular one, which always shows the whole assembly. main.ts warns about
+// the reverse — comparative flags in a linear run — so say this here rather than
+// leave the non-linear direction silent.
+function warnLinearOnlyOptions(mode: ViewMode, opts: Opts) {
+  if (mode === 'linear') {
+    return []
+  }
+  const ignored = [
+    opts.showTracks?.length ? '--track' : '',
+    opts.refseq ? '--refseq' : '',
+    mode === 'circular' && opts.loc ? '--loc' : '',
+  ].filter(Boolean)
+  if (ignored.length) {
+    console.warn(
+      `Warning: ${ignored.join(', ')} ${ignored.length > 1 ? 'have' : 'has'} no effect on a ${mode} view`,
+    )
+  }
+  return ignored
+}
+
 // Registry of every render mode. The exhaustive Record means adding a ViewMode
 // is a compile error until a renderer is registered here.
 const modeRenderers: Record<ViewMode, ModeRenderer> = {
@@ -479,6 +502,7 @@ export async function renderRegion(opts: Opts) {
   // an explicit subcommand wins; otherwise a --spec selects its mode from the
   // view type, falling back to the default linear view
   const mode = opts.mode ?? (spec ? specMode(spec) : 'linear')
+  warnLinearOnlyOptions(mode, opts)
   try {
     const result = await modeRenderers[mode]({
       model,

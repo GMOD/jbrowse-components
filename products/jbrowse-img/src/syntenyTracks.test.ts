@@ -62,13 +62,29 @@ describe('syntenyTrackLevels', () => {
     expect(syntenyTrackLevels(data)).toEqual([[], ['hs1_mm39']])
   })
 
-  // Unlike the dotplot, synteny keeps an unplaceable track rather than dropping
-  // it — a two-assembly view has one gap and it can only mean that one.
-  test('a track matching no pair falls back to level 0', () => {
+  // Unlike the dotplot, synteny keeps a track it has no way to place rather than
+  // dropping it — a two-assembly view has one gap and it can only mean that one.
+  test('a track with no assemblyNames falls back to level 0', () => {
     const data: Config = {
       ...threeWay,
       tracks: [synteny('unlabeled', [])],
     }
     expect(syntenyTrackLevels(data)).toEqual([['unlabeled'], []])
+  })
+
+  // A config holding every pairwise alignment is the ordinary way to get one of
+  // these. Level 0 would draw hg38-vs-mm39 between hg38 and hs1, mapping
+  // coordinates through an assembly the adapter knows nothing about.
+  test('a track naming a non-adjacent pair is skipped, not put on level 0', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+    const data: Config = {
+      ...threeWay,
+      tracks: [...threeWay.tracks, synteny('hg38_mm39', ['hg38', 'mm39'])],
+    }
+    expect(syntenyTrackLevels(data)).toEqual([['hg38_hs1'], ['hs1_mm39']])
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('skipping synteny track "hg38_mm39"'),
+    )
+    warn.mockRestore()
   })
 })
