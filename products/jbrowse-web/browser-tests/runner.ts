@@ -15,8 +15,8 @@ import {
   enableCrossBackendCollection,
   runCrossBackendGate,
 } from './crossBackendGate.ts'
-import { BASICAUTH_PORT, OAUTH_PORT, PORT } from './helpers.ts'
-import { buildPath, startServer } from './server.ts'
+import { BASICAUTH_PORT, OAUTH_PORT, PORT, setPort } from './helpers.ts'
+import { buildPath, startServerOnFreePort } from './server.ts'
 import { startBasicAuthServer, startOAuthServer } from './servers.ts'
 import { snapshotConfig, snapshotUpdates } from './snapshot.ts'
 
@@ -439,7 +439,12 @@ async function main() {
   }
 
   console.log('Starting test server...')
-  const server = await startServer(PORT)
+  // published before anything builds a url, including the OAuth redirect below
+  const { server, port } = await startServerOnFreePort(PORT)
+  setPort(port)
+  if (port !== 3333) {
+    console.log(`(default port was taken; serving on ${port})`)
+  }
 
   let oauthServer: Server | undefined
   let basicAuthServer: Server | undefined
@@ -449,7 +454,7 @@ async function main() {
       console.log('Starting auth servers...')
       oauthServer = await startOAuthServer({
         port: OAUTH_PORT,
-        redirectPort: PORT,
+        redirectPort: port,
         dataPath: volvoxDataPath,
       })
       basicAuthServer = await startBasicAuthServer({

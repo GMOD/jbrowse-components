@@ -13,7 +13,13 @@ import type { Browser, ElementHandle, Page } from 'puppeteer'
 // re-exported so the suites keep importing it from './helpers'
 export { delay }
 
-export const PORT = 3333
+// Not a constant: the runner may have to move off the default when another
+// process in the worktree holds it, and every url built below has to follow.
+// Read through the live binding rather than copying it into a module scope.
+export let PORT = 3333
+export function setPort(port: number) {
+  PORT = port
+}
 export const OAUTH_PORT = 3030
 export const BASICAUTH_PORT = 3040
 
