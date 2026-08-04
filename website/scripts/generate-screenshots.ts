@@ -1390,7 +1390,7 @@ function printSummary(totals: RunTotals) {
   console.log(
     `\n${passed} ${check ? 'checked' : 'succeeded'}, ${failed} failed${
       check ? `, ${flaky.length} flaky` : `, ${kept} unchanged`
-    }${skipped > 0 ? `, ${skipped} skipped (curated / heavy remote data)` : ''}`,
+    }${skipped > 0 ? `, ${skipped} skipped (curated / heavy remote data / needs a GPU)` : ''}`,
   )
   if (changed.length > 0) {
     printReport(
@@ -1715,6 +1715,15 @@ async function main() {
     if (spec.curated) {
       console.log(
         `${progress()} ⊘ ${spec.name} (curated, keeping committed image)`,
+      )
+      skipped++
+      return
+    }
+    // Not gated on --filter, unlike heavyNetwork: naming this one in a
+    // headless run does not make it renderable, it just fails more explicitly.
+    if (spec.headedOnly && !headed) {
+      console.log(
+        `${progress()} ⊘ ${spec.name} (needs a real GPU; re-run with --headed)`,
       )
       skipped++
       return

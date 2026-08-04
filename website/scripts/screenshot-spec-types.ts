@@ -109,6 +109,15 @@ export interface BaseSpecFields {
   // gallery/hg002_dipcall was the last one, and rehosting a slice of the two
   // 1GB dipcall BAMs was the better fix than skipping it.
   heavyNetwork?: boolean
+  // spec renders correctly only against a real GPU. Headless falls back to
+  // swiftshader, and software-rasterizing a large WebGL display (a density
+  // heatmap of thousands of rows, a whole-genome view with a block per contig)
+  // pegs the main thread long enough that puppeteer's own page.evaluate times
+  // out — nothing throws, and a reader on a GPU never sees it, so a headless
+  // run fails in a way that looks like a broken figure rather than a missing
+  // rasterizer. Skipped unless --headed, keeping the committed PNG, instead of
+  // failing the run. See reference-swiftshader-pileup-zoom-stall.
+  headedOnly?: boolean
   // per-spec override of the content-stable diff gate (fraction of pixels in
   // [0,1]). Raise it for specs with irreducible render jitter — remote-data
   // timing, heavy text, animated chrome — so an unchanged capture isn't

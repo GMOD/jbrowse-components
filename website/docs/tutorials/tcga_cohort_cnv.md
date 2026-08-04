@@ -329,7 +329,7 @@ hosted, so it loads from any config today (see
 }
 ```
 
-<Figure caption="The same 1104 tumors over ERBB2 as the figure earlier on this page, clustered on this window, but read from the binned Zarr store instead of the segment BED. The amplified, gained, lost and balanced bands land in the same places because these are the same calls; the heatmap ramps continuously where the stack steps through five colors." src="/img/tcga/cohort_cnv_zarr_erbb2.png" />
+<Figure caption="The same 1104 primary tumors as the figure at the top of this page, and the same cohort recurrence above them, but read from the binned Zarr store instead of the segment BED. Clustered on the whole genome. The recurrent stripes fall in the same places because these are the same calls; the heatmap ramps continuously where the stack steps through five colors." src="/img/tcga/cohort_cnv_zarr_genome.png" />
 
 The adapter config is the store's location and nothing else: the sample list,
 the bin size and the resolution levels are attributes of the store. Each tumor's
@@ -345,7 +345,7 @@ numbers: the scale is `nice()`-rounded, so ±1.5 would quietly become the ±2 th
 color bar draws anyway.
 
 Clustering is scoped to the blocks in view either way, so the row order above is
-this window's, not the cohort's genome-wide relatedness.
+genome-wide only because the figure's view is.
 
 Binning is also the one thing this representation loses. A focal amplification
 narrower than the base 10kb bin is averaged with its neighbours rather than

@@ -16,8 +16,11 @@ const HG38_MAIN_CHROMS = [
 
 // The binned reading of the same cohort loads through its own config, because
 // the Zarr adapter arrives in a plugin and a plugin can only be declared by a
-// config — `sessionTracks` cannot carry one.
+// config — `sessionTracks` cannot carry one. That config's hg38 is the
+// chr-prefixed FASTA, matching the store's own refNames, so this is the
+// prefixed spelling of the contig list above rather than a second set.
 const TCGA_CNV_CONFIG = 'test_data/tcga_cnv/config.json'
+const HG38_MAIN_CHROMS_CHR = HG38_MAIN_CHROMS.map(c => `chr${c}`)
 
 // One row per TCGA-BRCA primary tumor (1104 of them), painted from the caller's
 // raw Segment_Mean on a diverging blue/red log2 scale. Built by
@@ -673,44 +676,35 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The same window as cohort_cnv_erbb2 above, and the same 1104 tumors, but
-  // read out of the binned Zarr store instead of the segment BED and drawn as a
-  // quantitative heatmap rather than a five-step jexl scale. Side by side the
-  // two say the same thing about the cohort, which is the point: it is the same
-  // calls, and the store is a second way of holding them.
+  // The whole cohort at whole-genome zoom, out of the binned store: the view
+  // the section is actually about, since this is where the BED has to return
+  // every segment of every tumor (5.8 MB) and the store reads one 1.2 MB level
+  // of its pyramid instead. Same composition as cohort_cnv_genome at the top of
+  // this file, so the two are directly comparable.
   //
-  // A locus rather than the whole genome, for two reasons. It is the row of the
-  // tutorial's byte table where the store is furthest ahead (411 KB to 14 KB,
-  // because 2.6 Mb segments make tabix scan back over the chromosome). And
-  // clustering is scoped to the blocks in view, so at whole-genome zoom the RPC
-  // did not settle inside a 15 minute budget here — a locus clusters in seconds
-  // and is what the sibling figure above does too.
-  //
-  // Gated on the dendrogram rather than the display's own `data-clustered`,
-  // because the tree only mounts once the cluster RPC has returned a tree.
+  // MUST be regenerated headed (`--headed`), on a real GPU. Headless falls back
+  // to swiftshader, and software-rasterizing this density heatmap across 23
+  // blocks pegs the main thread hard enough that puppeteer's own page.evaluate
+  // times out — nothing throws, nothing in JBrowse is slow, and real users on a
+  // GPU never see it. The BED figure above carries the same warning.
   {
     mode: 'url',
-    name: 'tcga/cohort_cnv_zarr_erbb2',
+    name: 'tcga/cohort_cnv_zarr_genome',
+    headedOnly: true,
     url: lgvSession(TCGA_CNV_CONFIG, {
       assembly: 'hg38',
-      loc: 'chr17:39,000,000-40,500,000',
-      // same band over ERBB2 as the BED figure, so the amplified column is tied
-      // to the gene rather than left to be located against the ruler
-      highlight: ['chr17:39,688,094-39,728,658'],
+      displayedRegionNames: HG38_MAIN_CHROMS_CHR,
       trackLabels: 'offset',
       tracks: [
         {
-          // MANE is one transcript per gene, so the lane names ERBB2 and its
-          // neighbors in a single row. Without it the highlight band over the
-          // gene is an unlabeled stripe.
-          trackId: 'MANE.GRCh38.v1.4.refseq',
-          type: 'LinearBasicDisplay',
-          height: 84,
+          trackId: 'tcga_brca_cnv_recurrence',
+          type: 'LinearWiggleDisplay',
+          height: 120,
         },
         {
           trackId: 'tcga_brca_cnv_zarr',
           type: 'MultiLinearWiggleDisplay',
-          height: 700,
+          height: 760,
           runClustering: true,
           showTree: true,
         },
@@ -719,8 +713,8 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     readySelector: CLUSTERED,
     readyTimeout: 900000,
     viewportWidth: 1900,
-    viewportHeight: 1015,
-    settleMs: 15000,
+    viewportHeight: 1120,
+    settleMs: 20000,
   },
 
   // CDH1 grouped by histology. E-cadherin loss is the defining lesion of lobular
