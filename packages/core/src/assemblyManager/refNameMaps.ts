@@ -2,15 +2,32 @@ import type { Alias } from '../data_adapters/BaseAdapter/index.ts'
 
 export type RefNameAliases = Record<string, string>
 
-/* biome-ignore lint/complexity/useRegexLiterals: */
+// The SAM spec's reference-name grammar, verbatim: printable ASCII apart from
+// backslash, comma, quotes, brackets and braces, not starting with `*` or `=`
+// (SAMv1 §1.2.1, https://samtools.github.io/hts-specs/SAMv1.pdf).
+//
+// Anchored, because the spec says names *match* this expression -- it is the
+// grammar for a whole name, not something to search for inside one. Unanchored,
+// `test` asked only whether a name contained one legal character anywhere, so it
+// passed `chr 1`, ` chr1` and `x[bad]` and rejected only names made entirely of
+// illegal characters. Note what that let through: a refName with whitespace in
+// it, which is what an unindexed FASTA yields when its defline separates the id
+// from the description with a tab rather than a space, and which then breaks
+// every locstring and url that carries it.
+//
+// Anchoring rejects nothing real: measured against the chrom.sizes and
+// chromAlias files of 25 UCSC/GenArk genomes (hg38, hs1, mm39, dm6, sacCer3,
+// and a random sample of the rest), all 4,935,269 names pass.
+/* biome-ignore lint/complexity/useRegexLiterals: keeps the character classes 1:1 with the spec, no `/` escaping */
 const refNameRegex = new RegExp(
-  '[0-9A-Za-z!#$%&+./:;?@^_|~-][0-9A-Za-z!#$%&*+./:;=?@^_|~-]*',
+  '^[0-9A-Za-z!#$%&+./:;?@^_|~-][0-9A-Za-z!#$%&*+./:;=?@^_|~-]*$',
 )
 
-// Valid refName pattern from https://samtools.github.io/hts-specs/SAMv1.pdf
 export function checkRefName(refName: string) {
   if (!refNameRegex.test(refName)) {
-    throw new Error(`Encountered invalid refName: "${refName}"`)
+    throw new Error(
+      `Encountered invalid refName: "${refName}". Reference names may not be empty, may not start with * or =, and may not contain whitespace, backslashes, commas, quotes, brackets or braces`,
+    )
   }
 }
 
