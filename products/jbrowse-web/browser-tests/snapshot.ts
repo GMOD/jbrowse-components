@@ -217,16 +217,25 @@ export async function pageSnapshot(page: Page, name: string, threshold = 0.1) {
   }
 }
 
-// Pileup rows morph-animate into place (morphProgress 0->1, easeInOutCubic; see
+// Feature rows morph-animate into place (morphProgress 0->1, easeInOutCubic; see
 // LinearBasicDisplay/baseModel.ts). The `*-done`/canvasDrawn testid fires per
-// paint, so a capture can land MID-morph with reads at intermediate Y — a frame
-// the deterministic layout never settles on. Two independent browser runs catch
-// different morph frames, producing a false cross-backend diff (the confirmed
-// cause of the pileup gate flakiness: read layout is deterministic run-to-run,
-// verified 30/30, but the animated frame is not). Wait until every display has
-// cleared `morphFromTops` (morph settled) before capturing. Best-effort: a view
-// or display type without the field reads as idle, and a timeout proceeds anyway
-// (the pixel comparison is still the real assertion).
+// paint, so a capture can land MID-morph with features at intermediate Y — a
+// frame the deterministic layout never settles on. Two independent browser runs
+// catch different morph frames, producing a false cross-backend diff. Wait until
+// every display has cleared `morphFromTops` (morph settled) before capturing.
+// Best-effort: a view or display type without the field reads as idle, and a
+// timeout proceeds anyway (the pixel comparison is still the real assertion).
+//
+// **This does nothing for an alignments display, so it is not the explanation
+// for the pileup gate flakiness** — a claim this comment used to make. Grep
+// says it: `morphFromTops` is declared in plugins/canvas
+// LinearBasicDisplay/baseModel.ts and read only by that plugin's
+// FeatureComponent. LinearAlignmentsDisplay has no such field, so the predicate
+// below reads `undefined == null` -> true on the first poll and the wait
+// returns immediately for exactly the displays that flake. The same overclaim
+// was corrected in browser-tests/README.md and crossBackendGate.ts by
+// 8d8239d3ad and had grown back here; whatever settles an alignments capture,
+// it is not this function.
 async function waitForMorphIdle(page: Page, timeout = 10000) {
   await page
     .waitForFunction(
