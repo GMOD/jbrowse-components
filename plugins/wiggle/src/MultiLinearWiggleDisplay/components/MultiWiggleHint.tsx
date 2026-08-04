@@ -2,13 +2,26 @@ import { BlockMsg } from '@jbrowse/plugin-linear-genome-view'
 import { Button } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { MultiWiggleDisplayModel } from './multiWiggleDisplayTypes.ts'
+// What the hint reads, spelled out like its sibling overlays (see
+// MultiWiggleOverlayLines, MultiWiggleSvgScales) rather than taking the whole
+// display — which is also what keeps the two blank-plot cases checkable without
+// standing one up.
+export interface HintModel {
+  numSources: number
+  isOverlay: boolean
+  isDensityMode: boolean
+  effectiveRowHeight: number
+  height: number
+  sourcesWithoutLayout: { name: string }[]
+  subtreeFilter?: readonly string[]
+  setSubtreeFilter: (names?: string[]) => void
+}
 
 // The plot would otherwise render as a silent blank in two recoverable cases;
 // name the escape inline instead of leaving the user staring at nothing. Each
 // case carries its own escape hatch: clearing the filter is the fix for the
 // first and would make the second (too many rows) strictly worse.
-function hint(model: MultiWiggleDisplayModel) {
+function hint(model: HintModel) {
   const { numSources, isOverlay, isDensityMode, effectiveRowHeight } = model
   // A subtree filter that matches nothing: loaded adapter sources exist but the
   // filter removed them all (numSources is the post-filter count). Otherwise,
@@ -35,7 +48,7 @@ function hint(model: MultiWiggleDisplayModel) {
 const MultiWiggleHint = observer(function MultiWiggleHint({
   model,
 }: {
-  model: MultiWiggleDisplayModel
+  model: HintModel
 }) {
   const shown = hint(model)
   return shown ? (
