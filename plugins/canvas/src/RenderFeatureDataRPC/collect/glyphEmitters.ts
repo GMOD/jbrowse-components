@@ -405,12 +405,56 @@ function processRepeatRegionLayout(
   emitTopLevelStrandArrow(layout, baseTopPx, flatbushIdx, ctx, collector)
 }
 
+// Draws the cut positions a feature carries as dark ticks over its box, shared
+// by the two cut-marking glyphs (CRISPR guide, restriction motif). When both
+// strands' cuts are pinned they are half-height — top cut on the upper half,
+// bottom cut on the lower half — so the stagger between them reads as the
+// overhang the enzyme leaves. A single known cut gets one full-height tick
+// instead: half-height there would imply a second cut nothing specified. Zero-
+// width cut rects are widened to MIN_RECT_WIDTH_PX by the rect shader.
+function pushCutTicks(
+  feature: Feature,
+  baseTopPx: number,
+  height: number,
+  flatbushIdx: number,
+  collector: Collector,
+) {
+  const strand = feature.get('strand') ?? 0
+  const rawTop: unknown = feature.get('cutSite')
+  const rawBottom: unknown = feature.get('cutSiteBottom')
+  const topCut = typeof rawTop === 'number' ? rawTop : undefined
+  const bottomCut = typeof rawBottom === 'number' ? rawBottom : undefined
+  const pushCut = (at: number, y: number, cutHeight: number) => {
+    collector.rects.push({
+      start: at,
+      end: at,
+      y,
+      height: cutHeight,
+      color: CUT_SITE_COLOR,
+      strand,
+      flatbushIdx,
+    })
+  }
+  if (topCut !== undefined && bottomCut !== undefined) {
+    const half = height / 2
+    pushCut(topCut, baseTopPx, half)
+    pushCut(bottomCut, baseTopPx + half, half)
+  } else {
+    // Keyed on whichever cut exists, not on `cutSite` specifically, so a feature
+    // carrying only `cutSiteBottom` still draws. Testing `topCut` alone silently
+    // drew no tick at all for that feature.
+    const soleCut = topCut ?? bottomCut
+    if (soleCut !== undefined) {
+      pushCut(soleCut, baseTopPx, height)
+    }
+  }
+}
+
 // CRISPR guide RNA (CrisprGuideAdapter): the whole feature box is the
 // protospacer+PAM span in the config color; the PAM subfeature is overpainted
-// red and the predicted cut site (the feature's `cutSite` attribute) is a dark
-// tick drawn on top. A zero-width cut rect is widened to MIN_RECT_WIDTH_PX by
-// the rect shader, so it renders as a thin vertical bar. The PAM is registered
-// as a hoverable subfeature.
+// red and the predicted cut sites are drawn on top — one tick for a blunt
+// cutter like SpCas9, a staggered pair for one like Cas12a. The PAM is
+// registered as a hoverable subfeature.
 function processCrisprGuideLayout(
   layout: FeatureLayout,
   baseTopPx: number,
@@ -450,31 +494,15 @@ function processCrisprGuideLayout(
     )
   }
 
-  const cutSite = feature.get('cutSite')
-  if (typeof cutSite === 'number') {
-    collector.rects.push({
-      start: cutSite,
-      end: cutSite,
-      y: baseTopPx,
-      height,
-      color: CUT_SITE_COLOR,
-      strand,
-      flatbushIdx,
-    })
-  }
+  pushCutTicks(feature, baseTopPx, height, flatbushIdx, collector)
 
   emitTopLevelStrandArrow(layout, baseTopPx, flatbushIdx, ctx, collector)
 }
 
 // Sequence motif (MotifListAdapter): the feature box is the recognition site in
-// the config color, with the cut positions drawn as dark ticks over it. A
-// palindromic site carries both strands' cuts (`cutSite` + `cutSiteBottom`), and
-// they are drawn as half-height ticks — top cut on the upper half, bottom cut on
-// the lower half — so the stagger between them reads as the overhang the enzyme
-// leaves. A site with a single known cut, or a non-palindromic one where only
-// the top-strand cut is pinned, gets one full-height tick instead: half-height
-// there would imply a second cut that the motif notation never specified.
-// Zero-width cut rects are widened to MIN_RECT_WIDTH_PX by the rect shader.
+// the config color, with its cut positions ticked over it. A palindromic site
+// pins both strands' cuts, a type IIS one pins both outright, and a '^' on a
+// stranded site pins only the top — see pushCutTicks for how each is drawn.
 function processMotifLayout(
   layout: FeatureLayout,
   baseTopPx: number,
@@ -483,39 +511,9 @@ function processMotifLayout(
   collector: Collector,
 ) {
   const { feature, height } = layout
-  const strand = feature.get('strand') ?? 0
 
   pushBoxRect(feature, baseTopPx, height, flatbushIdx, ctx, collector.rects)
-
-  const rawTop: unknown = feature.get('cutSite')
-  const rawBottom: unknown = feature.get('cutSiteBottom')
-  const topCut = typeof rawTop === 'number' ? rawTop : undefined
-  const bottomCut = typeof rawBottom === 'number' ? rawBottom : undefined
-  const pushCut = (at: number, y: number, cutHeight: number) => {
-    collector.rects.push({
-      start: at,
-      end: at,
-      y,
-      height: cutHeight,
-      color: CUT_SITE_COLOR,
-      strand,
-      flatbushIdx,
-    })
-  }
-  const half = height / 2
-  if (topCut !== undefined && bottomCut !== undefined) {
-    pushCut(topCut, baseTopPx, half)
-    pushCut(bottomCut, baseTopPx + half, half)
-  } else {
-    // Whichever single cut is pinned gets the full-height tick — keyed on the
-    // cut that exists, not on `cutSite` specifically, so a motif carrying only
-    // `cutSiteBottom` still draws. Testing `topCut` alone silently drew no tick
-    // at all for that feature.
-    const soleCut = topCut ?? bottomCut
-    if (soleCut !== undefined) {
-      pushCut(soleCut, baseTopPx, height)
-    }
-  }
+  pushCutTicks(feature, baseTopPx, height, flatbushIdx, collector)
 
   emitTopLevelStrandArrow(layout, baseTopPx, flatbushIdx, ctx, collector)
 }

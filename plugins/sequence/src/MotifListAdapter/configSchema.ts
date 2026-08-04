@@ -32,8 +32,10 @@ const configSchema = ConfigurationSchema(
     /**
      * #slot
      * Newline-separated list of named motifs in REBASE notation, e.g.
-     * `EcoRI  G^AATTC`. The name is optional and `^` optionally marks the
-     * top-strand cut. Blank lines and `#` comments are ignored.
+     * `EcoRI  G^AATTC` or, for a type IIS enzyme that cuts downstream of its
+     * site, `BsaI  GGTCTC(1/5)`. The name is optional, `^` marks the top-strand
+     * cut, and `(n/m)` gives the top and bottom cuts counted from the site's 3'
+     * end. Blank lines and `#` comments are ignored.
      */
     motifs: {
       type: 'text',

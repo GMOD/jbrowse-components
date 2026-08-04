@@ -51,8 +51,8 @@ const configSchema = ConfigurationSchema(
     },
     /**
      * #slot
-     * distance in bp from the PAM-proximal end of the protospacer to the
-     * predicted cut site (3 for SpCas9)
+     * distance in bp from the PAM-proximal end of the protospacer to the cut on
+     * the protospacer-matching strand (3 for SpCas9, 18 for Cas12a)
      */
     cutOffset: {
       type: 'number',
@@ -60,6 +60,44 @@ const configSchema = ConfigurationSchema(
     },
     /**
      * #slot
+     * same, for the cut on the opposite strand. Equal to `cutOffset` for a blunt
+     * cutter like SpCas9; larger for a staggered one like Cas12a (23), whose two
+     * cuts leave a 5' overhang.
+     */
+    cutOffsetBottom: {
+      type: 'number',
+      defaultValue: 3,
+    },
+    /**
+     * #slot
+     * drop guides below this GC percent. A PAM occurs every ~8bp of genome, so
+     * an unfiltered scan is far denser than a display can draw; the defaults
+     * keep everything and leave the choice to the caller.
+     */
+    minGcPercent: {
+      type: 'number',
+      defaultValue: 0,
+    },
+    /**
+     * #slot
+     * drop guides above this GC percent
+     */
+    maxGcPercent: {
+      type: 'number',
+      defaultValue: 100,
+    },
+    /**
+     * #slot
+     * drop guides containing TTTT, which terminates transcription from the pol
+     * III (U6/H1) promoters guides are usually expressed from
+     */
+    excludePolyT: {
+      type: 'boolean',
+      defaultValue: false,
+    },
+    /**
+     * #slot
+     * whether to scan the forward strand for PAMs
      */
     searchForward: {
       type: 'boolean',
@@ -67,6 +105,7 @@ const configSchema = ConfigurationSchema(
     },
     /**
      * #slot
+     * whether to scan the reverse strand for PAMs
      */
     searchReverse: {
       type: 'boolean',

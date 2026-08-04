@@ -95,6 +95,40 @@ test('finds a reverse-strand guide and reports guide/PAM in guide orientation', 
   expect(g.get('cutSite')).toBe(12)
 })
 
+test('a guide whose PAM sits outside the query is still found via the padding', async () => {
+  //          0         1         2
+  //          0123456789012345678901234
+  const seq = 'ATATATATATAAATTTTGGATATAT'
+  // the guide spans 10..19 but the query stops at 12, so its PAM is outside
+  const adapter = makeAdapter(seq, { searchReverse: false })
+  const guides = await getGuides(adapter, {
+    assemblyName: 'volvox',
+    refName: 'chr1',
+    start: 0,
+    end: 12,
+  })
+  expect(guides).toHaveLength(1)
+  expect(guides[0]!.get('start')).toBe(10)
+})
+
+test('GC and poly-T filters drop guides the caller asked to exclude', async () => {
+  //          0         1         2
+  //          0123456789012345678901234
+  const seq = 'ATATATATATAAATTTTGGATATAT'
+  // the only guide is AAATTT: 0% GC, no TTTT run
+  const kept = await getGuides(
+    makeAdapter(seq, { searchReverse: false, maxGcPercent: 50 }),
+    { assemblyName: 'volvox', refName: 'chr1', start: 0, end: 25 },
+  )
+  expect(kept).toHaveLength(1)
+
+  const dropped = await getGuides(
+    makeAdapter(seq, { searchReverse: false, minGcPercent: 40 }),
+    { assemblyName: 'volvox', refName: 'chr1', start: 0, end: 25 },
+  )
+  expect(dropped).toHaveLength(0)
+})
+
 test('overlapping PAMs each yield a guide', async () => {
   // GGG contains two NGG PAMs (at the first and second G)
   const seq = 'ATATATATATAAATTTGGGATATAT'

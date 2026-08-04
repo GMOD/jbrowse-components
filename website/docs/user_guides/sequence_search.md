@@ -27,14 +27,21 @@ view.
 ## Restriction enzymes and other named motifs
 
 The **Motif list** mode takes a pasted list in the notation REBASE already uses,
-one motif per line, with an optional name and an optional `^` marking the cut:
+one motif per line, with an optional name and an optional cut marker:
 
 ```
 # name  site
 EcoRI   G^AATTC
 BamHI   G^GATCC
 PstI    CTGCA^G
+BsaI    GGTCTC(1/5)
 ```
+
+There are two cut notations because there are two kinds of enzyme. A `^` marks a
+cut inside the recognition site. The `(n/m)` form is for the type IIS enzymes
+that cut _downstream_ of their site — BsaI, BsmBI, BbsI, SapI, AarI, the Golden
+Gate workhorses — where `n` and `m` count from the site's 3' end to the top- and
+bottom-strand cuts (negative numbers count back into the site).
 
 The panel is prefilled with common cloning enzymes, but nothing is built in:
 wipe it and paste your own set from REBASE or anywhere else. Sites may use
@@ -42,13 +49,13 @@ wipe it and paste your own set from REBASE or anywhere else. Sites may use
 `GGTNACC`), blank lines and `#` comments are ignored, and a bare site with no
 name simply names itself.
 
-The `^` is what makes this more than a motif search: it pins the top-strand cut,
-and for a palindromic site (which most restriction sites are) the bottom-strand
-cut mirrors it, so each hit reports both cut positions and whether the enzyme
-leaves a 5' overhang, a 3' overhang, or a blunt end. Palindromic sites read the
-same on both strands, so they are reported once rather than twice, and the
-strand checkboxes only appear when the list contains a motif that is actually
-stranded.
+The cut notation is what makes this more than a motif search. `(n/m)` pins both
+strands' cuts outright; a `^` pins the top-strand cut, and for a palindromic
+site (which most classic restriction sites are) the bottom-strand cut mirrors
+it. So each hit reports both cut positions and whether the enzyme leaves a 5'
+overhang, a 3' overhang, or a blunt end. Palindromic sites read the same on both
+strands, so they are reported once rather than twice, and the strand checkboxes
+only appear when the list contains a motif that is actually stranded.
 
 Because the list is just text, the same mode works for primers, adapters,
 polylinker sites, or any other named motif set, not only enzymes.

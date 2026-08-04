@@ -45,7 +45,7 @@ surface.
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-motifs">**motifs**</span><br>[`text`](/docs/config_guides/slot_types#text) = <code>''</code> | Newline-separated list of named motifs in REBASE notation, e.g. `EcoRI G^AATTC`. The name is optional and `^` optionally marks the top-strand cut. Blank lines and `#` comments are ignored. |
+| <span id="slot-motifs">**motifs**</span><br>[`text`](/docs/config_guides/slot_types#text) = <code>''</code> | Newline-separated list of named motifs in REBASE notation, e.g. `EcoRI G^AATTC` or, for a type IIS enzyme that cuts downstream of its site, `BsaI GGTCTC(1/5)`. The name is optional, `^` marks the top-strand cut, and `(n/m)` gives the top and bottom cuts counted from the site's 3' end. Blank lines and `#` comments are ignored. |
 | <span id="slot-sequenceadapter">**sequenceAdapter**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>null</code> | discouraged: leave unset. JBrowse supplies the assembly's sequence adapter automatically; this override exists only for the rare case of scanning a sequence other than the one the track is displayed against. |
 | <span id="slot-searchforward">**searchForward**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | ignored for palindromic motifs, which match both strands at once |
 | <span id="slot-searchreverse">**searchReverse**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | ignored for palindromic motifs, which match both strands at once |

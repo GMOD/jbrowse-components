@@ -8,6 +8,7 @@ test('SpCas9 plus-strand: PAM 3prime, protospacer to the left, cut 3bp in', () =
     guideLength: 20,
     pamLocation: '3prime',
     cutOffset: 3,
+    cutOffsetBottom: 3,
     strand: 1,
   })
   expect(p.pamStart).toBe(100)
@@ -26,6 +27,7 @@ test('SpCas9 minus-strand: revcomp PAM at left, protospacer to the right', () =>
     guideLength: 20,
     pamLocation: '3prime',
     cutOffset: 3,
+    cutOffsetBottom: 3,
     strand: -1,
   })
   expect(p.pamStart).toBe(100)
@@ -58,11 +60,29 @@ test('Cas12a plus-strand: PAM 5prime, protospacer to the right', () => {
     guideLength: 23,
     pamLocation: '5prime',
     cutOffset: 18,
+    cutOffsetBottom: 23,
     strand: 1,
   })
   expect(p.pamStart).toBe(200)
   expect(p.pamEnd).toBe(204)
   expect(p.protoStart).toBe(204)
   expect(p.protoEnd).toBe(227)
+  // Cas12a cuts the two strands 5 bases apart, leaving a 5' overhang, so both
+  // positions are reported rather than one blunt cut
   expect(p.cutSite).toBe(222)
+  expect(p.cutSiteBottom).toBe(227)
+})
+
+test('a blunt cutter reports no second cut, rather than a duplicate position', () => {
+  const p = placeGuide({
+    matchStart: 100,
+    pamLength: 3,
+    guideLength: 20,
+    pamLocation: '3prime',
+    cutOffset: 3,
+    cutOffsetBottom: 3,
+    strand: 1,
+  })
+  expect(p.cutSite).toBe(97)
+  expect(p.cutSiteBottom).toBeUndefined()
 })

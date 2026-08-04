@@ -87,16 +87,33 @@ test('reverse-strand hit is anchored on the actual sequence end', async () => {
 })
 
 test('searchForward=false / searchReverse=false drop their strand', async () => {
-  // GAATTC is palindromic, so it is found on both strands at 3..9
-  const both = await search('AAAGAATTCAAA', { search: 'GAATTC' })
+  //                        0         1
+  //                        012345678901234567
+  // GTAATC at 2..8, and its revcomp GATTAC at 10..16
+  const both = await search('AAGTAATCAAGATTACAA', { search: 'GTAATC' })
   expect(both.map(f => f.get('strand')).sort()).toEqual([-1, 1])
 
-  const fwdOnly = await search('AAAGAATTCAAA', {
-    search: 'GAATTC',
+  const fwdOnly = await search('AAGTAATCAAGATTACAA', {
+    search: 'GTAATC',
     searchReverse: false,
   })
   expect(fwdOnly).toHaveLength(1)
   expect(fwdOnly[0]!.get('strand')).toBe(1)
+})
+
+test('a palindromic plain sequence is reported once, not once per strand', async () => {
+  // GAATTC matches both strands at 3..9; scanning each would double every hit
+  const feats = await search('AAAGAATTCAAA', { search: 'GAATTC' })
+  expect(feats).toHaveLength(1)
+  expect(feats[0]!.get('start')).toBe(3)
+  expect(feats[0]!.get('strand')).toBe(0)
+})
+
+test('a regex is never collapsed, since it has no reverse complement', async () => {
+  // GAATTC is palindromic but 'GAATT(C|G)' is a regex, so both strands run and
+  // the palindromic hit is still reported twice
+  const feats = await search('AAAGAATTCAAA', { search: 'GAATT(C|G)' })
+  expect(feats.map(f => f.get('strand')).sort()).toEqual([-1, 1])
 })
 
 test('caseInsensitive (default) matches a lowercase query, off does not', async () => {

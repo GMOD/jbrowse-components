@@ -24,18 +24,24 @@ export interface GuidePlacement {
   protoStart: number
   protoEnd: number
   cutSite: number
+  // absent when the two strands are cut at the same place (a blunt enzyme), so
+  // nothing downstream has to special-case a pair of identical positions
+  cutSiteBottom?: number
 }
 
 // Given a PAM match on the plus strand at [matchStart, matchStart+pamLength),
-// compute the protospacer extent and predicted (blunt) cut site for a guide on
-// the given strand. Cas9-type enzymes carry the PAM 3' of the protospacer;
-// Cas12a-type carry it 5'. All coordinates are absolute plus-strand interbase.
+// compute the protospacer extent and predicted cut sites for a guide on the
+// given strand. Cas9-type enzymes carry the PAM 3' of the protospacer and cut
+// both strands at the same offset (blunt); Cas12a-type carry it 5' and cut the
+// two strands at different offsets, leaving a staggered 5' overhang. All
+// coordinates are absolute plus-strand interbase.
 export function placeGuide({
   matchStart,
   pamLength,
   guideLength,
   pamLocation,
   cutOffset,
+  cutOffsetBottom,
   strand,
 }: {
   matchStart: number
@@ -43,6 +49,7 @@ export function placeGuide({
   guideLength: number
   pamLocation: string
   cutOffset: number
+  cutOffsetBottom: number
   strand: 1 | -1
 }): GuidePlacement {
   const pamStart = matchStart
@@ -57,8 +64,11 @@ export function placeGuide({
   const protoStart = protoOnLeft ? pamStart - guideLength : pamEnd
   const protoEnd = protoOnLeft ? pamStart : pamEnd + guideLength
 
-  // the cut sits cutOffset bp into the protospacer from its PAM-proximal end
-  const cutSite = protoOnLeft ? pamStart - cutOffset : pamEnd + cutOffset
+  // each cut sits its offset in bp into the protospacer from the PAM-proximal end
+  const at = (offset: number) =>
+    protoOnLeft ? pamStart - offset : pamEnd + offset
+  const cutSite = at(cutOffset)
+  const cutSiteBottom = at(cutOffsetBottom)
 
   return {
     featureStart: Math.min(pamStart, protoStart),
@@ -68,5 +78,6 @@ export function placeGuide({
     protoStart,
     protoEnd,
     cutSite,
+    ...(cutSiteBottom === cutSite ? {} : { cutSiteBottom }),
   }
 }

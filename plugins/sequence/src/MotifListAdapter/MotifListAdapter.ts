@@ -1,123 +1,109 @@
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import {
-  SimpleFeature,
-  doesIntersect2,
   isPalindromic,
   iupacToRegex,
   parseMotifList,
   reverseComplementIupac,
 } from '@jbrowse/core/util'
-import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import { getSequenceSubAdapter } from '../getSequenceSubAdapter.ts'
+import { ReferenceScanAdapter } from '../ReferenceScanAdapter.ts'
 
+import type { ScanWindow } from '../ReferenceScanAdapter.ts'
 import type { MotifListAdapterConfig } from './configSchema.ts'
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Feature, ParsedMotif, Region } from '@jbrowse/core/util'
+import type { ParsedMotif } from '@jbrowse/core/util'
 
-// Describes the double-strand break implied by a palindromic site's cut offset:
-// the two cuts are mirror images, so their separation is the overhang.
+// Describes the double-strand break implied by the two cut offsets: their
+// separation is the overhang. Stated in offsets rather than coordinates so it
+// reads the same whichever strand the site was matched on.
 function describeEnds(overhang: number) {
   return overhang === 0
     ? 'blunt'
     : `${overhang > 0 ? "5'" : "3'"} overhang (${Math.abs(overhang)} bp)`
 }
 
-export default class MotifListAdapter extends BaseFeatureDataAdapter<MotifListAdapterConfig> {
-  public async configure() {
-    return getSequenceSubAdapter(this, this.getConf('sequenceAdapter'))
+export default class MotifListAdapter extends ReferenceScanAdapter<MotifListAdapterConfig> {
+  // the list is a config string parsed identically for every block, and an
+  // adapter instance is cached per config (dataAdapterCache), so parsing it and
+  // compiling its regexes once per instance rather than once per block matters
+  // for a pasted REBASE set of a few hundred enzymes
+  private motifsCache?: ParsedMotif[]
+
+  private get motifs() {
+    this.motifsCache ??= parseMotifList(this.getConf('motifs')).motifs
+    return this.motifsCache
   }
 
-  public async getRefNames() {
-    const adapter = await this.configure()
-    return adapter.getRefNames()
+  protected scanPadding() {
+    // a motif straddling the query edge is only found if its whole span was
+    // fetched, so pad by the longest site
+    return Math.max(0, ...this.motifs.map(m => m.site.length))
   }
 
-  public getFeatures(query: Region, opts: BaseOptions) {
-    return ObservableCreate<Feature>(async observer => {
-      const sequenceAdapter = await this.configure()
-      const searchForward = this.getConf('searchForward')
-      const searchReverse = this.getConf('searchReverse')
-      const { motifs } = parseMotifList(this.getConf('motifs'))
+  protected scan({ query, residues, windowStart, emit }: ScanWindow) {
+    const searchForward = this.getConf('searchForward')
+    const searchReverse = this.getConf('searchReverse')
 
-      // a motif straddling the query edge is only found if its whole span was
-      // fetched, so pad by the longest site
-      const pad = Math.max(0, ...motifs.map(m => m.site.length))
-      const queryStart = Math.max(0, query.start - pad)
-      const residues =
-        (await sequenceAdapter.getSequence(
-          { ...query, start: queryStart, end: query.end + pad },
-          opts,
-        )) ?? ''
+    const emitMotif = (
+      motif: ParsedMotif,
+      motifIdx: number,
+      pattern: string,
+      strand: 1 | 0 | -1,
+    ) => {
+      const { cutOffset: topOffset, site } = motif
+      // '(n/m)' notation pins both cuts outright; a '^' pins only the top one,
+      // whose mirror image is the bottom cut on a palindrome (strand 0) and
+      // unknown on a stranded site
+      const bottomOffset =
+        motif.cutOffsetBottom ??
+        (strand === 0 && topOffset !== undefined
+          ? site.length - topOffset
+          : undefined)
+      // lookahead keeps overlapping hits: a site can start at every base
+      const re = new RegExp(`(?=(${iupacToRegex(pattern)}))`, 'gi')
+      for (const match of residues.matchAll(re)) {
+        const start = windowStart + match.index
+        const end = start + pattern.length
+        // offsets are measured from the site's 5' end, which is the
+        // high-coordinate end when the site was matched revcomp'd. A type IIS
+        // offset runs past the site, landing the cut outside [start, end).
+        const at = (offset: number) =>
+          strand === -1 ? end - offset : start + offset
+        const cutSite = topOffset === undefined ? undefined : at(topOffset)
+        const cutSiteBottom =
+          bottomOffset === undefined ? undefined : at(bottomOffset)
+        emit({
+          uniqueId: `${this.id}-${motifIdx}-${start}-${strand}`,
+          refName: query.refName,
+          start,
+          end,
+          strand,
+          name: motif.name,
+          type: 'motif',
+          site,
+          ...(cutSite === undefined ? {} : { cutSite }),
+          ...(cutSiteBottom === undefined ? {} : { cutSiteBottom }),
+          ...(topOffset === undefined || bottomOffset === undefined
+            ? {}
+            : { ends: describeEnds(bottomOffset - topOffset) }),
+        })
+      }
+    }
 
-      const emit = (
-        motif: ParsedMotif,
-        motifIdx: number,
-        pattern: string,
-        strand: 1 | 0 | -1,
-      ) => {
-        const { cutOffset } = motif
-        // lookahead keeps overlapping hits: a site can start at every base
-        const re = new RegExp(`(?=(${iupacToRegex(pattern)}))`, 'gi')
-        for (const match of residues.matchAll(re)) {
-          const start = queryStart + match.index
-          const end = start + pattern.length
-          if (doesIntersect2(start, end, query.start, query.end)) {
-            // the cut sits cutOffset bp from the site's 5' end, which is the
-            // high-coordinate end when the site was matched revcomp'd
-            const cutSite =
-              cutOffset === undefined
-                ? undefined
-                : strand === -1
-                  ? end - cutOffset
-                  : start + cutOffset
-            // only a palindrome's notation pins the bottom-strand cut too: it
-            // mirrors the top cut, so the two together give the overhang
-            const bottomCut =
-              cutOffset === undefined || strand !== 0
-                ? undefined
-                : end - cutOffset
-            observer.next(
-              new SimpleFeature({
-                uniqueId: `${this.id}-${motifIdx}-${start}-${strand}`,
-                refName: query.refName,
-                start,
-                end,
-                strand,
-                name: motif.name,
-                type: 'motif',
-                site: motif.site,
-                ...(cutSite === undefined ? {} : { cutSite }),
-                ...(bottomCut === undefined || cutSite === undefined
-                  ? {}
-                  : {
-                      cutSiteBottom: bottomCut,
-                      ends: describeEnds(bottomCut - cutSite),
-                    }),
-              }),
-            )
-          }
+    for (const [motifIdx, motif] of this.motifs.entries()) {
+      const { site } = motif
+      if (isPalindromic(site)) {
+        // a palindrome matches both strands at the same coordinates, so scanning
+        // each strand would double every hit; emit it once, unstranded,
+        // regardless of the strand flags — there is no strand to choose between
+        // (which is what the config slots' docs promise)
+        emitMotif(motif, motifIdx, site, 0)
+      } else {
+        if (searchForward) {
+          emitMotif(motif, motifIdx, site, 1)
+        }
+        if (searchReverse) {
+          emitMotif(motif, motifIdx, reverseComplementIupac(site), -1)
         }
       }
-
-      for (const [motifIdx, motif] of motifs.entries()) {
-        const { site } = motif
-        if (isPalindromic(site)) {
-          // a palindrome matches both strands at the same coordinates, so
-          // scanning each strand would double every hit; emit it once, unstranded
-          if (searchForward || searchReverse) {
-            emit(motif, motifIdx, site, 0)
-          }
-        } else {
-          if (searchForward) {
-            emit(motif, motifIdx, site, 1)
-          }
-          if (searchReverse) {
-            emit(motif, motifIdx, reverseComplementIupac(site), -1)
-          }
-        }
-      }
-      observer.complete()
-    })
+    }
   }
 }
