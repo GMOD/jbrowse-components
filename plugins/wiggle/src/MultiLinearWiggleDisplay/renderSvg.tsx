@@ -13,8 +13,11 @@ import {
 
 import { drawWiggleToCtx } from '../shared/Canvas2DWiggleRenderer.ts'
 import OverlayColorLegend from '../shared/OverlayColorLegend.tsx'
+import {
+  svgLegendRightPx,
+  svgScalebarLeftPx,
+} from '../shared/WiggleFamilySvg.tsx'
 import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
-import { legendRightEdgePx } from '../shared/wiggleComponentUtils.ts'
 import MultiWiggleOverlayLines from './MultiWiggleOverlayLines.tsx'
 import MultiWiggleSvgScales from './MultiWiggleSvgScales.tsx'
 
@@ -95,11 +98,11 @@ function MultiWiggleSvgBody({
   canvasWidth,
   opts,
 }: LgvSvgBodyProps<RenderSvgModel>) {
-  // anchors scale bars to left edge of content; non-zero only when scrolled
-  // before genome start. Left-oriented, so the labels grow into the export
-  // margin rather than over the plot (the on-screen axis instead indents by
-  // ONSCREEN_AXIS_LEFT_PX and grows rightward).
-  const scalebarLeft = Math.max(-view.offsetPx, 0)
+  // Multi keeps its own body rather than WiggleFamilySvgFrame (it stacks rows
+  // edge-to-edge with no YSCALEBAR_LABEL_OFFSET inset — see its `renderState`),
+  // but the two anchor helpers are pure geometry and shared, so the scale bars
+  // and legends land in the same place as every other wiggle-family export.
+  const scalebarLeft = svgScalebarLeftPx(view)
   const { rpcDataMap, renderState } = model
 
   // No data-size gate: renderState is always defined (a [0,1] stub until
@@ -113,10 +116,7 @@ function MultiWiggleSvgBody({
   const labelOffset = treeSidebarOffset(model)
 
   const props = model.gpuProps()
-  // right-aligned legends pin to the content's right edge, not the viewport's:
-  // at whole-genome zoom the regions can end before it, and a legend parked out
-  // in the empty gutter reads as detached from the plot (same rule as on screen)
-  const legendRight = legendRightEdgePx(view.visibleRegions, canvasWidth)
+  const legendRight = svgLegendRightPx(view, canvasWidth)
   const renderBlocks = buildRenderBlocks(view.visibleRegions)
   const state = {
     ...renderState,
