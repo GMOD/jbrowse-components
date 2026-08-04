@@ -35,6 +35,15 @@ The heatmap's block comes out at the published breakpoint coordinates, so its
 edges can be checked against them by eye, and against the karyotype lane below
 it, whose cells are drawn at those same coordinates from a different file.
 
+What marks the span as recombination-suppressed, rather than merely dense in
+common variants, is that the correlation does not fall off with distance inside
+it. Markers at opposite ends of the block are about as correlated as
+neighbouring ones, which is why the Cameroon triangle stays filled out to its
+apex instead of fading away from the diagonal. Everywhere else on the arm, and
+across the whole Gabon panel, r² decays with separation in the ordinary way.
+That contrast is the diagnostic; a block that faded with distance would be a
+region of low recombination rather than one of none.
+
 The Gabon panel is a control rather than a second example. That population is
 not inversion-free: 5 of its 69 mosquitoes are heterozygous, the blue rows at
 the bottom of its karyotype lane. What it lacks is enough of them to hold the
@@ -152,19 +161,31 @@ of these:
 - Is the background already high? A bottlenecked panel can show a healthy
   inside/outside ratio while its whole arm renders red. Read the absolute
   background, not only the ratio.
-- Is the feature really two alleles? r² is a two-allele statistic. Where several
-  haplotypes segregate at one locus they fragment the correlation, which is why
-  insecticide-resistance alleles at _Vgsc_ produce no block in this data even
-  though the sweep is real.
+- Is the feature really two alleles? r² is a correlation between two biallelic
+  markers, so where several haplotypes segregate at one locus they fragment it:
+  each carries a different background, and no single pair of markers tags them
+  all. A soft sweep can therefore leave a weaker and patchier block than its
+  strength suggests, which is a reason to read a faint block carefully rather
+  than to conclude nothing happened.
 
 ## Metric and allele-frequency floor
 
-r² and D' disagree about the same data. D' runs higher inside a block but also
-tints the region outside it, while r² collapses to near zero there. Contrast
-against background is what makes a block legible, not how bright its cells are,
-so r² usually draws the sharper boundary despite looking dimmer. Switch with
-[`ldMetric`](/docs/config/sharedlddisplay/#slot-ldmetric); the reproduce script
-prints both ratios for every panel.
+r² and D' answer different questions, so they disagree about the same data by
+design. D' asks whether recombination has been seen between two markers: it is
+scaled by the most the two allele frequencies would allow, so it saturates near
+1 wherever no recombinant haplotype has turned up. r² asks how well one marker
+predicts the other, which also requires the two to be at similar frequency, so a
+pair can be in complete linkage and still score low.
+
+That is why the same block reads brighter under D', and why D' also tints the
+region outside it where r² collapses to near zero. Contrast against background,
+not cell brightness, is what makes a block legible, so r² usually draws the
+sharper boundary despite looking dimmer, and it is the one to read when the
+question is whether a marker can stand in for another. D' is the better read on
+where recombination stops, which is why the reproduce script uses it, not r², to
+recover the breakpoints. Switch with
+[`ldMetric`](/docs/config/sharedlddisplay/#slot-ldmetric); the script prints
+both ratios for every panel.
 
 Raising the minor allele frequency filter
 ([`minorAlleleFrequencyFilter`](/docs/config/sharedlddisplay/#slot-minorallelefrequencyfilter))
