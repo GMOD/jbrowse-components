@@ -283,7 +283,7 @@ aligner splits it into a primary alignment plus one supplementary alignment per
 additional locus, records the whole set in each record's `SA` tag, and the
 pileup draws them as separate rows, often far apart or on different chromosomes.
 
-Right-click any of them and choose `Launch view` -> `Linear read vs ref` to put
+Right-click any of them and choose **Launch view → Linear read vs ref** to put
 them back together. The `SA` tag is what makes this possible from one record:
 the view reads the read's other segments straight off it, so no search of the
 rest of the genome is needed. The read becomes its own assembly along one lane,

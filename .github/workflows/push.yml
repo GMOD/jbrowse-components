@@ -473,6 +473,8 @@ jobs:
           pnpm build
           node scripts/check-llms.ts
           node scripts/check-duplicate-ids.ts
+          node scripts/check-menu-paths.ts
+          node scripts/check-captions.ts --check
           mkdir testing
           mv dist testing/jb2
       - name: Check website links

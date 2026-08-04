@@ -387,7 +387,7 @@ loci apiece, which reads as missing data rather than as a result. **Group by...
 
 A synteny track in a plain view renders through the same display as a read
 pileup, so the rest of that menu is the one you already know from alignments:
-**Show... > Show coverage**, for instance, adds a histogram of how many other
+**Show... → Show coverage**, for instance, adds a histogram of how many other
 strains cover each base of the strain you are viewing.
 
 A lane can only say where a strain stops. What that strain carries instead is
