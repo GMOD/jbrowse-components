@@ -543,33 +543,44 @@ The soft-clipping indicators on these reads will appear black.
 
 ### How does JBrowse know when to display the "Zoom in to see more features" message
 
-Before fetching anything, JBrowse asks the adapter roughly how much data the
-visible region would download. For an indexed file that is a lookup in the
-index, so it costs nothing. The checks, in order:
-
-- below 20kb nothing is ever held back
-- over the byte limit for the region, you get the message instead of a download
-- feature tracks then also check feature density, which catches a small region
-  holding an enormous number of features
-- adapters that summarize at screen resolution (bigWig, Hi-C, MultiWiggle,
-  sequence) can never be too large and always render
+Two limits guard the region, and either one shows the message: how many bytes
+the fetch would download, and how many features would land on screen.
 
 The message itself is "Zoom in to see features or force load (may be slow)",
 usually with the estimated size that tripped it, and the banner's **Force load**
 button downloads the region anyway.
 
-To force load without a click (an embedded view, a notebook, a screenshot, where
-nobody can press the button), set
+#### Raising the feature limit
+
+[`maxFeatureScreenDensity`](/docs/config/baselineardisplay/#slot-maxfeaturescreendensity)
+is **features per pixel of track width**, and it defaults to `1`. So the feature
+count a track will draw is roughly the width of your browser window in pixels:
+about 1,500 features on a 1,500px-wide window. Doubling the slot to `2` allows
+about 3,000, and so on. It is a density rather than a count because the same
+region drawn in a wider window has more room, so the budget should grow with it.
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "dense_genes",
+  "name": "Genes",
+  "assemblyNames": ["volvox"],
+  "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" },
+  "displayDefaults": { "maxFeatureScreenDensity": 5 }
+}
+```
+
+If you only want the region loaded once, the **Force load** button does that
+without touching the config. To force it without a click (an embedded view, a
+notebook, a screenshot, where nobody can press the button), set
 [`forceLoad`](/docs/config/baselineardisplay/#slot-forceload) on the display.
 
-To move the thresholds instead, the two slots are
-[`maxFeatureScreenDensity`](/docs/config/baselineardisplay/#slot-maxfeaturescreendensity)
-and [`fetchSizeLimit`](/docs/config/baselineardisplay/#slot-fetchsizelimit) on
-the display:
+#### Raising the byte limit
 
-```json
-"displayDefaults": { "maxFeatureScreenDensity": 0.0006 }
-```
+[`fetchSizeLimit`](/docs/config/baselineardisplay/#slot-fetchsizelimit) is a
+plain byte count. Regions under 20kb are never held back, and adapters that
+summarize at screen resolution (bigWig, Hi-C, MultiWiggle, sequence) are never
+too large, so neither limit applies to them.
 
 The BAM, CRAM and VCF adapters have their own `fetchSizeLimit`, and an adapter's
 limit takes priority over the display's, so for those formats set it on the
@@ -736,8 +747,9 @@ an error rather than rendering blank, so that shows up differently.)
 
 If the menus and track names look fine but the features themselves are missing,
 smeared, or the wrong color, the drawing path is the more likely cause than the
-data. A URL parameter switches which one is used: `?renderer=webgl` for WebGL2,
-`?renderer=canvas2d` for software drawing.
+data. A URL parameter pins which one is used, so you can try each in turn:
+`?renderer=webgpu`, `?renderer=webgl` for WebGL2, and `?renderer=canvas2d` for
+software drawing.
 
 That identifies where the problem is rather than fixing it, so please
 [open an issue](https://github.com/GMOD/jbrowse-components/issues) noting which

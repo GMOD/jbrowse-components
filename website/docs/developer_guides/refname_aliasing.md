@@ -56,11 +56,27 @@ One column is the "primary" refName that must match the names in your
 FASTA/sequence adapter; the other columns become aliases. The primary column is
 the first by default; use `refNameColumn` (below) to pick a different one.
 
-```json
-"refNameAliases": {
-  "adapter": {
-    "type": "RefNameAliasAdapter",
-    "uri": "aliases.txt"
+```json addassembly
+{
+  "name": "hg38",
+  "uri": "hg38.fa.gz",
+  "refNameAliases": { "uri": "aliases.txt" }
+}
+```
+
+That bare `{ "uri": ... }` is the shorthand for the default
+`RefNameAliasAdapter`. Spell the adapter out when you need one of its options,
+or a different alias adapter entirely:
+
+```json addassembly
+{
+  "name": "hg38",
+  "uri": "hg38.fa.gz",
+  "refNameAliases": {
+    "adapter": {
+      "type": "RefNameAliasAdapter",
+      "uri": "aliases.txt"
+    }
   }
 }
 ```
@@ -82,12 +98,16 @@ the first by default; use `refNameColumn` (below) to pick a different one.
 chr1	1	NC_000001.11
 ```
 
-```json
-"refNameAliases": {
-  "adapter": {
-    "type": "RefNameAliasAdapter",
-    "uri": "aliases.txt",
-    "refNameColumnHeaderName": "name"
+```json addassembly
+{
+  "name": "hg38",
+  "uri": "hg38.fa.gz",
+  "refNameAliases": {
+    "adapter": {
+      "type": "RefNameAliasAdapter",
+      "uri": "aliases.txt",
+      "refNameColumnHeaderName": "name"
+    }
   }
 }
 ```
@@ -100,10 +120,14 @@ accessions, UCSC-style names, and sequence names all at once. Get them from the
 assembly, or the `datasets` CLI.
 
 ```json
-"refNameAliases": {
-  "adapter": {
-    "type": "NcbiSequenceReportAliasAdapter",
-    "uri": "sequence_report.tsv"
+{
+  "name": "GCF_000001405.40",
+  "uri": "GCF_000001405.40.fa.gz",
+  "refNameAliases": {
+    "adapter": {
+      "type": "NcbiSequenceReportAliasAdapter",
+      "uri": "sequence_report.tsv"
+    }
   }
 }
 ```

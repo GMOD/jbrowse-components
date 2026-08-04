@@ -250,10 +250,6 @@ Clustering is computed over the region in view, so this is chr4 similarity, not
 a genome-wide relatedness: pan somewhere else and the same menu item gives a
 different order.
 
-Open the whole demo live in the
-[JBrowse BXD demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_bxd.json),
-or click the **Open in JBrowse** link under any figure above.
-
 ## Reproduce it end to end
 
 Every step above is wrapped in one script,

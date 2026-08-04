@@ -355,14 +355,7 @@ views over them, with nothing baked into the served config (pair it with
   "sessionAssemblies": [
     {
       "name": "my_assembly",
-      "sequence": {
-        "type": "ReferenceSequenceTrack",
-        "trackId": "my_assembly_refseq",
-        "adapter": {
-          "type": "TwoBitAdapter",
-          "uri": "https://example.com/my_assembly.2bit"
-        }
-      }
+      "uri": "https://example.com/my_assembly.2bit"
     }
   ],
   "sessionTracks": [

@@ -60,11 +60,6 @@ same modified-base calls, see
 [Color by base modifications](/docs/user_guides/alignments_track#modifications-and-methylation)
 on the alignments track.
 
-The COLO829 tumor modkit bedMethyl file is included in the
-[demo config](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json)
-as the track **"COLO829_tumor.ht_modkit.bed (as MultiQuantitativeTrack)"** under
-the Methylation category (assembly hg38, chr21).
-
 ## Clustering rows by score
 
 Reorder subtracks by signal similarity, via **Clustering → Cluster rows by

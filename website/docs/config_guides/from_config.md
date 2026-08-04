@@ -16,26 +16,32 @@ unique `uniqueId` are required. `type`, `name`, and any other attributes are
 optional. Use it with any feature track type, such as a `FeatureTrack`:
 
 ```json
-"adapter": {
-  "type": "FromConfigAdapter",
-  "features": [
-    {
-      "refName": "ctgA",
-      "uniqueId": "feature1",
-      "start": 190,
-      "end": 250,
-      "type": "gene",
-      "name": "MyGene"
-    },
-    {
-      "refName": "ctgA",
-      "uniqueId": "feature2",
-      "start": 300,
-      "end": 400,
-      "type": "mRNA",
-      "name": "MyTranscript"
-    }
-  ]
+{
+  "type": "FeatureTrack",
+  "trackId": "inline_features",
+  "name": "Inline features",
+  "assemblyNames": ["volvox"],
+  "adapter": {
+    "type": "FromConfigAdapter",
+    "features": [
+      {
+        "refName": "ctgA",
+        "uniqueId": "feature1",
+        "start": 190,
+        "end": 250,
+        "type": "gene",
+        "name": "MyGene"
+      },
+      {
+        "refName": "ctgA",
+        "uniqueId": "feature2",
+        "start": 300,
+        "end": 400,
+        "type": "mRNA",
+        "name": "MyTranscript"
+      }
+    ]
+  }
 }
 ```
 
@@ -46,24 +52,29 @@ sequence tracks; see [configuring assemblies](/docs/config_guides/assemblies)).
 Each feature's `seq` holds the bases for its region:
 
 ```json
-"adapter": {
-  "type": "FromConfigSequenceAdapter",
-  "features": [
-    {
-      "refName": "SEQUENCE_1",
-      "uniqueId": "firstId",
-      "start": 0,
-      "end": 33,
-      "seq": "CCAAGATCTAAGATGTCAACACCTATCTGCTCA"
-    },
-    {
-      "refName": "SEQUENCE_2",
-      "uniqueId": "secondId",
-      "start": 0,
-      "end": 44,
-      "seq": "CCGAACCACAGGCCTATGTTACCATTGGAAAGCTCACCTTCCCG"
+{
+  "name": "inline_assembly",
+  "sequence": {
+    "adapter": {
+      "type": "FromConfigSequenceAdapter",
+      "features": [
+        {
+          "refName": "SEQUENCE_1",
+          "uniqueId": "firstId",
+          "start": 0,
+          "end": 33,
+          "seq": "CCAAGATCTAAGATGTCAACACCTATCTGCTCA"
+        },
+        {
+          "refName": "SEQUENCE_2",
+          "uniqueId": "secondId",
+          "start": 0,
+          "end": 44,
+          "seq": "CCGAACCACAGGCCTATGTTACCATTGGAAAGCTCACCTTCCCG"
+        }
+      ]
     }
-  ]
+  }
 }
 ```
 

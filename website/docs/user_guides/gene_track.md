@@ -101,9 +101,21 @@ easy to tell apart. Each region is individually hoverable and clickable, and its
 name comes from the feature's `product` attribute when the track's `labels.name`
 is configured to read it, e.g.:
 
-```json
-"labels": {
-  "name": "jexl:get(feature,'product') || get(feature,'name') || get(feature,'id')"
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "enterovirus_d_genes",
+  "name": "Genes",
+  "assemblyNames": ["GCF_000861205.1"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "uri": "https://example.com/GCF_000861205.1.gff.gz"
+  },
+  "displayDefaults": {
+    "labels": {
+      "name": "jexl:feature.product || feature.name || feature.id"
+    }
+  }
 }
 ```
 

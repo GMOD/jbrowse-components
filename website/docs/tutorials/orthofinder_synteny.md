@@ -56,7 +56,7 @@ collinearity you see in the ribbons is a property of the genomes rather than of
 the method, which is the opposite of an MCScan track, where collinearity is what
 the input file is made of.
 
-## Three genome sets, three things to look at
+## Three genome sets
 
 The [script](#reproduce-it-end-to-end) builds any of them.
 
@@ -126,7 +126,7 @@ OrthoFinder. The script prints the list to paste into the track config.
 
 A cell holds every gene of that genome in the orthogroup, and a synteny link
 runs from one gene to one gene, so a cell holding two maize genes has no single
-correct answer. Three treatments, and the default is the middle column here:
+correct answer. Three treatments:
 
 | `--pick`           | A rice gene with two maize orthologs                         | Use when                                                  |
 | ------------------ | ------------------------------------------------------------ | --------------------------------------------------------- |

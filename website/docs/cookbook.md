@@ -293,27 +293,42 @@ works one of these through end to end.
 
 ## Labels, tooltips & details {#labels-tooltips-details}
 
-Labels go in `displayDefaults` the same way `color` does. Note that
-[`showLabels`](/docs/config/linearcanvasbasedisplay/#slot-showlabels) takes
-`auto`, `on`, or `off`, not a boolean:
+Labels go in `displayDefaults` the same way `color` does.
+[`showLabels`](/docs/config/linearcanvasbasedisplay/#slot-showlabels) is not a
+boolean but a choice of which text is drawn: `auto` drops descriptions and then
+names as the view gets denser, while `nameAndDescription`, `name`,
+`description`, and `none` pin one choice at every zoom.
 
-```json
-"displayDefaults": {
-  "labels": {
-    "name": "jexl:feature.name || feature.id",
-    "description": "jexl:feature.note || feature.description || ''"
-  },
-  "showLabels": "on",
-  "showDescriptions": true
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "genes_labeled",
+  "name": "Genes",
+  "assemblyNames": ["volvox"],
+  "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" },
+  "displayDefaults": {
+    "labels": {
+      "name": "jexl:feature.name || feature.id",
+      "description": "jexl:feature.note || feature.description || ''"
+    },
+    "showLabels": "nameAndDescription"
+  }
 }
 ```
 
 `mouseover` returns the hover text. It is rendered as HTML, so `<b>`, `<br/>`,
 and links all work:
 
-```json
-"displayDefaults": {
-  "mouseover": "jexl:`${feature.name} [${feature.type}] ${feature.start}-${feature.end}`"
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "genes_mouseover",
+  "name": "Genes",
+  "assemblyNames": ["volvox"],
+  "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" },
+  "displayDefaults": {
+    "mouseover": "jexl:`${feature.name} [${feature.type}] ${feature.start}-${feature.end}`"
+  }
 }
 ```
 
@@ -324,9 +339,16 @@ Its `feature` callback returns an object that gets merged into what's shown.
 Name an existing field to rewrite it, add a new one for an extra row, or set a
 field to `undefined` to hide it.
 
-```json
-"formatDetails": {
-  "feature": "jexl:{name:'<a href=https://www.ncbi.nlm.nih.gov/gene/?term='+feature.name+'>'+feature.name+'</a>', type:undefined}"
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "genes_linked_details",
+  "name": "Genes",
+  "assemblyNames": ["volvox"],
+  "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" },
+  "formatDetails": {
+    "feature": "jexl:{name:'<a href=https://www.ncbi.nlm.nih.gov/gene/?term='+feature.name+'>'+feature.name+'</a>', type:undefined}"
+  }
 }
 ```
 
@@ -354,8 +376,15 @@ For a small, unindexed file, use the plaintext adapter (`Gff3Adapter`,
 [`heightMode`](/docs/config/linearcanvasbasedisplay/#slot-heightmode) decides
 what happens when more features arrive than fit in that box:
 
-```json
-"displayDefaults": { "height": 200, "heightMode": "fit" }
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "genes_fit",
+  "name": "Genes",
+  "assemblyNames": ["volvox"],
+  "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" },
+  "displayDefaults": { "height": 200, "heightMode": "fit" }
+}
 ```
 
 - `fixed` keeps the height you set and scrolls the overflow
@@ -372,8 +401,15 @@ vertical room each feature gets, independent of height. `collapsed` puts
 everything on one row and turns labels off, which suits a repeat or mappability
 stripe:
 
-```json
-"displayDefaults": { "displayMode": "collapsed" }
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "repeats_collapsed",
+  "name": "Repeats",
+  "assemblyNames": ["volvox"],
+  "adapter": { "type": "BedTabixAdapter", "uri": "volvox-bed12.bed.gz" },
+  "displayDefaults": { "displayMode": "collapsed" }
+}
 ```
 
 `normal`, `compact`, and `superCompact` are the other values.
@@ -384,12 +420,20 @@ Arcs suit interactions, breakpoints, and paired features. The arc display isn't
 a `FeatureTrack`'s default, so you select it with a `displays` array:
 
 ```json
-"displays": [
-  {
-    "type": "LinearArcDisplay",
-    "arcHeight": "jexl:log10(feature.end-feature.start)*20"
-  }
-]
+{
+  "type": "FeatureTrack",
+  "trackId": "interactions_arcs",
+  "name": "Interactions",
+  "assemblyNames": ["volvox"],
+  "adapter": { "type": "BedpeAdapter", "uri": "volvox.bedpe" },
+  "displays": [
+    {
+      "type": "LinearArcDisplay",
+      "displayId": "interactions_arcs-LinearArcDisplay",
+      "arcHeight": "jexl:log10(feature.end-feature.start)*20"
+    }
+  ]
+}
 ```
 
 `color`, `arcHeight`, `thickness`, and `label` all accept `jexl:`, so arc height
@@ -402,9 +446,19 @@ can encode span or score. See
 Every entry is an expression already, so unlike `color`, the `jexl:` prefix is
 optional here:
 
-```json
-"displayDefaults": {
-  "jexlFilters": ["feature.end - feature.start > 1000", "feature.type == 'gene'"]
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "genes_filtered",
+  "name": "Long genes only",
+  "assemblyNames": ["volvox"],
+  "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" },
+  "displayDefaults": {
+    "jexlFilters": [
+      "feature.end - feature.start > 1000",
+      "feature.type == 'gene'"
+    ]
+  }
 }
 ```
 
@@ -442,9 +496,20 @@ reads with all of its bits set. The 1540 below hides unmapped, vendor-failed,
 and duplicate reads; 3844 also hides secondary and supplementary. `tagFilters`
 restricts by tag value. A read has to pass every filter to be drawn:
 
-```json
-"displayDefaults": {
-  "filterBy": { "flagExclude": 1540, "flagInclude": 0, "tagFilters": [{ "tag": "HP", "value": "1" }] }
+```json addtrack
+{
+  "type": "AlignmentsTrack",
+  "trackId": "my_bam_filtered",
+  "name": "Haplotype 1 reads",
+  "assemblyNames": ["volvox"],
+  "adapter": { "type": "BamAdapter", "uri": "volvox-sorted.bam" },
+  "displayDefaults": {
+    "filterBy": {
+      "flagExclude": 1540,
+      "flagInclude": 0,
+      "tagFilters": [{ "tag": "HP", "value": "1" }]
+    }
+  }
 }
 ```
 
@@ -534,10 +599,17 @@ the rows stop being comparable.
 fields are the usual thing to branch on, and they parse as arrays, so index
 them:
 
-```json
-"displayDefaults": {
-  "color": "jexl:{DEL:'red',INS:'blue',DUP:'green',INV:'orange'}[feature.INFO.SVTYPE[0]] || 'gray'",
-  "jexlFilters": ["feature.INFO.AF[0] > 0.05"]
+```json addtrack
+{
+  "type": "VariantTrack",
+  "trackId": "svs_by_type",
+  "name": "SVs by type",
+  "assemblyNames": ["volvox"],
+  "adapter": { "type": "VcfTabixAdapter", "uri": "volvox.dup.vcf.gz" },
+  "displayDefaults": {
+    "color": "jexl:{DEL:'red',INS:'blue',DUP:'green',INV:'orange'}[feature.INFO.SVTYPE[0]] || 'gray'",
+    "jexlFilters": ["feature.INFO.AF[0] > 0.05"]
+  }
 }
 ```
 
@@ -545,7 +617,19 @@ Multi-sample VCFs open in the standard variant display. For genotypes as a grid,
 switch from the track menu or name the display in the config:
 
 ```json
-"displays": [{ "type": "LinearMultiSampleVariantMatrixDisplay" }]
+{
+  "type": "VariantTrack",
+  "trackId": "cohort_matrix",
+  "name": "Cohort genotypes",
+  "assemblyNames": ["volvox"],
+  "adapter": { "type": "VcfTabixAdapter", "uri": "volvox.dup.vcf.gz" },
+  "displays": [
+    {
+      "type": "LinearMultiSampleVariantMatrixDisplay",
+      "displayId": "cohort_matrix-LinearMultiSampleVariantMatrixDisplay"
+    }
+  ]
+}
 ```
 
 See [variant tracks](/docs/config_guides/variant_track).
@@ -594,11 +678,17 @@ jbrowse make-pif alignments.paf   # -> alignments.pif.gz (+ .tbi)
 ```
 
 ```json
-"adapter": {
-  "type": "PairwiseIndexedPAFAdapter",
-  "uri": "alignments.pif.gz",
-  "queryAssembly": "peach",
-  "targetAssembly": "grape"
+{
+  "type": "SyntenyTrack",
+  "trackId": "grape_peach_synteny_pif",
+  "name": "Grape vs Peach (indexed)",
+  "assemblyNames": ["peach", "grape"],
+  "adapter": {
+    "type": "PairwiseIndexedPAFAdapter",
+    "uri": "alignments.pif.gz",
+    "queryAssembly": "peach",
+    "targetAssembly": "grape"
+  }
 }
 ```
 
@@ -611,13 +701,19 @@ jbrowse make-pif alignments.paf   # -> alignments.pif.gz (+ .tbi)
 and needs the MCScan workflow's per-assembly BED files. MCScan adapters take
 only `assemblyNames`, with the query first:
 
-```json
-"adapter": {
-  "type": "MCScanAnchorsAdapter",
-  "uri": "grape.peach.anchors.gz",
-  "bed1": "grape.bed.gz",
-  "bed2": "peach.bed.gz",
-  "assemblyNames": ["grape", "peach"]
+```json addtrack
+{
+  "type": "SyntenyTrack",
+  "trackId": "grape_peach_anchors",
+  "name": "Grape vs Peach (MCScan anchors)",
+  "assemblyNames": ["grape", "peach"],
+  "adapter": {
+    "type": "MCScanAnchorsAdapter",
+    "uri": "grape.peach.anchors.gz",
+    "bed1": "grape.bed.gz",
+    "bed2": "peach.bed.gz",
+    "assemblyNames": ["grape", "peach"]
+  }
 }
 ```
 
@@ -679,17 +775,24 @@ shared backbone. For full walkthroughs, see
 
 ## Instance-wide settings
 
-**Track folders** are set on the track itself. Nested arrays make nested folders
-in the [hierarchical track selector](/docs/config_guides/track_selector):
+**Track folders** and **metadata** are both set on the track itself. A nested
+`category` array makes nested folders in the
+[hierarchical track selector](/docs/config_guides/track_selector), and
+`metadata` shows up in the track details:
 
-```json
-"category": ["RNA-seq", "Brain"]
-```
-
-**Metadata** shows up in the track details:
-
-```json
-"metadata": { "description": "150bp paired-end reads", "source": "See <a href='https://example.com'>the paper</a>" }
+```json addtrack
+{
+  "type": "AlignmentsTrack",
+  "trackId": "brain_rnaseq",
+  "name": "Brain RNA-seq",
+  "assemblyNames": ["volvox"],
+  "adapter": { "type": "BamAdapter", "uri": "volvox-sorted.bam" },
+  "category": ["RNA-seq", "Brain"],
+  "metadata": {
+    "description": "150bp paired-end reads",
+    "source": "See <a href='https://example.com'>the paper</a>"
+  }
+}
 ```
 
 **Text searching.** `jbrowse text-index` builds the index and writes the

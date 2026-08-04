@@ -207,13 +207,19 @@ If you don't need per-row names, colors or groups, the `bigWigs` shorthand takes
 a plain array of URLs and derives each row's label from its filename:
 
 ```json
-"adapter": {
-  "type": "MultiWiggleAdapter",
-  "bigWigs": [
-    "https://example.com/bw/CD8_Naive.bw",
-    "https://example.com/bw/CD8_Memory.bw",
-    "https://example.com/bw/Naive_B.bw"
-  ]
+{
+  "type": "MultiQuantitativeTrack",
+  "trackId": "scatac_pseudobulk_simple",
+  "name": "scATAC pseudobulk",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "MultiWiggleAdapter",
+    "bigWigs": [
+      "https://example.com/bw/CD8_Naive.bw",
+      "https://example.com/bw/CD8_Memory.bw",
+      "https://example.com/bw/Naive_B.bw"
+    ]
+  }
 }
 ```
 

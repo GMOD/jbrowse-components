@@ -145,11 +145,25 @@ unnamed. Rather than editing the file, name them on the adapter with the
 [`columnNames`](/docs/config/bedadapter/#slot-columnnames) slot in
 `config.json`:
 
-```json
-"adapter": {
-  "type": "BedAdapter",
-  "uri": ".../GRCh38_HG008-T-V0.5_somatic-CNV_PASS.draftbenchmark.calls.bed",
-  "columnNames": ["chrom", "start", "end", "total_copy_number", "hap1_copy_number", "hap2_copy_number", "name"]
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "hg008t_somatic_cnv",
+  "name": "HG008-T somatic CNV",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BedAdapter",
+    "uri": ".../GRCh38_HG008-T-V0.5_somatic-CNV_PASS.draftbenchmark.calls.bed",
+    "columnNames": [
+      "chrom",
+      "start",
+      "end",
+      "total_copy_number",
+      "hap1_copy_number",
+      "hap2_copy_number",
+      "name"
+    ]
+  }
 }
 ```
 
@@ -475,16 +489,12 @@ ways: the SV inspector for whole-genome triage, the linear genome view for
 read-level detail and copy number, and the dotplot/synteny views for
 chromosome-scale rearrangements in the assembly.
 
-A
-[live demo](https://jbrowse.org/code/jb2/latest/?config=/demos/cgiab/config.json)
-carries all of these tracks pre-loaded.
-
 ### Walkthrough: a chr3–chr13 translocation
 
-Open `http://yourhost.com/jbrowse2/` (or the live demo linked above) in a web
-browser. From the start screen, launch the SV inspector, then use **Open from
-track** to pick the C-GIAB benchmark VCF you loaded earlier. The result is a
-combined data table and circular overview of the SV calls.
+Open your JBrowse 2 instance in a web browser. From the start screen, launch the
+SV inspector, then use **Open from track** to pick the C-GIAB benchmark VCF you
+loaded earlier. The result is a combined data table and circular overview of the
+SV calls.
 
 <Figure caption="The SV inspector showing the benchmark VCF as a circular overview alongside a table of calls." src="/img/sv_cgiab/translocation_sv_inspector_view.png" />
 

@@ -32,21 +32,17 @@ It is an imprecise, manually-flagged call that overlaps neighboring complex
 (CPX) events, which is what makes it worth following: a call like this is a
 claim to be checked against the reads, not a result to read off.
 
-The tracks are already loaded in the hosted demo, built with the usual
-`jbrowse add-track` workflow. The callset is bgzip-compressed and tabix-indexed
-on JBrowse's S3, and the alignment tracks stream the published high-coverage
-CRAMs directly from the 1000 Genomes FTP.
-
-[Open the 1000 Genomes demo](https://jbrowse.org/code/jb2/latest/?config=/genomes/GRCh38/1000genomes/config_1000genomes.json)
+The tracks are added with the usual `jbrowse add-track` workflow. The callset is
+bgzip-compressed and tabix-indexed, and the alignment tracks stream the
+published high-coverage CRAMs directly from the 1000 Genomes FTP.
 
 In the track selector, enable the 1KGP 2022 Illumina ensemble SV callset under
 **1000 Genomes → SV callsets**, listed by its file name
 **1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf**, then navigate to
 `chr19:41,700,000-42,000,000` to start at the left breakpoint region.
 
-This walkthrough uses the hosted web demo, but everything below works the same
-in [JBrowse Desktop](/docs/quickstart_desktop), which is the better fit for your
-own VCF and BAM files.
+Everything below works the same in [JBrowse Desktop](/docs/quickstart_desktop),
+which is the better fit for your own VCF and BAM files.
 
 ## Genotypes across the cohort
 

@@ -22,10 +22,16 @@ adapter auto-resolves the companion index by appending the standard suffix
 (`.bai` for a `.bam`, `.crai` for a `.cram`, `.fai` for a `.fa`, `.tbi` for a
 tabix `.gz`, and so on).
 
-```json
-"adapter": {
-  "type": "BamAdapter",
-  "uri": "https://example.com/sample.bam"
+```json addtrack
+{
+  "type": "AlignmentsTrack",
+  "trackId": "sample_bam",
+  "name": "Sample reads",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BamAdapter",
+    "uri": "https://example.com/sample.bam"
+  }
 }
 ```
 
@@ -36,11 +42,17 @@ Use CSI over TBI/BAI for chromosomes longer than 512 Mb (some plant and animal
 genomes exceed it; CRAM's `.crai` has no such limit). BAM and the tabix-indexed
 adapters (VCF, GFF3, BED, BEDGRAPH, MAF, PAF) accept a `csi: true` shorthand:
 
-```json
-"adapter": {
-  "type": "VcfTabixAdapter",
-  "uri": "https://example.com/variants.vcf.gz",
-  "csi": true
+```json addtrack
+{
+  "type": "VariantTrack",
+  "trackId": "variants_csi",
+  "name": "Variants",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "VcfTabixAdapter",
+    "uri": "https://example.com/variants.vcf.gz",
+    "csi": true
+  }
 }
 ```
 
@@ -65,9 +77,13 @@ definition, not a track.
 
 <!-- FILE_TYPES sequence END -->
 
-```json
-"adapter": {
-  "type": "IndexedFastaAdapter",
+You usually don't name one of these adapters at all: give the assembly a `name`
+and a sequence-file `uri`, and JBrowse picks the adapter from the extension and
+derives the index siblings.
+
+```json addassembly
+{
+  "name": "hg38",
   "uri": "https://example.com/genome.fa"
 }
 ```
@@ -161,11 +177,17 @@ attribute — so files that carry only a `gene_id`, like UCSC `genePredToGtf` or
 AUGUSTUS output, still get gene models. Point `aggregateField` at whichever
 attribute holds your display name:
 
-```json
-"adapter": {
-  "type": "GtfTabixAdapter",
-  "uri": "https://example.com/genes.gtf.gz",
-  "aggregateField": "ref_gene_name"
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "genes_gtf",
+  "name": "Genes",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "GtfTabixAdapter",
+    "uri": "https://example.com/genes.gtf.gz",
+    "aggregateField": "ref_gene_name"
+  }
 }
 ```
 

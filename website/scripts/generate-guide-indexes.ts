@@ -189,8 +189,8 @@ function buildUserGuide(): string {
     'title: User guide',
     'sidebar_label: Overview',
     'description:',
-    '  Index of the guides for driving JBrowse, covering track types, views,',
-    '  and the rest of the app.',
+    '  Index of the guides for driving JBrowse, covering track types, views, and the',
+    '  rest of the app.',
     '---',
     '',
     'How to drive JBrowse once it is running. New here? Start with the',
@@ -213,8 +213,8 @@ function buildConfigGuide(): string {
     'title: Config guide',
     'sidebar_label: Overview',
     'description:',
-    '  Index of the guides for writing config.json, covering assemblies,',
-    '  tracks, callbacks, and deployment.',
+    '  Index of the guides for writing config.json, covering assemblies, tracks,',
+    '  callbacks, and deployment.',
     '---',
     '',
     'How to configure the `config.json` that drives a session. For copy-paste',
@@ -252,8 +252,8 @@ app, an electron app, a CLI app, etc). \`jbrowse-web\`, \`jbrowse-desktop\`, and
 
 A "plugin" is a package of functionality that is designed to "plug in" to a
 product **at runtime** to add functionality. These can be written and published
-by anyone, not just the JBrowse core team. Most products load plugins at runtime, though it
-isn't required.
+by anyone, not just the JBrowse core team. Most products load plugins at
+runtime, though it isn't required.
 
 <Figure src="/img/product_architecture.png" caption="This figure summarizes the general architecture of our state model and React component tree"/>
 

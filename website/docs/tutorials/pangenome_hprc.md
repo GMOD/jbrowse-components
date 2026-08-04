@@ -467,14 +467,7 @@ alike, so `hs1` is what the launch opens and `CHM13` is what the graph says:
   "name": "hs1",
   "displayName": "Human (T2T-CHM13v2.0/hs1)",
   "aliases": ["CHM13", "T2T-CHM13v2.0"],
-  "sequence": {
-    "type": "ReferenceSequenceTrack",
-    "trackId": "hs1-ReferenceSequenceTrack",
-    "adapter": {
-      "type": "TwoBitAdapter",
-      "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hs1/bigZips/hs1.2bit"
-    }
-  }
+  "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hs1/bigZips/hs1.2bit"
 }
 ```
 

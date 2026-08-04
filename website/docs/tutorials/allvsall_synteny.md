@@ -174,15 +174,21 @@ loads each haplotype as its own JBrowse assembly, and then an assembly maps to a
 `sample#haplotype` prefix rather than to a sample:
 
 ```json
-"adapter": {
-  "type": "AllVsAllPAFAdapter",
-  "uri": "all_vs_all.paf",
+{
+  "type": "SyntenyTrack",
+  "trackId": "grape_peach_haps_ava",
+  "name": "Grape/peach haplotypes all-vs-all",
   "assemblyNames": ["grape_hap1", "grape_hap2", "peach_hap1", "peach_hap2"],
-  "assemblyNameToPanSN": {
-    "grape_hap1": "grape#1",
-    "grape_hap2": "grape#2",
-    "peach_hap1": "peach#1",
-    "peach_hap2": "peach#2"
+  "adapter": {
+    "type": "AllVsAllPAFAdapter",
+    "uri": "all_vs_all.paf",
+    "assemblyNames": ["grape_hap1", "grape_hap2", "peach_hap1", "peach_hap2"],
+    "assemblyNameToPanSN": {
+      "grape_hap1": "grape#1",
+      "grape_hap2": "grape#2",
+      "peach_hap1": "peach#1",
+      "peach_hap2": "peach#2"
+    }
   }
 }
 ```
@@ -222,11 +228,17 @@ jbrowse add-track all_vs_all.pif.gz --adapterType AllVsAllIndexedPAFAdapter \
 Everything else about the track is unchanged, only the `adapter` block differs
 from the un-indexed version above:
 
-```json
-"adapter": {
-  "type": "AllVsAllIndexedPAFAdapter",
-  "uri": "all_vs_all.pif.gz",
-  "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"]
+```json addtrack
+{
+  "type": "SyntenyTrack",
+  "trackId": "ecoli_ava_indexed",
+  "name": "E. coli all-vs-all (indexed)",
+  "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"],
+  "adapter": {
+    "type": "AllVsAllIndexedPAFAdapter",
+    "uri": "all_vs_all.pif.gz",
+    "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"]
+  }
 }
 ```
 

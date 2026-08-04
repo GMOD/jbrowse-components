@@ -2,8 +2,8 @@
 title: Config guide
 sidebar_label: Overview
 description:
-  Index of the guides for writing config.json, covering assemblies,
-  tracks, callbacks, and deployment.
+  Index of the guides for writing config.json, covering assemblies, tracks,
+  callbacks, and deployment.
 ---
 
 How to configure the `config.json` that drives a session. For copy-paste

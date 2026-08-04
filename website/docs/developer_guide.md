@@ -22,8 +22,8 @@ app, an electron app, a CLI app, etc). `jbrowse-web`, `jbrowse-desktop`, and
 
 A "plugin" is a package of functionality that is designed to "plug in" to a
 product **at runtime** to add functionality. These can be written and published
-by anyone, not just the JBrowse core team. Most products load plugins at runtime, though it
-isn't required.
+by anyone, not just the JBrowse core team. Most products load plugins at
+runtime, though it isn't required.
 
 <Figure src="/img/product_architecture.png" caption="This figure summarizes the general architecture of our state model and React component tree"/>
 

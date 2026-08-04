@@ -50,9 +50,8 @@ options for a specific track or adapter type, the auto-generated
 source so it never goes stale, e.g. [](/docs/config/bamadapter) or
 [](/docs/config/linearwiggledisplay).
 
-For repetitive data you can
-[generate `config.json` from a script](/docs/config_guides/deploying); see
-[](/docs/config_guides/deploying) for an end-to-end setup.
+For repetitive data, [](/docs/config_guides/deploying) covers generating
+`config.json` from a script, end to end.
 
 On jbrowse-desktop, saved sessions use this same config format, stored in a file
 with a `.jbrowse` extension.

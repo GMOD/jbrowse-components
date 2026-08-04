@@ -28,8 +28,7 @@ minimap2 argument order.
 
 This tutorial follows three _Helicobacter pylori_ strains (26695, CHC155, and
 J99) from raw assemblies to a stacked three-genome synteny view. The steps work
-the same on any pair of assemblies you have, and the finished dataset is hosted:
-[open the H. pylori synteny demo](https://jbrowse.org/code/jb2/latest/?config=/demos/hpylori/config.json).
+the same on any pair of assemblies you have.
 
 ## Aligning the assemblies
 

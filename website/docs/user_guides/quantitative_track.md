@@ -28,17 +28,39 @@ slot) offers these styles:
 
 <Figure caption="The same BigWig rendered in every plot type at once (XY plot, Density, Line (step), Line (interpolated), and Scatter), so the styles can be compared directly. Switch a track between them from its Plot type menu." src="/img/bigwig_line.png" />
 
-## Autoscale options
+## Score options
 
-The **Autoscale type** option controls the Y-axis range:
+**Plot type** and **Resolution** are top-level track menu items; the rest of the
+settings below are grouped under **Score**.
 
-- Local (default) - rescales to the current view (useful when navigating to
-  regions with very different signal levels)
-- Local ± 3σ - scales to three standard deviations of the local signal, clipping
-  outlier spikes; recommended for coverage tracks that have a few anomalously
-  high positions
+### Autoscale type
 
-## Other track options
+Controls the Y-axis range (the display's
+[`autoscale`](/docs/config/linearwiggledisplay/#slot-autoscale) slot). All three
+rescale to the region in view, and differ in how they treat outliers:
+
+- Local - the plain min and max of the visible data, so one anomalous position
+  flattens everything else against the axis
+- Local (99th percentile) - clips the outermost 1% of each sign, which keeps a
+  few extreme positions from setting the scale for the whole track
+- Local ± 3σ - scales to three standard deviations of the local signal, a harder
+  clip than the percentile when the spikes are very tall
+
+### Summary score mode
+
+Zoomed out, a BigWig serves precomputed summary bins rather than per-base
+values, and this picks which statistic of the bin a pixel draws: **Minimum**,
+**Maximum**, **Average**, or **Whiskers**, which draws all three at once as a
+darker average band inside the lighter min-to-max range
+([`summaryScoreMode`](/docs/config/linearwiggledisplay/#slot-summaryscoremode)).
+Density mode maps score to color rather than height, so it has no whiskers
+presentation and draws the average instead.
+
+A narrow peak that is obvious at full resolution can fade out across a whole
+chromosome, because averaging it over a wide bin flattens it. **Maximum** keeps
+it visible.
+
+### Other options
 
 - Scale type - switch the Y axis between linear and log scaling; log is useful
   when signal spans several orders of magnitude
