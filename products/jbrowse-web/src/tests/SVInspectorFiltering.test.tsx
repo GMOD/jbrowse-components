@@ -140,7 +140,7 @@ test('SVInspector quick-filter input propagates to visibleRows/features', async 
       spreadsheet.visibleRows!.length,
     )
     expect(
-      svInspectorView.featuresCircularTrackConfiguration.adapter.features,
+      svInspectorView.featuresCircularTrackConfiguration?.adapter.features,
     ).toBe(svInspectorView.features)
   })
 }, 60000)
@@ -194,8 +194,8 @@ test('SVInspector filtering updates circular view accordingly', async () => {
 
     const trackConfig = svInspectorView.featuresCircularTrackConfiguration
     expect(trackConfig).toBeDefined()
-    expect(trackConfig.type).toBe('VariantTrack')
-    expect(trackConfig.adapter.features).toBe(features)
+    expect(trackConfig?.type).toBe('VariantTrack')
+    expect(trackConfig?.adapter.features).toBe(features)
 
     const allRows = spreadsheet.rows!
     const visibilityMap: Record<number, boolean> = {}
