@@ -1,6 +1,5 @@
 import { tagColorPalette } from '@jbrowse/core/ui/theme'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
-import { reconcileLayout } from '@jbrowse/tree-sidebar'
 
 // A row in the painting. `name` is the partition value (the row identity, and
 // the tree leaf name); the rest are user arrangement overrides. `labelColor`
@@ -112,17 +111,4 @@ export function orderPartitionValues(
   const seen = new Set(listed)
   const rest = [...values].filter(v => !seen.has(v)).sort()
   return [...listed, ...rest]
-}
-
-/**
- * Reconcile the persisted `layout` (user reorder/relabel) against the rows
- * currently discovered in the data via the shared `reconcileLayout`. Block
- * colors come per feature, not per row, so no palette synthesis happens here
- * (unlike the multiwiggle sources).
- */
-export function buildEditableSources(
-  discovered: MultiRowSource[],
-  layout: MultiRowSource[],
-): MultiRowSource[] {
-  return reconcileLayout(discovered, layout)
 }

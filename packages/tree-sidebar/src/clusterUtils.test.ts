@@ -5,6 +5,7 @@ import {
   getLeafNames,
   parseClusterTree,
   pruneNewickToLeaves,
+  reconcileLayout,
   treeDescribesRows,
   validateClusterOrder,
 } from './clusterUtils.ts'
@@ -259,5 +260,48 @@ describe('computeClusterHierarchy', () => {
     expect(
       computeClusterHierarchy(root, undefined, 90, 80, false),
     ).toBeUndefined()
+  })
+})
+
+// The membership rule every row display shares: a `layout` orders and overrides,
+// the data decides who is there. Both halves matter — a row the data no longer
+// has must go, and one the layout never saw must still get a row.
+describe('reconcileLayout', () => {
+  const discovered = [{ name: 'mom' }, { name: 'dad' }, { name: 'kid' }]
+
+  test('empty layout returns the discovered array itself', () => {
+    expect(reconcileLayout(discovered, [])).toBe(discovered)
+  })
+
+  test('layout order wins', () => {
+    const layout = [{ name: 'kid' }, { name: 'mom' }, { name: 'dad' }]
+    expect(reconcileLayout(discovered, layout).map(s => s.name)).toEqual([
+      'kid',
+      'mom',
+      'dad',
+    ])
+  })
+
+  test('drops layout rows the data no longer has', () => {
+    expect(
+      reconcileLayout(discovered, [{ name: 'gone' }, { name: 'dad' }]).map(
+        s => s.name,
+      ),
+    ).toEqual(['dad', 'mom', 'kid'])
+  })
+
+  test('appends newly-discovered rows, in discovered order', () => {
+    expect(
+      reconcileLayout(discovered, [{ name: 'dad' }]).map(s => s.name),
+    ).toEqual(['dad', 'mom', 'kid'])
+  })
+
+  test('layout entries are partial overrides over the discovered row', () => {
+    const layout = [{ name: 'mom', label: 'Mother', color: 'red' }]
+    expect(reconcileLayout(discovered, layout)).toEqual([
+      { name: 'mom', label: 'Mother', color: 'red' },
+      { name: 'dad' },
+      { name: 'kid' },
+    ])
   })
 })

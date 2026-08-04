@@ -1,11 +1,7 @@
 import { tagColorPalette } from '@jbrowse/core/ui/theme'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
-import {
-  buildEditableSources,
-  orderPartitionValues,
-  resolveRowColors,
-} from './sourcesLogic.ts'
+import { orderPartitionValues, resolveRowColors } from './sourcesLogic.ts'
 
 const rows = [{ name: 'mom' }, { name: 'dad' }, { name: 'kid' }]
 
@@ -66,47 +62,5 @@ test('duplicate rowOrder entries are de-duplicated (no blank row)', () => {
   expect(orderPartitionValues(new Set(['a', 'b']), ['a', 'a', 'b'])).toEqual([
     'a',
     'b',
-  ])
-})
-
-const discovered = [{ name: 'mom' }, { name: 'dad' }, { name: 'kid' }]
-
-test('buildEditableSources: empty layout returns discovered unchanged', () => {
-  expect(buildEditableSources(discovered, [])).toBe(discovered)
-})
-
-test('buildEditableSources: layout reorders discovered rows', () => {
-  const layout = [{ name: 'kid' }, { name: 'mom' }, { name: 'dad' }]
-  expect(buildEditableSources(discovered, layout)).toEqual([
-    { name: 'kid' },
-    { name: 'mom' },
-    { name: 'dad' },
-  ])
-})
-
-test('buildEditableSources: layout rows no longer in the data are dropped', () => {
-  const layout = [{ name: 'gone' }, { name: 'dad' }]
-  expect(buildEditableSources(discovered, layout)).toEqual([
-    { name: 'dad' },
-    { name: 'mom' },
-    { name: 'kid' },
-  ])
-})
-
-test('buildEditableSources: newly-discovered rows append in discovered order', () => {
-  const layout = [{ name: 'dad' }]
-  expect(buildEditableSources(discovered, layout)).toEqual([
-    { name: 'dad' },
-    { name: 'mom' },
-    { name: 'kid' },
-  ])
-})
-
-test('buildEditableSources: layout label/color overrides merge over discovered', () => {
-  const layout = [{ name: 'mom', label: 'Mother', color: 'red' }]
-  expect(buildEditableSources(discovered, layout)).toEqual([
-    { name: 'mom', label: 'Mother', color: 'red' },
-    { name: 'dad' },
-    { name: 'kid' },
   ])
 })

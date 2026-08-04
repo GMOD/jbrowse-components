@@ -25,6 +25,7 @@ import {
   buildSpatialIndex,
   computeClusterHierarchy,
   filterRowsBySubtree,
+  reconcileLayout,
   treeSidebarRightEdge,
 } from '@jbrowse/tree-sidebar'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
@@ -49,7 +50,6 @@ import {
 import { rowOrderByValueAt } from './rowOrderByValueAt.ts'
 import {
   applyRowGroups,
-  buildEditableSources,
   orderPartitionValues,
   resolveRowColors,
 } from './sourcesLogic.ts'
@@ -304,7 +304,7 @@ export default function stateModelFactory(
        * what the arrangement dialog edits. Not subtree-filtered.
        */
       get editableSources(): MultiRowSource[] {
-        return buildEditableSources(self.sourcesWithoutLayout, self.layout)
+        return reconcileLayout(self.sourcesWithoutLayout, self.layout)
       },
     }))
     .views(self => ({

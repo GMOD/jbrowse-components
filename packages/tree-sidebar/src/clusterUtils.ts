@@ -171,15 +171,10 @@ export function treeDescribesRows(
   rows: readonly { name: string }[],
 ): boolean {
   const leafNodes = leaves(root)
-  if (leafNodes.length !== rows.length) {
-    return false
-  }
-  for (let i = 0; i < leafNodes.length; i++) {
-    if (leafNodes[i]!.data.name !== rows[i]!.name) {
-      return false
-    }
-  }
-  return true
+  return (
+    leafNodes.length === rows.length &&
+    leafNodes.every((leaf, i) => leaf.data.name === rows[i]!.name)
+  )
 }
 
 // Position the (filtered) cluster tree for drawing: leaves spaced over

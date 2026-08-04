@@ -717,23 +717,6 @@ export default function MultiSampleVariantBaseModelF(
         },
         /**
          * #action
-         * Restore the configured default arrangement — empties the layout
-         * and clears the cluster tree plus the subtree filter that named its
-         * leaves, then re-applies the `colorBy` palette if one is configured.
-         * Overrides the mixin's `clearLayout` so the user gets the same
-         * starting state they had on initial load.
-         */
-        clearLayout() {
-          self.clusterTree = undefined
-          self.setSubtreeFilter(undefined)
-          self.layout = []
-          // With no layout left, `applyArrangement` re-derives from adapter
-          // order — the same "reset to the configured default" it does on first
-          // load, so the two can't drift.
-          applyArrangement(self, self.colorBy, self.groupBy)
-        },
-        /**
-         * #action
          */
         setMafFilter(arg: number) {
           setConf(self, 'minorAlleleFrequencyFilter', arg)
@@ -829,6 +812,23 @@ export default function MultiSampleVariantBaseModelF(
           setConf(self, 'featureColor', arg)
         },
       }))
+      .actions(self => {
+        const superClearLayout = self.clearLayout
+        return {
+          /**
+           * #action
+           * Restore the configured default arrangement. The mixin's
+           * `clearLayout` empties the layout and drops the tree plus the subtree
+           * filter that named its leaves; with no layout left, `applyArrangement`
+           * re-derives from adapter order — the same thing it does on first
+           * load, so a reset and a fresh load can't come out different.
+           */
+          clearLayout() {
+            superClearLayout()
+            applyArrangement(self, self.colorBy, self.groupBy)
+          },
+        }
+      })
       .views(self => ({
         /**
          * #getter
