@@ -17,6 +17,7 @@ import { useVariantCanvasInteraction } from '../../shared/hooks/useVariantCanvas
 import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
 import VariantInsertionGlyphOverlay from './VariantInsertionGlyphOverlay.tsx'
 import { pickVariantCell } from './pickVariantCell.ts'
+import { drawnCellHeightPx } from './shaders/variant.js.generated.ts'
 import { variantCellSpanPx } from './variantCellSpan.ts'
 import { computeVariantHitQuery } from './variantHitTest.ts'
 
@@ -102,7 +103,7 @@ function getFeatureUnderMouse(
     toX,
     pxPerBp:
       (region.screenEndPx - region.screenStartPx) / (region.end - region.start),
-    drawnRowHeight: Math.max(model.effectiveRowHeight, 2),
+    drawnRowHeight: drawnCellHeightPx(model.effectiveRowHeight),
   })
   if (!picked) {
     return undefined
@@ -157,11 +158,11 @@ const HoveredCellHighlight = observer(function HoveredCellHighlight({
     return null
   }
   const toX = makeBpMapper(region)
-  // The 2px floor every painter applies (shaders/variant.slang,
-  // Canvas2DVariantRenderer, variantCellSpanPx) — the box has to be the size
-  // the cell was drawn at, not the size a row nominally occupies, or a
-  // sub-pixel row highlights as an invisible sliver over a 2px cell.
-  const drawnRowHeight = Math.max(model.effectiveRowHeight, 2)
+  // The 2px floor every painter applies, read from the shader's own generated
+  // twin (shaders/variant.slang, adr-051) rather than restated — the box has to
+  // be the size the cell was drawn at, not the size a row nominally occupies,
+  // or a sub-pixel row highlights as an invisible sliver over a 2px cell.
+  const drawnRowHeight = drawnCellHeightPx(model.effectiveRowHeight)
   // Same drawn extent the cell painted, so the box lands on an insertion marker
   // rather than the ~1bp reference span underneath it.
   const { left, width } = variantCellSpanPx({

@@ -96,8 +96,17 @@ export function getPhasedColor(
     // is correct (not a bug) — the old `% 255` just truncated the wheel,
     // never emitting the 255-360 magenta/red arc. The golden-angle multiplier
     // spreads consecutive phase sets far apart instead of by a single degree.
+    //
+    // Rounded to whole degrees so the *string* this returns has 361 possible
+    // values rather than one per phase set. Everything downstream is memoized
+    // by that string — `getCachedABGR`'s cache is module-level and never
+    // evicts, and it lives in a worker that outlives every fetch — so an
+    // unrounded hue interned one entry (plus one `colord` parse) per distinct
+    // PS, and a whole-genome phased callset has hundreds of thousands of them.
+    // A degree is well under the resolution the eye reads a hue at, and two
+    // phase sets landing on one hue is already inherent to a 360-slot wheel.
     const ps = +PS
-    const hue = Number.isFinite(ps) ? (ps * 137.508) % 360 : 0
+    const hue = Number.isFinite(ps) ? Math.round((ps * 137.508) % 360) : 0
     return `hsl(${hue}, 50%, 50%)`
   }
   return allele === mostFrequentAlt ? PRIMARY_ALT_COLOR : SECONDARY_ALT_COLOR

@@ -136,11 +136,16 @@ export function getSources({
   renderingMode: string
   sampleInfo?: Record<string, SampleInfo>
 }): ProcessedSource[] {
-  const sourceMap = Object.fromEntries(sources.map(s => [s.name, s]))
+  // A Map, not an object keyed by sample name: names come from the file, and on
+  // a plain object a sample called `constructor` or `toString` reads back an
+  // inherited value instead of `undefined`, so the miss check below would keep a
+  // row that has no source. It also builds and probes faster at cohort sizes,
+  // and this runs on every reorder (`sourcesBase` is a computed).
+  const sourceMap = new Map(sources.map(s => [s.name, s]))
 
   return appendUncoveredSamples(sources, layout).flatMap(row => {
     const sampleName = resolveSampleName(row)
-    const baseSource = sourceMap[sampleName]
+    const baseSource = sourceMap.get(sampleName)
 
     if (!baseSource) {
       return []

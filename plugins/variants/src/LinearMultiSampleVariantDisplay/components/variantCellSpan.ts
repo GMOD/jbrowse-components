@@ -1,5 +1,7 @@
 import { insertionBarWidth, textWidthForNumber } from '@jbrowse/alignments-core'
 
+import { snappedCellWidthPx } from './shaders/variant.js.generated.ts'
+
 // The widest an insertion marker can ever get: insertionBarWidth caps at the
 // count label's box (textWidthForNumber), so the hit-test's search window needs
 // no per-region maximum — half of this plus the click tolerance covers every
@@ -35,7 +37,9 @@ export function variantCellSpanPx({
   drawnRowHeight: number
 }) {
   const left = Math.min(x1, x2)
-  const width = Math.max(2, Math.abs(x2 - x1))
+  // The shader's own 2px floor, generated into TS (adr-051), rather than a
+  // fourth hand-written copy of it.
+  const width = snappedCellWidthPx(left, Math.max(x1, x2))
   const markerWidth =
     insertedBp > 0 ? insertionBarWidth(insertedBp, pxPerBp, drawnRowHeight) : 0
   if (markerWidth > width) {

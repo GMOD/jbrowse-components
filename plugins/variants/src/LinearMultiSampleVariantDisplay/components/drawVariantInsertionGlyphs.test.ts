@@ -66,19 +66,25 @@ const state: VariantRenderState = {
 }
 
 // One insertion record (1bp of reference, the VCF convention) with two cells:
-// row 0 carries the allele, row 1 is reference.
+// screen row 0 carries the allele, screen row 1 is reference.
+//
+// Laid out the way computeVariantCells emits it — the reference bucket first,
+// then the non-reference one, with `refCellCount` marking the boundary — so the
+// pass under test sees the ordering it (and the hit test) rely on rather than an
+// arrangement no payload can actually have.
 const INSERTED = 65481
 function data(
   overrides?: Partial<VariantInsertionGlyphData>,
 ): VariantInsertionGlyphData {
   return {
-    cellRowIndices: Uint32Array.from([0, 1]),
-    cellColors: Uint32Array.from([ALT_BLUE, REF_GREY]),
-    cellCarriesAlt: Uint8Array.from([1, 0]),
+    cellRowIndices: Uint32Array.from([1, 0]),
+    cellColors: Uint32Array.from([REF_GREY, ALT_BLUE]),
+    cellCarriesAlt: Uint8Array.from([0, 1]),
     cellFeatureIndices: Uint32Array.from([0, 0]),
     featurePositions: Uint32Array.from([10, 11]),
     featureInsertedBp: Int32Array.from([INSERTED]),
     numCells: 2,
+    refCellCount: 1,
     ...overrides,
   }
 }
@@ -124,7 +130,7 @@ test('the marker keeps the cell genotype color, not the alignments purple', () =
   // supplies length, so it must not repaint over that
   const RED = 0xff0000ff
   const { calls } = draw(
-    data({ cellColors: Uint32Array.from([RED, REF_GREY]) }),
+    data({ cellColors: Uint32Array.from([REF_GREY, RED]) }),
   )
   expect(calls[0]!.fillStyle).toBe(abgrToCssRgba(RED))
 })

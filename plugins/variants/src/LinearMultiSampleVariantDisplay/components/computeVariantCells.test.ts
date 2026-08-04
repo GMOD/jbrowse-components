@@ -684,6 +684,26 @@ describe('featureGenotypeMap records every genotype, not only painted ones', () 
     )
   })
 
+  // The record is the adapter's whole genotype map, shipped by reference — not
+  // a copy assembled from the rows being drawn. That is what makes it the same
+  // object the matrix display ships, so the two cannot disagree, and it is why
+  // narrowing the rows (a subtree filter) cannot quietly narrow the record the
+  // anchored sort reads.
+  test('a sample the display is not drawing still has its genotype recorded', () => {
+    const result = computeVariantCells({
+      filteredVariants: [{ feature, mostFrequentAlt: '1' }],
+      sources: [{ name: 'S2', sampleName: 'S2' }],
+      renderingMode: 'alleleCount',
+      referenceDrawingMode: 'skip',
+      featureGenotypes: genotypeLookup([feature]),
+    })
+    expect(result.numCells).toBe(1)
+    expect(result.featureGenotypeMap.f1!.genotypes).toEqual({
+      S1: '0/0',
+      S2: '0/1',
+    })
+  })
+
   test('phased mode keeps a hom-ref call that paints nothing', () => {
     const phasedFeature = makeFeature({
       genotypes: { S1: '0|0', S2: '1|0' },

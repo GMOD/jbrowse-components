@@ -67,6 +67,12 @@ export function variantShowSubmenuItems(
 export function variantTrackMenuItems(
   self: MultiSampleVariantBaseModel,
 ): MenuItem[] {
+  // "has a fetch landed yet", which is what separates "checking..." from "not
+  // in this dataset" on every gated entry below. Read off `cellData` rather
+  // than `featuresVolatile`, which answers the same boolean by materializing a
+  // SimpleFeature per loaded variant — thousands of objects built to open a
+  // menu, on a getter nothing else in this display reads.
+  const loaded = !!self.cellData
   return [
     {
       label: 'Show...',
@@ -126,14 +132,14 @@ export function variantTrackMenuItems(
           label: `Phased${
             self.hasPhased
               ? ''
-              : !self.featuresVolatile
+              : !loaded
                 ? ' (checking for phased variants...)'
                 : ' (disabled, no phased variants found)'
           }`,
           helpText:
             'Phased mode splits each sample into multiple rows representing each haplotype, and the phasing of the variants is used to color the variant in the individual haplotype rows. For example, a diploid sample SAMPLE1 will generate two rows SAMPLE1-HP0 and SAMPLE1 HP1 and a variant 1|0 will draw a box in the top row but not the bottom row',
           disabled: !self.hasPhased,
-          disabledHelpText: !self.featuresVolatile
+          disabledHelpText: !loaded
             ? 'Checking for phased variants...'
             : 'No phased variants found in this dataset',
           checked: self.renderingMode === 'phased',
@@ -170,7 +176,7 @@ export function variantTrackMenuItems(
           label: `Phase set${
             self.hasPhaseSet
               ? ''
-              : !self.featuresVolatile
+              : !loaded
                 ? ' (checking for phase sets...)'
                 : ' (no PS field found)'
           }`,
@@ -180,7 +186,7 @@ export function variantTrackMenuItems(
           checked: self.featureColor === PHASE_SET_COLOR,
           disabled: !self.hasPhaseSet || self.renderingMode !== 'phased',
           disabledHelpText: !self.hasPhaseSet
-            ? !self.featuresVolatile
+            ? !loaded
               ? 'Checking for phase sets...'
               : 'No phase sets (FORMAT PS) found in this dataset'
             : 'Only applies in phased mode — switch Rendering mode to phased',
@@ -192,7 +198,7 @@ export function variantTrackMenuItems(
           label: `Consequence impact${
             self.hasConsequence
               ? ''
-              : !self.featuresVolatile
+              : !loaded
                 ? ' (checking for annotations...)'
                 : ' (no SnpEff/VEP annotations found)'
           }`,
@@ -201,7 +207,7 @@ export function variantTrackMenuItems(
           type: 'radio',
           checked: self.featureColor === CONSEQUENCE_IMPACT_JEXL,
           disabled: !self.hasConsequence,
-          disabledHelpText: !self.featuresVolatile
+          disabledHelpText: !loaded
             ? 'Checking for annotations...'
             : 'No SnpEff/VEP annotations (ANN/CSQ) found in this dataset',
           onClick: () => {
@@ -212,7 +218,7 @@ export function variantTrackMenuItems(
           label: `SV type${
             self.hasSvType
               ? ''
-              : !self.featuresVolatile
+              : !loaded
                 ? ' (checking for structural variants...)'
                 : ' (no structural variants found)'
           }`,
@@ -221,7 +227,7 @@ export function variantTrackMenuItems(
           type: 'radio',
           checked: self.featureColor === SV_TYPE_COLOR,
           disabled: !self.hasSvType,
-          disabledHelpText: !self.featuresVolatile
+          disabledHelpText: !loaded
             ? 'Checking for structural variants...'
             : 'No structural variants (SVTYPE) found in this dataset',
           onClick: () => {

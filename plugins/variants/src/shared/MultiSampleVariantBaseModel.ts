@@ -79,11 +79,25 @@ export function maybeApplyColorByPalette(
   if (sources.some(source => colorBy in source)) {
     return applyColorPalette(sources, colorBy)
   }
-  console.warn(
-    `colorBy attribute "${colorBy}" not found in sample metadata. ` +
-      `Available attributes: ${Object.keys(sources[0] ?? {}).join(', ')}`,
-  )
+  warnMissingAttribute('colorBy', colorBy, sources)
   return undefined
+}
+
+// One spelling of "the config names an attribute the metadata doesn't have", for
+// the two settings that take one. Silent on an empty source list: that is the
+// pre-load state, not a bad config, and warning there printed an attribute list
+// that was empty because there was nothing to list yet.
+function warnMissingAttribute(
+  setting: string,
+  attribute: string,
+  sources: Record<string, unknown>[],
+) {
+  if (sources.length) {
+    console.warn(
+      `${setting} attribute "${attribute}" not found in sample metadata. ` +
+        `Available attributes: ${Object.keys(sources[0]!).join(', ')}`,
+    )
+  }
 }
 
 type SetSlotFn = (slotName: string, value: unknown) => void
@@ -181,10 +195,7 @@ export function maybeApplyGroupBy<S extends Record<string, unknown>>(
   if (sources.some(source => groupBy in source)) {
     return sortSourcesByAttribute(sources, groupBy)
   }
-  console.warn(
-    `groupBy attribute "${groupBy}" not found in sample metadata. ` +
-      `Available attributes: ${Object.keys(sources[0] ?? {}).join(', ')}`,
-  )
+  warnMissingAttribute('groupBy', groupBy, sources)
   return undefined
 }
 
@@ -1033,12 +1044,14 @@ export default function MultiSampleVariantBaseModelF(
       .views(self => ({
         /**
          * #getter
+         * Row name -> source, for the hover tooltip. A Map for the same reason
+         * `getSources`' is: row names come from the file, and on a plain object
+         * a sample called `constructor` resolves to something inherited rather
+         * than to a miss.
          */
         get sourceMap() {
           return self.sources
-            ? Object.fromEntries(
-                self.sources.map((source: Source) => [source.name, source]),
-              )
+            ? new Map(self.sources.map(source => [source.name, source]))
             : undefined
         },
         /**
@@ -1185,7 +1198,7 @@ export default function MultiSampleVariantBaseModelF(
           if (!hoveredGenotype) {
             return undefined
           }
-          const source = sourceMap?.[hoveredGenotype.name]
+          const source = sourceMap?.get(hoveredGenotype.name)
           return source ? { ...source, ...hoveredGenotype } : undefined
         },
       }))

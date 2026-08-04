@@ -8,57 +8,60 @@ import {
   getAltColorForDosage,
 } from './constants.ts'
 
+// The dosage color for one genotype. '' means "draw no cell here" — the same
+// sentinel getPhasedColor returns, so the two cell-color functions share one
+// `if (c)` at every call site.
+//
+// Uncached: its one caller memoizes the whole resolved cell style per distinct
+// genotype string per site (see shared/variantCellStyles.ts), so this now runs
+// a handful of times per variant rather than once per cell. The memo it used to
+// carry keyed on `${genotype}:${mostFrequentAlt}:${altOverride}` — a string
+// allocation on the per-cell path, and a key that silently left out `drawRef`,
+// so a cache shared across two reference-drawing modes would have answered from
+// the wrong one.
 export function getAlleleColor(
   genotype: string,
   mostFrequentAlt: string,
-  colorCache: Record<string, string | undefined>,
   drawRef = true,
-  // Consequence mode: paint alt-carrying cells with this color instead of the
-  // allele-dosage shade. Part of the cache key since the same genotype maps to
-  // different colors across features (each variant has its own impact color).
+  // Consequence / SV-type mode: paint alt-carrying cells with this color
+  // instead of the allele-dosage shade.
   altOverride?: string,
 ) {
-  const cacheKey = `${genotype}:${mostFrequentAlt}:${altOverride ?? ''}`
-  let c = colorCache[cacheKey]
-  if (c === undefined) {
-    let alt = 0
-    let uncalled = 0
-    let alt2 = 0
-    let ref = 0
+  let alt = 0
+  let uncalled = 0
+  let alt2 = 0
+  let ref = 0
 
-    const alleles =
-      genotype.length === 3 && (genotype[1] === '/' || genotype[1] === '|')
-        ? [genotype[0]!, genotype[2]!]
-        : genotype.split(GENOTYPE_SPLITTER)
-    const total = alleles.length
+  const alleles =
+    genotype.length === 3 && (genotype[1] === '/' || genotype[1] === '|')
+      ? [genotype[0]!, genotype[2]!]
+      : genotype.split(GENOTYPE_SPLITTER)
+  const total = alleles.length
 
-    for (let i = 0; i < total; i++) {
-      const allele = alleles[i]!
-      if (allele === mostFrequentAlt) {
-        alt++
-      } else if (allele === '0') {
-        ref++
-      } else if (allele === '.') {
-        uncalled++
-      } else {
-        alt2++
-      }
+  for (let i = 0; i < total; i++) {
+    const allele = alleles[i]!
+    if (allele === mostFrequentAlt) {
+      alt++
+    } else if (allele === '0') {
+      ref++
+    } else if (allele === '.') {
+      uncalled++
+    } else {
+      alt2++
     }
-    c = getColorAlleleCount(
-      ref,
-      alt,
-      alt2,
-      uncalled,
-      total,
-      drawRef,
-      altOverride,
-    )
-    colorCache[cacheKey] = c
   }
-  return c
+  return getColorAlleleCount(
+    ref,
+    alt,
+    alt2,
+    uncalled,
+    total,
+    drawRef,
+    altOverride,
+  )
 }
 
-export function getColorAlleleCount(
+function getColorAlleleCount(
   ref: number,
   alt: number,
   alt2: number,

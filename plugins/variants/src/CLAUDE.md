@@ -18,8 +18,15 @@ prefers declarative iteration.
 - **Genotype maps crossing RPC key by `sampleName`**, never `name` (HP-suffixed
   in phased mode).
 - **`featureGenotypeMap` is a genotype record, not a log of what got painted** —
-  record every genotype the sources cover, or hom-ref rows decode as MISSING
-  under `referenceDrawingMode: 'skip'` and the two displays sort differently.
+  both cell loops ship the adapter's whole genotype map for the feature, by
+  reference, so the two displays are handed the same object and cannot disagree.
+  Don't rebuild it from the rows being drawn: under the default
+  `referenceDrawingMode: 'skip'` a hom-ref call paints nothing, so a
+  painted-cells copy made every hom-ref row decode as MISSING to the anchored
+  sort — while the matrix, which always paints ref, sorted the same data
+  differently. It is also the largest single cost the loop can take on: a fresh
+  dictionary-mode object per feature with one insert per sample, which is
+  features × samples inserts to reproduce a map already in hand.
 - **`NaN` is the only missing marker** in genotype matrices. A sentinel on the
   value scale (`-1`) made samples cluster by missingness.
 - **`featureColor` is the single cell-coloring axis.** Add new modes there, not
@@ -54,13 +61,13 @@ Render input → the subclass `renderState` getter.
   `sampleFilter`, sent **sorted** so only membership can move it — because a
   focused clade is genuinely fewer cells to compute. Same split maf makes
   (`subtreeFilter` + `placeMafRegionData`); multi-wiggle makes it by passing
-  sources as a structural arg and re-encoding from `gpuProps()`.
-  **Nothing may wait on the refetch this removed.** The cluster tree did: it was
-  stashed as `pendingClusterTree` and promoted in `setCellData`, so once a
-  reorder stopped refetching it was never promoted and a `runClustering: true`
-  display drew no dendrogram — silently, because the rows were still clustered.
-  It applies immediately now, which is safe for the same reason: `rowRemap` is
-  derived from `sources`, so the cells re-place in the tick the layout changes.
+  sources as a structural arg and re-encoding from `gpuProps()`. **Nothing may
+  wait on the refetch this removed.** The cluster tree did: it was stashed as
+  `pendingClusterTree` and promoted in `setCellData`, so once a reorder stopped
+  refetching it was never promoted and a `runClustering: true` display drew no
+  dendrogram — silently, because the rows were still clustered. It applies
+  immediately now, which is safe for the same reason: `rowRemap` is derived from
+  `sources`, so the cells re-place in the tick the layout changes.
 - The cell arrays stay in the **worker's** row numbering, because they are
   sorted by `(featureIndex, rowIndex)` and `findCellIndex` binary-searches that.
   Placement writes a second array; the hit test converts its one query row

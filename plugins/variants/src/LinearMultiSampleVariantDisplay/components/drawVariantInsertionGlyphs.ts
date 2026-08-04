@@ -9,6 +9,7 @@ import {
   makeBpMapper,
 } from '@jbrowse/render-core/canvas2dUtils'
 
+import { drawnCellHeightPx } from './shaders/variant.js.generated.ts'
 import { variantCellSpanPx } from './variantCellSpan.ts'
 
 import type {
@@ -33,6 +34,11 @@ export interface VariantInsertionGlyphData {
   featurePositions: Uint32Array
   featureInsertedBp: Int32Array
   numCells: number
+  // Where the non-reference bucket starts. Only alt-carrying cells widen, and
+  // `isAlt` implies `!isReference` (see computeVariantCells' addCell), so every
+  // cell this pass can draw lives at or after this index — the reference bucket,
+  // which on a cohort VCF is most of the payload, is skipped outright.
+  refCellCount: number
 }
 
 /**
@@ -68,7 +74,9 @@ export function drawVariantInsertionGlyphs(
   state: VariantRenderState,
 ) {
   const { canvasWidth, canvasHeight, rowHeight, scrollTop } = state
-  const drawnRowHeight = Math.max(rowHeight, 2)
+  // variant.slang's own 2px floor, generated into TS (adr-051), so a marker
+  // cannot be sized against a different band than the cell it widens.
+  const drawnRowHeight = drawnCellHeightPx(rowHeight)
   const labelFits = drawnRowHeight >= MIN_HEIGHT_FOR_TEXT
   ctx.font = FONT
   ctx.textBaseline = 'middle'
@@ -119,7 +127,15 @@ export function drawVariantInsertionGlyphs(
       // zoomed out past the point an insertion outgrows its cell — skips the
       // per-cell walk entirely instead of running it to draw nothing.
       if (anyMarker) {
-        for (let i = 0; i < region.numCells; i++) {
+        // One-entry memo of the abgr -> CSS string conversion. Genotype colors
+        // come from a tiny fixed palette and the cells arrive feature-major, so
+        // consecutive markers usually share one — and this pass repaints on
+        // every scroll and pan, where an allocation per marker is per frame.
+        let lastAbgr = -1
+        let lastCss = ''
+        // Reference cells never carry the alt, so the scan starts at the
+        // non-reference bucket (see VariantInsertionGlyphData.refCellCount).
+        for (let i = region.refCellCount; i < region.numCells; i++) {
           const featureIdx = region.cellFeatureIndices[i]!
           if (region.cellCarriesAlt[i] && drawsMarker[featureIdx]) {
             // Y-cull as the block painter does
@@ -127,7 +143,12 @@ export function drawVariantInsertionGlyphs(
             if (y + drawnRowHeight >= 0 && y <= canvasHeight) {
               const xCenter = markerXCenter[featureIdx]!
               const inserted = region.featureInsertedBp[featureIdx]!
-              ctx.fillStyle = abgrToCssRgba(region.cellColors[i]!)
+              const abgr = region.cellColors[i]!
+              if (abgr !== lastAbgr) {
+                lastAbgr = abgr
+                lastCss = abgrToCssRgba(abgr)
+              }
+              ctx.fillStyle = lastCss
               drawInsertionMarker(
                 ctx,
                 xCenter,
@@ -142,7 +163,7 @@ export function drawVariantInsertionGlyphs(
               ) {
                 ctx.fillStyle = 'white'
                 ctx.fillText(String(inserted), xCenter, y + drawnRowHeight / 2)
-                ctx.fillStyle = abgrToCssRgba(region.cellColors[i]!)
+                // No restore: every marker sets fillStyle before it draws.
               }
             }
           }

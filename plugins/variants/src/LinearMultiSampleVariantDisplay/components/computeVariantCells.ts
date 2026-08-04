@@ -6,7 +6,6 @@ import {
   NO_CALL_COLOR,
   REFERENCE_COLOR,
 } from '../../shared/constants.ts'
-import { getAlleleColor } from '../../shared/drawAlleleCount.ts'
 import {
   featureHasPhaseSet,
   getPhasedColor,
@@ -14,6 +13,11 @@ import {
   isPhasedOrHaploid,
   splitPhasedAlleles,
 } from '../../shared/getPhasedColor.ts'
+import {
+  buildAlleleCountStyle,
+  buildPhasedStyles,
+  countHaplotypes,
+} from '../../shared/variantCellStyles.ts'
 import { getCachedABGR } from '../../shared/variantWebglUtils.ts'
 import { SHAPE_RECT, SHAPE_TRI_LEFT } from './variantShape.ts'
 
@@ -22,6 +26,7 @@ import type {
   ProcessedSource,
   VariantFeatureGenotypes,
 } from '../../shared/types.ts'
+import type { VariantCellStyle } from '../../shared/variantCellStyles.ts'
 import type { Feature, ProgressReporter } from '@jbrowse/core/util'
 
 export interface VariantCellData {
@@ -109,12 +114,12 @@ export function computeVariantCells({
   featureGenotypes: ReadonlyMap<string, Record<string, string>>
   report?: ProgressReporter
 }): VariantCellData {
-  const alleleColorCache: Record<string, string | undefined> = {}
   const drawRef = referenceDrawingMode === 'draw'
   // Packed once — every no-call cell reuses it instead of a per-cell cache hit.
   const noCallAbgr = getCachedABGR(NO_CALL_COLOR)
 
   const numSources = sources.length
+  const numHaplotypes = countHaplotypes(sources)
   const maxCells = filteredVariants.length * numSources
   // One buffer set, written from both ends: reference cells forward from 0,
   // non-reference backward from the end. That lands the two paint buckets in a
@@ -193,6 +198,14 @@ export function computeVariantCells({
     featureIndices[b] = f
   }
 
+  // Per-site genotype -> cell style memos, allocated once and cleared per
+  // feature (their entries bake in that feature's `mostFrequentAlt` and
+  // override color). A site with thousands of samples carries a handful of
+  // distinct genotype strings, so this is what keeps the color work O(sites x
+  // distinct genotypes) instead of O(cells) — see shared/variantCellStyles.ts.
+  const alleleCountStyles = new Map<string, VariantCellStyle | null>()
+  const phasedStyles = new Map<string, (VariantCellStyle | null)[]>()
+
   let featureIdx = 0
   for (const { feature, mostFrequentAlt } of filteredVariants) {
     report?.()
@@ -211,10 +224,15 @@ export function computeVariantCells({
     const ref = feature.get('REF') as string
     const featureName = feature.get('name')!
     const description = feature.get('description') as string
-    const sourceGenotypes: Record<string, string> = {}
+    // This variant's genotypes, resolved once: the record shipped in
+    // `featureGenotypeMap` below, and the genotypes both non-phase-set loops
+    // read. Prepopulated by `computeSampleInfo` for every filtered variant.
+    const stringGenotypes = featureGenotypes.get(featureId)!
     // Per-variant override color, resolved once per feature (not per cell);
     // undefined when no override is set, so normal genotype coloring runs.
     const overrideColor = featureColor?.(feature)
+    alleleCountStyles.clear()
+    phasedStyles.clear()
 
     if (renderingMode === 'phased') {
       // PS (phase-set) coloring requires per-sample FORMAT data, which only the
@@ -224,95 +242,118 @@ export function computeVariantCells({
       const hasPhaseSet =
         colorByPhaseSet &&
         featureHasPhaseSet(feature.get('FORMAT') as string | undefined)
+      // `samples` can be absent even on a feature whose FORMAT declares PS (a
+      // non-VCF adapter, a sites-only record), so the fallback below is keyed on
+      // the field actually being there rather than on `hasPhaseSet` — reading
+      // the flat map back through a `hasPhaseSet`-keyed `undefined` was a crash.
       const samp = hasPhaseSet
-        ? (feature.get('samples') as Record<string, Record<string, string[]>>)
+        ? (feature.get('samples') as
+            | Record<string, Record<string, string[]>>
+            | undefined)
         : undefined
-      const stringGenotypes = hasPhaseSet
-        ? undefined
-        : featureGenotypes.get(featureId)!
-
-      for (let j = 0; j < numSources; j++) {
-        const { HP, sampleName } = sources[j]!
-        let genotype: string | undefined
-        let PS: string | undefined
-        if (samp) {
+      if (samp) {
+        // Phase-set coloring: the hue comes from a per-(feature, sample) FORMAT
+        // field, so there is nothing site-wide to memoize and this stays on the
+        // per-cell color call.
+        for (let j = 0; j < numSources; j++) {
+          const { HP, sampleName } = sources[j]!
           const s = samp[sampleName]
-          genotype = s?.GT?.[0]
-          PS = s?.PS?.[0]
-        } else {
-          genotype = stringGenotypes![sampleName]
+          const genotype = s?.GT?.[0]
+          if (!genotype) {
+            continue
+          }
+          if (isPhasedOrHaploid(genotype)) {
+            const c = getPhasedColor(
+              splitPhasedAlleles(genotype),
+              HP!,
+              mostFrequentAlt,
+              s.PS?.[0],
+              drawRef,
+            )
+            if (c) {
+              const isRefCell = c === REFERENCE_COLOR
+              // Only alt-carrying cells take the per-variant override; ref and
+              // no-call keep their own color so a missing call is never painted
+              // as though it carried the variant.
+              const isAltCell = !isRefCell && c !== NO_CALL_COLOR
+              addCell(
+                start,
+                end,
+                j,
+                getCachedABGR(
+                  isAltCell && overrideColor !== undefined ? overrideColor : c,
+                ),
+                shape,
+                isRefCell,
+                isAltCell,
+                featureIdx,
+              )
+            }
+          } else if (isNoCall(genotype)) {
+            // A missing unphased call (`./.`, `.`) is a no-call, not unphased
+            // data — draw it as no-call rather than the black "Unphased" fill.
+            addCell(start, end, j, noCallAbgr, shape, false, false, featureIdx)
+          } else {
+            addCell(start, end, j, BLACK_ABGR, shape, false, false, featureIdx)
+          }
         }
-        if (!genotype) {
-          continue
-        }
-        // Recorded before the color check, not per drawn cell: this map is the
-        // genotype record the anchored sort reads, and under
-        // `referenceDrawingMode: 'skip'` a hom-ref call paints nothing. Keying
-        // it off what was painted made every hom-ref row read as a no-call
-        // there while the matrix (which always paints ref) sorted them apart.
-        // Costs nothing on the wire — `genotypeCodes` is a fixed
-        // Uint16Array(numSamples) either way.
-        sourceGenotypes[sampleName] = genotype
-        if (isPhasedOrHaploid(genotype)) {
-          const c = getPhasedColor(
-            splitPhasedAlleles(genotype),
-            HP!,
-            mostFrequentAlt,
-            PS,
-            drawRef,
-          )
-          if (c) {
-            const isRefCell = c === REFERENCE_COLOR
-            // Only alt-carrying cells take the per-variant override; ref and
-            // no-call keep their own color so a missing call is never painted
-            // as though it carried the variant.
-            const cellColor =
-              overrideColor !== undefined && !isRefCell && c !== NO_CALL_COLOR
-                ? overrideColor
-                : c
+      } else {
+        for (let j = 0; j < numSources; j++) {
+          const { HP, sampleName } = sources[j]!
+          const genotype = stringGenotypes[sampleName]
+          if (!genotype) {
+            continue
+          }
+          let byHp = phasedStyles.get(genotype)
+          if (byHp === undefined) {
+            byHp = buildPhasedStyles(
+              genotype,
+              mostFrequentAlt,
+              numHaplotypes,
+              drawRef,
+              overrideColor,
+            )
+            phasedStyles.set(genotype, byHp)
+          }
+          const style = byHp[HP!]
+          if (style) {
             addCell(
               start,
               end,
               j,
-              getCachedABGR(cellColor),
+              style.abgr,
               shape,
-              isRefCell,
-              !isRefCell && c !== NO_CALL_COLOR,
+              style.isRef,
+              style.isAlt,
               featureIdx,
             )
           }
-        } else if (isNoCall(genotype)) {
-          // A missing unphased call (`./.`, `.`) is a no-call, not unphased
-          // data — draw it as no-call rather than the black "Unphased" fill.
-          addCell(start, end, j, noCallAbgr, shape, false, false, featureIdx)
-        } else {
-          addCell(start, end, j, BLACK_ABGR, shape, false, false, featureIdx)
         }
       }
     } else {
-      const samp = featureGenotypes.get(featureId)!
       for (let j = 0; j < numSources; j++) {
         const { sampleName } = sources[j]!
-        const genotype = samp[sampleName]
+        const genotype = stringGenotypes[sampleName]
         if (genotype) {
-          // See the phased loop: recorded whether or not a cell is painted.
-          sourceGenotypes[sampleName] = genotype
-          const c = getAlleleColor(
-            genotype,
-            mostFrequentAlt,
-            alleleColorCache,
-            drawRef,
-            overrideColor,
-          )
-          if (c) {
+          let style = alleleCountStyles.get(genotype)
+          if (style === undefined) {
+            style = buildAlleleCountStyle(
+              genotype,
+              mostFrequentAlt,
+              drawRef,
+              overrideColor,
+            )
+            alleleCountStyles.set(genotype, style)
+          }
+          if (style) {
             addCell(
               start,
               end,
               j,
-              getCachedABGR(c),
+              style.abgr,
               shape,
-              c === REFERENCE_COLOR,
-              c !== REFERENCE_COLOR && c !== NO_CALL_COLOR,
+              style.isRef,
+              style.isAlt,
               featureIdx,
             )
           }
@@ -329,7 +370,7 @@ export function computeVariantCells({
       length: bpLen,
       insertedBp: inserted,
       type: featureType,
-      genotypes: sourceGenotypes,
+      genotypes: stringGenotypes,
     }
     insertedBp[featureIdx] = inserted
     featurePositions[featureIdx * 2] = start
