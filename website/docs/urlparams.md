@@ -234,6 +234,11 @@ against.
 ?config=none&hubURL=https://example.com/hub.txt&assembly=GCF_019202715.1&loc=chr1:1-100000
 ```
 
+`&hubURL=` opens each hub with a single linear genome view. For anything beyond
+that — several views over a hub, a workspace layout, a dotplot, or extra
+`sessionTracks` — put the hub in a session spec's
+[`sessionConnections`](#session-spec) instead.
+
 See [](/docs/user_guides/hub_url) for the full workflow, including combining a
 hub with a config and loading several at once.
 
@@ -385,6 +390,43 @@ views over them, with nothing baked into the served config (pair it with
   ]
 }
 ```
+
+A top-level `sessionConnections` array attaches connections — UCSC track hubs,
+JBrowse hubs — to the session. Each entry is a connection config. Connections
+are added after `sessionAssemblies` and before the tracks and views, and the
+spec waits for each one to finish fetching before launching its views, so a view
+can name an assembly or a trackId the connection supplies:
+
+```json
+{
+  "sessionConnections": [
+    {
+      "type": "UCSCTrackHubConnection",
+      "connectionId": "my_hub",
+      "name": "My hub",
+      "hubTxtLocation": { "uri": "https://example.com/hub.txt" }
+    }
+  ],
+  "views": [
+    {
+      "type": "LinearGenomeView",
+      "assembly": "GCF_019202715.1",
+      "loc": "chr1:1-100000"
+    }
+  ]
+}
+```
+
+This is what [`&hubURL=`](#huburl) does in its simple form, written out. Use the
+spec form when the hub needs more than one view, a
+[layout](#tiled-views--workspaces), a view type other than the linear genome
+view, or additional `sessionTracks` alongside the hub's own — none of which
+`&hubURL=` can express.
+
+A spec that lists no `views` leaves the connection to open its own view wherever
+it starts (a single-file hub's `defaultPos`), which is what `&hubURL=` on its
+own does. As soon as the spec has views of its own, that is taken as the launch
+instruction and the connection doesn't open a competing one.
 
 You can also use `&sessionName=` with session specs to set a custom session
 name:

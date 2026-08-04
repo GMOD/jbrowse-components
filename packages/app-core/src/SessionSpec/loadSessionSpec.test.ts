@@ -1,4 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
+import { observable, runInAction } from 'mobx'
 
 import { loadSessionSpec } from './loadSessionSpec.ts'
 
@@ -22,6 +23,36 @@ function stubView(id: string): StubView {
   return view
 }
 
+// A connection reports `loading` from the moment it attaches until its own
+// fetch settles, so a spec that registers one has to wait that out before
+// launching views over the assemblies and tracks it supplies. Observable
+// because the wait is a mobx `when` over exactly that flag.
+function connectionStub() {
+  const connectionInstances = observable.array<{ loading: boolean }>([])
+  const made: { conf: Record<string, unknown>; silent?: boolean }[] = []
+  return {
+    made,
+    settle: () => {
+      runInAction(() => {
+        for (const conn of connectionInstances) {
+          conn.loading = false
+        }
+      })
+    },
+    session: {
+      connectionInstances,
+      addConnectionConf: (conf: Record<string, unknown>) => conf,
+      makeConnection: (
+        conf: Record<string, unknown>,
+        snap?: { silent?: boolean },
+      ) => {
+        made.push({ conf, silent: snap?.silent })
+        connectionInstances.push(observable({ loading: true }))
+      },
+    },
+  }
+}
+
 function setup(
   handlers: Record<
     string,
@@ -37,7 +68,13 @@ function setup(
   {
     workspaces = true,
     registeredViewTypes = [] as string[],
-  }: { workspaces?: boolean; registeredViewTypes?: string[] } = {},
+    connections,
+  }: {
+    workspaces?: boolean
+    registeredViewTypes?: string[]
+    // omitted models a session that cannot take connections at all
+    connections?: ReturnType<typeof connectionStub>
+  } = {},
 ) {
   const session = {
     views: [] as StubView[],
@@ -46,6 +83,7 @@ function setup(
     ...(workspaces
       ? { setUseWorkspaces: jest.fn(), setInit: jest.fn() }
       : undefined),
+    ...connections?.session,
   }
   const rootModel = { session, setSession: jest.fn() }
   const pluginManager = {
@@ -318,6 +356,97 @@ test('a spec view nesting its settings under init is told where they go', async 
   expect(session.notifyError).toHaveBeenCalledWith(
     expect.stringContaining('nest their settings under "init"'),
   )
+})
+
+// A hub (or any connection) brings its own assemblies and tracks, from a fetch.
+// Before `sessionConnections` a spec could not carry one at all — a URL was
+// either a hub or a spec, never both — so a hub could never be opened with a
+// dotplot, a layout, or more than the one view its own defaultPos gives it.
+describe('sessionConnections', () => {
+  const HUB = {
+    type: 'UCSCTrackHubConnection',
+    connectionId: 'hub1',
+    hubTxtLocation: { uri: 'https://example.com/hub.txt' },
+  }
+
+  function setupWithHub(log: string[]) {
+    const connections = connectionStub()
+    const { session, pluginManager } = setup(
+      {
+        'LaunchView-LinearGenomeView': async s => {
+          log.push('launch')
+          s.views.push(stubView('lgv'))
+        },
+      },
+      { connections },
+    )
+    return { session, pluginManager, connections }
+  }
+
+  // the whole point of waiting: a view launched mid-fetch resolves neither the
+  // assembly the hub is about to define nor the track ids it is about to add
+  it('launches views only once the connections have settled', async () => {
+    const log: string[] = []
+    const { session, pluginManager, connections } = setupWithHub(log)
+
+    const p = loadSessionSpec(
+      {
+        sessionConnections: [HUB],
+        views: [{ type: 'LinearGenomeView', assembly: 'hubGenome' }],
+      },
+      pluginManager,
+    )
+    // the handler body runs synchronously up to its own first await, so an
+    // unguarded launch would already have logged by now
+    log.push('settle')
+    connections.settle()
+    await p
+
+    expect(log).toEqual(['settle', 'launch'])
+    expect(session.views).toHaveLength(1)
+  })
+
+  it('silences a connection when the spec launches its own views', async () => {
+    const { pluginManager, connections } = setupWithHub([])
+    const p = loadSessionSpec(
+      {
+        sessionConnections: [HUB],
+        views: [{ type: 'LinearGenomeView', assembly: 'hubGenome' }],
+      },
+      pluginManager,
+    )
+    connections.settle()
+    await p
+
+    expect(connections.made).toEqual([{ conf: HUB, silent: true }])
+  })
+
+  // no views means the spec is only asking to attach the hub, so the hub's own
+  // launch at its defaultPos is the only one there is — silencing it would open
+  // nothing at all
+  it('leaves a connection unsilenced when the spec has no views', async () => {
+    const { pluginManager, connections } = setupWithHub([])
+
+    await loadSessionSpec(
+      { sessionConnections: [HUB], views: [] },
+      pluginManager,
+    )
+
+    expect(connections.made).toEqual([{ conf: HUB, silent: false }])
+  })
+
+  it('reports a spec that an application cannot attach connections for', async () => {
+    const { session, pluginManager } = setup({})
+
+    await loadSessionSpec(
+      { sessionConnections: [HUB], views: [] },
+      pluginManager,
+    )
+
+    expect(session.notifyError).toHaveBeenCalledWith(
+      expect.stringContaining('cannot add connections to a session'),
+    )
+  })
 })
 
 // `size` reaches dockview only on the top-level split, and only when every

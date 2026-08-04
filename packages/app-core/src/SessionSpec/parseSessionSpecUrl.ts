@@ -19,6 +19,7 @@ export interface ParsedSessionSpec {
   spec: {
     views: ViewSpec[]
     sessionAssemblies?: Record<string, unknown>[]
+    sessionConnections?: Record<string, unknown>[]
     sessionTracks?: Record<string, unknown>[]
     layout?: LayoutNode
   }

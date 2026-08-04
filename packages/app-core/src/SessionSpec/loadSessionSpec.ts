@@ -2,10 +2,13 @@ import {
   isSessionWithAddAssembly,
   isSessionWithAddTracks,
 } from '@jbrowse/core/util'
+import { isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
+import { when } from 'mobx'
 
 import type { DockviewLayoutNode } from '../DockviewLayout/index.ts'
 import type { LayoutNode, ViewSpec } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 // A spec `layout` needs both session mixins that own workspaces state:
@@ -20,6 +23,53 @@ function isSessionWithWorkspaceLayout(
   session: AbstractSessionModel,
 ): session is AbstractSessionModel & SessionWithWorkspaceLayout {
   return 'setInit' in session && 'setUseWorkspaces' in session
+}
+
+// A spec `sessionConnections` needs a session that can both register a
+// connection config and instantiate it. Declared here rather than reused from
+// core's SessionWithConnectionEditing because a spec carries plain JSON
+// snapshots rather than built config models, and because `silent` — the option
+// that stops a connection opening its own view over the spec's — is a web
+// session's, not the base interface's.
+interface SessionWithSpecConnections {
+  addConnectionConf: (conf: Record<string, unknown>) => AnyConfigurationModel
+  makeConnection: (
+    conf: AnyConfigurationModel,
+    initialSnapshot?: { silent?: boolean },
+  ) => void
+  connectionInstances: { loading: boolean }[]
+}
+function isSessionWithSpecConnections(
+  session: AbstractSessionModel,
+): session is AbstractSessionModel & SessionWithSpecConnections {
+  return (
+    'addConnectionConf' in session &&
+    'makeConnection' in session &&
+    'connectionInstances' in session
+  )
+}
+
+// A connection supplies assemblies and tracks that the spec's views go on to
+// reference by name, and it supplies them from a fetch. Launching a view before
+// that fetch lands gives it an assembly that doesn't exist yet ("Assembly X not
+// found") and a `tracks` list whose ids don't resolve yet.
+//
+// Causal, not timed: every connection reports `loading` from its own
+// afterAttach until its connect() promise settles, success or failure, so this
+// proceeds the moment the last one is done and never waits on one that failed.
+// A session destroyed mid-wait (a StrictMode remount, a session swap) resolves
+// it too — reading a detached node throws, and here that would land in the
+// caller's catch and report a spurious error against the *new* session.
+async function whenConnectionsSettle(
+  session: AbstractSessionModel & SessionWithSpecConnections,
+) {
+  // isStateTreeNode first: the liveness question only applies to a real MST
+  // session, and this is called with plain object sessions under test
+  const gone = () => isStateTreeNode(session) && !isAlive(session)
+  await when(
+    () => gone() || session.connectionInstances.every(conn => !conn.loading),
+  )
+  return !gone()
 }
 
 // Convert LayoutNode (view indices into the spec's `views` array) to
@@ -96,12 +146,14 @@ export async function loadSessionSpec(
   {
     views,
     sessionAssemblies = [],
+    sessionConnections = [],
     sessionTracks = [],
     layout,
     sessionName,
   }: {
     views: ViewSpec[]
     sessionAssemblies?: Record<string, unknown>[]
+    sessionConnections?: Record<string, unknown>[]
     sessionTracks?: Record<string, unknown>[]
     layout?: LayoutNode
     sessionName?: string
@@ -122,6 +174,27 @@ export async function loadSessionSpec(
     if (isSessionWithAddAssembly(session)) {
       for (const assembly of sessionAssemblies) {
         session.addSessionAssembly(assembly)
+      }
+    }
+    // Connections after the assemblies (a connection config may name one the
+    // spec defines) and before the tracks and views, which are what reference
+    // the assemblies and tracks a connection brings in.
+    if (sessionConnections.length) {
+      if (session && isSessionWithSpecConnections(session)) {
+        for (const conf of sessionConnections) {
+          // silent whenever the spec launches views of its own: a connection
+          // that opens one on connect (a single-file UCSC hub goes to its
+          // `defaultPos`) would otherwise open a second view competing with
+          // the one the spec asked for. With no views the spec is only asking
+          // to attach the connection, so let it do its own thing.
+          session.makeConnection(session.addConnectionConf(conf), {
+            silent: views.length > 0,
+          })
+        }
+      } else {
+        session?.notifyError(
+          'Session spec has "sessionConnections", but this application cannot add connections to a session',
+        )
       }
     }
     if (isSessionWithAddTracks(session)) {
@@ -199,6 +272,22 @@ export async function loadSessionSpec(
     // view prop every view type has, so one path covers all of them (including
     // plugin-provided types whose launcher never heard of it). A nested `init` is
     // NOT unwrapped the same way — see the diagnostic above for why.
+    // Let any connection this spec registered finish before the views that
+    // reference what it supplies are launched (see whenConnectionsSettle). Gated
+    // on there being views: with none, nothing is waiting on the connection, and
+    // holding the load open until a hub finishes fetching would be pure delay —
+    // the connection is the deliverable. A session that went away while we
+    // waited has nothing left to launch into.
+    if (
+      sessionConnections.length &&
+      views.length &&
+      session &&
+      isSessionWithSpecConnections(session) &&
+      !(await whenConnectionsSettle(session))
+    ) {
+      return
+    }
+
     const createdViewIds: (string | undefined)[] = []
     for (const { type, displayName, ...view } of views) {
       const before = new Set(session?.views.map(v => v.id))
