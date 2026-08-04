@@ -516,6 +516,65 @@ export const ldSpecs: ScreenshotSpec[] = [
       },
     ],
   },
+  // r² against D' on ONE file, which is the only way the tutorial's claim about
+  // them can be checked. Two displays over the same Cameroon .ld.gz, same
+  // window, same everything else, so any difference in the picture is the
+  // metric's.
+  //
+  // This figure is why the D' path was fixed: it first rendered two
+  // pixel-identical panels, because tabix hands back no header for a
+  // `-S 1`-indexed plink file, the column layout lost its DP column, and a
+  // 'dprime' request silently resolved to r² while the legend still said D'.
+  // If these two panels ever come out identical again, that is the regression,
+  // not a property of the data — D' averages 0.59 inside 2La against r²'s 0.19.
+  {
+    mode: 'url',
+    name: 'ld/anopheles_r2_vs_dprime',
+    url: `${ANOGAM3_HUB}&session=${encodeSessionSpec({
+      sessionTracks: [
+        agLdTrack(
+          'ag1000g_2l_cmgam_r2',
+          'Cameroon, r\u00b2',
+          'ag1000g_2L_CMgam.ld.gz',
+        ),
+        {
+          ...agLdTrack(
+            'ag1000g_2l_cmgam_dprime',
+            "Cameroon, D'",
+            'ag1000g_2L_CMgam.ld.gz',
+          ),
+          displays: [
+            {
+              type: 'LDTrackDisplay',
+              ldMetric: 'dprime',
+              useGenomicPositions: true,
+              showLegend: true,
+              height: 300,
+            },
+          ],
+        },
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'anoGam3',
+          // the whole arm, as in the figure above: the claim is about what each
+          // metric does OUTSIDE the block, so the outside has to be in frame
+          loc: 'chr2L',
+          tracks: [
+            { trackId: 'ag1000g_2l_cmgam_r2', type: 'LDTrackDisplay' },
+            { trackId: 'ag1000g_2l_cmgam_dprime', type: 'LDTrackDisplay' },
+          ],
+        },
+      ],
+    })}&sessionName=Screenshot`,
+    readySelector: '[data-testid="ld-display-done"]',
+    // same anoGam3 hub chrom.sizes fetch as the figure above, same allowance
+    readyTimeout: 180000,
+    // two 300px panels + 2 headers + ruler/overview
+    viewportHeight: 860,
+    settleMs: 8000,
+  },
   {
     mode: 'url',
     name: 'ld/lct_lactase',

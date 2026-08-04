@@ -187,6 +187,8 @@ recover the breakpoints. Switch with
 [`ldMetric`](/docs/config/sharedlddisplay/#slot-ldmetric); the script prints
 both ratios for every panel.
 
+<Figure caption="The same Cameroon file drawn twice over chromosome arm 2L, r² above and D' below, with every other setting equal. D' saturates across the 2La block and leaves a haze over the rest of the arm; r² is dimmer inside the block but near-white outside it, which is the wider separation of the two. Both stay filled out to the block's apex, where an ordinary locus fades away from the diagonal." src="/img/ld/anopheles_r2_vs_dprime.png" />
+
 Raising the minor allele frequency filter
 ([`minorAlleleFrequencyFilter`](/docs/config/sharedlddisplay/#slot-minorallelefrequencyfilter))
 thins dense callsets to the common, block-tagging variants. Push it too high and
