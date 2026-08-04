@@ -1,0 +1,222 @@
+{
+  "assemblies": [
+    {
+      "name": "hg38",
+      "aliases": ["GRCh38"],
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "hg38-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+        }
+      }
+    },
+    {
+      "name": "der3_RARB_BICC1_TRHDE",
+      "displayName": "COLO829 derivative allele (RARB/BICC1/TRHDE)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "der3_RARB_BICC1_TRHDE-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "uri": "der3_RARB.derivative.fa.gz"
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "ncbi_refseq_hg38",
+      "name": "NCBI RefSeq genes",
+      "assemblyNames": ["hg38"],
+      "category": ["Annotation"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "indexType": "CSI",
+          "location": {
+            "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz.csi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "COLO829_somatic_sv",
+      "name": "COLO829 somatic SVs (nanomonsv)",
+      "assemblyNames": ["hg38"],
+      "category": ["COLO829 (melanoma, ONT R10)"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "uri": "COLO829.somatic-sv.vcf.gz"
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "COLO829_tumor_ont",
+      "name": "COLO829 tumour (ONT R10, haplotagged)",
+      "assemblyNames": ["hg38"],
+      "category": ["COLO829 (melanoma, ONT R10)"],
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829_tumor.ht.cram"
+        },
+        "craiLocation": {
+          "uri": "https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829_tumor.ht.cram.crai"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "COLO829BL_normal_ont",
+      "name": "COLO829BL matched normal (ONT R10)",
+      "assemblyNames": ["hg38"],
+      "category": ["COLO829 (melanoma, ONT R10)"],
+      "adapter": {
+        "type": "BamAdapter",
+        "uri": "https://ont-open-data.s3.amazonaws.com/colo829_2024.03/basecalls/colo829bl/sup/PAU59807.d052sup4305mCG_5hmCGvHg38.bam"
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "COLO829_tumor_coverage",
+      "name": "COLO829 tumour coverage (50 kb bins)",
+      "assemblyNames": ["hg38"],
+      "category": ["COLO829 (melanoma, ONT R10)"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "uri": "COLO829_tumor.coverage.bw"
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "COLO829_normal_coverage",
+      "name": "COLO829BL normal coverage (50 kb bins)",
+      "assemblyNames": ["hg38"],
+      "category": ["COLO829 (melanoma, ONT R10)"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "uri": "COLO829_normal.coverage.bw"
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "der3_vs_hg38",
+      "name": "Derivative allele vs hg38",
+      "assemblyNames": ["der3_RARB_BICC1_TRHDE", "hg38"],
+      "category": ["COLO829 (melanoma, ONT R10)"],
+      "adapter": {
+        "type": "PairwiseIndexedPAFAdapter",
+        "assemblyNames": ["der3_RARB_BICC1_TRHDE", "hg38"],
+        "pifGzLocation": {
+          "uri": "der3_RARB.vs_reference.pif.gz"
+        },
+        "index": {
+          "indexType": "TBI",
+          "location": {
+            "uri": "der3_RARB.vs_reference.pif.gz.tbi"
+          }
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "der3_segments",
+      "name": "Where each segment came from",
+      "assemblyNames": ["der3_RARB_BICC1_TRHDE"],
+      "category": ["COLO829 (melanoma, ONT R10)"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "bedGzLocation": {
+          "uri": "der3_RARB.derivative_segments.bed.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "der3_RARB.derivative_segments.bed.gz.tbi"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "reads_vs_der3",
+      "name": "Spanning reads realigned to the derivative",
+      "assemblyNames": ["der3_RARB_BICC1_TRHDE"],
+      "category": ["COLO829 (melanoma, ONT R10)"],
+      "adapter": {
+        "type": "BamAdapter",
+        "uri": "der3_RARB.reads_vs_derivative.bam"
+      }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "K562_star_fusion",
+      "name": "K562 STAR-Fusion calls (DepMap 24Q4)",
+      "assemblyNames": ["hg38"],
+      "category": ["K562 (CML)"],
+      "adapter": {
+        "type": "StarFusionAdapter",
+        "starFusionLocation": {
+          "uri": "K562.star-fusion.tsv"
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "K562_isoseq",
+      "name": "K562 PacBio Iso-Seq (ENCODE)",
+      "assemblyNames": ["hg38"],
+      "category": ["K562 (CML)"],
+      "adapter": {
+        "type": "BamAdapter",
+        "uri": "K562_isoseq.bam"
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "K562_cn",
+      "name": "K562 copy-number segments (DepMap WGS)",
+      "assemblyNames": ["hg38"],
+      "category": ["K562 (CML)"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "uri": "K562_cn.bw"
+      }
+    }
+  ],
+  "defaultSession": {
+    "name": "COLO829 multi-hop rearrangement",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "init": {
+          "assembly": "hg38",
+          "loc": "chr3:25,320,000-25,370,000",
+          "tracks": [
+            "ncbi_refseq_hg38",
+            "COLO829_somatic_sv",
+            "COLO829_tumor_ont"
+          ]
+        }
+      }
+    ]
+  }
+}
