@@ -30,7 +30,15 @@ const SharedTooltip = observer(function SharedTooltip({
         '[data-tooltip]',
       )
       if (target) {
-        setState({ anchorEl: target, text: target.dataset.tooltip ?? '' })
+        // mouseover fires again for every descendant crossed, and a track row
+        // is a label wrapping a checkbox, an svg and a couple of spans — so
+        // keep the existing state when the row hasn't changed, rather than
+        // re-rendering on each micro-move within one row
+        setState(prev =>
+          prev?.anchorEl === target
+            ? prev
+            : { anchorEl: target, text: target.dataset.tooltip ?? '' },
+        )
       }
     }
 
