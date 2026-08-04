@@ -3,34 +3,54 @@ import {
   polarToCartesian,
   radToDeg,
   stripAlpha,
-  toLocale,
 } from '@jbrowse/core/util'
 import { makeContrasting } from '@jbrowse/core/util/color'
 import { useTheme } from '@mui/material/styles'
 import { observer } from 'mobx-react'
 
+import {
+  labelFitsAlongArc,
+  labelFontSizePx,
+  labelOffsetPx,
+  sliceLabelText,
+} from '../rulerLabels.ts'
+
 import type { CircularViewModel } from '../model.ts'
-import type {
-  Slice,
-  SliceElidedRegion,
-  SliceNonElidedRegion,
-} from '../slices.ts'
+import type { Slice, SliceNonElidedRegion } from '../slices.ts'
 
 // the slice's own angular span as an SVG arc. A slice covers its region
 // exactly, so this is equally the arc from its first base to its last
 function sliceArcPath(slice: Slice, radiusPx: number) {
   const { startRadians, endRadians } = slice
-  return [
-    'M',
-    ...polarToCartesian(radiusPx, startRadians),
+  const arcTo = (radians: number, largeArc: '0' | '1') => [
     'A',
     radiusPx,
     radiusPx,
     '0',
-    endRadians - startRadians > Math.PI ? '1' : '0',
+    largeArc,
     '1',
-    ...polarToCartesian(radiusPx, endRadians),
-  ].join(' ')
+    ...polarToCartesian(radiusPx, radians),
+  ]
+  const moveToStart = ['M', ...polarToCartesian(radiusPx, startRadians)]
+  const spanRadians = endRadians - startRadians
+  // A slice covering the whole circle ends exactly where it began, and SVG
+  // renders an arc segment whose two endpoints coincide as nothing at all — a
+  // lone chromosome with no inter-slice gap coming out of its span (spacingPx
+  // 0) lost its entire ideogram ring, label still drawn. Sub-pixel short of a
+  // full turn is the same thing once coordinates round. Two half-turns have
+  // distinct endpoints and draw.
+  return (
+    (2 * Math.PI - spanRadians) * radiusPx < 1
+      ? [
+          ...moveToStart,
+          ...arcTo(startRadians + Math.PI, '0'),
+          ...arcTo(startRadians, '0'),
+        ]
+      : [
+          ...moveToStart,
+          ...arcTo(endRadians, spanRadians > Math.PI ? '1' : '0'),
+        ]
+  ).join(' ')
 }
 
 const RulerLabel = observer(function RulerLabel({
@@ -39,7 +59,7 @@ const RulerLabel = observer(function RulerLabel({
   maxWidthPx,
   radians,
   radiusPx,
-  title = text,
+  title,
   color,
 }: {
   offsetRadians: number
@@ -47,12 +67,14 @@ const RulerLabel = observer(function RulerLabel({
   maxWidthPx: number
   radiusPx: number
   radians: number
+  // hover text, only where it says something the label doesn't — an elision's
+  // count expands to what it stands for, a refName is already itself
   title?: string
   color: string
 }) {
-  const textXY = polarToCartesian(radiusPx + 5, radians)
+  const textXY = polarToCartesian(radiusPx + labelOffsetPx, radians)
   const deg = radToDeg(radians)
-  const parallel = text.length * 6.5 < maxWidthPx
+  const parallel = labelFitsAlongArc(text, maxWidthPx)
   // the view rotates the whole figure by offsetRadians, so which half of the
   // screen a label lands on - and therefore which way it has to be flipped to
   // read right-side-up - depends on that rotation too. cos/sin of the on-screen
@@ -74,7 +96,7 @@ const RulerLabel = observer(function RulerLabel({
     <text
       x={0}
       y={0}
-      fontSize={13}
+      fontSize={labelFontSizePx}
       fontWeight={500}
       letterSpacing="0.0075em"
       textAnchor={textAnchor}
@@ -83,7 +105,7 @@ const RulerLabel = observer(function RulerLabel({
       fill={stripAlpha(color)}
     >
       {text}
-      <title>{title}</title>
+      {title ? <title>{title}</title> : null}
     </text>
   )
 })
@@ -134,14 +156,12 @@ const RulerArc = observer(function RulerArc({
 const ElisionRulerArc = observer(function ElisionRulerArc({
   model,
   slice,
-  region,
 }: {
   model: CircularViewModel
   slice: Slice
-  region: SliceElidedRegion
 }) {
   const theme = useTheme()
-  const regionCount = `[${toLocale(region.regions.length)}]`
+  const regionCount = sliceLabelText(slice)
   return (
     <RulerArc
       model={model}
@@ -181,7 +201,7 @@ const RegionRulerArc = observer(function RegionRulerArc({
     <RulerArc
       model={model}
       slice={slice}
-      text={region.refName}
+      text={sliceLabelText(slice)}
       labelColor={color}
       strokeColor={color}
     />
@@ -196,7 +216,7 @@ const Ruler = observer(function Ruler({
   slice: Slice
 }) {
   return slice.region.elided ? (
-    <ElisionRulerArc model={model} region={slice.region} slice={slice} />
+    <ElisionRulerArc model={model} slice={slice} />
   ) : (
     <RegionRulerArc region={slice.region} model={model} slice={slice} />
   )

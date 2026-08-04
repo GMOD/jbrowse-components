@@ -85,16 +85,16 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
           >
             <div
               class="css-1ggxnpa"
-              style="transform: translate(0px,0px);"
+              style="transform: translate(204px,0px);"
             >
               <svg
                 class="css-1cibtmu css-dg9xgn"
-                height="406.3661977236758"
-                style="transform: rotate(-1.5707963267948966rad); transform-origin: 203.1830988618379px 203.1830988618379px;"
-                width="406.3661977236758"
+                height="400"
+                style="transform: rotate(-1.5707963267948966rad); transform-origin: 200px 200px;"
+                width="400"
               >
                 <g
-                  transform="translate(203.1830988618379,203.1830988618379)"
+                  transform="translate(200,200)"
                 >
                   <text
                     dominant-baseline="middle"
@@ -103,17 +103,14 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                     font-weight="500"
                     letter-spacing="0.0075em"
                     text-anchor="middle"
-                    transform="translate(-51.604261030352276,117.33672518582992) rotate(23.73971705749446)"
+                    transform="translate(-50.162928934118504,114.49314634837569) rotate(23.659687593887426)"
                     x="0"
                     y="0"
                   >
                     ctgA
-                    <title>
-                      ctgA
-                    </title>
                   </text>
                   <path
-                    d="M 124.18309886183789 0 A 124.18309886183789 124.18309886183789 0 1 1 -83.9297439650367 -91.52726435818121"
+                    d="M 120.99999999999999 0 A 120.99999999999999 120.99999999999999 0 1 1 -82.02724452490492 -88.95240949885199"
                     fill="none"
                     stroke="#996600"
                     stroke-width="2"
@@ -125,17 +122,14 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                     font-weight="500"
                     letter-spacing="0.0075em"
                     text-anchor="middle"
-                    transform="translate(51.60426103035232,-117.3367251858299) rotate(383.7397170574945)"
+                    transform="translate(50.16292893411838,-114.49314634837573) rotate(383.6596875938874)"
                     x="0"
                     y="0"
                   >
                     ctgB
-                    <title>
-                      ctgB
-                    </title>
                   </text>
                   <path
-                    d="M -76.23131743422664 -98.03177181491303 A 124.18309886183789 124.18309886183789 0 0 1 123.77412860245514 -10.070110805343754"
+                    d="M -74.33846823476652 -95.47142054305364 A 120.99999999999999 120.99999999999999 0 0 1 120.58010419076767 -10.07166686023764"
                     fill="none"
                     stroke="#666600"
                     stroke-width="2"

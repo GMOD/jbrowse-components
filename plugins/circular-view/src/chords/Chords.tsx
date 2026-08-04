@@ -19,8 +19,11 @@ const Chords = observer(function Chords({
     onChordClick,
   } = display
   return (
-    // testid is load-bearing for the embedded-component cypress suites
-    <g data-testid="structuralVariantChordRenderer">
+    // testid is load-bearing for the embedded-component cypress suites.
+    // `cursor` is inherited, so it belongs here rather than repeated on every
+    // chord — a whole-genome SV set is tens of thousands of them, and each copy
+    // is also a dead attribute in the SVG export
+    <g data-testid="structuralVariantChordRenderer" cursor="crosshair">
       {features?.map(feature => (
         <Chord
           key={feature.id()}

@@ -62,7 +62,6 @@ const Chord = observer(function Chord({
   return (
     <path
       data-testid={`chord-${feature.id()}`}
-      cursor="crosshair"
       fill="none"
       d={`M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`}
       {...getStrokeProps(stroke)}

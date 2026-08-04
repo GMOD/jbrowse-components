@@ -124,7 +124,12 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
           {
             error: self.error,
             regionTooLarge: false,
-            extraTerminal: false,
+            // the feature fetch below never runs while the view has no
+            // displayed regions, and the view menu offers its track selector
+            // from the import form — so a track opened there rests forever in
+            // "fetch not started", and an export awaiting `ready` would hang
+            // with the dialog's spinner up and nothing said
+            extraTerminal: !this.view.displayedRegions.length,
           },
           () => this.ready,
         )

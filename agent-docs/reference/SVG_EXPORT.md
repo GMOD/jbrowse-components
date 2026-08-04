@@ -274,8 +274,11 @@ the errored track renders its own box.
 This is why every view's `error` must be **resolved** (fold in assembly errors
 and, for the composed views, the sub-views'), not just its raw `volatileError` —
 the same rule that makes `showLoading` fall back to the import form instead of
-spinning. LGV, dotplot and linear-comparative are on the helper; circular and
-breakpoint-split still inline the bare `when()`.
+spinning. Every view is on the helper.
+
+A view whose *resting* state draws nothing throws here too rather than saving a
+blank canvas: the circular view sitting on its import form has no figure, only
+its padding, and used to export a 160px white square.
 
 The **sequence** display adds one extra terminal disjunct — it overrides
 `svgReadyExtraTerminal` to return `zoomedOut`, because zoomed past its
@@ -292,7 +295,7 @@ is false, that state has to reach `svgReady` some other way** — `error`,
 whole view's export, because `renderToSvg` awaits every display and
 `awaitSvgReady` has no time bound.
 
-Read a global display's `shouldFetch` and ask what leaves it false forever. Two
+Read a global display's `shouldFetch` and ask what leaves it false forever. Three
 shapes have shipped this bug:
 
 - **A user toggle in the gate.** LD's `shouldFetch` is
@@ -307,6 +310,34 @@ shapes have shipped this bug:
   phase and `svgReady` resolves through it. (And if it's retriable, drive it from
   an autorun on `reloadCounter` so the chrome's retry button re-runs it — a
   `reload()` that only clears the error drops straight back onto the scrim.)
+- **The containing view is empty.** The chord display's fetch is gated on
+  `view.displayedRegions.length`, and the circular view's menu offers its track
+  selector from the import form — so a track opened there never fetched, and the
+  export hung with the dialog's spinner up. Its `extraTerminal` is now
+  `!view.displayedRegions.length`. The gate need not be on the display: read
+  what the fetch autorun *reads*.
+
+### The view geometry is measured after the displays' waits, never before
+
+Same ordering rule as the LGV track heights, for the same reason, and all three
+non-LGV views have shipped a violation of it. A `renderToSvg` that destructures
+its canvas size out of the model before `await`ing the displays sizes that canvas
+for the pre-wait geometry, while the bodies — resolved after — draw against the
+post-wait one. The dotplot's plot rect moves with a zoom or a diagonalize
+reorder; the circular figure's size, center *and* rotation all move with a zoom
+or a drag, and its ruler labels re-read `offsetRadians` for themselves, so a
+rotation mid-fetch flipped them upside-down against a wrapper rotated the old
+way. Read the geometry on the line after the `Promise.all`.
+
+And a view's *on-screen* padding is not automatically the export's. The circular
+view reserves a fixed `paddingPx` gutter for the ruler labels around its circle;
+on screen a label that overruns it is clipped by a box the user can resize, but
+an export is a standalone artifact, so it takes `max(paddingPx, measured label
+width)` — 12-character RefSeq accessions overrun the 80px default and came out
+with their tails cut off at the canvas edge. The measurement lives beside the
+component that draws the labels (`rulerLabels.ts`, imported by both `Ruler.tsx`
+and the export) so the fit test and the room reserved for the labels that fail
+it can't disagree.
 
 ### Displays outside the two LGV GPU mixins supply their own `dataCurrent`
 
