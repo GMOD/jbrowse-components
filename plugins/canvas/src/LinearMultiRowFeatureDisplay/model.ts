@@ -26,6 +26,7 @@ import {
   computeClusterHierarchy,
   filterRowsBySubtree,
   reconcileLayout,
+  treeSidebarOffset,
   treeSidebarRightEdge,
 } from '@jbrowse/tree-sidebar'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
@@ -500,15 +501,15 @@ export default function stateModelFactory(
           self.showBranchLength,
         )
       },
+    }))
+    .views(self => ({
       /**
        * #getter
        * Pixel width reserved on the left for the tree (0 when no tree shows).
        */
       get sidebarOffset(): number {
-        return self.showTree && self.clusterTree ? self.treeAreaWidth : 0
+        return treeSidebarOffset(self)
       },
-    }))
-    .views(self => ({
       /**
        * #getter
        */

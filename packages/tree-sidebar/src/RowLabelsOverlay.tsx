@@ -1,10 +1,6 @@
 import { SvgRowLabels } from './SvgRowLabels.tsx'
 
-interface Source {
-  name: string
-  label?: string
-  labelColor?: string
-}
+import type { RowLabelSource } from './types.ts'
 
 /**
  * The on-screen half of the sidebar's row labels: `SvgRowLabels` in the overlay
@@ -35,7 +31,7 @@ export function RowLabelsOverlay({
   scrollTop,
   testId,
 }: {
-  sources: Source[] | undefined
+  sources: RowLabelSource[] | undefined
   // Resolved px row height, never a fit-to-height sentinel — same contract as
   // `TreeDrawingModel.effectiveRowHeight`.
   rowHeight: number

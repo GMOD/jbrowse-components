@@ -70,3 +70,69 @@ describe('clearLayout', () => {
     expect(m.subtreeFilter).toBeUndefined()
   })
 })
+
+// Provenance labels a dendrogram with the locus it came from, so the invariant
+// that matters is not that it is present but that it is never *wrong*: it may
+// only ever describe the tree currently loaded. Every path that touches
+// `clusterTree` therefore has to set or clear it in the same action.
+describe('clusterProvenance', () => {
+  const here = {
+    regions: [{ refName: 'ctgA', start: 0, end: 100 }],
+  }
+
+  it('is stored with the tree it describes', () => {
+    const m = makeModel()
+    m.setLayoutAndClusterTree([a, b], '(a,b);', here)
+    expect(m.clusterProvenance).toEqual(here)
+  })
+
+  it('is cleared whenever a reorder clears the tree', () => {
+    const m = makeModel()
+    m.setLayoutAndClusterTree([a, b], '(a,b);', here)
+    m.setLayout([b, a])
+    expect(m.clusterTree).toBeUndefined()
+    expect(m.clusterProvenance).toBeUndefined()
+  })
+
+  it('survives a layout write that keeps the tree', () => {
+    const m = makeModel()
+    m.setLayoutAndClusterTree([a, b], '(a,b);', here)
+    m.setLayout([{ name: 'a' }, { name: 'b' }])
+    expect(m.clusterProvenance).toEqual(here)
+  })
+
+  it('is cleared by clearLayout', () => {
+    const m = makeModel()
+    m.setLayoutAndClusterTree([a, b], '(a,b);', here)
+    m.clearLayout()
+    expect(m.clusterProvenance).toBeUndefined()
+  })
+
+  // A tree that arrives as data (maf's `.nh` phylogeny) has no locus. Leaving
+  // the previous run's provenance attached would caption a phylogeny with a
+  // clustering run's region — worse than saying nothing.
+  it('is cleared when a tree is supplied rather than computed', () => {
+    const m = makeModel()
+    m.setLayoutAndClusterTree([a, b], '(a,b);', here)
+    m.setClusterTree('(b,a);')
+    expect(m.clusterTree).toBe('(b,a);')
+    expect(m.clusterProvenance).toBeUndefined()
+  })
+
+  // A re-run over a different locus must replace, not merge.
+  it('is replaced by the next run rather than kept', () => {
+    const m = makeModel()
+    m.setLayoutAndClusterTree([a, b], '(a,b);', here)
+    const elsewhere = {
+      regions: [{ refName: 'ctgB', start: 900, end: 1000 }],
+    }
+    m.setLayoutAndClusterTree([b, a], '(b,a);', elsewhere)
+    expect(m.clusterProvenance).toEqual(elsewhere)
+  })
+
+  it('is undefined for a run that supplies none', () => {
+    const m = makeModel()
+    m.setLayoutAndClusterTree([a, b], '(a,b);')
+    expect(m.clusterProvenance).toBeUndefined()
+  })
+})

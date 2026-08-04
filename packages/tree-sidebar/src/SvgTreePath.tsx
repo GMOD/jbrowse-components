@@ -1,4 +1,6 @@
-import { TREE_STROKE, renderTreeSVG } from './hierarchy.ts'
+import { useTheme } from '@mui/material'
+
+import { renderTreeSVG, treeStroke } from './hierarchy.ts'
 
 import type { ClusterHierarchyNode } from './types.ts'
 
@@ -9,12 +11,13 @@ export function SvgTreePath({
   hierarchy: ClusterHierarchyNode
   scrollTop?: number
 }) {
+  const theme = useTheme()
   return (
     <g transform={`translate(0 ${-scrollTop})`}>
       <path
         d={renderTreeSVG(hierarchy)}
         fill="none"
-        stroke={TREE_STROKE}
+        stroke={treeStroke(theme.palette)}
         strokeWidth={1}
       />
     </g>

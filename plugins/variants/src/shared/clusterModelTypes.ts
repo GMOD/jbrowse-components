@@ -1,6 +1,7 @@
 import type { ProcessedSource, SampleInfo, Source } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
+import type { ClusterProvenance } from '@jbrowse/tree-sidebar'
 
 export interface ReducedModel {
   layout: Source[]
@@ -22,6 +23,10 @@ export interface ReducedModel {
   sampleInfo?: Record<string, SampleInfo>
   setClusterTree: (arg?: string) => void
   setLayout: (arg: Source[]) => void
-  setLayoutAndClusterTree: (layout: Source[], tree?: string) => void
+  setLayoutAndClusterTree: (
+    layout: Source[],
+    tree?: string,
+    provenance?: ClusterProvenance,
+  ) => void
   clearLayout: () => void
 }

@@ -45,6 +45,28 @@ explanation. It distinguishes "stale" from "no tree" and from "deliberately not
 positioned" (multi-wiggle overlay) by testing `root` against the rows itself —
 `hierarchy` being undefined does not tell those apart.
 
+## `clusterProvenance` is written in the same action as the tree, always
+
+`treeDescribesRows` gates the dendrogram on row **names**, and names don't
+change when you pan — so the tree stays drawn over a different locus, or a
+different chromosome, looking exactly as authoritative as where it was computed.
+`clusterProvenance` records the regions and the settings a run used;
+`ClusterProvenanceHint` shows the locus on screen and `SvgTreeSidebar` captions
+the export, which is the copy that ends up under a figure.
+
+The invariant is not that it is present but that it is never **wrong**: it may
+only describe the tree currently loaded. So every write touching `clusterTree`
+sets or clears it in the same action — `setLayoutAndClusterTree` takes it,
+`setLayout`/`clearLayout` drop it with the tree, and `setClusterTree` (maf's
+supplied `.nh` phylogeny) clears it, since captioning a phylogeny with the
+previous run's region is worse than no caption. A tree with no provenance is
+therefore also the signal that it was supplied rather than computed.
+
+Drift is an **overlap fraction, not an equality test**: `contentBlocks` shift a
+sub-bp amount on any pan or zoom, so equality would flag a stale tree constantly
+and train the reader to ignore it. `clusterProvenanceOverlap` asks how much of
+the clustered span is still on screen.
+
 ## `subtreeFilter` goes with the row _names_, not with the tree
 
 It is a set of names; `filterRowsBySubtree` matches on `name` with no tree

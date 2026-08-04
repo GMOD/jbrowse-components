@@ -63,6 +63,7 @@ const SvgVariantOverlay = ({
           treeAreaWidth={treeAreaWidth}
           scrollTop={scrollTop}
           labels={<SvgSampleRowLabelGutter model={model} />}
+          clusterProvenance={model.clusterProvenance}
         />
       </g>
       {showLegend ? (

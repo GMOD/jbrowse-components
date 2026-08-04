@@ -5,6 +5,7 @@ import type {
   LegendSection,
   LgvSvgExportable,
 } from '@jbrowse/plugin-linear-genome-view'
+import type { ClusterProvenance } from '@jbrowse/tree-sidebar'
 
 // Extends SampleRowLabelsModel because the export paints its sidebar row colors with
 // the same live component the on-screen overlay does — see SvgVariantOverlay.
@@ -19,4 +20,7 @@ export interface RenderSvgBaseModel
   sources: Source[] | undefined
   showLegend: boolean
   legendSections(): LegendSection[]
+  // Captioned above the exported tree: which locus and settings produced it.
+  // Undefined when no clustering has been run.
+  clusterProvenance?: ClusterProvenance
 }

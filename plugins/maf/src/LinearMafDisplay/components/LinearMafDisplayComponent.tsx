@@ -7,6 +7,7 @@ import {
   DisplayCrosshairs,
   RowLabelsOverlay,
   TreeSidebar,
+  treeSidebarOffset,
   treeSidebarRightEdge,
 } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
@@ -91,8 +92,6 @@ const MafBody = observer(function MafBody({
     scrollTop,
     effectiveRowHeight,
     showTree,
-    treeAreaWidth,
-    hierarchy,
     sources,
     samples,
     colorPalette,
@@ -113,7 +112,7 @@ const MafBody = observer(function MafBody({
   const { isDragging, selectionRect, mouse, contextCoord, setContextCoord } =
     drag
 
-  const sidebarOffset = showTree && hierarchy ? treeAreaWidth : 0
+  const sidebarOffset = treeSidebarOffset(model)
   // Mouse guides/tooltips hide left of the sidebar's resize-handle edge.
   const dataLeft = treeSidebarRightEdge(model)
 

@@ -2,7 +2,11 @@ import { useCallback } from 'react'
 
 import { getContainingView } from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
-import { DisplayCrosshairs, TreeSidebar } from '@jbrowse/tree-sidebar'
+import {
+  DisplayCrosshairs,
+  TreeSidebar,
+  treeSidebarOffset,
+} from '@jbrowse/tree-sidebar'
 import { ONSCREEN_AXIS_LEFT_PX } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
@@ -100,8 +104,7 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
   clientMouseCoord: [number, number]
   offsetMouseCoord: [number, number]
 }) {
-  const treeShowing = model.showTree && !!model.hierarchy
-  const labelOffset = treeShowing ? model.treeAreaWidth : 0
+  const labelOffset = treeSidebarOffset(model)
 
   // Pin the right-aligned legends to the content's right edge, not the full
   // track width (see legendRightEdgePx).

@@ -1,18 +1,14 @@
 import { getFillProps, max, measureText } from '@jbrowse/core/util'
 import { alpha, useTheme } from '@mui/material'
 
+import type { RowLabelSource } from './types.ts'
+
 // Below this a label's text is illegible, so the row draws as a color swatch
 // only. It is not a gate on drawing anything at all: a clustered track can sit
 // at a fraction of a pixel a row (1,987 canids in 640px is 0.32px) and the tint
 // is still the only thing carrying row identity there, so it has to survive.
 const MIN_TEXT_ROW_HEIGHT = 6
 const SWATCH_WIDTH = 8
-
-interface Source {
-  name: string
-  label?: string
-  labelColor?: string
-}
 
 // Consecutive rows sharing a color paint as one rect. At sub-pixel row heights
 // the alternative is a rect per row -- 1,987 DOM nodes re-rendered on every
@@ -21,7 +17,7 @@ interface Source {
 // Visually identical either way: the rects are contiguous and same-filled.
 // Rows with no color contribute nothing, so a partly-colored track draws gaps
 // rather than a run bridging them.
-function colorRuns(sources: Source[]) {
+function colorRuns(sources: RowLabelSource[]) {
   const runs: { start: number; end: number; color: string; key: string }[] = []
   for (const [idx, source] of sources.entries()) {
     const color = source.labelColor
@@ -51,7 +47,7 @@ export function SvgRowLabels({
   scrollTop = 0,
   availableHeight,
 }: {
-  sources: Source[]
+  sources: RowLabelSource[]
   rowHeight: number
   labelOffset: number
   scrollTop?: number

@@ -17,6 +17,21 @@ const regions = [
   { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 },
 ]
 
+// What a run records about itself, so a dendrogram can say which locus and
+// which site filters produced it. Asserted alongside the layout and tree
+// because it has to be written in the same action as the tree — provenance left
+// over from a previous run would caption this one with the wrong region.
+const withMode = (mode: string) => [
+  { name: 'mode', value: mode },
+  { name: 'MAF filter', value: '0' },
+  { name: 'max missingness', value: '1' },
+]
+
+const PROVENANCE = {
+  regions: [{ refName: 'ctgA', start: 0, end: 100, assemblyName: 'volvox' }],
+  settings: withMode('alleleCount'),
+}
+
 function makeModel(overrides: Partial<ReducedModel> = {}): ReducedModel {
   return {
     layout: [],
@@ -78,6 +93,7 @@ describe('runGenotypeClustering', () => {
         { name: 'sampleB', sampleName: 'sampleB' },
       ],
       '(a,b,c);',
+      PROVENANCE,
     )
   })
 
@@ -162,6 +178,9 @@ describe('runGenotypeClustering', () => {
         { name: 'sampleA HP0', sampleName: 'sampleA', HP: 0 },
       ],
       '(...);',
+      // the recorded mode follows the run, since a phased tree clusters
+      // haplotype rows rather than sample rows
+      { ...PROVENANCE, settings: withMode('phased') },
     )
   })
 
@@ -207,6 +226,7 @@ describe('runGenotypeClustering', () => {
         { name: 'sampleC', color: 'red' },
       ],
       '(a,b);',
+      PROVENANCE,
     )
   })
 })

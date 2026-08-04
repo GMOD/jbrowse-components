@@ -1,3 +1,5 @@
+import { clusterProvenanceFromRegions } from '@jbrowse/tree-sidebar'
+
 import { applyClusterOrder } from './applyClusterOrder.ts'
 
 import type { ReducedModel } from './clusterModelTypes.ts'
@@ -76,6 +78,18 @@ export async function runGenotypeClustering({
         sampleInfo,
       }),
       ret.tree,
+      // The settings recorded are the ones that change which sites entered the
+      // matrix, so a reader can tell a tree built over common variants from one
+      // built over everything. `filters` (a jexl chain) is deliberately reduced
+      // to whether one was active: the expressions are long, the caption is one
+      // line, and "there was a filter" is what changes how the tree should be
+      // read.
+      clusterProvenanceFromRegions(regions, [
+        { name: 'mode', value: renderingMode },
+        { name: 'MAF filter', value: String(minorAlleleFrequencyFilter) },
+        { name: 'max missingness', value: String(maxMissingnessFilter) },
+        ...(filters ? [{ name: 'track filters', value: 'active' }] : []),
+      ]),
     )
   }
 }

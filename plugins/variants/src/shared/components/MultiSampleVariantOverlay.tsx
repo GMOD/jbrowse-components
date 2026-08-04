@@ -1,4 +1,5 @@
 import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
+import { treeSidebarOffset } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
 import SvgSampleRowLabelGutter from './SvgSampleRowLabelGutter.tsx'
@@ -25,8 +26,7 @@ const MultiSampleVariantOverlay = observer(function MultiSampleVariantOverlay({
   model: VariantOverlayModel
   top?: number
 }) {
-  const { availableHeight, showTree, hierarchy, treeAreaWidth, showLegend } =
-    model
+  const { availableHeight, showLegend } = model
   return (
     <>
       <svg
@@ -41,9 +41,7 @@ const MultiSampleVariantOverlay = observer(function MultiSampleVariantOverlay({
           overflow: 'hidden',
         }}
       >
-        <g
-          transform={`translate(${showTree && hierarchy ? treeAreaWidth : 0})`}
-        >
+        <g transform={`translate(${treeSidebarOffset(model)})`}>
           <SvgSampleRowLabelGutter model={model} />
         </g>
       </svg>

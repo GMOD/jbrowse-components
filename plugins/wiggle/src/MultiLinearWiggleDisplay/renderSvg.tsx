@@ -5,7 +5,11 @@ import {
   renderDisplaySvg,
 } from '@jbrowse/plugin-linear-genome-view'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
-import { SvgTreePath } from '@jbrowse/tree-sidebar'
+import {
+  SvgTreePath,
+  describeClusterProvenance,
+  treeSidebarOffset,
+} from '@jbrowse/tree-sidebar'
 
 import { drawWiggleToCtx } from '../shared/Canvas2DWiggleRenderer.ts'
 import OverlayColorLegend from '../shared/OverlayColorLegend.tsx'
@@ -48,9 +52,9 @@ function MultiWiggleSvgBody({
   // Wiggle can't use the shared SvgTreeSidebar: its row labels live in
   // MultiWiggleSvgScales (shared with the on-screen path, alongside the
   // scalebars). So keep the split, but derive the label offset and the tree from
-  // one `treeShowing` so a blank gutter can't appear.
-  const { hierarchy, showTree, treeAreaWidth } = model
-  const treeShowing = showTree && !!hierarchy
+  // the one `treeSidebarOffset` gate so a blank gutter can't appear.
+  const { hierarchy } = model
+  const labelOffset = treeSidebarOffset(model)
 
   const props = model.gpuProps()
   // right-aligned legends pin to the content's right edge, not the viewport's:
@@ -95,7 +99,7 @@ function MultiWiggleSvgBody({
         model={model}
         legendRight={legendRight}
         scalebarLeft={scalebarLeft}
-        labelOffset={treeShowing ? treeAreaWidth : 0}
+        labelOffset={labelOffset}
       />
       {/* Overlay-mode color legend, drawn inline here. On screen this same
           legend is the hoisted MultiWiggleLegendOverlay instead (lifted above
@@ -110,7 +114,18 @@ function MultiWiggleSvgBody({
           maxHeight={height}
         />
       ) : null}
-      {treeShowing ? <SvgTreePath hierarchy={hierarchy} /> : null}
+      {labelOffset && hierarchy ? (
+        <>
+          <SvgTreePath hierarchy={hierarchy} />
+          {/* The locus travels with the figure — see SvgTreeSidebar, which
+              carries the same caption for the displays that can use it. */}
+          {model.clusterProvenance ? (
+            <text x={0} y={-4} fontSize={11} fill="#666">
+              {describeClusterProvenance(model.clusterProvenance)}
+            </text>
+          ) : null}
+        </>
+      ) : null}
     </>
   )
 }

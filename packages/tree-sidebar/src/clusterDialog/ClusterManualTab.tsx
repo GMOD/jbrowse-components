@@ -133,17 +133,18 @@ const ClusterManualTab = observer(function ClusterManualTab({
           </Button>
         </div>
         <ClusterAdvancedOptions>
-          <RadioGroup>
+          <RadioGroup
+            value={clusterMethod}
+            onChange={(_event, next) => {
+              setClusterMethod(next)
+            }}
+          >
             {Object.entries(methods).map(([key, label]) => (
               <FormControlLabel
                 key={key}
                 value={key}
-                checked={clusterMethod === key}
                 control={<Radio />}
                 label={label}
-                onChange={() => {
-                  setClusterMethod(key)
-                }}
               />
             ))}
           </RadioGroup>

@@ -3,6 +3,7 @@ import { cast, types } from '@jbrowse/mobx-state-tree'
 import { applySubtreeFilter, buildTree } from './clusterUtils.ts'
 import { maxNodeHeight } from './hierarchy.ts'
 
+import type { ClusterProvenance } from './clusterProvenance.ts'
 import type { HoveredTreeNode } from './types.ts'
 
 /**
@@ -18,6 +19,18 @@ export function TreeSidebarMixin<
     .model({
       layout: types.stripDefault(types.frozen<S[]>(), []),
       clusterTree: types.stripDefault(types.maybe(types.string), undefined),
+      /**
+       * #property
+       * What `clusterTree` was computed from — the locus and the settings.
+       * Set only for a tree this app computed; a supplied phylogeny (maf's
+       * `.nh`) leaves it undefined. Persisted with the tree so it survives a
+       * session snapshot, which is the case that most needs it: a shared link
+       * otherwise hands over a dendrogram with no way to learn its locus.
+       */
+      clusterProvenance: types.stripDefault(
+        types.maybe(types.frozen<ClusterProvenance>()),
+        undefined,
+      ),
       treeAreaWidth: types.stripDefault(types.number, 80),
       subtreeFilter: types.stripDefault(
         types.maybe(types.array(types.string)),
@@ -69,11 +82,17 @@ export function TreeSidebarMixin<
       },
     }))
     .actions(self => ({
+      // Provenance is written and cleared in the same action as the tree it
+      // describes, never on its own. The failure it guards against is not a
+      // missing caption but a *wrong* one: provenance left standing from a
+      // previous run would label the new dendrogram with the old run's locus,
+      // which is worse than saying nothing at all.
       setLayout(layout: S[]) {
         const clearTree = self.willClearTree(layout)
         self.layout = layout
         if (clearTree) {
           self.clusterTree = undefined
+          self.clusterProvenance = undefined
         }
       },
       // Reset to no arrangement at all, which includes the subtree filter: the
@@ -92,14 +111,24 @@ export function TreeSidebarMixin<
       clearLayout() {
         self.layout = []
         self.clusterTree = undefined
+        self.clusterProvenance = undefined
         self.subtreeFilter = undefined
       },
+      // For a tree that arrives as data rather than from a run — maf's `.nh`
+      // guide tree. It has no locus and no settings, so this clears provenance
+      // rather than leaving the previous tree's attached.
       setClusterTree(tree?: string) {
         self.clusterTree = tree
+        self.clusterProvenance = undefined
       },
-      setLayoutAndClusterTree(layout: S[], tree?: string) {
+      setLayoutAndClusterTree(
+        layout: S[],
+        tree?: string,
+        provenance?: ClusterProvenance,
+      ) {
         self.layout = layout
         self.clusterTree = tree
+        self.clusterProvenance = provenance
       },
       setTreeAreaWidth(width: number) {
         self.treeAreaWidth = width

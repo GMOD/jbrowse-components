@@ -3,10 +3,26 @@ export { default as parseNewick } from './newick.ts'
 export type { NewickNode } from './newick.ts'
 export { default as TreeSidebar } from './TreeSidebar.tsx'
 export { DisplayCrosshairs } from './DisplayCrosshairs.tsx'
-export { treeSidebarRightEdge } from './treeSidebarGeometry.ts'
+export {
+  treeSidebarOffset,
+  treeSidebarRightEdge,
+} from './treeSidebarGeometry.ts'
 export { SvgRowLabels } from './SvgRowLabels.tsx'
 export { RowLabelsOverlay } from './RowLabelsOverlay.tsx'
 export { StaleTreeHint } from './StaleTreeHint.tsx'
+export { ClusterProvenanceHint } from './ClusterProvenanceHint.tsx'
+export {
+  CLUSTER_PROVENANCE_MIN_OVERLAP,
+  clusterProvenanceDrifted,
+  clusterProvenanceFromRegions,
+  clusterProvenanceLocLabel,
+  clusterProvenanceOverlap,
+  describeClusterProvenance,
+} from './clusterProvenance.ts'
+export type {
+  ClusterProvenance,
+  ClusterProvenanceRegion,
+} from './clusterProvenance.ts'
 export { SvgTreePath } from './SvgTreePath.tsx'
 export { SvgTreeSidebar } from './SvgTreeSidebar.tsx'
 export { setupTreeDrawingAutorun } from './treeDrawingAutorun.ts'
@@ -60,6 +76,7 @@ export type {
   ClusterHierarchyNode,
   ClusterNodeData,
   HoveredTreeNode,
+  RowLabelSource,
   TreeDrawingModel,
   TreeSidebarModel,
   TreeSource,

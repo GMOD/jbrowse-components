@@ -1,3 +1,4 @@
+import type { ClusterProvenance } from './clusterProvenance.ts'
 import type { HierarchyNode, PositionedHierarchyNode } from './hierarchy.ts'
 import type { NewickNode } from './newick.ts'
 import type Flatbush from '@jbrowse/core/util/flatbush'
@@ -16,6 +17,18 @@ export interface TreeSource {
   color?: string
 }
 
+// One row as the sidebar's label half draws it: `name` is the identity (React
+// key, and what the tree's leaves are matched against), `label` the displayed
+// string when the adapter config supplied one, `labelColor` the identity tint
+// that carries the row when it is too short for text. Shared by `SvgRowLabels`,
+// its on-screen wrapper `RowLabelsOverlay`, and `SvgTreeSidebar`, which each
+// used to redeclare it.
+export interface RowLabelSource {
+  name: string
+  label?: string
+  labelColor?: string
+}
+
 export interface TreeSidebarModel {
   totalHeight?: number
   hierarchy?: ClusterHierarchyNode
@@ -24,6 +37,10 @@ export interface TreeSidebarModel {
   // the tree no longer describes the rows — having the unpositioned one lets
   // `StaleTreeHint` tell those apart.
   root?: HierarchyNode<ClusterNodeData>
+  // What the tree was computed from, when this app computed it. Undefined for
+  // a supplied phylogeny (maf's `.nh`) and for a session that predates the
+  // field — `ClusterProvenanceHint` simply renders nothing in both cases.
+  clusterProvenance?: ClusterProvenance
   treeAreaWidth: number
   height: number
   lineZoneHeight?: number

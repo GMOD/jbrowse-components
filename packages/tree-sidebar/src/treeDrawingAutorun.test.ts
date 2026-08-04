@@ -96,8 +96,29 @@ const View = types
     },
   }))
 
+// `getSession` duck-types on rpcManager + configuration; the draw autorun reads
+// the palette off it for the branch-line stroke.
+const Session = types
+  .model('TestSession', {
+    view: View,
+  })
+  .volatile(() => ({
+    rpcManager: {},
+    configuration: {},
+    palette: { mode: 'light' },
+  }))
+  .actions(self => ({
+    setMode(mode: 'light' | 'dark') {
+      self.palette = { mode }
+    },
+  }))
+
+function createDisplay(id: string) {
+  return Session.create({ view: { id } })
+}
+
 test('autorun sizes the tree canvas itself, surviving a height change', () => {
-  const { display } = View.create({ id: 'view1' })
+  const { display } = createDisplay('view1').view
   setupTreeDrawingAutorun(display)
 
   const canvas = document.createElement('canvas')
@@ -116,7 +137,7 @@ test('autorun sizes the tree canvas itself, surviving a height change', () => {
 })
 
 test('autorun sizes the mouseover canvas to view width x content height', () => {
-  const { display } = View.create({ id: 'view2' })
+  const { display } = createDisplay('view2').view
   setupTreeDrawingAutorun(display)
 
   const canvas = document.createElement('canvas')
@@ -132,7 +153,7 @@ test('autorun sizes the mouseover canvas to view width x content height', () => 
 // Reading the raw `rowHeight` here painted zero-height rows, so hovering the
 // tree highlighted nothing in fit-to-height mode (variants' default).
 test('subtree hover highlights rows at the resolved row height', () => {
-  const { display } = View.create({ id: 'view3' })
+  const { display } = createDisplay('view3').view
   setupTreeDrawingAutorun(display)
   display.setMouseoverCanvasRef(document.createElement('canvas'))
 
@@ -147,4 +168,17 @@ test('subtree hover highlights rows at the resolved row height', () => {
     [0, 0, 800, 10],
     [0, 10, 800, 10],
   ])
+})
+
+// A hardcoded white panel and a black stroke made the sidebar a bright
+// rectangle on a dark-themed track; both now follow the session palette.
+test('branch lines take their ink from the session palette', () => {
+  const session = createDisplay('view4')
+  const { display } = session.view
+  setupTreeDrawingAutorun(display)
+  display.setTreeCanvasRef(document.createElement('canvas'))
+
+  expect(stubCtx.strokeStyle).toBe('#0008')
+  session.setMode('dark')
+  expect(stubCtx.strokeStyle).toBe('#fff8')
 })

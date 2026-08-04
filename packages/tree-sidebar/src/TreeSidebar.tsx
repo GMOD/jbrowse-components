@@ -6,6 +6,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Menu, MenuItem, alpha } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { ClusterProvenanceHint } from './ClusterProvenanceHint.tsx'
 import { StaleTreeHint } from './StaleTreeHint.tsx'
 import { getLeafNames } from './clusterUtils.ts'
 import {
@@ -23,6 +24,11 @@ interface MenuAnchor {
 }
 
 // Centered line with a contrasting halo, hidden until the handle is hovered.
+// Both the halo and the panel below take their color from the theme rather than
+// a literal white: they sit over the rendering canvas, and a hardcoded white
+// panel made the whole sidebar a bright rectangle on a dark-themed track (the
+// row labels beside it were already `background.paper`). `treeStroke` moves with
+// them so the branch lines stay legible against the panel in either mode.
 const useStyles = makeStyles()(theme => ({
   resizeHandle: {
     '&::after': {
@@ -35,12 +41,17 @@ const useStyles = makeStyles()(theme => ({
       transform: 'translateX(-50%)',
       background: theme.palette.grey[500],
       opacity: 0,
-      boxShadow: `0 0 0 1px ${alpha('#fff', 0.6)}`,
+      boxShadow: `0 0 0 1px ${alpha(theme.palette.background.paper, 0.6)}`,
       transition: 'opacity 100ms',
     },
     '&:hover::after': {
       opacity: 1,
     },
+  },
+  panel: {
+    position: 'absolute',
+    left: 0,
+    background: alpha(theme.palette.background.paper, 0.8),
   },
 }))
 
@@ -163,15 +174,14 @@ const TreeSidebar = observer(function TreeSidebar({
         }}
       >
         <div
+          className={classes.panel}
           style={{
-            position: 'absolute',
             top: lineZoneHeight,
-            left: 0,
             width: treeAreaWidth,
             height: contentHeight,
-            background: alpha('#fff', 0.8),
           }}
         />
+        <ClusterProvenanceHint model={model} top={lineZoneHeight} />
         <canvas
           data-testid="tree_sidebar_dendrogram"
           ref={treeCanvasRef}

@@ -1,5 +1,14 @@
-// stroke for tree branch lines, shared by the canvas and SVG draw paths
-export const TREE_STROKE = '#0008'
+// Stroke for tree branch lines, shared by the canvas and SVG draw paths. The
+// sidebar paints a translucent `background.paper` panel behind the dendrogram,
+// so the ink has to follow the theme with it: black-on-white was legible in
+// either mode only while the panel was hardcoded white, which is what made the
+// sidebar a bright rectangle on a dark track.
+//
+// Literal per mode rather than `alpha(text.primary, …)` so the light-mode value
+// stays exactly what it has always been, byte for byte, in the exported SVG.
+export function treeStroke(palette: { mode: 'light' | 'dark' }) {
+  return palette.mode === 'dark' ? '#fff8' : '#0008'
+}
 
 // Left inset (CSS px) for the root branch line. The root sits at the smallest y
 // (leftmost node in the left-to-right dendrogram); at y=0 its 1px-wide vertical

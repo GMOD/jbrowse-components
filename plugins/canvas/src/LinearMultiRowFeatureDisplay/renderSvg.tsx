@@ -22,6 +22,7 @@ import type {
   LgvSvgBodyProps,
 } from '@jbrowse/plugin-linear-genome-view'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
+import type { ClusterProvenance } from '@jbrowse/tree-sidebar'
 import type { ClusterHierarchyNode } from '@jbrowse/tree-sidebar'
 
 // Duck-typed slice of the display the export reads, mirroring
@@ -39,6 +40,9 @@ export interface RenderSvgModel extends SvgExportable {
   treeAreaWidth: number
   showTree: boolean
   hierarchy: ClusterHierarchyNode | undefined
+  // Captioned above the exported tree — for this display it also records the
+  // color scheme, which IS the clustering matrix here.
+  clusterProvenance?: ClusterProvenance
   showLegend: boolean
   colorLegend: LegendEntry[]
   hiddenCategorySet: ReadonlySet<string>
@@ -96,6 +100,7 @@ function MultiRowSvgBody({
         rowHeight={self.effectiveRowHeight}
         treeAreaWidth={self.treeAreaWidth}
         availableHeight={height}
+        clusterProvenance={self.clusterProvenance}
       />
       {self.showLegend && self.colorLegend.length ? (
         <MultiRowColorLegend

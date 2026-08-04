@@ -1,9 +1,9 @@
-import { getContainingView } from '@jbrowse/core/util'
+import { getContainingView, getSession } from '@jbrowse/core/util'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { getPreparedCanvas2D } from '@jbrowse/render-core/canvas2dUtils'
 import { autorun } from 'mobx'
 
-import { TREE_STROKE, links, treeLinkSegments } from './hierarchy.ts'
+import { links, treeLinkSegments, treeStroke } from './hierarchy.ts'
 import { treeContentHeight } from './treeSidebarGeometry.ts'
 
 import type { TreeDrawingModel } from './types.ts'
@@ -41,7 +41,9 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
         }
 
         ctx.translate(0, -scrollTop)
-        ctx.strokeStyle = TREE_STROKE
+        // `getSession(self).palette`, not a React theme: this is a model
+        // autorun, and the read makes a theme switch repaint the tree
+        ctx.strokeStyle = treeStroke(getSession(self).palette)
         ctx.lineWidth = 1
 
         ctx.beginPath()
