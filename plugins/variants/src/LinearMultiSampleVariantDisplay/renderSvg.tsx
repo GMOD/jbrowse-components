@@ -1,4 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
+import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { renderDisplaySvg } from '@jbrowse/plugin-linear-genome-view'
 
@@ -60,6 +61,10 @@ function VariantSvgBody({
   // LgvSvgBodyProps.canvasWidth.
   const exportState = { ...renderState, canvasWidth }
   const { canvasHeight } = renderState
+  // The export's palette comes from the user-selected export theme rather than
+  // the live on-screen one, the same rule plugin-maf's export follows, so a
+  // light export of a dark session still gets light-theme colors.
+  const { insertion } = resolvePalette({ configTheme: opts?.theme })
   return (
     <SvgVariantOverlay
       model={model}
@@ -85,6 +90,7 @@ function VariantSvgBody({
               insertionGlyphRegions,
               renderBlocks,
               exportState,
+              insertion,
             )
           }
         }}

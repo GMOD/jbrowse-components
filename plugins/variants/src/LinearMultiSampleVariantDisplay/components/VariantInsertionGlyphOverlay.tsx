@@ -1,3 +1,4 @@
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { getContainingView } from '@jbrowse/core/util'
 import { OverlayCanvas } from '@jbrowse/render-core'
 import { observer } from 'mobx-react'
@@ -22,6 +23,7 @@ const VariantInsertionGlyphOverlay = observer(
     model: LinearMultiSampleVariantDisplayModel
   }) {
     const view = getContainingView(model) as LinearGenomeViewModel
+    const palette = usePalette()
     const { insertionGlyphRegions, renderBlocks, renderState } = model
     return insertionGlyphRegions ? (
       <OverlayCanvas
@@ -33,6 +35,7 @@ const VariantInsertionGlyphOverlay = observer(
             insertionGlyphRegions,
             renderBlocks,
             renderState,
+            palette.insertion,
           )
         }}
       />

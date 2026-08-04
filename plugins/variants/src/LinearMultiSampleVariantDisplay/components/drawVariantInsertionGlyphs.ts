@@ -1,5 +1,4 @@
 import {
-  INSERTION_COLOR,
   MIN_HEIGHT_FOR_TEXT,
   drawInsertionMarker,
   getInsertionType,
@@ -61,17 +60,21 @@ export interface VariantInsertionGlyphData {
  * (`cellCarriesAlt`), because widening a reference or no-call cell would claim
  * that haplotype has the sequence.
  *
- * Markers are `INSERTION_COLOR`, the same purple the pileup and the multi-row
- * feature display use. They used to take the cell's own genotype color, on the
- * reasoning that the color is what says which allele the haplotype carries and
- * the marker only supplies length. That does not survive the geometry: the bar
- * is `insertionBarWidth` wide where the cell under it is the 2px floor, so at 60
- * bp/px a 7.8kb insertion paints ~130px across a row of OTHER records' cells. In
- * genotype coloring those neighbours are the same dark blue, so the marker was
- * invisible against them and only its white label survived — a number floating
- * in a solid field, which is exactly what a docs review reported. A category
- * color is also what the equivalent glyph in `drawMultiRowIndelGlyphs` already
- * uses, over rows whose features carry per-feature colors of their own.
+ * Markers take one category color, `insertionColor` — the caller passes the
+ * theme's `palette.insertion`, which is what the pileup
+ * (`alignmentComponentUtils`) and the MAF display (`drawMafInsertions`) paint
+ * their insertions with, so the three agree and a custom theme moves all three
+ * together.
+ *
+ * They used to take the cell's own genotype color, on the reasoning that the
+ * color is what says which allele the haplotype carries and the marker only
+ * supplies length. That does not survive the geometry: the bar is
+ * `insertionBarWidth` wide where the cell under it is the 2px floor, so at 60
+ * bp/px a 7.8kb insertion paints a 34px box across a row of OTHER records'
+ * cells. In genotype coloring those neighbours are the same dark blue, so the
+ * marker was invisible against them and only its white label survived — a
+ * number floating in a solid field, which is exactly what a docs review
+ * reported.
  *
  * The dosage that fill used to carry is not lost with it: the record's own cell
  * is still drawn at its reference span underneath, and every mode reports the
@@ -84,6 +87,7 @@ export function drawVariantInsertionGlyphs(
   regions: ReadonlyMap<number, VariantInsertionGlyphData>,
   blocks: VariantRenderBlock[],
   state: VariantRenderState,
+  insertionColor: string,
 ) {
   const { canvasWidth, canvasHeight, rowHeight, scrollTop } = state
   // variant.slang's own 2px floor, generated into TS (adr-051), so a marker
@@ -143,7 +147,7 @@ export function drawVariantInsertionGlyphs(
         // loop rather than per cell (this pass repaints on every scroll and
         // pan). The label below is the only thing that changes it, and it sets
         // it back.
-        ctx.fillStyle = INSERTION_COLOR
+        ctx.fillStyle = insertionColor
         // Reference cells never carry the alt, so the scan starts at the
         // non-reference bucket (see VariantInsertionGlyphData.refCellCount).
         for (let i = region.refCellCount; i < region.numCells; i++) {
@@ -172,7 +176,7 @@ export function drawVariantInsertionGlyphs(
                 // loop: when every marker set its own color a label could leave
                 // `white` behind harmlessly, and now it would paint the next
                 // marker with it.
-                ctx.fillStyle = INSERTION_COLOR
+                ctx.fillStyle = insertionColor
               }
             }
           }

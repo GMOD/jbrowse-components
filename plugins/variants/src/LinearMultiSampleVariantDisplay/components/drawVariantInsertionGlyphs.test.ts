@@ -1,4 +1,5 @@
-import { INSERTION_COLOR, insertionBarWidth } from '@jbrowse/alignments-core'
+import { insertionBarWidth } from '@jbrowse/alignments-core'
+import { resolvePalette } from '@jbrowse/core/ui/palette'
 
 import { drawVariantInsertionGlyphs } from './drawVariantInsertionGlyphs.ts'
 
@@ -84,15 +85,26 @@ function data(
   }
 }
 
+// The theme's insertion color, which is also what plugin-alignments' pileup and
+// plugin-maf paint their insertions with -- the point of passing it in rather
+// than hardcoding one here.
+const INSERTION_COLOR = resolvePalette().insertion
+
 function draw(
   region: VariantInsertionGlyphData,
   overrides?: Partial<VariantRenderState>,
 ) {
   const { ctx, calls, texts } = mockCtx()
-  drawVariantInsertionGlyphs(ctx, new Map([[0, region]]), [block], {
-    ...state,
-    ...overrides,
-  })
+  drawVariantInsertionGlyphs(
+    ctx,
+    new Map([[0, region]]),
+    [block],
+    {
+      ...state,
+      ...overrides,
+    },
+    INSERTION_COLOR,
+  )
   return { calls, texts }
 }
 
@@ -123,8 +135,9 @@ test('leaves reference and no-call cells alone', () => {
 // The marker used to take the cell's own genotype color. The bar is
 // `insertionBarWidth` wide where its cell is the 2px floor, so it paints across
 // a row of OTHER records' cells -- which in genotype coloring are the same dark
-// blue, leaving the marker invisible and only its white label showing. Same
-// category color as the pileup and drawMultiRowIndelGlyphs.
+// blue, leaving the marker invisible and only its white label showing. It takes
+// the theme's insertion color instead, the same one the pileup and the MAF
+// display use.
 test('markers are the shared insertion purple, whatever the cells are colored', () => {
   const { calls } = draw(data())
   expect(calls.map(c => c.fillStyle)).toEqual([INSERTION_COLOR])
@@ -173,10 +186,16 @@ test('labels the marker with the bp count when the row is tall enough', () => {
 test('widens without a label on rows too short for letters', () => {
   const wideBlock: VariantRenderBlock = { ...block, end: 200000 }
   const { ctx, calls, texts } = mockCtx()
-  drawVariantInsertionGlyphs(ctx, new Map([[0, data()]]), [wideBlock], {
-    ...state,
-    rowHeight: 2,
-  })
+  drawVariantInsertionGlyphs(
+    ctx,
+    new Map([[0, data()]]),
+    [wideBlock],
+    {
+      ...state,
+      rowHeight: 2,
+    },
+    INSERTION_COLOR,
+  )
   expect(calls).toHaveLength(1)
   expect(calls[0]!.w).toBeGreaterThan(2)
   expect(calls[0]!.w).toBe(insertionBarWidth(INSERTED, 1000 / 200000, 2))
