@@ -17,13 +17,17 @@ const HierarchicalTree = observer(function HierarchicalTree({
   const containerRef = useRef<HTMLDivElement>(null)
   const [scrollTop, setScrollTop] = useState(0)
   const { rows, treeHeight } = model
-  // clamp: when the list shrinks (filter/collapse) the browser caps the real
-  // scrollTop but may not fire a scroll event, leaving our state stale-high and
-  // rendering a blank viewport until the next manual scroll
-  const effectiveScrollTop = Math.min(
-    scrollTop,
-    Math.max(0, treeHeight - height),
-  )
+  // when the list shrinks (filter/collapse) the browser caps the real scrollTop
+  // but may not fire a scroll event, leaving our state stale-high and rendering
+  // a blank viewport until the next manual scroll. Written back into state
+  // during render rather than only derived: the cap is what the DOM did, so
+  // keeping the stale value would scroll the rendered window back down to it
+  // when the list grows again, while the container is still at the top
+  const maxScrollTop = Math.max(0, treeHeight - height)
+  if (scrollTop > maxScrollTop) {
+    setScrollTop(maxScrollTop)
+  }
+  const effectiveScrollTop = Math.min(scrollTop, maxScrollTop)
   const { startIndex, endIndex } = model.visibleRange(
     height,
     effectiveScrollTop,
