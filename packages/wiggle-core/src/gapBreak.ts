@@ -49,11 +49,28 @@ export function gapBreakLimit({
 
 /**
  * #api
- * The default for {@link gapBreakLimit}'s `multiple`. Deliberately loose: bins
- * that tile the genome sit at exactly 1x, and the sporadic non-tiling bins that
- * reduced BigWig data is full of land around 2x, so the threshold has to clear
- * both without needing a per-track knob. What it does catch is the case it is
- * for — an unmappable or unsequenced stretch with no bins at all, which runs
- * orders of magnitude past the mean rather than a couple of multiples.
+ * The default for {@link gapBreakLimit}'s `multiple`. Deliberately far out:
+ * a hole worth breaking on runs orders of magnitude past the mean, not a couple
+ * of multiples, so the threshold's job is to sit well clear of ordinary spacing
+ * variation rather than to track it closely.
+ *
+ * Calibrated against the LD recombination curve at the LCT locus, which is the
+ * least forgiving series either caller has — 1401 MAF-filtered SNPs over 3.1 Mb,
+ * spacing that is not uniform but a heavy right tail (median 996 bp against a
+ * 2354 bp mean, i.e. dense stretches and sparse ones in the same window, with no
+ * bimodal split between "typical" and "hole" to aim at). There:
+ *
+ *   5x  -> 47 breaks, the curve shatters into dots wherever the local density
+ *          runs below the global average — a first guess at this constant, and
+ *          plainly wrong once rendered
+ *   10x -> 17 breaks, still reads as dashed
+ *   20x -> 2 breaks, exactly the two longest bridged spans (73 kb and 67 kb;
+ *          the next one down is 44 kb, so this sits in a real gap in the tail
+ *          rather than slicing through a run of comparable spans)
+ *
+ * BigWig bins, the other caller, tile the genome and so sit at 1x with the
+ * occasional skipped bin near 2x; 20x clears those with room to spare and still
+ * catches an unmappable stretch, which is hundreds of times the bin width. So
+ * the loose end of the range serves both, where the tight end served neither.
  */
-export const DEFAULT_GAP_BREAK_MULTIPLE = 5
+export const DEFAULT_GAP_BREAK_MULTIPLE = 20
