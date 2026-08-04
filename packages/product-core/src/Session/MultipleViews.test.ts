@@ -237,3 +237,26 @@ test('a replaced view keeps its position among its panel-mates', () => {
     'FakeSyntenyView',
   ])
 })
+
+// The replacement takes the slot, so it takes the focus. Consumers all compare
+// focusedViewId against a view id, so leaving the dead id would not error - the
+// focus ring would just quietly match nothing.
+test('replaceView moves the focus onto the view it created', () => {
+  const session = sessionWithThreeViews()
+  const replaced = session.views[1]!
+  session.setFocusedViewId(replaced.id)
+
+  const created = session.replaceView(replaced, 'FakeSyntenyView')
+
+  expect(session.focusedViewId).toBe(created.id)
+})
+
+test('replaceView leaves another view’s focus alone', () => {
+  const session = sessionWithThreeViews()
+  const focused = session.views[0]!.id
+  session.setFocusedViewId(focused)
+
+  session.replaceView(session.views[1], 'FakeSyntenyView')
+
+  expect(session.focusedViewId).toBe(focused)
+})

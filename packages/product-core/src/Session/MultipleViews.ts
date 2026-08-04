@@ -179,14 +179,27 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
          * view's own menu.
          */
         replaceView(view: IBaseViewModel, typeName: string, initialState = {}) {
-          // read before the removal, which is what makes the index stale
+          // read before the removal, which is what makes both stale
           const idx = self.views.indexOf(view)
+          // `idx` first, so a view already gone from the session short-circuits
+          // before `view.id` is read: that node is destroyed, and MST warns on
+          // any read through it
+          const wasFocused = idx !== -1 && self.focusedViewId === view.id
           detach(view)
           // a view already gone from the session appends, rather than throwing
           // or silently dropping the launch
           const at = idx === -1 ? self.views.length : idx
           self.views.splice(at, 0, { ...initialState, type: typeName })
-          return self.views[at]!
+          const created = self.views[at]!
+          // The replacement takes the slot, so it takes the focus with it.
+          // Every consumer compares `focusedViewId === view.id`, so a
+          // replacement that left the old id in place would simply match
+          // nothing: the focus ring would vanish and the drawer would stop
+          // naming a view, with nothing to say why.
+          if (wasFocused) {
+            self.setFocusedViewId(created.id)
+          }
+          return created
         },
 
         /**
