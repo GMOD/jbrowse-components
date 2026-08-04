@@ -1,5 +1,11 @@
-import { getContainingView, openFeatureWidget } from '@jbrowse/core/util'
-import { addDisposer } from '@jbrowse/mobx-state-tree'
+import { getConf, resolveConf, setConf } from '@jbrowse/core/configuration'
+import {
+  getContainingTrack,
+  getContainingView,
+  getEnv,
+  openFeatureWidget,
+} from '@jbrowse/core/util'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { installClearHoverOnViewportChange } from '@jbrowse/plugin-linear-genome-view'
 import { observable } from 'mobx'
 
@@ -8,7 +14,12 @@ import {
   computeScoreStats,
   getNiceDomain,
 } from '../util.ts'
-import { WiggleScoreConfigMixin } from './WiggleScoreConfigMixin.ts'
+import {
+  RESOLUTION_MAX,
+  RESOLUTION_MIN,
+  WiggleScoreConfigMixin,
+  confNode,
+} from './WiggleScoreConfigMixin.ts'
 import { wiggleFeatureWidgetData } from './wiggleComponentUtils.ts'
 
 import type { WiggleDataResult, WiggleFeatureUnderMouse } from '../util.ts'
@@ -50,12 +61,25 @@ function visibleEntries(
  * #category display
  *
  * Extends WiggleScoreConfigMixin with rpcDataMap, autoscale domain, and cache
- * reset. Used by LinearWiggleDisplay and MultiLinearWiggleDisplay. Displays
- * that own a different rpcDataMap type should compose WiggleScoreConfigMixin
- * directly instead.
+ * reset — plus the wiggle-specific config that used to sit in that mixin (the
+ * pos/neg palette, rendering type, summary mode, resolution and the line/gap
+ * settings). They live here because this is where they are *read*: the other
+ * composer of WiggleScoreConfigMixin, LinearManhattanDisplay, touches none of
+ * them and was inheriting a config schema advertising them anyway. Moved onto
+ * this chain with `.props()`/`.views()` rather than a new mixin composed in, so
+ * no `types.compose` layer is added (ADR-041).
+ *
+ * Used by LinearWiggleDisplay and MultiLinearWiggleDisplay. Displays that own a
+ * different rpcDataMap type should compose WiggleScoreConfigMixin directly.
  */
 export function WiggleCommonMixin() {
   return WiggleScoreConfigMixin()
+    .props({
+      /**
+       * #property
+       */
+      resolution: types.stripDefault(types.number, 1),
+    })
     .volatile(() => ({
       /**
        * #volatile
@@ -65,6 +89,84 @@ export function WiggleCommonMixin() {
        * #volatile
        */
       featureUnderMouse: undefined as WiggleFeatureUnderMouse | undefined,
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get posColor(): string {
+        return getConf(confNode(self), 'posColor')
+      },
+      /**
+       * #getter
+       */
+      get negColor(): string {
+        return getConf(confNode(self), 'negColor')
+      },
+      /**
+       * #getter
+       */
+      get bicolorPivot(): number {
+        return getConf(confNode(self), 'bicolorPivot')
+      },
+      /**
+       * #getter
+       */
+      get numQuantile(): number {
+        return getConf(confNode(self), 'numQuantile')
+      },
+      /**
+       * #getter
+       */
+      get lineWidth(): number {
+        return resolveConf(confNode(self), 'lineWidth')
+      },
+      /**
+       * #getter
+       * Interpolated-line gap threshold, as a multiple of the track's own mean
+       * point spacing (see gapBreakLimit). 0 keeps one connected line.
+       */
+      get maxGapMultiple(): number {
+        return getConf(confNode(self), 'maxGapMultiple')
+      },
+      /**
+       * #getter
+       */
+      get summaryScoreMode(): string {
+        return getConf(confNode(self), 'summaryScoreMode')
+      },
+      /**
+       * #getter
+       */
+      get renderingType(): string {
+        return getConf(confNode(self), 'defaultRendering')
+      },
+      /**
+       * #getter
+       */
+      get hasResolution() {
+        const { pluginManager } = getEnv(self)
+        const adapterConfig = getConf(getContainingTrack(self), 'adapter') as {
+          type: string
+        }
+        return pluginManager
+          .getAdapterType(adapterConfig.type)
+          .adapterCapabilities.includes('hasResolution')
+      },
+      /**
+       * #getter
+       * The summary mode actually drawn. Density has no whiskers presentation
+       * — `sourceLayers` falls back to the average scores — so the autoscale
+       * domain reads this rather than the raw slot; otherwise the color ramp
+       * spans the whisker extremes while the plot paints averages, and the
+       * score legend reports a range nothing on screen reaches. Single-wiggle
+       * defaults to whiskers, so plain "plot type → Density" hit this.
+       */
+      get effectiveSummaryScoreMode() {
+        return self.isDensityMode && this.summaryScoreMode === 'whiskers'
+          ? 'avg'
+          : this.summaryScoreMode
+      },
     }))
     .views(() => ({
       /**
@@ -148,6 +250,54 @@ export function WiggleCommonMixin() {
        */
       selectFeature(feat: WiggleFeatureUnderMouse) {
         openFeatureWidget(self, wiggleFeatureWidgetData(feat))
+      },
+      /**
+       * #action
+       */
+      setResolution(res: number) {
+        self.resolution = Math.min(
+          RESOLUTION_MAX,
+          Math.max(RESOLUTION_MIN, res),
+        )
+      },
+      /**
+       * #action
+       */
+      setBicolorPivot(val?: number) {
+        setConf(confNode(self), 'bicolorPivot', val)
+      },
+      /**
+       * #action
+       * Lives here beside the `posColor`/`negColor` getters and
+       * `setBicolorPivot` so both the single- and multi-wiggle color editors
+       * write the score-sign palette the same way.
+       */
+      setPosColor(color?: string) {
+        setConf(confNode(self), 'posColor', color)
+      },
+      /**
+       * #action
+       */
+      setNegColor(color?: string) {
+        setConf(confNode(self), 'negColor', color)
+      },
+      /**
+       * #action
+       */
+      setRenderingType(type: string) {
+        setConf(confNode(self), 'defaultRendering', type)
+      },
+      /**
+       * #action
+       */
+      setSummaryScoreMode(val: string) {
+        setConf(confNode(self), 'summaryScoreMode', val)
+      },
+      /**
+       * #action
+       */
+      setLineWidth(val?: number) {
+        setConf(confNode(self), 'lineWidth', val)
       },
     }))
     .actions(self => ({

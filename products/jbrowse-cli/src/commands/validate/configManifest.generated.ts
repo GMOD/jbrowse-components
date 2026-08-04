@@ -3965,18 +3965,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | string)"
         },
         {
-          "name": "posColor",
-          "type": "(JexlString | string)"
-        },
-        {
-          "name": "negColor",
-          "type": "(JexlString | string)"
-        },
-        {
-          "name": "bicolorPivot",
-          "type": "(JexlString | number)"
-        },
-        {
           "name": "minScore",
           "type": "(JexlString | number)"
         },
@@ -3994,6 +3982,18 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "numStdDev",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "posColor",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "negColor",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "bicolorPivot",
           "type": "(JexlString | number)"
         },
         {
@@ -4033,18 +4033,6 @@ export const configManifest: ConfigManifest = {
           "type": "identifier"
         },
         {
-          "name": "posColor",
-          "type": "(JexlString | string)"
-        },
-        {
-          "name": "negColor",
-          "type": "(JexlString | string)"
-        },
-        {
-          "name": "bicolorPivot",
-          "type": "(JexlString | number)"
-        },
-        {
           "name": "minScore",
           "type": "(JexlString | number)"
         },
@@ -4062,6 +4050,18 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "numStdDev",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "posColor",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "negColor",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "bicolorPivot",
           "type": "(JexlString | number)"
         },
         {
@@ -4141,18 +4141,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | string)"
         },
         {
-          "name": "posColor",
-          "type": "(JexlString | string)"
-        },
-        {
-          "name": "negColor",
-          "type": "(JexlString | string)"
-        },
-        {
-          "name": "bicolorPivot",
-          "type": "(JexlString | number)"
-        },
-        {
           "name": "minScore",
           "type": "(JexlString | number)"
         },
@@ -4170,6 +4158,18 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "numStdDev",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "posColor",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "negColor",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "bicolorPivot",
           "type": "(JexlString | number)"
         },
         {
@@ -4237,18 +4237,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | string)"
         },
         {
-          "name": "posColor",
-          "type": "(JexlString | string)"
-        },
-        {
-          "name": "negColor",
-          "type": "(JexlString | string)"
-        },
-        {
-          "name": "bicolorPivot",
-          "type": "(JexlString | number)"
-        },
-        {
           "name": "minScore",
           "type": "(JexlString | number)"
         },
@@ -4266,6 +4254,18 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "numStdDev",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "posColor",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "negColor",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "bicolorPivot",
           "type": "(JexlString | number)"
         },
         {
@@ -4604,32 +4604,36 @@ export const configManifest: ConfigManifest = {
           "type": "identifier"
         },
         {
-          "name": "defaultRendering",
-          "type": "(JexlString | Rendering type)"
+          "name": "maxFeatureScreenDensity",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "fetchSizeLimit",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "forceLoad",
+          "type": "(JexlString | boolean)"
         },
         {
           "name": "height",
           "type": "(JexlString | number)"
         },
         {
-          "name": "useBicolor",
-          "type": "(JexlString | boolean)"
+          "name": "mouseover",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "jexlFilters",
+          "type": "(JexlString | string[])"
         },
         {
           "name": "color",
           "type": "(JexlString | string)"
         },
         {
-          "name": "posColor",
-          "type": "(JexlString | string)"
-        },
-        {
-          "name": "negColor",
-          "type": "(JexlString | string)"
-        },
-        {
-          "name": "bicolorPivot",
-          "type": "(JexlString | number)"
+          "name": "colorBy",
+          "type": "(JexlString | GwasColorBy)"
         },
         {
           "name": "minScore",
@@ -4652,32 +4656,12 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | number)"
         },
         {
-          "name": "numQuantile",
-          "type": "(JexlString | number)"
-        },
-        {
-          "name": "scatterPointSize",
-          "type": "(JexlString | (number | undefined))"
-        },
-        {
-          "name": "lineWidth",
-          "type": "(JexlString | (number | undefined))"
-        },
-        {
-          "name": "maxGapMultiple",
-          "type": "(JexlString | number)"
-        },
-        {
           "name": "minimalTicks",
           "type": "(JexlString | boolean)"
         },
         {
-          "name": "summaryScoreMode",
-          "type": "(JexlString | Score type)"
-        },
-        {
-          "name": "colorBy",
-          "type": "(JexlString | GwasColorBy)"
+          "name": "scatterPointSize",
+          "type": "(JexlString | (number | undefined))"
         }
       ]
     }

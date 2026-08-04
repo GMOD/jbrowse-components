@@ -1,9 +1,5 @@
-import { getConf, resolveConf, setConf } from '@jbrowse/core/configuration'
-import {
-  getContainingTrack,
-  getContainingView,
-  getEnv,
-} from '@jbrowse/core/util'
+import { resolveConf, setConf } from '@jbrowse/core/configuration'
+import { getContainingView } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import { ScoreScaleMixin } from '@jbrowse/wiggle-core'
 
@@ -28,7 +24,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 type ConfNode = ResolvableDisplay & {
   configuration: AnyConfigurationModel
 }
-const confNode = (self: object) => self as ConfNode
+export const confNode = (self: object) => self as ConfNode
 
 // Resolution is a multiplier on the number of bins fetched (higher = finer),
 // stepped multiplicatively. Only the coarser side needs a floor to avoid
@@ -45,10 +41,18 @@ export const RESOLUTION_STEP = 2
  * #stateModel WiggleScoreConfigMixin
  * #category display
  *
- * Score/scale/color config and isCacheValid for wiggle-family displays. Does
- * NOT include rpcDataMap or autoscale domain computation — those live in
- * WiggleCommonMixin, which composes this. Displays that own their own
- * rpcDataMap type (e.g. LinearManhattanDisplay) should compose this instead.
+ * The score-PLOT config every wiggle-family display shares: the score axis
+ * (`ScoreScaleMixin`), the cross-hatch toggle, the scatter point size and the
+ * zoom-staleness cache test. Deliberately NOT the wiggle-specific palette,
+ * rendering-type, summary-mode and resolution config — those moved to
+ * `WiggleCommonMixin`, which composes this, when it became clear that
+ * `LinearManhattanDisplay` (the other composer) reads none of them and was
+ * inheriting a config schema that advertised twelve slots doing nothing on a
+ * Manhattan plot. Relocation rather than a new mixin layer: `types.compose`
+ * depth is a real ceiling in these chains (ADR-041).
+ *
+ * A display that owns its own rpcDataMap type composes this; a wiggle-shaped
+ * one composes `WiggleCommonMixin`.
  *
  * The score *axis* itself (scaleType / autoscale / min-max and their setters) is
  * `ScoreScaleMixin`, composed in below and shared with the alignments coverage
@@ -60,10 +64,6 @@ export function WiggleScoreConfigMixin() {
       'WiggleScoreConfigMixin',
       ScoreScaleMixin(),
       types.model({
-        /**
-         * #property
-         */
-        resolution: types.stripDefault(types.number, 1),
         /**
          * #property
          */
@@ -80,58 +80,8 @@ export function WiggleScoreConfigMixin() {
       /**
        * #getter
        */
-      get posColor(): string {
-        return getConf(confNode(self), 'posColor')
-      },
-      /**
-       * #getter
-       */
-      get negColor(): string {
-        return getConf(confNode(self), 'negColor')
-      },
-      /**
-       * #getter
-       */
-      get bicolorPivot(): number {
-        return getConf(confNode(self), 'bicolorPivot')
-      },
-      /**
-       * #getter
-       */
-      get numQuantile(): number {
-        return getConf(confNode(self), 'numQuantile')
-      },
-      /**
-       * #getter
-       */
       get scatterPointSize(): number {
         return resolveConf(confNode(self), 'scatterPointSize')
-      },
-      /**
-       * #getter
-       */
-      get lineWidth(): number {
-        return resolveConf(confNode(self), 'lineWidth')
-      },
-      /**
-       * #getter
-       * Interpolated-line gap threshold, as a multiple of the track's own mean
-       * point spacing (see gapBreakLimit). 0 keeps one connected line.
-       */
-      get maxGapMultiple(): number {
-        return getConf(confNode(self), 'maxGapMultiple')
-      },
-      /**
-       * #getter
-       */
-      get summaryScoreMode(): string {
-        return getConf(confNode(self), 'summaryScoreMode')
-      },
-      /**
-       * #getter
-       */
-      get renderingType(): string {
-        return getConf(confNode(self), 'defaultRendering')
       },
       /**
        * #getter
@@ -155,62 +105,14 @@ export function WiggleScoreConfigMixin() {
       /**
        * #action
        */
-      setResolution(res: number) {
-        self.resolution = Math.min(
-          RESOLUTION_MAX,
-          Math.max(RESOLUTION_MIN, res),
-        )
-      },
-      /**
-       * #action
-       */
       setLoadedBpPerPx(bpPerPx: number | undefined) {
         self.loadedBpPerPx = bpPerPx
       },
       /**
        * #action
        */
-      setBicolorPivot(val?: number) {
-        setConf(confNode(self), 'bicolorPivot', val)
-      },
-      /**
-       * #action
-       * Lives here beside the `posColor`/`negColor` getters and
-       * `setBicolorPivot` so both the single- and multi-wiggle color editors
-       * write the score-sign palette the same way.
-       */
-      setPosColor(color?: string) {
-        setConf(confNode(self), 'posColor', color)
-      },
-      /**
-       * #action
-       */
-      setNegColor(color?: string) {
-        setConf(confNode(self), 'negColor', color)
-      },
-      /**
-       * #action
-       */
-      setRenderingType(type: string) {
-        setConf(confNode(self), 'defaultRendering', type)
-      },
-      /**
-       * #action
-       */
-      setSummaryScoreMode(val: string) {
-        setConf(confNode(self), 'summaryScoreMode', val)
-      },
-      /**
-       * #action
-       */
       setScatterPointSize(val?: number) {
         setConf(confNode(self), 'scatterPointSize', val)
-      },
-      /**
-       * #action
-       */
-      setLineWidth(val?: number) {
-        setConf(confNode(self), 'lineWidth', val)
       },
     }))
     .views(self => ({
@@ -229,18 +131,6 @@ export function WiggleScoreConfigMixin() {
       },
       /**
        * #getter
-       */
-      get hasResolution() {
-        const { pluginManager } = getEnv(self)
-        const adapterConfig = getConf(getContainingTrack(self), 'adapter') as {
-          type: string
-        }
-        return pluginManager
-          .getAdapterType(adapterConfig.type)
-          .adapterCapabilities.includes('hasResolution')
-      },
-      /**
-       * #getter
        * Whether the score-axis cross hatches draw. Density spends color, not
        * height, on the score, so there is no axis for them to rule — and the
        * track menu drops the toggle there, which would strand hatches enabled
@@ -250,20 +140,6 @@ export function WiggleScoreConfigMixin() {
        */
       get showCrossHatches() {
         return self.displayCrossHatches && !self.isDensityMode
-      },
-      /**
-       * #getter
-       * The summary mode actually drawn. Density has no whiskers presentation
-       * — `sourceLayers` falls back to the average scores — so the autoscale
-       * domain reads this rather than the raw slot; otherwise the color ramp
-       * spans the whisker extremes while the plot paints averages, and the
-       * score legend reports a range nothing on screen reaches. Single-wiggle
-       * defaults to whiskers, so plain "plot type → Density" hit this.
-       */
-      get effectiveSummaryScoreMode() {
-        return self.isDensityMode && self.summaryScoreMode === 'whiskers'
-          ? 'avg'
-          : self.summaryScoreMode
       },
     }))
 }

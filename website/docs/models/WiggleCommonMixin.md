@@ -10,9 +10,16 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/shared/WiggleCommonMixin.ts).
 
 Extends WiggleScoreConfigMixin with rpcDataMap, autoscale domain, and cache
-reset. Used by LinearWiggleDisplay and MultiLinearWiggleDisplay. Displays that
-own a different rpcDataMap type should compose WiggleScoreConfigMixin directly
-instead.
+reset — plus the wiggle-specific config that used to sit in that mixin (the
+pos/neg palette, rendering type, summary mode, resolution and the line/gap
+settings). They live here because this is where they are _read_: the other
+composer of WiggleScoreConfigMixin, LinearManhattanDisplay, touches none of them
+and was inheriting a config schema advertising them anyway. Moved onto this
+chain with `.props()`/`.views()` rather than a new mixin composed in, so no
+`types.compose` layer is added (ADR-041).
+
+Used by LinearWiggleDisplay and MultiLinearWiggleDisplay. Displays that own a
+different rpcDataMap type should compose WiggleScoreConfigMixin directly.
 
 Members a composed model contributes are listed here too, so these tables are
 the whole surface.
@@ -22,7 +29,7 @@ the whole surface.
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
-| <span id="property-resolution">**resolution**</span><br><code>resolution: types.stripDefault(types.number, 1)</code> |  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#property-resolution) |
+| <span id="property-resolution">**resolution**</span><br><code>resolution: types.stripDefault(types.number, 1)</code> |  | WiggleCommonMixin |
 | <span id="property-displaycrosshatches">**displayCrossHatches**</span><br><code>displayCrossHatches: types.stripDefault(types.boolean, false)</code> |  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#property-displaycrosshatches) |
 
 ## Volatiles
@@ -39,23 +46,23 @@ the whole surface.
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
+| <span id="getter-poscolor">**posColor**</span><br><code>string</code> |  | WiggleCommonMixin |
+| <span id="getter-negcolor">**negColor**</span><br><code>string</code> |  | WiggleCommonMixin |
+| <span id="getter-bicolorpivot">**bicolorPivot**</span><br><code>number</code> |  | WiggleCommonMixin |
+| <span id="getter-numquantile">**numQuantile**</span><br><code>number</code> |  | WiggleCommonMixin |
+| <span id="getter-linewidth">**lineWidth**</span><br><code>number</code> |  | WiggleCommonMixin |
+| <span id="getter-maxgapmultiple">**maxGapMultiple**</span><br><code>number</code> | Interpolated-line gap threshold, as a multiple of the track's own mean point spacing (see gapBreakLimit). 0 keeps one connected line. | WiggleCommonMixin |
+| <span id="getter-summaryscoremode">**summaryScoreMode**</span><br><code>string</code> |  | WiggleCommonMixin |
+| <span id="getter-renderingtype">**renderingType**</span><br><code>string</code> |  | WiggleCommonMixin |
+| <span id="getter-hasresolution">**hasResolution**</span><br><code>boolean</code> |  | WiggleCommonMixin |
+| <span id="getter-effectivesummaryscoremode">**effectiveSummaryScoreMode**</span><br><code>string</code> | The summary mode actually drawn. Density has no whiskers presentation — `sourceLayers` falls back to the average scores — so the autoscale domain reads this rather than the raw slot; otherwise the color ramp spans the whisker extremes while the plot paints averages, and the score legend reports a range nothing on screen reaches. Single-wiggle defaults to whiskers, so plain "plot type → Density" hit this. | WiggleCommonMixin |
 | <span id="getter-autoscalesourcenames">**autoscaleSourceNames**</span><br><code>Set&lt;string&gt; &#124; undefined</code> | Source names to include when computing the autoscale domain; `undefined` means every fetched source. Multi-wiggle always fetches all sources and filters client-side, so it overrides this to the visible subset — otherwise a subtree filter that hides sources would leave the Y-axis scaled to the hidden ones. | WiggleCommonMixin |
 | <span id="getter-visiblescorestats">**visibleScoreStats**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ entries: { visStart: number; visEnd: number; data: WiggleSour…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ entries: { visStart: number; visEnd: number; data: WiggleSourceData; }[]; stats: ScoreStats &#124; undefined; } &#124; undefined</code></pre></dialog></span> | The visible feature arrays plus their min/max/mean/stddev, walked once per domain recompute rather than once per autoscale input. | WiggleCommonMixin |
 | <span id="getter-visiblescorerange">**visibleScoreRange**</span><br><code>[number, number] &#124; undefined</code> |  | WiggleCommonMixin |
 | <span id="getter-domain">**domain**</span><br><code>[number, number] &#124; undefined</code> |  | WiggleCommonMixin |
-| <span id="getter-poscolor">**posColor**</span><br><code>string</code> |  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#getter-poscolor) |
-| <span id="getter-negcolor">**negColor**</span><br><code>string</code> |  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#getter-negcolor) |
-| <span id="getter-bicolorpivot">**bicolorPivot**</span><br><code>number</code> |  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#getter-bicolorpivot) |
-| <span id="getter-numquantile">**numQuantile**</span><br><code>number</code> |  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#getter-numquantile) |
 | <span id="getter-scatterpointsize">**scatterPointSize**</span><br><code>number</code> |  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#getter-scatterpointsize) |
-| <span id="getter-linewidth">**lineWidth**</span><br><code>number</code> |  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#getter-linewidth) |
-| <span id="getter-maxgapmultiple">**maxGapMultiple**</span><br><code>number</code> | <span data-pagefind-ignore>Interpolated-line gap threshold, as a multiple of the track's own mean point spacing (see gapBreakLimit). 0 keeps one connected line.</span> | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#getter-maxgapmultiple) |
-| <span id="getter-summaryscoremode">**summaryScoreMode**</span><br><code>string</code> |  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#getter-summaryscoremode) |
-| <span id="getter-renderingtype">**renderingType**</span><br><code>string</code> |  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#getter-renderingtype) |
 | <span id="getter-isdensitymode">**isDensityMode**</span><br><code>boolean</code> | <span data-pagefind-ignore>Whether score maps to color instead of height. Each display overrides this from its own rendering-type table (`density` / `multirowdensity`); the base is false so this mixin's resolved getters below can key on it, the same override idiom `autoscaleSourceNames` uses in WiggleCommonMixin.</span> | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#getter-isdensitymode) |
-| <span id="getter-hasresolution">**hasResolution**</span><br><code>boolean</code> |  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#getter-hasresolution) |
 | <span id="getter-showcrosshatches">**showCrossHatches**</span><br><code>boolean</code> | <span data-pagefind-ignore>Whether the score-axis cross hatches draw. Density spends color, not height, on the score, so there is no axis for them to rule — and the track menu drops the toggle there, which would strand hatches enabled in another plot type with no way to turn them off. Every consumer (on-screen overlay, multi-row overlay lines, SVG export) reads this, never the raw `displayCrossHatches` prop.</span> | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#getter-showcrosshatches) |
-| <span id="getter-effectivesummaryscoremode">**effectiveSummaryScoreMode**</span><br><code>string</code> | <span data-pagefind-ignore>The summary mode actually drawn. Density has no whiskers presentation — `sourceLayers` falls back to the average scores — so the autoscale domain reads this rather than the raw slot; otherwise the color ramp spans the whisker extremes while the plot paints averages, and the score legend reports a range nothing on screen reaches. Single-wiggle defaults to whiskers, so plain "plot type → Density" hit this.</span> | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#getter-effectivesummaryscoremode) |
 | <span id="getter-scaletype">**scaleType**</span><br><code>string</code> |  | [ScoreScaleMixin](../scorescalemixin#getter-scaletype) |
 | <span id="getter-autoscaletype">**autoscaleType**</span><br><code>string</code> |  | [ScoreScaleMixin](../scorescalemixin#getter-autoscaletype) |
 | <span id="getter-numstddev">**numStdDev**</span><br><code>number</code> |  | [ScoreScaleMixin](../scorescalemixin#getter-numstddev) |
@@ -79,16 +86,16 @@ the whole surface.
 | <span id="action-cleardisplayspecificdata">**clearDisplaySpecificData**</span><br><code>() =&gt; void</code> |  | WiggleCommonMixin |
 | <span id="action-setfeatureundermouse">**setFeatureUnderMouse**</span><br><code>(feat?: WiggleFeatureUnderMouse &#124; undefined) =&gt; void</code> |  | WiggleCommonMixin |
 | <span id="action-selectfeature">**selectFeature**</span><br><code>(feat: WiggleFeatureUnderMouse) =&gt; void</code> |  | WiggleCommonMixin |
+| <span id="action-setresolution">**setResolution**</span><br><code>(res: number) =&gt; void</code> |  | WiggleCommonMixin |
+| <span id="action-setbicolorpivot">**setBicolorPivot**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  | WiggleCommonMixin |
+| <span id="action-setposcolor">**setPosColor**</span><br><code>(color?: string &#124; undefined) =&gt; void</code> | Lives here beside the `posColor`/`negColor` getters and `setBicolorPivot` so both the single- and multi-wiggle color editors write the score-sign palette the same way. | WiggleCommonMixin |
+| <span id="action-setnegcolor">**setNegColor**</span><br><code>(color?: string &#124; undefined) =&gt; void</code> |  | WiggleCommonMixin |
+| <span id="action-setrenderingtype">**setRenderingType**</span><br><code>(type: string) =&gt; void</code> |  | WiggleCommonMixin |
+| <span id="action-setsummaryscoremode">**setSummaryScoreMode**</span><br><code>(val: string) =&gt; void</code> |  | WiggleCommonMixin |
+| <span id="action-setlinewidth">**setLineWidth**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  | WiggleCommonMixin |
 | <span id="action-togglecrosshatches">**toggleCrossHatches**</span><br><code>() =&gt; void</code> |  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#action-togglecrosshatches) |
-| <span id="action-setresolution">**setResolution**</span><br><code>(res: number) =&gt; void</code> |  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#action-setresolution) |
 | <span id="action-setloadedbpperpx">**setLoadedBpPerPx**</span><br><code>(bpPerPx: number &#124; undefined) =&gt; void</code> |  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#action-setloadedbpperpx) |
-| <span id="action-setbicolorpivot">**setBicolorPivot**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#action-setbicolorpivot) |
-| <span id="action-setposcolor">**setPosColor**</span><br><code>(color?: string &#124; undefined) =&gt; void</code> | <span data-pagefind-ignore>Lives here beside the `posColor`/`negColor` getters and `setBicolorPivot` so both the single- and multi-wiggle color editors write the score-sign palette the same way.</span> | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#action-setposcolor) |
-| <span id="action-setnegcolor">**setNegColor**</span><br><code>(color?: string &#124; undefined) =&gt; void</code> |  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#action-setnegcolor) |
-| <span id="action-setrenderingtype">**setRenderingType**</span><br><code>(type: string) =&gt; void</code> |  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#action-setrenderingtype) |
-| <span id="action-setsummaryscoremode">**setSummaryScoreMode**</span><br><code>(val: string) =&gt; void</code> |  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#action-setsummaryscoremode) |
 | <span id="action-setscatterpointsize">**setScatterPointSize**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#action-setscatterpointsize) |
-| <span id="action-setlinewidth">**setLineWidth**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#action-setlinewidth) |
 | <span id="action-setscaletype">**setScaleType**</span><br><code>(scaleType: string) =&gt; void</code> |  | [ScoreScaleMixin](../scorescalemixin#action-setscaletype) |
 | <span id="action-setautoscale">**setAutoscale**</span><br><code>(val?: string &#124; undefined) =&gt; void</code> |  | [ScoreScaleMixin](../scorescalemixin#action-setautoscale) |
 | <span id="action-setminscore">**setMinScore**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  | [ScoreScaleMixin](../scorescalemixin#action-setminscore) |

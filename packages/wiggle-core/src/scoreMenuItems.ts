@@ -125,11 +125,20 @@ export function makeCrossHatchItem(self: {
 // submenus and coverage prepend its on/off + y-axis toggles; `scaleType` is
 // dropped by manhattan (linear-only); `autoscaleOptions` is overridden by
 // coverage's reduced + dynamic-σ list.
+//
+// `autoscale` is the same kind of opt-out as `scaleType`, and exists for the
+// same reason: a display whose domain doesn't consult `autoscaleType` must not
+// offer radios for it. Manhattan takes plain min/max over the loaded regions and
+// applies only the manual bounds, so its Autoscale-type radios wrote the config
+// slot and changed nothing on screen — a control that lies is worse than a
+// missing one. Opt-out rather than opt-in so a display that grows a domain
+// without wiring autoscale keeps the menu it already had.
 export function makeScoreSubMenu(
   self: ScoreScaleModel,
   opts: {
     label?: string
     scaleType?: boolean
+    autoscale?: boolean
     autoscaleOptions?: [string, string][]
     leadingItems?: MenuItem[]
   } = {},
@@ -137,6 +146,7 @@ export function makeScoreSubMenu(
   const {
     label = 'Score',
     scaleType = true,
+    autoscale = true,
     autoscaleOptions,
     leadingItems = [],
   } = opts
@@ -146,7 +156,7 @@ export function makeScoreSubMenu(
     subMenu: [
       ...leadingItems,
       ...(scaleType ? [makeScaleTypeSubMenu(self)] : []),
-      makeAutoscaleTypeSubMenu(self, autoscaleOptions),
+      ...(autoscale ? [makeAutoscaleTypeSubMenu(self, autoscaleOptions)] : []),
       makeSetMinMaxScoreItem(self),
       ...(resolveScoreBounds(self).hasManual
         ? [makeClearMinMaxScoreItem(self)]

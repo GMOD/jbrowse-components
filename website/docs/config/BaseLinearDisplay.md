@@ -23,6 +23,7 @@ that identifies it (not one of the config slots below).
 
 ## Related links
 
+- **Extended by:** [LinearManhattanDisplay](../linearmanhattandisplay)
 - **Extended by:** [LinearAlignmentsDisplay](../linearalignmentsdisplay)
 - **Extended by:** [LinearArcDisplay](../lineararcdisplay)
 - **Extended by:** [LinearPairedArcDisplay](../linearpairedarcdisplay)

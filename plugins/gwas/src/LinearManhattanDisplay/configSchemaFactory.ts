@@ -1,13 +1,22 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
-import { linearWiggleDisplayConfigSchema } from '@jbrowse/plugin-wiggle'
+import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
+import {
+  remapRetiredAutoscale,
+  scoreAxisConfigSchemaFields,
+} from '@jbrowse/plugin-wiggle'
 
 import { DEFAULT_MANHATTAN_COLOR } from '../ManhattanRPC/rpcTypes.ts'
 import { DEFAULT_POINT_DIAMETER_PX } from './manhattanRenderingBackendTypes.ts'
 
-// Reuses LinearWiggleDisplay's schema, but overrides `color`: wiggle's is the
-// single-color fallback for when `useBicolor` is off. Manhattan is always
-// single-color and supports per-feature jexl callbacks.
+// Declares its own slots rather than extending LinearWiggleDisplay's schema.
+// It used to, which put sixteen inherited slots on a GWAS track of which twelve
+// did nothing — `defaultRendering: 'density'`, `useBicolor`, `summaryScoreMode`,
+// the pos/neg palette, `bicolorPivot`, `lineWidth`, `maxGapMultiple` — all read
+// only by wiggle code a Manhattan plot never runs. A config doc that advertises
+// a slot is a promise it works; these were promises nothing kept. What Manhattan
+// genuinely shares is the score *axis*, so it takes `scoreAxisConfigSchemaFields`
+// and nothing else.
 /**
  * #config LinearManhattanDisplay
  * #category display
@@ -81,6 +90,21 @@ export function configSchemaFactory() {
         defaultValue: 'normal',
         description: 'How to color Manhattan points',
       },
+      // The score axis. `scaleType`, `autoscale` and `numStdDev` come with it
+      // because `ScoreScaleMixin` reads all five, but only the min/max bounds
+      // reach this plot: -log10 p values are pre-transformed so the axis is
+      // linear-only, and `domain` takes plain min/max over the loaded regions.
+      // The track menu says so — it drops both radio submenus.
+      ...scoreAxisConfigSchemaFields,
+      /**
+       * #slot
+       */
+      minimalTicks: {
+        type: 'boolean',
+        defaultValue: false,
+        description: 'Draw only the min/max Y-axis ticks',
+        advanced: true,
+      },
       /**
        * #slot
        * Manhattan point diameter in px (adjustable from the track menu). Larger
@@ -103,8 +127,16 @@ export function configSchemaFactory() {
       /**
        * #baseConfiguration
        */
-      baseConfiguration: linearWiggleDisplayConfigSchema,
+      baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
+      explicitIdentifier: 'displayId',
+      // Carried over from the wiggle schema this used to extend: retired
+      // `global`/`globalsd` autoscale values appear in old configs and would
+      // otherwise sit outside the narrowed enum. `colorImpliesSolid` is NOT
+      // carried over — it keys on `useBicolor`, which a Manhattan plot has no
+      // notion of.
+      preProcessSnapshot: (snap: Record<string, unknown>) =>
+        remapRetiredAutoscale(snap),
     },
   )
 }

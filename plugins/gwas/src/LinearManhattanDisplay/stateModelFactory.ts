@@ -414,7 +414,12 @@ export function stateModelFactory(
          */
         trackMenuItems() {
           return [
-            makeScoreSubMenu(self, { scaleType: false }),
+            // scaleType and autoscale are both off because `domain` above
+            // consults neither: -log10 p values are pre-transformed so the axis
+            // is linear-only, and the domain is plain min/max over the loaded
+            // regions with the manual bounds applied on top. Set min/max score
+            // is the one score control that does anything here.
+            makeScoreSubMenu(self, { scaleType: false, autoscale: false }),
             {
               label: 'Point size',
               icon: ScatterPlotIcon,

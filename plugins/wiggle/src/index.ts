@@ -96,6 +96,11 @@ export {
 } from './LinearWiggleDisplay/index.ts'
 
 export { WiggleCommonMixin } from './shared/WiggleCommonMixin.ts'
+// The score axis alone, for a display that has one without wiggle's palette and
+// rendering vocabulary (GWAS Manhattan), plus the snapshot remap that keeps
+// retired autoscale values loading.
+export { scoreAxisConfigSchemaFields } from './shared/wiggleConfigSchemaFields.ts'
+export { remapRetiredAutoscale } from './shared/remapRetiredAutoscale.ts'
 export { WiggleScoreConfigMixin } from './shared/WiggleScoreConfigMixin.ts'
 export { SMALL_POINT_MAX_DIAMETER_PX } from '@jbrowse/wiggle-core'
 export {

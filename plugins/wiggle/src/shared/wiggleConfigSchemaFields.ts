@@ -3,25 +3,17 @@ import { DEFAULT_GAP_BREAK_MULTIPLE } from '@jbrowse/wiggle-core'
 
 import { WIGGLE_NEG_COLOR_DEFAULT, WIGGLE_POS_COLOR_DEFAULT } from '../util.ts'
 
-export const wiggleConfigSchemaFields = {
-  posColor: {
-    type: 'color',
-    defaultValue: WIGGLE_POS_COLOR_DEFAULT,
-    description:
-      'Fill color for positive scores, used when useBicolor is true (the default)',
-  },
-  negColor: {
-    type: 'color',
-    defaultValue: WIGGLE_NEG_COLOR_DEFAULT,
-    description:
-      'Fill color for negative scores, used when useBicolor is true (the default)',
-  },
-  bicolorPivot: {
-    type: 'number',
-    defaultValue: 0,
-    description: 'Pivot value for bicolor mode',
-    advanced: true,
-  },
+// The score AXIS alone: exactly the slots `ScoreScaleMixin` reads, and nothing
+// else. Split out of `wiggleConfigSchemaFields` below so a display with a score
+// axis but none of wiggle's palette/rendering vocabulary can declare the axis
+// without inheriting the rest — LinearManhattanDisplay used to extend the whole
+// wiggle display schema and advertised twelve slots that did nothing on a GWAS
+// track.
+//
+// `numQuantile` is deliberately NOT here even though `autoscale` names
+// `localpercentile`: it is read by the autoscale *computation*
+// (`WiggleCommonMixin`), which only the wiggle displays run.
+export const scoreAxisConfigSchemaFields = {
   minScore: {
     type: 'number',
     defaultValue: Number.MIN_VALUE,
@@ -58,6 +50,28 @@ export const wiggleConfigSchemaFields = {
     defaultValue: 3,
     description:
       'Number of standard deviations to use for the localsd autoscale type',
+    advanced: true,
+  },
+} as const
+
+export const wiggleConfigSchemaFields = {
+  ...scoreAxisConfigSchemaFields,
+  posColor: {
+    type: 'color',
+    defaultValue: WIGGLE_POS_COLOR_DEFAULT,
+    description:
+      'Fill color for positive scores, used when useBicolor is true (the default)',
+  },
+  negColor: {
+    type: 'color',
+    defaultValue: WIGGLE_NEG_COLOR_DEFAULT,
+    description:
+      'Fill color for negative scores, used when useBicolor is true (the default)',
+  },
+  bicolorPivot: {
+    type: 'number',
+    defaultValue: 0,
+    description: 'Pivot value for bicolor mode',
     advanced: true,
   },
   numQuantile: {
