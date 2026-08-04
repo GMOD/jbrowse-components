@@ -339,7 +339,14 @@ function writeJsExports(
   base: string,
   shaderWgsl?: string,
 ) {
-  const fns = parseJsExports(source)
+  // `shaderWgsl` present means this is a shader with entry points, lifted from
+  // its own compile — the only case where an export may name a function the
+  // shader merely imports (see parseJsExports). A module's wrapper cannot see
+  // past its own module, so it gets its own source only.
+  const fns = parseJsExports(
+    source,
+    shaderWgsl ? readImportedSources(slangPath, source) : [],
+  )
   if (!fns) {
     return
   }

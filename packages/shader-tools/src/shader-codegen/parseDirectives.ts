@@ -54,9 +54,17 @@ function evalConstExpr(
   what: string,
   evaluating = new Set<string>(),
 ): number {
-  // Strip Slang's `u` / `U` integer suffix first so `1u` doesn't leave a stray
-  // `u` that the identifier pass would fail to resolve.
-  const stripped = raw.replaceAll(/(\d+)[uU]\b/g, '$1')
+  // Hex first, and to a decimal literal rather than through the suffix strip:
+  // `0xffffffffu` would otherwise reach the identifier pass below as the
+  // unresolvable name `xffffffffu`, since the leading `0` is all that reads as
+  // a number. Hex is how a u32 sentinel gets spelled (`NO_PREV_START`), and it
+  // is the only constant form the evaluator could not see.
+  const dehexed = raw.replaceAll(/0[xX]([0-9a-fA-F]+)[uU]?\b/g, (_m, digits) =>
+    String(Number.parseInt(digits as string, 16)),
+  )
+  // Strip Slang's `u` / `U` integer suffix so `1u` doesn't leave a stray `u`
+  // that the identifier pass would fail to resolve.
+  const stripped = dehexed.replaceAll(/(\d+)[uU]\b/g, '$1')
   // Replace identifier references with their resolved numeric values.
   const cleaned = stripped.replaceAll(/[A-Za-z_]\w*/g, name => {
     if (evaluating.has(name)) {
@@ -148,7 +156,26 @@ export function parseExportedConsts(
 // a `module` file must additionally be `public` — a module-private one isn't
 // visible to the synthesized wrapper the driver compiles. Both failures are
 // reported at `pnpm gen:shaders`.
-export function parseJsExports(source: string) {
+//
+// `importedSources` lets a shader export a function authored in a module it
+// imports. The caller passes them ONLY for a shader with entry points, where
+// the twin is lifted from that shader's own compiled WGSL and the draw path is
+// what keeps the function alive. A module file gets none, because its export
+// path compiles a synthesized wrapper that `import`s just the one module —
+// Slang does not re-export a grandparent's symbols, so a name from further up
+// would vanish between here and the WGSL.
+//
+// Why a shader would want this: the decision belongs in the shared module (it
+// is what the module's own clip-space functions are built on), but `js-export`
+// emits one file per shader and `js-export-out` redirects all of it. Exporting
+// from the *pass* is how a module-authored decision reaches a package the
+// module's own plugin cannot write into — the coverage band's px layout is
+// authored in alignmentsUniforms and lifted by coverage.slang into
+// @jbrowse/alignments-core.
+export function parseJsExports(
+  source: string,
+  importedSources: readonly string[] = [],
+) {
   const directive = /^\/\/!\s*js-export:\s*(.+)/m.exec(source)
   if (!directive) {
     return undefined
@@ -171,18 +198,24 @@ export function parseJsExports(source: string) {
   const declared = new Map<string, JsExportFn>()
   const fnRe =
     /^\s*(?:public\s+)?([A-Za-z_]\w*)\s+([A-Za-z_]\w*)\s*\(([^)]*)\)\s*\{/gm
-  for (let m = fnRe.exec(source); m; m = fnRe.exec(source)) {
-    // `else if (...) {` reads as a two-identifier signature. Nothing downstream
-    // would resolve it, but it would sit in the "Declared:" list a typo prints.
-    if (SLANG_KEYWORDS.has(m[1]!)) {
-      continue
+  // Imports first, so a same-named function in the shader's own source wins —
+  // that is the one slangc will have compiled.
+  for (const src of [...importedSources, source]) {
+    fnRe.lastIndex = 0
+    for (let m = fnRe.exec(src); m; m = fnRe.exec(src)) {
+      // `else if (...) {` reads as a two-identifier signature. Nothing
+      // downstream would resolve it, but it would sit in the "Declared:" list a
+      // typo prints.
+      if (SLANG_KEYWORDS.has(m[1]!)) {
+        continue
+      }
+      const paramTypes = m[3]!
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean)
+        .map(p => p.split(/\s+/)[0]!)
+      declared.set(m[2]!, { name: m[2]!, returnType: m[1]!, paramTypes })
     }
-    const paramTypes = m[3]!
-      .split(',')
-      .map(s => s.trim())
-      .filter(Boolean)
-      .map(p => p.split(/\s+/)[0]!)
-    declared.set(m[2]!, { name: m[2]!, returnType: m[1]!, paramTypes })
   }
   const missing = names.filter(n => !declared.has(n))
   if (missing.length > 0) {
@@ -192,7 +225,12 @@ export function parseJsExports(source: string) {
     const candidates = [...declared.keys()].sort().join(', ') || '(none)'
     throw new Error(
       `//! js-export names no such 'public' function in this shader: ` +
-        `${missing.join(', ')}. Declared: ${candidates}`,
+        `${missing.join(', ')}. Declared: ${candidates}` +
+        (importedSources.length === 0
+          ? `. (Only this file's own functions are in scope here — a module ` +
+            `exports through a synthesized wrapper that cannot see what the ` +
+            `module itself imports.)`
+          : ''),
     )
   }
   const fns = names.map(n => declared.get(n)!)

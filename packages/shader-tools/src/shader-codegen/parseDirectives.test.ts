@@ -1,5 +1,6 @@
 import {
   parseExportedConsts,
+  parseJsExports,
   parseLayoutOut,
   parseTargets,
   parseVertsPerInstance,
@@ -122,6 +123,24 @@ describe('parseExportedConsts', () => {
     expect(parseExportedConsts(mask)).toEqual({ MASK: 0b101000 })
   })
 
+  // A u32 sentinel is spelled in hex, and the evaluator used to see `0` as the
+  // number and `xffffffffu` as an unresolvable identifier — so the one constant
+  // form a "larger than any real value" marker needs was the one form that
+  // could not be exported.
+  test('evaluates a hex literal, with or without the u suffix', () => {
+    const hex = [
+      '//! export-consts: SENTINEL, MASK, HALF_MASK',
+      'static const uint SENTINEL = 0xffffffffu;',
+      'static const uint MASK = 0xFF;',
+      'static const uint HALF_MASK = 0x0Fu | 0xF0u;',
+    ].join('\n')
+    expect(parseExportedConsts(hex)).toEqual({
+      SENTINEL: 4294967295,
+      MASK: 255,
+      HALF_MASK: 255,
+    })
+  })
+
   test('throws when a named const does not exist', () => {
     expect(() =>
       parseExportedConsts(
@@ -146,6 +165,56 @@ describe('parseTargets', () => {
   test('throws on an unrecognized target', () => {
     expect(() => parseTargets('//! targets: wgsl, metal')).toThrow(/metal/)
     expect(() => parseTargets('//! targets: wsgl')).toThrow(/wsgl/)
+  })
+})
+
+describe('parseJsExports', () => {
+  const OWN = [
+    '//! js-export: ownFn',
+    'float ownFn(float x) {',
+    '  return x;',
+    '}',
+  ].join('\n')
+
+  test('reads a function declared in the shader itself', () => {
+    expect(parseJsExports(OWN)).toEqual([
+      { name: 'ownFn', returnType: 'float', paramTypes: ['float'] },
+    ])
+  })
+
+  test('resolves a function declared in an imported module', () => {
+    // A decision authored in a shared module, lifted by the pass that draws
+    // with it — which is how it reaches a package the module's own plugin
+    // cannot write into (adr-051). Only offered to shaders with entry points:
+    // a module's export goes through a synthesized wrapper that imports one
+    // module, and Slang does not re-export a grandparent's symbols.
+    const module =
+      'public float bandPx(float h, float inset) {\n  return h - inset;\n}'
+    const shader =
+      '//! js-export: bandPx\n[shader("vertex")] float4 vs_main() { return bandPx(1.0, 2.0); }'
+    expect(parseJsExports(shader, [module])).toEqual([
+      { name: 'bandPx', returnType: 'float', paramTypes: ['float', 'float'] },
+    ])
+  })
+
+  test('without the imported sources it reports why the name is out of scope', () => {
+    const shader =
+      '//! js-export: bandPx\nfloat other(float x) {\n  return x;\n}'
+    expect(() => parseJsExports(shader)).toThrow(/synthesized wrapper/)
+    expect(() => parseJsExports(shader)).toThrow(/Declared: other/)
+  })
+
+  test('the shader’s own declaration shadows the imported one', () => {
+    const module = 'public float f(float a, float b) {\n  return a;\n}'
+    const shader = '//! js-export: f\nfloat f(float a) {\n  return a;\n}'
+    expect(parseJsExports(shader, [module])![0]!.paramTypes).toEqual(['float'])
+  })
+
+  test('a non-scalar signature is refused by name and type', () => {
+    const module = 'public float3 shade(float4 c) {\n  return c.xyz;\n}'
+    const shader = '//! js-export: shade\nfloat4 vs_main() { return shade(c); }'
+    expect(() => parseJsExports(shader, [module])).toThrow(/shade/)
+    expect(() => parseJsExports(shader, [module])).toThrow(/float3|float4/)
   })
 })
 
