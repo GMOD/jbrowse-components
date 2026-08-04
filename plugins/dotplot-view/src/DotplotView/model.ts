@@ -477,6 +477,40 @@ export default function stateModelFactory(pm: PluginManager) {
         },
         /**
          * #getter
+         * The h ticks that land on the drawn axis. `hTickPositions` comes from
+         * staticBlocks, which extend a screen past the viewport in both
+         * directions; clipping here rather than per element in the axis
+         * component keeps the SVG export from carrying a group per invisible
+         * tick, and is cached for the same reason hblockLabelKeysToHide is.
+         */
+        get visibleHTickPositions() {
+          return this.hTickPositions.filter(
+            t => t.alongPx > 0 && t.alongPx < this.viewWidth,
+          )
+        },
+        /**
+         * #getter
+         * The v ticks that land on the drawn axis. See visibleHTickPositions.
+         */
+        get visibleVTickPositions() {
+          return this.vTickPositions.filter(
+            t => t.alongPx > 0 && t.alongPx < this.viewHeight,
+          )
+        },
+        /**
+         * #getter
+         * Both axes have a region on screen, so the plot has a grid to draw and
+         * a first block to anchor its backdrop rect on. The grid reads the two
+         * block lists' heads, which only this makes safe.
+         */
+        get hasVisibleRegions() {
+          return (
+            self.hview.dynamicBlocks.contentBlocks.length > 0 &&
+            self.vview.dynamicBlocks.contentBlocks.length > 0
+          )
+        },
+        /**
+         * #getter
          */
         get views() {
           return [self.hview, self.vview]
@@ -509,6 +543,19 @@ export default function stateModelFactory(pm: PluginManager) {
          */
         get dotplotDisplays() {
           return self.tracks.map(t => t.displays[0] as DotplotDisplayModel)
+        },
+        /**
+         * #getter
+         * Every failed track's error, combined into the one value the plot has
+         * room to report — resolved here rather than per display because they
+         * all paint the same plot rect. SVG export draws one banner from it; a
+         * box per errored display buried its siblings' dots.
+         */
+        get displayError() {
+          const errors = this.dotplotDisplays
+            .map(d => d.error)
+            .filter(e => e != null)
+          return errors.length > 0 ? errors.join('\n') : undefined
         },
         /**
          * #method

@@ -131,8 +131,9 @@ Four invariants hold for **every** GPU display:
   legitimate empty render (e.g. alignments' coverage axis). Every draw function
   is empty-safe (self-guards or map-lookup), so the body just draws.
 - **Non-LGV displays keep their own wrapper.** `renderDisplaySvg` resolves its
-  geometry from a `LinearGenomeViewModel`, so dotplot, synteny and circular
-  still call `awaitSvgReady` + `SvgChrome` directly (see
+  geometry from a `LinearGenomeViewModel`, so dotplot, synteny and circular still
+  call `awaitSvgReady` themselves — and mount the chrome wherever the surface
+  they paint is owned (see
   [below](#non-lgv-displays-same-gate-and-svgchrome-wherever-theres-a-box-to-draw)).
 
 ### The export canvas width is `view.width`
@@ -331,12 +332,12 @@ same `computeSvgReady` policy:
   (`loadedFetchKey === currentFetchKey`) closes that window exactly as arc's
   signature does. It has no `regionTooLarge` state, so its `SvgChrome` is passed
   `error` only. **`SvgChrome` is not LGV-specific** — it is the terminal chrome
-  for *any* rectangular display, and synteny and dotplot are the proof. Synteny
-  is also the one case where the chrome sits a level *above* the display: every
+  for *any* rectangular display that owns the band it draws in. Synteny is one of
+  the two where the terminal sits a level *above* the display instead: every
   synteny display in a level paints the same full-height band, so
   `SVGSyntenyLevel` owns one `SvgChrome` over the errors combined across the
   level (mirroring `LevelSyntenyCanvas`'s single banner). A per-display error box
-  would cover its siblings' ribbons.
+  would cover its siblings' ribbons. The dotplot is the other — see below.
 
 ### The shared freshness name, and the shared signature compare
 
@@ -405,18 +406,26 @@ the shared `awaitSvgReady` — never an inlined `when()`. Both below run
 `computeSvgReady` with `regionTooLarge: false` (neither gates on region size) and
 supply their own `dataCurrent` thunk:
 
-- **dotplot**: `!!geometry && dataCurrent` (which makes it stale-safe, matching
-  the capture gate above). Its plot area is rectangular, so it mounts the shared
-  `SvgChrome` like every other rectangular display — passing `error` only, since
-  it has no `regionTooLarge` state.
+- **dotplot**: `!!instanceData && dataCurrent` (which makes it stale-safe,
+  matching the capture gate above). `instanceData` rather than `geometry`
+  deliberately: the export polls this getter outside any reactive context, where
+  reading the `geometry` computed would recompute every segment's color per poll.
+  Like synteny, its terminal state lives a level up — every dotplot display in a
+  view paints the one plot rect, so `SVGDotplotView` reads `error` off each
+  display and draws **one banner** across the top of the plot rather than a
+  `SvgChrome` per display. Sizing matters as much as the count here: a plot-sized
+  box buried both its siblings' dots and its own stale geometry, which a failed
+  refetch leaves on screen under `DisplayStatusOverlays`' `ErrorBanner`. The
+  banner is the export's counterpart of that banner.
 - **circular chord**: `ready` — a chord fetch covers the whole view at once, so
   "features arrived" is the whole freshness axis. This is the one genuinely
   bespoke error UI (`<DisplayError>`): a radial display has no width/height box
   to host a message rect.
 
 So the readiness gate is uniform across **every** display (LGV, arc, synteny,
-dotplot, circular), and so is the error chrome except for the radial one.
-`SvgChrome` is not LGV-specific — synteny and dotplot are the proof.
+dotplot, circular). The error chrome is uniform for displays that own their band;
+the two shared-surface views (synteny level, dotplot plot area) hoist it to the
+owner of the surface, and the radial one is bespoke.
 
 ## paintLayer: raster-vs-vector dispatch
 

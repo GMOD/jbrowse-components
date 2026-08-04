@@ -25,6 +25,8 @@ function gridLines(
   return out
 }
 
+// Mounted only under `hasVisibleRegions`, which is what makes each axis's first
+// block (the near end of its backdrop rect) safe to read.
 const RegionGrid = observer(function RegionGrid({
   model,
 }: {
@@ -121,11 +123,8 @@ const DotplotGrid = observer(function DotplotGrid({
   model: DotplotViewModel
   children?: React.ReactNode
 }) {
-  const { viewWidth, viewHeight, hview, vview } = model
+  const { viewWidth, viewHeight, hasVisibleRegions } = model
   const theme = useTheme()
-  const hasBlocks =
-    hview.dynamicBlocks.contentBlocks.length > 0 &&
-    vview.dynamicBlocks.contentBlocks.length > 0
   return (
     <>
       <rect
@@ -133,7 +132,7 @@ const DotplotGrid = observer(function DotplotGrid({
         height={viewHeight}
         {...getFillProps(theme.palette.divider)}
       />
-      {hasBlocks ? <RegionGrid model={model} /> : null}
+      {hasVisibleRegions ? <RegionGrid model={model} /> : null}
       {children}
     </>
   )

@@ -1,4 +1,3 @@
-import { SvgChrome } from '@jbrowse/core/svg/SvgExport'
 import { awaitSvgReady } from '@jbrowse/core/svg/svgReady'
 import { getContainingView } from '@jbrowse/core/util'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
@@ -22,6 +21,13 @@ interface RenderSvgView {
   dotplotRenderState: DotplotRenderState
 }
 
+// One track's dots, drawn into the plot area every display in the view shares.
+// The terminal state belongs to the view (SVGDotplotView), not to this display:
+// they all paint that same rect, so a per-display SVGErrorBox covered its
+// siblings' dots — and its own stale geometry, which a failed refetch leaves on
+// screen under the ErrorBanner. It is the hazard SVGSyntenyLevel documents for
+// the equally non-LGV synteny display. No regionTooLarge state anywhere: the
+// dotplot gates its fetch by LOD, not region size.
 export async function renderSvg(
   model: DotplotRenderModel,
   opts?: PaintLayerOpts,
@@ -30,38 +36,25 @@ export async function renderSvg(
   const view = getContainingView(model) as AbstractViewModel & RenderSvgView
   const { viewWidth, viewHeight, dotplotRenderState } = view
   const { geometry } = model
-  // the plot area is rectangular, so the shared terminal-state chrome applies
-  // (as it does for the equally non-LGV multi-LGV synteny display). No
-  // regionTooLarge state: the dotplot gates its fetch by LOD, not region size.
-  return (
-    <SvgChrome error={model.error} width={viewWidth} height={viewHeight}>
-      {geometry ? (
-        <PaintLayer
-          width={viewWidth}
-          height={viewHeight}
-          opts={opts}
-          paint={ctx => {
-            const {
-              viewBpH,
-              viewBpV,
-              bpPerPxHInv,
-              bpPerPxVInv,
-              lineWidth,
-              alpha,
-            } = dotplotRenderState
-            drawDotplotInstances(ctx, geometry, {
-              viewBpH,
-              bpPerPxHInv,
-              viewBpV,
-              bpPerPxVInv,
-              viewWidth,
-              viewHeight,
-              lineWidth,
-              alpha,
-            })
-          }}
-        />
-      ) : null}
-    </SvgChrome>
-  )
+  return geometry ? (
+    <PaintLayer
+      width={viewWidth}
+      height={viewHeight}
+      opts={opts}
+      paint={ctx => {
+        const { viewBpH, viewBpV, bpPerPxHInv, bpPerPxVInv, lineWidth, alpha } =
+          dotplotRenderState
+        drawDotplotInstances(ctx, geometry, {
+          viewBpH,
+          bpPerPxHInv,
+          viewBpV,
+          bpPerPxVInv,
+          viewWidth,
+          viewHeight,
+          lineWidth,
+          alpha,
+        })
+      }}
+    />
+  ) : null
 }

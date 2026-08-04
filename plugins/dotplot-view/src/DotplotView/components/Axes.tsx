@@ -56,7 +56,7 @@ function AxisTitle({
   y: number
   transform?: string
   dominantBaseline?: 'hanging'
-  fill: { fill: string }
+  fill: string
 }) {
   const text = fitAxisTitle(title, availablePx)
   return (
@@ -67,7 +67,7 @@ function AxisTitle({
       textAnchor="middle"
       fontSize={AXIS_TITLE_FONT}
       dominantBaseline={dominantBaseline}
-      {...fill}
+      fill={fill}
     >
       {text === title ? null : <title>{title}</title>}
       {text}
@@ -75,15 +75,10 @@ function AxisTitle({
   )
 }
 
-// hue for axis text (fill) and tick lines (stroke); both are the primary text
-// color, shared by the horizontal and vertical axes.
-function useAxisColors() {
-  const theme = useTheme()
-  const color = stripAlpha(theme.palette.text.primary)
-  return {
-    fill: { fill: color },
-    stroke: { stroke: color },
-  }
+// One hue for axis text (fill) and tick lines (stroke), shared by the horizontal
+// and vertical axes: the primary text color, as an opaque hex.
+function useAxisColor() {
+  return stripAlpha(useTheme().palette.text.primary)
 }
 
 export const HorizontalAxis = observer(function HorizontalAxis({
@@ -105,19 +100,13 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
 }: {
   model: DotplotViewModel
 }) {
-  const { viewWidth, borderY, hview } = model
+  const { viewWidth, borderY, hview, visibleHTickPositions: ticks } = model
   // Horizontal-axis labels are drawn vertically (rotated -90° about their anchor).
   const rotate = -90
   const { offsetPx, dynamicBlocks, bpPerPx } = hview
   const blocks = dynamicBlocks.contentBlocks
   const hide = model.hblockLabelKeysToHide
-  // ticks come from staticBlocks, which extend a screen past the viewport;
-  // dropping the off-axis ones here (rather than per-element inside the map)
-  // keeps the SVG export from carrying an empty group per invisible tick
-  const ticks = model.hTickPositions.filter(
-    t => t.alongPx > 0 && t.alongPx < viewWidth,
-  )
-  const { fill, stroke } = useAxisColors()
+  const color = useAxisColor()
 
   return (
     <>
@@ -134,7 +123,7 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
               fontSize={AXIS_LABEL_FONT}
               dominantBaseline="hanging"
               textAnchor="end"
-              {...fill}
+              fill={color}
             >
               <title>{b.refName}</title>
               {truncateRefName(b.refName)}
@@ -149,7 +138,7 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
             y1={0}
             y2={tickLen(tick)}
             strokeWidth={1}
-            {...stroke}
+            stroke={color}
           />
           {tick.type === 'major' && x > 10 ? (
             <text
@@ -159,7 +148,7 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
               fontSize={AXIS_LABEL_FONT}
               dominantBaseline="middle"
               textAnchor="end"
-              {...fill}
+              fill={color}
             >
               {tickLabel(tick, bpPerPx)}
             </text>
@@ -172,7 +161,7 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
         y={borderY - 12}
         x={viewWidth / 2}
         dominantBaseline="hanging"
-        fill={fill}
+        fill={color}
       />
     </>
   )
@@ -197,15 +186,11 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
 }: {
   model: DotplotViewModel
 }) {
-  const { viewHeight, borderX, vview } = model
+  const { viewHeight, borderX, vview, visibleVTickPositions: ticks } = model
   const { offsetPx, dynamicBlocks, bpPerPx } = vview
   const blocks = dynamicBlocks.contentBlocks
   const hide = model.vblockLabelKeysToHide
-  // see HorizontalAxisRaw
-  const ticks = model.vTickPositions.filter(
-    t => t.alongPx > 0 && t.alongPx < viewHeight,
-  )
-  const { fill, stroke } = useAxisColors()
+  const color = useAxisColor()
 
   // Vertical axis is flipped: block offsetPx grows upward visually, so we map
   // alongPx (downward-natural) to viewHeight - alongPx.
@@ -222,7 +207,7 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
               y={yoff}
               fontSize={AXIS_LABEL_FONT}
               textAnchor="end"
-              {...fill}
+              fill={color}
             >
               <title>{b.refName}</title>
               {truncateRefName(b.refName)}
@@ -239,7 +224,7 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
               x1={borderX}
               x2={borderX - tickLen(tick)}
               strokeWidth={1}
-              {...stroke}
+              stroke={color}
             />
             {tick.type === 'major' && alongPx > 10 ? (
               <text
@@ -248,7 +233,7 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
                 textAnchor="end"
                 dominantBaseline="hanging"
                 fontSize={AXIS_LABEL_FONT}
-                {...fill}
+                fill={color}
               >
                 {tickLabel(tick, bpPerPx)}
               </text>
@@ -262,7 +247,7 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
         y={viewHeight / 2}
         x={12}
         transform={`rotate(-90,12,${viewHeight / 2})`}
-        fill={fill}
+        fill={color}
       />
     </>
   )

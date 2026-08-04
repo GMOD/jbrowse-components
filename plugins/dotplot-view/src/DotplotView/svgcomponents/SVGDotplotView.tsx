@@ -1,4 +1,4 @@
-import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
+import { SVGErrorBox, SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { exportMargin } from '@jbrowse/core/svg/constants'
 import { awaitViewInitialized } from '@jbrowse/core/svg/svgReady'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
@@ -10,6 +10,11 @@ import DotplotGrid from '../components/DotplotGrid.tsx'
 
 import type { DotplotViewModel, ExportSvgOptions } from '../model.ts'
 
+// The failed-track note is a strip across the top of the plot, not a box sized
+// to it: the displays all paint that one rect, so a full-height box buries every
+// track that did render. Enough for one line of SVGErrorBox's 14px text.
+const errorBannerHeight = 30
+
 // render the dotplot view to an SVG string
 export async function renderToSvg(
   model: DotplotViewModel,
@@ -20,7 +25,6 @@ export async function renderToSvg(
 
   const session = getSession(model)
   const theme = session.getActiveThemeOptions?.(themeName)
-  const { width, borderX, viewWidth, viewHeight, height } = model
   // dotplotDisplays over tracks[].displays[0]: same displays, but typed as
   // DotplotDisplayModel instead of the view's untyped pluggable track array
   const displayResults = await Promise.all(
@@ -29,6 +33,20 @@ export async function renderToSvg(
       node: await display.renderSvg({ ...opts, theme }),
     })),
   )
+
+  // Deliberately read after those waits, not before. Each display's renderSvg
+  // reads viewWidth/viewHeight for itself, once its own readiness wait resolves;
+  // a zoom or a diagonalize reorder landing during the wait moves the axis
+  // borders and so the plot size, and measuring up front left the clip rect and
+  // the axes on the pre-wait geometry while the dots were drawn against the new
+  // one. (Same ordering rule as the LGV export's track heights.)
+  //
+  // `displayError` is the view's combined one, not each display's own: they all
+  // paint this one rect, so a box per errored display stacks over its siblings'
+  // dots and over its own stale geometry. One banner instead — the shape
+  // DisplayStatusOverlays takes on screen, an ErrorBanner floating over a canvas
+  // that keeps drawing every track that has data.
+  const { width, borderX, viewWidth, viewHeight, height, displayError } = model
 
   const { pluginManager } = getEnv(model)
   const additional = pluginManager.evaluateExtensionPoint(
@@ -60,6 +78,13 @@ export async function renderToSvg(
             {displayResults.map(({ id, node }) => (
               <g key={id}>{node}</g>
             ))}
+            {displayError ? (
+              <SVGErrorBox
+                error={displayError}
+                width={viewWidth}
+                height={errorBannerHeight}
+              />
+            ) : null}
           </SvgClipRect>
           {model.showColorLegend ? (
             <SVGColorByLegend

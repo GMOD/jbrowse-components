@@ -2,13 +2,23 @@ import { renderToStaticMarkup } from 'react-dom/server'
 
 import { renderSvg } from './renderSvg.tsx'
 
-import type { DotplotGeometryData } from './dotplotRenderingBackendTypes.ts'
+import type {
+  DotplotGeometryData,
+  DotplotRenderState,
+} from './dotplotRenderingBackendTypes.ts'
 import type { DotplotRenderModel } from './types.ts'
 
 // renderSvg reads the containing view for the plot size and render state, and
 // awaits svgReady through mobx `when`. The model is a plain object here, so
 // both are intercepted (same shape as the canvas display's renderSvg test).
-const view = {
+// `dotplotRenderState` is annotated rather than inferred so a field added to the
+// real getter fails to compile here instead of reaching the draw call as
+// undefined — `alpha` did, and every stroke came out `rgba(r,g,b,NaN)`.
+const view: {
+  viewWidth: number
+  viewHeight: number
+  dotplotRenderState: DotplotRenderState
+} = {
   viewWidth: 100,
   viewHeight: 100,
   dotplotRenderState: {
@@ -18,6 +28,7 @@ const view = {
     bpPerPxHInv: 1,
     bpPerPxVInv: 1,
     lineWidth: 2,
+    alpha: 1,
     displayKeys: [0],
   },
 }
@@ -50,7 +61,6 @@ function geometry(
 function model(overrides: Partial<DotplotRenderModel> = {}) {
   return {
     geometry: undefined,
-    error: undefined,
     svgReady: true,
     ...overrides,
   }
@@ -65,15 +75,10 @@ function drawnSegments(html: string) {
     : []
 }
 
-test('an errored display exports a labeled box rather than a blank plot', async () => {
-  const html = renderToStaticMarkup(
-    await renderSvg(model({ error: new Error('fetch failed') })),
-  )
-  expect(html).toContain('fill="#ffdddd"')
-  expect(html).toContain('fetch failed')
-  expect(html).not.toContain('<path')
-})
-
+// The error terminal state is the view's (SVGDotplotView owns it, since every
+// display paints the same plot rect), so an errored display draws whatever
+// geometry it still holds — the on-screen behavior, where a failed refetch
+// leaves the old dots under the ErrorBanner.
 test('a display with no geometry yet exports the empty plot', async () => {
   const html = renderToStaticMarkup(await renderSvg(model()))
   expect(html).not.toContain('fill="#ffdddd"')
