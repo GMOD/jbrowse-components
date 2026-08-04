@@ -13,6 +13,7 @@ import {
   hpyloriUrl,
   sessionSpec,
 } from '../screenshot-spec-helpers.ts'
+import { ECOLI_DEMO_BASE } from './demoBase.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -957,19 +958,26 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // capture time instead of hand-tuned pixels landing on a neighbor.
     annotations: [
       {
+        // right-aligned against the right edge (reviewer's ask). stx2B sits at
+        // about two thirds across, so the callout is on the far side of what it
+        // names and the arrow now runs right-to-left; `textAlign: 'end'` is what
+        // pins the pill's RIGHT edge at x, since its width is only known once
+        // the text is measured in the page.
         type: 'text',
         text: 'stx2 (Shiga toxin) prophage island\npresent in Sakai, absent from K-12',
-        x: 300,
+        x: 1470,
         y: 335,
+        textAlign: 'end',
         maxWidth: 380,
       },
       {
         type: 'arrow',
-        from: { x: 560, y: 360 },
+        from: { x: 1085, y: 365 },
         // stop short of the stx2B label instead of landing on top of it — the
-        // box below marks the gene itself
+        // box below marks the gene itself. Offset toward the tail, which is now
+        // on the right.
         anchor: { text: 'stx2B' },
-        dx: -45,
+        dx: 45,
         dy: -28,
       },
       {
@@ -1066,25 +1074,65 @@ export const syntenySpecs: ScreenshotSpec[] = [
               },
             ],
           },
+          // The graph of the same island, in the same frame (review: "I don't
+          // see the graph in this screenshot. should be combined figure?").
+          // What the lanes cannot say is what the strains that stop at the
+          // island's left edge carry INSTEAD — sequence absent from the
+          // alignment is absent from the PAF — and that is the short arm beside
+          // the long node here.
+          //
+          // The gfatools slice rather than a launch cut off the segments index:
+          // the tabix cut expands one hop off the region and a link is indexed
+          // at its reference-side endpoint, so CFT073's and IAI39's detours —
+          // which leave at s501 and rejoin at s506 — come in as 43 bp/558 bp
+          // stubs with nothing behind them, which is the opposite of what this
+          // pane is here to show. `gfatools view -R … -r 1` walks the graph
+          // itself. Same file, settings and ramp as pangenome/rgfa_paa_bubble,
+          // which draws this graph under a three-strain synteny view.
+          //
+          // The plugin loads from the hosted demo config's own `esmUrl`, which
+          // is on the generator's pre-approved list (trustCapturePlugins), so
+          // the cross-origin plugin warning does not cover the capture.
+          {
+            type: 'GraphGenomeView',
+            gfaLocation: { uri: `${ECOLI_DEMO_BASE}/ecoli_paa_subgraph.gfa` },
+            layoutMode: 'force',
+            colorScheme: 'reference-position',
+            colorDomain: { start: 1445000, end: 1474500 },
+          },
         ],
       },
     ),
-    // the extra height below the lanes is where the callout sits, so it covers
-    // no lane
-    viewportHeight: 500,
-    readySelector: '[data-testid="pileup-display-done"]',
+    viewportHeight: 1190,
+    // Both panes: the lanes' own done-marker AND the graph's layout timing.
+    // `body:has(A) B` is an AND — a bare list would be a CSS OR and fire on
+    // whichever landed first, which here is always the lanes.
+    readySelector:
+      'body:has([data-testid="graph-perf-stats"]) [data-testid="pileup-display-done"]',
     readyTimeout: 120000,
     settleMs: 12000,
     // name the island, since "three lanes stop here" is only interesting once
     // the reader knows what stops. One line; the rest is in the caption.
     annotations: [
       {
+        // centred in the strip between the last lane and the graph pane's own
+        // header, which is what the LGV's spare height is for here
         type: 'text',
         fontSize: 18,
         maxWidth: 560,
         x: 250,
-        y: 445,
+        y: 430,
         text: 'paa operon (phenylacetate catabolism): present in K-12 and NCTC86, absent from the other three',
+      },
+      {
+        // The island in the graph pane, ringed the way
+        // pangenome/rgfa_paa_bubble rings it — same segment, same slice, so the
+        // two figures mark the same node. Anchored through the view's own
+        // nodePositions, which resolves to a point ON the polyline: the arc's
+        // bounding-box centre is the empty space it encloses.
+        type: 'circle',
+        anchor: { view: 1, graphNode: 's502' },
+        radius: 40,
       },
     ],
   },

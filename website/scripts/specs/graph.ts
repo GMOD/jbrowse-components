@@ -2084,6 +2084,37 @@ export const graphSpecs: ScreenshotSpec[] = [
     // the two ribbon bands and the graph pane
     viewportHeight: 1580,
     hideTooltip: true,
+    // One ring in each half, on the same segment (review: "we may want to circle
+    // entries in the lineargenomeview/linearsyntenyview and the correspondance
+    // in graphgenomeview"). The shared hue already says they are the same
+    // object, but only to a reader who thinks to compare two panes 700px apart;
+    // the pair of rings is what makes the reader look.
+    //
+    // Both are anchored by NAME, not by pixel: the lane's by s502's own span out
+    // of the segs index (PAA_ISLAND_HIGHLIGHT, which draws the shaded band over
+    // the same bp), the graph's through the view's nodePositions, so the ring
+    // follows the node when the layout moves.
+    annotations: [
+      {
+        type: 'circle',
+        anchor: {
+          view: [0, 1],
+          track: ECOLI_SEGMENTS_TRACK,
+          locus: `chr:${PAA_ISLAND_HIGHLIGHT.start}-${PAA_ISLAND_HIGHLIGHT.end}`,
+        },
+        // the 50px lane, ringed a little proud of it. The block is ~150px wide
+        // here, so a ring sized to the whole segment would swallow its
+        // neighbours; this marks it without hiding what it sits between.
+        radius: 34,
+      },
+      {
+        type: 'circle',
+        anchor: { view: 1, graphNode: 's502' },
+        // resolves to a point ON the node's polyline rather than its bounding
+        // box, which for a node bent into an arc is the empty space inside it
+        radius: 40,
+      },
+    ],
   },
   // NO FIGURE for the per-strain paths track (`ecoli_minigraph_paths`), which
   // graph_genome_view.md still documents and the demo still hosts. Retired
