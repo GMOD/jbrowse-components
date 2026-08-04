@@ -22,6 +22,7 @@ import {
   parseReleaseFilename,
   parseReleasePost,
   splitReleaseBody,
+  stripImages,
 } from './releaseBlog.ts'
 
 const BLOG_DIR = path.resolve(
@@ -45,8 +46,9 @@ const { body, title } = parseReleasePost(
 )
 const { y, m, d, slug, tag } = parseReleaseFilename(post)
 
-// Summary only (before "## Downloads"), not the full changelog.
-const { notes } = splitReleaseBody(body)
+// Summary only (before "## Downloads"), not the full changelog, and prose only
+// — mdToHtml has no image case, so a figure would go out as literal markdown.
+const notes = stripImages(splitReleaseBody(body).notes)
 
 const releaseUrl = `https://github.com/${REPO}/releases/tag/${tag}`
 const blogUrl = `https://jbrowse.org/jb2/blog/${y}/${m}/${d}/${slug}/`

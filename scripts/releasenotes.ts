@@ -7,6 +7,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import {
+  absolutizeImages,
   findReleasePost,
   parseReleasePost,
   splitReleaseBody,
@@ -28,4 +29,6 @@ const { body } = parseReleasePost(
 )
 const { notes, changelog } = splitReleaseBody(body)
 
-process.stdout.write(`${[notes, changelog].filter(Boolean).join('\n\n')}\n`)
+process.stdout.write(
+  `${[absolutizeImages(notes), changelog].filter(Boolean).join('\n\n')}\n`,
+)

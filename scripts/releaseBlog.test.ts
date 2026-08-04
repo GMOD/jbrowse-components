@@ -3,12 +3,14 @@ import { tmpdir } from 'node:os'
 import path from 'node:path'
 
 import {
+  absolutizeImages,
   findReleasePost,
   parseReleaseFilename,
   parseReleasePost,
   releasePostFilename,
   renderReleasePost,
   splitReleaseBody,
+  stripImages,
 } from './releaseBlog.ts'
 
 const template = readFileSync(path.join(__dirname, 'blog_template.txt'), 'utf8')
@@ -44,6 +46,70 @@ test('a rendered post parses back into the same notes and changelog', () => {
   const { title, body } = parseReleasePost(post, file)
   expect(title).toBe('v4.4.0 Release')
   expect(splitReleaseBody(body)).toEqual({ notes, changelog })
+})
+
+// release.ts writes the post and pushes in one run, so a draft that kept the
+// repo-relative paths it was reviewed with has to be corrected here or it ships
+// with every figure broken.
+test('rendering a post rewrites repo-relative figures to site-root', () => {
+  const post = renderReleasePost({
+    template,
+    tag: 'v5.0.0',
+    date: '2026-08-04 10:11:12',
+    notes: '![a caption](../static/img/gwas/manhattan.png)\n\nprose',
+    changelog,
+  })
+  expect(post).toContain('![a caption](/img/gwas/manhattan.png)')
+  expect(post).not.toContain('../static/img/')
+})
+
+// A draft's notes-to-self are invisible on the blog but not downstream:
+// announce.ts escapes HTML, so a comment would reach the newsletter as text.
+test('rendering a post drops the draft-only HTML comments', () => {
+  const post = renderReleasePost({
+    template,
+    tag: 'v5.0.0',
+    date: '2026-08-04 10:11:12',
+    notes: '<!--\nTODO: fill in the tag\n-->\n\nprose\n\n<!-- and this -->\n',
+    changelog,
+  })
+  expect(post).not.toContain('<!--')
+  expect(post).not.toContain('TODO')
+  expect(post).toContain('\nprose\n')
+})
+
+test('a path that is already site-root, or external, is left alone', () => {
+  const notes = [
+    '![a](/img/already.png)',
+    '![b](https://example.com/x.png)',
+    'prose mentioning ../static/img/ and /img/ outside an image',
+  ].join('\n\n')
+  expect(
+    renderReleasePost({
+      template,
+      tag: 'v5.0.0',
+      date: '2026-08-04 10:11:12',
+      notes,
+      changelog,
+    }),
+  ).toContain(notes)
+})
+
+// The release body is GitHub-rendered, so a site-root path misses the figure.
+test('absolutizeImages points figures at the deployed site', () => {
+  expect(absolutizeImages('![a](/img/gwas/manhattan.png)')).toBe(
+    '![a](https://jbrowse.org/jb2/img/gwas/manhattan.png)',
+  )
+  expect(absolutizeImages('![a](https://example.com/x.png)')).toBe(
+    '![a](https://example.com/x.png)',
+  )
+})
+
+// The newsletter's mdToHtml has no image case, so figures have to go.
+test('stripImages drops figure lines and closes the gap they leave', () => {
+  expect(
+    stripImages('one\n\n![a](/img/a.png)\n\n![b](/img/b.png)\n\ntwo\n'),
+  ).toBe('one\n\ntwo')
 })
 
 test('findReleasePost selects by tag, not recency', () => {

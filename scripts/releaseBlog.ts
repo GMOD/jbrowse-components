@@ -17,6 +17,64 @@ export function releasePostFilename(tag: string, date: string) {
   return `${date}-${tag}-release.md`
 }
 
+// Where the site serves website/static/img once deployed.
+const SITE_IMG = 'https://jbrowse.org/jb2/img/'
+
+// Matches a markdown image's target, so only image URLs are rewritten and a
+// literal "/img/..." elsewhere in the prose is left alone.
+const imageTarget = /(!\[[^\]]*\]\()([^)]+)(\))/g
+
+// A draft may address figures repo-relatively (../static/img/foo.png) so they
+// render in the GitHub file view while it is being reviewed. The site serves
+// that directory at /img, so the paths have to be site-root by the time the
+// post is written — and release.ts commits, tags and pushes in one run, so
+// there is no later chance to fix them. Normalizing here rather than asking
+// the author to remember means a draft is reviewable and publishable at once.
+function normalizeDraftImages(md: string) {
+  return md.replaceAll(imageTarget, (whole, open, url: string, close) =>
+    url.startsWith('../static/img/')
+      ? `${open}${url.replace('../static/img/', '/img/')}${close}`
+      : whole,
+  )
+}
+
+// Everything a draft carries for the person publishing it — what still needs
+// filling in, how the figures were sourced — belongs in an HTML comment, which
+// is invisible on the blog but not everywhere downstream: announce.ts escapes
+// HTML, so a comment reaches the newsletter as visible "<!--" text.
+function stripHtmlComments(md: string) {
+  return md.replaceAll(/<!--[\s\S]*?-->/g, '')
+}
+
+// Turn a reviewed draft into publishable notes. release.ts runs this on the way
+// into the blog post, so it is the one place a draft-only convenience gets
+// undone; everything downstream reads the post, never the draft.
+export function prepareDraftNotes(md: string) {
+  return normalizeDraftImages(stripHtmlComments(md))
+    .replaceAll(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
+// The GitHub release body is rendered by GitHub, not by the website, so a
+// site-root path there resolves against github.com and misses the figure.
+export function absolutizeImages(md: string) {
+  return md.replaceAll(imageTarget, (whole, open, url: string, close) =>
+    url.startsWith('/img/')
+      ? `${open}${url.replace('/img/', SITE_IMG)}${close}`
+      : whole,
+  )
+}
+
+// The newsletter takes the prose only. mdToHtml has no image case, so a figure
+// would arrive as a line of literal markdown, and a figure-heavy post would
+// arrive as dozens of them — the mail links out to the full post anyway.
+export function stripImages(md: string) {
+  return md
+    .replaceAll(/^!\[[^\]]*\]\([^)]*\)[^\S\n]*\n?/gm, '')
+    .replaceAll(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
 // Fill blog_template.txt. Unknown ${...} placeholders are left alone.
 export function renderReleasePost({
   template,
@@ -34,7 +92,7 @@ export function renderReleasePost({
   const vars: Record<string, string> = {
     RELEASE_TAG: tag,
     DATE: date,
-    NOTES: notes,
+    NOTES: prepareDraftNotes(notes),
     CHANGELOG: changelog,
   }
   return template.replaceAll(

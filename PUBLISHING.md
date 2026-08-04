@@ -39,34 +39,27 @@ to eyeball locally.
 
 ## Figures in a draft
 
-A draft is copied into the blog post verbatim, and `release.ts` commits, tags
-and pushes in the same run — so whatever paths are in the draft are what ship,
-with no chance to fix them in between. Three places consume that same text, and
-they resolve URLs differently:
+Reference figures already in `website/static/img/` — either the site path
+`/img/foo.png`, or the repo-relative `../static/img/foo.png` if you want them to
+preview in the pull request that reviews the draft. Both work:
+`prepareDraftNotes` converts the repo-relative form on the way into the post,
+since `release.ts` commits, tags and pushes in one run and there is no later
+chance to fix a path. It also drops HTML comments, so notes to whoever publishes
+the release (placeholders, what still needs filling in) can live in the draft.
 
-| Consumer            | Rendered by                 | Needs                                                                       |
-| ------------------- | --------------------------- | --------------------------------------------------------------------------- |
-| `website/blog/*.md` | the Astro site              | `/img/…` (the base prefix is added at build time)                           |
-| GitHub release body | GitHub                      | an absolute URL — a `/img/…` path resolves against github.com, not the site |
-| Email newsletter    | `mdToHtml` in `announce.ts` | nothing: it has no image case, so `![…](…)` arrives as literal text         |
+The same text reaches three places that resolve URLs differently, each handled
+on the way out, so the draft only has to be right once:
 
-So **write image paths as `/img/…`**, matching what the docs use. The figure
-shows up on the blog, which is where the post actually lives and where the other
-two link to.
+| Consumer            | Rendered by                 | Gets                                                         |
+| ------------------- | --------------------------- | ------------------------------------------------------------ |
+| `website/blog/*.md` | the Astro site              | `/img/…`, with the base prefix added at build time           |
+| GitHub release body | GitHub                      | absolute `https://jbrowse.org/jb2/img/…` (`releasenotes.ts`) |
+| Email newsletter    | `mdToHtml` in `announce.ts` | prose only — figures are stripped                            |
 
-Two consequences worth knowing before you write a figure-heavy post. Images will
-not render in the GitHub release body, so lead with prose that stands on its own
-there. And a draft with many figures makes for a poor newsletter, since each one
-becomes a line of raw markdown — keep the summary paragraphs readable on their
-own, or trim figures from the draft and let the blog post carry them.
-
-If you drafted with repo-relative paths so the figures preview in a pull request
-(`../static/img/…`, which resolves in the GitHub file view from either
-`release_announcement_drafts/` or `blog/`), convert them before releasing:
-
-```bash
-sed -i 's|\.\./static/img/|/img/|g' website/release_announcement_drafts/v<version>.md
-```
+Figures are dropped from the newsletter rather than converted because `mdToHtml`
+has no image case and the mail links out to the full post anyway, so keep the
+summary paragraphs readable without them. `releaseBlog.test.ts` covers all
+three.
 
 Once the post is on the site you can upgrade `![caption](src)` to
 `<Figure caption="…" src="…" />`, which adds a lightbox and, for any image
