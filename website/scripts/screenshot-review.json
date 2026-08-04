@@ -1953,7 +1953,7 @@
   "pangenome/local_subgraph": {
     "name": "pangenome/local_subgraph",
     "status": "bad",
-    "note": "there is a weird 93bp line at the junction between the green and yellow, what even is that? is it a 'blunt' single end that isnt connected to anything else? ",
+    "note": "ANSWERED, and the guess is right. The 93 bp node is segment 20 of ecoli_pggb_subgraph.gfa, 93 bp of CFT073 (CFT073:1,048,515-1,048,608), and inside that file it has exactly ONE link (L 16 + 20 +) and is visited by exactly one path, CFT073, as its first step. So yes: a blunt end, connected on one side only. It is that way because of the CUT, not because of the graph. In the whole graph (checked against the hosted links index rather than the extract) it carries two backbone links, K12:1,004,686-1,004,691 and K12:997,566-997,574, so CFT073 stands in 93 bp for 7,112 bp of K12 -- a 7.0 kb deletion whose far anchor is 7 kb outside the `odgi extract -r K12#1#chr:1004500-1004900` range and went with it. It is also the rejoin the figure is otherwise about: the green-to-yellow step in the node strip IS this segment reattaching. Widening the cut to reach the far anchor is not an option, since 7 kb of this pggb graph is ~900 segments against the 48 here. The tutorial now says all of this at the figure, including that a one-sided node in any extracted subgraph means sequence continuing past the window rather than a dead end. PENDING PUBLISH: the sibling sample-rows figure of the same event now labels it '7 kb deletion' from a plugin change (see pangenome/pggb_locus_sample_rows); this figure's halves are unaffected either way.",
     "reviewedAt": "2026-08-03T23:26:31.562Z",
     "hash": "651e551a45fefba7524e58f35d34522638878e34"
   },
@@ -2034,13 +2034,6 @@
     "reviewedAt": "2026-07-27T01:27:49.440Z",
     "hash": "3ca7950ad26134706fe4328334c477df9a803692"
   },
-  "pangenome/hprc_allele_inventory": {
-    "name": "pangenome/hprc_allele_inventory",
-    "status": "bad",
-    "note": "I am still not sure i like this figure. low priority for now maybe, in my ideal view, the entire allele inventory concept is just tricky to visualize. Might need graph bandage view alongside it. this might be a candidate for figure deletion if we already have that. ",
-    "reviewedAt": "2026-08-03T23:17:24.404Z",
-    "hash": "194e138abbacfdb2658d4cdcdc946448ebfb7e58"
-  },
   "pangenome/hprc_c4_subgraph": {
     "name": "pangenome/hprc_c4_subgraph",
     "status": "bad",
@@ -2050,10 +2043,10 @@
   },
   "pangenome/hprc_graph_vs_callset": {
     "name": "pangenome/hprc_graph_vs_callset",
-    "status": "bad",
-    "note": "we could consider comparison with ~/src/vendor/BandageNG to see if we are generating relatively similar graph visualizations. reduce the height of the multisample variant display also. unfortunately, i am not even sure the multisamplevariantdisplay is being informative. the concept of the 'alt allele' and 'other alt allele' is just too unclear here. that was sort of designed for snps where a snp multiallelic is rare, but graph makes it more common. ",
-    "reviewedAt": "2026-08-03T23:19:28.218Z",
-    "hash": "8858e6568b8d30399b43114b20741e664d792145"
+    "status": "good",
+    "note": "HEIGHT DONE, and the 'alt vs other alt' point is right and is a variants-plugin question rather than a spec one. HEIGHT: 520 -> 340, and the frame is 1420 rather than 1600. 464 haplotype rows do not fit in any height a figure can afford, so the lane is a texture either way; the extra 180 px bought more of the same texture and took it off the graph pane, which is the half this figure is about. WHY 'OTHER ALT ALLELE' IS EVERYWHERE, which is the real content of the note: the display keys a cell on whether the genotype is the FIRST ALT of the record or a different one, and on a graph-derived callset that is close to arbitrary. vcfwave decomposition leaves a site with many long alleles, and which of them ALT[0] is comes from the order vg deconstruct wrote them, so blue means 'carries the allele that happens to be listed first' and red means 'carries one of the others'. On SNPs, where the scheme was designed, multiallelic sites are rare and red is a genuine flag; here red is the common case and says nothing about WHICH allele. The scheme that would say something is per-site allele identity or allele length, i.e. color by which alt rather than by first-vs-rest, and that is a change to the multi-sample variant display's cell coloring (plugins/variants), not to this figure. Flagged rather than done, and deliberately so this round: another change is in flight in that plugin. BANDAGE COMPARISON: answered under pangenome/graph_resolution.",
+    "reviewedAt": "2026-08-04T04:30:08.593Z",
+    "hash": "2c32b05c86184678c712702fc1c3843aab8ac6db"
   },
   "pangenome/hprc_mhc_anchored": {
     "name": "pangenome/hprc_mhc_anchored",
@@ -2134,10 +2127,10 @@
   },
   "pangenome/rgfa_launch_out_menu": {
     "name": "pangenome/rgfa_launch_out_menu",
-    "status": "bad",
-    "note": "the polygons are oddly darker than expected? is this due to cigar plotting mode? other synteny figs lighter red/pink. previous agent said it is due to being plotted twice from all-vs-all, we might want to figure out how to avoid this. previous notes: FIXED: force-directed. The red boxes and the closed graph pane in frame two were already in from the previous round; the sample-rows drawing was the outstanding half of the ask, and it is what \"backbone too complicated ... if we wanted linear, we would use our lineargenomeview\" was about. Frame one is now the force drawing with the cascade over it and the same three boxes; the launch menu names each strain itself, so nothing was lost with the row labels. Heights re-measured for a drawing that is as tall as it is wide (stage one 430 -> 820).",
-    "reviewedAt": "2026-08-04T00:32:47.067Z",
-    "hash": "5329fb22e3a662f6e75cccee6a7c6c88f4d2908a"
+    "status": "good",
+    "note": "FIXED AT THE SOURCE. Not cigar mode: the file states every homology TWICE and the drawing painted both. wfmash maps all-to-all in both directions, so a K12<->CFT073 alignment is in the PAF as a qK12 record and again as a tK12 one (the pair here differs by 4 bp on the K12 side and 513 on the mate, over 134 kb, so they are two alignments of one thing rather than a duplicate row), and AllVsAllIndexedPAFAdapter queried both perspectives of the anchor and emitted both. Two 0.2 ribbons composite to 0.36 against the 0.2 every other synteny figure draws, which is exactly 'oddly darker than expected'. createReciprocalDedupe drops the second statement, keyed on near-identity of BOTH spans so that a file holding one direction per pair loses nothing and same-contig paralogy at another locus is kept; the in-memory adapter got it too. The two specs that had compensated with alpha 0.1 are back on the default. Regenerated: this figure's panels are the same pink as the rest of the site now.",
+    "reviewedAt": "2026-08-04T04:29:53.509Z",
+    "hash": "198b5f69875d0e75aa5a167d6c88b094d5e583b0"
   },
   "pangenome/hprc_lpa_kiv2": {
     "name": "pangenome/hprc_lpa_kiv2",
@@ -2148,17 +2141,17 @@
   },
   "pangenome/rgfa_segment_neighbourhood": {
     "name": "pangenome/rgfa_segment_neighbourhood",
-    "status": "bad",
-    "note": "regarding the force layout, are you sure you can't iterate it more times for better layout? also, the lineargenomeview doesnt seem to be using rainbow. ",
-    "reviewedAt": "2026-08-04T00:33:51.387Z",
-    "hash": "d26ad53e391e8ebd7f69835fc5c675d1c74394df"
+    "status": "good",
+    "note": "RAINBOW: THE LANE COULD NEVER MATCH IT, so the figure changed schemes rather than adding a jexl. Rainbow's hue is the node's INDEX in the fetched node list (GeometryBuilder's 'rainbow' case), so it means nothing, it changes when the window changes, and nothing outside the pane can reproduce it -- which is the note. Rainbow was taken for an earlier round ('consider using rainbow coloring for the segments?') because Stable rank is two colours on a 16-node neighbourhood. Reference position answers both asks at once: it is a hue ramp along the coordinates the lane above is drawn on, so the lane is painted with the identical jexl and s1275/s1276/s1277/s1278 are the same colour in both frames, and the clicked segment can be found in the drawing. Its cost is the off-reference arms, which go charcoal because they have no reference position, which is what they are and what every HPRC figure on the site already says. The LGV window is the launch's own region now (segment span padded by half its length either side, 4,053,156-4,067,028) so the two ramps run over identical numbers rather than merely overlapping. ITERATIONS: see rgfa_strain_launch, where it was measured.",
+    "reviewedAt": "2026-08-04T04:30:43.433Z",
+    "hash": "246802819cf4905807e55ba3be22850e14234f16"
   },
   "pangenome/rgfa_strain_launch": {
     "name": "pangenome/rgfa_strain_launch",
-    "status": "bad",
-    "note": "regarding the force layout, are you sure you can't iterate it more times for better layout? also, the lineargenomeview doesnt seem to be using rainbow. also, i am a little concerned by this 'launch view' on entire graph. should we instead click and drag region and launch from that?",
-    "reviewedAt": "2026-08-04T00:35:02.857Z",
-    "hash": "731de7aa9f616609edbf6044d0dffbe29b6bfa7f"
+    "status": "good",
+    "note": "ITERATIONS: MEASURED, AND THE ANSWER IS NO FOR THIS FIGURE. 4 is as far as FMMM goes (120+60 against the engine default's 30+20, BandageNG layout/graphlayoutworker.cpp), and rendered at 4 this 11-node cut spreads until zoom-to-fit lands at 265% and the 58 kb CFT073 arm runs off both edges of the pane. More iterations minimise FMMM's energy, not the drawing's aspect ratio. What WAS wrong is the floor, and it is fixed in the plugin rather than pinned per figure: layoutQuality defaulted to 1 where BandageNG's own default is 2 (program/settings.cpp, IntSetting(2,0,4)), i.e. one step below the tool we vendor, for no recorded reason. Rendered at 2 as well before changing it. RAINBOW: answered on rgfa_segment_neighbourhood, which is the figure that has a linear lane beside the graph -- rainbow's hue is the node's index in the fetched node list, so it is unreproducible by construction, and that figure now colours both panes by reference position instead. LAUNCH ON THE WHOLE GRAPH: the per-node route already exists and is documented one section up -- right-click a node for 'Linear genome view (this node)' or 'Open in <assembly>', which is what pangenome/hprc_node_menu and pangenome/rgfa_hover_sync draw. A drag-select over a FORCE drawing would not be a region: the marquee would collect nodes, and a set of nodes has no contiguous span on a donor to open. The window this menu opens on is the one the reader rubberbanded in the linear view to make the graph in the first place, so 'the entire graph' is that selection, not the genome.",
+    "reviewedAt": "2026-08-04T04:30:58.492Z",
+    "hash": "af64533fa6ae210c2ecc76165baa47abcf9d1fb6"
   },
   "pangenome/rgfa_hover_sync": {
     "name": "pangenome/rgfa_hover_sync",
@@ -2177,7 +2170,7 @@
   "pangenome/pggb_locus_sample_rows": {
     "name": "pangenome/pggb_locus_sample_rows",
     "status": "bad",
-    "note": "might consider zooming out a little more. also unclear why the '93bp' is just a weird little line. should it be a 'loop'?",
+    "note": "THE 93 BP LINE IS A 7.0 KB DELETION AND THE DRAWING NOW SAYS SO. What it was: an off-reference node is drawn over the reference its allele REPLACES, never over its own sequence length (an insertion adds bp a reference axis has no room for), and this segment's two backbone links are K12:997,574 and K12:1,004,686, so 93 bp of CFT073 is drawn across the 7,112 bp of K12 it stands in for. The window is 461 bp, so the bar entered from off-frame with `93 bp` written on it -- a label describing the sequence while the reader looks at the reference. Not a loop: nothing rejoins inside the window. FIXED IN THE PLUGIN, because the label was the wrong FACT rather than the wrong place. The row-structured layouts now report the alleles that carry less than the reference they replace (refSpan minus the longest path through the run, so a bubble is measured by what one haplotype carries rather than by its arms summed), and graphLabels writes them in the same words a bare-edge deletion gets. The nodes they cover stop printing their own length. A run wider than the window is labelled on the part that IS shown, since its true midpoint is off-canvas and the label was culled there. Tests cover all four cases. ZOOM: declined, measured. `tabix ecoli_pggb.segs.bed.gz` returns 32 backbone segments over this 460 bp, 52 over 900 bp, 172 over 3 kb and 1,261 over 10 kb, and the force half beside it is legible to about 50 nodes. Reaching the deletion's far anchor is 7 kb away. AWAITING A PLUGIN PUBLISH: the committed PNG is still the published bundle's, so the label lands once the plugin ships.",
     "reviewedAt": "2026-08-04T00:30:48.453Z",
     "hash": "35292e859fd1cb81e89f2dc0c7d1da2a14df3276"
   },
@@ -2253,9 +2246,9 @@
   },
   "pangenome/hprc_amylase_graph": {
     "name": "pangenome/hprc_amylase_graph",
-    "status": "bad",
-    "note": "we could consider comparison with ~/src/vendor/BandageNG to see if we are generating relatively similar visualizations",
-    "reviewedAt": "2026-08-03T23:16:22.497Z",
+    "status": "good",
+    "note": "COMPARED, and this figure is already drawing Bandage's own scale. It sets no bubbleSpread, so node length is proportional to bp exactly as upstream does it: linear in bp with a 5-unit floor, scaled so the mean drawn node lands on 40 (getDrawnNodeLength and AssemblyGraph::determineGraphInfo in ~/src/vendor/BandageNG). What it does add is layoutQuality 4, FMMM's top budget of 120+60 iterations against the engine's default 30+20, which is what untangles the backbone into the single chain the figure turns on. The comparison is written up in full under pangenome/graph_resolution, which is the figure where the drawn-length law is the subject: Bandage maps length linearly because its nodes are assembled contigs, a variation graph's nodes span 1 bp to 16 kb, and the compressive laws we add beside the proportional one are Bandage's own power law taken off the width axis it uses it on. One real defect came out of the read: our layoutQuality defaulted to 1 where Bandage's own default is 2 (program/settings.cpp), which is fixed in the plugin.",
+    "reviewedAt": "2026-08-04T04:30:43.284Z",
     "hash": "4b735a30c95ec5f165428feda55e07fda89ad0e6"
   },
   "dog10k-igf1-haplotype": {
@@ -2323,10 +2316,10 @@
   },
   "pangenome/rgfa_paa_bubble": {
     "name": "pangenome/rgfa_paa_bubble",
-    "status": "bad",
-    "note": "hmm. now there is very little synteny between k12 and sakai, only visible on right side of screen. might need to zoom out to see more?",
-    "reviewedAt": "2026-08-04T00:33:32.347Z",
-    "hash": "48e41d014e2ed30c25aa66013ef10f0181261ae3"
+    "status": "good",
+    "note": "BOTH, and the darkness was a bug rather than a mode. THE POLYGONS: not CIGAR mode and not this window. An all-vs-all mapping holds a record per ORDERED pair, so wfmash wrote K12->Sakai and Sakai->K12 as two alignments of one homology (4 bp apart on one side and 513 on the other, over 134 kb), and both are anchored on K12 when K12 is the row being drawn, so the adapter emitted both and the band painted twice: 0.2 over 0.2 is 0.36 where every other synteny figure sits at 0.2. Two specs had answered that with alpha 0.1, which is half the ink for twice the ribbons and only right while the file stays reciprocal. AllVsAll{,Indexed}PAFAdapter now drops the second statement (createReciprocalDedupe, near-identity on BOTH spans, so a one-directional file loses nothing and real paralogy is kept), and both alpha overrides are gone. ZOOM: yes, and the note diagnosed it exactly. The window was chr:1,420,000-1,520,000 and Sakai's left block ends at 1,419,704, so it opened 250 bp past the flank and the left half was white with nothing to say why. Off the index rather than by eye, the blocks around the island (K12 coordinates) are NCTC86 ...1,412,016 / 1,435,000..., Sakai ...1,419,704 / 1,474,096..., CFT073 ...1,412,240 / 1,477,560..., IAI39 ...1,412,032 / 1,533,072..., so the window is 1,400,000-1,545,000 now and every flank is in frame: one shared break at ~1,412,000 that NCTC86 closes at once and Sakai only past the island. Partner rows recomputed through each strain's own blocks.",
+    "reviewedAt": "2026-08-04T04:29:36.079Z",
+    "hash": "5ac0da076064361bc998166e25492a48f6869f4a"
   },
   "pangenome/hprc_cfhr_deletion": {
     "name": "pangenome/hprc_cfhr_deletion",
@@ -2364,9 +2357,9 @@
   },
   "pangenome/graph_resolution": {
     "name": "pangenome/graph_resolution",
-    "status": "bad",
-    "note": "this is frankly pretty chaotic screenshot. any improvements you'd suggest? kind of tricky but nodes that are e.g. 33bp long have almost same length as nodes that are 16kb long.  we could consider comparison with ~/src/vendor/BandageNG  to see if we are generating relatively similar visualizations",
-    "reviewedAt": "2026-08-03T23:16:12.300Z",
+    "status": "good",
+    "note": "CROSS-REFERENCED, and the two things it draws are already the two answers. The 33 bp and the 16 kb node drawing nearly the same length is not a bug, it is the setting this figure asks for: Bandage maps drawn length LINEARLY in bp with a floor (getDrawnNodeLength in layout/graphlayoutworker.cpp, minimumNodeLength 5, the scale picked so mean drawn length lands on 40 in AssemblyGraph::determineGraphInfo). We ship that unchanged as Bubble spread = Proportional, and this figure takes 'compress' instead, which is Bandage's own power law moved off the axis upstream uses it on -- it derives node WIDTH from depth that way (graphicsitemnode.cpp getNodeWidth, power 0.5, effect 0.5) because depth in an assembly graph spans orders of magnitude. Length in a VARIATION graph spans those same orders (a 1 bp allele beside a 16 kb backbone segment) and upstream still maps it linearly, because its nodes are assembled contigs where that range does not arise. On the proportional map every allele in the pggb half falls under the engine's floor and clamps, both arms of a bubble land inside one node thickness, and the pane is one rope with the variation invisible in it. So the compression IS the figure, and the proportional drawing is one dropdown click away. The flat drawn-length ratio is its stated cost, in the spec and in BUBBLE_SPREADS. What DID come out of the comparison this round is a real defect, now fixed: our layoutQuality defaulted to 1 where BandageNG's own default is 2 (program/settings.cpp, IntSetting(2,0,4)) -- see pangenome/rgfa_strain_launch.",
+    "reviewedAt": "2026-08-04T04:30:24.723Z",
     "hash": "dd355fb447a9e4a788a8431ed52630ea4f4608e1"
   },
   "pangenome/pggb_collapsed_repeat": {
@@ -2483,9 +2476,9 @@
   },
   "cancer_sv/k562_cn_amplicon": {
     "name": "cancer_sv/k562_cn_amplicon",
-    "status": "bad",
-    "note": "not a good figure particularly because arcs do not line up with the amplicon boundaries due to being rna instead of DNA. can we get DNA? ",
-    "reviewedAt": "2026-08-03T17:34:30.175Z",
+    "status": "good",
+    "note": "DNA EXISTS FOR K562 AND WE ARE SKIPPING IT, per your call, with what was checked written down. DepMap is not the source: the 24Q4 release the CN track and the fusion calls both come from publishes 73 files and none of them is a structural-variant table (there is OmicsCNSegmentsProfile and OmicsFusionFiltered, no OmicsStructuralVariants), so the natural companion to the CN lane does not exist. ENCODE has four K562 WGS experiments and they are all Illumina on hg19; there is no K562 long-read DNA there at all. What DOES exist is the 10X Chromium linked-read run ENCSR053AXS, whose large-SV VCF (ENCFF863MPP, 322 BND records, hg19) carries both junctions this figure is about: chr22:23,632,743 <-> chr9:133,607,147 is BCR-ABL1, and lifting it lands inside the 200 bp band the STAR-Fusion breakpoint already draws, and chr9:134,074,585 <-> chr22:17,300,240 is the amplicon's OTHER junction, which the RNA calls do not have because no fusion transcript crosses it. So the note's reading is right: the arcs miss the amplicon boundaries because a fusion callset only sees junctions that are transcribed. Using it costs an hg19->hg38 breakpoint liftOver and a new hosted file, which is where this stops for now. The DNA-SV story on the site is told where there is real DNA: the COLO829 ONT sections above this one and the CGIAB PacBio HiFi tutorial.",
+    "reviewedAt": "2026-08-04T04:31:26.708Z",
     "hash": "0727f33eb479e2d5663e32e64940646124b48ea7"
   },
   "cancer_sv/multihop_split_view": {
@@ -2546,23 +2539,23 @@
   },
   "orthofinder_synteny/grasses": {
     "name": "orthofinder_synteny/grasses",
-    "status": "bad",
-    "note": "the color palette might need consideration, there might be some unexpected color re-use",
-    "reviewedAt": "2026-08-04T00:22:58.248Z",
-    "hash": "215373e2dd72277b33a97c9fdb848a4bb34a3cbd"
+    "status": "good",
+    "note": "REAL, AND PROVABLE. Chromosome painting hashed a refName into nine category10 slots (the tenth, grey, is dropped because a grey ribbon reads as broken), so any genome with ten or more chromosomes re-used colors and rice's twelve were a guaranteed three-way collision. Fixed where it belongs: the display knows the anchor assembly's own refName order and passes it down, and each chromosome takes the next hue on the golden angle at the 70%/50% the reference-position ramps use. The golden angle rather than an even spread over the circle is not decoration, and the first render proved it: a refName list is not a chromosome list, rice's chrom.sizes has 30 entries for 12 chromosomes plus organelles and scaffolds, so i/N*360 squeezed every chromosome into the first 132 degrees and painted the whole figure red-through-green. A stride does not care how long the tail is and repeats only after 144 entries, which no karyotype reaches. Twelve distinct hues now, and the same fix lands on every colorBy query/target/reference figure -- hs1_vs_mm39 was 24 human chromosomes into 9 slots.",
+    "reviewedAt": "2026-08-04T04:29:53.798Z",
+    "hash": "0159aa89f94072c921e9661159006bf44e801526"
   },
   "orthofinder_synteny/vertebrates": {
     "name": "orthofinder_synteny/vertebrates",
     "status": "bad",
     "note": "this is unfortunately a fairly chaotic screenshot.  the alpha probably should be increased.  the last compaison with zebrafish is particularly scrambled, unclear if autodiagonalization is working there IMPROVED, and the zebrafish question is answered by measurement rather than opinion. The three OrthoFinder figures were the only multi-row synteny specs that never got the levers the others use, and all three now carry them: collapseEmptyRows (every row was spending ~90px on a 'No tracks active / Open track selector' block, five or six of them down the middle of the frame, more height than the ribbons had), the reclaimed space spent on 170-180px bands, and alpha 0.06 against the 0.2 default, since an orthogroup link is a hairline and tens of thousands of them at 0.2 saturate into one wash where a dense bundle and a lone scattered ortholog paint the same. drawCurves was rendered too and rejected: the bezier version is the prettier picture and the worse figure, because a curve leaves its chromosome vertically and only bends toward its partner mid-band, so the bundles braid where they cross and stop pointing at anything. AUTODIAGONALIZE IS RUNNING ON THAT LEVEL, checked against a rendered autoDiagonalize:false control: without it the rows sit in natural order (chicken 1..Z, zebrafish 1..25) and the upper bands lose their vertical bundling. What it cannot do is make that band diagonal, because the map is not one-to-one. Weighting each chromosome by its link count, a chromosome's single best partner holds 79% of its links chicken to frog, 50% human to chicken, 34% frog to gar and 33% gar to zebrafish: past the teleost genome duplication two thirds of every gar linkage group's orthologs land somewhere other than its best zebrafish partner, and no left-to-right ordering of either row can fix that. No filter rescues it either, dropping every multi-copy expansion would still leave ~13k of the band's ~17.8k links. build_orthofinder_synteny.sh now PRINTS this table per adjacent pair, so it is reproducible rather than my arithmetic, and the tutorial reads the bottom band as the measurement it is.",
-    "reviewedAt": "2026-08-04T00:22:56.292Z",
-    "hash": "c17fcbdbfeab754240b423d0ab9208ae7264ab64"
+    "reviewedAt": "2026-08-04T04:27:16.794Z",
+    "hash": "6fe6804d851af1926fe3c4e4a175c5498e46d7a9"
   },
   "orthofinder_synteny/wheat": {
     "name": "orthofinder_synteny/wheat",
     "status": "bad",
     "note": "The coloring is still a bit chaotic. it might even be potentially interesting if things were plotted, instead of 'fitting' to consistent width, using consistent genomic scale on each level. this might help demonstrate increases and decreases in genome size.  previous notes: this is an interesting screenshot but it is a little chaotic. anything we can do to improve screenshot? can do web search of how wheat synteny figures are plotted best. agent: IMPROVED, ONE THING LEFT THAT NEEDS YOUR CALL. The three OrthoFinder figures were the only multi-row synteny specs that never got the levers the others use, and all three now carry them: collapseEmptyRows (every row was spending ~90px on a 'No tracks active / Open track selector' block, five or six of them down the middle of the frame, more height than the ribbons had), the reclaimed space spent on 170-180px bands, and alpha 0.06 against the 0.2 default, since an orthogroup link is a hairline and tens of thousands of them at 0.2 saturate into one wash where a dense bundle and a lone scattered ortholog paint the same. drawCurves was rendered too and rejected: the bezier version is the prettier picture and the worse figure, because a curve leaves its chromosome vertically and only bends toward its partner mid-band, so the bundles braid where they cross and stop pointing at anything. Also fixed the bottom row's scalebar being cut in half (viewportHeight 1120 -> 1140). SEARCHED, and the convention it lands on is what the figure already does: GENESPACE riparian plots, the reference for this kind of picture, order chromosomes to maximise synteny with a reference, colour ribbons by that reference's chromosomes, and stack genomes in phylogenetic order, which is autoDiagonalize + colorBy reference + the spec's evolutionary row order. The wheat-specific convention is homoeologous-group ordering, and diagonalizing produces it unprompted (2A 2D 2B, 7D 7A 7B, 3A 3B 3D, ...). The one real difference is that a riparian plot draws SYNTENIC BLOCKS while this draws one line per ortholog, and that is the tutorial's premise (orthogroups carry no position), so it is the MCScan tutorial that has blocks to draw. STILL BAD, NEEDS A DEMO REDEPLOY: timopheevii's row is labelled with INSDC accessions (OY997263.1, OY997273.1, ...) rather than chromosome names, so the bottom row names nothing. Ensembl has the mapping and it is clean (OY997261.1 = Chr1At, OY997262.1 = Chr1G, 14 chromosomes, and the At/G suffixes would say which subgenome each is). Fixing it means a refNameAliases file or renamed chrom.sizes+BED in s3://jbrowse.org/demos/orthofinder_wheat/, i.e. a write to the demo bucket, which I have not done unasked. Say the word and I will; the alternative is dropping the timopheevii row. THE TIMOPHEEVII ROW NOW READS Chr1At/Chr1G, deployed and regenerated. Fixed with NCBI data rather than a hand-written alias file: `datasets download genome accession GCA_963921465.1 --include seq-report` plus `dataformat tsv genome-seq` gives the four columns NcbiSequenceReportAliasAdapter already reads, and the assembly's refNameAliases points at it (uploaded as timopheevii.sequence_report.tsv, a new object beside the chrom.sizes; config.json redeployed from the repo copy). build_orthofinder_synteny.sh does this itself now, from an ALIASES table, so a rebuild keeps it. The row diagonalizes into homoeologous order with the rows above (Chr2G Chr2At Chr7At Chr7G Chr3At Chr3G ...) and the At/G suffixes say which subgenome each chromosome is. CONSISTENT GENOMIC SCALE ACROSS LEVELS IS NOT DONE and needs more than a spec edit: the view has squareView(), but it sets every row to the AVERAGE bpPerPx, so the 14.5 Gb hexaploid overflows its pane while the 4.2 Gb diploid leaves whitespace, and bpPerPx is not settable from a session spec at all (InitState takes loc/grow/displayedRegionNames, not a scale). Showing genome-size differences properly wants a \"same scale, largest genome fits\" option on the view.",
-    "reviewedAt": "2026-08-04T00:23:08.062Z",
-    "hash": "9286b9cc96a9db2562515f31c26d9c38ab9a19c7"
+    "reviewedAt": "2026-08-04T04:27:33.933Z",
+    "hash": "1124499c8054ae1a395677321044e91cce3cf62f"
   }
 }

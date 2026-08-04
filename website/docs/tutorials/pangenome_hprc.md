@@ -606,10 +606,10 @@ inside the drawn window are the inversion and its two forward flanks.
 
 Each haplotype row carries its own CAT gene annotation, which states the same
 event a second way: the named genes inside the boxed span run PPIAL4F, RNVU1-28,
-RNVU1-2A, RNVU1-26, NBPF15, RNVU1-15, PPIAL4E down the carrier and PPIAL4E
-through PPIAL4F — the reference's order — down the non-carrier.
+RNVU1-2A, RNVU1-26, NBPF15, RNVU1-15, PPIAL4E down the carrier, and PPIAL4E
+through PPIAL4F, the reference's order, down the non-carrier.
 
-<Figure caption="The 1q21.1 bubble the graph flags as an inversion, drawn as alignments. Between the two haplotype rows are the RefSeq genes, the bubble lane cut to inversion-flagged bubbles with the boxed one the subject, and the rGFA segments. The top row is HG01891 hap 1: its ribbon crosses inside the boxed span, runs parallel either side of it, and its own genes run backwards through it. The bottom row is HG02698 hap 2, one forward ribbon and reference gene order across the whole window — the comparison that separates an inversion from a contig deposited backwards." src="/img/pangenome/hprc_inversion.png" />
+<Figure caption="The 1q21.1 bubble the graph flags as an inversion, drawn as alignments. Between the two haplotype rows are the RefSeq genes, the bubble lane cut to inversion-flagged bubbles with the boxed one the subject, and the rGFA segments. The top row is HG01891 hap 1: its ribbon crosses inside the boxed span, runs parallel either side of it, and its own genes run backwards through it. The bottom row is HG02698 hap 2, one forward ribbon and reference gene order across the whole window, which is the comparison that separates an inversion from a contig deposited backwards." src="/img/pangenome/hprc_inversion.png" />
 
 The [allele inventory](#the-allele-inventory) has nothing for them by
 construction, since a mixed-orientation pair of backbone segments is a
@@ -646,7 +646,12 @@ sits, so the CIGAR puts the indel at the end of the span by convention. Over a 2
 kb anchor nothing turns on it, but the CFHR-scale spans in the same figure carry
 a marker that is placed rather than located.
 
-<Figure caption="The allele inventory over the complement factor H cluster, under the RefSeq genes and the rGFA segments. Grey bars are the reference span each allele replaces, labelled with it, and purple marks are insertions drawn at the size they insert, which is what the CIGAR in the BED buys. The long bar from CFHR3 to CFHR1 is the deletion the graph figure above draws as an arc. Rows are the display packing overlapping alleles, not haplotypes." src="/img/pangenome/hprc_allele_inventory.png" />
+The lane is not pictured here, deliberately. Its rows are the display packing
+overlapping alleles rather than a set of haplotypes, which is a reading it
+cannot help. The one event worth looking at over this window, the 84,683 bp
+deletion between CFHR3 and CFHR1, is drawn on the same coordinates by the graph
+figure earlier in this page, where it is an arc with the two genes it removes
+boxed beside it.
 
 The
 [graph genome view guide](/docs/user_guides/graph_genome_view#when-all-you-have-is-the-graph)

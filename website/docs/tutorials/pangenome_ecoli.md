@@ -668,7 +668,7 @@ narrow: `tabix ecoli_pggb.segs.bed.gz` returns 32 backbone segments over this
 460 bp, 172 over 3 kb and 1,261 over 10 kb.
 
 A row's bar is drawn over the **reference it replaces**, never over its own
-sequence length — an insertion adds bp that a reference axis has no room for, so
+sequence length. An insertion adds bp that a reference axis has no room for, so
 length lives in the tooltip instead. That is why CFT073's row carries one long
 bar labelled `93 bp` running off the left edge: its segment links to
 `K12:1,004,686` inside the window and to `K12:997,574` 7.1 kb upstream of it, so
@@ -752,8 +752,8 @@ junction in the force pane. It is where CFT073 rejoins, and it has a single end
 here because `odgi extract -E` was given `K12#1#chr:1004500-1004900`. In the
 whole graph that segment links to `K12:1,004,686` **and** to `K12:997,574`, so
 CFT073 carries 93 bp where K12 carries 7.1 kb; the far anchor is 7 kb outside
-the cut and went with it. A one-sided node in any extracted subgraph means this
-— sequence continuing past the window, not a dead end in the graph.
+the cut and went with it. A one-sided node in any extracted subgraph means the
+same thing: sequence continuing past the window, not a dead end in the graph.
 
 <Figure caption="One slice of the five-strain graph drawn both ways, under a linear view of the same locus. Left, anchored on the graph's K12 path: both panels share an axis and the Depth colors, so the backbone row is the node strip above it and the green-to-yellow step, where the fifth strain rejoins the shared sequence, is at the same x in both. Right, force-directed: the same nodes and colors with nothing holding them to the axis. The alternate alleles have no K12 coordinate either way, and their drawn width is a visibility floor rather than their length in bp, which the node tooltip gives." src="/img/pangenome/local_subgraph.png" links="Anchored=pangenome/local_subgraph_anchored,Force-directed=pangenome/local_subgraph_force" />
 

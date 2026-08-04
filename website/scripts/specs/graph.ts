@@ -2932,70 +2932,22 @@ export const graphSpecs: ScreenshotSpec[] = [
       },
     ],
   },
-  // The allele inventory, which the HPRC tutorial documents in JSON and had no
-  // picture of. It is a BED read by an AlignmentsTrack, and that pairing is the
-  // whole point: each row carries a CIGAR against the reference span it replaces
-  // (2062M63348I), so the display packs the overlapping alleles into rows and
-  // draws each insertion at the size it inserts instead of as a 1 bp box.
+  // pangenome/hprc_allele_inventory was here and is RETIRED (review: "I am
+  // still not sure i like this figure ... the entire allele inventory concept is
+  // just tricky to visualize. Might need graph bandage view alongside it. this
+  // might be a candidate for figure deletion if we already have that").
   //
-  // The CFHR window, not amylase (review: "it is just too complex in this genome
-  // region. we need a simpler region with less diversity"). Amylase is 22 alleles
-  // of which four are tens of kb of insertion at nearly the same coordinate, so
-  // the lane packed six rows of overlapping grey bars carrying five-digit labels
-  // and the reader had to disentangle which bar belonged to which. This window
-  // holds 16, and its structure is one 84,683 bp deletion with small insertions
-  // scattered around it (`tabix hprc-v2.0-mc-grch38.alleles.bed.gz
-  // chr1:196700000-196900000`).
+  // We already have that, on the same window: hprc_cfhr_deletion draws this
+  // exact 200 kb as a graph beside three rows of alignment, and the -84,683 bar
+  // that was this figure's subject is the arc that one labels "84.7 kb
+  // deletion". So the pairing the note asks for exists, and this was the half of
+  // it that had to be read as a lane of grey bars whose rows are a packing
+  // rather than a set of haplotypes -- the misreading the spec spent a paragraph
+  // heading off.
   //
-  // It is also the window hprc_cfhr_deletion draws as a graph, which is the
-  // second reason to move: the arc that figure labels "skips 84.7 kb of
-  // reference" is the -84,683 bar here, so the same event is a loop in one figure
-  // and the span it covers in the other.
-  //
-  // What a ROW is, since the obvious reading is wrong and the reviewer asked for
-  // sample names: rows are the display's packing of overlapping alleles, and the
-  // track cannot carry haplotype rows at all. The BED's `firstSeenIn` is
-  // minigraph's build order, not carriage -- an allele several haplotypes share
-  // is attributed to whichever was added first, so rows keyed on it would read as
-  // a haplotype pileup while stating something else (build_rgfa_alleles.sh says
-  // this at the field). Per-haplotype carriage is the callset's, which is what
-  // hprc_graph_vs_callset draws.
-  {
-    mode: 'url',
-    name: 'pangenome/hprc_allele_inventory',
-    url: sessionSpec(HPRC_CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: CFHR_WINDOW,
-          tracks: [
-            {
-              trackId: 'hg38_ncbiRefSeq_ucsc',
-              type: 'LinearBasicDisplay',
-              geneGlyphMode: 'longestCoding',
-              displayMode: 'compact',
-              height: 70,
-            },
-            hprcSegmentsLane(CFHR_REGION),
-            {
-              trackId: 'hprc_minigraph_alleles',
-              type: 'LinearAlignmentsDisplay',
-              // the coverage row plus the three rows this window packs into; the
-              // display's default leaves most of its box empty here
-              height: 115,
-            },
-          ],
-        },
-      ],
-    }),
-    readySelector: '[data-testid="pileup-display-done"]',
-    readyTimeout: 120000,
-    settleMs: 5000,
-    viewportWidth: 1000,
-    viewportHeight: 515,
-    hideTooltip: true,
-  },
+  // The tutorial section stays, with the BED, the CIGAR trick that draws an
+  // insertion at its real magnitude, and the warning that a row is not a
+  // haplotype. What it no longer carries is a picture of it.
   // What Settings -> Graph context buys. A region query on the reference reaches
   // a detour's entry and exit segments and nothing behind them, because the
   // interior sits on the donor's own stable sequence, which no reference
@@ -3172,7 +3124,13 @@ export const graphSpecs: ScreenshotSpec[] = [
             {
               trackId: 'hprc2_wave_grch38',
               type: 'LinearMultiSampleVariantDisplay',
-              height: 520,
+              // 340, down from 520 (review: "reduce the height of the
+              // multisample variant display also"). 464 haplotype rows do not
+              // fit in any height a figure can afford, so the lane is a texture
+              // either way and the extra 180 px bought more of the same texture
+              // — where the graph pane below it is the half this figure is
+              // about, and was the half being squeezed.
+              height: 340,
               jexlFilters: SV_FILTER,
               runClustering: true,
             },
@@ -3198,7 +3156,7 @@ export const graphSpecs: ScreenshotSpec[] = [
     // the gene lane, the segments lane, the 464-row callset, and the graph pane
     // under them — the force drawing is about as tall as it is wide where the
     // row stack was flat
-    viewportHeight: 1600,
+    viewportHeight: 1420,
     hideTooltip: true,
     // The event in the graph as well as in the tracks (review: "i see there is a
     // highlight on the lineargenomeview but no highlight in the graph itself").
