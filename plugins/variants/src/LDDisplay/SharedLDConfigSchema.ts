@@ -6,6 +6,13 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config SharedLDDisplay
+ * #category display
+ *
+ * Shared config for the two LD displays: `LDDisplay` (on a `VariantTrack`,
+ * computing pairwise R² from the VCF's own genotypes) and `LDTrackDisplay` (on
+ * an `LDTrack`, reading pre-computed LD such as PLINK `--r2` output). Both
+ * register the same slots against different track types, so the slots live here
+ * once.
  */
 export default function sharedLDConfigFactory() {
   return ConfigurationSchema(

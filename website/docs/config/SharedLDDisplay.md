@@ -9,6 +9,11 @@ Auto-generated config schema for the current JBrowse release — see the
 plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LDDisplay/SharedLDConfigSchema.ts).
 
+Shared config for the two LD displays: `LDDisplay` (on a `VariantTrack`,
+computing pairwise R² from the VCF's own genotypes) and `LDTrackDisplay` (on an
+`LDTrack`, reading pre-computed LD such as PLINK `--r2` output). Both register
+the same slots against different track types, so the slots live here once.
+
 ## Related links
 
 - **Base config:** [BaseLinearDisplay](../baselineardisplay)
