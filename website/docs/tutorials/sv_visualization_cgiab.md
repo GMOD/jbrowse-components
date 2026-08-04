@@ -357,12 +357,11 @@ to `haplotype` and it paints one row per parental copy.
       "type": "LinearMultiRowFeatureDisplay",
       "displayId": "hg008_wakhan_haplotype-LinearMultiRowFeatureDisplay",
       "partitionField": "haplotype",
-      "color": "jexl:get(feature,'copynumber_state')<0.5?'#2166ac':get(feature,'copynumber_state')<1.5?'#bdbdbd':get(feature,'copynumber_state')<2.5?'#f4a582':'#b2182b'",
+      "color": "jexl:get(feature,'copynumber_state')<0.5?'#2166ac':get(feature,'copynumber_state')<1.5?'#bdbdbd':'#f4a582'",
       "legend": [
         { "label": "Haplotype lost (0)", "color": "#2166ac" },
-        { "label": "One copy (1)", "color": "#bdbdbd" },
-        { "label": "Duplicated (2)", "color": "#f4a582" },
-        { "label": "Amplified (3+)", "color": "#b2182b" }
+        { "label": "One copy", "color": "#bdbdbd" },
+        { "label": "Two or more copies", "color": "#f4a582" }
       ]
     }
   ]
@@ -371,11 +370,13 @@ to `haplotype` and it paints one row per parental copy.
 
 `copynumber_state` here is one parental copy rather than the total, so `1` is
 the expected state and a `0` row is the lost haplotype that makes an arm LOH.
-This is the same allelic information the BAF track carries, but as segments
-instead of a point cloud, so it reads identically at every zoom level and is the
-better choice for a whole-genome overview. The `coverage` column is Wakhan's
-median depth for the segment, which is where the per-copy depth scale in this
-dataset can be read directly.
+Wakhan also emits fractional states for segments that are not clonal, so bucket
+the color rather than matching integers exactly. This is the same allelic
+information the BAF track carries, but as segments instead of a point cloud, so
+it reads identically at every zoom level and is the better choice for a
+whole-genome overview. The `coverage` column is Wakhan's median depth for the
+segment, which is where the per-copy depth scale in this dataset can be read
+directly.
 
 ### Subclonal copy number
 

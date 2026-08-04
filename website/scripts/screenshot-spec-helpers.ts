@@ -279,14 +279,16 @@ export const HG008_WAKHAN_HAP_TRACK = {
       displayId: 'hg008_wakhan_haplotype-LinearMultiRowFeatureDisplay',
       partitionField: 'haplotype',
       // copynumber_state here is one parental copy, not the total, so 1 is the
-      // expected state and 0 is the lost haplotype that makes an arm LOH.
+      // expected state and 0 is the lost haplotype that makes an arm LOH. Three
+      // buckets, not four: the published file tops out at 2 per haplotype, and a
+      // legend row nothing paints is noise. It also carries fractional states
+      // (0.51, 0.73), which fall in with one copy.
       color:
-        "jexl:get(feature,'copynumber_state')<0.5?'#2166ac':get(feature,'copynumber_state')<1.5?'#bdbdbd':get(feature,'copynumber_state')<2.5?'#f4a582':'#b2182b'",
+        "jexl:get(feature,'copynumber_state')<0.5?'#2166ac':get(feature,'copynumber_state')<1.5?'#bdbdbd':'#f4a582'",
       legend: [
         { label: 'Haplotype lost (0)', color: '#2166ac' },
-        { label: 'One copy (1)', color: '#bdbdbd' },
-        { label: 'Duplicated (2)', color: '#f4a582' },
-        { label: 'Amplified (3+)', color: '#b2182b' },
+        { label: 'One copy', color: '#bdbdbd' },
+        { label: 'Two or more copies', color: '#f4a582' },
       ],
     },
   ],

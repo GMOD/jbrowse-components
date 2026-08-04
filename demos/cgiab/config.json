@@ -376,23 +376,19 @@
           "type": "LinearMultiRowFeatureDisplay",
           "displayId": "hg008_wakhan_haplotype-LinearMultiRowFeatureDisplay",
           "partitionField": "haplotype",
-          "color": "jexl:get(feature,'copynumber_state')<0.5?'#2166ac':get(feature,'copynumber_state')<1.5?'#bdbdbd':get(feature,'copynumber_state')<2.5?'#f4a582':'#b2182b'",
+          "color": "jexl:get(feature,'copynumber_state')<0.5?'#2166ac':get(feature,'copynumber_state')<1.5?'#bdbdbd':'#f4a582'",
           "legend": [
             {
               "label": "Haplotype lost (0)",
               "color": "#2166ac"
             },
             {
-              "label": "One copy (1)",
+              "label": "One copy",
               "color": "#bdbdbd"
             },
             {
-              "label": "Duplicated (2)",
+              "label": "Two or more copies",
               "color": "#f4a582"
-            },
-            {
-              "label": "Amplified (3+)",
-              "color": "#b2182b"
             }
           ]
         }
