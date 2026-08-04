@@ -250,9 +250,6 @@ Clustering is computed over the region in view, so this is chr4 similarity, not
 a genome-wide relatedness: pan somewhere else and the same menu item gives a
 different order.
 
-The demo config carries a second trait, brain weight (`10672`), loaded the same
-way from the same API.
-
 Open the whole demo live in the
 [JBrowse BXD demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_bxd.json),
 or click the **Open in JBrowse** link under any figure above.
@@ -271,11 +268,15 @@ npx --yes serve bxd_demo/jbrowse2 # then open the printed URL
 ```
 
 It downloads JBrowse and the GeneNetwork consensus genotypes, builds the
-painting, fetches both traits' scans from GeneNetwork's mapping API (coat color,
-trait `11280`, and brain weight, `10672`), and writes a `config.json` that opens
-on mm10 chr4 with the coat-color scan over the painting. It prints each scan's
-peak marker and LOD as it goes, so the figures can be checked against the data.
-It needs `curl`, `jq`, `python3` and htslib (`bgzip`, `tabix`) on your `PATH`.
+painting, fetches the coat-color scan (trait `11280`) from GeneNetwork's mapping
+API, and writes a `config.json` that opens on mm10 chr4 with the scan over the
+painting. It prints the scan's peak marker and LOD as it goes, so the figures
+can be checked against the data. It needs `curl`, `jq`, `python3` and htslib
+(`bgzip`, `tabix`) on your `PATH`.
+
+Any GeneNetwork trait id can be swapped in, but most will scan flatter than this
+one: coat color is close to Mendelian here, and a polygenic trait leaves no peak
+sharp enough to be worth sorting the painting underneath.
 
 ## See also
 

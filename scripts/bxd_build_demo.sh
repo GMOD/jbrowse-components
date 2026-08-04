@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
 #
 # Reproducibly build the BXD systems-genetics demo from
-# website/docs/tutorials/bxd_qtl.md: the 198-strain chromosome painting plus two
-# GeneNetwork QTL scans (coat color, whose chr4 peak interval holds Tyrp1, and
-# brain weight), then wire up a runnable JBrowse.
+# website/docs/tutorials/bxd_qtl.md: the 198-strain chromosome painting plus the
+# GeneNetwork QTL scan for coat color, whose chr4 peak interval holds Tyrp1,
+# then wire up a runnable JBrowse.
 #
 # It downloads the GeneNetwork BXD consensus genotypes, builds the painting BED
-# with one Python helper, fetches both QTL scans already computed from
+# with one Python helper, fetches the QTL scan already computed from
 # GeneNetwork's mapping API, downloads JBrowse, and writes a config.json with
-# mm10 (from jbrowse.org), both Manhattan tracks, the painting, and a default
+# mm10 (from jbrowse.org), the Manhattan track, the painting, and a default
 # session on chr4.
 #
-# Everything is pinned (fixed source URLs, fixed trait IDs: 11280 coat color,
-# 10672 brain weight), so re-running reproduces the same tracks.
+# Everything is pinned (fixed source URLs, fixed trait ID 11280), so re-running
+# reproduces the same tracks.
 #
 # Requires: curl, jq (reshaping GeneNetwork's scan), python3 (the painting's
 #           run-length encoding), bgzip/tabix (htslib), and node (JBrowse CLI,
@@ -59,7 +59,9 @@ tabix -f -p bed "$APP"/bxd_painting.bed.gz
 # accounts for the relatedness among BXD strains, and serves the whole per-marker
 # scan over its API. Recomputing one here with a plain regression would ignore
 # that relatedness and answer a different question, so this only reshapes.
-# 11280 = coat color (a Mendelian-scale peak on chr4); 10672 = brain weight.
+# 11280 = coat color, a Mendelian-scale peak on chr4 (LOD 48). Most BXD traits
+# are polygenic and scan flat by comparison, which is why this one carries the
+# figure: there has to be a peak worth sorting the painting underneath.
 GN='https://genenetwork.org/api/v_pre1/mapping?db=BXDPublish&method=gemma'
 scan() {  # <trait_id> <out_stem>
   [ -f "$2.json" ] || curl -fsSL -o "$2.json" "$GN&trait_id=$1"
@@ -74,9 +76,8 @@ scan() {  # <trait_id> <out_stem>
   echo "$2: $(jq -r '.[0] | max_by(.lod_score) | "peak \(.name) chr\(.chr):\(.Mb)Mb LOD \(.lod_score*100|round/100)"' "$2.json")"
 }
 scan 11280 bxd_gwas_coatcolor
-scan 10672 bxd_gwas_brainweight
 
-# ── config.json: mm10 from jbrowse.org, both scans + the painting local ───────
+# ── config.json: mm10 from jbrowse.org, the scan + the painting local ─────────
 cat > "$APP"/config.json <<'JSON'
 {
   "assemblies": [
@@ -125,24 +126,6 @@ cat > "$APP"/config.json <<'JSON'
       ]
     },
     {
-      "type": "GWASTrack",
-      "trackId": "bxd_gwas_brainweight_mm10",
-      "name": "BXD QTL: brain weight (GEMMA)",
-      "assemblyNames": ["mm10"],
-      "category": ["GeneNetwork / BXD"],
-      "adapter": {
-        "type": "GWASAdapter",
-        "uri": "bxd_gwas_brainweight.tsv.gz",
-        "scoreColumn": "lod"
-      },
-      "displays": [
-        {
-          "type": "LinearManhattanDisplay",
-          "displayId": "bxd_gwas_brainweight_mm10-LinearManhattanDisplay"
-        }
-      ]
-    },
-    {
       "type": "FeatureTrack",
       "trackId": "bxd_chromosome_painting_mm10",
       "name": "BXD chromosome painting (GeneNetwork, 198 strains)",
@@ -187,8 +170,7 @@ JSON
 
 echo
 echo "Built $APP/config.json with mm10, the 198-strain chromosome painting, and"
-echo "GeneNetwork's GEMMA scans for both traits. It opens on chr4 with the"
-echo "coat-color Manhattan over the painting; right-click the painting near the"
-echo "peak and pick \"Sort rows by color here\" to reveal the B/D split. Add the"
-echo "brain-weight track for the second trait, loaded the same way. Serve it:"
+echo "GeneNetwork's GEMMA scan for coat color. It opens on chr4 with the"
+echo "Manhattan over the painting; right-click the painting near the peak and"
+echo "pick \"Sort rows by color here\" to reveal the B/D split. Serve it:"
 echo "  npx --yes serve $(pwd)/$APP"

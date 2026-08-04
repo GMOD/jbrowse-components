@@ -115,33 +115,6 @@
           "displayId": "bxd_gwas_coatcolor_mm10-LinearManhattanDisplay"
         }
       ]
-    },
-    {
-      "type": "GWASTrack",
-      "trackId": "bxd_gwas_brainweight_mm10",
-      "name": "BXD QTL: brain weight (GEMMA)",
-      "assemblyNames": ["mm10"],
-      "category": ["GeneNetwork / BXD"],
-      "adapter": {
-        "type": "GWASAdapter",
-        "bedGzLocation": {
-          "uri": "https://jbrowse.org/demos/bxd/bxd_gwas_brainweight.tsv.gz",
-          "locationType": "UriLocation"
-        },
-        "index": {
-          "location": {
-            "uri": "https://jbrowse.org/demos/bxd/bxd_gwas_brainweight.tsv.gz.tbi",
-            "locationType": "UriLocation"
-          }
-        },
-        "scoreColumn": "lod"
-      },
-      "displays": [
-        {
-          "type": "LinearManhattanDisplay",
-          "displayId": "bxd_gwas_brainweight_mm10-LinearManhattanDisplay"
-        }
-      ]
     }
   ],
   "defaultSession": {
