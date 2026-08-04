@@ -37,7 +37,10 @@ import { useConsensusSettings } from './useConsensusSettings.ts'
 import type { FilterBy } from '../shared/types.ts'
 import type { ConsensusVcfEntry } from '@jbrowse/alignments-core'
 import type { Region } from '@jbrowse/core/util'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type {
+  IAnyStateTreeNode,
+  IStateTreeNode,
+} from '@jbrowse/mobx-state-tree'
 
 // Reads are far heavier than a plain reference fetch, so refuse a whole-
 // chromosome consensus outright rather than round-tripping megabases of
@@ -49,7 +52,7 @@ function download(content: string, filename: string, type: string) {
   saveAs(new Blob([content], { type }), filename)
 }
 
-export interface ConsensusDisplay extends IAnyStateTreeNode {
+export interface ConsensusDisplay extends IStateTreeNode {
   adapterConfig: Record<string, unknown>
   filterBy?: FilterBy
 }

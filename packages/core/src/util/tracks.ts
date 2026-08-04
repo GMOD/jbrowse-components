@@ -42,6 +42,7 @@ import type {
 import type {
   IAnyStateTreeNode,
   IAnyType,
+  IStateTreeNode,
   Instance,
   types,
 } from '@jbrowse/mobx-state-tree'
@@ -79,7 +80,7 @@ export function getConfAssemblyNames(conf: AnyConfigurationModel) {
  * rpcSessionId */
 
 export function getRpcSessionId(thisNode: IAnyStateTreeNode) {
-  interface NodeWithRpcSessionId extends IAnyStateTreeNode {
+  interface NodeWithRpcSessionId extends IStateTreeNode {
     rpcSessionId: string
   }
   let highestRpcSessionId: string | undefined

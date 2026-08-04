@@ -16,7 +16,7 @@ import type {
   RpcStatus,
   StopToken,
 } from '@jbrowse/core/util'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 export interface ComparativeFetchContext {
   adapterConfig: Record<string, unknown>
@@ -36,7 +36,7 @@ export interface ComparativeFetchContext {
   assemblyManager: AssemblyManager
 }
 
-interface ComparativeFetchHost extends IAnyStateTreeNode {
+interface ComparativeFetchHost extends IStateTreeNode {
   adapterConfig: Record<string, unknown>
   setError: (error?: unknown) => void
   setFetching: (fetching: boolean) => void

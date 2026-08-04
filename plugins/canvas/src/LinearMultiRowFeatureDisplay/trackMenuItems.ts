@@ -15,7 +15,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import type { LegendEntry } from './rendering/colorLegend.ts'
 import type { MultiRowSource } from './sourcesLogic.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const SetRowArrangementDialog = lazy(
   () => import('./components/SetRowArrangementDialog.tsx'),
@@ -49,7 +49,7 @@ function rowHeightPreset(rowHeight: number) {
         : undefined
 }
 
-interface MultiRowMenuSelf extends IAnyStateTreeNode {
+interface MultiRowMenuSelf extends IStateTreeNode {
   showTree: boolean
   showLegend: boolean
   colorLegend: LegendEntry[]

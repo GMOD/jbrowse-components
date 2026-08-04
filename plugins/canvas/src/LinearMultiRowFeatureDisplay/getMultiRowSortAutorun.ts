@@ -1,9 +1,9 @@
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-interface SortAutorunSelf extends IAnyStateTreeNode {
+interface SortAutorunSelf extends IStateTreeNode {
   sortRowsBy?: { refName: string; pos: number }
   loadedRegions: {
     values: () => Iterable<{ refName: string; start: number; end: number }>

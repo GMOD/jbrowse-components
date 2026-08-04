@@ -4,9 +4,9 @@ import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import type { RpcStatus, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-interface DiagonalizeProgressModel extends IAnyStateTreeNode {
+interface DiagonalizeProgressModel extends IStateTreeNode {
   setAwaitingAutoDiagonalize: (arg: boolean) => void
   setDiagonalizeStatus: (arg?: RpcStatus) => void
   setDiagonalizeStopToken: (arg?: StopToken) => void

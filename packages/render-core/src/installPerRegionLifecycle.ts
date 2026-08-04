@@ -2,10 +2,10 @@ import { addDisposer } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
 import type { RenderingBackendCallbacks } from './RenderLifecycleMixin.ts'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { ObservableMap } from 'mobx'
 
-export interface LifecycleHost extends IAnyStateTreeNode {
+export interface LifecycleHost extends IStateTreeNode {
   attachRenderingBackend: <B>(b: B, cbs: RenderingBackendCallbacks<B>) => void
   renderNow: () => void
   setRenderError: (error: unknown) => void

@@ -17,7 +17,7 @@ import { SHOW_LABELS_MODES } from './showLabelsMode.ts'
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { HeightModeMenuModel } from '@jbrowse/plugin-linear-genome-view'
 
 // Single source for the size-preset radio options and their labels, so a
@@ -60,7 +60,7 @@ interface ColorMenuSelf {
   setFeatureColor: (color: string) => void
 }
 
-interface FeatureHeightSelf extends IAnyStateTreeNode, HeightModeMenuModel {
+interface FeatureHeightSelf extends IStateTreeNode, HeightModeMenuModel {
   displayMode: DisplayMode
   setDisplayMode: (value: DisplayMode) => void
 }

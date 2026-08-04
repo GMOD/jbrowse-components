@@ -1,5 +1,5 @@
 import type PluginManager from '../PluginManager.ts'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { ComponentType } from 'react'
 
 /**
@@ -8,7 +8,7 @@ import type { ComponentType } from 'react'
  * adapter is selected and contributes config fragments through `mixinData`,
  * which the widget merges into the track config on submit.
  */
-export interface AddTrackComponentModel extends IAnyStateTreeNode {
+export interface AddTrackComponentModel extends IStateTreeNode {
   assembly: string | undefined
   setAssembly: (arg: string) => void
   trackAdapterType: string | undefined

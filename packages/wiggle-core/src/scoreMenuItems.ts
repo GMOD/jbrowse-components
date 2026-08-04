@@ -5,7 +5,7 @@ import { getSession } from '@jbrowse/core/util'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const SetMinMaxDialog = lazy(() => import('./SetMinMaxDialog.tsx'))
 
@@ -16,7 +16,7 @@ const SetMinMaxDialog = lazy(() => import('./SetMinMaxDialog.tsx'))
 // values (Number.MIN_VALUE/MAX_VALUE sentinels intact) the dialog expects;
 // minScoreBound/maxScoreBound are the resolved bounds (undefined = autoscale)
 // every implementer already derives (WiggleScoreConfigMixin + alignments).
-export interface ScoreScaleModel extends IAnyStateTreeNode {
+export interface ScoreScaleModel extends IStateTreeNode {
   scaleType: string
   autoscaleType: string
   minScore: number

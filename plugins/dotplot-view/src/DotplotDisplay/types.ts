@@ -1,6 +1,6 @@
 import type { DotplotGeometryData } from './dotplotRenderingBackendTypes.ts'
 import type { DotplotFeaturesAndPositionsResult } from './executeDotplotFeaturesAndPositions.ts'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 // What the display holds after a fetch: the RPC result minus the two
 // skipped-refName lists, which the fetch autorun consumes on arrival (to decide
@@ -14,7 +14,7 @@ export type DotplotRpcData = Omit<
   'skippedHRefNames' | 'skippedVRefNames'
 >
 
-export interface DotplotRenderModel extends IAnyStateTreeNode {
+export interface DotplotRenderModel extends IStateTreeNode {
   geometry: DotplotGeometryData | undefined
   error: unknown
   svgReady: boolean

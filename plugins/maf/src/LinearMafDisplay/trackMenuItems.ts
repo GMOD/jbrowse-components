@@ -18,7 +18,7 @@ import type { ConservationMode } from './conservationModes.ts'
 import type { RowIdentityModeWithOff } from './rowIdentityModes.ts'
 import type { MafSource } from './stateModel.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const SetRowHeightDialog = lazy(
   () => import('./components/SetRowHeightDialog/SetRowHeightDialog.tsx'),
@@ -48,7 +48,7 @@ const HEIGHT_PRESETS = [
   { label: 'Compact', rowHeight: 8, rowProportion: 0.9 },
 ]
 
-interface MafMenuSelf extends IAnyStateTreeNode {
+interface MafMenuSelf extends IStateTreeNode {
   showAllLetters: boolean
   mismatchRendering: boolean
   showAsUpperCase: boolean

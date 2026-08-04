@@ -3,9 +3,9 @@ import { autorun } from 'mobx'
 
 import { getSession } from './index.ts'
 
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-interface InitAutorunHost<T> extends IAnyStateTreeNode {
+interface InitAutorunHost<T> extends IStateTreeNode {
   init?: T
   setInit: (init?: T) => void
   setError: (error: unknown) => void
