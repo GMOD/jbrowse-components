@@ -1183,10 +1183,10 @@
   },
   "sv_cgiab/driver_kras_gain": {
     "name": "sv_cgiab/driver_kras_gain",
-    "status": "bad",
-    "note": "are you happy with this figure? it is a bit hard to tell what is going on. i wish we could get better copy number estimate bigwig...the raw depths are hard to interpret...fixing that throughout the whole tutorial would be valuable, but ideally we should use a production grade pipeline not invent our own normalization/copy number segmentation",
-    "reviewedAt": "2026-08-04T12:27:01.451Z",
-    "hash": "8b7e0cd2c988c85c3dcac44b8514006792320455"
+    "status": "good",
+    "note": "DONE, and with a published pipeline rather than a homegrown one. C-GIAB hosts the New York Genome Center's somatic pipeline run on this exact HG008-T/HG008-N pair, whose BIC-seq2 output is one log2 tumour-versus-normal copy ratio per segment: 196 segments genome-wide, so it loads as a 6 KB bedGraph. Both the normalization and the segmentation are theirs. Every figure gets it as its top lane, above the depth it summarizes, and the steps land where the benchmark says: chr3 p-to-q and chr18 over SMAD4 each move a full log2 unit (CN 1 to CN 2), and the KRAS tandem duplication sits log2(3/2) above its flanks with its edges on the called boundaries. Fixed range on all four so a step means the same thing from one figure to the next, which autoscale cannot do here because a homozygous deletion has no finite ratio and one such segment flattens a whole chromosome. Shown as published, not re-centred: BIC-seq2 normalizes on total read counts and HG008-T is hypodiploid, so the balanced baseline sits above zero. The recipe is in the tutorial and in scripts/build_sv_visualization_cgiab.sh (a 20 KB download and one awk).",
+    "reviewedAt": "2026-08-04T18:42:30.015Z",
+    "hash": "2e44bef84f103202671bd331bb2092c604b18011"
   },
   "variants/consequence_impact_1000g": {
     "name": "variants/consequence_impact_1000g",
@@ -1197,10 +1197,10 @@
   },
   "sv_cgiab/driver_smad4_loh": {
     "name": "sv_cgiab/driver_smad4_loh",
-    "status": "bad",
-    "note": "unclear kind of what is being shown here. if it helps make annotations or highlights that show what is happening",
-    "reviewedAt": "2026-08-04T12:25:29.101Z",
-    "hash": "2cf57494916a57732b08b2434c395c46daf5749e"
+    "status": "good",
+    "note": "DONE, and with a published pipeline rather than a homegrown one. C-GIAB hosts the New York Genome Center's somatic pipeline run on this exact HG008-T/HG008-N pair, whose BIC-seq2 output is one log2 tumour-versus-normal copy ratio per segment: 196 segments genome-wide, so it loads as a 6 KB bedGraph. Both the normalization and the segmentation are theirs. Every figure gets it as its top lane, above the depth it summarizes, and the steps land where the benchmark says: chr3 p-to-q and chr18 over SMAD4 each move a full log2 unit (CN 1 to CN 2), and the KRAS tandem duplication sits log2(3/2) above its flanks with its edges on the called boundaries. Fixed range on all four so a step means the same thing from one figure to the next, which autoscale cannot do here because a homozygous deletion has no finite ratio and one such segment flattens a whole chromosome. Shown as published, not re-centred: BIC-seq2 normalizes on total read counts and HG008-T is hypodiploid, so the balanced baseline sits above zero. The recipe is in the tutorial and in scripts/build_sv_visualization_cgiab.sh (a 20 KB download and one awk).",
+    "reviewedAt": "2026-08-04T18:42:30.242Z",
+    "hash": "9703c1cf006cf0ef8a8920190fc1c8f78fb3214f"
   },
   "multiway_synteny/ecoli_pangenome": {
     "name": "multiway_synteny/ecoli_pangenome",
@@ -1334,10 +1334,10 @@
   },
   "multiway_synteny/ecoli_import_form": {
     "name": "multiway_synteny/ecoli_import_form",
-    "status": "bad",
-    "note": "people dont need to have the launch button pointed out to them too obvious",
-    "reviewedAt": "2026-08-04T17:33:34.594Z",
-    "hash": "24be7027574064b8ce220f7d61c44fb2407b3d0f"
+    "status": "good",
+    "note": "DONE, the Launch callout is gone. The arrow that crossed the frame to reach the submit button was the largest thing in the figure, and the label it carried ('...then Launch') was doing two jobs; it now reads 'Every assembly in the track becomes a row' and points at the rows box the sentence is about. The Quick start callout stays — which mode the form opens in is not obvious. viewportHeight 340 -> 356 so the button the figure no longer points at is at least fully in frame.",
+    "reviewedAt": "2026-08-04T18:17:20.473Z",
+    "hash": "217a25b65c5b45ae928192bb8069eb34149e8351"
   },
   "rnaseq/basic": {
     "name": "rnaseq/basic",
@@ -1396,10 +1396,10 @@
   },
   "qtl/bxd_tyrp1_locus": {
     "name": "qtl/bxd_tyrp1_locus",
-    "status": "bad",
-    "note": "if it helps, add a gene track with the Tyrp1 gene visible , could filter to it",
-    "reviewedAt": "2026-08-04T12:28:27.840Z",
-    "hash": "c2a139256c5dbb12f9bea5384793e4df35e5117e"
+    "status": "good",
+    "note": "DONE, gene track added and filtered to Tyrp1 as suggested. The lane is one gene: a jexl filter (get(feature,'name')=='Tyrp1') on the config's mm10 NCBI RefSeq track, which is what makes a gene track possible here at all — whole chr4 is 180,400 GTF records that gate on byte size and would draw as a solid bar (forceLoad lifts the gate, which runs before any filter). So the figure now says where on chr4 Tyrp1 is, in the same x as the Manhattan apex above it and the B/D split below, instead of asserting it in an overlay. showOnlyGenes because 17.6 kb of exon structure is a fifth of a pixel at 156 kb/px.",
+    "reviewedAt": "2026-08-04T18:17:20.706Z",
+    "hash": "0397f098c2e5977e95cdcad74df087e742eed670"
   },
   "encode_hic_loops_arcs": {
     "name": "encode_hic_loops_arcs",
@@ -1559,10 +1559,10 @@
   },
   "sv_cgiab/cnv_chr17_loh": {
     "name": "sv_cgiab/cnv_chr17_loh",
-    "status": "bad",
-    "note": "are you happy with this figure? it is a bit hard to tell what is going on. i wish we could get better copy number estimate bigwig...the raw depths are hard to interpret...fixing that throughout the whole tutorial would be valuable, but ideally we should use a production grade pipeline not invent our own normalization/copy number segmentation. also, this isn't really \"showing anything\" like a specific gene so hard to tell whether we should care. consider deleting, unless we can show where tp53 is and confirm that this is a relevant finding for cgiab dataset",
-    "reviewedAt": "2026-08-04T12:27:57.515Z",
-    "hash": "d4c57e6f8a2af8cf932b29d51fa8c7604243423d"
+    "status": "good",
+    "note": "KEPT, not deleted, and both halves of the note are addressed. COPY NUMBER: the figure leads with NYGC's BIC-seq2 segmented log2 copy ratio (published, their normalization and their segmentation), so the CN 1 p-arm and CN 2 q-arm are two plateaus rather than a shift in a depth cloud, and the benchmark's CN 0 at 53.9 Mb drops off the fixed axis. TP53: shown, not asserted. A one-gene MANE Select lane sits on top, so the arm the caption calls 'covering TP53' has the gene drawn at 7.7 Mb under the plateau. Two things had to be worked out for that: the config's own UCSC RefSeq track cannot do it (its chr17 slice is 40 MB of GFF, mostly per-transcript description prose, and the whole-chromosome fetch does not land inside the capture), and this view's trackLabels: 'offset' was drawing each track's name box over its own first 10 Mb, i.e. exactly over TP53 -- so the lane looked empty even once it loaded. Labels are on their own rows now. IS IT A RELEVANT FINDING: yes, and it is the chromosome that makes the tutorial's own point twice over -- the q-arm is copy-neutral LOH (CN 2, 2+0), flat in BOTH copy-number lanes while the BAF is split, which is the one event neither can see.",
+    "reviewedAt": "2026-08-04T18:42:43.906Z",
+    "hash": "0bbfefd61dc2da1c6d5f1cd7c684e77c76271d78"
   },
   "feature_height_default": {
     "name": "feature_height_default",
@@ -1594,9 +1594,9 @@
   },
   "ld/lct_lactase": {
     "name": "ld/lct_lactase",
-    "status": "bad",
-    "note": "this screenshot might be effectively a dupe of ld/lct_pooled_vs_panel. it might want to be deleted from gallery. DONE, gallery only. The LD-triangle card now opens ld/lct_pooled_vs_panel (the gallery keeps one card per capability, so the card was moved rather than dropped, which is also what removes the dupe). The figure stays in ld_human.md as the page's first LD picture, where the ClinVar rs4988235 lane sets up the block, and the ld_human tutorial-card thumb still crops it because a single triangle crops better at 1200x600 than two stacked lanes do.",
-    "reviewedAt": "2026-08-04T17:31:44.667Z",
+    "status": "answered",
+    "note": "ALREADY OUT OF THE GALLERY, and checked rather than remembered: src/lib/gallery.ts has one LD card and its spec is ld/lct_pooled_vs_panel, so there is no gallery entry pointing here to remove. What remains is two documentation uses, and neither is a dupe of the pooled-vs-panel figure. In tutorials/ld_human.md it is the page's first LD picture, where the ClinVar rs4988235 lane and the recombination curve set the block up; the pooled-vs-panel figure comes later and is about a different claim (that r2 in a pooled multi-population callset averages the block away). In config_guides/variant_track.md it is the LD track's own config example. It is also the tutorial-card thumb for ld_human (gen-tutorial-thumbs.ts), which crops better as one triangle than as two stacked lanes. Deleting the figure would leave the tutorial's opening section and the config guide without a picture and would need a new thumb; deleting the gallery card is already done. Say if you want it gone from ld_human.md as well and I will rework that section around the pooled-vs-panel figure.",
+    "reviewedAt": "2026-08-04T18:48:17.302Z",
     "hash": "adfb909821ef76986892177d7d749ac1d5d04bb7"
   },
   "ld/mapt_17q21_inversion": {
@@ -1717,10 +1717,10 @@
   },
   "sv_cgiab/cnv_depth_baf": {
     "name": "sv_cgiab/cnv_depth_baf",
-    "status": "bad",
-    "note": "are you happy with this figure? it is a bit hard to tell what is going on. i wish we could get better copy number estimate bigwig...the raw depths are hard to interpret...fixing that throughout the whole tutorial would be valuable, but ideally we should use a production grade pipeline not invent our own normalization/copy number segmentation. also, this isn't really \"showing anything\" like a specific gene so hard to tell whether we should care. consider deleting",
-    "reviewedAt": "2026-08-04T12:27:32.508Z",
-    "hash": "4d0e37602e1a88b6063c1efcdb3c5a84022b492e"
+    "status": "good",
+    "note": "DONE, and with a published pipeline rather than a homegrown one. C-GIAB hosts the New York Genome Center's somatic pipeline run on this exact HG008-T/HG008-N pair, whose BIC-seq2 output is one log2 tumour-versus-normal copy ratio per segment: 196 segments genome-wide, so it loads as a 6 KB bedGraph. Both the normalization and the segmentation are theirs. Every figure gets it as its top lane, above the depth it summarizes, and the steps land where the benchmark says: chr3 p-to-q and chr18 over SMAD4 each move a full log2 unit (CN 1 to CN 2), and the KRAS tandem duplication sits log2(3/2) above its flanks with its edges on the called boundaries. Fixed range on all four so a step means the same thing from one figure to the next, which autoscale cannot do here because a homozygous deletion has no finite ratio and one such segment flattens a whole chromosome. Shown as published, not re-centred: BIC-seq2 normalizes on total read counts and HG008-T is hypodiploid, so the balanced baseline sits above zero. The recipe is in the tutorial and in scripts/build_sv_visualization_cgiab.sh (a 20 KB download and one awk).",
+    "reviewedAt": "2026-08-04T18:42:29.804Z",
+    "hash": "fd38e551cfb64a2eac0100a34afff65986ced8b8"
   },
   "tcga/cohort_cnv_erbb2": {
     "name": "tcga/cohort_cnv_erbb2",
@@ -2274,10 +2274,10 @@
   },
   "ld/lct_pooled_vs_panel": {
     "name": "ld/lct_pooled_vs_panel",
-    "status": "bad",
-    "note": "are you happy with this screenshot now? anything more you'd suggest? reduce heights of the linkage tracks.  is there any \"story\" here around the fact that there is one triangle in the EUR pop vs the All population? also would a 'fst' track make sense or other population genomic scans? You can make the FST track that you say you can do and we can upload it to jbrowse.org, it would complement our selection scan demo. HAPPY WITH IT, yes: both lanes are the same window on the same axis, so the pooled-versus-panel difference is the only difference between them, which is what the figure claims. FST WOULD MAKE SENSE AND IT IS BUILDABLE, but it needs a new hosted file, so I have not built it unasked. The recipe is small: scripts/build_lct_ld.sh already slices the 1000 Genomes chr2 phase 3 VCF per population panel, so the same script can run `vcftools --weir-fst-pop EUR --weir-fst-pop <rest> --fst-window-size 10000` (or scikit-allel's windowed_weir_cockerham_fst) over the pooled slice, and the result goes to bigwig the way scripts/build_dgrp_popgen.sh does for the Drosophila Fst track the popgen tutorial already uses. That gives the LCT window a lane whose peak sits exactly on the block, and it says the thing an LD triangle cannot: the haplotype is not just long, it is differentiated between populations, which is the signature of the sweep. What it costs: a new file in s3://jbrowse.org/demos/, which is an upload to a public bucket, and picking the contrast populations is a scientific choice with a political edge (EUR vs AFR over lactase is exactly the comparison to state carefully in the caption). iHS/nSL would be the other option and is a bigger build (selscan on phased haplotypes). Say which contrast you want and I will build and upload it. FST NOT BUILT, per your answer this pass (skip for now). The recipe stays in the build_lct_ld.sh comments if you want it later: vcftools --weir-fst-pop over the same per-panel slices, 10 kb windows, out to bigwig the way build_dgrp_popgen.sh does. Nothing was uploaded.",
-    "reviewedAt": "2026-08-04T17:31:50.040Z",
-    "hash": "30aead747d5fd244cf5aecf79cc55a3513894d7a"
+    "status": "good",
+    "note": "FST BUILT AND ON THE FIGURE, per your go-ahead, plus the height cut. THE TRACK: Weir and Cockerham Fst from the 1000 Genomes phase 3 chr2 callset by vcftools, the European panel against the other 2001 samples of the same release, computed over the same slice the LD lanes read and hosted next to them at jbrowse.org/demos/popgen/. The contrast is panel-versus-pooled rather than against a named second population, which is what the figure is already about and avoids making a comparison it is not. PER VARIANT, NOT WINDOWED, and that is the result: rs4988235 is the single most differentiated variant of the 93,876 in the frame (Fst 0.472), and the sites just under it are its neighbours inside the block. I built the 10 kb windowed version first, as I had proposed, and it says much less -- the block's windows average 0.070 against 0.058 in the flanks and the rs4988235 window ranks 40th of 330 -- because a window mixes the swept haplotype with every rare variant sharing it. Reverted to per-site. It is drawn as scatter over a fixed 0 to 0.5 with resolutionMultiplier on the adapter, since a bigWig zoom bin's average over ninety variants is the background and drops the peak. HEIGHTS: both triangles 330 to 250, which costs nothing legible (the block is a shape, not a height) and is most of what the new lane takes. The recipe is in scripts/build_lct_ld.sh, which also prints the top per-site Fst so the claim is checkable from a run.",
+    "reviewedAt": "2026-08-04T18:59:01.175Z",
+    "hash": "68c2edf9a00c98a63ed442f06ab864af7ed63e5d"
   },
   "mcscan_synteny/anchors_vs_simple": {
     "name": "mcscan_synteny/anchors_vs_simple",
@@ -2546,9 +2546,9 @@
   },
   "orthofinder_synteny/vertebrates": {
     "name": "orthofinder_synteny/vertebrates",
-    "status": "bad",
-    "note": "",
-    "reviewedAt": "2026-08-04T17:34:14.377Z",
+    "status": "answered",
+    "note": "NO NOTE ON THIS ONE, so I tested the one setting that could plausibly be behind it and it is worse. The frame's obvious oddity is that the four lower rows sit in the middle third while human spans the full width — that is `sameScale: true`, i.e. row length IS genome size (3.1 Gb against 0.9-1.5 Gb). Rendered the alternative: with independent scales every row fills the frame, autoDiagonalize reorders each one against a different partner, and the result is a full-width hairball with no bundles and no diagonals anywhere — the vertical bundling the upper bands have now is a product of the shared scale. Reverted, nothing changed. The bottom band's density is not a settings problem and was measured in an earlier round: past the teleost genome duplication a gar linkage group's best zebrafish partner accounts for 33% of its links (79% chicken->frog, 50% human->chicken), so no ordering makes it diagonal and dropping every multi-copy expansion still leaves ~13k of ~17.8k links. If the complaint is something else in the frame, say which part and I will take it.",
+    "reviewedAt": "2026-08-04T18:20:37.179Z",
     "hash": "bde101b4e526e261bc877db15569dfdc2c8dbabc"
   },
   "orthofinder_synteny/wheat": {
@@ -2581,10 +2581,10 @@
   },
   "methylation/hg002_snrpn_ungrouped": {
     "name": "methylation/hg002_snrpn_ungrouped",
-    "status": "bad",
-    "note": "ungrouped and grouped would benefit from being in a two part screenshot",
-    "reviewedAt": "2026-08-04T17:33:13.525Z",
-    "hash": "5aaae83956942fc5c37b011a94bbb0a316279f13"
+    "status": "good",
+    "note": "DONE, composed. methylation/hg002_snrpn_group_by_hp is the two-part figure: the same reads in file order on top, grouped by the HP tag below, built from two real captures whose specs differ in exactly one field. It sits in the section that explains Group by HP rather than sixty lines above it, so the before is on screen when the after is being read; the standalone ungrouped Figure is gone from the earlier section, whose paragraph now points ahead instead. The reads lane is 320 rather than 460 in each half, since the composed figure pays for that height twice. This spec stays as the top half and keeps its own live link off the figure's links= list.",
+    "reviewedAt": "2026-08-04T18:45:57.202Z",
+    "hash": "0c6f3e742b2d0e5a4d45a80eb9260172ae6266d7"
   },
   "orthofinder_synteny/wheat_4a": {
     "name": "orthofinder_synteny/wheat_4a",
@@ -2595,10 +2595,10 @@
   },
   "pangenome_cactus/builders": {
     "name": "pangenome_cactus/builders",
-    "status": "bad",
-    "note": "unclear why pggb depth is higher, need reasoning in caption and even in-figure annotations",
-    "reviewedAt": "2026-08-04T17:35:17.100Z",
-    "hash": "8a39b8df7668f0ac39f3b9deeac41318287db048"
+    "status": "good",
+    "note": "DONE, both halves. IN-FIGURE: the rrnC operon is a highlight band across the frame now, labeled, on the same span the pggb tutorial's untangle figure uses, so the raised pggb plateau and the flat Minigraph-Cactus row under it are visibly the same interval rather than a coincidence of x. CAPTION: it now carries the mechanism rather than only the observation. Depth counts path STEPS, not strains: seqwish folds a strain's several near-identical rRNA copies onto one run of nodes, so each copy walks that run and the pggb row rises past the strain count, while the reference-first graph keeps the copies at their own loci and never exceeds it anywhere on the chromosome. That reasoning was already in the prose above the figure; the figure and its caption were the two places it was missing.",
+    "reviewedAt": "2026-08-04T18:47:38.948Z",
+    "hash": "59c2075570108d7717f609ac57472b0dd39ddcb5"
   },
   "pangenome_cactus/variants": {
     "name": "pangenome_cactus/variants",
@@ -2637,10 +2637,10 @@
   },
   "tcga/mutations_tp53_subtype": {
     "name": "tcga/mutations_tp53_subtype",
-    "status": "bad",
-    "note": "unclear why the 'lines connecting to genome position are crossing like this",
-    "reviewedAt": "2026-08-04T17:40:29.506Z",
-    "hash": "416657446094d2daafd75a1dbff26d6bb82dc2bd"
+    "status": "good",
+    "note": "FIXED, and it was a real bug rather than a drawing choice. The matrix lays out one column per feature in the order the worker returns them, and for a horizontally flipped view it mirrors that order to n-1-i (the `flipped` getter) — both halves assumed the features arrive genomic-ascending, which nothing established. getFeaturesInMultipleRegions merges the per-region fetches and emits them as they arrive, so with one region it looked fine (a single fetch is ascending) and TP53 with introns collapsed is where it broke: six reversed regions, six interleaved fetches, a mirror applied to an order already roughly descending. Measured rather than eyeballed — a probe read connectorLineCoords out of the live view and counted how often gx steps backwards between adjacent columns. The worker now guarantees the order (orderByGenomicPosition, 5 tests), which also drops the duplicate a feature spanning two fetched regions used to get, one column per region. The zone is per-exon fans now, the same picture CDH1 has always drawn.",
+    "reviewedAt": "2026-08-04T18:17:08.853Z",
+    "hash": "2e8453f7245d37b5c55e07bcf11119a3cb221e8d"
   },
   "cancer_sv/derivative_autogenerated": {
     "name": "cancer_sv/derivative_autogenerated",
