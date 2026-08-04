@@ -135,12 +135,11 @@ export async function readTabixLinesRedispatched(
 }
 
 /**
- * Minimal structural view of the `@gmod/tabix` calls a header read needs, kept
+ * Minimal structural view of the `@gmod/tabix` call a header read needs, kept
  * structural for the same reason as {@link TabixLineSource}.
  */
 interface TabixHeaderSource {
-  getHeader(): Promise<string>
-  getSkippedLines(): Promise<string[]>
+  getHeaderLines(): Promise<string[]>
 }
 
 /**
@@ -166,15 +165,14 @@ interface TabixHeaderSource {
  * and a bedGraph loses the names of its value columns. Nothing errors, because
  * the assumed layout parses.
  *
- * getSkippedLines is the other half, added in @gmod/tabix 3.5.3. It sizes its
- * read from the index rather than assuming the header fits one block, which is
- * what this did while the two halves lived in different packages.
+ * That policy now lives in @gmod/tabix 3.5.4 as getHeaderLines, next to the
+ * index metadata that decides it, so this is a delegate. Deciding it there also
+ * costs one read of the file's leading blocks rather than two: asking for the
+ * commented block and then the counted rows used to fetch and decompress the
+ * same bytes twice, which every bare-header file did on every call.
  */
-export async function readTabixHeaderLines(
+export function readTabixHeaderLines(
   file: TabixHeaderSource,
 ): Promise<string[]> {
-  const commented = await file.getHeader()
-  return commented
-    ? commented.split(/\r?\n/).filter(Boolean)
-    : (await file.getSkippedLines()).filter(Boolean)
+  return file.getHeaderLines()
 }

@@ -1,9 +1,5 @@
 import { createStopToken, stopStopToken } from './stopToken.ts'
-import {
-  readTabixHeaderLines,
-  readTabixLines,
-  readTabixLinesRedispatched,
-} from './tabix.ts'
+import { readTabixLines, readTabixLinesRedispatched } from './tabix.ts'
 
 // A stand-in for @gmod/tabix's TabixIndexedFile that records the opts it was
 // handed and emits two lines. The point of these tests is the cancellation
@@ -213,30 +209,8 @@ describe('readTabixLinesRedispatched', () => {
   })
 })
 
-describe('readTabixHeaderLines', () => {
-  it('prefers a commented header', async () => {
-    const lines = await readTabixHeaderLines({
-      getHeader: () => Promise.resolve('#chrom\tstart\tend\n'),
-      getSkippedLines: () => Promise.reject(new Error('should not be asked')),
-    })
-    expect(lines).toEqual(['#chrom\tstart\tend'])
-  })
-
-  // the case getHeader cannot answer: a plain header row kept via `tabix -S 1`,
-  // which the index counted but the meta-character scan never sees
-  it('falls back to the lines the index counted', async () => {
-    const lines = await readTabixHeaderLines({
-      getHeader: () => Promise.resolve(''),
-      getSkippedLines: () => Promise.resolve(['chrom\tstart\tend']),
-    })
-    expect(lines).toEqual(['chrom\tstart\tend'])
-  })
-
-  it('reads nothing when the file has neither', async () => {
-    const lines = await readTabixHeaderLines({
-      getHeader: () => Promise.resolve(''),
-      getSkippedLines: () => Promise.resolve([]),
-    })
-    expect(lines).toEqual([])
-  })
-})
+// readTabixHeaderLines is a delegate to @gmod/tabix's getHeaderLines as of
+// 3.5.4, so the commented-header / counted-rows / neither cases are tested
+// there, against real files rather than a stub. What reaches this repo is
+// covered end-to-end by the adapters that read a header: BedTabixAdapter's
+// commented-header and 1-based skip-line-header tests, and PlinkLDTabixAdapter.
