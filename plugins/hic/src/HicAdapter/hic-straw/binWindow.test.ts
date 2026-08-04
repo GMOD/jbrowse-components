@@ -1,5 +1,4 @@
 import { binWindow } from './binWindow.ts'
-import ContactRecord from './contactRecord.ts'
 import HicFile from './hicFile.ts'
 import MatrixZoomData from './matrixZoomData.ts'
 
@@ -25,10 +24,12 @@ test('an aligned region is unchanged', () => {
 // Stub everything below the record filter: one block holding bins 0..9 on the
 // diagonal, so what comes back is purely a function of the bin window.
 function fileWithDiagonalBins(n: number) {
-  const records = Array.from(
-    { length: n },
-    (_, i) => new ContactRecord(i, i, 1),
-  )
+  const diagonal = Int32Array.from({ length: n }, (_, i) => i)
+  const records = {
+    bin1: diagonal,
+    bin2: diagonal,
+    counts: new Float32Array(n).fill(1),
+  }
   const file = new HicFile({
     file: { read: () => Promise.resolve(new ArrayBuffer(0)) },
   })
@@ -48,7 +49,7 @@ async function binsIn(region: HicRegion, binsize: number) {
     'BP',
     binsize,
   )
-  return records.map(r => r.bin1)
+  return [...records.bin1]
 }
 
 test('the record filter keeps every bin overlapping a non-aligned region', async () => {

@@ -1,7 +1,9 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 import { executeRenderHicData } from './executeRenderHicData.ts'
+import { toContacts } from './testContacts.ts'
 
+import type { TestContact } from './testContacts.ts'
 import type { HicDataResult } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util'
@@ -10,30 +12,18 @@ jest.mock('@jbrowse/core/data_adapters/dataAdapterCache', () => ({
   getAdapter: jest.fn(),
 }))
 
-interface Rec {
-  bin1: number
-  bin2: number
-  counts: number
-  region1Idx: number
-  region2Idx: number
-}
-
 const ROT_45 = Math.SQRT1_2
 
 async function run(
   region: Region,
-  records: Rec[],
+  records: TestContact[],
   bpPerPx: number,
   res: number,
 ) {
   jest.mocked(getAdapter).mockResolvedValue({
     dataAdapter: {
       getMultiRegionContactRecords: () =>
-        Promise.resolve({
-          records,
-          resolution: res,
-          appliedNormalization: 'KR',
-        }),
+        Promise.resolve(toContacts(records, res)),
     },
   } as unknown as Awaited<ReturnType<typeof getAdapter>>)
   const out = await executeRenderHicData({
@@ -71,7 +61,7 @@ describe('hic matrix aligns to the ruler on a non-res-aligned block start', () =
       const res = 100
       const bpPerPx = 1
       const bins = [0, 3, 9]
-      const records: Rec[] = bins.map(b => ({
+      const records: TestContact[] = bins.map(b => ({
         bin1: b,
         bin2: b,
         counts: 1,

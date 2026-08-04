@@ -11,11 +11,11 @@ import { inflate } from 'pako-esm2'
 import { binWindow } from './binWindow.ts'
 import BinaryParser from './binary.ts'
 import BufferedFile from './bufferedFile.ts'
-import ContactRecord from './contactRecord.ts'
 import LRU from './lru.ts'
 import Matrix from './matrix.ts'
 import NormalizationVector from './normalizationVector.ts'
 
+import type { ContactRecords } from './contactRecords.ts'
 import type MatrixZoomData from './matrixZoomData.ts'
 import type {
   BlockIndexEntry,
@@ -55,7 +55,23 @@ export interface HicConfig {
 // cached block for the lifetime of the LRU.
 interface Block {
   blockNumber: number
-  records: ContactRecord[]
+  records: ContactRecords
+}
+
+/**
+ * Copy a partially-filled decode buffer down to its true length, or hand it
+ * back untouched when the filter dropped nothing. A `subarray` would be free
+ * but keeps the whole oversized buffer reachable, and these land in a cache
+ * that outlives the fetch.
+ */
+function truncateRecords(records: ContactRecords, n: number): ContactRecords {
+  return n === records.bin1.length
+    ? records
+    : {
+        bin1: records.bin1.slice(0, n),
+        bin2: records.bin2.slice(0, n),
+        counts: records.counts.slice(0, n),
+      }
 }
 
 // Keyed by `${zd.getKey()}_${blockNumber}`, which already carries the binsize,
@@ -292,33 +308,67 @@ export default class HicFile {
     )
 
     const blocks = await this.getBlocks(r1, r2, binsize)
-    const contactRecords: ContactRecord[] = []
+
+    // Sum of the blocks' record counts bounds the survivors, so the output is
+    // allocated once and filled by a write cursor. Blocks overlap the window
+    // rather than nest in it, so the true count isn't known without either this
+    // upper bound or a counting pre-pass over the same data.
+    let capacity = 0
+    for (const block of blocks) {
+      if (block) {
+        capacity += block.records.bin1.length
+      }
+    }
+    const outBin1 = new Int32Array(capacity)
+    const outBin2 = new Int32Array(capacity)
+    const outCounts = new Float32Array(capacity)
+    let n = 0
+
     for (const block of blocks) {
       // An undefined block is most likely a base-pair range outside the
       // chromosome
-      if (block) {
-        for (const rec of block.records) {
-          if (
-            rec.bin1 >= x1 &&
-            rec.bin1 < x2 &&
-            rec.bin2 >= y1 &&
-            rec.bin2 < y2
-          ) {
-            if (norm) {
-              const nvnv =
-                norm.v1[rec.bin1 - norm.offset1]! *
-                norm.v2[rec.bin2 - norm.offset2]!
-              if (nvnv !== 0 && !Number.isNaN(nvnv)) {
-                contactRecords.push(
-                  new ContactRecord(rec.bin1, rec.bin2, rec.counts / nvnv),
-                )
-              }
-            } else {
-              contactRecords.push(rec)
+      if (!block) {
+        continue
+      }
+      const { bin1, bin2, counts } = block.records
+      const len = bin1.length
+      // `norm` is loop-invariant, so it selects the loop rather than being
+      // retested per record — which also hoists the vector/offset reads
+      if (norm) {
+        const { v1, v2, offset1, offset2 } = norm
+        for (let i = 0; i < len; i++) {
+          const b1 = bin1[i]!
+          const b2 = bin2[i]!
+          if (b1 >= x1 && b1 < x2 && b2 >= y1 && b2 < y2) {
+            const nvnv = v1[b1 - offset1]! * v2[b2 - offset2]!
+            if (nvnv !== 0 && !Number.isNaN(nvnv)) {
+              outBin1[n] = b1
+              outBin2[n] = b2
+              outCounts[n] = counts[i]! / nvnv
+              n++
             }
           }
         }
+      } else {
+        for (let i = 0; i < len; i++) {
+          const b1 = bin1[i]!
+          const b2 = bin2[i]!
+          if (b1 >= x1 && b1 < x2 && b2 >= y1 && b2 < y2) {
+            outBin1[n] = b1
+            outBin2[n] = b2
+            outCounts[n] = counts[i]!
+            n++
+          }
+        }
       }
+    }
+
+    // Views, not copies: this result is consumed immediately by the adapter's
+    // concatenation, which copies into its own exactly-sized arrays.
+    const contactRecords: ContactRecords = {
+      bin1: outBin1.subarray(0, n),
+      bin2: outBin2.subarray(0, n),
+      counts: outCounts.subarray(0, n),
     }
 
     // What was actually applied, which is not always what was asked for:
@@ -441,69 +491,103 @@ export default class HicFile {
       const parser = new BinaryParser(
         new DataView(plain.buffer, plain.byteOffset, plain.byteLength),
       )
+      // Total records in the block, whatever encoding follows — so every branch
+      // below knows its exact (or, for the dense encoding, upper-bound) size
+      // before it starts reading and never has to grow an array.
       const nRecords = parser.getInt()
-      const records: ContactRecord[] = []
-
-      if (this.version < 7) {
-        for (let i = 0; i < nRecords; i++) {
-          const binX = parser.getInt()
-          const binY = parser.getInt()
-          const counts = parser.getFloat()
-          records.push(new ContactRecord(binX, binY, counts))
-        }
-      } else {
-        const binXOffset = parser.getInt()
-        const binYOffset = parser.getInt()
-
-        const useFloatContact = parser.getByte() === 1
-        const useIntXPos = this.version < 9 ? false : parser.getByte() === 1
-        const useIntYPos = this.version < 9 ? false : parser.getByte() === 1
-        const type = parser.getByte()
-
-        if (type === 1) {
-          // List-of-rows representation
-          const rowCount = useIntYPos ? parser.getInt() : parser.getShort()
-          for (let i = 0; i < rowCount; i++) {
-            const dy = useIntYPos ? parser.getInt() : parser.getShort()
-            const binY = binYOffset + dy
-            const colCount = useIntXPos ? parser.getInt() : parser.getShort()
-            for (let j = 0; j < colCount; j++) {
-              const dx = useIntXPos ? parser.getInt() : parser.getShort()
-              const binX = binXOffset + dx
-              const counts = useFloatContact
-                ? parser.getFloat()
-                : parser.getShort()
-              records.push(new ContactRecord(binX, binY, counts))
-            }
-          }
-        } else if (type === 2) {
-          const nPts = parser.getInt()
-          const w = parser.getShort()
-          for (let i = 0; i < nPts; i++) {
-            const row = Math.floor(i / w)
-            const col = i - row * w
-            const bin1 = binXOffset + col
-            const bin2 = binYOffset + row
-            if (useFloatContact) {
-              const counts = parser.getFloat()
-              if (!Number.isNaN(counts)) {
-                records.push(new ContactRecord(bin1, bin2, counts))
-              }
-            } else {
-              const counts = parser.getShort()
-              if (counts !== Short_MIN_VALUE) {
-                records.push(new ContactRecord(bin1, bin2, counts))
-              }
-            }
-          }
-        } else {
-          throw new Error(`Unknown block type: ${type}`)
-        }
-      }
-
-      block = { blockNumber, records }
+      block = { blockNumber, records: this.parseBlockRecords(parser, nRecords) }
     }
     return block
+  }
+
+  /**
+   * Decode one block's records straight into typed arrays.
+   *
+   * Every encoding here knows its length up front, so each array is allocated
+   * once and filled by a write cursor. Where a filter can drop records (the
+   * dense encoding's empty cells) the arrays are sized to the upper bound and
+   * copied down to the true length at the end — blocks are cached for the life
+   * of the session, so it is worth one memcpy not to pin an oversized buffer.
+   */
+  private parseBlockRecords(
+    parser: BinaryParser,
+    nRecords: number,
+  ): ContactRecords {
+    if (this.version < 7) {
+      const bin1 = new Int32Array(nRecords)
+      const bin2 = new Int32Array(nRecords)
+      const counts = new Float32Array(nRecords)
+      for (let i = 0; i < nRecords; i++) {
+        bin1[i] = parser.getInt()
+        bin2[i] = parser.getInt()
+        counts[i] = parser.getFloat()
+      }
+      return { bin1, bin2, counts }
+    }
+
+    const binXOffset = parser.getInt()
+    const binYOffset = parser.getInt()
+
+    const useFloatContact = parser.getByte() === 1
+    const useIntXPos = this.version < 9 ? false : parser.getByte() === 1
+    const useIntYPos = this.version < 9 ? false : parser.getByte() === 1
+    const type = parser.getByte()
+
+    if (type === 1) {
+      // List-of-rows representation. The rows partition the block's records, so
+      // `nRecords` sizes the arrays exactly; the overflow check is a
+      // corrupt-file guard, not a growth path.
+      const bin1 = new Int32Array(nRecords)
+      const bin2 = new Int32Array(nRecords)
+      const counts = new Float32Array(nRecords)
+      let n = 0
+      const rowCount = useIntYPos ? parser.getInt() : parser.getShort()
+      for (let i = 0; i < rowCount; i++) {
+        const dy = useIntYPos ? parser.getInt() : parser.getShort()
+        const binY = binYOffset + dy
+        const colCount = useIntXPos ? parser.getInt() : parser.getShort()
+        if (n + colCount > nRecords) {
+          throw new Error(
+            `hic block declares ${nRecords} records but its rows hold more`,
+          )
+        }
+        for (let j = 0; j < colCount; j++) {
+          bin1[n] =
+            binXOffset + (useIntXPos ? parser.getInt() : parser.getShort())
+          bin2[n] = binY
+          counts[n] = useFloatContact ? parser.getFloat() : parser.getShort()
+          n++
+        }
+      }
+      return truncateRecords({ bin1, bin2, counts }, n)
+    }
+
+    if (type === 2) {
+      // Dense representation: `nPts` counts every cell of the w-wide rectangle,
+      // empty ones included, so it is an upper bound on the surviving records.
+      const nPts = parser.getInt()
+      const w = parser.getShort()
+      const bin1 = new Int32Array(nPts)
+      const bin2 = new Int32Array(nPts)
+      const counts = new Float32Array(nPts)
+      let n = 0
+      for (let i = 0; i < nPts; i++) {
+        // read unconditionally: the parser advances a fixed stride per cell
+        // whether or not the cell holds a value
+        const c = useFloatContact ? parser.getFloat() : parser.getShort()
+        // NaN (float) and Short_MIN_VALUE (int) are the "no value" markers
+        if (useFloatContact ? !Number.isNaN(c) : c !== Short_MIN_VALUE) {
+          const row = Math.floor(i / w)
+          bin1[n] = binXOffset + (i - row * w)
+          bin2[n] = binYOffset + row
+          counts[n] = c
+          n++
+        }
+      }
+      return truncateRecords({ bin1, bin2, counts }, n)
+    }
+
+    throw new Error(`Unknown block type: ${type}`)
   }
 
   async getNormalizationVector(

@@ -6,6 +6,7 @@ import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { openHicFilehandle } from './HicFilehandle.ts'
 import HicStraw, { NO_DATA_FOR_RESOLUTION } from './hic-straw/index.ts'
 
+import type { ContactRecords } from './hic-straw/contactRecords.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -13,18 +14,44 @@ import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterC
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
 import type { Region } from '@jbrowse/core/util/types'
 
-interface ContactRecord {
-  bin1: number
-  bin2: number
-  counts: number
-}
-
-export interface MultiRegionContactRecord {
-  bin1: number
-  bin2: number
-  counts: number
+/**
+ * One contiguous run of contacts belonging to a single region pair, as a
+ * half-open `[start, end)` slice of the concatenated contact arrays.
+ *
+ * Region membership is a property of the *query*, not of a contact: every
+ * contact a pair produces shares it. Carrying it as runs rather than two
+ * more per-contact columns is what lets the consumer hoist all the
+ * pair-invariant layout terms out of its inner loop — see
+ * `executeRenderHicData`.
+ *
+ * The runs tile `[0, numContacts)` in order. They are not guaranteed unique
+ * per pair, only contiguous, so consumers must iterate them rather than index
+ * by pair.
+ */
+export interface RegionPairRun {
   region1Idx: number
   region2Idx: number
+  start: number
+  end: number
+}
+
+/**
+ * A whole multi-region matrix as three parallel typed arrays plus the run
+ * table describing which region pair each stretch came from.
+ *
+ * `bin1`/`bin2` are `Uint32Array` rather than the `Int32Array` hic-straw
+ * decodes into because these are the arrays that transfer to the main thread
+ * and feed the hover index unchanged — bins are non-negative chromosome
+ * indices, so the reinterpretation is exact.
+ */
+export interface MultiRegionContacts {
+  bin1: Uint32Array
+  bin2: Uint32Array
+  counts: Float32Array
+  pairs: RegionPairRun[]
+  numContacts: number
+  resolution: number
+  appliedNormalization: string
 }
 
 interface HicMetadata {
@@ -56,7 +83,7 @@ interface HicParser {
     ref2: Ref,
     units: string,
     binsize: number,
-  ) => Promise<{ records: ContactRecord[]; appliedNormalization: string }>
+  ) => Promise<{ records: ContactRecords; appliedNormalization: string }>
   getMetaData: () => Promise<HicMetadata>
   getNormalizationOptions: () => Promise<string[]>
   getChromosomeIndex: (chrAlias: string) => Promise<number | undefined>
@@ -122,11 +149,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
   async getMultiRegionContactRecords(
     regions: Region[],
     opts: HicContactOptions,
-  ): Promise<{
-    records: MultiRegionContactRecord[]
-    resolution: number
-    appliedNormalization: string
-  }> {
+  ): Promise<MultiRegionContacts> {
     const {
       resolution: res,
       normalization = 'KR',
@@ -141,7 +164,6 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
       )
     }
 
-    const allRecords: MultiRegionContactRecord[] = []
     // Downgraded to whatever a pair actually got if any pair fell back, so the
     // display never claims a normalization only some of the matrix received —
     // vectors are stored per (type, chr, unit, binsize), so partial coverage is
@@ -150,10 +172,21 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
 
     // Resolve each region's file chromosome index once (O(n)) rather than
     // re-deriving it inside every region pair (O(n²)) — it's fixed per region
-    // and drives the transpose un-swap in getRegionPairRecords.
+    // and drives the transpose un-swap in fetchRegionPairRecords.
     const regionChrIdxs = await Promise.all(
       regions.map(r => this.hic.getChromosomeIndex(r.refName)),
     )
+
+    // One entry per non-empty pair, holding that pair's own decode buffers. The
+    // pair count is O(regions²) — tiny — so this is a handful of objects, not
+    // per-contact overhead, and it buys the exact total needed to size the
+    // concatenated arrays without a second pass over the data.
+    const perPair: {
+      region1Idx: number
+      region2Idx: number
+      recs: ContactRecords
+    }[] = []
+    let numContacts = 0
 
     await updateStatus(
       'Downloading data',
@@ -164,18 +197,23 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
             // cancel point between region pairs so a multi-region fetch can be
             // stopped part-way rather than running every pair to completion
             checkStopToken(stopToken)
-            const applied = await this.appendRegionPairRecords(allRecords, {
+            const pair = await this.fetchRegionPairRecords({
               region1: regions[i]!,
               region2: regions[j]!,
-              region1Idx: i,
-              region2Idx: j,
               chr1Idx: regionChrIdxs[i],
               chr2Idx: regionChrIdxs[j],
               normalization,
               resolution: res,
             })
-            if (applied !== undefined && applied !== normalization) {
-              appliedNormalization = applied
+            if (pair === undefined) {
+              continue
+            }
+            if (pair.appliedNormalization !== normalization) {
+              appliedNormalization = pair.appliedNormalization
+            }
+            if (pair.recs.bin1.length > 0) {
+              perPair.push({ region1Idx: i, region2Idx: j, recs: pair.recs })
+              numContacts += pair.recs.bin1.length
             }
           }
         }
@@ -183,17 +221,40 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
       stopToken,
     )
 
-    return { records: allRecords, resolution: res, appliedNormalization }
+    // Exact-size allocation, then one `set` (a memcpy) per pair. Sizing exactly
+    // matters beyond tidiness: these buffers are transferred to the main thread
+    // whole, so an oversized parent buffer would ship the slack too.
+    const bin1 = new Uint32Array(numContacts)
+    const bin2 = new Uint32Array(numContacts)
+    const counts = new Float32Array(numContacts)
+    const pairs: RegionPairRun[] = []
+    let at = 0
+    for (const { region1Idx, region2Idx, recs } of perPair) {
+      bin1.set(recs.bin1, at)
+      bin2.set(recs.bin2, at)
+      counts.set(recs.counts, at)
+      const end = at + recs.bin1.length
+      pairs.push({ region1Idx, region2Idx, start: at, end })
+      at = end
+    }
+
+    return {
+      bin1,
+      bin2,
+      counts,
+      pairs,
+      numContacts,
+      resolution: res,
+      appliedNormalization,
+    }
   }
 
   /**
-   * Append one region pair's contacts to `out`, un-swapping hic-straw's
-   * transpose so `bin1` always maps back to `region1`'s coordinates. Returns
-   * the normalization the file actually applied to this pair.
+   * Fetch one region pair's contacts, un-swapping hic-straw's transpose so
+   * `bin1` always maps back to `region1`'s coordinates.
    *
-   * Appends in place rather than returning its own array: a single pair can hold
-   * millions of contacts at a fine binsize, and an intermediate array per pair
-   * doubles the peak allocation for nothing.
+   * The un-swap is a swap of the two array references, not per-contact work:
+   * the transpose applies uniformly to everything the pair returned.
    *
    * Returns `undefined` (contributing nothing) for a pair the file has no data
    * for at this resolution rather than throwing: inter-chromosomal pairs
@@ -203,28 +264,23 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
    * Isolating each pair keeps one missing matrix from failing the whole
    * multi-region fetch.
    */
-  private async appendRegionPairRecords(
-    out: MultiRegionContactRecord[],
-    {
-      region1,
-      region2,
-      region1Idx,
-      region2Idx,
-      chr1Idx,
-      chr2Idx,
-      normalization,
-      resolution,
-    }: {
-      region1: Region
-      region2: Region
-      region1Idx: number
-      region2Idx: number
-      chr1Idx: number | undefined
-      chr2Idx: number | undefined
-      normalization: string
-      resolution: number
-    },
-  ): Promise<string | undefined> {
+  private async fetchRegionPairRecords({
+    region1,
+    region2,
+    chr1Idx,
+    chr2Idx,
+    normalization,
+    resolution,
+  }: {
+    region1: Region
+    region2: Region
+    chr1Idx: number | undefined
+    chr2Idx: number | undefined
+    normalization: string
+    resolution: number
+  }): Promise<
+    { recs: ContactRecords; appliedNormalization: string } | undefined
+  > {
     try {
       const { records, appliedNormalization } =
         await this.hic.getContactRecords(
@@ -245,16 +301,12 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
         chr2Idx !== undefined &&
         (chr1Idx > chr2Idx ||
           (chr1Idx === chr2Idx && region1.start >= region2.end))
-      for (const { bin1, bin2, counts } of records) {
-        out.push({
-          bin1: transposed ? bin2 : bin1,
-          bin2: transposed ? bin1 : bin2,
-          counts,
-          region1Idx,
-          region2Idx,
-        })
+      return {
+        recs: transposed
+          ? { bin1: records.bin2, bin2: records.bin1, counts: records.counts }
+          : records,
+        appliedNormalization,
       }
-      return appliedNormalization
     } catch (e) {
       if (`${e}`.includes(NO_DATA_FOR_RESOLUTION)) {
         return undefined

@@ -2,7 +2,9 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 import { findContactAt } from '../LinearHicDisplay/contactLookup.ts'
 import { executeRenderHicData } from './executeRenderHicData.ts'
+import { toContacts } from './testContacts.ts'
 
+import type { TestContact } from './testContacts.ts'
 import type { HicDataResult } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util'
@@ -10,14 +12,6 @@ import type { Region } from '@jbrowse/core/util'
 jest.mock('@jbrowse/core/data_adapters/dataAdapterCache', () => ({
   getAdapter: jest.fn(),
 }))
-
-interface Rec {
-  bin1: number
-  bin2: number
-  counts: number
-  region1Idx: number
-  region2Idx: number
-}
 
 const BP_PER_PX = 1
 const RES = 10
@@ -29,15 +23,11 @@ function region(refName: string, reversed: boolean): Region {
   return { refName, start: 0, end: SPAN, assemblyName: 'a', reversed }
 }
 
-async function run(regions: Region[], records: Rec[]) {
+async function run(regions: Region[], records: TestContact[]) {
   jest.mocked(getAdapter).mockResolvedValue({
     dataAdapter: {
       getMultiRegionContactRecords: () =>
-        Promise.resolve({
-          records,
-          resolution: RES,
-          appliedNormalization: 'KR',
-        }),
+        Promise.resolve(toContacts(records, RES)),
     },
   } as unknown as Awaited<ReturnType<typeof getAdapter>>)
   const res = await executeRenderHicData({
@@ -79,12 +69,12 @@ const round = (n: number) => Math.round(n * 1e6) / 1e6
 const PX = 3
 
 // contacts inside region 0, inside region 1, and spanning the two
-const RECORDS: Rec[] = [
+const RECORDS: TestContact[] = [
   { bin1: 0, bin2: 0, counts: 1, region1Idx: 0, region2Idx: 0 },
   { bin1: 0, bin2: 50, counts: 2, region1Idx: 0, region2Idx: 0 },
   { bin1: 90, bin2: 99, counts: 3, region1Idx: 0, region2Idx: 0 },
 ]
-const MULTI: Rec[] = [
+const MULTI: TestContact[] = [
   ...RECORDS,
   { bin1: 10, bin2: 20, counts: 4, region1Idx: 0, region2Idx: 1 },
   { bin1: 0, bin2: 30, counts: 5, region1Idx: 1, region2Idx: 1 },

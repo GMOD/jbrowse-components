@@ -24,6 +24,18 @@ function chrIndex(chr: string) {
   return Promise.resolve(metadata.chromosomes.find(c => c.name === chr)?.index)
 }
 
+// hic-straw hands back struct-of-arrays; spell one contact out readably
+function oneContact(bin1: number, bin2: number, counts: number) {
+  return {
+    records: {
+      bin1: Int32Array.of(bin1),
+      bin2: Int32Array.of(bin2),
+      counts: Float32Array.of(counts),
+    },
+    appliedNormalization: 'NONE',
+  }
+}
+
 function makeMockParser() {
   return {
     getMetaData: () => Promise.resolve(metadata),
@@ -37,10 +49,7 @@ function makeMockParser() {
       if (ref.chr !== ref2.chr) {
         throw new Error(`${NO_DATA_FOR_RESOLUTION}: map ${ref.chr}-${ref2.chr}`)
       }
-      return Promise.resolve({
-        records: [{ bin1: 0, bin2: 0, counts: 5 }],
-        appliedNormalization: 'NONE',
-      })
+      return Promise.resolve(oneContact(0, 0, 5))
     },
   }
 }
@@ -67,17 +76,17 @@ test('a missing inter-chromosomal pair does not fail the whole multi-region fetc
     { assemblyName: 'test', refName: '2', start: 0, end: 1000000 },
   ]
 
-  const { records } = await adapter.getMultiRegionContactRecords(regions, {
-    resolution: 100000,
-    normalization: 'NONE',
-  })
+  const { numContacts, pairs } = await adapter.getMultiRegionContactRecords(
+    regions,
+    { resolution: 100000, normalization: 'NONE' },
+  )
 
   // both intra-chromosomal pairs (0,0) and (1,1) survive; the throwing inter
   // pair (0,1) contributes nothing instead of aborting the fetch
-  expect(records).toHaveLength(2)
-  expect(records.map(r => [r.region1Idx, r.region2Idx])).toEqual([
-    [0, 0],
-    [1, 1],
+  expect(numContacts).toBe(2)
+  expect(pairs).toEqual([
+    { region1Idx: 0, region2Idx: 0, start: 0, end: 1 },
+    { region1Idx: 1, region2Idx: 1, start: 1, end: 2 },
   ])
 })
 
@@ -110,28 +119,23 @@ test('un-swaps bin1/bin2 when hic-straw transposed the query (idx1 > idx2)', asy
     getMetaData: () => Promise.resolve(metadata),
     getNormalizationOptions: () => Promise.resolve(['NONE']),
     getChromosomeIndex: chrIndex,
-    getContactRecords: () =>
-      Promise.resolve({
-        records: [{ bin1: 7, bin2: 3, counts: 9 }],
-        appliedNormalization: 'NONE',
-      }),
+    getContactRecords: () => Promise.resolve(oneContact(7, 3, 9)),
   })
   const regions: Region[] = [
     { assemblyName: 'test', refName: '2', start: 0, end: 1000000 },
     { assemblyName: 'test', refName: '1', start: 0, end: 1000000 },
   ]
 
-  const { records } = await adapter.getMultiRegionContactRecords(regions, {
-    resolution: 100000,
-    normalization: 'NONE',
-  })
+  const { bin1, bin2, counts, pairs } =
+    await adapter.getMultiRegionContactRecords(regions, {
+      resolution: 100000,
+      normalization: 'NONE',
+    })
 
-  const interPair = records.find(r => r.region1Idx === 0 && r.region2Idx === 1)
-  expect(interPair).toEqual({
-    bin1: 3,
-    bin2: 7,
-    counts: 9,
-    region1Idx: 0,
-    region2Idx: 1,
-  })
+  const interPair = pairs.find(p => p.region1Idx === 0 && p.region2Idx === 1)
+  expect(interPair).toBeDefined()
+  const at = interPair!.start
+  expect(interPair!.end - at).toBe(1)
+  // bin1 maps back to region1 ('2', the higher-index chr) despite the transpose
+  expect([bin1[at], bin2[at], counts[at]]).toEqual([3, 7, 9])
 })

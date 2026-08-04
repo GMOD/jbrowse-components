@@ -2,7 +2,9 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 import { calcRegionScreenOffsetsPx } from '../regionOffsets.ts'
 import { executeRenderHicData } from './executeRenderHicData.ts'
+import { toContacts } from './testContacts.ts'
 
+import type { TestContact } from './testContacts.ts'
 import type { HicDataResult } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util'
@@ -15,27 +17,15 @@ const RES = 100
 const BP_PER_PX = 1
 const ROT_45 = Math.SQRT1_2
 
-interface Rec {
-  bin1: number
-  bin2: number
-  counts: number
-  region1Idx: number
-  region2Idx: number
-}
-
 async function run(
   regions: Region[],
   regionOffsetsPx: number[],
-  records: Rec[],
+  records: TestContact[],
 ) {
   jest.mocked(getAdapter).mockResolvedValue({
     dataAdapter: {
       getMultiRegionContactRecords: () =>
-        Promise.resolve({
-          records,
-          resolution: RES,
-          appliedNormalization: 'KR',
-        }),
+        Promise.resolve(toContacts(records, RES)),
     },
   } as unknown as Awaited<ReturnType<typeof getAdapter>>)
   const out = await executeRenderHicData({
@@ -60,7 +50,7 @@ function cellLeftGenomicPx(d: HicDataResult, i: number) {
   return (d.positions[i * 2]! + d.positions[i * 2 + 1]!) * ROT_45
 }
 
-function diagonal(regionIdx: number, bin: number): Rec {
+function diagonal(regionIdx: number, bin: number): TestContact {
   return {
     bin1: bin,
     bin2: bin,

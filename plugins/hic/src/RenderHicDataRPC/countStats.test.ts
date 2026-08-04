@@ -1,6 +1,7 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 import { executeRenderHicData } from './executeRenderHicData.ts'
+import { toContacts } from './testContacts.ts'
 
 import type { HicDataResult } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -12,21 +13,19 @@ jest.mock('@jbrowse/core/data_adapters/dataAdapterCache', () => ({
 const RES = 10
 
 async function statsFor(counts: number[]) {
-  const records = counts.map((c, i) => ({
-    bin1: i,
-    bin2: i,
-    counts: c,
-    region1Idx: 0,
-    region2Idx: 0,
-  }))
+  const contacts = toContacts(
+    counts.map((c, i) => ({
+      bin1: i,
+      bin2: i,
+      counts: c,
+      region1Idx: 0,
+      region2Idx: 0,
+    })),
+    RES,
+  )
   jest.mocked(getAdapter).mockResolvedValue({
     dataAdapter: {
-      getMultiRegionContactRecords: () =>
-        Promise.resolve({
-          records,
-          resolution: RES,
-          appliedNormalization: 'KR',
-        }),
+      getMultiRegionContactRecords: () => Promise.resolve(contacts),
     },
   } as unknown as Awaited<ReturnType<typeof getAdapter>>)
   const res = await executeRenderHicData({

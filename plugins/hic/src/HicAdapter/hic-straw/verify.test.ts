@@ -42,16 +42,19 @@ test('parses real .hic file', async () => {
     'BP',
     res,
   )
-  expect(recs.length).toBe(3957)
-  expect(recs[0]).toMatchObject({ bin1: 0, bin2: 0, counts: 785 })
-  expect(recs[2]).toMatchObject({ bin1: 1, bin2: 1, counts: 942 })
+  expect(recs.bin1.length).toBe(3957)
+  // the three arrays are parallel and always exactly the same length
+  expect(recs.bin2.length).toBe(3957)
+  expect(recs.counts.length).toBe(3957)
+  expect([recs.bin1[0], recs.bin2[0], recs.counts[0]]).toEqual([0, 0, 785])
+  expect([recs.bin1[2], recs.bin2[2], recs.counts[2]]).toEqual([1, 1, 942])
 
   const norms = await straw.getNormalizationOptions()
   expect(norms).toEqual(['NONE', 'VC', 'VC_SQRT', 'KR', 'SCALE'])
 
   // exercise KR normalization (reads norm vector index for v8 file)
   const kr = await straw.getContactRecords('KR', r, r, 'BP', res)
-  expect(kr.records.length).toBeGreaterThan(0)
+  expect(kr.records.bin1.length).toBeGreaterThan(0)
   expect(kr.appliedNormalization).toBe('KR')
 
   // A viewport block never lands on a bin boundary, so this is what the display
@@ -65,8 +68,8 @@ test('parses real .hic file', async () => {
     'BP',
     res,
   )
-  expect(offsetRecs.map(x => x.bin1)).toContain(0)
+  expect([...offsetRecs.bin1]).toContain(0)
   // and the window is [floor(start/res), ceil(end/res)) = [0, 11)
-  expect(Math.min(...offsetRecs.map(x => x.bin1))).toBe(0)
-  expect(Math.max(...offsetRecs.map(x => x.bin2))).toBe(10)
+  expect(Math.min(...offsetRecs.bin1)).toBe(0)
+  expect(Math.max(...offsetRecs.bin2)).toBe(10)
 })
