@@ -39,14 +39,17 @@ literal, never `?raw` a private helper of this site.
 - Prose in `src/docs/*.md` must not restate a measurable number. If a page needs
   one, generate it. See `scripts/measureChromeBundle.ts` and its `pnpm autogen`
   entry, which is where the chrome bundle figures come from.
-- `MUI_BUDGET` in `scripts/smoke.mjs` is the evidence for this site's central
-  claim: every page that installs `plainChromeOverlays` + `plainTrackControl`
-  renders **zero** Material UI elements. When it fails, the fix is almost never
-  to change the number — it is that a display started rendering a Material
-  component that isn't behind either provider. Raising the budget quietly makes
-  the prose false.
-- The demo runs in the browser, so verify with `pnpm build && pnpm smoke` (5
-  headless pages) rather than reasoning about it. `pnpm typecheck` is
+- `scripts/smoke.mjs` holds the evidence for this site's central claim, in two
+  halves: `MUI_BUDGET` counts `Mui*`-classed elements, and `muiThemedStyling`
+  counts elements whose font came from MUI's default theme — which is the only
+  way to see a `makeStyles` component, since an emotion class has no `Mui` in
+  its name. Every page that installs `plainChromeOverlays` + `plainTrackControl`
+  scores **zero** on both. When one fails, the fix is almost never to change the
+  number — it is that a display started rendering a Material component that
+  isn't behind either provider. Raising the budget quietly makes the prose
+  false. Background: `agent-docs/handoffs/byo-no-mui.md`.
+- The demo runs in the browser, so verify with `pnpm build && pnpm smoke` (one
+  headless page per example) rather than reasoning about it. `pnpm typecheck` is
   `astro check`, and `pnpm check-links` validates doc references and internal
   cross-links.
 - This site is in `push.yml` twice: the deploy loop and the

@@ -1,15 +1,15 @@
 ---
 name: byo-no-mui
-description: State of the build-your-own product's "renders no Material UI" claim, the verified hole in the check that guards it, and the architectural decision waiting. Read before touching the display chrome/track-control seams or the BYO examples site.
+description: State of the build-your-own product's "renders no Material UI" claim — what the census now measures, what it found and how that was fixed, and the weight half that is still out of reach. Read before touching the display chrome/track-control seams or the BYO examples site.
 ---
 
 # Build-your-own: the no-MUI claim
 
 ## Where it stands
 
-`826689e7a7` added the second swappable seam. A stock wiggle, feature or
-alignments display, unforked, now renders **zero elements carrying a `Mui*`
-class** when an embedder installs both plain sets:
+Two seams (`826689e7a7`) plus a palette-styled tooltip. A stock wiggle, feature
+or alignments display, unforked, renders **nothing styled by Material UI** when
+an embedder installs both plain sets:
 
 ```tsx
 <DisplayChromeOverlayProvider value={plainChromeOverlays}>
@@ -17,76 +17,81 @@ class** when an embedder installs both plain sets:
 </DisplayChromeOverlayProvider>
 ```
 
-`MUI_BUDGET` in `products/jbrowse-build-your-own/examples-site/scripts/smoke.mjs`
-holds that per page, in both directions. See
-[reference/DISPLAYCHROME.md](../reference/DISPLAYCHROME.md#the-bring-your-own-seams)
-for how the two seams divide, and why they are two.
+See [reference/DISPLAYCHROME.md](../reference/DISPLAYCHROME.md#the-bring-your-own-seams)
+for how the two seams divide, why they are two, and why the tooltip did not
+become a third.
 
-Read that sentence carefully, because the next section is about the gap between
-it and what a reader of the site believes it says.
+## What the census measures, and why it is two halves
 
-## The hole, measured
+`products/jbrowse-build-your-own/examples-site/scripts/smoke.mjs`, per page, in
+both directions:
 
-**`MUI_BUDGET` counts `Mui*` classnames. Components styled through
-`makeStyles` don't have one.** `@jbrowse/core/util/tss-react`'s `makeStyles`
-emits emotion classes (`css-5970li`) while reading the *Material UI theme*, so a
-component can be fully MUI-dependent and completely invisible to the census.
+1. **`MUI_BUDGET`** — outermost elements carrying a `Mui*` classname. Zero
+   everywhere except `a-stack-of-tracks`, which shows stock chrome on purpose.
+2. **`muiThemedStyling`** — elements whose computed `font-family` starts with
+   `Roboto`, MUI's default typography, excluding anything already inside a
+   `Mui*` subtree. Zero on every page, `a-stack-of-tracks` included. Run at rest
+   **and** after a pointer sweep across each track.
 
-`BaseTooltip` (`packages/core/src/ui/BaseTooltip.tsx`) is the live example.
-Hover a feature on `/storybook/byo/your-own-feature-details/` and the DOM gets:
+Half 2 exists because half 1 has a hole that took a session to find, and it is
+worth restating: **`makeStyles` components carry no `Mui*` class.**
+`@jbrowse/core/util/tss-react`'s `makeStyles` emits an emotion class
+(`css-5970li`) while reading the *Material UI theme*, so a component can be
+fully MUI-styled and invisible to a classname count. `BaseTooltip` was exactly
+that — a grey Material chip in a font the host page never loaded, on every page,
+with the guard reporting zero. Silent, and endorsed by a green check.
 
-```
-cls:  css-5970li
-text: ctgA
-bg:   rgba(97, 97, 97, 0.9)        <- alpha(theme.palette.grey[700], 0.9)
-font: Roboto, Helvetica, Arial     <- MUI default typography
-anyMuiClassOnPage: false           <- the census says zero
-```
+The fingerprint is the font because it is the only one that discriminates: the
+JBrowse palette *deliberately* reproduces MUI's color values
+(`packages/core/src/ui/palette.ts`), so `rgb(97, 97, 97)` proves nothing, while
+this site's own stack starts with `-apple-system` and nothing on it loads
+Roboto.
 
-Both of those values come from **MUI's default theme**, because the host mounts
-no `ThemeProvider` — so an embedder gets a grey Material tooltip in a font their
-page never loaded, and the guard reports success. That is the worst failure
-shape available: silent, and endorsed by a green check.
+Not covered: a themed `makeStyles` component that sets no typography. Three
+exist in the display render path today (`BaseLinearDisplay`, canvas's
+`FeatureComponent`, alignments') and all three are `makeStyles()({…})` with
+**no theme argument** — layout only, no MUI value on screen. A new one that
+takes `theme =>` and touches only colors would slip through both halves. If that
+becomes a real risk the answer is to stop importing MUI's `useTheme` in
+`makeStyles`, not a third census.
 
-Fixing the tooltip alone is not the fix. The census is what's wrong.
+## What was fixed
 
-## The root, and the decision waiting
+`BaseTooltip` (`packages/core/src/ui/BaseTooltip.tsx`) now styles itself from
+`usePalette()` plus inline styles, and inherits its font. **No provider was
+added** — it needed colors, and colors already had a toolkit-free home. That is
+the precedent for the next candidate: reach for the palette before reaching for
+a fourth context.
+
+It still imports MUI for `Portal` and for one theme read, the
+`MuiPopper.defaultProps.container` a shadow-DOM embed configures (see the LGV
+site's `ShadowDOMOneLinearGenomeView`). Neither contributes styling; both are
+behaviour every other portaled thing in JBrowse shares.
+
+**The guard was A/B'd, not assumed.** Reverting `BaseTooltip.tsx` to its
+`makeStyles` version and re-running `pnpm build && pnpm smoke` fails 4 of the 7
+pages with `<div class="css-5970li">` named in the output. So the census is not
+vacuous — but three pages still passed, because whether a hover lands on a
+feature in a headless swiftshader render is luck. `BaseTooltip.test.tsx` in
+`@jbrowse/core` is the deterministic half, and the half to extend first if the
+tooltip's look changes again.
+
+## Still open: the weight half
 
 `makeStyles` imports `useTheme` from `@mui/material/styles`
-(`packages/core/src/util/tss-react/mui/mui.ts`). ~154 call sites use it, ~6 of
-which take no `theme` argument. While that holds:
-
-- the **weight** half of the pitch ("Material UI never enters the module graph")
-  is unreachable for anyone rendering a stock display, no matter how many
-  providers they install. The site says so plainly; that is honesty, not a
-  solution.
-- any new `makeStyles` component in a display's render path is a silent
-  regression the guard cannot see.
-
-The decision that keeps getting deferred: **a third provider, or one real UI
-boundary?** Three contexts now stand between a display and a host's design
-system (`PaletteProvider`, `DisplayChromeOverlayProvider`,
-`TrackControlProvider`). Each was individually justified — this handoff's own
-commit added the second — but "MUI leaked, add a context" has now happened
-twice, and the tooltip is the third candidate. Adding it makes four. Before
-doing that, decide whether the answer is instead a theme-free `makeStyles` (or a
+(`packages/core/src/util/tss-react/mui/mui.ts`), ~154 call sites. While that
+holds, "Material UI never enters the module graph" is unreachable for anyone
+rendering a stock display, no matter how many providers they install. The site
+says so plainly, under "What you do not get rid of"; that is honesty, not a
+solution. The fix, if it is ever worth it, is a theme-free `makeStyles` (or a
 `usePalette`-backed styling helper) that stock display components are *required*
-to use, which would collapse all of it.
-
-## What to do first
-
-1. **Widen the census before adding anything.** Count what actually renders MUI
-   *behaviour*, not MUI classnames — a fair proxy is any element whose computed
-   `font-family` or colours came from the MUI default theme, or simply: assert
-   no `@mui/*` module is evaluated in the page. Extend it over hover and
-   menu-open states, not just at-rest. It will find `BaseTooltip`; assume it
-   finds more.
-2. Only then decide the tooltip's fate, with the full list in hand.
+to use — which would also close the census gap above. `pnpm measure-chrome-bundle`
+measures what the reach half costs today.
 
 ## Verifying, cheaply
 
 The examples site is the harness. `pnpm build && pnpm smoke` in
-`products/jbrowse-build-your-own/examples-site` runs six pages headless. For
+`products/jbrowse-build-your-own/examples-site` runs every page headless. For
 anything the smoke check can't see, a throwaway puppeteer probe against the
 built `dist/` is the pattern that found everything above — serve `dist/`, strip
 the Astro base, `--use-gl=swiftshader`, settle ~7s, then measure. Write it as a
@@ -98,15 +103,16 @@ Two traps that cost time here:
 - `page.mouse.click` uses **viewport** coordinates. `scrollIntoView` the element
   and re-read its `boundingBox()` first, or every click lands on `<html>`.
 - This is a **shared worktree**. Other agents' half-finished work will redden
-  your runs — a wiggle TDZ regression failed three BYO pages during this
-  session and cleared itself. Re-run before believing a failure is yours, and
-  commit with explicit pathspecs.
+  your runs — a wiggle TDZ regression failed three BYO pages during one session
+  and cleared itself. Re-run before believing a failure is yours, and commit
+  with explicit pathspecs.
 
 ## Don't
 
-- **Don't raise `MUI_BUDGET` to make smoke pass.** It is the evidence for the
-  site's central claim. A failure means a display started rendering something
-  outside both providers; the number is the messenger.
+- **Don't raise `MUI_BUDGET`, or narrow the font census, to make smoke pass.**
+  They are the evidence for the site's central claim. A failure means a display
+  started rendering something outside both providers; the number is the
+  messenger.
 - **Don't hide the corner controls** as a way to reach zero. The track-sizing
   button carries the count of features the layout dropped outright and the
   isoform notice is the only sign transcripts are hidden — a track that lies
@@ -114,11 +120,11 @@ Two traps that cost time here:
   a plain rendering, which they now have.
 - **Don't factor the shared helpers out of the examples site.** See its
   `CLAUDE.md`: every page must be one complete copy-pasteable file, and the site
-  was built the other way once and rewritten. That said, the duplication is
-  now ~250 identical lines across six ~480-line files, and one pan-handler fix
-  in this session had to land in five of them. If that becomes untenable the
-  answer is a different *rule* (a full page plus delta-only successors), argued
-  in that `CLAUDE.md` — not a quiet `src/browser/` module.
+  was built the other way once and rewritten. That said, the duplication is now
+  ~250 identical lines across seven ~480-line files, and one pan-handler fix in
+  one session had to land in five of them. If that becomes untenable the answer
+  is a different *rule* (a full page plus delta-only successors), argued in that
+  `CLAUDE.md` — not a quiet `src/browser/` module.
 - **Don't add a corner control by importing MUI directly.** Describe it as
   `TrackControlProps` and render `TrackControl`; the icon is a *name*, never an
   element, or the display re-imports an icon package.
@@ -131,4 +137,5 @@ Two traps that cost time here:
   weren't verifiable in-session.
 - `plainTrackControl` has one literal colour (`#d97706`, the warning tone).
   There is no CSS system colour for "something is wrong", and the warning state
-  exists precisely to be seen without hovering.
+  exists precisely to be seen without hovering. The location box on
+  `drive-it-from-your-app` reuses that literal for the same reason.

@@ -36,6 +36,7 @@ const MUI_BUDGET = {
   'a-stack-of-tracks': 3,
   'bring-your-own-overlays': 0,
   'add-the-chrome-you-want': 0,
+  'drive-it-from-your-app': 0,
   'your-own-feature-details': 0,
 }
 
@@ -63,6 +64,90 @@ async function muiBudget(page, slug) {
         `renders ${found.length} Material UI element(s), expected ${expected}:\n` +
           found.map(f => `           - ${f}`).join('\n'),
       ]
+}
+
+// The second half of the census, and the one that catches what counting `Mui*`
+// classnames cannot.
+//
+// `makeStyles` (`@jbrowse/core/util/tss-react`) emits an emotion class —
+// `css-5970li`, no `Mui` anywhere in it — while reading the Material UI
+// *theme*. So a component can be fully MUI-styled and score zero above. That
+// was not hypothetical: `BaseTooltip` rendered a grey Material chip in Roboto
+// on every one of these pages, and the count said zero, which is the worst
+// failure shape there is — silent, and endorsed by a green check.
+//
+// The fingerprint is the font. A host that mounts no `ThemeProvider` (every
+// page here) gets MUI's *default* theme, whose typography is
+// `Roboto, Helvetica, Arial, sans-serif`; this site's own stack starts with
+// `-apple-system`, so an element computing Roboto first did not inherit it from
+// the page — something stated it, and the only thing on these pages that can is
+// the MUI theme.
+//
+// Elements inside a `Mui*`-classed subtree are excluded: those are counted
+// above, by name, and double-reporting them would make `a-stack-of-tracks`
+// (which shows stock chrome on purpose) fail twice for one control. **Zero is
+// the bar on every page**, that one included — its three Material widgets are
+// unstyled by typography, and a tooltip is not one of them.
+async function muiThemedStyling(page, when) {
+  const found = await page.evaluate(() => {
+    const themed = [...document.querySelectorAll('body *')].filter(el =>
+      getComputedStyle(el).fontFamily.startsWith('Roboto'),
+    )
+    return themed
+      .filter(el => !el.closest('[class*="Mui"]'))
+      .filter(el => !themed.some(o => o !== el && o.contains(el)))
+      .map(
+        el =>
+          `<${el.tagName.toLowerCase()} class="${el.getAttribute('class') ?? ''}"> ` +
+          `${el.textContent.trim().slice(0, 40)}`,
+      )
+  })
+  return found.length === 0
+    ? []
+    : [
+        `${when}: ${found.length} element(s) styled from Material UI's default theme:\n` +
+          found.map(f => `           - ${f}`).join('\n'),
+      ]
+}
+
+// Move the pointer across each track, so the census above sees the hover states
+// too — a tooltip only exists while something is under the cursor, and it is
+// drawn by the display itself rather than by either bring-your-own provider, so
+// it is the state most likely to smuggle a themed component onto the screen.
+//
+// Deliberately opportunistic: whether a given pixel in a headless swiftshader
+// render has a feature under it is not something to build a hard assertion on,
+// and a hover that finds nothing simply censuses an unchanged page.
+// `BaseTooltip.test.tsx` in `@jbrowse/core` is the deterministic half of this.
+//
+// The sweep stays out of the bottom-right quadrant on purpose: the corner
+// controls live there, and hovering one on `a-stack-of-tracks` would mount a
+// Material popover that the at-rest count above has no entry for.
+// The census runs per track rather than once at the end, because a tooltip is
+// only up while the pointer is on the thing that raised it: sweeping every
+// track and then looking would only ever see the last position's.
+async function censusWhileHovering(page) {
+  const found = new Set()
+  for (const canvas of await page.$$('canvas')) {
+    await canvas.evaluate(el => {
+      el.scrollIntoView({ block: 'center' })
+    })
+    await new Promise(r => setTimeout(r, 200))
+    const box = await canvas.boundingBox()
+    if (!box || box.height < 40) {
+      continue
+    }
+    for (const fx of [0.3, 0.45, 0.6]) {
+      for (const fy of [0.25, 0.5]) {
+        await page.mouse.move(box.x + box.width * fx, box.y + box.height * fy)
+        await new Promise(r => setTimeout(r, 120))
+      }
+    }
+    for (const message of await muiThemedStyling(page, 'while hovering')) {
+      found.add(message)
+    }
+  }
+  return [...found]
 }
 
 // Every page here drives the view with a pan handler of its own, and a pan
@@ -120,9 +205,13 @@ const failures = await smokeExamplesSite({
   // spawn to guard
   //
   // The census runs before the click: opening one of those bottom-right menus
-  // mounts a Material popover, which would land in the count.
+  // mounts a Material popover, which would land in the count. It runs twice,
+  // either side of a hover, because the states a display draws while the
+  // pointer is over it are outside both bring-your-own providers.
   check: async (page, slug) => [
     ...(await muiBudget(page, slug)),
+    ...(await muiThemedStyling(page, 'at rest')),
+    ...(await censusWhileHovering(page)),
     ...(await clicksReachTheTrack(page)),
   ],
   log: m => {

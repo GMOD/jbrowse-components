@@ -6,31 +6,39 @@ import {
   useFloating,
   useInteractions,
 } from '@floating-ui/react'
-import { Portal, alpha, useTheme } from '@mui/material'
+import { Portal, useTheme } from '@mui/material'
 
-import { makeStyles } from '../util/tss-react/index.ts'
+import { usePalette } from './PaletteContext.tsx'
+import { alpha, grey } from './palette.ts'
 
-function round(value: number) {
-  return Math.round(value * 1e5) / 1e5
-}
-
-const useStyles = makeStyles()(theme => ({
-  // these styles come from
-  // https://github.com/mui-org/material-ui/blob/master/packages/material-ui/src/Tooltip/Tooltip.js
-  tooltip: {
-    position: 'absolute',
-    pointerEvents: 'none',
-    backgroundColor: alpha(theme.palette.grey[700], 0.9),
-    borderRadius: theme.shape.borderRadius,
-    color: theme.palette.common.white,
-    fontFamily: theme.typography.fontFamily,
-    padding: '4px 8px',
-    fontSize: theme.typography.fontSize,
-    lineHeight: `${round(14 / 10)}em`,
-    maxWidth: 300,
-    wordWrap: 'break-word',
-  },
-}))
+// The hover tooltip every display shares.
+//
+// Its look comes from the palette and plain inline styles rather than from a
+// `makeStyles` reading the Material UI theme, and that is deliberate: an
+// embedder who installs `plainChromeOverlays` + `plainTrackControl` gets stock
+// displays that render no Material UI, and a tooltip carrying the MUI *default*
+// theme's grey and Roboto (which is what it did, since such a host mounts no
+// ThemeProvider) put a Material widget back on their screen. It was invisible
+// to `jbrowse-build-your-own`'s smoke census too, which counts `Mui*`
+// classnames and never sees an emotion class.
+//
+// The chip is dark in both palette modes, the way a tooltip conventionally is.
+// It is the one thing on screen that deliberately does not match the page.
+//
+// `fontFamily: inherit` puts it in whatever font it is portaled into: Roboto in
+// JBrowse's own products, whose `CssBaseline` sets the body font, and the
+// host's font in an embed. The size is stated rather than inherited, because
+// body text is a good deal larger than a tooltip should be.
+const tooltipBaseStyle = {
+  pointerEvents: 'none',
+  borderRadius: 4,
+  fontFamily: 'inherit',
+  fontSize: 12,
+  padding: '4px 8px',
+  lineHeight: 1.4,
+  maxWidth: 300,
+  wordWrap: 'break-word',
+} as const
 
 export default function BaseTooltip({
   clientPoint: clientPointCoords,
@@ -53,9 +61,12 @@ export default function BaseTooltip({
   clientPoint?: { x: number; y: number }
   children: React.ReactNode
 }) {
+  // the theme is read for one thing only: the portal container a shadow-DOM
+  // embed configures through `MuiPopper.defaultProps.container`, which every
+  // other portaled thing in JBrowse honours too. It contributes no styling.
   const theme = useTheme()
   const popperTheme = theme.components?.MuiPopper
-  const { classes } = useStyles()
+  const palette = usePalette()
   const { refs, floatingStyles, context } = useFloating({
     placement,
     strategy: 'fixed',
@@ -69,9 +80,12 @@ export default function BaseTooltip({
   return (
     <Portal container={popperTheme?.defaultProps?.container}>
       <div
-        className={classes.tooltip}
         ref={refs.setFloating}
         style={{
+          ...tooltipBaseStyle,
+          backgroundColor: alpha(grey[700], 0.9),
+          color: palette.common.white,
+          // after the base style, so the strategy's `position: fixed` wins
           ...floatingStyles,
           zIndex: 100000,
           // workaround for tooltips flashing at top left corner of screen
@@ -80,7 +94,6 @@ export default function BaseTooltip({
             floatingStyles.transform === 'translate(0px, 0px)'
               ? 'hidden'
               : undefined,
-          pointerEvents: 'none',
         }}
         {...getFloatingProps()}
       >

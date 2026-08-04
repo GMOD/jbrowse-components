@@ -222,6 +222,17 @@ They stay separate because `DisplayChromeBase` takes its overlay set as a *prop*
 and never renders a track control; folding the two would put entries in
 `DisplayChromeOverlays` that the chrome ignores.
 
+**A third seam was considered for the tooltip and rejected.** `BaseTooltip` is
+rendered by each display directly, behind neither provider, and it used to style
+itself through `makeStyles(theme => …)` — so in a host that mounts no
+`ThemeProvider` it drew MUI's *default* grey chip in Roboto, and the BYO smoke
+census (which counts `Mui*` classnames) scored it zero. What it actually needed
+was colors, and colors already have a toolkit-free home: it reads `usePalette()`
+and inline styles now, and no provider was added. Reach for the palette before
+reaching for a fourth context — a component that only needs colors doesn't need
+a seam. `BaseTooltip.test.tsx` pins the plain rendering, because the browser
+census can only see a tooltip that a headless hover happened to raise.
+
 **Reach vs weight.** Both providers are *reach*: they redirect what stock
 displays render, but `DisplayChrome`/`TrackControl` still reference MUI, so it
 stays in the bundle. *Weight* is only available to code writing its own display
