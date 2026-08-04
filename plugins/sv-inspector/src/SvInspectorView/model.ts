@@ -14,7 +14,8 @@ import type { SpreadsheetViewStateModel } from '@jbrowse/plugin-spreadsheet-view
 
 interface SvInspectorViewInit {
   assembly: string
-  uri: string
+  /** absent means "open the import form", pre-set to the assembly/fileType */
+  uri?: string
   fileType?: string
 }
 

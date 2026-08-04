@@ -4,7 +4,9 @@ import type { AbstractSessionModel } from '@jbrowse/core/util'
 export interface LaunchSpreadsheetViewArgs {
   session: AbstractSessionModel
   assembly: string
-  uri: string
+  // a spec view is untyped user input, so both of these can be absent: without
+  // a uri the view opens on the import form
+  uri?: string
   fileType?: string
   // optional explicit view id, so another view in the same session spec can
   // reference this one
@@ -24,12 +26,14 @@ export default function LaunchSpreadsheetViewF(pluginManager: PluginManager) {
   /** #extensionPoint LaunchView-SpreadsheetView | async | Programmatically launch a spreadsheet view */
   pluginManager.addToExtensionPoint('LaunchView-SpreadsheetView', args => {
     const { session, id, assembly, uri, fileType } = args
-    // only carry an init when there's a file to import; a bare launch should
-    // land on the import form rather than auto-importing an empty location
+    // carry an init whenever the caller named anything to apply. With a uri it
+    // imports the file; with only an assembly it still lands on the import
+    // form, but with that assembly selected rather than the first one. An
+    // empty init is skipped so no one feeds an empty location to openLocation
     // (which surfaces a spurious "invalid fileLocation" error)
     session.addView('SpreadsheetView', {
       id,
-      ...(uri ? { init: { assembly, uri, fileType } } : {}),
+      ...(assembly || uri ? { init: { assembly, uri, fileType } } : {}),
     })
     return args
   })

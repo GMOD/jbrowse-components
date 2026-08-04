@@ -25,7 +25,7 @@ utilizeFetchMockForTest(volvoxGetFile)
 
 function createSvInspectorViewWithInit(init: {
   assembly: string
-  uri: string
+  uri?: string
   fileType?: string
 }) {
   const { pluginManager, rootModel } = getPluginManager()
@@ -51,6 +51,17 @@ test('SvInspectorView initializes its spreadsheet from init', async () => {
   )
 
   expect(view.spreadsheetView.spreadsheet?.assemblyName).toBe('volvox')
+  expect(view.init).toBeUndefined()
+}, 40000)
+
+// Regression: a launch that named an assembly but no file dropped the assembly,
+// and the import form fell back to whichever assembly sorted first
+test('an assembly with no uri lands on the import form, on that assembly', () => {
+  const { view } = createSvInspectorViewWithInit({ assembly: 'volvox' })
+
+  expect(view.spreadsheetView.importWizard.selectedAssemblyName).toBe('volvox')
+  expect(view.showCircularView).toBe(false)
+  expect(view.spreadsheetView.spreadsheet).toBeUndefined()
   expect(view.init).toBeUndefined()
 }, 40000)
 

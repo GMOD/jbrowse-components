@@ -12,7 +12,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export interface SpreadsheetViewInit {
   assembly: string
-  uri: string
+  /** absent means "open the import form", pre-set to the assembly/fileType */
+  uri?: string
   fileType?: string
 }
 
@@ -173,25 +174,36 @@ export default function stateModelFactory() {
           /**
            * #action
            * apply a declarative init (from addView / sv-inspector): point the
-           * import wizard at the file and load it
+           * import wizard at the file and load it. Without a uri there is
+           * nothing to load, so the wizard is only seeded — the import form
+           * then opens on the caller's assembly and file type instead of
+           * whichever assembly happens to sort first
            */
           async applyInit(init: SpreadsheetViewInit) {
-            self.importWizard.setSelectedAssemblyName(init.assembly)
-            const fileLocation = {
-              uri: init.uri,
-              locationType: 'UriLocation' as const,
+            const { importWizard } = self
+            const { assembly, uri, fileType } = init
+            importWizard.setSelectedAssemblyName(assembly)
+            if (uri) {
+              const fileLocation = {
+                uri,
+                locationType: 'UriLocation' as const,
+              }
+              importWizard.setFileSource(fileLocation)
+              // persist the location synchronously (fileSource is volatile) so
+              // a snapshot taken before the async load finishes can still
+              // reload the file instead of dropping to the import form. init is
+              // cleared synchronously by the reaction, so the cache is the only
+              // reconstruction source.
+              importWizard.setCachedFileLocation(fileLocation)
             }
-            self.importWizard.setFileSource(fileLocation)
-            // persist the location synchronously (fileSource is volatile) so a
-            // snapshot taken before the async load finishes can still reload the
-            // file instead of dropping to the import form. init is cleared
-            // synchronously by the reaction, so the cache is the only
-            // reconstruction source.
-            self.importWizard.setCachedFileLocation(fileLocation)
-            if (init.fileType) {
-              self.importWizard.setFileType(init.fileType)
+            // after setFileSource, which infers a type from the filename: an
+            // explicit fileType is the caller overriding that inference
+            if (fileType) {
+              importWizard.setFileType(fileType)
             }
-            await self.loadSpreadsheet(init.assembly)
+            if (uri) {
+              await self.loadSpreadsheet(assembly)
+            }
           },
         }))
         .actions(self => ({

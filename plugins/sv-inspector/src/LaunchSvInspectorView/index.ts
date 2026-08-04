@@ -4,7 +4,9 @@ import type { AbstractSessionModel } from '@jbrowse/core/util'
 export interface LaunchSvInspectorViewArgs {
   session: AbstractSessionModel
   assembly: string
-  uri: string
+  // a spec view is untyped user input, so both of these can be absent: without
+  // a uri the view opens on the import form
+  uri?: string
   fileType?: string
   height?: number
   // optional explicit view id, so another view in the same session spec can
@@ -25,13 +27,15 @@ export default function LaunchSvInspectorViewF(pluginManager: PluginManager) {
   /** #extensionPoint LaunchView-SvInspectorView | async | Programmatically launch the SV inspector view */
   pluginManager.addToExtensionPoint('LaunchView-SvInspectorView', args => {
     const { session, id, assembly, uri, fileType, height } = args
-    // only carry an init when there's a file to import; a bare launch should
-    // land on the import form rather than auto-importing an empty location
+    // carry an init whenever the caller named anything to apply. With a uri it
+    // imports the file; with only an assembly it still lands on the import
+    // form, but with that assembly selected rather than the first one. An
+    // empty init is skipped so no one feeds an empty location to openLocation
     // (which surfaces a spurious "invalid fileLocation" error)
     session.addView('SvInspectorView', {
       id,
       ...(height ? { height } : {}),
-      ...(uri ? { init: { assembly, uri, fileType } } : {}),
+      ...(assembly || uri ? { init: { assembly, uri, fileType } } : {}),
     })
     return args
   })

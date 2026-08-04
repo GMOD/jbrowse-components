@@ -42,6 +42,37 @@ test('setInit applies the import exactly once', () => {
   expect(model.importWizard.fileSource).toMatchObject({ uri: 'test.vcf' })
 })
 
+// Regression: a launch that named an assembly but no file dropped the assembly
+// on the floor, and the import form fell back to assemblyNames[0]
+test('an init with no uri seeds the import form instead of loading', () => {
+  const { Session, SpreadsheetView } = makeSession()
+  const session = Session.create({ rpcManager: {}, configuration: {} })
+  const model = session.setView(
+    SpreadsheetView.create({ type: 'SpreadsheetView' }),
+  )
+
+  model.setInit({ assembly: 'volvox', fileType: 'BEDPE' })
+
+  expect(model.importWizard.selectedAssemblyName).toBe('volvox')
+  expect(model.importWizard.fileType).toBe('BEDPE')
+  // nothing to open, so no source, no cache, and we stay on the import form
+  expect(model.importWizard.fileSource).toBeUndefined()
+  expect(model.importWizard.cachedFileLocation).toBeUndefined()
+  expect(model.spreadsheet).toBeUndefined()
+})
+
+// an explicit fileType is the caller overriding what the filename implies
+test('an explicit fileType wins over the type inferred from the uri', () => {
+  const { Session, SpreadsheetView } = makeSession()
+  const session = Session.create({ rpcManager: {}, configuration: {} })
+  const model = session.setView(
+    SpreadsheetView.create({ type: 'SpreadsheetView' }),
+  )
+
+  model.setInit({ assembly: 'volvox', uri: 'test.vcf', fileType: 'BEDPE' })
+  expect(model.importWizard.fileType).toBe('BEDPE')
+})
+
 test('reloading the same file preserves column visibility and SV-type filter', () => {
   const { Session, SpreadsheetView } = makeSession()
   const session = Session.create({ rpcManager: {}, configuration: {} })
