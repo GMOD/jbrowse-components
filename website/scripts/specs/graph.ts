@@ -2294,6 +2294,24 @@ export const graphSpecs: ScreenshotSpec[] = [
         // box, which for a node bent into an arc is the empty space inside it
         radius: 40,
       },
+      // What the grey half of the drawing is (review: "unclear why this isnt
+      // more of a rainbow palette also"). The ramp IS on -- it is the same
+      // reference-position ramp the lane above uses, which is what makes the
+      // island green in both panes -- but a ramp over K12 coordinates can only
+      // color segments that HAVE one, and about half the nodes in a bubble by
+      // definition do not: they are the routes the other strains take past it,
+      // carrying their own donor's SN/SO instead. So the grey is the answer to
+      // the same question the figure is asking, not a palette that failed to
+      // apply, and it says so on the drawing now. s1613 is one of those nodes
+      // (SR:i:1 in ecoli_paa_subgraph.gfa), anchored by name like the rings.
+      {
+        type: 'text',
+        text: 'grey = no K12 coordinate: the routes past the island',
+        fontSize: 17,
+        textAlign: 'end',
+        anchor: { view: 1, graphNode: 's1613', alignX: 'left' },
+        dx: -14,
+      },
     ],
   },
   // NO FIGURE for the per-strain paths track (`ecoli_minigraph_paths`), which

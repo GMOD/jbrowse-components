@@ -2316,10 +2316,10 @@
   },
   "pangenome/rgfa_paa_bubble": {
     "name": "pangenome/rgfa_paa_bubble",
-    "status": "bad",
-    "note": "unclear why this isnt more of a rainbow palette also. previous agent notes: we may want to circle entries in the lineargenomeview/linearsyntenyview and the correspondance in graphgenomeview RINGED IN BOTH HALVES, and both anchored by name rather than by pixel. The lane's ring takes s502's own span out of the segs index (the same bp the shaded band uses); the graph's resolves through the view's nodePositions, which gives a point ON the node's polyline rather than the bounding-box centre, which for an arc is the empty space it encloses. The caption now says the two rings are one segment.",
-    "reviewedAt": "2026-08-04T12:28:57.856Z",
-    "hash": "9c5f920e7f1d5464a0a11d55d73c99608de404dd"
+    "status": "answered",
+    "note": "The palette IS on -- it is the same reference-position ramp the segments lane above uses, which is exactly what makes the island green in both panes and is why the two rings are believable as one object. What is grey is not a palette that failed to apply. A ramp over K12 coordinates can only color a segment that HAS one, and about half the nodes in a bubble by construction do not: they are the routes the other strains take past the island, and they carry their own donor's SN/SO instead. Checked against the file the pane loads, ecoli_paa_subgraph.gfa: of its 19 segments the colored ones are SR:i:0 (K12), and the grey ones are s1613 at rank 1, s2093-s2096 at rank 2 (CFT073), s2388 at rank 3 (NCTC86) and s2632/s2633 at rank 4. So grey is the answer to the same question the figure is asking, and it now says so on the drawing -- a label anchored to s1613 by name, like the rings. Caption extended to match. THE ALTERNATIVE, and why not: the view also has a 'stable-rank' scheme, which would color those same nodes by which donor contributed them and would genuinely rainbow the bubble. It is not taken here because it would break the one thing this figure was rebuilt for last round -- the lane above is all rank 0, so under stable-rank it collapses to a single color and the hue correspondence between the block and the node, which is what the two rings point at, is gone. Rainbow proper (hue = the node's index in the fetched list) stays rejected for the reason recorded on rgfa_segment_neighbourhood: it is unreproducible by construction.",
+    "reviewedAt": "2026-08-04T23:14:06.473Z",
+    "hash": "3c2c124a3b02f4e57d6c5934f82d24f44bc91e93"
   },
   "pangenome/hprc_cfhr_deletion": {
     "name": "pangenome/hprc_cfhr_deletion",
