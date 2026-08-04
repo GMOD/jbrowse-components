@@ -194,10 +194,17 @@ export const mafSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     // wider capture so more of the codon alignment is visible (reviewer)
     viewportWidth: 1250,
-    viewportHeight: 640,
+    // tall enough for the whole 470px display: at 640 the frame cut the last
+    // species row in half, which reads as a rendering fault rather than as a
+    // list that continues
+    viewportHeight: 780,
     settleMs: 12000,
     actions: [
-      { type: 'hover', from: { x: 600, y: 380 } },
+      // an ORANGE cell in a non-reference row. The hover used to land on the
+      // ce11 row, which is the reference: its tooltip necessarily reads
+      // "Change: none", so the figure demonstrated the readout on the one case
+      // where there is nothing to read. This is caePb3's S -> L against it.
+      { type: 'hover', from: { x: 351, y: 396 } },
       { type: 'delay', ms: 2000 },
     ],
   },

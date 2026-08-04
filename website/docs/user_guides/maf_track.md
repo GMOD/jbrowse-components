@@ -112,7 +112,7 @@ loaded (in codon view, or with the strip on), the hover also shows the gene
 name; in codon view it shows the species' codon and amino acid next to the
 reference's and labels the change synonymous or nonsynonymous.
 
-<Figure src="/img/maf_codon_tooltip.png" caption="The codon-view hover tooltip on the ce11 26-way alignment: over a codon cell it shows the species' codon and amino acid next to the reference's (here GAA → GCC, E → A) and labels the change nonsynonymous, alongside the alignment location and the CDS frame/gene the reading frame came from."/>
+<Figure src="/img/maf_codon_tooltip.png" caption="The codon-view hover tooltip on the ce11 26-way alignment. Hovering a codon cell reads out the substitution against the reference, so a nonsynonymous change is named rather than inferred from the cell color."/>
 
 ## Row layout and the species tree
 
