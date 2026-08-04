@@ -2,7 +2,10 @@ import { lazy } from 'react'
 
 import { checkboxItem } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
-import { treeBranchLengthMenuItem } from '@jbrowse/tree-sidebar'
+import {
+  clearSubtreeFilterMenuItems,
+  treeBranchLengthMenuItem,
+} from '@jbrowse/tree-sidebar'
 import { makeRadioSubMenu } from '@jbrowse/wiggle-core'
 import HeightIcon from '@mui/icons-material/Height'
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -250,15 +253,8 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
         ])
       },
     },
-    ...(self.subtreeFilter
-      ? [
-          {
-            label: 'Clear subtree filter',
-            onClick: () => {
-              self.setSubtreeFilter(undefined)
-            },
-          },
-        ]
-      : []),
+    // maf has no "Clustering" submenu to file this under (its tree is the
+    // adapter's guide tree, not a run), so it takes the shared item directly.
+    ...clearSubtreeFilterMenuItems(self),
   ]
 }

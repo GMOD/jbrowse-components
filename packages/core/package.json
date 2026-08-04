@@ -155,6 +155,7 @@
     "./util/paintLayer": "./src/util/paintLayer.tsx",
     "./util/parseLineByLine": "./src/util/parseLineByLine.ts",
     "./util/range": "./src/util/range.ts",
+    "./util/resolveRowHeight": "./src/util/resolveRowHeight.ts",
     "./util/rxjs": "./src/util/rxjs.ts",
     "./util/setStackTraceLimit": "./src/util/setStackTraceLimit.ts",
     "./util/simpleFeature": "./src/util/simpleFeature.ts",
@@ -763,6 +764,10 @@
         "types": "./esm/util/range.d.ts",
         "import": "./esm/util/range.js"
       },
+      "./util/resolveRowHeight": {
+        "types": "./esm/util/resolveRowHeight.d.ts",
+        "import": "./esm/util/resolveRowHeight.js"
+      },
       "./util/rxjs": {
         "types": "./esm/util/rxjs.d.ts",
         "import": "./esm/util/rxjs.js"
@@ -1246,6 +1251,9 @@
         ],
         "util/range": [
           "esm/util/range.d.ts"
+        ],
+        "util/resolveRowHeight": [
+          "esm/util/resolveRowHeight.d.ts"
         ],
         "util/rxjs": [
           "esm/util/rxjs.d.ts"

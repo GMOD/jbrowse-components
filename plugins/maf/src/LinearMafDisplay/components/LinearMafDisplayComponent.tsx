@@ -5,7 +5,7 @@ import { VerticalScrollbar } from '@jbrowse/core/ui'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import {
   DisplayCrosshairs,
-  SvgRowLabels,
+  RowLabelsOverlay,
   TreeSidebar,
   treeSidebarRightEdge,
 } from '@jbrowse/tree-sidebar'
@@ -223,26 +223,15 @@ const MafBody = observer(function MafBody({
           width={width}
           height={rowsHeight}
         />
-        {showTree && sources?.length ? (
-          <svg
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width,
-              height: rowsHeight,
-              pointerEvents: 'none',
-              zIndex: 2,
-            }}
-          >
-            <SvgRowLabels
-              sources={sources}
-              rowHeight={effectiveRowHeight}
-              labelOffset={sidebarOffset}
-              scrollTop={scrollTop}
-              availableHeight={rowsHeight}
-            />
-          </svg>
+        {showTree ? (
+          <RowLabelsOverlay
+            sources={sources}
+            rowHeight={effectiveRowHeight}
+            labelOffset={sidebarOffset}
+            width={width}
+            height={rowsHeight}
+            scrollTop={scrollTop}
+          />
         ) : null}
         <TreeSidebar model={model} />
       </div>

@@ -11,6 +11,7 @@ import {
   openFeatureWidget,
 } from '@jbrowse/core/util'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
+import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
@@ -451,9 +452,15 @@ export default function stateModelFactory(
        * Resolved per-row height: `rowHeight === 0` auto-fits, any positive
        * value is the pinned px height. Every consumer reads this, never the raw
        * `rowHeight` setting.
+       *
+       * The sentinel resolution and the non-positive floor are shared with the
+       * other sentinel-bearing row displays (`resolveRowHeight`) — `featureAt`
+       * and `rowBand` divide by this, so a `height` slot configured to 0 must
+       * not reach them as a 0. A genuine sub-pixel fit height passes through;
+       * see `autoRowHeight`.
        */
       get effectiveRowHeight(): number {
-        return self.rowHeight === 0 ? self.autoRowHeight : self.rowHeight
+        return resolveRowHeight(self.rowHeight, self.autoRowHeight)
       },
     }))
     .views(self => ({
@@ -474,13 +481,20 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * Positioned dendrogram (when a cluster tree exists and rows are loaded).
-       * Leaves spaced over `height`, branches over `treeAreaWidth`.
+       * Positioned dendrogram (when a cluster tree exists and describes the
+       * rows on screen). Leaves spaced over `height`, branches over
+       * `treeAreaWidth`.
+       *
+       * Passes the *drawn* row names, so a `rowGroups` partition — which
+       * reorders `sources` downstream of `layout`, where `setLayout`'s
+       * invalidation can't see it — drops the dendrogram rather than drawing it
+       * against the regrouped order. The two orderings genuinely conflict:
+       * clustering decides an order and `rowGroups` overrides it.
        */
       get hierarchy() {
         return computeClusterHierarchy(
           self.root,
-          self.sources.length,
+          self.sources,
           self.height,
           self.treeAreaWidth,
           self.showBranchLength,

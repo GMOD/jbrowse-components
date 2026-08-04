@@ -1,26 +1,6 @@
-import PluginManager from '@jbrowse/core/PluginManager'
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { BaseAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
-import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
-import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
-import {
-  createBaseTrackConfig,
-  createBaseTrackModel,
-} from '@jbrowse/core/pluggableElementTypes/models'
-import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { resolvePalette } from '@jbrowse/core/ui/palette'
-import { types } from '@jbrowse/mobx-state-tree'
-import LinearGenomeViewPlugin, {
-  BaseLinearDisplayComponent,
-  linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory,
-} from '@jbrowse/plugin-linear-genome-view'
 import { waitFor } from '@testing-library/react'
 
-import configSchemaF from './configSchema.ts'
-import stateModelFactory from './stateModel.ts'
-
-import type { Instance } from '@jbrowse/mobx-state-tree'
+import { createMafTestEnvironment } from './testEnv.ts'
 
 // The LinearMafGetAlignmentData result for a region with no alignment blocks on
 // a sample-discovery track (no configured `samples`): the worker discovers rows
@@ -51,156 +31,6 @@ function makeEmptyMafResult() {
   }
 }
 
-function createTestEnvironment() {
-  console.warn = jest.fn()
-  console.error = jest.fn()
-  // MAF's configSchema reads baseLinearDisplayConfigSchema off the installed
-  // LinearGenomeViewPlugin's exports, so the real plugin must be registered.
-  const pluginManager = new PluginManager([new LinearGenomeViewPlugin()])
-
-  pluginManager.addAdapterType(
-    () =>
-      new AdapterType({
-        name: 'MafTabixAdapter',
-        configSchema: ConfigurationSchema(
-          'MafTabixAdapter',
-          {},
-          { explicitlyTyped: true },
-        ),
-        getAdapterClass: () => Promise.resolve(class extends BaseAdapter {}),
-      }),
-  )
-
-  const configSchema = configSchemaF(pluginManager)
-
-  pluginManager.addTrackType(() => {
-    const trackConfigSchema = ConfigurationSchema(
-      'MafTrack',
-      {},
-      {
-        baseConfiguration: createBaseTrackConfig(pluginManager),
-        explicitIdentifier: 'trackId',
-      },
-    )
-    return new TrackType({
-      name: 'MafTrack',
-      configSchema: trackConfigSchema,
-      stateModel: createBaseTrackModel(
-        pluginManager,
-        'MafTrack',
-        trackConfigSchema,
-      ),
-    })
-  })
-
-  pluginManager.addDisplayType(() => {
-    return new DisplayType({
-      name: 'LinearMafDisplay',
-      configSchema,
-      stateModel: stateModelFactory(configSchema),
-      trackType: 'MafTrack',
-      viewType: 'LinearGenomeView',
-      ReactComponent: BaseLinearDisplayComponent,
-    })
-  })
-
-  pluginManager.createPluggableElements()
-  pluginManager.configure()
-
-  const mockRpcCall = jest.fn()
-
-  const LinearGenomeModel = LinearGenomeViewModelFactory(pluginManager)
-
-  const trackConfigSchema = pluginManager.pluggableConfigSchemaType('track')
-  const trackConfig = trackConfigSchema.create(
-    {
-      type: 'MafTrack',
-      trackId: 'test_track',
-      assemblyNames: ['volvox'],
-      // No `samples` slot on the adapter → sample-discovery path.
-      adapter: { type: 'MafTabixAdapter' },
-    },
-    { pluginManager },
-  )
-
-  const Session = types
-    .model({
-      name: 'testSession',
-      view: types.maybe(LinearGenomeModel),
-      configuration: types.map(types.frozen()),
-    })
-    .volatile(() => ({
-      rpcManager: {
-        call: mockRpcCall,
-      },
-      theme: createJBrowseTheme(),
-      palette: resolvePalette(),
-      assemblyManager: {
-        get: (name: string) =>
-          name === 'volvox'
-            ? {
-                initialized: true,
-                regions: [
-                  {
-                    refName: 'ctgA',
-                    start: 0,
-                    end: 50_000,
-                    assemblyName: 'volvox',
-                  },
-                ],
-                getCanonicalRefName: (refName: string) => refName,
-                configuration: { sequence: undefined },
-              }
-            : undefined,
-        isValidRefName: () => true,
-      },
-    }))
-    .views(() => ({
-      getTrackById(id: string) {
-        return id === 'test_track' ? trackConfig : undefined
-      },
-      // every promotable-slot read walks the cascade through this; nothing is
-      // promoted in these tests, so every display resolves to its promotedBase
-      getDisplayTypeDefault() {
-        return undefined
-      },
-    }))
-    .actions(self => ({
-      setView(view: Instance<typeof LinearGenomeModel>) {
-        self.view = view
-        return view
-      },
-      notifyError() {},
-      queueDialog() {},
-    }))
-
-  function createDisplay() {
-    const session = Session.create({ configuration: {} }, { pluginManager })
-    const view = session.setView(
-      LinearGenomeModel.create({
-        type: 'LinearGenomeView',
-        tracks: [
-          {
-            type: 'MafTrack',
-            configuration: 'test_track',
-            displays: [{ type: 'LinearMafDisplay' }],
-          },
-        ],
-      }),
-    )
-    view.setWidth(800)
-    view.setDisplayedRegions([
-      { assemblyName: 'volvox', start: 0, end: 10_000, refName: 'ctgA' },
-    ])
-
-    const track = view.tracks[0]!
-    const display = track.displays[0]!
-    return { session, view, track, display, mockRpcCall }
-  }
-
-  return { createDisplay, mockRpcCall }
-}
-
 beforeEach(() => {
   jest.useFakeTimers()
 })
@@ -218,7 +48,10 @@ describe('LinearMafDisplay zero-block loading', () => {
   // the loading overlay spun forever. Once a region has loaded the callback runs
   // and the canvas clears, even with nothing to draw.
   it('releases the first-paint gate after a fetch that returns no blocks/samples', async () => {
-    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    const { createDisplay, mockRpcCall } = createMafTestEnvironment({
+      assemblyEnd: 50_000,
+      viewRegionEnd: 10_000,
+    })
     mockRpcCall.mockResolvedValue(makeEmptyMafResult())
     const { display } = createDisplay()
 

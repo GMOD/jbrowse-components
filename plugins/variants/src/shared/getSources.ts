@@ -102,6 +102,21 @@ export function buildCanonicalRows({
     : rows
 }
 
+/**
+ * Note the membership rule, which is **deliberately not** tree-sidebar's
+ * `reconcileLayout` (what maf, multi-row features and multi-wiggle use). There a
+ * `layout` is an ordering hint and a discovered row it omits is appended; here
+ * `layout` *is* the row set, and a sample it omits is a sample that gets no row.
+ *
+ * That is load-bearing rather than an oversight: `sampleFilter` — the one fetch
+ * input the rows have — is derived from this, so narrowing the layout narrows
+ * what the worker computes, and `editableSources` is documented as skipping the
+ * subtree filter precisely because submitting a narrowed list would drop rows.
+ * The other three displays discover their rows from the data as regions load, so
+ * an ordering-hint layout is the only rule that can work for them; the sample
+ * set here comes once from the VCF header. `rowPlacement.test.ts` pins both
+ * halves.
+ */
 export function getSources({
   sources,
   layout = sources,

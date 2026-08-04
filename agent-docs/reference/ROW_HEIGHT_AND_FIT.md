@@ -41,8 +41,13 @@ taller than the height it was asked to fit inside — which re-grows the track a
 makes fit mode report a scroll it is documented never to have. The floor belongs
 in two other places only: `effectiveRowHeight` guarding against a **non-positive**
 value (consumers divide by it), and the drawing code widening a sub-pixel band
-(`rowBand` in canvas) without changing how many rows fit. maf, variants and
-canvas each carry this as a regression comment on the relevant getter.
+(`rowBand` in canvas) without changing how many rows fit.
+
+Both halves of that — resolving the `0` sentinel and flooring only a
+non-positive result — are `packages/core/src/util/resolveRowHeight.ts`, which
+maf, variants and canvas each call from their `effectiveRowHeight`. They used to
+spell it out individually and canvas's copy had lost the floor, which is exactly
+the drift a two-rules-pulling-opposite-ways invariant invites.
 
 ### Drag-resize leaves a pinned height alone
 

@@ -53,6 +53,13 @@ export function TreeSidebarMixin<
       // was built from the current `layout`, so any membership/order change
       // (with a tree loaded) makes it stale. Single source of truth shared by
       // `setLayout` and the color dialog's pre-submit warning.
+      //
+      // This covers the writes that go *through* `setLayout`. Rows can also move
+      // without one — a display decorating `sources` downstream of `layout`, a
+      // discovered row set growing as regions load — so the backstop is derived,
+      // in `computeClusterHierarchy`, which declines to position a tree whose
+      // leaves aren't the rows on screen. This getter stays because a warning
+      // has to be answerable before the write, not after it.
       willClearTree(next: S[]) {
         return (
           !!self.clusterTree &&
@@ -69,10 +76,19 @@ export function TreeSidebarMixin<
           self.clusterTree = undefined
         }
       },
-      // The subtree filter names leaves of `clusterTree` and hides rows on its
-      // own, so it goes with the tree: leaving it set hides rows against a tree
-      // that no longer exists, and the sidebar's "Clear subtree filter" is in
-      // the tree's context menu, which is gone too.
+      // Reset to no arrangement at all, which includes the subtree filter: the
+      // user asked for the rows back as they came.
+      //
+      // The filter is otherwise **independent of the tree**. It is a set of row
+      // names, and `filterRowsBySubtree` matches on `name` with no tree
+      // involved, so a reorder or a re-cluster leaves it perfectly valid and
+      // `setLayout` deliberately keeps it — dropping a focused clade on every
+      // reorder would discard the user's focus, and for maf (where
+      // `subtreeFilter` is a fetch argument) refetch every loaded region. What
+      // does invalidate it is a change to what rows are *called*: the
+      // multi-sample variant displays' rendering mode renames rows between
+      // sample and haplotype ("HG001" ↔ "HG001 HP0"), and `setPhasedMode`
+      // clears the filter for exactly that reason.
       clearLayout() {
         self.layout = []
         self.clusterTree = undefined

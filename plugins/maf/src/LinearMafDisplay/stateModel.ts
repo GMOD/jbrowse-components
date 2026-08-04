@@ -13,6 +13,7 @@ import {
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { clamp, getContainingView, getSession } from '@jbrowse/core/util'
 import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
+import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   MIN_DISPLAY_HEIGHT,
@@ -26,6 +27,7 @@ import {
   buildSpatialIndex,
   computeClusterHierarchy,
   filterRowsBySubtree,
+  reconcileLayout,
 } from '@jbrowse/tree-sidebar'
 import { domainFromStats, getNiceDomain } from '@jbrowse/wiggle-core'
 import deepEqual from 'fast-deep-equal'
@@ -665,20 +667,17 @@ export default function stateModelFactory(
          * by name. Empty `layout` (no customization) passes the worker set through.
          * Not subtree-filtered — this is what the arrangement dialog edits.
          * Undefined until the first fetch populates the worker set.
+         *
+         * The shared `reconcileLayout`, same as multi-row features and
+         * multi-wiggle. Its append half matters here: a sample-discovery track
+         * learns of a genome only from the region whose blocks contain it (see
+         * `setSamples` / `unionSources`), and the hand-rolled merge this
+         * replaced iterated `layout` alone — so with any custom arrangement
+         * saved, a species revealed by a later region never got a row at all.
          */
         get editableSources(): MafSource[] | undefined {
           const base = self.sourcesVolatile
-          if (base.length === 0) {
-            return undefined
-          }
-          if (self.layout.length === 0) {
-            return base
-          }
-          const byName = new Map(base.map(s => [s.name, s]))
-          return self.layout.flatMap(row => {
-            const b = byName.get(row.name)
-            return b ? [{ ...b, ...row }] : []
-          })
+          return base.length ? reconcileLayout(base, self.layout) : undefined
         },
       }))
       .views(self => ({
@@ -881,13 +880,12 @@ export default function stateModelFactory(
          * canvas — now lives on `rowsHeight` itself, where the canvas actually
          * is.
          *
-         * Floored only when non-positive — a resolved getter must never hand
-         * back 0 (consumers divide by it: `rowAtY`, the renderers). A genuine
-         * sub-pixel fit height passes through; see `autoRowHeight`.
+         * The sentinel resolution and the non-positive floor are shared with the
+         * other sentinel-bearing row displays (`resolveRowHeight`); a genuine
+         * sub-pixel fit height passes through, see `autoRowHeight`.
          */
         get effectiveRowHeight() {
-          const raw = self.rowHeight === 0 ? self.autoRowHeight : self.rowHeight
-          return raw > 0 ? raw : 1
+          return resolveRowHeight(self.rowHeight, self.autoRowHeight)
         },
       }))
       .views(self => ({
@@ -941,7 +939,7 @@ export default function stateModelFactory(
         get hierarchy() {
           return computeClusterHierarchy(
             self.root,
-            self.sources?.length ?? 0,
+            self.sources,
             self.rowsContentHeight,
             self.treeAreaWidth,
             self.showBranchLength,

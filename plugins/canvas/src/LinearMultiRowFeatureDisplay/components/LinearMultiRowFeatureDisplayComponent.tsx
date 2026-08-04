@@ -9,7 +9,7 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import {
   DisplayCrosshairs,
-  SvgRowLabels,
+  RowLabelsOverlay,
   TreeSidebar,
   treeSidebarRightEdge,
 } from '@jbrowse/tree-sidebar'
@@ -59,35 +59,22 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
       />
       <MultiRowIndelGlyphOverlay model={model} />
       <MultiRowHoverHighlight model={model} />
-      {sources.length ? (
-        // The display's doneness signal for capture gates. `sources` is derived
-        // from fetched features (the partition values), so this subtree cannot
-        // exist before data has loaded and been binned into rows -- unlike
-        // `canvasDrawn`/`-done`, which flips on an empty first paint. The color
-        // legend serves this role for categorical paintings but renders nothing
-        // when the palette is continuous (MAX_LEGEND_ENTRIES), so the row labels
-        // are the signal that holds in both modes. See
-        // agent-docs/guides/SCREENSHOT_CAPTURE_RACE.md.
-        <svg
-          data-testid="multirow-row-labels"
-          style={{
-            position: 'absolute',
-            left: 0,
-            top: 0,
-            width: view.trackWidthPx,
-            height,
-            pointerEvents: 'none',
-            zIndex: 2,
-          }}
-        >
-          <SvgRowLabels
-            sources={sources}
-            rowHeight={effectiveRowHeight}
-            labelOffset={sidebarOffset}
-            availableHeight={height}
-          />
-        </svg>
-      ) : null}
+      {/* Also the display's doneness signal for capture gates: `sources` is
+          derived from fetched features (the partition values), so this subtree
+          cannot exist before data has loaded and been binned into rows --
+          unlike `canvasDrawn`/`-done`, which flips on an empty first paint. The
+          color legend serves this role for categorical paintings but renders
+          nothing when the palette is continuous (MAX_LEGEND_ENTRIES), so the row
+          labels are the signal that holds in both modes. See
+          agent-docs/guides/SCREENSHOT_CAPTURE_RACE.md. */}
+      <RowLabelsOverlay
+        testId="multirow-row-labels"
+        sources={sources}
+        rowHeight={effectiveRowHeight}
+        labelOffset={sidebarOffset}
+        width={view.trackWidthPx}
+        height={height}
+      />
       {/* portaled above the inter-region masks (see FloatingSvgOverlay) so the
           legend isn't buried at multi-region scale */}
       {showLegend && colorLegend.length ? (

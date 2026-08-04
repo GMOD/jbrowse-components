@@ -6,6 +6,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Menu, MenuItem, alpha } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { StaleTreeHint } from './StaleTreeHint.tsx'
 import { getLeafNames } from './clusterUtils.ts'
 import {
   TREE_RESIZE_HANDLE_WIDTH,
@@ -143,7 +144,9 @@ const TreeSidebar = observer(function TreeSidebar({
   }
 
   if (!hierarchy || !showTree || !sources?.length) {
-    return null
+    // one of those is "there IS a tree, it just doesn't describe these rows any
+    // more" — which needs saying rather than silently drawing nothing
+    return <StaleTreeHint model={model} />
   }
 
   const contentHeight = treeContentHeight(model)

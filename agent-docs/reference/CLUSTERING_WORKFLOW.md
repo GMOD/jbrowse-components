@@ -102,7 +102,29 @@ Key actions:
 - `setLayout(layout)` — clears tree if sample names changed
 - `setLayoutAndClusterTree(layout, tree)` — atomic update (wiggle)
 - `setSubtreeFilter(names)` — collapses to deepest matching subtree (interactive click)
-- `clearLayout()` — wipes layout + tree
+- `clearLayout()` — wipes layout + tree + subtree filter
+
+### Staleness has one imperative half and one derived half
+
+`clusterLayout` positions leaves *positionally* (leaf `i` on row `i`), so a tree
+that no longer names the rows on screen draws against the wrong ones. Two things
+enforce that it does:
+
+- **`setLayout` → `willClearTree`**, for the writes that go through it. It also
+  backs the color dialog's pre-submit warning, which has to answer before the
+  write happens. Every action that moves rows must route through `setLayout`,
+  never a direct `self.layout =`.
+- **`computeClusterHierarchy`**, which takes the *drawn rows* and returns
+  `undefined` unless the tree's leaves are exactly those names in that order.
+  This is the backstop for the ways rows move with no layout write at all — a
+  `sources` decoration downstream of `layout` (multi-row features' `rowGroups`),
+  a discovered row set growing as regions load, variants' phased expansion
+  switching on when ploidy arrives.
+
+`subtreeFilter` is **not** invalidated by either: it is a set of row names that
+`filterRowsBySubtree` matches without a tree, so it survives a reorder on
+purpose. Only a change to what rows are *called* invalidates it — variants'
+`setPhasedMode`, which renames rows between `HG001` and `HG001 HP0`.
 
 ---
 

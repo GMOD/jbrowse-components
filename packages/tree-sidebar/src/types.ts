@@ -1,4 +1,4 @@
-import type { PositionedHierarchyNode } from './hierarchy.ts'
+import type { HierarchyNode, PositionedHierarchyNode } from './hierarchy.ts'
 import type { NewickNode } from './newick.ts'
 import type Flatbush from '@jbrowse/core/util/flatbush'
 
@@ -19,6 +19,11 @@ export interface TreeSource {
 export interface TreeSidebarModel {
   totalHeight?: number
   hierarchy?: ClusterHierarchyNode
+  // The parsed (and subtree-filtered) tree, from TreeSidebarMixin. `hierarchy`
+  // is this *positioned*, and is undefined both when there is no tree and when
+  // the tree no longer describes the rows — having the unpositioned one lets
+  // `StaleTreeHint` tell those apart.
+  root?: HierarchyNode<ClusterNodeData>
   treeAreaWidth: number
   height: number
   lineZoneHeight?: number

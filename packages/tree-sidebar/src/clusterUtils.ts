@@ -150,19 +150,57 @@ export function filterRowsBySubtree<T extends { name: string }>(
   return filterSet ? rows.filter(r => filterSet.has(r.name)) : rows
 }
 
+// True when `root`'s leaves are exactly `rowNames`, in the same order — i.e.
+// the tree still describes the rows the display is drawing.
+//
+// `clusterLayout` spaces the tree's own leaves evenly across the row axis, so
+// leaf *i* lands on row *i* positionally and nothing reconciles leaf name to row
+// name at draw time. Any disagreement therefore draws the whole dendrogram
+// against rows it does not name.
+//
+// This is a *derived* check on purpose. `setLayout` clears a stale
+// `clusterTree` for the writes that go through it, but rows also move without
+// any layout write at all: a display decorating `sources` downstream of
+// `layout` (multi-row features' `rowGroups` partition), a discovered row set
+// growing as regions load (multi-row features, multi-wiggle), a phased
+// expansion switching on when the ploidy arrives (multi-sample variants). One
+// check where the tree is positioned covers all of them, and covers whatever
+// the next one turns out to be.
+export function treeDescribesRows(
+  root: HierarchyNode<ClusterNodeData>,
+  rows: readonly { name: string }[],
+): boolean {
+  const leafNodes = leaves(root)
+  if (leafNodes.length !== rows.length) {
+    return false
+  }
+  for (let i = 0; i < leafNodes.length; i++) {
+    if (leafNodes[i]!.data.name !== rows[i]!.name) {
+      return false
+    }
+  }
+  return true
+}
+
 // Position the (filtered) cluster tree for drawing: leaves spaced over
 // `leafExtent` px along the row axis, branches over `treeAreaWidth` along the
-// depth axis. Undefined when there's no tree or no rows to align it against.
-// Every tree-sidebar consumer routes through this so the clusterLayout argument
-// order and the empty-state guard can't drift between display types.
+// depth axis. Undefined when there's no tree, no rows to align it against, or a
+// tree that no longer describes those rows (see `treeDescribesRows`). Every
+// tree-sidebar consumer routes through this so the clusterLayout argument order,
+// the empty-state guard and the staleness gate can't drift between display
+// types.
+//
+// `rows` are the rows actually drawn — the display's `sources`, after every
+// reorder, filter and decoration it applies — never the pre-filter or pre-layout
+// list.
 export function computeClusterHierarchy(
   root: HierarchyNode<ClusterNodeData> | undefined,
-  rowCount: number,
+  rows: readonly { name: string }[] | undefined,
   leafExtent: number,
   treeAreaWidth: number,
   showBranchLength: boolean,
 ): ClusterHierarchyNode | undefined {
-  return root && rowCount
+  return root && rows?.length && treeDescribesRows(root, rows)
     ? clusterLayout(root, leafExtent, treeAreaWidth, showBranchLength)
     : undefined
 }

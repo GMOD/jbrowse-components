@@ -1,26 +1,8 @@
-import PluginManager from '@jbrowse/core/PluginManager'
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { BaseAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
-import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
-import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
-import {
-  createBaseTrackConfig,
-  createBaseTrackModel,
-} from '@jbrowse/core/pluggableElementTypes/models'
-import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { types } from '@jbrowse/mobx-state-tree'
-import LinearGenomeViewPlugin, {
-  BaseLinearDisplayComponent,
-  linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory,
-} from '@jbrowse/plugin-linear-genome-view'
 import { waitFor } from '@testing-library/react'
 
-import configSchemaF from './configSchema.ts'
-import stateModelFactory from './stateModel.ts'
+import { createMafTestEnvironment } from './testEnv.ts'
 
 import type { MafAlignedRow } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
-import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // A LinearMafGetAlignmentData result with no blocks; `samples` is what each test
 // varies, since that (not the block content) is what drives the cache key here.
@@ -71,160 +53,6 @@ function makeMafResult(
       },
     },
   }
-}
-
-function createTestEnvironment() {
-  console.warn = jest.fn()
-  console.error = jest.fn()
-  // MAF's configSchema reads baseLinearDisplayConfigSchema off the installed
-  // LinearGenomeViewPlugin's exports, so the real plugin must be registered.
-  const pluginManager = new PluginManager([new LinearGenomeViewPlugin()])
-
-  pluginManager.addAdapterType(
-    () =>
-      new AdapterType({
-        name: 'MafTabixAdapter',
-        configSchema: ConfigurationSchema(
-          'MafTabixAdapter',
-          {},
-          { explicitlyTyped: true },
-        ),
-        getAdapterClass: () => Promise.resolve(class extends BaseAdapter {}),
-      }),
-  )
-
-  const configSchema = configSchemaF(pluginManager)
-
-  pluginManager.addTrackType(() => {
-    const trackConfigSchema = ConfigurationSchema(
-      'MafTrack',
-      {},
-      {
-        baseConfiguration: createBaseTrackConfig(pluginManager),
-        explicitIdentifier: 'trackId',
-      },
-    )
-    return new TrackType({
-      name: 'MafTrack',
-      configSchema: trackConfigSchema,
-      stateModel: createBaseTrackModel(
-        pluginManager,
-        'MafTrack',
-        trackConfigSchema,
-      ),
-    })
-  })
-
-  pluginManager.addDisplayType(() => {
-    return new DisplayType({
-      name: 'LinearMafDisplay',
-      configSchema,
-      stateModel: stateModelFactory(configSchema),
-      trackType: 'MafTrack',
-      viewType: 'LinearGenomeView',
-      ReactComponent: BaseLinearDisplayComponent,
-    })
-  })
-
-  pluginManager.createPluggableElements()
-  pluginManager.configure()
-
-  const mockRpcCall = jest.fn()
-
-  const LinearGenomeModel = LinearGenomeViewModelFactory(pluginManager)
-
-  const trackConfigSchema = pluginManager.pluggableConfigSchemaType('track')
-  const trackConfig = trackConfigSchema.create(
-    {
-      type: 'MafTrack',
-      trackId: 'test_track',
-      assemblyNames: ['volvox'],
-      // No `samples` slot on the adapter → sample-discovery path.
-      adapter: { type: 'MafTabixAdapter' },
-    },
-    { pluginManager },
-  )
-
-  const Session = types
-    .model({
-      name: 'testSession',
-      view: types.maybe(LinearGenomeModel),
-      configuration: types.map(types.frozen()),
-    })
-    .volatile(() => ({
-      rpcManager: {
-        call: mockRpcCall,
-      },
-      theme: createJBrowseTheme(),
-      assemblyManager: {
-        get: (name: string) =>
-          name === 'volvox'
-            ? {
-                initialized: true,
-                regions: [
-                  {
-                    refName: 'ctgA',
-                    start: 0,
-                    end: 50_000,
-                    assemblyName: 'volvox',
-                  },
-                ],
-                getCanonicalRefName: (refName: string) => refName,
-                configuration: { sequence: undefined },
-              }
-            : undefined,
-        isValidRefName: () => true,
-      },
-    }))
-    .views(() => ({
-      getTrackById(id: string) {
-        return id === 'test_track' ? trackConfig : undefined
-      },
-      // every promotable-slot read walks the cascade through this; nothing is
-      // promoted in these tests, so every display resolves to its promotedBase
-      getDisplayTypeDefault() {
-        return undefined
-      },
-    }))
-    .actions(self => ({
-      setView(view: Instance<typeof LinearGenomeModel>) {
-        self.view = view
-        return view
-      },
-      notifyError() {},
-      queueDialog() {},
-    }))
-
-  function createDisplay(
-    regions = [
-      { assemblyName: 'volvox', start: 0, end: 10_000, refName: 'ctgA' },
-    ],
-    // extra display snapshot keys, for the states a session can arrive in
-    // rather than click into (a share link, a screenshot spec)
-    displaySnapshot: Record<string, unknown> = {},
-  ) {
-    const session = Session.create({ configuration: {} }, { pluginManager })
-    const view = session.setView(
-      LinearGenomeModel.create({
-        type: 'LinearGenomeView',
-        tracks: [
-          {
-            type: 'MafTrack',
-            configuration: 'test_track',
-            displays: [{ type: 'LinearMafDisplay', ...displaySnapshot }],
-          },
-        ],
-      }),
-    )
-    view.setWidth(800)
-    view.setDisplayedRegions(regions)
-
-    const track = view.tracks[0]!
-    const display = track.displays[0]!
-    return { session, view, track, display, mockRpcCall }
-  }
-
-  return { createDisplay, mockRpcCall }
 }
 
 const HG38_MM10 = [
@@ -280,7 +108,10 @@ describe('LinearMafDisplay alignment fetch count', () => {
   // (heaviest-in-the-plugin) payload was downloaded a second time on every single
   // track load.
   it('fetches a region once when the sample set is stable', async () => {
-    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    const { createDisplay, mockRpcCall } = createMafTestEnvironment({
+      assemblyEnd: 50_000,
+      viewRegionEnd: 10_000,
+    })
     mockRpcCall.mockImplementation(() =>
       Promise.resolve(makeMafResult(HG38_MM10)),
     )
@@ -302,7 +133,10 @@ describe('LinearMafDisplay alignment fetch count', () => {
   // placement autorun re-places them against the widened order — the counter was
   // only re-downloading every loaded region, once per newly seen genome.
   it('re-places, without refetching, when the sample set grows', async () => {
-    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    const { createDisplay, mockRpcCall } = createMafTestEnvironment({
+      assemblyEnd: 50_000,
+      viewRegionEnd: 10_000,
+    })
     mockRpcCall.mockImplementation((_id, method) =>
       Promise.resolve(
         method === 'LinearMafGetAlignmentData'
@@ -347,7 +181,10 @@ describe('LinearMafDisplay alignment fetch count', () => {
   // in the second region, had no row to be placed at and rendered nothing. The
   // union covers both regions, and being additive it settles on the first pass.
   it('unions genomes discovered in different regions', async () => {
-    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    const { createDisplay, mockRpcCall } = createMafTestEnvironment({
+      assemblyEnd: 50_000,
+      viewRegionEnd: 10_000,
+    })
     mockRpcCall.mockImplementation((_id, method, args) =>
       Promise.resolve(
         method === 'LinearMafGetAlignmentData'
@@ -365,10 +202,12 @@ describe('LinearMafDisplay alignment fetch count', () => {
     )
     // both narrow enough to sit in the 800px viewport at the default bpPerPx, so
     // one batch buffers the pair
-    const { display } = createDisplay([
-      { assemblyName: 'volvox', start: 0, end: 400, refName: 'ctgA' },
-      { assemblyName: 'volvox', start: 1000, end: 1400, refName: 'ctgA' },
-    ])
+    const { display } = createDisplay({
+      regions: [
+        { assemblyName: 'volvox', start: 0, end: 400, refName: 'ctgA' },
+        { assemblyName: 'volvox', start: 1000, end: 1400, refName: 'ctgA' },
+      ],
+    })
     await settle(display, 2)
 
     expect(display.sources?.map((s: { name: string }) => s.name)).toEqual([
@@ -388,12 +227,15 @@ describe('LinearMafDisplay row placement', () => {
   // Nothing about order is sent now: rows come back named, and the client
   // places them against the list it draws.
   it('sends no row order, whatever the arrangement', async () => {
-    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    const { createDisplay, mockRpcCall } = createMafTestEnvironment({
+      assemblyEnd: 50_000,
+      viewRegionEnd: 10_000,
+    })
     mockRpcCall.mockImplementation(() =>
       Promise.resolve(makeMafResult(HG38_MM10)),
     )
-    const { display } = createDisplay(undefined, {
-      layout: [{ name: 'mm10' }, { name: 'hg38' }],
+    const { display } = createDisplay({
+      displaySnapshot: { layout: [{ name: 'mm10' }, { name: 'hg38' }] },
     })
     await settle(display)
 
@@ -411,7 +253,10 @@ describe('LinearMafDisplay row placement', () => {
   // payload in the plugin, because `layoutOrder` had to be part of the cache
   // key for the worker to renumber the rows.
   it('re-places cached rows on a reorder, without refetching', async () => {
-    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    const { createDisplay, mockRpcCall } = createMafTestEnvironment({
+      assemblyEnd: 50_000,
+      viewRegionEnd: 10_000,
+    })
     mockRpcCall.mockImplementation((_id, method) =>
       Promise.resolve(
         method === 'LinearMafGetAlignmentData'
@@ -442,7 +287,10 @@ describe('LinearMafDisplay row placement', () => {
   // numbered against a list the display did not draw, so every row below the
   // missing one drew under another row's name.
   it('places correctly when the layout names a genome the reply lacks', async () => {
-    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    const { createDisplay, mockRpcCall } = createMafTestEnvironment({
+      assemblyEnd: 50_000,
+      viewRegionEnd: 10_000,
+    })
     mockRpcCall.mockImplementation((_id, method) =>
       Promise.resolve(
         method === 'LinearMafGetAlignmentData'
@@ -450,8 +298,10 @@ describe('LinearMafDisplay row placement', () => {
           : makeMafResult([]),
       ),
     )
-    const { display } = createDisplay(undefined, {
-      layout: [{ name: 'mm10' }, { name: 'rn6' }, { name: 'hg38' }],
+    const { display } = createDisplay({
+      displaySnapshot: {
+        layout: [{ name: 'mm10' }, { name: 'rn6' }, { name: 'hg38' }],
+      },
     })
     await settle(display)
 
@@ -470,13 +320,18 @@ describe('LinearMafDisplay row placement', () => {
   // The subtree filter still travels, as a row *set*: the worker ships only
   // those genomes and scopes coverage to them.
   it('sends the subtree filter as a set', async () => {
-    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    const { createDisplay, mockRpcCall } = createMafTestEnvironment({
+      assemblyEnd: 50_000,
+      viewRegionEnd: 10_000,
+    })
     mockRpcCall.mockImplementation(() =>
       Promise.resolve(makeMafResult(HG38_MM10)),
     )
-    const { display } = createDisplay(undefined, {
-      layout: [{ name: 'mm10' }, { name: 'hg38' }],
-      subtreeFilter: ['hg38'],
+    const { display } = createDisplay({
+      displaySnapshot: {
+        layout: [{ name: 'mm10' }, { name: 'hg38' }],
+        subtreeFilter: ['hg38'],
+      },
     })
     await settle(display)
 

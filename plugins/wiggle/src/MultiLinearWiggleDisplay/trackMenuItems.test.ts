@@ -12,10 +12,14 @@ function makeDisplay({
   sources = ['a', 'b'],
   renderingType,
   clusterTree,
+  // the tree's leaves, in tree order — hclust's `order` is exactly its newick
+  // leaf order, which is what puts leaf i on row i
+  leafOrder = ['b', 'a'],
 }: {
   sources?: string[]
   renderingType?: string
   clusterTree?: string
+  leafOrder?: string[]
 } = {}) {
   const { createDisplay } = createTestEnvironment()
   const { display, session } = createDisplay()
@@ -24,7 +28,14 @@ function makeDisplay({
     display.setRenderingType(renderingType)
   }
   if (clusterTree) {
-    display.setClusterTree(clusterTree)
+    // A real clustered state, not just a tree string: clustering writes the row
+    // order and the tree together, and `computeClusterHierarchy` declines to
+    // position a tree whose leaves aren't the rows on screen. `leafOrder` is
+    // what the run would have persisted as `layout`.
+    display.setLayoutAndClusterTree(
+      leafOrder.map(name => ({ name, source: name })),
+      clusterTree,
+    )
   }
   return { display, session }
 }

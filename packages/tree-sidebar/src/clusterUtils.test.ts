@@ -1,9 +1,11 @@
 import {
   buildClusteredLayout,
+  computeClusterHierarchy,
   filterRowsBySubtree,
   getLeafNames,
   parseClusterTree,
   pruneNewickToLeaves,
+  treeDescribesRows,
   validateClusterOrder,
 } from './clusterUtils.ts'
 import { clusterLayout, hierarchy, leaves } from './hierarchy.ts'
@@ -185,4 +187,77 @@ test('filterRowsBySubtree keeps row order, not filter order', () => {
 test('filterRowsBySubtree ignores filter names no row has', () => {
   const rows = [{ name: 'mom' }, { name: 'dad' }]
   expect(filterRowsBySubtree(rows, ['dad', 'ghost'])).toEqual([{ name: 'dad' }])
+})
+
+// The tree is positioned by spacing its own leaves evenly across the row axis
+// (leaf i lands on row i), so a tree that no longer names the rows on screen
+// draws the whole dendrogram against the wrong ones. `computeClusterHierarchy`
+// is where every display positions its tree, so it is where that is caught —
+// including for the ways rows move with no `setLayout` call to hook.
+describe('treeDescribesRows', () => {
+  const root = parseClusterTree('((a,b),c);')
+
+  test('true when the leaves are the rows, in order', () => {
+    expect(
+      treeDescribesRows(root, [{ name: 'a' }, { name: 'b' }, { name: 'c' }]),
+    ).toBe(true)
+  })
+
+  test('false when the rows are reordered (same membership)', () => {
+    expect(
+      treeDescribesRows(root, [{ name: 'b' }, { name: 'a' }, { name: 'c' }]),
+    ).toBe(false)
+  })
+
+  test('false when a row is added', () => {
+    expect(
+      treeDescribesRows(root, [
+        { name: 'a' },
+        { name: 'b' },
+        { name: 'c' },
+        { name: 'd' },
+      ]),
+    ).toBe(false)
+  })
+
+  test('false when a row is dropped', () => {
+    expect(treeDescribesRows(root, [{ name: 'a' }, { name: 'b' }])).toBe(false)
+  })
+})
+
+describe('computeClusterHierarchy', () => {
+  const root = parseClusterTree('((a,b),c);')
+  const rows = [{ name: 'a' }, { name: 'b' }, { name: 'c' }]
+
+  test('positions the tree when it describes the rows', () => {
+    const laid = computeClusterHierarchy(root, rows, 90, 80, false)
+    expect(leaves(laid!).map(l => l.data.name)).toEqual(['a', 'b', 'c'])
+  })
+
+  test('declines a tree whose leaves are not the rows on screen', () => {
+    // e.g. multi-row features' `rowGroups` regrouping `sources` downstream of
+    // `layout`, or a discovered row set growing as regions load
+    expect(
+      computeClusterHierarchy(
+        root,
+        [rows[2]!, rows[0]!, rows[1]!],
+        90,
+        80,
+        false,
+      ),
+    ).toBeUndefined()
+    expect(
+      computeClusterHierarchy(root, [...rows, { name: 'd' }], 90, 80, false),
+    ).toBeUndefined()
+  })
+
+  test('undefined with no tree and with no rows', () => {
+    expect(
+      computeClusterHierarchy(undefined, rows, 90, 80, false),
+    ).toBeUndefined()
+    expect(computeClusterHierarchy(root, [], 90, 80, false)).toBeUndefined()
+    expect(
+      computeClusterHierarchy(root, undefined, 90, 80, false),
+    ).toBeUndefined()
+  })
 })

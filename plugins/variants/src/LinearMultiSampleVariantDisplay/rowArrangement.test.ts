@@ -1,0 +1,159 @@
+import { createTestEnvironment } from './testEnv.ts'
+
+// Sample metadata as samplesTsv supplies it: `population` is what "Color by…"
+// and "Group by…" key on.
+const SOURCES = [
+  { name: 'S0', population: 'AFR' },
+  { name: 'S1', population: 'EUR' },
+  { name: 'S2', population: 'AFR' },
+]
+
+// A clustering run's output: rows in tree-leaf order, plus the newick whose
+// leaves are those same names in that same order (hclust's `order` is exactly
+// `toNewick`'s leaf order, which is what makes leaf i land on row i).
+const CLUSTERED = [{ name: 'S2' }, { name: 'S0' }, { name: 'S1' }]
+const CLUSTERED_TREE = '((S2,S0),S1);'
+
+function clusteredDisplay() {
+  const { display } = createTestEnvironment().createDisplay()
+  display.setSources(SOURCES)
+  display.setLayoutAndClusterTree(CLUSTERED, CLUSTERED_TREE)
+  return display
+}
+
+function rowNames(display: { sources?: { name: string }[] }) {
+  return display.sources?.map(s => s.name)
+}
+
+describe('recoloring does not disturb the arrangement', () => {
+  it('keeps a clustered order and its tree when coloring by a sample attribute', () => {
+    const display = clusteredDisplay()
+    display.setColorBy('population')
+
+    expect(rowNames(display)).toEqual(['S2', 'S0', 'S1'])
+    expect(display.clusterTree).toBe(CLUSTERED_TREE)
+    // the dendrogram still positions, i.e. its leaves are still these rows
+    expect(display.hierarchy).toBeDefined()
+    expect(display.sources?.every(s => s.color)).toBe(true)
+  })
+
+  it('clearing the coloring strips the palette without resetting the order', () => {
+    const display = clusteredDisplay()
+    display.setColorBy('population')
+    display.setColorBy('')
+
+    expect(rowNames(display)).toEqual(['S2', 'S0', 'S1'])
+    expect(display.clusterTree).toBe(CLUSTERED_TREE)
+    expect(display.sources?.some(s => s.color)).toBe(false)
+  })
+
+  // Rows are haplotypes after a phased clustering run, while `sourcesVolatile`
+  // is still sample-level — re-deriving from it halved the row count.
+  it('keeps the haplotype rows in phased mode', () => {
+    const { display } = createTestEnvironment().createDisplay()
+    display.setPhasedMode('phased')
+    display.setSources(SOURCES)
+    const haplotypes = ['S2', 'S0', 'S1'].flatMap(sampleName => [
+      { name: `${sampleName} HP0`, sampleName, HP: 0 },
+      { name: `${sampleName} HP1`, sampleName, HP: 1 },
+    ])
+    display.setLayoutAndClusterTree(
+      haplotypes,
+      '(((S2 HP0,S2 HP1),(S0 HP0,S0 HP1)),(S1 HP0,S1 HP1));',
+    )
+
+    display.setColorBy('population')
+
+    expect(rowNames(display)).toEqual(haplotypes.map(s => s.name))
+    expect(display.hierarchy).toBeDefined()
+  })
+})
+
+describe('regrouping invalidates the tree it reorders under', () => {
+  // `setLayout` decides from the rows, not from which action ran: a grouping
+  // that lands on the order the tree already describes keeps it.
+  it('keeps the tree when the grouping agrees with the clustered order', () => {
+    const display = clusteredDisplay()
+    display.setGroupBy('population')
+
+    // AFR (S2, S0) leads EUR (S1) by size, which is the clustered order already
+    expect(rowNames(display)).toEqual(['S2', 'S0', 'S1'])
+    expect(display.groupBy).toBe('population')
+    expect(display.clusterTree).toBe(CLUSTERED_TREE)
+  })
+
+  it('drops the cluster tree when the grouping order differs from it', () => {
+    const { display } = createTestEnvironment().createDisplay()
+    display.setSources(SOURCES)
+    // clustered in adapter order, which grouping will not preserve
+    display.setLayoutAndClusterTree(
+      [{ name: 'S0' }, { name: 'S1' }, { name: 'S2' }],
+      '((S0,S1),S2);',
+    )
+
+    display.setGroupBy('population')
+
+    expect(rowNames(display)).toEqual(['S0', 'S2', 'S1'])
+    expect(display.clusterTree).toBeUndefined()
+    expect(display.hierarchy).toBeUndefined()
+  })
+})
+
+describe('a rendering-mode switch renames the rows', () => {
+  // The filter holds tree *leaf* names, and the mode decides whether those are
+  // sample names or "S0 HP0" haplotype names. Left behind it matched nothing
+  // and the display went blank.
+  it('clears the subtree filter along with the layout and tree', () => {
+    const display = clusteredDisplay()
+    display.setSubtreeFilter(['S2', 'S0'])
+    expect(rowNames(display)).toEqual(['S2', 'S0'])
+
+    display.setPhasedMode('phased')
+
+    expect(display.subtreeFilter).toBeUndefined()
+    expect(display.layout).toEqual([])
+    expect(display.clusterTree).toBeUndefined()
+    expect(rowNames(display)).toEqual(['S0', 'S1', 'S2'])
+  })
+
+  // Clearing without re-arranging dropped the configured coloring on every
+  // mode switch, while "Color by… → Population" stayed checked in the menu.
+  it('re-applies the configured coloring to the renamed rows', () => {
+    const { display } = createTestEnvironment().createDisplay()
+    display.setSources(SOURCES)
+    display.setColorBy('population')
+
+    display.setPhasedMode('phased')
+
+    expect(display.colorBy).toBe('population')
+    expect(display.sources?.every(s => s.color)).toBe(true)
+    const byName = Object.fromEntries(
+      display.layout.map(s => [s.name, s.color]),
+    )
+    expect(byName.S0).toBe(byName.S2)
+    expect(byName.S0).not.toBe(byName.S1)
+  })
+
+  it('leaves everything alone when the mode does not change', () => {
+    const display = clusteredDisplay()
+    display.setSubtreeFilter(['S2', 'S0'])
+
+    display.setPhasedMode(display.renderingMode)
+
+    expect(display.subtreeFilter?.slice()).toEqual(['S2', 'S0'])
+    expect(display.clusterTree).toBe(CLUSTERED_TREE)
+  })
+
+  // A reorder is not a rename: the filter still names rows that exist, so the
+  // user's focused clade survives a "Sort by genotype" or a dialog reorder.
+  it('survives a reorder that invalidates the tree', () => {
+    const display = clusteredDisplay()
+    display.setSubtreeFilter(['S2', 'S0'])
+
+    display.setLayout([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])
+
+    expect(display.clusterTree).toBeUndefined()
+    expect(display.subtreeFilter?.slice()).toEqual(['S2', 'S0'])
+    expect(rowNames(display)).toEqual(['S0', 'S2'])
+  })
+})

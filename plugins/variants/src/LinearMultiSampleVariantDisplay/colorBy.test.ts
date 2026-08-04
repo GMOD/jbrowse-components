@@ -56,10 +56,24 @@ describe('multi-sample variant colorBy', () => {
     expect(model.layout.map(s => s.name)).toEqual(['HG001', 'HG003', 'HG002'])
   })
 
-  it('clears the grouping when set to empty', () => {
+  // Set to empty, the palette goes and the arrangement stays: a recolor is not
+  // a reorder in either direction, and resetting the order here threw away a
+  // clustering run or a hand-made order along with the colors.
+  it('strips the palette when set to empty, keeping the order', () => {
     const model = makeModel()
     model.setSources(sources)
+    model.setGroupBy('population')
     model.setColorBy('population')
+    model.setColorBy('')
+
+    expect(model.colorBy).toBe('')
+    expect(model.layout.map(s => s.name)).toEqual(['HG001', 'HG003', 'HG002'])
+    expect(model.layout.some(s => s.color)).toBe(false)
+  })
+
+  it('persists no arrangement at all when there was none to keep', () => {
+    const model = makeModel()
+    model.setSources(sources)
     model.setColorBy('')
 
     expect(model.colorBy).toBe('')

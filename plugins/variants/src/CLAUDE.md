@@ -50,7 +50,7 @@ Render input → the subclass `renderState` getter.
   (`buildCanonicalRows`), ships `rowNames`, and the client places those names
   onto screen rows (`rowRemap` → `placeVariantRows`). A drag-reorder, a "Group
   by", a clustering run and "Sort by genotype" therefore re-upload the cells
-  already in hand; none of them refetches. The row *set* still is an input —
+  already in hand; none of them refetches. The row _set_ still is an input —
   `sampleFilter`, sent **sorted** so only membership can move it — because a
   focused clade is genuinely fewer cells to compute. Same split maf makes
   (`subtreeFilter` + `placeMafRegionData`); multi-wiggle makes it by passing
@@ -67,6 +67,29 @@ Render input → the subclass `renderState` getter.
 - **Matrix mode is zoom-cache-strict** (`isCacheValid` requires
   `bpPerPx === loadedBpPerPx`). Don't extend that or the visible-only fetch to
   regular mode.
+
+## `layout` is the row set here, unlike the other row displays
+
+maf, multi-row features and multi-wiggle discover their rows from the data as
+regions load, so their `layout` is an _ordering hint_ and tree-sidebar's
+`reconcileLayout` appends a discovered row it omits. Here the sample set arrives
+once from the VCF header, and `getSources` iterates `layout` alone: a sample it
+omits gets no row. That is load-bearing —
+
+- `sampleFilter`, the rows' one fetch input, is derived from it, so narrowing
+  the layout narrows what the worker computes;
+- `editableSources` skips the subtree filter for exactly this reason, since
+  submitting a narrowed list out of the dialog would drop rows from `layout`;
+- `rowPlacement.test.ts` pins both halves, including the `HIDDEN_ROW` sentinel
+  for a shipped row the display isn't drawing.
+
+Don't "unify" it with `reconcileLayout`.
+
+Row-arrangement actions do share the rest: they persist through the mixin's
+`setLayout` (never a direct `self.layout =`) so a stale dendrogram is dropped,
+and `applyArrangement` re-arranges the rows already on screen rather than
+re-deriving from adapter order — re-deriving made "Color by…" discard a
+clustering run, and halve the row count in phased mode.
 
 ## Connector lines
 

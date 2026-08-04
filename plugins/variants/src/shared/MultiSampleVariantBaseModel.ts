@@ -13,6 +13,7 @@ import {
   getSession,
   openFeatureWidget,
 } from '@jbrowse/core/util'
+import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import {
   addDisposer,
@@ -187,12 +188,13 @@ export function maybeApplyGroupBy<S extends Record<string, unknown>>(
   return undefined
 }
 
-// Apply the active colorBy palette and groupBy ordering in one pass, the shared
-// arrangement every layout-resetting action wants: color first, then group the
-// colored rows so a track can set both and get grouped-and-colored together.
-// Returns `[]` when neither applies, the "no arrangement" layout. Keeping this
-// in one place is why setSources/setColorBy/setGroupBy/clearLayout can't drift
-// apart (e.g. recoloring silently dropping an active grouping).
+// Apply the active colorBy palette and groupBy ordering in one pass: color
+// first, then group the colored rows so a track can set both and get
+// grouped-and-colored together. Returns `[]` when neither applies, the "no
+// arrangement" layout. Its one caller is `applyArrangement`, which is in turn
+// the one thing setSources / setColorBy / setGroupBy / clearLayout / setPhasedMode
+// all arrange through — which is why none of them can drift (a recolor dropping
+// an active grouping, a mode switch dropping the coloring).
 function arrangeSources(
   colorBy: string,
   groupBy: string,
@@ -200,6 +202,70 @@ function arrangeSources(
 ): Source[] {
   const colored = maybeApplyColorByPalette(colorBy, sources)
   return maybeApplyGroupBy(groupBy, colored ?? sources) ?? colored ?? []
+}
+
+// Drop the palette colors a previous `colorBy` wrote, leaving order and every
+// other per-row override in place. Applied only to layout rows: the adapter
+// sources can carry a color of their own (a `color` column in samplesTsv),
+// which is not ours to strip.
+function stripPaletteColors(rows: Source[]): Source[] {
+  return rows.map(({ color: _color, ...rest }) => rest)
+}
+
+// The slice `applyArrangement` drives. Structural so the helper can live beside
+// `arrangeSources` rather than inside the actions block that calls it.
+interface ArrangeableModel {
+  sourcesVolatile: Source[] | undefined
+  layout: Source[]
+  setLayout: (layout: Source[]) => void
+}
+
+/**
+ * Re-apply the active `colorBy` palette and `groupBy` ordering and persist the
+ * result as the layout. The single implementation behind `setColorBy` and
+ * `setGroupBy`.
+ *
+ * With an arrangement already on screen it re-arranges **that**, not adapter
+ * order: re-deriving from `sourcesVolatile` made "Color by… → Population"
+ * silently discard a clustering run or a hand-made order, and in phased mode
+ * halve the row count, since `layout` there holds haplotype rows where
+ * `sourcesVolatile` holds samples.
+ *
+ * Persists through the mixin's `setLayout`, never a direct `self.layout =`, so
+ * a loaded dendrogram is dropped exactly when the rows really do move — a
+ * recolor over an unchanged order now keeps its tree, and a regroup correctly
+ * loses it.
+ */
+function applyArrangement(
+  self: ArrangeableModel,
+  colorBy: string,
+  groupBy: string,
+) {
+  const sources = self.sourcesVolatile
+  if (!sources) {
+    return
+  }
+  if (self.layout.length === 0) {
+    // Nothing arranged yet, so adapter order is the thing to arrange. `[]` —
+    // what `arrangeSources` returns when neither axis applies — is the right
+    // answer here: it *means* "no arrangement".
+    self.setLayout(arrangeSources(colorBy, groupBy, sources))
+    return
+  }
+  // Merge the layout back over the adapter metadata that the palette and the
+  // grouping read (`layout` is only an ordering/override hint).
+  // `renderingMode: 'alleleCount'` is "merge, don't expand further" — the
+  // layout rows already carry whatever granularity they were built at.
+  const current = getSources({
+    sources,
+    layout: self.layout,
+    renderingMode: 'alleleCount',
+  })
+  const base = colorBy ? current : stripPaletteColors(current)
+  const next = arrangeSources(colorBy, groupBy, base)
+  // Neither axis applies — but there is an arrangement here, and clearing both
+  // must not throw away the order the user is looking at.
+  self.setLayout(next.length ? next : base)
 }
 
 // Regions to fetch + render, by mode. Regular mode draws each variant at its
@@ -619,10 +685,7 @@ export default function MultiSampleVariantBaseModelF(
           // Apply the colorBy palette and groupBy ordering only when the user
           // hasn't already arranged the layout themselves.
           if (self.layout.length === 0) {
-            const next = arrangeSources(self.colorBy, self.groupBy, sources)
-            if (next.length) {
-              self.layout = next
-            }
+            applyArrangement(self, self.colorBy, self.groupBy)
           }
         },
         /**
@@ -631,14 +694,13 @@ export default function MultiSampleVariantBaseModelF(
          * pass '' to clear the coloring. Persists the arrangement as the layout
          * and records the choice in the `colorBy` config slot so it survives a
          * data refetch and serializes into the session. Re-applies `groupBy` in
-         * the same pass so recoloring doesn't drop an existing grouping.
+         * the same pass so recoloring doesn't drop an existing grouping, and
+         * recolors the rows in place (see `applyArrangement`) so it doesn't drop
+         * an existing order either.
          */
         setColorBy(colorBy: string) {
           setConf(self, 'colorBy', colorBy)
-          const sources = self.sourcesVolatile
-          if (sources) {
-            self.layout = arrangeSources(colorBy, self.groupBy, sources)
-          }
+          applyArrangement(self, colorBy, self.groupBy)
         },
         /**
          * #action
@@ -651,10 +713,7 @@ export default function MultiSampleVariantBaseModelF(
          */
         setGroupBy(groupBy: string) {
           setConf(self, 'groupBy', groupBy)
-          const sources = self.sourcesVolatile
-          if (sources) {
-            self.layout = arrangeSources(self.colorBy, groupBy, sources)
-          }
+          applyArrangement(self, self.colorBy, groupBy)
         },
         /**
          * #action
@@ -666,11 +725,12 @@ export default function MultiSampleVariantBaseModelF(
          */
         clearLayout() {
           self.clusterTree = undefined
-          self.subtreeFilter = undefined
-          const sources = self.sourcesVolatile
-          self.layout = sources
-            ? arrangeSources(self.colorBy, self.groupBy, sources)
-            : []
+          self.setSubtreeFilter(undefined)
+          self.layout = []
+          // With no layout left, `applyArrangement` re-derives from adapter
+          // order — the same "reset to the configured default" it does on first
+          // load, so the two can't drift.
+          applyArrangement(self, self.colorBy, self.groupBy)
         },
         /**
          * #action
@@ -709,11 +769,25 @@ export default function MultiSampleVariantBaseModelF(
          * #action
          */
         setPhasedMode(arg: string) {
-          if (self.renderingMode !== arg) {
-            self.layout = []
-            self.clusterTree = undefined
-          }
+          const renamesRows = self.renderingMode !== arg
           setConf(self, 'renderingMode', arg)
+          if (renamesRows) {
+            // The mode decides what a row is *called* — sample names in
+            // allele-count mode, "HG001 HP0" haplotype names in phased — so the
+            // layout, the tree built from it, and the subtree filter naming that
+            // tree's leaves all go stale together. The filter is otherwise
+            // independent of the tree (`filterRowsBySubtree` keys on `name` and
+            // needs no tree, so a reorder leaves it perfectly valid); this is the
+            // one action that renames the rows out from under it, and leaving it
+            // set here matched nothing and blanked the display.
+            //
+            // Same reset as `clearLayout`, so the configured `colorBy` palette
+            // and `groupBy` order come back on the new row names. Clearing
+            // without re-arranging dropped the row coloring on every mode
+            // switch while the menu still showed it checked — nothing else
+            // re-seeds `layout` (`setSources` fires once per adapter).
+            self.clearLayout()
+          }
         },
         /**
          * #action
@@ -1062,21 +1136,14 @@ export default function MultiSampleVariantBaseModelF(
          * than a resize. Every consumer reads this, never the raw `rowHeight`
          * setting.
          *
-         * Floored at 1px only when non-positive: `availableHeight` floors at
-         * 0 (see above), so `autoRowHeight` can still be exactly 0 when
-         * `lineZoneHeight` swallows the whole display — dividing by it
-         * elsewhere (`/ effectiveRowHeight` in applyRowResizeWheel, the
-         * renderers) would propagate NaN/Infinity. A resolved getter must never hand
-         * back a degenerate value. The floor must not catch legitimate
-         * sub-1px auto-fit heights (many-sample tracks squeezed into a short
-         * display) — flooring those would balloon `totalHeight` past
-         * `availableHeight` and make `scrollableHeight` report a scroll in the
-         * one mode documented never to have one.
+         * The sentinel resolution and the non-positive floor are shared with
+         * the other sentinel-bearing row displays (`resolveRowHeight`) — the
+         * floor is reachable here because `availableHeight` floors at 0, so a
+         * `lineZoneHeight` that swallows the whole display makes
+         * `autoRowHeight` exactly 0.
          */
         get effectiveRowHeight() {
-          const height =
-            self.rowHeight === 0 ? this.autoRowHeight : self.rowHeight
-          return height > 0 ? height : 1
+          return resolveRowHeight(self.rowHeight, this.autoRowHeight)
         },
         /**
          * #getter
@@ -1084,7 +1151,7 @@ export default function MultiSampleVariantBaseModelF(
         get hierarchy() {
           return computeClusterHierarchy(
             self.root,
-            self.sources?.length ?? 0,
+            self.sources,
             this.effectiveRowHeight * this.nrow,
             self.treeAreaWidth,
             self.showBranchLength,
@@ -1351,7 +1418,9 @@ export default function MultiSampleVariantBaseModelF(
               {
                 adapterConfig,
                 regions: regions.map(r => r.region),
-                displayedRegionIndices: regions.map(r => r.displayedRegionIndex),
+                displayedRegionIndices: regions.map(
+                  r => r.displayedRegionIndex,
+                ),
                 ...rpcProps,
                 // bound at factory call time, per subclass
                 mode: cellDataMode,

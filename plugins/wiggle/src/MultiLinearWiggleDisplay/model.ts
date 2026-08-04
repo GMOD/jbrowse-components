@@ -323,7 +323,7 @@ export default function stateModelFactory(
           ? undefined
           : computeClusterHierarchy(
               self.root,
-              self.sources.length,
+              self.sources,
               self.height,
               self.treeAreaWidth,
               self.showBranchLength,

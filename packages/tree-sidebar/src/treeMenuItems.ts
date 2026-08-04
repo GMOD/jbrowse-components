@@ -32,11 +32,37 @@ export function treeBranchLengthMenuItem(
   )
 }
 
-interface ClusteringMenuModel extends BranchLengthMenuModel {
-  clusterTree?: string
+interface SubtreeFilterMenuModel {
   subtreeFilter?: readonly string[]
-  setShowTree: (arg: boolean) => void
   setSubtreeFilter: (arg?: string[]) => void
+}
+
+// "Clear subtree filter", or nothing when no filter is set — spread, don't
+// insert. Every display that can focus a clade needs this escape hatch and needs
+// it to survive the tree: the filter is a set of row names, so it keeps hiding
+// rows after a reorder has invalidated the dendrogram whose node-click set it,
+// and the tree's own context menu is gone with the tree. Returned as a list so
+// the one label and the one gate are single-sourced across the clustering
+// submenu and the displays (maf) that have no clustering submenu to put it in.
+export function clearSubtreeFilterMenuItems(
+  self: SubtreeFilterMenuModel,
+): MenuItem[] {
+  return self.subtreeFilter?.length
+    ? [
+        {
+          label: 'Clear subtree filter',
+          onClick: () => {
+            self.setSubtreeFilter(undefined)
+          },
+        },
+      ]
+    : []
+}
+
+interface ClusteringMenuModel
+  extends BranchLengthMenuModel, SubtreeFilterMenuModel {
+  clusterTree?: string
+  setShowTree: (arg: boolean) => void
 }
 
 // One "Clustering" submenu shape for every display that clusters its rows
@@ -99,16 +125,7 @@ export function clusteringMenuItem(
           ]
         : []),
       ...(treeApplies ? [treeBranchLengthMenuItem(self)] : []),
-      ...(self.subtreeFilter?.length
-        ? [
-            {
-              label: 'Clear subtree filter',
-              onClick: () => {
-                self.setSubtreeFilter(undefined)
-              },
-            },
-          ]
-        : []),
+      ...clearSubtreeFilterMenuItems(self),
     ],
   }
 }

@@ -5,6 +5,8 @@ export { default as TreeSidebar } from './TreeSidebar.tsx'
 export { DisplayCrosshairs } from './DisplayCrosshairs.tsx'
 export { treeSidebarRightEdge } from './treeSidebarGeometry.ts'
 export { SvgRowLabels } from './SvgRowLabels.tsx'
+export { RowLabelsOverlay } from './RowLabelsOverlay.tsx'
+export { StaleTreeHint } from './StaleTreeHint.tsx'
 export { SvgTreePath } from './SvgTreePath.tsx'
 export { SvgTreeSidebar } from './SvgTreeSidebar.tsx'
 export { setupTreeDrawingAutorun } from './treeDrawingAutorun.ts'
@@ -18,6 +20,7 @@ export {
   parseClusterOrder,
   parseClusterTree,
   reconcileLayout,
+  treeDescribesRows,
   validateClusterOrder,
 } from './clusterUtils.ts'
 export { generateClusterRScript, matrixToTsv } from './clusterRScript.ts'
@@ -29,6 +32,7 @@ export { default as ClusterProgress } from './ClusterProgress.tsx'
 export { useClusterRun } from './useClusterRun.ts'
 export { TreeSidebarMixin } from './TreeSidebarMixin.ts'
 export {
+  clearSubtreeFilterMenuItems,
   clusteringMenuItem,
   treeBranchLengthMenuItem,
 } from './treeMenuItems.ts'
