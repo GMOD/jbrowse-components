@@ -123,8 +123,8 @@ of shared copy-number profile.
 
 A vertical stripe is one locus called the same way across many rows, blue for
 recurrent loss and red for recurrent gain. A whole row tending red or blue is
-one heavily aneuploid tumor, and clustering pulls those rows together into a
-band.
+one heavily aneuploid tumor, altered across most of its genome, and clustering
+pulls those rows together into a band.
 
 Zooming to a single locus turns the stripe back into per-tumor calls, and
 clustering on just that window sorts the cohort into its copy-number classes
@@ -134,9 +134,9 @@ there.
 
 Do not read proportions off this display. At 1104 rows in a few hundred pixels
 each row is well under one pixel tall, so rows alias together and the saturated
-colors crowd out the neutral ones. The stack maps where events are rather than
-how many rows carry them: the ERBB2 window above is 68.5% balanced in the file
-and paints as roughly half that.
+colors crowd out the neutral ones, which leaves the balanced band drawn thinner
+than its share of the file. The stack maps where events are rather than how many
+rows carry them.
 
 ## Add a recurrence track
 
@@ -363,8 +363,8 @@ splicing data, look outside TCGA (GTEx and recount3 publish junction summaries).
   recurrence track's scale and color controls
 - [](/docs/tutorials/bxd_qtl), the same multi-row display for strain genotypes
 - [](/docs/tutorials/chromhmm), the same display across cell types
-- [](/docs/tutorials/population_cnv), one row per sample for germline copy
-  number, from depth rather than segment calls
+- [](/docs/tutorials/population_cnv), the germline counterpart: one row per
+  individual across a whole population, from per-sample bigWigs
 - [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab), single-tumor
   structural and copy-number variation
 - [jexl](/docs/config_guides/jexl)

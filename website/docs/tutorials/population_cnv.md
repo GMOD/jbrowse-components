@@ -315,7 +315,7 @@ bash build_1000g_cnv_zarr.sh --whole-genome # every main contig
 - [Multi-quantitative tracks](/docs/user_guides/multiquantitative_track), the
   display's own menus and options
 - [](/docs/tutorials/tcga_cohort_cnv), the same one-row-per-sample idea for
-  somatic segment calls
+  somatic copy number across a tumor cohort
 - [Structural variants across samples](/docs/tutorials/sv_multisamples)
 - [Clustering](/docs/user_guides/clustering)
 

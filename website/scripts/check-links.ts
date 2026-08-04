@@ -16,7 +16,12 @@
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 
-import { isFile, reportProblems, walkFiles } from './check-utils.ts'
+import {
+  assertBaseMatches,
+  isFile,
+  reportProblems,
+  walkFiles,
+} from './check-utils.ts'
 
 const distDir = join(import.meta.dirname, '..', 'dist')
 const BASE = process.env.SITE_BASE_PATH || '/jb2'
@@ -94,6 +99,7 @@ if (!isFile(join(distDir, 'index.html'))) {
   console.error('dist/ not found or empty — run `pnpm build` first.')
   process.exit(1)
 }
+assertBaseMatches(distDir, BASE)
 
 const problems = walkFiles(distDir, name => name.endsWith('.html')).flatMap(
   checkFile,

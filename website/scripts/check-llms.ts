@@ -10,7 +10,12 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { isFile, reportProblems, walkFiles } from './check-utils.ts'
+import {
+  assertBaseMatches,
+  isFile,
+  reportProblems,
+  walkFiles,
+} from './check-utils.ts'
 
 const docsDir = join(import.meta.dirname, '..', 'docs')
 const distDir = join(import.meta.dirname, '..', 'dist')
@@ -86,6 +91,7 @@ if (dupeHeadings.length > 0) {
 // type="text/markdown" href="…/docs/<slug>.md"> (BaseLayout). Confirm each of
 // those hrefs resolves to an emitted file.
 const BASE = process.env.SITE_BASE_PATH || '/jb2'
+assertBaseMatches(distDir, BASE)
 const ALTERNATE =
   /<link\b[^>]*rel="alternate"[^>]*type="text\/markdown"[^>]*href="([^"]+)"/g
 const badAlternates = walkFiles(distDir, name =>
