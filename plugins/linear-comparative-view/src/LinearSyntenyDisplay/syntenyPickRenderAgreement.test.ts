@@ -19,9 +19,11 @@ import type {
 // Nothing asserted that. `syntenyPickEngine.test.ts` imports only the pick
 // engine, and `Canvas2DSyntenyRenderer.test.ts` only the renderer, so moving
 // one threshold and not the other produces ribbons you can see but not click
-// (or click but not see) with every test still green. It is the last `SYNC:`
+// (or click but not see) with every test still green. It is the last hand-sync
 // site encoding a user-visible must-agree invariant rather than a deliberate
-// per-backend divergence (adr-051).
+// per-backend divergence (adr-051). Deliberately not spelling the tag marker
+// here: it is grepped to count the remaining sites, and prose about them should
+// not inflate the count.
 //
 // This drives BOTH real implementations over the same geometry and compares
 // their verdicts, rather than re-deriving the threshold here — a test that

@@ -270,12 +270,29 @@ and the two implementations have to be *meant* to agree:
 
 ## Consequences
 
-- Six drift sites retired in the first round, forty-five more since
-  (twenty-eight functions and nineteen constants, sixteen of them crossing a
-  package boundary); `SYNC:`-tagged sites went 27 → 8, and six of the ones removed were
+- **What is generated today, by count rather than by tally.** 24 shaders export
+  something: **31 functions** (17 shaders carry `js-export`) and **86
+  constants**. **19 of those names land in a different package than the shader**
+  — 4 functions and 15 constants, via `js-export-out` / `consts-out`.
+  `SYNC:`-tagged sites went **27 → 8**, and six of the ones removed were
   **stale** — they named `read.slang` branches deleted when read classification
   moved to the CPU. Everything left is classified in
   [handoffs/shader-js-codegen.md](../handoffs/shader-js-codegen.md).
+
+  These are counts of what the directives currently emit, deliberately replacing
+  a running "drift sites retired" tally that had been incremented by hand each
+  round and drifted badly — it had reached "forty-five retired (twenty-eight
+  functions and nineteen constants)" against a true 31 and 86, having been
+  internally inconsistent from the start (its own "twenty-nine more" did not
+  equal its "twenty-two functions and nine constants"). Recount rather than
+  increment:
+
+  ```sh
+  grep -rh '^//! js-export:' --include='*.slang' packages plugins \
+    | sed 's#^//! js-export: ##' | tr ',' '\n' | grep -c '[a-zA-Z]'
+  grep -rh '^//! export-consts:' --include='*.slang' packages plugins \
+    | sed 's#^//! export-consts: ##' | tr ',' '\n' | grep -c '[a-zA-Z]'
+  ```
 - **Not every drift site wants codegen.** The last `SYNC:` tag that was not
   shader-coupled at all — `features/linkedReads/compute.ts` keeping its palette
   indices numbered like `PAIR_DIRECTION_NUM` — closed by defining one from the

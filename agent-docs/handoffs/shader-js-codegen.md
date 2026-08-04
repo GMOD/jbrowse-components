@@ -20,7 +20,12 @@ The *why*, including everything deliberately not built, is
 | `*.js.generated.ts` | the generated twins — never hand-edit |
 | `hpmathParity` / `alphaShaderParity` / `syntenyShaderParity` / `pointMarkerParity` / `hicShaderParity` / `qualityFadeParity` / `densityGradientParity` / `scoreToYParity` / `coverageBandLayoutParity` / `dprimeFinalizeParity` / `insertionWidth` / `rowBand` / `drawCanvas` tests | the retirement gates |
 
-Seventeen shaders export today; the table is in ADR-051.
+**17 shaders carry `js-export` (31 functions); 24 export something once
+`export-consts` is counted (86 constants).** 19 of those names land in a
+different package than their shader. The table of what and why is in ADR-051 —
+which also carries the one-line greps, because these are counts to re-run, not a
+tally to increment. A hand-incremented one lived here for several rounds and
+ended up off by a factor of four on the constants.
 
 **Generated constants have no re-export hops.** A consumer imports from the
 generated module (or from the package that owns the concept, where a
