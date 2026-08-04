@@ -1,8 +1,10 @@
 import { INVOKABLE_CHANNELS } from './ipc/channelNames.ts'
 
-// The require() the renderer gets once contextIsolation is on. Kept free of
-// `electron` imports so it is unit-testable without an Electron runtime — the
-// contextBridge wiring in preload.ts is not.
+// The require() the renderer would get once contextIsolation is on. Nothing
+// loads the preload that installs this yet, so it is not what the renderer has
+// today — see preload.ts. Kept free of `electron` imports so it is unit-testable
+// without an Electron runtime, which the contextBridge wiring in preload.ts is
+// not.
 
 export interface RendererElectron {
   ipcRenderer: {
@@ -15,7 +17,8 @@ export type Invoke = (channel: string, ...args: unknown[]) => Promise<unknown>
 const allowedChannels = new Set<string>(INVOKABLE_CHANNELS)
 
 /**
- * Builds the shim exposed to the page as `require`.
+ * Builds the shim that would be exposed to the page as `require` (see the note
+ * above: no window installs it yet).
  *
  * Plugins in the wild already reach the main process by destructuring
  * `require('electron')` — the Apollo plugin does exactly this to open its OAuth

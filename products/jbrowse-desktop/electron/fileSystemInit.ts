@@ -11,10 +11,9 @@ import type { AppPaths } from './paths.ts'
 
 export const LEGACY_QUICKSTARTS = ['hg19', 'hg38', 'mm10']
 
-/**
- * Ensures all required directories exist
- */
-export async function ensureDirectoriesExist(paths: AppPaths) {
+// Every directory the app writes into. Created before anything else so no
+// handler has to guard for a missing parent.
+async function ensureDirectoriesExist(paths: AppPaths) {
   const directories = [
     paths.quickstartDir,
     paths.faiDir,
@@ -27,23 +26,18 @@ export async function ensureDirectoriesExist(paths: AppPaths) {
   )
 }
 
-/**
- * Initializes the recent sessions file if it doesn't exist
- */
-export async function initializeRecentSessionsFile(paths: AppPaths) {
-  if (!fs.existsSync(paths.recentSessionsPath)) {
-    await fs.promises.writeFile(
-      paths.recentSessionsPath,
-      stringify([]),
-      ENCODING,
-    )
+// Seeds a JSON list file that the rest of the app then reads without an
+// existence check — getGlobalPlugins deliberately surfaces a read failure rather
+// than treating it as empty, so the file has to be here before any window opens.
+async function initializeJsonListFile(filePath: string) {
+  if (!fs.existsSync(filePath)) {
+    await fs.promises.writeFile(filePath, stringify([]), ENCODING)
   }
 }
 
-/**
- * Deletes legacy quickstarts on first startup
- */
-export async function cleanupLegacyQuickstarts(paths: AppPaths) {
+// Deletes the quickstarts that used to ship with the app, once, on first
+// startup after the upgrade that dropped them.
+async function cleanupLegacyQuickstarts(paths: AppPaths) {
   await Promise.all(
     LEGACY_QUICKSTARTS.map(async name => {
       const quickstartPath = getQuickstartPath(paths, name)
@@ -66,19 +60,6 @@ export async function cleanupLegacyQuickstarts(paths: AppPaths) {
 }
 
 /**
- * Initializes the global plugins file if it doesn't exist
- */
-export async function initializeGlobalPluginsFile(paths: AppPaths) {
-  if (!fs.existsSync(paths.globalPluginsPath)) {
-    await fs.promises.writeFile(
-      paths.globalPluginsPath,
-      stringify([]),
-      ENCODING,
-    )
-  }
-}
-
-/**
  * Initializes the file system: creates directories and sets up initial files
  */
 export async function initializeFileSystem(paths: AppPaths) {
@@ -86,8 +67,8 @@ export async function initializeFileSystem(paths: AppPaths) {
   // quickstartDir, so it must not race the mkdir that creates it
   await ensureDirectoriesExist(paths)
   await Promise.all([
-    initializeRecentSessionsFile(paths),
-    initializeGlobalPluginsFile(paths),
+    initializeJsonListFile(paths.recentSessionsPath),
+    initializeJsonListFile(paths.globalPluginsPath),
     cleanupLegacyQuickstarts(paths),
   ])
 }

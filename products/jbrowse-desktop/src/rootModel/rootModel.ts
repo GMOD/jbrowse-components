@@ -62,6 +62,19 @@ function getSaveSession(model: BaseRootModel) {
   }
 }
 
+// Every menu action that can throw reports the same way: logged for the devtools
+// console, then surfaced in the session's notification area. Structurally typed
+// so both `self.session` and a BaseSession-narrowed one pass without a cast.
+function reportError(
+  session:
+    | { notifyError: (message: string, error: unknown) => void }
+    | undefined,
+  e: unknown,
+) {
+  console.error(e)
+  session?.notifyError(`${e}`, e)
+}
+
 type SessionModelFactory = (args: {
   pluginManager: PluginManager
   assemblyConfigSchema: BaseAssemblyConfigSchema
@@ -178,20 +191,43 @@ export default function rootModelFactory({
             await self.openNewSessionCallback(self.sessionPath)
           }
         },
+        /**
+         * #action
+         * Save now rather than waiting out the autosave's 1s debounce, so the
+         * last second of edits survives. Every path that tears the session down
+         * — quitting, returning to the start screen — has to call this first;
+         * Exit did not, and lost whatever was still inside the debounce window.
+         */
+        async flushSession() {
+          // capture the session up front so a save failure reports to the same
+          // session even if it changed during the awaited save
+          const { session } = self
+          if (session) {
+            try {
+              await self.saveSession(getSaveSession(self))
+            } catch (e) {
+              reportError(session, e)
+            }
+          }
+        },
         afterCreate() {
           addDisposer(
             self,
             autorun(
               async () => {
-                // capture the session up front so a save failure reports to the
-                // same session even if it changed during the awaited save
+                // NOT `await this.flushSession()`, tempting as the reuse is: an
+                // MST action runs untracked, so the snapshot reads would happen
+                // where this autorun cannot see them and it would fire exactly
+                // once, silently ending autosave. The reads have to stay here,
+                // and getSaveSession has to be evaluated before saveSession (an
+                // action) is entered.
                 const { session } = self
                 if (session) {
+                  const snap = getSaveSession(self)
                   try {
-                    await self.saveSession(getSaveSession(self))
+                    await self.saveSession(snap)
                   } catch (e) {
-                    console.error(e)
-                    session.notifyError(`${e}`, e)
+                    reportError(session, e)
                   }
                 }
               },
@@ -228,8 +264,7 @@ export default function rootModelFactory({
                                   }
                                 }
                               } catch (e) {
-                                console.error(e)
-                                self.session?.notifyError(`${e}`, e)
+                                reportError(self.session, e)
                               }
                               doneCallback()
                             },
@@ -257,8 +292,7 @@ export default function rootModelFactory({
                               await self.openNewSessionCallback(path)
                             }
                           } catch (e) {
-                            console.error(e)
-                            self.session?.notifyError(`${e}`, e)
+                            reportError(self.session, e)
                           }
                         },
                       },
@@ -295,8 +329,7 @@ export default function rootModelFactory({
                               await self.saveSession(getSaveSession(self))
                             }
                           } catch (e) {
-                            console.error(e)
-                            self.session?.notifyError(`${e}`, e)
+                            reportError(self.session, e)
                           }
                         },
                       },
@@ -335,15 +368,7 @@ export default function rootModelFactory({
                       // debounce window aren't lost, then let the Loader tear
                       // down this plugin manager (workers + autosave) rather
                       // than leaving it orphaned behind the start screen
-                      const session = self.session as BaseSession | undefined
-                      if (session) {
-                        try {
-                          await self.saveSession(getSaveSession(self))
-                        } catch (e) {
-                          console.error(e)
-                          session.notifyError(`${e}`, e)
-                        }
-                      }
+                      await self.flushSession()
                       self.returnToStartScreenCallback()
                     },
                   },
@@ -351,6 +376,10 @@ export default function rootModelFactory({
                     label: 'Exit',
                     icon: MeetingRoomIcon,
                     onClick: async () => {
+                      // quitting destroys the window, so the pending debounced
+                      // autosave would never run: flush first, exactly as
+                      // returning to the start screen above does
+                      await self.flushSession()
                       await ipcRenderer.invoke('quit')
                     },
                   },

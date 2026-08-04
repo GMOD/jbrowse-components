@@ -20,6 +20,25 @@ import type { RecentSession, SessionSnap } from './channels.ts'
 const { unlink, readFile, writeFile, rename } = fs.promises
 const THUMBNAIL_WIDTH = 500
 
+// `instanceof Error` is deliberately not part of this. A Node error that crosses
+// a vm realm — jest's module sandbox today, any future worker boundary — fails
+// instanceof while still carrying its code, so the code is the only part worth
+// testing, and testing it is what makes these paths reachable from a test at all.
+function isNotFound(e: unknown) {
+  return (e as NodeJS.ErrnoException | null)?.code === 'ENOENT'
+}
+
+// A session that was never saved with a window up has no thumbnail, and a file
+// deleted outside the app is already gone: neither absence is worth a console
+// error, but anything else (a permissions problem) still is.
+function unlinkIfPresent(filePath: string) {
+  return unlink(filePath).catch((e: unknown) => {
+    if (!isNotFound(e)) {
+      logError(e)
+    }
+  })
+}
+
 // capturePage stalls on a full readback of the window's framebuffer, so it must
 // not ride the 1s autosave: while a user pans, the session snapshot changes
 // every tick and this would fire once a second forever. The thumbnail only
@@ -77,9 +96,8 @@ async function readSession(sessionPath: string): Promise<SessionSnap> {
     relativeUrisToLocalPaths(snap, path.dirname(sessionPath))
     return snap
   } catch (e) {
-    const missing = e instanceof Error && 'code' in e && e.code === 'ENOENT'
     throw new Error(
-      missing
+      isNotFound(e)
         ? `Session file no longer exists: ${sessionPath}. It may have been moved or deleted.`
         : `Failed to read session ${sessionPath}: ${e}`,
       { cause: e },
@@ -195,8 +213,12 @@ export function registerSessionHandlers(
         rows.filter(s => !sessionPaths.includes(s.path)),
       ),
       ...sessionPaths.flatMap(sessionPath => [
-        unlink(getThumbnailPath(paths, sessionPath)).catch(logError),
-        unlink(sessionPath).catch(logError),
+        unlinkIfPresent(getThumbnailPath(paths, sessionPath)),
+        // an install upgraded from a pre-sha256 build can still hold the
+        // legacy-named thumbnail (loadThumbnail migrates one only when the card
+        // is viewed), so deleting just the current name orphaned it forever
+        unlinkIfPresent(getLegacyThumbnailPath(paths, sessionPath)),
+        unlinkIfPresent(sessionPath),
       ]),
     ])
   })
