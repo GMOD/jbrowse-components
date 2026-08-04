@@ -63,7 +63,12 @@ export function computeCoverageTicks(
       ticks.push({ value: tick, y: yOf(tick) })
       tick *= 2
     }
-    if (ticks.length < 2) {
+    // A log axis whose octave ladder never fired still wants a top tick — but
+    // only when maxDepth isn't the 1 already pushed. At maxDepth === 1 (a
+    // single-read pileup) this used to emit {value:1} twice at the same y, and
+    // both YScaleBar and CrossHatchLines key on `${value}-${y}` — so it drew a
+    // duplicate label and guide line under a React duplicate-key warning.
+    if (ticks.length < 2 && maxDepth > 1) {
       ticks.push({ value: maxDepth, y: yOf(maxDepth) })
     }
   } else if (coverageHeight < 70) {

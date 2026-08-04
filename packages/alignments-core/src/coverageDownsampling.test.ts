@@ -60,6 +60,22 @@ describe('computeCoverageTicks', () => {
       expect(Number.isFinite(tick.y)).toBe(true)
     }
   })
+
+  // YScaleBar and CrossHatchLines both key on `${value}-${y}`, so a repeated
+  // tick is a React duplicate key plus an overdrawn label and guide line
+  test('emits no duplicate ticks on any log scale', () => {
+    for (const maxDepth of [1, 2, 3, 5, 8, 17, 100]) {
+      const items = computeCoverageTicks(maxDepth, 150, 'log').items
+      const keys = items.map(t => `${t.value}-${t.y}`)
+      expect(new Set(keys).size).toBe(items.length)
+    }
+  })
+
+  test('log scale with maxDepth=1 keeps its single tick rather than doubling it', () => {
+    expect(computeCoverageTicks(1, 150, 'log').items.map(t => t.value)).toEqual(
+      [1],
+    )
+  })
 })
 
 describe('downsampleDenseMax', () => {
