@@ -1,7 +1,7 @@
 import { parseArgs } from 'node:util'
 
 import { printHelp } from '../../utils.ts'
-import { waitForProcessClose } from '../process-utils.ts'
+import { describeExit, waitForProcessClose } from '../process-utils.ts'
 import {
   validateFileArgument,
   validateRequiredCommands,
@@ -115,9 +115,11 @@ export async function run(args?: string[]) {
   ).finally(() => {
     stdin.end()
   })
-  const exitCode = await waitForProcessClose(child)
-  if (exitCode !== 0) {
-    throw new Error(`PIF sort/index pipeline exited with code ${exitCode}`)
+  // no SIGPIPE exemption here (unlike sort-gff/sort-bed): this pipeline's output
+  // is the .pif.gz file, so anything that killed it early left that file broken
+  const exit = await waitForProcessClose(child)
+  if (exit.code !== 0) {
+    throw new Error(`PIF sort/index pipeline exited with ${describeExit(exit)}`)
   }
 
   // A file that yielded nothing is almost always the wrong file, not an empty

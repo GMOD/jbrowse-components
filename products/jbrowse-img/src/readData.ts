@@ -9,18 +9,30 @@ import {
   syntenyTrackTypes,
 } from './makeConfigs.ts'
 import { modifierValue } from './parseArgv.ts'
+import { STDIN_ARG, readTextInput } from './util.ts'
 
 import type { Assembly, Config, Opts, Track } from './types.ts'
 
+// how to name an input in an error message
+function inputName(file: string) {
+  return file === STDIN_ARG ? 'stdin' : file
+}
+
 function read(file: string): unknown {
   try {
-    return JSON.parse(fs.readFileSync(file, 'utf8')) as unknown
+    return JSON.parse(readTextInput(file)) as unknown
   } catch (e) {
     throw new Error(
-      `Failed to parse ${file} as JSON, use --fasta if you mean to pass a FASTA file`,
+      `Failed to parse ${inputName(file)} as JSON, use --fasta if you mean to pass a FASTA file`,
       { cause: e },
     )
   }
+}
+
+// a `localPath` inside a JSON input resolves relative to that input's file; piped
+// JSON has no file, so its paths resolve against the cwd the pipe ran in
+function baseDirOf(file: string) {
+  return file === STDIN_ARG ? process.cwd() : path.dirname(path.resolve(file))
 }
 
 // The `--multiwig` argument is either a path/URL list (comma-separated BigWig
@@ -28,7 +40,7 @@ function read(file: string): unknown {
 // URLs or full subadapter objects. A JSON file's `localPath`s resolve relative
 // to that file, matching how --tracks/--config paths resolve.
 function readMultiWiggleSources(file: string): unknown[] {
-  if (!file.toLowerCase().endsWith('.json')) {
+  if (file !== STDIN_ARG && !file.toLowerCase().endsWith('.json')) {
     return file
       .split(',')
       .map(s => s.trim())
@@ -36,16 +48,16 @@ function readMultiWiggleSources(file: string): unknown[] {
   }
   let data: unknown
   try {
-    data = JSON.parse(fs.readFileSync(file, 'utf8'))
+    data = JSON.parse(readTextInput(file))
   } catch (e) {
-    throw new Error(`Failed to parse ${file} as JSON`, { cause: e })
+    throw new Error(`Failed to parse ${inputName(file)} as JSON`, { cause: e })
   }
   if (!Array.isArray(data)) {
     throw new Error(
-      `${file}: expected a JSON array of BigWig URLs or subadapter objects`,
+      `${inputName(file)}: expected a JSON array of BigWig URLs or subadapter objects`,
     )
   }
-  resolveLocalPaths(data, path.dirname(path.resolve(file)))
+  resolveLocalPaths(data, baseDirOf(file))
   return data
 }
 
@@ -63,6 +75,21 @@ function resolveLocalPaths(value: unknown, baseDir: string) {
       }
     }
   }
+}
+
+// --tracks names a JSON array of track configs, whose localPaths resolve relative
+// to it (or to the cwd when piped)
+function readTrackArray(file: string): Track[] {
+  const data = read(file)
+  if (!Array.isArray(data)) {
+    throw new Error(`${inputName(file)}: expected a JSON array of tracks`)
+  }
+  const tracks = data as Track[]
+  const baseDir = baseDirOf(file)
+  for (const track of tracks) {
+    resolveLocalPaths(track, baseDir)
+  }
+  return tracks
 }
 
 // `configObject` is a config already fetched off the network (from --hub or a
@@ -85,22 +112,14 @@ export function readData(
   configObject?: Config,
 ) {
   let assemblyData: Assembly | undefined
-  if (asm && fs.existsSync(asm)) {
+  // `-` reads the assembly JSON from stdin; any other non-existent value is an
+  // assembly NAME to look up in the config below
+  if (asm && (asm === STDIN_ARG || fs.existsSync(asm))) {
     assemblyData = read(asm) as Assembly
-    resolveLocalPaths(assemblyData, path.dirname(path.resolve(asm)))
+    resolveLocalPaths(assemblyData, baseDirOf(asm))
   }
 
-  const rawTracksData = tracks ? read(tracks) : undefined
-  if (rawTracksData !== undefined && !Array.isArray(rawTracksData)) {
-    throw new Error(`${tracks}: expected a JSON array of tracks`)
-  }
-  const tracksData = rawTracksData as Track[] | undefined
-  if (tracksData && tracks) {
-    const baseDir = path.dirname(path.resolve(tracks))
-    for (const track of tracksData) {
-      resolveLocalPaths(track, baseDir)
-    }
-  }
+  const tracksData = tracks ? readTrackArray(tracks) : undefined
   const configData: Partial<Config> & Record<string, unknown> = configObject
     ? configObject
     : config
@@ -112,7 +131,7 @@ export function readData(
     : undefined
 
   if (config && !configObject) {
-    resolveLocalPaths(configData, path.dirname(path.resolve(config)))
+    resolveLocalPaths(configData, baseDirOf(config))
   }
 
   // the session.json can be a raw session or a json file with a "session"

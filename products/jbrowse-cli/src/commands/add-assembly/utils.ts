@@ -3,6 +3,7 @@ import path from 'node:path'
 
 import { isURL } from '../../types/common.ts'
 import {
+  STDIN_ARG,
   debug,
   ignoreNotFound,
   isRecord,
@@ -166,7 +167,9 @@ async function customSequenceAdapter(argsSequence: string, name?: string) {
   const adapter = await readInlineOrFileJson<Sequence['adapter']>(argsSequence)
   debug(`Custom adapter: ${JSON.stringify(adapter)}`)
   if (!name) {
-    if (isValidJSON(argsSequence)) {
+    // neither inline JSON nor stdin carries a filename to name the assembly
+    // after, and "-" is not a name
+    if (isValidJSON(argsSequence) || argsSequence === STDIN_ARG) {
       throw new Error(
         'Must provide --name when using custom inline JSON sequence',
       )

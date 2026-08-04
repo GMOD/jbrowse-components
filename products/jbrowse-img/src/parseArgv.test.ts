@@ -1,4 +1,9 @@
-import { modifierValue, parseArgv, splitModifier } from './parseArgv.ts'
+import {
+  modifierValue,
+  parseArgv,
+  splitModifier,
+  standardizeArgv,
+} from './parseArgv.ts'
 
 test('parses track types, flags, and per-track options', () => {
   const args =
@@ -70,4 +75,15 @@ test('modifierValue returns the first matching key value, else undefined', () =>
   expect(modifierValue(tokens, 'index')).toBe('https://x/a.csi')
   expect(modifierValue(tokens, 'name')).toBe('My Track')
   expect(modifierValue(tokens, 'missing')).toBeUndefined()
+})
+
+// a bare `-` names stdin, so it is a VALUE. Treating it as a flag made it an
+// option named '' — `--spec -` warned "unknown option --" and left --spec empty.
+test('parseArgv treats a bare "-" as a value, not a new flag', () => {
+  expect(parseArgv(['--spec', '-'])).toEqual([['spec', ['-']]])
+  expect(parseArgv(['--config', '-', '--loc', 'ctgA:1-100'])).toEqual([
+    ['config', ['-']],
+    ['loc', ['ctgA:1-100']],
+  ])
+  expect(standardizeArgv(parseArgv(['--tracks', '-']), []).tracks).toBe('-')
 })

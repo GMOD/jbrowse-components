@@ -931,24 +931,24 @@ Options:
   --fasta           Path to indexed FASTA file
   --chromSizes      Path to a chrom.sizes file (whole-genome assembly, no sequence). Repeat for each assembly in a comparative view
   --aliases         Path to reference name aliases file
-  --assembly        Path to assembly JSON or name in config
+  --assembly        Path to assembly JSON (or "-" for stdin) or name in config
   --hub             Pull a whole config from genomes.jbrowse.org: a UCSC db name (hg19, mm10) or GenArk accession (GCA_/GCF_...). Gives cytobands, refName aliasing, and hosted trackIds (see --track)
   --track           Show a trackId already in the config (from --hub/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
-  --config          Path to JBrowse config.json (path or URL)
-  --session         Path to session JSON
+  --config          Path to JBrowse config.json (path, URL, or "-" for stdin)
+  --session         Path to session JSON (or "-" for stdin)
   --loc             Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --hub)
-  --out             Output file path (SVG or PNG)
+  --out             Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
   --width           Width of output in pixels [default: 1500]
   --noRasterize     Disable rasterization of pileup/coverage [default: false]
   --defaultSession  Use default session from config [default: false]
-  --tracks          Path to JSON file with an array of track configs
+  --tracks          Path to JSON file with an array of track configs (or "-" for stdin)
   --cytobands       Path to cytoband file for the assembly
   --themeName       Theme for rendering: default, lightStock, lightMinimal, darkStock, or darkMinimal
   --fontFamily      Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
   --showGridlines   Show genomic coordinate gridlines in the output [default: false]
   --trackLabels     Track label position: offset, overlay, left, or none
   --refseq          Show the reference sequence track [default: false]
-  --spec            Session-spec JSON (inline or path to .json) describing the view; see urlparams.md. Drives N-way comparative views from a --config
+  --spec            Session-spec JSON (inline, path to .json, or "-" for stdin) describing the view; see urlparams.md. Drives N-way comparative views from a --config
   --help            Show help
   --version         Print version
 
@@ -978,24 +978,24 @@ Options:
   --fasta               Path to indexed FASTA file
   --chromSizes          Path to a chrom.sizes file (whole-genome assembly, no sequence). Repeat for each assembly in a comparative view
   --aliases             Path to reference name aliases file
-  --assembly            Path to assembly JSON or name in config
+  --assembly            Path to assembly JSON (or "-" for stdin) or name in config
   --hub                 Pull a whole config from genomes.jbrowse.org: a UCSC db name (hg19, mm10) or GenArk accession (GCA_/GCF_...). Gives cytobands, refName aliasing, and hosted trackIds (see --track)
   --track               Show a trackId already in the config (from --hub/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
-  --config              Path to JBrowse config.json (path or URL)
-  --session             Path to session JSON
+  --config              Path to JBrowse config.json (path, URL, or "-" for stdin)
+  --session             Path to session JSON (or "-" for stdin)
   --loc                 Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --hub)
-  --out                 Output file path (SVG or PNG)
+  --out                 Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
   --width               Width of output in pixels [default: 1500]
   --noRasterize         Disable rasterization of pileup/coverage [default: false]
   --defaultSession      Use default session from config [default: false]
-  --tracks              Path to JSON file with an array of track configs
+  --tracks              Path to JSON file with an array of track configs (or "-" for stdin)
   --cytobands           Path to cytoband file for the assembly
   --themeName           Theme for rendering: default, lightStock, lightMinimal, darkStock, or darkMinimal
   --fontFamily          Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
   --showGridlines       Show genomic coordinate gridlines in the output [default: false]
   --trackLabels         Track label position: offset, overlay, left, or none
   --refseq              Show the reference sequence track [default: false]
-  --spec                Session-spec JSON (inline or path to .json) describing the view; see urlparams.md. Drives N-way comparative views from a --config
+  --spec                Session-spec JSON (inline, path to .json, or "-" for stdin) describing the view; see urlparams.md. Drives N-way comparative views from a --config
   --fasta2              Second assembly indexed FASTA (shorthand)
   --aliases2            Reference name aliases for fasta2
   --loc2                Location on the second assembly
@@ -1022,24 +1022,24 @@ Options:
   --fasta               Path to indexed FASTA file
   --chromSizes          Path to a chrom.sizes file (whole-genome assembly, no sequence). Repeat for each assembly in a comparative view
   --aliases             Path to reference name aliases file
-  --assembly            Path to assembly JSON or name in config
+  --assembly            Path to assembly JSON (or "-" for stdin) or name in config
   --hub                 Pull a whole config from genomes.jbrowse.org: a UCSC db name (hg19, mm10) or GenArk accession (GCA_/GCF_...). Gives cytobands, refName aliasing, and hosted trackIds (see --track)
   --track               Show a trackId already in the config (from --hub/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
-  --config              Path to JBrowse config.json (path or URL)
-  --session             Path to session JSON
+  --config              Path to JBrowse config.json (path, URL, or "-" for stdin)
+  --session             Path to session JSON (or "-" for stdin)
   --loc                 Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --hub)
-  --out                 Output file path (SVG or PNG)
+  --out                 Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
   --width               Width of output in pixels [default: 1500]
   --noRasterize         Disable rasterization of pileup/coverage [default: false]
   --defaultSession      Use default session from config [default: false]
-  --tracks              Path to JSON file with an array of track configs
+  --tracks              Path to JSON file with an array of track configs (or "-" for stdin)
   --cytobands           Path to cytoband file for the assembly
   --themeName           Theme for rendering: default, lightStock, lightMinimal, darkStock, or darkMinimal
   --fontFamily          Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
   --showGridlines       Show genomic coordinate gridlines in the output [default: false]
   --trackLabels         Track label position: offset, overlay, left, or none
   --refseq              Show the reference sequence track [default: false]
-  --spec                Session-spec JSON (inline or path to .json) describing the view; see urlparams.md. Drives N-way comparative views from a --config
+  --spec                Session-spec JSON (inline, path to .json, or "-" for stdin) describing the view; see urlparams.md. Drives N-way comparative views from a --config
   --fasta2              Second assembly indexed FASTA (shorthand)
   --aliases2            Reference name aliases for fasta2
   --loc2                Location on the second assembly
@@ -1070,24 +1070,24 @@ Options:
   --fasta           Path to indexed FASTA file
   --chromSizes      Path to a chrom.sizes file (whole-genome assembly, no sequence). Repeat for each assembly in a comparative view
   --aliases         Path to reference name aliases file
-  --assembly        Path to assembly JSON or name in config
+  --assembly        Path to assembly JSON (or "-" for stdin) or name in config
   --hub             Pull a whole config from genomes.jbrowse.org: a UCSC db name (hg19, mm10) or GenArk accession (GCA_/GCF_...). Gives cytobands, refName aliasing, and hosted trackIds (see --track)
   --track           Show a trackId already in the config (from --hub/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
-  --config          Path to JBrowse config.json (path or URL)
-  --session         Path to session JSON
+  --config          Path to JBrowse config.json (path, URL, or "-" for stdin)
+  --session         Path to session JSON (or "-" for stdin)
   --loc             Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --hub)
-  --out             Output file path (SVG or PNG)
+  --out             Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
   --width           Width of output in pixels [default: 1500]
   --noRasterize     Disable rasterization of pileup/coverage [default: false]
   --defaultSession  Use default session from config [default: false]
-  --tracks          Path to JSON file with an array of track configs
+  --tracks          Path to JSON file with an array of track configs (or "-" for stdin)
   --cytobands       Path to cytoband file for the assembly
   --themeName       Theme for rendering: default, lightStock, lightMinimal, darkStock, or darkMinimal
   --fontFamily      Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
   --showGridlines   Show genomic coordinate gridlines in the output [default: false]
   --trackLabels     Track label position: offset, overlay, left, or none
   --refseq          Show the reference sequence track [default: false]
-  --spec            Session-spec JSON (inline or path to .json) describing the view; see urlparams.md. Drives N-way comparative views from a --config
+  --spec            Session-spec JSON (inline, path to .json, or "-" for stdin) describing the view; see urlparams.md. Drives N-way comparative views from a --config
 
 Examples:
   jb2export circular --fasta ref.fa --vcfgz sv.vcf.gz --out out.svg

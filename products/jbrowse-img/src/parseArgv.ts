@@ -4,11 +4,15 @@ export type Entry = [string, string[]]
 // onto it until the next flag. `--key=value` is equivalent to `--key value`: the
 // inline value seeds the entry, so `--width=1000` no longer silently becomes an
 // unknown `width=1000` option.
+//
+// A bare `-` is the exception: it is the conventional name for stdin, so it is a
+// VALUE. Treating it as a flag made it an option named '' — `--spec -` warned
+// "unknown option --" and left --spec with no value at all.
 export function parseArgv(rawArgv: string[]) {
   const entries: Entry[] = []
   let current: string[] | undefined
   for (const arg of rawArgv) {
-    if (arg.startsWith('-')) {
+    if (arg.startsWith('-') && arg !== '-') {
       const eq = arg.indexOf('=')
       current = []
       if (eq === -1) {

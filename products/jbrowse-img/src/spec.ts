@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 
 import { modeDescriptors, viewModes } from './modes.ts'
+import { STDIN_ARG, readStdin } from './util.ts'
 
 import type { ViewMode } from './modes.ts'
 
@@ -14,10 +15,15 @@ export interface ViewSpec {
 }
 
 // Accepts the documented `{ views: [viewObject] }` wrapper (so JSON copied from
-// a `&session=spec-` URL works) or a bare view object. Reads from a file when
-// `spec` is a path, else parses it as inline JSON.
+// a `&session=spec-` URL works) or a bare view object. Reads stdin for `-`, a
+// file when `spec` is a path, else parses it as inline JSON.
 export function parseSpec(spec: string): ViewSpec {
-  const raw = fs.existsSync(spec) ? fs.readFileSync(spec, 'utf8') : spec
+  const raw =
+    spec === STDIN_ARG
+      ? readStdin()
+      : fs.existsSync(spec)
+        ? fs.readFileSync(spec, 'utf8')
+        : spec
   const obj = JSON.parse(raw) as Record<string, unknown>
   const view =
     typeof obj.type === 'string'

@@ -718,6 +718,11 @@ Options:
 
       --out                  Synonym for target
 
+Notes:
+
+The track argument is a JSON file, inline JSON, or "-" to read the JSON from
+stdin, so a track config can be generated and piped straight in.
+
 Examples:
 
 # add a track from a JSON file
@@ -728,6 +733,9 @@ $ jbrowse add-track-json track.json --update
 
 # pass the track config inline instead of via a file
 $ jbrowse add-track-json '{"type":"FeatureTrack","trackId":"genes","assemblyNames":["hg38"],"adapter":{"type":"Gff3TabixAdapter","gffGzLocation":{"uri":"genes.gff.gz"}}}'
+
+# pipe the track config in from another program
+$ jq '.tracks[0]' other/config.json | jbrowse add-track-json -
 
 # write to a config.json in a specific installation directory
 $ jbrowse add-track-json track.json --out /path/to/jb2/
@@ -770,8 +778,8 @@ Usage: jbrowse set-default-session [options]
 
 Options:
   -s, --session              set path to a file containing session in json
-                             format (required, unless using
-                             delete/currentSession flags)
+                             format, or "-" to read it from stdin (required,
+                             unless using delete/currentSession flags)
 
   -n, --name                 Give a name for the default session (overrides any
                              name in the session file; defaults to "New Default
@@ -798,6 +806,9 @@ $ jbrowse set-default-session --target /path/to/jb2/installation/config.json --s
 
 # override the name stored in the session file
 $ jbrowse set-default-session --session session.json --name "My default view"
+
+# pipe a session in from another program
+$ jq '.defaultSession' other/config.json | jbrowse set-default-session --session -
 
 # print the current default session
 $ jbrowse set-default-session --currentSession

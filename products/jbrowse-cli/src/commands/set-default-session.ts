@@ -23,6 +23,9 @@ const examples = [
   '# override the name stored in the session file',
   '$ jbrowse set-default-session --session session.json --name "My default view"',
   '',
+  '# pipe a session in from another program',
+  `$ jq '.defaultSession' other/config.json | jbrowse set-default-session --session -`,
+  '',
   '# print the current default session',
   '$ jbrowse set-default-session --currentSession',
   '',
@@ -34,7 +37,7 @@ const options = {
     type: 'string',
     short: 's',
     description:
-      'set path to a file containing session in json format (required, unless using delete/currentSession flags)',
+      'set path to a file containing session in json format, or "-" to read it from stdin (required, unless using delete/currentSession flags)',
   },
   name: {
     type: 'string',

@@ -113,7 +113,10 @@ export const optionDefs: OptionDef[] = [
       'Path to a chrom.sizes file (whole-genome assembly, no sequence). Repeat for each assembly in a comparative view',
   },
   { name: 'aliases', description: 'Path to reference name aliases file' },
-  { name: 'assembly', description: 'Path to assembly JSON or name in config' },
+  {
+    name: 'assembly',
+    description: 'Path to assembly JSON (or "-" for stdin) or name in config',
+  },
   {
     name: 'hub',
     description:
@@ -124,14 +127,21 @@ export const optionDefs: OptionDef[] = [
     description:
       'Show a trackId already in the config (from --hub/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)',
   },
-  { name: 'config', description: 'Path to JBrowse config.json (path or URL)' },
-  { name: 'session', description: 'Path to session JSON' },
+  {
+    name: 'config',
+    description: 'Path to JBrowse config.json (path, URL, or "-" for stdin)',
+  },
+  { name: 'session', description: 'Path to session JSON (or "-" for stdin)' },
   {
     name: 'loc',
     description:
       'Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --hub)',
   },
-  { name: 'out', description: 'Output file path (SVG or PNG)' },
+  {
+    name: 'out',
+    description:
+      'Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats',
+  },
   {
     name: 'width',
     description: 'Width of output in pixels',
@@ -149,7 +159,8 @@ export const optionDefs: OptionDef[] = [
   },
   {
     name: 'tracks',
-    description: 'Path to JSON file with an array of track configs',
+    description:
+      'Path to JSON file with an array of track configs (or "-" for stdin)',
   },
   { name: 'cytobands', description: 'Path to cytoband file for the assembly' },
   {
@@ -179,7 +190,7 @@ export const optionDefs: OptionDef[] = [
   {
     name: 'spec',
     description:
-      'Session-spec JSON (inline or path to .json) describing the view; see urlparams.md. Drives N-way comparative views from a --config',
+      'Session-spec JSON (inline, path to .json, or "-" for stdin) describing the view; see urlparams.md. Drives N-way comparative views from a --config',
   },
 ]
 

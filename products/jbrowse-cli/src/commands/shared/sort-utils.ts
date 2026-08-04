@@ -4,7 +4,11 @@ import { parseArgs } from 'node:util'
 import { fileSync } from 'tmp'
 
 import { printHelp } from '../../utils.ts'
-import { waitForProcessClose } from '../process-utils.ts'
+import {
+  describeExit,
+  diedOfSigpipe,
+  waitForProcessClose,
+} from '../process-utils.ts'
 import { validateFileArgument, validateRequiredCommands } from './validators.ts'
 
 import type { ChildProcess } from 'node:child_process'
@@ -132,9 +136,15 @@ export async function runSort(
   validateRequiredCommands(['sh', 'sort', 'grep'])
 
   const child = spawnSortProcess(file, config.sortColumn)
-  const exitCode = await waitForProcessClose(child)
+  const exit = await waitForProcessClose(child)
 
-  if (exitCode !== 0) {
-    throw new Error(`Sort process exited with code ${exitCode}`)
+  // These commands exist to be piped (`jbrowse sort-bed in.bed | bgzip > …`), so
+  // a consumer that stops reading early — `| head`, `| grep -q` — must not be
+  // reported as a sort failure. It used to exit 1 with "exited with code 141".
+  if (diedOfSigpipe(exit)) {
+    return
+  }
+  if (exit.code !== 0) {
+    throw new Error(`Sort process exited with ${describeExit(exit)}`)
   }
 }

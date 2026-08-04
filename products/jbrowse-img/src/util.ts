@@ -3,6 +3,26 @@ import fs from 'node:fs'
 
 import { fileSync } from 'tmp'
 
+// `-` as a file argument means stdin, so a JSON input can be piped in rather
+// than staged as a file: `jq … | jb2export --spec -`
+export const STDIN_ARG = '-'
+
+let stdinConsumed = false
+
+export function readStdin() {
+  // reading fd 0 twice yields nothing the second time, which would surface as a
+  // baffling JSON parse error rather than the mistake it is
+  if (stdinConsumed) {
+    throw new Error('stdin ("-") can only be read once per command')
+  }
+  stdinConsumed = true
+  return fs.readFileSync(0, 'utf8')
+}
+
+export function readTextInput(file: string) {
+  return file === STDIN_ARG ? readStdin() : fs.readFileSync(file, 'utf8')
+}
+
 export function convert(
   result: string,
   args: { out: string; width?: string },

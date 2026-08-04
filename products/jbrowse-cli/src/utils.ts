@@ -1,4 +1,4 @@
-import { promises as fsPromises } from 'node:fs'
+import { promises as fsPromises, readFileSync } from 'node:fs'
 import path from 'node:path'
 import zlib from 'node:zlib'
 
@@ -69,8 +69,27 @@ export async function resolveConfigPath(target?: string, out?: string) {
   return isDir ? path.join(output, 'config.json') : output
 }
 
+// `-` as a file argument means stdin, so a JSON hunk can be piped in rather than
+// staged as a file: `jq … | jbrowse add-track-json -`
+export const STDIN_ARG = '-'
+
+let stdinConsumed = false
+
+function readStdin() {
+  // reading fd 0 twice yields nothing the second time, which would surface as a
+  // baffling JSON parse error rather than the mistake it is
+  if (stdinConsumed) {
+    throw new Error('stdin ("-") can only be read once per command')
+  }
+  stdinConsumed = true
+  return readFileSync(0, 'utf8')
+}
+
 export async function readJsonFile<T>(location: string): Promise<T> {
-  const contents = await fsPromises.readFile(location, { encoding: 'utf8' })
+  const contents =
+    location === STDIN_ARG
+      ? readStdin()
+      : await fsPromises.readFile(location, { encoding: 'utf8' })
   return JSON.parse(contents)
 }
 
@@ -97,6 +116,11 @@ export async function writeJsonFile(location: string, contents: unknown) {
 }
 
 export async function readInlineOrFileJson<T>(inlineOrFileName: string) {
+  // checked before the inline attempt rather than falling through it, so the
+  // intent is explicit (JSON.parse('-') happens to throw, but not by design)
+  if (inlineOrFileName === STDIN_ARG) {
+    return readJsonFile<T>(STDIN_ARG)
+  }
   let result: T
   // see if it's inline JSON
   try {

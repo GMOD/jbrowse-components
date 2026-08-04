@@ -48,6 +48,10 @@ export async function run(args?: string[]) {
 
   const usage = 'jbrowse add-track-json <track> [options]'
 
+  const notes =
+    'The track argument is a JSON file, inline JSON, or "-" to read the JSON ' +
+    'from stdin, so a track config can be generated and piped straight in.'
+
   const examples = [
     '# add a track from a JSON file',
     '$ jbrowse add-track-json track.json',
@@ -58,6 +62,9 @@ export async function run(args?: string[]) {
     '# pass the track config inline instead of via a file',
     `$ jbrowse add-track-json '{"type":"FeatureTrack","trackId":"genes","assemblyNames":["hg38"],"adapter":{"type":"Gff3TabixAdapter","gffGzLocation":{"uri":"genes.gff.gz"}}}'`,
     '',
+    '# pipe the track config in from another program',
+    `$ jq '.tracks[0]' other/config.json | jbrowse add-track-json -`,
+    '',
     '# write to a config.json in a specific installation directory',
     '$ jbrowse add-track-json track.json --out /path/to/jb2/',
   ]
@@ -66,6 +73,7 @@ export async function run(args?: string[]) {
     printHelp({
       description,
       examples,
+      notes,
       usage,
       options,
     })
