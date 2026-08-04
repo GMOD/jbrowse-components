@@ -68,6 +68,7 @@
   "peerDependencies": {
     "react": ">=19.0.0"
   },
+  "//publishConfig": "The shader subpaths are spelled out because `./*` cannot reach them: it rewrites `./shaders/pointGlyph` to `esm/shaders/pointGlyph.js`, but the source is `pointGlyph.js.generated.ts`, so tsc emits `pointGlyph.js.generated.js` and the wildcard resolves to a file that was never written. Nothing catches that in the workspace — the source `exports` above name the .ts directly — so it only surfaces once a consumer installs the packed tarball.",
   "publishConfig": {
     "access": "public",
     "main": "esm/index.js",
@@ -76,6 +77,26 @@
       ".": {
         "types": "./esm/index.d.ts",
         "import": "./esm/index.js"
+      },
+      "./shaders/hpmath": {
+        "types": "./esm/shaders/hpmath.js.generated.d.ts",
+        "import": "./esm/shaders/hpmath.js.generated.js"
+      },
+      "./shaders/pointGlyph": {
+        "types": "./esm/shaders/pointGlyph.js.generated.d.ts",
+        "import": "./esm/shaders/pointGlyph.js.generated.js"
+      },
+      "./shaders/pointGlyphConsts": {
+        "types": "./esm/shaders/pointGlyph.generated.d.ts",
+        "import": "./esm/shaders/pointGlyph.generated.js"
+      },
+      "./shaders/rowRect": {
+        "types": "./esm/shaders/rowRect.js.generated.d.ts",
+        "import": "./esm/shaders/rowRect.js.generated.js"
+      },
+      "./shaders/rowRectConsts": {
+        "types": "./esm/shaders/rowRect.generated.d.ts",
+        "import": "./esm/shaders/rowRect.generated.js"
       },
       "./*": {
         "types": "./esm/*.d.ts",
