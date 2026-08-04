@@ -94,13 +94,17 @@ evolutionary step rather than an arbitrary one.
 Diagonalizing this stack lands on the layout wheat figures are conventionally
 drawn in: it brings each homoeologous group's chromosomes together, so the
 hexaploid row reads as groups rather than as subgenomes, without being told
-which chromosomes are homoeologs. The wedge shapes come from the row widths.
-Every row spans its whole genome across the same pixel width, so a chromosome of
-the diploid donor is three times the width of its counterpart in the hexaploid,
-and a one-to-one correspondence between them draws as a triangle rather than a
-parallelogram.
+which chromosomes are homoeologs.
 
-<Figure caption="Six wheat-lineage genomes stacked on OrthoFinder orthogroups, in evolutionary order: Aegilops tauschii, bread wheat, durum, wild emmer, Triticum urartu, T. timopheevii. Each band is a real step (D-donor to hexaploid, hexaploid to durum, durum to its wild ancestor, wild ancestor to the A-genome donor, A-genome donor to the independent timopheevii tetraploid) rather than an arbitrary pairing, and the A/B/D subgenome suffixes in wheat's and durum's own chromosome names carry through the ribbons." src="/img/orthofinder_synteny/wheat.png" />
+The rows also share one bp/px rather than each being fitted to the pane width —
+"Show all regions at same scale" in the view menu, `sameScale` in a session
+spec. A row's drawn length is then its genome size, which for this stack is the
+subject: the diploid donors are drawn short and the hexaploid fills the frame.
+Fitted individually, every row is the same length instead, which stretches the
+diploid donor's seven chromosomes across the same span as the hexaploid's
+twenty-one and draws a one-to-one correspondence between the two as a wedge.
+
+<Figure caption="Six wheat-lineage genomes stacked on OrthoFinder orthogroups, in evolutionary order: Aegilops tauschii, bread wheat, durum, wild emmer, Triticum urartu, T. timopheevii. All six rows are on one genomic scale, so a row's length is its genome size: the two diploid donors against the hexaploid they built and the tetraploids in between." src="/img/orthofinder_synteny/wheat.png" />
 
 ## The conversion
 

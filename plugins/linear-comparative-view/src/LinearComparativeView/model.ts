@@ -372,6 +372,23 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
+       * Show every row's whole region set on ONE bp/px, the coarsest row's, so
+       * the largest genome still fills its pane and every other row is drawn
+       * shorter in proportion to its size. That difference is the point: rows
+       * fit individually to width all end up the same length, which silently
+       * stretches a small genome to look like a large one and misaligns every
+       * ribbon between them by the ratio. Distinct from squareView, which
+       * averages the rows' current scales (the average fits nobody, and each
+       * row's own zoom clamp pulls the small ones back to fit-to-width anyway).
+       */
+      showAllRegionsSameScale() {
+        const bpPerPx = Math.max(...self.views.map(v => v.maxBpPerPx))
+        for (const view of self.views) {
+          view.showAllRegionsAtScale(bpPerPx)
+        }
+      },
+      /**
+       * #action
        */
       clearView() {
         self.views = cast([])

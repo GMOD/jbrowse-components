@@ -43,7 +43,7 @@ driven imperatively — every property and action below is reachable on
 const view = viewState.session.views[0]
 await view.navToLocString('chr1:2,000,000-2,100,000')
 view.showTrack('alignments')
-view.setBpPerPx(view.bpPerPx * 2) // zoom out 2x
+view.zoomTo(view.bpPerPx * 2) // zoom out 2x
 ```
 
 Members a composed model contributes are listed here too, so these tables are
@@ -235,6 +235,7 @@ the whole surface.
 | <span id="action-toggletrackselector">**toggleTrackSelector**</span><br><code>() =&gt; Widget</code> |  | LinearGenomeView |
 | <span id="action-horizontalscroll">**horizontalScroll**</span><br><code>(distance: number) =&gt; number</code> |  | LinearGenomeView |
 | <span id="action-showallregions">**showAllRegions**</span><br><code>() =&gt; void</code> |  | LinearGenomeView |
+| <span id="action-showallregionsatscale">**showAllRegionsAtScale**</span><br><code>(bpPerPx: number) =&gt; void</code> | showAllRegions at a scale the caller supplies rather than this view's own fit-to-width one, so several views can share one bp/px and their genomes compare by drawn length. Deliberately assigns past maxBpPerPx instead of going through zoomTo: a scale that fits the LARGEST genome in a set necessarily exceeds every smaller genome's fit-to-width limit, and clamping each row back to its own limit is exactly the equal-width stretch this exists to avoid. Only a caller that owns the layout of a whole set of views has a reason to reach for it — anything zooming a single view wants zoomTo, whose clamp keeps the genome on screen. | LinearGenomeView |
 | <span id="action-showallregionsinassembly">**showAllRegionsInAssembly**</span><br><code>(assemblyName?: string &#124; undefined) =&gt; void</code> |  | LinearGenomeView |
 | <span id="action-setdraggingtrackid">**setDraggingTrackId**</span><br><code>(idx?: string &#124; undefined) =&gt; void</code> |  | LinearGenomeView |
 | <span id="action-setlasttrackdragy">**setLastTrackDragY**</span><br><code>(y: number) =&gt; void</code> |  | LinearGenomeView |

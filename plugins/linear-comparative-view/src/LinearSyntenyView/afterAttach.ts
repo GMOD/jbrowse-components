@@ -168,6 +168,13 @@ async function applyInit(
   if (init.autoDiagonalize) {
     await runAutoDiagonalize(self)
   }
+  // last, and not in applyInitSettings with the rest: the shared scale sits
+  // past the smaller rows' own maxBpPerPx, and setDisplayedRegions re-clamps
+  // bpPerPx into that range — so diagonalizing after this would undo it on
+  // every row it reorders.
+  if (init.sameScale) {
+    self.showAllRegionsSameScale()
+  }
 }
 
 export function doAfterAttach(self: LinearSyntenyViewModel) {

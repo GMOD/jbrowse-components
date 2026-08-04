@@ -40,6 +40,13 @@ export interface LinearSyntenyViewInit extends SyntenyViewSharedInit {
   // → "Expand all views"). Off by default so an authored session keeps its rows
   // as written — the launch dialog turns it on, and offers a checkbox to not.
   collapseEmptyRows?: boolean
+  // Put every genome row on one bp/px, the coarsest row's, instead of fitting
+  // each to the pane width. The largest genome then fills the frame and the
+  // rest are drawn shorter in proportion, so a size difference between rows
+  // (polyploidy, a genome duplication) is visible as length rather than hidden
+  // by the per-row stretch — and orthologs between two rows line up at the same
+  // scale on both. Applied last, after any autoDiagonalize pass.
+  sameScale?: boolean
   // Render ribbons as bezier curves rather than straight chords. Reads much
   // better at whole-genome scale where straight crossings stack into noise.
   drawCurves?: boolean

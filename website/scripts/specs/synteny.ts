@@ -772,6 +772,16 @@ export const syntenySpecs: ScreenshotSpec[] = [
             ],
             colorBy: 'reference',
             autoDiagonalize: true,
+            // One bp/px down the whole stack instead of fitting each row to the
+            // pane. This set is the case for it: the rows run 4.2 Gb (diploid
+            // tauschii) to 14.5 Gb (hexaploid bread wheat), so fit-to-width drew
+            // them all the same length and stretched tauschii's 7 chromosomes
+            // across the same span as wheat's 21 — which both hides the
+            // polyploidy the figure is about and puts every ribbon between those
+            // two rows at a 3x horizontal ratio, fanning what is really a clean
+            // 1:1 D-genome correspondence. Same scale, the row lengths ARE the
+            // genome sizes and a D chromosome sits over its own copy.
+            sameScale: true,
             // see the grasses spec above for why these four settings; the three
             // OrthoFinder figures are the same picture on different genomes
             collapseEmptyRows: true,

@@ -282,7 +282,7 @@ function openTrackSelectorWidget(self: IAnyStateTreeNode) {
  * const view = viewState.session.views[0]
  * await view.navToLocString('chr1:2,000,000-2,100,000')
  * view.showTrack('alignments')
- * view.setBpPerPx(view.bpPerPx * 2) // zoom out 2x
+ * view.zoomTo(view.bpPerPx * 2) // zoom out 2x
  * ```
  */
 export function stateModelFactory(pluginManager: PluginManager) {
@@ -1361,6 +1361,25 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       showAllRegions() {
         self.bpPerPx = self.maxBpPerPx
+        self.scrollTo(
+          getCenteredOffsetPx(self.displayedRegionsTotalPx, self.width),
+        )
+      },
+
+      /**
+       * #action
+       * showAllRegions at a scale the caller supplies rather than this view's
+       * own fit-to-width one, so several views can share one bp/px and their
+       * genomes compare by drawn length. Deliberately assigns past maxBpPerPx
+       * instead of going through zoomTo: a scale that fits the LARGEST genome
+       * in a set necessarily exceeds every smaller genome's fit-to-width limit,
+       * and clamping each row back to its own limit is exactly the equal-width
+       * stretch this exists to avoid. Only a caller that owns the layout of a
+       * whole set of views has a reason to reach for it — anything zooming a
+       * single view wants zoomTo, whose clamp keeps the genome on screen.
+       */
+      showAllRegionsAtScale(bpPerPx: number) {
+        self.bpPerPx = Math.max(bpPerPx, self.minBpPerPx)
         self.scrollTo(
           getCenteredOffsetPx(self.displayedRegionsTotalPx, self.width),
         )

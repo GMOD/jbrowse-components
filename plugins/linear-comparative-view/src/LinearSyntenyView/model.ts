@@ -63,7 +63,7 @@ const AddRowDialog = lazy(() => import('./components/AddRowDialog.tsx'))
  * }
  * ```
  * Other `init` fields: `colorBy`, `levelHeights`, `alpha`, `minAlignmentLength`,
- * `autoDiagonalize` — see the `init` property below.
+ * `autoDiagonalize`, `sameScale` — see the `init` property below.
  */
 export default function stateModelFactory(pluginManager: PluginManager) {
   return types
@@ -495,6 +495,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               label: 'Show all regions',
               onClick: () => {
                 self.showAllRegions()
+              },
+            },
+            {
+              label: 'Show all regions at same scale',
+              onClick: () => {
+                self.showAllRegionsSameScale()
               },
             },
             {
