@@ -511,6 +511,97 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     settleMs: 10000,
   },
 
+  // Two windows on chr8 opened in one view. The matrix is fetched for every
+  // PAIR of displayed regions, not just each region against itself, so the
+  // block between the two panels carries their cross-region contacts — the
+  // same geometry that puts a bright off-diagonal block at a translocation's
+  // partner loci. Nothing in the app has to be clicked to get it; it falls out
+  // of a multi-region `loc`.
+  {
+    mode: 'url',
+    name: 'hic/two_regions',
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      // two windows close enough that the cross-block carries real signal —
+      // 5Mb-apart windows fetch their pair just the same, but Hi-C contact
+      // frequency has decayed to near background by then and the block reads
+      // as empty, which shows the geometry without showing the data
+      loc: 'chr8:52,000,000-54,000,000 chr8:54,200,000-56,200,000',
+      trackLabels: 'offset',
+      tracks: ['hic'],
+    }),
+    viewportHeight: 530,
+    readySelector: '[data-testid="hic-display-done"]',
+    readyTimeout: 60000,
+    settleMs: 10000,
+  },
+
+  // The two halves of the faint-contacts comparison. Same region, same ramp;
+  // the only difference is where the color scale saturates. With
+  // useColorPercentile off the diagonal owns the scale (maxScore/20) and the
+  // TAD interiors wash out; on (the default) it saturates at the 95th
+  // percentile and off-diagonal structure separates from background. Kept as
+  // two declarative specs composed below, so each state stays an openable live
+  // link and neither can drift from a menu-driving capture.
+  {
+    mode: 'url',
+    name: 'hic/percentile_off',
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: 'chr8:50,366,343-61,321,733',
+      trackLabels: 'offset',
+      tracks: [{ trackId: 'hic', useColorPercentile: false }],
+    }),
+    viewportHeight: 530,
+    readySelector: '[data-testid="hic-display-done"]',
+    readyTimeout: 60000,
+    settleMs: 10000,
+  },
+  {
+    mode: 'url',
+    name: 'hic/percentile_on',
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: 'chr8:50,366,343-61,321,733',
+      trackLabels: 'offset',
+      tracks: [{ trackId: 'hic', useColorPercentile: true }],
+    }),
+    viewportHeight: 530,
+    readySelector: '[data-testid="hic-display-done"]',
+    readyTimeout: 60000,
+    settleMs: 10000,
+  },
+  {
+    mode: 'compose',
+    name: 'hic/faint_contacts',
+    parts: ['hic/percentile_off', 'hic/percentile_on'],
+  },
+
+  // The on-figure overlay: the color legend and the binsize dropdown, both off
+  // by default and both enabled here from config rather than by driving the
+  // Show menu. This is the state the docs recommend for baking a chosen
+  // resolution into a figure.
+  {
+    mode: 'url',
+    name: 'hic/overlay_controls',
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: 'chr8:50,366,343-61,321,733',
+      trackLabels: 'offset',
+      tracks: [
+        {
+          trackId: 'hic',
+          showLegend: true,
+          showResolutionControls: true,
+        },
+      ],
+    }),
+    viewportHeight: 530,
+    readySelector: '[data-testid="hic-display-done"]',
+    readyTimeout: 60000,
+    settleMs: 10000,
+  },
+
   // The same modifications CRAM shown twice in ONE ultra-wide frame — top row in
   // modifications mode (each call drawn at its MM-tag position), bottom row in
   // methylation mode (both modified and reference-CpG-inferred unmodified

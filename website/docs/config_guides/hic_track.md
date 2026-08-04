@@ -18,7 +18,7 @@ Example Hi-C track config:
   "assemblyNames": ["hg19"],
   "adapter": {
     "type": "HicAdapter",
-    "uri": "https://s3.amazonaws.com/igv.broadinstitute.org/data/hic/intra_nofrag_30.hic"
+    "uri": "https://jbrowse.org/genomes/hg19/intra_nofrag_30.hic"
   }
 }
 ```
@@ -32,11 +32,49 @@ shorthand. The longhand form uses a `hicLocation` slot. See the
 ## Color scheme
 
 [`colorScheme`](/docs/config/linearhicdisplay/#slot-colorscheme) takes
-`juicebox`, `fall`, or `viridis`. Log scaling and percentile clipping are slots
-too. See the [LinearHicDisplay config docs](/docs/config/linearhicdisplay) for
-the full list, and
-[reading the contact matrix](/docs/user_guides/hic_track#reading-the-contact-matrix)
-for what the ramps show.
+`juicebox`, `fall`, or `viridis`. Log scaling
+([`useLogScale`](/docs/config/linearhicdisplay/#slot-uselogscale)) and
+percentile clipping
+([`useColorPercentile`](/docs/config/linearhicdisplay/#slot-usecolorpercentile))
+are slots too, as are the overlay's legend
+([`showLegend`](/docs/config/linearhicdisplay/#slot-showlegend)) and binsize
+dropdown
+([`showResolutionControls`](/docs/config/linearhicdisplay/#slot-showresolutioncontrols)).
+See the [LinearHicDisplay config docs](/docs/config/linearhicdisplay) for the
+full list, and
+[adjusting the color scale](/docs/user_guides/hic_track#adjusting-the-color-scale)
+for what each one does to the picture.
+
+## Normalization and resolution
+
+[`selectedNormalization`](/docs/config/linearhicdisplay/#slot-selectednormalization)
+names the matrix-balancing scheme to request (`KR`, `SCALE`, `VC`, `VC_SQRT`,
+`NONE`). It is resolved at runtime against what the file actually provides, so a
+config naming a scheme the file lacks falls back rather than erroring — see
+[normalization](/docs/user_guides/hic_track#normalization).
+
+[`resolutionBias`](/docs/config/linearhicdisplay/#slot-resolutionbias) is a
+signed offset from the zoom-derived binsize rather than an absolute binsize, so
+the choice stays meaningful as the view zooms: negative is finer, positive
+coarser.
+
+```json addtrack
+{
+  "type": "HicTrack",
+  "trackId": "hic_kr",
+  "name": "Hi-C (KR, log scale)",
+  "assemblyNames": ["hg19"],
+  "adapter": {
+    "type": "HicAdapter",
+    "uri": "https://jbrowse.org/genomes/hg19/intra_nofrag_30.hic"
+  },
+  "displayDefaults": {
+    "selectedNormalization": "KR",
+    "useLogScale": true,
+    "showLegend": true
+  }
+}
+```
 
 ## Loops and interactions as arcs
 
