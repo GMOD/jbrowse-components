@@ -742,6 +742,61 @@ test('reversed region reserves label overhang on the lower-bp side', () => {
   expect(rLeft.topPx).not.toBe(rLabel.topPx)
 })
 
+// A subfeature label (a transcript name under its gene) draws whenever the
+// worker baked one — it is not gated by showLabels/showDescriptions, which only
+// govern the feature's own name/description (see resolveFeatureLabels). So its
+// overhang has to be reserved whenever it exists, independently of whether the
+// parent kept a name line. Two cases where the parent keeps none:
+//   - the gene carries no name of its own (nothing to gate on)
+//   - names are switched off entirely — config `none`, or the fit ladder's
+//     `bodies` rung, which packs with showLabels=false
+// Left unreserved, the transcript label paints straight over whatever the packer
+// put in the whitespace beside it.
+describe('subfeature-label overhang is reserved even with no name line', () => {
+  // Gene A (bp 0-10) carries only its transcript's label, 100px wide; gene B
+  // sits in the whitespace that label overhangs (bp 20-30). At bpPerPx 1 the
+  // reserved span is 0..106, so B has to stack.
+  function data() {
+    const base = makeFeatureData({
+      features: [
+        { featureId: 'geneA', startBp: 0, endBp: 10, height: 10 },
+        { featureId: 'geneB', startBp: 20, endBp: 30, height: 10 },
+      ],
+    })
+    const floatingLabelsData: FloatingLabelsDataMap = {
+      // keyed by the transcript, attributed to its gene — what emitSubfeatureLabel
+      // writes
+      'geneA-mRNA1': {
+        featureId: 'geneA-mRNA1',
+        minX: 0,
+        maxX: 10,
+        topY: 0,
+        featureHeight: 10,
+        parentFeatureId: 'geneA',
+        subfeatureLabel: {
+          text: 'geneA-mRNA1',
+          relativeY: 0,
+          color: 'black',
+          textWidth: 100,
+          isOverlay: false,
+        },
+      },
+    }
+    return { ...base, floatingLabelsData }
+  }
+  const keys = new Map([[0, 'v:ctgA']])
+
+  it.each([
+    ['names on', true],
+    ['names off (fit bodies rung)', false],
+  ])('%s', (_name, showLabels) => {
+    const out = layout(new Map([[0, data()]]), keys, 1, showLabels, false)
+    const [a, b] = out.get(0)!.flatbushItems
+    expect(a!.topPx).toBe(0)
+    expect(b!.topPx).toBeGreaterThan(0)
+  })
+})
+
 // Stable empty set: the model's pinnedFeatureIdSet is a MobX-cached getter with
 // a stable reference, so the incremental memo relies on reference identity to
 // detect a pin change. A fresh set per call would spuriously bust the cache.

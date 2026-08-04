@@ -1073,15 +1073,23 @@ function decideLabelReservations(
     }
 
     // Widen the layout span by the label overhang so the packer keeps a kept
-    // name off its neighbor's row. A reversed region overhangs toward lower bp
+    // label off its neighbor's row. A reversed region overhangs toward lower bp
     // (widen layoutStartBp); otherwise toward higher bp (widen layoutEndBp).
-    // Gated on the feature reserving a name or description line, so one carrying
-    // nothing but a subfeature label reserves no overhang.
-    const reservesLabel = keepName || keepDescription
-    const overhangPx =
-      labelInfo && reservesLabel
-        ? keptOverhangWidthPx(labelInfo.widths, keepName, keepDescription)
-        : 0
+    //
+    // Deliberately NOT gated on the feature keeping a name or description line:
+    // a subfeature label (a transcript name under its gene) is un-gated at draw
+    // time — showLabels/showDescriptions govern only the feature's OWN name and
+    // description (see resolveFeatureLabels) — so its width has to be reserved
+    // whenever it exists. Gating on the name/description lines left it
+    // unreserved for a gene carrying no name of its own, and for every gene once
+    // names were off (config `none`, or the fit ladder's `bodies` rung), where
+    // the transcript label then painted over whatever the packer put beside it.
+    // keptOverhangWidthPx already maxes the subfeature width in unconditionally
+    // and returns 0 when there is no label of any kind, so it is the whole
+    // decision.
+    const overhangPx = labelInfo
+      ? keptOverhangWidthPx(labelInfo.widths, keepName, keepDescription)
+      : 0
     if (overhangPx > 0) {
       const labelBp = overhangPx * bpPerPx
       if (geom.hasNonReversed) {

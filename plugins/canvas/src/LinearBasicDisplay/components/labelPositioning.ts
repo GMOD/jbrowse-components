@@ -248,11 +248,15 @@ export type RegionWithData = BpRegionBounds & { displayedRegionIndex: number }
 // and the SVG export (renderSvg) from drifting — the divergence that let the
 // export double-paint a spanning feature's label.
 //
-// Whether a label shows at all is decided upstream by the caller's fit-aware
+// Whether a name/description shows is decided upstream by the caller's fit-aware
 // visibility (model.renderedShowLabels / renderedShowDescriptions): the packer
 // reserved row height and label-width overhang for exactly the labels these flags
 // leave on, so emitted labels never overlap a feature or each other. At the fit
-// `bodies` level both flags are off, so nothing is emitted.
+// `bodies` level both flags are off, so no name or description is emitted — but a
+// worker-baked SUBFEATURE label still is (resolveFeatureLabels doesn't gate it on
+// either flag; `subfeatureLabels` is a config choice the worker bakes, and
+// collapsed mode is the only thing that turns it off, in rpcProps). The packer
+// reserves its overhang unconditionally to match — see decideLabelReservations.
 export function forEachDisplayLabel(
   regions: RegionWithData[],
   dataMap: Map<number, FeatureDataResult>,
