@@ -21,11 +21,18 @@
 # one frequency profile into one per group: a bedGraph column pair per group,
 # which a MultiQuantitativeTrack draws as one row each.
 #
-# Requires: curl, python3, bgzip + tabix (htslib)
+# The same segments are written a second way, as a samples-by-bins Zarr store,
+# which is what the whole-genome view actually wants: the BED has to return every
+# segment of every tumor for that view, while the matrix reads one level of a
+# resolution pyramid. Skipped when node is absent — the BED and the bedGraphs
+# above stand on their own.
+#
+# Requires: curl, python3, bgzip + tabix (htslib); node >=22 for the Zarr store
 # Output:   tcga_<project>_cnv.bed.gz (+ .tbi)
 #           tcga_<project>_cnv_recurrence.bedGraph.gz (+ .tbi)
 #           tcga_<project>_cnv_recurrence_by_<groupby>.bedGraph.gz (+ .tbi)
 #           tcga_<project>_clinical.tsv
+#           tcga_<project>_cnv.zarr/
 # Runtime:  ~15-25 min for BRCA (1106 tumors), dominated by the GDC downloads
 #
 # Usage: build_tcga_cohort_cnv.sh [PROJECT] [LIMIT] [GROUPBY]
@@ -40,7 +47,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Sibling helpers this script runs, fetched next to it when absent, so a bare
 # `curl -fO` of this one file behaves the same as a repo checkout.
-HELPERS=(cnv_recurrence.py tcga_clinical_tsv.py)
+HELPERS=(cnv_recurrence.py tcga_clinical_tsv.py build_signal_zarr.ts)
 for h in "${HELPERS[@]}"; do
   [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
     "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
@@ -203,10 +210,37 @@ python3 "$SCRIPT_DIR/cnv_recurrence.py" "$OUT.bed.gz" "$BY" \
 bgzip -f "$BY"
 tabix -f -p bed "$BY.gz"
 
+# One row per tumor again, but binned rather than as intervals. The pyramid is
+# spaced ~3x rather than 10x because the adapter takes the coarsest level whose
+# bins are still no wider than a screen pixel: a 10x gap leaves a view landing
+# just under a level's bin size fetching up to 10x more bins than it can draw.
+#
+# --samples here is only a name<TAB>group table (no URLs); it fixes the row order
+# and hands each tumor its clinical group, which is what the clustering sidebar
+# groups on and what "color by" keys on.
+if command -v node >/dev/null 2>&1; then
+  echo "== building the signal matrix"
+  awk -F'\t' -v col="$GROUPBY" '
+    NR==1 { for (i = 1; i <= NF; i++) if ($i == col) c = i; next }
+    c     { print $1 "\t" $c }' "$CLINICAL" > "$WORK/samples_group.tsv"
+  # The base level is held in memory whole while every coarser one is derived
+  # from it: 1104 tumors x 10kb bins is ~1.3 GB, so the default heap is not
+  # enough at cohort scale.
+  node --max-old-space-size=6144 "$SCRIPT_DIR/build_signal_zarr.ts" \
+    --bed "$OUT.bed.gz" --sample-column sample --value-column segmean \
+    --samples "$WORK/samples_group.tsv" \
+    --out "$OUT.zarr" \
+    --levels 10000,30000,100000,300000,1000000,3000000
+else
+  echo "== skipping the signal matrix (node not found)"
+fi
+
 echo "== done: $OUT.bed.gz ($(du -h "$OUT.bed.gz" | cut -f1))"
 echo "         ${OUT}_recurrence.bedGraph.gz ($(du -h "${OUT}_recurrence.bedGraph.gz" | cut -f1))"
 echo "         $BY.gz ($(du -h "$BY.gz" | cut -f1))"
 echo "         $CLINICAL ($(du -h "$CLINICAL" | cut -f1))"
+[ -d "$OUT.zarr" ] && echo "         $OUT.zarr ($(du -sh "$OUT.zarr" | cut -f1))"
 echo "   upload with: aws s3 cp $OUT.bed.gz{,.tbi} s3://jbrowse.org/demos/tcga/"
 echo "                aws s3 cp ${OUT}_recurrence.bedGraph.gz{,.tbi} s3://jbrowse.org/demos/tcga/"
 echo "                aws s3 cp $BY.gz{,.tbi} s3://jbrowse.org/demos/tcga/"
+[ -d "$OUT.zarr" ] && echo "                aws s3 cp --recursive $OUT.zarr s3://jbrowse.org/demos/tcga/$OUT.zarr"

@@ -1,5 +1,6 @@
-// Pack many single-sample BigWigs into one samples-by-bins Zarr v3 store, the
-// format MultiWiggleZarrAdapter reads.
+// Pack a cohort's quantitative calls into one samples-by-bins Zarr v3 store, the
+// format MultiWiggleZarrAdapter reads. Input is either one BigWig per sample
+// (--samples) or one interval BED holding every sample's calls (--bed).
 //
 // Why: a multi-sample signal track built from N BigWigs is latency-bound, not
 // payload-bound. Each file needs its header, chrom B-tree and R-tree index
@@ -15,6 +16,17 @@
 //     --levels 1000,10000 \
 //     --concurrency 24
 //
+//   node scripts/build_signal_zarr.ts \
+//     --bed tcga_brca_cnv.bed.gz \       # every sample's segments in one file
+//     --sample-column sample --value-column segmean \
+//     --samples name_group.tsv \         # optional: row order and grouping
+//     --out cohort.zarr --levels 10000,100000
+//
+// Space the levels closer than 10x apart. The adapter reads the coarsest level
+// whose bins are still no wider than a screen pixel, so a 10x gap means a view
+// landing just under a level's bin size fetches up to 10x more bins than it can
+// draw. 10000,30000,100000,... holds that to ~3x.
+//
 // The store is written by hand rather than through zarrita's `create`/`set`:
 // zarrita's gzip codec is decode-only, and writing the chunk files directly
 // keeps the build free of a wasm codec while producing exactly what the browser
@@ -22,14 +34,14 @@
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { parseArgs } from 'node:util'
-import { gzipSync } from 'node:zlib'
-
-import { BigWig } from '@gmod/bbi'
-import { RemoteFile } from 'generic-filehandle2'
+import { gunzipSync, gzipSync } from 'node:zlib'
 
 const { values } = parseArgs({
   options: {
     samples: { type: 'string' },
+    bed: { type: 'string' },
+    'sample-column': { type: 'string', default: 'sample' },
+    'value-column': { type: 'string', default: 'score' },
     out: { type: 'string' },
     region: { type: 'string', multiple: true },
     levels: { type: 'string', default: '1000' },
@@ -39,10 +51,25 @@ const { values } = parseArgs({
   },
 })
 
-if (values.help || !values.samples || !values.out) {
-  console.log(
-    'usage: node scripts/build_signal_zarr.ts --samples <tsv> --out <dir.zarr> [--region chr:start-end]... [--levels 1000,10000] [--chunk-bins 256] [--concurrency 24]',
-  )
+const USAGE = `usage: node scripts/build_signal_zarr.ts --out <dir.zarr> [options]
+
+input, one of:
+  --samples <tsv>       one BigWig per sample; name<TAB>url, or name<TAB>group<TAB>url
+  --bed <file[.gz]>     one interval BED holding every sample's calls, with a
+                        #-prefixed header naming the columns past end. Pair with
+                        --samples as a name<TAB>group table to fix row order and
+                        attach a group; without it the samples are whatever the
+                        file contains, sorted.
+      --sample-column   header name of the column holding the sample (default sample)
+      --value-column    header name of the column holding the number (default score)
+
+  --region chr:start-end  repeatable; omit for whole genome
+  --levels 1000,10000     resolution pyramid, finest first
+  --chunk-bins 256        bins per chunk; the sample axis is always whole
+  --concurrency 24        parallel BigWig reads (--samples only)`
+
+if (values.help || !values.out || !(values.samples || values.bed)) {
+  console.log(USAGE)
   process.exit(values.help ? 0 : 1)
 }
 
@@ -58,19 +85,27 @@ const baseBinSize = levelBinSizes[0]!
 interface Sample {
   name: string
   group?: string
-  url: string
+  // absent in --bed mode, where every sample's calls live in the one file
+  url?: string
 }
 
-const samples: Sample[] = readFileSync(values.samples, 'utf8')
-  .split('\n')
-  .map(line => line.trim())
-  .filter(line => line && !line.startsWith('#'))
-  .map(line => {
-    const cols = line.split('\t')
-    return cols.length >= 3
-      ? { name: cols[0]!, group: cols[1]!, url: cols[2]! }
-      : { name: cols[0]!, url: cols[1]! }
-  })
+// In --bed mode this table is optional and only fixes row order and grouping,
+// so it is read as name<TAB>group there and name[<TAB>group]<TAB>url otherwise.
+function readSampleTable(path: string, withUrl: boolean): Sample[] {
+  return readFileSync(path, 'utf8')
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line && !line.startsWith('#'))
+    .map(line => {
+      const cols = line.split('\t')
+      if (!withUrl) {
+        return { name: cols[0]!, group: cols[1] || undefined }
+      }
+      return cols.length >= 3
+        ? { name: cols[0]!, group: cols[1]!, url: cols[2]! }
+        : { name: cols[0]!, url: cols[1]! }
+    })
+}
 
 interface Span {
   refName: string
@@ -111,22 +146,149 @@ async function pool<T, R>(
   return out
 }
 
-const readers = samples.map(s => ({
-  ...s,
-  bw: new BigWig({ filehandle: new RemoteFile(s.url) }),
-}))
+// Unplaced/random contigs multiply the bin axis without carrying anything a
+// cohort figure shows, so "whole genome" means the main ones.
+const MAIN_CONTIG = /^(chr)?([1-9]\d?|X|Y)$/
 
-console.log(`opening ${readers.length} BigWigs`)
-const headers = await pool(readers, concurrency, r => r.bw.getHeader())
+// Natural order, so the bin axis runs chr1..chr22,X,Y rather than the string
+// sort's chr1, chr10, chr11.
+function contigRank(name: string) {
+  const bare = name.replace(/^chr/, '')
+  return bare === 'X' ? 23 : bare === 'Y' ? 24 : Number(bare)
+}
 
-// Whole genome means every refName the first file declares, main contigs only:
-// the unplaced/random contigs multiply the bin axis without carrying anything a
-// cohort figure shows.
+// One interval BED holding every sample's calls: the shape
+// build_tcga_cohort_cnv.sh already writes, and the shape any per-sample segment
+// caller can be coerced into. Read whole rather than streamed — a cohort of
+// piecewise-constant calls is a few hundred thousand rows, and both the sample
+// list and the contig extents are derived from it before any binning starts.
+interface Interval {
+  refName: string
+  start: number
+  end: number
+  sample: string
+  value: number
+}
+
+function readBed(path: string, sampleColumn: string, valueColumn: string) {
+  const raw = readFileSync(path)
+  const text = (path.endsWith('.gz') ? gunzipSync(raw) : raw).toString('utf8')
+  const lines = text.split('\n')
+  // The convention build_tcga_cohort_cnv.sh writes and BedTabixAdapter reads:
+  // a #-prefixed first line naming the columns, including the ones past `end`.
+  const header = lines[0]?.startsWith('#')
+    ? lines[0].slice(1).split('\t')
+    : undefined
+  if (!header) {
+    throw new Error(
+      `${path} has no #-prefixed header line, so there is no way to find the "${sampleColumn}" and "${valueColumn}" columns`,
+    )
+  }
+  const sampleIdx = header.indexOf(sampleColumn)
+  const valueIdx = header.indexOf(valueColumn)
+  for (const [name, idx] of [
+    [sampleColumn, sampleIdx],
+    [valueColumn, valueIdx],
+  ] as const) {
+    if (idx < 0) {
+      throw new Error(
+        `${path} has no "${name}" column; its header is ${header.join(', ')}`,
+      )
+    }
+  }
+  const out: Interval[] = []
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i]!
+    if (!line) {
+      continue
+    }
+    const cols = line.split('\t')
+    const value = Number(cols[valueIdx])
+    // A call with no number is not a zero — drop it rather than bin it as one
+    if (Number.isNaN(value)) {
+      continue
+    }
+    out.push({
+      refName: cols[0]!,
+      start: Number(cols[1]),
+      end: Number(cols[2]),
+      sample: cols[sampleIdx]!,
+      value,
+    })
+  }
+  return out
+}
+
+const intervals = values.bed
+  ? readBed(values.bed, values['sample-column'], values['value-column'])
+  : undefined
+
+let samples: Sample[]
+if (intervals) {
+  const present = new Set(intervals.map(i => i.sample))
+  samples = values.samples
+    ? readSampleTable(values.samples, false).filter(s => present.has(s.name))
+    : [...present].sort().map(name => ({ name }))
+  console.log(
+    `${intervals.length} intervals over ${present.size} samples in ${values.bed}` +
+      (values.samples
+        ? `, ${samples.length} of them named in ${values.samples}`
+        : ''),
+  )
+} else {
+  samples = readSampleTable(values.samples!, true)
+}
+if (samples.length === 0) {
+  throw new Error(
+    intervals
+      ? `no samples to build from: ${values.samples ? `nothing in ${values.samples} matched a "${values['sample-column']}" value in ${values.bed} — check that the column exists and that the names are spelled the same way` : `${values.bed} yielded no intervals`}`
+      : `no samples listed in ${values.samples}`,
+  )
+}
+
+// Imported here rather than at the top so that --bed mode, which never opens a
+// BigWig, needs no npm packages at all: build_tcga_cohort_cnv.sh can run the
+// converter with nothing but node.
+const readers = intervals
+  ? []
+  : await (async () => {
+      const [{ BigWig }, { RemoteFile }] = await Promise.all([
+        import('@gmod/bbi'),
+        import('generic-filehandle2'),
+      ])
+      return samples.map(s => ({
+        ...s,
+        bw: new BigWig({ filehandle: new RemoteFile(s.url!) }),
+      }))
+    })()
+
+if (readers.length) {
+  console.log(`opening ${readers.length} BigWigs`)
+}
+const headers = readers.length
+  ? await pool(readers, concurrency, r => r.bw.getHeader())
+  : []
+
+// Whole genome means every main contig the input declares: the BigWig header
+// knows the true lengths, and a BED only knows how far its own calls reach —
+// which for calls that tile the genome is the same answer to within a telomere,
+// and bins past it would have been unmeasured anyway.
 const spans: Span[] = values.region?.length
   ? values.region.map(parseRegion)
-  : Object.values(headers[0]!.refsByNumber)
-      .filter(ref => /^(chr)?([1-9]\d?|X|Y)$/.test(ref.name))
-      .map(ref => ({ refName: ref.name, start: 0, end: ref.length }))
+  : intervals
+    ? [
+        ...intervals
+          .filter(i => MAIN_CONTIG.test(i.refName))
+          .reduce(
+            (m, i) => m.set(i.refName, Math.max(m.get(i.refName) ?? 0, i.end)),
+            new Map<string, number>(),
+          ),
+      ]
+        .map(([refName, end]) => ({ refName, start: 0, end }))
+        .sort((a, b) => contigRank(a.refName) - contigRank(b.refName))
+    : Object.values(headers[0]!.refsByNumber)
+        .filter(ref => MAIN_CONTIG.test(ref.name))
+        .map(ref => ({ refName: ref.name, start: 0, end: ref.length }))
 
 // Every level shares one bin axis layout, so a refName's slot is the same
 // fraction of every level and the adapter can switch levels without remapping.
@@ -160,46 +322,110 @@ const matrix = new Float32Array(samples.length * baseLayout.totalBins).fill(
   Number.NaN,
 )
 
-let done = 0
-await pool(readers, concurrency, async (reader, sampleIndex) => {
-  const rowStart = sampleIndex * baseLayout.totalBins
-  for (const span of spans) {
-    const ref = baseLayout.refs[span.refName]!
-    const feats = await reader.bw.getFeatures(
-      span.refName,
-      span.start,
-      span.end,
-      { basesPerSpan: 1 },
-    )
-    // Weighted mean over each output bin, so a source whose own bins are a
-    // different size (or offset) than ours still lands on the right values
-    // rather than being sampled at one point.
-    const sums = new Float64Array(ref.numBins)
-    const widths = new Float64Array(ref.numBins)
-    for (const f of feats) {
-      const score = f.score ?? 0
-      const from = Math.max(f.start, ref.start)
-      const to = Math.min(f.end, ref.start + ref.numBins * baseBinSize)
-      for (let pos = from; pos < to;) {
-        const bin = Math.floor((pos - ref.start) / baseBinSize)
-        const binEnd = ref.start + (bin + 1) * baseBinSize
-        const width = Math.min(to, binEnd) - pos
-        sums[bin] = sums[bin]! + score * width
-        widths[bin] = widths[bin]! + width
-        pos += width
-      }
-    }
-    for (let i = 0; i < ref.numBins; i++) {
-      if (widths[i]! > 0) {
-        matrix[rowStart + ref.binOffset + i] = sums[i]! / widths[i]!
-      }
+// Weighted mean over each output bin, so an input whose own intervals are a
+// different size (or offset) than ours lands on the right value rather than
+// being sampled at one point. A BigWig's fixed-width values and a caller's
+// megabase segments both go through this, which is what keeps the two input
+// modes from disagreeing at a bin boundary.
+interface Bins {
+  ref: RefSpan
+  sums: Float64Array
+  widths: Float64Array
+}
+
+function makeBins(ref: RefSpan): Bins {
+  return {
+    ref,
+    sums: new Float64Array(ref.numBins),
+    widths: new Float64Array(ref.numBins),
+  }
+}
+
+function addInterval(bins: Bins, start: number, end: number, score: number) {
+  const { ref, sums, widths } = bins
+  const from = Math.max(start, ref.start)
+  const to = Math.min(end, ref.start + ref.numBins * baseBinSize)
+  for (let pos = from; pos < to;) {
+    const bin = Math.floor((pos - ref.start) / baseBinSize)
+    const binEnd = ref.start + (bin + 1) * baseBinSize
+    const width = Math.min(to, binEnd) - pos
+    sums[bin] = sums[bin]! + score * width
+    widths[bin] = widths[bin]! + width
+    pos += width
+  }
+}
+
+function writeBins(bins: Bins, target: Float32Array, rowStart: number) {
+  const { ref, sums, widths } = bins
+  for (let i = 0; i < ref.numBins; i++) {
+    if (widths[i]! > 0) {
+      target[rowStart + ref.binOffset + i] = sums[i]! / widths[i]!
     }
   }
-  done++
-  if (done % 100 === 0 || done === readers.length) {
-    console.log(`  read ${done}/${readers.length}`)
+}
+
+if (intervals) {
+  const rowOf = new Map(samples.map((s, i) => [s.name, i]))
+  // Bucketed by sample first: one accumulator per (sample, ref) is allocated
+  // and drained once, rather than one per interval or one kept alive for the
+  // whole cohort.
+  const bySample = new Map<number, Interval[]>()
+  for (const interval of intervals) {
+    const row = rowOf.get(interval.sample)
+    if (row === undefined || !baseLayout.refs[interval.refName]) {
+      continue
+    }
+    const list = bySample.get(row)
+    if (list) {
+      list.push(interval)
+    } else {
+      bySample.set(row, [interval])
+    }
   }
-})
+  let done = 0
+  for (const [sampleIndex, list] of bySample) {
+    const rowStart = sampleIndex * baseLayout.totalBins
+    const accumulators = new Map<string, Bins>()
+    for (const interval of list) {
+      let acc = accumulators.get(interval.refName)
+      if (!acc) {
+        acc = makeBins(baseLayout.refs[interval.refName]!)
+        accumulators.set(interval.refName, acc)
+      }
+      addInterval(acc, interval.start, interval.end, interval.value)
+    }
+    for (const acc of accumulators.values()) {
+      writeBins(acc, matrix, rowStart)
+    }
+    done++
+    if (done % 200 === 0 || done === bySample.size) {
+      console.log(`  binned ${done}/${bySample.size}`)
+    }
+  }
+} else {
+  let done = 0
+  await pool(readers, concurrency, async (reader, sampleIndex) => {
+    const rowStart = sampleIndex * baseLayout.totalBins
+    for (const span of spans) {
+      const ref = baseLayout.refs[span.refName]!
+      const feats = await reader.bw.getFeatures(
+        span.refName,
+        span.start,
+        span.end,
+        { basesPerSpan: 1 },
+      )
+      const acc = makeBins(ref)
+      for (const f of feats) {
+        addInterval(acc, f.start, f.end, f.score ?? 0)
+      }
+      writeBins(acc, matrix, rowStart)
+    }
+    done++
+    if (done % 100 === 0 || done === readers.length) {
+      console.log(`  read ${done}/${readers.length}`)
+    }
+  })
+}
 
 // Compact, not pretty: the group's metadata carries one entry per sample, and
 // at cohort scale that file is the first thing every reader downloads.
