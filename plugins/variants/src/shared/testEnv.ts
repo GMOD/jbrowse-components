@@ -6,6 +6,7 @@ import {
   createBaseTrackConfig,
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
+import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { types } from '@jbrowse/mobx-state-tree'
 import { linearGenomeViewStateModelFactory } from '@jbrowse/plugin-linear-genome-view'
 
@@ -99,6 +100,11 @@ export function createDisplayTestEnvironment<T>({
     })
     .volatile(() => ({
       rpcManager: { call: mockRpcCall },
+      // The real session's `palette` getter, which is what model-side rendering
+      // colors read (`getSession(self).palette`, no React context). The shim
+      // omitted it, so a getter that reads one threw `undefined.insertion` here
+      // rather than in the code under test.
+      palette: resolvePalette(),
       assemblyManager: {
         get: (name: string) => (name === 'volvox' ? asm : undefined),
         waitForAssembly: () => Promise.resolve(asm),

@@ -1349,6 +1349,23 @@ export default function MultiSampleVariantBaseModelF(
           const view = getContainingView(self) as LinearGenomeViewModel
           return view.bpPerPx === self.loadedBpPerPx
         },
+
+        /**
+         * #getter
+         * The insertion marker's color when this display is drawing insertion
+         * markers, else undefined — which is what keeps the marker out of the
+         * legend it does not appear in.
+         *
+         * Declared here, answering undefined, so `legendSections` below can be
+         * written once: the matrix display draws no markers at all, and the
+         * regular display overrides this with the theme color when its
+         * `showInsertionGlyphs` slot is on and something visible actually
+         * inserts bases. A gate the base owns and a subclass overrides, rather
+         * than a flag threaded through every caller.
+         */
+        get insertionLegendColor(): string | undefined {
+          return undefined
+        },
       }))
       .views(self => ({
         /**
@@ -1367,6 +1384,7 @@ export default function MultiSampleVariantBaseModelF(
             svTypeColors: self.svTypeColors,
             colorBy: self.colorBy,
             sources: self.sources,
+            insertionColor: self.insertionLegendColor,
           }).filter(s => !self.dismissedLegendSections.includes(s.id))
         },
       }))

@@ -1,5 +1,5 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
-import { getContainingView } from '@jbrowse/core/util'
+import { getContainingView, getSession } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { types } from '@jbrowse/mobx-state-tree'
 import { createRegionUploadSync } from '@jbrowse/render-core/regionUploadSync'
@@ -164,6 +164,38 @@ export function stateModelFactory(
           return getConf(self, 'showInsertionGlyphs')
             ? self.perRegionCellMap
             : undefined
+        },
+        /**
+         * #getter
+         * Overrides the base's `undefined`: this display draws the markers, so
+         * it is the one that puts them in the legend. `getSession(self).palette`
+         * rather than a React theme, because this is a model getter — and it is
+         * the same `palette.insertion` the overlay paints with, so the swatch
+         * cannot drift from the glyph.
+         *
+         * The condition is "something visible inserts bases", walking
+         * `featureInsertedBp` (one entry per variant) rather than the cells.
+         * Deliberately *not* "is a marker drawn at this zoom" — that is
+         * `variantCellSpanPx(...).drawsMarker`, which needs the block geometry
+         * and flips while zooming, so the legend would appear and disappear
+         * under a scroll wheel. Data-presence matches what `hasSecondaryAlt` /
+         * `hasNoCall` mean for the other conditional entries, and the payload is
+         * already viewport-scoped, so it is still a statement about what is on
+         * screen.
+         */
+        get insertionLegendColor(): string | undefined {
+          if (!getConf(self, 'showInsertionGlyphs')) {
+            return undefined
+          }
+          for (const region of self.perRegionCellMap.values()) {
+            const inserted = region.featureInsertedBp
+            for (let i = 0; i < inserted.length; i++) {
+              if (inserted[i]! > 0) {
+                return getSession(self).palette.insertion
+              }
+            }
+          }
+          return undefined
         },
         /**
          * #getter

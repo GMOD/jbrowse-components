@@ -1,5 +1,7 @@
 import { NO_CALL_COLOR, REFERENCE_COLOR } from './constants.ts'
 import { PHASE_SET_COLOR } from './getPhasedColor.ts'
+import { CONSEQUENCE_IMPACT_JEXL } from './variantConsequence.ts'
+import { SV_TYPE_COLOR } from './variantSvType.ts'
 import {
   getGenotypeLegendItems,
   getSampleGroupLegendItems,
@@ -253,5 +255,66 @@ describe('phase-set legend section', () => {
     })
     expect(section!.id).toBe('genotypes')
     expect(section!.items.map(i => i.label)).toContain('Homozygous reference')
+  })
+})
+
+describe('getVariantLegendSections insertion marker', () => {
+  const base = {
+    renderingMode: 'alleleCount',
+    hasSecondaryAlt: false,
+    hasUnphased: false,
+    hasNoCall: false,
+    featureColor: '',
+    svTypeColors: {},
+    colorBy: '',
+    sources: undefined,
+  }
+
+  // The display resolves the color (palette.insertion) and answers undefined
+  // where no marker is drawn — the matrix display, the slot off, or nothing
+  // visible inserting bases. Absent means absent, not a colorless entry.
+  test('no section when the display draws no markers', () => {
+    expect(
+      getVariantLegendSections(base).map(s => s.id),
+    ).toEqual(['genotypes'])
+  })
+
+  test('its own section, carrying the color the glyph is painted with', () => {
+    const sections = getVariantLegendSections({
+      ...base,
+      insertionColor: '#800080',
+    })
+    expect(sections.map(s => s.id)).toEqual(['genotypes', 'insertions'])
+    const insertions = sections.find(s => s.id === 'insertions')!
+    expect(insertions.items).toEqual([
+      { color: '#800080', label: 'Insertion (label is length in bp)' },
+    ])
+  })
+
+  // The reason it is a section rather than a genotype swatch: coloring by SV
+  // type REPLACES the genotype items, and an entry appended to them would go
+  // with them — in the mode an insertion is most likely to be the thing being
+  // looked at. Same for consequence impact, and for a raw jexl expression,
+  // which drops the cell section entirely.
+  test.each([
+    ['svType', SV_TYPE_COLOR],
+    ['consequenceImpact', CONSEQUENCE_IMPACT_JEXL],
+  ])('survives the %s coloring replacing the genotype items', (id, color) => {
+    const sections = getVariantLegendSections({
+      ...base,
+      featureColor: color,
+      svTypeColors: { DEL: '#123456' },
+      insertionColor: '#800080',
+    })
+    expect(sections.map(s => s.id)).toEqual([id, 'insertions'])
+  })
+
+  test('survives a jexl coloring that drops the cell section outright', () => {
+    const sections = getVariantLegendSections({
+      ...base,
+      featureColor: 'jexl:someUserExpression(feature)',
+      insertionColor: '#800080',
+    })
+    expect(sections.map(s => s.id)).toEqual(['insertions'])
   })
 })

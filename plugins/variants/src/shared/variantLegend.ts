@@ -186,9 +186,10 @@ function getCellColorSection({
 }
 
 // The legend split into independently-closable sections: the genotype/cell
-// coloring and (when colorBy is set) the sample-grouping coloring used for the
-// sidebar row labels — two distinct color meanings that share one legend box.
-// The group section is omitted when colorBy is unset or carries a single value.
+// coloring, the insertion marker where one is drawn, and (when colorBy is set)
+// the sample-grouping coloring used for the sidebar row labels — distinct color
+// meanings that share one legend box. The group section is omitted when colorBy
+// is unset or carries a single value.
 export function getVariantLegendSections({
   renderingMode,
   hasSecondaryAlt,
@@ -198,6 +199,7 @@ export function getVariantLegendSections({
   svTypeColors,
   colorBy,
   sources,
+  insertionColor,
 }: {
   renderingMode: string
   hasSecondaryAlt: boolean
@@ -215,6 +217,12 @@ export function getVariantLegendSections({
   svTypeColors?: Record<string, string>
   colorBy: string
   sources: Source[] | undefined
+  // The insertion marker's color, or undefined where no marker is drawn (the
+  // matrix display, the slot turned off, or nothing visible inserting bases).
+  // Resolved by the display rather than imported, for the same reason
+  // `drawVariantInsertionGlyphs` takes it: this is `palette.insertion`, so a
+  // custom theme moves the swatch and the glyph together.
+  insertionColor?: string
 }): LegendSection[] {
   const groupItems = getSampleGroupLegendItems(colorBy, sources)
   // Phase-set coloring exists only on the phased path — the allele-count cell
@@ -236,6 +244,27 @@ export function getVariantLegendSections({
   })
   return [
     ...(cellSection ? [cellSection] : []),
+    // A section of its own rather than one more swatch on the genotype items:
+    // the marker is drawn in EVERY cell-color mode, while the genotype items
+    // are *replaced* wholesale by the consequence-impact, SV-type or phase-set
+    // section — so an entry appended to them would vanish exactly when the
+    // cells are colored by SV type. The label names what the number means, not
+    // just the color: the review that prompted this reported the marker as "the
+    // text like 5593", so the unexplained thing was the count, not the box.
+    ...(insertionColor
+      ? [
+          {
+            id: 'insertions',
+            title: 'Insertions',
+            items: [
+              {
+                color: insertionColor,
+                label: 'Insertion (label is length in bp)',
+              },
+            ],
+          },
+        ]
+      : []),
     ...(groupItems.length
       ? [
           {
