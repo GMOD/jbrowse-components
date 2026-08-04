@@ -6,7 +6,6 @@ import { autorun } from 'mobx'
 
 import { createPluginManager } from './createPluginManager.ts'
 import {
-  buildJb1SessionSpec,
   buildLgvInit,
   fetchRemoteConfig,
   getSessionQueryType,
@@ -201,7 +200,12 @@ const SessionLoader = types
      * #getter
      */
     get isHubSession() {
-      return !!self.hubURL
+      // length, not presence: `&hubURL=` (or `&hubURL=,,`) parses to an empty
+      // array, which is still truthy. That routed the load to loadHubSpec, which
+      // has no first URL to connect to and returns without ever calling
+      // setSession — a JBrowse with no session at all and no diagnostic. An
+      // empty list is no hub, so fall through to the normal default session.
+      return !!self.hubURL?.length
     },
     /**
      * #getter
@@ -241,6 +245,26 @@ const SessionLoader = types
     },
     /**
      * #getter
+     * the loc/assembly/tracks/... URL shorthand as a LinearGenomeView init.
+     * One place, because all three consumers (a fresh jb1-style spec, the
+     * layer-onto-defaultSession path, and the shorthand riding along on a hub)
+     * must read exactly the same params — a getter that forgot one would drop
+     * it on only one of the three routes. Keys the URL omits are absent, not
+     * undefined (see buildLgvInit).
+     */
+    get urlViewInit() {
+      return buildLgvInit({
+        loc: self.loc,
+        assembly: self.assembly,
+        tracks: self.tracks,
+        tracklist: self.tracklist,
+        nav: self.nav,
+        highlight: self.highlight,
+        regions: self.regions,
+      })
+    },
+    /**
+     * #getter
      */
     get resolvedConfigPath() {
       return self.configPath || window.__jbrowseConfigPath || 'config.json'
@@ -260,18 +284,17 @@ const SessionLoader = types
      * URL-derived init (loc/tracks/highlight/...) applied onto the
      * defaultSession's first view when `extendDefaultSession` is enabled,
      * otherwise undefined
+     *
+     * Gated on the init being non-empty rather than on `isJb1StyleSession`
+     * (loc || assembly): applyDefaultSessionViewInit resolves the assembly from
+     * the view itself, so `&extendSession=true&tracks=…` — adding tracks to a
+     * curated defaultSession, with no navigation — is meaningful and used to be
+     * dropped silently for want of a `&loc=`.
      */
     get defaultSessionViewInit() {
-      return self.extendDefaultSession && self.isJb1StyleSession
-        ? buildLgvInit({
-            loc: self.loc,
-            assembly: self.assembly,
-            tracks: self.tracks,
-            tracklist: self.tracklist,
-            nav: self.nav,
-            highlight: self.highlight,
-            regions: self.regions,
-          })
+      const init = self.urlViewInit
+      return self.extendDefaultSession && Object.keys(init).length
+        ? init
         : undefined
     },
   }))
@@ -568,16 +591,10 @@ const SessionLoader = types
     decodeJb1StyleSession() {
       self.setSessionSource({
         type: 'spec',
-        spec: buildJb1SessionSpec({
-          loc: self.loc,
-          tracks: self.tracks,
-          assembly: self.assembly,
-          tracklist: self.tracklist,
-          nav: self.nav,
-          highlight: self.highlight,
-          regions: self.regions,
+        spec: {
           sessionTracks: self.sessionTracksParsed,
-        }),
+          views: [{ type: 'LinearGenomeView', ...self.urlViewInit }],
+        },
       })
     },
     /**
@@ -587,6 +604,12 @@ const SessionLoader = types
       self.setSessionSource({
         type: 'hub',
         hubSpec: { hubURL: self.hubURL },
+        // a hand-written link may carry the loc/assembly/tracks shorthand too;
+        // loadHubSpec applies it on top of the hub session. Gated on loc/assembly
+        // (not on the init being non-empty, as the defaultSession path is): a hub
+        // launch resolves against one of the hub's own genomes, so an init with
+        // no way to name one has nothing to launch against.
+        viewInit: self.isJb1StyleSession ? self.urlViewInit : undefined,
       })
     },
   }))
@@ -621,22 +644,29 @@ const SessionLoader = types
           await self.decodeJsonUrlSession()
         } else if (self.sessionQueryType === 'local') {
           await self.fetchLocalSession()
+        } else if (self.extendDefaultSession && self.isJb1StyleSession) {
+          // `&extendSession=true` names the *config's* defaultSession as the
+          // thing to layer onto, so the shorthand doesn't build a session of its
+          // own here — it is applied to the default one in initSession, via
+          // defaultSessionViewInit. Outranks the hub branch below, which would
+          // otherwise replace that defaultSession outright.
+          self.setSessionSource({ type: 'default' })
+        } else if (self.isHubSession) {
+          // lower priority than local session: hubURL is left in URL even
+          // when a local session exists.
+          //
+          // Above the loc/assembly shorthand, though: a hub is the only param
+          // that brings its own assemblies and tracks, so a link carrying both
+          // is asking to navigate *inside* the hub. Ranking the shorthand first
+          // built a bare LGV and dropped the hub with no diagnostic. The
+          // shorthand rides along on the hub session (see decodeHubSpec).
+          self.decodeHubSpec()
         } else if (self.isJb1StyleSession) {
           // the loc/assembly/tracks shorthand ranks below every explicit
           // `session=` prefix: an explicit session always wins over a stray
           // loc (generated URLs never combine them — loc is stripped once
           // consumed — so this only disambiguates hand-crafted URLs)
-          if (self.extendDefaultSession) {
-            // layer loc/tracks onto the configured defaultSession (applied in
-            // initSession via defaultSessionViewInit) rather than replacing it
-            self.setSessionSource({ type: 'default' })
-          } else {
-            self.decodeJb1StyleSession()
-          }
-        } else if (self.isHubSession) {
-          // lower priority than local session: hubURL is left in URL even
-          // when a local session exists
-          self.decodeHubSpec()
+          self.decodeJb1StyleSession()
         } else if (self.sessionQuery) {
           throw new Error(
             `Unrecognized URL session format: "${self.sessionQuery}"`,

@@ -93,9 +93,10 @@ export function splitHighlights(str: string) {
 }
 
 // Normalizes the loc/tracks/assembly/... URL params into a LinearGenomeView
-// init shape. Shared by the loader's defaultSessionViewInit getter (layered onto
-// the default session) and buildJb1SessionSpec (wrapped into a full spec), so
-// the comma/space splitting can't drift between the two.
+// init shape. Read once by the loader (its `urlViewInit` getter) and reused by
+// every route the shorthand can take — a fresh spec, layered onto the
+// defaultSession, or riding along on a hub — so the comma/space splitting can't
+// drift between them.
 //
 // A param the URL omits is left off the result rather than set to undefined:
 // applyDefaultSessionViewInit merges this over the view's own pending init, and
@@ -135,27 +136,6 @@ export function buildLgvInit(args: {
     init.displayedRegionNames = regions.split(',')
   }
   return init
-}
-
-export function buildJb1SessionSpec(args: {
-  loc?: string
-  tracks?: string
-  assembly?: string
-  tracklist?: boolean
-  nav?: boolean
-  highlight?: string
-  regions?: string
-  sessionTracks: Record<string, unknown>[]
-}) {
-  return {
-    sessionTracks: args.sessionTracks,
-    views: [
-      {
-        type: 'LinearGenomeView',
-        ...buildLgvInit(args),
-      },
-    ],
-  }
 }
 
 // The recognized `session=` type prefixes; single source for stripPrefix and

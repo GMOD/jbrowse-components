@@ -6,9 +6,14 @@ import { deleteQueryParams, readQueryParams } from './useQueryParam.ts'
 import type { SessionLoaderModel } from './SessionLoader.ts'
 import type { Snap } from './types.ts'
 
-// URL params consumed by the loader and stripped from the address bar.
-// config, session and adminKey are intentionally preserved.
-const paramsToDelete = [
+// URL params the loader reads but leaves in the address bar, so a reload
+// resolves the same config/session/admin mode.
+const preservedParams = ['config', 'session', 'adminKey'] as const
+
+// URL params the loader consumes once and then strips from the address bar.
+// Kept as its own list, with the read below derived from both, so a new param
+// can't be added to the read and silently left behind in the URL.
+const consumedParams = [
   'loc',
   'tracks',
   'assembly',
@@ -29,23 +34,7 @@ const paramsToDelete = [
 // params from the address bar is a separate one-time side effect performed by
 // stripConsumedSessionParams once the loader is committed/mounted.
 export function createSessionLoaderFromUrl(initialTimestamp: number) {
-  const p = readQueryParams([
-    'config',
-    'session',
-    'adminKey',
-    'password',
-    'loc',
-    'assembly',
-    'tracks',
-    'sessionTracks',
-    'tracklist',
-    'highlight',
-    'nav',
-    'regions',
-    'hubURL',
-    'sessionName',
-    'extendSession',
-  ])
+  const p = readQueryParams([...preservedParams, ...consumedParams])
   return SessionLoader.create({
     configPath: p.config,
     sessionQuery: p.session,
@@ -56,9 +45,14 @@ export function createSessionLoaderFromUrl(initialTimestamp: number) {
     tracks: p.tracks,
     regions: p.regions,
     sessionTracks: p.sessionTracks,
-    tracklist: p.tracklist === 'true',
+    // absent stays absent, rather than collapsing into the param's default:
+    // buildLgvInit layers its result over a defaultSession's own pending init,
+    // so a `false`/`true` synthesized here would overwrite what that session
+    // set — `&extendSession=true&loc=…` forced the nav bar back on and closed a
+    // track selector the config had opened via `init.tracklist`
+    tracklist: p.tracklist === undefined ? undefined : p.tracklist === 'true',
+    nav: p.nav === undefined ? undefined : p.nav !== 'false',
     highlight: p.highlight,
-    nav: p.nav !== 'false',
     extendSession: p.extendSession === 'true',
     hubURL: p.hubURL?.split(',').filter(Boolean),
     sessionName: p.sessionName,
@@ -71,7 +65,7 @@ export function createSessionLoaderFromUrl(initialTimestamp: number) {
 // called from the loader lifecycle effect, which only fires for the committed
 // instance and is naturally idempotent (deleting absent params is a no-op).
 export function stripConsumedSessionParams() {
-  deleteQueryParams(paramsToDelete)
+  deleteQueryParams(consumedParams)
 }
 
 export function reloadSessionLoader(

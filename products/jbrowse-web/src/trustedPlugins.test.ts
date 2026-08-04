@@ -1,6 +1,7 @@
 import {
   arePluginsRemembered,
   forgetTrustedPlugins,
+  listTrustedPlugins,
   rememberPlugins,
 } from './trustedPlugins.ts'
 
@@ -43,4 +44,14 @@ test('forget revokes prior approvals', () => {
   rememberPlugins([apollo])
   forgetTrustedPlugins()
   expect(arePluginsRemembered([apollo])).toBe(false)
+})
+
+test('lists what is trusted, sorted, so the revoke UI can show it', () => {
+  rememberPlugins([other, apollo])
+  expect(listTrustedPlugins()).toEqual([
+    'http://localhost:9000/dist/jbrowse-plugin-apollo.umd.development.js',
+    'http://localhost:9000/dist/other.umd.js',
+  ])
+  forgetTrustedPlugins()
+  expect(listTrustedPlugins()).toEqual([])
 })

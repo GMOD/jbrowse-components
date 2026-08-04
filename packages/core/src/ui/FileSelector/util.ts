@@ -5,11 +5,25 @@ import type { FileLocation } from '../../util/index.ts'
 
 export const MAX_LABEL_LENGTH = 5
 
+// jbrowse-web keeps its URL params in the hash fragment XOR the query string
+// (the long/json share modes put every param in the hash, which is never sent to
+// the server and so can't trip the request-line limit), and its own loader reads
+// `adminKey` from whichever the URL uses. Reading only `search` here made the two
+// disagree on a hash-form URL: the root model is in admin mode, but the file
+// picker still offers "File", whose BlobLocation cannot be written into the
+// config.json the admin server saves.
+//
+// The hash/search rule must stay identical to jbrowse-web's canonical reader
+// (`useQueryParam.ts` `paramLocation`).
 export function isAdminMode() {
-  return (
-    typeof window !== 'undefined' &&
-    new URLSearchParams(window.location.search).get('adminKey') !== null
+  if (typeof window === 'undefined') {
+    return false
+  }
+  const hash = window.location.hash.slice(1)
+  const params = new URLSearchParams(
+    hash.includes('=') ? hash : window.location.search,
   )
+  return params.get('adminKey') !== null
 }
 
 // Truncate a file/account label at the tail. Distinct from the core

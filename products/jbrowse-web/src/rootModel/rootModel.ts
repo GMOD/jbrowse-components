@@ -53,6 +53,9 @@ const SetDefaultSession = lazy(
 const PreferencesDialog = lazy(
   () => import('../components/PreferencesDialog.tsx'),
 )
+const TrustedPluginsDialog = lazy(
+  () => import('../components/TrustedPluginsDialog.tsx'),
+)
 
 type AssemblyConfig = ReturnType<typeof assemblyConfigSchemaFactory>
 type SessionModelFactory = (args: {
@@ -177,6 +180,9 @@ export default function RootModel({
 
       /**
        * #action
+       * Re-reads the whole `metadata` store. For anything that changes rows this
+       * model didn't just write itself (first load, pruning, favorite, rename,
+       * delete) — the autosave path uses `upsertSessionMetadata` instead.
        */
       async fetchSessionMetadata() {
         if (self.sessionDB) {
@@ -185,6 +191,27 @@ export default function RootModel({
             ret
               .filter(f => f.configPath === (self.configPath ?? ''))
               .sort((a, b) => +sessionLastUsed(b) - +sessionLastUsed(a)),
+          )
+        }
+      },
+      /**
+       * #action
+       * Merges a row this model has just written into the in-memory list. The
+       * autosave autorun writes exactly one row on every debounced session edit
+       * — every 400ms for as long as you keep panning — and already holds its
+       * contents, so re-reading every session's metadata to learn what it just
+       * stored is the expensive way to move one row to the top.
+       */
+      upsertSessionMetadata(meta: SessionMetadata) {
+        // a row for another config belongs to a different bucket of the list
+        if (meta.configPath === (self.configPath ?? '')) {
+          this.setSavedSessionMetadata(
+            [
+              meta,
+              ...(self.savedSessionMetadata ?? []).filter(
+                m => m.id !== meta.id,
+              ),
+            ].sort((a, b) => +sessionLastUsed(b) - +sessionLastUsed(a)),
           )
         }
       },
@@ -408,6 +435,15 @@ export default function RootModel({
               redoMenuItem(self.history),
               { type: 'divider' },
               pluginStoreMenuItem(),
+              {
+                label: 'Trusted plugins...',
+                onClick: () => {
+                  self.session?.queueDialog((onClose: () => void) => [
+                    TrustedPluginsDialog,
+                    { onClose },
+                  ])
+                },
+              },
               {
                 label: 'Assembly manager',
                 icon: DNA,

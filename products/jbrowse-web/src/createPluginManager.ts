@@ -127,9 +127,16 @@ function initSession(
     } else if (sessionSource?.type === 'snapshot') {
       rootModel.setSession(sessionSource.snapshot)
     } else if (sessionSource?.type === 'hub') {
-      // @ts-expect-error hubSpec is dynamic JSON (Record<string,unknown>); the
-      // required shape is validated at runtime inside loadHubSpec
-      void loadHubSpec({ ...sessionSource.hubSpec, sessionName }, pluginManager)
+      void loadHubSpec(
+        // @ts-expect-error hubSpec is dynamic JSON (Record<string,unknown>); the
+        // required shape is validated at runtime inside loadHubSpec
+        {
+          ...sessionSource.hubSpec,
+          sessionName,
+          viewInit: sessionSource.viewInit,
+        },
+        pluginManager,
+      )
     } else if (sessionSource?.type === 'spec') {
       void loadSessionSpec(
         // @ts-expect-error spec is dynamic JSON (Record<string,unknown>); the

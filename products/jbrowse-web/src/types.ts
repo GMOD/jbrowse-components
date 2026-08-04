@@ -1,4 +1,5 @@
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
+import type { InitState } from '@jbrowse/plugin-linear-genome-view'
 import type { SessionMetadata } from '@jbrowse/web-core'
 import type { DBSchema } from 'idb'
 
@@ -44,7 +45,13 @@ export interface SessionTriagedInfo {
 export type SessionSource =
   | { type: 'snapshot'; snapshot: Snap }
   | { type: 'spec'; spec: Snap }
-  | { type: 'hub'; hubSpec: Snap }
+  | {
+      type: 'hub'
+      hubSpec: Snap
+      // the loc/assembly/tracks URL shorthand, when the link carried it
+      // alongside &hubURL=; applied on top of the hub session
+      viewInit?: Partial<InitState>
+    }
   | { type: 'default' }
   | { type: 'error'; error: unknown }
 

@@ -44,6 +44,12 @@ export function arePluginsRemembered(defs: PluginDefinition[]) {
   return defs.every(d => trusted.has(pluginUrl(d)))
 }
 
+// The plugin URLs currently trusted on this origin, for the UI that revokes
+// them. Sorted so the list doesn't reshuffle as approvals accumulate.
+export function listTrustedPlugins() {
+  return [...readTrusted()].sort((a, b) => a.localeCompare(b))
+}
+
 // Revokes every remembered plugin approval on this origin.
 export function forgetTrustedPlugins() {
   try {

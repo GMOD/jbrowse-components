@@ -225,6 +225,15 @@ Loads one or more UCSC track hubs as a session (multiple hubs as a
 comma-separated list), typically combined with `?config=none` since the hub
 supplies its own assemblies and tracks.
 
+Add `&loc=` and `&assembly=` to open the hub at a particular place instead of
+wherever the hub itself starts. `&assembly=` is required for this: it names one
+of the hub's genomes, and without it there is nothing to resolve `&loc=`
+against.
+
+```
+?config=none&hubURL=https://example.com/hub.txt&assembly=GCF_019202715.1&loc=chr1:1-100000
+```
+
 See [](/docs/user_guides/hub_url) for the full workflow, including combining a
 hub with a config and loading several at once.
 

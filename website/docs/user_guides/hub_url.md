@@ -40,6 +40,22 @@ or extra assemblies:
 
 The hub's tracks are added on top of whatever the config already defines.
 
+## Opening the hub at a specific location
+
+By default a hub opens wherever it says to (`defaultPos` in its `genomes`
+stanza). Add [`&loc=`](/docs/urlparams#loc) and
+[`&assembly=`](/docs/urlparams#assembly) to land somewhere else:
+
+```
+?config=none&hubURL=https://example.com/hub.txt&assembly=GCF_019202715.1&loc=chr1:1-100000
+```
+
+`&assembly=` is required here, and it is the hub's genome ID — the same name the
+hub's `genomes.txt` (or its `genome` line, for a one-file hub) uses. `&loc=` on
+its own has no assembly to resolve against, so JBrowse loads the hub at its own
+default location and says why. `&tracks=` works the same way, naming track IDs
+the hub defines.
+
 ## Loading several hubs
 
 Pass a comma-separated list to open more than one hub at once:

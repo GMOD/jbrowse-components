@@ -48,33 +48,36 @@ export async function setupSessionDB(self: WebRootModel) {
         async () => {
           if (self.session) {
             try {
-              // careful not to access self.savedSessionMetadata in here, or
-              // else it can create an infinite loop. Capture id/name/snapshot
-              // synchronously so the reactive reads are tracked and the async
-              // tail never touches a possibly-destroyed node.
+              // careful not to access self.savedSessionMetadata in the tracked
+              // head of this autorun, or else it can create an infinite loop —
+              // the list this writes is the list it would be observing.
+              // (upsertSessionMetadata below reads it, but from inside an MST
+              // action past an await, so neither is tracked.) Capture
+              // id/name/snapshot synchronously so the reactive reads are tracked
+              // and the async tail never touches a possibly-destroyed node.
               const { id, name } = self.session
               const snap = getSnapshot<Session>(self.session)
               const configPath = self.configPath ?? ''
               await sessionDB.put('sessions', snap, id)
               const ret = await sessionDB.get('metadata', id)
-              await sessionDB.put(
-                'metadata',
-                {
-                  favorite: ret?.favorite ?? false,
-                  createdAt: ret?.createdAt ?? new Date(),
-                  // a session id survives reloads, so createdAt is pinned to
-                  // the day the session first appeared and says nothing about
-                  // whether it is still in use. This is what the recent list,
-                  // the pruner and the age-based delete all rank by.
-                  updatedAt: new Date(),
-                  name,
-                  id,
-                  configPath,
-                },
+              const meta = {
+                favorite: ret?.favorite ?? false,
+                createdAt: ret?.createdAt ?? new Date(),
+                // a session id survives reloads, so createdAt is pinned to
+                // the day the session first appeared and says nothing about
+                // whether it is still in use. This is what the recent list,
+                // the pruner and the age-based delete all rank by.
+                updatedAt: new Date(),
+                name,
                 id,
-              )
+                configPath,
+              }
+              await sessionDB.put('metadata', meta, id)
               if (isAlive(self)) {
-                await self.fetchSessionMetadata()
+                // the one row that changed is the one we just wrote, so merge it
+                // in rather than re-reading every session's metadata on each
+                // debounce tick (see upsertSessionMetadata)
+                self.upsertSessionMetadata(meta)
               }
             } catch (e) {
               console.error(e)

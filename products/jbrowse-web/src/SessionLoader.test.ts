@@ -356,6 +356,70 @@ describe('SessionLoader', () => {
         type: 'hub',
         hubSpec: { hubURL: ['https://example.com/hub.txt'] },
       })
+      expect(
+        (loader.sessionSource as { viewInit?: unknown }).viewInit,
+      ).toBeUndefined()
+    })
+
+    it('carries the loc/assembly shorthand along as a view init', () => {
+      const loader = SessionLoader.create({
+        hubURL: ['https://example.com/hub.txt'],
+        loc: 'chr1:1-1000',
+        assembly: 'hg38',
+        tracks: 'track1',
+        initialTimestamp: Date.now(),
+      })
+      loader.decodeHubSpec()
+      expect(loader.sessionSource).toMatchObject({
+        type: 'hub',
+        hubSpec: { hubURL: ['https://example.com/hub.txt'] },
+        viewInit: {
+          loc: 'chr1:1-1000',
+          assembly: 'hg38',
+          tracks: ['track1'],
+        },
+      })
+    })
+
+    // regression: isJb1StyleSession was checked first, so a hand-written
+    // ?hubURL=...&loc=... built a bare LGV and dropped the hub entirely
+    it('a hub with loc resolves to the hub, not a bare LGV spec', async () => {
+      const loader = SessionLoader.create({
+        hubURL: ['https://example.com/hub.txt'],
+        loc: 'chr1:1-1000',
+        assembly: 'hg38',
+        initialTimestamp: Date.now(),
+      })
+      await loader.loadSessionByType()
+      expect(loader.sessionSource).toMatchObject({
+        type: 'hub',
+        viewInit: { loc: 'chr1:1-1000', assembly: 'hg38' },
+      })
+    })
+
+    // extendSession names the *config's* defaultSession as the thing to layer
+    // onto, which a hub session replaces outright
+    it('extendSession still wins over a hub', async () => {
+      const loader = SessionLoader.create({
+        hubURL: ['https://example.com/hub.txt'],
+        loc: 'chr1:1-1000',
+        extendSession: true,
+        initialTimestamp: Date.now(),
+      })
+      await loader.loadSessionByType()
+      expect(loader.sessionSource).toEqual({ type: 'default' })
+    })
+
+    // a returning user's own session outranks the hubURL still sitting in the
+    // address bar
+    it('an explicit session= still wins over a hub', async () => {
+      const loader = SessionLoader.create({
+        hubURL: ['https://example.com/hub.txt'],
+        sessionQuery: 'spec-{"views":[]}',
+        initialTimestamp: Date.now(),
+      })
+      await loader.loadSessionByType()
+      expect(loader.sessionSource).toMatchObject({ type: 'spec' })
     })
   })
 
@@ -767,22 +831,57 @@ describe('SessionLoader', () => {
       expect(loader.sessionQueryType).toBe('encoded')
     })
 
-    it('treats tracklist=true as true and any other value as false', () => {
+    it('treats tracklist=true as true and any other present value as false', () => {
       setSearch('?tracklist=true')
       expect(createSessionLoaderFromUrl(0).tracklist).toBe(true)
       setSearch('?tracklist=false')
       expect(createSessionLoaderFromUrl(0).tracklist).toBe(false)
-      setSearch('')
-      expect(createSessionLoaderFromUrl(0).tracklist).toBe(false)
     })
 
-    it('treats nav=false as false and any other value (incl. absent) as true', () => {
+    it('treats nav=false as false and any other present value as true', () => {
       setSearch('?nav=false')
       expect(createSessionLoaderFromUrl(0).nav).toBe(false)
       setSearch('?nav=true')
       expect(createSessionLoaderFromUrl(0).nav).toBe(true)
-      setSearch('')
-      expect(createSessionLoaderFromUrl(0).nav).toBe(true)
+    })
+
+    // an absent param must stay absent all the way into the built init, or
+    // &extendSession= layers a synthesized nav/tracklist over — and erases —
+    // whatever the config's defaultSession set for them
+    it('leaves an absent nav/tracklist out of the built init', () => {
+      setSearch('?loc=chr1:1-100&extendSession=true')
+      const loader = createSessionLoaderFromUrl(0)
+      expect(loader.nav).toBeUndefined()
+      expect(loader.tracklist).toBeUndefined()
+      expect(loader.defaultSessionViewInit).toEqual({ loc: 'chr1:1-100' })
+    })
+
+    // &hubURL= with an empty value parses to [], which is truthy: it used to
+    // route to loadHubSpec, which has no hub to connect to and returns without
+    // setting any session at all
+    it('treats an empty hubURL as no hub', () => {
+      setSearch('?hubURL=')
+      expect(createSessionLoaderFromUrl(0).isHubSession).toBe(false)
+      setSearch('?hubURL=,,')
+      expect(createSessionLoaderFromUrl(0).isHubSession).toBe(false)
+      setSearch('?hubURL=https://example.com/hub.txt')
+      expect(createSessionLoaderFromUrl(0).isHubSession).toBe(true)
+    })
+
+    // no &loc= to navigate to, but adding tracks to a curated defaultSession is
+    // still meaningful; this used to be dropped for want of a loc/assembly
+    it('applies a tracks-only shorthand to the default session', () => {
+      setSearch('?tracks=a,b&extendSession=true')
+      expect(createSessionLoaderFromUrl(0).defaultSessionViewInit).toEqual({
+        tracks: ['a', 'b'],
+      })
+    })
+
+    it('builds no init when extendSession carries no params', () => {
+      setSearch('?extendSession=true')
+      expect(
+        createSessionLoaderFromUrl(0).defaultSessionViewInit,
+      ).toBeUndefined()
     })
   })
 

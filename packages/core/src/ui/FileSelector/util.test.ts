@@ -4,6 +4,7 @@ import {
   dirFromPath,
   getAccountLabel,
   getInitialSourceType,
+  isAdminMode,
   truncateLabel,
 } from './util.ts'
 
@@ -27,6 +28,38 @@ describe('truncateLabel', () => {
   test('handles exactly MAX_LABEL_LENGTH', () => {
     const str = 'a'.repeat(MAX_LABEL_LENGTH)
     expect(truncateLabel(str)).toBe(str)
+  })
+})
+
+describe('isAdminMode', () => {
+  const setUrl = (rest: string) => {
+    window.history.replaceState(null, '', `${window.location.pathname}${rest}`)
+  }
+  afterEach(() => {
+    setUrl('')
+  })
+
+  test('reads adminKey from the query string', () => {
+    setUrl('?config=foo.json&adminKey=abc')
+    expect(isAdminMode()).toBe(true)
+  })
+
+  // jbrowse-web's long/json share modes relocate every param into the hash, and
+  // its loader reads adminKey from there; this must agree with it
+  test('reads adminKey from the hash when the URL keeps its params there', () => {
+    setUrl('#config=foo.json&adminKey=abc')
+    expect(isAdminMode()).toBe(true)
+  })
+
+  test('false with no adminKey in either place', () => {
+    setUrl('?config=foo.json#section')
+    expect(isAdminMode()).toBe(false)
+  })
+
+  // hash XOR search: once the hash holds params, only the hash is read
+  test('ignores a query-string adminKey when the params live in the hash', () => {
+    setUrl('?adminKey=abc#config=foo.json')
+    expect(isAdminMode()).toBe(false)
   })
 })
 

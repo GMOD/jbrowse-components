@@ -355,3 +355,52 @@ test('adds menus', () => {
   )
   expect(resolveMenus(root.menus())).toMatchSnapshot()
 })
+
+describe('upsertSessionMetadata', () => {
+  const meta = (id: string, updatedAt: Date, configPath = '') => ({
+    id,
+    name: id,
+    createdAt: new Date(0),
+    updatedAt,
+    configPath,
+    favorite: false,
+  })
+
+  test('moves the rewritten row to the top without re-reading the store', () => {
+    const root = getRootModel().create(mainThreadConfig)
+    const older = meta('older', new Date(1000))
+    const newer = meta('newer', new Date(2000))
+    root.setSavedSessionMetadata([newer, older])
+
+    root.upsertSessionMetadata(meta('older', new Date(3000)))
+
+    expect(root.savedSessionMetadata?.map(m => m.id)).toEqual([
+      'older',
+      'newer',
+    ])
+    // replaced, not appended alongside the row it supersedes
+    expect(root.savedSessionMetadata).toHaveLength(2)
+  })
+
+  test('adds a row the list has not seen yet', () => {
+    const root = getRootModel().create(mainThreadConfig)
+    root.setSavedSessionMetadata([meta('existing', new Date(1000))])
+
+    root.upsertSessionMetadata(meta('fresh', new Date(2000)))
+
+    expect(root.savedSessionMetadata?.map(m => m.id)).toEqual([
+      'fresh',
+      'existing',
+    ])
+  })
+
+  test('ignores a row belonging to another config', () => {
+    const root = getRootModel().create(mainThreadConfig)
+    const existing = meta('existing', new Date(1000))
+    root.setSavedSessionMetadata([existing])
+
+    root.upsertSessionMetadata(meta('other', new Date(2000), 'other.json'))
+
+    expect(root.savedSessionMetadata).toEqual([existing])
+  })
+})
