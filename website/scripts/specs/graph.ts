@@ -923,7 +923,10 @@ function repeatDensityDisplay(asm: string) {
     // rescale each row to its own maximum and erase the entire result.
     minScore: 0,
     maxScore: 1,
-    height: 300,
+    // 200, not 300 (review: more compact). Four class rows still read as four
+    // rows at 50px each, and the 100px saved on each pane is what lets the
+    // synteny band between them be tall enough to see a ribbon in.
+    height: 200,
   }
 }
 
@@ -3175,6 +3178,19 @@ export const graphSpecs: ScreenshotSpec[] = [
   // the two panes the same width in bp, which is what lets the rows be read
   // against each other at all — the objection that retired the strip on the
   // figure above was two panes at different bp/px.
+  //
+  // A SYNTENY VIEW WAS TRIED HERE AND IS WRONG FOR THIS COMPARISON (review
+  // asked for one; rendered it twice before concluding). The band needs the two
+  // panes to be counterparts and these deliberately are not — each is its own
+  // assembly's last 650 kb, which is the only framing that keeps them the same
+  // width in bp. Hung the UCSC hg38-to-hs1 liftOver chain between them as a
+  // session track and what it paints is a single flat block across the whole
+  // band, because a liftOver chain is one chromosome-scale feature and its base
+  // ribbon is one trapezoid: the band ends up asserting that these two windows
+  // correspond end to end, which is the opposite of what the figure is for.
+  // Filtering to blocks over 20 kb does not change it. It also costs the two
+  // `displayName` titles, which a synteny view's sub-panels do not carry, and
+  // those titles are what say the panes are not the same interval.
   {
     mode: 'url',
     name: 'pangenome/hprc_repeat_classes',
@@ -3201,9 +3217,9 @@ export const graphSpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     settleMs: 15000,
     viewportWidth: 1000,
-    // 6 rows x 2 panes at 300px a stack, their view headers and rulers, and one
-    // app bar. The generator's below-the-fold check settled this: 800 cut 156.
-    viewportHeight: 960,
+    // two 200px stacks, their view headers and rulers, and one app bar. Was 960
+    // at the old 300px display height.
+    viewportHeight: 760,
     hideTooltip: true,
   },
   // pangenome/hprc_allele_inventory was here and is RETIRED (review: "I am

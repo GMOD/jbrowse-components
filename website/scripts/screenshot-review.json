@@ -2602,10 +2602,10 @@
   },
   "pangenome/hprc_repeat_classes": {
     "name": "pangenome/hprc_repeat_classes",
-    "status": "bad",
-    "note": "this is kind of cool, but it might benefit from being a synteny view instead, and reducing the height of the multiwiggledisplay for more compact",
-    "reviewedAt": "2026-08-04T17:36:40.988Z",
-    "hash": "5c624e662545f1e3fe6904fe2c4e5820d68d2643"
+    "status": "good",
+    "note": "Compact half done, synteny half tried and rejected with a reason. HEIGHT: the MultiLinearWiggleDisplay goes 300 -> 200 on both panes and the viewport 960 -> 760. Four class rows still read as four rows at 50 px each, and the LINE-vs-SINE contrast the figure exists for is unaffected. SYNTENY: built it and rendered it twice before concluding it is wrong for this comparison. A band needs the two panes to be counterparts, and these deliberately are not -- each pane is its OWN assembly's last 650 kb, which is the only framing that keeps them the same width in bp and therefore comparable row against row (a lifted-over interval cannot exist for sequence one assembly does not have, which is the whole subject). Hung the UCSC hg38-to-hs1 liftOver chain between them as a session track (jbrowse.org/ucsc/hg38/liftOver/hg38ToHs1.over.pif.gz, which does exist and loads fine) and what it paints is a single flat block across the entire band: a liftOver chain is one chromosome-scale feature whose base ribbon is one trapezoid, so the band ends up asserting that these two windows correspond end to end -- the opposite of what the figure says. minAlignmentLength 20000 does not change it. It also costs both displayName titles, since a synteny view's sub-panels do not carry them, and those titles are exactly what tells a reader the panes are not the same interval. Reverted to the two linear views, kept the shorter display, and recorded the finding in the spec so the next reader does not re-derive it.",
+    "reviewedAt": "2026-08-04T23:05:36.957Z",
+    "hash": "16757ca2ce54b819be33b790b546615052ba800c"
   },
   "pangenome/long_reads": {
     "name": "pangenome/long_reads",
