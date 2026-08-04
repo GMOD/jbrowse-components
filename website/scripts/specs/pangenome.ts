@@ -293,4 +293,68 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
       { type: 'delay', ms: 2000 },
     ],
   },
+
+  // What a depth trough IS, at single-read resolution. The depth and pav tracks
+  // say K12 carries sequence no other strain does; this is an unrelated clinical
+  // isolate's nanopore reads over one of those troughs, and the absence is the
+  // same absence.
+  //
+  // The locus is read off the data rather than chosen. `odgi pav` for NCTC86
+  // gives 52 K12 spans no other strain traverses; the ones a long read can span
+  // whole are 2-9 kb, and CPZ-55 at chr:2,559,000-2,565,000 is where the reads
+  // are unambiguous. Measured on the BAM this figure loads:
+  //   flanks     11-15x
+  //   2,559,000-2,565,000   exactly 0x
+  //   right flank 16x
+  // and the reads that cross it carry ONE deletion of 6,789-6,791 bp (five of
+  // them at last count, starting anywhere from 2,545,683 to 2,554,482). So the
+  // pileup shows the event twice over: a hole with hard edges, and a wall of
+  // reads each drawing the same gap.
+  //
+  // The gene lane is the point of the window, not decoration — intZ and yffL-yffS
+  // name the CPZ-55 cryptic prophage, so the figure says which mobile element the
+  // trough is rather than just that a trough exists.
+  //
+  // NOT whole-genome and not the other two prophages: CP4-6 (263-297 kb) reads
+  // 2.8x and DLP12 (566.5-573.5 kb) 4.8x in this isolate, which is partial
+  // carriage and a muddier picture. CPZ-55 is the clean one.
+  {
+    mode: 'url',
+    name: 'pangenome/long_reads',
+    url: sessionSpec(CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'K12',
+          loc: 'chr:2,554,000-2,570,000',
+          tracks: [
+            { trackId: 'K12_genes', type: 'LinearBasicDisplay' },
+            {
+              trackId: 'ecoli_e146_ont',
+              // 320 left half the lane empty: this slice is ~20x, so the reads
+              // stack about 10 deep and the rest was white
+              type: 'LinearAlignmentsDisplay',
+              height: 210,
+            },
+            {
+              trackId: 'ecoli_pggb_depth',
+              type: 'LinearWiggleDisplay',
+              height: 100,
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: '2,554,000',
+    readyTimeout: 120000,
+    viewportWidth: 1000,
+    // gene lane + the pileup with its coverage band + the depth wiggle
+    viewportHeight: 690,
+    settleMs: 20000,
+    hideTooltip: true,
+    actions: [
+      { type: 'hover', from: { x: 950, y: 60 } },
+      { type: 'delay', ms: 2000 },
+    ],
+  },
 ]

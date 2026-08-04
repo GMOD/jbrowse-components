@@ -490,7 +490,22 @@ plateau near the strain count, dropping over the accessory stretches the variant
 and MAF projections zoom into.
 
 The troughs sit at depth 1 where no other strain traverses the graph. Those
-stretches are K12's private sequence, and the gene lane names what is in them.
+stretches are K12's private sequence, and the gene lane names what is in them:
+mostly cryptic prophages and IS elements, which is where a bacterial accessory
+genome usually lives.
+
+An unrelated isolate's long reads say the same thing without the graph. These
+are nanopore reads from _E. coli_ E146
+([ENA DRR193901](https://www.ebi.ac.uk/ena/browser/view/DRR193901)), a
+carbapenem-resistant clinical isolate that is not one of the five, mapped
+straight onto K12 with `minimap2 -ax map-ont`:
+
+<Figure caption="Nanopore reads from an unrelated E. coli isolate over one K12 depth trough, with the depth curve below. Coverage stops dead at the edges of the cryptic prophage CPZ-55 and resumes after it, and the reads long enough to cross the whole element carry it as a single deletion, each labelled with its length in bp. The graph projection below bottoms out over exactly the same span, so the trough, the coverage hole and the deletion are one event in three encodings." src="/img/pangenome/long_reads.png" />
+
+Nothing in that picture came from the pangenome graph, which is what makes it a
+check on the projection rather than a restatement of it. It also shows the thing
+a depth curve cannot: where the two flanks are joined in a genome that lacks the
+element.
 
 The peaks go the other way. `odgi depth` counts path **steps**, and the graph
 collapses the rRNA operons into one copy that every strain then walks several
@@ -788,10 +803,16 @@ same thing: sequence continuing past the window, not a dead end in the graph.
 ### Drawing the haplotype paths
 
 A P line is a walk: the ordered list of segments one strain takes through the
-graph. **View menu → Settings → Draw paths on edges** draws them, one stroke per
-path across every edge the path crosses, with a color key naming the strain each
-stroke belongs to. Set **Color** to **Grey** first, so the only colors in the
-drawing are the paths.
+graph. **View menu → Settings → Draw paths** draws them. Every node and every
+connector is split lengthwise into one lane per path, in the order of the color
+key beside the drawing, and a strain that does not walk a node leaves its lane
+empty there. Set **Color** to **Grey** first, so the only colors in the drawing
+are the paths.
+
+Reading a lane rather than counting strokes is what makes carriage legible on a
+node as short as a single base: an absence lands at the same height on every
+node, so a missing strain is a gap in a fixed place instead of a stroke that has
+to be found.
 
 This is carriage, which is the one thing the graph states and none of the
 projections above can: an alternate allele has no reference coordinate, so
