@@ -49,7 +49,6 @@ export interface ComputeDerivativePathsOpts {
   tolerance?: number
   /** Drop paths with less support than this. */
   minReads?: number
-  maxCandidates?: number
   /**
    * Context to show beyond the outermost junctions. The interior segments are
    * pinned by junctions on both sides, but the first and last are open — a read
@@ -62,7 +61,6 @@ export interface ComputeDerivativePathsOpts {
 const DEFAULTS = {
   tolerance: 20,
   minReads: 2,
-  maxCandidates: 10,
   flank: 2000,
 }
 
@@ -202,6 +200,12 @@ export function derivativeLocString(segments: DerivativeSegment[]) {
 /**
  * #api
  * Rank the derivative paths the reads in view describe, most-supported first.
+ *
+ * Every path above `minReads` is returned, not a top-N: how MANY paths a window
+ * produces is itself evidence about all of them. One or two is what a real event
+ * looks like; forty is a repeat, and a caller that had already truncated to ten
+ * could not tell a reader that. Presenting a shorter list is the picker's job,
+ * and it says what it left out.
  */
 export function computeDerivativePaths(
   opts: ComputeDerivativePathsOpts,
@@ -209,7 +213,6 @@ export function computeDerivativePaths(
   const { chains } = opts
   const tolerance = opts.tolerance ?? DEFAULTS.tolerance
   const minReads = opts.minReads ?? DEFAULTS.minReads
-  const maxCandidates = opts.maxCandidates ?? DEFAULTS.maxCandidates
   const flank = opts.flank ?? DEFAULTS.flank
 
   const groups = new Map<string, { chains: SegAln[][] }>()
@@ -250,12 +253,10 @@ export function computeDerivativePaths(
     })
   }
 
-  return candidates
-    .sort(
-      (a, b) =>
-        // support first; then more hops, since a 3-junction path is the
-        // interesting one when two candidates are equally well supported
-        b.readCount - a.readCount || b.segments.length - a.segments.length,
-    )
-    .slice(0, maxCandidates)
+  return candidates.sort(
+    (a, b) =>
+      // support first; then more hops, since a 3-junction path is the
+      // interesting one when two candidates are equally well supported
+      b.readCount - a.readCount || b.segments.length - a.segments.length,
+  )
 }

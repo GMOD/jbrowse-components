@@ -179,6 +179,25 @@ describe('computeDerivativePaths', () => {
     ).toHaveLength(0)
   })
 
+  it('returns every supported path, so a caller can say how many there were', () => {
+    // How many paths a window produces is evidence about all of them: one or two
+    // is an event, forty is a repeat. Truncating here would hand the picker a
+    // list it could not describe, which is how a wall of mapping noise ends up
+    // looking like a tidy top ten.
+    const many = Array.from({ length: 25 }, (_, i) => {
+      const chain = der3Chain()
+      chain[1] = seg(
+        'chr10',
+        58_717_463 + i * 5000,
+        58_717_662 + i * 5000,
+        1,
+        32_732,
+      )
+      return chain
+    }).flatMap(chain => [chain, chain])
+    expect(computeDerivativePaths({ chains: many })).toHaveLength(25)
+  })
+
   it('ignores a read with no junction', () => {
     expect(
       computeDerivativePaths({

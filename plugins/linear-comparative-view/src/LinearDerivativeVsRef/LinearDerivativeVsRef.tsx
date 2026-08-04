@@ -61,6 +61,10 @@ function refPanelTrackIds(view: { tracks?: ViewTrack[] }) {
     .map(t => t.configuration.trackId)
 }
 
+// Rows the picker draws. Enough that a real event's alternatives all fit, few
+// enough that a repeat-driven list does not become the dialog.
+const MAX_SHOWN = 10
+
 interface SyntenyPanel {
   initialized?: boolean
   showTrack?: (
@@ -110,7 +114,11 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
   handleClose: () => void
 }) {
   const { classes } = useStyles()
-  const candidates = model.derivativePathCandidates
+  const ranked = model.derivativePathCandidates
+  // A window that produces dozens of paths has said something about all of them,
+  // so the overflow is reported rather than dropped: it is the difference
+  // between "here is the event" and "these reads map everywhere".
+  const candidates = ranked.slice(0, MAX_SHOWN)
   const [selected, setSelected] = useState(0)
   const [error, setError] = useState<unknown>()
 
@@ -245,6 +253,13 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
                 />
               ))}
             </RadioGroup>
+            {ranked.length > candidates.length ? (
+              <Typography className={classes.caveat}>
+                {ranked.length - candidates.length} further paths are supported
+                by at least two reads and are not listed. A window that produces
+                this many is usually repetitive rather than rearranged.
+              </Typography>
+            ) : null}
           </>
         )}
       </div>
