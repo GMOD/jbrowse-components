@@ -12,7 +12,7 @@ import { makeGCContentTrackConf } from '../makeGCContentTrackConf.ts'
 import SharedModelF from './shared.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { LinearGCContentDisplayConfigSchema } from './index.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 /**
@@ -48,7 +48,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
  */
 export default function stateModelF(
   pluginManager: PluginManager,
-  configSchema: AnyConfigurationSchemaType,
+  configSchema: LinearGCContentDisplayConfigSchema,
 ) {
   return types
     .compose(

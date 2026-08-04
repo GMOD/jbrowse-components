@@ -4,7 +4,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import SharedModelF from './shared.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { LinearGCContentDisplayConfigSchema } from './index.ts'
 
 /**
  * #stateModel LinearGCContentTrackDisplay
@@ -43,7 +43,7 @@ import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
  */
 export default function stateModelF(
   pluginManager: PluginManager,
-  configSchema: AnyConfigurationSchemaType,
+  configSchema: LinearGCContentDisplayConfigSchema,
 ) {
   return types
     .compose(

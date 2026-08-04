@@ -17,23 +17,24 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 // both displays share every slot (see sharedConfigSchema); they only differ in
 // which track type they attach to and how they resolve their adapter, so the
 // per-type config is just an empty schema deriving from the shared one
-function makeConfigSchema(pluginManager: PluginManager, name: string) {
+function makeConfigSchema(name: string) {
   return ConfigurationSchema(
     name,
     {},
     {
-      baseConfiguration: sharedGCContentConfigSchema(pluginManager),
+      baseConfiguration: sharedGCContentConfigSchema(),
       explicitlyTyped: true,
     },
   )
 }
 
+export type LinearGCContentDisplayConfigSchema = ReturnType<
+  typeof makeConfigSchema
+>
+
 export default function LinearGCContentDisplayF(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
-    const configSchema = makeConfigSchema(
-      pluginManager,
-      'LinearGCContentDisplay',
-    )
+    const configSchema = makeConfigSchema('LinearGCContentDisplay')
     return new DisplayType({
       name: 'LinearGCContentDisplay',
       configSchema,
@@ -46,10 +47,7 @@ export default function LinearGCContentDisplayF(pluginManager: PluginManager) {
   })
 
   pluginManager.addDisplayType(() => {
-    const configSchema = makeConfigSchema(
-      pluginManager,
-      'LinearGCContentTrackDisplay',
-    )
+    const configSchema = makeConfigSchema('LinearGCContentTrackDisplay')
     return new DisplayType({
       name: 'LinearGCContentTrackDisplay',
       configSchema,

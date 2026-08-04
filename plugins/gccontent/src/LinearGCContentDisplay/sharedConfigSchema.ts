@@ -1,7 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
-
-import type PluginManager from '@jbrowse/core/PluginManager'
+import { linearWiggleDisplayConfigSchema } from '@jbrowse/plugin-wiggle'
 
 /**
  * #config SharedGCContentDisplay
@@ -60,9 +59,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  * }
  * ```
  */
-export default function sharedGCContentConfigSchema(
-  pluginManager: PluginManager,
-) {
+export default function sharedGCContentConfigSchema() {
   return ConfigurationSchema(
     'SharedGCContentDisplay',
     {
@@ -114,9 +111,22 @@ export default function sharedGCContentConfigSchema(
       /**
        * #baseConfiguration
        */
-      baseConfiguration: pluginManager.getDisplayType('LinearWiggleDisplay')
-        .configSchema,
+      // Imported directly rather than fetched back out of the plugin registry
+      // as `pluginManager.getDisplayType('LinearWiggleDisplay').configSchema`.
+      // That is the identical object — the wiggle plugin registers the same
+      // module-level const it exports — but the registry types it as
+      // `AnyConfigurationSchemaType`, which widened this schema's base and so
+      // erased slot-name and value checking for every read of a GC content
+      // slot, including this schema's OWN `windowSize`/`windowDelta`/`gcMode`.
+      // A widened base poisons the whole schema, so no annotation downstream
+      // could recover it. gccontent already imports this barrel for the model
+      // factory and the React component, so nothing new lands in the bundle.
+      baseConfiguration: linearWiggleDisplayConfigSchema,
       explicitlyTyped: true,
     },
   )
 }
+
+export type SharedGCContentConfigSchema = ReturnType<
+  typeof sharedGCContentConfigSchema
+>

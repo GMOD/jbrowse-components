@@ -129,3 +129,6 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
 )
 
 export default linearWiggleDisplayConfigSchema
+
+export type LinearWiggleDisplayConfigSchema =
+  typeof linearWiggleDisplayConfigSchema

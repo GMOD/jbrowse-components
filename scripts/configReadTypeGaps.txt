@@ -21,8 +21,8 @@
 #     Fixable in one line by naming the concrete schema type, which is the
 #     lever CONFIG_PATTERN.md points at.
 #
-# 156 unchecked in source, 165 in tests,
-# of 830 total config accessor calls. The gate counts source only.
+# 150 unchecked in source, 165 in tests,
+# of 833 total config accessor calls. The gate counts source only.
 
 packages/app-core/src/Assemblies/AssembliesMixin.ts  (1)
   166	readConfObject('name')
@@ -38,12 +38,12 @@ packages/core/src/configuration/configTypeNarrowing.test.ts  (4)  [test]
   245	readConfObject('limit')
 packages/core/src/configuration/configurationSchema.test.ts  (7)  [test]
   441	getConf('frozenSlot')
-  1076	readConfObject('a')
-  1080	readConfObject('b')
-  1084	readConfObject('zzz')
-  1111	readConfObject('limit')
-  1129	readConfObject('assemblyNames')
-  1130	readConfObject('trackId')
+  1134	readConfObject('a')
+  1138	readConfObject('b')
+  1142	readConfObject('zzz')
+  1169	readConfObject('limit')
+  1187	readConfObject('assemblyNames')
+  1188	readConfObject('trackId')
 packages/core/src/configuration/configurationSlot.test.ts  (8)  [test]
   28	readConfObject('slot')
   48	readConfObject('slot')
@@ -279,10 +279,6 @@ plugins/dotplot-view/src/DotplotView/components/DotplotWarnings.tsx  (1)
 plugins/gccontent/src/extraTrackMenuItems.ts  (2)
   20	readConfObject('type')
   29	readConfObject('adapter')
-plugins/gccontent/src/LinearGCContentDisplay/shared.tsx  (3)
-  45	getConf('windowSize')
-  48	getConf('windowDelta')
-  51	getConf('gcMode')
 plugins/gccontent/src/LinearGCContentDisplay/stateModelReferenceSequence.ts  (2)
   73	getConf('adapter')
   97	getConf('adapter')
@@ -308,8 +304,8 @@ plugins/linear-comparative-view/src/LGVSyntenyDisplay/model.ts  (2)
 plugins/linear-comparative-view/src/LinearComparativeView/components/LinearComparativeRenderArea.tsx  (1)
   131	getConf('trackId')
 plugins/linear-comparative-view/src/LinearDerivativeVsRef/LinearDerivativeVsRef.tsx  (2)
-  124	getConf('assemblyNames')
-  136	getConf('sequence')
+  136	getConf('assemblyNames')
+  148	getConf('sequence')
 plugins/linear-comparative-view/src/LinearReadVsRef/launchLinearReadVsRef.ts  (2)
   18	getConf('assemblyNames')
   26	getConf('sequence')
@@ -369,10 +365,6 @@ plugins/wiggle/src/CreateMultiWiggleExtension/index.ts  (3)
   34	readConfObject('assemblyNames')
   38	readConfObject('adapter')
   39	readConfObject('name')
-plugins/wiggle/src/LinearWiggleDisplay/model.ts  (3)
-  123	getConf('color')
-  131	getConf('useBicolor')
-  152	getConf('minimalTicks')
 plugins/wiggle/src/shared/WiggleScoreConfigMixin.ts  (10)
   84	getConf('posColor')
   90	getConf('negColor')
@@ -391,7 +383,7 @@ products/jbrowse-web/src/rootModel/rootModel.test.ts  (3)  [test]
   149	readConfObject('name')
   256	readConfObject('name')
 products/jbrowse-web/src/rootModel/rootModel.ts  (1)
-  295	readConfObject('preConfiguredSessions')
+  322	readConfObject('preConfiguredSessions')
 products/jbrowse-web/src/tests/assemblyConfigShorthand.test.ts  (2)  [test]
   36	readConfObject('type')
   37	readConfObject('trackId')
