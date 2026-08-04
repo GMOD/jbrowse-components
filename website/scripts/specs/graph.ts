@@ -3586,16 +3586,19 @@ export const graphSpecs: ScreenshotSpec[] = [
           // `CFT073 chr:…`, which names the strain and its coordinates.
           layoutMode: 'force',
           colorScheme: 'stable-rank',
-          // NOT layoutQuality 4, and that is the measured answer to review's
-          // "are you sure you can't iterate it more times for better layout?".
-          // You can — 4 is as far as FMMM goes, 120 + 60 iterations — and here
-          // it is worse: rendered, the extra budget spreads this 11-node cut
-          // until zoom-to-fit lands at 265% and the 58 kb CFT073 arm runs off
-          // both edges of the pane. More iterations minimise FMMM's energy, not
-          // the drawing's aspect ratio. What WAS wrong is the floor: the view
-          // defaulted to quality 1 where Bandage's own default is 2
-          // (program/settings.cpp), and that is fixed in the plugin rather than
-          // pinned per figure.
+          // No layoutQuality here, which is a per-figure call rather than a
+          // rule. It IS a spec prop — `layoutQuality: 4` is how
+          // hprc_amylase_graph untangles its backbone and how
+          // pggb_haplotype_paths gets a clean lens out of the IS5 bubble, and
+          // the same setting is a radio in the view's own Settings dialog — so
+          // any figure that draws better with more iterations can just say so.
+          // This one does not: rendered at 4, the extra budget spreads an
+          // 11-node cut until zoom-to-fit lands at 265% and the 58 kb CFT073
+          // arm runs off both edges of the pane. More iterations minimise
+          // FMMM's energy, not the drawing's aspect ratio. What was wrong was
+          // the floor under all of them, and that is fixed in the plugin: the
+          // view defaulted to quality 1 where Bandage's own default is 2
+          // (program/settings.cpp).
         },
       ],
     }),
