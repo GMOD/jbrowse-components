@@ -2,7 +2,10 @@
 
 `ARCHITECTURE.md` is canonical. `reference/` is how the system works, `guides/`
 are operational how-tos, `architecture-decision-records/` is why — `ls` them and
-read what the task needs. Backlog in `TODO.md`.
+read what the task needs. Backlog in `TODO.md`, and `handoffs/` is where a
+session leaves the state of an unfinished thread: what was measured, what the
+next agent should not re-derive, and the decision left open. Read the matching
+handoff before picking a thread back up; delete one once its thread closes.
 
 ## Invariants — violations cause silent bugs, not crashes
 
