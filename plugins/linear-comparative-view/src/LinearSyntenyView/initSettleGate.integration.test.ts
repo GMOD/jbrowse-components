@@ -48,7 +48,7 @@ test('an init pass declares the diagonalize gate rather than only raising it', a
   view.beginAutoDiagonalize(true)
   view.setWidth(800)
 
-  await when(() => view.init === undefined, { timeout: 15000 })
+  await when(() => view.init === undefined)
   expect(view.pendingAutoDiagonalize).toBe(false)
 })
 
@@ -63,7 +63,7 @@ test('a level does not settle while init is still adding its tracks', async () =
   }) as LinearSyntenyViewModel
   view.setWidth(800)
 
-  await when(() => view.levels.length > 0, { timeout: 15000 })
+  await when(() => view.levels.length > 0)
   const level = view.levels[0]
   // the shape that settles vacuously: painted, with nothing left to be
   // unsettled by
@@ -71,7 +71,7 @@ test('a level does not settle while init is still adding its tracks', async () =
   expect(level.linearSyntenyDisplays).toHaveLength(0)
   expect(level.settled).toBe(false)
 
-  await when(() => view.init === undefined, { timeout: 15000 })
+  await when(() => view.init === undefined)
   expect(level.settled).toBe(true)
 })
 
@@ -91,7 +91,7 @@ test('a row spec sets the LGV view props on its own panel', async () => {
   }) as LinearSyntenyViewModel
   view.setWidth(800)
 
-  await when(() => view.init === undefined, { timeout: 15000 })
+  await when(() => view.init === undefined)
   expect(view.views[0]!.showAminoAcids).toBe(false)
   expect(view.views[0]!.trackLabels).toBe('offset')
   // the row that asked for nothing keeps the defaults

@@ -38,7 +38,7 @@ test('an unloadable assembly reports instead of spinning forever', async () => {
   }) as BreakpointViewModel
   view.setWidth(800)
 
-  await when(() => !!view.error, { timeout: 15000 })
+  await when(() => !!view.error)
 
   // `initialized` folds in every row's assembly, so it can never become true
   // here. The spinner it used to gate is unreachable state; the import form,
@@ -60,7 +60,10 @@ test('rows that load leave the view usable', async () => {
   }) as BreakpointViewModel
   view.setWidth(800)
 
-  await when(() => view.initialized, { timeout: 15000 })
+  // await the one async precondition rather than polling for it; see the note
+  // in SVGDotplotView.test.tsx on why the inner 15s deadline is gone
+  await session.assemblyManager.waitForAssembly('volvox')
+  await when(() => view.initialized)
 
   expect(view.error).toBeUndefined()
   expect(view.showLoading).toBe(false)

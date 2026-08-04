@@ -41,8 +41,11 @@ test('init.highlight is applied after the assembly finishes loading', async () =
     },
   })
   view.setWidth(800)
+  // await the one async precondition rather than polling for it; see the note
+  // in SVGDotplotView.test.tsx on why the inner 15s deadline is gone
+  await session.assemblyManager.waitForAssembly('volvox')
 
-  await when(() => view.highlight.length > 0, { timeout: 15000 })
+  await when(() => view.highlight.length > 0)
 
   expect(view.highlight[0]).toMatchObject({
     refName: 'ctgA',
@@ -65,10 +68,13 @@ test('init loc navigation runs once regions exist, and highlight still applies',
     },
   })
   view.setWidth(800)
+  // await the one async precondition rather than polling for it; see the note
+  // in SVGDotplotView.test.tsx on why the inner 15s deadline is gone
+  await session.assemblyManager.waitForAssembly('volvox')
 
   // loc-nav gates on initialized (regions populated), so wait for that
-  await when(() => view.initialized, { timeout: 15000 })
-  await when(() => view.highlight.length > 0, { timeout: 15000 })
+  await when(() => view.initialized)
+  await when(() => view.highlight.length > 0)
 
   expect(view.highlight).toHaveLength(1)
   // the horizontal axis should have been moved off the whole-genome overview
@@ -93,9 +99,12 @@ test('a bad init.highlight entry keeps its siblings and the loc-nav after it', a
     },
   })
   view.setWidth(800)
+  // await the one async precondition rather than polling for it; see the note
+  // in SVGDotplotView.test.tsx on why the inner 15s deadline is gone
+  await session.assemblyManager.waitForAssembly('volvox')
 
-  await when(() => view.initialized, { timeout: 15000 })
-  await when(() => view.highlight.length === 2, { timeout: 15000 })
+  await when(() => view.initialized)
+  await when(() => view.highlight.length === 2)
 
   // the two good entries survived the bad one between them
   expect(view.highlight.map((h: { start: number }) => h.start)).toEqual([
@@ -120,11 +129,14 @@ test('a bad per-axis init loc leaves the other axis navigated', async () => {
     },
   })
   view.setWidth(800)
+  // await the one async precondition rather than polling for it; see the note
+  // in SVGDotplotView.test.tsx on why the inner 15s deadline is gone
+  await session.assemblyManager.waitForAssembly('volvox')
 
-  await when(() => view.initialized, { timeout: 15000 })
+  await when(() => view.initialized)
   // the whole point: axis 0 throws first, and before the per-axis catch that
   // aborted the loop, so axis 1 never navigated and this would time out
-  await when(() => view.vview.offsetPx > 0, { timeout: 15000 })
+  await when(() => view.vview.offsetPx > 0)
 
   expect(notifyError).toHaveBeenCalledTimes(1)
   // the plot materialized, so init is consumed rather than kept for a retry

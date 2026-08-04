@@ -50,7 +50,7 @@ test('a bad per-row init loc keeps the built rows', async () => {
   }) as LinearSyntenyViewModel
   view.setWidth(800)
 
-  await when(() => view.init === undefined, { timeout: 15000 })
+  await when(() => view.init === undefined)
 
   expect(view.views).toHaveLength(2)
   // the row with the good loc still navigated
@@ -75,7 +75,7 @@ test('an unloadable assembly keeps init and shows the import form', async () => 
   }) as LinearSyntenyViewModel
   view.setWidth(800)
 
-  await when(() => !!view.error, { timeout: 15000 })
+  await when(() => !!view.error)
 
   expect(view.views).toHaveLength(0)
   // kept, so a reload can retry it

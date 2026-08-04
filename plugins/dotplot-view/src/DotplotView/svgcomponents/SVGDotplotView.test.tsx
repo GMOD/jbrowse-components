@@ -17,7 +17,14 @@ async function setup() {
     init: { views: [{ assembly: 'volvox' }, { assembly: 'volvox' }] },
   }) as DotplotViewModel
   view.setWidth(800)
-  await when(() => view.initialized, { timeout: 15000 })
+  // Causal, not a wall clock: the only async precondition here is the assembly
+  // load, so await that and let `when` resolve on the reaction tick after it.
+  // The 15s deadline this replaces sat INSIDE a shorter jest budget, so it could
+  // only ever fire before jest's own and told you nothing extra - and under a
+  // loaded machine (several suites plus a build) it fired on work that normally
+  // takes a few hundred ms, which is the flake it produced.
+  await session.assemblyManager.waitForAssembly('volvox')
+  await when(() => view.initialized)
   return { session, view }
 }
 
@@ -109,7 +116,7 @@ test('errored tracks export one banner, not a plot-sized box each', async () => 
   // renders the terminal state, and both displays must be in it at once. After
   // the fetches land, so the autorun that clears the error before a fetch isn't
   // still to come.
-  await when(() => view.dotplotDisplays.every(d => d.ready), { timeout: 15000 })
+  await when(() => view.dotplotDisplays.every(d => d.ready))
   // setError logs, and these errors are the fixture — keep them off stderr
   const log = jest.spyOn(console, 'error').mockImplementation(() => {})
   for (const display of view.dotplotDisplays) {

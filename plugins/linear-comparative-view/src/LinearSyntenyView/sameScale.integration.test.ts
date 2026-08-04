@@ -46,7 +46,7 @@ async function launch(init: Record<string, unknown>) {
     init,
   }) as LinearSyntenyViewModel
   view.setWidth(800)
-  await when(() => view.init === undefined, { timeout: 15000 })
+  await when(() => view.init === undefined)
   return view
 }
 

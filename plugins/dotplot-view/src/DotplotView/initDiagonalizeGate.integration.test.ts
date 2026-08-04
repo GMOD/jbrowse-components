@@ -51,12 +51,12 @@ test('an init superseded before its reorder hands the gate to its replacement', 
   view.setWidth(800)
 
   // the gate goes up as the first step of the apply, before the reorder
-  await when(() => view.pendingAutoDiagonalize, { timeout: 15000 })
+  await when(() => view.pendingAutoDiagonalize)
 
   // superseded while parked in the reorder's wait, by an init wanting no reorder
   view.setInit({ views })
 
-  await when(() => view.init === undefined, { timeout: 15000 })
+  await when(() => view.init === undefined)
   expect(view.pendingAutoDiagonalize).toBe(false)
 })
 
@@ -72,6 +72,6 @@ test('an init pass declares the gate rather than only raising it', async () => {
   view.beginAutoDiagonalize(true)
   view.setWidth(800)
 
-  await when(() => view.init === undefined, { timeout: 15000 })
+  await when(() => view.init === undefined)
   expect(view.pendingAutoDiagonalize).toBe(false)
 })
