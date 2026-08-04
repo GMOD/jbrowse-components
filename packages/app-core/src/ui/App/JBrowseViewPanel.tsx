@@ -7,7 +7,6 @@ import { useDockview } from './DockviewContext.tsx'
 import ViewStack from './ViewStack.tsx'
 import { getViewsForPanel } from './dockviewUtils.ts'
 
-import type { JBrowseViewPanelParams } from './types.ts'
 import type { IDockviewPanelProps } from 'dockview-react'
 
 const ViewLauncher = lazy(() => import('./ViewLauncher.tsx'))
@@ -32,9 +31,9 @@ const useStyles = makeStyles()(theme => ({
 
 const JBrowseViewPanel = observer(function JBrowseViewPanel({
   api,
-}: IDockviewPanelProps<JBrowseViewPanelParams>) {
-  // Panel identity is the dockview panel id, not params — so layouts persisted
-  // before params carried the panelId (blanked to {}) still restore correctly.
+}: IDockviewPanelProps) {
+  // Panel identity is the dockview panel id: it is the one thing every layout
+  // ever persisted carries, however its params were shaped at the time.
   const panelId = api.id
   const { session } = useDockview()
   const { classes } = useStyles()

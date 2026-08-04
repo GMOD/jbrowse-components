@@ -6,7 +6,11 @@ import type {
 } from '../../DockviewLayout/index.ts'
 import type { DockviewSessionType } from './types.ts'
 import type { AbstractViewModel } from '@jbrowse/core/util'
-import type { DockviewApi, DockviewGroupPanel } from 'dockview-react'
+import type {
+  DockviewApi,
+  DockviewGroupPanel,
+  SerializedDockview,
+} from 'dockview-react'
 
 /**
  * Single source of truth for the panel-id format. Every panel id is created
@@ -30,16 +34,41 @@ export function getViewsForPanel(
 }
 
 /**
- * Reconcile session views against dockview panels: assign any view lacking a
- * panel to the active panel (creating one if there are none), then drop
- * assignments for views that no longer exist. Runs inside an autorun in
- * TiledViewsContainer whenever the view list or assignments change.
+ * dockview serializes its grid to a fresh object every call, so identity
+ * comparison never holds — compare by value. Both sides originate from
+ * `api.toJSON()` (the session's copy having at most round-tripped through a
+ * snapshot), so key order is stable and stringify is a sound deep-equal.
+ */
+export function layoutsEqual(
+  a: SerializedDockview | undefined,
+  b: SerializedDockview | undefined,
+) {
+  return JSON.stringify(a) === JSON.stringify(b)
+}
+
+/**
+ * Reconcile session views against dockview panels: drop assignments that can no
+ * longer render, then home any view left without a panel. Runs inside the
+ * sync autorun in useDockviewController, after the persisted layout has been
+ * applied — so `api` holds the panels the session's own layout describes.
  */
 export function reconcilePanelAssignments(
   api: DockviewApi,
   session: DockviewSessionType & SessionWithDockviewLayout,
 ) {
   const currentViewIds = new Set(session.views.map(v => v.id))
+
+  // An assignment is what marks a view as homed, so a stale one is worse than
+  // none: pointing at a panel dockview no longer has leaves the view rendered
+  // by nothing while the homing loop below still considers it placed.
+  for (const panelId of [...session.panelViewAssignments.keys()]) {
+    const panelGone = !api.getPanel(panelId)
+    for (const viewId of session.getViewIdsForPanel(panelId)) {
+      if (panelGone || !currentViewIds.has(viewId)) {
+        session.removeViewFromPanel(viewId)
+      }
+    }
+  }
 
   for (const view of session.views) {
     if (!session.getPanelContainingView(view.id)) {
@@ -57,28 +86,21 @@ export function reconcilePanelAssignments(
       session.assignViewToPanel(activePanelId, view.id)
     }
   }
-
-  for (const id of [...session.panelViewAssignments.values()].flat()) {
-    if (!currentViewIds.has(id)) {
-      session.removeViewFromPanel(id)
-    }
-  }
 }
 
 // No `title`: an unset title makes JBrowseViewTab derive the tab name from the
 // panel's views (see getTabDisplayName). A title is only ever set when the user
 // explicitly renames a tab via api.setTitle.
 //
-// `params` carries only the panelId (a plain string), so the layout serializes
-// cleanly via api.toJSON() with no live MST session embedded (which would be a
-// circular snapshot). Panel/tab components read the live session from
-// DockviewContext instead.
+// No `params` either: panel identity is `api.id`, and the live MST session
+// reaches the portaled panel/tab components through DockviewContext. Anything
+// put here would have to survive api.toJSON(), so a session reference would
+// serialize a circular snapshot into the persisted layout.
 export function createPanelConfig(panelId: string) {
   return {
     id: panelId,
     component: 'jbrowseView' as const,
     tabComponent: 'jbrowseTab' as const,
-    params: { panelId },
   }
 }
 
@@ -186,12 +208,10 @@ export function rearrangePanelsWithDirection(
     return
   }
 
+  // carries `title` forward so a user-renamed tab survives a re-tile
   const panelStates = panels.map(p => ({
-    id: p.id,
-    component: 'jbrowseView' as const,
-    tabComponent: 'jbrowseTab' as const,
+    ...createPanelConfig(p.id),
     title: p.title,
-    params: p.params,
   }))
 
   for (const p of panels) {

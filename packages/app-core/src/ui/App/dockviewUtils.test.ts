@@ -3,21 +3,32 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { DockviewLayoutMixin } from '../../DockviewLayout/index.ts'
 import {
   applyInitLayout,
+  createPanelConfig,
   createPanelId,
   getPanelPosition,
+  layoutsEqual,
   rearrangePanelsWithDirection,
+  reconcilePanelAssignments,
 } from './dockviewUtils.ts'
 
 import type { DockviewApi } from 'dockview-react'
 
+// `views` stands in for the session's real view list: reconcile only ever reads
+// ids off it, so a bare id model is the whole surface it needs
 const TestSessionModel = types.compose(
   'TestSession',
-  types.model({ name: types.string }),
+  types.model({
+    name: types.string,
+    views: types.array(types.model({ id: types.identifier })),
+  }),
   DockviewLayoutMixin(),
 )
 
-function createSession() {
-  return TestSessionModel.create({ name: 'test' })
+function createSession(viewIds: string[] = []) {
+  return TestSessionModel.create({
+    name: 'test',
+    views: viewIds.map(id => ({ id })),
+  })
 }
 
 type SessionArg = Parameters<typeof applyInitLayout>[1]
@@ -188,6 +199,69 @@ describe('applyInitLayout', () => {
     })
 
     expect(setSizeCalls).toHaveLength(0)
+  })
+})
+
+describe('layoutsEqual', () => {
+  it('compares by value, since api.toJSON() is a fresh object each call', () => {
+    const a = { grid: { root: { type: 'branch' } }, panels: {} }
+    expect(layoutsEqual(a as never, structuredClone(a) as never)).toBe(true)
+    expect(layoutsEqual(a as never, { grid: {}, panels: {} } as never)).toBe(
+      false,
+    )
+    expect(layoutsEqual(undefined, undefined)).toBe(true)
+    expect(layoutsEqual(a as never, undefined)).toBe(false)
+  })
+})
+
+describe('reconcilePanelAssignments', () => {
+  it('homes an unassigned view into the active panel', () => {
+    const { api } = createFakeApi()
+    api.addPanel(createPanelConfig('panel-1'))
+    const session = createSession(['view-1'])
+    session.setActivePanelId('panel-1')
+
+    reconcilePanelAssignments(api, session as unknown as SessionArg)
+
+    expect(session.getViewIdsForPanel('panel-1')).toEqual(['view-1'])
+  })
+
+  it('drops assignments for views that no longer exist', () => {
+    const { api } = createFakeApi()
+    api.addPanel(createPanelConfig('panel-1'))
+    const session = createSession([])
+    session.assignViewToPanel('panel-1', 'gone')
+
+    reconcilePanelAssignments(api, session as unknown as SessionArg)
+
+    expect(session.panelViewAssignments.has('panel-1')).toBe(false)
+  })
+
+  // an assignment is what marks a view as homed, so one pointing at a panel
+  // dockview doesn't have leaves the view rendered by nothing, forever
+  it('re-homes a view assigned to a panel dockview no longer has', () => {
+    const { api } = createFakeApi()
+    api.addPanel(createPanelConfig('panel-live'))
+    const session = createSession(['view-1'])
+    session.assignViewToPanel('panel-dead', 'view-1')
+    session.setActivePanelId('panel-live')
+
+    reconcilePanelAssignments(api, session as unknown as SessionArg)
+
+    expect(session.panelViewAssignments.has('panel-dead')).toBe(false)
+    expect(session.getViewIdsForPanel('panel-live')).toEqual(['view-1'])
+  })
+
+  it('creates a panel when dockview has none at all', () => {
+    const { api, addPanelCalls } = createFakeApi()
+    const session = createSession(['view-1'])
+
+    reconcilePanelAssignments(api, session as unknown as SessionArg)
+
+    expect(addPanelCalls).toHaveLength(1)
+    const panelId = addPanelCalls[0]!.id
+    expect(session.activePanelId).toBe(panelId)
+    expect(session.getViewIdsForPanel(panelId)).toEqual(['view-1'])
   })
 })
 

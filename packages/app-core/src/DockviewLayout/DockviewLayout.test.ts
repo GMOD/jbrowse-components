@@ -110,89 +110,35 @@ describe('DockviewLayoutMixin', () => {
   })
 
   describe('view ordering within panel', () => {
-    it('moveViewUpInPanel moves view up', () => {
+    function threeViews() {
       const session = createTestSession()
       session.assignViewToPanel('panel-1', 'view-1')
       session.assignViewToPanel('panel-1', 'view-2')
       session.assignViewToPanel('panel-1', 'view-3')
+      return session
+    }
 
-      session.moveViewUpInPanel('view-2')
-
-      expect(session.getViewIdsForPanel('panel-1')).toEqual([
-        'view-2',
-        'view-1',
-        'view-3',
-      ])
+    it.each([
+      ['up', 'view-2', ['view-2', 'view-1', 'view-3']],
+      ['down', 'view-2', ['view-1', 'view-3', 'view-2']],
+      ['top', 'view-3', ['view-3', 'view-1', 'view-2']],
+      ['bottom', 'view-1', ['view-2', 'view-3', 'view-1']],
+      // already at the end it moves toward: a no-op, not a wrap
+      ['up', 'view-1', ['view-1', 'view-2', 'view-3']],
+      ['down', 'view-3', ['view-1', 'view-2', 'view-3']],
+    ] as const)('moveViewInPanel %s on %s', (direction, viewId, expected) => {
+      const session = threeViews()
+      session.moveViewInPanel(viewId, direction)
+      expect(session.getViewIdsForPanel('panel-1')).toEqual(expected)
     })
 
-    it('moveViewUpInPanel does nothing for first view', () => {
-      const session = createTestSession()
-      session.assignViewToPanel('panel-1', 'view-1')
-      session.assignViewToPanel('panel-1', 'view-2')
-
-      session.moveViewUpInPanel('view-1')
-
+    it('is a no-op for a view in no panel', () => {
+      const session = threeViews()
+      session.moveViewInPanel('view-elsewhere', 'top')
       expect(session.getViewIdsForPanel('panel-1')).toEqual([
         'view-1',
-        'view-2',
-      ])
-    })
-
-    it('moveViewDownInPanel moves view down', () => {
-      const session = createTestSession()
-      session.assignViewToPanel('panel-1', 'view-1')
-      session.assignViewToPanel('panel-1', 'view-2')
-      session.assignViewToPanel('panel-1', 'view-3')
-
-      session.moveViewDownInPanel('view-2')
-
-      expect(session.getViewIdsForPanel('panel-1')).toEqual([
-        'view-1',
-        'view-3',
-        'view-2',
-      ])
-    })
-
-    it('moveViewDownInPanel does nothing for last view', () => {
-      const session = createTestSession()
-      session.assignViewToPanel('panel-1', 'view-1')
-      session.assignViewToPanel('panel-1', 'view-2')
-
-      session.moveViewDownInPanel('view-2')
-
-      expect(session.getViewIdsForPanel('panel-1')).toEqual([
-        'view-1',
-        'view-2',
-      ])
-    })
-
-    it('moveViewToTopInPanel moves view to top', () => {
-      const session = createTestSession()
-      session.assignViewToPanel('panel-1', 'view-1')
-      session.assignViewToPanel('panel-1', 'view-2')
-      session.assignViewToPanel('panel-1', 'view-3')
-
-      session.moveViewToTopInPanel('view-3')
-
-      expect(session.getViewIdsForPanel('panel-1')).toEqual([
-        'view-3',
-        'view-1',
-        'view-2',
-      ])
-    })
-
-    it('moveViewToBottomInPanel moves view to bottom', () => {
-      const session = createTestSession()
-      session.assignViewToPanel('panel-1', 'view-1')
-      session.assignViewToPanel('panel-1', 'view-2')
-      session.assignViewToPanel('panel-1', 'view-3')
-
-      session.moveViewToBottomInPanel('view-1')
-
-      expect(session.getViewIdsForPanel('panel-1')).toEqual([
         'view-2',
         'view-3',
-        'view-1',
       ])
     })
   })
@@ -376,84 +322,17 @@ describe('pending move', () => {
   })
 })
 
-describe('Move to new tab scenario', () => {
-  it('correctly sets up two panels when moving a view to new tab', () => {
+describe('getViewIdsForPanel', () => {
+  // callers iterate this list while removing views, which splices the
+  // underlying array — a live MST node would skip elements mid-iteration
+  it('returns a copy, not the live MST array', () => {
     const session = createTestSession()
-
-    // Simulate: 3 views exist, user clicks "Move to new tab" on view-3
-    const allViewIds = ['view-1', 'view-2', 'view-3']
-    const pendingViewId = 'view-3'
-    const otherViewIds = allViewIds.filter(id => id !== pendingViewId)
-
-    // Create first panel for other views
-    const firstPanelId = 'panel-1'
-    for (const viewId of otherViewIds) {
-      session.assignViewToPanel(firstPanelId, viewId)
-    }
-
-    // Create second panel for the pending view
-    const secondPanelId = 'panel-2'
-    session.assignViewToPanel(secondPanelId, pendingViewId)
-    session.setActivePanelId(secondPanelId)
-
-    // Verify structure
-    expect(session.getViewIdsForPanel('panel-1')).toEqual(['view-1', 'view-2'])
-    expect(session.getViewIdsForPanel('panel-2')).toEqual(['view-3'])
-    expect(session.activePanelId).toBe('panel-2')
-    expect(session.panelViewAssignments.size).toBe(2)
-  })
-
-  it('correctly moves a view from one panel to another', () => {
-    const session = createTestSession()
-
-    // Initial state: all views in one panel
     session.assignViewToPanel('panel-1', 'view-1')
-    session.assignViewToPanel('panel-1', 'view-2')
-    session.assignViewToPanel('panel-1', 'view-3')
 
-    // Move view-3 to new panel
-    session.removeViewFromPanel('view-3')
-    session.assignViewToPanel('panel-2', 'view-3')
+    const ids = session.getViewIdsForPanel('panel-1')
+    session.removeViewFromPanel('view-1')
 
-    // Verify structure
-    expect(session.getViewIdsForPanel('panel-1')).toEqual(['view-1', 'view-2'])
-    expect(session.getViewIdsForPanel('panel-2')).toEqual(['view-3'])
-  })
-
-  it('handles moving the only view to new tab (first panel becomes empty)', () => {
-    const session = createTestSession()
-
-    // Only 1 view exists, user clicks "Move to new tab"
-    const pendingViewId = 'view-1'
-
-    // Second panel gets the only view
-    const secondPanelId = 'panel-2'
-    session.assignViewToPanel(secondPanelId, pendingViewId)
-    session.setActivePanelId(secondPanelId)
-
-    // Verify structure - first panel doesn't exist (no views)
+    expect(ids).toEqual(['view-1'])
     expect(session.getViewIdsForPanel('panel-1')).toEqual([])
-    expect(session.getViewIdsForPanel('panel-2')).toEqual(['view-1'])
-    expect(session.panelViewAssignments.size).toBe(1)
-  })
-
-  it('handles clearing all panel assignments', () => {
-    const session = createTestSession()
-
-    // Set up some panels
-    session.assignViewToPanel('panel-1', 'view-1')
-    session.assignViewToPanel('panel-1', 'view-2')
-    session.assignViewToPanel('panel-2', 'view-3')
-    session.setDockviewLayout({ grid: {} } as any)
-
-    // Clear all panels (simulates what happens on remount)
-    for (const panelId of session.panelViewAssignments.keys()) {
-      session.removePanel(panelId)
-    }
-    session.setDockviewLayout(undefined)
-
-    // Verify everything is cleared
-    expect(session.panelViewAssignments.size).toBe(0)
-    expect(session.dockviewLayout).toBeUndefined()
   })
 })

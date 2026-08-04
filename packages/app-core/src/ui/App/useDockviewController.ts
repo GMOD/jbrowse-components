@@ -7,6 +7,7 @@ import {
   createPanelConfig,
   createPanelId,
   getPanelPosition,
+  layoutsEqual,
   reconcilePanelAssignments,
 } from './dockviewUtils.ts'
 
@@ -29,33 +30,35 @@ type DockviewSession = DockviewSessionType & SessionWithDockviewLayout
  */
 export function useDockviewController(session: DockviewSession) {
   const [api, setApi] = useState<DockviewApi | null>(null)
-  const rearrangingRef = useRef(false)
+  const removingPanelsRef = useRef(false)
   const sessionRef = useRef(session)
   sessionRef.current = session
 
-  // Run `fn` with layout->session syncing suppressed. dockview fires its
-  // onDidLayoutChange/onDidRemovePanel listeners synchronously while we
-  // imperatively rearrange panels; the flag tells those listeners to ignore
-  // our own mutations. The `finally` guarantees the flag is always reset, so
-  // it can never get stuck on (which would silently disable persistence).
-  const withSuppressedSync = useCallback((fn: () => void) => {
-    rearrangingRef.current = true
+  // Run `fn` with the "a closed panel closes its views" rule turned off.
+  // Removing a panel is how dockview expresses both "the user closed this tab"
+  // and "I am restructuring the grid" (fromJSON clears every panel first, the
+  // tile presets remove and re-add them), and only the first should reach
+  // session.removeView. onDidRemovePanel fires synchronously, so a flag held
+  // across the call is enough to tell them apart; the `finally` guarantees it
+  // is always reset, so it can never get stuck on and eat a real close.
+  const withSuppressedPanelRemoval = useCallback((fn: () => void) => {
+    removingPanelsRef.current = true
     try {
       fn()
     } finally {
-      rearrangingRef.current = false
+      removingPanelsRef.current = false
     }
   }, [])
 
   const rearrangePanels = useCallback(
     (arrange: (api: DockviewApi) => void) => {
       if (api) {
-        withSuppressedSync(() => {
+        withSuppressedPanelRemoval(() => {
           arrange(api)
         })
       }
     },
-    [api, withSuppressedSync],
+    [api, withSuppressedPanelRemoval],
   )
 
   const addEmptyTab = useCallback(
@@ -119,6 +122,15 @@ export function useDockviewController(session: DockviewSession) {
     // Handle layout from URL params
     const { init: initLayout } = session
 
+    // Clear any stale panel assignments from a previous mount. Every branch
+    // below mints fresh panel ids, so an assignment left over from the last
+    // mount either strands its view (no panel renders it) or — since
+    // assignViewToPanel doesn't unassign — double-renders it in two panels at
+    // once. Hoisted above the `init` branch, which used to skip it.
+    for (const panelId of [...session.panelViewAssignments.keys()]) {
+      session.removePanel(panelId)
+    }
+
     if (initLayout) {
       const firstPanelId = applyInitLayout(dockviewApi, session, initLayout)
 
@@ -129,11 +141,6 @@ export function useDockviewController(session: DockviewSession) {
       }
       session.setDockviewLayout(dockviewApi.toJSON())
       return
-    }
-
-    // Clear any stale panel assignments from a previous mount
-    for (const panelId of session.panelViewAssignments.keys()) {
-      session.removePanel(panelId)
     }
 
     const pendingViewExists =
@@ -190,7 +197,7 @@ export function useDockviewController(session: DockviewSession) {
       })
 
       event.api.onDidRemovePanel(e => {
-        if (!rearrangingRef.current) {
+        if (!removingPanelsRef.current) {
           const session = sessionRef.current
           for (const viewId of session.getViewIdsForPanel(e.id)) {
             const view = session.views.find(v => v.id === viewId)
@@ -202,9 +209,17 @@ export function useDockviewController(session: DockviewSession) {
         }
       })
 
+      // dockview fires this on a microtask (AsapEvent), so it also lands after
+      // every layout we install ourselves — fromJSON on restore and on undo,
+      // the tile presets — by which time any synchronous suppression flag is
+      // long reset. Writing that echo back would count as a fresh session edit:
+      // an undo would push its own re-serialization into the TimeTraveller
+      // history 300ms later and truncate the redo stack. So compare first, and
+      // only persist a layout dockview actually moved away from.
       event.api.onDidLayoutChange(() => {
-        if (!rearrangingRef.current) {
-          sessionRef.current.setDockviewLayout(event.api.toJSON())
+        const layout = event.api.toJSON()
+        if (!layoutsEqual(layout, sessionRef.current.dockviewLayout)) {
+          sessionRef.current.setDockviewLayout(layout)
         }
       })
 
@@ -212,7 +227,7 @@ export function useDockviewController(session: DockviewSession) {
       const savedLayout = !hasPendingAction && sessionRef.current.dockviewLayout
 
       if (savedLayout) {
-        withSuppressedSync(() => {
+        withSuppressedPanelRemoval(() => {
           try {
             event.api.fromJSON(savedLayout)
             if (event.api.panels.length === 0) {
@@ -227,46 +242,35 @@ export function useDockviewController(session: DockviewSession) {
         createInitialPanels(event.api)
       }
     },
-    [createInitialPanels, withSuppressedSync],
+    [createInitialPanels, withSuppressedPanelRemoval],
   )
 
-  // Keep panel<->view assignments in sync: home any newly added view and drop
-  // assignments for removed views, as session.views changes.
-  useEffect(() => {
-    if (!api) {
-      return undefined
-    }
-    return autorun(() => {
-      reconcilePanelAssignments(api, session)
-    })
-  }, [session, api])
-
-  // Re-apply the persisted layout when it changes out from under dockview
-  // (undo/redo rewinds session.dockviewLayout), ignoring our own edits.
+  // Keep dockview in step with the session, in this order:
+  //   1. re-apply the persisted layout when it changes out from under dockview
+  //      (undo/redo rewinds session.dockviewLayout through applySnapshot)
+  //   2. reconcile panel<->view assignments against the panels that leaves
+  // One autorun rather than two, because step 2 reads the panel set step 1
+  // installs. As separate reactions an undo runs them in the wrong order:
+  // reconcile fires first, judges the restored assignments against the panels
+  // undo is about to replace, and prunes every one of them as dead.
   useEffect(() => {
     if (!api) {
       return undefined
     }
     return autorun(() => {
       const { dockviewLayout } = session
-      if (!dockviewLayout || rearrangingRef.current) {
-        return
+      if (dockviewLayout && !layoutsEqual(api.toJSON(), dockviewLayout)) {
+        withSuppressedPanelRemoval(() => {
+          try {
+            api.fromJSON(dockviewLayout)
+          } catch (e) {
+            console.error('Failed to restore dockview layout from undo:', e)
+          }
+        })
       }
-
-      const currentLayout = api.toJSON()
-      if (JSON.stringify(currentLayout) === JSON.stringify(dockviewLayout)) {
-        return
-      }
-
-      withSuppressedSync(() => {
-        try {
-          api.fromJSON(dockviewLayout)
-        } catch (e) {
-          console.error('Failed to restore dockview layout from undo:', e)
-        }
-      })
+      reconcilePanelAssignments(api, session)
     })
-  }, [session, api, withSuppressedSync])
+  }, [session, api, withSuppressedPanelRemoval])
 
   return { contextValue, onReady }
 }

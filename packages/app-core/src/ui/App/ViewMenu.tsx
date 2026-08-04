@@ -17,6 +17,7 @@ import { renameIds } from './copyView.ts'
 
 import type { SessionWithDockviewLayout } from '../../DockviewLayout/index.ts'
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
+import type { ReorderDirection } from '@jbrowse/core/util'
 import type { SessionWithMultipleViews } from '@jbrowse/product-core'
 import type { SvgIconProps } from '@mui/material'
 
@@ -38,16 +39,44 @@ const ViewMenu = observer(function ViewMenu({
     ? (session.getPanelContainingView(model.id)?.viewIds.length ?? 0)
     : session.views.length
 
-  const moveView = (
-    panelFn: (id: string) => void,
-    sessionFn: (id: string) => void,
-  ) => {
+  const classicMoves: Record<ReorderDirection, (id: string) => void> = {
+    top: session.moveViewToTop,
+    up: session.moveViewUp,
+    down: session.moveViewDown,
+    bottom: session.moveViewToBottom,
+  }
+
+  // In workspace mode the panel's own view-id list is the order that renders;
+  // in classic mode it's session.views. Same four directions either way.
+  const moveView = (direction: ReorderDirection) => {
     if (usePanel) {
-      panelFn(model.id)
+      session.moveViewInPanel(model.id, direction)
     } else {
-      sessionFn(model.id)
+      classicMoves[direction](model.id)
     }
   }
+
+  // 'top'/'bottom' only mean something with a view above *and* below
+  const moveItems = (
+    [
+      ['top', 'Move view to top', KeyboardDoubleArrowUpIcon, 2],
+      ['up', 'Move view up', KeyboardArrowUpIcon, 1],
+      ['down', 'Move view down', KeyboardArrowDownIcon, 1],
+      ['bottom', 'Move view to bottom', KeyboardDoubleArrowDownIcon, 2],
+    ] as const
+  ).flatMap(([direction, label, icon, minViews]) =>
+    viewCount > minViews
+      ? [
+          {
+            label,
+            icon,
+            onClick: () => {
+              moveView(direction)
+            },
+          },
+        ]
+      : [],
+  )
 
   return (
     <CascadingMenuButton
@@ -99,55 +128,7 @@ const ViewMenu = observer(function ViewMenu({
                 session.setUseWorkspaces(true)
               },
             },
-            ...(viewCount > 2
-              ? [
-                  {
-                    label: 'Move view to top',
-                    icon: KeyboardDoubleArrowUpIcon,
-                    onClick: () => {
-                      moveView(
-                        session.moveViewToTopInPanel,
-                        session.moveViewToTop,
-                      )
-                    },
-                  },
-                ]
-              : []),
-            ...(viewCount > 1
-              ? [
-                  {
-                    label: 'Move view up',
-                    icon: KeyboardArrowUpIcon,
-                    onClick: () => {
-                      moveView(session.moveViewUpInPanel, session.moveViewUp)
-                    },
-                  },
-                  {
-                    label: 'Move view down',
-                    icon: KeyboardArrowDownIcon,
-                    onClick: () => {
-                      moveView(
-                        session.moveViewDownInPanel,
-                        session.moveViewDown,
-                      )
-                    },
-                  },
-                ]
-              : []),
-            ...(viewCount > 2
-              ? [
-                  {
-                    label: 'Move view to bottom',
-                    icon: KeyboardDoubleArrowDownIcon,
-                    onClick: () => {
-                      moveView(
-                        session.moveViewToBottomInPanel,
-                        session.moveViewToBottom,
-                      )
-                    },
-                  },
-                ]
-              : []),
+            ...moveItems,
           ],
         },
         ...model.menuItems(),

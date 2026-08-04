@@ -1,6 +1,7 @@
 import { reorder } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import type { ReorderDirection } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type { SerializedDockview } from 'dockview-react'
 
@@ -181,56 +182,17 @@ export function DockviewLayoutMixin() {
 
         /**
          * #action
-         * Move a view up within its panel's view stack
+         * Reorder a view within its panel's view stack. The workspace-mode
+         * counterpart of the session's `moveViewUp`/`moveViewToTop`/... family,
+         * which reorder `session.views` itself — here the panel's own view-id
+         * list is the order that renders, so that is what moves.
          */
-        moveViewUpInPanel(viewId: string) {
+        moveViewInPanel(viewId: string, direction: ReorderDirection) {
           const loc = self.getPanelContainingView(viewId)
           if (loc) {
             self.panelViewAssignments.set(
               loc.panelId,
-              reorder(loc.viewIds, loc.idx, 'up'),
-            )
-          }
-        },
-
-        /**
-         * #action
-         * Move a view down within its panel's view stack
-         */
-        moveViewDownInPanel(viewId: string) {
-          const loc = self.getPanelContainingView(viewId)
-          if (loc) {
-            self.panelViewAssignments.set(
-              loc.panelId,
-              reorder(loc.viewIds, loc.idx, 'down'),
-            )
-          }
-        },
-
-        /**
-         * #action
-         * Move a view to the top of its panel's view stack
-         */
-        moveViewToTopInPanel(viewId: string) {
-          const loc = self.getPanelContainingView(viewId)
-          if (loc) {
-            self.panelViewAssignments.set(
-              loc.panelId,
-              reorder(loc.viewIds, loc.idx, 'top'),
-            )
-          }
-        },
-
-        /**
-         * #action
-         * Move a view to the bottom of its panel's view stack
-         */
-        moveViewToBottomInPanel(viewId: string) {
-          const loc = self.getPanelContainingView(viewId)
-          if (loc) {
-            self.panelViewAssignments.set(
-              loc.panelId,
-              reorder(loc.viewIds, loc.idx, 'bottom'),
+              reorder(loc.viewIds, loc.idx, direction),
             )
           }
         },

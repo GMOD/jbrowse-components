@@ -8,7 +8,7 @@ import { useDockview } from './DockviewContext.tsx'
 import JBrowseTabMenu from './JBrowseTabMenu.tsx'
 import { getViewsForPanel } from './dockviewUtils.ts'
 
-import type { DockviewSessionType, JBrowseViewPanelParams } from './types.ts'
+import type { DockviewSessionType } from './types.ts'
 import type { AbstractViewModel } from '@jbrowse/core/util'
 import type { IDockviewPanelHeaderProps } from 'dockview-react'
 
@@ -74,9 +74,9 @@ function getTabDisplayName(
 
 const JBrowseViewTab = observer(function JBrowseViewTab({
   api,
-}: IDockviewPanelHeaderProps<JBrowseViewPanelParams>) {
-  // Panel identity is the dockview panel id, not params — so layouts persisted
-  // before params carried the panelId (blanked to {}) still restore correctly.
+}: IDockviewPanelHeaderProps) {
+  // Panel identity is the dockview panel id: it is the one thing every layout
+  // ever persisted carries, however its params were shaped at the time.
   const panelId = api.id
   const { session } = useDockview()
   const { classes } = useStyles()
