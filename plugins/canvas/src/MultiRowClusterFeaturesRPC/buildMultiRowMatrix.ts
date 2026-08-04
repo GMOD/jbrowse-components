@@ -88,12 +88,37 @@ export function buildMultiRowMatrix({
   const totalWidth =
     regions.reduce((a, r) => a + Math.max(0, r.end - r.start), 0) || 1
   const bins: Bin[] = []
+  // Where each region's bins start in `bins`, so a feature can be walked onto
+  // just its own region's slice. Bins are pushed per region in ascending `mid`,
+  // which is what lets the search below be a binary one.
+  const regionBinStart: number[] = []
   for (const [regionIndex, r] of regions.entries()) {
+    regionBinStart.push(bins.length)
     const w = Math.max(0, r.end - r.start)
     const nb = Math.max(1, Math.round((maxBins * w) / totalWidth))
     for (let i = 0; i < nb; i++) {
       bins.push({ regionIndex, mid: r.start + ((i + 0.5) * w) / nb })
     }
+  }
+  regionBinStart.push(bins.length)
+
+  // First bin of region `regionIndex` whose midpoint is at or past `start`.
+  // Comparing the stored `mid` rather than re-deriving an index from the
+  // spacing: the coverage test below is `f.start <= mid < f.end` on these exact
+  // numbers, and a re-derived index would disagree with it by an ulp at a
+  // boundary — which is precisely where a bin changes hands.
+  function firstBinAtOrAfter(regionIndex: number, start: number) {
+    let lo = regionBinStart[regionIndex]!
+    let hi = regionBinStart[regionIndex + 1]!
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1
+      if (bins[mid]!.mid < start) {
+        lo = mid + 1
+      } else {
+        hi = mid
+      }
+    }
+    return lo
   }
 
   const byRow = new Map<string, MatrixFeature[]>()
@@ -141,27 +166,38 @@ export function buildMultiRowMatrix({
   }
 
   const matrix = new Map<string, number[]>()
+  // Which feature covers each bin, refilled per row. Written by walking the
+  // features onto their own bins rather than scanning every feature at every
+  // bin: the scan was bins × features per row, so a dense painting spent
+  // seconds of worker time here (500k features over 1000 bins measured at
+  // 3.3s). Assigning in feature order preserves last-covering-wins exactly,
+  // because a later feature overwrites the bins it shares with an earlier one.
+  const coveringPerBin = new Array<MatrixFeature | undefined>(bins.length)
   for (const name of sources) {
     const intervals = byRow.get(name) ?? []
     const row = new Array<number>(bins.length * channels)
     if (categorical) {
       row.fill(0)
     }
-    for (const [binIndex, bin] of bins.entries()) {
-      // last covering feature wins, matching the paint order (later features
-      // draw on top); an uncovered bin is a gap. Only features from this bin's
-      // own region count — coordinates repeat across regions, so a same-coord
-      // feature on another chromosome must not leak in.
-      let covering: MatrixFeature | undefined
-      for (const f of intervals) {
-        if (
-          f.regionIndex === bin.regionIndex &&
-          f.start <= bin.mid &&
-          bin.mid < f.end
-        ) {
-          covering = f
-        }
+    coveringPerBin.fill(undefined)
+    for (const f of intervals) {
+      // Only this feature's own region: coordinates repeat across regions, so a
+      // same-coord feature on another chromosome must not leak in.
+      const end = regionBinStart[f.regionIndex + 1]
+      if (end === undefined) {
+        continue
       }
+      for (
+        let i = firstBinAtOrAfter(f.regionIndex, f.start);
+        i < end && bins[i]!.mid < f.end;
+        i++
+      ) {
+        coveringPerBin[i] = f
+      }
+    }
+    for (let binIndex = 0; binIndex < bins.length; binIndex++) {
+      // an uncovered bin is a gap
+      const covering = coveringPerBin[binIndex]
       const o = binIndex * channels
       if (categorical) {
         // gap takes the slot past the last color

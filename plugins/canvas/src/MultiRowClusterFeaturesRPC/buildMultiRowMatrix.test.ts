@@ -63,6 +63,37 @@ describe('continuous palettes: rgb channels', () => {
     expect(row).toEqual([...BLUE, ...RED])
   })
 
+  // A bin is claimed by midpoint, so a feature narrower than the bin spacing
+  // covers one only if it happens to straddle that point. Both outcomes matter
+  // to the walk that assigns bins: it has to find the first midpoint at or past
+  // the feature's start, and stop at the first one past its end.
+  test('a feature between two midpoints covers nothing', () => {
+    const [row] = buildRows({
+      sources: ['s1'],
+      regions: [{ start: 0, end: 10 }],
+      maxBins: 2, // midpoints at 2.5, 7.5
+      features: [
+        { regionIndex: 0, row: 's1', start: 4, end: 6, colorKey: 'red' },
+        ...PALETTE_FILLER,
+      ],
+    })
+    expect(row).toEqual([...GAP, ...GAP])
+  })
+
+  test('a feature hanging off either end covers the bins it reaches', () => {
+    const [row] = buildRows({
+      sources: ['s1'],
+      regions: [{ start: 0, end: 10 }],
+      maxBins: 4, // midpoints at 1.25, 3.75, 6.25, 8.75
+      features: [
+        // starts before the region, ends between midpoints 2 and 3
+        { regionIndex: 0, row: 's1', start: -100, end: 7, colorKey: 'red' },
+        ...PALETTE_FILLER,
+      ],
+    })
+    expect(row).toEqual([...RED, ...RED, ...RED, ...GAP])
+  })
+
   test('bins split across regions proportional to width', () => {
     const matrix = buildRows({
       sources: ['s1'],
