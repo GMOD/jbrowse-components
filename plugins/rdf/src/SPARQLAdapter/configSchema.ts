@@ -11,6 +11,9 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 const SPARQLAdapterConfigSchema = ConfigurationSchema(
   'SPARQLAdapter',
   {
+    /**
+     * #slot
+     */
     endpoint: {
       type: 'fileLocation',
       defaultValue: {
@@ -19,24 +22,36 @@ const SPARQLAdapterConfigSchema = ConfigurationSchema(
       },
       description: 'URL of the SPARQL endpoint',
     },
+    /**
+     * #slot
+     */
     queryTemplate: {
       type: 'text',
       defaultValue: '',
       description:
         'SPARQL query where {start} {end} and {refName} will get replaced for each call',
     },
+    /**
+     * #slot
+     */
     refNamesQueryTemplate: {
       type: 'text',
       defaultValue: '',
       description:
         'SPARQL query that returns the possible refNames in a ?refName column',
     },
+    /**
+     * #slot
+     */
     refNames: {
       type: 'stringArray',
       defaultValue: [],
       description:
         'Possible refNames used by the SPARQL endpoint (ignored if "refNamesQueryTemplate" is provided)',
     },
+    /**
+     * #slot
+     */
     additionalQueryParams: {
       type: 'stringArray',
       defaultValue: [],

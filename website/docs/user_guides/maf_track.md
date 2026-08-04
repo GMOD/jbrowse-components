@@ -85,6 +85,17 @@ the reference: nonsynonymous changes stand out, synonymous (silent) changes get
 a faint tint, stop codons are flagged, and conserved codons stay clean. The
 residue is drawn on each codon once you zoom in far enough to read it.
 
+<!-- COLOR_TABLE maf START -->
+
+<!-- prettier-ignore -->
+| Color | Name | Value | Description |
+| --- | --- | --- | --- |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#e8930c;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#e8930c"></span> | Nonsynonymous codon | `#e8930c` | MAF codon view: the species' amino acid differs from the reference (nonsynonymous) |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#3a7bd5;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#3a7bd5"></span> | Synonymous codon | `#3a7bd5` | MAF codon view: the codon differs from the reference but the amino acid is unchanged (silent) |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#cc2222;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#cc2222"></span> | Codon stop | `#cc2222` | MAF codon view: a stop codon |
+
+<!-- COLOR_TABLE maf END -->
+
 On a large alignment, narrowing to a focused set of species first (see
 [Selecting a subtree](#selecting-a-subtree)) keeps the per-codon columns
 legible.
