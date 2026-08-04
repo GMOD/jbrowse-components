@@ -63,24 +63,35 @@ here: the synteny view opens on the locus the linear view is already showing, so
 keeping both leaves two views of one place stacked, with the taller of the two
 below the fold.
 
-The figure below walks those steps on a second pair, **hg38 to Mouse (mm39)
-liftOver** around _SHH_, because a cross-species target is where the tracks each
-panel ends up with are worth following. Every click is the same on the hs1 track
-this page opened with.
+The figure below walks those steps on a second pair, **hg38 to Chimp (panTro6)
+liftOver** across an intron of _FTO_, because a cross-species target is where the
+tracks each panel ends up with are worth following. Every click is the same on
+the hs1 track this page opened with.
 
-<Figure caption="The four steps on the hg38-to-mm39 liftOver track around SHH: right-click a chain block, confirm the framing, launch, then add the mouse panel's genes and repeats. SHH crosses to mouse Shh on one unbroken run of ribbon; the flanks either side are cut into wedges by sequence one species has and the other does not." src="/img/genomes_synteny/launch_sequence.png" />
+<Figure caption="The four steps on the hg38-to-panTro6 liftOver track across an FTO intron: right-click a chain block, confirm the framing, launch, then add the chimp panel's genes and repeats. The last frame also switches the ribbon to curves and to Transparent indels, which is what turns the one gap in it into a hole you can line up against the RepeatMasker track above: the element under it is an L1HS, the youngest human LINE-1 subfamily, and the chimp panel keeps every flanking repeat but not that one." src="/img/genomes_synteny/launch_sequence.png" />
 
 The panel for the assembly you launched from opens with the tracks that view had
 on, which is why the human side arrives with its genes and repeats already;
 **Copy this view's tracks into its panel** in the dialog turns that off. Nothing
-in the launching view says what the mouse panel should show, so that one opens
+in the launching view says what the chimp panel should show, so that one opens
 empty, and its tracks come from its own track selector, whose button in the view
-header lists one per panel. On genomes.jbrowse.org the mouse panel offers the
-same **NCBI RefSeq - RefSeq Curated** and **RepeatMasker** as the human one,
-because naming mm39 also brought in the mm39 hub's gene, repeat and gap tracks.
-The rest of that hub is not loaded with them; open it from **File → Open
-connection** as a JBrowse 2 hub at `https://jbrowse.org/ucsc/mm39/config.json`
-when you want its conservation or expression tracks too.
+header lists one per panel. On genomes.jbrowse.org the chimp panel offers
+**NCBI RefSeq - RefSeq All** and **RepeatMasker**, because naming panTro6 also
+brought in the panTro6 hub's gene, repeat and gap tracks. (RefSeq Curated exists
+there too but is a human-first product, and chimp's copy of it leaves this window
+empty.) The rest of that hub is not loaded with them; open it from **File → Open
+connection** as a JBrowse 2 hub at
+`https://jbrowse.org/ucsc/panTro6/config.json` when you want its conservation or
+expression tracks too.
+
+The ribbon's drawing is worth two more menu items once the panels are set.
+**Curved lines** in the synteny track menu is the shape in the last frame, and
+**Transparent indels** — the CIGAR display mode — leaves an indel see-through
+instead of painting it as a colored wedge. On a liftOver chain that is the
+difference between a picture and a puzzle: across this 20 kb the chain carries
+one gap of about 6 kb and four of six bases or fewer, so the single hole in the
+ribbon is the single transposon, sitting under the block RepeatMasker labels
+`L1HS`.
 
 Set the ribbon coloring to **Strand** from the palette button in the synteny
 track header.

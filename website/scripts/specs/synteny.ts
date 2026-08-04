@@ -63,18 +63,19 @@ function tnnt3Session(view: Record<string, unknown> = {}) {
   })
 }
 
-// Genes over repeats in each panel of the finished SHH comparison, one entry per
+// Genes over repeats in each panel of the finished FTO comparison, one entry per
 // track. RefSeq Curated is the same gene track (and the same longest-isoform
 // glyph) the LGV the launch came from is showing, and the human pair matches
 // what that view's tracks were copied into the anchor panel as — so the two
-// bottom frames differ in the mouse panel and nothing else.
+// bottom frames differ in the chimp panel and nothing else.
 //
 // The heights are the figure's, which is the point of declaring this frame
 // rather than clicking it together: pinned, they hold the two frames to roughly
-// one height instead of the default four times over. Labels off on the repeats
-// for the same reason they are off in the launching view — at 42 kb every
-// repeat carries a name and the names are two rows of overlapping text.
-const SHH_PANEL_TRACKS = {
+// one height instead of the default four times over. Repeat labels stay ON here
+// (they are off in the launching view, which is 4x this window): at 18 kb this
+// interval holds a dozen elements, and the name on the one in the gap is what
+// makes the figure's claim checkable rather than asserted.
+const FTO_PANEL_TRACKS = {
   hg38: [
     {
       trackId: 'hg38-ncbiRefSeqCurated',
@@ -84,20 +85,21 @@ const SHH_PANEL_TRACKS = {
     {
       trackId: 'hg38-rmsk',
       displayMode: 'compact',
-      showLabels: 'none',
       height: 72,
     },
   ],
-  mm39: [
+  // `panTro6-ncbiRefSeq`, not the Curated track the human panel uses: RefSeq
+  // Curated is a human-first product and chimp's copy of it is sparse enough to
+  // leave this window empty, which would put a blank lane opposite FTO.
+  panTro6: [
     {
-      trackId: 'mm39-ncbiRefSeqCurated',
+      trackId: 'panTro6-ncbiRefSeq',
       geneGlyphMode: 'longestCoding',
       height: 60,
     },
     {
-      trackId: 'mm39-rmsk',
+      trackId: 'panTro6-rmsk',
       displayMode: 'compact',
-      showLabels: 'none',
       height: 72,
     },
   ],
@@ -1682,22 +1684,32 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // reach its result. The panels carry their step number, since a grid has two
   // reading orders and the numbers pick one.
   //
-  // Human vs MOUSE, not human vs T2T (reviewer): between two assemblies of the
-  // same species every block is near-identical and the launched view says
-  // nothing a reader could not have guessed. hg38 -> mm39 over SHH is the
-  // opposite case — a deeply conserved developmental gene whose coding exons
-  // still align at ~90 My of divergence while the sequence between them does
-  // not, so the chain track is a handful of separated blocks and the view the
-  // launch opens is worth looking at.
+  // Human vs CHIMP at an FTO intron, not human vs T2T and no longer human vs
+  // mouse. Same-species assemblies make every block near-identical and the
+  // launched view says nothing a reader could not have guessed, so it has to be
+  // cross-species; but mouse was the wrong kind of cross-species for a figure
+  // whose payoff frame is a ribbon full of indel wedges. At ~90 My every gap is
+  // a gap and none of them is attributable to anything, which is what the review
+  // asked to fix ("a gene where the insertions and deletions are more clearly
+  // assignable to a single transposon insertion").
   //
-  // 40 kb, not the 300 kb this used to open on. At 300 kb the payoff frames were
-  // unreadable in both bands that matter: RepeatMasker was a solid strip rather
-  // than repeats, and the ribbon's CIGAR indel wedges (cigarMode 'full') were a
-  // mass of overlapping triangles. At ~45 bp/px a 300 bp Alu is its own block and
-  // the ribbon's gaps are countable, so the picture shows what it is for — SHH's
-  // own sequence aligning across ~90 My while the flank either side of it is
-  // interrupted, repeat by repeat. The window keeps SHH whole and leans
-  // downstream, which is the side those interruptions are on.
+  // hg38 chr16:54,042,096-54,048,145 is a 6,049 bp **L1HS** — the youngest,
+  // still-active human LINE-1 subfamily, so human-specific by subfamily — sitting
+  // in an FTO intron. Read out of the hub's own RepeatMasker file
+  // (jbrowse.org/ucsc/hg38/rmsk.bed.gz), with 641 bp of unique sequence between
+  // it and the nearest upstream element (THE1D) and ~4.5 kb to the nearest
+  // downstream one (AluSx), so the chain has clean anchors either side and the
+  // insertion is a single gap rather than a repeat-dense smear.
+  //
+  // NOT the RB1/VAPB/PICALM loci: those are the linear-synteny guide's TE
+  // figures and they read the same hg38ToPanTro6.over.pif.gz this hub track
+  // does, so reusing one would republish an existing picture from a different
+  // menu.
+  //
+  // 18 kb: about three window-widths of the element itself, so both flanks are
+  // in frame with their repeats named. At the 300 kb this figure once opened on,
+  // RepeatMasker was a solid strip rather than repeats and the CIGAR wedges were
+  // a mass of overlapping triangles.
   //
   // The right-click is a viewport coordinate, not a selector: the chain-block
   // canvas fills the display's whole height, so its center lands well below the
@@ -1713,7 +1725,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          loc: 'chr7:155,795,000-155,835,000',
+          loc: 'chr16:54,036,000-54,054,000',
           tracks: [
             {
               trackId: 'hg38-ncbiRefSeqCurated',
@@ -1730,11 +1742,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
             {
               trackId: 'hg38-rmsk',
               displayMode: 'compact',
-              // 58 repeats in this window, and every one of them carries a name
-              // — at 40 kb that is two rows of overlapping text under a row of
-              // blocks. The blocks are what the figure is pointing at; the
-              // classes are named in the prose.
-              showLabels: 'none',
+              // labels on: at 18 kb this window holds about a dozen elements, so
+              // the names fit on one row, and the one on the L1HS is what the
+              // whole figure is pointing at
               height: 70,
             },
             {
@@ -1743,11 +1753,12 @@ export const syntenySpecs: ScreenshotSpec[] = [
               // whatever fragment is under the cursor. Stacked, the long
               // conserved chains are their own bars and the launch can be aimed
               // at a big one.
-              trackId: 'hg38_to_mm39_liftOver',
+              trackId: 'hg38_to_panTro6_liftOver',
               type: 'LGVSyntenyDisplay',
               collapseGroupRows: false,
-              // one row: this window sits inside a single 6.4 Mb chain, so the
-              // rest of the display would be empty canvas under the menu
+              // one row: this window sits inside a single chromosome-scale
+              // chain, so the rest of the display would be empty canvas under
+              // the menu
               height: 60,
             },
           ],
@@ -1869,26 +1880,36 @@ export const syntenySpecs: ScreenshotSpec[] = [
       // windows: the locstrings are the ones the CIGAR mapping produced in stage
       // 3, so this is that view with tracks on, not a different one.
       //
-      // mm39 needs no setup here either, for the same reason it needs none in
+      // panTro6 needs no setup here either, for the same reason it needs none in
       // the LGV above: naming it resolves it through the hub plugin, which also
-      // brings the mm39 hub's tracks (jbrowse.org/ucsc/mm39/config.json) — which
-      // is where mm39-ncbiRefSeqCurated and mm39-rmsk come from.
+      // brings the panTro6 hub's tracks (jbrowse.org/ucsc/panTro6/config.json) —
+      // which is where panTro6-ncbiRefSeq and panTro6-rmsk come from.
+      //
+      // drawCurves and cigarMode 'matches' ("Transparent indels"), both review
+      // asks and both only meaningful on THIS frame: an indel drawn as a gap
+      // rather than as a painted wedge is what makes the L1HS read as the human
+      // side having sequence the chimp side does not, instead of as one more
+      // colored triangle among the alignment's ordinary noise. Stages 1-3 keep
+      // the defaults, since they are about the launch rather than about the
+      // ribbon.
       {
         url: sessionSpec(UCSC_HG38_CONFIG, {
           views: [
             {
               type: 'LinearSyntenyView',
-              tracks: [['hg38_to_mm39_liftOver']],
+              tracks: [['hg38_to_panTro6_liftOver']],
+              drawCurves: true,
+              cigarMode: 'matches',
               views: [
                 {
                   assembly: 'hg38',
-                  loc: 'chr7:155,794,008-155,836,008',
-                  tracks: SHH_PANEL_TRACKS.hg38,
+                  loc: 'chr16:54,035,008-54,055,008',
+                  tracks: FTO_PANEL_TRACKS.hg38,
                 },
                 {
-                  assembly: 'mm39',
-                  loc: 'chr5:28,655,318-28,724,519',
-                  tracks: SHH_PANEL_TRACKS.mm39,
+                  assembly: 'panTro6',
+                  loc: 'chr16:39,085,191-39,099,009',
+                  tracks: FTO_PANEL_TRACKS.panTro6,
                 },
               ],
             },
@@ -1902,7 +1923,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             x: 24,
             y: 56,
             fontSize: 20,
-            text: '(4) Add each panel’s genes and repeats',
+            text: '(4) Chimp tracks on, ribbon drawn with transparent indels',
           },
         ],
       },

@@ -1966,10 +1966,10 @@
   },
   "genomes_synteny/launch_sequence": {
     "name": "genomes_synteny/launch_sequence",
-    "status": "bad",
-    "note": "please try to use showCurves and transparent indels in last screenshot. also we might want a different gene where the insertions and deletions are more 'clearly' assigninable to a single transposon insertion",
-    "reviewedAt": "2026-08-04T20:18:23.527Z",
-    "hash": "c6711e8bb64ca2022f0d1fe2a897d75861247917"
+    "status": "good",
+    "note": "Both asks done, and the second one moved the whole figure. SHOWCURVES + TRANSPARENT INDELS: drawCurves and cigarMode 'matches' are now on frame 4 only, since frames 1-3 are about the launch rather than about the ribbon -- which has the side effect that 3 and 4 sit next to each other in the grid showing the same indel as a painted wedge and as a see-through hole. A DIFFERENT GENE: mouse was the wrong kind of cross-species for a payoff frame made of indel wedges. At ~90 My every gap is a gap and none of them is attributable to anything, so the figure moved to hg38 vs CHIMP (panTro6), which the hub already carries as hg38_to_panTro6_liftOver, at an FTO intron. WHY THAT LOCUS, measured rather than picked. hg38 chr16:54,042,096-54,048,145 is a 6,049 bp L1HS -- the youngest, still-active human LINE-1 subfamily, so human-specific by subfamily -- read out of the hub's own rmsk.bed.gz, with 641 bp of unique sequence to the nearest upstream element (THE1D) and ~4.5 kb to the nearest downstream one (AluSx). Then walked the chain's CIGAR from hg38ToPanTro6.over.pif.gz across the 20 kb window: FIVE indel events total, one deletion of 6,190 bp at chr16:54,042,080-54,048,270 and four insertions of 6, 1, 1 and 1 bp. So the single hole in the ribbon IS the single transposon, bracketing the RepeatMasker call by 16 bp upstream and 125 bp downstream (its poly-A and target-site duplication). The chimp panel keeps every flanking element -- MLT1O, L1ME4c, MSTB, L2b, THE1D, AluSx -- and has no L1HS. NOT the RB1/VAPB/PICALM loci from the linear-synteny guide: those read the same hg38ToPanTro6.over.pif.gz this hub track does, so reusing one would republish an existing picture from a different menu. Also: window 40 kb -> 18 kb, repeat labels back ON (at 18 kb a dozen elements fit on one row and the name on the one in the gap is what makes the claim checkable), and the chimp panel takes panTro6-ncbiRefSeq rather than the Curated track the human panel uses, because RefSeq Curated is a human-first product and chimp's copy leaves this window empty. Frame 4's label says both changes so a reader is not left wondering why the ribbon looks different from frame 3. Tutorial prose and caption rewritten.",
+    "reviewedAt": "2026-08-04T23:00:17.272Z",
+    "hash": "756a122de74f08199bc5efbf0ce577b2f3b5fbed"
   },
   "desktop-blat-results": {
     "name": "desktop-blat-results",
