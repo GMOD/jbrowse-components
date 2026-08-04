@@ -1553,17 +1553,32 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * Whether there are reads to reconstruct FROM, as opposed to reads that
+         * describe no rearrangement. An empty `derivativePathCandidates` means
+         * either, and they call for opposite responses: widen the window, or
+         * narrow it. A window too large for the track's byte budget renders as
+         * `force load` with nothing behind it, and reporting that as "no path is
+         * supported here" sends a reader looking for an event that was never
+         * fetched.
+         */
+        get hasReadsForDerivativePaths() {
+          return self.rpcDataMap.size > 0
+        },
+
+        /**
+         * #getter
          * Derivative-allele paths the reads in view describe, most-supported
          * first. Each read's SA chain is already an ordered, oriented list of
          * reference intervals — a derivative path — so the proposal is a
-         * grouping of those chains rather than any new analysis.
+         * grouping of those chains rather than any new analysis. Empty when no
+         * reads are loaded, which `hasReadsForDerivativePaths` distinguishes.
          *
          * Deliberately NOT gated on `readConnections`: this reads the chains,
          * not the arcs, and a user who wants a reconstruction should not first
          * have to turn on a display option that draws something else.
          */
         get derivativePathCandidates(): DerivativeCandidate[] {
-          if (self.rpcDataMap.size === 0) {
+          if (!this.hasReadsForDerivativePaths) {
             return []
           }
           const regionInfos = [...self.loadedRegions.entries()]

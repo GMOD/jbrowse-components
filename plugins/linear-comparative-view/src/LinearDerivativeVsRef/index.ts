@@ -53,6 +53,7 @@ export default function LinearDerivativeVsRefMenuItemF(pm: PluginManager) {
                     {
                       model: self as {
                         derivativePathCandidates: DerivativeCandidate[]
+                        hasReadsForDerivativePaths: boolean
                       },
                       track: getContainingTrack(self),
                       handleClose,

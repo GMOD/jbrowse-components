@@ -109,7 +109,10 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
   track,
   handleClose,
 }: {
-  model: { derivativePathCandidates: DerivativeCandidate[] }
+  model: {
+    derivativePathCandidates: DerivativeCandidate[]
+    hasReadsForDerivativePaths: boolean
+  }
   track: AbstractTrackModel
   handleClose: () => void
 }) {
@@ -201,7 +204,19 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
     >
       <div className={classes.root}>
         {error ? <ErrorMessage error={error} /> : null}
-        {candidates.length === 0 ? (
+        {!model.hasReadsForDerivativePaths ? (
+          // Distinguished from "reads, but no path" because the two call for
+          // opposite responses. This is the state a window too large for the
+          // track's byte budget lands in: the pileup shows `force load` and
+          // nothing has been fetched, so reporting an absence of paths would
+          // send a reader looking for an event that was never read.
+          <Typography>
+            This track has not loaded reads for this window, so there is nothing
+            to reconstruct from yet. If the pileup is asking to force load,
+            narrow the window: the reconstruction reads SA tags, so the far side
+            of a junction does not have to be on screen to be reconstructed.
+          </Typography>
+        ) : candidates.length === 0 ? (
           <Typography>
             No rearranged path is supported by more than one read in this
             window. Reconstruction reads split alignments, so it needs reads
