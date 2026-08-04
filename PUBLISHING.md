@@ -2,11 +2,16 @@
 
 ## Main Release
 
-Two manual steps: write the draft, then publish the release.
+Steps 1, 2 and 4 are yours; step 3 is CI running unattended off the tag.
 
 1. **Write** `website/release_announcement_drafts/v<version>.md`. It becomes the
    summary of both the blog post and the GitHub release body; `pnpm release`
-   aborts without it.
+   aborts without it. Write the body only — `scripts/blog_template.txt` supplies
+   the frontmatter, the `## Downloads` block, and the generated changelog, so a
+   draft that carries its own will end up with two of each. Everything you write
+   lands above `## Downloads`, which is the cut `splitReleaseBody` uses to
+   separate your summary from the changelog. See
+   [Figures in a draft](#figures-in-a-draft) if the post has screenshots.
 2. **Run** `pnpm release <patch|minor|major>`. It checks you're on a clean, up
    to date `main` with green CI, bumps every package version and `version.ts`,
    prepends the PR changelog to `CHANGELOG.md`, turns the draft into a dated
@@ -31,6 +36,41 @@ Two manual steps: write the draft, then publish the release.
 
 `pnpm releasenotes [--tag v4.3.1]` prints the same body `release.yml` generates,
 to eyeball locally.
+
+## Figures in a draft
+
+A draft is copied into the blog post verbatim, and `release.ts` commits, tags
+and pushes in the same run — so whatever paths are in the draft are what ship,
+with no chance to fix them in between. Three places consume that same text, and
+they resolve URLs differently:
+
+| Consumer            | Rendered by                 | Needs                                                                       |
+| ------------------- | --------------------------- | --------------------------------------------------------------------------- |
+| `website/blog/*.md` | the Astro site              | `/img/…` (the base prefix is added at build time)                           |
+| GitHub release body | GitHub                      | an absolute URL — a `/img/…` path resolves against github.com, not the site |
+| Email newsletter    | `mdToHtml` in `announce.ts` | nothing: it has no image case, so `![…](…)` arrives as literal text         |
+
+So **write image paths as `/img/…`**, matching what the docs use. The figure
+shows up on the blog, which is where the post actually lives and where the other
+two link to.
+
+Two consequences worth knowing before you write a figure-heavy post. Images will
+not render in the GitHub release body, so lead with prose that stands on its own
+there. And a draft with many figures makes for a poor newsletter, since each one
+becomes a line of raw markdown — keep the summary paragraphs readable on their
+own, or trim figures from the draft and let the blog post carry them.
+
+If you drafted with repo-relative paths so the figures preview in a pull request
+(`../static/img/…`, which resolves in the GitHub file view from either
+`release_announcement_drafts/` or `blog/`), convert them before releasing:
+
+```bash
+sed -i 's|\.\./static/img/|/img/|g' website/release_announcement_drafts/v<version>.md
+```
+
+Once the post is on the site you can upgrade `![caption](src)` to
+`<Figure caption="…" src="…" />`, which adds a lightbox and, for any image
+backed by a screenshot spec, an "Open this view in JBrowse" link.
 
 ## Prereleases
 
@@ -59,7 +99,9 @@ overwrites nothing). Consumers opt in explicitly:
 npm install @jbrowse/react-linear-genome-view@next
 ```
 
-**What it deliberately does not do.** No blog post, no `CHANGELOG.md` entry, and
+**What it deliberately does not do.** No blog post — so a draft already sitting
+in `website/release_announcement_drafts/` is neither required nor consumed, and
+stays put for the stable release that takes it. No `CHANGELOG.md` entry, and
 `website/src/config.ts` is left alone — it drives the download page's asset
 links, so pointing it at a beta would advertise downloads the site shouldn't
 offer yet. Those all belong to the stable release that follows. On the CI side
