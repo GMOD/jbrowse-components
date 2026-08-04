@@ -40,6 +40,54 @@ export interface VariantInsertionGlyphData {
 }
 
 /**
+ * Which records in one block earn a marker, and where its center sits.
+ *
+ * Whether a marker is drawn depends only on the feature — every cell of one
+ * variant shares its span and its inserted bp — so this walks `featurePositions`
+ * (thousands) rather than the cells (features × samples). Records that insert
+ * nothing are every SNP and every deletion, and they can't produce a marker, so
+ * they never reach the geometry.
+ *
+ * Split out of the draw so the legend can ask the painter's own question instead
+ * of approximating it. Both cheaper approximations are wrong on real figures:
+ * "the window holds an insertion" puts a swatch on a callset of short indels,
+ * which can never draw a marker at any zoom (`insertionBarWidth` returns 1px
+ * below `LONG_INSERTION_MIN_LENGTH`, under the 2px cell floor); "the window
+ * holds a long insertion" puts one on any view zoomed out far enough that even a
+ * long bar falls under that floor, which is three of the fourteen committed
+ * figures carrying this display.
+ */
+export function markersForBlock(
+  region: VariantInsertionGlyphData,
+  block: VariantRenderBlock,
+  drawnRowHeight: number,
+) {
+  const toX = makeBpMapper(block)
+  const pxPerBp =
+    (block.screenEndPx - block.screenStartPx) / (block.end - block.start)
+  const numFeatures = region.featureInsertedBp.length
+  const drawsMarker = new Uint8Array(numFeatures)
+  const markerXCenter = new Float64Array(numFeatures)
+  let anyMarker = false
+  for (let f = 0; f < numFeatures; f++) {
+    const insertedBp = region.featureInsertedBp[f]!
+    if (insertedBp > 0) {
+      const x1 = toX(region.featurePositions[f * 2]!)
+      const x2 = toX(region.featurePositions[f * 2 + 1]!)
+      if (
+        variantCellSpanPx({ x1, x2, insertedBp, pxPerBp, drawnRowHeight })
+          .drawsMarker
+      ) {
+        markerXCenter[f] = (x1 + x2) / 2
+        drawsMarker[f] = 1
+        anyMarker = true
+      }
+    }
+  }
+  return { drawsMarker, markerXCenter, anyMarker, pxPerBp }
+}
+
+/**
  * Insertion markers over the genotype cells, sized by each record's inserted bp.
  *
  * `drawVariantBlocks` draws a cell across the reference span its record covers,
@@ -108,37 +156,8 @@ export function drawVariantInsertionGlyphs(
       return region && region.numCells > 0 ? region : undefined
     },
     (region, block) => {
-      const toX = makeBpMapper(block)
-      const pxPerBp =
-        (block.screenEndPx - block.screenStartPx) / (block.end - block.start)
-      // Whether a marker is drawn, and where, depends only on the feature —
-      // every cell of one variant shares its span and its inserted bp — so this
-      // walks `featurePositions` (thousands) rather than the cells (features ×
-      // samples). Records that insert nothing are every SNP and every deletion,
-      // and they can't produce a marker, so they never reach the geometry.
-      const numFeatures = region.featureInsertedBp.length
-      const drawsMarker = new Uint8Array(numFeatures)
-      const markerXCenter = new Float64Array(numFeatures)
-      let anyMarker = false
-      for (let f = 0; f < numFeatures; f++) {
-        const insertedBp = region.featureInsertedBp[f]!
-        if (insertedBp > 0) {
-          const x1 = toX(region.featurePositions[f * 2]!)
-          const x2 = toX(region.featurePositions[f * 2 + 1]!)
-          const span = variantCellSpanPx({
-            x1,
-            x2,
-            insertedBp,
-            pxPerBp,
-            drawnRowHeight,
-          })
-          if (span.drawsMarker) {
-            markerXCenter[f] = (x1 + x2) / 2
-            drawsMarker[f] = 1
-            anyMarker = true
-          }
-        }
-      }
+      const { drawsMarker, markerXCenter, anyMarker, pxPerBp } =
+        markersForBlock(region, block, drawnRowHeight)
       // A callset where nothing earns a marker — a SNP panel, or any window
       // zoomed out past the point an insertion outgrows its cell — skips the
       // per-cell walk entirely instead of running it to draw nothing.

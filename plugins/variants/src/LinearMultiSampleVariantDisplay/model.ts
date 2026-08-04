@@ -1,12 +1,13 @@
-import { LONG_INSERTION_MIN_LENGTH } from '@jbrowse/alignments-core'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { types } from '@jbrowse/mobx-state-tree'
 import { createRegionUploadSync } from '@jbrowse/render-core/regionUploadSync'
 
 import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.ts'
 import { placeVariantRows } from '../shared/placeVariantRows.ts'
+import { markersForBlock } from './components/drawVariantInsertionGlyphs.ts'
+import { drawnCellHeightPx } from './components/shaders/variant.js.generated.ts'
 
 import type { ShippedRegionData } from '../VariantRPC/executeVariantCellData.ts'
 import type { Placed } from '../shared/placeVariantRows.ts'
@@ -16,10 +17,7 @@ import type {
 } from './components/variantRenderingBackendTypes.ts'
 import type { LinearMultiSampleVariantDisplayConfigModel } from './configSchema.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type {
-  ExportSvgDisplayOptions,
-  LinearGenomeViewModel,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * #stateModel LinearMultiSampleVariantDisplay
@@ -62,14 +60,14 @@ export function stateModelFactory(
 
         return {
           get visibleRegions() {
-            const view = getContainingView(self) as LinearGenomeViewModel
+            const view = self.lgv
             return view.visibleRegions
           },
           // Resolved geometry, never undefined. "The view isn't measured yet" is
           // the mixin-wide `canRender` gate, and "no regular-mode payload" falls
           // out of an empty perRegionCellMap — neither is a nullable state.
           get renderState() {
-            const view = getContainingView(self) as LinearGenomeViewModel
+            const view = self.lgv
             return {
               canvasWidth: view.trackWidthPx,
               canvasHeight: self.availableHeight,
@@ -174,36 +172,33 @@ export function stateModelFactory(
          * the same `palette.insertion` the overlay paints with, so the swatch
          * cannot drift from the glyph.
          *
-         * The condition is "something visible inserts at least
-         * `LONG_INSERTION_MIN_LENGTH` bases", which is the zoom-independent half
-         * of the painter's own rule.
+         * The condition is `markersForBlock` — the painter's own test, on the
+         * painter's own blocks — because both cheaper approximations are wrong
+         * on real figures. "The window holds an insertion" puts a swatch on a
+         * callset of short indels, which can never draw a marker at any zoom.
+         * "The window holds a *long* insertion" puts one on any view zoomed out
+         * far enough that even a long bar falls under the 2px cell floor; that
+         * was three of the fourteen committed figures carrying this display,
+         * each gaining exactly one 576px swatch and no glyph.
          *
-         * Not simply "the window contains an insertion". Those differ
-         * systematically rather than at the margin: `insertionBarWidth` returns
-         * 1px below that length, which never beats the 2px cell floor at ANY
-         * zoom, so a callset of ordinary short indels has an insertion in every
-         * window and a marker in none. Keying on the data alone put an
-         * "Insertions" swatch on three figures that draw nothing.
-         *
-         * Not the painter's full test (`variantCellSpanPx(...).drawsMarker`)
-         * either, though that is what actually decides. It needs `renderBlocks`
-         * and `renderState`, both of which resolve the containing view — and
-         * `legendSections` is reachable from a display mounted outside one (see
-         * SvgVariantOverlay.test.tsx). It would also recompute on every pan.
-         * The residual gap is one direction only and it is the rare one: zoomed
-         * far enough out that even a long insertion's bar falls under the cell
-         * floor, the entry outlives the glyph.
+         * So the entry does come and go with zoom, unlike `hasSecondaryAlt` /
+         * `hasNoCall`. That is the honest behavior for a glyph whose visibility
+         * is itself a function of zoom, and it is why this reads the view: the
+         * components that call `legendSections` are the same ones that already
+         * read `renderState`.
          */
         get insertionLegendColor(): string | undefined {
           if (!getConf(self, 'showInsertionGlyphs')) {
             return undefined
           }
-          for (const region of self.perRegionCellMap.values()) {
-            const inserted = region.featureInsertedBp
-            for (let i = 0; i < inserted.length; i++) {
-              if (inserted[i]! >= LONG_INSERTION_MIN_LENGTH) {
-                return getSession(self).palette.insertion
-              }
+          const drawnRowHeight = drawnCellHeightPx(self.renderState.rowHeight)
+          for (const block of self.renderBlocks) {
+            const region = self.perRegionCellMap.get(block.displayedRegionIndex)
+            if (
+              region?.numCells &&
+              markersForBlock(region, block, drawnRowHeight).anyMarker
+            ) {
+              return getSession(self).palette.insertion
             }
           }
           return undefined

@@ -1,7 +1,6 @@
 import { render } from '@testing-library/react'
 
-import configFactory from '../../LinearMultiSampleVariantDisplay/configSchema.ts'
-import stateModelFactory from '../../LinearMultiSampleVariantDisplay/model.ts'
+import { createTestEnvironment } from '../../LinearMultiSampleVariantDisplay/testEnv.ts'
 import SvgVariantOverlay from './SvgVariantOverlay.tsx'
 
 import type { Source } from '../types.ts'
@@ -9,17 +8,15 @@ import type { Source } from '../types.ts'
 // What the on-screen display shows must survive the SVG export. Each case here
 // is a thing that used to be visible live and absent in the exported figure:
 // the sidebar color swatches, a lone sample's row label, and the color key.
+//
+// Built inside a real view rather than as a bare `stateModel.create()`. The
+// overlay renders `legendSections()`, and the insertion entry asks the painter's
+// own question about the visible blocks, so the model needs the view its
+// components always have in the app.
 function createDisplay(sources: Source[]) {
-  const configSchema = configFactory()
-  const model = stateModelFactory(configSchema).create({
-    type: 'LinearMultiSampleVariantDisplay',
-    configuration: configSchema.create({
-      type: 'LinearMultiSampleVariantDisplay',
-      displayId: 'svg-overlay-test',
-    }),
-  })
-  model.setSources(sources)
-  return model
+  const { display } = createTestEnvironment().createDisplay()
+  display.setSources(sources)
+  return display
 }
 
 function renderOverlay(model: ReturnType<typeof createDisplay>) {
