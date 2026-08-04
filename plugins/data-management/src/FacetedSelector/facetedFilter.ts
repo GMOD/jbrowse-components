@@ -1,16 +1,14 @@
-import { coarseStripHTML } from '@jbrowse/core/util'
-
+import { buildSearchText } from '../shared/searchText.ts'
 import { getRowStr } from './components/util.ts'
 
 import type { Row } from './components/util.ts'
 
 /**
- * The text a free-text query matches a row against: its name, category,
- * adapter, description, and every metadata value, tags stripped and lowercased.
- * Built once per row in allRows (mirroring the tree's trackNodeSourceFor) so a
- * keystroke neither re-reads configs nor re-strips HTML, and so a query can't
- * match a tag name that never appears on screen. Newline-joined so a query
- * can't span two fields.
+ * The text a free-text query matches a row against: every column the grid
+ * renders — name, category, adapter, description and each metadata value —
+ * normalized by buildSearchText, which the tree's rows go through too. Built
+ * once per row in allRows (mirroring the tree's trackNodeSourceFor) so a
+ * keystroke neither re-reads configs nor re-strips HTML.
  */
 export function rowSearchText(row: {
   name: string
@@ -19,17 +17,13 @@ export function rowSearchText(row: {
   description?: string
   metadata: Record<string, unknown>
 }) {
-  return coarseStripHTML(
-    [
-      row.name,
-      row.category,
-      row.adapter,
-      row.description,
-      ...Object.values(row.metadata),
-    ]
-      .filter(v => v !== undefined && v !== null)
-      .join('\n'),
-  ).toLowerCase()
+  return buildSearchText([
+    row.name,
+    row.category,
+    row.adapter,
+    row.description,
+    ...Object.values(row.metadata),
+  ])
 }
 
 // The facets with a non-empty selection, each as a lookup set. Facets with no

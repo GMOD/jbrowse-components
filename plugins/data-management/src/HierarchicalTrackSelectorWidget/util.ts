@@ -1,6 +1,8 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 
+import { buildSearchText } from '../shared/searchText.ts'
+
 import type {
   TrackNodeSource,
   TreeCategoryNode,
@@ -33,11 +35,13 @@ export function containsAll<T>(superset: T[] = [], subset: T[] = []) {
 }
 
 // Everything the tree needs from a track's config, read once into
-// model.allTracks instead of on every filterText keystroke. searchText is the
-// text a query matches against: the name and each category, newline-joined so a
-// query can't span two of them (the filter is a single-line field). sortName is
-// the raw name slot rather than getTrackName, so the unnamed reference sequence
-// track still sorts to the top.
+// model.allTracks instead of on every filterText keystroke. searchText covers
+// what a tree row shows — its name, the categories it nests under, and the
+// description it carries as a tooltip — and is normalized by buildSearchText,
+// which the faceted selector's rows go through too. Adapter and metadata are
+// left out here because, unlike in the faceted grid, the tree renders neither.
+// sortName is the raw name slot rather than getTrackName, so the unnamed
+// reference sequence track still sorts to the top.
 export function trackNodeSourceFor(
   conf: AnyConfigurationModel,
   session: AbstractSessionModel,
@@ -45,14 +49,15 @@ export function trackNodeSourceFor(
   const name = getTrackName(conf, session)
   const categories =
     (readConfObject(conf, 'category') as string[] | undefined) ?? []
+  const description =
+    (readConfObject(conf, 'description') as string | undefined) ?? ''
   return {
     conf,
     name,
     sortName: String(readConfObject(conf, 'name') ?? ''),
-    description:
-      (readConfObject(conf, 'description') as string | undefined) ?? '',
+    description,
     categories,
-    searchText: [name, ...categories].join('\n').toLowerCase(),
+    searchText: buildSearchText([name, description, ...categories]),
   }
 }
 
