@@ -34,6 +34,15 @@ async function fetchPrimaryAlignment(
   const SA = (getTag(preFeature, 'SA') as string | undefined) ?? ''
   const primaryAln = SA.split(';', 1)[0]!
   const [saRef, saStart] = primaryAln.split(',')
+  // A supplementary read without an SA tag has nothing pointing at its primary.
+  // Said here rather than walked into: `+undefined` is NaN, which used to reach
+  // the adapter as a NaN-bounded region and come back as "primary feature not
+  // found" — the same message a genuinely missing primary gives.
+  if (!saRef || !saStart) {
+    throw new Error(
+      'Supplementary alignment carries no SA tag, so its primary alignment cannot be located',
+    )
+  }
   const session = getSession(track)
   const { rpcManager } = session
   const adapterConfig = getConf(track, 'adapter')
@@ -49,9 +58,9 @@ async function fetchPrimaryAlignment(
     sequenceAdapter,
     regions: [
       {
-        refName: saRef!,
-        start: +saStart! - 1,
-        end: +saStart!,
+        refName: saRef,
+        start: +saStart - 1,
+        end: +saStart,
         assemblyName: asm ?? '',
       },
     ],

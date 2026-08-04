@@ -1,7 +1,5 @@
 import { Menu } from '@jbrowse/core/ui'
-import { getContainingView } from '@jbrowse/core/util'
 
-import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
 import type { LinearSyntenyDisplayModel } from '../model.ts'
 import type { ClickCoord } from './util.ts'
 
@@ -14,7 +12,7 @@ export default function SyntenyContextMenu({
   model: LinearSyntenyDisplayModel
   anchorEl: ClickCoord
 }) {
-  const view = getContainingView(model) as LinearSyntenyViewModel
+  const { view } = model
   const { clientX, clientY, feature } = anchorEl
   return (
     <Menu

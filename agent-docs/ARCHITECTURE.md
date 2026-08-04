@@ -168,6 +168,18 @@ what makes their upload callbacks keyed rather than per-region: they diff throug
 active-set prune computed from one display's map would wipe its siblings'
 buffers.
 
+**A shared canvas is laid out by the model that owns it, never by the displays
+drawing on it.** The canvas is absolutely positioned over the whole band, so it
+contributes no height; the band has to reserve its own (`level.height` for a
+synteny level). Sizing it from the displays instead looks equivalent — every
+display in a level reports the level's height — right up to the legal case of a
+band with *no* display: an assembly pair with no synteny dataset between it (the
+import form launches those deliberately), or the last track on a level hidden.
+`LinearComparativeRenderArea` reserved 0px there while its canvas still painted
+the level's height, overlapping the genome row below. The SVG export never had
+the bug because `SVGLinearSyntenyView` lays its rows out from `level.height`
+directly — the on-screen path is the one that has to be told.
+
 **The key is `sharedBackendKey(self.id)` — a hash of the display's node id,
 never its index in the parent's list.** An index renumbers the moment a sibling
 is hidden or reordered, and then the survivor's key names a slot holding another
@@ -531,6 +543,16 @@ Each such state has to reach `svgReady` through `error`, `regionTooLarge`, or
 dialog spinner up and nothing said. Minimized tracks are the one case already
 handled for you — `SVGLinearGenomeView` filters them out.
 
+**The on-screen twin: the same states are terminal for the loading overlay.** A
+first-load overlay is `!ready && !error`, and `ready` means "a fetch landed" — so
+a resting state that never fetches spins it forever, for the same reason and with
+less excuse than the export, since the user is looking at it. Answer it once and
+read that one getter from all three places, as `LinearSyntenyDisplay.fetchInert`
+(`isMinimized || !connectedViews`) does for its fetch autorun's gate, its
+`loading`, and its `svgReady` `extraTerminal`. Deriving the export's terminal set
+separately from the overlay's is how they drift: synteny's `svgReady` named both
+states while `loading` named neither.
+
 ## `rpcProps()` / `gpuProps()` pattern
 
 Domain-named methods that enumerate **what affects rendering output**. Both are
@@ -570,6 +592,19 @@ is itself a function of user settings: GC content folds `gcMode` / `windowSize` 
 builds, so it lists those three in `rpcProps()` purely as cache keys. A display
 that overrides `adapterConfig` from mutable state has to do the same, or its
 settings change nothing until something else invalidates.
+
+**Override it only to change what the adapter *is*, and never to annotate it.**
+`dataAdapterCache` keys on the config object (`adapterConfigCacheKey`), so a key
+the adapter never reads still forks the cache: the decorating display resolves
+its own instance and its own parse of the file, while every plain reader of the
+same track — another display type over it, a `CoreGetFeatures` probe behind a
+launch dialog — shares a second one. `LinearSyntenyDisplay` returned
+`{ name: <the adapter's own type>, assemblyNames: <a slot its config schema does
+not declare, so always undefined>, ...adapter }`, and paid a duplicate parse of
+every PAF it shared with `LGVSyntenyDisplay` or the region-launch mate discovery.
+Both keys were inert at the adapter — which is exactly why nothing caught it. If
+a worker-side value genuinely doesn't belong to the adapter, pass it as a sibling
+RPC arg, the way `sequenceAdapter` is passed.
 
 `rpcProps()` is the **only** extension point for the RPC payload. Each display
 defines its own typed shape; subclasses that layer on fields capture `super` and

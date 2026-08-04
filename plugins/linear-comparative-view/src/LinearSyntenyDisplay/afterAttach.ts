@@ -1,4 +1,4 @@
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import {
   detectDisplayAssembliesSwapped,
@@ -6,7 +6,6 @@ import {
 } from '@jbrowse/synteny-core'
 import { autorun, untracked } from 'mobx'
 
-import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 import type { LinearSyntenyDisplayModel } from './model.ts'
 
 const RPC_DEBOUNCE_MS = 500
@@ -21,9 +20,10 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
     delay: RPC_DEBOUNCE_MS,
     prepare: () => {
       // A synteny level draws between two adjacent genome views; this display
-      // only depends on those two, not the whole stack. connectedViews is the
-      // shared gate (same one renderParams uses).
-      const connected = self.isMinimized ? undefined : self.connectedViews
+      // only depends on those two, not the whole stack. `fetchInert` is the
+      // shared gate — the loading overlay and the SVG export read the same one,
+      // so neither can wait on a fetch this decides not to run.
+      const connected = self.fetchInert ? undefined : self.connectedViews
       if (connected) {
         const { v0, v1 } = connected
         // The only other tracked dep. `currentFetchKey` folds every input this
@@ -44,7 +44,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         // carries the visible window + pan buffer and the cull width; the
         // target axis (v1) only supplies its cumBp index + cull geometry.
         return untracked(() => {
-          const view = getContainingView(self) as LinearSyntenyViewModel
+          const { view } = self
           return {
             fetchKey,
             drawCIGAR: view.drawCIGAR,
@@ -122,8 +122,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         if (!isAlive(self)) {
           return
         }
-        const view = getContainingView(self) as LinearSyntenyViewModel
-        const level = self.level
+        const { view, level } = self
         if (!view.initialized || level + 1 >= view.views.length) {
           return
         }

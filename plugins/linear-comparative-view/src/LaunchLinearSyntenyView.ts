@@ -2,33 +2,30 @@ import { launchSyntenyView } from '@jbrowse/synteny-core'
 
 import { normalizeTrackLevels } from './LinearSyntenyView/util/initHelpers.ts'
 
+import type { LinearSyntenyViewInit } from './LinearSyntenyView/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
-import type { TrackInit } from '@jbrowse/plugin-linear-genome-view'
-import type { SyntenyViewSharedInit } from '@jbrowse/synteny-core'
 
-export interface LaunchLinearSyntenyViewArgs extends SyntenyViewSharedInit {
+/**
+ * The view's own `init` contract plus where to put it. Derived from
+ * `LinearSyntenyViewInit` rather than restated: every field below `views` is
+ * forwarded verbatim by the handler, so a hand-copied subset only ever meant
+ * that a field the view already honored (`collapseEmptyRows`,
+ * `fadeThinAlignmentsMode`, a row's LGV launch props) was rejected by the type
+ * while working perfectly at runtime.
+ */
+export interface LaunchLinearSyntenyViewArgs extends Omit<
+  LinearSyntenyViewInit,
+  'views'
+> {
   session: AbstractSessionModel
   // optional explicit view id, so another view in the same session spec can
   // reference this one
   id?: string
-  // a bare trackId string, or { trackId, displaySnapshot, trackSnapshot } to
-  // configure the per-panel track (matches LinearSyntenyViewInit.views).
-  // optional: the extension point receives untrusted runtime spec data, so a
-  // malformed spec can omit it — the handler guards and reports a clear error
-  views?: {
-    loc?: string
-    assembly: string
-    tracks?: TrackInit[]
-    trackLabels?: 'overlapping' | 'offset' | 'hidden'
-  }[]
-  tracks?: string[] | string[][]
-  levelHeights?: number[]
-  drawCurves?: boolean
-  alpha?: number
-  // CIGAR display mode: 'full' colors indel wedges, 'matches' leaves indels
-  // see-through (transparent), 'off' draws blocks only.
-  cigarMode?: 'off' | 'matches' | 'full'
+  // optional, unlike the view's own: the extension point receives untrusted
+  // runtime spec data, so a malformed spec can omit it — the handler defaults it
+  // to an empty stack rather than throwing on a missing property
+  views?: LinearSyntenyViewInit['views']
 }
 
 declare module '@jbrowse/core/PluginManager' {

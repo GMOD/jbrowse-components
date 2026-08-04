@@ -34,8 +34,7 @@ const AddRowDialog = observer(function AddRowDialog({
   const session = getSession(model)
   const { pluginManager } = getEnv(model)
   const { assemblyNames } = session
-  const terminalAssembly =
-    model.views[model.views.length - 1]?.assemblyNames[0] ?? ''
+  const terminalAssembly = model.views.at(-1)?.assemblyNames[0] ?? ''
   const options = getAddRowOptions(session, terminalAssembly)
 
   // pre-configured datasets carry their own other-endpoint assembly; a custom

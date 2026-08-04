@@ -99,30 +99,6 @@ function bucketBpPerPx(bpPerPx: number) {
   return Math.floor(Math.log2(Math.max(bpPerPx, 1)))
 }
 
-// One connected genome view's snapped fetch window. Written once so the query
-// axis's window (what the fetch sends) and the target axis's (which only enters
-// the refetch key) can't drift apart.
-function viewFetchWindow(view: {
-  visibleRegions: {
-    refName: string
-    start: number
-    end: number
-    assemblyName: string
-    displayedRegionIndex: number
-  }[]
-  displayedRegions: Region[]
-  width: number
-  bpPerPx: number
-}) {
-  const { visibleRegions, displayedRegions, width, bpPerPx } = view
-  return syntenyFetchRegions({
-    visibleRegions,
-    displayedRegions,
-    width,
-    bpPerPx,
-  })
-}
-
 function windowSignature(regions: Region[]) {
   return regions.map(r => `${r.refName}:${r.start}-${r.end}`).join(',')
 }
@@ -282,13 +258,18 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #getter
+       * The track's adapter config verbatim, which is what
+       * `BaseTrackModel.adapterConfig` hands every other consumer of this
+       * track. Byte-identical on purpose: the worker's adapter cache is keyed
+       * on the config, so the two decorative keys this used to add — `name`,
+       * duplicating the adapter's own `type`, and `assemblyNames`, read off
+       * the display's config schema, which declares no such slot and so always
+       * answered `undefined` — bought a second parse of the same file, one
+       * adapter for the ribbons and another for everything reading the track
+       * plainly (LGVSyntenyDisplay, the region launch's mate discovery).
        */
-      get adapterConfig() {
-        return {
-          name: self.parentTrack.configuration.adapter.type,
-          assemblyNames: getConf(self, 'assemblyNames'),
-          ...getConf(self.parentTrack, 'adapter'),
-        }
+      get adapterConfig(): Record<string, unknown> {
+        return getConf(self.parentTrack, 'adapter')
       },
       /**
        * #getter
@@ -391,13 +372,28 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #getter
+       * The two states where the fetch autorun deliberately never runs:
+       * minimized, or a level whose two rows aren't both showing regions. A
+       * display in one of them draws nothing (`renderParams` is undefined for
+       * exactly the same pair) and has no data coming, so anything waiting on
+       * data has to treat it as terminal rather than wait forever. One getter
+       * because three places answer it — the autorun's own gate, the loading
+       * overlay, and the SVG export.
+       */
+      get fetchInert() {
+        return self.isMinimized || !this.connectedViews
+      },
+      /**
+       * #getter
        * First load: no data has arrived yet. Deliberately not `&& fetching` —
        * that would blink the overlay off during the pre-fetch debounce gap.
-       * Excludes error so error UI and loading UI never show simultaneously.
+       * Excludes error so error UI and loading UI never show simultaneously,
+       * and `fetchInert` so a display that will never fetch shows no overlay
+       * instead of spinning on data that is not coming.
        * Drives the full striped LoadingOverlay.
        */
       get loading() {
-        return !this.ready && !self.error
+        return !this.ready && !self.error && !this.fetchInert
       },
       /**
        * #getter
@@ -480,18 +476,16 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * of capturing stale ones. No `regionTooLarge` state (synteny never gates
        * on region size).
        *
-       * `extraTerminal` covers the two states where the fetch autorun
-       * deliberately never runs — minimized, or a level whose two rows aren't
-       * both showing regions. Those displays draw nothing (`renderParams` is
-       * undefined for exactly the same pair), so a data-only gate would hang the
-       * export forever on data that is never coming.
+       * `extraTerminal` is `fetchInert` — the states where the fetch autorun
+       * deliberately never runs — so a data-only gate can't hang the export
+       * forever on data that is never coming.
        */
       get svgReady() {
         return computeSvgReady(
           {
             error: self.error,
             regionTooLarge: false,
-            extraTerminal: self.isMinimized || !this.connectedViews,
+            extraTerminal: this.fetchInert,
           },
           () => this.ready && !this.refetching && this.dataCurrent,
         )
@@ -726,7 +720,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       get fetchRegions() {
         const connected = this.connectedViews
-        return connected ? viewFetchWindow(connected.v0) : []
+        return connected ? syntenyFetchRegions(connected.v0) : []
       },
       /**
        * #getter
@@ -741,7 +735,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       get fetchRegionsKey() {
         const connected = this.connectedViews
         return connected
-          ? [this.fetchRegions, viewFetchWindow(connected.v1)]
+          ? [this.fetchRegions, syntenyFetchRegions(connected.v1)]
               .map(windowSignature)
               .join('_')
           : undefined
@@ -752,8 +746,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * substitutes yTop before handing this to the backend.
        */
       get renderParams() {
-        const connected = this.connectedViews
-        if (self.isMinimized || !connected) {
+        // same spelling as the fetch autorun's gate, so "draws nothing" and
+        // "never fetches" cannot come apart
+        const connected = this.fetchInert ? undefined : this.connectedViews
+        if (!connected) {
           return undefined
         }
         const view = this.view
@@ -762,11 +758,15 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         // Instance index -> 1-based featureId (0 = "no hit"), the id the
         // shaders/canvas compare against to highlight every instance of a
         // feature. Matches the `instanceFeatureIdx[i] + 1` mapping in
-        // interleaveInstances and the pick engine.
-        const toFeatureId = (idx: number) =>
-          idx >= 0 && instanceData
-            ? instanceData.instanceFeatureIdx[idx]! + 1
-            : 0
+        // interleaveInstances and the pick engine. An index past the end reads
+        // `undefined` and answers "no hit", the same way `getFeature` refuses
+        // an out-of-range instance: asserting it non-null instead wrote
+        // `NaN` into the clickedFeatureId uniform.
+        const toFeatureId = (idx: number) => {
+          const featureIdx =
+            idx >= 0 ? instanceData?.instanceFeatureIdx[idx] : undefined
+          return featureIdx === undefined ? 0 : featureIdx + 1
+        }
         return {
           yTop: 0,
           height: this.height,
