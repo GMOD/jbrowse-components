@@ -148,17 +148,17 @@
     },
     {
       "type": "AlignmentsTrack",
-      "trackId": "skbr3.ont.sort.mod",
-      "name": "SKBR3 nanopore (CRAM)",
+      "trackId": "colo829_tumor_ont",
+      "name": "COLO829 tumor nanopore (CRAM, MM/ML)",
       "assemblyNames": ["hg38"],
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/skbr3.ont.sort.mod.cram",
+          "uri": "https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829_tumor.ht.cram",
           "locationType": "UriLocation"
         },
         "craiLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/skbr3.ont.sort.mod.cram.crai",
+          "uri": "https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829_tumor.ht.cram.crai",
           "locationType": "UriLocation"
         }
       }
@@ -194,20 +194,6 @@
             "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/HG00096/alignment/HG00096.mapped.ILLUMINA.bwa.GBR.low_coverage.20120522.bam.bai",
             "locationType": "UriLocation"
           }
-        }
-      }
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "nanopore_ultralong_cram_coverage",
-      "name": "HG002 Nanopore ultralong coverage",
-      "assemblyNames": ["hg19"],
-      "category": ["GIAB"],
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.bam.regions.bw",
-          "locationType": "UriLocation"
         }
       }
     },
@@ -290,12 +276,12 @@
         {
           "id": "6ai9Zeeqq",
           "type": "AlignmentsTrack",
-          "configuration": "skbr3.ont.sort.mod",
+          "configuration": "colo829_tumor_ont",
           "displays": [
             {
               "id": "cdW7g9U6CX",
               "type": "LinearAlignmentsDisplay",
-              "configuration": "skbr3.ont.sort.mod-LinearAlignmentsDisplay",
+              "configuration": "colo829_tumor_ont-LinearAlignmentsDisplay",
               "height": 250,
               "showCoverage": true,
               "filterBySetting": {

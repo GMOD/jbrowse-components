@@ -6,7 +6,12 @@
     "offsetPx": 752150,
     "bpPerPx": 25.084820116171613,
     "displayedRegions": [
-      { "assemblyName": "hg38", "refName": "1", "start": 0, "end": 248956422 }
+      {
+        "assemblyName": "hg38",
+        "refName": "1",
+        "start": 0,
+        "end": 248956422
+      }
     ],
     "tracks": [
       {
@@ -47,22 +52,28 @@
             "configuration": "hg38.100way.phyloP100way-LinearWiggleDisplay",
             "selectedRendering": "",
             "resolution": 5,
-            "constraints": { "max": 10, "min": -10 }
+            "constraints": {
+              "max": 10,
+              "min": -10
+            }
           }
         ]
       },
       {
         "id": "6ai9Zeeqq",
         "type": "AlignmentsTrack",
-        "configuration": "skbr3.ont.sort.mod",
+        "configuration": "colo829_tumor_ont",
         "displays": [
           {
             "id": "cdW7g9U6CX",
             "type": "LinearAlignmentsDisplay",
-            "configuration": "skbr3.ont.sort.mod-LinearAlignmentsDisplay",
+            "configuration": "colo829_tumor_ont-LinearAlignmentsDisplay",
             "height": 250,
             "showCoverage": true,
-            "filterBySetting": { "flagInclude": 0, "flagExclude": 1536 }
+            "filterBySetting": {
+              "flagInclude": 0,
+              "flagExclude": 1536
+            }
           }
         ]
       }
