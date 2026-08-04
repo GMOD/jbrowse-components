@@ -405,8 +405,27 @@ public float3 hueRampHalfSat(float hueDeg) {
   return hue + m;
 }
 
+// The coverage band's two px-space numbers, factored out of the clip-space
+// conversions below so `//! js-export` can lift them (coverage.slang carries
+// the directive, since a module has no draw path of its own to keep them
+// alive). `covYOffset` is the scalebar-label inset, reserved at BOTH ends —
+// hence the drawable height losing two of them while the baseline loses one.
+//
+// rendererUtils.ts's `coverageLayout` was the hand-written twin, read by the
+// coverage bars, the SNP segments and the modification segments. Both backends
+// measure every coverage mark from these, so disagreeing shifts the whole band
+// rather than one glyph — visible only against the other backend.
+public float covEffectiveHeightPx(float covHeight, float covYOffset) {
+  return covHeight - 2.0 * covYOffset;
+}
+
+// Distance from the coverage area's top edge down to the bars' baseline.
+public float covBottomOffsetPx(float covHeight, float covYOffset) {
+  return covHeight - covYOffset;
+}
+
 public float effHeight(Uniforms u) {
-  return u.covHeight - 2.0 * u.covYOffset;
+  return covEffectiveHeightPx(u.covHeight, u.covYOffset);
 }
 
 // Clip-space Y of the coverage area's top edge. Single source for where every
@@ -418,7 +437,8 @@ public float covAreaTop(Uniforms u) {
 }
 
 public float covBottom(Uniforms u) {
-  return covAreaTop(u) - ((u.covHeight - u.covYOffset) / u.canvasH) * 2.0;
+  return covAreaTop(u)
+    - (covBottomOffsetPx(u.covHeight, u.covYOffset) / u.canvasH) * 2.0;
 }
 
 // Normalize a coverage depth value (relDepth = rawDepth / regionMaxDepth) to [0,1]

@@ -1,0 +1,56 @@
+import {
+  covBottomOffsetPx,
+  covEffectiveHeightPx,
+} from './coverageBandLayout.generated.ts'
+import { YSCALEBAR_LABEL_OFFSET } from './coverageDownsampling.ts'
+import { coverageLayout } from './rendererUtils.ts'
+
+// The retirement gate for coverage.slang's `//! js-export` (adr-051), and the
+// first export lifted from a function the exporting shader only *imports* —
+// the band geometry is authored in alignmentsUniforms.slang, where the
+// clip-space conversions that use it live, and coverage.slang is the pass that
+// reaches both off its draw path.
+//
+// `retiredCoverageLayout` is what rendererUtils.ts open-coded. The asymmetry is
+// the whole content: the scalebar-label inset is reserved at BOTH ends of the
+// band, so the drawable height loses two of it while the baseline loses one.
+// Getting that backwards on one backend shifts every coverage mark — bars, SNP
+// segments, modification segments — rather than one glyph, which is precisely
+// the drift that only shows up against the other backend.
+
+function retiredCoverageLayout(coverageHeight: number) {
+  const effectiveH = coverageHeight - 2 * YSCALEBAR_LABEL_OFFSET
+  const bottom = coverageHeight - YSCALEBAR_LABEL_OFFSET
+  return { effectiveH, bottom }
+}
+
+// 0 and a height under the inset are degenerate but reachable — a collapsed
+// coverage strip during a resize drag — and both sides must agree there too.
+const HEIGHTS = [0, 1, 5, 10, 11, 50, 100, 337]
+
+test('the generated band layout reproduces the hand-written twin it replaced', () => {
+  for (const h of HEIGHTS) {
+    expect(coverageLayout(h)).toEqual(retiredCoverageLayout(h))
+  }
+})
+
+test('the label inset is reserved at both ends, so the two differ by one of it', () => {
+  const { effectiveH, bottom } = coverageLayout(100)
+  expect(bottom - effectiveH).toBe(YSCALEBAR_LABEL_OFFSET)
+  expect(bottom).toBe(100 - YSCALEBAR_LABEL_OFFSET)
+})
+
+test('the baseline sits inside the band, and the bars fit between the insets', () => {
+  const h = 50
+  const { effectiveH, bottom } = coverageLayout(h)
+  expect(bottom).toBeLessThan(h)
+  expect(bottom - effectiveH).toBeGreaterThan(0)
+})
+
+test('the two generated functions are read in the units the shader uses', () => {
+  // Both take (bandHeight, inset) in px, not a Uniforms struct — that is the
+  // split that made them exportable at all, and a caller passing them in the
+  // other order would silently invert the band.
+  expect(covEffectiveHeightPx(100, 5)).toBe(90)
+  expect(covBottomOffsetPx(100, 5)).toBe(95)
+})

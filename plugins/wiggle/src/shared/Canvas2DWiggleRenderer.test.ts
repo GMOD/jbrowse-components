@@ -1,9 +1,4 @@
 import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
-
-import {
-  Canvas2DWiggleRenderer,
-  drawWiggleToCtx,
-} from './Canvas2DWiggleRenderer.ts'
 import {
   RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_LINE,
@@ -11,7 +6,12 @@ import {
   RENDERING_TYPE_SCATTER,
   RENDERING_TYPE_XYPLOT,
   SCALE_TYPE_LINEAR,
-} from './wiggleComponentUtils.ts'
+} from '@jbrowse/wiggle-core'
+
+import {
+  Canvas2DWiggleRenderer,
+  drawWiggleToCtx,
+} from './Canvas2DWiggleRenderer.ts'
 
 import type {
   SourceRenderData,

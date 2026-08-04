@@ -1,4 +1,5 @@
 import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
+import { NO_PREV_START } from '@jbrowse/wiggle-core'
 
 import {
   FIELD_OFFSET_F32,
@@ -62,13 +63,14 @@ export function interleaveInstances(
       // (the shader averages it in clip space, exactly as it does the current
       // feature's, so the joint lands on one point); prevScoreLine the previous
       // real score (prevScore is zeroed at gaps for the step-line, so the
-      // center-line needs its own). NO_PREV_START (0xffffffff, larger than any
-      // genomic coord) marks the source start — or a hole wider than
-      // gapLimitBp — so the shader collapses that quad to nothing. Both unused
-      // by other modes.
+      // center-line needs its own). NO_PREV_START marks the source start — or a
+      // hole wider than gapLimitBp — so the shader collapses that quad to
+      // nothing; it is the shader's own constant, generated in (adr-051), since
+      // this is the side that writes the value the shader tests for. Both
+      // unused by other modes.
       u32[off + FIELD_OFFSET_F32.prevStartEnd] = prevLinked
         ? positions[pi - 2]!
-        : 0xffffffff
+        : NO_PREV_START
       u32[off + FIELD_OFFSET_F32.prevStartEnd + 1] = prevLinked
         ? positions[pi - 1]!
         : 0

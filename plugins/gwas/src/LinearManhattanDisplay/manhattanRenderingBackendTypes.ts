@@ -1,3 +1,5 @@
+import { scoreToYPx } from './shaders/manhattan.js.generated.ts'
+
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 
@@ -19,21 +21,23 @@ export const DEFAULT_POINT_DIAMETER_PX = 4
 // Map a score to its canvas Y (px from the top). Shared by the Canvas2D/SVG
 // draw path and the hover hit-test so the drawn point and its grab target stay
 // pixel-aligned; out-of-domain scores clamp to the top/bottom edge.
+//
+// The mapping itself is manhattan.slang's `scoreToYPx`, generated into TS
+// (adr-051); this is the tuple-taking wrapper both callers already use.
 export function scoreToY(
   score: number,
   domainY: [number, number],
   canvasHeight: number,
 ) {
-  const [domainMin, domainMax] = domainY
-  const range = domainMax - domainMin || 1
-  const norm = Math.max(0, Math.min(1, (score - domainMin) / range))
-  return (1 - norm) * canvasHeight
+  return scoreToYPx(score, domainY[0], domainY[1], canvasHeight)
 }
 
-// Inverse of scoreToY (unclamped): canvas Y (px from top) → score. Kept next to
-// scoreToY so the forward/inverse transforms share the same `|| 1` guard and
-// stay in lockstep — the hover hit-test derives its score query window from
-// this, and any drift would offset the grab target from the drawn point.
+// Inverse of scoreToY (unclamped): canvas Y (px from top) → score. The hover
+// hit-test derives its score query window from this, so the two must agree
+// wherever the forward map is invertible — which is wherever the domain has a
+// span, and there the `|| 1` below never fires. On a degenerate (min == max)
+// domain the forward map is a step and has no inverse to be in lockstep with,
+// so the guards differing there costs nothing.
 export function yToScore(
   y: number,
   domainY: [number, number],

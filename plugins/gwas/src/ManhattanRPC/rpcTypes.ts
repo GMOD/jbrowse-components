@@ -1,12 +1,16 @@
+import {
+  GLYPH_INSERTION,
+  GLYPH_POINT,
+} from '../LinearManhattanDisplay/shaders/manhattan.iface.generated.ts'
+
 import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
-// Per-feature glyph classes — shared numeric contract between the RPC
-// executor, the LD evaluator, and both renderers (GPU shader glyph IDs match
-// these values; see manhattan.slang).
-export const GLYPH_POINT = 0
-export const GLYPH_INSERTION = 1
-export const GLYPH_INDEX = 2
+// The per-feature glyph classes this file used to declare are manhattan.slang's
+// now, generated into `shaders/manhattan.iface.generated.ts` by
+// `pnpm gen:shaders` (adr-051) — the shader's vertex branches and every
+// non-shader consumer read the one definition. They were previously restated
+// here and pinned to the shader by a test that string-matched its source.
 
 // Glyph for a feature outside LD mode. The LD evaluator falls back to this for
 // every non-index SNP, so switching coloring modes can't silently flatten

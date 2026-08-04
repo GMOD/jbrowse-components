@@ -7,7 +7,10 @@ import type { PairDirection } from '@jbrowse/alignments-core'
 import type { Feature } from '@jbrowse/core/util'
 
 // GPU-uniform encoding of the shared PairDirection categories (0 = unknown).
-const PAIR_DIRECTION_NUM: Record<PairDirection, number> = {
+// Also the linked-read connector's color index: `pairedColorType` passes an
+// orientNum straight through as a palette slot, so features/linkedReads
+// derives its LINKED_READ_COLOR_PAIR_* from this rather than restating it.
+export const PAIR_DIRECTION_NUM: Record<PairDirection, number> = {
   LR: 1,
   RL: 2,
   RR: 3,

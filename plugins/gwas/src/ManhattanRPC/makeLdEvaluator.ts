@@ -1,6 +1,7 @@
 import { ldBinColor, ldIndexColor } from '../LinearManhattanDisplay/ldBins.ts'
+import { GLYPH_INDEX } from '../LinearManhattanDisplay/shaders/manhattan.iface.generated.ts'
 import { lookupR2, matchesIndexSnp, posKey } from './ldToIndex.ts'
-import { GLYPH_INDEX, defaultGlyph } from './rpcTypes.ts'
+import { defaultGlyph } from './rpcTypes.ts'
 
 import type { LdToIndex } from './ldToIndex.ts'
 import type { Feature } from '@jbrowse/core/util'

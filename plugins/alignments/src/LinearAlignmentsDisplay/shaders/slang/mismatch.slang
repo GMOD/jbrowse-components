@@ -1,6 +1,7 @@
 // Mismatch pass: one colored 1bp rectangle per mismatch base. Also used for
 // the softclip-bases overlay (same geometry, same color lookup).
 //! targets: wgsl, glsl
+//! js-export: qualityFade
 
 import alignmentsUniforms;
 import colorPack;
@@ -9,6 +10,10 @@ import hpmath;
 
 public static const uint VERTS_PER_INSTANCE = 6u;
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
+
+// Phred quality at and above which a mismatch stays fully opaque. Everything
+// below fades linearly toward transparent.
+static const float OPAQUE_QUAL = 50.0;
 
 struct Instance {
   uint  position  : ATTR0;   // absolute genomic bp
@@ -32,6 +37,19 @@ float3 baseColor(uint b, Uniforms u) {
   }
 }
 
+// Alpha multiplier for a mismatch of this per-base Phred quality: 1 when the
+// setting is off, 1 when the base carries no quality (qual == 0, which is also
+// what the softclip-bases pass packs), and a linear ramp to OPAQUE_QUAL
+// otherwise. `//! js-export`ed: features/mismatch/drawCanvas.ts carried the
+// same three-way conditional under a "Mirrors the GPU mismatch.slang path"
+// comment, which is the whole setting's behavior kept in agreement by eye.
+float qualityFade(float qual, bool enabled) {
+  if (enabled && qual > 0.0) {
+    return min(1.0, qual / OPAQUE_QUAL);
+  }
+  return 1.0;
+}
+
 [shader("vertex")]
 ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   ColorVsOut o;
@@ -40,13 +58,8 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   // Sub-pixel alpha: at <1 px/bp, blend toward full-row alpha based on the
   // per-site frequency so thinly-covered mismatches fade out. The softclip-base
   // pass shares this shader and packs full frequency, pinning its alpha at 1.
-  float alpha = frequencyFade(u.pxPerBp, inst.frequency, u);
-  // Fade by base quality: Phred 50+ stays opaque, lower qualities fade toward
-  // transparent. qual == 0 (no quality, and the softclip-bases pass) is left
-  // untouched. Mirrors the Canvas2D drawMismatches path.
-  if (u.mismatchAlpha != 0 && inst.qual > 0.0) {
-    alpha *= min(1.0, inst.qual / 50.0);
-  }
+  float alpha = frequencyFade(u.pxPerBp, inst.frequency, u)
+              * qualityFade(inst.qual, u.mismatchAlpha != 0);
   if (alpha <= 0.0) { return discardVertex(); }
 
   float clip1 = bpToClipX(inst.position, u);

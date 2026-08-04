@@ -5,6 +5,7 @@ import {
   pileupRowOffCanvas,
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+import { qualityFade } from '../../LinearAlignmentsDisplay/shaders/slang/mismatch.js.generated.ts'
 import {
   baseColorFallback,
   buildBaseColorTupleMap,
@@ -56,12 +57,11 @@ export function drawMismatches(
       pxPerBp,
       region.mismatchFrequencies[i]!,
     )
-    // Fade by base quality: Phred 50+ opaque, lower fades out. qual 0 (no
-    // quality) stays opaque. Mirrors the GPU mismatch.slang path.
-    const qual = region.mismatchQuals[i]!
-    const qualAlpha =
-      state.mismatchAlpha && qual > 0 ? Math.min(1, qual / 50) : 1
-    const alpha = freqAlpha * qualAlpha
+    // Fade by base quality: Phred 50+ opaque, lower fades out, and qual 0 (no
+    // quality) stays opaque. `qualityFade` is mismatch.slang's own ramp,
+    // generated into TS (adr-051).
+    const alpha =
+      freqAlpha * qualityFade(region.mismatchQuals[i]!, state.mismatchAlpha)
     ctx.fillStyle =
       alpha >= 1
         ? baseCss[base]!

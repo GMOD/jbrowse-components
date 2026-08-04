@@ -2,6 +2,13 @@
 // coverage color. Bar height is normalizeDepth(depth, u) * effectiveHeight.
 //! targets: wgsl, glsl
 //! layout-out: packages/alignments-core/src/coverageLayout.generated.ts
+// The band geometry is authored in alignmentsUniforms, but lifted from HERE:
+// a module is dead-code-eliminated down to nothing, and this pass is the one
+// that reaches both functions off its draw path. The twin lands in
+// @jbrowse/alignments-core because that is where the Canvas2D coverage
+// painters live, and they cannot depend on this plugin.
+//! js-export: covEffectiveHeightPx, covBottomOffsetPx
+//! js-export-out: packages/alignments-core/src/coverageBandLayout.generated.ts
 
 import alignmentsUniforms;
 import colorPack;

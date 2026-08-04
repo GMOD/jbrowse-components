@@ -1,10 +1,12 @@
 import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
-import { gapBreakLimit } from '@jbrowse/wiggle-core'
-
-import { getEffectiveScores } from '../util.ts'
 import {
   RENDERING_TYPE_LINE_CENTER,
   RENDERING_TYPE_XYPLOT,
+  gapBreakLimit,
+} from '@jbrowse/wiggle-core'
+
+import { getEffectiveScores } from '../util.ts'
+import {
   isOverlayMode,
   isScatterMode,
   makeWhiskersLayers,

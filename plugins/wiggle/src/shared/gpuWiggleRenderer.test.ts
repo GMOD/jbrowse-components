@@ -1,4 +1,10 @@
 import { MockHal } from '@jbrowse/render-core/hal'
+import {
+  RENDERING_TYPE_LINE,
+  RENDERING_TYPE_XYPLOT,
+  SCALE_TYPE_LINEAR,
+  SCALE_TYPE_LOG,
+} from '@jbrowse/wiggle-core'
 
 import { GpuWiggleRenderer, WIGGLE_PASSES } from './GpuWiggleRenderer.ts'
 import {
@@ -7,12 +13,6 @@ import {
   UNIFORM_OFFSET_F32 as U,
   UNIFORM_OFFSET_I32 as UI,
 } from './shaders/wiggle.generated.ts'
-import {
-  RENDERING_TYPE_LINE,
-  RENDERING_TYPE_XYPLOT,
-  SCALE_TYPE_LINEAR,
-  SCALE_TYPE_LOG,
-} from './wiggleComponentUtils.ts'
 
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { SourceRenderData } from '@jbrowse/wiggle-core'

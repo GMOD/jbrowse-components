@@ -18,9 +18,15 @@ The *why*, including everything deliberately not built, is
 | `parseDirectives.ts` | `//! js-export:`, `//! js-export-out:`, and the constant evaluator (which resolves through `import`s) |
 | `build-shaders.ts` `writeJsExports` | lifts from the shader's own WGSL, or from a synthesized compute wrapper for `module` files |
 | `*.js.generated.ts` | the generated twins — never hand-edit |
-| `hpmathParity` / `alphaShaderParity` / `syntenyShaderParity` / `pointMarkerParity` / `hicShaderParity` / `insertionWidth` / `rowBand` / `drawCanvas` tests | the retirement gates |
+| `hpmathParity` / `alphaShaderParity` / `syntenyShaderParity` / `pointMarkerParity` / `hicShaderParity` / `qualityFadeParity` / `densityGradientParity` / `scoreToYParity` / `coverageBandLayoutParity` / `insertionWidth` / `rowBand` / `drawCanvas` tests | the retirement gates |
 
-Thirteen shaders export today; the table is in ADR-051.
+Sixteen shaders export today; the table is in ADR-051.
+
+**Generated constants have no re-export hops.** A consumer imports from the
+generated module (or from the package that owns the concept, where a
+`consts-out`/`js-export-out` put it) — never through a third module that merely
+passes it along. Two chains that existed were removed while adding these; don't
+add one back for convenience.
 
 ## Verified facts, do not re-derive
 
@@ -48,6 +54,24 @@ Thirteen shaders export today; the table is in ADR-051.
   error where it cannot infer which. Don't "simplify" that away — the values
   that need it (packed ABGR colors, flag words) are exactly the ones at or above
   2³¹ where JS's signed coercion silently changes the answer.
+- **A shader can export a function it only `import`s** (entry-point shaders
+  only — a module's synthesized wrapper cannot see past its own module, and the
+  error says so). This is how a decision authored in a shared module reaches a
+  package that module's plugin cannot write into, without a new `.slang` file
+  existing only to own a `js-export-out`. Reach for it before concluding "the
+  destination is wrong, so leave the twin hand-written" — that conclusion was
+  drawn once and was wrong.
+- **A retirement gate is a bug detector, not a formality.** `scoreToYParity`
+  failed on its first run: Manhattan's JS and shader spelled the degenerate
+  y-domain guard differently (`|| 1` vs `max(range, 1e-6)`) and the shader's own
+  comment claimed they matched. They do not — see ADR-051's consequences. When a
+  sweep fails, work out which side is right; do not adjust the fixture to agree.
+- **A `bool` parameter survives the whole pipeline** and lands as a TS
+  `boolean`, so a shader-side `u.someFlag != 0` should be lifted as
+  `fn(x, bool enabled)` rather than an int — the consumer then passes its
+  existing boolean. `qualityFade` is the first export doing this. Note slangc
+  expands the `&&` in its body into an `if`/`else` over a `_S5` temporary, so
+  the generated JS is longer than the Slang; that is the desugaring, not a bug.
 - **A `SYNC:` tag can be stale.** Six in `colorUtils.ts` / `colorSchemes.ts` /
   `insertSizeStats.ts` named `read.slang` branches (`chainHasSupp`,
   `colorSuppChains`, `isOrientationScheme`, `insertSizeColor`) that were deleted
@@ -86,12 +110,19 @@ functions would have needed first anyway.
    `snapBoxCenterY` and `fillShade` / `shadeFill` are the pattern.
 2. Add the name to `//! js-export:`. Cross-package consumer? Add
    `//! js-export-out: <repo-relative path>` — it redirects, so there is exactly
-   one generated file.
+   one generated file. If the decision belongs in a shared *module* but the twin
+   has to land somewhere that module's own package can't reach, put both
+   directives on a **pass that imports it** instead: the name resolves through
+   imports for a shader with entry points. `coverage.slang` exporting
+   `alignmentsUniforms`'s band layout into `@jbrowse/alignments-core` is the
+   worked example.
 3. `pnpm gen:shaders`. A typo names the candidates; a non-scalar signature names
    the function and the offending type; a dead function says so.
 4. Wire the consumer, keeping the hand-written twin **as a test fixture**.
 5. Sweep generated-vs-retired over the inputs where it historically broke, then
-   delete the fixture. Copy `hicShaderParity.test.ts`.
+   delete the fixture. Copy `hicShaderParity.test.ts`. If the sweep fails,
+   **decide which side is right first** — `scoreToYParity` failed because the
+   hand-written twin was wrong, not the generator.
 6. Cross-package consumers outside the `js-export-out` package need an entry in
    that package's `exports` map (hand-maintained; `generateExports.mjs` is
    `@jbrowse/core`-only).
@@ -99,13 +130,55 @@ functions would have needed first anyway.
 **Step 4 is not optional.** The generator's whole value is that it can't drift;
 that only holds if each retirement was proved once.
 
-## The residue: 10 `SYNC:` sites, classified
+## The residue: 9 `SYNC:` sites, classified
 
 Ordered by what it would take to close them. **The tags were never the whole
 inventory** — `grep -rn '\.slang' --include='*.ts'` turns up as many untagged
 "Mirrors X.slang" comments, and that is where `mapHicCount`, `intronAlpha`,
-`showChevron`, `rowBandPx`, `overlapAlpha`, the variant cell snap and the
-continuation sign arithmetic all came from. Run that grep first.
+`showChevron`, `rowBandPx`, `overlapAlpha`, `qualityFade`, `densityGradientT`,
+the variant cell snap and the continuation sign arithmetic all came from. Run
+that grep first.
+
+That grep has now been walked end to end, and so have two complementary sweeps:
+**every `.slang` in the repo checked for a `js-export`/`export-consts`
+directive, every one without a directive read against its Canvas2D twin, and
+every `static const` in every shader grepped for a TS re-typing.** That last
+sweep is the cheap one and it is worth re-running after any shader gains a
+constant — it is what found the wiggle rendering-mode enum and the Manhattan
+glyph ids:
+
+```sh
+# name-collision sweep: shader consts that also appear in TS
+grep -oP '^\s*(public\s+)?static const \w+ \K\w+' <shader>.slang
+```
+
+What that turned up is either exported now (the ADR table) or classified in
+ADR-051 §"Deliberately not exported": `snpColor`/`baseColor` (per-backend
+payload behind a shared dispatch), wiggle's `scoreToY` (a multiply once its
+deliberately-divergent normalizer is set aside), and the arc / interleave /
+packing comments, which describe buffer layouts rather than math.
+
+Two structural findings from that sweep, so it need not be redone:
+
+- **`maf.slang` and `multiRow.slang` are entry points over `rowRect` and hold no
+  math of their own.** Their decisions were already exported via `rowRect`.
+- **The thin alignments passes** (`clip`, `indicator`, `coverage`,
+  `interbaseHistogram`, `arcMarker`, `linkedReadLine`) are `vs_main` over
+  `alignmentsUniforms` helpers. Anything shared in them is in that module, so
+  that is where to look — and `coverage.slang` is the worked example of lifting
+  from it.
+
+Nothing obvious is left. The next export will come from a function that does not
+exist yet, or from a `vs_main` body that grows a second decision worth naming.
+
+### Closed without codegen
+
+- **`compute.ts` linked-read pair ordering** — was TS↔TS, not shader-coupled.
+  `LINKED_READ_COLOR_PAIR_*` are now *defined as* `PAIR_DIRECTION_NUM.LR` and
+  friends, with the split slots numbering off the end of the pair block, so the
+  two orderings cannot be renumbered apart. The general form: two TS constants
+  that must be equal should *be* equal — a generated twin is for when the other
+  side is the shader.
 
 ### Considered and deliberately not converted
 
@@ -118,9 +191,6 @@ continuation sign arithmetic all came from. Run that grep first.
   instance into `projectCorners`, whose own comment records that per-instance
   allocation there once dominated a pick-index profile at 500k instances. Not
   worth it; leave the comments, they are earning their keep.
-- **`compute.ts` linked-read pair ordering**. TS↔TS, not shader-coupled:
-  `LINKED_READ_COLOR_PAIR_*` are defined equal to `PAIR_DIRECTION_NUM`. Deriving
-  one from the other closes it without any codegen.
 
 ### Genuinely per-backend, leave them
 

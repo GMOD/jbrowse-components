@@ -1,7 +1,44 @@
+import {
+  NO_PREV_START as GENERATED_NO_PREV_START,
+  RENDERING_TYPE_DENSITY as GENERATED_RENDERING_TYPE_DENSITY,
+  RENDERING_TYPE_LINE as GENERATED_RENDERING_TYPE_LINE,
+  RENDERING_TYPE_LINE_CENTER as GENERATED_RENDERING_TYPE_LINE_CENTER,
+  RENDERING_TYPE_SCATTER as GENERATED_RENDERING_TYPE_SCATTER,
+  RENDERING_TYPE_XYPLOT as GENERATED_RENDERING_TYPE_XYPLOT,
+} from './wiggleRenderModes.generated.ts'
+
 import type { WiggleScaleType } from './normalize.ts'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 export type WiggleRenderingType = 0 | 1 | 2 | 3 | 4
+
+// The `renderingType` uniform's vocabulary. These are wiggle.slang's own
+// numbers, generated in by `pnpm gen:shaders` (adr-051): the Canvas2D path
+// branches on them to pick a draw function while the GPU path branches on them
+// inside vs_main, so a renumbering that reached only one side would quietly
+// draw a different plot type on each backend. Declared here rather than in the
+// plugin because this is where `WiggleRenderingType` lives, and the annotations
+// are what pin each generated value into that union.
+export const RENDERING_TYPE_XYPLOT: WiggleRenderingType =
+  GENERATED_RENDERING_TYPE_XYPLOT
+export const RENDERING_TYPE_DENSITY: WiggleRenderingType =
+  GENERATED_RENDERING_TYPE_DENSITY
+export const RENDERING_TYPE_LINE: WiggleRenderingType =
+  GENERATED_RENDERING_TYPE_LINE
+export const RENDERING_TYPE_SCATTER: WiggleRenderingType =
+  GENERATED_RENDERING_TYPE_SCATTER
+// Point-to-point line: connects the score at each feature's bp midpoint to its
+// neighbor's, instead of tracing the stepped bar tops that RENDERING_TYPE_LINE
+// draws. Better for sparse/discrete data where the plateaus look wrong.
+export const RENDERING_TYPE_LINE_CENTER: WiggleRenderingType =
+  GENERATED_RENDERING_TYPE_LINE_CENTER
+
+// `prevStartEnd.x` sentinel meaning "no previous feature" — the source start,
+// or a hole wider than `gapLimitBp`. Larger than any genomic coordinate, so it
+// cannot collide with a real start, and the shader collapses that quad to
+// nothing. wiggle.slang's, generated in, because the encoder writes it and the
+// shader tests for it.
+export const NO_PREV_START = GENERATED_NO_PREV_START
 
 export interface WiggleGPURenderState {
   domainY: [number, number]

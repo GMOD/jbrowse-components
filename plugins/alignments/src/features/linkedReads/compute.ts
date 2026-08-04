@@ -1,5 +1,6 @@
 import { splitJunctionKind } from '@jbrowse/alignments-core'
 
+import { PAIR_DIRECTION_NUM } from '../../shared/buildBaseFeatureData.ts'
 import {
   connectionEndpoints,
   readGroupConnections,
@@ -11,14 +12,21 @@ import type { LinkedReadLinesUploadData } from './types.ts'
 
 // Color type indices for linked-read connecting lines + bezier curves.
 // Shared by main-thread (Canvas2D / SVG) and the GPU palette uniform.
-// Order is fixed to match LinkedReadLinePalette in shaders/palettes.ts.
+// Order is fixed to match linkedReadColorPalette in shaders/palettes.ts.
+//
+// The four pair slots ARE the worker's orientation codes, because
+// `pairedColorType` below passes an orientNum through unchanged. Taken from
+// PAIR_DIRECTION_NUM rather than restated, so the two orderings cannot be
+// renumbered apart — they used to be two hand-kept lists under a SYNC comment.
 export const LINKED_READ_COLOR_PAIR_UNKNOWN = 0
-export const LINKED_READ_COLOR_PAIR_LR = 1
-export const LINKED_READ_COLOR_PAIR_RL = 2
-export const LINKED_READ_COLOR_PAIR_RR = 3
-export const LINKED_READ_COLOR_PAIR_LL = 4
-export const LINKED_READ_COLOR_SPLIT_NORMAL = 5
-export const LINKED_READ_COLOR_SPLIT_INV = 6
+export const LINKED_READ_COLOR_PAIR_LR = PAIR_DIRECTION_NUM.LR
+export const LINKED_READ_COLOR_PAIR_RL = PAIR_DIRECTION_NUM.RL
+export const LINKED_READ_COLOR_PAIR_RR = PAIR_DIRECTION_NUM.RR
+export const LINKED_READ_COLOR_PAIR_LL = PAIR_DIRECTION_NUM.LL
+// The split-read slots continue past the pair block; they have no orientation
+// code of their own, so they number off its end.
+export const LINKED_READ_COLOR_SPLIT_NORMAL = LINKED_READ_COLOR_PAIR_LL + 1
+export const LINKED_READ_COLOR_SPLIT_INV = LINKED_READ_COLOR_PAIR_LL + 2
 
 // Human-readable connection classification for the bezier-arc hover tooltip.
 // Pair-orientation wording matches CATEGORY_LEGEND (the read-fill legend) so the
@@ -52,23 +60,25 @@ export interface ReadEntry {
   data: PileupDataResult
 }
 
-// Normal LR pairs (orient 0/1) and same-strand split reads get a straight line;
-// aberrant orientations get a bezier curve to stand out visually. A split read
-// is "normal" (a plain deletion) when both segments keep the same strand;
-// opposite strands flag an inversion.
+// Normal LR pairs — and unknown orientations, which code 0 and are not worth
+// calling out — plus same-strand split reads get a straight line; aberrant
+// orientations get a bezier curve to stand out visually. A split read is
+// "normal" (a plain deletion) when both segments keep the same strand; opposite
+// strands flag an inversion.
 export function isNormalOrientation(
   hasPaired: boolean,
   orientNum: number,
   s1: number,
   s2: number,
 ) {
-  return hasPaired ? orientNum <= 1 : s1 === s2
+  // Measured against LR rather than a literal 1: everything aberrant numbers
+  // above it, so this stays right if the codes are ever renumbered.
+  return hasPaired ? orientNum <= PAIR_DIRECTION_NUM.LR : s1 === s2
 }
 
-// `orientNum` is a readPairOrientations code; this passes it through as the
-// color index unchanged, which is only correct because LINKED_READ_COLOR_PAIR_*
-// (1..4) are defined equal to PAIR_DIRECTION_NUM (buildBaseFeatureData.ts:
-// LR:1, RL:2, RR:3, LL:4). SYNC: keep the two orderings identical.
+// `orientNum` is a PAIR_DIRECTION_NUM code, passed through as the color index
+// unchanged — which the LINKED_READ_COLOR_PAIR_* definitions above make true by
+// construction rather than by agreement.
 function pairedColorType(orientNum: number) {
   return orientNum >= LINKED_READ_COLOR_PAIR_LR &&
     orientNum <= LINKED_READ_COLOR_PAIR_LL

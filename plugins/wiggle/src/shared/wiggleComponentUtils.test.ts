@@ -3,6 +3,9 @@ import {
   RENDERING_TYPE_LINE,
   RENDERING_TYPE_SCATTER,
   RENDERING_TYPE_XYPLOT,
+} from '@jbrowse/wiggle-core'
+
+import {
   getRowHeight,
   getRowTop,
   hitTestMouse,

@@ -1,13 +1,13 @@
 import { forEachClippedBlock } from '@jbrowse/render-core/canvas2dUtils'
 import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
-
 import {
   RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_LINE,
   RENDERING_TYPE_LINE_CENTER,
   RENDERING_TYPE_SCATTER,
-  getRowHeight,
-} from './wiggleComponentUtils.ts'
+} from '@jbrowse/wiggle-core'
+
+import { getRowHeight } from './wiggleComponentUtils.ts'
 import {
   drawDensity,
   drawLine,

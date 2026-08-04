@@ -1,35 +1,37 @@
-import { readFileSync } from 'node:fs'
-import path from 'node:path'
-
+import { defaultGlyph } from '../ManhattanRPC/rpcTypes.ts'
 import {
   GLYPH_INDEX,
   GLYPH_INSERTION,
   GLYPH_POINT,
-} from '../ManhattanRPC/rpcTypes.ts'
+} from './shaders/manhattan.iface.generated.ts'
 
-// The GPU path duplicates something the Canvas2D/SVG path also encodes: the
-// glyph id numbering (rpcTypes), tied to its shader counterpart only by
-// comments. The naga test next door only proves the WGSL compiles — and is
-// skipped when naga isn't installed — so nothing else catches a drift that
-// silently makes the GPU draw different glyphs than the Canvas2D fallback and
-// the SVG export.
+import type { Feature } from '@jbrowse/core/util'
+
+// The glyph ids are a numeric contract between the RPC executor, the LD
+// evaluator, the Canvas2D/SVG draw and the shader's vertex branches. Drift
+// makes the GPU draw different glyphs from the fallback and the export, with
+// nothing throwing.
 //
-// The index-SNP size bump used to be checked here too, by scraping
-// `INDEX_GLYPH_SCALE` out of the source and comparing it to a TS literal. It is
-// `//! export-consts`ed now, so the Canvas2D path reads the shader's own value
-// and there is nothing left to compare.
-const slang = readFileSync(path.join(__dirname, 'shaders/manhattan.slang'), {
-  encoding: 'utf8',
+// This file used to enforce that by reading manhattan.slang and string-matching
+// its branches (`inst.glyph == 1u ? SHAPE_TRI`). That pinned the *source text*,
+// not the values: it broke on reformatting, and it could not have caught the
+// worker and the shader agreeing on a spelling but disagreeing on a number.
+// The ids are `//! export-consts`ed now (adr-051) and there is only one
+// definition left, so there is no longer a pair to compare. What remains worth
+// asserting is the shape of that one definition, and the classifier over it.
+
+test('the three glyph classes stay distinct', () => {
+  // A renumbering that collapsed two would merge glyph classes rather than
+  // fail — every insertion SV would quietly draw as a plain SNP, say.
+  expect(new Set([GLYPH_POINT, GLYPH_INSERTION, GLYPH_INDEX]).size).toBe(3)
 })
 
-// Each glyph id's shader branch, keyed by the shape it must select. Pins the
-// id->shape mapping itself rather than just the set of ids, so renumbering a
-// constant fails here instead of silently swapping glyphs on the GPU.
-test.each([
-  ['insertion -> triangle', `inst.glyph == ${GLYPH_INSERTION}u ? SHAPE_TRI`],
-  ['index -> diamond', `inst.glyph == ${GLYPH_INDEX}u ? SHAPE_DIAMOND`],
-  ['index -> size bump', `inst.glyph == ${GLYPH_INDEX}u ? INDEX_GLYPH_SCALE`],
-  ['point -> small-point fast path', `inst.glyph == ${GLYPH_POINT}u &&`],
-])('shader maps %s', (_label, branch) => {
-  expect(slang).toContain(branch)
+test('defaultGlyph sends insertion SVs to the triangle and the rest to a disc', () => {
+  // Both coloring modes route through this, so an SV cannot flatten into a
+  // plain disc just because LD mode is off.
+  const feat = (svtype?: string) =>
+    ({ get: (k: string) => (k === 'svtype' ? svtype : undefined) }) as Feature
+  expect(defaultGlyph(feat('INS'))).toBe(GLYPH_INSERTION)
+  expect(defaultGlyph(feat('DEL'))).toBe(GLYPH_POINT)
+  expect(defaultGlyph(feat())).toBe(GLYPH_POINT)
 })

@@ -1,12 +1,12 @@
 import { writeBpRangeUniforms } from '@jbrowse/render-core/blockClipUtils'
 import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 import { slangPass } from '@jbrowse/render-core/slangPass'
-
-import * as wiggleShader from './shaders/wiggle.generated.ts'
 import {
   RENDERING_TYPE_LINE,
   RENDERING_TYPE_LINE_CENTER,
-} from './wiggleComponentUtils.ts'
+} from '@jbrowse/wiggle-core'
+
+import * as wiggleShader from './shaders/wiggle.generated.ts'
 import { interleaveInstances } from './wiggleInstanceBuffer.ts'
 
 import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'

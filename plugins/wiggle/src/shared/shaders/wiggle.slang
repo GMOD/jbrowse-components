@@ -7,6 +7,15 @@
 // a 6-vert capsule per feature under premultiplied max-blend (round-joined SDF
 // line — see the RENDERING_TYPE_LINE_CENTER branch).
 //! targets: wgsl, glsl
+//! js-export: densityGradientT
+// The rendering-mode and scale enums are the numeric contract between the
+// `renderingType` / `scaleType` uniforms and every TS path that sets them or
+// branches on them, and the sentinel is the same contract inside the instance
+// buffer. Generated into @jbrowse/wiggle-core (see consts-out) because that is
+// where `WiggleRenderingType` and `WiggleScaleType` are declared, and the
+// plugin reads them back from there.
+//! export-consts: RENDERING_TYPE_XYPLOT, RENDERING_TYPE_DENSITY, RENDERING_TYPE_LINE, RENDERING_TYPE_SCATTER, RENDERING_TYPE_LINE_CENTER, SCALE_TYPE_LOG, NO_PREV_START
+//! consts-out: packages/wiggle-core/src/wiggleRenderModes.generated.ts
 
 import hpmath;
 import colorPack;
@@ -101,6 +110,22 @@ float normalizeScore(float score, float domainMin, float domainMax, int scaleTyp
 
 float scoreToY(float score, float domainMin, float domainMax, float h, int scaleType) {
   return (1.0 - normalizeScore(score, domainMin, domainMax, scaleType)) * h;
+}
+
+// Density mode's gradient position: how far this score sits from the pivot,
+// as a fraction of the pivot's distance to the further end of the normalized
+// domain. 0 paints white, 1 paints the track color.
+//
+// Takes normalized scores rather than raw ones because the two backends
+// normalize deliberately differently — normalizeScore() above avoids NaN on a
+// degenerate (min == max) domain where JS `makeScoreNormalizer` returns 0 (see
+// adr-051) — so the ramp is the only part they must agree on. `//! js-export`ed:
+// getDensityColor.ts carried it verbatim, keeping a `max(maxDist, 0.0001)` floor
+// that can never fire (maxDist >= 0.5 always) purely so a reader comparing the
+// two backends saw identical arithmetic.
+float densityGradientT(float norm, float zeroNorm) {
+  float maxDist = max(zeroNorm, 1.0 - zeroNorm);
+  return abs(norm - zeroNorm) / max(maxDist, 0.0001);
 }
 
 // Score → clip-space Y within a single row (line mode). Reads the y domain and
@@ -252,9 +277,7 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
   if (u.renderingType == RENDERING_TYPE_DENSITY) {
     float norm = normalizeScore(inst.score, u.domainYMin, u.domainYMax, u.scaleType);
     float zeroNorm = normalizeScore(u.origin, u.domainYMin, u.domainYMax, u.scaleType);
-    float maxDist = max(zeroNorm, 1.0 - zeroNorm);
-    float t = abs(norm - zeroNorm) / max(maxDist, 0.0001);
-    outColor = float4(lerp(float3(1.0), instColor.rgb, t), 1.0);
+    outColor = float4(lerp(float3(1.0), instColor.rgb, densityGradientT(norm, zeroNorm)), 1.0);
   } else {
     outColor = float4(instColor.rgb, 1.0);
   }

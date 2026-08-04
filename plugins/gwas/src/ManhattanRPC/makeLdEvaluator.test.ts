@@ -1,7 +1,11 @@
 import { ldBinColor, ldIndexColor } from '../LinearManhattanDisplay/ldBins.ts'
+import {
+  GLYPH_INDEX,
+  GLYPH_INSERTION,
+  GLYPH_POINT,
+} from '../LinearManhattanDisplay/shaders/manhattan.iface.generated.ts'
 import { feat, testLd as ld } from './ldTestHelpers.ts'
 import { makeLdEvaluator } from './makeLdEvaluator.ts'
-import { GLYPH_INDEX, GLYPH_INSERTION, GLYPH_POINT } from './rpcTypes.ts'
 
 test('index SNP (by name): index color, r²=1', () => {
   const { evalColor, evalR2 } = makeLdEvaluator(ld, 'rsIndex', 'chr1')

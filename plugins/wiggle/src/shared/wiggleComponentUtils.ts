@@ -1,5 +1,13 @@
 import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
-import { resolveRenderState, scaleTypeFromString } from '@jbrowse/wiggle-core'
+import {
+  RENDERING_TYPE_DENSITY,
+  RENDERING_TYPE_LINE,
+  RENDERING_TYPE_LINE_CENTER,
+  RENDERING_TYPE_SCATTER,
+  RENDERING_TYPE_XYPLOT,
+  resolveRenderState,
+  scaleTypeFromString,
+} from '@jbrowse/wiggle-core'
 
 import type {
   FeatureArrays,
@@ -14,17 +22,9 @@ import type {
   WiggleRenderingType,
 } from '@jbrowse/wiggle-core'
 
-export { SCALE_TYPE_LINEAR, SCALE_TYPE_LOG } from '@jbrowse/wiggle-core'
-export { SMALL_POINT_MAX_DIAMETER_PX } from '@jbrowse/wiggle-core'
-
-export const RENDERING_TYPE_XYPLOT: WiggleRenderingType = 0
-export const RENDERING_TYPE_DENSITY: WiggleRenderingType = 1
-export const RENDERING_TYPE_LINE: WiggleRenderingType = 2
-export const RENDERING_TYPE_SCATTER: WiggleRenderingType = 3
-// Point-to-point line: connects the score at each feature's bp midpoint to its
-// neighbor's, instead of tracing the stepped bar tops that RENDERING_TYPE_LINE
-// draws. Better for sparse/discrete data where the plateaus look wrong.
-export const RENDERING_TYPE_LINE_CENTER: WiggleRenderingType = 4
+// The rendering-mode vocabulary lives in `@jbrowse/wiggle-core`, next to the
+// `WiggleRenderingType` union it inhabits, and is wiggle.slang's own numbering
+// generated in (adr-051). Import it from there, not through this module.
 
 function lightenColor(
   rgb: [number, number, number],

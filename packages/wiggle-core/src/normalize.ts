@@ -1,6 +1,11 @@
+import { SCALE_TYPE_LOG as GENERATED_SCALE_TYPE_LOG } from './wiggleRenderModes.generated.ts'
+
 export type WiggleScaleType = 0 | 1
 export const SCALE_TYPE_LINEAR: WiggleScaleType = 0
-export const SCALE_TYPE_LOG: WiggleScaleType = 1
+// The value the `scaleType` uniform is compared against, so it is wiggle.slang's
+// own — generated in by `pnpm gen:shaders` (adr-051). Only LOG crosses the
+// boundary; LINEAR is simply "not that".
+export const SCALE_TYPE_LOG: WiggleScaleType = GENERATED_SCALE_TYPE_LOG
 
 /**
  * #api

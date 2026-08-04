@@ -146,7 +146,26 @@ Two escape hatches mirror the ones `export-consts` already had:
 - **Imported `static const`s resolve.** The constant evaluator now reads the
   modules a shader `import`s, so a pass can write `CURVE_SEGMENTS * 6u` where it
   previously had to spell `48u` under a comment explaining that the codegen
-  could not follow the identifier.
+  could not follow the identifier. It also reads **hex**, which it could not: a
+  `u32` sentinel is spelled `0xffffffffu`, and the evaluator saw the leading `0`
+  as the number and `xffffffffu` as an unresolvable identifier — so the one
+  constant form a "larger than any real value" marker needs was the one form
+  that could not be exported.
+
+**A shader may also export a function it only `import`s**, which is what makes
+those two compose. `js-export-out` redirects a whole file, so a decision
+authored in a shared module could otherwise only land beside that module —
+redirecting `alignmentsUniforms.slang` would drag `frequencyAlpha` and the arc
+scale out of the plugin that owns them. Naming the function on the *pass* that
+draws with it puts the twin wherever that pass wants, and leaves the decision
+authored next to the clip-space conversions built on it: the coverage band's px
+layout lives in `alignmentsUniforms.slang` and is lifted by `coverage.slang`
+into `@jbrowse/alignments-core`. Offered only to a shader with entry points,
+where the twin comes from that shader's own compile and the draw path is what
+keeps the function alive. A module gets its own source only, because its export
+path compiles a synthesized wrapper that `import`s exactly one module and Slang
+does not re-export a grandparent's symbols — the error message says so rather
+than letting the name vanish between the directive and the WGSL.
 
 **Retirement is gated by a differential test.** The hand-written twin is kept
 verbatim as a fixture, swept against the generated function over the inputs
@@ -177,6 +196,12 @@ the no-GPU path this all exists for.
 | `overlap.slang` | `overlapAlpha` | `features/overlap/drawCanvas.ts` — the constants were already shared; the `smoothstep` between them was hand-written |
 | `continuation.slang` | `markerDirection`, `strandMatchesEdge` | `Canvas2DFeatureRenderer` — edge-marker sign arithmetic, "kept in agreement by eye" |
 | `syntenyTypes.slang` | `KIND_CIGAR_MIN`, `KIND_MARKER` via `export-consts` | `syntenyColors.ts` — the CIGAR kinds now number themselves off the shader's boundary, so staying contiguous above it is structural |
+| `mismatch.slang` | `qualityFade` | `features/mismatch/drawCanvas.ts` — "Mirrors the GPU mismatch.slang path"; the whole `mismatchAlpha` setting is this one three-way conditional, and it was stated twice |
+| `wiggle.slang` | `densityGradientT` | `getDensityColor.ts` — the density ramp position, carrying a `max(maxDist, 0.0001)` floor that cannot fire, kept only so the two backends read identically |
+| `manhattan.slang` | `scoreToYPx` | `manhattanRenderingBackendTypes.ts` — Manhattan's whole Y mapping, read by the Canvas2D draw *and* the hover hit test |
+| `coverage.slang` | `covEffectiveHeightPx`, `covBottomOffsetPx` (authored in `alignmentsUniforms.slang`) | `@jbrowse/alignments-core` `coverageLayout` — the band's drawable height and baseline, which the coverage bars, SNP segments and modification segments all measure from |
+| `wiggle.slang` | `RENDERING_TYPE_*` (5), `SCALE_TYPE_LOG`, `NO_PREV_START` via `export-consts` | `@jbrowse/wiggle-core` — the `renderingType` / `scaleType` uniform vocabulary and the instance-buffer sentinel, all re-typed by hand where `WiggleRenderingType` is declared |
+| `manhattan.slang` | `GLYPH_POINT`, `GLYPH_INSERTION`, `GLYPH_INDEX` via `export-consts` | `ManhattanRPC/rpcTypes.ts` — restated there, and pinned to the shader only by a test that string-matched its branches out of the `.slang` source |
 
 ### A vector signature is usually a scalar decision in a wrapper
 
@@ -216,8 +241,24 @@ and the two implementations have to be *meant* to agree:
 - **`normalizeScore` / `scoreToY` (wiggle)** — the shader's own comment records a
   deliberate divergence from JS `makeScoreNormalizer` on a degenerate
   (`min == max`) domain: JS returns 0, the shader avoids NaN. Unifying them is a
-  product decision, not a codegen one. `js-export` reaches `wiggle.slang` now,
-  so this is a choice rather than a limitation.
+  product decision, not a codegen one. That divergence is also what fixes the
+  split point for `densityGradientT`, which takes *normalized* scores: the ramp
+  is the only part of the density branch both backends must agree on.
+  `scoreToY`'s own remaining content, once the normalizer is set aside, is
+  `(1 - norm) * h` — a multiply, in the `computeCorners` class.
+- **`snpColor` / `baseColor` (snpCoverage, mismatch)** — a `switch` from a base
+  code to a `float3` out of `Uniforms`. The Canvas2D twins (`snpColorForType`,
+  `buildBaseCssMap`) switch over the same codes, but what each returns is a
+  color *object* / prebuilt CSS string versus three floats. This is the
+  `hueRampHalfSat` shape from the table above: the dispatch is shared and
+  trivial, the payload is per-backend, and a wrapper would be a hand-written
+  twin again.
+- **`effHeight` / `covBottom` (coverage band)** — **now exported**, as
+  `covEffectiveHeightPx` / `covBottomOffsetPx`. The blocker was destination, not
+  shape: `alignmentsUniforms.slang`'s twin lands in plugin-alignments, which
+  `@jbrowse/alignments-core` cannot import. Letting `coverage.slang` export a
+  function it imports solved that without a new module, and is the general fix
+  for "authored in the shared module, needed in a specific package".
 - **`sBlend` / `yCurve` (synteny)** — exported as a **test oracle**, not as
   production code. The Canvas2D path deliberately draws one `bezierCurveTo`
   rather than tessellating, and `syntenyRibbonPath.ts` carries an algebraic proof
@@ -228,12 +269,17 @@ and the two implementations have to be *meant* to agree:
 
 ## Consequences
 
-- Six drift sites retired in the first round, twenty-nine more since (twenty-two
-  functions and nine constants, five of them crossing a package boundary);
-  `SYNC:`-tagged sites went 27 → 10, and six of the ones removed were **stale**
-  — they named `read.slang` branches deleted when read classification moved to
-  the CPU. Everything left is classified in
+- Six drift sites retired in the first round, forty-four more since
+  (twenty-seven functions and nineteen constants, fifteen of them crossing a
+  package boundary); `SYNC:`-tagged sites went 27 → 9, and six of the ones removed were
+  **stale** — they named `read.slang` branches deleted when read classification
+  moved to the CPU. Everything left is classified in
   [handoffs/shader-js-codegen.md](../handoffs/shader-js-codegen.md).
+- **Not every drift site wants codegen.** The last `SYNC:` tag that was not
+  shader-coupled at all — `features/linkedReads/compute.ts` keeping its palette
+  indices numbered like `PAIR_DIRECTION_NUM` — closed by defining one from the
+  other. Two TS constants that must be equal should *be* equal; reach for a
+  generated twin only when the other side is the shader.
 - The `SYNC:` tags were never the whole inventory. Grepping TS for `.slang`
   turns up as many untagged "Mirrors X.slang" comments, and that is where
   `mapHicCount`, `intronAlpha`, `showChevron`, `rowBandPx`, `overlapAlpha` and
@@ -265,3 +311,27 @@ and the two implementations have to be *meant* to agree:
   0.34999999403953552) into whole-step errors wherever a product landed on an
   exact integer. Any consumer taking a generated float into byte space should
   round for the same two reasons.
+- **An enum shared with a uniform is `export-consts`'s best case, and was the
+  last one left.** `wiggle.slang`'s five `RENDERING_TYPE_*` and its `scaleType`
+  encoding were hand-typed on both sides: a renumbering reaching only one would
+  have made the Canvas2D path draw a different *plot type* from the GPU, with
+  nothing throwing. Manhattan's glyph ids were the same, and were "guarded" by a
+  test that read the `.slang` and string-matched `inst.glyph == 1u ? SHAPE_TRI`
+  — which pins the source text, breaks on reformatting, and could never have
+  caught the two sides agreeing on a spelling while disagreeing on a number.
+  Look for a TS constant whose value only means anything to a shader.
+- **Generating a constant can delete a test rather than add one.** With one
+  definition left there is no pair to compare, so the glyph contract test kept
+  only what still has content: that the classes stay distinct, and that the
+  classifier over them behaves. A test asserting two things agree is a sign the
+  two things should be one thing.
+- **A retirement gate found a live bug, which is the mechanism working.**
+  Manhattan's JS `scoreToY` guarded a degenerate y-domain with `|| 1` where the
+  shader used `max(range, 1e-6)`, and the shader's comment asserted the two
+  matched. They do not: `|| 1` invents a phantom unit-wide domain, so with
+  `minScore` and `maxScore` config-pinned to the same value, a score half a unit
+  above the pin drew half-way up the Canvas2D canvas while the GPU clamped it to
+  the top. Adopting the shader's behavior is the fix, and the Canvas2D path — the
+  one `crossBackendGate` cannot reach — is where it had been wrong. When a
+  parity sweep fails, check which side is right before making it pass; that is
+  the whole reason the fixture is swept rather than eyeballed.

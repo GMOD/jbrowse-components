@@ -55,6 +55,14 @@ export type { ScoreScaleModel } from './scoreMenuItems.ts'
 export { default as YScaleBar } from './YScaleBar.tsx'
 export { default as YScaleBarOverlay } from './YScaleBarOverlay.tsx'
 
+export {
+  NO_PREV_START,
+  RENDERING_TYPE_DENSITY,
+  RENDERING_TYPE_LINE,
+  RENDERING_TYPE_LINE_CENTER,
+  RENDERING_TYPE_SCATTER,
+  RENDERING_TYPE_XYPLOT,
+} from './renderingBackendTypes.ts'
 export type {
   SourceRenderData,
   WiggleGPURenderState,
