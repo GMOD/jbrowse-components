@@ -64,14 +64,16 @@ test('takes the regions array order, not the arrival order of the runs', () => {
   ).toEqual(['exon1-a', 'exon1-b', 'exon2-a', 'exon2-b'])
 })
 
-test('dedupes a feature that arrived from two overlapping fetches', () => {
+// Ranked by the FIRST region it overlaps, so a feature that spans a boundary
+// still lands in one place on the axis rather than between the two.
+test('ranks a feature spanning two regions by the first of them', () => {
   const span = feat('span', 7_674_500)
   expect(
     order(
-      [span, exon2, span],
-      [region(7_674_000, 7_675_000), region(7_674_400, 7_675_000)],
+      [exon1, span],
+      [region(7_674_000, 7_675_000), region(7_675_500, 7_676_500)],
     ),
-  ).toEqual(['exon2-a', 'span'])
+  ).toEqual(['span', 'exon1-a'])
 })
 
 test('keeps a feature that overlaps no region, after the placed ones', () => {

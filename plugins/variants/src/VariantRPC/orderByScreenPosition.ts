@@ -21,12 +21,18 @@ import type { Feature, Region } from '@jbrowse/core/util'
  * regions, six concurrent fetches) came back globally ascending under a ruler
  * running the other way.
  *
- * A feature is assigned to the first region it overlaps and appears once, the
- * same rule and the same dedupe as `groupFeaturesByRegion` — merge does not
- * dedupe, so a feature spanning two fetched regions arrives twice. A feature
- * overlapping no region keeps its arrival order at the end rather than being
- * dropped; the caller asked for these features and losing one silently would be
- * worse than a column out of place.
+ * A feature is ranked by the first region it overlaps, the same rule
+ * `groupFeaturesByRegion` uses. It does NOT dedupe: merge can emit a feature
+ * once per fetched region it spans, but this display is genotypes at variant
+ * sites, and measured on the figure that prompted all this — TP53 with its
+ * introns collapsed, six regions — the longest REF allele is 30 bp against
+ * introns hundreds of bp wide and nothing overlaps two regions. Ordering is one
+ * job; if duplicate columns ever turn out to be real, the place to drop one is
+ * the fetch that made it, not a sort.
+ *
+ * A feature overlapping no region keeps its arrival order at the end rather than
+ * being dropped; the caller asked for these features and losing one silently
+ * would be worse than a column out of place.
  */
 export function orderByScreenPosition<T>(
   items: T[],
@@ -43,7 +49,6 @@ export function orderByScreenPosition<T>(
     list.push({ region, rank })
   }
 
-  const seen = new Set<string>()
   const ranked: { item: T; rank: number; pos: number; arrival: number }[] = []
   const unplaced: T[] = []
   for (const [arrival, item] of items.entries()) {
@@ -57,11 +62,6 @@ export function orderByScreenPosition<T>(
       unplaced.push(item)
       continue
     }
-    const id = feature.id()
-    if (seen.has(id)) {
-      continue
-    }
-    seen.add(id)
     ranked.push({
       item,
       rank: hit.rank,
