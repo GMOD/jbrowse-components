@@ -6,6 +6,7 @@ import {
   getLuminance as muiGetLuminance,
 } from '@mui/material/styles'
 
+import * as convert from '../color-bits/convert.ts'
 import { namedColorToHex } from './cssColorsLevel4.ts'
 
 /**
@@ -86,14 +87,79 @@ export function makeContrasting(
 
 export { isNamedColor, namedColorToHex } from './cssColorsLevel4.ts'
 
+// The (lightness, chroma) tiers randomColor picks between, in OKLCH. Values are
+// in the band a hand-built categorical palette occupies — bright enough to tell
+// apart, dark enough that black text over one still reads, and never near
+// white/black. The three differ enough to separate two neighbouring hues, and
+// little enough that no tier reads as "the faded ones".
+const RANDOM_COLOR_TIERS = [
+  { lightness: 0.66, chroma: 0.15 },
+  { lightness: 0.56, chroma: 0.14 },
+  { lightness: 0.75, chroma: 0.12 },
+]
+
+// sRGB has room for very different amounts of chroma at different hues (a
+// vivid yellow exists, an equally vivid blue does not), so a requested chroma
+// is often outside the gamut. Bisect down to the most saturated in-gamut
+// version of the SAME hue and lightness, rather than letting the channel clamp
+// do it — clamping a channel shifts the hue, which is the one thing this must
+// hold constant.
+const GAMUT_BISECTION_STEPS = 8
+const GAMUT_EPSILON = 1 / 512
+
+function oklchToSrgb(lightness: number, chroma: number, hue: number) {
+  return convert.xyzd50ToSrgb(...convert.oklchToXyzd50(lightness, chroma, hue))
+}
+
+function inGamut(rgb: [number, number, number]) {
+  return rgb.every(v => v >= -GAMUT_EPSILON && v <= 1 + GAMUT_EPSILON)
+}
+
+function oklchToHex(lightness: number, chroma: number, hue: number) {
+  let rgb = oklchToSrgb(lightness, chroma, hue)
+  if (!inGamut(rgb)) {
+    let lo = 0
+    let hi = chroma
+    for (let i = 0; i < GAMUT_BISECTION_STEPS; i++) {
+      const mid = (lo + hi) / 2
+      const candidate = oklchToSrgb(lightness, mid, hue)
+      if (inGamut(candidate)) {
+        lo = mid
+        rgb = candidate
+      } else {
+        hi = mid
+      }
+    }
+  }
+  return `#${rgb
+    .map(v =>
+      Math.max(0, Math.min(255, Math.round(v * 255)))
+        .toString(16)
+        .padStart(2, '0'),
+    )
+    .join('')}`
+}
+
 /**
  * Generate a consistent random color for a given string.
  * The same string will always generate the same color, with no shared palette
  * state — so the same value (e.g. a gene symbol used as an ortholog id) gets the
  * same color across independent tracks/panels.
  *
+ * Statelessness is why this hashes into a color space rather than indexing a
+ * fixed palette of N: with no allocator there is no "next unused color", so an
+ * N-color palette collides by the birthday problem — six values into a
+ * twenty-color palette collide more often than not — while a hue circle does
+ * not repeat until 360 values. What a curated palette actually buys is
+ * perceptual evenness, and that comes from the space, not the list: hues are
+ * placed in OKLCH at a fixed lightness and chroma, so every value is equally
+ * light and equally colorful. HSL, which this used to use, is neither — its
+ * hue wheel spends a quarter of itself on greens that look identical and a
+ * sliver on yellow, and at one lightness its yellows glare while its blues go
+ * murky. That unevenness is what reads as "random RGB".
+ *
  * @param str - The string to generate a color from
- * @returns A CSS color string in HSL format
+ * @returns A CSS hex color string
  */
 export function randomColor(str: string): string {
   // djb2 hash — much better distribution than a char-code sum (anagrams and
@@ -104,17 +170,10 @@ export function randomColor(str: string): string {
   }
   const h = hash >>> 0
   const hue = h % 360
-  // Vary saturation and lightness too, not just hue: a fixed S/L reads muddy
-  // because it collapses the palette to one perceptual dimension (blues and
-  // greens at the same S/L look alike). A separate xorshift-mixed hash (Math.imul
-  // for a real 32-bit multiply — a plain `*` overflows float precision and drops
-  // the low bits) picks the S/L tier independently of the hue. Tiers stay
-  // mid-range so every color reads under a black-or-white label (never near
-  // white/black).
+  // The tier is picked by a separately mixed hash (xorshift + Math.imul for a
+  // real 32-bit multiply — a plain `*` overflows float precision and drops the
+  // low bits) so it varies independently of the hue rather than tracking it.
   const mix = Math.imul(h ^ (h >>> 15), 2246822519) >>> 0
-  const s = mix % 3
-  const sat = s === 0 ? 68 : s === 1 ? 82 : 58
-  const l = (mix >>> 3) % 3
-  const light = l === 0 ? 46 : l === 1 ? 58 : 38
-  return `hsl(${hue}, ${sat}%, ${light}%)`
+  const tier = RANDOM_COLOR_TIERS[mix % RANDOM_COLOR_TIERS.length]!
+  return oklchToHex(tier.lightness, tier.chroma, hue)
 }

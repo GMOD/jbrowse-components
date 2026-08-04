@@ -650,6 +650,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
             // multi-copy expansion would still leave ~13k of the band's ~17.8k
             // links). The band is dense because the answer is.
             autoDiagonalize: true,
+            // and one bp/px down the stack, see the wheat spec below. Row
+            // length is genome size here too: human's 3.1 Gb against the
+            // 0.9-1.5 Gb of the four below it, with gar and zebrafish (0.90 and
+            // 1.35) the pair the bottom band is really about.
+            sameScale: true,
             // see the grasses spec below for why these four settings; the three
             // OrthoFinder figures are the same picture on different genomes
             collapseEmptyRows: true,
@@ -698,6 +703,12 @@ export const syntenySpecs: ScreenshotSpec[] = [
             ],
             colorBy: 'reference',
             autoDiagonalize: true,
+            // One bp/px down the stack, see the wheat spec below. This set has
+            // the widest size spread of the three (brachypodium 0.27 Gb to
+            // maize 2.14 Gb), so it is also where the shared scale costs the
+            // most frame: the four small rows are drawn between an eighth and a
+            // third of maize's length.
+            sameScale: true,
             // No row carries a track, so every row was spending ~90px on a "No
             // tracks active / Open track selector" block: five of them, down the
             // middle of the frame, over half the height the ribbons had.
@@ -1927,10 +1938,13 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // The colored genes stay on `randomColor` rather than a curated rainbow,
   // because the figure documents what the "Color by attribute" dialog writes
   // (ColorByAttributeDialog builds this exact jexl) and a hand-picked palette
-  // would be a picture of something the dialog cannot produce. `randomColor`'s
-  // hash was measured against a cat10-style fixed palette when it was written:
-  // the fixed palette is prettier at six values and collides badly past ten,
-  // and it is the same function coloring BAM tag values and consequence terms.
+  // would be a picture of something the dialog cannot produce. Review: "ideally
+  // we get a better palette, pulling from good color set rather than like random
+  // rgb" — answered in `randomColor` itself rather than here. It now places its
+  // hues in OKLCH at a fixed lightness and chroma instead of raw HSL, so every
+  // value comes out equally light and equally colorful, which is the property a
+  // curated categorical palette actually has. It stays a hash rather than a list
+  // of N because it has no allocator: see its docstring.
   {
     mode: 'url',
     name: 'sv_synteny/ortholog_colors',
