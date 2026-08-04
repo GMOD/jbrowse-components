@@ -26,7 +26,7 @@ export const pages: ExamplePage[] = [
     slug: 'customizing-the-app',
     title: 'Customizing the app',
     description:
-      'Small tweaks to the app: switch to the dark theme, observe state changes, fit it into a sized container, or offload data parsing to a web worker.',
+      'Small tweaks to the app: switch to the dark theme, observe state changes, put the session in the URL, fit it into a sized container, or offload data parsing to a web worker.',
     group: 'Getting started',
     sections: [
       {
@@ -40,6 +40,12 @@ export const pages: ExamplePage[] = [
         title: 'Observe state with onChange',
         description:
           'onChange fires on every MST patch — persist the session, drive undo/redo, or sync external UI.',
+      },
+      {
+        slug: 'session-in-url',
+        title: 'Put the session in the URL',
+        description:
+          'Serialize the live session with encodeSession, restore it with decodeSession — shareable links, bookmarkable views, browser history.',
       },
       {
         slug: 'fit-to-container',

@@ -1,6 +1,7 @@
 import createViewState from './createViewState.ts'
 
 import type { JBrowseProps, ManagedView } from './JBrowse/index.ts'
+import type { SessionSnapshot } from './types.ts'
 
 /**
  * A declarative description of the app to mount. This is the framework-agnostic
@@ -27,12 +28,11 @@ import type { JBrowseProps, ManagedView } from './JBrowse/index.ts'
  */
 export type CreateAppOptions = Omit<JBrowseProps, 'ref'>
 
-export interface AppSessionSnapshot {
-  name: string
+// The `views`-derived session, narrowed from the open SessionSnapshot shape so
+// viewsToSession's mapping is checked. Assignable to SessionSnapshot (whose
+// index signature it inherits), so it drops straight into createViewState.
+export interface AppSessionSnapshot extends SessionSnapshot {
   views?: { id: string; type: string; init?: ManagedView['init'] }[]
-  // the app's session snapshot type carries an index signature (SnapshotIn of
-  // the MST session model); mirror it so this is assignable to createViewState
-  [key: string]: unknown
 }
 
 // Turn the declarative `views` list into a session snapshot, defaulting each
@@ -69,6 +69,7 @@ export function createViewStateFromProps(opts: CreateAppOptions) {
     makeWorkerInstance,
     onChange,
     views,
+    session,
     sessionName = 'session',
   } = opts
   return createViewState({
@@ -78,10 +79,13 @@ export function createViewStateFromProps(opts: CreateAppOptions) {
       internetAccounts,
       aggregateTextSearchAdapters,
       configuration,
-      // `views` is the single initial-state mechanism; with none given, the
-      // session opens empty but still honors `sessionName`
+      // `views` describes the app's own starting state, so it stays the
+      // defaultSession even when a restored `session` opens instead — File →
+      // New session then returns here rather than to the restored one. With no
+      // views given, the session opens empty but still honors `sessionName`.
       defaultSession: viewsToSession(sessionName, views),
     },
+    session,
     plugins,
     onChange,
     makeWorkerInstance,

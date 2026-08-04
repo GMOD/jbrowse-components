@@ -2,17 +2,26 @@ import { onPatch } from '@jbrowse/mobx-state-tree'
 
 import createModel from './createModel.ts'
 
-import type { Config } from './types.ts'
-import type { PluginConstructor } from '@jbrowse/core/Plugin'
+import type { Config, PluginInput, SessionSnapshot } from './types.ts'
 import type { IJsonPatch } from '@jbrowse/mobx-state-tree'
 
-export default function createViewState(opts: {
+export interface CreateViewStateOptions {
   config: Config
-  plugins?: PluginConstructor[]
+  plugins?: PluginInput[]
+  /**
+   * A serialized session to open now — e.g. one restored from a URL via
+   * {@link decodeSession}, or a `getSnapshot(viewState.session)` you stored
+   * yourself. It only decides what opens at launch: `config.defaultSession` is
+   * left alone, so File → New session still returns to the app's own starting
+   * state rather than to whatever was restored.
+   */
+  session?: SessionSnapshot
   onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
   makeWorkerInstance?: () => Worker
-}) {
-  const { config, plugins = [], onChange, makeWorkerInstance } = opts
+}
+
+export default function createViewState(opts: CreateViewStateOptions) {
+  const { config, plugins = [], session, onChange, makeWorkerInstance } = opts
   const { defaultSession = { name: 'NewSession' } } = config
   const { model, pluginManager } = createModel({
     runtimePlugins: plugins,
@@ -21,13 +30,25 @@ export default function createViewState(opts: {
   const stateTree = model.create(
     {
       jbrowse: config,
-      session: defaultSession,
+      session: session ?? defaultSession,
     },
     { pluginManager },
   )
 
   pluginManager.setRootModel(stateTree)
   pluginManager.configure()
+
+  // A jbrowse-web config.json names its plugins in `config.plugins`, and that
+  // app fetches them itself. This one can't: fetching is async and this
+  // function is synchronous, so the host has to await loadPlugins and pass the
+  // result in. Silently opening a session whose plugins are all missing is the
+  // worst outcome — every track that needed one then fails on its own, far from
+  // the cause — so say it here instead.
+  if (config.plugins?.length && plugins.length === 0) {
+    console.warn(
+      `This config names ${config.plugins.length} plugin(s), which createViewState does not fetch. Load them yourself: const plugins = await loadPlugins(config.plugins); createViewState({ config, plugins })`,
+    )
+  }
 
   if (onChange) {
     onPatch(stateTree, onChange)

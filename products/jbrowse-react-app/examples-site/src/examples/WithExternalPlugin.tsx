@@ -6,8 +6,10 @@ import { JBrowseApp, createViewState, loadPlugins } from '@jbrowse/react-app2'
 type ViewState = ReturnType<typeof createViewState>
 
 // loadPlugins fetches plugins at runtime from a URL (here the UCSC plugin from
-// unpkg), so you don't have to bundle them. Pass the resulting classes to
-// createViewState the same way you would inline plugins.
+// unpkg), so you don't have to bundle them. Pass the records it returns to
+// createViewState unchanged — each one pairs the plugin class with the
+// definition it was loaded from, and that definition is what lets the RPC
+// worker load the same plugin on its side.
 export default function WithExternalPlugin() {
   const [viewState, setViewState] = useState<ViewState>()
   const [error, setError] = useState<unknown>()
@@ -58,7 +60,7 @@ export default function WithExternalPlugin() {
               ],
             },
           },
-          plugins: plugins.map(p => p.plugin),
+          plugins,
         })
         setViewState(state)
       } catch (e) {

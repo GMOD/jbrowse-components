@@ -14,5 +14,14 @@ export { createApp } from './createApp.ts'
 export type { CreateAppOptions, JBrowseAppController } from './createApp.ts'
 export { default as createModel } from './createModel.ts'
 export { default as createViewState } from './createViewState.ts'
+export type { CreateViewStateOptions } from './createViewState.ts'
+export { useCreateViewState } from './useCreateViewState.ts'
+// tear down an engine the host built and is discarding — React unmount alone
+// leaves its RPC workers and autoruns running
+export { destroyViewState } from './destroyViewState.ts'
 export { default as loadPlugins } from './loadPlugins.ts'
+// serialize the live session to a URL-safe string and back, for hosts that keep
+// app state in the address bar
+export { decodeSession, encodeSession } from './sessionUrl.ts'
 export type { ViewModel } from './createModel.ts'
+export type { Config, PluginInput, SessionSnapshot } from './types.ts'

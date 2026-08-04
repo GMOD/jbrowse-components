@@ -39,12 +39,14 @@ const tracks = [
   },
 ]
 
+// Supplying makeWorkerInstance is the whole switch: RPC then defaults to the
+// WebWorkerRpcDriver. (A config `rpc.defaultDriver` still overrides it, e.g. to
+// force everything back onto the main thread while debugging.)
 export default function WithWebWorker() {
   return (
     <JBrowse
       assemblies={assemblies}
       tracks={tracks}
-      configuration={{ rpc: { defaultDriver: 'WebWorkerRpcDriver' } }}
       makeWorkerInstance={() => new RpcWorker()}
       views={[
         {

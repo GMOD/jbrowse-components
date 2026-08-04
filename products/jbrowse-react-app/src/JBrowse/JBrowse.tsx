@@ -4,8 +4,7 @@ import JBrowseApp from '../JBrowseApp/index.ts'
 import { createViewStateFromProps } from '../createViewStateFromProps.ts'
 
 import type { ViewModel } from '../createModel.ts'
-import type { Config } from '../types.ts'
-import type { PluginConstructor } from '@jbrowse/core/Plugin'
+import type { Config, PluginInput, SessionSnapshot } from '../types.ts'
 import type { IJsonPatch } from '@jbrowse/mobx-state-tree'
 import type { Ref } from 'react'
 
@@ -22,11 +21,11 @@ export interface ManagedView {
 
 export interface JBrowseProps {
   assemblies: Config['assemblies']
-  tracks: Config['tracks']
+  tracks?: Config['tracks']
   internetAccounts?: Config['internetAccounts']
   aggregateTextSearchAdapters?: Config['aggregateTextSearchAdapters']
   configuration?: Config['configuration']
-  plugins?: PluginConstructor[]
+  plugins?: PluginInput[]
   makeWorkerInstance?: () => Worker
   onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
 
@@ -35,6 +34,12 @@ export interface JBrowseProps {
   // defaultSession.views, so the same shape round-trips through saved sessions
   views?: ManagedView[]
   sessionName?: string
+  // a previously serialized session to restore instead — from decodeSession(),
+  // or a getSnapshot(viewState.session) you stored yourself. Unlike `views`
+  // (a launch description) this carries full state: navigation, open tracks,
+  // per-display settings, widgets. `views` still describes what File → New
+  // session returns to.
+  session?: SessionSnapshot
   // ref to the live engine, for imperative control after launch
   // (session.addView, navToLocString, ...)
   ref?: Ref<ViewModel>
@@ -44,9 +49,10 @@ export interface JBrowseProps {
  * Uncontrolled, prop-driven wrapper around the `viewState`-based
  * {@link JBrowseApp}. Unlike the single-view products this is session-centric:
  * `views` lists the views to open at launch, each carrying its own view-type
- * `init` blob. Props are initial values; the engine is built once (remount via
- * React `key` to swap assemblies/plugins). For imperative control after launch
- * (session.addView, navToLocString, ...) take a `ref` to the live engine.
+ * `init` blob, or `session` restores a previously serialized one. Props are
+ * initial values; the engine is built once (remount via React `key` to swap
+ * assemblies/plugins). For imperative control after launch (session.addView,
+ * navToLocString, ...) take a `ref` to the live engine.
  */
 function JBrowse({ ref, ...opts }: JBrowseProps) {
   const [state] = useState(() => createViewStateFromProps(opts))
