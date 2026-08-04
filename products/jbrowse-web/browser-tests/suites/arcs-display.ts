@@ -144,9 +144,6 @@ const suite: TestSuite = {
         await delay(500)
 
         const collapseItem = await findByText(page, /Collapse introns/, 10000)
-        if (!collapseItem) {
-          throw new Error('"Collapse introns" not found in context menu')
-        }
         await collapseItem.click()
         await delay(300)
 

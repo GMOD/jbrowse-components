@@ -31,10 +31,10 @@ const suite: TestSuite = {
       fn: async page => {
         await navigateToApp(page)
         const zoomIn = await findByTestId(page, 'zoom_in', 10000)
-        await zoomIn?.click()
+        await zoomIn.click()
         await delay(500)
         const zoomOut = await findByTestId(page, 'zoom_out', 10000)
-        await zoomOut?.click()
+        await zoomOut.click()
       },
     },
     {
@@ -42,10 +42,10 @@ const suite: TestSuite = {
       fn: async page => {
         await navigateToApp(page)
         const helpButton = await findByText(page, 'Help', 10000)
-        await helpButton?.click()
+        await helpButton.click()
         await delay(300)
         const aboutMenuItem = await findByText(page, 'About', 10000)
-        await aboutMenuItem?.click()
+        await aboutMenuItem.click()
         await findByText(page, /The Evolutionary Software Foundation/i, 10000)
       },
     },

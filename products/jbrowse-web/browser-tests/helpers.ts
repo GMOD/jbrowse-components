@@ -26,60 +26,99 @@ export function appendGpuParam(url: string) {
   return `${url}${sep}renderer=${backend}`
 }
 
+// Both finders below RESOLVE TO A HANDLE OR THROW — never to null. That matters
+// because essentially every caller is `(await findByX(...)).click()`, and while
+// they returned `ElementHandle | null` those calls were written `?.click()`,
+// which turns "the thing I need isn't there" into a silent no-op: the test kept
+// going, asserted against a page nothing had been clicked on, and passed or
+// failed somewhere unrelated. `waitForSelector` only returns null for a
+// `hidden: true` wait, which neither of these does.
 export async function findByTestId(
   page: Page,
   testId: string,
   timeout = 30000,
-) {
-  return page.waitForSelector(`[data-testid="${testId}"]`, { timeout })
+): Promise<ElementHandle> {
+  const selector = `[data-testid="${testId}"]`
+  const handle = await page.waitForSelector(selector, { timeout })
+  if (!handle) {
+    throw new Error(`element not found: ${selector}`)
+  }
+  return handle
 }
+
+// Wait for the deepest element whose trimmed text matches, and hand back a
+// handle to it. The predicate crosses into the page, so it takes a regex as
+// source+flags rather than as a RegExp.
+async function waitForTextMatch(
+  page: Page,
+  source: string,
+  flags: string,
+  timeout: number,
+  describe: string,
+): Promise<ElementHandle> {
+  const handle = await page
+    .waitForFunction(
+      (src: string, f: string) => {
+        const re = new RegExp(src, f)
+        const walk = document.createTreeWalker(
+          document.body,
+          NodeFilter.SHOW_ELEMENT,
+        )
+        let match: Node | null = null
+        for (let node = walk.nextNode(); node; node = walk.nextNode()) {
+          if (re.test((node.textContent ?? '').trim())) {
+            match = node
+          }
+        }
+        return match
+      },
+      { timeout },
+      source,
+      flags,
+    )
+    .catch(() => {
+      throw new Error(`no element with text ${describe}`)
+    })
+  const el = handle.asElement()
+  if (!el) {
+    throw new Error(`no element with text ${describe}`)
+  }
+  return el as ElementHandle
+}
+
+const escapeRegExp = (s: string) => s.replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 export async function findByText(
   page: Page,
   text: string | RegExp,
   timeout = 30000,
-): Promise<ElementHandle | null> {
+): Promise<ElementHandle> {
   if (typeof text === 'string') {
     // ::-p-text() is unreliable in Firefox BiDi with per-browser restarts.
-    // Fall back to DOM-based text search if the Puppeteer selector fails.
+    // Fall back to the DOM walk if the Puppeteer selector fails. The fallback
+    // used to only wait for the text to EXIST and then return null, so from
+    // there on every caller's click silently did nothing.
     try {
       const handle = await page.waitForSelector(`::-p-text(${text})`, {
         timeout: Math.min(timeout, 3000),
       })
-      return handle
+      if (handle) {
+        return handle
+      }
     } catch {
-      await page.waitForFunction(
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        (t: string) => document.body?.textContent?.includes(t) ?? false,
-        { timeout },
-        text,
-      )
-      return null
+      // fall through to the DOM walk
     }
+    return waitForTextMatch(
+      page,
+      escapeRegExp(text),
+      '',
+      timeout,
+      JSON.stringify(text),
+    )
   }
   // ::-p-text() can't do regex — it matches the source string literally, so
-  // anchors (`^identity$`) and escapes never hit. Walk the DOM instead and
-  // return a handle to the deepest element whose trimmed text matches.
-  const handle = await page.waitForFunction(
-    (source: string, flags: string) => {
-      const re = new RegExp(source, flags)
-      const walk = document.createTreeWalker(
-        document.body,
-        NodeFilter.SHOW_ELEMENT,
-      )
-      let match: Node | null = null
-      for (let node = walk.nextNode(); node; node = walk.nextNode()) {
-        if (re.test((node.textContent ?? '').trim())) {
-          match = node
-        }
-      }
-      return match
-    },
-    { timeout },
-    text.source,
-    text.flags,
-  )
-  return handle.asElement() as ElementHandle | null
+  // anchors (`^identity$`) and escapes never hit.
+  return waitForTextMatch(page, text.source, text.flags, timeout, String(text))
 }
 
 export async function waitForLoadingToComplete(page: Page, timeout = 30000) {
@@ -146,7 +185,7 @@ export async function navigateWithSessionSpec(
 export async function zoomOut(page: Page, times = 1) {
   const button = await findByTestId(page, 'zoom_out', 10000)
   for (let i = 0; i < times; i++) {
-    await button?.click()
+    await button.click()
   }
   await delay(2000)
   await waitForDataLoaded(page, 90000)
@@ -158,7 +197,7 @@ export async function openTrack(page: Page, trackId: string) {
     `htsTrackLabel-Tracks,${trackId}`,
     10000,
   )
-  await trackLabel?.click()
+  await trackLabel.click()
 }
 
 export async function waitForDisplay(
@@ -282,10 +321,14 @@ export async function handleOAuthLogin(browser: Browser) {
   if (!popup) {
     throw new Error('Could not get OAuth popup page')
   }
-  await popup.waitForSelector('input[type="submit"]', { timeout: 10000 })
+  const submitBtn = await popup.waitForSelector('input[type="submit"]', {
+    timeout: 10000,
+  })
+  if (!submitBtn) {
+    throw new Error('OAuth submit button not found')
+  }
   await delay(500)
-  const submitBtn = await popup.$('input[type="submit"]')
-  await submitBtn?.click()
+  await submitBtn.click()
   await delay(2000)
 }
 
@@ -294,10 +337,8 @@ export async function handleBasicAuthLogin(
   username = 'admin',
   password = 'password',
 ) {
-  const dialog = await findByTestId(page, 'login-httpbasic', 10000)
-  if (!dialog) {
-    throw new Error('BasicAuth login dialog not found')
-  }
+  // throws by itself if the dialog never appears
+  await findByTestId(page, 'login-httpbasic', 10000)
 
   const usernameInput = await findByTestId(
     page,
@@ -309,11 +350,11 @@ export async function handleBasicAuthLogin(
     'login-httpbasic-password',
     10000,
   )
-  await usernameInput?.type(username)
-  await passwordInput?.type(password)
+  await usernameInput.type(username)
+  await passwordInput.type(password)
 
   const submitBtn = await findByText(page, 'Submit', 10000)
-  await submitBtn?.click()
+  await submitBtn.click()
   await delay(500)
 }
 
@@ -334,13 +375,13 @@ export async function waitForWorkspacesReady(page: Page) {
 
 export async function copyView(page: Page) {
   const viewMenu = await findByTestId(page, 'view_menu_icon', 10000)
-  await viewMenu?.click()
+  await viewMenu.click()
   await delay(300)
   const viewOptions = await findByText(page, 'View options', 10000)
-  await viewOptions?.click()
+  await viewOptions.click()
   await delay(300)
   const copyViewBtn = await findByText(page, 'Copy view', 10000)
-  await copyViewBtn?.click()
+  await copyViewBtn.click()
   await delay(1000)
 }
 
@@ -353,10 +394,10 @@ export async function clickViewMenuOption(
   await viewMenus[viewIndex]?.click()
   await delay(300)
   const viewOptions = await findByText(page, 'View options', 10000)
-  await viewOptions?.click()
+  await viewOptions.click()
   await delay(300)
   const option = await findByText(page, optionText, 10000)
-  await option?.click()
+  await option.click()
 }
 
 export async function setupWorkspacesViaMoveToTab(page: Page) {

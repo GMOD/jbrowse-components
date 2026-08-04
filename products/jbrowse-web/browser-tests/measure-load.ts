@@ -5,6 +5,7 @@ import {
 } from '@jbrowse/browser-test-utils'
 import { launch } from 'puppeteer'
 
+import { collectWireRequests, summarizeWire } from './cdpNetwork.ts'
 import { startServer } from './server.ts'
 
 const PORT = 3345
@@ -17,35 +18,21 @@ async function measure(
   waitSelector: string,
 ) {
   const browser = await launch({ headless: true, args: BASE_CHROME_ARGS })
-  const page = await browser.newPage()
-  const client = await page.createCDPSession()
-  await client.send('Network.enable')
+  try {
+    const page = await browser.newPage()
+    const requests = await collectWireRequests(page)
 
-  const urlByReq = new Map<string, string>()
-  let jsBytes = 0
-  let jsCount = 0
-  let allBytes = 0
-  client.on('Network.responseReceived', (e: any) => {
-    urlByReq.set(e.requestId, e.response.url)
-  })
-  client.on('Network.loadingFinished', (e: any) => {
-    const url = urlByReq.get(e.requestId) || ''
-    allBytes += e.encodedDataLength || 0
-    if (url.endsWith('.js') || url.includes('.js?')) {
-      jsBytes += e.encodedDataLength || 0
-      jsCount++
-    }
-  })
+    await page.goto(`http://localhost:${PORT}/?${buildUrlSuffix}`, {
+      waitUntil: 'networkidle0',
+      timeout: 60000,
+    })
+    await page.waitForSelector(waitSelector, { timeout: 45000 }).catch(() => {})
+    await new Promise(r => setTimeout(r, 1000))
 
-  await page.goto(`http://localhost:${PORT}/?${buildUrlSuffix}`, {
-    waitUntil: 'networkidle0',
-    timeout: 60000,
-  })
-  await page.waitForSelector(waitSelector, { timeout: 45000 }).catch(() => {})
-  await new Promise(r => setTimeout(r, 1000))
-
-  await browser.close()
-  return { label, jsBytes, jsCount, allBytes }
+    return { label, ...summarizeWire(requests) }
+  } finally {
+    await browser.close()
+  }
 }
 
 async function main() {

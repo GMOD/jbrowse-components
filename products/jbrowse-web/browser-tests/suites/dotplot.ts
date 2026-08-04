@@ -14,7 +14,7 @@ async function openPaletteMenu(page: Page) {
   const alreadyOpen = await page.$('[role="menu"]')
   if (!alreadyOpen) {
     const btn = await findByTestId(page, 'color_by_menu', 20000)
-    await btn!.click()
+    await btn.click()
     await page.waitForSelector('[role="menu"]', { timeout: 10000 })
   }
 }
@@ -129,7 +129,7 @@ const suite: TestSuite = {
         await dotplot!.click()
 
         const axes = await findByTestId(page, 'quick-start-axes', 30000)
-        const before = await axes!.evaluate(e => e.textContent)
+        const before = await axes.evaluate(e => e.textContent)
 
         const swap = await page.waitForSelector('::-p-text(Swap)')
         await swap!.click()

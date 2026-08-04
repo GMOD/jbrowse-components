@@ -21,7 +21,7 @@ const quickStartTest: TestCase = {
       'config=test_data%2Fvolvox%2Fconfig_synteny_snp.json',
     )
     const rows = await findByTestId(page, 'quick-start-rows', 30000)
-    const text = await rows!.evaluate(e => e.textContent)
+    const text = await rows.evaluate(e => e.textContent)
     if (!text.includes('volvox_snp') || !text.includes('volvox')) {
       throw new Error(`quick start rows not derived from track: ${text}`)
     }
@@ -45,7 +45,7 @@ const quickStartHandoffTest: TestCase = {
     const manual = await page.waitForSelector('::-p-text(Manual)')
     await manual!.click()
     const rows = await findByTestId(page, 'synteny-assembly-rows', 10000)
-    const values = await rows!.$$eval('.MuiSelect-select', els =>
+    const values = await rows.$$eval('.MuiSelect-select', els =>
       els.map(e => e.textContent),
     )
     if (!values.includes('volvox_snp') || !values.includes('volvox')) {
@@ -121,7 +121,7 @@ const identityLegendTest: TestCase = {
 
     // dismiss it and confirm it is removed
     const close = await findByTestId(page, 'color-by-legend-close', 10000)
-    await close!.click()
+    await close.click()
     await page.waitForFunction(
       () =>
         document.querySelectorAll('[data-testid="color-by-legend"]').length ===

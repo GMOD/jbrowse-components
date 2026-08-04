@@ -4,6 +4,7 @@
 // skill to confirm autoDiagonalize / colorBy=query / minAlignmentLength wiring
 // is hit on first load.
 import http from 'http'
+import os from 'os'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -16,7 +17,7 @@ const BUILD = path.join(REPO, 'products/jbrowse-web/build')
 const PORT = 3399
 
 function startServer() {
-  return new Promise(resolve => {
+  return new Promise((resolve, reject) => {
     const server = http.createServer((req, res) => {
       const url = req.url || '/'
       const publicPath =
@@ -33,6 +34,9 @@ function startServer() {
         ],
       })
     })
+    // without this the promise never settles when the port is taken (another
+    // agent's run, a stale server), and the script hangs with no output
+    server.on('error', reject)
     server.listen(PORT, () => {
       resolve(server)
     })
@@ -43,7 +47,7 @@ async function main() {
   const server = await startServer()
   console.log(`server on http://localhost:${PORT}`)
   const browser = await launch({
-    headless: 'new',
+    headless: true,
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
     defaultViewport: { width: 1920, height: 1080 },
   })
@@ -102,7 +106,9 @@ async function main() {
     return out
   })
 
-  const outPng = path.join(REPO, 'verify-hs1-mm39.png')
+  // tmpdir, not the repo root: this is a scratch capture, and an untracked PNG
+  // sitting next to package.json gets swept into somebody's `git add`
+  const outPng = path.join(os.tmpdir(), 'verify-hs1-mm39.png')
   await page.screenshot({ path: outPng, fullPage: false })
   console.log(`screenshot ${outPng}`)
   console.log(`found ${chromLabels.length} chrom labels`)

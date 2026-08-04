@@ -30,19 +30,19 @@ const suite: TestSuite = {
         await waitForDataLoaded(page)
 
         const menuIcon = await findByTestId(page, 'track_menu_icon', 10000)
-        await menuIcon?.click()
+        await menuIcon.click()
         await delay(300)
 
         // renamed from "Color" in 569af0a120; findByText is case-sensitive
         const colorItem = await findByText(page, 'Edit color...', 10000)
-        await colorItem?.click()
+        await colorItem.click()
         await delay(500)
 
         // the dialog shows compact swatches; the hex field lives in the
         // popover each swatch opens (default mode is bicolor, so this is the
         // positive color)
         const swatch = await findByTestId(page, 'wiggle-pos-color', 10000)
-        await swatch?.click()
+        await swatch.click()
         await delay(300)
 
         const colorInput = await page.waitForSelector(

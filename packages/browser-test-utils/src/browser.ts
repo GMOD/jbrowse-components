@@ -1,11 +1,17 @@
 import fs from 'node:fs'
 
+// Just the sandbox flags, for the scripts that MEASURE cross-origin behaviour
+// (COOP/COEP isolation, cancelled cross-origin fetches) and would be measuring
+// nothing with web security off. They used to spell this
+// `BASE_CHROME_ARGS.filter(a => a !== '--disable-web-security')`, which silently
+// stops subtracting the day another security flag is added below.
+export const SANDBOX_CHROME_ARGS = ['--no-sandbox', '--disable-setuid-sandbox']
+
 // Chrome flags both harnesses launch with. Backend-specific flags
 // (--disable-gpu, --enable-unsafe-swiftshader, --disable-popup-blocking) are
 // appended by each caller.
 export const BASE_CHROME_ARGS = [
-  '--no-sandbox',
-  '--disable-setuid-sandbox',
+  ...SANDBOX_CHROME_ARGS,
   '--disable-web-security',
 ]
 

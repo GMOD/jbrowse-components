@@ -8,6 +8,7 @@ import { gzipSync } from 'node:zlib'
 import { BASE_CHROME_ARGS } from '@jbrowse/browser-test-utils'
 import { launch } from 'puppeteer'
 
+import { collectWireRequests, isJsOrCssUrl } from './cdpNetwork.ts'
 import { buildPath, startServer } from './server.ts'
 
 const MARKERS: Record<string, string> = {
@@ -26,19 +27,7 @@ async function main() {
   const server = await startServer(PORT)
   const browser = await launch({ headless: true, args: BASE_CHROME_ARGS })
   const page = await browser.newPage()
-  const client = await page.createCDPSession()
-  await client.send('Network.enable')
-  const urlByReq = new Map<string, string>()
-  const files = new Set<string>()
-  client.on('Network.responseReceived', (e: any) => {
-    urlByReq.set(e.requestId, e.response.url)
-  })
-  client.on('Network.loadingFinished', (e: any) => {
-    const url = urlByReq.get(e.requestId) ?? ''
-    if (/\.(js|css)(\?|$)/.test(url) && url.includes('/static/')) {
-      files.add(url.split('/static/')[1]!.split('?')[0]!)
-    }
-  })
+  const requests = await collectWireRequests(page)
   await page.goto(
     `http://localhost:${PORT}/?config=test_data/volvox/config.json&renderer=canvas2d`,
     { waitUntil: 'networkidle0', timeout: 90000 },
@@ -47,6 +36,12 @@ async function main() {
   await new Promise(r => setTimeout(r, 1500))
   await browser.close()
   server.close()
+
+  const files = new Set(
+    requests
+      .filter(r => isJsOrCssUrl(r.url) && r.url.includes('/static/'))
+      .map(r => r.url.split('/static/')[1]!.split('?')[0]!),
+  )
 
   let rawTotal = 0
   let gzTotal = 0

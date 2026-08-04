@@ -22,14 +22,14 @@ const suite: TestSuite = {
         await navigateToApp(page)
 
         const toolsMenu = await findByText(page, 'Tools', 10000)
-        await toolsMenu?.click()
+        await toolsMenu.click()
         await delay(300)
         const useWorkspacesCheckbox = await findByText(
           page,
           'Use workspaces',
           10000,
         )
-        await useWorkspacesCheckbox?.click()
+        await useWorkspacesCheckbox.click()
         await delay(500)
 
         const searchInputsBefore = await page.$$(
@@ -38,14 +38,14 @@ const suite: TestSuite = {
         const viewCountBefore = searchInputsBefore.length
 
         const addMenu = await findByText(page, 'Add', 10000)
-        await addMenu?.click()
+        await addMenu.click()
         await delay(300)
         const linearGenomeViewOption = await findByText(
           page,
           'Linear genome view',
           10000,
         )
-        await linearGenomeViewOption?.click()
+        await linearGenomeViewOption.click()
 
         const timeout = 10000
         const start = Date.now()

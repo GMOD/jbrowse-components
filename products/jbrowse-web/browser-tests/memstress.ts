@@ -11,20 +11,23 @@
 // growth across rounds = a real leak; transient garbage is collected away.
 //
 // Env: HEADLESS=0 to watch, ROUNDS=n, SEED=n for a reproducible action stream.
+import { encodeSessionSpec } from '@jbrowse/browser-test-utils'
+
 import {
-  BASE_CHROME_ARGS,
-  createTestServer,
-  encodeSessionSpec,
-} from '@jbrowse/browser-test-utils'
-import puppeteer from 'puppeteer'
+  forceGc,
+  heapUsageOrZero,
+  launchProfilingBrowser,
+  mb,
+  setupWorkerTracking,
+  sleep,
+  sumHeapUsage,
+} from './memHelpers.ts'
+import { startServer } from './server.ts'
 
-import type { CDPSession, Page } from 'puppeteer'
+import type { Page } from 'puppeteer'
 
-const repoRoot = '/home/cdiesh/src/jbrowse-components2'
-const jbrowseWebRoot = `${repoRoot}/products/jbrowse-web`
 const PORT = 3402
 const ROUNDS = Number(process.env.ROUNDS || process.argv[2] || 20)
-const mb = (n: number) => `${(n / 1024 / 1024).toFixed(1)} MB`
 
 // deterministic PRNG (mulberry32) so a SEED reproduces the action stream
 let seedState = Number(process.env.SEED || 0x9e3779b9) >>> 0
@@ -59,15 +62,9 @@ function randomLoc() {
   return `${ctg}:${start}-${start + width}`
 }
 
-async function heapUsage(s: CDPSession) {
-  await s.send('Runtime.enable')
-  return s.send('Runtime.getHeapUsage').catch(() => ({ usedSize: 0 }))
-}
-async function forceGc(s: CDPSession) {
-  await s.send('HeapProfiler.enable').catch(() => {})
-  await s.send('HeapProfiler.collectGarbage').catch(() => {})
-}
-
+// Unlike the other profilers here this waits only on the overlay clearing: the
+// stress loop hides tracks as often as it shows them, and a round that closed
+// the last display would never see a `*-done` element at all.
 async function waitRender(page: Page) {
   await page
     .waitForFunction(
@@ -77,33 +74,6 @@ async function waitRender(page: Page) {
       { timeout: 30000, polling: 200 },
     )
     .catch(() => {})
-}
-
-async function setupWorkerTracking(page: Page) {
-  const workers = new Map<string, CDPSession>()
-  const client = await page.createCDPSession()
-  await client.send('Target.setAutoAttach', {
-    autoAttach: true,
-    waitForDebuggerOnStart: false,
-    flatten: true,
-  })
-  client.on('Target.attachedToTarget', (e: any) => {
-    const { targetInfo, sessionId } = e
-    if (targetInfo.type === 'worker' || targetInfo.type === 'shared_worker') {
-      const s = (client as any).connection()?.session(sessionId)
-      if (s) {
-        workers.set(targetInfo.targetId, s)
-      }
-    }
-  })
-  client.on('Target.detachedFromTarget', (e: any) => {
-    for (const [id] of workers) {
-      if (id === e.targetId) {
-        workers.delete(id)
-      }
-    }
-  })
-  return workers
 }
 
 // Simulate leaving the tab and coming back. Fires the real lifecycle events
@@ -139,26 +109,43 @@ async function visibilityTransition(
 
 async function tabLeave(page: Page) {
   await visibilityTransition(page, true, 'pagehide') // disposes GPU backends
-  await new Promise(r => setTimeout(r, 500))
+  await sleep(500)
   // pageshow bumps contextVersion → GPU backend re-init; visible → restore render
   await visibilityTransition(page, false, 'pageshow')
-  await new Promise(r => setTimeout(r, 500))
+  await sleep(500)
 }
 
-// Perform one randomized action against the live view model.
+// The live view model, as the stress loop drives it. Duck-typed rather than
+// imported: this runs inside the page against the model jbrowse-web exposes on
+// `window`, so there is no MST type to reach for from here.
+interface StressView {
+  tracks: { configuration: { trackId: string } }[]
+  bpPerPx: number
+  offsetPx: number
+  hideTrack: (trackId: string) => void
+  showTrack: (trackId: string) => void
+  navToLocString: (loc: string) => void
+  zoomTo: (bpPerPx: number) => void
+  scrollTo: (offsetPx: number) => void
+}
+
+// Perform one randomized action against the live view model. Every random draw
+// is made HERE, from the seeded PRNG, and passed in — the sub-decisions (zoom
+// direction, scroll direction) used to call the page's own `Math.random()`,
+// which meant a run was never reproducible from its SEED the way the header
+// promises.
 async function act(page: Page) {
   const track = pick(TRACKS)
   const loc = randomLoc()
   return page.evaluate(
-    (trackId, locStr, r) => {
-      const s = (window as any).JBrowseSession
-      const view = s?.views?.[0]
+    (trackId, locStr, r, zoomIn, scrollLeft) => {
+      const view = (
+        window as unknown as { JBrowseSession?: { views?: StressView[] } }
+      ).JBrowseSession?.views?.[0]
       if (!view) {
         return 'noview'
       }
-      const shown = new Set(
-        view.tracks.map((t: any) => t.configuration.trackId),
-      )
+      const shown = new Set(view.tracks.map(t => t.configuration.trackId))
       if (r < 0.4) {
         // toggle a track on/off (display create/destroy lifecycle)
         if (shown.has(trackId)) {
@@ -172,36 +159,25 @@ async function act(page: Page) {
         return `nav ${locStr}`
       } else if (r < 0.85) {
         // zoom in/out about the center
-        const factor = Math.random() < 0.5 ? 0.5 : 2
+        const factor = zoomIn ? 0.5 : 2
         view.zoomTo(view.bpPerPx * factor)
         return `zoom x${factor}`
       } else {
         // horizontal scroll
-        view.scrollTo(view.offsetPx + (Math.random() < 0.5 ? -400 : 400))
+        view.scrollTo(view.offsetPx + (scrollLeft ? -400 : 400))
         return `scroll`
       }
     },
     track,
     loc,
     rand(),
+    rand() < 0.5,
+    rand() < 0.5,
   )
 }
 
-const server = await createTestServer(PORT, { jbrowseWebRoot, repoRoot })
-const browser = await puppeteer.launch({
-  headless: process.env.HEADLESS !== '0',
-  protocolTimeout: 600000,
-  args: [
-    ...BASE_CHROME_ARGS,
-    '--ignore-gpu-blocklist',
-    '--use-angle=gl',
-    '--use-gl=angle',
-    '--window-size=1400,900',
-    '--js-flags=--expose-gc',
-  ],
-})
-const page = await browser.newPage()
-await page.setViewport({ width: 1400, height: 800 })
+const server = await startServer(PORT)
+const { browser, page } = await launchProfilingBrowser()
 const workers = await setupWorkerTracking(page)
 const main = await page.createCDPSession()
 
@@ -230,23 +206,24 @@ const url = `http://localhost:${PORT}/?config=test_data/volvox/config.json&sessi
 console.log(`stress: ${ROUNDS} rounds, seed=${seedState}`)
 await page.goto(url, { waitUntil: 'load', timeout: 120000 })
 await waitRender(page)
-await new Promise(r => setTimeout(r, 2000))
+await sleep(2000)
 
 async function floor(label: string) {
   await forceGc(main)
-  for (const [, s] of workers) {
-    await forceGc(s)
+  for (const session of workers.values()) {
+    await forceGc(session)
   }
-  await new Promise(r => setTimeout(r, 700))
-  const m = await heapUsage(main)
-  let w = 0
-  for (const [, s] of workers) {
-    w += (await heapUsage(s)).usedSize
-  }
+  await sleep(700)
+  const m = await heapUsageOrZero(main)
+  const w = (await sumHeapUsage(workers.values())).used
   const met = await page.metrics()
   const { openTracks, canvases } = await page
     .evaluate(() => ({
-      openTracks: (window as any).JBrowseSession?.views?.[0]?.tracks?.length,
+      openTracks: (
+        window as unknown as {
+          JBrowseSession?: { views?: { tracks?: unknown[] }[] }
+        }
+      ).JBrowseSession?.views?.[0]?.tracks?.length,
       canvases: document.querySelectorAll('canvas').length,
     }))
     .catch(() => ({ openTracks: -1, canvases: -1 }))
@@ -265,7 +242,7 @@ for (let round = 1; round <= ROUNDS; round++) {
   const actionsPerRound = randint(4, 9)
   for (let i = 0; i < actionsPerRound; i++) {
     await act(page)
-    await new Promise(r => setTimeout(r, randint(150, 450)))
+    await sleep(randint(150, 450))
     await waitRender(page)
   }
   // every 3rd round, leave the tab and come back (GPU dispose → re-init cycle)

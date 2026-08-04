@@ -10,20 +10,26 @@
 //     growth across rounds = a real leak (transient garbage is collected away).
 //
 // Scenarios (leak mode): 'nav-local', 'nav-demo', 'view-churn'.
+import { encodeSessionSpec } from '@jbrowse/browser-test-utils'
+
 import {
-  BASE_CHROME_ARGS,
-  createTestServer,
-  encodeSessionSpec,
-} from '@jbrowse/browser-test-utils'
-import puppeteer from 'puppeteer'
+  forceGc,
+  heapUsage,
+  launchProfilingBrowser,
+  mb,
+  navTo,
+  setupWorkerTracking,
+  sleep,
+  sumHeapUsage,
+  takeHeapSnapshot,
+  waitRender,
+} from './memHelpers.ts'
+import { startServer } from './server.ts'
 
 import type { CDPSession, Page } from 'puppeteer'
 
-const repoRoot = '/home/cdiesh/src/jbrowse-components'
-const jbrowseWebRoot = `${repoRoot}/products/jbrowse-web`
 const PORT = 3399
 const mode = process.argv[2] || 'snapshot'
-const mb = (n: number) => `${(n / 1024 / 1024).toFixed(1)} MB`
 
 // ---- heap snapshot aggregation -------------------------------------------
 function aggregateSnapshot(json: string) {
@@ -110,101 +116,16 @@ function topRetainers(json: string, topN = 15) {
   }
 }
 
-async function takeSnapshot(session: CDPSession) {
-  let buf = ''
-  const onChunk = (e: { chunk: string }) => {
-    buf += e.chunk
-  }
-  session.on('HeapProfiler.addHeapSnapshotChunk', onChunk)
-  await session.send('HeapProfiler.enable')
-  if (process.env.NOGC !== '1') {
-    await session.send('HeapProfiler.collectGarbage')
-  }
-  await session.send('HeapProfiler.takeHeapSnapshot', { reportProgress: false })
-  session.off('HeapProfiler.addHeapSnapshotChunk', onChunk)
-  return buf
+// NOGC=1 skips the pre-snapshot collection, to see what a snapshot looks like
+// before GC rather than after.
+function takeSnapshot(session: CDPSession) {
+  return takeHeapSnapshot(session, process.env.NOGC !== '1')
 }
 
-async function heapUsage(session: CDPSession) {
-  await session.send('Runtime.enable')
-  return session.send('Runtime.getHeapUsage')
-}
-
-async function forceGc(session: CDPSession) {
-  await session.send('HeapProfiler.enable').catch(() => {})
-  await session.send('HeapProfiler.collectGarbage').catch(() => {})
-}
-
-// ---- worker auto-attach ---------------------------------------------------
-async function setupWorkerTracking(page: Page) {
-  const workerSessions = new Map<string, CDPSession>()
-  const client = await page.createCDPSession()
-  await client.send('Target.setAutoAttach', {
-    autoAttach: true,
-    waitForDebuggerOnStart: false,
-    flatten: true,
-  })
-  client.on('Target.attachedToTarget', (e: any) => {
-    const { targetInfo, sessionId } = e
-    if (targetInfo.type === 'worker' || targetInfo.type === 'shared_worker') {
-      const conn = (client as any).connection()
-      const s = conn?.session(sessionId)
-      if (s) {
-        workerSessions.set(targetInfo.targetId, s)
-      }
-    }
-  })
-  return workerSessions
-}
-
-async function launch() {
-  const browser = await puppeteer.launch({
-    headless: process.env.HEADLESS !== '0',
-    protocolTimeout: 600000,
-    args: [
-      ...BASE_CHROME_ARGS,
-      '--ignore-gpu-blocklist',
-      '--enable-features=Vulkan',
-      '--use-angle=gl',
-      '--use-gl=angle',
-      '--window-size=1400,900',
-      '--js-flags=--expose-gc',
-    ],
-  })
-  const page = await browser.newPage()
-  await page.setViewport({ width: 1400, height: 800 })
-  return { browser, page }
-}
-
-async function waitRender(page: Page) {
-  await page
-    .waitForFunction(
-      () =>
-        document.querySelectorAll(
-          '[data-testid$="-done"],[data-testid$="_done"]',
-        ).length > 0 &&
-        document.querySelectorAll('[data-testid="loading-overlay"]').length ===
-          0,
-      { timeout: 60000, polling: 200 },
-    )
-    .catch(() => {})
-}
-
-async function navTo(page: Page, loc: string) {
-  const input = 'input[placeholder="Search for location"]'
-  await page.waitForSelector(input, { timeout: 20000 })
-  await page.focus(input)
-  await page.$eval(input, el => {
-    el.value = ''
-  })
-  await page.keyboard.down('Control')
-  await page.keyboard.press('KeyA')
-  await page.keyboard.up('Control')
-  await page.keyboard.press('Backspace')
-  await page.type(input, loc)
-  await page.keyboard.press('Enter')
-  await new Promise(r => setTimeout(r, 300))
-  await waitRender(page)
+// Vulkan on top of the shared profiling flags: this is the profiler that reads
+// GPU-adjacent allocations, so it wants the same backend the app ships with.
+function launch() {
+  return launchProfilingBrowser(['--enable-features=Vulkan'])
 }
 
 async function clickMenuItemByText(page: Page, text: string) {
@@ -231,7 +152,7 @@ async function toggleTrackByName(page: Page, name: string) {
     }
     return false
   }, name)
-  await new Promise(r => setTimeout(r, 600))
+  await sleep(600)
   await waitRender(page)
   return changed
 }
@@ -239,7 +160,7 @@ async function toggleTrackByName(page: Page, name: string) {
 // ---- leak scenarios -------------------------------------------------------
 async function runLeak() {
   const scenario = process.argv[3] || 'nav-local'
-  const server = await createTestServer(PORT, { jbrowseWebRoot, repoRoot })
+  const server = await startServer(PORT)
   const { browser, page } = await launch()
   const workerSessions = await setupWorkerTracking(page)
   const main = await page.createCDPSession()
@@ -277,19 +198,16 @@ async function runLeak() {
   console.log(`scenario=${scenario} config=${cfg.config}`)
   await page.goto(url, { waitUntil: 'load', timeout: 120000 })
   await waitRender(page)
-  await new Promise(r => setTimeout(r, 2000))
+  await sleep(2000)
 
   const floor = async (label: string) => {
     await forceGc(main)
-    for (const [, s] of workerSessions) {
-      await forceGc(s)
+    for (const session of workerSessions.values()) {
+      await forceGc(session)
     }
-    await new Promise(r => setTimeout(r, 800))
+    await sleep(800)
     const m = await heapUsage(main)
-    let w = 0
-    for (const [, s] of workerSessions) {
-      w += (await heapUsage(s).catch(() => ({ usedSize: 0 }))).usedSize
-    }
+    const w = (await sumHeapUsage(workerSessions.values())).used
     const met = await page.metrics()
     console.log(
       `  ${label.padEnd(9)} main ${mb(m.usedSize).padStart(9)}  worker ${mb(w).padStart(9)}  ` +
@@ -301,9 +219,9 @@ async function runLeak() {
   if (scenario === 'view-churn') {
     // open the track selector once; rounds toggle the track off then on
     await page.click('[data-testid="view_menu_icon"]').catch(() => {})
-    await new Promise(r => setTimeout(r, 400))
+    await sleep(400)
     await clickMenuItemByText(page, 'Open track selector')
-    await new Promise(r => setTimeout(r, 1000))
+    await sleep(1000)
     // filter to reveal the track (categories are collapsed by default)
     const filter = await page.evaluate(name => {
       const inp = [...document.querySelectorAll('input')].find(
@@ -325,7 +243,7 @@ async function runLeak() {
       return false
     }, cfg.tracks[0]!)
     console.log(`  filter input ${filter ? 'set' : 'NOT FOUND'}`)
-    await new Promise(r => setTimeout(r, 1500))
+    await sleep(1500)
   }
 
   console.log('\n=== post-GC floor per round (rising floor / nodes = leak) ===')
@@ -333,7 +251,7 @@ async function runLeak() {
   for (let round = 1; round <= 6; round++) {
     if (scenario === 'view-churn') {
       const off = await toggleTrackByName(page, cfg.tracks[0]!) // destroy display
-      await new Promise(r => setTimeout(r, 500))
+      await sleep(500)
       await toggleTrackByName(page, cfg.tracks[0]!) // recreate display
       if (!off) {
         console.log('  (warn: track checkbox not found)')
@@ -341,7 +259,7 @@ async function runLeak() {
     } else {
       for (const loc of cfg.loci) {
         await navTo(page, loc)
-        await new Promise(r => setTimeout(r, 400))
+        await sleep(400)
       }
     }
     await floor(`round ${round}`)
@@ -362,7 +280,7 @@ async function runSnapshot() {
     'Deep sequencing'
   ).split(',')
   const renderer = process.env.RENDERER || process.argv[5] || 'webgl'
-  const server = await createTestServer(PORT, { jbrowseWebRoot, repoRoot })
+  const server = await startServer(PORT)
   const { browser, page } = await launch()
   const workerSessions = await setupWorkerTracking(page)
 
@@ -375,7 +293,7 @@ async function runSnapshot() {
   )
   await page.goto(url, { waitUntil: 'load', timeout: 120000 })
   await waitRender(page)
-  await new Promise(r => setTimeout(r, Number(process.env.SETTLE ?? 3000)))
+  await sleep(Number(process.env.SETTLE ?? 3000))
 
   const main = await page.createCDPSession()
   console.log('\n=== JS heap usage per target ===')

@@ -275,16 +275,13 @@ async function setupPage(browser: Browser, getElapsed: () => string) {
 
   page.on('console', msg => {
     const text = msg.text()
-    if (
-      text.includes('favicon') ||
-      text.includes('GPU stall due to ReadPixels')
-    ) {
-      return
-    }
     const type = msg.type()
     if (quiet && type !== 'error') {
       return
     }
+    // isBrowserConsoleNoise already covers favicon + GPU-stall chatter; a second
+    // copy of those needles ahead of this check made `--debug` unable to
+    // unsuppress them, which is the one thing the flag is for.
     if (!debug && isBrowserConsoleNoise(text)) {
       return
     }

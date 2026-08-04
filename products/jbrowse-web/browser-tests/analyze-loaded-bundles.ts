@@ -9,6 +9,7 @@ import {
 } from '@jbrowse/browser-test-utils'
 import { launch } from 'puppeteer'
 
+import { collectWireRequests, isJsUrl, urlBasename } from './cdpNetwork.ts'
 import { buildPath, startServer } from './server.ts'
 
 // Attribute bundle bytes to source modules for ONE page load. Everything in
@@ -114,21 +115,7 @@ async function collectLoadedFiles(port: number, scenario: string) {
     ],
   })
   const page = await browser.newPage()
-  const client = await page.createCDPSession()
-  await client.send('Network.enable')
-
-  const urlByReq = new Map<string, string>()
-  const wire = new Map<string, number>()
-  client.on('Network.responseReceived', (e: any) => {
-    urlByReq.set(e.requestId, e.response.url)
-  })
-  client.on('Network.loadingFinished', (e: any) => {
-    const url = urlByReq.get(e.requestId)
-    if (url?.includes('.js')) {
-      const file = url.split('/').pop()!.split('?')[0]!
-      wire.set(file, (wire.get(file) ?? 0) + (e.encodedDataLength ?? 0))
-    }
-  })
+  const requests = await collectWireRequests(page)
 
   await page.goto(`http://localhost:${port}/?${s.query}`, {
     waitUntil: 'networkidle0',
@@ -137,6 +124,17 @@ async function collectLoadedFiles(port: number, scenario: string) {
   await page.waitForSelector(s.waitSelector, { timeout: 60000 }).catch(() => {})
   await new Promise(r => setTimeout(r, 1500))
   await browser.close()
+
+  // Bytes per chunk file. `isJsUrl` rather than `url.includes('.js')`, which
+  // also matched every `.json` config and `.js.map` the page pulled and listed
+  // them back out under "non-chunk requests ignored".
+  const wire = new Map<string, number>()
+  for (const r of requests) {
+    if (isJsUrl(r.url)) {
+      const file = urlBasename(r.url)
+      wire.set(file, (wire.get(file) ?? 0) + r.bytes)
+    }
+  }
   return wire
 }
 

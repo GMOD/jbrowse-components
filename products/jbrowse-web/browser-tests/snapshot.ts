@@ -120,9 +120,24 @@ function compareImages(
 // window and never scrolls the page, so the two captures are equivalent — every
 // full-page golden is exactly the 1280x800 viewport. A test that needs more room
 // should size the viewport (`page.setViewport`), not reach back for `fullPage`.
-export async function capturePageSnapshot(page: Page, name: string) {
+// The no-extra-waits variant of pageSnapshot, for a frame whose subject is
+// transient UI the caller already has on screen (an open context menu): the
+// loading/morph waits would be waiting on something that finished long ago.
+//
+// Like every other snapshot helper here it THROWS on a mismatch. It used to
+// return the comparison result instead, and its one caller ignored it — so the
+// gwas-locuszoom context-menu golden was read and compared on every run and its
+// verdict discarded, i.e. that figure had no assertion behind it at all.
+export async function capturePageSnapshot(
+  page: Page,
+  name: string,
+  threshold = 0.1,
+) {
   const screenshot = await page.screenshot()
-  return compareImages(name, screenshot)
+  const result = compareImages(name, screenshot, threshold)
+  if (!result.passed) {
+    throw new Error(result.message)
+  }
 }
 
 // LoadingOverlay always keeps the literal text "Loading" in the DOM (hidden via

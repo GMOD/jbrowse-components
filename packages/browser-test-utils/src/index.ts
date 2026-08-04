@@ -22,6 +22,7 @@ export {
 } from './waits.ts'
 export {
   BASE_CHROME_ARGS,
+  SANDBOX_CHROME_ARGS,
   findChromeExecutable,
   isBrowserConsoleNoise,
 } from './browser.ts'

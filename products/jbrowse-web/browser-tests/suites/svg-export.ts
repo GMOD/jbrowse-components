@@ -55,13 +55,13 @@ function waitForDownload(
 
 async function triggerSvgExport(page: Page) {
   const viewMenu = await findByTestId(page, 'view_menu_icon', 10000)
-  await viewMenu?.click()
+  await viewMenu.click()
   await delay(300)
   const exportSvg = await findByText(page, 'Export SVG', 10000)
-  await exportSvg?.click()
+  await exportSvg.click()
   await delay(500)
   const submitBtn = await findByText(page, 'Submit', 10000)
-  await submitBtn?.click()
+  await submitBtn.click()
 }
 
 // Every MST view/display gets a fresh `ElementId` (a 10-char nanoid) per

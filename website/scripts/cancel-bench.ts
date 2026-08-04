@@ -21,7 +21,7 @@ import http from 'node:http'
 import path from 'node:path'
 
 import {
-  BASE_CHROME_ARGS,
+  SANDBOX_CHROME_ARGS,
   findChromeExecutable,
   delay,
   waitForDisplayPhases,
@@ -185,10 +185,7 @@ const browser = await launch({
   headless: true,
   defaultViewport: { width: 1280, height: 900 },
   executablePath: findChromeExecutable(),
-  args: [
-    ...BASE_CHROME_ARGS.filter(a => a !== '--disable-web-security'),
-    '--use-angle=gl',
-  ],
+  args: [...SANDBOX_CHROME_ARGS, '--use-angle=gl'],
 })
 const out: Awaited<ReturnType<typeof once>>[] = []
 try {

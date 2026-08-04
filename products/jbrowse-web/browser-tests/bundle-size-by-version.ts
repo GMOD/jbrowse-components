@@ -22,6 +22,8 @@ import { BASE_CHROME_ARGS } from '@jbrowse/browser-test-utils'
 import { launch } from 'puppeteer'
 import handler from 'serve-handler'
 
+import { collectWireRequests, summarizeWire } from './cdpNetwork.ts'
+
 const CACHE_DIR = process.env.JB_BENCH_CACHE || '/tmp/jb-bench-versions'
 const PORT = 3346
 const HERE = new URL('.', import.meta.url).pathname
@@ -132,25 +134,7 @@ async function measureDir(
   const browser = await launch({ headless: true, args: BASE_CHROME_ARGS })
   try {
     const page = await browser.newPage()
-    const client = await page.createCDPSession()
-    await client.send('Network.enable')
-
-    const urlByReq = new Map<string, string>()
-    let jsBytes = 0
-    let jsCount = 0
-    let allBytes = 0
-    client.on('Network.responseReceived', (e: any) => {
-      urlByReq.set(e.requestId, e.response.url)
-    })
-    client.on('Network.loadingFinished', (e: any) => {
-      const url = urlByReq.get(e.requestId) || ''
-      const len = e.encodedDataLength || 0
-      allBytes += len
-      if (url.endsWith('.js') || url.includes('.js?')) {
-        jsBytes += len
-        jsCount++
-      }
-    })
+    const requests = await collectWireRequests(page)
 
     // assembly/loc/tracks URL params open an LGV at a locus with the named
     // track. This API predates session-specs, so it works across old + new.
@@ -179,7 +163,7 @@ async function measureDir(
       .catch(() => false)
     await new Promise(r => setTimeout(r, 1500))
 
-    return { version, jsBytes, jsCount, allBytes, rendered }
+    return { version, ...summarizeWire(requests), rendered }
   } finally {
     await browser.close()
     server.close()
