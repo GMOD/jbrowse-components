@@ -122,7 +122,9 @@ test('multi-column insertion emits one entry per row with the correct length', (
 // stopped at the row's end (`renderBases`, `buildInstanceBuffer`,
 // `IdentityColumns.accumulate`), so coverage disagreed with what was drawn.
 test('a row shorter than the reference contributes nothing past its end', () => {
-  const blocks: MafWireBlock[] = [block(10, 'ACGT', [row(0, 'ACGT'), row(1, 'AC')])]
+  const blocks: MafWireBlock[] = [
+    block(10, 'ACGT', [row(0, 'ACGT'), row(1, 'AC')]),
+  ]
   const r = computeMafCoverage(blocks, 10, 14)
   expect(Array.from(r.depths)).toEqual([2, 2, 1, 1])
   expect(Array.from(r.mismatchPositions)).toEqual([])
@@ -133,7 +135,9 @@ test('a row shorter than the reference contributes nothing past its end', () => 
 
 test('a short row emits no phantom insertion in a reference-gap column', () => {
   // Ref has a 2-column insertion at refPos=51; row1 ends before it.
-  const blocks: MafWireBlock[] = [block(50, 'A--T', [row(0, 'AGCT'), row(1, 'A')])]
+  const blocks: MafWireBlock[] = [
+    block(50, 'A--T', [row(0, 'AGCT'), row(1, 'A')]),
+  ]
   const r = computeMafCoverage(blocks, 50, 52)
   expect(r.insertions).toEqual([{ position: 51, length: 2 }])
 })

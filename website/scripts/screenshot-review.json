@@ -554,8 +554,8 @@
     "name": "share_button",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-27T12:50:58.336Z",
-    "hash": "c528935dd8225f15599843d97cf7fc777cd62814"
+    "reviewedAt": "2026-08-04T00:35:21.890Z",
+    "hash": "c67e7bbb7fe5b7cfb31cbf9d09b9006fcf0213be"
   },
   "sv_inspector_importform": {
     "name": "sv_inspector_importform",
@@ -855,8 +855,8 @@
     "name": "gene_track_collapse_introns",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-27T12:48:55.592Z",
-    "hash": "e71f4664d72f17f1fd4de004273004b738204fb5"
+    "reviewedAt": "2026-08-04T00:21:42.572Z",
+    "hash": "b804bf111a7b4821968e10f6fcd695021a6ede20"
   },
   "gene_track_color_by_cds": {
     "name": "gene_track_color_by_cds",
@@ -1961,8 +1961,8 @@
     "name": "pangenome/rgfa_subgraph_launch",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-01T15:03:52.524Z",
-    "hash": "e2bcf5e08fad92b5e8281d326718b67790500cd9"
+    "reviewedAt": "2026-08-04T00:35:05.951Z",
+    "hash": "76e2c7ed96ab03d4dac0547f3947f0d3011adb61"
   },
   "genomes_synteny/launch_sequence": {
     "name": "genomes_synteny/launch_sequence",
@@ -2059,8 +2059,8 @@
     "name": "pangenome/hprc_mhc_anchored",
     "status": "good",
     "note": "DONE, both asks, and the circles are model-anchored rather than drawn at a measured position. Each half now carries a red caption saying it is the same subgraph (force-directed / anchored on hg38), and both ring THE SAME TWO NODES: s101145+, 12,021 bp of GRCh38 backbone, and s396436+, the 12,253 bp allele over it. They are the two longest nodes in the cut, so the graph writes 12 kb and 12.3 kb beside them in both layouts and the rings do not have to carry the identification. Picked with probe-graph-nodes.ts and anchored by segment id, so either layout can put them where it likes. Needed --force: two rings and a pill are under 0.5% of the frame.",
-    "reviewedAt": "2026-08-01T15:02:10.042Z",
-    "hash": "35eae3c1ab98a29e9c516cd2f3730970fe65ca62"
+    "reviewedAt": "2026-08-04T00:36:28.412Z",
+    "hash": "7c778e87d028481191ebe5257923e78dc76eebdd"
   },
   "pangenome/hprc_mhc_sample_rows": {
     "name": "pangenome/hprc_mhc_sample_rows",
@@ -2134,38 +2134,38 @@
   },
   "pangenome/rgfa_launch_out_menu": {
     "name": "pangenome/rgfa_launch_out_menu",
-    "status": "good",
-    "note": "the polygons are oddly darker than expected? is this due to cigar plotting mode? other synteny figs lighter red/pink. previous notes: FIXED: force-directed. The red boxes and the closed graph pane in frame two were already in from the previous round; the sample-rows drawing was the outstanding half of the ask, and it is what \"backbone too complicated ... if we wanted linear, we would use our lineargenomeview\" was about. Frame one is now the force drawing with the cascade over it and the same three boxes; the launch menu names each strain itself, so nothing was lost with the row labels. Heights re-measured for a drawing that is as tall as it is wide (stage one 430 -> 820).",
-    "reviewedAt": "2026-08-01T14:15:23.018Z",
-    "hash": "3ba732e7008746a33dec6088f51ca4ae6dd7272e"
+    "status": "bad",
+    "note": "the polygons are oddly darker than expected? is this due to cigar plotting mode? other synteny figs lighter red/pink. previous agent said it is due to being plotted twice from all-vs-all, we might want to figure out how to avoid this. previous notes: FIXED: force-directed. The red boxes and the closed graph pane in frame two were already in from the previous round; the sample-rows drawing was the outstanding half of the ask, and it is what \"backbone too complicated ... if we wanted linear, we would use our lineargenomeview\" was about. Frame one is now the force drawing with the cascade over it and the same three boxes; the launch menu names each strain itself, so nothing was lost with the row labels. Heights re-measured for a drawing that is as tall as it is wide (stage one 430 -> 820).",
+    "reviewedAt": "2026-08-04T00:32:47.067Z",
+    "hash": "5329fb22e3a662f6e75cccee6a7c6c88f4d2908a"
   },
   "pangenome/hprc_lpa_kiv2": {
     "name": "pangenome/hprc_lpa_kiv2",
-    "status": "bad",
-    "note": "check that we regenerated figure after publish. you can regen all pangenome figs. PLUGIN FIX MADE, FIGURE PENDING A PUBLISH: the changes below are in jbrowse-plugin-graphgenomeview (tests+lint+typecheck green, verified by rendering against a local build), but these PNGs pin esmUrl to a content-addressed bundle, so the committed figure only moves after a betabuild and an esmUrl bump. All three asks applied. FORCE LAYOUT: sample rows drew the 33 segments as a reference lane with eleven stubs on grey threads, which is what \"i just dont get it\" was about; as a graph it is a chain of bubbles. NON-SPECTRUM NON-BACKBONE: off-reference nodes are one flat charcoal (rgb(60,65,72)) rather than a paler ramp hue, in the plugin and in the linear lane jexl that mirrors it, so a hue means reference position and only that. THE RED LOOP now says \"skips 27.7 kb\" -- it is a deletion edge, and the old \"-27.7 kb\" was what made it unreadable. viewportHeight 990 -> 1170 (the run reported 75px cut). The Sample rows explanation in pangenome_hprc.md keeps its section and now points at hprc_graph_vs_callset, which is still drawn that way. THE PUBLISH LANDED: plugin 5e1c0d4f42b5 (2026-07-30), esmUrl repinned in the three test_data/graphgenomeview configs, figure regenerated against it. Nothing here is pending any more. CHECKED, AND IT WAS ALREADY CURRENT -- a full non-forced regen of all 39 pangenome specs reports hprc_lpa_kiv2 at 0.031%, i.e. unchanged against the published plugin. Four others in the sweep were NOT current and are now regenerated: hprc_amylase_graph (2.88%), graph_context (5.06%) and its two parts (5.55%, 4.56%). Those are real pending changes rather than jitter -- a second regen right after puts all four under 0.01% -- so the committed copies had been stale against the current build. Everything else in the sweep was under the gate.",
-    "reviewedAt": "2026-08-01T15:01:59.281Z",
-    "hash": "612376205307b5798f9dc95c2d2e0526cfcea028"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-04T00:28:38.397Z",
+    "hash": "03a791950da3fa27ac6e29dfad7f838b15570fa0"
   },
   "pangenome/rgfa_segment_neighbourhood": {
     "name": "pangenome/rgfa_segment_neighbourhood",
     "status": "bad",
-    "note": "regarding the force layout, are you sure you can't iterate it more times for better layout? also, the lineargenomeview doesnt seem to be using rainbow. previous agent notes. RAINBOW, as suggested, and it is the better picture: Stable rank is two colors on a 16-node neighbourhood, so every arm painted alike and only the length labels told one segment from the next. Each segment now takes its own hue, which is also Bandage own default. The recolor is under the content-stable gate (thin strokes on a white pane), so it needed --force; the guide caption no longer names rank colors. ON THE LAYOUT being a little weird: FMMM draws this 16-node chain as a long snake with one stub, and there is no setting between that and the anchored layout the same review is retiring. Bubble spread only changes how far a bubble opens, and this cut has one. YES, IT CAN ITERATE MORE, and the previous answer here (\"there is no setting between that and the anchored layout\") was wrong. The view has a Layout quality setting (View menu -> Settings) which is FMMM's iteration budget: the model default 1 is 15 fixed + 10 fine-tuning iterations, and the top setting is 120 + 60 (graphlayout.cpp in the plugin). Measured on THIS cut, rendered declaratively at quality 4: the 16-node neighbourhood stops being a snake with crossings and draws as a clean tree with both small bubbles as visible lenses, and the layout still takes 20ms. Same on pangenome/pggb_haplotype_paths, which is declarative and now ships at quality 4. WHY THIS FIGURE HAS NOT MOVED YET: its graph is launched from the track context menu, so the view is created with the model defaults and there is nothing in the spec to set. Two ways to close it -- drive View menu -> Settings -> Layout quality as an extra stage (the toolbar button is an unlabelled icon, so it needs a testid added), or raise the default in the plugin and republish, which fixes every menu-launched graph figure at once. The second is the real fix and needs a plugin build + esmUrl repin; flagging rather than doing it unasked.",
-    "reviewedAt": "2026-08-01T15:03:59.641Z",
-    "hash": "398362f6607f6a1e5650aa322464b269a2c0713c"
+    "note": "regarding the force layout, are you sure you can't iterate it more times for better layout? also, the lineargenomeview doesnt seem to be using rainbow. ",
+    "reviewedAt": "2026-08-04T00:33:51.387Z",
+    "hash": "d26ad53e391e8ebd7f69835fc5c675d1c74394df"
   },
   "pangenome/rgfa_strain_launch": {
     "name": "pangenome/rgfa_strain_launch",
     "status": "bad",
-    "note": "regarding the force layout, are you sure you can't iterate it more times for better layout? also, the lineargenomeview doesnt seem to be using rainbow. previous agent notes: Force-directed too, same review, and frame two now closes the graph pane the way rgfa_launch_out_menu does. That was not cosmetic: a force drawing is 700px where the five sample rows were 300, so the launched CFT073 view sat at the bottom of the page with its gene track second row off-screen, and the readiness wait on the clbK floating label never fired. Closing the graph after the launch puts the launched view at the top of the frame, which is also the frame the review asked for. Same answer as pangenome/rgfa_segment_neighbourhood: Layout quality is FMMM's iteration budget (default 1 = 15+10 iterations, top = 120+60), raising it visibly removes the crossings, and it is measured rather than argued -- see that entry. This figure launches its graph through the menu too, so it takes the model default and cannot be set from the spec; the fix that covers both is raising the plugin default and repinning esmUrl.",
-    "reviewedAt": "2026-08-01T15:03:57.552Z",
-    "hash": "bf94b4f90e2cc726dc2810ee97390dec8d544a7e"
+    "note": "regarding the force layout, are you sure you can't iterate it more times for better layout? also, the lineargenomeview doesnt seem to be using rainbow. also, i am a little concerned by this 'launch view' on entire graph. should we instead click and drag region and launch from that?",
+    "reviewedAt": "2026-08-04T00:35:02.857Z",
+    "hash": "731de7aa9f616609edbf6044d0dffbe29b6bfa7f"
   },
   "pangenome/rgfa_hover_sync": {
     "name": "pangenome/rgfa_hover_sync",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-01T14:14:44.244Z",
-    "hash": "5141c4ae712a36b2df3d1d206d92a4b97b43a126"
+    "reviewedAt": "2026-08-04T00:30:52.747Z",
+    "hash": "8ab73e612f644c1bde0bea07e156caf6a0f025b1"
   },
   "pangenome/rgfa_sample_rows": {
     "name": "pangenome/rgfa_sample_rows",
@@ -2177,9 +2177,9 @@
   "pangenome/pggb_locus_sample_rows": {
     "name": "pangenome/pggb_locus_sample_rows",
     "status": "bad",
-    "note": "There is a 'deletion' and an 'insertion' in the IAI39 row, is this an artifact? it is not easily visible in the graph. i also dont like the backbone visualization, use bandage graph.  previous  notes: if there was a maf track of the different samples we could highlight rows in the maf and the graphgenomeview DONE, as far as the displays allow. Cross-highlighting a row in one display from a row in the other is not something either has, but the same five rows in the same order is, and that is the readable half of the idea: pggb's own -M MAF is now a lane above the graph, pinned by the display's `layout` prop to the graph's sample-row order (K12, CFT073, IAI39, NCTC86, Sakai), so a strain reads straight down -- aligned bases above, the segments it takes instead of the reference below. It is also the figure's existing claim made twice: CFT073 has MAF columns only where its contig reaches, which is the same boundary its graph row starts at. Track declared in the session (the graphgenomeview fixture config carries K12 and nothing else) with an absolute uri. Cost: `layout` clears the MAF dendrogram, which at five strains carried nothing the row labels do not, and the graph has no tree to agree with anyway. viewportHeight 733 -> 895. NOT AN ARTIFACT IN THE DATA, A BUG IN THE DISPLAY, and it is fixed. The 311 is a real 311 bp insertion at K12 chr:1,004,687 -- but it belongs to CFT073, not IAI39: it was drawn two rows off. LinearMafDisplay ships the row order to the worker as `orderedSampleIds` so block `rowIndex` is the on-screen row, and that getter reads the worker's own row set, which does not exist on the fetch that DISCOVERS it. A session that ARRIVES with a `layout` (a share link, a screenshot spec, this figure) therefore labelled its rows from the layout while the worker had assigned rowIndex in canonical sample order, and every row drew under another row's name until something invalidated the cache. The getter now falls back to the persisted layout, narrowed by the subtree filter the same way `sources` is; two regression tests in singleFetchPerRegion.test.ts fail without it. In the regenerated figure the 311 sits on CFT073, whose row is blank left of it because its contig starts there, and IAI39's row carries the variants it actually has. THE BANDAGE ASK IS NOT DONE: switching the pane to the force layout drops the row-for-row pairing with the MAF lane that the previous round built at this figure's own request, and this PNG is also the user guide's only illustration of the Sample rows layout, so it is worth one question before doing it.",
-    "reviewedAt": "2026-08-03T20:40:06.846Z",
-    "hash": "d89edea980fb954d35433ae457fcfdd538053e0f"
+    "note": "might consider zooming out a little more. also unclear why the '93bp' is just a weird little line. should it be a 'loop'?",
+    "reviewedAt": "2026-08-04T00:30:48.453Z",
+    "hash": "35292e859fd1cb81e89f2dc0c7d1da2a14df3276"
   },
   "scatac/pbmc5k_cd8a": {
     "name": "scatac/pbmc5k_cd8a",
@@ -2274,10 +2274,10 @@
   },
   "ld/anopheles_2la": {
     "name": "ld/anopheles_2la",
-    "status": "bad",
-    "note": "the figure capture uses very 'strong' language like \"far too rare\", prefer to be a little more dry.  and fact check yourself too please, if better wording or better plot is needed. if a Fst plot would help, and could be added to this figure as an extra track, we can consider this. reduce wordiness of the text annotations also. avoid referring to exact numbers, just general concepts. ",
-    "reviewedAt": "2026-08-03T23:22:47.235Z",
-    "hash": "3562db7c7765fec289bc9e8e36df9c10fe3b3933"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-04T00:23:07.959Z",
+    "hash": "27b600b55a6ac75bca7fb9b3f40cd476de44aa36"
   },
   "ld/lct_pooled_vs_panel": {
     "name": "ld/lct_pooled_vs_panel",
@@ -2324,16 +2324,16 @@
   "pangenome/rgfa_paa_bubble": {
     "name": "pangenome/rgfa_paa_bubble",
     "status": "bad",
-    "note": "the polygons are oddly darker than expected? is this due to cigar plotting mode? other synteny figs lighter red/pink. previous notes: DONE, both asks. Zoomed out 50 kb -> 100 kb: at 50 kb the Sakai band arrived in the last 4% of its row and the rest read as a row with no data rather than as a strain that lacks the island; at 100 kb its block is half the row and the island is visibly what it stops short of. The two partner windows are re-derived the same way as before, K12 window carried across each strain block in ecoli_pggb_ava, not eyeballed. And all three rows now carry their own gene lane (genes only, compact, no descriptions, so three of them plus the segments lane still fit over the two ribbon bands).",
-    "reviewedAt": "2026-08-03T23:19:55.786Z",
-    "hash": "e1803cd89dd40e6efe12dd1cd39371adbb85b527"
+    "note": "hmm. now there is very little synteny between k12 and sakai, only visible on right side of screen. might need to zoom out to see more?",
+    "reviewedAt": "2026-08-04T00:33:32.347Z",
+    "hash": "48e41d014e2ed30c25aa66013ef10f0181261ae3"
   },
   "pangenome/hprc_cfhr_deletion": {
     "name": "pangenome/hprc_cfhr_deletion",
-    "status": "good",
-    "note": "do you think the bandage graph intuitively shows the deletion here? could it be better? cross reference other graph drawing programs to see if it could ANSWERED: no, it did not, and the figure is now the anchored layout instead of the force one. WHY THE FORCE DRAWING COULD NOT DO IT, measured off the capture rather than argued: FMMM has no reference axis, so the arc's two endpoints are wherever the simulation put them and its size is the only thing left to carry the event. Two things followed. The arc bowed out by the drawn length of the backbone it bypasses, but that backbone was scattered across the drawing, so the big black loop enclosed nothing; and the label rides an apex computed from the BYPASSED nodes (deletionApex in graphLabels.ts) while the curve is drawn between the EDGE's endpoints, which in a force layout are different places -- 'skips 84.7 kb of reference' sat top right on the magenta chain with the loop sweeping the opposite corner. The two agree in an anchored layout, which is why nobody had noticed. CROSS-REFERENCED AGAINST ~/src/vendor, as asked. Every tool that shows a deletion legibly puts the reference on an axis first. VRPG (lh3's rGFA viewer) projects the graph onto reference coordinates beside a linear annotation panel, which is this pairing. sequenceTubeMap orders nodes monotonically along x with a width per node from its length, so a path that skips nodes is drawn across the nodes it skips (drawDeletion in tubemap.js is a grey line over exactly that span). odgi does not use a node-link drawing for this at all: odgi pav / odgi viz reduce presence/absence to a path-by-position matrix where a deletion is a gap in one row. Bandage has no reference concept, so a deletion there is a bare link at a joint with nothing to state, and our bulge was already an improvement on it. PangyPlot is the one force-directed pangenome viewer that solves it, and it does the inverse of what we did: the deletion link stays a straight chord with an x at its midpoint, and a dedicated force (delLinkForce in layout-forces.js) pushes the bypassed nodes perpendicularly off it, so the LAYOUT closes the bubble instead of the edge bowing to fake one. WHAT CHANGED: layoutMode auto, bubbleSpread dropped (it is a floor in FMMM units passed to the remote engine only, so it was dead under a local layout and only added a no-op step to the figure's recipe), viewportHeight 1580 -> 1342 for the shorter pane. The arc now spans exactly the bp it removes and spans them under the hg38 row above, so the boxed CFHR3/CFHR1, the carrier's missing ribbon and the arc line up on the same coordinates. Cost, stated in the spec and the caption: MIN_DELETION_LABEL_PX gates on the arc's bulge in screen px, and at 0.4% the other two deletions (2.2 kb, 9.3 kb) come to ~13 px, so they draw as short thick arcs without labels where in FMMM units they had them. ON YOUR FOLLOW-UP (\"should it literally just draw it as a lineargenomeview track?\", then \"we could make a custom track type also ... but this could be misguided, based on idea of linearizing the pangenome, which gave us a lot of heartache before\"): agreed, and DECIDED AGAINST rather than left open, written up in agent-docs/reference/PANGENOME_GRAPHS.md under Carriage. It is buildable and cheap -- links.bed.gz already states both endpoints with ranks, deletionEdges.ts already classifies them, BedpeAdapter and LinearPairedArcDisplay ship in core, so no new hosted file and no build-script change would be needed. Three reasons not to. A backbone-to-backbone skip names no donor, so the arcs are anonymous, and a row in a linear track reads as carriage: the same misreading that retired hprc_allele_inventory's sample rows. wave.vcf.gz already draws this event better, with no plugin at all -- not symbolic, tabix-indexed, explicit ALTs to 65 kb, a genotype per haplotype, and this deletion is one of its records at 139 of 464 haplotypes; a projected arc is that with the genotypes discarded. And what the projection would uniquely add over the VCF is segment-level correspondence plus the chaining and nesting of an alternate path, and nesting is exactly the part an axis cannot hold, so the content worth linearizing is already in the VCF and the rest is not linearizable. The anchored figure stands: it puts the graph on the reference axis for reading, without claiming the graph states carriage.",
-    "reviewedAt": "2026-08-01T15:01:20.000Z",
-    "hash": "4ed1de270f4ff5d6a62112c3e3902f820531ddb0"
+    "status": "bad",
+    "note": "do you think the bandage graph intuitively shows the deletion here? could it be better? cross reference other graph drawing programs to see if it could. also, the third row just looks like normal non interesting alignment, so not sure if we need hg00099, it is 'boring' to match reference here. previous agent notes: ANSWERED: no, it did not, and the figure is now the anchored layout instead of the force one. WHY THE FORCE DRAWING COULD NOT DO IT, measured off the capture rather than argued: FMMM has no reference axis, so the arc's two endpoints are wherever the simulation put them and its size is the only thing left to carry the event. Two things followed. The arc bowed out by the drawn length of the backbone it bypasses, but that backbone was scattered across the drawing, so the big black loop enclosed nothing; and the label rides an apex computed from the BYPASSED nodes (deletionApex in graphLabels.ts) while the curve is drawn between the EDGE's endpoints, which in a force layout are different places -- 'skips 84.7 kb of reference' sat top right on the magenta chain with the loop sweeping the opposite corner. The two agree in an anchored layout, which is why nobody had noticed. CROSS-REFERENCED AGAINST ~/src/vendor, as asked. Every tool that shows a deletion legibly puts the reference on an axis first. VRPG (lh3's rGFA viewer) projects the graph onto reference coordinates beside a linear annotation panel, which is this pairing. sequenceTubeMap orders nodes monotonically along x with a width per node from its length, so a path that skips nodes is drawn across the nodes it skips (drawDeletion in tubemap.js is a grey line over exactly that span). odgi does not use a node-link drawing for this at all: odgi pav / odgi viz reduce presence/absence to a path-by-position matrix where a deletion is a gap in one row. Bandage has no reference concept, so a deletion there is a bare link at a joint with nothing to state, and our bulge was already an improvement on it. PangyPlot is the one force-directed pangenome viewer that solves it, and it does the inverse of what we did: the deletion link stays a straight chord with an x at its midpoint, and a dedicated force (delLinkForce in layout-forces.js) pushes the bypassed nodes perpendicularly off it, so the LAYOUT closes the bubble instead of the edge bowing to fake one. WHAT CHANGED: layoutMode auto, bubbleSpread dropped (it is a floor in FMMM units passed to the remote engine only, so it was dead under a local layout and only added a no-op step to the figure's recipe), viewportHeight 1580 -> 1342 for the shorter pane. The arc now spans exactly the bp it removes and spans them under the hg38 row above, so the boxed CFHR3/CFHR1, the carrier's missing ribbon and the arc line up on the same coordinates. Cost, stated in the spec and the caption: MIN_DELETION_LABEL_PX gates on the arc's bulge in screen px, and at 0.4% the other two deletions (2.2 kb, 9.3 kb) come to ~13 px, so they draw as short thick arcs without labels where in FMMM units they had them. ON YOUR FOLLOW-UP (\"should it literally just draw it as a lineargenomeview track?\", then \"we could make a custom track type also ... but this could be misguided, based on idea of linearizing the pangenome, which gave us a lot of heartache before\"): agreed, and DECIDED AGAINST rather than left open, written up in agent-docs/reference/PANGENOME_GRAPHS.md under Carriage. It is buildable and cheap -- links.bed.gz already states both endpoints with ranks, deletionEdges.ts already classifies them, BedpeAdapter and LinearPairedArcDisplay ship in core, so no new hosted file and no build-script change would be needed. Three reasons not to. A backbone-to-backbone skip names no donor, so the arcs are anonymous, and a row in a linear track reads as carriage: the same misreading that retired hprc_allele_inventory's sample rows. wave.vcf.gz already draws this event better, with no plugin at all -- not symbolic, tabix-indexed, explicit ALTs to 65 kb, a genotype per haplotype, and this deletion is one of its records at 139 of 464 haplotypes; a projected arc is that with the genotypes discarded. And what the projection would uniquely add over the VCF is segment-level correspondence plus the chaining and nesting of an alternate path, and nesting is exactly the part an axis cannot hold, so the content worth linearizing is already in the VCF and the rest is not linearizable. The anchored figure stands: it puts the graph on the reference axis for reading, without claiming the graph states carriage.",
+    "reviewedAt": "2026-08-04T00:36:24.191Z",
+    "hash": "d4d46ea1613fbb79e3130d58195232ceacc2d127"
   },
   "dog10k-fgf4-retrogene": {
     "name": "dog10k-fgf4-retrogene",
@@ -2343,10 +2343,10 @@
   },
   "pangenome/graph_context": {
     "name": "pangenome/graph_context",
-    "status": "bad",
+    "status": "good",
     "note": "this is frankly pretty chaotic screenshot. any improvements you'd suggest? might want to use different colors for the different annotation boxes so it is clear what the correspondence is across the left and right panels.",
-    "reviewedAt": "2026-08-03T23:16:09.621Z",
-    "hash": "a58b3d91287b0e2ffc6df36a88ac124057ed4247"
+    "reviewedAt": "2026-08-04T00:23:21.108Z",
+    "hash": "3712b721daae5259bea48121f41d7bccf5f2085a"
   },
   "dog10k-size-fst-scan": {
     "name": "dog10k-size-fst-scan",
@@ -2448,10 +2448,10 @@
   },
   "pangenome/hprc_inversion": {
     "name": "pangenome/hprc_inversion",
-    "status": "good",
-    "note": "would be interesting to see the graph also, as a sidebar or second screenshot in two part screenshot here BUILT IT, LOOKED AT IT, AND TOOK IT BACK OUT -- with a picture's worth of specifics, since the last round asserted this without evidence. The pane loads from the same two tabix indexes the segments lane in this figure already draws, so the cut is free (loadedTrackId + loadedRegion, force layout, reference-position colors, the same recipe as rgfa_subgraph_launch). Two attempts. Over the figure's own 350 kb window it is 173 nodes / 243 edges auto-fitted to 13.7%, where every node is a hairline and the only legible marks in the frame are the length labels floating in white space. Cut to the bubble plus 20 kb of flank with the bubbles opened, it is 72 nodes / 100 edges at 21%: better, but two thirds of the frame is still empty, most nodes draw as unlabelled black arcs, and the labels that ARE readable say \"120.1 kb deletion\", \"125.1 kb deletion\", \"57 bp deletion\". That last part is the reason this is not a matter of tuning. The view's edges carry no orientation, and its detector calls any edge between two rank-0 segments with a coordinate gap a deletion, so the two breakpoints of an inversion are labelled as deletions in the drawing. Beside a caption that says inversion, the graph half would be teaching the drawing wrong rather than adding a projection. What the figure keeps instead is the bubble lane, which is where the inversion flag actually lives (it comes from the bubble index, not from either drawing), and the crossing ribbon, which is where the orientation is visible. If you want the graph half anyway I can add it with the caveat stated in the caption -- say the word and it is a ten-line spec -- and the real fix is edge orientation in the plugin, which would also make the amylase and CFHR arcs honest.",
-    "reviewedAt": "2026-08-02T20:14:04.673Z",
-    "hash": "fdad2f26d184689490456c969128cd8c0cd94993"
+    "status": "bad",
+    "note": "if available, might be worth adding gene track in the first sample and third sample. slightly unclear though why we include the third sample as this looks like it 'matches' the hg38 reference e.g. like you say \"the bottom row is HG02698 hap 2, one forward ribbon across the whole window.\"  so not interesting so can consider deleting third row??",
+    "reviewedAt": "2026-08-04T00:28:20.755Z",
+    "hash": "0a03b84c052eadfbfc0f4ed9d43ffea520821070"
   },
   "tcga/cohort_cnv_recurrence_subtype": {
     "name": "tcga/cohort_cnv_recurrence_subtype",
@@ -2532,10 +2532,10 @@
   },
   "pangenome/hprc_chm13_allele": {
     "name": "pangenome/hprc_chm13_allele",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-03T13:15:41.214Z",
-    "hash": "172608c16e12f5a520804fed67fe31ae6e3d6b16"
+    "status": "bad",
+    "note": "might want text annotation toward the top that says \"HG38\" and text annotation at the bottom that says \"T2T-CHM13v2.0\". unfortunately, there is no gene in this region, but if someother track would help potentially explain why this was missed in hg38 e.g. repeats can add that.",
+    "reviewedAt": "2026-08-04T00:26:54.777Z",
+    "hash": "38916b5dad8eb78bc64e72c94ffa41acb1aeaac7"
   },
   "dotplot_self_chry": {
     "name": "dotplot_self_chry",
@@ -2547,22 +2547,22 @@
   "orthofinder_synteny/grasses": {
     "name": "orthofinder_synteny/grasses",
     "status": "bad",
-    "note": "this looks ok but we could consider looking at other tools that render synteny between species to see if there are tricks that would improve the rendering further. alpha might be able to be increased.",
-    "reviewedAt": "2026-08-03T23:23:30.693Z",
-    "hash": "1a783364ee6b0f5dc0922719da9dc3e37d570b2e"
+    "note": "the color palette might need consideration, there might be some unexpected color re-use",
+    "reviewedAt": "2026-08-04T00:22:58.248Z",
+    "hash": "215373e2dd72277b33a97c9fdb848a4bb34a3cbd"
   },
   "orthofinder_synteny/vertebrates": {
     "name": "orthofinder_synteny/vertebrates",
     "status": "bad",
     "note": "this is unfortunately a fairly chaotic screenshot.  the alpha probably should be increased.  the last compaison with zebrafish is particularly scrambled, unclear if autodiagonalization is working there IMPROVED, and the zebrafish question is answered by measurement rather than opinion. The three OrthoFinder figures were the only multi-row synteny specs that never got the levers the others use, and all three now carry them: collapseEmptyRows (every row was spending ~90px on a 'No tracks active / Open track selector' block, five or six of them down the middle of the frame, more height than the ribbons had), the reclaimed space spent on 170-180px bands, and alpha 0.06 against the 0.2 default, since an orthogroup link is a hairline and tens of thousands of them at 0.2 saturate into one wash where a dense bundle and a lone scattered ortholog paint the same. drawCurves was rendered too and rejected: the bezier version is the prettier picture and the worse figure, because a curve leaves its chromosome vertically and only bends toward its partner mid-band, so the bundles braid where they cross and stop pointing at anything. AUTODIAGONALIZE IS RUNNING ON THAT LEVEL, checked against a rendered autoDiagonalize:false control: without it the rows sit in natural order (chicken 1..Z, zebrafish 1..25) and the upper bands lose their vertical bundling. What it cannot do is make that band diagonal, because the map is not one-to-one. Weighting each chromosome by its link count, a chromosome's single best partner holds 79% of its links chicken to frog, 50% human to chicken, 34% frog to gar and 33% gar to zebrafish: past the teleost genome duplication two thirds of every gar linkage group's orthologs land somewhere other than its best zebrafish partner, and no left-to-right ordering of either row can fix that. No filter rescues it either, dropping every multi-copy expansion would still leave ~13k of the band's ~17.8k links. build_orthofinder_synteny.sh now PRINTS this table per adjacent pair, so it is reproducible rather than my arithmetic, and the tutorial reads the bottom band as the measurement it is.",
-    "reviewedAt": "2026-08-03T23:23:30.788Z",
-    "hash": "0a43caee324739fdf5c9b5193bf30c4d8faea81f"
+    "reviewedAt": "2026-08-04T00:22:56.292Z",
+    "hash": "c17fcbdbfeab754240b423d0ab9208ae7264ab64"
   },
   "orthofinder_synteny/wheat": {
     "name": "orthofinder_synteny/wheat",
     "status": "bad",
     "note": "The coloring is still a bit chaotic. it might even be potentially interesting if things were plotted, instead of 'fitting' to consistent width, using consistent genomic scale on each level. this might help demonstrate increases and decreases in genome size.  previous notes: this is an interesting screenshot but it is a little chaotic. anything we can do to improve screenshot? can do web search of how wheat synteny figures are plotted best. agent: IMPROVED, ONE THING LEFT THAT NEEDS YOUR CALL. The three OrthoFinder figures were the only multi-row synteny specs that never got the levers the others use, and all three now carry them: collapseEmptyRows (every row was spending ~90px on a 'No tracks active / Open track selector' block, five or six of them down the middle of the frame, more height than the ribbons had), the reclaimed space spent on 170-180px bands, and alpha 0.06 against the 0.2 default, since an orthogroup link is a hairline and tens of thousands of them at 0.2 saturate into one wash where a dense bundle and a lone scattered ortholog paint the same. drawCurves was rendered too and rejected: the bezier version is the prettier picture and the worse figure, because a curve leaves its chromosome vertically and only bends toward its partner mid-band, so the bundles braid where they cross and stop pointing at anything. Also fixed the bottom row's scalebar being cut in half (viewportHeight 1120 -> 1140). SEARCHED, and the convention it lands on is what the figure already does: GENESPACE riparian plots, the reference for this kind of picture, order chromosomes to maximise synteny with a reference, colour ribbons by that reference's chromosomes, and stack genomes in phylogenetic order, which is autoDiagonalize + colorBy reference + the spec's evolutionary row order. The wheat-specific convention is homoeologous-group ordering, and diagonalizing produces it unprompted (2A 2D 2B, 7D 7A 7B, 3A 3B 3D, ...). The one real difference is that a riparian plot draws SYNTENIC BLOCKS while this draws one line per ortholog, and that is the tutorial's premise (orthogroups carry no position), so it is the MCScan tutorial that has blocks to draw. STILL BAD, NEEDS A DEMO REDEPLOY: timopheevii's row is labelled with INSDC accessions (OY997263.1, OY997273.1, ...) rather than chromosome names, so the bottom row names nothing. Ensembl has the mapping and it is clean (OY997261.1 = Chr1At, OY997262.1 = Chr1G, 14 chromosomes, and the At/G suffixes would say which subgenome each is). Fixing it means a refNameAliases file or renamed chrom.sizes+BED in s3://jbrowse.org/demos/orthofinder_wheat/, i.e. a write to the demo bucket, which I have not done unasked. Say the word and I will; the alternative is dropping the timopheevii row. THE TIMOPHEEVII ROW NOW READS Chr1At/Chr1G, deployed and regenerated. Fixed with NCBI data rather than a hand-written alias file: `datasets download genome accession GCA_963921465.1 --include seq-report` plus `dataformat tsv genome-seq` gives the four columns NcbiSequenceReportAliasAdapter already reads, and the assembly's refNameAliases points at it (uploaded as timopheevii.sequence_report.tsv, a new object beside the chrom.sizes; config.json redeployed from the repo copy). build_orthofinder_synteny.sh does this itself now, from an ALIASES table, so a rebuild keeps it. The row diagonalizes into homoeologous order with the rows above (Chr2G Chr2At Chr7At Chr7G Chr3At Chr3G ...) and the At/G suffixes say which subgenome each chromosome is. CONSISTENT GENOMIC SCALE ACROSS LEVELS IS NOT DONE and needs more than a spec edit: the view has squareView(), but it sets every row to the AVERAGE bpPerPx, so the 14.5 Gb hexaploid overflows its pane while the 4.2 Gb diploid leaves whitespace, and bpPerPx is not settable from a session spec at all (InitState takes loc/grow/displayedRegionNames, not a scale). Showing genome-size differences properly wants a \"same scale, largest genome fits\" option on the view.",
-    "reviewedAt": "2026-08-03T23:16:02.547Z",
-    "hash": "31f6d2bcf9afee9e88109fda33f3b1a3ce26a6c7"
+    "reviewedAt": "2026-08-04T00:23:08.062Z",
+    "hash": "9286b9cc96a9db2562515f31c26d9c38ab9a19c7"
   }
 }

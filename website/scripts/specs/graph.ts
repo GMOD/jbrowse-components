@@ -1067,18 +1067,20 @@ function graphContextPartSpecs(): ScreenshotSpec[] {
           [DETOUR_ENTRY, ENTRY_COLOR],
           [DETOUR_EXIT, EXIT_COLOR],
         ] as const
-      ).map(([graphNode, color]): Annotation => ({
-        type: 'box',
-        anchor: { view: 1, graphNode },
-        strokeWidth: 3,
-        color,
-        // a wash the node's own colour cannot be mistaken for, so the pairing
-        // survives being read at thumbnail size, where a 3px outline does not
-        fillOpacity: 0.1,
-        // clear of the node's own "43 bp" / "558 bp" label, which the graph
-        // writes across the node rather than inside its bounding box
-        pad: 22,
-      })),
+      ).map(
+        ([graphNode, color]): Annotation => ({
+          type: 'box',
+          anchor: { view: 1, graphNode },
+          strokeWidth: 3,
+          color,
+          // a wash the node's own colour cannot be mistaken for, so the pairing
+          // survives being read at thumbnail size, where a 3px outline does not
+          fillOpacity: 0.1,
+          // clear of the node's own "43 bp" / "558 bp" label, which the graph
+          // writes across the node rather than inside its bounding box
+          pad: 22,
+        }),
+      ),
       label(text),
       // the arrow only exists in the half that has an interior to point at.
       // A third box would be the honest shape, but the interior draws BETWEEN
@@ -1479,12 +1481,14 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
     viewportHeight,
     hideTooltip: true,
     annotations: [
-      ...MHC_LANDMARK_NODES.map((graphNode): Annotation => ({
-        type: 'circle',
-        anchor: { view: 1, graphNode },
-        radius: 24,
-        strokeWidth: 3,
-      })),
+      ...MHC_LANDMARK_NODES.map(
+        (graphNode): Annotation => ({
+          type: 'circle',
+          anchor: { view: 1, graphNode },
+          radius: 24,
+          strokeWidth: 3,
+        }),
+      ),
       {
         type: 'text',
         text: label,

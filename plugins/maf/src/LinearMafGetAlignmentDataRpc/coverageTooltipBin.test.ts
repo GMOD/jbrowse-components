@@ -29,7 +29,11 @@ function block(
  * the MismatchArrays shape, then call `buildCoverageTooltipBin`. Locks in the
  * (position → depth + per-base counts) contract end-to-end.
  */
-function makeBin(blocks: MafWireBlock[], regionStart: number, regionEnd: number) {
+function makeBin(
+  blocks: MafWireBlock[],
+  regionStart: number,
+  regionEnd: number,
+) {
   const mafCov = computeMafCoverage(blocks, regionStart, regionEnd)
   const { mismatchPositions, mismatchBases } = mafCov
   return (pos: number) =>
