@@ -155,8 +155,16 @@ with gzip.open(src, "rt") as fh:
             regions.append((fields[1], int(fields[3])))
         elif not line.startswith("#"):
             break
-for name, length in sorted(regions, key=lambda r: -r[1])[:keep]:
-    print(f"{name}\t{length}")
+# Select the largest `keep`, but write them in the GFF3's own order rather than
+# in the order the size sort produced. This file's line order is the assembly's
+# region order in JBrowse, so it is what a row is drawn in wherever nothing
+# overrides it, and Ensembl lists chromosomes naturally (1D 2D 3D ...) where
+# descending length does not (2D 7D 3D 5D 4D 1D 6D). Sorted by size, a
+# whole-assembly row interleaves the chromosomes a reader is comparing.
+biggest = {name for name, _ in sorted(regions, key=lambda r: -r[1])[:keep]}
+for name, length in regions:
+    if name in biggest:
+        print(f"{name}\t{length}")
 PY
 
   # One BED row per gene, named by the bare Ensembl gene id, the same id the

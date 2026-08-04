@@ -844,10 +844,15 @@ export const syntenySpecs: ScreenshotSpec[] = [
           {
             type: 'LinearSyntenyView',
             views: [
-              // the seven chromosomes, named rather than left as the whole
-              // assembly: the demo's ChromSizesAdapter also carries 23 unplaced
-              // scaffolds, which spend a fifth of the row's width on sequences
-              // that draw nothing
+              // Named in numeric order, which is the point: this demo's
+              // chrom.sizes was written largest-first, so the assembly's own
+              // region order is 2D 7D 3D 5D 4D 1D 6D and a whole-assembly row
+              // interleaves the three donor chromosomes among the four that
+              // draw nothing, with the 7D and 5D bundles crossing the 4D one
+              // (rendered, and it is much the worse picture). The 23 unplaced
+              // scaffolds it also drops are 0.46% of the row and invisible
+              // either way. build_orthofinder_synteny.sh now writes chrom.sizes
+              // in the GFF3's order, so a rebuilt set would not need this.
               { assembly: 'tauschii', loc: '1D 2D 3D 4D 5D 6D 7D' },
               { assembly: 'wheat', loc: '4A' },
             ],
