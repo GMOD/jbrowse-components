@@ -94,8 +94,8 @@
     "name": "sv_synteny/dotplot_import",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-27T01:36:52.353Z",
-    "hash": "6037db4425ff43e04d7060ddb55894810f504b0a"
+    "reviewedAt": "2026-08-04T17:39:47.321Z",
+    "hash": "c6ebb72f2499c72d514df67ec421b931bf53b915"
   },
   "sv_synteny/dotplot": {
     "name": "sv_synteny/dotplot",
@@ -107,8 +107,8 @@
     "name": "sv_synteny/linear_synteny_genes",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-03T13:16:06.022Z",
-    "hash": "f9952c823da5c9e5fe9e7ed1db7f3fd25bc6ad23"
+    "reviewedAt": "2026-08-04T17:39:50.268Z",
+    "hash": "2ce49ff2debe251df24b85f951e9a34870a3782e"
   },
   "bigwig/whole_genome_coverage": {
     "name": "bigwig/whole_genome_coverage",
@@ -215,8 +215,8 @@
     "name": "sv_cgiab/synteny_view",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-25T16:10:14.813Z",
-    "hash": "fa69b3ebbc88894e212acc9e284d3d8be083381f"
+    "reviewedAt": "2026-08-04T17:39:43.322Z",
+    "hash": "ee48187119a856afc0b32dbc521310a3cb637567"
   },
   "linear_synteny": {
     "name": "linear_synteny",
@@ -1058,9 +1058,9 @@
   "jbrowse-img/yeast_synteny": {
     "name": "jbrowse-img/yeast_synteny",
     "status": "good",
-    "note": "FIXED: SVGRuler tick-centering (committed) + plugin build:esm + regen -> major-tick labels centered.",
-    "reviewedAt": "2026-07-08T23:35:18.206Z",
-    "hash": "e6ae1d8df3de3b5086dc46e765e34575dafccc09"
+    "note": "",
+    "reviewedAt": "2026-08-04T17:30:10.565Z",
+    "hash": "154decf6c5fcabf0eb9c3dd71e104ed9088ef2f0"
   },
   "jbrowse-img/yeast_dotplot": {
     "name": "jbrowse-img/yeast_dotplot",
@@ -1093,9 +1093,9 @@
   "sv_cgiab/dotplot_import_form": {
     "name": "sv_cgiab/dotplot_import_form",
     "status": "good",
-    "note": "viewportHeight 400->450; the assembly-selector card is no longer clipped",
-    "reviewedAt": "2026-07-22T21:29:41.719Z",
-    "hash": "fdd9270e57512dac3153659f08fd35e496cae006"
+    "note": "",
+    "reviewedAt": "2026-08-04T17:39:39.826Z",
+    "hash": "da902d5d6854ab8d87b050beb800ecd031c3871a"
   },
   "feature_detail_protein": {
     "name": "feature_detail_protein",
@@ -1183,10 +1183,10 @@
   },
   "sv_cgiab/driver_kras_gain": {
     "name": "sv_cgiab/driver_kras_gain",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-27T12:52:25.804Z",
-    "hash": "5d20835a3c5f7b7e516f87048162f24eccc9381e"
+    "status": "bad",
+    "note": "are you happy with this figure? it is a bit hard to tell what is going on. i wish we could get better copy number estimate bigwig...the raw depths are hard to interpret...fixing that throughout the whole tutorial would be valuable, but ideally we should use a production grade pipeline not invent our own normalization/copy number segmentation",
+    "reviewedAt": "2026-08-04T12:27:01.451Z",
+    "hash": "8b7e0cd2c988c85c3dcac44b8514006792320455"
   },
   "variants/consequence_impact_1000g": {
     "name": "variants/consequence_impact_1000g",
@@ -1197,24 +1197,24 @@
   },
   "sv_cgiab/driver_smad4_loh": {
     "name": "sv_cgiab/driver_smad4_loh",
-    "status": "good",
+    "status": "bad",
     "note": "unclear kind of what is being shown here. if it helps make annotations or highlights that show what is happening",
-    "reviewedAt": "2026-07-27T12:52:27.195Z",
-    "hash": "193a722a4efae6eb68fe30e6984272fce560e1f6"
+    "reviewedAt": "2026-08-04T12:25:29.101Z",
+    "hash": "2cf57494916a57732b08b2434c395c46daf5749e"
   },
   "multiway_synteny/ecoli_pangenome": {
     "name": "multiway_synteny/ecoli_pangenome",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-04T08:04:59.730Z",
-    "hash": "86ca002bf085f4b9c772f14d034e579b4f7beb3c"
+    "reviewedAt": "2026-08-04T17:34:03.812Z",
+    "hash": "0405a6f27c45d22cef8007c8c4a8221c144e1fd3"
   },
   "multiway_synteny/grape_peach_cacao": {
     "name": "multiway_synteny/grape_peach_cacao",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-04T09:18:44.733Z",
-    "hash": "ef4ba32c20a439bb33331ff5267c2130717adcce"
+    "reviewedAt": "2026-08-04T17:34:05.647Z",
+    "hash": "bcd8180cbc4ca33182fd0dcd8e1e769c0f0a7dbb"
   },
   "search_feature_highlight": {
     "name": "search_feature_highlight",
@@ -1302,8 +1302,8 @@
     "name": "gallery/yeast_dotplot",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-14T02:03:26.740Z",
-    "hash": "a10e4e8d227b8640cff3b542eadb3e482a6c3b42"
+    "reviewedAt": "2026-08-04T17:43:12.686Z",
+    "hash": "83a470c395b493673993c27e6e8b2222435750bf"
   },
   "introgression": {
     "name": "introgression",
@@ -1334,10 +1334,10 @@
   },
   "multiway_synteny/ecoli_import_form": {
     "name": "multiway_synteny/ecoli_import_form",
-    "status": "good",
-    "note": "the full width syntenytrack is abnormally wide. please improve ui a bit to not have this. previous agent notes. FIXED: the box around the auto-filled assembly-rows stack was already in the spec (anchored to [data-testid=\"synteny-assembly-rows\"]) but the diff gate kept discarding the regen (0.444%, under the 0.5% threshold). Force-regenerated: all four E. coli assembly rows are now boxed in stage 2.",
-    "reviewedAt": "2026-07-25T16:11:33.809Z",
-    "hash": "bfdfa8aeb8c6fad7c81260ab4999188d823c6300"
+    "status": "bad",
+    "note": "people dont need to have the launch button pointed out to them too obvious",
+    "reviewedAt": "2026-08-04T17:33:34.594Z",
+    "hash": "24be7027574064b8ce220f7d61c44fb2407b3d0f"
   },
   "rnaseq/basic": {
     "name": "rnaseq/basic",
@@ -1349,23 +1349,23 @@
   "synteny_human_chimp_cigar_modes": {
     "name": "synteny_human_chimp_cigar_modes",
     "status": "good",
-    "note": "FIXED: RepeatMasker labels now visible (L1HS labeled at the RB1 insertion, absent in chimp) via heightMode grow — normal-height, compact, no decimation. Addresses \"make the repeat masker labels visible\".",
-    "reviewedAt": "2026-07-27T01:36:59.480Z",
-    "hash": "dcf5af3276ce03f366a974bc5ab1779d502bd06e"
+    "note": "",
+    "reviewedAt": "2026-08-04T17:40:00.883Z",
+    "hash": "68324143749018c992c5072c0ae84e3d75d42611"
   },
   "synteny_te_vapb_sva": {
     "name": "synteny_te_vapb_sva",
     "status": "good",
     "note": "FIXED: RepeatMasker heightMode fit->grow — repeats now render at NORMAL feature height (no fit-scaling inflation), the track auto-sizes compactly to the few rows, and every name is drawn (SVA_F at the insertion) with no fit-ladder decimation. (Corrected from the earlier fit:110 which the reviewer flagged as weirdly tall + label-decimating.)",
-    "reviewedAt": "2026-07-27T01:37:05.667Z",
-    "hash": "893243aeadc65f44357c1ddc5eca217c93c301a7"
+    "reviewedAt": "2026-08-04T17:40:10.630Z",
+    "hash": "7f038f030ee06e1857580c2f68938070d9ae3c7f"
   },
   "synteny_te_picalm_alu": {
     "name": "synteny_te_picalm_alu",
     "status": "good",
-    "note": "FIXED: RepeatMasker heightMode grow — normal-height compact repeats with all labels (AluYb8 human-specific insertion labeled, absent in chimp); no inflation, no decimation. Per reviewer: \"normal height... compact, but still showing labels\".",
-    "reviewedAt": "2026-07-27T01:37:02.644Z",
-    "hash": "d83bfa176ca90aeda7ef59b2af3edf4048922233"
+    "note": "",
+    "reviewedAt": "2026-08-04T17:40:06.868Z",
+    "hash": "7f01153c2237f712d0375fcb18ae44ca035259c8"
   },
   "cookbook_color_by_strand": {
     "name": "cookbook_color_by_strand",
@@ -1396,10 +1396,10 @@
   },
   "qtl/bxd_tyrp1_locus": {
     "name": "qtl/bxd_tyrp1_locus",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-28T15:05:58.002Z",
-    "hash": "db80d66a1e39129990517c740f9ef7bfc2621b55"
+    "status": "bad",
+    "note": "if it helps, add a gene track with the Tyrp1 gene visible , could filter to it",
+    "reviewedAt": "2026-08-04T12:28:27.840Z",
+    "hash": "c2a139256c5dbb12f9bea5384793e4df35e5117e"
   },
   "encode_hic_loops_arcs": {
     "name": "encode_hic_loops_arcs",
@@ -1486,8 +1486,8 @@
     "name": "multiway_synteny/ecoli_one_vs_all",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-04T09:18:16.762Z",
-    "hash": "4062e7e7c729c51905d06944dba0a8ea99f75ae5"
+    "reviewedAt": "2026-08-04T17:33:57.827Z",
+    "hash": "784b372709e92e60e7a27c6edb3be1b484540238"
   },
   "popgen/genotype_matrix_in2lt": {
     "name": "popgen/genotype_matrix_in2lt",
@@ -1512,9 +1512,9 @@
   "qtl/bxd_painting_sorted": {
     "name": "qtl/bxd_painting_sorted",
     "status": "good",
-    "note": "FIXED (folded qtl/bxd_sort_before_after into this single figure per reviewer): dropped the compose before/after stack and the separate 'input order' figure. This spec now opens the 'Sort rows by color here' context menu over the already-sorted painting, so the mechanism and the result are both in one image instead of two stacked ones. bxd_qtl.md's Figure updated to reference this image directly (no more links= two-state dialog); qtl/bxd_painting_input_order and qtl/bxd_sort_before_after specs, PNGs and review entries removed as no longer referenced.",
-    "reviewedAt": "2026-07-27T06:30:00.000Z",
-    "hash": "4bb37e70ca3e4b0cdc792866f423dce2f5bda1de"
+    "note": "",
+    "reviewedAt": "2026-08-04T17:39:34.264Z",
+    "hash": "4921c9f0e6c1ae0ea1456feb4f41c57b5b0c7853"
   },
   "rnaseq/pkm_mutually_exclusive": {
     "name": "rnaseq/pkm_mutually_exclusive",
@@ -1559,10 +1559,10 @@
   },
   "sv_cgiab/cnv_chr17_loh": {
     "name": "sv_cgiab/cnv_chr17_loh",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-27T12:51:13.830Z",
-    "hash": "8404ca903dc7902a922107a52a2c920e9224392c"
+    "status": "bad",
+    "note": "are you happy with this figure? it is a bit hard to tell what is going on. i wish we could get better copy number estimate bigwig...the raw depths are hard to interpret...fixing that throughout the whole tutorial would be valuable, but ideally we should use a production grade pipeline not invent our own normalization/copy number segmentation. also, this isn't really \"showing anything\" like a specific gene so hard to tell whether we should care. consider deleting, unless we can show where tp53 is and confirm that this is a relevant finding for cgiab dataset",
+    "reviewedAt": "2026-08-04T12:27:57.515Z",
+    "hash": "d4c57e6f8a2af8cf932b29d51fa8c7604243423d"
   },
   "feature_height_default": {
     "name": "feature_height_default",
@@ -1594,9 +1594,9 @@
   },
   "ld/lct_lactase": {
     "name": "ld/lct_lactase",
-    "status": "answered",
+    "status": "bad",
     "note": "this screenshot might be effectively a dupe of ld/lct_pooled_vs_panel. it might want to be deleted from gallery. DONE, gallery only. The LD-triangle card now opens ld/lct_pooled_vs_panel (the gallery keeps one card per capability, so the card was moved rather than dropped, which is also what removes the dupe). The figure stays in ld_human.md as the page's first LD picture, where the ClinVar rs4988235 lane sets up the block, and the ld_human tutorial-card thumb still crops it because a single triangle crops better at 1200x600 than two stacked lanes do.",
-    "reviewedAt": "2026-08-03T01:29:28.146Z",
+    "reviewedAt": "2026-08-04T17:31:44.667Z",
     "hash": "adfb909821ef76986892177d7d749ac1d5d04bb7"
   },
   "ld/mapt_17q21_inversion": {
@@ -1608,9 +1608,9 @@
   },
   "pangenome/maf": {
     "name": "pangenome/maf",
-    "status": "answered",
-    "note": "still dont understand this marker 5593, it should be purple and also it is not shown in the MAF display which means it is inconsistent. FIXED: the 5593 is the inserted-bp label the insertion marker paints on a genotype cell (an insertion consumes no reference, so its length can only be drawn as a widened marker). It was undecodable because the hover tooltip showed only Length, the REFERENCE span, ~1bp for any insertion. The tooltip now carries an Insertion row with that same number (getInsertedBp -> VariantFeatureBase.insertedBp -> buildVariantHit), for both multi-sample variant displays, and the figure caption names the numbered boxes. No figure change needed.",
-    "reviewedAt": "2026-08-03T13:15:58.993Z",
+    "status": "bad",
+    "note": "still dont understand this figure and the text like 5593, if insertion should be purple and also it is not shown in the MAF display which means it is inconsistent. FIXED: the 5593 is the inserted-bp label the insertion marker paints on a genotype cell (an insertion consumes no reference, so its length can only be drawn as a widened marker). It was undecodable because the hover tooltip showed only Length, the REFERENCE span, ~1bp for any insertion. The tooltip now carries an Insertion row with that same number (getInsertedBp -> VariantFeatureBase.insertedBp -> buildVariantHit), for both multi-sample variant displays, and the figure caption names the numbered boxes. No figure change needed.",
+    "reviewedAt": "2026-08-04T17:38:45.417Z",
     "hash": "35282756b177e9c6257e7a98a8fceb3b8c1f2486"
   },
   "phylop_ncbi_refseq_tp53": {
@@ -1717,10 +1717,10 @@
   },
   "sv_cgiab/cnv_depth_baf": {
     "name": "sv_cgiab/cnv_depth_baf",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-27T12:51:17.210Z",
-    "hash": "48e894f0914a6245d9c059bfb85a7c8a4ac6e762"
+    "status": "bad",
+    "note": "are you happy with this figure? it is a bit hard to tell what is going on. i wish we could get better copy number estimate bigwig...the raw depths are hard to interpret...fixing that throughout the whole tutorial would be valuable, but ideally we should use a production grade pipeline not invent our own normalization/copy number segmentation. also, this isn't really \"showing anything\" like a specific gene so hard to tell whether we should care. consider deleting",
+    "reviewedAt": "2026-08-04T12:27:32.508Z",
+    "hash": "4d0e37602e1a88b6063c1efcdb3c5a84022b492e"
   },
   "tcga/cohort_cnv_erbb2": {
     "name": "tcga/cohort_cnv_erbb2",
@@ -1739,9 +1739,9 @@
   "variants/potato_missingness": {
     "name": "variants/potato_missingness",
     "status": "good",
-    "note": "can consider making this a single screenshot with a copy of the track duplicated. the height of each display can be e.g. 300 each, so very evrtically compact DONE, one screenshot with the track in it twice. It needed two session tracks rather than two entries for `tetraploid_vcf`, because showTrackGeneric dedupes a view's tracks by trackId and the second entry just returns the lane already open; both point at the same out.vcf.gz with absolute URIs, so the two lanes are the same bytes read with two ceilings. 300 each as you said. Two things came free with it: the lanes carry the ceiling in their track NAMES, so the two text overlays the halves used to be labelled with are gone, and the two matrices are on ONE ruler instead of on two that happened to agree. The figure went 2200x2040 to 2200x1660 -- the compose was paying for an app bar, an overview, a search box and a ruler twice, about 420px of identical chrome. The compose spec and its two part specs are deleted with it, and the doc's <Figure> lost its links= pair for a single live link that opens both lanes.",
-    "reviewedAt": "2026-08-04T09:46:16.925Z",
-    "hash": "537923ead4734ebb23d1c2259df187d1c79455f1"
+    "note": "",
+    "reviewedAt": "2026-08-04T17:40:35.821Z",
+    "hash": "d6a12b17fbc20d8c71134fc121d31f305f85810d"
   },
   "sv_cgiab/dotplot_hap1": {
     "name": "sv_cgiab/dotplot_hap1",
@@ -1891,8 +1891,8 @@
     "name": "synteny_hg38_hs1_tnnt3",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-27T01:36:56.981Z",
-    "hash": "073c8dbf8b237d43bd68c32d19b090ee69503a65"
+    "reviewedAt": "2026-08-04T17:39:52.354Z",
+    "hash": "1954c6d0e606ddd42124a29afdf7664fced33f8a"
   },
   "variants/potato_missingness_before": {
     "name": "variants/potato_missingness_before",
@@ -1925,9 +1925,9 @@
   "genomes_synteny/ribbon_settings": {
     "name": "genomes_synteny/ribbon_settings",
     "status": "good",
-    "note": "FIXED: the Show... submenu was open in the DOM but unrasterized when the frame was taken (its own compositor layer, swiftshader a frame late), so the parent menu painted, the submenu did not, and the 'Show curved lines' box floated over the track behind it. Same race as bigwig/whole_genome_coverage; a 1s settle past waitForText clears it. Both boxed controls now sit on real menu rows.",
-    "reviewedAt": "2026-08-01T14:22:14.276Z",
-    "hash": "fc6a498633a0bcb9ad592bf4e35d6bc1bde7353c"
+    "note": "",
+    "reviewedAt": "2026-08-04T17:43:29.010Z",
+    "hash": "81a08938f4afb0368562f22aaf3b8b1f676cd09e"
   },
   "genomes_synteny/launch_menu": {
     "name": "genomes_synteny/launch_menu",
@@ -1940,8 +1940,8 @@
     "name": "multiway_synteny/ecoli_one_vs_all_whole_genome",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-04T08:13:20.849Z",
-    "hash": "7fefe744a1f8eff3756ddb6f71ac254d2d4007f5"
+    "reviewedAt": "2026-08-04T17:34:00.654Z",
+    "hash": "fb5bea839248dd23e8062b08422f08f44fb55d27"
   },
   "pangenome/hprc_mhc_bandage": {
     "name": "pangenome/hprc_mhc_bandage",
@@ -1952,9 +1952,9 @@
   },
   "pangenome/local_subgraph": {
     "name": "pangenome/local_subgraph",
-    "status": "answered",
-    "note": "new note: why is it blunt? why wouldnt an insertion be a loop? YES, A BLUNT END, AND THE CUT MADE IT. Segment 20 of ecoli_pggb_subgraph.gfa is 93 bp of CFT073 (CFT073:1,048,515-1,048,608) with exactly one link in that file (L 16 + 20 +), visited by one path, CFT073, as its first step. In the whole graph it carries two backbone links, K12:1,004,686-1,004,691 and K12:997,566-997,574, so CFT073 stands in 93 bp for 7,112 bp of K12: a 7.0 kb deletion whose far anchor is 7 kb outside the odgi extract -r K12#1#chr:1004500-1004900 range and went with it. It is also the rejoin this figure is otherwise about -- the green-to-yellow step in the node strip IS that segment reattaching. Widening the cut to reach the far anchor is not available: 7 kb of this pggb graph is ~900 segments against the 48 here. The tutorial says all of it at the figure now, including that a one-sided node in any extracted subgraph means sequence continuing past the window rather than a dead end in the graph. The sibling sample-rows figure of the same event now labels it '7 kb deletion' outright (see pangenome/pggb_locus_sample_rows); this figure's two halves are a file import and a force drawing, where a node IS drawn at its own scale, so neither carries that label and neither should.",
-    "reviewedAt": "2026-08-04T08:10:28.641Z",
+    "status": "bad",
+    "note": "if needed, add text annotation to say why it is blunt. also, it is not clear the size in the 'backbone' visualizations. previous notes: why is it blunt? why wouldnt an insertion be a loop? YES, A BLUNT END, AND THE CUT MADE IT. Segment 20 of ecoli_pggb_subgraph.gfa is 93 bp of CFT073 (CFT073:1,048,515-1,048,608) with exactly one link in that file (L 16 + 20 +), visited by one path, CFT073, as its first step. In the whole graph it carries two backbone links, K12:1,004,686-1,004,691 and K12:997,566-997,574, so CFT073 stands in 93 bp for 7,112 bp of K12: a 7.0 kb deletion whose far anchor is 7 kb outside the odgi extract -r K12#1#chr:1004500-1004900 range and went with it. It is also the rejoin this figure is otherwise about -- the green-to-yellow step in the node strip IS that segment reattaching. Widening the cut to reach the far anchor is not available: 7 kb of this pggb graph is ~900 segments against the 48 here. The tutorial says all of it at the figure now, including that a one-sided node in any extracted subgraph means sequence continuing past the window rather than a dead end in the graph. The sibling sample-rows figure of the same event now labels it '7 kb deletion' outright (see pangenome/pggb_locus_sample_rows); this figure's two halves are a file import and a force drawing, where a node IS drawn at its own scale, so neither carries that label and neither should.",
+    "reviewedAt": "2026-08-04T17:37:18.787Z",
     "hash": "ec825b9faeea9a506a0173af5382085aa0581765"
   },
   "pangenome/rgfa_subgraph_launch": {
@@ -1989,8 +1989,8 @@
     "name": "multiway_synteny/ecoli_launch_from_selection",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-04T09:18:08.203Z",
-    "hash": "6e9c153acb0f64b5c0a20754df1344e0cb935c13"
+    "reviewedAt": "2026-08-04T17:33:54.881Z",
+    "hash": "9d649e03e06e1a89218944b7925dad51798679db"
   },
   "desktop-ispcr-results": {
     "name": "desktop-ispcr-results",
@@ -2212,23 +2212,23 @@
   "dog10k-wolfdog-block-genotypes": {
     "name": "dog10k-wolfdog-block-genotypes",
     "status": "bad",
-    "note": "to some extent this is not an interesting figure. what is it supposed to show? we may want to zoom out at a minimum, add gene track, or whatever else is needed to make this interesting. previous agent notes; ASKED AGAIN ON THE REBUILT FIGURE, so: yes, and here is what it shows plus one fix it still wanted. It shows 21 ancestry-informative markers (AF>=0.8 in 36 European wolves, <=0.15 in 318 one-per-breed dogs, computed by the build script rather than picked) across three groups: all 12 Greek gray wolves solid for them, all 7 German Shepherd-lineage dogs empty - the breed both wolfdogs were crossed back to, so a clean negative control - and the 11 painted wolfdogs split per haplotype, each row carrying FLARE's own call in its label. 34 of 36 non-reference rows follow their call and the two that do not are the figure's point. THE FIX: a run of alt cells is one solid orange band, so at the 20px schema default nothing in the frame said how many markers the band was made of and the lane read as two painted blocks - which is the fair version of the question. lineZoneHeight 55 ties each column back to its position in the 11 kb block, so it is visibly a 21-marker panel. Same change the DENR and IGF1 matrices got this round.",
-    "reviewedAt": "2026-07-31T16:22:40.883Z",
-    "hash": "16ae52b6aa96d4f4a37886c0cc89f2fba0b018fa"
+    "note": "the clustering is cool. can we add even more dogs to generate more 'frission' from data visualization.. to some extent this is not an interesting figure. what is it supposed to show? we may want to zoom out at a minimum, add gene track, or whatever else is needed to make this interesting. previous agent notes; ASKED AGAIN ON THE REBUILT FIGURE, so: yes, and here is what it shows plus one fix it still wanted. It shows 21 ancestry-informative markers (AF>=0.8 in 36 European wolves, <=0.15 in 318 one-per-breed dogs, computed by the build script rather than picked) across three groups: all 12 Greek gray wolves solid for them, all 7 German Shepherd-lineage dogs empty - the breed both wolfdogs were crossed back to, so a clean negative control - and the 11 painted wolfdogs split per haplotype, each row carrying FLARE's own call in its label. 34 of 36 non-reference rows follow their call and the two that do not are the figure's point. THE FIX: a run of alt cells is one solid orange band, so at the 20px schema default nothing in the frame said how many markers the band was made of and the lane read as two painted blocks - which is the fair version of the question. lineZoneHeight 55 ties each column back to its position in the 11 kb block, so it is visibly a 21-marker panel. Same change the DENR and IGF1 matrices got this round.",
+    "reviewedAt": "2026-08-04T17:43:08.828Z",
+    "hash": "4159aafa841f7bafbaa18728e1011f4a307f74c0"
   },
   "dog10k-wolfdog-ancestry": {
     "name": "dog10k-wolfdog-ancestry",
     "status": "bad",
     "note": "are you happy with this figure? are there any interesting genes in this region?, make combined figure instead of the 'dissected below' if it helps ANSWERED, figure unchanged (no defect found: 22 rows all present, last row not clipped, legend intact). Interesting genes: no, and I would not invent one. The highlighted 7.9 Mb block holds 411 genes, 279 of them named, and it is the dog-chr1 orthologue of human chr19q -- 21 ZNFs, 13 kallikreins, 7 CEACAMs, the APOC cluster. Gene-dense but nothing that says anything about wolf ancestry; the block is where it is because of recombination since the founder cross, not selection, and naming a gene would manufacture a selection story the data does not support. Combined figure: addressed differently and I think better. The coupling the note is reacting to was a forward reference ('the wolf block dissected below') that the second figure could not repay, because that figure did not visibly show anything. It now carries FLARE's per-haplotype call in its own row labels, so it stands alone and the caption here just names the window rather than promising a dissection. Stacking them would have made a ~1585px compose with the FLARE pipeline explanation sitting inside the gap between the two halves.",
-    "reviewedAt": "2026-08-03T13:25:06.692Z",
-    "hash": "8f1bf2e9087f0e94b7e6ed4457be929d5c581bf2"
+    "reviewedAt": "2026-08-04T17:42:20.079Z",
+    "hash": "71e1d1574d315674448ccb7ff99aa7255860f455"
   },
   "mcscan_anchors": {
     "name": "mcscan_anchors",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-29T20:41:33.832Z",
-    "hash": "a14c3a239dbcf8a325a49788129071108d9b989f"
+    "reviewedAt": "2026-08-04T17:31:53.054Z",
+    "hash": "31a81bc59d03f4302e833dd49b989821a2897e33"
   },
   "sv_synteny/linear_synteny_ortholog_colors": {
     "name": "sv_synteny/linear_synteny_ortholog_colors",
@@ -2253,9 +2253,9 @@
   },
   "dog10k-igf1-haplotype": {
     "name": "dog10k-igf1-haplotype",
-    "status": "answered",
+    "status": "bad",
     "note": "this likely is not a gallery worthy screenshot. also what do you think about the clustering? would it make more sense to render ancestry painting? i cant really tell what the 'story' is here. DONE, matrix mode as suggested. In position space the records sit where they are, and over 400 kb most of the panel is the gaps between them, so the shared haplotype read as speckle - which is what 'hard to see the overarching pattern' was. One column per record gives every SNV the same width and the clades come out as solid blocks: the small-breed cluster carries alt across most of the window, the giant cluster is grey (reference) through the middle, and the size swatch beside the dendrogram lines up with the split. The reason the spec had avoided the matrix was that a boundary then lands at a column rather than a coordinate; the connector band above the rows answers that, at 34px rather than the 20px default - not higher, because with hundreds of records no single line can be followed and a tall band is just a grey wedge over the rows. Caption updated.",
-    "reviewedAt": "2026-08-03T21:05:41.795Z",
+    "reviewedAt": "2026-08-04T17:42:01.716Z",
     "hash": "43d83c5b637e94311a8ec281a9a2e09d0e2fac95"
   },
   "dog10k-slc28a3-copy-number": {
@@ -2274,17 +2274,17 @@
   },
   "ld/lct_pooled_vs_panel": {
     "name": "ld/lct_pooled_vs_panel",
-    "status": "answered",
+    "status": "bad",
     "note": "are you happy with this screenshot now? anything more you'd suggest? reduce heights of the linkage tracks.  is there any \"story\" here around the fact that there is one triangle in the EUR pop vs the All population? also would a 'fst' track make sense or other population genomic scans? You can make the FST track that you say you can do and we can upload it to jbrowse.org, it would complement our selection scan demo. HAPPY WITH IT, yes: both lanes are the same window on the same axis, so the pooled-versus-panel difference is the only difference between them, which is what the figure claims. FST WOULD MAKE SENSE AND IT IS BUILDABLE, but it needs a new hosted file, so I have not built it unasked. The recipe is small: scripts/build_lct_ld.sh already slices the 1000 Genomes chr2 phase 3 VCF per population panel, so the same script can run `vcftools --weir-fst-pop EUR --weir-fst-pop <rest> --fst-window-size 10000` (or scikit-allel's windowed_weir_cockerham_fst) over the pooled slice, and the result goes to bigwig the way scripts/build_dgrp_popgen.sh does for the Drosophila Fst track the popgen tutorial already uses. That gives the LCT window a lane whose peak sits exactly on the block, and it says the thing an LD triangle cannot: the haplotype is not just long, it is differentiated between populations, which is the signature of the sweep. What it costs: a new file in s3://jbrowse.org/demos/, which is an upload to a public bucket, and picking the contrast populations is a scientific choice with a political edge (EUR vs AFR over lactase is exactly the comparison to state carefully in the caption). iHS/nSL would be the other option and is a bigger build (selscan on phased haplotypes). Say which contrast you want and I will build and upload it. FST NOT BUILT, per your answer this pass (skip for now). The recipe stays in the build_lct_ld.sh comments if you want it later: vcftools --weir-fst-pop over the same per-panel slices, 10 kb windows, out to bigwig the way build_dgrp_popgen.sh does. Nothing was uploaded.",
-    "reviewedAt": "2026-08-03T01:29:44.425Z",
+    "reviewedAt": "2026-08-04T17:31:50.040Z",
     "hash": "30aead747d5fd244cf5aecf79cc55a3513894d7a"
   },
   "mcscan_synteny/anchors_vs_simple": {
     "name": "mcscan_synteny/anchors_vs_simple",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-31T21:48:00.393Z",
-    "hash": "9912e29659e59241b896ba2de8cfdba7a720dd3f"
+    "reviewedAt": "2026-08-04T17:31:54.860Z",
+    "hash": "ead8f1bd3fc17630ec0b95bd68c2768fbdd631b9"
   },
   "mcscan_synteny/dotplot": {
     "name": "mcscan_synteny/dotplot",
@@ -2297,8 +2297,8 @@
     "name": "multiway_synteny/blocks_one_vs_all",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-01T14:59:17.778Z",
-    "hash": "cb1cebdc42f01f21b463cfe878ea219947b08de4"
+    "reviewedAt": "2026-08-04T17:33:15.955Z",
+    "hash": "7bf4e4dc8e95253d8478a9fe1f1c782c68d63d1a"
   },
   "sv_synteny/ortholog_colors": {
     "name": "sv_synteny/ortholog_colors",
@@ -2317,9 +2317,9 @@
   "pangenome/rgfa_paa_bubble": {
     "name": "pangenome/rgfa_paa_bubble",
     "status": "bad",
-    "note": "we may want to circle entries in the lineargenomeview/linearsyntenyview and the correspondance in graphgenomeview RINGED IN BOTH HALVES, and both anchored by name rather than by pixel. The lane's ring takes s502's own span out of the segs index (the same bp the shaded band uses); the graph's resolves through the view's nodePositions, which gives a point ON the node's polyline rather than the bounding-box centre, which for an arc is the empty space it encloses. The caption now says the two rings are one segment.",
-    "reviewedAt": "2026-08-04T08:12:52.400Z",
-    "hash": "f859b07d73ab5697141d0f8818b83cb9b2cd3735"
+    "note": "unclear why this isnt more of a rainbow palette also. previous agent notes: we may want to circle entries in the lineargenomeview/linearsyntenyview and the correspondance in graphgenomeview RINGED IN BOTH HALVES, and both anchored by name rather than by pixel. The lane's ring takes s502's own span out of the segs index (the same bp the shaded band uses); the graph's resolves through the view's nodePositions, which gives a point ON the node's polyline rather than the bounding-box centre, which for an arc is the empty space it encloses. The caption now says the two rings are one segment.",
+    "reviewedAt": "2026-08-04T12:28:57.856Z",
+    "hash": "9c5f920e7f1d5464a0a11d55d73c99608de404dd"
   },
   "pangenome/hprc_cfhr_deletion": {
     "name": "pangenome/hprc_cfhr_deletion",
@@ -2413,9 +2413,9 @@
   },
   "cancer_sv/k562_starfusion_triage": {
     "name": "cancer_sv/k562_starfusion_triage",
-    "status": "answered",
-    "note": "are there any further things we should render?  NOTHING FURTHER TO RENDER, and it stays a solo figure. The circle is the whole 44-call output at the triage step, before a locus is chosen; the two loci it triages into are the next two figures. Its companion k562_cn_amplicon gained mate-direction ticks this pass (see that item), which is where the extra rendering went.",
-    "reviewedAt": "2026-08-02T22:59:33.187Z",
+    "status": "bad",
+    "note": "i still think it would be useful to make a multi-part figure. the circular view is generally not that strong on its own. previous notes: are there any further things we should render?  NOTHING FURTHER TO RENDER, and it stays a solo figure. The circle is the whole 44-call output at the triage step, before a locus is chosen; the two loci it triages into are the next two figures. Its companion k562_cn_amplicon gained mate-direction ticks this pass (see that item), which is where the extra rendering went.",
+    "reviewedAt": "2026-08-04T17:41:55.366Z",
     "hash": "9f20537510b2eab8ae3394c552f556885c1e49ed"
   },
   "desktop-add-track-steps": {
@@ -2527,8 +2527,8 @@
     "name": "pangenome/hprc_chm13_allele",
     "status": "bad",
     "note": "the repeatmasker track is not very interesting unfortunately and looks sort of glitchy even, just being collapsed layout. its also too zoomed in to tell if tis amoint of repeat is siognificant compard to background. previous agent notes; BOTH DONE. NAMING THE PANES: done in the app rather than over it — each view carries a displayName now, so the headers read 'hg38 (GRCh38) - no coordinates for this sequence', 'HPRC release 2 graph, cut to that window' and 'T2T-CHM13v2.0 (hs1) - an ordinary interval'. The headers already fell back to assembly names ('hg38', 'Human (T2T-CHM13v2.0/hs1)'), which is presumably what was easy to miss between three panes; naming all three also removes the 'Untitled view' the graph sat under. REPEATS: added, on BOTH panes, and they are the same UCSC RepeatMasker annotation so the two are comparable — hg38's from jbrowse.org's tabix'd copy, hs1's from hgdownload's bigBed. (The spec's warning about hgdownload is about a whole-file GET of hs1.2bit; ranged bigBed reads over a 180 kb window answer with CORS in well under a second, measured.) The picture: the CHM13-only interval is a near-continuous run of repeat, almost all LINE/L1, where the GRCh38 window it attaches to is broken up. WHAT IT IS NOT is a gap GRCh38 never closed, which was worth ruling out before claiming a mechanism: UCSC's hg38 'gap' track has exactly one record past chr17:82.5 Mb and it is the terminal 10 kb telomere at 83,247,441. So this is a real insertion allele in a LINE-dense subtelomere, not an assembly hole. The hs1 gene lane is gone with the change — jbrowse.org/ucsc/hs1/hs1.gff.gz has nothing in this window, so it was 70 px of empty lane, which is the 'no gene in this region' half of the note. BOTH HALVES OF THE NOTE ARE RIGHT, and the second one decides the first. THE BACKGROUND QUESTION, measured from the two files the lanes themselves load: the CHM13 allele is 84.6% repeat, its own left and right flanks are 79.0% and 70.4%, and 50 kb bins across the whole megabase CHM13 adds to chr17 run 70-92%. So there is no local contrast to see at any zoom -- the allele is not repeat-dense against its neighbourhood, it sits in a subtelomere that is repeat-dense end to end, and zooming out finds more of the same rather than a background to compare against. The contrast that IS real is between assemblies: GRCh38's last 650 kb of chr17 is 37.5% repeat against ~80% for the megabase CHM13 adds. That one cannot be drawn here either -- the two panes are at 30 bp/px and 180 bp/px, so a strip on each differs in scale before it differs in repeat, which is exactly what made the collapsed lane read as a glitch rather than as a measurement. Drawing it properly needs a repeat-density quantitative track, i.e. a file to build and host, not a display setting. WHAT CHANGED: the hg38 lane is gone (it was the half of a comparison that could not be made, 41 scattered elements over 30 kb), and the CHM13 lane stopped being a density strip. It is in normal layout now, growing to its own rows, with LINE red and every other class grey off the class the bigBed writes into the name. That says the thing the data does support and the thing the lane was added for: the inserted 142 kb is 48 LINE elements covering 116 kb of it, 34 of them over 4 kb and the longest a 13.6 kb L1MD -- a stack of L1, which is the sequence a BAC-and-Sanger reference had no way to place. Caption updated to match.",
-    "reviewedAt": "2026-08-04T09:30:30.838Z",
-    "hash": "fc29b4cdcc8481c7c0ad796281f565180a22bf8d"
+    "reviewedAt": "2026-08-04T17:35:43.312Z",
+    "hash": "feda5338822f9dde7066cc3fd6419db1d37b0202"
   },
   "dotplot_self_chry": {
     "name": "dotplot_self_chry",
@@ -2541,21 +2541,126 @@
     "name": "orthofinder_synteny/grasses",
     "status": "good",
     "note": "the previous palette on origin/main is better. not sure if there are ways to go back to that REAL, AND PROVABLE. Chromosome painting hashed a refName into nine category10 slots (the tenth, grey, is dropped because a grey ribbon reads as broken), so any genome with ten or more chromosomes re-used colors and rice's twelve were a guaranteed three-way collision. Fixed where it belongs: the display knows the anchor assembly's own refName order and passes it down, and each chromosome takes the next hue on the golden angle at the 70%/50% the reference-position ramps use. The golden angle rather than an even spread over the circle is not decoration, and the first render proved it: a refName list is not a chromosome list, rice's chrom.sizes has 30 entries for 12 chromosomes plus organelles and scaffolds, so i/N*360 squeezed every chromosome into the first 132 degrees and painted the whole figure red-through-green. A stride does not care how long the tail is and repeats only after 144 entries, which no karyotype reaches. Twelve distinct hues now, and the same fix lands on every colorBy query/target/reference figure -- hs1_vs_mm39 was 24 human chromosomes into 9 slots. SAME SCALE APPLIED, and of the three OrthoFinder figures this is the one I would revert. This set spans nearly eightfold (brachypodium 0.27 Gb to maize 2.14 Gb), so on one scale rice and brachypodium are stubs, maize is the only row with any width, and over half the frame is white. The chromosome names are gone from every row but maize. The section's takeaway — maize's whole-genome duplication showing as more ribbons per gene — now has to be read off two funnels rather than off a like-for-like comparison of band density. It is applied because you asked for it on both, and the caption now states the spread honestly, but say the word and it comes back off. The measurement behind the judgement: the three sets' size ratios are wheat 3.6x, vertebrates 3.4x, grasses 7.9x, and the shared scale is worth its whitespace at the first two. PALETTE IS BACK, and it is the palette rather than a ramp. Chromosome painting still assigns BY POSITION in the anchor assembly's own refName order -- that is what fixed the colour re-use -- but a position now indexes category10-minus-grey, the exact nine the previous build hashed into, instead of taking the next hue on the golden angle at HSL 70%/50%. Nine do not cover a karyotype, so each lap re-lights the same hues in OKLCH (core's new `relight`): deep first, then pale, because these ribbons draw at alpha 0.06 over white and a pale colour at 0.06 is one a reader cannot see. It is not the weaker option for telling chromosomes apart, which is what the ramp was reached for: closest pair in OKLab over 24 positions is 0.077 for the laps against 0.019 for the golden angle, since an even circle in HSL's hue is not perceptually even. Pinned by tests (the first nine ARE the palette; a lap re-lights rather than repeats). Regenerated across every chromosome-painting figure: the three orthofinder rows, grape_peach_cacao{,_gene_orthologs}, linear_synteny and hs1_vs_mm39_synteny. sameScale untouched this pass -- the standing offer to drop it from this one spec still stands.",
-    "reviewedAt": "2026-08-04T09:18:47.359Z",
-    "hash": "20fad3d151057c192bfec786c15c0680fcd20a78"
+    "reviewedAt": "2026-08-04T17:34:08.250Z",
+    "hash": "1ac4ef769aac1024ba321e7f7e32872eb4a6c6fe"
   },
   "orthofinder_synteny/vertebrates": {
     "name": "orthofinder_synteny/vertebrates",
     "status": "bad",
-    "note": "increase opacity DONE, alpha 0.15 -> 0.3. Left at 0.15 on the grasses and wheat figures rather than moved with it, and that is deliberate: alpha is a per-link constant, so the value that reads is set by how collinear the genomes are, not by the three figures being a set. A rice chromosome's orthologs land almost entirely on one partner, the links arrive as tight bundles and 0.15 saturates them. These five span ~430 My and a teleost genome duplication, so the same 0.15 spread the same number of links over the whole band and every one came out as background -- the gar-zebrafish band in particular read as a grey wash with a few strong diagonals on it. At 0.3 a single ortholog is visible and the bundles are solid without flooding their bands.",
-    "reviewedAt": "2026-08-04T09:19:04.346Z",
-    "hash": "7d54a08abbf5913bd13f3016f8d13b1c99dbaaae"
+    "note": "",
+    "reviewedAt": "2026-08-04T17:34:14.377Z",
+    "hash": "bde101b4e526e261bc877db15569dfdc2c8dbabc"
   },
   "orthofinder_synteny/wheat": {
     "name": "orthofinder_synteny/wheat",
     "status": "good",
+    "note": "anything else you would suggest to improve this figure?",
+    "reviewedAt": "2026-08-04T17:34:16.683Z",
+    "hash": "3dced8e262aec7d3bb3a798757ca3e40ce2c445f"
+  },
+  "hic/faint_contacts": {
+    "name": "hic/faint_contacts",
+    "status": "bad",
+    "note": "this just isnt a very 'interesting' screenshot.  consider deleting",
+    "reviewedAt": "2026-08-04T17:29:44.127Z",
+    "hash": "9da85a24ec961ad64508ee89b9f5a9bb4f07798b"
+  },
+  "ld/anopheles_r2_vs_dprime": {
+    "name": "ld/anopheles_r2_vs_dprime",
+    "status": "bad",
+    "note": "is there anything notable about this screenshot? if not can consider deleting.",
+    "reviewedAt": "2026-08-04T17:31:32.662Z",
+    "hash": "58d9499e4b5e92afff7d9499e5ea0cdcdd7b2ef0"
+  },
+  "methylation/arabidopsis_wgbs_two_color": {
+    "name": "methylation/arabidopsis_wgbs_two_color",
+    "status": "bad",
+    "note": "The methyldackyl generally enhances these screenshots substantially. without it they look weak. can consider deleting. ",
+    "reviewedAt": "2026-08-04T17:32:56.002Z",
+    "hash": "e08f28ef3ca2a775fe03582b8e0dd589d100345b"
+  },
+  "methylation/hg002_snrpn_ungrouped": {
+    "name": "methylation/hg002_snrpn_ungrouped",
+    "status": "bad",
+    "note": "ungrouped and grouped would benefit from being in a two part screenshot",
+    "reviewedAt": "2026-08-04T17:33:13.525Z",
+    "hash": "5aaae83956942fc5c37b011a94bbb0a316279f13"
+  },
+  "orthofinder_synteny/wheat_4a": {
+    "name": "orthofinder_synteny/wheat_4a",
+    "status": "bad",
+    "note": "are you happy with this figure? you can look at other potential improvements if it helps",
+    "reviewedAt": "2026-08-04T17:34:46.892Z",
+    "hash": "8f16149e5841b8f05adf36a38c8de561c4216e87"
+  },
+  "pangenome_cactus/builders": {
+    "name": "pangenome_cactus/builders",
+    "status": "bad",
+    "note": "unclear why pggb depth is higher, need reasoning in caption and even in-figure annotations",
+    "reviewedAt": "2026-08-04T17:35:17.100Z",
+    "hash": "8a39b8df7668f0ac39f3b9deeac41318287db048"
+  },
+  "pangenome_cactus/variants": {
+    "name": "pangenome_cactus/variants",
+    "status": "bad",
+    "note": "not a very interesting screenshot, consider deleting",
+    "reviewedAt": "2026-08-04T17:35:24.530Z",
+    "hash": "f9f19e496c01809fea91088b61a03018b96e4ddb"
+  },
+  "pangenome/hprc_repeat_classes": {
+    "name": "pangenome/hprc_repeat_classes",
+    "status": "bad",
+    "note": "this is kind of cool, but it might benefit from being a synteny view instead, and reducing the height of the multiwiggledisplay for more compact",
+    "reviewedAt": "2026-08-04T17:36:40.988Z",
+    "hash": "5c624e662545f1e3fe6904fe2c4e5820d68d2643"
+  },
+  "pangenome/long_reads": {
+    "name": "pangenome/long_reads",
+    "status": "bad",
+    "note": "this is not an especially interesting screenshot, but it does demonstrate some interesting biology i suppose...is there anything you would suggest? view as pairs/link supp reads likely can be toggled too. and a maf track of the different species in the graph if there is rgfa or maf available and/or bandage graph. ",
+    "reviewedAt": "2026-08-04T17:38:28.807Z",
+    "hash": "95008a2126b6a84c15055f2612acba3c664823c4"
+  },
+  "qtl/bxd_painting_clustered": {
+    "name": "qtl/bxd_painting_clustered",
+    "status": "bad",
+    "note": "might not need clustering when we have the sort, consider delete",
+    "reviewedAt": "2026-08-04T17:39:28.440Z",
+    "hash": "c3da3f68172f1b6f8f3761d6f3ba5624bd907462"
+  },
+  "scatac/pbmc5k_marker_swap": {
+    "name": "scatac/pbmc5k_marker_swap",
+    "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-04T09:19:10.903Z",
-    "hash": "e1819a26677a509b39bfa7eee98db23ff57c6da4"
+    "reviewedAt": "2026-08-04T17:39:34.323Z",
+    "hash": "0c41114a1479ad954df88e9f9d1ec8c2f4ca4417"
+  },
+  "tcga/mutations_tp53_subtype": {
+    "name": "tcga/mutations_tp53_subtype",
+    "status": "bad",
+    "note": "unclear why the 'lines connecting to genome position are crossing like this",
+    "reviewedAt": "2026-08-04T17:40:29.506Z",
+    "hash": "416657446094d2daafd75a1dbff26d6bb82dc2bd"
+  },
+  "cancer_sv/derivative_autogenerated": {
+    "name": "cancer_sv/derivative_autogenerated",
+    "status": "bad",
+    "note": "this figure does not look particularly interesting. any improvements you'd suggest? if it helps, you can make it use a 'replace view' option similar to collapse introns workflow so there is not a big read stack, and tracks that are open in the lineargenomeview can be copied to the new view.",
+    "reviewedAt": "2026-08-04T17:41:24.590Z",
+    "hash": "5403b9a4807909013df80c59aea4f8d02365054a"
+  },
+  "cancer_sv/foldback_reconstruction": {
+    "name": "cancer_sv/foldback_reconstruction",
+    "status": "bad",
+    "note": "this figure does not look particularly interesting. any improvements you'd suggest? if it helps, you can make it use a 'replace view' option similar to collapse introns workflow so there is not a big read stack, and tracks that are open in the lineargenomeview can be copied to the new view.",
+    "reviewedAt": "2026-08-04T17:41:31.455Z",
+    "hash": "626555438c2d1eae25b2a54f2e7cd367def07608"
+  },
+  "dog10k-wolfdog-ancestry-clustered": {
+    "name": "dog10k-wolfdog-ancestry-clustered",
+    "status": "bad",
+    "note": "the clustering is cool. can we add even more dogs to generate more 'frission' from data visualization. if it is good enough, we can delete dog10k-wolfdog-ancestry ",
+    "reviewedAt": "2026-08-04T17:43:05.234Z",
+    "hash": "676c73c35ed94b823ef45711a79be17c54740a33"
   }
 }
