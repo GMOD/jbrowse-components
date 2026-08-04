@@ -7,27 +7,19 @@ import MatrixZoomData from './matrixZoomData.ts'
 import type { Chromosome } from './types.ts'
 
 export default class Matrix {
-  private bpZoomData: MatrixZoomData[] = []
-  private fragZoomData: MatrixZoomData[] = []
+  // BP levels only. The FRAG code paths were dropped in this port (see
+  // hicFile.ts) and the adapter always queries 'BP', so a matrix's FRAG zoom
+  // levels are parsed off the wire and discarded rather than kept in a second
+  // list nothing can reach.
+  private bpZoomData: MatrixZoomData[]
 
-  constructor(
-    public chr1: number,
-    public chr2: number,
-    zoomDataList: MatrixZoomData[],
-  ) {
-    for (const zd of zoomDataList) {
-      if (zd.zoom.unit === 'BP') {
-        this.bpZoomData.push(zd)
-      } else {
-        this.fragZoomData.push(zd)
-      }
-    }
+  constructor(zoomDataList: MatrixZoomData[]) {
+    this.bpZoomData = zoomDataList.filter(zd => zd.zoom.unit === 'BP')
   }
 
   // Fetch zoom data by bin size. If no matching level exists return undefined.
-  getZoomData(binSize: number, unit = 'BP') {
-    const zdArray = unit === 'BP' ? this.bpZoomData : this.fragZoomData
-    return zdArray.find(zd => binSize === zd.zoom.binSize)
+  getZoomData(binSize: number) {
+    return this.bpZoomData.find(zd => binSize === zd.zoom.binSize)
   }
 
   static getKey(chrIdx1: number, chrIdx2: number) {
@@ -50,6 +42,6 @@ export default class Matrix {
     while (nResolutions-- > 0) {
       zdList.push(MatrixZoomData.parseMatrixZoomData(chr1, chr2, dis))
     }
-    return new Matrix(c1, c2, zdList)
+    return new Matrix(zdList)
   }
 }

@@ -35,7 +35,13 @@ test('parses real .hic file', async () => {
 
   const res = meta.resolutions[0]!
   const r = { chr: '1', start: 0, end: res * 200 }
-  const recs = await straw.getContactRecords('NONE', r, r, 'BP', res)
+  const { records: recs } = await straw.getContactRecords(
+    'NONE',
+    r,
+    r,
+    'BP',
+    res,
+  )
   expect(recs.length).toBe(3957)
   expect(recs[0]).toMatchObject({ bin1: 0, bin2: 0, counts: 785 })
   expect(recs[2]).toMatchObject({ bin1: 1, bin2: 1, counts: 942 })
@@ -44,6 +50,23 @@ test('parses real .hic file', async () => {
   expect(norms).toEqual(['NONE', 'VC', 'VC_SQRT', 'KR', 'SCALE'])
 
   // exercise KR normalization (reads norm vector index for v8 file)
-  const krRecs = await straw.getContactRecords('KR', r, r, 'BP', res)
-  expect(krRecs.length).toBeGreaterThan(0)
+  const kr = await straw.getContactRecords('KR', r, r, 'BP', res)
+  expect(kr.records.length).toBeGreaterThan(0)
+  expect(kr.appliedNormalization).toBe('KR')
+
+  // A viewport block never lands on a bin boundary, so this is what the display
+  // actually asks for. Every bin overlapping the region must come back — the
+  // bin straddling the start included, which the fractional bin window dropped.
+  const offset = { chr: '1', start: res / 2, end: res * 10 + res / 2 }
+  const { records: offsetRecs } = await straw.getContactRecords(
+    'NONE',
+    offset,
+    offset,
+    'BP',
+    res,
+  )
+  expect(offsetRecs.map(x => x.bin1)).toContain(0)
+  // and the window is [floor(start/res), ceil(end/res)) = [0, 11)
+  expect(Math.min(...offsetRecs.map(x => x.bin1))).toBe(0)
+  expect(Math.max(...offsetRecs.map(x => x.bin2))).toBe(10)
 })

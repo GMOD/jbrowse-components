@@ -35,24 +35,20 @@ export default class BinaryParser {
     return ret
   }
 
-  // DataView has no native 64-bit integer read, so accumulate bytes manually.
+  // No native 64-bit read that lands in a `number`, so compose two 32-bit words
+  // (deliberately not getBigUint64 — every caller is a file offset or a count
+  // that stays well inside Number.MAX_SAFE_INTEGER, and a BigInt would have to
+  // be converted back at each use site). hic-straw accumulated byte-by-byte
+  // through a throwaway 8-element array, which is a per-entry allocation in the
+  // block-index parse loop.
   getLong() {
-    const b: number[] = []
-    for (let i = 0; i < 8; i++) {
-      b[i] = this.view.getUint8(this.position + i)
-    }
-    let value = 0
-    if (this.littleEndian) {
-      for (let i = b.length - 1; i >= 0; i--) {
-        value = value * 256 + b[i]!
-      }
-    } else {
-      for (const byte of b) {
-        value = value * 256 + byte
-      }
-    }
+    const p = this.position
+    const le = this.littleEndian
+    const first = this.view.getUint32(p, le)
+    const second = this.view.getUint32(p + 4, le)
     this.position += 8
-    return value
+    // little-endian puts the low word first, big-endian the high word
+    return le ? second * 0x1_0000_0000 + first : first * 0x1_0000_0000 + second
   }
 
   getString() {

@@ -8,6 +8,7 @@
 
 import { inflate } from 'pako-esm2'
 
+import { binWindow } from './binWindow.ts'
 import BinaryParser from './binary.ts'
 import BufferedFile from './bufferedFile.ts'
 import ContactRecord from './contactRecord.ts'
@@ -48,35 +49,27 @@ export interface HicConfig {
   nvi?: string
 }
 
-class Block {
-  constructor(
-    public blockNumber: number,
-    public zoomData: MatrixZoomData,
-    public records: ContactRecord[],
-    public idx: BlockIndexEntry,
-  ) {}
+// Cached blocks are the decompressed records and nothing else. hic-straw also
+// hung the MatrixZoomData and the block-index entry off each Block; neither was
+// ever read back, and the zoom data pinned a whole `blockIndex` record per
+// cached block for the lifetime of the LRU.
+interface Block {
+  blockNumber: number
+  records: ContactRecord[]
 }
 
-class BlockCache {
-  private resolution: number | undefined
-  private map = new LRU<string, Block>(6)
-
-  set(resolution: number, key: string, value: Block) {
-    if (this.resolution !== resolution) {
-      this.map.clear()
-    }
-    this.resolution = resolution
-    this.map.set(key, value)
-  }
-
-  get(resolution: number, key: string) {
-    return this.resolution === resolution ? this.map.get(key) : undefined
-  }
-
-  has(resolution: number, key: string) {
-    return this.resolution === resolution && this.map.has(key)
-  }
-}
+// Keyed by `${zd.getKey()}_${blockNumber}`, which already carries the binsize,
+// so no separate resolution generation is needed to keep entries apart —
+// hic-straw's extra `resolution` field only made the cache single-resolution
+// (every zoom step threw the previous level away).
+//
+// Sized for a multi-region fetch's working set rather than a single region's.
+// At the auto binsize a view is a few hundred bins wide, so one region pair is
+// 1-4 blocks; three displayed regions is six pairs, past the old cap of 6 —
+// which meant a multi-region fetch evicted its own earlier reads and cached
+// nothing useful. Kept modest all the same: a block holds every contact in its
+// bin square, so this is the one thing here that can hold real memory.
+const BLOCK_CACHE_SIZE = 16
 
 function getNormalizationVectorKey(
   type: string,
@@ -94,11 +87,12 @@ export default class HicFile {
   private normVectorCache = new LRU<string, NormalizationVector>(10)
   private normalizationTypes = ['NONE']
   private matrixCache = new LRU<string, Matrix | undefined>(10)
-  private blockCache = new BlockCache()
+  private blockCache = new LRU<string, Block>(BLOCK_CACHE_SIZE)
   private normVectorIndexPosition = -1
   private normVectorIndexSize = -1
 
   private initPromise: Promise<void> | undefined
+  private normVectorIndexP: Promise<void> | undefined
   private version = 0
   private genomeId = ''
   private footerPosition = 0
@@ -284,10 +278,8 @@ export default class HicFile {
     const r1 = transpose ? region2 : region1
     const r2 = transpose ? region1 : region2
 
-    const x1 = r1.start / binsize
-    const x2 = r1.end / binsize
-    const y1 = r2.start / binsize
-    const y2 = r2.end / binsize
+    const [x1, x2] = binWindow(r1, binsize)
+    const [y1, y2] = binWindow(r2, binsize)
 
     // Normalization vectors are loop-invariant across blocks, so resolve them
     // once up front. Each is paired with the bin offset its values start at.
@@ -299,7 +291,7 @@ export default class HicFile {
       binsize,
     )
 
-    const blocks = await this.getBlocks(r1, r2, units, binsize)
+    const blocks = await this.getBlocks(r1, r2, binsize)
     const contactRecords: ContactRecord[] = []
     for (const block of blocks) {
       // An undefined block is most likely a base-pair range outside the
@@ -329,7 +321,15 @@ export default class HicFile {
       }
     }
 
-    return contactRecords
+    // What was actually applied, which is not always what was asked for:
+    // normalization vectors are stored per (type, chr, unit, binsize), so a file
+    // can offer KR at 5kb and nothing at 2.5Mb. hic-straw's answer was to warn to
+    // the console and silently hand back raw counts; reporting it lets the
+    // display tell the user which scheme they're looking at.
+    return {
+      records: contactRecords,
+      appliedNormalization: norm ? normalization : 'NONE',
+    }
   }
 
   private async getNormVectors(
@@ -374,12 +374,7 @@ export default class HicFile {
     return result
   }
 
-  async getBlocks(
-    region1: HicRegion,
-    region2: HicRegion,
-    unit: string,
-    binSize: number,
-  ) {
+  async getBlocks(region1: HicRegion, region2: HicRegion, binSize: number) {
     const blockKey = (blockNumber: number, zd: MatrixZoomData) =>
       `${zd.getKey()}_${blockNumber}`
 
@@ -395,11 +390,14 @@ export default class HicFile {
     } else if (idx2 === undefined) {
       console.warn(`No chromosome named: ${region2.chr}`)
     } else {
+      // A chr pair with no matrix at all is routine, not an anomaly: plenty of
+      // .hic files store no inter-chromosomal maps, and a multi-region view asks
+      // for every pair. Answering with no blocks (rather than warning once per
+      // pair per fetch) matches how the adapter already treats a pair missing
+      // this resolution.
       const matrix = await this.getMatrix(idx1, idx2)
-      if (!matrix) {
-        console.warn(`No matrix for ${region1.chr}-${region2.chr}`)
-      } else {
-        const zd = matrix.getZoomData(binSize, unit)
+      if (matrix) {
+        const zd = matrix.getZoomData(binSize)
         if (!zd) {
           throw new Error(
             `${NO_DATA_FOR_RESOLUTION}: ${binSize} for map ${region1.chr}-${region2.chr}`,
@@ -409,9 +407,9 @@ export default class HicFile {
         const blockNumbers = zd.getBlockNumbers(region1, region2, this.version)
         const blockNumbersToQuery: number[] = []
         for (const num of blockNumbers) {
-          const key = blockKey(num, zd)
-          if (this.blockCache.has(binSize, key)) {
-            blocks.push(this.blockCache.get(binSize, key))
+          const cached = this.blockCache.get(blockKey(num, zd))
+          if (cached) {
+            blocks.push(cached)
           } else {
             blockNumbersToQuery.push(num)
           }
@@ -424,7 +422,7 @@ export default class HicFile {
         )
         for (const block of newBlocks) {
           if (block) {
-            this.blockCache.set(binSize, blockKey(block.blockNumber, zd), block)
+            this.blockCache.set(blockKey(block.blockNumber, zd), block)
           }
         }
         blocks = blocks.concat(newBlocks)
@@ -503,7 +501,7 @@ export default class HicFile {
         }
       }
 
-      block = new Block(blockNumber, zd, records, idx)
+      block = { blockNumber, records }
     }
     return block
   }
@@ -523,15 +521,14 @@ export default class HicFile {
     if (this.normVectorCache.has(key)) {
       result = this.normVectorCache.get(key)
     } else {
-      const normVectorIndex = await this.getNormVectorIndex()
-      if (!normVectorIndex) {
-        console.warn('Normalization vectors not present in this file')
-      } else if (normVectorIndex[key] === undefined) {
-        console.warn(
-          `Normalization option ${type} not available at resolution ${binSize}. Will use NONE.`,
-        )
-      } else {
-        const idx = normVectorIndex[key]
+      // A file with no vectors at all, or none for this (type, chr, unit,
+      // binsize), simply answers undefined and the caller falls back to raw
+      // counts. hic-straw warned to the console here; that fires once per
+      // chromosome per region pair per fetch, and the console is the wrong place
+      // for it anyway — `getContactRecords` reports the normalization it
+      // actually applied so the display can tell the user.
+      const idx = (await this.getNormVectorIndex())?.[key]
+      if (idx) {
         const data = await this.file.read(idx.filePosition, 8)
         const parser = new BinaryParser(new DataView(data))
         const nValues = this.version < 9 ? parser.getInt() : parser.getLong()
@@ -551,34 +548,52 @@ export default class HicFile {
   }
 
   async getNormVectorIndex() {
-    if (this.version >= 6 && !this.normVectorIndex) {
-      // If we know the position of the norm vector index, read it directly.
-      // This is the case for hic v9 files.
-      if (this.normVectorIndexPosition > 0 && this.normVectorIndexSize > 0) {
-        await this.readNormVectorIndex({
-          start: this.normVectorIndexPosition,
-          size: this.normVectorIndexSize,
-        })
-      } else if (this.config.nvi) {
-        const nviArray = decodeURIComponent(this.config.nvi).split(',')
-        await this.readNormVectorIndex({
-          start: parseInt(nviArray[0]!),
-          size: parseInt(nviArray[1]!),
-        })
-      } else {
-        try {
-          await this.readNormExpectedValuesAndNormVectorIndex()
-        } catch (e) {
-          if (isCode416(e)) {
-            // Expected if file does not contain norm vectors
-            this.normExpectedValueVectorsPosition = undefined
-          } else {
-            console.error(e)
-          }
+    if (this.version >= 6) {
+      // Memoize the *attempt*, not just a populated result. A legal (if
+      // uncommon) v8 file with no norm vectors leaves `normVectorIndex`
+      // undefined, and the old `!this.normVectorIndex` guard then re-ran the
+      // discovery on every call — two calls per region pair per fetch, each
+      // walking the whole normalized-expected-values section with a chain of
+      // sequential range reads, only to rediscover there is nothing there.
+      // Cleared on failure (like `init`) so a transient read error retries
+      // rather than caching a rejection forever.
+      this.normVectorIndexP ??= this.loadNormVectorIndex().catch(
+        (e: unknown) => {
+          this.normVectorIndexP = undefined
+          throw e
+        },
+      )
+      await this.normVectorIndexP
+    }
+    return this.normVectorIndex
+  }
+
+  private async loadNormVectorIndex() {
+    // If we know the position of the norm vector index, read it directly.
+    // This is the case for hic v9 files.
+    if (this.normVectorIndexPosition > 0 && this.normVectorIndexSize > 0) {
+      await this.readNormVectorIndex({
+        start: this.normVectorIndexPosition,
+        size: this.normVectorIndexSize,
+      })
+    } else if (this.config.nvi) {
+      const nviArray = decodeURIComponent(this.config.nvi).split(',')
+      await this.readNormVectorIndex({
+        start: parseInt(nviArray[0]!),
+        size: parseInt(nviArray[1]!),
+      })
+    } else {
+      try {
+        await this.readNormExpectedValuesAndNormVectorIndex()
+      } catch (e) {
+        if (isCode416(e)) {
+          // Expected if file does not contain norm vectors
+          this.normExpectedValueVectorsPosition = undefined
+        } else {
+          console.error(e)
         }
       }
     }
-    return this.normVectorIndex
   }
 
   async getNormalizationOptions() {

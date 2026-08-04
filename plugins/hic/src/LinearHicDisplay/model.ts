@@ -21,6 +21,7 @@ import {
 import { createGlobalUploadSync } from '@jbrowse/render-core/globalUploadSync'
 import { autorun } from 'mobx'
 
+import { calcRegionScreenOffsetsPx } from '../regionOffsets.ts'
 import { generateColorRamp } from './components/colorRamp.ts'
 import { findContactAt } from './contactLookup.ts'
 import { buildHicTrackMenuItems } from './trackMenuItems.ts'
@@ -158,12 +159,18 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #getter
-       * The normalization actually used, resolved against what the file offers
+       * The normalization to *request*, resolved against what the file offers
        * (`availableNormalizations`). Falls back to the next-best available scheme
        * when the selection is absent (hic-straw silently uses NONE otherwise).
        * A pure getter, so opening a file that lacks the selected scheme never
        * writes a config delta / marks the track edited — only an explicit user
        * pick (setActiveNormalization) does.
+       *
+       * What the file could *deliver* is a second question this can't answer:
+       * normalization vectors are stored per (type, chr, unit, binsize) and
+       * `availableNormalizations` is the file-wide union, so a scheme listed here
+       * can still be missing at the current binsize. `appliedNormalization` below
+       * carries what actually came back.
        */
       get activeNormalization(): string {
         const avail = self.availableNormalizations
@@ -197,6 +204,21 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        */
       get dataCurrent(): boolean {
         return self.rpcData !== null && self.viewportFresh
+      },
+      /**
+       * #getter
+       * The normalization the loaded matrix actually carries, which differs from
+       * `activeNormalization` whenever the file has no vectors for the requested
+       * scheme at the current binsize (KR at 5 kb but nothing at 2.5 Mb is
+       * typical). The track menu ticks this, so the radios describe the data on
+       * screen rather than the request that produced it. Falls back to the
+       * request before any data has landed.
+       *
+       * Read only by the UI. It is fetch-derived, so it must stay out of
+       * `rpcProps()` — see the "rpcProps() loop trap".
+       */
+      get appliedNormalization(): string {
+        return self.rpcData?.appliedNormalization ?? self.activeNormalization
       },
       get colorScheme(): HicColorScheme {
         return getConf(self, 'colorScheme')
@@ -240,12 +262,9 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
           return -1
         }
         const bpPerPx = Math.max(1, self.view.bpPerPx)
-        let idx = -1
-        for (let i = 0; i < avail.length; i++) {
-          if (avail[i]! <= 2 * bpPerPx) {
-            idx = i
-          }
-        }
+        // sorted ascending by setAvailableResolutions, so the last match is the
+        // largest qualifying binsize
+        const idx = avail.findLastIndex(binSize => binSize <= 2 * bpPerPx)
         return idx === -1 ? 0 : idx
       },
       /**
@@ -394,7 +413,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       /**
        * #action
        */
-      setRpcData(data: HicDataResult | null) {
+      setRpcData(data: HicDataResult) {
         self.rpcData = data
       },
       /**
@@ -423,10 +442,11 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
           },
           render: b => {
             const data = self.rpcData
-            if (data) {
-              b.render(data, self.renderState)
+            if (!data) {
+              return false
             }
-            return data !== null
+            b.render(data, self.renderState)
+            return true
           },
         })
       },
@@ -572,8 +592,8 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         if (!view.initialized) {
           return
         }
-        const regions = view.dynamicBlocks.contentBlocks
-        if (!regions.length) {
+        const contentBlocks = view.dynamicBlocks.contentBlocks
+        if (!contentBlocks.length) {
           return
         }
         const resolution = self.effectiveResolution
@@ -589,6 +609,13 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         // `svgReady`) would call them current.
         const { bpPerPx, offsetPx } = view
         const { adapterConfig } = self
+        // Read the layout's own offsets here, alongside the viewport capture:
+        // the worker can't re-derive them from region widths, because
+        // `contentBlocks` omits elided regions that still take up screen space.
+        const regionOffsetsPx = calcRegionScreenOffsetsPx(
+          contentBlocks,
+          offsetPx,
+        )
         await self.runFetch(async ctx => {
           const sessionId = getRpcSessionId(self)
           const { rpcManager } = getSession(self)
@@ -597,7 +624,8 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
             'RenderHicData',
             {
               adapterConfig,
-              regions: [...regions],
+              regions: [...contentBlocks],
+              regionOffsetsPx,
               bpPerPx,
               resolution,
               ...self.rpcProps(),
@@ -645,7 +673,8 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
             }
           }
         } catch (e) {
-          console.error(e)
+          // setError surfaces this in the display chrome with a retry, so
+          // logging it too would just double-report
           if (isAlive(self)) {
             self.setError(e)
           }

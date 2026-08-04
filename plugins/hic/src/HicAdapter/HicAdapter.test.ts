@@ -37,7 +37,10 @@ function makeMockParser() {
       if (ref.chr !== ref2.chr) {
         throw new Error(`${NO_DATA_FOR_RESOLUTION}: map ${ref.chr}-${ref2.chr}`)
       }
-      return Promise.resolve([{ bin1: 0, bin2: 0, counts: 5 }])
+      return Promise.resolve({
+        records: [{ bin1: 0, bin2: 0, counts: 5 }],
+        appliedNormalization: 'NONE',
+      })
     },
   }
 }
@@ -107,7 +110,11 @@ test('un-swaps bin1/bin2 when hic-straw transposed the query (idx1 > idx2)', asy
     getMetaData: () => Promise.resolve(metadata),
     getNormalizationOptions: () => Promise.resolve(['NONE']),
     getChromosomeIndex: chrIndex,
-    getContactRecords: () => Promise.resolve([{ bin1: 7, bin2: 3, counts: 9 }]),
+    getContactRecords: () =>
+      Promise.resolve({
+        records: [{ bin1: 7, bin2: 3, counts: 9 }],
+        appliedNormalization: 'NONE',
+      }),
   })
   const regions: Region[] = [
     { assemblyName: 'test', refName: '2', start: 0, end: 1000000 },

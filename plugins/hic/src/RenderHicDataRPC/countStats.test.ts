@@ -22,7 +22,11 @@ async function statsFor(counts: number[]) {
   jest.mocked(getAdapter).mockResolvedValue({
     dataAdapter: {
       getMultiRegionContactRecords: () =>
-        Promise.resolve({ records, resolution: RES }),
+        Promise.resolve({
+          records,
+          resolution: RES,
+          appliedNormalization: 'KR',
+        }),
     },
   } as unknown as Awaited<ReturnType<typeof getAdapter>>)
   const res = await executeRenderHicData({
@@ -31,6 +35,7 @@ async function statsFor(counts: number[]) {
       sessionId: 'test',
       adapterConfig: {},
       regions: [{ refName: 'a', start: 0, end: 1000, assemblyName: 'a' }],
+      regionOffsetsPx: [0],
       bpPerPx: 1,
       resolution: RES,
       normalization: 'KR',

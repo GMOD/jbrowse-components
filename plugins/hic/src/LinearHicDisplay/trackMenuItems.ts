@@ -27,6 +27,7 @@ interface HicMenuSelf {
   canStepResolutionCoarser: boolean
   availableNormalizations: string[] | undefined
   activeNormalization: string
+  appliedNormalization: string
   effectiveResolution: number | undefined
   resolutionBias: number
   setUseLogScale: (f: boolean) => void
@@ -123,11 +124,17 @@ function showMenuItems(self: HicMenuSelf): MenuItem[] {
 }
 
 // Only the schemes the file actually offers, so the radios can't check a
-// normalization hic-straw would silently answer with NONE. `activeNormalization`
-// — not the raw config slot — drives the tick, so a file lacking the user's
-// pick shows the scheme it really used.
+// normalization hic-straw would silently answer with NONE. `appliedNormalization`
+// — not the raw config slot, and not the requested scheme either — drives the
+// tick, so the radios always describe the matrix on screen. Two things can make
+// them diverge from the user's pick: a file that lacks the scheme entirely
+// (handled by `activeNormalization`), and a file that has it but not at the
+// current binsize — vectors are stored per (type, chr, unit, binsize). The
+// second only becomes visible once data has loaded, so the requested-but-
+// unapplied entry says so rather than leaving an unexplained tick elsewhere.
 function normalizationMenuItems(self: HicMenuSelf): MenuItem[] {
   const avail = self.availableNormalizations
+  const { activeNormalization, appliedNormalization } = self
   return avail?.length
     ? [
         {
@@ -138,10 +145,13 @@ function normalizationMenuItems(self: HicMenuSelf): MenuItem[] {
               value: norm,
               label: norm,
               helpText:
-                NORM_HELP[norm] ??
-                'Matrix normalization scheme provided by this .hic file.',
+                norm === activeNormalization &&
+                appliedNormalization !== activeNormalization
+                  ? `Not available at the current resolution in this file — showing ${appliedNormalization}. Zoom to a finer binsize to use it.`
+                  : (NORM_HELP[norm] ??
+                    'Matrix normalization scheme provided by this .hic file.'),
             })),
-            self.activeNormalization,
+            appliedNormalization,
             norm => {
               self.setActiveNormalization(norm)
             },

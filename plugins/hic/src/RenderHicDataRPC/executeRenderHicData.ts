@@ -4,7 +4,7 @@ import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 import {
   calcRegionCombinedOffsets,
-  calcRegionDataXStarts,
+  calcRegionDataXBounds,
   mirrorUInRegion,
 } from '../regionOffsets.ts'
 
@@ -23,6 +23,7 @@ export async function executeRenderHicData({
     sessionId,
     adapterConfig,
     regions,
+    regionOffsetsPx,
     bpPerPx,
     resolution,
     normalization,
@@ -37,21 +38,33 @@ export async function executeRenderHicData({
   )
   const adapter = dataAdapter as HicAdapter
 
-  const { records: features, resolution: res } =
-    await adapter.getMultiRegionContactRecords(regions, {
-      resolution,
-      normalization,
-      stopToken,
-      statusCallback,
-    })
+  const {
+    records: features,
+    resolution: res,
+    appliedNormalization,
+  } = await adapter.getMultiRegionContactRecords(regions, {
+    resolution,
+    normalization,
+    stopToken,
+    statusCallback,
+  })
 
   // the fetch may have completed after the user navigated away; bail before
   // the O(numContacts) buffer build + sort rather than doing throwaway work
   checkStopToken(stopToken)
 
   const w = res / (bpPerPx * Math.SQRT2)
-  const regionCombinedOffsets = calcRegionCombinedOffsets(regions, bpPerPx, res)
-  const regionDataXStarts = calcRegionDataXStarts(regions, bpPerPx)
+  const regionCombinedOffsets = calcRegionCombinedOffsets(
+    regions,
+    regionOffsetsPx,
+    bpPerPx,
+    res,
+  )
+  const regionDataXBounds = calcRegionDataXBounds(
+    regions,
+    regionOffsetsPx,
+    bpPerPx,
+  )
   const numContacts = features.length
   const regionReversed = regions.map(r => !!r.reversed)
 
@@ -69,10 +82,10 @@ export async function executeRenderHicData({
     // Reflect each endpoint inside its own reversed region. A cell spans
     // `[u, u+w]`, so its reflected *min* corner is `mirror(u) - w`.
     const m1 = regionReversed[region1Idx]
-      ? mirrorUInRegion(regionDataXStarts, region1Idx, u1) - w
+      ? mirrorUInRegion(regionDataXBounds, region1Idx, u1) - w
       : u1
     const m2 = regionReversed[region2Idx]
-      ? mirrorUInRegion(regionDataXStarts, region2Idx, u2) - w
+      ? mirrorUInRegion(regionDataXBounds, region2Idx, u2) - w
       : u2
     // Renderers draw the triangle above the axis only for `u1 ≤ u2` (a lower
     // pair rotates to a negative y). Reflecting a region flips the order of
@@ -119,12 +132,13 @@ export async function executeRenderHicData({
     percentile95,
     binWidth: w,
     resolution: res,
+    appliedNormalization,
     regionRefNames: regions.map(r => r.refName),
     contactBin1,
     contactBin2,
     contactRegion1,
     contactRegion2,
-    regionDataXStarts,
+    regionDataXBounds,
     regionCombinedOffsets,
     regionReversed,
   }

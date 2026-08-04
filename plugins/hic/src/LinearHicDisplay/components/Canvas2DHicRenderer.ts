@@ -22,18 +22,45 @@ import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
  * bin first, the `yScalar` squash to the already-rotated triangle. `SvgCanvas`
  * composes its CTM the same way, so `viewScale !== viewScale * yScalar` (any
  * fit-to-height export) lands on the diagonal — see svgExportGeometry.test.ts.
+ *
+ * `width` is the width of the surface being painted, used only to cull. It's an
+ * explicit argument rather than a field on `HicDrawState` because the two
+ * callers paint different surfaces: the live renderer its canvas, the SVG export
+ * a layer of its own size.
  */
 export function drawHicBlocks(
   ctx: Ctx2D,
   data: HicUploadData,
   fillStyleLut: (t: number) => string | undefined,
   state: HicDrawState,
+  width: number,
 ) {
   const { yScalar, colorMaxScore, useLogScale, viewScale, viewOffsetX } = state
   const { positions, counts, numContacts, binWidth } = data
   if (numContacts === 0) {
     return
   }
+
+  // Cull in pre-rotation data space, where the visible strip is a plain range on
+  // one axis: a cell's screen x is `((px+py)/√2)*viewScale + viewOffsetX`, so
+  // `px+py` alone decides whether it lands on the surface. The GPU path lets the
+  // rasterizer discard these, but Canvas2D pays a full fillRect for every one —
+  // and at the auto binsize a full-width triangle is ~300k contacts, several
+  // times that once the user steps the resolution finer. Panning keeps the
+  // fetched matrix and redraws it shifted (see renderTransform), so off-surface
+  // contacts are the normal case, not an edge one.
+  //
+  // `positions` holds the cell's apex-ward corner, and the opposite corner
+  // `(px+w, py+w)` sits `2*binWidth` further along the sum axis — so a cell
+  // straddling the left edge has a min corner that far outside it. Padding by
+  // exactly that keeps every partially-visible bin (the right edge needs no pad,
+  // but symmetry is cheaper to keep honest than an asymmetric bound).
+  //
+  // Height is deliberately not culled: the triangle apex and `yScalar` already
+  // bound it, and a second test per cell would eat the win.
+  const pad = 2 * binWidth
+  const minSum = (-viewOffsetX / viewScale) * Math.SQRT2 - pad
+  const maxSum = ((width - viewOffsetX) / viewScale) * Math.SQRT2 + pad
 
   ctx.save()
   ctx.translate(viewOffsetX, 0)
@@ -43,6 +70,10 @@ export function drawHicBlocks(
   for (let i = 0; i < numContacts; i++) {
     const px = positions[i * 2]!
     const py = positions[i * 2 + 1]!
+    const sum = px + py
+    if (sum < minSum || sum > maxSum) {
+      continue
+    }
     const count = counts[i]!
 
     const t = mapHicCount(count, colorMaxScore, useLogScale)
@@ -73,6 +104,6 @@ export class Canvas2DHicRenderer
     if (!data || !this.fillStyleLut) {
       return
     }
-    drawHicBlocks(this.ctx, data, this.fillStyleLut, state)
+    drawHicBlocks(this.ctx, data, this.fillStyleLut, state, state.canvasWidth)
   }
 }

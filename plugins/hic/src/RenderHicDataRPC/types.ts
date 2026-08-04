@@ -5,6 +5,13 @@ export interface RenderHicDataArgs {
   sessionId: string
   adapterConfig: Record<string, unknown>
   regions: Region[]
+  /**
+   * Where each region sits on the screen axis, in pixels from the apex
+   * (data-x = 0), parallel to `regions`. Taken from the view's block layout
+   * rather than re-derived from region widths in the worker — see
+   * `calcRegionScreenOffsetsPx` for why a running sum is wrong.
+   */
+  regionOffsetsPx: number[]
   bpPerPx: number
   resolution: number
   normalization: string
@@ -43,6 +50,14 @@ export interface HicDataResult {
    */
   resolution: number
   /**
+   * The normalization the `.hic` file actually applied, which is not always the
+   * one requested: vectors are stored per (type, chr, unit, binsize), so a file
+   * can offer KR at 5 kb and nothing at 2.5 Mb. hic-straw's answer was to warn
+   * to the console and hand back raw counts; carrying it here lets the track
+   * menu tick the scheme in effect rather than the one asked for.
+   */
+  appliedNormalization: string
+  /**
    * refName per region index, parallel to the `regions` passed to the RPC.
    * Hover uses `regionRefNames[region1Idx]` to label a contact's locus.
    */
@@ -58,11 +73,13 @@ export interface HicDataResult {
   contactRegion1: Uint16Array
   contactRegion2: Uint16Array
   /**
-   * Pre-rotation data-x position where each region starts, in the same
-   * coordinate space as `positions[]` (length regions.length+1). Hover
-   * hit-test buckets a cursor into a region pair against this array.
+   * Pre-rotation data-x span of each region, in the same coordinate space as
+   * `positions[]`, flattened as `[start0, end0, start1, end1, …]`. Hover
+   * hit-test buckets a cursor into a region pair against this array, and the
+   * reversed-region mirror reflects within a span. Spans are not necessarily
+   * contiguous — see `calcRegionDataXBounds`.
    */
-  regionDataXStarts: number[]
+  regionDataXBounds: number[]
   /**
    * Per-region offset baked into `positions[]`:
    * `positionX = (bin1 + regionCombinedOffsets[r1]) * binWidth`.

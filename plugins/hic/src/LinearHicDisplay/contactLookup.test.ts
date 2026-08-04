@@ -22,8 +22,7 @@ function makeData(
 ) {
   const n = contacts.length
   const offsets = binBase.map((base, r) => r * span - base)
-  const starts = binBase.map((_, r) => r * span * W)
-  starts.push(binBase.length * span * W)
+  const bounds = binBase.flatMap((_, r) => [r * span * W, (r + 1) * span * W])
   const positions = new Float32Array(n * 2)
   const counts = new Float32Array(n)
   const contactBin1 = new Uint32Array(n)
@@ -47,12 +46,13 @@ function makeData(
     percentile95: n,
     binWidth: W,
     resolution: 1000,
+    appliedNormalization: 'KR',
     regionRefNames: binBase.map((_, r) => `chr${r + 1}`),
     contactBin1,
     contactBin2,
     contactRegion1,
     contactRegion2,
-    regionDataXStarts: starts,
+    regionDataXBounds: bounds,
     regionCombinedOffsets: offsets,
     regionReversed: binBase.map(() => false),
   } satisfies HicDataResult

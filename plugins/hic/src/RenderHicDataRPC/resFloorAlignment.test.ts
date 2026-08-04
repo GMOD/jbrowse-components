@@ -29,7 +29,11 @@ async function run(
   jest.mocked(getAdapter).mockResolvedValue({
     dataAdapter: {
       getMultiRegionContactRecords: () =>
-        Promise.resolve({ records, resolution: res }),
+        Promise.resolve({
+          records,
+          resolution: res,
+          appliedNormalization: 'KR',
+        }),
     },
   } as unknown as Awaited<ReturnType<typeof getAdapter>>)
   const out = await executeRenderHicData({
@@ -38,6 +42,7 @@ async function run(
       sessionId: 'test',
       adapterConfig: {},
       regions: [region],
+      regionOffsetsPx: [0],
       bpPerPx,
       resolution: res,
       normalization: 'KR',

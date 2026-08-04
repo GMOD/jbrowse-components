@@ -22,6 +22,7 @@ function baseSelf() {
     canStepResolutionCoarser: true,
     availableNormalizations: ['KR', 'VC', 'NONE'] as string[] | undefined,
     activeNormalization: 'KR',
+    appliedNormalization: 'KR',
     effectiveResolution: 25000 as number | undefined,
     resolutionBias: 0,
     setUseLogScale: jest.fn(),
@@ -93,13 +94,37 @@ describe('hic track menu shape', () => {
   // file that lacks the user's choice shows the scheme it really used.
   it('ticks the normalization actually in effect', () => {
     const items = buildHicTrackMenuItems(
-      makeSelf({ activeNormalization: 'VC' }),
+      makeSelf({ activeNormalization: 'VC', appliedNormalization: 'VC' }),
     )
     expect(
       subMenuOf(items, 'Normalization')
         .filter(i => 'checked' in i && i.checked)
         .map(labelOf),
     ).toEqual(['VC'])
+  })
+
+  // A file can list KR yet carry no KR vector at the current binsize (they are
+  // stored per resolution), in which case hic-straw hands back raw counts. The
+  // tick follows the data, and the requested row explains where it went rather
+  // than leaving an unexplained tick on NONE.
+  it('ticks what the data carries when the requested scheme was unavailable', () => {
+    const rows = subMenuOf(
+      buildHicTrackMenuItems(
+        makeSelf({
+          availableNormalizations: ['NONE', 'KR'],
+          activeNormalization: 'KR',
+          appliedNormalization: 'NONE',
+        }),
+      ),
+      'Normalization',
+    )
+    expect(rows.filter(i => 'checked' in i && i.checked).map(labelOf)).toEqual([
+      'NONE',
+    ])
+    const kr = rows.find(i => labelOf(i) === 'KR')!
+    expect('helpText' in kr ? kr.helpText : undefined).toMatch(
+      /Not available at the current resolution/,
+    )
   })
 
   // Both lists arrive from an async CoreGetInfo call, so the menu is built at

@@ -145,6 +145,69 @@ describe('Canvas2DHicRenderer', () => {
     expect(ctx.fillRect).toHaveBeenCalledTimes(3)
   })
 
+  // Canvas2D pays a full fillRect per contact, and a panned viewport redraws a
+  // matrix that mostly sits off-screen (renderTransform shifts the last fetch
+  // rather than refetching), so the draw loop culls on the rotated x axis.
+  // A cull that eats a visible bin is worse than no cull, hence the edge cases.
+  describe('off-screen culling', () => {
+    // screen x of a cell's apex-ward corner is `((px+py)/√2)*viewScale + off`
+    const screenX = (px: number, py: number) => ((px + py) / Math.SQRT2) * 1
+    const W = 10
+
+    function drawnAt(px: number, py: number, canvasWidth: number) {
+      const { canvas, ctx } = createMockCanvas()
+      const renderer = new Canvas2DHicRenderer(canvas)
+      renderer.uploadColorRamp(makeColorRamp())
+      renderer.render(
+        makeData({ positions: new Float32Array([px, py]), binWidth: W }),
+        makeRenderState({ canvasWidth }),
+      )
+      return ctx.fillRect.mock.calls.length === 1
+    }
+
+    test('drops a cell entirely right of the canvas', () => {
+      // apex corner well past the right edge of an 800px canvas
+      expect(screenX(1200, 1200)).toBeGreaterThan(800)
+      expect(drawnAt(1200, 1200, 800)).toBe(false)
+    })
+
+    test('drops a cell entirely left of the canvas', () => {
+      expect(drawnAt(-500, -500, 800)).toBe(false)
+    })
+
+    test('keeps a cell straddling the left edge', () => {
+      // apex corner is off-screen left, but the cell's far corner
+      // (px+W, py+W) — 2*binWidth further along the sum axis — is on-screen
+      const px = -W / 2
+      expect(screenX(px, px)).toBeLessThan(0)
+      expect(screenX(px + W, px + W)).toBeGreaterThan(0)
+      expect(drawnAt(px, px, 800)).toBe(true)
+    })
+
+    test('keeps a cell straddling the right edge', () => {
+      // apex corner just inside the right edge, far corner past it
+      const px = (800 * Math.SQRT2 - 5) / 2
+      expect(screenX(px, px)).toBeLessThan(800)
+      expect(screenX(px + W, px + W)).toBeGreaterThan(800)
+      expect(drawnAt(px, px, 800)).toBe(true)
+    })
+
+    test('keeps everything on a canvas wide enough for the whole matrix', () => {
+      const { canvas, ctx } = createMockCanvas()
+      const renderer = new Canvas2DHicRenderer(canvas)
+      renderer.uploadColorRamp(makeColorRamp())
+      renderer.render(
+        makeData({
+          positions: new Float32Array([0, 0, 10, 10, 20, 20]),
+          counts: new Float32Array([50, 75, 90]),
+          numContacts: 3,
+        }),
+        makeRenderState({ canvasWidth: 800 }),
+      )
+      expect(ctx.fillRect).toHaveBeenCalledTimes(3)
+    })
+  })
+
   test('useLogScale affects color mapping', () => {
     const { canvas, ctx } = createMockCanvas()
 

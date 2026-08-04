@@ -67,7 +67,7 @@ function HicSvgBody({
           height={height}
           opts={opts}
           paint={ctx => {
-            drawHicBlocks(ctx, rpcData, fillStyleLut, renderState)
+            drawHicBlocks(ctx, rpcData, fillStyleLut, renderState, visibleWidth)
           }}
         />
       </SvgClipRect>

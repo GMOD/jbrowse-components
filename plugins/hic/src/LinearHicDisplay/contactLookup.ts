@@ -119,13 +119,15 @@ function probe(
 
 /**
  * Bucket a pre-rotation data-x coordinate into a region index against
- * `regionDataXStarts` (length regions.length+1; index r is the start of region
- * r). Returns the last region whose start is ≤ `u`, clamping to region 0 for
- * coordinates left of the first region.
+ * `regionDataXBounds` (`[start0, end0, start1, end1, …]`). Returns the last
+ * region whose start is ≤ `u`, clamping to region 0 for coordinates left of the
+ * first region — so a cursor in a gap between two regions (an elided region, or
+ * padding) reads as the region on its left, which is what the probe below then
+ * fails to match on, yielding no contact.
  */
-function findRegion(starts: number[], u: number) {
-  for (let i = starts.length - 2; i >= 0; i--) {
-    if (u >= starts[i]!) {
+function findRegion(bounds: number[], u: number) {
+  for (let i = bounds.length / 2 - 1; i >= 0; i--) {
+    if (u >= bounds[i * 2]!) {
       return i
     }
   }
@@ -145,22 +147,22 @@ export function findContactAt(
 ): HicContactItem | undefined {
   const {
     binWidth,
-    regionDataXStarts,
+    regionDataXBounds,
     regionCombinedOffsets,
     regionReversed,
     counts,
   } = data
   // Bucketing needs no un-mirroring first: a reversed region reflects onto its
   // own span, so the cursor already sits in the right region either way.
-  const regionX = findRegion(regionDataXStarts, ux)
-  const regionY = findRegion(regionDataXStarts, uy)
+  const regionX = findRegion(regionDataXBounds, ux)
+  const regionY = findRegion(regionDataXBounds, uy)
   // Undo the reflection the worker baked into positions[] (it is its own
   // inverse) to land back in the forward space the bin math assumes.
   const fx = regionReversed[regionX]
-    ? mirrorUInRegion(regionDataXStarts, regionX, ux)
+    ? mirrorUInRegion(regionDataXBounds, regionX, ux)
     : ux
   const fy = regionReversed[regionY]
-    ? mirrorUInRegion(regionDataXStarts, regionY, uy)
+    ? mirrorUInRegion(regionDataXBounds, regionY, uy)
     : uy
   const binX = Math.floor(fx / binWidth - regionCombinedOffsets[regionX]!)
   const binY = Math.floor(fy / binWidth - regionCombinedOffsets[regionY]!)

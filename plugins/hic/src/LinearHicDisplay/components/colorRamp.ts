@@ -118,11 +118,13 @@ function buildRamp(scheme: ColorStops): Uint8Array {
   return data
 }
 
-const RAMPS: Record<HicColorScheme, Uint8Array> = {
-  juicebox: buildRamp(JUICEBOX_STOPS),
-  fall: buildRamp(FALL_STOPS),
-  viridis: buildRamp(VIRIDIS_FULL_STOPS),
-}
+// Derived from SCHEMES rather than listing the three names a third time, so the
+// "adding a scheme is one edit" promise above actually holds: SCHEMES is the
+// only table keyed by HicColorScheme, and its Record type makes a missing entry
+// a type error.
+const RAMPS = Object.fromEntries(
+  Object.entries(SCHEMES).map(([name, stops]) => [name, buildRamp(stops)]),
+) as Record<HicColorScheme, Uint8Array>
 
 export function generateColorRamp(colorScheme: HicColorScheme): Uint8Array {
   return RAMPS[colorScheme]
@@ -178,12 +180,18 @@ export function getLegendSvgStops(colorScheme: HicColorScheme) {
 // the cross-plugin primitive.
 export function makeHicFillStyleLut(ramp: Uint8Array) {
   const fill = makeRampFillStyleLut(ramp)
-  // Read the alpha byte directly rather than via lookupColorRamp, which
-  // allocates an {r,g,b,a} object on every call — this LUT runs once per
-  // contact per frame on the Canvas2D/SVG path.
+  // Precompute the transparent/opaque decision per ramp entry instead of
+  // re-deriving it per call: this LUT runs once per painted contact per frame,
+  // and `fill` already does its own index math. Reading the alpha byte here
+  // (rather than via lookupColorRamp) also avoids allocating an {r,g,b,a} object
+  // 256 times for a question that only needs one byte.
+  const opaque = new Uint8Array(256)
+  for (let i = 0; i < 256; i++) {
+    opaque[i] = ramp[i * 4 + 3]! / 255 < 0.01 ? 0 : 1
+  }
   return (t: number) => {
     const idx = Math.max(0, Math.min(255, Math.round(t * 255)))
-    return ramp[idx * 4 + 3]! / 255 < 0.01 ? undefined : fill(t)
+    return opaque[idx] === 0 ? undefined : fill(t)
   }
 }
 

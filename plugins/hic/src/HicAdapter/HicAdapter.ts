@@ -56,7 +56,7 @@ interface HicParser {
     ref2: Ref,
     units: string,
     binsize: number,
-  ) => Promise<ContactRecord[]>
+  ) => Promise<{ records: ContactRecord[]; appliedNormalization: string }>
   getMetaData: () => Promise<HicMetadata>
   getNormalizationOptions: () => Promise<string[]>
   getChromosomeIndex: (chrAlias: string) => Promise<number | undefined>
@@ -122,7 +122,11 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
   async getMultiRegionContactRecords(
     regions: Region[],
     opts: HicContactOptions,
-  ): Promise<{ records: MultiRegionContactRecord[]; resolution: number }> {
+  ): Promise<{
+    records: MultiRegionContactRecord[]
+    resolution: number
+    appliedNormalization: string
+  }> {
     const {
       resolution: res,
       normalization = 'KR',
@@ -138,6 +142,11 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     }
 
     const allRecords: MultiRegionContactRecord[] = []
+    // Downgraded to whatever a pair actually got if any pair fell back, so the
+    // display never claims a normalization only some of the matrix received —
+    // vectors are stored per (type, chr, unit, binsize), so partial coverage is
+    // a real state, not a theoretical one.
+    let appliedNormalization = normalization
 
     // Resolve each region's file chromosome index once (O(n)) rather than
     // re-deriving it inside every region pair (O(n²)) — it's fixed per region
@@ -155,7 +164,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
             // cancel point between region pairs so a multi-region fetch can be
             // stopped part-way rather than running every pair to completion
             checkStopToken(stopToken)
-            const pairRecords = await this.getRegionPairRecords({
+            const applied = await this.appendRegionPairRecords(allRecords, {
               region1: regions[i]!,
               region2: regions[j]!,
               region1Idx: i,
@@ -165,10 +174,8 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
               normalization,
               resolution: res,
             })
-            // Push element-wise (not `push(...spread)`) so a large pair can't
-            // overflow the call-stack argument limit.
-            for (const rec of pairRecords) {
-              allRecords.push(rec)
+            if (applied !== undefined && applied !== normalization) {
+              appliedNormalization = applied
             }
           }
         }
@@ -176,47 +183,57 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
       stopToken,
     )
 
-    return { records: allRecords, resolution: res }
+    return { records: allRecords, resolution: res, appliedNormalization }
   }
 
   /**
-   * Fetch contacts for one region pair, un-swapping hic-straw's transpose so
-   * `bin1` always maps back to `region1`'s coordinates.
+   * Append one region pair's contacts to `out`, un-swapping hic-straw's
+   * transpose so `bin1` always maps back to `region1`'s coordinates. Returns
+   * the normalization the file actually applied to this pair.
    *
-   * Returns `[]` for a pair the file has no data for at this resolution rather
-   * than throwing: inter-chromosomal pairs commonly only carry coarse
-   * binsizes, so when several regions are displayed the fine auto-picked
-   * resolution that intra-chromosomal pairs use can be absent for the
-   * inter-chromosomal pairs (hic-straw throws in that case). Isolating each
-   * pair keeps one missing matrix from failing the whole multi-region fetch.
+   * Appends in place rather than returning its own array: a single pair can hold
+   * millions of contacts at a fine binsize, and an intermediate array per pair
+   * doubles the peak allocation for nothing.
+   *
+   * Returns `undefined` (contributing nothing) for a pair the file has no data
+   * for at this resolution rather than throwing: inter-chromosomal pairs
+   * commonly only carry coarse binsizes, so when several regions are displayed
+   * the fine auto-picked resolution that intra-chromosomal pairs use can be
+   * absent for the inter-chromosomal pairs (hic-straw throws in that case).
+   * Isolating each pair keeps one missing matrix from failing the whole
+   * multi-region fetch.
    */
-  private async getRegionPairRecords({
-    region1,
-    region2,
-    region1Idx,
-    region2Idx,
-    chr1Idx,
-    chr2Idx,
-    normalization,
-    resolution,
-  }: {
-    region1: Region
-    region2: Region
-    region1Idx: number
-    region2Idx: number
-    chr1Idx: number | undefined
-    chr2Idx: number | undefined
-    normalization: string
-    resolution: number
-  }): Promise<MultiRegionContactRecord[]> {
+  private async appendRegionPairRecords(
+    out: MultiRegionContactRecord[],
+    {
+      region1,
+      region2,
+      region1Idx,
+      region2Idx,
+      chr1Idx,
+      chr2Idx,
+      normalization,
+      resolution,
+    }: {
+      region1: Region
+      region2: Region
+      region1Idx: number
+      region2Idx: number
+      chr1Idx: number | undefined
+      chr2Idx: number | undefined
+      normalization: string
+      resolution: number
+    },
+  ): Promise<string | undefined> {
     try {
-      const records = await this.hic.getContactRecords(
-        normalization,
-        { chr: region1.refName, start: region1.start, end: region1.end },
-        { chr: region2.refName, start: region2.start, end: region2.end },
-        'BP',
-        resolution,
-      )
+      const { records, appliedNormalization } =
+        await this.hic.getContactRecords(
+          normalization,
+          { chr: region1.refName, start: region1.start, end: region1.end },
+          { chr: region2.refName, start: region2.start, end: region2.end },
+          'BP',
+          resolution,
+        )
       // hic-straw transposes the query when idx1 > idx2 (or same chr, region1
       // starts after region2), swapping bin1/bin2 relative to our (i, j)
       // order — un-swap before storing. The indices come from hic-straw's own
@@ -228,16 +245,19 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
         chr2Idx !== undefined &&
         (chr1Idx > chr2Idx ||
           (chr1Idx === chr2Idx && region1.start >= region2.end))
-      return records.map(({ bin1, bin2, counts }) => ({
-        bin1: transposed ? bin2 : bin1,
-        bin2: transposed ? bin1 : bin2,
-        counts,
-        region1Idx,
-        region2Idx,
-      }))
+      for (const { bin1, bin2, counts } of records) {
+        out.push({
+          bin1: transposed ? bin2 : bin1,
+          bin2: transposed ? bin1 : bin2,
+          counts,
+          region1Idx,
+          region2Idx,
+        })
+      }
+      return appliedNormalization
     } catch (e) {
       if (`${e}`.includes(NO_DATA_FOR_RESOLUTION)) {
-        return []
+        return undefined
       }
       throw e
     }

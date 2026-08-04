@@ -29,6 +29,8 @@ function exportBin(yScalar: number) {
       viewScale: 1,
       viewOffsetX: 0,
     },
+    // wide enough that the cull can't be what makes the assertions pass
+    10_000,
   )
   const svg = ctx.getSerializedSvg()
   const [w, h] = /width="(\S+)" height="(\S+)"/

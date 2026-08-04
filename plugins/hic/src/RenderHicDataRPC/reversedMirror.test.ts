@@ -33,7 +33,11 @@ async function run(regions: Region[], records: Rec[]) {
   jest.mocked(getAdapter).mockResolvedValue({
     dataAdapter: {
       getMultiRegionContactRecords: () =>
-        Promise.resolve({ records, resolution: RES }),
+        Promise.resolve({
+          records,
+          resolution: RES,
+          appliedNormalization: 'KR',
+        }),
     },
   } as unknown as Awaited<ReturnType<typeof getAdapter>>)
   const res = await executeRenderHicData({
@@ -42,6 +46,8 @@ async function run(regions: Region[], records: Rec[]) {
       sessionId: 'test',
       adapterConfig: {},
       regions,
+      // every region here is SPAN wide and they tile the axis contiguously
+      regionOffsetsPx: regions.map((_, i) => (i * SPAN) / BP_PER_PX),
       bpPerPx: BP_PER_PX,
       resolution: RES,
       normalization: 'KR',
@@ -129,7 +135,7 @@ describe('reversed hic regions', () => {
     }
     // region 1 is reversed, so its intra-region contacts mirror within region
     // 1's own span and stay inside it
-    const [s1, e1] = [rev.regionDataXStarts[1]!, rev.regionDataXStarts[2]!]
+    const [s1, e1] = [rev.regionDataXBounds[2]!, rev.regionDataXBounds[3]!]
     for (const i of [4, 5]) {
       const { ux, uy } = cellCenter(rev, i)
       expect(ux).toBeGreaterThanOrEqual(s1)

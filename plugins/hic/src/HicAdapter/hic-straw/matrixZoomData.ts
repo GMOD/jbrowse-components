@@ -1,6 +1,8 @@
 // Vendored and converted to TypeScript from hic-straw (igvteam, MIT license)
 // https://github.com/igvteam/hic-straw
 
+import { binWindow } from './binWindow.ts'
+
 import type BinaryParser from './binary.ts'
 import type { BlockIndexEntry, Chromosome, HicRegion, Zoom } from './types.ts'
 
@@ -24,15 +26,18 @@ export default class MatrixZoomData {
     const blockBinCount = this.blockBinCount
     const blockColumnCount = this.blockColumnCount
 
+    // Integer bin bounds, not the raw fractional quotients upstream used: the
+    // blocks selected here must cover every bin the record filter will accept,
+    // and `binWindow` widens that to any bin overlapping the region. Selecting
+    // too many blocks only costs a read the filter then discards; selecting too
+    // few silently drops records (see binWindow.ts).
+    const [x1, x2] = binWindow(region1, binsize)
+    const [y1, y2] = binWindow(region2, binsize)
+
     // A Set dedups the block numbers that transposition can collide on the
     // same-chr diagonal, and keeps both branches uniform.
     const blockNumbers = new Set<number>()
     if (version < 9 || !sameChr) {
-      const x1 = region1.start / binsize
-      const x2 = region1.end / binsize
-      const y1 = region2.start / binsize
-      const y2 = region2.end / binsize
-
       const col1 = Math.floor(x1 / blockBinCount)
       const col2 = Math.floor((x2 - 1) / blockBinCount)
       const row1 = Math.floor(y1 / blockBinCount)
@@ -48,26 +53,22 @@ export default class MatrixZoomData {
         }
       }
     } else {
-      const binX1 = region1.start / binsize
-      const binX2 = region1.end / binsize
-      const binY1 = region2.start / binsize
-      const binY2 = region2.end / binsize
-
       // PAD = positionAlongDiagonal (~projected). Depth is the axis
       // perpendicular to the diagonal; nearer means closer to the diagonal.
-      const translatedLowerPAD = Math.floor((binX1 + binY1) / 2 / blockBinCount)
-      const translatedHigherPAD = Math.floor(
-        (binX2 + binY2) / 2 / blockBinCount,
-      )
+      // Widening stays safe here too: overlapping regions take the
+      // `containsDiagonal` branch (nearerDepth 0) and disjoint ones only see
+      // the near-corner gap shrink, so no depth level is lost.
+      const translatedLowerPAD = Math.floor((x1 + y1) / 2 / blockBinCount)
+      const translatedHigherPAD = Math.floor((x2 + y2) / 2 / blockBinCount)
       const translatedNearerDepth = Math.floor(
-        Math.log2(1 + Math.abs(binX1 - binY2) / Math.sqrt(2) / blockBinCount),
+        Math.log2(1 + Math.abs(x1 - y2) / Math.sqrt(2) / blockBinCount),
       )
       const translatedFurtherDepth = Math.floor(
-        Math.log2(1 + Math.abs(binX2 - binY1) / Math.sqrt(2) / blockBinCount),
+        Math.log2(1 + Math.abs(x2 - y1) / Math.sqrt(2) / blockBinCount),
       )
 
       // code above assumes above diagonal, but we could be below it
-      const containsDiagonal = (binX2 - binY1) * (binX1 - binY2) < 0
+      const containsDiagonal = (x2 - y1) * (x1 - y2) < 0
       const nearerDepth = containsDiagonal
         ? 0
         : Math.min(translatedNearerDepth, translatedFurtherDepth)
