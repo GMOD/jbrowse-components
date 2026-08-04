@@ -7,6 +7,7 @@ import {
 } from '@jbrowse/core/util/stopToken'
 import { collectWiggleTransferables } from '@jbrowse/wiggle-core'
 
+import { isMultiSource } from '../multiSourceAdapter.ts'
 import {
   featuresToRaw,
   groupFeaturesBySource,
@@ -30,24 +31,6 @@ interface FetchOpts {
   // adapters (MultiWiggleAdapter, getFallbackSourceArrays below), not here —
   // this executor doesn't know how many files there are.
   statusCallback?: StatusCallback
-}
-
-// Multi-source wiggle adapters fan out to inner adapters themselves and expose
-// this method, handing each of them every region at once so a subtrack whose
-// adapter coalesces reads (BigWig) serves the whole view in one pass. The
-// executor never groups features by source — that would be a third walk over
-// already-typed-array data. `raws` is aligned to the requested regions.
-interface MultiSourceWiggleAdapter extends BaseFeatureDataAdapter {
-  getMultiSourceFeatureArraysMulti(
-    regions: Region[],
-    opts: FetchOpts,
-  ): Promise<{ source: string; raws: RawFeatureArrays[] }[]>
-}
-
-function isMultiSource(
-  adapter: BaseFeatureDataAdapter,
-): adapter is MultiSourceWiggleAdapter {
-  return 'getMultiSourceFeatureArraysMulti' in adapter
 }
 
 // `primary` order first (the caller's stable list), then any sources present in
@@ -84,11 +67,13 @@ async function getFallbackSourceArrays(
     }),
   )
   const sources = [
-    ...new Set(groupsPerRegion.flatMap(groups => Object.keys(groups))),
+    ...new Set(groupsPerRegion.flatMap(groups => [...groups.keys()])),
   ]
   return sources.map(source => ({
     source,
-    raws: groupsPerRegion.map(groups => featuresToRaw(groups[source] ?? [])),
+    raws: groupsPerRegion.map(groups =>
+      featuresToRaw(groups.get(source) ?? []),
+    ),
   }))
 }
 
@@ -167,14 +152,14 @@ export async function executeRenderMultiWiggleData({
   // Otherwise a source with zero features in the fetched regions would be
   // absent from the payload, get echoed back on every later fetch, and stay
   // invisible even after navigating to where it has data.
-  const presentSources: SourceInfo[] = perSource.map(({ source }) => ({
-    name: source,
-  }))
   const orderedSources: SourceInfo[] = isMulti
     ? sourcesArg?.length
       ? sourcesArg
       : await dataAdapter.getSources(regions)
-    : unionSourcesByName(sourcesArg ?? [], presentSources)
+    : unionSourcesByName(
+        sourcesArg ?? [],
+        perSource.map(({ source }) => ({ name: source })),
+      )
 
   // Every region carries the full source list — a source with no features here
   // still gets an entry, so row placement stays aligned across regions.

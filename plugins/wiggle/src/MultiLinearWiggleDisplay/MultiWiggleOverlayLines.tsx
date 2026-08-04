@@ -18,7 +18,6 @@ interface OverlayModel {
   isDensityMode: boolean
   showRowSeparators: boolean
   showCrossHatches: boolean
-  numSources: number
   numRows: number
   effectiveRowHeight: number
   ticks?: YScaleTicks
@@ -36,7 +35,6 @@ export default observer(function MultiWiggleOverlayLines({
     isDensityMode,
     showRowSeparators,
     showCrossHatches,
-    numSources,
     numRows,
     effectiveRowHeight,
     ticks,
@@ -49,9 +47,12 @@ export default observer(function MultiWiggleOverlayLines({
   // getStrokeProps splits the alpha onto a separate stroke-opacity attribute so
   // it survives the SVG export (renderToStaticMarkup strips rgba() alpha),
   // keeping the live view and export identical. See CrossHatches.
+  // numRows, like the cross hatches below: it is numSources outside overlay and
+  // 1 inside it, so a single count drives both and they can't disagree about
+  // where a row boundary is.
   const separators =
-    !isOverlay && showRowSeparators && numSources > 1
-      ? Array.from({ length: numSources - 1 }).map((_, idx) => {
+    !isOverlay && showRowSeparators && numRows > 1
+      ? Array.from({ length: numRows - 1 }).map((_, idx) => {
           // +0.5 lands the 1px stroke on a device-pixel boundary so it renders
           // crisp instead of anti-aliased across two rows.
           const y = Math.round(getRowTop(idx + 1, effectiveRowHeight)) + 0.5

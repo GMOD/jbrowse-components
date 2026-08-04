@@ -539,12 +539,10 @@ export function makeWiggleRenderState(
     canvasWidth: width,
     canvasHeight: height,
     // Floored at 1: a source list that filters to empty (a subtree filter
-    // naming nothing present) leaves numRows 0 while buildSourceRenderData
-    // still falls back to the payload's sources and uploads instances. The
-    // Canvas2D path routes its divide through getRowHeight, but the shader's
-    // bare `canvasHeight / numRows` has no such guard — row 0's `rowIndex *
-    // inf` is NaN, so the GPU backend silently drew nothing where Canvas2D drew
-    // a row. Flooring here is the one place both backends read.
+    // naming nothing present) leaves numRows 0. Nothing is encoded for that
+    // state any more, but the shader's bare `canvasHeight / numRows` divides
+    // regardless of instance count and would seed the row transform with
+    // Infinity. Flooring here is the one place both backends read.
     numRows: Math.max(1, numRows),
     scatterPointSize: self.scatterPointSize,
     lineWidth: self.lineWidth,

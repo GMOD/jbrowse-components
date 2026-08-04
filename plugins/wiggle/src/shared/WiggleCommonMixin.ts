@@ -10,7 +10,7 @@ import { WiggleScoreConfigMixin } from './WiggleScoreConfigMixin.ts'
 import { wiggleFeatureWidgetData } from './wiggleComponentUtils.ts'
 
 import type { WiggleDataResult, WiggleFeatureUnderMouse } from '../util.ts'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { ObservableMap } from 'mobx'
 
@@ -20,7 +20,7 @@ import type { ObservableMap } from 'mobx'
 // A free function rather than a getter to keep the mixin's `.views` layering
 // shallow enough for MST's compose type inference.
 function visibleEntries(
-  self: IAnyStateTreeNode & {
+  self: IStateTreeNode & {
     rpcDataMap: ObservableMap<number, WiggleDataResult>
     autoscaleSourceNames: Set<string> | undefined
   },

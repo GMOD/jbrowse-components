@@ -212,6 +212,40 @@ describe('plain feature adapter fallback', () => {
     })
   })
 
+  // Source names come out of a file's column, so they can be anything. Both of
+  // these are why the grouping is a Map rather than a plain object: integer-like
+  // keys hoist ahead of the rest in one, and Object.prototype members read back
+  // as inherited functions.
+  it('discovers numeric-looking sources in file order, not numeric order', async () => {
+    jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
+      getFeaturesArray: jest
+        .fn()
+        .mockResolvedValue([
+          feature('10', 0, 1),
+          feature('2', 10, 2),
+          feature('1', 20, 3),
+        ]),
+    } as never)
+
+    const results = await run({})
+
+    expect(results[0]!.sources.map(s => s.name)).toEqual(['10', '2', '1'])
+    expect(scoresOf(results[0]!, '10')).toEqual([1])
+  })
+
+  it('handles a source named after an Object.prototype member', async () => {
+    jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
+      getFeaturesArray: jest
+        .fn()
+        .mockResolvedValue([feature('constructor', 0, 7)]),
+    } as never)
+
+    const results = await run({})
+
+    expect(results[0]!.sources.map(s => s.name)).toEqual(['constructor'])
+    expect(scoresOf(results[0]!, 'constructor')).toEqual([7])
+  })
+
   it("keeps the caller's source order ahead of newly-discovered ones", async () => {
     jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
       getFeaturesArray: jest

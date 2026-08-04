@@ -134,6 +134,31 @@ describe('buildSourceRenderData pos/neg coloring', () => {
   })
 })
 
+describe('buildSourceRenderData source list', () => {
+  // The display's visible list is the only thing iterated. It filtering to
+  // empty (a subtree filter naming no present source) means "draw nothing";
+  // falling back to the payload's sources there painted the first one
+  // full-height under the "no subtracks match" message.
+  test('an empty visible list encodes nothing', () => {
+    expect(
+      buildSourceRenderData(makeData(), {
+        ...baseGpuProps,
+        sources: [],
+      }),
+    ).toEqual([])
+  })
+
+  // A source the payload doesn't carry still occupies its row, so the rows
+  // below it don't shift up onto data that isn't theirs.
+  test('a source missing from the payload keeps its row index', () => {
+    const out = buildSourceRenderData(makeData(), {
+      ...baseGpuProps,
+      sources: [{ name: 'absent' }, { name: 'default' }],
+    })
+    expect(out.map(s => s.rowIndex)).toEqual([1, 1])
+  })
+})
+
 // The interpolated line is the only rendering that connects across bins, so it
 // is the only one that needs a hole threshold. Computed once per layer here so
 // the Canvas2D draw and the GPU instance encoding read the same number rather

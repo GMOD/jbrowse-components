@@ -44,9 +44,8 @@ function drawWiggleBlocks(
     origin,
   } = state
   // getRowHeight, not a bare divide: a source list that filters to empty (a
-  // subtree filter naming nothing present) leaves numRows 0 while
-  // buildSourceRenderData still falls back to the payload's sources, and
-  // Infinity here propagates to NaN rect geometry.
+  // subtree filter naming nothing present) leaves numRows 0, and Infinity here
+  // would propagate to NaN rect geometry.
   const rowHeight = getRowHeight(canvasHeight, numRows)
 
   forEachClippedBlock(

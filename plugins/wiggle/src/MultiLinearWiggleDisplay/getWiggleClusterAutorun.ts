@@ -7,7 +7,7 @@ import { runWiggleClustering } from './runWiggleClustering.ts'
 
 import type { ReducedModel } from './clusterModelTypes.ts'
 import type { RpcStatus } from '@jbrowse/core/util'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 // The multi-wiggle "Cluster columns" flavor of the shared declarative-
 // clustering autorun: fires once on `runClustering: true` and runs the real
@@ -15,7 +15,7 @@ import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 // DEFAULT_SAMPLES_PER_PIXEL for why this ignores the dialog's persisted
 // preference). Refuses a single row, matching the track menu's gate.
 export function getWiggleClusterAutorun(
-  self: IAnyStateTreeNode &
+  self: IStateTreeNode &
     ReducedModel & {
       runClustering?: boolean
       setRunClustering: (arg?: boolean) => void

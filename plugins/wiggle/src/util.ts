@@ -1,5 +1,3 @@
-import { groupBy } from '@jbrowse/core/util'
-
 import type { SourceInfo, WiggleFeatureArrays } from '@jbrowse/wiggle-core'
 
 export {
@@ -98,22 +96,37 @@ export const SINGLE_WIGGLE_SOURCE_NAME = 'default'
 // directly as a MultiQuantitativeTrack's adapter.
 //
 // A feature with no source lands under `''`, not under the `"undefined"` a bare
-// `groupBy(f => `${f.get('source')}`)` produces — that string reached the UI as
-// a real subtrack name, so a plain bedGraph pointed at a MultiQuantitativeTrack
-// showed `undefined: 5` in its tooltip. Empty rather than a placeholder word
-// because every consumer already treats a falsy source as unnamed: the tooltip
-// drops the `name: ` prefix and the row label renders nothing.
+// `${f.get('source')}` key produces — that string reached the UI as a real
+// subtrack name, so a plain bedGraph pointed at a MultiQuantitativeTrack showed
+// `undefined: 5` in its tooltip. Empty rather than a placeholder word because
+// every consumer already treats a falsy source as unnamed: the tooltip drops the
+// `name: ` prefix and the row label renders nothing.
 //
 // Shared by the render executor and the clustering score matrix so the two
 // agree on what an un-annotated feature is called — they key their outputs off
 // the same source list.
+//
+// A Map, not the plain object `groupBy` returns, because a source name here is
+// arbitrary data out of a file's column. Keys stay insertion-ordered whatever
+// they look like — a plain object hoists integer-like names, so samples named
+// "1", "2", "10" were discovered in numeric order rather than the file's — and a
+// name colliding with Object.prototype (`constructor`, `toString`) is a real
+// bucket rather than an inherited function.
 export function groupFeaturesBySource<
   T extends { get: (key: string) => unknown },
 >(features: T[]) {
-  return groupBy(features, f => {
+  const groups = new Map<string, T[]>()
+  for (const f of features) {
     const source = f.get('source')
-    return source === undefined || source === null ? '' : `${source}`
-  })
+    const key = source === undefined || source === null ? '' : `${source}`
+    const group = groups.get(key)
+    if (group) {
+      group.push(f)
+    } else {
+      groups.set(key, [f])
+    }
+  }
+  return groups
 }
 
 // Raw per-feature typed arrays returned by adapters' fast path. Display-side

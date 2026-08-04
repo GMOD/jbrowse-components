@@ -160,16 +160,19 @@ export function buildSourceRenderData(
   const defaultPosColor = cssColorToNormalizedRgb(defaultPosColorStr)
   const defaultNegColor = cssColorToNormalizedRgb(defaultNegColorStr)
   const sourcesByName = new Map(data.sources.map(s => [s.name, s]))
-  const orderedSources = sources.length > 0 ? sources : data.sources
   const result: SourceRenderData[] = []
 
-  // rowIndex is the source's position in orderedSources so it lines up with the
-  // model's numSources-based rowHeight and findHit's visibleSources[rowIdx],
-  // even when an earlier source is missing from the RPC payload. Overlay
-  // collapses every source onto row 0 and colors neg features with the source's
-  // pos color so overlapping sources stay visually one color.
-  for (let i = 0; i < orderedSources.length; i++) {
-    const orderedSource = orderedSources[i]!
+  // `sources` is the display's own visible list and the only thing iterated —
+  // never the payload's. rowIndex is the source's position in it, so it lines up
+  // with the model's numSources-based rowHeight and findHit's
+  // visibleSources[rowIdx], even when an earlier source is missing from the RPC
+  // payload. An empty list therefore draws nothing, which is what a subtree
+  // filter matching no present source means; falling back to the payload there
+  // painted its first source full-height underneath the "no subtracks match"
+  // message. Overlay collapses every source onto row 0 and colors neg features
+  // with the source's pos color so overlapping sources stay visually one color.
+  for (let i = 0; i < sources.length; i++) {
+    const orderedSource = sources[i]!
     const source = sourcesByName.get(orderedSource.name)
     if (source) {
       const posColor = orderedSource.color
