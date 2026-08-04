@@ -1,4 +1,4 @@
-import { calculateDprime } from './calculateLDStats.ts'
+import { dprimeFinalize } from './dprimeFinalize.generated.ts'
 
 const PIPE_CODE = 124 // '|'
 const ZERO_CODE = 48 // '0'
@@ -212,6 +212,6 @@ export function calculateLDStatsPhasedBits(
   const denom = pA * qA * pB * qB
   const r = denom > 0 ? D / Math.sqrt(denom) : 0
   const r2 = Math.min(1, Math.max(0, r * r))
-  const dprime = calculateDprime(D, pA, pB, signedLD)
+  const dprime = dprimeFinalize(D, pA, pB, signedLD)
   return { r2: signedLD ? r : r2, dprime }
 }

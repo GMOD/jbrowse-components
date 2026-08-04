@@ -2,6 +2,8 @@
 // uniform-grid). The genomic variant ignores `uniformW`; keeping the struct
 // identical lets both shaders share a single UBO byte layout so the renderer
 // writes one uniform buffer per frame regardless of which pass draws.
+//! js-export: dprimeFinalize
+//! js-export-out: packages/ld-core/src/dprimeFinalize.generated.ts
 module ldUniforms;
 
 import diagonalGrid;
@@ -72,26 +74,40 @@ public bool triangularCell(
 // haplotype-frequency popcounts, but the metric selection and D' normalization
 // downstream are identical). `ldMetric == 0` returns signed r or r2; otherwise
 // the composite D' (Weir 1979), clamped to [-1,1] signed or [0,1] unsigned.
+// D' — D normalized by its maximum given the two allele frequencies, so a
+// value is comparable across SNP pairs. Signed keeps the sign (-1..1) and
+// unsigned reports magnitude (0..1). Degenerate denominators report 0 rather
+// than dividing.
+//
+// `//! js-export`ed into @jbrowse/ld-core, whose `calculateDprime` was a
+// line-for-line twin: unlike most of what this codegen covers, LD is a *number
+// the user reads* off the heatmap and the tooltip, not a pixel — the WebGPU
+// compute path and the CPU fallback disagreeing would be a wrong statistic, not
+// a wrong-looking one. Split out of ldFinalize (which also picks the metric)
+// because that half is what both sides share; `signedLD` is a bool here so the
+// TS consumer passes the boolean it already has.
+public float dprimeFinalize(float D, float pA, float pB, bool signedLD) {
+  float qA = 1.0 - pA;
+  float qB = 1.0 - pB;
+  if (D > 0.0) {
+    float dmax = min(pA * qB, qA * pB);
+    if (dmax > 0.0) {
+      return min(1.0, D / dmax);
+    }
+  } else if (D < 0.0) {
+    float absMin = min(pA * pB, qA * qB);
+    if (absMin > 0.0) {
+      return signedLD ? max(-1.0, D / absMin) : min(1.0, abs(D) / absMin);
+    }
+  }
+  return 0.0;
+}
+
 public float ldFinalize(
   float r, float r2, float D, float pA, float pB, uint ldMetric, uint signedLD
 ) {
   if (ldMetric == 0u) {
     return signedLD != 0u ? r : r2;
   }
-  float qA = 1.0 - pA;
-  float qB = 1.0 - pB;
-  float dprime = 0.0;
-  if (D > 0.0) {
-    float dmax = min(pA * qB, qA * pB);
-    if (dmax > 0.0) {
-      dprime = min(1.0, D / dmax);
-    }
-  } else if (D < 0.0) {
-    float absMin = min(pA * pB, qA * qB);
-    if (absMin > 0.0) {
-      dprime = signedLD != 0u ? max(-1.0, D / absMin)
-                              : min(1.0, abs(D) / absMin);
-    }
-  }
-  return dprime;
+  return dprimeFinalize(D, pA, pB, signedLD != 0u);
 }

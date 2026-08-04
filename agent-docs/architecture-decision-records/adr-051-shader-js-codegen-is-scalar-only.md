@@ -202,6 +202,7 @@ the no-GPU path this all exists for.
 | `coverage.slang` | `covEffectiveHeightPx`, `covBottomOffsetPx` (authored in `alignmentsUniforms.slang`) | `@jbrowse/alignments-core` `coverageLayout` — the band's drawable height and baseline, which the coverage bars, SNP segments and modification segments all measure from |
 | `wiggle.slang` | `RENDERING_TYPE_*` (5), `SCALE_TYPE_LOG`, `NO_PREV_START` via `export-consts` | `@jbrowse/wiggle-core` — the `renderingType` / `scaleType` uniform vocabulary and the instance-buffer sentinel, all re-typed by hand where `WiggleRenderingType` is declared |
 | `manhattan.slang` | `GLYPH_POINT`, `GLYPH_INSERTION`, `GLYPH_INDEX` via `export-consts` | `ManhattanRPC/rpcTypes.ts` — restated there, and pinned to the shader only by a test that string-matched its branches out of the `.slang` source |
+| `ldUniforms.slang` | `dprimeFinalize` | `@jbrowse/ld-core` `calculateDprime` — a line-for-line twin, and the only export so far where the two backends must agree on a **number the user reads** rather than on pixels |
 
 ### A vector signature is usually a scalar decision in a wrapper
 
@@ -269,8 +270,8 @@ and the two implementations have to be *meant* to agree:
 
 ## Consequences
 
-- Six drift sites retired in the first round, forty-four more since
-  (twenty-seven functions and nineteen constants, fifteen of them crossing a
+- Six drift sites retired in the first round, forty-five more since
+  (twenty-eight functions and nineteen constants, sixteen of them crossing a
   package boundary); `SYNC:`-tagged sites went 27 → 9, and six of the ones removed were
   **stale** — they named `read.slang` branches deleted when read classification
   moved to the CPU. Everything left is classified in
@@ -325,6 +326,25 @@ and the two implementations have to be *meant* to agree:
   only what still has content: that the classes stay distinct, and that the
   classifier over them behaves. A test asserting two things agree is a sign the
   two things should be one thing.
+- **A compute shader with a CPU fallback is the highest-stakes case, and it was
+  found last.** Everything else here keeps two *renderers* agreeing. `ldCompute`
+  is a WebGPU compute pass whose fallback is not a GLSL variant but the CPU path
+  in `ld-core` — selected by GPU availability and by a work threshold below
+  which dispatch overhead dominates — so a drift there is two users reading
+  different r²/D' off the same data. Look for a `[shader("compute")]` with a
+  hand-written CPU twin before looking at draw paths again.
+- **The per-call cost is real and immaterial; measure before optimizing it
+  away.** Replacing `getDensityColor`'s hoisted reciprocal with a call to the
+  generated `densityGradientT` costs **0.56 ns per feature** (1.22× on that
+  arithmetic alone, 2M-feature microbenchmark) because the divisor can no longer
+  be lifted out of the loop. Against a `ctx.fillRect` per feature it is noise.
+  The place this *would* matter is already carved out: ADR's rule against
+  converting `computeCorners`, four calls per instance at 500k instances.
+- **That change also moved the CPU *toward* the GPU numerically.** `x * (1/d)`
+  and `x / d` differ in the last ulp, and the shader divides — so the hoisted
+  reciprocal was not merely faster but slightly different, putting roughly 1 in
+  1000 features one 1/255 LUT bucket off. Same class as the synteny rounding
+  note above: hoisting a reciprocal is a numeric choice, not just a speed one.
 - **A retirement gate found a live bug, which is the mechanism working.**
   Manhattan's JS `scoreToY` guarded a degenerate y-domain with `|| 1` where the
   shader used `max(range, 1e-6)`, and the shader's comment asserted the two

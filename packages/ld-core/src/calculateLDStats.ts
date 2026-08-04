@@ -1,36 +1,11 @@
-/**
- * Calculate D' (normalized D) from D and allele frequencies
- * @param D - Linkage disequilibrium coefficient
- * @param pA - Frequency of alt allele at locus 1
- * @param pB - Frequency of alt allele at locus 2
- * @param signedLD - If true, return signed D' (-1 to 1), otherwise |D'| (0 to 1)
- */
-export function calculateDprime(
-  D: number,
-  pA: number,
-  pB: number,
-  signedLD: boolean,
-): number {
-  const qA = 1 - pA
-  const qB = 1 - pB
+import { dprimeFinalize } from './dprimeFinalize.generated.ts'
 
-  if (D > 0) {
-    const Dmax = Math.min(pA * qB, qA * pB)
-    if (Dmax > 0) {
-      return Math.min(1, D / Dmax)
-    }
-  } else if (D < 0) {
-    const absDmin = Math.min(pA * pB, qA * qB)
-    if (absDmin > 0) {
-      // For signed: D/|Dmin| preserves negative sign
-      // For unsigned: |D|/|Dmin|
-      return signedLD
-        ? Math.max(-1, D / absDmin)
-        : Math.min(1, Math.abs(D) / absDmin)
-    }
-  }
-  return 0
-}
+// D' (normalized D) is `dprimeFinalize` from ldUniforms.slang, generated into
+// TS by `pnpm gen:shaders` (adr-051), and was a line-for-line hand-written twin
+// before. LD runs on WebGPU compute or on this CPU path — chosen by GPU
+// availability and by a work threshold below which dispatch overhead dominates
+// — so the two must agree on a *number the user reads* off the heatmap and the
+// tooltip, not merely on pixels.
 
 /**
  * Composite-LD r²/D' between two SNPs from encoded genotype dosages
@@ -111,7 +86,7 @@ export function calculateLDStats(
   const covG = sumProd / n - mean1 * mean2
   const D = covG / 2
 
-  const dprime = calculateDprime(D, pA, pB, signedLD)
+  const dprime = dprimeFinalize(D, pA, pB, signedLD)
 
   // For signed mode, return R instead of R²
   return { r2: signedLD ? r : r2, dprime }

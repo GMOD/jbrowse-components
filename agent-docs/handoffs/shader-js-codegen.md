@@ -18,9 +18,9 @@ The *why*, including everything deliberately not built, is
 | `parseDirectives.ts` | `//! js-export:`, `//! js-export-out:`, and the constant evaluator (which resolves through `import`s) |
 | `build-shaders.ts` `writeJsExports` | lifts from the shader's own WGSL, or from a synthesized compute wrapper for `module` files |
 | `*.js.generated.ts` | the generated twins — never hand-edit |
-| `hpmathParity` / `alphaShaderParity` / `syntenyShaderParity` / `pointMarkerParity` / `hicShaderParity` / `qualityFadeParity` / `densityGradientParity` / `scoreToYParity` / `coverageBandLayoutParity` / `insertionWidth` / `rowBand` / `drawCanvas` tests | the retirement gates |
+| `hpmathParity` / `alphaShaderParity` / `syntenyShaderParity` / `pointMarkerParity` / `hicShaderParity` / `qualityFadeParity` / `densityGradientParity` / `scoreToYParity` / `coverageBandLayoutParity` / `dprimeFinalizeParity` / `insertionWidth` / `rowBand` / `drawCanvas` tests | the retirement gates |
 
-Sixteen shaders export today; the table is in ADR-051.
+Seventeen shaders export today; the table is in ADR-051.
 
 **Generated constants have no re-export hops.** A consumer imports from the
 generated module (or from the package that owns the concept, where a
@@ -54,6 +54,14 @@ add one back for convenience.
   error where it cannot infer which. Don't "simplify" that away — the values
   that need it (packed ABGR colors, flag words) are exactly the ones at or above
   2³¹ where JS's signed coercion silently changes the answer.
+- **Factoring a decision into its own scalar function is free on the GPU and
+  ~0.5ns/item on the CPU.** Slang keeps the function in the emitted WGSL (that
+  is exactly what makes the lift possible) and every downstream compiler inlines
+  a scalar leaf — there is no call stack on a GPU. The measurable cost is all on
+  the consumer side, and only where the call defeats loop-invariant hoisting:
+  `getDensityColor` lost a hoisted reciprocal and measured 1.22× on that
+  arithmetic, 0.56 ns/feature. Don't pre-optimize this; do respect the existing
+  carve-out for genuinely hot loops (`computeCorners`, 500k instances).
 - **A shader can export a function it only `import`s** (entry-point shaders
   only — a module's synthesized wrapper cannot see past its own module, and the
   error says so). This is how a decision authored in a shared module reaches a
@@ -158,7 +166,15 @@ payload behind a shared dispatch), wiggle's `scoreToY` (a multiply once its
 deliberately-divergent normalizer is set aside), and the arc / interleave /
 packing comments, which describe buffer layouts rather than math.
 
-Two structural findings from that sweep, so it need not be redone:
+**That sweep was run twice, and the second pass found something the first
+missed** — `ldUniforms.slang`'s `dprimeFinalize`. The first pass had ranked
+shaders by "does it have a Canvas2D twin", and the LD compute shaders read as
+GPU-only. They are not: `ldCompute.slang`'s own header says its fallback is the
+CPU path in `ld-core`, not a GLSL variant. **A `[shader("compute")]` pass is the
+highest-stakes case in the whole inventory** — its twin computes a number the
+user reads, not a pixel — so check compute shaders *first*, not last.
+
+Three structural findings from that sweep, so it need not be redone:
 
 - **`maf.slang` and `multiRow.slang` are entry points over `rowRect` and hold no
   math of their own.** Their decisions were already exported via `rowRect`.
@@ -167,6 +183,11 @@ Two structural findings from that sweep, so it need not be redone:
   `alignmentsUniforms` helpers. Anything shared in them is in that module, so
   that is where to look — and `coverage.slang` is the worked example of lifting
   from it.
+- **The LD compute pair** (`ldCompute`, `ldPhasedCompute`) is the only
+  GPU-compute-with-CPU-fallback in the tree. Their shared decision
+  (`dprimeFinalize`) is exported; what is left in them is the accumulation loop,
+  which the emitter refuses by design and which is a buffer walk rather than a
+  decision.
 
 Nothing obvious is left. The next export will come from a function that does not
 exist yet, or from a `vs_main` body that grows a second decision worth naming.

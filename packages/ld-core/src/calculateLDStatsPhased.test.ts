@@ -1,8 +1,8 @@
-import { calculateDprime } from './calculateLDStats.ts'
 import {
   calculateLDStatsPhasedBits,
   packHaplotypesWithCounts,
 } from './calculateLDStatsPhased.ts'
+import { dprimeFinalize } from './dprimeFinalize.generated.ts'
 
 // Brute-force reference: count the four two-locus haplotype configurations over
 // both gametes directly from the genotype strings, then apply the textbook
@@ -52,7 +52,7 @@ function referencePhasedLD(
   const r = denom > 0 ? D / Math.sqrt(denom) : 0
   return {
     r2: signedLD ? r : Math.min(1, Math.max(0, r * r)),
-    dprime: calculateDprime(D, pA, pB, signedLD),
+    dprime: dprimeFinalize(D, pA, pB, signedLD),
   }
 }
 
