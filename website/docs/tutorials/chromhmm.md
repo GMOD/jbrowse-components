@@ -175,7 +175,7 @@ The same recipe scales to the
 a longer `rowOrder`. Because the multi-row display fetches and lays out one
 file, 127 epigenomes is still one track, one adapter, one fetch, not 127 tracks.
 
-<Figure src="/img/chromhmm.png" caption="The same display at 127 epigenomes instead of nine, over the same HOXA window and the same two boxes, with the rows ordered by Cluster rows by similarity rather than by config. Each row is one epigenome, thin enough that the painting reads as a heatmap of state rather than as blocks. Clustering separates the epigenomes carrying active promoter, enhancer and transcription across the anterior box from those holding both boxes in Polycomb-repressed and bivalent states."/>
+<Figure src="/img/chromhmm.png" caption="The same display at 127 epigenomes instead of nine, over the same HOXA window and the same two boxes, with the rows ordered by Cluster rows by similarity rather than by config and the dendrogram in the sidebar. Each row is one epigenome, thin enough that the painting reads as a heatmap of state rather than as blocks. The two top-level clades separate the epigenomes carrying active promoter, enhancer and transcription across the anterior box from those holding both boxes in Polycomb-repressed and bivalent states."/>
 
 At that row count `rowOrder` is 127 lines of config whose only job is to keep
 related tissues adjacent, which is exactly what **Cluster rows by similarity**

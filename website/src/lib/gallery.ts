@@ -364,7 +364,7 @@ export const gallerySections: readonly GallerySection[] = [
         spec: 'chromhmm',
         guide: 'tutorials/chromhmm',
         description:
-          'Roadmap Epigenomics chromatin states from a single BigBed. The multi-row feature display splits features by cell type into one row each, colors them with the itemRgb values the file carries, and derives the state legend from the data.',
+          'Roadmap Epigenomics chromatin states from a single BigBed. The multi-row feature display splits features by cell type into one row each, colors them with the itemRgb values the file carries, and derives the state legend from the data. Clustered over the HOXA cluster, the 127 epigenomes separate into those that open its anterior half and those holding all of it repressed.',
       },
       {
         label: 'Single-cell ATAC pseudobulk',
