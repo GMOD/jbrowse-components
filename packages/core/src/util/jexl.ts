@@ -133,6 +133,23 @@ export default function JexlF(/* config?: any*/) {
    * #jexlFunction Feature operations - getTag | getTag(feature, 'HP') | fetches haplotype tag from BAM or CRAM feature
    */
   j.addFunction('getTag', (feature: Feature, s: string) => {
+    // BAM features expose a targeted `getTag` that walks the tag block and
+    // decodes only the requested tag; `get('tags')` decodes every tag on the
+    // read (a Record allocation plus NM/AS/ms/de/… — often ~10 per read) to
+    // answer one, and this runs per feature on colour/label callbacks like
+    // `jexl:getTag(feature,'HP')`. Same duck-typing as
+    // `@jbrowse/modifications-utils`' getTag(), which core cannot import (that
+    // package depends on core). Unwrap first: on a jexlFeatureProxy every
+    // unknown property forwards to `feature.get()`, so `feature.getTag` would
+    // read a data field rather than the method. CRAM/synteny features have no
+    // accessor and keep the full-tags path, including its fallback to a
+    // top-level field of that name for features carrying no tags at all.
+    const target = unwrapFeature(feature) as Feature & {
+      getTag?: (tag: string) => unknown
+    }
+    if (target.getTag) {
+      return target.getTag(s)
+    }
     const tags = feature.get('tags') as Record<string, unknown> | undefined
     return tags ? tags[s] : feature.get(s)
   })

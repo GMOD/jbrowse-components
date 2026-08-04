@@ -34,6 +34,7 @@
   "dependencies": {
     "@jbrowse/cigar-utils": "workspace:^",
     "@jbrowse/core": "workspace:^",
+    "@jbrowse/modifications-utils": "workspace:^",
     "@jbrowse/wiggle-core": "workspace:^"
   },
   "publishConfig": {

@@ -1,4 +1,5 @@
 import {
+  getTag,
   isAbnormalPairDirection,
   pairDirection,
 } from '@jbrowse/alignments-core'
@@ -97,8 +98,9 @@ export function readChainSegments(features: Feature[]) {
   // instead of O(n^2).
   const seen = new Set<string>()
   for (const feature of features) {
-    const SA = (feature.get('tags') as Record<string, unknown> | undefined)
-      ?.SA as string | undefined
+    // getTag, not get('tags'): the latter decodes every tag on the read to
+    // answer one, and this runs per segment of every chained read on screen
+    const SA = getTag(feature, 'SA') as string | undefined
     const novel = SA === undefined ? [] : splitSA(SA).filter(a => !seen.has(a))
     if (!novel.length) {
       continue
@@ -151,10 +153,9 @@ export function markHiddenSegments(
 export function getMatchedAlignmentFeatures(features: Map<string, Feature>) {
   const candidates = new Map<string, Feature[]>()
   for (const f of features.values()) {
-    if (
-      !((f.get('flags') as number) & 4) &&
-      (f.get('tags') as Record<string, unknown> | undefined)?.SA
-    ) {
+    // getTag, not get('tags'): this walks every fetched feature, and the full
+    // tags decode allocates a Record per read to answer one presence check
+    if (!((f.get('flags') as number) & 4) && getTag(f, 'SA')) {
       bucket(candidates, f.get('name')!, f)
     }
   }
