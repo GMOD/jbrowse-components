@@ -3,7 +3,6 @@ import { prepareCanvas } from '@jbrowse/render-core/canvas2dUtils'
 import { Canvas2DGlobalRenderingBackend } from '@jbrowse/render-core/globalRenderingBackend'
 
 import { f2 } from '../../shared/constants.ts'
-import { mirrorColumnIndex } from './variantMatrixRenderingBackendTypes.ts'
 
 import type {
   MatrixRenderState,
@@ -22,10 +21,10 @@ export function drawVariantMatrixBlocks(
   data: VariantMatrixUploadData,
   state: { canvasWidth: number; canvasHeight: number } & Pick<
     MatrixRenderState,
-    'rowHeight' | 'scrollTop' | 'flipped'
+    'rowHeight' | 'scrollTop'
   >,
 ) {
-  const { canvasWidth, canvasHeight, rowHeight, scrollTop, flipped } = state
+  const { canvasWidth, canvasHeight, rowHeight, scrollTop } = state
   if (data.numFeatures === 0) {
     return
   }
@@ -42,12 +41,7 @@ export function drawVariantMatrixBlocks(
     if (y + rowHeight < 0 || y > canvasHeight) {
       continue
     }
-    const col = mirrorColumnIndex(
-      data.cellFeatureIndices[i]!,
-      data.numFeatures,
-      flipped,
-    )
-    const x = col * cellWidth
+    const x = data.cellFeatureIndices[i]! * cellWidth
     const color = data.cellColors[i]!
     if (color !== prevColor) {
       ctx.fillStyle = abgrToCssRgba(color)

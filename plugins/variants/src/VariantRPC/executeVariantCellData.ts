@@ -23,7 +23,7 @@ import {
   getVariantSvType,
 } from '../shared/variantSvType.ts'
 import { groupFeaturesByRegion } from './groupFeaturesByRegion.ts'
-import { orderByGenomicPosition } from './orderByGenomicPosition.ts'
+import { orderByScreenPosition } from './orderByScreenPosition.ts'
 
 import type { VariantCellData } from '../LinearMultiSampleVariantDisplay/components/computeVariantCells.ts'
 import type { MatrixCellData } from '../LinearMultiSampleVariantMatrixDisplay/components/computeVariantMatrixCells.ts'
@@ -412,11 +412,10 @@ export async function executeVariantCellData({
         }),
     )
     if (mode === 'matrix') {
-      // The list order is the column order here, and the display mirrors it for
-      // a flipped view, so it has to be genomic-ascending or the connector lines
-      // cross. Regular mode draws each variant at its own genomic position and
-      // doesn't care.
-      filteredVariants = orderByGenomicPosition(
+      // The list order is the column order here, so it has to be the on-screen
+      // order or the connector lines cross. Regular mode draws each variant at
+      // its own genomic position and doesn't care.
+      filteredVariants = orderByScreenPosition(
         filteredVariants,
         regions,
         v => v.feature,

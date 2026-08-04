@@ -288,6 +288,11 @@ function fetchRegionsForMode(
         start: Math.floor(vr.start),
         end: Math.ceil(vr.end),
         assemblyName: vr.assemblyName,
+        // carried, not dropped: matrix columns are laid out in the order the
+        // worker returns features, and inside a reversed region screen x rises
+        // as bp falls, so the worker cannot put the columns in screen order
+        // without it (orderByScreenPosition).
+        reversed: vr.reversed,
       },
       displayedRegionIndex: vr.displayedRegionIndex,
     }))

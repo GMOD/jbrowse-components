@@ -6,7 +6,6 @@ import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.
 import { clampLineZoneHeight } from '../shared/constants.ts'
 import { genomicViewportX } from '../shared/genomicViewportX.ts'
 import { placeVariantRows } from '../shared/placeVariantRows.ts'
-import { mirrorColumnIndex } from './components/variantMatrixRenderingBackendTypes.ts'
 
 import type { ConnectorCoord } from '../shared/ConnectorLines.tsx'
 import type { SharedVariantConfigModel } from '../shared/SharedVariantConfigSchema.ts'
@@ -48,27 +47,6 @@ export default function stateModelFactory(
           ? { ...snap, type: 'LinearMultiSampleVariantMatrixDisplay' }
           : snap,
       )
-      .views(self => ({
-        /**
-         * #getter
-         * True when every visible region is reversed (the view is horizontally
-         * flipped). The matrix lays columns out by genomic-ascending feature
-         * index, but a flipped view runs the ruler right-to-left, so columns are
-         * mirrored to `numFeatures-1-i` to keep them and the genome connector
-         * lines from crossing. Mixed forward/reversed regions don't flip.
-         *
-         * "Genomic-ascending" is a guarantee the worker makes
-         * (`orderByGenomicPosition`), not a property of the fetch: the per-region
-         * queries are merged in arrival order, so before that a multi-region
-         * flipped view — a minus-strand gene with its introns collapsed — mirrored
-         * an order that was already roughly descending and crossed every line.
-         */
-        get flipped(): boolean {
-          const view = getContainingView(self) as LinearGenomeViewModel
-          const regions = view.visibleRegions
-          return regions.length > 0 && regions.every(r => r.reversed)
-        },
-      }))
       .views(self => ({
         get prefersOffset() {
           return true
@@ -115,7 +93,6 @@ export default function stateModelFactory(
             canvasHeight: self.availableHeight,
             rowHeight: self.effectiveRowHeight,
             scrollTop: self.scrollTop,
-            flipped: self.flipped,
           }
         },
         /**
@@ -149,7 +126,7 @@ export default function stateModelFactory(
           const { assemblyManager } = getSession(self)
           const assembly = assemblyManager.get(view.assemblyNames[0]!)
           const features = self.featuresVolatile
-          const { n, columnWidth, left } = self.columnGeometry
+          const { columnWidth, left } = self.columnGeometry
           return assembly && features
             ? features
                 .map((feature, i) => {
@@ -162,10 +139,7 @@ export default function stateModelFactory(
                   return gx === undefined
                     ? undefined
                     : {
-                        mx:
-                          left +
-                          (mirrorColumnIndex(i, n, self.flipped) + 0.5) *
-                            columnWidth,
+                        mx: left + (i + 0.5) * columnWidth,
                         gx,
                         label: feature.get('name'),
                       }
@@ -176,9 +150,9 @@ export default function stateModelFactory(
         /**
          * #method
          * The connector for the column under `screenX` (the crosshair), or
-         * undefined off the ends. crosshairX picks a *screen* column, so mirror
-         * it back to the data index — on a flipped view the feature drawn there
-         * is not the one at that index.
+         * undefined off the ends. Screen column and data index are the same
+         * number: the worker hands the features back in screen order
+         * (`orderByScreenPosition`), so nothing here has to invert a mirror.
          */
         connectorLineAtScreenX(screenX: number): ConnectorCoord | undefined {
           const view = getContainingView(self) as LinearGenomeViewModel
@@ -189,7 +163,7 @@ export default function stateModelFactory(
           const screenCol = Math.floor((screenX - left) / columnWidth)
           const feature =
             assembly && features && screenCol >= 0 && screenCol < n
-              ? features[mirrorColumnIndex(screenCol, n, self.flipped)]!
+              ? features[screenCol]!
               : undefined
           const gx =
             assembly && feature

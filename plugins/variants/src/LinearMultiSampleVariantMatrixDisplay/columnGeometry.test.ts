@@ -35,7 +35,10 @@ function matrixCellData(starts: number[]): CellDataResult {
 // Four variants in an 8kb window shown at bpPerPx 10, so the content is exactly
 // the 800px viewport: four 200px columns, and each variant's genomic x is its
 // own bp/10 (or mirrored, on a reversed region).
-function loadedDisplay({ reversed = false } = {}) {
+function loadedDisplay({
+  reversed = false,
+  starts = [0, 1000, 3000, 7000],
+} = {}) {
   const { createDisplay } = createTestEnvironment()
   const { display, view } = createDisplay()
   view.setDisplayedRegions([
@@ -43,7 +46,7 @@ function loadedDisplay({ reversed = false } = {}) {
   ])
   view.zoomTo(10)
   view.scrollTo(0)
-  display.setCellData(matrixCellData([0, 1000, 3000, 7000]))
+  display.setCellData(matrixCellData(starts))
   return { display, view }
 }
 
@@ -69,24 +72,27 @@ test('the crosshair anchors to the column it sits in, not the nearest edge', () 
   expect(display.connectorLineAtScreenX(601)).toEqual({ mx: 700, gx: 700 })
 })
 
-// The regression risk `mirrorColumnIndex` carries: it is its own inverse, so a
-// screen->data lookup that forgets the mirror still returns a plausible-looking
-// column — just the wrong variant's genomic x, and the crosshair line points at
-// a locus the user isn't hovering.
-test('a flipped view mirrors the crosshair back to the data feature', () => {
-  const { display } = loadedDisplay({ reversed: true })
+// A reversed region takes no special case here at all: the worker reflects that
+// region's features onto themselves before shipping them (orderByScreenPosition),
+// so the payload below is descending in bp and the display just lays it out.
+// What the display must not do is re-derive an orientation of its own — the
+// mirror this replaced was a second opinion about which way the axis ran, and
+// wrong whenever it disagreed with the order it was given.
+test('a reversed region is drawn from the order the worker sent', () => {
+  const { display } = loadedDisplay({
+    reversed: true,
+    starts: [7000, 3000, 1000, 0],
+  })
 
-  expect(display.flipped).toBe(true)
-  // screen column 0 now holds the LAST variant (bp 7000), whose reversed
-  // genomic x is (8000-7000)/10 = 100 — left of screen, like its column
-  expect(display.connectorLineAtScreenX(100)).toEqual({ mx: 100, gx: 100 })
-  // and the whole field runs right-to-left with it
+  // gx on a reversed region is (8000 - bp) / 10, so both axes ascend together:
+  // no connector crosses another
   expect(display.connectorLineCoords).toEqual([
-    { mx: 700, gx: 800, label: 'v0' },
-    { mx: 500, gx: 700, label: 'v1' },
-    { mx: 300, gx: 500, label: 'v2' },
-    { mx: 100, gx: 100, label: 'v3' },
+    { mx: 100, gx: 100, label: 'v0' },
+    { mx: 300, gx: 500, label: 'v1' },
+    { mx: 500, gx: 700, label: 'v2' },
+    { mx: 700, gx: 800, label: 'v3' },
   ])
+  expect(display.connectorLineAtScreenX(100)).toEqual({ mx: 100, gx: 100 })
 })
 
 test('there is no connector off either end of the matrix', () => {

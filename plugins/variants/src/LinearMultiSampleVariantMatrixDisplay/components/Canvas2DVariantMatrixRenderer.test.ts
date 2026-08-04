@@ -42,7 +42,6 @@ const STATE = {
   canvasHeight: 300,
   rowHeight: 10,
   scrollTop: 0,
-  flipped: false,
 }
 
 function makeData(
@@ -99,18 +98,21 @@ describe('Canvas2DVariantMatrixRenderer', () => {
     expect(h).toBeCloseTo(20.3)
   })
 
-  test('mirrors column x when flipped', () => {
+  // A cell's column index is its screen column, on any view: the worker ships
+  // the features in screen order, so there is no orientation for this renderer
+  // to know about and nothing for it to mirror.
+  test('draws a cell at its own column index', () => {
     const { canvas, fillRectCalls } = createMockCanvas()
     const renderer = new Canvas2DVariantMatrixRenderer(canvas)
 
-    renderer.render(makeData({ cellFeatureIndices: new Float32Array([0]) }), {
-      ...STATE,
-      flipped: true,
-    })
+    renderer.render(
+      makeData({ cellFeatureIndices: new Float32Array([0]) }),
+      STATE,
+    )
 
-    // Data column 0 of 4 (cellWidth 100) mirrors to screen column 3, x=300.
+    // Data column 0 of 4 (cellWidth 100) draws at x=0.
     const [x] = fillRectCalls[0]!
-    expect(x).toBeCloseTo(299.7)
+    expect(x).toBeCloseTo(-0.3)
   })
 
   test('skips cells above viewport', () => {

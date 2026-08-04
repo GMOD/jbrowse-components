@@ -13,7 +13,6 @@ import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
 import { decodeGenotype } from '../../shared/genotypeCodec.ts'
 import { useVariantCanvasInteraction } from '../../shared/hooks/useVariantCanvasInteraction.tsx'
 import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
-import { mirrorColumnIndex } from './variantMatrixRenderingBackendTypes.ts'
 
 import type { VariantTooltipFields } from '../../shared/buildVariantHit.ts'
 import type { VariantFeatureInfo } from '../../shared/types.ts'
@@ -63,11 +62,11 @@ const VariantMatrixBody = observer(function VariantMatrixBody({
     // same column pitch the canvas and the connector lines lay out on. `rect` is
     // the canvas, which already sits at columnGeometry.left, so mouseX is
     // canvas-relative and the origin must not be subtracted again here.
-    const { columnWidth, n } = model.columnGeometry
+    const { columnWidth } = model.columnGeometry
     const mouseX = clientX - rect.left
     const mouseY = clientY - rect.top
-    const screenCol = Math.floor(mouseX / columnWidth)
-    const featureIdx = mirrorColumnIndex(screenCol, n, model.flipped)
+    // screen column and data index are the same number (orderByScreenPosition)
+    const featureIdx = Math.floor(mouseX / columnWidth)
     const rowIdx = Math.floor(
       (mouseY + model.scrollTop) / model.effectiveRowHeight,
     )

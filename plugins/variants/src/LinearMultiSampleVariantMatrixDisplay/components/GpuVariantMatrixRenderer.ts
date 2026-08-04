@@ -58,7 +58,6 @@ export class GpuVariantMatrixRenderer extends GpuGlobalRenderingBackend<
       this.uniformF32[U.canvasHeight] = canvasHeight
       this.uniformF32[U.rowHeight] = state.rowHeight
       this.uniformF32[U.scrollTop] = state.scrollTop
-      this.uniformF32[U.flipped] = state.flipped ? 1 : 0
       // Must be `getDpr()`, not a bare `devicePixelRatio` read: the shader
       // rebuilds the backing-store width as `canvasWidth * devicePixelRatio` to
       // snap column edges to physical pixels, so this has to be the same ratio

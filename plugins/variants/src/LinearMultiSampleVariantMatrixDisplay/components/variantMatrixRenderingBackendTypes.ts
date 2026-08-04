@@ -5,22 +5,14 @@ export interface MatrixRenderState {
   canvasHeight: number
   rowHeight: number
   scrollTop: number
-  flipped: boolean
 }
 
-// Map a data column index (genomic-ascending) to its on-screen column index. On
-// a horizontally-flipped view the mirror runs columns right-to-left so they
-// track the reversed ruler; the mapping is its own inverse (mirror twice ==
-// identity), so screen->data hit-tests use the same call. Shared by the GPU
-// shader (baked into `variantMatrix.slang`), the Canvas2D/SVG renderer, the
-// connector lines, and the cell hit-test so all five stay pixel-aligned.
-export function mirrorColumnIndex(
-  index: number,
-  numFeatures: number,
-  flipped: boolean,
-): number {
-  return flipped ? numFeatures - 1 - index : index
-}
+// A data column index IS its on-screen column index. The worker hands the
+// features back in screen order (`orderByScreenPosition`), reflecting each
+// reversed region onto itself the way the LD display and hic do, so no consumer
+// here — GPU shader, Canvas2D/SVG renderer, connector lines, cell hit-test —
+// mirrors anything. The global mirror this replaced could only express a view
+// whose regions were ALL reversed.
 
 export interface VariantMatrixUploadData {
   cellFeatureIndices: Float32Array

@@ -15,7 +15,6 @@ export const UNIFORM_OFFSET_F32 = {
   rowHeight: 3,
   scrollTop: 4,
   devicePixelRatio: 5,
-  flipped: 6,
 } as const
 
 
@@ -26,7 +25,6 @@ export interface Uniforms {
   rowHeight: number
   scrollTop: number
   devicePixelRatio: number
-  flipped: number
 }
 
 export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
@@ -37,7 +35,6 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[3] = uniforms.rowHeight
   f32[4] = uniforms.scrollTop
   f32[5] = uniforms.devicePixelRatio
-  f32[6] = uniforms.flipped
 }
 
 export const INSTANCE_STRIDE_BYTES = 12
