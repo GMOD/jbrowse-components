@@ -41,8 +41,10 @@ export default class IndexedFastaAdapter extends BaseSequenceAdapter {
 
   public async getRefNames(opts?: BaseOptions) {
     const { fasta } = await this.setup()
-    return updateStatus('Downloading FASTA index', opts?.statusCallback, () =>
-      fasta.getSequenceNames(),
+    return updateStatus(
+      'Downloading chromosome sizes',
+      opts?.statusCallback,
+      () => fasta.getSequenceNames(),
     )
   }
 
@@ -52,8 +54,10 @@ export default class IndexedFastaAdapter extends BaseSequenceAdapter {
     // assembly load spends here is that download. It exposes no byte callback,
     // so this is an indeterminate phase label rather than a bar
     return refSizesToRegions(
-      await updateStatus('Downloading FASTA index', opts?.statusCallback, () =>
-        fasta.getSequenceSizes(),
+      await updateStatus(
+        'Downloading chromosome sizes',
+        opts?.statusCallback,
+        () => fasta.getSequenceSizes(),
       ),
     )
   }

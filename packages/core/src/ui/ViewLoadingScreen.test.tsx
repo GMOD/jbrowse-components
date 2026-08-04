@@ -25,9 +25,9 @@ test('shows the phase label, with the percent when determinate', () => {
 
 test('an indeterminate phase keeps the label and drops the bar', () => {
   const { container } = render(
-    <ViewLoadingScreen message="Downloading 2bit header" />,
+    <ViewLoadingScreen message="Downloading chromosome sizes" />,
   )
-  expect(container.textContent).toContain('Downloading 2bit header')
+  expect(container.textContent).toContain('Downloading chromosome sizes')
   expect(container.textContent).not.toContain('%')
   expect(container.querySelector('[role="progressbar"]')).toBeNull()
 })

@@ -58,7 +58,7 @@ export default class UnindexedFastaAdapter extends BaseSequenceAdapter<Unindexed
     const text = await fetchAndMaybeUnzipText(
       openLocation(this.getConf('fastaLocation'), this.pluginManager),
       opts,
-      'Downloading FASTA',
+      'Downloading sequence',
     )
     const res = await updateStatus('Parsing FASTA', opts?.statusCallback, () =>
       parseSmallFasta(text),

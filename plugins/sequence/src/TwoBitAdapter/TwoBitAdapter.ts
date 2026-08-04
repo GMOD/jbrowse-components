@@ -62,7 +62,7 @@ export default class TwoBitAdapter extends BaseSequenceAdapter<TwoBitAdapterConf
     const { chromSizesData, twobit } = await this.setup(opts)
     return chromSizesData
       ? Object.keys(chromSizesData)
-      : updateStatus('Downloading 2bit header', opts?.statusCallback, () =>
+      : updateStatus('Downloading chromosome sizes', opts?.statusCallback, () =>
           twobit.getSequenceNames(),
         )
   }
@@ -74,7 +74,7 @@ export default class TwoBitAdapter extends BaseSequenceAdapter<TwoBitAdapterConf
     return refSizesToRegions(
       chromSizesData ??
         (await updateStatus(
-          'Downloading 2bit header',
+          'Downloading chromosome sizes',
           opts?.statusCallback,
           () => twobit.getSequenceSizes(),
         )),

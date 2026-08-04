@@ -1825,8 +1825,8 @@ test('loadingMessage reports what the assembly load is downloading', () => {
   expect(model.loadingProgress).toBe(0.25)
 
   // an indeterminate phase keeps the label but drops the bar
-  asm.setStatus('Downloading 2bit header')
-  expect(model.loadingMessage).toBe('Downloading 2bit header')
+  asm.setStatus('Downloading chromosome sizes')
+  expect(model.loadingMessage).toBe('Downloading chromosome sizes')
   expect(model.loadingProgress).toBeUndefined()
 
   asm.setStatus(undefined)

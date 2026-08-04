@@ -93,17 +93,23 @@ them directly, no RPC hop), so `statusCallback` is a plain function call. It is
 still the `statusCallback` off `BaseOptions`, so nothing downstream is special
 cased.
 
-What each phase says, and how determinate it is:
+Labels name **the data, not the file** — the house convention, set by
+`Downloading alignments` (which a BAM says, rather than naming the BAM or its
+index). One consequence worth knowing before you add a row: chrom.sizes, the
+`.fai` and the 2bit header are three sources for one answer — the assembly's
+chromosomes and their lengths — so all three say the same thing. A user should
+not have to know which their assembly happens to use, and only one is ever in
+play at a time.
 
-| file | label | bar? |
-| --- | --- | --- |
-| chrom.sizes (ChromSizes, TwoBit sidecar) | `Downloading chromosome sizes` | bytes |
-| chromAlias | `Downloading chromosome aliases` | bytes |
-| cytoband | `Downloading cytobands` | bytes |
-| genetic-code sidecar | `Downloading genetic codes` | bytes |
-| unindexed FASTA | `Downloading FASTA` | bytes |
-| .fai | `Downloading FASTA index` | no |
-| 2bit header/index | `Downloading 2bit header` | no |
+| data | source | label | bar? |
+| --- | --- | --- | --- |
+| chromosome list | chrom.sizes (ChromSizes, TwoBit sidecar) | `Downloading chromosome sizes` | bytes |
+| chromosome list | `.fai` | `Downloading chromosome sizes` | no |
+| chromosome list | 2bit header/index | `Downloading chromosome sizes` | no |
+| aliases | chromAlias | `Downloading chromosome aliases` | bytes |
+| cytobands | cytoband | `Downloading cytobands` | bytes |
+| genetic codes | sidecar TSV | `Downloading genetic codes` | bytes |
+| sequence | unindexed FASTA | `Downloading sequence` | bytes |
 
 The determinate ones are the whole-file text reads. They got there by moving off
 `readFile('utf8')`, whose remote path is `res.text()` and can't report bytes, to
