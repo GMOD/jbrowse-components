@@ -206,10 +206,10 @@
   },
   "sv_cgiab/cnv_with_bed_track": {
     "name": "sv_cgiab/cnv_with_bed_track",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-27T12:51:18.848Z",
-    "hash": "89c97a7d4faa432f55d84f6381b13009a337d02f"
+    "status": "bad",
+    "note": "aggressively pursue ideal clean informative image. we could add a baf track here. it would be interesting to plot normalized read depth also, but i want a tool that does that?? if one exists??",
+    "reviewedAt": "2026-08-04T23:39:28.340Z",
+    "hash": "19f15e785ff9e775e5819a87dbfc0e2ed7e21122"
   },
   "sv_cgiab/synteny_view": {
     "name": "sv_cgiab/synteny_view",
@@ -1162,9 +1162,9 @@
   },
   "sv_cgiab/driver_cdkn2a_deletion": {
     "name": "sv_cgiab/driver_cdkn2a_deletion",
-    "status": "answered",
+    "status": "good",
     "note": "CN 2 IS the diploid baseline already -- the benchmark's total_copy_number is absolute -- but the 60kb window contained only CN 1 and CN 0, so nothing in it said what zero was. Fixed by zooming out rather than by relabelling: the figure is now two frames, and the top one is 1.3Mb of chr9, the narrowest window that holds all three states (CN 1, CN 0 across the deletion, CN 1, then CN 2 at 22,631,434-22,939,870, taken from the benchmark BED). The segmented log2 ratio steps up over that CN 2 block, so the ladder is visible as depth as well as as a label. The 60kb read-level frame is unchanged underneath it. The CN 1 flanks are real: the whole of 9p has lost a copy in this tumour.",
-    "reviewedAt": "2026-08-04T21:04:00.396Z",
+    "reviewedAt": "2026-08-04T23:39:28.459Z",
     "hash": "1ba5d21f451ed2a6adb9bb4411fd2d2648230dc3"
   },
   "maf_codon_tooltip": {
@@ -2581,9 +2581,9 @@
   },
   "orthofinder_synteny/wheat_4a": {
     "name": "orthofinder_synteny/wheat_4a",
-    "status": "bad",
-    "note": "are you happy with this figure? you can look at other potential improvements if it helps",
-    "reviewedAt": "2026-08-04T17:34:46.892Z",
+    "status": "answered",
+    "note": "Yes, with one caption fix, and the claim is now verified rather than asserted. VERIFIED: joined the demo's own files -- tauschii.blocks.gz to tauschii.bed.gz and wheat.bed.gz -- and counted where each tauschii chromosome's orthogroup partners land on 4A. 2,874 links reach 4A. 4D contributes 2,045 of them, 5th-95th percentile 9.9 Mb to 602.1 Mb; 5D contributes 295 over 604.0 to 641.4 Mb; 7D contributes 407 over 647.3 to 742.4 Mb. Three consecutive, non-overlapping blocks in exactly the order the caption claims. Every other tauschii sequence contributes 30 links or fewer over the whole chromosome (2D 30, 3D 25, 1D 19, 6D 18), which is the 'scattered singletons' the prose already says. THE ONE REAL PROBLEM was a misreading risk, now fixed in the caption: the red bundle's apex sits a few pixels from the 6D tick label, so it reads as 6D at a glance, when 6D reaches 4A 18 times in 745 Mb. It is the right-hand end of 5D. The caption says so now, and names the three blocks in their order along 4A. WHAT I COULD NOT DO, recorded in the spec so it is not re-derived: put the three block names ON the figure. A synteny view's sub-panels have no view-container-<id> element -- only top-level views get one, ViewContainer.tsx -- so a {view:[0,1], locus} anchor resolves to nothing and the generator says so. The fallback, an in-app highlight on the bottom row, paints into that row's tracks area, and this row is a bare scalebar with no tracks, so it has nowhere to draw either. Both were rendered before being removed. Labelling this row needs either a track on it (there is no useful one at 745 Mb -- a gene lane over three quarters of a gigabase is a solid smear) or a locus anchor that works on a sub-panel.",
+    "reviewedAt": "2026-08-04T23:40:39.421Z",
     "hash": "8f16149e5841b8f05adf36a38c8de561c4216e87"
   },
   "pangenome_cactus/builders": {

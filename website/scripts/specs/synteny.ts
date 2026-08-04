@@ -851,6 +851,31 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // whole D genome is on the top row on purpose - the content is that only
   // three of its seven chromosomes reach 4A at all, which a row pre-filtered to
   // those three would assert rather than show.
+  //
+  // VERIFIED against the demo's own files, since the caption carries the whole
+  // finding. Joining tauschii.blocks.gz to tauschii.bed.gz and wheat.bed.gz
+  // gives 2,874 orthogroup links landing on 4A, and their 4A positions per donor
+  // chromosome are
+  //   4D  2045 links   5th-95th pct     9.9 Mb - 602.1 Mb
+  //   5D   295 links   5th-95th pct   604.0 Mb - 641.4 Mb
+  //   7D   407 links   5th-95th pct   647.3 Mb - 742.4 Mb
+  // -- three consecutive, non-overlapping blocks in that order, with every other
+  // tauschii sequence contributing 30 links or fewer over the whole chromosome
+  // (2D 30, 3D 25, 1D 19, 6D 18). That is the "scattered singletons" the prose
+  // claims, measured.
+  //
+  // NO ON-FIGURE LABELS NAMING THE THREE BLOCKS, and it is not for want of
+  // trying. A synteny view's sub-panels have no `view-container-<id>` element --
+  // only top-level views get one (ViewContainer.tsx) -- so a `{view: [0,1],
+  // locus}` anchor resolves to nothing and the run says so. The fallback, an
+  // in-app `highlight` on the bottom row, draws into the row's tracks area, and
+  // this row is a bare scalebar with no tracks, so it has nowhere to paint
+  // either. Both were rendered before being removed. Labelling this row needs
+  // either a track on it (there is no useful one at 745 Mb) or a locus anchor
+  // that works on a sub-panel. The caption does the naming instead, and it now
+  // says the red bundle leaves the RIGHT-HAND END of 5D -- the one real
+  // misreading risk here, since that apex sits a few px from the 6D tick label
+  // and 6D contributes 18 links to the whole chromosome.
   {
     mode: 'url',
     name: 'orthofinder_synteny/wheat_4a',

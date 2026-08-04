@@ -114,7 +114,7 @@ over bread wheat 4A alone, with **Color by → Query** painting each link by the
 tauschii chromosome it leaves rather than by the single chromosome they all
 arrive at.
 
-<Figure caption="Aegilops tauschii's seven D-genome chromosomes over bread wheat chromosome 4A, from the same wheat_orthogroups track as the six-row figure. Color by → Query gives each tauschii chromosome its own color. 4A resolves into three blocks: 4D over most of its length, then 5D and 7D at the distal end." src="/img/orthofinder_synteny/wheat_4a.png" />
+<Figure caption="Aegilops tauschii's seven D-genome chromosomes over bread wheat chromosome 4A, from the same wheat_orthogroups track as the six-row figure. Color by → Query gives each tauschii chromosome its own color. 4A resolves into three blocks in order along it: 4D over most of its length, then 5D, then 7D at the far end. The red bundle leaves the right-hand end of 5D, not 6D — its apex sits close to the 6D tick, and 6D reaches 4A only as singletons like the other three uninvolved chromosomes." src="/img/orthofinder_synteny/wheat_4a.png" />
 
 Those blocks are the 4AL/5AL and 4AL/7BS translocation pair, RFLP-mapped in
 [Devos et al. 1995](https://doi.org/10.1007/BF00220890) and revisited against
