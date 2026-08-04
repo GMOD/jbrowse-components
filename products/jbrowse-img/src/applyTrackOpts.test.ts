@@ -364,6 +364,24 @@ test('unknown modifier warns and does nothing', () => {
   warn.mockRestore()
 })
 
+// The modifier table is keyed by raw CLI input, so a name inherited from
+// Object.prototype read as a known modifier and died on its undefined `on` list
+test('an Object.prototype key is an unknown modifier, not a crash', () => {
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+  for (const name of ['constructor', 'toString', 'hasOwnProperty']) {
+    expect(buildDisplaySnapshot('alignments', [`${name}:x`]).snap).toEqual({})
+    expect(warn).toHaveBeenCalledWith(`Warning: unknown track option "${name}"`)
+  }
+  // the alias tables are keyed the same way
+  expect(
+    buildDisplaySnapshot('variant', ['display:constructor']).displayType,
+  ).toBe('constructor')
+  expect(buildDisplaySnapshot('alignments', ['sort:constructor']).sort).toEqual(
+    { type: 'constructor', tag: undefined },
+  )
+  warn.mockRestore()
+})
+
 // `index:` is consumed at config-build time (readData) but still rides in a
 // track's modifier list, so it must be a recognized no-op here rather than
 // warning like a typo.

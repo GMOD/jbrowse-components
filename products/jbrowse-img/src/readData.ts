@@ -161,10 +161,25 @@ export function readData(
     sessionData = sessionData.session as Record<string, unknown>
   }
 
+  // A session saved against the LGV-only react2 host — which jb2export used
+  // before react-app2 — holds a single `view` rather than a `views` array. Its
+  // one view is what react-app2 wants as views[0]; left alone it is an unknown
+  // key that the session model drops, and the export came out blank with
+  // nothing reported.
+  if (sessionData?.view && !sessionData.views) {
+    sessionData.views = [sessionData.view]
+    delete sessionData.view
+  }
+
   // only export first view (react-app2 sessions hold a `views` array). Guard on
   // a non-empty array so an empty `views: []` isn't rewritten to `[undefined]`,
   // which would crash createViewState downstream.
   if (Array.isArray(sessionData?.views) && sessionData.views.length > 0) {
+    if (sessionData.views.length > 1) {
+      console.warn(
+        `Warning: the session has ${sessionData.views.length} views; only the first is exported`,
+      )
+    }
     sessionData.views = [sessionData.views[0]]
   }
 
@@ -178,6 +193,15 @@ export function readData(
   }
   // else check if it was an assembly name in a config file
   else if (configData.assemblies?.length) {
+    // --config/--hub and the CLI assembly flags are alternatives, not additive:
+    // the config's assemblies win outright, so a --fasta given alongside one is
+    // dropped — and in a comparative run so is every --paf/--chain that binds to
+    // it, since those are built in the branch below that never runs.
+    if (fasta || hasComparativeArgs(argv)) {
+      console.warn(
+        'Warning: the assembly comes from the config (--config/--hub), so --fasta/--chromSizes and any comparison files passed with it are ignored. Use --assembly <name> to choose among the config assemblies.',
+      )
+    }
     if (asm) {
       const assembly = configData.assemblies.find(entry => entry.name === asm)
       if (!assembly) {

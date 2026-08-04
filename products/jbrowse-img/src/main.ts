@@ -47,6 +47,14 @@ function writeOutput(
     } else if (lower.endsWith('.pdf')) {
       convert(result, { out: outFile, width: String(width) }, ['-f', 'pdf'])
     } else {
+      // Only .png/.pdf are converted; everything else gets the raw SVG. Say so
+      // for an extension that asks for something else, since `--out fig.jpg`
+      // otherwise wrote SVG bytes under a name no viewer will open as SVG.
+      if (!lower.endsWith('.svg')) {
+        console.warn(
+          `Warning: writing SVG to "${outFile}"; only .png and .pdf are converted`,
+        )
+      }
       fs.writeFileSync(outFile, result)
     }
   }

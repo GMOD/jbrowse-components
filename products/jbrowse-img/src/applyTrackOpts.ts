@@ -248,6 +248,15 @@ const sortTypeAliases: Record<string, string> = {
   base: 'basePair',
 }
 
+// Look a user-typed key up in a lookup table. `Object.hasOwn` rather than a bare
+// index because every table here is keyed by raw CLI input, and `constructor` /
+// `toString` / `hasOwnProperty` are inherited from Object.prototype — so
+// `--bam x.bam constructor:1` found a "modifier" whose `on` was undefined and
+// died on `.includes` instead of warning like any other unknown name.
+function lookup<T>(table: Record<string, T>, key: string) {
+  return Object.hasOwn(table, key) ? table[key] : undefined
+}
+
 // One rule for every modifier value, so the grammar reads the same whatever the
 // track type: a value that isn't one of the things the modifier accepts is an
 // ERROR. jb2export writes a figure and exits, so a warning about a typo scrolls
@@ -353,7 +362,7 @@ const modifiers: Record<string, Modifier> = {
     on: ALL,
     apply: (r, v) => {
       const name = parseStr('display', v, 'display name')
-      r.displayType = displayTypeAliases[name] ?? name
+      r.displayType = lookup(displayTypeAliases, name) ?? name
     },
   },
   // `index:` (the .bai/.csi/.tbi location) and `name:` (the display name) are
@@ -403,7 +412,7 @@ const modifiers: Record<string, Modifier> = {
     on: ['alignments'],
     apply: (r, v, tag) => {
       const type = parseStr('sort', v, 'sort type')
-      r.sort = { type: sortTypeAliases[type] ?? type, tag }
+      r.sort = { type: lookup(sortTypeAliases, type) ?? type, tag }
     },
   },
   group: {
@@ -587,7 +596,7 @@ function applyModifier(
   val1: string,
   val2: string | undefined,
 ) {
-  const modifier = modifiers[prefix]
+  const modifier = lookup(modifiers, prefix)
   if (!modifier) {
     console.warn(`Warning: unknown track option "${prefix}"`)
   } else if (!modifier.on.includes(category)) {

@@ -6,6 +6,8 @@ import {
   getCigarMode,
   getColorBy,
   getNumber,
+  getNumberList,
+  getOptionalNumber,
   getString,
   getThemeName,
   getTrackLabels,
@@ -111,6 +113,65 @@ describe('getBooleanValue', () => {
       expect(getBooleanValue('yes', 'coverage')).toBe(false)
       expect(getBooleanValue('ture', 'coverage')).toBe(false)
       expect(warn).toHaveBeenCalledTimes(3)
+    } finally {
+      warn.mockRestore()
+    }
+  })
+})
+
+// Numbers were the last flag type that fell back in silence: `--width 120O`
+// rendered at the default 1500 with nothing said, while a bad enum or boolean
+// already reported itself.
+describe('numeric flags', () => {
+  test('a usable number parses without warning', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      expect(getNumber(parse('--width 1200'), 'width', 1500)).toBe(1200)
+      expect(getOptionalNumber(parse('--alpha 0.4'), 'alpha')).toBe(0.4)
+      expect(getOptionalNumber(parse('--loc chr1'), 'alpha')).toBeUndefined()
+      expect(warn).not.toHaveBeenCalled()
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
+  test('a non-numeric value warns and falls back rather than silently defaulting', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      expect(getNumber(parse('--width 120O'), 'width', 1500)).toBe(1500)
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('expected a number for --width'),
+      )
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
+  // `Number('')` is 0, so an empty value used to render a zero-width image
+  test('a bare or empty numeric flag warns instead of becoming 0', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      expect(getNumber(parse('--width='), 'width', 1500)).toBe(1500)
+      expect(getNumber(parse('--width --loc chr1'), 'width', 1500)).toBe(1500)
+      expect(warn).toHaveBeenCalledTimes(2)
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
+  // one value applies to every level, so a dropped entry read as deliberate
+  test('a non-numeric levelHeights entry warns and is skipped', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      expect(
+        getNumberList(parse('--levelHeights 300,300'), 'levelHeights'),
+      ).toEqual([300, 300])
+      expect(
+        getNumberList(parse('--levelHeights 300,abc'), 'levelHeights'),
+      ).toEqual([300])
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('non-numeric entry "abc"'),
+      )
     } finally {
       warn.mockRestore()
     }

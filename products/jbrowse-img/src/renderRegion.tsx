@@ -307,6 +307,15 @@ const renderLinear: ModeRenderer = async ({ model, data, opts, width }) => {
       'No --loc specified (e.g. --loc chr1:1-10000 or --loc all). ' +
         'Alternatively pass --session or --defaultSession.',
     )
+  } else if (!view.displayedRegions.length) {
+    // Without --loc the session IS the region, so a session that reaches here
+    // carrying no view (or a view positioned nowhere) renders an empty ruler and
+    // nothing else. That came out as a ~500-byte SVG with nothing reported —
+    // same class as the display errors throwOnDisplayError catches, so it fails
+    // the same way rather than writing a blank image.
+    throw new Error(
+      `the ${sessionParam ? '--session' : 'defaultSession'} has no view positioned on a region; pass --loc to say where to render`,
+    )
   }
 
   if (refseq) {
@@ -326,20 +335,19 @@ const renderLinear: ModeRenderer = async ({ model, data, opts, width }) => {
   // the config, so modifiers (height:, color:, …) route to the right display
   // slots whichever way the track got there.
   const toOpen = [
-    ...showTracks.flatMap(([, [trackInput, ...opts]]) =>
-      trackInput
-        ? [
-            {
-              trackId: resolveTrackId(
-                data.tracks,
-                trackInput,
-                data.assembly.name,
-              ),
-              opts,
-            },
-          ]
-        : [],
-    ),
+    ...showTracks.map(([, [trackInput, ...opts]]) => {
+      if (!trackInput) {
+        // a bare `--track` used to be skipped in silence, so the track the user
+        // meant to show just wasn't there
+        throw new Error(
+          '--track requires a trackId (list them with "jb2export list <hub>")',
+        )
+      }
+      return {
+        trackId: resolveTrackId(data.tracks, trackInput, data.assembly.name),
+        opts,
+      }
+    }),
     ...(data.openTracks ?? []),
   ]
   for (const { trackId, opts } of toOpen) {

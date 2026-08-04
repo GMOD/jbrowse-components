@@ -340,10 +340,25 @@ export function getBoolean(rest: Record<string, unknown>, key: string) {
   return getBooleanValue(rest[key], `--${key}`)
 }
 
+// A numeric flag. Absent is undefined; a present value that isn't a number
+// warns and is treated as absent, so `--width 120O` reports itself rather than
+// quietly rendering at the default — the reporting the enum-valued (getEnum) and
+// boolean (getBooleanValue) flags already do, which numbers were the last flag
+// type not to. An empty value (`--width=`) counts as unusable too: `Number('')`
+// is 0, which would render a zero-width image.
 export function getOptionalNumber(rest: Record<string, unknown>, key: string) {
   const v = rest[key]
-  const n = typeof v === 'string' ? Number(v) : NaN
-  return Number.isFinite(n) ? n : undefined
+  if (v === undefined) {
+    return undefined
+  }
+  const n = typeof v === 'string' && v.trim() !== '' ? Number(v) : Number.NaN
+  if (!Number.isFinite(n)) {
+    console.warn(
+      `Warning: expected a number for --${key}, got "${String(v)}"; ignoring`,
+    )
+    return undefined
+  }
+  return n
 }
 
 export function getNumber(
@@ -373,17 +388,25 @@ function getEnum<T extends string>(
   return match
 }
 
-// A comma-separated numeric list (e.g. levelHeights:300,300), dropping any
-// non-numeric entries; undefined when the flag is absent.
+// A comma-separated numeric list (e.g. --levelHeights 300,300). A non-numeric
+// entry warns rather than being dropped in silence, which turned
+// `--levelHeights 300,abc` into a one-level list — and one value applies to
+// every level, so that read as deliberate. Undefined when the flag is absent or
+// nothing usable was given.
 export function getNumberList(rest: Record<string, unknown>, key: string) {
   const v = rest[key]
   if (typeof v !== 'string') {
     return undefined
   }
-  const list = v
-    .split(',')
-    .map(s => Number(s))
-    .filter(n => Number.isFinite(n))
+  const list: number[] = []
+  for (const entry of v.split(',')) {
+    const n = entry.trim() === '' ? Number.NaN : Number(entry)
+    if (Number.isFinite(n)) {
+      list.push(n)
+    } else {
+      console.warn(`Warning: ignoring non-numeric entry "${entry}" in --${key}`)
+    }
+  }
   return list.length ? list : undefined
 }
 
