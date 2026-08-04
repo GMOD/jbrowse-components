@@ -6,11 +6,16 @@
  * the schema attached to `model.configuration`:
  *
  *   - the **slot name** is constrained to `ConfigurationSlotName<Schema>`, a
- *     finite union of literals, so a typo is a compile error — and a typo is the
- *     one config mistake with no runtime diagnostic either (`setSlot` assigns to
- *     an undeclared property: nothing throws, nothing persists, and the matching
- *     read keeps returning the default);
+ *     finite union of literals, so a typo is a compile error;
  *   - the **value type** comes from `ConfigurationSlotValue<Schema, Slot>`.
+ *
+ * What this number is now worth, post-adr-052: the WRITE path is guarded at
+ * runtime regardless of the schema — `setSlot` throws on an undeclared slot
+ * name, and MST type-checks the assigned value — so what these gaps uniquely
+ * cost is a typo'd slot name on a READ, which returns the default silently. The
+ * read path cannot take the same runtime guard (reading off an un-hydrated
+ * frozen config is legitimate and indistinguishable from the broken spelling;
+ * tried and reverted, see CONFIG_PATTERN.md).
  *
  * Both collapse the moment the schema widens to `AnyConfigurationSchemaType` —
  * `ConfigurationSlotName` degrades to `never`/`string` and the value to `any`.
@@ -174,22 +179,29 @@ function main() {
       '# Each entry is a read that returned `any`, which happens exactly when the',
       '# schema behind it widened to AnyConfigurationSchemaType. Both halves go at',
       '# once: the value is `any`, AND `ConfigurationSlotName` degrades to `string`',
-      '# so a typo in the quoted slot name compiles. A slot-name typo is the one',
-      '# config mistake with no runtime diagnostic either — `setSlot` assigns to an',
-      '# undeclared property, so nothing throws, nothing persists, and the matching',
-      '# read keeps returning the default.',
+      '# so a typo in the quoted slot name compiles.',
       '#',
-      '# Three populations, and they want different things:',
+      '# What that costs, post-adr-052: a typo on a READ, which silently returns',
+      '# the default. Writes are guarded at runtime whatever the schema — setSlot',
+      '# throws on an undeclared name and MST type-checks the value — and the read',
+      '# path cannot take the same guard (see adr-052).',
+      '#',
+      '# Four populations, and they want different things:',
       '#',
       '#   - a MIXIN casting its own `self` to a widened config holder. Load-bearing',
-      '#     as written (a mixin cannot know the composing schema) and the reason a',
-      '#     per-display generated accessor module would pay for itself: generated',
-      '#     next to the concrete schema, it can name it.',
+      '#     and ACCEPTED: a mixin cannot know the composing schema, and generic',
+      '#     threading does not rescue it. Generating per-display accessors to close',
+      '#     these was considered and rejected — see adr-052 before re-proposing it.',
       '#   - a `frozen`/`maybeFrozen` slot, which is `any` BY DESIGN — the escape',
       '#     hatch for arbitrary JSON. Accepted; it will never leave this list.',
+      '#   - a read against a TRACK schema (`trackId`, `assemblyNames`, `adapter`,',
+      '#     often via getContainingTrack/parentTrack). Grouped under the display',
+      '#     file that happens to contain it, so it LOOKS like display debt; naming',
+      '#     the display factory\'s schema cannot reach it. Check before estimating.',
       '#   - a factory that left its `configSchema` param at AnyConfigurationSchemaType.',
-      '#     Fixable in one line by naming the concrete schema type, which is the',
-      '#     lever CONFIG_PATTERN.md points at.',
+      '#     Usually one line, unless its base schema is itself widened — a base',
+      '#     taken from `pluginManager.getDisplayType(…).configSchema` poisons the',
+      '#     whole schema through GetBase and has to be re-plumbed first.',
       '#',
       `# ${sourceGaps.length} unchecked in source, ${gaps.length - sourceGaps.length} in tests,`,
       `# of ${total} total config accessor calls. The gate counts source only.`,

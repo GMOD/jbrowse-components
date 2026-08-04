@@ -3,6 +3,25 @@ name: todo
 description: Action items to build or fix, the current backlog. Read when picking up work.
 ---
 
+## Committed image snapshots are stale, in two unrelated ways
+
+`npx jest products/jbrowse-web/src/tests` fails 39 snapshots. Measured 2026-08,
+and they are **not one problem**:
+
+- **76 are pure size mismatches** (e.g. `808x250` → `806x250`), all from
+  `be6d18b4a1` moving the alignments canvas from `view.width` to
+  `view.trackWidthPx` — 2px of track outline. Content is unaffected.
+- **2 are a genuine content diff**: `VcfCluster.test.tsx` "opens a vcf track and
+  clusters genotypes", 1.15% / 2135 pixels. Unrelated to the width change and
+  nobody has explained it. Whatever is done about the width, **this one wants a
+  cause before a `-u`.**
+
+Don't blanket-regenerate. Beyond the two causes being different, the 2px change
+is exactly what the browser gate cannot see — it is a canvas-vs-GPU
+*differential* check, so a width both backends read identically passes it while
+every golden image is wrong. What validates that half is launching the app with
+track outlines on and off and looking, then regenerating in its own commit.
+
 ## Fold the non-LGV fetches onto `FetchMixin`
 
 `LinearSyntenyDisplay` and `DotplotDisplay` fetch outside `FetchMixin`: their own

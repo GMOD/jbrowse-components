@@ -7,9 +7,11 @@ summary: "Slot-name safety is a runtime guard on the single write funnel, not co
 
 ## Status
 
-Accepted (2026-08). Supersedes the accessor-codegen plan in
-[config-typing-and-accessors.md](../handoffs/config-typing-and-accessors.md),
-which is now the measurement record for this decision.
+Accepted (2026-08). Supersedes the accessor-codegen plan that the
+`config-typing-and-accessors` handoff carried; that handoff is deleted and this
+ADR is the record. The work is `258a85a4c2` (the guard), `c1a2d3af2f` /
+`dc6cac4b39` / `a28bf168fc` (the narrowings), and `b5cdd334f0` (the audit the
+whole thread was measured against).
 
 ## Context
 
