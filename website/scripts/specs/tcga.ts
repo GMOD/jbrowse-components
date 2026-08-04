@@ -712,4 +712,39 @@ export const tcgaSpecs: ScreenshotSpec[] = [
       MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT + MATRIX_CHROME_HEIGHT + 60,
     settleMs: 10000,
   },
+
+  // TP53 grouped by receptor subtype: the same mechanic as the CDH1 figure
+  // pointed at a different clinical column, and the page's second grouping
+  // claim, which it otherwise only asserts.
+  //
+  // TP53 rather than PIK3CA, which the same sentence names. PIK3CA's contrast
+  // is carried by two hotspot codons, so at 979 sub-pixel rows it is a handful
+  // of columns in a frame of empty grey (built and rejected). TP53 is mutated
+  // in most triple-negative tumors and a minority of HR+/HER2- ones, so its
+  // contrast is a density difference across the whole gene, which is what a
+  // matrix of sub-pixel rows is able to draw: the triple-negative band reads as
+  // the dark one.
+  //
+  // Introns collapsed for the same reason as CDH1: with introns in frame every
+  // private intronic call takes a column of its own and spreads the coding ones
+  // thin.
+  {
+    mode: 'url',
+    name: 'tcga/mutations_tp53_subtype',
+    url: mutationFigure({
+      loc: '17:7,668,000-7,688,000',
+      groupBy: 'subtype',
+      colorBy: 'subtype',
+      lineZoneHeight: LINE_ZONE_HEIGHT,
+      height: MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT,
+    }),
+    readySelector: MATRIX_DONE,
+    readyTimeout: 180000,
+    actions: collapseIntrons('TP53'),
+    hideSelectors: ['.MuiSnackbar-root'],
+    viewportWidth: 1500,
+    viewportHeight:
+      MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT + MATRIX_CHROME_HEIGHT,
+    settleMs: 10000,
+  },
 ]

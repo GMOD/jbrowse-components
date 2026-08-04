@@ -14,19 +14,16 @@ rows.
 
 ## Prerequisites
 
-To build the tracks:
-
 - cells already clustered and labeled, plus the barcoded BAM the counts came
   from (Cell Ranger's `possorted_genome_bam.bam`, or any BAM carrying a
   corrected cell-barcode tag)
-- `bedGraphToBigWig` from the UCSC utilities, or deepTools
-- a JBrowse instance to load the finished BigWigs into
-
-`bedGraphToBigWig` is a
-[single static binary from UCSC](https://hgdownload.soe.ucsc.edu/admin/exe/);
-the split-the-BAM route instead wants `pip install deeptools sinto`. The
-[reproduce script](#reproduce-it-end-to-end) needs neither, since it does its
-own binning.
+- [`bedGraphToBigWig`](https://hgdownload.soe.ucsc.edu/admin/exe/) from the UCSC
+  utilities, or `pip install deeptools sinto` for the split-the-BAM route; the
+  [reproduce script](#reproduce-it-end-to-end) needs neither, since it does its
+  own binning
+- a JBrowse instance to load the finished BigWigs into (see the
+  [web quickstart](/docs/quickstart_web), or the
+  [desktop quickstart](/docs/quickstart_desktop))
 
 ## What a genome browser adds
 
@@ -84,15 +81,57 @@ space and needing none.
 ## Loading the BigWigs
 
 One `MultiQuantitativeTrack` holds the whole set, one `BigWigAdapter` subadapter
-per cell type, each carrying the row's `name`, `color`, and `group`. That
-config, the `--multiwig` CLI form, and the add-track UI workflow are all covered
-on [](/docs/tutorials/scatac_pseudobulk), which loads an ATAC set the same way;
-nothing about the RNA case differs.
+per cell type, each carrying the row's `name`, `color`, and `group`:
+
+```json
+{
+  "type": "MultiQuantitativeTrack",
+  "trackId": "pbmc5k_scrna_pseudobulk",
+  "name": "scRNA pseudobulk by cell type (10x 5k PBMC)",
+  "category": ["Single cell", "Expression"],
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "MultiWiggleAdapter",
+    "subadapters": [
+      {
+        "type": "BigWigAdapter",
+        "name": "CD4 T",
+        "group": "T cell",
+        "color": "#1f77b4",
+        "uri": "https://example.com/bw/CD4_T.bw"
+      },
+      {
+        "type": "BigWigAdapter",
+        "name": "CD8 T",
+        "group": "T cell",
+        "color": "#279e68",
+        "uri": "https://example.com/bw/CD8_T.bw"
+      },
+      {
+        "type": "BigWigAdapter",
+        "name": "CD14 Mono",
+        "group": "Monocyte",
+        "color": "#8c564b",
+        "uri": "https://example.com/bw/CD14_Mono.bw"
+      }
+    ]
+  },
+  "displayDefaults": {
+    "defaultRendering": "multirowxy",
+    "height": 330
+  }
+}
+```
 
 Take the row order and the row colors from the single-cell object rather than
-from the filesystem. Related lineages stay adjacent instead of alphabetized, and
-a row keeps the color its cluster had on the UMAP, which is what lets a reader
-move between the two pictures.
+from the filesystem, so related lineages stay adjacent instead of alphabetized
+and a row keeps the color its cluster had on the UMAP, which is what lets a
+reader move between the two pictures.
+
+The `--multiwig` CLI form and the add-track UI workflow build the same track
+without hand-writing it, and both are covered on
+[](/docs/tutorials/scatac_pseudobulk), which loads an ATAC set the same way;
+nothing about the RNA case differs.
 
 ## One row per cell
 
@@ -125,22 +164,54 @@ heatmap in [](/docs/tutorials/population_cnv).
 The store is read by the `MultiWiggleZarrAdapter` that
 [`jbrowse-plugin-zarr`](https://github.com/cmdcolin/jbrowse-plugin-zarr) adds,
 the same adapter [](/docs/tutorials/population_cnv) uses for 2504 individuals of
-the 1000 Genomes panel. Its bin axis lays each window end to end keyed by
-refName, so it holds one window per chromosome; the marker genes it covers are
-picked to sit on different chromosomes for that reason. Per-cell coverage only
-says anything at a locus the cells actually have reads at, so covering marker
-windows rather than the genome is the whole design, and it is why the store is
-under a megabyte.
+the 1000 Genomes panel. Declaring the plugin and pointing a track at the store
+is the whole config; the cell list, the bin size and the row colors are
+attributes of the store, written by the build step:
 
-## Both assays over one locus
+```json
+{
+  "plugins": [
+    {
+      "name": "Zarr",
+      "url": "https://jbrowse.org/demos/zarr/jbrowse-plugin-zarr.umd.production.min.js"
+    }
+  ],
+  "tracks": [
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "pbmc5k_scrna_percell",
+      "name": "Per-cell coverage (marker loci)",
+      "category": ["Single cell"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "MultiWiggleZarrAdapter",
+        "uri": "percell.zarr"
+      },
+      "displayDefaults": {
+        "defaultRendering": "multirowdensity",
+        "minScore": 0,
+        "maxScore": 4,
+        "height": 420
+      }
+    }
+  ]
+}
+```
 
-Because the rows are just BigWigs, an RNA set and an ATAC set stack in one view.
-The demo config carries a pseudobulk scATAC set over the same PBMCs beside the
-RNA one, so both can be opened at a marker locus from the track selector.
+A relative `uri` resolves against the config that holds it, so a store sitting
+beside `config.json` needs no absolute URL, and nothing runs on the server.
 
-The two assays disagree about where the interesting coordinate is, which is the
-point of looking at them together: accessibility marks the promoter and the
-enhancers, and 3' RNA marks the far end of the transcript.
+The store's bin axis lays each window end to end keyed by refName, so it holds
+one window per chromosome; the marker genes it covers are picked to sit on
+different chromosomes for that reason. Per-cell coverage only says anything at a
+locus the cells actually have reads at, so covering marker windows rather than
+the genome is the whole design, and it is why the store is under a megabyte.
+
+Because the rows are just signal, an RNA set and an ATAC set stack in one view:
+the demo config carries a pseudobulk scATAC set over the same PBMCs beside the
+RNA one. The two assays disagree about where the interesting coordinate is,
+which is the point of opening both, and [](/docs/tutorials/scatac_pseudobulk) is
+the accessibility half.
 
 ## Linking the UMAP to the tracks
 

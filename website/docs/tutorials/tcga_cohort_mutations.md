@@ -201,14 +201,20 @@ mutation calls are exome only, so there is no intergenic signal to see.
 ## The same mechanic on other columns
 
 Point the slots at `subtype` instead and the rows band by receptor status, which
-is where the cohort's other well-known contrast lives: TP53 mutations
-concentrate in the triple-negative band, and PIK3CA's hotspot codons (H1047R in
-the kinase domain, E542K/E545K in the helical one) in the HR+/HER2- band
-([TCGA 2012](https://doi.org/10.1038/nature11412)). Hovering a column in the
+is where the cohort's other well-known contrast lives
+([TCGA 2012](https://doi.org/10.1038/nature11412)):
+
+<Figure caption="TP53's exons with rows grouped and colored by receptor subtype, introns collapsed. The triple-negative band is visibly the dense one; the much larger HR+/HER2- band above it is sparse. Bands run HR+/HER2-, HER2+, triple-negative, unknown from the top, named by the color strip in the gutter, and the cells are missense (orange) and truncating (red) calls spread the length of the coding sequence rather than piled on a codon." src="/img/tcga/mutations_tp53_subtype.png" />
+
+The bottom band is the tumors whose receptor calls do not resolve a subtype, a
+gap in the annotation rather than a fourth subtype. Hovering a column in the
 live view names its mutation and its consequence, and clicking one opens the
-variant popup with the per-tumor read counts. The `unknown` band is the tumors
-whose receptor calls do not resolve a subtype, a gap in the annotation rather
-than a fourth subtype.
+variant popup with the per-tumor read counts.
+
+PIK3CA is the same gene-scale picture with the opposite geometry: its calls pile
+on two hotspots (H1047R in the kinase domain, E542K/E545K in the helical one) in
+the HR+/HER2- band rather than spreading, so its connector fan comes off a
+couple of points where TP53's and CDH1's land in exon after exon.
 
 ## Clustering instead of grouping
 

@@ -77,29 +77,70 @@ files = snap.ex.export_coverage(
     n_jobs=2,
 )
 
+# Which lineage each of this dataset's labels belongs to, and the order those
+# lineages are drawn in. The single-cell object's own category order is not
+# lineage order -- it interleaves the two monocyte labels between the T-cell
+# ones and splits Memory B from Naive B around NK -- so a track that follows it
+# scatters each lineage down the stack. `group` is also what seeds the track's
+# sidebar tree, so a label missing from this map costs the row its branch as
+# well as its position.
+#
+# This map is the one dataset-specific thing in the script. Running it on your
+# own experiment means replacing it (or dropping it, which leaves the rows
+# ungrouped in the object's order).
+LINEAGE = {
+    "CD4 Naive": "T cell",
+    "CD4 Memory": "T cell",
+    "CD8 Naive": "T cell",
+    "CD8 Memory": "T cell",
+    "MAIT": "T cell",
+    "NK": "NK",
+    "Naive B": "B cell",
+    "Memory B": "B cell",
+    "CD14 Mono": "Myeloid",
+    "CD16 Mono": "Myeloid",
+    "cDC": "Myeloid",
+    "pDC": "Myeloid",
+}
+GROUP_ORDER = ["T cell", "NK", "B cell", "Myeloid"]
+
 # Cell type labels contain spaces ("CD14 Mono") and a space is not valid in a
 # track uri, so the files take an underscore form and the label survives as the
 # subadapter's name.
 cell_types = list(data.obs["cell_type"].cat.categories)
-colors = list(data.uns["cell_type_colors"])
+colors = dict(zip(cell_types, data.uns["cell_type_colors"]))
+
+# Rows sort by lineage, then by the order the map lists that lineage's labels
+# in, so naive sits beside memory. A label the map does not know keeps its
+# category position and lands after every label it does.
+order = {name: i for i, name in enumerate(LINEAGE)}
+cell_types.sort(
+    key=lambda ct: (
+        GROUP_ORDER.index(LINEAGE[ct]) if ct in LINEAGE else len(GROUP_ORDER),
+        order.get(ct, cell_types.index(ct)),
+    )
+)
+
 subadapters = []
-for cell_type, color in zip(cell_types, colors):
+for cell_type in cell_types:
     path = Path(files[cell_type])
     renamed = path.with_name(cell_type.replace(" ", "_") + ".bw")
     path.rename(renamed)
-    print(f"{cell_type}\t{renamed}")
+    group = LINEAGE.get(cell_type)
+    print(f"{cell_type}\t{group or '-'}\t{renamed}")
     subadapters.append(
         {
             "type": "BigWigAdapter",
             "name": cell_type,
-            "color": color,
+            **({"group": group} if group else {}),
+            "color": colors[cell_type],
             "uri": f"bw/{renamed.name}",
         }
     )
 
-# Row order and row color both come from the single-cell object rather than from
-# the filesystem: related lineages stay adjacent, and a row keeps the color its
-# cluster had on the UMAP.
+# A row keeps the color its cluster had on the UMAP, so the same cell type is
+# the same color in both pictures, and the lineage it was sorted into is
+# written down rather than left for a reader to infer from the label.
 Path("sources.json").write_text(json.dumps(subadapters, indent=2))
 PY
 

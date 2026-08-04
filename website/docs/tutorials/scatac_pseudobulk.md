@@ -11,19 +11,18 @@ draws one row per file.
 
 ## Prerequisites
 
-To build the tracks:
-
 - cells already clustered and labeled: either a fragments file (or a barcoded
   BAM) plus a barcode-to-label table, or the project object your analysis tool
   already holds, an `AnnData` in SnapATAC2 (Python), an `ArchRProject` in ArchR,
   or a Seurat/Signac object in R
-- a JBrowse instance to load the finished BigWigs into
-
-The pseudobulk tool follows from whichever of those you have:
-`pip install snapatac2` for the AnnData route, `pip install deeptools sinto` for
-the barcoded-BAM route, and `bedGraphToBigWig` is a
-[single static binary from UCSC](https://hgdownload.soe.ucsc.edu/admin/exe/) for
-the fragments-file route. ArchR and Signac install from R.
+- the pseudobulk tool that follows from whichever of those you have:
+  `pip install snapatac2`, `pip install deeptools sinto`, or
+  [`bedGraphToBigWig`](https://hgdownload.soe.ucsc.edu/admin/exe/) for the
+  fragments-file route (ArchR and Signac install from R)
+- a JBrowse instance to load the finished BigWigs into (see the
+  [web quickstart](/docs/quickstart_web), or the
+  [desktop quickstart](/docs/quickstart_desktop), which opens local `.bw` files
+  with nothing hosted)
 
 ## Why pseudobulk
 
@@ -32,45 +31,34 @@ a single cell is almost entirely zero and no locus reads as open or closed.
 Pseudobulking is the standard answer: take the labels your clustering already
 assigned, pool every fragment belonging to a label into one profile, and each
 cell type comes out as a dense track that looks like a bulk ATAC experiment run
-on that cell type alone. Twelve cell types give twelve BigWigs, JBrowse stacks
-them as twelve rows of one track, and accessibility restricted to one lineage
-reads as a peak present in a few rows and flat in the rest.
+on that cell type alone. JBrowse stacks the resulting files as rows of one
+track, and accessibility restricted to one lineage reads as a peak present in a
+few rows and flat in the rest.
 
-This tutorial follows one dataset: the 10x 5k-PBMC scATAC experiment in
-SnapATAC2's annotated release, which
-[`build_scatac_pseudobulk.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_scatac_pseudobulk.sh)
-takes from that object to a loaded JBrowse instance. PBMCs are a good check on
-the whole path, because the answer is known in advance: at a T-cell marker the
-T-cell rows have to carry the signal and the B-cell and monocyte rows have to
-stay flat.
+PBMCs are a good check on the whole path, because the answer is known in
+advance: at a T-cell marker the T-cell rows have to carry the signal, and at a
+B-cell marker the same rows have to go flat and the B-cell rows light up.
+
+<Figure caption="Twelve per-cell-type BigWigs from the 10x 5k PBMC scATAC dataset, loaded as one MultiQuantitativeTrack, over CD8A and MS4A1 in one discontinuous view. CD8A is carried by the CD8, MAIT and NK rows, all CD8A-expressing lineages; MS4A1 by the two B rows and nothing else. Each row keeps the color its cluster had in the single-cell object, and the rows are ordered by lineage, so the two markers land in different blocks." src="/img/scatac/pbmc5k_marker_swap.png" />
 
 The pseudobulk step runs in the same environment your clustering does, so the
 BigWigs it writes can also be viewed inline through the
 [JBrowse Jupyter / anywidget interface](/docs/jbrowse_jupyter) (or
 [](/docs/jbrowser)) without leaving the session.
 
-<Figure caption="Twelve per-cell-type BigWigs from the 10x 5k PBMC scATAC dataset over CD8A, loaded as one MultiQuantitativeTrack, each row keeping the color and cluster order the single-cell object gave it. The CD8 Memory, CD8 Naive, and MAIT rows carry the accessibility here while the B cell and monocyte rows stay flat." src="/img/scatac/pbmc5k_cd8a.png" />
-
-Clustering and cell-type labeling stay upstream, in Cell Ranger ATAC, ArchR,
-Signac, or SnapATAC2. This tutorial starts from what those produce and does
-three things with it: pseudobulks, by splitting fragments by label and pooling,
-normalizing and binning each group into a BigWig; loads the whole set through
-one `MultiWiggleAdapter`, so N cell types stay one track with one config, one
-height and one shared score axis; and reads it, through stacked rows, row
-clustering, and the rendering modes that suit many rows.
-
 ## Generating per-group BigWigs
 
-Two settings decide whether the rows can be compared to each other, whichever
-tool writes them.
+Clustering and cell-type labeling stay upstream, in Cell Ranger ATAC, ArchR,
+Signac, or SnapATAC2. Two settings decide whether the rows this page draws can
+be compared to each other, whichever tool writes them.
 
 Normalization matters because groups differ in cell count and in total
 fragments, so each track needs normalizing (CPM / RPKM, or per-cell-count).
 Without it a tall peak can just mean "more cells in this group".
 
-Bin size trades resolution against file size. Smaller bins (10-25bp) preserve
-ATAC peak shape, larger bins (50-100bp) are smaller and fine zoomed out, and
-10-25bp is typical.
+Bin size trades resolution against file size. Peak shape is the readable part of
+an ATAC track, so the bin has to stay well inside one peak; `export_coverage`
+below uses 25 bp.
 
 SnapATAC2's `export_coverage` splits cells by a metadata column and writes one
 normalized BigWig per group in a single call, which covers the pseudobulk step
@@ -93,9 +81,10 @@ snap.ex.export_coverage(
 # writes bw/<cell_type>.bw, one per group, keyed by group in the returned dict
 ```
 
-Keep `n_jobs` low: at the default of 8 the BigWig writer died partway through
-the groups on a 30GB machine, where two workers wrote all of them in about a
-minute.
+`n_jobs` is a memory knob rather than a speed one, since each worker holds a
+whole genome-wide coverage vector, and the BigWig writer dies partway through
+the groups rather than degrading when it runs out. The default was too high
+here.
 
 `groupby` is the whole decision: pass the cluster column (`"leiden"`) to get one
 row per cluster, or the annotated column (`"cell_type"`) to get one row per cell
@@ -126,7 +115,7 @@ page does not care which produced them. The tools are linked under
 In JBrowse, all the per-cell-type BigWigs go into one track: a
 `MultiQuantitativeTrack` whose `MultiWiggleAdapter` holds one `BigWigAdapter`
 per file. Each subadapter carries a `name` (the row label), an optional `color`,
-and an optional `group` (which seeds the sidebar clustering tree).
+and an optional `group`.
 
 ### Via the UI
 
@@ -134,8 +123,7 @@ From the "Add track" workflow, switch to "Add multi-wiggle track" and paste your
 BigWig URLs one per line (or a JSON array of subadapter objects). JBrowse builds
 the `MultiQuantitativeTrack` for you. This is the fastest way to try a set of
 files. Export the session to get the JSON config. On JBrowse Desktop the same
-workflow loads the `.bw` files straight from local disk with no web server
-([desktop quickstart](/docs/quickstart_desktop)).
+workflow loads the `.bw` files straight from local disk with no web server.
 
 ### Via the CLI
 
@@ -153,9 +141,7 @@ jbrowse add-track --multiwig "$(find bw -name '*.bw' | sort | paste -sd,)" \
 `--load copy --subDir bw` copies local files in beside `config.json`; drop both
 for BigWigs already served over HTTP. To carry per-row names, colors, and
 groups, pass a `.json` file of subadapter objects (the same objects as the
-config below) instead of the comma list. Either way the subadapters are drawn in
-the order given, so listing them in your analysis tool's cluster order keeps
-related lineages adjacent rather than alphabetized.
+config below) instead of the comma list.
 
 ### Via config JSON
 
@@ -201,8 +187,24 @@ three-cell-type example against hg38:
 }
 ```
 
-If you don't need per-row names/colors, the `bigWigs` shorthand takes a plain
-array of URLs (the row label is derived from each filename):
+Three things about that list are worth writing deliberately rather than taking
+from the filesystem.
+
+Subadapters draw in the order given, so list them **grouped by lineage**. A
+single-cell object's own category order usually is not: the one behind the
+figure above interleaves the monocyte labels among the T-cell ones and puts NK
+between the two B-cell labels, which scatters each lineage down the stack.
+
+Take each row's `color` from the cluster's color in your analysis, so a cell
+type is the same color in the browser as on the UMAP and a reader can move
+between the two pictures.
+
+`group` is what the sidebar tree branches on, and it is also what
+[](/docs/user_guides/clustering) reorders when you ask it to cluster rows by
+score at the locus in view.
+
+If you don't need per-row names, colors or groups, the `bigWigs` shorthand takes
+a plain array of URLs and derives each row's label from its filename:
 
 ```json
 "adapter": {
@@ -214,6 +216,29 @@ array of URLs (the row label is derived from each filename):
   ]
 }
 ```
+
+The display is a `MultiLinearWiggleDisplay`, and how the rows are drawn is one
+slot:
+[`defaultRendering`](/docs/config/multilinearwiggledisplay/#slot-defaultrendering)
+lists every mode, and the track menu switches between them live. `multirowxy`
+(the default, and the figures on this page) is best for comparing peak shape;
+`multirowdensity` maps score to color instead of height, which fits more rows in
+the same space. [](/docs/user_guides/multiquantitative_track) covers the rest of
+the menu.
+
+## Atlas rows, with no pseudobulk step of your own
+
+Published atlases distribute their per-cell-type pileups as BigWigs, which is
+the same set of files this page has been building, so they load through the same
+adapter with nothing to run. [CATlas](https://www.catlas.org/) publishes hg38
+coverage per cell type at
+`https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/<CellType>.bw`:
+
+<Figure caption="CATlas single-cell ATAC over the albumin (ALB) gene on chr4, one accessibility row per cell type on a shared scale, loaded straight from the atlas's hosted BigWigs. The Hepatocyte row is open across the locus while the other 15 rows stay flat." src="/img/scatac/alb_hepatocyte.png" />
+
+The rows read the same way whether the files came from an atlas or from your own
+`export_coverage` call, so an atlas is also a way to check a lineage in your own
+data against a much larger reference.
 
 ## Reproduce it end to end
 
@@ -238,9 +263,10 @@ own work is short:
 
 - `export_coverage(groupby="cell_type", bin_size=25, normalization="RPKM")`,
   which writes one BigWig per cell type into `bw/`
-- a `sources.json` of subadapters, taking each row's label, color, and position
-  from the same object, so the rows keep the colors and the cluster order the
-  single-cell analysis gave them
+- a `sources.json` of subadapters, taking each row's color from the same object
+  and its `group` and position from a lineage map the script states outright.
+  That map is the one dataset-specific thing in it, and running it on your own
+  experiment means replacing it
 - `jbrowse create` plus `add-assembly` for hg38 and a RefSeq gene track, then
   the one `MultiQuantitativeTrack` those subadapters make up
 
@@ -248,65 +274,21 @@ Everything upstream of `export_coverage` is the part a genome browser does not
 do, and this dataset is a convenient place to skip it. Running it on your own
 experiment means substituting your labeled object at that one call.
 
-Navigate the finished instance to a marker gene and read the rows against the
-labels: at CD8A the CD8 and MAIT rows are open and the B-cell and monocyte rows
-are flat, and at a B-cell marker such as MS4A1 the same rows swap. Rows that
-stay open everywhere usually mean the normalization step was skipped, since an
-unnormalized group's height tracks its cell count rather than its accessibility.
-
-## Rendering options
-
-The display is a `MultiLinearWiggleDisplay`. Its
-[`defaultRendering`](/docs/config/multilinearwiggledisplay/#slot-defaultrendering)
-slot chooses how the subtracks are drawn. Set it under the track's `displays`
-(or the `displayDefaults` shorthand), or switch it live from the track menu.
-
-- `multirowxy` - one stacked XY-plot row per cell type. This is the "one
-  coverage row per cell type" look above, and is best for comparing peak shape
-  across many groups.
-- `multirowdensity` - one row per cell type, but score mapped to color intensity
-  instead of bar height. Compact, and good for a heatmap-style view of many cell
-  types at once.
-- `multixyplot` - all cell types overlaid in a single shared plot (one Y axis).
-  Good for a few groups you want superimposed rather than stacked.
-- `multirowline` / `multirowscatter` and `multiline` / `multiscatter` are the
-  line and scatter variants of the stacked and overlapping layouts.
-
-Single-source names (`xyplot`, `density`, …) copied from a normal wiggle track
-are automatically remapped to their multi-row equivalents, so an accidental
-`"xyplot"` still loads.
-
-Other useful controls:
-
-- `height` - total track height in pixels (the
-  [`height`](/docs/config/multilinearwiggledisplay/#slot-height) slot). Raise it
-  when you have many rows.
-- `summaryScoreMode` - `avg`, `min`, `max`, or `whiskers` (the
-  [`summaryScoreMode`](/docs/config/multilinearwiggledisplay/#slot-summaryscoremode)
-  slot) for how each bin's summary is drawn when zoomed out.
-- The "Cluster rows by score..." clustering action in the track menu (see
-  [](/docs/user_guides/clustering)) sorts cell types with similar accessibility
-  profiles next to each other at the locus in view.
-
-Example display config that starts taller and in density mode:
-
-```json
-"displays": [
-  {
-    "type": "MultiLinearWiggleDisplay",
-    "defaultRendering": "multirowdensity",
-    "height": 400
-  }
-]
-```
+Navigate the finished instance to the two markers in the figure and read the
+rows against the labels. Rows that stay open everywhere usually mean the
+normalization step was skipped, since an unnormalized group's height tracks its
+cell count rather than its accessibility.
 
 ## See also
 
+- [](/docs/tutorials/scrna_pseudobulk), the same stacking for expression, plus
+  one row per cell under the pseudobulk rows
 - [Multi-quantitative track configuration](/docs/config_guides/multiquantitative_track)
 - [MultiWiggleAdapter config](/docs/config/multiwiggleadapter)
 - [MultiLinearWiggleDisplay model](/docs/models/multilinearwiggledisplay)
 - [](/docs/user_guides/clustering)
-- [](/docs/tutorials/chromhmm)
+- [](/docs/tutorials/chromhmm), many cell types in one track from a single file
+  rather than one file each
 
 ## Sources
 
@@ -325,8 +307,4 @@ Reference datasets:
   the 10x Genomics experiment this page pseudobulks, in its clustered and
   cell-type-annotated form
 - [CATlas: a single-cell atlas of chromatin accessibility in the human genome (Zhang et al., Cell 2021)](https://www.sciencedirect.com/science/article/pii/S0092867421012794)
-  · [resource portal](https://www.catlas.org/), whose per-cell-type pileup
-  BigWigs are public (hg38) at
-  `https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/<CellType>.bw`
-  and load into a `MultiWiggleAdapter` directly, with no pseudobulk step of your
-  own
+  · [resource portal](https://www.catlas.org/), the atlas the ALB figure reads

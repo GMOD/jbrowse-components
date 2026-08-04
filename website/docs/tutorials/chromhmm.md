@@ -34,7 +34,7 @@ instead we merge them into a single file with an extra `cellType` column and let
 the multi-row feature display split that one track back into a labeled sub-row
 per cell type. Every row shares one config, one adapter, and one fetch.
 
-<Figure src="/img/chromhmm.png" caption="Roadmap Epigenomics 15-state ChromHMM across 127 epigenomes as a single multi-row track, with NCBI RefSeq genes above for context. Each row is one epigenome, each block is painted by the file's own itemRgb, and the state key on the right is derived from the data."/>
+<Figure src="/img/chromhmm_hoxa_9celltype.png" caption="The nine UCSC ENCODE Broad epigenomes over the HOXA cluster as a single multi-row track, with hg19 RefSeq genes above. Each row is one cell type, each block is painted by the file's own itemRgb, and the state key on the right is derived from the data. H1-hESC holds the cluster in Polycomb-repressed states while the differentiated lines carry active promoter, enhancer and transcription over the genes each of them uses."/>
 
 ## Reproduce it end to end
 
@@ -170,19 +170,15 @@ Two more track-menu actions turn the painting into a comparison:
   rank the rows by the state each one carries at that base. On a promoter, the
   cell types with an active TSS rise to the top.
 
-The script opens on the HOXA cluster (`chr7:27,050,000-27,300,000`) because it
-shows both at once: the stem-cell line (H1-hESC) reads as Polycomb-repressed
-across the whole cluster while the differentiated lines carry active promoter
-and transcription states over the genes each of them uses.
-
 ## Scaling up: 127 epigenomes
 
 The same recipe scales to the
 [Roadmap Epigenomics](https://egg2.wustl.edu/roadmap/web_portal/chr_state_learning.html)
-15-state model across 127 epigenomes, the track in the figure above. The only
-difference is 127 input files and a longer `rowOrder`. Because the multi-row
-display fetches and lays out one file, 127 epigenomes is still one track, one
-adapter, one fetch, not 127 tracks.
+15-state model across 127 epigenomes. The only difference is 127 input files and
+a longer `rowOrder`. Because the multi-row display fetches and lays out one
+file, 127 epigenomes is still one track, one adapter, one fetch, not 127 tracks.
+
+<Figure src="/img/chromhmm.png" caption="The same display at 127 epigenomes instead of nine, over a window on chr11. Each row is one epigenome and the rows are thin enough that the painting reads as a heatmap of state rather than as blocks."/>
 
 At that row count `rowOrder` is 127 lines of config whose only job is to keep
 related tissues adjacent, which is exactly what **Cluster rows by similarity**

@@ -363,6 +363,8 @@ splicing data, look outside TCGA (GTEx and recount3 publish junction summaries).
   recurrence track's scale and color controls
 - [](/docs/tutorials/bxd_qtl), the same multi-row display for strain genotypes
 - [](/docs/tutorials/chromhmm), the same display across cell types
+- [](/docs/tutorials/population_cnv), one row per sample for germline copy
+  number, from depth rather than segment calls
 - [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab), single-tumor
   structural and copy-number variation
 - [jexl](/docs/config_guides/jexl)

@@ -1773,6 +1773,47 @@ export const uiSpecs: ScreenshotSpec[] = [
     viewportHeight: 700,
   },
 
+  // The nine-cell-type Broad ENCODE track at the HOXA cluster, which is the
+  // build scripts/build_chromhmm_multirow.sh actually produces and the window it
+  // opens on. The tutorial's only figure used to be the 127-epigenome Roadmap
+  // track above, so the path a reader follows end to end was the one path the
+  // page never showed.
+  //
+  // HOXA rather than a single promoter: at nine rows each state block is thick
+  // enough to read as a color, and the cluster separates the cell types by what
+  // they are rather than by how deeply they were sequenced. H1-hESC holds the
+  // whole cluster Polycomb-repressed while the differentiated lines carry active
+  // promoter and transcription over the genes each of them uses.
+  {
+    mode: 'url',
+    name: 'chromhmm_hoxa_9celltype',
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: 'chr7:27,050,000-27,300,000',
+      tracks: [
+        {
+          trackId: 'ncbi_gff_hg19',
+          type: 'LinearBasicDisplay',
+          showDescriptions: false,
+          // the HOXA genes stack three deep here, and at 100 the third row's
+          // labels were cut in half by the lane's own bottom edge
+          height: 140,
+        },
+        {
+          trackId: 'broad_chromhmm_multirow_hg19',
+          type: 'LinearMultiRowFeatureDisplay',
+          // 9 rows: 40px each, thick enough that a state block is a color
+          // rather than a line, and the row labels sit inside their own row
+          height: 360,
+        },
+      ],
+    }),
+    readyText: 'ChromHMM',
+    readyTimeout: 60000,
+    settleMs: 8000,
+    viewportHeight: 740,
+  },
+
   // The "Display types" submenu, with the multi-row display boxed: the
   // multi-row user guide's answer to "where do I turn this on". Deliberately
   // shot on a track still in its DEFAULT display, so the figure shows the

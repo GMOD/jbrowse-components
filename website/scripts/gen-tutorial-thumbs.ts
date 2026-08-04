@@ -125,7 +125,7 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
   scatac_pseudobulk: {
     // the PBMC pseudobulk rows the page's own script builds, skipping the gene
     // lane above them
-    src: 'scatac/pbmc5k_cd8a.png',
+    src: 'scatac/pbmc5k_marker_swap.png',
     band: [0.25, 1],
     position: 'left',
   },
