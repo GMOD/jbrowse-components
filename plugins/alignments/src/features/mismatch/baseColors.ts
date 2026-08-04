@@ -12,8 +12,8 @@ import type { CigarOpDrawColors } from '@jbrowse/alignments-core'
 // Single source for per-base canvas colors (mismatch + softclip-base draws),
 // keyed by uppercase-ASCII base code. Returns RGBColor tuples so mismatch draws
 // can apply per-mismatch alpha via rgba255(); softclip-base draws wrap in
-// rgb255(). N (78) has its own color; other non-A/C/G/T/N bytes fall back to
-// colorBaseN at the call sites. Under showModifications every base mutes to grey.
+// rgb255(). N (78) has its own color; other non-A/C/G/T/N bytes take
+// `baseColorFallback`. Under showModifications every base mutes to grey.
 export function buildBaseColorTupleMap(
   state: RenderState,
 ): Record<number, RGBColor> {
@@ -28,6 +28,42 @@ export function buildBaseColorTupleMap(
         84: colors.colorBaseT,
         78: colors.colorBaseN,
       }
+}
+
+// The color a byte that is not A/C/G/T/N takes. Reachable in ordinary data:
+// BAM's 4-bit alphabet is `=ACMGRSVTWYHKDBN`, so IUPAC ambiguity codes and '='
+// both reach the per-base draws, and the extractors only upper-case the byte
+// (`& ~0x20`) rather than folding it to N.
+//
+// Must mute under showModifications. The GPU reaches this same case through
+// mismatch.slang's `default: colorBaseN`, and writeUniforms has ALREADY swapped
+// colorBaseN to grey by then — so a call site reading the raw `colors.colorBaseN`
+// painted a stray IUPAC base blue on Canvas2D while the GPU painted it grey.
+export function baseColorFallback(state: RenderState): RGBColor {
+  return state.showModifications
+    ? state.colors.colorMutedSnpBase
+    : state.colors.colorBaseN
+}
+
+// The same palette as CSS strings, in a 256-entry table indexed by the raw base
+// byte, with the fallback above pre-filled. Two things follow: the byte indexes
+// the table directly, so no call site re-spells the non-ACGTN fallback (which
+// is how the mute above went missing from three of them), and a draw loop reads
+// a string rather than formatting one per cell. Mirrors `qualityCssColors`
+// (perBaseQuality/colors.ts), the same table for the quality ramp.
+//
+// The formatting is what the table removes, not the `fillStyle` assignment —
+// these passes emit one entry per visible base per read, the largest arrays the
+// display produces, so an `rgb()` template literal per cell is real allocation.
+// Whether de-duplicating the *assignment* on top of that pays (as `drawReads`
+// does with its `lastFill`) is unmeasured here.
+export function buildBaseCssMap(state: RenderState): string[] {
+  const tuples = buildBaseColorTupleMap(state)
+  const table = new Array<string>(256).fill(rgb255(baseColorFallback(state)))
+  for (const [code, tuple] of Object.entries(tuples)) {
+    table[Number(code)] = rgb255(tuple)
+  }
+  return table
 }
 
 // CigarOpDrawColors palette for Canvas2D SNP-coverage segment draws.

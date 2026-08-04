@@ -1,10 +1,9 @@
-import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import {
   makePileupCellMapper,
   pileupRowOffCanvas,
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
-import { buildBaseColorTupleMap } from '../mismatch/baseColors.ts'
+import { buildBaseCssMap } from '../mismatch/baseColors.ts'
 
 import type {
   DrawBlock,
@@ -33,12 +32,11 @@ export function drawSoftclipBases(
     fullBlockWidth,
     true,
   )
-  const baseColors = buildBaseColorTupleMap(state)
-  // N has a palette entry; any other non-A/C/G/T byte falls back to the N
-  // color, matching the GPU shader (mismatch.slang baseColor catch-all, shared
-  // with the softclip-bases overlay) and the mismatch draw. Under
-  // showModifications buildBaseColorTupleMap already mutes every base to grey.
-  const unknownColor = state.colors.colorBaseN
+  // N has a palette entry; any other non-A/C/G/T byte takes the table's
+  // pre-filled fallback, matching the GPU shader (mismatch.slang baseColor
+  // catch-all, shared with the softclip-bases overlay) and the mismatch draw —
+  // including its mute under showModifications.
+  const baseCss = buildBaseCssMap(state)
 
   for (let i = 0; i < region.softclipBasePositions.length; i++) {
     const yRow = region.softclipBaseYs[i]!
@@ -47,8 +45,7 @@ export function drawSoftclipBases(
       continue
     }
     const x = cellX(region.softclipBasePositions[i]!)
-    const base = region.softclipBaseBases[i]!
-    ctx.fillStyle = rgb255(baseColors[base] ?? unknownColor)
+    ctx.fillStyle = baseCss[region.softclipBaseBases[i]!]!
     ctx.fillRect(x, y, w, fH)
   }
 }

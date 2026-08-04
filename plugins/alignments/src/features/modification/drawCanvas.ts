@@ -30,6 +30,13 @@ export function drawModifications(
     false,
   )
 
+  // Reformat the CSS string only when the packed color actually changes. This
+  // is the densest array the display produces (one mark per CpG per read on a
+  // nanopore pileup) but it draws from a handful of colors — 5mC, 5hmC, the
+  // unmodified blue — in per-read runs, so `abgrToCssRgba` goes from once per
+  // mark to once per run. The comparison is on the u32, not the string.
+  let lastAbgr = -1
+
   for (let i = 0; i < n; i++) {
     const yRow = region.modificationYs[i]!
     const y = pileupRowY(yRow, state)
@@ -37,7 +44,11 @@ export function drawModifications(
       continue
     }
     const x = cellX(region.modificationPositions[i]!)
-    ctx.fillStyle = abgrToCssRgba(region.modificationColors[i]!)
+    const abgr = region.modificationColors[i]!
+    if (abgr !== lastAbgr) {
+      lastAbgr = abgr
+      ctx.fillStyle = abgrToCssRgba(abgr)
+    }
     ctx.fillRect(x, y, w, fH)
   }
 }

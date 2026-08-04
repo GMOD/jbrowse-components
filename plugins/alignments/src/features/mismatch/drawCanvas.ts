@@ -1,11 +1,15 @@
-import { rgb255, rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
+import { rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import {
   frequencyFade,
   makePileupCellMapper,
   pileupRowOffCanvas,
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
-import { buildBaseColorTupleMap } from './baseColors.ts'
+import {
+  baseColorFallback,
+  buildBaseColorTupleMap,
+  buildBaseCssMap,
+} from './baseColors.ts'
 
 import type {
   DrawBlock,
@@ -30,7 +34,14 @@ export function drawMismatches(
     fullBlockWidth,
     false,
   )
+  // N has a palette entry; any other non-A/C/G/T byte takes the fallback,
+  // matching the GPU shader (mismatch.slang baseColor catch-all). Opaque
+  // mismatches — the common case once zoomed to base level, where both fades
+  // resolve to 1 — read a prebuilt CSS string instead of formatting one per
+  // mismatch; only a genuinely faded one pays `rgba255`.
+  const baseCss = buildBaseCssMap(state)
   const baseColors = buildBaseColorTupleMap(state)
+  const fallbackTuple = baseColorFallback(state)
 
   for (let i = 0; i < region.mismatchPositions.length; i++) {
     const yRow = region.mismatchYs[i]!
@@ -40,9 +51,6 @@ export function drawMismatches(
     }
     const x = cellX(region.mismatchPositions[i]!)
     const base = region.mismatchBases[i]!
-    // N has a palette entry; any other non-A/C/G/T byte falls back to the N
-    // color, matching the GPU shader (mismatch.slang baseColor catch-all).
-    const colorTuple = baseColors[base] ?? state.colors.colorBaseN
     const freqAlpha = frequencyFade(
       state,
       pxPerBp,
@@ -54,7 +62,10 @@ export function drawMismatches(
     const qualAlpha =
       state.mismatchAlpha && qual > 0 ? Math.min(1, qual / 50) : 1
     const alpha = freqAlpha * qualAlpha
-    ctx.fillStyle = alpha >= 1 ? rgb255(colorTuple) : rgba255(colorTuple, alpha)
+    ctx.fillStyle =
+      alpha >= 1
+        ? baseCss[base]!
+        : rgba255(baseColors[base] ?? fallbackTuple, alpha)
     ctx.fillRect(x, y, w, fH)
   }
 }

@@ -27,6 +27,12 @@ export function drawGaps(
 ) {
   const fH = state.featureHeight
   const delColorBase = state.colors.colorDeletion
+  // Both are constant across the loop — the skip color entirely, and the
+  // deletion color whenever its fade resolves opaque, which is every deletion
+  // once zoomed in. Formatting them per gap was the only per-item string work
+  // in this pass; an ONT read carries hundreds of gaps.
+  const delCssOpaque = rgb255(delColorBase)
+  const skipCss = rgba255(state.colors.colorSkip, intronAlpha(fH))
 
   // gapPositions stores [start, end] pairs
   const numGaps = region.gapPositions.length / 2
@@ -53,15 +59,14 @@ export function drawGaps(
         widthPx * widthPx,
         region.gapFrequencies[i]!,
       )
-      ctx.fillStyle =
-        alpha >= 1 ? rgb255(delColorBase) : rgba255(delColorBase, alpha)
+      ctx.fillStyle = alpha >= 1 ? delCssOpaque : rgba255(delColorBase, alpha)
       ctx.fillRect(left, y, w, fH)
     } else if (gapType === GAP_SKIP) {
       // No clearRect needed: drawReads splits spliced reads into per-exon
       // segments, so the intron span is already unpainted. Just draw the 1px
       // centerline. (clearRect is a no-op on SvgCanvas — relying on it left
       // the read body solid under the line in vector SVG export.)
-      ctx.fillStyle = rgba255(state.colors.colorSkip, intronAlpha(fH))
+      ctx.fillStyle = skipCss
       const midY = y + fH / 2
       ctx.fillRect(left, midY - 0.5, w, 1)
     }

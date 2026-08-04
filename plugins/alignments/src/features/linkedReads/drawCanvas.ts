@@ -13,6 +13,16 @@ import type {
 import type { LinkedReadLinesUploadData } from './types.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
+// Palette and alpha are both module constants, so every stroke this pass can
+// ever use is known up front — build the seven CSS strings once rather than
+// formatting one per line (the cost `drawReads` documents for fillStyle).
+// LINKED_READ_LINE_ALPHA comes from linkedReadLine.generated.ts
+// (linkedReadLine.slang is the source of truth), so this path can't drift from
+// the shader.
+const LINE_CSS = linkedReadColorPalette.map(c =>
+  rgba255(c, LINKED_READ_LINE_ALPHA),
+)
+
 export function drawLinkedReadLines(
   ctx: Ctx2D,
   region: LinkedReadLinesUploadData,
@@ -35,15 +45,8 @@ export function drawLinkedReadLines(
       const endBp = region.linkedReadLinePositions[i * 2 + 1]!
       const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
       const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-      const colorIdx =
-        region.linkedReadLineColorTypes[i]! % linkedReadColorPalette.length
-      // LINKED_READ_LINE_ALPHA comes from linkedReadLine.generated.ts
-      // (linkedReadLine.slang is the source of truth), so this path can't drift
-      // from the shader.
-      ctx.strokeStyle = rgba255(
-        linkedReadColorPalette[colorIdx]!,
-        LINKED_READ_LINE_ALPHA,
-      )
+      ctx.strokeStyle =
+        LINE_CSS[region.linkedReadLineColorTypes[i]! % LINE_CSS.length]!
       ctx.beginPath()
       ctx.moveTo(x1, y1)
       ctx.lineTo(x2, y2)

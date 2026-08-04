@@ -31,7 +31,9 @@ function recordingCtx() {
 
 // Full RenderState with a red 'A' base color. Only the fields drawMismatches
 // reads matter; the rest are inert defaults. colors is populated just enough for
-// buildBaseColorTupleMap (base A + the muted-modifications color).
+// the base palette builders: base A, the muted-modifications color, and
+// colorBaseN — which backs the non-A/C/G/T fallback and so is resolved eagerly
+// when buildBaseCssMap prefills its table (a real palette always carries it).
 function baseState(overrides: Partial<RenderState> = {}): RenderState {
   return {
     scrollTop: 0,
@@ -57,6 +59,14 @@ function baseState(overrides: Partial<RenderState> = {}): RenderState {
     colors: {
       colorBaseA: [1, 0, 0],
       colorMutedSnpBase: [0.5, 0.5, 0.5],
+      // The whole per-base palette, not just the red A the assertions read:
+      // buildBaseCssMap resolves every entry up front (a real palette always
+      // carries them), so a partially-stubbed one throws rather than lazily
+      // skipping the bases this test never draws.
+      colorBaseC: [0, 1, 0],
+      colorBaseG: [0, 0, 1],
+      colorBaseT: [1, 1, 0],
+      colorBaseN: [0, 0, 0],
     } as RenderState['colors'],
     chainMode: false,
     showLinkedReadLines: false,

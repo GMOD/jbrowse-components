@@ -1,10 +1,9 @@
-import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import {
   makePileupCellMapper,
   pileupRowOffCanvas,
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
-import { buildBaseColorTupleMap } from '../mismatch/baseColors.ts'
+import { buildBaseCssMap } from '../mismatch/baseColors.ts'
 
 import type {
   DrawBlock,
@@ -31,8 +30,9 @@ export function drawPerBaseLetter(
   )
   // Same per-base palette as mismatch / softclip-base draws, so the Canvas2D
   // and GPU paths render identical colors (and both mute under modifications).
-  const baseColors = buildBaseColorTupleMap(state)
-  const unknown = state.colors.colorBaseN
+  // The CSS table bakes in the non-ACGTN fallback, so the byte indexes it
+  // directly — one entry per visible base per read runs through this loop.
+  const baseCss = buildBaseCssMap(state)
 
   for (let i = 0; i < n; i++) {
     const yRow = region.perBaseLetterYs[i]!
@@ -41,7 +41,7 @@ export function drawPerBaseLetter(
       continue
     }
     const x = cellX(region.perBaseLetterPositions[i]!)
-    ctx.fillStyle = rgb255(baseColors[region.perBaseLetterBases[i]!] ?? unknown)
+    ctx.fillStyle = baseCss[region.perBaseLetterBases[i]!]!
     ctx.fillRect(x, y, w, fH)
   }
 }
