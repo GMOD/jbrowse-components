@@ -1,3 +1,5 @@
+import { trackNameCollator as collator } from '../shared/collator.ts'
+
 import type { TrackNodeSource } from './types.ts'
 
 // sortName rather than the display name, so the unnamed reference sequence
@@ -12,7 +14,7 @@ export function sortSources(
   }
   const sorted = [...sources]
   if (sortNames) {
-    sorted.sort((a, b) => a.sortName.localeCompare(b.sortName))
+    sorted.sort((a, b) => collator.compare(a.sortName, b.sortName))
   }
   if (sortCategories) {
     // sort up to three sub-category levels, harder to code it to go deeper than
@@ -20,7 +22,7 @@ export function sortSources(
     // Array#sort being stable, so names stay ordered within a category
     sorted.sort((a, b) => {
       for (let i = 0; i < 3; i++) {
-        const d = (a.categories[i] ?? '').localeCompare(b.categories[i] ?? '')
+        const d = collator.compare(a.categories[i] ?? '', b.categories[i] ?? '')
         if (d !== 0) {
           return d
         }

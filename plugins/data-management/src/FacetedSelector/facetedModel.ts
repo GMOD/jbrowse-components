@@ -13,6 +13,7 @@ import { getTrackName } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
 import { observable } from 'mobx'
 
+import { trackNameCollator } from '../shared/collator.ts'
 import { configScopedKey } from '../shared/configScopedKey.ts'
 import { measureNameColumnWidth } from '../shared/trackGridUtils.ts'
 import { getRowStr, isMetadataFacet, metadataFacet } from './components/util.ts'
@@ -365,10 +366,7 @@ export function facetedStateTreeF() {
             row,
             key: coarseStripHTML(getRowStr(sortField, row)),
           }))
-          .sort(
-            (a, b) =>
-              dir * a.key.localeCompare(b.key, undefined, { numeric: true }),
-          )
+          .sort((a, b) => dir * trackNameCollator.compare(a.key, b.key))
           .map(({ row }) => row)
       },
     }))
