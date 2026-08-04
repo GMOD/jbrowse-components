@@ -115,9 +115,66 @@ describe('buildDerivativeVsRefSpec', () => {
     ])
   })
 
-  it('leaves the derivative panel empty: no configured track names it', () => {
-    const derivativeView = build().viewSpec.views[1] as { tracks: unknown[] }
-    expect(derivativeView.tracks).toEqual([])
+  it('hands the segments track back to be shown, not declared in the snapshot', () => {
+    // A display named in `views[1]` attaches with the view, i.e. before React
+    // has measured it, and this track lays out the instant it attaches because
+    // its features come from its own config. The caller shows it once the panel
+    // reports a width instead. Guarding the snapshot keeps that from quietly
+    // reverting.
+    const { viewSpec, segmentsTrack, segmentsDisplay } = build()
+    expect((viewSpec.views[1] as { tracks: unknown[] }).tracks).toEqual([])
+    expect(segmentsDisplay.configuration.displayId).toBe(
+      `${segmentsTrack.trackId}-LinearBasicDisplay`,
+    )
+  })
+
+  it('sizes the labels to one compact row per segment', () => {
+    // Every segment lands on its own row: each label is far wider than the
+    // feature under it, and a path's short segments sit within a few hundred
+    // bases of each other. Undersizing this clips the last of them, which are
+    // the interesting ones.
+    const { segmentsDisplay } = build()
+    expect(segmentsDisplay.configuration.displayMode).toBe('compact')
+    expect(segmentsDisplay.height).toBe(26 * 4 + 30)
+    const twoHop = build({
+      ...CANDIDATE,
+      segments: CANDIDATE.segments.slice(0, 2),
+    })
+    expect(twoHop.segmentsDisplay.height).toBe(26 * 2 + 30)
+  })
+
+  it('names each label for its reference interval, marking the inverted ones', () => {
+    const { segmentsTrack } = build()
+    expect(segmentsTrack.adapter.features.map(f => f.name)).toEqual([
+      'chr3:25,326,822..25,359,568 (32.7Kbp)',
+      'chr10:58,717,464..58,717,662 (199bp)',
+      'chr12:72,273,112..72,273,294 (183bp, inv)',
+      'chr3:25,352,684..25,359,111 (6.43Kbp, inv)',
+    ])
+  })
+
+  it('places the labels in derivative coordinates, not reference ones', () => {
+    // Same tiling as the ribbons' mates: the labels sit under the segments they
+    // name, so a label that kept its reference start would land in a different
+    // part of the allele (or off it).
+    const { viewSpec, segmentsTrack } = build()
+    const synteny = viewSpec.viewTrackConfigs[0] as {
+      adapter: { features: { mate?: { start: number; end: number } }[] }
+    }
+    const mates = synteny.adapter.features
+      .map(f => f.mate)
+      .filter(m => m !== undefined)
+    expect(segmentsTrack.adapter.features.map(f => [f.start, f.end])).toEqual(
+      mates.map(m => [m.start, m.end]),
+    )
+  })
+
+  it('scopes the labels to the temporary assembly it just built', () => {
+    const { segmentsTrack, temporaryAssembly } = build()
+    expect(segmentsTrack.assemblyNames).toEqual([temporaryAssembly.name])
+    expect(segmentsTrack.adapter.features[0]!.refName).toBe(
+      derivativeName(CANDIDATE),
+    )
   })
 
   it('carries no bases: the path is a structure, not a consensus', () => {

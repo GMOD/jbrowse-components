@@ -1,4 +1,8 @@
-import { gatherOverlaps } from '@jbrowse/core/util'
+import {
+  assembleLocString,
+  gatherOverlaps,
+  getBpDisplayStr,
+} from '@jbrowse/core/util'
 
 import type { DerivativeCandidate } from '@jbrowse/plugin-alignments'
 
@@ -14,6 +18,44 @@ import type { DerivativeCandidate } from '@jbrowse/plugin-alignments'
 // segment's block is twisted, which is what makes a foldback legible.
 
 export interface DerivativeVsRefSpec {
+  // A feature per segment, in derivative coordinates, named for the reference
+  // interval it came from. Session-scoped like the temporary assembly it is
+  // drawn against: the caller registers it with `addTrackConf` and then shows it
+  // on the derivative panel, rather than it being named in `viewSpec`. See
+  // `segmentsDisplay` for why it is mounted rather than declared.
+  segmentsTrack: {
+    type: 'FeatureTrack'
+    trackId: string
+    name: string
+    assemblyNames: string[]
+    adapter: {
+      type: 'FromConfigAdapter'
+      features: {
+        uniqueId: string
+        refName: string
+        start: number
+        end: number
+        strand: number
+        name: string
+      }[]
+    }
+  }
+  // The display snapshot `segmentsTrack` is shown with. Handed back for the
+  // caller to pass to `showTrack` rather than written into `viewSpec.views[1]`,
+  // because a display declared there attaches with the view: this track's
+  // features come from its config rather than a fetch, so it lays out
+  // immediately and reads the panel's width during its own `afterAttach`, before
+  // React has measured the panel. Mounting it once the panel reports
+  // `initialized` is the same picture without the race.
+  segmentsDisplay: {
+    type: 'LinearBasicDisplay'
+    height: number
+    configuration: {
+      type: 'LinearBasicDisplay'
+      displayId: string
+      displayMode: string
+    }
+  }
   temporaryAssembly: {
     name: string
     sequence: {
@@ -92,6 +134,7 @@ export function buildDerivativeVsRefSpec(
   const derivativeAssembly = `${refName}_${stamp}`
   const seqTrackId = `${refName}_seq_${stamp}`
   const syntenyTrackId = `derivative-${stamp}`
+  const segmentsTrackId = `derivative-segments-${stamp}`
 
   // Segments are laid end to end in derivative coordinates, in path order. That
   // offset walk is the whole reconstruction: it is what turns a set of reference
@@ -122,6 +165,31 @@ export function buildDerivativeVsRefSpec(
   })
   const totalLength = offset
 
+  // The same walk again, as a feature track on the derivative panel. Without it
+  // that panel is an empty axis: the allele has no sequence and no annotation of
+  // its own, so a reader gets a row of ribbons and nothing saying which
+  // reference interval any of them is. Each segment is labelled with where it
+  // came from, which is what turns the lower panel from a ruler into the
+  // ribbons' legend, and it costs nothing extra to compute.
+  const segmentFeatures = features.map((feat, idx) => ({
+    uniqueId: `${refName}-${idx}-label`,
+    refName,
+    start: feat.mate.start,
+    end: feat.mate.end,
+    strand: feat.strand,
+    name: `${assembleLocString({
+      refName: feat.refName,
+      start: feat.start,
+      end: feat.end,
+    })} (${getBpDisplayStr(feat.end - feat.start)}${
+      // `inv`, not `inverted`: a label is drawn from its feature's own position,
+      // and every segment after the first sits in the last few hundred bases of
+      // the allele, so the ones that most need the marker are the ones with the
+      // least room to the panel edge for it.
+      feat.strand === -1 ? ', inv' : ''
+    })`,
+  }))
+
   const lgvRegions = gatherOverlaps(
     candidate.segments.map(seg => ({
       refName: seg.refName,
@@ -135,6 +203,30 @@ export function buildDerivativeVsRefSpec(
   const refLen = lgvRegions.reduce((a, r) => a + r.end - r.start, 0)
 
   return {
+    segmentsTrack: {
+      type: 'FeatureTrack',
+      trackId: segmentsTrackId,
+      name: 'Where each segment came from',
+      assemblyNames: [derivativeAssembly],
+      adapter: {
+        type: 'FromConfigAdapter',
+        features: segmentFeatures,
+      },
+    },
+    segmentsDisplay: {
+      type: 'LinearBasicDisplay',
+      // One row per segment, and every segment gets its own: each label is far
+      // wider than the feature under it, and the short segments of a path sit
+      // within a few hundred bases of each other, so none of them can share a
+      // row. Compact rows are what keeps all of them inside the space the
+      // synteny view allows this panel.
+      height: 26 * candidate.segments.length + 30,
+      configuration: {
+        type: 'LinearBasicDisplay',
+        displayId: `${segmentsTrackId}-LinearBasicDisplay`,
+        displayMode: 'compact',
+      },
+    },
     temporaryAssembly: {
       name: derivativeAssembly,
       sequence: {
@@ -191,6 +283,8 @@ export function buildDerivativeVsRefSpec(
               refName,
             },
           ],
+          // The segments track is shown onto this panel afterwards, not declared
+          // here — see `segmentsDisplay`.
           tracks: [],
         },
       ],
@@ -215,6 +309,9 @@ export function buildDerivativeVsRefSpec(
           displays: [
             {
               type: 'LinearSyntenyDisplay',
+              // No `height` here: LinearSyntenyDisplay's is a getter reading the
+              // view level's, so one written into this snapshot is silently
+              // dead. The band is resized through the level (`setHeight`).
               configuration: `${syntenyTrackId}-LinearSyntenyDisplay`,
             },
           ],

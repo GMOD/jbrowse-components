@@ -2,9 +2,16 @@ import { useState } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { ErrorMessage, SubmitDialog } from '@jbrowse/core/ui'
-import { getContainingView, getSession, toLocale } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  getSession,
+  isSessionWithAddTracks,
+  toLocale,
+} from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { isAlive } from '@jbrowse/mobx-state-tree'
 import { FormControlLabel, Radio, RadioGroup, Typography } from '@mui/material'
+import { when } from 'mobx'
 import { observer } from 'mobx-react'
 
 import {
@@ -48,6 +55,33 @@ function refPanelTrackIds(view: { tracks?: ViewTrack[] }) {
   return (view.tracks ?? [])
     .filter(t => t.type !== 'AlignmentsTrack')
     .map(t => t.configuration.trackId)
+}
+
+interface SyntenyPanel {
+  initialized?: boolean
+  showTrack?: (
+    trackId: string,
+    initialSnapshot?: Record<string, unknown>,
+    displayInitialSnapshot?: Record<string, unknown>,
+  ) => void
+}
+
+// Run `show` once the panel has a width. A view created by an action is not
+// measured until React lays it out, and a display attached before then reads a
+// width that is not there yet — which for a track whose features come from its
+// config, and so lays out the instant it attaches, is a certainty rather than a
+// race. `when` fires synchronously if the panel is already sized, so this is
+// only a wait when there is something to wait for. It is not a timeout: the
+// condition is the view's own `initialized`.
+function showWhenMeasured(panel: SyntenyPanel, show: () => void) {
+  when(
+    () => !isAlive(panel) || !!panel.initialized,
+    () => {
+      if (isAlive(panel)) {
+        show()
+      }
+    },
+  )
 }
 
 function segmentSummary(candidate: DerivativeCandidate) {
@@ -94,23 +128,44 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
       if (!assembly) {
         throw new Error('assembly not found')
       }
-      const { temporaryAssembly, viewSpec } = buildDerivativeVsRefSpec({
-        candidate,
-        trackAssembly: trackAssembly!,
-        viewWidth: view.width,
-        sequenceTrackConf: getConf(assembly, 'sequence') as { trackId: string },
-        now: () => Date.now(),
-        rand: () => Math.random(),
-      })
+      const { segmentsTrack, segmentsDisplay, temporaryAssembly, viewSpec } =
+        buildDerivativeVsRefSpec({
+          candidate,
+          trackAssembly: trackAssembly!,
+          viewWidth: view.width,
+          sequenceTrackConf: getConf(assembly, 'sequence') as {
+            trackId: string
+          },
+          now: () => Date.now(),
+          rand: () => Math.random(),
+        })
       session.addTemporaryAssembly?.(temporaryAssembly)
       const created = session.addView('LinearSyntenyView', viewSpec) as {
-        views?: { showTrack?: (trackId: string) => void }[]
+        views?: SyntenyPanel[]
       }
-      // onto the reference panel only: the derivative panel is a synthetic
-      // assembly no configured track names
-      const refPanel = created.views?.[0]
-      for (const trackId of refPanelTrackIds(view)) {
-        refPanel?.showTrack?.(trackId)
+      const [refPanel, derivativePanel] = created.views ?? []
+      // the launching view's own tracks go onto the reference panel only: the
+      // derivative panel is a synthetic assembly no configured track names
+      const carried = refPanelTrackIds(view)
+      if (refPanel && carried.length > 0) {
+        showWhenMeasured(refPanel, () => {
+          for (const trackId of carried) {
+            refPanel.showTrack?.(trackId)
+          }
+        })
+      }
+      // A session that refuses track configs (embedded, `disableAddTracks`) gets
+      // the reconstruction without its segment labels rather than a panel
+      // naming a track nothing can resolve.
+      if (isSessionWithAddTracks(session) && derivativePanel) {
+        session.addTrackConf(segmentsTrack)
+        showWhenMeasured(derivativePanel, () => {
+          derivativePanel.showTrack?.(
+            segmentsTrack.trackId,
+            {},
+            segmentsDisplay,
+          )
+        })
       }
       handleClose()
     } catch (e) {
