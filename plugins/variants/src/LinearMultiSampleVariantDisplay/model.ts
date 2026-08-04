@@ -5,8 +5,10 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { createRegionUploadSync } from '@jbrowse/render-core/regionUploadSync'
 
 import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.ts'
+import { placeVariantRows } from '../shared/placeVariantRows.ts'
 
 import type { ShippedRegionData } from '../VariantRPC/executeVariantCellData.ts'
+import type { Placed } from '../shared/placeVariantRows.ts'
 import type {
   VariantRenderingBackend,
   VariantUploadData,
@@ -112,25 +114,40 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * The one walk of `perRegionCellData`. Every regular-mode consumer reads
-         * this map, so "does the glyph overlay see the same regions as the
-         * canvas" has a single answer — `ShippedRegionData` structurally
-         * satisfies both `VariantUploadData` (GPU/Canvas upload) and
+         * The one walk of `perRegionCellData`, and the point where a fetched
+         * cell becomes a *placed* cell. Every regular-mode consumer reads this
+         * map, so "does the glyph overlay see the same regions, and the same
+         * rows, as the canvas" has a single answer — the placed payload
+         * structurally satisfies `VariantUploadData` (GPU/Canvas upload) and
          * `VariantInsertionGlyphData` (overlay), and carries `featureIndexData`
-         * for the hit-test index.
+         * for the hit-test index plus `cellWorkerRowIndices` for its lookup.
+         *
+         * This is the display's "derived region map" in the sense of
+         * ARCHITECTURE.md's re-upload-without-refetch pattern: the arrays are
+         * freshly allocated per region and never mutated in place, so a row
+         * reorder changes each entry's identity, `createRegionUploadSync` sees
+         * the change and re-uploads, and no RPC is involved. Rows are the only
+         * thing derived here — the worker's numbering is arbitrary and must not
+         * reach a painter.
          *
          * A computed returning a plain Map, for the same reason the multi-row
          * display's is: the overlay draws inside an effect, where nothing it
          * reads is tracked, so the read has to happen here for a refetch to
          * repaint. Rebuilding is cheap (typical view shows 1-3 regions); MobX
-         * caches the computed so only cellData changes invalidate it.
+         * caches the computed so only cellData or a reorder invalidates it.
          */
         get perRegionCellMap() {
-          const { cellData } = self
-          const out = new Map<number, ShippedRegionData>()
-          if (cellData?.mode === 'regular') {
+          const { cellData, rowRemap } = self
+          const out = new Map<number, Placed<ShippedRegionData>>()
+          // No rowRemap means no data has landed: an empty map is the same
+          // "nothing to draw" every consumer already handles. Never fall back to
+          // identity placement — the worker's row order is its own.
+          if (cellData?.mode === 'regular' && rowRemap) {
             for (const k in cellData.perRegionCellData) {
-              out.set(Number(k), cellData.perRegionCellData[k]!)
+              out.set(
+                Number(k),
+                placeVariantRows(cellData.perRegionCellData[k]!, rowRemap),
+              )
             }
           }
           return out

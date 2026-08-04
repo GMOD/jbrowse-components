@@ -13,6 +13,8 @@ export interface PickCellData extends CellLookupData {
 export interface PickedCell {
   cellIndex: number
   featureIndex: number
+  // Screen row, so it indexes `model.sources` and positions the hover highlight
+  // directly.
   rowIndex: number
   genomicStart: number
   genomicEnd: number
@@ -36,6 +38,11 @@ export interface PickedCell {
  * window is padded out to the widest insertion marker, so most candidates at a
  * dense locus are not actually under it — and the shortest survivor wins, which
  * keeps a SNP inside a large deletion selectable.
+ *
+ * Rows are screen rows throughout, in and out; `rowUnmap` converts each to the
+ * worker numbering `findCellIndex` searches (see variantCellLookup.ts). A screen
+ * row the fetched data has no cells for maps to -1 and is skipped, which is the
+ * same outcome as a row that simply holds no cell here.
  */
 export function pickVariantCell({
   data,
@@ -43,6 +50,7 @@ export function pickVariantCell({
   mouseX,
   rowNearest,
   rowLowest,
+  rowUnmap,
   toX,
   pxPerBp,
   drawnRowHeight,
@@ -54,16 +62,22 @@ export function pickVariantCell({
   mouseX: number
   rowNearest: number
   rowLowest: number
+  // Screen row -> worker row, or -1. See MultiSampleVariantBaseModel.rowUnmap.
+  rowUnmap: Int32Array
   // bp -> canvas px for this region, reversal already handled.
   toX: (bp: number) => number
   pxPerBp: number
   drawnRowHeight: number
 }): PickedCell | undefined {
   for (let rowIndex = rowNearest; rowIndex >= rowLowest; rowIndex--) {
+    const workerRow = rowIndex < rowUnmap.length ? rowUnmap[rowIndex]! : -1
+    if (workerRow < 0) {
+      continue
+    }
     let best: PickedCell | undefined
     let bestLen = Infinity
     for (const featureIndex of candidateFeatures) {
-      const cellIndex = findCellIndex(data, featureIndex, rowIndex)
+      const cellIndex = findCellIndex(data, featureIndex, workerRow)
       if (cellIndex >= 0) {
         const genomicStart = data.featurePositions[featureIndex * 2]!
         const genomicEnd = data.featurePositions[featureIndex * 2 + 1]!

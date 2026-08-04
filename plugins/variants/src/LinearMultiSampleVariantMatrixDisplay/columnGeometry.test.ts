@@ -8,6 +8,7 @@ function matrixCellData(starts: number[]): CellDataResult {
   return {
     mode: 'matrix',
     sampleInfo: {},
+    rowNames: [],
     hasPhased: false,
     hasSecondaryAlt: false,
     hasUnphased: false,

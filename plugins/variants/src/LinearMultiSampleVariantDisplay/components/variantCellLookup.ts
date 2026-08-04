@@ -1,13 +1,19 @@
 // The per-region cell arrays a (feature, row) -> cell lookup needs. A structural
-// subset of both `VariantCellData` and its shipped form, so either satisfies it.
+// subset of the placed payload, so any `Placed<ShippedRegionData>` satisfies it.
+//
+// Rows here are the **worker's** numbering, not the screen's: the arrays are
+// sorted by `(featureIndex, workerRow)` and the binary search below depends on
+// that, while `cellRowIndices` on a placed payload has been permuted into screen
+// order for the painters. Callers convert the row they are querying with
+// `rowUnmap` — one lookup, versus re-sorting the arrays on every reorder.
 export interface CellLookupData {
   cellFeatureIndices: Uint32Array
-  cellRowIndices: Uint32Array
+  cellWorkerRowIndices: Uint32Array
   numCells: number
   refCellCount: number
 }
 
-// Lower bound of the (featureIndex, rowIndex) key in [lo, hi): the first index
+// Lower bound of the (featureIndex, workerRow) key in [lo, hi): the first index
 // whose key is >= the target. Valid because each bucket is sorted by that pair
 // (computeVariantCells emits cells feature-major/row-minor and partitions them
 // stably).
@@ -23,7 +29,7 @@ function lowerBound(
     const f = data.cellFeatureIndices[mid]!
     if (
       f < featureIdx ||
-      (f === featureIdx && data.cellRowIndices[mid]! < rowIndex)
+      (f === featureIdx && data.cellWorkerRowIndices[mid]! < rowIndex)
     ) {
       lo = mid + 1
     } else {
@@ -43,13 +49,13 @@ function searchBucket(
   const i = lowerBound(data, lo, hi, featureIdx, rowIndex)
   return i < hi &&
     data.cellFeatureIndices[i] === featureIdx &&
-    data.cellRowIndices[i] === rowIndex
+    data.cellWorkerRowIndices[i] === rowIndex
     ? i
     : -1
 }
 
 /**
- * The cell drawn for `featureIdx` on row `rowIndex`, or -1 if none was.
+ * The cell drawn for `featureIdx` on worker row `rowIndex`, or -1 if none was.
  *
  * "None was" is the load-bearing case, and why this reads the cell arrays rather
  * than re-deriving: a cell is absent when the sample has no genotype at the site,

@@ -269,8 +269,12 @@ override returning early **without** fetching breaks that chain and must supply
 its own wake path from the existing dependency set. Both in-tree cases do:
 sequence's `zoomedOut` moves with `bpPerPx`, so `visibleRegions` re-fires it;
 multi-sample variant's `!sourcesBase` clears through `SettingsInvalidate`,
-because `sourcesBase` *is* `rpcProps().sources`. Same failure mode as the global
-rule above — the autorun settles into a state nothing will wake it from.
+because `rpcProps().sampleFilter` is derived from `sourcesBase` and goes from
+`undefined` to a list the moment it arrives. That is also why `sampleFilter`
+spells the unfiltered case out in full rather than reusing `undefined` for it:
+collapsing the two would leave the key unchanged when sources landed, and the
+display would wedge with nothing drawn. Same failure mode as the global rule
+above — the autorun settles into a state nothing will wake it from.
 
 **Render path is a separate axis.** GPU-canvas vs Canvas2D is chosen per frame at
 the backend factory
@@ -351,13 +355,12 @@ computed from user-controlled inputs only; any part that needs fetch-result data
 is kept in a separate view used only for rendering or passed directly to the
 server.
 
-In the variant case, `rpcProps().sources` calls `getSources` with
-`renderingMode: 'alleleCount'` internally so haplotype expansion (which needs
-`sampleInfo`) is never triggered. The client's `sources` view still reads
-`sampleInfo` for rendering — safe because it is not in `rpcProps()`. The server
-receives the unexpanded sources and expands them after computing `sampleInfo`
-from features; sources from clustering already carry `HP` and pass through
-unchanged.
+In the variant case, `rpcProps().sampleFilter` calls `getSources` with
+`renderingMode: 'alleleCount'` internally (through `sourcesBase`) so haplotype
+expansion — which needs `sampleInfo` — is never triggered. The client's `sources`
+view still reads `sampleInfo` for rendering, safe because it is not in
+`rpcProps()`. The worker expands to haplotype rows itself, after computing
+`sampleInfo` from the features.
 
 **Rule:** `rpcProps()` must contain only user-controlled settings. Never include
 `cellData`, `sampleInfo`, or any getter that reads them.
@@ -373,6 +376,40 @@ debounced body, so it loops on the async-fetch cadence instead, which no
 within-tick counter can tell apart from fast interaction. See
 `plugins/linear-genome-view/src/BaseLinearDisplay/CLAUDE.md` for the overridable
 hook list and test-file mapping.
+
+### Row order is not a fetch input
+
+The three row-stacking displays all keep the *order* rows are drawn in out of
+the RPC, and each pays for it in a different currency:
+
+| display | what crosses | who assigns the row |
+| --- | --- | --- |
+| multi-wiggle | the full canonical `sources` list, as a **structural** arg (absent from `rpcProps()`) | the main-thread encoder, from `gpuProps().sources` |
+| MAF | `subtreeFilter` only | `placeMafRegionData`, keyed on species name, re-run by a placement autorun |
+| multi-sample variant | `sampleFilter` (sorted sample names) | `placeVariantRows`, keyed on `rowNames`, re-run by the derived region map |
+
+The shared rule: **a fetch argument may name the row *set*, never the row
+order.** The set is real work — a focused clade is a fraction of the cells or
+the sequence — while the order is a permutation the main thread can apply for
+free. Sent unsorted, a set puts the order back in through the JSON cache key
+even though no worker reads it, so sort it.
+
+A drag-reorder, a "Group by", a clustering run and a genotype sort are then all
+re-uploads of bytes already in hand; under positional row identity each of them
+re-downloaded and re-computed the whole window. It also removes a class of bug,
+since a payload numbered against a row list the display isn't drawing renders
+every row under another row's name — which is how both plugins found this.
+
+Two things to get right when doing it again:
+
+- **Name the rows in the payload** (`rowNames` / `sampleId`) and place by name.
+  A row the display isn't drawing must not fall back to row 0; variants sends it
+  to a `HIDDEN_ROW` sentinel that every painter's existing Y-cull discards, MAF
+  drops it.
+- **Placement must not disturb an ordering something else depends on.** The
+  variant cell arrays are sorted by `(featureIndex, rowIndex)` in the *worker's*
+  numbering and the hit test binary-searches that, so placement writes a second
+  array and leaves the sorted one alone.
 
 ### Sequence-adapter injection is instance-primed and order-dependent
 

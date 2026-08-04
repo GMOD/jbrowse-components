@@ -45,9 +45,20 @@ Fetch input → `rpcProps()`. Layout input → `sourcesBase`/`sources`/`hierarch
 Render input → the subclass `renderState` getter.
 
 - **`rpcProps()` must not read fetch-derived state** or it loops — which is why
-  it reads `sourcesBase`, not `sources`.
-- A reorder **does** refetch: the worker assigns `rowIndex` against the source
-  order it was handed.
+  `sampleFilter` reads `sourcesBase`, not `sources`.
+- **Row order is not a fetch input.** The worker builds its own row list
+  (`buildCanonicalRows`), ships `rowNames`, and the client places those names
+  onto screen rows (`rowRemap` → `placeVariantRows`). A drag-reorder, a "Group
+  by", a clustering run and "Sort by genotype" therefore re-upload the cells
+  already in hand; none of them refetches. The row *set* still is an input —
+  `sampleFilter`, sent **sorted** so only membership can move it — because a
+  focused clade is genuinely fewer cells to compute. Same split maf makes
+  (`subtreeFilter` + `placeMafRegionData`); multi-wiggle makes it by passing
+  sources as a structural arg and re-encoding from `gpuProps()`.
+- The cell arrays stay in the **worker's** row numbering, because they are
+  sorted by `(featureIndex, rowIndex)` and `findCellIndex` binary-searches that.
+  Placement writes a second array; the hit test converts its one query row
+  through `rowUnmap` instead.
 - The tier is **per display**, not per setting — `referenceDrawingMode` is a
   fetch input for regular and a render input for the matrix, so the base carries
   only what both send.

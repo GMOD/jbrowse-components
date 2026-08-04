@@ -69,7 +69,8 @@ function getFeatureUnderMouse(
   // region set the canvas and the glyph overlay did not.
   const regionCellData = model.perRegionCellMap.get(region.displayedRegionIndex)
   const featureIndex = model.featureIndices.get(region.displayedRegionIndex)
-  if (!regionCellData || !featureIndex) {
+  const { rowUnmap } = model
+  if (!regionCellData || !featureIndex || !rowUnmap) {
     return undefined
   }
 
@@ -97,6 +98,7 @@ function getFeatureUnderMouse(
     mouseX,
     rowNearest,
     rowLowest,
+    rowUnmap,
     toX,
     pxPerBp:
       (region.screenEndPx - region.screenStartPx) / (region.end - region.start),

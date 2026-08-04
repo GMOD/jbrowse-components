@@ -10,7 +10,7 @@ import {
   PHASE_SET_COLOR,
   featureHasPhaseSet,
 } from '../shared/getPhasedColor.ts'
-import { expandSourcesToHaplotypes } from '../shared/getSources.ts'
+import { buildCanonicalRows } from '../shared/getSources.ts'
 import { getFilteredVariants } from '../shared/minorAlleleFrequencyUtils.ts'
 import {
   CONSEQUENCE_IMPACT_JEXL,
@@ -83,6 +83,12 @@ export interface SimplifiedVariantFeature {
 
 interface CellDataBase {
   sampleInfo: Record<string, SampleInfo>
+  // Names the worker's row list, aligned to the `cellRowIndices` the cell arrays
+  // carry: `rowNames[cellRowIndices[i]]` is the row cell `i` belongs to. The
+  // client turns these into screen rows by name — nothing positional survives
+  // the boundary. Haplotype rows are named by the shared "<sampleName> HP<n>"
+  // convention, so they match the client's expansion exactly.
+  rowNames: string[]
   hasPhased: boolean
   // Whether any variant site is multiallelic (drives the "Other alt allele"
   // legend entry), whether any genotype call is unphased (drives the "Unphased"
@@ -300,7 +306,7 @@ export async function executeVariantCellData({
 }) {
   const {
     mode,
-    sources,
+    sampleFilter,
     renderingMode,
     referenceDrawingMode,
     featureColor,
@@ -449,14 +455,17 @@ export async function executeVariantCellData({
   const colorByPhaseSet =
     featureColor === PHASE_SET_COLOR && renderingMode === 'phased'
 
-  // For phased mode: expand sources into per-haplotype rows. The client sends
-  // layout-ordered sources without HP to avoid a circular sampleInfo dependency;
-  // we expand here using the sampleInfo we just computed. Sources from clustering
-  // already carry HP and pass through unchanged (see expandSourcesToHaplotypes).
-  const effectiveSources =
-    renderingMode === 'phased'
-      ? expandSourcesToHaplotypes({ sources, sampleInfo })
-      : sources
+  // The worker's own row list, in its own arbitrary order — see
+  // buildCanonicalRows. Phased mode expands to per-haplotype rows here, using
+  // the sampleInfo just computed, which is also why the client cannot send
+  // expanded sources: sampleInfo is fetch-derived and putting it in `rpcProps()`
+  // would loop.
+  const effectiveSources = buildCanonicalRows({
+    sampleInfo,
+    sampleFilter,
+    renderingMode,
+  })
+  const rowNames = effectiveSources.map(s => s.name)
 
   // Canonical sample order + shared dict for interning genotypes before
   // transfer. sampleInfo keys are the universe of every sampleName any feature's
@@ -545,6 +554,7 @@ export async function executeVariantCellData({
       {
         mode: 'regular' as const,
         sampleInfo,
+        rowNames,
         hasPhased,
         hasSecondaryAlt,
         hasUnphased,
@@ -601,6 +611,7 @@ export async function executeVariantCellData({
       {
         mode: 'matrix' as const,
         sampleInfo,
+        rowNames,
         hasPhased,
         hasSecondaryAlt,
         hasUnphased,

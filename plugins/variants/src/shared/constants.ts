@@ -24,6 +24,14 @@ export function clampLineZoneHeight(n: number) {
   return clamp(n, 10, 1000)
 }
 
+// Screen row a worker row maps to when the display isn't drawing it (see
+// `rowRemap`). Not a "skip this cell" flag anyone tests for: at this row index
+// every painter's own Y-cull already puts the cell millions of pixels below the
+// canvas, so the sentinel costs no branch on either backend, in the insertion-
+// glyph overlay, or in the SVG export. Chosen to be exactly representable in
+// float32 — the GPU paths carry the row index through a `float()` cast.
+export const HIDDEN_ROW = 0x00ffffff
+
 // Variant rendering colors
 export const REFERENCE_COLOR = '#ccc'
 export const NO_CALL_COLOR = 'hsl(50,50%,50%)'

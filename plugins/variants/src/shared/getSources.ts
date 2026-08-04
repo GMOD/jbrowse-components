@@ -55,6 +55,53 @@ export function expandSourcesToHaplotypes({
   })
 }
 
+/**
+ * The worker's own row list: one entry per sample it will emit cells for, HP-
+ * expanded in phased mode. Built in the worker rather than taken from the
+ * client, so no row *order* crosses the RPC boundary — `cellRowIndices` index
+ * into this list, `rowNames` names it, and the client maps those names onto the
+ * rows it draws (`rowRemap` → `placeVariantRows`). That is what lets a reorder,
+ * a regroup or a clustering run re-upload the cells already in hand instead of
+ * re-downloading the VCF; see ARCHITECTURE.md, "Row order is not a fetch input".
+ *
+ * Lives here, beside `expandSourcesToHaplotypes`, because the one thing it must
+ * get right is producing the same `"<sampleName> HP<n>"` strings the client's
+ * own expansion does — every phased row places by that name, and a drift would
+ * silently strand all of them. Sharing the expansion is how that stays true.
+ *
+ * The universe is `sampleInfo`: every sample the fetched genotypes mention,
+ * narrowed by `sampleFilter` when the client draws a subset. Its order is
+ * first-seen and therefore arbitrary, which is fine precisely because it is
+ * never the order anything is drawn in. A sample the client lists but this
+ * window's genotypes never mention gets no row, and so no cells — which is what
+ * it would have drawn anyway.
+ */
+export function buildCanonicalRows({
+  sampleInfo,
+  sampleFilter,
+  renderingMode,
+}: {
+  sampleInfo: Record<string, SampleInfo>
+  // `undefined` is "every sample", an empty list is "no samples" — they are not
+  // the same answer and collapsing them costs a whole cell matrix. Only the
+  // client's pre-sources state sends `undefined`; a filter that resolved to
+  // nothing sends `[]` and must compute nothing, which is also what the display
+  // will draw.
+  sampleFilter: string[] | undefined
+  renderingMode: string
+}): ProcessedSource[] {
+  const keep = sampleFilter ? new Set(sampleFilter) : undefined
+  const rows: ProcessedSource[] = []
+  for (const sampleName in sampleInfo) {
+    if (!keep || keep.has(sampleName)) {
+      rows.push({ name: sampleName, sampleName })
+    }
+  }
+  return renderingMode === 'phased'
+    ? expandSourcesToHaplotypes({ sources: rows, sampleInfo })
+    : rows
+}
+
 export function getSources({
   sources,
   layout = sources,

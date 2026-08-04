@@ -9,7 +9,10 @@ import LinesConnectingMatrixToGenomicPosition from './components/LinesConnecting
 
 import type { RenderSvgBaseModel } from '../shared/renderSvgUtils.ts'
 import type { MatrixConnectorLinesModel } from './components/LinesConnectingMatrixToGenomicPosition.tsx'
-import type { MatrixRenderState } from './components/variantMatrixRenderingBackendTypes.ts'
+import type {
+  MatrixRenderState,
+  VariantMatrixUploadData,
+} from './components/variantMatrixRenderingBackendTypes.ts'
 import type {
   ExportSvgDisplayOptions,
   LgvSvgBodyProps,
@@ -19,6 +22,7 @@ interface MatrixRenderSvgModel
   extends RenderSvgBaseModel, MatrixConnectorLinesModel {
   referenceDrawingMode: string
   renderState: MatrixRenderState
+  placedMatrixData: VariantMatrixUploadData | undefined
 }
 
 export async function renderSvg(
@@ -44,7 +48,7 @@ function VariantMatrixSvgBody({
   // content width its columns, connector lines and hit-test all key off), not
   // the outline-adjusted track width — so it is the right paint width here and
   // the shell's viewport `canvasWidth` only frames the overlay.
-  const { cellData, referenceDrawingMode, renderState } = model
+  const { placedMatrixData, referenceDrawingMode, renderState } = model
   const { canvasWidth: matrixWidth, canvasHeight } = renderState
   // same shift the live matrix body takes (VariantMatrixDisplayComponent):
   // when the content doesn't reach the left viewport edge (offsetPx < 0) the
@@ -53,10 +57,10 @@ function VariantMatrixSvgBody({
   const left = Math.max(0, -view.offsetPx)
 
   // svgReady + SvgChrome already guarantee a loaded, non-terminal state here, so
-  // the mode check narrows the single nullable fetch blob for TS only —
-  // unreachable at runtime. An empty (numCells === 0) matrix still paints
-  // nothing.
-  return cellData?.mode === 'matrix' ? (
+  // this narrows the single nullable fetch blob for TS only — unreachable at
+  // runtime. An empty (numCells === 0) matrix still paints nothing. Placed, not
+  // raw: the export draws the rows the screen draws.
+  return placedMatrixData ? (
     <SvgVariantOverlay
       model={model}
       idPrefix="variant-matrix-clip"
@@ -79,7 +83,7 @@ function VariantMatrixSvgBody({
               ctx.fillStyle = REFERENCE_COLOR
               ctx.fillRect(0, 0, matrixWidth, canvasHeight)
             }
-            drawVariantMatrixBlocks(ctx, cellData, renderState)
+            drawVariantMatrixBlocks(ctx, placedMatrixData, renderState)
           }}
         />
       </g>

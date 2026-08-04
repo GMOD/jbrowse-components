@@ -24,7 +24,7 @@ function build({
   const all = [...refCells, ...altCells]
   return {
     cellFeatureIndices: Uint32Array.from(all.map(c => c.feature)),
-    cellRowIndices: Uint32Array.from(all.map(c => c.row)),
+    cellWorkerRowIndices: Uint32Array.from(all.map(c => c.row)),
     cellCarriesAlt: Uint8Array.from(all.map(c => (c.carriesAlt ? 1 : 0))),
     numCells: all.length,
     refCellCount: refCells.length,
@@ -33,11 +33,16 @@ function build({
   }
 }
 
+// Screen row n is worker row n — the arrangement every test here but the
+// placement ones below is about something other than.
+const identityRows = Int32Array.from({ length: 64 }, (_, i) => i)
+
 // 1 bp per px, region anchored at 0, forward orientation.
 const geom = {
   toX: (bp: number) => bp,
   pxPerBp: 1,
   drawnRowHeight: 10,
+  rowUnmap: identityRows,
 }
 
 describe('pickVariantCell candidate narrowing', () => {
@@ -202,6 +207,7 @@ describe('pickVariantCell insertion markers', () => {
     toX: (bp: number) => bp * 0.2,
     pxPerBp: 0.2,
     drawnRowHeight: 10,
+    rowUnmap: identityRows,
   }
   // 1000bp -> x 200; the marker is centered there.
   const farFromLocus = 200 + HIT_TOLERANCE_PX + 4
@@ -258,11 +264,74 @@ describe('pickVariantCell reversed regions', () => {
       mouseX: 750,
       rowNearest: 0,
       rowLowest: 0,
+      rowUnmap: identityRows,
       toX: (bp: number) => 1000 - bp,
       pxPerBp: 1,
       drawnRowHeight: 10,
     })
     expect(picked?.genomicStart).toBe(100)
     expect(picked?.genomicEnd).toBe(300)
+  })
+})
+
+describe('pickVariantCell row placement', () => {
+  // Worker rows 0 and 1, drawn in the opposite order — what any reorder,
+  // regroup or clustering run produces now that row order no longer travels
+  // with the fetch.
+  const data = build({
+    altCells: [
+      { feature: 0, row: 0, carriesAlt: true },
+      { feature: 1, row: 1, carriesAlt: true },
+    ],
+    features: [
+      [100, 200],
+      [100, 200],
+    ],
+  })
+  // screen 0 <- worker 1, screen 1 <- worker 0
+  const swapped = Int32Array.from([1, 0])
+
+  test('resolves the cursor row through the placement, not positionally', () => {
+    const top = pickVariantCell({
+      ...geom,
+      data,
+      candidateFeatures: [0, 1],
+      mouseX: 150,
+      rowNearest: 0,
+      rowLowest: 0,
+      rowUnmap: swapped,
+    })
+    // the row drawn at the top is worker row 1, whose only cell is feature 1
+    expect(top?.featureIndex).toBe(1)
+    // and it reports the SCREEN row, so the highlight and `sources` lookup land
+    // on the row the cursor is actually over
+    expect(top?.rowIndex).toBe(0)
+
+    const bottom = pickVariantCell({
+      ...geom,
+      data,
+      candidateFeatures: [0, 1],
+      mouseX: 150,
+      rowNearest: 1,
+      rowLowest: 1,
+      rowUnmap: swapped,
+    })
+    expect(bottom?.featureIndex).toBe(0)
+    expect(bottom?.rowIndex).toBe(1)
+  })
+
+  test('a screen row the fetched data has no cells for picks nothing', () => {
+    expect(
+      pickVariantCell({
+        ...geom,
+        data,
+        candidateFeatures: [0, 1],
+        mouseX: 150,
+        rowNearest: 2,
+        rowLowest: 2,
+        // a sample the layout draws but this window's genotypes never mention
+        rowUnmap: Int32Array.from([1, 0, -1]),
+      }),
+    ).toBeUndefined()
   })
 })

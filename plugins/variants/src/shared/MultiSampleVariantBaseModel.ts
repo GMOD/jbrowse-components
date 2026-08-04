@@ -36,7 +36,11 @@ import deepEqual from 'fast-deep-equal'
 import { autorun } from 'mobx'
 
 import { sortSourcesAroundVariant } from './anchoredHaplotypeSort.ts'
-import { INTERNAL_SOURCE_KEYS, VARIANT_FEATURE_WIDGET } from './constants.ts'
+import {
+  HIDDEN_ROW,
+  INTERNAL_SOURCE_KEYS,
+  VARIANT_FEATURE_WIDGET,
+} from './constants.ts'
 import { buildSampleIndex } from './genotypeCodec.ts'
 import { expandSourcesToHaplotypes, getSources } from './getSources.ts'
 import {
@@ -48,12 +52,11 @@ import { getVariantLegendSections } from './variantLegend.ts'
 
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
 import type { SharedVariantConfigModel } from './SharedVariantConfigSchema.ts'
-import type { ProcessedSource, Source } from './types.ts'
+import type { Source } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { Feature, Region, RpcStatus } from '@jbrowse/core/util'
-import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
+import type { Feature, Region } from '@jbrowse/core/util'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   FetchContext,
   LegendSection,
@@ -221,49 +224,6 @@ function fetchRegionsForMode(
     }))
   }
   return view.bufferedVisibleRegions
-}
-
-// Module-local helper for the variant cell data RPC call. Takes the resolved
-// rpcProps object (rather than `self`) so TS infers the payload shape from
-// the model's rpcProps view without a structural cast. `mode` comes from the
-// per-subclass cellDataMode that's bound at factory call time. `regions` is the
-// already-resolved fetch set so the RPC fetches exactly what fetchNeeded marked
-// as loaded (no second view read across the async boundary).
-async function callMultiSampleVariantCellData(args: {
-  node: IAnyStateTreeNode
-  adapterConfig: AnyConfigurationModel
-  regions: { region: Region; displayedRegionIndex: number }[]
-  rpcProps: {
-    sources: ProcessedSource[]
-    minorAlleleFrequencyFilter: number
-    maxMissingnessFilter: number
-    filters?: SerializableFilterChain
-    renderingMode: string
-    // Regular mode only — see the `rpcProps` override on
-    // LinearMultiSampleVariantDisplay. Absent for the matrix.
-    referenceDrawingMode?: string
-    featureColor: string
-  }
-  mode: 'regular' | 'matrix'
-  statusCallback: (status: RpcStatus) => void
-  ctx: FetchContext
-}): Promise<CellDataResult> {
-  const { node, adapterConfig, regions, rpcProps, mode, statusCallback, ctx } =
-    args
-  const sessionId = getRpcSessionId(node)
-  return getSession(node).rpcManager.call(
-    sessionId,
-    'MultiSampleVariantGetCellData',
-    {
-      regions: regions.map(r => r.region),
-      displayedRegionIndices: regions.map(r => r.displayedRegionIndex),
-      ...rpcProps,
-      mode,
-      adapterConfig,
-      stopToken: ctx.stopToken,
-      statusCallback,
-    },
-  )
 }
 
 /**
@@ -957,19 +917,48 @@ export default function MultiSampleVariantBaseModelF(
         },
       }))
       .views(self => ({
+        /**
+         * #getter
+         * Which samples the worker should emit rows for, as a **set** — sorted
+         * and deduped, so only a membership change can move it. Row order is not
+         * a fetch input here; ARCHITECTURE.md, "Row order is not a fetch input",
+         * has the why and how the three row displays each do it.
+         *
+         * Two local rules:
+         *
+         * - `undefined` means the sources haven't loaded, and is deliberately not
+         *   reused for "all of them". `fetchNeeded` declines until `sourcesBase`
+         *   exists and this key changing is the only thing that wakes it, so
+         *   collapsing the two would leave it unchanged when sources landed and
+         *   wedge the display with nothing drawn.
+         * - Deduped because after a phased clustering run `sourcesBase` is
+         *   haplotype-level, listing a sample once per haplotype. The worker
+         *   takes samples and expands them itself, so a key that moved with
+         *   ploidy would refetch on a rendering-mode round trip that changed no
+         *   sample.
+         *
+         * Reads `sourcesBase`, never `sources`, for the loop reason below.
+         */
+        get sampleFilter(): string[] | undefined {
+          const base = self.sourcesBase
+          return base && [...new Set(base.map(s => s.sampleName))].sort()
+        },
+      }))
+      .views(self => ({
         // Payload for MultiSampleVariantGetCellData. SettingsInvalidate watches
-        // this — any change clears loaded data and triggers a refetch. Uses
-        // sourcesBase (not sources) to avoid reading sampleInfo, which comes from
-        // the fetch result and would cause an infinite invalidation loop.
+        // this — any change clears loaded data and triggers a refetch.
         //
-        // Only settings the *worker* reads belong here. `referenceDrawingMode`
-        // is deliberately absent: it changes the shipped cells in regular mode
-        // (computeVariantCells drops reference cells when 'skip'), so that
-        // display adds it back via super-capture, but the matrix computes ref
-        // cells unconditionally and greys its background in CSS instead.
+        // Only settings the *worker* reads belong here, and nothing fetch-derived
+        // may appear (`sampleFilter` reads `sourcesBase`, not `sources`, because
+        // `sources` reads `sampleInfo` — a fetch result — and would loop).
+        // `referenceDrawingMode` is deliberately absent: it changes the shipped
+        // cells in regular mode (computeVariantCells drops reference cells when
+        // 'skip'), so that display adds it back via super-capture, but the matrix
+        // computes ref cells unconditionally and greys its background in CSS
+        // instead.
         rpcProps() {
           return {
-            sources: self.sourcesBase,
+            sampleFilter: self.sampleFilter,
             minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
             maxMissingnessFilter: self.maxMissingnessFilter,
             filters: self.filters,
@@ -999,6 +988,41 @@ export default function MultiSampleVariantBaseModelF(
           return self.cellData
             ? buildSampleIndex(self.cellData.sampleNames)
             : undefined
+        },
+        /**
+         * #getter
+         * Worker row -> screen row, the client half of taking row order out of
+         * the RPC (see `sampleFilter`). The cells arrive numbered against the
+         * worker's own `rowNames` list; this is what turns that into the row the
+         * user is looking at, and rebuilding it is all a reorder costs.
+         *
+         * A worker row the display isn't drawing maps to `HIDDEN_ROW` rather than
+         * being dropped: at that index every painter's own Y-cull puts the cell
+         * far below the canvas, so the sentinel needs no special case on either
+         * backend, in the glyph overlay, or in the SVG export. (It stays rare —
+         * the *set* is still a fetch input, so normally every row shipped is a
+         * row drawn.)
+         *
+         * Undefined until data lands. Consumers that draw cells must treat that
+         * as "nothing to draw yet" rather than falling back to identity: the
+         * worker's order is arbitrary, so identity would paint rows under the
+         * wrong sample names.
+         */
+        get rowRemap(): Uint32Array | undefined {
+          const rowNames = self.cellData?.rowNames
+          if (!rowNames) {
+            return undefined
+          }
+          const sources = self.sources ?? []
+          const screenRowByName = new Map<string, number>()
+          for (let i = 0; i < sources.length; i++) {
+            screenRowByName.set(sources[i]!.name, i)
+          }
+          const out = new Uint32Array(rowNames.length)
+          for (let i = 0; i < rowNames.length; i++) {
+            out[i] = screenRowByName.get(rowNames[i]!) ?? HIDDEN_ROW
+          }
+          return out
         },
         // Row-height model: `rowHeight` (raw setting, 0 = fit), `autoRowHeight`
         // (the fit height), `effectiveRowHeight` (resolved). Shared spelling
@@ -1068,6 +1092,32 @@ export default function MultiSampleVariantBaseModelF(
         },
       }))
       .views(self => ({
+        /**
+         * #getter
+         * Screen row -> worker row, the inverse of `rowRemap`; `-1` for a screen
+         * row this window's data has no cells for (a sample the layout draws but
+         * whose genotypes never appear in the fetched variants).
+         *
+         * The hit test needs this direction, and needs it separately, because the
+         * cell arrays stay in the worker's numbering: they are sorted by
+         * `(featureIndex, rowIndex)` and `findCellIndex` binary-searches that
+         * order, which remapping the array in place would destroy. Converting the
+         * one row the cursor is over is O(1) and keeps the search O(log n).
+         */
+        get rowUnmap(): Int32Array | undefined {
+          const remap = self.rowRemap
+          if (!remap) {
+            return undefined
+          }
+          const out = new Int32Array(self.sources?.length ?? 0).fill(-1)
+          for (let workerRow = 0; workerRow < remap.length; workerRow++) {
+            const screenRow = remap[workerRow]!
+            if (screenRow < out.length) {
+              out[screenRow] = workerRow
+            }
+          }
+          return out
+        },
         get spatialIndex() {
           return buildSpatialIndex(self.hierarchy)
         },
@@ -1287,21 +1337,28 @@ export default function MultiSampleVariantBaseModelF(
             return
           }
           const bpPerPx = view.bpPerPx
-          // The override narrows sources to ProcessedSource[]: the guard above
-          // proves self.sourcesBase is defined here, but rpcProps()'s own read
-          // of it is typed ProcessedSource[] | undefined.
-          const sources = self.sourcesBase
-          const rpcProps = { ...self.rpcProps(), sources }
+          // Resolved before the await, so the RPC sends exactly what
+          // `fetchNeeded` is about to mark loaded — no second view read across
+          // the async boundary.
+          const rpcProps = self.rpcProps()
+          const { adapterConfig } = self
+          const sessionId = getRpcSessionId(self)
+          const { rpcManager } = getSession(self)
           await self.fetchRegions(regions, async (ctx: FetchContext) => {
-            const result = await callMultiSampleVariantCellData({
-              node: self,
-              adapterConfig: self.adapterConfig,
-              regions,
-              rpcProps,
-              mode: cellDataMode,
-              statusCallback: self.makeStatusCallback(),
-              ctx,
-            })
+            const result = await rpcManager.call(
+              sessionId,
+              'MultiSampleVariantGetCellData',
+              {
+                adapterConfig,
+                regions: regions.map(r => r.region),
+                displayedRegionIndices: regions.map(r => r.displayedRegionIndex),
+                ...rpcProps,
+                // bound at factory call time, per subclass
+                mode: cellDataMode,
+                stopToken: ctx.stopToken,
+                statusCallback: self.makeStatusCallback(),
+              },
+            )
             if (!ctx.isStale() && isAlive(self)) {
               self.setCellData(result)
               self.setLoadedBpPerPx(bpPerPx)

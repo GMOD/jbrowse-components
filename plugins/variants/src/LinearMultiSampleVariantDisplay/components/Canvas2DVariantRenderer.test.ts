@@ -1,3 +1,4 @@
+import { HIDDEN_ROW } from '../../shared/constants.ts'
 import { Canvas2DVariantRenderer } from './Canvas2DVariantRenderer.ts'
 
 import type {
@@ -289,6 +290,34 @@ describe('Canvas2DVariantRenderer', () => {
       expect(w).toBeCloseTo(80)
       expect(y).toBe(0)
       expect(h).toBe(10)
+    })
+
+    // The load-bearing half of HIDDEN_ROW: `placeVariantRows` sends a row the
+    // display isn't drawing to a row index far below the canvas instead of
+    // dropping the cell, on the strength of every painter already culling by y.
+    // Nothing in the draw path names the sentinel, so this is what keeps a
+    // future change to the cull from silently painting hidden rows at the top of
+    // the canvas.
+    test('a cell placed at HIDDEN_ROW paints nothing', () => {
+      const { canvas, fillRectCalls } = createMockCanvas()
+      const renderer = new Canvas2DVariantRenderer(canvas)
+      const regions = new Map([
+        [
+          0,
+          makeRegionData({
+            numCells: 2,
+            cellPositions: [100, 200, 100, 200],
+            cellRowIndices: [0, HIDDEN_ROW],
+            cellColors: [0xff0000ff, 0xff00ff00],
+            cellShapeTypes: [0, 0],
+          }),
+        ],
+      ])
+
+      renderer.renderBlocks([makeBlock()], regions, DEFAULT_STATE)
+
+      expect(fillRectCalls.length).toBe(1)
+      expect(fillRectCalls[0]![1]).toBe(0)
     })
   })
 })

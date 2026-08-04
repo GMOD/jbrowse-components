@@ -5,11 +5,15 @@ import { types } from '@jbrowse/mobx-state-tree'
 import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.ts'
 import { clampLineZoneHeight } from '../shared/constants.ts'
 import { genomicViewportX } from '../shared/genomicViewportX.ts'
+import { placeVariantRows } from '../shared/placeVariantRows.ts'
 import { mirrorColumnIndex } from './components/variantMatrixRenderingBackendTypes.ts'
 
 import type { ConnectorCoord } from '../shared/ConnectorLines.tsx'
 import type { SharedVariantConfigModel } from '../shared/SharedVariantConfigSchema.ts'
-import type { VariantMatrixRenderingBackend } from './components/variantMatrixRenderingBackendTypes.ts'
+import type {
+  VariantMatrixRenderingBackend,
+  VariantMatrixUploadData,
+} from './components/variantMatrixRenderingBackendTypes.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
@@ -60,12 +64,33 @@ export default function stateModelFactory(
         },
       }))
       .views(self => ({
-        get blockType() {
-          return 'dynamicBlocks'
-        },
         get prefersOffset() {
           return true
         },
+        /**
+         * #getter
+         * The matrix payload with its rows placed at the screen rows the display
+         * is drawing, or undefined before data lands. The single walk every
+         * matrix consumer reads — GPU upload, Canvas2D render and SVG export —
+         * so none of them can paint the worker's arbitrary row numbering.
+         *
+         * Freshly allocated on every reorder, which is exactly what makes a
+         * reorder a re-upload rather than a refetch: the buffer identity changes,
+         * the upload autorun re-runs, and no RPC is involved. The regular display
+         * does the same per region in `perRegionCellMap`.
+         */
+        // Annotated down to what the backends actually consume, rather than
+        // inferred: the inferred type drags the worker's whole payload shape
+        // into this display's public type, and the SVG body would then have to
+        // name it too.
+        get placedMatrixData(): VariantMatrixUploadData | undefined {
+          const { cellData, rowRemap } = self
+          return cellData?.mode === 'matrix' && rowRemap
+            ? placeVariantRows(cellData, rowRemap)
+            : undefined
+        },
+      }))
+      .views(self => ({
         /**
          * #getter
          * Per-frame render state for the GPU backend — the autorun reads this
@@ -187,9 +212,9 @@ export default function stateModelFactory(
         startRenderingBackend(backend: VariantMatrixRenderingBackend) {
           self.attachRenderingBackend<VariantMatrixRenderingBackend>(backend, {
             upload: b => {
-              const { cellData } = self
-              if (cellData?.mode === 'matrix') {
-                b.uploadData(cellData)
+              const { placedMatrixData } = self
+              if (placedMatrixData) {
+                b.uploadData(placedMatrixData)
               }
             },
             // A monolithic backend's `render` returns void, so the "did real
@@ -199,9 +224,9 @@ export default function stateModelFactory(
             // `canvasDrawn`, and the loading scrim and every `-done` selector key
             // off that, so the first snapshot would catch a blank canvas.
             render: b => {
-              const { cellData } = self
-              if (cellData?.mode === 'matrix') {
-                b.render(cellData, self.renderState)
+              const { placedMatrixData } = self
+              if (placedMatrixData) {
+                b.render(placedMatrixData, self.renderState)
                 return true
               } else {
                 return false

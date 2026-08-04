@@ -12,7 +12,7 @@ function cells(
   const all = [...refBucket, ...nonRefBucket]
   return {
     cellFeatureIndices: Uint32Array.from(all.map(c => c[0])),
-    cellRowIndices: Uint32Array.from(all.map(c => c[1])),
+    cellWorkerRowIndices: Uint32Array.from(all.map(c => c[1])),
     numCells: all.length,
     refCellCount: refBucket.length,
   }
