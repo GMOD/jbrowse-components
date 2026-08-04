@@ -96,13 +96,13 @@ drawn in: it brings each homoeologous group's chromosomes together, so the
 hexaploid row reads as groups rather than as subgenomes, without being told
 which chromosomes are homoeologs.
 
-The rows also share one bp/px rather than each being fitted to the pane width —
-"Show all regions at same scale" in the view menu, `sameScale` in a session
-spec. A row's drawn length is then its genome size, which for this stack is the
-subject: the diploid donors are drawn short and the hexaploid fills the frame.
-Fitted individually, every row is the same length instead, which stretches the
-diploid donor's seven chromosomes across the same span as the hexaploid's
-twenty-one and draws a one-to-one correspondence between the two as a wedge.
+The rows also share one bp/px rather than each being fitted to the pane width,
+which is "Show all regions at same scale" in the view menu and `sameScale` in a
+session spec. A row's drawn length is then its genome size, which for this stack
+is the subject: the diploid donors are drawn short and the hexaploid fills the
+frame. Fitted individually, every row is the same length instead, which
+stretches the diploid donor's chromosomes across the same span as the
+hexaploid's and draws a one-to-one correspondence between the two as a wedge.
 
 <Figure caption="Six wheat-lineage genomes stacked on OrthoFinder orthogroups, in evolutionary order: Aegilops tauschii, bread wheat, durum, wild emmer, Triticum urartu, T. timopheevii. All six rows are on one genomic scale, so a row's length is its genome size: the two diploid donors against the hexaploid they built and the tetraploids in between." src="/img/orthofinder_synteny/wheat.png" />
 
