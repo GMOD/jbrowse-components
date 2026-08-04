@@ -81,11 +81,19 @@ function truncateRecords(records: ContactRecords, n: number): ContactRecords {
 //
 // Sized for a multi-region fetch's working set rather than a single region's.
 // At the auto binsize a view is a few hundred bins wide, so one region pair is
-// 1-4 blocks; three displayed regions is six pairs, past the old cap of 6 —
-// which meant a multi-region fetch evicted its own earlier reads and cached
-// nothing useful. Kept modest all the same: a block holds every contact in its
-// bin square, so this is the one thing here that can hold real memory.
-const BLOCK_CACHE_SIZE = 16
+// 1-4 blocks; three displayed regions is six pairs, which at the top of that
+// range is 24 blocks — so the previous cap of 16 could still evict a fetch's
+// own earlier reads before it finished, the exact thrash that raising it from 6
+// was meant to stop.
+//
+// Room to fix that came from blocks becoming struct-of-arrays (see
+// contactRecords.ts): a cached contact went from ~55 bytes on the GC-traced
+// heap to 12 bytes of untraced ArrayBuffer, so 48 entries now costs less memory
+// than 16 did before — and costs the garbage collector nothing at all, which is
+// what actually capped this. Still deliberately bounded: a block holds every
+// contact in its bin square, so this remains the one thing here that can hold
+// real memory.
+const BLOCK_CACHE_SIZE = 48
 
 function getNormalizationVectorKey(
   type: string,
