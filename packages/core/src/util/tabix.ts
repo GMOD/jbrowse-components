@@ -152,6 +152,13 @@ interface TabixHeaderSource {
  * routinely are — comes back as the empty string, even though the index records
  * N in `skipLines`.
  *
+ * Reading both is not backwards compatibility, and does not become unnecessary
+ * once our own files are written with commented headers. A bare header is the
+ * shape the data's publisher chose: Pan-UKB's TSVs and PLINK's `.ld` are
+ * distributed that way, and `-S N` is the only way to index one without
+ * rewriting a file the user did not write. Advice about how to generate a file
+ * reaches the files we generate; this reaches the rest.
+ *
  * An adapter that stops at `getHeader()` therefore cannot tell "this file has
  * no header" from "this file's header is not commented", and quietly falls back
  * to an assumed column layout. That has cost real information more than once: a

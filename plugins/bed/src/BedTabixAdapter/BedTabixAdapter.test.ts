@@ -128,6 +128,12 @@ test('adapter can fetch bed with header', async () => {
   expect(featuresJsonArray.slice(0, 10)).toMatchSnapshot()
 })
 
+// Pan-UKB publishes plain TSVs whose header row carries no `#`, so `tabix -S 1`
+// is the only way to index one without rewriting the provider's file. That is
+// what makes reading a skip-counted header non-optional rather than a
+// convenience: the shape is chosen by whoever published the data, and a reader
+// that only understands commented headers cannot resolve `scoreColumn` here at
+// all. Recommending `#` for files we generate ourselves does not reach these.
 test('adapter reads 1-based skip-line header (Pan-UKB style)', async () => {
   const adapter = makeAdapter('./test_data/panukb_style.tsv.bgz', {
     scoreColumn: 'score_col',
