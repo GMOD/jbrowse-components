@@ -21,6 +21,11 @@ adapters, or the synteny fetch RPC.
   is read with — never recomputed from CIGAR (`M` folds in mismatches, giving
   spurious 100% identity across the LOD switch) and never a private copy of the
   fallback chain (a copy is what skipped the `id:f:` rung).
+- A PIF row carries **one** alignment string, `cg:Z:`; a `cs:Z:` is folded into
+  it. `forEachMismatch` prefers `cs`, so an unflipped one beside a flipped CIGAR
+  is wrong, not stale.
+- Nothing user-visible may key off which tier is loaded. The CIGAR menu did
+  (`hasCigarData`) and so appeared and disappeared as the user zoomed.
 - Profiled, not guessed: ~66% of cost is fetch + parse (unavoidable at read
   time), ~34% construct + downstream. So read-time binning caps at ~1.5×.
 - The only lever on the dominant cost is a **precomputed binned tier in
@@ -45,6 +50,20 @@ a one-letter prefix on the seqid (tabix column 1):
   (default 10 kb) so each coarse piece's bounding box stays tight and its
   straight ribbon is accurate. Emitted by default; suppress with `--no-coarse`
   (which is now an error alongside an explicit `--coarse`).
+
+## One alignment string per row
+
+A PIF row carries `cg:Z:` and never `cs:Z:`. `make-pif` folds a `cs` into the
+CIGAR (and prefers it over a co-present `cg`, since `csToCigar` writes `=`/`X`
+where minimap2's own `cg` writes `M`).
+
+This is an invariant, not a simplification: `SyntenyFeature.forEachMismatch`
+**prefers `cs` over the CIGAR**, so a `cs` that rode through unflipped beside a
+flipped `cg` did not merely go stale — it won, and the q perspective drew every
+indel with reversed sense. That shipped for rows from `minimap2 -c --cs`, which
+emits both tags. Don't reintroduce a second alignment string without a
+reorienter for it (which means reversing op order *and* reverse-complementing
+the spelled-out bases on the minus strand).
 
 ## Where `auto` resolves — main thread, once
 
@@ -198,12 +217,44 @@ A `cap + warn` floor (reuse the `RegionTooLarge` machinery) is orthogonal and
 worth adding regardless — binning summarizes, the cap protects the pathological
 case.
 
-## Coarse-by-default size tradeoff
+## Coarse-by-default: measured, and it does not always pay
 
-Coarse-by-default roughly doubles PIF record count. Big-CIGAR files earn it back
-in CIGAR bytes saved; dense close-species files (small CIGARs) pay ~2× file size
-for the tier that helps them least. Consider gating coarse emission on observed
-max-CIGAR length, or documenting the tradeoff.
+Coarse-by-default doubles PIF record count. Whether that buys anything is
+entirely a function of **CIGAR weight per row**, because a coarse row passes
+through every optional tag and drops only the CIGAR. So the tier's value is
+`coarse_bytes / fine_bytes` at the zoom it is served, and that ratio was
+measured rather than guessed:
+
+| block len | CIGAR bytes/row | coarse/fine bytes | file vs `--no-coarse` |
+| --------- | --------------- | ----------------- | --------------------- |
+| 1.5 kb    | 12              | **0.89**          | 1.89×                 |
+| 10 kb     | 72              | 0.66              | 1.66×                 |
+| 50 kb     | 360             | 0.30              | 1.30×                 |
+| 200 kb    | 1.4 K           | 0.10              | 1.10×                 |
+| 5 Mb      | 36 K            | **0.005**         | 1.00×                 |
+
+At the top of that table `auto` gives up the indel wedges to read 11% fewer
+bytes — a bad trade in *fidelity*, independent of whether the file size is
+affordable. At the bottom the tier is free and cuts the read by 200×. The
+crossover is around 30–50 kb blocks, i.e. where CIGAR bytes start to exceed the
+rest of the row (~150 bytes of tags + columns).
+
+Two levers, neither built:
+
+- **Slim the coarse row.** Most of a small-block coarse row is minimap2 chaining
+  internals (`ms AS nn cm s1 s2 rl zd`) that no zoomed-out ribbon reads. Keeping
+  only coords/strand/matches/blocklen/mapq/identity takes the 1.5 kb row to
+  ~0.35. Costs: a coarse ribbon's feature detail no longer matches the fine
+  tier's, which was a deliberate choice (see the passthrough comment in
+  `pif-generator.ts`).
+- **Decline the switch when it doesn't pay.** Needs the ratio to reach
+  `resolveLodTier`, which is main-thread — so it needs the file to state it, or
+  the adapter to report it the way `LinearHicDisplay` reports its binsize list
+  (one-shot RPC in `afterAttach` → model state → render decisions).
+
+To reproduce: emit N PAF rows of a fixed block length with a CIGAR of
+proportional op count, run `createPIF` with `coarseSplitGap: 10000`, and sum
+line lengths partitioned on `T`/`Q` vs `t`/`q` in the first column.
 
 Related: `agent-docs/reference/REGION_TOO_LARGE.md`, `agent-docs/ARCHITECTURE.md`
 ("Genome-size limits").

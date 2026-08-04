@@ -20,6 +20,7 @@ import { doAfterAttach } from './afterAttach.ts'
 import {
   autoScaleMenuItems,
   cigarModeMenuItems,
+  displayCanShowCigar,
   genomeViewsMenuItems,
   removeRowMenuItems,
 } from './menus.ts'
@@ -223,21 +224,15 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * True if any currently-loaded synteny display has at least one
-       * feature with a CIGAR. Used to gate CIGAR-related menu items —
-       * coarse-tier PIF files and CIGAR-less PAFs have nothing to show.
+       * True if any synteny display could show CIGAR detail — used to gate the
+       * CIGAR-related menu items, which a CIGAR-less PAF has nothing to put in.
        * Optimistic while no display has finished a fetch yet, so the menu is
        * there from the first render rather than popping in once data lands (the
        * common case: most synteny files carry CIGARs). A view with no synteny
        * tracks at all has nothing to gate, so it reports false.
        */
       get hasCigarData() {
-        // "has CIGAR, or hasn't reported yet" — an unloaded display reads
-        // undefined and counts as a maybe. No displays at all -> no maybes ->
-        // false.
-        return self.allSyntenyDisplays.some(
-          d => d.featureData?.hasCigar ?? true,
-        )
+        return self.allSyntenyDisplays.some(displayCanShowCigar)
       },
       /**
        * #getter

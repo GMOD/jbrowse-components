@@ -48,6 +48,15 @@ operations are consistent with the q-line's column order (query is primary):
 
 The t-line carries the original PAF CIGAR unchanged.
 
+A PIF row carries exactly one alignment string, `cg:Z:`. A minimap2 `cs:Z:`
+difference string is folded into it (`=` for matches, `X` for substitutions),
+and a row carrying both — what `minimap2 -c --cs` emits — keeps the one folded
+from the `cs`, since that spells out mismatches where minimap2's own `cg` says
+`M`. The substituted base letters are what the fold drops; mismatch positions
+survive as `X`. Reorienting a `cs` for the q-line would mean reversing its op
+order and reverse-complementing those bases, so carrying one alongside a flipped
+CIGAR is a standing invitation for the two to disagree.
+
 ### Identity
 
 Fine-tier rows pass the aligner's tags through untouched. The renderer derives

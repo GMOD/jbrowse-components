@@ -2,6 +2,7 @@ import RemoveIcon from '@mui/icons-material/Remove'
 
 import type { CigarMode } from './types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { LodTier } from '@jbrowse/synteny-core'
 
 // The conditional sections of the LinearSyntenyView header menu, each gated on
 // the state that gives it meaning and returning [] when inapplicable so they
@@ -98,6 +99,28 @@ interface CigarModeModel {
   hasCigarData: boolean
   cigarMode: CigarMode
   setCigarMode: (arg: CigarMode) => void
+}
+
+/**
+ * Whether one synteny display could show CIGAR detail — the per-display half of
+ * the view's `hasCigarData`. Three ways to answer "maybe", and the coarse one is
+ * the subtle one: a display serving the coarse LOD tier reports `hasCigar` false
+ * because that tier omits the CIGARs, NOT because the file lacks them. Reading
+ * that as "no CIGAR data" retracted the whole CIGAR menu on zoom-out and put it
+ * back on zoom-in — the tier switch, an implementation detail, made a menu
+ * appear and disappear under the user.
+ */
+export function displayCanShowCigar(display: {
+  lodTier: LodTier
+  featureData?: { hasCigar: boolean }
+}) {
+  return (
+    // a display that hasn't fetched yet
+    display.featureData === undefined ||
+    // one holding a tier that omits CIGARs it may well have
+    display.lodTier === 'coarse' ||
+    display.featureData.hasCigar
+  )
 }
 
 const CIGAR_MODES: { label: string; mode: CigarMode }[] = [

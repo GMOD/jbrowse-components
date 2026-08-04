@@ -115,15 +115,31 @@ function processLine(
   addPanSNSample(stats, c2!)
   // rest[0]=num_matches, rest[1]=block_len, rest[2]=mapq, rest[3+]=optional tags
 
-  // Prefer an existing CIGAR (cg:Z). When only a minimap2 cs difference string
-  // is present, rewrite it in place as a cg:Z tag so both PIF perspectives carry
-  // a uniform CIGAR and the flip/split logic below works unchanged.
-  let cigarIdx = rest.findIndex(f => f.startsWith('cg:Z'))
-  if (cigarIdx === -1) {
-    const csIdx = rest.findIndex(f => f.startsWith('cs:Z'))
-    if (csIdx !== -1) {
-      rest[csIdx] = `cg:Z:${csToCigar(rest[csIdx]!.slice(5))}`
-      cigarIdx = csIdx
+  // A PIF row carries exactly ONE alignment string — `cg:Z:`, in the
+  // orientation of the perspective it is indexed under. A minimap2 `cs:Z:` is
+  // folded into that CIGAR and never emitted, for two reasons:
+  //
+  //  - `cs` has its own orientation, and reorienting it means reversing op
+  //    order AND reverse-complementing the spelled-out bases. Keeping an
+  //    unflipped `cs` beside a flipped `cg` is silently wrong rather than
+  //    merely lossy: `SyntenyFeature.forEachMismatch` prefers `cs`, so a row
+  //    from `minimap2 -c --cs` (which emits both tags) drew every indel with
+  //    reversed sense from the query perspective.
+  //  - `csToCigar` yields `=`/`X`, so folding a `cs` in is strictly MORE
+  //    informative than minimap2's own M-style `cg` — which is why `cs` wins
+  //    when a row carries both. The substituted base letters are the only
+  //    thing lost; mismatch positions survive as `X`.
+  const csIdx = rest.findIndex(f => f.startsWith('cs:Z'))
+  const cgIdx = rest.findIndex(f => f.startsWith('cg:Z'))
+  let cigarIdx = cgIdx
+  if (csIdx !== -1) {
+    rest[csIdx] = `cg:Z:${csToCigar(rest[csIdx]!.slice(5))}`
+    cigarIdx = csIdx
+    if (cgIdx !== -1) {
+      rest.splice(cgIdx, 1)
+      if (cgIdx < csIdx) {
+        cigarIdx--
+      }
     }
   }
 
@@ -145,19 +161,15 @@ function processLine(
   const numMatches = +rest[0]!
   const blockLen = +rest[1]!
   const mapq = rest[2]
-  // Every optional tag except the alignment strings themselves rides along, so a
+  // Every optional tag except the alignment string itself rides along, so a
   // click on a coarse ribbon shows the same attributes as the same alignment
   // does zoomed in (rustybam's tags, minimap2's tp/cm/s1, odgi's id). Only the
-  // CIGAR/cs are dropped — dropping those is the entire point of the tier — and
-  // de:f:, which is rewritten below.
+  // CIGAR is dropped — dropping it is the entire point of the tier — and de:f:,
+  // which is rewritten below. No `cs:Z:` can reach here: it was folded into the
+  // cg above, since a PIF row carries one alignment string.
   const passthrough = rest
     .slice(3)
-    .filter(
-      f =>
-        !f.startsWith('cg:Z:') &&
-        !f.startsWith('cs:Z:') &&
-        !f.startsWith('de:f:'),
-    )
+    .filter(f => !f.startsWith('cg:Z:') && !f.startsWith('de:f:'))
   // Coarse identity must match the fine tier exactly, or coloring jumps at the
   // zoom where the view switches tiers. So it is written off the SAME function
   // the adapters read the fine tier with (de:f: tag, then odgi's id:f:, then

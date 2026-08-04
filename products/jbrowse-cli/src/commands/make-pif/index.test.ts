@@ -264,6 +264,34 @@ const tagValue = (line: string, prefix: string) =>
     .find(f => f.startsWith(prefix))
     ?.slice(prefix.length)
 
+// `minimap2 -c --cs` emits BOTH cg:Z: and cs:Z:. The two disagree about
+// orientation once a row is re-anchored on its query: make-pif flips the cg,
+// and a cs left beside it still describes the target perspective. That is not
+// merely stale — SyntenyFeature.forEachMismatch prefers cs over the CIGAR, so
+// the q row drew every indel with reversed sense. A PIF row carries one
+// alignment string; cs is folded into the cg (and wins, since it spells out
+// =/X where minimap2's own cg says M).
+test('a row carrying both cg and cs emits one cg, folded from the cs', async () => {
+  await runInTmpDir(async () => {
+    const lines = await pifLines(
+      pafRow(['cg:Z:10M4D30M', 'cs:Z::10-acgt:30'], { 3: '40', 8: '44' }),
+      ['--no-coarse'],
+    )
+    const tRow = lines.find(l => l.startsWith('t'))!
+    const qRow = lines.find(l => l.startsWith('q'))!
+    // the cs spells the run out as =/X where the cg said M, so it is what
+    // survives; the deletion flips to an insertion on the query perspective
+    expect(tagValue(tRow, 'cg:Z:')).toBe('10=4D30=')
+    expect(tagValue(qRow, 'cg:Z:')).toBe('10=4I30=')
+    // neither perspective carries a cs that could contradict its CIGAR
+    expect(tRow).not.toContain('cs:Z:')
+    expect(qRow).not.toContain('cs:Z:')
+    // exactly one alignment string per row
+    expect(tRow.split('\t').filter(f => f.startsWith('cg:Z:'))).toHaveLength(1)
+    expect(qRow.split('\t').filter(f => f.startsWith('cg:Z:'))).toHaveLength(1)
+  })
+})
+
 // odgi untangle writes id:f: and no de:f:. pafIdentity reads de -> id ->
 // num_matches/block_len, so a coarse tier that skipped the id rung colored off
 // 90/100 while the fine tier colored off id=0.99 — a visible jump at the zoom
