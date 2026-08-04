@@ -1,5 +1,7 @@
 import { makeCellLeftMapper } from '@jbrowse/render-core/canvas2dUtils'
 
+import { frequencyAlpha } from '../shaders/slang/alignmentsUniforms.js.generated.ts'
+
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
 import type { ReadConnectionsMode } from '../constants.ts'
@@ -236,11 +238,9 @@ export function shouldDrawOverlaps(state: RenderState) {
 }
 
 // Sub-pixel alpha blend: lerp between `base` (full-row coverage) and 1 using
-// per-site frequency. Same formula as frequencyAlpha() in
-// alignmentsUniforms.slang.
-function frequencyAlpha(base: number, frequency: number) {
-  return base + frequency * (1 - base)
-}
+// per-site frequency. `frequencyAlpha` is generated from
+// alignmentsUniforms.slang by `pnpm gen:shaders` (adr-051), so this is the
+// shader's own formula rather than a copy of it.
 
 // The whole low-frequency fade gate for one feature: honors the
 // "show low frequency mismatches" toggle, skips features that already cover a

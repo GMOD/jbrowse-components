@@ -4,9 +4,11 @@
 // two shaders (they previously redeclared identical consts with "must match"
 // comments pointing at each other).
 //
-// Imported via `import pointGlyph;`. The CPU-side counterpart of
-// SMALL_POINT_MAX_DIAMETER is SMALL_POINT_MAX_DIAMETER_PX in JS — keep them in
-// sync.
+// Imported via `import pointGlyph;`. The CPU side no longer keeps its own copy
+// of either the threshold or the snap: `export-consts` emits the constant and
+// `js-export` emits the snap, both consumed by `pointMarker.ts` (adr-051).
+//! export-consts: SMALL_POINT_MAX_DIAMETER
+//! js-export: crispSquareTopLeftPx
 module pointGlyph;
 
 // 1px device pad around a disc so the smoothstep edge has room to fade without
@@ -25,15 +27,25 @@ public float discExpand(float radiusPx) {
   return (radiusPx + AA_PAD_PX) / max(radiusPx, 0.5);
 }
 
+// Pixel-grid-snapped top-left of the crisp small-point square, on one axis. The
+// snap (round-half-up) is what makes the square's fill land on whole pixels
+// instead of AA-blurring across columns/rows — it is SHAPE_SOLID with no
+// fragment-side AA, so an unsnapped center reads as a fuzzy blob.
+//
+// Per-axis and scalar so `//! js-export` can lift it: Canvas2D's
+// `appendPointMarker` calls this for x and y rather than re-deriving the snap
+// (adr-051). The float2 wrapper below keeps the shader's call site unchanged.
+public float crispSquareTopLeftPx(float centerPx, float diameterPx) {
+  return floor(centerPx - diameterPx * 0.5 + 0.5);
+}
+
 // Screen-px position of quad corner `q` (each component 0 or 1) for the crisp
-// small-point square, given the marker center and diameter in px. The square's
-// top-left is snapped to the pixel grid (round-half-up) so its fill lands on
-// whole pixels instead of AA-blurring across columns/rows — the square is
-// SHAPE_SOLID with no fragment-side AA, so an unsnapped center reads as a fuzzy
-// blob rather than a crisp square. Mirrors the Math.floor(v + 0.5) snap in the
-// Canvas2D appendPointMarker so both backends land identical pixels.
+// small-point square, given the marker center and diameter in px.
 public float2 crispSquareCornerPx(float2 centerPx, float diameterPx, float2 q) {
-  float2 topLeft = floor(centerPx - diameterPx * 0.5 + 0.5);
+  float2 topLeft = float2(
+    crispSquareTopLeftPx(centerPx.x, diameterPx),
+    crispSquareTopLeftPx(centerPx.y, diameterPx)
+  );
   return topLeft + q * diameterPx;
 }
 

@@ -7,9 +7,9 @@ import {
 import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
 
 import {
-  KIND_CIGAR_MATCH,
-  KIND_MARKER,
-} from '../LinearSyntenyRPC/syntenyColors.ts'
+  isCigarKind,
+  isMarkerKind,
+} from './shaders/syntenyTypes.js.generated.ts'
 import { SyntenyGeometryCache } from './syntenyGeometryCache.ts'
 import { pickFeatureAtPoint } from './syntenyPickEngine.ts'
 import {
@@ -173,11 +173,12 @@ export function drawSyntenyTrack(
 
     // Location markers: zero-width context ticks. Drawn as a fixed 1px line at
     // the packed color's own alpha (~0.25), bypassing hover/global-alpha and
-    // the sub-pixel width fade that would zero a zero-width quad.
-    // SYNC: mirrors the isMarker path in syntenyTypes.slang's fillCoverage/
-    // shadeFill.
+    // the sub-pixel width fade that would zero a zero-width quad. Mirrors the
+    // isMarker path in syntenyTypes.slang's fillCoverage/shadeFill — and the
+    // predicate itself is now the shader's, generated (adr-051), so the
+    // threshold can't drift even though the shading below still can.
     const kind = data.kinds[i]!
-    if (kind === KIND_MARKER) {
+    if (isMarkerKind(kind)) {
       const xt = (c.sx1 + c.sx2) * 0.5
       const xb = (c.sx3 + c.sx4) * 0.5
       style.stroke(
@@ -194,7 +195,7 @@ export function drawSyntenyTrack(
     const featureId = data.instanceFeatureIdx[i]! + 1
     const isHovered = featureId === hoveredFeatureId
     const isClicked = featureId === clickedFeatureId
-    const isCigar = kind >= KIND_CIGAR_MATCH
+    const isCigar = isCigarKind(kind)
     const {
       r,
       g,

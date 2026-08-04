@@ -11,6 +11,11 @@ import {
   spanLeft,
 } from '@jbrowse/render-core/canvas2dUtils'
 import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
+import {
+  extendToMinWidthPx,
+  snapBoxCenterYPx,
+  snapBoxHeightPx,
+} from '@jbrowse/render-core/shaders/hpmath'
 
 import { computeOverlayRect, overlayItemRect } from './highlightUtils.ts'
 import { computeLabelExtraWidth } from './labelPositioning.ts'
@@ -51,30 +56,13 @@ const CHEVRON_HALF_H = CHEVRON_H_PX * 0.5
 
 type BpToScreen = (bp: number) => number
 
-// JS twin of hpmath.slang's snapBoxHeightPx: the pixel height a box is drawn at,
-// nudging a THIN box with an even height up to the next odd one so it has a true
-// center row for the 1px glyphs riding on it (intron lines, chevrons, strand
-// arrows, continuation markers) to sit on. Without it a 2px body — what fit mode
-// squeezes down to — puts its intron line on the box's bottom row, and the exons
-// read as floating above the line. See the shader for the full rationale.
-const THIN_BOX_PX = 4
-
-function boxHeightPx(heightPx: number) {
-  const hPx = Math.floor(heightPx + 0.5)
-  // A height that rounds to 0 stays 0 — it draws nothing, which is what a
-  // zero-height box asks for.
-  return hPx % 2 === 0 && hPx >= 2 && hPx <= THIN_BOX_PX ? hPx + 1 : hPx
-}
-
-// JS twin of hpmath.slang's snapBoxCenterY: the crisp (x.5) screen-y of the
-// drawn middle row of a box with real center `centerY` and height `heightPx`,
-// reproducing drawRects' edge snapping so the thin glyphs riding on a box land
-// on its center row instead of ~1px off in the compact modes.
-function boxCenterY(centerY: number, heightPx: number, scrollY: number) {
-  const topPx = Math.floor(centerY - heightPx / 2 - scrollY + 0.5)
-  const hPx = boxHeightPx(heightPx)
-  return topPx + Math.floor(hPx / 2) + 0.5
-}
+// `snapBoxHeightPx` (the pixel height a box is drawn at, nudging a THIN box with
+// an even height up to the next odd one so it has a true center row for the 1px
+// glyphs riding on it) and `snapBoxCenterYPx` (the crisp x.5 screen-y of that
+// row) are generated from hpmath.slang by `pnpm gen:shaders` — this file runs
+// the shader's own math rather than a hand-written twin of it. Both were
+// hand-ported here until adr-051; `hpmathParity.test.ts` pins the generated
+// pair against the implementations they replaced.
 
 function drawLines(
   ctx: Ctx2D,
@@ -89,7 +77,11 @@ function drawLines(
     const endBp = region.linePositions[i * 2 + 1]!
     const x1 = toX(startBp)
     const x2 = toX(endBp)
-    const y = boxCenterY(region.lineYs[i]!, region.lineHeights[i]!, scrollY)
+    const y = snapBoxCenterYPx(
+      region.lineYs[i]!,
+      region.lineHeights[i]!,
+      scrollY,
+    )
     ctx.strokeStyle = abgrToCssRgba(region.lineColors[i]!)
     ctx.lineWidth = 1
     ctx.beginPath()
@@ -181,9 +173,10 @@ function rectFillStyle(
 //     tick), so it straddles its coordinate, half the min width either side.
 //   - A real span is pixel-snapped at both ends (matching the GPU shader's
 //     snapToPixelX, so a min-width box is a crisp >=2px column rather than an
-//     anti-aliased blur) and then anchored on the feature's START edge, the way
-//     rect.slang's extendToMinWidthX does — which, reversed, is its right edge.
-//     That is what `spanLeft` owns.
+//     anti-aliased blur) and then widened to the min width by the shader's own
+//     `extendToMinWidthPx`, which grows the span away from the feature's START
+//     edge — reversed, that is its right edge. `spanLeft` turns the resulting
+//     signed span into a fill-x.
 function paintedRectSpan(
   startBp: number,
   endBp: number,
@@ -192,8 +185,12 @@ function paintedRectSpan(
   const x1 = toX(startBp)
   const isPoint = startBp === endBp
   const sx1 = Math.round(isPoint ? x1 - MIN_RECT_WIDTH_PX / 2 : x1)
-  const sx2 = Math.round(isPoint ? x1 + MIN_RECT_WIDTH_PX / 2 : toX(endBp))
-  const width = Math.max(MIN_RECT_WIDTH_PX, Math.abs(sx2 - sx1))
+  const sx2 = extendToMinWidthPx(
+    sx1,
+    Math.round(isPoint ? x1 + MIN_RECT_WIDTH_PX / 2 : toX(endBp)),
+    MIN_RECT_WIDTH_PX,
+  )
+  const width = Math.abs(sx2 - sx1)
   return [spanLeft(sx1, sx2, width), width]
 }
 
@@ -216,7 +213,7 @@ function drawRects(
   }
   for (let i = 0; i < region.rectYs.length; i++) {
     const y = Math.floor(region.rectYs[i]! - scrollY + 0.5)
-    const h = boxHeightPx(region.rectHeights[i]!)
+    const h = snapBoxHeightPx(region.rectHeights[i]!)
     const [xLeft, w] = paintedRectSpan(
       region.rectPositions[i * 2]!,
       region.rectPositions[i * 2 + 1]!,
@@ -262,7 +259,11 @@ function drawArrows(
     if (Math.abs(toX(otherEndBp) - cx) < ARROW_MIN_FEATURE_WIDTH_PX) {
       continue
     }
-    const y = boxCenterY(region.arrowYs[i]!, region.arrowHeights[i]!, scrollY)
+    const y = snapBoxCenterYPx(
+      region.arrowYs[i]!,
+      region.arrowHeights[i]!,
+      scrollY,
+    )
     const dir = block.reversed ? -rawDir : rawDir
     ctx.fillStyle = abgrToCssRgba(region.arrowColors[i]!)
 
@@ -385,7 +386,7 @@ function drawContinuation(
       ctx.strokeStyle =
         lum > 127.5 ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.55)'
       ctx.lineWidth = 1
-      const cy = boxCenterY(
+      const cy = snapBoxCenterYPx(
         region.rectYs[i]! + region.rectHeights[i]! * 0.5,
         region.rectHeights[i]!,
         scrollY,

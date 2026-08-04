@@ -7,6 +7,10 @@
 // See hic/canvas/multi-synteny for the same pattern on the CPU side
 // (cssColorToABGR).
 //! export-consts: TRIANGLE_HW, TRIANGLE_H
+// The sub-pixel frequency lerp is a pure scalar decision both backends must
+// make identically; rendererTypes.ts imports the generated twin rather than
+// re-deriving it (adr-051).
+//! js-export: frequencyAlpha
 //! consts-out: packages/alignments-core/src/indicatorTriangle.generated.ts
 module alignmentsUniforms;
 
@@ -416,7 +420,7 @@ public float normalizeDepth(float relDepth, Uniforms u) {
 
 // Sub-pixel alpha blend: lerp between `base` and 1.0 using per-site frequency.
 // Mirrors frequencyAlpha() in rendererTypes.ts.
-float frequencyAlpha(float base, float freq) {
+public float frequencyAlpha(float base, float freq) {
   return base + freq * (1.0 - base);
 }
 

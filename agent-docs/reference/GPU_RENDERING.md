@@ -325,6 +325,19 @@ touching either path, preserve whichever of these the display uses:
   `.slang` emits the value into its `*.generated.ts`; the Canvas2D side imports it
   (e.g. `sharedRendererConstants.ts` pulls `MIN_RECT_WIDTH_PX`, `CHEVRON_*`,
   `MIN_DENSITY_ALPHA`). Never retype a shader constant as a TS literal.
+- **Scalar *decisions* live in the shader too, and TS is generated from them.**
+  `//! js-export: fnA, fnB` emits `<base>.js.generated.ts` — TypeScript twins
+  transliterated from slangc's own WGSL, so the Canvas2D and SVG paths run the
+  shader's math rather than a hand-port of it. `hpmath.slang` exports
+  `snapBoxHeightPx` / `snapBoxCenterYPx` / `extendToMinWidthPx` this way. The
+  subset is **scalar only** (no vectors, swizzles, loops or indexing) and every
+  gap throws at `pnpm gen:shaders`; a shared decision is authored as a pure
+  px-in/px-out function with the clip-space conversion wrapped *around* it, which
+  is what makes it exportable. Retire the hand-written twin only behind a
+  differential sweep — `hpmathParity.test.ts` is the pattern.
+  [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-scalar-only.md)
+  covers why this stops at scalars and why a vertex/fragment stage is never
+  transpiled.
 - **One draw helper, both consumers.** Marker/glyph geometry and color math that
   both paths (or the on-screen overlay + SVG export) need lives in one function:
   `drawMafInsertionMarker`, `appendPointMarker` (wiggle scatter + Manhattan),

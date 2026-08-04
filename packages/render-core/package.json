@@ -44,6 +44,9 @@
     "./renderBlock": "./src/renderBlock.ts",
     "./renderingBackendBase": "./src/renderingBackendBase.ts",
     "./ScrollLockedOverlay": "./src/ScrollLockedOverlay.tsx",
+    "./shaders/hpmath": "./src/shaders/hpmath.js.generated.ts",
+    "./shaders/pointGlyph": "./src/shaders/pointGlyph.js.generated.ts",
+    "./shaders/pointGlyphConsts": "./src/shaders/pointGlyph.generated.ts",
     "./slangPass": "./src/slangPass.ts",
     "./useRenderingBackend": "./src/useRenderingBackend.ts",
     "./useTabVisibilityRerender": "./src/useTabVisibilityRerender.ts"

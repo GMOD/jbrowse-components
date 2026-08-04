@@ -1,9 +1,14 @@
+import { crispSquareTopLeftPx } from '@jbrowse/render-core/shaders/pointGlyph'
+import { SMALL_POINT_MAX_DIAMETER } from '@jbrowse/render-core/shaders/pointGlyphConsts'
+
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 // At/below a 3px diameter an antialiased disc reads as a blurry blob, so scatter
 // points draw as a crisp filled square below this threshold and an AA disc
-// above it. Mirrors SMALL_POINT_MAX_DIAMETER in wiggle.slang / manhattan.slang.
-export const SMALL_POINT_MAX_DIAMETER_PX = 3
+// above it. The value comes from pointGlyph.slang via `//! export-consts`, so
+// the two backends can't disagree about where the square/disc split is; the
+// alias keeps this module's long-standing public name.
+export const SMALL_POINT_MAX_DIAMETER_PX = SMALL_POINT_MAX_DIAMETER
 
 // Append one scatter point marker to the current path, centered on (cx, y): a
 // crisp filled square at/below SMALL_POINT_MAX_DIAMETER_PX, else an antialiased
@@ -18,12 +23,13 @@ export function appendPointMarker(
 ) {
   const radius = diameter / 2
   if (diameter <= SMALL_POINT_MAX_DIAMETER_PX) {
-    // snap the top-left to the pixel grid (round-half-up) so the crisp square's
+    // Snap the top-left to the pixel grid (round-half-up) so the crisp square's
     // fill lands on whole pixels instead of AA-blurring across columns/rows.
-    // Mirrors crispSquareCornerPx in pointGlyph.slang so GPU + Canvas2D agree.
+    // `crispSquareTopLeftPx` is generated from pointGlyph.slang (adr-051), so
+    // this is the shader's snap rather than a re-derivation of it.
     ctx.rect(
-      Math.floor(cx - radius + 0.5),
-      Math.floor(y - radius + 0.5),
+      crispSquareTopLeftPx(cx, diameter),
+      crispSquareTopLeftPx(y, diameter),
       diameter,
       diameter,
     )

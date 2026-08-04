@@ -11,6 +11,14 @@
 export type ShaderTarget = 'wgsl' | 'glsl'
 const TARGETS: readonly ShaderTarget[] = ['wgsl', 'glsl']
 
+export interface JsExportFn {
+  name: string
+  returnType: string
+  paramTypes: string[]
+}
+
+const SLANG_SCALARS = new Set(['float', 'uint', 'int', 'bool'])
+
 // Every module-scope `(public)? static const <type> NAME = <expr>;`, keyed by
 // name with the raw right-hand side as the value.
 function parseConstDecls(source: string) {
@@ -112,6 +120,70 @@ export function parseExportedConsts(source: string) {
       evalConstExpr(decls.get(n)!, decls, `export-const ${n}`),
     ]),
   )
+}
+
+// `//! js-export: fnA, fnB` — emit TS twins of these Slang functions so the
+// Canvas2D/SVG path runs the shader's own math instead of a hand-written copy.
+// Named functions must be `public` (a module-private one isn't visible to the
+// synthesized wrapper the driver compiles) and must live in the scalar subset
+// `wgslToJs.ts` supports; both failures are reported at `pnpm gen:shaders`.
+export function parseJsExports(source: string) {
+  const directive = /^\/\/!\s*js-export:\s*(.+)/m.exec(source)
+  if (!directive) {
+    return undefined
+  }
+  const names = directive[1]!
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean)
+  if (names.length === 0) {
+    throw new Error(`//! js-export names no functions`)
+  }
+  // Slang's `public <returnType> <name>(<params>)`. Parsing the signature here
+  // (rather than just the name) is what lets the driver synthesize a wrapper
+  // entry point that references each function, so slangc emits its body instead
+  // of dead-code-eliminating it. A typo then fails at codegen with the
+  // candidate list rather than as an "absent from the compiled WGSL" error
+  // after a slangc round-trip.
+  const declared = new Map<string, JsExportFn>()
+  const fnRe =
+    /^\s*public\s+([A-Za-z_]\w*)\s+([A-Za-z_]\w*)\s*\(([^)]*)\)\s*\{/gm
+  for (let m = fnRe.exec(source); m; m = fnRe.exec(source)) {
+    const paramTypes = m[3]!
+      .split(',')
+      .map(s => s.trim())
+      .filter(Boolean)
+      .map(p => p.split(/\s+/)[0]!)
+    declared.set(m[2]!, { name: m[2]!, returnType: m[1]!, paramTypes })
+  }
+  const missing = names.filter(n => !declared.has(n))
+  if (missing.length > 0) {
+    // The `|| '(none)'` has to bind to the joined list, not to the whole
+    // concatenation — which is never falsy, so a bare `||` at the end is dead
+    // code and an empty module reports "Declared: " with nothing after it.
+    const candidates = [...declared.keys()].sort().join(', ') || '(none)'
+    throw new Error(
+      `//! js-export names no such 'public' function in this shader: ` +
+        `${missing.join(', ')}. Declared: ${candidates}`,
+    )
+  }
+  const fns = names.map(n => declared.get(n)!)
+  // Reject non-scalar signatures here rather than letting wgslToJs discover
+  // them after a compile: the message can name the function and the type.
+  for (const fn of fns) {
+    const bad = [fn.returnType, ...fn.paramTypes].filter(
+      t => !SLANG_SCALARS.has(t),
+    )
+    if (bad.length > 0) {
+      throw new Error(
+        `//! js-export: ${fn.name} uses non-scalar type(s) ` +
+          `${[...new Set(bad)].join(', ')}. The JS emitter covers scalars ` +
+          `(${[...SLANG_SCALARS].join(', ')}) only — factor the scalar part of ` +
+          `the computation into its own public function and export that.`,
+      )
+    }
+  }
+  return fns
 }
 
 // `//! targets: wgsl, glsl` — which backends to emit. Default: both.

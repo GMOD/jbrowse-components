@@ -60,4 +60,5 @@ action needed under current workloads), **Proposed** (not yet decided).
 | [048](adr-048-pin-edits-the-stylesheet-not-the-elements.md) | Accepted | Setting a display-type default writes only the session-wide value; rewriting tracks is a separate, explicitly-labeled, opt-in action |
 | [049](adr-049-region-bound-wrapper-stays.md) | Accepted | Keep the per-read `RegionBoundBamFeature` wrapper — `recordClass` moved the wrapper from retained to transient, which is where the cost actually was; eliminating the transient one would change the adapter→extractor contract for ~1% |
 | [050](adr-050-track-containers-are-not-view-types.md) | Accepted | A track list that is not a view is addressed by id through its view (`trackContainerFor`), not registered as a hidden view type |
+| [051](adr-051-shader-js-codegen-is-scalar-only.md) | Accepted | Generate the Canvas2D twin of a shader's scalar decision functions from slangc's WGSL; never transpile the vertex or fragment stage |
 <!-- END GENERATED ADR INDEX -->

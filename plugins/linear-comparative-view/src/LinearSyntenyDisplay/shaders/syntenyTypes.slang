@@ -16,6 +16,10 @@
 // (syntenyFill{Curve,Straight}.slang, syntenyEdge{Curve,Straight}.slang) so
 // there are no `isCurve` branches anywhere; `GpuSyntenyRenderer.render`
 // dispatches the appropriate pass per track. This module is mode-agnostic.
+// The two kind predicates are pure scalar decisions the Canvas2D renderer and
+// the CPU pick engine must make identically; both import the generated twins
+// rather than re-spelling the thresholds (adr-051).
+//! js-export: isCigarKind, isMarkerKind
 module syntenyTypes;
 
 // Re-exported so every synteny pass gets `screenToClip` (and the rest of

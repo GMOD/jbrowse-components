@@ -3,6 +3,12 @@
 //
 // Imported via `import hpmath;` from shaders that need sub-pixel-accurate
 // conversion of base-pair positions to clip space when zoomed far in.
+//
+// The `js-export` set is the px-space *decisions* the Canvas2D and SVG paths
+// must make identically to the GPU — which pixel row a glyph centers on, how a
+// sub-pixel span is widened. `pnpm gen:shaders` transliterates them into
+// hpmath.js.generated.ts; nothing downstream re-derives them by hand.
+//! js-export: snapBoxHeightPx, snapBoxCenterYPx, extendToMinWidthPx
 module hpmath;
 
 public static const uint HP_LOW_MASK = 0xFFFu;
@@ -81,13 +87,22 @@ public float snapBoxHeightPx(float heightPx) {
 // (`floor(centerY - scrollY + 0.5) + 0.5`) gives. Thin boxes are drawn at an odd
 // height precisely so that center row exists; a taller even box still has none,
 // and stays consistent (just below the seam).
+//
+// Split in two on purpose. The decision — which pixel row is the center — is
+// resolution math the Canvas2D and SVG paths need in *screen px*; only the
+// clip-space conversion is GPU-specific. `//! js-export` lifts the px half into
+// TypeScript, so the two backends share the rule instead of the Canvas2D twin
+// re-deriving it (see adr-051). Keep new shared decisions in this shape: pure
+// px-in/px-out below, the `yPxToClipY` wrapper above it.
+public float snapBoxCenterYPx(float centerY, float heightPx, float scrollY) {
+  float topPx = floor(centerY - heightPx * 0.5 - scrollY + 0.5);
+  return topPx + floor(snapBoxHeightPx(heightPx) * 0.5) + 0.5;
+}
+
 public float snapBoxCenterY(
   float centerY, float heightPx, float scrollY, float canvasHeight
 ) {
-  float topPx = floor(centerY - heightPx * 0.5 - scrollY + 0.5);
-  float hPx = snapBoxHeightPx(heightPx);
-  float yPx = topPx + floor(hPx * 0.5) + 0.5;
-  return yPxToClipY(yPx, canvasHeight);
+  return yPxToClipY(snapBoxCenterYPx(centerY, heightPx, scrollY), canvasHeight);
 }
 
 // Extend the free edge `x2` away from the anchor `x1` so the span is at least
@@ -99,12 +114,19 @@ public float snapBoxCenterY(
 // direction of dx. Widening toward +x would flip the quad on reversed regions.
 // Contrast `expandMinWidthX` in alignmentsUniforms, which expands about the
 // midpoint (both edges move) — that one is for spans with no anchored edge.
+// Unit-agnostic core: `minWidth` is in whatever space x1/x2 are. Canvas2D calls
+// this directly in screen px (paired with `spanLeft`, which owns the fill-x
+// pivot); the clip-space wrapper below converts the px floor first. Same split
+// as snapBoxCenterYPx — the rule is shared, the coordinate space is not.
+public float extendToMinWidthPx(float x1, float x2, float minWidth) {
+  float dx = x2 - x1;
+  return abs(dx) < minWidth ? x1 + (dx < 0.0 ? -minWidth : minWidth) : x2;
+}
+
 public float extendToMinWidthX(
   float x1, float x2, float minWidthPx, float canvasWidth
 ) {
-  float minClipW = minWidthPx * 2.0 / canvasWidth;
-  float dx = x2 - x1;
-  return abs(dx) < minClipW ? x1 + (dx < 0.0 ? -minClipW : minClipW) : x2;
+  return extendToMinWidthPx(x1, x2, minWidthPx * 2.0 / canvasWidth);
 }
 
 // vid%6: 0→(0,0)  1→(1,0)  2→(0,1)  3→(0,1)  4→(1,0)  5→(1,1)
