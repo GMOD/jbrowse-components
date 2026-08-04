@@ -164,7 +164,8 @@ verdict goes into the failure message.
 One instrumented full run, 9 test failures, 16 blank captures:
 
 **16 of 16 read "all capture waits settled". Zero were attributed to a wait that
-expired.**
+expired.** Four further runs (the A/B below) added 18 more, all the same way:
+**34 of 34.**
 
 So at capture time the loading overlay was down, no display was in its `loading`
 phase, every display had reported `canvasDrawn`, and morph was clear — and the
@@ -182,23 +183,49 @@ Two more facts that reshape the story:
   drawn, or the loading scrim stays up."* A display reporting drawn over an empty
   canvas is that invariant failing intermittently.
 
-### Leading hypothesis for the webgl half, not yet proven
+### `preserveDrawingBuffer` — tested, REFUTED. Do not retry it.
 
-`preserveDrawingBuffer` appears **nowhere in the tree**, so every WebGL context
-takes the default `false` — under which the drawing buffer is cleared once
-composited, and any readback after a frame boundary returns empty. That fits all
-of it: content genuinely drawn, every readiness signal true, blank pixels,
-timing-sensitive, unfixable by waiting.
+`preserveDrawingBuffer` appears nowhere in the tree, so every WebGL context takes
+the default `false`, under which the drawing buffer is cleared once composited
+and a readback after a frame boundary returns empty. That fit every symptom, so
+it was tested properly rather than adopted: a harness-side
+`evaluateOnNewDocument` patch of `getContext` (verified first against a plain
+canvas — `false` without, `true` with, other attributes preserved), run
+**interleaved** A/B/A/B against the same build, because machine load drifts and
+absolute counts across sequential runs had already misled once.
 
-It also makes an uncomfortable prediction worth checking before trusting the
-fix above: **more waiting makes a webgl readback *more* likely to land after the
-buffer was cleared, not less.** `waitForCaptureSettled` added up to 60s of it.
-The run-to-run failure counts (pre-fix 11/18/15, post-fix 20/2/0/6/3/14) are too
-noisy to confirm or refute that, and it needs a deliberate test rather than
-another sweep.
+| Arm | flag | load | tests failed | webgl / canvas2d | pairs compared |
+| --- | --- | --- | --- | --- | --- |
+| A1 | off | 1.2 | 2 | 2 / 0 | 161 |
+| B1 | **on** | 10.5 | 1 | 1 / 0 | 161 |
+| A2 | off | 13.6 | 9 | 2 / 7 | 153 |
+| B2 | **on** | 12.0 | 15 | 10 / 5 | 148 |
 
-The canvas2d blanks need a separate explanation — Canvas2D has no drawing buffer
-to clear — so expect two causes, not one.
+No improvement; the treatment arm was worse at comparable load (B2 15 failures
+against A2's 9). The flag was removed again — it is not in the tree, and this
+table is the reason.
+
+**The result that kills the whole WebGL framing: A2 failed 7 canvas2d tests
+against 2 webgl.** Canvas2D has no drawing buffer to clear, so a blank there
+cannot have a WebGL cause, and the two backends failing together points at one
+mechanism rather than two.
+
+### Next hypothesis: it is the capture, not the render
+
+Everything now points away from the app and at the screenshot. `el.screenshot()`
+goes through Chrome's capture path, which serves composited layers — so if the
+canvas content has been drawn but not yet composited into the layer tree, the
+capture is blank while every app-level signal is legitimately true. That is
+backend-agnostic (explains canvas2d), load-sensitive (explains the frequency),
+and immune to waiting on app state (explains 34/34), which no other candidate so
+far manages at once.
+
+It predicts a cheap fix: wait for a **compositor** signal rather than an app one
+— a double `requestAnimationFrame` (or `page.evaluate` on one) after
+`waitForCaptureSettled` and before the capture. Test that next, the same
+interleaved way. Note this also reframes the earlier
+`fullPage`/viewport-resize fix as the same family of bug, which is mild
+supporting evidence.
 
 **A stable drift percentage does not mean a stable failure.**
 `fullpage_methylation_snapshot` came in at exactly 37.98% in two runs hours
@@ -210,11 +237,11 @@ determinism from a repeated number; check whether the pair was compared at all.
 ## Next, in order
 
 1. **Fix the blank captures — this is the gating item, and it is not about
-   machine load.** Test the `preserveDrawingBuffer` hypothesis first: it is one
-   context-creation flag, and either a readback taken inside the same frame or
-   `preserveDrawingBuffer: true` for the test build would settle it. Then chase
-   the canvas2d half separately. Do **not** spend another round chasing quiet
-   machines — 16/16 says waiting is not the lever.
+   machine load.** Next candidate is the compositor-timing one above: a double
+   `requestAnimationFrame` before the capture, A/B'd interleaved. Do **not**
+   spend another round chasing quiet machines (34/34 says waiting on app state is
+   not the lever) and do **not** retry `preserveDrawingBuffer` (tested, refuted,
+   table above).
 2. **Only then, consecutive clean runs**, and in the CI configuration
    (`--swiftshader` headless, per `pnpm test:browser:gate`) rather than the real
    GPU used here. Note the `load=` column is start-of-run, which is why run 1's
