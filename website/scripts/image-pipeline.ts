@@ -288,4 +288,13 @@ export function optimizePng(file: string) {
       }
     }
   }
+  // Falling off the bottom of the ladder ships the raw render. That is the
+  // right thing to do — a figure is better large than banded — but it is not a
+  // thing to do quietly: it is how vertebrates tripled in bytes unnoticed. Say
+  // it, with the size, so a regen that pushes a figure off the ladder reads as
+  // an event in the log rather than as a silent success.
+  const mb = (fs.statSync(file).size / 1e6).toFixed(1)
+  console.error(
+    `    ${file}: no pngquant floor met, shipping ${mb} MB unquantized`,
+  )
 }
