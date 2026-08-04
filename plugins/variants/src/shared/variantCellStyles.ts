@@ -75,7 +75,12 @@ export function buildAlleleCountStyle(
   drawRef: boolean,
   overrideColor: string | undefined,
 ): VariantCellStyle | null {
-  const color = getAlleleColor(genotype, mostFrequentAlt, drawRef, overrideColor)
+  const color = getAlleleColor(
+    genotype,
+    mostFrequentAlt,
+    drawRef,
+    overrideColor,
+  )
   if (!color) {
     return null
   }

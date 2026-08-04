@@ -1,12 +1,12 @@
 import { NO_CALL_COLOR, REFERENCE_COLOR } from './constants.ts'
 import { PHASE_SET_COLOR } from './getPhasedColor.ts'
 import { CONSEQUENCE_IMPACT_JEXL } from './variantConsequence.ts'
-import { SV_TYPE_COLOR } from './variantSvType.ts'
 import {
   getGenotypeLegendItems,
   getSampleGroupLegendItems,
   getVariantLegendSections,
 } from './variantLegend.ts'
+import { SV_TYPE_COLOR } from './variantSvType.ts'
 
 import type { Source } from './types.ts'
 
@@ -274,9 +274,7 @@ describe('getVariantLegendSections insertion marker', () => {
   // where no marker is drawn — the matrix display, the slot off, or nothing
   // visible inserting bases. Absent means absent, not a colorless entry.
   test('no section when the display draws no markers', () => {
-    expect(
-      getVariantLegendSections(base).map(s => s.id),
-    ).toEqual(['genotypes'])
+    expect(getVariantLegendSections(base).map(s => s.id)).toEqual(['genotypes'])
   })
 
   test('its own section, carrying the color the glyph is painted with', () => {
