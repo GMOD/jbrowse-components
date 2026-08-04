@@ -54,6 +54,7 @@ export function buildDotplotReadVsRefSpec({
   )
   const {
     readAssembly,
+    readAssemblyDisplayName,
     seqTrackId,
     syntenyTrackId,
     syntenyTrackName,
@@ -79,6 +80,7 @@ export function buildDotplotReadVsRefSpec({
     temporaryAssembly: buildReadVsRefTemporaryAssembly({
       readName,
       readAssembly,
+      readAssemblyDisplayName,
       totalLength,
       // No bases: a dotplot draws no sequence track, and the assembly's region
       // comes from the feature's start/end (mergeFeaturesToRegions), not from

@@ -57,6 +57,7 @@ export function buildReadVsRefSpec(args: BuildReadVsRefArgs): ReadVsRefSpec {
 
   const {
     readAssembly,
+    readAssemblyDisplayName,
     seqTrackId,
     syntenyTrackId,
     syntenyTrackName,
@@ -84,6 +85,7 @@ export function buildReadVsRefSpec(args: BuildReadVsRefArgs): ReadVsRefSpec {
     temporaryAssembly: buildReadVsRefTemporaryAssembly({
       readName,
       readAssembly,
+      readAssemblyDisplayName,
       totalLength,
       seq: featSeq,
       trackId: seqTrackId,

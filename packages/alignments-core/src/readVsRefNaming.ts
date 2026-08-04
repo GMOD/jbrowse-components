@@ -13,7 +13,8 @@ export function buildReadVsRefNames({
 }: {
   readName: string
   trackAssembly: string
-  // Date.now() at launch. Only ever a uniquifier, never displayed on its own.
+  // Date.now() at launch. A uniquifier for the ids only: nothing built here
+  // puts it in front of a reader, which is what readAssemblyDisplayName is for.
   stamp: number
 }) {
   const shortName = truncateMiddle(readName)
@@ -22,6 +23,12 @@ export function buildReadVsRefNames({
     // Per-launch unique: relaunching on the same read must not collide with the
     // temporary assembly the previous view registered and still owns.
     readAssembly: `${readName}_assembly_${stamp}`,
+    // What that assembly is CALLED on screen. The name above is an id and reads
+    // like one, but it is also what a panel header shows (through
+    // assemblyManager.getDisplayName), so the launched view used to be labelled
+    // with a wall-clock timestamp. Two launches on the same read share a display
+    // name, which is correct: they are the same read.
+    readAssemblyDisplayName: shortName,
     seqTrackId: `${readName}_${stamp}`,
     syntenyTrackId: `track-${stamp}`,
     syntenyTrackName: `${shortName}_vs_${trackAssembly}`,

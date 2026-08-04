@@ -58,6 +58,7 @@ export interface DerivativeVsRefSpec {
   }
   temporaryAssembly: {
     name: string
+    displayName: string
     sequence: {
       type: 'ReferenceSequenceTrack'
       name: string
@@ -235,6 +236,10 @@ export function buildDerivativeVsRefSpec(
     },
     temporaryAssembly: {
       name: derivativeAssembly,
+      // the name above is an id, and the stamp in it is only there so a relaunch
+      // cannot collide with a still-open view's assembly. A panel header shows
+      // the display name instead, so it does not show a wall-clock timestamp.
+      displayName: `${refName} derivative`,
       sequence: {
         type: 'ReferenceSequenceTrack',
         name: 'Derivative allele',

@@ -9,6 +9,7 @@
 export function buildReadVsRefTemporaryAssembly({
   readName,
   readAssembly,
+  readAssemblyDisplayName,
   totalLength,
   seq,
   trackId,
@@ -16,12 +17,15 @@ export function buildReadVsRefTemporaryAssembly({
 }: {
   readName: string
   readAssembly: string
+  // stamp-free label for the panel header; see buildReadVsRefNames
+  readAssemblyDisplayName: string
   totalLength: number
   seq: string | undefined
   trackId: string
   uniqueId: string
 }): {
   name: string
+  displayName: string
   sequence: {
     type: 'ReferenceSequenceTrack'
     name: string
@@ -42,6 +46,7 @@ export function buildReadVsRefTemporaryAssembly({
 } {
   return {
     name: readAssembly,
+    displayName: readAssemblyDisplayName,
     sequence: {
       type: 'ReferenceSequenceTrack',
       name: 'Read sequence',
