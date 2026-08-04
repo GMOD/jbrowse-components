@@ -1,8 +1,10 @@
 import { isBlank } from '../util/assemblyConfigUtils.ts'
+import { fetchAndMaybeUnzipText } from '../util/fetchAndMaybeUnzip.ts'
 import { parseTranslTable } from '../util/geneticCodes.ts'
 import { openLocation } from '../util/io/index.ts'
 
 import type PluginManager from '../PluginManager.ts'
+import type { BaseOptions } from '../data_adapters/BaseAdapter/types.ts'
 import type { FileLocation } from '../util/types/index.ts'
 import type { RefNameAliases } from './refNameMaps.ts'
 
@@ -45,15 +47,21 @@ export function lookupGeneticCodeId(
 export async function getGeneticCodesFromFile({
   location,
   pluginManager,
+  opts,
 }: {
   location: FileLocation | undefined
   pluginManager: PluginManager
+  opts?: BaseOptions
 }): Promise<Record<string, number>> {
   const map: Record<string, number> = {}
   // skip the config slot's default blank location ({ uri: '' }); a real file
   // yields the refName -> geneticCodeId map
   if (location && !isBlank(location)) {
-    const text = await openLocation(location, pluginManager).readFile('utf8')
+    const text = await fetchAndMaybeUnzipText(
+      openLocation(location, pluginManager),
+      opts,
+      'Downloading genetic codes',
+    )
     for (const line of text.split(/\r\n|\r|\n/)) {
       if (line && !line.startsWith('#')) {
         const [refName, codeColumn] = line.split('\t')

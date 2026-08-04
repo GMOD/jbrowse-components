@@ -1,4 +1,4 @@
-import { ErrorBanner, LoadingEllipses, ResizeHandle } from '@jbrowse/core/ui'
+import { ErrorBanner, ResizeHandle, ViewLoadingScreen } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useRenderingBackend } from '@jbrowse/render-core/useRenderingBackend'
 import { ColorByLegend, DiagonalizeLoadingScreen } from '@jbrowse/synteny-core'
@@ -124,6 +124,7 @@ const DotplotView = observer(function DotplotView({
     awaitingAutoDiagonalize,
     showImportForm,
     loadingMessage,
+    loadingProgress,
   } = model
   if (awaitingAutoDiagonalize) {
     return (
@@ -135,7 +136,9 @@ const DotplotView = observer(function DotplotView({
       />
     )
   } else if (showLoading) {
-    return <LoadingEllipses variant="h6" message={loadingMessage} />
+    return (
+      <ViewLoadingScreen message={loadingMessage} fraction={loadingProgress} />
+    )
   } else if (showImportForm) {
     return <ImportForm model={model} />
   } else {

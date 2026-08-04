@@ -39,14 +39,23 @@ export default class IndexedFastaAdapter extends BaseSequenceAdapter {
     }
   }
 
-  public async getRefNames(_opts?: BaseOptions) {
+  public async getRefNames(opts?: BaseOptions) {
     const { fasta } = await this.setup()
-    return fasta.getSequenceNames()
+    return updateStatus('Downloading FASTA index', opts?.statusCallback, () =>
+      fasta.getSequenceNames(),
+    )
   }
 
-  public async getRegions(_opts?: BaseOptions) {
+  public async getRegions(opts?: BaseOptions) {
     const { fasta } = await this.setup()
-    return refSizesToRegions(await fasta.getSequenceSizes())
+    // the .fai is read lazily by @gmod/indexedfasta on first use, so the wait an
+    // assembly load spends here is that download. It exposes no byte callback,
+    // so this is an indeterminate phase label rather than a bar
+    return refSizesToRegions(
+      await updateStatus('Downloading FASTA index', opts?.statusCallback, () =>
+        fasta.getSequenceSizes(),
+      ),
+    )
   }
 
   public async setupPre() {

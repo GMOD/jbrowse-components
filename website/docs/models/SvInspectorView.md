@@ -64,7 +64,7 @@ the whole surface.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="getter-currentassembly">**currentAssembly**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; ... 12 more ... &amp; IStateTree…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; ... 12 more ... &amp; IStateTreeNode&lt;…&gt;) &#124; undefined</code></pre></dialog></span> |  |
+| <span id="getter-currentassembly">**currentAssembly**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; ... 13 more ... &amp; IStateTree…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; ... 13 more ... &amp; IStateTreeNode&lt;…&gt;) &#124; undefined</code></pre></dialog></span> |  |
 | <span id="getter-assemblyname">**assemblyName**</span><br><code>string &#124; undefined</code> |  |
 | <span id="getter-showcircularview">**showCircularView**</span><br><code>boolean</code> | gated on the same condition the spreadsheet renders its grid on, so the circle never appears alongside the import form |
 | <span id="getter-features">**features**</span><br><code>SimpleFeatureSerialized[]</code> |  |

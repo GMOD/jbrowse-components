@@ -60,6 +60,64 @@ worker adapter → opts.statusCallback(status)
 `fetchAndMaybeUnzip` (bigwig/bigbed/hic/sequence) forward determinate progress
 through these.
 
+## The assembly load has its own status field
+
+The channel above is per-*display*, and it only opens once tracks are fetching.
+Everything before that — the wait a fresh LGV, dotplot or synteny view spends on
+a spinner — is `assembly.loadPre`, which fetches four independent files at once
+(sequence index, chromAlias, cytoband, genetic-code sidecar). That ran with a
+bare `{}` for opts, so every adapter's own "Downloading …" reporting was
+discarded and the view showed the hardcoded word "Loading" for the whole slow
+part of startup.
+
+`loadPre` now runs on the same transport: one `createStatusFanOut` slot per
+file (they are concurrent, so last-writer-wins would blank the label the moment
+the fastest of the four finished), behind one `createStatusThrottle`, writing
+`assembly.statusMessage` / `assembly.statusProgress` — the same split as
+`BaseDisplayModel`, so `LoadingProgress` renders both. The clear in `loadPre`'s
+`finally` bypasses the throttle, which has no trailing flush.
+
+Views read it through `assemblyManager.loadingAssembly(names)` — the first name
+that isn't `initialized` — and expose `loadingMessage` / `loadingProgress`, which
+`ViewLoadingScreen` renders. LGV prefers `initAssembly` there: pre-navigation the
+assembly `init` names isn't in `assemblyNames` yet.
+
+`ViewLoadingScreen` exists because a bare `LoadingProgress` renders an
+unconstrained full-width bar under an unaligned label — every other caller wraps
+it in a centered flex container and sets `barClassName`. Its metrics deliberately
+match `DiagonalizeLoadingScreen`, the sibling render branch in both comparative
+views, so a view can't jump between two differently laid-out loading screens.
+
+These adapters run on the **main thread** (`assemblyAdapters.ts` instantiates
+them directly, no RPC hop), so `statusCallback` is a plain function call. It is
+still the `statusCallback` off `BaseOptions`, so nothing downstream is special
+cased.
+
+What each phase says, and how determinate it is:
+
+| file | label | bar? |
+| --- | --- | --- |
+| chrom.sizes (ChromSizes, TwoBit sidecar) | `Downloading chromosome sizes` | bytes |
+| chromAlias | `Downloading chromosome aliases` | bytes |
+| cytoband | `Downloading cytobands` | bytes |
+| genetic-code sidecar | `Downloading genetic codes` | bytes |
+| unindexed FASTA | `Downloading FASTA` | bytes |
+| .fai | `Downloading FASTA index` | no |
+| 2bit header/index | `Downloading 2bit header` | no |
+
+The determinate ones are the whole-file text reads. They got there by moving off
+`readFile('utf8')`, whose remote path is `res.text()` and can't report bytes, to
+`fetchAndMaybeUnzipText` — which also means those files may now be gzipped.
+`fetchAndMaybeUnzip` takes an optional `label` for exactly this: several files
+loading at once behind one indicator, where its default "Downloading file" can't
+say which. The two indeterminate rows are readers (`@gmod/indexedfasta`,
+`@gmod/twobit`) that expose no byte callback; they get an `updateStatus` phase
+label instead.
+
+Still bare: jbrowse-web's pre-`pluginManager` full-page spinner
+(`products/jbrowse-web/src/components/Loading.tsx`), which covers config fetch →
+plugin load → session load and has no phase reporting of its own.
+
 ## Shared setup reports to whoever is waiting
 
 An adapter that parses a whole file caches the work in one promise. Memoizing

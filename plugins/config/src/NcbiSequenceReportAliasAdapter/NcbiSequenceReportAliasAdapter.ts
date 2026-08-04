@@ -3,7 +3,10 @@ import { BaseAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { readAliasRows } from '../aliasUtils.ts'
 
 import type { NcbiSequenceReportAliasAdapterConfig } from './configSchema.ts'
-import type { BaseRefNameAliasAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type {
+  BaseOptions,
+  BaseRefNameAliasAdapter,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 
 // locate a column by its header name, throwing a column-specific error if a
 // required one is absent
@@ -21,10 +24,11 @@ export default class NcbiSequenceReportAliasAdapter
   extends BaseAdapter<NcbiSequenceReportAliasAdapterConfig>
   implements BaseRefNameAliasAdapter
 {
-  async getRefNameAliases() {
+  async getRefNameAliases(opts?: BaseOptions) {
     const rows = await readAliasRows(
       this.getConf('location'),
       this.pluginManager,
+      opts,
     )
     if (rows.length === 0) {
       return []

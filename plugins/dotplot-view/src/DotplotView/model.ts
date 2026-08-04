@@ -438,12 +438,39 @@ export default function stateModelFactory(pm: PluginManager) {
         },
         /**
          * #getter
-         * Label for the generic loading spinner. The auto-diagonalize wait is a
-         * separate render branch (DiagonalizeLoadingScreen), so this only covers
-         * the plain "view not ready" case.
+         * The assembly whose load the spinner is waiting on. `init` names them
+         * before assemblyNames is materialized, so it is the source until then.
+         */
+        get loadingAssembly() {
+          const { assemblyManager } = getSession(self)
+          return assemblyManager.loadingAssembly(
+            self.assemblyNames.length > 0
+              ? self.assemblyNames
+              : (self.init?.views.map(v => v.assembly) ?? []),
+          )
+        },
+        /**
+         * #getter
+         * Label for the generic loading spinner, naming the assembly file being
+         * downloaded when the assembly load is what the wait is. The
+         * auto-diagonalize wait is a separate render branch
+         * (DiagonalizeLoadingScreen), so this only covers the plain "view not
+         * ready" case.
          */
         get loadingMessage() {
-          return this.showLoading ? 'Loading' : undefined
+          return this.showLoading
+            ? this.loadingAssembly?.statusMessage || 'Loading'
+            : undefined
+        },
+        /**
+         * #getter
+         * Determinate fraction for the spinner's bar, when the assembly load
+         * reports one
+         */
+        get loadingProgress() {
+          return this.showLoading
+            ? this.loadingAssembly?.statusProgress
+            : undefined
         },
         /**
          * #getter

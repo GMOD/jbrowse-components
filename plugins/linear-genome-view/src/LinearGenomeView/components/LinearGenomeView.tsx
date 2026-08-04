@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 
-import { LoadingEllipses } from '@jbrowse/core/ui'
+import { ViewLoadingScreen } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 
 import LinearGenomeViewContainer from './LinearGenomeViewContainer.tsx'
@@ -15,10 +15,12 @@ const LinearGenomeView = observer(function LinearGenomeView({
 }: {
   model: LinearGenomeViewModel
 }) {
-  const { showLoading, showImportForm, loadingMessage } = model
+  const { showLoading, showImportForm, loadingMessage, loadingProgress } = model
 
   if (showLoading) {
-    return <LoadingEllipses variant="h6" message={loadingMessage} />
+    return (
+      <ViewLoadingScreen message={loadingMessage} fraction={loadingProgress} />
+    )
   } else if (showImportForm) {
     return <ImportForm model={model} />
   } else {

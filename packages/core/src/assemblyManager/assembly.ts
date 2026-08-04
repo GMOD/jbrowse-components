@@ -5,6 +5,12 @@ import { getConf } from '../configuration/index.ts'
 import { adapterConfigCacheKey } from '../data_adapters/dataAdapterCache.ts'
 import QuickLRU from '../util/QuickLRU/index.ts'
 import {
+  createStatusFanOut,
+  createStatusThrottle,
+  statusFraction,
+  statusMessageText,
+} from '../util/progress.ts'
+import {
   getAssemblyRegions,
   getCytobands,
   getRefNameAliases,
@@ -18,6 +24,7 @@ import type PluginManager from '../PluginManager.ts'
 import type { BaseOptions } from '../data_adapters/BaseAdapter/index.ts'
 import type RpcManager from '../rpc/RpcManager.ts'
 import type { Feature, Region } from '../util/index.ts'
+import type { RpcStatus } from '../util/progress.ts'
 import type { RefNameAliases, RefNameMaps } from './refNameMaps.ts'
 import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
 
@@ -108,6 +115,19 @@ export default function assemblyFactory(
          * when MobX triggers the autorun after setLoaded
          */
         lowerCaseRefNameAliases: undefined as RefNameAliases | undefined,
+        /**
+         * #volatile
+         * What the in-flight load is doing ("Downloading chromosome sizes"), for a
+         * view that is showing a spinner while it waits. Same split as
+         * BaseDisplayModel's status fields, so the same LoadingProgress UI
+         * renders both.
+         */
+        statusMessage: undefined as string | undefined,
+        /**
+         * #volatile
+         * Fraction in [0,1] when the load reports determinate progress
+         */
+        statusProgress: undefined as number | undefined,
       }
     })
     .views(self => ({
@@ -164,6 +184,20 @@ export default function assemblyFactory(
     .actions(self => ({
       /**
        * #action
+       * Records what the in-flight load is doing. Its own actions block (rather
+       * than sitting next to setLoaded) so loadPre can hand `self.setStatus` to
+       * the adapters as a plain callback: it fires after awaits, outside the
+       * action that started the load, and a volatile write there has to go
+       * through an action of its own.
+       */
+      setStatus(status?: RpcStatus) {
+        self.statusMessage = statusMessageText(status)
+        self.statusProgress = statusFraction(status)
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
        * Applies all load-time state in a single transaction so dependent
        * autoruns fire once, with the precomputed lowercase/name lookups already
        * in place by the time refNameAliases becomes observable.
@@ -213,48 +247,73 @@ export default function assemblyFactory(
         }
         const assemblyName = self.name
 
-        // The four sources are independent files (sequence index, chromAlias,
-        // cytoband, genetic-code sidecar), so they are fetched together rather
-        // than in series: an assembly resolved on demand over a CDN paid four
-        // sequential round trips for what is one. buildRefNameMaps still needs
-        // both regions and aliases, it just doesn't need them to arrive in
-        // order. Promise.all rejects with the first failure, which is what a
-        // serial chain did too — any one of them failing fails the load.
-        const [regions, refNameAliasCollection, cytobands, geneticCodes] =
-          await Promise.all([
-            getAssemblyRegions({
-              config: conf.sequence.adapter,
-              pluginManager,
-            }),
-            getRefNameAliases({
-              config: conf.refNameAliases?.adapter,
-              pluginManager,
-            }),
-            getCytobands({
-              config: conf.cytobands?.adapter,
-              pluginManager,
-            }),
-            getGeneticCodesFromFile({
-              location: self.getConf('geneticCodesLocation'),
-              pluginManager,
-            }),
-          ])
-
-        for (const r of regions) {
-          checkRefName(r.refName)
-        }
-        const maps = buildRefNameMaps(regions, refNameAliasCollection)
-
-        this.setLoaded({
-          ...maps,
-          regions: regions.map(r => ({
-            ...r,
-            refName: maps.refNameAliases[r.refName] ?? r.refName,
-            assemblyName,
-          })),
-          cytobands,
-          geneticCodes,
+        // The four loads run at once and would otherwise fight over the one
+        // status field, and the first to finish would blank the label (the ''
+        // every phase helper clears with) while the rest were still going. A
+        // fan-out slot each turns them into one aggregate bar. Throttled
+        // because a whole-file download reports per chunk and each write
+        // repaints the spinner.
+        const throttle = createStatusThrottle()
+        const fanOut = createStatusFanOut(status => {
+          throttle.run(() => {
+            self.setStatus(status)
+          })
         })
+        const optsFor = (): BaseOptions => ({ statusCallback: fanOut() })
+
+        try {
+          // The four sources are independent files (sequence index, chromAlias,
+          // cytoband, genetic-code sidecar), so they are fetched together rather
+          // than in series: an assembly resolved on demand over a CDN paid four
+          // sequential round trips for what is one. buildRefNameMaps still needs
+          // both regions and aliases, it just doesn't need them to arrive in
+          // order. Promise.all rejects with the first failure, which is what a
+          // serial chain did too — any one of them failing fails the load.
+          const [regions, refNameAliasCollection, cytobands, geneticCodes] =
+            await Promise.all([
+              getAssemblyRegions({
+                config: conf.sequence.adapter,
+                pluginManager,
+                opts: optsFor(),
+              }),
+              getRefNameAliases({
+                config: conf.refNameAliases?.adapter,
+                pluginManager,
+                opts: optsFor(),
+              }),
+              getCytobands({
+                config: conf.cytobands?.adapter,
+                pluginManager,
+                opts: optsFor(),
+              }),
+              getGeneticCodesFromFile({
+                location: self.getConf('geneticCodesLocation'),
+                pluginManager,
+                opts: optsFor(),
+              }),
+            ])
+
+          for (const r of regions) {
+            checkRefName(r.refName)
+          }
+          const maps = buildRefNameMaps(regions, refNameAliasCollection)
+
+          this.setLoaded({
+            ...maps,
+            regions: regions.map(r => ({
+              ...r,
+              refName: maps.refNameAliases[r.refName] ?? r.refName,
+              assemblyName,
+            })),
+            cytobands,
+            geneticCodes,
+          })
+        } finally {
+          // cleared directly rather than through the throttle, which has no
+          // trailing flush: a clear landing inside a closed window would leave
+          // the last "Downloading …" on screen for good
+          self.setStatus(undefined)
+        }
       },
     }))
     .actions(self => ({

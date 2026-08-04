@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 
-import { LoadingEllipses } from '@jbrowse/core/ui'
+import { ViewLoadingScreen } from '@jbrowse/core/ui'
 import { DiagonalizeLoadingScreen } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
@@ -22,6 +22,7 @@ const LinearSyntenyView = observer(function LinearSyntenyView({
     showImportForm,
     awaitingAutoDiagonalize,
     loadingMessage,
+    loadingProgress,
   } = model
 
   if (awaitingAutoDiagonalize) {
@@ -34,7 +35,9 @@ const LinearSyntenyView = observer(function LinearSyntenyView({
       />
     )
   } else if (showLoading) {
-    return <LoadingEllipses variant="h6" message={loadingMessage} />
+    return (
+      <ViewLoadingScreen message={loadingMessage} fraction={loadingProgress} />
+    )
   } else if (showImportForm) {
     return <LinearSyntenyImportForm model={model} />
   } else {

@@ -271,6 +271,20 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       },
 
       /**
+       * #method
+       * The first of `asmNames` that hasn't finished loading — the one a view
+       * blocked on them is waiting for, and whose `statusMessage` /
+       * `statusProgress` its spinner should show. Returns the assembly itself
+       * (a stable reference, so a consuming getter doesn't invalidate on every
+       * read) or undefined once they are all loaded.
+       */
+      loadingAssembly(asmNames: string[]) {
+        return asmNames
+          .map(name => this.get(name))
+          .find(asm => !asm?.initialized)
+      },
+
+      /**
        * #getter
        * read via readConfObject, matching how the afterAttach autorun names the
        * assemblies it creates: get() treats a name found here as "a config

@@ -1,8 +1,10 @@
 import Adapter from './ChromSizesAdapter.ts'
 import configSchema from './configSchema.ts'
 
-test('adapter can fetch sequence from volvox.chrom.sizes', async () => {
-  const adapter = new Adapter(
+import type { RpcStatus } from '@jbrowse/core/util'
+
+function makeAdapter() {
+  return new Adapter(
     configSchema.create({
       chromSizesLocation: {
         localPath: require.resolve('./test_data/volvox.chrom.sizes'),
@@ -10,6 +12,10 @@ test('adapter can fetch sequence from volvox.chrom.sizes', async () => {
       },
     }),
   )
+}
+
+test('adapter can fetch sequence from volvox.chrom.sizes', async () => {
+  const adapter = makeAdapter()
 
   const regions = await adapter.getRegions()
   expect(regions).toEqual([
@@ -24,4 +30,17 @@ test('adapter can fetch sequence from volvox.chrom.sizes', async () => {
       end: 6079,
     },
   ])
+})
+
+test('names what it is downloading on the status channel', async () => {
+  const statuses: RpcStatus[] = []
+  await makeAdapter().getRegions({
+    statusCallback: s => {
+      statuses.push(s)
+    },
+  })
+  // what an assembly load's spinner shows instead of a bare "Loading", then the
+  // '' every phase helper clears with
+  expect(statuses[0]).toBe('Downloading chromosome sizes')
+  expect(statuses.at(-1)).toBe('')
 })

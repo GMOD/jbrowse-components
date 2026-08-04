@@ -30,6 +30,8 @@ JBrowse core.
 | <span id="volatile-cytobands">**cytobands**</span><br><code>cytobands: undefined as Feature[] &#124; undefined</code> |  |
 | <span id="volatile-loadedgeneticcodes">**loadedGeneticCodes**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>loadedGeneticCodes: undefined as Record&lt;string, number&gt; &#124; undef…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>loadedGeneticCodes: undefined as Record&lt;string, number&gt; &#124; undefined</code></pre></dialog></span> | refName -> NCBI genetic-code id loaded from `geneticCodesLocation`; merged with (and overridden by) the inline `geneticCodes` config slot |
 | <span id="volatile-lowercaserefnamealiases">**lowerCaseRefNameAliases**</span><br><code>lowerCaseRefNameAliases: undefined as RefNameAliases &#124; undefined</code> | Precomputed in loadPre to avoid expensive synchronous computation when MobX triggers the autorun after setLoaded |
+| <span id="volatile-statusmessage">**statusMessage**</span><br><code>statusMessage: undefined as string &#124; undefined</code> | What the in-flight load is doing ("Downloading chromosome sizes"), for a view that is showing a spinner while it waits. Same split as BaseDisplayModel's status fields, so the same LoadingProgress UI renders both. |
+| <span id="volatile-statusprogress">**statusProgress**</span><br><code>statusProgress: undefined as number &#124; undefined</code> | Fraction in [0,1] when the load reports determinate progress |
 
 ## Getters
 
@@ -68,6 +70,7 @@ JBrowse core.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
+| <span id="action-setstatus">**setStatus**</span><br><code>(status?: RpcStatus &#124; undefined) =&gt; void</code> | Records what the in-flight load is doing. Its own actions block (rather than sitting next to setLoaded) so loadPre can hand `self.setStatus` to the adapters as a plain callback: it fires after awaits, outside the action that started the load, and a volatile write there has to go through an action of its own. |
 | <span id="action-setloaded">**setLoaded**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>({…}: RefNameMaps &amp; { regions: Region[]; cytobands: Feature[];…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>({…}: RefNameMaps &amp; { regions: Region[]; cytobands: Feature[]; geneticCodes: Record&lt;…&gt;; }) =&gt; void</code></pre></dialog></span> | Applies all load-time state in a single transaction so dependent autoruns fire once, with the precomputed lowercase/name lookups already in place by the time refNameAliases becomes observable. |
 | <span id="action-seterror">**setError**</span><br><code>(e: unknown) =&gt; void</code> |  |
 | <span id="action-setloadingp">**setLoadingP**</span><br><code>(p?: Promise&lt;void&gt; &#124; undefined) =&gt; void</code> |  |

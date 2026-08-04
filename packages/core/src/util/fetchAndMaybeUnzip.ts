@@ -11,6 +11,12 @@ export function isGzip(buf: Uint8Array) {
 export async function fetchAndMaybeUnzip(
   loc: GenericFilehandle,
   opts: BaseOptions = {},
+  // what is being downloaded, for the loading UI. Defaulted rather than
+  // required because most callers are a track's one data file, where the track
+  // name is already on screen; name it wherever several files load at once
+  // behind a single indicator and "Downloading file" can't say which (the four
+  // parallel assembly loads, say)
+  label = 'Downloading file',
 ) {
   // statusCallback is passed through as-is rather than defaulted to a no-op:
   // downloadStatus hands the reader an undefined onProgress when there is no
@@ -21,7 +27,7 @@ export async function fetchAndMaybeUnzip(
   // drops at the socket rather than downloading a multi-GB body to completion
   const buf = await withStopTokenSignal(stopToken, signal =>
     downloadStatus(
-      'Downloading file',
+      label,
       statusCallback,
       onProgress =>
         loc.readFile({ ...opts, onProgress, signal }) as Promise<Uint8Array>,
@@ -42,8 +48,9 @@ export async function fetchAndMaybeUnzip(
 export async function fetchAndMaybeUnzipText(
   loc: GenericFilehandle,
   opts?: BaseOptions,
+  label?: string,
 ) {
-  const buffer = await fetchAndMaybeUnzip(loc, opts)
+  const buffer = await fetchAndMaybeUnzip(loc, opts, label)
   // 512MB  max chrome string length is 512MB
   if (buffer.length > 536_870_888) {
     throw new Error('Data exceeds maximum string length (512MB)')

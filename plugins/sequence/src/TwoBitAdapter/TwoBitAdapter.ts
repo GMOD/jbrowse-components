@@ -1,6 +1,6 @@
 import { TwoBitFile } from '@gmod/twobit'
 import { BaseSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { updateStatus } from '@jbrowse/core/util'
+import { fetchAndMaybeUnzipText, updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
@@ -23,17 +23,23 @@ export default class TwoBitAdapter extends BaseSequenceAdapter<TwoBitAdapterConf
     chromSizesData: Record<string, number> | undefined
   }>
 
-  private async initChromSizes() {
+  private async initChromSizes(opts?: BaseOptions) {
     const conf = this.getConf('chromSizesLocation')
     if (!isPlaceholderLocation(conf, '/path/to/default.chrom.sizes')) {
+      // fetchAndMaybeUnzipText rather than readFile('utf8') so the read reports
+      // byte progress (readFile's utf8 path takes res.text(), which can't)
       return parseChromSizes(
-        await openLocation(conf, this.pluginManager).readFile('utf8'),
+        await fetchAndMaybeUnzipText(
+          openLocation(conf, this.pluginManager),
+          opts,
+          'Downloading chromosome sizes',
+        ),
       )
     }
     return undefined
   }
 
-  async setupPre() {
+  async setupPre(opts?: BaseOptions) {
     return {
       twobit: new TwoBitFile({
         filehandle: openLocation(
@@ -41,28 +47,37 @@ export default class TwoBitAdapter extends BaseSequenceAdapter<TwoBitAdapterConf
           this.pluginManager,
         ),
       }),
-      chromSizesData: await this.initChromSizes(),
+      chromSizesData: await this.initChromSizes(opts),
     }
   }
-  async setup() {
-    this.setupP ??= this.setupPre().catch((e: unknown) => {
+  async setup(opts?: BaseOptions) {
+    this.setupP ??= this.setupPre(opts).catch((e: unknown) => {
       this.setupP = undefined
       throw e
     })
     return this.setupP
   }
 
-  public async getRefNames() {
-    const { chromSizesData, twobit } = await this.setup()
+  public async getRefNames(opts?: BaseOptions) {
+    const { chromSizesData, twobit } = await this.setup(opts)
     return chromSizesData
       ? Object.keys(chromSizesData)
-      : twobit.getSequenceNames()
+      : updateStatus('Downloading 2bit header', opts?.statusCallback, () =>
+          twobit.getSequenceNames(),
+        )
   }
 
-  public async getRegions() {
-    const { chromSizesData, twobit } = await this.setup()
+  public async getRegions(opts?: BaseOptions) {
+    const { chromSizesData, twobit } = await this.setup(opts)
+    // without a chrom.sizes sidecar the sizes come from the 2bit's own header +
+    // per-sequence records, which is the wait an assembly load sits in here
     return refSizesToRegions(
-      chromSizesData ?? (await twobit.getSequenceSizes()),
+      chromSizesData ??
+        (await updateStatus(
+          'Downloading 2bit header',
+          opts?.statusCallback,
+          () => twobit.getSequenceSizes(),
+        )),
     )
   }
 

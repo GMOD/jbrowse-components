@@ -14,6 +14,7 @@ export default class CytobandAdapter extends BaseAdapter {
     const text = await fetchAndMaybeUnzipText(
       openLocation(conf, this.pluginManager),
       opts,
+      'Downloading cytobands',
     )
     return text
       .split(/\n|\r\n|\r/)

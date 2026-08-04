@@ -752,9 +752,39 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
+       * The assembly whose load the spinner is waiting on: the one `init` names
+       * before navigation (it isn't in assemblyNames yet), else the first of the
+       * displayed assemblies that hasn't finished loading.
+       */
+      get loadingAssembly() {
+        return self.init
+          ? this.initAssembly
+          : getSession(self).assemblyManager.loadingAssembly(self.assemblyNames)
+      },
+
+      /**
+       * #getter
+       * What the spinner says. The assembly reports which of its files it is
+       * downloading, so this is "Downloading chromosome aliases" rather than a bare
+       * "Loading" for the part of startup that actually takes time. Falls back
+       * once the assembly is loaded and the remaining wait is the init autorun's
+       * own navigation, which is local.
        */
       get loadingMessage() {
-        return this.showLoading ? 'Loading' : undefined
+        return this.showLoading
+          ? this.loadingAssembly?.statusMessage || 'Loading'
+          : undefined
+      },
+
+      /**
+       * #getter
+       * Determinate fraction for the spinner's bar, when the assembly load
+       * reports one (a whole-file download with a Content-Length)
+       */
+      get loadingProgress() {
+        return this.showLoading
+          ? this.loadingAssembly?.statusProgress
+          : undefined
       },
 
       /**

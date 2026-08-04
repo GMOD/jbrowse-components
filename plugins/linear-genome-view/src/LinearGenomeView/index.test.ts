@@ -11,7 +11,11 @@ import {
   createBaseTrackConfig,
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
-import { getSession } from '@jbrowse/core/util'
+import {
+  getSession,
+  statusFraction,
+  statusMessageText,
+} from '@jbrowse/core/util'
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { waitFor } from '@testing-library/react'
@@ -27,6 +31,7 @@ import volvoxDisplayedRegions from './volvoxDisplayedRegions.json' with { type: 
 import type { LinearGenomeViewModel } from './index.ts'
 import type { InitState } from './types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { RpcStatus } from '@jbrowse/core/util'
 
 type LGV = LinearGenomeViewModel
 
@@ -91,6 +96,10 @@ function initialize() {
     .volatile(() => ({
       regions: volvoxDisplayedRegions,
       initialized: true,
+      // mirrors the real model's load-status fields, which the view's
+      // loadingMessage/loadingProgress read
+      statusMessage: undefined as string | undefined,
+      statusProgress: undefined as number | undefined,
     }))
     .views(() => ({
       // mirrors the real model: resolves an alias or any casing to the
@@ -106,8 +115,12 @@ function initialize() {
         return canonical[refName.toLowerCase()]
       },
     }))
-    .actions(() => ({
+    .actions(self => ({
       async load() {},
+      setStatus(status?: RpcStatus) {
+        self.statusMessage = statusMessageText(status)
+        self.statusProgress = statusFraction(status)
+      },
     }))
 
   const AssemblyManager = types
@@ -130,6 +143,12 @@ function initialize() {
       },
       get(str: string) {
         return self.assemblies.get(str)
+      },
+
+      loadingAssembly(names: string[]) {
+        return names
+          .map(name => self.assemblies.get(name))
+          .find(asm => !asm?.initialized)
       },
 
       async waitForAssembly(str: string) {
@@ -1559,6 +1578,8 @@ test('navToLocString with human assembly', async () => {
     .model({})
     .volatile(() => ({
       regions: hg38Regions,
+      // mirrors the real model, which loadingAssembly filters on
+      initialized: true,
     }))
     .views(() => ({
       // hg38 fixture refNames are unprefixed ('1'), so 'chr1' is an alias of
@@ -1581,6 +1602,12 @@ test('navToLocString with human assembly', async () => {
       },
       get(str: string) {
         return self.assemblies.get(str)
+      },
+
+      loadingAssembly(names: string[]) {
+        return names
+          .map(name => self.assemblies.get(name))
+          .find(asm => !asm?.initialized)
       },
 
       async waitForAssembly(str: string) {
@@ -1766,6 +1793,44 @@ test('showLoading is true when init is set and becomes false after initializatio
     expect(model.initialized).toBe(true)
   })
   expect(console.error).not.toHaveBeenCalled()
+})
+
+test('loadingMessage reports what the assembly load is downloading', () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const model = Session.create({
+    configuration: {},
+  }).setView(
+    LinearGenomeModel.create({
+      type: 'LinearGenomeView',
+      init: {
+        assembly: 'volvox',
+        loc: 'ctgA:1000-2000',
+      },
+    }),
+  )
+  expect(model.showLoading).toBe(true)
+  // nothing reported yet, so the generic label
+  expect(model.loadingMessage).toBe('Loading')
+  expect(model.loadingProgress).toBeUndefined()
+
+  // assertions stay in this one synchronous block: the real load is in flight
+  // and its `finally` clears the status, so anything after an await would race
+  const asm = model.loadingAssembly!
+  asm.setStatus({
+    message: 'Downloading chromosome aliases',
+    current: 1,
+    total: 4,
+  })
+  expect(model.loadingMessage).toBe('Downloading chromosome aliases')
+  expect(model.loadingProgress).toBe(0.25)
+
+  // an indeterminate phase keeps the label but drops the bar
+  asm.setStatus('Downloading 2bit header')
+  expect(model.loadingMessage).toBe('Downloading 2bit header')
+  expect(model.loadingProgress).toBeUndefined()
+
+  asm.setStatus(undefined)
+  expect(model.loadingMessage).toBe('Loading')
 })
 
 test('showAllRegions centers correctly with multiple regions', () => {
