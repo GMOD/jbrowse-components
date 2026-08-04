@@ -317,6 +317,9 @@ importers:
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../core
+      '@jbrowse/modifications-utils':
+        specifier: workspace:^
+        version: link:../modifications-utils
       '@jbrowse/wiggle-core':
         specifier: workspace:^
         version: link:../wiggle-core
@@ -826,8 +829,8 @@ importers:
         specifier: ^2.2.9
         version: 2.2.9
       '@gmod/tabix':
-        specifier: ^3.5.2
-        version: 3.5.2
+        specifier: ^3.5.3
+        version: 3.5.3
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -980,8 +983,8 @@ importers:
   plugins/comparative-adapters:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.5.2
-        version: 3.5.2
+        specifier: ^3.5.3
+        version: 3.5.3
       '@jbrowse/cigar-utils':
         specifier: workspace:^
         version: link:../../packages/cigar-utils
@@ -1179,8 +1182,8 @@ importers:
   plugins/gff3:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.5.2
-        version: 3.5.2
+        specifier: ^3.5.3
+        version: 3.5.3
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1233,8 +1236,8 @@ importers:
   plugins/gtf:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.5.2
-        version: 3.5.2
+        specifier: ^3.5.3
+        version: 3.5.3
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1704,8 +1707,8 @@ importers:
   plugins/variants:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.5.2
-        version: 3.5.2
+        specifier: ^3.5.3
+        version: 3.5.3
       '@gmod/vcf':
         specifier: ^7.0.10
         version: 7.0.10
@@ -4281,8 +4284,8 @@ packages:
   '@gmod/nclist@3.0.11':
     resolution: {integrity: sha512-b7wbxPAQCvyi9Eny/O5uTRq2CRaJJlS8TG4CBTOCaMbhFSv7Cy108ps0nntxtxO7TKc/mVs4V1TJNL8uzQG3IQ==}
 
-  '@gmod/tabix@3.5.2':
-    resolution: {integrity: sha512-1Rnv4ol/f1LoMo6RfBRdfOTKuCyo7STyU5NtbPW0T2WQZ6MwxMZemJuiB04Q3EQr9uv6KLPye0cj4C2w5fCBJg==}
+  '@gmod/tabix@3.5.3':
+    resolution: {integrity: sha512-0kgtjEtQa45X5k/1OpHHT6F0JSF+zlMcjGAgIECPJROPYDNdZl2lyMnkicWcHYVwvLx6SfKxvs59VAaZdlPgTw==}
 
   '@gmod/trix@3.0.19':
     resolution: {integrity: sha512-QUNgi7n7cJ82RrS9Rhdo5W16XNB7PcdEoMr9UReOrbKR0MlmleaJaNvmlqR05UopNgBszKWb3aJe4bUi4Uz/Hw==}
@@ -12222,7 +12225,7 @@ snapshots:
       '@jbrowse/quick-lru': 7.3.5
       '@jridgewell/resolve-uri': 3.1.2
 
-  '@gmod/tabix@3.5.2':
+  '@gmod/tabix@3.5.3':
     dependencies:
       '@gmod/abortable-promise-cache': 3.0.4
       '@gmod/bgzf-filehandle': 6.3.1

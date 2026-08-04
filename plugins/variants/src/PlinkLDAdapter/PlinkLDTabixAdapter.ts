@@ -27,9 +27,8 @@ export default class PlinkLDTabixAdapter extends PlinkLDAdapterBase<Config> {
     const location = this.getConf(['index', 'location'])
     const indexType = this.getConf(['index', 'indexType'])
 
-    const filehandle = openLocation(ldLocation, this.pluginManager)
     const ld = new TabixIndexedFile({
-      filehandle,
+      filehandle: openLocation(ldLocation, this.pluginManager),
       ...openTabixIndexFilehandle(location, indexType, this.pluginManager),
       chunkCacheSize: 50 * 2 ** 20,
     })
@@ -43,7 +42,7 @@ export default class PlinkLDTabixAdapter extends PlinkLDAdapterBase<Config> {
     // matching is a guess, and it is one that misfires on a headerless file
     // whose chromosome column reads `CHR1`. The last line is the column
     // defline; a commented preamble may sit above it.
-    const defline = (await readTabixHeaderLines(ld, filehandle)).at(-1)
+    const defline = (await readTabixHeaderLines(ld)).at(-1)
     let header = DEFAULT_PLINK_LD_HEADER
     if (defline) {
       try {

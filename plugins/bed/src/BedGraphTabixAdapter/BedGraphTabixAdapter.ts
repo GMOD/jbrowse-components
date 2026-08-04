@@ -30,9 +30,8 @@ export default class BedGraphTabixAdapter extends BaseFeatureDataAdapter<BedGrap
     const location = this.getConf(['index', 'location'])
     const indexType = this.getConf(['index', 'indexType'])
 
-    const filehandle = openLocation(bedGraphGzLocation, pm)
     const bedGraph = new TabixIndexedFile({
-      filehandle,
+      filehandle: openLocation(bedGraphGzLocation, pm),
       ...openTabixIndexFilehandle(location, indexType, pm),
       chunkCacheSize: 50 * 2 ** 20,
     })
@@ -41,7 +40,7 @@ export default class BedGraphTabixAdapter extends BaseFeatureDataAdapter<BedGrap
     // Not bedGraph.getHeader(): that returns only a `#`-commented header, so a
     // file whose header is a plain row skipped via `tabix -S 1` reported none
     // and quietly lost the names of its value columns.
-    const header = (await readTabixHeaderLines(bedGraph, filehandle)).join('\n')
+    const header = (await readTabixHeaderLines(bedGraph)).join('\n')
     return {
       columnNames,
       bedGraph,

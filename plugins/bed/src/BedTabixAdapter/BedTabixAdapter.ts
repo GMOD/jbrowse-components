@@ -128,12 +128,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
     // `#`-commented block, which getHeader() returns, and a plain row skipped
     // via `tabix -S N`, which it does not.
     return parseNamesFromHeader(
-      (
-        await readTabixHeaderLines(
-          this.bed,
-          openLocation(this.bedGzLoc, this.pluginManager),
-        )
-      ).join('\n'),
+      (await readTabixHeaderLines(this.bed)).join('\n'),
     )
   }
 

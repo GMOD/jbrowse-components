@@ -25,6 +25,12 @@ const preservedExports = [
   // through the canvas-sequencer-ts CJS interop boundary re-resolve it as a
   // package subpath, so it needs its own exports entry
   '@jbrowse/core/util/offscreenCanvasPonyfill',
+  // Exists precisely so callers can reach `unzip` WITHOUT the util barrel,
+  // which would put bgzf + pako on the startup path of every page (see
+  // src/util/unzip.ts). In-repo use comes and goes — the last two importers
+  // moved to util/tabix's header reader — but an external plugin decompressing
+  // a bgzf file has no other entry point, so usage is not the test here.
+  '@jbrowse/core/util/unzip',
 ]
 
 // Scan the codebase for all @jbrowse/core imports

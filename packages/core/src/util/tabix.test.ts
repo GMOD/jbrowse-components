@@ -1,5 +1,3 @@
-import { gzipSync } from 'zlib'
-
 import { createStopToken, stopStopToken } from './stopToken.ts'
 import {
   readTabixHeaderLines,
@@ -216,73 +214,29 @@ describe('readTabixLinesRedispatched', () => {
 })
 
 describe('readTabixHeaderLines', () => {
-  // a real bgzf block, so the unzip path is exercised rather than stubbed
-  const bgzip = (text: string) =>
-    gzipSync(Buffer.from(text), { level: 1 }) as unknown as Uint8Array
-
-  const filehandle = (text: string) => ({
-    read: () => Promise.resolve(bgzip(text)),
-  })
-
-  it('returns a commented header without reading the file', async () => {
-    let read = false
-    const lines = await readTabixHeaderLines(
-      {
-        getHeader: () => Promise.resolve('#chrom\tstart\tend\n'),
-        getMetadata: () => Promise.resolve({ skipLines: 0 }),
-      },
-      {
-        read: () => {
-          read = true
-          return Promise.resolve(new Uint8Array())
-        },
-      },
-    )
+  it('prefers a commented header', async () => {
+    const lines = await readTabixHeaderLines({
+      getHeader: () => Promise.resolve('#chrom\tstart\tend\n'),
+      getSkippedLines: () => Promise.reject(new Error('should not be asked')),
+    })
     expect(lines).toEqual(['#chrom\tstart\tend'])
-    expect(read).toBe(false)
   })
 
-  // the case tabix cannot answer: a plain header row, kept via `-S 1`, which
-  // getHeader() reports as absent even though the index counted it
-  it('reads a skip-line header off the front of the file', async () => {
-    const lines = await readTabixHeaderLines(
-      {
-        getHeader: () => Promise.resolve(''),
-        getMetadata: () => Promise.resolve({ skipLines: 1 }),
-      },
-      filehandle('chrom\tstart\tend\nchr1\t100\t200\n'),
-    )
+  // the case getHeader cannot answer: a plain header row kept via `tabix -S 1`,
+  // which the index counted but the meta-character scan never sees
+  it('falls back to the lines the index counted', async () => {
+    const lines = await readTabixHeaderLines({
+      getHeader: () => Promise.resolve(''),
+      getSkippedLines: () => Promise.resolve(['chrom\tstart\tend']),
+    })
     expect(lines).toEqual(['chrom\tstart\tend'])
   })
 
-  it('takes as many lines as the index declares', async () => {
-    const lines = await readTabixHeaderLines(
-      {
-        getHeader: () => Promise.resolve(''),
-        getMetadata: () => Promise.resolve({ skipLines: 2 }),
-      },
-      filehandle('track name=x\nchrom\tstart\tend\nchr1\t100\t200\n'),
-    )
-    expect(lines).toEqual(['track name=x', 'chrom\tstart\tend'])
-  })
-
-  // no header of either kind: the file is never speculatively read, so a data
-  // row can never be mistaken for a header
-  it('reads nothing when the index declares no header', async () => {
-    let read = false
-    const lines = await readTabixHeaderLines(
-      {
-        getHeader: () => Promise.resolve(''),
-        getMetadata: () => Promise.resolve({}),
-      },
-      {
-        read: () => {
-          read = true
-          return Promise.resolve(new Uint8Array())
-        },
-      },
-    )
+  it('reads nothing when the file has neither', async () => {
+    const lines = await readTabixHeaderLines({
+      getHeader: () => Promise.resolve(''),
+      getSkippedLines: () => Promise.resolve([]),
+    })
     expect(lines).toEqual([])
-    expect(read).toBe(false)
   })
 })

@@ -140,7 +140,7 @@ export async function readTabixLinesRedispatched(
  */
 interface TabixHeaderSource {
   getHeader(): Promise<string>
-  getMetadata(): Promise<{ skipLines?: number }>
+  getSkippedLines(): Promise<string[]>
 }
 
 /**
@@ -166,40 +166,15 @@ interface TabixHeaderSource {
  * and a bedGraph loses the names of its value columns. Nothing errors, because
  * the assumed layout parses.
  *
- * When the index declares skipped lines, this reads them off the front of the
- * file — one range request, and `unzip` tolerates the partial block at the end
- * of a fixed-size read. A read that fails is left to throw: an adapter that
- * cannot reach the file has a real problem to report, and falling back to the
- * assumed layout is how this went unnoticed in the first place.
+ * getSkippedLines is the other half, added in @gmod/tabix 3.5.3. It sizes its
+ * read from the index rather than assuming the header fits one block, which is
+ * what this did while the two halves lived in different packages.
  */
 export async function readTabixHeaderLines(
   file: TabixHeaderSource,
-  filehandle: {
-    read: (length: number, position: number) => Promise<Uint8Array>
-  },
 ): Promise<string[]> {
   const commented = await file.getHeader()
-  if (commented) {
-    return commented.split(/\r?\n/).filter(Boolean)
-  }
-  const { skipLines = 0 } = await file.getMetadata()
-  if (skipLines <= 0) {
-    return []
-  }
-  // TODO(@gmod/tabix ^3.5.3): this whole branch is `file.getSkippedLines()`.
-  // That shipped in 3.5.3 and sizes its read from the index instead of assuming
-  // one block, so it also drops the 65536 guess below and lets callers stop
-  // passing a filehandle purely to get here. Needs the five package.json ranges
-  // bumped off ^3.5.2 and a lockfile update, so it is a change to make when the
-  // lockfile is otherwise quiet.
-  //
-  // dynamic, like fetchAndMaybeUnzip: only a file that actually has a
-  // skip-line header should pull bgzf + pako in
-  const { unzip } = await import('@gmod/bgzf-filehandle')
-  const buf = await filehandle.read(65536, 0)
-  return new TextDecoder()
-    .decode(await unzip(buf))
-    .split(/\r?\n/)
-    .filter(Boolean)
-    .slice(0, skipLines)
+  return commented
+    ? commented.split(/\r?\n/).filter(Boolean)
+    : (await file.getSkippedLines()).filter(Boolean)
 }
