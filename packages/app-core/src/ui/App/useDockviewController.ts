@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { autorun, runInAction } from 'mobx'
 
 import {
+  adoptSavedPanelOrder,
   applyInitLayout,
   createPanelConfig,
   createPanelId,
@@ -223,6 +224,12 @@ export function useDockviewController(session: DockviewSession) {
             if (event.api.panels.length === 0) {
               throw new Error('No panels after fromJSON restore')
             }
+            // Only on this path, and only here: a restore is the one moment a
+            // session's saved panel order can disagree with session.views. The
+            // undo path below restores both from one snapshot, where they
+            // already agree, and writing to the session there is what the
+            // TimeTraveller cannot tell from a fresh edit.
+            adoptSavedPanelOrder(sessionRef.current)
           } catch (e) {
             console.error('Failed to restore dockview layout:', e)
             createInitialPanels(event.api)

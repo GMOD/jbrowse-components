@@ -3,6 +3,7 @@ import { cast, types } from '@jbrowse/mobx-state-tree'
 
 import { DockviewLayoutMixin } from '../../DockviewLayout/index.ts'
 import {
+  adoptSavedPanelOrder,
   applyInitLayout,
   createPanelConfig,
   createPanelId,
@@ -393,5 +394,40 @@ describe('one ordering', () => {
     // the layout reads v2 then v1, so that is the order now; nothing has to
     // consult the assignment arrays to find it out
     expect(session.views.map(v => v.id)).toEqual(['v2', 'v1'])
+  })
+})
+
+// A workspace saved BEFORE views had one ordering kept its within-panel order in
+// panelViewAssignments and nowhere else, because that is the only place the old
+// moveViewInPanel wrote it. Nothing reads that array as an order now, so the
+// arrangement has to be adopted into session.views on the way back in or it is
+// silently lost.
+describe('adoptSavedPanelOrder', () => {
+  it('applies a saved panel order without moving another panel’s views', () => {
+    const session = createSession(['v1', 'v2', 'v3'])
+    // as an old session would have it: the user moved v3 above v1 in panel-1,
+    // which reordered the assignment and left session.views alone
+    session.assignViewToPanel('panel-1', 'v3')
+    session.assignViewToPanel('panel-1', 'v1')
+    session.assignViewToPanel('panel-2', 'v2')
+
+    adoptSavedPanelOrder(session as unknown as SessionArg)
+
+    expect(session.views.map(v => v.id)).toEqual(['v3', 'v2', 'v1'])
+    // v2 is untouched: panel-1's order was applied within the slots its own
+    // views held, not by flattening every panel into one list
+    expect(session.views[1]!.id).toBe('v2')
+  })
+
+  it('is a no-op once the two already agree', () => {
+    const session = createSession(['v1', 'v2', 'v3'])
+    session.assignViewToPanel('panel-1', 'v1')
+    session.assignViewToPanel('panel-1', 'v2')
+    session.assignViewToPanel('panel-2', 'v3')
+
+    adoptSavedPanelOrder(session as unknown as SessionArg)
+    adoptSavedPanelOrder(session as unknown as SessionArg)
+
+    expect(session.views.map(v => v.id)).toEqual(['v1', 'v2', 'v3'])
   })
 })

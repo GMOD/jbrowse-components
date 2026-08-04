@@ -97,6 +97,30 @@ export function reconcilePanelAssignments(
   }
 }
 
+/**
+ * Adopt a restored session's saved within-panel order into `session.views`.
+ *
+ * A session saved before views had one ordering carries that order in
+ * `panelViewAssignments` and nowhere else — the old `moveViewInPanel` wrote it
+ * there and only there. That array is membership-only now and no longer read as
+ * an order, so without this a workspace the user arranged comes back in whatever
+ * order `session.views` happened to be in, silently undoing the arrangement.
+ *
+ * Per panel, never flattened across panels: `orderViews` only permutes the slots
+ * the named views already occupy, so one panel's saved order is applied without
+ * disturbing where any other panel's views sit. Idempotent for anything saved
+ * since — reconcile assigns in `session.views` order, so the two already agree —
+ * which is what makes it safe to run on every restore rather than gate on a
+ * version.
+ */
+export function adoptSavedPanelOrder(
+  session: DockviewSessionType & SessionWithDockviewLayout,
+) {
+  for (const panelId of [...session.panelViewAssignments.keys()]) {
+    session.orderViews(session.getViewIdsForPanel(panelId))
+  }
+}
+
 // No `title`: an unset title makes JBrowseViewTab derive the tab name from the
 // panel's views (see getTabDisplayName). A title is only ever set when the user
 // explicitly renames a tab via api.setTitle.
