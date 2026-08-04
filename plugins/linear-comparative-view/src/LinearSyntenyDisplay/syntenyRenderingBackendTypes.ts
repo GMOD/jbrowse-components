@@ -5,15 +5,21 @@ export interface SyntenyTrackRenderParams {
   yTop: number
   /** drawable height (CSS px) of this track */
   height: number
+  /** Track-wide opacity. A render parameter, NOT part of the packed color — an
+   * opacity drag must not invalidate `computedColors` (which would recompute,
+   * re-pack and re-upload every instance per frame). The shader multiplies it in
+   * `fillShade`; `resolveInstanceFill` is the Canvas2D twin. Dotplot's
+   * `DotplotRenderState.alpha` is the same split. */
   alpha: number
   /** Fade sub-pixel-thin ribbons by on-screen width; off keeps full alpha. */
   fadeThinAlignments: boolean
   minAlignmentLength: number
   hoveredFeatureId: number
   clickedFeatureId: number
-  /** LGV pan offsets (CSS px). Each backend converts to its own viewBp form
-   * internally — the GPU path splits `offsetPx * bpPerPx` into hi/lo Float32
-   * for hp-math precision; the Canvas2D path uses Float64 directly. */
+  /** LGV pan offsets (CSS px). Both backends fold these into the same per-axis
+   * `panPx = (base - offsetPx * bpPerPx) / bpPerPx` via `computeTransform`
+   * (float64), which is what lets a corner ride the GPU as a single Float32
+   * with no hi/lo split — see the header of syntenyTypes.slang. */
   offsetPx0: number
   offsetPx1: number
   bpPerPx0: number

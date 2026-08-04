@@ -36,6 +36,11 @@ export interface DotplotRenderState {
   bpPerPxHInv: number
   bpPerPxVInv: number
   lineWidth: number
+  // Plot-wide opacity. A render parameter, NOT part of the packed color — an
+  // opacity drag must not invalidate `colors` (which would recompute, re-pack
+  // and re-upload every instance per frame). Mirrors synteny's
+  // `SyntenyTrackRenderParams.alpha`.
+  alpha: number
   displayKeys: readonly number[]
 }
 

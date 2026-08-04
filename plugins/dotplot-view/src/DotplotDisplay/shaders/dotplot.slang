@@ -22,7 +22,11 @@
 //
 // Colors are pre-packed ABGR u32 on the CPU side
 // (dotplotColors.ts#packColor). Blend uses premultiplied alpha
-// (one / one-minus-src-alpha).
+// (one / one-minus-src-alpha). The plot-wide opacity slider is the `alpha`
+// UNIFORM, never baked into those bytes — same split as the synteny renderer's
+// `fillShade`. Baking it meant an opacity drag recomputed the whole colors
+// array, re-packed every instance and re-uploaded the buffer once per frame;
+// as a uniform it is a single scalar write.
 //! targets: wgsl, glsl
 
 import colorPack;
@@ -49,6 +53,8 @@ struct Uniforms {
   float  bpPerPxHInv;
   float  panPxV;
   float  bpPerPxVInv;
+  // Plot-wide opacity (the view's slider), multiplied into every fragment.
+  float  alpha;
 };
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
@@ -120,6 +126,8 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   float d = sqrt(du * du + dv * dv);
   float aa = fwidth(d);
   float edgeAlpha = 1.0 - smoothstep(halfWidth - aa, halfWidth + aa, d);
-  float finalAlpha = fragIn.color.a * edgeAlpha;
+  // The packed color's own alpha, the plot-wide slider, and the SDF edge, in
+  // that order. Premultiplied output, so the slider scales rgb with it.
+  float finalAlpha = fragIn.color.a * u.alpha * edgeAlpha;
   return float4(fragIn.color.rgb * finalAlpha, finalAlpha);
 }

@@ -1,3 +1,5 @@
+import { abgrAlpha } from '@jbrowse/core/util/colorBits'
+
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { SyntenyTrackRenderParams } from './syntenyRenderingBackendTypes.ts'
 
@@ -28,21 +30,23 @@ export interface CanvasLike {
   stroke(): void
 }
 
-// SYNC: matches hermiteEdges in syntenyTypes.slang exactly. The smoothstep
-// X-blend and the `1.5 t (1-t) + t³` Y curve together form the cubic Bezier
-// from (sx?, 0) to (sx?, height) with both control points at midheight on
-// each anchor's x. Algebra:
-//   (1-t)²(1+2t) = 1 - smoothstep(t)
+// SYNC: the same cubic the curve shaders trace — syntenyTypes.slang's `sBlend`
+// (the smoothstep X-blend) and `yCurve` (`1.5 t (1-t) + t³`) together form the
+// cubic Bezier from (sx?, 0) to (sx?, height) with both control points at
+// midheight on each anchor's x. Algebra:
+//   (1-t)²(1+2t) = 1 - sBlend(t)
 //   (h/2)·3t(1-t) + t³·h = h·[1.5t(1-t) + t³]
-// so the tessellation loop is replaceable by a single bezierCurveTo per edge
-// with zero loss of fidelity (and perfect browser AA at the curve).
+// so what the shader evaluates analytically per fragment is a single
+// bezierCurveTo per edge here, with zero loss of fidelity (and perfect browser
+// AA at the curve).
 //
 // Corners are NOT widened here — adjacent ribbons that share a genomic
 // boundary must have identical corner positions so their bezier curves
 // trace the same path and meet without whitespace gaps. Canvas2D path AA
-// renders thin/zero-width tips correctly without widening; the GPU shader
-// uses its line-mode branch (perpWidth < LINE_PERP_THRESHOLD) to keep
-// sub-pixel ribbons visible.
+// renders thin/zero-width tips correctly without widening; the GPU keeps
+// sub-pixel ribbons visible instead via perpCoverage's `expand` term (a 1px
+// minimum footprint) and the `thinWidthFade` density fade, and the Canvas2D
+// draw loop's own perpW<1 centerline branch is the twin of that.
 export function buildFeaturePath(
   ctx: CanvasLike,
   c: ProjectedCorners,
@@ -188,8 +192,9 @@ export function projectCorners(
 // horizontal span alone mis-measures it. Shared by the fill path (fill vs
 // centerline-stroke decision in Canvas2DSyntenyRenderer.drawSyntenyTrack) and the
 // pick path (pickFeatureAtPoint) so "drawn as a solid fill" and "pickable" stay
-// the same boundary. Mirrors perpFactor/halfPerpW in syntenyTypes.slang's
-// fillCoverage.
+// the same boundary. Mirrors the perpFactor/perpW pair in syntenyTypes.slang's
+// perpCoverage — measured from the whole ribbon's corners here, per-fragment
+// from each edge's own foreshortening there.
 export function ribbonPerpWidth(c: ProjectedCorners, height: number) {
   const xt = (c.sx1 + c.sx2) * 0.5
   const xb = (c.sx3 + c.sx4) * 0.5
@@ -224,21 +229,39 @@ export function isRibbonCulled(
   viewWidth: number,
   overdrawPx: number,
 ) {
-  const hullMin = Math.min(c.sx1, c.sx2, c.sx3, c.sx4)
-  const hullMax = Math.max(c.sx1, c.sx2, c.sx3, c.sx4)
-  if (hullMax < -HULL_CULL_PAD_PX || hullMin > viewWidth + HULL_CULL_PAD_PX) {
-    return true
-  }
-  const leftLimit = -overdrawPx
-  const rightLimit = viewWidth + overdrawPx
+  // Per-edge extents first — the hull is their union, so taking it from these
+  // costs two more comparisons rather than two four-argument Math.min/max
+  // passes over the same corners.
   const topMin = Math.min(c.sx1, c.sx2)
   const topMax = Math.max(c.sx1, c.sx2)
   const botMin = Math.min(c.sx3, c.sx4)
   const botMax = Math.max(c.sx3, c.sx4)
+  if (
+    Math.max(topMax, botMax) < -HULL_CULL_PAD_PX ||
+    Math.min(topMin, botMin) > viewWidth + HULL_CULL_PAD_PX
+  ) {
+    return true
+  }
+  const leftLimit = -overdrawPx
+  const rightLimit = viewWidth + overdrawPx
   return (
     topMax < leftLimit ||
     topMin > rightLimit ||
     botMax < leftLimit ||
     botMin > rightLimit
   )
+}
+
+// Alpha under 1% — the "too faint to be worth painting" floor the draw and pick
+// loops have always applied. Spelled as a byte compare rather than the
+// `abgrAlpha(packed) / 255 < 0.01` each used to carry: alpha is an integer, so
+// `< 2.55` IS `< 3`, and the divide leaves the per-instance loops.
+const MIN_VISIBLE_ALPHA_BYTE = 3
+
+// SYNC: the draw loop (Canvas2DSyntenyRenderer.drawSyntenyTrack) and the pick
+// engine must answer this identically, or a ribbon too faint to paint stays
+// hoverable — the same "drawn and pickable are one boundary" rule
+// `ribbonPerpWidth` enforces for sub-pixel thinness.
+export function isInstanceInvisible(packedColor: number) {
+  return abgrAlpha(packedColor) < MIN_VISIBLE_ALPHA_BYTE
 }

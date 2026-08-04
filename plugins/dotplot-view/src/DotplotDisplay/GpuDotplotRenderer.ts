@@ -1,5 +1,9 @@
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
+import {
+  interleaveInstances,
+  patchInstanceColors,
+} from './instanceInterleave.ts'
 import * as dotplotShader from './shaders/dotplot.generated.ts'
 
 import type {
@@ -11,8 +15,6 @@ import type { GpuHal, PassDescriptor } from '@jbrowse/render-core/hal'
 
 const PASS_LINE = 'line'
 const UNIFORMS_SIZE_BYTES = dotplotShader.UNIFORMS_SIZE_BYTES
-const INSTANCE_STRIDE_F32 = dotplotShader.INSTANCE_STRIDE_F32
-const F = dotplotShader.FIELD_OFFSET_F32
 const U = dotplotShader.UNIFORM_OFFSET_F32
 
 export const DOTPLOT_PASSES: PassDescriptor[] = [
@@ -35,6 +37,16 @@ export class GpuDotplotRenderer implements DotplotRenderingBackend {
   private uniformData = new ArrayBuffer(UNIFORMS_SIZE_BYTES)
   private uniformF32 = new Float32Array(this.uniformData)
   private baseByKey = new Map<number, AxisBase>()
+  // Packed instance buffer per display, reused across re-uploads that don't
+  // change geometry. `geomToken` is one of the coordinate arrays (all replaced
+  // atomically by buildLineSegments); while it holds, a colorBy change only
+  // patches the color lane instead of re-packing all five. The opacity slider
+  // doesn't reach here at all — it's the `alpha` uniform. Mirrors
+  // GpuSyntenyRenderer.getInterleaved.
+  private interleaveCache = new Map<
+    number,
+    { geomToken: Float64Array; colors: Uint32Array; buf: ArrayBuffer }
+  >()
   private width = 0
   private height = 0
 
@@ -50,36 +62,44 @@ export class GpuDotplotRenderer implements DotplotRenderingBackend {
 
   uploadGeometry(displayKey: number, data: DotplotGeometryData) {
     if (data.instanceCount === 0) {
-      this.hal.deleteRegion(displayKey)
-      this.baseByKey.delete(displayKey)
+      this.deleteGeometry(displayKey)
       return
     }
-
-    const n = data.instanceCount
-    const { baseH, baseV } = data
-    const buf = new ArrayBuffer(n * dotplotShader.INSTANCE_STRIDE_BYTES)
-    const f = new Float32Array(buf)
-    const u = new Uint32Array(buf)
-
-    // Store window-relative coords (cumBp - base) as single Float32 here at the
-    // shader-upload boundary; render() reconstructs screen px via panPx. JS-side
-    // code keeps working in absolute cumBp space.
-    for (let i = 0; i < n; i++) {
-      const off = i * INSTANCE_STRIDE_F32
-      f[off + F.x1] = data.x1[i]! - baseH
-      f[off + F.y1] = data.y1[i]! - baseV
-      f[off + F.x2] = data.x2[i]! - baseH
-      f[off + F.y2] = data.y2[i]! - baseV
-      u[off + F.color] = data.colors[i]!
-    }
-
+    const { baseH, baseV, instanceCount } = data
     this.baseByKey.set(displayKey, { baseH, baseV })
-    this.hal.uploadBuffer(displayKey, PASS_LINE, buf, n)
+    this.hal.uploadBuffer(
+      displayKey,
+      PASS_LINE,
+      this.getInterleaved(displayKey, data),
+      instanceCount,
+    )
+  }
+
+  // Packed instance bytes for a display, reusing the cached buffer when the
+  // geometry is unchanged. A recolor (new `colors`, same coordinate arrays)
+  // patches only the color lane.
+  private getInterleaved(displayKey: number, data: DotplotGeometryData) {
+    const cached = this.interleaveCache.get(displayKey)
+    if (cached?.geomToken === data.x1) {
+      if (cached.colors !== data.colors) {
+        patchInstanceColors(cached.buf, data.colors)
+        cached.colors = data.colors
+      }
+      return cached.buf
+    }
+    const buf = interleaveInstances(data)
+    this.interleaveCache.set(displayKey, {
+      geomToken: data.x1,
+      colors: data.colors,
+      buf,
+    })
+    return buf
   }
 
   deleteGeometry(displayKey: number) {
     this.hal.deleteRegion(displayKey)
     this.baseByKey.delete(displayKey)
+    this.interleaveCache.delete(displayKey)
   }
 
   render(state: DotplotRenderState) {
@@ -89,12 +109,14 @@ export class GpuDotplotRenderer implements DotplotRenderingBackend {
       viewBpV,
       bpPerPxVInv,
       lineWidth,
+      alpha,
       displayKeys,
     } = state
     this.hal.beginFrame(0, 0, 0, 0)
     this.uniformF32[U.resolution] = this.width
     this.uniformF32[U.resolution + 1] = this.height
     this.uniformF32[U.lineWidth] = lineWidth
+    this.uniformF32[U.alpha] = alpha
     this.uniformF32[U.bpPerPxHInv] = bpPerPxHInv
     this.uniformF32[U.bpPerPxVInv] = bpPerPxVInv
     for (const displayKey of displayKeys) {
@@ -105,8 +127,9 @@ export class GpuDotplotRenderer implements DotplotRenderingBackend {
       // panPx = (base - viewBp)/bpPerPx: how far the view has panned from the
       // fetch-time base, in px. Both operands are near the view (small delta),
       // so no genome-scale magnitude multiplies the rounded inv — that's what
-      // keeps a single Float32 coord sub-pixel. SYNC: matches computeCorners in
-      // dotplot.slang and drawDotplot's absolute reconstruction.
+      // keeps a single Float32 coord sub-pixel. SYNC: the `bpRel*bpPerPxInv +
+      // panPx` reconstruction in dotplot.slang's vs_main, and drawDotplot's
+      // equivalent from absolute cumBp.
       this.uniformF32[U.panPxH] = (base.baseH - viewBpH) * bpPerPxHInv
       this.uniformF32[U.panPxV] = (base.baseV - viewBpV) * bpPerPxVInv
       this.hal.writeUniforms(this.uniformData)
@@ -117,6 +140,7 @@ export class GpuDotplotRenderer implements DotplotRenderingBackend {
 
   dispose() {
     this.baseByKey.clear()
+    this.interleaveCache.clear()
     this.hal.dispose()
   }
 }

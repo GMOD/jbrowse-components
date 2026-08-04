@@ -48,6 +48,7 @@ export class Canvas2DDotplotRenderer implements DotplotRenderingBackend {
       viewBpV,
       bpPerPxVInv,
       lineWidth,
+      alpha,
       displayKeys,
     } = state
     const ctx = this.ctx
@@ -66,6 +67,7 @@ export class Canvas2DDotplotRenderer implements DotplotRenderingBackend {
         viewWidth: this.width,
         viewHeight: this.height,
         lineWidth,
+        alpha,
       })
     }
   }

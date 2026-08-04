@@ -1,9 +1,9 @@
-import { abgrAlpha } from '@jbrowse/core/util/colorBits'
 import Flatbush from '@jbrowse/core/util/flatbush'
 
 import {
   buildFeaturePath,
   computeTransform,
+  isInstanceInvisible,
   isRibbonCulled,
   makeCornerScratch,
   projectCorners,
@@ -139,18 +139,20 @@ export function pickFeatureAtPoint(
     const d1 = transform.panPx1 - idx.panPx1
     const panLo = Math.min(d0, d1)
     const panHi = Math.max(d0, d1)
-    // Sort descending so the highest instance index (last drawn = topmost)
-    // wins. In place — `search` returns a freshly allocated array we own, and on
-    // a dense whole-genome view it can hold ~100k candidates.
-    const candidates = idx.flatbush
-      .search(x - panHi, 0.5, x - panLo, 0.5)
-      .sort((a, b) => b - a)
-    for (let ci = 0, l = candidates.length; ci < l; ci++) {
+    // Walked from the highest instance index down, so the topmost (last drawn)
+    // wins. Sorted as an Int32Array — on a dense whole-genome view a stab can
+    // return ~100k candidates, and the native numeric sort has no per-comparison
+    // call into JS the way `(a, b) => b - a` on the plain array `search` returns
+    // does. Ascending then walked backwards, so nothing has to be reversed.
+    const candidates = new Int32Array(
+      idx.flatbush.search(x - panHi, 0.5, x - panLo, 0.5),
+    ).sort()
+    for (let ci = candidates.length - 1; ci >= 0; ci--) {
       const i = candidates[ci]!
       if (data.alignmentLengths[i]! < minAlignmentLength) {
         continue
       }
-      if (abgrAlpha(data.colors[i]!) / 255 < 0.01) {
+      if (isInstanceInvisible(data.colors[i]!)) {
         continue
       }
 

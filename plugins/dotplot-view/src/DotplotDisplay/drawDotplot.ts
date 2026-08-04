@@ -1,4 +1,9 @@
-import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
+import {
+  abgrAlpha,
+  abgrBlue,
+  abgrGreen,
+  abgrRed,
+} from '@jbrowse/core/util/colorBits'
 
 import type { DotplotGeometryData } from './dotplotRenderingBackendTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
@@ -11,6 +16,10 @@ export interface DotplotDrawParams {
   viewWidth: number
   viewHeight: number
   lineWidth: number
+  // Plot-wide opacity, multiplied into each stroke's alpha rather than baked
+  // into the packed color — the Canvas2D twin of the shader's `u.alpha`. Not
+  // `ctx.globalAlpha`: SvgCanvas (the SVG export target) doesn't implement it.
+  alpha: number
 }
 
 export function drawDotplotInstances(
@@ -26,6 +35,7 @@ export function drawDotplotInstances(
     viewWidth,
     viewHeight,
     lineWidth,
+    alpha,
   } = params
   // Round caps make sub-lineWidth segments render as dots, matching the GPU
   // capsule-SDF path. Setting per call keeps callers from forgetting.
@@ -79,7 +89,9 @@ export function drawDotplotInstances(
         currentAbgr = abgr
         let css = cssByAbgr.get(abgr)
         if (css === undefined) {
-          css = abgrToCssRgba(abgr)
+          // abgrToCssRgba with the plot-wide opacity folded in — the CPU twin
+          // of `color.a * u.alpha` in dotplot.slang's fragment.
+          css = `rgba(${abgrRed(abgr)},${abgrGreen(abgr)},${abgrBlue(abgr)},${(abgrAlpha(abgr) / 255) * alpha})`
           cssByAbgr.set(abgr, css)
         }
         ctx.strokeStyle = css

@@ -587,6 +587,7 @@ export default function stateModelFactory(pm: PluginManager) {
             bpPerPxHInv: 1 / hview.bpPerPx,
             bpPerPxVInv: 1 / vview.bpPerPx,
             lineWidth: self.lineWidth,
+            alpha: self.alpha,
             displayKeys,
           }
         },

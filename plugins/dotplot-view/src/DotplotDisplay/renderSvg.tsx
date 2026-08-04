@@ -41,8 +41,14 @@ export async function renderSvg(
           height={viewHeight}
           opts={opts}
           paint={ctx => {
-            const { viewBpH, viewBpV, bpPerPxHInv, bpPerPxVInv, lineWidth } =
-              dotplotRenderState
+            const {
+              viewBpH,
+              viewBpV,
+              bpPerPxHInv,
+              bpPerPxVInv,
+              lineWidth,
+              alpha,
+            } = dotplotRenderState
             drawDotplotInstances(ctx, geometry, {
               viewBpH,
               bpPerPxHInv,
@@ -51,6 +57,7 @@ export async function renderSvg(
               viewWidth,
               viewHeight,
               lineWidth,
+              alpha,
             })
           }}
         />

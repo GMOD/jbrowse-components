@@ -2,9 +2,12 @@
 // same geometry function, differing only in the fragment. That is what makes
 // the outline trace the fill instead of approximating it. What has to hold for
 // it, and isn't checked by the compiler, is that the two passes agree on vertex
-// count and instance layout — the outline pass is drawn from the fill pass's
-// instance buffer (GpuSyntenyRenderer.render -> drawPass(edgePass, key,
-// fillPass)).
+// count and instance layout: the outline pass gets its own buffer, but
+// `packClickedOutlineInstances` fills it by copying whole records out of the
+// buffer packed for the FILL pass, so a layout that drifted would silently
+// reinterpret those bytes. (Before the dedicated buffer, the outline pass read
+// the fill pass's buffer directly via `drawPass`'s `bufferPassId`; the same
+// agreement was load-bearing then too.)
 //
 // A third check used to live here: that the curve passes' VERTS_PER_INSTANCE
 // still equalled CURVE_SEGMENTS * 6. They spelled `48u` because the codegen
@@ -32,6 +35,10 @@ describe('synteny pass geometry', () => {
     ] as const) {
       expect(edge.INSTANCE_STRIDE_BYTES).toBe(fill.INSTANCE_STRIDE_BYTES)
       expect(edge.FIELD_OFFSET_F32).toEqual(fill.FIELD_OFFSET_F32)
+      // The vertex-attribute layout each HAL builds its pipeline from. Now that
+      // the edge pass declares its own (SYNTENY_PASSES no longer overrides it
+      // with the fill module's), this is what says the two agree.
+      expect(edge.GL_ATTRIBUTES).toEqual(fill.GL_ATTRIBUTES)
       expect(edge.UNIFORM_OFFSET_F32).toEqual(fill.UNIFORM_OFFSET_F32)
       expect(edge.UNIFORMS_SIZE_BYTES).toBe(fill.UNIFORMS_SIZE_BYTES)
     }

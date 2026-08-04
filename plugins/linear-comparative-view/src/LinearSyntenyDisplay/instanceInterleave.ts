@@ -3,9 +3,19 @@ import {
   INSTANCE_STRIDE_BYTES,
   INSTANCE_STRIDE_F32,
 } from './shaders/syntenyFillStraight.iface.generated.ts'
+import {
+  isCigarKind,
+  isMarkerKind,
+} from './shaders/syntenyTypes.js.generated.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 
+// Hand-written rather than the generated `packInstances` the repo's other GPU
+// renderers call: `packInstances` takes one flat ArrayLike per field, and this
+// layout's `featureId` is `instanceFeatureIdx[i] + 1`, so feeding it would mean
+// materializing a whole extra n-length array. Only the loop is local — the
+// offsets and stride still come from the shader's generated interface, so the
+// layout itself cannot drift.
 export function interleaveInstances(data: SyntenyInstanceData) {
   const {
     bp1,
@@ -54,4 +64,51 @@ export function patchInstanceColors(buf: ArrayBuffer, colors: Uint32Array) {
   for (let i = 0, n = colors.length; i < n; i++) {
     u32[i * INSTANCE_STRIDE_F32 + FIELD_OFFSET_F32.color] = colors[i]!
   }
+}
+
+// The instances the clicked-outline (edge) pass would actually paint, copied out
+// of an already-interleaved region buffer into a buffer of their own.
+//
+// The edge pass used to be drawn against the fill pass's buffer, which meant
+// every instance in the region ran the vertex shader and all but the clicked
+// one early-outed to a degenerate vertex: on a 500k-instance whole-genome view,
+// 3M wasted vertex invocations per frame in straight mode and 24M in curve mode
+// (48 verts/instance), for one outline, for as long as the selection is live.
+// A base feature is one instance per region, so this makes the pass ~1.
+//
+// SYNC: the predicate is `isClickedSilhouette` in syntenyTypes.slang — the kind
+// tests here are that shader's own, generated (adr-051). The shader keeps its
+// copy, so this narrowing can only ever remove instances the GPU would have
+// discarded anyway. It is exactly narrower in one case: the shader compares
+// featureIds as Float32 (`abs(diff) < 0.5`), which aliases neighbours past 2^24
+// features (see interleaveInstances), while the integer compare here cannot.
+export function packClickedOutlineInstances(
+  data: SyntenyInstanceData,
+  clickedFeatureId: number,
+  interleaved: ArrayBuffer,
+) {
+  const { instanceFeatureIdx, kinds, instanceCount } = data
+  const matches: number[] = []
+  for (let i = 0; i < instanceCount; i++) {
+    const kind = kinds[i]!
+    if (
+      instanceFeatureIdx[i]! + 1 === clickedFeatureId &&
+      !isCigarKind(kind) &&
+      !isMarkerKind(kind)
+    ) {
+      matches.push(i)
+    }
+  }
+  const count = matches.length
+  const buf = new ArrayBuffer(count * INSTANCE_STRIDE_BYTES)
+  const dst = new Uint8Array(buf)
+  const src = new Uint8Array(interleaved)
+  for (let m = 0; m < count; m++) {
+    const off = matches[m]! * INSTANCE_STRIDE_BYTES
+    dst.set(
+      src.subarray(off, off + INSTANCE_STRIDE_BYTES),
+      m * INSTANCE_STRIDE_BYTES,
+    )
+  }
+  return { buf, count }
 }

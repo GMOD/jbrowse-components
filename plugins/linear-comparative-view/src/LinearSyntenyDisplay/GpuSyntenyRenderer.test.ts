@@ -1,7 +1,11 @@
 import { MockHal } from '@jbrowse/render-core/hal'
 
+import { KIND_BASE, KIND_CIGAR_I } from '../LinearSyntenyRPC/syntenyColors.ts'
 import { GpuSyntenyRenderer, SYNTENY_PASSES } from './GpuSyntenyRenderer.ts'
-import { UNIFORM_OFFSET_F32 as U } from './shaders/syntenyFillStraight.generated.ts'
+import {
+  INSTANCE_STRIDE_BYTES,
+  UNIFORM_OFFSET_F32 as U,
+} from './shaders/syntenyFillStraight.generated.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type {
@@ -129,6 +133,120 @@ test('an empty render paints the background with no draw calls', () => {
   renderer.render(makeState([]))
 
   expect(hal.calls.map(c => c.method)).toEqual(['beginFrame', 'endFrame'])
+})
+
+describe('GpuSyntenyRenderer clicked outline', () => {
+  // Two features, three instances: feature 1's base + CIGAR tile, feature 2's
+  // base. Only the first is a clicked-outline silhouette.
+  function makeClickableData(): SyntenyInstanceData {
+    return {
+      ...makeInstanceData(3),
+      kinds: Uint8Array.from([KIND_BASE, KIND_CIGAR_I, KIND_BASE]),
+      instanceFeatureIdx: Uint32Array.from([0, 0, 1]),
+    }
+  }
+
+  // The regression this buffer exists for: the edge pass used to be drawn
+  // against the fill pass's buffer, so it ran the vertex shader over every
+  // instance in the region to outline one ribbon. It now gets a buffer of its
+  // own holding just that ribbon, and draws with no bufferPassId.
+  test('draws the edge pass against a one-instance buffer of its own', () => {
+    const hal = new MockHal(SYNTENY_PASSES)
+    const renderer = new GpuSyntenyRenderer(hal, makeMockCanvas())
+    renderer.uploadGeometry(0, makeClickableData())
+
+    renderer.render(makeState([[0, makeParams({ clickedFeatureId: 1 })]]))
+
+    expect(hal.getBufferCount(0, 'fillStraight')).toBe(3)
+    expect(hal.getBufferCount(0, 'edgeStraight')).toBe(1)
+    expect(hal.callsOf('drawPass').map(c => c.args)).toEqual([
+      ['fillStraight', 0, undefined],
+      ['edgeStraight', 0, undefined],
+    ])
+  })
+
+  test('re-renders the same selection without re-uploading', () => {
+    const hal = new MockHal(SYNTENY_PASSES)
+    const renderer = new GpuSyntenyRenderer(hal, makeMockCanvas())
+    renderer.uploadGeometry(0, makeClickableData())
+    const state = makeState([[0, makeParams({ clickedFeatureId: 1 })]])
+
+    renderer.render(state)
+    hal.calls = []
+    renderer.render(state)
+
+    expect(hal.callsOf('uploadBuffer')).toEqual([])
+  })
+
+  // A drawCurves toggle moves the outline to the other edge pass. The old
+  // pass's buffer has to go, or it sits on the GPU unreferenced for the life of
+  // the region.
+  test('a drawCurves toggle moves the buffer to the other edge pass', () => {
+    const hal = new MockHal(SYNTENY_PASSES)
+    const renderer = new GpuSyntenyRenderer(hal, makeMockCanvas())
+    renderer.uploadGeometry(0, makeClickableData())
+
+    renderer.render(makeState([[0, makeParams({ clickedFeatureId: 1 })]]))
+    hal.calls = []
+    renderer.render(
+      makeState([[0, makeParams({ clickedFeatureId: 1, drawCurves: true })]]),
+    )
+
+    expect(hal.getBufferCount(0, 'edgeStraight')).toBe(0)
+    expect(hal.getBufferCount(0, 'edgeCurve')).toBe(1)
+    expect(hal.callsOf('deleteBuffer').map(c => c.args)).toContainEqual([
+      0,
+      'edgeStraight',
+    ])
+  })
+
+  test('a new selection repacks the outline', () => {
+    const hal = new MockHal(SYNTENY_PASSES)
+    const renderer = new GpuSyntenyRenderer(hal, makeMockCanvas())
+    const data = makeClickableData()
+    renderer.uploadGeometry(0, data)
+
+    renderer.render(makeState([[0, makeParams({ clickedFeatureId: 1 })]]))
+    renderer.render(makeState([[0, makeParams({ clickedFeatureId: 2 })]]))
+
+    // Feature 2 is instance 2, so the packed record must be that one's.
+    const packed = hal.getBuffer(0, 'edgeStraight')!
+    const full = hal.getBuffer(0, 'fillStraight')!
+    expect(packed.count).toBe(1)
+    expect(new Uint8Array(packed.data)).toEqual(
+      new Uint8Array(full.data).slice(
+        2 * INSTANCE_STRIDE_BYTES,
+        3 * INSTANCE_STRIDE_BYTES,
+      ),
+    )
+  })
+
+  // The clicked feature can live in a different region than the one being
+  // drawn — every region renders with the same clickedFeatureId. An empty
+  // upload leaves no buffer, so the pass must be skipped rather than issued.
+  test('skips the edge pass when the clicked feature is not in the region', () => {
+    const hal = new MockHal(SYNTENY_PASSES)
+    const renderer = new GpuSyntenyRenderer(hal, makeMockCanvas())
+    renderer.uploadGeometry(0, makeClickableData())
+
+    renderer.render(makeState([[0, makeParams({ clickedFeatureId: 99 })]]))
+
+    expect(hal.callsOf('drawPass').map(c => c.args[0])).toEqual([
+      'fillStraight',
+    ])
+  })
+
+  // New geometry for a region invalidates the outline packed from the old.
+  test('re-uploaded geometry drops the stale outline buffer', () => {
+    const hal = new MockHal(SYNTENY_PASSES)
+    const renderer = new GpuSyntenyRenderer(hal, makeMockCanvas())
+    renderer.uploadGeometry(0, makeClickableData())
+    renderer.render(makeState([[0, makeParams({ clickedFeatureId: 1 })]]))
+
+    renderer.uploadGeometry(0, makeClickableData())
+
+    expect(hal.getBufferCount(0, 'edgeStraight')).toBe(0)
+  })
 })
 
 describe('GpuSyntenyRenderer window-relative uniforms', () => {

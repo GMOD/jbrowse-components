@@ -720,6 +720,31 @@ pre-builds the buffer, so canvas has only `rpcProps()`. This splits refetch from
 re-encode only; `bicolorPivot` change → worker output differs → `rpcProps()` →
 refetch.
 
+**Opacity is a render parameter, never a packed color.** Both comparative
+displays own a `computedColors` getter — the gpuProps half — and both keep the
+plot-wide opacity slider *out* of it: synteny multiplies it in `fillShade`,
+dotplot in `dotplot.slang`'s fragment (`color.a * u.alpha`), each fed from the
+render state (`SyntenyTrackRenderParams.alpha` / `DotplotRenderState.alpha`) with
+a Canvas2D twin so the SVG export matches. Dotplot used to bake it into every
+packed ABGR byte, which turned one drag frame into three full O(n) passes —
+recompute the colors array, re-pack every instance, re-upload the buffer — for a
+value that was identical on every instance. **A per-instance array is the wrong
+home for a scalar**: if a setting multiplies every element by the same number,
+it belongs in the uniform/draw params.
+
+**A split that still reaches the packer: the color-lane patch.** A genuine
+recolor (`colorBy`, `opacityByIdentity`, a track palette shift) does produce a
+fresh `colors` array, and the `geometry` getter then hands the backend a fresh
+object over the *same* coordinate arrays — which is exactly what
+`createKeyedUploadSync`'s reference diff is meant to catch, but a naive backend
+re-packs every lane to change one. So `GpuSyntenyRenderer.getInterleaved` /
+`GpuDotplotRenderer.getInterleaved` both memoize the packed bytes on
+`(one geometry array's identity, colors' identity)` and call
+`patchInstanceColors` when only the latter moved. The GPU re-upload still
+happens — the HAL has no partial-buffer update — but the CPU interleave, which
+dominates at 10⁵–10⁶ instances, does not. Any new keyed-upload backend whose
+palette is a separate main-thread pass wants the same two-line memo.
+
 Derived region maps apply when upload needs whole fresh per-region payloads, not
 just encoder parameters. Alignments' `laidOutByGroup` returns, per group, shallow
 clones of that group's `rpcDataMap` entries with freshly-allocated Y arrays from

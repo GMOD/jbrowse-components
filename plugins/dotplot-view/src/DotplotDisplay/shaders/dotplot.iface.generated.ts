@@ -15,6 +15,7 @@ export const UNIFORM_OFFSET_F32 = {
   bpPerPxHInv: 4,
   panPxV: 5,
   bpPerPxVInv: 6,
+  alpha: 7,
 } as const
 
 
@@ -25,6 +26,7 @@ export interface Uniforms {
   bpPerPxHInv: number
   panPxV: number
   bpPerPxVInv: number
+  alpha: number
 }
 
 export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
@@ -36,6 +38,7 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[4] = uniforms.bpPerPxHInv
   f32[5] = uniforms.panPxV
   f32[6] = uniforms.bpPerPxVInv
+  f32[7] = uniforms.alpha
 }
 
 export const INSTANCE_STRIDE_BYTES = 20

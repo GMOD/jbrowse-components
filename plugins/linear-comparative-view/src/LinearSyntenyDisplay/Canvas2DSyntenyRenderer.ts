@@ -18,6 +18,7 @@ import { pickFeatureAtPoint } from './syntenyPickEngine.ts'
 import {
   buildFeaturePath,
   computeTransform,
+  isInstanceInvisible,
   isRibbonCulled,
   makeCornerScratch,
   projectCorners,
@@ -170,7 +171,7 @@ export function drawSyntenyTrack(
       continue
     }
     const packed = data.colors[i]!
-    if (abgrAlpha(packed) / 255 < 0.01) {
+    if (isInstanceInvisible(packed)) {
       continue
     }
 

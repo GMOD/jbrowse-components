@@ -38,6 +38,7 @@ function makeState(
     bpPerPxHInv: 1,
     bpPerPxVInv: 1,
     lineWidth: 2,
+    alpha: 1,
     displayKeys: [0],
     ...overrides,
   }
@@ -121,5 +122,87 @@ describe('GpuDotplotRenderer window-relative uniforms', () => {
 
   test('instance stride shrank to the single-float layout', () => {
     expect(INSTANCE_STRIDE_F32).toBe(5)
+  })
+
+  // Opacity rides a uniform rather than the packed color, so an opacity drag is
+  // a uniform write — no recolor, no re-pack, no re-upload. The Canvas2D twin
+  // is the strokeStyle test in Canvas2DDotplotRenderer.test.ts.
+  test('the opacity slider writes a uniform and uploads nothing', () => {
+    const hal = new MockHal(DOTPLOT_PASSES)
+    const renderer = new GpuDotplotRenderer(hal)
+    renderer.resize(800, 600)
+    renderer.uploadGeometry(0, makeGeometry())
+    hal.calls = []
+
+    renderer.render(makeState({ alpha: 0.25 }))
+
+    expect(hal.getLastUniformsF32()![U.alpha]).toBe(0.25)
+    expect(hal.callsOf('uploadBuffer')).toEqual([])
+  })
+})
+
+// The rpcProps/gpuProps split means a colorBy change or an alpha-slider drag
+// hands the backend a new geometry object over the SAME coordinate arrays. The
+// re-upload is unavoidable (the HAL has no partial-buffer update); re-packing
+// the four coordinate lanes is not. Same fast path as GpuSyntenyRenderer.
+describe('GpuDotplotRenderer recolor', () => {
+  test('a recolor over unchanged geometry only rewrites the color lane', () => {
+    const hal = new MockHal(DOTPLOT_PASSES)
+    const renderer = new GpuDotplotRenderer(hal)
+    renderer.resize(800, 600)
+    const geom = makeGeometry({
+      x1: new Float64Array([8e8 + 100]),
+      y1: new Float64Array([5e8 + 200]),
+      baseH: 8e8,
+      baseV: 5e8,
+    })
+    renderer.uploadGeometry(0, geom)
+
+    renderer.uploadGeometry(0, {
+      ...geom,
+      colors: new Uint32Array([0x0000ff80]),
+    })
+
+    const stored = hal.getBuffer(0, 'line')!
+    const f = new Float32Array(stored.data)
+    const u = new Uint32Array(stored.data)
+    // New color, coordinates still window-relative against the same base.
+    expect(u[F.color]).toBe(0x0000ff80)
+    expect(f[F.x1]).toBe(100)
+    expect(f[F.y1]).toBe(200)
+  })
+
+  test('new geometry arrays repack rather than patch', () => {
+    const hal = new MockHal(DOTPLOT_PASSES)
+    const renderer = new GpuDotplotRenderer(hal)
+    renderer.resize(800, 600)
+    renderer.uploadGeometry(0, makeGeometry())
+
+    renderer.uploadGeometry(0, makeGeometry({ x1: new Float64Array([700]) }))
+
+    const f = new Float32Array(hal.getBuffer(0, 'line')!.data)
+    expect(f[F.x1]).toBe(700)
+  })
+
+  // A departed track's cached bytes have to go with its buffer, or the next
+  // display to take that key patches colors into the wrong geometry.
+  test('deleteGeometry drops the cached pack', () => {
+    const hal = new MockHal(DOTPLOT_PASSES)
+    const renderer = new GpuDotplotRenderer(hal)
+    renderer.resize(800, 600)
+    const geom = makeGeometry()
+    renderer.uploadGeometry(0, geom)
+    renderer.deleteGeometry(0)
+
+    // Same geomToken as before the delete: a surviving cache entry would answer
+    // from the stale buffer instead of repacking.
+    renderer.uploadGeometry(0, {
+      ...geom,
+      colors: new Uint32Array([0xabcdef01]),
+    })
+
+    const stored = hal.getBuffer(0, 'line')!
+    expect(new Uint32Array(stored.data)[F.color]).toBe(0xabcdef01)
+    expect(new Float32Array(stored.data)[F.x1]).toBe(100)
   })
 })

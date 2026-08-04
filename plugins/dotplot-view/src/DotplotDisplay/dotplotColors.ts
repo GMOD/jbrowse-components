@@ -1,9 +1,5 @@
 import { category10 } from '@jbrowse/core/ui/colors'
-import {
-  cssColorToABGR,
-  packAbgr,
-  withAbgrAlpha,
-} from '@jbrowse/core/util/colorBits'
+import { cssColorToABGR, packAbgr } from '@jbrowse/core/util/colorBits'
 import {
   colorSchemes,
   continuousRampConfig,
@@ -16,27 +12,22 @@ import type { Rgb, SyntenyColorBy } from '@jbrowse/synteny-core'
 
 export type DotplotColorFn = (data: DotplotRpcData, index: number) => number
 
-function alphaByte(alpha: number) {
-  return Math.round(alpha * 255)
-}
+// Every color packed in this module is fully OPAQUE. The plot-wide opacity
+// slider is a render parameter — the shader's `alpha` uniform and
+// `DotplotDrawParams.alpha` on the Canvas2D/SVG side — never baked into these
+// bytes; see `DotplotRenderState.alpha`. It used to be a build input to every
+// function below, which made an opacity drag recompute this whole array, re-pack
+// every instance and re-upload the buffer once per frame.
+//
+// The scheme colors come from the shared `colorSchemes` rather than local
+// literals, which is what keeps the dotplot's strand/default colors from
+// drifting off the synteny renderer's (it packs the same constants the same
+// way).
 
-function packColor(r: number, g: number, b: number, alpha: number) {
-  return packAbgr(r, g, b, alphaByte(alpha))
-}
-
-// Pack a CSS color from the shared colorSchemes at the view's alpha. Going
-// through colorSchemes rather than a local literal is what keeps the dotplot's
-// strand/default colors from drifting off the synteny renderer's (which packs
-// the same constants via cssColorToABGR).
-function packCss(css: string, alpha: number) {
-  return withAbgrAlpha(cssColorToABGR(css), alphaByte(alpha))
-}
-
-// Query/target chromosome-painting palette, pre-packed (alpha applied per
-// color-function build). Drop category10's grey (#7f7f7f): a grey point reads as
-// uncolored, and a genome whose (hashed) chromosome lands on that slot paints
-// muddy grey — matches the synteny nameColorPalette so the two views can't
-// drift.
+// Query/target chromosome-painting palette, pre-packed. Drop category10's grey
+// (#7f7f7f): a grey point reads as uncolored, and a genome whose (hashed)
+// chromosome lands on that slot paints muddy grey — matches the synteny
+// nameColorPalette so the two views can't drift.
 const nameColorAbgr = category10
   .filter(hex => hex.toLowerCase() !== '#7f7f7f')
   .map(hex => cssColorToABGR(hex))
@@ -50,13 +41,12 @@ function rampColorFn(
   values: Float32Array,
   toRgb: (norm: number) => Rgb,
   max: number,
-  alpha: number,
 ): DotplotColorFn {
-  const missing = packCss(colorSchemes.default.cigarColors.M, alpha)
+  const missing = cssColorToABGR(colorSchemes.default.cigarColors.M)
   const lut = new Uint32Array(256)
   for (let i = 0; i < 256; i++) {
     const [r, g, b] = toRgb(i / 255)
-    lut[i] = packColor(r, g, b, alpha)
+    lut[i] = packAbgr(r, g, b, 255)
   }
   return (_data, i) => {
     const v = values[i]!
@@ -67,23 +57,21 @@ function rampColorFn(
   }
 }
 
-function strandColorFn(alpha: number): DotplotColorFn {
-  const neg = packCss(colorSchemes.strand.negColor, alpha)
-  const pos = packCss(colorSchemes.strand.posColor, alpha)
+function strandColorFn(): DotplotColorFn {
+  const neg = cssColorToABGR(colorSchemes.strand.negColor)
+  const pos = cssColorToABGR(colorSchemes.strand.posColor)
   return (d, i) => (d.strands[i] === -1 ? neg : pos)
 }
 
 function nameColorFn(
-  alpha: number,
   pick: (d: DotplotRpcData, i: number) => string,
 ): DotplotColorFn {
-  const palette = nameColorAbgr.map(c => withAbgrAlpha(c, alphaByte(alpha)))
   const cache = new Map<string, number>()
   return (d, i) => {
     const name = pick(d, i)
     let color = cache.get(name)
     if (color === undefined) {
-      color = palette[hashString(name) % palette.length]!
+      color = nameColorAbgr[hashString(name) % nameColorAbgr.length]!
       cache.set(name, color)
     }
     return color
@@ -97,15 +85,13 @@ function constantColorFn(packed: number): DotplotColorFn {
 function rampConfigColorFn(
   values: Float32Array,
   mode: keyof typeof continuousRampConfig,
-  alpha: number,
 ): DotplotColorFn {
   const { toRgb, maxValue } = continuousRampConfig[mode]
-  return rampColorFn(values, toRgb, maxValue, alpha)
+  return rampColorFn(values, toRgb, maxValue)
 }
 
 export function createDotplotColorFunction(
   colorBy: SyntenyColorBy,
-  alpha: number,
   data: DotplotRpcData,
   trackColor: string,
 ): DotplotColorFn {
@@ -113,56 +99,50 @@ export function createDotplotColorFunction(
     // One flat color for every point in this track, so overlaid tracks are told
     // apart by hue rather than all painting the conventional black.
     case 'track':
-      return constantColorFn(packCss(trackColor, alpha))
+      return constantColorFn(cssColorToABGR(trackColor))
     case 'strand':
-      return strandColorFn(alpha)
+      return strandColorFn()
     case 'query':
     // 'reference' is a stacked-view (linear synteny) mode; the two-genome
     // dotplot has no anchor to key on, so it colors by query like 'query'.
     // falls through
     case 'reference':
-      return nameColorFn(alpha, (d, i) => d.refNames[i]!)
+      return nameColorFn((d, i) => d.refNames[i]!)
     case 'target':
-      return nameColorFn(alpha, (d, i) => d.mateRefNames[i]!)
+      return nameColorFn((d, i) => d.mateRefNames[i]!)
     case 'identity':
-      return rampConfigColorFn(data.identities, 'identity', alpha)
+      return rampConfigColorFn(data.identities, 'identity')
     case 'meanQueryIdentity':
-      return rampConfigColorFn(data.meanIdentities, 'meanQueryIdentity', alpha)
+      return rampConfigColorFn(data.meanIdentities, 'meanQueryIdentity')
     case 'mappingQuality':
-      return rampConfigColorFn(data.mappingQuals, 'mappingQuality', alpha)
+      return rampConfigColorFn(data.mappingQuals, 'mappingQuality')
     // Dotplot keeps a plain black default (its conventional line color) rather
     // than the synteny ribbon's red.
     case 'default':
-      return constantColorFn(packCss(colorSchemes.default.pointColor, alpha))
+      return constantColorFn(cssColorToABGR(colorSchemes.default.pointColor))
   }
 }
 
 // Pure function: one packed-ABGR color per line segment, from the segment ->
 // feature map the geometry builder emitted plus the current palette. This is the
-// gpuProps half of the rpcProps/gpuProps split — a colorBy or alpha change
-// reruns only this, leaving the positions (and the CIGAR walk that produced
-// them) untouched.
+// gpuProps half of the rpcProps/gpuProps split — a colorBy change reruns only
+// this, leaving the positions (and the CIGAR walk that produced them)
+// untouched. Opacity is deliberately NOT an input: it is a render parameter, so
+// the slider redraws without touching this array at all.
 export function computeDotplotColors({
   instanceData,
   rpcData,
   colorBy,
-  alpha,
   trackColor,
 }: {
   instanceData: DotplotInstanceData
   rpcData: DotplotRpcData
   colorBy: SyntenyColorBy
-  alpha: number
   // the display's slot in the view's track palette; only read by colorBy:'track'
   trackColor: string
 }) {
   const { instanceFeatureIdx, instanceCount } = instanceData
-  const colorFn = createDotplotColorFunction(
-    colorBy,
-    alpha,
-    rpcData,
-    trackColor,
-  )
+  const colorFn = createDotplotColorFunction(colorBy, rpcData, trackColor)
   const out = new Uint32Array(instanceCount)
   for (let i = 0; i < instanceCount; i++) {
     out[i] = colorFn(rpcData, instanceFeatureIdx[i]!)

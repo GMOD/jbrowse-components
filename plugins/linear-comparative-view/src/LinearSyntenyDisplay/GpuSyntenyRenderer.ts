@@ -3,6 +3,7 @@ import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import {
   interleaveInstances,
+  packClickedOutlineInstances,
   patchInstanceColors,
 } from './instanceInterleave.ts'
 import * as syntenyEdgeCurveShader from './shaders/syntenyEdgeCurve.generated.ts'
@@ -32,23 +33,19 @@ const PASS_EDGE_CURVE = 'edgeCurve'
 const UNIFORMS_SIZE_BYTES = syntenyFillStraightShader.UNIFORMS_SIZE_BYTES
 const U = syntenyFillStraightShader.UNIFORM_OFFSET_F32
 
+// Each edge pass carries its own buffer — the clicked feature's instances
+// alone, from packClickedOutlineInstances — so it takes its stride and
+// attributes from its own generated module like any other pass. It used to
+// borrow the fill pass's buffer via `drawPass`'s `bufferPassId`, which is what
+// the `bufferStride`/`bufferAttributes` overrides were for. All four modules
+// declare the same `Instance` struct out of syntenyTypes.slang and
+// syntenyPassGeometry.test.ts pins that, so the packed bytes are readable by
+// either pass of a mode regardless.
 export const SYNTENY_PASSES: PassDescriptor[] = [
   slangPass({ id: PASS_FILL_STRAIGHT, mod: syntenyFillStraightShader }),
   slangPass({ id: PASS_FILL_CURVE, mod: syntenyFillCurveShader }),
-  // Edge passes read the fill pass's instance buffer (uploaded under that
-  // pass id) — same Instance layout in both, so attribute layout matches.
-  slangPass({
-    id: PASS_EDGE_STRAIGHT,
-    mod: syntenyEdgeStraightShader,
-    bufferStride: syntenyFillStraightShader.INSTANCE_STRIDE_BYTES,
-    bufferAttributes: syntenyFillStraightShader.GL_ATTRIBUTES,
-  }),
-  slangPass({
-    id: PASS_EDGE_CURVE,
-    mod: syntenyEdgeCurveShader,
-    bufferStride: syntenyFillCurveShader.INSTANCE_STRIDE_BYTES,
-    bufferAttributes: syntenyFillCurveShader.GL_ATTRIBUTES,
-  }),
+  slangPass({ id: PASS_EDGE_STRAIGHT, mod: syntenyEdgeStraightShader }),
+  slangPass({ id: PASS_EDGE_CURVE, mod: syntenyEdgeCurveShader }),
 ]
 
 // 1×1 offscreen 2D context used solely to evaluate isPointInPath during CPU
@@ -89,6 +86,21 @@ export class GpuSyntenyRenderer implements SyntenyRenderingBackend {
     number,
     { geomToken: Float32Array; colors: Uint32Array; buf: ArrayBuffer }
   >()
+  // What each region's clicked-outline buffer currently holds. Uploaded under
+  // the EDGE pass id (the fill buffer keeps the fill pass id), so a region can
+  // carry both at once. Every field is part of the invalidation key: the two
+  // array identities catch an RPC refetch and a recolor, `featureId` a new
+  // selection, `passId` a drawCurves toggle.
+  private outlineBuffers = new Map<
+    number,
+    {
+      geomToken: Float32Array
+      colors: Uint32Array
+      featureId: number
+      passId: string
+      count: number
+    }
+  >()
   private pickCtx: CanvasRenderingContext2D | undefined
 
   constructor(hal: GpuHal, canvas: HTMLCanvasElement) {
@@ -109,12 +121,14 @@ export class GpuSyntenyRenderer implements SyntenyRenderingBackend {
       this.hal.deleteBuffer(key, prev)
       this.uploadedPass.delete(key)
     }
+    this.dropOutlineBuffer(key)
   }
 
   deleteGeometry(key: number) {
     this.cache.delete(key)
     this.uploadedPass.delete(key)
     this.interleaveCache.delete(key)
+    this.outlineBuffers.delete(key)
     this.hal.deleteRegion(key)
   }
 
@@ -130,15 +144,23 @@ export class GpuSyntenyRenderer implements SyntenyRenderingBackend {
       this.writeUniforms(params, state.overdrawPx, data)
       this.hal.drawPass(fillPass, key)
       if (params.clickedFeatureId > 0) {
-        // Edge pass only outlines the clicked feature's BASE silhouette
-        // (CIGAR tiles are culled in-shader via the `kind >= 3.0` check);
-        // it reads the active fill pass's instance buffer and re-draws that
-        // pass's own polygon, so the outline traces the fill exactly. Drawn
-        // after the fill so it layers above it.
+        // Edge pass outlines only the clicked feature's BASE silhouette, and
+        // re-draws the active fill pass's own polygon from the same packed
+        // instance record, so the outline traces the fill exactly. Drawn after
+        // the fill so it layers above it.
         const edgePass = params.drawCurves
           ? PASS_EDGE_CURVE
           : PASS_EDGE_STRAIGHT
-        this.hal.drawPass(edgePass, key, fillPass)
+        if (
+          this.ensureOutlineUploaded(
+            key,
+            edgePass,
+            data,
+            params.clickedFeatureId,
+          )
+        ) {
+          this.hal.drawPass(edgePass, key)
+        }
       }
     }
     this.hal.endFrame()
@@ -163,6 +185,68 @@ export class GpuSyntenyRenderer implements SyntenyRenderingBackend {
       data.instanceCount,
     )
     this.uploadedPass.set(key, passId)
+  }
+
+  // Put the clicked feature's outline instances on the GPU under `passId`,
+  // reusing what is already there when nothing in the key moved. Answers
+  // whether there is anything to draw: a clicked feature whose instances all
+  // live in another region packs to zero here, and the HAL leaves no buffer
+  // behind for an empty upload.
+  //
+  // Uploaded from render() rather than the upload callback because the clicked
+  // id is a RENDER parameter — nothing knows which feature to pack until the
+  // frame that draws it. Two consequences worth knowing:
+  //   - it reads the same packed bytes `ensureUploaded` just put on the GPU,
+  //     through the same `getInterleaved` memo, so the outline and the fill are
+  //     copies of one record and cannot describe different geometry;
+  //   - if this renderer ever brackets its uploads in `beginUpload`/
+  //     `endUpload`, this buffer is written outside that transaction and the
+  //     `endUpload` sweep would destroy it while the memo below still claims it
+  //     is live. Drop the memo alongside any such change.
+  private ensureOutlineUploaded(
+    key: number,
+    passId: string,
+    data: SyntenyInstanceData,
+    featureId: number,
+  ) {
+    const prev = this.outlineBuffers.get(key)
+    if (
+      prev &&
+      prev.geomToken === data.bp1 &&
+      prev.colors === data.colors &&
+      prev.featureId === featureId &&
+      prev.passId === passId
+    ) {
+      return prev.count > 0
+    }
+    // A drawCurves toggle moves the outline to the other edge pass; the old
+    // pass's buffer would otherwise sit on the GPU unreferenced. Same-pass
+    // re-uploads need no delete — both HALs replace in place.
+    if (prev && prev.passId !== passId) {
+      this.hal.deleteBuffer(key, prev.passId)
+    }
+    const { buf, count } = packClickedOutlineInstances(
+      data,
+      featureId,
+      this.getInterleaved(key, data),
+    )
+    this.hal.uploadBuffer(key, passId, buf, count)
+    this.outlineBuffers.set(key, {
+      geomToken: data.bp1,
+      colors: data.colors,
+      featureId,
+      passId,
+      count,
+    })
+    return count > 0
+  }
+
+  private dropOutlineBuffer(key: number) {
+    const prev = this.outlineBuffers.get(key)
+    if (prev) {
+      this.hal.deleteBuffer(key, prev.passId)
+      this.outlineBuffers.delete(key)
+    }
   }
 
   // Packed instance bytes for a region, reusing the cached buffer when the
@@ -207,6 +291,7 @@ export class GpuSyntenyRenderer implements SyntenyRenderingBackend {
   dispose() {
     this.cache.clear()
     this.interleaveCache.clear()
+    this.outlineBuffers.clear()
     this.hal.dispose()
   }
 

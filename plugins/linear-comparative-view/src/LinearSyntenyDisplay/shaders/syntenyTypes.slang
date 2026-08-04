@@ -258,13 +258,7 @@ float fillCoverage(float2 localPos, float edge0, float edge1,
                    float fadeThinAlignments, float aaHalf) {
   float cx = perpCoverage(localPos, edge0, edge1, pf0, pf1, kind,
                           fadeThinAlignments, aaHalf);
-  // One-output-pixel AA at the top/bottom cuts. Both vertex shaders set
-  // localPos.y = screenY - u.yTop exactly, so localPos.y is affine in screen y
-  // with unit slope — the ramp is aaHalf wide by construction, no derivative to
-  // take.
-  float cy = smoothstep(-aaHalf, aaHalf, localPos.y)
-           - smoothstep(h - aaHalf, h + aaHalf, localPos.y);
-  return cx * cy;
+  return cx * vertCoverage(localPos.y, h, aaHalf);
 }
 
 // How far a fill is faded, and how much hover darkens it. These two scalars are
@@ -338,7 +332,7 @@ static const float STROKE_ALPHA = 0.4;
 // syntenyFillCurve is untouched. Both modes have edge1 - edge0 =
 // lerp(x2-x1, x3-x4, s) exactly, monotonic in s, so the width can only reach
 // zero mid-ribbon when the two endpoint deltas differ in sign (a bowtie).
-// SYNC: mirrored by `padExtra` in syntenyFillCurvePad.test.ts.
+// SYNC: mirrored by `padExtra` in syntenyFillPad.test.ts.
 public float thinRibbonPad(float perpFactor, Corners c) {
   float dTop = c.x2 - c.x1;
   float dBot = c.x3 - c.x4;
@@ -447,11 +441,10 @@ public float4 strokeFs(FillVsOut i, float s, float sd, float dydt, Uniforms u) {
   float aaHalf = aaHalfPx(u);
   float band = max(clamp((STROKE_HALF_PX - d0) / (2.0 * aaHalf) + 0.5, 0.0, 1.0),
                    clamp((STROKE_HALF_PX - d1) / (2.0 * aaHalf) + 0.5, 0.0, 1.0));
-  // Cap the stroke at the ribbon's top and bottom, matching fillCoverage's
-  // vertical AA so the outline ends exactly where the fill does.
-  float cy = smoothstep(-aaHalf, aaHalf, i.localPos.y)
-           - smoothstep(u.height - aaHalf, u.height + aaHalf, i.localPos.y);
-  float alpha = band * cy * STROKE_ALPHA;
+  // Capped at the ribbon's top and bottom by the SAME vertical AA fillCoverage
+  // applies, so the outline ends exactly where the fill does.
+  float alpha = band * vertCoverage(i.localPos.y, u.height, aaHalf)
+              * STROKE_ALPHA;
   if (alpha <= 0.0) {
     discard;
   }
@@ -610,4 +603,17 @@ public float curveParamAtY(float yLocal, Uniforms u) {
     t = t - (yCurve(t) - yFrac) / yCurveDeriv(t);
   }
   return clamp(t, 0.0, 1.0);
+}
+
+// Coverage at the ribbon's top and bottom cuts: one output pixel of AA at each.
+// Both vertex shaders set localPos.y = screenY - u.yTop exactly, so localPos.y
+// is affine in screen y with unit slope — the ramp is aaHalf wide by
+// construction, no derivative to take.
+//
+// Shared by fillCoverage and strokeFs rather than spelled in both: the outline
+// has to end exactly where the fill does, and two copies of the same two
+// smoothsteps is precisely the shape that drifts.
+public float vertCoverage(float yLocal, float h, float aaHalf) {
+  return smoothstep(-aaHalf, aaHalf, yLocal)
+       - smoothstep(h - aaHalf, h + aaHalf, yLocal);
 }

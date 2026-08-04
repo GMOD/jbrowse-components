@@ -32,11 +32,29 @@
 - `GpuSyntenyRenderer.ts` wires the four passes (`fillStraight`, `fillCurve`,
   `edgeStraight`, `edgeCurve` — curve vs straight live in separate shader files
   so there are no `isCurve` branches) via `slangPass()` from
-  `@jbrowse/render-core/slangPass`. The edge passes reuse the matching fill
-  pass's instance buffer/stride. `INSTANCE_STRIDE_BYTES` and attribute layout
-  come from the generated module — do not hand-maintain a parallel copy.
+  `@jbrowse/render-core/slangPass`, each from its own generated module — no
+  `bufferStride`/`bufferAttributes` overrides, because every pass now owns its
+  buffer.
+- **The edge passes get their own one-instance buffer**, packed by
+  `packClickedOutlineInstances` (in `instanceInterleave.ts`) from the clicked
+  feature's record and uploaded under the edge pass id, from `render()` — the
+  clicked id is a render parameter, so nothing knows what to pack until the
+  frame that draws it. They used to be drawn against the fill pass's buffer via
+  `drawPass`'s `bufferPassId`, which ran the vertex shader over the whole region
+  — 24M invocations per frame in curve mode on a 500k-instance view — to outline
+  one ribbon. `isClickedSilhouette` stays in the shader as the safety net, and
+  `syntenyPassGeometry.test.ts` pins each mode's two passes to one instance
+  layout, which is what lets a record packed for the fill be read by the edge.
+- `instanceInterleave.ts` hand-writes the pack loop instead of calling the
+  generated `packInstances`, because `featureId` is `instanceFeatureIdx[i] + 1`
+  and the generated packer only takes flat arrays. Its `patchInstanceColors`
+  twin is the recolor fast path — dotplot's
+  `DotplotDisplay/instanceInterleave.ts` is the same two functions for the same
+  reason.
 - Picking is CPU-side: `syntenyPickEngine.ts` mirrors the shader's geometry
-  (`projectCorners`, `isEdgeCulled`) and runs a Flatbush bbox query refined with
-  `isPointInPath`. Both `Canvas2DSyntenyRenderer` and `GpuSyntenyRenderer` use
-  it — the `// SYNC:` comments mark the JS↔Slang pairs that must stay in
-  lockstep.
+  (`projectCorners`, `isRibbonCulled`) and runs a Flatbush bbox query refined
+  with `isPointInPath`. Both `Canvas2DSyntenyRenderer` and `GpuSyntenyRenderer`
+  use it — the `// SYNC:` comments mark the JS↔Slang pairs that must stay in
+  lockstep, and `syntenyRibbonPath.ts` is where the shared predicates
+  (`isRibbonCulled`, `ribbonPerpWidth`, `isInstanceInvisible`) live so "drawn"
+  and "pickable" cannot answer differently.

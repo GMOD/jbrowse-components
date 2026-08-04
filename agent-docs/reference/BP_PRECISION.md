@@ -158,6 +158,15 @@ captured when the geometry is built):
   Dotplot keeps **absolute** cumBp `Float64Array`s in geometry — the Canvas2D
   and SVG renderers consume them unchanged — and subtracts the base only at GPU
   upload; `buildLineSegments` carries `baseH`/`baseV` for the GPU path.
+- That is the *only* place the two diverge. Each plugin's
+  `DisplayName/instanceInterleave.ts` owns its pack loop (hand-written, not the
+  generated `packInstances`, because both apply a per-element transform a flat
+  ArrayLike packer can't express: synteny's `featureId = instanceFeatureIdx + 1`,
+  dotplot's `cumBp − base`), and each exports the same
+  `interleaveInstances` / `patchInstanceColors` pair — see [the recolor fast
+  path](../ARCHITECTURE.md#gpuprops-and-derived-region-maps--re-upload-without-refetch).
+  Offsets and stride always come from the shader's generated interface, so only
+  the loop is local.
 
 This works because the fetch is scoped per window and re-runs when the window
 moves (synteny: both views refetch on pan; dotplot: the h-axis refetches, and a

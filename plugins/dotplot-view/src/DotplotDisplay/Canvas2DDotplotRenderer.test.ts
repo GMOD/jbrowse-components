@@ -59,6 +59,7 @@ const DEFAULT_STATE: DotplotRenderState = {
   bpPerPxHInv: 1,
   bpPerPxVInv: 1,
   lineWidth: 2,
+  alpha: 1,
   displayKeys: [0],
 }
 
@@ -133,6 +134,7 @@ describe('Canvas2DDotplotRenderer', () => {
       bpPerPxHInv: 2,
       bpPerPxVInv: 3,
       lineWidth: 1,
+      alpha: 1,
       displayKeys: [0],
     })
 
@@ -158,6 +160,32 @@ describe('Canvas2DDotplotRenderer', () => {
 
     renderer.render(DEFAULT_STATE)
     expect(ctx.strokeStyle).toMatch(/^rgba\(128,64,191,0\.8/)
+  })
+
+  // Opacity is a render parameter, not part of the packed color (the GPU twin
+  // is `color.a * u.alpha` in dotplot.slang's fragment). SvgCanvas has no
+  // globalAlpha, so it has to land in the rgba() string itself or the SVG
+  // export would come out at full opacity.
+  test('folds the plot-wide opacity into strokeStyle', () => {
+    const { canvas, ctx } = createMockCanvas()
+    const renderer = new Canvas2DDotplotRenderer(canvas)
+    renderer.resize(800, 600)
+
+    renderer.uploadGeometry(0, {
+      x1: new Float64Array([0]),
+      y1: new Float64Array([0]),
+      x2: new Float64Array([1]),
+      y2: new Float64Array([1]),
+      // opaque, as every packed dotplot color now is
+      colors: new Uint32Array([0xffbf4080]),
+      instanceFeatureIdx: new Uint32Array([0]),
+      instanceCount: 1,
+      baseH: 0,
+      baseV: 0,
+    })
+
+    renderer.render({ ...DEFAULT_STATE, alpha: 0.25 })
+    expect(ctx.strokeStyle).toBe('rgba(128,64,191,0.25)')
   })
 
   test('renders multiple tracks independently', () => {
