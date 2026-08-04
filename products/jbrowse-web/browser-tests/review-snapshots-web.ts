@@ -5,6 +5,12 @@ import path from 'node:path'
 import { parseArgs } from 'node:util'
 
 import {
+  createVerdictRoutes,
+  isVerdictStale,
+  sendJson,
+} from '@jbrowse/browser-test-utils'
+
+import {
   BACKENDS,
   collectSnapshots,
   compareBackends,
@@ -15,10 +21,9 @@ import {
   reportPath,
   snapshotPath,
   snapshotsDir,
-  updateReport,
 } from './snapshot-review-lib.ts'
 
-import type { Backend, BackendDiff, Verdict } from './snapshot-review-lib.ts'
+import type { Backend, BackendDiff } from './snapshot-review-lib.ts'
 
 const { values } = parseArgs({
   args: process.argv.slice(2),
@@ -59,10 +64,8 @@ function buildSnapshotPayload() {
     // an approval means "I looked at these pixels" even if a test run replaces
     // them while the page is open
     const imageHash = referenceHash(s)
-    // An approval/denial only resurfaces when the reviewed image has actually
-    // changed since: current reference hash no longer matches the stored one.
-    // A verdict from before hashing (no stored hash) is taken at face value.
-    const stale = verdict?.hash !== undefined && verdict.hash !== imageHash
+    // an approval/denial only resurfaces once the reviewed image changes
+    const stale = isVerdictStale(verdict, imageHash)
     return { ...s, verdict, stale, imageHash: imageHash ?? null }
   })
 }
@@ -88,40 +91,6 @@ async function buildCompareCacheInBackground() {
   console.log(
     `Cross-backend drift computed for ${Object.keys(compareCache).length} snapshots`,
   )
-}
-
-// A verdict body is a name, a status and a note; a megabyte is already orders
-// of magnitude more than the longest note anyone has typed.
-const maxBodyBytes = 1024 * 1024
-
-function readBody(req: http.IncomingMessage): Promise<string> {
-  return new Promise((resolve, reject) => {
-    let data = ''
-    req.on('data', chunk => {
-      data += chunk
-      if (data.length > maxBodyBytes) {
-        req.destroy()
-        reject(new Error('request body too large'))
-      }
-    })
-    req.on('end', () => {
-      resolve(data)
-    })
-    // A request that errors or is aborted never fires 'end'. Without these the
-    // promise stays pending for the life of the process, and an 'error' with no
-    // listener is an unhandled error event that takes the server down — which,
-    // if it lands mid-write, is exactly how the report gets truncated. 'close'
-    // fires after 'end' too, but rejecting a settled promise is a no-op.
-    req.on('error', reject)
-    req.on('close', () => {
-      reject(new Error('request closed before its body ended'))
-    })
-  })
-}
-
-function sendJson(res: http.ServerResponse, status: number, body: unknown) {
-  res.writeHead(status, { 'Content-Type': 'application/json' })
-  res.end(JSON.stringify(body))
 }
 
 const contentTypes: Record<string, string> = {
@@ -167,179 +136,16 @@ function serveDiff(res: http.ServerResponse, query: URLSearchParams) {
   }
 }
 
-// What the client had in hand when it composed the write: `ifReviewedAt` is the
-// verdict's `reviewedAt` it last saw, `ifImageHash` the hash of the snapshot it
-// actually rendered. `null` means "there was none", and an absent field opts out
-// of that check (curl and scripts, which have nothing stale to revert). Anything
-// else is a malformed body rather than a silent opt-out.
-type Precondition = string | null | undefined
-
-function parsePrecondition(
-  body: object,
-  field: 'ifReviewedAt' | 'ifImageHash',
-): { ok: true; value: Precondition } | { ok: false } {
-  if (!(field in body)) {
-    return { ok: true, value: undefined }
-  }
-  const v = (body as Record<string, unknown>)[field]
-  return typeof v === 'string' || v === null
-    ? { ok: true, value: v }
-    : { ok: false }
-}
-
-// Validate untrusted bodies rather than blindly casting; a malformed POST would
-// otherwise write a garbage verdict into the report.
-function parseVerdictBody(raw: string):
-  | {
-      name: string
-      status: 'good' | 'bad'
-      note: string
-      ifReviewedAt: Precondition
-      ifImageHash: Precondition
-    }
-  | undefined {
-  const body: unknown = JSON.parse(raw)
-  if (
-    typeof body === 'object' &&
-    body !== null &&
-    'name' in body &&
-    typeof body.name === 'string' &&
-    body.name !== '' &&
-    'status' in body &&
-    (body.status === 'good' || body.status === 'bad')
-  ) {
-    const pre = parsePrecondition(body, 'ifReviewedAt')
-    const img = parsePrecondition(body, 'ifImageHash')
-    if (!pre.ok || !img.ok) {
-      return undefined
-    }
-    const note =
-      'note' in body && typeof body.note === 'string' ? body.note : ''
-    return {
-      name: body.name,
-      status: body.status,
-      note,
-      ifReviewedAt: pre.value,
-      ifImageHash: img.value,
-    }
-  }
-  return undefined
-}
-
-function parseNameBody(
-  raw: string,
-): { name: string; ifReviewedAt: Precondition } | undefined {
-  const body: unknown = JSON.parse(raw)
-  if (
-    typeof body !== 'object' ||
-    body === null ||
-    !('name' in body) ||
-    typeof body.name !== 'string' ||
-    body.name === ''
-  ) {
-    return undefined
-  }
-  const pre = parsePrecondition(body, 'ifReviewedAt')
-  return pre.ok ? { name: body.name, ifReviewedAt: pre.value } : undefined
-}
-
-// True when the entry moved underneath the client since it loaded — the other
-// review server, a hand edit, a branch switch. Writing anyway would silently
-// revert that change, which is what a page left open for an afternoon does
-// every time its note input loses focus.
-function isConflict(stored: Verdict | undefined, ifReviewedAt: Precondition) {
-  return (
-    ifReviewedAt !== undefined && (stored?.reviewedAt ?? null) !== ifReviewedAt
-  )
-}
-
-// True when the snapshot moved under the reviewer — a test run rewrote it after
-// their page rendered. The verdict precondition cannot see this: nothing about
-// the verdict changed, only the picture it would be recorded against.
-function isImageConflict(name: string, ifImageHash: Precondition) {
-  return (
-    ifImageHash !== undefined &&
-    (referenceHashByName(name) ?? null) !== ifImageHash
-  )
-}
-
-function sendConflict(
-  res: http.ServerResponse,
-  name: string,
-  current: Verdict | undefined,
-  reason: 'verdict' | 'image',
-) {
-  const hash = referenceHashByName(name)
-  sendJson(res, 409, {
-    error: 'changed since your page loaded',
-    reason,
-    current: current ?? null,
-    stale: current?.hash !== undefined && current.hash !== hash,
-    imageHash: hash ?? null,
-  })
-}
-
-async function handleVerdict(
-  req: http.IncomingMessage,
-  res: http.ServerResponse,
-) {
-  const parsed = parseVerdictBody(await readBody(req))
-  if (!parsed) {
-    sendJson(res, 400, { error: 'invalid verdict body' })
-    return
-  }
-  const { ifReviewedAt, ifImageHash, ...fields } = parsed
-  // The report is loaded, checked and written inside one lock: reading it out
-  // here first would reopen the lost-update window the lock exists to close.
-  // The image check belongs in here too — the snapshot is hashed under the same
-  // lock that stamps the hash, so a test run cannot slip between the two.
-  const outcome = updateReport(report => {
-    const stored = report[fields.name]
-    if (isConflict(stored, ifReviewedAt)) {
-      return { conflict: 'verdict' as const, current: stored }
-    }
-    if (isImageConflict(fields.name, ifImageHash)) {
-      return { conflict: 'image' as const, current: stored }
-    }
-    const verdict: Verdict = {
-      ...fields,
-      reviewedAt: new Date().toISOString(),
-      hash: referenceHashByName(fields.name),
-    }
-    report[fields.name] = verdict
-    return { conflict: false as const, verdict }
-  })
-  if (outcome.conflict) {
-    sendConflict(res, fields.name, outcome.current, outcome.conflict)
-  } else {
-    sendJson(res, 200, outcome.verdict)
-  }
-}
-
-async function handleClearVerdict(
-  req: http.IncomingMessage,
-  res: http.ServerResponse,
-) {
-  const parsed = parseNameBody(await readBody(req))
-  if (!parsed) {
-    sendJson(res, 400, { error: 'invalid body' })
-    return
-  }
-  const { name, ifReviewedAt } = parsed
-  const outcome = updateReport(report => {
-    const stored = report[name]
-    if (isConflict(stored, ifReviewedAt)) {
-      return { conflict: true as const, current: stored }
-    }
-    delete report[name]
-    return { conflict: false as const }
-  })
-  if (outcome.conflict) {
-    sendConflict(res, name, outcome.current, 'verdict')
-  } else {
-    sendJson(res, 200, { name, cleared: true })
-  }
-}
+// The write protocol — locked read-modify-write, the reviewedAt and image-hash
+// preconditions, the 409 the page recovers from — is shared with the website's
+// screenshot review; only the report and what a name hashes to differ.
+const { handleVerdict, handleClearVerdict } = createVerdictRoutes({
+  reportPath,
+  hashOf: referenceHashByName,
+  // 'answered' belongs to the website review's denial-reply flow; nothing here
+  // produces it.
+  statuses: ['good', 'bad'],
+})
 
 const server = http.createServer((req, res) => {
   const raw = req.url ?? '/'

@@ -68,9 +68,9 @@ function walkMarkdown(dir: string): string[] {
   return out
 }
 
-const markdownFiles = docRoots
-  .filter(d => fs.existsSync(d))
-  .flatMap(d => walkMarkdown(d))
+function findMarkdownFiles() {
+  return docRoots.filter(d => fs.existsSync(d)).flatMap(d => walkMarkdown(d))
+}
 
 // gallery.ts is the single source of truth for /gallery/ (see
 // website/CLAUDE.md); its items reference images via `spec`/`img` fields, not
@@ -164,8 +164,8 @@ function scanGalleryUsages(): Map<string, DocUsage[]> {
 // would be O(names × files); this is O(files).
 function buildUsageIndex(): Map<string, DocUsage[]> {
   const index = scanGalleryUsages()
-  for (const file of markdownFiles) {
-    // a doc file can be deleted/regenerated between the startup scan and now
+  for (const file of findMarkdownFiles()) {
+    // a doc file can be deleted/regenerated between the directory walk and now
     // (e.g. autogen rewriting docs/config/*.md); a vanished file is just not a
     // usage, so skip it rather than crashing
     const text = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : ''
@@ -209,13 +209,62 @@ function getUsageIndex() {
   return usageIndex
 }
 
+// jb2export writes its renders to products/jbrowse-img/img (the README/npm
+// copy); the website mirror at static/img/jbrowse-img is only refreshed by a
+// `pnpm screenshots` (captureCliSpec) or `pnpm autogen` run. So a fresh
+// jb2export the reviewer just produced can leave the review tooling looking at
+// the stale mirror. Self-heal on read: if the source render is newer than (or
+// absent from) the mirror, copy it over before anyone hashes or serves it.
+const jbrowseImgPrefix = 'jbrowse-img/'
+const jbrowseImgSrcDir = path.resolve(
+  websiteRoot,
+  '..',
+  'products',
+  'jbrowse-img',
+  'img',
+)
+
+// Called on every read of a mirrored figure rather than once at startup: the
+// hash and the bytes a reviewer is served have to agree, and a jb2export run
+// mid-session is exactly the case this exists for. Two stats when there is
+// nothing to do.
+export function syncJbrowseImgMirror(name: string) {
+  if (!name.startsWith(jbrowseImgPrefix)) {
+    return
+  }
+  // the `jbrowse-img/` segment names the mirror directory under static/img; on
+  // the source side it is already the directory being resolved against
+  const src = path.resolve(
+    jbrowseImgSrcDir,
+    `${name.slice(jbrowseImgPrefix.length)}.png`,
+  )
+  const dest = path.resolve(imgDir, `${name}.png`)
+  if (
+    !src.startsWith(jbrowseImgSrcDir + path.sep) ||
+    !dest.startsWith(imgDir + path.sep) ||
+    !fs.existsSync(src)
+  ) {
+    return
+  }
+  const srcMtime = fs.statSync(src).mtimeMs
+  if (!fs.existsSync(dest) || fs.statSync(dest).mtimeMs < srcMtime) {
+    fs.mkdirSync(path.dirname(dest), { recursive: true })
+    fs.copyFileSync(src, dest)
+  }
+}
+
 function pngExists(name: string) {
+  syncJbrowseImgMirror(name)
   return fs.existsSync(path.join(imgDir, `${name}.png`))
 }
 
 // sha1 of a screenshot's committed PNG, used to keep a verdict valid only while
-// the reviewed image is unchanged (see isVerdictStale).
+// the reviewed image is unchanged (see isVerdictStale). The mirror sync happens
+// here rather than only when the image is served: a hash taken before the sync
+// describes bytes the reviewer will never see, and the write that carries it as
+// a precondition then fails as a conflict against the figure it just looked at.
 export function imageHash(name: string): string | undefined {
+  syncJbrowseImgMirror(name)
   return hashFile(path.join(imgDir, `${name}.png`))
 }
 
@@ -234,7 +283,7 @@ function gitPathToName(gitPath: string): string {
 // off; raise it well past what any single screenshot or file listing needs.
 const gitMaxBuffer = 1024 * 1024 * 50
 
-// Cache of which names exist on origin/main (populated once at startup).
+// Cache of which names exist on origin/main.
 let mainSet: Set<string> | undefined
 
 function getMainSet(): Set<string> {
@@ -285,6 +334,19 @@ function getChangedSet(): Set<string> {
 
 export function mainPngChanged(name: string): boolean {
   return getChangedSet().has(name)
+}
+
+// Drop every memoized scan of the working tree: the doc usage index and both
+// git sets. A review session IS regenerate, reload, look again, so a cache held
+// for the life of the server reports the tree as it was when it started — a
+// figure regenerated an hour ago still reads "unchanged vs main", and a doc
+// reference added since still reads "not referenced in any doc". The next read
+// re-scans (~190ms, against the ~200ms the same response already spends hashing
+// every PNG).
+export function refreshWorkingTreeScans() {
+  usageIndex = undefined
+  mainSet = undefined
+  changedSet = undefined
 }
 
 export function readMainPng(name: string): Buffer | undefined {
@@ -363,8 +425,8 @@ export function collectScreenshots(specs: ScreenshotSpec[]): Screenshot[] {
     ),
   )
   const foldedParts = new Set(
-    [...partsOf].flatMap(([parent, parts]) =>
-      names.has(parent) ? parts.filter(part => !index.has(part)) : [],
+    [...partsOf.values()].flatMap(parts =>
+      parts.filter(part => !index.has(part)),
     ),
   )
 
@@ -373,9 +435,11 @@ export function collectScreenshots(specs: ScreenshotSpec[]): Screenshot[] {
     .sort((a, b) => a.localeCompare(b))
     .map(name => ({
       ...toPart(name),
-      parts: (partsOf.get(name) ?? [])
-        .filter(part => foldedParts.has(part))
-        .map(toPart),
+      // every part, including one that kept its own card because a doc
+      // references it directly. The parent lists what it is stacked from, and
+      // "a part moved but the stack didn't" is only answerable if the list is
+      // the whole recipe.
+      parts: (partsOf.get(name) ?? []).map(toPart),
     }))
 }
 

@@ -1,8 +1,13 @@
 import fs from 'node:fs'
 import http from 'node:http'
 import path from 'node:path'
+import { parseArgs } from 'node:util'
 
-import { isVerdictStale } from '@jbrowse/browser-test-utils'
+import {
+  createVerdictRoutes,
+  isVerdictStale,
+  sendJson,
+} from '@jbrowse/browser-test-utils'
 
 import {
   collectScreenshots,
@@ -10,20 +15,43 @@ import {
   imgDir,
   loadReport,
   readMainPng,
+  refreshWorkingTreeScans,
   reportPath,
-  updateReport,
+  syncJbrowseImgMirror,
   websiteRoot,
 } from './screenshot-review-lib.ts'
 import { screenshotLiveUrls, specs } from './screenshot-specs.ts'
 
-import type { Verdict } from './screenshot-review-lib.ts'
+const { values } = parseArgs({
+  args: process.argv.slice(2),
+  allowPositionals: false,
+  options: {
+    help: { type: 'boolean', short: 'h', default: false },
+    port: { type: 'string' },
+  },
+})
 
-const cliArgs = process.argv.slice(2)
-const portArg = cliArgs.find(a => a.startsWith('--port='))
-const portVal = portArg ? Number(portArg.split('=')[1]) : Number.NaN
+if (values.help) {
+  console.log(`Review website screenshots in a web UI.
+
+Usage: pnpm review-screenshots-web [--port=3335]
+
+Each figure is shown against the same figure on origin/main, with where the
+docs use it, and approve/deny/note controls. Verdicts are written to
+${path.relative(process.cwd(), reportPath)}.
+`)
+  process.exit(0)
+}
+
+const portVal = values.port ? Number(values.port) : Number.NaN
 const port = Number.isFinite(portVal) ? portVal : 3335
 
 function buildSpecPayload() {
+  // Every load is a fresh look at the working tree. A review session is
+  // regenerate, reload, look again, so the git and doc-usage scans behind
+  // `changed`/`existsOnMain`/`usages` cannot be answered from what the tree
+  // looked like when the server started.
+  refreshWorkingTreeScans()
   const report = loadReport()
   return collectScreenshots(specs).map(shot => {
     const verdict = report[shot.name]
@@ -50,287 +78,79 @@ function buildSpecPayload() {
   })
 }
 
-// A verdict body is a name, a status and a note; a megabyte is already orders
-// of magnitude more than the longest note anyone has typed.
-const maxBodyBytes = 1024 * 1024
-
-function readBody(req: http.IncomingMessage): Promise<string> {
-  return new Promise((resolve, reject) => {
-    let data = ''
-    req.on('data', chunk => {
-      data += chunk
-      if (data.length > maxBodyBytes) {
-        req.destroy()
-        reject(new Error('request body too large'))
-      }
-    })
-    req.on('end', () => {
-      resolve(data)
-    })
-    // A request that errors or is aborted never fires 'end'. Without these the
-    // promise stays pending for the life of the process, and an 'error' with no
-    // listener is an unhandled error event that takes the server down — which,
-    // if it lands mid-write, is exactly how the report gets truncated. 'close'
-    // fires after 'end' too, but rejecting a settled promise is a no-op.
-    req.on('error', reject)
-    req.on('close', () => {
-      reject(new Error('request closed before its body ended'))
-    })
-  })
-}
-
-function sendJson(res: http.ServerResponse, status: number, body: unknown) {
-  res.writeHead(status, { 'Content-Type': 'application/json' })
-  res.end(JSON.stringify(body))
-}
-
 const contentTypes: Record<string, string> = {
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
   '.svg': 'image/svg+xml',
 }
 
-// jb2export writes its renders to products/jbrowse-img/img (the README/npm
-// copy); the website mirror at static/img/jbrowse-img is only refreshed by a
-// `pnpm screenshots` (captureCliSpec) or `pnpm autogen` run. So a fresh
-// jb2export the reviewer just produced can leave the review UI showing the stale
-// mirror. Self-heal on read: for a `jbrowse-img/<name>` request, if the source
-// render is newer than (or absent from) the mirror, copy it over before serving.
-const jbrowseImgSrcDir = path.resolve(
-  websiteRoot,
-  '..',
-  'products',
-  'jbrowse-img',
-  'img',
-)
+function sendNotFound(res: http.ServerResponse) {
+  res.writeHead(404)
+  res.end('not found')
+}
 
-function syncJbrowseImgFromSource(rel: string, dest: string) {
-  const name = rel.slice('jbrowse-img/'.length)
-  const src = path.resolve(jbrowseImgSrcDir, name)
-  if (!src.startsWith(jbrowseImgSrcDir + path.sep) || !fs.existsSync(src)) {
-    return
-  }
-  const srcMtime = fs.statSync(src).mtimeMs
-  const destFresh = fs.existsSync(dest) && fs.statSync(dest).mtimeMs >= srcMtime
-  if (!destFresh) {
-    fs.mkdirSync(path.dirname(dest), { recursive: true })
-    fs.copyFileSync(src, dest)
+// A hand-typed or truncated URL can carry a malformed escape, which throws.
+// That is a request for a path that does not exist, not a server error.
+function decodePath(s: string): string | undefined {
+  try {
+    return decodeURIComponent(s)
+  } catch {
+    return undefined
   }
 }
 
 // Serve /img/<name>.png, guarding against path traversal outside imgDir
 function serveImage(res: http.ServerResponse, urlPath: string) {
-  const rel = decodeURIComponent(urlPath.slice('/img/'.length))
-  const full = path.resolve(imgDir, rel)
-  if (full.startsWith(imgDir + path.sep) && rel.startsWith('jbrowse-img/')) {
-    syncJbrowseImgFromSource(rel, full)
+  const rel = decodePath(urlPath.slice('/img/'.length))
+  const full = rel === undefined ? undefined : path.resolve(imgDir, rel)
+  if (full === undefined || !full.startsWith(imgDir + path.sep)) {
+    sendNotFound(res)
+    return
   }
-  if (!full.startsWith(imgDir + path.sep) || !fs.existsSync(full)) {
-    res.writeHead(404)
-    res.end('not found')
-  } else {
-    res.writeHead(200, {
-      'Content-Type':
-        contentTypes[path.extname(full)] ?? 'application/octet-stream',
-    })
-    fs.createReadStream(full).pipe(res)
+  // a jb2export the reviewer produced a minute ago is only in
+  // products/jbrowse-img/img until something copies it across
+  syncJbrowseImgMirror(full.slice(imgDir.length + 1).replace(/\.png$/, ''))
+  if (!fs.existsSync(full)) {
+    sendNotFound(res)
+    return
   }
+  res.writeHead(200, {
+    'Content-Type':
+      contentTypes[path.extname(full)] ?? 'application/octet-stream',
+  })
+  const stream = fs.createReadStream(full)
+  // An unhandled stream 'error' is an uncaught exception that takes the whole
+  // server down mid-review. The 200 is already out, so there is no status left
+  // to send — drop the connection and let the <img> fail on its own.
+  stream.on('error', () => {
+    res.destroy()
+  })
+  stream.pipe(res)
 }
 
 // Serve /img-main/<name>.png from origin/main via git show
 function serveMainImage(res: http.ServerResponse, urlPath: string) {
-  const name = decodeURIComponent(urlPath.slice('/img-main/'.length)).replace(
+  const name = decodePath(urlPath.slice('/img-main/'.length))?.replace(
     /\.png$/,
     '',
   )
-  const buf = readMainPng(name)
+  const buf = name === undefined ? undefined : readMainPng(name)
   if (!buf) {
-    res.writeHead(404)
-    res.end('not found')
+    sendNotFound(res)
   } else {
     res.writeHead(200, { 'Content-Type': 'image/png' })
     res.end(buf)
   }
 }
 
-// Validate untrusted request bodies rather than blindly casting; a malformed
-// POST otherwise writes a garbage verdict into the report.
-function parseName(body: unknown): string | undefined {
-  return typeof body === 'object' &&
-    body !== null &&
-    'name' in body &&
-    typeof body.name === 'string' &&
-    body.name !== ''
-    ? body.name
-    : undefined
-}
-
-// What the client had in hand when it composed the write: `ifReviewedAt` is the
-// verdict's `reviewedAt` it last saw, `ifImageHash` the sha1 of the PNG it
-// actually rendered. `null` means "there was none", and an absent field opts out
-// of that check (curl and scripts, which have nothing stale to revert). Anything
-// else is a malformed body rather than a silent opt-out.
-type Precondition = string | null | undefined
-
-function parsePrecondition(
-  body: object,
-  field: 'ifReviewedAt' | 'ifImageHash',
-): { ok: true; value: Precondition } | { ok: false } {
-  if (!(field in body)) {
-    return { ok: true, value: undefined }
-  }
-  const v = (body as Record<string, unknown>)[field]
-  return typeof v === 'string' || v === null
-    ? { ok: true, value: v }
-    : { ok: false }
-}
-
-function parseVerdictBody(raw: string):
-  | {
-      name: string
-      status: 'good' | 'bad' | 'answered'
-      note: string
-      ifReviewedAt: Precondition
-      ifImageHash: Precondition
-    }
-  | undefined {
-  const body: unknown = JSON.parse(raw)
-  const name = parseName(body)
-  if (
-    name === undefined ||
-    typeof body !== 'object' ||
-    body === null ||
-    !('status' in body) ||
-    (body.status !== 'good' &&
-      body.status !== 'bad' &&
-      body.status !== 'answered')
-  ) {
-    return undefined
-  }
-  const pre = parsePrecondition(body, 'ifReviewedAt')
-  const img = parsePrecondition(body, 'ifImageHash')
-  if (!pre.ok || !img.ok) {
-    return undefined
-  }
-  const note = 'note' in body && typeof body.note === 'string' ? body.note : ''
-  return {
-    name,
-    status: body.status,
-    note,
-    ifReviewedAt: pre.value,
-    ifImageHash: img.value,
-  }
-}
-
-function parseNameBody(
-  raw: string,
-): { name: string; ifReviewedAt: Precondition } | undefined {
-  const body: unknown = JSON.parse(raw)
-  const name = parseName(body)
-  if (name === undefined || typeof body !== 'object' || body === null) {
-    return undefined
-  }
-  const pre = parsePrecondition(body, 'ifReviewedAt')
-  return pre.ok ? { name, ifReviewedAt: pre.value } : undefined
-}
-
-// True when the entry moved underneath the client since it loaded — another
-// review server, flip-review.ts, a hand edit, a branch switch. Writing anyway
-// would silently revert that change, which is what a page left open for an
-// afternoon does every time its note textarea loses focus.
-function isConflict(stored: Verdict | undefined, ifReviewedAt: Precondition) {
-  return (
-    ifReviewedAt !== undefined && (stored?.reviewedAt ?? null) !== ifReviewedAt
-  )
-}
-
-// True when the PNG moved under the reviewer — a regen landed after their page
-// rendered. The verdict precondition cannot see this: nothing about the verdict
-// changed, only the picture it would be recorded against. Left unchecked, the
-// reviewer approves the image they are looking at and the server stamps the
-// hash of the one that replaced it, which reads afterwards as a considered
-// approval of pixels nobody ever saw.
-function isImageConflict(name: string, ifImageHash: Precondition) {
-  return ifImageHash !== undefined && (imageHash(name) ?? null) !== ifImageHash
-}
-
-function sendConflict(
-  res: http.ServerResponse,
-  name: string,
-  current: Verdict | undefined,
-  reason: 'verdict' | 'image',
-) {
-  const hash = imageHash(name)
-  sendJson(res, 409, {
-    error: 'changed since your page loaded',
-    reason,
-    current: current ?? null,
-    stale: isVerdictStale(current, hash),
-    imageHash: hash ?? null,
-  })
-}
-
-async function handleVerdict(
-  req: http.IncomingMessage,
-  res: http.ServerResponse,
-) {
-  const parsed = parseVerdictBody(await readBody(req))
-  if (!parsed) {
-    sendJson(res, 400, { error: 'invalid verdict body' })
-    return
-  }
-  const { ifReviewedAt, ifImageHash, ...fields } = parsed
-  // The report is loaded, checked and written inside one lock: reading it out
-  // here first would reopen the lost-update window the lock exists to close.
-  // The image check belongs in here too — the PNG is hashed under the same lock
-  // that stamps the hash, so a regen cannot slip between the two.
-  const outcome = updateReport(report => {
-    const stored = report[fields.name]
-    if (isConflict(stored, ifReviewedAt)) {
-      return { conflict: 'verdict' as const, current: stored }
-    }
-    if (isImageConflict(fields.name, ifImageHash)) {
-      return { conflict: 'image' as const, current: stored }
-    }
-    const verdict: Verdict = {
-      ...fields,
-      reviewedAt: new Date().toISOString(),
-      hash: imageHash(fields.name),
-    }
-    report[fields.name] = verdict
-    return { conflict: false as const, verdict }
-  })
-  if (outcome.conflict) {
-    sendConflict(res, fields.name, outcome.current, outcome.conflict)
-  } else {
-    sendJson(res, 200, outcome.verdict)
-  }
-}
-
-async function handleClearVerdict(
-  req: http.IncomingMessage,
-  res: http.ServerResponse,
-) {
-  const parsed = parseNameBody(await readBody(req))
-  if (!parsed) {
-    sendJson(res, 400, { error: 'invalid body' })
-    return
-  }
-  const { name, ifReviewedAt } = parsed
-  const outcome = updateReport(report => {
-    const stored = report[name]
-    if (isConflict(stored, ifReviewedAt)) {
-      return { conflict: true as const, current: stored }
-    }
-    delete report[name]
-    return { conflict: false as const }
-  })
-  if (outcome.conflict) {
-    sendConflict(res, name, outcome.current, 'verdict')
-  } else {
-    sendJson(res, 200, { name, cleared: true })
-  }
-}
+const { handleVerdict, handleClearVerdict } = createVerdictRoutes({
+  reportPath,
+  hashOf: imageHash,
+  // 'answered' has no button: flip-review.ts writes it, and the UI only posts
+  // it back when a note is saved against an entry that is already in that
+  // state. Rejecting it here would turn typing a note into a failed write.
+  statuses: ['good', 'bad', 'answered'],
+})
 
 const server = http.createServer((req, res) => {
   const url = req.url ?? '/'
@@ -354,12 +174,30 @@ const server = http.createServer((req, res) => {
     } else if (pathname.startsWith('/img/')) {
       serveImage(res, pathname)
     } else {
-      res.writeHead(404)
-      res.end('not found')
+      sendNotFound(res)
     }
   } catch (err) {
-    sendJson(res, 500, { error: `${err}` })
+    // an image route may already have committed its status line, and writing a
+    // second one throws again — from a catch that has nowhere left to report
+    if (res.headersSent) {
+      res.destroy()
+    } else {
+      sendJson(res, 500, { error: `${err}` })
+    }
   }
+})
+
+// Several agents share this worktree and the port is fixed, so "address in use"
+// is a routine collision rather than a crash worth a stack trace.
+server.on('error', (err: NodeJS.ErrnoException) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(
+      `port ${port} is already in use — a review server is likely already ` +
+        `running. Open it, or pass --port=<n> to start a second one.`,
+    )
+    process.exit(1)
+  }
+  throw err
 })
 
 server.listen(port, () => {
@@ -464,6 +302,7 @@ const PAGE = /* html */ `<!doctype html>
   .cardmsg:empty { display: none; }
   .cardmsg.error { color: #b91c1c; }
   .cardmsg.warn { color: #b45309; }
+  .loaderror { color: #b91c1c; font-size: 14px; line-height: 1.5; white-space: pre-wrap; }
 </style>
 </head>
 <body>
@@ -531,17 +370,24 @@ function writeUrl() {
   history.replaceState(null, '', qs ? '?' + qs : location.pathname)
 }
 
+// A value only restores if it still names something the UI can show. A typo or
+// a stale bookmark otherwise leaves every card filtered out and no control
+// looking active — a blank page that reads as "nothing to review".
+const STATUSES = ['needs', 'good', 'answered', 'bad', 'all']
+const KINDS = ['all', 'manual', 'auto']
+const SORTS = ['default', 'recent']
+
 function readUrl() {
   const params = new URLSearchParams(location.search)
   const status = params.get('status')
-  if (status) filters.status = status
+  if (STATUSES.includes(status)) filters.status = status
   filters.changedOnly = params.get('changed') === '1'
   const sort = params.get('sort')
-  if (sort) filters.sortBy = sort
+  if (SORTS.includes(sort)) filters.sortBy = sort
   const group = params.get('group')
   if (group) filters.group = group
   const kind = params.get('kind')
-  if (kind) filters.kind = kind
+  if (KINDS.includes(kind)) filters.kind = kind
   const q = params.get('q')
   if (q) $('#search').value = q
 }
@@ -583,7 +429,22 @@ function buildGroupOptions() {
 
 async function load() {
   readUrl()
-  data = await (await fetch('/api/specs')).json()
+  try {
+    const res = await fetch('/api/specs')
+    const body = await res.json()
+    if (!res.ok || !Array.isArray(body)) {
+      throw new Error((body && body.error) || 'HTTP ' + res.status)
+    }
+    data = body
+  } catch (err) {
+    // Say why. The report being unparseable is a real case with real recovery
+    // instructions in the message (loadReport writes them), and swallowing this
+    // left an empty page that looked like a review with nothing left to do.
+    $('#main').innerHTML =
+      '<div class="loaderror">Could not load the screenshot list.\\n\\n' +
+      esc(err.message) + '</div>'
+    return
+  }
   buildGroupOptions()
   // canonicalize: drops a shared-URL group that no longer names a real group
   writeUrl()
@@ -745,6 +606,22 @@ async function postJson(url, payload) {
   }))
 }
 
+// Writes for one card run one after another. Clicking Approve while the note
+// textarea has focus fires that textarea's change event first — the blur is part
+// of the click — so two writes for the same card are issued back to back.
+// Unserialized, the second still carries the reviewedAt the first has already
+// replaced, and the server refuses it as a conflict with a change that was us:
+// the reviewer's Approve silently does not land and the card says the entry
+// moved elsewhere.
+const writeChain = new Map()
+
+function queueWrite(name, fn) {
+  const run = (writeChain.get(name) || Promise.resolve()).then(fn)
+  // each caller reports its own failure; the chain itself must survive one
+  writeChain.set(name, run.catch(() => {}))
+  return run
+}
+
 function postVerdict(spec, status, note) {
   return postJson('/api/verdict', {
     name: spec.name,
@@ -775,31 +652,38 @@ const conflictText = result =>
       '). The card is back in sync; act again if you still want to.'
 
 async function setVerdict(btn, status) {
-  const el = cardEl(btn)
-  const name = el.dataset.name
-  const note = el.querySelector('.note').value
+  const name = cardEl(btn).dataset.name
   const spec = data.find(s => s.name === name)
   if (!spec) {
     return
   }
-  try {
-    const result = await postVerdict(spec, status, note)
-    if (result.conflict) {
-      adoptRemote(spec, result)
-      setMessage(name, conflictText(result), 'warn')
-    } else {
-      // adopt the server's own verdict: it carries the reviewedAt the next
-      // write has to match and the image hash this tab cannot compute. It was
-      // recorded against the current image, so it is not stale.
-      spec.verdict = result.body
-      spec.stale = false
-      setMessage(name, '')
+  await queueWrite(name, async () => {
+    // Read the note now rather than when the button was clicked: a note save
+    // ahead of us in the queue may have re-rendered the card. The card can also
+    // be gone entirely by now (a filter changed since the click), in which case
+    // the last saved note is the best text we have — better than dropping the
+    // verdict on the floor.
+    const noteEl = cardOf(name)?.querySelector('.note')
+    const note = noteEl ? noteEl.value : spec.verdict ? spec.verdict.note : ''
+    try {
+      const result = await postVerdict(spec, status, note)
+      if (result.conflict) {
+        adoptRemote(spec, result)
+        setMessage(name, conflictText(result), 'warn')
+      } else {
+        // adopt the server's own verdict: it carries the reviewedAt the next
+        // write has to match and the image hash this tab cannot compute. It was
+        // recorded against the current image, so it is not stale.
+        spec.verdict = result.body
+        spec.stale = false
+        setMessage(name, '')
+      }
+    } catch (err) {
+      setMessage(name, 'Not saved — ' + err.message, 'error')
     }
-  } catch (err) {
-    setMessage(name, 'Not saved — ' + err.message, 'error')
-  }
-  justActed.add(name)
-  updateCard(name)
+    justActed.add(name)
+    updateCard(name)
+  })
 }
 
 // Persist note edits on their own so a reason typed after Approve/Deny is saved
@@ -808,36 +692,41 @@ async function setVerdict(btn, status) {
 async function saveNote(input) {
   const name = cardEl(input).dataset.name
   const spec = data.find(s => s.name === name)
+  const note = input.value
   if (!spec) {
     return
   }
-  if (!spec.verdict) {
-    // a note has nothing to attach to until there is a verdict; say so rather
-    // than dropping the words silently, as this used to
-    setMessage(name, 'Note not saved yet — approve or deny and it goes with the verdict.', 'warn')
-    paintMessage(name)
-    return
-  }
-  // A note save carries the image precondition too, because the server restamps
-  // the verdict's hash from the current PNG on every write: without it, typing a
-  // note would quietly re-bless a figure that had been regenerated since, and
-  // clear its 'changed since review' flag with nobody having looked.
-  try {
-    const result = await postVerdict(spec, spec.verdict.status, input.value)
-    if (result.conflict) {
-      adoptRemote(spec, result)
-      setMessage(name, conflictText(result) + ' Your note text is still here — blur again to save it.', 'warn')
-      // re-render on this path only: it swaps in the image that is actually on
-      // disk, and updateCard carries the typed note across for us
-      updateCard(name)
+  await queueWrite(name, async () => {
+    if (!spec.verdict) {
+      // a note has nothing to attach to until there is a verdict; say so rather
+      // than dropping the words silently, as this used to. An Approve/Deny click
+      // is usually right behind us in the queue, and it carries this text along.
+      setMessage(name, 'Note not saved yet — approve or deny and it goes with the verdict.', 'warn')
+      paintMessage(name)
       return
     }
-    spec.verdict = result.body
-    setMessage(name, '')
-  } catch (err) {
-    setMessage(name, 'Note not saved — ' + err.message, 'error')
-  }
-  paintMessage(name)
+    // A note save carries the image precondition too, because the server
+    // restamps the verdict's hash from the current PNG on every write: without
+    // it, typing a note would quietly re-bless a figure that had been
+    // regenerated since, and clear its 'changed since review' flag with nobody
+    // having looked.
+    try {
+      const result = await postVerdict(spec, spec.verdict.status, note)
+      if (result.conflict) {
+        adoptRemote(spec, result)
+        setMessage(name, conflictText(result) + ' Your note text is still here — blur again to save it.', 'warn')
+        // re-render on this path only: it swaps in the image that is actually
+        // on disk, and updateCard carries the typed note across for us
+        updateCard(name)
+        return
+      }
+      spec.verdict = result.body
+      setMessage(name, '')
+    } catch (err) {
+      setMessage(name, 'Note not saved — ' + err.message, 'error')
+    }
+    paintMessage(name)
+  })
 }
 
 async function clearVerdict(btn) {
@@ -846,23 +735,25 @@ async function clearVerdict(btn) {
   if (!spec) {
     return
   }
-  try {
-    const result = await postJson('/api/verdict/clear', {
-      name,
-      ifReviewedAt: precondition(spec),
-    })
-    if (result.conflict) {
-      adoptRemote(spec, result)
-      setMessage(name, conflictText(result), 'warn')
-    } else {
-      spec.verdict = undefined
-      spec.stale = false
-      setMessage(name, '')
+  await queueWrite(name, async () => {
+    try {
+      const result = await postJson('/api/verdict/clear', {
+        name,
+        ifReviewedAt: precondition(spec),
+      })
+      if (result.conflict) {
+        adoptRemote(spec, result)
+        setMessage(name, conflictText(result), 'warn')
+      } else {
+        spec.verdict = undefined
+        spec.stale = false
+        setMessage(name, '')
+      }
+    } catch (err) {
+      setMessage(name, 'Not cleared — ' + err.message, 'error')
     }
-  } catch (err) {
-    setMessage(name, 'Not cleared — ' + err.message, 'error')
-  }
-  updateCard(name)
+    updateCard(name)
+  })
 }
 
 function syncControls() {
