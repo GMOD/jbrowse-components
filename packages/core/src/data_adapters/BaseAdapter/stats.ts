@@ -50,10 +50,23 @@ function sampleWindow(region: Region, interval: number) {
 // sparse regions expand until the window covers the whole region, bounded by a
 // wall-clock timeout. Lets a display reject an unrenderably dense region before
 // downloading the whole region's features.
+//
+// `admit` is the caller's feature-admission predicate (config filters, type
+// gates, ...). When given, the reported density counts only admitted features,
+// so a caller that filters before drawing gates on the population it will
+// actually render rather than the raw one — without it, a filtered view gets
+// rejected on features it was never going to draw.
+//
+// Note the asymmetry, and keep it: the *window growth* below tests the raw
+// count while the *density* reports the admitted count. Growing on the admitted
+// count would make a selective filter double the window over and over until it
+// spanned the whole region — turning the cheap pre-fetch probe into a second
+// full download for exactly the views that need it most.
 export async function calculateFeatureDensityStats(
   region: Region,
   getFeatures: (region: Region, opts?: BaseOptions) => Observable<Feature>,
   opts?: BaseOptions,
+  admit?: (feature: Feature) => boolean,
 ): Promise<{ featureDensity: number }> {
   const refLen = region.end - region.start
   const t0 = performance.now()
@@ -66,12 +79,13 @@ export async function calculateFeatureDensityStats(
     const features = await firstValueFrom(
       getFeatures({ ...region, start, end }, opts).pipe(toArray()),
     )
+    const admitted = admit ? features.filter(admit).length : features.length
 
     // Enough features to be meaningful, or the window already spans the whole
     // region (growing further can't sample more) — report density over the bp
     // actually sampled, not the nominal interval.
     if (features.length >= DENSITY_SAMPLE_MIN_FEATURES || sampledBp >= refLen) {
-      return { featureDensity: features.length / sampledBp }
+      return { featureDensity: admitted / sampledBp }
     }
 
     // Sparse region or slow adapter: sampling ran past the time budget without

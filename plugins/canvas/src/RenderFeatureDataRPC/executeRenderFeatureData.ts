@@ -81,30 +81,39 @@ export async function executeRenderFeatureData({
     return tooManyBytes
   }
 
+  // Feature admission (config jexlFilters + showOnlyGenes + solo/hidden) is
+  // built once here and used by both density gates and the layout pass below, so
+  // "what gets drawn" has exactly one answer and the pre-fetch estimate can't
+  // disagree with the exact post-fetch count.
+  const admit = buildFeatureAdmission({
+    config: displayConfig,
+    jexl: pluginManager.jexl,
+    showOnlyGenes,
+    soloFeatureIds,
+    hiddenFeatureIds,
+  })
+
   // Stage 1.5 (cheap): estimate feature density from a small sample before
   // downloading the whole region. Only runs when maxFeatureDensity is set — the
   // model leaves it undefined below AUTO_FORCE_LOAD_BP and when force-loaded, so
   // small/forced renders skip it. The post-fetch count below is the backstop.
   //
-  // Skipped when an admission filter (jexlFilters / showOnlyGenes / solo /
-  // hidden) is active: the sample fetches raw features and doesn't apply
-  // admission, so it counts the pre-filter population and would false-reject a
-  // filtered view that renders fine (e.g. showOnlyGenes at whole-chromosome zoom
-  // over a dense GFF). Those modes fetch the whole region to extract the
-  // admitted subset anyway, so the exact post-fetch gate — measuring the
-  // admitted count — is the correct gate there.
-  const hasAdmissionFilter =
-    !!showOnlyGenes ||
-    !!soloFeatureIds?.length ||
-    !!hiddenFeatureIds?.length ||
-    displayConfig.jexlFilters.length > 0
-  if (maxFeatureDensity !== undefined && !hasAdmissionFilter) {
+  // This deliberately runs even when a filter is active. It used to be skipped
+  // whenever one was, because the sample counted the raw population and would
+  // false-reject a filtered view that renders fine (showOnlyGenes at
+  // whole-chromosome zoom over a dense GFF). That skip was inert anyway — the
+  // `jexlFilters` slot ships a non-empty default (the NCBI gbkey=Src
+  // source-record filter), so every default-configured track took it and no
+  // track ever sampled. Passing `admit` removes the reason for the skip instead
+  // of the skip's trigger: the estimate now measures the admitted population.
+  if (maxFeatureDensity !== undefined) {
     const tooLarge = await samplePreFetchDensity({
       dataAdapter,
       region,
       bpPerPx: requestedBpPerPx,
       maxFeatureDensity,
       bytes,
+      admit,
       stopToken,
       statusCallback,
       stopTokenCheck,
@@ -128,19 +137,11 @@ export async function executeRenderFeatureData({
   // region.start / region.end are integer bp by contract — see
   // RenderFeatureDataArgs.region. No defensive rounding here.
 
-  // Feature admission (config jexlFilters + showOnlyGenes) runs before dedup and
-  // density-gating, so filtered-out features neither count toward density nor
-  // reach layout. Dedup before density-gating: multiple adapter passes can yield
-  // the same feature id, and the returned featureCount is the dedup'd size — the
-  // gate must use the same count it reports so main-thread and worker decisions
-  // stay in sync.
-  const admit = buildFeatureAdmission({
-    config: displayConfig,
-    jexl: pluginManager.jexl,
-    showOnlyGenes,
-    soloFeatureIds,
-    hiddenFeatureIds,
-  })
+  // Admission (built above) runs before dedup and density-gating, so
+  // filtered-out features neither count toward density nor reach layout. Dedup
+  // before density-gating: multiple adapter passes can yield the same feature
+  // id, and the returned featureCount is the dedup'd size — the gate must use
+  // the same count it reports so main-thread and worker decisions stay in sync.
   const features = new Map<string, Feature>()
   for (const f of featuresArray) {
     const id = f.id()

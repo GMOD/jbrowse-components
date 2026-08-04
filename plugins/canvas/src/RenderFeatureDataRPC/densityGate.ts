@@ -3,7 +3,7 @@ import { checkStopTokenThrottled } from '@jbrowse/core/util/stopToken'
 
 import type { RegionTooLargeResult, RenderFeatureDataArgs } from './rpcTypes.ts'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { StatusCallback } from '@jbrowse/core/util'
+import type { Feature, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken, StopTokenChecker } from '@jbrowse/core/util/stopToken'
 
 type Region = RenderFeatureDataArgs['region']
@@ -66,6 +66,11 @@ export function densityTooLargeResult(
 // small on disk but has too many variants to render), so this is the signal
 // that catches those.
 //
+// `admit` is the caller's admission predicate, and passing the *same* one the
+// full fetch uses is what makes this gate safe to run unconditionally: the
+// estimate counts the features that will actually be drawn, so a filtered view
+// can't be rejected on a population it filters away.
+//
 // A non-finite estimate means sampling timed out (very sparse region or slow
 // adapter): return undefined and let the full fetch decide, and never emit a
 // non-finite featureCount — JSON serializes Infinity to null, which would slip
@@ -76,6 +81,7 @@ export async function samplePreFetchDensity({
   bpPerPx,
   maxFeatureDensity,
   bytes,
+  admit,
   stopToken,
   statusCallback,
   stopTokenCheck,
@@ -85,6 +91,7 @@ export async function samplePreFetchDensity({
   bpPerPx: number
   maxFeatureDensity: number
   bytes: number | undefined
+  admit: (feature: Feature) => boolean
   stopToken?: StopToken
   statusCallback?: StatusCallback
   stopTokenCheck?: StopTokenChecker
@@ -93,6 +100,7 @@ export async function samplePreFetchDensity({
     region,
     (r, o) => dataAdapter.getFeatures(r, o),
     { stopToken, statusCallback },
+    admit,
   )
   checkStopTokenThrottled(stopTokenCheck)
   return densityTooLargeResult(

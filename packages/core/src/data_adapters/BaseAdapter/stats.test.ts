@@ -77,3 +77,35 @@ test('grows the window for a sparse region before reporting density', async () =
   expect(featureDensity).toBeCloseTo(1 / 2000)
   expect(queries.length).toBeGreaterThan(1)
 })
+
+test('counts only admitted features when an admit predicate is given', async () => {
+  // 1 feature/10bp, but admission keeps every 4th — the reported density must
+  // describe the population the caller will actually draw (0.025/bp), not the
+  // raw one (0.1/bp), so a gate downstream can't reject a filtered view on
+  // features it filters away.
+  const { getFeatures } = makeGetFeatures(1_000_000, 10)
+  const { featureDensity } = await calculateFeatureDensityStats(
+    region(0, 1_000_000),
+    getFeatures,
+    undefined,
+    f => f.get('start') % 40 === 0,
+  )
+  expect(featureDensity).toBeCloseTo(0.025)
+})
+
+test('grows the window on the raw count, not the admitted count', async () => {
+  // 1 feature/10bp with an admit predicate that keeps almost nothing. The raw
+  // count clears 70 in the first 1000bp window, so sampling must stop there.
+  // Growing on the admitted count instead would double the window until it
+  // spanned the region — a second full download for exactly the filtered views
+  // this probe is supposed to make cheap.
+  const { getFeatures, queries } = makeGetFeatures(1_000_000, 10)
+  const { featureDensity } = await calculateFeatureDensityStats(
+    region(0, 1_000_000),
+    getFeatures,
+    undefined,
+    f => f.get('start') === 0,
+  )
+  expect(queries).toHaveLength(1)
+  expect(featureDensity).toBeCloseTo(1 / 1000)
+})

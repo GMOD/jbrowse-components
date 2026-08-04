@@ -126,6 +126,7 @@ describe('samplePreFetchDensity', () => {
       bpPerPx: 1000,
       maxFeatureDensity: 1,
       bytes: undefined,
+      admit: () => true,
     })
     expect(result?.regionTooLarge).toBe(true)
     expect(Number.isFinite(result?.featureCount)).toBe(true)
@@ -139,7 +140,51 @@ describe('samplePreFetchDensity', () => {
       bpPerPx: 1,
       maxFeatureDensity: 1,
       bytes: undefined,
+      admit: () => true,
     })
     expect(result).toBeUndefined()
+  })
+
+  it('gates on the admitted population, not the raw one', async () => {
+    // The same 100-feature sample at the same zoom, decided two ways. Admitting
+    // everything: 0.1/bp over 1Mb = 100k features / 10k px = 10/px, rejected.
+    // Admitting 5 of the 100: 5k features / 10k px = 0.5/px, allowed. Only the
+    // predicate differs, so this pins the gate to the population that will
+    // actually be drawn rather than the raw one it was measured from.
+    const args = {
+      dataAdapter: fakeAdapter(100),
+      region,
+      bpPerPx: 100,
+      maxFeatureDensity: 1,
+      bytes: undefined,
+    }
+    expect(
+      (await samplePreFetchDensity({ ...args, admit: () => true }))
+        ?.regionTooLarge,
+    ).toBe(true)
+    expect(
+      await samplePreFetchDensity({
+        ...args,
+        admit: f => f.get('start') < 5,
+      }),
+    ).toBeUndefined()
+  })
+
+  it("still runs under the jexlFilters slot's NCBI gbkey=Src default", async () => {
+    // Regression guard for a gate that was inert in production: this stage used
+    // to be skipped whenever any admission filter was active, and the
+    // `jexlFilters` slot ships a non-empty default (hide the NCBI whole-molecule
+    // gbkey=Src source record), so every default-configured track skipped it and
+    // no track ever sampled. That default drops at most one feature per molecule,
+    // so a dense region must still be rejected pre-fetch under it.
+    const result = await samplePreFetchDensity({
+      dataAdapter: fakeAdapter(100),
+      region,
+      bpPerPx: 1000,
+      maxFeatureDensity: 1,
+      bytes: undefined,
+      admit: f => f.get('gbkey') !== 'Src',
+    })
+    expect(result?.regionTooLarge).toBe(true)
   })
 })
