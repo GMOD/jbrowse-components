@@ -139,12 +139,11 @@ export default function webpackBuilder(): webpack.Configuration {
       ],
     },
     plugins: [
-      // @jbrowse/mobx-state-tree reads process.env.ENABLE_TYPE_CHECK at runtime
-      // to run full type-checking; substitute "true" so validation stays on in
-      // production bundles (where NODE_ENV would otherwise disable dev checks)
-      new webpack.DefinePlugin({
-        'process.env.ENABLE_TYPE_CHECK': '"true"',
-      }),
+      // No DefinePlugin: nothing in the browser bundle reads a node global.
+      // MST's run-time type-checking is turned on by a setTypeChecking(true)
+      // call in the app's own entry point instead of by substituting
+      // process.env.ENABLE_TYPE_CHECK here — that keeps the flag a property of
+      // the app rather than of the build, and works under any bundler.
       new HtmlWebpackPlugin({
         inject: true,
         template: appHtml,
