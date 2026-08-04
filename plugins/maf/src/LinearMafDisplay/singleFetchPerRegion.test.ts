@@ -294,43 +294,58 @@ describe('LinearMafDisplay alignment fetch count', () => {
     ])
   })
 
-  // The other half of that trade: dropping the derived key also dropped an
-  // accidental repair. A sample-discovery track can report a different genome
-  // set per region, and the rows already fetched were narrowed against the old
-  // one, so the change has to invalidate them explicitly.
-  it('refetches when the worker reports a changed sample set', async () => {
+  // A grown sample set is a re-place, not a refetch. It used to bump a
+  // `sampleSetGeneration` counter into `rpcProps()`, from a design where the
+  // worker narrowed each region's blocks to the client's sample list and so
+  // genuinely lost rows it had not been told about. The worker discovers its own
+  // rows now and names them, so the rows already in hand are complete and the
+  // placement autorun re-places them against the widened order — the counter was
+  // only re-downloading every loaded region, once per newly seen genome.
+  it('re-places, without refetching, when the sample set grows', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
-    mockRpcCall.mockImplementation(() =>
-      Promise.resolve(makeMafResult(HG38_MM10)),
+    mockRpcCall.mockImplementation((_id, method) =>
+      Promise.resolve(
+        method === 'LinearMafGetAlignmentData'
+          ? makeMafResult(HG38_MM10, true, ['hg38', 'mm10'])
+          : makeMafResult([]),
+      ),
     )
     const { display } = createDisplay()
     await settle(display)
     expect(alignmentCalls(mockRpcCall)).toHaveLength(1)
-    expect(display.sampleSetGeneration).toBe(0)
 
-    mockRpcCall.mockImplementation(() =>
+    // rn6 sorts ahead of the other two in the new canonical set, so every
+    // already-fetched row has to move for the re-placement to be right.
+    mockRpcCall.mockImplementation((_id, method) =>
       Promise.resolve(
-        makeMafResult([...HG38_MM10, { id: 'rn6', label: 'rn6' }]),
+        method === 'LinearMafGetAlignmentData'
+          ? makeMafResult([{ id: 'rn6', label: 'rn6' }, ...HG38_MM10], true, [
+              'hg38',
+              'mm10',
+            ])
+          : makeMafResult([]),
       ),
     )
     display.reload()
     await settle(display)
 
-    expect(display.sampleSetGeneration).toBe(1)
     expect(display.sources?.map((s: { name: string }) => s.name)).toEqual([
+      'rn6',
       'hg38',
       'mm10',
-      'rn6',
     ])
-    // the reload's fetch, plus the one the changed set invalidated it into
-    expect(alignmentCalls(mockRpcCall)).toHaveLength(3)
+    expect(placedRows(display)).toEqual([
+      ['hg38', 1],
+      ['mm10', 2],
+    ])
+    // the reload's fetch and nothing more: no invalidation round behind it
+    expect(alignmentCalls(mockRpcCall)).toHaveLength(2)
   })
 
   // Regression: a sample-discovery track's regions can align different genomes.
   // One region's set used to stand for the whole batch, so rn6, discovered only
   // in the second region, had no row to be placed at and rendered nothing. The
-  // union covers both regions, and since it's additive the set is right on the
-  // first pass: no `sampleSetGeneration` bump, no refetch.
+  // union covers both regions, and being additive it settles on the first pass.
   it('unions genomes discovered in different regions', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockImplementation((_id, method, args) =>
@@ -361,7 +376,6 @@ describe('LinearMafDisplay alignment fetch count', () => {
       'mm10',
       'rn6',
     ])
-    expect(display.sampleSetGeneration).toBe(0)
     expect(alignmentCalls(mockRpcCall)).toHaveLength(2)
   })
 })

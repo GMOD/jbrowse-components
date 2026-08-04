@@ -239,16 +239,6 @@ export default function stateModelFactory(
          * rather than re-fetching it.
          */
         treeNewickVolatile: undefined as string | undefined,
-        /**
-         * #volatile
-         * Bumped by `setSamples` when the worker reports a row set that differs
-         * from the one already established — never on the first fetch populating
-         * an empty set. It's the invalidation half of the sample set, split out so
-         * `rpcProps()` can key on "the set changed" without keying on the set
-         * itself (which is fetch-derived, and made every track fetch twice). See
-         * `rpcProps`.
-         */
-        sampleSetGeneration: 0,
       }))
       .views(self => ({
         /**
@@ -400,11 +390,11 @@ export default function stateModelFactory(
          * fetch, so they replace, and a species dropped from the config stops
          * being a row. A sample-discovery set is not: it names only the genomes
          * the fetched region's blocks contained, so it is unioned into the rows
-         * already known (`unionSources`). Replacing there dropped rows — the
-         * worker indexes blocks by the client's order and discards samples
-         * missing from it, so a genome only one region aligns rendered nothing,
-         * and a region with no blocks at all (or the summary path, which never
-         * discovers) blanked every row.
+         * already known (`unionSources`). Replacing there dropped rows: a genome
+         * only one region aligns would stop having a row the moment another
+         * region reported its own set, and a region with no blocks at all (or
+         * the summary path, which never discovers) names none and so blanked
+         * every row.
          *
          * With either resolution the deepEqual guard makes this fire once and
          * skips the redundant frozen-array reassignment (and downstream
@@ -418,20 +408,18 @@ export default function stateModelFactory(
          * — and so what "Clear arrangement" restores — pinned to the first tree
          * the session ever saw.
          *
-         * A set that *changes* after one was already established bumps
-         * `sampleSetGeneration`, which invalidates the fetched rows through
-         * `rpcProps()`: they carry `rowIndex`es assigned against the old set. That
-         * only happens on a sample-discovery track whose regions align different
-         * genomes — where the union means it happens once per newly seen genome,
-         * not once per region whose set differs from the last one's. The first
-         * fetch populating an empty set does NOT bump — that
-         * transition is not a change of anything, and treating it as one is what
-         * made every MAF track fetch its alignment twice.
-         *
-         * The bump has to route through the cache key rather than clearing here:
-         * `fetchRegions` calls `setLoadedRegion` *after* this commit returns, so an
-         * imperative clear would be immediately overwritten by the very regions
-         * that were fetched against the old set.
+         * A set that *changes* after one was already established invalidates
+         * nothing: the fetched rows name their species rather than a row index,
+         * so the placement autorun re-places them against the widened order and
+         * they are correct again without a refetch. This used to bump a
+         * `sampleSetGeneration` counter into `rpcProps()`, from a design where
+         * the worker narrowed each region's blocks to the client's sample list
+         * and so genuinely lost rows it had not been told about. It no longer
+         * takes one — the row set is config-derived or discovered per region in
+         * the worker, and the only thing the client sends is `subtreeFilter` —
+         * so the counter had become a pure refetch of every loaded region, once
+         * per newly seen genome, on exactly the discovery tracks that can least
+         * afford it.
          */
         setSamples({
           samples,
@@ -455,9 +443,6 @@ export default function stateModelFactory(
             ? incoming
             : unionSources(self.sourcesVolatile, incoming)
           if (!deepEqual(next, self.sourcesVolatile)) {
-            if (self.sourcesVolatile.length > 0) {
-              self.sampleSetGeneration += 1
-            }
             self.sourcesVolatile = next
           }
           if (treeNewick !== self.treeNewickVolatile) {
@@ -1120,12 +1105,13 @@ export default function stateModelFactory(
          * places them (`placeMafRegionData`). A reorder therefore re-places the
          * cached payload — the heaviest in the plugin — instead of refetching it.
          *
-         * `subtreeFilter` stays because it is a fetch argument: the worker ships
-         * only the rows in it and scopes coverage/identity to them.
-         * `sampleSetGeneration` stays as the one signal only the worker can give
-         * — the discovered row set grew — though it is now conservative rather
-         * than load-bearing, since re-placement already fixes the rows that were
-         * fetched before the new genome was known.
+         * `subtreeFilter` stays because it is a fetch argument, and the *set* is
+         * the only thing about the rows that is: the worker ships only the rows
+         * in it and scopes coverage/identity to them. It is sent as a set, never
+         * an order, so reordering inside a filter is still free.
+         *
+         * The discovered row set growing is deliberately NOT a key — see
+         * `setSamples` for why re-placement covers it.
          *
          * Nothing here may be fetch-derived. Keying on a value that is undefined
          * until the first fetch lands and defined after flips the key on every
@@ -1144,7 +1130,6 @@ export default function stateModelFactory(
             // Copied to a plain array, since the key is a JSON string and an MST
             // node's serialization is not this module's to depend on.
             subtreeFilter: self.subtreeFilter?.slice(),
-            sampleSetGeneration: self.sampleSetGeneration,
             annotationDataActive: self.annotationDataActive,
           }
         },
