@@ -37,8 +37,8 @@ The dendrogram summarizes similarity over the visible window. It is not a
 phylogeny: no evolutionary model is fitted, branch lengths are merge distances
 rather than time or substitutions, and no support values are computed, so a
 crisply drawn clade is not thereby a well-supported one. A
-[MAF track](/docs/user_guides/maf_track) can show a real phylogeny, read from an
-`.nh` file rather than computed; that tree carries no locus caption, which
+[](/docs/user_guides/maf_track) can show a real phylogeny, read from an `.nh`
+file rather than computed; that tree carries no locus caption, which
 distinguishes the two on screen.
 
 For genotype data the window matters in one more way. A tree asks for a single
