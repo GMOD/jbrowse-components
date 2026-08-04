@@ -183,7 +183,10 @@ export const gallerySections: readonly GallerySection[] = [
       {
         label: '1000 Genomes SV genotypes',
         spec: 'multisv',
-        guide: 'tutorials/sv_multisamples',
+        // the guide that embeds this figure. The SV-multisamples tutorial is
+        // the same display on a different call (RHD, where the reads settle the
+        // genotypes), so it is not where this card's picture lives.
+        guide: 'user_guides/multivariant_track',
         description:
           'One row per sample straight from a multi-sample VCF, colored by genotype. Carriers of a large inversion appear as a solid block across the 1000 Genomes SV callset.',
       },

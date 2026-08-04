@@ -168,7 +168,7 @@ than being unexplained row ranges. Both are also in the track menu.
 Point the two slots at `histology` and the rows band by how the tumor was called
 under the microscope:
 
-<Figure caption="CDH1's exons with rows grouped and colored by histology, the gene's introns collapsed, and ClinVar's germline submissions in the lane above. The truncating (HIGH impact) cells crowd into the lobular band and the much larger ductal band above it is nearly empty; the connector fan ties each column to the exon it was called in." src="/img/tcga/mutations_cdh1_histology.png" />
+<Figure caption="CDH1's exons with rows grouped and colored by histology and the gene's introns collapsed. The truncating (HIGH impact) cells crowd into the lobular band, and the much larger ductal band above it is nearly empty; the connector fan ties each column to the exon it was called in." src="/img/tcga/mutations_cdh1_histology.png" />
 
 E-cadherin loss is the defining lesion of lobular breast cancer
 ([Ciriello et al. 2015](https://doi.org/10.1016/j.cell.2015.09.033)), and

@@ -1208,6 +1208,69 @@ export const svSpecs: ScreenshotSpec[] = [
     settleMs: 30000,
   },
 
+  // The copy-number ladder the detail figure below sits inside, and the top
+  // half of sv_cgiab/driver_cdkn2a_deletion. `total_copy_number` in this
+  // benchmark is ABSOLUTE -- CN 2 is a diploid segment -- but the 60kb detail
+  // window contains only CN 1 and CN 0, so nothing in it says what the scale's
+  // zero is and "CN 1" reads as if it might be the baseline. It is not: the
+  // whole of 9p has lost a copy in this tumour, which is the ordinary
+  // background a focal CDKN2A deletion is punched into.
+  //
+  // 1.3Mb is the narrowest window that contains all three states, taken from
+  // the benchmark BED rather than chosen: chr9 runs CN 1 from 10,000, CN 0
+  // across 21,952,497-21,972,343 (SV_75, the deletion), CN 1 again to
+  // 22,631,432, then CN 2 across 22,631,434-22,939,870 (SV_76) before dropping
+  // back to CN 1. So the lane reads 1, 0, 1, 2, 1 left to right and the reader
+  // has a diploid segment on screen to measure the others against.
+  //
+  // The segmented log2 ratio rather than the per-base coverage: at 1.3Mb the
+  // coverage is a summary either way, and the ratio is already on the fixed
+  // -2..1.5 axis the rest of the tutorial uses, so a step here means the same
+  // thing it means in the other CNV figures. The two absolute depths are not
+  // comparable across the pair anyway (the tumour BAM is a deeper run), which
+  // is exactly the confusion this half exists to remove.
+  {
+    mode: 'url',
+    name: 'sv_cgiab/cdkn2a_cn_ladder',
+    url: cgiabUrl({
+      sessionTracks: [HG008_BICSEQ2_TRACK],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'GRCh38_GIABv3',
+          loc: 'chr9:21,800,000-23,100,000',
+          trackLabels: 'offset',
+          tracks: [
+            {
+              trackId: 'hg38_ncbiRefSeq_ucsc',
+              type: 'LinearBasicDisplay',
+              geneGlyphMode: 'longestCoding',
+              height: 70,
+            },
+            {
+              trackId: 'hg008_bicseq2',
+              type: 'LinearWiggleDisplay',
+              defaultRendering: 'line',
+              useBicolor: false,
+              displayCrossHatches: true,
+              minScore: -2,
+              maxScore: 1.5,
+              height: 90,
+            },
+            'hg008_cnv_calls',
+          ],
+        },
+      ],
+    }),
+    readyText: 'chr9',
+    readyTimeout: 90000,
+    viewportWidth: 1500,
+    // the CNV lane wraps to a second row here (three segments, two of them
+    // overlapping in label space), so this clears two rows of it
+    viewportHeight: 545,
+    settleMs: 20000,
+  },
+
   // CDKN2A focal homozygous deletion (chr9:21,952,497-21,972,343, benchmark
   // SV_75, total CN=0 / hap 0+0) — the canonical PDAC two-hit tumor-suppressor
   // loss. A homozygous deletion reads differently from a heterozygous (single-
@@ -1236,7 +1299,7 @@ export const svSpecs: ScreenshotSpec[] = [
   // drops from ~65x to 0 at chr9:21,952,497-21,972,343.
   {
     mode: 'url',
-    name: 'sv_cgiab/driver_cdkn2a_deletion',
+    name: 'sv_cgiab/cdkn2a_reads',
     url: cgiabUrl({
       sessionTracks: [
         HG008_BICSEQ2_TRACK,
@@ -1391,8 +1454,18 @@ export const svSpecs: ScreenshotSpec[] = [
     viewportWidth: 1500,
     // 800 framed the 120px HiFiCNV depth lane this replaced; the two-row
     // coverage track is 280
-    viewportHeight: 1060,
+    viewportHeight: 1075,
     settleMs: 30000,
+  },
+
+  // The two above as one figure: the copy-number ladder over 1.3Mb, then the
+  // same event at 60kb where the reads are. Stacked, because the second is
+  // literally inside the first, and the CNV lane appears in both halves so the
+  // CN 0 label in the detail can be found in the wide one.
+  {
+    mode: 'compose',
+    name: 'sv_cgiab/driver_cdkn2a_deletion',
+    parts: ['sv_cgiab/cdkn2a_cn_ladder', 'sv_cgiab/cdkn2a_reads'],
   },
 
   // KRAS, the central PDAC oncogene: a low-level allelic gain (CN 3, 2+1) on

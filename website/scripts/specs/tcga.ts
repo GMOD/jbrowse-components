@@ -747,7 +747,12 @@ export const tcgaSpecs: ScreenshotSpec[] = [
       colorBy: 'histology',
       lineZoneHeight: LINE_ZONE_HEIGHT,
       height: MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT,
-      clinvar: true,
+      // NO ClinVar lane. It was here as "the germline record of a gene the
+      // cohort is mutating somatically", but collapsed to one row over a
+      // 16-exon window it draws as a 1500px barcode of touching CLNSIG ticks:
+      // it has no column a matrix column can be lined up against, and it was
+      // the busiest thing in a figure whose subject is a density difference
+      // between two bands.
     }),
     readySelector: MATRIX_DONE,
     readyTimeout: 180000,
@@ -756,10 +761,55 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     // real UI for a real click and has no business in the published frame
     hideSelectors: ['.MuiSnackbar-root'],
     viewportWidth: 1500,
-    // the ClinVar lane on top of the matrix figures' usual chrome
-    viewportHeight:
-      MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT + MATRIX_CHROME_HEIGHT + 60,
+    viewportHeight: MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT + MATRIX_CHROME_HEIGHT,
     settleMs: 10000,
+    // The bands are row ranges with a color strip in the gutter, and the legend
+    // is the only thing that says which range is which -- so the figure's whole
+    // result (this band, not that one) has to be read off a key in the far
+    // corner. These name the two bands in place.
+    //
+    // fracY of the display, not a measured pixel: the matrix is 130px of
+    // connector zone over 320px of rows, and the group boundary sits where the
+    // cohort's histology counts put it, so a fraction survives a re-render that
+    // a coordinate would not. Measured off the render, the lobular band is
+    // roughly the last seventh of the rows.
+    annotations: [
+      {
+        type: 'text',
+        text: 'ductal',
+        anchor: {
+          track: 'tcga_brca_mutations',
+          fracY: 0.62,
+          alignX: 'left',
+          dx: 90,
+        },
+      },
+      {
+        type: 'text',
+        text: 'lobular: most of the calls in this window',
+        anchor: {
+          track: 'tcga_brca_mutations',
+          fracY: 0.45,
+          alignX: 'left',
+          dx: 400,
+        },
+      },
+      {
+        type: 'arrow',
+        fromAnchor: {
+          track: 'tcga_brca_mutations',
+          fracY: 0.5,
+          alignX: 'left',
+          dx: 400,
+        },
+        anchor: {
+          track: 'tcga_brca_mutations',
+          fracY: 0.87,
+          alignX: 'left',
+          dx: 400,
+        },
+      },
+    ],
   },
 
   // TP53 grouped by receptor subtype: the same mechanic as the CDH1 figure

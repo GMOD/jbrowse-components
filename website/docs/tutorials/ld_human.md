@@ -29,14 +29,28 @@ construction: r² is a correlation across whatever samples you hand it.
 ## A sweep leaves a long haplotype
 
 Selection driving one haplotype to high frequency carries every variant on it
-along, leaving a stretch of correlated variants.
+along, leaving a stretch of correlated variants. Two things decide whether that
+stretch reads as a block: the window you cut, and which samples went into the
+file.
 
-<Figure src="/img/ld/lct_lactase.png" caption="LD at the human lactase locus on hg19. The ClinVar lane marks rs4988235; below it is haplotypic r² computed live from phased 1000 Genomes genotypes, with the recombination track above the triangle. The block ends at the banded gene, where the recombination curve spikes, and r² falls to near zero on both sides of it."/>
+<Figure src="/img/ld/lct_pooled_vs_panel.png" caption="The same locus, window and MAF floor twice, differing only in which samples went in. Pooling every panel breaks the block into a mosaic and leaves the recombination curve spiky throughout; one panel resolves it into a single block with the curve flat across it. Above both, Weir and Cockerham Fst per variant between the panel and the rest of the release."/>
 
-The blue curve is the recombination track
+Nothing about the display changed between those two lanes.
+
+The blue curve above each triangle is the recombination track
 ([`showRecombination`](/docs/config/sharedlddisplay/#slot-showrecombination)), 1
-− r² between adjacent variants. It sits near zero across the block and spikes at
-its edges.
+− r² between adjacent variants. On the single-panel lane it sits near zero across
+the block and spikes at its edges, which is where the block ends; on the pooled
+lane there is no such pair of edges to find.
+
+The Fst lane on top is the half an LD triangle cannot draw. Linkage says the
+haplotype is long; Fst says its variants are the ones whose frequency differs
+between this panel and everyone else, which is what a sweep leaves behind. The
+reproduce script computes it with
+[vcftools](https://vcftools.github.io/man_latest.html) over the same slice, per
+variant rather than in windows: `rs4988235` comes out the single most
+differentiated variant in the frame, and a windowed version loses that, because
+a window mixes the swept haplotype with every rare variant sharing it.
 
 ### Cut the slice wider than the block
 
@@ -49,20 +63,7 @@ adds white.
 ### Subset the VCF to one panel
 
 r² is computed across every sample in the file, so a whole callset correlates
-across panels that have no shared history.
-
-<Figure src="/img/ld/lct_pooled_vs_panel.png" caption="The same locus, window and MAF floor twice, differing only in which samples went in. Pooling every panel breaks the block into a mosaic and leaves the recombination curve spiky throughout; one panel resolves it into a single block with the curve flat across it. Above both, Weir and Cockerham Fst per variant between the panel and the rest of the release."/>
-
-Nothing about the display changed between those two lanes.
-
-The Fst lane on top is the half an LD triangle cannot draw. Linkage says the
-haplotype is long; Fst says its variants are the ones whose frequency differs
-between this panel and everyone else, which is what a sweep leaves behind. The
-reproduce script computes it with
-[vcftools](https://vcftools.github.io/man_latest.html) over the same slice, per
-variant rather than in windows: `rs4988235` comes out the single most
-differentiated variant in the frame, and a windowed version loses that, because
-a window mixes the swept haplotype with every rare variant sharing it.
+across panels that have no shared history, which is the upper lane above.
 
 ```bash
 bcftools view -S panel.samples --force-samples -Oz -o panel.vcf.gz all.vcf.gz

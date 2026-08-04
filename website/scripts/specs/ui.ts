@@ -257,18 +257,157 @@ export const uiSpecs: ScreenshotSpec[] = [
   },
 
   // Multi-sample variant display on the 1000 Genomes phase-3 SV ensemble
-  // callset (3202 samples) over the RHD locus, chr1:25.2-25.4Mb, sorted by
-  // genotype at HGSV_1821 — the 70kb deletion that removes the whole of RHD
-  // (chr1:25,265,081-25,335,163, PASS, AF=0.182, 2233 hom-ref / 771 het / 198
-  // hom-alt). Deleting RHD is the most common cause of the RhD-negative blood
-  // type, so the three genotype bands this sort produces are the three dosages
-  // of a gene rather than an anonymous interval.
+  // callset (3202 samples) across chr19:42.7-47.8Mb, sorted by genotype at the
+  // ~1.12Mb inversion HGSV_73318 (chr19:46,275,880-47,396,219, AF=0.238).
+  // Because this display draws variants at their genomic position, an
+  // inversion that size is a band a third of the window wide, and after the
+  // sort the carriers collect at the top so the band has a clean edge.
   //
-  // The window is 200kb rather than the multi-megabase sweep this spec used
-  // before: the deletion is then a third of the frame with RHD under it and
-  // RHCE (the 97%-identical paralog the read figures below turn on) at the
-  // right-hand edge, and the window still carries five SV classes for the
-  // svType variant below.
+  // This window is the display's scale case and nothing more: the sibling RHD
+  // figures below are the ones the SV-multisamples tutorial reads reads
+  // against, because chr19's large inversions are segmental-duplication
+  // mediated and short reads cannot resolve their breakpoints (measured: 10
+  // same-strand pairs in a carrier against 8 in a non-carrier). What this frame
+  // shows -- a megabase-scale call drawn at its real span across 3202 rows --
+  // is true independently of that, and it is what the display looks like at a
+  // scale no other figure in the set reaches.
+  //
+  // The right-click lands at x~1130 (genomic ~46.55Mb), an inversion-only gap
+  // where no other SV overlaps, so the sort reliably targets the inversion.
+  // forceLoad lifts the 1MB tabix fetch gate so the 5Mb window auto-loads
+  // headless instead of showing a force-load prompt. Remote 1000genomes data,
+  // so allow a long ready/settle.
+  {
+    mode: 'url',
+    name: 'multisv',
+    url: kgUrl({
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: '19:42,749,096-47,802,386',
+          tracks: [
+            {
+              trackId: '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
+              type: 'LinearMultiSampleVariantDisplay',
+              forceLoad: true,
+              height: 400,
+            },
+            // showLabels:'on' forces gene names on (the default 'auto' hides
+            // them at this 5Mb zoom past maxLabelFeatureDensity); showOnlyGenes
+            // drops the per-transcript subfeatures so only gene-level glyphs
+            // render. heightMode 'fit' puts the whole stack inside the lane: at
+            // 5Mb the fit ladder lands on its `bodies` rung, i.e. no names, and
+            // a labeled stack fits no lane height this figure can afford
+            // (measured -- 220px still dropped the names and added 90px of
+            // whitespace). The lane's job here is which part of the window
+            // carries genes.
+            {
+              trackId: 'ncbi_refseq_109_hg38',
+              type: 'LinearBasicDisplay',
+              height: 140,
+              showLabels: 'on',
+              showDescriptions: false,
+              showOnlyGenes: true,
+              heightMode: 'fit',
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: '1KGP',
+    readyTimeout: 90000,
+    viewportHeight: 800,
+    settleMs: 35000,
+    hideTooltip: true,
+    actions: [
+      // y=450 lands in the multi-sample matrix (proven coordinate); the dense
+      // 5Mb gene track never fully clears "Loading" headless, so don't gate on it
+      { type: 'rightclick', from: { x: 1130, y: 450 } },
+      { type: 'waitForText', text: 'Sort by genotype' },
+      { type: 'click', text: 'Sort by genotype' },
+      { type: 'delay', ms: 6000 },
+      // move the pointer off the matrix so the mouseover crosshair doesn't bake
+      // into the capture
+      { type: 'hover', from: { x: 6, y: 6 } },
+      { type: 'delay', ms: 800 },
+    ],
+  },
+
+  // The same chr19 inversion window with the display colored by SV type
+  // (`featureColor: 'svType'`): every alt-carrying cell takes its variant's
+  // structural-variant class color and the legend names each class present,
+  // including the callset's complex (CPX) events. Sorted the same way, so the
+  // inversion band is the same band as in `multisv` and only the palette
+  // differs.
+  {
+    mode: 'url',
+    name: 'multisv_svtype',
+    url: kgUrl({
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: '19:42,749,096-47,802,386',
+          tracks: [
+            {
+              trackId: '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
+              type: 'LinearMultiSampleVariantDisplay',
+              forceLoad: true,
+              height: 400,
+              featureColor: 'svType',
+            },
+            {
+              trackId: 'ncbi_refseq_109_hg38',
+              type: 'LinearBasicDisplay',
+              height: 140,
+              showLabels: 'on',
+              showDescriptions: false,
+              showOnlyGenes: true,
+              heightMode: 'fit',
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: '1KGP',
+    readyTimeout: 90000,
+    // clears the 400px matrix plus the 140px gene track: at 720 the RefSeq
+    // lane was sliced off mid-labels, cutting the genes the SV calls line up
+    // against
+    viewportHeight: 800,
+    settleMs: 35000,
+    hideTooltip: true,
+    actions: [
+      { type: 'rightclick', from: { x: 1130, y: 450 } },
+      { type: 'waitForText', text: 'Sort by genotype' },
+      { type: 'click', text: 'Sort by genotype' },
+      { type: 'delay', ms: 6000 },
+      { type: 'hover', from: { x: 6, y: 6 } },
+      { type: 'delay', ms: 800 },
+    ],
+  },
+
+  // The RHD locus, chr1:25.2-25.4Mb, and the figure the SV-multisamples
+  // tutorial reads its reads against. The anchor is HGSV_1821, the 70kb
+  // deletion that removes the whole of RHD (chr1:25,265,081-25,335,163, PASS,
+  // AF=0.182, 2233 hom-ref / 771 het / 198 hom-alt); deleting RHD is the most
+  // common cause of the RhD-negative blood type, so the three bands the sort
+  // produces are the three dosages of a gene rather than an anonymous interval.
+  //
+  // The window is 200kb: the deletion is then a third of the frame with RHD
+  // under it and RHCE (the 97%-identical paralog the read figures turn on) at
+  // the right-hand edge, and it still carries five SV classes for the SV-type
+  // lane's legend to name.
+  //
+  // TWO captures composed rather than two lanes in one view. One view with the
+  // callset loaded twice was built first and does not work: the second
+  // multi-sample display's presence makes the FIRST one's canvas stop
+  // answering `onContextMenu` (it resolves its own feature and opens nothing
+  // when that comes back undefined), so the "Sort by genotype" the sort needs
+  // never appears -- measured, on both lanes, with and without a settling
+  // hover. That is an app bug rather than a spec one; until it is fixed, a
+  // capture per colouring is the only way to get both sorted the same way.
   //
   // The right-click lands at x~750, the deletion's midpoint in this window
   // (fraction 0.50 of a 1500px capture), which is inside the deletion and clear
@@ -277,7 +416,7 @@ export const uiSpecs: ScreenshotSpec[] = [
   // a long ready/settle.
   {
     mode: 'url',
-    name: 'multisv',
+    name: 'multisv_rhd_genotype',
     url: kgUrl({
       views: [
         {
@@ -290,6 +429,51 @@ export const uiSpecs: ScreenshotSpec[] = [
               type: 'LinearMultiSampleVariantDisplay',
               forceLoad: true,
               height: 400,
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: '1KGP',
+    readyTimeout: 90000,
+    // no gene lane on this half: the two halves are the same window at the same
+    // scale, so the gene track under the lower one names RHD and RHCE for both,
+    // and a second copy would be 140px of the same picture
+    viewportHeight: 640,
+    settleMs: 35000,
+    hideTooltip: true,
+    actions: [
+      { type: 'rightclick', from: { x: 750, y: 450 } },
+      { type: 'waitForText', text: 'Sort by genotype' },
+      { type: 'click', text: 'Sort by genotype' },
+      { type: 'delay', ms: 6000 },
+      // move the pointer off the matrix so the mouseover crosshair doesn't bake
+      // into the capture
+      { type: 'hover', from: { x: 6, y: 6 } },
+      { type: 'delay', ms: 800 },
+    ],
+  },
+
+  // The same window, same sort, coloured by SV class instead: every
+  // alt-carrying cell takes its variant's structural-variant class color and
+  // the legend names the five present here (DEL, DUP, INS, INV, CNV). This is
+  // the half that carries the gene lane for the composed pair.
+  {
+    mode: 'url',
+    name: 'multisv_rhd_svtype',
+    url: kgUrl({
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: '1:25,200,000-25,400,000',
+          tracks: [
+            {
+              trackId: '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
+              type: 'LinearMultiSampleVariantDisplay',
+              forceLoad: true,
+              height: 400,
+              featureColor: 'svType',
             },
             // showLabels:'on' forces gene names on at this zoom; showOnlyGenes
             // drops the per-transcript subfeatures so RHD/RHCE read as single
@@ -316,54 +500,20 @@ export const uiSpecs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Sort by genotype' },
       { type: 'click', text: 'Sort by genotype' },
       { type: 'delay', ms: 6000 },
-      // move the pointer off the matrix so the mouseover crosshair doesn't bake
-      // into the capture
       { type: 'hover', from: { x: 6, y: 6 } },
       { type: 'delay', ms: 800 },
     ],
   },
 
-  // Same RHD window as `multisv`, with the multi-sample display colored by SV
-  // type (`featureColor: 'svType'`): every alt-carrying cell takes its
-  // variant's structural-variant class color and the legend names each class
-  // present. This 200kb holds five of them (DEL, DUP, INS, INV, CNV), so the
-  // window is a map of what kind of SV sits where with the RHD deletion as its
-  // largest feature.
+  // The two above as one figure, since they are one window twice: the same
+  // 3202 rows in the same sorted order, coloured by genotype and then by SV
+  // class. Stacked rather than side by side -- they share an x axis, and a
+  // column that is a deletion in one half has to sit over the same column in
+  // the other for the pair to say anything.
   {
-    mode: 'url',
-    name: 'multisv_svtype',
-    url: kgUrl({
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: '1:25,200,000-25,400,000',
-          tracks: [
-            {
-              trackId: '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
-              type: 'LinearMultiSampleVariantDisplay',
-              forceLoad: true,
-              height: 400,
-              featureColor: 'svType',
-            },
-            {
-              trackId: 'ncbi_refseq_109_hg38',
-              type: 'LinearBasicDisplay',
-              height: 140,
-              showLabels: 'on',
-              showDescriptions: false,
-              showOnlyGenes: true,
-              heightMode: 'fit',
-            },
-          ],
-        },
-      ],
-    }),
-    readyText: '1KGP',
-    readyTimeout: 90000,
-    viewportHeight: 800,
-    settleMs: 35000,
-    hideTooltip: true,
+    mode: 'compose',
+    name: 'multisv_rhd',
+    parts: ['multisv_rhd_genotype', 'multisv_rhd_svtype'],
   },
 
   // The read-level check the SV-multisamples tutorial's genotypes are read

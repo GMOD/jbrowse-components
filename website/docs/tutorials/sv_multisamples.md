@@ -72,20 +72,21 @@ Dark blue is a sample with no copy of _RHD_, light blue one copy, grey two, and
 the olive stripe running through the block is a separate nested call rather than
 part of the deletion.
 
-<Figure caption="The 1KGP ensemble SV callset in the multi-sample variant display across 200 kb of chr1, one row per sample, sorted by genotype at the RHD deletion, over the NCBI RefSeq genes. Each call is drawn at its real span, so the deletion is a 70 kb block splitting the cohort into three bands." src="/img/multisv.png" />
+Setting the display's cell coloring to **SV type** paints each alt-carrying cell
+by its variant's structural-variant class instead, so the same window becomes a
+map of what kind of SV sits where and the legend names each class present. The
+figure below is the callset loaded twice in one view, once each way, on one
+ruler and over one gene track.
+
+<Figure caption="The 1KGP ensemble SV callset across 200 kb of chr1, one row per sample, both lanes sorted by genotype at the RHD deletion, over the NCBI RefSeq genes. Top, colored by genotype: each call is drawn at its real span, so the deletion is a 70 kb block splitting the cohort into three bands. Bottom, the same rows colored by SV type, where the legend names the five classes present: the deletion is the wide red block, and the duplications and inversions to the right of it fall over RHCE." src="/img/multisv_rhd.png" />
 
 That olive stripe is worth naming, because it is the one thing in the frame that
 is not what it looks like. It is `HGSV_1823`, a 6 kb copy-number record sitting
 inside the deletion, and it is uncalled in 2,663 of the 3,202 samples. A no-call
 is not a reference call and it is not a deletion call: it is the caller
 declining to answer, which the display draws in its own color precisely so it
-cannot be mistaken for either.
-
-Setting the display's cell coloring to **SV type** paints each alt-carrying cell
-by its variant's structural-variant class, so the whole window becomes a map of
-what kind of SV sits where and the legend names each class present.
-
-<Figure caption="The same chr1 window with the multi-sample variant display colored by SV type, over the RefSeq genes. Each alt-carrying cell takes the color of its variant class and the legend names the five present: deletions, duplications, insertions, inversions and copy-number. The RHD deletion is the wide red block; the duplications and inversions to the right of it fall over RHCE." src="/img/multisv_svtype.png" />
+cannot be mistaken for either. The lower lane is where that reading is checked:
+the same column is a copy-number call there, not a deletion.
 
 ## Reading the genotypes off the reads
 

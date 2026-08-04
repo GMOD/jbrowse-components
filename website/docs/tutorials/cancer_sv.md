@@ -156,6 +156,11 @@ vs ref** on it is then the single-molecule evidence behind one candidate.
 Whatever else was open in the view comes along onto the reference panel, so the
 path is read against the genes it runs through.
 
+The dialog offers two destinations. **Draw in new view** appends the
+reconstruction below the pileup it came from; **Replace current view** puts it
+in that view's place, which is what the figures here use, since the window the
+pileup is showing is the window the reconstruction is anchored on.
+
 The lower panel has no sequence track. This reconstruction is the allele's order
 and orientation, taken from where the reads' alignments start and stop; it does
 not recover the bases at a junction. That is the next section.

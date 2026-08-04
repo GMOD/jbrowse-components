@@ -1382,6 +1382,53 @@ function localSubgraphPartSpecs(): ScreenshotSpec[] {
     // right-sized figure on its own live link.
     viewportHeight,
     hideTooltip: true,
+    // The blunt end, named in both halves. Review, twice: "why is it blunt? why
+    // wouldn't an insertion be a loop?" and then "if needed, add text
+    // annotation to say why it is blunt. also, it is not clear the size in the
+    // 'backbone' visualizations."
+    //
+    // Segment 20 is 93 bp of CFT073 (CFT073:1,048,515-1,048,608) and carries
+    // exactly one link inside this file. In the WHOLE graph it carries two, and
+    // the second one lands 7 kb outside the `odgi extract -r
+    // K12#1#chr:1004500-1004900` this figure was cut with -- so the free end is
+    // where the cut fell, not a dead end in the graph, and the event it belongs
+    // to is a 7 kb deletion whose far anchor went with the cut. Widening to
+    // reach that anchor is not available: 7 kb of this pggb graph is ~900
+    // segments against the 48 here.
+    //
+    // Ringed AND labelled in the anchored half too, which is the other half of
+    // the note: on the backbone the rank-1 nodes are unlabelled marks under the
+    // reference row, so nothing there says how big one is. Anchored by segment
+    // id (probe-graph-nodes.ts), so neither layout has to hold still.
+    annotations: [
+      {
+        type: 'circle',
+        anchor: { view: 1, graphNode: '20+' },
+        radius: 22,
+        strokeWidth: 3,
+      },
+      {
+        type: 'text',
+        // The sentence goes on the force half, which has the room; the anchored
+        // half gets the size alone. Its pane has a pinned aspect ratio -- row
+        // spacing is a fraction of the reference span -- so it is two rows tall
+        // whatever the viewport is, and a three-line pill anywhere inside it
+        // lands on the rows it is annotating (tried: below the ring it fell
+        // through the pane's own border into the composite's padding). The size
+        // beside the ring is what the note asked that half for anyway.
+        text:
+          layoutMode === 'force'
+            ? '93 bp of CFT073. One link here, two in the whole graph: this free end is the cut, not a dead end'
+            : '93 bp',
+        anchor: { view: 1, graphNode: '20+' },
+        // pulled left in the force pane, where the node sits near the right
+        // edge and the pill would otherwise run off it
+        dx: layoutMode === 'force' ? -200 : 0,
+        dy: layoutMode === 'force' ? -70 : -34,
+        maxWidth: 330,
+        fontSize: 17,
+      },
+    ],
   })
   return [
     part('pangenome/local_subgraph_anchored', 'auto', 640),
@@ -1702,14 +1749,40 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
     viewportHeight,
     hideTooltip: true,
     annotations: [
-      ...MHC_LANDMARK_NODES.map(
-        (graphNode): Annotation => ({
+      ...MHC_LANDMARK_NODES.flatMap((graphNode, i): Annotation[] => [
+        {
           type: 'circle',
           anchor: { view: 1, graphNode },
           radius: 24,
           strokeWidth: 3,
-        }),
-      ),
+        },
+        // A NUMBER on each ring, the same number in both halves, which is the
+        // cross-pane pointer this pair was missing (review: "you can consider
+        // drawing an arrow from left panel to right panel"). An arrow cannot be
+        // drawn: the halves are two separate captures `+append`ed afterwards,
+        // so no overlay spans the seam, and the two panes are different heights
+        // besides. A badge does the same job and survives both layouts moving
+        // their nodes, since it is anchored to the node rather than to a pixel.
+        {
+          type: 'circle',
+          text: `${i + 1}`,
+          anchor: { view: 1, graphNode },
+          radius: 15,
+          // The two landmarks are an allele and the reference stretch it
+          // replaces, so the force layout draws them touching and a shared
+          // offset stacks their badges on each other (and on the graph's own
+          // "12 kb" label). They go opposite ways there. The anchored layout
+          // puts them rows apart, so up-left is free for both.
+          dx: layoutMode === 'force' && i === 1 ? 34 : -34,
+          dy:
+            layoutMode === 'force' && i === 0
+              ? // the force half's caption sits top left of its canvas and the
+                // first landmark is right under it, so an up-left badge lands
+                // behind the pill (rendered, and it did)
+                34
+              : -34,
+        },
+      ]),
       {
         type: 'text',
         text: label,
@@ -1728,7 +1801,11 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
       'force',
       1055,
       {
-        dx: -390,
+        // TOP RIGHT, not top left. The two landmark nodes are an allele and the
+        // reference stretch it replaces, and this layout draws both of them in
+        // the pane's top-left corner -- the caption there covered the second
+        // ring and its badge outright.
+        dx: 180,
         dy: -276,
       },
       'The same subgraph, force-directed',

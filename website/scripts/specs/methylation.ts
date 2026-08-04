@@ -183,11 +183,34 @@ export const methylationSpecs: ScreenshotSpec[] = [
   // adds the converted (unmethylated) sites in blue, and the blue is what says
   // the blank stretches above were sequenced and unmethylated rather than
   // cytosine-free.
+  //
+  // The MethylDackel CpG fraction rides above both pileups, because the claim
+  // the figure makes is quantitative and the pileups alone only gesture at it:
+  // where the two-color lane paints blue the aggregate reads near 0%, and where
+  // it paints red the aggregate is near 100%, so "sequenced and unmethylated"
+  // is a number rather than an absence of paint. Only the CpG subadapter of the
+  // config's three-context track, declared here as its own track: both pileups
+  // are colored by CpG, and CHG/CHH rows would be two lanes of a different
+  // question (that is methylation/arabidopsis_wgbs_contexts).
   {
     mode: 'url',
     name: 'methylation/arabidopsis_wgbs_two_color',
     url: sessionSpec(ARABIDOPSIS_WGBS_CONFIG, {
-      sessionTracks: WGBS_TWO_COLOR_COPIES.map(c => c.track),
+      sessionTracks: [
+        {
+          type: 'QuantitativeTrack',
+          trackId: 'arabidopsis_methyldackel_cpg',
+          name: 'CpG methylation, aggregate (MethylDackel, %)',
+          assemblyNames: ['arabidopsis'],
+          adapter: {
+            type: 'BigWigAdapter',
+            bigWigLocation: {
+              uri: 'https://jbrowse.org/demos/bisulfite/arabidopsis_wgbs_CpG.bw',
+            },
+          },
+        },
+        ...WGBS_TWO_COLOR_COPIES.map(c => c.track),
+      ],
       views: [
         {
           type: 'LinearGenomeView',
@@ -197,6 +220,17 @@ export const methylationSpecs: ScreenshotSpec[] = [
             // two gene rows at this locus, so the default height leaves half the
             // track empty above two 240px pileups that both need to fit
             { trackId: 'arabidopsis_genes', height: 80 },
+            {
+              trackId: 'arabidopsis_methyldackel_cpg',
+              type: 'LinearWiggleDisplay',
+              // fixed 0..100: it is a percentage, and autoscale would redraw
+              // the same data against whatever the window's maximum happened to
+              // be, so a bar's height would stop meaning a fraction
+              minScore: 0,
+              maxScore: 100,
+              color: '#d62728',
+              height: 90,
+            },
             ...WGBS_TWO_COLOR_COPIES.map(c => c.display),
           ],
         },
@@ -205,8 +239,8 @@ export const methylationSpecs: ScreenshotSpec[] = [
     readySelector: '[data-testid="pileup-display-done"]',
     readyTimeout: 90000,
     settleMs: 15000,
-    // genes(80) + two 240px pileups + headers/ruler/overview
-    viewportHeight: 830,
+    // genes(80) + aggregate(90) + two 240px pileups + headers/ruler/overview
+    viewportHeight: 960,
   },
 
   // ONT HG002 fiber-seq (6mA) at the GAPDH promoter, modifications mode. The

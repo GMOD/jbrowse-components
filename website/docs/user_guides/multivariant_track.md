@@ -21,6 +21,8 @@ overlapping calls use slight transparency so you can still tell them apart.
 If overlaps overwhelm the view, use "Edit filters" in the track menu to hide
 variants by size, name, or any Jexl expression.
 
+<Figure caption="1000 Genomes SV ensemble callset (3202 samples) across 5 Mb of chr19, one row per sample, sorted by genotype at a 1.1 Mb inversion. Because each call is drawn at its real span, a megabase-scale variant is a band a fifth of the window wide, and the sort collects its carriers into a block against the rest of the cohort." src="/img/multisv.png" />
+
 ## Matrix: best for SNP/indel patterns
 
 Each visible variant gets one column and each sample gets one row, regardless of

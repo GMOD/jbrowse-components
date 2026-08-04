@@ -137,14 +137,15 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'left',
   },
   ld_human: {
-    // The block itself, roughly 5:3 already so the cover-crop barely trims. The
-    // `xband` used to start at 0.28 to clear a callout box at the figure's left
-    // edge; that callout is gone and the figure is on a wider window, so this
-    // frames the whole block instead of a corner of the triangle.
-    src: 'ld/lct_lactase.png',
-    band: [0.37, 1],
-    xband: [0.02, 0.72],
-    position: 'left',
+    // The single-panel triangle, which is the lower of the two lanes: the page
+    // no longer embeds the solo lactase figure, and a card has to come from a
+    // figure the page shows. Framed on the block rather than on the whole lane
+    // — the left third of this window is the pale flank, so a left-anchored
+    // cover-crop of the full width lands on white.
+    src: 'ld/lct_pooled_vs_panel.png',
+    band: [0.69, 1],
+    xband: [0.25, 0.78],
+    position: 'center',
   },
   ld_mosquitoes: {
     // Both lanes over the same span, one filled and one not, which is the whole

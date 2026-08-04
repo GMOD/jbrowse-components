@@ -341,7 +341,7 @@ mode the deletion figure above uses, puts x back on GRCh38 and stacks the
 alternate alleles below the backbone by rank. The same MHC class II window drawn
 both ways:
 
-<Figure caption="One MHC class II subgraph drawn both ways, same window and same tracks above it. Left, force-directed: the drawing is the graph's shape and nothing in it lines up with the linear view. Right, anchored: every x is a GRCh38 coordinate, so the backbone is one straight line and each allele hangs below where it attaches, stacked by rank. The rings mark the same two nodes in both halves, a 12 kb reference stretch and the 12.3 kb allele over it." src="/img/pangenome/hprc_mhc_anchored.png" links="Force-directed=pangenome/hprc_mhc_layout_force,Anchored=pangenome/hprc_mhc_layout_anchored" />
+<Figure caption="One MHC class II subgraph drawn both ways, same window and same tracks above it. Left, force-directed: the drawing is the graph's shape and nothing in it lines up with the linear view. Right, anchored: every x is a GRCh38 coordinate, so the backbone is one straight line and each allele hangs below where it attaches, stacked by rank. Rings 1 and 2 are the same two nodes in both halves, a 12 kb reference stretch and the 12.3 kb allele over it: touching in the force drawing, rows apart on the anchored one." src="/img/pangenome/hprc_mhc_anchored.png" links="Force-directed=pangenome/hprc_mhc_layout_force,Anchored=pangenome/hprc_mhc_layout_anchored" />
 
 Each locus below is a window small enough to draw:
 

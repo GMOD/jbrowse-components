@@ -242,13 +242,15 @@ Sorting keys every row on one column and lets the rest of the chromosome fall
 where it may. The track menu's **Clustering** → **Cluster rows by similarity**
 keys them on the whole visible region instead, and draws the tree it built down
 the left-hand side. A session can trigger it declaratively with
-`runClustering: true`, the same way `sortRowsBy` bakes in a sort.
-
-<Figure src="/img/qtl/bxd_painting_clustered.png" caption="The same painting and scan, with the strains ordered by their genotype similarity across the whole of chr4 rather than at the peak. Strains sharing long stretches of the chromosome are neighbors, so the mosaic collects into wide blocks and the dendrogram at the left shows how they nest."/>
+`runClustering: true`, the same way `sortRowsBy` bakes in a sort. See
+[](/docs/user_guides/multivariant_track) for what the dialog and its dendrogram
+look like.
 
 Clustering is computed over the region in view, so this is chr4 similarity, not
 a genome-wide relatedness: pan somewhere else and the same menu item gives a
-different order.
+different order. For this scan the sorted order above is the one to read: the
+peak is what the association is about, and keying the rows on it is what puts
+the B/D split directly under it.
 
 ## Reproduce it end to end
 

@@ -151,10 +151,10 @@
   },
   "multisv": {
     "name": "multisv",
-    "status": "bad",
-    "note": "I like my older screenshot with the large chr19 inversion. it doesnt have biological meaning potentially but it is cool. this new screenshot can be added as a new spec addition to to the old one but no replace please. work it into a separate tutorial if needed, not gallery either. i also dont quite understand the 'story' of the new screenshot. what is it? is there biology?",
-    "reviewedAt": "2026-08-04T20:21:16.685Z",
-    "hash": "36b2696f86ad447e7a8a00bf5753138e924a1164"
+    "status": "answered",
+    "note": "Restored to the chr19 window and the 1.12Mb HGSV_73318 inversion, unchanged otherwise. The RHD version is not gone, it moved: multisv_rhd_genotype / multisv_rhd_svtype, composed as multisv_rhd, and only the SV-multisamples tutorial shows it. This figure now lives in user_guides/multivariant_track (the 'Regular' section had no figure) and keeps the gallery card, whose description was already about the inversion. The chr19 story is scale: a megabase-scale call drawn at its real span across 3202 rows. It is not a reads story -- 9 chr19 inversions are segmental-duplication mediated and short reads cannot settle their breakpoints, which is why the tutorial moved to RHD in the first place.",
+    "reviewedAt": "2026-08-04T21:03:34.913Z",
+    "hash": "2641a4bf57811761d6ba1e14e60001bf7ac5364b"
   },
   "breakpoint_split_view": {
     "name": "breakpoint_split_view",
@@ -1162,10 +1162,10 @@
   },
   "sv_cgiab/driver_cdkn2a_deletion": {
     "name": "sv_cgiab/driver_cdkn2a_deletion",
-    "status": "bad",
-    "note": "is copy number 0 diploid in the new segmentation track? somewhat unclear. might consider making copy number 2 the full diploid unless there is a reason not to. consider zooming out a bit too. ",
-    "reviewedAt": "2026-08-04T20:12:38.413Z",
-    "hash": "bf8f4f42715d23bddea95ab8f2d504b6f859d777"
+    "status": "answered",
+    "note": "CN 2 IS the diploid baseline already -- the benchmark's total_copy_number is absolute -- but the 60kb window contained only CN 1 and CN 0, so nothing in it said what zero was. Fixed by zooming out rather than by relabelling: the figure is now two frames, and the top one is 1.3Mb of chr9, the narrowest window that holds all three states (CN 1, CN 0 across the deletion, CN 1, then CN 2 at 22,631,434-22,939,870, taken from the benchmark BED). The segmented log2 ratio steps up over that CN 2 block, so the ladder is visible as depth as well as as a label. The 60kb read-level frame is unchanged underneath it. The CN 1 flanks are real: the whole of 9p has lost a copy in this tumour.",
+    "reviewedAt": "2026-08-04T21:04:00.396Z",
+    "hash": "1ba5d21f451ed2a6adb9bb4411fd2d2648230dc3"
   },
   "maf_codon_tooltip": {
     "name": "maf_codon_tooltip",
@@ -1594,9 +1594,9 @@
   },
   "ld/lct_lactase": {
     "name": "ld/lct_lactase",
-    "status": "bad",
-    "note": "\"Say if you want it gone from ld_human.md as well and I will rework that section around the pooled-vs-panel figure.\" yes i think it can probably get removed. we have to pooled vs panel. unless you think this works on its own. i dunno. ALREADY OUT OF THE GALLERY, and checked rather than remembered: src/lib/gallery.ts has one LD card and its spec is ld/lct_pooled_vs_panel, so there is no gallery entry pointing here to remove. What remains is two documentation uses, and neither is a dupe of the pooled-vs-panel figure. In tutorials/ld_human.md it is the page's first LD picture, where the ClinVar rs4988235 lane and the recombination curve set the block up; the pooled-vs-panel figure comes later and is about a different claim (that r2 in a pooled multi-population callset averages the block away). In config_guides/variant_track.md it is the LD track's own config example. It is also the tutorial-card thumb for ld_human (gen-tutorial-thumbs.ts), which crops better as one triangle than as two stacked lanes. Deleting the figure would leave the tutorial's opening section and the config guide without a picture and would need a new thumb; deleting the gallery card is already done. Say if you want it gone from ld_human.md as well and I will rework that section around the pooled-vs-panel figure.",
-    "reviewedAt": "2026-08-04T20:19:33.100Z",
+    "status": "answered",
+    "note": "Out of ld_human.md, as you decided. The opening section is rebuilt around the pooled-vs-panel figure, which carries the same gene track, the same LCT band and the same block on its lower lane, plus the Fst lane; the recombination-curve paragraph now reads across both lanes and the two subsections that follow it are unchanged. The tutorial card thumb had to move with it (a card has to come from a figure its page embeds) and is now the single-panel triangle cropped out of that figure. The spec and PNG stay for config_guides/variant_track.md, which uses it as the LD track's config example.",
+    "reviewedAt": "2026-08-04T21:03:36.452Z",
     "hash": "adfb909821ef76986892177d7d749ac1d5d04bb7"
   },
   "ld/mapt_17q21_inversion": {
@@ -1654,10 +1654,10 @@
   },
   "multisv_svtype": {
     "name": "multisv_svtype",
-    "status": "bad",
-    "note": "restore the old screenshot, and then, like notes on multisv, make this a new tutorial. consider combining this figure with the new multisv since it is same data and region. DONE: heightMode 'fit' on the RefSeq lane, so the whole gene stack sits inside the 140px lane instead of four labeled rows with the fifth sliced against the lane border and the rest behind an internal scrollbar. At 5Mb the fit ladder lands on its 'bodies' rung, so the names go: tried a 220px lane to get them back and it still dropped them, just with 90px of whitespace added, because the labeled stack does not fit any lane height this figure can afford. The lane now reads as where in the window the genes are, which is what a 5Mb SV-type figure can use it for.",
-    "reviewedAt": "2026-08-04T20:21:46.400Z",
-    "hash": "4689bde0c34576b23c21d1e531babcc1127fce5d"
+    "status": "answered",
+    "note": "Restored to chr19 as well, and it is now sorted like its sibling rather than left in file order, so the inversion band is the same band in both. The user-guide caption at multivariant_track.md:146 already said 'on chr19' -- it had never been updated when the spec moved to chr1, so the figure and its caption now agree again. The RHD SV-type lane is multisv_rhd_svtype, the lower half of the composed multisv_rhd, which is the combining you asked for: same data, same region, same sorted row order, one figure.",
+    "reviewedAt": "2026-08-04T21:03:35.386Z",
+    "hash": "8fbe9697f44511dfd173b6a149140a59fce5814b"
   },
   "scatac/alb_hepatocyte": {
     "name": "scatac/alb_hepatocyte",
@@ -1952,10 +1952,10 @@
   },
   "pangenome/local_subgraph": {
     "name": "pangenome/local_subgraph",
-    "status": "bad",
-    "note": "if needed, add text annotation to say why it is blunt. also, it is not clear the size in the 'backbone' visualizations. previous notes: why is it blunt? why wouldnt an insertion be a loop? YES, A BLUNT END, AND THE CUT MADE IT. Segment 20 of ecoli_pggb_subgraph.gfa is 93 bp of CFT073 (CFT073:1,048,515-1,048,608) with exactly one link in that file (L 16 + 20 +), visited by one path, CFT073, as its first step. In the whole graph it carries two backbone links, K12:1,004,686-1,004,691 and K12:997,566-997,574, so CFT073 stands in 93 bp for 7,112 bp of K12: a 7.0 kb deletion whose far anchor is 7 kb outside the odgi extract -r K12#1#chr:1004500-1004900 range and went with it. It is also the rejoin this figure is otherwise about -- the green-to-yellow step in the node strip IS that segment reattaching. Widening the cut to reach the far anchor is not available: 7 kb of this pggb graph is ~900 segments against the 48 here. The tutorial says all of it at the figure now, including that a one-sided node in any extracted subgraph means sequence continuing past the window rather than a dead end in the graph. The sibling sample-rows figure of the same event now labels it '7 kb deletion' outright (see pangenome/pggb_locus_sample_rows); this figure's two halves are a file import and a force drawing, where a node IS drawn at its own scale, so neither carries that label and neither should.",
-    "reviewedAt": "2026-08-04T17:37:18.787Z",
-    "hash": "ec825b9faeea9a506a0173af5382085aa0581765"
+    "status": "answered",
+    "note": "Both halves now ring segment 20 and name it. WHY IT IS BLUNT, on the force half where there is room to say it: 93 bp of CFT073 (CFT073:1,048,515-1,048,608) carrying one link inside this file and two in the whole graph, so the free end is where the odgi extract -r K12#1#chr:1004500-1004900 fell rather than a dead end in the graph. The event it belongs to is a 7 kb deletion whose far anchor is 7 kb outside that range; widening to reach it is not available, 7 kb of this pggb graph is ~900 segments against the 48 here. SIZE IN THE BACKBONE HALF: that half gets '93 bp' beside the same ring, which is the thing its rank-1 marks never said. Both anchored by segment id through the view's nodePositions, so neither layout has to hold still. Longer text does not fit the anchored pane: its aspect ratio is pinned (row spacing is a fraction of the reference span), so it is two rows tall whatever the viewport is.",
+    "reviewedAt": "2026-08-04T21:13:04.487Z",
+    "hash": "25d257a85d76713716a7f60cc958e5bcb6f26f71"
   },
   "pangenome/rgfa_subgraph_launch": {
     "name": "pangenome/rgfa_subgraph_launch",
@@ -2050,10 +2050,10 @@
   },
   "pangenome/hprc_mhc_anchored": {
     "name": "pangenome/hprc_mhc_anchored",
-    "status": "bad",
-    "note": "you can consider drawing an arrow from left panel to right panel",
-    "reviewedAt": "2026-08-04T20:09:59.397Z",
-    "hash": "405c032435d4df93a7e97561801a212b8c99483c"
+    "status": "answered",
+    "note": "Numbered both rings instead, 1 and 2, the same numbers in both halves. An arrow across the seam is not drawable: the halves are two separate captures +appended afterwards, so no overlay spans them, and they are different heights besides. The badges are anchored to the segment ids through the view's nodePositions, so they survive either layout moving its nodes. Two follow-on fixes the numbering exposed: the force half's caption sat exactly on top of the second ring (the two landmarks are an allele and the reference stretch it replaces, so that layout draws them touching) and has moved to the top right, and the two badges now go opposite ways off their rings there. Caption updated to name them.",
+    "reviewedAt": "2026-08-04T21:13:54.749Z",
+    "hash": "5b330752f6b7e51f1c921b878d9fd7b0a53f50c9"
   },
   "pangenome/hprc_mhc_sample_rows": {
     "name": "pangenome/hprc_mhc_sample_rows",
@@ -2355,13 +2355,6 @@
     "reviewedAt": "2026-08-01T05:10:00.000Z",
     "hash": "514318f703c757694afe574274ea70d13cd9e69d"
   },
-  "pangenome/graph_resolution": {
-    "name": "pangenome/graph_resolution",
-    "status": "bad",
-    "note": "the bandage graph just looks very jagged here FIXED, and the cause was an iteration budget rather than the drawing law. Both halves were pinned at layoutQuality 1 (15 + 10 FMMM iterations), which is below the plugin's own default of 2 and is a leftover from before that default was raised. The pggb cut is 53 nodes of which 33 are 1 bp, so what is being laid out is essentially one long path, and an under-relaxed path keeps the kink at every joint its initial placement gave it -- that IS the jaggedness, not the 18 alt arms, which are the same nodes either way. At 3 (60 + 40) the same cut draws as a smooth arc and the beads read as beads. Not 'more is better': 4 was rendered too and relaxes the arc into a hockey stick with half the pane empty, which is the same thing the rgfa_strain_launch note recorded for an 11-node cut. The minigraph half took 3 as well, unasked, because it had the same problem in a form easier to miss -- at 1 its 16.4 kb backbone segment ran diagonally across the 4.4 kb one it joins, and at 3 the five backbone segments lie end to end with the stubs hanging off them. The pggb caption moved into the arc: the up-and-right corner it used to sit in is empty only when the rope is kinked, and the relaxed arc runs under it.",
-    "reviewedAt": "2026-08-04T09:19:31.206Z",
-    "hash": "77ad30e9de04127933eee45e0f7661b5f270a4cd"
-  },
   "pangenome/pggb_collapsed_repeat": {
     "name": "pangenome/pggb_collapsed_repeat",
     "status": "good",
@@ -2385,10 +2378,10 @@
   },
   "tcga/mutations_cdh1_histology": {
     "name": "tcga/mutations_cdh1_histology",
-    "status": "bad",
-    "note": "the clinvar track makes this a bit chaotic. not sure it is helping here, might remove. text annotation box that explains the majority of mutations are in the lobular might help also",
-    "reviewedAt": "2026-08-04T20:13:57.472Z",
-    "hash": "85d14a053327db773af63e50f0a06a1d8b93f620"
+    "status": "answered",
+    "note": "ClinVar lane gone -- collapsed to one row over 16 exons it was a 1500px barcode of touching CLNSIG ticks with no column a matrix column could be lined up against, and it was the busiest thing in a figure whose subject is a density difference. Both bands are named in place now (anchored to the display by fraction, not by pixel), with an arrow from the label to the lobular band. Measured off the render, lobular is the last seventh of the rows and carries 78% of the mutation marks in the frame against ductal's 14% over 72% of the rows.",
+    "reviewedAt": "2026-08-04T21:04:00.099Z",
+    "hash": "d90265bedd8b6ce0f04a503cdfce2f7e86520185"
   },
   "scrna/ms4a1_bcell": {
     "name": "scrna/ms4a1_bcell",
@@ -2490,10 +2483,10 @@
   },
   "cancer_sv/multihop_tumour_vs_normal": {
     "name": "cancer_sv/multihop_tumour_vs_normal",
-    "status": "bad",
-    "note": "this is not a very 'interesting' screenshot, we could consider making it take less space at a minimum or deleting also SMALLER, as asked, rather than deleted: it is the only frame showing the matched normal, and the tumour-clips/normal-reads-through contrast is what makes the call somatic rather than a mapping artefact. The composed cancer_sv/multihop_reads went from 1900x960 to 1600x885 css (about 62% of the area). +append needs the two halves the same HEIGHT but not the same width, so this half took the narrower one (660 vs 940) and dropped its gene track -- the window is deep inside RARB's first intron, so the glyph was a line with arrows on it, and the three-locus half already names every gene.",
-    "reviewedAt": "2026-08-02T21:53:27.822Z",
-    "hash": "050fc47c77d8eeda7adabc85284caf715d5280e2"
+    "status": "answered",
+    "note": "Smaller as recorded, and one real defect fixed: nanomonsv calls both hops here (chr12 and chr10) and the 60px SV lane was slicing the second record through its name with the rest behind the track's own scrollbar. That lane is 130px now and the 70px came out of the two pileups' measured slack (they draw 259px and 269px), so the composed figure is the same height and the second breakend reads out in full: r_12_1 G]CHR10:58717464].",
+    "reviewedAt": "2026-08-04T21:03:35.864Z",
+    "hash": "42ed0983c919abb8253b1188fbb5186a984db6ef"
   },
   "cancer_sv/derivative_proof": {
     "name": "cancer_sv/derivative_proof",
@@ -2567,17 +2560,17 @@
   },
   "ld/anopheles_r2_vs_dprime": {
     "name": "ld/anopheles_r2_vs_dprime",
-    "status": "bad",
-    "note": "is there anything notable about this screenshot? if not can consider deleting.",
-    "reviewedAt": "2026-08-04T17:31:32.662Z",
+    "status": "answered",
+    "note": "Kept. What is notable is the metric comparison itself, and it is the only figure that draws it: over the same Cameroon file and the same arm, D' saturates across the 2La block AND leaves a haze over the rest of chr2L, while r2 is dimmer inside the block but near-white outside it. That is the reason LDDisplay defaults to r2 and the reason ldMetric exists, and it is not visible on either lane alone. It is also the only illustration of the ldMetric slot.",
+    "reviewedAt": "2026-08-04T21:03:12.885Z",
     "hash": "58d9499e4b5e92afff7d9499e5ea0cdcdd7b2ef0"
   },
   "methylation/arabidopsis_wgbs_two_color": {
     "name": "methylation/arabidopsis_wgbs_two_color",
-    "status": "bad",
-    "note": "The methyldackyl generally enhances these screenshots substantially. without it they look weak. can consider deleting. ",
-    "reviewedAt": "2026-08-04T17:32:56.002Z",
-    "hash": "e08f28ef3ca2a775fe03582b8e0dd589d100345b"
+    "status": "answered",
+    "note": "Kept, with the MethylDackel lane you say these figures need. The config's aggregate track is three contexts; only the CpG subadapter is drawn here, since both pileups are coloured by CpG and CHG/CHH would be a different question (that is arabidopsis_wgbs_contexts). It earns its place rather than decorating: every red column in the two pileups has a bar above it, and the blue stretches over the gene body sit where the aggregate reads near zero, so 'sequenced and unmethylated rather than cytosine-free' is a number in the frame instead of an argument in the caption.",
+    "reviewedAt": "2026-08-04T21:04:00.708Z",
+    "hash": "3335a29eb093b0bd279710082298dfb425284058"
   },
   "methylation/hg002_snrpn_ungrouped": {
     "name": "methylation/hg002_snrpn_ungrouped",
@@ -2621,13 +2614,6 @@
     "reviewedAt": "2026-08-04T17:38:28.807Z",
     "hash": "95008a2126b6a84c15055f2612acba3c664823c4"
   },
-  "qtl/bxd_painting_clustered": {
-    "name": "qtl/bxd_painting_clustered",
-    "status": "bad",
-    "note": "might not need clustering when we have the sort, consider delete",
-    "reviewedAt": "2026-08-04T17:39:28.440Z",
-    "hash": "c3da3f68172f1b6f8f3761d6f3ba5624bd907462"
-  },
   "scatac/pbmc5k_marker_swap": {
     "name": "scatac/pbmc5k_marker_swap",
     "status": "good",
@@ -2644,17 +2630,17 @@
   },
   "cancer_sv/derivative_autogenerated": {
     "name": "cancer_sv/derivative_autogenerated",
-    "status": "bad",
-    "note": "this figure does not look particularly interesting. any improvements you'd suggest? if it helps, you can make it use a 'replace view' option similar to collapse introns workflow so there is not a big read stack, and tracks that are open in the lineargenomeview can be copied to the new view.",
-    "reviewedAt": "2026-08-04T17:41:24.590Z",
-    "hash": "5403b9a4807909013df80c59aea4f8d02365054a"
+    "status": "answered",
+    "note": "Now uses 'Replace current view'. That option already existed in the app (the dialog offers 'Draw in new view' and 'Replace current view', and it already carries the launching view's non-alignments tracks onto the reference panel) -- the spec was still clicking the old 'Draw it', which would have failed on the next regen anyway. The result frame is the synteny view alone: ribbons at full width, the provenance track's four segment labels clear of the bottom edge, and no 240px of the same pileup sitting above the answer. The picker frame still shows the dialog over the pileup it was computed from, which is the half that has to.",
+    "reviewedAt": "2026-08-04T21:03:59.543Z",
+    "hash": "c8195163228333d251b57a546a569a85b64fbd19"
   },
   "cancer_sv/foldback_reconstruction": {
     "name": "cancer_sv/foldback_reconstruction",
-    "status": "bad",
-    "note": "this figure does not look particularly interesting. any improvements you'd suggest? if it helps, you can make it use a 'replace view' option similar to collapse introns workflow so there is not a big read stack, and tracks that are open in the lineargenomeview can be copied to the new view.",
-    "reviewedAt": "2026-08-04T17:41:31.455Z",
-    "hash": "626555438c2d1eae25b2a54f2e7cd367def07608"
+    "status": "answered",
+    "note": "Same change as derivative_autogenerated: 'Replace current view', so the result frame is the two chr9 windows and the crossing ribbons rather than a pileup with the answer squeezed under it. Shorter than that figure because a fold-back's derivative carries two segments, so the provenance track is one row.",
+    "reviewedAt": "2026-08-04T21:03:59.824Z",
+    "hash": "6d99e21940a0a6e5f78ff2f031ff1c449d0091bd"
   },
   "dog10k-wolfdog-ancestry-clustered": {
     "name": "dog10k-wolfdog-ancestry-clustered",
@@ -2676,5 +2662,12 @@
     "note": "we may want a whole genome overview also",
     "reviewedAt": "2026-08-04T20:18:33.354Z",
     "hash": "180a3202af64b33e771bdb5690152cf0efe68306"
+  },
+  "pangenome/graph_resolution": {
+    "name": "pangenome/graph_resolution",
+    "status": "good",
+    "note": "layoutQuality 3 landed: both halves draw as smooth arcs, the pggb beads read as beads, and the caption sits inside the arc",
+    "reviewedAt": "2026-08-04T21:04:13.113Z",
+    "hash": "85afe7707698e2af458fcde749c0c44c47aba27a"
   }
 }
