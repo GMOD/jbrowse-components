@@ -1,6 +1,11 @@
-import { decodeSessionFromUrl, encodeSessionToUrl } from '@jbrowse/product-core'
+import {
+  decodeSessionFromUrl,
+  encodeSessionToUrl,
+  getShareableSessionSnapshot,
+} from '@jbrowse/product-core'
 
 import type { ViewModel } from './createModel.ts'
+import type { SessionSnapshot } from './types.ts'
 
 /**
  * Serialize the live session into a compact, URL-safe string suitable for a
@@ -25,3 +30,22 @@ export async function encodeSession(viewState: ViewModel): Promise<string> {
  * its declarative `views` instead of opening a half-built session.
  */
 export const decodeSession = decodeSessionFromUrl
+
+/**
+ * The live session as a plain JSON snapshot, ready to hand straight back as
+ * `createApp`'s `session` (or `setSession`). The uncompressed twin of
+ * {@link encodeSession}, for hosts that move JSON rather than URLs — a notebook
+ * kernel, an R session, a "save this layout" button.
+ *
+ * Like `encodeSession` and for the same reason, not a plain `getSnapshot`:
+ * display settings a user is *inheriting* from a promoted display-type default
+ * live in their own browser, never in the session, so a raw snapshot replays
+ * differently for whoever opens it.
+ */
+export function getSessionSnapshot(viewState: ViewModel): SessionSnapshot {
+  const { session } = viewState
+  if (!session) {
+    throw new Error('no session to snapshot')
+  }
+  return getShareableSessionSnapshot(session) as SessionSnapshot
+}
