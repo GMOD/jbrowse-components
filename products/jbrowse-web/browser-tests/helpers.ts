@@ -6,7 +6,7 @@ import {
 } from '@jbrowse/browser-test-utils'
 
 import { analyzeCanvasPng, assertNonBlank } from './canvasContent.ts'
-import { snapshotConfig } from './snapshot.ts'
+import { canvasSelfReport, snapshotConfig } from './snapshot.ts'
 
 import type { Browser, ElementHandle, Page } from 'puppeteer'
 
@@ -383,7 +383,14 @@ export async function assertCanvasHasContent(
   }
   const buf = await el.screenshot({ type: 'png' })
   const stats = analyzeCanvasPng(buf)
-  assertNonBlank(stats, `assertCanvasHasContent: ${selector}`, {
+  // Same render-vs-capture question canvasSnapshot asks, on the other path that
+  // can report a blank — a blank arriving through here was invisible to that
+  // instrumentation and is how the first run with it produced no verdict.
+  const wouldFail =
+    stats.distinctColors < minDistinctColors ||
+    stats.nonBgFraction < minNonBgFraction
+  const selfReport = wouldFail ? await canvasSelfReport(page, selector) : ''
+  assertNonBlank(stats, `assertCanvasHasContent: ${selector}${selfReport}`, {
     minDistinctColors,
     minNonBgFraction,
   })

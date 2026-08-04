@@ -278,7 +278,7 @@ async function waitForCaptureSettled(page: Page) {
 //
 // Comparing against a same-size blank canvas is exact, rather than guessing a
 // byte-length threshold.
-async function canvasSelfReport(page: Page, selector: string) {
+export async function canvasSelfReport(page: Page, selector: string) {
   return page
     .evaluate(sel => {
       const el = document.querySelector(sel)
