@@ -41,6 +41,14 @@ gesture.
 | `useVariantVirtualScroll.ts` | matrix vertical scroll + row height | `shift` → **change row height**. else if `!scrollZoom && !ctrl && !meta && overflow` → scroll inner (latched). |
 | `useMafVirtualScroll.ts` | MAF rows vertical scroll + row height | same rule as the variant displays, and deliberately so: same sample-row shape, same coupled row-height axis. Added when MAF moved off grow-to-fit onto virtual scroll. |
 
+The last two rows are **one rule in two call sites**, not two rules. Since the
+agreement is deliberate it is now written once, as
+`useRowVirtualScroll` (`packages/core/src/util/`), and each hook supplies only
+its own rows-area height (`availableHeight` vs `rowsHeight`, which differ
+because MAF's excludes the bands above its rows) plus `scrollZoom`. That is the
+decision below applied, not an exception to it: unify where there is one true
+rule. The pileup and canvas-basic rules stay where they are.
+
 ## The real inconsistency (not resolved here — it's a product call)
 
 `shift`+wheel means three different things:
