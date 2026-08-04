@@ -32,6 +32,7 @@
 # time, so the figure can ask for chr2 against a file that has never heard of it.
 #
 # Requires: bcftools (>= 1.17, with libcurl support), htslib (tabix), curl, awk,
+#           vcftools + bedGraphToBigWig (UCSC), for the Fst track.
 #           plink (1.9, for the printed r² tables only. Debian/Ubuntu ship it as
 #           `plink1.9`, so there: PLINK=plink1.9 bash scripts/...)
 # Usage:    bash scripts/build_lct_ld.sh [outdir]
@@ -89,6 +90,37 @@ if [ ! -f "$POOLED" ]; then
   bcftools view -r "$REGION" -Oz -o "$POOLED" "$CHR2"
 fi
 tabix -f -p vcf "$POOLED"
+
+# ── Fst: this panel against the rest of the release ──────────────────────────
+# The other half of the sweep signature, and the one an LD triangle cannot draw:
+# linkage says the haplotype is long, Fst says its variants are the ones whose
+# frequency separates this panel from everyone else. Weir and Cockerham, by
+# vcftools, over the same slice the LD lanes use.
+#
+# PER VARIANT, not windowed. A 10 kb windowed run was built first and says much
+# less: the block's windows average barely above the flanks, because a window
+# mixes the swept haplotype with every rare variant sharing it. Per site,
+# rs4988235 comes out the single most differentiated variant in the frame.
+FST_BW=lct_1kg_chr2_fst_${PANEL_CODE,,}_vs_rest.bw
+if [ ! -f "$FST_BW" ]; then
+  awk -v p="$PANEL_CODE" 'NR>1 && $3!=p {print $1}' panel.txt | sort > rest.samples
+  echo "rest: $(wc -l < rest.samples) samples"
+  vcftools --gzvcf "$POOLED" --weir-fst-pop panel.samples --weir-fst-pop rest.samples \
+    --out fst_site
+  # 1-based site -> bedGraph interval; drop the sites vcftools reports as nan
+  awk 'NR>1 && $3!="-nan" && $3!="nan" {printf "chr%s\t%d\t%d\t%.5f\n",$1,$2-1,$2,$3}' \
+    fst_site.weir.fst | sort -k1,1 -k2,2n | awk '!seen[$2]++' > fst_site.bedgraph
+  printf 'chr2\t243199373\n' > hg19.chrom.sizes
+  bedGraphToBigWig fst_site.bedgraph hg19.chrom.sizes "$FST_BW"
+fi
+echo "wrote $FST_BW"
+
+# The most differentiated variants in the frame, which is the figure's claim.
+if [ -f fst_site.weir.fst ]; then
+  echo
+  echo "top per-site Fst ($PANEL_CODE vs rest); rs4988235 is chr2:136,608,646:"
+  sort -k3,3gr fst_site.weir.fst | head -5 | awk '{printf "  chr%s:%s  %.3f\n",$1,$2,$3}'
+fi
 
 # ── Evidence ─────────────────────────────────────────────────────────────────
 # plink --r2 for both tables, on the same MAF floor the figure uses. This is

@@ -288,6 +288,40 @@ const TWO_LA_LOCUS = 'chr2L:20,524,058-42,165,532'
 // own, so the lane would read as fine-grained speckle against one long block
 // rather than as a blank. The reason not to draw it is the editorial one above,
 // not legibility.
+// Weir and Cockerham Fst per variant, the European panel against the other 2001
+// samples of the same release, over the same window the LD lanes draw. Computed
+// by vcftools from the 1000 Genomes phase 3 chr2 callset (scripts/build_lct_ld.sh),
+// so the estimator is a published one and the panels are the release's own.
+//
+// Per site, not windowed, and that is the finding: rs4988235 is the single most
+// differentiated variant of the 93,876 in the frame, and the sites just below it
+// are its neighbours inside the block. A 10 kb windowed version was built first
+// and says much less -- the block's windows average barely above the flanks,
+// because a window mixes the swept haplotype with every rare variant sharing it.
+//
+// The contrast is one panel against the pooled remainder rather than against a
+// named second population: the figure's own subject is panel-versus-pooled, and
+// naming a second population here would make a comparison the figure is not
+// about.
+const LCT_FST_TRACK = {
+  type: 'QuantitativeTrack',
+  trackId: 'kgp_lct_fst',
+  name: 'Fst, this panel vs the other 1000 Genomes samples (Weir & Cockerham)',
+  assemblyNames: ['hg19'],
+  adapter: {
+    type: 'BigWigAdapter',
+    bigWigLocation: {
+      uri: 'https://jbrowse.org/demos/popgen/lct_1kg_chr2_fst_eur_vs_rest.bw',
+      locationType: 'UriLocation',
+    },
+    // raw per-site values out to well past this window's 3.1 kb/px: a bigWig
+    // zoom bin carries min/avg/max, and the average of ninety variants is the
+    // background, so the summarized lane draws the haze and drops the peak that
+    // is the whole point. Same reason the C-GIAB BAF track takes one.
+    resolutionMultiplier: 0.001,
+  },
+}
+
 const lctPanelTrack = (trackId: string, name: string, file: string) => ({
   type: 'VariantTrack',
   trackId,
@@ -336,6 +370,7 @@ export const ldSpecs: ScreenshotSpec[] = [
           'One population panel (r²)',
           'lct_1kg_chr2_eur_wide.vcf.gz',
         ),
+        LCT_FST_TRACK,
       ],
       views: [
         {
@@ -354,8 +389,24 @@ export const ldSpecs: ScreenshotSpec[] = [
               height: 60,
               showOnlyGenes: true,
             },
-            { trackId: 'kgp_lct_pooled', type: 'LDDisplay' },
-            { trackId: 'kgp_lct_panel', type: 'LDDisplay' },
+            // The lane an LD triangle cannot draw (reviewer: "would a 'fst'
+            // track make sense"): the block is not only long, its variants are
+            // the most frequency-differentiated in the frame, which is the other
+            // half of a sweep. Scatter over a fixed 0..0.5, because the value is
+            // one point per variant and the spread IS the signal.
+            {
+              trackId: 'kgp_lct_fst',
+              type: 'LinearWiggleDisplay',
+              defaultRendering: 'scatter',
+              useBicolor: false,
+              scatterPointSize: 2,
+              summaryScoreMode: 'max',
+              minScore: 0,
+              maxScore: 0.5,
+              height: 110,
+            },
+            { trackId: 'kgp_lct_pooled', type: 'LDDisplay', height: 250 },
+            { trackId: 'kgp_lct_panel', type: 'LDDisplay', height: 250 },
           ],
         },
       ],
@@ -365,9 +416,12 @@ export const ldSpecs: ScreenshotSpec[] = [
     readySelector: '[data-testid="ld-display-done"]',
     // 21 MB of genotypes across the two lanes, the pooled one on 2504 samples
     readyTimeout: 600000,
-    // the gene lane, then two LD tracks (330 triangle + 50 recombination zone
-    // each) + 2 headers + ruler/overview
-    viewportHeight: 995,
+    // the gene lane, the Fst scatter, then two LD tracks (250 triangle + 50
+    // recombination zone each) + headers + ruler/overview. The triangles came
+    // down from 330 (reviewer: "reduce heights of the linkage tracks"), which
+    // costs nothing legible: the block is a shape, not a height, and the room
+    // it frees is what the Fst lane takes.
+    viewportHeight: 1000,
     settleMs: 8000,
   },
   {

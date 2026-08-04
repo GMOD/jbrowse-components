@@ -51,9 +51,18 @@ adds white.
 r² is computed across every sample in the file, so a whole callset correlates
 across panels that have no shared history.
 
-<Figure src="/img/ld/lct_pooled_vs_panel.png" caption="The same locus, window and MAF floor twice, differing only in which samples went in. Pooling every panel breaks the block into a mosaic and leaves the recombination curve spiky throughout; one panel resolves it into a single block with the curve flat across it."/>
+<Figure src="/img/ld/lct_pooled_vs_panel.png" caption="The same locus, window and MAF floor twice, differing only in which samples went in. Pooling every panel breaks the block into a mosaic and leaves the recombination curve spiky throughout; one panel resolves it into a single block with the curve flat across it. Above both, Weir and Cockerham Fst per variant between the panel and the rest of the release."/>
 
 Nothing about the display changed between those two lanes.
+
+The Fst lane on top is the half an LD triangle cannot draw. Linkage says the
+haplotype is long; Fst says its variants are the ones whose frequency differs
+between this panel and everyone else, which is what a sweep leaves behind. The
+reproduce script computes it with
+[vcftools](https://vcftools.github.io/man_latest.html) over the same slice, per
+variant rather than in windows: `rs4988235` comes out the single most
+differentiated variant in the frame, and a windowed version loses that, because
+a window mixes the swept haplotype with every rare variant sharing it.
 
 ```bash
 bcftools view -S panel.samples --force-samples -Oz -o panel.vcf.gz all.vcf.gz
