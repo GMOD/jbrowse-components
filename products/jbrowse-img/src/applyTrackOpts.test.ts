@@ -122,13 +122,23 @@ describe('feature modifiers', () => {
     expect(snap.displayMode).toBe('superCompact')
   })
 
-  test('alignment-only modifiers are ignored on a feature track', () => {
+  // A modifier aimed at the wrong track type used to be dropped in silence, so
+  // `--gffgz genes.gff.gz sashimi:down` looked like it had worked.
+  test('alignment-only modifiers warn on a feature track', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
     const { snap } = buildDisplaySnapshot('feature', [
       'arcs:up',
       'sashimi:down',
     ])
     expect(snap.readConnections).toBeUndefined()
     expect(snap.showSashimiArcs).toBeUndefined()
+    expect(warn).toHaveBeenCalledWith(
+      'Warning: track option "arcs" has no effect on a feature track (applies to: alignments)',
+    )
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('"sashimi" has no effect on a feature track'),
+    )
+    warn.mockRestore()
   })
 
   test('heightMode sets each track-height strategy', () => {
@@ -150,10 +160,32 @@ describe('feature modifiers', () => {
     expect(snap.heightMode).toBe('fit')
   })
 
-  test('an unknown heightMode is ignored', () => {
-    expect(
-      buildDisplaySnapshot('feature', ['heightMode:bogus']).snap.heightMode,
-    ).toBeUndefined()
+  test('an unknown heightMode rejects', () => {
+    expect(() => buildDisplaySnapshot('feature', ['heightMode:bogus'])).toThrow(
+      /Invalid heightMode value "bogus". Expected fixed, grow, fit./,
+    )
+  })
+
+  // heightMode's optional second arg used to swallow a typo (`Number.isFinite`
+  // guard), silently rendering at the default height
+  test('a non-numeric heightMode height rejects', () => {
+    expect(() =>
+      buildDisplaySnapshot('feature', ['heightMode:fit:20o']),
+    ).toThrow(/Invalid heightMode/)
+  })
+
+  // feature and variant displays extend the same LinearCanvasBaseDisplay, so
+  // every modifier that reads one of its slots must accept both
+  test('the canvas-base modifiers apply to feature and variant alike', () => {
+    for (const category of ['feature', 'variant'] as const) {
+      expect(
+        buildDisplaySnapshot(category, ['heightMode:grow']).snap.heightMode,
+      ).toBe('grow')
+      expect(
+        buildDisplaySnapshot(category, ['featureHeight:compact']).snap
+          .displayMode,
+      ).toBe('compact')
+    }
   })
 
   test('alignments heightMode shares the full fixed/grow/fit vocabulary', () => {
@@ -199,13 +231,97 @@ describe('wiggle / score modifiers', () => {
     expect(snap.useBicolor).toBeUndefined()
   })
 
-  test('score settings are ignored on a non-score (alignments) track', () => {
+  test('score settings warn and are ignored on a non-score (alignments) track', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
     const { snap } = buildDisplaySnapshot('alignments', [
       'scaletype:log',
       'fill:false',
     ])
     expect(snap.scaleType).toBeUndefined()
     expect(snap.defaultRendering).toBeUndefined()
+    expect(warn).toHaveBeenCalledTimes(2)
+    warn.mockRestore()
+  })
+
+  // `resolution:bogus` used to fall back to 1 silently, which reads as a
+  // deliberate coarse render rather than the typo it is
+  test('a non-numeric resolution rejects', () => {
+    expect(() => buildDisplaySnapshot('wiggle', ['resolution:x'])).toThrow(
+      /Invalid resolution/,
+    )
+  })
+})
+
+// The canvas feature display has no `colorBy` (its color slot is a plain CSS
+// color/jexl string), and the multi-sample variant displays' `colorBy` is a
+// sample-attribute string, not a {type, tag} object — so the object this used to
+// write was dropped as an unknown MST key or rejected as a bad slot value.
+describe('color routing', () => {
+  test('color sets colorBy on alignments and a solid color on wiggle', () => {
+    expect(buildDisplaySnapshot('alignments', ['color:strand']).snap).toEqual({
+      colorBy: { type: 'strand', tag: undefined },
+    })
+    expect(buildDisplaySnapshot('wiggle', ['color:purple']).snap).toEqual({
+      color: 'purple',
+    })
+  })
+
+  test('color warns on feature/variant/hic rather than writing a dead colorBy', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+    for (const category of ['feature', 'variant', 'hic'] as const) {
+      const { snap } = buildDisplaySnapshot(category, ['color:strand'])
+      expect(snap.colorBy).toBeUndefined()
+      expect(snap.color).toBeUndefined()
+    }
+    expect(warn).toHaveBeenCalledTimes(3)
+    warn.mockRestore()
+  })
+})
+
+// One rule for every modifier value, whatever the track type: a value the
+// modifier can't use is an error. jb2export writes a figure and exits, so a
+// warning scrolls past and leaves a wrong image behind.
+describe('modifier values are validated the same way everywhere', () => {
+  test.each([
+    ['alignments', 'height:', /Missing height/],
+    ['alignments', 'height:8o', /Invalid height/],
+    ['alignments', 'color:', /Missing color/],
+    ['alignments', 'group:', /Missing group/],
+    ['alignments', 'sort:', /Missing sort/],
+    // a bare `arcs` used to mean OFF, the opposite of every other bare modifier
+    ['alignments', 'arcs', /Missing arcs/],
+    ['alignments', 'arcs:upp', /Invalid arcs value "upp"/],
+    ['alignments', 'sashimi:downn', /Invalid sashimi/],
+    ['alignments', 'linkedReads:bezierr', /Invalid linkedReads/],
+    ['alignments', 'coverage:ture', /Invalid coverage value "ture"/],
+    ['alignments', 'softClipping:0', /Invalid softClipping/],
+    ['alignments', 'featureHeight:bogus', /Invalid featureHeight/],
+    ['alignments', 'coverageHeight:x', /Invalid coverageHeight/],
+    ['feature', 'heightMode:bogus', /Invalid heightMode/],
+    ['variant', 'display:', /Missing display/],
+    ['wiggle', 'autoscale:', /Missing autoscale/],
+    ['wiggle', 'scaletype:', /Missing scaletype/],
+    ['wiggle', 'minmax:lo:100', /Invalid minmax/],
+    ['wiggle', 'crosshatch:maybe', /Invalid crosshatch/],
+    ['wiggle', 'fill:1', /Invalid fill/],
+    ['wiggle', 'resolution:x', /Invalid resolution/],
+  ] as const)('%s track: %s rejects', (category, opt, message) => {
+    expect(() => buildDisplaySnapshot(category, [opt])).toThrow(message)
+  })
+
+  // the flag-like modifiers stay flag-like: bare or :true is on, :false is off
+  test.each([
+    ['coverage', 'showCoverage'],
+    ['softClipping', 'showSoftClipping'],
+    ['force', 'forceLoad'],
+  ] as const)('%s reads as a flag', (opt, key) => {
+    expect(buildDisplaySnapshot('alignments', [opt]).snap[key]).toBe(true)
+    expect(buildDisplaySnapshot('alignments', [`${opt}:true`]).snap[key]).toBe(
+      true,
+    )
+    expect(buildDisplaySnapshot('alignments', [`${opt}:false`]).snap[key]).toBe(
+      false,
+    )
   })
 })
 

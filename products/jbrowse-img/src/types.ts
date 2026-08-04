@@ -16,6 +16,18 @@ export type AssertNever<T extends never> = T
 // rather than the instantiated type.
 export type AssertTrue<T extends true> = T
 
+// Proof that a hand-written value list covers every member of an upstream union.
+// A value the union has but the list lacks resolves to that value instead of
+// `true`, so the AssertTrue wrapping it fails the build and names the straggler.
+// The Exclude can't go straight into an `extends never` type parameter: inside a
+// generic alias it is checked against Upstream's own constraint (`string`),
+// which is never empty, so the assertion failed for every list.
+export type Covers<Upstream extends string, List extends readonly string[]> = [
+  Exclude<Upstream, List[number]>,
+] extends [never]
+  ? true
+  : Exclude<Upstream, List[number]>
+
 export interface Opts {
   noRasterize?: boolean
   loc?: string

@@ -398,11 +398,22 @@ function circularTrackIds(model: Model, tracks: Track[]) {
     pluginManager.getViewType('CircularView').displayTypes.map(d => d.name),
   )
   const compatible = tracks.filter(track => {
-    const { displayTypes } = pluginManager.getTrackType(trackType(track))
-    const ok = displayTypes.some(d => supported.has(d.name))
+    const type = trackType(track)
+    let names: string[] = []
+    try {
+      names = pluginManager.getTrackType(type).displayTypes.map(d => d.name)
+    } catch {
+      // getTrackType THROWS for a type this bundle doesn't register — which a
+      // --hub/--config config can easily carry (a track type from a plugin
+      // jb2export doesn't bundle), and which aborted the whole render from
+      // inside the very filter meant to skip untenable tracks. A type with no
+      // registered display is definitionally one the circular view can't open,
+      // so fall through to the skip-and-warn below.
+    }
+    const ok = names.some(name => supported.has(name))
     if (!ok) {
       console.warn(
-        `Warning: skipping track "${track.trackId}" (${trackType(track)}) — it has no display the circular view can render`,
+        `Warning: skipping track "${track.trackId}" (${type}) — it has no display the circular view can render`,
       )
     }
     return ok

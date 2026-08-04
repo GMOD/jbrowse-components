@@ -1,15 +1,18 @@
 import path from 'node:path'
 
-import { getBooleanValue } from './options.ts'
+import { trackTypeForFlag } from './makeConfigs.ts'
 import { trackMatches, trackName } from './trackFields.ts'
 
 import type { Entry } from './parseArgv.ts'
-import type { AssertNever, Track } from './types.ts'
+import type { AssertNever, AssertTrue, Covers, Track } from './types.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'
 import type { LinearBasicDisplayModel } from '@jbrowse/plugin-canvas'
 import type { LinearHicDisplayModel } from '@jbrowse/plugin-hic'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  HeightMode,
+  LinearGenomeViewModel,
+} from '@jbrowse/plugin-linear-genome-view'
 import type { LinearVariantDisplayModel } from '@jbrowse/plugin-variants'
 import type { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 
@@ -29,27 +32,18 @@ export type TrackDisplay =
   | LinearHicDisplayModel
   | WiggleDisplayModel
 
-// Display category, derived from the CLI track-type flag (--bam, --bigwig, …).
-// Lets us build the right snapshot before the display instance exists, and gate
-// each modifier to the track types it applies to.
+// Display category: which display a track opens with, and so which snapshot keys
+// are meaningful for it. Lets us build the right snapshot before the display
+// instance exists, and gate each modifier to the track types it applies to.
 export type Category = 'alignments' | 'wiggle' | 'feature' | 'variant' | 'hic'
 
-const categoryByType: Record<string, Category> = {
-  bam: 'alignments',
-  cram: 'alignments',
-  bigwig: 'wiggle',
-  multiwig: 'wiggle',
-  vcfgz: 'variant',
-  gffgz: 'feature',
-  bigbed: 'feature',
-  bedgz: 'feature',
-  hic: 'hic',
-}
-
-// Display category for a track already in the config (referenced by --track from
-// a --hub/--config), keyed by the config track's `type`. Anything unlisted
-// (FeatureTrack and friends) drives a feature display.
-const categoryByConfigType: Record<string, Category> = {
+// The ONE track-type -> category table. A track already in the config
+// (referenced by --track from a --hub/--config) is keyed by its config `type`
+// directly; a track-type CLI flag (--bam, --bigwig, …) resolves through
+// makeConfigs' flag -> track type map first, so the two paths can't disagree and
+// adding a file type stays a single edit. Anything unlisted (FeatureTrack and
+// friends) drives a feature display.
+const categoryByTrackType: Record<string, Category> = {
   AlignmentsTrack: 'alignments',
   QuantitativeTrack: 'wiggle',
   MultiQuantitativeTrack: 'wiggle',
@@ -58,14 +52,18 @@ const categoryByConfigType: Record<string, Category> = {
   HicTrack: 'hic',
 }
 
+export function categoryForTrackType(type: string | undefined): Category {
+  return (
+    (type === undefined ? undefined : categoryByTrackType[type]) ?? 'feature'
+  )
+}
+
 export function configTrackCategory(
   tracks: Track[],
   trackId: string,
 ): Category {
   const type = tracks.find(t => t.trackId === trackId)?.type
-  const category =
-    typeof type === 'string' ? categoryByConfigType[type] : undefined
-  return category ?? 'feature'
+  return categoryForTrackType(typeof type === 'string' ? type : undefined)
 }
 
 // Resolve a user's --track token to a real trackId in the config. Hosted
@@ -129,11 +127,18 @@ const ALIGNMENTS_COMPACTNESS = {
   'super-compact': 1,
 }
 
-// The `heightMode` config-slot values the canvas feature + alignments displays
-// share: `fixed` (scroll), `grow` (resize the track to fit all), `fit` (shrink
-// content to fill the height). Other display types have no heightMode notion.
-const HEIGHT_MODES = ['fixed', 'grow', 'fit'] as const
-const HEIGHT_MODE_CATEGORIES = new Set<Category>(['feature', 'alignments'])
+// The `heightMode` config-slot values, pinned to the upstream union so a mode
+// added or renamed there fails the build here rather than leaving the CLI
+// silently rejecting a mode the displays now accept.
+const HEIGHT_MODES = [
+  'fixed',
+  'grow',
+  'fit',
+] as const satisfies readonly HeightMode[]
+
+export type AssertHeightModesCoverUpstream = AssertTrue<
+  Covers<HeightMode, typeof HEIGHT_MODES>
+>
 
 // Settings initialized via the display snapshot passed to `view.showTrack`.
 // Keys that are config slots (`height`, `color`, `sortedBy`, …) are routed by
@@ -147,14 +152,14 @@ interface DisplaySnapshot {
   // region-size / feature-density gate, the declarative equivalent of the
   // banner's "Force load" button
   forceLoad?: boolean
-  // alignments + feature
-  colorBy?: { type: string; tag?: string }
+  // alignments + the canvas-based displays (feature, variant), which share
+  // LinearCanvasBaseDisplay's slots. Which display each key is valid for is
+  // pinned by the `on` list of the modifier that writes it, below.
   featureHeight?: number
-  // feature (canvas) + alignments — shared fixed/grow/fit vocabulary, gated per
-  // display type by HEIGHT_MODES
   displayMode?: 'normal' | 'compact' | 'superCompact'
-  heightMode?: 'fixed' | 'grow' | 'fit'
+  heightMode?: HeightMode
   // alignments
+  colorBy?: { type: string; tag?: string }
   groupBy?: { type: string; tag?: string }
   sortedBy?: {
     type: string
@@ -193,7 +198,8 @@ interface DisplaySnapshot {
 // check key existence against those: a property renamed or removed upstream (the
 // silently-dead-snapshot-field class of bug) then fails the build. It checks
 // existence, not snapshot-input validity or value type — value types are pinned
-// by the interface above.
+// by the interface above, and WHICH display a key is valid for is pinned by each
+// modifier's `on` list.
 // Valid keys = every member of the display Instance types (MST props + resolved
 // getters) plus the wiggle config slots whose snapshot name diverges from any
 // instance member: `autoscale`/`defaultRendering` resolve through
@@ -249,20 +255,338 @@ const sortTypeAliases: Record<string, string> = {
   base: 'basePair',
 }
 
-// Parse a modifier's numeric argument, failing loudly on a typo instead of
-// writing NaN into the snapshot (which renders as a blank/broken track).
-// `expected` names the wider grammar for the modifiers that also accept keywords.
-function parseNum(prefix: string, val: string, expected = 'a number') {
-  const n = +val
-  if (Number.isNaN(n)) {
-    throw new Error(`Invalid ${prefix} value "${val}". Expected ${expected}.`)
-  }
-  return n
+// One rule for every modifier value, so the grammar reads the same whatever the
+// track type: a value that isn't one of the things the modifier accepts is an
+// ERROR. jb2export writes a figure and exits, so a warning about a typo scrolls
+// past and leaves a wrong image behind — `arcs:upp` used to render a plot with
+// no arcs at all. (A modifier NAME is different: an unknown one, or one aimed at
+// a track type it doesn't apply to, only warns — see applyModifier.)
+function invalid(prefix: string, val: string, expected: string): never {
+  throw new Error(
+    val === ''
+      ? `Missing ${prefix} value. Expected ${prefix}:<${expected}>.`
+      : `Invalid ${prefix} value "${val}". Expected ${expected}.`,
+  )
 }
 
-// Fold one `prefix:val1:val2` modifier into the display snapshot. Gated by
-// category so a modifier only writes keys valid for that display type (an
-// out-of-category key would be an invalid snapshot).
+// A bare `height:` with nothing after the colon would otherwise become a silent
+// 0 via `+''`. `expected` names the wider grammar for the modifiers that also
+// accept keywords.
+function parseNum(prefix: string, val: string, expected = 'a number') {
+  const n = val === '' ? Number.NaN : +val
+  return Number.isNaN(n) ? invalid(prefix, val, expected) : n
+}
+
+// A modifier whose value is mandatory and free-form (a color, a tag, a display
+// name). `color:` with nothing after the colon is a typo, not a request to color
+// by the empty string — which would reach the display as an invalid config-slot
+// value, or be dropped silently.
+function parseStr(prefix: string, val: string, expected = 'value') {
+  return val || invalid(prefix, val, expected)
+}
+
+// A modifier whose value comes from a fixed set (arcs, sashimi, heightMode, …).
+// Returns the matched member so the caller keeps the narrow literal type.
+function parseEnum<T extends string>(
+  prefix: string,
+  val: string,
+  allowed: readonly T[],
+) {
+  return (
+    allowed.find(a => a === val) ?? invalid(prefix, val, allowed.join(', '))
+  )
+}
+
+// A modifier that reads as a flag: bare (`coverage`) or `:true` is on, `:false`
+// is off, anything else is a typo. `getBooleanValue` in options.ts is the same
+// question for a top-level --flag, where an unusable value warns rather than
+// throws — the flags there are view cosmetics, these change what the image shows.
+function parseBool(prefix: string, val: string) {
+  return val === '' || val === 'true'
+    ? true
+    : val === 'false'
+      ? false
+      : invalid(prefix, val, 'true or false')
+}
+
+// Every category, for the modifiers that apply to any track type.
+const ALL = [
+  'alignments',
+  'wiggle',
+  'feature',
+  'variant',
+  'hic',
+] as const satisfies readonly Category[]
+
+export type AssertAllCategoriesListed = AssertTrue<Covers<Category, typeof ALL>>
+
+// Both of these open a display built on LinearCanvasBaseDisplay — the canvas
+// feature display, and the variant display, which extends the very same schema.
+// Every modifier that reads one of that base's slots (heightMode, featureHeight,
+// …) therefore takes CANVAS, never one of the two alone: gating them apart is
+// how `featureHeight:compact` came to work on a GFF track but not a VCF one.
+const CANVAS = ['feature', 'variant'] as const satisfies readonly Category[]
+
+// One `prefix:val1:val2` modifier: which display categories it writes for, and
+// what it folds into the snapshot. Enumerating the categories — rather than
+// re-deriving `isAlignments`/`isScore` inside each case — puts the gate in one
+// place and lets the dispatcher report a modifier aimed at the wrong track type
+// instead of dropping it silently. The `on` lists are the same grouping the
+// README documents per track type.
+interface Modifier {
+  on: readonly Category[]
+  apply: (
+    result: BuildResult,
+    val1: string,
+    val2: string | undefined,
+    category: Category,
+  ) => void
+}
+
+const modifiers: Record<string, Modifier> = {
+  height: {
+    on: ALL,
+    apply: (r, v) => {
+      r.snap.height = parseNum('height', v)
+    },
+  },
+  force: {
+    on: ALL,
+    apply: (r, v) => {
+      r.snap.forceLoad = parseBool('force', v)
+    },
+  },
+  display: {
+    on: ALL,
+    apply: (r, v) => {
+      const name = parseStr('display', v, 'display name')
+      r.displayType = displayTypeAliases[name] ?? name
+    },
+  },
+  // `index:` (the .bai/.csi/.tbi location) and `name:` (the display name) are
+  // consumed at config-build time in readData, so there's nothing to write to
+  // the display snapshot — listed only so they aren't warned about as typos.
+  index: { on: ALL, apply: () => {} },
+  name: { on: ALL, apply: () => {} },
+
+  // Track-height strategy, mirroring the `heightMode` config slot. `fixed`
+  // scrolls to see all, `grow` resizes the track to fit everything, `fit`
+  // shrinks content to fill the current height. An optional numeric second arg
+  // sets the fixed track height in the same modifier, e.g. `heightMode:fit:200`.
+  heightMode: {
+    on: ['alignments', ...CANVAS],
+    apply: (r, v, height) => {
+      r.snap.heightMode = parseEnum('heightMode', v, HEIGHT_MODES)
+      if (height !== undefined) {
+        r.snap.height = parseNum('heightMode', height)
+      }
+    },
+  },
+
+  // The compactness presets map onto different fields per display: featureHeight
+  // for alignments, the displayMode slot for the canvas-based displays. Both are
+  // still plain snapshot values.
+  featureHeight: {
+    on: ['alignments', ...CANVAS],
+    apply: (r, v, _v2, category) => {
+      if (v === 'normal' || v === 'compact' || v === 'super-compact') {
+        if (category === 'alignments') {
+          r.snap.featureHeight = ALIGNMENTS_COMPACTNESS[v]
+        } else {
+          r.snap.displayMode = v === 'super-compact' ? 'superCompact' : v
+        }
+      } else {
+        r.snap.featureHeight = parseNum(
+          'featureHeight',
+          v,
+          'normal, compact, super-compact, or a number',
+        )
+      }
+    },
+  },
+
+  // ——— alignments ———
+  sort: {
+    on: ['alignments'],
+    apply: (r, v, tag) => {
+      const type = parseStr('sort', v, 'sort type')
+      r.sort = { type: sortTypeAliases[type] ?? type, tag }
+    },
+  },
+  group: {
+    on: ['alignments'],
+    apply: (r, v, tag) => {
+      r.snap.groupBy = { type: parseStr('group', v, 'group type'), tag }
+    },
+  },
+  arcs: {
+    on: ['alignments'],
+    apply: (r, v) => {
+      // A bare `arcs` used to mean OFF, the opposite of every other bare
+      // modifier (`coverage`, `force`, …), so the mode is required.
+      const mode = parseEnum('arcs', v, ['off', 'up', 'down', 'cloud'] as const)
+      r.snap.readConnections = mode === 'cloud' || mode === 'off' ? mode : 'arc'
+      if (mode === 'up' || mode === 'down') {
+        r.snap.readConnectionsDown = mode === 'down'
+      }
+    },
+  },
+  linkedReads: {
+    on: ['alignments'],
+    apply: (r, v) => {
+      // 'bezier' is the separate showBezierConnections overlay, not a
+      // linkedReads layout mode (which is only off|normal).
+      const mode = parseEnum('linkedReads', v, ['off', 'normal', 'bezier'])
+      if (mode === 'bezier') {
+        r.snap.showBezierConnections = true
+      } else {
+        r.snap.linkedReads = mode
+      }
+    },
+  },
+  sashimi: {
+    on: ['alignments'],
+    apply: (r, v) => {
+      const mode = parseEnum('sashimi', v, ['off', 'up', 'down', 'auto'])
+      r.snap.showSashimiArcs = mode !== 'off'
+      if (mode !== 'off') {
+        r.snap.sashimiArcsMode = mode
+      }
+    },
+  },
+  coverage: {
+    on: ['alignments'],
+    apply: (r, v) => {
+      r.snap.showCoverage = parseBool('coverage', v)
+    },
+  },
+  coverageHeight: {
+    on: ['alignments'],
+    apply: (r, v) => {
+      r.snap.coverageHeight = parseNum('coverageHeight', v)
+    },
+  },
+  readConnectionsHeight: {
+    on: ['alignments'],
+    apply: (r, v) => {
+      r.snap.readConnectionsHeight = parseNum('readConnectionsHeight', v)
+    },
+  },
+  readConnectionsLineWidth: {
+    on: ['alignments'],
+    apply: (r, v) => {
+      r.snap.readConnectionsLineWidth = parseNum('readConnectionsLineWidth', v)
+    },
+  },
+  softClipping: {
+    on: ['alignments'],
+    apply: (r, v) => {
+      r.snap.showSoftClipping = parseBool('softClipping', v)
+    },
+  },
+  // snpcov collapses an alignments display to coverage-only: hide the pileup
+  // band, keep coverage. Sizing the coverage band to the track height (when a
+  // height was given) makes it fill the track. Deferred to last by
+  // buildDisplaySnapshot so the user's height: flows in first.
+  snpcov: {
+    on: ['alignments'],
+    apply: r => {
+      r.snap.showPileup = false
+      r.snap.showCoverage = true
+      if (r.snap.height !== undefined) {
+        r.snap.coverageHeight = r.snap.height
+      }
+    },
+  },
+
+  // ——— coloring ———
+  // Two different settings share the `color:` spelling because they are the same
+  // question per track type: alignments pick a color SCHEME (`colorBy`, which
+  // takes an optional tag), wiggle picks a solid CSS color. The canvas-based
+  // feature and variant displays have neither slot — a `colorBy` written for
+  // them was dropped as an unknown MST key (feature) or rejected as a
+  // wrong-shaped config-slot value (the multi-sample variant displays, whose
+  // `colorBy` is a plain sample-attribute string), so they are gated out here.
+  color: {
+    on: ['alignments', 'wiggle'],
+    apply: (r, v, tag, category) => {
+      const value = parseStr('color', v, 'color scheme or CSS color')
+      if (category === 'alignments') {
+        r.snap.colorBy = { type: value, tag }
+      } else {
+        // Wiggle: render in one solid color. The bicolor default routes through
+        // pos/negColor and ignores `color`; the display config's own
+        // `colorImpliesSolid` preProcessSnapshot turns bicolor off for a bare
+        // `color`, so don't restate it here — that would also override an
+        // explicit `useBicolor` from the JSON escape hatch.
+        r.snap.color = value
+      }
+    },
+  },
+
+  // ——— wiggle / score ———
+  autoscale: {
+    on: ['wiggle'],
+    apply: (r, v) => {
+      r.snap.autoscale = parseStr('autoscale', v, 'autoscale type')
+    },
+  },
+  minmax: {
+    on: ['wiggle'],
+    apply: (r, min, max) => {
+      if (min) {
+        r.snap.minScore = parseNum('minmax', min)
+      }
+      if (max) {
+        r.snap.maxScore = parseNum('minmax', max)
+      }
+    },
+  },
+  // scaletype/autoscale name a wiggle config slot's enum value directly. They
+  // are NOT re-listed here: the slot's own stringEnum rejects a bad value, which
+  // reaches jb2export as a fatal render error, so a local copy of the list would
+  // only add a way for the CLI to drift out of step with the display.
+  scaletype: {
+    on: ['wiggle'],
+    apply: (r, v) => {
+      r.snap.scaleType = parseStr('scaletype', v, 'linear or log')
+    },
+  },
+  crosshatch: {
+    on: ['wiggle'],
+    apply: (r, v) => {
+      r.snap.displayCrossHatches = parseBool('crosshatch', v)
+    },
+  },
+  // Legacy fill toggle. `fill:false` historically meant "no fill" on
+  // xyplot-family renderers, which maps to the `scatter` rendering type;
+  // `fill:true` is plain `xyplot`.
+  fill: {
+    on: ['wiggle'],
+    apply: (r, v) => {
+      r.snap.defaultRendering = parseBool('fill', v) ? 'xyplot' : 'scatter'
+    },
+  },
+  resolution: {
+    on: ['wiggle'],
+    apply: (r, v) => {
+      r.snap.resolution =
+        v === 'fine'
+          ? 10
+          : v === 'superfine'
+            ? 100
+            : parseNum('resolution', v, 'fine, superfine, or a number')
+    },
+  },
+}
+
+// Fold one `prefix:val1:val2` modifier into the display snapshot, or say why it
+// did nothing. Modifier NAMES warn rather than throw — an unknown one for
+// forward compatibility, and a well-known one aimed at the wrong track type
+// because reusing one modifier list across a mixed set of files is a reasonable
+// thing to script. (Modifier VALUES throw; see `invalid` above.) Either way it
+// is now said out loud: `--bigwig sig.bw sashimi:up` used to look like it
+// worked.
 function applyModifier(
   result: BuildResult,
   category: Category,
@@ -270,243 +594,26 @@ function applyModifier(
   val1: string,
   val2: string | undefined,
 ) {
-  const snap = result.snap
-  const isAlignments = category === 'alignments'
-  const isScore = category === 'wiggle'
-  const hasFeatureSize = isAlignments || category === 'feature'
-  switch (prefix) {
-    case 'height': {
-      if (val1) {
-        snap.height = parseNum('height', val1)
-      }
-      break
-    }
-    case 'sort': {
-      if (isAlignments) {
-        result.sort = { type: sortTypeAliases[val1] ?? val1, tag: val2 }
-      }
-      break
-    }
-    case 'group': {
-      if (isAlignments && val1) {
-        snap.groupBy = { type: val1, tag: val2 }
-      }
-      break
-    }
-    case 'color': {
-      if (isAlignments || category === 'variant' || category === 'feature') {
-        snap.colorBy = { type: val1, tag: val2 }
-      } else if (isScore) {
-        // Wiggle: render in one solid color. The bicolor default routes through
-        // pos/negColor and ignores `color`; the display config's own
-        // `colorImpliesSolid` preProcessSnapshot turns bicolor off for a bare
-        // `color`, so don't restate it here — that would also override an
-        // explicit `useBicolor` from the JSON escape hatch.
-        snap.color = val1
-      }
-      break
-    }
-    case 'arcs': {
-      if (isAlignments) {
-        if (val1 === 'cloud') {
-          snap.readConnections = 'cloud'
-        } else if (val1 === 'up' || val1 === 'down') {
-          snap.readConnections = 'arc'
-          snap.readConnectionsDown = val1 === 'down'
-        } else if (val1 === 'off' || val1 === '') {
-          snap.readConnections = 'off'
-        } else {
-          // A typo (arcs:upp) previously silently turned arcs off; warn so the
-          // mistake is visible instead of producing a plot without arcs.
-          console.warn(
-            `Warning: unknown arcs mode "${val1}" (expected off, up, down, cloud); ignoring`,
-          )
-        }
-      }
-      break
-    }
-    case 'linkedReads': {
-      if (isAlignments) {
-        // 'bezier' is the separate showBezierConnections overlay, not a
-        // linkedReads layout mode (which is only off|normal).
-        if (val1 === 'bezier') {
-          snap.showBezierConnections = true
-        } else if (val1 === 'normal' || val1 === 'off') {
-          snap.linkedReads = val1
-        }
-      }
-      break
-    }
-    case 'sashimi': {
-      if (isAlignments) {
-        if (val1 === 'off') {
-          snap.showSashimiArcs = false
-        } else if (val1 === 'up' || val1 === 'down' || val1 === 'auto') {
-          snap.showSashimiArcs = true
-          snap.sashimiArcsMode = val1
-        }
-      }
-      break
-    }
-    case 'coverage': {
-      if (isAlignments) {
-        snap.showCoverage = getBooleanValue(val1 || 'true', 'coverage')
-      }
-      break
-    }
-    case 'coverageHeight': {
-      if (isAlignments && val1) {
-        snap.coverageHeight = parseNum('coverageHeight', val1)
-      }
-      break
-    }
-    case 'readConnectionsHeight': {
-      if (isAlignments && val1) {
-        snap.readConnectionsHeight = parseNum('readConnectionsHeight', val1)
-      }
-      break
-    }
-    case 'readConnectionsLineWidth': {
-      if (isAlignments && val1) {
-        snap.readConnectionsLineWidth = parseNum(
-          'readConnectionsLineWidth',
-          val1,
-        )
-      }
-      break
-    }
-    case 'featureHeight': {
-      if (val1 === 'normal' || val1 === 'compact' || val1 === 'super-compact') {
-        // The compactness presets map onto different fields per display:
-        // featureHeight for alignments, the displayMode slot for canvas
-        // features. Both are still plain snapshot values.
-        if (isAlignments) {
-          snap.featureHeight = ALIGNMENTS_COMPACTNESS[val1]
-        } else if (category === 'feature') {
-          snap.displayMode = val1 === 'super-compact' ? 'superCompact' : val1
-        }
-      } else if (val1 && hasFeatureSize) {
-        snap.featureHeight = parseNum(
-          'featureHeight',
-          val1,
-          'normal, compact, super-compact, or a number',
-        )
-      }
-      break
-    }
-    case 'softClipping': {
-      if (isAlignments) {
-        snap.showSoftClipping = getBooleanValue(val1 || 'true', 'softClipping')
-      }
-      break
-    }
-    case 'force': {
-      if (getBooleanValue(val1 || 'true', 'force')) {
-        snap.forceLoad = true
-      }
-      break
-    }
-    case 'heightMode': {
-      // Track-height strategy, mirroring the `heightMode` config slot. `fixed`
-      // scrolls to see all, `grow` resizes the track to fit everything, `fit`
-      // shrinks content to fill the current height. Valid values are gated per
-      // display type (HEIGHT_MODES). An optional numeric second arg sets the
-      // fixed track height in the same modifier, e.g. `heightMode:fit:200`.
-      if (HEIGHT_MODE_CATEGORIES.has(category)) {
-        const mode = HEIGHT_MODES.find(m => m === val1)
-        if (mode) {
-          snap.heightMode = mode
-          const n = Number(val2)
-          if (val2 && Number.isFinite(n)) {
-            snap.height = n
-          }
-        } else {
-          console.warn(
-            `Warning: unknown heightMode "${val1}" for a ${category} track`,
-          )
-        }
-      }
-      break
-    }
-    case 'display': {
-      if (val1) {
-        result.displayType = displayTypeAliases[val1] ?? val1
-      }
-      break
-    }
-    case 'autoscale': {
-      if (isScore) {
-        snap.autoscale = val1
-      }
-      break
-    }
-    case 'minmax': {
-      if (isScore) {
-        if (val1) {
-          snap.minScore = parseNum('minmax', val1)
-        }
-        if (val2) {
-          snap.maxScore = parseNum('minmax', val2)
-        }
-      }
-      break
-    }
-    case 'scaletype': {
-      if (isScore) {
-        snap.scaleType = val1
-      }
-      break
-    }
-    case 'crosshatch': {
-      if (isScore) {
-        snap.displayCrossHatches = getBooleanValue(val1 || 'true', 'crosshatch')
-      }
-      break
-    }
-    // Legacy fill toggle. `fill:false` historically meant "no fill" on
-    // xyplot-family renderers, which maps to the `scatter` rendering type;
-    // `fill:true` is plain `xyplot`.
-    case 'fill': {
-      if (isScore) {
-        snap.defaultRendering = getBooleanValue(val1 || 'true', 'fill')
-          ? 'xyplot'
-          : 'scatter'
-      }
-      break
-    }
-    case 'resolution': {
-      if (isScore) {
-        const val =
-          val1 === 'fine' ? 10 : val1 === 'superfine' ? 100 : Number(val1)
-        snap.resolution = Number.isNaN(val) ? 1 : val
-      }
-      break
-    }
-    // snpcov collapses an alignments display to coverage-only: hide the pileup
-    // band, keep coverage. Sizing the coverage band to the track height (when a
-    // height was given) makes it fill the track. Applied after the loop so the
-    // user's height: flows in first.
-    case 'snpcov': {
-      if (isAlignments) {
-        snap.showPileup = false
-        snap.showCoverage = true
-        if (snap.height !== undefined) {
-          snap.coverageHeight = snap.height
-        }
-      }
-      break
-    }
-    // `index:` (the .bai/.csi/.tbi location) and `name:` (the display name) are
-    // consumed at config-build time in readData, so there's nothing to write to
-    // the display snapshot — listed only so they aren't warned about as typos.
-    case 'index':
-    case 'name': {
-      break
-    }
-    default: {
-      console.warn(`Warning: unknown track option "${prefix}"`)
-      break
-    }
+  const modifier = modifiers[prefix]
+  if (!modifier) {
+    console.warn(`Warning: unknown track option "${prefix}"`)
+  } else if (!modifier.on.includes(category)) {
+    console.warn(
+      `Warning: track option "${prefix}" has no effect on a ${category} track (applies to: ${modifier.on.join(', ')})`,
+    )
+  } else {
+    modifier.apply(result, val1, val2, category)
+  }
+}
+
+// Raw JSON escape hatch for settings without a dedicated modifier. Reported with
+// the offending token, since a bare SyntaxError from a shell-mangled brace names
+// nothing.
+function parseJsonModifier(opt: string): DisplaySnapshot {
+  try {
+    return JSON.parse(opt) as DisplaySnapshot
+  } catch (e) {
+    throw new Error(`Invalid JSON track option: ${opt}`, { cause: e })
   }
 }
 
@@ -516,24 +623,22 @@ function applyModifier(
 // caller to resolve against the view.
 export function buildDisplaySnapshot(category: Category, opts: string[]) {
   const result: BuildResult = { snap: {} }
-  const apply = (opt: string) => {
-    const [prefix = '', val1 = '', val2] = opt.split(':')
-    applyModifier(result, category, prefix, val1, val2)
-  }
-  const deferred: string[] = []
+  const deferred: [string, string, string | undefined][] = []
   for (const opt of opts) {
     if (opt.startsWith('{')) {
-      // Raw JSON escape hatch for settings without a dedicated modifier.
-      Object.assign(result.snap, JSON.parse(opt) as DisplaySnapshot)
-    } else if (opt.startsWith('snpcov')) {
-      deferred.push(opt)
+      Object.assign(result.snap, parseJsonModifier(opt))
+      continue
+    }
+    const [prefix = '', val1 = '', val2] = opt.split(':')
+    if (prefix === 'snpcov') {
+      deferred.push([prefix, val1, val2])
     } else {
-      apply(opt)
+      applyModifier(result, category, prefix, val1, val2)
     }
   }
-  deferred.forEach(opt => {
-    apply(opt)
-  })
+  for (const [prefix, val1, val2] of deferred) {
+    applyModifier(result, category, prefix, val1, val2)
+  }
   return result
 }
 
@@ -550,15 +655,23 @@ export function applyDisplayOpts(
   const { snap, sort, displayType } = buildDisplaySnapshot(category, opts)
 
   // Resolve the center-line sort against the view (the pivot is the genomic
-  // position under the view center) and bake it into the snapshot.
-  const center = view.centerLineInfo
-  if (sort && center && center.offset >= 0) {
-    snap.sortedBy = {
-      type: sort.type,
-      pos: Math.round(center.offset),
-      refName: center.refName,
-      assemblyName: center.assemblyName,
-      tag: sort.tag,
+  // position under the view center) and bake it into the snapshot. The view only
+  // has a center line once it has displayed regions, so say when the sort is
+  // dropped rather than render an unsorted pileup that looks like a sort bug.
+  if (sort) {
+    const center = view.centerLineInfo
+    if (center && center.offset >= 0) {
+      snap.sortedBy = {
+        type: sort.type,
+        pos: Math.round(center.offset),
+        refName: center.refName,
+        assemblyName: center.assemblyName,
+        tag: sort.tag,
+      }
+    } else {
+      console.warn(
+        `Warning: sort:${sort.type} on "${trackId}" ignored — the view has no center position to sort at (pass --loc)`,
+      )
     }
   }
 
@@ -582,16 +695,16 @@ export function applyDisplayOpts(
 
 // A track-type CLI flag (--bam file.bam, --bigwig sig.bw, …): the file's
 // basename is the trackId readData built, and the flag name selects the display
-// category. Thin wrapper over applyDisplayOpts.
+// category via the track type that flag opens. Thin wrapper over applyDisplayOpts.
 export function applyTrackOpts(trackEntry: Entry, view: LinearGenomeViewModel) {
-  const [trackType, [track, ...opts]] = trackEntry
+  const [flag, [track, ...opts]] = trackEntry
   if (!track) {
     throw new Error('invalid command line args')
   }
   applyDisplayOpts(
     view,
     path.basename(track),
-    categoryByType[trackType] ?? 'feature',
+    categoryForTrackType(trackTypeForFlag(flag)),
     opts,
   )
 }

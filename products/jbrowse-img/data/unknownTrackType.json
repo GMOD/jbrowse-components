@@ -1,0 +1,11 @@
+[
+  {
+    "type": "SomePluginTrack",
+    "trackId": "unregistered_type",
+    "name": "a track type this bundle does not register",
+    "assemblyNames": ["volvox.fa"],
+    "adapter": {
+      "type": "SomePluginAdapter"
+    }
+  }
+]

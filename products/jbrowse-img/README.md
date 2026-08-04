@@ -468,6 +468,16 @@ Instead of extra `--flags`, per-track settings use a colon-based syntax that
 follows the track file argument, e.g. `--bam reads.bam color:tag:RG height:400`.
 This is the full list of available modifiers.
 
+Modifiers are grouped below by the track types they apply to. Passing one to a
+track type it does not apply to (say `sashimi:up` on a BigWig) prints a warning
+naming the types it does work on, rather than doing nothing quietly.
+
+A modifier **value** the modifier can't use — `arcs:upp`, `height:8o`,
+`coverage:ture` — is an error, not a warning: the tool writes one figure and
+exits, so a warning would scroll past and leave you with a wrong image. The
+`true|false` modifiers (`coverage`, `softClipping`, `force`, `crosshatch`,
+`fill`) also read bare, so `coverage` on its own means `coverage:true`.
+
 **All tracks**
 
 | Modifier        | Example                | Description                                          |
@@ -531,6 +541,9 @@ Available `color:type` values:
 | `tag:<TAG>`                | Color by any BAM tag, e.g. `color:tag:HP`, `color:tag:RG` |
 
 **Feature tracks (GFF3/BED/BigBed)**
+
+`heightMode:` also applies to VCF tracks, which use the same canvas display
+base.
 
 | Modifier                            | Example                 | Description                                                                                                                                                                                                       |
 | ----------------------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

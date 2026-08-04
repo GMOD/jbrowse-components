@@ -44,6 +44,22 @@ test('a track with no chord display is skipped, not fatal', async () => {
   assert.ok(paths.length > 2, `expected variant chords, got ${paths.length}`)
 })
 
+// The skip filter asks the pluginManager which displays a track type declares —
+// and `getTrackType` THROWS for a type this bundle doesn't register, which a
+// --hub/--config config can easily carry (a track type from a plugin jb2export
+// doesn't bundle). That threw out of the very filter meant to keep an
+// un-renderable track from aborting the render.
+test('a track of an unregistered type is skipped, not fatal', async () => {
+  const svg = await renderRegion({
+    mode: 'circular',
+    fasta: volvoxFasta,
+    trackList: [['vcfgz', [sv]]],
+    tracks: path.join(__dirname, '../data/unknownTrackType.json'),
+  })
+  const paths = svg.match(/<path/g) ?? []
+  assert.ok(paths.length >= 2, `expected an ideogram, got ${paths.length}`)
+})
+
 // CircularView reads assemblyManager.get() without awaiting, so a failed
 // assembly load never reaches the session and its init never completes — which
 // would hang headlessly. The assembly error is detected directly so it fails
