@@ -2,8 +2,8 @@ import { act, renderHook } from '@testing-library/react'
 
 import { useRecentLocations } from './useRecentLocations.ts'
 
-// localStorage persistence is disabled under jest (see the hook), so these
-// exercise the in-memory list semantics: order, dedupe, cap, and clear
+// list semantics: order, dedupe, cap, clear, and the round trip through
+// localStorage (cleared between tests by config/jest/localStorage.js)
 
 test('adds locations most-recent-first', () => {
   const { result } = renderHook(() => useRecentLocations('hg38'))
@@ -57,4 +57,22 @@ test('clear empties the list', () => {
     result.current.clearRecentLocations()
   })
   expect(result.current.recentLocations).toEqual([])
+})
+
+test('persists per assembly, and not at all without one', () => {
+  const { result, unmount } = renderHook(() => useRecentLocations('hg38'))
+  act(() => {
+    result.current.addRecentLocation('chr1')
+  })
+  unmount()
+
+  expect(
+    renderHook(() => useRecentLocations('hg38')).result.current.recentLocations,
+  ).toEqual(['chr1'])
+  expect(
+    renderHook(() => useRecentLocations('hg19')).result.current.recentLocations,
+  ).toEqual([])
+  expect(
+    renderHook(() => useRecentLocations()).result.current.recentLocations,
+  ).toEqual([])
 })

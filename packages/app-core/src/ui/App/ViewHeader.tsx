@@ -57,12 +57,7 @@ const ViewHeader = observer(function ViewHeader({
   // race to scrollIntoView (last one wins, landing on the bottom view);
   // ViewStack only sets it for views added after the initial render.
   useEffect(() => {
-    if (
-      scrollOnMount &&
-      typeof jest === 'undefined' &&
-      !navigator.webdriver &&
-      window.self === window.top
-    ) {
+    if (scrollOnMount && !navigator.webdriver && window.self === window.top) {
       scrollRef.current?.scrollIntoView({ block: 'center' })
     }
   }, [scrollOnMount])

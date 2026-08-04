@@ -33,7 +33,7 @@ export function useAssemblySelection(
   const [override, setOverride] = useLocalStorage<string | undefined>(
     instanceScopedKey('lastAssembly', localStorageKey ?? ''),
     undefined,
-    typeof jest === 'undefined' && Boolean(localStorageKey),
+    Boolean(localStorageKey),
   )
   const selectedAssemblyName = assemblyNames.includes(override ?? '')
     ? override

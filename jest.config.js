@@ -52,6 +52,8 @@ const baseConfig = {
     '<rootDir>/config/jest/setHTML.js',
     '<rootDir>/config/jest/resizeObserver.js',
     '<rootDir>/config/jest/pointerEvents.js',
+    '<rootDir>/config/jest/requestIdleCallback.js',
+    '<rootDir>/config/jest/scrollIntoView.js',
   ],
   testEnvironmentOptions: { url: 'http://localhost' },
 }
@@ -119,6 +121,7 @@ export default {
       setupFilesAfterEnv: [
         '<rootDir>/config/jest/fetchMockAfterEnv.js',
         '<rootDir>/config/jest/deterministicIds.js',
+        '<rootDir>/config/jest/localStorage.js',
       ],
       ...baseConfig,
     },

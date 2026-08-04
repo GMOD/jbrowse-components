@@ -18,19 +18,16 @@ export const isNode =
     (globalThis as { process?: unknown }).process,
   ) === '[object process]'
 
-// requires immediate execution in jest environment, because (hypothesis) it
-// otherwise listens for prerendered_canvas but reads empty pixels, and doesn't
-// get the contents of the canvas
+// the real idle callback where the realm has one, otherwise a short timeout.
+// jsdom has neither, so tests install a synchronous shim
+// (config/jest/requestIdleCallback.js) rather than this branching on the
+// environment
 export const rIC =
-  typeof jest === 'undefined'
-    ? // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      typeof window !== 'undefined' && window.requestIdleCallback
-      ? window.requestIdleCallback
-      : (cb: () => void) => {
-          setTimeout(() => {
-            cb()
-          }, 1)
-        }
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  typeof window !== 'undefined' && window.requestIdleCallback
+    ? window.requestIdleCallback
     : (cb: () => void) => {
-        cb()
+        setTimeout(() => {
+          cb()
+        }, 1)
       }

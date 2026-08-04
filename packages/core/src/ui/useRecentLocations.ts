@@ -8,15 +8,14 @@ const MAX_RECENT_LOCATIONS = 6
 /**
  * Remembers the locations recently opened from an import form, most-recent
  * first and deduplicated, scoped per assembly (and per host/path/config like
- * the remembered assembly). Disabled under jest so tests don't touch
- * localStorage; the in-memory list still updates, so the behavior stays
- * testable.
+ * the remembered assembly). Without an assembly there is nothing to scope the
+ * key to, so the list stays in memory only.
  */
 export function useRecentLocations(assemblyName?: string) {
   const [recentLocations, setRecentLocations] = useLocalStorage<string[]>(
     instanceScopedKey('recentLocations', assemblyName ?? ''),
     [],
-    typeof jest === 'undefined' && Boolean(assemblyName),
+    Boolean(assemblyName),
   )
   function addRecentLocation(loc: string) {
     setRecentLocations(prev =>
