@@ -158,6 +158,9 @@ export const mafSpecs: ScreenshotSpec[] = [
     // is identifiable rather than inferred from the cell color.
     mode: 'url',
     name: 'maf_codon_tooltip',
+    // the tooltip IS the figure here, so the run should complain if it ever
+    // stops appearing rather than quietly capturing the frame without it
+    expectTooltip: true,
     url: sessionSpec(CE_MAF_FRAMES, {
       sessionTracks: [CE11_GENE_TRACK],
       views: [

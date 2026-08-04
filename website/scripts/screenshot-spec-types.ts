@@ -146,9 +146,18 @@ export interface CommonSpecFields extends BaseSpecFields {
   // `viewportHeight` is fine between rows, and is how a grid trims the blank
   // under its shorter half).
   stageColumns?: number
-  // suppress the hover/right-click BaseTooltip (which lingers while a context
-  // menu is open) so it doesn't clutter the capture
+  // suppress the hover/right-click tooltip (which lingers while a context menu
+  // is open) so it doesn't clutter the capture
   hideTooltip?: boolean
+  // this figure is ABOUT a tooltip, so one is supposed to be on screen.
+  //
+  // Tooltips are not hidden by default and should not be: a tooltip is often the
+  // thing a figure is demonstrating. What is worth catching is the accidental
+  // one, left behind because a click sequence happened to end on a hoverable
+  // control, which lands in a committed PNG with nobody the wiser. So the run
+  // reports a tooltip it did not expect, and — declared here — one it expected
+  // and did not get.
+  expectTooltip?: boolean
   // CSS selectors for transient chrome to hide just before capture (e.g. a MUI
   // snackbar toast or the hover tooltip left over from driving a menu):
   // `['.MuiSnackbar-root', '.MuiTooltip-popper']`. Each matched element is

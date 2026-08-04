@@ -24,6 +24,7 @@ import {
   clearAnnotations,
   drawAnnotations,
   hideLingeringTooltip,
+  visibleTooltipText,
 } from './annotations.ts'
 import {
   IM,
@@ -800,6 +801,12 @@ async function shoot(
 ) {
   if (spec.hideTooltip) {
     await hideLingeringTooltip(page)
+  } else {
+    // Not hidden — a tooltip is often what a figure is demonstrating. Recorded
+    // instead, so the run can say when one showed up that the spec never asked
+    // for (the kind a click sequence leaves behind on whatever control it ended
+    // on) or when a figure that IS about a tooltip lost it.
+    tooltipSeen.set(spec.name, await visibleTooltipText(page))
   }
   if (spec.hideSelectors && spec.hideSelectors.length > 0) {
     await page.evaluate(selectors => {
@@ -853,6 +860,18 @@ async function overflowPx(page: Page) {
 }
 
 const clippedPx = new Map<string, number>()
+// spec name -> the tooltip text on screen at capture, or undefined for none.
+// Only populated for specs that did not ask for suppression.
+const tooltipSeen = new Map<string, string | undefined>()
+
+// Whether the spec of this name declares that a tooltip belongs in its frame.
+// Looked up by name rather than threaded through the capture, because a staged
+// spec shoots several frames under one name and the declaration is the spec's.
+function expectsTooltip(name: string) {
+  return specs.some(
+    s => s.name === name && 'expectTooltip' in s && s.expectTooltip,
+  )
+}
 
 // Wait for the browser to actually rasterize the current DOM before capturing.
 // A single rAF callback fires *before* paint, so a freshly-composited layer —
@@ -1421,6 +1440,24 @@ function printSummary(totals: RunTotals) {
         ([name, px]) =>
           `• ${name}.png: ${px} css px of page below the viewport`,
       ),
+    )
+  }
+  const strayTooltips = [...tooltipSeen].filter(
+    ([name, text]) => text !== undefined && !expectsTooltip(name),
+  )
+  if (strayTooltips.length > 0) {
+    printReport(
+      `TOOLTIP LEFT IN THE CAPTURE (${strayTooltips.length}) — a hover the actions ended on; park the cursor or set hideTooltip, or set expectTooltip if the figure is about it`,
+      strayTooltips.map(([name, text]) => `• ${name}.png: "${text}"`),
+    )
+  }
+  const missingTooltips = [...tooltipSeen].filter(
+    ([name, text]) => text === undefined && expectsTooltip(name),
+  )
+  if (missingTooltips.length > 0) {
+    printReport(
+      `EXPECTED TOOLTIP MISSING (${missingTooltips.length}) — the spec sets expectTooltip but nothing was on screen`,
+      missingTooltips.map(([name]) => `• ${name}.png`),
     )
   }
   if (slacked.length > 0) {
