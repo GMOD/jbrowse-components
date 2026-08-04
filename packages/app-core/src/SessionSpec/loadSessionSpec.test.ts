@@ -383,6 +383,57 @@ test('a spec view nesting its settings under init is told where they go', async 
   )
 })
 
+// `sessionTracks` names the session, but `addTrackConf` follows the user (an
+// admin's lands in the config every visitor loads), so the spec has to ask for
+// the session-scoped adder where one exists — same rule as sessionConnections
+describe('sessionTracks', () => {
+  const TRACK = { trackId: 't1', type: 'FeatureTrack' }
+
+  function setupWithTracks({ sessionScoped = true } = {}) {
+    const addedVia: string[] = []
+    const { session, pluginManager } = setup({})
+    Object.assign(session, {
+      // isSessionWithAddTracks goes through isSessionModel, which keys on these
+      // two rather than on MST node-ness
+      rpcManager: {},
+      configuration: {},
+      addTrackConf: (conf: Record<string, unknown>) => {
+        addedVia.push('addTrackConf')
+        return conf
+      },
+      ...(sessionScoped
+        ? {
+            addSessionTrackConf: (conf: Record<string, unknown>) => {
+              addedVia.push('addSessionTrackConf')
+              return conf
+            },
+          }
+        : undefined),
+    })
+    return { pluginManager, addedVia }
+  }
+
+  it('adds to the session, not to wherever the user edits land', async () => {
+    const { pluginManager, addedVia } = setupWithTracks()
+
+    await loadSessionSpec({ sessionTracks: [TRACK], views: [] }, pluginManager)
+
+    expect(addedVia).toEqual(['addSessionTrackConf'])
+  })
+
+  // Desktop and the embedded circular view have no sessionTracks array; their
+  // one destination is the config, which is saved with the session there anyway
+  it('falls back to addTrackConf where there is no session-scoped adder', async () => {
+    const { pluginManager, addedVia } = setupWithTracks({
+      sessionScoped: false,
+    })
+
+    await loadSessionSpec({ sessionTracks: [TRACK], views: [] }, pluginManager)
+
+    expect(addedVia).toEqual(['addTrackConf'])
+  })
+})
+
 // A hub (or any connection) brings its own assemblies and tracks, from a fetch.
 // Before `sessionConnections` a spec could not carry one at all — a URL was
 // either a hub or a spec, never both — so a hub could never be opened with a

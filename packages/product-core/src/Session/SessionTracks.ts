@@ -325,45 +325,75 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
           applySnapshot(node, fullConfig)
         }
       }
+      // The session-scoped add, shared by the action that always means the
+      // session and the one that means it only for a non-admin. A plain closure
+      // rather than `this.addSessionTrackConf` so neither action's inferred
+      // return type depends on the other's.
+      function addToSession(trackConf: AnyConfiguration) {
+        const { trackId, type } = trackConf as {
+          type: string
+          trackId: string
+        }
+        if (!type) {
+          throw new Error(`track type not specified for "${trackId}"`)
+        }
+        // Dedupe against everything the session can already resolve — config
+        // catalog (jbrowse.tracks), assembly sequences, connection tracks and
+        // prior sessionTracks — not just sessionTracks. Re-adding a config
+        // already in the catalog would otherwise push a full shadow into
+        // sessionTracks, silently demoting a catalog track to a session track
+        // and dropping its trackConfigDeltas override semantics.
+        const existing = self.getTrackById(trackId)
+        if (existing) {
+          return existing
+        }
+        // sessionTracks is a typed MST array (unlike the frozen
+        // jbrowse.tracks), so an invalid config throws on push. Surface it as
+        // a snackbar and skip the add, rather than letting it crash the app.
+        try {
+          const length = self.sessionTracks.push(trackConf)
+          return self.sessionTracks[length - 1]
+        } catch (e) {
+          self.notifyError(
+            `Track "${trackId}" has an invalid configuration: ${e}`,
+            e,
+          )
+          return undefined
+        }
+      }
       return {
         /**
          * #action
+         * Add a track config to *this session*: it lands in `sessionTracks`,
+         * travels with the session when it is saved or shared, and never
+         * reaches the config.json the server hands every visitor.
+         *
+         * This is the one to call when the track belongs to the session being
+         * built — a session spec's `sessionTracks`, a URL's `&sessionTracks=` —
+         * no matter who is looking. `addTrackConf` below is the one whose
+         * destination depends on that. Mirrors
+         * `addSessionConnectionConf`/`addConnectionConf` in the connections
+         * mixins.
+         */
+        addSessionTrackConf(trackConf: AnyConfiguration) {
+          return addToSession(trackConf)
+        },
+
+        /**
+         * #action
+         * Add a track config wherever *this user's* edits belong: an admin's
+         * into the shared config (`jbrowse.tracks`, which the admin server
+         * writes back into config.json for every visitor), everyone else's into
+         * the session. Two destinations behind one name, so call it only where
+         * that really is the intent — the "Add track" workflows, where an admin
+         * adding a track means to add it for the whole site. Anything that
+         * means one destination should say which: `addSessionTrackConf` above
+         * for the session, `jbrowse.addTrackConf` for the config.
          */
         addTrackConf(trackConf: AnyConfiguration) {
-          if (self.adminMode) {
-            return superAddTrackConf(trackConf)
-          }
-
-          const { trackId, type } = trackConf as {
-            type: string
-            trackId: string
-          }
-          if (!type) {
-            throw new Error(`track type not specified for "${trackId}"`)
-          }
-          // Dedupe against everything the session can already resolve — config
-          // catalog (jbrowse.tracks), assembly sequences, connection tracks and
-          // prior sessionTracks — not just sessionTracks. Re-adding a config
-          // already in the catalog would otherwise push a full shadow into
-          // sessionTracks, silently demoting a catalog track to a session track
-          // and dropping its trackConfigDeltas override semantics.
-          const existing = self.getTrackById(trackId)
-          if (existing) {
-            return existing
-          }
-          // sessionTracks is a typed MST array (unlike the frozen
-          // jbrowse.tracks), so an invalid config throws on push. Surface it as
-          // a snackbar and skip the add, rather than letting it crash the app.
-          try {
-            const length = self.sessionTracks.push(trackConf)
-            return self.sessionTracks[length - 1]
-          } catch (e) {
-            self.notifyError(
-              `Track "${trackId}" has an invalid configuration: ${e}`,
-              e,
-            )
-            return undefined
-          }
+          return self.adminMode
+            ? superAddTrackConf(trackConf)
+            : addToSession(trackConf)
         },
 
         /**

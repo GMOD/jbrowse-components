@@ -182,6 +182,47 @@ describe('JBrowseWebSessionModel', () => {
     )
   })
 
+  // the same session-vs-config split as the two connection adders above, and
+  // for the same reason: a caller that means "this session" must be able to say
+  // so rather than inheriting whoever happens to be looking
+  describe('track adders', () => {
+    const trackSnap = {
+      trackId: 'spec_track',
+      type: 'FeatureTrack',
+      name: 'spec track',
+      assemblyNames: ['volvox'],
+      adapter: { type: 'FromConfigAdapter', features: [] },
+    }
+
+    it.each([false, true])(
+      'addSessionTrackConf keeps the config in the session (adminMode=%s)',
+      adminMode => {
+        const session = createTestSession({ adminMode })
+        session.addSessionTrackConf(trackSnap)
+        expect(session.sessionTracks.map(t => t.trackId)).toEqual([
+          'spec_track',
+        ])
+        expect(session.jbrowse.tracks).toHaveLength(0)
+      },
+    )
+
+    it('an admin addTrackConf writes the config, not the session', () => {
+      const session = createTestSession({ adminMode: true })
+      session.addTrackConf(trackSnap)
+      expect(session.sessionTracks).toHaveLength(0)
+      expect(
+        session.jbrowse.tracks.map((t: AnyConfigurationModel) => t.trackId),
+      ).toEqual(['spec_track'])
+    })
+
+    it('a non-admin addTrackConf writes the session, not the config', () => {
+      const session = createTestSession({})
+      session.addTrackConf(trackSnap)
+      expect(session.sessionTracks.map(t => t.trackId)).toEqual(['spec_track'])
+      expect(session.jbrowse.tracks).toHaveLength(0)
+    })
+  })
+
   describe('displayTypeDefaults store', () => {
     it('round-trips a promoted per-display-type slot default', () => {
       const session = createTestSession()

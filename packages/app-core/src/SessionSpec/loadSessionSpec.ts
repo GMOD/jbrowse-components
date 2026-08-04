@@ -58,6 +58,24 @@ function isSessionWithSpecConnections(
   )
 }
 
+// Same split as the connections above, one layer down: `addTrackConf` follows
+// the user, so in jbrowse-web's admin mode it writes `jbrowse.tracks` — the
+// config.json served to everyone. A spec key named `sessionTracks` means the
+// session whoever is looking, so prefer the session-scoped adder where the
+// application has one (jbrowse-web, the embedded LGV). Desktop and the embedded
+// circular view have only `addTrackConf`, and its one destination is the right
+// one there.
+interface SessionWithAddSessionTracks {
+  addSessionTrackConf: (
+    conf: Record<string, unknown>,
+  ) => AnyConfigurationModel | undefined
+}
+function isSessionWithAddSessionTracks(
+  session: AbstractSessionModel,
+): session is AbstractSessionModel & SessionWithAddSessionTracks {
+  return 'addSessionTrackConf' in session
+}
+
 // A connection supplies assemblies and tracks that the spec's views go on to
 // reference by name, and it supplies them from a fetch. Launching a view before
 // that fetch lands gives it an assembly that doesn't exist yet ("Assembly X not
@@ -241,7 +259,15 @@ export async function loadSessionSpec(
     }
     if (isSessionWithAddTracks(session)) {
       for (const track of sessionTracks) {
-        session.addTrackConf(track)
+        // session-scoped adder for the same reason as the connections above: a
+        // spec key named `sessionTracks` means the session, and `addTrackConf`
+        // follows the user, so an admin clicking a link would otherwise write
+        // the spec's tracks into the config.json served to everyone.
+        if (isSessionWithAddSessionTracks(session)) {
+          session.addSessionTrackConf(track)
+        } else {
+          session.addTrackConf(track)
+        }
       }
     }
 
