@@ -18,6 +18,16 @@ gitignored). `deploy_staging.sh` wraps a staging deploy.
   that names its specs rewrites them, since the gate's 0.5% is wider than a
   renamed label. If an unfiltered sweep says unchanged where you expected a
   change, `--force` and diff the two rather than trusting the gate.
+- **`--affected` narrows a sweep to what a change could have moved**, mapping
+  changed file → workspace package → reverse-dependency closure → plugins →
+  the type names those plugins own → specs whose session names them
+  (`scripts/screenshot-impact.ts`, runnable on its own to see the reasoning).
+  It narrows only — it does **not** imply `--force`, so the diff gate still
+  decides what gets rewritten, and it intersects with `--filter`. It is an
+  approximation with a known conservative floor (~45 specs that resolve to no
+  in-repo type are always selected). **The unfiltered sweep is its oracle**: a
+  PNG a full regen rewrites that `--affected` would not have selected is a bug
+  in the map, not an acceptable miss.
 - **No spec sets `diffThreshold`.** Treat a request for one as a bug in whatever
   is producing the nondeterminism.
 - **Downscale before reading a PNG** — captures are ~3000px and Read rejects

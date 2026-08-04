@@ -32,6 +32,7 @@ import {
   pngDiffFraction,
   trailingBackgroundPx,
 } from './image-pipeline.ts'
+import { changedFilesFromGit, selectAffected } from './screenshot-impact.ts'
 import {
   matchesFilterTokens,
   parseFilterTokens,
@@ -82,6 +83,13 @@ const { values } = parseArgs({
     check: { type: 'boolean', default: false },
     // fraction-of-pixels diff below which a re-render keeps the committed PNG
     'diff-threshold': { type: 'string' },
+    // narrow the run to specs a change could plausibly have moved
+    affected: { type: 'boolean', default: false },
+    since: { type: 'string' },
+    // take the changed-file list from a file (one path per line) instead of
+    // asking git — a CI runner already knows the diff of the PR it is building,
+    // and computing it again from a shallow checkout gets it wrong
+    'changed-from': { type: 'string' },
   },
 })
 
@@ -102,7 +110,7 @@ function optNum(name: string, raw: string | undefined) {
   return n
 }
 
-const { headed, filter, exact, force, check, firefox } = values
+const { headed, filter, exact, force, check, firefox, affected, since } = values
 const filterTokens = parseFilterTokens(filter)
 // A filtered run names its specs, so it means them: the content-stable diff gate
 // below exists to keep an unfiltered sweep from rewriting 288 PNGs over
@@ -178,6 +186,13 @@ Options:
                           --check, where parallelism reads as spec flakiness)
       --diff-threshold <f>  Pixel-diff fraction below which a re-render keeps
                           the committed PNG (default: ${DEFAULT_DIFF_THRESHOLD})
+      --affected          Only render specs a change since --since could have
+                          moved (see screenshot-impact.ts). Narrows; does NOT
+                          imply --force, and intersects with --filter
+      --since <ref>       Git ref --affected diffs the working tree against
+                          (default: HEAD, i.e. uncommitted work)
+      --changed-from <f>  Read --affected's changed-file list from a file (one
+                          path per line) instead of asking git
       --port <n>          Proxy to an app server already running on this port
                           instead of serving products/jbrowse-web/build
       --localport <n>     Port to serve/proxy on (default: ${DEFAULT_LOCAL_PORT})
@@ -187,6 +202,8 @@ Examples:
   pnpm generate-screenshots --filter lgv_pileup,dotplot
   pnpm generate-screenshots --check --filter dotplot
   pnpm generate-screenshots --force
+  pnpm generate-screenshots --affected
+  pnpm generate-screenshots --affected --since origin/main
 `
 
 if (values.help) {
@@ -1433,13 +1450,62 @@ async function main() {
   // "re-render these few" is one invocation instead of a shell loop. The flag is
   // repeatable and the tokens union. Parsed once at module scope, since it also
   // decides forceCommit.
-  const selected = specs.filter(s =>
+  let selected = specs.filter(s =>
     matchesFilterTokens(s.name, filterTokens, exact),
   )
 
   if (selected.length === 0) {
     console.error(`No specs match filter: ${filterTokens.join(',')}`)
     process.exit(1)
+  }
+
+  // `--affected` narrows the sweep to specs a change could plausibly have moved
+  // (see screenshot-impact.ts for how, and for what it deliberately can't
+  // prove). Deliberately does NOT imply --force the way --filter does: --filter
+  // is "re-render these, I mean them", while this is "skip the ones nothing
+  // could have touched", so the content-stable diff gate still decides what gets
+  // rewritten. It also composes with --filter rather than replacing it — both
+  // narrow, so the run is the intersection.
+  if (affected) {
+    const ref = since ?? 'HEAD'
+    const changedFrom = values['changed-from']
+    const changed = changedFrom
+      ? fs
+          .readFileSync(changedFrom, 'utf8')
+          .split('\n')
+          .map(s => s.trim())
+          .filter(Boolean)
+      : changedFilesFromGit(ref)
+    const selection = await selectAffected(changed)
+    console.log(
+      `--affected: ${changed.length} file(s) ${changedFrom ? `from ${changedFrom}` : `changed since ${ref}`}${
+        selection.reasons.length
+          ? `\n${selection.reasons
+              .slice(0, 8)
+              .map(r => `  · ${r}`)
+              .join('\n')}`
+          : ''
+      }`,
+    )
+    if (selection.kind === 'none') {
+      // Exit 0: "nothing to re-render" is the answer, not a failure. A CI job
+      // that runs this on every PR has to be able to pass on a docs-only change.
+      console.log('  nothing changed that renders a figure — nothing to do')
+      return
+    }
+    if (selection.kind === 'some') {
+      const before = selected.length
+      selected = selected.filter(s => selection.names.has(s.name))
+      console.log(
+        `  narrowed ${before} -> ${selected.length} spec(s) of ${specs.length}`,
+      )
+      if (selected.length === 0) {
+        console.log('  (nothing left after --filter) — nothing to do')
+        return
+      }
+    } else {
+      console.log(`  no narrowing possible — running all ${selected.length}`)
+    }
   }
 
   // The figure a doc publishes for a compose spec is the STACK, not the parts.
