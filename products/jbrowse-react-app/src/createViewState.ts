@@ -60,15 +60,20 @@ export default function createViewState(opts: CreateViewStateOptions) {
     stateTree.setPluginsUpdatedCallback(onPluginsUpdated)
   }
 
-  // A jbrowse-web config.json names its plugins in `config.plugins`, and that
-  // app fetches them itself. This one can't: fetching is async and this
-  // function is synchronous, so the host has to await loadPlugins and pass the
-  // result in. Silently opening a session whose plugins are all missing is the
-  // worst outcome — every track that needed one then fails on its own, far from
-  // the cause — so say it here instead.
-  if (config.plugins?.length && plugins.length === 0) {
+  // A config.json names its plugins in `config.plugins`, and a session that was
+  // shared or saved out of jbrowse-web can carry its own in `sessionPlugins`.
+  // That app fetches both itself; this one can't, because fetching is async and
+  // this function is synchronous, so the host has to await loadPlugins and pass
+  // the result in. Silently opening a session whose plugins are all missing is
+  // the worst outcome — every track that needed one then fails on its own, far
+  // from the cause — so say it here instead.
+  const named = [
+    ...(config.plugins ?? []),
+    ...(stateTree.session?.sessionPlugins ?? []),
+  ]
+  if (named.length > 0 && plugins.length === 0) {
     console.warn(
-      `This config names ${config.plugins.length} plugin(s), which createViewState does not fetch. Load them yourself: const plugins = await loadPlugins(config.plugins); createViewState({ config, plugins })`,
+      `This config/session names ${named.length} plugin(s), which createViewState does not fetch. Load them yourself: const plugins = await loadPlugins(defs); createViewState({ config, plugins })`,
     )
   }
 

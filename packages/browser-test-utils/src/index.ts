@@ -1,6 +1,10 @@
 export { createTestServer } from './server.ts'
 export { smokeExamplesSite } from './examplesSmoke.ts'
 export {
+  checkPluginTookEffect,
+  checkSessionUrlRoundTrip,
+} from './examplesChecks.ts'
+export {
   buildDocIndex,
   findBrokenCrossLinks,
   findBrokenDocLinks,

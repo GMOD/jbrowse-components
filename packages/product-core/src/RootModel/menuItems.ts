@@ -1,10 +1,15 @@
 import { Cable } from '@jbrowse/core/ui/Icons'
+import AddIcon from '@mui/icons-material/Add'
 import ExtensionIcon from '@mui/icons-material/Extension'
+import GetAppIcon from '@mui/icons-material/GetApp'
+import PublishIcon from '@mui/icons-material/Publish'
 import RedoIcon from '@mui/icons-material/Redo'
 import SettingsIcon from '@mui/icons-material/Settings'
 import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard'
 import StorageIcon from '@mui/icons-material/Storage'
 import UndoIcon from '@mui/icons-material/Undo'
+
+import { getShareableSessionSnapshot } from '../Session/index.ts'
 
 import type { SessionWithMultipleViews } from '../Session/index.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -23,6 +28,62 @@ const MULTI_VIEW_WARNING =
 
 const WORKSPACES_HELP_TEXT =
   'Workspaces allow you to organize views into tabs and tiles. There are a variety of unique features, for instance, you can drag views between tabs or split them side-by-side. Try clicking and dragging the tab header to create a new split'
+
+// the "new session" action lives on the root, not the session, so these two take
+// it rather than reading it off the bound argument like the rest
+interface RootWithDefaultSession {
+  setDefaultSession: () => void
+}
+
+export function newSessionMenuItem(root: RootWithDefaultSession): MenuItem {
+  return {
+    label: 'New session',
+    icon: AddIcon,
+    onClick: () => {
+      root.setDefaultSession()
+    },
+  }
+}
+
+export function importSessionMenuItem(): MenuItem {
+  return {
+    label: 'Import session...',
+    icon: PublishIcon,
+    onClick: (session: SessionWithWidgets) => {
+      session.showWidget(
+        session.addWidget('ImportSessionWidget', 'importSessionWidget'),
+      )
+    },
+  }
+}
+
+export function exportSessionMenuItem(): MenuItem {
+  return {
+    label: 'Export session',
+    icon: GetAppIcon,
+    onClick: async (session: AbstractSessionModel) => {
+      const { saveAs } = await import('@jbrowse/core/util')
+      saveAs(
+        new Blob(
+          [
+            JSON.stringify(
+              {
+                // an exported file is read by someone who doesn't have this
+                // browser's promoted display-type defaults, so flatten the
+                // cascade into it (same rule as ShareDialog)
+                session: getShareableSessionSnapshot(session),
+              },
+              null,
+              2,
+            ),
+          ],
+          { type: 'text/plain;charset=utf-8' },
+        ),
+        'session.json',
+      )
+    },
+  }
+}
 
 export function openTrackMenuItem(): MenuItem {
   return {

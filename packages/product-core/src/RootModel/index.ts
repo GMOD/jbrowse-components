@@ -11,6 +11,9 @@ export { HierarchicalConfigSchemaFactory } from './HierarchicalConfig.ts'
 export { PreferencesConfigSchemaFactory } from './PreferencesConfig.ts'
 export { createConfigModel } from './createConfigModel.ts'
 export {
+  exportSessionMenuItem,
+  importSessionMenuItem,
+  newSessionMenuItem,
   openConnectionMenuItem,
   openTrackMenuItem,
   pluginStoreMenuItem,

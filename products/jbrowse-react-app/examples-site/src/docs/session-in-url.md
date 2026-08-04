@@ -42,6 +42,12 @@ A few things worth knowing:
   raw snapshot renders differently for whoever opens the link. `encodeSession`
   flattens that cascade into the snapshot first.
 
+The demo puts its save button above the app to keep the example short. In a real
+app it belongs in the toolbar: pass it as `headerButtons` and it renders beside
+the session name, where JBrowse Web puts its own Share button. The button has to
+be yours rather than built in — only your app knows the URL its page is served
+at, and whether that page restores a session on load.
+
 For a session you want to keep rather than share — surviving a reload without a
 link — the same snapshot goes to `localStorage`; use the
 [onChange](../customizing-the-app/#with-on-change) patch stream to know when it

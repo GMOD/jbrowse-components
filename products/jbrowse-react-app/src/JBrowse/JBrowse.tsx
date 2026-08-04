@@ -45,6 +45,10 @@ export interface JBrowseProps {
   // per-display settings, widgets. `views` still describes what File → New
   // session returns to.
   session?: SessionSnapshot
+  // your own controls in the app toolbar — a Share button, a link back to your
+  // app. Only you know the URL your page is served at, so a link-building
+  // button has to be yours; see encodeSession and the session-in-url example
+  headerButtons?: React.ReactElement
   // ref to the live engine, for imperative control after launch
   // (session.addView, navToLocString, ...)
   ref?: Ref<ViewModel>
@@ -59,12 +63,12 @@ export interface JBrowseProps {
  * assemblies/plugins). For imperative control after launch (session.addView,
  * navToLocString, ...) take a `ref` to the live engine.
  */
-function JBrowse({ ref, ...opts }: JBrowseProps) {
+function JBrowse({ ref, headerButtons, ...opts }: JBrowseProps) {
   const [state] = useState(() => createViewStateFromProps(opts))
 
   useImperativeHandle(ref, () => state, [state])
 
-  return <JBrowseApp viewState={state} />
+  return <JBrowseApp viewState={state} headerButtons={headerButtons} />
 }
 
 export default JBrowse

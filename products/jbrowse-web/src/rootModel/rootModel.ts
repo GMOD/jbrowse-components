@@ -14,7 +14,9 @@ import { AssemblyManager } from '@jbrowse/plugin-data-management'
 import {
   BaseRootModelFactory,
   InternetAccountsRootModelMixin,
-  getShareableSessionSnapshot,
+  exportSessionMenuItem,
+  importSessionMenuItem,
+  newSessionMenuItem,
   openConnectionMenuItem,
   openTrackMenuItem,
   pluginStoreMenuItem,
@@ -23,10 +25,7 @@ import {
   undoMenuItem,
   workspacesMenuItem,
 } from '@jbrowse/product-core'
-import AddIcon from '@mui/icons-material/Add'
 import FileCopyIcon from '@mui/icons-material/FileCopy'
-import GetAppIcon from '@mui/icons-material/GetApp'
-import PublishIcon from '@mui/icons-material/Publish'
 import StarIcon from '@mui/icons-material/Star'
 
 import packageJSON from '../../package.json' with { type: 'json' }
@@ -321,57 +320,9 @@ export default function RootModel({
               }
 
               return [
-                {
-                  label: 'New session',
-                  icon: AddIcon,
-                  onClick: () => {
-                    self.setDefaultSession()
-                  },
-                },
-                {
-                  label: 'Import session...',
-                  icon: PublishIcon,
-                  onClick: () => {
-                    const widget = self.session?.addWidget(
-                      'ImportSessionWidget',
-                      'importSessionWidget',
-                    )
-                    if (widget) {
-                      self.session?.showWidget(widget)
-                    }
-                  },
-                },
-                {
-                  label: 'Export session',
-                  icon: GetAppIcon,
-                  onClick: async () => {
-                    if (self.session) {
-                      const { saveAs } = await import('@jbrowse/core/util')
-
-                      saveAs(
-                        new Blob(
-                          [
-                            JSON.stringify(
-                              {
-                                // an exported file is read by someone who
-                                // doesn't have this browser's promoted
-                                // display-type defaults, so flatten the cascade
-                                // into it (same rule as ShareDialog)
-                                session: getShareableSessionSnapshot(
-                                  self.session,
-                                ),
-                              },
-                              null,
-                              2,
-                            ),
-                          ],
-                          { type: 'text/plain;charset=utf-8' },
-                        ),
-                        'session.json',
-                      )
-                    }
-                  },
-                },
+                newSessionMenuItem(self),
+                importSessionMenuItem(),
+                exportSessionMenuItem(),
                 {
                   label: 'Duplicate session',
                   icon: FileCopyIcon,

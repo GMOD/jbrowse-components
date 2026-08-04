@@ -26,7 +26,9 @@ import type { SessionSnapshot } from './types.ts'
  * })
  * ```
  */
-export type CreateAppOptions = Omit<JBrowseProps, 'ref'>
+// `headerButtons` is dropped along with `ref`: both are React values, and this
+// is the shape a host that doesn't write JSX passes in
+export type CreateAppOptions = Omit<JBrowseProps, 'ref' | 'headerButtons'>
 
 // The `views`-derived session, narrowed from the open SessionSnapshot shape so
 // viewsToSession's mapping is checked. Assignable to SessionSnapshot (whose

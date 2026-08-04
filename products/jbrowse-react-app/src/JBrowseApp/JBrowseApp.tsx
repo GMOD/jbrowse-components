@@ -26,8 +26,18 @@ const useStyles = makeStyles()({
 
 const JBrowseApp = observer(function JBrowseApp({
   viewState,
+  headerButtons,
 }: {
   viewState: ViewModel
+  /**
+   * Your own controls, rendered in the app's toolbar next to the session name.
+   * This is where a Share button goes: only the host knows the URL its page is
+   * served at and whether that page restores a session, so the button that
+   * builds a link has to be yours — see `encodeSession`/`decodeSession` and the
+   * session-in-url example. jbrowse-web fills the same slot with its own
+   * ShareButton.
+   */
+  headerButtons?: React.ReactElement
 }) {
   const { classes } = useStyles()
   const { session } = viewState
@@ -41,7 +51,11 @@ const JBrowseApp = observer(function JBrowseApp({
               {/* key forces React to remount App when the session is replaced
                 (File > New session, File > Import session, setSession from a
                 host) preventing stale references to old session views */}
-              <App key={session.id} session={session} />
+              <App
+                key={session.id}
+                session={session}
+                HeaderButtons={headerButtons}
+              />
             </Suspense>
           </ScopedCssBaseline>
         </div>

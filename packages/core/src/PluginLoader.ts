@@ -91,7 +91,19 @@ async function loadScript(scriptUrl: string, integrity?: string) {
   if (!isInWebWorker()) {
     return promisifiedLoadScript(scriptUrl, integrity)
   } else if (hasImportScripts(scope)) {
-    scope.importScripts(scriptUrl)
+    try {
+      scope.importScripts(scriptUrl)
+    } catch (error) {
+      // A *module* worker has importScripts on its global but throws from it —
+      // the spec forbids it there. That is the whole failure for a UMD plugin
+      // in a bundler configured for module workers (Vite's `worker.format:
+      // 'es'`), and the raw TypeError names none of it, so it reads as a broken
+      // plugin rather than an incompatible pairing.
+      throw new Error(
+        `Failed to load ${scriptUrl} in the worker. A UMD plugin is loaded there via importScripts, which module workers do not support — either build the worker as a classic worker, or use a plugin published as ESM.`,
+        { cause: error },
+      )
+    }
     return
   } else {
     throw new Error(

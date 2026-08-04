@@ -10,26 +10,22 @@ import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import {
   BaseRootModelFactory,
   InternetAccountsRootModelMixin,
+  exportSessionMenuItem,
   getShareableSessionSnapshot,
+  importSessionMenuItem,
+  newSessionMenuItem,
   openConnectionMenuItem,
   openTrackMenuItem,
   preferencesMenuItem,
   workspacesMenuItem,
 } from '@jbrowse/product-core'
 import { PreferencesDialog } from '@jbrowse/web-core'
-import AddIcon from '@mui/icons-material/Add'
-import GetAppIcon from '@mui/icons-material/GetApp'
-import PublishIcon from '@mui/icons-material/Publish'
 import { autorun } from 'mobx'
 
 import { version } from '../version.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
-import type {
-  AbstractSessionModel,
-  SessionWithWidgets,
-} from '@jbrowse/core/util'
 import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
 import type { SessionSnapshot } from '@jbrowse/product-core'
 import type { AbstractWebRootModel } from '@jbrowse/web-core'
@@ -195,52 +191,9 @@ export default function RootModel({
             {
               label: 'File',
               menuItems: [
-                {
-                  label: 'New session',
-                  icon: AddIcon,
-                  onClick: () => {
-                    self.setDefaultSession()
-                  },
-                },
-                {
-                  label: 'Import session…',
-                  icon: PublishIcon,
-                  onClick: (session: SessionWithWidgets) => {
-                    const widget = session.addWidget(
-                      'ImportSessionWidget',
-                      'importSessionWidget',
-                    )
-                    session.showWidget(widget)
-                  },
-                },
-                {
-                  label: 'Export session',
-                  icon: GetAppIcon,
-                  onClick: async (session: AbstractSessionModel) => {
-                    const { saveAs } = await import('@jbrowse/core/util')
-
-                    saveAs(
-                      new Blob(
-                        [
-                          JSON.stringify(
-                            {
-                              // an exported file is read by someone who doesn't
-                              // have this browser's promoted display-type
-                              // defaults, so flatten the cascade into it (same
-                              // rule as jbrowse-web's ShareDialog)
-                              session: getShareableSessionSnapshot(session),
-                            },
-                            null,
-                            2,
-                          ),
-                        ],
-                        { type: 'text/plain;charset=utf-8' },
-                      ),
-                      'session.json',
-                    )
-                  },
-                },
-
+                newSessionMenuItem(self),
+                importSessionMenuItem(),
+                exportSessionMenuItem(),
                 { type: 'divider' },
                 openTrackMenuItem(),
                 openConnectionMenuItem(),

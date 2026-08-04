@@ -1,51 +1,19 @@
 // Build-output smoke test (run after `astro build`): node scripts/smoke.mjs
 // Shared implementation lives in @jbrowse/browser-test-utils so all the
-// per-product examples-site smoke scripts stay identical; the per-page `check`
-// hook below is this site's own.
+// per-product examples-site smoke scripts stay identical, including the
+// per-page `check` assertions.
 import path from 'path'
 import { fileURLToPath } from 'url'
 
-import { smokeExamplesSite } from '@jbrowse/browser-test-utils'
+import {
+  checkSessionUrlRoundTrip,
+  smokeExamplesSite,
+} from '@jbrowse/browser-test-utils'
 
 import config from '../astro.config.mjs'
 import { examples } from '../src/examples.ts'
 
 const here = path.dirname(fileURLToPath(import.meta.url))
-
-// Drive the session-in-url demo's actual round trip: save the live session into
-// the URL, reload, and confirm the view came back up from it. Both halves are
-// browser-only (deflate + base64 out, the hash read + restore back in), so a
-// unit test can't stand in for this one.
-async function checkSessionUrlRoundTrip(page) {
-  // scoped to .demo: the doc prose above it renders code blocks that carry
-  // their own copy buttons
-  const button = await page.$('#session-in-url .demo button')
-  if (!button) {
-    return ['session-in-url: save button not rendered']
-  }
-  await button.click()
-  const saved = await page
-    .waitForFunction(() => window.location.hash.includes('session=encoded-'), {
-      timeout: 10000,
-    })
-    .then(() => true)
-    .catch(() => false)
-  if (!saved) {
-    const hash = await page.evaluate(() => window.location.hash)
-    return [`session-in-url: save did not write a session to the url (${hash})`]
-  }
-  await page.reload({ waitUntil: 'domcontentloaded' }).catch(() => {})
-  return page
-    .waitForFunction(
-      () =>
-        document
-          .querySelector('#session-in-url .demo')
-          ?.textContent?.includes('restored "'),
-      { timeout: 30000 },
-    )
-    .then(() => [])
-    .catch(() => ['session-in-url: the session in the url did not restore'])
-}
 
 const failures = await smokeExamplesSite({
   distDir: path.join(here, '..', 'dist'),
