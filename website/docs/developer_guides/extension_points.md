@@ -201,19 +201,28 @@ express "or this other one". Where two adapters genuinely read the same
 extension, the one the chain does not pick declares that on its own registration
 instead, and the "Add track" form offers it alongside the guess:
 
+<!-- include: plugins/comparative-adapters/src/AllVsAllPAFAdapter/index.ts#alsoReads -->
+
 ```typescript
-new AdapterType({
-  name: 'AllVsAllPAFAdapter',
-  displayName: 'All-vs-all PAF adapter',
-  configSchema,
-  adapterMetadata: {
-    category: 'Synteny adapters',
-    // a .paf is claimed by PAFAdapter, and an all-vs-all one is
-    // indistinguishable by name
-    alsoReads: /\.paf(\.gz)?$/i,
-  },
-  getAdapterClass: () => import('./AllVsAllPAFAdapter.ts').then(r => r.default),
-})
+export default function AllVsAllPAFAdapterF(pluginManager: PluginManager) {
+  pluginManager.addAdapterType(
+    () =>
+      new AdapterType({
+        name: 'AllVsAllPAFAdapter',
+        displayName: 'All-vs-all PAF adapter',
+        configSchema,
+        adapterMetadata: {
+          category: 'Synteny adapters',
+          // a .paf is claimed by PAFAdapter, and an all-vs-all one is
+          // indistinguishable by name; read as pairwise it attributes one
+          // genome's contigs to another rather than merely dropping them
+          alsoReads: /\.paf(\.gz)?$/i,
+        },
+        getAdapterClass: () =>
+          import('./AllVsAllPAFAdapter.ts').then(r => r.default),
+      }),
+  )
+}
 ```
 
 `alsoReads` is a form hint only. It does not enter this extension point, so a

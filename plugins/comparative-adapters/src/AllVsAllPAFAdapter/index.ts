@@ -4,6 +4,7 @@ import configSchema from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
+// #region alsoReads
 export default function AllVsAllPAFAdapterF(pluginManager: PluginManager) {
   pluginManager.addAdapterType(
     () =>
@@ -23,3 +24,4 @@ export default function AllVsAllPAFAdapterF(pluginManager: PluginManager) {
       }),
   )
 }
+// #endregion
