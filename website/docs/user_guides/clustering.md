@@ -18,9 +18,37 @@ clustered.
 | [Multi-quantitative](/docs/user_guides/multiquantitative_track) | Cluster rows by score...    | each subtrack's signal profile |
 | [Multi-row feature](/docs/user_guides/multirow_feature_track)   | Cluster rows by similarity  | each row's painted intervals   |
 
-Clustering reads **only the region currently in view**, so navigate to an
-informative locus before running it. A region with no discriminating signal
-produces no useful separation.
+Clustering reads **only the region currently in view**. That makes it a
+statement about one window, never about the track as a whole — a clustered
+painting cannot be captioned as genome-wide relatedness unless the view really
+is the whole genome. After a run, the locus the tree was computed from is shown
+beside the dendrogram and travels with an SVG export, so a figure carries its
+own scope.
+
+The window is therefore part of the result. Hierarchical clustering returns a
+fully resolved tree for any input, including one with no structure in it, so
+re-running across loci until the rows separate as expected selects a window
+rather than establishing a grouping. A grouping found that way is a hypothesis
+to check on independent data.
+
+## What the tree does and does not claim
+
+The dendrogram summarizes similarity over the visible window. It is not a
+phylogeny: no evolutionary model is fitted, branch lengths are merge distances
+rather than time or substitutions, and no support values are computed, so a
+crisply drawn clade is not thereby a well-supported one. A
+[MAF track](/docs/user_guides/maf_track) can show a real phylogeny, read from an
+`.nh` file rather than computed; that tree carries no locus caption, which
+distinguishes the two on screen.
+
+For genotype data the window matters in one more way. A tree asks for a single
+distance summarizing the whole window, but a haplotype is a mosaic of segments
+with different histories, so past the first recombination breakpoint a
+window-averaged distance describes no position in particular. When that is the
+question, the multi-sample variant display's **Sort by genotype** (right-click a
+variant) is the better tool: it orders rows by their allele at that variant and
+then by how far they agree outward, so the shared block reads as a solid
+rectangle and frays exactly where recombination ends it.
 
 ## Auto and manual modes
 
@@ -37,7 +65,14 @@ Both modes cluster the same rows with the same linkage by default (average, or
 UPGMA), so manual mode reproduces auto mode rather than quietly returning a
 different tree.
 
-The multi-row feature display runs in the browser without a dialog.
+The multi-row feature display runs in the browser without a dialog. It clusters
+on the color each row is painted, so the coloring is an input rather than a
+display preference: change **Color by...** and the same rows over the same locus
+give a different tree. The coloring in force is recorded in the caption
+alongside the locus. A painting with a handful of distinct colors is treated as
+categorical, and distance is then the number of bins whose colors differ; a
+palette with many colors is treated as continuous, and rows painted similar
+shades land closer together.
 
 ## Reading and using the dendrogram
 
