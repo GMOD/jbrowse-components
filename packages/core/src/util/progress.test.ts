@@ -459,3 +459,37 @@ describe('createStatusFanOut', () => {
     }).not.toThrow()
   })
 })
+
+// assembly.loadPre composes these two — a fan-out slot per concurrent file,
+// behind one throttle — and then clears the status OUTSIDE the throttle. This
+// pins why: the throttle has no trailing flush, so the retire that would have
+// cleared the label is exactly the kind of write a burst swallows. Route that
+// clear through the throttle to "tidy up" and the last "Downloading …" stays on
+// screen after the load finishes, with nothing else failing.
+describe('a throttled fan-out needs an unthrottled clear', () => {
+  let clock = 0
+  beforeEach(() => {
+    clock = 1_000_000
+    jest.spyOn(Date, 'now').mockImplementation(() => clock)
+  })
+  afterEach(() => {
+    jest.restoreAllMocks()
+  })
+
+  it('swallows the final clear when it goes through the throttle', () => {
+    const seen: RpcStatus[] = []
+    const throttle = createStatusThrottle()
+    const slot = createStatusFanOut(s => {
+      throttle.run(() => seen.push(s))
+    })
+    const a = slot()
+    const b = slot()
+    a({ message: 'Downloading', current: 1, total: 2 })
+    b({ message: 'Downloading', current: 1, total: 2 })
+    a('')
+    b('')
+    // every write after the first landed inside the same 100ms window
+    expect(seen).toEqual([{ message: 'Downloading', current: 1, total: 2 }])
+    expect(seen.at(-1)).not.toBe('')
+  })
+})
