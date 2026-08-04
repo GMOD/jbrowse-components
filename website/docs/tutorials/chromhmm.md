@@ -34,7 +34,15 @@ instead we merge them into a single file with an extra `cellType` column and let
 the multi-row feature display split that one track back into a labeled sub-row
 per cell type. Every row shares one config, one adapter, and one fetch.
 
-<Figure src="/img/chromhmm_hoxa_9celltype.png" caption="The nine UCSC ENCODE Broad epigenomes over the HOXA cluster as a single multi-row track, one row per cell type, with hg19 RefSeq genes above. H1-hESC holds the cluster in Polycomb-repressed states while the differentiated lines carry active promoter, enhancer and transcription over the genes each of them uses."/>
+<Figure src="/img/chromhmm_hoxa_9celltype.png" caption="The nine UCSC ENCODE Broad epigenomes over the HOXA cluster as a single multi-row track, one row per cell type, with hg19 RefSeq genes above. Boxed: the anterior genes HOXA1 to HOXA7, and the posterior genes HOXA9 to HOXA13. The lines that open the cluster open the anterior box and hold the posterior box repressed, and they break at the same place; H1-hESC, K562 and GM12878 hold both boxes in poised and repressed states throughout."/>
+
+HOXA is the window the build script opens on because the painting there has a
+structure to find rather than just a lot of color. The genes are transcribed in
+the order they sit in, so a cell type opens the stretch matching its own
+position along the body axis and holds the rest under Polycomb. Most of the rows
+that open the cluster at all stop between HOXA7 and HOXA9, which is what makes
+the change read as a column across the rows rather than as nine unrelated
+patterns.
 
 ## What the merged file holds
 
@@ -167,7 +175,7 @@ The same recipe scales to the
 a longer `rowOrder`. Because the multi-row display fetches and lays out one
 file, 127 epigenomes is still one track, one adapter, one fetch, not 127 tracks.
 
-<Figure src="/img/chromhmm.png" caption="The same display at 127 epigenomes instead of nine, over a window on chr11. Each row is one epigenome and the rows are thin enough that the painting reads as a heatmap of state rather than as blocks."/>
+<Figure src="/img/chromhmm.png" caption="The same display at 127 epigenomes instead of nine, over the same HOXA window and the same two boxes, with the rows ordered by Cluster rows by similarity rather than by config. Each row is one epigenome, thin enough that the painting reads as a heatmap of state rather than as blocks. Clustering separates the epigenomes carrying active promoter, enhancer and transcription across the anterior box from those holding both boxes in Polycomb-repressed and bivalent states."/>
 
 At that row count `rowOrder` is 127 lines of config whose only job is to keep
 related tissues adjacent, which is exactly what **Cluster rows by similarity**

@@ -1863,31 +1863,87 @@ export const uiSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'chromhmm',
     // Roadmap 127-epigenome ChromHMM chromatin states as a multi-row feature
-    // heatmap over a ~900kb window on chr11, with the RefSeq gene track above
-    // for context. Rebuilt from the old server-side share link as a
-    // self-contained sessionSpec so the figure and its gallery live link come
-    // from this one spec.
+    // heatmap, on the SAME HOXA window as chromhmm_hoxa_9celltype below so the
+    // two figures differ only in row count. The window it used to be shot on
+    // (chr11:5.87-6.78Mb) had no structure the extra rows revealed: it read as
+    // one green transcribed block against grey, so 127 rows looked like nine
+    // rows with more noise, which is the opposite of the point.
+    //
+    // HOXA separates the epigenomes into blocks, because the anterior half of
+    // the cluster is active only in lineages with a matching positional
+    // identity, and it is the same column boundary in every one of them.
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg19',
-      loc: 'chr11:5,875,140-6,784,158',
+      loc: 'chr7:27,100,000-27,280,000',
       tracks: [
         {
           trackId: 'ncbi_gff_hg19',
           // descriptions add noise on the context gene track; names suffice here
           type: 'LinearBasicDisplay',
           showDescriptions: false,
+          height: 120,
         },
         {
           trackId: 'roadmap_chromhmm_multirow_hg19',
           type: 'LinearMultiRowFeatureDisplay',
-          height: 480,
+          // clustered, not in `rowOrder`: at 127 rows a pixel-high row carries
+          // no label, so the only thing that can group the epigenomes is where
+          // the display puts them. Unclustered the same window is 127 rows of
+          // scattered red with no block in it.
+          runClustering: true,
+          // the clustered ORDER is what this figure uses; a dendrogram over
+          // 5px rows whose labels are all sub-pixel is decoration. It is also
+          // the only way to keep `StaleTreeHint` off the figure, because three
+          // Roadmap epigenome names carry parentheses and `@gmod/hclust`'s
+          // `toNewick` emits leaf labels unquoted, so those three parse back as
+          // a different name and `treeDescribesRows` (correctly) refuses to
+          // position the tree. Fixing the quoting is the real answer.
+          showTree: false,
+          height: 700,
         },
       ],
     }),
+    // the same two domains boxed on the same coordinates as the nine-row figure,
+    // so the boundary a reader learned there is the one they find again here
+    annotations: [
+      {
+        type: 'box',
+        anchor: {
+          track: 'roadmap_chromhmm_multirow_hg19',
+          locus: 'chr7:27,132,613-27,196,294',
+        },
+        pad: 2,
+      },
+      {
+        type: 'box',
+        anchor: {
+          track: 'roadmap_chromhmm_multirow_hg19',
+          locus: 'chr7:27,202,056-27,246,878',
+        },
+        pad: 2,
+        color: '#1565c0',
+      },
+    ],
+    // clustering 127 rows is real WASM compute, and a settle long enough to
+    // cover it on a slow runner is one that is wrong on a fast one — a 15s
+    // settle shot the run mid-cluster, chip and all. So wait on the run's own
+    // progress chip clearing, which the autorun's `finally` does. The short
+    // delay ahead of it is only to let the `delay: 500` autorun fire, not a
+    // guess at how long the cluster takes: waiting for `hidden` on a chip that
+    // has not gone up yet passes instantly.
+    actions: [
+      { type: 'delay', ms: 2000 },
+      {
+        type: 'waitForSelector',
+        selector: '[data-testid="progress-chip"]',
+        hidden: true,
+        timeout: 180000,
+      },
+    ],
     readyText: 'ChromHMM',
-    readyTimeout: 60000,
-    settleMs: 8000,
-    viewportHeight: 700,
+    readyTimeout: 120000,
+    settleMs: 6000,
+    viewportHeight: 1060,
   },
 
   // The nine-cell-type Broad ENCODE track at the HOXA cluster, which is the
@@ -1898,9 +1954,18 @@ export const uiSpecs: ScreenshotSpec[] = [
   //
   // HOXA rather than a single promoter: at nine rows each state block is thick
   // enough to read as a color, and the cluster separates the cell types by what
-  // they are rather than by how deeply they were sequenced. H1-hESC holds the
-  // whole cluster Polycomb-repressed while the differentiated lines carry active
-  // promoter and transcription over the genes each of them uses.
+  // they are rather than by how deeply they were sequenced.
+  //
+  // The two boxes are the figure's whole point, and without them the picture is
+  // a wall of color a reader has no entry into. A HOX cluster is transcribed
+  // colinearly, so a cell type opens the part of it matching its own positional
+  // identity and leaves the rest under Polycomb; the break falls between HOXA7
+  // and HOXA9 in every row that has one, which is what makes it a column in the
+  // painting rather than nine unrelated patterns. Boxing the two domains says
+  // where to look; the caption says what the split means.
+  //
+  // Both are anchored to the track and a locus, so they stay on the genes when
+  // the window, the track height or the viewport width moves.
   {
     mode: 'url',
     name: 'chromhmm_hoxa_9celltype',
@@ -1925,10 +1990,56 @@ export const uiSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
+    annotations: [
+      // HOXA1 txStart to HOXA7 txEnd, hg19 refGene
+      {
+        type: 'box',
+        anchor: {
+          track: 'broad_chromhmm_multirow_hg19',
+          locus: 'chr7:27,132,613-27,196,294',
+        },
+        pad: 2,
+      },
+      // HOXA9 txStart to HOTTIP txEnd, hg19 refGene
+      {
+        type: 'box',
+        anchor: {
+          track: 'broad_chromhmm_multirow_hg19',
+          locus: 'chr7:27,202,056-27,246,878',
+        },
+        pad: 2,
+        color: '#1565c0',
+      },
+      {
+        type: 'text',
+        text: 'anterior HOXA1-A7',
+        fontSize: 20,
+        anchor: {
+          track: 'broad_chromhmm_multirow_hg19',
+          locus: 'chr7:27,132,613-27,196,294',
+          fracY: 0,
+        },
+        dy: 20,
+      },
+      {
+        type: 'text',
+        text: 'posterior HOXA9-A13',
+        fontSize: 20,
+        color: '#1565c0',
+        anchor: {
+          track: 'broad_chromhmm_multirow_hg19',
+          locus: 'chr7:27,202,056-27,246,878',
+          fracY: 0,
+        },
+        dy: 20,
+      },
+    ],
     readyText: 'ChromHMM',
     readyTimeout: 60000,
     settleMs: 8000,
-    viewportHeight: 740,
+    // 740 put the viewport's own bottom edge on the boxes' bottom stroke, which
+    // read as the painting continuing past the frame
+    viewportHeight: 764,
   },
 
   // The "Display types" submenu, with the multi-row display boxed: the

@@ -142,8 +142,8 @@ JSON
 echo
 echo "Built $APP/config.json with the hg19 assembly and the multi-row ChromHMM"
 echo "track (nine cell types, one color-coded row each). It opens on the HOXA"
-echo "cluster (chr7:27,050,000-27,300,000), where the stem-cell line (H1-hESC)"
-echo "reads as Polycomb-repressed while differentiated lines carry active states."
+echo "cluster (chr7:27,050,000-27,300,000), where each cell type opens the part"
+echo "of the cluster its own lineage uses and leaves the rest repressed."
 echo "Serve it and open in a browser, e.g.:"
 echo "  npx --yes serve $(pwd)/$APP"
 echo "or open $(pwd)/$APP/config.json in JBrowse Desktop via File -> Session ->"
