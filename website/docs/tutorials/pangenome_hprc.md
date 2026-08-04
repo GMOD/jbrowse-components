@@ -531,6 +531,83 @@ tabix https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.links.bed.gz \
   awk -F'\t' '$6 ~ /^GRCh38/ || $10 ~ /^GRCh38/'
 ```
 
+### What kind of sequence GRCh38 was missing
+
+The lane above says the inserted sequence is tiled by L1, but at 180 bp/px it
+cannot say whether that is unusual — a subtelomere is repeat-dense either way.
+To answer that you need the same measurement on both assemblies at the same
+scale, which is a quantitative track rather than a display setting. This one is
+the fraction of each 5 kb bin covered by one RepeatMasker class, one lane per
+class, on GRCh38 and CHM13 alike:
+
+```json addtrack
+{
+  "type": "MultiQuantitativeTrack",
+  "trackId": "hs1_repeat_density",
+  "name": "Repeat density by class (RepeatMasker, 5 kb bins)",
+  "assemblyNames": ["hs1"],
+  "adapter": {
+    "type": "MultiWiggleAdapter",
+    "subadapters": [
+      {
+        "type": "BigWigAdapter",
+        "name": "LINE",
+        "color": "rgb(200,60,45)",
+        "bigWigLocation": {
+          "uri": "https://jbrowse.org/demos/hprc/repeat_density/hs1_repeat_density_LINE.bw"
+        }
+      },
+      {
+        "type": "BigWigAdapter",
+        "name": "SINE",
+        "color": "rgb(60,110,180)",
+        "bigWigLocation": {
+          "uri": "https://jbrowse.org/demos/hprc/repeat_density/hs1_repeat_density_SINE.bw"
+        }
+      },
+      {
+        "type": "BigWigAdapter",
+        "name": "LTR",
+        "color": "rgb(70,150,90)",
+        "bigWigLocation": {
+          "uri": "https://jbrowse.org/demos/hprc/repeat_density/hs1_repeat_density_LTR.bw"
+        }
+      },
+      {
+        "type": "BigWigAdapter",
+        "name": "DNA",
+        "color": "rgb(230,150,40)",
+        "bigWigLocation": {
+          "uri": "https://jbrowse.org/demos/hprc/repeat_density/hs1_repeat_density_DNA.bw"
+        }
+      }
+    ]
+  },
+  "displayDefaults": {
+    "defaultRendering": "multirowxy",
+    "minScore": 0,
+    "maxScore": 1
+  }
+}
+```
+
+Swap `hs1` for `hg38` in both the `trackId`/`assemblyNames` and the four URLs
+for the GRCh38 copy; `Satellite` and `Simple_repeat` are hosted under the same
+names if you want them (they are near zero here, but a window on a centromere is
+all Satellite). Pin `minScore`/`maxScore` to 0 and 1 rather than autoscaling, or
+each row rescales to its own maximum and the comparison the track exists for
+disappears.
+
+<Figure caption="Repeat density by class over the last 650 kb of chr17 in each assembly, on the same 0-1 scale. Top: GRCh38, where LINE and SINE run at about the same level. Bottom: CHM13's own last 650 kb, where the LINE row is near-saturated and the SINE row is lower than GRCh38's. The sequence the older reference was missing is not generically repetitive — it is an L1 field, and it holds less Alu than the reference sequence it continues." src="/img/pangenome/hprc_repeat_classes.png" />
+
+Each pane is its own assembly's last 650 kb, not a lifted-over interval: there
+is no lift-over for sequence one of them does not have, so what is being
+compared is what each assembly ends the chromosome with. Over those two windows
+`build_repeat_density.sh` reports LINE at 13.71% against 70.05%, SINE at 13.58%
+against 10.53%, and total repeat at 37.22% against 76.37% — so a single density
+lane would have shown the doubling and hidden that one class went up fivefold
+while another went down.
+
 ## The bubble track
 
 A bubble is where haplotypes diverge and rejoin. The bubble track reports where
@@ -855,6 +932,22 @@ draw as a lane each. What that costs is a 464-assembly download and a mapping
 run, which is why this page takes the index route: a scope decision, not a
 property of the data. Both scripts need htslib (`bgzip`, `tabix`) on your
 `PATH`.
+
+The [repeat-density lanes](#what-kind-of-sequence-grch38-was-missing) are their
+own script, and the only one here that touches neither the graph nor HPRC — it
+reads UCSC's RepeatMasker for the two assemblies and bins it:
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_repeat_density.sh
+bash build_repeat_density.sh out
+```
+
+It writes the twelve bigWigs (six classes x two assemblies, genome-wide) and
+then prints the per-class table the section above quotes, so the numbers come
+out of the same run that builds the lanes. It needs `bedtools` plus UCSC's
+`bedGraphToBigWig` and `bigBedToBed`; the script's header has the one-curl-each
+install for those. First run downloads ~500 MB and re-running skips what is
+already built, so an interrupted run resumes.
 
 The two haplotype rows in the CFHR figure are a third script:
 [`build_hprc_cfhr_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc_cfhr_synteny.sh)

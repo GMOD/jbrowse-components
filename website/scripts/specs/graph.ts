@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
-import { sessionSpec } from '../screenshot-spec-helpers.ts'
+import { displayReady, sessionSpec } from '../screenshot-spec-helpers.ts'
 import { ECOLI_DEMO_BASE, usingLocalDemo } from './demoBase.ts'
 
 import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
@@ -859,6 +859,71 @@ function repeatLane(trackId: string) {
     // scrollbar over the one row a reader would have to scroll to see.
     heightMode: 'grow',
     height: 90,
+  }
+}
+
+// Fraction of each 5 kb bin covered by one RepeatMasker class, one bigWig per
+// class per assembly, built and uploaded by scripts/build_repeat_density.sh.
+// Six classes: RepeatMasker emits ~15 and the tail (scRNA, snRNA, tRNA) is under
+// 0.02% here, which is a lane of flat zero to scan past.
+//
+// LINE keeps the same red the per-element lane uses on the figure above, so the
+// two figures agree about which class the argument is about; the others are
+// distinguishable rather than meaningful, since only their heights are being
+// compared.
+// Four of the six classes the build script hosts. Satellite and Simple_repeat
+// are hosted too and belong in a track a reader builds for themselves — a window
+// on a centromere is all Satellite — but in THIS window they are 0.27% and 1.47%,
+// so as rows they were two flat lines taking a third of the stack. Dropping them
+// is not hiding a result; it is not spending a row on a class that has nothing
+// to say here, and it takes the four that do from 50 to 75 px each.
+const REPEAT_CLASSES = [
+  { cls: 'LINE', color: 'rgb(200,60,45)' },
+  { cls: 'SINE', color: 'rgb(60,110,180)' },
+  { cls: 'LTR', color: 'rgb(70,150,90)' },
+  { cls: 'DNA', color: 'rgb(230,150,40)' },
+]
+
+const REPEAT_DENSITY_BASE = 'https://jbrowse.org/demos/hprc/repeat_density'
+
+function repeatDensityTrackId(asm: string) {
+  return `${asm}_repeat_density`
+}
+
+function repeatDensityTrack(asm: string) {
+  return {
+    type: 'MultiQuantitativeTrack',
+    trackId: repeatDensityTrackId(asm),
+    name: 'Repeat density by class (RepeatMasker, 5 kb bins)',
+    assemblyNames: [asm],
+    adapter: {
+      type: 'MultiWiggleAdapter',
+      subadapters: REPEAT_CLASSES.map(({ cls, color }) => ({
+        type: 'BigWigAdapter',
+        name: cls,
+        color,
+        bigWigLocation: {
+          uri: `${REPEAT_DENSITY_BASE}/${asm}_repeat_density_${cls}.bw`,
+          locationType: 'UriLocation',
+        },
+      })),
+    },
+  }
+}
+
+function repeatDensityDisplay(asm: string) {
+  return {
+    trackId: repeatDensityTrackId(asm),
+    type: 'MultiLinearWiggleDisplay',
+    // one row per class, not overlaid: the finding is that one row goes up 5x
+    // while another goes down, and overlaid curves make that a tangle.
+    defaultRendering: 'multirowxy',
+    // 0..1 pinned on BOTH panes. These are fractions, so the domain is known,
+    // and it is the only thing making the two panes comparable — autoscale would
+    // rescale each row to its own maximum and erase the entire result.
+    minScore: 0,
+    maxScore: 1,
+    height: 300,
   }
 }
 
@@ -3004,6 +3069,65 @@ export const graphSpecs: ScreenshotSpec[] = [
         strokeWidth: 3,
       },
     ],
+  },
+  // The measurement the figure above could not make. hprc_chm13_allele says what
+  // the inserted sequence is MADE OF, per element, because at 30 and 180 bp/px a
+  // density read is not available to it (see repeatLane). This says how that
+  // compares to the reference sequence it continues, which is the claim the
+  // tutorial was asserting in prose.
+  //
+  // Per CLASS rather than one density line, and that is the whole result. Total
+  // repeat density says 37% -> 76% and stops. Split by class it says which:
+  //
+  //   LINE  13.71% -> 70.05%     SINE  13.58% -> 10.53%
+  //   LTR    6.10% ->  9.81%     DNA    2.29% ->  8.17%
+  //
+  // so the added sequence is not generically repetitive — it is an L1 field
+  // (within LINE, L1 alone goes 13.35% -> 66.70%) that is DEPLETED of Alu
+  // relative to GRCh38's own last stretch of the same chromosome. One class up
+  // 5x while another goes down is a shape a single density lane cannot draw, and
+  // it is the mechanism the page already claimed: long L1 is the sequence a
+  // BAC-and-Sanger reference had no way to place.
+  //
+  // Both numbers come out of scripts/build_repeat_density.sh, which also builds
+  // these bigWigs, so the table is regenerable rather than remembered.
+  //
+  // Each pane is its OWN assembly's last 650 kb, not a lifted-over interval:
+  // there is no lift-over for sequence one of them does not have, so the
+  // comparison is between what each assembly ends chr17 with. That also makes
+  // the two panes the same width in bp, which is what lets the rows be read
+  // against each other at all — the objection that retired the strip on the
+  // figure above was two panes at different bp/px.
+  {
+    mode: 'url',
+    name: 'pangenome/hprc_repeat_classes',
+    url: sessionSpec(HPRC_CONFIG, {
+      sessionTracks: [repeatDensityTrack('hg38'), repeatDensityTrack('hs1')],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          displayName: 'GRCh38 — the last 650 kb it has of chr17',
+          assembly: 'hg38',
+          loc: 'chr17:82,607,441-83,257,441',
+          tracks: [repeatDensityDisplay('hg38')],
+        },
+        {
+          type: 'LinearGenomeView',
+          displayName: 'T2T-CHM13v2.0 — its own last 650 kb of chr17',
+          assembly: 'hs1',
+          loc: 'chr17:83,626,897-84,276,897',
+          tracks: [repeatDensityDisplay('hs1')],
+        },
+      ],
+    }),
+    readySelector: displayReady('multi-wiggle-display'),
+    readyTimeout: 120000,
+    settleMs: 15000,
+    viewportWidth: 1000,
+    // 6 rows x 2 panes at 300px a stack, their view headers and rulers, and one
+    // app bar. The generator's below-the-fold check settled this: 800 cut 156.
+    viewportHeight: 960,
+    hideTooltip: true,
   },
   // pangenome/hprc_allele_inventory was here and is RETIRED (review: "I am
   // still not sure i like this figure ... the entire allele inventory concept is
