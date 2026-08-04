@@ -266,14 +266,40 @@ describe('color routing', () => {
     })
   })
 
-  test('color warns on feature/variant/hic rather than writing a dead colorBy', () => {
-    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
-    for (const category of ['feature', 'variant', 'hic'] as const) {
-      const { snap } = buildDisplaySnapshot(category, ['color:strand'])
+  // The canvas displays take a CSS color or a jexl in the same `color` slot the
+  // wiggle display uses — never a colorBy object, which is what used to be
+  // written for them and dropped as an unknown MST key.
+  test('color sets a solid color on the canvas-based displays', () => {
+    for (const category of ['feature', 'variant'] as const) {
+      const { snap } = buildDisplaySnapshot(category, ['color:red'])
+      expect(snap).toEqual({ color: 'red' })
       expect(snap.colorBy).toBeUndefined()
-      expect(snap.color).toBeUndefined()
     }
-    expect(warn).toHaveBeenCalledTimes(3)
+  })
+
+  // `colorByMode` reports 'strand' only for this exact jexl, so a near-miss
+  // would render as an opaque per-feature expression and read back as
+  // "color by attribute"
+  test('color:strand means strand on the canvas displays too, via the jexl they recognize', () => {
+    for (const category of ['feature', 'variant'] as const) {
+      const { snap } = buildDisplaySnapshot(category, ['color:strand'])
+      expect(snap.color).toBe(
+        "jexl:get(feature,'strand')==1?'tomato':get(feature,'strand')==-1?'cornflowerblue':'goldenrod'",
+      )
+    }
+    // wiggle has no strand notion — 'strand' stays a literal color there
+    expect(buildDisplaySnapshot('wiggle', ['color:strand']).snap.color).toBe(
+      'strand',
+    )
+  })
+
+  test('color warns on a hic track, which has no color slot of either kind', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+    const { snap } = buildDisplaySnapshot('hic', ['color:red'])
+    expect(snap.color).toBeUndefined()
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('"color" has no effect on a hic track'),
+    )
     warn.mockRestore()
   })
 })

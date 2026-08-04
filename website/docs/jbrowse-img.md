@@ -555,13 +555,13 @@ Available `color:type` values:
 | `methylation`              | CpG methylation via MM/ML tags                            |
 | `tag:<TAG>`                | Color by any BAM tag, e.g. `color:tag:HP`, `color:tag:RG` |
 
-**Feature tracks (GFF3/BED/BigBed)**
+**Feature tracks (GFF3/BED/BigBed) and VCF tracks**
 
-`heightMode:` also applies to VCF tracks, which use the same canvas display
-base.
+These share one display base, so every modifier below applies to both.
 
 | Modifier                            | Example                 | Description                                                                                                                                                                                                       |
 | ----------------------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `color:value`                       | `color:magenta`         | Glyph fill: any CSS color, or `strand` to color by feature strand (tomato forward, cornflowerblue reverse)                                                                                                        |
 | `featureHeight:preset`              | `featureHeight:compact` | Display mode (`normal`, `compact`, `super-compact`)                                                                                                                                                               |
 | `heightMode:<fixed\|grow\|fit>[:N]` | `heightMode:fit:200`    | Track-height strategy: `fixed` scrolls to see all features, `grow` resizes the track to fit every feature, `fit` shrinks glyphs so every row fits without scrolling; an optional number sets the track height too |
 

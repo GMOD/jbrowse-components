@@ -3,7 +3,10 @@ import { trackMatches, trackName } from './trackFields.ts'
 import type { AssertNever, AssertTrue, Covers, Track } from './types.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'
-import type { LinearBasicDisplayModel } from '@jbrowse/plugin-canvas'
+import type {
+  STRAND_COLOR_JEXL,
+  LinearBasicDisplayModel,
+} from '@jbrowse/plugin-canvas'
 import type { LinearHicDisplayModel } from '@jbrowse/plugin-hic'
 import type {
   HeightMode,
@@ -107,6 +110,20 @@ const ALIGNMENTS_COMPACTNESS = {
   compact: 3,
   'super-compact': 1,
 }
+
+// What `color:strand` writes into the canvas displays' `color` slot. That slot
+// holds a CSS color or a jexl expression, and `colorByMode` reports 'strand'
+// only for this EXACT string — so a near-miss would still render (as an opaque
+// per-feature expression) while reading back as "color by attribute".
+//
+// Duplicated rather than imported as a value: @jbrowse/plugin-canvas is a
+// devDependency here, used only for display types, and importing a value from
+// it would make the whole plugin a runtime dependency of this leaf module.
+// `satisfies typeof STRAND_COLOR_JEXL` is a type-only reference, so it costs
+// nothing at runtime and still fails the build the moment upstream edits the
+// string. Same trade as ALIGNMENTS_COMPACTNESS above.
+const STRAND_COLOR_JEXL_LOCAL =
+  "jexl:get(feature,'strand')==1?'tomato':get(feature,'strand')==-1?'cornflowerblue':'goldenrod'" satisfies typeof STRAND_COLOR_JEXL
 
 // The `heightMode` config-slot values, pinned to the upstream union so a mode
 // added or renamed there fails the build here rather than leaving the CLI
@@ -490,26 +507,38 @@ const modifiers: Record<string, Modifier> = {
   },
 
   // ——— coloring ———
-  // Two different settings share the `color:` spelling because they are the same
-  // question per track type: alignments pick a color SCHEME (`colorBy`, which
-  // takes an optional tag), wiggle picks a solid CSS color. The canvas-based
-  // feature and variant displays have neither slot — a `colorBy` written for
-  // them was dropped as an unknown MST key (feature) or rejected as a
-  // wrong-shaped config-slot value (the multi-sample variant displays, whose
-  // `colorBy` is a plain sample-attribute string), so they are gated out here.
+  // `color:` asks the same question of every track type, but each display
+  // answers it through a different slot, so this routes rather than writing one
+  // key. Alignments pick a color SCHEME (`colorBy`, with an optional tag);
+  // wiggle and the canvas-based displays take a `color` string. `color:strand`
+  // means the same thing everywhere: alignments have a scheme by that name, and
+  // for canvas it is the exact jexl `colorByMode` reads back as strand mode.
   color: {
-    on: ['alignments', 'wiggle'],
+    on: ALL,
     apply: (r, v, tag, category) => {
       const value = parseStr('color', v, 'color scheme or CSS color')
       if (category === 'alignments') {
         r.snap.colorBy = { type: value, tag }
+      } else if (category === 'hic') {
+        // The hic display has no color slot of either kind
+        console.warn(
+          'Warning: track option "color" has no effect on a hic track',
+        )
       } else {
         // Wiggle: render in one solid color. The bicolor default routes through
         // pos/negColor and ignores `color`; the display config's own
         // `colorImpliesSolid` preProcessSnapshot turns bicolor off for a bare
         // `color`, so don't restate it here — that would also override an
         // explicit `useBicolor` from the JSON escape hatch.
-        r.snap.color = value
+        //
+        // Feature/variant: the same `color` slot on LinearCanvasBaseDisplay,
+        // which takes a CSS color or a jexl expression. A jexl with more than
+        // one colon can't survive this modifier's `split(':')`, so anything
+        // beyond the strand built-in goes through the JSON escape hatch.
+        r.snap.color =
+          value === 'strand' && category !== 'wiggle'
+            ? STRAND_COLOR_JEXL_LOCAL
+            : value
       }
     },
   },

@@ -39,6 +39,11 @@ export {
   linearCanvasBaseDisplayConfigSchemaFactory,
   linearCanvasBaseDisplayStateModelFactory,
 } from './LinearBasicDisplay/index.ts'
+// The exact string `colorByMode` recognizes as "color by strand". Exported so a
+// third party writing the `color` slot can produce the value the display reads
+// back as strand mode rather than as an opaque jexl — @jbrowse/img pins its own
+// copy against this one's literal type, so the two cannot drift.
+export { STRAND_COLOR_JEXL } from './RenderFeatureDataRPC/featureColors.ts'
 export type {
   LinearBasicDisplayModel,
   LinearCanvasBaseDisplayModel,
