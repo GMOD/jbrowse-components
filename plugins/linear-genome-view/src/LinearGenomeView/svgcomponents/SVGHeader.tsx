@@ -82,8 +82,8 @@ export default function SVGHeader({
     : undefined
   const theme = useTheme()
   const fill = stripAlpha(theme.palette.text.primary)
-  const visibleRegions = model.dynamicBlocks.contentBlocks
-  if (!visibleRegions.length) {
+  // nothing on screen to label: no assembly name, scalebar or ruler
+  if (!model.hasVisibleContent) {
     return null
   }
 
@@ -107,7 +107,7 @@ export default function SVGHeader({
         <SVGScalebar model={model} fontSize={fontSize} />
       </g>
       <g transform={`translate(0 ${rulerTop})`}>
-        <SVGRuler model={model} fontSize={fontSize} rulerHeight={rulerHeight} />
+        <SVGRuler model={model} rulerHeight={rulerHeight} />
       </g>
     </g>
   )

@@ -48,27 +48,41 @@ export function svgHtmlToPngBlob(
     })
     const url = URL.createObjectURL(svgBlob)
     img.onload = () => {
-      const canvas = document.createElement('canvas')
-      const w = img.width
-      const h = img.height
-      canvas.width = w
-      canvas.height = h
-      const ctx = canvas.getContext('2d')!
-      ctx.imageSmoothingEnabled = true
-      ctx.imageSmoothingQuality = 'high'
-      ctx.drawImage(img, 0, 0)
-      URL.revokeObjectURL(url)
-      canvas.toBlob(blob => {
-        if (blob) {
-          resolve(blob)
-        } else {
-          reject(
-            new Error(
-              `Failed to create PNG. The image may be too large (${w}x${h}). Try reducing the view size or use SVG format.`,
-            ),
-          )
+      // Everything here runs in an event handler, so a throw would escape the
+      // promise instead of rejecting it and leave the export dialog spinning
+      // forever with nothing said — the hang `awaitViewInitialized` cures on
+      // the other end of this pipeline. Reject explicitly instead.
+      try {
+        const canvas = document.createElement('canvas')
+        const w = img.width
+        const h = img.height
+        // stated once: both the context and the blob give out at this size,
+        // and both failures are silent (a null, not a throw)
+        const tooLarge = `The image may be too large (${w}x${h}). Try reducing the view size or use SVG format.`
+        canvas.width = w
+        canvas.height = h
+        const ctx = canvas.getContext('2d')
+        if (!ctx) {
+          // browsers hand back a null 2d context rather than throwing once the
+          // canvas exceeds their area limit, which PNG_SCALE makes 4x easier to
+          // hit than the on-screen canvases
+          throw new Error(`Failed to create PNG rendering context. ${tooLarge}`)
         }
-      }, 'image/png')
+        ctx.imageSmoothingEnabled = true
+        ctx.imageSmoothingQuality = 'high'
+        ctx.drawImage(img, 0, 0)
+        canvas.toBlob(blob => {
+          if (blob) {
+            resolve(blob)
+          } else {
+            reject(new Error(`Failed to create PNG. ${tooLarge}`))
+          }
+        }, 'image/png')
+      } catch (e) {
+        reject(e instanceof Error ? e : new Error(`${e}`))
+      } finally {
+        URL.revokeObjectURL(url)
+      }
     }
     img.onerror = event => {
       URL.revokeObjectURL(url)

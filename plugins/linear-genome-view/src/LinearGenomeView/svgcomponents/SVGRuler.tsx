@@ -16,6 +16,8 @@ import {
   RULER_TICK_FONT_SIZE,
   getRulerLayout,
   gridlineTickXs,
+  refNameLabelBaselineY,
+  refNameLabelBoxHeight,
   vlinePath,
 } from './util.ts'
 
@@ -87,13 +89,7 @@ function Ruler({
 // chromosome interior. No assembly-name prefix here (unlike the on-screen
 // scalebar): the SVG export already draws a standalone assembly-name label
 // above the ruler, so folding it into this one too is redundant.
-function SVGRefNameLabels({
-  model,
-  fontSize,
-}: {
-  model: LGV
-  fontSize: number
-}) {
+function SVGRefNameLabels({ model }: { model: LGV }) {
   const theme = useTheme()
   const fill = stripAlpha(theme.palette.text.primary)
   const { labels } = getScalebarRefNameLabels({
@@ -114,7 +110,6 @@ function SVGRefNameLabels({
             key={label.key}
             label={label}
             fill={fill}
-            fontSize={fontSize}
             clipId={`reflabel-${model.id}-${label.key}`}
           />
         ))}
@@ -130,21 +125,19 @@ function SVGRefNameLabels({
 function SVGRefNameLabel({
   label,
   fill,
-  fontSize,
   clipId,
 }: {
   label: ScalebarRefNameLabel
   fill: string
-  fontSize: number
   clipId: string
 }) {
   const { transform, maxWidth, paddingLeft, text } = label
   return (
     <g transform={`translate(${transform} 0)`}>
-      <SvgClipRect id={clipId} width={maxWidth} height={fontSize + 2}>
+      <SvgClipRect id={clipId} width={maxWidth} height={refNameLabelBoxHeight}>
         <text
           x={paddingLeft}
-          y={fontSize}
+          y={refNameLabelBaselineY}
           fontSize={REF_NAME_LABEL_FONT_SIZE}
           fontWeight="bold"
           fill={fill}
@@ -158,11 +151,9 @@ function SVGRefNameLabel({
 
 export default function SVGRuler({
   model,
-  fontSize,
   rulerHeight,
 }: {
   model: LGV
-  fontSize: number
   // Total vertical budget for this ruler (refName label + tick numbers + tick
   // marks), matching the caller's own row-height math. The tick marks are
   // anchored to the bottom of this budget (minus a small margin) so they can
@@ -172,23 +163,22 @@ export default function SVGRuler({
 }) {
   const { tickTopY, numbersBaselineY } = getRulerLayout(rulerHeight)
   return (
-    <>
+    // the tick and block frames overhang the viewport on both sides; clip so
+    // ticks, tick numbers, refName labels and the region-separator bar at the
+    // last region's right edge can't bleed into the export margin (on screen
+    // the scalebar's overflow:hidden does this)
+    <SvgClipRect
+      id={`ruler-clip-${model.id}`}
+      width={model.width}
+      height={rulerHeight}
+    >
       <SVGRegionSeparators model={model} height={rulerHeight} />
-      {/* the tick and block frames overhang the viewport on both sides; clip so
-      ticks, tick numbers and refName labels can't bleed into the export margin
-      (on screen the scalebar's overflow:hidden does this) */}
-      <SvgClipRect
-        id={`ruler-clip-${model.id}`}
-        width={model.width}
-        height={rulerHeight}
-      >
-        <Ruler
-          model={model}
-          tickTopY={tickTopY}
-          numbersBaselineY={numbersBaselineY}
-        />
-        <SVGRefNameLabels model={model} fontSize={fontSize} />
-      </SvgClipRect>
-    </>
+      <Ruler
+        model={model}
+        tickTopY={tickTopY}
+        numbersBaselineY={numbersBaselineY}
+      />
+      <SVGRefNameLabels model={model} />
+    </SvgClipRect>
   )
 }

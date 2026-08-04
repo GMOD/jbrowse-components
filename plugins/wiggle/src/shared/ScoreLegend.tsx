@@ -1,3 +1,4 @@
+import { svgSafeId } from '@jbrowse/core/svg/svgId'
 import { measureLegendText } from '@jbrowse/core/ui'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { stripAlpha } from '@jbrowse/core/util'
@@ -126,10 +127,14 @@ function ScoreRampLegend({
     pivotX - wPivot / 2 > wMin &&
     pivotX + wPivot / 2 < barWidth - wMax
   const labelY = BAR_HEIGHT + LABEL_SIZE + 4
+  // hand-rolled rather than SvgGradientLegend (this bar is sampled from the
+  // live color function), so it owns the sanitizing that component does:
+  // gradientId is built from the displayId, which is arbitrary config text
+  const gradientId = svgSafeId(ramp.gradientId)
   return (
     <g>
       <defs>
-        <linearGradient id={ramp.gradientId} x1="0" x2="1" y1="0" y2="0">
+        <linearGradient id={gradientId} x1="0" x2="1" y1="0" y2="0">
           {rampStops(domain, ramp, isLog).map(s => (
             <stop key={s.offset} offset={s.offset} stopColor={s.color} />
           ))}
@@ -148,7 +153,7 @@ function ScoreRampLegend({
         y={3}
         width={barWidth}
         height={BAR_HEIGHT}
-        fill={`url(#${ramp.gradientId})`}
+        fill={`url(#${gradientId})`}
         stroke={stripAlpha(palette.text.primary)}
         strokeOpacity={0.25}
         strokeWidth={0.5}

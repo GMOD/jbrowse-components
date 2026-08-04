@@ -2,6 +2,7 @@ import { getBpDisplayStr, stripAlpha } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 
 import { SVG_SCALEBAR_CAP } from '../consts.ts'
+import { labelBaselineFromTop } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 
@@ -44,9 +45,8 @@ export default function SVGScalebar({
       />
       <text
         x={(x0 + x1) / 2}
-        y={SVG_SCALEBAR_CAP}
+        y={labelBaselineFromTop(SVG_SCALEBAR_CAP, fontSize)}
         textAnchor="middle"
-        dominantBaseline="hanging"
         fontSize={fontSize}
         fill={color}
       >

@@ -14,9 +14,13 @@ import type { TrackLabelMode } from '../types.ts'
 // modes hang off the leftmost visible content at `x`, either just above the
 // track body ('offset') or inset over it ('overlay').
 //
-// 'offset' is placed on its alphabetic baseline (not a hanging one) so its
-// descenders land a known distance above the track body — the band it sits in
-// is `textHeight` tall, and offsetLabelBaselineY owns that arithmetic.
+// Every mode is placed on its alphabetic baseline (the SVG default, so no
+// dominantBaseline is emitted at all): 'offset' so its descenders land a known
+// distance above the track body — the band it sits in is `textHeight` tall, and
+// offsetLabelBaselineY owns that arithmetic — and 'left'/'overlay' so their
+// ascenders stay inside the track box they align with. 'left' used to be pinned
+// at a hardcoded y=20 on a hanging baseline, which neither scaled with fontSize
+// nor stayed inside a track shorter than ~35px.
 function labelPosition({
   trackLabels,
   trackLabelOffset,
@@ -33,18 +37,15 @@ function labelPosition({
   return trackLabels === 'left'
     ? {
         x: trackLabelOffset - TRACK_LABEL_GAP,
-        y: 20,
+        y: insetLabelBaselineY(fontSize),
         textAnchor: 'end' as const,
-        dominantBaseline: 'hanging' as const,
       }
     : trackLabels === 'offset'
       ? {
           x,
           y: offsetLabelBaselineY(textHeight, fontSize),
-          // left-aligned on the alphabetic baseline is the SVG default; omit
-          // both rather than spend bytes on them
+          // left-aligned is the SVG default; omit rather than spend bytes on it
           textAnchor: undefined,
-          dominantBaseline: undefined,
         }
       : {
           // inset over the track body, on a baseline far enough down that the
@@ -52,7 +53,6 @@ function labelPosition({
           x: x + 5,
           y: insetLabelBaselineY(fontSize),
           textAnchor: undefined,
-          dominantBaseline: undefined,
         }
 }
 
@@ -86,7 +86,6 @@ export default function SVGTrackLabel({
       y={pos.y}
       textAnchor={pos.textAnchor}
       fontSize={fontSize}
-      dominantBaseline={pos.dominantBaseline}
       fill={stripAlpha(theme.palette.text.primary)}
     >
       {trackName}

@@ -1,5 +1,3 @@
-/* eslint-disable react-refresh/only-export-components */
-
 import { exportMargin } from '@jbrowse/core/svg/constants'
 import { awaitViewInitialized } from '@jbrowse/core/svg/svgReady'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
@@ -33,7 +31,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
     themeName = 'default',
     fontFamily,
     showGridlines = false,
-    Wrapper = ({ children }) => children,
+    Wrapper,
   } = opts
   const session = getSession(model)
   const theme = session.getActiveThemeOptions?.(themeName)
@@ -46,10 +44,10 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
     showCytobands: effectiveShowCytobands,
     rulerHeight,
   })
-  const offset = tracksTop
-  const tracksHeight = totalHeight(visibleTracks, textHeight, trackLabels)
-  const height = tracksHeight + offset + exportMargin
 
+  // deliberately read before the awaits below, since it is an input to them.
+  // That is why `svgLegendWidth` is specified as a function of the *settings*
+  // and not of the loaded data — see LinearHicDisplay's implementation.
   const legendWidth = max(
     visibleTracks.map(track => track.displays[0]!.svgLegendWidth?.() ?? 0),
     0,
@@ -69,6 +67,17 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
       }),
     })),
   )
+
+  // Reserved *after* those awaits, not before: a display whose height is
+  // derived from its data (LinearMultiRowFeatureDisplay is `nrow *
+  // effectiveRowHeight`) only reaches its final height once `renderSvg`'s
+  // readiness wait resolves. SVGTracks re-reads `displays[0].height` when it
+  // lays the tracks out, which happens later still, so measuring up front left
+  // the canvas sized for the pre-fetch height and the taller track bodies ran
+  // off the bottom of the export.
+  const tracksHeight = totalHeight(visibleTracks, textHeight, trackLabels)
+  const height = tracksHeight + tracksTop + exportMargin
+
   const trackLabelOffset = trackLabelLeftOffset({
     tracks: visibleTracks,
     trackLabels,
@@ -94,11 +103,11 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
           />
         </g>
         {showGridlines ? (
-          <g transform={`translate(${trackLabelOffset} ${offset})`}>
+          <g transform={`translate(${trackLabelOffset} ${tracksTop})`}>
             <SVGGridlines model={model} height={tracksHeight} />
           </g>
         ) : null}
-        <g transform={`translate(0 ${offset})`}>
+        <g transform={`translate(0 ${tracksTop})`}>
           <SVGTracks
             textHeight={textHeight}
             fontSize={fontSize}
@@ -110,15 +119,10 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
             legendWidth={legendWidth}
           />
         </g>
-        <g transform={`translate(${trackLabelOffset} ${offset})`}>
+        <g transform={`translate(${trackLabelOffset} ${tracksTop})`}>
           <SVGHighlightsOverlay model={model} tracksHeight={tracksHeight} />
         </g>
       </g>
     ),
   })
 }
-
-export { default as SVGGridlines } from './SVGGridlines.tsx'
-export { default as SVGRuler } from './SVGRuler.tsx'
-export { default as SVGTracks } from './SVGTracks.tsx'
-export { default as SVGView } from './SVGView.tsx'

@@ -7,6 +7,7 @@ import { useTheme } from '@mui/material'
 
 import { stripAlpha } from '../util/index.ts'
 import { exportMargin } from './constants.ts'
+import { svgSafeId } from './svgId.ts'
 
 // Full-bleed background rect. `width`/`height` are the *total* SVG dimensions.
 export function SVGBackground({
@@ -147,19 +148,23 @@ export function SvgClipRect({
   height,
   children,
 }: {
+  // may contain config data (a trackId, a refName-bearing block key). Pass it
+  // raw: sanitizing happens here, where the id and the `url()` pointing at it
+  // are both emitted, and svgSafeId must not be applied twice
   id: string
   width: number
   height: number
   children: React.ReactNode
 }) {
+  const safeId = svgSafeId(id)
   return (
     <>
       <defs>
-        <clipPath id={id}>
+        <clipPath id={safeId}>
           <rect x={0} y={0} width={width} height={height} />
         </clipPath>
       </defs>
-      <g clipPath={`url(#${id})`}>{children}</g>
+      <g clipPath={`url(#${safeId})`}>{children}</g>
     </>
   )
 }

@@ -1,9 +1,13 @@
+import { REF_NAME_LABEL_FONT_SIZE } from '../util.ts'
 import {
   defaultTextHeight,
   getHeaderLayout,
   insetLabelBaselineY,
+  labelBaselineFromTop,
   labelInkHeight,
   offsetLabelBaselineY,
+  refNameLabelBaselineY,
+  refNameLabelBoxHeight,
 } from './util.ts'
 
 // Chrome reports a 13px Latin string's ink box as 15px tall (12 above the
@@ -52,6 +56,36 @@ test.each(fontSizes)(
     expect(inkTop).toBeGreaterThanOrEqual(0)
   },
 )
+
+// labelBaselineFromTop stands in for a hanging baseline at the sites whose
+// reserved height is computed from labelInkHeight, so it has to mean the same
+// thing that reservation assumes: the top of the ink box lands on the given y,
+// with the whole box below it.
+test.each(fontSizes)(
+  'labelBaselineFromTop puts the ink box top at the given y (fontSize %i)',
+  fontSize => {
+    const top = 7
+    const baseline = labelBaselineFromTop(top, fontSize)
+    const ink = labelInkHeight(fontSize)
+    const d = descent(fontSize)
+    expect(baseline - (ink - d)).toBe(top)
+    expect(baseline + d).toBe(top + ink)
+  },
+)
+
+// The bold refName label's clip box used to be sized `fontSize + 2` with its
+// baseline at `fontSize` — the export's *general* font size, not the size the
+// name is drawn at. That cut the descenders off a name like `chrUn_gl000220` at
+// the default 13, and at any smaller export font clipped the tops as well. The
+// box is now keyed to REF_NAME_LABEL_FONT_SIZE, so it holds the glyphs whatever
+// the caller asks for elsewhere in the export.
+test('the refName label box holds the glyphs it clips', () => {
+  const d = descent(REF_NAME_LABEL_FONT_SIZE)
+  const inkTop =
+    refNameLabelBaselineY - (labelInkHeight(REF_NAME_LABEL_FONT_SIZE) - d)
+  expect(inkTop).toBeGreaterThanOrEqual(0)
+  expect(refNameLabelBaselineY + d).toBeLessThanOrEqual(refNameLabelBoxHeight)
+})
 
 // The header stacks assembly name, scalebar and ruler by ink box, not by
 // fontSize: reserving only fontSize clipped the assembly name's ascenders

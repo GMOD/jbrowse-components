@@ -174,11 +174,9 @@ export type {
   TrackLabelMode,
   VolatileGuide,
 } from './LinearGenomeView/types.ts'
-export {
-  SVGTracks,
-  SVGView,
-  renderToSvg,
-} from './LinearGenomeView/svgcomponents/SVGLinearGenomeView.tsx'
+export { renderToSvg } from './LinearGenomeView/svgcomponents/SVGLinearGenomeView.tsx'
+export { default as SVGTracks } from './LinearGenomeView/svgcomponents/SVGTracks.tsx'
+export { default as SVGView } from './LinearGenomeView/svgcomponents/SVGView.tsx'
 export { default as SVGHighlights } from './LinearGenomeView/svgcomponents/SVGHighlights.tsx'
 export { default as SVGHighlightsOverlay } from './LinearGenomeView/svgcomponents/SVGHighlightsOverlay.tsx'
 export { default as ExportSvgDialog } from './LinearGenomeView/components/ExportSvgDialog.tsx'
@@ -194,6 +192,9 @@ export {
   SvgChrome,
   SvgClipRect,
 } from '@jbrowse/core/svg/SvgExport'
+// for a display that hand-rolls a <clipPath> instead of using SvgClipRect (an
+// inset or non-rect clip); ids built from a trackId/refName need it
+export { svgSafeId } from '@jbrowse/core/svg/svgId'
 export { awaitSvgReady } from '@jbrowse/core/svg/svgReady'
 export type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 export { renderDisplaySvg } from './shared/renderDisplaySvg.tsx'

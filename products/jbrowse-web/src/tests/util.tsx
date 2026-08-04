@@ -252,6 +252,22 @@ function assertNoDuplicateSvgIds(svg: string) {
   expect([...duplicates]).toEqual([])
 }
 
+// Every `url(#x)` in an export must resolve to an `id="x"` in the same
+// document — these files are self-contained, so there is nowhere else for a
+// reference to point. A dangling one is silent at render time: the clip simply
+// never applies and the element paints over its neighbours, or a gradient fill
+// comes out transparent. That is how ids built out of config text (a trackId
+// like `Genes (curated)`, a refName like `gi|123|ref|NC_000001|`) used to break
+// an export, since `url()` cannot carry parens, quotes or spaces — see
+// svgSafeId.
+function assertNoDanglingSvgRefs(svg: string) {
+  const ids = new Set([...svg.matchAll(/\bid="([^"]+)"/g)].map(m => m[1]!))
+  const dangling = [...svg.matchAll(/url\(#([^)]*)\)/g)]
+    .map(m => m[1]!)
+    .filter(ref => !ids.has(ref))
+  expect([...new Set(dangling)]).toEqual([])
+}
+
 /**
  * Extract the exported SVG string from the mocked `saveAs`. Relies on the
  * `svgExportMocks.ts` Blob mock, which stores constructor args as
@@ -298,6 +314,7 @@ export async function exportAndVerifySvg({
   const dir = path.dirname(module.filename)
   fs.writeFileSync(`${dir}/__image_snapshots__/${filename}_snapshot.svg`, svg)
   assertNoDuplicateSvgIds(svg)
+  assertNoDanglingSvgRefs(svg)
   expect(svg).toMatchSnapshot()
   return svg
 }

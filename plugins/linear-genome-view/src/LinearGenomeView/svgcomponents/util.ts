@@ -6,6 +6,7 @@ import {
   HEADER_OVERVIEW_HEIGHT,
   SVG_SCALEBAR_CAP,
 } from '../consts.ts'
+import { REF_NAME_LABEL_FONT_SIZE } from '../util.ts'
 
 import type { TrackLabelMode } from '../types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -83,6 +84,26 @@ function labelDescent(fontSize: number) {
   return Math.ceil(fontSize * LABEL_DESCENT_EM)
 }
 
+/**
+ * Baseline y for a label whose ink box should start at `topY` — roughly what
+ * `dominantBaseline="hanging"` asks the renderer for, but resolved here.
+ *
+ * Not a renderer-compatibility workaround (`dominant-baseline` is well
+ * supported, and SvgCanvas emits it on every feature label it writes). The
+ * point is that this file already *models* the ink box, in LABEL_INK_EM /
+ * LABEL_DESCENT_EM, and reserves vertical space from that model —
+ * `getHeaderLayout` budgets `labelInkHeight(fontSize)` for the scalebar's bp
+ * label, `defaultTextHeight` for an offset track label. A label placed with
+ * `hanging` is instead positioned by the renderer's own notion of the font's
+ * ascent, so the space reserved and the space used come from two different
+ * models that merely happen to agree closely at the sizes we ship. Resolving
+ * the baseline from the same constants makes them one model, which is what lets
+ * util.test.ts check placement against reservation at all.
+ */
+export function labelBaselineFromTop(topY: number, fontSize: number) {
+  return topY + labelInkHeight(fontSize) - labelDescent(fontSize)
+}
+
 // clearance an 'offset' label keeps above its ascenders and below its
 // descenders. The bottom gap is the wider of the two: it separates text from
 // the features, where the top gap only separates it from the track above.
@@ -107,7 +128,7 @@ export function offsetLabelBaselineY(textHeight: number, fontSize: number) {
 // Baseline for a label inset into the top of the box it draws over ('overlay'
 // mode), measured down from that top edge so the ascenders stay inside it.
 export function insetLabelBaselineY(fontSize: number) {
-  return LABEL_PAD_TOP + labelInkHeight(fontSize) - labelDescent(fontSize)
+  return labelBaselineFromTop(LABEL_PAD_TOP, fontSize)
 }
 
 // Compact vertical layout for the exported header: rows (assembly name,
@@ -142,7 +163,7 @@ export function getHeaderLayout({
   const rulerTop =
     scalebarLineY + SVG_SCALEBAR_CAP + labelInkHeight(fontSize) + ROW_GAP
   return {
-    assemblyLabelBaselineY: assemblyLabelHeight - labelDescent(fontSize),
+    assemblyLabelBaselineY: labelBaselineFromTop(0, fontSize),
     cytobandTop,
     scalebarLineY,
     rulerTop,
@@ -164,6 +185,19 @@ export function getRulerLayout(rulerHeight: number) {
   const tickTopY = rulerHeight - 2 - RULER_MAJOR_TICK
   return { tickTopY, numbersBaselineY: tickTopY - RULER_TICK_LABEL_GAP }
 }
+
+// Ink box of the bold refName label drawn at the top of the ruler, keyed to the
+// size its glyphs are actually drawn at rather than to the export's general
+// `fontSize`. The two are independent: the fit tests upstream (refNameLabelWidth
+// via getScalebarRefNameLabels / refNameLabelFitsInView) all measure at
+// REF_NAME_LABEL_FONT_SIZE, so sizing the label's clip box off `fontSize`
+// instead clipped the descenders of a name like `chrUn_gl000220` at the default
+// 13, and both ends of the glyphs at any smaller export font.
+export const refNameLabelBoxHeight = labelInkHeight(REF_NAME_LABEL_FONT_SIZE)
+export const refNameLabelBaselineY = labelBaselineFromTop(
+  0,
+  REF_NAME_LABEL_FONT_SIZE,
+)
 
 // space the label pushes a track down by; only 'offset' mode does
 export function labelOffset(trackLabels: TrackLabelMode, textHeight: number) {

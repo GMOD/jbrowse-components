@@ -1,3 +1,4 @@
+import { svgSafeId } from '@jbrowse/core/svg/svgId'
 import { getSession } from '@jbrowse/core/util'
 
 import SVGRegionSeparators from './SVGRegionSeparators.tsx'
@@ -42,7 +43,10 @@ export default function SVGTracks({
         const conf = track.configuration
         const trackName = svgTrackName(track, session)
         const display = track.displays[0]!
-        const clipId = `track-clip-${model.id}-${conf.trackId}`
+        // hand-rolled rather than SvgClipRect because the rect is inset by
+        // `textOffset`, so it owns the sanitizing SvgClipRect would have done:
+        // a trackId is arbitrary config text and lands inside a `url(#...)`
+        const clipId = svgSafeId(`track-clip-${model.id}-${conf.trackId}`)
         const currentOffset = offsets[i]!
         return (
           <g key={conf.trackId} transform={`translate(0 ${currentOffset})`}>

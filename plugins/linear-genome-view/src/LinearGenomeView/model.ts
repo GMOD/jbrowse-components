@@ -1903,6 +1903,20 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #getter
+         * Whether any part of a displayed region actually falls inside the
+         * viewport. False both when the view holds no regions at all and when
+         * it holds some but is scrolled entirely off them; either way there is
+         * no visible span for the scalebar, ruler and refName labels to
+         * describe, which is what the SVG export's header checks before drawing
+         * one. Distinct from `hasDisplayedRegions`, which only asks whether the
+         * view has been given regions, not whether any are on screen.
+         */
+        get hasVisibleContent() {
+          return this.dynamicBlocks.contentBlocks.length > 0
+        },
+
+        /**
+         * #getter
          * Returns the currently visible content blocks with screen pixel
          * positions and displayedRegionIndex guaranteed.
          * Used by WebGL displays for per-region data fetching and rendering.

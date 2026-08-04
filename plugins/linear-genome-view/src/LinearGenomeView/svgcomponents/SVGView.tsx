@@ -65,7 +65,7 @@ export default function SVGView({
         >
           {view.assemblyNames.join(', ')}
         </text>
-        <SVGRuler model={view} fontSize={fontSize} rulerHeight={contentTop} />
+        <SVGRuler model={view} rulerHeight={contentTop} />
       </g>
       {showGridlines ? (
         <g transform={`translate(${trackLabelOffset} ${contentTop})`}>

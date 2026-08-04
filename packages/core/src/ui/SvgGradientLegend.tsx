@@ -1,4 +1,6 @@
 /* eslint-disable react-refresh/only-export-components -- layout constants belong with this leaf SVG primitive; no component state to fast-refresh */
+import { svgSafeId } from '../svg/svgId.ts'
+
 export interface GradientStop {
   // e.g. '0%'; also used as the React key, so keep them distinct
   offset: string
@@ -42,7 +44,9 @@ export default function SvgGradientLegend({
   padding = 8,
   fontSize = 10,
 }: {
-  // must be document-unique when several gradient legends share one SVG
+  // must be document-unique when several gradient legends share one SVG.
+  // Callers build it from a displayId, so pass it raw: sanitizing happens here,
+  // where the id and the `url()` pointing at it are both emitted
   gradientId: string
   stops: GradientStop[]
   labels: GradientLabel[]
@@ -61,10 +65,11 @@ export default function SvgGradientLegend({
   const titleGap = title ? fontSize + 4 : 0
   const barY = padding + titleGap
   const labelY = barY + barHeight + fontSize + 2
+  const safeGradientId = svgSafeId(gradientId)
   return (
     <g transform={`translate(${x}, ${y})`}>
       <defs>
-        <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
+        <linearGradient id={safeGradientId} x1="0%" y1="0%" x2="100%" y2="0%">
           {stops.map(stop => (
             <stop
               key={stop.offset}
@@ -99,7 +104,7 @@ export default function SvgGradientLegend({
         y={barY}
         width={barWidth}
         height={barHeight}
-        fill={`url(#${gradientId})`}
+        fill={`url(#${safeGradientId})`}
         rx={2}
       />
       {labels.map(label => (
