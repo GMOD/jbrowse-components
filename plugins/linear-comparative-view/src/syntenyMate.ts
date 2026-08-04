@@ -4,7 +4,12 @@ import type { Feature } from '@jbrowse/core/util'
 // by the display, the tooltip jexl function, the launch dialog and the synteny
 // RPC — each of them used to keep its own copy of this interface plus its own
 // cast, which is exactly how the shapes drift apart.
-export interface SyntenyMate {
+// A type alias rather than an interface on purpose: this is plain feature data
+// that travels over the RPC, so it has to satisfy the open `[key: string]:
+// unknown` shapes a serialized feature is declared with. An interface gets no
+// implicit index signature and so does not, which leaves callers copying the
+// object at runtime purely to widen it.
+export type SyntenyMate = {
   start: number
   end: number
   refName: string

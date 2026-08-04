@@ -1,10 +1,8 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 
-import { pickMatesForRegion } from './pickMatesForRegion.ts'
-
 import type { MateDiscoveryResult } from './pickMatesForRegion.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { AbstractSessionModel, Feature, Region } from '@jbrowse/core/util'
+import type { AbstractSessionModel, Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export type MateDiscovery = (
@@ -13,12 +11,14 @@ export type MateDiscovery = (
 
 // Which assemblies a region aligns to, and on which alignment each.
 //
-// The features are fetched straight from the track's adapter rather than read
-// off a display: the launch is offered for any synteny track in the session, so
-// there may be no display to read (and what a display holds is packed worker
-// output keyed by feature index, while the panels need whole Features with
-// their mate and CIGAR). The region is one rubberband selection, and an
-// in-memory PAF is already parsed behind the adapter's shared setup.
+// Fetched straight from the track's adapter rather than read off a display: the
+// launch is offered for any synteny track in the session, so there may be no
+// display to read (and what a display holds is packed worker output keyed by
+// feature index, while the panels need whole Features with their mate and
+// CIGAR).
+//
+// The reduction to one alignment per mate assembly happens in the worker, beside
+// the fetch — see executeDiscoverMates for why that side of the boundary.
 //
 // The caller's `stopToken` travels with the RPC: a selection can be a whole
 // chromosome, and the download+parse behind it is exactly the phase that honors
@@ -39,23 +39,15 @@ export function makeMateDiscovery({
   return async stopToken => {
     const { rpcManager } = session
     const trackId = readConfObject(track, 'trackId') as string
-    const features: Feature[] = await rpcManager.call(
-      trackId,
-      'CoreGetFeatures',
-      {
-        adapterConfig: readConfObject(track, 'adapter') as Record<
-          string,
-          unknown
-        >,
-        regions: [region],
-        stopToken,
-      },
-    )
-    return pickMatesForRegion({
-      features,
-      region,
+    return rpcManager.call(trackId, 'SyntenyDiscoverMates', {
+      adapterConfig: readConfObject(track, 'adapter') as Record<
+        string,
+        unknown
+      >,
+      regions: [region],
       trackAssemblyNames: readConfObject(track, 'assemblyNames') as string[],
       anchorAssembly: region.assemblyName,
+      stopToken,
     })
   }
 }
