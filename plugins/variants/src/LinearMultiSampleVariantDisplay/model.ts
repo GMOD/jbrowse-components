@@ -1,3 +1,4 @@
+import { LONG_INSERTION_MIN_LENGTH } from '@jbrowse/alignments-core'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
@@ -173,15 +174,25 @@ export function stateModelFactory(
          * the same `palette.insertion` the overlay paints with, so the swatch
          * cannot drift from the glyph.
          *
-         * The condition is "something visible inserts bases", walking
-         * `featureInsertedBp` (one entry per variant) rather than the cells.
-         * Deliberately *not* "is a marker drawn at this zoom" — that is
-         * `variantCellSpanPx(...).drawsMarker`, which needs the block geometry
-         * and flips while zooming, so the legend would appear and disappear
-         * under a scroll wheel. Data-presence matches what `hasSecondaryAlt` /
-         * `hasNoCall` mean for the other conditional entries, and the payload is
-         * already viewport-scoped, so it is still a statement about what is on
-         * screen.
+         * The condition is "something visible inserts at least
+         * `LONG_INSERTION_MIN_LENGTH` bases", which is the zoom-independent half
+         * of the painter's own rule.
+         *
+         * Not simply "the window contains an insertion". Those differ
+         * systematically rather than at the margin: `insertionBarWidth` returns
+         * 1px below that length, which never beats the 2px cell floor at ANY
+         * zoom, so a callset of ordinary short indels has an insertion in every
+         * window and a marker in none. Keying on the data alone put an
+         * "Insertions" swatch on three figures that draw nothing.
+         *
+         * Not the painter's full test (`variantCellSpanPx(...).drawsMarker`)
+         * either, though that is what actually decides. It needs `renderBlocks`
+         * and `renderState`, both of which resolve the containing view — and
+         * `legendSections` is reachable from a display mounted outside one (see
+         * SvgVariantOverlay.test.tsx). It would also recompute on every pan.
+         * The residual gap is one direction only and it is the rare one: zoomed
+         * far enough out that even a long insertion's bar falls under the cell
+         * floor, the entry outlives the glyph.
          */
         get insertionLegendColor(): string | undefined {
           if (!getConf(self, 'showInsertionGlyphs')) {
@@ -190,7 +201,7 @@ export function stateModelFactory(
           for (const region of self.perRegionCellMap.values()) {
             const inserted = region.featureInsertedBp
             for (let i = 0; i < inserted.length; i++) {
-              if (inserted[i]! > 0) {
+              if (inserted[i]! >= LONG_INSERTION_MIN_LENGTH) {
                 return getSession(self).palette.insertion
               }
             }
