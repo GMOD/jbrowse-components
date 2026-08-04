@@ -349,7 +349,14 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     // testid flips only once model.canvasDrawn is true, so a missing or empty
     // BAM fails the capture instead of quietly yielding a blank lane. readyText
     // on the window would have matched before a single read rendered.
-    readySelector: '[data-testid="pileup-display-done"]',
+    // The alignments display puts `data-display-phase` on its DisplayChrome div
+    // (whose testid is derived from displayId) and `pileup-display-done` on an
+    // inner div, so unlike the variant/wiggle displays the two attributes are
+    // NOT on one element and cannot be ANDed directly — that selector matches
+    // nothing and the capture fails. `:has()` relates them instead: a display
+    // chrome that is finished AND contains a drawn pileup.
+    readySelector:
+      '[data-display-phase="ready"]:has([data-testid="pileup-display-done"])',
     readyTimeout: 120000,
     viewportWidth: 1000,
     // gene lane + the pileup with its coverage band + the depth wiggle

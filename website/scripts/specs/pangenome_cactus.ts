@@ -105,7 +105,14 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readyText: '806,000',
+    // Scoped to this display AND to its real doneness. `-done` alone is
+    // canvasDrawn, i.e. first paint, which flips on an empty canvas while the
+    // fetch is still in flight; `data-display-phase` covers the whole fetch.
+    // Both attributes sit on the same DisplayChrome div, so one selector says
+    // "the variant matrix specifically, finished". readyText on the locus
+    // matched the ruler, which paints before any genotype does.
+    readySelector:
+      '[data-testid="variant-matrix-display-done"][data-display-phase="ready"]',
     readyTimeout: 90000,
     viewportWidth: 1000,
     // fits the gene lane plus the whole 260px matrix and the genotype legend;
@@ -219,7 +226,10 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readyText: 'by builder',
+    // as above: the multiwiggle specifically, finished. The track name matched
+    // as soon as the lane's header rendered, which is before either curve.
+    readySelector:
+      '[data-testid="multi-wiggle-display-done"][data-display-phase="ready"]',
     readyTimeout: 90000,
     viewportWidth: 1000,
     // the gene lane plus the whole 300px two-row stack, with room for the
