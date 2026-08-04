@@ -98,6 +98,10 @@ export type {
 } from './ui/index.ts'
 
 export { initializeWorker } from './rpcWorker.ts'
+export { toPluginLoadRecord } from './pluginInput.ts'
+export type { PluginInput } from './pluginInput.ts'
+export { decodeSessionFromUrl, encodeSessionToUrl } from './sessionUrl.ts'
+export type { SessionSnapshot } from './sessionUrl.ts'
 export {
   migrateConfigSnapshot,
   migrateSessionSnapshot,

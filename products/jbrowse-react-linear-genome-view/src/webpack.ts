@@ -1,12 +1,13 @@
+// The UMD entry point: everything the npm entry exports, plus React itself,
+// since a <script>-tag consumer can't import it.
+//
+// Re-exported wholesale rather than hand-listed. The list drifted while it was
+// hand-written — `createLinearGenomeView`, the very API that exists for the
+// script-tag consumer this bundle serves, was missing from it.
 // eslint-disable-next-line no-restricted-imports
 import * as React from 'react'
 
-export { default as JBrowseLinearGenomeView } from './JBrowseLinearGenomeView/index.ts'
-export { default as LinearGenomeView } from './LinearGenomeView/index.ts'
-export { default as createModel } from './createModel/index.ts'
-export { default as createViewState } from './createViewState.ts'
-export { default as loadPlugins } from './loadPlugins.ts'
-export type { ViewModel } from './createModel/createModel.ts'
+export * from './index.ts'
 
 export * from 'react-dom/client'
 

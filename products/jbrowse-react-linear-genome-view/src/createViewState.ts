@@ -7,10 +7,13 @@ import type {
   createConfigModel,
   createSessionModel,
 } from './createModel/index.ts'
-import type { PluginConstructor } from '@jbrowse/core/Plugin'
 import type { ParsedLocString } from '@jbrowse/core/util'
 import type { IJsonPatch, SnapshotIn } from '@jbrowse/mobx-state-tree'
 import type { HighlightType } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  PluginInput,
+  SessionSnapshot as RestoredSessionSnapshot,
+} from '@jbrowse/product-core'
 
 type SessionSnapshot = SnapshotIn<ReturnType<typeof createSessionModel>>
 type ConfigSnapshot = SnapshotIn<ReturnType<typeof createConfigModel>>
@@ -23,11 +26,16 @@ type AggregateTextSearchAdapters = ConfigSnapshot['aggregateTextSearchAdapters']
 // declarative <LinearGenomeView> component
 export interface CreateViewStateBaseOptions {
   assembly: Assembly
-  tracks: Tracks
+  tracks?: Tracks
   internetAccounts?: InternetAccounts
   aggregateTextSearchAdapters?: AggregateTextSearchAdapters
   configuration?: Record<string, unknown>
-  plugins?: PluginConstructor[]
+  /**
+   * Plugin classes, or the `{ plugin, definition }` records `loadPlugins`
+   * returns — pass those through unchanged, since the definition is what lets
+   * the RPC worker load the same plugin on its side.
+   */
+  plugins?: PluginInput[]
   disableAddTracks?: boolean
   onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
   makeWorkerInstance?: () => Worker
@@ -39,7 +47,15 @@ export interface CreateViewStateBaseOptions {
 export interface ViewStateOptions extends CreateViewStateBaseOptions {
   location?: string | ParsedLocString
   highlight?: (string | HighlightType)[]
+  /** a session you author, checked against the session model's shape */
   defaultSession?: SessionSnapshot
+  /**
+   * A session that came from somewhere else — {@link decodeSession} on a URL
+   * param, a snapshot you stored. Same slot as `defaultSession` (this one
+   * wins), but open-shaped: its contents are only known at runtime, so MST
+   * validates it at create rather than the compiler validating it here.
+   */
+  session?: RestoredSessionSnapshot
 }
 
 export default function createViewState(opts: ViewStateOptions) {
@@ -56,6 +72,7 @@ export default function createViewState(opts: ViewStateOptions) {
     disableAddTracks = false,
     makeWorkerInstance,
     defaultSession,
+    session,
     drawerViewHeight = '100vh',
   } = opts
   const { model, pluginManager } = createModel(plugins, makeWorkerInstance)
@@ -82,6 +99,12 @@ export default function createViewState(opts: ViewStateOptions) {
   )
   pluginManager.setRootModel(stateTree)
   pluginManager.configure()
+  if (session) {
+    // applied after create rather than passed in: a restored session's shape is
+    // only known at runtime, and restoreSession is the door for that (MST
+    // validates it here and throws on a mismatch)
+    stateTree.restoreSession(session)
+  }
   if (location || highlight) {
     // route through the declarative `init` field so the navigation + highlight
     // flow goes through the same path as URL/session-spec launches, instead of

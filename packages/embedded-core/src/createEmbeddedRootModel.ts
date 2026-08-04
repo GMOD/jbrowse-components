@@ -11,6 +11,7 @@ import {
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { IAnyModelType, SnapshotIn } from '@jbrowse/mobx-state-tree'
+import type { SessionSnapshot } from '@jbrowse/product-core'
 
 // every embedded session is composed from product-core's BaseSessionModel, which
 // provides setName; requiring it here lets renameCurrentSession rename in place
@@ -105,6 +106,22 @@ export function createEmbeddedRootModel<
          */
         setSession(sessionSnapshot: SnapshotIn<SESSION>) {
           self.session = cast(sessionSnapshot)
+        },
+        /**
+         * #action
+         * Load a session whose shape is only known at runtime — decoded from a
+         * URL, read back from storage, handed over by a non-TypeScript host.
+         *
+         * Separate from `setSession` because that one takes the compiler-checked
+         * snapshot type, which a value parsed out of JSON can never satisfy.
+         * The assertion below is the whole reason this exists: it is the single
+         * place the conversion happens, instead of every caller asserting at its
+         * own site. Nothing is unchecked at runtime — MST validates the snapshot
+         * as it applies it and throws on a mismatch, which is the check that
+         * actually matters for a value this app did not author.
+         */
+        restoreSession(sessionSnapshot: SessionSnapshot) {
+          self.session = cast(sessionSnapshot as SnapshotIn<SESSION>)
         },
         /**
          * #action

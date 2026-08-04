@@ -1,3 +1,5 @@
+import { isAlive } from '@jbrowse/mobx-state-tree'
+
 import { createLinearGenomeView } from './index.ts'
 
 jest.mock('./makeWorkerInstance', () => () => {})
@@ -83,5 +85,57 @@ test('addTrack/removeTrack toggle a single track', async () => {
 
   controller.removeTrack('t1')
   expect(shownIds(view)).toEqual([])
+  controller.destroy()
+})
+
+// React unmount does not own the engine: without an explicit teardown the MST
+// tree stays alive with its autoruns running and its RPC worker pool orphaned,
+// which is a per-mount leak for hosts that mount and discard repeatedly (a
+// Jupyter cell re-run, an SPA route change).
+test('destroy tears down the engine, not just the React root', async () => {
+  const controller = createLinearGenomeView(document.createElement('div'), {
+    assembly,
+  })
+  const state = await controller.whenReady()
+  const destroyDrivers = jest.spyOn(state.rpcManager, 'destroy')
+
+  controller.destroy()
+
+  expect(destroyDrivers).toHaveBeenCalled()
+  expect(isAlive(state)).toBe(false)
+})
+
+test('destroy is idempotent, and works before the first build settles', async () => {
+  const controller = createLinearGenomeView(document.createElement('div'), {
+    assembly,
+  })
+
+  // StrictMode runs a ref callback's cleanup immediately after setup, so this
+  // lands before the async build ever renders
+  expect(() => {
+    controller.destroy()
+    controller.destroy()
+  }).not.toThrow()
+  await controller.whenReady()
+})
+
+// setAssembly/setSession rebuild the engine from scratch. The previous one has
+// to die with them, or every swap orphans a worker pool — and it can only die
+// after its React tree is gone, which is why the swap unmounts first.
+test('a rebuild destroys the engine it replaced', async () => {
+  const controller = createLinearGenomeView(document.createElement('div'), {
+    assembly,
+  })
+  const first = await controller.whenReady()
+
+  controller.setSession({
+    name: 'restored',
+    view: { type: 'LinearGenomeView' },
+  })
+  const second = await controller.whenReady()
+
+  expect(second).not.toBe(first)
+  expect(isAlive(first)).toBe(false)
+  expect(isAlive(second)).toBe(true)
   controller.destroy()
 })

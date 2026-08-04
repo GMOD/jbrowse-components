@@ -1,11 +1,10 @@
+// The UMD entry point: everything the npm entry exports, plus React itself,
+// since a <script>-tag consumer can't import it. Re-exported wholesale rather
+// than hand-listed, which is how the sibling products' lists drifted.
 // eslint-disable-next-line no-restricted-imports
 import * as React from 'react'
 
-export { default as JBrowseCircularGenomeView } from './JBrowseCircularGenomeView/index.ts'
-export { default as CircularGenomeView } from './CircularGenomeView/index.ts'
-export { default as createModel } from './createModel/index.ts'
-export { default as createViewState } from './createViewState.ts'
-export { default as loadPlugins } from './loadPlugins.ts'
+export * from './index.ts'
 
 export * from 'react-dom/client'
 

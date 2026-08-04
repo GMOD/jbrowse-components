@@ -5,6 +5,8 @@ import WithSessionHighlights from '../examples/WithSessionHighlights.tsx'
 import WithSessionHighlightsCode from '../examples/WithSessionHighlights.tsx?raw'
 import WithSessionPersistence from '../examples/WithSessionPersistence.tsx'
 import WithSessionPersistenceCode from '../examples/WithSessionPersistence.tsx?raw'
+import SessionInUrl from '../examples/SessionInUrl.tsx'
+import SessionInUrlCode from '../examples/SessionInUrl.tsx?raw'
 import { getPage, section } from '../examples.ts'
 import Layout from '../layouts/ExampleLayout.astro'
 import Section from '../layouts/ExampleSection.astro'
@@ -13,6 +15,7 @@ const page = getPage('session-setup')
 const sec0 = section(page, 'with-init-advanced')
 const sec1 = section(page, 'with-session-highlights')
 const sec2 = section(page, 'with-session-persistence')
+const sec3 = section(page, 'session-in-url')
 ---
 
 <Layout page={page}>
@@ -24,5 +27,8 @@ const sec2 = section(page, 'with-session-persistence')
   </Section>
   <Section {...sec2} code={WithSessionPersistenceCode}>
     <WithSessionPersistence client:only="react" />
+  </Section>
+  <Section {...sec3} code={SessionInUrlCode}>
+    <SessionInUrl client:only="react" />
   </Section>
 </Layout>

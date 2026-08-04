@@ -18,5 +18,9 @@ onSnapshot(state.session, snap =>
 
 The snapshot references tracks by `trackId` and the assembly by name, so it
 restores against the same `assembly`/`tracks` config you pass on every load.
-Swap `localStorage` for a server call to persist per-user views. `getSnapshot`
-is also how you export the current session on demand (e.g. a "share" button).
+Swap `localStorage` for a server call to persist per-user views.
+
+This keeps a session for one browser. To hand one to someone else, use
+[the session in the URL](../session-setup/#session-in-url) — `encodeSession`
+compresses it for a link and bakes in settings a raw `getSnapshot` would leave
+behind in your own browser.

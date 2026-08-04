@@ -1,12 +1,13 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { createEmbeddedRootModel } from '@jbrowse/embedded-core'
+import { toPluginLoadRecord } from '@jbrowse/product-core'
 
 import corePlugins from '../corePlugins.ts'
 import { version } from '../version.ts'
 import createSessionModel from './createSessionModel.ts'
 
-import type { PluginConstructor } from '@jbrowse/core/Plugin'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { PluginInput } from '@jbrowse/product-core'
 
 /**
  * #stateModel JBrowseReactCircularGenomeViewRootModel
@@ -16,12 +17,15 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * Composes the shared {@link EmbeddedRootModel} with a CircularView session.
  */
 export default function createModel(
-  runtimePlugins: PluginConstructor[],
+  runtimePlugins: PluginInput[],
   makeWorkerInstance?: () => Worker,
 ) {
-  const pluginManager = new PluginManager(
-    [...corePlugins, ...runtimePlugins].map(P => new P()),
-  ).createPluggableElements()
+  const pluginManager = new PluginManager([
+    ...corePlugins.map(P => ({ plugin: new P() })),
+    // keeps each runtime plugin's `definition`, which is what the RPC worker
+    // boots from — see toPluginLoadRecord
+    ...runtimePlugins.map(toPluginLoadRecord),
+  ]).createPluggableElements()
   const model = createEmbeddedRootModel({
     name: 'ReactCircularGenomeView',
     version,

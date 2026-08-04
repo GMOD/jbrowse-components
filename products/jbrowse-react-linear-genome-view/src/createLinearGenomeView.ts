@@ -9,6 +9,7 @@ import { createRoot } from 'react-dom/client'
 
 import JBrowseLinearGenomeView from './JBrowseLinearGenomeView/index.ts'
 import createViewState from './createViewState.ts'
+import { destroyViewState } from './destroyViewState.ts'
 
 import type { ViewModel } from './createModel/createModel.ts'
 import type { ViewStateOptions } from './createViewState.ts'
@@ -98,6 +99,10 @@ export interface LinearGenomeViewController {
   setTracks(tracks: TrackInput[]): void
   addTrack(track: TrackInput): void
   removeTrack(trackId: string): void
+  /**
+   * Unmount the view and tear the engine down — React root, RPC worker threads,
+   * and the MST tree's autoruns. The controller is unusable afterwards.
+   */
   destroy(): void
 }
 
@@ -191,15 +196,37 @@ export function createLinearGenomeView(
   // the resolved assembly name, stamped onto tracks guessed from a bare URL
   let assemblyName: string | undefined
 
-  const root = createRoot(el)
+  let root = createRoot(el)
   let disposers: (() => void)[] = []
   let current: ViewModel | undefined
+  // the engine whose React tree is actually mounted. Distinct from `current`,
+  // which a rebuild clears at once (so `viewState` reads undefined while
+  // rebuilding) — this one has to stay alive until its tree is replaced, or the
+  // old view would blank out for the whole async build.
+  let mounted: ViewModel | undefined
+  let destroyed = false
 
   function teardown() {
     for (const dispose of disposers) {
       dispose()
     }
     disposers = []
+  }
+
+  // Replace the mounted tree, then destroy the engine it was showing. Order
+  // matters both ways: unmount first (React must stop observing an engine
+  // before it dies), and destroy before rendering the replacement (so the
+  // outgoing engine's RPC workers don't outlive it). root.unmount() is
+  // synchronous, which is what makes this safe without waiting on a commit; a
+  // root can't be reused after unmounting, hence the fresh one.
+  function swapIn(viewState: ViewModel) {
+    if (mounted) {
+      root.unmount()
+      root = createRoot(el)
+      destroyViewState(mounted)
+    }
+    mounted = viewState
+    root.render(createElement(JBrowseLinearGenomeView, { viewState }))
   }
 
   async function build() {
@@ -258,8 +285,17 @@ export function createLinearGenomeView(
         }),
       )
     }
+    if (destroyed) {
+      // destroy() ran while this build was still resolving its assembly. There
+      // is no root left to render onto, and nothing else will ever reach this
+      // engine, so it dies here instead of leaking a worker pool. Reachable
+      // from React StrictMode, which calls a ref callback's cleanup right after
+      // setup — i.e. before any build can finish.
+      destroyViewState(viewState)
+      return viewState
+    }
     current = viewState
-    root.render(createElement(JBrowseLinearGenomeView, { viewState }))
+    swapIn(viewState)
     return viewState
   }
 
@@ -321,8 +357,20 @@ export function createLinearGenomeView(
       current?.session.view.hideTrack(trackId)
     },
     destroy() {
+      destroyed = true
       teardown()
       root.unmount()
+      // both, because a build that threw leaves the previous engine mounted
+      // while `current` is undefined. destroyViewState is idempotent, so the
+      // usual case (they're the same engine) costs nothing.
+      if (mounted) {
+        destroyViewState(mounted)
+      }
+      if (current) {
+        destroyViewState(current)
+      }
+      mounted = undefined
+      current = undefined
     },
   }
 }

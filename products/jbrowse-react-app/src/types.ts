@@ -1,8 +1,7 @@
-import type { PluginConstructor } from '@jbrowse/core/Plugin'
-import type { PluginRecord } from '@jbrowse/core/PluginLoader'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
+import type { PluginInput, SessionSnapshot } from '@jbrowse/product-core'
 
 interface TextSearchAdapterConfig {
   textSearchAdapterId: string
@@ -17,27 +16,9 @@ interface TrackConfig {
   [key: string]: unknown
 }
 
-/**
- * A serialized session — what `getSnapshot(viewState.session)` produces, what
- * `decodeSession` returns, and what the `session` option restores. Open-shaped
- * on purpose: the concrete shape is the session model's `SnapshotIn`, which
- * grows with every plugin the host loads.
- */
-export interface SessionSnapshot {
-  name: string
-  [key: string]: unknown
-}
-
-/**
- * A plugin to register: either the class itself, or the `{ plugin, definition }`
- * record `loadPlugins` returns.
- *
- * Prefer passing the record straight through. The `definition` is what lets the
- * RPC worker load the same plugin on its side — hand it only the class and the
- * plugin exists on the main thread but not in the worker, so anything it
- * contributes that runs there (an adapter, most commonly) fails to resolve.
- */
-export type PluginInput = PluginConstructor | PluginRecord
+// re-exported so hosts get them from this package rather than reaching into
+// product-core; both are shared with the other embedded products
+export type { PluginInput, SessionSnapshot }
 
 export interface Config {
   assemblies: SnapshotIn<BaseAssemblyConfigSchema>[]

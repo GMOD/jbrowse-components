@@ -239,7 +239,7 @@ export const pages: ExamplePage[] = [
     slug: 'session-setup',
     title: 'Init & persistence',
     description:
-      'Use the advanced init blob for a richer initial view, add highlighted regions to the session, and persist the live session to localStorage and restore it on reload.',
+      'Use the advanced init blob for a richer initial view, add highlighted regions to the session, persist the live session to localStorage, and put it in the URL to share it.',
     group: 'Sessions & state',
     sections: [
       {
@@ -258,6 +258,12 @@ export const pages: ExamplePage[] = [
         title: 'Persist & restore the session',
         description:
           'Mirror the live session to localStorage with onSnapshot, and restore it as defaultSession on reload.',
+      },
+      {
+        slug: 'session-in-url',
+        title: 'Put the session in the URL',
+        description:
+          'Serialize the live session with encodeSession, restore it with decodeSession — shareable links, bookmarkable views, browser history.',
       },
     ],
   },

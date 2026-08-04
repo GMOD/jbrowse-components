@@ -31,7 +31,10 @@ export default function WithExternalPlugin() {
               uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt',
             },
           },
-          plugins: plugins.map(p => p.plugin),
+          // pass the records through unchanged: each pairs the plugin class
+          // with the definition it was loaded from, and that definition is what
+          // lets the RPC worker load the same plugin on its side
+          plugins,
           tracks: [
             {
               type: 'FeatureTrack',

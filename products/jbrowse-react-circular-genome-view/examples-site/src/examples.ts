@@ -37,6 +37,21 @@ export const pages: ExamplePage[] = [
     ],
   },
   {
+    slug: 'session-in-url',
+    title: 'Put the session in the URL',
+    description:
+      'Serialize the live session with encodeSession, restore it with decodeSession — shareable links, bookmarkable views, browser history.',
+    group: 'Getting started',
+    sections: [
+      {
+        slug: 'session-in-url',
+        title: 'Put the session in the URL',
+        description:
+          'Serialize the live session with encodeSession, restore it with decodeSession — shareable links, bookmarkable views, browser history.',
+      },
+    ],
+  },
+  {
     slug: 'human',
     title: 'Human structural variants (hg19)',
     description:
