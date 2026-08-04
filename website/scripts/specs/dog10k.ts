@@ -60,53 +60,65 @@ const CEA_GROUPS = [
   },
 ]
 
-// Sidebar rows for the marker figure. The VCF keeps the Dog10K sample IDs (they
-// are the data's identity, and the build script writes this same order);
-// `layout` only relabels the rows, two per sample since the matrix is drawn in
-// phased mode.
+// Sidebar rows for the marker figure, and the row order of the named-subset
+// painting drawn above it. The VCF keeps the Dog10K sample IDs (they are the
+// data's identity, and the build script writes this same order); `layout` only
+// relabels the rows, two per sample since the matrix is drawn in phased mode.
 //
-// The swatches are the painting's own Okabe-Ito pair, and they carry the whole
-// figure: orange means "this haplotype is a wolf haplotype" and blue means "this
-// one is a dog haplotype". For the two reference groups that is a fact about the
-// animal. For the eleven painted animals it is *the painting's call in this
-// window*, per haplotype, read off the committed BED — so a reader's rule is
-// "orange swatch, filled row", and every row either follows it or is the
-// disagreement worth looking at.
-const WOLF_SWATCH = '#E69F00'
-const DOG_SWATCH = '#0072B2'
+// The order is not editorial: it is `named.tsv`, which
+// scripts/build_dog10k_wolfdog_ancestry.sh writes sorted by descending chr1
+// wolf fraction out of FLARE's own per-sample output. So the figure reads down
+// the page as a ranking, and the eight breeds at the bottom of the sweep's
+// wolf-fraction list are there because the sweep put them there rather than
+// because they sound wolfish. Regenerate with:
+//   cut -f2 dog10k_wolfdog_build/named.tsv
+//
+// The swatch marks which of the five groups a row belongs to. It deliberately
+// does NOT encode the painting's per-haplotype call the way this figure's
+// earlier version did: the window now spans block EDGES, so a haplotype is
+// wolf-called over part of it and dog-called over the rest, and one letter per
+// row would be a summary rather than the fact. The painting track directly
+// above carries the call, at the same row order and the same row heights, so
+// the two line up row for row.
+const WOLF = '#E69F00'
+const WOLFDOG = '#D55E00'
+const LOOKALIKE = '#CC79A7'
+const GSD = '#0072B2'
+const SWEEP = '#999999'
 
-const GREEK_WOLVES = Array.from(
-  { length: 12 },
-  (_, i) => `CLUPGR0000${String(i + 1).padStart(2, '0')}`,
-)
-
-const GSD_REFERENCE = [
-  'GRSD000003',
-  'OLGS000001',
-  'OLGS000002',
-  'OLGS000003',
-  'OLGS000004',
-  'OLGS000005',
-  'OLGS000006',
-]
-
-// FLARE's per-haplotype call across chr1:107.9-108.1 Mb, from
-// test_data/dog10k/dog10k_wolfdog_ancestry.chr1.bed.gz. Every one of these
-// haplotypes has a single call spanning the whole window, so one letter per
-// haplotype is the complete story rather than a summary:
-//   tabix dog10k_wolfdog_ancestry.chr1.bed.gz chr1:107935000-108005000
-const PAINTED = [
-  { sample: 'SAAR000001', label: 'Saarloos 1', calls: 'WD' },
-  { sample: 'SAAR000002', label: 'Saarloos 2', calls: 'WD' },
-  { sample: 'SAAR000003', label: 'Saarloos 3', calls: 'DD' },
-  { sample: 'SAAR000004', label: 'Saarloos 4', calls: 'DD' },
-  { sample: 'CZEC000001', label: 'Czechoslovakian 1', calls: 'DD' },
-  { sample: 'CZEC000002', label: 'Czechoslovakian 2', calls: 'DD' },
-  { sample: 'CZEC000003', label: 'Czechoslovakian 3', calls: 'WW' },
-  { sample: 'CZEC000004', label: 'Czechoslovakian 4', calls: 'WD' },
-  { sample: 'GRSD000002', label: 'German Shepherd 1', calls: 'DD' },
-  { sample: 'SHIL000001', label: 'Shiloh Shepherd 1', calls: 'DD' },
-  { sample: 'TMSK000001', label: 'Tamaskan 1', calls: 'DD' },
+const NAMED: [string, string, string][] = [
+  ['CLUPPT000001', 'Gray wolf 7', WOLF],
+  ['CLUPRU000003', 'Gray wolf 3', WOLF],
+  ['CLUPPT000002', 'Gray wolf 8', WOLF],
+  ['CLUPRU000001', 'Gray wolf 1', WOLF],
+  ['CLUPRU000002', 'Gray wolf 2', WOLF],
+  ['CLUPRU000004', 'Gray wolf 4', WOLF],
+  ['CLUPSE000001', 'Gray wolf 5', WOLF],
+  ['CLUPSE000002', 'Gray wolf 6', WOLF],
+  ['SAAR000001', 'Saarloos 1', WOLFDOG],
+  ['SAAR000003', 'Saarloos 3', WOLFDOG],
+  ['SAAR000002', 'Saarloos 2', WOLFDOG],
+  ['SAAR000004', 'Saarloos 4', WOLFDOG],
+  ['CZEC000003', 'Czechoslovakian 3', WOLFDOG],
+  ['SHIL000001', 'Shiloh Shepherd', LOOKALIKE],
+  ['CZEC000001', 'Czechoslovakian 1', WOLFDOG],
+  ['CZEC000004', 'Czechoslovakian 4', WOLFDOG],
+  ['THAI000009', 'Thai Ridgeback', SWEEP],
+  ['CHOW000004', 'Chow Chow', SWEEP],
+  ['CAUC000004', 'Caucasian Ovcharka', SWEEP],
+  ['GAFT000006', 'Great Anglo-French Tricolour Hound', SWEEP],
+  ['KAIK000005', 'Kai Ken', SWEEP],
+  ['ANAT000007', 'Anatolian Shepherd Dog', SWEEP],
+  ['TMSK000001', 'Tamaskan', LOOKALIKE],
+  ['SPEI000006', 'Chinese Shar-Pei', SWEEP],
+  ['KARS000006', 'Kars', SWEEP],
+  ['CZEC000002', 'Czechoslovakian 2', WOLFDOG],
+  ['OLGS000001', 'Old German Shepherd 1', GSD],
+  ['WSSD000003', 'White Swiss Shepherd 1', GSD],
+  ['GRSD000002', 'German Shepherd', GSD],
+  ['OLGS000002', 'Old German Shepherd 2', GSD],
+  ['OLGS000003', 'Old German Shepherd 3', GSD],
+  ['WSSD000004', 'White Swiss Shepherd 2', GSD],
 ]
 
 // HP is 0-based on the wire (`<sample> HP0`/`HP1`, see makeHaplotypeSources);
@@ -115,50 +127,23 @@ function haplotypeRows({
   sample,
   label,
   color,
-  suffix = () => '',
 }: {
   sample: string
   label: string
-  color: (hp: number) => string
-  suffix?: (hp: number) => string
+  color: string
 }) {
   return [0, 1].map(hp => ({
     name: `${sample} HP${hp}`,
     sampleName: sample,
     HP: hp,
-    label: `${label} hap${hp + 1}${suffix(hp)}`,
-    color: color(hp),
+    label: `${label} hap${hp + 1}`,
+    color,
   }))
 }
 
-const DOG_VCF_LAYOUT = [
-  ...GREEK_WOLVES.flatMap((sample, i) =>
-    haplotypeRows({
-      sample,
-      label: `Greek wolf ${i + 1}`,
-      color: () => WOLF_SWATCH,
-    }),
-  ),
-  // The call goes in the label as well as the swatch. An 8px swatch is a fine
-  // grouping cue but too small to *check* a row against, and checking is the
-  // whole job here — the two rows that disagree with their call have to be
-  // findable without a callout painted over the figure.
-  ...PAINTED.flatMap(({ sample, label, calls }) =>
-    haplotypeRows({
-      sample,
-      label,
-      color: hp => (calls[hp] === 'W' ? WOLF_SWATCH : DOG_SWATCH),
-      suffix: hp => (calls[hp] === 'W' ? ': Wolf' : ': Dog'),
-    }),
-  ),
-  ...GSD_REFERENCE.flatMap((sample, i) =>
-    haplotypeRows({
-      sample,
-      label: i === 0 ? 'German Shepherd Dog' : `Old German Shepherd ${i}`,
-      color: () => DOG_SWATCH,
-    }),
-  ),
-]
+const DOG_VCF_LAYOUT = NAMED.flatMap(([sample, label, color]) =>
+  haplotypeRows({ sample, label, color }),
+)
 
 // Row labels for the CYP1A2 figure. Breeds carrying the nonsense allele first,
 // then two that do not, then the wolves — which is where the control lives: no
@@ -398,16 +383,17 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     url: lgvSession(DOG_CONFIG, {
       assembly: 'UU_Cfam_GSD_1.0',
       loc: 'chr1:1-123,556,469',
-      // the 7.9 Mb wolf block on Saarloos 1 hap1 that the genotype figure
-      // dissects, marked in-app so the two figures are visibly the same place.
-      // Read off the committed BED, not eyeballed:
-      //   tabix dog10k_wolfdog_ancestry.chr1.bed.gz chr1:107935000-108005000
-      highlight: ['chr1:105,310,741-113,251,574'],
+      // the window the genotype figure below dissects, marked in-app so the two
+      // figures are visibly the same place. Read off the committed BED, not
+      // eyeballed: three of these rows end a wolf block inside it.
+      highlight: ['chr1:112,000,000-113,500,000'],
       tracks: [
         {
-          trackId: 'dog10k_wolfdog_ancestry',
+          trackId: 'dog10k_wolfdog_named',
           type: 'LinearMultiRowFeatureDisplay',
-          height: 460,
+          // 64 rows. Above the 6px a row label needs, which is the whole reason
+          // this figure exists next to the 486-row one below it.
+          height: 700,
         },
       ],
     }),
@@ -419,22 +405,35 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     readySelector: '[data-testid="multirow-color-legend"]',
     readyTimeout: 60000,
     settleMs: 3000,
-    // all 22 haplotype rows plus the color legend, no page background below
-    viewportHeight: 665,
+    // all 64 haplotype rows plus the color legend, no page background below
+    viewportHeight: 905,
   },
 
-  // The same 22 rows reordered by ancestry similarity across the visible
-  // chromosome (`runClustering`, the session form of the track menu's
-  // Clustering -> Cluster rows by similarity) rather than by the config's
-  // breed-grouped `rowOrder`. This is the figure that carries the page's three
-  // read-offs at once, because the order is derived rather than asserted: the
-  // wolf-richest haplotypes collect at the top (six of the eight Saarloos
-  // haplotypes are the top six rows, the few-founders expectation), while the
-  // Tamaskan's two haplotypes fall at the dog end of the order with the German
-  // Shepherd control (not adjacent to it — Czechoslovakian 2, at 0.016 wolf,
-  // sits between them), and the Shiloh Shepherd's land up among the wolfdogs. No
-  // `highlight` here: the block dissected by the genotype figure belongs to the
-  // breed-ordered panel above, and marking it twice reads as two claims.
+  // The spectrum: the same inference over 243 animals — one dog from each of the
+  // 219 breeds the collection sequenced four or more of, plus the eight wolfdogs,
+  // the two wolf-lookalike breeds, the German Shepherd lineage they were crossed
+  // back to, and eight European gray wolves held out of the wolf panel so they
+  // are painted by the other twenty-eight. Reordered by ancestry similarity
+  // across the visible chromosome (`runClustering`, the session form of the track
+  // menu's Clustering -> Cluster rows by similarity).
+  //
+  // WHY THE BREED SWEEP IS MOST OF IT, per review ("can we add even more dogs to
+  // generate more frisson... we see the variety and spectrum and the ones that
+  // cluster out"). The wolfdogs on their own can only show that a documented
+  // cross leaves blocks. Against 219 breeds picked on how well the collection
+  // sequenced them and nothing else, the same picture also shows what a dog with
+  // no such cross looks like — 193 of the 219 come in under 1% wolf on this
+  // chromosome — so the wolfdogs' 15-45% is a distance rather than an assertion,
+  // and the handful of breeds that do carry something are found by the sweep
+  // instead of being nominated.
+  //
+  // 486 rows in 1100px is ~2.3px a row, well under the ~6px a row label needs, so
+  // this figure deliberately carries no names: it is the WHERE, and the figure
+  // above it is the WHO, at the same data and 64 of the same rows. The dendrogram
+  // is what makes it readable without labels, and the chip in its corner names
+  // the locus the tree was computed over (whole-chromosome here), which is not a
+  // decoration — cluster on a 5 Mb view and the same rows come out in a different
+  // order.
   {
     mode: 'url',
     name: 'dog10k-wolfdog-ancestry-clustered',
@@ -445,7 +444,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         {
           trackId: 'dog10k_wolfdog_ancestry',
           type: 'LinearMultiRowFeatureDisplay',
-          height: 460,
+          height: 1100,
           runClustering: true,
         },
       ],
@@ -455,65 +454,73 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     // is the real signal that the reordering happened (a settle alone can
     // capture the pre-cluster order)
     readySelector: '[data-testid="tree_sidebar_dendrogram"]',
-    readyTimeout: 120000,
+    readyTimeout: 180000,
     settleMs: 5000,
-    viewportHeight: 665,
+    viewportHeight: 1305,
   },
 
   // Does the painting survive contact with the genotypes it was inferred from?
-  // The check is the 21 markers in this window whose alt allele is common in the
+  // The check is the markers in this window whose alt allele is common in the
   // wolf panel and rare in the dog panel (AF_wolf >= 0.8, AF_dog <= 0.15, both
-  // written per site by the build script from the full panels). They sit in one
-  // 11 kb LD block, so each row is effectively one haplotype read 21 times, and
-  // a row is either filled or empty rather than speckled.
+  // written per site by the build script from the full panels).
   //
-  // The rows are the twelve Greek gray wolves (filled, by construction), the
-  // eleven painted animals swatched by the painting's own per-haplotype call,
-  // and the seven German Shepherd-lineage dogs as the dog background both
-  // wolfdog breeds were crossed back to. No ancestry-painting track above it:
-  // at 15 kb the painting is a stack of solid stripes, and the swatch column
-  // already carries its calls.
+  // 1.5 Mb, not the 15 kb this figure used to frame, per review ("we may want to
+  // zoom out at a minimum, add gene track"). The window is chosen for its EDGES:
+  // Saarloos 3 hap1 and Czechoslovakian 4 hap1 end a wolf block at 112.58 Mb and
+  // Saarloos 1 hap1 at 113.25 Mb, while other rows run wolf or dog straight
+  // through. Inside a single block the figure could only show that a wolf-called
+  // haplotype carries wolf alleles; at an edge there is something to be wrong
+  // about, and 49 markers rather than 21 to be wrong with.
   //
-  // 34 of the 36 non-reference rows follow their call, and the two that don't —
-  // Saarloos 2 hap2 and Saarloos 4 hap2, both called Dog, both filled — are the
-  // figure's point rather than a defect in it. The markers average AF 0.86 in
-  // wolves and 0.098 in dogs, so 11.4% of the collection's 3,138 breed-dog
-  // haplotypes carry them; across 17 dog-called haplotypes that predicts ~1.9
-  // carriers and there are 2. A block call at one locus is an estimate, and this
-  // is what the estimate looks like where it is wrong.
+  // Three tracks, top to bottom, deliberately: the genes the window sits on, the
+  // painting's call, and the genotypes the call was inferred from. The painting
+  // is in the frame now because at 1.5 Mb it is no longer a stack of solid
+  // stripes — the edges are visible in it — and it draws the same 32 animals in
+  // the same order as the matrix, so the two are read against each other by
+  // counting down from the top rather than by looking anything up. They are not
+  // at the same row PITCH: the painting is deliberately under the ~6px a row
+  // label needs so that the 32 names are spent once, on the matrix, instead of
+  // twice.
   {
     mode: 'url',
     name: 'dog10k-wolfdog-block-genotypes',
     url: lgvSession(DOG_CONFIG, {
       assembly: 'UU_Cfam_GSD_1.0',
-      // the markers span chr1:107,986,844-107,998,239; this frames them with a
-      // little margin either side
-      loc: 'chr1:107,985,000-108,000,000',
+      loc: 'chr1:112,000,000-113,500,000',
       tracks: [
+        {
+          trackId: 'canFam4_ncbi_refseq',
+          type: 'LinearBasicDisplay',
+          height: 70,
+        },
+        {
+          trackId: 'dog10k_wolfdog_named',
+          type: 'LinearMultiRowFeatureDisplay',
+          // 64 rows at ~5px: under the label threshold on purpose. The matrix
+          // below carries the labels for both, and repeating them here would
+          // spend a third of the frame's width on the same 32 names twice.
+          height: 320,
+        },
         {
           trackId: 'dog10k_wolfdog_block_genotypes',
           type: 'LinearMultiSampleVariantMatrixDisplay',
           renderingMode: 'phased',
           height: 700,
           // A run of alt cells is one solid orange band, so at the 20px schema
-          // default nothing in the frame said how many markers it was made of
-          // and the lane read as two painted blocks. The connector band ties each
-          // column back to its position in the 11 kb block, which is what makes
-          // it visibly a 21-marker panel.
+          // default nothing in the frame said how many markers it was made of.
+          // The connector band ties each column back to its position, which is
+          // what lets the reader put a column at the same coordinate as the
+          // block edge in the painting above.
           lineZoneHeight: 55,
           layout: DOG_VCF_LAYOUT,
           // Paint the alt cells in the painting's own wolf orange rather than
-          // the default genotype blue. Two reasons: carrying these alleles *is*
-          // the wolf signal, so the cell and the ancestry block above it end up
-          // the same color; and the default blue is the same blue as the Dog
-          // swatch, which made a dog-called row that carries the haplotype (the
-          // two the figure is about) read as a swatch rather than as data.
-          featureColor: WOLF_SWATCH,
-          // Without this the lane draws every one of the window's ~150 sites,
-          // nearly all of which are shared between wolves and dogs and say
-          // nothing about ancestry — which is what made the old version of this
-          // figure a wall of salt-and-pepper. `AF_wolf`/`AF_dog` are
-          // `Number=A`, hence the [0].
+          // the default genotype blue: carrying these alleles *is* the wolf
+          // signal, so the cell and the block above it end up the same color.
+          featureColor: WOLF,
+          // Without this the lane draws every common site in 1.5 Mb, nearly all
+          // of which are shared between wolves and dogs and say nothing about
+          // ancestry — which is what made the old version of this figure a wall
+          // of salt-and-pepper. `AF_wolf`/`AF_dog` are `Number=A`, hence the [0].
           jexlFilters: [
             "jexl:get(feature,'INFO').AF_wolf[0] >= 0.8 && get(feature,'INFO').AF_dog[0] <= 0.15",
           ],
@@ -522,11 +529,11 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'chr1',
     readySelector: '[data-testid="variant-matrix-display-done"]',
-    readyTimeout: 90000,
+    readyTimeout: 120000,
     settleMs: 6000,
-    // all 60 haplotype rows and the genotype legend, nothing below. 905 fit the
-    // last row's label but cut its cell band against the frame.
-    viewportHeight: 920,
+    // gene track, the 320px painting, the 700px matrix, their headers and the
+    // two keys, nothing below
+    viewportHeight: 1363,
   },
 
   // The Collie eye anomaly deletion (Schall & Kidd 2025, Fig 9): a 7.8 kb
@@ -1233,6 +1240,20 @@ export const dog10kSpecs: ScreenshotSpec[] = [
   // default: with hundreds of records no single line can be followed, and a tall
   // band is just a grey wedge over the rows the figure is about.
   //
+  // 220 kb, NOT the 400 kb the slice covers, per review ("i cant really tell
+  // what the 'story' is here"). Equal-width columns are what makes the matrix
+  // legible, and they are also what makes a wide window cost so much: the sites
+  // that separate the two size classes (alt AF 0.82 in toy/small against 0.21 in
+  // giant) are 95 of 606, and in the 400 kb frame the other 511 columns are
+  // exactly as wide, so the block was one sixth of a panel of noise. The
+  // separating sites span 41,455,350-41,611,659 — the build script prints that
+  // range rather than it being read off a picture — and this window is that span
+  // with ~55 kb of undifferentiated flank either side, so the block is a third of
+  // the panel and both of its edges are still inside the frame. Neither edge is
+  // the gene's: IGF1 is 41,495,479-41,567,874, and the haplotype runs 40 kb past
+  // it upstream and 44 kb past it downstream, which is why the frame is not the
+  // gene.
+  //
   // `runClustering` orders the rows by genotype similarity. The size swatch
   // comes from the samples TSV and is applied afterwards, so the row order and
   // the swatch are independent.
@@ -1250,7 +1271,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     name: 'dog10k-igf1-haplotype',
     url: lgvSession(DOG_CONFIG, {
       assembly: 'UU_Cfam_GSD_1.0',
-      loc: 'chr15:41,350,000-41,750,000',
+      loc: 'chr15:41,400,000-41,620,000',
       tracks: [
         {
           trackId: 'canFam4_ncbi_refseq',

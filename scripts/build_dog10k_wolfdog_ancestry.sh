@@ -8,9 +8,14 @@
 # each carries wolf haplotypes on a dog background. This script slices the
 # public Dog10K phased reference panel (UU_Cfam_GSD_1.0, the German Shepherd
 # assembly UCSC calls canFam4), runs FLARE with a European gray wolf panel and a
-# breed-dog panel, and writes one painted BED9 row per haplotype. Two German
-# Shepherds ride along as targets: they should paint essentially solid dog,
-# which is the control on the whole inference.
+# breed-dog panel, and writes one painted BED9 row per haplotype.
+#
+# The eight wolfdogs are painted alongside twenty-one other animals that pin
+# both ends of the answer: four European gray wolves held out of the wolf panel
+# (which should paint solid wolf), the German Shepherd lineage the crosses were
+# made with, and the northern and "ancient"-cluster breeds a reader expects to
+# be wolfish (which should paint solid dog, because local ancestry measures a
+# recent cross and not deep divergence). See the target table below.
 #
 # Everything is pinned (fixed sample lists, fixed FLARE seed), so re-running
 # reproduces the same painting.
@@ -54,20 +59,95 @@ awk -F'\t' 'NR>1 && $12=="YES" && $17=="TRUE" {print $1"\t"$2"\t"$3}' \
 awk -F'\t' '$3=="Wolf" && ($2=="Greece"||$2=="Sweden"||$2=="Russia"||
   $2=="Portugal"||$2=="Europe"||$2=="Eurasia"){print $1}' keep.tsv > wolves.txt
 
-# Targets, chosen before the dog panel so the panel can exclude them. Both
-# wolfdog breeds, plus three controls: one German Shepherd Dog (the breed both
-# wolfdogs were crossed from), the Shiloh Shepherd (which shares 78% of its F2
-# sites with wolves in the Dog10K paper, the highest of any breed dog, though
-# D-statistics there find no significant excess over German Shepherds), and the
-# Tamaskan (a wolf-lookalike bred from ordinary sled and herding dogs).
-awk -F'\t' '$2 ~ /Wolfdog/ {print $1}' keep.tsv > targets.txt
-{ echo GRSD000002; echo SHIL000001; echo TMSK000001; } >> targets.txt
+# Targets, chosen before the dog panel so the panel can exclude them, and
+# written in the order the painted track stacks them. The figure is a spectrum,
+# not a portrait of the wolfdogs alone, so the subject is painted between two
+# groups that pin the ends and one that is the rest of the dog world:
+#
+#   held-out wolves  eight European gray wolves REMOVED from the wolf panel
+#                    below, so they are painted by the remaining twenty-eight
+#                    rather than by themselves. Nothing else in the figure says
+#                    what a correct all-wolf call looks like.
+#   the subject      all eight wolfdogs, both breeds, the only animals here with
+#                    a documented 20th-century wolf cross; the Shiloh Shepherd
+#                    (which shares 78% of its F2 sites with wolves in the Dog10K
+#                    paper, the highest of any breed dog, though D-statistics
+#                    there find no significant excess over German Shepherds) and
+#                    the Tamaskan, both bred to LOOK wolfish out of ordinary
+#                    sled and herding dogs; and the German Shepherd lineage the
+#                    crosses were made with, three ways (the modern breed, the
+#                    Old German Shepherd, the White Swiss Shepherd).
+#   the breed sweep  one dog from every breed the collection sequenced at least
+#                    four of. Two jobs at once: it is the negative control (the
+#                    northern and "ancient"-cluster breeds a reader assumes are
+#                    the wolfiest dogs in the room are all in here, and local
+#                    ancestry measures a recent cross rather than deep
+#                    divergence, so they should paint as flat as a Labrador),
+#                    and it is what makes the picture a spectrum rather than an
+#                    assertion — nothing about a breed's position is chosen, so
+#                    a breed that comes out carrying wolf comes out of the data.
+#
+# The threshold is on how well a breed is SEQUENCED, not on anything about the
+# breed, which keeps the sweep from being a curated list; four is where the
+# collection stops being one or two founders' dogs. Village dogs are
+# deliberately absent: the dog reference panel below is one animal per BREED, so
+# a free-breeding dog has no representative of its own background in it and any
+# wolf it painted could be that gap rather than ancestry.
+SWEEP_MIN=4
+awk -F'\t' -v m="$SWEEP_MIN" '$3=="Breed_Dogs" &&
+  $2 !~ /Wolfdog|Shiloh|Tamaskan|German Shepherd|White Swiss Shepherd/ {
+    n[$2]++; last[$2] = $1
+  }
+  END { for (b in n) if (n[b] >= m) print last[b]"\t"b }' keep.tsv \
+  | LC_ALL=C sort -t$'\t' -k2,2 > sweep.tsv
+
+# Named groups first, then the sweep in breed order. `last[]` above takes the
+# breed's last animal so the dog panel below, which takes the first one left
+# after the targets are removed, is never left without a stand-in for a breed
+# it just gave up — a target whose own breed is missing from the panel gets
+# pushed toward the wolf side, which is the one artifact that would look
+# exactly like the result.
+python3 - <<'PY' > targets.tsv
+GROUPS = (
+    # Russia, Sweden and Portugal; the Greek wolves are left in the panel
+    # because the marker figure at the bottom of this script draws all twelve
+    # of them as its wolf reference and one animal should not be both.
+    ('Gray wolf', ['CLUPRU000001', 'CLUPRU000002', 'CLUPRU000003',
+                   'CLUPRU000004', 'CLUPSE000001', 'CLUPSE000002',
+                   'CLUPPT000001', 'CLUPPT000002']),
+    ('Saarloos', ['SAAR00000%d' % i for i in range(1, 5)]),
+    ('Czechoslovakian', ['CZEC00000%d' % i for i in range(1, 5)]),
+    ('Shiloh Shepherd', ['SHIL000001']),
+    ('Tamaskan', ['TMSK000001']),
+    ('German Shepherd', ['GRSD000002']),
+    ('Old German Shepherd', ['OLGS000001', 'OLGS000002', 'OLGS000003']),
+    ('White Swiss Shepherd', ['WSSD000003', 'WSSD000004']),
+)
+for prefix, ids in GROUPS:
+    for n, sample in enumerate(ids, 1):
+        # a one-animal group carries no number: "Tamaskan", not "Tamaskan 1"
+        print('%s\t%s' % (sample, prefix if len(ids) == 1
+                          else '%s %d' % (prefix, n)))
+PY
+grep -v -F -f <(cut -f1 targets.tsv) sweep.tsv >> targets.tsv
+cut -f1 targets.tsv > targets.txt
+
+# The eight wolf targets are painted, so they cannot also be painting: drop them
+# from the reference panel. Held out AFTER wolves.txt is built rather than
+# excluded from the awk above, so the panel definition stays "every European
+# gray wolf" and this line is visibly the hold-out.
+grep -v -F -f targets.txt wolves.txt > wolves.panel.txt
+mv wolves.panel.txt wolves.txt
 
 # Dog panel: one dog from every breed the collection has, minus the targets and
 # the two wolfdog breeds. Breadth is what makes a block read as wolf-versus-dog
 # rather than breed-versus-breed, and it has to include the shepherd breeds:
 # an alphabetically truncated panel leaves the targets' own dog background
 # unrepresented, which pushes ordinary dog haplotypes toward the wolf panel.
+# Only the target ANIMALS are removed, not their breeds, so every target that
+# has a littermate in the collection keeps a stand-in on the dog side — which is
+# what makes a flat-dog painting of the Chow Chow or the Malamute a result
+# rather than an artifact of a missing panel.
 awk -F'\t' '$3=="Breed_Dogs" && $2 !~ /Wolfdog|Shiloh|Tamaskan/ {print $1"\t"$2}' \
   keep.tsv | grep -v -F -f targets.txt | sort -t$'\t' -k2,2 -u | cut -f1 > dogs.txt
 
@@ -87,18 +167,13 @@ cat wolves.txt dogs.txt targets.txt greek.txt gsdref.txt | sort -u > all.txt
 awk '{print $1"\tWolf"}' wolves.txt > refpanel.txt
 awk '{print $1"\tDog"}' dogs.txt >> refpanel.txt
 
-# Row labels for the painted track, in the order the display stacks them.
-python3 - <<'PY' > labels.tsv
-for prefix, ids in (
-    ('Saarloos', ['SAAR00000%d' % i for i in range(1, 5)]),
-    ('Czechoslovakian', ['CZEC00000%d' % i for i in range(1, 5)]),
-    ('German Shepherd', ['GRSD000002']),
-    ('Shiloh Shepherd', ['SHIL000001']),
-    ('Tamaskan', ['TMSK000001']),
-):
-    for n, sample in enumerate(ids, 1):
-        print('%s\t%s %d' % (sample, prefix, n))
-PY
+# Row labels for the painted track, in the order the display stacks them —
+# the same table the targets were taken from.
+cp targets.tsv labels.tsv
+
+printf 'panel: %s wolves, %s dogs; %s targets (%s haplotype rows)\n' \
+  "$(wc -l < wolves.txt)" "$(wc -l < dogs.txt)" \
+  "$(wc -l < targets.txt)" "$(( $(wc -l < targets.txt) * 2 ))"
 
 # ── Slice the phased panel ───────────────────────────────────────────────────
 # bcftools reads the remote BCF over HTTP by range request, pulling only this
@@ -139,22 +214,63 @@ echo
 echo "Ancestry fractions on $CHROM:"
 zcat "wolfdog_$CHROM.global.anc.gz"
 
-# ── Painted BED ─────────────────────────────────────────────────────────────
+# ── The named subset ────────────────────────────────────────────────────────
+# The spectrum painting is 243 animals, which at any sane figure height is under
+# the ~6px a row label needs, so it can show WHERE everything falls and not WHAT
+# anything is. This is the companion set that carries the names: the twenty-four
+# animals the target table names outright, plus the eight sweep breeds with the
+# most wolf on this chromosome — chosen by FLARE's own per-sample output rather
+# than by which breeds sound wolfish, which is the whole point of having swept
+# 219 of them. Ordered by descending wolf fraction, so the figure is a ranking
+# and the order is not an assertion either.
+python3 - "wolfdog_$CHROM.global.anc.gz" <<'PY' > named.tsv
+import gzip
+import sys
+
+frac = {}
+with gzip.open(sys.argv[1], 'rt') as fh:
+    next(fh)
+    for line in fh:
+        sample, wolf = line.split('\t')[:2]
+        frac[sample] = float(wolf)
+
+named, sweep = [], []
+with open('targets.tsv') as fh:
+    for i, line in enumerate(fh):
+        sample, label = line.rstrip('\n').split('\t')
+        (named if i < 24 else sweep).append((sample, label))
+
+sweep.sort(key=lambda r: -frac[r[0]])
+rows = named + sweep[:8]
+rows.sort(key=lambda r: -frac[r[0]])
+for sample, label in rows:
+    print(f'{sample}\t{label}')
+PY
+
+# ── Painted BEDs ────────────────────────────────────────────────────────────
+# Two paintings out of the one FLARE run, differing only in which rows they
+# keep: the spectrum and the named subset above.
+python3 "$SCRIPT_DIR/flare_anc_to_bed.py" "wolfdog_$CHROM.anc.vcf.gz" named.tsv \
+  "dog10k_wolfdog_named.$CHROM.bed"
 python3 "$SCRIPT_DIR/flare_anc_to_bed.py" "wolfdog_$CHROM.anc.vcf.gz" labels.tsv \
   "dog10k_wolfdog_ancestry.$CHROM.bed"
 # `jbrowse sort-bed` does exactly this, but this script is otherwise node-free,
 # so the pipeline is inline rather than pulling in the CLI: keep the `#`-header
 # line (it names the columns for the BedTabixAdapter) on top, and sort the rest
 # under LC_ALL=C so the order does not shift with the caller's locale.
-{ grep '^#' "dog10k_wolfdog_ancestry.$CHROM.bed"
-  grep -v '^#' "dog10k_wolfdog_ancestry.$CHROM.bed" \
-    | LC_ALL=C sort -t"$(printf '\t')" -k1,1 -k2,2n
-} | bgzip > "dog10k_wolfdog_ancestry.$CHROM.bed.gz"
-tabix -f -p bed "dog10k_wolfdog_ancestry.$CHROM.bed.gz"
+for painting in "dog10k_wolfdog_ancestry.$CHROM" "dog10k_wolfdog_named.$CHROM"; do
+  { grep '^#' "$painting.bed"
+    grep -v '^#' "$painting.bed" \
+      | LC_ALL=C sort -t"$(printf '\t')" -k1,1 -k2,2n
+  } | bgzip > "$painting.bed.gz"
+  tabix -f -p bed "$painting.bed.gz"
+done
 
 echo
-echo "Wrote $(pwd)/dog10k_wolfdog_ancestry.$CHROM.bed.gz (plus its .tbi)."
-echo "Load it with the track JSON in the local ancestry tutorial."
+echo "Wrote $(pwd)/dog10k_wolfdog_ancestry.$CHROM.bed.gz (243 animals) and"
+echo "      $(pwd)/dog10k_wolfdog_named.$CHROM.bed.gz (the named subset),"
+echo "plus their .tbi. Load them with the track JSON in the local ancestry"
+echo "tutorial; the subset track's rowOrder is named.tsv, in that order."
 
 # Wolf-block length distribution per animal. The tutorial's claim that the
 # breeds separate on block LENGTH and not only on total wolf fraction rests on
@@ -182,28 +298,85 @@ awk -F'\t' '$11=="Wolf" {
     }
   }' "dog10k_wolfdog_ancestry.$CHROM.bed" | sort -k2,2nr
 
+# ── The painting checked against raw allele sharing ─────────────────────────
+# FLARE matches HAPLOTYPES against the panels, which is what makes a block a
+# block; this counts ALLELES instead, at the sites where the two panels are
+# nearly fixed for different ones, and is deliberately the cruder measurement.
+# Two things need it. The wolfdogs' fractions should track it, which says the
+# painting is reading the data rather than the model. And when the two disagree
+# the disagreement is the interesting number rather than a thing to argue past:
+# on chr1 the two Swedish museum wolves carry MORE wolf-diagnostic alleles than
+# any other held-out wolf and are still painted about half dog, so their rows
+# are a property of the panel they are matched against and not of the animals.
+echo
+echo "Wolf-diagnostic alleles carried, per named animal (FLARE-independent):"
+{ awk '{print $1"\twolfpanel"}' wolves.txt
+  awk '{print $1"\tdogpanel"}' dogs.txt; } > afgroups.chk
+# The panel frequencies have to be computed BEFORE the subset — after it there
+# are no panel samples left to compute them from, and `+fill-tags` says so with
+# a bare "No populations given?".
+bcftools +fill-tags "$CHROM.subset.vcf.gz" -Ou -- -S afgroups.chk -t AF \
+  | bcftools view -S <(cut -f1 named.tsv) --force-samples -Ob -o named.chk.bcf
+# `-S` subsets but does not REORDER: the columns come out in the VCF's own
+# sample order, so the labels have to be looked up from that order rather than
+# from named.tsv's. Getting this wrong silently prints every number against the
+# wrong animal, and the result still looks like a plausible table.
+bcftools query -l named.chk.bcf > named.chk.order
+bcftools query -f '%INFO/AF_wolfpanel\t%INFO/AF_dogpanel[\t%GT]\n' named.chk.bcf \
+  | awk -F'\t' -v labelfile=named.tsv -v orderfile=named.chk.order '
+      BEGIN {
+        n_named = 0
+        while ((getline line < labelfile) > 0) {
+          split(line, f, "\t")
+          named[++n_named] = f[1]; label[f[1]] = f[2]
+        }
+        n_order = 0
+        while ((getline s < orderfile) > 0) { column[s] = ++n_order + 2 }
+      }
+      $1 >= 0.8 && $2 <= 0.2 {
+        n++
+        for (i = 3; i <= NF; i++) {
+          g = $i; carried[i] += gsub(/1/, "1", g); total[i] += 2
+        }
+      }
+      END {
+        printf "  over %d sites where the panels are nearly fixed apart\n", n
+        # named.tsv order, which is descending FLARE wolf fraction, so the two
+        # measurements read down the page against each other
+        for (j = 1; j <= n_named; j++) {
+          i = column[named[j]]
+          printf "  %-34s %.3f\n", label[named[j]], carried[i] / total[i]
+        }
+      }'
+rm -f named.chk.bcf named.chk.order
+
 # ── Genotype slice behind the second tutorial figure ────────────────────────
-# A 200 kb window at chr1:107.9-108.1 Mb, inside blocks the painting calls Wolf
-# on five of the sixteen wolfdog haplotypes and Dog on the other eleven. That
-# mix is the point: the figure checks both kinds of call at once.
+# 1.5 Mb at chr1:112.0-113.5 Mb, and the window is chosen for its EDGES: three
+# wolfdog haplotypes end a wolf block inside it (Saarloos 3 hap1 and
+# Czechoslovakian 4 hap1 at 112.58 Mb, Saarloos 1 hap1 at 113.25 Mb) while
+# others run wolf or dog straight through. A window sitting entirely inside one
+# block can only show that a wolf-called haplotype carries wolf alleles, which
+# is a weaker claim than it sounds — it is where the painting says a block STOPS
+# that there is something to be wrong about, and the same rows are drawn above
+# as the painting so the two can be read against each other.
 #
-# Rows are the twelve Greek gray wolves, all eleven painted animals, and the
-# seven German Shepherd-lineage dogs. Sample IDs stay as they are; the figure
-# relabels the rows in its display config rather than rewriting the data.
+# Rows are named.tsv, the same animals in the same order as the subset painting,
+# so a row is at the same height in both tracks. The eight held-out gray wolves
+# are the wolf reference; the collection's Greek wolves are not needed here.
 #
 # Each site carries the alt-allele frequency in each FLARE reference panel, so
 # the figure can filter itself down to the ancestry-informative markers instead
-# of drawing two thousand mostly uninformative columns. The frequencies are
-# computed over the full panels (36 European wolves, 318 one-per-breed dogs)
-# *before* the sample subset, so they stay panel-wide estimates and do not
-# describe the thirty samples the file ends up holding — which is why AC/AF/AN
-# are dropped rather than left to be read as the same thing.
+# of drawing every common site in the window. The frequencies are computed over
+# the full panels (28 European wolves, 318 one-per-breed dogs) *before* the
+# sample subset, so they stay panel-wide estimates and do not describe the
+# thirty-two samples the file ends up holding — which is why AC/AF/AN are
+# dropped rather than left to be read as the same thing.
 if [ "$CHROM" = chr1 ]; then
-  { cat greek.txt; cat targets.txt; cat gsdref.txt; } > block.samples
+  cut -f1 named.tsv > block.samples
   { awk '{print $1"\twolf"}' wolves.txt
     awk '{print $1"\tdog"}' dogs.txt; } > afgroups.txt
   tabix -f -p vcf "$CHROM.subset.vcf.gz"
-  bcftools view -r chr1:107900000-108100000 -Ou "$CHROM.subset.vcf.gz" \
+  bcftools view -r chr1:112000000-113500000 -Ou "$CHROM.subset.vcf.gz" \
     | bcftools +fill-tags -Ou -- -S afgroups.txt -t AF \
     | bcftools view -S block.samples --force-samples -Ou \
     | bcftools annotate -x INFO/AC,INFO/AF,INFO/AN,INFO/NS \
@@ -214,5 +387,5 @@ if [ "$CHROM" = chr1 ]; then
   echo "Markers the figure keeps (AF_wolf >= 0.8 and AF_dog <= 0.15):"
   bcftools query -f '%POS\t%INFO/AF_wolf\t%INFO/AF_dog\n' \
     dog10k_wolfdog_chr1_block.vcf.gz \
-    | awk '$2>=0.8 && $3<=0.15 {n++; print "  "$0} END {print "  "n" markers"}'
+    | awk '$2>=0.8 && $3<=0.15 {n++} END {print "  "n" markers"}'
 fi

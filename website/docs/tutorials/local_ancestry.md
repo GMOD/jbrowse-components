@@ -48,6 +48,15 @@ wolf-lookalike bred from ordinary sled and herding dogs. Painting all of them at
 once asks whether a genome-wide sharing statistic and a wolfish appearance point
 at the same thing local ancestry does.
 
+Then the rest of the dog world, because two wolfdog breeds on their own can only
+show that a documented cross leaves blocks. One dog from each of the 219 breeds
+the collection sequenced four or more of goes in as well — chosen on how well the
+breed was sequenced and on nothing about the breed — so the same run also says
+what a dog with no such cross looks like, and any breed that turns out to carry
+something is found rather than nominated. Eight European gray wolves are held out
+of the wolf panel and painted as targets, which is the only thing in the figure
+that says what a correct all-wolf call looks like.
+
 The [Dog10K consortium](https://www.dog10kgenomes.org/) publishes a phased
 reference panel of 1929 canids on the `UU_Cfam_GSD_1.0` assembly, which includes
 both wolfdog breeds, 57 gray wolves, and hundreds of breed dogs. Local ancestry
@@ -69,8 +78,9 @@ Dog10K phased BCF ────> chr1.ref.vcf.gz + chr1.gt.vcf.gz   (bcftools vie
                         wolfdog_chr1.anc.vcf.gz   per-marker AN1/AN2 calls
                         wolfdog_chr1.global.anc.gz  per-sample summary
                               │
-                              v  flare_anc_to_bed.py + labels.tsv
-                        dog10k_wolfdog_ancestry.chr1.bed.gz  one run per block
+                              v  flare_anc_to_bed.py + labels.tsv / named.tsv
+                        dog10k_wolfdog_ancestry.chr1.bed.gz  all 243 animals
+                        dog10k_wolfdog_named.chr1.bed.gz     the named subset
                               │
                               v  BedTabixAdapter + LinearMultiRowFeatureDisplay
                         one painted row per haplotype
@@ -101,8 +111,8 @@ AFGH000001	Dog
 The panel is a single 6 GB BCF, and `bcftools` reads it over HTTP by range
 request, so a chromosome costs a chromosome rather than the whole file. That
 subset splits into `chr1.ref.vcf.gz` (the two panels) and `chr1.gt.vcf.gz` (the
-targets: four Saarloos, four Czechoslovakian Wolfdogs, and the German Shepherd,
-Shiloh Shepherd, and Tamaskan controls).
+targets: 243 animals — the eight wolfdogs, the Shiloh Shepherd and Tamaskan, the
+German Shepherd lineage, eight held-out gray wolves, and the 219-breed sweep).
 
 ### The genetic map
 
@@ -124,12 +134,17 @@ sorts the targets:
 
 ```
 SAMPLE          Wolf    Dog
-SAAR000001      0.444   0.556
-CZEC000003      0.276   0.724
-SHIL000001      0.22    0.78
-TMSK000001      0.033   0.967
-GRSD000002      0       1
+CLUPRU000001    0.996   0.004     held-out gray wolf
+SAAR000001      0.446   0.554     Saarloos Wolfdog
+CZEC000003      0.281   0.719     Czechoslovakian Wolfdog
+SHIL000001      0.225   0.775     Shiloh Shepherd
+THAI000009      0.08    0.92      top of the 219-breed sweep
+TMSK000001      0.033   0.967     Tamaskan
+GRSD000002      0       1         German Shepherd Dog
 ```
+
+Of the 219 swept breeds, 193 come in under 1% wolf on this chromosome, which is
+what makes the wolfdogs' 15-45% a distance rather than an assertion.
 
 ### Collapsing calls into blocks
 
@@ -158,36 +173,45 @@ config: a BED carrying `itemRgb` is painted with it automatically.
 ```json
 {
   "type": "FeatureTrack",
-  "trackId": "dog10k_wolfdog_ancestry",
-  "name": "Wolfdog local ancestry (FLARE, chr1)",
+  "trackId": "dog10k_wolfdog_named",
+  "name": "Local ancestry, named animals (FLARE, chr1)",
   "assemblyNames": ["UU_Cfam_GSD_1.0"],
   "adapter": {
     "type": "BedTabixAdapter",
     "disableGeneHeuristic": true,
-    "uri": "dog10k_wolfdog_ancestry.chr1.bed.gz"
+    "uri": "dog10k_wolfdog_named.chr1.bed.gz"
   },
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",
       "partitionField": "sample",
       "rowOrder": [
+        "Gray wolf 7 hap1",
+        "Gray wolf 7 hap2",
         "Saarloos 1 hap1",
         "Saarloos 1 hap2",
-        "Czechoslovakian 1 hap1",
-        "Czechoslovakian 1 hap2",
-        "German Shepherd 1 hap1",
-        "German Shepherd 1 hap2"
+        "Czechoslovakian 3 hap1",
+        "Czechoslovakian 3 hap2",
+        "German Shepherd hap1",
+        "German Shepherd hap2"
       ]
     }
   ]
 }
 ```
 
-`rowOrder` is abbreviated here; the build script writes all twenty-two rows.
+`rowOrder` is abbreviated here; the build script writes all sixty-four rows, in
+descending order of the animal's chr1 wolf fraction, so the row order is
+FLARE's own output rather than an editorial choice.
+
+The same FLARE run writes a second BED holding all 243 animals, loaded the same
+way with an empty `rowOrder`. Two paintings rather than one, because a row label
+needs about six pixels of row height and 486 rows do not have them at any figure
+size: the small one is who, the big one is where.
 
 ## Reading the painting
 
-<Figure caption="Dog10K chr1 painted by FLARE against gray wolf and breed-dog panels, two haplotype rows per animal. Wolf blocks (orange) tile the four Saarloos Wolfdogs and, in fewer and longer runs, the four Czechoslovakian Wolfdogs. The German Shepherd is near-solid dog (blue), the Shiloh Shepherd carries long wolf blocks, and the Tamaskan carries only flecks. The highlighted band is the wolf block dissected below." src="/img/dog10k-wolfdog-ancestry.png" />
+<Figure caption="Dog10K chr1 painted by FLARE against gray wolf and breed-dog panels, two rows per animal, in descending order of wolf fraction. Six of the eight held-out gray wolves paint near-solid wolf (orange); the wolfdogs below carry megabase blocks; the sweep breeds carry flecks, bar the Great Anglo-French Tricolour Hound's 11.4 Mb block; the German Shepherd lineage at the foot is solid dog. Highlighted: the window dissected below." src="/img/dog10k-wolfdog-ancestry.png" />
 
 Read each pair of rows as one animal's two chromosome copies. Wolf on one row
 and dog on the other is a heterozygous stretch; both orange is homozygous
@@ -196,9 +220,23 @@ fraction, and length is the more informative of the two: a recent cross leaves
 long founder haplotypes because recombination has had few generations to break
 them up.
 
-The German Shepherd row is the check. Same panel, same FLARE run, same
-references, and it takes almost no wolf on this chromosome, so the orange
-elsewhere is signal rather than an artifact of the panels.
+Both ends of the figure are checks. The German Shepherd lineage at the foot
+takes almost no wolf on this chromosome under the same panel and the same run,
+so the orange elsewhere is signal rather than an artifact of the panels. The
+gray wolves at the head are the other end of the same check, and they are
+painted rather than asserted: each was removed from the wolf panel before the
+run, so it is painted by the twenty-eight that remain.
+
+Six of those eight paint 98% wolf or better. **Two do not** — the two Swedish
+museum specimens come out about half dog, and that is a result about the method
+rather than about the animals. The build script prints a second, cruder
+measurement beside FLARE's: the fraction of chr1 sites where the two panels are
+nearly fixed for different alleles at which the animal carries the wolf one. The
+two Swedish wolves score 0.92 and 0.92 there, the highest of all eight, against
+0.06 for the German Shepherd. FLARE matches whole haplotypes against the panel
+and those two have no close match in it; the allele count does not care about
+haplotypes and says plainly that they are wolves. Where a painting and the raw
+alleles disagree, the painting is the model's answer.
 
 ### What the two wolf-like breeds do
 
@@ -207,35 +245,80 @@ prints both, one line per animal, as a count of wolf blocks with their median
 and longest.
 
 The Tamaskan behaves like a dog that merely looks like a wolf. Its wolf
-assignments are short flecks, well under a megabase and nothing approaching the
-length a recent cross would leave, against a German Shepherd control that takes
-no wolf at all on this chromosome. Appearance carries no ancestry.
+assignments are many and short, and its longest is 1.5 Mb — inside the range an
+ordinary breed reaches anyway, since the Kars, the Eurasier and the Spanish
+Mastiff all land between 1.7 and 2.0 Mb with no wolf story attached to any of
+them. That is what having 219 breeds in the run buys: "short flecks" is a
+comparison, and the sweep is what it gets compared against. Appearance carries no
+ancestry.
 
-The Shiloh Shepherd does not. Its wolf blocks run to megabases, a length
-distribution closer to a Czechoslovakian Wolfdog than to the Tamaskan. The
-Dog10K paper's own D-statistics find no significant excess of wolf allele
-sharing in this breed over German Shepherd Dogs, and the collection holds a
-single Shiloh Shepherd, painted here on a single chromosome.
+The Shiloh Shepherd does not. Its longest wolf block on chr1 is 17.5 Mb, against
+a sweep in which every breed but one stops at 2.4 Mb. The Dog10K paper's own
+D-statistics find no significant excess of wolf allele sharing in this breed over
+German Shepherd Dogs, and the collection holds a single Shiloh Shepherd, painted
+here on a single chromosome.
 
-Those readings are all row-order arguments, so let the display derive the order
-instead of taking it from the config. The track menu's **Clustering** →
-**Cluster rows by similarity** reorders the rows by how alike their painting is
-across the region in view, and draws the tree it built beside them:
+**The exception is worth naming, because the sweep found it rather than being
+asked about it.** The Great Anglo-French Tricolour Hound — a French pack hound
+with no wolf in its account of itself — carries an 11.4 Mb block on one
+haplotype, which is wolfdog scale, while its total chr1 wolf fraction is only
+0.042 because the rest of it is empty. One long block in one animal is what a
+recent single introgression looks like and also what a phasing error or a
+mis-assembled region looks like; a chromosome and an animal are not enough to
+tell those apart. It is in the named figure above so that it is visible rather
+than averaged away, and following it up would start with the check in the next
+section applied at its edges.
 
-<Figure caption="The same 22 haplotype rows, reordered by ancestry similarity across chr1 instead of grouped by breed. The wolf-richest haplotypes collect at the top, where six of the eight Saarloos rows land together. The Tamaskan's two haplotypes fall at the dog end of the order, down with the German Shepherd control, while the Shiloh Shepherd's sit up among the wolfdogs." src="/img/dog10k-wolfdog-ancestry-clustered.png" />
+Those readings are all row-order arguments, and the order above came out of
+FLARE's per-sample summary, so it can only rank what the summary already ranked.
+Switch to the 243-animal painting and let the display derive the order from the
+blocks themselves: the track menu's **Clustering** → **Cluster rows by
+similarity** reorders rows by how alike their painting is across the region in
+view, and draws the tree it built beside them.
 
-Nothing in that order was declared: the same clustering that puts the Saarloos
-haplotypes together puts the Tamaskan next to the control.
+<Figure caption="486 haplotype rows — 219 breeds at one dog each, the eight wolfdogs, the two wolf-lookalike breeds, the German Shepherd lineage and eight held-out gray wolves — clustered on their chr1 painting. Wolf-carrying rows collect at the top; below them the sweep fades into the solid dog field 193 of the 219 breeds sit in. No row labels at 2px a row: this figure is where, the one above is who." src="/img/dog10k-wolfdog-ancestry-clustered.png" />
+
+Nothing in that order was declared. The clustering has no access to the breed
+names, and it still puts the held-out wolves at one end, the wolfdogs under
+them, and the German Shepherd lineage in the field with every other breed.
+
+The chip in the tree's corner names the locus the tree was computed from, and it
+is load-bearing rather than decorative: the clustering runs over the region in
+view, so panning to a 5 Mb window and re-clustering gives a different order for
+the same rows. A dendrogram beside a painting is an answer to a question that
+includes where you were looking.
 
 ## Checking a block against the genotypes
 
 A painted block is an inference, and the genotypes it was inferred from are
-right there in the panel. Saarloos 1 is called Wolf on hap1 and Dog on hap2
-across the highlighted block above, so inside that block its two haplotype rows
-should track different reference groups. Loading the same window's phased
-genotypes underneath the painting shows exactly that:
+right there in the panel. The window worth checking is not the middle of a block
+but its **edge**: inside a block, a wolf-called haplotype carrying wolf alleles
+is barely a claim, while at an edge the painting says the wolf alleles stop at a
+coordinate, and either they do or they do not. The 1.5 Mb highlighted above holds
+three such edges.
 
-<Figure caption="A 40 kb window inside the wolf block. Top: the painting, with Saarloos 1 hap1 orange and hap2 blue. Bottom: the panel's phased genotypes as a matrix, eight gray wolves above and eight breed dogs below, blue where a haplotype carries the alt allele. Where the Saarloos wolf-called haplotype carries an alt allele, most wolf haplotypes carry it and almost no dog haplotype does." src="/img/dog10k-wolfdog-block-genotypes.png" />
+Underneath the gene track and the painting, the same window's phased genotypes go
+in as a matrix, filtered to the markers that carry ancestry information at all —
+the ones whose alt allele is common in the wolf panel and rare in the dog panel:
+
+```
+"jexlFilters": [
+  "jexl:get(feature,'INFO').AF_wolf[0] >= 0.8 && get(feature,'INFO').AF_dog[0] <= 0.15"
+]
+```
+
+Both frequencies were written per site by the build script over the full panels,
+before the sample subset, so they are panel-wide estimates rather than a
+description of the 32 animals in the file. Without the filter the lane draws
+every common site in 1.5 Mb, nearly all of them shared between wolves and dogs,
+and the figure is a wall of salt-and-pepper.
+
+<Figure caption="1.5 Mb of chr1 spanning three wolf-block edges. Top: the genes in the window. Middle: FLARE's painting for 32 named animals. Bottom: their phased genotypes at the 49 markers that separate the panels, one column per marker, orange for the wolf allele. Gray wolves carry them throughout, the German Shepherd lineage almost nowhere, and a wolfdog's row stops where its block edge is." src="/img/dog10k-wolfdog-block-genotypes.png" />
+
+The matrix draws one column per marker rather than placing each at its
+coordinate, so a run of carriers reads as a band instead of as speckle; the lines
+above the rows tie each column back to where it actually is, which is how a
+column is matched to the block edge in the painting above it.
 
 This is the check worth running on any local-ancestry call before building
 anything on top of it: the painting is a summary, and the summary should be
@@ -263,10 +346,11 @@ bash build_dog10k_wolfdog_ancestry.sh chr38 # any other autosome
 
 It downloads the Dog10K sample table, derives the panel and target lists, slices
 that chromosome out of the phased panel, generates the map, runs FLARE, prints
-the per-sample ancestry fractions and the wolf-block length distribution behind
-the reading above, and writes the painted BED
+the per-sample ancestry fractions, the wolf-block length distribution and the
+FLARE-independent allele count behind the readings above, and writes both painted
+BEDs
 ([`flare_anc_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/flare_anc_to_bed.py))
-plus its index and the genotype slice the second figure uses.
+plus their indexes and the genotype slice the last figure uses.
 
 ## See also
 

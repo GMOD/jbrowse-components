@@ -137,6 +137,18 @@ diagnostic = [r for r in gene if freq(r, small) - freq(r, giant) > 0.5]
 print(f'\n{len(gene)} sites inside IGF1; {len(diagnostic)} of them separate '
       'the toy/small and giant panels')
 
+# Where the separating sites are, over the WHOLE slice rather than inside the
+# gene. The figure frames this span with flanks either side, so it is printed
+# rather than eyeballed off a picture: in a matrix every record is one column of
+# equal width, so a window that is mostly undifferentiated sites is mostly
+# columns that say nothing and the shared haplotype reads as speckle. Both ends
+# fall outside the gene, which is the other reason not to frame on the gene.
+sep = [r for r in rows if freq(r, small) - freq(r, giant) > 0.5]
+if sep:
+    lo, hi = int(sep[0][0]), int(sep[-1][0])
+    print(f'{len(sep)} separating sites in the whole slice, spanning '
+          f'{lo:,}-{hi:,} ({(hi - lo) / 1000:.0f} kb), of {len(rows)} sites')
+
 print('\nalt dosage over those sites, per canid:')
 for size, group in by_size.items():
     scores = []

@@ -161,9 +161,22 @@ reorders them by genotype similarity and draws a dendrogram in the sidebar.
 The clustering reads genotypes only. The swatch is applied afterwards from the
 sample table, so the two are independent.
 
+## Framing it
+
+The slice is 400 kb but the figure frames 220 kb of it, and in a matrix that is
+not a detail. Every record is one column of equal width, so a window's width in
+the frame is a count of records rather than a span of chromosome: widen it and
+the extra columns are as wide as the informative ones. The build script prints
+which sites actually separate the two size classes — 95 of the 606, spanning
+41,455,350-41,611,659 — so this window is that span with about 55 kb of
+undifferentiated flank on each side. The shared haplotype is then about a third
+of the panel with both its edges still inside the frame, instead of one sixth of
+a panel of noise. Neither edge is the gene's: _IGF1_ is 41,495,479-41,567,874 and
+the haplotype runs 40 kb past it upstream and 44 kb past it downstream.
+
 ## Reading it
 
-<Figure caption="SNVs across 400 kb at IGF1 as a matrix, one row per canid and one column per variant, clustered by genotype with size class as the sidebar swatch. The upper cluster is the toy and small breeds and the lower one the giant breeds. Even column widths are what make the shared haplotype a solid block rather than speckle; the lines above the rows tie each column back to its position." src="/img/dog10k-igf1-haplotype.png" />
+<Figure caption="SNVs across 220 kb at IGF1 as a matrix, one row per canid and one column per variant, clustered by genotype with size class as the sidebar swatch. The upper cluster is the toy and small breeds and the lower one the giants; the wolves are the red run between them. Even column widths make the shared haplotype a block rather than speckle; the lines above tie each column back to its position." src="/img/dog10k-igf1-haplotype.png" />
 
 The panel separates into two clusters that correspond to the size classes, and
 the block's boundaries fall within the window, so its extent reads against the
