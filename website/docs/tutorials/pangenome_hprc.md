@@ -77,12 +77,12 @@ projections of the graph (below). Release 3 has no graphs at all (it is the
 verkko assembly and QC release), so release 2 is the one for this.
 
 Every file above is published twice, once per reference. This page uses the
-GRCh38 build because that is the assembly most readers already have loaded, but
-every locus it features (MHC, KIR, LPA, AMY1, CFHR) is one where GRCh38 is the
-weaker backbone, and the T2T-CHM13 build of the same graph and the same callset
-sits beside it. Nothing here is specific to GRCh38: both build scripts run on
-the CHM13 files unchanged, and the only config change is the PanSN prefix
-(`{ "chm13": "CHM13" }` in place of `{ "hg38": "GRCh38" }`).
+GRCh38 build because that is the assembly most readers already have loaded,
+though every locus it features (MHC, KIR, LPA, AMY1, CFHR) is one where GRCh38
+is the weaker backbone and the T2T-CHM13 build sits beside it. Nothing here is
+specific to GRCh38: both build scripts run on the CHM13 files unchanged, and the
+only config change is the PanSN prefix, `{ "chm13": "CHM13" }` in place of
+`{ "hg38": "GRCh38" }`.
 
 ## Regular GFA vs rGFA
 
@@ -110,11 +110,10 @@ segment sits and which segments are the reference, and JBrowse can open any
 locus with no extraction step.
 
 Release 2 ships no `minigraph/` directory and never labels a file "rGFA", but
-the graph route does not need release 1: "rGFA" names a tag convention, not a
-separate format, and the `sv.gfa` above is the minigraph stage of the
-Minigraph-Cactus build, so every one of its segments already carries these tags.
-(The base-level `gfa.gz` beside it does not, and neither do pggb graphs, which
-keep the `odgi extract` route.)
+that is a naming matter rather than a missing format: `sv.gfa` is the minigraph
+stage of the Minigraph-Cactus build, so every one of its segments already
+carries these tags. The base-level `gfa.gz` beside it does not, and neither do
+pggb graphs, which keep the `odgi extract` route.
 
 A PanSN name has two halves, and only the first needs configuring:
 

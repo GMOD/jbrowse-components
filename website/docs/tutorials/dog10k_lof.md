@@ -260,11 +260,7 @@ against the numbers that produced them.
 
 ## References
 
-Meadows, J. R. S., Kidd, J. M., Wang, G.-D., et al. (2023).
-[Genome sequencing of 2000 canids by the Dog10K consortium advances the understanding of demography, genome function and architecture](https://doi.org/10.1186/s13059-023-03023-7).
-_Genome Biology_, _24_(1), 187.
-
-Court, M. H. (2013).
-[Canine cytochrome P450 pharmacogenetics](https://doi.org/10.1016/j.cvsm.2013.05.001).
-_Veterinary Clinics of North America: Small Animal Practice_, _43_(5),
-1027-1038.
+- Meadows et al. (2023).
+  [Genome sequencing of 2000 canids by the Dog10K consortium advances the understanding of demography, genome function and architecture](https://doi.org/10.1186/s13059-023-03023-7)
+- Court (2013).
+  [Canine cytochrome P450 pharmacogenetics](https://doi.org/10.1016/j.cvsm.2013.05.001)

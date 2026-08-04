@@ -36,40 +36,22 @@ five are on [bioconda](https://bioconda.github.io/) if you already run conda.
 
 ## Windowed statistics as tracks
 
-Population-genetic scans are per-window statistics running along the genome: Fst
-(differentiation between groups), nucleotide diversity (π) within a group, dxy
-(divergence between groups). Each has the same shape as a wiggle track, so once
-you've computed them from a multi-sample VCF you can load them into JBrowse and
-read the peaks and troughs against genes. JBrowse does no population-genetic
-inference itself; it draws the windowed statistic your tool produced. No single
-statistic is decisive alone, so this tutorial stacks Fst, π, and Tajima's D on a
-shared genomic axis: where the signals line up is what points to a selective
-sweep, an inversion, or gene flow.
+A population-genetic scan is a per-window statistic running along the genome:
+Fst between two groups, nucleotide diversity (π) within one, dxy between them.
+That is the shape of a wiggle track, so whatever a scanner writes per window
+loads as a [quantitative track](/docs/user_guides/quantitative_track) and reads
+against the genes underneath it.
 
-The [Jupyter selection-scan example](/docs/jbrowse_jupyter) runs this same
-compute-then-view loop in Python and is available as a Colab notebook.
-
-Everything below is a reproducible pipeline: each command runs against publicly
-hosted _Drosophila melanogaster_ data on the dm6 assembly and produces bigWig
-tracks you can load. Along the way it reproduces two signals from the
-[Drosophila Genetic Reference Panel](https://dgrpool.epfl.ch/) (DGRP), a panel
-of 205 inbred lines ([Mackay et al. 2012](https://doi.org/10.1038/nature10811)):
-
-- Fst across the `In(2L)t` inversion: lines carrying the cosmopolitan `In(2L)t`
-  inversion are strongly differentiated from standard-arrangement lines across
-  the whole inverted region of chromosome arm `2L`, because the inversion
-  suppresses recombination there
-  ([Corbett-Detig & Hartl 2012](https://doi.org/10.1371/journal.pgen.1003056)).
-  This megabase-scale signal is exactly what a windowed scan catches and a
-  pairwise [LD triangle](/docs/tutorials/ld_human) misses. See that tutorial for
-  why the two tools work at different scales.
-- Genome-wide nucleotide diversity (π): the diversity landscape, dropping in
-  low-recombination regions near the centromeres and at loci under selection
-  such as `Cyp6g1`, an insecticide-resistance gene
-  ([Daborn et al. 2002](https://doi.org/10.1126/science.1074170)).
-
-The same workflow applies to any species and any grouping. Swap in your own
-populations or your own VCF and the JBrowse side is identical.
+No single statistic is decisive alone, so this tutorial stacks Fst, π and
+Tajima's D on a shared axis. The panel is the
+[Drosophila Genetic Reference Panel](https://dgrpool.epfl.ch/) (DGRP), 205
+inbred lines ([Mackay et al. 2012](https://doi.org/10.1038/nature10811)) on dm6,
+and the two signals it draws are Fst across the `In(2L)t` inversion, which
+suppresses recombination across the whole of chromosome arm `2L`
+([Corbett-Detig & Hartl 2012](https://doi.org/10.1371/journal.pgen.1003056)),
+and the π landscape, which dips at loci under selection such as the
+insecticide-resistance gene `Cyp6g1`
+([Daborn et al. 2002](https://doi.org/10.1126/science.1074170)).
 
 ## Build the scans
 
@@ -93,34 +75,22 @@ nucleotide diversity and Tajima's D
 packs each into a bigWig with `bedGraphToBigWig`. See
 [reproduce it end to end](#reproduce-it-end-to-end) for the invocation.
 
-The one thing to check yourself is chromosome naming, because a mismatch there
-draws an empty track rather than an error. The script takes the contig names
-from the VCF header, and this VCF calls the chromosome arms `2L`, `2R`, `3L`,
-`3R`, `X` and `4`, FlyBase style, so the bigWigs use those names too. UCSC dm6
-prefixes them `chr2L` and so on. If your dm6 assembly uses the UCSC names,
-[refname aliasing](/docs/developer_guides/refname_aliasing) reconciles the two
-at display time.
+The one thing to check yourself is chromosome naming, because a mismatch draws
+an empty track rather than an error. The bigWigs take their contig names from
+the VCF header, which spells the arms `2L`, `2R`, `3L`, `3R`, `X` and `4`,
+FlyBase style, where UCSC dm6 prefixes them `chr2L`. If your dm6 assembly uses
+the UCSC names, [refname aliasing](/docs/developer_guides/refname_aliasing)
+reconciles the two at display time.
 
-The rest of what the script does is bookkeeping you would otherwise have to get
-right by hand: the three vcftools outputs disagree about whether a window start
-is 0-based or 1-based, and one of them leaves the window end off entirely. A
-mistake there shifts a whole track sideways by one window instead of failing.
-
-Windows vcftools could not estimate come out as `nan` and are dropped. Negative
-Fst estimates, an expected artifact of the Weir & Cockerham estimator at
-low-differentiation sites, are floored at 0 for display, which is conventional.
-Tajima's D keeps its sign: unlike Fst it is meaningfully signed, and the
-negative excursions are the signal.
-
-Because this VCF holds only variant sites, `--window-pi` sums diversity over the
-genotyped SNPs and omits invariant positions, so the absolute values are not
-calibrated. They remain directly comparable across windows of the same VCF. For
-calibrated absolute π and dxy you need an allSites VCF and a tool that expects
-one, such as [pixy](https://pixy.readthedocs.io/)
-([Korunes & Samuk 2021](https://doi.org/10.1111/1755-0998.13326)), which
-computes π, dxy, and Fst together without the missing-data bias. Its output is
-one row per window with the value in a column, so it packs into a bigWig the
-same way.
+Two properties of the values carry into the figures. Negative Fst estimates, an
+artifact of the Weir & Cockerham estimator at low-differentiation sites, are
+floored at 0, while Tajima's D keeps its sign, since its negative excursions are
+the signal. And because this VCF holds variant sites only, `--window-pi` omits
+invariant positions, so π is comparable across windows of the same file without
+being calibrated in absolute terms. [pixy](https://pixy.readthedocs.io/)
+([Korunes & Samuk 2021](https://doi.org/10.1111/1755-0998.13326)) computes π,
+dxy and Fst from an allSites VCF without that bias, one row per window, so its
+output packs into a bigWig the same way.
 
 ## Loading in JBrowse
 
@@ -188,21 +158,20 @@ out.
 
 ## Reading the signals
 
-We zoom out to the whole genome (all six arms). The `In(2L)t` Fst track rises
-into a tall block of differentiation across the inverted region of chromosome
-2L, while every other arm sits at low background Fst. Viewing all the arms at
-once gives that block something to be measured against.
+Opening the assembly with no location shows all of its regions at once, so the
+six arms lay out side by side and the block has the rest of the genome to be
+measured against. The `In(2L)t` Fst track rises across the inverted region of
+chromosome 2L, while every other arm sits at low background Fst.
 
 <Figure src="/img/popgen/fst_in2lt_2L.png" caption="All six dm6 arms. Top: the In(2L)t inversion extent. Bottom: Fst between In(2L)t and standard-arrangement lines, a tall block across the whole left arm of chromosome 2 against low background on every other arm."/>
 
-Then we use the search box to jump to `Cyp6g1` (on `2R`) and add the Tajima's D
-track from the pipeline alongside π. Both statistics dip together over the swept
-window, which marks a hard sweep where either one alone would be ambiguous.
+Then search `Cyp6g1` (on `2R`) in the location box and add the Tajima's D track
+alongside π. Both dip together over the swept window, where either statistic
+alone would be ambiguous.
 
 <Figure src="/img/popgen/tajimad_cyp6g1.png" caption="Tajima's D (top) and π (middle) across 2R around Cyp6g1 (highlighted; Cyp6g1 and Cyp6g2 labeled in the gene track). Both dip over the highlighted window against their flanking background: the joint trough is the hard-sweep signature."/>
 
-Reading the two statistics together is what the stack is for, because each pair
-of values means something different:
+Each pair of values reads differently, which is what the stack is for:
 
 | Fst  | Within-group π         | Reading                                          |
 | ---- | ---------------------- | ------------------------------------------------ |
@@ -274,11 +243,10 @@ column order, and the split only reads as two blocks by luck.
 
 <Figure src="/img/popgen/in2lt_per_sample.png" caption="Whole chr2L. Top: the In(2L)t extent. Middle: Fst between arrangements. Bottom: one row per DGRP line, genotyped for the inversion as a single SV call and grouped by karyotype. The carrier block spans breakpoint to breakpoint, directly under the Fst plateau. Inversions draw as a tapered glyph, so each carrier row thins toward its left breakpoint."/>
 
-The genotypes here are the arrangement karyotypes themselves, so this is the
-cleanest per-line view of _who_ carries the inversion. The independent evidence
-that ordinary SNPs across the region co-segregate with it (the reason the
-arrangement behaves as one recombination-suppressed block) is exactly what the
-Fst scan above quantifies.
+The genotypes here are the arrangement karyotypes themselves, so the lane is a
+direct record of which lines carry the inversion. That ordinary SNPs across the
+region co-segregate with it, which is why the arrangement behaves as one
+recombination-suppressed block, is what the Fst scan above quantifies.
 
 ## Notes
 
@@ -320,41 +288,28 @@ in JBrowse Desktop.
 - [Multi-sample variant track](/docs/user_guides/multivariant_track)
 - [](/docs/user_guides/gwas_track)
 - [Configuring assemblies](/docs/config_guides/assemblies)
+- [](/docs/tutorials/ld_human), which reads the same panel-level question at a
+  scale a windowed scan cannot resolve
+- [JBrowse Jupyter](/docs/jbrowse_jupyter), which runs this compute-then-view
+  loop in Python
 
 ## References
 
-Corbett-Detig, R. B., & Hartl, D. L. (2012).
-[Population genomics of inversion polymorphisms in Drosophila melanogaster](https://doi.org/10.1371/journal.pgen.1003056).
-_PLoS Genetics_, _8_(12), e1003056.
-
-Daborn, P. J., Yen, J. L., Bogwitz, M. R., et al. (2002).
-[A single P450 allele associated with insecticide resistance in Drosophila](https://doi.org/10.1126/science.1074170).
-_Science_, _297_(5590), 2253–2256.
-
-Danecek, P., Auton, A., Abecasis, G., et al. (2011).
-[The variant call format and VCFtools](https://doi.org/10.1093/bioinformatics/btr330).
-_Bioinformatics_, _27_(15), 2156–2158.
-
-Gardeux, V., Gonzalez-Morales, N., Deplancke, B., et al. (2023).
-[DGRPool: A web tool leveraging harmonized Drosophila Genetic Reference Panel phenotyping data](https://doi.org/10.7554/eLife.88981).
-_eLife_, _12_, e88981.
-
-Huang, W., Massouras, A., Inoue, Y., et al. (2015).
-[Linkage disequilibrium and inversion-typing of the Drosophila melanogaster Genome Reference Panel](https://doi.org/10.1534/g3.115.019554).
-_G3: Genes, Genomes, Genetics_, _5_(8), 1695–1701.
-
-Korunes, K. L., & Samuk, K. (2021).
-[pixy: Unbiased estimation of nucleotide diversity and divergence in the presence of missing data](https://doi.org/10.1111/1755-0998.13326).
-_Molecular Ecology Resources_, _21_(4), 1359–1368.
-
-Mackay, T. F. C., Richards, S., Stone, E. A., et al. (2012).
-[The Drosophila melanogaster Genetic Reference Panel](https://doi.org/10.1038/nature10811).
-_Nature_, _482_(7384), 173–178.
-
-Tajima, F. (1989).
-[Statistical method for testing the neutral mutation hypothesis by DNA polymorphism](https://doi.org/10.1093/genetics/123.3.585).
-_Genetics_, _123_(3), 585–595.
-
-Weir, B. S., & Cockerham, C. C. (1984).
-[Estimating F-statistics for the analysis of population structure](https://doi.org/10.2307/2408641).
-_Evolution_, _38_(6), 1358–1370.
+- Corbett-Detig & Hartl (2012).
+  [Population genomics of inversion polymorphisms in Drosophila melanogaster](https://doi.org/10.1371/journal.pgen.1003056)
+- Daborn et al. (2002).
+  [A single P450 allele associated with insecticide resistance in Drosophila](https://doi.org/10.1126/science.1074170)
+- Danecek et al. (2011).
+  [The variant call format and VCFtools](https://doi.org/10.1093/bioinformatics/btr330)
+- Gardeux et al. (2023).
+  [DGRPool: A web tool leveraging harmonized Drosophila Genetic Reference Panel phenotyping data](https://doi.org/10.7554/eLife.88981)
+- Huang et al. (2015).
+  [Linkage disequilibrium and inversion-typing of the Drosophila melanogaster Genome Reference Panel](https://doi.org/10.1534/g3.115.019554)
+- Korunes & Samuk (2021).
+  [pixy: Unbiased estimation of nucleotide diversity and divergence in the presence of missing data](https://doi.org/10.1111/1755-0998.13326)
+- Mackay et al. (2012).
+  [The Drosophila melanogaster Genetic Reference Panel](https://doi.org/10.1038/nature10811)
+- Tajima (1989).
+  [Statistical method for testing the neutral mutation hypothesis by DNA polymorphism](https://doi.org/10.1093/genetics/123.3.585)
+- Weir & Cockerham (1984).
+  [Estimating F-statistics for the analysis of population structure](https://doi.org/10.2307/2408641)

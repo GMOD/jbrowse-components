@@ -321,10 +321,9 @@ bash build_1000g_cnv_zarr.sh --whole-genome # every main contig
 
 ## References
 
-- Shen F and Kidd JM,
+- Shen & Kidd (2020).
   [Rapid, Paralog-Sensitive CNV Analysis of 2457 Human Genomes Using QuicK-mer2](https://doi.org/10.3390/genes11020141),
-  Genes 2020, 11(2):141. **The citation for the copy-number data used throughout
-  this page.**
+  the citation for the copy-number data used throughout this page
 - [KiddLab/kmer_1KG](https://github.com/KiddLab/kmer_1KG), the Kidd lab track
   hub these files come from, and
   [KiddLab/QuicK-mer2](https://github.com/KiddLab/QuicK-mer2), the caller that

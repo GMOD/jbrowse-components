@@ -49,12 +49,10 @@ CLI and `bedGraphToBigWig` are each a
 comes from [nodejs.org](https://nodejs.org/). Everything else runs inside the
 cactus image.
 
-Cactus also ships a statically linked
-[binary release](https://github.com/ComparativeGenomicsToolkit/cactus/blob/master/BIN-INSTALL.md),
-which is the route on a machine with no container runtime at all. The image is
-used here because the projections below need odgi, halSynteny, hal2maf and `vg`,
-and it carries all four. On a cluster with no docker, `singularity` runs that
-same image, and the wrapper below is the only line that changes.
+The image is used here because the projections below need odgi, halSynteny,
+hal2maf and `vg`, and it carries all four. On a machine with no container
+runtime at all, Cactus also ships a statically linked
+[binary release](https://github.com/ComparativeGenomicsToolkit/cactus/blob/master/BIN-INSTALL.md).
 
 ## Cactus against pggb
 
@@ -106,17 +104,10 @@ in_cactus() {
 }
 ```
 
-Under singularity, redefine the wrapper and every call after it is unchanged.
-`--bind` and `--pwd` are `-v` and `-w`, and singularity runs as the invoking
-user already, so it needs no `-u`. A `docker://` reference is pulled and cached
-on first use, so there is no separate `singularity pull` step:
-
-```bash
-in_cactus() {
-  singularity exec --cleanenv --bind "$PWD":/data --pwd /data \
-    docker://quay.io/comparative-genomics-toolkit/cactus:v3.2.1 "$@"
-}
-```
+Under singularity,
+`singularity exec --bind "$PWD":/data --pwd /data docker://<image>` replaces the
+wrapper body and every call after it is unchanged. The
+[build script](#reproduce-it-end-to-end) picks the runtime off `PATH`.
 
 Now build the graph. `--reference K12` makes K12 the minigraph backbone, and the
 path every projection is decomposed against:
@@ -483,10 +474,9 @@ the difference to be worth a graph. The
 [alignments track guide](/docs/user_guides/alignments_track) covers coloring and
 sorting the pileup.
 
-`vg giraffe` rewrites `ecoli.d2.dist` as it runs, which leaves it newer than the
-`.min` and `.zipcodes` built from it, and a second run then refuses to start
-because an index looks stale. The indexes are fine and only the mtimes are
-misleading, so `touch` the two derived files before re-mapping.
+`vg giraffe` rewrites `ecoli.d2.dist` as it runs, leaving it newer than the
+`.min` and `.zipcodes` built from it, so a second run refuses to start on an
+index that only looks stale. `touch` the two derived files before re-mapping.
 
 ## Compared to `odgi viz`
 

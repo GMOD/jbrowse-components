@@ -24,13 +24,10 @@ A bacterial pangenome is often built the other way, from annotations rather than
 from sequence: [Panaroo](https://github.com/gtonkinhill/panaroo),
 [Roary](https://sanger-pathogens.github.io/Roary/) and
 [PPanGGOLiN](https://github.com/labgem/PPanGGOLiN) cluster genes across
-assemblies and report which genomes carry each cluster, split into a core and an
-accessory set. That answers a gene-level question this page's tracks answer at
-the base level, and the two do not fully overlap. A gene cluster no reference
-carries has no reference coordinate, so it cannot be drawn on the K12 axis at
-all, while the projections here place every base of the graph that K12 shares.
-Use the gene-level tools for the gene table, and these for where the sequence
-sits.
+assemblies into a core and an accessory set. Use those for the gene table and
+these tracks for where the sequence sits: a gene cluster no reference carries
+has no reference coordinate and cannot be drawn on the K12 axis at all, while
+the projections here place every base of the graph that K12 shares.
 
 :::caution Experimental
 
@@ -57,13 +54,10 @@ CLI and `bedGraphToBigWig` are each a
 comes from [nodejs.org](https://nodejs.org/). Everything else runs inside the
 pggb image.
 
-pggb's
+The image is the route here because it pins all five tools the pipeline is made
+of at once; pggb's
 [installation docs](https://pggb.readthedocs.io/en/latest/rst/installation.html)
-cover that image, plus bioconda (`conda install -c bioconda pggb`), guix, and a
-from-source build of the five tools the pipeline is made of. The image is the
-route here because it pins all five at once. On a cluster with no docker,
-`singularity` runs the same image, and the wrapper below is the only line that
-changes.
+cover the alternatives.
 
 ## The linear projections
 
@@ -123,33 +117,17 @@ in_pggb pggb -i /data/all.fa.gz -o /data/pggb \
   -n 5 -c 4 -p 90 -s 5000 -V K12:10000 -M -t "$(nproc)"
 ```
 
-Under singularity, redefine the wrapper and every call after it is unchanged.
-`--bind` and `--pwd` are `-v` and `-w`, and singularity runs as the invoking
-user already, so it needs no `-u`. A `docker://` reference is pulled and cached
-on first use, so there is no separate `singularity pull` step:
-
-```bash
-in_pggb() {
-  singularity exec --cleanenv --bind "$PWD":/data --pwd /data \
-    docker://ghcr.io/pangenome/pggb:202603141454453ade6b "$@"
-}
-```
-
-Pinning the image to a dated build tag (rather than `:latest`) keeps the graph
-reproducible. Five bacterial chromosomes are minutes on a laptop; smoothxg's
-partial-order alignment is the step that grows, and `-T` caps its threads
-separately from `-t` if it runs you out of memory.
-
-`-n` is the number of haplotypes, `-p` the minimum alignment identity, and `-s`
-the segment length. `-p 90 -s 5000` suits a bacterial pangenome.
-
-Two flags are easy to miss. `-c, --n-mappings` is separate from `-n` and
-defaults to `1`, so `-n 5` alone keeps each segment's single best match and
-builds an under-connected graph that crashes smoothxg. Set it to the haplotype
-count minus one. `-n` is a smoothxg parameter and cannot influence mapping at
-all, which is why the two have to be set together. The other flag is `-w /data`
-in the wrapper (`--pwd /data` under singularity), which gives the container a
-writable working directory. Without it seqwish cannot write its temporary files.
+`-n` is the number of haplotypes, `-p` the minimum alignment identity and `-s`
+the segment length; `-p 90 -s 5000` suits a bacterial pangenome. `-c` is
+separate, the number of mappings wfmash keeps per segment, and it defaults to
+`1`, so `-n` alone builds an under-connected graph and the two have to be set
+together. Five bacterial chromosomes are minutes on a laptop. Pinning the image
+to a dated build tag rather than `:latest` keeps the graph reproducible, and
+under singularity
+`singularity exec --bind "$PWD":/data --pwd /data docker://<image>` replaces the
+wrapper body, leaving every call after it unchanged. The
+[build script](#reproduce-it-end-to-end) picks the runtime off `PATH` and
+carries the pggb flags that are easy to get wrong.
 
 pggb runs [wfmash](https://github.com/waveygang/wfmash) (all-vs-all alignment),
 [seqwish](https://github.com/ekg/seqwish) (induces the graph),
@@ -289,9 +267,8 @@ graph budget for it accordingly, or restrict `-Q` to the paths you need.
 `pggb -V` writes a VCF of every variant the graph decomposes against the K12
 path, genotyped across the other four strains. Its `CHROM` is the PanSN
 reference path (`K12#1#chr`), so rename it to the K12 assembly's refName
-(`chr`). `bcftools` rather than `sed`: a global substitution also rewrites
-`INFO/AT` and `PS`, which happen not to contain the path name today and are not
-guaranteed not to. It ships in the pggb image, so this needs no extra install:
+(`chr`), with `bcftools` rather than `sed` so the substitution cannot reach
+`INFO/AT` or `PS`. It ships in the pggb image, so this needs no extra install:
 
 ```bash
 printf 'K12#1#chr\tchr\n' > rename_chrs.tsv
@@ -349,13 +326,12 @@ allele goes from hundreds of kilobases to under `LEN`. Nothing is left wide
 enough to paint over the layer beneath it, which is why the track needs no
 display filter. `vcfwave` then realigns what survives into primitive variants.
 
-`LEN` is a cost knob as much as a filter, and the two pull in opposite
-directions. vcfwave realigns every allele vcfbub keeps, so the step is dominated
-by the longest ones: at HPRC's own `-a 100000` this graph had vcfwave running
-for nineteen minutes without finishing, against about two at `-a 10000`. Six of
-its alleles are over 50 kb. Structural variation that large is better read in
-the graph view or the per-strain path track anyway, so the smaller cap costs the
-browser nothing.
+`LEN` is a cost knob as much as a filter. vcfwave realigns every allele vcfbub
+keeps, so the step is dominated by the longest ones, and raising the cap to
+HPRC's own `-a 100000` leaves it running far longer on this graph than
+`-a 10000` does. Structural variation that large is better read in the graph
+view or the per-strain path track anyway, so the smaller cap costs the browser
+nothing.
 
 Keep the raw file too and load it as a second track. It is where the graph
 structure lives: `LV`/`PS` give the snarl tree, and `AT` states each allele as
@@ -391,18 +367,12 @@ ships with the reproducible build below. One block per reference row matters
 because an index keys a block on its first row, so a repeat's second copy is
 only queryable once it anchors a block of its own.
 
-The second is a bug, and the script crops around it. smoothxg pads each sequence
-before running POA and blanks the padding afterwards, but on the SPOA path (the
-default; pggb does not pass `-A`) that loop compares an ASCII alignment against
-abPOA's numeric gap code, so it removes a fixed number of columns rather than a
-fixed number of bases per row. Padding survives wherever a row is gapped there,
-and on a row antiparallel to the block's first row it lands at the opposite end,
-where a consumer reading indels off the columns sees a phantom insertion at
+The second is a smoothxg bug that leaves its own block padding on some rows,
+which a consumer reading indels off the columns sees as a phantom insertion at
 every POA block boundary.
 [pangenome/smoothxg#223](https://github.com/pangenome/smoothxg/pull/223) fixes
-it upstream. No published pggb image carries it yet, so `reroot_maf.py` still
-crops: check `smoothxg --version` in your image against that commit before
-assuming the crop is dead code.
+it upstream, and no published pggb image carries the fix yet, so `reroot_maf.py`
+crops around it.
 
 Then convert the MAF to the tabix-indexed BED the
 [`MafTabixAdapter`](/docs/config/maftabixadapter) reads, one line per block
@@ -736,8 +706,7 @@ deletion, not a loop, and most of it is outside the frame.
 
 #### Where this stops, and what to do instead
 
-This gives browsing by locus rather than seamless browsing of any graph, and it
-has four limits.
+This gives browsing by locus rather than seamless browsing of any graph.
 
 The index is built once, offline, and nothing reads the GFA live, so it has to
 be rebuilt when the graph changes. It grows with total sequence rather than with
@@ -902,10 +871,6 @@ Everything downstream is derived from the strain table at the top of the script,
 so adding genomes there is the only edit an expanded pangenome needs. Watch two
 costs as that grows: wfmash is all-vs-all, so mapping scales with the square of
 the genome count, and `odgi untangle` indexes every step of every path.
-
-The PAF sort and bigWig conversion spill temp files large enough to overflow a
-tmpfs `/tmp`, so the script routes `TMPDIR` to a `tmp/` directory inside the
-build output. Export your own `TMPDIR` to override it.
 
 ## See also
 

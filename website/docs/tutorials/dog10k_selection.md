@@ -39,9 +39,11 @@ far apart their allele frequencies sit, and
 writes one BED line per window.
 
 A Manhattan track expects a `-log10(p)` column, and this file has neither a p
-column nor a p-value. `GWASAdapter` takes the column to read as the score, and
-the transform to apply to it, as separate settings, so a differentiation
-statistic loads with no reshaping:
+column nor a p-value. `GWASAdapter` takes the column to read as the score
+([`scoreColumn`](/docs/config/gwasadapter/#slot-scorecolumn)) and the transform
+to apply to it
+([`scoreTransform`](/docs/config/gwasadapter/#slot-scoretransform)) as separate
+settings, so a differentiation statistic loads with no reshaping:
 
 ```json
 {
@@ -86,15 +88,12 @@ fall, none of which a window score carries.
 ## Choosing the panel
 
 The panel is the two groups the scan compared plus the twelve Greek gray wolves,
-taken from the Dog10K sample table by breed name.
-
-The rows are selected on breed rather than on genotype. Rows selected by what
-they carry would group by what they carry, so the clustering below would
-reproduce the selection rather than test it.
-
-Whole breeds are used rather than a few animals each, because the variation
-within a breed is part of the result and several breeds depart from the pattern
-one animal at a time.
+taken from the Dog10K sample table by breed name. Rows are selected on breed
+rather than on genotype, since rows selected by what they carry would group by
+what they carry and the clustering below would reproduce the selection rather
+than test it. Whole breeds go in rather than a few animals each, because the
+variation within a breed is part of the result and several breeds depart from
+the pattern one animal at a time.
 
 ## Slicing the locus out of the callset
 
@@ -166,10 +165,9 @@ sample table, so the two are independent.
 
 <Figure caption="SNVs across 400 kb at IGF1 as a matrix, one row per canid and one column per variant, clustered by genotype with size class as the sidebar swatch. The upper cluster is the toy and small breeds and the lower one the giant breeds. Even column widths are what make the shared haplotype a solid block rather than speckle; the lines above the rows tie each column back to its position." src="/img/dog10k-igf1-haplotype.png" />
 
-The panel separates into two clusters that correspond to the size classes.
-
-The block's boundaries fall within the window, so its extent can be read against
-the gene track above it rather than inferred.
+The panel separates into two clusters that correspond to the size classes, and
+the block's boundaries fall within the window, so its extent reads against the
+gene track above it rather than being inferred.
 
 Rows depart from their swatch in both directions: single orange rows sit within
 the giant cluster and single blue rows within the small one. The build script
@@ -224,10 +222,7 @@ numerically as well as read from the figure.
 
 ## References
 
-Sutter, N. B., Bustamante, C. D., Chase, K., et al. (2007).
-[A single IGF1 allele is a major determinant of small size in dogs](https://doi.org/10.1126/science.1137045).
-_Science_, _316_(5821), 112-115.
-
-Meadows, J. R. S., Kidd, J. M., Wang, G.-D., et al. (2023).
-[Genome sequencing of 2000 canids by the Dog10K consortium advances the understanding of demography, genome function and architecture](https://doi.org/10.1186/s13059-023-03023-7).
-_Genome Biology_, _24_(1), 187.
+- Sutter et al. (2007).
+  [A single IGF1 allele is a major determinant of small size in dogs](https://doi.org/10.1126/science.1137045)
+- Meadows et al. (2023).
+  [Genome sequencing of 2000 canids by the Dog10K consortium advances the understanding of demography, genome function and architecture](https://doi.org/10.1186/s13059-023-03023-7)

@@ -524,22 +524,13 @@ on an annotated _FGF4_ intron and each deposited CDS is a single interval.
 
 ## References
 
-Schall, P. Z., and Kidd, J. M. (2025).
-[Integrative genotyping and analysis of canine structural variation using long-read and short-read data](https://doi.org/10.1093/gbe/evaf173).
-_Genome Biology and Evolution_, _17_(10), evaf173.
-
-Parker, H. G., Kukekova, A. V., Akey, D. T., et al. (2007).
-[Breed relationships facilitate fine-mapping studies: a 7.8-kb deletion cosegregates with Collie eye anomaly across multiple dog breeds](https://doi.org/10.1101/gr.6086307).
-_Genome Research_, _17_(11), 1562-1571.
-
-Parker, H. G., VonHoldt, B. M., Quignon, P., et al. (2009).
-[An expressed fgf4 retrogene is associated with breed-defining chondrodysplasia in domestic dogs](https://doi.org/10.1126/science.1173275).
-_Science_, _325_(5943), 995-998.
-
-Brown, E. A., Dickinson, P. J., Mansour, T., et al. (2017).
-[FGF4 retrogene on CFA12 is responsible for chondrodystrophy and intervertebral disc disease in dogs](https://doi.org/10.1073/pnas.1709082114).
-_PNAS_, _114_(43), 11476-11481.
-
-Meadows, J. R. S., Kidd, J. M., Wang, G.-D., et al. (2023).
-[Genome sequencing of 2000 canids by the Dog10K consortium advances the understanding of demography, genome function and architecture](https://doi.org/10.1186/s13059-023-03023-7).
-_Genome Biology_, _24_(1), 187.
+- Schall & Kidd (2025).
+  [Integrative genotyping and analysis of canine structural variation using long-read and short-read data](https://doi.org/10.1093/gbe/evaf173)
+- Parker et al. (2007).
+  [Breed relationships facilitate fine-mapping studies: a 7.8-kb deletion cosegregates with Collie eye anomaly across multiple dog breeds](https://doi.org/10.1101/gr.6086307)
+- Parker et al. (2009).
+  [An expressed fgf4 retrogene is associated with breed-defining chondrodysplasia in domestic dogs](https://doi.org/10.1126/science.1173275)
+- Brown et al. (2017).
+  [FGF4 retrogene on CFA12 is responsible for chondrodystrophy and intervertebral disc disease in dogs](https://doi.org/10.1073/pnas.1709082114)
+- Meadows et al. (2023).
+  [Genome sequencing of 2000 canids by the Dog10K consortium advances the understanding of demography, genome function and architecture](https://doi.org/10.1186/s13059-023-03023-7)

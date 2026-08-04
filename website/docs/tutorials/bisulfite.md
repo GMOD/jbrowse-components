@@ -22,8 +22,8 @@ CHG, and CHH each selectable. No MM/ML tags and no methylation caller.
   [samtools](http://www.htslib.org/)
 - htslib (`bgzip`, `tabix`), and `node` for the [JBrowse CLI](/docs/cli)
 - [MethylDackel](https://github.com/dpryan79/MethylDackel), for the
-  [conversion-rate check](#check-the-conversion-rate-first) and the optional
-  aggregate track
+  [conversion-rate check](#check-the-conversion-rate) and the optional aggregate
+  track
 - UCSC's `bedGraphToBigWig`, for the optional aggregate track only
 
 ## What bisulfite data looks like

@@ -8,19 +8,18 @@ guide_category: Tutorials
 tutorial_category: Population genomics
 ---
 
-**TL;DR:** scale is not the limit people assume. A 22 Mb inversion reads as one
-block, from `plink --r2` output through an
-[`LDTrack`](/docs/config/plinkldtabixadapter). What decides whether you see
-anything is the panel, the allele frequency and the metric, and all three can be
-tested before building a figure. The same inversion also loads as what it is, a
-structural variant genotyped per mosquito, which is a different picture of the
-same thing.
+**TL;DR:** a 22 Mb inversion reads as one block, from `plink --r2` output
+through an [`LDTrack`](/docs/config/plinkldtabixadapter). What decides whether a
+locus shows anything is the panel, the allele frequency floor and the metric,
+all three testable before a figure is built. The same inversion also loads as a
+structural variant genotyped per mosquito, which is the same event drawn a
+different way.
 
 ## Prerequisites
 
-- the figure loads hosted data
-- the [reproduce script](#reproduce-it-end-to-end) needs `plink` (1.9, not
-  plink2), htslib (`bgzip`, `tabix`), `samtools`, `curl`, and `python3`
+- nothing to read the figures, which load hosted data
+- `plink` (1.9, not plink2), htslib (`bgzip`, `tabix`), `samtools`, `curl` and
+  `python3` for the [reproduce script](#reproduce-it-end-to-end)
 
 ## An inversion is one block
 
@@ -36,20 +35,18 @@ The heatmap's block comes out at the published breakpoint coordinates, so its
 edges can be checked against them by eye, and against the karyotype lane below
 it, whose cells are drawn at those same coordinates from a different file.
 
-The Gabon panel is a control, not a second example. That population is not
-inversion-free: 5 of its 69 mosquitoes are heterozygous, and they are the blue
-rows at the bottom of its karyotype lane. What it lacks is enough of them for
-the arrangement to hold the segment together, since the other 64 recombine
-across it freely, so there is nothing to correlate over the 2La span. The panel
-still carries a block at the low-coordinate end of the arm, near the
-voltage-gated sodium channel, which says the display works and the 2La span is
-genuinely uncorrelated rather than unread.
+The Gabon panel is a control rather than a second example. That population is
+not inversion-free: 5 of its 69 mosquitoes are heterozygous, the blue rows at
+the bottom of its karyotype lane. What it lacks is enough of them to hold the
+segment together, since the other 64 recombine across it freely, so there is
+nothing to correlate over the 2La span. It still carries a block at the
+low-coordinate end of the arm, near the voltage-gated sodium channel, which says
+the display works and the span is genuinely uncorrelated rather than unread.
 
-Read that panel as a statement about common variation, which is what it is made
-of. Both files were built with a minor allele frequency floor, and in Gabon the
+Both files were built with a minor allele frequency floor, and in Gabon the
 inverted arrangement sits far below it, so the variants tagging those five
-carriers are not in the file. The claim the empty panel supports is that the
-arrangement is too rare there to structure the common variants around it, not
+carriers are not in the file at all. The empty panel supports the claim that the
+arrangement is too rare there to structure the common variation around it, not
 that no correlated carrier haplotype exists.
 
 ## The rearrangement itself, per mosquito
@@ -123,35 +120,28 @@ text label, leaving the track header as the only place a population name can go.
 ### What is inferred here, and what is not
 
 The inversion is not something this pipeline discovers. 2La is a cytologically
-defined arrangement, both of its breakpoints have been cloned and sequenced
-([Sharakhov et al. 2006](https://doi.org/10.1073/pnas.0509683103)), and a PCR
-across the junctions karyotypes single mosquitoes, checked against polytene
-cytology on field specimens
-([White et al. 2007](https://doi.org/10.4269/ajtmh.2007.76.334)). The
-coordinates the call is drawn at are that published extent.
+defined arrangement whose breakpoints have been cloned and sequenced
+([Sharakhov et al. 2006](https://doi.org/10.1073/pnas.0509683103)), and the
+coordinates the call is drawn at are that published extent. PCR across the
+junctions karyotypes single mosquitoes, checked against polytene cytology on
+field specimens
+([White et al. 2007](https://doi.org/10.4269/ajtmh.2007.76.334)).
 
 What is inferred is each mosquito's karyotype, by scoring the tag SNPs of
 [Love et al. 2019](https://doi.org/10.1534/g3.119.400445), the in-silico method
-MalariaGEN ships for the current Ag3 release. Those tags were ascertained on
-held-out Ag1000G samples and checked against specimens whose karyotypes had been
-read off polytene chromosomes, so the inference has an orthogonal reference to
-be wrong against. The score itself is the mean number of alternate alleles
-across the tags, and it is only worth rounding into a genotype because it comes
-out trimodal with empty space between the peaks. The
-[reproduce script](#reproduce-it-end-to-end) prints that histogram, so the
-property can be checked rather than taken on trust.
-
-The same script prints the karyotype breakdown per population, which is the
-independent check on the heatmaps above: the panel that shows a block is the one
-segregating both arrangements, and the flat panel is the one near-fixed for the
-standard arrangement. If those disagreed, the heatmap figure would be the thing
-to doubt.
+MalariaGEN ships for the current Ag3 release. The score is the mean number of
+alternate alleles across the tags, and rounding it into a genotype is only
+defensible because it comes out trimodal with empty space between the peaks. The
+[reproduce script](#reproduce-it-end-to-end) prints that histogram and the
+karyotype breakdown per population, which is the independent check on the
+heatmaps: the panel that shows a block is the one segregating both arrangements,
+and the flat one is near-fixed for the standard arrangement.
 
 ## Will your locus show up at all?
 
 A blank or washed-out triangle usually means the locus was never going to show.
-Four checks are worth running first, all of them cheap, and the
-[reproduce script](#reproduce-it-end-to-end) prints the numbers for each:
+The [reproduce script](#reproduce-it-end-to-end) prints the numbers behind each
+of these:
 
 - Is there variation left? A sweep that went to fixation leaves almost no common
   variants to correlate. Compare common-variant density at your locus against a
@@ -167,7 +157,7 @@ Four checks are worth running first, all of them cheap, and the
   insecticide-resistance alleles at _Vgsc_ produce no block in this data even
   though the sweep is real.
 
-## Pick the metric before you blame the data
+## Metric and allele-frequency floor
 
 r² and D' disagree about the same data. D' runs higher inside a block but also
 tints the region outside it, while r² collapses to near zero there. Contrast
@@ -197,10 +187,11 @@ npx --yes serve ag1000g_ld_build/jbrowse2
 The numbers it prints are how the panel and the metric were chosen, so another
 locus can be assessed the same way.
 
-Data is Ag1000G phase 2 AR1, whose terms of use were lifted in March 2022. Cite
-the release: Anopheles gambiae 1000 Genomes Consortium, "Genome variation and
-population structure among 1142 mosquitoes of the African malaria vector species
-Anopheles gambiae and Anopheles coluzzii", Genome Research 2020;30:1533-1548.
+The data is Ag1000G phase 2 AR1. MalariaGEN opens its older releases, and phase
+2's terms of use were lifted in March 2022, so the script downloads it without
+registration or a data-access agreement. The current Ag3 release is not open
+access yet, which is why this tutorial builds on phase 2 while taking its
+karyotyping tag SNPs from the Ag3 method.
 
 ## Making an LD track from your own data
 
@@ -224,3 +215,14 @@ and splits it into `--r2-phased` and `--r2-unphased`.
 - [](/docs/user_guides/variant_track)
 - [Variant track configuration](/docs/config_guides/variant_track)
 - [Gallery: variants and populations](/gallery/#variants)
+
+## References
+
+- Anopheles gambiae 1000 Genomes Consortium (2020).
+  [Genome variation and population structure among 1142 mosquitoes of the African malaria vector species Anopheles gambiae and Anopheles coluzzii](https://doi.org/10.1101/gr.262790.120)
+- Love et al. (2019).
+  [In silico karyotyping of chromosomally polymorphic malaria mosquitoes in the Anopheles gambiae complex](https://doi.org/10.1534/g3.119.400445)
+- Sharakhov et al. (2006).
+  [Breakpoint structure reveals the unique origin of an interspecific chromosomal inversion (2La) in the Anopheles gambiae complex](https://doi.org/10.1073/pnas.0509683103)
+- White et al. (2007).
+  [Molecular karyotyping of the 2La inversion in Anopheles gambiae](https://doi.org/10.4269/ajtmh.2007.76.334)

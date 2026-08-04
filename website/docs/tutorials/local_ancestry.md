@@ -310,10 +310,7 @@ plus its index and the genotype slice the second figure uses.
 
 ## References
 
-Meadows, J. R. S., Kidd, J. M., Wang, G.-D., et al. (2023).
-[Genome sequencing of 2000 canids by the Dog10K consortium advances the understanding of demography, genome function and architecture](https://doi.org/10.1186/s13059-023-03023-7).
-_Genome Biology_, _24_(1), 187.
-
-Browning, S. R., Waples, R. K., and Browning, B. L. (2023).
-[Fast, accurate local ancestry inference with FLARE](https://doi.org/10.1016/j.ajhg.2023.02.010).
-_American Journal of Human Genetics_, _110_(2), 326-335.
+- Meadows et al. (2023).
+  [Genome sequencing of 2000 canids by the Dog10K consortium advances the understanding of demography, genome function and architecture](https://doi.org/10.1186/s13059-023-03023-7)
+- Browning et al. (2023).
+  [Fast, accurate local ancestry inference with FLARE](https://doi.org/10.1016/j.ajhg.2023.02.010)

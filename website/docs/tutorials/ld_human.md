@@ -15,9 +15,9 @@ which samples went in.
 
 ## Prerequisites
 
-- the figures load hosted data
-- the [reproduce script](#reproduce-it-end-to-end) needs `bcftools`, htslib
-  (`tabix`), `plink` (1.9, not plink2), and `curl`
+- nothing to read the figures, which load hosted data
+- `bcftools`, htslib (`tabix`), `plink` (1.9, not plink2) and `curl` for the
+  [reproduce script](#reproduce-it-end-to-end)
 
 ## Reading the triangle
 
@@ -42,12 +42,14 @@ its edges.
 
 A slice that begins where the block begins cannot show that it ends, and renders
 as a triangle filling the frame. The reproduce script prints r² against the
-causal variant along the slice, which is how to pick the edges. Note this is the
-file, not the view: zooming out past the end of the file only adds white.
+causal variant along the slice, which is how to pick the edges. The constraint
+is the file rather than the view, so zooming out past the end of the file only
+adds white.
 
 ### Subset the VCF to one panel
 
-Pointing the display at a whole callset is the first thing to get wrong.
+r² is computed across every sample in the file, so a whole callset correlates
+across panels that have no shared history.
 
 <Figure src="/img/ld/lct_pooled_vs_panel.png" caption="The same locus, window and MAF floor twice, differing only in which samples went in. Pooling every panel breaks the block into a mosaic and leaves the recombination curve spiky throughout; one panel resolves it into a single block with the curve flat across it."/>
 
@@ -86,14 +88,20 @@ bash build_lct_ld.sh                  # writes ./lct_ld_build
 The file it writes is genotypes; the display does the r². What the script prints
 is the two choices behind the figure, as `plink --r2` tables: r² against
 rs4988235 along the slice, and mean pairwise r² inside the block for one panel
-against the pooled release. Cite the release: 1000 Genomes Project Consortium,
-"A global reference for human genetic variation", Nature 2015;526:68-74.
+against the pooled release.
 
 ## See also
 
 - [](/docs/tutorials/ld_mosquitoes) for a region too large to compute live, and
   the checks to run before blaming the display
+- [](/docs/tutorials/population_genomics) for the same panel-level contrast as a
+  windowed scan rather than a pairwise matrix
 - [](/docs/user_guides/variant_track)
 - [](/docs/user_guides/gwas_track)
 - [Variant track configuration](/docs/config_guides/variant_track#linkage-disequilibrium-ld-display)
 - [Gallery: variants and populations](/gallery/#variants)
+
+## References
+
+- 1000 Genomes Project Consortium (2015).
+  [A global reference for human genetic variation](https://doi.org/10.1038/nature15393)
