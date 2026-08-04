@@ -26,6 +26,7 @@ jest.mock('@jbrowse/core/util', () => ({
   measureText: (s: string, fontSize = 10) => s.length * fontSize * 0.6,
   max: (arr: number[], d = 0) => (arr.length ? Math.max(...arr) : d),
   getFillProps: (color: string) => ({ fill: color }),
+  getStrokeProps: (color: string) => ({ stroke: color }),
 }))
 jest.mock('mobx', () => ({
   ...jest.requireActual('mobx'),
@@ -105,6 +106,7 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
     showTree: false,
     hierarchy: undefined,
     showLegend: false,
+    showRowSeparators: false,
     colorLegend: [],
     hiddenCategorySet: new Set<string>(),
     ...overrides,
@@ -150,6 +152,26 @@ describe('LinearMultiRowFeatureDisplay renderSvg', () => {
   it('omits the dendrogram when the tree is hidden', async () => {
     const html = renderResult(await renderSvg(makeModel(), {}))
     expect(html).not.toContain('#0008')
+  })
+
+  it('draws a separator on each row boundary when showRowSeparators is set', async () => {
+    const html = renderResult(
+      await renderSvg(makeModel({ showRowSeparators: true }), {}),
+    )
+    // two 50px rows: one line, on the boundary between them, half-pixel offset
+    // so the 1px stroke lands on a device pixel
+    expect(html).toContain('y1="50.5"')
+    expect(html.match(/<line /g)?.length).toBe(1)
+  })
+
+  it('omits separators when rows are below the drawable threshold', async () => {
+    const html = renderResult(
+      await renderSvg(
+        makeModel({ showRowSeparators: true, effectiveRowHeight: 2 }),
+        {},
+      ),
+    )
+    expect(html).not.toContain('<line ')
   })
 
   it('renders the error box instead of the body when model.error is set', async () => {

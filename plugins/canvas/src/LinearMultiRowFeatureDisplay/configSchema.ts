@@ -170,6 +170,25 @@ export default function configSchemaF(pluginManager: PluginManager) {
       },
       /**
        * #slot
+       * Draw a hairline between adjacent rows. Off by default: a painting whose
+       * neighbouring rows differ in color already separates itself, and the line
+       * only earns its pixel where they don't — a run of same-colored rows (an
+       * ancestry painting where most animals are one color, a cohort sorted so
+       * like sits next to like) reads as one block without it, and the row count
+       * can't be recovered by eye.
+       *
+       * Only drawn once rows are at least 4px tall. Below
+       * that the line is as thick as the row it borders, so a dense painting
+       * would be turned into a grid of hairlines with a little color between
+       * them.
+       */
+      showRowSeparators: {
+        type: 'boolean',
+        defaultValue: false,
+        description: 'draw separator lines between rows',
+      },
+      /**
+       * #slot
        * Show the categorical color key (swatch + label per distinct per-feature
        * color). Only appears in per-feature color mode; in per-row palette /
        * sampleColorMap mode the sidebar labels are already the key, so nothing

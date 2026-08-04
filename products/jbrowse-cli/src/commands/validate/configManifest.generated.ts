@@ -2876,6 +2876,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | number)"
         },
         {
+          "name": "showRowSeparators",
+          "type": "(JexlString | boolean)"
+        },
+        {
           "name": "showLegend",
           "type": "(JexlString | boolean)"
         },

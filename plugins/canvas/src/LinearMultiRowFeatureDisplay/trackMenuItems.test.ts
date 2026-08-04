@@ -15,6 +15,8 @@ function makeSelf(
   return {
     showTree: true,
     showLegend: true,
+    showRowSeparators: false,
+    effectiveRowHeight: 14,
     colorLegend: [],
     hiddenCategories: [],
     showBranchLength: true,
@@ -25,6 +27,7 @@ function makeSelf(
     rowHeight: 0,
     setShowTree: () => {},
     setShowLegend: () => {},
+    setShowRowSeparators: () => {},
     toggleCategory: () => {},
     setHiddenCategories: () => {},
     setShowBranchLength: () => {},
@@ -80,8 +83,25 @@ describe('multi-row track menu', () => {
     expect(items.every(i => 'icon' in i && i.icon)).toBe(true)
     expect(labels(subMenuOf(items, 'Show...'))).toEqual([
       'Show sidebar with tree and labels',
+      'Show row separators',
       'Tree branch lengths',
     ])
+  })
+
+  // the toggle stays clickable when rows are too thin to draw a separator on
+  // (taller rows make it appear), so the row height is the only thing that says
+  // why nothing happened
+  it('explains the row separator toggle when rows are below the draw threshold', () => {
+    const sub = (rowHeight: number) =>
+      subMenuOf(
+        buildMultiRowTrackMenuItems(makeSelf({ effectiveRowHeight: rowHeight })),
+        'Show...',
+      ).find(i => 'label' in i && i.label === 'Show row separators')
+
+    expect(sub(2)).toMatchObject({
+      subLabel: 'Needs rows 4px or taller',
+    })
+    expect(sub(14)).not.toHaveProperty('subLabel')
   })
 
   it('keeps the tree controls in one place, not one copy per submenu', () => {

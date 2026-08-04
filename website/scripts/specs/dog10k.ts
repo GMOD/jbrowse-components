@@ -395,6 +395,13 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           // 64 rows. Above the 6px a row label needs, which is the whole reason
           // this figure exists next to the 486-row one below it.
           height: 700,
+          // Rows are haplotypes, two per animal, and most of this painting is
+          // one dog color running edge to edge — so without a line the row
+          // count cannot be read off the image, and neither can which pair of
+          // rows belongs to which name in the sidebar. The clustered figure
+          // below is at ~2.3px a row and deliberately does NOT set this (below
+          // MIN_SEPARATOR_ROW_PX the lines would be the figure).
+          showRowSeparators: true,
         },
       ],
     }),

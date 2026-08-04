@@ -19,6 +19,7 @@ import { MultiRowRendererFactory } from '../rendering/MultiRowRendererFactory.ts
 import MultiRowColorLegend from './MultiRowColorLegend.tsx'
 import MultiRowHoverHighlight from './MultiRowHoverHighlight.tsx'
 import MultiRowIndelGlyphOverlay from './MultiRowIndelGlyphOverlay.tsx'
+import MultiRowSeparatorLines from './MultiRowSeparatorLines.tsx'
 import MultiRowTooltip from './MultiRowTooltip.tsx'
 
 import type { LinearMultiRowFeatureDisplayModel } from '../model.ts'
@@ -39,6 +40,7 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
     effectiveRowHeight,
     sidebarOffset,
     showLegend,
+    showRowSeparators,
     colorLegend,
     hiddenCategorySet,
   } = model
@@ -58,6 +60,27 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
         }}
       />
       <MultiRowIndelGlyphOverlay model={model} />
+      {/* inline rather than portaled through FloatingSvgOverlay: the tree
+          sidebar is a later sibling and its panel is opaque, so drawing the
+          lines here is what stops them from running across the dendrogram */}
+      {showRowSeparators ? (
+        <svg
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: view.trackWidthPx,
+            height,
+            pointerEvents: 'none',
+          }}
+        >
+          <MultiRowSeparatorLines
+            numRows={sources.length}
+            rowHeight={effectiveRowHeight}
+            width={view.trackWidthPx}
+          />
+        </svg>
+      ) : null}
       <MultiRowHoverHighlight model={model} />
       {/* Also the display's doneness signal for capture gates: `sources` is
           derived from fetched features (the partition values), so this subtree

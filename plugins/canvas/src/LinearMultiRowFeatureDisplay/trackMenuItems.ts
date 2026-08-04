@@ -12,6 +12,8 @@ import PaletteIcon from '@mui/icons-material/Palette'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
+import { MIN_SEPARATOR_ROW_PX } from './rendering/rowBand.ts'
+
 import type { LegendEntry } from './rendering/colorLegend.ts'
 import type { MultiRowSource } from './sourcesLogic.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -52,6 +54,8 @@ function rowHeightPreset(rowHeight: number) {
 interface MultiRowMenuSelf extends IStateTreeNode {
   showTree: boolean
   showLegend: boolean
+  showRowSeparators: boolean
+  effectiveRowHeight: number
   colorLegend: LegendEntry[]
   hiddenCategories: readonly string[]
   showBranchLength: boolean
@@ -65,6 +69,7 @@ interface MultiRowMenuSelf extends IStateTreeNode {
   rowHeight: number
   setShowTree: (f: boolean) => void
   setShowLegend: (f: boolean) => void
+  setShowRowSeparators: (f: boolean) => void
   toggleCategory: (label: string) => void
   setHiddenCategories: (labels: string[]) => void
   setShowBranchLength: (f: boolean) => void
@@ -93,6 +98,19 @@ function showMenuItems(self: MultiRowMenuSelf): MenuItem[] {
           }),
         ]
       : []),
+    // stays clickable below the draw threshold (the toggle is a setting, and
+    // taller rows make it appear) but says so, rather than silently doing
+    // nothing on a dense painting
+    checkboxItem(
+      'Show row separators',
+      self.showRowSeparators,
+      () => {
+        self.setShowRowSeparators(!self.showRowSeparators)
+      },
+      self.effectiveRowHeight < MIN_SEPARATOR_ROW_PX
+        ? { subLabel: `Needs rows ${MIN_SEPARATOR_ROW_PX}px or taller` }
+        : undefined,
+    ),
     treeBranchLengthMenuItem(self),
   ]
 }

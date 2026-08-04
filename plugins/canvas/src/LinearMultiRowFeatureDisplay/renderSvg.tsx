@@ -7,6 +7,7 @@ import {
 import { SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 
 import MultiRowColorLegend from './components/MultiRowColorLegend.tsx'
+import MultiRowSeparatorLines from './components/MultiRowSeparatorLines.tsx'
 import { drawMultiRowBlocks } from './rendering/drawMultiRowBlocks.ts'
 import { drawMultiRowIndelGlyphs } from './rendering/drawMultiRowIndelGlyphs.ts'
 
@@ -46,6 +47,7 @@ export interface RenderSvgModel extends SvgExportable {
   // color scheme, which IS the clustering matrix here.
   clusterProvenance?: ClusterProvenance
   showLegend: boolean
+  showRowSeparators: boolean
   colorLegend: LegendEntry[]
   hiddenCategorySet: ReadonlySet<string>
 }
@@ -95,6 +97,15 @@ function MultiRowSvgBody({
           }}
         />
       </SvgClipRect>
+      {/* before the sidebar, matching the live display's stacking: the tree
+          panel paints over the lines rather than the lines over the tree */}
+      {self.showRowSeparators ? (
+        <MultiRowSeparatorLines
+          numRows={self.sources.length}
+          rowHeight={self.effectiveRowHeight}
+          width={canvasWidth}
+        />
+      ) : null}
       <SvgTreeSidebar
         showTree={self.showTree}
         hierarchy={self.hierarchy}
