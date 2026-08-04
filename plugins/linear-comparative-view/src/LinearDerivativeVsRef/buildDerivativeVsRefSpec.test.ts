@@ -143,6 +143,22 @@ describe('buildDerivativeVsRefSpec', () => {
     expect(twoHop.segmentsDisplay.height).toBe(26 * 2 + 30)
   })
 
+  it('caps the label track for a path no one could read', () => {
+    // Segment count has no upper bound upstream: an ngmlr-aligned ONT record in
+    // COLO829 carries 943 SA entries, and one segment per row would ask for a
+    // display tens of thousands of pixels tall.
+    const huge = build({
+      ...CANDIDATE,
+      segments: Array.from({ length: 900 }, (_, i) => ({
+        refName: 'chr1',
+        start: i * 1000,
+        end: i * 1000 + 500,
+        strand: 1,
+      })),
+    })
+    expect(huge.segmentsDisplay.height).toBe(260)
+  })
+
   it('names each label for its reference interval, marking the inverted ones', () => {
     const { segmentsTrack } = build()
     expect(segmentsTrack.adapter.features.map(f => f.name)).toEqual([

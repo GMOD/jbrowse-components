@@ -220,7 +220,13 @@ export function buildDerivativeVsRefSpec(
       // within a few hundred bases of each other, so none of them can share a
       // row. Compact rows are what keeps all of them inside the space the
       // synteny view allows this panel.
-      height: 26 * candidate.segments.length + 30,
+      //
+      // Capped, because segment count is not bounded by anything upstream: a
+      // real ngmlr-aligned ONT record in COLO829 carries 943 SA entries, and a
+      // path built from one would otherwise ask for a display tens of thousands
+      // of pixels tall. Past the cap the track scrolls, which is the right
+      // failure for a path no one can read anyway.
+      height: Math.min(26 * candidate.segments.length + 30, 260),
       configuration: {
         type: 'LinearBasicDisplay',
         displayId: `${segmentsTrackId}-LinearBasicDisplay`,
