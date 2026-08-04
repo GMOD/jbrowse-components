@@ -89,11 +89,25 @@ export const qtlSpecs: ScreenshotSpec[] = [
       // painting fills the chromosome so Tyrp1's position under the peak is
       // legible at a glance
       loc: 'chr4',
-      // no gene track at this whole-chromosome zoom: individual genes aren't
-      // resolvable across 156 Mb (and the track would just hit its
-      // feature-density limit), so the Manhattan peak + haplotype painting carry
-      // the figure
       tracks: [
+        // The gene lane is one gene (reviewer: "add a gene track with the Tyrp1
+        // gene visible, could filter to it"). A whole RefSeq track over 156 Mb
+        // is 180k GTF records that draw as a solid bar and gate on density, so
+        // the jexl filter is what makes the lane possible at all: it leaves a
+        // single labeled glyph, which is the one thing the figure wants from a
+        // gene track — where on chr4 Tyrp1 actually is, in the same x as the
+        // peak above and the haplotype split below. `forceLoad` because the
+        // density gate runs on the region's byte size, before any filter.
+        {
+          trackId: 'mm10_ncbi_refseq',
+          jexlFiltersSetting: ["jexl:get(feature,'name')=='Tyrp1'"],
+          forceLoad: true,
+          // one box per gene: Tyrp1's 17 kb of exon structure is a fifth of a
+          // pixel at 156 kb/px, so an isoform glyph here is a claim the scale
+          // cannot support
+          showOnlyGenes: true,
+          height: 50,
+        },
         {
           trackId: 'bxd_gwas_coatcolor_mm10',
           type: 'LinearManhattanDisplay',
@@ -110,8 +124,8 @@ export const qtlSpecs: ScreenshotSpec[] = [
     }),
     readySelector: '[data-testid="manhattan-display-done"]',
     readyTimeout: 90000,
-    // manhattan(200) + full painting(460) + headers clear crop
-    viewportHeight: 950,
+    // gene lane(50) + manhattan(200) + full painting(460) + headers clear crop
+    viewportHeight: 1000,
     settleMs: 16000,
     annotations: [
       {
