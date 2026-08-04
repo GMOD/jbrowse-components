@@ -59,6 +59,7 @@ COMMANDS
   create               Downloads and installs the latest JBrowse 2 release
   add-assembly         Add an assembly to a JBrowse 2 configuration
   add-track            Add a track to a JBrowse 2 configuration
+  validate             Check a configuration for errors, including ones JBrowse accepts silently
   text-index           Make a text-indexing file for any given track(s)
   admin-server         Start up a small admin server for JBrowse configuration
   upgrade              Upgrades JBrowse 2 to latest version
@@ -370,6 +371,55 @@ $ jbrowse add-track --multiwig a.bw,b.bw,c.bw --load copy --name "Coverage"
 
 # ...or from a sources.json carrying per-row name/color for each BigWig
 $ jbrowse add-track --multiwig sources.json --name "CATlas ATAC"
+```
+
+## jbrowse validate
+
+```
+Check a JBrowse configuration for errors, including the ones JBrowse itself
+accepts silently
+
+Usage: jbrowse validate [config.json] [options]
+
+Options:
+      --json                 Output the findings as JSON instead of text
+
+  -q, --quiet                Only print errors, suppressing warnings and notes
+
+  -h, --help                 Show help
+
+Notes:
+
+A config key JBrowse does not recognize is ignored rather than reported, so a
+misspelled slot leaves the track loading normally with the setting doing
+nothing. That is what this command is mainly for.
+
+Two levels are reported:
+
+  error    JBrowse accepts it and silently does the wrong thing — an unknown
+       slot, a track naming an assembly the config never defines, a
+defaultSession naming a trackId that does not exist, a duplicate
+trackId. Exits 1.
+
+  warning  JBrowse will complain by itself on load, or handles it — a type name
+          the core plugins do not register (expected if one of your plugins
+      registers it), or a legacy key a migration rewrites. Never fails
+ the run.
+
+Types registered by plugins are not known to this command, so they come through
+as warnings rather than errors.
+
+Examples:
+
+# check the config.json in the current directory
+$ jbrowse validate
+
+# check a specific config or saved session
+$ jbrowse validate /path/to/config.json
+$ jbrowse validate mysession.jbrowse
+
+# machine-readable output
+$ jbrowse validate config.json --json
 ```
 
 ## jbrowse text-index

@@ -508,11 +508,10 @@ from an older JBrowse version. **A config key JBrowse does not recognize is
 ignored rather than reported** — the track still appears, so the only symptom is
 that your color, height, or filter does nothing.
 
-The repo carries a checker for exactly this. From a clone of
-[jbrowse-components](https://github.com/GMOD/jbrowse-components):
+The CLI checks for exactly this:
 
 ```bash
-node .claude/skills/jbrowse-authoring/scripts/validate-config.mjs myconfig.json
+jbrowse validate myconfig.json
 ```
 
 ```
@@ -521,8 +520,10 @@ error: tracks[0].assemblyNames: assembly "hg19" is not defined in this config �
 error: defaultSession.views[0].init.tracks[0]: trackId "sample_bem" is not defined in this config
 ```
 
-It reads the config-slot definitions out of JBrowse itself, so it knows every
-track, display, and adapter type and the slots each one accepts. Two levels:
+It checks against the config-slot definitions read out of JBrowse itself, so it
+knows every track, display, and adapter type and the slots each one accepts. It
+does not open your data files, so it works before anything is uploaded. Two
+levels:
 
 - **error** — JBrowse accepts it and silently does the wrong thing: an unknown
   slot, a track pointing at an assembly the config never defines, a
@@ -532,13 +533,10 @@ track, display, and adapter type and the slots each one accepts. Two levels:
   it does not know (which is expected if a plugin registers it), or a legacy key
   a migration rewrites.
 
-Types your plugins register are not known to the checker, so those come through
-as warnings. Add `--json` for machine-readable output; it exits non-zero when
-there are errors, so it can gate a deploy.
-
-The same directory is a [Claude Code
-skill](https://docs.claude.com/en/docs/claude-code/skills) covering how to write
-a config and session from scratch, if you are authoring one with an AI assistant.
+Types your plugins register are not known to it, so those come through as
+warnings. Add `--json` for machine-readable output; it exits non-zero when there
+are errors, so it can gate a deploy. See [](/docs/agents) if an AI assistant is
+writing the config.
 
 ## Behavior and design
 

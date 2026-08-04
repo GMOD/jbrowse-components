@@ -91,6 +91,7 @@
     "jbrowse_jupyter",
     "cli",
     "jbrowse-img",
+    "agents",
     "faq"
   ]
 }
