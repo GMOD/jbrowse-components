@@ -13,30 +13,13 @@ import {
 } from '@jbrowse/core/util/stopToken'
 import { readTabixHeaderLines } from '@jbrowse/core/util/tabix'
 
-import { bedFeatureLocus, featureData, parseNamesFromHeader } from '../util.ts'
+import { featureData, parseNamesFromHeader } from '../util.ts'
 
 import type { BedTabixAdapterConfig } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type { Feature, FileLocation, Region } from '@jbrowse/core/util'
-
-// 0-based column offsets + coordinate conventions derived from the tabix index
-// metadata. `hasEndColumn` is false when the index has a begin but no end
-// column (`-b` only, e.g. LocusZoom GWAS / point data, where end column is 0) —
-// those features are a single position, so callers use end = start + 1.
-function resolveBedColumns(
-  metadata: Awaited<ReturnType<TabixIndexedFile['getMetadata']>>,
-) {
-  const { columnNumbers, coordinateType } = metadata
-  return {
-    colRef: columnNumbers.ref - 1,
-    colStart: columnNumbers.start - 1,
-    colEnd: columnNumbers.end - 1,
-    hasEndColumn: columnNumbers.end > 0,
-    oneBased: coordinateType === '1-based-closed',
-  }
-}
 
 export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdapterConfig> {
   private parser: BED
@@ -48,6 +31,10 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
   public static capabilities = ['getFeatures', 'getRefNames']
 
   setupP?: Promise<Awaited<ReturnType<TabixIndexedFile['getMetadata']>>>
+
+  // undefined when the file declares no column names — parseNamesFromHeader's
+  // answer for a header it can't read names out of
+  private namesP?: Promise<string[] | undefined>
 
   // true once the index metadata has downloaded; gates the status label so
   // pan/zoom re-entry into getMetadata() doesn't re-flash "Downloading index"
@@ -119,7 +106,18 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
         )
   }
 
+  // Memoized: getFeatures needs the names on every query, and reading them goes
+  // to the file's leading blocks — a fetch and a decompress that was being
+  // repeated on every pan and zoom.
   async getNames() {
+    this.namesP ??= this.readNames().catch((e: unknown) => {
+      this.namesP = undefined
+      throw e
+    })
+    return this.namesP
+  }
+
+  private async readNames() {
     const columnNames: string[] = readConfObject(this.config, 'columnNames')
     if (columnNames.length) {
       return columnNames
@@ -135,8 +133,9 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
   public getFeatures(query: Region, opts?: BaseOptions) {
     const { stopToken, statusCallback = () => {} } = opts ?? {}
     return ObservableCreate<Feature>(async observer => {
-      const { colRef, colStart, colEnd, hasEndColumn, oneBased } =
-        resolveBedColumns(await this.getMetadata())
+      // warms the index under its own status label — getLines would otherwise
+      // download it under "Downloading features"
+      await this.getMetadata()
       const names = await this.getNames()
       const scoreColumn = readConfObject(this.config, 'scoreColumn')
       const disableGeneHeuristic = readConfObject(
@@ -147,22 +146,23 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
       checkStopToken(stopToken)
       await withStopTokenSignal(stopToken, signal =>
         downloadStatus('Downloading features', statusCallback, onProgress =>
+          // start/end come from @gmod/tabix rather than being re-derived from
+          // the line: it located the coordinate columns to find these lines at
+          // all, and already applied the index's coordinate offset (-1 for a
+          // 1-based-closed preset) and its no-end-column convention (a single
+          // position becomes start..start+1). refName is likewise the query's
+          // — getLines only calls back for lines whose ref column matches it.
           this.bed.getLines(query.refName, query.start, query.end, {
-            lineCallback: (line, fileOffset) => {
+            lineCallback: (line, fileOffset, start, end) => {
               checkStopTokenThrottled(stopTokenCheck)
               const splitLine = line.split('\t')
               observer.next(
                 new SimpleFeature(
                   featureData({
                     splitLine,
-                    ...bedFeatureLocus({
-                      splitLine,
-                      colRef,
-                      colStart,
-                      colEnd,
-                      oneBased,
-                      hasEndColumn,
-                    }),
+                    refName: query.refName,
+                    start,
+                    end,
                     scoreColumn,
                     parser: this.parser,
                     uniqueId: `${this.id}-${fileOffset}`,
