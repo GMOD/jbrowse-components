@@ -45,7 +45,11 @@ import {
   debugDump,
 } from './screenshot-asserts.ts'
 import { captureEmbeddedToTemp } from './screenshot-embedded.ts'
-import { changedFilesFromGit, selectAffected } from './screenshot-impact.ts'
+import {
+  changedFilesFromGit,
+  selectAffected,
+  selectCover,
+} from './screenshot-impact.ts'
 import {
   CONCURRENCY,
   DEVICE_SCALE_FACTOR,
@@ -54,6 +58,7 @@ import {
   buildPath,
   changedFrom,
   check,
+  cover,
   diffThreshold,
   exact,
   externalPort,
@@ -557,6 +562,24 @@ async function main() {
   if (selected.length === 0) {
     console.error(`No specs match filter: ${filterTokens.join(',')}`)
     process.exit(1)
+  }
+
+  // `--cover` narrows to the smallest set that still puts every declared type on
+  // screen. It answers a different question from --affected: not "which figures
+  // could have moved" but "does every type still launch, paint and settle" — the
+  // half of the corpus's value that does not need 329 renders. Composes with the
+  // others by intersection, like --filter.
+  if (cover) {
+    const { names, uncovered } = selectCover()
+    const before = selected.length
+    selected = selected.filter(s => names.has(s.name))
+    const gap =
+      uncovered.length > 0
+        ? `\n  (${uncovered.length} type(s) only an unresolved spec declares, so no spec here reaches them: ${uncovered.join(', ')})`
+        : ''
+    console.log(
+      `--cover: ${before} -> ${selected.length} spec(s) covering every declared type${gap}`,
+    )
   }
 
   // `--affected` narrows the sweep to specs a change could plausibly have moved

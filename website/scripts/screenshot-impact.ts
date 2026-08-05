@@ -643,6 +643,63 @@ export async function selectAffected(
 
 // Changed files as `git diff <ref>` sees them: committed since <ref> AND
 // uncommitted, plus untracked files. Deliberately reads the WORKING TREE rather
+// The smallest set of specs that still puts every declared type on screen.
+//
+// This exists because `--affected` degrades to "all" on about half of real
+// commits, and honestly so: a change under packages/core can move any figure, so
+// the map cannot narrow it. But "which figures moved" and "is the app still
+// working" are different questions, and only the first one needs 329 renders.
+// Every view, display, adapter and renderer type in the corpus appearing at
+// least once is enough to answer the second — a type that no longer launches,
+// paints or settles fails its assertions here exactly as it would in the sweep.
+//
+// So this is a correctness gate, NOT a staleness check. It cannot tell you a
+// figure went out of date; the unfiltered sweep is still the only thing that
+// does (and is still the oracle for selectAffected above). Measured at 22 specs
+// for 53 of 56 types — ~7% of the corpus.
+//
+// Greedy, and ties break toward a spec whose `?config=` this repo ships, so the
+// gate leans on local test_data rather than on jbrowse.org being up.
+//
+// The three types it cannot reach (GCContentTrack, GCContentAdapter,
+// IndexedFastaAdapter) are declared only by specs whose own type set could not
+// be resolved, which are `unresolved` and therefore excluded from the pool —
+// they are always selected by `--affected` anyway, so nothing is unwatched.
+export function selectCover(): { names: Set<string>; uncovered: string[] } {
+  const fingerprints = buildFingerprints()
+  const local = new Set(
+    specs
+      .filter(s => s.mode === 'url' && !s.url.startsWith('http'))
+      .map(s => s.name),
+  )
+  const remaining = new Set(fingerprints.flatMap(f => [...f.types]))
+  const pool = fingerprints.filter(f => !f.unresolved && f.types.size > 0)
+  const names = new Set<string>()
+  for (;;) {
+    let best: SpecFingerprint | undefined
+    let bestScore = 0
+    for (const f of pool) {
+      if (names.has(f.name)) {
+        continue
+      }
+      const gain = [...f.types].filter(t => remaining.has(t)).length
+      const score = gain * 2 + (local.has(f.name) ? 1 : 0)
+      if (gain > 0 && score > bestScore) {
+        bestScore = score
+        best = f
+      }
+    }
+    if (!best) {
+      break
+    }
+    names.add(best.name)
+    for (const t of best.types) {
+      remaining.delete(t)
+    }
+  }
+  return { names, uncovered: [...remaining].sort() }
+}
+
 // than the index — this repo's worktree is shared between agents, and the
 // question "what should I re-render" is about the files on disk.
 export function changedFilesFromGit(ref: string): string[] {

@@ -43,6 +43,8 @@ const { values } = parseArgs({
     'diff-threshold': { type: 'string' },
     // narrow the run to specs a change could plausibly have moved
     affected: { type: 'boolean', default: false },
+    // the smallest set of specs that still puts every declared type on screen
+    cover: { type: 'boolean', default: false },
     since: { type: 'string' },
     // take the changed-file list from a file (one path per line) instead of
     // asking git — a CI runner already knows the diff of the PR it is building,
@@ -68,8 +70,9 @@ function optNum(name: string, raw: string | undefined) {
   return n
 }
 
-const { headed, filter, exact, force, check, firefox, affected, since } = values
-export { headed, exact, check, firefox, affected, since }
+const { headed, filter, exact, force, check, firefox, affected, cover, since } =
+  values
+export { headed, exact, check, firefox, affected, cover, since }
 // the changed-file list --affected reads instead of asking git
 export const changedFrom = values['changed-from']
 export const filterTokens = parseFilterTokens(filter)
@@ -160,6 +163,11 @@ Options:
       --affected          Only render specs a change since --since could have
                           moved (see screenshot-impact.ts). Narrows; does NOT
                           imply --force, and intersects with --filter
+      --cover             Only render the smallest set of specs that still puts
+                          every declared type on screen (~22 of 329). A
+                          correctness gate, not a staleness check: it proves
+                          every type still launches and paints, and says nothing
+                          about whether a figure is out of date
       --since <ref>       Git ref --affected diffs the working tree against
                           (default: HEAD, i.e. uncommitted work)
       --changed-from <f>  Read --affected's changed-file list from a file (one

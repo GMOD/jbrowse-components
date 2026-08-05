@@ -33,7 +33,26 @@ or `--affected` will not know it changes every capture.
   with a known conservative floor (~45 specs that resolve to no in-repo type are
   always selected). **The unfiltered sweep is its oracle**: a PNG a full regen
   rewrites that `--affected` would not have selected is a bug in the map, not an
-  acceptable miss.
+  acceptable miss. Measured over 60 real commits: 42% select nothing (exit 0, no
+  render), 10% narrow (median 60 specs), and **48% select everything** — honestly
+  so, since a `packages/core` change can move any figure. Plan for that half
+  rather than being surprised by it.
+- **`--cover` answers a different question from `--affected`**: not "which figures
+  moved" but "does every type still launch, paint and settle". It renders the
+  smallest set of specs that still puts every declared type on screen — 22 of 329,
+  a greedy set cover over the same fingerprints. Reach for it before pushing a
+  change under `packages/core`, where `--affected` can only say "all". It proves
+  **nothing** about whether a figure is out of date; only a sweep does.
+- **None of this can be a PR gate, and that is a measurement.** 318 of the 329
+  specs fetch from jbrowse.org, hgdownload or an ENCODE bucket, so a required
+  check built on them fails on somebody else's outage rather than on the change
+  under review — the trap `cross_backend_gate` describes, whose predecessor
+  "published a drift log nobody read". Scoping the cover to specs that touch no
+  remote data leaves 11 specs reaching 6 of 56 types, which is not a gate either.
+  So the sweep runs weekly off the PR path (`.github/workflows/figures.yml`,
+  `workflow_dispatch` for on demand) and its artifact is the list of figures that
+  moved; `--cover` and `--affected` are what you run locally to avoid paying 30
+  minutes to learn that nothing did.
 - **A spec's own `diffThreshold` is a last resort**, and the run says so: a keep
   that only happened because of a raised gate is reported under
   `KEPT BEHIND A RAISED diffThreshold`, because a deliberate recolor of one bar

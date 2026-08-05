@@ -1,0 +1,88 @@
+name: Figures
+
+# The weekly sweep of the website's 329 figure specs.
+#
+# SCHEDULED, NOT A PR GATE, and that is a measurement rather than a preference:
+# 318 of the 329 specs fetch from jbrowse.org, hgdownload or an ENCODE bucket, so
+# a required check built on them would fail on somebody else's outage instead of
+# on the change under review. That is the same trap the cross-backend gate's
+# comment describes — the version of it that ran continue-on-error over
+# everything "published a drift log nobody read" — so this does not pretend to be
+# a gate. It is the periodic answer to a question nothing else asks.
+#
+# The question: which committed figures no longer match the app? The generator
+# only rewrites a PNG whose capture actually changed, so the list of files this
+# job leaves modified IS the answer, and the artifact is that list. Two
+# regressions found by running this by hand once (an MST error banner over both
+# dotplot import forms, and a lost side-by-side layout) had been published for
+# weeks with every other check green, because a figure that goes wrong still
+# renders, still passes, and still looks like a figure.
+#
+# It is also the oracle for `--affected` (see website/scripts/screenshot-impact.ts):
+# a PNG this rewrites that `--affected` would not have selected is a bug in that
+# map. The artifact is what you diff to find out.
+#
+# Weekly, not nightly: ~30 min of runner time, and figures do not rot faster than
+# that. Run it on demand with the Actions "Run workflow" button after a change
+# you expect to move things.
+
+on:
+  schedule:
+    # Mondays 06:00 UTC — a full week of merges, sitting in the artifact before
+    # anyone starts the week's work
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  sweep:
+    name: Weekly figure sweep
+    runs-on: ubuntu-latest
+    # The sweep itself is ~30 min; the ceiling is for a spec whose remote host
+    # hangs rather than refuses, which would otherwise burn the default 6 hours.
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: Build jbrowse-web
+        uses: ./.github/actions/build-jbrowse-web
+      # The generator shells out to ImageMagick and pngquant for the diff gate
+      # and the optimizer; without them every capture would ship unquantized and
+      # the content-stable gate could not run at all.
+      - name: Install ImageMagick and pngquant
+        run: sudo apt-get update && sudo apt-get -y install imagemagick pngquant
+      # Fails the run when a SPEC fails — a view that would not launch, a display
+      # that never painted, an error banner in the frame. A figure that merely
+      # moved is not a failure; it is the artifact below.
+      - name: Sweep
+        run: node scripts/generate-screenshots.ts
+        working-directory: website
+      # What the app changed under the figures, as files. `git status` names them
+      # and the PNGs themselves are the evidence, so a reviewer can look rather
+      # than re-render.
+      - name: Collect what moved
+        if: always()
+        run: |
+          git status --porcelain website/static/img products/jbrowse-img/img \
+            | tee /tmp/moved.txt
+          echo "$(grep -c . /tmp/moved.txt) figure(s) moved" >> "$GITHUB_STEP_SUMMARY"
+          sed 's/^/    /' /tmp/moved.txt >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload the figures that moved
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: figures-that-moved
+          path: |
+            website/static/img
+            products/jbrowse-img/img
+            website/debug-screenshots
+          retention-days: 14
+          if-no-files-found: ignore
