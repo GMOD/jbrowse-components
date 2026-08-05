@@ -1,0 +1,16 @@
+---
+import AScalebarNotARuler from '../examples/AScalebarNotARuler.tsx'
+import AScalebarNotARulerCode from '../examples/AScalebarNotARuler.tsx?raw'
+import { getPage, section } from '../examples.ts'
+import Layout from '../layouts/ExampleLayout.astro'
+import Section from '../layouts/ExampleSection.astro'
+
+const page = getPage('a-scalebar-not-a-ruler')
+const sec = section(page, 'a-scalebar-not-a-ruler')
+---
+
+<Layout page={page}>
+  <Section {...sec} code={AScalebarNotARulerCode}>
+    <AScalebarNotARuler client:only="react" />
+  </Section>
+</Layout>

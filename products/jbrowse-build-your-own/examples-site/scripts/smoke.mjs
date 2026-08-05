@@ -38,6 +38,7 @@ const MUI_BUDGET = {
   'a-stack-of-tracks': 3,
   'bring-your-own-overlays': 0,
   'add-the-chrome-you-want': 0,
+  'a-scalebar-not-a-ruler': 0,
   'drive-it-from-your-app': 0,
   'your-own-feature-details': 0,
   'run-it-in-a-worker': 0,

@@ -64,6 +64,16 @@ export const pages: ExamplePage[] = [
     ],
   },
   {
+    slug: 'a-scalebar-not-a-ruler',
+    title: 'A scalebar, not a ruler',
+    description:
+      'Labelled ticks, gridlines behind the data, region names that stay on screen while you pan, and drag across it to zoom.',
+    group: 'Making it yours',
+    sections: [
+      { slug: 'a-scalebar-not-a-ruler', title: 'Ticks, names, drag to zoom' },
+    ],
+  },
+  {
     slug: 'drive-it-from-your-app',
     title: 'Drive it from your app',
     description:
