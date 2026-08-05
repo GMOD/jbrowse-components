@@ -112,6 +112,8 @@ reuses the alignments ones) offers only the rows it lists.
 | GWASTrack | [](/docs/config/linearmanhattandisplay) | [`scatterPointSize`](/docs/config/linearmanhattandisplay/#slot-scatterpointsize) |
 | VariantTrack | [](/docs/config/linearpairedarcdisplay) | [`lineWidth`](/docs/config/linearpairedarcdisplay/#slot-linewidth) |
 | VariantTrack | [](/docs/config/linearvariantdisplay) | [`displayDirectionalChevrons`](/docs/config/linearvariantdisplay/#slot-displaydirectionalchevrons), [`displayMode`](/docs/config/linearvariantdisplay/#slot-displaymode), [`heightMode`](/docs/config/linearvariantdisplay/#slot-heightmode), [`subfeatureLabels`](/docs/config/linearvariantdisplay/#slot-subfeaturelabels) |
+| QuantitativeTrack | [](/docs/config/linearwiggledisplay) | [`lineWidth`](/docs/config/linearwiggledisplay/#slot-linewidth), [`scatterPointSize`](/docs/config/linearwiggledisplay/#slot-scatterpointsize) |
+| MultiQuantitativeTrack | [](/docs/config/multilinearwiggledisplay) | [`lineWidth`](/docs/config/multilinearwiggledisplay/#slot-linewidth), [`scatterPointSize`](/docs/config/multilinearwiggledisplay/#slot-scatterpointsize) |
 
 <!-- PROMOTABLE_SLOTS END -->
 
