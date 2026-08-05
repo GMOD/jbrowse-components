@@ -93,28 +93,12 @@ function isSubSchema(prop) {
   return Boolean(model?.properties && model.name?.endsWith('ConfigurationSchema'))
 }
 
-// normalizeSnapshot lets an adapter accept keys its schema never declares — the
-// \`uri\` shorthand being the one everybody uses. Those are legal input, so the
-// validator must not flag them. An arbitrary normalizeSnapshot can't be
-// enumerated, so probe it instead. The candidate list is every key any
-// normalizer in the repo reads:
-//
-//   grep -rhoE '\\bsnap\\.[a-zA-Z][a-zA-Z0-9]*' plugins/*/src packages/*/src | sort -u
-//
-// Keep the trailing [a-zA-Z0-9]* — without it the match stops at the first
-// digit and bed1/bed2 read as a nonexistent "bed". Re-run when adding a
-// normalizer that reads a new key, or this list quietly stops covering it and
-// the validator starts crying wolf. A key listed here that no adapter uses
-// costs nothing: the probe below just never reports it.
-const SHORTHAND_PROBES = [
-  'uri',
-  'baseUri',
-  'csi',
-  'bed1',
-  'bed2',
-  'chromSizes',
-  'localPath',
-]
+// A snapshot normalizer lets an adapter accept keys its schema never declares —
+// the \`uri\` shorthand being the one everybody uses. Those are legal input, so
+// the validator must not flag them. An arbitrary normalizer can't be
+// enumerated, so probe it instead, with the candidate keys SHORTHAND_PROBES
+// supplies (derived from source by the outer script; see collectShorthandProbes).
+const SHORTHAND_PROBES = __SHORTHAND_PROBES__
 
 // An adapter can put its normalizer in either of two places, and only one of
 // them is \`normalizeSnapshot\` on the AdapterType. The other is the
@@ -321,8 +305,84 @@ console.log(JSON.stringify({
 }))
 `
 
+// Every key an ADAPTER's snapshot normalizer reads, which is the candidate set
+// the probe inside the bundle tries against each adapter. Derived rather than
+// hand-listed: the list used to be a literal with a comment telling the next
+// person to re-run this grep, and it went stale exactly as the comment feared —
+// `nhUri` (MafTabixAdapter's Newick sidecar, used by our own documented ce11
+// example) was missing, so `jbrowse validate` called it an unknown slot.
+//
+// Scoped to adapter config schemas on two counts, because both matter:
+//   - `configSchema*.ts` only. A `snap.x` elsewhere is some other kind of
+//     snapshot processing, and the file glob is complete — every adapter
+//     normalizer in the repo lives in one of these (the sole exception,
+//     AdapterType.ts, is the base class that calls them).
+//   - `#config <Name>Adapter` only. Track and display schemas run normalizers
+//     too, for legacy-key migrations (`color`, `labels`, `renderer`, …), and
+//     those keys are not adapter shorthands. Including them would widen the
+//     "retry the leftovers together" fallback below, which accepts every
+//     remaining candidate at once when it fires.
+//
+// Keep the trailing [a-zA-Z0-9]* in the pattern — without it the match stops at
+// the first digit and bed1/bed2 read as a nonexistent "bed".
+function collectShorthandProbes() {
+  const files: string[] = []
+  const walk = (dir: string) => {
+    for (const e of readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, e.name)
+      if (e.isDirectory()) {
+        if (!['node_modules', 'dist', 'esm', 'cjs', 'build'].includes(e.name)) {
+          walk(full)
+        }
+      } else if (
+        /^configSchema.*\.ts$/.test(e.name) &&
+        !e.name.includes('.test.')
+      ) {
+        files.push(full)
+      }
+    }
+  }
+  for (const group of ['plugins', 'packages']) {
+    walk(path.join(REPO_ROOT, group))
+  }
+  const keys = new Set<string>()
+  for (const file of files) {
+    const text = readFileSync(file, 'utf8')
+    if (!/^\s*\*\s*#config\s+\w*Adapter\b/m.test(text)) {
+      continue
+    }
+    for (const m of text.matchAll(/\bsnap\.([a-zA-Z][a-zA-Z0-9]*)/g)) {
+      keys.add(m[1]!)
+    }
+  }
+  // `type` is on every snapshot and is what the probe holds constant, so it is
+  // never a shorthand; dropping it here keeps it out of the leftovers retry.
+  keys.delete('type')
+  if (!keys.has('uri')) {
+    throw new Error(
+      'collectShorthandProbes found no `uri` — the scan is not reaching the adapter schemas',
+    )
+  }
+  // `uri` and its `baseUri` companion first, the rest alphabetical. Probe order
+  // is the order each adapter's `shorthandKeys` comes out in, so a stable one
+  // that leads with the common pair keeps the manifest diff to real changes
+  // rather than churning every adapter whenever a key is added.
+  const lead = ['uri', 'baseUri'].filter(k => keys.has(k))
+  for (const k of lead) {
+    keys.delete(k)
+  }
+  return [...lead, ...[...keys].sort()]
+}
+
 const built = esbuild.buildSync({
-  stdin: { contents: ENTRY, resolveDir: RESOLVE_DIR, loader: 'ts' },
+  stdin: {
+    contents: ENTRY.replace(
+      '__SHORTHAND_PROBES__',
+      JSON.stringify(collectShorthandProbes()),
+    ),
+    resolveDir: RESOLVE_DIR,
+    loader: 'ts',
+  },
   bundle: true,
   platform: 'node',
   format: 'esm',

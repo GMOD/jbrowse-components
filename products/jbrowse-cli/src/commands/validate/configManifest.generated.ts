@@ -1102,7 +1102,8 @@ export const configManifest: ConfigManifest = {
       "shorthandKeys": [
         "uri",
         "baseUri",
-        "csi"
+        "csi",
+        "nhUri"
       ]
     },
     "HicAdapter": {
@@ -1345,11 +1346,11 @@ export const configManifest: ConfigManifest = {
       "shorthandKeys": [
         "uri",
         "baseUri",
-        "csi",
         "bed1",
         "bed2",
         "chromSizes",
-        "localPath"
+        "csi",
+        "nhUri"
       ]
     },
     "MCScanBlocksAdapter": {
@@ -1406,11 +1407,11 @@ export const configManifest: ConfigManifest = {
       "shorthandKeys": [
         "uri",
         "baseUri",
-        "csi",
         "bed1",
         "bed2",
         "chromSizes",
-        "localPath"
+        "csi",
+        "nhUri"
       ]
     },
     "MashMapAdapter": {
