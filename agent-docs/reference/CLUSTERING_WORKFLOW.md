@@ -81,9 +81,14 @@ name, then binned into columns.
 ### Variants phased mode (`getPhasedGenotypeMatrix.ts`)
 
 `renderingMode === 'phased'`: one row per haplotype per sample (e.g. `HG001
-HP0`, `HG001 HP1`). Values are allele indices in `Int16Array`. Dialog expands
-sources to haplotypes via `expandSourcesToHaplotypes()` before calling
-`setLayoutAndPendingClusterTree`.
+HP0`, `HG001 HP1`). Values are allele indices in `Int16Array`.
+
+The dialog commits a finished run through one `applyOrder(order)` callback,
+which calls `applyClusterOrder` (`plugins/variants/src/shared/`) and hands the
+result to `model.setLayout`. Haplotype expansion is inside that helper — it
+calls `expandSourcesToHaplotypes` itself off `renderingMode` / `sampleInfo` —
+rather than at the call site, so the phased and unphased paths commit
+identically and the dialog holds no mode-specific branch.
 
 ---
 
