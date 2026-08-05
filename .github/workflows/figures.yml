@@ -65,24 +65,36 @@ jobs:
       - name: Sweep
         run: node scripts/generate-screenshots.ts
         working-directory: website
-      # What the app changed under the figures, as files. `git status` names them
-      # and the PNGs themselves are the evidence, so a reviewer can look rather
-      # than re-render.
+      # What the app changed under the figures, as files. The generator only
+      # rewrites a PNG whose capture actually changed, so `git status` names
+      # exactly those and the PNGs themselves are the evidence — a reviewer can
+      # look instead of re-rendering.
+      #
+      # Copied into a staging dir rather than uploaded in place: static/img is
+      # 421 files and 64 MB, and an artifact called "figures that moved" that
+      # ships all of them every week (including the weeks nothing moved) is not
+      # the answer to the question. Paths are kept so each file still says which
+      # figure it is.
       - name: Collect what moved
         if: always()
         run: |
           git status --porcelain website/static/img products/jbrowse-img/img \
-            | tee /tmp/moved.txt
-          echo "$(grep -c . /tmp/moved.txt) figure(s) moved" >> "$GITHUB_STEP_SUMMARY"
-          sed 's/^/    /' /tmp/moved.txt >> "$GITHUB_STEP_SUMMARY"
+            > /tmp/moved.txt
+          cut -c4- /tmp/moved.txt | while read -r f; do
+            mkdir -p "/tmp/moved/$(dirname "$f")"
+            cp "$f" "/tmp/moved/$f"
+          done
+          {
+            echo "$(grep -c . /tmp/moved.txt || true) figure(s) moved"
+            sed 's/^/    /' /tmp/moved.txt
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Upload the figures that moved
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: figures-that-moved
           path: |
-            website/static/img
-            products/jbrowse-img/img
+            /tmp/moved
             website/debug-screenshots
           retention-days: 14
           if-no-files-found: ignore
