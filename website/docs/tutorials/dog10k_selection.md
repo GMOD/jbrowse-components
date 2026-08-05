@@ -176,11 +176,17 @@ and the haplotype runs 40 kb past it upstream and 44 kb past it downstream.
 
 ## Reading it
 
-<Figure caption="SNVs across 220 kb at IGF1 as a matrix, one row per canid and one column per variant, clustered by genotype with size class as the sidebar swatch. The upper cluster is the toy and small breeds and the lower one the giants; the wolves are the red run between them. Even column widths make the shared haplotype a block rather than speckle; the lines above tie each column back to its position." src="/img/dog10k-igf1-haplotype.png" />
+<Figure caption="SNVs across 220 kb at IGF1 as a matrix, one row per canid and one column per variant, clustered by genotype with size class as the sidebar swatch, under per-site Fst between the same two size panels. The upper cluster is the toy and small breeds and the lower one the giants; the wolves are the red run between them. Even column widths make the shared haplotype a block rather than speckle; the lines above tie each column back to its position." src="/img/dog10k-igf1-haplotype.png" />
 
 The panel separates into two clusters that correspond to the size classes, and
 the block's boundaries fall within the window, so its extent reads against the
 gene track above it rather than being inferred.
+
+The lane between them says which columns are doing the work. It is the same
+Hudson Fst as the genome scan, between the same two panels, but computed one
+site at a time over this VCF rather than in 200 kb windows, so each point is one
+column of the matrix below. The differentiated sites are a run rather than a
+scatter, and the run is the block the clustering found.
 
 Rows depart from their swatch in both directions: single orange rows sit within
 the giant cluster and single blue rows within the small one. The build script
@@ -220,9 +226,10 @@ labelling.
 
 [`build_dog10k_igf1.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_igf1.sh)
 derives the same panels plus the metadata TSV, slices the _IGF1_ window out of
-the callset, and reports the alt-allele dosage per size class over the sites
-inside the gene that separate the two dog classes, so the split can be checked
-numerically as well as read from the figure.
+the callset, scores every site in it with the same estimator the scan uses, and
+reports the alt-allele dosage per size class over the sites inside the gene that
+separate the two dog classes, so the split can be checked numerically as well as
+read from the figure.
 
 ## See also
 

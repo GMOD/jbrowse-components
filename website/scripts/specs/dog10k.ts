@@ -1488,6 +1488,10 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           trackId: 'dog10k_igf1_fst',
           type: 'LinearManhattanDisplay',
           height: 150,
+          scatterPointSize: 4,
+          // the same 0-0.8 axis as the genome-wide scan on the page above, so a
+          // reader moving between them is reading one scale
+          ...FST_AXIS,
         },
         {
           trackId: 'dog10k_igf1_haplotype',
@@ -1505,7 +1509,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     readySelector: '[data-testid="tree_sidebar_dendrogram"]',
     readyTimeout: 120000,
     settleMs: 5000,
-    // gene track, the 760px matrix, their headers, and the two keys
-    viewportHeight: 1080,
+    // gene track, the Fst lane, the 760px matrix, their headers and the keys
+    viewportHeight: 1263,
   },
 ]

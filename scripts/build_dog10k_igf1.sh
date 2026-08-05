@@ -18,6 +18,7 @@
 set -euo pipefail
 
 OUTDIR="${1:-dog10k_igf1_build}"
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SHARE=https://kiddlabshare.med.umich.edu/dog10K
 SNVS=$SHARE/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz
 
@@ -85,6 +86,17 @@ tabix -f -p vcf dog10k_igf1.vcf.gz
 
 echo
 echo "Sites kept: $(bcftools view -H dog10k_igf1.vcf.gz | wc -l)"
+
+# ── Fst per site ────────────────────────────────────────────────────────────
+# The same Hudson estimator build_dog10k_size_fst.sh scans the genome with, one
+# site at a time over the slice above rather than in 200 kb windows: that scan's
+# bin is wider than this whole window, so it says nothing inside it. Reading it
+# off the same VCF the matrix draws is what makes each point one column of the
+# matrix.
+python3 "$HERE/igf1_site_fst.py" \
+  dog10k_igf1.vcf.gz dog10k_igf1_samples.tsv dog10k_igf1_fst.bed
+bgzip -f dog10k_igf1_fst.bed
+tabix -f -p bed dog10k_igf1_fst.bed.gz
 
 # ── Check it against the numbers ────────────────────────────────────────────
 # Report the quantity the figure shows: per size class, the alt-allele dosage
@@ -160,5 +172,6 @@ for size, group in by_size.items():
 PY
 
 echo
-echo "Wrote $(pwd)/dog10k_igf1.vcf.gz (plus its .tbi) and"
+echo "Wrote $(pwd)/dog10k_igf1.vcf.gz (plus its .tbi),"
+echo "      $(pwd)/dog10k_igf1_fst.bed.gz (plus its .tbi) and"
 echo "      $(pwd)/dog10k_igf1_samples.tsv"
