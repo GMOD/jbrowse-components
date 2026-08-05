@@ -1,0 +1,34 @@
+{
+  "a-stack-of-tracks": {
+    "chunks": 221,
+    "gzipKb": 526
+  },
+  "add-the-chrome-you-want": {
+    "chunks": 238,
+    "gzipKb": 548
+  },
+  "bring-your-own-overlays": {
+    "chunks": 238,
+    "gzipKb": 547
+  },
+  "drive-it-from-your-app": {
+    "chunks": 238,
+    "gzipKb": 548
+  },
+  "one-track": {
+    "chunks": 219,
+    "gzipKb": 523
+  },
+  "pan-and-zoom": {
+    "chunks": 220,
+    "gzipKb": 525
+  },
+  "run-it-in-a-worker": {
+    "chunks": 238,
+    "gzipKb": 547
+  },
+  "your-own-feature-details": {
+    "chunks": 238,
+    "gzipKb": 547
+  }
+}

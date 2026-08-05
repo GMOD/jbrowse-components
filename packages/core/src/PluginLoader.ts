@@ -1,4 +1,4 @@
-import ReExports from './ReExports/index.ts'
+import { setReExportRegistry } from './ReExports/registry.ts'
 import {
   isCJSPluginDefinition,
   isESMPluginDefinition,
@@ -236,11 +236,37 @@ export default class PluginLoader {
     return plugin.default
   }
 
+  private reExportTarget: WindowOrWorkerGlobalScope | undefined
+
+  /**
+   * Ask for the runtime ABI (`JBrowseExports`) to be published on `target`
+   * before any plugin bundle is evaluated. Records the target; the registry
+   * itself is fetched in `loadSettled` below.
+   *
+   * The split is the point. Every product calls this at startup, synchronously,
+   * whether or not the config names a plugin — so importing the registry here
+   * put it in every host's first paint. It is a ~126 KB gzipped module (see
+   * `ReExports/registry.ts` for why it cannot shrink) that only a runtime plugin
+   * can use, and loading one is async anyway.
+   */
   installGlobalReExports(target: WindowOrWorkerGlobalScope) {
+    this.reExportTarget = target
+    return this
+  }
+
+  private async publishReExports() {
+    const target = this.reExportTarget
+    if (!target) {
+      return
+    }
+    const { default: ReExports } = await import('./ReExports/index.ts')
     ;(target as unknown as Record<string, unknown>).JBrowseExports = {
       ...ReExports,
     }
-    return this
+    // the synchronous half: `pluginManager.jbrequire(name)` is what a CJS
+    // plugin calls, and it cannot await
+    setReExportRegistry(ReExports)
+    this.reExportTarget = undefined
   }
 
   /**
@@ -260,6 +286,9 @@ export default class PluginLoader {
    * fail renders with a much worse message) keep using `load`.
    */
   async loadSettled(baseUri?: string) {
+    // before the first plugin script evaluates — a UMD bundle reads
+    // `JBrowseExports` off the global at module scope
+    await this.publishReExports()
     const results = await Promise.allSettled(
       this.definitions.map(async definition => ({
         plugin: await this.loadPlugin(definition, baseUri),

@@ -1867,6 +1867,9 @@ importers:
       '@jbrowse/browser-test-utils':
         specifier: workspace:*
         version: link:../../../packages/browser-test-utils
+      es-module-lexer:
+        specifier: ^2.3.1
+        version: 2.3.1
       typescript:
         specifier: ^6.0.3
         version: 6.0.3

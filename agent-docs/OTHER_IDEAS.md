@@ -1922,6 +1922,17 @@ unreachable for anyone rendering a stock display, no matter how many providers
 they install. The build-your-own site says so plainly under "What you do not get
 rid of"; that is honesty, not a solution.
 
+**Scope correction (2026-08-05):** a `makeStyles` that never reaches MUI would
+not on its own get Material UI out of an embedded host's bundle, because
+`makeStyles` was never the biggest edge into it. Three static pins from
+eagerly-evaluated modules were, worth 144 KB gzipped on the build-your-own
+site's sparsest page, and they are now cut —
+[reference/EAGER_BUNDLE.md](reference/EAGER_BUNDLE.md) has the measurements and
+what remains. Read that before costing this idea: the ~38 registration-time
+modules importing the `@jbrowse/core/ui` barrel for menu-item *descriptor*
+helpers are a cheaper and larger win than 269 `makeStyles` call sites, and they
+are the reason most of MUI is still eager.
+
 The fix, if it is worth it, is a theme-free `makeStyles` — or a
 `usePalette()`-backed styling helper — that stock display components are
 *required* to use. It would also close the census gap noted in DISPLAYCHROME.md

@@ -34,7 +34,7 @@ view as far as a notch of a Chrome one.
   default when the browser is one element in a long document, where a wheel that
   silently swallowed the page scroll would trap the reader.
 
-**Read it off the view rather than keeping your own copy.** Some displays scroll
+Read it off the view rather than keeping your own copy. Some displays scroll
 vertically inside themselves — an alignments pileup is the one you will hit
 first — and their own wheel handler consults the same `view.scrollZoom` to work
 out whether the plain wheel is already spoken for. A private `useState` that

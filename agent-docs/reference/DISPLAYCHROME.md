@@ -397,7 +397,9 @@ census can only see a tooltip that a headless hover happened to raise.
 
 **Reach vs weight.** Both providers are *reach*: they redirect what stock
 displays render, but `DisplayChrome`/`TrackControl` still reference MUI, so it
-stays in the bundle. *Weight* is only available to code writing its own display
+stays in the bundle. What the *host* pays either way — and the three pins that
+were making it pay much more than the chrome — is
+[EAGER_BUNDLE.md](EAGER_BUNDLE.md). *Weight* is only available to code writing its own display
 component — `DisplayChromeBase` + a `TrackControlComponent` of its own import no
 toolkit at all. `pnpm measure-chrome-bundle` measures the first half of that and
 CI re-checks it. The weight half is blocked on `makeStyles` importing `useTheme`

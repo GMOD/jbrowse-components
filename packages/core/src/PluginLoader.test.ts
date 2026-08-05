@@ -340,3 +340,77 @@ describe('dedupePlugins', () => {
     expect(dedupePlugins(plugins)).toHaveLength(2)
   })
 })
+
+// The runtime ABI moved behind a dynamic import so that a host loading no
+// runtime plugin doesn't pay for it (~126 KB gzipped, see
+// ReExports/registry.ts). That makes *when* it is published a contract rather
+// than a consequence of a static import, and these are its two halves: a UMD
+// bundle reads `JBrowseExports` off the global at module scope, and a CJS/ESM
+// plugin's `install()` calls `pluginManager.jbrequire(name)` synchronously.
+// Both must be satisfied by the time any plugin script runs.
+describe('runtime re-export ABI', () => {
+  it('publishes JBrowseExports on the target before loading plugins', async () => {
+    const target = {} as WindowOrWorkerGlobalScope & { JBrowseExports?: object }
+    await new PluginLoader([]).installGlobalReExports(target).load()
+    expect(target.JBrowseExports).toBeDefined()
+    // one entry from each of the two barrel shapes the registry serves
+    expect(target.JBrowseExports).toHaveProperty('@jbrowse/core/util')
+    expect(target.JBrowseExports).toHaveProperty('react')
+  })
+
+  // in its own module registry, so the assertion is that *this* load populated
+  // it — the registry is module-level state, and reusing the one an earlier
+  // test filled would let this pass with the wiring removed
+  it('makes the synchronous jbrequire path resolve once a load has run', async () => {
+    jest.resetModules()
+    const { default: Loader } = await import('./PluginLoader.ts')
+    const { default: Manager } = await import('./PluginManager.ts')
+    expect(() => new Manager([]).jbrequire('@jbrowse/core/util')).toThrow(
+      /No jbrequire re-export defined/,
+    )
+    await new Loader([])
+      .installGlobalReExports({} as WindowOrWorkerGlobalScope)
+      .load()
+    expect(new Manager([]).jbrequire('@jbrowse/core/util')).toHaveProperty(
+      'getSession',
+    )
+  })
+
+  it('leaves the target alone until a load actually happens', () => {
+    const target = {} as WindowOrWorkerGlobalScope & { JBrowseExports?: object }
+    new PluginLoader([]).installGlobalReExports(target)
+    expect(target.JBrowseExports).toBeUndefined()
+  })
+})
+
+// End-to-end over the real fixture the no-build-plugin guide is generated from
+// (test_data/no_build_plugin/esmplugin.js): its `install()` calls `jbrequire`
+// five times at the top, so this fails outright if the registry is not
+// published by the time a plugin runs. That is the half of the ABI a unit test
+// on the loader alone cannot see, and the reason the registry's dynamic import
+// lives in `loadSettled` rather than anywhere later.
+test('a real no-build plugin installs through jbrequire', async () => {
+  jest.resetModules()
+  const { default: Loader } = await import('./PluginLoader.ts')
+  const { default: Manager } = await import('./PluginManager.ts')
+  const records = await new Loader(
+    [{ esmUrl: 'https://example.com/esmplugin.js' }],
+    {
+      fetchESM: () => import('../../../test_data/no_build_plugin/esmplugin.js'),
+    },
+  )
+    .installGlobalReExports({} as WindowOrWorkerGlobalScope)
+    .load()
+  // the shape every product builds: the loader returns the class, the manager
+  // takes an instance (createPluginManager.ts's asPluginRecord)
+  const pluginManager = new Manager(
+    records.map(({ plugin: P, definition }) => ({
+      plugin: new P(),
+      definition,
+    })),
+  ).createPluggableElements()
+  pluginManager.configure()
+  expect(pluginManager.getWidgetType('CiteWidget').heading).toBe(
+    'Cite this JBrowse session',
+  )
+})

@@ -47,7 +47,7 @@ trading parse time for postMessage time.
 
 The consequence to plan for is plugins. The worker is a separate module graph
 with its own plugin manager, so anything that adds an adapter or a renderer has
-to be registered on **both** sides — it is not enough to have passed it to
+to be registered on both sides — it is not enough to have passed it to
 `createViewState`.
 
 ## Is it worth it for one small track?

@@ -11,6 +11,11 @@ import { componentLabel, mainMaxWidth } from '../siteMeta.ts'
 // astro.config.mjs -- and because it is a typed JSON import, a renamed field
 // fails `astro check` instead of rendering "undefined KB".
 import bundle from '~repo/scripts/chromeBundleSizes.json'
+// Same rule, wider question: what a page here downloads before it runs, written
+// by `pnpm measure-eager-bundle` and re-checked by `pnpm smoke`. The two are not
+// alternatives -- the file above is the chrome layer bundled on its own, this
+// one is the whole engine as these pages actually ship it.
+import eager from '../../eagerBundleSizes.json'
 
 // The engine call, spelled out. Every example page repeats this rather than
 // importing it from somewhere in this site, so each page's source is complete
@@ -95,6 +100,17 @@ view.setInit({
       which builds both entry points and writes the result to a committed file
       this page reads. CI re-runs it, so the figures above cannot drift away
       from what the code costs.
+    </p>
+    <p>
+      That is the chrome layer weighed on its own. The other number, and the one
+      you actually pay, is what a page here downloads before it can run:
+      <strong>{eager['one-track'].gzipKb} KB gzipped</strong> for the sparsest page
+      on this site, across {eager['one-track'].chunks} chunks. Almost all of it is
+      the engine — every plugin registers its models, adapters and config schemas
+      before a session can be read, and that cannot be deferred. What can be, is:
+      each page's budget is committed and <code>pnpm smoke</code> fails if a page
+      goes over it, because the way this number grows is one static import from a
+      state model to a React component, which is invisible in a diff.
     </p>
     <p>
       Bundle size is the smaller half of the argument. The larger half is that

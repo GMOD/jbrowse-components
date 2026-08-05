@@ -48,8 +48,6 @@ import { when } from 'mobx'
 
 import { handleSelectedRegion } from '../searchUtils.ts'
 import { doAfterAttach } from './afterAttach.ts'
-import Header from './components/Header.tsx'
-import MiniControls from './components/MiniControls.tsx'
 import { shouldSwapTracks } from './components/util.ts'
 import {
   HEADER_BAR_HEIGHT,
@@ -59,6 +57,9 @@ import {
   SCALE_BAR_HEIGHT,
 } from './consts.ts'
 import { setupKeyboardHandler } from './keyboardHandler.ts'
+// lazy, and deliberately so — see lazyChromeComponents.tsx. A view model is
+// eager, so a React component it names is in every host's first paint.
+import { Header, MiniControls } from './lazyChromeComponents.tsx'
 import {
   buildMenuItems,
   buildRubberBandMenuItems,
