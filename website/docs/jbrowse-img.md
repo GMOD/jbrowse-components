@@ -86,14 +86,18 @@ This example shows using remote files, e.g. with human hg19 and several tracks
 Note the use of --aliases, which smoothes over refname differences e.g. fasta
 contains 1 for chr1, and bigbed contains chr1, gff contains NC_000001.10
 
+<!-- jb2export: remote_files -->
+
 ```bash
 jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
-  --aliases https://jbrowse.org/genomes/hg19/hg19_aliases.txt  \
+  --aliases https://jbrowse.org/genomes/hg19/hg19_aliases.txt \
   --bigbed https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinvar/clinvarMain.bb \
   --gffgz https://jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz \
   --bigwig https://jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.regions.bw \
-  --loc 1:48,683,542..48,907,531
+  --loc 1:48,683,542-48,907,531 --width 1200 --out remote_files.png
 ```
+
+<Figure src="/img/jbrowse-img/remote_files.png" caption="ClinVar variants above NCBI RefSeq genes across a 220 kb window of hg19 chromosome 1, every file streamed from a public URL" />
 
 ### Hosted assemblies (genomes.jbrowse.org)
 
@@ -116,12 +120,14 @@ Every track in the hosted config can be shown by its trackId with `--track`,
 which is repeatable and accepts the same display modifiers as the track-type
 flags (see [Track modifiers](#track-modifiers)):
 
+<!-- jb2export: hub_tracks -->
+
 ```bash
-jb2export --hub hg19 \
-  --track hg19-ncbiRefSeqCurated \
-  --track hg19-clinvarMain \
-  --loc chr1:1,000,000-1,100,000 --out out.svg
+jb2export --hub hg19 --track hg19-ncbiRefSeqCurated --track hg19-clinvarMain \
+  --loc chr1:1,020,000-1,040,000 --width 1200 --out hub_tracks.png
 ```
+
+<Figure src="/img/jbrowse-img/hub_tracks.png" caption="NCBI RefSeq genes and ClinVar variants at the start of hg19 chromosome 1, both named by trackId from the hosted hg19 hub" />
 
 Hosted trackIds are all prefixed with the assembly name (`hg19-...`), so
 `--track` fills that in for you: `--track ncbiRefSeqCurated` resolves to
@@ -138,9 +144,14 @@ hg19-clinvarCnv, hg19-dbSnp155ClinVar, ...?
 Hosted configs also carry a gene text-search index, so `--loc` accepts a **gene
 name** and jumps to it, no need to look up coordinates:
 
+<!-- jb2export: gene_name_search -->
+
 ```bash
-jb2export --hub hg19 --track ncbiRefSeqCurated --loc BRCA1 --out out.svg
+jb2export --hub hg19 --track ncbiRefSeqCurated --loc BRCA1 --width 1200 \
+  --out gene_name_search.png
 ```
+
+<Figure src="/img/jbrowse-img/gene_name_search.png" caption="The BRCA1 gene, reached by typing its name instead of its coordinates" />
 
 `--loc` still takes ordinary locstrings (`chr1:1-10000`,
 `1:1,000,000-1,100,000`, or `all`); a name that isn't a locstring is looked up
@@ -852,11 +863,14 @@ default, but you replace them with localPath like this
 
 Then you can call it like above
 
+<!-- jb2export: volvox_config -->
+
 ```bash
-jb2export --config data/volvox/config.json \
-  --assembly volvox \
-  --loc ctgA:1-50,000
+jb2export --config data/volvox/config.json --assembly volvox --track volvox_sv \
+  --loc ctgA:1-50,000 --width 1200 --out volvox_config.png
 ```
+
+<Figure src="/img/jbrowse-img/volvox_config.png" caption="Structural-variant calls over 50 kb of volvox ctgA, read from a config whose VCF is a localPath rather than a URL" />
 
 The localPaths will be resolved relative to the file that is supplied so in this
 example we would resolve data/volvox/volvox.dup.vcf.gz if "localPath":
@@ -871,11 +885,14 @@ If you use jbrowse-web, you can select File->Export session which produces a
 session.json file, and then use the --session parameter. Make sure to specify
 the assembly also, it currently does not infer the assembly from the session
 
+<!-- jb2export: skbr3_session -->
+
 ```bash
-jb2export --config data/config.json \
-  --session data/skbr3/session.json \
-  --assembly hg19
+jb2export --config data/config.json --session data/skbr3/session.json \
+  --assembly hg19 --width 1400 --out skbr3_session.png
 ```
+
+<Figure src="/img/jbrowse-img/skbr3_session.png" caption="SKBR3 whole-genome read coverage, restored from a saved session file rather than described on the command line" />
 
 The session names its tracks by trackId, so the `--config` you pass has to be
 the one those ids come from — `data/config.json` here, which defines hg19 and
@@ -942,10 +959,15 @@ coverage band to fill the whole track. Combine with `height:N` (overall track
 height) to get a coverage-only render at the size you want. Reproducible with
 the bundled volvox alignments:
 
+<!-- jb2export: snpcov -->
+
 ```bash
-jb2export --fasta data/volvox/volvox.fa --bam data/volvox/volvox-sorted.bam \
-  snpcov height:200 --loc ctgA:1-20000 --width 1200 --out snpcov.png
+jb2export --fasta data/volvox/volvox.fa \
+  --bam data/volvox/volvox-sorted.bam snpcov height:200 --loc ctgA:1-20000 \
+  --width 1200 --out snpcov.png
 ```
+
+<Figure src="/img/jbrowse-img/snpcov.png" caption="The same volvox alignments as a coverage histogram alone, with the read pileup hidden" />
 
 ## Parameters
 

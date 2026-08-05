@@ -31,7 +31,7 @@
 // UNCOVERED_BASELINE. The number can only go down.
 //
 // Run `pnpm sync-img-readme` to update, `--check` to fail on drift (CI/autogen).
-import { readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 import { jbrowseImgSpecs } from './screenshot-spec-helpers.ts'
@@ -49,17 +49,60 @@ const IMG_BASE =
 
 const check = process.argv.includes('--check')
 
-// jb2export fences that still have no spec behind them. Each runs against real
-// inputs, so each could have a figure. Lower this by adding a cliSpec and a
-// marker; never raise it.
-const UNCOVERED_BASELINE = 9
+// jb2export fences that could render a figure and have no spec behind them.
+// Lower this by adding a cliSpec and a marker; never raise it.
+const UNCOVERED_BASELINE = 0
 
 const MARKER = /^<!--\s*jb2export:\s*(\S+?)\s*-->$/
 
-// Inputs that only stand for a real file, so the surrounding command can never
-// render anything and must not count against the ratchet.
-const PLACEHOLDER =
-  /\b(ref\.fa|reads\.bam|file\d?\.bam|file\.bw|jbrowse\.json|spec\.json|sv\.vcf\.gz|out\.svg|out\.png|file\.svg|myfile|hg19\.fa\b)/
+const JB_IMG_DIR = join(
+  import.meta.dirname,
+  '..',
+  '..',
+  'products',
+  'jbrowse-img',
+)
+
+// Something that looks like a file rather than a locstring or a modifier:
+// `data/volvox/volvox.fa`, `a.chrom.sizes`, `sources.json`. Deliberately does
+// not match `ctgA:1-50,000` or `1:1,000,000-1,100,000`, which carry no
+// extension, nor `height:200`.
+const FILEISH = /^[\w./,-]+\.[a-z0-9]{2,10}(\.(gz|bgz|bz2))?$/i
+
+/**
+ * Whether a fence is a command that would actually produce an image, and so
+ * ought to have a figure beside it.
+ *
+ * Asks the filesystem rather than matching a list of placeholder names. That
+ * list was the first attempt and it under-matched immediately — `coverage.bw`,
+ * `custom_bam.bam`, `sources.json` and `a.chrom.sizes` all read as real, so four
+ * illustrative snippets counted as missing figures. A local path either exists
+ * in products/jbrowse-img or it stands for one the reader is expected to supply,
+ * and that is a question with an answer.
+ */
+function isRenderable(body: string) {
+  if (!/\bjb2export\b/.test(body)) {
+    return false
+  }
+  // a transcript of a command's OUTPUT (`$ jb2export …` followed by an error),
+  // and `list`, which prints text
+  if (/^\s*\$ /m.test(body) || /\bjb2export\s+list\b/.test(body)) {
+    return false
+  }
+  // a `<contig>`-style stand-in, and a fence running the command more than once
+  // — one figure can only come from one command
+  if (/<[a-z][\w-]*>/i.test(body) || body.match(/\bjb2export\b/g)!.length > 1) {
+    return false
+  }
+  const tokens = body.split(/\s+/)
+  return tokens.every((token, i) => {
+    // --out names what the command WRITES, so it never has to exist
+    if (tokens[i - 1] === '--out' || !FILEISH.test(token)) {
+      return true
+    }
+    return token.includes('://') || existsSync(join(JB_IMG_DIR, token))
+  })
+}
 
 const specsByName = new Map(
   jbrowseImgSpecs.map(spec => [spec.name.replace(/^jbrowse-img\//, ''), spec]),
@@ -164,8 +207,7 @@ function sync(source: string) {
       if (line.startsWith('```')) {
         const close = lines.findIndex((l, j) => j > i && l.startsWith('```'))
         const end = close === -1 ? lines.length - 1 : close
-        const text = lines.slice(i + 1, end).join('\n')
-        if (/\bjb2export\b/.test(text) && !PLACEHOLDER.test(text)) {
+        if (isRenderable(lines.slice(i + 1, end).join('\n'))) {
           uncovered++
         }
         out.push(...lines.slice(i, end + 1))

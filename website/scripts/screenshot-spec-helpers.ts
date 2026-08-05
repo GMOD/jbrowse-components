@@ -1262,6 +1262,111 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1400',
   ]),
 
+  // The README's "Remote files" example: everything streamed by URL, with
+  // --aliases reconciling the 1 / chr1 / NC_000001.10 refname styles across the
+  // four sources. Same idea as the headline above, at a locus where the ClinVar
+  // variants over the RefSeq genes are the point.
+  cliSpec('remote_files', [
+    '--fasta',
+    'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',
+    '--aliases',
+    'https://jbrowse.org/genomes/hg19/hg19_aliases.txt',
+    '--bigbed',
+    'https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinvar/clinvarMain.bb',
+    '--gffgz',
+    'https://jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz',
+    '--bigwig',
+    'https://jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.regions.bw',
+    '--loc',
+    '1:48,683,542-48,907,531',
+    '--width',
+    '1200',
+  ]),
+
+  // `--hub` + repeated `--track`: the whole assembly and its hosted trackIds
+  // come from genomes.jbrowse.org, so the command names only what to show.
+  // 20 kb rather than the 100 kb the README used to print: ClinVar's variant
+  // density puts a 100 kb window over the track's own render limit, so half the
+  // figure was the words "Region too large to render". `force:true` clears that
+  // gate and was tried — it draws, but at 100 kb the variants are bare ticks,
+  // where 20 kb labels each one with its base change. Narrowing says more.
+  cliSpec('hub_tracks', [
+    '--hub',
+    'hg19',
+    '--track',
+    'hg19-ncbiRefSeqCurated',
+    '--track',
+    'hg19-clinvarMain',
+    '--loc',
+    'chr1:1,020,000-1,040,000',
+    '--width',
+    '1200',
+  ]),
+
+  // A gene name rather than a locstring: resolved through the hub's Trix index
+  // (navToLocStringOrSearch), which is the only reason `--loc BRCA1` works.
+  cliSpec('gene_name_search', [
+    '--hub',
+    'hg19',
+    '--track',
+    'ncbiRefSeqCurated',
+    '--loc',
+    'BRCA1',
+    '--width',
+    '1200',
+  ]),
+
+  // The three README examples that show how a config is supplied, each of which
+  // renders something and so gets a figure rather than being read on faith.
+
+  // `--config` + `--assembly` + `--loc`: the bundled volvox config, whose
+  // adapters use localPath (resolved relative to the config file), so this also
+  // demonstrates that a config full of local files needs no server. `--track`
+  // is not optional here — a config supplies definitions, not an open track
+  // list, so without it this renders a correct and completely empty ruler.
+  cliSpec('volvox_config', [
+    '--config',
+    'data/volvox/config.json',
+    '--assembly',
+    'volvox',
+    '--track',
+    'volvox_sv',
+    '--loc',
+    'ctgA:1-50,000',
+    '--width',
+    '1200',
+  ]),
+
+  // `--session`: a saved session supplies the view and its tracks, `--config`
+  // supplies the trackIds it names. data/skbr3/session.json is the `init` form,
+  // so this is also the only figure covering that path end to end.
+  cliSpec('skbr3_session', [
+    '--config',
+    'data/config.json',
+    '--session',
+    'data/skbr3/session.json',
+    '--assembly',
+    'hg19',
+    '--width',
+    '1400',
+  ]),
+
+  // `snpcov` collapses an alignments track to its coverage band alone — the
+  // same data as `alignments_pileup` above with the pileup hidden, which is
+  // what makes the pair worth showing together.
+  cliSpec('snpcov', [
+    '--fasta',
+    'data/volvox/volvox.fa',
+    '--bam',
+    'data/volvox/volvox-sorted.bam',
+    'snpcov',
+    'height:200',
+    '--loc',
+    'ctgA:1-20000',
+    '--width',
+    '1200',
+  ]),
+
   // SKBR3 cell-line whole-genome coverage (hg19, --loc all), log scale — the
   // cancer karyotype's amplifications/deletions stand out.
   cliSpec('skbr3_cov', [
