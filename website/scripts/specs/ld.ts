@@ -759,8 +759,8 @@ export const ldSpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     settleMs: 5000,
     // gene(60) + clinvar(70) + the 800px matrix, their headers and the ruler.
-    // Provisional: size it from the run's own CONTENT CLIPPED / blank-below
-    // report on the first successful capture, not off the image.
+    // Confirmed by a capture: the run reports neither clipped content nor slack
+    // below the last row at this height.
     viewportHeight: 1200,
   },
 ]

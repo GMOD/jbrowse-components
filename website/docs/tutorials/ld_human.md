@@ -73,6 +73,47 @@ tabix -p vcf panel.vcf.gz
 The same applies to species, and more sharply: a panel mixing two species
 invents LD that neither species has.
 
+## What the triangle is a picture of
+
+A triangle is a pairwise matrix turned on its corner, so its vertical axis is
+the distance between the two variants being compared rather than any value.
+Nothing on screen says so, and no other track works that way.
+
+The haplotypes it summarises need no such explaining, and the same VCF draws
+them. A
+[`LinearMultiSampleVariantMatrixDisplay`](/docs/config/linearmultisamplevariantmatrixdisplay/)
+in
+[`renderingMode: 'phased'`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-renderingmode)
+gives one row per chromosome and one column per variant.
+
+<Figure src="/img/ld/lct_haploblock.png" caption="1000 Genomes haplotypes at LCT/MCM6, one row per chromosome, clustered rather than left in file order. The pale slab across the upper rows is one haplotype carried by many chromosomes, ending either side of the highlighted gene where the mosaic resumes. Sidebar stripe is population; above it, RefSeq genes and the ClinVar lactase-persistence records."/>
+
+**Ordering is what makes a block visible, not colour and not row count.** Left
+in file order the same matrix is a plaid at any size, because a block is a set
+of alleles travelling together and which of them is the non-reference allele
+varies from site to site. Clustering puts near-identical chromosomes next to
+each other, and a swept haplotype carries little variation of its own, so it
+resolves into one slab.
+
+The clustering is not told which variant is causal. `rs4988235` falls below the
+figure's own MAF floor and is not among the columns drawn, so the ClinVar lane
+marks it independently of the rows it lands on.
+
+Grouping by population would put labelled bands down the sidebar and leave each
+band in file order, so the slab would not form. Nothing is lost by clustering
+instead: [`colorBy`](/docs/config/sharedvariantdisplay/#slot-colorby) keeps the
+populations in the sidebar stripe, and which of them carry the block is then a
+result rather than the axis the rows were sorted on.
+
+### Rows have to be worth a pixel
+
+Over the whole release each haplotype row falls well below a pixel in a lane
+this tall and averages into its neighbours, leaving a flat wash whatever the
+ordering. This figure reads a subsample of six populations instead. Its
+[build script](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_haploblock.sh)
+prints that arithmetic against the lane, and the per-population frequencies the
+populations were chosen for.
+
 ## Coloring a GWAS by LD to the lead SNP
 
 Which variants near a GWAS peak are correlated with the lead SNP, and therefore

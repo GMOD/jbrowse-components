@@ -283,23 +283,25 @@ thinning, use `jexlFiltersSetting: ["jexl:...", ...]` on its display snapshot
 
 ## Known blockers (check `screenshot-review.json` for current status first)
 
-- **`ld/lct_haploblock` has never been captured**, and the two LCT figures
-  beside it cannot be regenerated either, because `hgdownload.soe.ucsc.edu` is
-  unreachable — every spec built on `HG19_HUB` (and any other UCSC-hub config)
-  is blocked on it. The failure is three pending requests (`hg19.chrom.sizes`,
-  `hg19.chromAlias.txt`, `cytoBand.txt.gz`) and then a ready-gate timeout, which
-  reads like a data or CORS problem in the spec's own track; check UCSC before
-  chasing anything else. When it is back:
-  ```bash
-  node scripts/generate-screenshots.ts --filter ld/lct_haploblock --exact --force
+- **`hgdownload.soe.ucsc.edu` is unreachable**, so every spec built on
+  `HG19_HUB` (and any other UCSC-hub config) cannot be regenerated. It presents
+  as three pending requests (`hg19.2bit`, `hg19.chromAlias.txt`,
+  `cytoBand.txt.gz`) and then a ready-gate timeout, which reads like a data or
+  CORS problem in the spec's own track. Check UCSC first.
+
+  **`hgdownload2.soe.ucsc.edu` serves the same paths** (200 on the 2bit,
+  chromAlias, cytoBand and the gbdb bigBeds, with ranges and
+  `Access-Control-Allow-Origin: *`). `ld/lct_haploblock` was captured through
+  it by adding, temporarily, to the Chrome args in `generate-screenshots.ts`:
   ```
-  Then set its `viewportHeight` from that run's own `CONTENT CLIPPED` /
-  blank-below report (1200 is a provisional estimate, never measured against a
-  real capture), and embed it on `docs/tutorials/ld_human.md` with a caption —
-  it is in `ldSpecs` but no page references it yet. Everything not behind UCSC
-  is already verified: the display settings render 300 haplotype rows with the
-  dendrogram positioned, and its hosted VCF drives the figure end to end from
-  S3.
+  '--host-resolver-rules=MAP hgdownload.soe.ucsc.edu <hgdownload2 IP>',
+  '--ignore-certificate-errors',
+  ```
+  Host resolution rather than `page.setRequestInterception`, which disables the
+  HTTP cache and stalled even local chunk requests until the run timed out.
+  **Revert it before committing** — it is a workaround for an outage, not a
+  setting, and the cert override is not something to leave in a figure
+  pipeline.
 - `jbrowse-img/multisample_variants` — `jb2export`'s static SSR renders the
   per-sample genotype matrix **empty** for the 1000G phase3 callset (volvox's
   simpler path works); a real fix needs a `jb2export` matrix-render bug chase.
