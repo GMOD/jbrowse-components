@@ -30,8 +30,33 @@ Exploratory concepts that are *not* committed work live in
 | [Alignments main-thread repack](#alignments-still-repacks-every-row-instanced-pass-on-the-main-thread) | alignments, GPU | profile the pack/upload/clone split first |
 | [Stop rewriting the worker's arrays](#stop-rewriting-the-workers-arrays-to-lay-out-features) | canvas | count the consumers — they decide if it is worth it |
 | [`featureItemMap` O(N) build](#featureitemmap-is-an-on-build-serving-a-handful-of-point-queries) | canvas | pairs with the entry above |
+| [`sideBySide` no longer splits](#sidebyside-no-longer-splits-the-protein-view-from-its-genome-view) | workspaces, dockview | bisect the eight dockview commits against the figure |
 
 ## Ready to build: small and self-contained
+
+### `sideBySide` no longer splits the protein view from its genome view
+
+A session spec asking for `sideBySide: true` on a ProteinView used to lay out
+genome-left / protein-right. It now stacks the two vertically, which puts the
+molstar structure below the fold entirely — 48.9% of the figure's pixels, and
+518 css px of clipped content in the sweep's own report.
+
+The protein3d plugin is **version-pinned** in `PROTEIN3D_CONFIG`
+(jbrowse.org/plugins/.../0.8.0/), so the plugin did not change and this is ours.
+`sideBySide` asks the host to place the new view beside the current one, which is
+a workspace layout; `packages/app-core/src/ui/App/dockviewUtils.ts` and
+`useDockviewController.ts` have eight recent commits, including "apply a spec's
+workspace layout even once dockview is up".
+
+Reproduce with `node scripts/generate-screenshots.ts --exact --filter
+protein/connected` from `website/` and compare against the committed
+`static/img/protein/connected.png`, which is still the correct side-by-side
+capture — the sweep rewrote it and the rewrite was reverted, so nothing broken
+is published and regenerating is what exposes it.
+
+Found by the weekly figure sweep (`.github/workflows/figures.yml`), which is the
+only thing that looks: the capture succeeded, every assertion passed, and the
+result still looked like a figure.
 
 ### Grey out the genomic-coordinate option instead of hiding it
 
