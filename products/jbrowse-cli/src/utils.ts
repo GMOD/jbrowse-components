@@ -135,7 +135,7 @@ export async function readInlineOrFileJson<T>(inlineOrFileName: string) {
   return result
 }
 
-export async function fetchGithubVersions() {
+async function fetchGithubVersions() {
   const versions: GithubRelease[] = []
   for await (const iter of fetchVersions()) {
     versions.push(...iter)
@@ -222,12 +222,7 @@ interface ReleaseFlags {
 // resolves the JBrowse release download URL from the create/upgrade flags,
 // preferring an explicit --url, then --nightly, --branch, and finally --tag
 // (or the latest release)
-export async function resolveReleaseUrl({
-  url,
-  nightly,
-  branch,
-  tag,
-}: ReleaseFlags) {
+async function resolveReleaseUrl({ url, nightly, branch, tag }: ReleaseFlags) {
   return url
     ? url
     : nightly
@@ -252,7 +247,7 @@ export async function printVersions() {
   console.log(`All JBrowse versions:\n${versions.join('\n')}`)
 }
 
-export async function fetchReleaseArchive(
+async function fetchReleaseArchive(
   locationUrl: string,
   validateZipContentType: boolean,
 ) {

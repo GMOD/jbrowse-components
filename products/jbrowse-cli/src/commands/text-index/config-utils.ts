@@ -9,9 +9,7 @@ import {
 
 import type { Config, Track } from '../../base.ts'
 
-export function validatePrefixSize(
-  value?: string | number,
-): number | undefined {
+function validatePrefixSize(value?: string | number): number | undefined {
   if (!value) {
     return undefined
   }

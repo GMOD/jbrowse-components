@@ -472,7 +472,7 @@ export function guessTrack({
   return { adapter: { type: typeOverride ?? 'UNKNOWN' }, files: [] }
 }
 
-export const adapterTypesToTrackTypeMap: Record<string, string> = {
+const adapterTypesToTrackTypeMap: Record<string, string> = {
   BamAdapter: 'AlignmentsTrack',
   CramAdapter: 'AlignmentsTrack',
   SamAdapter: 'AlignmentsTrack',

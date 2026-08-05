@@ -69,7 +69,7 @@ interface AssemblyFlags {
   config?: string
 }
 
-export function isValidJSON(string: string) {
+function isValidJSON(string: string) {
   try {
     JSON.parse(string)
     return true
@@ -99,7 +99,7 @@ const seqTypeByExtension: [RegExp, SequenceType][] = [
   [/\.json$/i, 'custom'],
 ]
 
-export function guessSequenceType(sequence: string): SequenceType {
+function guessSequenceType(sequence: string): SequenceType {
   const byExtension = seqTypeByExtension.find(([regex]) =>
     regex.test(sequence),
   )?.[1]

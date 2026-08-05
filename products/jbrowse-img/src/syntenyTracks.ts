@@ -13,7 +13,7 @@ function syntenyTracks(data: Config) {
 // assemblyNames are [query, target] and which side is which follows the file
 // format (a chain's query is the LOWER assembly), not the stacking order. A
 // track declaring no assemblyNames can't be placed, so it matches nothing.
-export function comparesPair(track: Track, a: string, b: string) {
+function comparesPair(track: Track, a: string, b: string) {
   const names = track.assemblyNames ?? []
   return names.includes(a) && names.includes(b)
 }

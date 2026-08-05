@@ -6,7 +6,7 @@ import { ignoreNotFound } from '../../utils.ts'
 const { copyFile, rename, symlink, unlink } = fs.promises
 const { COPYFILE_EXCL } = fs.constants
 
-export async function loadFile({
+async function loadFile({
   src,
   destDir,
   mode,

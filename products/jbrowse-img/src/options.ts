@@ -49,7 +49,7 @@ const trackLabelModes = [
   'none',
 ] as const satisfies readonly TrackLabelMode[]
 
-export const cigarModes = [
+const cigarModes = [
   'off',
   'matches',
   'full',
@@ -94,7 +94,7 @@ export type AssertEnumListsCoverUpstream = [
   AssertTrue<Covers<ThemeName, typeof themeNames>>,
 ]
 
-export const optionDefs: OptionDef[] = [
+const optionDefs: OptionDef[] = [
   { name: 'fasta', description: 'Path to indexed FASTA file' },
   {
     name: 'chromSizes',

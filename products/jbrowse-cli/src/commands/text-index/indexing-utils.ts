@@ -21,7 +21,7 @@ function ensureTrixDir(outLocation: string) {
   fs.mkdirSync(path.join(outLocation, 'trix'), { recursive: true })
 }
 
-export async function runIxIxx({
+async function runIxIxx({
   readStream,
   outLocation,
   name,

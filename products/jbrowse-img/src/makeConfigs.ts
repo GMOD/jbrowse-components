@@ -221,7 +221,7 @@ export function makeFastaAssembly(
 // `.chrom.sizes`/`.sizes` extension, so `hs1.chrom.sizes` shows as `hs1` in the
 // synteny scalebar's assembly-name label — the extension is file-format noise,
 // not part of the assembly name.
-export function chromSizesAssemblyName(chromSizes: string) {
+function chromSizesAssemblyName(chromSizes: string) {
   return path.basename(chromSizes).replace(/\.(chrom\.)?sizes$/, '')
 }
 
