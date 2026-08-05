@@ -16,6 +16,7 @@ import {
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { isAlive } from '@jbrowse/mobx-state-tree'
+import { projectReadsOntoDerivative } from '@jbrowse/plugin-alignments'
 import { FormControlLabel, Radio, RadioGroup, Typography } from '@mui/material'
 import { when } from 'mobx'
 import { observer } from 'mobx-react'
@@ -26,7 +27,10 @@ import {
 } from './buildDerivativeVsRefSpec.ts'
 
 import type { AbstractTrackModel, AbstractViewModel } from '@jbrowse/core/util'
-import type { DerivativeCandidate } from '@jbrowse/plugin-alignments'
+import type {
+  DerivativeCandidate,
+  NamedReadChain,
+} from '@jbrowse/plugin-alignments'
 
 const useStyles = makeStyles()(theme => ({
   root: {
@@ -117,6 +121,7 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
 }: {
   model: {
     derivativePathCandidates: DerivativeCandidate[]
+    derivativeReadChains: NamedReadChain[]
     hasReadsForDerivativePaths: boolean
   }
   track: AbstractTrackModel
@@ -153,17 +158,31 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
       if (!assembly) {
         throw new Error('assembly not found')
       }
-      const { segmentsTrack, segmentsDisplay, temporaryAssembly, viewSpec } =
-        buildDerivativeVsRefSpec({
-          candidate,
-          trackAssembly: trackAssembly!,
-          viewWidth: view.width,
-          sequenceTrackConf: getConf(assembly, 'sequence') as {
-            trackId: string
-          },
-          now: () => Date.now(),
-          rand: () => Math.random(),
-        })
+      const {
+        segmentsTrack,
+        segmentsDisplay,
+        readsTrack,
+        readsDisplay,
+        temporaryAssembly,
+        viewSpec,
+      } = buildDerivativeVsRefSpec({
+        candidate,
+        trackAssembly: trackAssembly!,
+        viewWidth: view.width,
+        sequenceTrackConf: getConf(assembly, 'sequence') as {
+          trackId: string
+        },
+        // The reads this candidate was proposed from, put back onto it. Read
+        // here rather than inside the builder so the chains come from the same
+        // getter the candidates did — a second walk of the pileup could place
+        // reads on a path no read in it describes.
+        projectedReads: projectReadsOntoDerivative({
+          segments: candidate.segments,
+          chains: model.derivativeReadChains,
+        }),
+        now: () => Date.now(),
+        rand: () => Math.random(),
+      })
       session.addTemporaryAssembly?.(temporaryAssembly)
       const created = addOrReplaceView({
         session,
@@ -186,12 +205,20 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
       // naming a track nothing can resolve.
       if (isSessionWithAddTracks(session) && derivativePanel) {
         session.addTrackConf(segmentsTrack)
+        if (readsTrack) {
+          session.addTrackConf(readsTrack)
+        }
         showWhenMeasured(derivativePanel, () => {
           derivativePanel.showTrack?.(
             segmentsTrack.trackId,
             {},
             segmentsDisplay,
           )
+          // after the labels, so the legend stays directly under the ribbons and
+          // the evidence sits below it
+          if (readsTrack && readsDisplay) {
+            derivativePanel.showTrack?.(readsTrack.trackId, {}, readsDisplay)
+          }
         })
       }
       handleClose()
@@ -257,7 +284,9 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
               reads independently describe, laid out in the order and
               orientation the reads cross it. Drawing one opens it as a synteny
               view, one ribbon per segment, so the reconstruction can be read
-              against the reference it came from.
+              against the reference it came from, with every read in view placed
+              on the allele underneath: a read that agrees with it lands
+              unbroken, and one that does not breaks where it leaves.
             </Typography>
             <Typography className={classes.caveat}>
               Read counts rank these paths; they do not vouch for them. The size
