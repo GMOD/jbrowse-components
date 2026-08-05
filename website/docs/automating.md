@@ -221,10 +221,16 @@ await page.screenshot({ path: 'view.png' })
 await browser.close()
 ```
 
-A display that ends in its "too large" or error state publishes no phase at all,
-so these waits return immediately for it. That is correct (it is finished, not
-pending), but it means the waits alone will not tell you a capture is empty:
-check the frame, or assert on something the data itself produces.
+Either way the waits return as soon as a display is finished rather than
+pending, so they will not tell you a capture came out empty: check the frame, or
+assert on something the data itself produces.
+
+Two of the terminal states replace the display's whole subtree rather than
+overlaying it, and so publish no `data-display-phase` at all: "too large", and a
+rendering-backend failure. An ordinary fetch error is an overlay on the still
+mounted canvas, and does publish `error`. The waits above are unaffected — none
+of the three is `loading` — but a census over `[data-display-phase]` counts the
+first two as absent, not as terminal.
 
 For a longer-form session (multiple views, per-track display options) encode a
 full session spec rather than individual params. See the session-spec section of

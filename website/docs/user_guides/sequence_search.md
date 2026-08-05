@@ -80,7 +80,16 @@ With more than one motif in the list, two buttons are available:
 - **Launch one track per motif** - each motif gets its own track, so enzymes are
   visually separable without relying on labels.
 
+## Ship one in config.json
+
+A search launched from the menu lives in your session. To put one in front of
+everyone who opens the instance, write the same adapter into `config.json` as an
+ordinary `FeatureTrack` — it names no file, since the assembly supplies the
+sequence. The [cookbook](/docs/cookbook#reference-scan) has a whole track config
+for each of the three modes.
+
 ## See also
 
 - [](/docs/user_guides/sequence_track)
 - [](/docs/user_guides/feature_sequence)
+- [](/docs/cookbook#reference-scan)

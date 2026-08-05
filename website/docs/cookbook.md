@@ -124,6 +124,7 @@ theme. Every recipe below changes one piece of it.
 | Track height and packing                  | `height`, `heightMode`, `displayMode`      | [feature tracks](#feature-tracks)                                                                 |
 | Feature and read filtering                | `jexlFilters`, `filterBy`                  | [filtering](#showing-only-some-features-filtering), [SAM flags](#filter-reads-by-sam-flag-or-tag) |
 | Read grouping and clipping                | `groupBy`, `showSoftClipping`              | [alignments tracks](#alignments-tracks)                                                           |
+| A track with no data file                 | `MotifListAdapter`, `CrisprGuideAdapter`   | [computed from the reference](#reference-scan)                                                    |
 | Plot style and scale                      | `defaultRendering`, `scaleType`            | [wiggle tracks](#quantitative-wiggle-tracks)                                                      |
 | Multiple signals per track                | `subadapters`                              | [multi-signal wiggle](#multiple-signals-on-one-track-each-its-own-color)                          |
 | Genotype matrix                           | `displays`                                 | [variant tracks](#variant-tracks)                                                                 |
@@ -463,6 +464,101 @@ optional here:
 ```
 
 The same slot works on variant and alignments tracks.
+
+## Tracks computed from the reference {#reference-scan}
+
+Three adapters take no data file at all: they scan the assembly's own sequence
+and emit the hits as features. Nothing names a file, and nothing names a
+sequence either — the adapter is handed the sequence of whatever assembly the
+track is displayed against, so the same track config works on any assembly that
+has one.
+
+The [sequence search guide](/docs/user_guides/sequence_search) drives all three
+from the view's menu, which is the right tool for a one-off question. Write them
+into config.json when the track should be there for everyone.
+
+### Restriction enzyme sites
+
+`MotifListAdapter` takes a REBASE-style list, one motif per line: an optional
+name, the site, and an optional cut marker. `^` marks a cut inside the site;
+`(n/m)` is for the type IIS enzymes that cut downstream of theirs.
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "restriction_enzymes",
+  "name": "Restriction enzymes",
+  "assemblyNames": ["volvox"],
+  "adapter": {
+    "type": "MotifListAdapter",
+    "motifs": "EcoRI\tG^AATTC\nBamHI\tG^GATCC\nBsaI\tGGTCTC(1/5)"
+  }
+}
+```
+
+Sites may use IUPAC ambiguity codes, blank lines and `#` comments are ignored,
+and a palindromic site is reported once rather than twice. Because the list is
+just text, the same adapter serves primers, adapters, or any named motif set.
+
+### CRISPR guide RNAs
+
+`CrisprGuideAdapter` scans for PAM sites and emits each candidate protospacer,
+annotated with its GC% and a poly-T flag. The defaults are SpCas9:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "crispr_guides",
+  "name": "CRISPR guides SpCas9 (NGG)",
+  "assemblyNames": ["volvox"],
+  "adapter": {
+    "type": "CrisprGuideAdapter",
+    "pam": "NGG",
+    "guideLength": 20,
+    "pamLocation": "3prime",
+    "cutOffset": 3,
+    "minGcPercent": 40,
+    "maxGcPercent": 60,
+    "excludePolyT": true
+  }
+}
+```
+
+A PAM occurs roughly every 8bp, so an unfiltered scan is far denser than a
+display can draw. The adapter keeps everything by default and leaves the choice
+to you, which is why the GC window and `excludePolyT` (which drops guides
+containing `TTTT`, a terminator for the pol III promoters guides are usually
+expressed from) are set above rather than relied on.
+
+Other enzymes are the same track with different numbers — SaCas9 is `NNGRRT`
+with `guideLength` 21, and Cas12a is `"pam": "TTTV"`, `"pamLocation": "5prime"`,
+`"guideLength": 23`, `"cutOffset": 18`, `"cutOffsetBottom": 23`. Cas12a needs
+that last slot because it is a staggered cutter: the two strands are cut at
+different offsets, leaving an overhang. For a blunt cutter the two are equal.
+
+### One pattern across the reference
+
+`SequenceSearchAdapter` takes a single regex, so `TATA[AT]A[AT]` finds either
+TATA-box variant:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "tata_boxes",
+  "name": "TATA boxes",
+  "assemblyNames": ["volvox"],
+  "adapter": {
+    "type": "SequenceSearchAdapter",
+    "search": "TATA[AT]A[AT]",
+    "caseInsensitive": true
+  }
+}
+```
+
+`searchForward` and `searchReverse` are on by default on all three adapters; set
+either to `false` to scan one strand. Regex syntax has no reverse complement and
+no IUPAC codes (`N` matches a literal N), so an ambiguous site belongs in a
+motif list rather than here.
 
 ## Alignments tracks
 
