@@ -53,6 +53,8 @@ interface MafMenuSelf extends IStateTreeNode {
   mismatchRendering: boolean
   showAsUpperCase: boolean
   showTree: boolean
+  showRowLabels: boolean
+  setShowRowLabels: (arg: boolean) => void
   showBranchLength: boolean
   treeHasBranchLengths: boolean
   showCoverage: boolean
@@ -136,6 +138,13 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
       self.showTree,
       self.setShowTree,
     ),
+    // Separate from the sidebar toggle above so the tree can be kept without
+    // the names, which are an overlay on the alignment and cover the left of
+    // the rows they name. Only reachable while the sidebar is on, since that is
+    // what reserves their gutter.
+    ...(self.showTree
+      ? [toggle('Show row labels', self.showRowLabels, self.setShowRowLabels)]
+      : []),
     treeBranchLengthMenuItem(self),
     toggle('Show coverage', self.showCoverage, self.setShowCoverage),
     toggle('Show alignments', self.showAlignments, self.setShowAlignments),

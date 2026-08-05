@@ -71,6 +71,7 @@ function MafSvgBody({
   const {
     hierarchy,
     showTree,
+    showRowLabels,
     treeAreaWidth,
     sources,
     effectiveRowHeight,
@@ -209,7 +210,7 @@ function MafSvgBody({
           sources={sources ?? []}
           rowHeight={effectiveRowHeight}
           treeAreaWidth={treeAreaWidth}
-          showLabels={!!sources?.length}
+          showLabels={showRowLabels && !!sources?.length}
           scrollTop={scrollTop}
           availableHeight={rowsHeight}
         />

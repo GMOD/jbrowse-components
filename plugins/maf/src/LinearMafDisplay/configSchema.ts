@@ -97,6 +97,23 @@ export default function configSchemaF(pluginManager: PluginManager) {
       },
       /**
        * #slot
+       * Draw each row's species name in the sidebar. On by default, and only
+       * ever drawn when `showTree` is on, since the sidebar is what reserves
+       * their gutter.
+       *
+       * They are an overlay on the alignment rather than a gutter beside it,
+       * and each is as wide as its own text, so over a wide view the left of
+       * every row sits under its own name. Turning `showTree` off hides them,
+       * but takes the tree with it; this is the way to keep the tree and drop
+       * the names.
+       */
+      showRowLabels: {
+        type: 'boolean',
+        defaultValue: DEFAULTS.showRowLabels,
+        description: 'draw the species name over the left of each row',
+      },
+      /**
+       * #slot
        * Position tree nodes by their cluster merge height (dendrogram) rather
        * than evenly by topology (cladogram).
        */

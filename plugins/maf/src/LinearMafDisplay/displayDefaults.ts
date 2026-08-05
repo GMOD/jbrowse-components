@@ -32,6 +32,7 @@ export const DEFAULTS = {
   mismatchRendering: true,
   showAsUpperCase: true,
   showTree: true,
+  showRowLabels: true,
   showBranchLength: true,
   showCoverage: true,
   showAlignments: true,

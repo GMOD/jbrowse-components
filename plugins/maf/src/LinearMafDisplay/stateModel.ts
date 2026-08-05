@@ -282,6 +282,12 @@ export default function stateModelFactory(
         /**
          * #getter
          */
+        get showRowLabels(): boolean {
+          return getConf(self, 'showRowLabels')
+        },
+        /**
+         * #getter
+         */
         get showBranchLength(): boolean {
           return getConf(self, 'showBranchLength')
         },
@@ -465,6 +471,12 @@ export default function stateModelFactory(
          */
         setShowTree(arg: boolean) {
           setConf(self, 'showTree', arg)
+        },
+        /**
+         * #action
+         */
+        setShowRowLabels(arg: boolean) {
+          setConf(self, 'showRowLabels', arg)
         },
         /**
          * #action

@@ -230,6 +230,7 @@ const MafBody = observer(function MafBody({
             width={width}
             height={rowsHeight}
             scrollTop={scrollTop}
+            showLabels={model.showRowLabels}
           />
         ) : null}
         <TreeSidebar model={model} />

@@ -4369,6 +4369,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
+          "name": "showRowLabels",
+          "type": "(JexlString | boolean)"
+        },
+        {
           "name": "showBranchLength",
           "type": "(JexlString | boolean)"
         },
