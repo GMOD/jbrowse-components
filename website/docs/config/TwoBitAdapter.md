@@ -36,8 +36,10 @@ _See the **Config slots** section below for all available configuration fields._
 ## Config slots
 
 These slots go inside the track's `adapter`:
-`"adapter": { "type": "TwoBitAdapter", ... }`. Slot types (`fileLocation`,
-`frozen`, ...) are explained in the
+`"adapter": { "type": "TwoBitAdapter", ... }`. It also accepts the
+[shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`,
+`baseUri`, `chromSizes` in place of writing a location slot out. Slot types
+(`fileLocation`, `frozen`, ...) are explained in the
 [config slot types reference](/docs/config_guides/slot_types). Slots a base
 configuration contributes are listed here too, so this table is the whole
 surface.

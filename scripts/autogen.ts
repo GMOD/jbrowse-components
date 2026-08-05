@@ -95,6 +95,28 @@ const GENERATORS: Generator[] = [
     argv: api('generateDisplayFoundationDocs.ts'),
   },
   {
+    // The config-slot manifest `jbrowse validate` checks against, read out of
+    // the live ConfigurationSchema objects. It rides autogen so a new slot (or a
+    // renamed one) can't leave the validator reporting a correct config as
+    // broken — the failure that makes a checker worth ignoring. Also emits the
+    // jbrowse-authoring skill's config-types.md index.
+    //
+    // Runs BEFORE the doc generators below, not after: generateConfigDocs
+    // reads the shorthand keys out of this manifest, so generating it second
+    // would document the previous run's answer and leave `pnpm autogen`
+    // needing two passes to settle after a normalizer changes.
+    name: 'config schema manifest',
+    argv: [
+      'node',
+      '--experimental-strip-types',
+      'scripts/generateConfigManifest.ts',
+    ],
+    diffPaths: [
+      'products/jbrowse-cli/src/commands/validate/configManifest.generated.ts',
+      '.claude/skills/jbrowse-authoring/references/config-types.md',
+    ],
+  },
+  {
     // config_guides and user_guides are in the diff because gendocs also
     // rewrites the marker blocks embedded in the hand-written guides
     // (DISPLAY_TYPES, which needs the whole-repo DisplayType scan generate.ts
@@ -119,23 +141,6 @@ const GENERATORS: Generator[] = [
       'packages/*/README.md',
       'plugins/*/README.md',
       'products/*/README.md',
-    ],
-  },
-  {
-    // The config-slot manifest `jbrowse validate` checks against, read out of
-    // the live ConfigurationSchema objects. It rides autogen so a new slot (or a
-    // renamed one) can't leave the validator reporting a correct config as
-    // broken — the failure that makes a checker worth ignoring. Also emits the
-    // jbrowse-authoring skill's config-types.md index.
-    name: 'config schema manifest',
-    argv: [
-      'node',
-      '--experimental-strip-types',
-      'scripts/generateConfigManifest.ts',
-    ],
-    diffPaths: [
-      'products/jbrowse-cli/src/commands/validate/configManifest.generated.ts',
-      '.claude/skills/jbrowse-authoring/references/config-types.md',
     ],
   },
 ]

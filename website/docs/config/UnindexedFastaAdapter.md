@@ -36,8 +36,10 @@ sequence into memory, so prefer the IndexedFastaAdapter for large genomes.
 ## Config slots
 
 These slots go inside the track's `adapter`:
-`"adapter": { "type": "UnindexedFastaAdapter", ... }`. Slot types
-(`fileLocation`, `frozen`, ...) are explained in the
+`"adapter": { "type": "UnindexedFastaAdapter", ... }`. It also accepts the
+[shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`,
+`baseUri` in place of writing a location slot out. Slot types (`fileLocation`,
+`frozen`, ...) are explained in the
 [config slot types reference](/docs/config_guides/slot_types). Slots a base
 configuration contributes are listed here too, so this table is the whole
 surface.

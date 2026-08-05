@@ -41,11 +41,12 @@ used for specifying refNames+sizes of an assembly
 ## Config slots
 
 These slots go inside the track's `adapter`:
-`"adapter": { "type": "FromConfigRegionsAdapter", ... }`. Slot types
-(`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types). Slots a base
-configuration contributes are listed here too, so this table is the whole
-surface.
+`"adapter": { "type": "FromConfigRegionsAdapter", ... }`. This adapter has no
+`uri` [shorthand](/docs/config_guides/file_types#the-uri-shorthand) — give it
+the location slots below. Slot types (`fileLocation`, `frozen`, ...) are
+explained in the [config slot types reference](/docs/config_guides/slot_types).
+Slots a base configuration contributes are listed here too, so this table is the
+whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

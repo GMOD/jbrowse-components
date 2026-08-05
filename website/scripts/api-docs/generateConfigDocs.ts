@@ -454,6 +454,49 @@ function isBaseSchema(header: ConfigHeader, links: DisplayLinkContext) {
   )
 }
 
+// Which shorthand keys an adapter accepts in place of writing its location slot
+// out, read from the manifest `jbrowse validate` checks against — the only place
+// this is known, since a shorthand is whatever the adapter's snapshot normalizer
+// chooses to rewrite and is found by probing it, not by reading a declaration.
+// (`scripts/generateConfigManifest.ts`, which autogen runs before this.)
+//
+// Stated per adapter because the answer genuinely varies and the guides could
+// only ever hedge at it: `uri` covers most adapters, 14 have no shorthand at
+// all, and one page saying so beats a sentence in file_types.md that a reader
+// has to take on faith.
+const MANIFEST =
+  'products/jbrowse-cli/src/commands/validate/configManifest.generated.ts'
+
+const shorthandKeysByAdapter = (() => {
+  const text = fs.readFileSync(MANIFEST, 'utf8')
+  const json =
+    /export const configManifest: ConfigManifest = (\{[\s\S]*\})\n/.exec(
+      text,
+    )?.[1]
+  const parsed = json
+    ? (JSON.parse(json) as {
+        adapters: Record<string, { shorthandKeys?: string[] }>
+      })
+    : undefined
+  if (!parsed?.adapters.BamAdapter) {
+    // A manifest this cannot read would silently mark every adapter as having
+    // no shorthand, which reads as a fact rather than as a missing file.
+    throw new Error(`could not read adapter shorthands from ${MANIFEST}`)
+  }
+  return parsed.adapters
+})()
+
+function shorthandLine(name: string, category: string, isBase: boolean) {
+  if (category !== 'Adapter' || isBase) {
+    return ''
+  }
+  const keys = shorthandKeysByAdapter[name]?.shorthandKeys ?? []
+  if (!keys.length) {
+    return `This adapter has no \`uri\` [shorthand](${FILE_TYPES_GUIDE}#the-uri-shorthand) — give it the location slots below.`
+  }
+  return `It also accepts the [shorthand](${FILE_TYPES_GUIDE}#the-uri-shorthand) key${keys.length > 1 ? 's' : ''} ${keys.map(k => `\`${k}\``).join(', ')} in place of writing a location slot out.`
+}
+
 // Where a page's slots are written in a config file. A `#slot-` deep link
 // scrolls past the example and lands mid-table, so the nesting — adapter slot,
 // display entry, or top-level track field — has to be stated at the table
@@ -548,6 +591,7 @@ function renderConfig(
         '## Config slots',
         [
           slotNesting(header.name, category, isBase),
+          shorthandLine(header.name, category, isBase),
           `Slot types (\`fileLocation\`, \`frozen\`, ...) are explained in the [config slot types reference](${SLOT_TYPES_GUIDE}). Slots a base configuration contributes are listed here too, so this table is the whole surface.`,
         ]
           .filter(Boolean)
@@ -826,6 +870,7 @@ function renderInlineDefault(node: ts.Expression): string | undefined {
 // had become `{#the-maybe-types}`, which is 13 dead anchors CI counted and no
 // reader could have followed.
 const SLOT_TYPES_GUIDE = '/docs/config_guides/slot_types'
+const FILE_TYPES_GUIDE = '/docs/config_guides/file_types'
 const DISPLAYS_GUIDE = '/docs/config_guides/tracks#configuring-displays'
 const MAYBE_TYPES_ANCHOR = 'the-maybe-types'
 const DOCUMENTED_SLOT_TYPES = new Map([
