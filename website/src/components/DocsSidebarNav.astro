@@ -146,7 +146,9 @@ const sidebar = buildSiteSidebar(allDocs, baseUrl)
         event.preventDefault()
         // A filtered list is usually down to one obvious hit; Enter takes it
         // rather than making the reader move back to the mouse.
-        for (const link of list.querySelectorAll('li:not([hidden]) > a')) {
+        for (const link of list.querySelectorAll(
+          ':scope li:not([hidden]) > a',
+        )) {
           if (link instanceof HTMLAnchorElement) {
             link.click()
             break
