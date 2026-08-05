@@ -3,7 +3,12 @@ import PanAndZoom from '../examples/PanAndZoom.tsx'
 import { examples } from '../examples.ts'
 import Gallery from '../layouts/Gallery.astro'
 import Shell from '../layouts/Shell.astro'
-import { componentLabel, mainMaxWidth } from '../siteMeta.ts'
+import {
+  componentLabel,
+  demoHeights,
+  landingDemo,
+  mainMaxWidth,
+} from '../siteMeta.ts'
 // Measured, not asserted. `pnpm measure-chrome-bundle` bundles both chrome
 // entry points for real and writes this file; CI re-checks it, so the figures
 // below cannot drift from what the code costs. `~repo` is the repo root, see
@@ -31,11 +36,17 @@ const base = import.meta.env.BASE_URL
     it documents for exactly this situation: `scrollZoom` off, because a bare
     wheel that zoomed would swallow the page scroll of the reader on their way
     down to the gallery. The checkbox in it turns the other mode on.
+
+    Its box is held open at the height it settles at, because this is the first
+    thing on the page and everything below it would otherwise drop when the
+    island mounts. See `demoHeights`.
   */}
-  <div class="demo"><PanAndZoom client:only="react" scrollZoom={false} /></div>
+  <div class="demo reserved" style={`min-height:${demoHeights[landingDemo]}px`}>
+    <PanAndZoom client:only="react" scrollZoom={false} />
+  </div>
 
   <p class="note">
-    That is the <a href={`${base}pan-and-zoom/`}>Pan and zoom</a> example, running
+    That is the <a href={`${base}${landingDemo}/`}>Pan and zoom</a> example, running
     its own source. Every page below adds one thing to it.
   </p>
   <p class="note">

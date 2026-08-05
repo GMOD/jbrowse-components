@@ -113,6 +113,66 @@ async function muiThemedStyling(page, when) {
       ]
 }
 
+// The third measured claim on this site, and the one a reader feels rather than
+// reads: every demo is `client:only`, so its box is empty until ~460 KB of
+// engine has arrived, and `src/siteMeta.ts` holds it open at the height the demo
+// settles at so the page doesn't jump when that happens.
+//
+// That only works while the reservation matches reality, and a stale one is
+// worse than none — the page then jumps in whichever direction the number is
+// wrong. So this measures every demo box with its own reservation neutralised
+// and compares the two. Reading `min-height` off the element rather than
+// re-importing the table is deliberate: it checks what the page actually
+// shipped, and it covers a page that stacks several demos without knowing which
+// section is which.
+//
+// The two edges are not symmetric, because the two mistakes are not. A demo
+// taller than its reservation jumps the page, which is the whole failure this
+// prevents, so that edge is tight. A demo shorter than its reservation only
+// leaves dead space inside its own border — and is sometimes correct, because a
+// demo whose chrome wraps is taller at narrow widths and the figure to reserve
+// is the tallest it gets, which this viewport is at the narrow end of. So the
+// other edge only fires when the gap is big enough to be a stale number rather
+// than a wrap.
+const TALLER_PX = 12
+const SHORTER_PX = 60
+
+async function demoHeightBudget(page) {
+  const boxes = await page.$$eval('.demo', els =>
+    els.map(el => {
+      const reserved = Math.round(Number.parseFloat(el.style.minHeight) || 0)
+      const before = el.style.minHeight
+      el.style.minHeight = '0px'
+      const settled = Math.round(el.getBoundingClientRect().height)
+      el.style.minHeight = before
+      return { reserved, settled }
+    }),
+  )
+  return boxes.flatMap(({ reserved, settled }) => {
+    if (reserved === 0) {
+      return [
+        `demo box reserves no height (it settles at ${settled}px) — add it to ` +
+          'demoHeights in src/siteMeta.ts, or the page jumps when the island mounts',
+      ]
+    }
+    if (settled > reserved + TALLER_PX) {
+      return [
+        `demo settles at ${settled}px, taller than the ${reserved}px reserved ` +
+          'for it, so the page jumps when it mounts — raise it in demoHeights ' +
+          'in src/siteMeta.ts',
+      ]
+    }
+    if (settled < reserved - SHORTER_PX) {
+      return [
+        `demo settles at ${settled}px, ${reserved - settled}px under the ` +
+          `${reserved}px reserved for it, which is now dead space — lower it in ` +
+          'demoHeights in src/siteMeta.ts',
+      ]
+    }
+    return []
+  })
+}
+
 // Move the pointer across each track, so the census above sees the hover states
 // too — a tooltip only exists while something is under the cursor, and it is
 // drawn by the display itself rather than by either bring-your-own provider, so
@@ -218,6 +278,7 @@ const failures = await smokeExamplesSite({
   // pointer is over it are outside both bring-your-own providers.
   check: async (page, slug) => [
     ...(await muiBudget(page, slug)),
+    ...(await demoHeightBudget(page)),
     ...(await muiThemedStyling(page, 'at rest')),
     ...(await censusWhileHovering(page)),
     ...(await clicksReachTheTrack(page)),

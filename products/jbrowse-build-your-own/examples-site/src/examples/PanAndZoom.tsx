@@ -389,6 +389,9 @@ const PanAndZoom = observer(function PanAndZoom({
           overflow: 'hidden',
           touchAction: 'none',
           cursor: 'grab',
+          // hold the track's configured height from the first paint, so nothing
+          // below it moves when the assembly finishes loading and it appears
+          minHeight: wiggleTrack.displayDefaults.height,
         }}
       >
         <ZoomHint show={hint} />

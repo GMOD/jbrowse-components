@@ -334,6 +334,34 @@ const groups = [...new Set(examples.map(e => e.group))]
         height: 80vh;
         overflow: hidden;
       }
+      /* A `client:only` island is an empty element until React hydrates it, and
+      Astro gives it `display: contents`, so it draws nothing of its own: a demo
+      box sits blank while several hundred KB of engine arrives. Styling the
+      island's *empty* state puts a skeleton in that box which removes itself the
+      instant React appends a child — no JS, no timer, and nothing left behind to
+      shift the page.
+
+      Only on a box that reserves its height (`.reserved`, from the site's
+      demoHeights): in a box that doesn't, this line would itself be the layout
+      shift it is here to avoid. */
+      .demo.reserved {
+        position: relative;
+      }
+      /* out of flow, so the skeleton cannot contribute height of its own: these
+      boxes are `border-box`, so an in-flow child sized off the same min-height
+      overflows the content box by the border and leaves 2px to shift back. */
+      .demo.reserved > astro-island:empty {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--muted);
+        font-size: 0.85em;
+      }
+      .demo.reserved > astro-island:empty::after {
+        content: 'loading…';
+      }
       details.source {
         border: 1px solid var(--border);
         border-radius: 4px;
