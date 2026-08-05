@@ -123,9 +123,24 @@ Three things about the contig-to-reference alignment are not obvious:
 - **`--min-mapq` drops the repeat hits** that fine seeding produces. Real
   segments come back at 60, repeats at 0.
 
-`--preset` and `--splice` exist but are **untested against real RNA**. They were
-added for building a fusion-transcript contig from Iso-Seq and nothing has run
-that path yet.
+**This tool is DNA-only, deliberately.** A `--splice` flag once existed, adding
+minimap2's `-x splice -u n` to the contig-vs-reference alignment so the contig
+could be a fusion *transcript* whose exons are adjacent in it but separated by
+introns in the genome. It was removed: nothing ever passed it, no Iso-Seq ever
+went through it, and the evidence multi-hop rests on is genomic — one long read
+crossing a chain of junctions. RNA shows that a fusion exists; it cannot show
+the reference segments the junctions join, which is the whole claim here.
+
+Removing it also removes a trap, because the alignment was only the visible half
+of the problem. The surrounding output stays DNA-shaped whatever minimap2 does:
+`--min-segment` defaults to 50 bp, so the gap-fill pass silently drops an exon
+shorter than that, and the segment BED labels each piece as
+`chr9:130,731,327-131,152,326 (421.0 kb)` — the description of a derivative
+chromosome's arm, not of an exon. A `--splice` that aligned correctly would still
+have produced a track that read wrong.
+
+`--preset` stays and is unrelated to any of this: it selects the read chemistry
+for the read-to-contig alignments (`map-ont`, `map-hifi`, `map-pb`).
 
 ## Bugs worth knowing about
 

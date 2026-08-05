@@ -729,8 +729,7 @@ def derive(args, tmp):
                 kept.append(f)
         return kept
 
-    splice = ['-x', 'splice', '-u', 'n'] if args.splice else []
-    rows = align(derivative, [*splice, '-k', '11', '-w', '5', '-m', '30',
+    rows = align(derivative, ['-k', '11', '-w', '5', '-m', '30',
                               '-s', '40', '-N', '20', '-p', '0.1'])
     rows.sort(key=lambda f: int(f[2]))
 
@@ -738,7 +737,7 @@ def derive(args, tmp):
         fragment = os.path.join(tmp, f'gap_{start}.fa')
         with open(fragment, 'w') as fh:
             fh.write(f'>gap\n{trimmed[start:end]}\n')
-        found = align(fragment, [*splice, '-k', '9', '-w', '3', '-m', '20',
+        found = align(fragment, ['-k', '9', '-w', '3', '-m', '20',
                                  '-s', '30', '-N', '5', '-p', '0.5'])
         if found:
             best = max(found, key=lambda r: int(r[9]))
@@ -859,10 +858,6 @@ def main():
                    help='shortest unplaced stretch of contig worth a second alignment pass')
     d.add_argument('--preset', default='map-ont',
                    help='minimap2 preset for read alignment (map-ont, map-hifi, map-pb)')
-    d.add_argument('--splice', action='store_true',
-                   help='align the contig to the reference splice-aware, for a '
-                        'fusion transcript whose exons are adjacent in the contig '
-                        'but separated by introns in the genome')
     d.add_argument('--genes', metavar='GFF_GZ',
                    help='tabix-indexed reference GFF3; its genes/exons/CDS are '
                         'projected onto the derivative as their own track')
