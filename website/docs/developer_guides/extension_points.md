@@ -433,6 +433,10 @@ export interface AboutPanelProps {
 }
 ```
 
+No in-tree plugin registers on any of the three: a track that wants to change
+its own About dialog sets the `formatAbout` config slot. These are the
+programmatic equivalent, for tracks you do not own.
+
 All three are declared together, and the differences between them are worth
 reading side by side — one accumulates an array, the other two thread a single
 value:
@@ -582,6 +586,10 @@ export interface ReplaceWidgetProps {
 ```
 
 Return value: the new React component.
+
+Nothing in this repo registers on it: a display that wants its own feature
+details widget names one with a `featureWidgetType` getter instead. Reach for
+this point to replace a widget you do **not** own.
 
 This point fires whenever **any** widget opens, so a callback that does not
 scope itself takes over the drawer, the modal, and every feature details panel.
@@ -1135,7 +1143,10 @@ Registered contract:
 ```
 
 Add custom radio options to the DotplotView import form; selecting one renders
-the plugin's React component. Each option:
+the plugin's React component. In-tree formats are listed in
+`defaultSyntenyFileFormats` rather than contributed here, so this point and its
+`LinearSyntenyView` twin exist for formats that live outside this repo. Each
+option:
 
 <!-- include: plugins/dotplot-view/src/DotplotView/components/ImportForm/TrackSelector.tsx#option -->
 
