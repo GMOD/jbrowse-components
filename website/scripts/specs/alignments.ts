@@ -538,16 +538,14 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
 
   // The same region-pair machinery taken to the whole genome: every chromosome
   // displayed at once, so the fetch is every chromosome against every other one
-  // and the picture is the block diagonal. `displayedRegionNames` is the
-  // declarative way in — whole chromosomes in the order given, no menu to drive
-  // — and it names the 24 main ones so the unplaced and alt contigs don't take a
-  // third of the width for slivers too narrow to draw a triangle in.
+  // and the picture is the whole pyramid rather than its diagonal.
+  // `displayedRegionNames` is the declarative way in — whole chromosomes in the
+  // order given, no menu to drive — and it names the 24 main ones so the
+  // unplaced and alt contigs don't take a third of the width for slivers too
+  // narrow to draw a triangle in.
   //
-  // useLogScale is not decoration here, it is what makes the figure exist. At
-  // 2.4 Mb/px contact frequency has decayed over almost every bin on screen, so
-  // on the linear ramp all 24 triangles render as a 1px pink smear along the
-  // diagonal (rendered it that way first). On log they are solid, and the
-  // centromeres show as the notch out of each one.
+  // The ramp and the track height are a property of the FILE, not of the view —
+  // both are commented where they are set, and both moved when the file did.
   //
   // A FILE WITH INTER-CHROMOSOMAL BLOCKS IN IT (reviewer: "ideally the whole
   // genome hic we use has inter-chromosomal connections"). The demo's own

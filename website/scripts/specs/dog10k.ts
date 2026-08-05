@@ -509,6 +509,30 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         },
         textAlign: 'end',
       },
+      // THE FINDING, said on the figure rather than left to be inferred from
+      // where the orange is. Anchored on rows 4-7 -- Tricolour 1 and 2, both
+      // haplotypes -- which are the two animals that carry it: over the chr1
+      // this figure draws they are 17.4% and 15.7% wolf with tracts to 15.5 Mb,
+      // against a clade whose next-highest animal is 5.7% and whose median is
+      // ~0. Those numbers stay OFF the image (they are computed from the BED,
+      // not published) -- the pill says what the picture shows, and stays two
+      // lines like its neighbours: four lines of it butted into the group pill
+      // below and made the right-hand column read as one wall of text.
+      //
+      // Right-aligned like the others, and free to be: neither animal has a
+      // single wolf tract in the right 22% of chr1 (queried over the BED the
+      // track loads), so the pill covers blue either side of nothing.
+      {
+        type: 'text',
+        text: 'two of these hounds carry long\nstretches of wolf ancestry',
+        anchor: {
+          track: 'dog10k_anglofrench',
+          fracY: 6 / 66,
+          alignX: 'right',
+          dx: -12,
+        },
+        textAlign: 'end',
+      },
       {
         type: 'text',
         text: 'the stocks they were bred from:\nFrench pack hounds and English foxhounds',

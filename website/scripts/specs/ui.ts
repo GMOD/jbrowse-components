@@ -493,6 +493,22 @@ export const uiSpecs: ScreenshotSpec[] = [
     viewportHeight: 980,
     settleMs: 35000,
     hideTooltip: true,
+    // The record lane's SV-type key floats at its own top-right, on top of the
+    // last two records' labels (HGSV_1832 and HGSV_1835 came out as `HGS… <DU…`
+    // and a clipped `<DEL> 18.2Kb`). It is also the one key here that names
+    // nothing new: every record is drawn with its class IN its label (`<DEL>`,
+    // `<CNV>`, `<INS:ME:ALU>`), where a matrix cell carries no text at all and
+    // the genotype key above it is the only thing naming those fills. So the
+    // record lane's key goes and the matrix's stays.
+    //
+    // Scoped through the record track's own rendering container: both tracks
+    // portal a `Hide legend` box into their own TrackContainer overlay (a
+    // sibling of that container inside the track Paper — see
+    // TrackOverlayPortal), so a bare `[title="Hide legend"]` would take the
+    // genotype key instead, being first in the DOM.
+    hideSelectors: [
+      '[data-testid$="-kgp_sv_records"] ~ div div:has(> button[title="Hide legend"])',
+    ],
     actions: [
       { type: 'rightclick', from: { x: 750, y: 450 } },
       { type: 'waitForText', text: 'Sort by genotype' },
