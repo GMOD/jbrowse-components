@@ -224,6 +224,14 @@ interface InitView {
 // failure the dotplot/synteny autorun deliberately KEEPS `init` set (interactive
 // recovery) but reports the error to the session, so waiting on `!init` alone
 // would hang — also resolve on a session error, which is then rethrown.
+//
+// `!init` and NOT the views' own `initPending`, which looks like the obvious
+// predicate and is the wrong one here: that getter answers "should a loading
+// indicator show", and LinearGenomeView's clears the moment displayedRegions
+// land — while the same apply pass still has `init.tracks` to attach and
+// `init.highlight` to place. Rendering there would emit a positioned view with
+// its tracks missing. `init` is cleared only once the whole pass is done, which
+// is the question this is actually asking.
 async function whenViewReady(view: InitView, session: RenderErrorSources) {
   await when(
     () =>
@@ -252,18 +260,40 @@ async function whenViewReady(view: InitView, session: RenderErrorSources) {
 // silently doing nothing.
 type SpecInit = Record<string, unknown>
 
-async function addInitView<T extends InitView>(
-  ctx: ModeContext,
-  viewType: string,
-  init: SpecInit | DotplotViewInit | LinearSyntenyViewInit | CircularViewInit,
-) {
-  const view = ctx.model.session.addView(viewType, { init }) as T
+// The one gate between "I have a view" and "I can render it": size it, then
+// wait for any `init` blob to be consumed.
+//
+// It belongs to *holding* a view rather than to having just built one, which is
+// the distinction this used to get wrong. A view carries an `init` whether this
+// tool synthesized it from flags (addInitView below) or a `--session` /
+// `--defaultSession` supplied one already carrying it — `init` is a persisted
+// prop on LinearGenomeView, DotplotView and LinearSyntenyView alike, applied by
+// the shared `installInitAutorun` state machine. Waiting only in the construct
+// path meant the one view type this tool ADOPTS rather than builds, the LGV in
+// renderLinear, never awaited its init: the positioned-on-a-region check ran
+// against a view whose navigation autorun had not finished, so a session using
+// the modern `init: {assembly, loc, tracks}` form failed with "has no view
+// positioned on a region" instead of rendering.
+//
+// Free for a view with nothing to wait for: an LGV with no `init` has no
+// displayed regions yet, so `assemblyNames` is empty, `assembliesInitialized` is
+// vacuously true, and this resolves as soon as `setWidth` lands.
+async function readyView<T extends InitView>(view: T, ctx: ModeContext) {
   view.setWidth(ctx.width)
   await whenViewReady(view, ctx.model.session)
   return view
 }
 
-const renderLinear: ModeRenderer = async ({ model, data, opts, width }) => {
+async function addInitView<T extends InitView>(
+  ctx: ModeContext,
+  viewType: string,
+  init: SpecInit | DotplotViewInit | LinearSyntenyViewInit | CircularViewInit,
+) {
+  return readyView(ctx.model.session.addView(viewType, { init }) as T, ctx)
+}
+
+const renderLinear: ModeRenderer = async ctx => {
+  const { model, data, opts } = ctx
   const {
     loc,
     showTracks = [],
@@ -275,10 +305,16 @@ const renderLinear: ModeRenderer = async ({ model, data, opts, width }) => {
   } = opts
 
   const { session } = model
-  const view = (session.views[0] ??
-    session.addView('LinearGenomeView', {})) as LinearGenomeViewModel
-
-  view.setWidth(width)
+  // Adopted from the session when one supplied a view, else synthesized. Either
+  // way it goes through readyView, so an `init` the session carried is applied
+  // before anything below reads the view's position — and before `--loc`, which
+  // is an explicit instruction from the command line and so wins over whatever
+  // the session's init navigated to.
+  const view = await readyView(
+    (session.views[0] ??
+      session.addView('LinearGenomeView', {})) as LinearGenomeViewModel,
+    ctx,
+  )
 
   if (loc) {
     const { name } = data.assembly
