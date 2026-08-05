@@ -7,6 +7,12 @@ import {
 } from '../../../../plugins/canvas/src/RenderFeatureDataRPC/featureColors.ts'
 import { isJexl } from '../../../../packages/core/src/util/jexlStrings.ts'
 import { capitalizeFirst } from '../../../../plugins/variants/src/shared/constants.ts'
+import { CONSERVATION_MODES } from '../../../../plugins/maf/src/LinearMafDisplay/conservationModes.ts'
+import { DEFAULTS } from '../../../../plugins/maf/src/LinearMafDisplay/displayDefaults.ts'
+import {
+  CODON_ROW_RENDERING,
+  ROW_RENDERINGS,
+} from '../../../../plugins/maf/src/LinearMafDisplay/rowRenderings.ts'
 import { GROUP_BY_LABELS } from '../../../../plugins/alignments/src/shared/groupByLabels.ts'
 import { GENE_GLYPH_MODE_OPTIONS } from '../../../../plugins/canvas/src/LinearBasicDisplay/geneGlyphMode.ts'
 import { getHeightModeOptions } from '../../../../plugins/linear-genome-view/src/BaseLinearDisplay/models/heightMode.ts'
@@ -344,6 +350,44 @@ function scoreSignColorStep(
   }
 }
 
+// The MAF display stores what its rows are colored by across three slots that
+// each predate the others (showTranslation, colorByChromosome, rowIdentityMode)
+// while the menu presents them as one radio — they are alternatives, and only
+// one paints. So each of those slots resolves to the same 'Row coloring' group,
+// and its option labels are imported.
+const ROW_COLORING = `${TRACK_MENU} → Row coloring`
+const MAF_ROW_RENDERING_LABELS = new Map<string, string>([
+  ...ROW_RENDERINGS.map(([v, l]) => [v, l] as [string, string]),
+  [CODON_ROW_RENDERING[0], CODON_ROW_RENDERING[1]],
+])
+
+// HEIGHT_PRESETS in the MAF track menu, which writes rowHeight and
+// rowProportion together — hand-verified, since its module pulls in the menu
+// helpers, though the Normal height itself comes from the imported DEFAULTS.
+const MAF_HEIGHT_PRESETS: { label: string; rowHeight: number }[] = [
+  { label: 'Normal', rowHeight: DEFAULTS.rowHeight },
+  { label: 'Compact', rowHeight: 8 },
+]
+
+function mafRowHeightPath(rowHeight: number) {
+  if (rowHeight === 0) {
+    return `${TRACK_MENU} → Row height → Squeeze to fit view`
+  }
+  const preset = MAF_HEIGHT_PRESETS.find(p => p.rowHeight === rowHeight)
+  return preset
+    ? `${TRACK_MENU} → Row height → ${preset.label}`
+    : `${TRACK_MENU} → Row height → Custom... → ${rowHeight}px`
+}
+
+// The one dialog that edits row order, labels and which rows are shown. Each
+// display names its menu item for what its own dialog covers.
+const ROW_ARRANGEMENT_EDITORS: Record<string, string> = {
+  LinearMafDisplay: 'Edit row arrangement...',
+  LinearMultiRowFeatureDisplay: 'Edit colors/arrangement...',
+  LinearMultiSampleVariantDisplay: 'Edit colors/arrangement...',
+  LinearMultiSampleVariantMatrixDisplay: 'Edit colors/arrangement...',
+}
+
 function geneGlyphStep(value: unknown): FieldStep | undefined {
   const option = GENE_GLYPH_MODE_OPTIONS.find(o => o.value === value)
   return option
@@ -464,6 +508,70 @@ const numberField =
 export const trackFields: Record<string, FieldRecipe> = {
   colorBy: colorByStep,
   color: colorStep,
+  colorByChromosome: (value, { displayType }) =>
+    value === true && displayType === 'LinearMafDisplay'
+      ? { path: `${ROW_COLORING} → ${MAF_ROW_RENDERING_LABELS.get('sourceChrom')}` }
+      : undefined,
+  rowIdentityMode: (value, { displayType }) => {
+    const label =
+      typeof value === 'string'
+        ? MAF_ROW_RENDERING_LABELS.get(value)
+        : undefined
+    return label && displayType === 'LinearMafDisplay'
+      ? { path: `${ROW_COLORING} → ${label}` }
+      : undefined
+  },
+  rowIdentityAutoZoom: (value, { displayType }) =>
+    typeof value === 'boolean' && displayType === 'LinearMafDisplay'
+      ? {
+          path: `${ROW_COLORING} → Show bases when zoomed in (${value ? 'checked' : 'unchecked'})`,
+          note: 'Qualifies the two identity plots above it in that submenu, and does nothing under the other row colorings.',
+        }
+      : undefined,
+  showConservation: (value, { displayType }) =>
+    typeof value === 'boolean' && displayType === 'LinearMafDisplay'
+      ? {
+          path: `${TRACK_MENU} → Show... → Show conservation (% identity) (${value ? 'checked' : 'unchecked'})`,
+        }
+      : undefined,
+  conservationMode: (value, { displayType }) => {
+    const label = CONSERVATION_MODES.find(([v]) => v === value)?.[1]
+    return label && displayType === 'LinearMafDisplay'
+      ? {
+          path: `${TRACK_MENU} → Show... → Conservation resolution → ${label}`,
+          note: 'Offered only on a track with a mafFrames annotation adapter, since a per-codon reading needs a reading frame.',
+        }
+      : undefined
+  },
+  rowHeight: (value, { displayType }) =>
+    typeof value === 'number' && displayType === 'LinearMafDisplay'
+      ? { path: mafRowHeightPath(value) }
+      : undefined,
+  rowProportion: (value, { displayType }) =>
+    typeof value === 'number' && displayType === 'LinearMafDisplay'
+      ? {
+          path: `${TRACK_MENU} → Row height`,
+          note: `Each preset there sets the row height and the glyph's share of it (${value} here) together, so this follows from the same click as the height above.`,
+        }
+      : undefined,
+  subtreeFilter: (value, { displayType }) => {
+    const editor = displayType ? ROW_ARRANGEMENT_EDITORS[displayType] : undefined
+    return Array.isArray(value) && editor
+      ? {
+          path: `${TRACK_MENU} → ${editor} → untick the rows you do not want`,
+          note: `This figure keeps ${value.length} row${value.length === 1 ? '' : 's'}. The dendrogram is pruned to match, so it stays the tree of what is drawn.`,
+        }
+      : undefined
+  },
+  layout: (value, { displayType }) => {
+    const editor = displayType ? ROW_ARRANGEMENT_EDITORS[displayType] : undefined
+    return Array.isArray(value) && editor
+      ? {
+          path: `${TRACK_MENU} → ${editor} → drag the rows into order`,
+          note: `The same dialog renames a row, so a figure's ${value.length} rows carry both their order and any labels it shows.`,
+        }
+      : undefined
+  },
   posColor: scoreSignColorStep('Positive'),
   negColor: scoreSignColorStep('Negative'),
   useBicolor: (value, { displayType }) =>
