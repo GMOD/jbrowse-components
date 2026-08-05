@@ -3,7 +3,7 @@ import {
   validateClusterOrder,
 } from '@jbrowse/tree-sidebar'
 
-import { expandSourcesToHaplotypes } from './getSources.ts'
+import { expandSourcesToHaplotypes, resolveSampleName } from './getSources.ts'
 
 import type { ProcessedSource, SampleInfo, Source } from './types.ts'
 
@@ -18,7 +18,16 @@ import type { ProcessedSource, SampleInfo, Source } from './types.ts'
 // - re-append the rows a subtree filter is hiding. They weren't clustered and
 //   aren't in the tree, but `layout` is the persisted record of every row's
 //   position and color — dropping them here erases them for good once the
-//   filter is cleared.
+//   filter is cleared. Matching them is by `name` for a haplotype row and by
+//   SAMPLE for a bare sample row, which is the same "covered" rule `getSources`
+//   states: a phased run replaces one sample row with its haplotypes, and a
+//   name-only test reads "NA07056" as uncovered by "NA07056 HP0" and appends the
+//   sample back on top of its own haplotypes. That layout then expands a second
+//   time on the way to `sources` — 150 samples came back as 450 layout rows and
+//   600 drawn rows against a 300-leaf tree, so `treeDescribesRows` refused the
+//   dendrogram and half the rows had no cells. A bare sample row is the only
+//   thing superseded; a hidden HAPLOTYPE row is kept even when its sibling
+//   clustered, since the filter may be hiding exactly one of a pair.
 //
 // Validation lives here rather than at the paste box because the length an order
 // must cover is the *expanded* row count, which only this function knows: in
@@ -45,5 +54,13 @@ export function applyClusterOrder({
   validateClusterOrder(order, baseSources.length)
   const clustered = buildClusteredLayout(baseSources, layout, order)
   const clusteredNames = new Set(clustered.map(s => s.name))
-  return [...clustered, ...layout.filter(s => !clusteredNames.has(s.name))]
+  const clusteredSamples = new Set(clustered.map(resolveSampleName))
+  return [
+    ...clustered,
+    ...layout.filter(
+      s =>
+        !clusteredNames.has(s.name) &&
+        !(s.HP === undefined && clusteredSamples.has(resolveSampleName(s))),
+    ),
+  ]
 }
