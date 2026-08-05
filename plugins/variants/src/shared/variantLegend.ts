@@ -112,6 +112,30 @@ export function getSampleGroupLegendItems(
     }))
 }
 
+// The two swatches every override-color mode still paints and none of them can
+// name: an override applies only to alt-carrying cells, so a reference call
+// keeps the grey fill and a no-call keeps the no-call yellow (see
+// `getColorAlleleCount`). Without these, an SV-type or consequence key describes
+// five colors while most of the picture is the two it left out — which is
+// exactly how a reviewer read the yellow no-call column in the RHD figure as
+// unexplained. Ref is unconditional because grey is the row background even
+// under `referenceDrawingMode: 'skip'`; no-call is gated on there being one.
+function getNonAltItems({
+  renderingMode,
+  hasNoCall,
+}: {
+  renderingMode: string
+  hasNoCall: boolean
+}): LegendItem[] {
+  return [
+    {
+      color: REFERENCE_COLOR,
+      label: renderingMode === 'phased' ? 'Reference' : 'Homozygous reference',
+    },
+    ...(hasNoCall ? [{ color: NO_CALL_COLOR, label: 'No call' }] : []),
+  ]
+}
+
 // The cell-coloring section for a resolved `featureColor` key: the impact-tier
 // key for the consequence preset, the present SV types for the SV-type preset,
 // the phasing rule for the phase-set preset, or the genotype key — which is also
@@ -137,17 +161,23 @@ function getCellColorSection({
     return {
       id: 'consequenceImpact',
       title: 'Consequence impact',
-      items: IMPACT_TIERS.map(t => ({ color: t.color, label: t.tier })),
+      items: [
+        ...IMPACT_TIERS.map(t => ({ color: t.color, label: t.tier })),
+        ...getNonAltItems({ renderingMode, hasNoCall }),
+      ],
     }
   }
   if (cellColorKey === SV_TYPE_COLOR) {
     return {
       id: 'svType',
       title: 'SV type',
-      items: Object.entries(svTypeColors ?? {}).map(([type, color]) => ({
-        color,
-        label: svTypeDisplayLabel(type),
-      })),
+      items: [
+        ...Object.entries(svTypeColors ?? {}).map(([type, color]) => ({
+          color,
+          label: svTypeDisplayLabel(type),
+        })),
+        ...getNonAltItems({ renderingMode, hasNoCall }),
+      ],
     }
   }
   if (cellColorKey === PHASE_SET_COLOR) {

@@ -163,6 +163,9 @@ describe('getVariantLegendSections', () => {
       'MODERATE',
       'LOW',
       'MODIFIER',
+      // the override only reaches alt-carrying cells, so the ref fill is still
+      // on screen and still has to be named
+      'Homozygous reference',
     ])
   })
 
@@ -182,6 +185,27 @@ describe('getVariantLegendSections', () => {
       { color: '#e41a1c', label: 'Deletion' },
       { color: '#377eb8', label: 'Duplication' },
       { color: '#1f77b4', label: 'INVDUP' }, // unrecognized token: raw label
+      { color: REFERENCE_COLOR, label: 'Homozygous reference' },
+    ])
+  })
+
+  it('names the no-call fill in an SV-type key when one is drawn', () => {
+    const [section] = getVariantLegendSections({
+      renderingMode: 'alleleCount',
+      hasSecondaryAlt: false,
+      hasUnphased: false,
+      hasNoCall: true,
+      featureColor: 'svType',
+      svTypeColors: { DEL: '#e41a1c' },
+      colorBy: '',
+      sources,
+    })
+    // an SV-type override paints alt cells only; a no-call keeps the no-call
+    // yellow, and a key that omits it leaves a whole column unexplained
+    expect(section!.items).toEqual([
+      { color: '#e41a1c', label: 'Deletion' },
+      { color: REFERENCE_COLOR, label: 'Homozygous reference' },
+      { color: NO_CALL_COLOR, label: 'No call' },
     ])
   })
 

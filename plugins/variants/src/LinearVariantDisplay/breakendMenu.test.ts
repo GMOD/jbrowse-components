@@ -76,7 +76,7 @@ test('one row on a breakend, which launches with the refetched feature', async (
   const feature = { id: () => 'r_12_1' }
   const self = fakeSelf({ type: 'breakend', feature })
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const items = breakendMenuItems(self as any)
+  const items = breakendMenuItems(self)
   expect(items.map(i => ('label' in i ? i.label : undefined))).toEqual([
     SPLIT_VIEW_MENU_LABEL,
   ])
