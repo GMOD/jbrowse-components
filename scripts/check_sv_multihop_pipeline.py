@@ -244,7 +244,8 @@ def main():
         # of them covers the whole middle. Depth rises across the left margin,
         # sits at 12, and falls across the right one. (A real run whose reads
         # stop mid-allele can have a genuine hole, which is what sv_multihop's
-        # own "unsupported bases inside the contig" warning is for.)
+        # own "uncalled base(s) inside the contig" warning reports the longest
+        # run for.)
         #
         # An interior N here is therefore `samtools consensus` declining to call
         # an AMBIGUOUS base at full depth, not an unsupported one -- swap the

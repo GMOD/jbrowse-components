@@ -687,9 +687,23 @@ def derive(args, tmp):
         sys.exit(f'no base of the backbone is supported by >={args.min_depth} '
                  'reads, so there is no contig to reconstruct; lower --min-depth '
                  'or widen --window')
-    interior_n = trimmed.upper().count('N')
-    if interior_n:
-        print(f'warning: {interior_n} unsupported bases inside the contig')
+    # Two unrelated things put an N here and they want opposite responses, so
+    # report what separates them rather than calling both unsupported. A run of
+    # hundreds is a stretch of the allele no read supported at --min-depth: a
+    # hole, and the segment over it will not be placed. Scattered singletons are
+    # `samtools consensus` declining an ambiguous position that reads do cover,
+    # which moves between samtools releases and is cosmetic. --min-segment is
+    # the threshold because it is already the length below which this tool would
+    # not bother trying to place a stretch.
+    runs = [len(run) for run in re.findall('[Nn]+', trimmed)]
+    if runs:
+        print(f'warning: {sum(runs)} uncalled base(s) inside the contig in '
+              f'{len(runs)} run(s), longest {max(runs)} bp')
+        if max(runs) >= args.min_segment:
+            print(f'    a run that long is a stretch no read supported at '
+                  f'--min-depth {args.min_depth}, not an ambiguous base: lower '
+                  f'it, or widen --window if the reads exist but were not '
+                  f'fetched')
     with open(derivative, 'w') as fh:
         fh.write(f'>{args.name}\n')
         for i in range(0, len(trimmed), 60):
