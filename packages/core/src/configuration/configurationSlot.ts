@@ -92,21 +92,40 @@ const slotTypes = {
   frozen: { model: types.frozen(), fallbackDefault: {} },
 } satisfies Record<string, SlotTypeSpec>
 
+// The two types with no builtin table entry, because the author supplies the
+// `types.enumeration` as `model`. Named once, and spliced into both the type
+// union and the runtime set below so those two cannot drift apart.
+const ENUM_SLOT_TYPES = ['stringEnum', 'maybeStringEnum'] as const
+
 /**
  * Every legal `type` on a slot definition: the builtin table's own names, plus
- * the two enum types, which have no builtin entry because the author supplies
- * the `types.enumeration` as `model`.
+ * the two enum types.
  *
  * Closed on purpose. A name outside this set still *works* at runtime as long
  * as a `model` is given — which is exactly the trap: the value round-trips
  * fine, and the only symptom is that everything keyed off the type name stops
  * recognising the slot (`slotFacade` hands the editor no `choices`, so an enum
- * renders as a free text box). Nothing about that reaches a test.
+ * renders as a free text box).
  */
 export type ConfigSlotType =
   | keyof typeof slotTypes
-  | 'stringEnum'
-  | 'maybeStringEnum'
+  | (typeof ENUM_SLOT_TYPES)[number]
+
+/**
+ * The same closed set, at runtime, because the type alone does not close it for
+ * the callers that matter most: `ConfigSlot` is plugin-facing, and a JS plugin
+ * or one built against an older core reaches it with no checking at all. Those
+ * are exactly the callers that hit the silent-degradation trap above, and
+ * `type: 'enum'` — a name this table has never had — is the one that did.
+ *
+ * Typed `Set<string>` rather than `Set<ConfigSlotType>` so the membership test
+ * stays a question TypeScript has not already answered for in-tree callers. It
+ * is a real runtime check, not a restatement of the signature.
+ */
+const CONFIG_SLOT_TYPE_NAMES = new Set<string>([
+  ...Object.keys(slotTypes),
+  ...ENUM_SLOT_TYPES,
+])
 
 // Lookup view over the table. The two enum types are legal `ConfigSlotType`s
 // with no entry, so indexing by the union has to tolerate a miss — this states
@@ -200,8 +219,10 @@ export interface ConfigSlotDefinition {
  */
 export default function ConfigSlot(definition: ConfigSlotDefinition) {
   const { model, type, defaultValue, promotable, promotedBase } = definition
-  if (!type) {
-    throw new Error('type name required')
+  if (!CONFIG_SLOT_TYPE_NAMES.has(type)) {
+    throw new Error(
+      `config slot needs a known type name, got ${JSON.stringify(type)}`,
+    )
   }
   const valueModel = model ?? builtinSlotTypes[type]?.model
   if (!valueModel) {

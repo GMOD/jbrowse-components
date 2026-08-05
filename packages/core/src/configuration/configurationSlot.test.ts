@@ -30,7 +30,20 @@ test('ConfigSlot builds a value-union property with a default', () => {
 
 test('ConfigSlot requires a type', () => {
   // @ts-expect-error deliberately missing type
-  expect(() => ConfigSlot({ defaultValue: 'x' })).toThrow(/type name required/)
+  expect(() => ConfigSlot({ defaultValue: 'x' })).toThrow(/known type name/)
+})
+
+// The check is a set membership rather than a truthiness test precisely so it
+// catches this: `type: 'enum'` is a name the builtin table has never had, and
+// with a `model` supplied the slot used to build fine and merely stop being
+// recognised as an enum anywhere downstream (no `choices` in the editor). TS
+// closes it for in-tree callers; this closes it for a JS plugin, or one built
+// against a core that predates the narrowed signature.
+test('ConfigSlot rejects a type name outside the closed set', () => {
+  expect(() =>
+    // @ts-expect-error 'enum' has never been a slot type name
+    ConfigSlot({ type: 'enum', model: types.string, defaultValue: 'x' }),
+  ).toThrow(/known type name, got "enum"/)
 })
 
 test('ConfigSlot requires a defaultValue', () => {
