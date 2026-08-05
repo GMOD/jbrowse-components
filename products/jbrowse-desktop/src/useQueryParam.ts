@@ -33,15 +33,6 @@ function updateUrl(params: URLSearchParams) {
   }
 }
 
-export function readQueryParams<T extends string>(keys: T[]) {
-  const params = getSearchParams()
-  const result = {} as Record<T, string | undefined>
-  for (const key of keys) {
-    result[key] = params.get(key) ?? undefined
-  }
-  return result
-}
-
 export function useQueryParam(key: string) {
   const value = useSyncExternalStore(
     subscribe,

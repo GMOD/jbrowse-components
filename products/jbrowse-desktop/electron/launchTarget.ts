@@ -70,7 +70,7 @@ export function parseProtocolUrl(input: string): string | undefined {
 // payload like `jbrowse:x/../../../Downloads/evil.jbrowse` climbs back out to an
 // arbitrary local config, opened with neither the link confirmation prompt nor
 // the plugin-trust gate a remote config gets.
-export function isProtocolUrl(arg: string) {
+function isProtocolUrl(arg: string) {
   return arg.toLowerCase().startsWith(`${JBROWSE_PROTOCOL}:`)
 }
 

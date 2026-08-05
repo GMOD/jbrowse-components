@@ -29,13 +29,29 @@ export default function windowStateKeeper(options: Options) {
   let winRef: BrowserWindow | null = null
   let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
+  // a function declaration, not a const: `loadState()` above runs before this
+  // point in the body, and a TDZ ReferenceError there lands in its own catch —
+  // silently returning the default size for every window
+  function isSize(n: unknown): n is number {
+    return Number.isInteger(n) && (n as number) > 0
+  }
+
   function loadState(): WindowState {
     try {
       const saved = JSON.parse(
         fs.readFileSync(stateFile, 'utf8'),
       ) as WindowState
       if (isValidState(saved)) {
-        return saved
+        // Sizes are re-defaulted rather than trusted: isValidState accepts a
+        // maximized/fullscreen entry carrying no usable bounds at all, and
+        // BrowserWindow given an undefined width/height falls back to its own
+        // 800x600 instead of this app's default — which the user only discovers
+        // when they unmaximize.
+        return {
+          ...saved,
+          width: isSize(saved.width) ? saved.width : defaultWidth,
+          height: isSize(saved.height) ? saved.height : defaultHeight,
+        }
       }
     } catch {
       // No saved state or invalid JSON
@@ -48,10 +64,8 @@ export default function windowStateKeeper(options: Options) {
     const hasBounds =
       Number.isInteger(x) &&
       Number.isInteger(y) &&
-      Number.isInteger(width) &&
-      width > 0 &&
-      Number.isInteger(height) &&
-      height > 0
+      isSize(width) &&
+      isSize(height)
 
     if (!hasBounds && !s.isMaximized && !s.isFullScreen) {
       return false
