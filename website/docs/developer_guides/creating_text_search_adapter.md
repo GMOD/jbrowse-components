@@ -18,29 +18,55 @@ any data source: an API, a local file, or a SQLite database.
 
 ## The interface
 
-Your adapter extends `BaseAdapter` and implements one method.
+Your adapter extends `BaseAdapter` and implements one method:
+
+<!-- include: packages/core/src/data_adapters/BaseAdapter/BaseTextSearchAdapter.ts -->
 
 ```ts
-interface BaseTextSearchAdapter extends BaseAdapter {
-  searchIndex(args: BaseTextSearchArgs): Promise<BaseResult[]>
-}
+import type BaseResult from '../../TextSearch/BaseResults.ts'
+import type { BaseAdapter } from './BaseAdapter.ts'
+import type { BaseTextSearchArgs } from './types.ts'
 
-interface BaseTextSearchArgs {
-  queryString: string
-  searchType?: 'full' | 'prefix' | 'exact'
-  stopToken?: StopToken
-  limit?: number
-  pageNumber?: number
+export interface BaseTextSearchAdapter extends BaseAdapter {
+  searchIndex(args: BaseTextSearchArgs): Promise<BaseResult[]>
 }
 ```
 
+Everything the search box knows about the query arrives in that one argument:
+
+<!-- include: packages/core/src/data_adapters/BaseAdapter/types.ts#textSearchArgs -->
+
+```ts
+export type SearchType = 'full' | 'prefix' | 'exact'
+
+// Everything the search box hands an adapter. There is no result limit or page
+// number here: an adapter returns everything it matched, and TextSearchManager
+// ranks the merged results without filtering them, so any cap an adapter wants
+// is its own to apply.
+export interface BaseTextSearchArgs {
+  queryString: string
+  searchType?: SearchType
+  stopToken?: StopToken
+}
+```
+
+`searchType` is advisory — nothing enforces it, so an adapter that ignores
+`'exact'` simply returns its prefix hits and the ranker floats the exact one.
+
 ## Implementing the adapter
+
+`JBrowse1TextSearchAdapter` is the smaller of the two built-ins and shows the
+whole shape: a constructor that reads its config, a `searchIndex` that returns
+`BaseResult[]`, and its own handling of `searchType === 'exact'`.
+
+<!-- include: plugins/legacy-jbrowse/src/JBrowse1TextSearchAdapter/JBrowse1TextSearchAdapter.ts -->
 
 ```ts
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
-import { BaseAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { openLocation } from '@jbrowse/core/util/io'
+import { BaseAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+
+import HttpMap from './HttpMap.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -50,46 +76,86 @@ import type {
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
-export default class MyTextSearchAdapter
+interface SearchResults {
+  prefix: ({ name: string } | string)[]
+  // generate-names.pl record: [name, trackIndex, ?, refName, start, end]
+  exact: [string, number, string, string, number, number][]
+}
+
+type IndexFile = Record<string, SearchResults>
+
+// Uses index built by generate-names.pl
+export default class JBrowse1TextSearchAdapter
   extends BaseAdapter
   implements BaseTextSearchAdapter
 {
+  httpMap: HttpMap
+
+  tracksNames?: string[]
+
   constructor(
     config: AnyConfigurationModel,
     getSubAdapter?: getSubAdapterType,
     pluginManager?: PluginManager,
   ) {
     super(config, getSubAdapter, pluginManager)
-    const endpoint = readConfObject(config, 'endpoint')
-    this.endpoint = endpoint as string
+    const namesIndex = readConfObject(config, 'namesIndexLocation')
+    const { baseUri, uri } = namesIndex
+    this.httpMap = new HttpMap({
+      url: baseUri ? new URL(uri, baseUri).href : uri,
+    })
   }
 
-  async searchIndex(args: BaseTextSearchArgs): Promise<BaseResult[]> {
-    const { queryString, searchType, limit = 100 } = args
+  /**
+   * Returns the contents of the file containing the query if it exists
+   * else it returns empty
+   * @param query - string query
+   */
+  async loadIndexFile(query: string): Promise<IndexFile> {
+    return this.httpMap.getBucket(query)
+  }
 
-    const response = await fetch(
-      `${this.endpoint}?q=${encodeURIComponent(queryString)}&limit=${limit}`,
-    )
-    const hits = (await response.json()) as ApiHit[]
-
-    const results = hits.map(
-      hit =>
-        new BaseResult({
-          label: hit.name,
-          displayString: hit.displayName,
-          locString: `${hit.refName}:${hit.start}..${hit.end}`,
-          trackId: hit.trackId,
-        }),
-    )
-
-    return searchType === 'exact'
-      ? results.filter(
-          r => r.getLabel().toLowerCase() === queryString.toLowerCase(),
-        )
-      : results
+  async searchIndex(args: BaseTextSearchArgs) {
+    const { searchType, queryString } = args
+    const tracks = this.tracksNames ?? (await this.httpMap.getTrackNames())
+    const str = queryString.toLowerCase()
+    const entries = await this.loadIndexFile(str)
+    const results = entries[str]
+    return results ? this.formatResults(results, tracks, searchType) : []
+  }
+  formatResults(results: SearchResults, tracks: string[], searchType?: string) {
+    return [
+      ...(searchType === 'exact'
+        ? []
+        : results.prefix.map(
+            result =>
+              new BaseResult({
+                label: typeof result === 'object' ? result.name : result,
+              }),
+          )),
+      ...results.exact.map(
+        ([name, trackIndex, , refName, start, end]) =>
+          new BaseResult({
+            locString: `${refName || name}:${start}-${end}`,
+            label: name,
+            trackId: tracks[trackIndex],
+          }),
+      ),
+      // the index encodes an overflow bucket as a pseudo-hit; it is a message,
+      // not a navigable location
+    ].filter(result => result.getLabel() !== 'too many matches')
   }
 }
 ```
+
+The three constructor arguments are `BaseAdapter`'s, so pass them straight to
+`super` even if you only use `config`. Backing the adapter with an API instead
+of a file changes only `searchIndex`'s body — `fetch` the endpoint you read out
+of the config and map each hit to a `BaseResult`.
+
+A `searchIndex` that can be slow should honor `args.stopToken`: every keystroke
+supersedes the previous query, and `TextSearchManager` treats an abort as a
+normal outcome rather than a failure.
 
 ## BaseResult fields
 
@@ -104,59 +170,93 @@ export default class MyTextSearchAdapter
 Results with `locString` navigate directly. Results with nested `results` show a
 dialog. Results with neither treat the label as a reference name.
 
+`RefSequenceResult`, the subclass the assembly's own refNames come back as,
+takes a `refName` instead and uses it as the `locString`.
+
 ## Configuration schema
+
+<!-- include: plugins/legacy-jbrowse/src/JBrowse1TextSearchAdapter/configSchema.ts -->
 
 ```ts
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-const MyTextSearchAdapter = ConfigurationSchema(
-  'MyTextSearchAdapter',
+/**
+ * #config JBrowse1TextSearchAdapter
+ * #trackType TextSearchAdapter
+ * #fileFormat textsearch | JBrowse 1 names index | From JBrowse 1 `generate-names.pl`
+ * note: metadata about tracks and assemblies covered by text search adapter
+ */
+export default ConfigurationSchema(
+  'JBrowse1TextSearchAdapter',
   {
-    endpoint: {
-      type: 'string',
-      defaultValue: '',
-      description: 'URL of your search API',
+    /**
+     * #slot
+     */
+    namesIndexLocation: {
+      type: 'fileLocation',
+      defaultValue: { uri: '/volvox/names', locationType: 'UriLocation' },
+      description: 'the location of the JBrowse1 names index data directory',
     },
+    /**
+     * #slot
+     */
+    tracks: {
+      type: 'stringArray',
+      defaultValue: [],
+      description: 'List of tracks covered by text search adapter',
+    },
+    /**
+     * #slot
+     */
     assemblyNames: {
       type: 'stringArray',
       defaultValue: [],
-      description: 'Assemblies covered by this adapter',
+      description: 'List of assemblies covered by text search adapter',
     },
   },
   {
     explicitlyTyped: true,
+    /**
+     * #identifier
+     */
     explicitIdentifier: 'textSearchAdapterId',
   },
 )
-
-export default MyTextSearchAdapter
 ```
 
-`assemblyNames` is required; the TextSearchManager uses it to pick which
-adapters to query for a given assembly.
+`assemblyNames` is required; `TextSearchManager` uses it to pick which adapters
+to query for a given assembly. The `explicitIdentifier` is what a config's
+`textSearchAdapterId` writes to, and what the adapter cache keys on — two
+adapters sharing an id are one cache entry. (`TrixTextSearchAdapter` uses
+`implicitIdentifier` instead, so its id is optional in a config.)
+
+The `#config` / `#slot` JSDoc tags are what generate the published config page
+for the adapter; they are optional but free.
 
 ## Plugin registration
+
+<!-- include: plugins/trix/src/index.ts -->
 
 ```ts
 import Plugin from '@jbrowse/core/Plugin'
 import TextSearchAdapterType from '@jbrowse/core/pluggableElementTypes/TextSearchAdapterType'
 
-import configSchema from './MyTextSearchAdapter/configSchema.ts'
+import configSchema from './TrixTextSearchAdapter/configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-export default class MyPlugin extends Plugin {
-  name = 'MyPlugin'
+export default class TrixPlugin extends Plugin {
+  name = 'TrixPlugin'
 
   install(pluginManager: PluginManager) {
     pluginManager.addTextSearchAdapterType(() => {
       return new TextSearchAdapterType({
-        name: 'MyTextSearchAdapter',
-        displayName: 'My text search adapter',
+        name: 'TrixTextSearchAdapter',
+        displayName: 'Trix text search adapter',
         configSchema,
-        description: 'Searches my custom API',
+        description: 'Trix text search adapter',
         getAdapterClass: () =>
-          import('./MyTextSearchAdapter/MyTextSearchAdapter.ts').then(
+          import('./TrixTextSearchAdapter/TrixTextSearchAdapter.ts').then(
             d => d.default,
           ),
       })
@@ -164,6 +264,9 @@ export default class MyPlugin extends Plugin {
   }
 }
 ```
+
+`getAdapterClass` is a dynamic import so the adapter's code stays out of the
+bundle until something actually searches with it.
 
 ## Config.json wiring
 

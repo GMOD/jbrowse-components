@@ -26,29 +26,41 @@ abstraction instead.
 ## Minimal walkthrough
 
 The [plugin templates](/docs/developer_guides/simple_plugin) scaffold the build
-setup to register a view via `pluginManager.addViewType(...)`. A registration
-looks roughly like:
+setup to register a view via `pluginManager.addViewType(...)`. Every built-in
+view is registered the same way — this is the dotplot's, in full:
+
+<!-- include: plugins/dotplot-view/src/DotplotView/index.ts -->
 
 ```ts
-import PluginManager from '@jbrowse/core/PluginManager'
-import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
-import { types } from '@jbrowse/mobx-state-tree'
-import { stateModelFactory, ReactComponent } from './MyView'
+import { lazy } from 'react'
 
-export default function (pluginManager: PluginManager) {
+import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
+
+import stateModelFactory from './model.ts'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+
+export default function DotplotViewF(pluginManager: PluginManager) {
   pluginManager.addViewType(() => {
     return new ViewType({
-      name: 'MyView',
+      name: 'DotplotView',
+      displayName: 'Dotplot view',
       stateModel: stateModelFactory(pluginManager),
-      ReactComponent,
+      ReactComponent: lazy(() => import('./components/DotplotView.tsx')),
     })
   })
 }
 ```
 
-The state model is a [mobx-state-tree](https://mobx-state-tree.js.org/) model
-(see [](/docs/developer_guides/mst_patterns)) and the React component receives
+`name` is what a session snapshot and a URL spec store; `displayName` is what
+the "Add" menu shows. The state model is a
+[mobx-state-tree](https://mobx-state-tree.js.org/) model (see
+[](/docs/developer_guides/mst_patterns)) and the React component receives
 `{ model }` as a prop.
+
+Wrap the component in `React.lazy` as every built-in view does — the view's
+whole component tree then stays out of the initial bundle until a session
+actually opens one.
 
 ## Reference implementations in this repo
 

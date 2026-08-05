@@ -24,6 +24,10 @@ function resolvedName(loc: FileLocation) {
   return getFileName(loc) || 'MyTrack'
 }
 
+// The shape every entry of a `*-SyntenyFileFormats` point has: a radio label
+// and a component that reports a built adapter config through onAdapterChange
+// (or `undefined` when the user clears the selection).
+// #region simpleFormat
 function makeSimpleFormat(
   extension: string,
   adapterType: string,
@@ -72,6 +76,7 @@ function makeSimpleFormat(
   })
   return { extension, Component }
 }
+// #endregion
 
 function makeAnchorsFormat(
   extension: string,

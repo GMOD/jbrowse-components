@@ -8,49 +8,38 @@ guide_category: Plugins
 need custom logic. The Multi-wiggle track does this, producing a textbox to
 paste a list of files.
 
-A simple add-track workflow:
+The multi-wiggle workflow is the whole registration:
+
+<!-- include: plugins/wiggle/src/MultiWiggleAddTrackWorkflow/index.ts -->
 
 ```ts
-// plugins/wiggle/src/MultiWiggleAddTrackWorkflow/index.ts
+import { lazy } from 'react'
 
-import PluginManager from '@jbrowse/core/PluginManager'
 import { AddTrackWorkflowType } from '@jbrowse/core/pluggableElementTypes'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import MultiWiggleWidget from './AddTrackWorkflow'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
-export default (pm: PluginManager) => {
+export default function MultiWiggleAddTrackWorkflowF(pm: PluginManager) {
   pm.addAddTrackWorkflowType(
     () =>
       new AddTrackWorkflowType({
         name: 'Multi-wiggle track',
-        // ReactComponent (in a separate file) is the form rendered in the track widget
-        ReactComponent: MultiWiggleWidget,
+        displayName: 'Add multi-wiggle track',
+        ReactComponent: lazy(() => import('./AddTrackWorkflow.tsx')),
         stateModel: types.model({}),
       }),
   )
 }
 ```
 
-Install this component into your plugin:
+`ReactComponent` is the form rendered inside the "Add track" widget, and it is
+lazily imported so the form's code only loads when a user picks this workflow.
+`stateModel` is the workflow's own state; an empty `types.model({})` is fine
+when the form holds everything it needs in React state.
 
-```ts
-// plugins/wiggle/src/index.ts
-
-import MultiWiggleAddTrackWorkflowF from './MultiWiggleAddTrackWorkflow'
-
-// ...
-
-export default class WigglePlugin extends Plugin {
-  name = 'WigglePlugin'
-
-  install(pm: PluginManager) {
-    // ...
-    MultiWiggleAddTrackWorkflowF(pm)
-    // ...
-  }
-}
-```
+Call `MultiWiggleAddTrackWorkflowF(pm)` from your plugin's `install()`, the same
+as any other pluggable element.
 
 ## See also
 

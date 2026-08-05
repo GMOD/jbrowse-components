@@ -23,13 +23,18 @@ export default class CanvasPlugin extends Plugin {
   configure(pluginManager: PluginManager) {
     // When a text-search result is chosen, highlight the specific feature on
     // its canvas display (not just the navigated region).
+    // #region searchResultSelected
     pluginManager.addToExtensionPoint(
       'LinearGenomeView-searchResultSelected',
       (arg, { result, model, assemblyName }) => {
         highlightSearchResultFeature({ result, model, assemblyName })
+        // args is `undefined` for this point, but returning what came in is
+        // the convention every callback follows: the fold passes a callback's
+        // return value to the next one, so dropping it truncates the chain
         return arg
       },
     )
+    // #endregion
   }
 }
 

@@ -1,6 +1,7 @@
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
+// #region registry
 export interface LaunchSpreadsheetViewArgs {
   session: AbstractSessionModel
   assembly: string
@@ -21,6 +22,7 @@ declare module '@jbrowse/core/PluginManager' {
     }
   }
 }
+// #endregion
 
 export default function LaunchSpreadsheetViewF(pluginManager: PluginManager) {
   /** #extensionPoint LaunchView-SpreadsheetView | async | Programmatically launch a spreadsheet view */

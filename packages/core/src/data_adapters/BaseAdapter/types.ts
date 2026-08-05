@@ -46,10 +46,16 @@ export interface BaseOptionsWithRegions extends BaseOptions {
   regions?: Region[]
 }
 
+// #region textSearchArgs
 export type SearchType = 'full' | 'prefix' | 'exact'
 
+// Everything the search box hands an adapter. There is no result limit or page
+// number here: an adapter returns everything it matched, and TextSearchManager
+// ranks the merged results without filtering them, so any cap an adapter wants
+// is its own to apply.
 export interface BaseTextSearchArgs {
   queryString: string
   searchType?: SearchType
   stopToken?: StopToken
 }
+// #endregion

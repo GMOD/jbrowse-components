@@ -42,27 +42,41 @@ Built-in points are registered in the `ExtensionPointRegistry` interface in
 known name, so callbacks get typed `args` and evaluate calls return the correct
 type without a cast.
 
-Register your own point the same way:
+Register your own point the same way. The spreadsheet view's launcher is a
+complete example — an exported args interface, then the augmentation naming it:
+
+<!-- include: plugins/spreadsheet-view/src/LaunchSpreadsheetView/index.ts#registry -->
 
 ```typescript
-import type PluginManager from '@jbrowse/core/PluginManager'
-
-export interface MyPluginExtensionArgs {
-  value: number
+export interface LaunchSpreadsheetViewArgs {
+  session: AbstractSessionModel
+  assembly: string
+  // a spec view is untyped user input, so both of these can be absent: without
+  // a uri the view opens on the import form
+  uri?: string
+  fileType?: string
+  // optional explicit view id, so another view in the same session spec can
+  // reference this one
+  id?: string
 }
 
 declare module '@jbrowse/core/PluginManager' {
   interface ExtensionPointRegistry {
-    'MyPlugin-myExtensionPoint': {
-      args: MyPluginExtensionArgs
-      result: MyPluginExtensionArgs
+    'LaunchView-SpreadsheetView': {
+      args: LaunchSpreadsheetViewArgs
+      result: LaunchSpreadsheetViewArgs
     }
   }
 }
 ```
 
-Put the `declare module` block in any file that is part of your plugin's
-compilation.
+Three things generalize from it. `args` and `result` are the same type on a
+point that threads one payload through, and a callback returns what it was
+given; a point that accumulates declares an array for both. A third optional
+key, `props`, declares the context object passed unchanged to every callback —
+see [`Core-replaceWidget`](#core-replacewidget) for one that has it. And the
+`declare module` block goes in any file that is part of your plugin's
+compilation; putting it beside the registration keeps the two from drifting.
 
 ## API
 
@@ -583,24 +597,78 @@ panel, which is the main reason to prefer the helper.
 
 type: synchronous
 
-- `args` - `SnapshotIn<AnyConfigurationModel>` - Copy of the current track
-  config
+Rewrite a track config snapshot before it is instantiated. Registered contract:
 
-Return value: A new track config
-
-Example:
+<!-- include: packages/core/src/pluggableElementTypes/models/migrateTrackConfig.ts#registry -->
 
 ```typescript
-pluginManager.addToExtensionPoint('Core-preProcessTrackConfig', snap => {
-  return {
-    ...snap,
-    metadata: {
-      ...snap.metadata,
-      extraMetadata: 'extra metadata',
-    },
+interface DisplayConfigSnapshot {
+  type?: string
+  [key: string]: unknown
+}
+export interface TrackConfigSnapshot {
+  displays?: DisplayConfigSnapshot[]
+  [key: string]: unknown
+}
+
+// A data transform, not a component fold: each callback receives the previous
+// callback's rewritten snapshot. The snapshot is already a defensive clone at
+// both fire sites, so a callback may return a mutated `snap` as well as a new
+// object.
+declare module '../../PluginManager.ts' {
+  interface ExtensionPointRegistry {
+    'Core-preProcessTrackConfig': {
+      args: TrackConfigSnapshot
+      result: TrackConfigSnapshot
+    }
   }
-})
+}
 ```
+
+The snapshot is an open record rather than a typed config model — the point
+fires before anything validates it, which is the whole reason it is useful.
+Return a new snapshot (or the mutated one; both fire sites clone first). This
+declaration lives inside core, so it augments the module by relative path; a
+plugin writes `declare module '@jbrowse/core/PluginManager'` for the same
+effect.
+
+For the common case — migrating a _display's_ config across a format change —
+register through `addDisplayConfigMigration` rather than by hand:
+
+<!-- include: plugins/wiggle/src/MultiLinearWiggleDisplay/preProcessTrackConfig.ts -->
+
+```typescript
+import { addDisplayConfigMigration } from '@jbrowse/core/pluggableElementTypes/models'
+
+import { remapMultiWiggleRendering } from './configSchema.ts'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+
+// MultiLinearWiggleDisplay's legacy single-source `defaultRendering` remap
+// (e.g. "xyplot" -> "multixyplot") rewrites the value of a constrained enum
+// slot, so it must run before the display types.union validates the snapshot —
+// the config-schema preProcessSnapshot alone does not (see
+// addDisplayConfigMigration).
+export default function MigrateMultiWiggleConfigF(
+  pluginManager: PluginManager,
+) {
+  addDisplayConfigMigration(
+    pluginManager,
+    ['MultiLinearWiggleDisplay'],
+    remapMultiWiggleRendering,
+  )
+}
+```
+
+That helper walks `snap.displays` for you and only calls your `migrate` for the
+display types you name, so unrelated tracks pass through untouched. Use it — not
+a config-schema `preProcessSnapshot` — whenever the migration rewrites the
+**value** of an existing constrained slot: a `types.union` tests the raw
+snapshot, so it rejects the legacy value before a schema-level preprocessor ever
+runs. Adding, removing, or renaming a slot does not need this, since the union
+ignores props it doesn't know. Pass every type name the display answers to
+(canonical plus aliases), and make `migrate` idempotent — it also fires from the
+config-schema `preProcessSnapshot` on a direct create.
 
 ### Core-addTrackComponent
 
@@ -797,19 +865,26 @@ action, e.g. selecting a corresponding feature. It's a notification point: the
 payload lives in `props` (passed unchanged to every callback) rather than
 `args`, so callbacks can't alter what later callbacks see.
 
-Example:
+The canvas plugin registers on it to highlight the feature the result names,
+rather than only the region the search navigated to:
+
+<!-- include: plugins/canvas/src/index.ts#searchResultSelected -->
 
 ```typescript
 pluginManager.addToExtensionPoint(
   'LinearGenomeView-searchResultSelected',
-  (_, { result, model }) => {
-    const trackId = result.getTrackId()
-    if (trackId === 'my_custom_track') {
-      // perform custom action
-    }
+  (arg, { result, model, assemblyName }) => {
+    highlightSearchResultFeature({ result, model, assemblyName })
+    // args is `undefined` for this point, but returning what came in is
+    // the convention every callback follows: the fold passes a callback's
+    // return value to the next one, so dropping it truncates the chain
+    return arg
   },
 )
 ```
+
+`args` is `undefined` here, so the return is not carrying data — it is keeping
+the fold intact for whatever registered after you.
 
 ### DotplotView-ImportFormSyntenyOptions
 
@@ -904,26 +979,72 @@ export interface SyntenyFileFormatOption {
 `onAdapterChange` should be called with the built adapter config whenever the
 user's file selection is complete, or `undefined` when the selection is cleared.
 
-Example: adding a custom `.maf` format
+The built-in formats are all produced by one helper in `@jbrowse/synteny-core`,
+which is the smallest complete example of the shape:
+
+<!-- include: packages/synteny-core/src/defaultSyntenyFileFormats.tsx#simpleFormat -->
 
 ```typescript
-pluginManager.addToExtensionPoint(
-  'DotplotView-SyntenyFileFormats',
-  (formats: SyntenyFileFormatOption[]) => [
-    ...formats,
-    {
-      extension: '.maf',
-      Component: ({ assembly1, assembly2, onAdapterChange }) => (
-        <MafFileSelector
-          assembly1={assembly1}
-          assembly2={assembly2}
-          onAdapterChange={onAdapterChange}
-        />
-      ),
-    },
-  ],
-)
+function makeSimpleFormat(
+  extension: string,
+  adapterType: string,
+  locationKey: string,
+): SyntenyFileFormatOption {
+  const Component = observer(function SyntenyFormat({
+    assembly1,
+    assembly2,
+    onAdapterChange,
+  }: FormatProps) {
+    const [fileLocation, setFileLocation] = useState<FileLocation>()
+    const [swap, setSwap] = useState(false)
+
+    const buildAdapter = (loc: FileLocation, sw: boolean) => ({
+      type: adapterType,
+      [locationKey]: loc,
+      queryAssembly: sw ? assembly2 : assembly1,
+      targetAssembly: sw ? assembly1 : assembly2,
+    })
+
+    return (
+      <StandardFormatSelector
+        radioOption={extension}
+        fileLocation={fileLocation}
+        assembly1={assembly1}
+        assembly2={assembly2}
+        swap={swap}
+        setFileLocation={loc => {
+          setFileLocation(loc)
+          onAdapterChange({
+            name: resolvedName(loc),
+            adapter: buildAdapter(loc, swap),
+          })
+        }}
+        setSwap={sw => {
+          setSwap(sw)
+          if (fileLocation) {
+            onAdapterChange({
+              name: resolvedName(fileLocation),
+              adapter: buildAdapter(fileLocation, sw),
+            })
+          }
+        }}
+      />
+    )
+  })
+  return { extension, Component }
+}
 ```
+
+Two things to copy from it. The component owns the file-location state and calls
+`onAdapterChange` on _every_ change, including the swap toggle after a file is
+already chosen — reporting only on the file pick leaves the form holding an
+adapter with the assemblies the wrong way round. And `StandardFormatSelector` is
+exported from `@jbrowse/synteny-core`, so a plugin format gets the same
+file/swap UI as the built-ins rather than reimplementing it.
+
+Register the option by appending it to the array the point hands you:
+`pluginManager.addToExtensionPoint('DotplotView-SyntenyFileFormats', formats => [...formats, myFormat])`.
+Dropping the spread removes every built-in format from the form.
 
 ### LinearSyntenyView-SyntenyFileFormats
 

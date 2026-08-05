@@ -15,19 +15,28 @@ tracks by querying a remote resource, such as a UCSC Track Hub.
 Connections are a pluggable element, installed with the plugin manager via
 `addConnectionType`:
 
+<!-- include: plugins/data-management/src/JB2TrackHubConnection/index.ts -->
+
 ```ts
-pluginManager.addConnectionType(
-  () =>
-    new ConnectionType({
-      name: 'MyConnection',
-      configSchema: myConfigSchema,
-      stateModel: myModelFactory(pluginManager),
-      displayName: 'My Awesome Connection',
-      description:
-        'Add tracks to JBrowse from data in the myAwesomeData format',
-      url: '//mysite.com/info',
-    }),
-)
+import { ConnectionType } from '@jbrowse/core/pluggableElementTypes'
+
+import configSchema from './configSchema.ts'
+import stateModelFactory from './model.ts'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+
+export default function JB2TrackHubConnectionF(pluginManager: PluginManager) {
+  pluginManager.addConnectionType(() => {
+    return new ConnectionType({
+      name: 'JB2TrackHubConnection',
+      configSchema,
+      stateModel: stateModelFactory(pluginManager),
+      displayName: 'JB2 Track Hub',
+      description: 'A JBrowse 2 config file based trackhub',
+      url: 'https://jbrowse.org/jb2/',
+    })
+  })
+}
 ```
 
 ### Required items
@@ -58,41 +67,105 @@ Shown in the GUI when a user adds a connection:
 ## State model
 
 The state model composes `BaseConnectionModelFactory` and implements
-`connect()`, which reads the connection's configuration, fetches the data, and
-adds the resulting tracks:
+`connect()`. Keep the model itself thin — `connect()` hands off to a lazily
+imported module rather than doing the work inline:
+
+<!-- include: plugins/data-management/src/JB2TrackHubConnection/model.ts -->
 
 ```ts
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { BaseConnectionModelFactory } from '@jbrowse/core/pluggableElementTypes/models'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import configSchema from './configSchema'
-import { fetchData, transformData } from './myStuff'
+import { lazyConnect } from '../lazyConnect.ts'
+import configSchema from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-export default function modelFactory(pluginManager: PluginManager) {
+/**
+ * #stateModel JB2TrackHubConnection
+ */
+export default function JB2TrackHubConnection(pluginManager: PluginManager) {
   return types
     .compose(
-      'MyConnection',
+      'JB2TrackHubConnection',
       BaseConnectionModelFactory(pluginManager),
       types.model({
+        /**
+         * #property
+         */
         configuration: ConfigurationReference(configSchema),
-        type: types.literal('MyConnection'),
+        /**
+         * #property
+         */
+        type: types.literal('JB2TrackHubConnection'),
       }),
     )
     .actions(self => ({
-      async connect() {
-        const dataLocation = getConf(self, 'dataLocation')
-        const data = await fetchData(dataLocation)
-        self.addTrackConfs(transformData(data))
+      /**
+       * #action
+       */
+      connect() {
+        return lazyConnect(self, () => import('./doConnect.ts'))
       },
     }))
 }
 ```
 
+`lazyConnect` keeps a connection's parsing code out of the startup bundle until
+someone actually connects, and it owns the failure policy — it logs, notifies,
+and breaks the connection — so each `doConnect` is only the happy path. It also
+re-checks `isAlive(self)` after the dynamic import, since `doConnect` walks up
+to the session and a StrictMode double-mount can dispose the node mid-import.
+
+The `doConnect` module is where the configuration is read and the tracks are
+added:
+
+<!-- include: plugins/data-management/src/JB2TrackHubConnection/doConnect.ts -->
+
+```ts
+import { getConf } from '@jbrowse/core/configuration'
+import { getSession } from '@jbrowse/core/util'
+import { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
+import { openLocation } from '@jbrowse/core/util/io'
+
+import { resolve } from './util.ts'
+
+import type { ConnectionDoConnectArg } from '../lazyConnect.ts'
+import type { UriLocation } from '@jbrowse/core/util'
+
+// lazyConnect wraps this in the shared connect-failure handler
+export async function doConnect(self: ConnectionDoConnectArg) {
+  const session = getSession(self)
+  const configJsonLocation = getConf(self, 'configJsonLocation') as UriLocation
+
+  const configJson = JSON.parse(
+    await openLocation(configJsonLocation).readFile('utf8'),
+  )
+  const configUri = resolve(configJsonLocation.uri, configJsonLocation.baseUri)
+  addRelativeUris(configJson, new URL(configUri))
+  if (configJson.assemblies) {
+    for (const assembly of configJson.assemblies) {
+      if (!session.assemblyManager.has(assembly.name)) {
+        session.addSessionAssembly?.(assembly)
+      }
+    }
+  }
+
+  if (configJson.tracks) {
+    self.addTrackConfs(configJson.tracks)
+  }
+  if (!self.silent) {
+    session.notify('Successfully loaded', 'success')
+  }
+}
+```
+
 `BaseConnectionModelFactory` provides `addTrackConf`, `addTrackConfs`, and
-`setTrackConfs` for adding tracks incrementally or all at once.
+`setTrackConfs` for adding tracks incrementally or all at once. Note `silent`:
+it is set when a session is restored and the connection reconnects on load, and
+it suppresses the first-connect side effects (the success snackbar, launching a
+view) that would otherwise fire on every page load.
 
 ## See also
 

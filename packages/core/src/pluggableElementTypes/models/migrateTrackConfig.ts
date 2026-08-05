@@ -4,6 +4,7 @@
 
 import type PluginManager from '../../PluginManager'
 
+// #region registry
 interface DisplayConfigSnapshot {
   type?: string
   [key: string]: unknown
@@ -25,6 +26,7 @@ declare module '../../PluginManager.ts' {
     }
   }
 }
+// #endregion
 
 // Registers a back-compat migration for a display's CONFIG snapshot that runs
 // BEFORE the display `types.union` validates it.
