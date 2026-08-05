@@ -66,6 +66,10 @@ const STRUCTURAL_MENU_NAMES = new Set([
   'help',
 ])
 
+// Build output. Gitignored, so CI has none of it, and a `.d.ts` there would
+// otherwise vouch for a name `src/` no longer has.
+const BUILD_DIRS = new Set(['node_modules', 'dist', 'esm', 'cjs', 'build'])
+
 // A menu label is short. The cap also stops a stray `**` pairing with one far
 // down the page and swallowing a whole section as a single "path".
 const MAX_SEGMENT = 60
@@ -90,6 +94,12 @@ function sourceLabels() {
     for (const file of walkFiles(
       join(root, dir),
       name => /\.tsx?$/.test(name) && !/\.test\.tsx?$/.test(name),
+      // Source only. `esm/` carries a `.d.ts` per module, which matched this
+      // filter, so a renamed menu label went on being "found" in a stale local
+      // build — in the one check whose entire purpose is catching renames. It
+      // also made the answer depend on whether the developer had built, since
+      // these directories are gitignored and CI has none of them.
+      BUILD_DIRS,
     )) {
       const txt = readFileSync(file, 'utf8')
       for (const m of txt.matchAll(

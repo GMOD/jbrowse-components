@@ -347,6 +347,18 @@ function scanBlobAnchors(path: string, lines: string[]): Problem[] {
 // the live precedent for the `rpcProps()`/`gpuProps()` super-capture pattern
 // for however long after the server-side block system that owned `renderProps`
 // was deleted, because a camelCase claim matched no pattern here.
+//
+// agent-docs/reference/ was scanned once to see whether the exemption should be
+// narrowed per-doc, and it should not. Of the identifiers it names that no
+// source file has, all but three were deliberate — "the retired
+// `FeatureRendererType` path", "`BaseLinearDisplayComponent` ... are all gone",
+// "the deleted machinery (`userByteLimit`, `resolveForceLoadLimits`, ...)",
+// `hasRects`/`hasLines` offered as the shape a renderer must NOT cache. That
+// "it used to be X, and here is why it isn't" idiom is most of what those docs
+// are *for*, so an allowlist would grow past the drift it catches, one entry per
+// sentence. The three that were real drift (a chord component, a clustering
+// action, a context-menu anchor — each also wrong about more than its name) were
+// fixed directly. Re-run the scan after a big refactor rather than wiring it up.
 const SYMBOL_DIRS = [join(docsDir, 'developer_guides')]
 const SYMBOL_FILES = [join(root, 'agent-docs', 'ARCHITECTURE.md')]
 // PascalCase, plus camelCase with an internal capital. The internal capital is
@@ -373,11 +385,24 @@ const DOC_ABSENT_ON_PURPOSE = new Set([
   'renderProps',
 ])
 
+// Build output, which must not contribute symbols. `esm/` holds a `.d.ts` per
+// module and so matched the old `.tsx?$` filter: a symbol deleted from `src/`
+// went on "existing" in a stale local build, and — since these are gitignored —
+// CI, which has no build at all, disagreed with the developer's machine about
+// whether a doc reference resolved. The set is now a pure function of `src/`.
+const BUILD_DIRS = new Set(['node_modules', 'dist', 'esm', 'cjs', 'build'])
+
 function collectSymbols() {
   const set = new Set<string>()
-  const isSource = (name: string) => /\.tsx?$/.test(name)
+  // Not just .ts/.tsx. A doc naming a shader entry point (`screenToClip`,
+  // `bpToLinear` — the architecture spec's shader section invites exactly that)
+  // or a build/probe script's export would otherwise be reported as a dead
+  // symbol claim, which reads as a checker bug and gets the line deleted rather
+  // than the name fixed. The set only ever answers "does this exist anywhere",
+  // so a wider net over real sources costs nothing but the read.
+  const isSource = (name: string) => /\.(tsx?|jsx?|mjs|cjs|slang)$/.test(name)
   for (const base of ['packages', 'plugins', 'products', 'example-plugins']) {
-    for (const file of walkFiles(join(root, base), isSource)) {
+    for (const file of walkFiles(join(root, base), isSource, BUILD_DIRS)) {
       for (const m of readFileSync(file, 'utf8').matchAll(
         /\b(?:[A-Z][A-Za-z0-9]{4,}|[a-z][A-Za-z0-9]*[A-Z][A-Za-z0-9]*)\b/g,
       )) {
