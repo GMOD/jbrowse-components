@@ -59,3 +59,17 @@ test('rejects a refName with no length on record', () => {
 test('rejects an empty range', () => {
   expect(() => parse('ctgA:200-100')).toThrow(/empty region/)
 })
+
+// A display's `clusterRegion` is the second caller, and it depends on the span
+// as well as the bounds: multi-wiggle derives its sampling density by dividing
+// the named span, so a region that came back with the wrong width would bin the
+// matrix wrongly rather than fail.
+test('a region carries the span a density can be derived from', () => {
+  const [region] = parse('ctgA:1-40000')
+  expect((region?.end ?? 0) - (region?.start ?? 0)).toBe(40000)
+})
+
+test('clamps a range that runs past the end of the contig', () => {
+  const [region] = parse('ctgA:49,000-60,000')
+  expect(region?.end).toBe(50000)
+})

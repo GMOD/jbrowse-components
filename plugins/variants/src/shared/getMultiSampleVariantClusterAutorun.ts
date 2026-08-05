@@ -27,7 +27,7 @@ export function getMultiSampleVariantClusterAutorun(
   setupRunClusteringAutorun(self, {
     name: 'AutoRunMultiSampleVariantClustering',
     ready: () => self.clusteringReady,
-    run: (view, stopToken, statusCallback, regions) =>
+    run: (stopToken, statusCallback, regions) =>
       runGenotypeClustering({
         model: self,
         rpcManager: getSession(self).rpcManager,

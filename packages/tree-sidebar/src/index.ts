@@ -27,8 +27,6 @@ export { SvgTreePath } from './SvgTreePath.tsx'
 export { SvgTreeSidebar } from './SvgTreeSidebar.tsx'
 export { setupTreeDrawingAutorun } from './treeDrawingAutorun.ts'
 export { setupRunClusteringAutorun } from './runClusteringAutorun.ts'
-export { parseClusterRegion } from './clusterRegion.ts'
-export type { ClusterRegionAssembly } from './clusterRegion.ts'
 export {
   applySubtreeFilter,
   buildClusteredLayout,

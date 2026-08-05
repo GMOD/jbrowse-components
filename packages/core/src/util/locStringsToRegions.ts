@@ -1,6 +1,6 @@
-import { parseLocString } from '@jbrowse/core/util'
+import { parseLocString } from './locString.ts'
 
-import type { Region } from '@jbrowse/core/util'
+import type { Region } from './types/index.ts'
 
 // Only what the parse reads off an assembly, so it stays testable on plain data
 // rather than needing a live MST instance. `Assembly` satisfies it.
@@ -10,10 +10,12 @@ export interface RefNameSource {
   regions?: readonly { refName: string; end: number }[]
 }
 
-// Parses what the user typed into the dialog's region field. Throws on an
-// unparsable ref name or an empty range, and the dialog surfaces that rather
-// than fetching. Whitespace separates regions, so a multi-region rubberband
-// selection round-trips through the field.
+// Parses locstrings a user wrote -- into a dialog's region field, or into a
+// display's `clusterRegion` in a session -- to the regions a fetch runs over.
+// Throws on an unparsable ref name or an empty range, so a caller surfaces the
+// typo rather than quietly running over something else. Whitespace separates
+// regions, so a multi-region rubberband selection round-trips through a field,
+// and a setting can name more than one locus.
 //
 // A bare refName means the whole contig, so its length is required, not a
 // fallback: defaulting a missing length to 0 turned "this contig has no length

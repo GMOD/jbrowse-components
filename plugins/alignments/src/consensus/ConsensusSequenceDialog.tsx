@@ -17,6 +17,7 @@ import {
   getRpcSessionId,
   getSession,
   isSessionWithAddTracks,
+  locStringsToRegions,
   saveAs,
   toLocale,
 } from '@jbrowse/core/util'
@@ -31,7 +32,6 @@ import { observer } from 'mobx-react'
 
 import { defaultFilterFlags } from '../shared/util.ts'
 import ConsensusSettingsPanel from './ConsensusSettingsPanel.tsx'
-import { locStringsToRegions } from './locStringsToRegions.ts'
 import { useConsensusSettings } from './useConsensusSettings.ts'
 
 import type { FilterBy } from '../shared/types.ts'

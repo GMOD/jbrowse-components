@@ -25,7 +25,7 @@ export function getMultiRowClusterAutorun(
   setupRunClusteringAutorun(self, {
     name: 'AutoRunMultiRowClustering',
     ready: () => self.sourcesWithoutLayout.length > 1,
-    run: (_view, stopToken, statusCallback, regions) =>
+    run: (stopToken, statusCallback, regions) =>
       runMultiRowClustering({
         model: self,
         regions,

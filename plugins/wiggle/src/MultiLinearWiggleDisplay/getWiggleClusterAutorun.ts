@@ -29,7 +29,7 @@ export function getWiggleClusterAutorun(
   setupRunClusteringAutorun(self, {
     name: 'AutoRunMultiWiggleClustering',
     ready: () => self.sourcesWithoutLayout.length > 1,
-    run: (_view, stopToken, statusCallback, regions) =>
+    run: (stopToken, statusCallback, regions) =>
       runWiggleClustering({
         model: self,
         rpcManager: getSession(self).rpcManager,

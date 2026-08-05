@@ -1,10 +1,12 @@
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  getSession,
+  locStringsToRegions,
+} from '@jbrowse/core/util'
 import { isAbortException } from '@jbrowse/core/util/aborting'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
-
-import { parseClusterRegion } from './clusterRegion.ts'
 
 import type { Region, RpcStatus } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
@@ -51,13 +53,14 @@ export function setupRunClusteringAutorun(
   opts: {
     name: string
     ready: () => boolean
+    // `regions` is what to cluster over: the display's `clusterRegion`
+    // resolved, or the visible blocks. Handed down rather than left for each
+    // flavor to read off the view, which is also why none of them takes the
+    // view any more -- resolving the regions was the only thing they used it
+    // for, and two of the three already ignored it.
     run: (
-      view: LinearGenomeViewModel,
       stopToken: StopToken,
       statusCallback: (status: RpcStatus) => void,
-      // What to cluster over: `clusterRegion` resolved, or the visible blocks.
-      // Handed to `run` rather than left for each flavor to read off the view,
-      // so all three answer "where did this clustering read from" the same way.
       regions: Region[],
     ) => Promise<void>
   },
@@ -82,7 +85,6 @@ export function setupRunClusteringAutorun(
         try {
           const regions = await clusterRegions(self, view)
           await opts.run(
-            view,
             stopToken,
             status => {
               if (applying) {
@@ -94,6 +96,12 @@ export function setupRunClusteringAutorun(
         } catch (e) {
           if (!isAbortException(e) && isAlive(self)) {
             console.error(e)
+            // This path has no dialog to report into -- that is the whole
+            // reason it owns a status channel -- so without this the only sign
+            // of a failure is the progress chip disappearing and nothing
+            // happening. A `clusterRegion` with a typo in it lands here, and it
+            // is a setting the session author can fix.
+            getSession(self).notifyError(`${e}`, e)
           }
         } finally {
           stopStopToken(stopToken)
@@ -132,5 +140,5 @@ async function clusterRegions(
   if (!assembly) {
     throw new Error(`assembly ${assemblyName} not found`)
   }
-  return parseClusterRegion(clusterRegion, assembly, assemblyName)
+  return locStringsToRegions(clusterRegion, assembly, assemblyName)
 }
