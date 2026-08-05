@@ -273,6 +273,13 @@ is evidence rather than illustration.
 
 <Figure caption="The stitching at base scale, over the reads realigned to it: chr3 runs out, chr10 follows, then chr12 inverted, then chr3 resumes backwards. The projected genes under the segments carry the same names as the reference row above, so the chr12 insert reads as a piece of TRHDE on the allele's other strand. The reads below cross every join at flat depth." src="/img/cancer_sv/derivative_inserts.png" />
 
+Reads crossing a junction only mean something against what the same molecules do
+against the reference. Both tracks below are real alignments with soft clipping
+shown, over the same 380 bp of the event: `derive`'s realigned BAM on the
+derivative, and the tumour BAM on hg38.
+
+<Figure caption="Left: the tumour pileup against hg38 at chr3:25,359,568 with soft clipping shown, where the reads carrying the allele end and their tails hang off as mismatch-coloured clip. Right: the spanning reads realigned to the derivative across the same junction, clipping still on, crossing it at flat depth. The band marks the junction in each assembly's own coordinates." src="/img/cancer_sv/realigned_reads.png" links="hg38=cancer_sv/realigned_reads_reference,derivative=cancer_sv/realigned_reads_derivative" />
+
 ## The transcript view
 
 The COLO829 event is genomic. What a fusion looks like in RNA, and how a

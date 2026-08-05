@@ -103,6 +103,124 @@ const HG38_MAIN_CHROMS = [
 const FUSION_ARC_COLOR =
   "jexl:get(feature,'score') > 100 ? '#c62828' : '#9e9e9e'"
 
+// The halves of cancer_sv/realigned_reads: the same junction, the same reads,
+// read against the reference and against the allele `derive` built from them.
+//
+// It is the one claim the tutorial makes in prose that no figure drew. The
+// derivative figures show the realigned pileup on its own, where "these reads
+// cross the junction" is a picture of reads not doing anything in particular;
+// what makes it evidence is that the SAME molecules are torn in four against
+// hg38. The review asked for it from the other end -- "why are the reads not
+// shown using alignmentstrack? that is potentially important" -- which on the
+// in-app reconstruction they cannot be (its allele is a structure with no
+// bases, so its lane is a coordinate projection), and here they are: a real BAM
+// on both sides, `derive`'s own `reads_vs_derivative` output on the right.
+//
+// The chr3 junction at 25,359,568, which is the first one the allele takes, at
+// 380 bp on both sides so a pane's width is the same number of bases. The
+// derivative's own coordinate for it is 32,732 (der3_RARB.vs_reference.paf:
+// segment 1 is 0-32,732 + -> chr3:25,326,821-25,359,568), and the two windows
+// are centred on the pair.
+//
+// Soft clipping is ON in both panes, which is what makes the comparison
+// honest: the right pane is not "clipping hidden", it is the same setting over
+// reads that have none to draw.
+// The chr3 -> chr10 junction as a 20 bp band in each assembly's own
+// coordinates. `derive`'s PAF puts derivative 0-32,732 (+) against
+// chr3:25,326,821-25,359,568, so the boundary is the same event at
+// 25,359,568 and at 32,732; the band is wide enough to be a mark rather than a
+// hairline at 380 bp across a 700 px pane.
+const JUNCTION_HL_COLOR = 'rgba(60,65,72,0.12)'
+const JUNCTION_HL_HG38 = {
+  refName: 'chr3',
+  start: 25359558,
+  end: 25359578,
+  color: JUNCTION_HL_COLOR,
+}
+const JUNCTION_HL_DER3 = {
+  refName: 'der3_RARB_BICC1_TRHDE',
+  start: 32722,
+  end: 32742,
+  color: JUNCTION_HL_COLOR,
+}
+
+function realignedReadsPartSpecs(): ScreenshotSpec[] {
+  // One height for both, since `+append` pads the shorter pane, and each pane's
+  // tracks are then sized to fill it rather than to a round number: both halves
+  // of the first render were wrong in opposite directions (the reference pane
+  // carried 150 px of blank inside a track taller than its own pileup, the
+  // derivative pane cut 97 px off the bottom of the page), which is what the
+  // generator's two size reports are for.
+  const HEIGHT = 612
+  const WIDTH = 700
+  return [
+    {
+      mode: 'url',
+      name: 'cancer_sv/realigned_reads_reference',
+      viewportHeight: HEIGHT,
+      viewportWidth: WIDTH,
+      url: lgvSession(CONFIG, {
+        assembly: 'hg38',
+        loc: 'chr3:25,359,380-25,359,760',
+        // The junction itself, in-app rather than as a drawn callout, and the
+        // same band in the other pane's coordinates. Both windows put it at 49%
+        // of their width, so side by side the two marks line up and a reader
+        // compares the same column twice.
+        highlight: [JUNCTION_HL_HG38],
+        tracks: [
+          {
+            trackId: TUMOUR,
+            showSoftClipping: true,
+            // 200x tumour depth: two pixels a row fits the pileup and still
+            // leaves the clipped tails' mismatch ticks distinguishable, which
+            // one pixel merges into a single coloured block
+            featureHeight: 2,
+            featureSpacing: 0,
+            // the pileup's own size at this row height, measured off the render:
+            // taller is blank page under the reads rather than more of them
+            height: 410,
+          },
+        ],
+      }),
+      readyText: '25,359',
+      readyTimeout: 90000,
+      settleMs: 15000,
+    },
+    {
+      mode: 'url',
+      name: 'cancer_sv/realigned_reads_derivative',
+      viewportHeight: HEIGHT,
+      viewportWidth: WIDTH,
+      url: lgvSession(CONFIG, {
+        assembly: 'der3_RARB_BICC1_TRHDE',
+        loc: 'der3_RARB_BICC1_TRHDE:32,545-32,925',
+        highlight: [JUNCTION_HL_DER3],
+        tracks: [
+          // the junction has to be marked on this side: with 29 reads running
+          // straight through it, nothing in the pileup itself says where it is,
+          // and "no read clips here" needs a here
+          { trackId: 'der3_segments', height: 70 },
+          {
+            trackId: 'reads_vs_der3',
+            showSoftClipping: true,
+            // 29 reads rather than 200, so they get a row an order of magnitude
+            // taller than the reference pane's and the pane fills with the
+            // same 380 bp of pileup
+            featureHeight: 9,
+            featureSpacing: 1,
+            // all 29 rows, and no more: a height that shows twenty of them puts
+            // the rest behind a scrollbar, which reads as a pileup that stops
+            height: 300,
+          },
+        ],
+      }),
+      readyText: '32,5',
+      readyTimeout: 90000,
+      settleMs: 15000,
+    },
+  ]
+}
+
 export const cancerSvSpecs: ScreenshotSpec[] = [
   // The event as the reference shows it: every spanning read is torn into four
   // pieces, so the pileup is a wall of clipping at two points 457 bp apart, and
@@ -501,6 +619,20 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
+  },
+
+  ...realignedReadsPartSpecs(),
+  {
+    mode: 'compose',
+    name: 'cancer_sv/realigned_reads',
+    parts: [
+      'cancer_sv/realigned_reads_reference',
+      'cancer_sv/realigned_reads_derivative',
+    ],
+    // Side by side, because the two panes are the same reads in two coordinate
+    // systems rather than two steps of a procedure. Stacked, the second would
+    // read as what happened next.
+    direction: 'horizontal',
   },
 
   // K562: the caller's whole output at once, as chords on a circle. Every call
