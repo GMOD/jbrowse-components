@@ -78,7 +78,9 @@ binding-less imports from declaration emit, so it never reaches the entry
 
 Symptom when you get it wrong: `TS2488 Type 'unknown' must have a
 '[Symbol.iterator]()' method` at an `addToExtensionPoint` callback, because the
-overload fell back to the untyped signature.
+overload fell back to the untyped signature. On an accumulating point the same
+cause reads differently — `contributeToExtensionPoint` rejects the name outright,
+since an unseen registry entry leaves it out of `AccumulatingPointName`.
 
 ## `pnpm autogen` needs a clean tree
 
