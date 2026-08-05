@@ -19,6 +19,14 @@ set -euo pipefail
 
 OUTDIR="${1:-dog10k_igf1_build}"
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# fetched on demand so a bare `curl -O` of this one script still works
+HELPERS=(igf1_site_fst.py)
+for h in "${HELPERS[@]}"; do
+  [ -f "$HERE/$h" ] || curl -fsSL -o "$HERE/$h" \
+    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
+done
+
 SHARE=https://kiddlabshare.med.umich.edu/dog10K
 SNVS=$SHARE/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz
 

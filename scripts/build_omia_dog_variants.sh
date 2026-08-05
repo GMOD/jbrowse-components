@@ -21,6 +21,14 @@ set -euo pipefail
 
 OUTDIR="${1:-omia_dog_build}"
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# fetched on demand so a bare `curl -O` of this one script still works
+HELPERS=(omia_sql_to_bed.py omia_bed_to_gff.py)
+for h in "${HELPERS[@]}"; do
+  [ -f "$HERE/$h" ] || curl -fsSL -o "$HERE/$h" \
+    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
+done
+
 OMIA_DUMP=https://omia.org/static/omia.sql.gz
 CHAIN=https://hgdownload.soe.ucsc.edu/goldenPath/canFam3/liftOver/canFam3ToCanFam4.over.chain.gz
 LIFTOVER=https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/liftOver
