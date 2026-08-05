@@ -92,11 +92,22 @@ The same thing scales to the whole genome. **View → Show all regions in
 assembly** puts every chromosome in the view at once, which makes the fetch
 every chromosome against every other one and the drawing a block diagonal.
 
-<Figure caption="hg19 chr1 to chrY in one view, log scale. Each chromosome is its own triangle and the notch out of each one is its centromere. The blocks between them are empty because this file stores intra-chromosomal contacts only." src="/img/hic/whole_genome.png" />
+<Figure caption="GM12878 in situ Hi-C (ENCODE ENCSR730CER), hg38 chr1 to chrY in one view. Each chromosome is a triangle along the bottom edge and each pair of chromosomes is the block between their two triangles, so the whole pyramid is the genome against itself. The white bands crossing it are centromeres and the acrocentric short arms, where there is nothing to contact." src="/img/hic/whole_genome.png" />
 
-Log scale is required at this zoom. One pixel is megabases, contact frequency
-has decayed over almost every bin on screen, and on the linear ramp the
-twenty-four triangles render as a thin smear along the diagonal.
+How much figure this is depends on the file. A file storing only
+intra-chromosomal contacts draws its per-chromosome triangles and leaves every
+block between them empty, which is a picture of the geometry rather than of the
+data; check a candidate before reading anything into a blank off-diagonal. It
+also decides the sensible ramp: a sparse file needs
+[`useLogScale`](/docs/config/linearhicdisplay/#slot-uselogscale) to lift its
+decayed long-range bins off the floor, and a dense one comes back solid under
+the same setting, since every bin then reaches the top of the scale.
+
+The track has to be tall here. A pair's contacts are drawn in the wedge between
+its two regions, so the drawing is as tall as the widest pair on screen is
+wide, and at whole-genome zoom that is chr1 against chrY: half the view. A
+hundred-pixel track shows the top slice of that pyramid, which is its faintest
+corner.
 
 ## Fitting the triangle to the track height
 

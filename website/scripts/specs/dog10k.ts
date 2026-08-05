@@ -446,6 +446,17 @@ export const dog10kSpecs: ScreenshotSpec[] = [
   // both Great Anglo-French breeds, 24-63 the stocks they were bred from, 64-65
   // German Shepherd. Derived from that list rather than measured off a PNG, so
   // adding a dog to the build moves the pills by editing one arithmetic line.
+  //
+  // RIGHT-aligned, and that is a data decision rather than a taste one. Placed
+  // at the left they sat exactly where the row labels used to, and a query over
+  // the BED for wolf segments falling under each pill found the worst case
+  // there: the Great Anglo-French pill covered Tricolour 5's 11.4 Mb terminal
+  // block on hap1 and its 8.9-11.4 Mb block on hap2 -- the single most
+  // interesting thing in the figure, and the block the deleted unlabelled panel
+  // existed to uncover. The same query over the right edge returns nothing for
+  // three of the four pills; the fourth sits on the held-out wolf and the
+  // wolfdog, whose rows are wolf end to end, so it covers orange with orange
+  // either side of it and hides no boundary.
   {
     mode: 'url',
     name: 'dog10k-anglofrench-hounds',
@@ -482,9 +493,10 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         anchor: {
           track: 'dog10k_anglofrench',
           fracY: 2 / 66,
-          alignX: 'left',
-          dx: 12,
+          alignX: 'right',
+          dx: -12,
         },
+        textAlign: 'end',
       },
       {
         type: 'text',
@@ -492,9 +504,10 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         anchor: {
           track: 'dog10k_anglofrench',
           fracY: 14 / 66,
-          alignX: 'left',
-          dx: 12,
+          alignX: 'right',
+          dx: -12,
         },
+        textAlign: 'end',
       },
       {
         type: 'text',
@@ -502,9 +515,10 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         anchor: {
           track: 'dog10k_anglofrench',
           fracY: 44 / 66,
-          alignX: 'left',
-          dx: 12,
+          alignX: 'right',
+          dx: -12,
         },
+        textAlign: 'end',
       },
       {
         type: 'text',
@@ -512,9 +526,10 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         anchor: {
           track: 'dog10k_anglofrench',
           fracY: 65 / 66,
-          alignX: 'left',
-          dx: 12,
+          alignX: 'right',
+          dx: -12,
         },
+        textAlign: 'end',
       },
     ],
   },

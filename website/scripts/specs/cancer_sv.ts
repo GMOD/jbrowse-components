@@ -199,7 +199,7 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
         {
           type: 'text',
           text: 'aligned to hg38',
-          anchor: { track: TUMOUR, fracY: 0, alignX: 'left', dx: 10, dy: 16 },
+          anchor: { track: TUMOUR, fracY: 0, alignX: 'left', dx: 10, dy: 30 },
         },
       ],
     },
@@ -235,20 +235,24 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
       readyTimeout: 90000,
       settleMs: 15000,
       // The other half of the same label, and the one the reviewer asked for by
-      // name. It says the tool as well as the target, because "realigned" with
-      // no agent is the sentence that invites "by what?" -- `derive` is
-      // scripts/sv_multihop.py's subcommand and it runs minimap2, both named in
-      // the tutorial's Reproduce section.
+      // name. Short enough to stay one line: the first version named the tool
+      // too ("... (sv_multihop.py derive)") and wrapped to three lines that
+      // covered the track header and the top of the pileup. The tool is in the
+      // caption and in the tutorial's Reproduce section, which is where a
+      // sentence belongs; a callout is a label.
       annotations: [
         {
           type: 'text',
-          text: 'the same reads realigned to the derived contig (sv_multihop.py derive)',
+          text: 'realigned to the derived contig',
           anchor: {
             track: 'reads_vs_der3',
             fracY: 0,
             alignX: 'left',
             dx: 10,
-            dy: 16,
+            // clear of the track header: fracY 0 is the top of the rendering
+            // container and a pill is ~44px tall, so a smaller offset draws it
+            // across the track name
+            dy: 30,
           },
         },
       ],
@@ -437,7 +441,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         // below the pileup, which left the same locus with the same tracks on
         // screen twice, one scroll apart ("too chaotic ... should also use
         // 'replace view'") -- that is now what the button does.
-        viewportHeight: 1310,
+        viewportHeight: 1330,
       },
     ],
   },
@@ -824,12 +828,11 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           { type: 'delay', ms: 1000 },
         ],
         annotations: [{ type: 'box', anchor: { text: 'Window size (bp)' } }],
-        // The result frame's height, not the dialog frames': this is the left
-        // half of the grid's second row and `+append` pads the shorter of a
-        // pair, so matching it here is what keeps a band of blank page out of
-        // the middle of the figure. The extra height is pileup behind the
-        // dialog, which is the same pileup the frame above it shows.
-        viewportHeight: 1070,
+        // Deliberately NOT raised to the result frame's height. It is the left
+        // half of the grid's second row, so `+append` pads it to match -- with
+        // white, which reads as a gutter. Matching heights instead was tried
+        // and is worse: the app's own page is ~667 tall here, so the extra 400
+        // is grey app background rather than more pileup.
       },
       {
         // The result, loaded as a session rather than clicked out of the dialog

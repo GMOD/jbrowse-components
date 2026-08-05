@@ -72,13 +72,14 @@ Dark blue is a sample with no copy of _RHD_, light blue one copy, grey two, and
 the olive stripe running through the block is a separate nested call rather than
 part of the deletion.
 
-Setting the display's cell coloring to **SV type** paints each alt-carrying cell
-by its variant's structural-variant class instead, so the same window becomes a
-map of what kind of SV sits where and the legend names each class present. The
-figure below is the callset loaded twice in one view, once each way, on one
-ruler and over one gene track.
+A matrix cell says a sample carries something at that column, not which call it
+carries, and 26 records overlap in this window. Loading the same VCF a second
+time in the ordinary variant display puts each of them on its own row with its
+id, class and size, so a band in the matrix reads off a named record. Cell
+coloring by **SV type** is the other way to ask that question, shown in the
+[multi-variant track guide](/docs/user_guides/multivariant_track).
 
-<Figure caption="The 1KGP ensemble SV callset across 200 kb of chr1, one row per sample, both lanes sorted by genotype at the RHD deletion, over the NCBI RefSeq genes. Top, colored by genotype: each call is drawn at its real span, so the deletion is a 70 kb block splitting the cohort into three bands. Bottom, the same rows colored by SV type, where the legend names the five classes present: the deletion is the wide red block, and the duplications and inversions to the right of it fall over RHCE." src="/img/multisv_rhd.png" />
+<Figure caption="The 1KGP ensemble SV callset across 200 kb of chr1 twice over: as a genotype matrix, one row per sample, sorted by genotype at the RHD deletion, and under it as ordinary variant records colored by SV class. Each call is drawn at its real span in both, so the deletion is a 70 kb block splitting the cohort into three bands above and the labelled HGSV_1821 record below. The NCBI RefSeq genes are at the foot." src="/img/multisv_rhd.png" />
 
 That olive stripe is worth naming, because it is the one thing in the frame that
 is not what it looks like. It is `HGSV_1823`, a 6 kb copy-number record sitting

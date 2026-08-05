@@ -397,17 +397,33 @@ export const uiSpecs: ScreenshotSpec[] = [
   //
   // The window is 200kb: the deletion is then a third of the frame with RHD
   // under it and RHCE (the 97%-identical paralog the read figures turn on) at
-  // the right-hand edge, and it still carries five SV classes for the SV-type
-  // lane's legend to name.
+  // the right-hand edge.
   //
-  // TWO captures composed rather than two lanes in one view. One view with the
-  // callset loaded twice was built first and does not work: the second
-  // multi-sample display's presence makes the FIRST one's canvas stop
-  // answering `onContextMenu` (it resolves its own feature and opens nothing
-  // when that comes back undefined), so the "Sort by genotype" the sort needs
-  // never appears -- measured, on both lanes, with and without a settling
-  // hover. That is an app bug rather than a spec one; until it is fixed, a
-  // capture per colouring is the only way to get both sorted the same way.
+  // ONE VIEW, TWO DISPLAY TYPES OF THE SAME CALLSET, which is what the review
+  // asked for ("change this to one figure where the regular
+  // linearvariantdisplay and the multisamplevariantdisplay of same data was
+  // visible, then user can see which sv is which"). It was two captures
+  // composed -- the same matrix coloured by genotype and then by SV class --
+  // and the second was doing the "which SV is which" job badly: a matrix cell
+  // says a sample carries SOMETHING here, and with 26 overlapping records in
+  // this window a colour change is only visible where two calls differ in their
+  // carriers. The ordinary display separates them by construction, one row per
+  // non-overlapping set, and labels each with its id and size (HGSV_1821 <DEL>
+  // 70.1Kbp), so a column in the matrix reads off a named record.
+  //
+  // The SV-type CELL colouring the second half used to carry is not lost: it is
+  // multisv_svtype in the multi-variant user guide, on a window whose classes
+  // are the subject rather than a second copy of this one.
+  //
+  // Lane order is matrix, records, genes, so the records sit between the two
+  // things they explain -- the cells above and the genes below.
+  //
+  // A second display of the same TRACK is not possible (showTrack resolves by
+  // trackId and returns the open one), so the record lane is a sessionTrack
+  // pointing at the same VCF under its own id. Two multi-sample displays in one
+  // view is separately impossible: the second one's presence makes the first
+  // stop answering `onContextMenu`, so "Sort by genotype" never appears. One
+  // matrix plus one ordinary display does not hit that.
   //
   // The right-click lands at x~750, the deletion's midpoint in this window
   // (fraction 0.50 of a 1500px capture), which is inside the deletion and clear
@@ -416,68 +432,7 @@ export const uiSpecs: ScreenshotSpec[] = [
   // a long ready/settle.
   {
     mode: 'url',
-    name: 'multisv_rhd_genotype',
-    url: kgUrl({
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: '1:25,200,000-25,400,000',
-          tracks: [
-            {
-              trackId: '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
-              type: 'LinearMultiSampleVariantDisplay',
-              forceLoad: true,
-              height: 400,
-            },
-          ],
-        },
-      ],
-    }),
-    readyText: '1KGP',
-    readyTimeout: 90000,
-    // no gene lane on this half: the two halves are the same window at the same
-    // scale, so the gene track under the lower one names RHD and RHCE for both,
-    // and a second copy would be 140px of the same picture
-    viewportHeight: 640,
-    settleMs: 35000,
-    hideTooltip: true,
-    actions: [
-      { type: 'rightclick', from: { x: 750, y: 450 } },
-      { type: 'waitForText', text: 'Sort by genotype' },
-      { type: 'click', text: 'Sort by genotype' },
-      { type: 'delay', ms: 6000 },
-      // move the pointer off the matrix so the mouseover crosshair doesn't bake
-      // into the capture
-      { type: 'hover', from: { x: 6, y: 6 } },
-      { type: 'delay', ms: 800 },
-    ],
-  },
-
-  // The same window, same sort, coloured by SV class instead: every
-  // alt-carrying cell takes its variant's structural-variant class color and
-  // the legend names the five present here (DEL, DUP, INS, INV, CNV). This is
-  // the half that carries the gene lane for the composed pair.
-  //
-  // It also carries the ORDINARY variant display of the same callset, between
-  // the matrix and the genes (reviewer: "so the user can see which sv is
-  // which"). A matrix column is a genotype wash — 26 records over this window
-  // overlap, so a cell says "this sample carries something here" and the
-  // boundary between two calls is only visible where their carrier sets differ.
-  // The same 26 records in a LinearVariantDisplay lay out in rows and separate:
-  // HGSV_1821 (the 70kb RHD deletion) is one bar, and the duplications and
-  // inversions over RHCE are their own. Same colors on both, since the lane
-  // takes the `svTypeColor` jexl the SV-type preset is built on
-  // (SV_TYPE_COLOR_JEXL in plugins/variants/src/shared/variantSvType.ts —
-  // hardcoded rather than imported, since that module pulls the core util
-  // barrel and specs are read under plain node).
-  //
-  // A second display of the same *track* is not possible — showTrack resolves by
-  // trackId and returns the open one — so the lane is a sessionTrack pointing at
-  // the same VCF under its own id.
-  {
-    mode: 'url',
-    name: 'multisv_rhd_svtype',
+    name: 'multisv_rhd',
     url: kgUrl({
       sessionTracks: [
         {
@@ -502,7 +457,6 @@ export const uiSpecs: ScreenshotSpec[] = [
               type: 'LinearMultiSampleVariantDisplay',
               forceLoad: true,
               height: 400,
-              featureColor: 'svType',
             },
             {
               trackId: 'kgp_sv_records',
@@ -511,6 +465,12 @@ export const uiSpecs: ScreenshotSpec[] = [
               // enough for the four rows the 26 records pack into plus their
               // name/type labels; at 130 the last row was under the lane's fold
               height: 170,
+              // the same `svTypeColor` jexl the SV-type cell preset is built on
+              // (SV_TYPE_COLOR_JEXL in plugins/variants/src/shared/
+              // variantSvType.ts -- written out rather than imported, since that
+              // module pulls the core util barrel and specs are read under
+              // plain node), so a record's colour and the legend agree with the
+              // multi-variant guide's SV-type figure
               color: 'jexl:svTypeColor(feature)',
             },
             // showLabels:'on' forces gene names on at this zoom; showOnlyGenes
@@ -538,20 +498,11 @@ export const uiSpecs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Sort by genotype' },
       { type: 'click', text: 'Sort by genotype' },
       { type: 'delay', ms: 6000 },
+      // move the pointer off the matrix so the mouseover crosshair doesn't bake
+      // into the capture
       { type: 'hover', from: { x: 6, y: 6 } },
       { type: 'delay', ms: 800 },
     ],
-  },
-
-  // The two above as one figure, since they are one window twice: the same
-  // 3202 rows in the same sorted order, coloured by genotype and then by SV
-  // class. Stacked rather than side by side -- they share an x axis, and a
-  // column that is a deletion in one half has to sit over the same column in
-  // the other for the pair to say anything.
-  {
-    mode: 'compose',
-    name: 'multisv_rhd',
-    parts: ['multisv_rhd_genotype', 'multisv_rhd_svtype'],
   },
 
   // The read-level check the SV-multisamples tutorial's genotypes are read
