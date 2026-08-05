@@ -579,11 +579,14 @@ manual **min/max score** cap from the track menu (a few centromere and repeat
 spikes otherwise compress the copy-number signal), then switch to **overlapping
 scatter** so the two samples plot as points in one band (tumor red, normal
 blue). Zoom to a region and open the benchmark CNV BED track to check that
-coverage changes line up with the called intervals.
+coverage changes line up with the called intervals. Coverage says a level
+changed but not what changed, so put the BAF track from above in the same
+window: chromosome 5 carries three different answers, and each one is a
+different shape in that lane.
 
 <Figure caption="The linear genome view start screen: click Show all regions in assembly to lay out every chromosome across the view." src="/img/sv_cgiab/cnv_show_all_regions.png" />
 
-<Figure caption="A multi-bigwig track with tumor (red) and normal (blue) coverage zoomed to chromosome 5, in overlapping-scatter rendering, above the benchmark CNV BED track. Orange boxes mark individual CNVs (clicking one shows its feature details), and coverage drops and gains line up with the called intervals below." src="/img/sv_cgiab/cnv_with_bed_track.png" />
+<Figure caption="Chromosome 5: the segmented copy ratio, tumor (red) and normal (blue) indexcov coverage as overlapping scatter on a fixed 0-3 axis, B-allele frequency, and the benchmark CNV calls. Tumor coverage steps up over the gain and down across the q-arm while the normal stays flat, and the BAF lane says what each step is: one band at 0.5, then a 1/3 and 2/3 pair, then two bands at 0 and 1." src="/img/sv_cgiab/cnv_with_bed_track.png" />
 
 Raw coverage is only a sanity check on existing calls. For a signal that reads
 directly as copy number, use the depth, BAF, and copy-number tracks built above.

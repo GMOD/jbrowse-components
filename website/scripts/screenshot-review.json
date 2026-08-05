@@ -206,10 +206,10 @@
   },
   "sv_cgiab/cnv_with_bed_track": {
     "name": "sv_cgiab/cnv_with_bed_track",
-    "status": "bad",
-    "note": "aggressively pursue ideal clean informative image. we could add a baf track here. it would be interesting to plot normalized read depth also, but i want a tool that does that?? if one exists??",
-    "reviewedAt": "2026-08-04T23:39:28.340Z",
-    "hash": "19f15e785ff9e775e5819a87dbfc0e2ed7e21122"
+    "status": "answered",
+    "note": "BAF added, and the coverage lane fixed so it can be read. Both halves of the note. (1) THE BAF TRACK: chr5 is the chromosome that most rewards one -- the benchmark calls three allelic states on it where chr3 (cnv_depth_baf) has two. Measured off the hosted bigWig per 2 Mb of het sites: chr5:20-22 Mb CN 2 (1|1) is 84% between 0.4 and 0.6, chr5:37-39 Mb CN 3 (2|1) is 45% at 0.15-0.4 and 49% at 0.6-0.85, chr5:60-62 Mb CN 1 (0|1) is 48% below 0.15 and 51% above 0.85 with nothing between. So the lane draws one band, then the 1/3-2/3 fork the tutorial's own table predicts for a gain, then the two LOH bands. (2) NORMALIZED READ DEPTH, and the tool that does it: that is what the coverage lane already was -- goleft indexcov normalizes each sample to its own median, which is the only reason the two rows can be read against each other. It did not LOOK like it because the display was on localsd autoscale while the walkthrough text tells the reader to apply a manual min/max cap: indexcov's centromere and repeat spikes run to 497, so every plateau sat in the bottom fifth of the lane as one cloud. Fixed 0..3 with crosshatches now, where the tumor's three levels (0.6 / 1.1 / 1.9 by median) step against the normal's flat 1.0. Caption and the walkthrough paragraph updated; viewport 690 -> 830.",
+    "reviewedAt": "2026-08-05T00:40:09.899Z",
+    "hash": "fb95af4ddcaf56cce21a3cd96d6ff3f7e68b3058"
   },
   "sv_cgiab/synteny_view": {
     "name": "sv_cgiab/synteny_view",

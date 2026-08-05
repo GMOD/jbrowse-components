@@ -1044,9 +1044,28 @@ export const svSpecs: ScreenshotSpec[] = [
     // calls, so the coverage gains/losses can be compared against the called
     // intervals. Uses the normalized indexcov bigwigs (median≈1 → reads
     // directly as copy number).
+    //
+    // BAF added (reviewer: "aggressively pursue ideal clean informative image.
+    // we could add a baf track here"), and chr5 is the chromosome that most
+    // rewards it: the benchmark calls three different allelic states on it,
+    // where chr3 (sv_cgiab/cnv_depth_baf) has two. Measured off the hosted
+    // bigWig, het sites per 2 Mb:
+    //
+    //   chr5:20-22 Mb   CN 2 (1|1)   84% of sites between 0.4 and 0.6
+    //   chr5:37-39 Mb   CN 3 (2|1)   45% at 0.15-0.4 and 49% at 0.6-0.85
+    //   chr5:60-62 Mb   CN 1 (0|1)   48% below 0.15, 51% above 0.85, nothing between
+    //
+    // so the lane draws one band, then the 1/3/2/3 pair the tutorial's table
+    // predicts for a gain, then the two LOH bands -- against a coverage lane
+    // where the tumor sits at 1.9 / 1.1 / 0.6 and the normal stays at 1.0.
+    // The other half of the note ("plot normalized read depth also, but i want
+    // a tool that does that??") is what the coverage lane already is: goleft
+    // indexcov normalizes each sample to its own median, which is why the two
+    // rows can be read against each other at all.
     url: cgiabUrl({
       sessionTracks: [
         HG008_BICSEQ2_TRACK,
+        HG008_BAF_TRACK,
         {
           type: 'MultiQuantitativeTrack',
           trackId: 'hg008_cnv_indexcov_chr5',
@@ -1104,11 +1123,34 @@ export const svSpecs: ScreenshotSpec[] = [
               trackId: 'hg008_cnv_indexcov_chr5',
               type: 'MultiLinearWiggleDisplay',
               defaultRendering: 'multiscatter',
-              autoscale: 'localsd',
+              // Fixed 0..3, which is the manual min/max cap the walkthrough
+              // tells the reader to apply, and which localsd autoscale was
+              // quietly not doing: indexcov's few centromere and repeat spikes
+              // run to 497, so an autoscaled axis put every plateau in the
+              // bottom fifth of the lane and the three tumor levels (0.6 / 1.1
+              // / 1.9 by median, against the normal's flat 1.0) were one cloud.
+              minScore: 0,
+              maxScore: 3,
+              displayCrossHatches: true,
               // finer binning (basesPerSpan = bpPerPx/resolution) so the
               // whole-chromosome scatter resolves more CNV detail
               resolution: 8,
               height: 200,
+            },
+            {
+              trackId: 'hg008_baf',
+              type: 'LinearWiggleDisplay',
+              // Same settings as the chr3 figure so the two read alike: scatter
+              // over a fixed 0..1, because the value is one point per germline
+              // het site and the whole signal is the spread. A line would
+              // average the two LOH bands into 0.5 and erase the event. The raw
+              // fetch that keeps the bands apart is HG008_BAF_TRACK's
+              // resolutionMultiplier, not a display setting.
+              defaultRendering: 'scatter',
+              scatterPointSize: 1,
+              minScore: 0,
+              maxScore: 1,
+              height: 140,
             },
             'GRCh38_HG008-T-V0.5_somatic-CNV_PASS.draftbenchmark.calls',
           ],
@@ -1119,9 +1161,10 @@ export const svSpecs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     // wider viewport so the whole-chromosome CNV + bed track aren't cut off
     viewportWidth: 1800,
-    // the segmented lane(90) + the coverage rows(200) + the bed calls + chrome;
-    // sized rather than left to the default, which now leaves blank below
-    viewportHeight: 690,
+    // the segmented lane(90) + the coverage rows(200) + BAF(140) + the bed
+    // calls + chrome; sized rather than left to the default, which leaves blank
+    // below
+    viewportHeight: 830,
     settleMs: 15000,
   },
 
