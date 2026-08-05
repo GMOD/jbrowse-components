@@ -186,16 +186,21 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
       },
       options: ROW_IDENTITY_MODES,
       extraItems: [
-        {
-          ...checkboxItem(
-            'Auto-switch by zoom',
-            self.rowIdentityAutoZoom,
-            () => {
-              self.setRowIdentityAutoZoom(!self.rowIdentityAutoZoom)
-            },
-          ),
-          disabled: self.rowIdentityMode === 'none',
-        },
+        // Named for what it does, not for the mechanism. "Auto-switch by zoom"
+        // said neither which two things swap nor which way round, and the row
+        // it sits under is already "by zoom" — so the only thing the label had
+        // to carry (that zooming in gives you the letters back) was the part it
+        // left out.
+        checkboxItem(
+          'Show bases when zoomed in',
+          self.rowIdentityAutoZoom,
+          () => {
+            self.setRowIdentityAutoZoom(!self.rowIdentityAutoZoom)
+          },
+          // The dependency stated rather than gated on: with `Off` selected
+          // above there is no identity plot to swap out, so the row is inert.
+          { subLabel: 'while a mode above is selected' },
+        ),
       ],
     }),
   ]

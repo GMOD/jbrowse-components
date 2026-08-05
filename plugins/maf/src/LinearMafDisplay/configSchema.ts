@@ -194,13 +194,21 @@ export default function configSchemaF(pluginManager: PluginManager) {
       },
       /**
        * #slot
-       * When true the per-row identity plot follows zoom like UCSC `wigMaf`;
-       * when false the selected `rowIdentityMode` is pinned on at every zoom.
+       * When true (the default) the `rowIdentityMode` plot draws only while
+       * zoomed out, and zooming in to base level swaps it back for the base/SNP
+       * coloring — where individual bases are legible, the letters say more than
+       * a per-pixel mean of them. This is UCSC `wigMaf` behavior. When false the
+       * plot is pinned on at every zoom and the bases are never shown.
+       *
+       * The slot name is the mechanism ("auto by zoom"); what a user picks is
+       * which of the two renderings they get zoomed in, which is how the menu
+       * row is worded.
        */
       rowIdentityAutoZoom: {
         type: 'boolean',
         defaultValue: DEFAULTS.rowIdentityAutoZoom,
-        description: 'let zoom drive the per-row identity plot (UCSC wigMaf)',
+        description:
+          'show the base/SNP coloring instead of the per-row identity plot once zoomed in to base level (UCSC wigMaf); false pins the plot on at every zoom',
       },
       /**
        * #slot
