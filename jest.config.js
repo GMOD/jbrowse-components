@@ -96,7 +96,7 @@ export default {
       // jbrowse-img uses Node environment with native fetch (no jest-fetch-mock)
       displayName: 'jbrowse-img',
       testMatch: ['<rootDir>/products/jbrowse-img/**/*.test.ts'],
-      testPathIgnorePatterns: ['/dist/', '/cypress/', '/demos/'],
+      testPathIgnorePatterns: ['/dist/', '/demos/'],
       testEnvironment: 'node',
       ...baseConfig,
     },
@@ -111,7 +111,6 @@ export default {
       ],
       testPathIgnorePatterns: [
         '/dist/',
-        '/cypress/',
         '/demos/',
         '<rootDir>/products/jbrowse-img/',
         // Own lockfile/test runner (vitest), CI'd separately (blat_proxy job).

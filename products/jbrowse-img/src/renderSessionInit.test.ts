@@ -25,7 +25,7 @@ import path from 'node:path'
 
 import { enableStaticRendering } from 'mobx-react'
 
-import { renderRegion } from './renderRegion.tsx'
+import { renderRegion } from './renderRegion.ts'
 
 // The half of setupEnv() the jsdom environment doesn't cover. Static rendering
 // is the load-bearing one: these renders go to static markup, so an observer

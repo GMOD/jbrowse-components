@@ -1,4 +1,4 @@
-export { renderRegion } from './renderRegion.tsx'
+export { renderRegion } from './renderRegion.ts'
 export { setupEnv } from './setupEnv.ts'
 export { convert } from './util.ts'
 export { parseArgv, standardizeArgv } from './parseArgv.ts'

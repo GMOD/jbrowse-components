@@ -6,7 +6,7 @@ import type { LinearSyntenyViewInit } from '@jbrowse/plugin-linear-comparative-v
 import type { SyntenyViewSharedInit } from '@jbrowse/synteny-core'
 
 // The `init` snapshot a comparative view is opened with, built from CLI flags
-// (the --spec path supplies its own, see spec.ts). Split out of renderRegion.tsx
+// (the --spec path supplies its own, see spec.ts). Split out of renderRegion.ts
 // because that module imports the plugin renderToSvg chain, which pulls pure-ESM
 // deps Jest's CJS transform can't load — this one is pure, so the snapshot shape
 // is unit-testable. Same split, same reason, as applyTrackOpts.ts.

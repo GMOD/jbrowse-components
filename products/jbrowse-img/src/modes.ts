@@ -1,6 +1,6 @@
 // Every render mode jbrowse-img supports and how each is dispatched. This is the
 // single source of truth that the CLI subcommands + help (options.ts), the
-// --spec view-type mapping, and the renderer dispatch (renderRegion.tsx) all
+// --spec view-type mapping, and the renderer dispatch (renderRegion.ts) all
 // derive from. `linear` is the implicit default (bare invocation with no
 // subcommand) but is registered here so `jb2export lgv ...` also works and so
 // the renderer Record stays exhaustive.

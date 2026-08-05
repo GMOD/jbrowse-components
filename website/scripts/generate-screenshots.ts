@@ -8,6 +8,7 @@ import { parseArgs, promisify } from 'node:util'
 
 import {
   BASE_CHROME_ARGS,
+  PENDING_DISPLAYS,
   createTestServer,
   findChromeExecutable,
   isBrowserConsoleNoise,
@@ -225,12 +226,14 @@ const debugDir = path.resolve(__dirname, '..', 'debug-screenshots')
 // jb2export (the @jbrowse/img CLI) renders the products/jbrowse-img/README
 // example images straight to PNG via React SSR — no browser involved, so
 // CliSpecs bypass the puppeteer pipeline entirely and land here instead of
-// outDir. Run from source via tsx (not the npm-installed `jb2export` binary)
-// so a local edit to products/jbrowse-img/src is reflected immediately.
+// outDir. Run from source with plain `node --experimental-strip-types` (not the
+// npm-installed `jb2export` binary) so a local edit to products/jbrowse-img/src
+// is reflected immediately — its src is pure .ts, so node strips it in place.
+// Its @jbrowse/* deps come from their built esm/ (see jbrowse-img's resolve.ts),
+// so a plugin change needs `pnpm build` before it shows up in a figure.
 const jbrowseImgDir = path.resolve(repoRoot, 'products', 'jbrowse-img')
 const jbrowseImgOutDir = path.join(jbrowseImgDir, 'img')
 const jb2exportBin = path.join(jbrowseImgDir, 'src', 'bin.ts')
-const repoTsconfig = path.join(repoRoot, 'tsconfig.json')
 // Prebuilt UMD of the embedded LGV component, used by `mode:'embedded'` specs.
 // Built by `pnpm --filter @jbrowse/react-linear-genome-view2 build:webpack`.
 const EMBED_UMD_PATH = path.resolve(
@@ -552,8 +555,24 @@ async function assertRenderSettled(page: Page, spec: BrowserScreenshotSpec) {
 
     // region-too-large message (TooLargeMessage's BlockMsg carries no test-id, so
     // key off its own literal); own text nodes only, so the wrapping Alert and
-    // every ancestor up to body don't each report the same message
-    for (const el of document.querySelectorAll('body *')) {
+    // every ancestor up to body don't each report the same message.
+    //
+    // Candidates come from a text-node walk rather than `body *` for the same
+    // reason waitForQuiescent's do: only an element with own text can match
+    // either literal below, and building the own-text string for every element
+    // on a heavy page is the expensive part. Same set, a fraction of the work.
+    const candidates = new Set<Element>()
+    const walker = document.createTreeWalker(
+      document.body,
+      NodeFilter.SHOW_TEXT,
+    )
+    for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+      const parent = n.parentElement
+      if (parent && parent !== document.body && (n.textContent ?? '').trim()) {
+        candidates.add(parent)
+      }
+    }
+    for (const el of candidates) {
       const own = Array.from(el.childNodes)
         .filter(n => n.nodeType === Node.TEXT_NODE)
         .map(n => n.textContent ?? '')
@@ -823,9 +842,40 @@ async function shoot(
     await clearAnnotations(page)
   }
   await waitForRasterize(page)
+  await recordUnpainted(page, spec.name)
   // last gate before anything is written: same document we readied?
   await assertSamePageAsReady(page, spec)
   await page.screenshot({ path: file, clip: spec.crop })
+}
+
+// Which displays had still not reported their first paint when the frame was
+// taken, for the end-of-run report.
+//
+// Every settle wait is best-effort — waitForDisplaysDone swallows its own
+// timeout — so "all painted" and "we stopped waiting" leave the same trace:
+// none. The result is a committed PNG with a blank track in it and a run that
+// reported success. `PENDING_DISPLAYS` is exported for exactly this
+// post-condition re-check, and both sibling harnesses (jbrowse-web's
+// browser-tests and the desktop selenium harness) already do it; this is the
+// only capture path that did not.
+//
+// Reported rather than fatal: a display that never paints is usually a spec
+// whose settleMs is too short for its data, which is a number to raise, not a
+// figure to fail. What it must not be is invisible.
+async function recordUnpainted(page: Page, name: string) {
+  const pending = await page.evaluate(
+    selector =>
+      [...document.querySelectorAll(selector)].map(
+        el => el.getAttribute('data-testid') ?? '(unnamed display)',
+      ),
+    PENDING_DISPLAYS,
+  )
+  if (pending.length > 0) {
+    unpaintedDisplays.set(
+      name,
+      [...new Set([...(unpaintedDisplays.get(name) ?? []), ...pending])].sort(),
+    )
+  }
 }
 
 // Note how much of the page this capture cut off, for the end-of-run report.
@@ -863,15 +913,15 @@ const clippedPx = new Map<string, number>()
 // spec name -> the tooltip text on screen at capture, or undefined for none.
 // Only populated for specs that did not ask for suppression.
 const tooltipSeen = new Map<string, string | undefined>()
+// spec name -> displays that had not painted when its frame was taken
+const unpaintedDisplays = new Map<string, string[]>()
 
-// Whether the spec of this name declares that a tooltip belongs in its frame.
-// Looked up by name rather than threaded through the capture, because a staged
-// spec shoots several frames under one name and the declaration is the spec's.
-function expectsTooltip(name: string) {
-  return specs.some(
-    s => s.name === name && 'expectTooltip' in s && s.expectTooltip,
-  )
-}
+// Specs that declare a tooltip belongs in their frame. Looked up by name rather
+// than threaded through the capture, because a staged spec shoots several frames
+// under one name and the declaration is the spec's.
+const tooltipExpected = new Set(
+  specs.filter(s => 'expectTooltip' in s && s.expectTooltip).map(s => s.name),
+)
 
 // Wait for the browser to actually rasterize the current DOM before capturing.
 // A single rAF callback fires *before* paint, so a freshly-composited layer —
@@ -1309,11 +1359,9 @@ async function captureSpec(
 async function renderCliSpecToTemp(spec: CliSpec, suffix = '') {
   const renderPath = tempPath('jb-img', spec.name, suffix)
   await execFileAsync(
-    'npx',
+    'node',
     [
-      'tsx',
-      '--tsconfig',
-      repoTsconfig,
+      '--experimental-strip-types',
       jb2exportBin,
       ...spec.args,
       '--out',
@@ -1442,8 +1490,16 @@ function printSummary(totals: RunTotals) {
       ),
     )
   }
+  if (unpaintedDisplays.size > 0) {
+    printReport(
+      `DISPLAYS NOT PAINTED AT CAPTURE (${unpaintedDisplays.size}) — the settle gave up waiting, so these frames may show a blank track; raise the spec's settleMs, or fix the display that never reports done`,
+      [...unpaintedDisplays].map(
+        ([name, ids]) => `• ${name}.png: ${ids.join(', ')}`,
+      ),
+    )
+  }
   const strayTooltips = [...tooltipSeen].filter(
-    ([name, text]) => text !== undefined && !expectsTooltip(name),
+    ([name, text]) => text !== undefined && !tooltipExpected.has(name),
   )
   if (strayTooltips.length > 0) {
     printReport(
