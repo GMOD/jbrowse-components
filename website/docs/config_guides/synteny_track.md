@@ -166,11 +166,12 @@ The per-adapter slots are on each adapter's config page (see
 [Choosing an adapter](#choosing-an-adapter) above). These rules apply across all
 of them:
 
-- `assemblyNames` is always `["query", "target"]`, query first. Most pairwise
-  adapters also accept the named `queryAssembly`/`targetAssembly` fields, which
-  cannot be read in the wrong order; the MCScan ones take only `assemblyNames`.
-  The all-vs-all adapters are the exception: their `assemblyNames` is the full
-  list of genomes in the file, in no particular order.
+- `assemblyNames` means one thing on a pairwise adapter and another on an
+  all-vs-all one. **Pairwise:** exactly `["query", "target"]`, query first —
+  most also accept the named `queryAssembly`/`targetAssembly` fields, which
+  cannot be read in the wrong order, while the MCScan ones take only
+  `assemblyNames`. **All-vs-all:** the full list of genomes in the file, in no
+  particular order.
 - Every adapter except the two indexed ones (`PairwiseIndexedPAFAdapter` and
   `AllVsAllIndexedPAFAdapter`) reads the whole file into memory. For large
   alignments, convert to PIF and use one of those instead.
