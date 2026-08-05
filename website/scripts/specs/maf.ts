@@ -408,26 +408,43 @@ export const mafSpecs: ScreenshotSpec[] = [
   // The two halves of the summary tier, on one track at two zooms. Same
   // session, same ~30 mammals, same region centre — only the width changes, so
   // the figure isolates what the `summaryAdapter` does rather than confounding
-  // it with a different locus or a different species set.
+  // it with a different locus or a different species set. Both parts pin
+  // `height` and `subtreeFilter` identically, so the two panels stack at the
+  // same width with the same species on the same lines.
   //
-  // Both parts pin `height` and `subtreeFilter` identically so the two panels
-  // stack at the same width with their rows on the same lines; a reader
-  // comparing them is meant to see one track change behaviour, not two figures.
-  {
-    // ~180kb: past the 20kb force-load floor, which is exactly where the full
-    // alignment fetch would be blocked and where `showSummary` takes the rows
-    // over instead. One bar per species per aligned run, shaded by the
-    // summary's score and carrying no sequence at all — the whole point being
-    // that this renders without downloading 30 species' bases.
-    mode: 'url',
-    name: 'maf_summary_zoomed_out',
+  // Each half carries its own label. A compose has no annotation layer — the
+  // parts are captured separately and `-append`ed — so without one the stack is
+  // two near-identical browser frames whose only difference is the ruler text,
+  // which is not a before/after a reader can see at a glance.
+  ...(
+    [
+      [
+        'maf_summary_zoomed_out',
+        // ~180kb, past the 20kb force-load floor. That floor is exactly where
+        // the full alignment fetch is blocked and where `showSummary` hands the
+        // rows to the summary file instead: one bar per species per aligned
+        // run, no sequence fetched at all.
+        '12:6,450,000-6,630,000',
+        'Zoomed out (180 kb): one bar per species, from the summary file',
+      ],
+      [
+        'maf_summary_zoomed_in',
+        // the same track ~900x closer, inside a GAPDH exon, where the alignment
+        // itself is affordable and the rows resolve into per-base cells
+        '12:6,537,000-6,537,200',
+        'Zoomed in (200 bp): the alignment itself, one cell per base',
+      ],
+    ] as const
+  ).map(([name, loc, label]) => ({
+    mode: 'url' as const,
+    name,
     url: sessionSpec(HG38_470WAY, {
       sessionTracks: [HG38_NCBI_GENE_TRACK],
       views: [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          loc: '12:6,450,000-6,630,000',
+          loc,
           trackLabels: 'offset',
           tracks: [
             {
@@ -446,53 +463,35 @@ export const mafSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readyText: '6,4',
+    readyText: '12',
     readyTimeout: 120000,
     viewportWidth: 1000,
-    viewportHeight: 700,
+    // the height maf_470way_codon settled on for the same 30 rows at the same
+    // 460px display height; this pair shows no conservation band, so a first
+    // render will report blank space to trim rather than clipping
+    viewportHeight: 765,
     settleMs: 18000,
     hideTooltip: true,
-    actions: [{ type: 'delay', ms: 2000 }],
-  },
-  {
-    // The same track ~900x closer, inside a GAPDH exon: below the floor the
-    // alignment itself is affordable, so the rows resolve into per-base cells
-    // with mismatches to human colored.
-    mode: 'url',
-    name: 'maf_summary_zoomed_in',
-    url: sessionSpec(HG38_470WAY, {
-      sessionTracks: [HG38_NCBI_GENE_TRACK],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: '12:6,537,000-6,537,200',
-          trackLabels: 'offset',
-          tracks: [
-            {
-              trackId: 'ncbi_genes_hg38_ucsc',
-              type: 'LinearBasicDisplay',
-              geneGlyphMode: 'longestCoding',
-              showOnlyGenes: true,
-            },
-            {
-              trackId: 'hg38.multiz470way',
-              type: 'LinearMafDisplay',
-              height: 460,
-              subtreeFilter: HG38_470WAY_30,
-            },
-          ],
+    annotations: [
+      {
+        type: 'text' as const,
+        text: label,
+        fontSize: 20,
+        // bottom-left of the track band, `dx` clear of the tree sidebar and its
+        // species names. UNVERIFIED — UCSC was unreachable, so this placement
+        // has never been seen against a real capture; check it before trusting
+        // the figure.
+        anchor: {
+          track: 'hg38.multiz470way',
+          alignX: 'left' as const,
+          alignY: 'bottom' as const,
         },
-      ],
-    }),
-    readyText: '6,537',
-    readyTimeout: 120000,
-    viewportWidth: 1000,
-    viewportHeight: 700,
-    settleMs: 18000,
-    hideTooltip: true,
-    actions: [{ type: 'delay', ms: 2000 }],
-  },
+        dx: 220,
+        dy: -26,
+      },
+    ],
+    actions: [{ type: 'delay' as const, ms: 2000 }],
+  })),
   {
     mode: 'compose',
     name: 'maf_summary_tier',
