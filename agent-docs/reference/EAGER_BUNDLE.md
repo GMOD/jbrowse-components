@@ -194,11 +194,37 @@ rolldown putting a module reached only through dynamic imports into a chunk
 something eager also imports. That is a chunking question, not a source one, and
 the answer would be `advancedChunks` config rather than an edit anyone can read.
 
-**The one real lever left: `BaseMenuItem.icon`.** `@mui/material/styles` (~51 KB)
-is now the largest eager Material area, and it is reached by every
-`@mui/icons-material` import — ~39 eager menu modules name an icon for a row's
-`icon` field — and by `makeStyles`. `icon` is typed `React.ElementType`, i.e. an
-element type rather than a name, which is the descriptor rule (see pin 4) at the
-scale that needs arguing before starting: it means a name→component registry on
-the render side. See also OTHER_IDEAS.md, "A theme-free `makeStyles`", which is
-the other half of the same 51 KB.
+**An icon-name registry for `BaseMenuItem.icon` is NOT the next lever, and this
+is the correction to an earlier draft of this file that said it was.** The claim
+was that `icon` being a `React.ElementType` costs the ~51 KB
+`@mui/material/styles` graph. Measured 2026-08-05, it does not:
+
+- the 43 eager `@mui/icons-material` modules are **21 KB** of source between
+  them, plus `SvgIcon` (3 KB) reached through `createSvgIcon`;
+- `@mui/material/styles` is held by **`packages/core/src/util/tss-react/mui/mui.ts`**,
+  a six-line module whose only content is
+  `import { useTheme } from '@mui/material/styles'` feeding `createMakeStyles`.
+  It is eager because 268 `makeStyles` call sites are, and it has nothing to do
+  with icons.
+
+So a registry buys ~24 KB of source — well under 10 KB gzipped — in exchange for
+changing a **public ABI field** that external plugins set, across ~39 modules,
+plus a closed name union and a resolver to keep in step. The mechanism would
+work (`CascadingMenu`, `MenuItems` and `CascadingMenuButton` are all lazy
+already, so named icons would land in the menu chunk), and it is the right shape
+by the descriptor rule — it is simply not worth it at this size.
+
+**The ordering is the point: do the theme-free `makeStyles` first**
+(OTHER_IDEAS.md, "A theme-free `makeStyles`"). That is what releases the 51 KB,
+and it makes the icon registry worth ~72 KB instead of ~24 KB. Done in the other
+order, the icon work is a large ABI change for a small number and the big half
+stays put.
+
+**How the earlier draft got it wrong, since the same trap is easy to re-enter.**
+A module-level BFS "is `styles` still reachable if I refuse to walk through an
+icon?" answered *no* — because rolldown **inlines** barrels, so the surviving
+graph has no edge where the source has one, and the probe's regex was looking for
+`styles/useTheme.mjs` when the real edge is to `styles/index.mjs`. Two ways to be
+wrong at once, both silent. Check a suspected pin by finding the **first-party**
+module that names it (`grep` the source), not by trusting a graph walk that has
+been through a bundler.
