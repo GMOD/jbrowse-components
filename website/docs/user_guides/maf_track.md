@@ -25,6 +25,22 @@ differs from the reference drawn as colored marks. The features below come from
 two track-menu submenus: **Row coloring** picks the one way the rows are
 colored, and **Show...** holds the bands and overlays that layer on top of it.
 
+## Zooming out past the alignment
+
+Every MAF format packs each block's species sequences together, so a zoomed-out
+query would download all of them — tens of megabytes for a single screen of a
+deep alignment. JBrowse blocks that with a "requested too much data" prompt.
+
+A track configured with a summary file shows presence bars there instead: one
+bar per species per aligned region, shaded by the summary's score, with no
+sequence read at all. Zooming back in swaps the bars for the alignment itself.
+The coverage band is not drawn on the summary tier, since its depths come from
+the per-base alignment that the tier exists to avoid reading. Pointing a track
+at a summary file is covered in the
+[MAF track configuration guide](/docs/config_guides/maf_track#the-zoom-out-tier).
+
+<Figure src="/img/maf_summary_tier.png" caption="The UCSC hg38 470-way narrowed to ~30 representative mammals, over GAPDH at two zooms. At 180 kb (top) the track reads its summary file: one grey bar per species per aligned region, and no coverage band. At 200 bp (bottom) the same track draws the alignment itself, one colored cell per base, with the coverage band above it. The guide tree in the left sidebar is the same in both."/>
+
 ## Conservation and per-row identity
 
 The **Show conservation (% identity)** band plots, at each reference base, the
