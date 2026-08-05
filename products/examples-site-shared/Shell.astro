@@ -49,6 +49,30 @@ const isActive = (slug: string) => trimSlash(`${base}${slug}`) === here
 // sidebar is grouped by each page's `group`, in first-appearance order (the
 // pages list is already group-contiguous), mirroring the index Gallery
 const groups = [...new Set(examples.map(e => e.group))]
+
+// Which commit produced the page you are looking at. These sites deploy to a
+// fixed, unversioned S3 prefix (/storybook/<site>/) behind CloudFront, so there
+// is otherwise no way to tell a freshly-deployed page from a cached older one —
+// which is the whole question when you push a fix and go check it live.
+//
+// `GITHUB_SHA` when CI built it, a local `git rev-parse` otherwise, and 'dev'
+// when neither answers (a packed tarball or a sandbox with no git). Frontmatter
+// runs in Node at build time, so `node:child_process` is available; it is a bare
+// specifier, not a relative import, so it keeps this file self-contained the way
+// the symlink requires.
+let buildCommit = 'dev'
+try {
+  const { execSync } = await import('node:child_process')
+  buildCommit = (
+    process.env.GITHUB_SHA ??
+    execSync('git rev-parse HEAD', { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+  )
+    .trim()
+    .slice(0, 7)
+} catch {
+  // no CI env and no git — 'dev' is the honest answer, and a missing stamp must
+  // never fail the build
+}
 ---
 
 <html lang="en">
@@ -56,6 +80,7 @@ const groups = [...new Set(examples.map(e => e.group))]
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/x-icon" href={`${base}favicon.ico`} />
+    <meta name="jbrowse-build-commit" content={buildCommit} />
     <title>{title} — JBrowse {componentLabel}</title>
     {/* apply the saved theme before first paint to avoid a flash */}
     <script is:inline>
@@ -185,6 +210,13 @@ const groups = [...new Set(examples.map(e => e.group))]
       header.topbar nav a.sibling:hover {
         background: var(--hover);
         text-decoration: none;
+      }
+      /* the deploy stamp: legible when you look for it, quiet when you don't */
+      .build-commit {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.8em;
+        color: var(--muted);
+        opacity: 0.7;
       }
       .theme-toggle {
         display: inline-flex;
@@ -501,6 +533,10 @@ const groups = [...new Set(examples.map(e => e.group))]
         </div>
         <a href={docsHref}>Embedding docs</a>
         <a href="https://jbrowse.org/jb2/">jbrowse.org</a>
+        {/* the deployed commit — see `buildCommit` above. Also emitted as a
+            <meta> in <head>, so checking what is live is a curl and a grep
+            rather than a screenshot. */}
+        <span class="build-commit" title="deployed commit">{buildCommit}</span>
         <button
           type="button"
           id="theme-toggle"
