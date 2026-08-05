@@ -427,10 +427,13 @@ rules out; tracked in OTHER_IDEAS.md §"Deferred architecture-review items".
 
 ## Correctness surfaces nothing mechanical protects
 
-### Ordering is the contract, in five places
+### Ordering is the contract
 
-**Status:** Partly closed (2026-08). Three of the five now report themselves in
-dev; two remain silent.
+**Status:** Partly closed (2026-08). The two lists below are the count; it is
+deliberately not restated as a number in the heading, which asserted one ("in
+five places") across two additions while the body listed six and a source
+comment citing the heading by title still said four. **Don't put the length of a
+growing list anywhere but the list.**
 
 One failure shape recurs: behavior depends on an order no type can see, and
 getting it wrong is silent. The fix shape is equally uniform — make the order

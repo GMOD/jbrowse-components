@@ -30,13 +30,13 @@ function report(message: string) {
  * violation is silent. Called once from the per-region fetch foundation's
  * `afterAttach`; no-op in production.
  *
- * ARCHITECTURAL_LIMITS.md §"Ordering is the contract, in four places" asks for
- * exactly this — "each order becomes explicit data … `makeSettingsLoopGuard` is
- * this move already applied to the `rpcProps` loop trap. Generalize it." Two of
- * the four are checkable here without any chance of a false positive; the third
- * (a gate mixin landing on the wrong side of `.compose()`) is checked by that
- * mixin itself, where it is local, and the fourth (a trigger read under a gate)
- * is a shape, not a state, so it stays a test.
+ * ARCHITECTURAL_LIMITS.md §"Ordering is the contract" asks for exactly this —
+ * "each order becomes explicit data … `makeSettingsLoopGuard` is this move
+ * already applied to the `rpcProps` loop trap. Generalize it." That doc's "Now
+ * checked" list is the authoritative account of which contracts report
+ * themselves and which are still silent; don't restate the split here, because
+ * this comment said "four places" against a heading that said five and a list
+ * that held six.
  *
  * Every message names the fix, not just the symptom — the failure modes here
  * cost hours precisely because the symptom (a wedged display, a stale cache)

@@ -389,7 +389,7 @@ been written yet.
 `HeightModeMixin` must compose **after** `TrackHeightMixin` — it overrides that
 mixin's `height` and `resizeHeight`, and `types.compose` resolves a collision to
 the later argument. Same hazard as the canvas gate mixin; see [ordering is the
-contract](reference/ARCHITECTURAL_LIMITS.md#ordering-is-the-contract-in-five-places).
+contract](reference/ARCHITECTURAL_LIMITS.md#ordering-is-the-contract).
 
 `LinearCanvasBaseDisplay` (plugins/canvas) is **not** a peer of these. It is a
 canvas-feature *specialization layered on `MultiRegionDisplayMixin`*, and only
