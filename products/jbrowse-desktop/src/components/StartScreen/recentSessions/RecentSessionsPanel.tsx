@@ -37,6 +37,7 @@ import { useInnerDims } from '../useInnerDims.ts'
 import { loadPluginManager, openSpecLink } from '../util.tsx'
 import RecentSessionsCards from './RecentSessionsCards.tsx'
 import RecentSessionsDataGrid from './RecentSessionsDataGrid.tsx'
+import { useFavoriteSessions } from './useFavoriteSessions.ts'
 
 import type { RecentSessionData } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -121,10 +122,7 @@ export default function RecentSessionPanel({
     'showFavoritesOnly',
     false,
   )
-  const [favorites, setFavorites] = useLocalStorage(
-    'startScreen-favoriteSessions',
-    [] as string[],
-  )
+  const { isFavorite, toggleFavorite, pruneTo } = useFavoriteSessions()
   const {
     data: sessions = [],
     error: listSessionsError,
@@ -141,23 +139,7 @@ export default function RecentSessionPanel({
         // literal string "undefined" in the card and the grid.
         name: s.name ?? 'Untitled session',
       })),
-    {
-      // Favorites are keyed by session path, and nothing else prunes them: a
-      // deleted session kept its star forever, and a later session saved to the
-      // same path (Documents/JBrowse/untitled.jbrowse is easy to reuse) came
-      // back starred on its own. Not done for an empty list, which is also what
-      // an unreadable recent_sessions.json reads as — that must not cost the
-      // user every star they have.
-      onSuccess: rows => {
-        if (rows.length) {
-          const live = new Set(rows.map(r => r.path))
-          const next = favorites.filter(path => live.has(path))
-          if (next.length !== favorites.length) {
-            setFavorites(next)
-          }
-        }
-      },
-    },
+    { onSuccess: pruneTo },
   )
 
   const launch = async (path: string) => {
@@ -200,20 +182,11 @@ export default function RecentSessionPanel({
     }
   }
 
-  const favs = new Set(favorites)
-  const isFavorite = (sessionPath: string) => favs.has(sessionPath)
-  const toggleFavorite = (sessionPath: string) => {
-    if (favs.has(sessionPath)) {
-      setFavorites(favorites.filter(path => path !== sessionPath))
-    } else {
-      setFavorites([...favorites, sessionPath])
-    }
-  }
   const sortedSessions = sessions.toSorted((a, b) => b.updated - a.updated)
   const filteredSessions = sortedSessions.filter(
     f =>
       (showAutosaves || !f.isAutosave) &&
-      (!showFavoritesOnly || favs.has(f.path)),
+      (!showFavoritesOnly || isFavorite(f.path)),
   )
   const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000
   const oldAutosaves = sessions.filter(

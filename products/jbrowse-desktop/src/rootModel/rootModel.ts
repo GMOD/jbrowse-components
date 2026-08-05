@@ -30,7 +30,6 @@ import SaveAsIcon from '@mui/icons-material/SaveAs'
 import { autorun } from 'mobx'
 
 import packageJSON from '../../package.json' with { type: 'json' }
-import OpenSequenceDialog from '../components/OpenSequenceDialog.tsx'
 import jobsModelFactory from '../indexJobsModel.ts'
 import { invokeIpc } from '../ipc.ts'
 import JBrowseDesktop from '../jbrowseModel.ts'
@@ -44,9 +43,15 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
 import type { BaseRootModel, BaseSession } from '@jbrowse/product-core'
 
-// lazies
+// lazies. A dialog reached through session.queueDialog can always be one:
+// DialogQueue Suspense-wraps whatever it is handed. OpenSequenceDialog was the
+// last one named directly here, which put AddGenomePane and the assembly-config
+// builders in the root model — as eager a module as this app has.
 const PreferencesDialog = lazy(
   () => import('@jbrowse/product-core/src/ui/PreferencesDialog'),
+)
+const OpenSequenceDialog = lazy(
+  () => import('../components/OpenSequenceDialog.tsx'),
 )
 const ExportToWebDialog = lazy(
   () => import('../components/ExportToWebDialog.tsx'),

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { Suspense, lazy, useMemo, useState } from 'react'
 
 import { LoadingEllipses, createJBrowseTheme } from '@jbrowse/core/ui'
 import { localStorageGetItem } from '@jbrowse/core/util'
@@ -9,7 +9,6 @@ import { observer } from 'mobx-react'
 
 import { invokeIpc } from '../ipc.ts'
 import { useQueryParam } from '../useQueryParam.ts'
-import JBrowse from './JBrowse.tsx'
 import { NotificationProvider } from './Notifications.tsx'
 import { useNotifyError } from './NotifyContext.ts'
 import StartScreen from './StartScreen/StartScreen.tsx'
@@ -24,6 +23,13 @@ import type { DesktopRootModel } from '../rootModel/rootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 setGpuOverride(new URLSearchParams(window.location.search).get('renderer'))
+
+// The session UI — @jbrowse/app-core's App, and with it dockview, the drawer
+// widgets and their Material chrome — is what the start screen exists to get you
+// to, not what it is made of. Lazy so launching to the start screen doesn't
+// evaluate it first; by the time this resolves the session's plugin manager has
+// already been built, which takes considerably longer.
+const JBrowse = lazy(() => import('./JBrowse.tsx'))
 
 const LoaderContents = observer(function LoaderContents() {
   const [pluginManager, setPluginManager] = useState<PluginManager>()
@@ -102,10 +108,14 @@ const LoaderContents = observer(function LoaderContents() {
     handleSpecLinkError,
   )
 
+  const loading = <LoadingEllipses variant="h6" message="Loading session" />
+
   return pluginManager?.rootModel?.session ? (
-    <JBrowse pluginManager={pluginManager} />
+    <Suspense fallback={loading}>
+      <JBrowse pluginManager={pluginManager} />
+    </Suspense>
   ) : config || specLink ? (
-    <LoadingEllipses variant="h6" message="Loading session" />
+    loading
   ) : (
     <StartScreen setPluginManager={handleSetPluginManager} />
   )
