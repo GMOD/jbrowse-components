@@ -9,7 +9,7 @@ import {
   colorShortInsertArc,
   colorSplitReadInversion,
   colorSupplementary,
-} from '@jbrowse/core/ui/theme'
+} from '@jbrowse/core/ui/palette'
 import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
 
 import type { RGBColor } from './colors.ts'

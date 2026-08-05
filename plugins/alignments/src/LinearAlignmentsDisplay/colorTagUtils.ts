@@ -1,5 +1,5 @@
 import { getQueryColor, hashString } from '@jbrowse/core/ui/colors'
-import { tagColorPalette } from '@jbrowse/core/ui/theme'
+import { tagColorPalette } from '@jbrowse/core/ui/palette'
 
 export const TAG_COLOR_PALETTE = tagColorPalette
 

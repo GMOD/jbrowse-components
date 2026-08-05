@@ -3,7 +3,7 @@ import {
   colorFwdStrand,
   colorNostrand,
   colorRevStrand,
-} from '@jbrowse/core/ui/theme'
+} from '@jbrowse/core/ui/palette'
 import { measureText } from '@jbrowse/core/util'
 
 import { mergeJunctions } from './junctions.ts'

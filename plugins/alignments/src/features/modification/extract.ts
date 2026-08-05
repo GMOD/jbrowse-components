@@ -12,7 +12,7 @@ import {
   methylated5hmC,
   methylated5mC,
   unmethylated5mC,
-} from '@jbrowse/core/ui/theme'
+} from '@jbrowse/core/ui/palette'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import {
   getMethBins,

@@ -1,4 +1,4 @@
-import { colorLongreadInv } from '@jbrowse/core/ui/theme'
+import { colorLongreadInv } from '@jbrowse/core/ui/palette'
 import { OverlayCanvas } from '@jbrowse/render-core'
 import { observer } from 'mobx-react'
 

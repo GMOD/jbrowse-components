@@ -193,6 +193,8 @@ export default [
   '@jbrowse/core/ui',
   // #reexport The JBrowse MUI theme
   '@jbrowse/core/ui/theme',
+  // #reexport The same colors and `resolvePalette` without Material UI in the module graph, for worker and renderer code
+  '@jbrowse/core/ui/palette',
   // #reexport Core helpers: `getSession`, `getContainingView`, `Feature`, region and coordinate utilities
   '@jbrowse/core/util',
   // #reexport Color parsing and manipulation helpers

@@ -3,7 +3,7 @@ import {
   colorFwdStrand,
   colorNostrand,
   colorRevStrand,
-} from '@jbrowse/core/ui/theme'
+} from '@jbrowse/core/ui/palette'
 import { cssColorToRgb, packAbgr } from '@jbrowse/core/util/colorBits'
 
 import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'

@@ -22,6 +22,7 @@ import WidgetType from '../pluggableElementTypes/WidgetType.ts'
 import * as pluggableElementTypes from '../pluggableElementTypes/index.ts'
 import * as pluggableElementTypeModels from '../pluggableElementTypes/models/index.ts'
 import * as coreUi from '../ui/index.ts'
+import * as corePalette from '../ui/palette.ts'
 import * as coreTheme from '../ui/theme.ts'
 import Base1DView from '../util/Base1DViewModel.ts'
 import * as coreColor from '../util/color/index.ts'
@@ -129,6 +130,7 @@ const libs = {
   '@jbrowse/core/util/types/mst': mstTypes,
   '@jbrowse/core/ui': coreUi,
   '@jbrowse/core/ui/theme': coreTheme,
+  '@jbrowse/core/ui/palette': corePalette,
   '@jbrowse/core/util': coreUtil,
   '@jbrowse/core/util/color': coreColor,
   '@jbrowse/core/util/layouts': coreLayouts,

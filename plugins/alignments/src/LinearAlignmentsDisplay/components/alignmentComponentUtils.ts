@@ -10,7 +10,7 @@ import {
   colorSplitReadInversion,
   colorSupplementary,
   colorUnmappedMate,
-} from '@jbrowse/core/ui/theme'
+} from '@jbrowse/core/ui/palette'
 
 import { toRgb } from '../shaders/colors.ts'
 

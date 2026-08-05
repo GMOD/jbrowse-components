@@ -1,4 +1,4 @@
-import { tagColorPalette } from '@jbrowse/core/ui/theme'
+import { tagColorPalette } from '@jbrowse/core/ui/palette'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
 // A row in the painting. `name` is the partition value (the row identity, and
