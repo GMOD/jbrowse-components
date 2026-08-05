@@ -125,13 +125,49 @@ _NHEJ1_'s exons to be identified as intronic rather than coding.
 
 ## Reading it
 
-<Figure caption="A 7.8 kb deletion inside an NHEJ1 intron, genotyped across breeds from the Dog10K structural-variant callset. Every carrier is a Collie-clade breed; the other breeds and the four wolves are homozygous reference." src="/img/dog10k-nhej1-cea-deletion.png" />
+<Figure caption="A 7.8 kb deletion inside an NHEJ1 intron, genotyped across breeds from the Dog10K structural-variant callset. Every carrier is a Collie-clade breed; the other breeds and the four wolves are homozygous reference. The lane between the genes and the genotypes is OMIA's curated record of the same variant, whose span comes from a different publication than the callset does." src="/img/dog10k-nhej1-cea-deletion.png" />
 
 The picture matches the literature: the deletion is common in the Collie clade,
 homozygous in several animals, and absent everywhere else in this set including
 the wolves. Reading the gene model with it shows why a deletion this size can
 segregate at this frequency, since it removes intronic sequence rather than
 coding exons.
+
+### Checking the call against a curated source
+
+The middle lane is not from the callset. [OMIA](https://omia.org) curates the
+published causal variants of Mendelian traits in animals, one record per variant
+with its phenotype, mode of inheritance and the coordinates the paper reported,
+and its Collie eye anomaly record (OMIA 000218-9615) is this deletion. Its span
+was published on CanFam3.1 and lifted to this assembly, so the bar and the
+genotype column below it come from two different publications by two different
+routes:
+
+```json
+{
+  "type": "FeatureTrack",
+  "trackId": "omia_dog_variants",
+  "name": "OMIA causal variants (dog)",
+  "assemblyNames": ["UU_Cfam_GSD_1.0"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "uri": "omia_dog_variants.gff3.gz"
+  },
+  "displayDefaults": {
+    "labels": { "description": "jexl:feature.inheritance" }
+  }
+}
+```
+
+The mode of inheritance is drawn as the feature's description because it is what
+turns the two blues below into a result. Recessive means the homozygotes are the
+affected dogs and the heterozygotes are unaffected carriers, which no amount of
+looking at the genotype legend will say.
+
+Click the bar for the rest of the record: OMIA's own HGVS strings, the OMIA id,
+the assembly the coordinates were published on and whether this feature reached
+canFam4 through a chain. That last one matters when you use the track elsewhere.
+A lifted record can be right about the locus and wrong about the base.
 
 ### Why the lane shows one record
 
@@ -486,6 +522,20 @@ bash build_dog10k_nhej1_sv.sh   # writes ./dog10k_sv_build/
 It downloads the Dog10K sample table, derives the breed lists from it, slices
 the locus out of the Zenodo genotype VCF, and prints the deletion's genotypes so
 you can check the figure against the data before trusting either.
+
+[`build_omia_dog_variants.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_omia_dog_variants.sh)
+builds the OMIA lane:
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_omia_dog_variants.sh
+bash build_omia_dog_variants.sh   # writes ./omia_dog_build/
+```
+
+OMIA publishes no coordinate API, so this reads the nightly mysqldump the site
+offers, keeps the dog records, lifts the CanFam3.1 majority with UCSC's chain,
+and prints how many records each assembly contributed and how many the lift
+dropped. Rerunning it on another day gives a different count: the database is
+curated continuously.
 
 [`build_dog10k_slc28a3_cn.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_slc28a3_cn.sh)
 builds the copy-number tracks the same way, and prints each panel animal's copy

@@ -737,6 +737,20 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           type: 'LinearBasicDisplay',
           height: 110,
         },
+        // OMIA's own record of this variant, from a source that is not the
+        // callset ("if we have clinvar or omia dog variants would be
+        // interesting", review). Its span is the check: OMIA published the CEA
+        // deletion on CanFam3.1 as g.25698028_25705826del, and lifted to canFam4
+        // that is chr37:25,574,007-25,581,807, which is the deletion the Dog10K
+        // genotypes below are of (POS 25,574,005, the anchor base ahead of it).
+        // Two independent sources, one bar. The description under the label is
+        // the mode of inheritance, which is what makes the dark cells below
+        // affected rather than merely homozygous.
+        {
+          trackId: 'omia_dog_variants',
+          type: 'LinearBasicDisplay',
+          height: 60,
+        },
         {
           trackId: 'dog10k_nhej1_svs',
           type: 'LinearMultiSampleVariantDisplay',
@@ -755,19 +769,19 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     readyText: 'chr37',
     readyTimeout: 90000,
     settleMs: 6000,
-    // gene track plus all 36 sample rows and the genotype legend
-    viewportHeight: 915,
-    // What the deletion does, beside the column that carries it. The legend can
-    // say "homozygous alt" but not that homozygous is the affected state: CEA is
-    // recessive (Parker et al. 2007; OMIA 000218-9615), so the dark cells are
-    // affected animals and the light ones are unaffected carriers, which is the
-    // difference between the two blues a reader cannot otherwise infer. The pill
-    // sits left of the column, over lane that paints nothing — the filtered lane
-    // has one record, so no cell is covered.
+    // gene track, the OMIA lane, all 36 sample rows and the genotype legend
+    viewportHeight: 1003,
+    // What the two blues MEAN, beside the column that carries them. The legend
+    // can say "homozygous alt" but not that homozygous is the affected state,
+    // and that is the one thing neither it nor the OMIA lane spells out — the
+    // lane names the disease and calls it recessive, so the pill no longer
+    // repeats either and says what recessive buys the reader instead. It sits
+    // left of the column, over lane that paints nothing (the filtered track has
+    // one record), so no cell is covered.
     annotations: [
       {
         type: 'text',
-        text: '7.8 kb intron deletion, recessive:\nhomozygotes have Collie eye anomaly',
+        text: 'Recessive: dark rows are affected dogs,\nlight ones unaffected carriers',
         fontSize: 22,
         maxWidth: 460,
         anchor: {
