@@ -9,7 +9,10 @@ import {
 } from './util.ts'
 
 import type PluginManager from '../PluginManager.ts'
-import type { ConfigSlotDefinition } from './configurationSlot.ts'
+import type {
+  ConfigSlotDefinition,
+  ConfigSlotType,
+} from './configurationSlot.ts'
 import type { AnyConfigurationModel } from './types.ts'
 
 /**
@@ -66,7 +69,7 @@ export function preProcessSlotValues(
 export interface SlotFacade {
   name: string
   description: string
-  type: string
+  type: ConfigSlotType
   contextVariable: string[]
   defaultValue: unknown
   /** enum choices, present only for `stringEnum`/`maybeStringEnum` slots */

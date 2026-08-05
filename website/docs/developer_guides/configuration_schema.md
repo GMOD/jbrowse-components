@@ -64,15 +64,33 @@ type renders.
 | `numberMap`      | `Record<string, number>`   |                                                     |
 | `frozen`         | `unknown`                  | Arbitrary JSON; not deeply reactive                 |
 
-For enums, use `type: 'stringEnum'` and add a `model` field:
+Five types also have a `maybe` form — `maybeNumber`, `maybeBoolean`,
+`maybeColor`, `maybeFrozen`, `maybeStringEnum` — whose default is `undefined`
+rather than a concrete value. That is what a **promotable** slot needs:
+`undefined` means "not set on this track, follow the session-wide default", and
+it is the one value no config can spell, so it stays distinguishable from every
+real value the user might write. Pair it with `promotedBase` for what inheriting
+resolves to, and read it with `resolveConf`. `lineWidth` in the example below is
+one.
+
+For enums, use `type: 'stringEnum'` and add a `model` field. The wiggle
+display's `summaryScoreMode` slot:
+
+<!-- include: plugins/wiggle/src/LinearWiggleDisplay/configSchema.ts#stringEnumSlot -->
 
 ```ts
-displayMode: {
+summaryScoreMode: {
   type: 'stringEnum',
-  model: types.enumeration('DisplayMode', ['normal', 'compact', 'collapse']),
-  defaultValue: 'normal',
+  model: types.enumeration('Score type', ['max', 'min', 'avg', 'whiskers']),
+  description:
+    'choose whether to use max/min/average or whiskers which combines all three into the same rendering',
+  defaultValue: 'whiskers',
 },
 ```
+
+`stringEnum` (and `maybeStringEnum`) are the only types the config editor reads
+the `model`'s choices from, so a slot typed anything else renders as a free text
+input however valid its `model` is.
 
 ## Graphical editing
 
@@ -92,24 +110,52 @@ for each one:
 
 ## Schema inheritance with baseConfiguration
 
-Displays inherit base display slots by passing `baseConfiguration`:
+Displays inherit base display slots by passing `baseConfiguration`.
+`LinearPairedArcDisplay` declares two slots of its own and takes the rest from
+the base linear display schema:
+
+<!-- include: plugins/arc/src/LinearPairedArcDisplay/configSchema.ts#schema -->
 
 ```ts
-import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
-
-export default function configSchemaF(pluginManager: PluginManager) {
+export function configSchemaFactory() {
   return ConfigurationSchema(
-    'LinearMyDisplay',
+    'LinearPairedArcDisplay',
     {
-      mySlot: { type: 'string', defaultValue: '' },
+      /**
+       * #slot
+       */
+      color: {
+        type: 'color',
+        description: 'the color of the arcs',
+        defaultValue: 'jexl:defaultPairedArcColor(feature,alt)',
+        contextVariable: ['feature', 'alt'],
+      },
+      /**
+       * #slot
+       */
+      lineWidth: {
+        type: 'maybeNumber',
+        description:
+          'the stroke width of the arcs, in pixels. Unset (the default) follows the session-wide default for this display type',
+        // sentinel promotable slot: see promotableDefaults.ts
+        defaultValue: undefined,
+        promotedBase: defaultArcLineWidth,
+        promotable: true,
+      },
     },
     {
+      /**
+       * #baseConfiguration
+       */
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
     },
   )
 }
 ```
+
+(The `#slot` and `#baseConfiguration` comments are JSDoc tags that generate the
+[config reference pages](/docs/config) — they are not part of the schema API.)
 
 The base schema's slots are merged in first. When a name collides, what happens
 depends on the kind of entry:
@@ -142,35 +188,40 @@ say), state the field explicitly, as above. Overrides that only moved a
 ## preProcessSnapshot
 
 Use `preProcessSnapshot` to normalize incoming config JSON before the MST model
-is created, for example to support a shorthand URI syntax:
+is created. It is what makes the `uri` shorthand work: `BamAdapter` passes this
+function, which expands a bare `uri` into the `bamLocation` and `index` slots
+the schema actually declares, and derives the index name from it.
+
+<!-- include: plugins/alignments/src/BamAdapter/configSchema.ts#preProcess -->
 
 ```ts
-ConfigurationSchema(
-  'MyAdapter',
-  {
-    indexLocation: { type: 'fileLocation', defaultValue: { uri: 'data.ix' } },
-    dataLocation: { type: 'fileLocation', defaultValue: { uri: 'data.bin' } },
-  },
-  {
-    explicitlyTyped: true,
-    preProcessSnapshot: snap =>
-      snap.uri
-        ? {
-            ...snap,
-            dataLocation: { uri: snap.uri, baseUri: snap.baseUri },
-            indexLocation: { uri: `${snap.uri}.ix`, baseUri: snap.baseUri },
-          }
-        : snap,
-  },
-)
+export function normalizeSnapshot(snap: Record<string, unknown>) {
+  return snap.uri
+    ? {
+        ...snap,
+        bamLocation: {
+          uri: snap.uri,
+          baseUri: snap.baseUri,
+        },
+        index: {
+          indexType: snap.csi ? 'CSI' : 'BAI',
+          location: {
+            uri: `${snap.uri}.${snap.csi ? 'csi' : 'bai'}`,
+            baseUri: snap.baseUri,
+          },
+        },
+      }
+    : snap
+}
 ```
 
-This allows minimal configs in `config.json`:
+Passed as `preProcessSnapshot: normalizeSnapshot` in the schema's options, that
+allows minimal configs in `config.json`:
 
 ```json
 "adapter": {
-  "type": "MyAdapter",
-  "uri": "tracks/data.bin"
+  "type": "BamAdapter",
+  "uri": "tracks/sample.bam"
 }
 ```
 
@@ -219,15 +270,23 @@ readConfObject(config, ['index', 'indexType'])
 
 ## ConfigurationReference
 
-State models refer to their config via `ConfigurationReference`:
+State models refer to their config via `ConfigurationReference`, alongside the
+`type` literal that discriminates them. This is one argument of the model's
+`types.compose(...)` chain, which is where the model gets its name:
+
+<!-- include: plugins/arc/src/LinearPairedArcDisplay/model.ts#configRef -->
 
 ```ts
-import { ConfigurationReference } from '@jbrowse/core/configuration'
-
-types.model('LinearMyDisplay', {
-  type: types.literal('LinearMyDisplay'),
-  configuration: ConfigurationReference(myConfigSchema),
-})
+types.model({
+  /**
+   * #property
+   */
+  type: types.literal('LinearPairedArcDisplay'),
+  /**
+   * #property
+   */
+  configuration: ConfigurationReference(configSchema),
+}),
 ```
 
 `ConfigurationReference` is a union of a string ID reference and the full config
@@ -239,6 +298,11 @@ The resolution dispatch is based on `explicitIdentifier` in the schema options:
 - `'trackId'` → `TrackConfigurationReference` (looks in `session.tracksById`)
 - `'displayId'` → `DisplayConfigurationReference`
 - anything else → plain reference
+
+`ConfigurationReference` types `self.configuration` as `any`, so reads off it
+are unchecked. Displays that care add a `conf` getter typed off the concrete
+schema (`get conf(): LinearPairedArcDisplayConfig`) and read through that — the
+same move as `BaseAdapter<CONF>`.
 
 ## Frozen track hydration
 
@@ -257,10 +321,13 @@ Any slot can hold a callback instead of a plain value. A slot's
 `contextVariable` field lists the arguments the callback expects; the calling
 code supplies them as the third argument to `readConfObject`:
 
-```js
+<!-- include: plugins/arc/src/LinearArcDisplay/configSchema.ts#contextVariableSlot -->
+
+```ts
 color: {
   type: 'color',
-  defaultValue: 'goldenrod',
+  description: 'the color of the arcs',
+  defaultValue: 'darkblue',
   contextVariable: ['feature'],
 },
 ```
@@ -302,34 +369,43 @@ configurations descend from a single root, `root.configuration`.
          Slot  Slot
 ```
 
-A schema can nest a sub-schema as a slot. For example, `BamAdapter` embeds its
-index config:
+A schema can nest a sub-schema as a slot. `BamAdapter` embeds its index config
+that way:
 
-```js
-ConfigurationSchema(
-  'BamAdapter',
-  {
-    bamLocation: {
-      type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.bam', locationType: 'UriLocation' },
-    },
-    index: ConfigurationSchema('BamIndex', {
-      indexType: {
-        model: types.enumeration('IndexType', ['BAI', 'CSI']),
-        type: 'stringEnum',
-        defaultValue: 'BAI',
-      },
-      location: {
-        type: 'fileLocation',
-        defaultValue: {
-          uri: '/path/to/my.bam.bai',
-          locationType: 'UriLocation',
-        },
-      },
-    }),
+<!-- include: plugins/alignments/src/BamAdapter/configSchema.ts#nesting -->
+
+```ts
+/**
+ * #slot
+ */
+bamLocation: {
+  type: 'fileLocation',
+  defaultValue: {
+    uri: '/path/to/my.bam',
+    locationType: 'UriLocation',
   },
-  { explicitlyTyped: true },
-)
+},
+
+index: ConfigurationSchema('BamIndex', {
+  /**
+   * #slot index.indexType
+   */
+  indexType: {
+    model: types.enumeration('IndexType', ['BAI', 'CSI']),
+    type: 'stringEnum',
+    defaultValue: 'BAI',
+  },
+  /**
+   * #slot index.location
+   */
+  location: {
+    type: 'fileLocation',
+    defaultValue: {
+      uri: '/path/to/my.bam.bai',
+      locationType: 'UriLocation',
+    },
+  },
+}),
 ```
 
 Read a nested slot with a path array:

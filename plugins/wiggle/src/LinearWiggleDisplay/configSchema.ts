@@ -109,6 +109,7 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
     /**
      * #slot
      */
+    // #region stringEnumSlot
     summaryScoreMode: {
       type: 'stringEnum',
       model: types.enumeration('Score type', ['max', 'min', 'avg', 'whiskers']),
@@ -116,6 +117,7 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
         'choose whether to use max/min/average or whiskers which combines all three into the same rendering',
       defaultValue: 'whiskers',
     },
+    // #endregion
   },
   {
     explicitlyTyped: true,

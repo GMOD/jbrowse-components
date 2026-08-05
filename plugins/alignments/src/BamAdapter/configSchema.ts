@@ -24,6 +24,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * ```
  */
 
+// #region preProcess
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return snap.uri
     ? {
@@ -42,10 +43,12 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
       }
     : snap
 }
+// #endregion
 
 const configSchema = ConfigurationSchema(
   'BamAdapter',
   {
+    // #region nesting
     /**
      * #slot
      */
@@ -77,6 +80,7 @@ const configSchema = ConfigurationSchema(
         },
       },
     }),
+    // #endregion
     /**
      * #slot
      */

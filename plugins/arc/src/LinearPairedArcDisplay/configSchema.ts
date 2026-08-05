@@ -35,6 +35,7 @@ const defaultArcLineWidth = 3
  * }
  * ```
  */
+// #region schema
 export function configSchemaFactory() {
   return ConfigurationSchema(
     'LinearPairedArcDisplay',
@@ -70,6 +71,7 @@ export function configSchemaFactory() {
     },
   )
 }
+// #endregion
 
 export type LinearPairedArcDisplayConfigModel = ReturnType<
   typeof configSchemaFactory

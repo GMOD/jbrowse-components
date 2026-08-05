@@ -126,6 +126,10 @@ describe('toFixedValue', () => {
 
   test('throws if a callback default has no type fallback', () => {
     expect(() =>
+      // @ts-expect-error an unknown slot type is a compile error since `type`
+      // was narrowed to ConfigSlotType; the runtime guard stays for callers
+      // that reach here from JS or from an external plugin built against an
+      // older core
       toFixedValue('jexl:undefined', 'mysteryType', 'jexl:foo', jexl),
     ).toThrow(/fallbackDefault/)
   })

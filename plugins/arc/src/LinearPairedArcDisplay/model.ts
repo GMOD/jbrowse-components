@@ -67,6 +67,7 @@ export function stateModelFactory(
       // reload/svgReady contract — identical structure to LD, so arc has no
       // special fetch or region-too-large behavior
       ArcFetchModel(),
+      // #region configRef
       types.model({
         /**
          * #property
@@ -77,6 +78,7 @@ export function stateModelFactory(
          */
         configuration: ConfigurationReference(configSchema),
       }),
+      // #endregion
     )
     .views(self => ({
       /**

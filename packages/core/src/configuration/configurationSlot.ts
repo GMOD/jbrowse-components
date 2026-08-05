@@ -24,7 +24,13 @@ interface SlotTypeSpec {
 // Single source of truth for the builtin slot type names, pairing each with its
 // MST value type and its editor fallback default. Keeping model + fallback in
 // one table means adding a slot type is one edit and can't half-register.
-const slotTypes: Record<string, SlotTypeSpec> = {
+//
+// `satisfies` rather than an annotation: a `Record<string, …>` annotation
+// widens the keys to `string`, which is what let `type: 'enum'` — a name this
+// table has never had — compile for years and silently lose the config
+// editor's dropdown. The literal keys are what `ConfigSlotType` below is made
+// of.
+const slotTypes = {
   stringArray: { model: types.array(types.string), fallbackDefault: [] },
   stringArrayMap: {
     model: types.map(types.array(types.string)),
@@ -84,7 +90,29 @@ const slotTypes: Record<string, SlotTypeSpec> = {
     },
   },
   frozen: { model: types.frozen(), fallbackDefault: {} },
-}
+} satisfies Record<string, SlotTypeSpec>
+
+/**
+ * Every legal `type` on a slot definition: the builtin table's own names, plus
+ * the two enum types, which have no builtin entry because the author supplies
+ * the `types.enumeration` as `model`.
+ *
+ * Closed on purpose. A name outside this set still *works* at runtime as long
+ * as a `model` is given — which is exactly the trap: the value round-trips
+ * fine, and the only symptom is that everything keyed off the type name stops
+ * recognising the slot (`slotFacade` hands the editor no `choices`, so an enum
+ * renders as a free text box). Nothing about that reaches a test.
+ */
+export type ConfigSlotType =
+  | keyof typeof slotTypes
+  | 'stringEnum'
+  | 'maybeStringEnum'
+
+// Lookup view over the table. The two enum types are legal `ConfigSlotType`s
+// with no entry, so indexing by the union has to tolerate a miss — this states
+// that in the type rather than casting it away at each call.
+const builtinSlotTypes: Partial<Record<ConfigSlotType, SlotTypeSpec>> =
+  slotTypes
 
 // The slot types whose default is `undefined` — the genuine "unset" state,
 // distinguishable from every value a config can spell. Mostly derived from the
@@ -94,7 +122,7 @@ const slotTypes: Record<string, SlotTypeSpec> = {
 // the author supplies the enumeration and `ConfigSlot` wraps it in
 // `types.maybe`.
 const MAYBE_TYPES = new Set([
-  ...Object.entries(slotTypes)
+  ...Object.entries<SlotTypeSpec>(slotTypes)
     .filter(([, spec]) => spec.fallbackDefault === undefined)
     .map(([name]) => name),
   'maybeStringEnum',
@@ -108,7 +136,7 @@ export interface ConfigSlotDefinition {
   /** custom base MST model for the slot's value */
   model?: IAnyType
   /** name of the type of slot, e.g. "string", "number", "stringArray" */
-  type: string
+  type: ConfigSlotType
   /** default value of the slot */
   defaultValue: unknown
   /** parameter names of the function callback */
@@ -175,7 +203,7 @@ export default function ConfigSlot(definition: ConfigSlotDefinition) {
   if (!type) {
     throw new Error('type name required')
   }
-  const valueModel = model ?? slotTypes[type]?.model
+  const valueModel = model ?? builtinSlotTypes[type]?.model
   if (!valueModel) {
     throw new Error(
       `no builtin config slot type "${type}", and no 'model' param provided`,
@@ -271,7 +299,7 @@ export function toCallbackValue(value: unknown) {
  */
 export function toFixedValue(
   value: unknown,
-  type: string,
+  type: ConfigSlotType,
   defaultValue: unknown,
   jexl: JexlInstance,
 ) {
@@ -287,7 +315,7 @@ export function toFixedValue(
     /* fall through to default */
   }
   if (isCallbackValue(defaultValue)) {
-    const spec = slotTypes[type]
+    const spec = builtinSlotTypes[type]
     if (spec?.fallbackDefault === undefined) {
       throw new Error(`no fallbackDefault defined for type ${type}`)
     }

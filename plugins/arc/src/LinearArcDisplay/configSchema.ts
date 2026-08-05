@@ -45,12 +45,14 @@ export function configSchemaFactory() {
       /**
        * #slot
        */
+      // #region contextVariableSlot
       color: {
         type: 'color',
         description: 'the color of the arcs',
         defaultValue: 'darkblue',
         contextVariable: ['feature'],
       },
+      // #endregion
       /**
        * #slot
        */
@@ -92,7 +94,7 @@ export function configSchemaFactory() {
        * #slot
        */
       displayMode: {
-        type: 'enum',
+        type: 'stringEnum',
         defaultValue: 'arcs',
         model: types.enumeration('DisplayMode', ['arcs', 'semicircles']),
         description: 'render semi-circles instead of arcs',
