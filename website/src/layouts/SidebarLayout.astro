@@ -64,10 +64,19 @@ const { title, description, toggleLabel, navLabel, mdHref } = Astro.props
     flex-shrink: 0;
     border-right: 1px solid var(--color-border);
     overflow-y: auto;
-    padding: 1rem 0;
+    /* No top padding: a `position: sticky` child (the docs filter box) is
+       clamped to its containing block, which is this element's *content* box,
+       so any padding here becomes a strip the child pins below and scrolled
+       rows show through. The first child carries the gap as a margin instead —
+       a margin doesn't move the containing-block edge, so the child still pins
+       flush with the top of the scrollport. */
+    padding: 0 0 1rem;
     position: sticky;
     top: var(--nav-height);
     height: calc(100vh - var(--nav-height));
+  }
+  .sidebar > :global(:first-child) {
+    margin-top: 1rem;
   }
 
   .sidebar :global(ul) {

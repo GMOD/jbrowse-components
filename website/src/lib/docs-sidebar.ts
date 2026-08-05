@@ -347,19 +347,24 @@ const TOP_LEVEL_CATEGORY_BUCKETS: Record<string, SearchCategory> = {
   Tutorials: 'user',
   Configuration: 'config',
   Development: 'developer',
-  'Autogen docs: Config schema': 'autogen',
-  'Autogen docs: State models': 'autogen',
-  'Autogen docs: Exported functions': 'autogen',
+  'Reference: Config schema': 'autogen',
+  'Reference: State models': 'autogen',
+  'Reference: Exported functions': 'autogen',
 }
 // "Embedding", "Command line tools" and the loose introduction/faq links are
 // intentionally unmapped: they fall through to the always-shown 'other' bucket
 // so no search filter can hide them.
 
-// Pages whose search-filter bucket is deliberately not their sidebar category
-// (e.g. admin-server setup reads as an ops/developer topic even though it's
-// grouped under "Getting started" for a first-time user). Keep this list
-// short — most classification should come from TOP_LEVEL_CATEGORY_BUCKETS.
+// Pages whose search-filter bucket is deliberately not their sidebar category.
+// The cookbook is a top-level sidebar link (it is the page people arrive
+// looking for, not a chapter of the config guide) but its content is config, so
+// the "Config guides" filter should still return it; quickstart_adminserver is
+// not in the sidebar at all (check-sidebar.ts lists it as intentionally
+// unlisted, reached from user_guides/basic_usage.md) and reads as an ops topic.
+// Keep this list short — most classification should come from
+// TOP_LEVEL_CATEGORY_BUCKETS.
 const SEARCH_CATEGORY_OVERRIDES: Record<string, SearchCategory> = {
+  cookbook: 'config',
   quickstart_adminserver: 'developer',
 }
 

@@ -1,5 +1,6 @@
 ---
 title: Cookbook
+sidebar_label: Cookbook (config recipes)
 description:
   'Copy-paste recipes for the most common JBrowse 2 configuration tasks: colors,
   labels, tooltips, tracks, themes, and more'

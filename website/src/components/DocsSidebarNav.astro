@@ -14,6 +14,202 @@ const allDocs = await getCollection('docs')
 const sidebar = buildSiteSidebar(allDocs, baseUrl)
 ---
 
-<ul>
+{
+  /* A filter over the nav itself, not a search: 370-odd pages sit behind nine
+     categories that are collapsed unless they hold the current page, so a
+     reader who knows a page's name ("cookbook", "jexl", "BamAdapter") but not
+     which category owns it had no way in short of opening every drawer.
+     Filtering keeps the structure rather than flattening it — a matching
+     category opens itself and keeps its heading, so a hit still reads as "Track
+     types: MAF track" under "User guide", which is what tells apart the four
+     pages the same feature has under different categories. Distinct from the
+     header search, which is full-text over page bodies and leaves the page. */
+}
+<div class="sidebar-filter">
+  <label class="sr-only" for="sidebar-filter-input">Filter documentation</label>
+  <input
+    id="sidebar-filter-input"
+    type="search"
+    placeholder="Filter pages..."
+    autocomplete="off"
+    spellcheck="false"
+  />
+</div>
+<p
+  class="sidebar-filter-empty"
+  id="sidebar-filter-empty"
+  aria-live="polite"
+  hidden
+>
+  No page titles match. <a href={`${baseUrl}/search/`} id="sidebar-filter-all"
+    >Search all docs</a
+  >
+</p>
+<ul id="docs-sidebar-list">
   {sidebar.map(item => <SidebarItem item={item} currentSlug={currentSlug} />)}
 </ul>
+
+<script>
+  const inputEl = document.getElementById('sidebar-filter-input')
+  const listEl = document.getElementById('docs-sidebar-list')
+  const emptyEl = document.getElementById('sidebar-filter-empty')
+  const allEl = document.getElementById('sidebar-filter-all')
+
+  if (
+    inputEl instanceof HTMLInputElement &&
+    listEl &&
+    emptyEl &&
+    allEl instanceof HTMLAnchorElement
+  ) {
+    const input = inputEl
+    const list = listEl
+    const empty = emptyEl
+    const allLink = allEl
+    const searchHref = allLink.href
+
+    // Captured before the first filter run so clearing the box restores the
+    // categories the reader had open (and the one the current page opened)
+    // rather than collapsing everything.
+    const groups = [...list.querySelectorAll('details')]
+    const wasOpen = new WeakMap<HTMLDetailsElement, boolean>()
+    for (const details of groups) {
+      wasOpen.set(details, details.open)
+    }
+
+    // Every token has to appear somewhere in the label, in any order, so both
+    // "maf track" and "track maf" find "Track types: MAF track".
+    function matches(text: string, tokens: string[]) {
+      const haystack = text.toLowerCase()
+      return tokens.every(token => haystack.includes(token))
+    }
+
+    // Returns whether anything under `ul` survived. `forced` is set for the
+    // children of a category whose own label matched, so filtering on
+    // "tutorials" lists the tutorials instead of emptying the drawer that
+    // matched.
+    function filterList(
+      ul: Element,
+      tokens: string[],
+      forced: boolean,
+    ): boolean {
+      let anyVisible = false
+      for (const li of ul.children) {
+        if (!(li instanceof HTMLElement)) {
+          continue
+        }
+        const details = li.querySelector(':scope > details')
+        let visible: boolean
+        if (details instanceof HTMLDetailsElement) {
+          const summary = details.querySelector(':scope > summary')
+          const childUl = details.querySelector(':scope > ul')
+          const self = forced || matches(summary?.textContent ?? '', tokens)
+          const kept = childUl ? filterList(childUl, tokens, self) : false
+          visible = self || kept
+          details.open = visible
+        } else {
+          const link = li.querySelector(':scope > a')
+          visible = forced || matches(link?.textContent ?? '', tokens)
+        }
+        li.hidden = !visible
+        anyVisible ||= visible
+      }
+      return anyVisible
+    }
+
+    function reset() {
+      for (const li of list.querySelectorAll('li')) {
+        li.hidden = false
+      }
+      for (const details of groups) {
+        details.open = wasOpen.get(details) ?? false
+      }
+      empty.hidden = true
+    }
+
+    function apply() {
+      const query = input.value.trim()
+      if (!query) {
+        reset()
+        return
+      }
+      const tokens = query.toLowerCase().split(/\s+/)
+      empty.hidden = filterList(list, tokens, false)
+      allLink.href = `${searchHref}?q=${encodeURIComponent(query)}`
+    }
+
+    input.addEventListener('input', apply)
+    input.addEventListener('keydown', event => {
+      if (event.key === 'Escape') {
+        input.value = ''
+        reset()
+      } else if (event.key === 'Enter') {
+        event.preventDefault()
+        // A filtered list is usually down to one obvious hit; Enter takes it
+        // rather than making the reader move back to the mouse.
+        for (const link of list.querySelectorAll('li:not([hidden]) > a')) {
+          if (link instanceof HTMLAnchorElement) {
+            link.click()
+            break
+          }
+        }
+      }
+    })
+    // A restore from bfcache repopulates the input without firing `input`, so
+    // reapply — otherwise the box shows a query the list no longer reflects.
+    window.addEventListener('pageshow', apply)
+  }
+</script>
+
+<style>
+  /* Sticks to the top of the sidebar's own scrollport: an open category runs to
+     116 rows, and a filter you have to scroll back up to reach is one you stop
+     using. */
+  .sidebar-filter {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: 0.25rem 12px 0.5rem;
+    background: #fff;
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: 0.5rem;
+  }
+  .sidebar-filter input {
+    width: 100%;
+    padding: 5px 8px;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+    font-size: 0.8rem;
+  }
+  .sidebar-filter input:focus {
+    outline: 2px solid var(--color-accent);
+    outline-offset: -1px;
+    background: #fff;
+  }
+  .sidebar-filter-empty {
+    margin: 0 0 0.5rem;
+    padding: 0 12px;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+  }
+  /* The layout styles every sidebar link as a padded block row with a hanging
+     indent (SidebarLayout.astro); this one is inline prose. */
+  .sidebar-filter-empty a {
+    display: inline;
+    padding: 0;
+    text-indent: 0;
+    font-size: inherit;
+    color: var(--color-accent);
+    text-decoration: underline;
+  }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+</style>

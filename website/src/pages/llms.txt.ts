@@ -15,10 +15,10 @@ import {
 // Additive: an absent or renamed key just prints its bullets, never a dead link.
 const sectionNotes: Record<string, string> = {
   Configuration:
-    'The config model: assemblies, then tracks; each track = one adapter (data) + display type(s), wired with JEXL. Per-type slots are under "Autogen docs: Config schema".',
-  'Autogen docs: Config schema':
+    'The config model: assemblies, then tracks; each track = one adapter (data) + display type(s), wired with JEXL. Per-type slots are under "Reference: Config schema".',
+  'Reference: Config schema':
     'Generated config-slot reference per adapter/track/display type (BamAdapter, LinearWiggleDisplay, ...). Fetch the page for the type you are configuring.',
-  'Autogen docs: State models':
+  'Reference: State models':
     'Generated reference for the MobX state-tree models behind each view, display, and session: the properties, actions, and getters a plugin can call.',
 }
 

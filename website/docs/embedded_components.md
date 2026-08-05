@@ -62,7 +62,7 @@ function MyBrowser() {
 `state` is the root model, so the view's actions are one level down at
 `state.session.view` — `navToLocString`, `showTrack`, `horizontallyFlip`,
 `exportSvg`. Anything marked `#action` on the
-[view's state model](/docs/models/LinearGenomeView) is callable there.
+[view's state model](/docs/models/lineargenomeview) is callable there.
 `@jbrowse/react-app2` is session-centric instead, with `state.session.addView`
 and `state.session.views[0]`.
 
