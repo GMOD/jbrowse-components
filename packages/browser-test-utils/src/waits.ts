@@ -101,7 +101,15 @@ export async function waitForQuiescent(
         // rather than shared with the identical walk in the website generator's
         // assertRenderSettled: this whole function is serialized into the page,
         // so it can only call what it declares.
-        const body: HTMLElement | null = document.body
+        // querySelector, not `document.body`, because lib.dom types the latter
+        // as a non-null HTMLElement — it is null while the document is still
+        // parsing, but a `const` annotated `HTMLElement | null` narrows straight
+        // back to non-null off its initializer, so the guard below read as
+        // always-false to the type-aware lint. The check has to stay: without
+        // it createTreeWalker(null) throws, waitForQuiescent's own
+        // `.catch(() => {})` swallows it, and a still-parsing page comes back
+        // quiescent — the exact inversion this is here to prevent.
+        const body = document.querySelector('body')
         if (!body) {
           // still parsing: not quiescent, rather than trivially quiescent
           return false
