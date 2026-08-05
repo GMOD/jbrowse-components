@@ -29,13 +29,14 @@ gitignored). `deploy_staging.sh` wraps a staging deploy.
   rewrites that `--affected` would not have selected is a bug in the map, not an
   acceptable miss.
 - **A spec's own `diffThreshold` is a last resort**, and the run says so: a keep
-  that only happened because of a raised gate is reported under `KEPT BEHIND A
-  RAISED diffThreshold`, because a deliberate recolor of one bar moves ~2.4% of
-  pixels and a 2% allowance would silently keep the old image. Nine specs raise
-  it today (0.02–0.03), all for jitter that is genuinely irreducible from here —
-  dense per-base glyphs, a multiscatter cloud whose points land on a different
-  BigWig zoom level run to run, remote-fetch timing. Anything else is a bug in
-  whatever is producing the nondeterminism; fix that first.
+  that only happened because of a raised gate is reported under
+  `KEPT BEHIND A RAISED diffThreshold`, because a deliberate recolor of one bar
+  moves ~2.4% of pixels and a 2% allowance would silently keep the old image.
+  Nine specs raise it today (0.02–0.03), all for jitter that is genuinely
+  irreducible from here — dense per-base glyphs, a multiscatter cloud whose
+  points land on a different BigWig zoom level run to run, remote-fetch timing.
+  Anything else is a bug in whatever is producing the nondeterminism; fix that
+  first.
 - **Size a figure from the run's own two reports, not from the PNG.**
   `CONTENT CLIPPED BELOW THE FOLD` gives the exact css px to raise
   `viewportHeight` by and `blank below the last content` the px to lower it.

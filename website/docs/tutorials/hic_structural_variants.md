@@ -56,14 +56,14 @@ track looks like noise, this is the first thing to change — see
 The matrix is fetched for every pair of displayed regions. With one region on
 screen that is just the region against itself; open a second and JBrowse also
 fetches the contacts _between_ the two and draws them in the wedge between their
-triangles. Nothing needs configuring for this — it falls out of navigating to two
-locations at once, which you can do by typing both into the location box
+triangles. Nothing needs configuring for this — it falls out of navigating to
+two locations at once, which you can do by typing both into the location box
 separated by a space.
 
 That makes a genome browser a translocation detector. Contact frequency decays
-with distance along whatever molecule two loci actually sit on, so two regions on
-separate chromosomes only touch at the nucleus' low background rate. If they are
-fused, they are neighbours, and they contact each other constantly.
+with distance along whatever molecule two loci actually sit on, so two regions
+on separate chromosomes only touch at the nucleus' low background rate. If they
+are fused, they are neighbours, and they contact each other constantly.
 
 K562 is derived from a chronic myeloid leukaemia patient and carries the
 Philadelphia chromosome, t(9;22)(q34;q11)
@@ -76,19 +76,19 @@ pipeline in ENCODE, so the two maps are directly comparable.
 
 Read the two panels as one comparison. The paired triangles are the same in both
 — chr9 and chr22 each fold normally in K562. What differs is the space between
-them, and that space is not a subtle enrichment: it is empty in one cell line and
-solid in the other.
+them, and that space is not a subtle enrichment: it is empty in one cell line
+and solid in the other.
 
 ## Why the control matters more than the sample
 
 It would be easy to produce that figure dishonestly, and the two ways to do it
 are worth knowing because both fail silently.
 
-**Pick a shallow control and the difference is sequencing depth, not karyotype.**
-ENCODE has several GM12878 Hi-C experiments; the "supernatant" fraction
-(`ENCSR730CER`) has a couple of hundred occupied bins in this window with a
-maximum of 7 contacts. Against K562 it looks like a spectacular result, but an
-empty panel is empty because nothing was sequenced. The figure above uses
+**Pick a shallow control and the difference is sequencing depth, not
+karyotype.** ENCODE has several GM12878 Hi-C experiments; the "supernatant"
+fraction (`ENCSR730CER`) has a couple of hundred occupied bins in this window
+with a maximum of 7 contacts. Against K562 it looks like a spectacular result,
+but an empty panel is empty because nothing was sequenced. The figure above uses
 `ENCSR410MDC`, which is the _deeper_ of the two files — and that is the point.
 Run the scan below and the totals come out the wrong way round from what the
 figure suggests: across the whole chr9–chr22 block GM12878 has **more** contact
@@ -97,18 +97,18 @@ order inverts, 149 against 161,282. A focal difference against a higher
 background is an argument; a difference in totals is not.
 
 **Normalize, and you delete the finding.** Matrix balancing exists to divide out
-per-bin coverage differences, and an amplified fusion _is_ a coverage difference.
-Under `INTER_SCALE` the K562 peak stops being at _ABL1_×_BCR_ and moves to a
-mapping artifact at chr9:129.4 Mb × chr22:23.5 Mb that is present in both cell
-lines. Both Hi-C tracks in this demo therefore set
+per-bin coverage differences, and an amplified fusion _is_ a coverage
+difference. Under `INTER_SCALE` the K562 peak stops being at *ABL1*×*BCR* and
+moves to a mapping artifact at chr9:129.4 Mb × chr22:23.5 Mb that is present in
+both cell lines. Both Hi-C tracks in this demo therefore set
 [`selectedNormalization`](/docs/config/linearhicdisplay/#slot-selectednormalization)
 to `NONE`. Balanced matrices are the right choice for reading domains and loops,
 and the wrong choice for reading rearrangements.
 
 That artifact is the reason a single ranked sample proves nothing. It is the
-hottest bin in this chromosome pair in GM12878 _and_ near the top in K562, and it
-is not a rearrangement. What identifies a breakpoint is a bin hot in the sample
-and cold in the control.
+hottest bin in this chromosome pair in GM12878 _and_ near the top in K562, and
+it is not a rearrangement. What identifies a breakpoint is a bin hot in the
+sample and cold in the control.
 
 ## Run the scan
 
@@ -123,8 +123,8 @@ bash scan_hic_translocation.sh
 ```
 
 It needs `java` and `curl` and downloads `juicer_tools` itself; `CASE`, `CTRL`,
-`CHR1`, `CHR2` and `RES` are all overridable, so the same scan applies to any two
-`.hic` files that hold inter-chromosomal blocks. The top row it prints is
+`CHR1`, `CHR2` and `RES` are all overridable, so the same scan applies to any
+two `.hic` files that hold inter-chromosomal blocks. The top row it prints is
 `chr9:130,750,000 × chr22:23,000,000` — _ABL1_ intron 1 against the _BCR_ major
 breakpoint cluster region, the canonical CML fusion, at 161,282 contacts against
 149 in GM12878.
@@ -186,18 +186,18 @@ The loop and domain BEDPEs need one extra slot each, for opposite reasons:
 }
 ```
 
-A contact domain is a `FeatureTrack`, not a paired-arc one. Arrowhead writes each
-domain with both BEDPE mates set to the same interval, so an arc would run from
-the domain to itself and draw nothing; read as plain features the same file gives
-one box per domain, with nested domains stacking into rows. Loops, whose two
-mates really are different places, are the paired-arc case — see the
+A contact domain is a `FeatureTrack`, not a paired-arc one. Arrowhead writes
+each domain with both BEDPE mates set to the same interval, so an arc would run
+from the domain to itself and draw nothing; read as plain features the same file
+gives one box per domain, with nested domains stacking into rows. Loops, whose
+two mates really are different places, are the paired-arc case — see the
 [Hi-C track config guide](/docs/config_guides/hic_track#loops-and-interactions-as-arcs).
 
 For the loops file, set
 [`columnNames`](/docs/config/bedpeadapter/#slot-columnnames) explicitly if you
 want to color or filter by a column. The adapter otherwise takes column names
-from the file's own header line, and juicer writes its version banner _after_ the
-defline; the last header line therefore has no tab-separated fields, name
+from the file's own header line, and juicer writes its version banner _after_
+the defline; the last header line therefore has no tab-separated fields, name
 resolution gives up, and every extra column reads back as `undefined` — a jexl
 expression on `observed` then silently evaluates against nothing. Listing the 24
 columns in config skips the guesswork.
@@ -207,11 +207,12 @@ columns in config skips the guesswork.
 - [](/docs/user_guides/hic_track) — resolution, color scales, normalization, and
   the region-pair mechanism this tutorial leans on
 - [](/docs/config_guides/hic_track)
-- [](/docs/tutorials/chromhmm), the other ENCODE annotation stacked many-rows-deep
+- [](/docs/tutorials/chromhmm), the other ENCODE annotation stacked
+  many-rows-deep
 - [](/docs/tutorials/cancer_sv), the same translocation question answered from
   reads instead of contacts
 - [](/docs/user_guides/sv_visualization)
-- [HiGlass](https://higlass.io/) is the reference viewer for Hi-C on its own, with
-  matrix-versus-matrix layouts JBrowse has no equivalent of. The trade here is the
-  other way round: a linear browser puts the matrix in the same coordinate system
-  as genes, annotations and read-level tracks.
+- [HiGlass](https://higlass.io/) is the reference viewer for Hi-C on its own,
+  with matrix-versus-matrix layouts JBrowse has no equivalent of. The trade here
+  is the other way round: a linear browser puts the matrix in the same
+  coordinate system as genes, annotations and read-level tracks.

@@ -46,8 +46,7 @@ const BCR = { refName: 'chr22', start: 23_180_509, end: 23_318_037 }
 //     to K562 it looks like a spectacular difference, but the difference would
 //     be sequencing depth, not karyotype. `hic_gm12878_insitu` (ENCSR410MDC) is
 //     the depth-matched one and is what this spec uses.
-const JUNCTION_LOC =
-  'chr9:129,730,000-131,730,000 chr22:22,285,000-24,285,000'
+const JUNCTION_LOC = 'chr9:129,730,000-131,730,000 chr22:22,285,000-24,285,000'
 
 // Raw counts, linear ramp, 95th-percentile saturation. Log scale is wrong for
 // these files: they are dense enough that log pushes every bin to the top of the
@@ -227,7 +226,8 @@ export const hicSpecs: ScreenshotSpec[] = [
         {
           trackId: 'hic_gm12878_loops',
           height: 84,
-          color: "jexl:get(feature,'observed')>300?'#8b1a1a':'rgba(90,90,90,0.28)'",
+          color:
+            "jexl:get(feature,'observed')>300?'#8b1a1a':'rgba(90,90,90,0.28)'",
         },
         {
           trackId: 'hic_gm12878_insitu',

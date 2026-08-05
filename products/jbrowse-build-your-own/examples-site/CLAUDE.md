@@ -62,12 +62,12 @@ literal, never `?raw` a private helper of this site.
 - **`eagerBundleSizes.json` is the second measured claim, and it is a ratchet.**
   `pnpm measure-eager-bundle` writes what each page downloads before it can run
   (the static-import closure from its entry); `pnpm smoke` re-checks it. Going
-  **under** a budget fails as well as going over — bank the win by re-running and
-  committing, or the next change quietly spends it. When a page goes over, the
-  cause is essentially always one static import from an eagerly-evaluated module
-  to a React component; `agent-docs/reference/EAGER_BUNDLE.md` names the three
-  shapes and how to attribute a new one. Don't raise a budget to make it pass,
-  for the same reason `MUI_BUDGET` isn't raised.
+  **under** a budget fails as well as going over — bank the win by re-running
+  and committing, or the next change quietly spends it. When a page goes over,
+  the cause is essentially always one static import from an eagerly-evaluated
+  module to a React component; `agent-docs/reference/EAGER_BUNDLE.md` names the
+  three shapes and how to attribute a new one. Don't raise a budget to make it
+  pass, for the same reason `MUI_BUDGET` isn't raised.
 - **For anything smoke can't see, a throwaway puppeteer probe against the built
   `dist/` is the pattern** — serve `dist/`, strip the Astro base,
   `--use-gl=swiftshader`, settle ~7s, then measure. Write it as a `.tmp.mjs`
