@@ -3,7 +3,7 @@ import {
   getInsertionType,
   passesFrequencyGate,
 } from '../../LinearAlignmentsDisplay/constants.ts'
-import { INTERBASE_INSERTION } from '../../shared/types.ts'
+import { interbaseRangeEnds } from '../../shared/uploadTypes.ts'
 
 import type {
   CigarCoords,
@@ -26,15 +26,21 @@ function hitTestInsertion(
     interbasePositions,
     interbaseYs,
     interbaseLengths,
-    interbaseTypes,
     interbaseSequences,
     interbaseFrequencies,
   } = resolved.rpcData
-  const numInterbases = interbasePositions.length
+  // The worker lays the merged interbase array out as
+  // (insertions, softclips, hardclips), so the insertions are a prefix — the
+  // same slice `packInsertions` uploads. Bounding the scan is what lets the
+  // per-entry `interbaseTypes[i] !== INTERBASE_INSERTION` test go: this and
+  // `hitTestClip` each walked the whole array, so one hover scanned it three
+  // times over (large insertion, small insertion, clip) to reject most of it on
+  // a type byte the layout already guarantees.
+  const { insEnd } = interbaseRangeEnds(resolved.rpcData)
   const pxPerBp = 1 / bpPerPx
 
-  for (let i = 0; i < numInterbases; i++) {
-    if (interbaseTypes[i] !== INTERBASE_INSERTION || interbaseYs[i] !== row) {
+  for (let i = 0; i < insEnd; i++) {
+    if (interbaseYs[i] !== row) {
       continue
     }
     const pos = interbasePositions[i]

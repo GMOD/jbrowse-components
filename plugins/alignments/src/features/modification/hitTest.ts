@@ -16,13 +16,10 @@ export interface ModificationHitResult {
 }
 
 export function hitTestModification(
-  resolved: ResolvedBlock | undefined,
-  coords: CigarCoords | undefined,
+  resolved: ResolvedBlock,
+  coords: CigarCoords,
   featureHeight: number,
 ): ModificationHitResult | undefined {
-  if (!resolved || !coords) {
-    return undefined
-  }
   const { row, genomicPos, bpPerPx } = coords
   if (
     !isWithinReadBand(coords, featureHeight) ||
@@ -43,7 +40,6 @@ export function hitTestModification(
   if (hits.length === 0) {
     return undefined
   }
-  const idx = hits[0]!
   const {
     modificationPositions,
     modificationColors,
@@ -52,6 +48,24 @@ export function hitTestModification(
     modificationNoMod,
     detectedModifications,
   } = resolved.rpcData
+  // Nearest to the cursor, NOT `hits[0]`. Flatbush returns its packed
+  // (Hilbert-sorted) tree order, which for the collinear points of one row is
+  // ascending position — so taking the first hit reported the LEFTMOST
+  // candidate in the window, up to `hitToleranceBp + 0.5` bp left of the
+  // cursor. The window is ±2bp at 1bp/px and consecutive modified bases on one
+  // read are the normal case for 5mC/6mA, so the tooltip and the details widget
+  // routinely named a neighbouring base — and disagreed with the `snpBase`
+  // annotation, which comes from the mismatch test pinned to the exact cursor
+  // base.
+  let idx = hits[0]!
+  let bestDist = Infinity
+  for (const h of hits) {
+    const dist = Math.abs(modificationPositions[h]! - queryCenter)
+    if (dist < bestDist) {
+      bestDist = dist
+      idx = h
+    }
+  }
   const colorPacked = modificationColors[idx]!
   const typeIdx = modificationTypeIndices?.[idx]
   return {

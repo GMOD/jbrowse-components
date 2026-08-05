@@ -163,6 +163,85 @@ test('sort still fires when the block is cleared before the click', () => {
   expect(model.sortCalls).toEqual([['basePair', 42, 'ctgA']])
 })
 
+// A deletion/skip reports `position` as the op's START, which for a 5kb
+// deletion or a 100kb intron can be off screen — and it disagreed with the read
+// menu's own "Sort by ▸ Base pair" in the same menu, which has always meant the
+// clicked column. A base-pair sort anchors on the column.
+describe('a gap cigar hit sorts at the clicked column, not the gap start', () => {
+  test('deletion', () => {
+    const model = makeModel({
+      contextMenuCigarHit: {
+        type: 'deletion',
+        index: 0,
+        position: 28498,
+        length: 4860,
+      },
+      contextMenuGenomicPos: 30000,
+    })
+    firstSubMenuItem(run(model)[0]).onClick()
+    expect(model.sortCalls).toEqual([['basePair', 30000, 'ctgA']])
+  })
+
+  test('skip', () => {
+    const model = makeModel({
+      contextMenuCigarHit: { type: 'skip', index: 0, position: 100, length: 900 },
+      contextMenuGenomicPos: 550,
+    })
+    firstSubMenuItem(run(model)[0]).onClick()
+    expect(model.sortCalls).toEqual([['basePair', 550, 'ctgA']])
+  })
+
+  // The op's own position is the fallback, for the (unreachable in the display,
+  // but structurally possible) case of a hit with no recorded click column.
+  test('falls back to the op position without a clicked column', () => {
+    const model = makeModel({
+      contextMenuCigarHit: {
+        type: 'deletion',
+        index: 0,
+        position: 28498,
+        length: 4860,
+      },
+    })
+    firstSubMenuItem(run(model)[0]).onClick()
+    expect(model.sortCalls).toEqual([['basePair', 28498, 'ctgA']])
+  })
+
+  // The two "sort by base pair" rows a gap right-click puts in one menu — the
+  // gap submenu's and the read's — must now name the same base.
+  test('agrees with the read menu Sort by ▸ Base pair', () => {
+    const model = makeModel({
+      contextMenuCigarHit: {
+        type: 'deletion',
+        index: 0,
+        position: 28498,
+        length: 4860,
+      },
+      contextMenuGenomicPos: 30000,
+      contextMenuFeature: makeFeature({ name: 'readABC' }),
+    })
+    const items = run(model)
+    firstSubMenuItem(items[0]).onClick()
+    findSubMenu(items, 'Sort by')
+      .find(i => i.label === 'Base pair')!
+      .onClick()
+    expect(model.sortCalls).toEqual([
+      ['basePair', 30000, 'ctgA'],
+      ['basePair', 30000, 'ctgA'],
+    ])
+  })
+})
+
+// A mismatch is 1bp, so its own position IS the clicked column — the anchor
+// swap above must not move it.
+test('a mismatch still sorts at its own base', () => {
+  const model = makeModel({
+    contextMenuCigarHit: { type: 'mismatch', index: 0, position: 42, length: 1 },
+    contextMenuGenomicPos: 42,
+  })
+  firstSubMenuItem(run(model)[0]).onClick()
+  expect(model.sortCalls).toEqual([['basePair', 42, 'ctgA']])
+})
+
 test('an interbase (insertion) cigar hit sorts by the interbase type', () => {
   const model = makeModel({
     contextMenuCigarHit: {
@@ -171,6 +250,18 @@ test('an interbase (insertion) cigar hit sorts by the interbase type', () => {
       position: 7,
       length: 3,
     },
+  })
+  firstSubMenuItem(run(model)[0]).onClick()
+  expect(model.sortCalls).toEqual([['insertion', 7, 'ctgA']])
+})
+
+// An interbase mark IS its position — the sort groups reads by whether they
+// carry one there — so it keeps anchoring on the mark, not on wherever inside
+// its hit tolerance the cursor happened to land.
+test('an interbase hit anchors on the mark even with a clicked column', () => {
+  const model = makeModel({
+    contextMenuCigarHit: { type: 'insertion', index: 0, position: 7, length: 3 },
+    contextMenuGenomicPos: 9,
   })
   firstSubMenuItem(run(model)[0]).onClick()
   expect(model.sortCalls).toEqual([['insertion', 7, 'ctgA']])

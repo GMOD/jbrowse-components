@@ -168,6 +168,48 @@ describe('hitTestModification', () => {
     expect(hit!.modType).toBe('5mC')
   })
 
+  // Flatbush returns its packed (Hilbert-sorted) tree order, not distance
+  // order, so `hits[0]` was the LEFTMOST candidate in the ±tolerance window
+  // rather than the one under the cursor. The window is ±2bp at 1bp/px and
+  // consecutive modified bases on one read are the normal case for 5mC/6mA, so
+  // the tooltip and details widget routinely named a neighbouring base — and
+  // disagreed with the snpBase annotation, which is pinned to the exact cursor
+  // base by the mismatch test.
+  describe('picks the modification nearest the cursor', () => {
+    // Four consecutive modified bases on one read, each a different mod type so
+    // the assertion can tell which one answered.
+    function consecutiveMods() {
+      const positions = [1000, 1001, 1002, 1003]
+      return makeResolved(
+        makeRpcData({
+          modificationPositions: new Uint32Array(positions),
+          modificationColors: new Uint32Array(
+            positions.map(() => packAbgr(255, 0, 0, 200)),
+          ),
+          modificationYs: new Uint16Array([0, 0, 0, 0]),
+          modificationTypeIndices: new Uint8Array([0, 1, 2, 3]),
+          detectedModifications: ['a', 'b', 'c', 'd'],
+          modFlatbush: makeModFlatbush(positions, [0, 0, 0, 0]),
+        }),
+      )
+    }
+
+    // Visual center of base b is b+0.5, so a cursor at b+0.5 is exactly on it.
+    it.each([
+      [1000.5, 1000, 'a'],
+      [1001.5, 1001, 'b'],
+      [1002.5, 1002, 'c'],
+      [1003.5, 1003, 'd'],
+    ])('cursor at %s resolves base %s', (genomicPos, position, modType) => {
+      const hit = hitTestModification(
+        consecutiveMods(),
+        makeCoords({ genomicPos }),
+        10,
+      )
+      expect(hit).toMatchObject({ position, modType })
+    })
+  })
+
   it('returns undefined modType when typeIndices are absent', () => {
     const pos = 1000
     const rpcData = makeRpcData({

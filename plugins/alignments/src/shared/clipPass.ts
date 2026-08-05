@@ -1,7 +1,7 @@
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
+import { passesFrequencyGate } from '../LinearAlignmentsDisplay/constants.ts'
 import * as clipShader from '../LinearAlignmentsDisplay/shaders/slang/clip.generated.ts'
-import { INTERBASE_HARDCLIP, INTERBASE_SOFTCLIP } from './types.ts'
 import { interbaseRangeEnds } from './uploadTypes.ts'
 
 import type {
@@ -58,27 +58,44 @@ export function uploadClips(
   }
 }
 
-// Hit test for soft + hard clips in one pass. Both bars live in the same merged
-// interbase array and differ only by `interbaseTypes[i]`, so the entry already
-// names which kind was hit — no need to scan once per kind.
+// Hit test for soft + hard clips in one pass, over the same `[insEnd, hcEnd)`
+// slice `packClips` uploads and deriving the kind from the same `i < scEnd`
+// boundary — so a bar's hit kind and its drawn color cannot disagree.
 //
-// Softclip still wins a tie, structurally rather than by scan order: the worker
-// lays the array out as (insertions, softclips, hardclips), so a softclip at this
-// row and position is always reached first.
+// Softclip wins a tie structurally rather than by scan order, for the same
+// reason: the worker lays the array out as (insertions, softclips, hardclips),
+// so a softclip at this row and position is always reached first.
 export function hitTestClip(
   resolved: ResolvedBlock,
   coords: CigarCoords,
+  filterMismatchesByFrequency: boolean,
 ): CigarHitResult | undefined {
   const { bpPerPx, genomicPos, row } = coords
-  const { interbasePositions, interbaseYs, interbaseLengths, interbaseTypes } =
-    resolved.rpcData
-  const numInterbases = interbasePositions.length
+  const {
+    interbasePositions,
+    interbaseYs,
+    interbaseLengths,
+    interbaseFrequencies,
+  } = resolved.rpcData
+  const { insEnd, scEnd, hcEnd } = interbaseRangeEnds(resolved.rpcData)
   const hitToleranceBp = Math.max(0.5, bpPerPx * 3)
 
-  for (let i = 0; i < numInterbases; i++) {
-    const type = interbaseTypes[i]
-    const isClip = type === INTERBASE_SOFTCLIP || type === INTERBASE_HARDCLIP
-    if (!isClip || interbaseYs[i] !== row) {
+  for (let i = insEnd; i < hcEnd; i++) {
+    if (interbaseYs[i] !== row) {
+      continue
+    }
+    // Same significance gate as the mismatch and small-insertion tests, off the
+    // same `interbaseFrequencies` byte the clip shader fades by (clip.slang's
+    // `frequencyFade`). This test was the one mark hit-test without it, so a
+    // clip faded to the noise floor still intercepted clicks that every other
+    // faded mark hands back to the read body underneath.
+    if (
+      !passesFrequencyGate(
+        bpPerPx,
+        interbaseFrequencies[i] ?? 0,
+        filterMismatchesByFrequency,
+      )
+    ) {
       continue
     }
     const pos = interbasePositions[i]
@@ -89,7 +106,7 @@ export function hitTestClip(
       Math.abs(genomicPos - pos) < hitToleranceBp
     ) {
       return {
-        type: type === INTERBASE_SOFTCLIP ? 'softclip' : 'hardclip',
+        type: i < scEnd ? 'softclip' : 'hardclip',
         index: i,
         position: pos,
         length: len,

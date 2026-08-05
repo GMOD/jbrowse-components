@@ -1,6 +1,10 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
 
-import { INTERBASE_INSERTION } from '../../shared/types.ts'
+import {
+  INTERBASE_HARDCLIP,
+  INTERBASE_INSERTION,
+  INTERBASE_SOFTCLIP,
+} from '../../shared/types.ts'
 import {
   SNP_HIT_MAX_BP_PER_PX,
   contextMenuFieldsForHit,
@@ -11,10 +15,20 @@ import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
 import type { HitTestOptions } from './hitTestPipeline.ts'
 
+function countType(types: Uint8Array, code: number) {
+  let n = 0
+  for (const t of types) {
+    if (t === code) {
+      n++
+    }
+  }
+  return n
+}
+
 function makeRpcData(
   overrides: Partial<PileupDataResult> = {},
 ): PileupDataResult {
-  return {
+  const data = {
     mismatchPositions: new Uint32Array(),
     mismatchFrequencies: new Uint8Array(),
     mismatchQuals: new Uint8Array(),
@@ -35,10 +49,25 @@ function makeRpcData(
     interbaseSequences: [],
     indicatorPositions: new Uint32Array(),
     indicatorColorTypes: new Uint8Array(),
+    softclipBasePositions: new Uint32Array(),
+    softclipBaseYs: new Uint16Array(),
+    softclipBaseReadIndices: new Uint32Array(),
     coverageDepths: new Float32Array(),
     coverageStartPos: 0,
     ...overrides,
   } as PileupDataResult
+  // The worker publishes the three counts that partition the merged interbase
+  // array into (insertions, softclips, hardclips), and the insertion/clip hit
+  // tests slice by them rather than re-checking a type byte per entry. Derive
+  // them here so a test only has to supply `interbaseTypes` — in that canonical
+  // order, which is the layout `buildInterbaseArrays` guarantees.
+  const types = data.interbaseTypes
+  return {
+    ...data,
+    numInsertions: countType(types, INTERBASE_INSERTION),
+    numSoftclips: countType(types, INTERBASE_SOFTCLIP),
+    numHardclips: countType(types, INTERBASE_HARDCLIP),
+  }
 }
 
 // Standard block: 200px wide, covers [0, 20000] → bpPerPx=100.
@@ -72,6 +101,7 @@ const ZOOMED_OUT_OPTS: HitTestOptions = {
   scrollTop: 0,
   isChainMode: false,
   filterMismatchesByFrequency: true,
+  showMismatches: true,
   pileupVisible: true,
 }
 
@@ -522,6 +552,187 @@ describe('chain mode resolves the read under the cursor, not the chain first rea
     expect(result.type).toBe('feature')
     if (result.type === 'feature') {
       expect(result.hit).toStrictEqual({ id: 'mate1', index: 0 })
+    }
+  })
+})
+
+// `gap` / `mismatch` / `insertion` are the three PILEUP_LAYERS entries gated on
+// showMismatches, and the flag is a repaint-tier setting — the arrays are still
+// fetched. So without a matching gate here the marks stayed hoverable, clickable
+// and right-clickable while nothing was drawn for them.
+describe('showMismatches off stops hit-testing the layers it stops drawing', () => {
+  const NO_MISMATCHES: HitTestOptions = {
+    ...ZOOMED_OUT_OPTS,
+    showMismatches: false,
+  }
+
+  // bpPerPx=1 (bpRange [0,200] over 200px) — the zoomed-in branch.
+  function zoomedIn(rpcOverrides: Partial<PileupDataResult> = {}) {
+    return {
+      ...makeResolved(rpcOverrides),
+      bpRange: [0, 200] as [number, number],
+    }
+  }
+
+  it('a mismatch is inert', () => {
+    const resolved = zoomedIn({
+      mismatchPositions: new Uint32Array([100]),
+      mismatchYs: new Uint16Array([0]),
+      mismatchBases: new Uint8Array([65]),
+    })
+    expect(performHitTest(100, 60, resolved, ZOOMED_OUT_OPTS).type).toBe('cigar')
+    expect(performHitTest(100, 60, resolved, NO_MISMATCHES).type).toBe('none')
+  })
+
+  it('an insertion is inert', () => {
+    const resolved = zoomedIn({
+      interbasePositions: new Uint32Array([100]),
+      interbaseYs: new Uint16Array([0]),
+      interbaseTypes: new Uint8Array([INTERBASE_INSERTION]),
+      interbaseLengths: new Uint32Array([1]),
+      interbaseSequences: ['A'],
+      interbaseFrequencies: new Uint8Array([255]),
+    })
+    expect(performHitTest(100, 60, resolved, ZOOMED_OUT_OPTS).type).toBe('cigar')
+    expect(performHitTest(100, 60, resolved, NO_MISMATCHES).type).toBe('none')
+  })
+
+  // The sharpest case: a deletion draws no gap mark, and the read body is NOT
+  // split at deletions (only at skips), so the read is a solid block there. The
+  // gap test went on intercepting the whole span, making that read unselectable
+  // across its own deletion.
+  it('a deletion hands the click back to the read it is drawn inside', () => {
+    const resolved = zoomedIn({
+      gapPositions: new Uint32Array([50, 150]),
+      gapYs: new Uint16Array([0]),
+      gapTypes: new Uint8Array([0]),
+      readPositions: new Uint32Array([0, 200]),
+      readYs: new Uint16Array([0]),
+      readIds: ['read1'],
+    })
+    expect(performHitTest(100, 60, resolved, ZOOMED_OUT_OPTS).type).toBe('cigar')
+    const off = performHitTest(100, 60, resolved, NO_MISMATCHES)
+    expect(off.type).toBe('feature')
+    if (off.type === 'feature') {
+      expect(off.hit).toStrictEqual({ id: 'read1', index: 0 })
+    }
+  })
+
+  it('the zoomed-out deletion branch is gated too', () => {
+    const resolved = makeResolved({
+      gapPositions: new Uint32Array([9500, 10500]),
+      gapYs: new Uint16Array([0]),
+      gapTypes: new Uint8Array([0]),
+    })
+    expect(performHitTest(100, 60, resolved, ZOOMED_OUT_OPTS).type).toBe('cigar')
+    expect(performHitTest(100, 60, resolved, NO_MISMATCHES).type).toBe('none')
+  })
+
+  // Clips draw unconditionally (PILEUP_LAYERS gates them on `() => true`), so
+  // they must stay hittable — the gate covers the mark layers, not this one.
+  it('a soft clip stays hittable', () => {
+    const resolved = zoomedIn({
+      interbasePositions: new Uint32Array([100]),
+      interbaseYs: new Uint16Array([0]),
+      interbaseTypes: new Uint8Array([INTERBASE_SOFTCLIP]),
+      interbaseLengths: new Uint32Array([20]),
+      interbaseFrequencies: new Uint8Array([255]),
+    })
+    const off = performHitTest(100, 60, resolved, NO_MISMATCHES)
+    expect(off.type).toBe('cigar')
+    if (off.type === 'cigar') {
+      expect(off.hit.type).toBe('softclip')
+    }
+  })
+})
+
+// `readPositions` carries the read's TRUE aligned extent — soft-clip expansion
+// is applied to the layout's extents and never written back — so hitTestFeature
+// finds nothing over the clipped tail that drawSoftclipBases paints. Left
+// unhandled, the visible run answered no hover, cleared the selection on click,
+// and fell through to the browser's own context menu on right-click.
+describe('soft-clipped bases resolve to their read', () => {
+  // bpPerPx=1; read aligned over [0,100], 20 clipped bases drawn at [100,120).
+  function clippedRead() {
+    return {
+      ...makeResolved({
+        readPositions: new Uint32Array([0, 100]),
+        readYs: new Uint16Array([0]),
+        readIds: ['read1'],
+        softclipBasePositions: new Uint32Array(
+          Array.from({ length: 20 }, (_, k) => 100 + k),
+        ),
+        softclipBaseYs: new Uint16Array(20),
+        softclipBaseReadIndices: new Uint32Array(20),
+      }),
+      bpRange: [0, 200] as [number, number],
+    }
+  }
+
+  it('hovering past the alignment end still names the read', () => {
+    // x=110 → bp 110, outside readPositions [0,100] but inside the clipped run
+    const result = performHitTest(110, 60, clippedRead(), ZOOMED_OUT_OPTS)
+    expect(result.type).toBe('feature')
+    if (result.type === 'feature') {
+      expect(result.hit).toStrictEqual({ id: 'read1', index: 0 })
+    }
+  })
+
+  it('the aligned body still wins where the two could overlap', () => {
+    const result = performHitTest(50, 60, clippedRead(), ZOOMED_OUT_OPTS)
+    expect(result.type).toBe('feature')
+    if (result.type === 'feature') {
+      expect(result.hit).toStrictEqual({ id: 'read1', index: 0 })
+    }
+  })
+
+  it('past the end of the clipped run is still a miss', () => {
+    expect(performHitTest(130, 60, clippedRead(), ZOOMED_OUT_OPTS).type).toBe(
+      'none',
+    )
+  })
+
+  it('another row is a miss', () => {
+    // canvasY=72 → adjustedY=22 → row 1; the clip bases are all on row 0
+    expect(performHitTest(110, 72, clippedRead(), ZOOMED_OUT_OPTS).type).toBe(
+      'none',
+    )
+  })
+})
+
+// The clip test was the one mark hit-test with no significance gate, though the
+// clip shader fades by the same `interbaseFrequencies` byte the mismatch and
+// small-insertion tests read through passesFrequencyGate.
+describe('clip hit gates on frequency like every other mark', () => {
+  // bpPerPx=10 (bpRange [0,2000] over 200px) — past base level, so the gate is
+  // live; frequency 0 = zeroed by the depth-dependent draw threshold.
+  function lowFreqClip() {
+    return {
+      ...makeResolved({
+        interbasePositions: new Uint32Array([1000]),
+        interbaseYs: new Uint16Array([0]),
+        interbaseTypes: new Uint8Array([INTERBASE_SOFTCLIP]),
+        interbaseLengths: new Uint32Array([20]),
+        interbaseFrequencies: new Uint8Array([0]),
+      }),
+      bpRange: [0, 2000] as [number, number],
+    }
+  }
+
+  it('a noise-floor clip does not intercept', () => {
+    expect(performHitTest(100, 60, lowFreqClip(), ZOOMED_OUT_OPTS).type).toBe(
+      'none',
+    )
+  })
+
+  it('but stays hittable with frequency filtering off', () => {
+    const result = performHitTest(100, 60, lowFreqClip(), {
+      ...ZOOMED_OUT_OPTS,
+      filterMismatchesByFrequency: false,
+    })
+    expect(result.type).toBe('cigar')
+    if (result.type === 'cigar') {
+      expect(result.hit.type).toBe('softclip')
     }
   })
 })

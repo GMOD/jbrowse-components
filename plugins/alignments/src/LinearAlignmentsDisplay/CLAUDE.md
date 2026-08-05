@@ -78,6 +78,31 @@ Grow mode is `HeightModeMixin`'s in full — this display supplies only
 `setHeightMode` for the two resets the mixin can't know about. The scroll clamp
 is `TrackHeightMixin`'s, off `scrollableHeight`.
 
+## Hit-testing: every draw gate needs a matching hit gate
+
+`PILEUP_LAYERS` decides what is painted; `performHitTest` decides what answers a
+hover, click and right-click. **Nothing keeps the two lists in step**, and the
+settings that gate them are repaint-tier — the arrays are fetched either way —
+so a layer switched off keeps its marks hoverable, clickable and
+right-clickable over blank pixels. `showMismatches` and `pileupVisible` are in
+`HitTestOptions` for exactly that reason; `clip` is deliberately absent because
+its layer draws unconditionally. The sharp case is `hitTestGap`: the read body
+is split at skips but **not** at deletions, so an ungated gap test intercepts
+the whole span of a read that draws as solid body, and the read stops being
+selectable across its own deletion.
+
+The converse gap is a layer with no hit test at all. Soft-clipped bases are the
+one that bit: `readPositions` carries the read's TRUE aligned extent (the
+soft-clip expansion goes into the layout's extents and is never written back),
+so `hitTestFeature` misses the run `drawSoftclipBases` paints past the alignment
+end — and a miss doesn't fail quietly, it clears the selection on click and
+falls through to the **browser's** context menu on right-click.
+
+Priority within the chain is a real decision, not scan order. Both index-backed
+tests must pick by distance: `Flatbush.search` returns packed Hilbert order,
+which for one row's collinear points is ascending position, so `hits[0]` is the
+leftmost candidate in the window rather than the one under the cursor.
+
 ## Context menu: build items from the id, not the feature
 
 `contextMenuFeature` arrives a round trip after the click. Gate items on

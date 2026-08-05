@@ -3421,6 +3421,11 @@ export default function stateModelFactory(
            * and, when the hit carries one, populated by an async RPC fetch — so
            * "open the menu for this hit and its read" stays a single call and a
            * repositioned menu can't inherit the prior read's items.
+           *
+           * Dropping the hover is part of opening, not a step the caller does
+           * first: the tooltip must go, but the highlight box has to survive as
+           * a pin on the menu's own read, and that is a clear-then-re-box order
+           * no call site should have to know (or get right in a second one).
            */
           openContextMenu(args: {
             anchor: ContextMenuAnchor
@@ -3431,6 +3436,7 @@ export default function stateModelFactory(
             modHit?: ModificationHitResult
             featureId?: string
           }) {
+            self.clearMouseoverState()
             self.contextMenuAnchor = args.anchor
             self.contextMenuBlock = args.block
             self.contextMenuGenomicPos = args.genomicPos
@@ -3441,7 +3447,7 @@ export default function stateModelFactory(
             self.contextMenuFeatureId = args.featureId
             // Pin the hover to the menu's target read so its highlight box
             // (highlightBoxes, keyed on featureIdUnderMouse) stays on while the
-            // menu is open — the caller cleared mouseover state first, so this
+            // menu is open — the clear above dropped the tooltip, so this
             // re-boxes just the read the menu acts on. Undefined for
             // coverage/indicator hits, which have no read to box. Mirrors canvas
             // LinearBasicDisplay.openContextMenu.

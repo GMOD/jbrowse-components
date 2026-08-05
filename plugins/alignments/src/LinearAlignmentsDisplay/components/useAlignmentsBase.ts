@@ -3,6 +3,7 @@ import { useMemo, useRef } from 'react'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { clamp, getContainingView } from '@jbrowse/core/util'
 
+import { snpBaseFromCigar } from '../../shared/hitTestTypes.ts'
 import { getMismatchContrastMap } from '../../shared/util.ts'
 import {
   CLICK_SUPPRESS_THRESHOLD_PX,
@@ -31,10 +32,7 @@ import {
   formatModificationTooltip,
 } from './tooltipUtils.ts'
 
-import type {
-  CigarHitResult,
-  ResolvedBlock,
-} from '../../shared/hitTestTypes.ts'
+import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
 import type { HitTestResult } from './hitTestPipeline.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -45,12 +43,6 @@ export type { LinearAlignmentsDisplayModel }
 export interface FeatureHit {
   id: string
   index: number
-}
-
-// The SNP base to annotate a modification hit with, when the modified base is
-// also a mismatch. undefined for a modification over a reference-matching base.
-function snpBaseFromCigar(cigarHit: CigarHitResult | undefined) {
-  return cigarHit?.type === 'mismatch' ? cigarHit.base : undefined
 }
 
 // Hit-test handlers + palette plumbing for the pileup canvas. Mouse coords come
@@ -108,6 +100,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
             scrollTop: model.scrollTop,
             isChainMode,
             filterMismatchesByFrequency: model.filterMismatchesByFrequency,
+            showMismatches: model.showMismatches,
             pileupVisible: picked.section.pileupHeight > 0,
           })
         : { type: 'none' }
@@ -199,15 +192,16 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       contextMenuFieldsForHit(result)
     if (show) {
       e.preventDefault()
-      model.clearMouseoverState()
-      // The genomic column under the cursor, anchoring the read menu's "sort at
-      // the clicked position" items (independent of whether a cigar feature was
-      // hit). Same transform the hit-test pipeline uses.
+      // The genomic column under the cursor, anchoring the "sort at the clicked
+      // position" items — the read menu's, and the cigar submenu's base-pair
+      // sort. Independent of whether a cigar feature was hit, and the same
+      // transform the hit-test pipeline uses.
       const genomicPos = resolved
         ? canvasXToBasePos(e.nativeEvent.offsetX, resolved)
         : undefined
-      // One atomic call: coord + block + hits, plus the async read fetch when
-      // the hit carries one. A repositioned menu can't inherit the prior read.
+      // One atomic call: coord + block + hits, the hover handoff, plus the async
+      // read fetch when the hit carries one. A repositioned menu can't inherit
+      // the prior read.
       model.openContextMenu({
         anchor: { clientX: e.clientX, clientY: e.clientY },
         block: resolved,

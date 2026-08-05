@@ -29,6 +29,14 @@ export interface CigarHitResult {
   qual?: number
 }
 
+// The SNP base to annotate a modification hit with, when the modified base is
+// also a mismatch. undefined for a modification over a reference-matching base.
+// Shared by the left-click path (useAlignmentsBase) and the right-click one
+// (menus/contextMenu), which must annotate the identical widget.
+export function snpBaseFromCigar(cigarHit: CigarHitResult | undefined) {
+  return cigarHit?.type === 'mismatch' ? cigarHit.base : undefined
+}
+
 export interface ResolvedBlock {
   rpcData: PileupDataResult
   bpRange: [number, number]

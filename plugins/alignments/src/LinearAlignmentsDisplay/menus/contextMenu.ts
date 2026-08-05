@@ -14,6 +14,7 @@ import FilterAltOffIcon from '@mui/icons-material/FilterAltOff'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 
+import { snpBaseFromCigar } from '../../shared/hitTestTypes.ts'
 import {
   buildPairedEndMateFeature,
   getMateFields,
@@ -56,6 +57,9 @@ interface HitMenuModel extends IStateTreeNode {
   // snapshot — closeContextMenu runs before the click callback, so reading it
   // live would see undefined.
   contextMenuBlock: ResolvedBlock | undefined
+  // Genomic column under the right-click. The cigar submenu's base-pair sort
+  // anchors here, not on the op's own start — see getHitMenuItems.
+  contextMenuGenomicPos: number | undefined
   setSortedByAtPosition: (arg: {
     type: string
     pos: number
@@ -89,9 +93,6 @@ interface ContextMenuModel
   contextMenuFeature: Feature | undefined
   // The same read's id, carried by the hit test and so known synchronously.
   contextMenuFeatureId: string | undefined
-  // Genomic column under the right-click, anchoring the read menu's "sort at the
-  // clicked position" items. Captured into the onClicks like contextMenuBlock.
-  contextMenuGenomicPos: number | undefined
   // The active ordering, read only to pre-fill the tag dialog so this entry
   // point and the track menu's "Tag..." open with the same field filled.
   sortedBy?: { type: string; tag?: string }
@@ -336,7 +337,17 @@ export function getHitMenuItems(
             ? `Sort by ${typeLabel.toLowerCase()} at position`
             : 'Sort by base at position',
           sortType: isInterbase ? cigarHit.type : 'basePair',
-          position: cigarHit.position,
+          // An interbase mark IS its position, so the sort anchors on the mark.
+          // A base-pair sort anchors on the clicked COLUMN instead: a deletion
+          // or skip reports `position` as the op's start, which for a 5kb
+          // deletion or a 100kb intron is a locus that can be off screen — and
+          // it silently disagreed with the read menu's own "Sort by ▸ Base
+          // pair" in the same menu, which has always meant the clicked column.
+          // A mismatch is 1bp, so the two are the same base there.
+          position:
+            isInterbase || self.contextMenuGenomicPos === undefined
+              ? cigarHit.position
+              : self.contextMenuGenomicPos,
           // Named with its span, so "Open deletion details" beside a
           // feature-level "Open feature details" reads as the CIGAR op the
           // cursor is on rather than as an unexplained second kind of detail. A
@@ -359,7 +370,7 @@ export function getHitMenuItems(
     // above. snpBase annotates the widget when the modified base is also a SNP,
     // mirroring the left-click path.
     if (modHit) {
-      const snpBase = cigarHit?.type === 'mismatch' ? cigarHit.base : undefined
+      const snpBase = snpBaseFromCigar(cigarHit)
       items.push({
         label: 'Open modification details',
         icon: MenuOpenIcon,
@@ -500,7 +511,7 @@ export function getContextMenuItems(
             onClick: () => {
               viewMateRegionInCurrentView({
                 view: getContainingView(self) as LGV,
-                feature: feat,
+                mate: mateFields,
               })
             },
           },

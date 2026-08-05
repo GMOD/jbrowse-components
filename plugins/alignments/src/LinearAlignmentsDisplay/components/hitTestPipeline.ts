@@ -10,6 +10,7 @@ import {
 import { hitTestMismatch } from '../../features/mismatch/hitTest.ts'
 import { hitTestModification } from '../../features/modification/hitTest.ts'
 import { hitTestFeature } from '../../features/read/hitTest.ts'
+import { hitTestSoftclipBase } from '../../features/softclip/hitTest.ts'
 import { hitTestClip } from '../../shared/clipPass.ts'
 import { isWithinReadBand } from '../../shared/hitTestTypes.ts'
 import { canvasToGenomicCoords } from './alignmentComponentUtils.ts'
@@ -140,6 +141,15 @@ export interface HitTestOptions {
   // (and stop being clickable) once zoomed out; when false they draw opaque and
   // stay clickable at every zoom.
   filterMismatchesByFrequency: boolean
+  // Mirrors the `gap` / `mismatch` / `insertion` draw layers, which are the
+  // three PILEUP_LAYERS entries gated on this flag. The arrays are fetched
+  // either way (it is a repaint-tier setting, not an `rpcProps` one), so
+  // without this the marks stayed hoverable, clickable and right-clickable
+  // while nothing was drawn for them — and `hitTestGap` went on intercepting
+  // the whole deletion span, making a read that draws as solid body
+  // unselectable across it. Clips are deliberately absent: their layer draws
+  // unconditionally, so their hit test must too.
+  showMismatches: boolean
   // False when this section's pileup band is collapsed to zero height
   // (`showPileup` off, or a collapsed group): reads are laid out but not drawn,
   // so the per-read/cigar/modification tests must be skipped to avoid resolving
@@ -153,27 +163,27 @@ export interface HitTestOptions {
 //  3. small insertions (thin bars that don't overlap SNPs)
 //  4. gaps (deletions/skips spanning the read body)
 //  5. clips (interbase bars at alignment edges; softclip wins over hardclip)
+//
+// Steps 1-4 are the `showMismatches` layers and vanish with them; step 5 draws
+// unconditionally and so stays. Callers have already checked `isWithinReadBand`.
 function hitTestCigarItem(
   resolved: ResolvedBlock,
   coords: CigarCoords,
   featureHeight: number,
-  filterMismatchesByFrequency: boolean,
+  { filterMismatchesByFrequency, showMismatches }: HitTestOptions,
 ): CigarHitResult | undefined {
-  if (!isWithinReadBand(coords, featureHeight)) {
-    return undefined
-  }
-  return (
-    hitTestLargeInsertion(resolved, coords, featureHeight) ??
-    hitTestMismatch(resolved, coords, filterMismatchesByFrequency) ??
-    hitTestSmallInsertion(
-      resolved,
-      coords,
-      featureHeight,
-      filterMismatchesByFrequency,
-    ) ??
-    hitTestGap(resolved, coords) ??
-    hitTestClip(resolved, coords)
-  )
+  const marks = showMismatches
+    ? (hitTestLargeInsertion(resolved, coords, featureHeight) ??
+      hitTestMismatch(resolved, coords, filterMismatchesByFrequency) ??
+      hitTestSmallInsertion(
+        resolved,
+        coords,
+        featureHeight,
+        filterMismatchesByFrequency,
+      ) ??
+      hitTestGap(resolved, coords))
+    : undefined
+  return marks ?? hitTestClip(resolved, coords, filterMismatchesByFrequency)
 }
 
 // Single site for the canvas-X → genomicPos transform; `reversed` is handled
@@ -226,7 +236,7 @@ export function performHitTest(
     featureSpacing,
     scrollTop,
     isChainMode,
-    filterMismatchesByFrequency,
+    showMismatches,
     pileupVisible,
   } = options
 
@@ -287,17 +297,19 @@ export function performHitTest(
     scrollTop,
   })
 
-  if (bpPerPx <= SNP_HIT_MAX_BP_PER_PX) {
+  // Every per-read test below is confined to a drawn read body. Asked once
+  // here for the two branches that used to spell it separately (hitTestCigarItem
+  // internally, the zoomed-out branch inline); the tests that are exported and
+  // unit-tested on their own — hitTestFeature, hitTestModification,
+  // hitTestSoftclipBase — keep their own guard.
+  const inReadBand = isWithinReadBand(coords, featureHeight)
+
+  if (inReadBand && bpPerPx <= SNP_HIT_MAX_BP_PER_PX) {
     // Modification before CIGAR: a modified+mismatched base resolves as a
     // modification hit, not a mismatch hit. modFlatbush is undefined when
     // not in modification mode so this is a no-op.
     const modificationHit = hitTestModification(resolved, coords, featureHeight)
-    const cigarHit = hitTestCigarItem(
-      resolved,
-      coords,
-      featureHeight,
-      filterMismatchesByFrequency,
-    )
+    const cigarHit = hitTestCigarItem(resolved, coords, featureHeight, options)
     if (modificationHit) {
       return {
         type: 'modification',
@@ -315,10 +327,9 @@ export function performHitTest(
         resolved,
       }
     }
-  } else if (isWithinReadBand(coords, featureHeight)) {
+  } else if (inReadBand && showMismatches) {
     // When zoomed out, surface features that are still visually significant.
-    // These two tests are called directly rather than through
-    // `hitTestCigarItem`, so they need its band guard spelled here.
+    // Both are `showMismatches` layers, so the gate covers the whole branch.
     // `featureHit` is attached just as in the zoomed-in branch: without it a
     // right-click on a zoomed-out insertion/deletion loses the read's own menu
     // items and a hover drops the chain highlight, purely because of zoom.
@@ -346,12 +357,15 @@ export function performHitTest(
     }
   }
 
-  // The read under the cursor always wins; in chain mode a miss then falls
-  // back to the chain, so the connecting line between mates stays hoverable.
-  // `chainIdsForRead` resolves the whole chain from any of its reads, so the
-  // chain highlight/selection is unaffected by which read answers.
+  // The read under the cursor always wins. A miss then falls back to the read's
+  // soft-clipped tail (drawn past its aligned extent, so `hitTestFeature` can't
+  // see it) and, in chain mode, to the chain — so the connecting line between
+  // mates stays hoverable. `chainIdsForRead` resolves the whole chain from any
+  // of its reads, so the chain highlight/selection is unaffected by which read
+  // answers.
   const hit =
     hitTestFeature(resolved, coords, featureHeight) ??
+    hitTestSoftclipBase(resolved, coords, featureHeight) ??
     (isChainMode
       ? hitTestChain(coords, resolved.rpcData, featureHeight)
       : undefined)
