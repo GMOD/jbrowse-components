@@ -182,7 +182,7 @@ Two were deliberately kept against the list:
 runtime plugin through `jbrequire`. The audit's reachability grep was in-tree
 only, so "dead" there means "dead in this repo", not "dead". The deletions above
 crossed that surface knowingly — they are obscure helpers, and
-[PLUGIN_ABI_STABILITY.md](reference/PLUGIN_ABI_STABILITY.md) is explicit that
+[PLUGIN_ABI_STABILITY.md](PLUGIN_ABI_STABILITY.md) is explicit that
 RFC-001 deferred formal API-stability policy. The two items below are bigger
 and were left for a deliberate call:
 
