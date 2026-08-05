@@ -167,6 +167,14 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
+      # check-build-scripts runs sv_multihop's pipeline against an allele it
+      # builds itself, and skips that check when these are absent. A check that
+      # only ever skips here is not a check, and this is the only coverage that
+      # pipeline's glue has.
+      - name: Install the aligner and samtools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends samtools minimap2 tabix
       - name: Validate docs
         run: pnpm check-docs
 

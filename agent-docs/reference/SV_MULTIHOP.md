@@ -304,6 +304,21 @@ says a change to it did not move the published figures. `chains` against
 its output is quoted in the tutorial (100 junctions, 4 chains, chain 1 is the
 RARB one), so a diff of it is a diff of the docs.
 
+**The synthetic foldback is now a check, not a recipe.**
+`scripts/check_sv_multihop_pipeline.py` builds the allele below, runs `derive`
+over it and asserts the reconstruction, in about a second and with no network.
+`check-build-scripts.py` runs it when samtools/minimap2/tabix are present and
+says **SKIPPED** in its summary line when they are not, and the `docs` CI job
+installs them so that it actually runs there. It is mutation-tested: unmerging
+the reference windows, dropping the `-1` from the coordinate lift, dropping the
+strand flip in `project_feature` and disabling the `Parent` rewrite each fail it.
+Two mutations it does *not* catch, both understood — rebasing a second-pass row
+(the fixture never needs the second pass, see that file's header; pinned by
+`place_gap_row` instead) and clamping a window to the chromosome (cosmetic, it
+only silences a faidx warning).
+
+The recipe behind it, if you want to vary the shape:
+
 A synthetic foldback runs the whole pipeline in seconds and has a known answer,
 which is how the MAPQ-0 bug above surfaced. Build a two-contig reference, splice
 a derivative out of it (`chrA[0:20000] + chrB[1000:1200] +

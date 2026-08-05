@@ -5,7 +5,9 @@ validates every embedded quoted heredoc tagged JSON (must be valid JSON) or PY
 (must be syntactically valid Python) — the config.json / session.json blocks and
 the config-patching snippets. It also syntax-checks every standalone helper in
 scripts/*.py (reroot_maf.py, hapibd_to_bed.py, …), which the scripts invoke as
-real pipeline steps. It does NOT download data or run the pipelines.
+real pipeline steps. It downloads no data. The one pipeline it runs is
+sv_multihop's, against a synthetic allele it builds itself
+(check_sv_multihop_pipeline.py), and only when samtools and minimap2 are there.
 
 Usage: python3 scripts/check-build-scripts.py
 """
@@ -485,6 +487,24 @@ check("unplaced_gaps does not count a stretch two segments overlap",
       sv_multihop.unplaced_gaps(
           [["q", "0", "0", "600"], ["q", "0", "300", "1000"]], 1000, 50), [])
 
+# A fragment realigned by the second pass carries the FRAGMENT's query name,
+# length and offsets. Rebasing them is what puts the recovered segment where it
+# belongs on the contig; left alone it reports at the top of the allele, drawing
+# a ribbon to the wrong place rather than failing. (Whether pass one misses a
+# short insert at all is an aligner accident -- it flipped between random seeds
+# in check_sv_multihop_pipeline.py's fixture -- so this path is pinned here
+# rather than end to end.)
+check("place_gap_row rebases a second-pass row onto the whole contig",
+      sv_multihop.place_gap_row(
+          ["gap", "200", "10", "190", "+", "chrB:1-1000", "1000", "500", "680"]
+          + ["60"] * 4, "der1", 26078, 32931)[:4],
+      ["der1", "26078", "32941", "33121"])
+check("place_gap_row leaves the target side alone, it is already lifted",
+      sv_multihop.place_gap_row(
+          ["gap", "200", "10", "190", "+", "chrB:1-1000", "1000", "500", "680"]
+          + ["60"] * 4, "der1", 26078, 32931)[4:9],
+      ["+", "chrB:1-1000", "1000", "500", "680"])
+
 # The contig is aligned against windows cut out of the reference, so every PAF
 # target coordinate arrives window-relative; unlifted, the reconstruction points
 # at the top of each chromosome instead of at the chain.
@@ -624,6 +644,29 @@ check("the projected gene track belongs to the derivative",
       [t["assemblyNames"] for t in genes_cfg["tracks"]
        if t["trackId"] == sv_multihop.track_ids("der1", "hg38")["genes"]],
       [["der1"]])
+
+# Everything above is the pure functions. The glue between them -- two alignment
+# passes against merged reference windows, the projection, the files the emitted
+# config points at -- is where the bugs that shipped actually lived, and none of
+# it is reachable from a unit check. So run it, on an allele built here so the
+# answer is known exactly.
+pipeline_tools = ["samtools", "minimap2", "bgzip", "tabix"]
+pipeline_missing = [t for t in pipeline_tools if shutil.which(t) is None]
+if pipeline_missing:
+    # Loud, and counted: a check that quietly skips is a check that has stopped
+    # being one, and this is the only coverage sv_multihop's pipeline has.
+    print(f"note: {', '.join(pipeline_missing)} not installed, "
+          f"SKIPPING the sv_multihop pipeline check")
+    pipeline_ran = False
+else:
+    pipeline = subprocess.run(
+        [sys.executable, "scripts/check_sv_multihop_pipeline.py"],
+        capture_output=True, text=True)
+    if pipeline.returncode:
+        print(pipeline.stdout)
+        print(f"FAIL sv_multihop pipeline: {pipeline.stderr.strip()}")
+        failed = True
+    pipeline_ran = True
 
 # depmap_to_jbrowse.py: StarFusionAdapter keys off a '#'-prefixed header and
 # finds the breakpoint columns by name, so a plain CSV->TSV dump loads as an
@@ -806,4 +849,5 @@ check("the .blocks columns are in that order, not the caller's",
 if failed:
     sys.exit(1)
 print(f"ok: {len(scripts)} build scripts + {len(helpers)} python helpers valid, "
-      f"{behavior} helper behavior checks pass, {cited} doc curl targets exist")
+      f"{behavior} helper behavior checks pass, {cited} doc curl targets exist, "
+      f"sv_multihop pipeline {'rebuilds its foldback' if pipeline_ran else 'SKIPPED'}")

@@ -356,6 +356,22 @@ def unplaced_gaps(rows, contig_length, min_segment):
     return gaps
 
 
+def place_gap_row(row, name, contig_length, start):
+    """A second-pass PAF row, rewritten as a row of the whole contig.
+
+    The fragment was cut out and aligned on its own, so its query name, length
+    and coordinates are the fragment's; only the target side arrives correct.
+    Left alone, the recovered segment reports at the top of the contig -- it
+    draws as a ribbon to the wrong part of the allele rather than as an error,
+    and the segment recovered here is the templated insert the figure is about.
+    """
+    row[0] = name
+    row[1] = str(contig_length)
+    row[2] = str(int(row[2]) + start)
+    row[3] = str(int(row[3]) + start)
+    return row
+
+
 def lift_to_chromosome(rows, chrom_length):
     """PAF rows aligned against `chrom:start-end` window sequences, rewritten
     against whole chromosomes.
@@ -725,12 +741,8 @@ def derive(args, tmp):
         found = align(fragment, [*splice, '-k', '9', '-w', '3', '-m', '20',
                                  '-s', '30', '-N', '5', '-p', '0.5'])
         if found:
-            f = max(found, key=lambda r: int(r[9]))
-            f[0] = args.name
-            f[1] = str(len(trimmed))
-            f[2] = str(int(f[2]) + start)
-            f[3] = str(int(f[3]) + start)
-            rows.append(f)
+            best = max(found, key=lambda r: int(r[9]))
+            rows.append(place_gap_row(best, args.name, len(trimmed), start))
             print(f'    gap {start}-{end} placed by second pass')
 
     if not rows:
