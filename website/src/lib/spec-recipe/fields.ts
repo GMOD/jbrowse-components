@@ -445,6 +445,46 @@ function filterStep(
     : undefined
 }
 
+// arcColorOptions (menus/colorBy.ts), the radios inside its 'Arc color' submenu.
+const ARC_COLORS: Record<string, string> = {
+  insertSizeAndOrientation: 'Insert size and orientation',
+  insertSize: 'Insert size',
+  orientation: 'Orientation',
+}
+
+// The alignments 'Sort by...' radios (menus/sortGroup.ts). The strand row is
+// titled from the track's noun, as the height submenus are.
+function sortByLabel(type: string, noun: string) {
+  return type === 'basePair'
+    ? 'Base pair'
+    : type === 'strand'
+      ? `${capitalizeFirst(noun)} strand`
+      : type === 'tag'
+        ? 'Tag...'
+        : undefined
+}
+
+// 'Show legend' and 'Show coverage' are spelled identically in the alignments
+// display's Show submenu (menus/reads.ts) and the synteny display's
+// (LGVSyntenyDisplay/menus.ts), so these only have to say which displays have
+// the submenu at all.
+const SHOW_SUBMENU_DISPLAYS = new Set([
+  'LinearAlignmentsDisplay',
+  'LGVSyntenyDisplay',
+])
+
+// linkedReads, drawInter, drawLongRange, readConnectionsHeight and sortedBy are
+// declared by LinearAlignmentsDisplay and nothing else, so unlike the fields
+// above them the name settles the display on its own: an entry carrying one is
+// either that display or a spec naming a slot no display has. That is what lets
+// these answer an entry whose display type went unresolved.
+function isAlignmentsOnlyField(displayType: string | undefined) {
+  return displayType === undefined || displayType === 'LinearAlignmentsDisplay'
+}
+
+const READ_CONNECTIONS_MENU = `${TRACK_MENU} → Read connections`
+const BAND_OPTIONS = `${READ_CONNECTIONS_MENU} → Arc / read cloud band options`
+
 function geneGlyphStep(value: unknown): FieldStep | undefined {
   const option = GENE_GLYPH_MODE_OPTIONS.find(o => o.value === value)
   return option
@@ -567,6 +607,80 @@ export const trackFields: Record<string, FieldRecipe> = {
   color: colorStep,
   jexlFilters: filterStep,
   jexlFiltersSetting: filterStep,
+  linkedReads: (value, { displayType }) =>
+    typeof value === 'string' && isAlignmentsOnlyField(displayType)
+      ? {
+          path: `${READ_CONNECTIONS_MENU} → View as pairs / link supplementary alignments (${value === 'off' ? 'unchecked' : 'checked'})`,
+        }
+      : undefined,
+  drawLongRange: (value, { displayType }) =>
+    typeof value === 'boolean' && isAlignmentsOnlyField(displayType)
+      ? {
+          path: `${BAND_OPTIONS} → Show off-screen mate connections (${value ? 'checked' : 'unchecked'})`,
+          note: 'That submenu stays greyed out until an arc or read-cloud overlay is on.',
+        }
+      : undefined,
+  drawInter: (value, { displayType }) =>
+    typeof value === 'boolean' && isAlignmentsOnlyField(displayType)
+      ? {
+          path: `${BAND_OPTIONS} → Show inter-chromosomal pairs (${value ? 'checked' : 'unchecked'})`,
+        }
+      : undefined,
+  readConnectionsHeight: (value, { displayType }) =>
+    typeof value === 'number' && isAlignmentsOnlyField(displayType)
+      ? {
+          path: `Drag the handle at the edge of the arc band to resize it (${value}px here).`,
+          note: 'Its tooltip reads "Drag to resize arcs area"; there is no menu entry for the height.',
+        }
+      : undefined,
+  arcColorByType: (value, { displayType }) => {
+    const label = typeof value === 'string' ? ARC_COLORS[value] : undefined
+    return label && displayType === 'LinearAlignmentsDisplay'
+      ? { path: `${TRACK_MENU} → Color by... → Arc color → ${label}` }
+      : undefined
+  },
+  sortedBy: (value, { displayType, noun }) => {
+    const type = asString(asRecord(value)?.type)
+    const label = type ? sortByLabel(type, noun) : undefined
+    return label && isAlignmentsOnlyField(displayType)
+      ? {
+          path: `${TRACK_MENU} → Sort by... → ${label}`,
+          note: 'The sort is taken at the base under the centre line, so navigate to the position you want before sorting.',
+        }
+      : undefined
+  },
+  showLegend: (value, { displayType }) =>
+    typeof value === 'boolean' &&
+    displayType &&
+    SHOW_SUBMENU_DISPLAYS.has(displayType)
+      ? {
+          path: `${TRACK_MENU} → Show... → Show legend (${value ? 'checked' : 'unchecked'})`,
+        }
+      : undefined,
+  showCoverage: (value, { displayType }) =>
+    typeof value === 'boolean' &&
+    displayType &&
+    SHOW_SUBMENU_DISPLAYS.has(displayType)
+      ? {
+          path: `${TRACK_MENU} → Show... → Show coverage (${value ? 'checked' : 'unchecked'})`,
+        }
+      : undefined,
+  collapseGroupRows: (value, { displayType }) =>
+    typeof value === 'boolean' &&
+    displayType &&
+    SHOW_SUBMENU_DISPLAYS.has(displayType)
+      ? {
+          path: `${TRACK_MENU} → Show... → Collapse groups to one row (${value ? 'checked' : 'unchecked'})`,
+          note: 'Offered only once the reads are grouped, since it is what the groups collapse into.',
+        }
+      : undefined,
+  hideSelfAlignments: (value, { displayType }) =>
+    typeof value === 'boolean' && displayType === 'LGVSyntenyDisplay'
+      ? {
+          path: `${TRACK_MENU} → Group by... → Hide self-alignment lane (${value ? 'checked' : 'unchecked'})`,
+          note: 'Below a divider at the foot of that submenu, and only meaningful on an all-vs-all track, which is what has a self lane.',
+        }
+      : undefined,
   scaleType: (value, { displayType }) => {
     const menu = displayType ? SCORE_MENUS[displayType] : undefined
     const label = typeof value === 'string' ? SCALE_TYPES[value] : undefined

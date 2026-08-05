@@ -5,29 +5,21 @@
 #
 # Adding a name here is a coverage regression — prefer a verified click-path in
 # src/lib/spec-recipe/fields.ts. Removing one is the win.
-arcColorByType
 bubbleSpread
 clusterRegion
-collapseGroupRows
 color
 colorDomain
 connectedView
 displayMode
-drawInter
-drawLongRange
 featureColor
 featureHighlights
 featureSpacing
 gfaLocation
 height
-hideSelfAlignments
 jexlFiltersSetting
-linkedReads
 maxFeatureScreenDensity
-readConnectionsHeight
 renderingMode
 showColorLegend
-showCoverage
 showHighlightChips
 showIntraviewLinks
 showLabels
@@ -35,7 +27,6 @@ showLegend
 showResolutionControls
 showRowSeparators
 sideBySide
-sortedBy
 strokeColor
 transcriptId
 uniprotId
