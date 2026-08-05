@@ -36,6 +36,12 @@ const SUPPRESS = '<!-- menu-path-ok -->'
 // Pages whose subject plugin is not in this repo, so none of their labels can
 // resolve here. A page-level fact, kept in one place rather than as a
 // suppression comment on each of the ~15 paths they contain.
+//
+// Every entry is asserted to exist below. An exemption list is the one part of
+// a check that can rot without anyone hearing about it: rename the page and the
+// entry silently stops applying to anything, and the page it now names — none —
+// goes unchecked forever. Same reason spec-recipe-unmapped.txt is a checked-in
+// list of names rather than a count.
 const EXTERNAL_PLUGIN_PAGES = new Set([
   'user_guides/graph_genome_view.md',
   'tutorials/pangenome_ecoli.md',
@@ -117,11 +123,13 @@ const resolves = (segment: string) => {
 }
 
 const errorLines: string[] = []
+const seenPages = new Set<string>()
 for (const file of walkFiles(
   docsDir,
   name => name.endsWith('.md') && name !== 'CLAUDE.md',
 )) {
   const rel = file.slice(docsDir.length + 1)
+  seenPages.add(rel)
   if (
     GENERATED_PREFIXES.some(p => rel.startsWith(p)) ||
     EXTERNAL_PLUGIN_PAGES.has(rel)
@@ -194,14 +202,22 @@ for (const file of walkFiles(
   flush()
 }
 
+for (const page of EXTERNAL_PLUGIN_PAGES) {
+  if (!seenPages.has(page)) {
+    errorLines.push(
+      `  EXTERNAL_PLUGIN_PAGES names ${JSON.stringify(page)}, which no longer exists.\n      Drop it, or point it at the page's new path.`,
+    )
+  }
+}
+
 reportProblems(
   errorLines.length > 0
     ? [
-        `Found ${errorLines.length} menu path(s) naming a label no source file renders:\n`,
+        `Found ${errorLines.length} problem(s) in documented menu paths:\n`,
         ...errorLines,
-        `\nRename the label in the docs to match the source. If the label belongs`,
-        `to a plugin outside this repo, add the page to EXTERNAL_PLUGIN_PAGES, or`,
-        `add ${SUPPRESS} to the line for a one-off.`,
+        `\nFor a label the source no longer renders, rename it in the docs to match.`,
+        `If it belongs to a plugin outside this repo, add the page to`,
+        `EXTERNAL_PLUGIN_PAGES, or add ${SUPPRESS} to the line for a one-off.`,
       ]
     : [],
   'All menu-path labels resolve to a string the app renders.',
