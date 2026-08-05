@@ -60,7 +60,6 @@ showIntraviewLinks
 showLabels
 showLegend
 showResolutionControls
-showRowLabels
 showRowSeparators
 showTree
 sideBySide
