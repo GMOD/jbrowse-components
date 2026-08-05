@@ -1,13 +1,21 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { getFileHandle, verifyPermission } from './fileHandleStore.ts'
 import {
   findFileHandleIds,
   getFileName,
   getRpcSessionId,
   getTrackName,
   pickDisplayForView,
+  restoreFileHandles,
   stripFileExtension,
 } from './tracks.ts'
+
+jest.mock('./fileHandleStore.ts', () => ({
+  getFileHandle: jest.fn(),
+  storeFileHandle: jest.fn(),
+  verifyPermission: jest.fn(),
+}))
 
 describe('pickDisplayForView', () => {
   // a multi-sample VCF track: two displays declared, matrix first, plus the
@@ -403,5 +411,89 @@ describe('getRpcSessionId', () => {
     const Root = types.model('Root', { leaf: Leaf })
     const root = Root.create({ leaf: { id: 'l' } })
     expect(() => getRpcSessionId(root.leaf)).toThrow(/rpcSessionId/)
+  })
+})
+
+describe('restoreFileHandles', () => {
+  function deferred<T>() {
+    let resolve!: (value: T) => void
+    const promise = new Promise<T>(r => {
+      resolve = r
+    })
+    return { promise, resolve }
+  }
+
+  // one entry per verifyPermission call, so a test can see exactly which
+  // handles have been asked about and hold each answer open
+  let checks: { handleId: string; answer: (granted: boolean) => void }[]
+  // resolved as the Nth check begins, so a test waits on the thing it is
+  // asserting about rather than on a timer
+  let checkStarted: ReturnType<typeof deferred<void>>[]
+
+  beforeEach(() => {
+    checks = []
+    checkStarted = [deferred<void>(), deferred<void>(), deferred<void>()]
+    ;(getFileHandle as jest.Mock).mockImplementation((handleId: string) =>
+      Promise.resolve({
+        name: `${handleId}.bam`,
+        getFile: () => Promise.resolve(new File([], `${handleId}.bam`)),
+      }),
+    )
+    ;(verifyPermission as jest.Mock).mockImplementation(
+      (handle: { name: string }) => {
+        const answer = deferred<boolean>()
+        checks.push({
+          handleId: handle.name.replace('.bam', ''),
+          answer: answer.resolve,
+        })
+        checkStarted[checks.length - 1]?.resolve()
+        return answer.promise
+      },
+    )
+  })
+
+  test('prompts for one file at a time, not all at once', async () => {
+    // a browser shows one file-access prompt per user gesture, so firing them
+    // concurrently means one dialog and the rest denied unasked
+    const all = restoreFileHandles(['p1', 'p2', 'p3'], true)
+
+    await checkStarted[0]!.promise
+    expect(checks.map(c => c.handleId)).toEqual(['p1'])
+
+    checks[0]!.answer(true)
+    await checkStarted[1]!.promise
+    expect(checks.map(c => c.handleId)).toEqual(['p1', 'p2'])
+
+    checks[1]!.answer(true)
+    await checkStarted[2]!.promise
+    checks[2]!.answer(true)
+
+    expect((await all).map(r => r.success)).toEqual([true, true, true])
+  })
+
+  test('a denial does not stop the files behind it being offered', async () => {
+    const all = restoreFileHandles(['d1', 'd2'], true)
+
+    await checkStarted[0]!.promise
+    checks[0]!.answer(false)
+    await checkStarted[1]!.promise
+    checks[1]!.answer(true)
+
+    expect((await all).map(r => r.success)).toEqual([false, true])
+  })
+
+  test('runs the batch at once when it cannot prompt', async () => {
+    // nothing to take turns over, and this is the session-load path
+    const all = restoreFileHandles(['s1', 's2', 's3'], false)
+
+    // all three in flight before any has been answered — serializing this would
+    // deadlock here rather than pass slowly
+    await Promise.all(checkStarted.map(d => d.promise))
+    expect(checks.map(c => c.handleId)).toEqual(['s1', 's2', 's3'])
+
+    for (const check of checks) {
+      check.answer(true)
+    }
+    expect((await all).map(r => r.success)).toEqual([true, true, true])
   })
 })

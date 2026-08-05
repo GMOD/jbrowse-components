@@ -219,24 +219,43 @@ export async function storeFileHandleLocation(
   }
 }
 
+async function settleFileHandle(handleId: string, requestPermission: boolean) {
+  try {
+    await ensureFileHandleReady(handleId, requestPermission)
+    return { handleId, success: true as const }
+  } catch (error) {
+    return { handleId, success: false as const, error }
+  }
+}
+
+/**
+ * Resolves a batch of stored file handles, one result per id.
+ *
+ * With `requestPermission` set these run ONE AT A TIME, and that is the whole
+ * point of the branch. `requestPermission()` needs transient user activation and
+ * the browser puts a single file-access prompt on screen at a time, so N of them
+ * fired off one "Restore access" click means the first call takes the prompt and
+ * the rest are refused without the user ever seeing a dialog — files reported
+ * back as permission failures that nobody was asked about. Taking turns, each
+ * prompt waits for the one before it to be answered, and whatever the activation
+ * window no longer covers is simply still pending for the next click instead of
+ * being spent.
+ *
+ * Without it nothing can prompt, so there is nothing to take turns over and the
+ * batch runs at once.
+ */
 export async function restoreFileHandles(
   handleIds: string[],
   requestPermission = false,
 ) {
-  const settled = await Promise.allSettled(
-    handleIds.map(handleId =>
-      ensureFileHandleReady(handleId, requestPermission),
-    ),
-  )
-  return settled.map((result, i) =>
-    result.status === 'fulfilled'
-      ? { handleId: handleIds[i]!, success: true as const }
-      : {
-          handleId: handleIds[i]!,
-          success: false as const,
-          error: result.reason,
-        },
-  )
+  if (!requestPermission) {
+    return Promise.all(handleIds.map(id => settleFileHandle(id, false)))
+  }
+  const results: Awaited<ReturnType<typeof settleFileHandle>>[] = []
+  for (const handleId of handleIds) {
+    results.push(await settleFileHandle(handleId, true))
+  }
+  return results
 }
 
 export function findFileHandleIds(obj: unknown) {
