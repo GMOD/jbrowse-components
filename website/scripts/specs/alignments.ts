@@ -80,6 +80,76 @@ function strandSpecificParts(): ScreenshotSpec[] {
   ]
 }
 
+// Strand-split coverage, as a mirror pair rather than one frame. Grouping splits
+// the coverage band as well as the pileup — each section's band is computed from
+// only that section's reads — so hiding the pileup leaves two histograms sharing
+// one autoscaled axis. One frame can only show "one band is full, the other is
+// empty", which reads as a property of the track; two frames on opposite-strand
+// genes show the fill FOLLOWING the gene's strand, which is the actual claim.
+//
+// firstOfPairStrand, NOT strand: this is a stranded paired-end library, so the
+// transcript strand is which mate the read is. Grouping on the raw read strand
+// sends the two mates of every pair to opposite sections, so neither band is the
+// transcript strand — the same distinction the coloring figure above draws.
+//
+// These two genes were picked by rendering candidates, not by reputation. Both
+// land on a ~2000 axis, so the panels read as parallel. Rejected: SURF1/SURF2
+// (the obvious choice next to the coloring figure's locus, but too shallow in
+// this library — linear renders the reverse band as an empty strip); GAPDH
+// (intronic spikes over 5000 blow the autoscale and flatten its own exons, and
+// its isoform stack is six rows deep); the whole four-gene surfeit cluster on a
+// log axis (low-level antisense fills both bands and blurs the alternation).
+function strandBandParts(): ScreenshotSpec[] {
+  const part = (
+    name: string,
+    loc: string,
+    readyText: string,
+    label: string,
+  ): ScreenshotSpec => ({
+    mode: 'url',
+    name,
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc,
+      trackLabels: 'offset',
+      tracks: [
+        { trackId: 'ncbi_gff_hg19', type: 'LinearBasicDisplay', height: 105 },
+        {
+          trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
+          type: 'LinearAlignmentsDisplay',
+          groupBy: { type: 'firstOfPairStrand' },
+          showPileup: false,
+          showSashimiArcs: false,
+          coverageHeight: 120,
+          height: 270,
+        },
+      ],
+    }),
+    readyText,
+    readyTimeout: 60000,
+    settleMs: 15000,
+    viewportHeight: 640,
+    hideTooltip: true,
+    annotations: [
+      { type: 'text', x: 24, y: 56, fontSize: 22, maxWidth: 800, text: label },
+    ],
+  })
+  return [
+    part(
+      'rnaseq/strand_split_coverage_fwd',
+      'chr9:136,215,000-136,217,300',
+      'RPL7A',
+      'RPL7A is on the + strand',
+    ),
+    part(
+      'rnaseq/strand_split_coverage_rev',
+      'chr7:5,566,500-5,570,600',
+      'ACTB',
+      'ACTB is on the - strand',
+    ),
+  ]
+}
+
 export const alignmentsSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
@@ -282,6 +352,50 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
   // feature details / Copy info / Dotplot of read vs ref / Linear read vs ref).
   // Read glyphs are canvas-drawn, so the rightclick uses a viewport coordinate;
   // a follow-up mouse move off the read clears its hover tooltip.
+  // Strand-split coverage: what grouping does to the coverage band itself. The
+  // depth split is the obvious half; the half worth a figure is that each band
+  // carries its OWN mismatch coloring, because every section's band is computed
+  // from only that section's reads (buildGroupResult runs the whole coverage
+  // pipeline per group). So the two bands disagree about which positions are
+  // colored, and a mismatch on one strand only is the pattern that separates a
+  // systematic basecalling error from a real variant.
+  //
+  // HG002 nanopore, where that pattern is the point: ONT's context/homopolymer
+  // errors are systematically strand-specific, so the asymmetry is real signal
+  // rather than a prop. Base-level zoom is load-bearing. The same track over
+  // 1.2 kb was tried and both bands come back a wall of ticks with nothing
+  // legible; at ~60 bp each position is a block wide enough to read.
+  {
+    mode: 'url',
+    name: 'alignments/strand_split_coverage',
+    url: sessionSpec(DEMO_CONFIG, {
+      sessionTracks: [HG002_NANOPORE_HP_TRACK],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg19',
+          loc: '1:63,006,240-63,006,300',
+          tracks: [
+            {
+              trackId: 'hg002_nanopore_hp',
+              type: 'LinearAlignmentsDisplay',
+              forceLoad: true,
+              groupBy: { type: 'strand' },
+              showPileup: false,
+              coverageHeight: 150,
+              height: 340,
+            },
+          ],
+        },
+      ],
+    }),
+    readySelector: '[data-testid="pileup-display-done"]',
+    readyTimeout: 90000,
+    settleMs: 12000,
+    viewportHeight: 545,
+    hideTooltip: true,
+  },
+
   {
     mode: 'url',
     name: 'linear_align_ctx_menu',
@@ -357,7 +471,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     name: 'alignments_sort_by_base',
     url: lgvSession(VOLVOX, {
       assembly: 'volvox',
-      loc: 'ctgA:14427-14534',
+      loc: 'ctgA:14470-14500',
       showCenterLine: true,
       tracks: [
         {
@@ -1199,5 +1313,15 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     mode: 'compose',
     name: 'rnaseq/strand_specific',
     parts: ['rnaseq/strand_specific_default', 'rnaseq/strand_specific_pair'],
+  },
+
+  ...strandBandParts(),
+  {
+    mode: 'compose',
+    name: 'rnaseq/strand_split_coverage',
+    parts: [
+      'rnaseq/strand_split_coverage_fwd',
+      'rnaseq/strand_split_coverage_rev',
+    ],
   },
 ]

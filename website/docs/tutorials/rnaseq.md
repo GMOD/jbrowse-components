@@ -92,6 +92,18 @@ menu and pick **Color by... → Paired end → First of pair strand**:
 
 <Figure caption="The same reads under the two colorings at the surfeit locus. Default coloring is one grey pileup across the cluster; first-of-pair strand splits it into two colors that switch where the genes do." src="/img/rnaseq/strand_specific.png" links="Default=rnaseq/strand_specific_default,First of pair strand=rnaseq/strand_specific_pair" />
 
+Coloring answers the question one read at a time. The coverage histogram answers
+it for a whole gene: pick **Group by... → First-of-pair strand**, then turn off
+**Show... → Show pileup**. Grouping gives each section its own coverage band,
+computed from only that section's reads, so with the pileup hidden what is left
+is two histograms, forward and reverse, sharing one autoscaled axis.
+
+<Figure caption="Two genes on opposite strands, same stranded RNA-seq track, pileup hidden. RPL7A fills the forward band and leaves the reverse one empty; ACTB does the opposite. Peaks sit on the exons in the gene model above." src="/img/rnaseq/strand_split_coverage.png" links="RPL7A (+ strand)=rnaseq/strand_split_coverage_fwd,ACTB (- strand)=rnaseq/strand_split_coverage_rev" />
+
+Which band fills follows the gene, not the track. Swapping to **Strand** groups
+on the read's own strand instead, which for a paired-end library sends the two
+mates of every pair to opposite bands, so neither one is the transcript strand.
+
 ## Short reads vs long reads
 
 Short-read RNA-seq (usually Illumina, ~150 bp per read) fragments each
