@@ -266,6 +266,11 @@ const agKaryotypeTrack = (pop: string, name: string, height: number) => ({
 // not the other is the whole result.
 const TWO_LA_LOCUS = 'chr2L:20,524,058-42,165,532'
 
+// Well outside 2La (which starts at 20.5 Mb) and inside the arm's own left
+// triangle, so a label placed here sits over the part of the frame where r² and
+// D' disagree rather than over empty page.
+const OUTSIDE_TWO_LA = 'chr2L:9,000,000'
+
 // The per-population point, shown rather than asserted, WITHOUT making a figure
 // out of human population differences. Both lanes are the same locus, window,
 // MAF floor and settings; the only difference is which samples went in. Pooled
@@ -581,6 +586,12 @@ export const ldSpecs: ScreenshotSpec[] = [
   // 'dprime' request silently resolved to r² while the legend still said D'.
   // If these two panels ever come out identical again, that is the regression,
   // not a property of the data — D' averages 0.59 inside 2La against r²'s 0.19.
+  //
+  // The two labels are on it because the difference the section is about is
+  // OUTSIDE the block, and outside-the-block is most of the frame rather than a
+  // place the eye goes ("i am still not super convinced this is worth keeping",
+  // review). Both anchor at a locus in the arm's left third, which is outside
+  // 2La in both panels, so they follow the data if the window ever moves.
   {
     mode: 'url',
     name: 'ld/anopheles_r2_vs_dprime',
@@ -628,6 +639,30 @@ export const ldSpecs: ScreenshotSpec[] = [
     // two 300px panels + 2 headers + ruler/overview
     viewportHeight: 860,
     settleMs: 8000,
+    annotations: [
+      {
+        type: 'text',
+        anchor: {
+          track: 'ag1000g_2l_cmgam_r2',
+          locus: OUTSIDE_TWO_LA,
+          fracY: 0.3,
+        },
+        text: 'r² outside the inversion: near zero',
+        fontSize: 16,
+        maxWidth: 340,
+      },
+      {
+        type: 'text',
+        anchor: {
+          track: 'ag1000g_2l_cmgam_dprime',
+          locus: OUTSIDE_TWO_LA,
+          fracY: 0.3,
+        },
+        text: "D' outside the inversion: still high",
+        fontSize: 16,
+        maxWidth: 340,
+      },
+    ],
   },
   {
     mode: 'url',
