@@ -10,6 +10,7 @@ import {
 
 import { analyzeCanvasPng, assertNonBlank } from './canvasContent.ts'
 import { recordCapture } from './crossBackendGate.ts'
+import { displayStateSummary } from './displayState.ts'
 import { comparePngBuffers } from './pngDiff.ts'
 
 import type { CanvasContentStats } from './canvasContent.ts'
@@ -430,7 +431,13 @@ export async function canvasSnapshot(
   threshold = 0.05,
   { assertContent = true }: { assertContent?: boolean } = {},
 ) {
-  const el = await page.waitForSelector(selector, { timeout: 60000 })
+  const el = await page
+    .waitForSelector(selector, { timeout: 60000 })
+    .catch(async (e: unknown) => {
+      throw new Error(
+        `${e instanceof Error ? e.message : String(e)}${await displayStateSummary(page)}`,
+      )
+    })
   if (!el) {
     throw new Error(`Canvas element not found: ${selector}`)
   }

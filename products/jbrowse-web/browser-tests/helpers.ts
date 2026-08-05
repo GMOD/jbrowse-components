@@ -6,6 +6,7 @@ import {
 } from '@jbrowse/browser-test-utils'
 
 import { assertNonBlank } from './canvasContent.ts'
+import { displayStateSummary, isDisplaySelector } from './displayState.ts'
 import {
   canvasSelfReport,
   captureUntilNonBlank,
@@ -50,7 +51,18 @@ export async function findByTestId(
   timeout = 30000,
 ): Promise<ElementHandle> {
   const selector = `[data-testid="${testId}"]`
-  const handle = await page.waitForSelector(selector, { timeout })
+  // A display's `-done` id is waited for through here too, and a bare
+  // "Waiting for selector failed" cannot say whether it never mounted, never
+  // painted, or was misspelled. Gated on the id so button/menu waits stay terse.
+  const handle = await page
+    .waitForSelector(selector, { timeout })
+    .catch(async (e: unknown) => {
+      throw isDisplaySelector(testId)
+        ? new Error(
+            `${e instanceof Error ? e.message : String(e)}${await displayStateSummary(page)}`,
+          )
+        : e
+    })
   if (!handle) {
     throw new Error(`element not found: ${selector}`)
   }
@@ -289,8 +301,10 @@ export async function waitForDisplayPaint(
       selector,
     )
     .then(handle => handle.jsonValue() as Promise<{ gated: GatedDisplay[] }>)
-    .catch(() => {
-      throw new Error(`timed out waiting for ${selector}`)
+    .catch(async () => {
+      throw new Error(
+        `timed out waiting for ${selector}${await displayStateSummary(page)}`,
+      )
     })
 
   if (gated.gated.length > 0) {
