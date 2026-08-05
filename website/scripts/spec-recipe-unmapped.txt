@@ -5,12 +5,9 @@
 #
 # Adding a name here is a coverage regression — prefer a verified click-path in
 # src/lib/spec-recipe/fields.ts. Removing one is the win.
-alpha
 arcColorByType
 autoscale
-bicolorPivot
 bubbleSpread
-cigarMode
 clusterRegion
 collapseGroupRows
 color
@@ -33,9 +30,7 @@ jexlFiltersSetting
 layout
 linkedReads
 maxFeatureScreenDensity
-negColor
 numStdDev
-posColor
 readConnectionsHeight
 renderingMode
 rowHeight
@@ -58,7 +53,6 @@ strokeColor
 subtreeFilter
 transcriptId
 uniprotId
-useBicolor
 useColorPercentile
 useLogScale
 zoomToBaseLevel

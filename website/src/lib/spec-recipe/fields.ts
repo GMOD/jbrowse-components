@@ -300,6 +300,50 @@ const TREE_SIDEBAR_DISPLAYS = new Set([
   'LinearMultiRowFeatureDisplay',
 ])
 
+// CIGAR_MODES in the synteny view's menus.ts, whose submenu sits in
+// headerMenuItems beside Re-order chromosomes. The section is gated on the data
+// (coarse-tier PIF and CIGAR-less PAF have no ops), not on config.
+const CIGAR_MODES: Record<string, string> = {
+  full: 'Colored indels',
+  matches: 'Transparent indels',
+  off: 'None',
+}
+
+// The two wiggle displays each open their own color editor from their own menu
+// item, and the two dialogs are not the same component: the single-wiggle one
+// leads with a Single color / Positive-negative toggle and carries the Pivot
+// field, while the multi-wiggle one puts the two swatches under a 'Score sign
+// colors' heading and has no pivot control at all.
+const WIGGLE_COLOR_EDITORS: Record<string, string> = {
+  LinearWiggleDisplay: 'Edit color...',
+  MultiLinearWiggleDisplay: 'Edit colors/arrangement...',
+}
+
+// Where the positive/negative swatches sit inside each of those dialogs.
+function scoreSignPath(displayType: string, side: 'Positive' | 'Negative') {
+  const editor = `${TRACK_MENU} → ${WIGGLE_COLOR_EDITORS[displayType]}`
+  return displayType === 'LinearWiggleDisplay'
+    ? `${editor} → Positive/negative → ${side}`
+    : `${editor} → Score sign colors → ${side}`
+}
+
+function scoreSignColorStep(
+  side: 'Positive' | 'Negative',
+): FieldRecipe {
+  return (value, { displayType }) => {
+    const color = asString(value)
+    return color && displayType && displayType in WIGGLE_COLOR_EDITORS
+      ? {
+          path: `${scoreSignPath(displayType, side)} → ${color}`,
+          note:
+            displayType === 'MultiLinearWiggleDisplay'
+              ? 'The two swatches are offered only in a multi-row plot type — an overlay paints each source\'s negative features in its own color, so there are no two sides to color.'
+              : undefined,
+        }
+      : undefined
+  }
+}
+
 function geneGlyphStep(value: unknown): FieldStep | undefined {
   const option = GENE_GLYPH_MODE_OPTIONS.find(o => o.value === value)
   return option
@@ -420,6 +464,33 @@ const numberField =
 export const trackFields: Record<string, FieldRecipe> = {
   colorBy: colorByStep,
   color: colorStep,
+  posColor: scoreSignColorStep('Positive'),
+  negColor: scoreSignColorStep('Negative'),
+  useBicolor: (value, { displayType }) =>
+    typeof value === 'boolean' && displayType === 'LinearWiggleDisplay'
+      ? {
+          path: `${TRACK_MENU} → Edit color... → ${value ? 'Positive/negative' : 'Single color'}`,
+        }
+      : undefined,
+  bicolorPivot: (value, { displayType }) => {
+    if (typeof value !== 'number' || !displayType) {
+      return undefined
+    }
+    if (displayType === 'LinearWiggleDisplay') {
+      return {
+        path: `${TRACK_MENU} → Edit color... → Positive/negative → Pivot → ${value}`,
+      }
+    }
+    // The multi-wiggle editor writes the two swatches and nothing else, so this
+    // is the config-editor case the `color` recipe above describes: a value the
+    // menu provably cannot express, not one nobody has written a path for.
+    return displayType === 'MultiLinearWiggleDisplay'
+      ? {
+          path: `${TRACK_MENU} → Settings → bicolorPivot`,
+          note: `The score both sides are measured from. Its editor has no field for it — only the single-wiggle display's does — so on a multi-wiggle track it is set on the config.`,
+        }
+      : undefined
+  },
   scatterPointSize: (value, { displayType }) => {
     const menu = displayType ? POINT_SIZE_MENUS[displayType] : undefined
     return typeof value === 'number' && menu
@@ -739,6 +810,24 @@ const SETTINGS_POPOVERS: Record<string, string> = {
 }
 
 export const viewFields: Record<string, FieldRecipe> = {
+  alpha: (value, { viewType }) => {
+    const popover = viewType ? SETTINGS_POPOVERS[viewType] : undefined
+    return typeof value === 'number' && popover
+      ? {
+          path: `${popover} (the sliders button in the view header) → Opacity: → drag to ${value}`,
+          note: 'Lower values let dense overlapping ribbons show through each other.',
+        }
+      : undefined
+  },
+  cigarMode: (value, { viewType }) => {
+    const label = typeof value === 'string' ? CIGAR_MODES[value] : undefined
+    return label && viewType === 'LinearSyntenyView'
+      ? {
+          path: `Synteny view header → View options → CIGAR display mode → ${label}`,
+          note: 'The submenu appears only when the alignments actually carry CIGAR ops — a coarse-tier PIF or a CIGAR-less PAF has none to draw.',
+        }
+      : undefined
+  },
   minAlignmentLength: (value, { viewType }) => {
     const popover = viewType ? SETTINGS_POPOVERS[viewType] : undefined
     return typeof value === 'number' && popover
