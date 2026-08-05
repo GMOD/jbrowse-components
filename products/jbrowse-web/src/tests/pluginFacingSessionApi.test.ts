@@ -30,23 +30,33 @@ jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 // generator's TRUSTED_PLUGIN_URLS). Extend it when another plugin is checked;
 // say in the commit which bundle you read.
 //
+// Recomputing it is a grep of each bundle for `.member` / `"member"` against the
+// session's own member names — minification renames the variable but not the
+// property — followed by throwing out the hits that land on some other object.
+// That last step is the whole job and it needs eyes: `assemblyNames` reads off a
+// track, `setHovered` off the plugin's own model, `palette` off the MUI theme.
+//
 // Removals fail here, additions don't — same doctrine as the ABI baseline. To
 // drop one deliberately, delete it in the same commit as the change and say
 // which published plugins you checked.
 const PLUGIN_FACING = {
-  // jbrowse-plugin-protein3d
   addTrackConf: 'protein3d',
+  // optional-chained at the call site (`session.addTemporaryAssembly?.({...})`),
+  // so losing it degrades as silently as setPendingMove did
+  addTemporaryAssembly: 'protein3d',
   addView: 'protein3d, graphgenomeviewer',
+  addWidget: 'graphgenomeviewer',
+  assemblyManager: 'protein3d, graphgenomeviewer',
   getTracksById: 'protein3d',
+  notify: 'protein3d, graphgenomeviewer',
   queueDialog: 'protein3d',
   rpcManager: 'protein3d',
   // its `sideBySide` launch option, behind an `in session` guard
   setPendingMove: 'protein3d',
   setUseWorkspaces: 'protein3d',
-  tracks: 'protein3d, graphgenomeviewer',
-  // jbrowse-plugin-graphgenomeviewer
-  addWidget: 'graphgenomeviewer',
   showWidget: 'graphgenomeviewer',
+  tracks: 'protein3d, graphgenomeviewer',
+  views: 'graphgenomeviewer',
 }
 
 test('the session keeps every member a published plugin reaches for', () => {
