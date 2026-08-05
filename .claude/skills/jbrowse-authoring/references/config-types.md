@@ -74,7 +74,8 @@ is drawn).
 Adapters marked `uri` accept the `uri` shorthand (`{type, uri}`) instead of the
 explicit location slot, and derive the index location from it.
 
-- [CytobandAdapter](https://jbrowse.org/jb2/docs/config/cytobandadapter.md)
+- [CytobandAdapter](https://jbrowse.org/jb2/docs/config/cytobandadapter.md) —
+  shorthands: uri, baseUri
 - [CramAdapter](https://jbrowse.org/jb2/docs/config/cramadapter.md) —
   shorthands: uri, baseUri
 - [BamAdapter](https://jbrowse.org/jb2/docs/config/bamadapter.md) — shorthands:
@@ -134,16 +135,20 @@ explicit location slot, and derive the index location from it.
 - [PlinkLDAdapter](https://jbrowse.org/jb2/docs/config/plinkldadapter.md) —
   shorthands: uri, baseUri
 - [PlinkLDTabixAdapter](https://jbrowse.org/jb2/docs/config/plinkldtabixadapter.md)
+  — shorthands: uri, baseUri
 - [MultiWiggleAdapter](https://jbrowse.org/jb2/docs/config/multiwiggleadapter.md)
 - [BigWigAdapter](https://jbrowse.org/jb2/docs/config/bigwigadapter.md) —
   shorthands: uri, baseUri
 - [GCContentAdapter](https://jbrowse.org/jb2/docs/config/gccontentadapter.md)
 - [BgzipTaffyAdapter](https://jbrowse.org/jb2/docs/config/bgziptaffyadapter.md)
+  — shorthands: uri, baseUri
 - [BigMafAdapter](https://jbrowse.org/jb2/docs/config/bigmafadapter.md)
-- [MafTabixAdapter](https://jbrowse.org/jb2/docs/config/maftabixadapter.md)
+- [MafTabixAdapter](https://jbrowse.org/jb2/docs/config/maftabixadapter.md) —
+  shorthands: uri, baseUri, csi
 - [HicAdapter](https://jbrowse.org/jb2/docs/config/hicadapter.md) — shorthands:
   uri, baseUri
 - [AllVsAllPAFAdapter](https://jbrowse.org/jb2/docs/config/allvsallpafadapter.md)
+  — shorthands: uri, baseUri
 - [AllVsAllIndexedPAFAdapter](https://jbrowse.org/jb2/docs/config/allvsallindexedpafadapter.md)
   — shorthands: uri, baseUri, csi
 - [PAFAdapter](https://jbrowse.org/jb2/docs/config/pafadapter.md) — shorthands:
@@ -157,12 +162,14 @@ explicit location slot, and derive the index location from it.
 - [MCScanAnchorsAdapter](https://jbrowse.org/jb2/docs/config/mcscananchorsadapter.md)
   — shorthands: uri, baseUri, csi, bed1, bed2, chromSizes, localPath
 - [MCScanBlocksAdapter](https://jbrowse.org/jb2/docs/config/mcscanblocksadapter.md)
+  — shorthands: uri, baseUri
 - [MCScanSimpleAnchorsAdapter](https://jbrowse.org/jb2/docs/config/mcscansimpleanchorsadapter.md)
   — shorthands: uri, baseUri, csi, bed1, bed2, chromSizes, localPath
 - [MashMapAdapter](https://jbrowse.org/jb2/docs/config/mashmapadapter.md) —
   shorthands: uri, baseUri
 - [BlastTabularAdapter](https://jbrowse.org/jb2/docs/config/blasttabularadapter.md)
-- [GWASAdapter](https://jbrowse.org/jb2/docs/config/gwasadapter.md)
+- [GWASAdapter](https://jbrowse.org/jb2/docs/config/gwasadapter.md) —
+  shorthands: uri, baseUri, csi
 
 ## Text search adapters
 

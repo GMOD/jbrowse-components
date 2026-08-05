@@ -51,6 +51,10 @@ const INDEX = path.join(
 // needs to say has to come back as JSON.
 const ENTRY = `
 import PluginManager from '@jbrowse/core/PluginManager'
+// by path, not via the package's exports map, which does not publish the
+// registry — this is a build script reaching into the source tree it bundles,
+// the same way it reaches ./src/corePlugins.ts below
+import { getConfigurationSchemaMetadata } from '../../packages/core/src/configuration/schemaRegistry.ts'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import corePlugins from './src/corePlugins.ts'
 
@@ -112,11 +116,33 @@ const SHORTHAND_PROBES = [
   'localPath',
 ]
 
+// An adapter can put its normalizer in either of two places, and only one of
+// them is \`normalizeSnapshot\` on the AdapterType. The other is the
+// ConfigurationSchema's own \`preProcessSnapshot\`, which is what actually runs
+// when a config loads — an adapter wiring only that one (AllVsAllPAFAdapter,
+// MCScanBlocksAdapter) used to report NO shorthands, so \`jbrowse validate\`
+// called \`uri\` an unknown slot on the very config their #example shows.
+//
+// Read the schema's own declared \`preProcessSnapshot\` out of the metadata
+// ConfigurationSchema registers for it, rather than reaching for a
+// \`preProcessSnapshot()\` method on the type. Every schema is returned wrapped
+// in \`types.stripDefault\`, whose own preprocessor merges the model defaults in,
+// so walking the type chain and applying what it finds reports EVERY probe key
+// as a shorthand on EVERY adapter — measured: 21 adapters claiming all seven,
+// including ones with no preprocessor at all. The metadata holds the single
+// function the adapter actually declared.
+function schemaPreProcessor(configSchema) {
+  return configSchema
+    ? getConfigurationSchemaMetadata(configSchema)?.options?.preProcessSnapshot
+    : undefined
+}
+
 // Some shorthands only act as modifiers on another one — \`csi: true\` does
 // nothing by itself and rewrites the index location when \`uri\` is also present.
 // So each key is probed twice: alone, and alongside \`uri\`.
 function shorthandKeysOf(adapterType) {
-  const normalize = adapterType.normalizeSnapshot
+  const normalize =
+    adapterType.normalizeSnapshot ?? schemaPreProcessor(adapterType.configSchema)
   if (!normalize) {
     return []
   }

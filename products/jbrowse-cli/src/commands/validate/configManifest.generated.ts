@@ -15,7 +15,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
         }
       ],
-      "shorthandKeys": []
+      "shorthandKeys": [
+        "uri",
+        "baseUri"
+      ]
     },
     "CramAdapter": {
       "slots": [
@@ -919,7 +922,10 @@ export const configManifest: ConfigManifest = {
           ]
         }
       ],
-      "shorthandKeys": []
+      "shorthandKeys": [
+        "uri",
+        "baseUri"
+      ]
     },
     "MultiWiggleAdapter": {
       "slots": [
@@ -1014,7 +1020,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | frozen)"
         }
       ],
-      "shorthandKeys": []
+      "shorthandKeys": [
+        "uri",
+        "baseUri"
+      ]
     },
     "BigMafAdapter": {
       "slots": [
@@ -1082,11 +1091,19 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
         },
         {
+          "name": "summaryAdapter",
+          "type": "(JexlString | frozen)"
+        },
+        {
           "name": "annotationAdapter",
           "type": "(JexlString | frozen)"
         }
       ],
-      "shorthandKeys": []
+      "shorthandKeys": [
+        "uri",
+        "baseUri",
+        "csi"
+      ]
     },
     "HicAdapter": {
       "slots": [
@@ -1123,7 +1140,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | frozen)"
         }
       ],
-      "shorthandKeys": []
+      "shorthandKeys": [
+        "uri",
+        "baseUri"
+      ]
     },
     "AllVsAllIndexedPAFAdapter": {
       "slots": [
@@ -1355,7 +1375,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | string[])"
         }
       ],
-      "shorthandKeys": []
+      "shorthandKeys": [
+        "uri",
+        "baseUri"
+      ]
     },
     "MCScanSimpleAnchorsAdapter": {
       "slots": [
@@ -1496,7 +1519,11 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | frozen)"
         }
       ],
-      "shorthandKeys": []
+      "shorthandKeys": [
+        "uri",
+        "baseUri",
+        "csi"
+      ]
     }
   },
   "tracks": {
