@@ -696,15 +696,32 @@ export const dog10kSpecs: ScreenshotSpec[] = [
   // hounds in it, WHICH dog carries the block is the result rather than a detail
   // spent on a label.
   //
-  // TWO PANELS, AND THE SECOND IS NOT OPTIONAL. The row labels are drawn as an
-  // overlay across the left ~14% of the frame, which over a 123.5 Mb view is the
-  // first ~17 Mb of chr1 — and two of these ten dogs carry their block inside it
-  // (Tricolour 5 an 11.4 Mb terminal block, Wh/Orange 3 a 4.3 Mb one at 6 Mb).
-  // The whole-chromosome panel alone therefore paints both of them as cleaner
-  // than they are, which is the one error this figure cannot afford, since its
-  // subject is which individual carries what. The lower panel re-draws the first
-  // 25 Mb, where 11.4 Mb is 46% of the width instead of 9%. Same 560px track
-  // height in both so the rows keep one pitch and a dog can be followed down.
+  // THREE PANELS, AND NEITHER OF THE LOWER TWO IS DECORATION.
+  //
+  // Panel 1 is chr1 with the labels on, which is the only place the ten animals
+  // are named.
+  //
+  // Panel 2 is the same chr1 view with `showRowLabels: false`. The labels draw
+  // as an overlay ON the plot, each as wide as its own text, so over a 123.5 Mb
+  // view they cover roughly the first 17 Mb of every row — and two of these ten
+  // dogs carry their block inside that span (Tricolour 5 an 11.4 Mb terminal
+  // block, Wh/Orange 3 a 4.3 Mb one at 6 Mb). Panel 1 alone therefore paints
+  // both of them as cleaner than they are, which is the one error a figure about
+  // which individual carries what cannot afford. This panel is the same data
+  // with nothing on top of it. (It used to be a 25 Mb zoom; the `showRowLabels`
+  // slot this bug produced is the better fix, since the zoom recovered the start
+  // at the cost of showing only a fifth of the chromosome.)
+  //
+  // Panel 3 is chr38, same ten animals, same order, labels off. It is here
+  // because panel 1 on its own is misleading in a second and worse way: it reads
+  // as "Tricolour 1 and 2 are the wolf-carrying ones", and on chr38 those two
+  // are the empty ones while Tricolour 3 and 5 carry a fifth of the chromosome.
+  // Lin et al.'s claim is about GENOME-WIDE ancestry; per chromosome, which
+  // individual looks wolfy is close to arbitrary, because a few percent of
+  // genome scattered in blocks lands on some chromosomes and not others. Without
+  // this panel the page invites exactly the over-reading its own caveat warns
+  // about. Same 560px track height in all three so the rows keep one pitch and a
+  // dog can be followed down the whole stack.
   {
     mode: 'url',
     name: 'dog10k-anglofrench-hounds-chromosome',
@@ -731,23 +748,48 @@ export const dog10kSpecs: ScreenshotSpec[] = [
 
   {
     mode: 'url',
-    name: 'dog10k-anglofrench-hounds-start',
+    name: 'dog10k-anglofrench-hounds-unlabelled',
     url: lgvSession(DOG_CONFIG, {
       assembly: 'UU_Cfam_GSD_1.0',
-      // 25 Mb, not the 17 the labels cover: the extra 8 Mb is what puts a clean
-      // right-hand margin after Tricolour 5's block so the block reads as a
-      // block that ends rather than as the panel running out.
-      loc: 'chr1:1-25,000,000',
+      loc: 'chr1:1-123,556,469',
       tracks: [
         {
           trackId: 'dog10k_anglofrench',
           type: 'LinearMultiRowFeatureDisplay',
           height: 560,
+          // the whole reason this panel exists, see above
+          showRowLabels: false,
           showRowSeparators: true,
         },
       ],
     }),
     readyText: 'chr1',
+    // NOT the row-labels overlay, which is the usual doneness gate: it still
+    // renders with the labels off (deliberately, so this flag can't disarm the
+    // gate) but the legend is the signal that reads the same either way here
+    readySelector: '[data-testid="multirow-color-legend"]',
+    readyTimeout: 60000,
+    settleMs: 3000,
+    viewportHeight: 765,
+  },
+
+  {
+    mode: 'url',
+    name: 'dog10k-anglofrench-hounds-chr38',
+    url: lgvSession(DOG_CONFIG, {
+      assembly: 'UU_Cfam_GSD_1.0',
+      loc: 'chr38:1-24,803,098',
+      tracks: [
+        {
+          trackId: 'dog10k_anglofrench_chr38',
+          type: 'LinearMultiRowFeatureDisplay',
+          height: 560,
+          showRowLabels: false,
+          showRowSeparators: true,
+        },
+      ],
+    }),
+    readyText: 'chr38',
     readySelector: '[data-testid="multirow-color-legend"]',
     readyTimeout: 60000,
     settleMs: 3000,
@@ -759,7 +801,8 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     name: 'dog10k-anglofrench-hounds',
     parts: [
       'dog10k-anglofrench-hounds-chromosome',
-      'dog10k-anglofrench-hounds-start',
+      'dog10k-anglofrench-hounds-unlabelled',
+      'dog10k-anglofrench-hounds-chr38',
     ],
   },
 

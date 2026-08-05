@@ -297,13 +297,12 @@ echo "tutorial; the subset track's rowOrder is named.tsv, in that order."
 # for the figures above it, and because these rows want breed order rather than
 # the sweep's descending-wolf-fraction order — the claim is within-breed spread,
 # so the two breeds have to sit in two blocks to be compared.
-if [ "$CHROM" = chr1 ]; then
-  # GAFT000001/GAWO000001 stay in the DOG PANEL and so cannot be painted: a
-  # target matched against itself paints dog by construction. Everything else of
-  # both forms is free, which is five of the collection's six of each. Reference
-  # rows top and bottom are animals already held out of the panel by the run
-  # above, so nothing here is both panel and target.
-  python3 - <<'PY' > anglofrench.tsv
+# GAFT000001/GAWO000001 stay in the DOG PANEL and so cannot be painted: a
+# target matched against itself paints dog by construction. Everything else of
+# both forms is free, which is five of the collection's six of each. Reference
+# rows top and bottom are animals already held out of the panel by the run
+# above, so nothing here is both panel and target.
+python3 - <<'PY' > anglofrench.tsv
 PANEL = {'GAFT000001', 'GAWO000001'}
 ROWS = [('CLUPRU000001', 'Gray wolf (held out)'),
         ('SAAR000001', 'Saarloos Wolfdog')]
@@ -320,41 +319,40 @@ ROWS.append(('GRSD000002', 'German Shepherd'))
 for sample, label in ROWS:
     print('%s\t%s' % (sample, label))
 PY
-  bcftools view -S <(cut -f1 anglofrench.tsv) --force-samples \
-    -Oz -o anglofrench.gt.vcf.gz "$CHROM.subset.vcf.gz"
-  java -Xmx12g -jar flare.jar ref="$CHROM.ref.vcf.gz" ref-panel=refpanel.txt \
-    gt=anglofrench.gt.vcf.gz map="$CHROM.map" out="anglofrench_$CHROM" seed=42
-  python3 "$SCRIPT_DIR/flare_anc_to_bed.py" "anglofrench_$CHROM.anc.vcf.gz" \
-    anglofrench.tsv "dog10k_anglofrench.$CHROM.bed"
-  { grep '^#' "dog10k_anglofrench.$CHROM.bed"
-    grep -v '^#' "dog10k_anglofrench.$CHROM.bed" \
-      | LC_ALL=C sort -t"$(printf '\t')" -k1,1 -k2,2n
-  } | bgzip > "dog10k_anglofrench.$CHROM.bed.gz"
-  tabix -f -p bed "dog10k_anglofrench.$CHROM.bed.gz"
+bcftools view -S <(cut -f1 anglofrench.tsv) --force-samples \
+  -Oz -o anglofrench.gt.vcf.gz "$CHROM.subset.vcf.gz"
+java -Xmx12g -jar flare.jar ref="$CHROM.ref.vcf.gz" ref-panel=refpanel.txt \
+  gt=anglofrench.gt.vcf.gz map="$CHROM.map" out="anglofrench_$CHROM" seed=42
+python3 "$SCRIPT_DIR/flare_anc_to_bed.py" "anglofrench_$CHROM.anc.vcf.gz" \
+  anglofrench.tsv "dog10k_anglofrench.$CHROM.bed"
+{ grep '^#' "dog10k_anglofrench.$CHROM.bed"
+  grep -v '^#' "dog10k_anglofrench.$CHROM.bed" \
+    | LC_ALL=C sort -t"$(printf '\t')" -k1,1 -k2,2n
+} | bgzip > "dog10k_anglofrench.$CHROM.bed.gz"
+tabix -f -p bed "dog10k_anglofrench.$CHROM.bed.gz"
 
-  echo
-  echo "Ancestry fractions for the Anglo-French run on $CHROM:"
-  zcat "anglofrench_$CHROM.global.anc.gz"
-  echo
-  echo "Wolf blocks per Anglo-French animal on $CHROM (count, median kb, longest kb):"
-  awk -F'\t' '$11=="Wolf" {
-      split($10, a, " hap"); len[a[1]] = len[a[1]] " " ($3-$2)
+echo
+echo "Ancestry fractions for the Anglo-French run on $CHROM:"
+zcat "anglofrench_$CHROM.global.anc.gz"
+echo
+echo "Wolf blocks per Anglo-French animal on $CHROM (count, median kb, longest kb):"
+awk -F'\t' '$11=="Wolf" {
+    split($10, a, " hap"); len[a[1]] = len[a[1]] " " ($3-$2)
+  }
+  END {
+    for (animal in len) {
+      n = split(len[animal], v, " ")
+      m = 0; for (i = 1; i <= n; i++) if (v[i] != "") w[++m] = v[i] + 0
+      for (i = 2; i <= m; i++) { x = w[i]; j = i - 1
+        while (j > 0 && w[j] > x) { w[j+1] = w[j]; j-- }
+        w[j+1] = x }
+      med = (m % 2) ? w[(m+1)/2] : (w[m/2] + w[m/2+1]) / 2
+      printf "  %-28s %4d  %8.0f  %8.0f\n", animal, m, med/1000, w[m]/1000
+      delete w; m = 0
     }
-    END {
-      for (animal in len) {
-        n = split(len[animal], v, " ")
-        m = 0; for (i = 1; i <= n; i++) if (v[i] != "") w[++m] = v[i] + 0
-        for (i = 2; i <= m; i++) { x = w[i]; j = i - 1
-          while (j > 0 && w[j] > x) { w[j+1] = w[j]; j-- }
-          w[j+1] = x }
-        med = (m % 2) ? w[(m+1)/2] : (w[m/2] + w[m/2+1]) / 2
-        printf "  %-28s %4d  %8.0f  %8.0f\n", animal, m, med/1000, w[m]/1000
-        delete w; m = 0
-      }
-    }' "dog10k_anglofrench.$CHROM.bed" | sort -k2,2nr
-  echo
-  echo "Wrote $(pwd)/dog10k_anglofrench.$CHROM.bed.gz plus its .tbi."
-fi
+  }' "dog10k_anglofrench.$CHROM.bed" | sort -k2,2nr
+echo
+echo "Wrote $(pwd)/dog10k_anglofrench.$CHROM.bed.gz plus its .tbi."
 
 # Wolf-block length distribution per animal. The tutorial's claim that the
 # breeds separate on block LENGTH and not only on total wolf fraction rests on

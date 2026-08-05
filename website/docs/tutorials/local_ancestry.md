@@ -335,21 +335,31 @@ against the same two panels, the same map and the same held-out wolf as
 everything above, and prints their ancestry fractions and block lengths beside
 the ones behind the figures above.
 
-<Figure caption="Top: chr1 for five Great Anglo-French Tricolour Hounds and five White and Orange Hounds, between a held-out gray wolf and a German Shepherd. Bottom: the first 25 Mb, which the row labels cover in the panel above. Two Tricolour rows carry megabase wolf blocks the length of the chromosome, three carry almost none, and four of the five White and Orange are painted dog end to end." src="/img/dog10k-anglofrench-hounds.png" links="Whole chromosome=dog10k-anglofrench-hounds-chromosome,First 25 Mb=dog10k-anglofrench-hounds-start" />
+<Figure caption="Five Great Anglo-French Tricolour Hounds and five White and Orange Hounds, between a held-out gray wolf and a German Shepherd. Top: chr1, with the rows named. Middle: the same chr1 view with the labels off, since they cover the start of every row. Bottom: chr38, same animals in the same order. Two Tricolour rows carry wolf blocks on chr1 and three barely do; on chr38 it is the other three." src="/img/dog10k-anglofrench-hounds.png" links="chr1=dog10k-anglofrench-hounds-chromosome,chr1 unlabelled=dog10k-anglofrench-hounds-unlabelled,chr38=dog10k-anglofrench-hounds-chr38" />
 
 Two of the Tricolour Hounds are painted like the wolfdog above them and three
 are not. Of the White and Orange Hounds one carries a block and the rest are
 painted dog end to end, like the German Shepherd at the foot. These are ten
 registered members of two closely related French pack breeds.
 
-The dog the sweep drew, on how well its breed was sequenced and nothing else, is
-one of these five, and its long block is the one the section above could not
-separate from a phasing error. Both of its haplotypes end a wolf block at the
-same coordinate, which is what the lower panel is zoomed in on.
+The row labels are an overlay on the plot rather than a gutter beside it, so on
+a whole-chromosome view they cover the left of the rows they name. Two of these
+dogs carry a block inside the covered span, which is why the middle panel draws
+the same view with
+[`showRowLabels`](/docs/config/LinearMultiRowFeatureDisplay/#slot-showrowlabels)
+off.
 
-Two cautions. This is one chromosome, so nothing here is the genome-wide
-fraction the paper reports. And what carries ancestry is an animal rather than a
-breed, which is the same reading the eighth wolfdog forced above.
+Then read the bottom panel against the top one. The two Tricolour Hounds that
+carry most of the wolf on chr1 are the two that carry almost none on chr38, and
+the pair that carries it there is a different pair. A few percent of a genome,
+scattered in blocks, lands on some chromosomes and not others, so which
+individual looks wolfish is a property of the chromosome you happened to open.
+The paper's ranking is genome-wide; a single chromosome cannot reproduce it, and
+this pair of panels is what that costs.
+
+Which is the same reading the eighth wolfdog forced above, one level up: what
+carries ancestry is an animal rather than a breed, and what carries a number is
+a genome rather than a chromosome.
 
 ## Checking a block against the genotypes
 

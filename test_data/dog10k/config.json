@@ -685,6 +685,52 @@
     },
     {
       "type": "FeatureTrack",
+      "trackId": "dog10k_anglofrench_chr38",
+      "name": "Local ancestry, both Great Anglo-French hound breeds (FLARE, chr38)",
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "disableGeneHeuristic": true,
+        "uri": "dog10k_anglofrench.chr38.bed.gz"
+      },
+      "displays": [
+        {
+          "type": "LinearMultiRowFeatureDisplay",
+          "displayId": "dog10k_anglofrench_chr38-LinearMultiRowFeatureDisplay",
+          "partitionField": "sample",
+          "rowOrder": [
+            "Gray wolf (held out) hap1",
+            "Gray wolf (held out) hap2",
+            "Saarloos Wolfdog hap1",
+            "Saarloos Wolfdog hap2",
+            "Gt Anglo-French Tricolour 1 hap1",
+            "Gt Anglo-French Tricolour 1 hap2",
+            "Gt Anglo-French Tricolour 2 hap1",
+            "Gt Anglo-French Tricolour 2 hap2",
+            "Gt Anglo-French Tricolour 3 hap1",
+            "Gt Anglo-French Tricolour 3 hap2",
+            "Gt Anglo-French Tricolour 4 hap1",
+            "Gt Anglo-French Tricolour 4 hap2",
+            "Gt Anglo-French Tricolour 5 hap1",
+            "Gt Anglo-French Tricolour 5 hap2",
+            "Gt Anglo-French Wh/Orange 1 hap1",
+            "Gt Anglo-French Wh/Orange 1 hap2",
+            "Gt Anglo-French Wh/Orange 2 hap1",
+            "Gt Anglo-French Wh/Orange 2 hap2",
+            "Gt Anglo-French Wh/Orange 3 hap1",
+            "Gt Anglo-French Wh/Orange 3 hap2",
+            "Gt Anglo-French Wh/Orange 4 hap1",
+            "Gt Anglo-French Wh/Orange 4 hap2",
+            "Gt Anglo-French Wh/Orange 5 hap1",
+            "Gt Anglo-French Wh/Orange 5 hap2",
+            "German Shepherd hap1",
+            "German Shepherd hap2"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
       "trackId": "dog10k_anglofrench",
       "name": "Local ancestry, both Great Anglo-French hound breeds (FLARE, chr1)",
       "assemblyNames": ["UU_Cfam_GSD_1.0"],
