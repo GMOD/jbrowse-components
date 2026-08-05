@@ -94,6 +94,61 @@ BED/BAM. Worker output is **absolute genomic uint32** — no regionStart-relativ
 arithmetic crosses the worker boundary. The precision machinery that makes this
 work on a float32 GPU is in [reference/BP_PRECISION.md](reference/BP_PRECISION.md).
 
+## Where a display's state lives
+
+A new setting has three possible homes, and picking wrong fails silently rather
+than loudly. Each has its own JSDoc tag and its own generated doc page:
+
+| home | tag | survives a reload? | read/written as |
+| --- | --- | --- | --- |
+| config slot | `#slot` | yes — in the track config | `getConf` / `resolveConf`, written with `setConf` |
+| MST property | `#property` | yes — in the session snapshot, on the display node | `self.x`, written by an action |
+| MST volatile | `#volatile` | no | `self.x`, written by an action |
+
+**The slot is the default, and by a wide margin.** Count the tags on a display
+and the split is lopsided: `LinearAlignmentsDisplay` has 45 slots and 2
+properties, `LinearWiggleDisplay` 6 and 2, `LinearBasicDisplay` 24 and 7 — and
+on most displays the surviving properties are just `type` and `configuration`,
+the structural minimum MST needs. Nearly every track-menu setting is a slot.
+
+That works because a slot is not admin-only. A user's edit is diffed into
+`trackConfigDeltas` — a frozen `trackId → partial config` map on the session —
+so a slot is per-instance *and* persistent without the display model holding it
+([ADR-032](architecture-decision-records/adr-032-track-config-nodes-are-throwaway-views.md),
+which is also why the hydrated config node is a detached scratch root and
+`getSession()` on it throws). Volatiles are for what genuinely dies with the
+view: `BaseDisplay`'s own are `error`, `statusMessage`, `statusProgress`.
+
+**The trap is that "a display node" means two different things, and they take
+opposite keys.**
+
+- In **config** — `tracks[].displays[]` — the node is built by the display's
+  **config schema**. Slots are live here; a state-model property is meaningless.
+- In a **session** — `views[].tracks[].displays[]` — the node is instantiated by
+  the display's **state model**. Properties are live here, and a slot name is
+  dropped exactly like a misspelling: the session loads, the track appears, the
+  setting does nothing.
+
+So `"height": 250` on a session display node silently does nothing — `height` is
+a `#slot` on `baseLinearDisplayConfigSchema`, not a property. A whole class of
+these sat unnoticed in this repo's own fixtures; `jbrowse validate`'s
+`checkSessionDisplay` now reports them, and distinguishes the three cases (real
+property, slot in the wrong place, legacy key a migration still lifts).
+
+**Migrating one is where the second trap is.** Adding, removing or renaming a
+slot needs nothing special — the display `types.union` ignores unknown props, so
+a config-schema `preProcessSnapshot` is enough. But rewriting the **value** of an
+existing constrained slot (an enum rename, a type narrow) must go through
+`addDisplayConfigMigration`, because the union validates the *raw* snapshot
+before any schema `preProcessSnapshot` runs: the union rejects the legacy value
+first and the hook never fires. A legacy display-instance key that a session
+migration lifts onto its replacing slot goes in `migratedDisplayKeys`, so
+validate calls it stale rather than dead.
+
+How a slot then reaches the renderer — snapshot, plain object, RPC payload, and
+the JEXL callbacks along the way — is
+[reference/CONFIG_PATTERN.md](reference/CONFIG_PATTERN.md).
+
 ## Public developer guides mirror this spec
 
 The hand-written walkthroughs in `website/docs/developer_guides/` —
@@ -1040,6 +1095,11 @@ region and refetches stale ones.
   `untracked`, so their reads register no dependency and callers silently keep a
   stale answer; `assertDisplayContract` `console.error`s on it in dev. See
   [the pattern](#rpcprops--gpuprops-pattern).
+- Don't reach for a new MST property when a config slot would do — the slot is
+  the default, and a user's edit persists through `trackConfigDeltas` either
+  way. And don't write a slot name onto a *session* display node: that node is
+  built by the state model, so the key is dropped in silence. See [where a
+  display's state lives](#where-a-displays-state-lives).
 - Don't re-implement a cross-cutting mixin's policy in a display. `scrollTop`
   clamping, grow-mode height and the score axis each arrive by overriding one
   hook (see [Cross-cutting

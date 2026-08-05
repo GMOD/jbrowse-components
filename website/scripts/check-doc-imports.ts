@@ -12,11 +12,12 @@
 //      to the anchor. Catches a cross-doc deep link (e.g. the developer guides
 //      pointing at `agent-docs/ARCHITECTURE.md#three-upload-patterns`, and the
 //      reverse) left dangling by a renamed heading.
-//   4. Every backticked `PascalCase` identifier in developer-guide prose,
-//      checked to appear somewhere in source. Catches a symbol renamed out from
-//      under the prose (e.g. `AlignmentsFeatureDetailWidget` for what is really
-//      `AlignmentsFeatureWidget`, or `PluggableElement` for
-//      `PluggableElementType`) — the fence checks above can't see prose, and
+//   4. Every backticked identifier in developer-guide and ARCHITECTURE.md prose
+//      — `PascalCase`, or `camelCase` with an internal capital — checked to
+//      appear somewhere in source. Catches a symbol renamed out from under the
+//      prose (e.g. `AlignmentsFeatureDetailWidget` for what is really
+//      `AlignmentsFeatureWidget`, or `renderProps` for a method deleted with the
+//      server-side block system) — the fence checks above can't see prose, and
 //      `sync-doc-snippets` only guards fences that opted into an include.
 //
 // All four are the same failure — a plausible-looking reference that no longer
@@ -337,14 +338,40 @@ function scanBlobAnchors(path: string, lines: string[]): Problem[] {
 // it still exists somewhere. That is enough to catch renames, which is the
 // failure that actually happens.
 //
-// Scoped to developer_guides: the tutorials and FAQ are full of gene symbols
-// (`CDKN2A`), accession IDs, and third-party type names that legitimately don't
-// appear in this repo, and agent-docs deliberately records superseded names.
-const SYMBOL_DIR = join(docsDir, 'developer_guides')
-const TICKED_SYMBOL = /`([A-Z][A-Za-z0-9]{4,})`/g
-// `My*` is the guides' placeholder convention (`MyAdapterConfig`, `MyPlugin`),
-// standing in for a symbol the reader will name themselves.
-const PLACEHOLDER = /^My[A-Z]/
+// Scoped to developer_guides plus agent-docs/ARCHITECTURE.md: the tutorials and
+// FAQ are full of gene symbols (`CDKN2A`), accession IDs, and third-party type
+// names that legitimately don't appear in this repo. The rest of agent-docs is
+// exempt because HISTORICAL.md and the ADRs deliberately record superseded
+// names — but ARCHITECTURE.md declares itself the canonical *current* spec, so
+// that exemption is the opposite of what it wants. It named `renderProps` as
+// the live precedent for the `rpcProps()`/`gpuProps()` super-capture pattern
+// for however long after the server-side block system that owned `renderProps`
+// was deleted, because a camelCase claim matched no pattern here.
+const SYMBOL_DIRS = [join(docsDir, 'developer_guides')]
+const SYMBOL_FILES = [join(root, 'agent-docs', 'ARCHITECTURE.md')]
+// PascalCase, plus camelCase with an internal capital. The internal capital is
+// what keeps this from flagging ordinary backticked prose (`true`, `undefined`,
+// `error`) while still catching `renderProps`, `canvasWidthPx`, `isCacheValid`.
+const TICKED_SYMBOL =
+  /`([A-Z][A-Za-z0-9]{4,}|[a-z][A-Za-z0-9]*[A-Z][A-Za-z0-9]*)`/g
+// Two placeholder conventions, both standing in for a name the reader supplies:
+// `My*` in the guides (`MyAdapterConfig`, `MyPlugin`), and `Xxx` as an infix in
+// the architecture spec, where a rule holds across a family of per-plugin
+// symbols (`GpuXxxRenderer`, `drawXxxToCtx`, `XxxSvgBody`).
+const PLACEHOLDER = /^My[A-Z]|Xxx/
+// Symbols a doc names in order to say they are *gone* or must not be written.
+// Their absence from the tree is the claim, so absence must not fail the check.
+// Keep each entry pinned to the sentence that needs it — if that sentence goes,
+// so does the entry.
+const DOC_ABSENT_ON_PURPOSE = new Set([
+  // ARCHITECTURE.md, "Theme-derived render inputs are session getters": the
+  // volatile-plus-useEffect shape it rules out, contrasted with the getter.
+  'setColorPalette',
+  // ARCHITECTURE.md, "`rpcProps()` / `gpuProps()` pattern": names the removed
+  // server-side-block predecessor precisely to stop the next reader grepping
+  // for it. It was a live-precedent claim here until 2026-08.
+  'renderProps',
+])
 
 function collectSymbols() {
   const set = new Set<string>()
@@ -352,7 +379,7 @@ function collectSymbols() {
   for (const base of ['packages', 'plugins', 'products', 'example-plugins']) {
     for (const file of walkFiles(join(root, base), isSource)) {
       for (const m of readFileSync(file, 'utf8').matchAll(
-        /\b[A-Z][A-Za-z0-9]{4,}\b/g,
+        /\b(?:[A-Z][A-Za-z0-9]{4,}|[a-z][A-Za-z0-9]*[A-Z][A-Za-z0-9]*)\b/g,
       )) {
         set.add(m[0])
       }
@@ -364,7 +391,10 @@ function collectSymbols() {
 let symbolCache: Set<string> | undefined
 
 function scanSymbols(path: string, lines: string[]): Problem[] {
-  if (!path.startsWith(SYMBOL_DIR)) {
+  if (
+    !SYMBOL_DIRS.some(d => path.startsWith(d)) &&
+    !SYMBOL_FILES.includes(path)
+  ) {
     return []
   }
   symbolCache ??= collectSymbols()
@@ -376,7 +406,11 @@ function scanSymbols(path: string, lines: string[]): Problem[] {
     } else if (!inCode) {
       for (const match of line.matchAll(TICKED_SYMBOL)) {
         const id = match[1]!
-        if (!PLACEHOLDER.test(id) && !symbolCache!.has(id)) {
+        if (
+          !PLACEHOLDER.test(id) &&
+          !DOC_ABSENT_ON_PURPOSE.has(id) &&
+          !symbolCache!.has(id)
+        ) {
           problems.push({
             file: path,
             line: i + 1,

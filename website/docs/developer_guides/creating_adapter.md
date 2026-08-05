@@ -303,7 +303,8 @@ The ones a typical adapter reads:
 - `headers` - HTTP headers as a plain object
 - `statusCallback` - report load progress to the UI (see
   [](/docs/developer_guides/rpc_workers))
-- any `renderProps` from the display model type are also spread in
+- any `rpcProps()` the display model defines are spread in at the RPC call site,
+  so a display's user-facing settings reach the adapter under their own names
 
 Returns an rxjs `Observable`. Emit features with
 `observer.next(new SimpleFeature(...))` and finish with `observer.complete()`.
