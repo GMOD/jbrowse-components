@@ -1120,9 +1120,11 @@ export default function stateModelFactory(
          * SVG export and RPC, where no component mounts to seed it. Theme changes
          * trigger a main-thread re-encode but never an RPC refetch.
          */
+        // #region colorPalette
         get colorPalette(): MafColorPalette {
           return getMafColorPalette(getSession(self).palette)
         },
+        // #endregion
         /**
          * #getter
          * Genomic bp the GPU encoder collapses into one cell. Zoomed in this is

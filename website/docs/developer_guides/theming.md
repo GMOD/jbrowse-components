@@ -150,14 +150,15 @@ is a rendering input:
 - **`session.theme`** is the resolved MUI `Theme`, for components that are MUI.
 
 Derive a display's colors in a **model getter** over `session.palette`, and read
-that getter from `renderState` or whatever you hand the renderer:
+that getter from `renderState` or whatever you hand the renderer. MAF's
+is the worked case:
+
+<!-- include: plugins/maf/src/LinearMafDisplay/stateModel.ts#colorPalette -->
 
 ```ts
-.views(self => ({
-  get colorPalette() {
-    return buildMyColorPalette(getSession(self).palette)
-  },
-}))
+get colorPalette(): MafColorPalette {
+  return getMafColorPalette(getSession(self).palette)
+},
 ```
 
 Do **not** stage them in a volatile that a React `useEffect` pushes in with a
