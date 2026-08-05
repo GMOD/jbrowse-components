@@ -75,9 +75,18 @@ const THRESHOLD_OVERRIDES: { match: string; threshold: number }[] = [
   { match: 'arcs-paired-end-rnaseq', threshold: 0.1 },
   { match: 'arcs-rnaseq-sashimi', threshold: 0.1 },
   { match: 'arcs-collapse-introns-sashimi', threshold: 0.05 },
-  // dense simulated-long-read pileups + their coverage strip: uniform edge
-  // shimmer over identically-shaped reads (measured 11-17%, coverage inflated by
-  // a 45px-tall image). matches inversion-pbsim / -linked / -coverage.
+  // dense simulated-long-read pileups + their coverage strip: measured 11-17%,
+  // the coverage strip inflated by a 45px-tall image. matches inversion-pbsim /
+  // -linked / -coverage.
+  //
+  // **The "uniform edge shimmer" explanation this comment used to give is
+  // refuted.** These four drifts came in at 16.71 / 7.97 / 5.49 / 2.30 on a real
+  // GPU, and at 16.71 / 7.97 / 5.49 / 2.30 under swiftshader — the same figures
+  // to two decimals across two completely different rasterizers. AA/MSAA noise
+  // cannot survive swapping the rasterizer; a systematic difference in what gets
+  // drawn can. So this is the entry in the list most likely to be hiding a real
+  // canvas2d-vs-GPU bug, and it is the one to audit before `Long Reads and
+  // Inversions` joins CI_GATE_SUITES — a "passing" 16.71% is not a check.
   { match: 'inversion-pbsim', threshold: 0.2 },
   // coverage histograms whose SNP/mismatch ticks are 1px-edge sensitive
   { match: 'inversion-paired-coverage', threshold: 0.08 },

@@ -127,12 +127,32 @@ full coverage (66 pairs).
 reads identically); on canvas2d it is. The durable half of all this now lives in
 [reference/SCREENSHOT_CAPTURE_RACE.md](../reference/SCREENSHOT_CAPTURE_RACE.md).
 
+### Which is why half the verdicts are still unreadable
+
+Six blanks across the eight runs above, and the split is perfectly clean:
+
+| backend | verdict | conclusive? |
+| --- | --- | --- |
+| canvas2d × 3 | HAS content → **capture side** | yes |
+| webgl × 3 | "ALSO blank" | **no** — cleared drawing buffer reads the same |
+
+So every blank that *can* be attributed points at the capture path, and every
+webgl one tells you nothing. That is the useful reading of `preserveDrawingBuffer`
+below: it is refuted **as a fix**, and untested **as a diagnostic**. Turning it on
+temporarily makes webgl's self-report conclusive, and the harness patch to do it
+(an `evaluateOnNewDocument` override of `getContext`, verified against a plain
+canvas first) is already described in the refuted experiment. That is one
+deliberate run, not another A/B — and do not leave it on, for the reason in that
+same entry.
+
 ## Do not re-derive
 
-- **`preserveDrawingBuffer`: tested, REFUTED.** Interleaved A/B/A/B on one build;
-  no improvement, treatment arm worse at comparable load (15 failures vs 9). The
-  result that kills the whole WebGL framing: one control arm failed **7 canvas2d
-  tests against 2 webgl**, and canvas2d has no drawing buffer to clear.
+- **`preserveDrawingBuffer` as a FIX: tested, REFUTED.** Interleaved A/B/A/B on
+  one build; no improvement, treatment arm worse at comparable load (15 failures
+  vs 9). The result that kills the whole WebGL framing: one control arm failed
+  **7 canvas2d tests against 2 webgl**, and canvas2d has no drawing buffer to
+  clear. (Refuted as a fix only — see above for the diagnostic use, which is
+  still open.)
 - **Compositor double-rAF: tested, INCONCLUSIVE, not in the tree.** Blanks went
   5 → 4 while within-arm spread (1 vs 7) exceeded the between-arm difference. It
   was verified active first (58 ms under swiftshader, 1670 ms in plain headless),
@@ -152,9 +172,8 @@ reads identically); on canvas2d it is. The durable half of all this now lives in
 - **Threshold overrides are where the gate is told not to look.**
   `grep -c 'match:' crossBackendGate.ts` — nine entries, unchanged since
   `333db010c9`. This file said seven for several rounds, so count them rather
-  than trusting the number. `targeted_inversion-pbsim-coverage` sits at 16.71%
-  under a 20% ceiling in every full-suite run — a real, stable divergence the
-  gate is configured to accept. That list wants auditing, not growing.
+  than trusting the number. That list wants auditing, not growing — see the next
+  section for the entry to start with.
 - **`EXCLUDED_SUBSTRINGS` is empty.** Scoping is `--ci-gate` / `--filter`.
 - **A stable drift percentage does not mean a stable failure.**
   `fullpage_methylation_snapshot` came in at exactly 37.98% in two runs hours
@@ -162,30 +181,87 @@ reads identically); on canvas2d it is. The durable half of all this now lives in
   diff, so the magnitude reproduces while the occurrence stays racy. Check
   whether the pair was compared at all before inferring determinism.
 
+## The pbsim override is NOT antialiasing noise — measured
+
+The `inversion-pbsim` entry raises the gate's ceiling to 20% and
+`targeted_inversion-pbsim-coverage` has sat at 16.71% under it in every run for
+months. The override comment blamed "uniform edge shimmer over identically-shaped
+reads". **That explanation is refuted.** The four drifts were
+
+| | real GPU (2026-08-04) | swiftshader (2026-08-04) |
+| --- | --- | --- |
+| `targeted_inversion-pbsim-coverage` | 16.71% | 16.71% |
+| `targeted_inversion-pbsim` | 7.97% | 7.97% |
+| `targeted_inversion-paired-coverage` | 5.49% | 5.49% |
+| `fullpage_inversion-pbsim` | 2.30% | 2.30% |
+
+— the same figures to two decimals across **two completely different
+rasterizers**. AA/MSAA noise cannot survive swapping the rasterizer; a systematic
+difference in *what is drawn* can. So this is the entry most likely to be hiding
+a real canvas2d-vs-GPU bug, and a "passing" 16.71% is not a check. Start the
+override audit here, and do it before `Long Reads and Inversions` joins
+`CI_GATE_SUITES`.
+
+## Alignments: re-measured, and the drift is gone
+
+The exclusion rested on a 2026-07 record of over-threshold pileup drift. Measured
+again on 2026-08-04 under swiftshader, after the composed capture waits:
+
+| Scope | run | load | tests | pairs | over threshold | uncompared | retries |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `Alignments Track` + `Color Schemes` | 1 | 4.9 | 26 / 0 | 20 | **0** | 0 | 1 |
+| | 2 | 8.6 | 26 / 0 | 20 | **0** | 0 | 0 |
+| | 3 | 10.2 | 26 / 0 | 20 | **0** | 0 | 0 |
+| whole pileup family¹ | 1 | 8.7 | 79 / 1 | 60 | **0** | 2 | 11 |
+| | 2 | 30.8 | 80 / 0 | 62 | **0** | 0 | 2 |
+| | 3 | 35.1 | 77 / 3 | 56 | **0** | 6 | 5 |
+
+¹ alignments, breakpoint split view, methylation, long-reads-inversions,
+multi-region sort, session-spec, main-thread RPC. Alignments drift: 2.01% (under
+a 10% override), 0.93%, 0.87%.
+
+**The historical pileup drift does not reproduce — 0 over threshold in all six
+runs.** What replaces it is a *stability* difference, not a correctness one, and
+it tracks machine load rather than anything in the app: the heavy suites (CRAM,
+simulated long reads) needed 2-11 retries per run, and their failures arrive as
+`Navigating frame was detached` in simultaneous batches of four — the whole
+concurrency-4 worker pool dying together, once with a literal "Failed to launch
+the browser process". Every one of those hit a *first* attempt, so the retry is
+the remedy and not the cause.
+
+Note what that costs at load 35: run 3 finished with 6 uncompared pairs, all
+"only canvas2d", i.e. the webgl pass lost those browsers. Coverage degrades with
+load while the verdict stays clean — which is the exact shape `--ci-gate`'s
+uncompared-is-a-failure rule exists to make visible, and its own reason to keep
+the heavy suites out of a blocking job.
+
+Recommendation: add **`Alignments Track`** and **`Alignments Color Schemes`**
+(tight drift, clean 3/3). Hold `Long Reads and Inversions` until the pbsim
+override above is audited — adding it now would buy four pairs whose passing
+verdict is a 5-17% divergence the gate is configured to ignore.
+
 ## Next, in order
 
-1. **Widen `CI_GATE_SUITES`.** The list is 12 suites; the remaining local
-   deterministic ones (arcs, workspaces, redraw, cursor-guides, svg-export,
-   custom-url, variant-force-load) were never measured under swiftshader. Arcs
-   and workspaces carry threshold overrides tuned on a real GPU, so measure
-   before adding — that is the whole procedure, and it is a measurement, not an
-   edit.
-2. **Attribute the TIMEOUT mode.** The other failure mode, and now the dominant
-   one: a display never reports `-done` inside 60 s. Apply exactly the move that
-   worked for blanks — when the wait expires, report what state the display is
-   actually in (`data-display-phase`, whether the wrapper exists at all, whether
-   an error banner is up) instead of an opaque timeout. `waits.ts` already notes
-   the likely shape: a display in a terminal `tooLarge`/`renderError` state
-   renders no wrapper and so can never report done, which reads as a timeout
-   forever. An earlier attempt at this was reverted (`839113dabe`) — re-query the
-   selector per attempt rather than holding the handle, and prove the mechanism
-   on a targeted reproduction first.
-3. **Alignments.** They are out of the CI scope because every over-threshold
-   failure ever recorded here has been an alignments view, and the diff image
-   agrees with the structural argument (one backend full width, the other painted
-   only the left ~47% — a capture taken mid-paint, not a shader divergence). The
-   capture-side fix above may well have closed it; nobody has re-measured the
-   alignments suite since. That measurement is the cheapest remaining win.
+1. **Audit the `inversion-pbsim` override** (above). It is now a well-posed bug
+   hunt rather than a vague cleanup, and it gates widening the CI scope to the
+   long-read suites.
+2. **Widen `CI_GATE_SUITES`** with the two alignments suites, then the local
+   deterministic ones never measured under swiftshader (arcs, workspaces, redraw,
+   cursor-guides, svg-export, custom-url, variant-force-load). Arcs and
+   workspaces carry overrides tuned on a real GPU, so measure before adding —
+   that is the whole procedure, and it is a measurement, not an edit.
+3. **Attribute the TIMEOUT mode.** The other failure mode: a display never
+   reports `-done` inside 60 s. Apply exactly the move that worked for blanks —
+   when the wait expires, report what state the display is actually in
+   (`data-display-phase`, whether the wrapper exists at all, whether an error
+   banner is up) instead of an opaque timeout. `waits.ts` already notes the
+   likely shape: a display in a terminal `tooLarge`/`renderError` state renders no
+   wrapper and so can never report done, which reads as a timeout forever. An
+   earlier attempt was reverted (`839113dabe`) — re-query the selector per attempt
+   rather than holding the handle, and prove the mechanism on a targeted
+   reproduction first.
+4. **Make the webgl blank verdict readable** with `preserveDrawingBuffer` as a
+   diagnostic (see above). Half the blanks are currently unattributable.
 
 ## Related
 
