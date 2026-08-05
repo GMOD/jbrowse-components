@@ -50,6 +50,14 @@ const VALIDATORS: Validator[] = [
     argv: web('check-spec-recipes.ts', '--check'),
   },
   {
+    // The spec-list mistakes that render a plausible figure instead of failing:
+    // a duplicate name (one PNG, two specs), a compose part that names no spec
+    // (keeps stacking the renamed part's stale image), fields an embedded
+    // capture ignores.
+    name: 'screenshot specs are well formed',
+    argv: web('check-specs.ts'),
+  },
+  {
     // Offline half only; the published half is --network, which needs
     // jbrowse.org and so has no place in a push build.
     name: 'figure live links name a config that ships',

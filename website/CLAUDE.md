@@ -28,13 +28,25 @@ gitignored). `deploy_staging.sh` wraps a staging deploy.
   always selected). **The unfiltered sweep is its oracle**: a PNG a full regen
   rewrites that `--affected` would not have selected is a bug in the map, not an
   acceptable miss.
-- **No spec sets `diffThreshold`.** Treat a request for one as a bug in whatever
-  is producing the nondeterminism.
+- **A spec's own `diffThreshold` is a last resort**, and the run says so: a keep
+  that only happened because of a raised gate is reported under `KEPT BEHIND A
+  RAISED diffThreshold`, because a deliberate recolor of one bar moves ~2.4% of
+  pixels and a 2% allowance would silently keep the old image. Nine specs raise
+  it today (0.02–0.03), all for jitter that is genuinely irreducible from here —
+  dense per-base glyphs, a multiscatter cloud whose points land on a different
+  BigWig zoom level run to run, remote-fetch timing. Anything else is a bug in
+  whatever is producing the nondeterminism; fix that first.
 - **Size a figure from the run's own two reports, not from the PNG.**
   `CONTENT CLIPPED BELOW THE FOLD` gives the exact css px to raise
   `viewportHeight` by and `blank below the last content` the px to lower it.
   Both beat measuring off an image, and the clipped one cannot be recovered from
   the image at all.
+- **`DISPLAYS NOT PAINTED AT CAPTURE` names a frame that may hold a blank
+  track.** Every settle wait is best-effort, so "all painted" and "we stopped
+  waiting" otherwise look identical; the run re-checks
+  `[data-display-drawn="false"]` at shoot time and lists what was still pending.
+  Raise that spec's `settleMs`, or fix the display that never reports done —
+  don't accept the figure because it looks plausible.
 - **Downscale before reading a PNG** — captures are ~3000px and Read rejects
   them: `convert static/img/<n>.png -resize 1400x /tmp/shot.png`.
 - **Never hand-measure a callout position** — every annotation `anchor`s. Prefer

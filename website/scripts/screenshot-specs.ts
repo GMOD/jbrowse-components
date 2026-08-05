@@ -136,6 +136,69 @@ export const screenshotSlowSpecNames = new Set(
 // interactive jbrowse.org link.
 export const screenshotSpecNames = new Set(specs.map(spec => spec.name))
 
+// Spec-list mistakes that produce a plausible-looking figure instead of an
+// error. Each of these has a silent failure mode, which is the bar for being
+// here — a spec that is merely unusual is not a problem:
+//
+// - two specs sharing a name write the same PNG, so the second silently
+//   overwrites the first every regen, and the `--filter` that "fixes" one keeps
+//   flipping the committed image back and forth
+// - a compose part naming no spec is only caught at capture time by the
+//   missing-file check, which cannot fire after a RENAME: the old part's PNG is
+//   still on disk, so the stack keeps being built from an image nothing renders
+//   any more
+// - the fields an embedded capture ignores (it screenshots the component
+//   element, bypassing the shoot path) do nothing at all when set, and nothing
+//   said so
+//
+// Run at the top of a generate-screenshots run — before an hour of rendering —
+// and in CI via check-specs.ts, which needs no browser.
+export function validateSpecs(list: ScreenshotSpec[] = specs) {
+  const problems: string[] = []
+  const seen = new Set<string>()
+  for (const spec of list) {
+    if (seen.has(spec.name)) {
+      problems.push(`${spec.name}: two specs share this name`)
+    }
+    seen.add(spec.name)
+  }
+  for (const spec of list) {
+    if (spec.mode === 'compose') {
+      for (const part of spec.parts) {
+        if (!seen.has(part)) {
+          problems.push(`${spec.name}: part "${part}" is not a spec`)
+        }
+      }
+    } else if (spec.mode === 'embedded') {
+      const ignored = (
+        [
+          ['annotations', spec.annotations?.length],
+          ['stages', spec.stages?.length],
+          ['crop', spec.crop],
+          ['hideSelectors', spec.hideSelectors?.length],
+          ['hideTooltip', spec.hideTooltip],
+        ] as const
+      )
+        .filter(([, set]) => set)
+        .map(([field]) => field)
+      if (ignored.length > 0) {
+        problems.push(
+          `${spec.name}: embedded specs ignore ${ignored.join(', ')} (they screenshot the component element, not the page)`,
+        )
+      }
+    }
+    if ('stageColumns' in spec && spec.stageColumns && !spec.stages?.length) {
+      problems.push(`${spec.name}: stageColumns without stages`)
+    }
+    if ('expectTooltip' in spec && spec.expectTooltip && spec.hideTooltip) {
+      problems.push(
+        `${spec.name}: expectTooltip and hideTooltip contradict each other`,
+      )
+    }
+  }
+  return problems
+}
+
 // Split `--filter a,b,c` into trimmed, non-empty tokens. Takes an array because
 // the flag is declared `multiple`, so repeating it (`--filter a --filter b`)
 // unions the tokens. It used to be a plain string, where node's parseArgs keeps

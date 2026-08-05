@@ -39,6 +39,7 @@ import {
   matchesFilterTokens,
   parseFilterTokens,
   specs,
+  validateSpecs,
 } from './screenshot-specs.ts'
 
 import type { CommitResult } from './image-pipeline.ts'
@@ -865,8 +866,8 @@ async function shoot(
 async function recordUnpainted(page: Page, name: string) {
   const pending = await page.evaluate(
     selector =>
-      [...document.querySelectorAll(selector)].map(
-        el => el.getAttribute('data-testid') ?? '(unnamed display)',
+      [...document.querySelectorAll<HTMLElement>(selector)].map(
+        el => el.dataset.testid ?? '(unnamed display)',
       ),
     PENDING_DISPLAYS,
   )
@@ -1123,15 +1124,16 @@ async function captureStages(
   renderPath: string,
   port: number,
 ) {
+  const cols = spec.stageColumns ?? 0
   const stageFiles = stages.map((_, i) =>
     tempPath('jb-shot', spec.name, `-${i}`),
   )
-  const rowFiles = stageFiles.map((_, i) =>
-    tempPath('jb-row', spec.name, `-${i}`),
+  const rowFiles = Array.from(
+    { length: cols > 1 ? Math.ceil(stages.length / cols) : 0 },
+    (_, i) => tempPath('jb-row', spec.name, `-${i}`),
   )
   try {
     await captureEachStage(page, spec, stages, stageFiles, port)
-    const cols = spec.stageColumns ?? 0
     if (cols > 1) {
       // rows of `cols` frames, then the rows stacked. A trailing partial row is
       // padded on the right to the full row width rather than centered, so the
@@ -1140,7 +1142,6 @@ async function captureStages(
       // Each frame takes a white border first, so the panels are separated by a
       // gutter instead of abutting: two app windows sharing an edge read as one
       // window with a seam down it.
-      const rows: string[] = []
       for (const f of stageFiles) {
         execFileSync(IM, [
           f,
@@ -1151,13 +1152,12 @@ async function captureStages(
           f,
         ])
       }
-      for (let i = 0; i < stageFiles.length; i += cols) {
-        const row = rowFiles[rows.length]!
-        execFileSync(IM, [...stageFiles.slice(i, i + cols), '+append', row])
-        rows.push(row)
+      for (const [r, row] of rowFiles.entries()) {
+        const frames = stageFiles.slice(r * cols, r * cols + cols)
+        execFileSync(IM, [...frames, '+append', row])
       }
       execFileSync(IM, [
-        ...rows,
+        ...rowFiles,
         '-background',
         'white',
         '-gravity',
@@ -1341,15 +1341,31 @@ function commit(renderPath: string, outputPath: string, spec: ScreenshotSpec) {
   })
 }
 
+// Commit a finished temp capture, and make sure it does not outlive this call
+// whatever happens. `commit` removes the temp file on both of its paths, so the
+// rm is a no-op in the normal case — it is there for the ones between the render
+// and the commit (a mkdir that fails, a diff that throws), which otherwise leave
+// a multi-megabyte PNG in tmpdir per failed spec.
+function commitTemp(
+  renderPath: string,
+  outputPath: string,
+  spec: ScreenshotSpec,
+) {
+  try {
+    fs.mkdirSync(path.dirname(outputPath), { recursive: true })
+    return commit(renderPath, outputPath, spec)
+  } finally {
+    fs.rmSync(renderPath, { force: true })
+  }
+}
+
 async function captureSpec(
   page: Page,
   spec: BrowserScreenshotSpec,
   port: number,
 ) {
   const renderPath = await renderSpecToTemp(page, spec, port)
-  const outputPath = path.join(outDir, `${spec.name}.png`)
-  fs.mkdirSync(path.dirname(outputPath), { recursive: true })
-  return commit(renderPath, outputPath, spec)
+  return commitTemp(renderPath, path.join(outDir, `${spec.name}.png`), spec)
 }
 
 // jb2export renders the products/jbrowse-img/README example images straight
@@ -1377,7 +1393,7 @@ async function captureCliSpec(spec: CliSpec) {
   const renderPath = await renderCliSpecToTemp(spec)
   const baseName = spec.name.replace(/^jbrowse-img\//, '')
   const outputPath = path.join(jbrowseImgOutDir, `${baseName}.png`)
-  const result = commit(renderPath, outputPath, spec)
+  const result = commitTemp(renderPath, outputPath, spec)
   // jb2export writes into products/jbrowse-img/img — the README/npm copy served
   // via raw.github. The docs site and the screenshot-review UI instead read the
   // website's own mirror at static/img/jbrowse-img (spec name `jbrowse-img/x`
@@ -1419,8 +1435,7 @@ async function captureComposeSpec(spec: ComposeSpec) {
   const append = spec.direction === 'horizontal' ? '+append' : '-append'
   execFileSync(IM, [...partPaths, append, renderPath])
   optimizePng(renderPath)
-  const outputPath = path.join(outDir, `${spec.name}.png`)
-  return commit(renderPath, outputPath, spec)
+  return commitTemp(renderPath, path.join(outDir, `${spec.name}.png`), spec)
 }
 
 // Print a titled, ===-barred block of lines to stderr (failure/flaky summaries).
@@ -1508,7 +1523,7 @@ function printSummary(totals: RunTotals) {
     )
   }
   const missingTooltips = [...tooltipSeen].filter(
-    ([name, text]) => text === undefined && expectsTooltip(name),
+    ([name, text]) => text === undefined && tooltipExpected.has(name),
   )
   if (missingTooltips.length > 0) {
     printReport(
@@ -1546,6 +1561,19 @@ function printSummary(totals: RunTotals) {
 }
 
 async function main() {
+  // Before anything is rendered: a duplicate name or a compose part that names
+  // no spec is an hour of capture producing a wrong figure, and neither fails on
+  // its own (see validateSpecs). Same check CI runs via check-specs.ts.
+  const specProblems = validateSpecs()
+  if (specProblems.length > 0) {
+    console.error(
+      `${specProblems.length} screenshot spec problem(s):\n${specProblems
+        .map(p => `  - ${p}`)
+        .join('\n')}`,
+    )
+    process.exit(1)
+  }
+
   // `--filter a,b,c` matches a spec when any comma-separated token matches, so
   // "re-render these few" is one invocation instead of a shell loop. The flag is
   // repeatable and the tokens union. Parsed once at module scope, since it also
@@ -1790,11 +1818,21 @@ async function main() {
     spec: BrowserScreenshotSpec | CliSpec,
     render: (suffix: string) => Promise<string>,
   ) {
-    const a = await render('-a')
-    const b = await render('-b')
-    const frac = pngDiffFraction(a, b)
-    fs.rmSync(a, { force: true })
-    fs.rmSync(b, { force: true })
+    // The cleanup is a finally, not two rmSyncs after the diff: the second
+    // render is the one that fails (a flaky spec is why anyone runs --check),
+    // and that left the first capture behind in tmpdir on every such failure.
+    const captures: string[] = []
+    let frac: number | null
+    try {
+      for (const suffix of ['-a', '-b']) {
+        captures.push(await render(suffix))
+      }
+      frac = pngDiffFraction(captures[0]!, captures[1]!)
+    } finally {
+      for (const f of captures) {
+        fs.rmSync(f, { force: true })
+      }
+    }
     if (frac === null || frac >= specThreshold(spec)) {
       const drift = frac === null ? 'size-mismatch' : pct(frac)
       console.log(`  ✗ ${spec.name} FLAKY (${drift} between two renders)`)
