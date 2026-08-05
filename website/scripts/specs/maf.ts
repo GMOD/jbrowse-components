@@ -183,7 +183,7 @@ export const mafSpecs: ScreenshotSpec[] = [
             {
               trackId: 'ce11.26way',
               type: 'LinearMafDisplay',
-              heightOverride: 470,
+              height: 470,
               showTranslation: true,
             },
           ],
@@ -196,8 +196,10 @@ export const mafSpecs: ScreenshotSpec[] = [
     viewportWidth: 1250,
     // tall enough for the whole 470px display: at 640 the frame cut the last
     // species row in half, which reads as a rendering fault rather than as a
-    // list that continues
-    viewportHeight: 780,
+    // list that continues. Raised from 780 when the height above was fixed —
+    // it had been spelled `heightOverride`, a dead key silently dropped, so the
+    // display was capturing at its fit-to-content height rather than at 470.
+    viewportHeight: 810,
     settleMs: 12000,
     actions: [
       // an ORANGE cell in a non-reference row. The hover used to land on the
@@ -377,7 +379,7 @@ export const mafSpecs: ScreenshotSpec[] = [
               // still fill the track tall enough to read the per-codon amino
               // acids at a more compact per-row height (reviewer).
               type: 'LinearMafDisplay',
-              heightOverride: 460,
+              height: 460,
               showTranslation: true,
               showConservation: true,
               conservationMode: 'codon',
@@ -391,8 +393,10 @@ export const mafSpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     viewportWidth: 1000,
     // gene lane(40) + coverage/conservation bands + ~30 fitted rows at the
-    // shrunk display height
-    viewportHeight: 830,
+    // shrunk display height. Lowered from 830 when the height above was fixed —
+    // it had been spelled `heightOverride`, a dead key silently dropped, so the
+    // display had been taller than the 460 the spec asked for.
+    viewportHeight: 765,
     settleMs: 18000,
     hideTooltip: true,
     actions: [

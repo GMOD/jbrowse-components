@@ -31,7 +31,6 @@ featureHighlights
 featureSpacing
 gfaLocation
 height
-heightOverride
 hideSelfAlignments
 id
 jexlFilters
