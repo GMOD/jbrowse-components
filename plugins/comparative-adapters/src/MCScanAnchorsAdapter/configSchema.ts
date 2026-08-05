@@ -48,6 +48,9 @@ const MCScanAnchorsAdapter = ConfigurationSchema(
   {
     /**
      * #slot
+     * location of the `.anchors` file from `python -m jcvi.compara.catalog
+     * ortholog`: one line per anchor pair, naming a gene in each genome. The
+     * gene names are resolved to coordinates through the two BED files.
      */
     mcscanAnchorsLocation: {
       type: 'fileLocation',
@@ -58,6 +61,9 @@ const MCScanAnchorsAdapter = ConfigurationSchema(
     },
     /**
      * #slot
+     * BED giving coordinates for the gene names in the anchors file's first
+     * column, i.e. the query assembly's genes. Written by
+     * `python -m jcvi.formats.gff bed`.
      */
     bed1Location: {
       type: 'fileLocation',
@@ -68,6 +74,8 @@ const MCScanAnchorsAdapter = ConfigurationSchema(
     },
     /**
      * #slot
+     * BED giving coordinates for the gene names in the anchors file's second
+     * column, i.e. the target assembly's genes.
      */
     bed2Location: {
       type: 'fileLocation',
@@ -78,6 +86,9 @@ const MCScanAnchorsAdapter = ConfigurationSchema(
     },
     /**
      * #slot
+     * `[query, target]` — the assembly `bed1Location` describes, then the one
+     * `bed2Location` describes. Getting the order backwards draws every link
+     * against the wrong genome rather than erroring.
      */
     assemblyNames: {
       type: 'stringArray',

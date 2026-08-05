@@ -42,6 +42,8 @@ const configSchema = ConfigurationSchema(
   {
     /**
      * #slot
+     * location of the SAM file, header lines included. Ignored when `samText`
+     * supplies the alignment inline.
      */
     samLocation: {
       type: 'fileLocation',

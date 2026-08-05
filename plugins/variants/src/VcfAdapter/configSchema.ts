@@ -29,6 +29,8 @@ const VcfAdapter = ConfigurationSchema(
   {
     /**
      * #slot
+     * location of the VCF file. May be gzipped; it is read and parsed in full
+     * on first use, so the whole call set has to fit in memory.
      */
     vcfLocation: {
       type: 'fileLocation',
@@ -39,13 +41,16 @@ const VcfAdapter = ConfigurationSchema(
     },
     /**
      * #slot
+     * location of a tab-separated table of per-sample metadata. It needs a
+     * header row, and its first column must be the sample name exactly as the
+     * VCF spells it; every other column (`population`, `superpopulation`, ...)
+     * becomes a value the multi-sample variant displays can group, sort and
+     * color their sample rows by.
      */
     samplesTsvLocation: {
       type: 'fileLocation',
       defaultValue: {
         uri: '/path/to/samples.tsv',
-        description:
-          'tsv with header like name\tpopulation\tetc. where the first column is required, and is the sample names',
         locationType: 'UriLocation',
       },
     },

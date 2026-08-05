@@ -63,6 +63,9 @@ const DeltaAdapter = ConfigurationSchema(
     },
     /**
      * #slot
+     * location of the MUMmer `.delta` file written by `nucmer`/`promer` (also
+     * accepts the `delta-filter` output). May be gzipped; the whole file is
+     * read into memory.
      */
     deltaLocation: {
       type: 'fileLocation',

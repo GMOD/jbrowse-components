@@ -21,6 +21,9 @@ const configSchema = ConfigurationSchema(
     },
     /**
      * #slot
+     * location of the bigMaf file — a BigBed whose extra field holds the MAF
+     * alignment block, as built by UCSC's `mafToBigMaf` followed by
+     * `bedToBigBed -type=bed3+1 -as=bigMaf.as -tab`.
      */
     bigBedLocation: {
       type: 'fileLocation',

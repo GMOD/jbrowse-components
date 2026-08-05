@@ -36,6 +36,8 @@ const Gff3Adapter = ConfigurationSchema(
   {
     /**
      * #slot
+     * location of the GFF3 file. May be gzipped; it is decompressed and parsed
+     * in full on first use, so the file has to fit in memory.
      */
     gffLocation: {
       type: 'fileLocation',

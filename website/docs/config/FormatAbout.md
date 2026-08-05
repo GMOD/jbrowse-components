@@ -21,4 +21,4 @@ surface.
 | Slot | Description |
 | --- | --- |
 | <span id="slot-configurationformataboutconfig">**configuration.formatAbout.config**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>{}</code> | formats configuration object in about dialog<br>_callback args:_ `config` |
-| <span id="slot-configurationformatabouthideuris">**configuration.formatAbout.hideUris**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> |  |
+| <span id="slot-configurationformatabouthideuris">**configuration.formatAbout.hideUris**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | leave file locations out of every About dialog in the session, for a deployment that would rather not show users where the data sits. A track can set the same slot on its own `formatAbout`. |

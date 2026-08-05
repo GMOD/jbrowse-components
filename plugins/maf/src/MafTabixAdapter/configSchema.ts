@@ -36,6 +36,9 @@ const configSchema = ConfigurationSchema(
     },
     /**
      * #slot
+     * location of the bgzip-compressed BED that `maf2bed` writes from a MAF:
+     * one line per alignment block, with every species' aligned bases packed
+     * into the last column.
      */
     bedGzLocation: {
       type: 'fileLocation',
@@ -46,6 +49,10 @@ const configSchema = ConfigurationSchema(
     },
     /**
      * #slot
+     * name of the MAF's reference species, spelled as it appears in the file's
+     * `s` lines (the `hg38` of `hg38.chr1`). Set it when that differs from the
+     * JBrowse assembly name; left empty, the reference row is looked up by the
+     * queried assembly's name and falls back to the block's first species.
      */
     refAssemblyName: {
       type: 'string',
@@ -54,6 +61,9 @@ const configSchema = ConfigurationSchema(
     index: ConfigurationSchema('Index', {
       /**
        * #slot index.location
+       * location of the tabix index. Only needed when it is not named
+       * `<file>.bed.gz.tbi` (or `.csi`), which is what the `uri` shorthand
+       * assumes.
        */
       location: {
         type: 'fileLocation',
@@ -63,6 +73,8 @@ const configSchema = ConfigurationSchema(
       },
       /**
        * #slot index.indexType
+       * `TBI` is the usual `tabix` output. `CSI` is required for a reference
+       * longer than 512 Mb, which TBI cannot address.
        */
       indexType: {
         model: types.enumeration('IndexType', ['TBI', 'CSI']),

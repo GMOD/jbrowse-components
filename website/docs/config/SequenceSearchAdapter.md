@@ -28,6 +28,6 @@ surface.
 | --- | --- |
 | <span id="slot-search">**search**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | Search string or regex to search for |
 | <span id="slot-sequenceadapter">**sequenceAdapter**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>null</code> | discouraged: leave unset. JBrowse supplies the assembly's sequence adapter automatically; this override exists only for the rare case of scanning a sequence other than the one the track is displayed against. |
-| <span id="slot-searchforward">**searchForward**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> |  |
-| <span id="slot-searchreverse">**searchReverse**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> |  |
-| <span id="slot-caseinsensitive">**caseInsensitive**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> |  |
+| <span id="slot-searchforward">**searchForward**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | report matches on the reference as written (the plus strand) |
+| <span id="slot-searchreverse">**searchReverse**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | also search the reverse complement, reporting those hits on the minus strand. Turn it off for a motif that is only meaningful in one orientation, or to halve the work on a palindromic pattern |
+| <span id="slot-caseinsensitive">**caseInsensitive**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | match regardless of case, so soft-masked (lowercase) repeat regions are searched too. Turn it off to search only unmasked sequence |

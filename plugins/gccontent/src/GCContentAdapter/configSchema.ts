@@ -31,6 +31,9 @@ const GCContentAdapterF = (_pluginManager: PluginManager) => {
     {
       /**
        * #slot
+       * the sequence GC is computed from, as a plain adapter snapshot — usually
+       * a copy of the assembly's own `sequence.adapter`. Required: unlike the
+       * alignments adapters, nothing fills this in automatically.
        */
       sequenceAdapter: {
         type: 'frozen',
@@ -38,6 +41,8 @@ const GCContentAdapterF = (_pluginManager: PluginManager) => {
       },
       /**
        * #slot
+       * width in bp of the window each score is computed over, centered on the
+       * position. 1 scores single bases; wider windows smooth the signal
        */
       windowSize: {
         type: 'number',
@@ -46,6 +51,9 @@ const GCContentAdapterF = (_pluginManager: PluginManager) => {
       },
       /**
        * #slot
+       * step in bp between successive windows. Equal to `windowSize` (the
+       * default) the windows tile without overlapping; smaller values overlap
+       * them, giving a denser, smoother signal for proportionally more work
        */
       windowDelta: {
         type: 'number',

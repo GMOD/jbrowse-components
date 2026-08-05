@@ -55,4 +55,4 @@ surface.
 | <span id="slot-assemblynames">**assemblyNames**</span><br>`stringArray` = <code>[]</code> | Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second |
 | <span id="slot-targetassembly">**targetAssembly**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | alternative to assembly names |
 | <span id="slot-queryassembly">**queryAssembly**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | alternative to assembly names |
-| <span id="slot-deltalocation">**deltaLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/file.delta', locationType: 'UriLocation' }</code> |  |
+| <span id="slot-deltalocation">**deltaLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/file.delta', locationType: 'UriLocation' }</code> | location of the MUMmer `.delta` file written by `nucmer`/`promer` (also accepts the `delta-filter` output). May be gzipped; the whole file is read into memory. |

@@ -53,6 +53,10 @@ const configSchema = ConfigurationSchema(
 
     /**
      * #slot cramLocation
+     * location of the CRAM file. CRAM stores each read as differences from the
+     * reference it was compressed against, so the assembly's sequence has to be
+     * that same reference — pointing this at an assembly built from a different
+     * FASTA shows up as widespread false mismatches rather than as an error.
      */
     cramLocation: {
       type: 'fileLocation',
@@ -64,6 +68,9 @@ const configSchema = ConfigurationSchema(
 
     /**
      * #slot craiLocation
+     * location of the CRAM index (`.crai`) written by `samtools index`. Only
+     * needed when the index is not named `<file>.cram.crai`, which is what the
+     * `uri` shorthand assumes.
      */
     craiLocation: {
       type: 'fileLocation',

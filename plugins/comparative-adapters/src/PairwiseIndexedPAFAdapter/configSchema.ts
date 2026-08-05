@@ -93,12 +93,11 @@ const PairwiseIndexedPAFAdapter = ConfigurationSchema(
       defaultValue: 10000,
       advanced: true,
     },
-    /**
-     * #slot
-     */
     index: ConfigurationSchema('TabixIndex', {
       /**
        * #slot index.indexType
+       * `TBI` is the usual `tabix` output. `CSI` is required for a reference
+       * longer than 512 Mb, which TBI cannot address.
        */
       indexType: {
         model: types.enumeration('IndexType', ['TBI', 'CSI']),
@@ -107,6 +106,9 @@ const PairwiseIndexedPAFAdapter = ConfigurationSchema(
       },
       /**
        * #slot index.location
+       * location of the tabix index. Only needed when it is not named
+       * `<file>.pif.gz.tbi` (or `.csi`), which is what the `uri` shorthand
+       * assumes.
        */
       location: {
         type: 'fileLocation',

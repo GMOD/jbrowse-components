@@ -55,7 +55,7 @@ surface.
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-mcscananchorslocation">**mcscanAnchorsLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/mcscan.anchors', locationType: 'UriLocation' }</code> |  |
-| <span id="slot-bed1location">**bed1Location**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/file.bed', locationType: 'UriLocation' }</code> |  |
-| <span id="slot-bed2location">**bed2Location**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/file.bed', locationType: 'UriLocation' }</code> |  |
-| <span id="slot-assemblynames">**assemblyNames**</span><br>`stringArray` = <code>[]</code> |  |
+| <span id="slot-mcscananchorslocation">**mcscanAnchorsLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/mcscan.anchors', locationType: 'UriLocation' }</code> | location of the `.anchors` file from `python -m jcvi.compara.catalog ortholog`: one line per anchor pair, naming a gene in each genome. The gene names are resolved to coordinates through the two BED files. |
+| <span id="slot-bed1location">**bed1Location**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/file.bed', locationType: 'UriLocation' }</code> | BED giving coordinates for the gene names in the anchors file's first column, i.e. the query assembly's genes. Written by `python -m jcvi.formats.gff bed`. |
+| <span id="slot-bed2location">**bed2Location**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/file.bed', locationType: 'UriLocation' }</code> | BED giving coordinates for the gene names in the anchors file's second column, i.e. the target assembly's genes. |
+| <span id="slot-assemblynames">**assemblyNames**</span><br>`stringArray` = <code>[]</code> | `[query, target]` — the assembly `bed1Location` describes, then the one `bed2Location` describes. Getting the order backwards draws every link against the wrong genome rather than erroring. |

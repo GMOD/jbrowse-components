@@ -16,6 +16,9 @@ const NcbiSequenceReportAliasAdapterConfigSchema = ConfigurationSchema(
   {
     /**
      * #slot
+     * location of the `sequence_report.tsv` NCBI publishes with an assembly. It
+     * carries the RefSeq, GenBank and UCSC-style name of every sequence, so one
+     * file aliases them all without hand-writing a chromAlias table.
      */
     location: {
       type: 'fileLocation',

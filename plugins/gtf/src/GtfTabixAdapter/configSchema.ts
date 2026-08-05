@@ -45,6 +45,8 @@ const GtfTabixAdapter = ConfigurationSchema(
   {
     /**
      * #slot
+     * location of the bgzip-compressed GTF, sorted by position. Must be bgzip
+     * rather than plain gzip, which tabix cannot index.
      */
     gtfGzLocation: {
       type: 'fileLocation',
@@ -57,6 +59,8 @@ const GtfTabixAdapter = ConfigurationSchema(
     index: ConfigurationSchema('GtfTabixIndex', {
       /**
        * #slot index.indexType
+       * `TBI` is the usual `tabix` output. `CSI` is required for a reference
+       * longer than 512 Mb, which TBI cannot address.
        */
       indexType: {
         model: types.enumeration('IndexType', ['TBI', 'CSI']),
@@ -65,6 +69,9 @@ const GtfTabixAdapter = ConfigurationSchema(
       },
       /**
        * #slot index.location
+       * location of the tabix index. Only needed when it is not named
+       * `<file>.gtf.gz.tbi` (or `.csi`), which is what the `uri` shorthand
+       * assumes.
        */
       location: {
         type: 'fileLocation',

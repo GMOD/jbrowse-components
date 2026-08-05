@@ -47,6 +47,6 @@ surface.
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-bigwiglocation">**bigWigLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.bw', locationType: 'UriLocation' }</code> |  |
+| <span id="slot-bigwiglocation">**bigWigLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.bw', locationType: 'UriLocation' }</code> | location of the BigWig file. It carries its own index and precomputed zoom levels, so there is no separate index to configure and a whole-chromosome view reads summary bins rather than every point. |
 | <span id="slot-source">**source**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | added as feature.get('source') on all features |
 | <span id="slot-resolutionmultiplier">**resolutionMultiplier**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1</code> | Resolution multiplier applied to every fetch: <1 fetches more points (higher resolution), >1 fetches fewer (e.g. 2 = half as many points)<br>_advanced_ |

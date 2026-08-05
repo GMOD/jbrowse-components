@@ -31,12 +31,12 @@ used to load STAR-Fusion `star-fusion.fusion_predictions.tsv` output
 
 - **Track:** [VariantTrack](../varianttrack)
 - **Display:** [LinearPairedArcDisplay](../linearpairedarcdisplay)
-- **Display:** [ChordVariantDisplay](../chordvariantdisplay)
 - **Display:**
   [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
 - **Display:**
   [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
 - **Display:** [LinearVariantDisplay](../linearvariantdisplay)
+- **Display:** [ChordVariantDisplay](../chordvariantdisplay)
 
 ## Config slots
 

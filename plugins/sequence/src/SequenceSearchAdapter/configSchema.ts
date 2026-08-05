@@ -33,6 +33,7 @@ const configSchema = ConfigurationSchema(
     },
     /**
      * #slot
+     * report matches on the reference as written (the plus strand)
      */
     searchForward: {
       type: 'boolean',
@@ -40,6 +41,9 @@ const configSchema = ConfigurationSchema(
     },
     /**
      * #slot
+     * also search the reverse complement, reporting those hits on the minus
+     * strand. Turn it off for a motif that is only meaningful in one
+     * orientation, or to halve the work on a palindromic pattern
      */
     searchReverse: {
       type: 'boolean',
@@ -47,6 +51,8 @@ const configSchema = ConfigurationSchema(
     },
     /**
      * #slot
+     * match regardless of case, so soft-masked (lowercase) repeat regions are
+     * searched too. Turn it off to search only unmasked sequence
      */
     caseInsensitive: {
       type: 'boolean',

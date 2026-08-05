@@ -40,12 +40,12 @@ combined VCF (useful for large call sets split by chromosome)
 
 - **Track:** [VariantTrack](../varianttrack)
 - **Display:** [LinearPairedArcDisplay](../linearpairedarcdisplay)
-- **Display:** [ChordVariantDisplay](../chordvariantdisplay)
 - **Display:**
   [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
 - **Display:**
   [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
 - **Display:** [LinearVariantDisplay](../linearvariantdisplay)
+- **Display:** [ChordVariantDisplay](../chordvariantdisplay)
 
 ## Config slots
 
@@ -62,5 +62,5 @@ surface.
 | --- | --- |
 | <span id="slot-vcfgzlocationmap">**vcfGzLocationMap**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>{}</code> | object like `{chr1:{uri:'url to file'}}` |
 | <span id="slot-indexlocationmap">**indexLocationMap**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>{}</code> | object like `{chr1:{uri:'url to index'}}` |
-| <span id="slot-indextype">**indexType**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (TBI, CSI) = <code>'TBI'</code> |  |
-| <span id="slot-samplestsvlocation">**samplesTsvLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ uri: '/path/to/samples.tsv', description: 'tsv with header li…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{&#10;&#160;&#160;&#160;&#160;uri: '/path/to/samples.tsv',&#10;&#160;&#160;&#160;&#160;description:&#10;&#160;&#160;&#160;&#160;&#160;&#160;'tsv with header like "name\tpopulation\tetc" where the first column is required, and corresponds to the sample names in the VCF files',&#10;&#160;&#160;&#160;&#160;locationType: 'UriLocation',&#10;&#160;&#160;}</code></pre></dialog></span> |  |
+| <span id="slot-indextype">**indexType**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (TBI, CSI) = <code>'TBI'</code> | index flavor for every entry of `indexLocationMap` — one setting covers them all, so the per-chromosome files have to be indexed the same way. `CSI` is required for a reference longer than 512 Mb, which TBI cannot address. |
+| <span id="slot-samplestsvlocation">**samplesTsvLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/samples.tsv', locationType: 'UriLocation' }</code> | location of a tab-separated table of per-sample metadata, shared by every file in `vcfGzLocationMap`. It needs a header row, and its first column must be the sample name exactly as the VCFs spell it; every other column (`population`, `superpopulation`, ...) becomes a value the multi-sample variant displays can group, sort and color their sample rows by. |

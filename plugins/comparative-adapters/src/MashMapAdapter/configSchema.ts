@@ -61,6 +61,9 @@ const MashMapAdapter = ConfigurationSchema(
     },
     /**
      * #slot
+     * location of the MashMap `.out` file — PAF-like records with MashMap's
+     * approximate identity in place of a CIGAR, so the bands it draws are
+     * mapping blocks with no base-level alignment inside them.
      */
     outLocation: {
       type: 'fileLocation',

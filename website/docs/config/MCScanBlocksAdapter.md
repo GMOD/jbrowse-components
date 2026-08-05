@@ -77,7 +77,7 @@ surface.
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-mcscanblockslocation">**mcscanBlocksLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/mcscan.blocks', locationType: 'UriLocation' }</code> |  |
+| <span id="slot-mcscanblockslocation">**mcscanBlocksLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/mcscan.blocks', locationType: 'UriLocation' }</code> | location of the `.blocks` table: column 0 is a reference gene and each further column is that gene's ortholog in another genome, `.` where there is none. `blockAssemblies` names the columns and `bedLocations` resolves each column's gene names to coordinates. |
 | <span id="slot-blockassemblies">**blockAssemblies**</span><br>`stringArray` = <code>[]</code> | one assembly name per column of the blocks file, in column order (column 0 is the reference) |
 | <span id="slot-bedlocations">**bedLocations**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>[]</code> | one BED fileLocation per column of the blocks file, parallel to blockAssemblies, resolving that column's gene ids to coordinates |
 | <span id="slot-assemblynames">**assemblyNames**</span><br>`stringArray` = <code>[]</code> | the assemblies this track can render; list all of blockAssemblies to let one track back every band of a multi-way view (the view picks each band's pair), or just two to pin it to a single pair. Every entry must appear in blockAssemblies |

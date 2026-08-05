@@ -43,6 +43,9 @@ const TwoBitAdapter = ConfigurationSchema(
   {
     /**
      * #slot
+     * location of the UCSC `.2bit` file. It is self-contained — sequence and
+     * index in one file — but its per-sequence header is spread through the
+     * file, so a genome with many contigs benefits from `chromSizesLocation`.
      */
     twoBitLocation: {
       type: 'fileLocation',

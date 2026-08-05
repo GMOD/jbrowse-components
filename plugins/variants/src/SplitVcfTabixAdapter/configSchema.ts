@@ -48,6 +48,10 @@ const SplitVcfTabixAdapter = ConfigurationSchema(
 
     /**
      * #slot
+     * index flavor for every entry of `indexLocationMap` — one setting covers
+     * them all, so the per-chromosome files have to be indexed the same way.
+     * `CSI` is required for a reference longer than 512 Mb, which TBI cannot
+     * address.
      */
     indexType: {
       model: types.enumeration('IndexType', ['TBI', 'CSI']),
@@ -57,13 +61,16 @@ const SplitVcfTabixAdapter = ConfigurationSchema(
 
     /**
      * #slot
+     * location of a tab-separated table of per-sample metadata, shared by every
+     * file in `vcfGzLocationMap`. It needs a header row, and its first column
+     * must be the sample name exactly as the VCFs spell it; every other column
+     * (`population`, `superpopulation`, ...) becomes a value the multi-sample
+     * variant displays can group, sort and color their sample rows by.
      */
     samplesTsvLocation: {
       type: 'fileLocation',
       defaultValue: {
         uri: '/path/to/samples.tsv',
-        description:
-          'tsv with header like "name\tpopulation\tetc" where the first column is required, and corresponds to the sample names in the VCF files',
         locationType: 'UriLocation',
       },
     },

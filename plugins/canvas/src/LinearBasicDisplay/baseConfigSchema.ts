@@ -236,6 +236,12 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       },
       /**
        * #slot
+       * feature types counted as transcripts for isoform stacking, label
+       * spacing, and the gene-only view. It does not decide which glyph is
+       * drawn, whether UTRs are implied, or whether a feature can be
+       * translated — those are structural (anything with a direct CDS child is
+       * a coding transcript), so org-specific and prokaryotic coding types
+       * render correctly without being listed here.
        */
       transcriptTypes: {
         type: 'stringArray',
@@ -258,6 +264,11 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       },
       /**
        * #slot
+       * top-level feature types that always stack their children on separate
+       * rows. Container detection is otherwise structural — a feature whose
+       * children have children of their own stacks anyway — so this is only
+       * needed for a type whose children look like leaves but should still
+       * each get a row.
        */
       containerTypes: {
         type: 'stringArray',
@@ -280,9 +291,6 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
           'imply UTRs from exon/CDS differences on transcript glyphs that carry no explicit UTR subfeatures',
         defaultValue: true,
       },
-      /**
-       * #slot
-       */
       labels: ConfigurationSchema('CanvasFeatureLabels', {
         /**
          * #slot labels.name

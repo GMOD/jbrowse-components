@@ -35,6 +35,9 @@ const ChromSizesAdapter = ConfigurationSchema(
   {
     /**
      * #slot
+     * location of the `.chrom.sizes` file — one `name<TAB>length` line per
+     * reference sequence. There is no sequence behind it, so base-level views
+     * of this assembly are empty.
      */
     chromSizesLocation: {
       type: 'fileLocation',

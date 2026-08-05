@@ -196,6 +196,11 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
       },
       /**
        * #slot
+       * where this track's data comes from. Its `type` names the adapter for
+       * the file format (`BamAdapter`, `Gff3TabixAdapter`, ...) and the rest of
+       * the object is that adapter's own slots — see the adapter pages for
+       * each. Most adapters also accept a `uri` shorthand in place of writing
+       * their location slots out.
        */
       adapter: pluginManager.pluggableConfigSchemaType('adapter'),
 
@@ -220,6 +225,10 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
 
         /**
          * #slot textSearching.textSearchAdapter
+         * a per-track name search index, normally a `TrixTextSearchAdapter`
+         * over what `jbrowse text-index --tracks` built. Without one, this
+         * track's features are only findable through an assembly-wide search
+         * adapter.
          */
         textSearchAdapter: pluginManager.pluggableConfigSchemaType(
           'text search adapter',
@@ -293,6 +302,8 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
 
         /**
          * #slot formatAbout.hideUris
+         * leave this track's file locations out of its About dialog, for a
+         * deployment that would rather not show users where the data sits
          */
         hideUris: {
           type: 'boolean',

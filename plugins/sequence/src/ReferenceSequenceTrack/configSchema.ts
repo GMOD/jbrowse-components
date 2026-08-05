@@ -97,6 +97,8 @@ export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
 
         /**
          * #slot formatAbout.hideUris
+         * leave the sequence file's locations out of the About dialog, for a
+         * deployment that would rather not show users where the data sits
          */
         hideUris: {
           type: 'boolean',

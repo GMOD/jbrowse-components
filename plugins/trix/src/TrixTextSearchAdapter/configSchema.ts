@@ -33,6 +33,8 @@ const TrixTextSearchAdapter = ConfigurationSchema(
   {
     /**
      * #slot
+     * location of the Trix `.ix` index written by `jbrowse text-index`: the
+     * sorted term-to-feature table the search box reads.
      */
     ixFilePath: {
       type: 'fileLocation',
@@ -43,6 +45,9 @@ const TrixTextSearchAdapter = ConfigurationSchema(
     },
     /**
      * #slot
+     * location of the `.ixx` prefix index, which records where in the `.ix`
+     * each prefix begins. It is what makes a lookup a couple of range requests
+     * instead of a download of the whole index.
      */
     ixxFilePath: {
       type: 'fileLocation',
@@ -53,6 +58,8 @@ const TrixTextSearchAdapter = ConfigurationSchema(
     },
     /**
      * #slot
+     * location of the `_meta.json` written beside the index, recording which
+     * tracks and assemblies it covers and the attributes it was built from.
      */
     metaFilePath: {
       type: 'fileLocation',

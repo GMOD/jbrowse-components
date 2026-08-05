@@ -47,6 +47,6 @@ surface.
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-rewriterefnames">**rewriteRefNames**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | _callback args:_ `refName` |
-| <span id="slot-fastalocation">**fastaLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/seq.fa', locationType: 'UriLocation' }</code> |  |
+| <span id="slot-rewriterefnames">**rewriteRefNames**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | jexl expression rewriting each sequence name as the FASTA is parsed, e.g. `jexl:refName.split(' ')[0]` to keep only the first word of a description line. Left empty, names are used as written; an expression returning nothing falls back to the original name.<br>_callback args:_ `refName` |
+| <span id="slot-fastalocation">**fastaLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/seq.fa', locationType: 'UriLocation' }</code> | location of the plain FASTA. With no index there are no byte offsets to seek to, so the whole file is downloaded and parsed on first use and held in memory. |
 | <span id="slot-metadatalocation">**metadataLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ uri: '/path/to/fa.metadata.yaml', locationType: 'UriLocation'…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ uri: '/path/to/fa.metadata.yaml', locationType: 'UriLocation' }</code></pre></dialog></span> | Optional metadata file |

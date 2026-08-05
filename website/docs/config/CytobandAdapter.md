@@ -35,4 +35,4 @@ surface.
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-cytobandlocation">**cytobandLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/cytoband.txt.gz' }</code> |  |
+| <span id="slot-cytobandlocation">**cytobandLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/cytoband.txt.gz' }</code> | location of a UCSC-style `cytoBand.txt` (`chrom start end name gieStain`), which draws the ideogram banding in the view's overview bar. May be gzipped. Configured on an assembly, not on a track. |

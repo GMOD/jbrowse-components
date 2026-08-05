@@ -54,7 +54,7 @@ surface.
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-bamlocation">**bamLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.bam', locationType: 'UriLocation' }</code> |  |
-| <span id="slot-indexindextype">**index.indexType**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (BAI, CSI) = <code>'BAI'</code> |  |
-| <span id="slot-indexlocation">**index.location**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.bam.bai', locationType: 'UriLocation' }</code> |  |
+| <span id="slot-bamlocation">**bamLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.bam', locationType: 'UriLocation' }</code> | location of the BAM file. Per-base mismatches come from the record's MD tag when it has one, and are otherwise computed against the assembly's reference sequence. |
+| <span id="slot-indexindextype">**index.indexType**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (BAI, CSI) = <code>'BAI'</code> | `BAI` is the usual `samtools index` output. `CSI` is required for a reference longer than 512 Mb, which BAI cannot address. |
+| <span id="slot-indexlocation">**index.location**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.bam.bai', locationType: 'UriLocation' }</code> | location of the index. Only needed when it is not named `<file>.bam.bai` (or `.bam.csi`), which is what the `uri` shorthand assumes. |
 | <span id="slot-fetchsizelimit">**fetchSizeLimit**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>5_000_000</code> | size to fetch in bytes over which to display a warning to the user that too much data will be fetched<br>_advanced_ |

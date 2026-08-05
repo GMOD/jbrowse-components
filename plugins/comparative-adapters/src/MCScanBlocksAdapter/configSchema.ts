@@ -60,6 +60,10 @@ const MCScanBlocksAdapter = ConfigurationSchema(
   {
     /**
      * #slot
+     * location of the `.blocks` table: column 0 is a reference gene and each
+     * further column is that gene's ortholog in another genome, `.` where there
+     * is none. `blockAssemblies` names the columns and `bedLocations` resolves
+     * each column's gene names to coordinates.
      */
     mcscanBlocksLocation: {
       type: 'fileLocation',

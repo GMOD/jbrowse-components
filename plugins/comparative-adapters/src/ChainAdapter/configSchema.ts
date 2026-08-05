@@ -62,6 +62,8 @@ const ChainAdapter = ConfigurationSchema(
     },
     /**
      * #slot
+     * location of the UCSC chain file, as used by `liftOver` and produced by
+     * `axtChain`. May be gzipped; the whole file is read into memory.
      */
     chainLocation: {
       type: 'fileLocation',

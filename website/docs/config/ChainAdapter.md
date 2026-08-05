@@ -54,4 +54,4 @@ surface.
 | <span id="slot-assemblynames">**assemblyNames**</span><br>`stringArray` = <code>[]</code> | Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second |
 | <span id="slot-targetassembly">**targetAssembly**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | can be specified as alternative to assemblyNames |
 | <span id="slot-queryassembly">**queryAssembly**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | can be specified as alternative to assemblyNames |
-| <span id="slot-chainlocation">**chainLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/file.chain', locationType: 'UriLocation' }</code> |  |
+| <span id="slot-chainlocation">**chainLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/file.chain', locationType: 'UriLocation' }</code> | location of the UCSC chain file, as used by `liftOver` and produced by `axtChain`. May be gzipped; the whole file is read into memory. |

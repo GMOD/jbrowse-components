@@ -29,6 +29,8 @@ const regionsConfigSchema = ConfigurationSchema(
   {
     /**
      * #slot
+     * stable identifier used as the adapter cache key; avoids hashing the
+     * (potentially large) features array. optional — falls back to hash.
      */
     adapterId: {
       type: 'string',
@@ -36,6 +38,10 @@ const regionsConfigSchema = ConfigurationSchema(
     },
     /**
      * #slot
+     * one entry per reference sequence, each with a `uniqueId`, `refName`,
+     * `start: 0` and `end` set to that sequence's length. This is what defines
+     * the assembly's reference names and sizes; no bases are supplied, so
+     * base-level views are empty.
      */
     features: {
       type: 'frozen',

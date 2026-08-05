@@ -55,5 +55,5 @@ surface.
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-samlocation">**samLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.sam', locationType: 'UriLocation' }</code> |  |
+| <span id="slot-samlocation">**samLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.sam', locationType: 'UriLocation' }</code> | location of the SAM file, header lines included. Ignored when `samText` supplies the alignment inline. |
 | <span id="slot-samtext">**samText**</span><br>[`text`](/docs/config_guides/slot_types#text) = <code>''</code> | SAM text supplied inline instead of from `samLocation`, header lines included. Takes precedence when set. Lets an alignment produced in the browser — a BLAT hit converted from PSL, for instance — persist in a session without a file behind it. |

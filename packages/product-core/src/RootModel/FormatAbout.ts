@@ -18,8 +18,10 @@ export function FormatAboutConfigSchemaFactory() {
     },
     /**
      * #slot configuration.formatAbout.hideUris
+     * leave file locations out of every About dialog in the session, for a
+     * deployment that would rather not show users where the data sits. A track
+     * can set the same slot on its own `formatAbout`.
      */
-
     hideUris: {
       type: 'boolean',
       defaultValue: false,

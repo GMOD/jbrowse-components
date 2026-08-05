@@ -65,6 +65,10 @@ const PAFAdapter = ConfigurationSchema(
     },
     /**
      * #slot
+     * location of the PAF file (minimap2, wfmash, and similar). May be gzipped.
+     * There is no index, so the whole alignment is read into memory — convert
+     * anything large with `jbrowse make-pif` and use the
+     * `PairwiseIndexedPAFAdapter` instead.
      */
     pafLocation: {
       type: 'fileLocation',

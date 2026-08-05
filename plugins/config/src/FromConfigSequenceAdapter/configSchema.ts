@@ -28,6 +28,8 @@ const sequenceConfigSchema = ConfigurationSchema(
   {
     /**
      * #slot
+     * stable identifier used as the adapter cache key; avoids hashing the
+     * (potentially large) features array. optional — falls back to hash.
      */
     adapterId: {
       type: 'string',
@@ -35,6 +37,10 @@ const sequenceConfigSchema = ConfigurationSchema(
     },
     /**
      * #slot
+     * one entry per reference sequence, each with a `uniqueId`, `refName`,
+     * `start`, `end`, and a `seq` string holding the bases for that span. The
+     * bases live in the config, so this is for small sequences — a plasmid, a
+     * test contig — not a genome.
      */
     features: {
       type: 'frozen',

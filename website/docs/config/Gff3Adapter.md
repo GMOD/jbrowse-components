@@ -31,10 +31,10 @@ the Gff3TabixAdapter for large files.
 ## Related links
 
 - **Track:** [FeatureTrack](../featuretrack)
-- **Display:** [LinearScoreDisplay](../linearscoredisplay)
 - **Display:** [LinearArcDisplay](../lineararcdisplay)
 - **Display:** [LinearBasicDisplay](../linearbasicdisplay)
 - **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
+- **Display:** [LinearScoreDisplay](../linearscoredisplay)
 
 ## Config slots
 
@@ -50,4 +50,4 @@ surface.
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-gfflocation">**gffLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.gff', locationType: 'UriLocation' }</code> |  |
+| <span id="slot-gfflocation">**gffLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.gff', locationType: 'UriLocation' }</code> | location of the GFF3 file. May be gzipped; it is decompressed and parsed in full on first use, so the file has to fit in memory. |

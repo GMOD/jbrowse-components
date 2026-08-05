@@ -46,6 +46,8 @@ const VcfTabixAdapter = ConfigurationSchema(
   {
     /**
      * #slot
+     * location of the bgzip-compressed VCF, sorted by position. Must be bgzip
+     * rather than plain gzip, which tabix cannot index.
      */
     vcfGzLocation: {
       type: 'fileLocation',
@@ -58,6 +60,8 @@ const VcfTabixAdapter = ConfigurationSchema(
     index: ConfigurationSchema('VcfIndex', {
       /**
        * #slot index.indexType
+       * `TBI` is the usual `tabix` output. `CSI` is required for a reference
+       * longer than 512 Mb, which TBI cannot address.
        */
       indexType: {
         model: types.enumeration('IndexType', ['TBI', 'CSI']),
@@ -66,6 +70,9 @@ const VcfTabixAdapter = ConfigurationSchema(
       },
       /**
        * #slot index.location
+       * location of the tabix index. Only needed when it is not named
+       * `<file>.vcf.gz.tbi` (or `.csi`), which is what the `uri` shorthand
+       * assumes.
        */
       location: {
         type: 'fileLocation',
@@ -77,13 +84,16 @@ const VcfTabixAdapter = ConfigurationSchema(
     }),
     /**
      * #slot
+     * location of a tab-separated table of per-sample metadata. It needs a
+     * header row, and its first column must be the sample name exactly as the
+     * VCF spells it; every other column (`population`, `superpopulation`, ...)
+     * becomes a value the multi-sample variant displays can group, sort and
+     * color their sample rows by.
      */
     samplesTsvLocation: {
       type: 'fileLocation',
       defaultValue: {
         uri: '/path/to/samples.tsv',
-        description:
-          'tsv with header like name\tpopulation\tetc. where the first column is required, and is the sample names',
         locationType: 'UriLocation',
       },
     },

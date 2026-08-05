@@ -28,6 +28,9 @@ const IndexedFastaAdapter = ConfigurationSchema(
   {
     /**
      * #slot
+     * location of the FASTA file. Only the visible bases are fetched, as byte
+     * ranges resolved through the `.fai`, so the file itself is never
+     * downloaded whole.
      */
     fastaLocation: {
       type: 'fileLocation',
@@ -35,6 +38,9 @@ const IndexedFastaAdapter = ConfigurationSchema(
     },
     /**
      * #slot
+     * location of the `samtools faidx` index (`.fai`). It supplies the
+     * reference names and lengths as well as the byte offsets, so the assembly
+     * cannot load without it.
      */
     faiLocation: {
       type: 'fileLocation',

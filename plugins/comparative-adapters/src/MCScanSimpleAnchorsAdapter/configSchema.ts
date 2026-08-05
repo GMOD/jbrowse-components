@@ -48,6 +48,11 @@ const MCScanSimpleAnchorsAdapter = ConfigurationSchema(
   {
     /**
      * #slot
+     * location of the `.anchors.simple` file from
+     * `python -m jcvi.compara.synteny screen --simple`: one line per synteny
+     * block, giving only the first and last gene of the block in each genome.
+     * That draws whole blocks rather than the per-gene links a full `.anchors`
+     * file gives.
      */
     mcscanSimpleAnchorsLocation: {
       type: 'fileLocation',
@@ -58,6 +63,9 @@ const MCScanSimpleAnchorsAdapter = ConfigurationSchema(
     },
     /**
      * #slot
+     * BED giving coordinates for the query assembly's gene names — the first
+     * two columns of each block line. Written by
+     * `python -m jcvi.formats.gff bed`.
      */
     bed1Location: {
       type: 'fileLocation',
@@ -68,6 +76,8 @@ const MCScanSimpleAnchorsAdapter = ConfigurationSchema(
     },
     /**
      * #slot
+     * BED giving coordinates for the target assembly's gene names — the third
+     * and fourth columns of each block line.
      */
     bed2Location: {
       type: 'fileLocation',
@@ -79,6 +89,9 @@ const MCScanSimpleAnchorsAdapter = ConfigurationSchema(
 
     /**
      * #slot
+     * `[query, target]` — the assembly `bed1Location` describes, then the one
+     * `bed2Location` describes. Getting the order backwards draws every block
+     * against the wrong genome rather than erroring.
      */
     assemblyNames: {
       type: 'stringArray',

@@ -43,6 +43,9 @@ const BedGraphTabixAdapter = ConfigurationSchema(
   {
     /**
      * #slot
+     * location of the bgzip-compressed bedGraph (`chrom start end value`,
+     * sorted by position). Must be bgzip rather than plain gzip, which tabix
+     * cannot index.
      */
     bedGraphGzLocation: {
       type: 'fileLocation',
@@ -54,6 +57,8 @@ const BedGraphTabixAdapter = ConfigurationSchema(
     index: ConfigurationSchema('BedGraphTabixIndex', {
       /**
        * #slot index.indexType
+       * `TBI` is the usual `tabix` output. `CSI` is required for a reference
+       * longer than 512 Mb, which TBI cannot address.
        */
       indexType: {
         model: types.enumeration('IndexType', ['TBI', 'CSI']),
@@ -62,6 +67,8 @@ const BedGraphTabixAdapter = ConfigurationSchema(
       },
       /**
        * #slot index.location
+       * location of the tabix index. Only needed when it is not named
+       * `<file>.tbi` (or `.csi`), which is what the `uri` shorthand assumes.
        */
       location: {
         type: 'fileLocation',

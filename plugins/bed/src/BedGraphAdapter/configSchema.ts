@@ -35,6 +35,8 @@ const BedGraphAdapter = ConfigurationSchema(
   {
     /**
      * #slot
+     * location of the plain-text bedGraph (`chrom start end value`, one line
+     * per interval). May be gzipped.
      */
     bedGraphLocation: {
       type: 'fileLocation',

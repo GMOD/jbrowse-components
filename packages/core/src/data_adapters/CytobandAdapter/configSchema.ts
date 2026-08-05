@@ -9,6 +9,9 @@ const configSchema = ConfigurationSchema(
   {
     /**
      * #slot
+     * location of a UCSC-style `cytoBand.txt` (`chrom start end name
+     * gieStain`), which draws the ideogram banding in the view's overview bar.
+     * May be gzipped. Configured on an assembly, not on a track.
      */
     cytobandLocation: {
       type: 'fileLocation',

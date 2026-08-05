@@ -9,6 +9,9 @@ const NCListAdapter = ConfigurationSchema(
   {
     /**
      * #slot
+     * URL of a JBrowse 1 NCList `trackData.json`, with `{refseq}` standing in
+     * for the reference sequence name — the per-reference directory layout
+     * `flatfile-to-json.pl` and `biodb-to-json.pl` write.
      */
     rootUrlTemplate: {
       type: 'fileLocation',

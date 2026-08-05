@@ -34,6 +34,10 @@ const BgzipFastaAdapter = ConfigurationSchema(
   {
     /**
      * #slot
+     * location of the bgzip-compressed FASTA. Must be bgzip rather than plain
+     * gzip — `samtools faidx` cannot index the latter, and only bgzip supports
+     * the per-block random access that keeps a base-level view to one range
+     * request.
      */
     fastaLocation: {
       type: 'fileLocation',
@@ -41,6 +45,9 @@ const BgzipFastaAdapter = ConfigurationSchema(
     },
     /**
      * #slot
+     * location of the `samtools faidx` index (`.fai`). It supplies the
+     * reference names and lengths as well as the offsets into the uncompressed
+     * sequence, so the assembly cannot load without it.
      */
     faiLocation: {
       type: 'fileLocation',
@@ -62,6 +69,9 @@ const BgzipFastaAdapter = ConfigurationSchema(
     },
     /**
      * #slot
+     * location of the bgzip block index (`.gzi`), written beside the `.fai` by
+     * `samtools faidx` on a bgzipped FASTA. It maps uncompressed offsets to
+     * compressed ones, which is what makes a range request possible at all.
      */
     gziLocation: {
       type: 'fileLocation',

@@ -39,6 +39,8 @@ const BlastTabularAdapter = ConfigurationSchema(
     },
     /**
      * #slot
+     * location of the BLAST tabular output (`-outfmt 6` or `7`). Set `columns`
+     * to match if the run used a custom column list.
      */
     blastTableLocation: {
       type: 'fileLocation',
