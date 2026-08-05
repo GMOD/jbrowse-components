@@ -85,14 +85,12 @@ configure(pluginManager) {
 
 ## Importing with jbrequire
 
-With no build step, use `jbrequire` to access the shared libraries JBrowse
-re-exports (React, MobX, MST, MUI, and `@jbrowse/core` APIs). See
+With no build step, reach the shared libraries JBrowse re-exports (React, MobX,
+MST, MUI, `@jbrowse/core` APIs) through `jbrequire` — e.g.
+`const { types } = pluginManager.jbrequire('@jbrowse/mobx-state-tree')`. The
+complete example below uses it five times. See
 [](/docs/developer_guides/imports_and_reexports) and the
 [canonical list](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/ReExports/list.ts).
-
-```js
-const { types } = pluginManager.jbrequire('@jbrowse/mobx-state-tree')
-```
 
 ## Complete example
 
@@ -218,26 +216,40 @@ which defines a global variable rather than exporting a class.
 ## Note: Plugins in embedded React components
 
 This guide targets jbrowse-web, which loads plugins via `config.json`. Embedded
-components (`@jbrowse/react-app2` or `@jbrowse/react-linear-genome-view2`)
-instead pass the plugin class in the `plugins` array to `createViewState`:
+components (`@jbrowse/react-app2` or `@jbrowse/react-linear-genome-view2`) have
+no config.json, so they take the class directly — declared in the same file, and
+passed in `plugins`:
 
-```js
-import { createViewState, JBrowseApp } from '@jbrowse/react-app2'
+<!-- include: products/jbrowse-react-app/examples-site/src/examples/EmbeddedPlugin.tsx#usePlugin -->
 
-class MyPlugin {
-  name = 'MyPlugin'
-  install(pluginManager) {
-    /* ... */
-  }
-  configure() {}
+```tsx
+export default function EmbeddedPlugin() {
+  return (
+    <JBrowse
+      assemblies={assemblies}
+      tracks={tracks}
+      // the class itself, not a definition to fetch — an embedded app has no
+      // config.json to list plugins in
+      plugins={[HighlightRegionPlugin]}
+      views={[
+        {
+          type: 'LinearGenomeView',
+          init: {
+            assembly: 'volvox',
+            loc: 'ctgA:1..50000',
+            tracks: ['volvox_cram'],
+          },
+        },
+      ]}
+    />
+  )
 }
-
-const state = createViewState({ config, plugins: [MyPlugin] })
 ```
 
-See the
-[With external plugin](https://jbrowse.org/storybook/app/with-external-plugin/)
-example in the `@jbrowse/react-app2` examples site for a live example.
+`createViewState({ config, plugins: [MyPlugin] })` takes the same array. To
+fetch a published plugin at runtime instead, `loadPlugins` returns records to
+pass through unchanged — see
+[With external plugin](https://jbrowse.org/storybook/app/with-external-plugin/).
 
 ## See also
 

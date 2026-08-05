@@ -61,11 +61,14 @@ class HighlightRegionPlugin extends Plugin {
   configure() {}
 }
 
+// #region usePlugin
 export default function EmbeddedPlugin() {
   return (
     <JBrowse
       assemblies={assemblies}
       tracks={tracks}
+      // the class itself, not a definition to fetch — an embedded app has no
+      // config.json to list plugins in
       plugins={[HighlightRegionPlugin]}
       views={[
         {
@@ -80,3 +83,4 @@ export default function EmbeddedPlugin() {
     />
   )
 }
+// #endregion
