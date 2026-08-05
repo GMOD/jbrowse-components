@@ -95,6 +95,7 @@ import type {
   RowIdentityMode,
   RowIdentityModeWithOff,
 } from './rowIdentityModes.ts'
+import type { RowRendering } from './rowRenderings.ts'
 import type { Region, UriLocation } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
@@ -1521,6 +1522,30 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
+         * The row coloring the *user picked*, as one value across the three
+         * slots that store it. `activeRowRendering` below is what is actually
+         * painting; this is the setting behind it, and the two differ wherever
+         * zoom or the summary path overrides the choice.
+         *
+         * Zoom-independent on purpose. The radio it drives would otherwise
+         * move its own tick as the user zoomed — the identity plot yields to
+         * the bases at base level, codon view only exists there — which reads
+         * as the menu changing the setting behind their back.
+         *
+         * Same precedence as `activeRowRendering`, minus the zoom/summary
+         * terms, so "what wins" is one rule rather than two that can disagree.
+         */
+        get selectedRowRendering(): RowRendering {
+          return self.showTranslation && !!self.annotationAdapterConfig
+            ? 'codon'
+            : self.colorByChromosome
+              ? 'sourceChrom'
+              : self.rowIdentityMode !== 'none'
+                ? self.rowIdentityMode
+                : 'bases'
+        },
+        /**
+         * #getter
          * Single source of truth for what the per-sample rows area draws right now:
          * `bases` (the GPU SNP/base coloring), `codon` (per-codon change coloring
          * from `mafFrames`), `sourceChrom` (color-by-source-chromosome SV mode), or
@@ -1586,6 +1611,36 @@ export default function stateModelFactory(
           return rendering === 'bases' || rendering === 'codon'
             ? undefined
             : rendering
+        },
+      }))
+      .actions(self => ({
+        /**
+         * #action
+         * Pick the row coloring, writing all three slots so exactly one is on.
+         *
+         * The exclusivity has to be written, not just displayed: the slots are
+         * independent booleans, `activeRowRendering` resolves a clash by
+         * precedence, and the menu used to offer them as separate checkboxes —
+         * so turning on color-by-chromosome while an identity plot was selected
+         * left a setting that was on, persisted into the session, and painting
+         * nothing. Selecting through here is what makes the tick the truth.
+         *
+         * A session saved before this (or hand-written config) can still carry
+         * two of them; nothing migrates, `selectedRowRendering` just reports
+         * the one that wins, and the next pick clears the rest.
+         */
+        setRowRendering(rendering: RowRendering) {
+          // Through the per-slot actions, not `setConf` again: they are the
+          // persisted form and stay individually settable (a saved session
+          // names them one by one), so this is the exclusivity rule on top of
+          // them rather than a second place that knows the slot names.
+          self.setShowTranslation(rendering === 'codon')
+          self.setColorByChromosome(rendering === 'sourceChrom')
+          self.setRowIdentityMode(
+            rendering === 'heatmap' || rendering === 'xyplot'
+              ? rendering
+              : 'none',
+          )
         },
       }))
       .views(self => ({

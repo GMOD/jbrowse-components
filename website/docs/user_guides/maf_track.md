@@ -21,8 +21,9 @@ what you can do once the track is on screen.
 
 Zoomed out, each pixel summarizes the alignment beneath it. Zoom in and the
 per-species rows resolve into individual bases, with positions where a species
-differs from the reference drawn as colored marks. Most of the features below
-are toggled from the track menu's **Show...** submenu.
+differs from the reference drawn as colored marks. The features below come from
+two track-menu submenus: **Row coloring** picks the one way the rows are
+colored, and **Show...** holds the bands and overlays that layer on top of it.
 
 ## Conservation and per-row identity
 
@@ -31,14 +32,18 @@ fraction of aligned species whose base matches the reference, a quick read of
 which regions are conserved versus divergent. It is computed from the alignment
 itself, so no extra files are needed.
 
-Where conservation collapses every species into one profile, **Per-row
-identity** breaks the same signal out per species so you can see _which_ genomes
-diverge in a region. It offers two styles, **Heatmap** (each row shaded on a
-red→grey→blue ramp, red divergent, blue conserved) and **X-Y plot** (a
-per-species identity wiggle), plus **Off**. By default it draws only while you
-are zoomed out past base level, where individual bases are no longer legible,
-and zooming in swaps it back for the ordinary base coloring; uncheck **Show
-bases when zoomed in** to keep the plot on at every zoom level instead.
+Where conservation collapses every species into one profile, the **Row
+coloring** menu breaks the same signal out per species so you can see _which_
+genomes diverge in a region. Everything in that menu is an alternative — the
+rows are colored one way at a time — and the default, **Bases (SNPs vs
+reference)**, is the per-base coloring described above.
+
+**Identity heatmap** shades each row on a red→grey→blue ramp (red divergent,
+blue conserved); **Identity X-Y plot** draws the same signal as a per-species
+wiggle. Both draw only while you are zoomed out past base level, where
+individual bases are no longer legible, and zooming in swaps them back for the
+ordinary base coloring; uncheck **Show bases when zoomed in** to keep the plot
+on at every zoom level instead.
 
 This works on large alignments: with all ~470 species of the UCSC hg38 470-way
 shown at once, the heatmap gives a per-base conservation view across the full
@@ -48,16 +53,16 @@ set of species.
 
 ## Color by source chromosome
 
-**Color by source chromosome** replaces the per-base coloring with a structural
-view. Within each species row, the source chromosomes its blocks come from (in
-that species' own genome) are ranked by coverage: the row's main chromosome gets
-the primary color, and blocks from a different source chromosome take a
-contrasting accent. A row that stays one color is collinear; a row that _changes
-color along its length_ is drawing blocks from more than one source chromosome,
-an immediate flag for a translocation or rearrangement. Ranking per row keeps
-this readable, with no per-scaffold rainbow, and a compact legend in the
-top-right names the scheme (main / 2nd / 3rd source). Like conservation, it is
-derived from the alignment with no extra data to fetch.
+**Source chromosome**, in the same **Row coloring** menu, replaces the per-base
+coloring with a structural view. Within each species row, the source chromosomes
+its blocks come from (in that species' own genome) are ranked by coverage: the
+row's main chromosome gets the primary color, and blocks from a different source
+chromosome take a contrasting accent. A row that stays one color is collinear; a
+row that _changes color along its length_ is drawing blocks from more than one
+source chromosome, an immediate flag for a translocation or rearrangement.
+Ranking per row keeps this readable, with no per-scaffold rainbow, and a compact
+legend in the top-right names the scheme (main / 2nd / 3rd source). Like
+conservation, it is derived from the alignment with no extra data to fetch.
 
 <Figure src="/img/maf_color_by_chromosome.png" caption="Color-by-source-chromosome mode on the ce11 26-way alignment: each species row is colored by its per-row source-chromosome rank, so a row stays one color when collinear and switches color (2nd/3rd source) where blocks come from a different source chromosome, marking rearrangements."/>
 
@@ -74,17 +79,19 @@ without replacing them.
 ## Codon (amino-acid) view
 
 When the track has a CDS-frames file configured (a UCSC `mafFrames` annotation
-on the display), the menu gains two coding-aware options. **Show CDS frames**
-(off by default) draws a thin reading-frame-colored strip on each species' row,
-marking the coding exons projected onto that species so the gene structure reads
-vertically across the whole alignment.
+on the display), two coding-aware options appear. **Show CDS frames** (off by
+default, under **Show...**) draws a thin reading-frame-colored strip on each
+species' row, marking the coding exons projected onto that species so the gene
+structure reads vertically across the whole alignment. It is a strip drawn over
+whatever the rows are colored by, so it composes with any **Row coloring**.
 
-**Codon view (amino-acid changes)** switches the per-sample rows from per-base
-SNP coloring to a per-codon view: every species is translated in the reference
-reading frame, and each codon cell is colored by how its amino acid compares to
-the reference: nonsynonymous changes stand out, synonymous (silent) changes get
-a faint tint, stop codons are flagged, and conserved codons stay clean. The
-residue is drawn on each codon once you zoom in far enough to read it.
+**Codon changes (amino acids)**, a **Row coloring** option, switches the
+per-sample rows from per-base SNP coloring to a per-codon view: every species is
+translated in the reference reading frame, and each codon cell is colored by how
+its amino acid compares to the reference: nonsynonymous changes stand out,
+synonymous (silent) changes get a faint tint, stop codons are flagged, and
+conserved codons stay clean. The residue is drawn on each codon once you zoom in
+far enough to read it.
 
 <!-- COLOR_TABLE maf START -->
 

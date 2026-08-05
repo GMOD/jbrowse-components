@@ -8,14 +8,15 @@ import {
 } from '@jbrowse/tree-sidebar'
 import { makeRadioSubMenu } from '@jbrowse/wiggle-core'
 import HeightIcon from '@mui/icons-material/Height'
+import PaletteIcon from '@mui/icons-material/Palette'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { CONSERVATION_MODES } from './conservationModes.ts'
 import { DEFAULTS } from './displayDefaults.ts'
-import { ROW_IDENTITY_MODES } from './rowIdentityModes.ts'
+import { CODON_ROW_RENDERING, ROW_RENDERINGS } from './rowRenderings.ts'
 
 import type { ConservationMode } from './conservationModes.ts'
-import type { RowIdentityModeWithOff } from './rowIdentityModes.ts'
+import type { RowRendering } from './rowRenderings.ts'
 import type { MafSource } from './stateModel.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -62,11 +63,12 @@ interface MafMenuSelf extends IStateTreeNode {
   showConservation: boolean
   conservationMode: ConservationMode
   showAnnotations: boolean
-  showTranslation: boolean
-  colorByChromosome: boolean
   showInversions: boolean
   annotationAdapterConfig: Record<string, unknown> | undefined
-  rowIdentityMode: RowIdentityModeWithOff
+  // The three slots behind "Row coloring" are read and written through this
+  // pair, not individually — that is what keeps exactly one of them on.
+  selectedRowRendering: RowRendering
+  setRowRendering: (m: RowRendering) => void
   rowIdentityAutoZoom: boolean
   rowHeight: number
   subtreeFilter?: readonly string[]
@@ -84,10 +86,7 @@ interface MafMenuSelf extends IStateTreeNode {
   setShowConservation: (f: boolean) => void
   setConservationMode: (m: ConservationMode) => void
   setShowAnnotations: (f: boolean) => void
-  setShowTranslation: (f: boolean) => void
-  setColorByChromosome: (f: boolean) => void
   setShowInversions: (f: boolean) => void
-  setRowIdentityMode: (m: RowIdentityModeWithOff) => void
   setRowIdentityAutoZoom: (f: boolean) => void
   setSubtreeFilter: (names?: string[]) => void
   // Consumed structurally by SetRowArrangementDialog's TreeLayoutModel<MafSource>
@@ -101,19 +100,56 @@ interface MafMenuSelf extends IStateTreeNode {
 // appear only when an `annotationAdapter` (mafFrames) is configured.
 function frameMenuItems(self: MafMenuSelf): MenuItem[] {
   return self.annotationAdapterConfig
-    ? [
-        toggle(
-          'Show CDS frames',
-          self.showAnnotations,
-          self.setShowAnnotations,
-        ),
-        toggle(
-          'Codon view (amino-acid changes)',
-          self.showTranslation,
-          self.setShowTranslation,
-        ),
-      ]
+    ? [toggle('Show CDS frames', self.showAnnotations, self.setShowAnnotations)]
     : []
+}
+
+/**
+ * The one thing the per-sample rows are colored by.
+ *
+ * These are alternatives — `activeRowRendering` paints exactly one and resolves
+ * a clash by precedence — but they used to be three separate controls sitting
+ * among the visibility toggles: a "Color by source chromosome" checkbox, a
+ * "Codon view" checkbox, and a "Per-row identity" radio. Nothing said they
+ * competed, so checking one while another was on left a setting that was on,
+ * persisted, and painting nothing. One radio, in the shape wiggle's "Plot type"
+ * already uses for the same problem, makes the exclusivity the menu's rather
+ * than something the user has to know.
+ *
+ * `Show bases when zoomed in` rides along because it qualifies the two identity
+ * options and nothing else.
+ */
+function rowRenderingMenuItem(self: MafMenuSelf): MenuItem {
+  return makeRadioSubMenu({
+    label: 'Row coloring',
+    icon: PaletteIcon,
+    value: self.selectedRowRendering,
+    onChange: m => {
+      self.setRowRendering(m)
+    },
+    options: [
+      ...ROW_RENDERINGS,
+      // Codons need a reading frame, so the option appears only where a
+      // mafFrames adapter can define one — same gate as the CDS-frame row.
+      ...(self.annotationAdapterConfig ? [CODON_ROW_RENDERING] : []),
+    ],
+    extraItems: [
+      // Named for what it does, not for the mechanism. "Auto-switch by zoom"
+      // said neither which two things swap nor which way round — so the only
+      // thing the label had to carry (that zooming in gives you the letters
+      // back) was the part it left out.
+      checkboxItem(
+        'Show bases when zoomed in',
+        self.rowIdentityAutoZoom,
+        () => {
+          self.setRowIdentityAutoZoom(!self.rowIdentityAutoZoom)
+        },
+        // The dependency stated rather than gated on: it qualifies the two
+        // identity options above and is inert under the others.
+        { subLabel: 'for the identity plots above' },
+      ),
+    ],
+  })
 }
 
 function showMenuItems(self: MafMenuSelf): MenuItem[] {
@@ -167,42 +203,14 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
           }),
         ]
       : []),
-    toggle(
-      'Color by source chromosome',
-      self.colorByChromosome,
-      self.setColorByChromosome,
-    ),
+    // An overlay drawn on top of whatever the rows are colored by, not one of
+    // the alternatives in "Row coloring" — so it stays a plain toggle here.
     toggle(
       'Show inversions (strand flips)',
       self.showInversions,
       self.setShowInversions,
     ),
     ...frameMenuItems(self),
-    makeRadioSubMenu({
-      label: 'Per-row identity',
-      value: self.rowIdentityMode,
-      onChange: m => {
-        self.setRowIdentityMode(m)
-      },
-      options: ROW_IDENTITY_MODES,
-      extraItems: [
-        // Named for what it does, not for the mechanism. "Auto-switch by zoom"
-        // said neither which two things swap nor which way round, and the row
-        // it sits under is already "by zoom" — so the only thing the label had
-        // to carry (that zooming in gives you the letters back) was the part it
-        // left out.
-        checkboxItem(
-          'Show bases when zoomed in',
-          self.rowIdentityAutoZoom,
-          () => {
-            self.setRowIdentityAutoZoom(!self.rowIdentityAutoZoom)
-          },
-          // The dependency stated rather than gated on: with `Off` selected
-          // above there is no identity plot to swap out, so the row is inert.
-          { subLabel: 'while a mode above is selected' },
-        ),
-      ],
-    }),
   ]
 }
 
@@ -251,6 +259,10 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
       type: 'subMenu',
       subMenu: rowHeightMenuItems(self),
     },
+    // Top level rather than inside "Show...": it is the one choice that decides
+    // what the rows look like, and the neighbouring wiggle displays surface
+    // their equivalent ("Plot type") at the top level too.
+    rowRenderingMenuItem(self),
     {
       label: 'Show...',
       icon: VisibilityIcon,
