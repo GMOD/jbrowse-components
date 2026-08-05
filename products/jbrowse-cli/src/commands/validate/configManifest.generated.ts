@@ -2844,6 +2844,18 @@ export const configManifest: ConfigManifest = {
       ],
       "aliases": [
         "LinearFeatureDisplay"
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "rpcDriverName",
+        "configuration",
+        "jexlFiltersSetting",
+        "pinnedFeatureIds",
+        "soloFeatureIds",
+        "soloApplied",
+        "hiddenFeatureIds",
+        "featureHighlights"
       ]
     },
     "LinearMultiRowFeatureDisplay": {
@@ -2936,6 +2948,21 @@ export const configManifest: ConfigManifest = {
           "name": "showBranchLength",
           "type": "(JexlString | boolean)"
         }
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "rpcDriverName",
+        "layout",
+        "clusterTree",
+        "clusterProvenance",
+        "treeAreaWidth",
+        "subtreeFilter",
+        "configuration",
+        "runClustering",
+        "clusterRegion",
+        "sortRowsBy",
+        "hiddenCategories"
       ]
     },
     "LinearAlignmentsDisplay": {
@@ -3154,6 +3181,12 @@ export const configManifest: ConfigManifest = {
         "LinearSNPCoverageDisplay",
         "LinearReadArcsDisplay",
         "LinearReadCloudDisplay"
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "rpcDriverName",
+        "configuration"
       ]
     },
     "ChordVariantDisplay": {
@@ -3185,6 +3218,13 @@ export const configManifest: ConfigManifest = {
       ],
       "legacyKeys": [
         "renderer"
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "rpcDriverName",
+        "bezierRadiusRatio",
+        "configuration"
       ]
     },
     "DotplotDisplay": {
@@ -3197,6 +3237,12 @@ export const configManifest: ConfigManifest = {
           "name": "displayId",
           "type": "identifier"
         }
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "rpcDriverName",
+        "configuration"
       ]
     },
     "LinearSyntenyDisplay": {
@@ -3209,6 +3255,12 @@ export const configManifest: ConfigManifest = {
           "name": "displayId",
           "type": "identifier"
         }
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "rpcDriverName",
+        "configuration"
       ]
     },
     "LGVSyntenyDisplay": {
@@ -3425,6 +3477,13 @@ export const configManifest: ConfigManifest = {
           "name": "hideSelfAlignments",
           "type": "(JexlString | boolean)"
         }
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "rpcDriverName",
+        "configuration",
+        "lodMode"
       ]
     },
     "LinearReferenceSequenceDisplay": {
@@ -3453,6 +3512,12 @@ export const configManifest: ConfigManifest = {
           "name": "showTranslation",
           "type": "(JexlString | boolean)"
         }
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "rpcDriverName",
+        "configuration"
       ]
     },
     "LinearVariantDisplay": {
@@ -3588,6 +3653,18 @@ export const configManifest: ConfigManifest = {
         "color2",
         "color3",
         "outline"
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "rpcDriverName",
+        "configuration",
+        "jexlFiltersSetting",
+        "pinnedFeatureIds",
+        "soloFeatureIds",
+        "soloApplied",
+        "hiddenFeatureIds",
+        "featureHighlights"
       ]
     },
     "LinearMultiSampleVariantDisplay": {
@@ -3683,6 +3760,20 @@ export const configManifest: ConfigManifest = {
       ],
       "aliases": [
         "MultiLinearVariantDisplay"
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "rpcDriverName",
+        "layout",
+        "clusterTree",
+        "clusterProvenance",
+        "treeAreaWidth",
+        "subtreeFilter",
+        "configuration",
+        "jexlFilters",
+        "runClustering",
+        "clusterRegion"
       ]
     },
     "LinearMultiSampleVariantMatrixDisplay": {
@@ -3774,6 +3865,20 @@ export const configManifest: ConfigManifest = {
       ],
       "aliases": [
         "LinearVariantMatrixDisplay"
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "rpcDriverName",
+        "layout",
+        "clusterTree",
+        "clusterProvenance",
+        "treeAreaWidth",
+        "subtreeFilter",
+        "configuration",
+        "jexlFilters",
+        "runClustering",
+        "clusterRegion"
       ]
     },
     "LDDisplay": {
@@ -3874,6 +3979,12 @@ export const configManifest: ConfigManifest = {
           "name": "signedLD",
           "type": "(JexlString | boolean)"
         }
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "rpcDriverName",
+        "configuration"
       ]
     },
     "LDTrackDisplay": {
@@ -3974,6 +4085,12 @@ export const configManifest: ConfigManifest = {
           "name": "signedLD",
           "type": "(JexlString | boolean)"
         }
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "rpcDriverName",
+        "configuration"
       ]
     },
     "LinearWiggleDisplay": {
@@ -4062,6 +4179,13 @@ export const configManifest: ConfigManifest = {
           "name": "summaryScoreMode",
           "type": "(JexlString | Score type)"
         }
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "rpcDriverName",
+        "resolution",
+        "configuration"
       ]
     },
     "MultiLinearWiggleDisplay": {
@@ -4158,6 +4282,20 @@ export const configManifest: ConfigManifest = {
           "name": "showLegend",
           "type": "(JexlString | boolean)"
         }
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "rpcDriverName",
+        "resolution",
+        "layout",
+        "clusterTree",
+        "clusterProvenance",
+        "treeAreaWidth",
+        "subtreeFilter",
+        "configuration",
+        "runClustering",
+        "clusterRegion"
       ]
     },
     "LinearGCContentDisplay": {
@@ -4258,6 +4396,13 @@ export const configManifest: ConfigManifest = {
           "name": "gcMode",
           "type": "(JexlString | gcMode)"
         }
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "rpcDriverName",
+        "resolution",
+        "configuration"
       ]
     },
     "LinearGCContentTrackDisplay": {
@@ -4358,6 +4503,13 @@ export const configManifest: ConfigManifest = {
           "name": "gcMode",
           "type": "(JexlString | gcMode)"
         }
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "rpcDriverName",
+        "resolution",
+        "configuration"
       ]
     },
     "LinearMafDisplay": {
@@ -4474,6 +4626,17 @@ export const configManifest: ConfigManifest = {
           "name": "showInversions",
           "type": "(JexlString | boolean)"
         }
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "rpcDriverName",
+        "layout",
+        "clusterTree",
+        "clusterProvenance",
+        "treeAreaWidth",
+        "subtreeFilter",
+        "configuration"
       ]
     },
     "LinearHicDisplay": {
@@ -4542,6 +4705,12 @@ export const configManifest: ConfigManifest = {
           "name": "squashToHeight",
           "type": "(JexlString | boolean)"
         }
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "rpcDriverName",
+        "configuration"
       ]
     },
     "LinearArcDisplay": {
@@ -4605,6 +4774,12 @@ export const configManifest: ConfigManifest = {
       ],
       "legacyKeys": [
         "renderer"
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "rpcDriverName",
+        "configuration"
       ]
     },
     "LinearPairedArcDisplay": {
@@ -4649,6 +4824,12 @@ export const configManifest: ConfigManifest = {
           "name": "lineWidth",
           "type": "(JexlString | (number | undefined))"
         }
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "rpcDriverName",
+        "configuration"
       ]
     },
     "LinearManhattanDisplay": {
@@ -4725,6 +4906,14 @@ export const configManifest: ConfigManifest = {
           "name": "scatterPointSize",
           "type": "(JexlString | (number | undefined))"
         }
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "rpcDriverName",
+        "configuration",
+        "indexSnp",
+        "indexSnpPinned"
       ]
     }
   },
@@ -4859,5 +5048,21 @@ export const configManifest: ConfigManifest = {
         }
       ]
     }
+  },
+  "migratedDisplayKeys": {
+    "*": [
+      "heightPreConfig"
+    ],
+    "LinearAlignmentsDisplay": [
+      "PileupDisplay",
+      "SNPCoverageDisplay",
+      "colorBy",
+      "colorBySetting",
+      "filterBy",
+      "filterBySetting",
+      "hideMismatchesSetting",
+      "jexlFilters",
+      "trackMaxHeight"
+    ]
   }
 }

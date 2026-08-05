@@ -11,11 +11,12 @@
  *   LinearReadCloudDisplay → LinearAlignmentsDisplay
  *   LinearFeatureDisplay → LinearBasicDisplay
  *
- * Also lifts per-instance color/filter settings off the pre-4.x nested
- * `LinearAlignmentsDisplay` container (which held `PileupDisplay` /
- * `SNPCoverageDisplay` sub-nodes carrying `colorBy` / `filterBy`) into the
- * config where those settings now live as slots — see
- * `extractNestedAlignmentsSettings` — and routes the legacy per-instance
+ * Also lifts the per-instance alignments settings a v4.3.0 session persisted
+ * (`colorBySetting`, `filterBySetting`, `jexlFilters`, `trackMaxHeight`,
+ * `hideMismatchesSetting`) into the config where they now live as slots — off
+ * the nested `LinearAlignmentsDisplay` container's `PileupDisplay` /
+ * `SNPCoverageDisplay` sub-nodes and off a flat old display alike, see
+ * `extractAlignmentsInstanceSettings` — and routes the legacy per-instance
  * `heightPreConfig` display-height prop onto the `height` config slot — see
  * `extractInstanceHeight`.
  */
@@ -66,7 +67,72 @@ const displayTypeMap: Record<
 // modifications/methylation session opens colored `normal`). We pull them off
 // the instance here and route them into the config.
 const NESTED_ALIGNMENTS_SUBNODES = ['PileupDisplay', 'SNPCoverageDisplay']
-const MIGRATED_INSTANCE_SLOTS = ['colorBy', 'filterBy']
+
+// Persisted key -> the slot it now lives in, and how to carry its value across.
+//
+// The `*Setting` names are the ones a real saved session carries, and getting
+// them wrong is why this migration never fired: SharedLinearPileupDisplayMixin
+// (v4.3.0) declared the props as `colorBySetting`/`filterBySetting`, its
+// `preProcessSnapshot` renamed an incoming bare `colorBy` to `colorBySetting`,
+// and its `postProcessSnapshot` wrote that name back out — so no session
+// snapshot JBrowse ever produced holds the bare form this used to look for. The
+// bare names stay accepted because a hand-written snapshot may use them.
+//
+// `hideSmallIndelsSetting` and `hideLargeIndelsSetting` are deliberately absent:
+// those two toggles have no slot today, the feature having been removed rather
+// than moved, so there is nowhere to carry them.
+const MIGRATED_INSTANCE_SLOTS: Record<
+  string,
+  { slot: string; convert?: (value: unknown) => unknown }
+> = {
+  colorBy: { slot: 'colorBy' },
+  colorBySetting: { slot: 'colorBy' },
+  filterBy: { slot: 'filterBy' },
+  filterBySetting: { slot: 'filterBy' },
+  jexlFilters: { slot: 'jexlFilters' },
+  trackMaxHeight: { slot: 'maxHeight' },
+  hideMismatchesSetting: {
+    slot: 'showMismatches',
+    convert: value => !value,
+  },
+}
+
+/**
+ * Every display-instance key this module still understands, keyed by the display
+ * type it applies to — `*` for the ones any display gets. A session snapshot
+ * carrying one of these loads correctly, so `jbrowse validate` reports it as
+ * stale rather than dead; that command reads this map (through the generated
+ * config manifest) rather than keeping a copy that could drift.
+ *
+ * Keyed rather than flat because the same name means different things on
+ * different displays: `jexlFilters` is lifted here for the alignments display,
+ * while on a LinearBasicDisplay — whose own prop is `jexlFiltersSetting` — it is
+ * simply dead, and a flat list would call that one supported.
+ */
+export const MIGRATED_DISPLAY_INSTANCE_KEYS: Record<string, string[]> = {
+  '*': ['heightPreConfig'],
+  LinearAlignmentsDisplay: [
+    ...Object.keys(MIGRATED_INSTANCE_SLOTS),
+    ...NESTED_ALIGNMENTS_SUBNODES,
+  ],
+}
+
+// Read the migrated settings off one node (a nested sub-node, or an old flat
+// display's own snapshot), keyed by the slot they now belong to. A key present
+// under both its bare and its `*Setting` spelling resolves to whichever comes
+// last in MIGRATED_INSTANCE_SLOTS, which is the `*Setting` one — the spelling
+// the display was actually writing.
+function migratedSettingsOf(source: Record<string, unknown>) {
+  const settings: Record<string, unknown> = {}
+  for (const [key, { slot, convert }] of Object.entries(
+    MIGRATED_INSTANCE_SLOTS,
+  )) {
+    if (source[key] !== undefined) {
+      settings[slot] = convert ? convert(source[key]) : source[key]
+    }
+  }
+  return settings
+}
 
 // A per-instance setting lifted off an old display, tagged with the track +
 // display config it must land on. `displayType` is used only when the target
@@ -101,39 +167,48 @@ function migrateDisplayType(display: Record<string, unknown>) {
 }
 
 /**
- * Detect a pre-4.x nested LinearAlignmentsDisplay instance, pull `colorBy` /
- * `filterBy` off its `PileupDisplay` (or `SNPCoverageDisplay`) sub-node into
- * `collected`, and return the display with the dead sub-nodes stripped. The
- * caller routes `collected` into the config (see `applyExtractedSettings`); the
- * settings can't stay on the instance because they're config slots now.
+ * Pull the per-instance alignments settings off an old display into `collected`
+ * and return the display with the dead keys stripped. The caller routes
+ * `collected` into the config (see `applyExtractedSettings`); the settings can't
+ * stay on the instance because they're config slots now.
+ *
+ * Two shapes, because v4.3.0 sessions hold both:
+ *
+ *   - the nested `LinearAlignmentsDisplay` container, whose settings sat on
+ *     `PileupDisplay` / `SNPCoverageDisplay` sub-nodes
+ *   - a flat `LinearPileupDisplay` / `LinearReadArcsDisplay` /
+ *     `LinearReadCloudDisplay` / `LinearSNPCoverageDisplay`, which carried them
+ *     directly — `migrateDisplayType` has already renamed it by the time this
+ *     runs, so both arrive here as a LinearAlignmentsDisplay
+ *
+ * The display's own keys are read only when it carries a `configuration`
+ * reference, i.e. only for a session instance. A *config* display node reaches
+ * this same function through `migrateConfigSnapshot`, and there `colorBy` and
+ * friends are the live slots — lifting them would strip a working config.
  */
-function extractNestedAlignmentsSettings(
+function extractAlignmentsInstanceSettings(
   display: Record<string, unknown>,
   trackConfigId: string | undefined,
   collected: ExtractedDisplaySettings[],
 ): Record<string, unknown> {
-  const hasNested = NESTED_ALIGNMENTS_SUBNODES.some(k => isObject(display[k]))
-  if (display.type !== 'LinearAlignmentsDisplay' || !hasNested) {
+  if (display.type !== 'LinearAlignmentsDisplay') {
     return display
   }
-  const source = NESTED_ALIGNMENTS_SUBNODES.map(k => display[k]).find(isObject)
-  const settings: Record<string, unknown> = {}
-  if (source) {
-    for (const slot of MIGRATED_INSTANCE_SLOTS) {
-      if (source[slot] !== undefined) {
-        settings[slot] = source[slot]
-      }
-    }
-  }
+  const subNode = NESTED_ALIGNMENTS_SUBNODES.map(k => display[k]).find(isObject)
   // The instance's `configuration` string is the display config id the settings
   // must merge onto (`${trackId}-LinearAlignmentsDisplay`). Skip routing if it's
   // inline or the track id is unknown — nothing to key the merge on.
   const displayId = display.configuration
-  if (
-    trackConfigId &&
-    typeof displayId === 'string' &&
-    Object.keys(settings).length > 0
-  ) {
+  const isInstance = typeof displayId === 'string'
+  const ownSettings = isInstance ? migratedSettingsOf(display) : {}
+  const settings = {
+    ...(subNode ? migratedSettingsOf(subNode) : {}),
+    ...ownSettings,
+  }
+  if (!subNode && Object.keys(settings).length === 0) {
+    return display
+  }
+  if (trackConfigId && isInstance && Object.keys(settings).length > 0) {
     collected.push({
       trackConfigId,
       displayId,
@@ -142,6 +217,14 @@ function extractNestedAlignmentsSettings(
     })
   }
   const { PileupDisplay, SNPCoverageDisplay, ...rest } = display
+  if (isInstance) {
+    // Every one of these is dead on a display instance now, routed or not — MST
+    // would drop them on load anyway, and leaving them makes a migrated snapshot
+    // still look like it holds settings it does not.
+    for (const key of Object.keys(MIGRATED_INSTANCE_SLOTS)) {
+      delete rest[key]
+    }
+  }
   return rest
 }
 
@@ -181,7 +264,7 @@ function migrateDisplaySnapshot(
   collected: ExtractedDisplaySettings[],
 ) {
   return extractInstanceHeight(
-    extractNestedAlignmentsSettings(
+    extractAlignmentsInstanceSettings(
       migrateDisplayType(display),
       trackConfigId,
       collected,

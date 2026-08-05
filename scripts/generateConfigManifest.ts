@@ -55,6 +55,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 // registry — this is a build script reaching into the source tree it bundles,
 // the same way it reaches ./src/corePlugins.ts below
 import { getConfigurationSchemaMetadata } from '../../packages/core/src/configuration/schemaRegistry.ts'
+import { MIGRATED_DISPLAY_INSTANCE_KEYS } from '@jbrowse/product-core'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import corePlugins from './src/corePlugins.ts'
 
@@ -91,6 +92,16 @@ function slotsOf(type) {
 function isSubSchema(prop) {
   const model = modelOf(prop)
   return Boolean(model?.properties && model.name?.endsWith('ConfigurationSchema'))
+}
+
+// The MST properties of a type's STATE MODEL, which is a different question
+// from its config slots and the one a saved session turns on: a session
+// snapshot's display node is instantiated by the state model, so a config-slot
+// name written there is dropped exactly like a misspelling. Only displays are
+// collected — that is where a session actually carries settings.
+function stateModelPropsOf(stateModel) {
+  const model = modelOf(stateModel)
+  return model?.properties ? Object.keys(model.properties) : undefined
 }
 
 // A snapshot normalizer lets an adapter accept keys its schema never declares —
@@ -323,6 +334,10 @@ function collect(group, getType) {
       ...(group === 'track'
         ? { displayTypes: (entry.displayTypes ?? []).map(d => d.name) }
         : {}),
+      // What a display node in a saved session may carry.
+      ...(group === 'display'
+        ? { stateModelProps: stateModelPropsOf(entry.stateModel) }
+        : {}),
     }
   }
   return out
@@ -334,6 +349,16 @@ console.log(JSON.stringify({
   displays: collect('display', n => pm.getDisplayType(n)),
   textSearchAdapters: collect('text search adapter', n => pm.getTextSearchAdapterType(n)),
   connections: collect('connection', n => pm.getConnectionType(n)),
+  // Legacy display-instance keys product-core's sessionMigrations still lifts
+  // into the config, keyed by display type ('*' = any). Taken from the migration
+  // itself rather than restated, so the two cannot disagree about what is stale
+  // versus dead.
+  migratedDisplayKeys: Object.fromEntries(
+    Object.entries(MIGRATED_DISPLAY_INSTANCE_KEYS).map(([type, keys]) => [
+      type,
+      [...keys].sort(),
+    ]),
+  ),
 }))
 `
 
@@ -575,8 +600,17 @@ const oxfmtBin = path.join(
 )
 await promisify(execFile)(process.execPath, [oxfmtBin, INDEX])
 
+// Type groups only — `migratedDisplayKeys` is a lookup table, not a set of
+// registered types, and counting its keys reads as "2 migrated display keys".
+const TYPE_GROUPS = [
+  'adapters',
+  'tracks',
+  'displays',
+  'textSearchAdapters',
+  'connections',
+]
 const counts = Object.entries(schema)
-  .filter(([, types]) => !Array.isArray(types))
+  .filter(([group]) => TYPE_GROUPS.includes(group))
   .map(([group, types]) => `${Object.keys(types as object).length} ${group}`)
   .join(', ')
 console.log(`wrote ${path.relative(REPO_ROOT, OUT)}: ${counts}`)

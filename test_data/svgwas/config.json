@@ -49,6 +49,13 @@
       "name": "UKB MCV SV-GWAS (imputed long-read SVs)",
       "category": ["GWAS", "Structural variants"],
       "assemblyNames": ["hg38"],
+      "displays": [
+        {
+          "type": "LinearManhattanDisplay",
+          "displayId": "ukb_mcv_sv_gwas-LinearManhattanDisplay",
+          "height": 250
+        }
+      ],
       "adapter": {
         "type": "GWASAdapter",
         "scoreColumn": "neg_log_pvalue",
@@ -88,8 +95,7 @@
               {
                 "id": "svgwas_display",
                 "type": "LinearManhattanDisplay",
-                "configuration": "ukb_mcv_sv_gwas-LinearManhattanDisplay",
-                "height": 250
+                "configuration": "ukb_mcv_sv_gwas-LinearManhattanDisplay"
               }
             ]
           }

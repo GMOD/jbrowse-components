@@ -50,14 +50,7 @@
               {
                 "id": "A5CESIgpSu",
                 "type": "LinearAlignmentsDisplay",
-                "configuration": "methylation_clip-LinearAlignmentsDisplay",
-                "colorBySetting": {
-                  "type": "methylation"
-                },
-                "filterBySetting": {
-                  "flagInclude": 0,
-                  "flagExclude": 1540
-                }
+                "configuration": "methylation_clip-LinearAlignmentsDisplay"
               }
             ]
           }
@@ -70,6 +63,15 @@
       "type": "AlignmentsTrack",
       "trackId": "methylation_clip",
       "name": "methylation_clip",
+      "displays": [
+        {
+          "type": "LinearAlignmentsDisplay",
+          "displayId": "methylation_clip-LinearAlignmentsDisplay",
+          "colorBy": {
+            "type": "methylation"
+          }
+        }
+      ],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {

@@ -112,6 +112,7 @@ export type { SessionSnapshot } from './sessionUrl.ts'
 export { registerLocalFiles, resolveLocalFileUris } from './localFiles.ts'
 export type { LocalFileInput } from './localFiles.ts'
 export {
+  MIGRATED_DISPLAY_INSTANCE_KEYS,
   migrateConfigSnapshot,
   migrateSessionSnapshot,
 } from './sessionMigrations/index.ts'

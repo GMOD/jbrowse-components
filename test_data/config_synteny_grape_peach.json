@@ -74,8 +74,7 @@
               {
                 "id": "v9h9kOmHjU",
                 "type": "LinearSyntenyDisplay",
-                "configuration": "grape_peach_synteny_mcscan-LinearSyntenyDisplay",
-                "height": 100
+                "configuration": "grape_peach_synteny_mcscan-LinearSyntenyDisplay"
               }
             ]
           }
@@ -148,8 +147,7 @@
               {
                 "id": "nX0MnvhRZS",
                 "type": "LinearSyntenyDisplay",
-                "configuration": "fileName-1606319049337-LinearSyntenyDisplay",
-                "height": 100
+                "configuration": "fileName-1606319049337-LinearSyntenyDisplay"
               }
             ]
           }

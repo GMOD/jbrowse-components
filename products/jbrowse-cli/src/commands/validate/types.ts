@@ -29,6 +29,13 @@ export interface TypeEntry {
   displayTypes?: string[]
   /** Old type names this type still answers to. */
   aliases?: string[]
+  /**
+   * Displays only: the MST properties of the display's state model — what a
+   * display node inside a saved session (or a `defaultSession`) may carry. A
+   * config slot is NOT among them: the session snapshot instantiates the state
+   * model, which drops a key it does not declare.
+   */
+  stateModelProps?: string[]
 }
 
 export type TypeGroup = Record<string, TypeEntry>
@@ -39,6 +46,13 @@ export interface ConfigManifest {
   displays: TypeGroup
   textSearchAdapters: TypeGroup
   connections: TypeGroup
+  /**
+   * Legacy display-instance keys product-core's sessionMigrations still lifts
+   * onto the config slots that replaced them, keyed by the display type they
+   * apply to (`*` = any). A session carrying one loads correctly, so it is
+   * reported as stale rather than as a dead setting.
+   */
+  migratedDisplayKeys: Record<string, string[]>
 }
 
 export type ProblemLevel = 'error' | 'warning'

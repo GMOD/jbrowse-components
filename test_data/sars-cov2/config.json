@@ -118,7 +118,7 @@
                 "type": "LinearBasicDisplay",
                 "heightPreConfig": 280,
                 "configuration": "sequence-LinearBasicDisplay",
-                "jexlFilters": ["jexl:feature.type=='gene'"]
+                "jexlFiltersSetting": ["jexl:feature.type=='gene'"]
               }
             ]
           }

@@ -24,8 +24,7 @@
               {
                 "id": "sle_lz_display",
                 "type": "LinearManhattanDisplay",
-                "configuration": "sle_gwas_ld-LinearManhattanDisplay",
-                "height": 250
+                "configuration": "sle_gwas_ld-LinearManhattanDisplay"
               }
             ]
           }
@@ -166,7 +165,8 @@
         {
           "displayId": "sle_gwas_ld-LinearManhattanDisplay",
           "type": "LinearManhattanDisplay",
-          "colorBy": "ld"
+          "colorBy": "ld",
+          "height": 250
         }
       ]
     },

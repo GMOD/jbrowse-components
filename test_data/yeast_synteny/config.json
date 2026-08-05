@@ -469,8 +469,7 @@
               {
                 "id": "YVqf0qowGL",
                 "type": "LinearSyntenyDisplay",
-                "configuration": "dotplot_track-LinearSyntenyDisplay",
-                "height": 100
+                "configuration": "dotplot_track-LinearSyntenyDisplay"
               }
             ]
           }

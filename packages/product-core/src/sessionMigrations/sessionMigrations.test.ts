@@ -310,6 +310,127 @@ describe('migrateSessionSnapshot', () => {
     expect(display.filterBy).toEqual({ flagInclude: 0, flagExclude: 1536 })
   })
 
+  // The shape a REAL v4.3.0 session holds. SharedLinearPileupDisplayMixin's
+  // preProcessSnapshot renamed an incoming `colorBy` to `colorBySetting` and its
+  // postProcessSnapshot wrote that name back out, so a saved session never
+  // carries the bare `colorBy` the fixture above uses — which is exactly why
+  // this migration silently collected nothing for every real upgrade.
+  const releasedNestedAlignmentsView = (trackConfigId: string) => ({
+    type: 'LinearGenomeView',
+    tracks: [
+      {
+        type: 'AlignmentsTrack',
+        configuration: trackConfigId,
+        displays: [
+          {
+            type: 'LinearAlignmentsDisplay',
+            configuration: `${trackConfigId}-LinearAlignmentsDisplay`,
+            PileupDisplay: {
+              type: 'LinearPileupDisplay',
+              configuration: `${trackConfigId}-LinearPileupDisplay`,
+              colorBySetting: { type: 'modifications' },
+              filterBySetting: { flagInclude: 0, flagExclude: 1540 },
+            },
+            SNPCoverageDisplay: {
+              type: 'LinearSNPCoverageDisplay',
+              configuration: `${trackConfigId}-LinearSNPCoverageDisplay`,
+            },
+          },
+        ],
+      },
+    ],
+  })
+
+  test('routes the released colorBySetting/filterBySetting spelling', () => {
+    const result = migrateSessionSnapshot({
+      name: 'test',
+      views: [releasedNestedAlignmentsView('track1')],
+    })
+    const display = (result.views as any)[0].tracks[0].displays[0]
+    expect(display.PileupDisplay).toBeUndefined()
+    const deltaDisplay = (result.trackConfigDeltas as any).track1.displays[0]
+    expect(deltaDisplay.displayId).toBe('track1-LinearAlignmentsDisplay')
+    expect(deltaDisplay.colorBy).toEqual({ type: 'modifications' })
+    expect(deltaDisplay.filterBy).toEqual({
+      flagInclude: 0,
+      flagExclude: 1540,
+    })
+  })
+
+  // A user who switched the track to "Pileup" / "Read arcs" / … in v4.3.0 has a
+  // flat display of that type rather than the nested container, carrying the
+  // same settings directly. migrateDisplayType renames it first, so both shapes
+  // reach the extractor as a LinearAlignmentsDisplay.
+  test('routes settings off a flat old display type', () => {
+    const result = migrateSessionSnapshot({
+      name: 'test',
+      views: [
+        {
+          type: 'LinearGenomeView',
+          tracks: [
+            {
+              type: 'AlignmentsTrack',
+              configuration: 'track1',
+              displays: [
+                {
+                  type: 'LinearReadCloudDisplay',
+                  configuration: 'track1-LinearReadCloudDisplay',
+                  colorBySetting: { type: 'insertSizeAndOrientation' },
+                  trackMaxHeight: 900,
+                  jexlFilters: ["jexl:get(feature,'flags')==99"],
+                  hideMismatchesSetting: true,
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    })
+    const display = (result.views as any)[0].tracks[0].displays[0]
+    expect(display.type).toBe('LinearAlignmentsDisplay')
+    // the read-cloud band settings migrateDisplayType restores stay on the
+    // instance snapshot; the dead per-instance keys are stripped
+    expect(display.readConnections).toBe('cloud')
+    expect(display.colorBySetting).toBeUndefined()
+    expect(display.trackMaxHeight).toBeUndefined()
+    expect(display.jexlFilters).toBeUndefined()
+    expect(display.hideMismatchesSetting).toBeUndefined()
+
+    const deltaDisplay = (result.trackConfigDeltas as any).track1.displays[0]
+    expect(deltaDisplay.displayId).toBe('track1-LinearReadCloudDisplay')
+    expect(deltaDisplay.colorBy).toEqual({ type: 'insertSizeAndOrientation' })
+    expect(deltaDisplay.maxHeight).toBe(900)
+    expect(deltaDisplay.jexlFilters).toEqual(["jexl:get(feature,'flags')==99"])
+    // hideMismatches inverts into the showMismatches slot that replaced it
+    expect(deltaDisplay.showMismatches).toBe(false)
+  })
+
+  // The config path runs the same extractor, and there `colorBy` is the live
+  // slot — lifting it off a track's display config would strip a working config.
+  test('leaves colorBy alone on a config display node', () => {
+    const result = migrateConfigSnapshot({
+      tracks: [
+        {
+          trackId: 'track1',
+          type: 'AlignmentsTrack',
+          displays: [
+            {
+              type: 'LinearPileupDisplay',
+              displayId: 'track1-LinearPileupDisplay',
+              colorBy: { type: 'modifications' },
+              jexlFilters: ["jexl:get(feature,'flags')==99"],
+            },
+          ],
+        },
+      ],
+    })
+    const display = (result.tracks as any)[0].displays[0]
+    expect(display.type).toBe('LinearAlignmentsDisplay')
+    expect(display.colorBy).toEqual({ type: 'modifications' })
+    expect(display.jexlFilters).toEqual(["jexl:get(feature,'flags')==99"])
+    expect(result.trackConfigDeltas).toBeUndefined()
+  })
+
   test('merges nested colorBy into an existing trackConfigDeltas entry', () => {
     const snap = {
       name: 'test',
@@ -478,7 +599,44 @@ describe('migrateSessionSnapshot', () => {
     expect(display.height).toBe(120)
   })
 
-  test('leaves a flat LinearAlignmentsDisplay (no nested sub-nodes) untouched', () => {
+  // A flat LinearAlignmentsDisplay with no sub-nodes still needs the lift: the
+  // display has no `colorBy` prop, only a `colorBy` slot, so a key sitting here
+  // is dropped by MST on load and the session opens colored `normal`. Both
+  // spellings, because a hand-authored snapshot (test_data/methylation_test) may
+  // use either.
+  test.each(['colorBy', 'colorBySetting'])(
+    'lifts %s off a flat LinearAlignmentsDisplay instance',
+    key => {
+      const snap = {
+        name: 'test',
+        views: [
+          {
+            type: 'LinearGenomeView',
+            tracks: [
+              {
+                type: 'AlignmentsTrack',
+                configuration: 'track1',
+                displays: [
+                  {
+                    type: 'LinearAlignmentsDisplay',
+                    configuration: 'track1-LinearAlignmentsDisplay',
+                    [key]: { type: 'methylation' },
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      }
+      const result = migrateSessionSnapshot(snap)
+      const display = (result.views as any)[0].tracks[0].displays[0]
+      expect(display[key]).toBeUndefined()
+      const deltaDisplay = (result.trackConfigDeltas as any).track1.displays[0]
+      expect(deltaDisplay.colorBy).toEqual({ type: 'methylation' })
+    },
+  )
+
+  test('leaves a display instance with only live props untouched', () => {
     const snap = {
       name: 'test',
       views: [
@@ -492,7 +650,6 @@ describe('migrateSessionSnapshot', () => {
                 {
                   type: 'LinearAlignmentsDisplay',
                   configuration: 'track1-LinearAlignmentsDisplay',
-                  colorBy: { type: 'methylation' },
                 },
               ],
             },

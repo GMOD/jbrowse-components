@@ -168,7 +168,7 @@ function resolveType(
   groupLabel: string,
   where: string,
   report: Report,
-): TypeEntry | undefined {
+): (TypeEntry & { canonicalName: string }) | undefined {
   const typeName = obj.type
   if (typeof typeName !== 'string') {
     report.error(
@@ -177,17 +177,19 @@ function resolveType(
     )
     return undefined
   }
-  const entry =
-    group[typeName] ??
-    // An old type name a current type still answers to. baseTrackConfig
-    // canonicalizes it before validation and sessionMigrations restores the
-    // settings that made the old type distinct, so this is supported config —
-    // check it against the type that absorbed it.
-    Object.values(group).find(candidate =>
-      candidate.aliases?.includes(typeName),
-    )
-  if (entry) {
-    return entry
+  const canonical =
+    typeName in group
+      ? typeName
+      : // An old type name a current type still answers to. baseTrackConfig
+        // canonicalizes it before validation and sessionMigrations restores the
+        // settings that made the old type distinct, so this is supported config
+        // — check it against the type that absorbed it.
+        Object.keys(group).find(name =>
+          group[name]!.aliases?.includes(typeName),
+        )
+  const entry = canonical === undefined ? undefined : group[canonical]
+  if (entry && canonical !== undefined) {
+    return { ...entry, canonicalName: canonical }
   }
   report.warn(
     where,
@@ -393,12 +395,112 @@ function checkAssembly(
   checkAdapter(sequence.adapter, manifest, `${where}.sequence.adapter`, report)
 }
 
+// A display node written inside a session — `views[].tracks[].displays[]` — is
+// instantiated by the display's STATE MODEL, not by its config schema. Almost
+// every track-menu setting is a config slot now, and a slot name here is dropped
+// exactly like a misspelling: the session loads, the track appears, the setting
+// does nothing. That is the same silent failure the slot checks above exist for,
+// on the surface people hand-write most, and it is why a whole class of these
+// sat unnoticed in this repo's own fixtures.
+//
+// The advice differs from the unknown-slot case, so the messages do too — a slot
+// is real, it is just in the wrong place, and there are two right places for it.
+function checkSessionDisplay(
+  display: Record<string, unknown>,
+  manifest: ConfigManifest,
+  where: string,
+  report: Report,
+) {
+  const entry = resolveType(
+    display,
+    manifest.displays,
+    'display',
+    `${where}.type`,
+    report,
+  )
+  // A display type the manifest doesn't know (a plugin's) has already been
+  // reported as a warning by resolveType; its props are unknowable here.
+  if (!entry?.stateModelProps) {
+    return
+  }
+  const props = entry.stateModelProps
+  const slots = entry.slots.map(slot => slot.name)
+  const migrated = [
+    ...(manifest.migratedDisplayKeys['*'] ?? []),
+    ...(manifest.migratedDisplayKeys[entry.canonicalName] ?? []),
+  ]
+  for (const key of Object.keys(display)) {
+    if (props.includes(key)) {
+      continue
+    }
+    if (migrated.includes(key)) {
+      report.warn(
+        `${where}.${key}`,
+        `"${key}" is a legacy display-instance key that a session migration lifts onto the config slot replacing it — it still works, but writing the current slot is clearer`,
+      )
+    } else if (slots.includes(key)) {
+      report.error(
+        `${where}.${key}`,
+        `"${key}" is a config slot, not a display property, so a session snapshot drops it and the setting silently does nothing — put it on the track's "displays" entry under "tracks", or in a "trackConfigDeltas" entry, instead`,
+      )
+    } else {
+      report.error(
+        `${where}.${key}`,
+        `unknown display property "${key}"${didYouMean(key, [...props, ...slots])} — a session snapshot drops keys the display does not declare, so this setting silently does nothing`,
+      )
+    }
+  }
+}
+
+// Walks the tracks of a view and its sub-views (a synteny view holds a row of
+// LGVs, each with tracks of its own).
+function checkSessionViewTracks(
+  view: unknown,
+  manifest: ConfigManifest,
+  where: string,
+  report: Report,
+) {
+  if (!isRecord(view)) {
+    return
+  }
+  if (Array.isArray(view.tracks)) {
+    for (const [i, track] of view.tracks.entries()) {
+      if (!isRecord(track) || !Array.isArray(track.displays)) {
+        continue
+      }
+      for (const [j, display] of track.displays.entries()) {
+        if (isRecord(display)) {
+          checkSessionDisplay(
+            display,
+            manifest,
+            `${where}.tracks[${i}].displays[${j}]`,
+            report,
+          )
+        }
+      }
+    }
+  }
+  if (Array.isArray(view.views)) {
+    for (const [i, sub] of view.views.entries()) {
+      checkSessionViewTracks(sub, manifest, `${where}.views[${i}]`, report)
+    }
+  }
+}
+
 // A view's `init` names tracks and an assembly by id. Nothing validates those at
 // load: a trackId that does not exist simply fails to open, which reads as a
 // rendering bug rather than a typo.
-function checkSession(session: unknown, report: Report, ctx: Ctx) {
+function checkSession(
+  session: unknown,
+  manifest: ConfigManifest,
+  report: Report,
+  ctx: Ctx,
+) {
   if (!isRecord(session) || !Array.isArray(session.views)) {
     return
+  }
+  for (const [i, view] of session.views.entries()) {
+    checkSessionViewTracks(view, manifest, `defaultSession.views[${i}]`, report)
   }
   for (const [i, view] of session.views.entries()) {
     if (!isRecord(view) || !isRecord(view.init)) {
@@ -514,7 +616,7 @@ export function validateConfig(
 
   // Tracks are registered before the session is checked, so a session may
   // reference any track in the file regardless of declaration order.
-  checkSession(config.defaultSession, report, ctx)
+  checkSession(config.defaultSession, manifest, report, ctx)
 
   return report.result()
 }

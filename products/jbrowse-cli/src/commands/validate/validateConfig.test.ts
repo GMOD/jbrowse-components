@@ -207,6 +207,132 @@ describe('validateConfig', () => {
     ])
   })
 
+  // A display node inside a session is built by the display's STATE MODEL, so
+  // the accepted keys are its MST props — not its config slots, which is the
+  // trap: a slot name here reads as obviously right and is dropped in silence.
+  // Every case below was found sitting in this repo's own fixtures.
+  function sessionDisplay(display: Record<string, unknown>) {
+    const config = baseConfig()
+    config.defaultSession.views = [
+      {
+        type: 'LinearGenomeView',
+        // @ts-expect-error the snapshot form, alongside the spec form above
+        tracks: [
+          {
+            type: 'AlignmentsTrack',
+            configuration: 'sample_bam',
+            displays: [display],
+          },
+        ],
+      },
+    ]
+    return config
+  }
+
+  it('reports a config slot written on a session display node', () => {
+    const [error] = errorsOf(
+      sessionDisplay({
+        type: 'LinearAlignmentsDisplay',
+        configuration: 'sample_bam-LinearAlignmentsDisplay',
+        height: 250,
+      }),
+    )
+    expect(error?.where).toBe(
+      'defaultSession.views[0].tracks[0].displays[0].height',
+    )
+    expect(error?.message).toContain('config slot, not a display property')
+  })
+
+  it('accepts a real display prop on a session display node', () => {
+    expect(
+      errorsOf(
+        sessionDisplay({
+          type: 'LinearAlignmentsDisplay',
+          configuration: 'sample_bam-LinearAlignmentsDisplay',
+          rpcDriverName: 'MainThreadRpcDriver',
+        }),
+      ),
+    ).toEqual([])
+  })
+
+  it('suggests the display prop a misspelled session key meant', () => {
+    const [error] = errorsOf(
+      sessionDisplay({
+        type: 'LinearBasicDisplay',
+        configuration: 'sample_bam-LinearBasicDisplay',
+        trackDisplayMode: 'compact',
+      }),
+    )
+    expect(error?.message).toContain('did you mean "displayMode"')
+  })
+
+  // Stale but working, so a warning — and scoped to the display type the
+  // migration actually covers, since `jexlFilters` is lifted for the alignments
+  // display and simply dead on a LinearBasicDisplay (whose prop is
+  // `jexlFiltersSetting`).
+  it('warns rather than errors on a key a session migration still lifts', () => {
+    const config = sessionDisplay({
+      type: 'LinearAlignmentsDisplay',
+      configuration: 'sample_bam-LinearAlignmentsDisplay',
+      colorBySetting: { type: 'modifications' },
+    })
+    expect(errorsOf(config)).toEqual([])
+    expect(warningsOf(config)[0]?.message).toContain('legacy display-instance')
+  })
+
+  it('errors on a migrated key of another display type', () => {
+    const [error] = errorsOf(
+      sessionDisplay({
+        type: 'LinearBasicDisplay',
+        configuration: 'sample_bam-LinearBasicDisplay',
+        jexlFilters: ["jexl:feature.type=='gene'"],
+      }),
+    )
+    expect(error?.message).toContain('config slot, not a display property')
+  })
+
+  // An old display type resolves through its alias, so the props checked are
+  // the absorbing type's — the ones the snapshot will actually be built with.
+  it('checks an old display type against the type that absorbed it', () => {
+    const config = sessionDisplay({
+      type: 'LinearPileupDisplay',
+      configuration: 'sample_bam-LinearPileupDisplay',
+      colorBySetting: { type: 'modifications' },
+    })
+    expect(errorsOf(config)).toEqual([])
+  })
+
+  it('checks displays inside a session sub-view', () => {
+    const config = baseConfig()
+    config.defaultSession.views = [
+      {
+        type: 'LinearSyntenyView',
+        // @ts-expect-error a synteny view holds a row of LGVs
+        views: [
+          {
+            type: 'LinearGenomeView',
+            tracks: [
+              {
+                type: 'AlignmentsTrack',
+                configuration: 'sample_bam',
+                displays: [
+                  {
+                    type: 'LinearAlignmentsDisplay',
+                    configuration: 'sample_bam-LinearAlignmentsDisplay',
+                    notAProp: 1,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ]
+    expect(errorsOf(config).map(e => e.where)).toEqual([
+      'defaultSession.views[0].views[0].tracks[0].displays[0].notAProp',
+    ])
+  })
+
   it('notes that plugin-registered types cannot be checked', () => {
     const config = { ...baseConfig(), plugins: [{ name: 'X', umdUrl: 'x.js' }] }
     expect(validateConfig(config).notes[0]).toContain('plugin(s)')

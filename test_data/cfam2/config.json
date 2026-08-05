@@ -34,6 +34,13 @@
       "trackId": "genes.gff",
       "name": "genes.gff",
       "assemblyNames": ["UU_Cfam_GSD_1.0"],
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "genes.gff-LinearBasicDisplay",
+          "displayMode": "compact"
+        }
+      ],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
@@ -83,7 +90,6 @@
                 "type": "LinearBasicDisplay",
                 "heightPreConfig": 190,
                 "configuration": "genes.gff-LinearBasicDisplay",
-                "trackDisplayMode": "compact",
                 "jexlFiltersSetting": ["jexl:feature.type=='gene'"]
               }
             ]
