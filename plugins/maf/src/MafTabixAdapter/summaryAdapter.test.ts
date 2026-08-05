@@ -1,3 +1,4 @@
+import { readConfObject } from '@jbrowse/core/configuration'
 import {
   BedTabixAdapter,
   bedTabixConfigSchema as BedTabixConfigSchema,
@@ -5,6 +6,8 @@ import {
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
+import TaffyConfigSchema from '../BgzipTaffyAdapter/configSchema.ts'
+import BigMafConfigSchema from '../BigMafAdapter/configSchema.ts'
 import { mafSummaryFeatures } from '../util/loadMafSummaryAdapter.ts'
 import MafTabixAdapter from './MafTabixAdapter.ts'
 import MafTabixConfigSchema from './configSchema.ts'
@@ -119,5 +122,55 @@ describe('a maf2bed --summary BED round-trips into summary records', () => {
   it('emits nothing when the slot is unset, so callers fall back to the gate', async () => {
     const out = await records(mafAdapter(null))
     expect(out).toEqual([])
+  })
+})
+
+// `showSummary` is `!!readConfObject(self.adapterConfig, 'summaryAdapter') &&
+// aboveForceLoadFloor`. A schema with no such slot reads `undefined` there — no
+// error, no warning, just a track that never summarizes.
+//
+// That is not hypothetical: `LinearMafDisplay/testEnv.ts` registers its own stub
+// `MafTabixAdapter` schema which declares the slot, so every display-level
+// summary test passed while the shipped schema had none and the real product
+// path was dead. These assert the schemas the plugin actually registers, using
+// the same read the display makes, so the stub cannot drift away from them
+// again.
+describe('the summaryAdapter slot exists where the display expects it', () => {
+  it('MafTabixAdapter round-trips a summary sub-adapter', () => {
+    const conf = MafTabixConfigSchema.create({
+      bedGzLocation: { uri: 'x.bed.gz', locationType: 'UriLocation' },
+      summaryAdapter: { type: 'BedTabixAdapter' },
+    })
+    expect(readConfObject(conf, 'summaryAdapter')).toEqual({
+      type: 'BedTabixAdapter',
+    })
+  })
+
+  it('BigMafAdapter round-trips one too', () => {
+    const conf = BigMafConfigSchema.create({
+      bigBedLocation: { uri: 'x.bb', locationType: 'UriLocation' },
+      summaryAdapter: { type: 'BigBedAdapter' },
+    })
+    expect(readConfObject(conf, 'summaryAdapter')).toEqual({
+      type: 'BigBedAdapter',
+    })
+  })
+
+  it('reads as unset — not as an error — when nothing is configured', () => {
+    const conf = MafTabixConfigSchema.create({
+      bedGzLocation: { uri: 'x.bed.gz', locationType: 'UriLocation' },
+    })
+    expect(readConfObject(conf, 'summaryAdapter')).toBeNull()
+  })
+
+  // Deliberately absent: TAF's `.tai` seeks within an alignment, so a read
+  // already costs what is on screen rather than what the blocks span, and the
+  // zoom-out problem the tier solves does not arise the same way. Pinned so the
+  // omission reads as a decision rather than an oversight.
+  it('BgzipTaffyAdapter has no summary slot, by decision', () => {
+    const conf = TaffyConfigSchema.create({
+      tafGzLocation: { uri: 'x.taf.gz', locationType: 'UriLocation' },
+    })
+    expect(Object.keys(conf)).not.toContain('summaryAdapter')
   })
 })

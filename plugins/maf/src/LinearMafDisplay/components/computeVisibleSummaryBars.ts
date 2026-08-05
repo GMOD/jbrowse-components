@@ -36,11 +36,18 @@ interface ComputeVisibleSummaryBarsParams extends MafRowGeometryParams {
 /**
  * Positioned per-species presence bars for zoom-out rendering, one per summary
  * block×species in the visible regions. Each bar spans the block's reference
- * extent on its species' row; `score` (the UCSC bigMafSummary 0..1 normalized
- * alignment score — not percent identity, see `drawMafSummaryBars`) and the
- * left/right `MafStatus` chars are carried through for score-shading + bridge
- * decoration in `drawMafSummaryBars`. Mirrors `computeVisibleEmptyLines` so the
- * summary overlay composites exactly like the e-line overlay.
+ * extent on its species' row, and `score` shades it (0..1 — see
+ * `drawMafSummaryBars`, and note the two producers put different metrics there).
+ * Mirrors `computeVisibleEmptyLines` so the summary overlay composites exactly
+ * like the e-line overlay.
+ *
+ * `leftStatus`/`rightStatus` ride along **unused**: nothing draws them today.
+ * They were described here as feeding "bridge decoration in
+ * `drawMafSummaryBars`", which that function has never done — it reads `score`
+ * and nothing else. Kept rather than dropped because they are the one part of a
+ * `bigMafSummary` row that says what sits between two runs, which is what a
+ * bridge decoration would need; a `maf2bed --summary` BED omits the columns
+ * entirely, so anything built on them has to tolerate their absence.
  */
 export function computeVisibleSummaryBars(
   params: ComputeVisibleSummaryBarsParams,
