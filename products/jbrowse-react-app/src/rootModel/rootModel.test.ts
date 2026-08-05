@@ -9,13 +9,14 @@ import rootModelFactory from './rootModel.ts'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
-function getRootModel() {
+function getRootModel(makeWorkerInstance?: () => Worker) {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
   pluginManager.createPluggableElements()
   pluginManager.configure()
   return rootModelFactory({
     pluginManager,
     sessionModelFactory,
+    makeWorkerInstance,
   })
 }
 afterEach(() => {
@@ -40,6 +41,24 @@ test('creates with defaults', () => {
   expect(root.session).toBeTruthy()
   expect(root.jbrowse.assemblies.length).toBe(0)
   expect(getSnapshot(root.jbrowse.configuration)).toMatchSnapshot()
+})
+
+// the RpcManager is built by product-core's base root from the options this
+// factory hands it, so the worker-factory-implies-worker-driver rule has to
+// survive that hop — a host that passes no factory must stay on the main thread
+describe('the default RPC driver follows makeWorkerInstance', () => {
+  test('main thread with no worker factory', () => {
+    const root = getRootModel().create(
+      // no rpc.defaultDriver here: the point is what the *host* default is
+      { jbrowse: {} },
+    )
+    expect(root.rpcManager.defaultDriverName).toBe('MainThreadRpcDriver')
+  })
+
+  test('web worker with one', () => {
+    const root = getRootModel(() => ({}) as Worker).create({ jbrowse: {} })
+    expect(root.rpcManager.defaultDriverName).toBe('WebWorkerRpcDriver')
+  })
 })
 
 test('creates with a minimal session', () => {

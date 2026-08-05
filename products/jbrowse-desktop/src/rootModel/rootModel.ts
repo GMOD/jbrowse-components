@@ -6,7 +6,6 @@ import {
   processMutableMenuActions,
 } from '@jbrowse/app-core'
 import assemblyConfigSchemaF from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
-import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { DNA } from '@jbrowse/core/ui/Icons'
 import { addDisposer, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { AssemblyManager } from '@jbrowse/plugin-data-management'
@@ -111,6 +110,10 @@ export default function rootModelFactory({
           jbrowseModelType,
           sessionModelType,
           assemblyConfigSchema,
+          rpcManagerOptions: {
+            makeWorkerInstance,
+            defaultDriverName: 'WebWorkerRpcDriver',
+          },
         }),
         InternetAccountsRootModelMixin(pluginManager),
         HistoryManagementMixin(),
@@ -122,14 +125,9 @@ export default function rootModelFactory({
          */
         jobsManager: types.optional(JobsManager, {}),
       })
-      .volatile(self => ({
+      .volatile(() => ({
         version: packageJSON.version,
         adminMode: true,
-        rpcManager: new RpcManager(
-          pluginManager,
-          self.jbrowse.configuration.rpc,
-          { makeWorkerInstance, defaultDriverName: 'WebWorkerRpcDriver' },
-        ),
         openNewSessionCallback: async (_path: string) => {
           console.error('openNewSessionCallback unimplemented')
         },

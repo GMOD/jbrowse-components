@@ -5,7 +5,6 @@ import {
 } from '@jbrowse/app-core'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import { dedupePlugins } from '@jbrowse/core/pluginDefinitions'
-import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import {
   BaseRootModelFactory,
@@ -76,12 +75,20 @@ export default function RootModel({
           assemblyConfigSchema,
         }),
         assemblyConfigSchema,
+        rpcManagerOptions: {
+          makeWorkerInstance,
+          // when a worker factory is supplied, run RPC off the main thread by
+          // default; config `defaultDriver` still overrides this
+          defaultDriverName: makeWorkerInstance
+            ? 'WebWorkerRpcDriver'
+            : 'MainThreadRpcDriver',
+        },
       }),
       InternetAccountsRootModelMixin(pluginManager),
       RootAppMenuMixin(),
     )
 
-    .volatile(self => ({
+    .volatile(() => ({
       /**
        * #volatile
        */
@@ -98,21 +105,6 @@ export default function RootModel({
       pluginsUpdatedCallback: undefined as
         | ((args: PluginsUpdate) => void)
         | undefined,
-      /**
-       * #volatile
-       */
-      rpcManager: new RpcManager(
-        pluginManager,
-        self.jbrowse.configuration.rpc,
-        {
-          makeWorkerInstance,
-          // when a worker factory is supplied, run RPC off the main thread by
-          // default; config `defaultDriver` still overrides this
-          defaultDriverName: makeWorkerInstance
-            ? 'WebWorkerRpcDriver'
-            : 'MainThreadRpcDriver',
-        },
-      ),
     }))
     .actions(self => {
       // pluginsUpdated latches true and this root lives on, so without this any

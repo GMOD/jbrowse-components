@@ -9,6 +9,7 @@ import { filterSessionInPlace } from '../sessionUtils.ts'
 import type { BaseSession } from '../Session/BaseSession.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
+import type { RpcManagerOptions } from '@jbrowse/core/rpc/RpcManager'
 import type { IAnyType, Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 // `session` is a `types.maybe(sessionModelType)` where `sessionModelType` is the
@@ -28,11 +29,19 @@ export function BaseRootModelFactory({
   jbrowseModelType,
   sessionModelType,
   assemblyConfigSchema,
+  rpcManagerOptions,
 }: {
   pluginManager: PluginManager
   jbrowseModelType: IAnyType
   sessionModelType: IAnyType
   assemblyConfigSchema: BaseAssemblyConfigSchema
+  /**
+   * How this product drives RPC — its worker factory and default driver. Taken
+   * here rather than left to each product to redefine the `rpcManager`
+   * volatile: a redefinition shadows this one but does not stop it being
+   * constructed, so every root built two managers and threw one away.
+   */
+  rpcManagerOptions?: RpcManagerOptions
 }) {
   return types
     .model('BaseRootModel', {
@@ -66,7 +75,11 @@ export function BaseRootModelFactory({
       /**
        * #volatile
        */
-      rpcManager: new RpcManager(pluginManager, self.jbrowse.configuration.rpc),
+      rpcManager: new RpcManager(
+        pluginManager,
+        self.jbrowse.configuration.rpc,
+        rpcManagerOptions,
+      ),
 
       /**
        * #volatile

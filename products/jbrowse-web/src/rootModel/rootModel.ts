@@ -7,7 +7,6 @@ import {
 } from '@jbrowse/app-core'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import { readConfObject } from '@jbrowse/core/configuration'
-import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { DNA } from '@jbrowse/core/ui/Icons'
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { AssemblyManager } from '@jbrowse/plugin-data-management'
@@ -112,6 +111,10 @@ export default function RootModel({
         jbrowseModelType,
         sessionModelType,
         assemblyConfigSchema,
+        rpcManagerOptions: {
+          makeWorkerInstance,
+          defaultDriverName: 'WebWorkerRpcDriver',
+        },
       }),
       InternetAccountsRootModelMixin(pluginManager),
       HistoryManagementMixin(),
@@ -123,7 +126,7 @@ export default function RootModel({
        */
       configPath: types.maybe(types.string),
     })
-    .volatile(self => ({
+    .volatile(() => ({
       /**
        * #volatile
        */
@@ -144,17 +147,6 @@ export default function RootModel({
        * #volatile
        */
       pluginsUpdated: false,
-      /**
-       * #volatile
-       */
-      rpcManager: new RpcManager(
-        pluginManager,
-        self.jbrowse.configuration.rpc,
-        {
-          makeWorkerInstance,
-          defaultDriverName: 'WebWorkerRpcDriver',
-        },
-      ),
       /**
        * #volatile
        */
