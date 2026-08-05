@@ -34,7 +34,7 @@ surface.
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-height">**height**</span><br>`maybeNumber` = <code>undefined</code> | Override the base `height` slot as a `maybeNumber`: unset means fit rows to their content height, an explicit value is a drag-resized track height. See the model's `fitTargetHeight` getter. |
+| <span id="slot-height">**height**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) = <code>undefined</code> | Override the base `height` slot as a `maybeNumber`: unset means fit rows to their content height, an explicit value is a drag-resized track height. See the model's `fitTargetHeight` getter. |
 | <span id="slot-rowheight">**rowHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | Per-row height in px, or `0` for "fit to display height" mode where rows stretch to fill the track height. The resolved value is the model's `effectiveRowHeight` getter. Defaults to fit-to-height so large alignments stay bounded by the track height; a pinned height is honored whatever the species count, with the rows that don't fit scrolled to. |
 | <span id="slot-rowproportion">**rowProportion**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>DEFAULTS.rowProportion</code> | fraction of the row height each glyph fills |
 | <span id="slot-showallletters">**showAllLetters**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>DEFAULTS.showAllLetters</code> | draw every base letter instead of only mismatches |

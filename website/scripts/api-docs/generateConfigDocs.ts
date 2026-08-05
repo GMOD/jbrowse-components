@@ -817,26 +817,36 @@ function renderInlineDefault(node: ts.Expression): string | undefined {
 
 // Slot-type names (`fileLocation`, `frozen`, ...) are opaque jargon on their
 // own, so link each documented one to its explanation in the slot-types guide.
-// Only types with a matching `### <type>` heading there are linked — CI checks
-// these anchors resolve — anything else renders as plain code.
+// Only types with a heading there are linked — CI checks these anchors resolve —
+// anything else renders as plain code.
+//
+// A map rather than a set of names, because a section does not have to be named
+// after one type: the four `maybe*` types share one, and while this derived the
+// anchor from the type name it emitted `#maybeboolean` at a page whose heading
+// had become `{#the-maybe-types}`, which is 13 dead anchors CI counted and no
+// reader could have followed.
 const SLOT_TYPES_GUIDE = '/docs/config_guides/slot_types'
 const DISPLAYS_GUIDE = '/docs/config_guides/tracks#configuring-displays'
-const DOCUMENTED_SLOT_TYPES = new Set([
-  'string',
-  'number',
-  'integer',
-  'boolean',
-  'maybeBoolean',
-  'fileLocation',
-  'stringEnum',
-  'color',
-  'frozen',
-  'text',
+const MAYBE_TYPES_ANCHOR = 'the-maybe-types'
+const DOCUMENTED_SLOT_TYPES = new Map([
+  ['string', 'string'],
+  ['number', 'number'],
+  ['integer', 'integer'],
+  ['boolean', 'boolean'],
+  // the four the guide's `maybe*` section actually names
+  ['maybeNumber', MAYBE_TYPES_ANCHOR],
+  ['maybeBoolean', MAYBE_TYPES_ANCHOR],
+  ['maybeStringEnum', MAYBE_TYPES_ANCHOR],
+  ['maybeFrozen', MAYBE_TYPES_ANCHOR],
+  ['fileLocation', 'filelocation'],
+  ['stringEnum', 'stringenum'],
+  ['color', 'color'],
+  ['frozen', 'frozen'],
+  ['text', 'text'],
 ])
 function typeLink(type: string) {
-  return DOCUMENTED_SLOT_TYPES.has(type)
-    ? `[\`${type}\`](${SLOT_TYPES_GUIDE}#${type.toLowerCase()})`
-    : `\`${type}\``
+  const anchor = DOCUMENTED_SLOT_TYPES.get(type)
+  return anchor ? `[\`${type}\`](${SLOT_TYPES_GUIDE}#${anchor})` : `\`${type}\``
 }
 
 // Effective meta for a slot that overrides one further up the
