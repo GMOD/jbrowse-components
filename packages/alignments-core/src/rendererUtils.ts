@@ -301,10 +301,25 @@ export function drawInterbaseSegments(
     const yOffset = f32[off + INTERBASE_FIELD.yOffset]!
     const segH = f32[off + INTERBASE_FIELD.segHeight]!
     const colorType = f32[off + INTERBASE_FIELD.colorType]!
-    const segTop = INDICATOR_TRIANGLE_H + yOffset * interbaseHeight
-    const segHeight = segH * interbaseHeight
+    // Snap both edges to whole pixels — the ONE place in this file that has to,
+    // and interbaseHistogram.slang rounds the same two numbers the same way.
+    //
+    // INDICATOR_TRIANGLE_H is 4.5, so the unsnapped top edge lands mid-pixel,
+    // and the two backends resolve a half-covered row differently: at 40bp/px
+    // ~40 of these 1px bars stack in one column, and Canvas2D composites each
+    // one separately (0.5 alpha over 0.5 alpha over … → opaque) where the GPU
+    // resolves the union coverage once and correctly stays at 50%. That read as
+    // a full row of 128,0,128 against 191,127,191 and was the largest remaining
+    // cross-backend divergence after the minWidthLeft fix. Whole-pixel edges
+    // have no partial coverage for either backend to disagree about.
+    const segTop = Math.floor(
+      INDICATOR_TRIANGLE_H + yOffset * interbaseHeight + 0.5,
+    )
+    const segBottom = Math.floor(
+      INDICATOR_TRIANGLE_H + (yOffset + segH) * interbaseHeight + 0.5,
+    )
     ctx.fillStyle = colorLut[colorType - 1] ?? colorLut[0]!
-    ctx.fillRect(px - 0.5, segTop, 1, segHeight)
+    ctx.fillRect(px - 0.5, segTop, 1, segBottom - segTop)
   }
 }
 

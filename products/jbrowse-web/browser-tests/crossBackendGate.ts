@@ -87,15 +87,21 @@ const THRESHOLD_OVERRIDES: { match: string; threshold: number }[] = [
   // coverage mark past 1bp/px sat half a pixel right of the GPU's. Centering the
   // canvas side took the worst pair 16.71% -> 7.32%.
   //
-  // The rest is a second bug, still open: TRIANGLE_H is 4.5, so the interbase
-  // bar's top edge lands mid-pixel on BOTH backends — and they resolve that
-  // differently. Canvas2D alpha-blends ~40 overlapping 1px bars per column and
-  // converges to opaque; the GPU's coverage resolve happens once and stays at
-  // exactly 50%, which is why one whole row reads 128,0,128 against 191,127,191.
-  // Snapping that edge to a whole pixel on both sides should close it.
+  // A second bug was found behind it and fixed too, for a smaller gain than
+  // expected: TRIANGLE_H is 4.5, so the interbase bar's edges landed mid-pixel,
+  // and the backends do not agree on a half-covered row — Canvas2D composites
+  // each of the ~40 bars stacked in one column separately and saturates to
+  // opaque, while the GPU resolves the union coverage once and stays at exactly
+  // 50%. Snapping both edges to whole pixels took 7.32% -> 6.59%.
   //
-  // 10% until then — above the measured 7.32% and half what it was. This number
-  // should keep falling; it is a record of what is still broken, not a setting.
+  // What is LEFT is the same accumulate-vs-resolve difference on marks that
+  // cannot be snapped: the SNP ticks and indicator triangles sit at arbitrary
+  // sub-pixel x, ~40 deep per column at this zoom. Closing that means canvas2d
+  // drawing one merged mark per pixel column instead of 40 overlapping
+  // antialiased ones — a change to the drawing model, not an offset fix.
+  //
+  // 10%, above the measured 6.59%. This number should keep falling; it is a
+  // record of what is still broken, not a setting.
   { match: 'inversion-pbsim', threshold: 0.1 },
   // coverage histograms whose SNP/mismatch ticks are 1px-edge sensitive.
   // The left-anchor fix above took this from 5.49% to 2.24% — under the 3%
