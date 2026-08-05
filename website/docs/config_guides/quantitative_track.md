@@ -8,8 +8,6 @@ guide_category: Track types
 and color options (`scaleType`, `autoscale`, `defaultRendering`, `color`, etc.)
 go in `displayDefaults`.
 
-## QuantitativeTrack config
-
 Example QuantitativeTrack config:
 
 ```json addtrack
@@ -25,7 +23,7 @@ Example QuantitativeTrack config:
 }
 ```
 
-### Display options
+## Display options
 
 Scale, autoscale, and color options (`scaleType`, `autoscale`, `minScore`,
 `maxScore`, `defaultRendering`, `color`, `bicolorPivot`, etc.) are appearance
@@ -51,7 +49,7 @@ or `scatter`:
 See the [LinearWiggleDisplay config docs](/docs/config/linearwiggledisplay) for
 the full list of display slots and their defaults.
 
-### Adapters
+## Adapters
 
 BigWig (`BigWigAdapter`) and bedGraph are both supported. For bedGraph, use
 `BedGraphTabixAdapter` (a bgzip+tabix-indexed file) for large data, or

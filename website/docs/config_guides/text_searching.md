@@ -37,12 +37,13 @@ A per-track config looks like this:
 
 ```json
 {
+  "type": "FeatureTrack",
   "trackId": "mytrack",
   "name": "My track name",
+  "assemblyNames": ["hg19"],
   "adapter": {
     "type": "Gff3TabixAdapter",
-    "gffGzLocation": { "uri": "yourfile.gff.gz" },
-    "index": { "location": { "uri": "yourfile.gff.gz.tbi" } }
+    "uri": "yourfile.gff.gz"
   },
   "textSearching": {
     "textSearchAdapter": {

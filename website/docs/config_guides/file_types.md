@@ -36,7 +36,9 @@ tabix `.gz`, and so on).
 ```
 
 Spell out the full slot form (e.g. `bamLocation` plus `index.location`) only
-when the index is named differently or lives elsewhere.
+when the index is named differently or lives elsewhere. A few adapters have no
+`uri` shorthand at all, `BigMafAdapter` among them; each adapter's config page
+shows the forms it accepts under _Example usage_.
 
 Use CSI over TBI/BAI for chromosomes longer than 512 Mb (some plant and animal
 genomes exceed it; CRAM's `.crai` has no such limit). BAM and the tabix-indexed

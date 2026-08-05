@@ -1,13 +1,16 @@
 ---
 title: Customizing feature details
-description: Customizing feature detail panels with the formatDetails slot
+description:
+  Customizing feature detail panels and the About track dialog with the
+  formatDetails and formatAbout slots
 guide_category: Callbacks
 ---
 
 **TL;DR:** the track slot `formatDetails` takes jexl callbacks that return an
 object of fields to merge onto a feature: a new key adds a row, an existing key
-overrides it, and `undefined`/`null` hides it. For complex logic, register a
-jexl function in a small plugin.
+overrides it, and `undefined`/`null` hides it. `formatAbout` does the same for
+the About track dialog. For complex logic, register a jexl function in a small
+plugin.
 
 Here is an example track with a formatter:
 
@@ -22,14 +25,7 @@ Here is an example track with a formatter:
   },
   "adapter": {
     "type": "Gff3TabixAdapter",
-    "gffGzLocation": {
-      "uri": "volvox.sort.gff3.gz"
-    },
-    "index": {
-      "location": {
-        "uri": "volvox.sort.gff3.gz.tbi"
-      }
-    }
+    "uri": "volvox.sort.gff3.gz"
   }
 }
 ```
@@ -111,6 +107,10 @@ Put `myplugin.js` in the same directory as your config file, then use the custom
       "trackId": "genes",
       "assemblyNames": ["hg19"],
       "name": "Genes",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "volvox.sort.gff3.gz"
+      },
       "formatDetails": {
         "feature": "jexl:{name:formatName(feature)}"
       }
@@ -204,6 +204,46 @@ property access (`feature.start`); `feature.get('start')` does **not** work
 here. See
 [property access vs `get()`](/docs/config_guides/jexl#property-access-vs-get)
 for how this differs across callback types.
+
+## The About track dialog
+
+`formatAbout` is the same idea for the "About track" dialog, which shows a
+track's own configuration rather than a feature. It has two slots, on the track
+or session-wide as [`configuration.formatAbout`](/docs/config/formatabout/):
+
+- [`hideUris`](/docs/config/basetrack/#slot-formatabouthideuris) drops every
+  file location from the dialog. Session-wide and per-track are OR'd, so a
+  session-wide `true` cannot be turned back on by a track. It hides the URLs
+  from the dialog only, not from `config.json`, which the browser downloads
+  either way.
+- [`config`](/docs/config/basetrack/#slot-formataboutconfig) is a jexl callback
+  returning an object merged over the config shown, applied exactly as
+  `formatDetails.feature` is: a new key adds a row, an existing one overrides,
+  `undefined`/`null` hides. Where both are set, the track's object is merged
+  over the session's.
+
+The callback's variable is `config`, not `feature`:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "genes",
+  "name": "Genes",
+  "assemblyNames": ["hg19"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "uri": "volvox.sort.gff3.gz"
+  },
+  "formatAbout": {
+    "hideUris": true,
+    "config": "jexl:{Source:'GENCODE v44',adapter:undefined}"
+  }
+}
+```
+
+`jbrowse add-assembly` and `add-track` accept the same thing through `--config`,
+so a generated config can set it without a post-processing step; see
+[](/docs/cli#jbrowse-add-assembly).
 
 ## Going beyond field formatting
 

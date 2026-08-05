@@ -140,7 +140,7 @@ tabix -p bed output.bedmethyl.gz
 `--preset traditional` produces 5mC calls (5hmC is combined into the 5mC
 fraction). Omit it for separate 5mC and 5hmC rows.
 
-```json
+```json addtrack
 {
   "type": "MultiQuantitativeTrack",
   "trackId": "sample_modkit",
@@ -148,14 +148,7 @@ fraction). Omit it for separate 5mC and 5hmC rows.
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "BedTabixAdapter",
-    "bedGzLocation": {
-      "uri": "https://yourhost/sample_modkit.bedmethyl.gz"
-    },
-    "index": {
-      "location": {
-        "uri": "https://yourhost/sample_modkit.bedmethyl.gz.tbi"
-      }
-    }
+    "uri": "https://yourhost/sample_modkit.bedmethyl.gz"
   }
 }
 ```

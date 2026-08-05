@@ -94,13 +94,11 @@ sample name rather than anything that changes per build. See
 
 ## The one thing that lives in index.html: cache-busting
 
-Because `config.json` is fetched _before_ it can configure anything, the only
-piece of deploy config that genuinely has to live in `index.html` is the
-[cache-buster](/docs/config_guides/avoiding_stale_config). It is a one-line
-snippet, so it is easy to inject from your build rather than hand-edit. Beyond
-that and any plugin `<script>` tags (see
-[plugins](/docs/config_guides/plugins)), the rest of your setup (assemblies,
-tracks, default session) is all `config.json` and can be fully scripted.
+Assemblies, tracks, plugins, and the default session are all `config.json`, so
+all of it can be scripted. The one exception is the
+[cache-buster](/docs/config_guides/avoiding_stale_config), a one-line
+`<script>`, which has to be in `index.html` because `config.json` is fetched
+before it can configure anything.
 
 ## See also
 

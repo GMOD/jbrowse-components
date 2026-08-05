@@ -33,8 +33,8 @@ JBrowse infers the adapter from the extension (`.2bit` → `TwoBitAdapter`,
 }
 ```
 
-Keep `uri` as a key (not a bare string) so relative uris resolve against the
-config's location.
+`refNameAliases` and `cytobands` take an object with a `uri` key, not a bare
+path string, so that a relative uri resolves against the config's own location.
 
 ### Named adapter: `sequence.adapter`
 

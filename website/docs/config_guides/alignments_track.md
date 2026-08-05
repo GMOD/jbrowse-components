@@ -26,11 +26,10 @@ Example `AlignmentsTrack` config:
 ## Adapter options
 
 The `uri` shorthand above resolves the index for you (`<uri>.bai` for a BAM,
-`<uri>.crai` for a CRAM), so most tracks need nothing else. For a CSI-indexed
-BAM (chromosomes over 512 Mb, which BAI can't index), add `"csi": true`
-alongside `uri`. See the
-[`uri` shorthand section](/docs/config_guides/file_types#the-uri-shorthand) for
-when to spell out the location slots instead.
+`<uri>.crai` for a CRAM), so most tracks need nothing else. Add `"csi": true`
+alongside `uri` for a CSI-indexed BAM. See
+[the `uri` shorthand](/docs/config_guides/file_types#the-uri-shorthand) for when
+to spell out the location slots instead, and when CSI is required.
 
 CRAM decodes against the reference sequence, but you do not configure that. Both
 adapters take their `sequenceAdapter` from the enclosing assembly automatically.

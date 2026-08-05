@@ -1,13 +1,16 @@
 ---
 title: Coloring/theming
-description: Customizing the application color theme
+description:
+  Customizing the application color theme, logo, and the user-preference
+  defaults an instance ships with
 guide_category: Appearance
 ---
 
 **TL;DR:** set colors and sizing under a top-level `theme` in the
 [`configuration`](/docs/config/jbrowseconfiguration) section. JBrowse's palette
 has four customizable colors (`primary`, `secondary`, `tertiary`, `quaternary`);
-add `"mode": "dark"` inside a palette for dark mode.
+add `"mode": "dark"` inside a palette for dark mode. `configuration.preferences`
+sets the starting value of the settings users can toggle for themselves.
 
 ## Color
 
@@ -146,6 +149,39 @@ the space best; a tall one will be capped by the width limit and end up small.
   }
 }
 ```
+
+## User preference defaults
+
+`configuration.preferences` sets the starting value of the settings a user can
+change for themselves in the Preferences dialog. A user's own choice is stored
+in `localStorage` and wins from then on, so these are defaults for your
+instance, not a way to lock a setting down.
+
+```json
+{
+  "configuration": {
+    "preferences": {
+      "numberGrouping": false,
+      "scrollZoom": true,
+      "useWorkspaces": true,
+      "animationMode": "system"
+    }
+  }
+}
+```
+
+- [`numberGrouping`](/docs/config/preferencesconfigschema/#slot-configurationpreferencesnumbergrouping)
+  writes coordinates with thousands separators (`chr1:1,234,567`). Turn it off
+  for an instance whose users copy coordinates into tools that reject the
+  commas.
+- [`scrollZoom`](/docs/config/preferencesconfigschema/#slot-configurationpreferencesscrollzoom)
+  makes the mouse wheel zoom without Ctrl held.
+- [`useWorkspaces`](/docs/config/preferencesconfigschema/#slot-configurationpreferencesuseworkspaces)
+  opens views as tabbed/tiled panels rather than a vertical stack. A session
+  that names `useWorkspaces` itself still wins over this.
+- [`animationMode`](/docs/config/preferencesconfigschema/#slot-configurationpreferencesanimationmode)
+  is `enabled`, `disabled`, or `system`, which follows the OS
+  prefers-reduced-motion setting.
 
 ## Advanced
 

@@ -86,8 +86,8 @@ Each feature's `seq` holds the bases for its region:
 
 Supplies refNames and their lengths with no sequence at all, so a view can be
 navigated and tracks drawn against an assembly whose FASTA you don't have or
-don't want to load. Same place in the config as `FromConfigSequenceAdapter`,
-and each feature is just an interval:
+don't want to load. Same place in the config as `FromConfigSequenceAdapter`, and
+each feature is just an interval:
 
 ```json
 {

@@ -19,16 +19,24 @@ walkthrough see the
 
 Pick the adapter that matches how your alignment was produced:
 
-| Alignment source                               | Adapter                      |
-| ---------------------------------------------- | ---------------------------- |
-| minimap2, wfmash, or any PAF-producing aligner | `PAFAdapter`                 |
-| PAF tabix-indexed for large alignments         | `PairwiseIndexedPAFAdapter`  |
-| All-vs-all PAF (many genomes in one file)      | `AllVsAllPAFAdapter`         |
-| All-vs-all PAF, tabix-indexed                  | `AllVsAllIndexedPAFAdapter`  |
-| MUMmer / nucmer (`.delta`)                     | `DeltaAdapter`               |
-| UCSC liftOver / lastz (`.chain`)               | `ChainAdapter`               |
-| MCScan gene-level synteny (`.anchors`)         | `MCScanAnchorsAdapter`       |
-| MCScan simplified anchors (`.anchors.simple`)  | `MCScanSimpleAnchorsAdapter` |
+<!-- FILE_TYPES synteny START -->
+
+<!-- prettier-ignore -->
+| Format | Adapter | Track type | Notes |
+| --- | --- | --- | --- |
+| All-vs-all indexed PAF (PIF) | [](/docs/config/allvsallindexedpafadapter) | [](/docs/config/syntenytrack) | The tabix-indexed form of all-vs-all PAF |
+| All-vs-all PAF | [](/docs/config/allvsallpafadapter) | [](/docs/config/syntenytrack) | PanSN-prefixed; one file backs every pair in a multi-way view |
+| BLAST tabular | [](/docs/config/blasttabularadapter) | [](/docs/config/syntenytrack) |  |
+| Chain (UCSC liftOver / lastz) | [](/docs/config/chainadapter) | [](/docs/config/syntenytrack) |  |
+| Delta (MUMmer / nucmer) | [](/docs/config/deltaadapter) | [](/docs/config/syntenytrack) |  |
+| Indexed PAF (PIF) | [](/docs/config/pairwiseindexedpafadapter) | [](/docs/config/syntenytrack) | Built by `jbrowse make-pif`; fetches only the visible region |
+| MashMap | [](/docs/config/mashmapadapter) | [](/docs/config/syntenytrack) |  |
+| MCScan anchors | [](/docs/config/mcscananchorsadapter) | [](/docs/config/syntenytrack) | Gene-level synteny; also needs one BED per assembly |
+| MCScan blocks | [](/docs/config/mcscanblocksadapter) | [](/docs/config/syntenytrack) | Multi-genome, reference-anchored; also needs one BED per assembly |
+| MCScan simple anchors | [](/docs/config/mcscansimpleanchorsadapter) | [](/docs/config/syntenytrack) | Gene-level synteny; also needs one BED per assembly |
+| PAF | [](/docs/config/pafadapter) | [](/docs/config/syntenytrack) | Loaded entirely into memory; convert to PIF for large alignments |
+
+<!-- FILE_TYPES synteny END -->
 
 ## Alignment format glossary
 
@@ -58,9 +66,15 @@ explained in
   `*.rbest.chain.gz` file over a raw `*.all.chain.gz`, which also contains every
   match driven by repeats and gene copies and fills the view with clutter.
 - **delta** MUMmer and nucmer's format.
+- **BLAST tabular** BLAST's `-outfmt 6` table, one row per high-scoring pair.
+- **MashMap** the approximate mapper's output, which reports where long segments
+  correspond without aligning them base by base.
 - **anchors** MCScan's gene-level format. It pairs up matching genes by name
   rather than by position, so the MCScan adapters also need a BED file per
-  genome to look up where those genes are.
+  genome to look up where those genes are. `.anchors.simple` collapses each run
+  of anchors into one block. **blocks** is MCScan's multi-genome table, with one
+  column per genome anchored to a reference column, which stacks more than two
+  rows the way an all-vs-all file does.
 
 Which to load:
 

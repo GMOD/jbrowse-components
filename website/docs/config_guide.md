@@ -17,6 +17,7 @@ recipes, see the [](/docs/cookbook).
 - [](/docs/config_guides/authentication)
 - [](/docs/config_guides/slot_types)
 - [](/docs/config_guides/connections)
+- [](/docs/config_guides/from_config)
 - [](/docs/config_guides/plugins)
 - [](/docs/config_guides/file_types)
 - [](/docs/config_guides/text_searching)
@@ -36,7 +37,6 @@ recipes, see the [](/docs/cookbook).
 
 - [](/docs/config_guides/customizing_feature_colors)
 - [](/docs/config_guides/customizing_feature_details)
-- [](/docs/config_guides/from_config)
 - [](/docs/config_guides/jexl)
 
 ## Appearance

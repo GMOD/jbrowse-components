@@ -26,10 +26,10 @@ Example config:
 
 ## VcfTabixAdapter configuration options
 
-The `uri` shorthand above resolves a sibling `<uri>.tbi`. TBI can't index a
-chromosome over 512 Mb; add `"csi": true` alongside `uri` to resolve `<uri>.csi`
-instead. See
-[the `uri` shorthand](/docs/config_guides/file_types#the-uri-shorthand) and the
+The `uri` shorthand above resolves a sibling `<uri>.tbi`; adding `"csi": true`
+resolves `<uri>.csi` instead. See
+[the `uri` shorthand](/docs/config_guides/file_types#the-uri-shorthand) for when
+CSI is required, and the
 [VcfTabixAdapter config docs](/docs/config/vcftabixadapter) for the full slot
 form.
 

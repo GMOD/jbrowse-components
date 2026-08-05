@@ -49,9 +49,7 @@ Put `myplugin.js` in the same directory as your config file and reference it:
       "assemblyNames": ["hg19"],
       "adapter": {
         "type": "Gff3Adapter",
-        "gffLocation": {
-          "uri": "volvox.filtered.gff"
-        }
+        "uri": "volvox.filtered.gff"
       },
       "displayDefaults": { "color": "jexl:colorFeature(feature)" }
     }

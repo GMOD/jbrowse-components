@@ -1,6 +1,8 @@
 ---
 title: Default session
-description: Setting an initial session state loaded for all users
+description:
+  Setting the initial session state loaded for all users, and shipping named
+  sessions users can switch between
 guide_category: Appearance
 ---
 
@@ -79,6 +81,30 @@ previously shared link, which is why
 [trackIds must stay stable](/docs/config_guides/deploying#keep-trackids-stable-for-reproducible-links).
 
 To configure sessions via URL, see [URL parameters](/docs/urlparams).
+
+## Shipping several named sessions
+
+[`preConfiguredSessions`](/docs/config/jbrowserootconfig/#slot-preconfiguredsessions)
+is a top-level array of the same session objects, each with a `name`, which
+jbrowse-web and jbrowse-desktop list under File → "Pre-configured sessions...".
+Use it where one instance serves several starting points — a figure per
+publication, a locus per assay — that a reader should be able to switch between
+without a link.
+
+```json
+{
+  "defaultSession": { "name": "Overview", "views": [] },
+  "preConfiguredSessions": [
+    { "name": "LCT haplotype", "views": [] },
+    { "name": "MHC region", "views": [] }
+  ]
+}
+```
+
+They are the same format as `defaultSession`, so build each one the same way:
+set the view up in the app, export the session, paste the exported object in
+with a `name`. The same `trackId` caveat applies — a session naming a track that
+is not in the top-level `tracks` array silently opens without it.
 
 ## See also
 

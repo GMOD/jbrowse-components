@@ -6,9 +6,11 @@ description:
 guide_category: Core configuration
 ---
 
-Every field on a [config schema page](/docs/config_guide) lists a **Type**. This
-page explains what each type accepts, so a `Type: fileLocation` or
-`Type: frozen` on a slot tells you what to actually write.
+**TL;DR:** every field on a [config schema page](/docs/config_guide) lists a
+**Type**. This page says what each one accepts, so a `Type: fileLocation` or
+`Type: frozen` on a slot tells you what to actually write. The `maybe*` types
+are the ordinary ones plus a third "unset" state, described
+[in one section below](#the-maybe-types).
 
 ## string
 
@@ -22,14 +24,6 @@ A list of strings, e.g. a track's `assemblyNames` or `category`.
 
 A numeric value (integer or decimal), e.g. a pixel height or a score threshold.
 
-## maybeNumber
-
-A number or unset. Leaving it unset is a distinct third state: the slot follows
-the display-type default (see
-[defaults for all tracks](/docs/user_guides/display_defaults)) instead of giving
-the track a value of its own, the same way [`maybeBoolean`](#maybeboolean) works
-for booleans.
-
 ## integer
 
 A whole number.
@@ -37,15 +31,6 @@ A whole number.
 ## boolean
 
 `true` or `false`.
-
-## maybeBoolean
-
-`true`, `false`, or unset. Leaving it unset is a distinct third state: the slot
-follows the display-type default (see
-[defaults for all tracks](/docs/user_guides/display_defaults)) instead of giving
-the track a value of its own. Setting `true`/`false` customizes the track either
-way. Used where "follow the default" must be distinguishable from an explicit
-off.
 
 ## fileLocation
 
@@ -71,14 +56,6 @@ only) and `BlobLocation` (a file opened from the browser's file picker).
 One value from a fixed set. The allowed values are listed next to the slot, e.g.
 `stringEnum (linear, log)`.
 
-## maybeStringEnum
-
-One value from a fixed set, or unset. Leaving it unset is a distinct extra
-state, exactly as with [`maybeBoolean`](#maybeboolean): the slot follows the
-display-type default instead of giving the track a value of its own. Used for
-settings you can make the default for every track of a type, e.g. a display's
-`heightMode` or `displayMode`.
-
 ## color
 
 A CSS color: a hex string (`#f00`), an `rgb()`/`rgba()` value, or a named color.
@@ -92,18 +69,27 @@ that are not broken out into individual slots, for example a `colorBy` of
 `{ "type": "methylation" }` or a `groupBy` of `{ "type": "strand" }`. The shape
 a given `frozen` slot expects is described in that slot's own text.
 
-## maybeFrozen
-
-An arbitrary JSON value, or unset: the [`maybeBoolean`](#maybeboolean) story for
-object-valued settings. Used where "follow the display-type default" has to stay
-distinguishable from any object you could write, e.g. an alignments track's
-`colorBy`.
-
 ## text
 
 A multi-line string, e.g. an HTML template for a feature-details panel.
+
+## The `maybe*` types {#the-maybe-types}
+
+`maybeNumber`, `maybeBoolean`, `maybeStringEnum`, and `maybeFrozen` each accept
+everything the type without the prefix accepts, plus one more state: **unset**.
+
+Unset is not the same as a default value. A slot left unset follows the
+display-type default (see
+[defaults for all tracks](/docs/user_guides/display_defaults)) and keeps
+following it as that default changes; writing a value, even the one the default
+happens to hold, customizes the track to that value for good. So these types are
+used wherever "follow the default" has to stay distinguishable from an explicit
+choice that looks identical — a display's `heightMode` or `displayMode`, or an
+alignments track's `colorBy`, where every scheme including `normal` is something
+a user might deliberately pin.
 
 ## See also
 
 - [](/docs/config_guides/jexl)
 - [Configuring tracks](/docs/config_guides/tracks)
+- [](/docs/user_guides/display_defaults)

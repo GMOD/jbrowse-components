@@ -26,14 +26,12 @@ The JBrowse 2 config file (typically `config.json`) is structured as follows:
   "plugins": [/* optional array of plugins to load */],
   "internetAccounts": [/* optional array of authentication providers */],
   "aggregateTextSearchAdapters": [/* optional array of text search adapters */],
-  "defaultSession": {/* optional default session */}
+  "defaultSession": {/* optional default session */},
+  "preConfiguredSessions": [/* optional array of named sessions */]
 }
 ```
 
-The most important things to configure are your
-[assemblies](/docs/config_guides/assemblies) and your
-[tracks](/docs/config_guides/tracks). The rest of the top-level fields are
-optional:
+Every other top-level field is optional:
 
 | Field                         | Guide                                   |
 | ----------------------------- | --------------------------------------- |
@@ -42,6 +40,7 @@ optional:
 | `internetAccounts`            | [](/docs/config_guides/authentication)  |
 | `aggregateTextSearchAdapters` | [](/docs/config_guides/text_searching)  |
 | `defaultSession`              | [](/docs/config_guides/default_session) |
+| `preConfiguredSessions`       | [](/docs/config_guides/default_session) |
 | `configuration`               | [](/docs/config/jbrowseconfiguration)   |
 
 These hand-written guides explain the common cases. For the exhaustive list of

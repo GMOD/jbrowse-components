@@ -19,20 +19,27 @@ For what the track looks like once loaded, see the
 
 ## Adapters
 
-| Format         | Adapter                            |
-| -------------- | ---------------------------------- |
-| BigMaf         | [](/docs/config/bigmafadapter)     |
-| MAF (tabix)    | [](/docs/config/maftabixadapter)   |
-| TAF (bgzipped) | [](/docs/config/bgziptaffyadapter) |
+<!-- FILE_TYPES maf START -->
+
+<!-- prettier-ignore -->
+| Format | Adapter | Track type |
+| --- | --- | --- |
+| BigMaf | [](/docs/config/bigmafadapter) | [](/docs/config/maftrack) |
+| MAF (tabix) | [](/docs/config/maftabixadapter) | [](/docs/config/maftrack) |
+| TAF (bgzipped Taffy) | [](/docs/config/bgziptaffyadapter) | [](/docs/config/maftrack) |
+
+<!-- FILE_TYPES maf END -->
 
 Provide the aligned species either as a `samples` array (in track order) or via
 an `nhLocation` Newick tree, which both supplies the species and orders/labels
 the rows as a dendrogram.
 
 Example using the tabix-indexed BED form (the UCSC ce11 26-way, ordered by its
-phylogenetic tree):
+phylogenetic tree). `MafTabixAdapter` takes the
+[`uri` shorthand](/docs/config_guides/file_types#the-uri-shorthand), resolving
+the sibling `.tbi`, plus an `nhUri` for the tree:
 
-```json
+```json addtrack
 {
   "type": "MafTrack",
   "trackId": "ce11.26way",
@@ -40,24 +47,15 @@ phylogenetic tree):
   "assemblyNames": ["ce11"],
   "adapter": {
     "type": "MafTabixAdapter",
-    "bedGzLocation": {
-      "uri": "https://jbrowse.org/demos/ce/ce11.26way.bed.gz"
-    },
-    "nhLocation": {
-      "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/ce11/multiz26way/ce11.26way.nh"
-    },
-    "index": {
-      "indexType": "TBI",
-      "location": {
-        "uri": "https://jbrowse.org/demos/ce/ce11.26way.bed.gz.tbi"
-      }
-    }
+    "uri": "https://jbrowse.org/demos/ce/ce11.26way.bed.gz",
+    "nhUri": "https://hgdownload.soe.ucsc.edu/goldenPath/ce11/multiz26way/ce11.26way.nh"
   }
 }
 ```
 
-The BigMaf form swaps the adapter for a single `bigBedLocation`, and may also
-carry the two optional sub-adapters below.
+`BigMafAdapter` is the one MAF adapter with no `uri` shorthand: it takes a
+`bigBedLocation`, as in the 470-way example below, and may also carry the two
+optional sub-adapters.
 
 ## Producing the tabix BED from a MAF
 
