@@ -5,15 +5,9 @@ import {
   waitForViewPhases,
 } from '@jbrowse/browser-test-utils'
 
-import { assertNonBlank } from './canvasContent.ts'
-import { displayStateSummary, isDisplaySelector } from './displayState.ts'
-import {
-  canvasSelfReport,
-  captureUntilNonBlank,
-  snapshotConfig,
-} from './snapshot.ts'
+import { analyzeCanvasPng, assertNonBlank } from './canvasContent.ts'
+import { canvasSelfReport, snapshotConfig } from './snapshot.ts'
 
-import type { CanvasContentStats } from './canvasContent.ts'
 import type { Browser, ElementHandle, Page } from 'puppeteer'
 
 // re-exported so the suites keep importing it from './helpers'
@@ -51,18 +45,7 @@ export async function findByTestId(
   timeout = 30000,
 ): Promise<ElementHandle> {
   const selector = `[data-testid="${testId}"]`
-  // A display's `-done` id is waited for through here too, and a bare
-  // "Waiting for selector failed" cannot say whether it never mounted, never
-  // painted, or was misspelled. Gated on the id so button/menu waits stay terse.
-  const handle = await page
-    .waitForSelector(selector, { timeout })
-    .catch(async (e: unknown) => {
-      throw isDisplaySelector(testId)
-        ? new Error(
-            `${e instanceof Error ? e.message : String(e)}${await displayStateSummary(page)}`,
-          )
-        : e
-    })
+  const handle = await page.waitForSelector(selector, { timeout })
   if (!handle) {
     throw new Error(`element not found: ${selector}`)
   }
@@ -301,10 +284,8 @@ export async function waitForDisplayPaint(
       selector,
     )
     .then(handle => handle.jsonValue() as Promise<{ gated: GatedDisplay[] }>)
-    .catch(async () => {
-      throw new Error(
-        `timed out waiting for ${selector}${await displayStateSummary(page)}`,
-      )
+    .catch(() => {
+      throw new Error(`timed out waiting for ${selector}`)
     })
 
   if (gated.gated.length > 0) {
@@ -400,22 +381,15 @@ export async function assertCanvasHasContent(
   if (!el) {
     throw new Error(`assertCanvasHasContent: element not found: ${selector}`)
   }
-  // Re-take a blank capture before believing it, exactly as canvasSnapshot
-  // does: a display that truly draws nothing stays blank on every attempt, so
-  // the gate this function exists to be is unaffected.
-  const isBlank = (s: CanvasContentStats) =>
-    s.distinctColors < minDistinctColors ||
-    s.nonBgFraction < minNonBgFraction
-  const { stats } = await captureUntilNonBlank(
-    page,
-    `assertCanvasHasContent: ${selector}`,
-    () => el.screenshot({ type: 'png' }),
-    isBlank,
-  )
+  const buf = await el.screenshot({ type: 'png' })
+  const stats = analyzeCanvasPng(buf)
   // Same render-vs-capture question canvasSnapshot asks, on the other path that
   // can report a blank — a blank arriving through here was invisible to that
   // instrumentation and is how the first run with it produced no verdict.
-  const selfReport = isBlank(stats) ? await canvasSelfReport(page, selector) : ''
+  const wouldFail =
+    stats.distinctColors < minDistinctColors ||
+    stats.nonBgFraction < minNonBgFraction
+  const selfReport = wouldFail ? await canvasSelfReport(page, selector) : ''
   assertNonBlank(stats, `assertCanvasHasContent: ${selector}${selfReport}`, {
     minDistinctColors,
     minNonBgFraction,
