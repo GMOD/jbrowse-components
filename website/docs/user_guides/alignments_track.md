@@ -151,6 +151,17 @@ Grouping by `HP` is also how you check that a heterozygous variant's supporting
 reads sit on one haplotype; see
 [phasing heterozygous SVs](/docs/user_guides/sv_visualization#phasing-heterozygous-svs).
 
+Each section's coverage band is built from only that section's reads, which is
+how you get strand-split coverage. Group by **Strand** and turn off
+**Show... → Show pileup**, and the band becomes a forward histogram and a reverse
+histogram on a shared scale, each carrying its own mismatch coloring. On a
+strand-specific paired-end library group by **First-of-pair strand** instead,
+since there the transcript strand is which mate the read is; the
+[RNA-seq tutorial](/docs/tutorials/rnaseq#strand-specific-rna-seq) shows that on
+a pair of genes transcribed in opposite directions.
+
+<Figure caption="HG002 nanopore reads grouped by strand with the pileup hidden. Each band's mismatch coloring is computed from only that strand's reads, so the tall columns fall at different positions in the two bands: a mismatch seen on one strand and not the other is the pattern that separates a systematic basecalling error from a real variant." src="/img/alignments/strand_split_coverage.png" />
+
 ## Read height and track sizing
 
 The track menu's **Read height** submenu holds two independent choices: how tall
