@@ -837,10 +837,14 @@ session.json file, and then use the --session parameter. Make sure to specify
 the assembly also, it currently does not infer the assembly from the session
 
 ```bash
-jb2export --config data/skbr3/config.json \
-  --session session.json \
+jb2export --config data/config.json \
+  --session data/skbr3/session.json \
   --assembly hg19
 ```
+
+The session names its tracks by trackId, so the `--config` you pass has to be
+the one those ids come from — `data/config.json` here, which defines hg19 and
+the `ngmlr_cov` coverage track that `data/skbr3/session.json` opens.
 
 ### Respects the order of the files you input
 
