@@ -163,26 +163,26 @@ for more CLI options.
 ## Adapter reference
 
 The per-adapter slots are on each adapter's config page (see
-[Choosing an adapter](#choosing-an-adapter) above). Four rules apply across all
+[Choosing an adapter](#choosing-an-adapter) above). These rules apply across all
 of them:
 
-- `assemblyNames` is always `["query", "target"]`, query first. Every pairwise
-  adapter except the three MCScan ones also accepts the named
-  `queryAssembly`/`targetAssembly` fields, which cannot be read in the wrong
-  order — that is `PAFAdapter`, `PairwiseIndexedPAFAdapter`, `DeltaAdapter`,
-  `ChainAdapter`, `MashMapAdapter` and `BlastTabularAdapter`. The MCScan
-  adapters take only `assemblyNames`. The all-vs-all adapters are the exception:
-  their `assemblyNames` is the full list of genomes in the file, in no
-  particular order.
-- All file locations accept gzip-compressed input. Most adapters also accept the
-  [`uri` shorthand](/docs/config_guides/file_types#the-uri-shorthand); three do
-  not, and want their location slot written out — `AllVsAllPAFAdapter`
-  (`pafLocation`), `BlastTabularAdapter` (`blastTableLocation`) and
-  `MCScanBlocksAdapter` (`mcscanBlocksLocation`). Each adapter's config page
-  lists what it takes.
+- `assemblyNames` is always `["query", "target"]`, query first. Most pairwise
+  adapters also accept the named `queryAssembly`/`targetAssembly` fields, which
+  cannot be read in the wrong order; the MCScan ones take only `assemblyNames`.
+  The all-vs-all adapters are the exception: their `assemblyNames` is the full
+  list of genomes in the file, in no particular order.
 - Every adapter except the two indexed ones (`PairwiseIndexedPAFAdapter` and
   `AllVsAllIndexedPAFAdapter`) reads the whole file into memory. For large
   alignments, convert to PIF and use one of those instead.
+- **The two compressions are not interchangeable.** A whole-file adapter takes
+  plain `gzip` and decompresses the lot, so `.paf.gz` works and no index is
+  involved. The two indexed adapters instead need **bgzip plus a tabix index**,
+  which is what `jbrowse make-pif` produces — a plain `gzip` file has no block
+  structure to seek into, so it fails there rather than loading slowly. Pass
+  `csi: true` for a `.csi` index instead of `.tbi`.
+- Each adapter's config page names its own location slots and shows the
+  [`uri` shorthand](/docs/config_guides/file_types#the-uri-shorthand) form it
+  accepts, where it has one.
 - The MCScan adapters additionally need one BED file per assembly (`bed1` and
   `bed2`), which are intermediate outputs of the
   [MCScan workflow](<https://github.com/tanghaibao/jcvi/wiki/MCscan-(Python-version)>).
