@@ -6,14 +6,12 @@
 # Adding a name here is a coverage regression — prefer a verified click-path in
 # src/lib/spec-recipe/fields.ts. Removing one is the win.
 arcColorByType
-autoscale
 bubbleSpread
 clusterRegion
 collapseGroupRows
 color
 colorDomain
 connectedView
-displayCrossHatches
 displayMode
 drawInter
 drawLongRange
@@ -23,14 +21,11 @@ featureSpacing
 gfaLocation
 height
 hideSelfAlignments
-jexlFilters
 jexlFiltersSetting
 linkedReads
 maxFeatureScreenDensity
-numStdDev
 readConnectionsHeight
 renderingMode
-scaleType
 showColorLegend
 showCoverage
 showHighlightChips

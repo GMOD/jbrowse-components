@@ -388,6 +388,63 @@ const ROW_ARRANGEMENT_EDITORS: Record<string, string> = {
   LinearMultiSampleVariantMatrixDisplay: 'Edit colors/arrangement...',
 }
 
+// wiggle-core's makeScoreSubMenu, which the alignments coverage band reuses
+// under its own label — same rows inside, different name to look for. Its module
+// pulls in the menu helpers, so these are hand-verified: 'Score' is the default
+// in scoreMenuItems.ts, 'Coverage' the one alignments passes in coverage.ts.
+const SCORE_MENUS: Record<string, string> = {
+  LinearWiggleDisplay: 'Score',
+  MultiLinearWiggleDisplay: 'Score',
+  LinearAlignmentsDisplay: 'Coverage',
+}
+
+const SCALE_TYPES: Record<string, string> = {
+  linear: 'Linear scale',
+  log: 'Log scale',
+}
+
+// DEFAULT_AUTOSCALE_OPTIONS. The alignments coverage band passes a shorter list
+// whose σ label interpolates numStdDev, so it is deliberately not served here.
+const AUTOSCALE_TYPES: Record<string, string> = {
+  local: 'Local',
+  localpercentile: 'Local (99th percentile)',
+  localsd: 'Local ± 3σ',
+}
+
+// Every display that filters names the item 'Filter by...' — the canvas base
+// (trackMenus.ts), the alignments/LGVSynteny one (menus/filters.ts, which adds
+// a count when filters are active), and the multi-sample variant one. So unlike
+// most of this table the label does not vary; only which displays have it does.
+//
+// The two field names are one control. `jexlFilters` is the config-level slot
+// (stored unprefixed, `jexl:` added on read) and `jexlFiltersSetting` is the
+// session-level override the dialog actually writes, so a reader reproducing
+// either arrives through the same dialog.
+const FILTER_MENU_DISPLAYS = new Set([
+  'LinearBasicDisplay',
+  'LinearVariantDisplay',
+  'LinearMultiRowFeatureDisplay',
+  'LinearAlignmentsDisplay',
+  'LGVSyntenyDisplay',
+  'LinearMultiSampleVariantDisplay',
+  'LinearMultiSampleVariantMatrixDisplay',
+])
+
+function filterStep(
+  value: unknown,
+  { displayType }: FieldContext,
+): FieldStep | undefined {
+  const filters = Array.isArray(value)
+    ? value.filter(f => typeof f === 'string')
+    : undefined
+  return filters?.length && displayType && FILTER_MENU_DISPLAYS.has(displayType)
+    ? {
+        path: `${TRACK_MENU} → Filter by... → add ${filters.length === 1 ? 'the expression' : `the ${filters.length} expressions`}`,
+        note: `This figure filters on ${filters.map(f => `\`${f.replace(/^jexl:/, '')}\``).join(', ')}.`,
+      }
+    : undefined
+}
+
 function geneGlyphStep(value: unknown): FieldStep | undefined {
   const option = GENE_GLYPH_MODE_OPTIONS.find(o => o.value === value)
   return option
@@ -508,6 +565,39 @@ const numberField =
 export const trackFields: Record<string, FieldRecipe> = {
   colorBy: colorByStep,
   color: colorStep,
+  jexlFilters: filterStep,
+  jexlFiltersSetting: filterStep,
+  scaleType: (value, { displayType }) => {
+    const menu = displayType ? SCORE_MENUS[displayType] : undefined
+    const label = typeof value === 'string' ? SCALE_TYPES[value] : undefined
+    return menu && label
+      ? { path: `${TRACK_MENU} → ${menu} → Scale type → ${label}` }
+      : undefined
+  },
+  autoscale: (value, { displayType }) => {
+    const label = typeof value === 'string' ? AUTOSCALE_TYPES[value] : undefined
+    return label &&
+      (displayType === 'LinearWiggleDisplay' ||
+        displayType === 'MultiLinearWiggleDisplay')
+      ? { path: `${TRACK_MENU} → Score → Autoscale type → ${label}` }
+      : undefined
+  },
+  numStdDev: (value, { displayType }) =>
+    typeof value === 'number' && displayType && displayType in SCORE_MENUS
+      ? {
+          path: `${TRACK_MENU} → Settings → numStdDev`,
+          note: `How many standard deviations the "Local ± σ" autoscale spans. Nothing sets it from a menu — it only reads back out, as the σ in that option's own label — so it is set on the config.`,
+        }
+      : undefined,
+  displayCrossHatches: (value, { displayType }) =>
+    typeof value === 'boolean' &&
+    (displayType === 'LinearWiggleDisplay' ||
+      displayType === 'MultiLinearWiggleDisplay')
+      ? {
+          path: `${TRACK_MENU} → Show... → Show cross hatches (${value ? 'checked' : 'unchecked'})`,
+          note: 'Absent in the density plot types, where score maps to color rather than height and a hatch would mark nothing.',
+        }
+      : undefined,
   colorByChromosome: (value, { displayType }) =>
     value === true && displayType === 'LinearMafDisplay'
       ? { path: `${ROW_COLORING} → ${MAF_ROW_RENDERING_LABELS.get('sourceChrom')}` }
