@@ -19,7 +19,10 @@ description: What every JBrowse host downloads before it can run, why plugin reg
   single cheapest win of the five.
 - Plugin registration is **genuinely eager and not reducible**: every plugin's
   models, adapters and config schemas must be registered before a session
-  snapshot can be read.
+  snapshot can be read. **Eager relative to reading a snapshot, though — not to
+  first paint.** A host that opens on something other than a session (Desktop's
+  start screen) can draw it without the registry, and pin 6 is what was stopping
+  it: one static import.
 - What *is* reducible is the set of **React components a registration-time
   module names**. Three shapes cause almost all of it, none visible in a diff: a
   plugin's `exports` object, a state model importing a component, and a menu-item
@@ -52,6 +55,9 @@ JBrowse chrome at all:
 
 Same page throughout, rendering the same thing. 203 KB gzipped and 166 chunks
 were reachable and never used.
+
+Pin 6 is measured separately, on a different host and in different units — see
+its own table below, and don't read the two against each other.
 
 ## Where it went
 
@@ -179,6 +185,51 @@ the dialog through `session.queueDialog`, and `DialogQueue`
 One snag worth remembering: `lazy()` infers a type naming the component's props,
 so a props interface local to the dialog module fails the declaration emit with
 TS4023 (`LDFilterModel` here). Export the interface.
+
+### 6. Desktop's start screen holding the whole plugin graph
+
+The first five pins are one mistake — an eagerly evaluated module naming a React
+component. This one is a different shape, and it is the exception to "plugin
+registration is not reducible" above: **a screen that renders no session does not
+need the registry at all**, and JBrowse Desktop opens on exactly such a screen.
+
+`products/jbrowse-desktop/src/components/StartScreen/util.tsx` was the one static
+path from the desktop renderer's entry to `corePlugins`, and through it to every
+plugin's models, adapters and config schemas plus the root and session models.
+Four modules imported it — the Loader, `StartScreen`, `LeftSidePanel`,
+`RecentSessionsPanel` — so launching the app parsed and evaluated the entire
+plugin graph before the start screen could draw a pixel.
+
+The heavy half is now `StartScreen/pluginManagers.tsx`, and `util.tsx` is a
+facade reaching it through `import()`. Its three entry points
+(`loadPluginManager`, `openSpecLink`, `createStartScreenPluginManager`) were
+already async and awaited at every call site, so the deferral costs a chunk load
+on a path that was going to wait on IPC and plugin fetches anyway.
+
+Measured 2026-08-05 on `products/jbrowse-desktop`'s production webpack build.
+**Raw bytes of `main.js`, the only script `index.html` loads** — not the gzipped
+chunk counts above, so don't compare the two tables:
+
+| | `main.js` | plugin graph in it |
+| --- | --- | --- |
+| before | 2,695,539 B | yes |
+| after | 1,357,165 B | no |
+
+Checked by grepping `main.js` for `LinearGenomeViewPlugin`, `BamAdapter`,
+`CramAdapter`, `DotplotView` and `JBrowseDesktopRootModel` — one hit each before,
+none after. Roughly 130 KB of that came from three smaller lazies made in the
+same pass: `JBrowse.tsx` (app-core's `App`, dockview, drawer widgets) in the
+Loader, and the start screen's two dialogs-behind-buttons.
+
+`StartScreen/pluginManagers.eager.test.ts` guards it, because one static import
+anywhere puts the graph back and nothing about that diff would say so.
+
+**The general form, for the next host that opens on something other than a
+session:** the registry is eager relative to *reading a session snapshot*, not
+relative to first paint. Anything a host draws before a session exists — a start
+screen, a config picker, a login — can be reached without it, and the thing that
+usually prevents that is one static import on a module that had no other reason
+to be light.
 
 ## What is left, and what is not worth chasing
 
