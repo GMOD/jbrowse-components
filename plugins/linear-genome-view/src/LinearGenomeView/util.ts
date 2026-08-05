@@ -620,7 +620,7 @@ export async function generateLocations({
  * "chr1:1..100"
  * "chr1 chr2"
  * "chr1:1-100 chr2:1-100"
- * "chr1 100 200" equivalent to "chr1:1-100"
+ * "chr1 100 200" equivalent to "chr1:100-200"
  *
  * Used by navToLocString
  */

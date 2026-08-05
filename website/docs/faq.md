@@ -515,9 +515,11 @@ jbrowse validate myconfig.json
 ```
 
 ```
-error: tracks[0].adapter.bamLocatoin: unknown slot "bamLocatoin" — did you mean "bamLocation"?
 error: tracks[0].assemblyNames: assembly "hg19" is not defined in this config — did you mean "hg38"?
-error: defaultSession.views[0].init.tracks[0]: trackId "sample_bem" is not defined in this config
+error: tracks[0].adapter.bamLocatoin: unknown slot "bamLocatoin" — did you mean "bamLocation"? — JBrowse ignores keys it does not declare, so this setting silently does nothing
+error: defaultSession.views[0].init.tracks[0]: trackId "sample_bem" is not defined in this config — did you mean "sample_bam"?
+
+3 error(s), 0 warning(s) in myconfig.json
 ```
 
 It checks against the config-slot definitions read out of JBrowse itself, so it
@@ -722,7 +724,8 @@ The DynamoDB contents cannot be decrypted even by JBrowse administrators.
 
 ### Are my share links reproducible
 
-It depends which link you mean. There are two, and they behave differently:
+It depends which link you mean. The gear icon in the Share dialog offers three
+formats, and the first behaves differently from the other two:
 
 - The short link (`&session=share-<ID>&password=<KEY>`) is _not_ reproducible.
   Each click of the Share button mints a new random encryption key and uploads a
@@ -730,11 +733,13 @@ It depends which link you mean. There are two, and they behave differently:
   the exact same view. This is by design: the short link is just a key into our
   hosted store.
 
-- The long URL _is_ reproducible. Click the gear icon in the Share dialog to
-  switch to "Long URL" mode, which encodes the entire session as JSON directly
-  in the URL, with no server round-trip and no minted password. The same view
-  produces the same long URL (given the same config), and it keeps working even
-  if you rebuild or move your JBrowse instance.
+- **Long URL** and **Plaintext JSON** _are_ reproducible. Both carry the whole
+  session in the link itself, compressed for the first and as readable JSON for
+  the second, with no server round-trip and no minted password. The same view
+  produces the same link (given the same config), and it keeps working even if
+  you rebuild or move your JBrowse instance. Being long, both are written
+  [into the URL fragment](/docs/urlparams#query-string-or-hash-fragment) rather
+  than the query string.
 
 The one thing that can break reproducibility is your **config**, not the link. A
 restored session references tracks by `trackId`, so if a redeploy regenerates
@@ -784,9 +789,11 @@ an error rather than rendering blank, so that shows up differently.)
 
 If the menus and track names look fine but the features themselves are missing,
 smeared, or the wrong color, the drawing path is the more likely cause than the
-data. A URL parameter pins which one is used, so you can try each in turn:
-`?renderer=webgpu`, `?renderer=webgl` for WebGL2, and `?renderer=canvas2d` for
-software drawing.
+data. [`&renderer=`](/docs/urlparams#renderer) pins which one is used, so you
+can try each in turn: no parameter for the usual WebGPU-first detection,
+`?renderer=webgl` for WebGL2, and `?renderer=canvas2d` for software drawing. On
+JBrowse Desktop the same choice is the
+[`--renderer` flag](/docs/quickstart_desktop#launching-from-the-command-line).
 
 That identifies where the problem is rather than fixing it, so please
 [open an issue](https://github.com/GMOD/jbrowse-components/issues) noting which

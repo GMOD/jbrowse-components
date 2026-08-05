@@ -287,10 +287,13 @@ Optionally, build a text index so users can search by gene name or feature ID:
 jbrowse text-index
 ```
 
-This indexes GFF3 and VCF tracks (tabix-indexed or plain). Once complete, names
-can be typed directly into the location search box. See the
-[text-index docs](/docs/cli#jbrowse-text-index) and [](/docs/faq#text-searching)
-for more.
+This indexes the GFF3 and VCF tracks in your config, tabix-indexed or plain, and
+plain GTF. Every other track is skipped, and a bare `text-index` run skips
+silently — name a track with `--tracks` and it says why that one was left out.
+Once complete, names can be typed directly into the location search box. See
+[](/docs/config_guides/text_searching) for which attributes are indexed and how
+to narrow the set, the [text-index docs](/docs/cli#jbrowse-text-index) for the
+flags, and [](/docs/faq#text-searching) for how the trix files work.
 
 ## Tutorials
 

@@ -26,9 +26,15 @@ export see [@jbrowse/img](/docs/jbrowse-img); for the Python/notebook API see
   tracks?: TrackInit[]    // tracks to open (id strings, or objects; see below)
   tracklist?: boolean     // open the track selector drawer (default: false)
   nav?: boolean           // show the navigation header (default: true)
-  highlight?: string[]    // regions to highlight
+  highlight?: (string | HighlightType)[] // regions to highlight
 }
 ```
+
+`loc` takes several whitespace-separated locstrings
+(`'chr3:25,325,000-25,361,000 chr10:58,716,500-58,718,500'`) to open a
+discontinuous view of all of them, which is how a spec frames something spread
+across loci; `displayedRegionNames` takes whole chromosomes rather than
+intervals, and is ignored when `loc` is set. `grow` needs a `loc` to expand.
 
 A `TrackInit` is either a track id string, or an object that also sets initial
 display options:
@@ -40,6 +46,9 @@ display options:
   displaySnapshot?: object // overrides on the display, e.g. { height: 250 }
 }
 ```
+
+Any other key on that object is folded into the display snapshot, so
+`{ trackId, height: 250 }` is the shorthand for the nested form above.
 
 `init` is applied once when the view attaches, then cleared. It is a launch
 instruction rather than persistent state, so a saved session never retains it.

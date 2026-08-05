@@ -47,8 +47,10 @@ jbrowse validate config.json
 ```
 
 ```
-error: tracks[0].adapter.bamLocatoin: unknown slot "bamLocatoin" — did you mean "bamLocation"?
-error: defaultSession.views[0].init.tracks[0]: trackId "sample_bem" is not defined in this config
+error: tracks[0].adapter.bamLocatoin: unknown slot "bamLocatoin" — did you mean "bamLocation"? — JBrowse ignores keys it does not declare, so this setting silently does nothing
+error: defaultSession.views[0].init.tracks[0]: trackId "sample_bem" is not defined in this config — did you mean "sample_bam"?
+
+2 error(s), 0 warning(s) in config.json
 ```
 
 `--json` gives machine-readable output, and a non-zero exit means errors, so an

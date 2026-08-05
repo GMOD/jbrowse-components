@@ -12,6 +12,21 @@ Embedded components like @jbrowse/react-linear-genome-view2 make no assumptions
 about URL parameters. The consuming application must implement that logic
 itself.
 
+## Query string or hash fragment
+
+Every parameter on this page works in either place: `?config=…&loc=…` or
+`#config=…&loc=…`. A fragment is never sent to the server, so a long value — an
+`encoded-`/`json-` session, a whole [session spec](#session-spec), a big
+`&sessionTracks=` — cannot trip the request-line limit that answers a long query
+string with HTTP 414. That is why the Share button writes its two inline formats
+as hash URLs.
+
+The two are not mixed. If the fragment contains an `=`, JBrowse reads its
+parameters only from there and ignores the query string, so moving one long
+parameter into the fragment means moving them all:
+`?config=my.json#session=spec-{…}` loads the default `config.json`, not
+`my.json`.
+
 ## Linear genome view (simple)
 
 A simplified URL format for launching a single linear genome view:
@@ -21,7 +36,7 @@ A simplified URL format for launching a single linear genome view:
 The allowed query parameters are listed below. `&assembly=`, `&loc=`,
 `&regions=`, `&nav=`, `&tracks=`, `&tracklist=`, and `&highlight=` apply only to
 this single linear genome view launch. `?config=`, `&sessionName=`, `&hubURL=`,
-and `&session=` work for any launch type.
+`&renderer=`, and `&session=` work for any launch type.
 
 ### ?config=
 
@@ -61,11 +76,25 @@ Example strings
 &loc=chr1:6000-7000 // using - notation for range
 &loc=chr1:6000..7000 // using .. notation for range
 &loc=chr1:7000 // centered on this position
+&loc=chr1 // the whole of one chromosome
+&loc=chr1%206000%207000 // refName, start and end, whitespace separated
 &loc=GENEID // if you have used `jbrowse text-index`
 ```
 
 Navigating via `&loc=GENEID` requires a text index built with
 `jbrowse text-index`.
+
+Several whitespace-separated locstrings open a discontinuous view showing each
+region in turn, which is the only way to frame several loci inside one view — a
+gene and the partner it is fused to, an allele beside the sequences it derives
+from. The space is URL-encoded as `%20`:
+
+`&loc=chr3:25,325,000-25,361,000%20chr10:58,716,500-58,718,500`
+
+This is the same form the location box displays once a view holds more than one
+region, so what you copy out of it pastes back into a URL. To open a
+whole-genome view restricted to particular chromosomes instead, use
+[`&regions=`](#regions).
 
 By default `&loc=` (and `&assembly=`) start a fresh session, ignoring the
 config's `defaultSession`. Add `&extendSession=true` to navigate _within_ the
@@ -241,6 +270,22 @@ that — several views over a hub, a workspace layout, a dotplot, or extra
 
 See [](/docs/user_guides/hub_url) for the full workflow, including combining a
 hub with a config and loading several at once.
+
+### &renderer=
+
+Example
+
+`&renderer=webgl`
+
+Pins the backend tracks are drawn with, rather than detecting one. `webgl` skips
+WebGPU and uses WebGL2; `canvas2d` skips both and draws in software. Any other
+value leaves the normal WebGPU-first ladder alone.
+
+It is a debugging aid: trying each in turn says whether a blank or wrong-looking
+track comes from the GPU path, see
+[my tracks are blank or render incorrectly](/docs/faq#my-tracks-are-blank-or-render-incorrectly).
+JBrowse Desktop takes the same choice as a `--renderer` command-line flag, see
+[](/docs/quickstart_desktop#launching-from-the-command-line).
 
 ### Navigating within the default session
 
@@ -1101,6 +1146,10 @@ snapshot of a session. Unlike a session spec (which runs extra logic to build
 the session), a JSON session is a literal snapshot, the same shape produced by
 "Export session...".
 
+The Share button's gear icon offers this as "Plaintext JSON": the longest of the
+three formats, and the one to pick when you want to read what the session
+actually contains.
+
 Example
 
 ```
@@ -1115,12 +1164,14 @@ Similar to JSON sessions but uses a URL encoding (base64+gzip), so the URLs look
 like:
 
 ```
-https://jbrowse.org/code/jb2/latest/?session=encoded-eJyNU2FzmkAQ_SvOfaaNIKDyLbFN0xlrTWRqnU4mc8ACm8BB7k6Ndfj...
+https://jbrowse.org/code/jb2/latest/#session=encoded-eJyNU2FzmkAQ_SvOfaaNIKDyLbFN0xlrTWRqnU4mc8ACm8BB7k6Ndfj...
 ```
 
 The "Share" button's gear icon has a "Long URL" option that produces these.
 Because the entire session is encoded in the URL, they work without the central
-session-sharing system in place.
+session-sharing system in place — and because that makes the URL long, the Share
+button puts it [in the fragment](#query-string-or-hash-fragment) rather than the
+query string. `?session=encoded-` is read the same way.
 
 ### &session=local-
 
