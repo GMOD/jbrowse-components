@@ -1,5 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getTrackName } from '@jbrowse/core/util/tracks'
+import { isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import { buildSearchText } from '../shared/searchText.ts'
 
@@ -20,6 +21,15 @@ export function categoryId(groupId: string, categoryPath: string) {
 
 export function isUnsupported(name = '') {
   return name.endsWith('(Unsupported)') || name.endsWith('(Unknown)')
+}
+
+// A track config comes in two shapes and only one of them can die: session and
+// connection tracks are live MST nodes that deleting destroys, while a config
+// track is a plain frozen object MST knows nothing about (ADR-032) — and
+// `isAlive` throws rather than returning false on those. So node-ness has to be
+// tested first; a plain config is always usable, having nothing to outlive.
+export function isUsableTrackConfig(conf: AnyConfigurationModel) {
+  return !isStateTreeNode(conf) || isAlive(conf)
 }
 
 // true if the two arrays share at least one element (symmetric)

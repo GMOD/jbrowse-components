@@ -7,7 +7,7 @@ import {
   notEmpty,
 } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { isSessionWithSessionTracks } from '@jbrowse/product-core'
 import { autorun, observable } from 'mobx'
 
@@ -20,6 +20,7 @@ import {
   findSubCategories,
   findTopLevelCategories,
   getAllTrackNodes,
+  isUsableTrackConfig,
   trackNodeSourceFor,
 } from './util.ts'
 
@@ -275,7 +276,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * destroyed node is also what MST warns about.
        */
       get selection(): AnyConfigurationModel[] {
-        return self.selectionRaw.filter(elt => isAlive(elt))
+        return self.selectionRaw.filter(isUsableTrackConfig)
       },
       /**
        * #getter
