@@ -387,9 +387,11 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         ],
       },
       {
-        // `button::-p-text(...)`, not a bare text match: the dialog's own prose
-        // now names this action, so a text selector resolves to the paragraph
-        // -- which is an element, and clicking it succeeds and does nothing
+        // `button::-p-text(...)`, not a bare text match. The dialog's prose used
+        // to name this action too, so a text selector resolved to the paragraph
+        // -- an element, which clicks successfully and does nothing. That prose
+        // is gone now, but the selector stays: it says which element it means,
+        // and the next sentence added to the dialog would put the trap back.
         actions: [
           { type: 'click', selector: 'button::-p-text(Open as split view)' },
         ],

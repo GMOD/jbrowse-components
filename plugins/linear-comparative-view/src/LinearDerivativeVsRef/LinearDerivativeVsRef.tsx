@@ -276,6 +276,13 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
             // with no type is a submit button: without this the click runs this
             // handler AND the form's, so the dialog draws the synteny view too
             type="button"
+            // Same variant as the other two destinations. It is one of three
+            // things this dialog can draw, and left on the default text variant
+            // it read as a link between two filled buttons -- three ways to say
+            // "draw it" in three different weights (review: "i do not like the
+            // look of the dialog box").
+            variant="contained"
+            color="primary"
             disabled={candidates.length === 0}
             onClick={() => {
               void onOpenSplitView()
@@ -323,19 +330,24 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
           </Typography>
         ) : (
           <>
+            {/*
+              One line, then the list. This used to open with two paragraphs
+              explaining what each destination button draws (review: "i do not
+              like the look of the dialog box"), which is eight lines of grey
+              text above three short rows -- the buttons already carry those
+              names, and the tutorial carries the rest. What stays is the
+              sentence that says what a row IS, and the one caveat that changes
+              which row a reader picks.
+            */}
             <Typography>
-              Each path below is a route through the reference that this many
-              reads independently describe, laid out in the order and
-              orientation the reads cross it. Drawing one opens it as a synteny
-              view, one ribbon per segment, so the reconstruction can be read
-              against the reference it came from. Open as split view stacks the
-              same loci as reference panels instead, one per segment and in the
-              same order, with the reads that cross between them drawn.
+              Each route below is one that this many reads cross in the same
+              order and orientation.
             </Typography>
             <Typography className={classes.caveat}>
-              Read counts rank these paths; they do not vouch for them. The size
-              beside each is the check: a route whose segments are all about one
-              read long is an aligner splitting a short read, not an allele.
+              Read counts rank them; they do not vouch for them. A route whose
+              segments are all about one read long is an aligner splitting a
+              short read rather than an allele, which is what the size beside
+              each row is for.
             </Typography>
             <RadioGroup
               // the real result of the reconstruction pass, so a screenshot
