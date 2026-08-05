@@ -26,14 +26,13 @@ import {
 } from '@jbrowse/product-core'
 import { sessionLastUsed } from '@jbrowse/web-core'
 import FileCopyIcon from '@mui/icons-material/FileCopy'
-import StarIcon from '@mui/icons-material/Star'
 
 import packageJSON from '../../package.json' with { type: 'json' }
 import { gitCommit } from '../buildInfo.ts'
 import jbrowseWebFactory from '../jbrowseModel.ts'
 import makeWorkerInstance from '../makeWorkerInstance.ts'
 import { setupSessionDB, setupSessionStorageAutosave } from './persistence.ts'
-import { buildSessionListSubmenu } from './sessionMenus.ts'
+import { savedSessionMenuItems } from './sessionMenus.ts'
 
 import type { Session, SessionDB, SessionMetadata } from '../types.ts'
 import type { MenuDefinition } from '@jbrowse/app-core'
@@ -311,89 +310,45 @@ export default function RootModel({
        * #method
        */
       menus() {
-        const preConfiguredSessions = readConfObject(
-          self.jbrowse,
-          'preConfiguredSessions',
-        ) as { name: string; [key: string]: unknown }[] | undefined
+        const preConfiguredSessions:
+          | { name: string; [key: string]: unknown }[]
+          | undefined = readConfObject(self.jbrowse, 'preConfiguredSessions')
 
         const ret: MenuDefinition[] = [
           {
             label: 'File',
-            menuItems: () => {
-              const favs = self.savedSessionMetadata
-                ?.filter(f => f.favorite)
-                .slice(0, 5)
-              const rest = self.savedSessionMetadata
-                ?.filter(f => !f.favorite)
-                .slice(0, 5)
-              const sessionMenuActions = {
-                activate: (id: string) => self.activateSession(id),
-                showMore: () => {
-                  const widget = self.session?.addWidget(
-                    'SessionManager',
-                    'sessionManager',
-                  )
-                  if (widget) {
-                    self.session?.showWidget(widget)
+            menuItems: () => [
+              newSessionMenuItem(self),
+              importSessionMenuItem(),
+              exportSessionMenuItem(),
+              {
+                label: 'Duplicate session',
+                icon: FileCopyIcon,
+                onClick: () => {
+                  if (self.session) {
+                    const { id, ...rest } = getSnapshot<Session>(self.session)
+                    self.setSession(rest)
                   }
                 },
-              }
-
-              return [
-                newSessionMenuItem(self),
-                importSessionMenuItem(),
-                exportSessionMenuItem(),
-                {
-                  label: 'Duplicate session',
-                  icon: FileCopyIcon,
-                  onClick: () => {
-                    if (self.session) {
-                      const { id, ...rest } = getSnapshot<Session>(self.session)
-                      self.setSession(rest)
-                    }
-                  },
-                },
-                ...(preConfiguredSessions?.length
-                  ? [
-                      {
-                        label: 'Pre-configured sessions...',
-                        subMenu: preConfiguredSessions.map(r => ({
-                          label: r.name,
-                          onClick: () => {
-                            self.setSession(r)
-                          },
-                        })),
-                      },
-                    ]
-                  : []),
-                ...(favs?.length
-                  ? [
-                      {
-                        label: 'Favorite sessions...',
-                        subMenu: buildSessionListSubmenu({
-                          sessions: favs,
-                          currentSessionId: self.session?.id,
-                          actions: sessionMenuActions,
-                          itemIcon: StarIcon,
-                        }),
-                      },
-                    ]
-                  : []),
-                {
-                  label: 'Recent sessions...',
-                  type: 'subMenu',
-                  subMenu: buildSessionListSubmenu({
-                    sessions: rest,
-                    currentSessionId: self.session?.id,
-                    actions: sessionMenuActions,
-                    emptyLabel: 'No autosaves found',
-                  }),
-                },
-                { type: 'divider' },
-                openTrackMenuItem(),
-                openConnectionMenuItem(),
-              ]
-            },
+              },
+              ...(preConfiguredSessions?.length
+                ? [
+                    {
+                      label: 'Pre-configured sessions...',
+                      subMenu: preConfiguredSessions.map(r => ({
+                        label: r.name,
+                        onClick: () => {
+                          self.setSession(r)
+                        },
+                      })),
+                    },
+                  ]
+                : []),
+              ...savedSessionMenuItems(self),
+              { type: 'divider' },
+              openTrackMenuItem(),
+              openConnectionMenuItem(),
+            ],
           },
           ...(adminMode
             ? [

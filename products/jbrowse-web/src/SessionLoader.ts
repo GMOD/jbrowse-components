@@ -307,6 +307,9 @@ const SessionLoader = types
     },
     /**
      * #action
+     * Production code commits plugins through `setConfigAndPlugins`, which pairs
+     * them with the config snapshot so `ready` can't observe one without the
+     * other; this sets them alone, for tests driving the loader's state directly.
      */
     setRuntimePlugins(plugins: PluginRecord[]) {
       self.runtimePlugins = plugins

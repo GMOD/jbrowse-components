@@ -56,6 +56,19 @@ const ShareDialog = observer(function ShareDialog({
   // promotable-default cascade into concrete track values so the recipient sees
   // what the sender saw without inheriting their personal (un-shared) defaults.
   const [snap] = useState(() => getShareableSessionSnapshot(session))
+  // The bookmark button below has to put the share URL in the address bar — a
+  // browser can only bookmark what is there. Nothing put the page's own URL
+  // back afterwards, and the address bar is what a reload restores from
+  // (JBrowse.tsx keeps `session=local-<id>` there for exactly that): a tab left
+  // pointing at the share link reloads the snapshot the link was built from and
+  // silently drops everything done since. So capture the page URL on open and
+  // put it back on close — a bookmark keeps whatever the URL was at the moment
+  // it was pressed, so restoring afterwards costs it nothing.
+  const [pageUrl] = useState(() => window.location.href)
+  function close() {
+    window.history.replaceState(null, '', pageUrl)
+    handleClose()
+  }
 
   const {
     data,
@@ -74,7 +87,7 @@ const ShareDialog = observer(function ShareDialog({
       <InfoDialog
         maxWidth="xl"
         open
-        onClose={handleClose}
+        onClose={close}
         title="JBrowse Shareable Link"
         actions={
           <>

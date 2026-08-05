@@ -6,10 +6,12 @@ interface Window {
   __jbrowseConfigPath?: string
   // When set, appends a ?rand= cache-buster to the fetched config URL
   __jbrowseCacheBuster?: boolean
-  // Debug globals exposed for browser console access
+  // Debug globals for the devtools console; also how browser-tests reach into
+  // the live models (see browser-tests/suites). Nothing in the repo imports the
+  // MST pair, so a grep reads them as dead — they are used by hand against a
+  // running instance, so don't remove them on that evidence.
   JBrowseRootModel?: unknown
   JBrowseSession?: unknown
-  // MST utilities exposed for testing (temporary)
   getSnapshot?: unknown
   resolveIdentifier?: unknown
 }

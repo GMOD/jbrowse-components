@@ -61,7 +61,6 @@ exports[`adds menus 1`] = `
             "onClick": [Function],
           },
         ],
-        "type": "subMenu",
       },
       {
         "type": "divider",
@@ -234,7 +233,6 @@ exports[`adds menus 2`] = `
             "onClick": [Function],
           },
         ],
-        "type": "subMenu",
       },
       {
         "type": "divider",

@@ -5,7 +5,11 @@ import { getSnapshot, resolveIdentifier, types } from '@jbrowse/mobx-state-tree'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 
-// poke some things for testing (this stuff will eventually be removed)
+// The devtools console pair for window.JBrowseSession/JBrowseRootModel: with
+// these you can `getSnapshot(JBrowseSession)` or resolve a config by id from a
+// running instance, which is the fastest way to inspect real state. Nothing in
+// the repo imports them, so they read as dead to a grep — they are used by hand,
+// and by anyone debugging a deployed build. Don't remove them on that evidence.
 window.getSnapshot = getSnapshot
 window.resolveIdentifier = resolveIdentifier
 
