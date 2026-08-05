@@ -90,11 +90,13 @@ async function readRecentSessions(
   }
 }
 
-async function readSession(sessionPath: string): Promise<SessionSnap> {
+// The file exactly as it sits on disk. Anything that reads a session in order to
+// write it back (renameSession) has to start here: relativeUrisToLocalPaths
+// below rewrites the tree in place, so parsing through it and saving the result
+// would burn machine-absolute paths into a config the user only asked to rename.
+async function parseSessionFile(sessionPath: string): Promise<SessionSnap> {
   try {
-    const snap = JSON.parse(await readFile(sessionPath, ENCODING))
-    relativeUrisToLocalPaths(snap, path.dirname(sessionPath))
-    return snap
+    return JSON.parse(await readFile(sessionPath, ENCODING))
   } catch (e) {
     throw new Error(
       isNotFound(e)
@@ -103,6 +105,15 @@ async function readSession(sessionPath: string): Promise<SessionSnap> {
       { cause: e },
     )
   }
+}
+
+// The file as the renderer needs it: a hand-written config's relative uris only
+// mean anything next to the config, so they are resolved before it crosses the
+// IPC boundary.
+async function readSession(sessionPath: string): Promise<SessionSnap> {
+  const snap = await parseSessionFile(sessionPath)
+  relativeUrisToLocalPaths(snap, path.dirname(sessionPath))
+  return snap
 }
 
 function upsertRecentSession(sessions: RecentSession[], entry: RecentSession) {
@@ -137,7 +148,6 @@ function updateRecentSessions(
   return serializeRecentSessions(async () => {
     const next = update(await readRecentSessions(recentSessionsPath))
     await writeFile(recentSessionsPath, stringify(next))
-    return next
   })
 }
 
@@ -245,7 +255,9 @@ export function registerSessionHandlers(
     await serializeRecentSessions(async () => {
       const [rows, session] = await Promise.all([
         readRecentSessions(paths.recentSessionsPath),
-        readSession(sessionPath),
+        // parseSessionFile, not readSession: this rewrites the file, and a
+        // rename must change the name and nothing else
+        parseSessionFile(sessionPath),
       ])
       const idx = rows.findIndex(row => row.path === sessionPath)
 

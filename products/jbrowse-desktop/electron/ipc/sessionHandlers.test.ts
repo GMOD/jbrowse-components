@@ -223,6 +223,35 @@ test('renameSession renames both the list entry and the session file', async () 
   expect(snap.defaultSession.name).toBe('A better name')
 })
 
+test('renameSession leaves a config relative uris alone', async () => {
+  // loadSession resolves a hand-written config's relative uris into absolute
+  // localPaths for the renderer, in place. Renaming used to go through that same
+  // read and then save the result, so renaming a config.json row on the start
+  // screen — without ever opening it — burned this machine's paths into the
+  // user's config and made it unusable anywhere else.
+  const sessionPath = path.join(dir, 'config.json')
+  fs.writeFileSync(
+    sessionPath,
+    JSON.stringify({
+      assemblies: [{ sequence: { adapter: { uri: 'ref.fa.gz' } } }],
+      defaultSession: { name: 'before' },
+    }),
+  )
+  fs.writeFileSync(
+    paths.recentSessionsPath,
+    JSON.stringify([{ path: sessionPath, updated: 1, name: 'before' }]),
+  )
+
+  await invoke('renameSession', sessionPath, 'after')
+
+  const snap = JSON.parse(fs.readFileSync(sessionPath, 'utf8')) as {
+    assemblies: { sequence: { adapter: Record<string, unknown> } }[]
+    defaultSession: { name: string }
+  }
+  expect(snap.defaultSession.name).toBe('after')
+  expect(snap.assemblies[0]!.sequence.adapter).toEqual({ uri: 'ref.fa.gz' })
+})
+
 test('createInitialAutosaveFile writes the snapshot and lists it', async () => {
   fs.mkdirSync(paths.autosaveDir, { recursive: true })
 
