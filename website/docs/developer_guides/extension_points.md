@@ -629,25 +629,47 @@ Sequence sections. This is a `list` point: every plugin's panel is kept, in
 registration order, so panels compose rather than overwrite.
 
 Register with `addFeaturePanel`, which scopes the panel with the same selector
-`addReplaceWidget` uses:
+`addReplaceWidget` uses. The score-example plugin's panel, which reports the
+value its display draws:
+
+<!-- include: example-plugins/score-example/src/ScoreFeaturePanel/index.tsx#register -->
 
 ```tsx
-import { addFeaturePanel } from '@jbrowse/core/ui'
-import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
-
-addFeaturePanel(pluginManager, {
-  select: { trackType: 'VariantTrack' },
-  panel: ({ model, feature }) => (
-    <BaseCard title="Extra info">{/* your content */}</BaseCard>
-  ),
-})
+export default function ScoreFeaturePanelF(pluginManager: PluginManager) {
+  addFeaturePanel(pluginManager, {
+    select: {
+      // the track type this plugin's display attaches to
+      trackType: 'FeatureTrack',
+      // `where` reaches what the declarative fields cannot: the feature itself,
+      // and how deep in the subfeature tree this card is. depth 0 is the
+      // feature that was clicked — without it the panel repeats on every
+      // subfeature card. The score check keeps it off features that have none,
+      // since one FeatureTrack's features may carry a score and another's may
+      // not.
+      where: ({ feature, depth }) => depth === 0 && feature.score !== undefined,
+    },
+    panel: ScoreFeaturePanel,
+  })
+}
 ```
-
-Your panel renders its own card chrome, so use `BaseCard` for a titled section.
 
 - `select` - a `FeaturePanelSelector`, below. Omit it to add the panel to every
   track's feature details.
 - `panel` - a `React.ComponentType<FeaturePanelProps>`.
+
+Your panel renders its own card chrome, so start at `BaseCard`:
+
+<!-- include: example-plugins/score-example/src/ScoreFeaturePanel/index.tsx#panel -->
+
+```tsx
+function ScoreFeaturePanel({ feature }: FeaturePanelProps) {
+  return (
+    <BaseCard title="Score">
+      <div>{String(feature.score)}</div>
+    </BaseCard>
+  )
+}
+```
 
 <!-- include: packages/core/src/ui/addFeaturePanel.ts#selector -->
 
@@ -665,18 +687,10 @@ kind of track". `trackId` and `trackType` are documented under
 the user's copies of that track too.
 
 `where` additionally receives the `feature` being shown and the `depth` of the
-card it is being shown on, neither of which the declarative fields can reach.
-The point fires once per card, including the nested card for every subfeature,
-so `depth === 0` is how a panel says "only the feature the user clicked":
-
-```tsx
-addFeaturePanel(pluginManager, {
-  select: {
-    where: ({ feature, depth }) => feature.type === 'gene' && depth === 0,
-  },
-  panel: MyGenePanel,
-})
-```
+card it is being shown on, neither of which the declarative fields can reach —
+both are used in the example above. The point fires once per card, including the
+nested card for every subfeature, so `depth === 0` is how a panel says "only the
+feature the user clicked".
 
 Your panel receives the point's props:
 
