@@ -35,9 +35,10 @@ Where conservation collapses every species into one profile, **Per-row
 identity** breaks the same signal out per species so you can see _which_ genomes
 diverge in a region. It offers two styles, **Heatmap** (each row shaded on a
 red→grey→blue ramp, red divergent, blue conserved) and **X-Y plot** (a
-per-species identity wiggle), plus **Off**. By default it swaps in only when you
-zoom out past base level, where individual bases are no longer legible; uncheck
-**Auto-switch by zoom** to pin it on at every zoom level.
+per-species identity wiggle), plus **Off**. By default it draws only while you
+are zoomed out past base level, where individual bases are no longer legible,
+and zooming in swaps it back for the ordinary base coloring; uncheck **Show
+bases when zoomed in** to keep the plot on at every zoom level instead.
 
 This works on large alignments: with all ~470 species of the UCSC hg38 470-way
 shown at once, the heatmap gives a per-base conservation view across the full
