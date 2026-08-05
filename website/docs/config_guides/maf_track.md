@@ -163,16 +163,17 @@ location:
 - **`annotationAdapter`**: a UCSC `mafFrames` file (a `BigBedAdapter` over
   `multiz<N>wayFrames.bb`) carrying each gene's CDS reading frame projected
   through the alignment, one record per (species, region), keyed by `src`
-  species. It enables the "Show CDS frames" overlay and the "Codon view"
-  (amino-acid changes), both off by default. When the file carries a record for
-  the reference `src`, the reference row shows its own gene structure too.
+  species. It enables the "Show CDS frames" overlay and the "Codon changes
+  (amino acids)" row coloring, neither on by default. When the file carries a
+  record for the reference `src`, the reference row shows its own gene structure
+  too.
 
 ## Display options
 
-The conservation band, per-row identity (heatmap / X-Y plot), color by source
-chromosome, and inversion (strand-flip) overlays are all derived from the
-alignment with no extra configuration, toggled from the track menu. The
-[user guide](/docs/user_guides/maf_track) covers what each one shows.
+The conservation band, the identity plots (heatmap / X-Y plot),
+source-chromosome coloring, and the inversion (strand-flip) overlay are all
+derived from the alignment with no extra configuration, picked from the track
+menu. The [user guide](/docs/user_guides/maf_track) covers what each one shows.
 
 ## A larger example: the human 470-way
 

@@ -1,5 +1,6 @@
 import { alpha, getContrastText } from '@jbrowse/core/ui/palette'
 
+import type { LegendItem } from '@jbrowse/core/ui'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
 /**
@@ -78,6 +79,27 @@ export function getCodonColors(palette: JBrowsePalette) {
     },
     text: palette.text.primary,
   }
+}
+
+/**
+ * The color key for the codon view, built from the very fills `getCodonColors`
+ * hands the painter.
+ *
+ * It has to be, because those fills are alpha-composited: the legend used to
+ * name the raw theme colors, so the faint synonymous fill (alpha 0.18 in light
+ * mode) showed in the key as a saturated blue no cell on screen is — the
+ * reader's decoder was several shades off the thing it decoded.
+ *
+ * `same` is deliberately absent: a conserved codon takes no fill, so it has no
+ * swatch to show.
+ */
+export function getCodonLegendItems(palette: JBrowsePalette): LegendItem[] {
+  const { fill } = getCodonColors(palette)
+  return [
+    { label: 'Nonsynonymous', color: fill.nonsyn },
+    { label: 'Synonymous', color: fill.syn },
+    { label: 'Stop', color: fill.stop },
+  ]
 }
 
 export function getContrastBaseMap(palette: JBrowsePalette) {

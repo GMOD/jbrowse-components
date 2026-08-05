@@ -1,7 +1,9 @@
 // Single source of truth for the conservation-band resolution modes: [value,
 // menu label]. The state enumeration derives its valid values and the track
-// menu derives its radio items, so the two can't drift. Mirrors
-// `rowIdentityModes.ts`.
+// menu derives its radio items, so the two can't drift. The labels live here
+// because this IS its own radio submenu; `rowIdentityModes.ts` carries values
+// only, since its two modes are named in `rowRenderings.ts` alongside the
+// renderings they compete with.
 export const CONSERVATION_MODES = [
   ['base', 'Per-base (% identity)'],
   ['codon', 'Per-codon (amino-acid identity)'],

@@ -36,12 +36,18 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  */
 export function createMafTestEnvironment({
   summaryAdapter = null,
+  annotationAdapter = null,
   assemblyEnd = 10_000_000,
   viewRegionEnd = assemblyEnd,
 }: {
   // Adapter-level `summaryAdapter` snapshot; the zoom-out summary path is off
   // when it is null.
   summaryAdapter?: unknown
+  // Adapter-level `annotationAdapter` (UCSC mafFrames) snapshot. Only its
+  // presence is read by the gates — the display asks whether a reading frame
+  // *can* be defined, and the RPC that reads it is stubbed here — so a bare
+  // `{}` is enough to turn the frame-gated options on.
+  annotationAdapter?: unknown
   assemblyEnd?: number
   // How much of the assembly `createDisplay` displays by default.
   viewRegionEnd?: number
@@ -57,7 +63,10 @@ export function createMafTestEnvironment({
         name: 'MafTabixAdapter',
         configSchema: ConfigurationSchema(
           'MafTabixAdapter',
-          { summaryAdapter: { type: 'frozen', defaultValue: null } },
+          {
+            summaryAdapter: { type: 'frozen', defaultValue: null },
+            annotationAdapter: { type: 'frozen', defaultValue: null },
+          },
           { explicitlyTyped: true },
         ),
         getAdapterClass: () => Promise.resolve(class extends BaseAdapter {}),
@@ -106,7 +115,7 @@ export function createMafTestEnvironment({
       trackId: 'test_track',
       assemblyNames: ['volvox'],
       // No `samples` slot on the adapter → the sample-discovery path.
-      adapter: { type: 'MafTabixAdapter', summaryAdapter },
+      adapter: { type: 'MafTabixAdapter', summaryAdapter, annotationAdapter },
     },
     { pluginManager },
   )

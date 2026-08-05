@@ -34,7 +34,10 @@ import deepEqual from 'fast-deep-equal'
 import { autorun, observable } from 'mobx'
 
 import { buildInstanceBuffer } from '../LinearMafRenderer/mafInstanceBuffer.ts'
-import { getMafColorPalette } from '../LinearMafRenderer/util.ts'
+import {
+  getCodonLegendItems,
+  getMafColorPalette,
+} from '../LinearMafRenderer/util.ts'
 import {
   computeVisibleAnnotations,
   findFrameAt,
@@ -54,11 +57,10 @@ import {
 } from './components/computeVisibleInversions.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { computeVisibleSummaryBars } from './components/computeVisibleSummaryBars.ts'
-import { identityRgb } from './components/drawRowIdentity.ts'
+import { identityLegendItems } from './components/drawRowIdentity.ts'
 import {
   perRowChromRanks,
-  sourceChromRankColor,
-  sourceChromRankLabel,
+  sourceChromLegendItems,
   uniqueRegionsFromBlocks,
 } from './components/drawSourceChrom.ts'
 import { findRowHoverAtBp } from './components/findRowHover.ts'
@@ -67,6 +69,7 @@ import { coverageInsertionAt } from './coverageInsertion.ts'
 import { DEFAULTS } from './displayDefaults.ts'
 import { fetchMafAlignmentData, fetchMafSummaryData } from './fetchMafData.ts'
 import { placeMafRegionData } from './placeMafRows.ts'
+import { isRowIdentityMode } from './rowIdentityModes.ts'
 import { buildMafTrackMenuItems } from './trackMenuItems.ts'
 import { getMsaHighlights } from './util.ts'
 
@@ -96,6 +99,7 @@ import type {
   RowIdentityModeWithOff,
 } from './rowIdentityModes.ts'
 import type { RowRendering } from './rowRenderings.ts'
+import type { LegendItem } from '@jbrowse/core/ui'
 import type { Region, UriLocation } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
@@ -1505,23 +1509,6 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The codon view is on: the toggle is set, frame data is available to
-         * define the reading frame, and we're zoomed to base level (so codons are
-         * meaningful) and not in the cheap summary path. When active it replaces
-         * the per-base SNP rendering with per-codon change coloring.
-         */
-        get codonViewActive(): boolean {
-          return (
-            self.showTranslation &&
-            !!self.annotationAdapterConfig &&
-            self.zoomedToBaseLevel &&
-            !self.showSummary
-          )
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
          * The row coloring the *user picked*, as one value across the three
          * slots that store it. `activeRowRendering` below is what is actually
          * painting; this is the setting behind it, and the two differ wherever
@@ -1532,8 +1519,9 @@ export default function stateModelFactory(
          * the bases at base level, codon view only exists there — which reads
          * as the menu changing the setting behind their back.
          *
-         * Same precedence as `activeRowRendering`, minus the zoom/summary
-         * terms, so "what wins" is one rule rather than two that can disagree.
+         * This is where precedence between the three slots is decided, once:
+         * `activeRowRendering` starts from the answer rather than re-deriving
+         * it, so the two cannot disagree about which setting won.
          */
         get selectedRowRendering(): RowRendering {
           return self.showTranslation && !!self.annotationAdapterConfig
@@ -1544,41 +1532,54 @@ export default function stateModelFactory(
                 ? self.rowIdentityMode
                 : 'bases'
         },
+      }))
+      .views(self => ({
         /**
          * #getter
          * Single source of truth for what the per-sample rows area draws right now:
          * `bases` (the GPU SNP/base coloring), `codon` (per-codon change coloring
          * from `mafFrames`), `sourceChrom` (color-by-source-chromosome SV mode), or
-         * a per-row identity style (`heatmap` / `xyplot`). Codon view takes
-         * precedence when on, then color-by-chromosome (an explicit SV toggle, but
-         * not in the cheap summary path which carries no per-row chr); otherwise,
-         * with `rowIdentityAutoZoom` (default) it emulates UCSC `wigMaf` — bases at
-         * base level, the identity plot when zoomed out; with auto off the selected
-         * mode is pinned. The GPU canvas, the identity/chromosome canvases, the
-         * codon overlay, and SVG export all branch on this one getter so they can't
-         * disagree about what's on screen.
+         * a per-row identity style (`heatmap` / `xyplot`). The GPU canvas, the
+         * identity/chromosome canvases, the codon overlay, and SVG export all
+         * branch on this one getter so they can't disagree about what's on screen.
+         *
+         * `selectedRowRendering` is the setting; this applies the two things that
+         * can override it, and falls back to the bases — the rendering that needs
+         * nothing beyond the alignment — whenever it does:
+         *
+         * - the cheap summary path carries neither per-row bases nor per-row
+         *   source chromosomes, so no alternative can draw from it;
+         * - zoom, in the two directions UCSC `wigMaf` uses. Codons only exist at
+         *   base level, and with `rowIdentityAutoZoom` (the default) the identity
+         *   plot yields to the bases there, where the letters say more than a
+         *   per-pixel mean of them. Auto off pins the plot on at every zoom.
+         *
+         * Deriving from the selection rather than restating its precedence is
+         * also what keeps a config that sets two of the three slots — the state
+         * the old menu of independent checkboxes could reach, and a hand-written
+         * config still can — painting the one the menu ticks. Re-deriving let a
+         * lower-precedence slot take over at the zooms where the winner couldn't
+         * draw, so the menu said "Codon changes" while the rows were colored by
+         * source chromosome.
          */
         get activeRowRendering():
           | 'bases'
           | 'codon'
           | 'sourceChrom'
           | RowIdentityMode {
-          if (self.codonViewActive) {
-            return 'codon'
+          if (self.showSummary) {
+            return 'bases'
           }
-          if (self.colorByChromosome && !self.showSummary) {
-            return 'sourceChrom'
+          const selected = self.selectedRowRendering
+          if (selected === 'codon') {
+            return self.zoomedToBaseLevel ? 'codon' : 'bases'
           }
-          const { rowIdentityMode } = self
-          // With auto on (default) the identity plot yields to the bases once
-          // zoomed in to base level — UCSC wigMaf. Auto off pins it on everywhere.
-          const autoHidesAtBaseLevel =
-            self.rowIdentityAutoZoom && self.zoomedToBaseLevel
-          return rowIdentityMode !== 'none' &&
-            !self.showSummary &&
-            !autoHidesAtBaseLevel
-            ? rowIdentityMode
-            : 'bases'
+          if (isRowIdentityMode(selected)) {
+            return self.rowIdentityAutoZoom && self.zoomedToBaseLevel
+              ? 'bases'
+              : selected
+          }
+          return selected
         },
       }))
       .views(self => ({
@@ -1637,9 +1638,7 @@ export default function stateModelFactory(
           self.setShowTranslation(rendering === 'codon')
           self.setColorByChromosome(rendering === 'sourceChrom')
           self.setRowIdentityMode(
-            rendering === 'heatmap' || rendering === 'xyplot'
-              ? rendering
-              : 'none',
+            isRowIdentityMode(rendering) ? rendering : 'none',
           )
         },
       }))
@@ -1842,44 +1841,32 @@ export default function stateModelFactory(
          * export read it — an exported codon or source-chromosome figure whose
          * swatches are its only decoder used to ship with no key at all.
          *
-         * Source-chromosome coloring is by each row's per-row chromosome RANK
-         * (see `perRowChromRanks`), not by chromosome name, so its key is this
-         * short fixed scheme rather than a per-scaffold rainbow: one entry per
-         * rank actually present in view, and a lone "Main chromosome" entry
-         * means nothing rearranges here.
+         * A dispatch, not a description: each key is built by the module that
+         * paints the rendering, out of the colors it paints with. Written out
+         * here instead, all three had drifted from the screen — the codon
+         * swatches skipped the alpha the cells are composited with, the X-Y plot
+         * got the heatmap's ramp when it paints one color and varies height, and
+         * the source-chromosome key kept adding rows past the point where its
+         * palette stops changing.
          */
-        get legendItems(): { label: string; color?: string }[] {
+        get legendItems(): LegendItem[] {
           const view = self.lgv
           if (!view.initialized) {
             return []
           }
           const rendering = self.activeRowRendering
           if (rendering === 'codon') {
-            const { palette } = getSession(self)
-            return [
-              { label: 'Nonsynonymous', color: palette.codonNonsynonymous },
-              { label: 'Synonymous', color: palette.codonSynonymous },
-              { label: 'Stop', color: palette.codonStop },
-            ]
+            return getCodonLegendItems(getSession(self).palette)
           }
           if (rendering === 'sourceChrom') {
-            const { maxRank } = self.sourceChromRanks
-            return Array.from({ length: maxRank + 1 }, (_, rank) => ({
-              label: sourceChromRankLabel(rank),
-              color: sourceChromRankColor(rank),
-            }))
+            // Colored by each row's per-row chromosome RANK, not by chromosome
+            // name, so the key is this short fixed scheme rather than a
+            // per-scaffold rainbow.
+            return sourceChromLegendItems(self.sourceChromRanks.maxRank)
           }
-          if (rendering === 'heatmap' || rendering === 'xyplot') {
-            // Endpoints of the same ramp the rows are painted with, so the
-            // swatches match the rendering exactly. The color-less first entry
-            // names the metric, without which the ramp is ambiguous.
-            return [
-              { label: 'Per-base identity to reference' },
-              { label: 'Conserved (base matches)', color: identityRgb(1) },
-              { label: 'Divergent (base differs)', color: identityRgb(0) },
-            ]
-          }
-          return []
+          return isRowIdentityMode(rendering)
+            ? identityLegendItems(rendering)
+            : []
         },
         /**
          * #method

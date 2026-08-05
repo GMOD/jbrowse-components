@@ -9,6 +9,7 @@ import { rowBandGeometry, visibleRowRange } from './visibleRegionGeometry.ts'
 
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { RowIdentityMode } from '../rowIdentityModes.ts'
+import type { LegendItem } from '@jbrowse/core/ui'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
@@ -56,6 +57,40 @@ export function identityRgb(t: number) {
 const IDENTITY_RAMP = Array.from({ length: 101 }, (_, i) =>
   identityRgb(i / 100),
 )
+
+// The single fill the `xyplot` pass paints every bar with. Identity is in the
+// bar's HEIGHT there, not its color — named so the legend below can't go on
+// describing a red→blue ramp that mode never puts on screen.
+const XYPLOT_BAR_COLOR = IDENTITY_RAMP[100]!
+
+/**
+ * The color key for whichever identity plot is drawing, built here rather than
+ * in the model so it can't describe something this file stopped painting.
+ *
+ * The two modes encode identity differently and so need different keys: the
+ * heatmap really does read off the ramp, but the X-Y plot paints every bar the
+ * conserved end of it and varies the height. Both used to get the heatmap's
+ * two-swatch ramp key, so an X-Y figure shipped with a "Divergent" red swatch
+ * and not one red pixel to match it.
+ */
+export function identityLegendItems(mode: RowIdentityMode): LegendItem[] {
+  // The color-less row names the metric; without it either key is an
+  // uninterpreted color or height.
+  const metric = { label: 'Per-base identity to reference' }
+  return mode === 'xyplot'
+    ? [
+        metric,
+        {
+          label: 'Bar height: full = conserved, flat = divergent',
+          color: XYPLOT_BAR_COLOR,
+        },
+      ]
+    : [
+        metric,
+        { label: 'Conserved (base matches)', color: identityRgb(1) },
+        { label: 'Divergent (base differs)', color: identityRgb(0) },
+      ]
+}
 
 /**
  * One block's reference-side decisions, computed once and replayed for every
@@ -280,7 +315,7 @@ export function drawRowIdentity(
     scrollTop,
   )
   if (mode === 'xyplot') {
-    ctx.fillStyle = IDENTITY_RAMP[100]!
+    ctx.fillStyle = XYPLOT_BAR_COLOR
     for (let row = firstRow; row < lastRow; row++) {
       const rowBottom = bandOffset + rowHeight * row + bandH
       const base = (row - firstRow) * width

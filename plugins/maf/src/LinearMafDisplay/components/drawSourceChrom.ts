@@ -11,6 +11,7 @@ import {
 } from './visibleRegionGeometry.ts'
 
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
+import type { LegendItem } from '@jbrowse/core/ui'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
@@ -46,6 +47,30 @@ const RANK_LABELS = [
 
 export function sourceChromRankLabel(rank: number): string {
   return RANK_LABELS[Math.min(rank, RANK_LABELS.length - 1)]!
+}
+
+/**
+ * The color key for the source-chromosome rendering: one row per rank present
+ * in view, capped at the palette's last entry.
+ *
+ * The cap is the point, and it belongs here with the two clamps it follows from
+ * rather than in the model, which only knew the max rank. Both the color and
+ * the label saturate at the last slot ("Other source"), so ranking a row across
+ * more source chromosomes than the palette has — routine for a scaffold-level
+ * assembly in a many-way alignment, where one row can draw from dozens —
+ * emitted an identical "Other source" row per extra rank. The key then grew
+ * with the fragmentation of the worst genome on screen while saying nothing new
+ * past the fifth entry, and on a tall alignment it grew over the rows.
+ *
+ * A lone "Main chromosome" entry is the meaningful minimum: it says nothing in
+ * view is rearranged.
+ */
+export function sourceChromLegendItems(maxRank: number): LegendItem[] {
+  const shown = Math.min(maxRank, SOURCE_CHROM_PALETTE.length - 1) + 1
+  return Array.from({ length: shown }, (_, rank) => ({
+    label: sourceChromRankLabel(rank),
+    color: sourceChromRankColor(rank),
+  }))
 }
 
 /**

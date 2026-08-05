@@ -70,3 +70,91 @@ describe('row coloring is one choice across three slots', () => {
     expect(display.selectedRowRendering).toBe('bases')
   })
 })
+
+// `activeRowRendering` starts from `selectedRowRendering` rather than restating
+// its precedence, so the two can't disagree about which setting won. What is
+// left to it is the two things that override a selection — the summary path and
+// zoom — and the rule that it falls back to the bases, never to a losing slot.
+describe('what paints is the selection, overridden only by zoom and summary', () => {
+  // Presence is all the gates read, and the RPC that would fetch the file is
+  // stubbed, so the shape of the frames adapter doesn't matter here.
+  const framesEnv = (opts: { summaryAdapter?: unknown } = {}) =>
+    createMafTestEnvironment({
+      annotationAdapter: { type: 'BigBedAdapter' },
+      ...opts,
+    })
+
+  // `zoomedToBaseLevel` reads the *debounced* coarse zoom, and the view autorun
+  // that publishes it doesn't run headless — so a test that only calls zoomTo
+  // silently keeps whatever zoom the model was created at.
+  function zoomAndSettle(
+    view: ReturnType<
+      ReturnType<typeof createMafTestEnvironment>['createDisplay']
+    >['view'],
+    bpPerPx: number,
+  ) {
+    view.zoomTo(bpPerPx)
+    view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
+  }
+
+  it('draws codons at base level and the bases zoomed out', () => {
+    const { display, view } = framesEnv().createDisplay()
+    display.setRowRendering('codon')
+    zoomAndSettle(view, 0.5)
+    expect(display.selectedRowRendering).toBe('codon')
+    expect(display.zoomedToBaseLevel).toBe(true)
+    expect(display.activeRowRendering).toBe('codon')
+
+    // Same selection, zoomed out: codons are not resolvable, so the rows go
+    // back to the bases. The selection is remembered, not repainted as
+    // something else, and the menu's tick doesn't move.
+    zoomAndSettle(view, 100)
+    expect(display.selectedRowRendering).toBe('codon')
+    expect(display.activeRowRendering).toBe('bases')
+  })
+
+  it('yields an identity plot to the bases at base level, unless pinned', () => {
+    const { display, view } = framesEnv().createDisplay()
+    display.setRowRendering('heatmap')
+    zoomAndSettle(view, 100)
+    expect(display.activeRowRendering).toBe('heatmap')
+
+    // UCSC wigMaf: zoomed in, the letters say more than a per-pixel mean of them
+    zoomAndSettle(view, 0.5)
+    expect(display.activeRowRendering).toBe('bases')
+
+    display.setRowIdentityAutoZoom(false)
+    expect(display.activeRowRendering).toBe('heatmap')
+  })
+
+  // The cheap summary path carries neither per-row bases nor per-row source
+  // chromosomes, so no alternative can draw from it.
+  it('draws none of the alternatives on the summary path', () => {
+    const { display, view } = framesEnv({
+      summaryAdapter: { type: 'BigBedAdapter' },
+    }).createDisplay()
+    zoomAndSettle(view, 100)
+    expect(display.showSummary).toBe(true)
+
+    for (const rendering of ['sourceChrom', 'heatmap', 'xyplot'] as const) {
+      display.setRowRendering(rendering)
+      expect(display.selectedRowRendering).toBe(rendering)
+      expect(display.activeRowRendering).toBe('bases')
+    }
+  })
+
+  // The state the old menu of independent checkboxes could reach, and a
+  // hand-written config still can. Re-deriving precedence let the losing slot
+  // take over at the zooms where the winner couldn't draw, so the menu ticked
+  // "Codon changes" while the rows were colored by source chromosome.
+  it('falls back to the bases, not to a losing slot, when two are set', () => {
+    const { display, view } = framesEnv().createDisplay()
+    display.setShowTranslation(true)
+    display.setColorByChromosome(true)
+    zoomAndSettle(view, 100)
+
+    expect(display.selectedRowRendering).toBe('codon')
+    expect(display.zoomedToBaseLevel).toBe(false)
+    expect(display.activeRowRendering).toBe('bases')
+  })
+})

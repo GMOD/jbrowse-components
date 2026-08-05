@@ -188,7 +188,9 @@ export default function configSchemaF(pluginManager: PluginManager) {
        */
       rowIdentityMode: {
         type: 'stringEnum',
-        model: types.enumeration('RowIdentityMode', ROW_IDENTITY_MODE_VALUES),
+        model: types.enumeration('RowIdentityMode', [
+          ...ROW_IDENTITY_MODE_VALUES,
+        ]),
         defaultValue: DEFAULTS.rowIdentityMode,
         description: 'per-row identity rendering: none, heatmap, or xyplot',
       },
