@@ -44,12 +44,12 @@ used to load bgzip-compressed, tabix-indexed VCF files
 
 - **Track:** [VariantTrack](../varianttrack)
 - **Display:** [LinearPairedArcDisplay](../linearpairedarcdisplay)
+- **Display:** [ChordVariantDisplay](../chordvariantdisplay)
 - **Display:**
   [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
 - **Display:**
   [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
 - **Display:** [LinearVariantDisplay](../linearvariantdisplay)
-- **Display:** [ChordVariantDisplay](../chordvariantdisplay)
 
 ## Config slots
 

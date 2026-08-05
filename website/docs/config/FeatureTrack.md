@@ -60,13 +60,13 @@ identifies it (not one of the config slots below).
 
 ## Related links
 
+- **Display:** [LinearScoreDisplay](../linearscoredisplay)
 - **Display:** [LinearArcDisplay](../lineararcdisplay)
   ([state model](../../models/lineararcdisplay))
 - **Display:** [LinearBasicDisplay](../linearbasicdisplay)
   ([state model](../../models/linearbasicdisplay))
 - **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
   ([state model](../../models/linearmultirowfeaturedisplay))
-- **Display:** [LinearScoreDisplay](../linearscoredisplay)
 - **Adapter:** [BedAdapter](../bedadapter)
 - **Adapter:** [BedTabixAdapter](../bedtabixadapter)
 - **Adapter:** [BigBedAdapter](../bigbedadapter)

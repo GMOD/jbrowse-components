@@ -53,6 +53,8 @@ and custom feature details in `LinearVariantDisplay`
 
 - **Display:** [LinearPairedArcDisplay](../linearpairedarcdisplay)
   ([state model](../../models/linearpairedarcdisplay))
+- **Display:** [ChordVariantDisplay](../chordvariantdisplay)
+  ([state model](../../models/chordvariantdisplay))
 - **Display:**
   [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
   ([state model](../../models/linearmultisamplevariantdisplay))
@@ -61,8 +63,6 @@ and custom feature details in `LinearVariantDisplay`
   ([state model](../../models/linearmultisamplevariantmatrixdisplay))
 - **Display:** [LinearVariantDisplay](../linearvariantdisplay)
   ([state model](../../models/linearvariantdisplay))
-- **Display:** [ChordVariantDisplay](../chordvariantdisplay)
-  ([state model](../../models/chordvariantdisplay))
 - **Adapter:** [BedpeAdapter](../bedpeadapter)
 - **Adapter:** [StarFusionAdapter](../starfusionadapter)
 - **Adapter:** [SplitVcfTabixAdapter](../splitvcftabixadapter)

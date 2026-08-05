@@ -34,7 +34,7 @@ the whole surface.
 | Member | Description | Defined by |
 | --- | --- | --- |
 | <span id="volatile-adminmode">**adminMode**</span><br><code>adminMode</code> |  | JBrowseWebRootModel |
-| <span id="volatile-sessiondb">**sessionDB**</span><br><code>sessionDB: undefined as IDBPDatabase&lt;SessionDB&gt; &#124; undefined</code> |  | JBrowseWebRootModel |
+| <span id="volatile-sessiondb">**sessionDB**</span><br><code>sessionDB: undefined as SessionDBHandle &#124; undefined</code> |  | JBrowseWebRootModel |
 | <span id="volatile-version">**version**</span><br><code>version: packageJSON.version</code> |  | JBrowseWebRootModel |
 | <span id="volatile-gitcommit">**gitCommit**</span><br><code>gitCommit</code> |  | JBrowseWebRootModel |
 | <span id="volatile-pluginsupdated">**pluginsUpdated**</span><br><code>pluginsUpdated: false</code> |  | JBrowseWebRootModel |
@@ -61,7 +61,7 @@ the whole surface.
 | <span id="action-setsavedsessionmetadata">**setSavedSessionMetadata**</span><br><code>(sessions: SessionMetadata[]) =&gt; void</code> |  | JBrowseWebRootModel |
 | <span id="action-fetchsessionmetadata">**fetchSessionMetadata**</span><br><code>() =&gt; Promise&lt;void&gt;</code> | Re-reads the whole `metadata` store. For anything that changes rows this model didn't just write itself (first load, pruning, favorite, rename, delete) — the autosave path uses `upsertSessionMetadata` instead. | JBrowseWebRootModel |
 | <span id="action-upsertsessionmetadata">**upsertSessionMetadata**</span><br><code>(meta: SessionMetadata) =&gt; void</code> | Merges a row this model has just written into the in-memory list. The autosave autorun writes exactly one row on every debounced session edit — every 400ms for as long as you keep panning — and already holds its contents, so re-reading every session's metadata to learn what it just stored is the expensive way to move one row to the top. | JBrowseWebRootModel |
-| <span id="action-setsessiondb">**setSessionDB**</span><br><code>(sessionDB: IDBPDatabase&lt;SessionDB&gt;) =&gt; void</code> |  | JBrowseWebRootModel |
+| <span id="action-setsessiondb">**setSessionDB**</span><br><code>(sessionDB: SessionDBHandle) =&gt; void</code> |  | JBrowseWebRootModel |
 | <span id="action-setpluginsupdated">**setPluginsUpdated**</span><br><code>() =&gt; void</code> |  | JBrowseWebRootModel |
 | <span id="action-setreloadpluginmanagercallback">**setReloadPluginManagerCallback**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(callback: (configSnapshot: Record&lt;string, unknown&gt;, sessionSna…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(callback: (configSnapshot: Record&lt;string, unknown&gt;, sessionSnapshot: Record&lt;string, unknown&gt;) =&gt; void) =&gt; void</code></pre></dialog></span> |  | JBrowseWebRootModel |
 | <span id="action-activatesession">**activateSession**</span><br><code>(id: string) =&gt; Promise&lt;void&gt;</code> |  | JBrowseWebRootModel |

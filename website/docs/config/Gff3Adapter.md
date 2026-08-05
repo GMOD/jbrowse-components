@@ -31,10 +31,10 @@ the Gff3TabixAdapter for large files.
 ## Related links
 
 - **Track:** [FeatureTrack](../featuretrack)
+- **Display:** [LinearScoreDisplay](../linearscoredisplay)
 - **Display:** [LinearArcDisplay](../lineararcdisplay)
 - **Display:** [LinearBasicDisplay](../linearbasicdisplay)
 - **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
-- **Display:** [LinearScoreDisplay](../linearscoredisplay)
 
 ## Config slots
 

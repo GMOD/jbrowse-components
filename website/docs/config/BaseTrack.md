@@ -27,10 +27,10 @@ identifies it (not one of the config slots below).
 - **Extended by:** [MultiQuantitativeTrack](../multiquantitativetrack)
 - **Extended by:** [QuantitativeTrack](../quantitativetrack)
 - **Extended by:** [GWASTrack](../gwastrack)
+- **Extended by:** [HicTrack](../hictrack)
 - **Extended by:** [MafTrack](../maftrack)
 - **Extended by:** [LDTrack](../ldtrack)
 - **Extended by:** [VariantTrack](../varianttrack)
-- **Extended by:** [HicTrack](../hictrack)
 - **Extended by:** [SyntenyTrack](../syntenytrack)
 
 ## Config slots
