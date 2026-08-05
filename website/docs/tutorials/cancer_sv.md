@@ -301,7 +301,7 @@ against the reference. Both tracks below are real alignments with soft clipping
 shown, over the same 380 bp of the event: `derive`'s realigned BAM on the
 derivative, and the tumour BAM on hg38.
 
-<Figure caption="Left: the tumour pileup against hg38 at chr3:25,359,568 with soft clipping shown, where the reads carrying the allele end and their tails hang off as mismatch-coloured clip. Right: the spanning reads realigned to the derivative across the same junction, clipping still on, crossing it at flat depth. The band marks the junction in each assembly's own coordinates." src="/img/cancer_sv/realigned_reads.png" links="hg38=cancer_sv/realigned_reads_reference,derivative=cancer_sv/realigned_reads_derivative" />
+<Figure caption="Left: a breakpoint split view of the tumour against hg38, chr3:25,359,568 above and chr10:58,717,464 below. The reads carrying the allele end at the junction with their tails hanging off as mismatch-coloured clip, and the curves are those same molecules continuing on chr10. Right: the spanning reads realigned to the derivative across the same junction, clipping still on, crossing it at flat depth with no curve to draw." src="/img/cancer_sv/realigned_reads.png" links="hg38=cancer_sv/realigned_reads_reference,derivative=cancer_sv/realigned_reads_derivative" />
 
 ## The transcript view
 

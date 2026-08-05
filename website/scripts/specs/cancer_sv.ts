@@ -129,23 +129,21 @@ const FUSION_ARC_COLOR =
 // Soft clipping is ON in both panes, which is what makes the comparison
 // honest: the right pane is not "clipping hidden", it is the same setting over
 // reads that have none to draw.
-// The chr3 -> chr10 junction as a 20 bp band in each assembly's own
-// coordinates. `derive`'s PAF puts derivative 0-32,732 (+) against
-// chr3:25,326,821-25,359,568, so the boundary is the same event at
-// 25,359,568 and at 32,732; the band is wide enough to be a mark rather than a
-// hairline at 380 bp across a 700 px pane.
-const JUNCTION_HL_COLOR = 'rgba(60,65,72,0.12)'
-const JUNCTION_HL_HG38 = {
-  refName: 'chr3',
-  start: 25359558,
-  end: 25359578,
-  color: JUNCTION_HL_COLOR,
-}
+// The junction as a 20 bp band in the derivative's own coordinates. `derive`'s
+// PAF puts derivative 0-32,732 (+) against chr3:25,326,821-25,359,568, so the
+// boundary is the same event at 25,359,568 and at 32,732; the band is wide
+// enough to be a mark rather than a hairline at 380 bp across a 700 px pane.
+//
+// Only this pane carries one. The reference pane is a split view, where the
+// curves converge on the junction and mark it better than a band would -- and
+// a band could not be drawn there anyway: BreakpointSplitView's `init` forwards
+// `{loc, assembly, tracks}` to each panel and nothing else, so a `highlight`
+// authored on a panel is dropped on the way through.
 const JUNCTION_HL_DER3 = {
   refName: 'der3_RARB_BICC1_TRHDE',
   start: 32722,
   end: 32742,
-  color: JUNCTION_HL_COLOR,
+  color: 'rgba(60,65,72,0.12)',
 }
 
 function realignedReadsPartSpecs(): ScreenshotSpec[] {
@@ -155,38 +153,90 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
   // carried 150 px of blank inside a track taller than its own pileup, the
   // derivative pane cut 97 px off the bottom of the page), which is what the
   // generator's two size reports are for.
-  const HEIGHT = 612
+  //
+  // Two stacked panels now carry the left pane where one did, so the shared
+  // height is the split view's rather than the single pileup's.
+  // The split view's own height, and the derivative pane is then sized to meet
+  // it rather than the other way round: the left half's content is two panels
+  // and a bundle of curves, the right half's is 29 rows that can take any row
+  // height. Neither of the run's size reports fixes this number -- both measure
+  // the PAGE, and every miss here was inside a track. 566 came off the
+  // blank-below report and left the chr3 pileup on a scrollbar.
+  const HEIGHT = 615
   const WIDTH = 700
+  // Both panels of the split view draw their reads the same way on purpose:
+  // the comparison is between the two ENDS of one junction, so a difference in
+  // row height or in clipping between them would be a difference the data does
+  // not have. Super-compact because the depth is 200x and the curves have to
+  // leave the pileup they start from; at featureHeight 2 the top panel alone is
+  // taller than this whole pane.
+  //
+  // The HEIGHT each panel gets is not shared, though, and that is the same rule
+  // the panes themselves follow: chr3 carries the full tumour pileup and chr10
+  // carries only the reads whose tails land there, so equal track heights left
+  // 210 px of white under the lower pileup. Neither size report catches it --
+  // the blank is INSIDE the split view rather than below the fold.
+  const BREAKPOINT_READS = {
+    trackId: TUMOUR,
+    showSoftClipping: true,
+    ...SUPER_COMPACT,
+  }
   return [
     {
       mode: 'url',
       name: 'cancer_sv/realigned_reads_reference',
       viewportHeight: HEIGHT,
       viewportWidth: WIDTH,
-      url: lgvSession(CONFIG, {
-        assembly: 'hg38',
-        loc: 'chr3:25,359,380-25,359,760',
-        // The junction itself, in-app rather than as a drawn callout, and the
-        // same band in the other pane's coordinates. Both windows put it at 49%
-        // of their width, so side by side the two marks line up and a reader
-        // compares the same column twice.
-        highlight: [JUNCTION_HL_HG38],
-        tracks: [
+      // A BREAKPOINT SPLIT VIEW, not the single chr3 pileup this pane used to
+      // be (reviewer: "the left side should potentially show a breakpoint split
+      // view, so that the user can see the split alignment from chr3 to
+      // chr10"). One pileup could only show half the event: reads ending at
+      // 25,359,568 with their tails hanging off as clip, which says the
+      // molecules are torn but never where the other piece went. The second
+      // panel is where it went, and the curves between the panels are the same
+      // molecules drawn as one thing, so the left pane now makes the claim the
+      // right pane answers -- torn in two against hg38, continuous against the
+      // allele -- instead of leaving half of it to the caption.
+      url: sessionSpec(CONFIG, {
+        views: [
           {
-            trackId: TUMOUR,
-            showSoftClipping: true,
-            // 200x tumour depth: two pixels a row fits the pileup and still
-            // leaves the clipped tails' mismatch ticks distinguishable, which
-            // one pixel merges into a single coloured block
-            featureHeight: 2,
-            // the pileup's own size at this row height, measured off the render:
-            // taller is blank page under the reads rather than more of them
-            height: 410,
+            type: 'BreakpointSplitView',
+            displayName: 'RARB (chr3) - BICC1 (chr10)',
+            // THE VIEW'S OWN HEIGHT IS THE LEVER, and it is easy to miss: a
+            // panel's track height does apply (the two panels come out
+            // different sizes), but the split view lays its panels out inside
+            // `height` and scrolls them, so growing a track alone moves nothing
+            // on screen and only leaves blank page under the view. Both have to
+            // move together. `init` is NOT the spelling here -- the launcher
+            // takes the panels flat as `views` and rejects `init` by name,
+            // which is the config/defaultSession form.
+            height: 560,
+            views: [
+              {
+                assembly: 'hg38',
+                loc: 'chr3:25,359,380-25,359,760',
+                tracks: [{ ...BREAKPOINT_READS, height: 280 }],
+              },
+              {
+                assembly: 'hg38',
+                loc: 'chr10:58,717,274-58,717,654',
+                tracks: [{ ...BREAKPOINT_READS, height: 150 }],
+              },
+            ],
           },
         ],
       }),
-      readyText: '25,359',
-      readyTimeout: 90000,
+      // 380 bp a panel, which is the window the single pileup used and the same
+      // number of bases the derivative pane shows, so the two halves stay
+      // comparable base for base. It is also what makes the pileup fit: a 2 kb
+      // panel was tried and every read overlapping the wider window stacks, so
+      // the rows outgrew any height the panel could be given and the wall of
+      // clipping ran under a scrollbar.
+      // The connections rather than a delay -- the overlay publishes
+      // `<trackId>-loaded` only once a read has matches on BOTH panels, which
+      // is exactly the thing this pane exists to show.
+      readySelector: `[data-testid="${TUMOUR}-loaded"]`,
+      readyTimeout: 120000,
       settleMs: 15000,
       // Where each half's reads were aligned, on the half itself (reviewer: "if
       // it was shown how this was done, it is ideal e.g. text blurb saying
@@ -199,7 +249,18 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
         {
           type: 'text',
           text: 'aligned to hg38',
-          anchor: { track: TUMOUR, fracY: 0, alignX: 'left', dx: 10, dy: 30 },
+          // `view: [0, 0]` is the split view's UPPER panel -- an anchor's view
+          // is a path, and both panels carry the same trackId, so without the
+          // path this resolves to whichever the session lists first by
+          // accident rather than on purpose.
+          anchor: {
+            view: [0, 0],
+            track: TUMOUR,
+            fracY: 0,
+            alignX: 'left',
+            dx: 10,
+            dy: 30,
+          },
         },
       ],
     },
@@ -225,8 +286,11 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
             // same 380 bp of pileup
             featureHeight: 9,
             // all 29 rows, and no more: a height that shows twenty of them puts
-            // the rest behind a scrollbar, which reads as a pileup that stops
-            height: 300,
+            // the rest behind a scrollbar, which reads as a pileup that stops.
+            // Grown with the pane when the left half became two panels -- the
+            // rows get the extra height rather than the page, since `+append`
+            // would otherwise pad this half with white.
+            height: 308,
           },
         ],
       }),
