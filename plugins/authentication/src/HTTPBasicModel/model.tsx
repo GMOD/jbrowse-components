@@ -1,5 +1,5 @@
 import { tokenEntryModelFactory } from '../tokenEntryModelFactory.ts'
-import { HTTPBasicLoginForm } from './HTTPBasicLoginForm.tsx'
+import { HTTPBasicLoginForm } from '../lazyLoginForms.ts'
 
 import type { HTTPBasicInternetAccountConfigModel } from './configSchema.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'

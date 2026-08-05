@@ -8,7 +8,10 @@ import { LD_FILTER_CATEGORIES } from '../ldFilterCategories.ts'
 
 import type { FilterStats } from '../../VariantRPC/getLDMatrix.ts'
 
-interface LDFilterModel {
+// exported so `lazyDialogs.ts` can name this component's props: `lazy()` infers
+// a type mentioning it, and TS4023 refuses to emit a declaration referring to a
+// type it cannot import
+export interface LDFilterModel {
   minorAlleleFrequencyFilter: number
   hweFilterThreshold: number
   callRateFilter: number

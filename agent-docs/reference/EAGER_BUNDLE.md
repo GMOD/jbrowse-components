@@ -1,6 +1,6 @@
 ---
 name: eager-bundle
-description: What every JBrowse host downloads before it can run, why plugin registration makes most of it unavoidable, and the four pins that were making it pay for far more. Read before touching a plugin `exports` object, a state model's imports, or anything that claims a bundle number.
+description: What every JBrowse host downloads before it can run, why plugin registration makes most of it unavoidable, and the five pins that were making it pay for far more. Read before touching a plugin `exports` object, a state model's imports, or anything that claims a bundle number.
 ---
 
 # The eager bundle
@@ -14,6 +14,9 @@ description: What every JBrowse host downloads before it can run, why plugin reg
 - Menu-item builders live in **`@jbrowse/core/ui/menuItems`**, which is React-free
   and guarded by a test. Import builders from there, components from
   `@jbrowse/core/ui`.
+- **A dialog opened through `session.queueDialog` can always be `lazy()`** —
+  `DialogQueue` already Suspense-wraps it. A model naming one directly was the
+  single cheapest win of the five.
 - Plugin registration is **genuinely eager and not reducible**: every plugin's
   models, adapters and config schemas must be registered before a session
   snapshot can be read.
@@ -45,13 +48,14 @@ JBrowse chrome at all:
 | before | 347 | 667 KB |
 | after pins 1-3 | 219 | 523 KB |
 | after pin 4 | 218 | 514 KB |
+| after pin 5 | 181 | 464 KB |
 
-Same page throughout, rendering the same thing. 153 KB gzipped and 129 chunks
+Same page throughout, rendering the same thing. 203 KB gzipped and 166 chunks
 were reachable and never used.
 
 ## Where it went
 
-Four pins, in the order they were found. All four are the same mistake at
+Five pins, in the order they were found. All five are the same mistake at
 different scales: **a module that must be evaluated eagerly names a React
 component**.
 
@@ -146,53 +150,55 @@ the barrel this was split from, and requires it to *fail*: a purity test that
 cannot see a violation is worth nothing, and the first version of this one
 couldn't (it missed `export … from` and passed both ways).
 
+### 5. Dialogs named by the models that open them
+
+The largest of the five after the registry, and the cheapest: **523 → 464 KB
+gzipped, 218 → 181 chunks**, for three import lines.
+
+Three state models named a dialog at module scope:
+
+- `plugins/variants/src/LDDisplay/shared.ts` → `LDFilterDialog`,
+  `AddFiltersDialog`, and through them `JexlFilterDialog` → `SubmitDialog` →
+  `Dialog`
+- `plugins/authentication`'s `HTTPBasicModel/model.tsx` and
+  `ExternalTokenModel/model.tsx` → their token-entry forms
+
+15 KB of first-party dialog code, and behind it MUI's whole form cluster —
+`TextField` → `Select` → `Modal` → `Popover` → `InputBase` → `OutlinedInput`.
+Every host shipped it before anything could have opened a filter menu, and most
+sessions never authenticate at all. Now `plugins/variants/src/shared/lazyDialogs.ts`
+and `plugins/authentication/src/lazyLoginForms.ts`, following
+`plugin-linear-genome-view`'s `lazyDialogs.ts`.
+
+**Nothing else was needed, which is the part worth knowing.** Both routes reach
+the dialog through `session.queueDialog`, and `DialogQueue`
+(`packages/app-core/src/ui/App/DialogQueue.tsx`) already renders it inside a
+`Suspense` boundary. **A dialog opened through `queueDialog` can always be
+`lazy()`**; if one still isn't, that is an oversight rather than a constraint.
+
+One snag worth remembering: `lazy()` infers a type naming the component's props,
+so a props interface local to the dialog module fails the declaration emit with
+TS4023 (`LDFilterModel` here). Export the interface.
+
 ## What is left, and what is not worth chasing
 
-**Not worth chasing:** the ~1.5 MB raw that remains is dominated by plugin
+**Not worth chasing:** the ~1.4 MB raw that remains is dominated by plugin
 registration — models, adapters, config schemas for all 18 core plugins — plus
 React and MST. That is the engine, and `createViewState`'s contract is that all
 of it is registered before a session snapshot can be read.
 
-**The next two, measured 2026-08-05 after the pass above.** Both are the same
-shape as pins 1, 2 and 4, one level further out:
+**Also not worth chasing: `ButtonBase`, `Tooltip`, `Button`, `CircularProgress`
+(~58 KB).** As of pin 5, **no first-party eager module imports a
+`@mui/material` component at all** — checked, not assumed. These arrive by
+rolldown putting a module reached only through dynamic imports into a chunk
+something eager also imports. That is a chunking question, not a source one, and
+the answer would be `advancedChunks` config rather than an edit anyone can read.
 
-- **Dialog and form components reached from eager models.** The `createViewState`
-  chunk statically imports `SubmitDialog`, `NumberTextField` and
-  `AddFiltersDialog`, and through them MUI's `TextField` → `Select` → `Modal` →
-  `Popover` cluster (~90 KB). The routes are an internet-account model naming its
-  login form (`plugins/authentication`'s `ExternalTokenEntryForm`,
-  `HTTPBasicLoginForm`) and a display model naming its filter dialog. Each is a
-  `lazy()` at the model, the same edit as pin 2.
-- **`@mui/material/styles` (~51 KB), now the largest single area.** Reached by
-  every `@mui/icons-material` import — ~39 eager menu modules name an icon for a
-  row's `icon` field — and by `makeStyles`. `BaseMenuItem.icon` is
-  `React.ElementType`, i.e. an element type rather than a name, which is the
-  descriptor rule again at a scale worth arguing about before starting: it is the
-  field DISPLAYCHROME.md already forbids for track controls. Doing it means a
-  name→component registry on the render side. See also OTHER_IDEAS.md, "A
-  theme-free `makeStyles`", which is the other half of the same 51 KB.
-
-## How to measure it
-
-`products/jbrowse-build-your-own/examples-site/scripts/measureEagerBundle.mjs`
-does it from the built `dist/`, with `es-module-lexer` — which is the one thing
-that reliably tells a static import from a dynamic one in minified output. Two
-traps cost real time on the way to the numbers above:
-
-- **Chunk names lie.** A rolldown chunk takes the name of one of its modules and
-  may contain many unrelated ones. "Cutting the `LinearGenomeView` chunk saves
-  239 KB" was measured, published to a scratch file, and wrong: that chunk was
-  mostly `@jbrowse/core/ui`. Attribute at module level, via rolldown's own
-  `chunk.modules`, or don't attribute.
-- **esbuild is not a stand-in for the real build.** An esbuild
-  `splitting: true` metafile is far quicker to produce and disagreed with
-  rolldown in both directions — it called `@mui/x-data-grid` eager when the real
-  build splits it out, and missed pins the real build keeps. Use it to explore;
-  measure on `dist/`.
-
-For attribution, the tool worth rebuilding is a throwaway Vite plugin dumping
-`this.getModuleInfo(id).importedIds` in `buildEnd` and `chunk.modules` in
-`generateBundle`, then a BFS over that. Note that the pre-treeshake graph
-(`getModuleInfo`) and the post-treeshake one (`chunk.modules`) answer different
-questions and neither alone is enough: intersecting them is what turns "is
-statically reachable" into "is actually paid for".
+**The one real lever left: `BaseMenuItem.icon`.** `@mui/material/styles` (~51 KB)
+is now the largest eager Material area, and it is reached by every
+`@mui/icons-material` import — ~39 eager menu modules name an icon for a row's
+`icon` field — and by `makeStyles`. `icon` is typed `React.ElementType`, i.e. an
+element type rather than a name, which is the descriptor rule (see pin 4) at the
+scale that needs arguing before starting: it means a name→component registry on
+the render side. See also OTHER_IDEAS.md, "A theme-free `makeStyles`", which is
+the other half of the same 51 KB.

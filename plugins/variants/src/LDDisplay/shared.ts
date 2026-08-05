@@ -19,10 +19,11 @@ import ClearAllIcon from '@mui/icons-material/ClearAll'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { PRECOMPUTED_LD_ADAPTERS } from '../RenderLDDataRPC/types.ts'
-import AddFiltersDialog from '../shared/components/AddFiltersDialog.tsx'
-import LDFilterDialog from '../shared/components/LDFilterDialog.tsx'
 import { clampLineZoneHeight } from '../shared/constants.ts'
 import { genomicViewportX } from '../shared/genomicViewportX.ts'
+// lazy: this is a state model, so a dialog named here is in every host's first
+// paint — see ../shared/lazyDialogs.ts
+import { AddFiltersDialog, LDFilterDialog } from '../shared/lazyDialogs.ts'
 import { generateLDColorRamp } from './components/ldColorRamp.ts'
 import { toLDUploadData } from './components/ldRenderingBackendTypes.ts'
 

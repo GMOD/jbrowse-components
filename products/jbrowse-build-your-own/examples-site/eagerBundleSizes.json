@@ -1,34 +1,34 @@
 {
   "a-stack-of-tracks": {
-    "chunks": 220,
-    "gzipKb": 517
+    "chunks": 183,
+    "gzipKb": 466
   },
   "add-the-chrome-you-want": {
-    "chunks": 239,
-    "gzipKb": 541
+    "chunks": 222,
+    "gzipKb": 515
   },
   "bring-your-own-overlays": {
-    "chunks": 239,
-    "gzipKb": 541
+    "chunks": 222,
+    "gzipKb": 515
   },
   "drive-it-from-your-app": {
-    "chunks": 239,
-    "gzipKb": 541
+    "chunks": 222,
+    "gzipKb": 515
   },
   "one-track": {
-    "chunks": 218,
-    "gzipKb": 514
+    "chunks": 181,
+    "gzipKb": 464
   },
   "pan-and-zoom": {
-    "chunks": 219,
-    "gzipKb": 517
+    "chunks": 182,
+    "gzipKb": 466
   },
   "run-it-in-a-worker": {
-    "chunks": 239,
-    "gzipKb": 541
+    "chunks": 222,
+    "gzipKb": 515
   },
   "your-own-feature-details": {
-    "chunks": 239,
-    "gzipKb": 541
+    "chunks": 222,
+    "gzipKb": 515
   }
 }
