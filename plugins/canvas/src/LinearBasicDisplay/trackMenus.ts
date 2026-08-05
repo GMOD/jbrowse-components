@@ -1,6 +1,6 @@
 import { makeDisplayTypeDefaultControl } from '@jbrowse/core/configuration'
-import { checkboxItem, promotableRadioItem } from '@jbrowse/core/ui'
 import { Highlighter } from '@jbrowse/core/ui/Icons'
+import { checkboxItem, promotableRadioItem } from '@jbrowse/core/ui/menuItems'
 import { pluralize } from '@jbrowse/core/util'
 import { heightModeMenuItems } from '@jbrowse/plugin-linear-genome-view'
 import FilterAltIcon from '@mui/icons-material/FilterAlt'

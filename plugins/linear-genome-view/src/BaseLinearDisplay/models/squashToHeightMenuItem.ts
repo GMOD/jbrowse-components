@@ -1,4 +1,4 @@
-import { checkboxItem } from '@jbrowse/core/ui'
+import { checkboxItem } from '@jbrowse/core/ui/menuItems'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 

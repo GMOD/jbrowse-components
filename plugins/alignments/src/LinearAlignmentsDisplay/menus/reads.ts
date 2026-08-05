@@ -1,4 +1,4 @@
-import { checkboxItem, promotableToggleItem } from '@jbrowse/core/ui'
+import { checkboxItem, promotableToggleItem } from '@jbrowse/core/ui/menuItems'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { collapseGroupRowsItems } from './groupByMenu.ts'

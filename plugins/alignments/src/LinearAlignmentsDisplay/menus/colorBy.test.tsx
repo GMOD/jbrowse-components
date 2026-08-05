@@ -84,7 +84,7 @@ describe('color by menu', () => {
       displayTypeDefault: displayTypeDefault(model),
     })
     expect(
-      strand && 'endAdornment' in strand && strand.endAdornment,
+      strand && 'defaultForAll' in strand && strand.defaultForAll,
     ).toBeTruthy()
   })
 
@@ -93,7 +93,7 @@ describe('color by menu', () => {
     const item = byLabel(model, 'First of pair strand', {
       displayTypeDefault: displayTypeDefault(model),
     })
-    expect(item && 'endAdornment' in item && item.endAdornment).toBeTruthy()
+    expect(item && 'defaultForAll' in item && item.defaultForAll).toBeTruthy()
   })
 
   test('no standalone "Make ... the default" checkbox remains', () => {
@@ -111,13 +111,11 @@ describe('color by menu', () => {
     const item = byLabel(model, 'Strand', {
       displayTypeDefault: displayTypeDefault(model),
     })
-    const adornment =
-      item && 'endAdornment' in item ? item.endAdornment : undefined
-    if (!isValidElement(adornment)) {
+    const pin = item && 'defaultForAll' in item ? item.defaultForAll : undefined
+    if (!pin) {
       throw new Error('no pin on Strand radio')
     }
-    const { control } = adornment.props as { control: { toggle: () => void } }
-    control.toggle()
+    pin.control.toggle()
     expect(model.pinned.has(JSON.stringify({ type: 'strand' }))).toBe(true)
   })
 
@@ -125,7 +123,7 @@ describe('color by menu', () => {
     const model = makeModel()
     const strand = byLabel(model, 'Strand')
     expect(
-      strand && 'endAdornment' in strand && strand.endAdornment,
+      strand && 'defaultForAll' in strand && strand.defaultForAll,
     ).toBeFalsy()
   })
 
@@ -169,13 +167,11 @@ describe('color by menu', () => {
       includeTagOption: true,
       displayTypeDefault: displayTypeDefault(model),
     })
-    const adornment =
-      item && 'endAdornment' in item ? item.endAdornment : undefined
-    if (!isValidElement(adornment)) {
+    const pin = item && 'defaultForAll' in item ? item.defaultForAll : undefined
+    if (!pin) {
       throw new Error('no pin on the tag radio')
     }
-    const { control } = adornment.props as { control: { toggle: () => void } }
-    control.toggle()
+    pin.control.toggle()
     expect(model.pinned.has(JSON.stringify({ type: 'tag', tag: 'HP' }))).toBe(
       true,
     )
@@ -270,13 +266,11 @@ describe('color by modifications menu', () => {
     const item = byLabel(model, TWO_COLOR, {
       displayTypeDefault: displayTypeDefault(model),
     })
-    const adornment =
-      item && 'endAdornment' in item ? item.endAdornment : undefined
-    if (!isValidElement(adornment)) {
+    const pin = item && 'defaultForAll' in item ? item.defaultForAll : undefined
+    if (!pin) {
       throw new Error('no pin on 2-color radio')
     }
-    const { control } = adornment.props as { control: { toggle: () => void } }
-    control.toggle()
+    pin.control.toggle()
     expect(
       model.pinned.has(
         JSON.stringify({
@@ -402,7 +396,12 @@ describe('color by modifications menu', () => {
     if (!item || !('render' in item)) {
       throw new Error('no threshold slider')
     }
-    const rendered = item.render(() => {})
+    // makeSizeMenu renders the row through `lazy()`, so `render()` hands back a
+    // Suspense boundary whose only child is the row — see ui/makeSizeMenu.tsx
+    const boundary = item.render(() => {})
+    const rendered = isValidElement(boundary)
+      ? (boundary.props as { children?: unknown }).children
+      : undefined
     if (!isValidElement(rendered)) {
       throw new Error('threshold slider did not render')
     }

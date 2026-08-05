@@ -1,39 +1,32 @@
-import { useState } from 'react'
-
-import { Typography } from '@mui/material'
-import { observer } from 'mobx-react'
+import { Suspense, lazy } from 'react'
 
 import {
   isSlotCustomized,
   makeCurrentValueDisplayTypeDefaultControl,
 } from '../configuration/promotableDefaults.ts'
-import { makeStyles } from '../util/tss-react/index.ts'
-import { DefaultForAllAdornment } from './DefaultForAllAdornment.tsx'
-import {
-  INLINE_MENU_ROW_WIDTH,
-  ResetToDefaultButton,
-} from './InlineMenuControls.tsx'
-import SingleSlider from './SingleSlider.tsx'
-import { sliderScale } from './sliderScale.ts'
+import { INLINE_MENU_ROW_WIDTH } from './inlineMenuRowWidth.ts'
 
 import type { DisplayTypeDefaultControl } from '../configuration/promotableDefaults.ts'
 import type { ResolvableDisplay } from '../configuration/promotableResolve.ts'
 import type { MenuItem } from './MenuTypes.ts'
 import type { SliderScale } from './sliderScale.ts'
 
-const useStyles = makeStyles()(theme => ({
-  root: {
-    width: INLINE_MENU_ROW_WIDTH,
-  },
-  header: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(0.5),
-  },
-  label: {
-    flex: 1,
-  },
-}))
+// The row's drawn half is `lazy()` for the reason the promotable pin is a
+// description rather than an element: this builder is called from state models
+// and menu modules, which are eager, and the row is the only route by which MUI
+// `Slider` — the largest single Material component in the eager graph — reached
+// a host's first paint. `type: 'custom'` already made `render` a thunk, so the
+// laziness is free at call time; it is the module edge that had to go.
+//
+// The fallback holds the row's footprint so the open menu doesn't reflow when
+// the chunk lands. Height is the row's natural one (caption line + slider); it
+// is approximate on purpose, since being a few px out for one frame is
+// invisible where a collapse to zero is not.
+const SizeSliderRow = lazy(() =>
+  import('./SizeSliderRow.tsx').then(m => ({ default: m.SizeSliderRow })),
+)
+
+const sizeRowFallbackHeight = 46
 
 // One inline menu row: the live value/slider with a reset button and, for a
 // promotable slot, a pin to make the current value the session-wide default.
@@ -45,98 +38,6 @@ const useStyles = makeStyles()(theme => ({
 // window size triggers a reload): the thumb follows a local drag value and only
 // calls onChange when the drag ends. While not dragging, dragValue is undefined
 // so the row still reflects the model (including external resets).
-const SizeSliderRow = observer(function SizeSliderRow({
-  title,
-  getValue,
-  min,
-  max,
-  step,
-  scale,
-  format,
-  isDefault,
-  commitOnRelease,
-  onChange,
-  onReset,
-  displayTypeDefault,
-}: {
-  title: string
-  getValue: () => number
-  min: number
-  max: number
-  step: number
-  scale: SliderScale
-  format: (n: number) => string
-  isDefault: boolean
-  commitOnRelease?: boolean
-  onChange: (n: number) => void
-  onReset: () => void
-  displayTypeDefault?: DisplayTypeDefaultControl
-}) {
-  const { classes } = useStyles()
-  const modelValue = getValue()
-  const [dragValue, setDragValue] = useState<number | undefined>(undefined)
-  const value = dragValue ?? modelValue
-  const { toSlider, fromSlider, sliderStep } = sliderScale(scale)
-  const slug = title.toLowerCase().replaceAll(' ', '-')
-  return (
-    <div className={classes.root}>
-      <div className={classes.header}>
-        <Typography
-          variant="caption"
-          color="textSecondary"
-          className={classes.label}
-        >
-          {title}: {format(value)}
-        </Typography>
-        <ResetToDefaultButton
-          disabled={isDefault}
-          onClick={() => {
-            onReset()
-          }}
-        />
-        {displayTypeDefault ? (
-          // include the current value so the pin's tooltip reads as a concrete
-          // value ("Line width (2px)") — the copy assumes the label is a value,
-          // but a bare setting name reads oddly ("Use 'Line width' as the
-          // default")
-          <DefaultForAllAdornment
-            label={`${title} (${format(value)})`}
-            control={displayTypeDefault}
-          />
-        ) : null}
-      </div>
-      <SingleSlider
-        value={toSlider(value)}
-        min={toSlider(min)}
-        max={toSlider(max)}
-        step={sliderStep ?? step}
-        size="small"
-        aria-label={title.toLowerCase()}
-        data-testid={`${slug}-slider`}
-        valueLabelDisplay="auto"
-        valueLabelFormat={(v: number) => format(fromSlider(v))}
-        sx={{ py: 0.5, display: 'block' }}
-        onChange={v => {
-          const n = fromSlider(v)
-          if (commitOnRelease) {
-            setDragValue(n)
-          } else {
-            onChange(n)
-          }
-        }}
-        onChangeCommitted={
-          commitOnRelease
-            ? v => {
-                onChange(fromSlider(v))
-                setDragValue(undefined)
-              }
-            : undefined
-        }
-      />
-    </div>
-  )
-})
-
 // Everything a size row needs that doesn't depend on where its "is this the
 // default?" answer comes from — the one axis the two entry points below differ
 // on.
@@ -212,20 +113,31 @@ function sizeMenu(
     label,
     type: 'custom',
     render: () => (
-      <SizeSliderRow
-        title={title}
-        getValue={getValue}
-        min={min}
-        max={max}
-        step={step}
-        scale={scale}
-        format={format}
-        isDefault={isDefault}
-        commitOnRelease={commitOnRelease}
-        onChange={onChange}
-        onReset={onReset}
-        displayTypeDefault={displayTypeDefault}
-      />
+      <Suspense
+        fallback={
+          <div
+            style={{
+              width: INLINE_MENU_ROW_WIDTH,
+              height: sizeRowFallbackHeight,
+            }}
+          />
+        }
+      >
+        <SizeSliderRow
+          title={title}
+          getValue={getValue}
+          min={min}
+          max={max}
+          step={step}
+          scale={scale}
+          format={format}
+          isDefault={isDefault}
+          commitOnRelease={commitOnRelease}
+          onChange={onChange}
+          onReset={onReset}
+          displayTypeDefault={displayTypeDefault}
+        />
+      </Suspense>
     ),
   }
 }

@@ -1,5 +1,3 @@
-import { isValidElement } from 'react'
-
 import PluginManager from '@jbrowse/core/PluginManager'
 import {
   ConfigurationSchema,
@@ -149,13 +147,8 @@ function heightModePinProps(
 ) {
   const sub = getFeatureHeightMenuItem(display, 'read').subMenu
   const row = sub.find(i => 'label' in i && i.label === label)
-  const adornment = row && 'endAdornment' in row ? row.endAdornment : undefined
-  return isValidElement(adornment)
-    ? (adornment.props as {
-        control: { active: boolean; toggle: () => void }
-        label?: string
-      })
-    : undefined
+  // a description (`{ control, label }`), not a rendered element — ui/MenuTypes.ts
+  return row && 'defaultForAll' in row ? row.defaultForAll : undefined
 }
 
 describe('alignments showSoftClipping session default', () => {
@@ -401,7 +394,7 @@ describe('alignments compactness session default', () => {
 })
 
 // The "Read height" submenu surfaces the promote-as-default control as
-// a per-preset pin (endAdornment) on each value row — not the former standalone
+// a per-preset pin (defaultForAll) on each value row — not the former standalone
 // "Use X as the default" checkbox. Each pin's isDefault/onToggleDefault is
 // independent, so only the promoted preset reads as customized.
 describe('feature-height menu per-preset pins', () => {
@@ -412,14 +405,7 @@ describe('feature-height menu per-preset pins', () => {
     const row = getFeatureHeightMenuItem(display, 'read').subMenu.find(
       i => 'label' in i && i.label === label,
     )
-    const adornment =
-      row && 'endAdornment' in row ? row.endAdornment : undefined
-    return isValidElement(adornment)
-      ? (adornment.props as {
-          control: { active: boolean; toggle: () => void }
-          label?: string
-        })
-      : undefined
+    return row && 'defaultForAll' in row ? row.defaultForAll : undefined
   }
 
   it('has no standalone "as the default" checkbox row', () => {

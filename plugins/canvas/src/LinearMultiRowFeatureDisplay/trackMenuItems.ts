@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 
-import { checkboxItem, radioItems } from '@jbrowse/core/ui'
+import { checkboxItem, radioItems } from '@jbrowse/core/ui/menuItems'
 import { getSession } from '@jbrowse/core/util'
 import {
   clusteringMenuItem,

@@ -1,8 +1,8 @@
+import { makeSizeMenu } from '@jbrowse/core/ui'
 import {
-  makeSizeMenu,
   promotableRadioItem,
   promotableToggleItem,
-} from '@jbrowse/core/ui'
+} from '@jbrowse/core/ui/menuItems'
 import AltRouteIcon from '@mui/icons-material/AltRoute'
 
 import { DEFAULT_MIN_SASHIMI_SCORE } from '../constants.ts'

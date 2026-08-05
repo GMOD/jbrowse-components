@@ -1,4 +1,4 @@
-import { checkboxItem, promotableToggleItem } from '@jbrowse/core/ui'
+import { checkboxItem, promotableToggleItem } from '@jbrowse/core/ui/menuItems'
 import PolylineIcon from '@mui/icons-material/Polyline'
 
 import type { LinkedReadsMode, ReadConnectionsMode } from '../constants.ts'

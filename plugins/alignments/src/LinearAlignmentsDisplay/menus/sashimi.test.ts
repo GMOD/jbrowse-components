@@ -36,8 +36,10 @@ function makeModel() {
   }
 }
 
-function endAdornmentOf(item: MenuItem | undefined) {
-  return item && 'endAdornment' in item ? item.endAdornment : undefined
+// the "default for all tracks of this type" pin, carried as a description
+// (`defaultForAll`) rather than a rendered element — see ui/MenuTypes.ts
+function defaultForAllOf(item: MenuItem | undefined) {
+  return item && 'defaultForAll' in item ? item.defaultForAll : undefined
 }
 
 function labels(model: ReturnType<typeof makeModel>) {
@@ -93,9 +95,9 @@ describe('sashimi menu', () => {
     }
     const byLabel = (label: string) =>
       placement.subMenu.find(i => 'label' in i && i.label === label)
-    expect(endAdornmentOf(byLabel('Below coverage'))).toBeDefined()
-    expect(endAdornmentOf(byLabel('Auto (minimize overlap)'))).toBeDefined()
-    expect(endAdornmentOf(byLabel('Above coverage'))).toBeDefined()
+    expect(defaultForAllOf(byLabel('Below coverage'))).toBeDefined()
+    expect(defaultForAllOf(byLabel('Auto (minimize overlap)'))).toBeDefined()
+    expect(defaultForAllOf(byLabel('Above coverage'))).toBeDefined()
   })
 
   test('"Show labels" carries a default-for-all pin', () => {
@@ -104,7 +106,7 @@ describe('sashimi menu', () => {
     const showLabels = getSashimiMenuItem(model).subMenu.find(
       i => 'label' in i && i.label === 'Show labels',
     )
-    expect(endAdornmentOf(showLabels)).toBeDefined()
+    expect(defaultForAllOf(showLabels)).toBeDefined()
   })
 
   test('"Show sashimi arcs" carries one too', () => {
@@ -115,6 +117,6 @@ describe('sashimi menu', () => {
     const toggle = getSashimiMenuItem(model).subMenu.find(
       i => 'label' in i && i.label === 'Show sashimi arcs',
     )
-    expect(endAdornmentOf(toggle)).toBeDefined()
+    expect(defaultForAllOf(toggle)).toBeDefined()
   })
 })

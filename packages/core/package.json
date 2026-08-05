@@ -105,6 +105,7 @@
     "./ui/buildExtraTrackMenuItems": "./src/ui/buildExtraTrackMenuItems.ts",
     "./ui/colors": "./src/ui/colors.ts",
     "./ui/getGraphicsCapabilities": "./src/ui/getGraphicsCapabilities.ts",
+    "./ui/menuItems": "./src/ui/menuItems.ts",
     "./ui/palette": "./src/ui/palette.ts",
     "./ui/theme": "./src/ui/theme.ts",
     "./ui/useGraphicsCapabilities": "./src/ui/useGraphicsCapabilities.ts",
@@ -564,6 +565,10 @@
       "./ui/getGraphicsCapabilities": {
         "types": "./esm/ui/getGraphicsCapabilities.d.ts",
         "import": "./esm/ui/getGraphicsCapabilities.js"
+      },
+      "./ui/menuItems": {
+        "types": "./esm/ui/menuItems.d.ts",
+        "import": "./esm/ui/menuItems.js"
       },
       "./ui/palette": {
         "types": "./esm/ui/palette.d.ts",
@@ -1106,6 +1111,9 @@
         ],
         "ui/getGraphicsCapabilities": [
           "esm/ui/getGraphicsCapabilities.d.ts"
+        ],
+        "ui/menuItems": [
+          "esm/ui/menuItems.d.ts"
         ],
         "ui/palette": [
           "esm/ui/palette.d.ts"

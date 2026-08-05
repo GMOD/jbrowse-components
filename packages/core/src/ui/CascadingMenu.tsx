@@ -16,6 +16,10 @@ import { makeStyles } from '../util/tss-react/index.ts'
 import HoverMenu from './HoverMenu.tsx'
 import { MenuItemTrailing } from './MenuItemTrailing.tsx'
 import { staysOpenOnClick } from './MenuTypes.ts'
+import {
+  hasMenuItemAdornment,
+  menuItemAdornment,
+} from './menuItemAdornment.tsx'
 
 import type {
   BaseMenuItem,
@@ -100,15 +104,12 @@ function getMenuColumnFlags(menuItems: JBMenuItem[]) {
       m.helpText &&
       !m.disabled,
   )
-  const hasEndAdornment = menuItems.some(
-    m => 'endAdornment' in m && m.endAdornment,
-  )
+  const hasEndAdornment = menuItems.some(m => hasMenuItemAdornment(m))
   // a single row carrying both a help "?" and a trailing adornment (e.g. pin) is
   // the only case that genuinely needs help and adornment in separate columns
   const hasRowWithHelpAndAdornment = menuItems.some(
     m =>
-      'endAdornment' in m &&
-      m.endAdornment &&
+      hasMenuItemAdornment(m) &&
       'helpText' in m &&
       m.helpText &&
       !('disabled' in m && m.disabled),
@@ -367,7 +368,7 @@ function CascadingMenuList({
               inset={hasIcon && !item.icon}
               disabled={item.disabled}
               disabledHelpText={item.disabledHelpText}
-              endAdornment={item.endAdornment}
+              endAdornment={menuItemAdornment(item)}
               onMenuItemClick={onMenuItemClick}
               menuItems={item.subMenu}
               closeAfterItemClick={closeAfterItemClick}

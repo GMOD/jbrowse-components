@@ -1,4 +1,4 @@
-import { radioItems } from '@jbrowse/core/ui'
+import { radioItems } from '@jbrowse/core/ui/menuItems'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 import type React from 'react'

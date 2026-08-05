@@ -1,4 +1,4 @@
-import { checkboxItem } from '@jbrowse/core/ui'
+import { checkboxItem } from '@jbrowse/core/ui/menuItems'
 import AccountTreeIcon from '@mui/icons-material/AccountTree'
 
 import { describeClusterProvenance } from './clusterProvenance.ts'

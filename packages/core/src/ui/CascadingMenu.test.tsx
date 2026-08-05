@@ -3,7 +3,7 @@ import { act, cleanup, fireEvent, render } from '@testing-library/react'
 import { observable, runInAction } from 'mobx'
 
 import CascadingMenu from './CascadingMenu.tsx'
-import { promotableRadioItem } from './promotableMenuItems.tsx'
+import { promotableRadioItem } from './promotableMenuItems.ts'
 import { createJBrowseTheme } from './theme.ts'
 
 import type { MenuItem } from './MenuTypes.ts'

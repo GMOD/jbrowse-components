@@ -1,5 +1,3 @@
-import { isValidElement } from 'react'
-
 import { staysOpenOnClick } from '@jbrowse/core/ui'
 
 import { getReadConnectionsMenuItem } from './readConnections.ts'
@@ -79,25 +77,26 @@ function checkboxByLabel(model: ReturnType<typeof makeModel>, label: string) {
   return item
 }
 
-// A promotable row is a native checkbox item carrying a "default for all"
-// endAdornment (a DefaultForAllAdornment element), always present.
-function endAdornment(model: ReturnType<typeof makeModel>, label: string) {
+// A promotable row is a native checkbox item carrying a "default for all" pin,
+// always present. It is a description (`{ control, label }`) rather than a
+// rendered element — see ui/MenuTypes.ts — so the control is read straight off
+// the row instead of out of a React element's props.
+function defaultForAll(model: ReturnType<typeof makeModel>, label: string) {
   const item = findByLabel(model, label)
-  return item && 'endAdornment' in item ? item.endAdornment : undefined
+  return item && 'defaultForAll' in item ? item.defaultForAll : undefined
 }
 
-// Read the promotable control off a row's "default for all" endAdornment and
-// promote it (what clicking the pin does), exercising the menu's promote wiring.
+// Promote a row's value (what clicking its pin does), exercising the menu's
+// promote wiring.
 function promoteDefaultForAll(
   model: ReturnType<typeof makeModel>,
   label: string,
 ) {
-  const adornment = endAdornment(model, label)
-  if (!isValidElement(adornment)) {
+  const pin = defaultForAll(model, label)
+  if (!pin) {
     throw new Error(`no default-for-all control on ${label}`)
   }
-  const { control } = adornment.props as { control: { toggle: () => void } }
-  control.toggle()
+  pin.control.toggle()
 }
 
 describe('read connections menu', () => {
@@ -170,9 +169,9 @@ describe('promote-as-default (default for all) pin', () => {
 
   test('the pin is always shown, even while the mode is off', () => {
     const model = makeModel()
-    expect(endAdornment(model, pairs)).toBeDefined()
-    expect(endAdornment(model, 'Show read arcs')).toBeDefined()
-    expect(endAdornment(model, 'Show read cloud')).toBeDefined()
+    expect(defaultForAll(model, pairs)).toBeDefined()
+    expect(defaultForAll(model, 'Show read arcs')).toBeDefined()
+    expect(defaultForAll(model, 'Show read cloud')).toBeDefined()
   })
 
   test('the pin toggles the view-as-pairs session default', () => {

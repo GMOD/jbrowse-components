@@ -56,9 +56,9 @@ describe('Subfeature labels submenu', () => {
 
     const labels = subMenu.flatMap(i => ('label' in i ? [i.label] : []))
     expect(labels).toEqual(['Off', 'Below', 'Overlay'])
-    expect(radio(subMenu, 'Off').endAdornment).toBeDefined()
-    expect(radio(subMenu, 'Below').endAdornment).toBeDefined()
-    expect(radio(subMenu, 'Overlay').endAdornment).toBeDefined()
+    expect(radio(subMenu, 'Off').defaultForAll).toBeDefined()
+    expect(radio(subMenu, 'Below').defaultForAll).toBeDefined()
+    expect(radio(subMenu, 'Overlay').defaultForAll).toBeDefined()
   })
 
   it('checks the resolved mode and lets a track pin Below back over a session default', () => {

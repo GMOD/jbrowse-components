@@ -1,7 +1,12 @@
-import { DefaultForAllAdornment } from './DefaultForAllAdornment.tsx'
-
 import type { DisplayTypeDefaultControl } from '../configuration/promotableDefaults.ts'
 import type { CheckboxMenuItem, RadioMenuItem } from './MenuTypes.ts'
+
+// Both builders describe the trailing pin (`defaultForAll`) rather than
+// rendering it. That is what keeps this module — and therefore every state
+// model and menu file that calls it — free of React and of MUI's
+// ToggleButton/Tooltip. `menuItemAdornment.tsx` turns the description into
+// `DefaultForAllAdornment` at the point the menu is drawn. See
+// reference/EAGER_BUNDLE.md; `menuItems.purity.test.ts` holds it.
 
 // A promotable setting as one native checkbox menu row: the value toggles the
 // track (inheriting native hover/sizing/keyboard), and a trailing pin
@@ -36,9 +41,7 @@ export function promotableToggleItem({
     onClick: () => {
       onToggle()
     },
-    endAdornment: (
-      <DefaultForAllAdornment label={label} control={displayTypeDefault} />
-    ),
+    defaultForAll: { control: displayTypeDefault, label },
   }
 }
 
@@ -77,9 +80,7 @@ export function promotableRadioItem({
     onClick,
     keepMenuOpen,
     ...(displayTypeDefault && {
-      endAdornment: (
-        <DefaultForAllAdornment label={label} control={displayTypeDefault} />
-      ),
+      defaultForAll: { control: displayTypeDefault, label },
     }),
   }
 }

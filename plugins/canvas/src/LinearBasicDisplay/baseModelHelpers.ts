@@ -1,4 +1,4 @@
-import { radioItems } from '@jbrowse/core/ui'
+import { radioItems } from '@jbrowse/core/ui/menuItems'
 import { SimpleFeature } from '@jbrowse/core/util'
 
 import { featuresPerPx } from '../RenderFeatureDataRPC/densityGate.ts'

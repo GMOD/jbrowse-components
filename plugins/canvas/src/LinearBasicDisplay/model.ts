@@ -14,7 +14,7 @@ import {
   promotableRadioItem,
   promotableToggleItem,
   radioItems,
-} from '@jbrowse/core/ui'
+} from '@jbrowse/core/ui/menuItems'
 import { getContainingTrack, getSession } from '@jbrowse/core/util'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen'

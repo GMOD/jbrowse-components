@@ -1,4 +1,4 @@
-import { checkboxItem } from '@jbrowse/core/ui'
+import { checkboxItem } from '@jbrowse/core/ui/menuItems'
 import {
   collapseGroupRowsItems,
   groupByRadioMenuItem,

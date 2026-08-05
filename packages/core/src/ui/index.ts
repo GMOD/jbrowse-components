@@ -140,7 +140,7 @@ export { DefaultForAllAdornment } from './DefaultForAllAdornment.tsx'
 export {
   promotableRadioItem,
   promotableToggleItem,
-} from './promotableMenuItems.tsx'
+} from './promotableMenuItems.ts'
 export const VIEW_HEADER_HEIGHT = 28
 export {
   GRADIENT_LEGEND_HEIGHT,

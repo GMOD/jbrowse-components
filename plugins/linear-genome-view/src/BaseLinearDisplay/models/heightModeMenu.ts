@@ -1,5 +1,5 @@
 import { makeDisplayTypeDefaultControl } from '@jbrowse/core/configuration'
-import { promotableRadioItem } from '@jbrowse/core/ui'
+import { promotableRadioItem } from '@jbrowse/core/ui/menuItems'
 
 import { getHeightModeOptions } from './heightMode.ts'
 

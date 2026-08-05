@@ -1,3 +1,5 @@
+import type { DisplayTypeDefaultControl } from '../configuration/promotableDefaults.ts'
+
 // #region menuItem
 export interface MenuDivider {
   priority?: number
@@ -44,8 +46,36 @@ export interface BaseMenuItem {
    * checkbox/radio decoration and help icon — e.g. a secondary toggle. The
    * content must `stopPropagation` on its own click so it doesn't fire the row's
    * onClick or dismiss the menu.
+   *
+   * An **element**, so a module that sets it drags React and whatever it renders
+   * into its own graph. That is fine for the one-off it exists for (synteny's
+   * color swatch) and wrong for the common case, which is why the pin below is
+   * a description instead. Prefer `defaultForAll`; reach for this only when the
+   * content is genuinely arbitrary.
    */
   endAdornment?: React.ReactNode
+  /**
+   * The trailing "default for all tracks of this type" pin, as a **description**
+   * rather than an element — the renderer builds `DefaultForAllAdornment` from
+   * it. Same rule as a `TrackControlProps` icon name (reference/DISPLAYCHROME.md):
+   * menu-item builders are called from state models and menu modules, which are
+   * eager, so an element here puts MUI's `ToggleButton`, `Tooltip` and two icons
+   * into every host's first paint. It did, until 2026-08-05; see
+   * reference/EAGER_BUNDLE.md.
+   *
+   * Set it through `promotableToggleItem`/`promotableRadioItem`, not by hand.
+   */
+  defaultForAll?: MenuItemDefaultForAll
+}
+
+export interface MenuItemDefaultForAll {
+  control: DisplayTypeDefaultControl
+  /**
+   * Names the setting in the pin's tooltip and aria-label. Carried here rather
+   * than read off the row's `label`, which is a `ReactNode` and may not be a
+   * string; a pin that can't name what it promotes reads as a bug.
+   */
+  label: string
 }
 
 export interface NormalMenuItem extends BaseMenuItem {

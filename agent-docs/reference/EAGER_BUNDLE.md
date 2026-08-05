@@ -1,6 +1,6 @@
 ---
 name: eager-bundle
-description: What every JBrowse host downloads before it can run, why plugin registration makes most of it unavoidable, and the three pins that were making it pay for far more. Read before touching a plugin `exports` object, a state model's imports, or anything that claims a bundle number.
+description: What every JBrowse host downloads before it can run, why plugin registration makes most of it unavoidable, and the four pins that were making it pay for far more. Read before touching a plugin `exports` object, a state model's imports, or anything that claims a bundle number.
 ---
 
 # The eager bundle
@@ -11,12 +11,16 @@ description: What every JBrowse host downloads before it can run, why plugin reg
   page's entry. Everything JBrowse defers — renderers, display bodies, dialogs
   — is already behind `lazy()`/`import()`, so what remains is plugin
   registration plus whatever accidentally got pinned to it.
+- Menu-item builders live in **`@jbrowse/core/ui/menuItems`**, which is React-free
+  and guarded by a test. Import builders from there, components from
+  `@jbrowse/core/ui`.
 - Plugin registration is **genuinely eager and not reducible**: every plugin's
   models, adapters and config schemas must be registered before a session
   snapshot can be read.
 - What *is* reducible is the set of **React components a registration-time
-  module names**. Two shapes cause almost all of it, both invisible in a diff:
-  a plugin's `exports` object, and a state model importing a component.
+  module names**. Three shapes cause almost all of it, none visible in a diff: a
+  plugin's `exports` object, a state model importing a component, and a menu-item
+  builder returning an element where a description would do.
 - Measured and guarded per page by
   `products/jbrowse-build-your-own/examples-site`'s
   `pnpm measure-eager-bundle`, run by that site's `pnpm smoke`. It is a
@@ -39,14 +43,15 @@ JBrowse chrome at all:
 | | eager chunks | gzipped |
 | --- | --- | --- |
 | before | 347 | 667 KB |
-| after | 219 | 523 KB |
+| after pins 1-3 | 219 | 523 KB |
+| after pin 4 | 218 | 514 KB |
 
-That is the same page in both rows. Nothing about what it renders changed; 144
-KB gzipped was reachable but never used.
+Same page throughout, rendering the same thing. 153 KB gzipped and 129 chunks
+were reachable and never used.
 
 ## Where it went
 
-Three pins, in the order they were found. All three are the same mistake at
+Four pins, in the order they were found. All four are the same mistake at
 different scales: **a module that must be evaluated eagerly names a React
 component**.
 
@@ -105,6 +110,42 @@ repo's own no-build plugin fixture (`test_data/no_build_plugin/esmplugin.js`,
 five `jbrequire` calls at the top of `install()`) end to end. All three were
 confirmed to fail with the `publishReExports()` call removed.
 
+### 4. The `@jbrowse/core/ui` barrel, and two more elements in descriptors
+
+Done in a follow-up pass; 523 → 514 KB gzipped. **A small number, and worth
+knowing why it is small**, because the obvious reading of pin 3 was wrong: while
+`ReExports/modules.ts` was spreading the barrel's namespace, *every* member of
+`@jbrowse/core/ui` was retained, and it looked like ~38 eager menu modules were
+each dragging in a share of ~585 KB of Material UI. Once the spread was gone the
+barrel tree-shook per-export, and what those 38 modules actually named turned out
+to be 16 symbols, mostly free. So this pass is about the architecture, not the
+bytes: it is what stops the barrel becoming a pipe again.
+
+Three parts:
+
+- **`@jbrowse/core/ui/menuItems`**, a React-free entry holding the four builders
+  eager code needs (`checkboxItem`, `radioItems`, `promotableRadioItem`,
+  `promotableToggleItem`) plus the menu types. 23 call sites repointed. The rule
+  is *menu builders from here, components from `@jbrowse/core/ui`*.
+- **`endAdornment` → `defaultForAll` for the promotable pin.** The two
+  `promotable*Item` builders returned a `<DefaultForAllAdornment>` **element**,
+  so the module — and every state model calling it — pulled MUI's `ToggleButton`,
+  `Tooltip` and two icons. The row now carries a *description*
+  (`MenuItemDefaultForAll`) and `menuItemAdornment.tsx` builds the element where
+  the menu is drawn. `endAdornment` stays for genuinely arbitrary content
+  (synteny's colour swatch), which is what it was added for.
+- **`makeSizeMenu`'s slider row behind `lazy()`.** `type: 'custom'` already made
+  `render` a thunk, so the row was lazy at call time and eager in the module
+  graph — which is where it counted. MUI `Slider` was the single largest
+  Material component in the eager set (38 KB); it is now gone from it.
+
+`menuItems.purity.test.ts` walks the new entry's static graph — `import` **and**
+`export … from`, which is what a barrel is made of — and fails on react, @mui or
+@emotion, printing the trail. Its second case runs the tracer over `ui/index.ts`,
+the barrel this was split from, and requires it to *fail*: a purity test that
+cannot see a violation is worth nothing, and the first version of this one
+couldn't (it missed `export … from` and passed both ways).
+
 ## What is left, and what is not worth chasing
 
 **Not worth chasing:** the ~1.5 MB raw that remains is dominated by plugin
@@ -112,15 +153,24 @@ registration — models, adapters, config schemas for all 18 core plugins — pl
 React and MST. That is the engine, and `createViewState`'s contract is that all
 of it is registered before a session snapshot can be read.
 
-**The next real one, if someone wants it:** ~38 registration-time modules still
-import the `@jbrowse/core/ui` **barrel**, and almost all of them are
-`menuItems.ts` / `trackMenus.ts` / `model.ts` files taking only menu-item
-*descriptor builders* — `checkboxItem`, `radioItems`, `promotableRadioItem`,
-`VIEW_HEADER_HEIGHT` — none of which need React. The barrel they come through
-re-exports ~80 MUI components. Splitting those helpers into a React-free module
-with its own entry on core's exports map is the obvious move; it needs a
-`pnpm autogen` run for the exports map, which is why it was not done in the same
-pass.
+**The next two, measured 2026-08-05 after the pass above.** Both are the same
+shape as pins 1, 2 and 4, one level further out:
+
+- **Dialog and form components reached from eager models.** The `createViewState`
+  chunk statically imports `SubmitDialog`, `NumberTextField` and
+  `AddFiltersDialog`, and through them MUI's `TextField` → `Select` → `Modal` →
+  `Popover` cluster (~90 KB). The routes are an internet-account model naming its
+  login form (`plugins/authentication`'s `ExternalTokenEntryForm`,
+  `HTTPBasicLoginForm`) and a display model naming its filter dialog. Each is a
+  `lazy()` at the model, the same edit as pin 2.
+- **`@mui/material/styles` (~51 KB), now the largest single area.** Reached by
+  every `@mui/icons-material` import — ~39 eager menu modules name an icon for a
+  row's `icon` field — and by `makeStyles`. `BaseMenuItem.icon` is
+  `React.ElementType`, i.e. an element type rather than a name, which is the
+  descriptor rule again at a scale worth arguing about before starting: it is the
+  field DISPLAYCHROME.md already forbids for track controls. Doing it means a
+  name→component registry on the render side. See also OTHER_IDEAS.md, "A
+  theme-free `makeStyles`", which is the other half of the same 51 KB.
 
 ## How to measure it
 

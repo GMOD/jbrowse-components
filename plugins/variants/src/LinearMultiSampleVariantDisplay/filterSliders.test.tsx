@@ -41,19 +41,24 @@ describe('multi-sample variant filter sliders', () => {
     return row
   }
 
-  it('renders MAF as an off-by-default slider', () => {
+  // `findBy*` rather than `getBy*` throughout: makeSizeMenu draws the row
+  // through `lazy()`, so the first paint is its Suspense fallback and the
+  // slider arrives a microtask later (ui/makeSizeMenu.tsx).
+  it('renders MAF as an off-by-default slider', async () => {
     const model = makeModel()
     render(<>{sliderRow(model, 'Minor allele frequency').render(() => {})}</>)
 
-    expect(screen.getByText('MAF: off')).toBeTruthy()
+    expect(await screen.findByText('MAF: off')).toBeTruthy()
     expect(screen.getByTestId('maf-slider')).toBeTruthy()
   })
 
-  it('commits the MAF slider onto the config slot the worker reads', () => {
+  it('commits the MAF slider onto the config slot the worker reads', async () => {
     const model = makeModel()
     render(<>{sliderRow(model, 'Minor allele frequency').render(() => {})}</>)
 
-    const input = screen.getByTestId('maf-slider').querySelector('input')!
+    const input = (await screen.findByTestId('maf-slider')).querySelector(
+      'input',
+    )!
     fireEvent.change(input, { target: { value: 0.2 } })
 
     expect(model.minorAlleleFrequencyFilter).toBeCloseTo(0.2)
@@ -65,11 +70,11 @@ describe('multi-sample variant filter sliders', () => {
 
   // 1 keeps every variant, so the missingness row reads as off at its default
   // rather than at 0 like MAF
-  it('renders missingness as off at its keep-everything default', () => {
+  it('renders missingness as off at its keep-everything default', async () => {
     const model = makeModel()
     render(<>{sliderRow(model, 'Missingness').render(() => {})}</>)
 
-    expect(screen.getByText('Max missingness: off')).toBeTruthy()
+    expect(await screen.findByText('Max missingness: off')).toBeTruthy()
 
     const input = screen
       .getByTestId('max-missingness-slider')

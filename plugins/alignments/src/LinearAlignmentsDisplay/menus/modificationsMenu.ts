@@ -1,9 +1,9 @@
+import { makeSizeMenu } from '@jbrowse/core/ui'
 import {
   checkboxItem,
-  makeSizeMenu,
   promotableRadioItem,
   radioItems,
-} from '@jbrowse/core/ui'
+} from '@jbrowse/core/ui/menuItems'
 
 import {
   cytosineContextOptions,

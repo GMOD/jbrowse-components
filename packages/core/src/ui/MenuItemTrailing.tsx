@@ -2,6 +2,7 @@ import CascadingMenuHelpIconButton, {
   CascadingMenuHelpIconSpacer,
 } from './CascadingMenuHelpIconButton.tsx'
 import { MenuItemEndDecoration } from './MenuItems.tsx'
+import { menuItemAdornment } from './menuItemAdornment.tsx'
 
 import type { ClickableMenuItem } from './MenuTypes.ts'
 
@@ -89,7 +90,7 @@ export function MenuItemTrailing({
       ) : null}
       {sharedActionColumn ? (
         <MenuItemEndAdornmentSlot>
-          {helpButton ?? item.endAdornment}
+          {helpButton ?? menuItemAdornment(item)}
         </MenuItemEndAdornmentSlot>
       ) : (
         <>
@@ -102,7 +103,7 @@ export function MenuItemTrailing({
             ) : null)}
           {hasEndAdornment ? (
             <MenuItemEndAdornmentSlot>
-              {item.endAdornment}
+              {menuItemAdornment(item)}
             </MenuItemEndAdornmentSlot>
           ) : null}
         </>

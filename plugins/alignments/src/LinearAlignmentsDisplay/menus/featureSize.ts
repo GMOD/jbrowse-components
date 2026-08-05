@@ -1,7 +1,7 @@
 import { lazy } from 'react'
 
 import { makeDisplayTypeDefaultControl } from '@jbrowse/core/configuration'
-import { promotableRadioItem } from '@jbrowse/core/ui'
+import { promotableRadioItem } from '@jbrowse/core/ui/menuItems'
 import { capitalizeFirst, getSession } from '@jbrowse/core/util'
 import { heightModeMenuItems } from '@jbrowse/plugin-linear-genome-view'
 import HeightIcon from '@mui/icons-material/Height'

@@ -1,4 +1,4 @@
-import { checkboxItem, radioItems } from '@jbrowse/core/ui'
+import { checkboxItem, radioItems } from '@jbrowse/core/ui/menuItems'
 import { getBpDisplayStr } from '@jbrowse/core/util'
 import { squashToHeightCheckboxItem } from '@jbrowse/plugin-linear-genome-view'
 import {

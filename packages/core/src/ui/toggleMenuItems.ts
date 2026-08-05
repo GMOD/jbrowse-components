@@ -7,7 +7,7 @@ import type { CheckboxMenuItem, RadioMenuItem } from './MenuTypes.ts'
 // the rows that genuinely dismiss (a dialog opener passes `keepMenuOpen: false`).
 //
 // The promotable variants (a trailing pin that sets the display-type default)
-// live in `promotableMenuItems.tsx`; reach for those when the setting has a
+// live in `promotableMenuItems.ts`; reach for those when the setting has a
 // `DisplayTypeDefaultControl`.
 
 export function checkboxItem(
