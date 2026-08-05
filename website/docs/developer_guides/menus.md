@@ -278,68 +278,16 @@ export type MenuItem =
   | CustomMenuItem
 ```
 
-An example array covering the clickable and structural types:
+Each variant is one of the interfaces above: `type` is omitted for a plain row,
+`divider` and `subHeader` carry no handler, `checkbox` and `radio` carry a
+`checked` boolean, `subMenu` nests another `MenuItem[]`, and `custom` renders
+arbitrary content inline without dismissing the menu.
 
-```js
-;[
-  {
-    label: 'Normal menu item',
-    icon: AddIcon,
-    onClick: () => {},
-  },
-  {
-    label: 'Normal',
-    subLabel: 'with subLabel',
-    icon: AddIcon,
-    onClick: () => {},
-  },
-  {
-    label: 'Disabled menu item',
-    disabled: true,
-    icon: AddIcon,
-    onClick: () => {},
-  },
-  {
-    type: 'radio',
-    label: 'Radio checked',
-    checked: true,
-    onClick: () => {},
-  },
-  {
-    type: 'radio',
-    label: 'Radio unchecked',
-    checked: false,
-    onClick: () => {},
-  },
-  {
-    type: 'checkbox',
-    label: 'Checkbox checked',
-    checked: true,
-    onClick: () => {},
-  },
-  {
-    type: 'checkbox',
-    label: 'Checkbox unchecked',
-    checked: false,
-    onClick: () => {},
-  },
-  { type: 'divider' },
-  { type: 'subHeader', label: 'This is a subHeader' },
-  {
-    label: 'SubMenu',
-    subMenu: [
-      {
-        label: 'SubMenu item one',
-        onClick: () => {},
-      },
-      {
-        label: 'SubMenu item two',
-        onClick: () => {},
-      },
-    ],
-  },
-]
-```
+Prefer the builders in `@jbrowse/core/ui/menuItems` over writing the objects
+out: `checkboxItem`, `radioItems`, `promotableToggleItem` and
+`promotableRadioItem` produce these shapes, and that entry is React-free, so a
+state model or a plugin `menuItems` module can build rows without pulling the
+Material UI barrel into every host that installs it.
 
 ## Root model Menu API
 

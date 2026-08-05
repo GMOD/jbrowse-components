@@ -72,7 +72,7 @@ const stale: string[] = []
 // source. It covered `developer_guides/` alone until those were down to two,
 // which left the ~20 fences in `config_guides/`, `tutorials/` and the top-level
 // pages free to grow.
-const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '20')
+const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '19')
 let unIncluded = 0
 
 for (const path of walkFiles(docsDir, n => n.endsWith('.md'))) {
