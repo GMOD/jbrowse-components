@@ -12,6 +12,7 @@ export default class MyPlugin {
   version = '1.0'
 
   install(pluginManager) {
+    // #region jbrequire
     const { ConfigurationSchema } = pluginManager.jbrequire(
       '@jbrowse/core/configuration',
     )
@@ -24,6 +25,7 @@ export default class MyPlugin {
     const { types } = pluginManager.jbrequire('@jbrowse/mobx-state-tree')
 
     const React = pluginManager.jbrequire('react')
+    // #endregion
 
     const CiteWidget = () => {
       // React.createElement rather than JSX: JSX needs a build step, which is

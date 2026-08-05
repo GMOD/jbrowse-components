@@ -762,7 +762,7 @@ export default class PluginManager {
 
       if (!pack) {
         throw new TypeError(
-          `No jbrequire re-export defined for package '${lib}'. If this package must be shared between plugins, add it to ReExports.js. If it does not need to be shared, just import it normally.`,
+          `No jbrequire re-export defined for package '${lib}'. If this package must be shared between plugins, add it to ReExports/list.ts. If it does not need to be shared, just import it normally.`,
         )
       }
       return pack

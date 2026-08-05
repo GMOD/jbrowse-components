@@ -1,3 +1,4 @@
+// #region imports
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getContainingView, getSession } from '@jbrowse/core/util'
@@ -10,6 +11,7 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import { installPerRegionLifecycle } from '@jbrowse/render-core/installPerRegionLifecycle'
 import { observable } from 'mobx'
+// #endregion
 
 import type { ScoreRegionData } from '../ScoreRPC/rpcTypes.ts'
 import type {

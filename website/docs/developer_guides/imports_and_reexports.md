@@ -122,21 +122,35 @@ mirrored into the package's README on npm.
 
 ### Build-step plugins (template)
 
-Import everything normally, including re-exports:
+Import everything normally. `LinearScoreDisplay`, from the
+[worked example plugin](/docs/developer_guides/plotting_features), imports both
+kinds without distinguishing them:
+
+<!-- include: example-plugins/score-example/src/LinearScoreDisplay/model.ts#imports -->
 
 ```ts
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
-import { observer } from 'mobx-react'
-import Button from '@mui/material/Button'
-import { scaleLinear } from 'd3-scale' // not re-exported → bundled
+import {
+  MultiRegionDisplayMixin,
+  TrackHeightMixin,
+  fetchEachRegion,
+} from '@jbrowse/plugin-linear-genome-view'
+import { installPerRegionLifecycle } from '@jbrowse/render-core/installPerRegionLifecycle'
+import { observable } from 'mobx'
 ```
 
 The [plugin templates](/docs/developer_guides/simple_plugin) mark the re-export
-list as **external**, so those imports resolve to the host's copy at runtime
-while non-re-exported imports (like `d3-scale` above) are bundled in. The build
-configs read `ReExports/list.ts` directly, so you don't maintain this set
-yourself.
+list as **external**, so every import above that appears in the table earlier on
+this page resolves to the host's copy at runtime: the `@jbrowse/core` subpaths,
+`@jbrowse/mobx-state-tree`, `mobx`. The other two,
+`@jbrowse/plugin-linear-genome-view` and `@jbrowse/render-core`, are not on the
+list, so they are bundled into the plugin, which is what happens to any
+dependency that isn't — `d3-scale`, say. The build configs read
+`ReExports/list.ts` directly, so you do not maintain this set yourself.
 
 ### No-build plugins
 
@@ -144,11 +158,20 @@ A [no-build plugin](/docs/developer_guides/no_build_plugin) has no bundler to
 externalize anything, so it pulls re-exported modules at runtime with
 `pluginManager.jbrequire`:
 
+<!-- include: test_data/no_build_plugin/esmplugin.js#jbrequire -->
+
 ```js
 const { ConfigurationSchema } = pluginManager.jbrequire(
   '@jbrowse/core/configuration',
 )
+const WidgetType = pluginManager.jbrequire(
+  '@jbrowse/core/pluggableElementTypes/WidgetType',
+)
+const { ElementId } = pluginManager.jbrequire(
+  '@jbrowse/core/util/types/mst',
+)
 const { types } = pluginManager.jbrequire('@jbrowse/mobx-state-tree')
+
 const React = pluginManager.jbrequire('react')
 ```
 
@@ -156,8 +179,8 @@ const React = pluginManager.jbrequire('react')
 
 ```
 No jbrequire re-export defined for package 'd3-scale'. If this package must be
-shared between plugins, add it to ReExports. If it does not need to be shared,
-just import it normally.
+shared between plugins, add it to ReExports/list.ts. If it does not need to be
+shared, just import it normally.
 ```
 
 With no bundler, a non-re-exported dependency has to be loaded another way:

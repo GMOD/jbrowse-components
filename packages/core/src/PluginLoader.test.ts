@@ -365,8 +365,12 @@ describe('runtime re-export ABI', () => {
     jest.resetModules()
     const { default: Loader } = await import('./PluginLoader.ts')
     const { default: Manager } = await import('./PluginManager.ts')
+    // matched through the path it names, not just the prefix: the message is
+    // the one actionable thing a no-build plugin author gets, the imports guide
+    // quotes it verbatim, and it spent a while pointing at `ReExports.js` — a
+    // file that stopped existing when the list moved to `ReExports/list.ts`
     expect(() => new Manager([]).jbrequire('@jbrowse/core/util')).toThrow(
-      /No jbrequire re-export defined/,
+      /No jbrequire re-export defined .* add it to ReExports\/list\.ts/,
     )
     await new Loader([])
       .installGlobalReExports({} as WindowOrWorkerGlobalScope)
