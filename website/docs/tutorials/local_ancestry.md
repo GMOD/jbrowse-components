@@ -350,7 +350,7 @@ of the clade the reference panel does not already hold, run as a second FLARE
 job against the same two panels, the same map and the same held-out wolf as
 everything above.
 
-<Figure caption="The Anglo-French hound clade on chr1: both Great Anglo-French forms above the French pack hounds and English foxhounds they were made from, between a held-out gray wolf and a German Shepherd. Top: named. Middle: the same view unlabelled, since the labels cover the chromosome start. Bottom: chr38. Wolf blocks sit in the Great Anglo-French rows and nowhere else in the clade." src="/img/dog10k-anglofrench-hounds.png" links="chr1=dog10k-anglofrench-hounds-chromosome,chr1 unlabelled=dog10k-anglofrench-hounds-unlabelled,chr38=dog10k-anglofrench-hounds-chr38" />
+<Figure caption="The Anglo-French hound clade on chr1: both Great Anglo-French forms above the French pack hounds and English foxhounds they were made from, between a held-out gray wolf and a German Shepherd. Wolf blocks sit in the Great Anglo-French rows and nowhere else in the clade." src="/img/dog10k-anglofrench-hounds.png" links="chr1=dog10k-anglofrench-hounds" />
 
 The blocks stop at the breed. The stocks the Great Anglo-French hounds were
 crossed from run dog end to end, like the German Shepherd at the foot, and so
@@ -359,21 +359,23 @@ is not something their clade carries. Within those rows the painting is uneven,
 which is the spread the paper reports arriving as a picture rather than as a
 statistic.
 
-The row labels are an overlay on the plot rather than a gutter beside it, so on
-a whole-chromosome view they cover the left of the rows they name. Two of these
-dogs carry a block inside the covered span, which is why the middle panel draws
-the same view with
-[`showRowLabels`](/docs/config/LinearMultiRowFeatureDisplay/#slot-showrowlabels)
-off.
+The rows are unlabelled here on purpose. The labels are an overlay on the plot
+rather than a gutter beside it, and each is as wide as its own text, so on a
+whole-chromosome view they cover the left megabases of every row — and two of
+these dogs carry a block inside that span, which would read as absent rather
+than as covered. The group callouts say what this figure needs said; turn the
+names back on with
+[`showRowLabels`](/docs/config/linearmultirowfeaturedisplay/#slot-showrowlabels)
+when the question is which individual rather than which group.
 
-Then read the bottom panel against the top one. The two Tricolour Hounds that
-carry most of the wolf on chr1 are the two that carry almost none on chr38, and
-the pair that carries it there is a different pair, while the clade around them
-stays empty on both. A few percent of a genome, scattered in blocks, lands on
-some chromosomes and not others, so which individual looks wolfish is a property
-of the chromosome you happened to open. The paper's ranking is genome-wide; a
-single chromosome cannot reproduce it, and this pair of panels is what that
-costs.
+Which individual, though, is the reading this picture cannot carry on its own.
+The two Tricolour Hounds that hold most of the wolf on chr1 are not the two that
+hold it on chr38: a few percent of a genome, scattered in blocks, lands on some
+chromosomes and not others, so which animal looks wolfish is a property of the
+chromosome you happened to open. The paper's ranking is genome-wide and no
+single chromosome reproduces it. What survives at one chromosome is the
+clade-level claim above — wolf in the Great Anglo-French rows, and in none of
+the stocks around them.
 
 Which is the same reading the eighth wolfdog forced above, one level up: what
 carries ancestry is an animal rather than a breed, and what carries a number is

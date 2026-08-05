@@ -52,34 +52,85 @@ const scalarIndex = new Map<string, string | null>()
 // name -> ordered `slotName: { ... }` source pairs, or null on a conflict
 const slotFieldsIndex = new Map<string, [string, string][] | null>()
 
-// Slot-shaped object literal: every property is `name: { ... }` with a `type`
-// slot property. Required so an ordinary constant that happens to be spread
-// somewhere isn't mistaken for a slot table.
+// One entry of a slot table's source: either a slot of its own, or another slot
+// table it spreads in.
+type SlotPart = { pair: [string, string] } | { spread: string }
+
+// Slot-shaped object literal: every property is either `name: { ... }` with a
+// `type` slot property, or a spread of another slot table by name. Required so
+// an ordinary constant that happens to be spread somewhere isn't mistaken for a
+// slot table.
+//
+// A slot table may itself spread one, and that is not a corner case: it is how
+// `wiggleConfigSchemaFields` is built out of `scoreAxisConfigSchemaFields`, so
+// a Manhattan plot can declare the score axis without the palette. Treating the
+// spread as "not slot-shaped" rejected the whole outer table, which took every
+// wiggle slot off the config pages while the schema still declared them — the
+// same silent gap this index exists to close, one level down. Resolved in
+// buildEnumConstantIndex's second pass, since the inner table may be declared
+// after the outer one.
 //
 // `sf` is passed to getText explicitly rather than left to walk up parent
 // pointers: a program's trees only get those once the checker binds the file,
 // and this index runs before that.
-function slotFieldPairs(
+function slotFieldParts(
   node: ts.Expression,
   sf: ts.SourceFile,
-): [string, string][] | undefined {
+): SlotPart[] | undefined {
   if (!ts.isObjectLiteralExpression(node) || !node.properties.length) {
     return undefined
   }
-  const pairs = node.properties.map(p =>
-    ts.isPropertyAssignment(p) &&
-    ts.isIdentifier(p.name) &&
-    ts.isObjectLiteralExpression(p.initializer) &&
-    p.initializer.properties.some(
-      s =>
-        ts.isPropertyAssignment(s) &&
-        ts.isIdentifier(s.name) &&
-        s.name.text === 'type',
-    )
-      ? ([p.name.text, p.initializer.getText(sf)] as [string, string])
-      : undefined,
-  )
-  return pairs.every(pair => pair !== undefined) ? pairs : undefined
+  const parts = node.properties.map((p): SlotPart | undefined => {
+    if (ts.isSpreadAssignment(p) && ts.isIdentifier(p.expression)) {
+      return { spread: p.expression.text }
+    }
+    return ts.isPropertyAssignment(p) &&
+      ts.isIdentifier(p.name) &&
+      ts.isObjectLiteralExpression(p.initializer) &&
+      p.initializer.properties.some(
+        s =>
+          ts.isPropertyAssignment(s) &&
+          ts.isIdentifier(s.name) &&
+          s.name.text === 'type',
+      )
+      ? { pair: [p.name.text, p.initializer.getText(sf)] }
+      : undefined
+  })
+  // A table of nothing but spreads is not evidence of a slot table — every
+  // property has to be recognized, and at least one has to be a slot.
+  return parts.every(part => part !== undefined) &&
+    parts.some(part => 'pair' in part)
+    ? parts
+    : undefined
+}
+
+// Flatten a table's parts against the resolved tables, in source order so a
+// spread contributes where it is written. Undefined if any spread is unknown or
+// ambiguous — the same "drop rather than guess" rule as everything else here.
+function resolveSlotParts(
+  parts: SlotPart[],
+  resolved: Map<string, [string, string][] | null>,
+): [string, string][] | undefined {
+  const out: [string, string][] = []
+  for (const part of parts) {
+    if ('pair' in part) {
+      out.push(part.pair)
+      continue
+    }
+    const inner = resolved.get(part.spread)
+    if (!inner) {
+      return undefined
+    }
+    out.push(...inner)
+  }
+  // Object-spread semantics: a repeated name keeps its first position and takes
+  // its last value, which is how a schema overrides one slot of a table it
+  // spreads.
+  const byName = new Map<string, string>()
+  for (const [name, source] of out) {
+    byName.set(name, source)
+  }
+  return [...byName].map(([name, source]) => [name, source])
 }
 
 function stringsOf(node: ts.Expression): string[] | undefined {
@@ -173,6 +224,31 @@ function recordSlotFields(name: string, pairs: [string, string][]) {
   }
 }
 
+// Same conflict rule one stage earlier, on the unresolved parts, so two files
+// declaring the same table agree before either is flattened.
+function recordSlotParts(
+  parts: Map<string, SlotPart[] | null>,
+  name: string,
+  value: SlotPart[],
+) {
+  const prior = parts.get(name)
+  if (prior === undefined) {
+    parts.set(name, value)
+  } else if (prior === null || !sameParts(prior, value)) {
+    parts.set(name, null)
+  }
+}
+
+function sameParts(a: SlotPart[], b: SlotPart[]) {
+  return a.length === b.length && a.every((part, i) => samePart(part, b[i]!))
+}
+
+function samePart(a: SlotPart, b: SlotPart) {
+  return 'pair' in a
+    ? 'pair' in b && a.pair[0] === b.pair[0] && a.pair[1] === b.pair[1]
+    : 'spread' in b && a.spread === b.spread
+}
+
 // Only a *conflicting* redefinition drops a name, matching record/recordScalar.
 // Dropping on any second sighting also lost a table declared identically twice,
 // which silently deletes every slot it contributes from every schema that
@@ -245,6 +321,7 @@ function recordDerived(
 export function buildEnumConstantIndex(sourceFiles: ts.SourceFile[]) {
   const tables = new Map<string, TableProjections | null>()
   const derived = new Map<string, Projection | null>()
+  const slotParts = new Map<string, SlotPart[] | null>()
   for (const sf of sourceFiles) {
     if (!/\bconst\s+[A-Za-z_$][\w$]*\s*=/.test(sf.text)) {
       continue
@@ -258,9 +335,9 @@ export function buildEnumConstantIndex(sourceFiles: ts.SourceFile[]) {
             // `as const` wraps the literal in an assertion expression
             const value = ts.isAsExpression(init) ? init.expression : init
             const direct = stringsOf(value)
-            const slotFields = slotFieldPairs(value, sf)
-            if (slotFields) {
-              recordSlotFields(name, slotFields)
+            const parts = slotFieldParts(value, sf)
+            if (parts) {
+              recordSlotParts(slotParts, name, parts)
             }
             if (ts.isStringLiteralLike(value)) {
               recordScalar(name, value.text)
@@ -276,6 +353,24 @@ export function buildEnumConstantIndex(sourceFiles: ts.SourceFile[]) {
               }
             }
           }
+        }
+      }
+    }
+  }
+  // second pass: slot tables, now that every one of them has been seen. A table
+  // that spreads another can only be flattened once that one is, so this runs to
+  // a fixpoint rather than in one sweep — the chain is two deep today
+  // (scoreAxis -> wiggle) and nothing here assumes that. Anything still
+  // unresolved after it spreads a name that is unknown or ambiguous, and gets no
+  // entry at all rather than a partial one.
+  let resolvedCount = -1
+  while (resolvedCount !== slotFieldsIndex.size) {
+    resolvedCount = slotFieldsIndex.size
+    for (const [name, parts] of slotParts) {
+      if (parts && !slotFieldsIndex.has(name)) {
+        const pairs = resolveSlotParts(parts, slotFieldsIndex)
+        if (pairs) {
+          recordSlotFields(name, pairs)
         }
       }
     }
