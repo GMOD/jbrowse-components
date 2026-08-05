@@ -387,10 +387,10 @@ the check cannot come out wrong. At an edge the painting commits to something
 that can be: it says the wolf alleles stop at a particular coordinate, and they
 either do, or run past it, or stop well short of it.
 
-Any 1.5 Mb of chr1 holding a few edges will do, and the one below is an ordinary
-one. Underneath the gene track and the painting, its phased genotypes go in as a
-matrix, filtered to the markers that carry ancestry information at all — the
-ones whose alt allele is common in the wolf panel and rare in the dog panel:
+Any 1.5 Mb of chr1 holding a few edges will do. To run the check in the browser,
+put the phased genotypes in as a matrix lane under the painting, filtered to the
+markers that carry ancestry information at all: the ones whose alt allele is
+common in the wolf panel and rare in the dog panel.
 
 ```
 "jexlFilters": [
@@ -402,17 +402,12 @@ Both frequencies were written per site by the build script over the full panels,
 before the sample subset, so they are panel-wide estimates rather than a
 description of the 32 animals in the file. Without the filter the lane draws
 every common site in 1.5 Mb, nearly all of them shared between wolves and dogs,
-and the figure is a wall of salt-and-pepper.
+and it is a wall of salt-and-pepper. Ancestry-informative, there are 49 of them
+across the window, so a run of carriers is a band a block edge can be lined up
+against.
 
-<Figure caption="1.5 Mb of chr1: its genes, FLARE's painting for 32 named animals, and their phased genotypes at the 49 markers separating the panels, one column per marker, orange for the wolf allele. A wolfdog's row carries the markers up to its painted edge and none after; a sweep breed's short block is only half-carried." src="/img/dog10k-wolfdog-block-genotypes.png" />
-
-The matrix draws one column per marker rather than placing each at its
-coordinate, so a run of carriers reads as a band instead of as speckle; the
-lines above the rows tie each column back to where it actually is, which is how
-a column is matched to the block edge in the painting above it.
-
-The build script does the same comparison as a count, one line per edge, so the
-figure is not the only place the claim lives:
+The build script does the same comparison as a count, one line per edge, and
+that is where the claim actually lives:
 
 ```
 Wolf alleles carried either side of a painted block edge:
@@ -473,7 +468,7 @@ the per-sample ancestry fractions, the wolf-block length distribution, the
 FLARE-independent allele count and the per-window block-edge and recombination
 tiling behind the readings above, and writes both painted BEDs
 ([`flare_anc_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/flare_anc_to_bed.py))
-plus their indexes and the genotype slice the last figure uses.
+plus their indexes and the genotype slice the edge check uses.
 
 ## See also
 

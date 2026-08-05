@@ -2202,13 +2202,6 @@
     "reviewedAt": "2026-07-30T13:57:15.466Z",
     "hash": "f6d35709635f18bb0ed00c4893591a556bba270b"
   },
-  "dog10k-wolfdog-block-genotypes": {
-    "name": "dog10k-wolfdog-block-genotypes",
-    "status": "bad",
-    "note": "i dont understand this figure. i'd just suggest deleting. previous agent notes. Not deleted, but cut down to one view and stripped of the story. It was a compose: upper half the whole chromosome with the checked window boxed on it, lower half the window itself -- and the painting six paragraphs above carried the same box, so one ordinary window was marked three times. The locator half and its spec are gone, the box is gone, and what is left is the single frame: the genes, FLARE's painting for the 32 named animals, and the phased genotypes those calls were inferred from, at the 49 markers that separate the panels. KEPT RATHER THAN DELETED because it is the page's check on its own inference rather than another picture of ancestry: at a block edge the painting commits to a coordinate the genotypes can contradict, and for the long wolfdog blocks they do not (23/23 wolf alleles then 0/26) while the short sweep-breed blocks are only half-carried (13/23) or unsupported (Thai Ridgeback). The prose no longer says the window is special -- any 1.5 Mb with a few edges in it would do. If you would still rather the page ended at the painting, say so and it goes, along with the section.",
-    "reviewedAt": "2026-08-05T02:12:51.922Z",
-    "hash": "b3cb8c48505bd0d045a5448a6fdc19d3b3ccec15"
-  },
   "dog10k-wolfdog-ancestry": {
     "name": "dog10k-wolfdog-ancestry",
     "status": "answered",

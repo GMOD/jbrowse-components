@@ -145,11 +145,6 @@ const DOG_VCF_LAYOUT = NAMED.flatMap(([sample, label, color]) =>
   haplotypeRows({ sample, label, color }),
 )
 
-// The 1.5 Mb the genotype check runs in. Same window as $BLOCK_START /
-// $BLOCK_END in scripts/build_dog10k_wolfdog_ancestry.sh, which writes the
-// genotype slice for it.
-const WOLF_BLOCK_WINDOW = 'chr1:112,000,000-113,500,000'
-
 // Row labels for the CYP1A2 figure. Breeds carrying the nonsense allele first,
 // then two that do not, then the wolves — which is where the control lives: no
 // wolf or coyote in the whole collection carries it.
@@ -462,95 +457,29 @@ export const dog10kSpecs: ScreenshotSpec[] = [
   // corner chip names the region the tree came from because clustering is
   // region-scoped.
 
-  // Does the painting survive contact with the genotypes it was inferred from?
-  // The check is the markers in this window whose alt allele is common in the
-  // wolf panel and rare in the dog panel (AF_wolf >= 0.8, AF_dog <= 0.15, both
-  // written per site by the build script from the full panels).
+  // dog10k-wolfdog-block-genotypes was here and is DELETED (review: "i dont
+  // understand this figure. i'd just suggest deleting"). The previous pass had
+  // already offered exactly this, and its argument for keeping it does not
+  // survive a second reader not following the picture: three lanes at two
+  // different row pitches, where reading it at all meant counting down from the
+  // top of one lane to match a row in the other.
   //
-  // ONE VIEW, AND NO LOCATOR ABOVE IT. This used to be a compose whose upper
-  // half was the whole chromosome with this window boxed on it, and the painting
-  // six paragraphs up carried the same box — three marks for a window whose only
-  // property is that it holds block edges to check at. The build script tiles the
-  // chromosome: a median 1.5 Mb holds 5 wolf-block ends against this one's 9, in
-  // a tile the genetic map gives 0.35 cM against a 0.75 cM median. An ordinary
-  // window, so nothing points at it (review: "unclear why we are still focused on
-  // the 'nine block edges' ... if we are making up a story we should not do
-  // that"). What the figure shows is the check, not the place.
+  // THE CHECK ITSELF IS NOT DELETED and must not be, since a tutorial here ends
+  // by checking its inference against the raw data. It is the counts the build
+  // script prints, one line per painted block edge, which local_ancestry.md
+  // quotes under "Checking a block against the genotypes": three of the four
+  // wolfdog edges are exact (23/23 wolf alleles then 0/26 for both haplotypes
+  // ending at 112,576,175, and 41/43 then 0/6 for Saarloos 1 hap1), the five
+  // sweep-breed edges are not (13/23 for the Chow Chow and the Kai Ken, and the
+  // Thai Ridgeback's block ends before the first marker), and Saarloos 2 hap2 at
+  // 3/5 then 6/44 is a real drop that is not a coordinate. A table of counts is
+  // what that argument is; it was never a picture.
   //
-  // The build script counts the markers carried either side of each edge in the
-  // window, and that is why the window is worth the height. Three of the four
-  // wolfdog edges are exact: 23/23 wolf alleles then 0/26 for both haplotypes
-  // ending at 112,576,175, and 41/43 then 0/6 for Saarloos 1 hap1 at 113,251,574.
-  // The five sweep-breed edges are not — the Chow Chow and the Kai Ken carry 13
-  // of 23 on their wolf side, and the Thai Ridgeback's block ends before the
-  // first marker. Long blocks hold at their boundaries and short ones do not,
-  // which is the length argument the page makes, checked rather than asserted.
-  // Do not re-caption this as "the edges line up": the fourth wolfdog edge
-  // (Saarloos 2 hap2, 3/5 then 6/44) is a real drop and not a coordinate, and
-  // dropping that half of it would overstate the figure.
-  //
-  // Three tracks, top to bottom, deliberately: the genes the window sits on, the
-  // painting's call, and the genotypes the call was inferred from. The painting
-  // is in the frame because at 1.5 Mb it is no longer a stack of solid stripes —
-  // the edges are visible in it — and it draws the same 32 animals in the same
-  // order as the matrix, so the two are read against each other by counting down
-  // from the top rather than by looking anything up. They are not at the same row
-  // PITCH: the painting is deliberately under the ~6px a row label needs so that
-  // the 32 names are spent once, on the matrix, instead of twice.
-  {
-    mode: 'url',
-    name: 'dog10k-wolfdog-block-genotypes',
-    url: lgvSession(DOG_CONFIG, {
-      assembly: 'UU_Cfam_GSD_1.0',
-      loc: WOLF_BLOCK_WINDOW,
-      tracks: [
-        {
-          trackId: 'canFam4_ncbi_refseq',
-          type: 'LinearBasicDisplay',
-          height: 70,
-        },
-        {
-          trackId: 'dog10k_wolfdog_named',
-          type: 'LinearMultiRowFeatureDisplay',
-          // 64 rows at ~5px: under the label threshold on purpose. The matrix
-          // below carries the labels for both, and repeating them here would
-          // spend a third of the frame's width on the same 32 names twice.
-          height: 320,
-        },
-        {
-          trackId: 'dog10k_wolfdog_block_genotypes',
-          type: 'LinearMultiSampleVariantMatrixDisplay',
-          renderingMode: 'phased',
-          height: 700,
-          // A run of alt cells is one solid orange band, so at the 20px schema
-          // default nothing in the frame said how many markers it was made of.
-          // The connector band ties each column back to its position, which is
-          // what lets the reader put a column at the same coordinate as the
-          // block edge in the painting above.
-          lineZoneHeight: 55,
-          layout: DOG_VCF_LAYOUT,
-          // Paint the alt cells in the painting's own wolf orange rather than
-          // the default genotype blue: carrying these alleles *is* the wolf
-          // signal, so the cell and the block above it end up the same color.
-          featureColor: WOLF,
-          // Without this the lane draws every common site in 1.5 Mb, nearly all
-          // of which are shared between wolves and dogs and say nothing about
-          // ancestry — which is what made the old version of this figure a wall
-          // of salt-and-pepper. `AF_wolf`/`AF_dog` are `Number=A`, hence the [0].
-          jexlFilters: [
-            "jexl:get(feature,'INFO').AF_wolf[0] >= 0.8 && get(feature,'INFO').AF_dog[0] <= 0.15",
-          ],
-        },
-      ],
-    }),
-    readyText: 'chr1',
-    readySelector: '[data-testid="variant-matrix-display-done"]',
-    readyTimeout: 120000,
-    settleMs: 6000,
-    // gene track, the 320px painting, the 700px matrix, their headers and the
-    // two keys, nothing below
-    viewportHeight: 1363,
-  },
+  // The jexl marker filter stays in the tutorial too, because it is the reusable
+  // part: AF_wolf >= 0.8 && AF_dog <= 0.15 over frequencies the build script
+  // wrote per site across the FULL panels rather than across the 32 animals in
+  // the slice. Without it the lane is every common site in 1.5 Mb and reads as
+  // salt-and-pepper.
 
   // Both Great Anglo-French hound breeds, five dogs each, from the second FLARE
   // run in scripts/build_dog10k_wolfdog_ancestry.sh.
