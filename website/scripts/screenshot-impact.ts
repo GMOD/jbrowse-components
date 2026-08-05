@@ -466,6 +466,10 @@ const GLOBAL_TRIGGERS = [
   'website/scripts/generate-screenshots.ts',
   'website/scripts/actions.ts',
   'website/scripts/annotations.ts',
+  // where a click or a callout lands, for the two anchor kinds that ask the
+  // model instead of trusting a written-down coordinate
+  'website/scripts/graphAnchor.ts',
+  'website/scripts/locusAnchor.ts',
   'website/scripts/image-pipeline.ts',
   'website/scripts/screenshot-spec-helpers.ts',
   'website/scripts/screenshot-specs.ts',

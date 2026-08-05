@@ -151,9 +151,18 @@ const servePort = optNum('localport', values.localport) ?? DEFAULT_LOCAL_PORT
 // --check defaults to serial so a drift report has one fewer confound: with four
 // browsers sharing CPU and network, "this spec is flaky" and "the machine was
 // busy" are indistinguishable. It is explicitly NOT a fix for flakiness —
-// alignments_sort_by_base still drifts 17% in roughly half of serial runs, and
-// multiwig/addtrack has gone both 0.000% and 0.7% serially. Both are real,
-// unexplained, and predate this default. Pass --concurrency for wall-clock.
+// multiwig/addtrack has gone both 0.000% and 0.7% serially, and that one is
+// still unexplained. Pass --concurrency for wall-clock.
+//
+// alignments_sort_by_base used to head this list at 17% drift in roughly half of
+// serial runs, and it turned out not to be render nondeterminism at all: its
+// right-click was a hand-measured pixel, so WHICH read the menu opened on
+// depended on how the pileup happened to pack that run — and after the spec's
+// window was narrowed from 108bp to 31bp without the number being redone, the
+// pixel wasn't even on the SNP any more. Anchoring the click to the locus
+// (scripts/locusAnchor.ts) took it to 0.000% across six renders. Worth
+// remembering before calling a figure irreducibly flaky: a fixed coordinate in
+// its action chain is a likelier cause than the renderer.
 const CONCURRENCY = Math.max(
   1,
   optNum('concurrency', values.concurrency) ?? (headed || check ? 1 : 4),
@@ -1303,8 +1312,13 @@ async function captureEachStage(
       viewport &&
       viewport.height !== stage.viewportHeight
     ) {
-      await page.setViewport({ ...viewport, height: stage.viewportHeight })
-      await delay(500)
+      const height = stage.viewportHeight
+      await page.setViewport({ ...viewport, height })
+      // setViewport resolves on the CDP call, not on the page having laid out
+      // at the new size, so the frame could be taken mid-reflow. Wait for the
+      // page to agree about its own height rather than sleeping on it; the
+      // display-phase wait below then covers the re-render the resize starts.
+      await page.waitForFunction(h => window.innerHeight === h, {}, height)
     }
     // A stage's actions can start work of their own — alignments_sort_by_base's
     // second stage clicks "Sort by base at position", an async re-sort — and the

@@ -416,18 +416,24 @@ export function lgvSession(
   })
 }
 
-// Expand a menu drill-down into wait/hover/delay actions: each non-terminal item
-// is hovered to open its submenu; the terminal item is only waited for. The
-// caller lists the whole path, so an intermediate level can't be skipped — the
-// failure that left `modifications1` waiting on a submenu its parent never
-// opened. Pair with `cascadeBoxes` to keep the callout boxes on the same path.
-export function menuCascade(path: string[], delayMs = 500): ScreenshotAction[] {
+// Expand a menu drill-down into wait/hover actions: each non-terminal item is
+// hovered to open its submenu; the terminal item is only waited for. The caller
+// lists the whole path, so an intermediate level can't be skipped — the failure
+// that left `modifications1` waiting on a submenu its parent never opened. Pair
+// with `cascadeBoxes` to keep the callout boxes on the same path.
+//
+// Each level used to end in a fixed `delay` (500ms by default, hand-tuned to
+// 300/600/800 at six call sites) because a popper is visible a frame or two
+// before popper.js has finished positioning it, so the next hover could land on
+// a menu still moving. `waitForText` now returns only once the item's rect has
+// held still — the wait watches the thing that has to settle instead of guessing
+// how long it takes — so the delay has nothing left to pay for.
+export function menuCascade(path: string[]): ScreenshotAction[] {
   return path.flatMap((text, i) => {
     const parent = path[i - 1]
     return [
       ...(parent ? [{ type: 'hover' as const, text: parent }] : []),
       { type: 'waitForText' as const, text },
-      { type: 'delay' as const, ms: delayMs },
     ]
   })
 }
@@ -450,13 +456,11 @@ export const trackMenuIcon = (trackId: string): ScreenshotAction => ({
 // the cursor). Target the submenu row by its data-testid prefix.
 export const openFeatureHeightSubmenu = (): ScreenshotAction[] => [
   { type: 'waitForText', text: 'Read height' },
-  { type: 'delay', ms: 300 },
   {
     type: 'click',
     selector: '[data-testid^="cascading-submenu-read_height"]',
   },
   { type: 'waitForText', text: 'Super-compact' },
-  { type: 'delay', ms: 500 },
 ]
 
 // A stage that ends with its submenu open must be fully dismissed before the

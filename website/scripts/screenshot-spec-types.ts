@@ -55,9 +55,18 @@ export interface ScreenshotAction {
   from?: { x: number; y: number }
   to?: { x: number; y: number }
   // for 'click'/'rightclick'/'hover': resolve the point to act on from the live
-  // model instead of writing it down. Only the `graphNode` kind is supported —
-  // the case `from` existed for (a canvas with no element per feature) where the
-  // app can still say where the feature was drawn. Takes precedence over `from`.
+  // model instead of writing it down — the case `from` existed for (a canvas
+  // with no element per feature) where the app can still say where it drew
+  // things. Takes precedence over `from`. Two kinds resolve:
+  //
+  //   graphNode  a GFA segment in a GraphGenomeView (scripts/graphAnchor.ts)
+  //   locus      a genomic coordinate in a linear view (scripts/locusAnchor.ts),
+  //              with `track` naming which track to land in and `fracY` how far
+  //              down its band (default the middle)
+  //
+  // Prefer either over `from`. A hand-measured coordinate is correct only for
+  // the width, locus and layout it was measured against, and nothing tells you
+  // when one of those changes — see locusAnchor.ts for what that cost.
   anchor?: AnnotationAnchor
 }
 

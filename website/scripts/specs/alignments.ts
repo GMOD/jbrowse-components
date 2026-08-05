@@ -15,6 +15,17 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // path and the boxed annotation below can't drift from the menu.
 const FIT_LABEL = heightModeLabel('fit', 'read')
 
+// The green-A mismatch column `alignments_sort_by_base` is about: the base the
+// session sorts on, the base its right-click has to land on, and the base both
+// of its callouts point at. One anchor for all four, resolved against the live
+// view — the fracY sits in the pileup below the coverage subtrack, and every
+// read row in this column carries the mismatch.
+const SORT_COLUMN = {
+  track: 'volvox_bam',
+  locus: 'ctgA:14,481',
+  fracY: 0.3,
+}
+
 // The surfeit locus, the most tightly-packed gene cluster in the vertebrate
 // genome, with genes on alternating strands (RPL7A +, SURF1 -, SURF2 +, SURF4 -)
 // sharing bidirectional promoters. The two halves are the same reads under the
@@ -414,6 +425,10 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
   // already sorted by that base, so the variant reads cluster at the top — a
   // right-click there reliably lands on a mismatch and opens the read context
   // menu's "SNP/Mismatch → Sort by base at position" submenu, boxed here.
+  //
+  // The right-click and both callouts resolve through SORT_COLUMN, so the action
+  // and the arrow that explains it cannot come apart: the SNP is named once, as
+  // a locus, and the layout is the model's problem.
   {
     mode: 'url',
     name: 'alignments_sort_by_base',
@@ -438,8 +453,8 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'ctgA',
-    // narrower window; the rightclick x below is recomputed
-    // for this width — the SNP at ctgA:14481 sits at ~0.51 of the 107bp region
+    // narrower window; the right-click below anchors to the SNP's locus, so it
+    // follows this width rather than being recomputed against it
     viewportWidth: 1100,
     // crop each stage to the populated header+pileup so the stacked two-frame
     // figure isn't padded by the empty viewport below (shorter window).
@@ -454,7 +469,15 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     stages: [
       {
         actions: [
-          { type: 'rightclick', from: { x: 550, y: 272 } },
+          // Right-click the SNP column itself, resolved from the locus rather
+          // than written down: the previous fixed x was computed for a 107bp
+          // window and this spec's is 31bp, so it had drifted onto a plain read
+          // two columns over. The menu then offered no "SNP/Mismatch" item at
+          // all — intermittently, since which read sits under a fixed y depends
+          // on how the pileup packed that run. fracY lands in the pileup below
+          // the coverage subtrack; every read row in this column carries the
+          // mismatch, so anywhere in the band works.
+          { type: 'rightclick', anchor: SORT_COLUMN },
           ...menuCascade(['SNP/Mismatch', 'Sort by base at position']),
         ],
         annotations: [
@@ -491,17 +514,26 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           { type: 'hover', from: { x: 200, y: 100 } },
           { type: 'delay', ms: 2500 },
         ],
-        // make the (subtly-grouped) sort legible: point at the center column
-        // where the reads carrying each base at 14481 now stack into one block
+        // make the (subtly-grouped) sort legible: point at the column where the
+        // reads carrying each base at 14,481 now stack into one block. Anchored
+        // to that locus, like the right-click above — these were hand-measured
+        // pixels from when this spec framed 108bp, and after it was narrowed to
+        // 31bp the arrow pointed at the centre line two columns over with
+        // nothing to say so.
         annotations: [
           {
             type: 'text',
-            x: 610,
-            y: 250,
+            anchor: SORT_COLUMN,
+            dx: 60,
+            dy: -20,
             maxWidth: 330,
             text: 'Reads sorted by base at this column',
           },
-          { type: 'arrow', from: { x: 605, y: 258 }, to: { x: 565, y: 235 } },
+          {
+            type: 'arrow',
+            anchor: { ...SORT_COLUMN, dx: 12, dy: -18 },
+            fromAnchor: { ...SORT_COLUMN, dx: 52, dy: -14 },
+          },
         ],
       },
     ],
@@ -1061,7 +1093,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     settleMs: 12000,
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      ...menuCascade(['Read height', 'Compact'], 800),
+      ...menuCascade(['Read height', 'Compact']),
     ],
     // box both the "Read height" parent submenu and the "Compact" item it opens
     annotations: [
@@ -1103,7 +1135,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     viewportHeight: 560,
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      ...menuCascade(['Read height', FIT_LABEL], 800),
+      ...menuCascade(['Read height', FIT_LABEL]),
     ],
     annotations: [
       { type: 'box', anchor: { text: 'Read height' } },
@@ -1136,7 +1168,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       {
         actions: [
           { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-          ...menuCascade(['Read connections', 'Show read arcs'], 600),
+          ...menuCascade(['Read connections', 'Show read arcs']),
         ],
         // box only the "Show read arcs" checkbox (this figure is
         // specifically about enabling read arcs)
