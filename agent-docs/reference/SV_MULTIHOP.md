@@ -49,8 +49,7 @@ Two chr3 arms in opposite orientations (a foldback) with 199 bp of chr10 and
 183 bp of chr12 spliced in at the turn. That structure has now been derived three
 times independently — from the caller's breakend brackets, from a de novo
 consensus realigned back, and from a LINX-style breakend walk in a separate
-codebase ([below](#the-vcf-side-sibling-derivative-chromosome-utils)) — and all
-three agree.
+codebase ([below](#the-breakend-walk-cross-check)) — and all three agree.
 
 Supporting evidence, all measured rather than eyeballed:
 
@@ -199,46 +198,42 @@ to write an empty "reconstruction" and exit 0, and a locus naming a sequence the
 reference does not have died inside samtools *after* the fetch rather than
 against the `.fai` before it.
 
-## The VCF-side sibling: derivative-chromosome-utils
+## The breakend-walk cross-check
 
-`github.com/cmdcolin/derivative-chromosome-utils` is a TypeScript library that
-reconstructs derivative chromosomes from BND records alone, adapted from LINX's
-chaining (GRIDSS/PURPLE/LINX) but decoupled from any caller. It is the other half
-of this problem, and the two halves are worth keeping distinct:
+The other way to reconstruct this allele is to walk the caller's breakends
+directly: no reads, no consensus contig, just the BND records and their mates.
+The two are worth keeping distinct — a walk gives the segment order and
+orientation the *caller* implies, `derive` gives what the *reads* actually
+carry — and running both is what makes an agreement mean something.
 
-| | source of truth | output |
-| --- | --- | --- |
-| derivative-chromosome-utils | the caller's breakends | the *expected* segment order and orientation |
-| `sv_multihop derive` | the tumour reads | the *observed* allele, plus its JBrowse wiring |
-
-Run against COLO829, its `walkBreakends` returns the same four segments as the
-read-derived reconstruction above — same chromosomes, same two templated inserts,
-same foldback — once the traversal is read from the other end (a derivative and
-its reverse complement are one molecule). Only the outer chr3 bounds differ, and
-necessarily: the walk has no left-hand breakend to stop at, while the reads bound
+Walked over COLO829's VCF, it returns the same four segments as the read-derived
+reconstruction above: same chromosomes, same two templated inserts, same
+foldback, once the traversal is read from the other end (a derivative and its
+reverse complement are one molecule). Only the outer chr3 bounds differ, and
+necessarily — a walk has no left-hand breakend to stop at, while the reads bound
 the arms at read length. That agreement is the third independent derivation.
 
-**That took a fix, now upstream** (`08ff4f9`), and the bug is worth knowing
-because it is this project's own failure mode in someone else's code: the ALT
-pattern matched at most one base either side of the bracket, so any BND carrying
-an inserted sequence at the junction was dropped in silence. **28 of the 66 BND
-records** in COLO829's own VCF, and in this chain precisely the junction holding
-the chr12 templated insert — the segment the tutorial figure is about — leaving
-`deriveChromosomes` with a 0-segment chain and a plausible-looking walk.
+**Getting there needed a parser fix, and the bug is this file's own failure mode
+in another shape:** an ALT pattern that matches at most one base either side of
+the bracket drops, in silence, any BND carrying inserted sequence at the
+junction. That is **28 of the 66 BND records** in COLO829's own VCF, and in this
+chain precisely the junction holding the chr12 templated insert — the segment the
+tutorial figure is about — leaving a 0-segment chain and a plausible-looking
+walk.
 
 VCF 4.5 §5.4 is explicit that the replacement string can be longer: "the string t
 may be an extended version of s if some novel bases are inserted during the
-formation of the novel adjacency". §5.4.1 gives a worked example, which the
-pattern also dropped. The fix delegates the ALT grammar to `@gmod/vcf`'s
-`parseBreakend` rather than widening the regex — that parser already handles
-inserted sequence, assembly-contig mate positions (`<ctg1>:329`, §5.4.2) and
-single breakends, and `vcf-js` gained a regression test (`e1f3be2`) pinning the
-multi-base case, which was correct but untested there.
+formation of the novel adjacency". §5.4.1 gives a worked example, which such a
+pattern also drops. **Delegate the ALT grammar to `@gmod/vcf`'s `parseBreakend`
+rather than widening a regex** — it already handles inserted sequence,
+assembly-contig mate positions (`<ctg1>:329`, §5.4.2) and single breakends, and
+`vcf-js` gained a regression test (`e1f3be2`) pinning the multi-base case, which
+was correct but untested there.
 
-The mate refName case trap applies too, though the library dodges it —
-`buildGraph` pairs breakends by `MATEID`, not by chromosome. But `Breakend.mateChr`
-is handed to consumers exactly as the caller wrote it (`CHR10` against a `chr10`
-CHROM), so anything grouping on it needs to normalize.
+The mate refName case trap applies to any breakend walk too. Pairing by `MATEID`
+sidesteps it, but a mate refName handed to consumers as the caller wrote it
+(`CHR10` against a `chr10` CHROM) means anything that groups on it has to
+normalize — the same bug this file had, one layer up.
 
 ## Reads on the allele, in the app
 
@@ -373,13 +368,13 @@ to run it on their own callset. Either makes the interface concrete instead of
 guessed. `--jbrowse-out` is the seam that makes a standalone run browsable, so
 that is now what an external user would exercise first.
 
-derivative-chromosome-utils is not that second consumer — it is a sibling, not a
-caller of this. But it does redraw the line: the VCF-side reconstruction now has
-a real home elsewhere, which leaves `sv_multihop`'s own `chains` (proximity
-unioning, no ordering, one guessed `--max-segment`) as the weakest part of a tool
-whose strength is the read-side evidence. The cheap version of "extract it" is
-therefore to *shrink* it — let the library do the chaining and have `derive`
-consume a walk — rather than to move it.
+What *would* change the shape of the tool is the weakness in `chains`: proximity
+unioning gives an unordered set of junctions, with no segment order or
+orientation and one guessed `--max-segment`, against a `derive` whose strength is
+the read-side evidence. Ordering has to come from a breakend walk over the VCF
+([above](#the-breakend-walk-cross-check)) — a genuinely separate job from
+reading the alignments, and one to run as its own program and consume the output
+of, rather than to fold in here.
 
 ## Traps in this worktree
 
