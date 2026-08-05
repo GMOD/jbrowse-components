@@ -1945,9 +1945,9 @@
   },
   "pangenome/local_subgraph": {
     "name": "pangenome/local_subgraph",
-    "status": "bad",
-    "note": "Answered, and the answer is measured rather than argued: extracting more data does NOT recover it. my response: why not? previous notes: In ecoli_pggb.segs.bed.gz the blunt node is segment 176693, 93 bp, rank 1, CFT073 only, and ecoli_pggb.links.bed.gz gives its two links as 176689 at K12:1,004,686 and 178029 at K12:997,574. So it is a 7.1 kb deletion, not an extraction artifact, and the window holding both anchors is 7.4 kb -- which odgi extract -E returns as 6,361 segments (K12:1,000,500-1,008,900) against the 48 here, because a base-level pggb graph averages ~17 bp per segment. odgi extract -c 1 fetches the far anchor alone and is worse: that node's own two ends are then open and it anchors 7 kb off the left of the linear view. What changed instead is that the figure now names the EVENT rather than the cut. The force pane's label went from 'The sequence continues past this end: its other link falls outside the extracted window' to '93 bp of CFT073 where K12 has 7.1 kb. Its open end rejoins K12 7 kb outside this window', which closes the question rather than inviting it again. The tutorial paragraph carries the widening cost, and it now ends on the result that makes the whole thing worth reading: the same event is four nodes in the minigraph graph of these same five strains (s378 -> s379 -> s380 is K12 through the deletion, s378 -> s2025 -> s380 is CFT073 around it, both one row each in ecoli_minigraph.links.bed.gz over K12:997000-1005000). Which resolution can hold an event is a property of the graph, not of the window you asked for.",
-    "reviewedAt": "2026-08-05T03:18:48.660Z",
+    "status": "answered",
+    "note": "Why extracting more data does not recover it, since that is the question left standing. The blunt end is segment 176693 in ecoli_pggb.segs.bed.gz -- 93 bp, rank 1, CFT073 only -- and its two links in ecoli_pggb.links.bed.gz land at K12:1,004,686 and K12:997,574. The gap between those anchors is 7.1 kb, so a window that holds BOTH ends is 7.4 kb wide, not the ~1 kb this cut spans. That is what makes it unrecoverable by extracting more: odgi extract -E over K12:1,000,500-1,008,900 returns 6,361 segments against the 48 drawn here, because a base-level pggb graph averages ~17 bp per segment, and a 6,361-node hairball is not a legible figure at any layout. odgi extract -c 1 is worse rather than a middle ground: it fetches the far anchor alone, so THAT node's two ends are then open in turn, and it anchors 7 kb off the left of the linear view. Both were run rather than reasoned about. So the fix was to name the event instead of the cut: the force pane's label says '93 bp of CFT073 where K12 has 7.1 kb. Its open end rejoins K12 7 kb outside this window', which answers the question the open end raises instead of raising it again. The genuinely different answer is a coarser graph: the same event is four nodes in the minigraph graph of these same five strains (s378 -> s379 -> s380 is K12 through the deletion, s378 -> s2025 -> s380 is CFT073 around it, both one row each in ecoli_minigraph.links.bed.gz over K12:997000-1005000). Which resolution can hold an event is a property of the graph, not of the window you asked for.",
+    "reviewedAt": "2026-08-05T04:58:41.750Z",
     "hash": "63b0e9ef8dc1ca7b318500bee7ed98f14eff7d97"
   },
   "pangenome/rgfa_subgraph_launch": {
@@ -2239,10 +2239,10 @@
   },
   "dog10k-igf1-haplotype": {
     "name": "dog10k-igf1-haplotype",
-    "status": "bad",
-    "note": "zoomout even farther. previous notes: Cluster narrow, draw wide -- your second clause, and it is measurably the better figure. Clustering is region-scoped, so over the whole 320 kb the estimator is fed as many undifferentiated columns as separating ones. Ordering the rows on the 140 kb differentiated core instead and drawing the published window takes the size swatch from 22 colour blocks to 17, and the two longest blocks from 49% of painted rows to 67% -- the same summary the window sweep was scored on, so the two are comparable. The zoom-out half was already answered by the previous pass at 320 kb. HOW IT IS SAID: a new display property rather than a click-chain in the spec. The first version drove the UI (open at the core, cluster, type the wide window into the location box) and worked, but the figure's live link then opened the core rather than the frame you are looking at, and 'cluster here, look there' lived in the capture instead of in the session. LinearMultiSampleVariantDisplay now takes clusterRegion beside runClustering -- a locstring, whitespace-separated for several, throwing rather than falling back to the visible region so a typo cannot quietly cluster over whatever is on screen. Eight tests on the parse, and the tutorial names the setting where it describes the recipe.",
-    "reviewedAt": "2026-08-05T03:13:18.273Z",
-    "hash": "47f97d2d5e40003c5bced00cdc4196cd58ba7626"
+    "status": "answered",
+    "note": "Widened to the full 410 kb the callset covers (chr15:41,348,000-41,752,000), and this is the end of that road rather than one more step along it. clusterRegion had already removed what a wider window used to cost: the row order comes from the 140 kb differentiated core whatever is on screen, so widening can no longer move a row and only dilutes columns -- which is why the earlier 220/320/450 kb sweep does not apply any more. The hard stop is the data: the build's VCF and Fst BED both end at chr15:41,350,031-41,749,214, so a wider frame paints flank with no sites in it, and empty-for-lack-of-data reads exactly like no-differentiation-here. Wider than this is a rebuild of the callset, not a locstring.",
+    "reviewedAt": "2026-08-05T04:56:30.344Z",
+    "hash": "86b6812a680bb9e3a696e2f3b1d487d607cee64a"
   },
   "dog10k-slc28a3-copy-number": {
     "name": "dog10k-slc28a3-copy-number",
@@ -2595,16 +2595,16 @@
   },
   "cancer_sv/derivative_autogenerated": {
     "name": "cancer_sv/derivative_autogenerated",
-    "status": "bad",
-    "note": "if it was possible to align the reads to the derived contigs using procedure outside of jbrowse and then plot in jbrowse it may be interesting. unfortunately, the gene track is also very chaotic here on top, it is unclear what is happening there. also, there is not much lionarssynteyview alignment ribbon between to two smaller pieces on the right and the derived , very small, is this expected? is it an incidental/not real finding? previous agent notes: jbrowse can just be a 'primitive' for the data visualization rather than an entire workhorse. CORRECTION to my earlier reply on this figure. I said the reads lane answered 'why are the reads not shown using alignmentstrack'; that lane has since been reverted (e7b4f2b29b), on grounds I agree with: the projection could not fail at base level, because the in-app allele has no sequence for a read's own bases to disagree with, so it drew like evidence without being any. The figure no longer carries it and its caption no longer claims it. The alignmentstrack answer is cancer_sv/realigned_reads, one section down: derive's consensus with the spanning reads realigned onto it, beside the same molecules against hg38 where they are torn in four. That one is a real BAM on both sides, with real mismatches and real clipping against real bases.",
-    "reviewedAt": "2026-08-05T03:09:17.677Z",
+    "status": "answered",
+    "note": "Answering the ribbon question first, because it is the one with a fact behind it: yes, expected, and real. The two right-hand pieces are 199 bp of chr10 and 183 bp of chr12 inverted, against a 61 kb allele that is 52.3 kb of chr3 plus an 8.4 kb inverted chr3 return -- the sizes are on the figure itself, written by the segment track along the allele, and they come from derive's PAF rather than from the picture. So the ribbons are hairlines because the segments are hairlines, about 0.3% of the allele each, not because anything failed to align. They are templated inserts at the junction, they are the reason this event needs four segments rather than two, and the very next figure (cancer_sv/derivative_inserts) opens those junctions at base scale where the same two pieces are ribbons as wide as the chr3 arms and the realigned reads cross every join at flat depth. Incidental would look like one read's worth of support; this path has 26 reads crossing it in the same order and orientation. The gene track is chaotic for the same reason and the caption now says so rather than leaving it to be discovered: the reference row is a three-locus window whose second and third loci are a few hundred bases wide, so at the right-hand edge two loci's genes plus the gene track carried up from the launching view collide in a few pixels. That crowding IS the 199 bp and 183 bp, drawn honestly. On aligning reads to the derived contig outside JBrowse and plotting them here: that is cancer_sv/realigned_reads, one section down -- derive's consensus with the spanning reads realigned onto it, beside the same molecules against hg38 where they are torn in four, a real BAM on both sides, and both panes now labelled with which assembly they were aligned to.",
+    "reviewedAt": "2026-08-05T04:58:03.379Z",
     "hash": "40d86a2a010ff18ddbe4bc62a9269c2a2f6755ba"
   },
   "cancer_sv/foldback_reconstruction": {
     "name": "cancer_sv/foldback_reconstruction",
-    "status": "bad",
-    "note": "if it was possible to align the reads to the derived contigs using procedure outside of jbrowse and then plot in jbrowse it may be interesting. . previous agent notes:Dialog cut down, and the other two halves of the note were already settled. THE DIALOG opened with eight lines of grey text above three short rows: five explaining what each destination button draws, which the buttons already say, and three of caveat. It is now one sentence saying what a row is, plus the one caveat that changes which row you pick. The third destination was also the only button on the default text variant, so 'Open as split view' read as a link wedged between two filled buttons -- three ways to say 'draw it' in three weights; all three are contained/primary now and Cancel is the odd one out, which is right since it is the one that draws nothing. OUT OF BAND: agreed and done -- the read projection is reverted (e7b4f2b29b) and the tutorial now says the base-level check is sv_multihop.py derive, which polishes the spanning reads into a consensus and realigns them onto it. ALIGNMENTSTRACK: answered on the derivative_autogenerated entry; short version is that an alignments track there would have made a picture that cannot fail at base level look more like evidence, because the allele has no bases. The realigned pileup that CAN fail is on the page as reads_vs_der3, and cancer_sv/realigned_reads now puts the same reads against hg38 beside it. Regenerated derivative_autogenerated and multihop_split_view_steps too, since both show this dialog.",
-    "reviewedAt": "2026-08-05T03:10:07.694Z",
+    "status": "answered",
+    "note": "Aligning the reads to the derived contig outside JBrowse and plotting them here is done, and it is cancer_sv/realigned_reads: scripts/sv_multihop.py derive polishes the spanning reads into a consensus and realigns them onto it, and the figure puts that pileup beside the same molecules against hg38, where they are torn in four. A real BAM on both sides, real mismatches, real clipping against real bases, and both panes now carry a label saying which assembly their reads were aligned to -- which is what this note was asking for. Worth saying what it is NOT, since that was tried and reverted (e7b4f2b29b): a reads lane on the IN-APP reconstruction cannot be that check, because the path the dialog builds has no sequence, so a read's own bases never disagree with anything and the lane draws like evidence without being any. The dialog itself is also smaller than when this note was written: eight lines of grey text above the buttons became one sentence plus the single caveat that changes which row you pick, and all three destinations are contained buttons now, so Cancel is the odd one out -- which is right, since it is the one that draws nothing.",
+    "reviewedAt": "2026-08-05T04:58:55.349Z",
     "hash": "72199127963eee71df1cf1c575476335d0b2f5e4"
   },
   "hic/overlay_controls": {
@@ -2637,52 +2637,52 @@
   },
   "cancer_sv/multihop_split_view_steps": {
     "name": "cancer_sv/multihop_split_view_steps",
-    "status": "bad",
-    "note": "unfortunately this is too chaotic of a final screenshot. should also use 'replace view', and maybe a left right split",
-    "reviewedAt": "2026-08-05T03:10:52.664Z",
-    "hash": "d66b621f096eccb2963c87b3211186b0626f81fe"
+    "status": "answered",
+    "note": "Took 'should also use replace view' as a change to the app rather than to the capture, because the split-view destination could not replace: it was the one button in that dialog that always added a view. It now routes through addOrReplaceView and says so ('Replace with split view'; a session that cannot replace, e.g. embedded, still reads 'Open as split view'). The reason it is the right default there and not for the synteny destinations: this view is built from the launching view's OWN tracks and its first panel opens on the segment the pileup is already showing, so keeping that view above it was the same locus with the same tracks twice, one scroll apart. The figure is 3,780px where it was 4,578 and the second frame is now just the result. On the left-right split: not done, and the reason is mechanical -- the two frames are 560px and 1,330px tall, and a row is +append'ed, so side by side the short one pads with 770px of white. The 2x2 you asked for on split_view_from_breakend works because its four frames are two matched pairs.",
+    "reviewedAt": "2026-08-05T04:57:07.033Z",
+    "hash": "b0ae9c5a45f9ab734fadfae3c5e4d8e2d425b095"
   },
   "cancer_sv/realigned_reads": {
     "name": "cancer_sv/realigned_reads",
-    "status": "bad",
-    "note": "it is good to see the spanning reads. if it was shown how this was done, it is ideal e.g. text blurb saying \"reads aligned to the derived contig. also, the left side could be a breakpoints split view showing chr3 and chr10",
-    "reviewedAt": "2026-08-05T03:11:55.913Z",
-    "hash": "13ab37e91e64d0fcc3c9cce6c8e7815863367a7c"
+    "status": "answered",
+    "note": "Both halves now say where their reads were aligned, on the image: 'aligned to hg38' on the left pane, 'realigned to the derived contig' on the right, anchored to each pane's own read track. It has to be on-image rather than in the caption -- the two panes are separate captures appended side by side, and a reader's eye is inside a pane, not at the caption, when 'aligned to WHAT?' comes up. The first version also named the tool ('... (sv_multihop.py derive)') and wrapped to three lines that covered the track header and the top of the pileup; the tool belongs in the caption and in the tutorial's Reproduce section, and a callout is a label. On the left being a chr3+chr10 breakpoint split view: not done, deliberately. That view of this exact junction is cancer_sv/split_view_from_breakend one section up (r_12_1, chr3:25,359,568, the same junction this figure reads against the allele), and this figure's argument needs one junction against two coordinate systems, not two loci -- a two-panel left against a one-panel right also pads in a +append compose. The pair is a cross-reference rather than a repeat.",
+    "reviewedAt": "2026-08-05T04:57:19.327Z",
+    "hash": "e786ae38504d50129144cc9efd2347c76bc80e09"
   },
   "cancer_sv/split_view_from_breakend": {
     "name": "cancer_sv/split_view_from_breakend",
-    "status": "bad",
-    "note": "may want to use a 2x2 screenshot format",
-    "reviewedAt": "2026-08-05T03:12:08.107Z",
-    "hash": "096e33631f872ae65b9de82367471cab09af3b47"
+    "status": "answered",
+    "note": "2x2 (stageColumns: 2). It was 6,160px of column, most of it the same app chrome four times, with the result -- the frame the other three exist to reach -- below three screens of scroll; it is 3,528px now and the result sits beside the dialog step that produced it. Two things had to move with the layout: the viewport narrowed from 1400 to 1000, since a grid is two frames wide and 1400 made a 5,600px PNG the page then scales the text out of; and the third frame keeps the dialog frames' height rather than matching the result's, so +append pads it with white. Matching the heights was tried first and is worse -- the app's own page is ~667px here, so the extra 400 came back as grey app background rather than as more pileup.",
+    "reviewedAt": "2026-08-05T04:57:07.442Z",
+    "hash": "2f73042d8973037aea3b93da4e5cccf02aefd3a0"
   },
   "dog10k-anglofrench-hounds": {
     "name": "dog10k-anglofrench-hounds",
-    "status": "bad",
-    "note": "this screenshot is frankly just kind of confusing and too large. what is the point. consider deleting or drastically rethinking what we are trying to show",
-    "reviewedAt": "2026-08-05T03:12:57.485Z",
-    "hash": "8e87b2342aa3e1f7a509afe6e7798cf9eadcc42d"
+    "status": "answered",
+    "note": "Deleted two of the three panels and re-aimed what is left, which is closer to your 'drastically rethinking' than to a fix. The three panels each answered an objection to the one above: the per-animal labels draw ON the plot and cover the start of every row, so an unlabelled copy existed to show the blocks two dogs carry there, and chr38 existed because which individual looks wolfish changes with the chromosome. Answering objections stacked 6,870px whose actual finding -- orange in the Great Anglo-French rows and nowhere else in the clade -- was buried under two near-identical repeats of itself. The figure now claims only that clade-level result: one chr1 panel, 2,290px, per-animal names off, and four callouts naming the row groups (wolf+wolfdog / both Great Anglo-French breeds / the stocks they were bred from / German Shepherd), positioned from the display's own rowOrder rather than measured off a PNG. The per-animal and per-chromosome readings move to the prose. The callouts are RIGHT-aligned and that is a measured decision: placed left they sat exactly where the row labels used to, and a query over the BED for wolf segments under each pill found the worst case -- the Great Anglo-French pill covering Tricolour 5's 11.4 Mb terminal block on hap1 and its 8.9-11.4 Mb block on hap2, the single most interesting thing in the frame. Same query on the right returns nothing for three of the four; the fourth sits on the wolf and wolfdog rows, which are wolf end to end.",
+    "reviewedAt": "2026-08-05T04:56:29.936Z",
+    "hash": "12d2f320c70ca8fd2cf4706bdd1dc99dcfa3fe76"
   },
   "hic/whole_genome": {
     "name": "hic/whole_genome",
-    "status": "bad",
-    "note": "ideally the whole genome hic we use has inter-chromosomal connections. we may have one in our s3 bucket or we ave to look for one",
-    "reviewedAt": "2026-08-05T03:14:01.913Z",
-    "hash": "6efbfb74c8ade69bc156fdf3640ffead89aed240"
+    "status": "answered",
+    "note": "Found one, and it is not in our bucket. s3://jbrowse.org holds exactly two .hic files, both HG008-T read-pair maps that carry inter blocks for chr3 and chr13 only; the demo's own intra_nofrag_30.hic has 26 master-index entries and every one is a self-pair, which is why the off-diagonal was empty. The figure now loads ENCFF563JTY, GM12878 in situ Hi-C from ENCODE (ENCSR730CER), hg38, .hic v9 -- its footer holds 326 entries: 26 self-pairs and all 300 pairs of the 25 chromosomes. I read the footer directly rather than trusting file names, which is also what ruled out a 155 MB ENCODE 'contact matrix' that turned out to be ChIA-PET and would have been captioned as Hi-C. Two settings had to move with it, both for the same reason -- the old ones were compensating for a sparse file. The track is 700px where it was 100: a pair's contacts draw in the wedge between its two regions, so the drawing is as tall as the widest pair is wide, and at whole-genome zoom that is chr1 against chrY, half the view; at 100px the figure was the top slice of that pyramid painted at full saturation. And the ramp is linear where it was log: log lifts a decayed self-contact signal off the floor, and on a file that fills the whole pyramid it pushes every bin to the top and the map comes back solid red. Cost note for the live link: 300 real region-pair fetches, measured at 685,098 records in 224s serially against this file.",
+    "reviewedAt": "2026-08-05T04:56:51.281Z",
+    "hash": "73296548cd51b6c4a7b3de92007e215e48b82597"
   },
   "methylation/hg002_snrpn_group_by_hp": {
     "name": "methylation/hg002_snrpn_group_by_hp",
-    "status": "bad",
-    "note": "may want red annotation text saying HP1,HP2,HP unknown in  bottom. also, the first screenshot may want to show the track menu for group by->tag",
-    "reviewedAt": "2026-08-05T03:15:18.449Z",
-    "hash": "2d771d35fe89249a94167f228c761f2d34263b64"
+    "status": "answered",
+    "note": "Both. The grouped half carries three red callouts anchored to the display's own group headers by text, so they follow the groups wherever the layout puts them: 'HP1: methylated across the island', 'HP2: unmethylated', 'HP unknown: reads with no haplotype tag'. Which haplotype is which is read off the render rather than assumed -- HP tags are arbitrary and a rebuilt BAM could swap them -- so the pills get re-checked on regen. The ungrouped half now opens the track menu on Group by... -> Tag..., with both rows boxed; the ungrouped state is the honest place for it, since that is where the item still reads plain 'Tag...' rather than 'Tag (HP)...'.",
+    "reviewedAt": "2026-08-05T04:56:50.887Z",
+    "hash": "561965d18d229aedeac5b6f9b42ca4f90f033796"
   },
   "multisv_rhd": {
     "name": "multisv_rhd",
-    "status": "bad",
-    "note": "the second screenshot uses yellow for no-call but it is not in legend. also potentially we could just change this to one figure where the regular linearvariantdisplay and the multisamplevariantdisplay of same data was visible. then user can see which sv is which.",
-    "reviewedAt": "2026-08-05T04:19:38.394Z",
-    "hash": "a15f02ee8be48350af3a7e66fb46918571449e87"
+    "status": "answered",
+    "note": "One view now, not two composed captures. The legend half is fixed at the source: an override colour (SV type, consequence impact) only reaches alt-carrying cells, so the reference grey and the no-call yellow were painted with nothing in the key to name them -- getNonAltItems now appends 'Homozygous reference' plus 'No call' (gated on hasNoCall) to both keys, with tests. The 'which sv is which' half is the bigger change and it took your second suggestion literally: the figure is now the genotype matrix with the SAME callset under it in the ordinary LinearVariantDisplay, coloured by the same svTypeColor jexl, each record on its own row with its id, class and size drawn on it (HGSV_1821 <DEL> 70.1Kbp sits exactly under the deletion band, HGSV_1823 <CNV> 6.16Kbp under the olive no-call stripe). A matrix cell only says a sample carries SOMETHING at that column, and 26 records overlap in this window, so the record lane is what makes a band readable as a named call. The SV-type CELL colouring the old second capture carried is not lost -- multisv_svtype in the multi-variant guide is that figure on a window whose classes are the subject. Loading the same VCF twice needs a second trackId, since showTrack resolves one track per id; two multi-sample displays in one view remains impossible (the second kills the first's context menu, so no sort).",
+    "reviewedAt": "2026-08-05T04:56:11.362Z",
+    "hash": "1decf2ef5863a08de0197269cbba108381619f06"
   },
   "multisv_rhd_dosage": {
     "name": "multisv_rhd_dosage",
@@ -2690,13 +2690,6 @@
     "note": "",
     "reviewedAt": "2026-08-05T04:19:48.235Z",
     "hash": "3fce39522e0d2b74314ddfc2ed0f4f63f19cafb6"
-  },
-  "multisv_rhd_mapq": {
-    "name": "multisv_rhd_mapq",
-    "status": "bad",
-    "note": "not an interesting screenshot delete",
-    "reviewedAt": "2026-08-05T03:17:10.033Z",
-    "hash": "5121bc63c47d8dc7347b91516c230b81e1be88b7"
   },
   "tcga/cohort_cnv_zarr_genome": {
     "name": "tcga/cohort_cnv_zarr_genome",
