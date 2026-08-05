@@ -19,10 +19,12 @@ description: The shared display status chrome that owns loading, error, and retr
   `data-display-phase`, the other four overlays) is `DisplayStatusChromeBase`,
   which a display with no rendering backend renders directly. That is how arc
   gets the chrome instead of a copy of it.
-- The **loading term** is per-family, but customize it through the
-  `loadingSuppressed` hook, never by overriding `displayPhase` — an override
-  restates every term and then silently misses the next one added. Same rule the
-  precedence has, one level down.
+- The **loading term** is single-sourced too, in `computeLoadingTerm`: both
+  foundations evaluate the same expression and each constants out the one axis it
+  doesn't have (per-region the staleness term, global the `loadingSuppressed`
+  hook). Customize it through `loadingSuppressed` / `rendersCanvas`, never by
+  overriding `displayPhase` — an override restates every term and then silently
+  misses the next one added. Same rule the precedence has, one level down.
 - `renderError`/`tooLarge` replace the subtree (canvas unmounts,
   `backend.dispose()`); `error`/`loading` are overlays over a live canvas.
 - A status set while the phase is `ready` — work with no fetch behind it, e.g.
@@ -147,7 +149,12 @@ button is present, looks live, and does nothing. Two shapes have failed it:
   nothing restarts it, the canceled state being deliberately durable. Read
   **`isLoadingOrCanceled`** (FetchMixin), which exists so no family has to
   remember the second term. Arc had this hole; pinned by
-  `plugins/arc/src/shared/displayPhase.test.ts`.
+  `plugins/arc/src/shared/displayPhase.test.ts`. The per-region family had the
+  *shape* of it until 2026-08 — its term was `!isReady` (over a bare `isLoading`)
+  plus a separately-remembered `fetchCanceled`, i.e. the right answer reached the
+  wrong way — which is why the cancel term now lives inside `computeLoadingTerm`
+  rather than in either family's getter. Pinned on a real per-region display by
+  `plugins/canvas/src/LinearBasicDisplay/displayPhaseWiring.test.ts`.
 
 The check when adding a display: raise each error it can produce, press retry,
 and confirm the display can actually leave that state. Cancel is one of them.

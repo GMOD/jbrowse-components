@@ -1,4 +1,3 @@
-import { computeSvgReady } from '@jbrowse/core/svg/svgReady'
 import {
   getContainingTrack,
   getContainingView,
@@ -7,13 +6,17 @@ import {
 import { getTrackAssemblyNames } from '@jbrowse/core/util/tracks'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
-import { computeDisplayPhase } from '@jbrowse/render-core/displayPhase'
+import {
+  computeDisplayPhase,
+  computeLoadingTerm,
+} from '@jbrowse/render-core/displayPhase'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { autorun, observable, untracked } from 'mobx'
 
 import RegionTooLargeMixin from '../../shared/RegionTooLargeMixin.ts'
 import FetchMixin from './FetchMixin.ts'
 import { assertDisplayContract } from './assertDisplayContract.ts'
+import { foundationSvgReady } from './foundationSvgReady.ts'
 import { serializeRpcProps } from './rpcPropsCacheKey.ts'
 
 import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
@@ -120,7 +123,17 @@ export default function MultiRegionDisplayMixin() {
 
         /**
          * #getter
-         * true once the canvas has painted and no fetch is in flight
+         * true once the canvas has painted and no fetch is in flight — the
+         * render-lifecycle readiness axis of the three in CLAUDE.md.
+         *
+         * **`displayPhase` no longer routes through it**, and that is deliberate
+         * rather than an oversight to tidy up: the loading term wants
+         * `isLoadingOrCanceled`, and expressing it as `!isReady` (bare
+         * `isLoading`) left this family remembering `fetchCanceled` as a separate
+         * disjunct — the right answer reached the wrong way, one edit from the
+         * dead-Retry bug DISPLAYCHROME.md describes. This stays as the plain
+         * "painted and idle" question a display or plugin may want to ask; the
+         * scrim's question is `computeLoadingTerm`'s.
          */
         get isReady() {
           return self.canvasDrawn && !self.isLoading
@@ -239,36 +252,43 @@ export default function MultiRegionDisplayMixin() {
          * `awaitSvgReady(model)` instead of inlining the condition.
          */
         get svgReady(): boolean {
-          return computeSvgReady(
-            {
-              error: self.error,
-              regionTooLarge: self.regionTooLarge,
-              extraTerminal: self.svgReadyExtraTerminal,
-            },
-            () => self.dataCurrent,
-          )
+          return foundationSvgReady(self)
         },
 
         /**
          * #getter
          * The display's mutually-exclusive visual state, precedence single-sourced
-         * in `computeDisplayPhase`. Here `loading` means data isn't ready yet, or
-         * stale data (viewport past loaded) is still on screen through the
-         * pre-refetch debounce.
+         * in `computeDisplayPhase` and the loading term itself in
+         * `computeLoadingTerm` — the same expression the global family evaluates,
+         * so a term added to one reaches both. Here `loading` means data isn't
+         * ready yet, or stale data (viewport past loaded) is still on screen
+         * through the pre-refetch debounce.
          *
          * A subclass customizes this through `loadingSuppressed`, never by
          * overriding the getter — see that hook.
          */
         get displayPhase(): DisplayPhase {
-          // fetchCanceled keeps the overlay up (showing its retry affordance)
-          // after the user canceled mid-load
-          return computeDisplayPhase(
-            self,
-            () =>
-              !self.loadingSuppressed &&
-              (!self.isReady ||
-                !self.viewportWithinLoadedData ||
-                self.fetchCanceled),
+          return computeDisplayPhase(self, () =>
+            computeLoadingTerm(
+              {
+                loadingSuppressed: self.loadingSuppressed,
+                // `isLoadingOrCanceled`, not `!isReady` + a separately-remembered
+                // `fetchCanceled`: same answer, but the second term was this
+                // family's to remember, and remembering it is exactly what
+                // FetchMixin's getter exists to stop anyone having to do.
+                isLoadingOrCanceled: self.isLoadingOrCanceled,
+                canvasDrawn: self.canvasDrawn,
+                // Constant, not a hook: no per-region display shows a static
+                // non-canvas placeholder today. If one does, declare a
+                // `rendersCanvas` getter beside `loadingSuppressed` and read it
+                // here — the global family already declares that exact hook for
+                // LD, and this is the seam it plugs into.
+                rendersCanvas: true,
+              },
+              // this family's spatial-staleness axis; a thunk so a suppressed or
+              // already-loading display doesn't subscribe to viewport churn
+              () => self.viewportWithinLoadedData,
+            ),
           )
         },
 

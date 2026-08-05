@@ -6,6 +6,12 @@ import FetchMixin from './FetchMixin.ts'
 // isReady = canvasDrawn && !isLoading is defined in MultiRegionDisplayMixin.
 // That mixin can't be instantiated standalone (afterAttach calls getContainingView),
 // so we compose the two source mixins here and mirror the one-liner getter.
+//
+// This covers the *readiness axis* only. It used to be the loading overlay's
+// input too, but the scrim now asks `computeLoadingTerm` (which reads
+// `isLoadingOrCanceled`, not a bare `isLoading` — see the getter's comment), and
+// the overlay behaviour is pinned on a real display by
+// plugins/canvas/src/LinearBasicDisplay/displayPhaseWiring.test.ts.
 const TestModel = types
   .compose('TestModel', RenderLifecycleMixin(), FetchMixin(), types.model({}))
   .views(self => ({
@@ -22,7 +28,7 @@ function tick() {
 beforeEach(() => jest.spyOn(console, 'warn').mockImplementation(() => {}))
 afterEach(() => jest.restoreAllMocks())
 
-describe('isReady: loading overlay invariant', () => {
+describe('isReady: painted-and-idle invariant', () => {
   test('false on create — no fetch started, no render yet', () => {
     const m = TestModel.create()
     expect(m.isReady).toBe(false)

@@ -146,8 +146,10 @@ export { plainChromeOverlays } from './BaseLinearDisplay/index.ts'
 export {
   computeDisplayPhase,
   computeDisplayStatusPhase,
+  computeLoadingTerm,
 } from '@jbrowse/render-core/displayPhase'
 export type {
+  DisplayLoadingInputs,
   DisplayPhase,
   DisplayPhaseInputs,
   DisplayStatusPhase,

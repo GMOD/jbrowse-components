@@ -66,8 +66,10 @@ export type { BpRegionBounds, RenderBlock } from './renderBlock.ts'
 export {
   computeDisplayPhase,
   computeDisplayStatusPhase,
+  computeLoadingTerm,
 } from './displayPhase.ts'
 export type {
+  DisplayLoadingInputs,
   DisplayPhase,
   DisplayPhaseInputs,
   DisplayStatusPhase,

@@ -1,15 +1,16 @@
-import { getContainingView } from '@jbrowse/core/util'
 import { leadingEdgeDebounce } from '@jbrowse/core/util/leadingEdgeDebounce'
 import { types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
-import { computeDisplayPhase } from '@jbrowse/render-core/displayPhase'
+import {
+  computeDisplayPhase,
+  computeLoadingTerm,
+} from '@jbrowse/render-core/displayPhase'
 import { computed } from 'mobx'
 
 import GlobalFetchMixin from './GlobalFetchMixin.ts'
 import { autorunOnReadyView } from './MultiRegionDisplayMixin.ts'
 import { serializeRpcProps } from './rpcPropsCacheKey.ts'
 
-import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 
@@ -55,8 +56,10 @@ export default function GlobalDataDisplayMixin() {
        * autorun pair here keeps that out of every display's callbacks.
        */
       get canRender() {
-        const view = getContainingView(self) as LinearGenomeViewModel
-        return view.initialized
+        // `self.lgv`, not a second `getContainingView` cast: GlobalFetchMixin
+        // already owns that walk for this family, which is the whole point of
+        // hoisting it there.
+        return self.lgv.initialized
       },
 
       /**
@@ -103,13 +106,24 @@ export default function GlobalDataDisplayMixin() {
        * lives here, not in GlobalFetchMixin.
        */
       get displayPhase(): DisplayPhase {
-        // isLoadingOrCanceled, not isLoading: a canceled fetch keeps the overlay
-        // up so its retry affordance stays reachable (see FetchMixin)
-        return computeDisplayPhase(
-          self,
-          () =>
-            self.isLoadingOrCanceled ||
-            (self.rendersCanvas && !self.canvasDrawn),
+        return computeDisplayPhase(self, () =>
+          computeLoadingTerm(
+            {
+              // Constant, not a hook: no global display renders a static message
+              // in place of the whole display today. If one does, declare a
+              // `loadingSuppressed` getter beside `rendersCanvas` and read it
+              // here — the per-region family already declares that exact hook
+              // for sequence, and this is the seam it plugs into.
+              loadingSuppressed: false,
+              isLoadingOrCanceled: self.isLoadingOrCanceled,
+              canvasDrawn: self.canvasDrawn,
+              rendersCanvas: self.rendersCanvas,
+            },
+            // No staleness axis, deliberately: a global display keeps the last
+            // frame up through a refetch (StaleViewportRescaleMixin rescales
+            // it), so a pan/zoom shows no scrim beyond the isLoading window.
+            () => true,
+          ),
         )
       },
     }))

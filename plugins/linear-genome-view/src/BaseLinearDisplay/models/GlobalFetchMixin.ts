@@ -1,9 +1,9 @@
-import { computeSvgReady } from '@jbrowse/core/svg/svgReady'
 import { getContainingView } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import RegionTooLargeMixin from '../../shared/RegionTooLargeMixin.ts'
 import FetchMixin from './FetchMixin.ts'
+import { foundationSvgReady } from './foundationSvgReady.ts'
 
 import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
 
@@ -105,14 +105,7 @@ export default function GlobalFetchMixin() {
        * `awaitSvgReady(model)`.
        */
       get svgReady(): boolean {
-        return computeSvgReady(
-          {
-            error: self.error,
-            regionTooLarge: self.regionTooLarge,
-            extraTerminal: self.svgReadyExtraTerminal,
-          },
-          () => self.dataCurrent,
-        )
+        return foundationSvgReady(self)
       },
     }))
     .actions(self => ({

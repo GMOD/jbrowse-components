@@ -231,6 +231,13 @@ one freshness name every foundation exposes. Each of the five hand-written copie
 this replaced was a place to forget a terminal (hang the export) or forget
 freshness (capture a stale viewport) — both have shipped.
 
+The two LGV foundations don't even call it directly: the *field mapping* onto
+`SvgReadyTerminals` was itself the last duplicated copy (both wrote the same four
+fields, so a fifth terminal would have had to be remembered twice), and it now
+lives in `foundationSvgReady(self)`
+(`BaseLinearDisplay/models/foundationSvgReady.ts`). The non-LGV displays name
+their terminals differently and keep their own call.
+
 - **`MultiRegionDisplayMixin`** (per-region streamed — canvas, alignments, MAF,
   manhattan, wiggle / multi-wiggle, multi-variant, multi-variant-matrix):
   `dataCurrent` = `viewportWithinLoadedData && loadedRegions.size > 0`. The

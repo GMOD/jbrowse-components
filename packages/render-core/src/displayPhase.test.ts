@@ -1,4 +1,4 @@
-import { computeDisplayPhase } from './displayPhase.ts'
+import { computeDisplayPhase, computeLoadingTerm } from './displayPhase.ts'
 
 const NONE = { renderError: undefined, regionTooLarge: false, error: undefined }
 const never = () => {
@@ -61,5 +61,157 @@ describe('computeDisplayPhase lazy loading evaluation', () => {
     const loading = jest.fn(() => false)
     computeDisplayPhase(NONE, loading)
     expect(loading).toHaveBeenCalledTimes(1)
+  })
+})
+
+// A drawn, idle, viewport-current display: `computeLoadingTerm` returns false
+// here, so each test below flips exactly one input and asserts it alone raises
+// the scrim.
+const DRAWN = {
+  loadingSuppressed: false,
+  isLoadingOrCanceled: false,
+  rendersCanvas: true,
+  canvasDrawn: true,
+}
+const current = () => true
+
+describe('computeLoadingTerm', () => {
+  test('not loading once drawn, idle and viewport-current', () => {
+    expect(computeLoadingTerm(DRAWN, current)).toBe(false)
+  })
+
+  test('loading while a fetch is in flight', () => {
+    expect(
+      computeLoadingTerm({ ...DRAWN, isLoadingOrCanceled: true }, current),
+    ).toBe(true)
+  })
+
+  test('loading before the first paint', () => {
+    expect(computeLoadingTerm({ ...DRAWN, canvasDrawn: false }, current)).toBe(
+      true,
+    )
+  })
+
+  test('loading while the viewport is past loaded data', () => {
+    expect(computeLoadingTerm(DRAWN, () => false)).toBe(true)
+  })
+
+  // LD with the triangle off: it renders a static placeholder, never paints a
+  // canvas, so `canvasDrawn` can never flip. Without the gate the scrim sits
+  // over that placeholder permanently.
+  test('rendersCanvas: false drops the pre-paint term only', () => {
+    expect(
+      computeLoadingTerm(
+        { ...DRAWN, rendersCanvas: false, canvasDrawn: false },
+        current,
+      ),
+    ).toBe(false)
+    expect(
+      computeLoadingTerm(
+        {
+          ...DRAWN,
+          rendersCanvas: false,
+          canvasDrawn: false,
+          isLoadingOrCanceled: true,
+        },
+        current,
+      ),
+    ).toBe(true)
+  })
+
+  // Sequence past base resolution: a static "zoom in" message, no fetch. Unlike
+  // rendersCanvas this outranks every term, including an in-flight fetch.
+  test('loadingSuppressed outranks every other term', () => {
+    expect(
+      computeLoadingTerm(
+        {
+          loadingSuppressed: true,
+          isLoadingOrCanceled: true,
+          rendersCanvas: true,
+          canvasDrawn: false,
+        },
+        () => false,
+      ),
+    ).toBe(false)
+  })
+
+  // The viewport read is the only one that reaches the containing view, so it
+  // must stay behind the short-circuit — a suppressed or already-loading display
+  // subscribing to visibleRegions/loadedRegions churn is the hazard
+  // computeDisplayPhase's own `loading` thunk exists to avoid.
+  test.each([
+    ['suppressed', { ...DRAWN, loadingSuppressed: true }],
+    ['already loading', { ...DRAWN, isLoadingOrCanceled: true }],
+    ['pre-first-paint', { ...DRAWN, canvasDrawn: false }],
+  ])('does not read the viewport when %s', (_label, inputs) => {
+    const viewportCurrent = jest.fn(() => true)
+    computeLoadingTerm(inputs, viewportCurrent)
+    expect(viewportCurrent).not.toHaveBeenCalled()
+  })
+})
+
+// The two LGV display foundations hand-wrote this term until it was hoisted
+// here. These pin that the hoist was behaviour-preserving, by re-deriving each
+// family's old expression from the same inputs — so a future edit to
+// computeLoadingTerm that changes either family's meaning fails here rather
+// than in a screenshot.
+describe('computeLoadingTerm matches the expressions it replaced', () => {
+  const bools = [false, true]
+  const cases = bools.flatMap(loadingSuppressed =>
+    bools.flatMap(isLoading =>
+      bools.flatMap(fetchCanceled =>
+        bools.flatMap(canvasDrawn =>
+          bools.flatMap(rendersCanvas =>
+            bools.map(viewportWithinLoadedData => ({
+              loadingSuppressed,
+              isLoading,
+              fetchCanceled,
+              canvasDrawn,
+              rendersCanvas,
+              viewportWithinLoadedData,
+            })),
+          ),
+        ),
+      ),
+    ),
+  )
+
+  test.each(cases)('per-region parity %o', c => {
+    // MultiRegionDisplayMixin, before the hoist:
+    //   !loadingSuppressed && (!isReady || !viewportWithinLoadedData || fetchCanceled)
+    // with isReady = canvasDrawn && !isLoading
+    const isReady = c.canvasDrawn && !c.isLoading
+    const before =
+      !c.loadingSuppressed &&
+      (!isReady || !c.viewportWithinLoadedData || c.fetchCanceled)
+    expect(
+      computeLoadingTerm(
+        {
+          loadingSuppressed: c.loadingSuppressed,
+          isLoadingOrCanceled: c.isLoading || c.fetchCanceled,
+          canvasDrawn: c.canvasDrawn,
+          rendersCanvas: true,
+        },
+        () => c.viewportWithinLoadedData,
+      ),
+    ).toBe(before)
+  })
+
+  test.each(cases)('global parity %o', c => {
+    // GlobalDataDisplayMixin, before the hoist:
+    //   isLoadingOrCanceled || (rendersCanvas && !canvasDrawn)
+    const isLoadingOrCanceled = c.isLoading || c.fetchCanceled
+    const before = isLoadingOrCanceled || (c.rendersCanvas && !c.canvasDrawn)
+    expect(
+      computeLoadingTerm(
+        {
+          loadingSuppressed: false,
+          isLoadingOrCanceled,
+          canvasDrawn: c.canvasDrawn,
+          rendersCanvas: c.rendersCanvas,
+        },
+        () => true,
+      ),
+    ).toBe(before)
   })
 })

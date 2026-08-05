@@ -63,6 +63,83 @@ export function computeDisplayPhase(
 }
 
 /**
+ * The four terms the `loading` condition is built from, minus the one that is a
+ * thunk. All cheap flags on the display itself, so they are read eagerly the
+ * same way `computeDisplayPhase` reads its terminals.
+ */
+export interface DisplayLoadingInputs {
+  /**
+   * The display is deliberately showing a static message instead of data
+   * (sequence past base resolution), so no scrim at all. Suppresses every term
+   * below.
+   */
+  loadingSuppressed: boolean
+  /**
+   * A fetch is in flight, or the user canceled one. **Never a bare
+   * `isLoading`**: cancel drops the stop token synchronously, so without the
+   * second term the phase falls to `ready` and the overlay carrying the Retry
+   * button unmounts, leaving the display stopped and empty with nothing to
+   * click.
+   */
+  isLoadingOrCanceled: boolean
+  /**
+   * Whether this display paints a canvas in its current configuration. Gates
+   * the pre-first-paint term alone, because a display that is showing a
+   * deliberate non-canvas placeholder (LD with the triangle off) never flips
+   * `canvasDrawn` and would sit under the scrim forever.
+   */
+  rendersCanvas: boolean
+  /** first paint has happened */
+  canvasDrawn: boolean
+}
+
+/**
+ * The `loading` term itself — the one axis `computeDisplayPhase` leaves to its
+ * caller — expressed once for both LGV display families.
+ *
+ * It was two hand-written expressions, and they had already drifted apart in
+ * three ways that were equivalent only by accident: the per-region family spelled
+ * the cancel term out by hand (`!isReady || … || fetchCanceled`, over a bare
+ * `isLoading`) rather than reading `isLoadingOrCanceled`, and each family carried
+ * exactly one of the two suppression hooks — `loadingSuppressed` on per-region,
+ * `rendersCanvas` on global — so a display in the other family could express its
+ * case only by overriding `displayPhase`, which is the thing both hooks exist to
+ * prevent. Single-sourcing the expression is the same argument the precedence
+ * above already won, one level down: a term added here reaches every display,
+ * instead of reaching whichever family the author happened to be reading.
+ *
+ * Each family constants out the axis it doesn't have, which is where the two
+ * genuinely differ:
+ *
+ * - **per-region** passes `viewportCurrent = () => viewportWithinLoadedData` and
+ *   `rendersCanvas: true`,
+ * - **global** passes `viewportCurrent = () => true` (it keeps the last frame up
+ *   through a refetch rather than scrimming) and `loadingSuppressed: false`.
+ *
+ * `viewportCurrent` is a **thunk** for the same MobX reason `computeDisplayPhase`'s
+ * `loading` is, and it is the only term that needs to be: it reads the containing
+ * view (`visibleRegions`, `loadedRegions`), while the four inputs above are flags
+ * on the display itself. Short-circuiting keeps a suppressed or already-loading
+ * display from subscribing to viewport churn.
+ */
+export function computeLoadingTerm(
+  {
+    loadingSuppressed,
+    isLoadingOrCanceled,
+    rendersCanvas,
+    canvasDrawn,
+  }: DisplayLoadingInputs,
+  viewportCurrent: () => boolean,
+): boolean {
+  return (
+    !loadingSuppressed &&
+    (isLoadingOrCanceled ||
+      (rendersCanvas && !canvasDrawn) ||
+      !viewportCurrent())
+  )
+}
+
+/**
  * The same ranking minus `renderError`, for a display with no rendering backend
  * to fail (arc's main-thread SVG). `computeDisplayPhase` delegates here rather
  * than restating the tail, so there is still exactly one place the order lives —

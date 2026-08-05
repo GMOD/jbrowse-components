@@ -140,15 +140,39 @@ MultiRegionDisplayMixin  (composes RenderLifecycleMixin)
     isReady: boolean              canvasDrawn && !isLoading
     viewportWithinLoadedData      every visible block ⊆ a loaded region
     displayPhase                  'renderError' | 'tooLarge' | 'error' | 'loading' | 'ready'
-                                  computeDisplayPhase(self, () => !loadingSuppressed &&
-                                    (!isReady || !viewportWithinLoadedData || fetchCanceled))
-                                  (fetchCanceled keeps the overlay — and its retry affordance — up after a user cancel;
+                                  computeDisplayPhase(self, () => computeLoadingTerm({...}, () =>
+                                    self.viewportWithinLoadedData))
+                                  (this family supplies the staleness axis and constants out rendersCanvas;
                                    customize via the loadingSuppressed hook, never by overriding this getter)
 ```
 
 Loading-scrim visibility is derived once by `DisplayChrome` as `displayPhase ===
 'loading'` and passed to `DisplayLoadingOverlay` as a `visible` prop — not
 re-encoded per model.
+
+**The `loading` term itself is one expression, `computeLoadingTerm`**
+(`@jbrowse/render-core/displayPhase`), evaluated by both foundations:
+
+```
+!loadingSuppressed &&
+  (isLoadingOrCanceled || (rendersCanvas && !canvasDrawn) || !viewportCurrent())
+```
+
+Each family constants out the axis it doesn't have — per-region passes
+`viewportCurrent = () => viewportWithinLoadedData` and `rendersCanvas: true`,
+global passes `viewportCurrent = () => true` and `loadingSuppressed: false` — so
+the only per-family difference is the staleness axis described below. It was two
+hand-written expressions until 2026-08, and they had already drifted three ways
+that were equivalent only by accident: per-region spelled the cancel term out by
+hand (`!isReady || … || fetchCanceled`, over a bare `isLoading`) instead of
+reading `isLoadingOrCanceled`, and each family carried exactly one of the two
+suppression hooks, so a display in the other family could express its case only
+by overriding `displayPhase` — the thing both hooks exist to prevent. Adding a
+term now reaches every display. `viewportCurrent` stays a **thunk** because it is
+the only input that reads the containing view; the other four are flags on the
+display. Exhaustive parity against both replaced expressions is pinned in
+`displayPhase.test.ts`, and the wiring on a real display in
+`plugins/canvas/src/LinearBasicDisplay/displayPhaseWiring.test.ts`.
 
 Every canvas-drawing display renders through the shared `DisplayChrome`, which calls
 `useRenderingBackend(factory, model)` internally — the backend hook lives in
@@ -169,10 +193,10 @@ already true but stale data is still on screen (separate getter for tracking
 reasons — see BaseLinearDisplay/CLAUDE.md). `stopRenderingBackend` resets
 `canvasDrawn` so the overlay recovers after WebGL context loss.
 
-`GlobalDataDisplayMixin`'s `loading` term is
-`isLoading || fetchCanceled || (rendersCanvas && !canvasDrawn)`. The last clause is
-the global-display equivalent of MultiRegion's `!isReady`, covering the window
-between component mount and `isLoading` flipping true. On HiC that window is real:
+In `GlobalDataDisplayMixin`'s inputs to that term, the `rendersCanvas &&
+!canvasDrawn` clause is the global-display equivalent of MultiRegion's
+`!isReady`, covering the window between component mount and `isLoading` flipping
+true. On HiC that window is real:
 the fetch can't start until `CoreGetInfo` resolves the file's resolution list
 (that RPC is also what makes the resolution/norm overlay panel appear before
 anything else), so `isLoading` is false with nothing painted for the length of
