@@ -145,10 +145,12 @@ lists **one entry per species** the selection covers, naming that species' locus
 in its own coordinates; clicking one opens a view there.
 
 Only rows with aligned bases in the selection are listed, and only those whose
-sample is configured with an `assemblyName`. If the session does not already
-hold that assembly, JBrowse fetches just that one at click time, which is what
-lets a 26-way or 470-way alignment stay navigable without every species' genome
-being present in the config. Past six species the entries move into a submenu.
+sample is configured with an
+[`assemblyName`](/docs/config_guides/maf_track#the-samples-array). If the
+session does not already hold that assembly, JBrowse fetches just that one at
+click time, which is what lets a 26-way or 470-way alignment stay navigable
+without every species' genome being present in the config. Past six species the
+entries move into a submenu.
 
 ## Row layout and the species tree
 

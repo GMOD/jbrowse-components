@@ -83,9 +83,13 @@ panel's coordinates run right to left.
 
 ## Navigating each panel
 
-Each genome panel is a full linear genome view and is controlled independently:
+Each genome panel is a full linear genome view and, by default, is controlled
+independently:
 
-- scroll, zoom, and pan either panel on its own; ribbons redraw to follow
+- scroll, zoom, and pan either panel on its own; ribbons redraw to follow.
+  **Link views** in the hamburger menu instead replays a pan or zoom in one
+  panel onto the others, so the two move together — useful once the panels are
+  lined up on the region you want to walk along
 - type a region or gene name into a panel's search box to jump it there
 - add tracks (genes, alignments, coverage) to either side from its track
   selector, useful for reading what a syntenic block actually contains

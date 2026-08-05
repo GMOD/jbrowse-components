@@ -9,7 +9,7 @@ guide_category: Track types
 **TL;DR:** a `MafTrack` (with a `LinearMafDisplay`) shows a multiple alignment
 of several species against a reference, one row per species with a coverage
 summary on top. JBrowse reads three formats (BigMaf, tabix MAF, bgzipped TAF).
-Supply the species with a `samples` array or an `nhLocation` Newick tree.
+Supply the species with a `samples` array, an `nhLocation` Newick tree, or both.
 
 A MAF track shows a multiple alignment of several species against a reference
 genome: one row per aligned species, with a coverage summary on top. JBrowse
@@ -30,9 +30,9 @@ For what the track looks like once loaded, see the
 
 <!-- FILE_TYPES maf END -->
 
-Provide the aligned species either as a `samples` array (in track order) or via
-an `nhLocation` Newick tree, which both supplies the species and orders/labels
-the rows as a dendrogram.
+Provide the aligned species as a `samples` array (in track order), as an
+`nhLocation` Newick tree, which both supplies the species and orders/labels the
+rows as a dendrogram, or as both — see [below](#the-samples-array).
 
 Example using the tabix-indexed BED form (the UCSC ce11 26-way, ordered by its
 phylogenetic tree). `MafTabixAdapter` takes the
@@ -56,6 +56,71 @@ the sibling `.tbi`, plus an `nhUri` for the tree:
 `BigMafAdapter` is the one MAF adapter with no `uri` shorthand: it takes a
 `bigBedLocation`, as in the 470-way example below, and may also carry the two
 optional sub-adapters.
+
+## The samples array
+
+A [`samples`](/docs/config/maftabixadapter/#slot-samples) entry is either a bare
+id string or an object. The id is the token matched against the MAF's `src`
+column, haplotype suffix included, so a `hg38.chr1` row matches the sample
+`hg38`. The object form adds:
+
+- **`label`** — the sidebar label, for an id that is not itself readable.
+- **`color`** — the row's color.
+- **`assemblyName`** — the assembly this species' own genome is loaded as, which
+  makes its rows navigable: right-clicking a drag selection then offers
+  [that row's locus in the species' own coordinates](/docs/user_guides/maf_track#jumping-to-a-species-own-genome).
+  Rows of a sample that leaves it unset are not offered. It is deliberately not
+  derived from the id — ids are UCSC db names in some alignments, scientific
+  names in others (which map to several assemblies) and lab-internal ids in
+  others still, so a name lookup can land on the wrong genome and report
+  coordinates that are silently wrong.
+- **`assemblyConfigLocation`** — the config to load `assemblyName` out of when
+  the session does not already have it. Omit it when the assembly is already in
+  the config the user opened. A site hosting many genomes keeps one config per
+  genome, so an alignment's species usually are not present in that config;
+  JBrowse fetches just the named assembly from here at click time, which is what
+  lets a 26-way or 470-way stay navigable without inlining hundreds of genomes.
+  It is a `UriLocation` rather than a bare url so a relative uri resolves
+  against the declaring config rather than against the page.
+
+**A tree and a `samples` array compose**, and combining them is how a
+tree-ordered alignment also gets navigable rows. With an `nhLocation`/`nhUri`
+the tree's leaf names are the sample set and the row order, and `samples`
+becomes an override table matched by id; a leaf with no matching entry keeps its
+own name as its label.
+
+This track has one row pointing at an assembly the config already holds, one
+loading its assembly from a sibling config on click, and one plain row that is
+not navigable:
+
+```json addtrack
+{
+  "type": "MafTrack",
+  "trackId": "volvox_maf_navigable",
+  "name": "MAF multiple alignment (navigable rows)",
+  "assemblyNames": ["volvox"],
+  "adapter": {
+    "type": "MafTabixAdapter",
+    "uri": "volvox.maf.bed.gz",
+    "samples": [
+      { "id": "volvox", "label": "volvox", "assemblyName": "volvox" },
+      {
+        "id": "simvolvox",
+        "label": "simvolvox",
+        "assemblyName": "simvolvox",
+        "assemblyConfigLocation": {
+          "uri": "config_maf_nav_targets.json",
+          "locationType": "UriLocation"
+        }
+      },
+      { "id": "microvolvox", "label": "microvolvox" }
+    ]
+  }
+}
+```
+
+`test_data/volvox/config_maf_navigation.json` is the runnable version of it,
+reachable from the no-config screen.
 
 ## Producing the tabix BED from a MAF
 

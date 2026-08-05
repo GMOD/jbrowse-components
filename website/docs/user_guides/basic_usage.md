@@ -254,7 +254,19 @@ clickable. Clicking a name opens a menu with:
 
 ## View and layout controls
 
-Three layout controls, reached from the view's hamburger menu or the header bar.
+Four layout controls, reached from the view's hamburger menu or the header bar.
+
+### Show ideogram
+
+When the assembly is configured with
+[cytobands](/docs/config_guides/assemblies#configuring-cytoband-ideograms), the
+overview bar draws the chromosome as a banded ideogram with the centromere
+marked. **Show ideogram** toggles it; it is on by default, and the choice is
+remembered for later sessions.
+
+The entry is absent unless the view is showing a whole chromosome, since a
+sub-region gives an arbitrary slice of bands and draws the centromere as a lone
+half triangle.
 
 ### Track label positioning
 
