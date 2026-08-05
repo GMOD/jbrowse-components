@@ -63,14 +63,28 @@ export default class GetScoreData extends RpcMethodType {
   name = 'GetScoreData'
 
   async execute(args: GetScoreDataArgs, rpcDriverClassName: string) {
-    const { sessionId, adapterConfig, region, scoreColumn, stopToken } =
-      await this.deserializeArguments(args, rpcDriverClassName)
+    const {
+      sessionId,
+      adapterConfig,
+      region,
+      scoreColumn,
+      stopToken,
+      statusCallback,
+    } = await this.deserializeArguments(args, rpcDriverClassName)
     const dataAdapter = await getFeatureAdapterOrThrow({
       pluginManager: this.pluginManager,
       sessionId,
       adapterConfig,
     })
-    const features = await dataAdapter.getFeaturesArray(region, { stopToken })
+    // statusCallback arrives as an ordinary function: the caller's never
+    // crossed the boundary, the RPC layer replaced it with a side channel and
+    // rebuilt one here. Hand it to whatever does the slow work rather than only
+    // bracketing that work, so the message tracks the download.
+    statusCallback?.('Fetching features')
+    const features = await dataAdapter.getFeaturesArray(region, {
+      stopToken,
+      statusCallback,
+    })
     return buildScoreResult(features, scoreColumn)
   }
 }
@@ -191,33 +205,48 @@ export default class ScoreExamplePlugin extends Plugin {
 `getSession(self).rpcManager` dispatches. Note that `sessionId` is **not**
 repeated inside the args object — `call` injects it from its first parameter,
 and a registered method's args type is `Omit<…, 'sessionId'>`, so passing it
-again is a type error:
+again is a type error.
+
+A per-region display does not `await` the call itself. `fetchEachRegion` owns
+cancellation, stop tokens and staleness, so `LinearScoreDisplay` hands it the
+call and a place to put each result:
+
+<!-- include: example-plugins/score-example/src/LinearScoreDisplay/model.ts#fetchNeeded -->
 
 ```ts
-import { getRpcSessionId, getSession } from '@jbrowse/core/util'
-
-// inside an MST action on a model
-const sessionId = getRpcSessionId(self)
-const { rpcManager } = getSession(self)
-
-const result = await rpcManager.call(sessionId, 'GetScoreData', {
-  adapterConfig: self.adapterConfig,
-  region,
-  scoreColumn: 'score',
-  stopToken,
-})
+// called by the fetch autorun for the regions that need loading;
+// fetchEachRegion handles cancellation, stop tokens and staleness
+fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
+  const { adapterConfig } = self
+  if (!adapterConfig) {
+    return undefined
+  }
+  const sessionId = getRpcSessionId(self)
+  const { rpcManager } = getSession(self)
+  return fetchEachRegion(self, needed, {
+    // rpcManager.call injects sessionId itself, so it is not in the args
+    call: (region, ctx, displayedRegionIndex) =>
+      rpcManager.call(sessionId, 'GetScoreData', {
+        adapterConfig,
+        region,
+        ...self.rpcProps(),
+        stopToken: ctx.stopToken,
+        // the RPC layer replaces this function with a side-channel and
+        // calls it on the main thread as the worker reports progress
+        statusCallback:
+          self.makeRegionStatusCallback(displayedRegionIndex),
+      }),
+    onResult: (idx, result) => {
+      self.setRpcData(idx, result)
+    },
+  })
+},
 ```
 
-A per-region display does not call it this way. `fetchEachRegion` owns
-cancellation, stop tokens and staleness, and `LinearScoreDisplay`'s
-`fetchNeeded` hands the call to it — see
-[](/docs/developer_guides/data_fetching) and the worked model in
-[](/docs/developer_guides/plotting_features).
-
-This goes through `fetchEachRegion`, which owns cancellation, stop tokens and
-staleness for a per-region display — see
-[](/docs/developer_guides/data_fetching). A one-off call needs none of that and
-can `await rpcManager.call(...)` directly.
+See [](/docs/developer_guides/data_fetching) for what `fetchEachRegion` does
+with that, and [](/docs/developer_guides/plotting_features) for the rest of the
+model. A one-off call — a dialog, a widget — needs none of it and can
+`await rpcManager.call(...)` directly.
 
 ## What can cross the worker boundary
 
@@ -248,12 +277,10 @@ slot in the loading UI.
 In the worker it arrives deserialized and is called normally — pass it down to
 whatever does the slow work, usually the adapter:
 
+<!-- include: example-plugins/score-example/src/ScoreRPC/GetScoreData.ts#status -->
+
 ```ts
-const { statusCallback, stopToken } = await this.deserializeArguments(
-  args,
-  rpcDriverClassName,
-)
-statusCallback?.('Loading index…')
+statusCallback?.('Fetching features')
 const features = await dataAdapter.getFeaturesArray(region, {
   stopToken,
   statusCallback,

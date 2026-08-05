@@ -69,6 +69,7 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
       },
     }))
     .actions(self => ({
+      // #region fetchNeeded
       // called by the fetch autorun for the regions that need loading;
       // fetchEachRegion handles cancellation, stop tokens and staleness
       fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
@@ -96,6 +97,7 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
           },
         })
       },
+      // #endregion
       // #region startRenderingBackend
       // called once by DisplayChrome when the backend is created. Streams each
       // region into the backend and draws every frame from renderState. This is
