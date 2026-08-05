@@ -12,6 +12,11 @@ import type { CreateViewStateOptions } from './createViewState.ts'
  *
  * Options are read on the first render only. To swap assemblies or plugins,
  * remount via a React `key`; to swap the session, call `viewState.setSession`.
+ *
+ * The engine outlives React: it is yours to destroy. A component that holds one
+ * for the lifetime of the page never has to, but a host that mounts and
+ * discards repeatedly should pass it to `destroyViewState`, or each discarded
+ * one leaves its RPC worker threads and autoruns running.
  */
 export function useCreateViewState(opts: CreateViewStateOptions) {
   const [state] = useState(() => createViewState(opts))

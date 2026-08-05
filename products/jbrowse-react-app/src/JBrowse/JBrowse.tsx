@@ -63,6 +63,14 @@ export interface JBrowseProps {
  * initial values; the engine is built once (remount via React `key` to swap
  * assemblies/plugins). For imperative control after launch (session.addView,
  * navToLocString, ...) take a `ref` to the live engine.
+ *
+ * This owns its engine for the lifetime of the page and does not tear it down:
+ * the engine is not owned by React, so unmounting leaves its RPC worker threads
+ * and autoruns running. That is fine for a page that mounts one and keeps it,
+ * and a leak for a host that mounts and discards repeatedly — an SPA route, a
+ * notebook cell re-run. Those should build the engine themselves
+ * ({@link useCreateViewState} + `<JBrowseApp>`, or `createApp`) and hand it to
+ * `destroyViewState` when they let go of it.
  */
 function JBrowse({ ref, headerButtons, ...opts }: JBrowseProps) {
   const [state] = useState(() => createViewStateFromProps(opts))

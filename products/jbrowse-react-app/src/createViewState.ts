@@ -49,7 +49,11 @@ export default function createViewState(
     onPluginsUpdated,
     makeWorkerInstance,
   } = opts
-  const { defaultSession = { name: 'NewSession' } } = config
+  // the config model's own default for this slot, restated because a root with
+  // no session at all is a different (broken) state than one with an empty
+  // session — `session` is a types.maybe, so passing undefined means "no
+  // session", not "the default one"
+  const { defaultSession = { name: 'New Session' } } = config
   const { model, pluginManager } = createModel({
     runtimePlugins: plugins,
     makeWorkerInstance,
