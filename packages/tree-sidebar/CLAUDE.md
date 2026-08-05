@@ -176,12 +176,13 @@ division as the SVG side below.
 ## Both halves paint through `TrackOverlayPortal`, above the LGV's masks
 
 A display renders inside `TrackRenderingContainer`'s `contain: strict` sandbox,
-and the LGV's inter-region masks (`PaddingBlocks` — region separators, elided and
-boundary blocks) are a later sibling that paints over the whole of it. Nothing
-inside can `z-index` its way out. So in any multi-region or whole-genome view a
-grey separator bar landed on the sidebar at every region boundary: through the
-opaque dendrogram panel, and through the row-label text, which floats over the
-plot and so gets crossed wherever a boundary falls. Both halves portal out.
+and the LGV's inter-region masks (`PaddingBlocks` — region separators, elided
+and boundary blocks) are a later sibling that paints over the whole of it.
+Nothing inside can `z-index` its way out. So in any multi-region or whole-genome
+view a grey separator bar landed on the sidebar at every region boundary:
+through the opaque dendrogram panel, and through the row-label text, which
+floats over the plot and so gets crossed wherever a boundary falls. Both halves
+portal out.
 
 **`TreeSidebar` therefore has two layers, and the line between them is
 paint-vs-hit-test.** The panel, the tree canvas, the hover canvas and the hints
@@ -191,9 +192,9 @@ nothing, and leaving them in the display keeps every pointer path they already
 had. That matters concretely: the portal node is `pointer-events: none` (or it
 would eat canvas events), and maf binds its wheel-to-scroll listener to the
 **DOM** element these sit in, so a portaled hit box would have sent a wheel over
-the species names to the view instead of scrolling the rows. The two layers share
-an origin and their z-indexes are still read against each other, so ordering
-within the gutter is unchanged.
+the species names to the view instead of scrolling the rows. The two layers
+share an origin and their z-indexes are still read against each other, so
+ordering within the gutter is unchanged.
 
 The portal lands on the **display's own box**. A display that draws its sidebar
 somewhere other than its own top-left passes that down as `top` — maf does, for
@@ -207,23 +208,24 @@ and the component tests are unchanged.
 `lineZoneHeight` is the same idea — px reserved above the rows — and maf's
 `rowsTopOffset` is exactly that number, so setting it looks like the obvious
 tidy-up. **It would be applied twice.** maf's sidebar sits inside its rows
-container, which is *already* translated by `rowsTopOffset`; the internals then
+container, which is _already_ translated by `rowsTopOffset`; the internals then
 offset by `lineZoneHeight` again. Only the portaled half escapes that container
 and needs to be told, which is what `top` is.
 
 Nor can the sidebar simply move to the display root the way every other
 display's does: maf binds its wheel-to-scroll listener to that rows element by
 DOM node, deliberately, so a wheel over the species names scrolls the rows it
-labels rather than falling through to the view. Moving the inline layer out takes
-the hit box with it.
+labels rather than falling through to the view. Moving the inline layer out
+takes the hit box with it.
 
 The cost of leaving it is that `treeContentHeight` is the display height rather
-than maf's rows viewport, so the panel, the dendrogram canvas and the hit box all
-run `rowsTopOffset` px past the last row — measured, a 195px canvas under a 150px
-rows area. All of it is clipped by `TrackRenderingContainer`'s `contain: strict`,
-so it is invisible and untouchable and costs only the oversized backing store.
-Buying that back means growing this component an API for maf to re-bind its wheel
-through, which is the more expensive side of the trade.
+than maf's rows viewport, so the panel, the dendrogram canvas and the hit box
+all run `rowsTopOffset` px past the last row — measured, a 195px canvas under a
+150px rows area. All of it is clipped by `TrackRenderingContainer`'s
+`contain: strict`, so it is invisible and untouchable and costs only the
+oversized backing store. Buying that back means growing this component an API
+for maf to re-bind its wheel through, which is the more expensive side of the
+trade.
 
 ## SVG export: use `SvgTreeSidebar`, never `SvgRowLabels` alone
 
