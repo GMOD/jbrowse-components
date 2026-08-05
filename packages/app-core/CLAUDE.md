@@ -6,6 +6,13 @@ views live in which panel** (`panelViewAssignments`), because "a panel holds a
 stack of JBrowse views" is our concept, not dockview's. Everything hard in
 `ui/App/useDockviewController.ts` is keeping those two consistent.
 
+That is also why the seam is ours rather than dockview's: nine of the ten
+imports from `dockview-react` are `import type`, and the bugs that live here are
+reconciliation bugs, not library bugs. Vendoring dockview has been proposed and
+rejected —
+[ADR-057](../../agent-docs/architecture-decision-records/adr-057-dockview-stays-external.md)
+records why, and what would actually retire the friction.
+
 ## `session.views` is the order; a panel assignment is the grouping
 
 One ordering, both layout modes. `getViewsForPanel` reads a panel's membership

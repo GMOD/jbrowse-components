@@ -28,6 +28,18 @@ and an `init` describing the view to open, and the app component takes
 there is no imperative setup call to make. The storybook examples per package
 are copy-pasteable React code.
 
+**`@jbrowse/react-app2` also needs its stylesheet**, which the single-view
+components do not have:
+
+```js
+import '@jbrowse/react-app2/styles.css'
+```
+
+It styles the app's tiled panel layout, so without it the panels, tabs and
+dividers render unstyled while everything else looks correct. The file is
+self-contained, so a page that isn't running a bundler can `<link>` it from the
+package instead.
+
 **The props are initial values, like an input's `defaultValue`.** The engine is
 built once, on first render, and later prop changes are ignored — so pointing an
 already-mounted component at a different `assembly`, or a different plugin list,

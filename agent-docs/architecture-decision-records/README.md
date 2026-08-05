@@ -66,4 +66,5 @@ action needed under current workloads), **Proposed** (not yet decided).
 | [054](adr-054-comparative-displays-keep-their-own-fetch.md) | Rejected | The comparative displays don't compose `FetchMixin`; the third fetch shape is structural, and everything drift-prone they share with the LGV families is already shared as plain functions |
 | [055](adr-055-mst-model-types-are-interfaces.md) | Accepted | Export MST model instance types as `interface X extends Instance<…> {}`, not `type X = Instance<…>` — the interface form is what lets a view and its display name each other |
 | [056](adr-056-jbrowse-org-is-not-cross-origin-isolated.md) | Rejected | jbrowse.org stays non-isolated: the CloudFront header change is half an hour, but `COOP: same-origin` severs the OAuth popup handshake with no cross-browser way around it, and all isolation buys is the SharedArrayBuffer stop-token path that already benched at zero |
+| [057](adr-057-dockview-stays-external.md) | Accepted | dockview stays an npm dependency; the friction at the workspaces seam is two state machines both owning layout, which vendoring the library would not collapse |
 <!-- END GENERATED ADR INDEX -->
