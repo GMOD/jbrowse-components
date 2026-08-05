@@ -23,11 +23,11 @@ const MafCoverageBand = observer(function MafCoverageBand({
   onResizeActiveChange: (active: boolean) => void
 }) {
   const theme = useTheme()
-  const { showCoverage, coverageHeight, coverageTicks } = model
+  const { coverageBandActive, coverageHeight, coverageTicks } = model
   return (
     <MafBand
       model={model}
-      show={showCoverage}
+      show={coverageBandActive}
       top={0}
       height={coverageHeight}
       ticks={coverageTicks}

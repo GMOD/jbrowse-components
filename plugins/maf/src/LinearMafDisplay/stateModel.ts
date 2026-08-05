@@ -757,6 +757,59 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
+         * Use the cheap summary path when a `bigMafSummary` sub-adapter is
+         * configured and the view is zoomed out past the force-load threshold —
+         * exactly where the full alignment fetch would be blocked by the byte
+         * gate. Tracks without a summary never enter this path.
+         *
+         * `aboveForceLoadFloor` is the gate's own comparison against that
+         * threshold (`RegionTooLargeMixin`), read rather than restated so the swap
+         * and the gate can't end up disagreeing about where the floor is. It
+         * deliberately excludes the opt-in terms, which is what keeps this from
+         * being a cycle — `byteGateEnabled` below is false while we summarize.
+         *
+         * Declared this early in the chain — well before the fetch and rendering
+         * getters that are its obvious neighbours — because the band layout
+         * below needs it: `coverageBandActive` is what zeroes the band's height,
+         * and `rowsTopOffset` (and the whole height cascade under it) is
+         * resolved long before here. Both its inputs come off the compose, so
+         * there is nothing to order it after.
+         */
+        get showSummary() {
+          return (
+            !!readConfObject(self.adapterConfig, 'summaryAdapter') &&
+            self.aboveForceLoadFloor
+          )
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * The coverage band is on *and* has data to put in it.
+         *
+         * `showCoverage` is the user's setting — the menu ticks it, a config
+         * sets it — but the band's depths come from `coverage.coverageDepths` on
+         * the alignment blocks, and the summary path clears `rpcDataMap` on
+         * purpose. Reading the setting as if it answered both questions left the
+         * band reserving `coverageHeight` px above the rows and painting nothing
+         * whatsoever into them: no bars, no axis, no label — ~45px of dead
+         * chrome on every track with a `summaryAdapter` zoomed out past the
+         * floor.
+         *
+         * Everything that lays the band out, paints it, hit-tests it or exports
+         * it reads this; only the track menu reads `showCoverage`, so the tick
+         * keeps reporting what the user chose rather than where they happen to
+         * be zoomed — and zooming back in restores the band without touching the
+         * config. Same split as `basesRenderingActive` vs `activeRowRendering`,
+         * for the same reason.
+         */
+        get coverageBandActive() {
+          return self.showCoverage && !self.showSummary
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
          * Sample list keyed by sample id (alias of `sources` mapped to the
          * project's canonical `{ id, label, color }` shape). Consumed by
          * MafSequenceWidget, color legend, etc.
@@ -805,10 +858,11 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * Height of the coverage band above the rows (0 when hidden).
+         * Height of the coverage band above the rows (0 when hidden, and on the
+         * summary path, where it has nothing to draw).
          */
         get coverageDisplayHeight() {
-          return self.showCoverage ? self.coverageHeight : 0
+          return self.coverageBandActive ? self.coverageHeight : 0
         },
         /**
          * #getter
@@ -1199,7 +1253,7 @@ export default function stateModelFactory(
          * `coverageDomain` → `coverageTicks`.
          */
         get coverageStats() {
-          if (!self.showCoverage) {
+          if (!self.coverageBandActive) {
             return undefined
           }
           const view = self.lgv
@@ -1474,27 +1528,6 @@ export default function stateModelFactory(
           },
         }
       })
-      .views(self => ({
-        /**
-         * #getter
-         * Use the cheap summary path when a `bigMafSummary` sub-adapter is
-         * configured and the view is zoomed out past the force-load threshold —
-         * exactly where the full alignment fetch would be blocked by the byte
-         * gate. Tracks without a summary never enter this path.
-         *
-         * `aboveForceLoadFloor` is the gate's own comparison against that
-         * threshold (`RegionTooLargeMixin`), read rather than restated so the swap
-         * and the gate can't end up disagreeing about where the floor is. It
-         * deliberately excludes the opt-in terms, which is what keeps this from
-         * being a cycle — `byteGateEnabled` below is false while we summarize.
-         */
-        get showSummary() {
-          return (
-            !!readConfObject(self.adapterConfig, 'summaryAdapter') &&
-            self.aboveForceLoadFloor
-          )
-        },
-      }))
       .views(self => ({
         /**
          * #getter

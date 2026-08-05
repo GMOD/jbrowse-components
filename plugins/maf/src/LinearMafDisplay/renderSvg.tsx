@@ -79,7 +79,7 @@ function MafSvgBody({
     coverageDisplayHeight,
     rowsTopOffset,
     coverageTicks,
-    showCoverage,
+    coverageBandActive,
     coverageDomain,
     showConservation,
     codonConservationActive,
@@ -102,7 +102,7 @@ function MafSvgBody({
 
   return (
     <SvgClipRect id={`maf-clip-${model.id}`} width={view.width} height={height}>
-      {showCoverage ? (
+      {coverageBandActive ? (
         <PaintLayer
           width={width}
           height={model.coverageHeight}
@@ -215,7 +215,7 @@ function MafSvgBody({
           availableHeight={rowsHeight}
         />
       </g>
-      {showCoverage && coverageTicks ? (
+      {coverageBandActive && coverageTicks ? (
         <SvgYScaleGutter y={0} ticks={coverageTicks} />
       ) : null}
       {showConservation ? (

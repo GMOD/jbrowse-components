@@ -25,7 +25,7 @@ const MAFTooltip = observer(function ({
   model: LinearMafDisplayModel
   origMouseX?: number
 }) {
-  const { showCoverage, coverageDisplayHeight } = model
+  const { coverageBandActive, coverageDisplayHeight } = model
   // Controlled point for floating-ui. Without it, `useClientPoint` enters
   // pointer-tracking mode: a window `mousemove` listener that allocates a fresh
   // virtual reference every move. Every other display tooltip passes this.
@@ -48,7 +48,7 @@ const MAFTooltip = observer(function ({
     // for the containing cell. Kept separate so insertion data never mixes into
     // the depth table, mirroring plugin-alignments.
     const insertion =
-      showCoverage && mouseY < coverageDisplayHeight && !p2.oob
+      coverageBandActive && mouseY < coverageDisplayHeight && !p2.oob
         ? model.coverageInsertionHit(p2.index, gposFrac, view.bpPerPx)
         : undefined
     if (insertion) {

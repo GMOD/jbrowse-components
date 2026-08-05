@@ -179,6 +179,58 @@ describe('what paints is the selection, overridden only by zoom and summary', ()
     expect(display.basesRenderingActive).toBe(true)
   })
 
+  // The coverage band's depths come off the alignment blocks the summary path
+  // clears, so it reserved its height and painted nothing into it — no bars, no
+  // axis, no label. It collapses instead, and the rows start at the top of the
+  // track.
+  it('collapses the coverage band on the summary path', () => {
+    const { display, view } = framesEnv({
+      summaryAdapter: { type: 'BigBedAdapter' },
+    }).createDisplay()
+    zoomAndSettle(view, 100)
+    expect(display.showSummary).toBe(true)
+
+    expect(display.coverageBandActive).toBe(false)
+    expect(display.coverageDisplayHeight).toBe(0)
+    expect(display.rowsTopOffset).toBe(0)
+    expect(display.coverageStats).toBeUndefined()
+
+    // the *setting* is untouched, so the menu tick still reports what the user
+    // chose rather than where they are zoomed
+    expect(display.showCoverage).toBe(true)
+  })
+
+  // ...and it comes back on zoom-in without the user having to re-tick it,
+  // which is the whole reason the collapse lives on a derived getter instead of
+  // on the config slot.
+  it('restores the coverage band below the summary floor', () => {
+    const { display, view } = framesEnv({
+      summaryAdapter: { type: 'BigBedAdapter' },
+    }).createDisplay()
+    zoomAndSettle(view, 100)
+    expect(display.coverageDisplayHeight).toBe(0)
+
+    zoomAndSettle(view, 0.5)
+    expect(display.coverageBandActive).toBe(true)
+    expect(display.coverageDisplayHeight).toBe(display.coverageHeight)
+    expect(display.rowsTopOffset).toBe(display.coverageHeight)
+  })
+
+  // Turning it off by hand still wins — the summary path is an extra reason the
+  // band can't draw, not the only one.
+  it('keeps the band off on the summary path when the user turned it off', () => {
+    const { display, view } = framesEnv({
+      summaryAdapter: { type: 'BigBedAdapter' },
+    }).createDisplay()
+    display.setShowCoverage(false)
+    zoomAndSettle(view, 100)
+    expect(display.coverageBandActive).toBe(false)
+
+    zoomAndSettle(view, 0.5)
+    expect(display.coverageBandActive).toBe(false)
+    expect(display.coverageDisplayHeight).toBe(0)
+  })
+
   // The state the old menu of independent checkboxes could reach, and a
   // hand-written config still can. Re-deriving precedence let the losing slot
   // take over at the zooms where the winner couldn't draw, so the menu ticked

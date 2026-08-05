@@ -31,12 +31,12 @@ const MafBandLabels = observer(function MafBandLabels({
 }) {
   const { classes } = useStyles()
   const {
-    showCoverage,
+    coverageBandActive,
     showConservation,
     codonConservationActive,
     coverageDisplayHeight,
   } = model
-  return showCoverage && showConservation ? (
+  return coverageBandActive && showConservation ? (
     <>
       <div className={classes.label} style={{ top: 0 }}>
         Coverage
