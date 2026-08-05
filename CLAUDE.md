@@ -65,6 +65,11 @@ Background lives in `agent-docs/` (start at `ARCHITECTURE.md`, then
   delete it from the baseline in the same commit and say in the message which
   published plugins you checked. (Replaced `util/publicApi.test.ts`, which
   guarded the util barrel alone.)
+- **The session is a second plugin-facing surface, and it fails quieter.** A
+  plugin looks its members up at runtime, often behind `'x' in session`, so
+  removing one throws nothing — the plugin just stops asking and silently does
+  less. `jbrowse-web/src/tests/pluginFacingSessionApi.test.ts` pins the members
+  published bundles actually call, same doctrine as the ABI baseline.
 - `demos/<name>/config.json` deploys via `scripts/deploy-demo.sh`. Never
   `aws s3 cp` a config from elsewhere — the bucket has no versioning, so an
   overwrite that drops a track is unrecoverable.
