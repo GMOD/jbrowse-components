@@ -213,6 +213,17 @@ export const gallerySections: readonly GallerySection[] = [
         description:
           'A C-GIAB cancer benchmark translocation between two chromosomes, one per panel. Black splines connect tumor PacBio HiFi reads that map partway to each side, the read-level evidence for the call.',
       },
+      // The card above answers the same question from reads; this one answers it
+      // from contact frequency, which is a different capability rather than the
+      // same view on new data — the matrix is fetched for every PAIR of
+      // displayed regions, so two chromosomes in one view is the whole method.
+      {
+        label: 'K562 translocation in Hi-C',
+        spec: 'hic/bcr_abl1_translocation',
+        guide: 'tutorials/hic_structural_variants',
+        description:
+          'ENCODE Hi-C for a leukaemia line and a normal-karyotype line, each with a chr9 window and a chr22 window open at once. The wedge between the two panels is chr9 against chr22: empty in the normal cell, a solid block in K562, where the two chromosomes are fused.',
+      },
       {
         label: 'Read cloud',
         spec: 'alignments/read_cloud',

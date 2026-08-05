@@ -1915,6 +1915,89 @@
       }
     },
     {
+      "type": "HicTrack",
+      "trackId": "hic_gm12878_insitu",
+      "name": "GM12878 in situ Hi-C, deep (ENCODE ENCSR410MDC)",
+      "assemblyNames": ["hg38"],
+      "category": ["Hi-C", "GM12878 vs K562"],
+      "adapter": {
+        "type": "HicAdapter",
+        "uri": "https://encode-public.s3.amazonaws.com/2021/10/28/6f0cc163-86c7-4a68-baac-65af90f5a90d/ENCFF053VBX.hic"
+      },
+      "displayDefaults": {
+        "selectedNormalization": "NONE"
+      }
+    },
+    {
+      "type": "HicTrack",
+      "trackId": "hic_k562_insitu",
+      "name": "K562 in situ Hi-C (ENCODE ENCSR545YBD)",
+      "assemblyNames": ["hg38"],
+      "category": ["Hi-C", "GM12878 vs K562"],
+      "adapter": {
+        "type": "HicAdapter",
+        "uri": "https://encode-public.s3.amazonaws.com/2021/10/28/4d332729-3463-4782-b33c-76e4fa8ff72a/ENCFF080DPJ.hic"
+      },
+      "displayDefaults": {
+        "selectedNormalization": "NONE"
+      }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "hic_gm12878_loops",
+      "name": "GM12878 Hi-C loops (HiCCUPS, ENCFF712NKX)",
+      "assemblyNames": ["hg38"],
+      "category": ["Hi-C", "GM12878 vs K562"],
+      "adapter": {
+        "type": "BedpeAdapter",
+        "uri": "https://encode-public.s3.amazonaws.com/2021/10/28/70e6944c-1212-45f9-855c-dbc74e9a21f5/ENCFF712NKX.bedpe.gz",
+        "columnNames": [
+          "chr1",
+          "x1",
+          "x2",
+          "chr2",
+          "y1",
+          "y2",
+          "name",
+          "score",
+          "strand1",
+          "strand2",
+          "color",
+          "observed",
+          "expectedBL",
+          "expectedDonut",
+          "expectedH",
+          "expectedV",
+          "fdrBL",
+          "fdrDonut",
+          "fdrH",
+          "fdrV",
+          "numCollapsed",
+          "centroid1",
+          "centroid2",
+          "radius"
+        ]
+      },
+      "displays": [
+        {
+          "type": "LinearPairedArcDisplay",
+          "displayId": "hic_gm12878_loops-LinearPairedArcDisplay",
+          "lineWidth": 2
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hic_gm12878_domains",
+      "name": "GM12878 contact domains (Arrowhead, ENCFF301CUL)",
+      "assemblyNames": ["hg38"],
+      "category": ["Hi-C", "GM12878 vs K562"],
+      "adapter": {
+        "type": "BedpeAdapter",
+        "uri": "https://encode-public.s3.amazonaws.com/2021/10/28/467750ae-7aab-47b0-a304-dc5f8dff89f7/ENCFF301CUL.bedpe.gz"
+      }
+    },
+    {
       "type": "AlignmentsTrack",
       "trackId": "htsget_demo",
       "name": "Htsget DNANexus",

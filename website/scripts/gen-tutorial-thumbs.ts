@@ -191,6 +191,15 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     src: 'sv_cgiab/cnv_depth_baf.png',
     band: [0.25, 1],
   },
+  hic_structural_variants: {
+    // Same split as sv_visualization_cgiab above: the translocation comparison
+    // is this tutorial's gallery card, so the tutorial card takes its other
+    // half. That figure is also the one carrying the callout arrow and pills,
+    // and this one is a clean render — the arcs over the contact matrix, with
+    // the gene lane cropped off the top.
+    src: 'hic/loops_and_domains.png',
+    band: [0.27, 1],
+  },
   protein_structure: {
     // The structure itself, in the right-hand panel. Framing the whole panel
     // lands on its sequence-alignment table and a hover tooltip; the folded

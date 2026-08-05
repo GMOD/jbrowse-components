@@ -538,6 +538,15 @@ const SHOW_LEGEND_DISPLAYS = new Set([
   'LinearHicDisplay',
 ])
 
+// The three displays declaring `squashToHeight`, all of which draw a triangle
+// whose natural height is half the view width: the Hi-C contact matrix and the
+// two LD heatmaps. They share one menu-item helper, so they share the label.
+const SQUASH_TO_HEIGHT_DISPLAYS = new Set([
+  'LinearHicDisplay',
+  'LDDisplay',
+  'LDTrackDisplay',
+])
+
 // linkedReads, drawInter, drawLongRange, readConnectionsHeight and sortedBy are
 // declared by LinearAlignmentsDisplay and nothing else, so unlike the fields
 // above them the name settles the display on its own: an entry carrying one is
@@ -697,6 +706,33 @@ export const trackFields: Record<string, FieldRecipe> = {
       ? {
           path: `${TRACK_MENU} → Show... → Show faint contacts (95th percentile) (${value ? 'checked' : 'unchecked'})`,
           note: 'Saturates the color scale at the 95th percentile instead of the maximum, so faint off-diagonal contacts read more strongly.',
+        }
+      : undefined,
+  selectedNormalization: (value, { displayType }) =>
+    typeof value === 'string' && isHicOnlyField(displayType)
+      ? {
+          path: `${TRACK_MENU} → Normalization → ${value}`,
+          note: 'The submenu lists only the schemes the file actually carries, and ticks the one the loaded matrix has rather than the one requested. NONE is raw observed counts, which is what a rearrangement needs — matrix balancing divides an amplified fusion back out.',
+        }
+      : undefined,
+  resolutionBias: (value, { displayType }) =>
+    typeof value === 'number' && isHicOnlyField(displayType)
+      ? {
+          path: `${TRACK_MENU} → Resolution → ${value < 0 ? `Finer x${-value}` : `Coarser x${value}`}`,
+          note: 'A signed offset from the zoom-derived binsize, not an absolute one, so it keeps tracking zoom. Reset returns to auto. Positive is coarser, which is what turns a sparse speckled matrix into visible domain blocks.',
+        }
+      : undefined,
+  // Not Hi-C-only: LinearHicDisplay and the two LD displays all declare it, and
+  // all three get the label from the one shared squashToHeightCheckboxItem
+  // helper, so the path is the same for each. Gated on a resolved display type
+  // rather than by name, since the name alone does not settle which it is.
+  squashToHeight: (value, { displayType }) =>
+    typeof value === 'boolean' &&
+    displayType &&
+    SQUASH_TO_HEIGHT_DISPLAYS.has(displayType)
+      ? {
+          path: `${TRACK_MENU} → Show... → Fit to display height (${value ? 'checked' : 'unchecked'})`,
+          note: 'Squashes the triangle vertically to fill the track instead of drawing square bins at its natural half-the-view-width height. Unchecked keeps square bins, which fits when the feature of interest sits nearer the diagonal than the track is tall.',
         }
       : undefined,
   // ChordVariantDisplay's only, and it has no control — Chord.tsx reads the slot

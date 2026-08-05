@@ -203,6 +203,45 @@ tolerance ball for "did this figure move".
     demo settles on. Nothing is hosted from it yet — deploying is a deliberate
     step, not something the script does.
 
+- **Hi-C, four more, from building the two `hic/*` figures.** These are about
+  making a Hi-C figure _argue_ something rather than about the file format.
+  `hic/whole_genome` is still on the backlog and untouched by any of this.
+  - **The auto-picked binsize is usually too fine to see anything.** The rule is
+    the largest binsize `<= 2*bpPerPx`, which over a 2.4 Mb view lands on 2 kb;
+    at 2 kb every bin is nearly empty and the matrix renders as red speckle with
+    no domain edges. `resolutionBias: 2` steps to 10 kb and the blocks appear.
+    Every Hi-C figure wants this — if a matrix "looks like noise", it is this
+    before it is the data. And `useLogScale` is the opposite of a fix on a deep
+    file: it pushes every bin to the top of the ramp and returns solid red.
+  - **`squashToHeight` is usually the wrong reflex.** A pair's contacts are drawn
+    at depth `|x2-x1|/2`, so with two 2 Mb windows the cross-block apex is ~280
+    css px down, not the ~990 px the full wedge is tall. Squashing spent half the
+    frame on the empty long-range corner; leaving it off kept square bins AND
+    fit. Compute the depth of the feature you care about before reaching for it.
+  - **A shallow control is not a control, and a balanced matrix deletes the
+    finding.** For the translocation figure, ENCODE's "supernatant" GM12878
+    (`ENCSR730CER`, the file `config_demo.json` already carried) has ~140
+    occupied bin pairs in the window with a max of 7 contacts, so next to K562 it
+    looks spectacular for the wrong reason — sequencing depth, not karyotype.
+    `ENCSR410MDC` is the depth-matched file and is the one to compare against;
+    it carries MORE total chr9–chr22 contact than K562 and still 149 contacts at
+    the junction bin where K562 has 161,282. Separately, `INTER_SCALE` moves the
+    K562 peak off the fusion entirely and onto a mapping artifact present in both
+    lines: matrix balancing divides out per-bin coverage, and an amplified fusion
+    IS per-bin coverage. Both tracks pin `selectedNormalization: NONE`.
+    `scripts/scan_hic_translocation.sh` prints all of these numbers.
+  - **BEDPE gotchas that fail silently, both hit in one figure.** (1) A contact
+    domain has both mates set to the same interval, so as a
+    `LinearPairedArcDisplay` the arc runs from the domain to itself and draws
+    NOTHING — an empty 78px lane, no error. Read Arrowhead output as a
+    `FeatureTrack` and each domain is a box. (2) `parseNamesFromHeader` takes the
+    **last** header line, and juicer writes `# juicer_tools version …` _after_
+    the defline; that line has no tabs, so column-name resolution returns
+    undefined and every column past 10 reads back as `undefined`. A jexl
+    expression on `observed` then evaluates against nothing and silently takes
+    its else-branch — which looks exactly like a threshold that is merely wrong.
+    Set the adapter's `columnNames` explicitly on any juicer BEDPE.
+
 - **A legend that gains a section can outgrow its lane.** Adding one to the
   multi-sample variant display pushed it past the 120px `height` the
   `pangenome/maf` spec gave the track, and the last swatch was sliced in half by
