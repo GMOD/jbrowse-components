@@ -701,133 +701,39 @@ comma-joined path of category names from the track's `category` config field, so
 `categoryId = "Tracks-Wiggle,My Subcategory"`. Return the default component
 unchanged for categories you don't handle.
 
-### LaunchView-LinearGenomeView
+### LaunchView points
 
 type: async
 
-Launches a linear genome view. Rarely extended directly, but a useful reference
-for implementing a `LaunchView-*` point for your own view type. See
-[](/docs/developer_guides/creating_view).
+One point per launchable view type, named `LaunchView-` plus the view type.
+`loadSessionSpec` fires it with the spec's view object flat as its args plus
+`session`, and the launcher sorts those keys into what the view needs. A view
+type with no registered point cannot be launched from a spec, and
+`loadSessionSpec` reports that by name rather than failing silently.
 
-- `args` - an object of the format below
+Register one to make your own view type launchable — see
+[](/docs/developer_guides/creating_view). Registering a second callback on a
+built-in one is unusual: the chain passes the launch args along, so a later
+callback sees what the view was asked for, not the view the first one created.
 
-```typescript
-import type { LaunchLinearGenomeViewArgs } from '@jbrowse/plugin-linear-genome-view'
-// LaunchLinearGenomeViewArgs:
-interface args {
-  session: AbstractSessionModel
-  assembly?: string
-  loc?: string
-  tracks?: TrackInit[] // string trackId, or { trackId, displaySnapshot?, trackSnapshot? }
-  tracklist?: boolean
-  nav?: boolean
-  highlight?: string[]
-}
-```
+Each launcher's args are that view type's spec fields, documented once in the
+URL parameter guide and typed by the `Launch*Args` interface exported beside the
+registration:
 
-Reference:
-[the LGV plugin's registration](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/index.ts).
+| Extension point                  | Spec fields                                                    | Args type                                                                                                                                                    |
+| -------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `LaunchView-BreakpointSplitView` | [breakpoint split view](/docs/urlparams#breakpoint-split-view) | [`LaunchBreakpointSplitViewArgs`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/breakpoint-split-view/src/LaunchBreakpointSplitView/index.ts) |
+| `LaunchView-CircularView`        | [circular view](/docs/urlparams#circular-view)                 | [`LaunchCircularViewArgs`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/LaunchCircularView/index.ts)                       |
+| `LaunchView-DotplotView`         | [dotplot view](/docs/urlparams#dotplot-view)                   | [`LaunchDotplotViewArgs`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/LaunchDotplotView.ts)                                |
+| `LaunchView-LinearGenomeView`    | [linear genome view](/docs/urlparams#linear-genome-view)       | [`LaunchLinearGenomeViewArgs`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/LaunchLinearGenomeView/index.ts)          |
+| `LaunchView-LinearSyntenyView`   | [linear synteny view](/docs/urlparams#linear-synteny-view)     | [`LaunchLinearSyntenyViewArgs`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LaunchLinearSyntenyView.ts)         |
+| `LaunchView-SpreadsheetView`     | [spreadsheet view](/docs/urlparams#spreadsheet-view)           | [`LaunchSpreadsheetViewArgs`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/spreadsheet-view/src/LaunchSpreadsheetView/index.ts)              |
+| `LaunchView-SvInspectorView`     | [SV inspector](/docs/urlparams#sv-inspector)                   | [`LaunchSvInspectorViewArgs`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sv-inspector/src/LaunchSvInspectorView/index.ts)                  |
 
-### LaunchView-CircularView
-
-type: async
-
-Launches a circular view.
-
-- `args` - an object of the format below
-
-```typescript
-interface args {
-  session: AbstractSessionModel // the session model
-  assembly: string // assembly name
-  tracks: string[] // array of track IDs
-}
-```
-
-Reference:
-[the circular-view plugin's registration](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/index.ts).
-
-### LaunchView-SvInspectorView
-
-type: async
-
-Launches an SV inspector.
-
-- `args` - an object of the format below
-
-```typescript
-interface args {
-  session: AbstractSessionModel // the session model
-  assembly: string // assembly name
-  uri: string // uri for file to load into the SV inspector
-  fileType?: string // type of file referred to by the uri ("VCF"|"CSV"|"BEDPE",etc) if uri extension does not properly hint at the file type
-}
-```
-
-Reference:
-[the sv-inspector plugin's registration](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sv-inspector/src/index.ts).
-
-### LaunchView-SpreadsheetView
-
-type: async
-
-Launches a spreadsheet view.
-
-- `args` - an object of the format below
-
-```typescript
-interface args {
-  session: AbstractSessionModel // the session model
-  assembly: string // assembly name
-  uri: string // uri for file to load into the spreadsheet view
-  fileType?: string // type of file referred to by the uri ("VCF"|"CSV"|"BEDPE",etc) if uri extension does not properly hint at the file type
-}
-```
-
-Reference:
-[the spreadsheet-view plugin's registration](https://github.com/GMOD/jbrowse-components/blob/main/plugins/spreadsheet-view/src/index.ts).
-
-### LaunchView-DotplotView
-
-type: async
-
-Launches a dotplot view.
-
-```typescript
-interface args {
-  session: AbstractSessionModel // the session model
-  views: {
-    loc: string
-    assembly: string
-    tracks?: string[]
-  }[] // array of length 2, for vert and horiz
-  tracks: string[] // synteny track IDs to load on open
-}
-```
-
-Reference:
-[`LaunchDotplotView`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/LaunchDotplotView.ts).
-
-### LaunchView-LinearSyntenyView
-
-type: async
-
-Launches a linear synteny view.
-
-```typescript
-interface args {
-  session: AbstractSessionModel // the session model
-  views: {
-    loc: string // locstring
-    assembly: string // assembly name
-    tracks?: string[] // trackIDs to open on top and bottom
-  }[] // array of length 2, for top and bottom rows of synteny view
-  tracks: string[] // synteny track IDs to load on open
-}
-```
-
-Reference:
-[`LaunchLinearSyntenyView`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LaunchLinearSyntenyView.ts).
+Two spec keys never reach a launcher: `type` is the dispatch key, and
+`displayName` is applied by `loadSessionSpec` to whatever view the launch
+created, so it works for plugin-provided types whose launcher never heard of it.
+`id` is each launcher's own job, and all seven above honor it.
 
 ### LinearGenomeView-TracksContainerComponent
 
