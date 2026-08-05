@@ -4,10 +4,13 @@
 # figure at LCT needs: one row per haplotype, columns of variants, the swept
 # haplotype a solid slab.
 #
-# NO FIGURE READS THIS YET: the output is not hosted, and website/scripts/specs
-# gates its live links on assets that resolve. Build it, upload it (the command
-# is printed at the end), and the spec can then be added. Everything else the
-# figure needs has been verified against a local build.
+# THE OUTPUT IS ALREADY HOSTED at jbrowse.org/demos/popgen/, and verified driving
+# the figure from there: 300 haplotype rows, 50 per population, dendrogram
+# positioned. Re-running this script reproduces that file byte for byte, so it is
+# for re-deriving or re-cutting rather than for the upload. What is still missing
+# is the spec in website/scripts/specs/ld.ts and its captured figure, which needs
+# the UCSC hg19 hub (hgdownload.soe.ucsc.edu) reachable — the two LCT figures
+# already in that file need it too.
 #
 # WHY A SUBSAMPLE EXISTS AT ALL. The figure was first attempted against the
 # hosted full-release slices and never rendered (removed in 7dd1e36ece). The
@@ -160,11 +163,15 @@ awk -v pops="$POPS" '
 
 cat <<EOF
 
-Done. Nothing reads $OUT yet (see the header). When a figure does, upload it and
-its .tbi beside the other popgen demo assets:
+Done. $OUT is already hosted, so this run is a re-derivation — diff it against
+the hosted copy rather than uploading over it:
+
+  curl -s https://jbrowse.org/demos/popgen/$OUT | cmp - $OUT
+
+If you did change what this builds, upload the new cut and its index:
 
   aws s3 cp $OUT s3://jbrowse.org/demos/popgen/
   aws s3 cp $OUT.tbi s3://jbrowse.org/demos/popgen/
 
-Both files are new names, so this adds rather than overwrites.
+The bucket has no versioning, so an overwrite is not recoverable.
 EOF
