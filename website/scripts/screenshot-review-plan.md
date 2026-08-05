@@ -42,6 +42,17 @@ jq -r '[to_entries[]|select(.value.status=="bad")]|.[]|"\(.value.name)\t\(.value
     runs the bin directly so you see stderr the generator otherwise swallows.
   - Shaders: edit `.slang`, run `pnpm gen:shaders` (never hand-edit
     `*.generated.ts`).
+- **The generator serves `products/jbrowse-web/build/`, and its `test_data/` is
+  a COPY taken at build time, not the symlink the source tree has.** So an edit
+  to `test_data/<anything>.json` is invisible to a regen until you rebuild (or
+  `cp` the file into `build/test_data/`), and the failure looks nothing like a
+  stale config: the track simply never opens, so a `readySelector` waiting on
+  that display's `-done` testid times out and the spec reports
+  "Waiting for selector failed". Cost an hour of chasing CORS and file formats
+  on a new Hi-C track that worked in every direct probe. A `browser-tests/`
+  driver run against `startServer()` does NOT reproduce it — that serves the
+  source tree, symlink and all, which is exactly why the probe passed while the
+  regen failed.
 - **Viewing PNGs**: capture is ~1500w@2x ≈ 3000px, too big for the Read tool —
   downscale first: `convert static/img/<name>.png -resize 1100x /tmp/x.png`,
   then Read `/tmp/x.png`. Whole-genome/many-row figures (470-way, dotplots,
@@ -63,6 +74,12 @@ jq -r '[to_entries[]|select(.value.status=="bad")]|.[]|"\(.value.name)\t\(.value
   - `npx eslint --cache --fix scripts/specs/*.ts` — eslint reflows the whole
     file, which churns lines you didn't touch (inflates the diff, entangles with
     other agents' edits — see the worktree note below).
+
+- **`until ! pgrep -f "generate-screenshots"` never exits**: the waiting shell's
+  own command line contains the pattern, so it matches itself and spins
+  forever — and any regen chained after it never starts, silently. Match the
+  process rather than the pattern (`pgrep -x node` plus a check on the log), or
+  just run the regen in the foreground with a long tool timeout.
 
 ## The review log is largely stale — triage by PNG hash before touching anything
 
