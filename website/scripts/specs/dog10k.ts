@@ -771,17 +771,19 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     settleMs: 6000,
     // gene track, the OMIA lane, all 36 sample rows and the genotype legend
     viewportHeight: 1003,
-    // What the two blues MEAN, beside the column that carries them. The legend
-    // can say "homozygous alt" but not that homozygous is the affected state,
-    // and that is the one thing neither it nor the OMIA lane spells out — the
-    // lane names the disease and calls it recessive, so the pill no longer
-    // repeats either and says what recessive buys the reader instead. It sits
-    // left of the column, over lane that paints nothing (the filtered track has
-    // one record), so no cell is covered.
+    // What the deletion does, beside the column that carries it. The legend can
+    // say "homozygous alt" but not that homozygous is the affected state: CEA is
+    // recessive (Parker et al. 2007; OMIA 000218-9615), so the dark cells are
+    // affected animals and the light ones are unaffected carriers, which is the
+    // difference between the two blues a reader cannot otherwise infer. It names
+    // the disease rather than deferring to the OMIA lane for it (review): the
+    // pill is what a reader looks at, and Collie eye anomaly is the thing they
+    // will already know. The pill sits left of the column, over lane that paints
+    // nothing (the filtered track has one record), so no cell is covered.
     annotations: [
       {
         type: 'text',
-        text: 'Recessive: dark rows are affected dogs,\nlight ones unaffected carriers',
+        text: '7.8 kb intron deletion, recessive:\nhomozygotes have Collie eye anomaly',
         fontSize: 22,
         maxWidth: 460,
         anchor: {

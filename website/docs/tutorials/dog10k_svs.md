@@ -34,9 +34,10 @@ server; on JBrowse Web the same files go in through **Add track** or a
 
 Schall and Kidd genotyped long-read-discovered structural variants across the
 Dog10K collection and flagged those whose allele frequencies track breed clades.
-One is a 7.8 kb deletion in an intron of _NHEJ1_, the variant associated with
-Collie eye anomaly. If it is what the literature says, it should be common in
-Collies and their relatives and absent from unrelated breeds and from wolves.
+One is a 7.8 kb deletion in an intron of _NHEJ1_, the variant
+[Parker et al. (2007)](https://doi.org/10.1101/gr.6772807) tied to Collie eye
+anomaly. If it is what the literature says, it should be common in Collies and
+their relatives and absent from unrelated breeds and from wolves.
 The anomaly is recessive, so the darker cells in the figure below are affected
 animals and the lighter ones unaffected carriers.
 
