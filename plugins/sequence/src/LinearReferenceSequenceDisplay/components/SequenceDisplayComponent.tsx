@@ -1,5 +1,6 @@
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 
+import { useMouseState, useMouseTracking } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { toLocale } from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
@@ -10,6 +11,7 @@ import { SequenceRenderer } from './Canvas2DSequenceRenderer.ts'
 
 import type { LinearReferenceSequenceDisplayModel } from '../model.ts'
 import type { SequenceHover } from './sequenceHover.ts'
+import type { MouseTracker } from '@jbrowse/core/ui'
 
 const SequenceBody = observer(function SequenceBody({
   model,
@@ -62,6 +64,39 @@ const HoverContents = observer(function HoverContents({
   )
 })
 
+// The hover tooltip, in its own component so that following the pointer
+// re-renders it alone.
+//
+// The hover used to be `useState` in `SequenceDisplayComponent`, written from an
+// `onMouseMove` on `DisplayChrome` — so every mousemove re-rendered the chrome,
+// its status container and all three overlays, and ran `hoverAt` plus a
+// `getBoundingClientRect()` per *raw* event rather than once a frame. See
+// `useMouseTracking`.
+//
+// Resolving `hoverAt` here rather than in the handler also keeps the readout
+// live: it is an observer, so a base under a stationary cursor re-reads when the
+// sequence data or the viewport moves, instead of staying frozen at whatever the
+// last mousemove saw.
+const SequenceHoverTooltip = observer(function SequenceHoverTooltip({
+  model,
+  mouseTracker,
+}: {
+  model: LinearReferenceSequenceDisplayModel
+  mouseTracker: MouseTracker
+}) {
+  const mouseState = useMouseState(mouseTracker)
+  const hover = mouseState
+    ? model.hoverAt(mouseState.x, mouseState.y)
+    : undefined
+  return hover && mouseState ? (
+    <BaseTooltip
+      clientPoint={{ x: mouseState.clientX + 15, y: mouseState.clientY }}
+    >
+      <HoverContents hover={hover} />
+    </BaseTooltip>
+  ) : null
+})
+
 const SequenceDisplayComponent = observer(function SequenceDisplayComponent({
   model,
 }: {
@@ -69,26 +104,8 @@ const SequenceDisplayComponent = observer(function SequenceDisplayComponent({
 }) {
   const { height } = model
   const containerRef = useRef<HTMLDivElement>(null)
-  const [clientCoord, setClientCoord] = useState<[number, number]>()
-  const [hover, setHover] = useState<SequenceHover>()
-
-  function handleMouseMove(event: React.MouseEvent) {
-    const container = containerRef.current
-    if (container) {
-      const rect = container.getBoundingClientRect()
-      const info = model.hoverAt(
-        event.clientX - rect.left,
-        event.clientY - rect.top,
-      )
-      setHover(info)
-      setClientCoord(info ? [event.clientX, event.clientY] : undefined)
-    }
-  }
-
-  function handleMouseLeave() {
-    setHover(undefined)
-    setClientCoord(undefined)
-  }
+  const { mouseTracker, handleMouseMove, handleMouseLeave } =
+    useMouseTracking(containerRef)
 
   return (
     <>
@@ -98,24 +115,14 @@ const SequenceDisplayComponent = observer(function SequenceDisplayComponent({
         factory={SequenceRenderer}
         testid="sequence-display"
         style={{ width: '100%', height }}
-        onMouseMove={event => {
-          handleMouseMove(event)
-        }}
-        onMouseLeave={() => {
-          handleMouseLeave()
-        }}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
       >
         {({ canvasRef }) => (
           <SequenceBody model={model} canvasRef={canvasRef} />
         )}
       </DisplayChrome>
-      {hover && clientCoord ? (
-        <BaseTooltip
-          clientPoint={{ x: clientCoord[0] + 15, y: clientCoord[1] }}
-        >
-          <HoverContents hover={hover} />
-        </BaseTooltip>
-      ) : null}
+      <SequenceHoverTooltip model={model} mouseTracker={mouseTracker} />
     </>
   )
 })
