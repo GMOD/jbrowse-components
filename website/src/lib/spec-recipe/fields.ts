@@ -665,6 +665,24 @@ const graphSettingsField = (
 }
 
 export const viewFields: Record<string, FieldRecipe> = {
+  // Applied by initHelpers as levels[i].setHeight(h), and the only thing that
+  // calls setHeight from the UI is the ResizeHandle bar under each level
+  // (LinearComparativeRenderArea) — there is no menu entry or dialog for it.
+  levelHeights: (value, { viewType }) => {
+    const heights =
+      Array.isArray(value) && value.every(n => typeof n === 'number')
+        ? value
+        : undefined
+    return heights?.length && viewType === 'LinearSyntenyView'
+      ? {
+          path: 'Drag the bar below a synteny level to resize it.',
+          note:
+            heights.length === 1
+              ? `This figure's level is ${heights[0]}px tall.`
+              : `This figure's ${heights.length} levels are ${heights.join(', ')}px tall.`,
+        }
+      : undefined
+  },
   colorBy: (value, { viewType }) => {
     const label =
       typeof value === 'string' ? SYNTENY_COLOR_MODES[value] : undefined
