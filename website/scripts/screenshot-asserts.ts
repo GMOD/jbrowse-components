@@ -230,6 +230,22 @@ export async function assertRenderSettled(
         })
       }
     }
+    // The red box ErrorMessage/ErrorBanner render into, which is a THIRD error
+    // surface: it carries no reload_button and is not a snackbar, so it sailed
+    // past both checks above. A full sweep found it the only way it could be
+    // found — by eye, on a committed figure: `sv_synteny/dotplot_import` and
+    // `sv_cgiab/dotplot_import_form` had been publishing an MST type error
+    // banner across the top of the import form they are supposed to be showing.
+    for (const el of document.querySelectorAll(
+      '[data-testid="error-message-box"]',
+    )) {
+      if (isVisible(el)) {
+        found.push({
+          kind: 'error-box',
+          text: (el as HTMLElement).innerText.slice(0, 300),
+        })
+      }
+    }
 
     // region-too-large message (TooLargeMessage's BlockMsg carries no test-id, so
     // key off its own literal); own text nodes only, so the wrapping Alert and
