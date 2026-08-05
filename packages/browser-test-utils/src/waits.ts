@@ -52,6 +52,17 @@ export async function waitForLoadingComplete(
 // otherwise burn the whole timeout, so we swallow the rejection and let the
 // caller proceed — no worse than not waiting, and slow-but-finishing views now
 // get captured at the right moment instead of relying on a fixed settle.
+//
+// The candidate set comes from a text-node TreeWalker rather than from
+// `body *`. This is the only wait here that is O(DOM) instead of one
+// querySelector, and puppeteer polls it every animation frame: walking every
+// element to build its own-text string, on a page with thousands of them,
+// competed for main-thread time with the render it was waiting on. Only
+// elements that HAVE own text can ever match, and only a matching element needs
+// its style resolved, so both the string building and `getComputedStyle` now run
+// on a few hundred nodes instead of all of them. Same answer — an element with
+// no own text could never pass `t.length > 0` — so this is a cost change, not a
+// semantic one.
 export async function waitForQuiescent(
   page: Page,
   {
@@ -85,7 +96,26 @@ export async function waitForQuiescent(
             .map(n => n.textContent ?? '')
             .join('')
             .trim()
-        for (const el of document.querySelectorAll('body *')) {
+        // every element with at least one non-whitespace text child, which is
+        // exactly the set that can pass the `t.length > 0` test below. Inlined
+        // rather than shared with the identical walk in the website generator's
+        // assertRenderSettled: this whole function is serialized into the page,
+        // so it can only call what it declares.
+        const body: HTMLElement | null = document.body
+        if (!body) {
+          // still parsing: not quiescent, rather than trivially quiescent
+          return false
+        }
+        const candidates = new Set<Element>()
+        const walker = document.createTreeWalker(body, NodeFilter.SHOW_TEXT)
+        for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+          const parent = n.parentElement
+          const text = n.textContent ?? ''
+          if (parent && parent !== body && text.trim()) {
+            candidates.add(parent)
+          }
+        }
+        for (const el of candidates) {
           const t = ownText(el)
           if (t.length > 0 && t.length < 80 && re.test(t) && visible(el)) {
             return false
