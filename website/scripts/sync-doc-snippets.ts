@@ -23,19 +23,23 @@
 //
 // Because unmarked fences are ignored, nothing would otherwise stop a *new*
 // hand-written one appearing. `--check` therefore also ratchets: it counts the
-// un-included TS/JS fences under developer_guides and fails if that total rises
+// un-included TS/JS fences in the hand-written docs and fails if that total rises
 // above DOC_FENCE_BASELINE, so the debt can only shrink.
 //
 // Run `pnpm sync-doc-snippets` to update, `--check` to fail on drift (CI).
 import { readFileSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { join, relative } from 'node:path'
 
 import { walkFiles } from './check-utils.ts'
-import { extractRegion, stripRegionMarkers } from './docFenceRegions.ts'
+import {
+  countUnIncludedFences,
+  extractRegion,
+  isGeneratedDocPath,
+  stripRegionMarkers,
+} from './docFenceRegions.ts'
 
 const root = join(import.meta.dirname, '..', '..')
 const docsDir = join(import.meta.dirname, '..', 'docs')
-const guidesDir = join(docsDir, 'developer_guides')
 const check = process.argv.includes('--check')
 
 const MARKER = /^<!--\s*include:\s*(\S+?)\s*-->$/
@@ -54,25 +58,21 @@ function resolve(spec: string) {
 const problems: string[] = []
 const stale: string[] = []
 
-// Ratchet: the guides still carry hand-written TS/JS fences that predate this
+// Ratchet: the docs still carry hand-written TS/JS fences that predate this
 // script, and nothing stops a new one being added. Counting the un-included
 // ones and failing when the total *rises* freezes that debt without demanding a
-// big-bang conversion — the number only ever goes down, one guide at a time.
+// big-bang conversion — the number only ever goes down, one page at a time.
 // A count works here, unlike the spec-recipe ratchet that became a tracked list
 // of field names: an un-included fence has no stable identity to list, so there
 // is nothing to name in the diff beyond the file it sits in.
 //
-// Only TS/JS fences count: a `json` config sample or a `bash` command has no
-// compiled source to point an include at.
-const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '2')
-const INCLUDABLE = new Set([
-  'ts',
-  'tsx',
-  'js',
-  'jsx',
-  'typescript',
-  'javascript',
-])
+// Scope is every hand-written page. `config/`, `models/` and `api/` are whole
+// generated trees and `cli.md`/`jbrowse-img.md` are generated pages, so their
+// fences come from a JSDoc tag at a definition site and are already tied to
+// source. It covered `developer_guides/` alone until those were down to two,
+// which left the ~20 fences in `config_guides/`, `tutorials/` and the top-level
+// pages free to grow.
+const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '23')
 let unIncluded = 0
 
 for (const path of walkFiles(docsDir, n => n.endsWith('.md'))) {
@@ -81,24 +81,8 @@ for (const path of walkFiles(docsDir, n => n.endsWith('.md'))) {
   const out: string[] = []
   let changed = false
 
-  if (path.startsWith(guidesDir)) {
-    let inFence = false
-    lines.forEach((line, i) => {
-      const fence = /^\s*```(\S*)/.exec(line)
-      if (!fence) {
-        return
-      }
-      if (inFence) {
-        inFence = false
-        return
-      }
-      inFence = true
-      // The marker sits one or two lines up (prettier inserts a blank line).
-      const marked = [1, 2].some(k => MARKER.test((lines[i - k] ?? '').trim()))
-      if (!marked && INCLUDABLE.has(fence[1]!.toLowerCase())) {
-        unIncluded++
-      }
-    })
+  if (!isGeneratedDocPath(relative(docsDir, path))) {
+    unIncluded += countUnIncludedFences(text)
   }
 
   for (let i = 0; i < lines.length; i++) {
@@ -182,7 +166,7 @@ if (stale.length > 0) {
 
 if (unIncluded > FENCE_BASELINE) {
   console.error(
-    `\n${unIncluded} hand-written TS/JS fences in developer_guides exceeds the ` +
+    `\n${unIncluded} hand-written TS/JS fences in the docs exceeds the ` +
       `baseline of ${FENCE_BASELINE}. Point the new fence at real source with ` +
       `an <!-- include: --> marker (see example-plugins/score-example), or ` +
       `raise DOC_FENCE_BASELINE if it genuinely can't be.`,
@@ -190,7 +174,7 @@ if (unIncluded > FENCE_BASELINE) {
   process.exit(1)
 } else if (unIncluded < FENCE_BASELINE) {
   console.log(
-    `${unIncluded} hand-written TS/JS fences remain in developer_guides ` +
+    `${unIncluded} hand-written TS/JS fences remain in the docs ` +
       `(baseline ${FENCE_BASELINE}) — lower DOC_FENCE_BASELINE to ${unIncluded} to hold the gain.`,
   )
 }

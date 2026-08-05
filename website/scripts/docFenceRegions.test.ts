@@ -9,7 +9,12 @@
  * is not hypothetical — matching the first `#endregion` instead of the paired
  * one did exactly this to the no-build plugin guide's complete example.
  */
-import { extractRegion, stripRegionMarkers } from './docFenceRegions.ts'
+import {
+  countUnIncludedFences,
+  extractRegion,
+  isGeneratedDocPath,
+  stripRegionMarkers,
+} from './docFenceRegions.ts'
 
 const NESTED = [
   '// a note that should not reach the guide',
@@ -154,4 +159,84 @@ test('a whole-file include drops every marker and the trailing blank', () => {
       '}',
     ].join('\n'),
   )
+})
+
+// --- the ratchet's unit of debt -------------------------------------------
+
+const page = (...lines: string[]) => lines.join('\n')
+
+test('a plain TS fence counts', () => {
+  expect(countUnIncludedFences(page('```ts', 'const a = 1', '```'))).toBe(1)
+})
+
+test('a fence carrying an include marker does not count', () => {
+  expect(
+    countUnIncludedFences(
+      page('<!-- include: src/a.ts -->', '', '```ts', 'const a = 1', '```'),
+    ),
+  ).toBe(0)
+})
+
+// json config samples and shell commands have no compiled source to point at,
+// which is the whole reason the ratchet is language-filtered
+test('json and bash fences are not debt', () => {
+  expect(
+    countUnIncludedFences(
+      page('```json', '{}', '```', '```bash', 'ls', '```', '```', 'x', '```'),
+    ),
+  ).toBe(0)
+})
+
+// jexl.md is why: its function catalog is generated, emits ```js blocks, and
+// carries no include marker because it is a different generator. Counting those
+// booked eight generated fences as debt nobody could ever pay down.
+test('a fence inside another generator block does not count', () => {
+  expect(
+    countUnIncludedFences(
+      page(
+        '<!-- JEXL_CATALOG START -->',
+        '```js',
+        'jexl: max(0, 2)',
+        '```',
+        '<!-- JEXL_CATALOG END -->',
+        '```js',
+        'const handWritten = 1',
+        '```',
+      ),
+    ),
+  ).toBe(1)
+})
+
+// ``` inside a fence is content, not a marker, so a generated block opening
+// inside one must not switch the counter off for the rest of the page
+test('a marker-looking line inside a fence is content', () => {
+  expect(
+    countUnIncludedFences(
+      page(
+        '```ts',
+        '// <!-- COLOR_TABLE START -->',
+        '```',
+        '```ts',
+        'const a = 1',
+        '```',
+      ),
+    ),
+  ).toBe(2)
+})
+
+test('generated trees and pages are exempt', () => {
+  expect(isGeneratedDocPath('config/BamAdapter.md')).toBe(true)
+  expect(isGeneratedDocPath('models/LinearGenomeView.md')).toBe(true)
+  expect(isGeneratedDocPath('api/core-util.md')).toBe(true)
+  expect(isGeneratedDocPath('cli.md')).toBe(true)
+  expect(isGeneratedDocPath('jbrowse-img.md')).toBe(true)
+})
+
+// The bug this pair exists for: `config_guides/` starts with `config`, so a
+// prefix test without the separator exempts six hand-written config guides.
+test('a hand-written page whose name starts with a generated dir is not exempt', () => {
+  expect(isGeneratedDocPath('config_guides/jexl.md')).toBe(false)
+  expect(isGeneratedDocPath('developer_guides/menus.md')).toBe(false)
+  expect(isGeneratedDocPath('tutorials/display_settings.md')).toBe(false)
+  expect(isGeneratedDocPath('automating.md')).toBe(false)
 })

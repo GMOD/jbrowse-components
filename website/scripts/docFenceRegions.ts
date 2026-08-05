@@ -60,3 +60,87 @@ export function extractRegion(source: string, file: string, region: string) {
   )
   return body.map(l => l.slice(indent)).join('\n')
 }
+
+// Fence languages an `<!-- include: -->` could point at. A `json` config sample
+// or a `bash` command has no compiled source, so it is not debt.
+const INCLUDABLE = new Set([
+  'ts',
+  'tsx',
+  'js',
+  'jsx',
+  'typescript',
+  'javascript',
+])
+
+const INCLUDE_MARKER = /^<!--\s*include:\s*(\S+?)\s*-->$/
+// The other generator families — COLOR_TABLE, JEXL_CATALOG, PALETTE_KEYS and
+// friends — bracket their output with `<!-- NAME … START -->` / `END`.
+const GENERATED_START = /^<!--\s*[A-Z_]+[^>]*\bSTART\b[^>]*-->$/
+const GENERATED_END = /^<!--\s*[A-Z_]+[^>]*\bEND\b[^>]*-->$/
+
+/**
+ * Count the hand-written TS/JS fences in one page: the ratchet's unit of debt.
+ *
+ * Fences inside another generator's marker block do not count. `jexl.md` is why
+ * — its function catalog is generated, emits ```js blocks, and carries no
+ * `include:` marker because it is not that kind of generated. Counting those
+ * would have booked eight generated fences as debt no one could ever pay down.
+ */
+export function countUnIncludedFences(text: string) {
+  const lines = text.split('\n')
+  let inFence = false
+  let inGenerated = false
+  let count = 0
+  lines.forEach((line, i) => {
+    const trimmed = line.trim()
+    if (!inFence && GENERATED_START.test(trimmed)) {
+      inGenerated = true
+      return
+    }
+    if (!inFence && GENERATED_END.test(trimmed)) {
+      inGenerated = false
+      return
+    }
+    const fence = /^\s*```(\S*)/.exec(line)
+    if (!fence) {
+      return
+    }
+    if (inFence) {
+      inFence = false
+      return
+    }
+    inFence = true
+    if (inGenerated) {
+      return
+    }
+    // the marker sits one or two lines up (the formatter inserts a blank line)
+    const marked = [1, 2].some(k =>
+      INCLUDE_MARKER.test((lines[i - k] ?? '').trim()),
+    )
+    if (!marked && INCLUDABLE.has(fence[1]!.toLowerCase())) {
+      count++
+    }
+  })
+  return count
+}
+
+// Whole generated trees and generated pages, docs-relative. Their fences come
+// from a JSDoc tag at a definition site, so they are already tied to source and
+// are not the ratchet's business.
+const GENERATED_DIRS = ['config/', 'models/', 'api/']
+const GENERATED_PAGES = ['cli.md', 'jbrowse-img.md']
+
+/**
+ * Is this docs-relative path generated?
+ *
+ * The trailing slashes are load-bearing. `config_guides/jexl.md` starts with
+ * `config`, so a bare prefix test exempts six hand-written config guides and
+ * two tutorials — the ratchet then reports a smaller number than the truth and
+ * the pages it skipped are free to grow.
+ */
+export function isGeneratedDocPath(relativePath: string) {
+  return (
+    GENERATED_DIRS.some(d => relativePath.startsWith(d)) ||
+    GENERATED_PAGES.includes(relativePath)
+  )
+}
