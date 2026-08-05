@@ -14,12 +14,12 @@ order**, so the assignment array's own order carries no meaning and nothing may
 read it as one.
 
 It used to. Two arrays each claiming to be the order meant one user intent
-needed two implementations picked by mode — `moveViewUp`/`ToTop`/... reordering
-`session.views` for the classic stack, `moveViewInPanel` reordering the
-assignment for a workspace — and any operation _below_ that fork could not
-express itself to whichever ordering happened to be live. `replaceView` (put a
-new view where an old one was) was the first to hit it, and the fix was not a
-third case but deleting the second ordering.
+needed two implementations picked by mode — `moveViewUp` / `moveViewDown` /
+`moveViewToTop` reordering `session.views` for the classic stack,
+`moveViewInPanel` reordering the assignment for a workspace — and any operation
+_below_ that fork could not express itself to whichever ordering happened to be
+live. `replaceView` (put a new view where an old one was) was the first to hit
+it, and the fix was not a third case but deleting the second ordering.
 
 So the mode now decides the **scope** of a move and nothing else:
 `reorderWithin(views, idx, direction, inScope)` moves past the previous view _in

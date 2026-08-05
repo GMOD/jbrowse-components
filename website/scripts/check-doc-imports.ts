@@ -420,6 +420,11 @@ function scanRelativeAnchors(path: string, lines: string[]): Problem[] {
 // fixed directly. Re-run the scan after a big refactor rather than wiring it up.
 const SYMBOL_DIRS = [join(docsDir, 'developer_guides')]
 const SYMBOL_FILES = new Set([join(root, 'agent-docs', 'ARCHITECTURE.md')])
+// Every CLAUDE.md is symbol-checked too — see claudeDocs() below for why, and
+// for the baseline. They describe current practice by definition, so the
+// "records superseded names on purpose" exemption that keeps reference/ out
+// does not apply to them.
+const isClaudeDoc = (path: string) => path.endsWith('/CLAUDE.md')
 // PascalCase, plus camelCase with an internal capital. The internal capital is
 // what keeps this from flagging ordinary backticked prose (`true`, `undefined`,
 // `error`) while still catching `renderProps`, `canvasWidthPx`, `isCacheValid`.
@@ -442,6 +447,10 @@ const DOC_ABSENT_ON_PURPOSE = new Set([
   // server-side-block predecessor precisely to stop the next reader grepping
   // for it. It was a live-precedent claim here until 2026-08.
   'renderProps',
+  // packages/app-core/CLAUDE.md, "It is also the only 'arrange the panels like
+  // this' channel": names the volatile second channel that was deleted, in the
+  // past tense, so the reader doesn't go looking for it.
+  'pendingMove',
 ])
 
 // Build output, which must not contribute symbols. `esm/` holds a `.d.ts` per
@@ -460,12 +469,39 @@ function collectSymbols() {
   // than the name fixed. The set only ever answers "does this exist anywhere",
   // so a wider net over real sources costs nothing but the read.
   const isSource = (name: string) => /\.(tsx?|jsx?|mjs|cjs|slang)$/.test(name)
-  for (const base of ['packages', 'plugins', 'products', 'example-plugins']) {
+  const add = (file: string) => {
+    for (const m of readFileSync(file, 'utf8').matchAll(
+      /\b(?:[A-Z][A-Za-z0-9]{4,}|[a-z][A-Za-z0-9]*[A-Z][A-Za-z0-9]*)\b/g,
+    )) {
+      set.add(m[0])
+    }
+  }
+  // `scripts` and `website/scripts` are in here for the same reason as the root
+  // config below: a doc naming a generator's marker (`GOTCHA`) or a build
+  // script's export is making a real reference, and the tooling is simply not
+  // under a workspace directory.
+  for (const base of [
+    'packages',
+    'plugins',
+    'products',
+    'example-plugins',
+    'scripts',
+    'website/scripts',
+  ]) {
     for (const file of walkFiles(join(root, base), isSource, BUILD_DIRS)) {
-      for (const m of readFileSync(file, 'utf8').matchAll(
-        /\b(?:[A-Z][A-Za-z0-9]{4,}|[a-z][A-Za-z0-9]*[A-Z][A-Za-z0-9]*)\b/g,
-      )) {
-        set.add(m[0])
+      add(file)
+    }
+  }
+  // Repo-root tooling config, non-recursively. A doc that tells you to add an
+  // entry to `jest.config.js` names its keys (`testMatch`,
+  // `collectCoverageFrom`), and those are real references — they just don't
+  // live under a workspace directory. Without this the check calls them dead
+  // and the honest fix looks like deleting the sentence.
+  for (const name of readdirSync(root)) {
+    if (isSource(name) || name.endsWith('.json')) {
+      const file = join(root, name)
+      if (isFile(file)) {
+        add(file)
       }
     }
   }
@@ -475,7 +511,11 @@ function collectSymbols() {
 let symbolCache: Set<string> | undefined
 
 function scanSymbols(path: string, lines: string[]): Problem[] {
-  if (!SYMBOL_DIRS.some(d => path.startsWith(d)) && !SYMBOL_FILES.has(path)) {
+  if (
+    !SYMBOL_DIRS.some(d => path.startsWith(d)) &&
+    !SYMBOL_FILES.has(path) &&
+    !isClaudeDoc(path)
+  ) {
     return []
   }
   symbolCache ??= collectSymbols()
@@ -629,12 +669,29 @@ function isPointInTimeDoc(file: string) {
   )
 }
 
+// The CLAUDE.md files scattered through packages/plugins/products. They are the
+// highest-traffic docs in the tree — loaded into an agent's context by being in
+// the directory, rather than opened deliberately — and until now the only ones
+// nothing checked at all, since they live outside both website/docs and
+// agent-docs. A stale name in one misleads every session that touches that
+// directory, which is the worst reach-per-error ratio here.
+//
+// Scanned at a measured baseline of zero: 25 files, five apparent claims, all
+// five legitimate (two jest config keys, a tsx option, an elided method name
+// since written out in full, and one deliberate past-tense mention below).
+function claudeDocs() {
+  return ['packages', 'plugins', 'products', 'example-plugins'].flatMap(base =>
+    walkFiles(join(root, base), n => n === 'CLAUDE.md', BUILD_DIRS),
+  )
+}
+
 // Read each doc once; imports are checked everywhere, prose paths only in
 // hand-written guides (autogen dirs embed GitHub blob URLs, not repo paths).
 const isDoc = (name: string) => /\.mdx?$/.test(name)
 const problems = [
   ...walkFiles(docsDir, isDoc),
   ...walkFiles(agentDocsDir, isDoc),
+  ...claudeDocs(),
 ].flatMap(file => {
   if (isPointInTimeDoc(file)) {
     return []
