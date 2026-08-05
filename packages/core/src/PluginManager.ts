@@ -125,10 +125,13 @@ function logCallbackError(name: string, error: unknown) {
 //           callback. Use for notification-style points where the payload
 //           should not be mutated between callbacks.
 //
-// Extension points are accumulator-style: every callback receives the previous
-// callback's return value as its first arg, so for side-effect points
-// (LaunchView-*, etc.) declare `result` equal to `args` and return the args
-// unchanged so subsequent callbacks see the original payload.
+// Declaring `args` as an array makes the point *accumulating*, which changes
+// how plugins register on it: they call contributeToExtensionPoint and return
+// only their own entries, never the array. Everything else threads one value
+// through addToExtensionPoint, where each callback receives the previous one's
+// return value as its first arg — so for side-effect points (LaunchView-*,
+// etc.) declare `result` equal to `args` and return the args unchanged so
+// subsequent callbacks see the original payload.
 //
 // Example augmentation in a plugin:
 //
@@ -224,6 +227,22 @@ export type ExtensionPointProps<N extends ExtensionPointName> =
   'props' extends keyof ExtensionPointRegistry[N]
     ? ExtensionPointRegistry[N]['props']
     : Record<string, unknown>
+
+/**
+ * Points whose `args` are an array accumulate: the value threaded through the
+ * fold is every plugin's entries so far. They are registered with
+ * {@link PluginManager.contributeToExtensionPoint}, never
+ * {@link PluginManager.addToExtensionPoint} — see the entry type below for why.
+ */
+export type AccumulatingPointName = {
+  [N in ExtensionPointName]: ExtensionPointArgs<N> extends readonly unknown[]
+    ? N
+    : never
+}[ExtensionPointName]
+
+/** One element of an accumulating point's array — what a plugin contributes. */
+export type ExtensionPointEntry<N extends AccumulatingPointName> =
+  ExtensionPointArgs<N> extends readonly (infer E)[] ? E : never
 
 /**
  * The trailing `props` parameter of the evaluate methods, required exactly when
@@ -803,7 +822,41 @@ export default class PluginManager {
     return this.addElementType('add track workflow', cb)
   }
 
-  addToExtensionPoint<N extends ExtensionPointName>(
+  /**
+   * Contribute entries to an accumulating point.
+   *
+   * The callback is handed only the props and returns what it wants to add —
+   * one entry, several, or `undefined` to add nothing. It never receives the
+   * array, which is the whole point: the concatenation happens here, once, so
+   * no plugin can write the `[MyEntry]` that silently drops every other
+   * plugin's entries. That mistake looked correct to whoever made it, because
+   * with one plugin registered there is nothing to drop.
+   */
+  contributeToExtensionPoint<N extends AccumulatingPointName>(
+    extensionPointName: N,
+    callback: (
+      props: ExtensionPointProps<N>,
+    ) => ExtensionPointEntry<N> | ExtensionPointEntry<N>[] | undefined,
+  ): void {
+    this.addToExtensionPoint<ExtensionPointEntry<N>[]>(
+      extensionPointName,
+      (entries, props) => {
+        const contributed = callback(props as ExtensionPointProps<N>)
+        return contributed === undefined
+          ? entries
+          : [
+              ...entries,
+              ...(Array.isArray(contributed) ? contributed : [contributed]),
+            ]
+      },
+    )
+  }
+
+  // Accumulating points are excluded: they go through
+  // contributeToExtensionPoint, which owns the concatenation.
+  addToExtensionPoint<
+    N extends Exclude<ExtensionPointName, AccumulatingPointName>,
+  >(
     extensionPointName: N,
     callback: (
       extendee: ExtensionPointArgs<N>,

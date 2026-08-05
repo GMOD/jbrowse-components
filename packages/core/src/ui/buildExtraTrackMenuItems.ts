@@ -12,10 +12,10 @@ export interface ExtraTrackMenuItemsProps {
   view?: TrackActionView
 }
 
+/** Return the items to add, or nothing when the track isn't yours. */
 export type ExtraTrackMenuItemsCallback = (
-  items: MenuItem[],
   props: ExtraTrackMenuItemsProps,
-) => MenuItem[]
+) => MenuItem | MenuItem[] | undefined
 
 declare module '@jbrowse/core/PluginManager' {
   interface ExtensionPointRegistry {
@@ -31,14 +31,14 @@ declare module '@jbrowse/core/PluginManager' {
 }
 
 // Plugins call this to contribute per-track menu items (keyed off the track
-// config) to the hierarchical track selector. Wrapping addToExtensionPoint here
+// config) to the hierarchical track selector. Wrapping the registration here
 // keeps the typed callback contract in one place so callers don't depend on the
 // extension-point type augmentation crossing package boundaries.
 export function addExtraTrackMenuItems(
   pluginManager: PluginManager,
   callback: ExtraTrackMenuItemsCallback,
 ) {
-  pluginManager.addToExtensionPoint('Core-extraTrackMenuItems', callback)
+  pluginManager.contributeToExtensionPoint('Core-extraTrackMenuItems', callback)
 }
 
 // Returns the contributed per-track menu items, or an empty array when no

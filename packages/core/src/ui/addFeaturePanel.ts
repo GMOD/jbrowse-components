@@ -24,12 +24,10 @@ export interface FeaturePanelSelector extends TrackSelectorFields {
  * appears after the built-in sections, in registration order among other
  * plugins' panels.
  *
- * Prefer this to calling `addToExtensionPoint('Core-extraFeaturePanel', ...)`
- * directly. The point fires for every feature detail widget, so a hand-written
- * callback both appends to the accumulated array and re-derives its own
- * scoping; forgetting to spread the array drops every other plugin's panel, and
- * scoping by `model.trackId ===` stops applying as soon as the user copies the
- * track.
+ * Prefer this to calling `contributeToExtensionPoint` directly: the point fires
+ * for every feature detail widget, so a hand-written callback has to re-derive
+ * the scoping, and scoping by `model.trackId ===` stops applying as soon as the
+ * user copies the track.
  */
 export function addFeaturePanel(
   pluginManager: PluginManager,
@@ -41,12 +39,10 @@ export function addFeaturePanel(
     panel: ComponentType<FeaturePanelProps>
   },
 ) {
-  pluginManager.addToExtensionPoint(
-    'Core-extraFeaturePanel',
-    (panels, props) =>
-      selectorMatchesModel(select, props.model) &&
-      (select?.where === undefined || select.where(props))
-        ? [...panels, panel]
-        : panels,
+  pluginManager.contributeToExtensionPoint('Core-extraFeaturePanel', props =>
+    selectorMatchesModel(select, props.model) &&
+    (select?.where === undefined || select.where(props))
+      ? panel
+      : undefined,
   )
 }

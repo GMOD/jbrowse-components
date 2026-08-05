@@ -6,7 +6,9 @@ guide_category: Core concepts
 
 **TL;DR:** Extension points are named callback chains. A producer fires one with
 `evaluateExtensionPoint`; plugins register callbacks with `addToExtensionPoint`,
-each receiving the previous callback's return value.
+each receiving the previous callback's return value. Points that accumulate a
+list take `contributeToExtensionPoint` instead, where a callback returns only
+its own entries.
 
 ## Using extension points
 
@@ -89,11 +91,17 @@ pluginManager.evaluateAsyncExtensionPoint(extensionPointName, args, props)
 pluginManager.addToExtensionPoint(extensionPointName, args => {
   return newArgs // passed as args to the next callback in the chain
 })
+
+// points whose args are an array take contributions instead, and never hand
+// you the array — see "Accumulating points" below
+pluginManager.contributeToExtensionPoint(extensionPointName, props => {
+  return myEntry // or [myEntry, ...], or undefined to contribute nothing
+})
 ```
 
-`args` are accumulated (each callback's return value becomes the next callback's
-`args`); `props` is passed through unchanged. `addToExtensionPoint` creates the
-point if it doesn't exist yet.
+For `addToExtensionPoint`, `args` are accumulated: each callback's return value
+becomes the next callback's `args`. `props` is passed through unchanged by both.
+Either one creates the point if it doesn't exist yet.
 
 ## Extension point listing
 
@@ -108,6 +116,62 @@ only the last plugin to register is visible. The names don't carry this:
 `DotplotView-OverlaySVGComponent` accumulates and
 `DotplotView-OverlayHTMLComponent` does not. A blank shape means the point isn't
 in `ExtensionPointRegistry` yet.
+
+### Accumulating points
+
+Register on a `list` point with **`contributeToExtensionPoint`**, not
+`addToExtensionPoint`. Your callback receives the props and returns what it
+wants to add — one entry, an array of them, or `undefined` to add nothing. The
+GC content plugin adding an item to the reference sequence track's menu:
+
+<!-- include: plugins/gccontent/src/extraTrackMenuItems.ts -->
+
+```typescript
+import { readConfObject } from '@jbrowse/core/configuration'
+import { addExtraTrackMenuItems } from '@jbrowse/core/ui/buildExtraTrackMenuItems'
+import { addAndShowTrack, isSessionWithAddTracks } from '@jbrowse/core/util'
+import { getConfAssemblyNames } from '@jbrowse/core/util/tracks'
+
+import { makeGCContentTrackConf } from './makeGCContentTrackConf.ts'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+
+/**
+ * Adds an "Add GC content track" item to the reference sequence track's menu in
+ * the hierarchical track selector (where there's no open display to host the
+ * action). Uses the shared Core-extraTrackMenuItems extension point so the
+ * track-selector code stays decoupled from this plugin.
+ */
+export default function GCContentExtraTrackMenuItemsF(
+  pluginManager: PluginManager,
+) {
+  addExtraTrackMenuItems(pluginManager, ({ session, config, view }) =>
+    readConfObject(config, 'type') === 'ReferenceSequenceTrack' &&
+    isSessionWithAddTracks(session)
+      ? {
+          label: 'Add GC content track',
+          onClick: () => {
+            const conf = makeGCContentTrackConf({
+              assemblyNames: getConfAssemblyNames(config),
+              sequenceAdapter: readConfObject(config, 'adapter'),
+              gcMode: 'content',
+            })
+            addAndShowTrack(session, conf, view)
+          },
+        }
+      : undefined,
+  )
+}
+```
+
+It is never handed the array, and that is deliberate: the concatenation happens
+once inside the plugin manager, so no plugin can write the `[MyEntry]` that
+drops every other plugin's entries. That mistake used to be easy to make and
+impossible to notice, because with one plugin registered there is nothing to
+drop.
+
+`addToExtensionPoint` is for the points that thread a single value, and passing
+it a `list` point is a type error naming the method to use instead.
 
 For `list` points that accumulate rendered elements, register with
 `addExtensionElement` rather than by hand, so the array spread and the React
@@ -389,22 +453,17 @@ function ExtraAboutPanel() {
   return <BaseCard title="More info">{/* your content */}</BaseCard>
 }
 
-pluginManager.addToExtensionPoint(
+pluginManager.contributeToExtensionPoint(
   'Core-extraAboutPanel',
-  (panels, { config }) => {
-    return config.trackId === 'volvox_sv_test'
-      ? [...panels, ExtraAboutPanel]
-      : panels
-  },
+  ({ config }) =>
+    config.trackId === 'volvox_sv_test' ? ExtraAboutPanel : undefined,
 )
 ```
 
-Two things that a single-component version of this gets wrong. Dropping the
-spread discards every other plugin's panel — the same trap
-`Core-extraFeaturePanel` has, which is why that point has the `addFeaturePanel`
-helper and this one does not. And declaring the component inside the callback
-hands React a new element type on each evaluation; declare it at module scope as
-above. Each panel is rendered inside a `<Suspense>`, so `React.lazy` is fine.
+Declare the component at module scope as above. Returning one declared inside
+the callback hands React a new element type on each evaluation, so the panel
+remounts and loses whatever state it held. Each panel renders inside a
+`<Suspense>`, so `React.lazy` is fine.
 
 Unlike `Core-extraFeaturePanel`, this point does not scope itself for you: the
 dialog fires it for whatever track was opened, so a callback that returns
@@ -648,10 +707,11 @@ the widget was open; `trackId` and `trackType` stay defined either way. Derive
 the session with `getSession(model)` if you need it.
 
 If you fire this point yourself, or need a panel that decides per render, the
-underlying contract is an accumulating array: `args` is
-`React.ComponentType<FeaturePanelProps>[]`, empty by default, and each callback
-appends to it and returns it. Dropping the spread removes every other plugin's
-panel, which is the main reason to prefer the helper.
+underlying contract is an accumulating array — `args` is
+`React.ComponentType<FeaturePanelProps>[]`, empty by default — registered on
+with [`contributeToExtensionPoint`](#accumulating-points). The helper is still
+the better default: it does the track scoping, which nothing else can do for
+you.
 
 ### Core-preProcessTrackConfig
 
@@ -788,44 +848,37 @@ multi-wiggle track, is the whole registration:
 
 ```typescript
 export default function CreateMultiWiggleExtensionF(pm: PluginManager) {
-  pm.addToExtensionPoint(
+  pm.contributeToExtensionPoint(
     'TrackSelector-multiTrackMenuItems',
-    (items, props) => {
-      const { session } = props
-      return [
-        ...items,
-        ...(isSessionWithAddTracks(session)
-          ? [
-              {
-                label: 'Create multi-wiggle track...',
-                onClick: (model: HierarchicalTrackSelectorModel) => {
-                  getSession(model).queueDialog(handleClose => [
-                    ConfirmDialog,
-                    {
-                      tracks: model.selection,
-                      onClose: (result?: MakeTrackArg) => {
-                        if (result) {
-                          makeTrack({ model, arg: result })
-                        }
-                        handleClose()
-                      },
-                    },
-                  ])
+    ({ session }) =>
+      // contributing nothing is `undefined`, not an empty array to spread into
+      // someone else's — the accumulated items are not this callback's to see
+      isSessionWithAddTracks(session)
+        ? {
+            label: 'Create multi-wiggle track...',
+            onClick: (model: HierarchicalTrackSelectorModel) => {
+              getSession(model).queueDialog(handleClose => [
+                ConfirmDialog,
+                {
+                  tracks: model.selection,
+                  onClose: (result?: MakeTrackArg) => {
+                    if (result) {
+                      makeTrack({ model, arg: result })
+                    }
+                    handleClose()
+                  },
                 },
-              },
-            ]
-          : []),
-      ]
-    },
+              ])
+            },
+          }
+        : undefined,
   )
 }
 ```
 
-Note the second spread. A plugin whose item does not apply contributes `[]`
-rather than returning early, so the accumulated items pass through either way —
-returning `items` unchanged and returning `[...items, ...[]]` are the same
-thing, and writing it as one expression removes the branch where someone forgets
-the first spread.
+Note what a plugin whose item does not apply returns: `undefined`, meaning
+"nothing from me". There is no accumulated array in scope to pass through, so
+the not-applicable branch cannot accidentally return the wrong thing.
 
 ### TrackSelector-folderDialog
 
@@ -936,7 +989,8 @@ scalebar:
 ```
 
 Render custom overlays inside the overview scalebar, e.g. bookmark highlights.
-Append to the array and return it.
+Contribute the node with `addExtensionElement`, or `contributeToExtensionPoint`
+if you need to build it yourself.
 
 ### LinearGenomeView-searchResultSelected
 
@@ -1034,21 +1088,13 @@ Example: adding a custom synteny option that fetches data from a server
 ```typescript
 import type { DotplotImportFormSyntenyOption } from '@jbrowse/plugin-dotplot-view'
 
-pluginManager.addToExtensionPoint(
+pluginManager.contributeToExtensionPoint(
   'DotplotView-ImportFormSyntenyOptions',
-  (
-    options: DotplotImportFormSyntenyOption[],
-    { model, assembly1, assembly2 },
-  ) => {
-    return [
-      ...options,
-      {
-        value: 'my-server-synteny',
-        label: 'Load from my server',
-        ReactComponent: MySyntenyServerComponent,
-      },
-    ]
-  },
+  ({ model, assembly1, assembly2 }) => ({
+    value: 'my-server-synteny',
+    label: 'Load from my server',
+    ReactComponent: MySyntenyServerComponent,
+  }),
 )
 ```
 
@@ -1144,9 +1190,10 @@ adapter with the assemblies the wrong way round. And `StandardFormatSelector` is
 exported from `@jbrowse/synteny-core`, so a plugin format gets the same
 file/swap UI as the built-ins rather than reimplementing it.
 
-Register the option by appending it to the array the point hands you:
-`pluginManager.addToExtensionPoint('DotplotView-SyntenyFileFormats', formats => [...formats, myFormat])`.
-Dropping the spread removes every built-in format from the form.
+Register it with
+`pluginManager.contributeToExtensionPoint('DotplotView-SyntenyFileFormats', () => myFormat)`.
+The built-in formats are the point's initial value and are always kept; a
+contribution is added after them.
 
 ### LinearSyntenyView-SyntenyFileFormats
 
@@ -1223,19 +1270,16 @@ loaded yet and cannot extend this screen.
 itself:
 
 ```typescript
-pluginManager.addToExtensionPoint(
+pluginManager.contributeToExtensionPoint(
   'Desktop-StartScreenMenuItems',
-  (items, { setPluginManager, loadPluginManager }) => [
-    ...items,
-    {
-      label: 'Open my thing...',
-      onClick: () => {
-        loadPluginManager(myConfigPath)
-          .then(setPluginManager)
-          .catch(console.error)
-      },
+  ({ setPluginManager, loadPluginManager }) => ({
+    label: 'Open my thing...',
+    onClick: () => {
+      loadPluginManager(myConfigPath)
+        .then(setPluginManager)
+        .catch(console.error)
     },
-  ],
+  }),
 )
 ```
 

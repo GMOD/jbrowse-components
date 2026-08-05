@@ -16,23 +16,20 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 export default function GCContentExtraTrackMenuItemsF(
   pluginManager: PluginManager,
 ) {
-  addExtraTrackMenuItems(pluginManager, (items, { session, config, view }) =>
+  addExtraTrackMenuItems(pluginManager, ({ session, config, view }) =>
     readConfObject(config, 'type') === 'ReferenceSequenceTrack' &&
     isSessionWithAddTracks(session)
-      ? [
-          ...items,
-          {
-            label: 'Add GC content track',
-            onClick: () => {
-              const conf = makeGCContentTrackConf({
-                assemblyNames: getConfAssemblyNames(config),
-                sequenceAdapter: readConfObject(config, 'adapter'),
-                gcMode: 'content',
-              })
-              addAndShowTrack(session, conf, view)
-            },
+      ? {
+          label: 'Add GC content track',
+          onClick: () => {
+            const conf = makeGCContentTrackConf({
+              assemblyNames: getConfAssemblyNames(config),
+              sequenceAdapter: readConfObject(config, 'adapter'),
+              gcMode: 'content',
+            })
+            addAndShowTrack(session, conf, view)
           },
-        ]
-      : items,
+        }
+      : undefined,
   )
 }

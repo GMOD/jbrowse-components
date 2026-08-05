@@ -1,5 +1,6 @@
 import type PluginManager from '../PluginManager.ts'
 import type {
+  ExtensionPointEntry,
   ExtensionPointName,
   ExtensionPointProps,
   ExtensionPointRegistry,
@@ -22,11 +23,9 @@ export type ElementExtensionPointName = {
  * Render `component` into an overlay extension point, passing it the point's
  * props.
  *
- * Prefer this to calling `addToExtensionPoint` directly. The hand-written form
- * is `(rest, props) => [...rest, <C key="..." {...props} />]` at every call
- * site, where dropping the spread silently removes every other plugin's overlay
- * and forgetting the `key` produces a React warning that points at framework
- * code rather than at the plugin.
+ * Prefer this to contributing the element yourself: it fixes the React `key` at
+ * registration time, and forgetting that one produces a warning pointing at
+ * framework code rather than at the plugin.
  */
 export function addExtensionElement<N extends ElementExtensionPointName>(
   pluginManager: PluginManager,
@@ -39,11 +38,15 @@ export function addExtensionElement<N extends ElementExtensionPointName>(
   const key = `${name}-${Component.displayName ?? Component.name}-${
     pluginManager.extensionPoints.get(name)?.length ?? 0
   }`
-  // the constraint says this point's args are ReactNode[] and its props are the
-  // component's props, but TS cannot see either through the generic key, so
-  // both are restated (the same limitation PluggableComponent works around)
-  pluginManager.addToExtensionPoint<ReactNode[]>(name, (elements, props) => [
-    ...elements,
-    <Component key={key} {...(props as ExtensionPointProps<N>)} />,
-  ])
+  // ElementExtensionPointName constrains this point's entry to a ReactNode, but
+  // neither compiler resolves ExtensionPointEntry<N> through the generic key.
+  // tsc7 rejects the element without the assertion; eslint's TS6 service thinks
+  // the assertion is redundant. Same split as SessionTracks.ts.
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- tsc7 needs it
+  /* oxlint-disable typescript/no-unnecessary-type-assertion */
+  pluginManager.contributeToExtensionPoint(
+    name,
+    props => (<Component key={key} {...props} />) as ExtensionPointEntry<N>,
+  )
+  /* oxlint-enable typescript/no-unnecessary-type-assertion */
 }

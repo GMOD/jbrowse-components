@@ -49,35 +49,30 @@ function makeTrack({
 
 // #region register
 export default function CreateMultiWiggleExtensionF(pm: PluginManager) {
-  pm.addToExtensionPoint(
+  pm.contributeToExtensionPoint(
     'TrackSelector-multiTrackMenuItems',
-    (items, props) => {
-      const { session } = props
-      return [
-        ...items,
-        ...(isSessionWithAddTracks(session)
-          ? [
-              {
-                label: 'Create multi-wiggle track...',
-                onClick: (model: HierarchicalTrackSelectorModel) => {
-                  getSession(model).queueDialog(handleClose => [
-                    ConfirmDialog,
-                    {
-                      tracks: model.selection,
-                      onClose: (result?: MakeTrackArg) => {
-                        if (result) {
-                          makeTrack({ model, arg: result })
-                        }
-                        handleClose()
-                      },
-                    },
-                  ])
+    ({ session }) =>
+      // contributing nothing is `undefined`, not an empty array to spread into
+      // someone else's — the accumulated items are not this callback's to see
+      isSessionWithAddTracks(session)
+        ? {
+            label: 'Create multi-wiggle track...',
+            onClick: (model: HierarchicalTrackSelectorModel) => {
+              getSession(model).queueDialog(handleClose => [
+                ConfirmDialog,
+                {
+                  tracks: model.selection,
+                  onClose: (result?: MakeTrackArg) => {
+                    if (result) {
+                      makeTrack({ model, arg: result })
+                    }
+                    handleClose()
+                  },
                 },
-              },
-            ]
-          : []),
-      ]
-    },
+              ])
+            },
+          }
+        : undefined,
   )
 }
 // #endregion
