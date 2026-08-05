@@ -3544,6 +3544,7 @@ export default function stateModelFactory(
         }
       })
       .views(() => ({
+        // #region byteGate
         /**
          * #getter
          * Opt into RegionTooLargeMixin's byte gate: `fetchRegions` measures the
@@ -3552,6 +3553,7 @@ export default function stateModelFactory(
         get byteGateEnabled() {
           return true
         },
+        // #endregion
       }))
       .views(self => ({
         /**

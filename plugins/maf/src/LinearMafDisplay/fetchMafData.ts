@@ -103,6 +103,7 @@ async function fetchMafRegions<R extends SampleSet>(
   ) => Promise<R>,
   commit: (results: { displayedRegionIndex: number; result: R }[]) => void,
 ) {
+  // #region rawFetchRegions
   await self.fetchRegions(needed, async (ctx: FetchContext) => {
     // The CDS-frame annotation overlay (when configured) fetches in the same
     // stop-token-guarded pass as the main data so the two share staleness +
@@ -123,6 +124,7 @@ async function fetchMafRegions<R extends SampleSet>(
     }
     commit(results)
   })
+  // #endregion
 }
 
 /**

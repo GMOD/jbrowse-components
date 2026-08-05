@@ -42,12 +42,14 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
       get view() {
         return getContainingView(self) as LinearGenomeViewModel
       },
+      // #region rpcProps
       // fetch inputs watched by SettingsInvalidate; any change refetches. Put
       // settings that change what the worker computes here; never scroll/zoom
       // (those change every frame) or the fetch results themselves.
       rpcProps() {
         return { scoreColumn: getConf(self, 'scoreColumn') }
       },
+      // #endregion
       // recomputed cheaply every frame without fetching; carries the canvas
       // dimensions (required) plus whatever the draw path reads
       get renderState(): ScoreRenderState {

@@ -80,9 +80,10 @@ async fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
   const sessionId = getRpcSessionId(self)
   const { rpcManager } = getSession(self)
   await fetchEachRegion(self, needed, {
+    // rpcManager.call injects sessionId from its first argument, so it does not
+    // go in the args object — a registered method's args are Omit<…,'sessionId'>
     call: (region, ctx, displayedRegionIndex) =>
       rpcManager.call(sessionId, 'MyRpcMethod', {
-        sessionId,
         adapterConfig,
         ...self.rpcProps(),
         region,
@@ -107,45 +108,41 @@ one pass more efficiently, e.g. BigWig coalescing adjacent blocks).
 Drop to `fetchRegions` directly only when a display's fetch genuinely diverges
 from one-call-per-region: canvas prunes and folds a too-large result, MAF
 fetches summary vs detail, alignments builds a chain payload. You then own both
-`ctx.isStale()` guards by hand:
+`ctx.isStale()` guards by hand. MAF's is a worked case — it runs a second RPC
+concurrently under the same stop token, and takes one staleness guard around the
+whole batch rather than per region:
+
+<!-- include: plugins/maf/src/LinearMafDisplay/fetchMafData.ts#rawFetchRegions -->
 
 ```ts
-import { getSession, isAlive } from '@jbrowse/core/util'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import type { FetchContext } from '@jbrowse/plugin-linear-genome-view'
-
-fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
-  const view = getContainingView(self) as LinearGenomeViewModel
-  const sessionId = getRpcSessionId(self)
-  const { rpcManager } = getSession(self)
-
-  void self.fetchRegions(needed, async (ctx: FetchContext) => {
-    await Promise.all(
-      needed.map(async ({ region, displayedRegionIndex }) => {
-        const result = await rpcManager.call(sessionId, 'MyRpcMethod', {
-          sessionId,
-          adapterConfig: self.adapterConfig,
-          ...self.rpcProps(),
-          region,
-          bpPerPx: view.bpPerPx,
-          stopToken: ctx.stopToken,
-          statusCallback: (msg: string) => {
-            if (isAlive(self)) self.setStatusMessage(msg)
-          },
-        })
-
-        if (!ctx.isStale()) {
-          self.setRpcData(displayedRegionIndex, result)
-        }
-      }),
-    )
-  })
-},
+await self.fetchRegions(needed, async (ctx: FetchContext) => {
+  // The CDS-frame annotation overlay (when configured) fetches in the same
+  // stop-token-guarded pass as the main data so the two share staleness +
+  // loadedRegions book-keeping; the two RPCs run concurrently.
+  const [results] = await Promise.all([
+    callEachRegion(needed, ctx, call),
+    fetchAnnotationData(self, needed, ctx),
+  ])
+  // One guard around the whole batch, not per region as in `fetchEachRegion`:
+  // `setSamples` is a cross-region decision over `results`, so a partial
+  // commit would publish a sample set derived from a superseded viewport.
+  if (ctx.isStale()) {
+    return
+  }
+  const sampleSet = unionSampleSets(results)
+  if (sampleSet) {
+    self.setSamples(sampleSet)
+  }
+  commit(results)
+})
 ```
 
 `ctx.isStale()` returns `true` if the user panned/zoomed or settings changed
 while the fetch was in flight. Always check it before writing results, since
-stale writes trigger unnecessary re-renders.
+stale writes trigger unnecessary re-renders. Where you put the check is the
+decision `fetchEachRegion` makes for you: per region, results commit as they
+arrive; around the batch, as above, a cross-region decision can't be made from a
+half-superseded set.
 
 ## rpcProps: the cache key
 
@@ -154,16 +151,17 @@ of those values changes, it calls `clearAllRpcData()` and restarts the fetch
 cycle. This is how config changes (color scheme, filter settings, etc.) trigger
 a full refetch.
 
+It goes in a `.views()` block, and holds only the settings the worker reads:
+
+<!-- include: example-plugins/score-example/src/LinearScoreDisplay/model.ts#rpcProps -->
+
 ```ts
-// Inside .views(self => ({ ... }))
+// fetch inputs watched by SettingsInvalidate; any change refetches. Put
+// settings that change what the worker computes here; never scroll/zoom
+// (those change every frame) or the fetch results themselves.
 rpcProps() {
-  return {
-    // Include every setting that changes what the worker computes.
-    // Anything read here becomes a dependency of SettingsInvalidate.
-    colorScheme: self.colorScheme,
-    maxFeatures: readConfObject(self.configuration, 'maxFeatures'),
-  }
-}
+  return { scoreColumn: getConf(self, 'scoreColumn') }
+},
 ```
 
 **Do not include** values that change every frame (scroll position, zoom level).
@@ -186,10 +184,17 @@ Displays that fetch potentially large files can ask the adapter how many bytes a
 region would download, and hold off the fetch when that is over budget. Opt in
 with one getter:
 
+<!-- include: plugins/alignments/src/LinearAlignmentsDisplay/model.ts#byteGate -->
+
 ```ts
+/**
+ * #getter
+ * Opt into RegionTooLargeMixin's byte gate: `fetchRegions` measures the
+ * region set with `CoreGetRegionByteEstimate` before downloading reads.
+ */
 get byteGateEnabled() {
   return true
-}
+},
 ```
 
 `fetchRegions` then calls `CoreGetRegionByteEstimate` before your work callback.
@@ -238,7 +243,9 @@ a reactive dependency.
 
 `MultiRegionDisplayMixin` supplies only the fetch/render lifecycle. Compose it
 alongside `BaseDisplay` and `TrackHeightMixin`, which supply the display
-identity and `height` respectively:
+identity and `height` respectively. This one is elided rather than generated;
+for the same model whole and compiling, read `LinearScoreDisplay` in
+[](/docs/developer_guides/plotting_features):
 
 ```ts
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
