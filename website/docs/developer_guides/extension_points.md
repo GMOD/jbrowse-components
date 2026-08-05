@@ -307,6 +307,49 @@ export interface AboutPanelProps {
 }
 ```
 
+All three are declared together, and the differences between them are worth
+reading side by side — one accumulates an array, the other two thread a single
+value:
+
+<!-- include: packages/product-core/src/ui/util.ts#aboutRegistry -->
+
+```typescript
+// Augmentation lives here (not in the consuming components) because
+// AboutDialogContents imports from this module, so the registry entries are
+// visible wherever these points are evaluated — including getAboutDialogConfig
+// below, which then needs no cast on the Core-customizeAbout result.
+declare module '@jbrowse/core/PluginManager' {
+  interface ExtensionPointRegistry {
+    // accumulates an array of panels — every callback appends its own component
+    // and returns the array, so panels from multiple plugins compose instead of
+    // clobbering one another. Each renders its own BaseCard chrome
+    'Core-extraAboutPanel': {
+      args: ComponentType<AboutPanelProps>[]
+      result: ComponentType<AboutPanelProps>[]
+      props: AboutPanelProps
+    }
+    // singular: one dialog body renders, so this stays a single-component fold —
+    // return your own component to replace/wrap the default, or the default to
+    // opt out. Fired via PluggableComponent's `name` prop (no string-literal
+    // call site), so the docs tag lives here at the contract.
+    /** #extensionPoint Core-replaceAbout | sync | Replace or wrap a track's About dialog body */
+    'Core-replaceAbout': {
+      args: ComponentType<AboutPanelProps>
+      result: ComponentType<AboutPanelProps>
+      props: AboutPanelProps
+    }
+    // data transform: mutate the config object shown in the dialog
+    'Core-customizeAbout': {
+      args: { config: Record<string, unknown> }
+      result: {
+        config: { metadata?: Record<string, unknown>; [key: string]: unknown }
+      }
+      props: AboutPanelProps
+    }
+  }
+}
+```
+
 Example: returns a new about track dialog for a particular track
 
 ```typescript
@@ -324,32 +367,49 @@ pluginManager.addToExtensionPoint(
 
 type: synchronous
 
-Adds an extra panel to the "About this track" dialog, rendered below the
-built-in Configuration/Metadata cards. Return a React component that renders its
-own card chrome (use `BaseCard` for a titled section).
+Adds extra panels to the "About this track" dialog, rendered below the built-in
+Configuration/Metadata cards. This is a `list` point, like
+[`Core-extraFeaturePanel`](#core-extrafeaturepanel): `args` is an accumulating
+array of components, empty by default, and every plugin's panel is kept in
+registration order.
 
-- `args` - a `ReactComponent`, by default a no-op that renders nothing
+- `args` - `ComponentType<AboutPanelProps>[]`, `[]` by default
 - `props` - [`AboutPanelProps`](#core-replaceabout), also passed to your
   component
 
-Return value: the React component to render. It receives the `props` above.
+Return value: the array, with your component appended. Each panel renders its
+own card chrome, so use `BaseCard` for a titled section.
 
 Example: adds an extra about dialog panel for a particular track ID
 
 ```tsx
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 
+function ExtraAboutPanel() {
+  return <BaseCard title="More info">{/* your content */}</BaseCard>
+}
+
 pluginManager.addToExtensionPoint(
   'Core-extraAboutPanel',
-  (DefaultPanel, { config }) => {
-    return config.trackId !== 'volvox_sv_test'
-      ? DefaultPanel
-      : function ExtraAboutPanel({ config }) {
-          return <BaseCard title="More info">{/* your content */}</BaseCard>
-        }
+  (panels, { config }) => {
+    return config.trackId === 'volvox_sv_test'
+      ? [...panels, ExtraAboutPanel]
+      : panels
   },
 )
 ```
+
+Two things that a single-component version of this gets wrong. Dropping the
+spread discards every other plugin's panel — the same trap
+`Core-extraFeaturePanel` has, which is why that point has the `addFeaturePanel`
+helper and this one does not. And declaring the component inside the callback
+hands React a new element type on each evaluation; declare it at module scope as
+above. Each panel is rendered inside a `<Suspense>`, so `React.lazy` is fine.
+
+Unlike `Core-extraFeaturePanel`, this point does not scope itself for you: the
+dialog fires it for whatever track was opened, so a callback that returns
+`[...panels, MyPanel]` unconditionally adds its panel to every track's About
+dialog. Read `props.config` to decide, as above.
 
 ### Core-customizeAbout
 

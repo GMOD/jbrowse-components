@@ -22,6 +22,7 @@ export interface AboutPanelProps {
 }
 // #endregion
 
+// #region aboutRegistry
 // Augmentation lives here (not in the consuming components) because
 // AboutDialogContents imports from this module, so the registry entries are
 // visible wherever these points are evaluated — including getAboutDialogConfig
@@ -56,6 +57,7 @@ declare module '@jbrowse/core/PluginManager' {
     }
   }
 }
+// #endregion
 
 /**
  * Read a single config slot from either a live MST config or a plain snapshot
