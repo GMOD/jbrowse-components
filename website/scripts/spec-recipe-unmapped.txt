@@ -22,7 +22,6 @@ renderingMode
 showColorLegend
 showHighlightChips
 showIntraviewLinks
-showLabels
 showLegend
 showResolutionControls
 showRowSeparators

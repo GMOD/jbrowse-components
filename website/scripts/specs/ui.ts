@@ -306,8 +306,9 @@ export const uiSpecs: ScreenshotSpec[] = [
               trackId: 'ncbi_refseq_109_hg38',
               type: 'LinearBasicDisplay',
               height: 140,
-              showLabels: 'on',
-              showDescriptions: false,
+              // 'on' + showDescriptions:false is the retired pair;
+              // migrateBasicConfigSnapshot folds exactly that into 'name'
+              showLabels: 'name',
               showOnlyGenes: true,
               heightMode: 'fit',
             },
@@ -361,8 +362,9 @@ export const uiSpecs: ScreenshotSpec[] = [
               trackId: 'ncbi_refseq_109_hg38',
               type: 'LinearBasicDisplay',
               height: 140,
-              showLabels: 'on',
-              showDescriptions: false,
+              // 'on' + showDescriptions:false is the retired pair;
+              // migrateBasicConfigSnapshot folds exactly that into 'name'
+              showLabels: 'name',
               showOnlyGenes: true,
               heightMode: 'fit',
             },
@@ -480,8 +482,9 @@ export const uiSpecs: ScreenshotSpec[] = [
               trackId: 'ncbi_refseq_109_hg38',
               type: 'LinearBasicDisplay',
               height: 140,
-              showLabels: 'on',
-              showDescriptions: false,
+              // 'on' + showDescriptions:false is the retired pair;
+              // migrateBasicConfigSnapshot folds exactly that into 'name'
+              showLabels: 'name',
               showOnlyGenes: true,
             },
           ],
@@ -576,8 +579,9 @@ export const uiSpecs: ScreenshotSpec[] = [
               // in this file.
               heightMode: 'grow',
               geneGlyphMode: 'longestCoding',
-              showLabels: 'on',
-              showDescriptions: false,
+              // 'on' + showDescriptions:false is the retired pair;
+              // migrateBasicConfigSnapshot folds exactly that into 'name'
+              showLabels: 'name',
               showOnlyGenes: true,
             },
             ...['HG00113', 'HG00096', 'HG00097'].map(s => ({
@@ -1992,9 +1996,14 @@ export const uiSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'ncbi_gff_hg19',
-          // descriptions add noise on the context gene track; names suffice here
           type: 'LinearBasicDisplay',
-          showDescriptions: false,
+          // was `showDescriptions: false`, meaning "names suffice here". That
+          // pairing has no home on the unified labels enum, so
+          // migrateBasicConfigSnapshot resolved it to 'auto' — descriptions do
+          // come back at low density. Written as what it actually resolved to;
+          // pinning 'name' would honor the original intent but change the
+          // figure, so that is a call for whoever regenerates it.
+          showLabels: 'auto',
           height: 120,
         },
         {
@@ -2086,7 +2095,8 @@ export const uiSpecs: ScreenshotSpec[] = [
         {
           trackId: 'ncbi_gff_hg19',
           type: 'LinearBasicDisplay',
-          showDescriptions: false,
+          // as above: the retired `showDescriptions: false` resolved to 'auto'
+          showLabels: 'auto',
           // the HOXA genes stack three deep here, and at 100 the third row's
           // labels were cut in half by the lane's own bottom edge
           height: 140,
