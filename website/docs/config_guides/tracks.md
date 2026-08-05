@@ -82,10 +82,11 @@ you. You don't have to know or write the display's name:
 }
 ```
 
-JBrowse applies each setting to the display that uses it. If a track can be
-drawn more than one way, each setting lands where it fits, e.g. a `VariantTrack`
-colors its linear display with `color` and its circular (chord) display with
-`strokeColor`, both in the same object:
+A setting goes to every display whose config schema has a slot by that name. Two
+displays drawn differently usually name their slots differently, so in practice
+each setting lands on the display it belongs to: a `VariantTrack` colors its
+linear display with `color` and its circular (chord) display with `strokeColor`,
+both in the same object.
 
 ```json addtrack
 {
@@ -101,15 +102,17 @@ colors its linear display with `color` and its circular (chord) display with
 }
 ```
 
-A setting that nothing on the track uses is ignored, with a console warning so
-typos show up.
+Where a name is shared, though, the setting reaches all of them: `height` in
+`displayDefaults` sets the height of every display the track has. A setting no
+display defines is ignored, with a console warning so typos show up.
 
 ### Full array
 
 For precise control (giving two displays different values for the same setting,
 choosing which display is the default, or setting an explicit `displayId`), pass
-`displays` as an array. Each entry names a display `type`. `displayId` is
-optional and defaults to `{trackId}-{displayType}`.
+`displays` as an array. Each entry names a display `type`; `displayId` is
+optional and defaults to `{trackId}-{displayType}`. The two forms combine, and
+an explicit entry wins over `displayDefaults` for any setting it names itself.
 
 ```json
 {
@@ -119,12 +122,11 @@ optional and defaults to `{trackId}-{displayType}`.
   "assemblyNames": ["hg19"],
   "adapter": {
     "type": "BigBedAdapter",
-    "bigBedLocation": { "uri": "https://jbrowse.org/genomes/hg19/repeats.bb" }
+    "uri": "https://jbrowse.org/genomes/hg19/repeats.bb"
   },
   "displays": [
     {
       "type": "LinearBasicDisplay",
-      "displayId": "repeats_hg19-LinearBasicDisplay",
       "height": 200,
       "color": "jexl:feature.strand==1?'blue':'red'"
     }

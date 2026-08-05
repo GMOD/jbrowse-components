@@ -8,9 +8,8 @@ guide_category: Advanced topics
 **TL;DR:** most plugin logic is covered by fast Jest unit tests (adapters,
 models) and jsdom render tests (components); browser tests drive the built app.
 
-The plugin templates
-([Creating a simple plugin](/docs/developer_guides/simple_plugin)) ship with
-Jest preconfigured, so `pnpm test` works out of the box.
+The [plugin templates](/docs/developer_guides/simple_plugin) ship with Jest
+preconfigured, so `pnpm test` works out of the box.
 
 ## Adapter tests
 
@@ -137,6 +136,6 @@ Run with `pnpm test:browser` (builds `@jbrowse/web` first) or
 
 ## See also
 
-- [Creating a simple plugin](/docs/developer_guides/simple_plugin)
-- [Creating a data adapter](/docs/developer_guides/creating_adapter)
-- [Creating a widget](/docs/developer_guides/creating_widget)
+- [](/docs/developer_guides/simple_plugin)
+- [](/docs/developer_guides/creating_adapter)
+- [](/docs/developer_guides/creating_widget)

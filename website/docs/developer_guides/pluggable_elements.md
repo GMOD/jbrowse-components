@@ -4,24 +4,19 @@ description: Overview of all element types a plugin can register
 guide_category: Getting started
 ---
 
-A plugin is an independently distributed package that plugs into a JBrowse
-application. It's a class extending `@jbrowse/core/Plugin` with `install` and
-`configure` methods the application calls.
+**TL;DR:** a tour of every pluggable element type a plugin can register —
+adapters, tracks, views, displays, widgets, RPC methods, add-track workflows,
+and extension points — and which guide covers each.
 
-The class is distributed as an ESM module (or UMD bundle for legacy
-compatibility) loaded at runtime. **Only one version of a given plugin can be
-loaded on a page, even if multiple products use it.**
-
+A plugin's `install` method adds these elements to the host application, while
 `configure` typically sets up
 [mobx autoruns](https://mobx.js.org/refguide/autorun.html) that react to
-application state. `install` adds "pluggable elements" (new views, tracks,
-displays, and so on) to the host application.
+application state ([](/docs/developer_guides/simple_plugin) covers the class
+itself). A plugin is loaded at runtime as an ESM module, or a UMD bundle for
+legacy compatibility, and **only one version of a given plugin can be loaded on
+a page, even if multiple products use it.**
 
-**TL;DR:** A tour of every pluggable element type a plugin can register:
-adapters, tracks, views, displays, widgets, RPC methods, add-track workflows,
-and extension points.
-
-Many plugins referenced below live in the
+Most elements referenced below live in the
 [JBrowse Github repo](https://github.com/gmod/jbrowse-components) as up-to-date
 examples.
 

@@ -5,14 +5,12 @@ description:
 guide_category: Plugins
 ---
 
-## What is an adapter
-
-An adapter is a class that fetches and parses your data and returns it in a
-format JBrowse understands.
-
 **TL;DR:** extend `BaseFeatureDataAdapter`, implement `getRefNames()` and
 `getFeatures()` (an rxjs stream of `SimpleFeature`s), and register the type in
 your plugin.
+
+An adapter is a class that fetches and parses your data and returns it in a
+format JBrowse understands.
 
 To display data from a new source with JBrowse's existing gene displays, write a
 custom adapter. For custom rendering, you'll also need a
@@ -189,8 +187,8 @@ async callback) to `observer.error()`.
 ## See also
 
 - [](/docs/developer_guides/creating_display)
-- [Creating a custom text search adapter](/docs/developer_guides/creating_text_search_adapter)
+- [](/docs/developer_guides/creating_text_search_adapter)
 - [](/docs/developer_guides/configuration_schema)
 - [](/docs/developer_guides/rpc_workers)
-- [Plugin dependencies and re-exports](/docs/developer_guides/imports_and_reexports)
+- [](/docs/developer_guides/imports_and_reexports)
 - [](/docs/developer_guides/pluggable_elements)

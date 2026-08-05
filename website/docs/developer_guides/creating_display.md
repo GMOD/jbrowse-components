@@ -116,4 +116,4 @@ In-tree references:
 ## See also
 
 - [](/docs/developer_guides/data_fetching)
-- [Adding SVG export to a display](/docs/developer_guides/svg_export)
+- [](/docs/developer_guides/svg_export)

@@ -283,9 +283,11 @@ a `VariantTrack` display can color SNVs green and everything else purple:
 ```
 
 Any slot with a `contextVariable` can take a jexl callback as its default value,
-including [custom jexl functions](/docs/developer_guides/pluggable_elements)
-your plugin registers. See the [jexl config guide](/docs/config_guides/jexl) for
-more.
+including custom jexl functions your plugin registers with
+`pluginManager.jexl.addFunction` (see
+[](/docs/developer_guides/no_build_plugin) for a worked example). The
+[jexl config guide](/docs/config_guides/jexl) covers the expression language
+itself.
 
 ## Configuration internals
 

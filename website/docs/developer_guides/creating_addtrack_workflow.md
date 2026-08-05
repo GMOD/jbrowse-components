@@ -54,6 +54,6 @@ export default class WigglePlugin extends Plugin {
 
 ## See also
 
-- [Creating custom connections](/docs/developer_guides/creating_connection)
+- [](/docs/developer_guides/creating_connection)
 - [](/docs/developer_guides/extension_points)
 - [](/docs/developer_guides/pluggable_elements)

@@ -119,10 +119,10 @@ with nowhere better to put a read puts it somewhere, and records how sure it was
 in the read's mapping quality.
 
 So the residue is separable from real coverage, and separating it is a display
-setting rather than a reprocessing step. Set **Color by → Mapping quality** on
-the pileup:
-
-<Figure caption="15 kb inside RHD in HG00113, which carries no copy of it. Top, the default read coloring: a sparse grey pileup that could be read as low coverage. Bottom, the same reads colored by mapping quality, where the ramp runs red at MAPQ 0 through to green at MAPQ 60. Almost every read in the frame is red, so the residue is not RHD coverage but reads the aligner could not confidently place." src="/img/multisv_rhd_mapq.png" />
+setting rather than a reprocessing step. Open HG00113's pileup inside the
+deleted span and set **Color by → Mapping quality**: the ramp runs red at MAPQ 0
+through to green at MAPQ 60, and reads the aligner could not confidently place
+come out red rather than sitting in the grey a thin real signal would.
 
 This is the general habit worth taking from the page rather than the specific
 locus. Residual coverage inside a called deletion is common wherever the deleted
@@ -142,28 +142,14 @@ feet, so both junctions are on screen at once rather than one at a time.
 For more on navigating it, see
 [Breakpoint split view](/docs/user_guides/sv_visualization#breakpoint-split-view).
 
-## Where to go next
-
-- The whole callset rather than one call: the
-  [SV inspector](/docs/user_guides/sv_inspector_view) pairs a filterable table
-  of every SV with a circular whole-genome overview, and takes this callset's
-  URL straight from the track's **About track** menu.
-- The same cohort's inheritance patterns: [](/docs/tutorials/analyze_trio)
-  follows phased genotypes and IBD blocks through a trio, and
-  [SV inheritance in a trio](/docs/user_guides/sv_visualization) reads the same
-  question off trio alignments.
-- The [Jupyter multi-sample variants example](/docs/jbrowse_jupyter) renders the
-  same per-sample and matrix displays from a VCF in a notebook.
-
 ## See also
 
-- [](/docs/user_guides/sv_visualization)
 - [](/docs/user_guides/sv_inspector_view)
+- [](/docs/user_guides/sv_visualization)
 - [Multi-sample variant displays](/docs/user_guides/multivariant_track)
 - [](/docs/user_guides/clustering)
 - [](/docs/tutorials/analyze_trio)
-- [](/docs/tutorials/dog10k_svs), the same reading on a canine panel, and
-  [](/docs/tutorials/population_cnv) for copy number across the same 1000
-  Genomes samples, where a deletion at another locus is read from k-mer depth
-  rather than from a callset
+- [](/docs/tutorials/dog10k_svs)
+- [](/docs/tutorials/population_cnv)
 - [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab)
+- [](/docs/jbrowse_jupyter)

@@ -36,13 +36,13 @@ A plugin is a class extending `Plugin` with `install()` and `configure()`
 methods that register pluggable elements against the `pluginManager`. The
 element-specific guides walk through each type:
 
-- [Creating custom view types](/docs/developer_guides/creating_view)
+- [](/docs/developer_guides/creating_view)
 - [](/docs/developer_guides/creating_display)
-- [Creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display)
-- [Creating custom adapters](/docs/developer_guides/creating_adapter)
-- [Creating a custom text search adapter](/docs/developer_guides/creating_text_search_adapter)
-- [Creating custom widgets](/docs/developer_guides/creating_widget)
-- [Creating custom connections](/docs/developer_guides/creating_connection)
+- [](/docs/developer_guides/creating_gpu_display)
+- [](/docs/developer_guides/creating_adapter)
+- [](/docs/developer_guides/creating_text_search_adapter)
+- [](/docs/developer_guides/creating_widget)
+- [](/docs/developer_guides/creating_connection)
 
 For plugins that don't need a build step (e.g. jexl callbacks or small behavior
 tweaks), see

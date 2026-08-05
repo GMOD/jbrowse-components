@@ -31,9 +31,13 @@ export interface DocListEntry {
   title: string
   description?: string
   url: string
-  // Category prefix of a "<Category> -> <Name>" sidebar_label (config/models
-  // pages), for the grouped index pages. Undefined for pages without one.
+  // The page's section, for the grouped/filtered index pages: the prefix of a
+  // "<Category> -> <Name>" sidebar_label (config/models pages), else the
+  // `guide_category` frontmatter (guide dirs). Undefined for pages with
+  // neither.
   category?: string
+  // page id relative to its dir ("creating_display"), for guideRank ordering
+  slug: string
 }
 // top-level dir (e.g. "tutorials") -> its pages, for remark-doc-list. Lets an
 // index page (introduction.md) render a directory's contents from frontmatter
@@ -93,7 +97,8 @@ export function ensureAutogenIndex(): Promise<void> {
           title: d.data.title,
           description: d.data.description,
           url: urlFor(d.id),
-          category: categoryMatch?.[1]!.trim(),
+          category: categoryMatch?.[1]!.trim() ?? d.data.guide_category,
+          slug: d.id.slice(dir.length + 1),
         }
         const list = docsByDir.get(dir)
         if (list) {
@@ -159,6 +164,18 @@ export function docsInDirGrouped(
   return [...grouped.entries()]
     .sort((a, b) => a[0].localeCompare(b[0]))
     .map(([category, entries]) => ({ category, entries }))
+}
+
+// The pages of one `guide_category` within a guide dir, in the same order the
+// sidebar and the guide's landing page put them (curated lead pages first via
+// guideRank, everything else alphabetical). Lets a guide point at "the other
+// pages in my section" without hand-mirroring a list that goes stale the next
+// time a page is added — which is exactly what happened to the element-guide
+// list in simple_plugin.md.
+export function docsInCategory(dir: string, category: string): DocListEntry[] {
+  return docsInDir(dir)
+    .filter(e => e.category === category)
+    .sort((a, b) => guideRank(dir, a.slug) - guideRank(dir, b.slug))
 }
 
 export function backlinksFor(autogenId: string): GuideRef[] {

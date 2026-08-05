@@ -637,4 +637,85 @@ export const ldSpecs: ScreenshotSpec[] = [
     // visible edges, the highlight names the gene and the ClinVar tick names the
     // causal variant.
   },
+  // THE HAPLOBLOCK FIGURE, and the reason it exists: an LD triangle is a
+  // pairwise matrix rotated 45 degrees, so its VERTICAL axis is the distance
+  // between the two variants being compared rather than any value. Nothing on
+  // screen says that, no other track in the browser works that way, and the
+  // review that retired ld/anopheles_r2_vs_dprime landed on the same thing here
+  // ("ld is really the only thing that really makes me ask 'wtf'").
+  //
+  // r2 is the statistic; the haplotype block is the THING. So draw the thing:
+  // one row per haplotype, one column per variant, grouped by population. A
+  // swept haplotype is then a solid slab of alt calls sitting in some population
+  // bands and not others, which needs no vocabulary at all.
+  //
+  // GROUPED, NOT CLUSTERED, which is the whole design. Clustering would also
+  // gather the carriers, but it gathers them into an unlabelled dendrogram and
+  // the reader has to take on trust that the block means anything. Grouping puts
+  // labelled population bands down the sidebar, so the picture states which
+  // populations carry it rather than that some unnamed rows are alike.
+  //
+  // Pooled, not the EUR panel: with every population in frame the slab has
+  // somewhere to stop. The panel file on its own can only show that some
+  // Europeans carry it, which is the weaker half of the claim.
+  {
+    mode: 'url',
+    name: 'ld/lct_haploblock',
+    url: `${HG19_HUB}&session=${encodeSessionSpec({
+      sessionTracks: [
+        {
+          type: 'VariantTrack',
+          trackId: 'kgp_lct_haplotypes',
+          name: '1000 Genomes haplotypes across LCT (one row per haplotype)',
+          assemblyNames: ['hg19'],
+          adapter: {
+            type: 'VcfTabixAdapter',
+            uri: `${AG_POPGEN}/lct_1kg_chr2_pooled_wide.vcf.gz`,
+            // the release's own sample table, already hosted for the
+            // config_demo chr1 track. Sample ids are the same across
+            // chromosomes, so it applies to this chr2 slice unchanged.
+            samplesTsvLocation: {
+              uri: 'https://jbrowse.org/genomes/hg19/1000g.sorted.csv.gz',
+            },
+            fetchSizeLimit: 500_000_000,
+          },
+        },
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg19',
+          loc: LCT_LOC,
+          highlight: LCT_HIGHLIGHT,
+          tracks: [
+            {
+              trackId: 'hg19-ncbiRefSeqCurated',
+              type: 'LinearBasicDisplay',
+              height: 60,
+              showOnlyGenes: true,
+            },
+            {
+              trackId: 'kgp_lct_haplotypes',
+              type: 'LinearMultiSampleVariantDisplay',
+              // one row per haplotype: 2504 samples -> 5008 rows. Phased is the
+              // point, since a haplotype is what travels as one piece.
+              renderingMode: 'phased',
+              groupBy: 'population',
+              colorBy: 'population',
+              // the common, block-tagging variants. Unfiltered this window is
+              // mostly rare variation and the slab is buried in speckle.
+              minorAlleleFrequencyFilter: 0.35,
+              height: 900,
+              forceLoad: true,
+            },
+          ],
+        },
+      ],
+    })}&sessionName=Screenshot`,
+    readyText: 'variants shown',
+    readyTimeout: 300000,
+    // gene lane + the 900px haplotype stack + headers + ruler/overview
+    viewportHeight: 1090,
+    settleMs: 14000,
+  },
 ]

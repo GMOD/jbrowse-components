@@ -579,23 +579,30 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         'chrY',
       ],
       trackLabels: 'offset',
-      // 100, against a default that leaves ~190px of white under the drawing: a
-      // triangle is half as tall as its region is wide, and the widest region
-      // here is chr1 at ~113px of the 1450px genome, so 57px is the tallest
-      // thing the display has to hold
+      // 700, where the intra-only file needed 100. A pair's contacts are drawn
+      // in the wedge between its two regions, so the drawing's height is set by
+      // the WIDEST pair on screen: with only self-pairs that was chr1 against
+      // itself (~113px of the 1450px genome, so 57px of wedge), and with all
+      // 300 pairs answered it is chr1 against chrY, half the genome wide. At
+      // 100px the figure was the top slice of that pyramid, which is its
+      // faintest, longest-range corner painted at full saturation.
+      //
+      // Linear ramp, where the intra-only file needed `useLogScale`, for the
+      // same reason inverted: log was compensating for a decayed self-contact
+      // signal, and applied to a file that fills the whole pyramid it pushes
+      // every bin to the top of the scale and the map comes back solid red.
       tracks: [
-        { trackId: 'hic_gm12878_encode', useLogScale: true, height: 100 },
+        { trackId: 'hic_gm12878_encode', useLogScale: false, height: 700 },
       ],
     }),
-    viewportHeight: 302,
+    // 910, off the run's own clipped-below-the-fold report, for the 700px of
+    // track above
+    viewportHeight: 910,
     readySelector: '[data-testid="hic-display-done"]',
-    // 24 regions is 300 region pairs to fetch, and every one of them is a real
-    // fetch now that the file answers them -- through ENCODE's signed redirect,
-    // which costs a round trip each. Both waits are well past what a
-    // single-region figure needs.
-    // 300 region pairs, and all 300 answer now. Measured serially in node
-    // against this file at the 2.5 Mb binsize: 685,098 records in 224s, so the
-    // wait is minutes rather than the seconds an intra-only file needed.
+    // 300 region pairs, and all 300 answer now, where the intra-only file
+    // answered 24 of them. Measured serially in node against this file at the
+    // 2.5 Mb binsize: 685,098 records in 224s, so the wait is minutes rather
+    // than the seconds an intra-only file needed.
     readyTimeout: 900000,
     settleMs: 30000,
   },

@@ -53,8 +53,8 @@ Points at a hub's `hub.txt`. See [](/docs/config/ucsctrackhubconnection).
 
 ### JB2 track hub
 
-Points at a JBrowse 2 config file. See [](/docs/config/jb2trackhubconnection)
-and [loading from a config file](/docs/config_guides/from_config).
+Points at another JBrowse 2 `config.json`, whose `tracks` array becomes the
+connection's track list. See [](/docs/config/jb2trackhubconnection).
 
 ```json
 {
@@ -121,4 +121,4 @@ re-fetching the whole hub, and editing it saves the change to the session too.
 - [Connections user guide](/docs/user_guides/connections)
 - [](/docs/config/baseconnection)
 - [Configuring tracks](/docs/config_guides/tracks)
-- [Loading from a config file](/docs/config_guides/from_config)
+- [](/docs/config_guides/track_selector)

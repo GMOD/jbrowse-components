@@ -86,7 +86,7 @@ expression tracks too.
 
 The ribbon's drawing is worth two more menu items once the panels are set.
 **Curved lines** in the synteny track menu is the shape in the last frame, and
-**Transparent indels** — the CIGAR display mode — leaves an indel see-through
+**Transparent indels**, the CIGAR display mode, leaves an indel see-through
 instead of painting it as a colored wedge. On a liftOver chain that is the
 difference between a picture and a puzzle: across this 20 kb the chain carries
 one gap of about 6 kb and four of six bases or fewer, so the single hole in the

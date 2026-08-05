@@ -191,4 +191,4 @@ write.
 
 - [](/docs/developer_guides/data_fetching)
 - [](/docs/developer_guides/configuration_schema)
-- [Creating custom view types](/docs/developer_guides/creating_view)
+- [](/docs/developer_guides/creating_view)

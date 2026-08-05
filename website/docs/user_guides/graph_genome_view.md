@@ -6,16 +6,15 @@ description:
   beside a linear view of the same window
 ---
 
-Most pangenome tracks are **projections**: the graph flattened onto one
-reference's coordinates, as synteny, variants, alignment or depth. This guide is
-about drawing the graph **as a graph**, beside a linear view of the same window,
-and moving between the two. The reference's own path through the graph is its
-**backbone**; every segment off that path is an alternate allele some other
-assembly carries.
+**TL;DR:** The graph genome view draws a pangenome graph **as a graph**, beside
+a linear view of the same window, and moves between the two. The reference's own
+path through the graph is its **backbone**; every segment off that path is an
+alternate allele another assembly carries. Most other pangenome tracks are
+**projections** instead — the graph flattened onto one reference's coordinates
+as synteny, variants, alignment, or depth.
 
-**Prerequisites:** the graph genome view plugin (loading it is covered below), a
-pangenome graph in rGFA or GFA, and the contributing assemblies if you want to
-launch out into them.
+**Prerequisites:** the plugin (below), a graph in rGFA or GFA, and the
+contributing assemblies if you want to launch out into them.
 
 <Figure caption="50 kb of K12 launched as a graph. Both panels read the same two tabix indexes and run the same reference-position ramp, red at the start of the window to magenta at its end, so a block above and its node below share a hue. The alternate alleles are the charcoal ones, off the ramp: they have no K12 coordinates, which is why the linear track has nothing to show for them either." src="/img/pangenome/rgfa_subgraph_launch.png" />
 
@@ -55,12 +54,11 @@ Launch view → Graph genome view (this region)**.
 [Route 1](#route-1-a-graph-track-browsable-by-locus) builds the pair; skip to
 [Three layouts](#three-layouts) if you just need to know what the buttons do.
 
-## Coordinates are the whole problem
+## Where a segment's coordinates come from
 
-A graph is a set of segments and links. Drawing it needs nothing else, and
-force-directed layout does exactly that. Drawing it **beside a linear view**
-needs each segment's position on a reference, and that is what formats differ
-on.
+A graph is a set of segments and links, which is all force-directed layout
+needs. Drawing it **beside a linear view** also needs each segment's position on
+a reference, and that is what the formats differ on.
 
 | Format                                                        | Where positions live                 | Opening a locus                          |
 | ------------------------------------------------------------- | ------------------------------------ | ---------------------------------------- |
@@ -89,12 +87,14 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 bash build_pggb_tabix.sh pggb/*.smooth.final.gfa ecoli_pggb K12
 ```
 
-The plain-GFA walk makes two choices worth knowing: when a path reaches a
-segment twice **the first visit wins**, since a node draws as one tube at one x
-and recording both would claim reference the segment does not occupy (the repeat
-stays visible as depth); and a segment the reference never visits is placed on
-**its own carrier's coordinates**, which is the same asymmetry rGFA has and is
-why a reference query reaches it through the links file.
+The plain-GFA walk makes two choices worth knowing:
+
+- When a path reaches a segment twice, **the first visit wins**. A node draws as
+  one tube at one x, so recording both would claim reference the segment does
+  not occupy. The repeat stays visible as depth.
+- A segment the reference never visits is placed on **its own carrier's
+  coordinates**. That is the same asymmetry rGFA has, and why a reference query
+  reaches such a segment through the links file.
 
 Both write `<prefix>.segs.bed.gz` and `<prefix>.links.bed.gz` with their tabix
 indexes, and both load through one adapter:

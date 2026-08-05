@@ -201,7 +201,7 @@ Per-track:
 
 ## See also
 
-- [Creating custom adapters](/docs/developer_guides/creating_adapter)
+- [](/docs/developer_guides/creating_adapter)
 - [](/docs/developer_guides/configuration_schema)
 - Built-in adapter configs: [](/docs/config/trixtextsearchadapter) and
   [](/docs/config/jbrowse1textsearchadapter)

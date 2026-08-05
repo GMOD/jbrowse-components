@@ -94,10 +94,9 @@ every chromosome against every other one and the drawing a block diagonal.
 
 <Figure caption="hg19 chr1 to chrY in one view, log scale. Each chromosome is its own triangle and the notch out of each one is its centromere. The blocks between them are empty because this file stores intra-chromosomal contacts only." src="/img/hic/whole_genome.png" />
 
-Log scale is what makes that figure readable rather than optional decoration. At
-whole-genome zoom one pixel is megabases, contact frequency has decayed over
-almost every bin on screen, and on the linear ramp the twenty-four triangles
-render as a thin smear along the diagonal.
+Log scale is required at this zoom. One pixel is megabases, contact frequency
+has decayed over almost every bin on screen, and on the linear ramp the
+twenty-four triangles render as a thin smear along the diagonal.
 
 ## Fitting the triangle to the track height
 

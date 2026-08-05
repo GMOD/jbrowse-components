@@ -91,13 +91,12 @@ example draws only the high-scoring calls, in dark red, as thin arcs:
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "BedpeAdapter",
-    "bedpeLocation": { "uri": "https://example.com/loops.bedpe.gz" }
+    "uri": "https://example.com/loops.bedpe.gz"
   },
   "displays": [
     {
       "type": "LinearPairedArcDisplay",
-      "displayId": "hic_loops-LinearPairedArcDisplay",
-      "color": "jexl:get(feature,'score')>=500?'#8b1a1a':'rgba(0,0,0,0)'",
+      "color": "jexl:feature.score>=500?'#8b1a1a':'rgba(0,0,0,0)'",
       "lineWidth": 1
     }
   ]

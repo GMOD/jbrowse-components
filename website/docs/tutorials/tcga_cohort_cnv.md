@@ -287,7 +287,7 @@ Bytes over the wire for three views, counted through each reader:
 The first row is the widest gap and most of it is not the binning. TCGA segments
 average 2.6 Mb, so a query has to reach back to wherever an overlapping segment
 started, and tabix reads the same 411 KB for a 200kb window as for the whole
-chromosome — 1218 lines returned in the first case against 18,867 in the second.
+chromosome: 1218 lines returned in the first case against 18,867 in the second.
 Set against that, the store is 25 MB on disk to the BED's 5.9 MB. It earns its
 place on the zoomed-out views and on cohorts larger than this one, not as a
 replacement for the stack.
@@ -416,7 +416,7 @@ The binned store is a separate script,
 and not a step of the one above, because it needs none of what that one needed:
 its inputs are the BED and the clinical table, so it runs against the hosted
 copies in well under a minute rather than repeating the download. It needs
-`node` 22 or newer and nothing else — no `npm install`, since the converter only
+`node` 22 or newer and nothing else, with no `npm install`, since the converter only
 reaches for a BigWig reader on the path this does not take.
 
 ```bash

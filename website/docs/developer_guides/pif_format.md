@@ -6,6 +6,10 @@ guide_category: Advanced topics
 sidebar_label: PIF format
 ---
 
+**TL;DR:** run `jbrowse make-pif input.paf` and load the resulting `.pif.gz`;
+`jbrowse add-track` picks the `PairwiseIndexedPAFAdapter` from the extension.
+Use PIF over plain PAF for anything whole-genome scale.
+
 PIF (Pairwise Indexed Format) is a tabix-indexed variant of
 [PAF](https://github.com/lh3/minimap2/blob/master/doc/minimap2.1). Plain PAF
 must be loaded entirely into memory; PIF splits each alignment into two indexed
@@ -222,5 +226,5 @@ whole-genome comparisons PIF is strongly preferred.
 
 - Adapter config reference: [](/docs/config/pairwiseindexedpafadapter) and
   [](/docs/config/pafadapter)
-- [Creating custom view types](/docs/developer_guides/creating_view)
+- [](/docs/developer_guides/creating_view)
 - [Config guide: synteny track](/docs/config_guides/synteny_track)

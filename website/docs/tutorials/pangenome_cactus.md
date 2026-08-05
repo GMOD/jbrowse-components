@@ -278,7 +278,7 @@ row per sample:
 }
 ```
 
-<Figure caption="The graph's variant calls over 6 kb of K12, one column per variant and one row per strain, with the band above tying each column back to its position. Labeled: NCTC86's row, grey almost throughout while the other three break up — one strain tracks the reference across this window and the others do not." src="/img/pangenome_cactus/variants.png" />
+<Figure caption="The graph's variant calls over 6 kb of K12, one column per variant and one row per strain, with the band above tying each column back to its position. Labeled: NCTC86's row, grey almost throughout while the other three break up, so one strain tracks the reference across this window and the others do not." src="/img/pangenome_cactus/variants.png" />
 
 Grey in the matrix is a call matching K12, blue an alternate allele, and dark
 red a second alternate at a multi-allelic site. Every variant gets the same

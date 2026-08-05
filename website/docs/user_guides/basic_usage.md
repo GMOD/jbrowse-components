@@ -223,18 +223,18 @@ rubberband-select a region.
 
 <Figure caption="Screenshot of rubberbanding both the main and overview scalebars. The main scalebar produces extra options on selection, e.g. Zoom to region, Get sequence, etc." src="/img/rubberband.png" />
 
-The main scale bar's menu holds **Zoom to region**, **Get sequence** and **Copy
-range**, plus whatever the session adds: **Highlight region** and **Bookmark
-region**, and a **Launch** submenu collecting what the loaded plugins can start
-from the selection. That is where
-**[](/docs/user_guides/linear_synteny_view#from-a-locus-you-are-already-looking-at)**
-appears when a synteny dataset in the session covers this assembly: it opens a
-panel per assembly that aligns to the selection, whether or not the synteny
-track itself is turned on, alongside
-**[](/docs/user_guides/consensus_sequence)** when an alignments track is open.
-Both name the track they run on, since that choice decides the result: consensus
-lists the view's alignments tracks as a submenu, while synteny (whose datasets
-are session-wide and can run to dozens) picks them in its dialog.
+The main scale bar's menu holds **Zoom to region**, **Get sequence**, **Copy
+range**, **Highlight region** and **Bookmark region**, plus a **Launch** submenu
+of what the loaded plugins can start from the selection:
+
+- [](/docs/user_guides/linear_synteny_view#from-a-locus-you-are-already-looking-at),
+  when a synteny dataset in the session covers this assembly. It opens one panel
+  per assembly aligning to the selection, whether or not the synteny track is
+  turned on. Pick the dataset in its dialog.
+- [](/docs/user_guides/consensus_sequence), when an alignments track is open.
+  Pick the track from the submenu.
+
+Both name the track they run on, because that choice decides the result.
 
 ## Scalebar chromosome name menu
 

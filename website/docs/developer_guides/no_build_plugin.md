@@ -6,18 +6,18 @@ description:
 guide_category: Getting started
 ---
 
-## Prerequisites
-
-- you can run an instance of JBrowse 2 on the web, see
-  [any of our quickstart guides](/docs/quickstart_web) for details
-- a stable and recent version of [node](https://nodejs.org/en/)
-- basic familiarity with the command line and navigating the file system
+**TL;DR:** a no-build plugin is a single hand-edited `.js` file next to your
+`config.json`, referenced from the `plugins` array with `esmLoc`. It needs no
+bundler and no npm install, which makes it the right shape for
+[jexl config callbacks or similar modifications](/docs/config_guides/customizing_feature_colors/)
+— at the cost of no JSX, no TypeScript, and no dependencies beyond what JBrowse
+re-exports.
 
 A "regular" plugin uses the
 [plugin template](https://github.com/GMOD/jbrowse-plugin-template) and bundles
-dependencies with `rollup`. A no-build plugin has no build step and is hand
-edited, useful for
-[jexl config callbacks or similar modifications](/docs/config_guides/customizing_feature_colors/).
+dependencies with `rollup`. The only prerequisite here is a running JBrowse 2
+instance to load the file into (see
+[any of our quickstart guides](/docs/quickstart_web)).
 
 ## Adding a jexl callback
 
@@ -91,7 +91,7 @@ export default class MyPlugin {
 
 With no build step, use `jbrequire` to access the shared libraries JBrowse
 re-exports (React, MobX, MST, MUI, and `@jbrowse/core` APIs). See
-[Plugin dependencies and re-exports](/docs/developer_guides/imports_and_reexports)
+[](/docs/developer_guides/imports_and_reexports)
 and the
 [canonical list](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/ReExports/list.ts).
 

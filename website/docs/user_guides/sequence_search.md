@@ -16,6 +16,19 @@ sequence track is displayed. Three modes:
 - Motif list - search many named motifs at once, pasted as one per line. This is
   the mode for restriction enzymes; see below.
 
+## Sequence pattern
+
+Enter a sequence to find every occurrence in the reference. The field is a
+regex, so `GAATTC` matches exactly and `TATA[AT]A[AT]` matches either variant.
+Both strands are searched, case-insensitively; either can be turned off.
+
+Most restriction sites are palindromic — the site reads the same on both
+strands, which is how one enzyme cuts both — so such a hit is reported once,
+unstranded, rather than twice at one position. This needs bare `ACGT`: regex
+syntax has no reverse complement, and IUPAC codes are not regex (`N` matches a
+literal N). Use [Motif list](#restriction-enzymes-and-other-named-motifs) for
+IUPAC sites.
+
 ## CRISPR guide RNAs
 
 Choose an enzyme preset (SpCas9 `NGG`, SaCas9 `NNGRRT`, Cas12a `TTTV`, ...) or

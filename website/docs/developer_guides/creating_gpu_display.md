@@ -589,7 +589,7 @@ uses. The two paths share it unchanged.
 
 In your plugin's `install()`, register the display type pointing at your model
 factory and React component (see
-[Creating custom display types](/docs/developer_guides/creating_display) for the
+[](/docs/developer_guides/creating_display) for the
 full registration pattern).
 
 ## Key invariants
@@ -618,5 +618,5 @@ section of the architecture spec is the full quick-scan list.
 
 - [](/docs/developer_guides/data_fetching)
 - [](/docs/developer_guides/rpc_workers)
-- [Creating custom display types](/docs/developer_guides/creating_display)
-- [Adding SVG export to a display](/docs/developer_guides/svg_export)
+- [](/docs/developer_guides/creating_display)
+- [](/docs/developer_guides/svg_export)

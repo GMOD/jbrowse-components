@@ -44,9 +44,9 @@ below uses the second:
 
 <Figure caption="Grape (Y-axis) against peach (X-axis), with a minimum alignment length already applied. These two are divergent enough that the minimap2 PAF is almost all sub-kilobase hits, so every block still draws as a single dot and no diagonal survives. The horizontal band across grape chr12 is a repeat-rich region rather than synteny." src="/img/dotplot.png" />
 
-Min length has already done what it can here. When a plot still reads as specks
-after it, the pair is too divergent for a whole-genome view to say anything, and
-the next move is a smaller window rather than another setting.
+When a plot still reads as specks after Min length, the pair is too divergent
+for a whole-genome view to say anything; the next move is a smaller window
+rather than another setting.
 
 ## A genome against itself
 

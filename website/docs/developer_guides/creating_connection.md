@@ -96,7 +96,7 @@ export default function modelFactory(pluginManager: PluginManager) {
 
 ## See also
 
-- [Creating custom add-track workflows](/docs/developer_guides/creating_addtrack_workflow)
+- [](/docs/developer_guides/creating_addtrack_workflow)
 - [](/docs/developer_guides/configuration_schema)
 - [](/docs/developer_guides/mst_patterns)
 - [](/docs/developer_guides/pluggable_elements)

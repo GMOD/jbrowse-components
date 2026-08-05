@@ -1,10 +1,11 @@
 ---
-title: Top-level menu items
-description: Add items to the top-level application menu bar
+title: Menus
+description:
+  Add items to the application menu bar, the track menu, and track context menus
 guide_category: Plugins
 ---
 
-**TL;DR:** Add top-level menus from your plugin's `configure()` (guarded by
+**TL;DR:** Add application menus from your plugin's `configure()` (guarded by
 `isAbstractMenuManager`), and extend track/context menus by redefining
 `trackMenuItems`/`contextMenuItems` on the display model.
 
@@ -158,7 +159,7 @@ attributes. Types of `MenuItem`s:
 | onClick  | Callback of action to perform on click. Function signature is `(session) => void`. Required for 'normal', 'radio', and 'checkbox', not applicable to any others.                                         |
 | subMenu  | An array of menu items. Applicable only to 'subMenu'.                                                                                                                                                    |
 
-Here is an example array of MenuItems and the resulting menu:
+An example array covering every type:
 
 ```js
 ;[

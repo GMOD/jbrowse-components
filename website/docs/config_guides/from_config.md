@@ -2,18 +2,22 @@
 title: FromConfig adapters
 description:
   Inline data adapters for embedding small datasets directly in config
-guide_category: Callbacks
+guide_category: Core configuration
 ---
 
-`FromConfigAdapter` and `FromConfigSequenceAdapter` embed feature data directly
-in the config rather than reading a file, useful for small datasets or features
-returned by an API. Either can be the `adapter` value for any track type.
+**TL;DR:** the FromConfig adapters take their data from an array written into
+`config.json` instead of reading a file, for small datasets or for features an
+API handed you. There are three: `FromConfigAdapter` for features,
+`FromConfigSequenceAdapter` for sequence, and `FromConfigRegionsAdapter` for
+refNames and lengths with no sequence.
 
 ## FromConfigAdapter
 
 Each entry in `features` is a feature object. `refName`, `start`, `end`, and a
 unique `uniqueId` are required. `type`, `name`, and any other attributes are
-optional. Use it with any feature track type, such as a `FeatureTrack`:
+optional, and any extra attribute is readable from a
+[jexl callback](/docs/config_guides/jexl) like one read off a file. Use it with
+any feature track type, such as a `FeatureTrack`:
 
 ```json
 {
@@ -78,7 +82,33 @@ Each feature's `seq` holds the bases for its region:
 }
 ```
 
+## FromConfigRegionsAdapter
+
+Supplies refNames and their lengths with no sequence at all, so a view can be
+navigated and tracks drawn against an assembly whose FASTA you don't have or
+don't want to load. Same place in the config as `FromConfigSequenceAdapter`,
+and each feature is just an interval:
+
+```json
+{
+  "name": "regions_only",
+  "sequence": {
+    "adapter": {
+      "type": "FromConfigRegionsAdapter",
+      "features": [
+        { "uniqueId": "ctgA", "refName": "ctgA", "start": 0, "end": 50000 },
+        { "uniqueId": "ctgB", "refName": "ctgB", "start": 0, "end": 6079 }
+      ]
+    }
+  }
+}
+```
+
+For the same thing from a file rather than inline, use a
+[`ChromSizesAdapter`](/docs/config/chromsizesadapter) over a `.chrom.sizes`.
+
 ## See also
 
 - [Configuring tracks](/docs/config_guides/tracks)
+- [Configuring assemblies](/docs/config_guides/assemblies)
 - [FromConfigAdapter config docs](/docs/config/fromconfigadapter)

@@ -174,7 +174,7 @@ type: synchronous
 
 Add functionality to pluggable elements, e.g. extra right-click context menus.
 Your callback receives every pluggable element registered to the system. See
-[Adding menus](/docs/developer_guides/menus) for a worked example adding track
+[](/docs/developer_guides/menus) for a worked example adding track
 context-menu items.
 
 https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotReadVsRef/index.ts#L12-L45
@@ -704,7 +704,7 @@ type: async
 
 Launches a linear genome view. Rarely extended directly, but a useful reference
 for implementing a `LaunchView-*` point for your own view type. See
-[Creating view types](/docs/developer_guides/creating_view).
+[](/docs/developer_guides/creating_view).
 
 - `args` - an object of the format below
 

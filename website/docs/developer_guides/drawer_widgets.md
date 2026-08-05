@@ -4,17 +4,14 @@ description: Launching sidebar or popup widgets in the embedded LGV
 guide_category: Plugins
 ---
 
-## Overview
-
-In the embedded `@jbrowse/react-linear-genome-view2` component, widgets can show
-as resizable side panels (drawers) instead of modal dialogs.
-
 **TL;DR:** Set `tracklist: true` in the view `init` for the track selector, or
 call `session.addWidget(...)` + `session.showWidget(...)` for any widget. Drawer
 position and width are controlled via session actions.
 
-Drawers resize by dragging the edge, sit on the left or right, minimize while
-keeping widget state, and switch between open widgets.
+In the embedded `@jbrowse/react-linear-genome-view2` component, widgets can show
+as resizable side panels (drawers) instead of modal dialogs. Drawers resize by
+dragging the edge, sit on the left or right, minimize while keeping widget
+state, and switch between open widgets.
 
 ## Showing the track selector
 
@@ -118,6 +115,6 @@ https://jbrowse.org/storybook/lgv/with-drawer-widget/
 
 ## See also
 
-- [Creating custom widgets](/docs/developer_guides/creating_widget)
+- [](/docs/developer_guides/creating_widget)
 - [](/docs/developer_guides/extension_points)
 - [](/docs/embedded_components)

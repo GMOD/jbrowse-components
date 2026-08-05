@@ -68,7 +68,7 @@ pair orientations are not supported. The table below assumes `fr`:
 
 <Figure caption="An inverted duplication (CPX type INVdup, HGSV_2721) in HG02768 paired-end reads, with the 1KGP ensemble call above and the variant's INFO fields open alongside. Green LL, navy RR, and magenta split reads flag the inverted segment; the duplicated copy reads out as elevated coverage and arcs. These orientation-colored reads are a minority of an otherwise concordant grey pileup, so they cluster at the breakpoints." src="/img/inverted_duplication.png" />
 
-#### Short reads vs. long reads
+### Short reads vs long reads
 
 Short paired-end reads can only _infer_ an inversion: because neither mate spans
 the breakpoint, the evidence is indirect, a cluster of same-orientation (LL/RR)
@@ -154,10 +154,9 @@ is a useful companion reference.
   unmapped; long reads are needed to fully span the event
 - A purple insertion indicator triangle suggests an insertion when enough reads
   carry one at that position (see
-  [SV signals in the alignments track](#sv-signals-in-the-alignments-track) for
-  the depth-dependent threshold)
-
-<Figure caption="An insertion (nssv15767046 INS, labeled in the variant track at top) visible as a dense column of purple insertion rectangles at ~position 55,705,920 in nanopore (top track), PacBio (middle track), and Illumina (bottom track) reads. Long reads show tall purple bars spanning the inserted bases; Illumina reads show only soft-clip artifacts at the same site because the insert exceeds the fragment size." src="/img/insertion.png" />
+  [insertion and clipping indicators](/docs/user_guides/alignments_track#insertion-and-clipping-indicators)
+  for the depth-dependent threshold and for the same event across nanopore,
+  PacBio, and Illumina reads)
 
 ### Inversion
 
@@ -208,14 +207,11 @@ same-orientation pairs of an inverted duplication then read as a coherent bundle
 of curves rather than scattered singleton pileup rows.
 
 A read can look concordant (light-grey LR fill) yet still carry a colored
-connector. That happens when the read itself crosses the inversion breakpoint:
-it splits into a primary and a strand-flipped supplementary alignment, and the
-arc joining them takes the split-read inversion color, which is deliberately
-distinct from the RR-pair blue so the two kinds of evidence stay
-distinguishable. This is a second, independent line of evidence for the
-inversion, from a single split read rather than a pair. Hover any connector to
-read its classification (for example, _Split-read inversion_ versus _RR, both
-mates reverse strand_).
+connector: the read itself crosses the breakpoint, splitting into a primary and
+a strand-flipped supplementary alignment, and the arc joining them takes the
+split-read inversion color rather than the RR-pair blue. That is independent
+evidence for the inversion, from one read rather than a pair. Hover any
+connector for its classification.
 
 ## Read cloud
 
@@ -224,26 +220,17 @@ the log-scaled distance between mates, making it easy to count how many reads
 span a breakpoint and read their orientation at a glance. Chains with
 supplementary alignments are connected by an orange line.
 
-<Figure caption="Read cloud on an SV dataset: reads are drawn as horizontal lines stratified on the Y axis by the log distance between mates. The bar on the bottom row marks an abnormally large insert, flagging the structural-variant event." src="/img/alignments/read_cloud.png" />
-
 The Edit filters option in the track menu lets you show or hide proper pairs and
 singletons. The color scheme provides insert size, orientation, or combined
 coloring.
 
 ## Inspecting individual reads
 
-Right-clicking any read opens a context menu with two single-read inspection
-options:
-
-- Linear read vs ref - opens a synteny-style split view showing how that read
-  aligns to the reference, with the read sequence on one panel and the reference
-  on the other
-- Dotplot of read vs ref - opens a dotplot of the read against the reference,
-  which can reveal complex rearrangements as diagonal segments
-
-Both are most useful on long reads where a single read spans a breakpoint.
-
-<Figure caption="'Linear read vs ref' for a SKBR3 PacBio read spanning several insertions relative to the reference. The top panel is a standard pileup; the bottom panel is a synteny-style split view showing the read (top lane) aligned to the reference (bottom lane). Each gap in the diagonal alignment blocks in the lower panel marks inserted sequence not present in the reference. Click-and-drag over any region in the lower panel to extract its sequence." src="/img/read_vs_ref_insertion.png" />
+Right-click any read for **Linear read vs ref** and **Dotplot of read vs ref**,
+which lay one read out against every locus it touches. Both are most useful on a
+long read spanning a breakpoint, where the order the read visits those loci in
+is the structure of the rearrangement. See
+[one read against the reference](/docs/user_guides/alignments_track#one-read-against-the-reference).
 
 ## Breakpoint split view
 
@@ -288,8 +275,6 @@ the `HP` tag from the track menu. Sorting and coloring cluster each haplotype's
 reads together; grouping goes further and gives each haplotype its own pileup
 section, which makes a one-sided SV unmistakable. Reads with no `HP` tag collect
 in their own section, so unphased support is visible rather than hidden.
-
-<Figure caption="Reads colored and sorted by haplotype. Coloring by the HP tag gives one color per haplotype, and sorting by the HP tag stacks each haplotype's reads into contiguous rows, making it easy to see which haplotype carries the variant." src="/img/alignments/haplotype.png" />
 
 ## Working with large SVs
 

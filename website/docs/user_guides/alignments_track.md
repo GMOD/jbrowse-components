@@ -118,9 +118,8 @@ turn pink, and abnormal pair orientations get their own colors. A combined
 **Insert size and orientation** mode paints whichever cue is strongest. The
 [SV visualization guide](/docs/user_guides/sv_visualization#pair-orientation-color-scheme)
 has the full color tables, the threshold the "expected" insert range is built
-from, and how the combined mode breaks ties.
-
-<Figure caption="Reads colored by pair orientation at an inverted duplication. Most pairs are concordant LR (grey); the discordant ones cluster at the breakpoints: green LL, navy RR, and magenta split reads over the inverted segment." src="/img/inverted_duplication.png" />
+from, how the combined mode breaks ties, and what each pattern means at a real
+breakpoint.
 
 ### By tag
 
@@ -148,7 +147,9 @@ aren't reading.
 
 <Figure caption="HG002 ONT reads grouped and colored by the HP tag. The pileup splits into one tinted section per haplotype, so phased reads and their haplotype-correlated SNPs read at a glance." src="/img/alignments/haplotype.png" />
 
-<Figure caption="A 27 bp heterozygous deletion in HG002 ONT reads, grouped by HP into haplotype 1 (pink) and haplotype 2 (blue). The deletion-supporting reads concentrate in a single haplotype." src="/img/smalldel.png" />
+Grouping by `HP` is also how you check that a heterozygous variant's supporting
+reads sit on one haplotype; see
+[phasing heterozygous SVs](/docs/user_guides/sv_visualization#phasing-heterozygous-svs).
 
 ## Read height and track sizing
 
@@ -239,7 +240,12 @@ properly-paired reads. You can also filter to a specific read name or tag value
 
 Sashimi-style arcs are drawn automatically over spliced alignments (reads with
 `N` in the CIGAR), so RNA-seq and Iso-Seq splice junctions appear with no setup.
-When reads carry the XS tag, the arc strand follows it. The track menu's
+The arc strand follows whichever strand tag the aligner wrote: `XS` or `TS` give
+the transcript strand directly, while minimap2's `ts` gives the orientation
+relative to the read and is combined with the read's own strand. A read carrying
+none of the three (default STAR output without `--outSAMstrandField`, for one)
+contributes to the junction without a strand, so tagged and untagged reads mix
+freely on the same arc. The track menu's
 **Sashimi arcs** submenu controls them: _Show labels_ prints each junction's
 supporting-read count on its arc, _Arc placement_ splits the arcs above/below
 the coverage row, and _Filter by score_ drops low-support junctions. Turn the

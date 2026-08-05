@@ -42,10 +42,11 @@ for all options.
 
 Display settings (`colorBy`, `height`, `featureHeight`, `filterBy`, and the
 coverage `autoscale`/`minScore`/`maxScore`) are slots on the
-`LinearAlignmentsDisplay`, not on the track. Reads are a solid gray until you
-pick a coloring scheme via the
-[`colorBy`](/docs/config/linearalignmentsdisplay/#slot-colorby) slot. To change
-a default, set it with the track's
+`LinearAlignmentsDisplay`, not on the track. By default every read is drawn the
+same gray with its mismatches marked;
+[`colorBy`](/docs/config/linearalignmentsdisplay/#slot-colorby) is what colors
+the reads themselves by strand, pair orientation, insert size, a tag, and so on.
+To change a default, set it with the track's
 [`displayDefaults` shorthand](/docs/config_guides/tracks/#configuring-displays):
 
 ```json addtrack

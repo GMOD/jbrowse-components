@@ -188,6 +188,20 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
       readyText: '25,359',
       readyTimeout: 90000,
       settleMs: 15000,
+      // Where each half's reads were aligned, on the half itself (reviewer: "if
+      // it was shown how this was done, it is ideal e.g. text blurb saying
+      // 'reads aligned to the derived contig'"). It has to be on-image rather
+      // than in the caption: `direction: 'horizontal'` composes two captures
+      // and a reader's eye is inside a pane, not at the caption, when the
+      // question "aligned to WHAT?" comes up. Anchored to the track band so the
+      // pill follows the pileup rather than a measured y.
+      annotations: [
+        {
+          type: 'text',
+          text: 'aligned to hg38',
+          anchor: { track: TUMOUR, fracY: 0, alignX: 'left', dx: 10, dy: 16 },
+        },
+      ],
     },
     {
       mode: 'url',
@@ -220,6 +234,24 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
       readyText: '32,5',
       readyTimeout: 90000,
       settleMs: 15000,
+      // The other half of the same label, and the one the reviewer asked for by
+      // name. It says the tool as well as the target, because "realigned" with
+      // no agent is the sentence that invites "by what?" -- `derive` is
+      // scripts/sv_multihop.py's subcommand and it runs minimap2, both named in
+      // the tutorial's Reproduce section.
+      annotations: [
+        {
+          type: 'text',
+          text: 'the same reads realigned to the derived contig (sv_multihop.py derive)',
+          anchor: {
+            track: 'reads_vs_der3',
+            fracY: 0,
+            alignX: 'left',
+            dx: 10,
+            dy: 16,
+          },
+        },
+      ],
     },
   ]
 }
@@ -392,13 +424,20 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         // -- an element, which clicks successfully and does nothing. That prose
         // is gone now, but the selector stays: it says which element it means,
         // and the next sentence added to the dialog would put the trap back.
+        //
+        // The label reads "Replace with split view" wherever the session can
+        // replace a view, which is everywhere except embedded -- see
+        // LinearDerivativeVsRef's button.
         actions: [
-          { type: 'click', selector: 'button::-p-text(Open as split view)' },
+          { type: 'click', selector: 'button::-p-text(Replace with split view)' },
         ],
-        // the split view it created, under the pileup it was launched from:
-        // one panel per segment of the path, four here (the chain returns to
-        // chr3), measured off the run's own below-the-fold report
-        viewportHeight: 1729,
+        // the split view it created, IN the launching view's place: one panel
+        // per segment of the path, four here (the chain returns to chr3),
+        // measured off the run's own below-the-fold report. It used to open
+        // below the pileup, which left the same locus with the same tracks on
+        // screen twice, one scroll apart ("too chaotic ... should also use
+        // 'replace view'") -- that is now what the button does.
+        viewportHeight: 1310,
       },
     ],
   },
@@ -719,12 +758,22 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'cancer_sv/split_view_from_breakend',
-    viewportWidth: 1400,
+    // 1000, not the 1400 the single column used: `stageColumns` puts two frames
+    // in a row, so the figure is twice a frame wide and 1400 made it 5,600px of
+    // PNG that the page then scales the text out of.
+    viewportWidth: 1000,
     // The three menu/dialog frames. 612 is what the blank-below report asks
     // for and it is wrong here: the blank it measures is the page under a
     // CENTRED dialog, while the page itself is 667 tall, so 612 clipped the
     // pileup by 55. The result frame gets its own height below.
     viewportHeight: 670,
+    // 2x2 rather than a column (reviewer: "may want to use a 2x2 screenshot
+    // format"). Four frames stacked was 6,160px, most of it the same app
+    // chrome four times, and the result -- the thing the other three exist to
+    // reach -- was below three screens of scroll. A row is `+append`ed so the
+    // two frames sharing one have to share a height, which is why stage 3
+    // takes the result frame's height rather than the dialog frames'.
+    stageColumns: 2,
     url: lgvSession(CONFIG, {
       assembly: 'hg38',
       loc: 'chr3:25,359,318-25,359,818',
@@ -775,6 +824,12 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           { type: 'delay', ms: 1000 },
         ],
         annotations: [{ type: 'box', anchor: { text: 'Window size (bp)' } }],
+        // The result frame's height, not the dialog frames': this is the left
+        // half of the grid's second row and `+append` pads the shorter of a
+        // pair, so matching it here is what keeps a band of blank page out of
+        // the middle of the figure. The extra height is pileup behind the
+        // dialog, which is the same pileup the frame above it shows.
+        viewportHeight: 1070,
       },
       {
         // The result, loaded as a session rather than clicked out of the dialog

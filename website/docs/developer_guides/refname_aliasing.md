@@ -166,5 +166,5 @@ back to `Sequence name`; all four columns become aliases for it.
 - [Configuring reference name aliasing](/docs/config_guides/assemblies/#configuring-reference-name-aliasing)
 - Adapter config reference: [](/docs/config/refnamealiasadapter) and
   [](/docs/config/ncbisequencereportaliasadapter)
-- [Creating custom adapters](/docs/developer_guides/creating_adapter)
+- [](/docs/developer_guides/creating_adapter)
 - [](/docs/developer_guides/rpc_workers)

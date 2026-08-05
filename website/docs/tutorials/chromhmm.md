@@ -46,7 +46,7 @@ patterns.
 
 Which rows those are is the point of picking nine cell types rather than one.
 The posterior genes carry a trunk-and-limb address, and the two rows that open
-them here are the endothelial and skeletal-muscle lines — HUVEC and HSMM, the
+them here are the endothelial and skeletal-muscle lines, HUVEC and HSMM, the
 mesodermal pair. The keratinocyte, lung-fibroblast and mammary lines stop at
 HOXA7. GM12878 and K562 are blood, and hold the whole cluster shut. H1-hESC is
 pluripotent and has no address yet, so its rows are neither: the magenta is

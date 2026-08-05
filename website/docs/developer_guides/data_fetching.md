@@ -5,12 +5,18 @@ description:
 guide_category: Core concepts
 ---
 
-**TL;DR:** Every linear display composes `MultiRegionDisplayMixin`, which
+**TL;DR:** Most linear displays compose `MultiRegionDisplayMixin`, which
 installs five autoruns that manage fetch lifecycle, cancellation, and cache
 invalidation. You override `fetchNeeded` (usually via `fetchEachRegion`) and
 declare `rpcProps` as the cache key. This chain is the thing to understand for
 writing a non-GPU display, and for debugging unexpected refetches in any
 display.
+
+The exceptions are displays whose data isn't partitioned by region at all; they
+compose `GlobalDataDisplayMixin` or `GlobalFetchMixin` and install their own
+fetch autorun. See
+[display foundations](/docs/developer_guides/creating_display#display-foundations)
+for which foundation each in-tree display uses.
 
 ## The five autoruns
 
@@ -289,7 +295,7 @@ visibleRegions changes → FetchVisibleRegions (600ms) → fetchNeeded(needed)
 ## See also
 
 - [Architecture spec: data fetching pipeline](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#data-fetching-pipeline)
-- [Creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display)
+- [](/docs/developer_guides/creating_gpu_display)
 - [](/docs/developer_guides/rpc_workers)
 - [](/docs/developer_guides/mst_patterns)
-- [Creating custom display types](/docs/developer_guides/creating_display)
+- [](/docs/developer_guides/creating_display)

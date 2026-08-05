@@ -128,7 +128,19 @@ export const GUIDE_ORDER: Record<string, string[]> = {
   config_guides: ['intro', 'assemblies', 'tracks'],
   // pluggable_elements last of Getting started: it is the index for the
   // 'Plugins' category, which DEVELOPER_CATEGORIES puts next.
-  developer_guides: ['simple_plugin', 'no_build_plugin', 'pluggable_elements'],
+  //
+  // The three display pages lead 'Plugins' in escalation order. Alphabetically
+  // creating_gpu_display sorts above plotting_features, so the sidebar led with
+  // the shader path while both guides tell you to start on Canvas2D and move up
+  // only when a profile says so.
+  developer_guides: [
+    'simple_plugin',
+    'no_build_plugin',
+    'pluggable_elements',
+    'creating_display',
+    'plotting_features',
+    'creating_gpu_display',
+  ],
 }
 
 // Rank of a page within its category: listed slugs first in listed order, the
