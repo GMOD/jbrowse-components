@@ -1,6 +1,6 @@
-import { Suspense, useRef, useState } from 'react'
+import { Suspense, useRef } from 'react'
 
-import { ContextMenu } from '@jbrowse/core/ui'
+import { ContextMenu, useMouseState, useMouseTracking } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { isAlive } from '@jbrowse/mobx-state-tree'
@@ -16,7 +16,22 @@ import { AlignmentsRenderer } from '../renderers/AlignmentsRenderer.ts'
 import PileupBody from './PileupComponent.tsx'
 
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
+import type { MouseTracker } from '@jbrowse/core/ui'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+const COORD0: [number, number] = [0, 0]
+
+// The tooltip, in its own component so that following the pointer re-renders
+// the tooltip and nothing else.
+//
+// This used to be a `mouseCoord` useState in `AlignmentsDisplayComponent`, set
+// from an `onMouseMove` on `DisplayChrome`. Two things were wrong with that, and
+// both are why hovering a pileup was the most expensive hover in the app:
+// the write re-rendered `DisplayChrome`, the status container and `PileupBody`
+// with all its overlays — to move one tooltip — and it did so on every *raw*
+// mousemove, uncoalesced, with a `getBoundingClientRect()` per event on top.
+// `useMouseTracking` publishes the position instead and coalesces it to one
+// update per frame. See there.
 
 const useStyles = makeStyles()(theme => ({
   display: {
@@ -42,6 +57,28 @@ const useStyles = makeStyles()(theme => ({
 // `maxRows` getter clamps to the real limit and every stacked read shows.
 const SHOW_ALL_MAX_HEIGHT = 1_000_000
 
+const AlignmentsTooltipLayer = observer(function AlignmentsTooltipLayer({
+  model,
+  mouseTracker,
+}: {
+  model: LinearAlignmentsDisplayModel
+  mouseTracker: MouseTracker
+}) {
+  const { TooltipComponent } = model
+  const mouseState = useMouseState(mouseTracker)
+  return (
+    <Suspense fallback={null}>
+      <TooltipComponent
+        model={model}
+        offsetMouseCoord={mouseState ? [mouseState.x, mouseState.y] : COORD0}
+        clientMouseCoord={
+          mouseState ? [mouseState.clientX, mouseState.clientY] : COORD0
+        }
+      />
+    </Suspense>
+  )
+})
+
 const AlignmentsDisplayComponent = observer(
   function AlignmentsDisplayComponent({
     model,
@@ -50,10 +87,7 @@ const AlignmentsDisplayComponent = observer(
   }) {
     const { classes } = useStyles()
     const ref = useRef<HTMLDivElement>(null)
-    const [mouseCoord, setMouseCoord] = useState<{
-      offset: [number, number]
-      client: [number, number]
-    }>({ offset: [0, 0], client: [0, 0] })
+    const { mouseTracker, handleMouseMove } = useMouseTracking(ref)
     // Hiding a track detaches this display from the MST tree, which fires MobX
     // reactions synchronously inside the click handler — this still-mounted
     // observer re-renders once (reading config-backed getters like
@@ -63,7 +97,7 @@ const AlignmentsDisplayComponent = observer(
     }
     const view = getContainingView(model) as LinearGenomeViewModel
 
-    const { TooltipComponent, pileupTruncated } = model
+    const { pileupTruncated } = model
     return (
       <DisplayChrome
         model={model}
@@ -77,15 +111,7 @@ const AlignmentsDisplayComponent = observer(
         // display id now rides `data-display-id` on this same element.
         testid="pileup-display"
         className={classes.display}
-        onMouseMove={event => {
-          if (ref.current) {
-            const { left, top } = ref.current.getBoundingClientRect()
-            setMouseCoord({
-              offset: [event.clientX - left, event.clientY - top],
-              client: [event.clientX, event.clientY],
-            })
-          }
-        }}
+        onMouseMove={handleMouseMove}
       >
         {({ canvasRef, canvas }) => (
           <>
@@ -116,13 +142,7 @@ const AlignmentsDisplayComponent = observer(
                 }}
               />
             </BottomRightIndicators>
-            <Suspense fallback={null}>
-              <TooltipComponent
-                model={model}
-                offsetMouseCoord={mouseCoord.offset}
-                clientMouseCoord={mouseCoord.client}
-              />
-            </Suspense>
+            <AlignmentsTooltipLayer model={model} mouseTracker={mouseTracker} />
             <ContextMenu
               anchor={model.contextMenuAnchor}
               menuItems={() => model.contextMenuItems()}
