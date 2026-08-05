@@ -3,6 +3,7 @@ import { Font } from 'astro:assets'
 
 import Lightbox from '../components/Lightbox.astro'
 import SearchBox from '../components/SearchBox.astro'
+import SpecDialog from '../components/SpecDialog.astro'
 import styles from './BaseLayout.module.css'
 import { baseUrl } from '../lib/base-url.ts'
 import { navLinks } from '../lib/nav.ts'
@@ -297,6 +298,7 @@ const year = new Date().getFullYear()
     </footer>
 
     <Lightbox />
+    <SpecDialog />
 
     <script>
       const toggle = document.getElementById('nav-toggle')

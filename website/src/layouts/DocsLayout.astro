@@ -65,32 +65,18 @@ const isTutorial = isRealDoc && currentSlug.startsWith('tutorials/')
 </SidebarLayout>
 
 {
-  /* Figure recipe dialogs are emitted into the markdown HTML by remark-figure,
+  /* Cell dialogs are emitted into the generated HTML by the api-docs scripts,
     so they are wired here rather than mounted as an island. */
 }
 <script>
-  function outsideBox(dialog: HTMLDialogElement, x: number, y: number) {
-    const box = dialog.getBoundingClientRect()
-    return x < box.left || x > box.right || y < box.top || y > box.bottom
-  }
-
-  // open the recipe dialog for a clicked "?" trigger
-  document.addEventListener('click', event => {
-    const target = event.target
-    if (target instanceof HTMLElement) {
-      const button = target.closest('[data-spec-dialog]')
-      if (button instanceof HTMLElement) {
-        const id = button.dataset.specDialog
-        const dialog = id ? document.getElementById(id) : null
-        if (dialog instanceof HTMLDialogElement && !dialog.open) {
-          dialog.showModal()
-        }
-      }
-    }
-  })
-
   // open the dialog holding a table cell's full value (a long type signature, a
   // jexl default, an #example) — see dialogCell in scripts/api-docs/util.ts
+  //
+  // The recipe dialog beside a figure, its Copy buttons, and the backdrop
+  // light-dismiss this dialog also relies on, all live in
+  // components/SpecDialog.astro, which BaseLayout mounts on every page — the
+  // gallery renders the same recipe dialog and cannot reach a docs-only
+  // listener.
   document.addEventListener('click', event => {
     const target = event.target
     if (target instanceof HTMLElement) {
@@ -99,57 +85,6 @@ const isTutorial = isRealDoc && currentSlug.startsWith('tutorials/')
       if (dialog instanceof HTMLDialogElement && !dialog.open) {
         dialog.showModal()
       }
-    }
-  })
-
-  // Copy a recipe code block (session spec JSON, Desktop link, notebook
-  // snippet). The text comes from the block's own <code>, decoded from the
-  // figure's link, so it can't drift from the image.
-  document.addEventListener('click', async event => {
-    const target = event.target
-    if (target instanceof HTMLElement) {
-      const button = target.closest('.spec-copy')
-      if (button instanceof HTMLElement) {
-        const code = button.parentElement?.querySelector('code')
-        let ok = true
-        try {
-          await navigator.clipboard.writeText(code?.textContent ?? '')
-        } catch {
-          ok = false
-        }
-        button.textContent = ok ? 'Copied!' : 'Copy failed'
-        button.classList.toggle('copied', ok)
-        setTimeout(() => {
-          button.textContent = 'Copy'
-          button.classList.remove('copied')
-        }, 1500)
-      }
-    }
-  })
-
-  // Light-dismiss: close when a click both starts and ends on the backdrop
-  // (outside the dialog's own box); the ::backdrop reports the dialog element
-  // itself as the target. Requiring the press to *start* on the backdrop stops
-  // a text selection dragged out of the dialog from closing it.
-  let pressStartedOnBackdrop = false
-
-  document.addEventListener('pointerdown', event => {
-    const target = event.target
-    pressStartedOnBackdrop =
-      target instanceof HTMLDialogElement &&
-      target.open &&
-      outsideBox(target, event.clientX, event.clientY)
-  })
-
-  document.addEventListener('click', event => {
-    const target = event.target
-    if (
-      pressStartedOnBackdrop &&
-      target instanceof HTMLDialogElement &&
-      target.open &&
-      outsideBox(target, event.clientX, event.clientY)
-    ) {
-      target.close()
     }
   })
 </script>
@@ -469,175 +404,6 @@ const isTutorial = isRealDoc && currentSlug.startsWith('tutorials/')
   }
   .docs-content :global(.admonition-warning .admonition-title) {
     color: #e53e3e;
-  }
-
-  /* Figure recipe: the "?" in a figure caption and the dialog it opens.
-     Markup comes from src/lib/spec-recipe/html.ts. */
-  .docs-content :global(.spec-help) {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    margin-left: 0.35rem;
-    padding: 0.2rem;
-    border: none;
-    border-radius: 4px;
-    background: none;
-    color: var(--color-text-muted);
-    cursor: pointer;
-    vertical-align: middle;
-    opacity: 0.65;
-  }
-  .docs-content :global(.spec-help svg) {
-    width: 1rem;
-    height: 1rem;
-    display: block;
-  }
-  .docs-content :global(.spec-help:hover) {
-    background: var(--color-surface);
-    color: var(--color-accent);
-    opacity: 1;
-  }
-  .docs-content :global(.spec-help:focus-visible) {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 1px;
-    color: var(--color-accent);
-    opacity: 1;
-  }
-  .docs-content :global(.spec-dialog) {
-    width: min(46rem, 92vw);
-    max-height: 85vh;
-    padding: 1.25rem 1.5rem 1.5rem;
-    border: 1px solid var(--color-border);
-    border-radius: 8px;
-    background: #fff;
-    color: var(--color-text);
-  }
-  .docs-content :global(.spec-dialog::backdrop) {
-    background: rgba(0, 0, 0, 0.55);
-  }
-  .docs-content :global(.spec-dialog-close-form) {
-    float: right;
-    margin: -0.5rem -0.75rem 0 0;
-  }
-  .docs-content :global(.spec-dialog-close) {
-    border: none;
-    background: none;
-    color: var(--color-text-muted);
-    font-size: 1rem;
-    cursor: pointer;
-  }
-  /* radio-driven tabs: no JS, the checked input selects its panel */
-  .docs-content :global(.spec-tab-input) {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
-  }
-  .docs-content :global(.spec-tab-label) {
-    display: inline-block;
-    padding: 0.4rem 0.85rem;
-    border-bottom: 2px solid transparent;
-    color: var(--color-text-muted);
-    font-size: 0.9rem;
-    font-style: normal;
-    cursor: pointer;
-  }
-  .docs-content :global(.spec-tab-input:checked + .spec-tab-label) {
-    border-bottom-color: var(--color-accent);
-    color: var(--color-accent);
-    font-weight: 600;
-  }
-  .docs-content :global(.spec-tab-input:focus-visible + .spec-tab-label) {
-    outline: 2px solid var(--color-accent);
-  }
-  .docs-content :global(.spec-panel) {
-    display: none;
-    margin-top: 1rem;
-    max-height: 65vh;
-    overflow-y: auto;
-    text-align: left;
-    font-style: normal;
-    font-size: 0.9rem;
-  }
-  /* Pairs the nth tab with the nth panel. One rule per panel panels() can emit
-     (spec-recipe/html.ts) — a figure with fewer panels just leaves later rules
-     unmatched, but a new panel needs a rule here or its tab shows nothing. */
-  .docs-content
-    :global(
-      .spec-tabs > .spec-tab-input:nth-of-type(1):checked ~ .spec-panel-1
-    ),
-  .docs-content
-    :global(
-      .spec-tabs > .spec-tab-input:nth-of-type(2):checked ~ .spec-panel-2
-    ),
-  .docs-content
-    :global(
-      .spec-tabs > .spec-tab-input:nth-of-type(3):checked ~ .spec-panel-3
-    ),
-  .docs-content
-    :global(
-      .spec-tabs > .spec-tab-input:nth-of-type(4):checked ~ .spec-panel-4
-    ) {
-    display: block;
-  }
-  .docs-content :global(.spec-note) {
-    margin: 0.5rem 0;
-  }
-  .docs-content :global(.spec-desktop-open) {
-    margin: 0 0 0.5rem;
-    font-size: 1rem;
-    font-weight: 600;
-  }
-  .docs-content :global(.spec-steps) {
-    margin: 0;
-    padding-left: 1.25rem;
-  }
-  .docs-content :global(.spec-steps li) {
-    margin-bottom: 0.7rem;
-  }
-  .docs-content :global(.spec-step-title) {
-    display: block;
-  }
-  .docs-content :global(.spec-step-note),
-  .docs-content :global(.spec-step-example) {
-    display: block;
-    margin-top: 0.15rem;
-  }
-  /* the docs `pre` rule pairs --color-code-text with --color-code-bg; keep both
-     together here (a light background with that text color is unreadable) */
-  .docs-content :global(.spec-json),
-  .docs-content :global(.spec-python) {
-    max-height: 45vh;
-    overflow: auto;
-    padding: 0.75rem;
-    border-radius: 4px;
-    background: var(--color-code-bg);
-    color: var(--color-code-text);
-    font-size: 0.8rem;
-  }
-  .docs-content :global(.spec-copywrap) {
-    position: relative;
-  }
-  /* leave room so the button never sits over the first line of code */
-  .docs-content :global(.spec-copywrap pre) {
-    padding-top: 1.9rem;
-  }
-  .docs-content :global(.spec-copy) {
-    position: absolute;
-    top: 0.4rem;
-    right: 0.4rem;
-    padding: 0.2rem 0.55rem;
-    border: 1px solid var(--color-border);
-    border-radius: 4px;
-    background: var(--color-surface);
-    color: var(--color-text-muted);
-    font-size: 0.72rem;
-    font-weight: 600;
-    cursor: pointer;
-  }
-  .docs-content :global(.spec-copy:hover),
-  .docs-content :global(.spec-copy.copied) {
-    color: var(--color-accent);
-    border-color: var(--color-accent);
   }
 
   @media (max-width: 768px) {

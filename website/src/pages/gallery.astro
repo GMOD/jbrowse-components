@@ -10,9 +10,14 @@ import {
   gallerySections,
   itemImg,
   itemLinks,
+  itemLiveHref,
   itemPrimary,
 } from '../lib/gallery.ts'
+import { recipeButtonHtml, recipeDialogHtml } from '../lib/spec-recipe/html.ts'
+import { buildRecipe } from '../lib/spec-recipe/recipe.ts'
 import page from '../styles/page.module.css'
+
+import type { GalleryItem } from '../lib/gallery.ts'
 
 // Intrinsic dimensions from the PNG IHDR header (width @ byte 16, height @ 20),
 // stamped on each <img> so the browser reserves the right box and the page
@@ -48,6 +53,25 @@ function thumbSize(file: string) {
   }
 }
 
+// The same "how was this made" dialog a doc figure carries, on the card that
+// shows the same figure — decoded from the card's own live link, so the JSON in
+// it is the session that produced the image above it. An item whose live link
+// isn't a session spec (an external Storybook page, a hub URL) simply gets no
+// dialog, the way a hand-linked <Figure> doesn't. `spec` names the figure so
+// opening it in Desktop saves a session named after it, matching what the doc
+// figure's own link does.
+//
+// Ids only have to be unique within this page; a counter is enough, and unlike
+// the label it can't collide or need escaping.
+let dialogCount = 0
+function recipeFor(item: GalleryItem) {
+  const live = itemLiveHref(item)
+  const recipe = live ? buildRecipe(live, item.spec) : undefined
+  return recipe
+    ? { recipe, id: `gallery-spec-dialog-${dialogCount++}` }
+    : undefined
+}
+
 // Sections shown as screenshot cards vs. compact link lists: an item appears in
 // the card grid when it has a figure, otherwise in the "more examples" list.
 const sections = gallerySections
@@ -58,7 +82,15 @@ const sections = gallerySections
       // Sized from the thumbnail, which is what the card paints; the full-size
       // original is only ever handed to the lightbox.
       return file
-        ? [{ item: i, file, thumb: thumbOf(file), size: thumbSize(file) }]
+        ? [
+            {
+              item: i,
+              file,
+              thumb: thumbOf(file),
+              size: thumbSize(file),
+              help: recipeFor(i),
+            },
+          ]
         : []
     }),
     links: s.items.filter(i => !itemImg(i)),
@@ -83,7 +115,7 @@ const sections = gallerySections
             <h2 id={s.id}>{s.title}</h2>
             {s.cards.length > 0 && (
               <div class="grid">
-                {s.cards.map(({ item, file, thumb, size }) => {
+                {s.cards.map(({ item, file, thumb, size, help }) => {
                   const src = `${baseUrl}/img/${thumb}`
                   const full = `${baseUrl}/img/${file}`
                   // The enlarged figure offers the same destinations as the
@@ -122,8 +154,19 @@ const sections = gallerySections
                               {link.label}
                             </a>
                           ))}
+                          {/* last, so it reads as an adjunct to the live link
+                              it sits beside — the same order a doc figure's
+                              caption puts them in */}
+                          {help && (
+                            <Fragment set:html={recipeButtonHtml(help.id)} />
+                          )}
                         </p>
                       </figcaption>
+                      {help && (
+                        <Fragment
+                          set:html={recipeDialogHtml(help.recipe, help.id)}
+                        />
+                      )}
                     </figure>
                   )
                 })}
@@ -268,6 +311,9 @@ const sections = gallerySections
   .card-links {
     display: flex;
     flex-wrap: wrap;
+    /* centered, so the recipe button stays the square it is in a doc figure
+       caption rather than being stretched to the row height */
+    align-items: center;
     gap: 0.4rem 1.5rem;
     margin: 0.4rem 0 0;
   }
