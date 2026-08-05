@@ -5,6 +5,28 @@ let device: GPUDevice | null = null
 let devicePromise: Promise<GPUDevice | null> | null = null
 const deviceLostListeners = new Set<() => void>()
 
+// Proof that this machine's WebGPU works, set the first time a device is
+// acquired. It is what makes a failed acquisition readable, because the two
+// causes are indistinguishable at the call site and want opposite handling:
+//
+//  - Before it, failure means "no WebGPU here" — the ordinary path on most
+//    hardware. Cache it, so every later backend skips the rung for free.
+//  - After it, failure means the GPU stack has not come back up yet. The
+//    re-init that follows `device.lost` asks for an adapter within a frame of
+//    the loss, and on a sleep/wake or a driver reset that is exactly when
+//    `requestAdapter` still declines. So this is not a rare race — it is the
+//    expected timing of the one path that re-acquires.
+//
+// Caching the second kind is what `createGpuHal` then reads as "no WebGPU on
+// this machine" (its own words), silently pinning the whole page to WebGL2
+// until a reload. So past this flag a failure is retried and never cached.
+let hadDevice = false
+
+// Enough to outlast a wake-up, and only ever spent once `hadDevice` is set — a
+// machine without WebGPU declines on the first ask and waits for nothing.
+const REACQUIRE_TRIES = 3
+const REACQUIRE_DELAY_MS = 700
+
 export function onDeviceLost(listener: () => void) {
   deviceLostListeners.add(listener)
   return () => {
@@ -27,6 +49,47 @@ function logGpuCapabilities(adapter: GPUAdapter, device: GPUDevice) {
   )
 }
 
+async function acquire() {
+  const adapter = await navigator.gpu.requestAdapter()
+  if (!adapter) {
+    console.warn(
+      '[GPU] No compatible GPU adapter available. This may indicate WebGPU is disabled, unsupported hardware, or a system limitation. Falling back to WebGL2.',
+    )
+    return null
+  }
+  const d = await adapter.requestDevice({
+    requiredLimits: {
+      maxStorageBufferBindingSize: adapter.limits.maxStorageBufferBindingSize,
+      maxBufferSize: adapter.limits.maxBufferSize,
+    },
+  })
+  return { adapter, device: d }
+}
+
+// One ask on a machine that has never produced a device, several on one that
+// has. See `hadDevice`: only the latter is asking again worth anything, and
+// only there is a decline evidence of a stack still coming up rather than of
+// hardware that simply cannot do this.
+async function acquireWithRetry() {
+  const tries = hadDevice ? REACQUIRE_TRIES : 1
+  for (let attempt = 1; attempt <= tries; attempt++) {
+    const last = attempt === tries
+    try {
+      const got = await acquire()
+      if (got || last) {
+        return got
+      }
+    } catch (e) {
+      if (last) {
+        throw e
+      }
+      console.warn(`[GPU] device acquisition failed (${attempt}/${tries}):`, e)
+    }
+    await new Promise(resolve => setTimeout(resolve, REACQUIRE_DELAY_MS))
+  }
+  return null
+}
+
 async function createDevice(): Promise<GPUDevice | null> {
   try {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -36,19 +99,11 @@ async function createDevice(): Promise<GPUDevice | null> {
       )
       return null
     }
-    const adapter = await navigator.gpu.requestAdapter()
-    if (!adapter) {
-      console.warn(
-        '[GPU] No compatible GPU adapter available. This may indicate WebGPU is disabled, unsupported hardware, or a system limitation. Falling back to WebGL2.',
-      )
+    const got = await acquireWithRetry()
+    if (!got) {
       return null
     }
-    const d = await adapter.requestDevice({
-      requiredLimits: {
-        maxStorageBufferBindingSize: adapter.limits.maxStorageBufferBindingSize,
-        maxBufferSize: adapter.limits.maxBufferSize,
-      },
-    })
+    const { adapter, device: d } = got
     // Best-effort diagnostic: a logging failure (e.g. an environment that
     // doesn't populate adapter.info) must never abort device creation and drop
     // us to WebGL2.
@@ -79,6 +134,7 @@ async function createDevice(): Promise<GPUDevice | null> {
       }
     })
     device = d
+    hadDevice = true
     return d
   } catch (e) {
     console.warn('[GPU] WebGPU device creation failed:', e)
@@ -115,6 +171,7 @@ export function isGpuRenderingDisabled() {
 export function resetGpuDeviceForTests() {
   device = null
   devicePromise = null
+  hadDevice = false
   deviceLostListeners.clear()
 }
 
@@ -129,6 +186,18 @@ export function getGpuDevice() {
   if (devicePromise) {
     return devicePromise
   }
-  devicePromise = createDevice()
-  return devicePromise
+  const pending = createDevice()
+  devicePromise = pending
+  // Nothing re-asks on its own — every backend built from here on reads this
+  // memo — so a cached failure is permanent for the life of the page. That is
+  // the right answer for hardware that has no WebGPU and the wrong one for a
+  // stack that is still coming back up, and `hadDevice` is which. Drop the memo
+  // on the second, so the next display to build asks again instead of
+  // inheriting a demotion to WebGL2 that no longer reflects the machine.
+  void pending.then(d => {
+    if (!d && hadDevice && devicePromise === pending) {
+      devicePromise = null
+    }
+  })
+  return pending
 }

@@ -113,6 +113,17 @@ function installFakeGpu(device: FakeDevice) {
   })
 }
 
+// A GPU stack that declines `requestAdapter` — what a machine without WebGPU
+// looks like, and also what one looks like in the moments after a driver reset.
+function installFailingGpu() {
+  const requestAdapter = jest.fn().mockResolvedValue(null)
+  Object.defineProperty(navigator, 'gpu', {
+    configurable: true,
+    value: { requestAdapter },
+  })
+  return requestAdapter
+}
+
 function uninstallFakeGpu() {
   Object.defineProperty(navigator, 'gpu', {
     configurable: true,
@@ -176,4 +187,55 @@ test('lost-promise resolving on the current device clears it and notifies listen
   expect(await getGpuDevice()).toBe(device2)
 
   uninstallFakeGpu()
+})
+
+test('caches a failed acquisition on a machine that never had a device', async () => {
+  const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  const requestAdapter = installFailingGpu()
+
+  expect(await getGpuDevice()).toBeNull()
+  expect(await getGpuDevice()).toBeNull()
+
+  // Never had a device, so the decline is a fact about this machine: ask once
+  // and let every later backend read the memo. No retry delay either.
+  expect(requestAdapter).toHaveBeenCalledTimes(1)
+
+  warnSpy.mockRestore()
+  uninstallFakeGpu()
+})
+
+test('retries and does not cache a failed re-acquisition after a device loss', async () => {
+  jest.useFakeTimers()
+  const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  const errSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+
+  const device = makeFakeDevice()
+  installFakeGpu(device)
+  expect(await getGpuDevice()).toBe(device)
+
+  device.resolveLost('driver reset')
+  await Promise.resolve()
+  await Promise.resolve()
+
+  // The stack has not come back up: this is what the re-init that follows the
+  // loss actually sees, since it asks within a frame of it.
+  const requestAdapter = installFailingGpu()
+  const first = getGpuDevice()
+  await jest.advanceTimersByTimeAsync(3 * 700)
+  expect(await first).toBeNull()
+
+  // Asked more than once, unlike the never-had-a-device case above.
+  expect(requestAdapter).toHaveBeenCalledTimes(3)
+
+  // And crucially the null is NOT the page's permanent answer. Without this,
+  // `createGpuHal` reads it as "no WebGPU on this machine" and every display
+  // built for the rest of the session runs on WebGL2.
+  const device2 = makeFakeDevice()
+  installFakeGpu(device2)
+  expect(await getGpuDevice()).toBe(device2)
+
+  warnSpy.mockRestore()
+  errSpy.mockRestore()
+  uninstallFakeGpu()
+  jest.useRealTimers()
 })

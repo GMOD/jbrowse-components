@@ -192,6 +192,56 @@ describe('useRenderingBackend', () => {
     expect(model.startRenderingBackend).toHaveBeenCalledTimes(2)
   })
 
+  test('stops re-initializing after a bounded number of device losses', async () => {
+    const factory = jest.fn().mockResolvedValue({ dispose: jest.fn() })
+    const model = createReactiveModel()
+    const canvas = document.createElement('canvas')
+
+    const { result } = renderHook(() => useRenderingBackend(factory, model))
+    act(() => {
+      result.current.canvasRef(canvas)
+    })
+    await act(async () => {})
+    expect(factory).toHaveBeenCalledTimes(1)
+
+    // A device that keeps dying. Nothing reports this path, so uncapped it is a
+    // display re-initializing against a dead device for as long as the tab is
+    // open — the failure the budget exists to stop.
+    for (let i = 0; i < 5; i++) {
+      act(() => {
+        simulateDeviceLost()
+      })
+      await act(async () => {})
+    }
+
+    // 1 initial + at most MAX_RECOVERIES (2) rebuilds.
+    expect(factory).toHaveBeenCalledTimes(3)
+    // And it says so rather than sitting silently on a dead device.
+    expect(isGpuContextLostError(model.renderError)).toBe(true)
+  })
+
+  test('a device loss recovers silently while it is within budget', async () => {
+    const factory = jest.fn().mockResolvedValue({ dispose: jest.fn() })
+    const model = createReactiveModel()
+    const canvas = document.createElement('canvas')
+
+    const { result } = renderHook(() => useRenderingBackend(factory, model))
+    act(() => {
+      result.current.canvasRef(canvas)
+    })
+    await act(async () => {})
+
+    act(() => {
+      simulateDeviceLost()
+    })
+    await act(async () => {})
+
+    expect(factory).toHaveBeenCalledTimes(2)
+    // No banner: gpuDevice already dropped the dead device and the re-init got
+    // a fresh one, so there is nothing for the user to act on.
+    expect(model.renderError).toBeUndefined()
+  })
+
   test('re-initializes when canvas element is replaced after regionTooLarge recovery', async () => {
     const canvas1 = document.createElement('canvas')
     const canvas2 = document.createElement('canvas')

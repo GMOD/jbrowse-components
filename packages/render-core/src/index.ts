@@ -19,9 +19,12 @@ export { RenderLifecycleMixin } from './RenderLifecycleMixin.ts'
 export type { RenderingBackendCallbacks } from './RenderLifecycleMixin.ts'
 export {
   createGpuContextLostError,
+  createGpuDeviceLostError,
   isGpuContextLostError,
   useRenderingBackend,
 } from './useRenderingBackend.ts'
+export { RecoveryBudget } from './recoveryBudget.ts'
+export type { RecoveryVerdict } from './recoveryBudget.ts'
 export type { RenderLifecycleModel } from './useRenderingBackend.ts'
 export { useTabVisibilityRerender } from './useTabVisibilityRerender.ts'
 export { ScrollLockedOverlay } from './ScrollLockedOverlay.tsx'

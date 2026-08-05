@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import type { RefObject } from 'react'
+
 import { isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import { onDeviceLost } from './gpuDevice.ts'
+import { RecoveryBudget } from './recoveryBudget.ts'
 import { useTabVisibilityRerender } from './useTabVisibilityRerender.ts'
 
 // Auto-recovery from WebGL context loss. The browser force-loses the oldest
@@ -10,11 +13,11 @@ import { useTabVisibilityRerender } from './useTabVisibilityRerender.ts'
 // which strands the display on the GPU error overlay. We re-init a FEW times on
 // an exponential backoff so it comes back once GPU capacity frees — then stop
 // and leave the manual Retry button, deliberately leaning on manual recovery
-// rather than risk thrashing the page with endless re-inits. The attempt budget
-// resets ONLY on a genuine browser restore or a manual retry (never on a bare
-// re-acquire), so a context that keeps flapping climbs to the cap and stops —
-// it can never spin in an infinite loop.
-const MAX_CONTEXT_RECOVER_ATTEMPTS = 2
+// rather than risk thrashing the page with endless re-inits. The budget is
+// `RecoveryBudget`, which is windowed: a context that keeps flapping climbs to
+// the cap and stops, but two losses far enough apart to not be a flap each get
+// their own recovery. It resets outright only on a genuine browser restore or a
+// manual retry (never on a bare re-acquire — every flap contains one).
 const CONTEXT_RECOVER_BASE_MS = 1000
 
 // A lost context reports itself because nothing else will: calls on it are
@@ -31,22 +34,44 @@ const CONTEXT_LOST_MESSAGE =
   'WebGL context lost. The browser reclaimed the GPU context for this display, ' +
   'usually because too many GPU-rendered views are open at once.'
 
+const DEVICE_LOST_MESSAGE =
+  'WebGPU device lost. The GPU device backing this display went away and kept ' +
+  'going away after several attempts to rebuild on a fresh one.'
+
 /**
  * Flagged rather than matched by message or `instanceof`, so the error UI can
  * offer the remedy specific to a loss (switch the page to Canvas2D) without
  * offering it for render errors whose remedy differs (an over-allocation says to
  * zoom in).
+ *
+ * A lost WebGPU device carries the same flag deliberately: the two causes
+ * differ, but the remedy on offer — take the page off the GPU — is the same one.
  */
-export function createGpuContextLostError() {
-  return Object.assign(new Error(CONTEXT_LOST_MESSAGE), {
+export function createGpuContextLostError(message = CONTEXT_LOST_MESSAGE) {
+  return Object.assign(new Error(message), {
     gpuContextLost: true as const,
   })
+}
+
+export function createGpuDeviceLostError() {
+  return createGpuContextLostError(DEVICE_LOST_MESSAGE)
 }
 
 export function isGpuContextLostError(error: unknown) {
   return (
     typeof error === 'object' && error !== null && 'gpuContextLost' in error
   )
+}
+
+/**
+ * The display's recovery budget, created on first read. Reached through the ref
+ * at every use site rather than unwrapped once in the hook body: the unwrapped
+ * value is a fresh binding each render, so an effect closing over it has to
+ * name it as a dependency, and then the effect re-subscribes on every render.
+ * The ref itself is stable and needs no dependency.
+ */
+function budgetOf(ref: RefObject<RecoveryBudget | null>) {
+  return (ref.current ??= new RecoveryBudget())
 }
 
 function nodeAlive(model: unknown) {
@@ -127,7 +152,14 @@ export function useRenderingBackend<
   // recovery is driven by `renderError` (always observed) + this sticky flag,
   // not by the canvas-bound listener.
   const contextLostRef = useRef(false)
-  const recoverAttemptsRef = useRef(0)
+  // One budget across both loss families, not one each: a display renders on a
+  // single HAL rung at a time, and sharing it stops a display that flaps
+  // between the two from spending a fresh allowance on each.
+  const budgetRef = useRef<RecoveryBudget | null>(null)
+  // Latched once the budget says stop. The recovery effect below runs on every
+  // render, so it needs a non-mutating way to know it has already given up —
+  // asking the budget again would refresh its window and it would never lapse.
+  const gaveUpRef = useRef(false)
   const recoverTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   )
@@ -166,7 +198,8 @@ export function useRenderingBackend<
         clearTimeout(recoverTimerRef.current)
         recoverTimerRef.current = undefined
         contextLostRef.current = false
-        recoverAttemptsRef.current = 0
+        gaveUpRef.current = false
+        budgetOf(budgetRef).reset()
         setContextVersion(v => v + 1)
       }
       canvas.addEventListener('webglcontextlost', onLost)
@@ -187,8 +220,8 @@ export function useRenderingBackend<
   // Auto-recover a context-loss-induced error: re-init on bounded backoff. Gated
   // on `contextLostRef` so non-GPU render errors are never auto-retried, and on
   // a one-pending-timer guard so it schedules at most one attempt at a time. The
-  // attempt counter is reset only on a clean init / restore / manual retry, so a
-  // context that keeps re-losing climbs to the cap then stops — never spins.
+  // budget is spent only when an attempt is actually scheduled, so a context
+  // that keeps re-losing climbs to the cap then stops — never spins.
   // Runs every render (no dep array) on purpose: the guards make it idempotent,
   // and depending on `model.renderError` is unreliable here (a plain re-render
   // can miss the value transition). The unmount cleanup is the separate effect
@@ -197,11 +230,15 @@ export function useRenderingBackend<
     if (
       model.renderError &&
       contextLostRef.current &&
-      recoverTimerRef.current === undefined &&
-      recoverAttemptsRef.current < MAX_CONTEXT_RECOVER_ATTEMPTS
+      !gaveUpRef.current &&
+      recoverTimerRef.current === undefined
     ) {
-      const delay = CONTEXT_RECOVER_BASE_MS * 2 ** recoverAttemptsRef.current
-      recoverAttemptsRef.current += 1
+      const budget = budgetOf(budgetRef)
+      if (budget.record(performance.now()) === 'give-up') {
+        gaveUpRef.current = true
+        return
+      }
+      const delay = CONTEXT_RECOVER_BASE_MS * 2 ** (budget.attempt - 1)
       recoverTimerRef.current = setTimeout(() => {
         recoverTimerRef.current = undefined
         if (nodeAlive(model)) {
@@ -221,12 +258,30 @@ export function useRenderingBackend<
     [],
   )
 
+  // WebGPU device loss. This re-inits invisibly — no grace window and no
+  // `renderError`, because `gpuDevice` has already dropped the dead device and
+  // the next `getGpuDevice()` acquires a fresh one — but it is bounded by the
+  // same budget as the WebGL path, and for a sharper reason. A WebGL loss that
+  // never recovers is at least *reported*: it sets `renderError`, which is what
+  // unmounts the canvas. Nothing reports this one, so an uncapped version of it
+  // is a display that re-initializes against a dying device forever, silently,
+  // for as long as the tab is open. On give-up it says so instead.
   useEffect(
     () =>
       onDeviceLost(() => {
+        if (gaveUpRef.current) {
+          return
+        }
+        if (budgetOf(budgetRef).record(performance.now()) === 'give-up') {
+          gaveUpRef.current = true
+          if (nodeAlive(model)) {
+            model.setRenderError(createGpuDeviceLostError())
+          }
+          return
+        }
         setContextVersion(v => v + 1)
       }),
-    [],
+    [model],
   )
 
   useEffect(() => {
@@ -327,7 +382,8 @@ export function useRenderingBackend<
     clearTimeout(recoverTimerRef.current)
     recoverTimerRef.current = undefined
     contextLostRef.current = false
-    recoverAttemptsRef.current = 0
+    gaveUpRef.current = false
+    budgetOf(budgetRef).reset()
     if (nodeAlive(model)) {
       model.setRenderError(undefined)
     }

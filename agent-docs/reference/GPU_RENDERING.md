@@ -262,6 +262,22 @@ that unmounts the canvas, freeing the context for the page and letting the remou
 get a live one. Bounded auto-recovery then clears it (2 attempts, exponential
 backoff) and stops at the manual Retry.
 
+**The recovery budget is windowed, not lifetime** (`RecoveryBudget`, 2 within
+60 s). The cap exists for a context that recovers and immediately re-loses, and
+that flap happens within seconds; two unrelated losses an hour apart are not one,
+and a lifetime counter cannot tell them apart — it spends the second loss's
+budget on the first and leaves a long-lived tab unable to auto-recover at all. A
+successful re-init deliberately does not reset it (every flap contains one); only
+a genuine `webglcontextrestored` and a manual Retry do.
+
+**A WebGPU device loss is capped by the same budget**, and needs the cap more
+than the WebGL path does. That path re-inits invisibly — `gpuDevice` has already
+dropped the dead device and the next `getGpuDevice()` acquires a fresh one, so
+there is no grace window and no `renderError` — which means nothing reports it.
+Uncapped, a display re-initializes against a dying device silently for as long as
+the tab is open. On give-up it sets `createGpuDeviceLostError()`, which carries
+the same `gpuContextLost` flag (different cause, same remedy on offer).
+
 Navigating away is not one of these: `pagehide` tears the backend down and drops
 any pending report, since a bfcache freeze thaws the timer *after* `pageshow`
 rebuilt the backend. A loss while the tab is merely hidden does report and
@@ -823,6 +839,18 @@ drawn as several scissored blocks. Practical consequences:
 Measurements, the unpinned cap, and mitigation state:
 [ARCHITECTURAL_LIMITS.md](ARCHITECTURAL_LIMITS.md) §"One WebGL2 context per
 display canvas".
+
+**A failed device acquisition is cached, except after a loss.** `getGpuDevice()`
+memoizes its promise, so a null result normally means "no WebGPU on this machine"
+and every later backend skips the rung for free — which is right, and is what
+`createGpuHal` reads it as. But the re-init that follows `device.lost` asks for an
+adapter within a frame of the loss, and on a sleep/wake or driver reset that is
+precisely when `requestAdapter` still declines: the failure is not a rare race
+there, it is the expected timing. Caching *that* pins the whole page to WebGL2
+until a reload, silently. So `gpuDevice.ts` tracks whether a device has ever been
+acquired (`hadDevice`) and, past that point, retries the acquisition (3 × 700 ms)
+and never caches a failure. A machine that genuinely lacks WebGPU is unaffected —
+it declines on the first ask and waits for nothing.
 
 **Renderer override** (query param `?renderer=`). Only three values are
 recognized (`createHal.ts` + `getGpuDevice`): `canvas2d` / `canvas` force the
