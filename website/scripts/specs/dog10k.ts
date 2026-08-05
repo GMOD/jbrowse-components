@@ -389,6 +389,32 @@ export const dog10kSpecs: ScreenshotSpec[] = [
   // says, when what is inside it is an ordinary window picked for being
   // checkable (review: "if we are making up a story we should not do that ... i
   // just wanted to show ancestry painting"). The painting is the figure.
+  //
+  // STILL NOTHING MARKED ON IT after the next review, which was not a request
+  // for a mark: "all dogs come from wolves so its just like, super recent in
+  // this case? can add text that says this if it makes sense". That is right and
+  // it is the one thing about this figure a reader cannot get from the pixels,
+  // but it is a paragraph rather than a label, so it went into
+  // local_ancestry.md under Reading the painting. The short version: FLARE
+  // infers against the two panels it was handed, both of them modern, so
+  // everything domestication carried into dogs is in BOTH panels, separates
+  // nothing, and paints dog. Orange is only what still looks like a present-day
+  // gray wolf and not like a breed dog, which after that much divergence means
+  // recently acquired. The figure already carries both controls for that
+  // reading: held-out wolves solid orange at the top, German Shepherd lineage
+  // solid dog at the foot.
+  //
+  // "IF GENOME WIDE THERE ARE INTERESTING PATTERNS, WE CAN CONSIDER ZOOMING OUT
+  // GENOME WIDE" (same review). Not available as a spec edit, and not because of
+  // the display. scripts/build_dog10k_wolfdog_ancestry.sh takes ONE chromosome
+  // (`CHROM="${1:-chr1}"`) and every step after it is per-chromosome: the panel
+  // slice, the genetic map, the FLARE run, the BED. The hosted files are
+  // dog10k_wolfdog_named.chr1.bed and dog10k_wolfdog_ancestry.chr1.bed. Genome
+  // wide is 38 more FLARE runs over ~20x the sequence, then a re-upload of the
+  // demo, so it is a build-and-host job to be asked for rather than a loc
+  // change. Worth noting before anyone costs it out: chr1 is where the block
+  // structure is legible at all, and the same rows at 1/20th the bp per pixel
+  // would be flecks.
   {
     mode: 'url',
     name: 'dog10k-wolfdog-ancestry',
@@ -424,68 +450,17 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     viewportHeight: 905,
   },
 
-  // The spectrum: the same inference over 243 animals — one dog from each of the
-  // 219 breeds the collection sequenced four or more of, plus the eight wolfdogs,
-  // the two wolf-lookalike breeds, the German Shepherd lineage they were crossed
-  // back to, and eight European gray wolves held out of the wolf panel so they
-  // are painted by the other twenty-eight. Reordered by ancestry similarity
-  // across the visible chromosome (`runClustering`, the session form of the track
-  // menu's Clustering -> Cluster rows by similarity).
-  //
-  // WHY THE BREED SWEEP IS MOST OF IT, per review ("can we add even more dogs to
-  // generate more frisson... we see the variety and spectrum and the ones that
-  // cluster out"). The wolfdogs on their own can only show that a documented
-  // cross leaves blocks. Against 219 breeds picked on how well the collection
-  // sequenced them and nothing else, the same picture also shows what a dog with
-  // no such cross looks like — 193 of the 219 come in under 1% wolf on this
-  // chromosome — so the seven wolfdogs at 15-45% have a scale to be read
-  // against rather than an assertion (the eighth, Czechoslovakian 2 at 1.5% with
-  // no block over 0.8 Mb, sits inside the sweep's own range: the unit here is the
-  // animal, not the breed),
-  // and the handful of breeds that do carry something are found by the sweep
-  // instead of being nominated.
-  //
-  // 486 rows in 1100px is ~2.3px a row, well under the ~6px a row label needs, so
-  // this figure deliberately carries no names: it is the WHERE, and the figure
-  // above it is the WHO, at the same data and 64 of the same rows. The dendrogram
-  // is what makes it readable without labels, and the chip in its corner names
-  // the locus the tree was computed over (whole-chromosome here), which is not a
-  // decoration — cluster on a 5 Mb view and the same rows come out in a different
-  // order.
-  //
-  // treeAreaWidth 260, against the mixin's default of 80. At 80 over a 3000px
-  // capture the tree is a 2.7%-wide smear: the deep split that separates the
-  // wolves from everything else and the near-zero-height comb the 193 flat-dog
-  // breeds merge in are both in there, and neither is resolvable. Since the
-  // whole claim of this figure is that an unlabelled clustering recovers the
-  // structure, an unreadable tree is the one thing it cannot afford. The gutter
-  // is otherwise unused here — the rows are far below the height at which labels
-  // draw text — so the width costs nothing but frame.
-  {
-    mode: 'url',
-    name: 'dog10k-wolfdog-ancestry-clustered',
-    url: lgvSession(DOG_CONFIG, {
-      assembly: 'UU_Cfam_GSD_1.0',
-      loc: 'chr1:1-123,556,469',
-      tracks: [
-        {
-          trackId: 'dog10k_wolfdog_ancestry',
-          type: 'LinearMultiRowFeatureDisplay',
-          height: 1100,
-          treeAreaWidth: 260,
-          runClustering: true,
-        },
-      ],
-    }),
-    readyText: 'chr1',
-    // the dendrogram only mounts once the clustering RPC returns a tree, so it
-    // is the real signal that the reordering happened (a settle alone can
-    // capture the pre-cluster order)
-    readySelector: '[data-testid="tree_sidebar_dendrogram"]',
-    readyTimeout: 180000,
-    settleMs: 5000,
-    viewportHeight: 1305,
-  },
+  // dog10k-wolfdog-ancestry-clustered was here and is DELETED (review: "you can
+  // consider deleting"). It was the same FLARE painting over all 243 animals,
+  // clustered, and 193 of the 219 breeds come in under 1% wolf on chr1 — so
+  // roughly two thirds of a 2,610px capture was an unbroken dog-blue field whose
+  // only content was that null result. The named-animals figure above it already
+  // carries the spectrum with rows a reader can name, and the clustering
+  // capability is shown in dog10k-igf1-haplotype. What the deleted figure knew
+  // that nothing else did is now prose in local_ancestry.md: the clustering has
+  // no access to the breed names and still separates the wolf carriers, and its
+  // corner chip names the region the tree came from because clustering is
+  // region-scoped.
 
   // Does the painting survive contact with the genotypes it was inferred from?
   // The check is the markers in this window whose alt allele is common in the
@@ -1432,25 +1407,43 @@ export const dog10kSpecs: ScreenshotSpec[] = [
   // default: with hundreds of records no single line can be followed, and a tall
   // band is just a grey wedge over the rows the figure is about.
   //
-  // 220 kb, NOT the 400 kb the slice covers, per review ("i cant really tell
-  // what the 'story' is here"). Equal-width columns are what makes the matrix
-  // legible, and they are also what makes a wide window cost so much: the sites
-  // that separate the two size classes (alt AF 0.82 in toy/small against 0.21 in
-  // giant) are 95 of 606, and in the 400 kb frame the other 511 columns are
-  // exactly as wide, so the block was one sixth of a panel of noise. The
-  // separating sites span 41,455,350-41,611,659 — the build script prints that
-  // range rather than it being read off a picture — and this window is that span
-  // with ~55 kb of undifferentiated flank either side, so the block is a third of
-  // the panel and both of its edges are still inside the frame. Neither edge is
-  // the gene's: IGF1 is 41,495,479-41,567,874, and the haplotype runs 40 kb past
-  // it upstream and 44 kb past it downstream, which is why the frame is not the
-  // gene.
+  // 320 kb, which is the third window this figure has had, so here is the whole
+  // sweep rather than only the answer. The separating sites (alt AF 0.82 in
+  // toy/small against 0.21 in giant, 95 of 606) span 41,455,350-41,611,659, a
+  // range the build script prints rather than one read off a picture. IGF1
+  // itself is 41,495,479-41,567,874, so the haplotype runs 40 kb past the gene
+  // upstream and 44 kb past it downstream and the frame is not the gene.
+  //
+  // It was 400 kb, narrowed to 220 kb on review ("i cant really tell what the
+  // 'story' is here"), and is now 320 kb on the next one ("zoom out if it helps
+  // show larger patterns"). Both moves are real and they pull opposite ways:
+  //
+  //   - The MATRIX wants the window tight. Equal-width columns are what make it
+  //     legible and also what make a wide frame expensive, since an
+  //     undifferentiated column is exactly as wide as a separating one.
+  //   - The FST LANE wants the window wide. At 220 kb the run of differentiated
+  //     sites filled the frame edge to edge, so the lane could not show that it
+  //     IS a run: there was no background in view to see it rise out of.
+  //
+  // Rendered at 220, 320 and 450 kb and measured rather than eyeballed, since
+  // "the clustering fell apart" is the thing a wider window would break. Counting
+  // colour blocks down the size swatch (the row order's own summary: fewer, longer
+  // blocks means the clustering recovered the size classes better) gives 19
+  // blocks at 220 kb, 21 at 320 kb and 18 at 450 kb, with the two longest blocks
+  // covering 63%, 52% and 52% of painted rows. So the row order is essentially
+  // unaffected across the whole sweep, and the trade is only about how much of
+  // the matrix is noise columns.
+  //
+  // 320 kb is where the Fst lane gains a visible baseline at both edges while
+  // the toy/small block is still one run of 452 px. 450 kb buys no more Fst
+  // context and dilutes the matrix further, so it is not the answer to "zoom
+  // out" either.
   //
   // `runClustering` orders the rows by genotype similarity. The size swatch
   // comes from the samples TSV and is applied afterwards, so the row order and
   // the swatch are independent.
   //
-  // STAYS CLUSTERED, on the 400 kb window. A grouped-by-size variant was
+  // STAYS CLUSTERED, whatever the window. A grouped-by-size variant was
   // rendered (groupBy: 'size', window narrowed to the differentiated core) and is
   // the wrong figure twice over: the page's result is that clustering on
   // genotypes RECOVERS the size classes, which grouping by size assumes rather
@@ -1463,7 +1456,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     name: 'dog10k-igf1-haplotype',
     url: lgvSession(DOG_CONFIG, {
       assembly: 'UU_Cfam_GSD_1.0',
-      loc: 'chr15:41,400,000-41,620,000',
+      loc: 'chr15:41,375,000-41,695,000',
       tracks: [
         {
           trackId: 'canFam4_ncbi_refseq',

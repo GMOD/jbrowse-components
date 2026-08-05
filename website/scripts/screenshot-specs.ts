@@ -28,7 +28,6 @@ import { featuresSpecs } from './specs/features.ts'
 import { gallerySpecs } from './specs/gallery.ts'
 import { graphSpecs } from './specs/graph.ts'
 import { gwasSpecs } from './specs/gwas.ts'
-import { hprc2Specs } from './specs/hprc2.ts'
 import { ldSpecs } from './specs/ld.ts'
 import { mafSpecs } from './specs/maf.ts'
 import { methylationSpecs } from './specs/methylation.ts'
@@ -73,7 +72,6 @@ export const specs: ScreenshotSpec[] = [
   ...pangenomeSpecs,
   ...pangenomeCactusSpecs,
   ...graphSpecs,
-  ...hprc2Specs,
   ...cookbookSpecs,
   ...embeddedSpecs,
   ...jbrowseImgSpecs,

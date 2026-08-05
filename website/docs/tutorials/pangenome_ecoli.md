@@ -795,12 +795,36 @@ tooltip gives.
 
 One of them is worth naming, because a cut graph always has ends and this one
 has a conspicuous one: the dark 93 bp node hanging off the green-to-yellow
-junction in the force pane. It is where CFT073 rejoins, and it has a single end
-here because `odgi extract -E` was given `K12#1#chr:1004500-1004900`. In the
-whole graph that segment links to `K12:1,004,686` **and** to `K12:997,574`, so
-CFT073 carries 93 bp where K12 carries 7.1 kb; the far anchor is 7 kb outside
-the cut and went with it. A one-sided node in any extracted subgraph means the
-same thing: sequence continuing past the window, not a dead end in the graph.
+junction in the force pane. It is where CFT073 rejoins, and in the whole graph
+that segment links to `K12:1,004,686` **and** to `K12:997,574`, so CFT073
+carries 93 bp where K12 carries 7.1 kb. The open end is the far side of that
+deletion, 7 kb outside the window `odgi extract -E` was given. A one-sided node
+in any extracted subgraph means the same thing: sequence continuing past the
+window, not a dead end in the graph.
+
+Widening until it closes is the obvious next move and the index says what it
+costs before you spend it on. Both anchors are in view only from
+`K12#1#chr:997,574-1,004,961`, and `-E` over a window that size returns
+thousands of segments where this one returns 48, because a base-level graph
+averages ~17 bp per segment. `-c 1` fetches the far anchor without everything
+between, and moves the problem rather than solving it: that node's own two ends
+are then open, and anchored on K12 it sits 7 kb off the left edge of the linear
+view above.
+
+The same event is four nodes in the
+[minigraph graph](/docs/user_guides/graph_genome_view) of these same five
+strains, because a structural graph spends one segment on the 7 kb K12 stretch
+instead of four hundred. Query its links index over the span and both routes are
+one row each:
+
+```bash
+tabix https://jbrowse.org/demos/ecoli_pangenome/ecoli_minigraph.links.bed.gz \
+  'K12#1#chr:997000-1005000'
+```
+
+`s378 → s379 → s380` is K12 through the deletion and `s378 → s2025 → s380` is
+CFT073 around it, where `s2025` is this same CFT073 sequence. Which resolution
+holds an event is a property of the graph, not of the window you asked for.
 
 <Figure caption="One slice of the five-strain graph drawn both ways, under a linear view of the same locus. Left, anchored on the graph's K12 path: both panels share an axis and the Depth colors, so the green-to-yellow step where the fifth strain rejoins the shared sequence sits at the same x in both. Right, force-directed: the same nodes and colors with nothing holding them to the axis." src="/img/pangenome/local_subgraph.png" links="Anchored=pangenome/local_subgraph_anchored,Force-directed=pangenome/local_subgraph_force" />
 

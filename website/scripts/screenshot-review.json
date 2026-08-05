@@ -1608,9 +1608,9 @@
   },
   "pangenome/maf": {
     "name": "pangenome/maf",
-    "status": "answered",
-    "note": "170 -> 120, four strain rows and nothing else. The lane was only that tall because of its own legend: genotype key + Insertions section is ~160px inside a track container that paint-clips its box, so the previous pass raised the height to fit the legend rather than cutting the legend to the height. This capture dismisses it through the button the legend carries (a click on a missing selector throws the regen, so it cannot fail into a silently clipped key the way a CSS hide would). It is the one legend in the set that can go: its vocabulary ('Homozygous alt', 'Heterozygous') describes a diploid callset and these are four haploid strains, the tutorial prose right under the figure already explains the numbered purple insertion markers, and the caption now names blue/grey/olive. Bonus: the legend was covering data -- two more insertion markers at the right end of the window are visible now. Viewport 710 -> 660.",
-    "reviewedAt": "2026-08-05T00:27:55.072Z",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-05T02:10:47.762Z",
     "hash": "697862264123e33db689130ee2e88c384e326bf6"
   },
   "phylop_ncbi_refseq_tp53": {
@@ -1839,13 +1839,6 @@
     "reviewedAt": "2026-07-25T05:05:42.378Z",
     "hash": "bb9164db19c8a73f09b463bf8fa783cadfe8f162"
   },
-  "hprc2/mhc_clustered": {
-    "name": "hprc2/mhc_clustered",
-    "status": "bad",
-    "note": "hard to tell what is going on with the hprc2 structural alleles. is this 'collapsed' from plugins/canvas? need proper layout i think to see nested features. add the variant as a plain old linearvariantdisplay also. if needed, we might want to even make the multisamplevariantdisplay support this...as an option...above the display...since it may be a common need DONE, as a lane above the haplotype rows: same VCF, same >=50bp / LV==0 filter, one collapsed row of glyphs, so a column of the matrix now has a variant with a width and a type over it. It needs a second track config because a track appears once in a view, and the two lanes share the adapter and the filter so they cannot disagree about which sites they show. Worth knowing if you write this yourself: the plain display's filter goes in jexlFiltersSetting (already 'jexl:'-prefixed), NOT the jexlFilters the multi-sample display takes -- that slot holds unprefixed expressions and prefixes on read, so passing prefixed strings gives 'jexl:jexl:' and an error banner. ON THE BUILT-IN OPTION: not built, and the two-track form is what proves out what it should do before a slot exists. If you want it, the natural shape is a display-level boolean that reserves a row above the matrix for the site glyphs and shares the display's filter/colorBy, which is a variants-plugin change (model slot, layout in the display component, SVG export, config doc). Say the word.",
-    "reviewedAt": "2026-08-05T00:56:54.788Z",
-    "hash": "5d75c6f683f915aacabf7c412930928ae7f3be1a"
-  },
   "multirow/display_types_menu": {
     "name": "multirow/display_types_menu",
     "status": "good",
@@ -1953,9 +1946,9 @@
   "pangenome/local_subgraph": {
     "name": "pangenome/local_subgraph",
     "status": "answered",
-    "note": "'the cut' is gone from the figure. The callout now reads '93 bp of CFT073. The sequence continues past this end: its other link falls outside the extracted window' -- it names the extraction that produced the file rather than assuming the reader knows a subgraph was cut out of a bigger graph, and says what the free end means instead of denying a term ('not a dead end') the same reader would not have. Same length as the old sentence on purpose: a fourth line grows the pill down over the ring it points at (measured at 330 and at 380 px wrap width). The tutorial prose above the figure already says the same thing at length.",
-    "reviewedAt": "2026-08-05T00:27:46.778Z",
-    "hash": "23502769476060bd5dd346b857468c8313577c36"
+    "note": "Answered, and the answer is measured rather than argued: extracting more data does NOT recover it. In ecoli_pggb.segs.bed.gz the blunt node is segment 176693, 93 bp, rank 1, CFT073 only, and ecoli_pggb.links.bed.gz gives its two links as 176689 at K12:1,004,686 and 178029 at K12:997,574. So it is a 7.1 kb deletion, not an extraction artifact, and the window holding both anchors is 7.4 kb -- which odgi extract -E returns as 6,361 segments (K12:1,000,500-1,008,900) against the 48 here, because a base-level pggb graph averages ~17 bp per segment. odgi extract -c 1 fetches the far anchor alone and is worse: that node's own two ends are then open and it anchors 7 kb off the left of the linear view. What changed instead is that the figure now names the EVENT rather than the cut. The force pane's label went from 'The sequence continues past this end: its other link falls outside the extracted window' to '93 bp of CFT073 where K12 has 7.1 kb. Its open end rejoins K12 7 kb outside this window', which closes the question rather than inviting it again. The tutorial paragraph carries the widening cost, and it now ends on the result that makes the whole thing worth reading: the same event is four nodes in the minigraph graph of these same five strains (s378 -> s379 -> s380 is K12 through the deletion, s378 -> s2025 -> s380 is CFT073 around it, both one row each in ecoli_minigraph.links.bed.gz over K12:997000-1005000). Which resolution can hold an event is a property of the graph, not of the window you asked for.",
+    "reviewedAt": "2026-08-05T02:40:36.008Z",
+    "hash": "63b0e9ef8dc1ca7b318500bee7ed98f14eff7d97"
   },
   "pangenome/rgfa_subgraph_launch": {
     "name": "pangenome/rgfa_subgraph_launch",
@@ -2211,16 +2204,16 @@
   },
   "dog10k-wolfdog-block-genotypes": {
     "name": "dog10k-wolfdog-block-genotypes",
-    "status": "answered",
-    "note": "Not deleted, but cut down to one view and stripped of the story. It was a compose: upper half the whole chromosome with the checked window boxed on it, lower half the window itself -- and the painting six paragraphs above carried the same box, so one ordinary window was marked three times. The locator half and its spec are gone, the box is gone, and what is left is the single frame: the genes, FLARE's painting for the 32 named animals, and the phased genotypes those calls were inferred from, at the 49 markers that separate the panels. KEPT RATHER THAN DELETED because it is the page's check on its own inference rather than another picture of ancestry: at a block edge the painting commits to a coordinate the genotypes can contradict, and for the long wolfdog blocks they do not (23/23 wolf alleles then 0/26) while the short sweep-breed blocks are only half-carried (13/23) or unsupported (Thai Ridgeback). The prose no longer says the window is special -- any 1.5 Mb with a few edges in it would do. If you would still rather the page ended at the painting, say so and it goes, along with the section.",
-    "reviewedAt": "2026-08-05T01:08:22.391Z",
+    "status": "bad",
+    "note": "i dont understand this figure. i'd just suggest deleting. previous agent notes. Not deleted, but cut down to one view and stripped of the story. It was a compose: upper half the whole chromosome with the checked window boxed on it, lower half the window itself -- and the painting six paragraphs above carried the same box, so one ordinary window was marked three times. The locator half and its spec are gone, the box is gone, and what is left is the single frame: the genes, FLARE's painting for the 32 named animals, and the phased genotypes those calls were inferred from, at the 49 markers that separate the panels. KEPT RATHER THAN DELETED because it is the page's check on its own inference rather than another picture of ancestry: at a block edge the painting commits to a coordinate the genotypes can contradict, and for the long wolfdog blocks they do not (23/23 wolf alleles then 0/26) while the short sweep-breed blocks are only half-carried (13/23) or unsupported (Thai Ridgeback). The prose no longer says the window is special -- any 1.5 Mb with a few edges in it would do. If you would still rather the page ended at the painting, say so and it goes, along with the section.",
+    "reviewedAt": "2026-08-05T02:12:51.922Z",
     "hash": "b3cb8c48505bd0d045a5448a6fdc19d3b3ccec15"
   },
   "dog10k-wolfdog-ancestry": {
     "name": "dog10k-wolfdog-ancestry",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-05T02:03:49.257Z",
+    "status": "answered",
+    "note": "Text added, and the genome-wide half is a build job rather than a spec edit. 'All dogs come from wolves' is exactly right and it is the one thing about this figure the pixels cannot say, so it went into local_ancestry.md under Reading the painting as a paragraph rather than onto the image: FLARE infers against the two panels it was handed and both are modern, so everything domestication carried into dogs is in BOTH panels, separates nothing, and paints dog. Orange is only what still looks like a present-day gray wolf and unlike a breed dog, which after that much divergence means recently acquired -- so yes, super recent, the 20th-century crosses, and domestication is what the method is blind to by construction. The figure already carries both controls for that reading and the paragraph now points at them: held-out wolves near-solid orange at the top, German Shepherd lineage solid dog at the foot though it descends from wolves exactly as much as the Saarloos above it. ON GENOME WIDE: not reachable by changing loc. build_dog10k_wolfdog_ancestry.sh takes one chromosome (CHROM=${1:-chr1}) and every step after it is per-chromosome -- panel slice, genetic map, FLARE run, BED -- and the hosted files are dog10k_wolfdog_named.chr1.bed and dog10k_wolfdog_ancestry.chr1.bed. Genome wide is 38 more FLARE runs over ~20x the sequence plus a demo re-upload, so it needs asking for. Worth weighing first: chr1 is where the blocks are legible at all, and the same rows at a twentieth of the bp per pixel would be flecks.",
+    "reviewedAt": "2026-08-05T02:40:57.016Z",
     "hash": "38c99710801094942c6e7510ce1cec64e386a4de"
   },
   "mcscan_anchors": {
@@ -2253,10 +2246,10 @@
   },
   "dog10k-igf1-haplotype": {
     "name": "dog10k-igf1-haplotype",
-    "status": "bad",
-    "note": "zoom out if it helps show larger patterns.  not sure if it should may cluster in narrower area and then zoom out. previous agent notes Fst added, and it is the answer to the 'what is the biological meaning' half rather than a second decoration. THE OBSTACLE THE LAST PASS HIT was real but only for the scan as built: 200 kb bins are wider than this whole 220 kb window, so a lane of it would be one or two points. So the estimator is run again at this locus -- igf1_site_fst.py, same Hudson estimator, same two breed panels, one site at a time over the very VCF the matrix draws. That last part is what makes it worth having: every point in the lane is one column of the matrix under it, so the two lanes cannot disagree and no second callset is involved. WHAT IT SAYS: the differentiated sites are a RUN, not a scatter -- near zero at both window edges, a band at 0.5-0.7 across the gene and its upstream flank, peaking at 0.72 inside IGF1 -- and that run is the block the clustering found. The tapestry now has a reason: the columns the two clusters differ on are the ones under the peak. Axis pinned to the scan's 0-0.8 so the two figures are one scale. viewportHeight 1080 -> 1263, and scripts/build_dog10k_igf1.sh now emits the lane's BED so it reproduces with everything else. No callout and no highlight on it -- the shape is the point and it does not need pointing at.",
-    "reviewedAt": "2026-08-05T02:03:36.421Z",
-    "hash": "3d7cc417ea7be206ee22b5a341c98108e6628a9e"
+    "status": "answered",
+    "note": "Zoomed out, but to 320 kb rather than all the way, and the stopping point was measured. The window has now been 400 kb, 220 kb (narrowed on the review 'i cant really tell what the story is here') and 320 kb, and the two lanes pull opposite ways: the matrix wants it tight, because an undifferentiated column is exactly as wide as a separating one, while the Fst lane wants it wide, because at 220 kb the run of differentiated sites filled the frame edge to edge and so could not be seen to BE a run. Rendered all three and counted colour blocks down the size swatch, which is the row order's own summary: 19 blocks at 220 kb, 21 at 320, 18 at 450, with the two longest covering 63/52/52 percent of painted rows. So the clustering is essentially unaffected across the sweep and the only real trade is noise columns. 320 kb is where Fst gains a visible near-zero baseline at both edges while the toy/small block is still one 452 px run; 450 kb buys no more baseline and dilutes the matrix further. Caption and the Framing it section updated to say the flank is what the Fst lane needs, not padding. Note that 'cluster in a narrower area and then zoom out' is not available: runMultiRowClustering is scoped to view.dynamicBlocks, so the order is always recomputed for whatever is in view.",
+    "reviewedAt": "2026-08-05T02:40:46.298Z",
+    "hash": "b2a95057695ca83dc37814eb4fb31b99c91b7795"
   },
   "dog10k-slc28a3-copy-number": {
     "name": "dog10k-slc28a3-copy-number",
@@ -2456,8 +2449,8 @@
   "cancer_sv/multihop_reads": {
     "name": "cancer_sv/multihop_reads",
     "status": "answered",
-    "note": "Both halves, and the second one turned out to be a product gap rather than a figure. HOW IT WAS GENERATED: the three-panel view comes from Add -> Breakpoint split view, whose import form takes one row per locus, so the tutorial's own --loci line fills it in; the prose now says that outright, and another session in this worktree has a steps figure of that route in flight (cancer_sv/multihop_split_view_steps). EASIER: a breakend's split view was reachable only through the feature details panel, under whatever INFO the caller wrote -- a hundred rows of SnpEff ANN on this VCF, so the link sat below a table you have to scroll past to learn it exists. LinearVariantDisplay now carries the row in the feature right-click menu (c4fe814fc0), gated on the record's own type so a variant with no mate never offers it, and cancer_sv/split_view_from_breakend is the new four-frame figure: the menu, the dialog's shape step, its window-size step, then the two panels with the reads that cross the junction drawn as connectors between them. Worth knowing if you drive that dialog from a spec: its submit cannot be clicked by text or by .MuiDialogActions-root button (the first is Back), and the menu item queues one dialog while the click helper's covered-element fallback can dispatch twice, so a second copy stands behind the first -- the result frame is loaded as a session instead, which is the harness's own stage.url case.",
-    "reviewedAt": "2026-08-05T02:04:25.806Z",
+    "note": "The route is now a feature rather than a set of instructions. HOW IT WAS GENERATED, which was the ask: a session spec, and the only route the tutorial documented was Add -> Breakpoint split view with three loci typed into the import form -- loci a reader can only get by reading sv_multihop.py's output. That is the thing you said to avoid, so instead of screenshotting the form, the dialog that already knows the answer got a second destination. WHAT WAS BUILT: 'Open as split view' in the Reconstruct derivative allele dialog (fd705fd256). The dialog already scans the reads in the window, groups them by their SA chains and ranks the routes through the reference they describe; picking one and choosing this builds a BreakpointSplitView with one panel per SEGMENT of that route, in the order the reads cross it, carrying the launching view's tracks. Nothing is typed. One panel per segment rather than per chromosome is the part a hand-filled form cannot do: this chain leaves chr3 and returns to it, so it gets four panels and a person filling in rows types three. Each panel opens on the junction its segment carries rather than on the whole segment -- an outer segment is as long as the longest read that described it, and at 200x ONT a panel over 33 kb of one is a 17 MB fetch the alignments track refuses. NEW FIGURE cancer_sv/multihop_split_view_steps, two frames driving the real UI: the dialog over the pileup it scanned, and the view it built with the reads drawn crossing between panels. The tutorial teaches that route now and mentions the import form only as the way in when you already know the loci. Tests: buildSplitViewFromPath.test.ts covers the order, the revisit case, the junction windowing and the id stripping.",
+    "reviewedAt": "2026-08-05T02:27:54.107Z",
     "hash": "577c5578df93cbfb6e1d81817fafb396b14045cd"
   },
   "cancer_sv/derivative_inserts": {
@@ -2558,13 +2551,6 @@
     "reviewedAt": "2026-08-04T22:41:28.441Z",
     "hash": "1d7a132ee060d660e63a5f9211b8489266ea7083"
   },
-  "ld/anopheles_r2_vs_dprime": {
-    "name": "ld/anopheles_r2_vs_dprime",
-    "status": "answered",
-    "note": "Re-reviewed, and kept -- but the previous note's argument was not the one that decides it, so here is the one that does, plus a change to the figure. WHAT WAS ACTUALLY WRONG: the difference the section is about is outside the block, outside-the-block is most of the frame, and nothing in the frame said so -- the takeaway lived in the caption and the picture was two triangles in two colors. Fixed: a label in each lane over the arm's left third, 'r2 outside the inversion: near zero' over the near-white span, \\\"D' outside the inversion: still high\\\" over the same span drawn speckled blue. Same anchor locus in both, so they cannot drift apart. WHY IT IS NOT DELETED, beyond being the only picture of ldMetric: it is a live regression guard on a bug this codebase actually had. The two panels first rendered pixel-identical because tabix hands back no header for a -S 1 indexed plink file, the column layout lost its DP column, and a 'dprime' request silently resolved to r2 while the legend still said D'. Nothing else in the site would catch that recurrence -- D' averages 0.59 inside 2La against r2's 0.19, so identical panels are the tell. The section is also the page's only 'which metric do I read' answer, and the page's standard is to show rather than tell. If you still want it gone, it is one flip away and the prose survives without it.",
-    "reviewedAt": "2026-08-05T01:11:53.394Z",
-    "hash": "9a1f0dcf48e53de2d76b730a67e82a3248b61683"
-  },
   "methylation/hg002_snrpn_ungrouped": {
     "name": "methylation/hg002_snrpn_ungrouped",
     "status": "good",
@@ -2592,13 +2578,6 @@
     "note": "Kept, and given the one thing it was missing: something that says which row to read. It is the only picture in the tutorial's 'Pangenome variants projection' section, and that section is about a display choice (LinearMultiSampleVariantMatrixDisplay on the vg deconstruct VCF), so deleting it leaves the one step of the Cactus path with no picture. The window is also load-bearing -- chr:800,000-806,000 is deliberately the same 6 kb the MAF figure below draws base by base, so the reader gets one stretch in two projections. WHAT WAS ACTUALLY WRONG is that the finding was invisible: 133 columns of blue and grey with nothing pointing at NCTC86. Measured on the hosted VCF over that window (tabix + a per-sample genotype count): CFT073 carries an alt at 70 of the 133 records, IAI39 at 86, Sakai at 55, and NCTC86 at 3. That is the figure. A label now sits on NCTC86's row saying it, anchored to the row's own gutter label -- an SVG <text> in shared/components/SvgSampleRowLabels.tsx -- rather than to a fraction of the display height, since the matrix sits under a connector band whose height the spec has no business knowing. Caption updated to name the labeled row.",
     "reviewedAt": "2026-08-04T22:45:34.636Z",
     "hash": "9278b41eb1598a7e4ad04ef213acd162ad3807c1"
-  },
-  "pangenome/hprc_repeat_classes": {
-    "name": "pangenome/hprc_repeat_classes",
-    "status": "good",
-    "note": "Compact half done, synteny half tried and rejected with a reason. HEIGHT: the MultiLinearWiggleDisplay goes 300 -> 200 on both panes and the viewport 960 -> 760. Four class rows still read as four rows at 50 px each, and the LINE-vs-SINE contrast the figure exists for is unaffected. SYNTENY: built it and rendered it twice before concluding it is wrong for this comparison. A band needs the two panes to be counterparts, and these deliberately are not -- each pane is its OWN assembly's last 650 kb, which is the only framing that keeps them the same width in bp and therefore comparable row against row (a lifted-over interval cannot exist for sequence one assembly does not have, which is the whole subject). Hung the UCSC hg38-to-hs1 liftOver chain between them as a session track (jbrowse.org/ucsc/hg38/liftOver/hg38ToHs1.over.pif.gz, which does exist and loads fine) and what it paints is a single flat block across the entire band: a liftOver chain is one chromosome-scale feature whose base ribbon is one trapezoid, so the band ends up asserting that these two windows correspond end to end -- the opposite of what the figure says. minAlignmentLength 20000 does not change it. It also costs both displayName titles, since a synteny view's sub-panels do not carry them, and those titles are exactly what tells a reader the panes are not the same interval. Reverted to the two linear views, kept the shorter display, and recorded the finding in the spec so the next reader does not re-derive it.",
-    "reviewedAt": "2026-08-04T23:05:36.957Z",
-    "hash": "16757ca2ce54b819be33b790b546615052ba800c"
   },
   "pangenome/long_reads": {
     "name": "pangenome/long_reads",
@@ -2630,17 +2609,10 @@
   },
   "cancer_sv/foldback_reconstruction": {
     "name": "cancer_sv/foldback_reconstruction",
-    "status": "answered",
-    "note": "why are the reads not shown using alignmentstrack?that is potentially important. previous agent notes: Not a boring screenshot any more, and the answer to 'can it load the reads across the different areas' is yes, without the wasm minimap2. The reads are placed on the allele by transforming their own alignments through the path's piecewise-linear map (projectReadsOntoDerivative), so the frame now ends in 'Reads on this allele (9/19 unbroken)': a molecule that crosses the fold-back draws as ONE blue bar spanning both arms -- which is the picture the ribbons cannot make, since they are built from the reads and so can never disagree with them -- and the orange ones are chains this path does not account for. Stage 2's viewportHeight 610 -> 800, the lane having been 186 px below the fold. Caption updated.",
-    "reviewedAt": "2026-08-05T00:52:27.910Z",
-    "hash": "71da710724f4b1ff3b91fb140e7c7dee181d541a"
-  },
-  "dog10k-wolfdog-ancestry-clustered": {
-    "name": "dog10k-wolfdog-ancestry-clustered",
     "status": "bad",
-    "note": "you can consider deleting",
-    "reviewedAt": "2026-08-05T02:04:20.512Z",
-    "hash": "cf24d6a2cbf4a28572a76c7a85586cbc50438012"
+    "note": "i do not like the look of the dialog box. i think we are going to try to do this 'out of band' now also because it needs read re-alignment. why are the reads not shown using alignmentstrack?that is potentially important. previous agent notes: Not a boring screenshot any more, and the answer to 'can it load the reads across the different areas' is yes, without the wasm minimap2. The reads are placed on the allele by transforming their own alignments through the path's piecewise-linear map (projectReadsOntoDerivative), so the frame now ends in 'Reads on this allele (9/19 unbroken)': a molecule that crosses the fold-back draws as ONE blue bar spanning both arms -- which is the picture the ribbons cannot make, since they are built from the reads and so can never disagree with them -- and the orange ones are chains this path does not account for. Stage 2's viewportHeight 610 -> 800, the lane having been 186 px below the fold. Caption updated.",
+    "reviewedAt": "2026-08-05T02:13:46.004Z",
+    "hash": "7c36e0646a7f0fc796ade8c2c15dfca1960eb263"
   },
   "hic/overlay_controls": {
     "name": "hic/overlay_controls",

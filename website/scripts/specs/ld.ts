@@ -266,11 +266,6 @@ const agKaryotypeTrack = (pop: string, name: string, height: number) => ({
 // not the other is the whole result.
 const TWO_LA_LOCUS = 'chr2L:20,524,058-42,165,532'
 
-// Well outside 2La (which starts at 20.5 Mb) and inside the arm's own left
-// triangle, so a label placed here sits over the part of the frame where r² and
-// D' disagree rather than over empty page.
-const OUTSIDE_TWO_LA = 'chr2L:9,000,000'
-
 // The per-population point, shown rather than asserted, WITHOUT making a figure
 // out of human population differences. Both lanes are the same locus, window,
 // MAF floor and settings; the only difference is which samples went in. Pooled
@@ -575,95 +570,20 @@ export const ldSpecs: ScreenshotSpec[] = [
       },
     ],
   },
-  // r² against D' on ONE file, which is the only way the tutorial's claim about
-  // them can be checked. Two displays over the same Cameroon .ld.gz, same
-  // window, same everything else, so any difference in the picture is the
-  // metric's.
+  // ld/anopheles_r2_vs_dprime was here and is DELETED (review: "i dont need a
+  // 'live regression guard' i need interesting figures ... we cant even see the
+  // inversion multisamplesv track so it is not a good figure. delete i think").
+  // It drew the same Cameroon file twice, r2 over D', with no karyotype lane, so
+  // the span the two labels talked about was not in the frame. ld/anopheles_2la
+  // above is the same locus with the carriers under each panel, and the metric
+  // difference is prose plus the ratios build_ag1000g_ld.sh prints per panel.
   //
-  // This figure is why the D' path was fixed: it first rendered two
-  // pixel-identical panels, because tabix hands back no header for a
-  // `-S 1`-indexed plink file, the column layout lost its DP column, and a
-  // 'dprime' request silently resolved to r² while the legend still said D'.
-  // If these two panels ever come out identical again, that is the regression,
-  // not a property of the data — D' averages 0.59 inside 2La against r²'s 0.19.
-  //
-  // The two labels are on it because the difference the section is about is
-  // OUTSIDE the block, and outside-the-block is most of the frame rather than a
-  // place the eye goes ("i am still not super convinced this is worth keeping",
-  // review). Both anchor at a locus in the arm's left third, which is outside
-  // 2La in both panels, so they follow the data if the window ever moves.
-  {
-    mode: 'url',
-    name: 'ld/anopheles_r2_vs_dprime',
-    url: `${ANOGAM3_HUB}&session=${encodeSessionSpec({
-      sessionTracks: [
-        agLdTrack(
-          'ag1000g_2l_cmgam_r2',
-          'Cameroon, r\u00B2',
-          'ag1000g_2L_CMgam.ld.gz',
-        ),
-        {
-          ...agLdTrack(
-            'ag1000g_2l_cmgam_dprime',
-            "Cameroon, D'",
-            'ag1000g_2L_CMgam.ld.gz',
-          ),
-          displays: [
-            {
-              type: 'LDTrackDisplay',
-              ldMetric: 'dprime',
-              useGenomicPositions: true,
-              showLegend: true,
-              height: 300,
-            },
-          ],
-        },
-      ],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'anoGam3',
-          // the whole arm, as in the figure above: the claim is about what each
-          // metric does OUTSIDE the block, so the outside has to be in frame
-          loc: 'chr2L',
-          tracks: [
-            { trackId: 'ag1000g_2l_cmgam_r2', type: 'LDTrackDisplay' },
-            { trackId: 'ag1000g_2l_cmgam_dprime', type: 'LDTrackDisplay' },
-          ],
-        },
-      ],
-    })}&sessionName=Screenshot`,
-    readySelector: '[data-testid="ld-display-done"]',
-    // same anoGam3 hub chrom.sizes fetch as the figure above, same allowance
-    readyTimeout: 180000,
-    // two 300px panels + 2 headers + ruler/overview
-    viewportHeight: 860,
-    settleMs: 8000,
-    annotations: [
-      {
-        type: 'text',
-        anchor: {
-          track: 'ag1000g_2l_cmgam_r2',
-          locus: OUTSIDE_TWO_LA,
-          fracY: 0.3,
-        },
-        text: 'r² outside the inversion: near zero',
-        fontSize: 16,
-        maxWidth: 340,
-      },
-      {
-        type: 'text',
-        anchor: {
-          track: 'ag1000g_2l_cmgam_dprime',
-          locus: OUTSIDE_TWO_LA,
-          fracY: 0.3,
-        },
-        text: "D' outside the inversion: still high",
-        fontSize: 16,
-        maxWidth: 340,
-      },
-    ],
-  },
+  // The regression this figure used to guard is already covered where it should
+  // be: tabix hands back no header for a `-S 1`-indexed plink file, the column
+  // layout lost its DP column, and a 'dprime' request silently resolved to r2
+  // while the legend still said D'. PlinkLDTabixAdapter.test.ts asserts
+  // `dprimeIdx` on exactly that file, so nothing is lost by deleting the
+  // picture.
   {
     mode: 'url',
     name: 'ld/lct_lactase',

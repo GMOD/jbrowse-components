@@ -235,6 +235,20 @@ fraction, and length is the more informative of the two: a recent cross leaves
 long founder haplotypes because recombination has had few generations to break
 them up.
 
+Every dog descends from wolves, so the orange is not that. Local ancestry is
+inference against the two panels it was given, and both of them are modern: gray
+wolves on one side, breed dogs on the other. Whatever the two share, which is
+everything domestication carried over, is in both panels and separates nothing,
+so it paints dog. Orange marks the stretches that still look like a present-day
+gray wolf and unlike a breed dog, and after that much divergence the only way to
+be in that state is to have acquired the haplotype recently. The 20th-century
+crosses are what the method can see; domestication is what it is blind to by
+construction. Both ends of the figure say so on their own: the held-out gray
+wolves paint near-solid orange, so the panels can tell wolf from dog where the
+difference is real, and the German Shepherd lineage at the foot paints solid
+dog, though it descends from wolves exactly as much as the Saarloos above it
+does.
+
 One feature of the painting is not about the dogs at all. Blocks break up
 towards the end of chr1, and that is the genetic map rather than the animals.
 The build script tiles the chromosome and prints both the block-edge count and
@@ -299,22 +313,13 @@ made from.
 
 Those readings are all row-order arguments, and the order above came out of
 FLARE's per-sample summary, so it can only rank what the summary already ranked.
-Switch to the 243-animal painting and let the display derive the order from the
-blocks themselves: the track menu's **Clustering** → **Cluster rows by
-similarity** reorders rows by how alike their painting is across the region in
-view, and draws the tree it built beside them.
-
-<Figure caption="486 haplotype rows — 219 breeds at one dog each, the eight wolfdogs, the two wolf-lookalike breeds, the German Shepherd lineage and eight held-out gray wolves — clustered on their chr1 painting, beside the tree that ordered them. The wolf-carrying rows come off a deep branch at the top; the rest merge at almost no height into the dog field 193 of the 219 breeds sit in. No row labels at 2px a row." src="/img/dog10k-wolfdog-ancestry-clustered.png" />
-
-Nothing in that order was declared. The clustering has no access to the breed
-names, and it still puts the held-out wolves at one end, the wolfdogs under
-them, and the German Shepherd lineage in the field with every other breed.
-
-The chip in the tree's corner names the locus the tree was computed from, and it
+The track menu's **Clustering** → **Cluster rows by similarity** derives the
+order from the blocks instead, and on the full 243-animal painting it puts the
+held-out wolves and the wolfdogs on their own branch with no access to the breed
+names. The chip in the tree's corner names the locus the tree came from, which
 is load-bearing rather than decorative: the clustering runs over the region in
 view, so panning to a 5 Mb window and re-clustering gives a different order for
-the same rows. A dendrogram beside a painting is an answer to a question that
-includes where you were looking.
+the same rows.
 
 ## One breed, and the breeds it came from
 

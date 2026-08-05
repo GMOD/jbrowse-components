@@ -875,74 +875,6 @@ function repeatLane(trackId: string) {
   }
 }
 
-// Fraction of each 5 kb bin covered by one RepeatMasker class, one bigWig per
-// class per assembly, built and uploaded by scripts/build_repeat_density.sh.
-// Six classes: RepeatMasker emits ~15 and the tail (scRNA, snRNA, tRNA) is under
-// 0.02% here, which is a lane of flat zero to scan past.
-//
-// LINE keeps the same red the per-element lane uses on the figure above, so the
-// two figures agree about which class the argument is about; the others are
-// distinguishable rather than meaningful, since only their heights are being
-// compared.
-// Four of the six classes the build script hosts. Satellite and Simple_repeat
-// are hosted too and belong in a track a reader builds for themselves — a window
-// on a centromere is all Satellite — but in THIS window they are 0.27% and 1.47%,
-// so as rows they were two flat lines taking a third of the stack. Dropping them
-// is not hiding a result; it is not spending a row on a class that has nothing
-// to say here, and it takes the four that do from 50 to 75 px each.
-const REPEAT_CLASSES = [
-  { cls: 'LINE', color: 'rgb(200,60,45)' },
-  { cls: 'SINE', color: 'rgb(60,110,180)' },
-  { cls: 'LTR', color: 'rgb(70,150,90)' },
-  { cls: 'DNA', color: 'rgb(230,150,40)' },
-]
-
-const REPEAT_DENSITY_BASE = 'https://jbrowse.org/demos/hprc/repeat_density'
-
-function repeatDensityTrackId(asm: string) {
-  return `${asm}_repeat_density`
-}
-
-function repeatDensityTrack(asm: string) {
-  return {
-    type: 'MultiQuantitativeTrack',
-    trackId: repeatDensityTrackId(asm),
-    name: 'Repeat density by class (RepeatMasker, 5 kb bins)',
-    assemblyNames: [asm],
-    adapter: {
-      type: 'MultiWiggleAdapter',
-      subadapters: REPEAT_CLASSES.map(({ cls, color }) => ({
-        type: 'BigWigAdapter',
-        name: cls,
-        color,
-        bigWigLocation: {
-          uri: `${REPEAT_DENSITY_BASE}/${asm}_repeat_density_${cls}.bw`,
-          locationType: 'UriLocation',
-        },
-      })),
-    },
-  }
-}
-
-function repeatDensityDisplay(asm: string) {
-  return {
-    trackId: repeatDensityTrackId(asm),
-    type: 'MultiLinearWiggleDisplay',
-    // one row per class, not overlaid: the finding is that one row goes up 5x
-    // while another goes down, and overlaid curves make that a tangle.
-    defaultRendering: 'multirowxy',
-    // 0..1 pinned on BOTH panes. These are fractions, so the domain is known,
-    // and it is the only thing making the two panes comparable — autoscale would
-    // rescale each row to its own maximum and erase the entire result.
-    minScore: 0,
-    maxScore: 1,
-    // 200, not 300 (review: more compact). Four class rows still read as four
-    // rows at 50px each, and the 100px saved on each pane is what lets the
-    // synteny band between them be tall enough to see a ribbon in.
-    height: 200,
-  }
-}
-
 // The structural tier of the wave VCF, which is what makes it comparable to the
 // graph: minigraph collapses everything under ~50 bp, so an unfiltered callset
 // is thousands of SNP columns the graph never had. `alleleLength` rather than
@@ -1406,9 +1338,26 @@ function localSubgraphPartSpecs(): ScreenshotSpec[] {
     // the second one lands 7 kb outside the `odgi extract -r
     // K12#1#chr:1004500-1004900` this figure was cut with -- so the free end is
     // where the cut fell, not a dead end in the graph, and the event it belongs
-    // to is a 7 kb deletion whose far anchor went with the cut. Widening to
-    // reach that anchor is not available: 7 kb of this pggb graph is ~900
-    // segments against the 48 here.
+    // to is a 7 kb deletion whose far anchor went with the cut.
+    //
+    // "IF WE EXTRACTED MORE DATA, IT WOULD RECOVER POTENTIALLY? I WANT TO NOT
+    // HAVE BLUNTED ENDS JUST AS A RESULT OF EXTRACTING TOO SMALL OF A WINDOW"
+    // (review). Measured against the hosted graph rather than estimated, and the
+    // answer is no. In `ecoli_pggb.segs.bed.gz` this node is segment 176693,
+    // rank 1, CFT073 only; `ecoli_pggb.links.bed.gz` gives its two links as
+    // 176689 at K12:1,004,686 and 178029 at K12:997,566. So the far anchor is
+    // 7.1 kb away on the reference and the window that reaches it is
+    // K12:997,566-1,004,961. Extracting it: `-E` over K12:1,000,500-1,008,900 is
+    // 6,361 segments and over 997,500-1,011,900 is 6,763, against the 48 here.
+    // That is the base-level graph's ~17 bp per segment, not a bad choice of
+    // window, and 6,000 nodes in this pane is a thread rather than a drawing.
+    // `-c 1` would add the far anchor alone without the 6,000 between, and it is
+    // worse: the anchor's own two ends are then blunt, and the anchored layout
+    // places it at K12:997,566, which is 7 kb off the left of the linear view
+    // this pane is under.
+    //
+    // The end is therefore an EVENT and the label says so, rather than saying
+    // the window was too small and inviting the same question again.
     //
     // Ringed AND labelled in the anchored half too, which is the other half of
     // the note: on the backbone the rank-1 nodes are unlabelled marks under the
@@ -1432,12 +1381,14 @@ function localSubgraphPartSpecs(): ScreenshotSpec[] {
         // beside the ring is what the note asked that half for anyway.
         // "the cut" was denied as jargon (reviewer: "a person not familiar with
         // graphs might not understand what is meant by 'the cut', use precise
-        // language please"). It names the extraction that produced this file,
-        // which the sentence now says outright: the end is where the window
-        // stopped, and the segment carries on outside it.
+        // language please"), so the sentence names neither the cut nor the
+        // extraction: it states the event. 93 bp against K12's 7.1 kb IS the
+        // deletion, and the open end is the side of it that the window does not
+        // reach. Shorter than the sentence it replaces, so it cannot wrap past
+        // the three lines the pill has room for.
         text:
           layoutMode === 'force'
-            ? '93 bp of CFT073. The sequence continues past this end: its other link falls outside the extracted window'
+            ? '93 bp of CFT073 where K12 has 7.1 kb. Its open end rejoins K12 7 kb outside this window'
             : '93 bp',
         anchor: { view: 1, graphNode: '20+' },
         // pulled left in the force pane, where the node sits near the right
@@ -3208,92 +3159,36 @@ export const graphSpecs: ScreenshotSpec[] = [
       },
     ],
   },
-  // The measurement the figure above could not make. hprc_chm13_allele says what
-  // the inserted sequence is MADE OF, per element, because at 30 and 180 bp/px a
-  // density read is not available to it (see repeatLane). This says how that
-  // compares to the reference sequence it continues, which is the claim the
-  // tutorial was asserting in prose.
+  // pangenome/hprc_repeat_classes was here and is DELETED (review: "i dont think
+  // i really understand this figure. consider deleting. just not actually
+  // valuable information?"). It drew each assembly's own last 650 kb of chr17 in
+  // two panes, which is the only framing that keeps them the same width in bp,
+  // and the cost of that framing is that the two panes are not the same
+  // sequence: nothing in the picture says why two windows at different
+  // coordinates may be read against each other, and the LINE/SINE swap it exists
+  // for is a per-bin difference of a few percent.
   //
-  // Per CLASS rather than one density line, and that is the whole result. Total
-  // repeat density over the two windows says nothing at all — 37.22% against
-  // 36.48%, the same sequence by the only measure one lane can draw. Split by
-  // class it says the composition moved, and in opposite directions:
+  // The measurement itself is sound and stays in the tutorial as text, where it
+  // can be attributed. Over the two windows scripts/build_repeat_density.sh
+  // reports LINE 13.71% -> 16.51%, SINE 13.58% -> 9.00%, LTR 6.10% -> 5.83%,
+  // DNA 2.29% -> 3.01% and total repeat 37.22% -> 36.48%, so what moved is the
+  // composition and not the quantity.
   //
-  //   LINE  13.71% -> 16.51%     SINE  13.58% ->  9.00%
-  //   LTR    6.10% ->  5.83%     DNA    2.29% ->  3.01%
+  // DO NOT rebuild this as the insertion allele on its own, which is the obvious
+  // next idea: the allele runs LINE 23.70% against 14.18% and 14.47% either
+  // side, and 1.7x as a mean is not a shape a reader can see per bin.
+  // hprc_chm13_allele already draws that sequence per element, which is the
+  // resolution at which the L1 tiling is visible at all.
   //
-  // so what CHM13 ends the chromosome with is not more repeat than GRCh38 ends
-  // it with, it is more L1 and less Alu — the mechanism the page claims, long L1
-  // being the sequence a BAC-and-Sanger reference had no way to place.
-  //
-  // THESE NUMBERS ARE NOT THE ONES THIS FIGURE USED TO CARRY (13.71% -> 70.05%,
-  // 37% -> 76%, "one class up fivefold"). That set came from reading CHM13's
-  // bigRmskBed outer spans as aligned intervals, and a bigRmskBed record is a
-  // fragmented element JOINED back together, so its span covers whatever
-  // interrupted it and the classes overlap: the four summed past 1.0 in 71% of
-  // chr17's bins. scripts/build_repeat_density.sh expands the aligned blocks now,
-  // and the hosted hs1 bigWigs were rebuilt from it (2026-08-04).
-  //
-  // The larger version of the contrast is the insertion allele itself rather
-  // than these 650 kb windows, which are mostly the flank around it: the allele
-  // runs LINE 23.70% against 14.18% and 14.47% either side, SINE 8.57% against
-  // 13.57% on the left. That is 1.7x as a mean and NOT a shape a reader can see
-  // per bin, which is why hprc_chm13_allele stays a per-element lane at 180 kb
-  // rather than zooming out to draw it.
-  //
-  // Every number here comes out of scripts/build_repeat_density.sh, which also
-  // builds these bigWigs, so the table is regenerable rather than remembered.
-  //
-  // Each pane is its OWN assembly's last 650 kb, not a lifted-over interval:
-  // there is no lift-over for sequence one of them does not have, so the
-  // comparison is between what each assembly ends chr17 with. That also makes
-  // the two panes the same width in bp, which is what lets the rows be read
-  // against each other at all — the objection that retired the strip on the
-  // figure above was two panes at different bp/px.
-  //
-  // A SYNTENY VIEW WAS TRIED HERE AND IS WRONG FOR THIS COMPARISON (review
-  // asked for one; rendered it twice before concluding). The band needs the two
-  // panes to be counterparts and these deliberately are not — each is its own
-  // assembly's last 650 kb, which is the only framing that keeps them the same
-  // width in bp. Hung the UCSC hg38-to-hs1 liftOver chain between them as a
-  // session track and what it paints is a single flat block across the whole
-  // band, because a liftOver chain is one chromosome-scale feature and its base
-  // ribbon is one trapezoid: the band ends up asserting that these two windows
-  // correspond end to end, which is the opposite of what the figure is for.
-  // Filtering to blocks over 20 kb does not change it. It also costs the two
-  // `displayName` titles, which a synteny view's sub-panels do not carry, and
-  // those titles are what say the panes are not the same interval.
-  {
-    mode: 'url',
-    name: 'pangenome/hprc_repeat_classes',
-    url: sessionSpec(HPRC_CONFIG, {
-      sessionTracks: [repeatDensityTrack('hg38'), repeatDensityTrack('hs1')],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          displayName: 'GRCh38 — the last 650 kb it has of chr17',
-          assembly: 'hg38',
-          loc: 'chr17:82,607,441-83,257,441',
-          tracks: [repeatDensityDisplay('hg38')],
-        },
-        {
-          type: 'LinearGenomeView',
-          displayName: 'T2T-CHM13v2.0 — its own last 650 kb of chr17',
-          assembly: 'hs1',
-          loc: 'chr17:83,626,897-84,276,897',
-          tracks: [repeatDensityDisplay('hs1')],
-        },
-      ],
-    }),
-    readySelector: displayReady('multi-wiggle-display'),
-    readyTimeout: 120000,
-    settleMs: 15000,
-    viewportWidth: 1000,
-    // two 200px stacks, their view headers and rulers, and one app bar. Was 960
-    // at the old 300px display height.
-    viewportHeight: 760,
-    hideTooltip: true,
-  },
+  // A SYNTENY VIEW WAS ALSO TRIED HERE AND IS WRONG FOR THIS COMPARISON
+  // (rendered twice before concluding). A band needs the two panes to be
+  // counterparts and these deliberately were not. Hung the UCSC hg38-to-hs1
+  // liftOver chain between them as a session track and it paints a single flat
+  // block across the whole band, because a liftOver chain is one
+  // chromosome-scale feature whose base ribbon is one trapezoid: the band ends
+  // up asserting the two windows correspond end to end. minAlignmentLength 20000
+  // does not change it, and a synteny view's sub-panels carry no displayName, so
+  // it also costs the two titles that said the panes were different intervals.
   // pangenome/hprc_allele_inventory was here and is RETIRED (review: "I am
   // still not sure i like this figure ... the entire allele inventory concept is
   // just tricky to visualize. Might need graph bandage view alongside it. this

@@ -458,11 +458,15 @@ export const gallerySections: readonly GallerySection[] = [
           'The C4 locus of the HPRC release 2 pangenome as a force-directed graph, above lanes of the same window on GRCh38. Both panels are colored by reference position, so the thread winding through the graph runs red to magenta with the segment blocks above it.',
       },
       {
-        label: 'HPRC structural alleles by haplotype',
-        spec: 'hprc2/mhc_clustered',
+        // The HPRC card that held this slot was hprc2/mhc_clustered, deleted in
+        // review. Its replacement is the figure that already carried the same
+        // clustered 464-haplotype matrix, next to the graph the alleles came
+        // out of, which is a picture no other card in this section shows.
+        label: 'HPRC graph beside its callset',
+        spec: 'pangenome/hprc_graph_vs_callset',
         guide: 'tutorials/pangenome_hprc',
         description:
-          'Structural alleles across the HPRC release 2 haplotypes, one row each, clustered by genotype under the HLA class II genes they fall in. Haplotypes sharing whole sets of insertions and deletions form solid blocks, with no HLA typing involved.',
+          'One deletion site in the HPRC release 2 MHC, marked in a linear view over all 464 haplotypes clustered by genotype, with an arrow from the band to the reference node it removes in the force-directed graph below.',
       },
       {
         // One card for the pggb tutorial, not two, and the presence/absence

@@ -380,8 +380,9 @@ export const CGIAB_ASM_PIF_TRACK = {
 // Reach for this only where the display's FETCH MAY START LATE. The global gate
 // is "no element is at data-display-phase=loading", which is trivially true in
 // the window before a display has entered `loading` at all — so a big remote
-// track (hprc2's 2.3 GB VCF is the worked example, with its own note in that
-// file) can sail through it and be captured empty. Pairing `-done` with
+// track (HPRC release 2's 2.3 GB wave VCF is the worked example, and
+// specs/graph.ts's hprc_graph_vs_callset is where it is read that way) can sail
+// through it and be captured empty. Pairing `-done` with
 // `data-display-phase=ready` on the display itself closes that window: the
 // phase covers the whole fetch, where `-done` is `canvasDrawn`, i.e. first
 // paint, which an empty canvas reaches on its own.

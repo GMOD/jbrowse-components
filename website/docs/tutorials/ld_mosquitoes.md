@@ -185,9 +185,8 @@ question is whether a marker can stand in for another. D' is the better read on
 where recombination stops, which is why the reproduce script uses it, not r², to
 recover the breakpoints. Switch with
 [`ldMetric`](/docs/config/sharedlddisplay/#slot-ldmetric); the script prints
-both ratios for every panel.
-
-<Figure caption="The same Cameroon file drawn twice over chromosome arm 2L, r² above and D' below, with every other setting equal. D' saturates across the 2La block and leaves a haze over the rest of the arm; r² is dimmer inside the block but near-white outside it, which is the wider separation of the two. Both stay filled out to the block's apex, where an ordinary locus fades away from the diagonal." src="/img/ld/anopheles_r2_vs_dprime.png" />
+both ratios for every panel, so the two metrics can be compared on identical
+pairs before either one is drawn.
 
 Raising the minor allele frequency filter
 ([`minorAlleleFrequencyFilter`](/docs/config/sharedlddisplay/#slot-minorallelefrequencyfilter))

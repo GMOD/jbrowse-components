@@ -591,16 +591,16 @@ all Satellite). Pin `minScore`/`maxScore` to 0 and 1 rather than autoscaling, or
 each row rescales to its own maximum and the comparison the track exists for
 disappears.
 
-<Figure caption="Repeat density by class over the last 650 kb of chr17 in each assembly, on the same 0-1 scale. Top: GRCh38, where the LINE and SINE rows run at about the same level. Bottom: CHM13's own last 650 kb, where the LINE row sits higher and the SINE row lower. The two windows hold the same total amount of repeat, so what separates them is composition rather than quantity: more L1, less Alu." src="/img/pangenome/hprc_repeat_classes.png" />
-
-Each pane is its own assembly's last 650 kb, not a lifted-over interval: there
-is no lift-over for sequence one of them does not have, so what is being
-compared is what each assembly ends the chromosome with. Over those two windows
+Open the track on each assembly's last 650 kb of chr17, which is what each one
+ends the chromosome with rather than a lifted-over interval: there is no
+lift-over for sequence one of them does not have. Over those two windows
 `build_repeat_density.sh` reports LINE at 13.71% against 16.51%, SINE at 13.58%
 against 9.00%, and total repeat at 37.22% against 36.48%, so a single density
-lane would have reported no difference between the two windows at all. The
+lane would have reported no difference between the two windows at all. What
+moved is the composition, and in opposite directions: more L1, less Alu. The
 insertion allele on its own is the sharper version of the same contrast, at
-23.70% LINE against 14.18% and 14.47% in the CHM13 sequence either side of it.
+23.70% LINE against 14.18% and 14.47% in the CHM13 sequence either side of it,
+which is the L1 tiling the figure above already shows per element.
 
 ## The bubble track
 
@@ -841,9 +841,8 @@ has sequence it does not.
 That leaves few enough alleles to draw each at its own genomic position, lined
 up with the genes above. **Clustering → Cluster rows by genotype... → Run
 clustering** in the track menu reorders the 464 rows by genotype similarity and
-draws a dendrogram beside them:
-
-<Figure caption="Top-level sites holding a structural allele (50 bp and up) across the HPRC2 haplotypes, one row each, clustered by genotype and drawn under the HLA class II genes they fall in. The lane between the two stacks the same calls by overlap, so each allele has a width and the ones nested inside a longer allele are visible as such. Haplotypes that share whole sets of alleles cluster into solid blocks spanning several genes, with no HLA typing involved." src="/img/hprc2/mhc_clustered.png" />
+draws a dendrogram beside them. The figure in the next section is that matrix,
+beside the graph the same alleles came out of.
 
 ## Structure, not sequence
 
