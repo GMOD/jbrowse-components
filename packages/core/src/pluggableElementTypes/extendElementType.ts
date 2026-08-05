@@ -7,6 +7,13 @@ import type {
 } from '../PluginManager.ts'
 import type { IAnyModelType } from '@jbrowse/mobx-state-tree'
 
+// The one cast, in one place, named. `extend` is written by a caller against a
+// registry entry; this package cannot name that entry (see extendViewType), so
+// the callback is re-read as taking the base model type to call it.
+function widen<T>(extend: (stateModel: T) => IAnyModelType) {
+  return extend as unknown as (stateModel: IAnyModelType) => IAnyModelType
+}
+
 /**
  * Replace a view type's state model with an extended one, e.g. to add a menu
  * item to `LinearGenomeView`.
@@ -34,10 +41,18 @@ export function extendViewType<N extends ViewTypeName>(
     'Core-extendPluggableElement',
     (element, props) => {
       if (props.group === 'view' && element.name === name) {
-        // the group check established this element is a ViewType, and the
-        // registry says which one, so both halves of this are proven
-        const view = element as { stateModel: ViewTypeRegistry[N] }
-        view.stateModel = extend(view.stateModel)
+        // The group check established this element is a ViewType, and the
+        // registry says which one, so the read is proven. The body still works
+        // in `IAnyModelType`: `ViewTypeRegistry` is declared empty here and
+        // filled by module augmentation, so inside this package `ViewTypeName`
+        // is `never` and `ViewTypeRegistry[N]` with it — a value of that type
+        // cannot be produced or consumed, and compiling core alone fails on
+        // both. The precise type is what the *caller* gets, which is the whole
+        // point of the signature; widening it once here costs nothing, since
+        // the only operation is handing the model to `extend` and storing what
+        // comes back.
+        const view = element as { stateModel: IAnyModelType }
+        view.stateModel = widen(extend)(view.stateModel)
       }
       return element
     },
@@ -57,8 +72,9 @@ export function extendDisplayType<N extends DisplayTypeName>(
     'Core-extendPluggableElement',
     (element, props) => {
       if (props.group === 'display' && element.name === name) {
-        const display = element as { stateModel: DisplayTypeRegistry[N] }
-        display.stateModel = extend(display.stateModel)
+        // widened for the reason in extendViewType
+        const display = element as { stateModel: IAnyModelType }
+        display.stateModel = widen(extend)(display.stateModel)
       }
       return element
     },
