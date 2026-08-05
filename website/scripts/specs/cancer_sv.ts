@@ -42,12 +42,13 @@ const TUMOUR = 'COLO829_tumor_ont'
 const NORMAL = 'COLO829BL_normal_ont'
 const SV = 'COLO829_somatic_sv'
 
-// Super-compact reads (COMPACTNESS_PRESETS' featureHeight 1 / featureSpacing 0).
+// Super-compact reads (COMPACTNESS_PRESETS' featureHeight 1; the 0 gap that
+// pairs with it is derived, see featureSpacingForHeight).
 // ONT depth here is 200x tumour / 80x normal, and at the default read height a
 // panel shows a dozen rows out of that; the reads carrying the junction are
 // below the fold. One row per pixel puts the whole pileup in frame, which is
 // what makes the wall of clipping legible as a wall.
-const SUPER_COMPACT = { featureHeight: 1, featureSpacing: 0 }
+const SUPER_COMPACT = { featureHeight: 1 }
 
 // The two halves of cancer_sv/multihop_reads: the evidence at one breakpoint and
 // the chain across all three loci, side by side rather than a screen of figure
@@ -63,14 +64,14 @@ const MULTIHOP_NARROW_WIDTH = 660
 // the figure or behind a scrollbar. Two pixels fits all of it and still leaves
 // each read a row the bezier connector can leave from; one merges the rows into
 // a solid block and the connectors then fan out of a smear.
-const SPLIT_READS = { featureHeight: 2, featureSpacing: 0 }
+const SPLIT_READS = { featureHeight: 2 }
 
 // The 29 reads realigned to the derivative, in the two figures that carry them.
 // Every one of them spans the junctions, so the pileup is 29 rows however it is
 // laid out, and at the default row height only two thirds of them are above the
 // fold. Five pixels with a gap is the largest row that fits all 29 while leaving
 // the mismatch ticks and the clipping (or its absence) visible.
-const READS = { featureHeight: 5, featureSpacing: 1 }
+const READS = { featureHeight: 5 }
 
 // Every COLO829 window in this tutorial falls inside a large intron (RARB,
 // BICC1, TRHDE), where the gene track draws one flat line per isoform and no
@@ -178,7 +179,6 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
             // leaves the clipped tails' mismatch ticks distinguishable, which
             // one pixel merges into a single coloured block
             featureHeight: 2,
-            featureSpacing: 0,
             // the pileup's own size at this row height, measured off the render:
             // taller is blank page under the reads rather than more of them
             height: 410,
@@ -224,7 +224,6 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
             // taller than the reference pane's and the pane fills with the
             // same 380 bp of pileup
             featureHeight: 9,
-            featureSpacing: 1,
             // all 29 rows, and no more: a height that shows twenty of them puts
             // the rest behind a scrollbar, which reads as a pileup that stops
             height: 300,

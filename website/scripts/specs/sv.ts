@@ -769,7 +769,6 @@ export const svSpecs: ScreenshotSpec[] = [
                   trackId:
                     'HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3',
                   featureHeight: 1,
-                  featureSpacing: 0,
                   height: 250,
                   forceLoad: true,
                 },
@@ -789,7 +788,6 @@ export const svSpecs: ScreenshotSpec[] = [
                   trackId:
                     'HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3',
                   featureHeight: 1,
-                  featureSpacing: 0,
                   height: 250,
                   forceLoad: true,
                 },
@@ -1013,12 +1011,12 @@ export const svSpecs: ScreenshotSpec[] = [
             'GRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf',
             {
               trackId: 'hg008t_pacbio_chr10_deletion_slice',
-              // compact pileup: the "Compact" feature-height preset
-              // sets featureHeight=3, featureSpacing=0 (COMPACTNESS_PRESETS),
-              // both flat config-override keys on LinearAlignmentsDisplay
+              // compact pileup: the "Compact" feature-height preset sets
+              // featureHeight=3 (COMPACTNESS_PRESETS), a flat config-override
+              // key on LinearAlignmentsDisplay. The 0 gap follows from the
+              // height via featureSpacingForHeight; it is not a slot
               height: 300,
               featureHeight: 3,
-              featureSpacing: 0,
               // sort reads by the base at the screen-center column
               sortedBy: {
                 type: 'basePair',

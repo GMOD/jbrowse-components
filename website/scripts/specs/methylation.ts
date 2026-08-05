@@ -47,7 +47,6 @@ function wgbsContextTrack(
       showCoverage: false,
       heightMode: 'fixed',
       featureHeight: 3,
-      featureSpacing: 0,
       height: 90,
       ...displayOverrides,
     },
@@ -192,11 +191,11 @@ export const methylationSpecs: ScreenshotSpec[] = [
               },
               // compact pileup: displayMode isn't a real slot on this
               // display (that's the shared canvas base schema) — fixed
-              // heightMode + a small featureHeight/featureSpacing is the
-              // actual compact-row setting
+              // heightMode + a small featureHeight is the actual compact-row
+              // setting, and the gap that pairs with it is derived from the
+              // height rather than set
               heightMode: 'fixed',
               featureHeight: 3,
-              featureSpacing: 0,
               // reviewer: label the modification-type swatches (6mA calls)
               showLegend: true,
             },
@@ -209,7 +208,6 @@ export const methylationSpecs: ScreenshotSpec[] = [
               },
               heightMode: 'fixed',
               featureHeight: 3,
-              featureSpacing: 0,
             },
           ],
         },

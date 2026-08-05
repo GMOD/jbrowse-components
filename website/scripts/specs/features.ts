@@ -327,7 +327,6 @@ export const featuresSpecs: ScreenshotSpec[] = [
               trackId: 'pten_directrna',
               type: 'LinearAlignmentsDisplay',
               featureHeight: 3,
-              featureSpacing: 0,
               // 'auto' splits the junction arcs above and below the reads to
               // minimize crossings (vs the default 'up', which stacks them all
               // above)
