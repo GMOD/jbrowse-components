@@ -1243,9 +1243,3 @@ declare module '@jbrowse/core/PluginManager' {
     }
   }
 }
-
-declare module '@jbrowse/core/PluginManager' {
-  interface ViewTypeRegistry {
-    DotplotView: DotplotViewStateModel
-  }
-}

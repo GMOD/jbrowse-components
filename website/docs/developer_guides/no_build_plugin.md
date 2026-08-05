@@ -21,25 +21,22 @@ instance to load the file into (see
 
 ## Adding a jexl callback
 
-Register a custom jexl function to simplify config callbacks in `myplugin.js`:
+Register a custom jexl function from your plugin's `install()`, to simplify
+config callbacks:
+
+<!-- include: test_data/no_build_plugin/esmplugin.js#jexl -->
 
 ```js
-export default class MyPlugin {
-  name = 'MyPlugin'
-  version = '1.0'
-
-  install(pluginManager) {
-    pluginManager.jexl.addFunction('customColor', feature => {
-      if (feature.get('type') === 'exon') {
-        return 'red'
-      } else if (feature.get('type') === 'CDS') {
-        return 'green'
-      }
-    })
+// a jexl function usable from any config callback, e.g.
+// "jexl:customColor(feature)" as a track's color1
+pluginManager.jexl.addFunction('customColor', feature => {
+  if (feature.get('type') === 'exon') {
+    return 'red'
+  } else if (feature.get('type') === 'CDS') {
+    return 'green'
   }
-
-  configure(pluginManager) {}
-}
+  return 'goldenrod'
+})
 ```
 
 Put `myplugin.js` alongside your config file and reference it in `config.json`:
@@ -96,23 +93,25 @@ complete example below uses it five times. See
 
 `esmplugin.js`
 
-<!-- include: test_data/no_build_plugin/esmplugin.js -->
+<!-- include: test_data/no_build_plugin/esmplugin.js#plugin -->
 
 ```js
-// The "Complete example" no-build plugin from
-// website/docs/developer_guides/no_build_plugin.md, hosted so the tutorial's
-// result figure (no_build_final) can be generated automatically instead of
-// hand-captured.
-//
-// That guide's code fences are GENERATED FROM THIS FILE (`<!-- include: -->`),
-// so editing here edits the published guide — run `pnpm sync-doc-snippets`
-// after, and write comments for guide readers. The `// #region` marker is
-// load-bearing.
 export default class MyPlugin {
   name = 'MyPlugin'
   version = '1.0'
 
   install(pluginManager) {
+    // a jexl function usable from any config callback, e.g.
+    // "jexl:customColor(feature)" as a track's color1
+    pluginManager.jexl.addFunction('customColor', feature => {
+      if (feature.get('type') === 'exon') {
+        return 'red'
+      } else if (feature.get('type') === 'CDS') {
+        return 'green'
+      }
+      return 'goldenrod'
+    })
+
     const { ConfigurationSchema } = pluginManager.jbrequire(
       '@jbrowse/core/configuration',
     )

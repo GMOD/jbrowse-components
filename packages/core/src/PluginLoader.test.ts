@@ -10,6 +10,8 @@ import {
   pluginLabel,
   pluginUrl,
 } from './pluginDefinitions.ts'
+import { stringToJexlExpression } from './util/jexlStrings.ts'
+import SimpleFeature from './util/simpleFeature.ts'
 
 import type { PluginDefinition } from './pluginDefinitions.ts'
 
@@ -417,4 +419,20 @@ test('a real no-build plugin installs through jbrequire', async () => {
   expect(pluginManager.getWidgetType('CiteWidget').heading).toBe(
     'Cite this JBrowse session',
   )
+  // the guide's other half: a jexl function registered from the same install()
+  // is what a config callback resolves against, and jbrequire is not involved
+  // in that path at all — `pluginManager.jexl` is handed to the plugin directly
+  const color = await stringToJexlExpression(
+    'jexl:customColor(feature)',
+    pluginManager.jexl,
+  ).eval({
+    feature: new SimpleFeature({
+      uniqueId: 'f1',
+      refName: 'ctgA',
+      start: 0,
+      end: 10,
+      type: 'CDS',
+    }),
+  })
+  expect(color).toBe('green')
 })

@@ -235,11 +235,8 @@ depends on the kind of entry:
   have no fields to fold.
 
 To turn an inherited field off, state it rather than omitting it:
-
-```ts
-// inherits the base slot's description and validate, but is not advanced here
-mySlot: { type: 'number', defaultValue: 4, advanced: false },
-```
+`mySlot: { type: 'number', defaultValue: 4, advanced: false }` still inherits
+the base slot's `description` and `validate`, and is not advanced here.
 
 :::note Changed behavior
 

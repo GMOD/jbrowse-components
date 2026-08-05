@@ -47,8 +47,26 @@ function extractRegion(source: string, file: string, region: string) {
   if (start === -1) {
     throw new Error(`${file}: no "#region ${region}"`)
   }
+  // Match the *paired* #endregion, not the first one: a region may contain
+  // regions. The no-build plugin is the case — the whole class is one region so
+  // the published "complete example" can start below the note explaining that
+  // the guide is generated from it, and the sections above it slice pieces of
+  // that same class. Taking the first #endregion silently truncated the outer
+  // one at the first inner marker, which reads as a doc that lost its second
+  // half rather than as an error.
   const rest = lines.slice(start + 1)
-  const end = rest.findIndex(l => /^\s*(\/\/|#)\s*#endregion\b/.test(l))
+  let depth = 0
+  const end = rest.findIndex(l => {
+    if (/^\s*(\/\/|#)\s*#region\b/.test(l)) {
+      depth++
+    } else if (/^\s*(\/\/|#)\s*#endregion\b/.test(l)) {
+      if (depth === 0) {
+        return true
+      }
+      depth--
+    }
+    return false
+  })
   if (end === -1) {
     throw new Error(`${file}: "#region ${region}" has no "#endregion"`)
   }
@@ -89,7 +107,7 @@ const stale: string[] = []
 //
 // Only TS/JS fences count: a `json` config sample or a `bash` command has no
 // compiled source to point an include at.
-const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '5')
+const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '2')
 const INCLUDABLE = new Set([
   'ts',
   'tsx',

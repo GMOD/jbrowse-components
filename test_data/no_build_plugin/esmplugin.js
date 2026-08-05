@@ -5,13 +5,28 @@
 //
 // That guide's code fences are GENERATED FROM THIS FILE (`<!-- include: -->`),
 // so editing here edits the published guide — run `pnpm sync-doc-snippets`
-// after, and write comments for guide readers. The `// #region` marker is
-// load-bearing.
+// after, and write comments for guide readers. The `// #region` markers are
+// load-bearing — in particular the published "complete example" is the
+// `plugin` region, so this note about generating it stays out of the guide.
+// #region plugin
 export default class MyPlugin {
   name = 'MyPlugin'
   version = '1.0'
 
   install(pluginManager) {
+    // #region jexl
+    // a jexl function usable from any config callback, e.g.
+    // "jexl:customColor(feature)" as a track's color1
+    pluginManager.jexl.addFunction('customColor', feature => {
+      if (feature.get('type') === 'exon') {
+        return 'red'
+      } else if (feature.get('type') === 'CDS') {
+        return 'green'
+      }
+      return 'goldenrod'
+    })
+    // #endregion
+
     // #region jbrequire
     const { ConfigurationSchema } = pluginManager.jbrequire(
       '@jbrowse/core/configuration',
@@ -77,3 +92,4 @@ export default class MyPlugin {
   }
   // #endregion
 }
+// #endregion

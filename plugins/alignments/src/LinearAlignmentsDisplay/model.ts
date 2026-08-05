@@ -3693,9 +3693,3 @@ export type LinearAlignmentsDisplayStateModel = ReturnType<
 // encounter through React.lazy → PileupComponent → useAlignmentsBase → model
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface LinearAlignmentsDisplayModel extends Instance<LinearAlignmentsDisplayStateModel> {}
-
-declare module '@jbrowse/core/PluginManager' {
-  interface DisplayTypeRegistry {
-    LinearAlignmentsDisplay: LinearAlignmentsDisplayStateModel
-  }
-}

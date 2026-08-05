@@ -1,5 +1,4 @@
 import Plugin from '@jbrowse/core/Plugin'
-import { extendViewType } from '@jbrowse/core/pluggableElementTypes'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   JBrowseLinearGenomeView,
@@ -7,21 +6,28 @@ import {
 } from '@jbrowse/react-linear-genome-view2'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { PluggableElementType } from '@jbrowse/core/pluggableElementTypes'
+import type ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 
 class MyPlugin extends Plugin {
   name = 'MyPlugin'
   install(pluginManager: PluginManager) {
-    // #region extend
-    extendViewType(pluginManager, 'LinearGenomeView', stateModel =>
-      types.compose(
-        stateModel,
-        types.model().actions(() => ({
-          zoomTo: () => {},
-          scrollTo: () => {},
-        })),
-      ),
+    pluginManager.addToExtensionPoint<PluggableElementType>(
+      'Core-extendPluggableElement',
+      pluggableElement => {
+        if (pluggableElement.name === 'LinearGenomeView') {
+          const view = pluggableElement as ViewType
+          view.stateModel = types.compose(
+            view.stateModel,
+            types.model().actions(() => ({
+              zoomTo: () => {},
+              scrollTo: () => {},
+            })),
+          )
+        }
+        return pluggableElement
+      },
     )
-    // #endregion
   }
   configure() {}
 }

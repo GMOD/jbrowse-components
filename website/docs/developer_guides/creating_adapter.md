@@ -37,40 +37,17 @@ drawing, state, and menus.
   Example: the trix adapter. See
   [creating a custom text search adapter](/docs/developer_guides/creating_text_search_adapter).
 
-## Skeleton of a feature adapter
+## What a feature adapter implements
 
-```ts
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Feature, Region } from '@jbrowse/core/util'
-import type { Observable } from 'rxjs'
-import type { MyAdapterConfig } from './configSchema.ts'
-
-export default class MyAdapter extends BaseFeatureDataAdapter<MyAdapterConfig> {
-  // Base class stores config/getSubAdapter/pluginManager and exposes
-  // this.getConf('slotName'); no constructor needed unless you set up state.
-
-  async getRefNames(opts?: BaseOptions): Promise<string[]> {
-    return []
-  }
-
-  // features overlapping region, positions 0-based half-open. The next section
-  // fills this in.
-  getFeatures(region: Region, opts?: BaseOptions): Observable<Feature> {
-    return ObservableCreate<Feature>(async observer => {
-      observer.complete()
-    }, opts?.stopToken)
-  }
-}
-```
-
-Implement `getRefNames` (used for refName renaming) and `getFeatures` (an rxjs
-observable stream of features). Type the adapter on your config schema
+Extend `BaseFeatureDataAdapter` and supply two methods: `getRefNames`, used for
+refName renaming, and `getFeatures`, an rxjs observable stream of the features
+overlapping a region, positions 0-based half-open. The base class already holds
+the config, `getSubAdapter` and the plugin manager and exposes
+`this.getConf('slotName')`, so no constructor is needed unless the adapter sets
+up state of its own. Type it on your config schema
 (`BaseFeatureDataAdapter<MyAdapterConfig>`, where `MyAdapterConfig` comes from
-your [config schema](/docs/developer_guides/configuration_schema)) so
-`this.getConf(...)` reads are typed.
+your [config schema](/docs/developer_guides/configuration_schema)) so those
+`getConf` reads are typed.
 
 ## Example feature adapter
 
