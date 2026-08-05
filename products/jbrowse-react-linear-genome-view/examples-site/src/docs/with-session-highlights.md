@@ -2,8 +2,8 @@ The view can paint highlighted regions over the genome, useful for calling out a
 region of interest, a search hit, or a variant locus. Highlights live on the
 session, so they round-trip through saved sessions.
 
-Authoring them on the **view snapshot** lets each highlight carry its own color
-and label:
+Authoring them on the view snapshot lets each highlight carry its own color and
+label:
 
 ```js
 view: {
@@ -22,8 +22,8 @@ view: {
 }
 ```
 
-The simpler [`init.highlight`](../session-setup/#with-init-advanced) field also
-exists, but it only accepts plain loc-strings (no per-highlight color or label).
-The `highlight` property and its `addToHighlights`/`removeHighlight` actions are
-documented in the
+There is also a simpler [`init.highlight`](../session-setup/#with-init-advanced)
+field, which takes plain loc-strings and so has no room for a per-highlight
+color or label. The `highlight` property and its
+`addToHighlights`/`removeHighlight` actions are documented in the
 [LinearGenomeView state model](https://jbrowse.org/jb2/docs/models/lineargenomeview/).

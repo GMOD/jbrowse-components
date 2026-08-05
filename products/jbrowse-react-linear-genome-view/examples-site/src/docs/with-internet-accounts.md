@@ -22,11 +22,10 @@ Any track whose file locations carry `internetAccountId: 'manualGoogleEntry'`
 routes through this account, which prompts the user for a token and adds an
 `Authorization: Bearer <token>` header to each request.
 
-**OAuth note:** `DropboxOAuthInternetAccount` and
-`GoogleDriveOAuthInternetAccount` are **not** supported in the embedded LGV.
-They need app-level control over redirects and popups that only full JBrowse Web
-provides. Run the OAuth flow in your host app and pass the resulting token to
-`ExternalTokenInternetAccount`.
+`DropboxOAuthInternetAccount` and `GoogleDriveOAuthInternetAccount` are not
+supported in the embedded LGV. They need app-level control over redirects and
+popups that only full JBrowse Web provides. Run the OAuth flow in your host app
+and pass the resulting token to `ExternalTokenInternetAccount`.
 
 Although the name suggests external services, internet accounts are a general
 `fetch` override. A custom account type can rewrite URLs, add caching, or proxy

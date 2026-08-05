@@ -1,7 +1,7 @@
 JBrowse evaluates `jexl:` expressions per feature, with the `feature` in scope.
-The same mechanism drives both feature **color** and feature **labels**, so you
-can color and re-label features from their own attributes with no extra UI or
-plugin code. `color` reads a CSS color, `labels.name` reads the displayed text:
+The same mechanism drives both feature color and feature labels, so you can
+color and re-label features from their own attributes with no extra UI or plugin
+code. `color` reads a CSS color, `labels.name` reads the displayed text:
 
 ```js
 {

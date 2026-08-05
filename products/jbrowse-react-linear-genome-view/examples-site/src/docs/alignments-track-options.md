@@ -6,7 +6,7 @@ the
 [`displayDefaults` shorthand](https://jbrowse.org/jb2/docs/config_guides/tracks/)
 on the track config, and change them later from the track menu.
 
-This example loads HG002 haplotagged nanopore reads at the imprinted **SNRPN**
+This example loads HG002 haplotagged nanopore reads at the imprinted SNRPN
 locus. Because the reads carry an HP (haplotype) tag, coloring and grouping by
 that tag stacks the two parental alleles into separate, distinctly-colored
 groups. `displaySnapshot` is a property of the track entry, so it always travels

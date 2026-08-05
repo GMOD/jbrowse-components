@@ -1,6 +1,6 @@
-Feature displays on the canvas renderer support three **track-sizing**
-strategies, chosen with the `heightMode` config slot and switchable at runtime
-from the track's "Track sizing" menu:
+Feature displays on the canvas renderer support three track-sizing strategies,
+chosen with the `heightMode` config slot and switchable at runtime from the
+track's "Track sizing" menu:
 
 - `fixed` (_"Scroll to see all features"_): keep a fixed `height` and scroll
   when there are more rows than fit (the default).

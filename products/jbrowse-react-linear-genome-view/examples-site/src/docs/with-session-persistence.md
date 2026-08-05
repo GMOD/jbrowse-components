@@ -4,7 +4,7 @@ session is a [MobX-state-tree](https://mobx-state-tree.js.org) node, so
 `onSnapshot` gives you a serializable snapshot after every change:
 
 ```js
-import { getSnapshot, onSnapshot } from '@jbrowse/mobx-state-tree'
+import { onSnapshot } from '@jbrowse/mobx-state-tree'
 
 const state = createViewState({
   assembly,
@@ -22,5 +22,5 @@ Swap `localStorage` for a server call to persist per-user views.
 
 This keeps a session for one browser. To hand one to someone else, use
 [the session in the URL](../session-setup/#session-in-url) — `encodeSession`
-compresses it for a link and bakes in settings a raw `getSnapshot` would leave
-behind in your own browser.
+compresses it for a link, and folds in the display settings a raw `getSnapshot`
+would leave behind in your own browser.

@@ -13,11 +13,11 @@ Each phenotype file is one `GWASTrack` with a `GWASAdapter`. The Pan-UKBB flat
 files expose `neglog10_pval_*` columns that are already −log₁₀(p), so the
 adapter reads the selected population column directly as the Manhattan score
 (`scoreTransform: 'none'`, the default). For GWAS files whose p-value column is
-**not** pre-transformed, `GWASAdapter` offers a `scoreTransform` slot:
-`negLog10` for a raw p-value, or `negLog10FromLn` for a natural-log p-value (the
-convention Pan-UKBB uses in its Hail-format release, "ln P, not −log₁₀P"). The
-transform is applied natively per feature, so it stays fast across the millions
-of variants in a genome-wide view.
+not pre-transformed, `GWASAdapter` offers a `scoreTransform` slot: `negLog10`
+for a raw p-value, or `negLog10FromLn` for a natural-log p-value (the convention
+Pan-UKBB uses in its Hail-format release, "ln P, not −log₁₀P"). The transform is
+applied natively per feature, so it stays fast across the millions of variants
+in a genome-wide view.
 
 Featured phenotypes (height, BMI, LDL, type 2 diabetes, coronary disease,
 asthma, …) open zoomed to a known lead locus. Any other phenotype opens on

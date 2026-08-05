@@ -47,10 +47,9 @@ a build without a CSS loader can instead link
 
 The props are **initial values**, read once on mount. `assemblies` and `tracks`
 use the same format as a JBrowse Web `config.json`, so configs round-trip
-between the two. Unlike JBrowse Web, the embedded component does **not**
-auto-fetch a `config.json` from a URL parameter. You control how and when the
-config is loaded (see
-[Import a config.json](../loading-config/#with-import-config-json)).
+between the two. Unlike JBrowse Web, the embedded component does not auto-fetch
+a `config.json` from a URL parameter. You control how and when the config is
+loaded (see [Import a config.json](../loading-config/#with-import-config-json)).
 
 Each view's `init` blob is the same shape JBrowse Web serializes into its
 `?session=spec-…` URL, so its full field set — per-view `loc`/`tracks`,

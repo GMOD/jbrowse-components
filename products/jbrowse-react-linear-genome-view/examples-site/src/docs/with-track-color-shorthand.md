@@ -1,8 +1,8 @@
 Per-track appearance (color, height, display mode) is set on a track's
 **displays** (the different ways a track can be drawn). Rather than writing out
 the full `displays` array, you can list your settings in a `displayDefaults`
-**object**. JBrowse works out which display each setting belongs to and applies
-it, so you don't have to know the display's type name:
+object. JBrowse works out which display each setting belongs to and applies it,
+so you don't have to know the display's type name:
 
 ```js
 {

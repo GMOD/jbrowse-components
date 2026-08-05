@@ -21,8 +21,8 @@ lines sharing a `transcript_id` are grouped under a transcript (synthesized if
 absent, per the Cufflinks/StringTie convention), and transcripts sharing a
 `gene_id` are grouped into a gene.
 
-The gene's label comes from the **`aggregateField`** (default `gene_name`),
-falling back to the `gene_id` when the file has no such attribute — so a UCSC
+The gene's label comes from the `aggregateField` (default `gene_name`), falling
+back to the `gene_id` when the file has no such attribute — so a UCSC
 `genePredToGtf` or AUGUSTUS file, which carries only `gene_id`, still gets a
 gene model. Point `aggregateField` at whichever attribute holds your display
 name:

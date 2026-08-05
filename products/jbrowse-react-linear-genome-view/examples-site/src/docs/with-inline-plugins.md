@@ -20,4 +20,4 @@ class and pass it the same way. Plugins can also be
 [plugin development guide](https://jbrowse.org/jb2/docs/developer_guide/) for
 authoring. Note: if you enable the
 [web worker RPC](../plugins/#with-web-worker), plugins must be registered in
-**both** the main thread and the worker.
+both the main thread and the worker.

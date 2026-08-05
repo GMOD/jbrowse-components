@@ -1,8 +1,8 @@
 Everything the user changes — which tracks are open, how the view is rotated —
 lives in the session. `encodeSession` serializes the live session into a compact
 URL-safe string, and `decodeSession` turns one back into a snapshot you pass as
-the `session` option. That is the whole round-trip: a shareable link, a
-bookmarkable view, browser-history state.
+the `session` option. That round-trip is what turns the current view into a link
+someone else can open.
 
 ```js
 import {
@@ -23,19 +23,19 @@ const state = createViewState({
 const encoded = await encodeSession(state)
 ```
 
-A few things worth knowing:
+`session` and `defaultSession` fill the same slot, but they are checked
+differently. `defaultSession` is validated against the session model's shape,
+which suits one you write by hand; a decoded session's shape is only known at
+runtime, so it goes in `session` and is checked as it is applied.
 
-- **`session` vs `defaultSession`.** They fill the same slot, but
-  `defaultSession` is checked against the session model's shape, which suits one
-  you write by hand. A decoded session's shape is only known at runtime, so it
-  goes in `session` and is validated as it's applied.
-- **Put it in the hash fragment, not the query string.** The fragment is never
-  sent to the server, so a long session can't overflow the request line and get
-  an HTTP 414.
-- **The session travels; the config does not.** The receiving page supplies its
-  own `assembly` and `tracks`, and the snapshot references them by name.
-- **The format is JBrowse Web's.** `encodeSession` emits the same `encoded-…`
-  value that app's `?session=` accepts.
+The encoded value belongs in the hash fragment rather than the query string. The
+fragment is never sent to the server, so a long session won't overflow the
+request line and come back as an HTTP 414.
+
+Only the session travels in the link. The receiving page supplies its own
+`assembly` and `tracks`, and the snapshot refers to them by name. The encoding
+is JBrowse Web's own: `encodeSession` emits the same `encoded-…` value that
+app's `?session=` accepts.
 
 To keep a session for one browser rather than share it, write the same snapshot
 to `localStorage` instead — `onSnapshot(state.session, …)` tells you when it

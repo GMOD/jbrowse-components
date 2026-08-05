@@ -15,9 +15,9 @@ LIMS, or any page whose global CSS you don't control.
 
 The component itself needs no special configuration. The one thing you must do
 is give Material-UI's emotion cache and the MUI portal containers (menus,
-tooltips, dialogs) a target **inside** the shadow root. Otherwise MUI appends
-them to `document.body`, outside the shadow boundary, where the cache's styles
-don't reach them and they render unstyled.
+tooltips, dialogs) a target inside the shadow root. Otherwise MUI appends them
+to `document.body`, outside the shadow boundary, where the cache's styles don't
+reach them and they render unstyled.
 
 For composing with parent styles rather than isolating from them, see
 [styling from outside](../theming/#with-outside-styling).

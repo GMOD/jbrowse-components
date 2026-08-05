@@ -1,6 +1,6 @@
 `createViewState` builds a MobX-state-tree instance, an expensive, stateful
-object that must **not** be recreated on every React render. Calling it directly
-in a component body would throw away the view (and its scroll position, open
+object that must not be recreated on every React render. Calling it directly in
+a component body would throw away the view (and its scroll position, open
 tracks, and in-flight data) on each re-render of the parent.
 
 `useCreateViewState` is a thin hook wrapper that memoizes the instance for the

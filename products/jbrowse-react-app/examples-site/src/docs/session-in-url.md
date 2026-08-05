@@ -1,8 +1,8 @@
 Everything a user does — where they navigated, which tracks they opened, how
 each display is configured — lives in the session. `encodeSession` serializes
 the live session into a compact URL-safe string, and `decodeSession` turns one
-back into a snapshot you pass as the `session` prop. That is the whole
-round-trip: a shareable link, a bookmarkable view, browser-history state.
+back into a snapshot you pass as the `session` prop. That round-trip is what
+turns the current view into a link someone else can open.
 
 ```jsx
 import { JBrowse, decodeSession, encodeSession } from '@jbrowse/react-app2'
@@ -22,25 +22,27 @@ const session = param ? await decodeSession(param) : undefined
 const encoded = await encodeSession(viewState)
 ```
 
-A few things worth knowing:
+The encoded value belongs in the hash fragment rather than the query string. The
+fragment is never sent to the server, so a long session won't overflow the
+request line and come back as an HTTP 414; JBrowse Web moved its own `session=`
+there for the same reason.
 
-- **Put it in the hash fragment, not the query string.** The fragment is never
-  sent to the server, so a long session can't overflow the request line and get
-  an HTTP 414. JBrowse Web moved its own `session=` there for the same reason.
-- **The session travels; the config does not.** The receiving page supplies its
-  own `assemblies` and `tracks`. A session that references a `trackId` the
-  config doesn't have is dropped on load with a notification, rather than
-  failing the whole restore.
-- **`views` still describes your starting state.** `session` only decides what
-  opens now, so File → New session returns to `views` rather than to whatever
-  was restored.
-- **The format is JBrowse Web's.** `encodeSession` emits the same `encoded-…`
-  value that app's `?session=` accepts, so a link built here can be opened there
-  and vice versa.
-- **It is not a plain `getSnapshot`.** Display settings a user inherits from a
-  promoted display-type default live in their browser, not in the session, so a
-  raw snapshot renders differently for whoever opens the link. `encodeSession`
-  flattens that cascade into the snapshot first.
+Only the session travels in the link. The receiving page supplies its own
+`assemblies` and `tracks`, and a session that references a `trackId` the config
+doesn't have is dropped on load with a notification rather than failing the
+whole restore. Your `views` prop still describes the starting state: `session`
+only decides what opens now, so File → New session returns to `views` rather
+than to whatever was restored.
+
+The encoding is JBrowse Web's own: `encodeSession` emits the same `encoded-…`
+value that app's `?session=` accepts, so a link built here opens there, and one
+built there opens here.
+
+`encodeSession` does a little more than `getSnapshot`. Display settings a user
+picks up from a promoted display-type default live in their own browser rather
+than in the session, so a raw snapshot can render differently for whoever opens
+the link. `encodeSession` folds those settings into the snapshot before encoding
+it.
 
 The demo puts its save button above the app to keep the example short. In a real
 app it belongs in the toolbar: pass it as `headerButtons` and it renders beside

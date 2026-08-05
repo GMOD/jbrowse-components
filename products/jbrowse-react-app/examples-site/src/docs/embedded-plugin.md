@@ -25,4 +25,4 @@ runtime. See the
 [plugin development guide](https://jbrowse.org/jb2/docs/developer_guide/) for
 authoring. Note: if you enable the
 [web worker RPC](../customizing-the-app/#with-web-worker), plugins must be
-registered in **both** the main thread and the worker.
+registered in both the main thread and the worker.
