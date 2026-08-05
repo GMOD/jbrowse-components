@@ -607,6 +607,57 @@ export const trackFields: Record<string, FieldRecipe> = {
   color: colorStep,
   jexlFilters: filterStep,
   jexlFiltersSetting: filterStep,
+  renderingMode: (value, { displayType }) =>
+    typeof value === 'string' &&
+    displayType &&
+    MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)
+      ? {
+          path: `${TRACK_MENU} → Rendering mode → ${value === 'phased' ? 'Phased' : 'Allele count (dosage)'}`,
+          note:
+            value === 'phased'
+              ? 'Splits each sample into one row per haplotype. The item stays disabled until phased variants are found in the file.'
+              : undefined,
+        }
+      : undefined,
+  featureColor: (value, { displayType }) =>
+    value === 'svType' &&
+    displayType &&
+    MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)
+      ? {
+          path: `${TRACK_MENU} → Color by... → Cells → SV type`,
+          note: 'Sits in the Cells section of that submenu, above the Samples one the sample palette comes from.',
+        }
+      : undefined,
+  clusterRegion: (value, { displayType }) =>
+    typeof value === 'string' &&
+    displayType &&
+    MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)
+      ? {
+          path: `Navigate to the region you want to cluster on, then ${TRACK_MENU} → Cluster rows by genotype...`,
+          note: `Clustering is scoped to the region it was run over — this figure clustered on ${value}, which is what the row order reflects even after navigating elsewhere.`,
+        }
+      : undefined,
+  showRowSeparators: (value, { displayType }) =>
+    typeof value === 'boolean' &&
+    displayType === 'LinearMultiRowFeatureDisplay'
+      ? {
+          path: `${TRACK_MENU} → Show... → Show row separators (${value ? 'checked' : 'unchecked'})`,
+        }
+      : undefined,
+  featureHighlights: (value, { displayType }) =>
+    Array.isArray(value) && displayType === 'LinearBasicDisplay'
+      ? {
+          path: 'Search for the feature by name in the location box — a hit highlights it on the track.',
+          note: `This figure highlights ${value.length} feature${value.length === 1 ? '' : 's'}. There is no menu entry; the highlight is what a successful feature search leaves behind.`,
+        }
+      : undefined,
+  maxFeatureScreenDensity: (value, { displayType }) =>
+    typeof value === 'number' && displayType === 'LinearBasicDisplay'
+      ? {
+          path: `${TRACK_MENU} → Settings → maxFeatureScreenDensity`,
+          note: 'The features-per-pixel ceiling above which the track asks before drawing. Nothing sets it from a menu, so it is raised on the config.',
+        }
+      : undefined,
   linkedReads: (value, { displayType }) =>
     typeof value === 'string' && isAlignmentsOnlyField(displayType)
       ? {
@@ -1152,6 +1203,26 @@ export const viewFields: Record<string, FieldRecipe> = {
         }
       : undefined
   },
+  showHighlightChips: (value, { viewType }) =>
+    typeof value === 'boolean' && viewType === 'LinearGenomeView'
+      ? {
+          path: `View menu → Show highlight chips (${value ? 'checked' : 'unchecked'})`,
+          note: 'Greyed out while highlights themselves are hidden — the chip is drawn on a highlight band.',
+        }
+      : undefined,
+  showIntraviewLinks: (value, { viewType }) =>
+    typeof value === 'boolean' && viewType === 'BreakpointSplitView'
+      ? {
+          path: `View menu → Show intra-view links (${value ? 'checked' : 'unchecked'})`,
+        }
+      : undefined,
+  showColorLegend: (value, { viewType }) =>
+    typeof value === 'boolean' && viewType === 'DotplotView'
+      ? {
+          path: `Dotplot header → palette button → Show color legend (${value ? 'checked' : 'unchecked'})`,
+          note: 'The last item in the same menu the color modes are in.',
+        }
+      : undefined,
   minAlignmentLength: (value, { viewType }) => {
     const popover = viewType ? SETTINGS_POPOVERS[viewType] : undefined
     return typeof value === 'number' && popover
