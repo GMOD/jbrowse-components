@@ -223,6 +223,9 @@ const MafBody = observer(function MafBody({
           width={width}
           height={rowsHeight}
         />
+        {/* Both halves are portaled above the LGV's inter-region masks and so
+            land on the display's origin, not this container's — hence the
+            explicit `top`, which is the band stack above the rows. */}
         {showTree ? (
           <RowLabelsOverlay
             sources={sources}
@@ -230,11 +233,12 @@ const MafBody = observer(function MafBody({
             labelOffset={sidebarOffset}
             width={width}
             height={rowsHeight}
+            top={rowsTopOffset}
             scrollTop={scrollTop}
             showLabels={model.showRowLabels}
           />
         ) : null}
-        <TreeSidebar model={model} />
+        <TreeSidebar model={model} top={rowsTopOffset} />
       </div>
       {/* Offset below the stacked bands, which are pinned: only the rows
           scroll. Renders nothing while the rows fit. */}

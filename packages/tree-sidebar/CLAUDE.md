@@ -169,10 +169,38 @@ group a reader is hunting for, not the majority.
 `TreeSidebar` paints the dendrogram onto its own canvas; `RowLabelsOverlay` is
 the labels beside it. Render both — a display that hand-rolls the labels half
 re-states the overlay geometry that has to be right for it to work at all
-(`pointerEvents: 'none'` or it swallows the display's own hit test, `zIndex: 2`
-so it sits above the rendering canvas and below the crosshair, sized to the
+(`pointerEvents: 'none'` or it swallows the display's own hit test, sized to the
 **rows viewport** and paired with the same `scrollTop` the rows use). Same
 division as the SVG side below.
+
+## Both halves paint through `TrackOverlayPortal`, above the LGV's masks
+
+A display renders inside `TrackRenderingContainer`'s `contain: strict` sandbox,
+and the LGV's inter-region masks (`PaddingBlocks` — region separators, elided and
+boundary blocks) are a later sibling that paints over the whole of it. Nothing
+inside can `z-index` its way out. So in any multi-region or whole-genome view a
+grey separator bar landed on the sidebar at every region boundary: through the
+opaque dendrogram panel, and through the row-label text, which floats over the
+plot and so gets crossed wherever a boundary falls. Both halves portal out.
+
+**`TreeSidebar` therefore has two layers, and the line between them is
+paint-vs-hit-test.** The panel, the tree canvas, the hover canvas and the hints
+portal above the masks. The transparent node-picking box and the resize handle
+stay inline, because they draw nothing — being under the masks costs them
+nothing, and leaving them in the display keeps every pointer path they already
+had. That matters concretely: the portal node is `pointer-events: none` (or it
+would eat canvas events), and maf binds its wheel-to-scroll listener to the
+**DOM** element these sit in, so a portaled hit box would have sent a wheel over
+the species names to the view instead of scrolling the rows. The two layers share
+an origin and their z-indexes are still read against each other, so ordering
+within the gutter is unchanged.
+
+The portal lands on the **display's own box**. A display that draws its sidebar
+somewhere other than its own top-left passes that down as `top` — maf does, for
+the coverage/conservation bands stacked above its rows — because nothing in the
+portal can measure an offset the sidebar used to inherit from its container.
+Outside a `TrackContainer` the portal renders in place, so a standalone display
+and the component tests are unchanged.
 
 ## SVG export: use `SvgTreeSidebar`, never `SvgRowLabels` alone
 

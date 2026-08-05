@@ -5,7 +5,14 @@ import { createContext } from 'react'
 // React tree — sealed inside a `contain:strict` sandbox that those masks paint
 // over — can `createPortal` floating chrome into this node to escape above the
 // masks, without the LGV knowing anything about that chrome. The multi-wiggle
-// color legend uses it so the separators don't bury it at whole-genome scale.
+// color legend uses it so the separators don't bury it at whole-genome scale;
+// so do the tree sidebar's dendrogram panel and its per-sample row labels, which
+// otherwise get striped by a separator bar at every region boundary.
+//
+// The node is the display's own box — same origin, same height — so chrome
+// portaled here keeps the coordinates it would have had inline. A display that
+// draws its chrome somewhere other than its own top-left (maf stacks bands above
+// its rows) passes that offset down itself; nothing here can measure it.
 //
 // null when a display renders outside a TrackContainer (e.g. some tests); a
 // consumer must render nothing in that case.

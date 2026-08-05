@@ -24,6 +24,9 @@ const useStyles = makeStyles()(theme => ({
     borderLeft: 'none',
     whiteSpace: 'nowrap',
     cursor: 'pointer',
+    // click-to-dismiss, and `TreeSidebar` portals this into the track overlay
+    // node, which is pointer-events:none so it doesn't eat canvas events
+    pointerEvents: 'auto',
   },
 }))
 

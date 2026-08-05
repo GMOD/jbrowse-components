@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react'
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { TrackOverlayPortal } from '@jbrowse/plugin-linear-genome-view'
 import { Menu, MenuItem, alpha } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -16,11 +17,31 @@ import {
 
 import type { TreeSidebarModel } from './types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { ReactNode } from 'react'
 
 interface MenuAnchor {
   x: number
   y: number
   names: string[]
+}
+
+/**
+ * The zero-height box every part of the sidebar hangs off, so the portaled layer
+ * and the inline one are laid out by one rule and cannot drift apart.
+ *
+ * `absolute`, not the `sticky` the sidebar used to carry: nothing above it
+ * scrolls natively — `TrackRenderingContainer` deliberately has no `overflow`,
+ * and every row display paints a fixed canvas at `-scrollTop` instead — so the
+ * only scrollport sticky could ever have found was the window. In an embedded,
+ * page-scrolling host that would peel the sidebar off the rows it labels, and
+ * now that it is two layers, peel them off each other.
+ */
+function GutterLayer({ top, children }: { top: number; children: ReactNode }) {
+  return (
+    <div style={{ position: 'absolute', top, left: 0, height: 0, zIndex: 100 }}>
+      {children}
+    </div>
+  )
 }
 
 // Centered line with a contrasting halo, hidden until the handle is hovered.
@@ -65,10 +86,36 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+/**
+ * The dendrogram gutter, in two layers that sit on opposite sides of the LGV's
+ * inter-region masks.
+ *
+ * What it **paints** — the opaque panel, the tree canvas, the hover canvas, the
+ * hints — is portaled above those masks (`TrackOverlayPortal`), because a
+ * display renders inside a `contain:strict` sandbox the masks paint over, and at
+ * whole-genome or multi-region scale that put a grey separator bar through the
+ * dendrogram at every region boundary. What it **hit-tests** — the transparent
+ * node-picking box and the resize handle — deliberately stays inline: those draw
+ * nothing, so being under the masks costs them nothing, and staying inside the
+ * display keeps every pointer path they already have. In particular the portal
+ * node is `pointer-events: none` (so it doesn't eat canvas events), and maf's
+ * wheel-to-scroll listener is bound to the DOM element these sit in, not to the
+ * React tree the portal travels through.
+ *
+ * The two layers share an origin and their z-indexes are still read against each
+ * other, so the ordering within the gutter is unchanged.
+ */
 const TreeSidebar = observer(function TreeSidebar({
   model,
+  top = 0,
 }: {
   model: TreeSidebarModel
+  // Top of the sidebar within the display's own box. Non-zero only for a display
+  // that stacks something above its rows (maf's coverage/conservation bands):
+  // the painted layer is portaled onto the display's origin, so an offset it
+  // used to inherit from its container has to be passed explicitly. The inline
+  // layer still sits in that container and so does not take it.
+  top?: number
 }) {
   const { classes } = useStyles()
   const { width: viewWidth } = getContainingView(model) as LinearGenomeViewModel
@@ -166,56 +213,61 @@ const TreeSidebar = observer(function TreeSidebar({
 
   if (!hierarchy || !showTree || !sources?.length) {
     // one of those is "there IS a tree, it just doesn't describe these rows any
-    // more" — which needs saying rather than silently drawing nothing
-    return <StaleTreeHint model={model} />
+    // more" — which needs saying rather than silently drawing nothing. Portaled
+    // for the same reason the panel is: it is text in the gutter.
+    return (
+      <TrackOverlayPortal>
+        <GutterLayer top={top}>
+          <StaleTreeHint model={model} />
+        </GutterLayer>
+      </TrackOverlayPortal>
+    )
   }
 
   const contentHeight = treeContentHeight(model)
 
   return (
     <>
-      <div
-        style={{
-          position: 'sticky',
-          top: 0,
-          left: 0,
-          height: 0,
-          zIndex: 100,
-        }}
-      >
-        <div
-          className={classes.panel}
-          style={{
-            top: lineZoneHeight,
-            width: treeAreaWidth,
-            height: contentHeight,
-          }}
-        />
-        <ClusterProvenanceHint model={model} top={lineZoneHeight} />
-        <canvas
-          data-testid="tree_sidebar_dendrogram"
-          ref={treeCanvasRef}
-          style={{
-            width: treeAreaWidth,
-            height: contentHeight,
-            position: 'absolute',
-            top: lineZoneHeight,
-            left: 0,
-            pointerEvents: 'none',
-          }}
-        />
-        <canvas
-          ref={mouseoverCanvasRef}
-          style={{
-            width: viewWidth,
-            height: contentHeight,
-            position: 'absolute',
-            top: lineZoneHeight,
-            left: 0,
-            zIndex: 1,
-            pointerEvents: 'none',
-          }}
-        />
+      <TrackOverlayPortal>
+        <GutterLayer top={top}>
+          <div
+            className={classes.panel}
+            style={{
+              top: lineZoneHeight,
+              width: treeAreaWidth,
+              height: contentHeight,
+            }}
+          />
+          <ClusterProvenanceHint model={model} top={lineZoneHeight} />
+          <canvas
+            data-testid="tree_sidebar_dendrogram"
+            ref={treeCanvasRef}
+            style={{
+              width: treeAreaWidth,
+              height: contentHeight,
+              position: 'absolute',
+              top: lineZoneHeight,
+              left: 0,
+              pointerEvents: 'none',
+            }}
+          />
+          <canvas
+            ref={mouseoverCanvasRef}
+            style={{
+              width: viewWidth,
+              height: contentHeight,
+              position: 'absolute',
+              top: lineZoneHeight,
+              left: 0,
+              zIndex: 1,
+              pointerEvents: 'none',
+            }}
+          />
+        </GutterLayer>
+      </TrackOverlayPortal>
+      {/* the inline layer stays in the container the caller put it in, so it
+          takes no `top` of its own */}
+      <GutterLayer top={0}>
         <div
           onMouseMove={handleMouseMove}
           onMouseLeave={() => {
@@ -250,7 +302,7 @@ const TreeSidebar = observer(function TreeSidebar({
           }}
           vertical
         />
-      </div>
+      </GutterLayer>
       <Menu
         open={!!menuAnchor}
         onClose={closeMenu}

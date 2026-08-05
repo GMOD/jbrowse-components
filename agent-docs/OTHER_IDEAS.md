@@ -35,7 +35,7 @@ reference others may hold, not as free-form prose.
   for retiring the `heightOverride` name
 - [Vertical real estate](#vertical-real-estate--the-scrolls-within-scrolls-problem) —
   the view-level height allocator, and what the wheel machinery already does
-- [UI / UX](#ui--ux) — highlight API, super-compact mode, the `TrackOverlay` slot
+- [UI / UX](#ui--ux) — highlight API, super-compact mode
 
 **Synteny and comparative**
 
@@ -674,22 +674,6 @@ only when collapse is active, tooltip explains + optionally toggles "show all"; 
 per track, not per gene, sits with existing track controls; (3) corner badge overlaid on
 the render area — more discoverable, but floats over the data; (4) per-gene stacked-shadow
 glyph — communicates without text but is the noisiest since it repeats per gene.
-
-**Display floating-chrome overlay slot (`TrackOverlay`).** A display that draws
-top-corner chrome inside its own render — today the MultiWiggle `OverlayColorLegend`, and
-any future in-canvas badge/score-key — is sealed inside `TrackRenderingContainer`'s
-`contain: strict` stacking context, so the sibling `PaddingBlocks` (region separators +
-elided/boundary blocks) *always* paints over it in multi-region / whole-genome views; the
-chrome can't `z-index` its way out of a contained box. `TrackLabel` dodges this only
-because it's a direct `TrackContainer` child (`zIndex:200`), outside the contained
-subtree. Generalize that escape: add an optional `TrackOverlay` component to the display
-(mirroring the existing `DisplayBlurb` hook, but rendered by `TrackContainer` *after*
-`<PaddingBlocks>`, `pointerEvents:none`, top-right by default). MultiWiggle feeds its color
-legend through it for the interactive path while `renderSvg` keeps compositing the legend
-into the exported SVG (add a suppress-in-SVG flag so the two paths don't double-draw).
-Fixes the `cnv` screenshot's masked legend at the source and gives any display a clean
-home for floating chrome that must sit above region separators. Blast radius = just the
-interactive overlay-multiwiggle legend.
 
 ## Synteny / comparative
 

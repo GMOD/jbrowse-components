@@ -16,11 +16,6 @@ import type { LinearDisplayModel } from '../../BaseLinearDisplay/types.ts'
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
-// height of the in-flow drag handle at the bottom of the Paper. The overlay
-// node subtracts it so its box ends at the track content's bottom edge, which
-// is what bottom-anchored portaled chrome (status chips) measures against.
-const RESIZE_HANDLE_HEIGHT = 4
-
 const useStyles = makeStyles()({
   // No `overflow`: paint containment already clips to the padding box, and an
   // overflow would only add a scroll container — the spurious second scrollbar
@@ -38,9 +33,12 @@ const useStyles = makeStyles()({
   unpinnedTrack: {
     background: 'none',
   },
+  // in flow at the bottom of the Paper, and outside `trackContent` — so a
+  // `bottom:0` portaled overlay (the status chips) lands on the track content's
+  // bottom edge rather than having to subtract this height back out.
   resizeHandle: {
     position: 'relative',
-    height: RESIZE_HANDLE_HEIGHT,
+    height: 4,
   },
   // in-flow, so the label pushes the track body down by its own height. The
   // margin is that push plus a gap: without it the body starts on the label's
@@ -55,18 +53,30 @@ const useStyles = makeStyles()({
   trackLabelOverlap: {
     position: 'absolute',
   },
-  // Portal target for display-provided floating chrome (e.g. the multi-wiggle
-  // legend, the bottom-right status chips). Rendered after PaddingBlocks so it
-  // paints above the inter-region masks; shares their origin so a `top:0`
-  // overlay lands at the same place, and stops short of the resize handle so a
-  // `bottom:0` one sits on the track content's bottom edge. Below TrackLabel
-  // (zIndex 200); pointer-events pass through to the canvas.
+  // Wraps the rendering container so the overlay node below can be the display's
+  // own box rather than the Paper's. Anchored on the Paper, a portaled `top:0`
+  // overlay sat a track label's height above the canvas it was meant to be drawn
+  // on — which is every display with a tree sidebar, since they all set
+  // `prefersOffset` — and a `bottom:0` one only lined up via a hardcoded
+  // resize-handle subtraction. Position only: no z-index, so the overlay's own
+  // still competes in the Paper's stacking context against PaddingBlocks.
+  trackContent: {
+    position: 'relative',
+  },
+  // Portal target for display-provided floating chrome (the multi-wiggle legend,
+  // the tree sidebar's painted half and its row labels, the bottom-right status
+  // chips). zIndex 100 paints it above the inter-region masks and below
+  // TrackLabel (200); pointer-events pass through to the canvas.
+  //
+  // Its box is the *display's*, so chrome portaled here keeps the coordinates it
+  // would have had inline: same origin, same height, and — via the inline `left`
+  // — the same outline offset the rendering container takes, so an opaque
+  // overlay covers the canvas edge-to-edge instead of leaving a sliver.
   trackOverlay: {
     position: 'absolute',
     top: 0,
-    left: 0,
-    right: 0,
-    bottom: RESIZE_HANDLE_HEIGHT,
+    bottom: 0,
+    width: '100%',
     pointerEvents: 'none',
     zIndex: 100,
   },
@@ -86,6 +96,13 @@ const TrackContainer = observer(function TrackContainer({
   // displays[0]); narrow to the linear shape for prefersOffset/resizeHeight
   const display = track.activeDisplay as LinearDisplayModel
   const { showTrackOutlines } = model
+  // The Paper's 1px border, present iff outlines are on. Everything laid out in
+  // the *display's* coordinates has to cancel it — the rendering container
+  // shifts left by it (see renderingComponentContainer), so the overlay node and
+  // the masks over it have to move by the same amount or they land a pixel off
+  // the data. One binding rather than three copies of the ternary, because the
+  // three agreeing is the whole point.
+  const outlineOffset = showTrackOutlines ? 1 : 0
   // element state (not a ref) so consumers re-render once the portal target
   // mounts and the context value flips from null to the node
   const [overlayEl, setOverlayEl] = useState<HTMLDivElement | null>(null)
@@ -103,25 +120,28 @@ const TrackContainer = observer(function TrackContainer({
         model.onTrackDragOver(track.id, event.clientY)
       }}
     >
-      {/* offset cancels the Paper's 1px left border (present iff outlines on) */}
-      {track.pinned ? (
-        <Gridlines model={model} offset={showTrackOutlines ? 1 : 0} />
-      ) : null}
+      {track.pinned ? <Gridlines model={model} offset={outlineOffset} /> : null}
       {model.effectiveTrackLabels !== 'hidden' ? (
         <TrackLabel track={track} className={trackLabelStyle} />
       ) : null}
-      <ErrorBoundary FallbackComponent={e => <ErrorBanner error={e.error} />}>
-        <TrackOverlayContext value={overlayEl}>
-          <TrackRenderingContainer model={model} track={track} />
-        </TrackOverlayContext>
-      </ErrorBoundary>
-      {/* mirrors the rendering container's left offset (both sit inside the
-          Paper's 1px border, present iff outlines on), so the separator masks
-          the track content at the same x the data is drawn */}
-      <PaddingBlocks model={model} offset={showTrackOutlines ? 1 : 0} />
-      {/* mounted after PaddingBlocks so display chrome portaled here paints
-          above the inter-region masks (see TrackOverlayContext) */}
-      <div ref={setOverlayEl} className={classes.trackOverlay} />
+      <div className={classes.trackContent}>
+        <ErrorBoundary FallbackComponent={e => <ErrorBanner error={e.error} />}>
+          <TrackOverlayContext value={overlayEl}>
+            <TrackRenderingContainer model={model} track={track} />
+          </TrackOverlayContext>
+        </ErrorBoundary>
+        {/* the display's own box, outside its `contain:strict` sandbox — see
+            TrackOverlayContext */}
+        <div
+          ref={setOverlayEl}
+          className={classes.trackOverlay}
+          style={{ left: -outlineOffset }}
+        />
+      </div>
+      {/* so the separator masks the track content at the same x the data is
+          drawn. Painted over by the overlay node above, which is what lifts
+          display chrome clear of it. */}
+      <PaddingBlocks model={model} offset={outlineOffset} />
       <ResizeHandle
         onDrag={distance => display.resizeHeight(distance)}
         // Bracket the drag so a display can sit an expensive per-frame layer
