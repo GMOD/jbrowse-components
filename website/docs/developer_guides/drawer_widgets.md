@@ -16,37 +16,60 @@ state, and switch between open widgets.
 ## Showing the track selector
 
 The most common use is a hierarchical track selector panel. Set
-`tracklist: true` in the view's `init`:
+`tracklist: true` in the view's `init` — here on the managed
+`<LinearGenomeView>` component, whose `init` prop is its whole declarative
+input:
 
-```javascript
-import {
-  createViewState,
-  JBrowseLinearGenomeView,
-} from '@jbrowse/react-linear-genome-view2'
+<!-- include: products/jbrowse-react-linear-genome-view/examples-site/src/examples/WithInitAdvanced.tsx -->
 
-const state = createViewState({
-  assembly: assemblyConfig,
-  tracks: tracksConfig,
-  location: 'chr1:1000..2000',
-  defaultSession: {
-    name: 'My Session',
-    view: {
-      id: 'linearGenomeView',
-      type: 'LinearGenomeView',
-      init: {
-        assembly: 'hg38', // required: assembly name
-        tracklist: true, // shows track selector in drawer
-      },
-    },
-  },
-})
+```tsx
+import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 
-export default function App() {
-  return <JBrowseLinearGenomeView viewState={state} />
+// managed API: the `init` blob is the component's whole declarative input —
+// loc, which tracks to open (with per-display snapshots), tracklist/nav
+// visibility, and highlights
+export default function WithInitAdvanced() {
+  return (
+    <LinearGenomeView
+      assembly={{
+        name: 'hg38',
+        uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
+        refNameAliases: {
+          uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
+        },
+      }}
+      tracks={[
+        {
+          type: 'FeatureTrack',
+          trackId: 'ncbi-refseq-genes',
+          name: 'NCBI RefSeq Genes',
+          assemblyNames: ['hg38'],
+          adapter: {
+            type: 'Gff3TabixAdapter',
+            uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
+          },
+        },
+      ]}
+      init={{
+        loc: 'chr1:11,106,077-11,261,675',
+        tracklist: true,
+        nav: true,
+        tracks: [
+          { trackId: 'ncbi-refseq-genes', displaySnapshot: { height: 200 } },
+        ],
+        highlight: ['chr1:11,170,000-11,190,000'],
+      }}
+    />
+  )
 }
 ```
 
 ## Managing widgets programmatically
+
+Opening a widget from your own code means holding the engine, so these use the
+`useCreateViewState` form rather than the props form above — same object either
+way, see
+[driving the view from your own code](/docs/embedded_components#driving-the-view-from-your-own-code):
 
 ```javascript
 // open a widget in the drawer
@@ -70,19 +93,61 @@ state.session.hideWidget(editor)
 
 ## Init state options
 
-The `init` field accepts:
+The `init` prop accepts two sets of keys, and the split is worth knowing:
+`InitState` keys need resolving on load (a locstring has to become regions, a
+track id has to become an open track), which is why they live in a one-shot
+blob. `LinearGenomeViewLaunchProps` are plain view props forwarded straight onto
+the snapshot, so they round-trip on save like any other setting:
+
+<!-- include: plugins/linear-genome-view/src/LinearGenomeView/types.ts#initState -->
 
 ```typescript
-interface InitState {
-  assembly: string // required: assembly name
-  tracklist?: boolean // show hierarchical track selector (default: false)
-  loc?: string // initial location (e.g., 'chr1:1000..2000')
-  tracks?: TrackInit[] // tracks to display
-  nav?: boolean // show navigation header (default: true)
-  highlight?: (string | HighlightType)[] // genomic regions to highlight
-  showCenterLine?: boolean // show the center line
-  trackLabels?: 'overlapping' | 'offset' | 'hidden' // track-label placement mode
-  colorByCDS?: boolean // color CDS segments by reading frame
+export interface InitState {
+  /**
+   * A locstring, or several separated by spaces to open a discontinuous view:
+   * `'chr3:25,325,000-25,361,000 chr10:58,716,500-58,718,500'`. Multiple
+   * regions are the only declarative way to frame something spread across loci
+   * (a derivative allele against its sources, a gene's partners in a fusion) --
+   * `displayedRegionNames` takes whole chromosomes, not intervals.
+   */
+  loc?: string
+  // fractional zoom-out applied around `loc` for context (passed to
+  // navToLocString's `grow`), e.g. 0.2 pads a region by 20% on each side.
+  // Ignored without `loc`.
+  grow?: number
+  assembly: string
+  // restrict a whole-genome view to these assembly refNames (whole
+  // chromosomes), in the order given — e.g. the main chromosomes without the
+  // unplaced/alt contigs. Names resolve through the assembly's aliases. Ignored
+  // when `loc` is set (which navigates to a single region instead).
+  displayedRegionNames?: string[]
+  tracks?: TrackInit[]
+  tracklist?: boolean
+  nav?: boolean
+  // a string entry is a locstring or a JSON-encoded HighlightType (the URL
+  // wire-format); programmatic callers (createViewState/session JSON) can pass
+  // a HighlightType object directly
+  highlight?: (string | HighlightType)[]
+}
+
+// Plain persisted view props a launch spec may set inline alongside init keys.
+// Unlike InitState these need no resolution — LaunchView forwards them straight
+// onto the view snapshot.
+export interface LinearGenomeViewLaunchProps {
+  showCenterLine?: boolean
+  // track-label placement mode, matching the view's setTrackLabels action (not
+  // the ExportSvg TrackLabelMode enum)
+  trackLabels?: 'overlapping' | 'offset' | 'hidden'
+  // color CDS segments by reading frame on gene tracks (matches the view's
+  // setColorByCDS action)
+  colorByCDS?: boolean
+  // draw per-codon shading and amino acid lettering on coding features once
+  // zoomed in far enough (matches the view's setShowAminoAcids action). On by
+  // default, so a spec only ever sets this to false
+  showAminoAcids?: boolean
+  // draw the interactive link-icon chip on each highlight band (chips are
+  // otherwise off by default, leaving a bare colored band)
+  showHighlightChips?: boolean
 }
 ```
 

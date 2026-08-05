@@ -56,6 +56,7 @@ export type { TrackInit }
 // natively and they round-trip on save. Add a resolution field here + a case in
 // afterAttach's applyInit + an entry in its knownInitKeyMap; add a plain prop to
 // LinearGenomeViewLaunchProps (LaunchView forwards it automatically).
+// #region initState
 export interface InitState {
   /**
    * A locstring, or several separated by spaces to open a discontinuous view:
@@ -103,3 +104,4 @@ export interface LinearGenomeViewLaunchProps {
   // otherwise off by default, leaving a bare colored band)
   showHighlightChips?: boolean
 }
+// #endregion
