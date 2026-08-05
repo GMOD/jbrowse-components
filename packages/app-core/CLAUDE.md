@@ -83,6 +83,15 @@ It is also the _only_ "arrange the panels like this" channel. `pendingMove` was
 a second, volatile one saying the same thing, consumed in the same place;
 ViewMenu now writes an `init` (using `direction: 'tabs'` for "move to new tab").
 
+`setPendingMove` survives as **sugar over `init`**, and has to: it is public API
+an external plugin calls behind a `'setPendingMove' in session` guard
+(jbrowse-plugin-protein3d, putting a protein view beside its genome view).
+Deleting the action along with the channel did not fail anywhere — the plugin
+feature-detects, so it silently stopped asking for a split and started stacking,
+and the only thing that noticed was a website figure eight commits later. Keep
+the entry point even when its storage changes; a capability-detecting caller
+cannot tell you it lost a capability.
+
 ## `DockviewLayoutNode` is not isomorphic to dockview's grid
 
 dockview forces branch orientation to **alternate by depth**, so a `horizontal`

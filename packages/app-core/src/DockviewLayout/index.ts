@@ -1,4 +1,5 @@
 import { types } from '@jbrowse/mobx-state-tree'
+import { isSessionWithMultipleViews } from '@jbrowse/product-core'
 
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type { SerializedDockview } from 'dockview-react'
@@ -18,6 +19,15 @@ export interface DockviewLayoutNode {
   // Size as percentage (0-100) of the parent container. Meaningless under
   // 'tabs', where the children share one group's space.
   size?: number
+}
+
+/**
+ * A request to move one view relative to the others, from a caller that does
+ * not build layouts itself. `setPendingMove` turns it into an `init` layout.
+ */
+export interface PendingMove {
+  type: 'newTab' | 'splitRight'
+  viewId: string
 }
 
 /**
@@ -121,6 +131,46 @@ export function DockviewLayoutMixin() {
        */
       setInit(init: DockviewLayoutNode | undefined) {
         self.init = init
+      },
+
+      /**
+       * #action
+       * Ask for one view to be moved beside the others (`splitRight`) or into
+       * its own tab (`newTab`), applied whenever dockview next syncs.
+       *
+       * Sugar over `init`, not a second mechanism: the layout it builds is the
+       * same standing request a session spec's `layout` makes, so it lands
+       * whether workspaces were already on or are being switched on in the same
+       * breath — which is the ordering this used to get wrong.
+       *
+       * It exists because it is PUBLIC API. jbrowse-plugin-protein3d calls
+       * `setPendingMove({type: 'splitRight', viewId})` to put a protein view
+       * beside its genome view, behind a `'setPendingMove' in session` guard —
+       * so when the action was removed with the queue it used to write to, the
+       * plugin silently stopped splitting and started stacking instead, with no
+       * error anywhere. A capability-detecting caller cannot tell you it lost a
+       * capability; only the figure did (`protein/connected`).
+       */
+      setPendingMove(move: PendingMove | undefined) {
+        if (!move) {
+          self.init = undefined
+          return
+        }
+        // Everything else keeps its side of the split. With nothing else on
+        // screen there is nothing to split from, so the view just takes the
+        // space rather than sharing it with an empty panel. `views` belongs to
+        // the sibling mixin, so it is narrowed through that mixin's own guard
+        // rather than asserted onto `self`.
+        const others = isSessionWithMultipleViews(self)
+          ? self.views.flatMap(v => (v.id === move.viewId ? [] : [v.id]))
+          : []
+        self.init =
+          others.length > 0
+            ? {
+                direction: move.type === 'splitRight' ? 'horizontal' : 'tabs',
+                children: [{ viewIds: others }, { viewIds: [move.viewId] }],
+              }
+            : { viewIds: [move.viewId] }
       },
 
       /**

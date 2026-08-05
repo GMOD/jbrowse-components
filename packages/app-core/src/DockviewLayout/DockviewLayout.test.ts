@@ -274,3 +274,80 @@ describe('getViewIdsForPanel', () => {
     expect(session.getViewIdsForPanel('panel-1')).toEqual([])
   })
 })
+
+// `setPendingMove` is public API an external plugin calls behind a
+// `'setPendingMove' in session` guard (jbrowse-plugin-protein3d, to put a
+// protein view beside its genome view). A capability-detecting caller cannot
+// report that the capability went away — it just quietly stops asking — so
+// these tests are what says the entry point still exists and still means the
+// same thing.
+//
+// `isSessionWithMultipleViews` wants a real session's id/name/root, so the
+// double carries them; the bare model above would fall to the no-other-views
+// branch and the split cases would pass vacuously.
+const MoveSessionModel = types
+  .compose(
+    'MoveTestSession',
+    types.model({
+      id: types.identifier,
+      name: types.string,
+      views: types.array(types.model({ id: types.identifier })),
+    }),
+    DockviewLayoutMixin(),
+  )
+  .views(() => ({
+    get root() {
+      return {}
+    },
+  }))
+
+function createMoveSession(viewIds: string[]) {
+  return MoveSessionModel.create({
+    id: 'session-1',
+    name: 'test',
+    views: viewIds.map(id => ({ id })),
+  })
+}
+
+describe('setPendingMove', () => {
+  it('splitRight puts the view beside everything else', () => {
+    const session = createMoveSession(['view-1', 'view-2', 'view-3'])
+
+    session.setPendingMove({ type: 'splitRight', viewId: 'view-3' })
+
+    expect(session.init).toEqual({
+      direction: 'horizontal',
+      children: [{ viewIds: ['view-1', 'view-2'] }, { viewIds: ['view-3'] }],
+    })
+  })
+
+  // 'tabs' is how the layout vocabulary says "one group, another tab" rather
+  // than splitting the space
+  it('newTab puts the view in its own tab', () => {
+    const session = createMoveSession(['view-1', 'view-2'])
+
+    session.setPendingMove({ type: 'newTab', viewId: 'view-2' })
+
+    expect(session.init).toEqual({
+      direction: 'tabs',
+      children: [{ viewIds: ['view-1'] }, { viewIds: ['view-2'] }],
+    })
+  })
+
+  it('takes the whole space when there is nothing to split from', () => {
+    const session = createMoveSession(['view-1'])
+
+    session.setPendingMove({ type: 'splitRight', viewId: 'view-1' })
+
+    expect(session.init).toEqual({ viewIds: ['view-1'] })
+  })
+
+  it('clears the request', () => {
+    const session = createMoveSession(['view-1', 'view-2'])
+    session.setPendingMove({ type: 'splitRight', viewId: 'view-2' })
+
+    session.setPendingMove(undefined)
+
+    expect(session.init).toBeUndefined()
+  })
+})
