@@ -259,6 +259,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     <div className={classes.root} style={{ width, height }}>
       <RenderCanvas
         handle={{ canvasRef, canvasKey }}
+        drawn={model.settled}
         data-testid={model.settled ? 'synteny_canvas_done' : 'synteny_canvas'}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
@@ -268,9 +269,23 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
         style={{ width, height }}
       />
       {combinedError ? (
+        // One banner stacks the GPU error and every display's fetch error, so
+        // Retry has to undo whichever are present: `retry()` re-inits the
+        // backend, `reload()` refires each display's fetch autorun. It used to
+        // pass `retry` alone, so a PAF 404 with no GPU error rendered a banner
+        // with no button and the only way out was reloading the tab.
         <ErrorBanner
           error={combinedError}
-          onReset={gpuError ? retry : undefined}
+          onReset={() => {
+            if (gpuError) {
+              retry()
+            }
+            for (const d of model.linearSyntenyDisplays) {
+              if (d.error) {
+                d.reload()
+              }
+            }
+          }}
         />
       ) : null}
     </div>

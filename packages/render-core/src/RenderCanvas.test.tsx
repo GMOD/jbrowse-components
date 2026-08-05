@@ -42,6 +42,7 @@ function Harness({
       />
       <RenderCanvas
         handle={{ canvasRef, canvasKey }}
+        drawn={done}
         data-testid={done ? 'synteny_canvas_done' : 'synteny_canvas'}
       />
     </>
@@ -104,7 +105,7 @@ test('forwards data-testid verbatim rather than composing one', () => {
 
 test('emits no testid attribute when none is passed', () => {
   const { container } = render(
-    <RenderCanvas handle={{ canvasRef: jest.fn(), canvasKey: 0 }} />,
+    <RenderCanvas handle={{ canvasRef: jest.fn(), canvasKey: 0 }} drawn />,
   )
   expect(container.querySelector('canvas')?.hasAttribute('data-testid')).toBe(
     false,
@@ -116,6 +117,7 @@ test('forwards the caller half — sizing, class and handlers', () => {
   const { container } = render(
     <RenderCanvas
       handle={{ canvasRef: jest.fn(), canvasKey: 0 }}
+      drawn
       className="lvl"
       style={{ width: 120, height: 40 }}
       onMouseMove={onMouseMove}
@@ -128,4 +130,16 @@ test('forwards the caller half — sizing, class and handlers', () => {
 
   fireEvent.mouseMove(canvas)
   expect(onMouseMove).toHaveBeenCalled()
+})
+
+// The gap this closed: `PENDING_DISPLAYS` used to name `synteny_canvas`
+// explicitly and forgot dotplot, so an unpainted dotplot counted as finished and
+// a capture could land on it blank. Publishing the same attribute the LGV chrome
+// does makes "has everything painted?" one selector that covers every view.
+test('publishes the paint state the readiness waits select on', () => {
+  const { canvas, getByTestId } = setup()
+  expect(canvas()?.getAttribute('data-display-drawn')).toBe('false')
+
+  fireEvent.click(getByTestId('toggle-done'))
+  expect(canvas()?.getAttribute('data-display-drawn')).toBe('true')
 })

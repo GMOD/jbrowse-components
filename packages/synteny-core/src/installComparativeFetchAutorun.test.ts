@@ -44,6 +44,9 @@ const TestDisplay = types
     // read inside `untracked` by prepare below, so it must NOT refire anything
     geometry: 0,
     gated: false,
+    // `SyntenyFetchStateMixin`'s retry counter, which the autorun reads
+    // unconditionally
+    reloadCounter: 0,
   }))
   .views(() => ({
     get adapterConfig() {
@@ -68,6 +71,9 @@ const TestDisplay = types
     },
     setGated(flag: boolean) {
       self.gated = flag
+    },
+    reload() {
+      self.reloadCounter += 1
     },
   }))
 
@@ -285,4 +291,54 @@ describe('installComparativeFetchAutorun', () => {
     expect(display.error).toBeUndefined()
     spy.mockRestore()
   })
+})
+
+// The retry contract for the comparative displays. After an error every fetch
+// input is unchanged, so `prepare` recomputes the same key and nothing refires
+// the autorun — which is why clearing the error alone would leave the banner's
+// Retry a button that does nothing, and why the counter is read unconditionally
+// rather than inside any display's `prepare`.
+test('reload() refires the fetch with no input change', async () => {
+  let attempt = 0
+  const { display, prepared } = setup({
+    run: () => {
+      attempt += 1
+      return attempt === 1
+        ? Promise.reject(new Error('PAF 404'))
+        : Promise.resolve('ok')
+    },
+  })
+  await settle()
+  expect(`${display.error}`).toContain('PAF 404')
+  expect(prepared).toHaveLength(1)
+
+  display.reload()
+  await settle()
+
+  expect(prepared).toHaveLength(2)
+  expect(display.error).toBeUndefined()
+})
+
+test('reload() refires even while the gate is closed, so the wake chain holds', async () => {
+  // `prepare` returning undefined still records its reads as dependencies; the
+  // counter is read BEFORE that bail-out, so a reload during a gated state is
+  // not swallowed.
+  const { display, prepared } = setup({
+    run: () => Promise.resolve('ok'),
+    prepare: d => (d.gated ? undefined : { fetchKey: d.fetchKey, geometry: 0 }),
+  })
+  await settle()
+  expect(prepared).toHaveLength(1)
+
+  display.setGated(true)
+  await settle()
+  expect(prepared).toHaveLength(1)
+
+  display.reload()
+  await settle()
+  expect(prepared).toHaveLength(1) // still gated: reload does not bypass the gate
+
+  display.setGated(false)
+  await settle()
+  expect(prepared).toHaveLength(2)
 })

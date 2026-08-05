@@ -1,6 +1,6 @@
 import { Suspense, useRef, useState } from 'react'
 
-import { ContextMenu, LoadingOverlay } from '@jbrowse/core/ui'
+import { ContextMenu } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { isAlive } from '@jbrowse/mobx-state-tree'
@@ -62,32 +62,6 @@ const AlignmentsDisplayComponent = observer(
       return null
     }
     const view = getContainingView(model) as LinearGenomeViewModel
-
-    // NOT a gate holding back throwing reads, though it was written up as one.
-    // Checked read by read: `visibleLabels` and `highlightBoxes` each open with
-    // `view.initialized` and return `[]`; the one unguarded `view.width` in this
-    // subtree (`SashimiArcsOverlay`'s sub-band) is reached only from
-    // `sashimiArcSections`, which returns `[]` on that same check; and
-    // `PileupBezierOverlay` gates itself. `displayPhase` covers the window too —
-    // `viewportWithinLoadedData` is false while `!initialized`, so the phase
-    // resolves to `loading` rather than throwing. Nor is this branch reachable
-    // in the app: `LinearGenomeView` renders `ViewLoadingScreen` the whole time
-    // `showLoading` holds, and that includes `!initialized`, so no display
-    // mounts before its view is measured.
-    //
-    // It stays because it costs nothing and names the state ("Initializing")
-    // more precisely than the shared scrim can — it is the leftover of the
-    // `isVisible={debouncedLoading || !view.initialized}` overlay this component
-    // rendered inline until 2026-02, not a contract. The only thing it does buy
-    // that matters: alignments publishes no `data-display-phase` for this frame.
-    // If a pass wants that parity, deleting this branch is the whole change.
-    if (!view.initialized) {
-      return (
-        <div className={classes.display}>
-          <LoadingOverlay statusMessage="Initializing" isVisible immediate />
-        </div>
-      )
-    }
 
     const { TooltipComponent, pileupTruncated } = model
     return (

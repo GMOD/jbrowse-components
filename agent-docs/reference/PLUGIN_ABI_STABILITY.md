@@ -221,6 +221,17 @@ The pre-rip situation, and the graceful path we *didn't* take:
   "Indefinite maintenance" becomes "removed in v4, warned since v3." webgl-poc
   instead took the blunt path (remove now, accept breakage) because the GPU
   rewrite made in-tree maintenance of the block path untenable.
+- **`BaseLinearDisplayComponent` followed it out on 2026-08-05**, so neither half
+  of that pair is reachable any more: it is gone from `LGVPlugin.exports` and
+  from the barrel. It was the last reader of `BaseDisplayModel`'s
+  `DisplayMessageComponent` getter, which went with it — a display model no
+  longer holds a React component at all. In-tree it had no users left except ~19
+  test harnesses registering it as a stand-in `ReactComponent` for a display they
+  never render, which now pass `() => null`. Same blunt path, same reasoning, and
+  named here because this file is where the *first* half's removal is recorded:
+  an external plugin reaching `LGVPlugin.exports.BaseLinearDisplayComponent` at
+  runtime gets `undefined` rather than a deprecation. See
+  reference/DISPLAYCHROME.md, "One element per display", for what replaced it.
 
 ---
 

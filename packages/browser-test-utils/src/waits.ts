@@ -107,18 +107,18 @@ export async function waitForQuiescent(
 // anything ending in `-display`, plus synteny — because the id both identified
 // the display and encoded its paint state by mutating, and the bases came in
 // three shapes depending on whether a second wrapper element was involved. One
-// element per display and one stable attribute retire all of that. Synteny
-// stays listed because it is a non-LGV view with no chrome at all.
+// element per display and one stable attribute retire all of that — including
+// for the two non-LGV views, which have no chrome but publish the same attribute
+// through `RenderCanvas`. That closed a real hole: the old list named
+// `synteny_canvas` explicitly and simply forgot dotplot, so an unpainted dotplot
+// counted as finished here and a capture could land on it blank.
 //
 // Exported so a caller can re-check the post-condition after the wait and say
 // whether it actually settled or merely timed out. `waitForDisplaysDone` (like
 // its neighbours) swallows its own timeout on purpose, which leaves "every
 // display painted" and "we gave up waiting" indistinguishable at the call site —
 // and that ambiguity is what makes a blank capture unattributable.
-export const PENDING_DISPLAYS = [
-  '[data-display-drawn="false"]',
-  '[data-testid="synteny_canvas"]',
-].join(',')
+export const PENDING_DISPLAYS = '[data-display-drawn="false"]'
 
 // Wait until no display wrapper is still pending its first paint, or until the
 // timeout elapses (proceed anyway — a display stuck in its too-large/error state

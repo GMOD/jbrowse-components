@@ -38,6 +38,8 @@ export interface ComparativeFetchContext {
 
 interface ComparativeFetchHost extends IStateTreeNode {
   adapterConfig: Record<string, unknown>
+  /** `SyntenyFetchStateMixin`'s retry counter — see the read in the autorun */
+  reloadCounter: number
   setError: (error?: unknown) => void
   setFetching: (fetching: boolean) => void
   setStatusMessage: (status?: RpcStatus) => void
@@ -100,6 +102,14 @@ export function installComparativeFetchAutorun<TArgs, TResult>(
     self,
     autorun(
       async function comparativeFetchAutorun() {
+        // Tracked unconditionally, and BEFORE the `prepare()` bail-outs: after
+        // an error every fetch input is unchanged, so `prepare` recomputes the
+        // same key and nothing refires the autorun — `reload()` bumping this is
+        // the only thing that can. Reading it here rather than inside each
+        // display's `prepare` is what makes the error banner's Retry real for
+        // both of them at once. (`void` because the value is never used; the
+        // read is the point.)
+        void self.reloadCounter
         // Teardown mutates observables `prepare` reads before the disposers
         // run, and getContainingView on a detached node warns then throws —
         // here into an unawaited promise.

@@ -49,6 +49,15 @@ export function SyntenyFetchStateMixin() {
        * through each display's `warnings`.
        */
       assembliesSwapped: false,
+      /**
+       * #volatile
+       * Bumped by `reload()`. Read unconditionally by
+       * `installComparativeFetchAutorun`, so it is always in the autorun's
+       * dependency set — which is the whole point: after an error the fetch
+       * inputs are unchanged, so nothing else would ever refire the autorun and
+       * the error banner's Retry would be a button that does nothing.
+       */
+      reloadCounter: 0,
     }))
     .views(() => ({
       /**
@@ -88,6 +97,18 @@ export function SyntenyFetchStateMixin() {
        */
       setAssembliesSwapped(arg: boolean) {
         self.assembliesSwapped = arg
+      },
+      /**
+       * #action
+       * Re-run the fetch. The display's half of the retry contract
+       * (agent-docs/reference/DISPLAYCHROME.md, "The retry affordance is a
+       * contract"): every state that can raise an error banner must be one this
+       * actually undoes. Clearing the error is not enough on its own — the
+       * autorun re-clears it at the start of each run anyway — so this bumps a
+       * counter the autorun tracks, which is what makes the refetch happen.
+       */
+      reload() {
+        self.reloadCounter += 1
       },
     }))
 }

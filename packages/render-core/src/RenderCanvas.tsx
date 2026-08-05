@@ -46,12 +46,27 @@ export interface RenderCanvasHandle {
  */
 export default function RenderCanvas({
   handle,
+  drawn,
   ...canvasProps
 }: {
   handle: RenderCanvasHandle
+  /**
+   * Whether this canvas holds finished content — each view's own `settled`, the
+   * same flag its `*_canvas_done` testid is built from. Published as
+   * `data-display-drawn`, which is what `PENDING_DISPLAYS`
+   * (`@jbrowse/browser-test-utils`) selects on, so these views answer "has
+   * everything painted?" with the same attribute every LGV display does.
+   *
+   * Required, and that is the point: `PENDING_DISPLAYS` used to name
+   * `synteny_canvas` explicitly and simply **forgot dotplot**, so an unpainted
+   * dotplot counted as finished and a capture could land on it blank. A new
+   * drop-to-primitive view would have been forgotten the same way.
+   */
+  drawn: boolean
 } & Omit<ComponentPropsWithoutRef<'canvas'>, 'ref'>) {
   return (
     <canvas
+      data-display-drawn={drawn}
       // A changed key remounts the element, which is the whole point — see the
       // context-loss note above. React compares keys for a single child too, so
       // this does not need to sit in an array to take effect.

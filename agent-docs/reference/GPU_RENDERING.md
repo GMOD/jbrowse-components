@@ -308,7 +308,9 @@ re-init", driving the real `webglcontextrestored` event rather than a mock.
 The drop-to-primitive consumers keep their canvas mounted through an error by
 design (ADR-025's mount-lifetime rule, written for a _live_ context), so theirs
 must be keyed at the mount site. **That is structural too, not a rule to
-remember**: they render
+remember**, and the same component publishes their `data-display-drawn` (the
+readiness attribute the screenshot waits select on) as a required prop, because
+the list it replaced had quietly omitted dotplot: they render
 `RenderCanvas` (`@jbrowse/render-core/RenderCanvas`), which owns the
 `key={canvasKey}` and forwards everything else — so there is no way to mount
 that canvas without the key. `RenderCanvas.test.tsx` pins both halves (a changed

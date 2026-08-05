@@ -42,7 +42,9 @@ description: The shared display status chrome that owns loading, error, and retr
   circular-view (radial, own banners).
 - **One element per display**, carrying `data-testid` (`<base>` → `<base>-done`),
   `data-display-id`, `data-display-phase` and `data-display-drawn`. `testid` is
-  required. The three coexisting testid shapes, `DisplayContainer`,
+  required, no display bypasses the chrome, and the two non-LGV views publish
+  `data-display-drawn` too (via `RenderCanvas`), so one selector answers "has
+  everything painted?" for the whole app. The three coexisting testid shapes, `DisplayContainer`,
   `BaseLinearDisplayComponent` and the model's `DisplayMessageComponent` getter
   are all gone.
 
@@ -162,41 +164,40 @@ button is present, looks live, and does nothing. Two shapes have failed it:
 The check when adding a display: raise each error it can produce, press retry,
 and confirm the display can actually leave that state. Cancel is one of them.
 
-**One display bypasses the chrome for one state, and it is not load-bearing —
-an earlier revision of this file said it was.** `AlignmentsDisplayComponent`
-early-returns its own "Initializing" overlay while `!view.initialized`, rather
-than letting `displayPhase` resolve to `loading` the way every other display
-does. That was written up as the component-side twin of the model's `canRender`,
-gating in one place a family of pre-init reads that would otherwise each need a
-guard. Checked read by read, none of them needs one:
+**The non-LGV views owe the same contract by hand, and were not paying it.**
+They render their own banner, and `ErrorBanner`'s `onReset` is optional and
+silently draws no button without it — so until 2026-08 a dotplot GPU error, a
+dotplot fetch error and a synteny fetch error each rendered a banner whose only
+remedy was reloading the tab. Both halves are wired now: `retry()` from
+`useRenderingBackend` for the backend, and `reload()` on `SyntenyFetchStateMixin`
+for the fetch. `reload()` had to be built, and the shape is the same trap the LGV
+family hit — clearing the error is not enough, because after a failure every
+fetch input is unchanged, so `prepare()` recomputes the same key and nothing
+refires the autorun. It bumps a `reloadCounter` that
+`installComparativeFetchAutorun` reads **unconditionally, before its gate**, so
+one read serves both displays and a gated state can't swallow the retry. Pinned
+by `installComparativeFetchAutorun.test.ts`; the refire assertion was confirmed
+to fail with that read removed.
 
-- `visibleLabels` and `highlightBoxes` each open with `view.initialized` and
-  return `[]` (`LinearAlignmentsDisplay/model.ts`),
-- the one unguarded `view.width` in the subtree — `SashimiArcsOverlay`'s
-  sub-band — is reached only from `sashimiArcSections`, which returns `[]` on
-  that same check,
-- `PileupBezierOverlay` gates itself (see below),
-- and `displayPhase` covers the window anyway: `viewportWithinLoadedData` is
-  `false` while `!initialized`, so the phase resolves to `loading` rather than
-  throwing.
+**No display bypasses the chrome any more.** `AlignmentsDisplayComponent` used
+to early-return its own "Initializing" overlay while `!view.initialized`, and an
+earlier revision of this file called that load-bearing. It wasn't, on either
+count: nothing in that subtree throws before the view is measured
+(`visibleLabels`, `highlightBoxes` and `sashimiArcSections` each open with
+`view.initialized` and return `[]`; `PileupBezierOverlay` gates itself), and
+`displayPhase` resolves to `loading` rather than throwing because
+`viewportWithinLoadedData` is false while `!initialized`. The branch was also
+unreachable — `LinearGenomeView` renders `ViewLoadingScreen` for the whole of
+`showLoading`, which includes `!initialized`, so no display mounts before its
+view is measured, and every host reaches an LGV through that component. Deleted
+2026-08-05; alignments now publishes `data-display-phase` for every frame like
+everything else.
 
-**Nothing mounts a display before its view is measured, either.**
-`LinearGenomeView` renders `ViewLoadingScreen` for the whole of `showLoading`,
-which includes `!initialized`, and every host reaches an LGV through that same
-component (breakpoint-split and comparative views render it off the view-type
-registry). So this branch is unreachable in the app. It stays because it costs
-nothing and names the state more precisely than the shared scrim can — it is
-what is left of the `isVisible={debouncedLoading || !view.initialized}` overlay
-this component rendered inline until 2026-02. The one thing it costs: alignments
-publishes no `data-display-phase` for that frame. Deleting the branch is the
-whole change if a pass wants that parity; nothing has to move first.
-
-What *is* worth carrying forward from the audit is the bug it found.
-`PileupBezierOverlay` had a guard that didn't guard — `const { initialized,
-width } = view` evaluates `width` *before* the `!initialized` check, so it threw
-on exactly the run it was written for, latent only because the branch never ran.
-That is the shape to watch for anywhere a throwing getter is destructured next
-to the flag that gates it.
+What is worth carrying forward is the bug the audit found. `PileupBezierOverlay`
+had a guard that didn't guard — `const { initialized, width } = view` evaluates
+`width` *before* the `!initialized` check, so it threw on exactly the run it was
+written for, latent only because the branch never ran. That is the shape to watch
+for anywhere a throwing getter is destructured next to the flag that gates it.
 
 **Not on DisplayChrome, by design (non-LGV views).** Two distinct reasons, not to
 be conflated:
@@ -256,7 +257,13 @@ the inner `<canvas>` a static selector (`hic_canvas`, `ld_canvas`,
 `variant_canvas`, `variant_matrix_canvas`, `multirow_canvas`) as a query target:
 tests wait on `${base}-done`, then read the static selector. The non-LGV views
 keep their own standalone `synteny_canvas_done` / `dotplot_webgl_canvas_done`,
-since they have no chrome at all.
+since they have no chrome at all — but they do publish `data-display-drawn`,
+through `RenderCanvas`, which is what lets "has everything painted?" be one
+selector across every view. It is a **required** prop there for the reason the
+old arrangement failed: `PENDING_DISPLAYS` named `synteny_canvas` explicitly and
+simply forgot dotplot, so an unpainted dotplot counted as finished and a capture
+could land on it blank. A list that enumerates views forgets one; a required prop
+cannot.
 
 **Why two id attributes and not one.** `data-testid` is the *base* — shared by
 every instance of a display type, and it mutates on first paint. Neither

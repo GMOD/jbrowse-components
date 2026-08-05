@@ -6,6 +6,7 @@ import { tmpdir } from 'os'
 import { dirname, join, resolve } from 'path'
 import { fileURLToPath } from 'url'
 
+import { PENDING_DISPLAYS } from '@jbrowse/browser-test-utils'
 import { Builder, By, Key, WebDriver, logging, until } from 'selenium-webdriver'
 import handler from 'serve-handler'
 
@@ -342,11 +343,10 @@ export async function countElements(
 // The last two are best-effort, as they are in the web generator: a display in a
 // terminal too-large/error state renders no wrapper and publishes no phase, so
 // waiting on them strictly would fail a figure whose subject is that state.
-const PENDING_DISPLAYS = [
-  '[data-testid^="display-"]:not([data-testid$="-done"])',
-  '[data-testid$="-display"]',
-  '[data-testid="synteny_canvas"]',
-].join(',')
+// Imported, not re-stated: this was a hand-copy of the web generator's selector
+// and it had already gone stale — it still enumerated the three testid shapes
+// that existed before displays published `data-display-drawn`, and matched only
+// by accident (every base happens to end in `-display`). One export, one answer.
 
 interface PendingWork {
   blocking: string[]
