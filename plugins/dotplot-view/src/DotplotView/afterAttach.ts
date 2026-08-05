@@ -253,24 +253,33 @@ async function applyInit(
   init: DotplotViewInit,
   { superseded }: InitApplyContext,
 ) {
-  // a dotplot needs two axes. LaunchDotplotView enforces this, but a
-  // hand-authored init (set via addView, bypassing the launcher) could be
-  // malformed — fail loudly instead of silently producing a
-  // [assembly, undefined] axis pair. Notified rather than thrown: a
-  // structurally bad init can never succeed on retry, so it should be consumed
-  // the way a successful one is instead of being kept and re-notified on every
-  // reload.
-  if (init.views.length < 2) {
+  // A dotplot plots one assembly against another, so the only question an init
+  // has to answer is whether it names both. Counting views answers a different
+  // question, and answers it wrong: `views: [{}, {}]` is two views naming
+  // nothing, which cleared a `views.length < 2` check and then pushed
+  // [undefined, undefined] into `types.array(types.string)` behind two `!`
+  // assertions — so both import-form figures published an MST type error across
+  // the form they exist to show, until a full screenshot sweep caught it.
+  //
+  // Naming NEITHER is not an error: `{type: 'DotplotView'}` and those two empty
+  // axes both mean "open a dotplot and let me choose", which is the only route
+  // from a session spec to the import form. Naming ONE is malformed, and
+  // LaunchDotplotView takes untrusted spec data, so say so rather than
+  // half-launch. Both consume the init the way a successful apply does: neither
+  // could succeed on a retry.
+  const [target, query] = init.views.map(v => v.assembly)
+  if (!target && !query) {
+    // the import form, deliberately
+  } else if (!target || !query) {
     getSession(self).notifyError(
-      `DotplotView init requires 2 views, got ${init.views.length}`,
+      'DotplotView init needs an assembly on each of its two views',
     )
   } else {
-    const [target, query] = init.views.map(v => v.assembly)
     // declare the reorder gate up front, before any track render can paint: it
     // outlives this pass (only the reorder itself lowers it) where the
     // `initPending` term covers only the apply window below
     self.beginAutoDiagonalize(!!init.autoDiagonalize)
-    self.setAssemblyNames(target!, query!)
+    self.setAssemblyNames(target, query)
     applyInitTracks(self, init)
     applyInitDisplaySettings(self, init)
     // must land before autoDiagonalize: the reorder is computed over whatever
