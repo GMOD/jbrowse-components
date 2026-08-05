@@ -132,12 +132,21 @@ export const gallerySections: readonly GallerySection[] = [
     id: 'synteny',
     title: 'Synteny and whole-genome comparison',
     items: [
+      // Yeast, not the grape/peach plot this card used to carry. Those two are
+      // divergent enough that the PAF is all sub-kilobase hits, so every block
+      // draws as one dot and the card was a field of specks: a dotplot whose
+      // diagonal does not survive teaches a reader nothing about dotplots.
+      // R64 against YJM1447 is one unbroken diagonal with a single visible jog,
+      // which is what the view is for and is legible at card size. The
+      // grape/peach plot keeps its place in the dotplot guide, in the section
+      // about cutting clutter on a busy plot, where being unreadable is the
+      // point being made.
       {
         label: 'Whole-genome dotplot',
-        spec: 'dotplot',
+        spec: 'gallery/yeast_dotplot',
         guide: 'user_guides/dotplot_view',
         description:
-          'Grape against peach from a minimap2 PAF, with short alignments filtered out. The dotplot pans and zooms like any other view, and drag-selecting a block opens that region as a linear synteny view.',
+          'Two yeast assemblies from a minimap2 PAF: a single diagonal running corner to corner where the two agree, stepping off it once where they do not. The dotplot pans and zooms like any other view, and drag-selecting a block opens that region as a linear synteny view.',
       },
       {
         label: 'Human vs mouse synteny',
@@ -311,13 +320,13 @@ export const gallerySections: readonly GallerySection[] = [
         description:
           'The same LD-colored Manhattan track inside an embedded React linear genome view, with its source alongside.',
       },
-      {
-        label: 'LD triangle at the lactase locus',
-        spec: 'ld/lct_pooled_vs_panel',
-        guide: 'tutorials/ld_human',
-        description:
-          'Haplotypic r² computed in the browser from phased 1000 Genomes genotypes, the same window twice: every panel pooled breaks the lactase block into a mosaic, one panel resolves it into a single block.',
-      },
+      // The LD card was ld/lct_pooled_vs_panel and is REMOVED, on the same bar
+      // that retired ld/anopheles_r2_vs_dprime: two shaded triangles mean
+      // nothing to a reader who does not already know what r² is, and a gallery
+      // card is the one place with no surrounding prose to lean on. The figure
+      // is still in tutorials/ld_human.md, where it has that prose. No
+      // replacement LD card on purpose — padding a section beats nothing only
+      // if the replacement reads, and none of the LD figures do at card size.
       {
         label: 'BXD QTL with haplotype painting',
         spec: 'qtl/bxd_tyrp1_locus',

@@ -23,12 +23,12 @@ rather than reordering panels.
 
 <Figure caption="Launching a dotplot view from the Add menu (top), then the import form's Manual mode, where you select two assemblies and optionally supply a synteny file (bottom). The same form is shared with the linear synteny view." src="/img/dotplot_add.png" />
 
-<Figure caption="Dotplot of grape (Y-axis) vs peach (X-axis) genomes with a minimum alignment length applied. The two genomes are divergent enough that the minimap2 PAF is almost all sub-kilobase hits, so each block draws as a single dot. The horizontal band across grape chr12 is a repeat-rich region rather than synteny." src="/img/dotplot.png" />
+<Figure caption="Two yeast assemblies, S288C/R64 on the X-axis against the YJM1447 strain on the Y. One diagonal runs corner to corner where the two agree, and steps off itself once, on chromosome XII: that jog is a rearrangement between the strains. The scattered dots off the diagonal are short repeat hits." src="/img/gallery/yeast_dotplot.png" />
 
 ### Cutting clutter on a busy plot
 
 Two toolbar controls do most of the work on a whole-genome plot, and the figure
-above uses the second:
+below uses the second:
 
 - The palette button's **Color by** menu. **Query** gives each sequence on the
   horizontal axis its own color, and **Strand** and **Identity** color by those
@@ -41,6 +41,12 @@ above uses the second:
 - **Min length**, in the settings popover, drops alignments shorter than the
   slider value. Divergent genomes align in many short fragments, and hiding them
   is usually what makes the syntenic blocks visible at all.
+
+<Figure caption="Grape (Y-axis) against peach (X-axis), with a minimum alignment length already applied. These two are divergent enough that the minimap2 PAF is almost all sub-kilobase hits, so every block still draws as a single dot and no diagonal survives. The horizontal band across grape chr12 is a repeat-rich region rather than synteny." src="/img/dotplot.png" />
+
+Min length has already done what it can here. When a plot still reads as specks
+after it, the pair is too divergent for a whole-genome view to say anything, and
+the next move is a smaller window rather than another setting.
 
 ## A genome against itself
 
