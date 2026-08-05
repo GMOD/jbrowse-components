@@ -294,7 +294,25 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
   // errors are systematically strand-specific, so the asymmetry is real signal
   // rather than a prop. Base-level zoom is load-bearing. The same track over
   // 1.2 kb was tried and both bands come back a wall of ticks with nothing
-  // legible; at ~60 bp each position is a block wide enough to read.
+  // legible; at ~55 bp each position is a block wide enough to read.
+  //
+  // The window was computed, not eyeballed. Eyeballing candidate windows is what
+  // produced the earlier, weaker pick: ONT mismatches are frequent enough that
+  // every screenshot looks busy, so a genuinely one-sided column does not stand
+  // out by inspection. Instead, pileup the demo slices with no reference
+  //
+  //   samtools mpileup -r <slice> -Q 0 -d 2000 --no-output-ins --no-output-del \
+  //     --no-output-ends <bam>
+  //
+  // (no -f, so mpileup emits literal base letters: UPPERCASE = forward strand,
+  // lowercase = reverse), take the overall majority base at each position as the
+  // reference, and rank positions by |fwdMismatchFrac - revMismatchFrac| with at
+  // least 8 reads on each strand. Of 114k positions with both-strand coverage,
+  // 64 exceed 0.75 asymmetry; this window holds two of them pointing in opposite
+  // directions, which is what shows the asymmetry is not a property of one band.
+  // Rejected: 1:161,184,753 + 1:161,184,793 (a balanced het 40 bp from a 0/82
+  // position, the ideal contrast on paper, but the surrounding ONT speckle
+  // swamps it at the width needed to hold both).
   {
     mode: 'url',
     name: 'alignments/strand_split_coverage',
@@ -304,7 +322,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg19',
-          loc: '1:63,006,240-63,006,300',
+          loc: '1:55,705,686-55,705,740',
           tracks: [
             {
               trackId: 'hg002_nanopore_hp',
