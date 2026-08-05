@@ -21,6 +21,7 @@ interface RawTrack {
   name?: string
   type?: string
   adapter?: RawAdapter
+  displays?: { type?: string }[]
 }
 
 interface RawAssembly {
@@ -40,6 +41,11 @@ export interface TrackInfo {
   type: string
   // e.g. CramAdapter
   adapterType: string
+  // The display types the track config declares, in order. `pickDisplayForView`
+  // consults these before falling back to the ones the track type registers, so
+  // a config naming exactly one settles which display a spec entry means without
+  // the plugin registry a static script cannot reach.
+  declaredDisplayTypes: string[]
 }
 
 export interface AssemblyInfo {
@@ -77,6 +83,9 @@ export function lookupTrack(
         name: track.name ?? trackId,
         type: track.type ?? '',
         adapterType: track.adapter?.type ?? '',
+        declaredDisplayTypes: (track.displays ?? [])
+          .map(d => d.type)
+          .filter(t => typeof t === 'string'),
       }
     : undefined
 }

@@ -729,7 +729,25 @@ const DIAGONALIZE_MENUS: Record<string, string> = {
   DotplotView: 'Dotplot header → the ⋮ menu → Re-order chromosomes',
 }
 
+// The settings popover behind the sliders (TuneIcon) button in each view's
+// header — one shared SettingsPopover whose tooltip is the title each view
+// passes it, so the button a reader looks for is named differently per view
+// while the row inside is the same 'Min length:'.
+const SETTINGS_POPOVERS: Record<string, string> = {
+  LinearSyntenyView: 'Synteny display settings',
+  DotplotView: 'Dotplot display settings',
+}
+
 export const viewFields: Record<string, FieldRecipe> = {
+  minAlignmentLength: (value, { viewType }) => {
+    const popover = viewType ? SETTINGS_POPOVERS[viewType] : undefined
+    return typeof value === 'number' && popover
+      ? {
+          path: `${popover} (the sliders button in the view header) → Min length: → drag to ${value.toLocaleString('en-US')}bp`,
+          note: 'Hides alignments shorter than this, which is what clears the hairball of short spurious chains at whole-genome zoom.',
+        }
+      : undefined
+  },
   autoDiagonalize: (value, { viewType }) => {
     const menu = viewType ? DIAGONALIZE_MENUS[viewType] : undefined
     if (typeof value !== 'boolean' || !menu) {

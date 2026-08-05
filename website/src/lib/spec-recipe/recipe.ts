@@ -9,6 +9,7 @@ import {
 import { IGNORED_FIELDS, trackFields, viewFields } from './fields.ts'
 import { toProtocolUrl } from '../../../../products/jbrowse-desktop/electron/launchTarget.ts'
 
+import type { TrackInfo } from './configs.ts'
 import type { SpecTrackEntry, SpecView } from './decode.ts'
 import type { FieldContext, FieldRecipe } from './fields.ts'
 
@@ -80,6 +81,14 @@ function fieldSteps(
   return { steps, unmapped }
 }
 
+// See the FieldContext note in trackStep: the one branch of pickDisplayForView a
+// static script can evaluate for itself.
+function soleDeclaredDisplay(info: TrackInfo | undefined): string | undefined {
+  return info?.declaredDisplayTypes.length === 1
+    ? info.declaredDisplayTypes[0]
+    : undefined
+}
+
 function trackStep(
   entry: SpecTrackEntry,
   config: string,
@@ -89,7 +98,13 @@ function trackStep(
   const kind = info ? fileKind(info.adapterType) : undefined
   const context: FieldContext = {
     noun: trackNoun(info?.type),
-    displayType: specDisplayType(entry),
+    // The spec's own `type` first. Failing that, the track config's declared
+    // display — but only when it declares exactly one, which is the case
+    // `pickDisplayForView` settles without consulting the registry: with a
+    // single declared display there is nothing for the view's supported-types
+    // filter to choose between. Several declared, or none, still yields
+    // undefined rather than a guess.
+    displayType: specDisplayType(entry) ?? soleDeclaredDisplay(info),
   }
   const { steps: settings, unmapped } = fieldSteps(
     specTrackSettings(entry),

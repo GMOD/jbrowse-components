@@ -33,7 +33,6 @@ jexlFiltersSetting
 layout
 linkedReads
 maxFeatureScreenDensity
-minAlignmentLength
 negColor
 numStdDev
 posColor
