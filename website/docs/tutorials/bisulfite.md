@@ -225,12 +225,11 @@ and the bigWigs straight from local disk with no web server.
 In the alignments track menu, pick **Color by** then **Bisulfite / EM-seq**,
 then a cytosine context: **CpG**, **CHG**, **CHH**, or **All cytosines**.
 Methylated cytosines paint red, and **Show unmethylated (blue)** adds the
-converted sites in blue. The mode is reference-based, so it only means anything
-on a bisulfite or EM-seq library.
+converted sites in blue, which is what separates an unmethylated cytosine from
+no cytosine at all: with it off, both are blank. The mode is reference-based, so
+it only means anything on a bisulfite or EM-seq library.
 
-<Figure caption="One WGBS pileup loaded twice over the 3' end of AT1G12930 and the silenced AT1G12935 element, both colored Bisulfite / CpG, under the MethylDackel CpG fraction for the same window. Middle: methylated only, which leaves a converted cytosine blank. Bottom: Show unmethylated, which paints it blue. Every red column in the two pileups has a bar in the aggregate lane above it, and the blue stretches on the left sit where that lane reads near zero, so a blank in the methylated-only lane is an unmethylated cytosine rather than no cytosine." src="/img/methylation/arabidopsis_wgbs_two_color.png" />
-
-The remaining figure leaves **Show unmethylated** off, so methylation reads as
+The figure below leaves **Show unmethylated** off, so methylation reads as
 presence of red and the three contexts contrast without a red/blue mix on every
 read.
 

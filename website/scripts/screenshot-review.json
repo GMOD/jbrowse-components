@@ -1608,10 +1608,10 @@
   },
   "pangenome/maf": {
     "name": "pangenome/maf",
-    "status": "good",
-    "note": "The numbered purple boxes are insertion markers: an insertion consumes no reference, so a record that inserts 7.8 kb lands on the same 2px floor a SNP does and its length can only be drawn as a widened marker with the bp count in it. Two fixes since the review. (1) The marker now takes the theme's palette.insertion, the same color plugin-alignments' pileup and the MAF lane below it use, instead of the theme-agnostic #c000c0 fallback -- it used to take its cell's own genotype color, which in genotype coloring is the same dark blue as the neighbouring cells it paints across, so only the white number showed and it read as a number floating in the matrix. (2) NCTC86 no longer gets a marker on a row the VCF calls '.' for: cellCarriesAlt was read back off the resolved cell color, and allele-count mode blends its no-call shade through colord to a hex that is never string-equal to the NO_CALL_COLOR literal, so every no-call was flagged alt-carrying. Both fixed; figure regenerated. On the MAF lane not showing it: that is the data, not an inconsistency. The three strains stop aligning to K12 at exactly 4,579,961 (MAF block4717 carries only the K12 row) and their inserted sequence sits between MAF blocks rather than as reference-gap columns inside one, so there is no gap for an insertion marker to anchor to; the nearest real one, in block4715, is 72 bp = 1.2 px at 60 kb. The blank MAF row and the variant lane's marker are the same event said two ways.",
-    "reviewedAt": "2026-08-05T00:02:53.763Z",
-    "hash": "b40fa31c7430e430ab759554c0a87b688c73c325"
+    "status": "answered",
+    "note": "170 -> 120, four strain rows and nothing else. The lane was only that tall because of its own legend: genotype key + Insertions section is ~160px inside a track container that paint-clips its box, so the previous pass raised the height to fit the legend rather than cutting the legend to the height. This capture dismisses it through the button the legend carries (a click on a missing selector throws the regen, so it cannot fail into a silently clipped key the way a CSS hide would). It is the one legend in the set that can go: its vocabulary ('Homozygous alt', 'Heterozygous') describes a diploid callset and these are four haploid strains, the tutorial prose right under the figure already explains the numbered purple insertion markers, and the caption now names blue/grey/olive. Bonus: the legend was covering data -- two more insertion markers at the right end of the window are visible now. Viewport 710 -> 660.",
+    "reviewedAt": "2026-08-05T00:27:55.072Z",
+    "hash": "697862264123e33db689130ee2e88c384e326bf6"
   },
   "phylop_ncbi_refseq_tp53": {
     "name": "phylop_ncbi_refseq_tp53",
@@ -1952,10 +1952,10 @@
   },
   "pangenome/local_subgraph": {
     "name": "pangenome/local_subgraph",
-    "status": "bad",
-    "note": "a person not familiar with graphs might not understand what is meant by 'the cut',  use precise language please",
-    "reviewedAt": "2026-08-05T00:02:51.720Z",
-    "hash": "25d257a85d76713716a7f60cc958e5bcb6f26f71"
+    "status": "answered",
+    "note": "'the cut' is gone from the figure. The callout now reads '93 bp of CFT073. The sequence continues past this end: its other link falls outside the extracted window' -- it names the extraction that produced the file rather than assuming the reader knows a subgraph was cut out of a bigger graph, and says what the free end means instead of denying a term ('not a dead end') the same reader would not have. Same length as the old sentence on purpose: a fourth line grows the pill down over the ring it points at (measured at 330 and at 380 px wrap width). The tutorial prose above the figure already says the same thing at length.",
+    "reviewedAt": "2026-08-05T00:27:46.778Z",
+    "hash": "23502769476060bd5dd346b857468c8313577c36"
   },
   "pangenome/rgfa_subgraph_launch": {
     "name": "pangenome/rgfa_subgraph_launch",
@@ -2316,9 +2316,9 @@
   },
   "pangenome/rgfa_paa_bubble": {
     "name": "pangenome/rgfa_paa_bubble",
-    "status": "answered",
-    "note": "The palette IS on -- it is the same reference-position ramp the segments lane above uses, which is exactly what makes the island green in both panes and is why the two rings are believable as one object. What is grey is not a palette that failed to apply. A ramp over K12 coordinates can only color a segment that HAS one, and about half the nodes in a bubble by construction do not: they are the routes the other strains take past the island, and they carry their own donor's SN/SO instead. Checked against the file the pane loads, ecoli_paa_subgraph.gfa: of its 19 segments the colored ones are SR:i:0 (K12), and the grey ones are s1613 at rank 1, s2093-s2096 at rank 2 (CFT073), s2388 at rank 3 (NCTC86) and s2632/s2633 at rank 4. So grey is the answer to the same question the figure is asking, and it now says so on the drawing -- a label anchored to s1613 by name, like the rings. Caption extended to match. THE ALTERNATIVE, and why not: the view also has a 'stable-rank' scheme, which would color those same nodes by which donor contributed them and would genuinely rainbow the bubble. It is not taken here because it would break the one thing this figure was rebuilt for last round -- the lane above is all rank 0, so under stable-rank it collapses to a single color and the hue correspondence between the block and the node, which is what the two rings point at, is gone. Rainbow proper (hue = the node's index in the fetched list) stays rejected for the reason recorded on rgfa_segment_neighbourhood: it is unreproducible by construction.",
-    "reviewedAt": "2026-08-04T23:14:06.473Z",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-05T00:07:47.754Z",
     "hash": "3c2c124a3b02f4e57d6c5934f82d24f44bc91e93"
   },
   "pangenome/hprc_cfhr_deletion": {
@@ -2379,9 +2379,9 @@
   "tcga/mutations_cdh1_histology": {
     "name": "tcga/mutations_cdh1_histology",
     "status": "answered",
-    "note": "ClinVar lane gone -- collapsed to one row over 16 exons it was a 1500px barcode of touching CLNSIG ticks with no column a matrix column could be lined up against, and it was the busiest thing in a figure whose subject is a density difference. Both bands are named in place now (anchored to the display by fraction, not by pixel), with an arrow from the label to the lobular band. Measured off the render, lobular is the last seventh of the rows and carries 78% of the mutation marks in the frame against ductal's 14% over 72% of the rows.",
-    "reviewedAt": "2026-08-04T21:04:00.099Z",
-    "hash": "d90265bedd8b6ce0f04a503cdfce2f7e86520185"
+    "note": "Removed, and the figure keeps one label instead of two. The 'ductal' pill named the empty majority band -- the absence of the thing the figure is about -- and having a pill in each band read as a comparison between equals rather than a result in one of them. The lobular pill and the arrow into that band are what is left; the histology color strip in the gutter and its legend still say which range is which.",
+    "reviewedAt": "2026-08-05T00:27:46.512Z",
+    "hash": "c5425a4edd80008d9b0efc133ff9068df5a5b60f"
   },
   "scrna/ms4a1_bcell": {
     "name": "scrna/ms4a1_bcell",
@@ -2565,13 +2565,6 @@
     "reviewedAt": "2026-08-04T21:03:12.885Z",
     "hash": "58d9499e4b5e92afff7d9499e5ea0cdcdd7b2ef0"
   },
-  "methylation/arabidopsis_wgbs_two_color": {
-    "name": "methylation/arabidopsis_wgbs_two_color",
-    "status": "bad",
-    "note": "we can likely delete this figure. we already extensively showed this with the other methyldackyl screenshot",
-    "reviewedAt": "2026-08-05T00:00:20.791Z",
-    "hash": "3335a29eb093b0bd279710082298dfb425284058"
-  },
   "methylation/hg002_snrpn_ungrouped": {
     "name": "methylation/hg002_snrpn_ungrouped",
     "status": "good",
@@ -2637,9 +2630,9 @@
   },
   "cancer_sv/foldback_reconstruction": {
     "name": "cancer_sv/foldback_reconstruction",
-    "status": "answered",
-    "note": "kind of a boring screenshot. is this capable of loading the reads across the different areas, and even launch like a wasm of minimap2 to the derived contig? is that just insane stuff? i dont know. it is potentially the type of thing that should be an external plugin, but it is a fun idea.  Same change as derivative_autogenerated: 'Replace current view', so the result frame is the two chr9 windows and the crossing ribbons rather than a pileup with the answer squeezed under it. Shorter than that figure because a fold-back's derivative carries two segments, so the provenance track is one row.",
-    "reviewedAt": "2026-08-04T21:56:16.257Z",
+    "status": "bad",
+    "note": "kind of a boring screenshot. is this capable of loading the reads across the different areas, and even launch like a wasm of minimap2 to the derived contig? is that just insane stuff? i dont know. it is a fantastical idea. potentially the type of thing that should be an external plugin, but it is a fun idea.  Same change as derivative_autogenerated: 'Replace current view', so the result frame is the two chr9 windows and the crossing ribbons rather than a pileup with the answer squeezed under it. Shorter than that figure because a fold-back's derivative carries two segments, so the provenance track is one row.",
+    "reviewedAt": "2026-08-05T00:09:01.915Z",
     "hash": "6d99e21940a0a6e5f78ff2f031ff1c449d0091bd"
   },
   "dog10k-wolfdog-ancestry-clustered": {

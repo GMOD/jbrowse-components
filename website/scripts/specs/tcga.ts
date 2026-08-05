@@ -767,7 +767,13 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     // The bands are row ranges with a color strip in the gutter, and the legend
     // is the only thing that says which range is which -- so the figure's whole
     // result (this band, not that one) has to be read off a key in the far
-    // corner. These name the two bands in place.
+    // corner. This names the band the result is in.
+    //
+    // Only the lobular one. A matching 'ductal' pill sat in the band above and
+    // was denied (reviewer: "remove the 'ductal' text"): the ductal band is the
+    // empty majority of the rows, so a label in it names the absence of the
+    // thing the figure is about, and two pills in a frame whose subject is one
+    // of them read as a comparison between equals.
     //
     // fracY of the display, not a measured pixel: the matrix is 130px of
     // connector zone over 320px of rows, and the group boundary sits where the
@@ -775,16 +781,6 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     // a coordinate would not. Measured off the render, the lobular band is
     // roughly the last seventh of the rows.
     annotations: [
-      {
-        type: 'text',
-        text: 'ductal',
-        anchor: {
-          track: 'tcga_brca_mutations',
-          fracY: 0.62,
-          alignX: 'left',
-          dx: 90,
-        },
-      },
       {
         type: 'text',
         text: 'lobular: most of the calls in this window',

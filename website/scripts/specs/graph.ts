@@ -1271,20 +1271,18 @@ function graphContextPartSpecs(): ScreenshotSpec[] {
           [DETOUR_ENTRY, ENTRY_COLOR],
           [DETOUR_EXIT, EXIT_COLOR],
         ] as const
-      ).map(
-        ([graphNode, color]): Annotation => ({
-          type: 'box',
-          anchor: { view: 1, graphNode },
-          strokeWidth: 3,
-          color,
-          // a wash the node's own colour cannot be mistaken for, so the pairing
-          // survives being read at thumbnail size, where a 3px outline does not
-          fillOpacity: 0.1,
-          // clear of the node's own "43 bp" / "558 bp" label, which the graph
-          // writes across the node rather than inside its bounding box
-          pad: 22,
-        }),
-      ),
+      ).map(([graphNode, color]): Annotation => ({
+        type: 'box',
+        anchor: { view: 1, graphNode },
+        strokeWidth: 3,
+        color,
+        // a wash the node's own colour cannot be mistaken for, so the pairing
+        // survives being read at thumbnail size, where a 3px outline does not
+        fillOpacity: 0.1,
+        // clear of the node's own "43 bp" / "558 bp" label, which the graph
+        // writes across the node rather than inside its bounding box
+        pad: 22,
+      })),
       label(text),
       // the arrow only exists in the half that has an interior to point at.
       // A third box would be the honest shape, but the interior draws BETWEEN
@@ -1419,15 +1417,24 @@ function localSubgraphPartSpecs(): ScreenshotSpec[] {
         // lands on the rows it is annotating (tried: below the ring it fell
         // through the pane's own border into the composite's padding). The size
         // beside the ring is what the note asked that half for anyway.
+        // "the cut" was denied as jargon (reviewer: "a person not familiar with
+        // graphs might not understand what is meant by 'the cut', use precise
+        // language please"). It names the extraction that produced this file,
+        // which the sentence now says outright: the end is where the window
+        // stopped, and the segment carries on outside it.
         text:
           layoutMode === 'force'
-            ? '93 bp of CFT073. One link here, two in the whole graph: this free end is the cut, not a dead end'
+            ? '93 bp of CFT073. The sequence continues past this end: its other link falls outside the extracted window'
             : '93 bp',
         anchor: { view: 1, graphNode: '20+' },
         // pulled left in the force pane, where the node sits near the right
         // edge and the pill would otherwise run off it
         dx: layoutMode === 'force' ? -200 : 0,
         dy: layoutMode === 'force' ? -70 : -34,
+        // 330 and three lines is a constraint, not a default: a fourth line
+        // grows the pill down over the ring it points at (measured, both at 330
+        // and widened to 380). The reworded sentence is kept to the length that
+        // wraps to three.
         maxWidth: 330,
         fontSize: 17,
       },

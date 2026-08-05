@@ -422,6 +422,9 @@ python3 odgi_similarity_to_newick.py ecoli_pggb_similarity.tsv ecoli_pggb.nh
 `samples` still names and labels the rows, so a tree that fails to build leaves
 the track working.
 
+A cell in the variant lane is grey where that strain matches K12, blue where it
+carries the alternate allele, and olive where the site is uncalled.
+
 The numbered purple boxes in the variant lane are insertion markers, and the
 number on one is how many bases that strain's allele adds beyond K12. They need
 a marker because an insertion consumes no reference: the record spans a single

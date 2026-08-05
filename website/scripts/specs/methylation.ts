@@ -54,42 +54,6 @@ const WGBS_CONTEXT_COPIES = (['CG', 'CHG', 'CHH'] as const).map(c =>
   wgbsContextTrack(c),
 )
 
-// The same CpG pileup twice, once per state of the track menu's "Show
-// unmethylated (blue)" (colorBy.modifications.twoColor). Methylated-only paints
-// a site red and leaves a converted one blank, so absence of red carries two
-// meanings at once: unmethylated, or no cytosine there. Two-color separates
-// them. Distinct trackIds over the one adapter, as in the contexts figure.
-const WGBS_TWO_COLOR_COPIES = (
-  [
-    ['methylated_only', 'CpG methylation (methylated only)', false],
-    ['two_color', 'CpG methylation (show unmethylated)', true],
-  ] as const
-).map(([suffix, name, twoColor]) => ({
-  track: {
-    type: 'AlignmentsTrack',
-    trackId: `arabidopsis_wgbs_${suffix}`,
-    name,
-    assemblyNames: ['arabidopsis'],
-    adapter: WGBS_CRAM_ADAPTER,
-  },
-  display: {
-    trackId: `arabidopsis_wgbs_${suffix}`,
-    type: 'LinearAlignmentsDisplay',
-    colorBy: {
-      type: 'bisulfite',
-      modifications: {
-        cytosineContext: 'CG',
-        ...(twoColor ? { twoColor } : {}),
-      },
-    },
-    showCoverage: false,
-    heightMode: 'fixed',
-    featureHeight: 5,
-    featureSpacing: 1,
-    height: 240,
-  },
-}))
-
 // Arabidopsis WGBS (Col-0 DRR029742, bwameth-aligned) over
 // NC_003070.9:4,398,000-4,412,000, a window that pairs two methylation regimes:
 // the expressed ARM-repeat gene AT1G12930 (~4.398-4.406 Mb) carries gene-body
@@ -176,73 +140,6 @@ export const methylationSpecs: ScreenshotSpec[] = [
       })),
     ],
   },
-  // What "Show unmethylated (blue)" does, which the bisulfite tutorial names in
-  // the track menu and then leaves off in every other figure. Zoomed to ~4.5 kb
-  // over the AT1G12930 / silenced-element boundary so individual cytosines are
-  // resolvable: the top pileup paints methylated CpGs red only, the bottom one
-  // adds the converted (unmethylated) sites in blue, and the blue is what says
-  // the blank stretches above were sequenced and unmethylated rather than
-  // cytosine-free.
-  //
-  // The MethylDackel CpG fraction rides above both pileups, because the claim
-  // the figure makes is quantitative and the pileups alone only gesture at it:
-  // where the two-color lane paints blue the aggregate reads near 0%, and where
-  // it paints red the aggregate is near 100%, so "sequenced and unmethylated"
-  // is a number rather than an absence of paint. Only the CpG subadapter of the
-  // config's three-context track, declared here as its own track: both pileups
-  // are colored by CpG, and CHG/CHH rows would be two lanes of a different
-  // question (that is methylation/arabidopsis_wgbs_contexts).
-  {
-    mode: 'url',
-    name: 'methylation/arabidopsis_wgbs_two_color',
-    url: sessionSpec(ARABIDOPSIS_WGBS_CONFIG, {
-      sessionTracks: [
-        {
-          type: 'QuantitativeTrack',
-          trackId: 'arabidopsis_methyldackel_cpg',
-          name: 'CpG methylation, aggregate (MethylDackel, %)',
-          assemblyNames: ['arabidopsis'],
-          adapter: {
-            type: 'BigWigAdapter',
-            bigWigLocation: {
-              uri: 'https://jbrowse.org/demos/bisulfite/arabidopsis_wgbs_CpG.bw',
-            },
-          },
-        },
-        ...WGBS_TWO_COLOR_COPIES.map(c => c.track),
-      ],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'arabidopsis',
-          loc: 'NC_003070.9:4,404,000-4,408,500',
-          tracks: [
-            // two gene rows at this locus, so the default height leaves half the
-            // track empty above two 240px pileups that both need to fit
-            { trackId: 'arabidopsis_genes', height: 80 },
-            {
-              trackId: 'arabidopsis_methyldackel_cpg',
-              type: 'LinearWiggleDisplay',
-              // fixed 0..100: it is a percentage, and autoscale would redraw
-              // the same data against whatever the window's maximum happened to
-              // be, so a bar's height would stop meaning a fraction
-              minScore: 0,
-              maxScore: 100,
-              color: '#d62728',
-              height: 90,
-            },
-            ...WGBS_TWO_COLOR_COPIES.map(c => c.display),
-          ],
-        },
-      ],
-    }),
-    readySelector: '[data-testid="pileup-display-done"]',
-    readyTimeout: 90000,
-    settleMs: 15000,
-    // genes(80) + aggregate(90) + two 240px pileups + headers/ruler/overview
-    viewportHeight: 960,
-  },
-
   // ONT HG002 fiber-seq (6mA) at the GAPDH promoter, modifications mode. The
   // enzyme-treated sample (PAY22766, top) carries 6mA (A+a) calls that the
   // native no-enzyme control (PBA15131, bottom) lacks at the same locus. Data:

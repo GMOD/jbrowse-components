@@ -125,11 +125,18 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
               // tier. Keeping the filter would now drop real indels instead.
               trackId: 'ecoli_pggb_variants',
               type: 'LinearMultiSampleVariantDisplay',
-              // 4 strain rows would fit in 120, but the legend now carries an
-              // Insertions section as well as the genotype key and clipped out
-              // of the lane at that height -- the het swatch and its label were
-              // cut in half by the track boundary.
-              height: 170,
+              // Four strain rows and nothing else, which is what the lane is
+              // for here (reviewer: "reduce height of multisamplevariantdisplay").
+              //
+              // It sat at 170 because the legend does not fit in 120: it is the
+              // genotype key plus an Insertions section, ~160px inside a track
+              // container that paint-clips its own box, so at 120 the last
+              // swatch was sliced in half by the track boundary. The height was
+              // raised to the legend rather than the legend cut to the height.
+              // The action below hides it instead, and the caption names the
+              // colors -- see there for why this lane in particular can spare
+              // the key.
+              height: 120,
             },
             { trackId: 'ecoli_pggb_maf', type: 'LinearMafDisplay' },
           ],
@@ -140,10 +147,18 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     viewportWidth: 1000,
     // the variant lane plus one MAF row per sample and the coverage band
-    viewportHeight: 710,
+    viewportHeight: 660,
     settleMs: 15000,
     hideTooltip: true,
     actions: [
+      // The variant lane's own key, dismissed through the button it carries.
+      // Two reasons it is the one legend in the set that can go: its allele-count
+      // vocabulary ("Homozygous alt", "Heterozygous") describes a diploid callset
+      // and these are four haploid strains, and this lane is context under the
+      // MAF projection the figure is actually about. A missing selector throws
+      // the regen, so this cannot fail into a silently clipped legend the way a
+      // hideSelectors rule would.
+      { type: 'click', selector: '[title="Hide legend"]' },
       // park the cursor over the inert app header so no overview-ruler position
       // tooltip or feature hover lingers in the capture
       { type: 'hover', from: { x: 950, y: 60 } },
