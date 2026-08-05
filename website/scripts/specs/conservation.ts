@@ -63,7 +63,9 @@ export const conservationSpecs: ScreenshotSpec[] = [
     readyText: 'phyloP',
     readyTimeout: 60000,
     settleMs: 8000,
-    viewportHeight: 500,
+    // 500 cut the gene track's last transcript row in half; the run's own
+    // clipped-below-the-fold report asked for 27 css px more.
+    viewportHeight: 530,
     // Remote UCSC/NCBI range fetches introduce render-timing jitter; loosen the
     // content-stable gate so an unchanged capture isn't re-committed each regen.
     diffThreshold: 0.02,
