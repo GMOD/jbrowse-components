@@ -33,6 +33,7 @@ import { useNotifyError } from '../../NotifyContext.ts'
 import OpenLinkDialog from '../../OpenLinkDialog.tsx'
 import DeleteSessionDialog from '../dialogs/DeleteSessionDialog.tsx'
 import RenameSessionDialog from '../dialogs/RenameSessionDialog.tsx'
+import { useInnerDims } from '../useInnerDims.ts'
 import { loadPluginManager, openSpecLink } from '../util.tsx'
 import RecentSessionsCards from './RecentSessionsCards.tsx'
 import RecentSessionsDataGrid from './RecentSessionsDataGrid.tsx'
@@ -104,6 +105,7 @@ export default function RecentSessionPanel({
 }) {
   const { classes } = useStyles()
   const notifyError = useNotifyError()
+  const { height: innerHeight } = useInnerDims()
   const [displayMode, setDisplayMode] = useLocalStorage('displayMode', 'list')
   const [sessionToRename, setSessionToRename] = useState<RecentSessionData>()
   const [selectedSessions, setSelectedSessions] = useState<RecentSessions>([])
@@ -126,17 +128,36 @@ export default function RecentSessionPanel({
   const {
     data: sessions = [],
     error: listSessionsError,
-    mutate: mutateSessions,
-  } = useFetch(['listSessions'], async () =>
-    (await invokeIpc('listSessions')).map(s => ({
-      ...s,
-      // An entry is written from the config's own defaultSession, which need
-      // not carry a name (a hub config's usually doesn't); the session model
-      // resolves one for itself but the recent-sessions row keeps the gap until
-      // the first autosave rewrites it. Rendering that gap put the literal
-      // string "undefined" in the card and the grid.
-      name: s.name ?? 'Untitled session',
-    })),
+    mutate: refreshSessions,
+  } = useFetch(
+    ['listSessions'],
+    async () =>
+      (await invokeIpc('listSessions')).map(s => ({
+        ...s,
+        // An entry is written from the config's own defaultSession, which need
+        // not carry a name (a hub config's usually doesn't); the session model
+        // resolves one for itself but the recent-sessions row keeps the gap
+        // until the first autosave rewrites it. Rendering that gap put the
+        // literal string "undefined" in the card and the grid.
+        name: s.name ?? 'Untitled session',
+      })),
+    {
+      // Favorites are keyed by session path, and nothing else prunes them: a
+      // deleted session kept its star forever, and a later session saved to the
+      // same path (Documents/JBrowse/untitled.jbrowse is easy to reuse) came
+      // back starred on its own. Not done for an empty list, which is also what
+      // an unreadable recent_sessions.json reads as — that must not cost the
+      // user every star they have.
+      onSuccess: rows => {
+        if (rows.length) {
+          const live = new Set(rows.map(r => r.path))
+          const next = favorites.filter(path => live.has(path))
+          if (next.length !== favorites.length) {
+            setFavorites(next)
+          }
+        }
+      },
+    },
   )
 
   const launch = async (path: string) => {
@@ -148,15 +169,13 @@ export default function RecentSessionPanel({
         label: 'Remove from recent sessions',
         onClick: () => {
           invokeIpc('removeRecentSession', path)
-            .then(refreshSessions)
+            .then(() => {
+              refreshSessions()
+            })
             .catch(console.error)
         },
       })
     }
-  }
-
-  const refreshSessions = () => {
-    mutateSessions()
   }
 
   // the native picker is the same one File -> Open uses, so the start screen and
@@ -358,27 +377,33 @@ export default function RecentSessionPanel({
             ? 'No favorite sessions'
             : 'No sessions available'}
         </Typography>
-      ) : displayMode === 'grid' ? (
-        <RecentSessionsCards
-          launch={launch}
-          addToQuickstartList={entry => addToQuickstartList([entry])}
-          sessions={filteredSessions}
-          setSessionsToDelete={setSessionsToDelete}
-          setSessionToRename={setSessionToRename}
-          isFavorite={isFavorite}
-          toggleFavorite={toggleFavorite}
-        />
       ) : (
-        <RecentSessionsDataGrid
-          launch={launch}
-          setSelectedSessions={setSelectedSessions}
-          setSessionToRename={setSessionToRename}
-          setSessionsToDelete={setSessionsToDelete}
-          sessions={filteredSessions}
-          isFavorite={isFavorite}
-          toggleFavorite={toggleFavorite}
-          addToQuickstartList={entry => addToQuickstartList([entry])}
-        />
+        // both views scroll inside half the window rather than pushing the
+        // start screen's own page scroll, so the panel owns the box
+        <div style={{ maxHeight: innerHeight / 2, overflow: 'auto' }}>
+          {displayMode === 'grid' ? (
+            <RecentSessionsCards
+              launch={launch}
+              addToQuickstartList={entry => addToQuickstartList([entry])}
+              sessions={filteredSessions}
+              setSessionsToDelete={setSessionsToDelete}
+              setSessionToRename={setSessionToRename}
+              isFavorite={isFavorite}
+              toggleFavorite={toggleFavorite}
+            />
+          ) : (
+            <RecentSessionsDataGrid
+              launch={launch}
+              setSelectedSessions={setSelectedSessions}
+              setSessionToRename={setSessionToRename}
+              setSessionsToDelete={setSessionsToDelete}
+              sessions={filteredSessions}
+              isFavorite={isFavorite}
+              toggleFavorite={toggleFavorite}
+              addToQuickstartList={entry => addToQuickstartList([entry])}
+            />
+          )}
+        </div>
       )}
     </div>
   )

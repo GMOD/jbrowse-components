@@ -5,7 +5,10 @@ import { formatDistance } from 'date-fns'
  * views. The label reads as relative time ("5 minutes ago", "3 days ago"); the
  * tooltip carries the precise absolute timestamp for when exact detail matters.
  */
-export function formatLastModified(updated: number | undefined, now: number) {
+export function formatLastModified(
+  updated: number | undefined,
+  now = Date.now(),
+) {
   if (updated === undefined) {
     return { label: 'Unknown', tooltip: undefined }
   }

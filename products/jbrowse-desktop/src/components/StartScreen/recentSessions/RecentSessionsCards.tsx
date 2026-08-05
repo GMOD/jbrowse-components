@@ -1,6 +1,5 @@
 import { Grid } from '@mui/material'
 
-import { useInnerDims } from '../useInnerDims.ts'
 import SessionCard from './RecentSessionCard.tsx'
 
 import type { RecentSessionData } from '../types.ts'
@@ -22,27 +21,24 @@ export default function RecentSessionsCards({
   isFavorite: (sessionPath: string) => boolean
   toggleFavorite: (sessionPath: string) => void
 }) {
-  const { height: innerHeight } = useInnerDims()
   return (
-    <div style={{ maxHeight: innerHeight / 2, overflow: 'auto' }}>
-      <Grid container spacing={4}>
-        {sessions.map(session => (
-          <SessionCard
-            key={session.path}
-            sessionData={session}
-            isFavorite={isFavorite(session.path)}
-            launch={launch}
-            onDelete={session => {
-              setSessionsToDelete([session])
-            }}
-            onRename={setSessionToRename}
-            onAddToQuickstartList={addToQuickstartList}
-            onToggleFavorite={() => {
-              toggleFavorite(session.path)
-            }}
-          />
-        ))}
-      </Grid>
-    </div>
+    <Grid container spacing={4}>
+      {sessions.map(session => (
+        <SessionCard
+          key={session.path}
+          sessionData={session}
+          isFavorite={isFavorite(session.path)}
+          launch={launch}
+          onDelete={session => {
+            setSessionsToDelete([session])
+          }}
+          onRename={setSessionToRename}
+          onAddToQuickstartList={addToQuickstartList}
+          onToggleFavorite={() => {
+            toggleFavorite(session.path)
+          }}
+        />
+      ))}
+    </Grid>
   )
 }

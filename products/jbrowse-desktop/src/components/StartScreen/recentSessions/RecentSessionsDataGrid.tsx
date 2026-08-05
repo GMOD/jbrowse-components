@@ -1,12 +1,9 @@
-import { useState } from 'react'
-
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
 import { measureGridWidth } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Tooltip } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 
-import { useInnerDims } from '../useInnerDims.ts'
 import DateSinceLastUsed from './DateSinceLastUsed.tsx'
 import SessionNameCell from './SessionNameCell.tsx'
 import { formatLastModified } from './formatLastModified.ts'
@@ -46,11 +43,9 @@ function RecentSessionsDataGrid({
   addToQuickstartList?: (entry: RecentSessionData) => Promise<void>
 }) {
   const { classes } = useStyles()
-  const { height: innerHeight } = useInnerDims()
-  const [now] = useState(() => Date.now())
 
   const rows = sessions.map(session => {
-    const { label, tooltip } = formatLastModified(session.updated, now)
+    const { label, tooltip } = formatLastModified(session.updated)
     return { ...session, lastModified: label, lastModifiedTooltip: tooltip }
   })
 
@@ -107,22 +102,20 @@ function RecentSessionsDataGrid({
   ]
 
   return (
-    <div style={{ maxHeight: innerHeight / 2, overflow: 'auto' }}>
-      <DataGridFlexContainer>
-        <DataGrid
-          checkboxSelection
-          disableRowSelectionOnClick
-          getRowId={row => row.path}
-          onRowSelectionModelChange={(model: GridRowSelectionModel) => {
-            setSelectedSessions(selectedFromModel(model, sessions))
-          }}
-          rows={rows}
-          rowHeight={25}
-          columnHeaderHeight={33}
-          columns={columns}
-        />
-      </DataGridFlexContainer>
-    </div>
+    <DataGridFlexContainer>
+      <DataGrid
+        checkboxSelection
+        disableRowSelectionOnClick
+        getRowId={row => row.path}
+        onRowSelectionModelChange={(model: GridRowSelectionModel) => {
+          setSelectedSessions(selectedFromModel(model, sessions))
+        }}
+        rows={rows}
+        rowHeight={25}
+        columnHeaderHeight={33}
+        columns={columns}
+      />
+    </DataGridFlexContainer>
   )
 }
 

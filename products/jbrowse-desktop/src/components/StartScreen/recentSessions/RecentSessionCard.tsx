@@ -1,5 +1,3 @@
-import { useState } from 'react'
-
 import { CascadingMenuButton } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useFetch } from '@jbrowse/core/util/useFetch'
@@ -60,9 +58,8 @@ function RecentSessionCard({
   onToggleFavorite: () => void
 }) {
   const { classes } = useStyles()
-  const [now] = useState(() => Date.now())
   const { name, path, updated } = sessionData
-  const { label, tooltip } = formatLastModified(updated, now)
+  const { label, tooltip } = formatLastModified(updated)
 
   const { data: screenshot } = useFetch(
     ['loadThumbnail', path],

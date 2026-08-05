@@ -66,20 +66,30 @@ const useStyles = makeStyles()({
 })
 
 /**
- * A panel a global plugin may have replaced. The plugin's component renders
- * inside an error boundary falling back to the one JBrowse ships: the panels
- * are how a session gets opened, so a plugin that throws while rendering one
- * must not take the start screen — and with it the dialog that could remove
- * that plugin — down with it.
+ * One of the start screen's panels, as the extension point named by `name` left
+ * it: JBrowse's own component unless a global plugin replaced it.
+ *
+ * A replacement renders inside an error boundary falling back to the component
+ * JBrowse ships. The panels are how a session gets opened, so a plugin that
+ * throws while rendering one must not take the start screen — and with it the
+ * dialog that could remove that plugin — down with it. With no start screen
+ * plugin manager (it is still loading, or failed to build) there is nothing to
+ * dispatch to and the shipped component renders directly.
  */
-function PluginReplaceablePanel({
-  children,
-  fallback,
+function StartScreenPanel({
+  pluginManager,
+  name,
+  component: Component,
+  props,
 }: {
-  children: React.ReactNode
-  fallback: React.ReactNode
+  pluginManager: PluginManager | undefined
+  name:
+    | 'Desktop-StartScreenLaunchPanel'
+    | 'Desktop-StartScreenRecentSessionsPanel'
+  component: React.ComponentType<StartScreenPanelProps>
+  props: StartScreenPanelProps
 }) {
-  return (
+  return pluginManager ? (
     <ErrorBoundary
       FallbackComponent={() => (
         <>
@@ -88,12 +98,19 @@ function PluginReplaceablePanel({
             the menu&apos;s &quot;Global plugins&quot; dialog, or reload without
             global plugins.
           </Alert>
-          {fallback}
+          <Component {...props} />
         </>
       )}
     >
-      {children}
+      <PluggableComponent
+        pluginManager={pluginManager}
+        name={name}
+        component={Component}
+        props={props}
+      />
     </ErrorBoundary>
+  ) : (
+    <Component {...props} />
   )
 }
 
@@ -225,37 +242,21 @@ export default function StartScreen({
       <div className={classes.root}>
         <Paper elevation={3} className={classes.panel}>
           <Typography variant="h5">Launch new session</Typography>
-          {startScreenPluginManager ? (
-            <PluginReplaceablePanel
-              fallback={<LeftSidePanel {...panelProps} />}
-            >
-              <PluggableComponent
-                pluginManager={startScreenPluginManager}
-                name="Desktop-StartScreenLaunchPanel"
-                component={LeftSidePanel}
-                props={panelProps}
-              />
-            </PluginReplaceablePanel>
-          ) : (
-            <LeftSidePanel {...panelProps} />
-          )}
+          <StartScreenPanel
+            pluginManager={startScreenPluginManager}
+            name="Desktop-StartScreenLaunchPanel"
+            component={LeftSidePanel}
+            props={panelProps}
+          />
         </Paper>
         <Paper elevation={3} className={classes.recentPanel}>
           <Typography variant="h5">Recently opened sessions</Typography>
-          {startScreenPluginManager ? (
-            <PluginReplaceablePanel
-              fallback={<RecentSessionPanel {...panelProps} />}
-            >
-              <PluggableComponent
-                pluginManager={startScreenPluginManager}
-                name="Desktop-StartScreenRecentSessionsPanel"
-                component={RecentSessionPanel}
-                props={panelProps}
-              />
-            </PluginReplaceablePanel>
-          ) : (
-            <RecentSessionPanel {...panelProps} />
-          )}
+          <StartScreenPanel
+            pluginManager={startScreenPluginManager}
+            name="Desktop-StartScreenRecentSessionsPanel"
+            component={RecentSessionPanel}
+            props={panelProps}
+          />
         </Paper>
       </div>
       {showGlobalPlugins ? (
