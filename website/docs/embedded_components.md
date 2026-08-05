@@ -29,11 +29,7 @@ there is no imperative setup call to make. The storybook examples per package
 are copy-pasteable React code.
 
 **`@jbrowse/react-app2` also needs its stylesheet**, which the single-view
-components do not have:
-
-```js
-import '@jbrowse/react-app2/styles.css'
-```
+components do not have: `import '@jbrowse/react-app2/styles.css'`.
 
 It styles the app's tiled panel layout, so without it the panels, tabs and
 dividers render unstyled while everything else looks correct. The file is
@@ -49,25 +45,48 @@ React remounts it on a fresh engine.
 ## Driving the view from your own code
 
 When you want to read or change the view after launch, hold the engine yourself
-with `useCreateViewState` and render the `viewState`-taking component. That is
-the same object the props version builds internally, so nothing is given up:
+and render the `viewState`-taking component. That is the same object the props
+version builds internally, so nothing is given up. `useCreateViewState(opts)` is
+exactly `useState(() => createViewState(opts))`, so an example that needs the
+state before it returns — to call an action at construction, as here — writes
+that line out instead:
 
-```jsx
+<!-- include: products/jbrowse-react-linear-genome-view/examples-site/src/examples/WithShowTrack.tsx -->
+
+```tsx
+import { useState } from 'react'
+
 import {
   JBrowseLinearGenomeView,
-  useCreateViewState,
+  createViewState,
 } from '@jbrowse/react-linear-genome-view2'
 
-function MyBrowser() {
-  const state = useCreateViewState({ assembly, tracks, location: 'chr1:1-100' })
-  return (
-    <>
-      <button onClick={() => state.session.view.showTrack('my_genes')}>
-        Show genes
-      </button>
-      <JBrowseLinearGenomeView viewState={state} />
-    </>
-  )
+export default function WithShowTrack() {
+  const [state] = useState(() => {
+    const s = createViewState({
+      assembly: {
+        name: 'volvox',
+        uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
+      },
+      tracks: [
+        {
+          type: 'FeatureTrack',
+          trackId: 'volvox_gff3',
+          name: 'Volvox genes',
+          assemblyNames: ['volvox'],
+          adapter: {
+            type: 'Gff3TabixAdapter',
+            uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
+          },
+        },
+      ],
+      location: 'ctgA:1105..1221',
+    })
+    // showTrack API: https://jbrowse.org/jb2/docs/models/lineargenomeview/#action-showtrack
+    s.session.view.showTrack('volvox_gff3')
+    return s
+  })
+  return <JBrowseLinearGenomeView viewState={state} />
 }
 ```
 
@@ -91,14 +110,50 @@ drawing. Pass a `makeWorkerInstance` factory and JBrowse switches its RPC to a
 web worker instead; supplying the factory is the whole switch, no config slot
 needed.
 
-```js
+<!-- include: products/jbrowse-react-linear-genome-view/examples-site/src/examples/WithWebWorker.tsx -->
+
+```tsx
+import { useState } from 'react'
+
+import {
+  JBrowseLinearGenomeView,
+  createViewState,
+} from '@jbrowse/react-linear-genome-view2'
+// Vite/Astro apps construct the RPC worker with Vite's `?worker` suffix. (With
+// a webpack/CRA setup you'd instead import the package's prebuilt
+// `@jbrowse/react-linear-genome-view2/esm/makeWorkerInstance`.)
 import RpcWorker from '@jbrowse/react-linear-genome-view2/esm/rpcWorker?worker'
 
-const state = useCreateViewState({
-  assembly,
-  tracks,
-  makeWorkerInstance: () => new RpcWorker(),
-})
+export default function WithWebWorker() {
+  const [state] = useState(() => {
+    const s = createViewState({
+      assembly: {
+        name: 'volvox',
+        uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
+      },
+      tracks: [
+        {
+          type: 'FeatureTrack',
+          trackId: 'volvox_gff3',
+          name: 'Volvox genes',
+          assemblyNames: ['volvox'],
+          adapter: {
+            type: 'Gff3TabixAdapter',
+            uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
+          },
+        },
+      ],
+      location: 'ctgA:1105..1221',
+      // supplying makeWorkerInstance is enough — the RPC default driver
+      // switches to WebWorkerRpcDriver automatically (no defaultDriver config
+      // needed)
+      makeWorkerInstance: () => new RpcWorker(),
+    })
+    s.session.view.showTrack('volvox_gff3')
+    return s
+  })
+  return <JBrowseLinearGenomeView viewState={state} />
+}
 ```
 
 It is off by default only because constructing a worker is bundler-specific, not

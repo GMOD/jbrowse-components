@@ -73,14 +73,14 @@ way, see
 
 Every drawer action is on the session, so they read
 `state.session.setDrawerPosition('left')` and so on:
-[`showWidget`](/docs/models/DrawerWidgetSessionMixin#action-showwidget) and
-[`hideWidget`](/docs/models/DrawerWidgetSessionMixin#action-hidewidget) for one
+[`showWidget`](/docs/models/drawerwidgetsessionmixin#action-showwidget) and
+[`hideWidget`](/docs/models/drawerwidgetsessionmixin#action-hidewidget) for one
 widget,
-[`minimizeWidgetDrawer`](/docs/models/DrawerWidgetSessionMixin#action-minimizewidgetdrawer)
+[`minimizeWidgetDrawer`](/docs/models/drawerwidgetsessionmixin#action-minimizewidgetdrawer)
 and
-[`showWidgetDrawer`](/docs/models/DrawerWidgetSessionMixin#action-showwidgetdrawer)
+[`showWidgetDrawer`](/docs/models/drawerwidgetsessionmixin#action-showwidgetdrawer)
 for the drawer itself, and
-[`setDrawerPosition`](/docs/models/DrawerWidgetSessionMixin#action-setdrawerposition)
+[`setDrawerPosition`](/docs/models/drawerwidgetsessionmixin#action-setdrawerposition)
 for which side it sits on. Showing a widget un-minimizes the drawer, so a
 minimized drawer does not swallow the widget you just opened.
 
