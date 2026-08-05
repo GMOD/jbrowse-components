@@ -96,6 +96,10 @@ const GENERATORS: Generator[] = [
     name: 'display foundations table',
     argv: api('generateDisplayFoundationDocs.ts'),
   },
+  { name: 'fetch autoruns table', argv: api('generateFetchAutorunDocs.ts') },
+  { name: 'palette keys table', argv: api('generatePaletteDocs.ts') },
+  { name: 'helper package table', argv: api('generateHelperPackageDocs.ts') },
+  { name: 're-export module table', argv: api('generateReExportDocs.ts') },
   {
     // The config-slot manifest `jbrowse validate` checks against, read out of
     // the live ConfigurationSchema objects. It rides autogen so a new slot (or a

@@ -1696,6 +1696,13 @@ export function normalizeMarkerWhitespace(s: string) {
 // Each marker generator sweeps the whole tree for its own pair, so a run relists
 // and rereads website/docs eight times. Caching that measured 113ms for all eight
 // sweeps — not worth the module-level state, so don't.
+//
+// agent-docs is swept alongside the published guides. The architecture spec
+// restates several of the same tables the guides do, and hand-mirroring one into
+// the other is the drift these generators exist to remove — the spec used to
+// carry an explicit "then mirror it here" instruction for exactly that. A file
+// is only touched if it holds the marker pair, so widening the sweep costs
+// nothing to the docs that don't opt in.
 export function rewriteMarkerBlock(
   marker: string,
   block: string,
@@ -1706,7 +1713,7 @@ export function rewriteMarkerBlock(
   const re = new RegExp(`${startMarker}[\\s\\S]*?${endMarker}`)
   const full = `${startMarker}\n\n${block}\n\n${endMarker}`
   const stale: string[] = []
-  for (const file of listDocs('website/docs')) {
+  for (const file of [...listDocs('website/docs'), ...listDocs('agent-docs')]) {
     const original = fs.readFileSync(file, 'utf8')
     if (original.includes(startMarker)) {
       const updated = original.replace(re, () => full)

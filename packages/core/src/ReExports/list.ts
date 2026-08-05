@@ -159,26 +159,58 @@ export default [
   '@material-ui/lab/Alert',
   '@material-ui/lab',
 
+  // The `@jbrowse/core` subpaths below are the ones a plugin may import and get
+  // the host's copy of. Each carries a `#reexport <what it provides>` line,
+  // which renders the table in the dependencies-and-re-exports guide
+  // (website/scripts/api-docs/generateReExportDocs.ts) — so the guide stops
+  // restating this list, which is what left it five paths short. A new subpath
+  // needs the tag or the generator fails.
+  //
+  // Only the `@jbrowse/core` entries are tagged: the framework and MUI ones
+  // above are described by category in the guide's prose, not one row each.
+
+  // #reexport The base `Plugin` class your plugin extends
   '@jbrowse/core/Plugin',
+  // #reexport `ViewType`, `AdapterType`, `DisplayType`, `TrackType`, `WidgetType` in one import, for the `install` method that registers several
   '@jbrowse/core/pluggableElementTypes',
+  // #reexport Just the `ViewType` class, registered with `addViewType`
   '@jbrowse/core/pluggableElementTypes/ViewType',
+  // #reexport Just the `AdapterType` class, registered with `addAdapterType`
   '@jbrowse/core/pluggableElementTypes/AdapterType',
+  // #reexport Just the `DisplayType` class, registered with `addDisplayType`
   '@jbrowse/core/pluggableElementTypes/DisplayType',
+  // #reexport Just the `TrackType` class, registered with `addTrackType`
   '@jbrowse/core/pluggableElementTypes/TrackType',
+  // #reexport Just the `WidgetType` class, registered with `addWidgetType`
   '@jbrowse/core/pluggableElementTypes/WidgetType',
+  // #reexport Base MST models for tracks and displays to compose with
   '@jbrowse/core/pluggableElementTypes/models',
+  // #reexport `ConfigurationSchema`, `ConfigurationReference`, `readConfObject`, `getConf`
   '@jbrowse/core/configuration',
+  // #reexport Reusable MST types like `ElementId` and `Region`
   '@jbrowse/core/util/types/mst',
+  // #reexport Shared UI components — dialogs, menus, error and loading states
   '@jbrowse/core/ui',
+  // #reexport The JBrowse MUI theme
   '@jbrowse/core/ui/theme',
+  // #reexport Core helpers: `getSession`, `getContainingView`, `Feature`, region and coordinate utilities
   '@jbrowse/core/util',
+  // #reexport Color parsing and manipulation helpers
   '@jbrowse/core/util/color',
+  // #reexport Feature layout (packing) helpers
   '@jbrowse/core/util/layouts',
+  // #reexport Track and adapter config helpers
   '@jbrowse/core/util/tracks',
+  // #reexport The 1D (bp↔px) view model the linear views are built on
   '@jbrowse/core/util/Base1DViewModel',
+  // #reexport `openLocation` and the file-handle helpers
   '@jbrowse/core/util/io',
+  // #reexport Helpers for inspecting MST types
   '@jbrowse/core/util/mst-reflection',
+  // #reexport The RxJS re-exports an adapter's `getFeatures` stream is built from
   '@jbrowse/core/util/rxjs',
+  // #reexport `FeatureDetails`, `BaseCard` and the other feature-detail building blocks
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail',
+  // #reexport `BaseFeatureDataAdapter` and the adapter base classes
   '@jbrowse/core/data_adapters/BaseAdapter',
 ]

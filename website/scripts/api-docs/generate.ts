@@ -15,12 +15,16 @@ import {
 } from './generateConfigDocs.ts'
 import { writeDisplayFoundationDocs } from './generateDisplayFoundationDocs.ts'
 import { writeExtensionPointDocs } from './generateExtensionPointDocs.ts'
+import { writeFetchAutorunDocs } from './generateFetchAutorunDocs.ts'
 import {
   writeDisplayTypeDocs,
   writeFileTypeDocs,
   writeGotchaDocs,
 } from './generateFileTypeDocs.ts'
+import { writeHelperPackageDocs } from './generateHelperPackageDocs.ts'
 import { writeJexlDocs } from './generateJexlDocs.ts'
+import { writePaletteDocs } from './generatePaletteDocs.ts'
+import { writeReExportDocs } from './generateReExportDocs.ts'
 import { accumulateModel, writeModelDocs } from './generateStateModelDocs.ts'
 import { createDocProgram, extractWithComment, getAllFiles } from './util.ts'
 
@@ -186,6 +190,10 @@ async function main() {
   writeJexlDocs()
   writeExtensionPointDocs()
   writeDisplayFoundationDocs()
+  writeFetchAutorunDocs()
+  writePaletteDocs()
+  writeHelperPackageDocs()
+  writeReExportDocs()
   writeFileTypeDocs(files)
   writeDisplayTypeDocs(displayTypesByTrack, configNames)
   writeGotchaDocs(

@@ -1,8 +1,11 @@
 import fs from 'fs'
 
+import * as ts from 'typescript'
+
 import {
   listSources,
   markdownTable,
+  parseSourceFileSyntactic,
   rewriteMarkerBlock,
   runMarkerScript,
 } from './util.ts'
@@ -24,10 +27,17 @@ import {
 // A new display joins the table by tagging itself; nothing is restated, since
 // the display's own name comes from the `#stateModel` tag above it.
 //
-// The guide opts in with a marker pair, regenerated on `pnpm autogen`:
+// Two markers, both regenerated on `pnpm autogen`, over the same collected data:
 //
-//   <!-- DISPLAY_FOUNDATIONS START -->
-//   <!-- DISPLAY_FOUNDATIONS END -->
+//   <!-- DISPLAY_FOUNDATIONS START -->        the public guide's table
+//   <!-- DISPLAY_FOUNDATION_STACKS START -->  the architecture spec's
+//
+// They differ in one column. The guide says what a foundation brings as prose
+// (the `#displayFoundationDef` tag); the spec names the mixins it composes,
+// which is read straight off the foundation's own `types.compose(...)` call and
+// so needs no tag at all. The spec used to carry the display list as a
+// hand-maintained mirror of the guide's, under an explicit "then mirror it
+// here" instruction — which is a drift axis written down as a procedure.
 //
 // Editing between the markers is pointless — it is overwritten on regen.
 
@@ -44,11 +54,47 @@ const USE =
 interface Foundation {
   name: string
   brings: string
+  composes: string[]
   displays: string[]
+}
+
+// The mixins a foundation composes, read off its own
+// `types.compose('<name>', A(), B(), types.model({}))` call — the arguments
+// after the name literal, reduced to the head identifier of each so `FetchMixin()`
+// reads as `FetchMixin`. `types.model(...)` and other `types.*` members are the
+// empty model every foundation ends with, and are skipped.
+//
+// Structural, deliberately: this is the one column the architecture spec kept by
+// hand, and it is a restatement of a call three lines below the tag.
+function composedMixins(file: string, name: string) {
+  const out: string[] = []
+  const walk = (node: ts.Node) => {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isPropertyAccessExpression(node.expression) &&
+      node.expression.name.text === 'compose' &&
+      ts.isStringLiteral(node.arguments[0] ?? ({} as ts.Node)) &&
+      (node.arguments[0] as ts.StringLiteral).text === name
+    ) {
+      for (const arg of node.arguments.slice(1)) {
+        let expr: ts.Expression = arg
+        while (ts.isCallExpression(expr) || ts.isNonNullExpression(expr)) {
+          expr = expr.expression
+        }
+        if (ts.isIdentifier(expr)) {
+          out.push(expr.text)
+        }
+      }
+    }
+    ts.forEachChild(node, walk)
+  }
+  walk(parseSourceFileSyntactic(file))
+  return out
 }
 
 export function collectFoundations() {
   const defs = new Map<string, string>()
+  const defFiles = new Map<string, string>()
   const uses = new Map<string, string[]>()
   for (const dir of SOURCE_DIRS) {
     for (const file of listSources(dir)) {
@@ -58,6 +104,7 @@ export function collectFoundations() {
       }
       for (const [, name, brings] of src.matchAll(DEF)) {
         defs.set(name!, brings!.trim())
+        defFiles.set(name!, file)
       }
       for (const [, model, foundation] of src.matchAll(USE)) {
         uses.set(foundation!, [...(uses.get(foundation!) ?? []), model!])
@@ -74,6 +121,7 @@ export function collectFoundations() {
   const foundations: Foundation[] = [...defs].map(([name, brings]) => ({
     name,
     brings,
+    composes: composedMixins(defFiles.get(name)!, name),
     displays: [...(uses.get(name) ?? [])].sort((a, b) => a.localeCompare(b)),
   }))
   // Most-used first, so the common case leads; name breaks ties for stability.
@@ -83,24 +131,40 @@ export function collectFoundations() {
   )
 }
 
+const code = (names: string[]) => names.map(n => `\`${n}\``).join(', ')
+
 function renderTable(foundations: Foundation[]) {
   return markdownTable(
     ['Foundation', 'Brings', 'Used by'],
     foundations.map(
-      f =>
-        `| \`${f.name}()\` | ${f.brings} | ${f.displays
-          .map(d => `\`${d}\``)
-          .join(', ')} |`,
+      f => `| \`${f.name}()\` | ${f.brings} | ${code(f.displays)} |`,
+    ),
+  )
+}
+
+// The architecture spec's variant: composed mixins in place of the prose, since
+// what a reader touching a mixin needs is which other mixins arrive with it.
+function renderStackTable(foundations: Foundation[]) {
+  return markdownTable(
+    ['Foundation (composed on `BaseDisplay`)', 'Composes', 'Displays'],
+    foundations.map(
+      f => `| \`${f.name}()\` | ${code(f.composes)} | ${code(f.displays)} |`,
     ),
   )
 }
 
 export function writeDisplayFoundationDocs({ check = false } = {}) {
-  return rewriteMarkerBlock(
-    'DISPLAY_FOUNDATIONS',
-    renderTable(collectFoundations()),
-    { check },
-  )
+  const foundations = collectFoundations()
+  return [
+    ...rewriteMarkerBlock('DISPLAY_FOUNDATIONS', renderTable(foundations), {
+      check,
+    }),
+    ...rewriteMarkerBlock(
+      'DISPLAY_FOUNDATION_STACKS',
+      renderStackTable(foundations),
+      { check },
+    ),
+  ]
 }
 
 if (process.argv[1]?.endsWith('generateDisplayFoundationDocs.ts')) {

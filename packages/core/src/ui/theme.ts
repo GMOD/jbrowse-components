@@ -3,6 +3,7 @@ import deepmerge from 'deepmerge'
 
 import { palettePresets, resolvePalette } from './palette.ts'
 
+import type { AlignmentFill, StringColors } from './palette.ts'
 import type {
   PaletteColor,
   PaletteColorOptions,
@@ -23,55 +24,43 @@ type FrameTuple<T> = [
 ]
 type Frames = FrameTuple<PaletteColor>
 type FramesOptions = FrameTuple<PaletteColorOptions>
-// plain '#rrggbb' string colors present (required) on Palette and (optional) on
-// PaletteOptions — declared once here and reused on both via the interfaces
-// below, so a new string color is added in a single place
-interface JBrowseStringColors {
-  stopCodon: string
-  startCodon: string
-  codonNonsynonymous: string
-  codonSynonymous: string
-  codonStop: string
-  coverage: string
-  insertion: string
-  softclip: string
-  skip: string
-  hardclip: string
-  deletion: string
-  modificationFwd: string
-  modificationRev: string
-  mutedSnpBase: string
-  missingData: string
-  gridlineMinor: string
-  gridlineMajor: string
-  featureHover: string
-  featureHoverStrong: string
-  featureSelected: string
-  featureDescription: string
-}
+// The plain '#rrggbb' string colors are `StringColors` from palette.ts, reused
+// here rather than restated: they are required on Palette and optional on
+// PaletteOptions, so a new string color is added in one place and reaches both.
+// The docs table in the theming guide is generated from these two interfaces
+// (website/scripts/api-docs/generatePaletteDocs.ts), so every member needs a
+// JSDoc line saying what it colors — the generator fails on one that doesn't.
 declare module '@mui/material/styles' {
-  interface Palette extends JBrowseStringColors {
+  interface Palette extends StringColors {
+    /** Accordion headers and some toolbar chrome */
     tertiary: PaletteColor
+    /** Secondary floating-action-button background */
     quaternary: PaletteColor
+    /** Selection highlights */
     highlight: PaletteColor
+    /** Text-match highlight behind search hits */
     textHighlight: PaletteColor
+    /** Per-base colors for sequence and SNP rendering */
     bases: {
+      /** Adenine */
       A: PaletteColor
+      /** Cytosine */
       C: PaletteColor
+      /** Guanine */
       G: PaletteColor
+      /** Thymine */
       T: PaletteColor
+      /** N / ambiguous base */
       N: PaletteColor
     }
+    /** Reading-frame coloring outside CDS, indexed 1..3 and -1..-3 */
     frames: Frames
+    /** Reading-frame coloring within CDS, indexed 1..3 and -1..-3 */
     framesCDS: Frames
-    alignmentFill: {
-      pairLR: string
-      pairRL: string
-      pairLL: string
-      pairRR: string
-    }
+    /** Read fill by pair orientation, when coloring alignments by pair */
+    alignmentFill: AlignmentFill
   }
-  interface PaletteOptions extends Partial<JBrowseStringColors> {
+  interface PaletteOptions extends Partial<StringColors> {
     tertiary?: PaletteColorOptions
     quaternary?: PaletteColorOptions
     highlight?: PaletteColorOptions
@@ -85,12 +74,7 @@ declare module '@mui/material/styles' {
     }
     framesCDS?: FramesOptions
     frames?: FramesOptions
-    alignmentFill?: {
-      pairLR?: string
-      pairRL?: string
-      pairLL?: string
-      pairRR?: string
-    }
+    alignmentFill?: Partial<AlignmentFill>
   }
 }
 

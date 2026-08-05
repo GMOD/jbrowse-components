@@ -64,9 +64,13 @@ export type FrameTuple<T> = [
 export type BaseKey = 'A' | 'C' | 'G' | 'T' | 'N'
 
 export interface AlignmentFill {
+  /** LR (→ ←): a normal, concordant proper pair */
   pairLR: string
+  /** RL (← →): mates point away from each other */
   pairRL: string
+  /** LL (→ →): both mates on the forward strand */
   pairLL: string
+  /** RR (← ←): both mates on the reverse strand */
   pairRR: string
 }
 
@@ -328,26 +332,47 @@ export const methylated5hmC = '#ffc0cb'
 
 /** Plain string colors that a theme may override wholesale. */
 export interface StringColors {
+  /** Stop codon in gene/CDS tracks */
   stopCodon: string
+  /** Start codon in gene/CDS tracks */
   startCodon: string
+  /** MAF codon view: the species' amino acid differs from the reference */
   codonNonsynonymous: string
+  /** MAF codon view: the codon differs but the amino acid does not */
   codonSynonymous: string
+  /** MAF codon view: a stop codon */
   codonStop: string
+  /** Coverage histogram fill */
   coverage: string
+  /** Insertion markers in alignments */
   insertion: string
+  /** Soft-clipped bases (clipped bases retained in the read) */
   softclip: string
+  /** Skipped regions, such as introns in RNA-seq reads */
   skip: string
+  /** Hard-clipped bases (clipped bases removed from the read) */
   hardclip: string
+  /** Deletion markers in alignments */
   deletion: string
+  /** Base modifications on the forward strand */
   modificationFwd: string
+  /** Base modifications on the reverse strand */
   modificationRev: string
+  /** SNP bases muted when show-modifications coloring is on */
   mutedSnpBase: string
+  /** MAF bridged-row fill where a species has no alignment */
   missingData: string
+  /** Minor vertical gridlines behind the genome */
   gridlineMinor: string
+  /** Major vertical gridlines behind the genome */
   gridlineMajor: string
+  /** Hover shading over a single feature */
   featureHover: string
+  /** Hover shading over a feature group, e.g. a linked-read chain */
   featureHoverStrong: string
+  /** Border accent around the click-selected feature */
   featureSelected: string
+  /** Feature description labels, e.g. gene descriptions */
   featureDescription: string
 }
 

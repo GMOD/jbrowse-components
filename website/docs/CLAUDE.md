@@ -8,9 +8,28 @@ Astro, not Docusaurus. Frontmatter is `title` (required), `description`,
 `pnpm autogen` rebuilds `config/`, `models/`, `api/`, the guide indexes
 (`user_guide.md` etc.), `cli.md`, `jbrowse-img.md`, and every marker-pair block
 (`<!-- COLOR_TABLE … -->`, `FILE_TYPES`, `DISPLAY_TYPES`, `GOTCHA`,
-`PROMOTABLE_SLOTS`). Each renders from a JSDoc tag or registration at the
-definition site — document a new one by tagging the source. Everything else
-under `docs/` is hand-written.
+`PROMOTABLE_SLOTS`, `DISPLAY_FOUNDATIONS`, `FETCH_AUTORUNS`, `PALETTE_KEYS`,
+`HELPER_PACKAGES`, `REEXPORT_MODULES`). Each renders from a JSDoc tag, a
+registration, or a manifest at the definition site — document a new one by
+tagging the source. Everything else under `docs/` is hand-written.
+
+The sweep also covers `agent-docs/`, which hosts the `DISPLAY_FOUNDATION_STACKS`
+and `FETCH_AUTORUNS` counterparts. A guide table and its architecture-spec twin
+come from one scan, so neither is a hand-mirror of the other.
+
+**A table a reader could check against the code is a generator waiting to be
+written**, and the strongest tell is a sentence pointing at a file: the
+re-export table sat directly under "treat that file as the source of truth" and
+was five paths short. Every one of the five above replaced a hand-written table
+that had already gone wrong — a foundation nothing composed, a clear condition
+that stopped being true, a third of the palette keys missing, four packages
+recommended for bundling that pull in `@jbrowse/core`. None of them failed
+loudly; each just quietly stopped describing the code.
+
+Where a generator needs prose it can't derive, the tag goes at the definition
+site and a missing one is **fatal**, not a blank cell — same reasoning as the
+untagged-`#slot` check. A blank cell reads as "this does nothing"; a failed
+build reads as "write one line here".
 
 ## Avoiding drift in hand-written docs
 

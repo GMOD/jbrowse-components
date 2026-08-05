@@ -1,6 +1,6 @@
 # @jbrowse/sv-core
 
-JBrowse 2 code shared between sv type code
+VCF breakend / structural-variant parsing and the shared SV launch helpers
 
 <!-- API_DOCS_START -->
 

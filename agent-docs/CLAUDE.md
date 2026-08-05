@@ -10,6 +10,14 @@ Everything else is filed:
 - `architecture-decision-records/` — *why*, one decision per file. Its README
   index is **generated** by `website/scripts/generate-adr-index.ts`; don't hand-
   edit the block between the marker comments.
+
+`pnpm autogen` sweeps this tree for marker pairs the same way it sweeps
+`website/docs`, so a table here can be generated from source rather than
+maintained: `ARCHITECTURE.md` gets its display-foundation and fetch-autorun
+tables that way, from the same scan that fills the public guides' versions.
+Anything between a `<!-- NAME START -->` / `<!-- NAME END -->` pair is
+overwritten on regen — if a table here restates something a reader could check
+against the code, write the generator instead of the table.
 - `handoffs/` — where a session leaves the state of an unfinished thread: what
   was measured, what the next agent should not re-derive, and the decision left
   open. Read the matching handoff before picking a thread back up; **delete one

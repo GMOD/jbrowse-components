@@ -55,7 +55,7 @@ export function isBlockCovered(
 
 /**
  * #stateModel MultiRegionDisplayMixin
- * #displayFoundationDef Per-region fetch + render: the five fetch autoruns, `rpcProps()` refetch wiring, and byte gating. The common case.
+ * #displayFoundationDef Per-region fetch + render: the fetch autoruns, `rpcProps()` refetch wiring, and byte gating. The common case.
  * #category display
  *
  * Per-region fetch lifecycle for LGV-based GPU displays. Installs five autoruns
@@ -484,6 +484,8 @@ export default function MultiRegionDisplayMixin() {
           // it. clearAllRpcData deliberately leaves it alone (no banner flicker
           // on an ordinary viewport-change clear), which is why the drop lives
           // in this autorun rather than in that action.
+          //
+          // #autorun `view.displayedRegions` changes | `clearAllRpcData()` **+ `clearByteEstimate()`** — the only place the cached byte estimate is dropped
           onDisplayedRegionsChange(
             self,
             () => {
@@ -496,6 +498,8 @@ export default function MultiRegionDisplayMixin() {
           // Autorun: fetch data when the visible viewport isn't covered
           // by loaded data. Fetches with an explicit buffer for smooth
           // scrolling without blank gaps.
+          //
+          // #autorun the viewport, or `fetchGeneration` after a fetch ends | `fetchNeeded(needed)` for the visible blocks loaded data doesn't cover. Skipped while `error` / `regionTooLarge` / `fetchCanceled` is set, while a fetch is in flight, and while the track is minimized
           autorunOnReadyView(
             self,
             view => {
@@ -593,6 +597,8 @@ export default function MultiRegionDisplayMixin() {
           // Re-fetch when the RPC payload changes. The cache key is what
           // rpcProps() *returns*, not what building it reads — see the
           // `rpcPropsCacheKey` getter.
+          //
+          // #autorun `rpcPropsCacheKey`, the serialized `rpcProps()` return | `clearAllRpcData()`. Installed only when the display defines `rpcProps()`
           if ((self as { rpcProps?: () => unknown }).rpcProps) {
             const loopGuard = makeSettingsLoopGuard('SettingsInvalidate')
             autorunOnReadyView(
@@ -613,6 +619,8 @@ export default function MultiRegionDisplayMixin() {
           // imperative flags, do.) Reads them untracked so setting them doesn't
           // trigger this autorun to immediately wipe them — only the viewport read
           // should fire it.
+          //
+          // #autorun `view.visibleRegions` | `clearAllRpcData()` when `error` or `fetchCanceled` is set, so the fetch autorun retries. Not `regionTooLarge`, which is derived and self-releasing
           autorunOnReadyView(
             self,
             view => {
@@ -629,6 +637,8 @@ export default function MultiRegionDisplayMixin() {
           // content, so a lingering hover would pin to a now-hidden feature. Fires
           // the overridable `onRegionTooLarge` hook on the transition; no-op unless
           // the display overrides the hook.
+          //
+          // #autorun `regionTooLarge` becoming true | the overridable `onRegionTooLarge()` hook — a no-op unless the display overrides it
           autorunOnReadyView(
             self,
             () => {

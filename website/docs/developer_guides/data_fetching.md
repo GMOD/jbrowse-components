@@ -6,7 +6,7 @@ guide_category: Core concepts
 ---
 
 **TL;DR:** Most linear displays compose `MultiRegionDisplayMixin`, which
-installs five autoruns that manage fetch lifecycle, cancellation, and cache
+installs the autoruns that manage fetch lifecycle, cancellation, and cache
 invalidation. You override `fetchNeeded` (usually via `fetchEachRegion`) and
 declare `rpcProps` as the cache key. This chain is the thing to understand for
 writing a non-GPU display, and for debugging unexpected refetches in any
@@ -18,32 +18,43 @@ fetch autorun. See
 [display foundations](/docs/developer_guides/creating_display#display-foundations)
 for which foundation each in-tree display uses.
 
-## The five autoruns
+## The fetch autoruns
 
-| Autorun                              | Fires on               | Action                                        |
-| ------------------------------------ | ---------------------- | --------------------------------------------- |
-| `DisplayedRegionsChange`             | `displayedRegions` ref | `clearAllRpcData()`                           |
-| `FetchVisibleRegions`                | `visibleRegions`       | `fetchNeeded()` after a 600 ms delay          |
-| `SettingsInvalidate`                 | `rpcProps()` fields    | `clearAllRpcData()`                           |
-| `ClearBlockingStateOnViewportChange` | `visibleRegions`       | `clearAllRpcData()` if `regionTooLarge`/error |
-| `ClearHoverOnRegionTooLarge`         | `regionTooLarge` set   | `onRegionTooLarge()` hook                     |
+<!-- FETCH_AUTORUNS START -->
 
-`ClearHoverOnRegionTooLarge` fires the overridable `onRegionTooLarge` hook when
-the banner replaces the rendered content, so a lingering hover doesn't pin to a
-now-hidden feature. It is a no-op unless your display overrides the hook.
+`MultiRegionDisplayMixin`'s `afterAttach` installs five autoruns:
 
-`clearAllRpcData()` resets `rpcDataMap`, `loadedRegions`, `regionTooLarge`, and
-`error`. It also bumps `fetchGeneration`, which causes `FetchVisibleRegions` to
-re-fire and start fresh fetches.
+<!-- prettier-ignore -->
+| Autorun | Fires on | Action |
+| --- | --- | --- |
+| `DisplayedRegionsChange` | `view.displayedRegions` changes | `clearAllRpcData()` **+ `clearByteEstimate()`** — the only place the cached byte estimate is dropped |
+| `FetchVisibleRegions` | the viewport, or `fetchGeneration` after a fetch ends (debounced 600 ms) | `fetchNeeded(needed)` for the visible blocks loaded data doesn't cover. Skipped while `error` / `regionTooLarge` / `fetchCanceled` is set, while a fetch is in flight, and while the track is minimized |
+| `SettingsInvalidate` | `rpcPropsCacheKey`, the serialized `rpcProps()` return | `clearAllRpcData()`. Installed only when the display defines `rpcProps()` |
+| `ClearBlockingStateOnViewportChange` | `view.visibleRegions` | `clearAllRpcData()` when `error` or `fetchCanceled` is set, so the fetch autorun retries. Not `regionTooLarge`, which is derived and self-releasing |
+| `ClearHoverOnRegionTooLarge` | `regionTooLarge` becoming true | the overridable `onRegionTooLarge()` hook — a no-op unless the display overrides it |
+
+<!-- FETCH_AUTORUNS END -->
+
+`clearAllRpcData()` cancels the in-flight fetch, clears `error` and
+`loadedRegions`, resets the canvas-drawn flag, and calls
+`clearDisplaySpecificData()` — the hook your display overrides to drop its own
+`rpcDataMap`. Cancelling bumps `fetchGeneration`, which re-fires
+`FetchVisibleRegions` to start fresh fetches.
+
+It deliberately leaves the too-large gate alone. `regionTooLarge` is derived
+from the cached byte estimate and the current viewport, so it releases itself
+and needs no imperative clear; keeping the estimate is what stops the banner
+flickering on an ordinary clear.
 
 ## FetchVisibleRegions: the core fetch trigger
 
-This autorun fires 600 ms after any change to the viewport. For each visible
-region block it checks whether the data is already loaded and still valid:
+This autorun fires on any change to the viewport, after the debounce quoted in
+the table above. For each visible region block it checks whether the data is
+already loaded and still valid:
 
 ```
 view.visibleRegions changes
-  ↓ (600ms delay)
+  ↓ (debounced)
 for each visible block:
   loadedRegion = loadedRegions.get(block.displayedRegionIndex)
   boundsValid  = refName matches AND start/end within loaded bounds
@@ -146,10 +157,22 @@ half-superseded set.
 
 ## rpcProps: the cache key
 
-`SettingsInvalidate` tracks every observable read inside `rpcProps()`. When any
-of those values changes, it calls `clearAllRpcData()` and restarts the fetch
-cycle. This is how config changes (color scheme, filter settings, etc.) trigger
-a full refetch.
+`SettingsInvalidate` watches `rpcPropsCacheKey`, the **serialized return value**
+of `rpcProps()`. When that string changes it calls `clearAllRpcData()` and
+restarts the fetch cycle. This is how config changes (color scheme, filter
+settings, etc.) trigger a full refetch.
+
+Watching what the method returns rather than the call itself is deliberate:
+building the payload usually reads far more observables than it returns — a
+whole config snapshot, or a value that was itself fetched — and tracking the
+call would refetch on every one of them. Two consequences to design around:
+
+- Only fields that reach the **return** are cache keys. A value merely consulted
+  while building the payload invalidates nothing.
+- `JSON.stringify` is the comparison, so a field whose distinct states serialize
+  the same way is a dead cache axis that fails silently. An `undefined` drops
+  its key entirely, and a class instance without a `toJSON` flattens to `{}`.
+  Prefer primitives and plain arrays.
 
 It goes in a `.views()` block, and holds only the settings the worker reads:
 

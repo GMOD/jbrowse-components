@@ -11,9 +11,11 @@ touches the view has to dismiss it first.
 
 ## Colors
 
-`theme.ts` is the single source of truth. Colors shared with RPC workers (which
+`palette.ts` is the single source of truth — `theme.ts` builds the MUI theme
+over it and holds no colors of its own. Colors shared with RPC workers (which
 have no theme context) are plain `export const` CSS strings — import them
 directly, never a fallback copy or a `theme.palette` hop. Theme-varying colors
-belong in `Palette`/`addMissingColors`. A JSDoc
+belong on the `StringColors` interface, with a value in `lightStringColors` and
+an override in `darkStringColors` where dark mode differs. A JSDoc
 `#color <group> | <label> | <description>` tag surfaces one as a swatch row in
 the website guides.

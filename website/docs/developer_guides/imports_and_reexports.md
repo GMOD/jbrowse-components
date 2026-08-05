@@ -37,38 +37,49 @@ So JBrowse loads one copy of each and **re-exports** it to plugins.
 ## What is re-exported
 
 The canonical list lives in
-[`packages/core/src/ReExports/list.ts`](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/ReExports/list.ts)
-and changes over time, so treat that file as the source of truth. The
-categories:
+[`packages/core/src/ReExports/list.ts`](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/ReExports/list.ts),
+and the table below is generated from it. The categories:
 
-- Framework singletons - `react`, `react-dom`, `mobx`, `mobx-react`,
-  `@jbrowse/mobx-state-tree` (our internal MST fork).
+- Framework singletons - `react` (with `react/jsx-runtime`), `react-dom` (with
+  `react-dom/client`), `mobx`, `mobx-react`, and `@jbrowse/mobx-state-tree`, our
+  internal MST fork, which is also aliased from plain `mobx-state-tree`.
 - Styling - `@mui/material` and its per-component subpaths (e.g.
   `@mui/material/Button`), `@mui/material/styles`, `tss-react`,
   `@mui/x-data-grid`. The legacy `@material-ui/core` paths are aliased to the
-  same MUI v5 modules for backward compatibility.
+  same MUI v5 modules for backward compatibility, and are derived from the same
+  subpath list rather than maintained separately.
 - `@jbrowse/core` APIs - the building blocks for pluggable elements and shared
   helpers:
 
-  | Module                                              | What it provides                                                                              |
-  | --------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-  | `@jbrowse/core/Plugin`                              | The base `Plugin` class your plugin extends                                                   |
-  | `@jbrowse/core/pluggableElementTypes`               | `ViewType`, `AdapterType`, `DisplayType`, `TrackType`, `WidgetType` (registered in `install`) |
-  | `@jbrowse/core/pluggableElementTypes/models`        | Base MST models for tracks/displays to compose with                                           |
-  | `@jbrowse/core/configuration`                       | `ConfigurationSchema`, `ConfigurationReference`, `readConfObject`, `getConf`                  |
-  | `@jbrowse/core/util`                                | Core helpers: `getSession`, `getContainingView`, `Feature`, region/coordinate utilities       |
-  | `@jbrowse/core/util/types/mst`                      | Reusable MST types like `ElementId`, `Region`                                                 |
-  | `@jbrowse/core/util/color`                          | Color parsing/manipulation helpers                                                            |
-  | `@jbrowse/core/util/layouts`                        | Feature layout (packing) helpers                                                              |
-  | `@jbrowse/core/util/tracks`                         | Track/adapter config helpers                                                                  |
-  | `@jbrowse/core/util/io`                             | `openLocation` and file-handle helpers                                                        |
-  | `@jbrowse/core/util/rxjs`                           | RxJS re-exports used by adapter `getFeatures` streams                                         |
-  | `@jbrowse/core/util/Base1DViewModel`                | The 1D (bp↔px) view model used by linear views                                                |
-  | `@jbrowse/core/util/mst-reflection`                 | Helpers for inspecting MST types                                                              |
-  | `@jbrowse/core/ui`                                  | Shared UI components (dialogs, menus, error/loading states)                                   |
-  | `@jbrowse/core/ui/theme`                            | The JBrowse MUI theme                                                                         |
-  | `@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail` | `FeatureDetails`, `BaseCard` and other feature-detail building blocks                         |
-  | `@jbrowse/core/data_adapters/BaseAdapter`           | `BaseFeatureDataAdapter` and adapter base classes                                             |
+<!-- REEXPORT_MODULES START -->
+
+<!-- prettier-ignore -->
+| Module | What it provides |
+| --- | --- |
+| `@jbrowse/core/Plugin` | The base `Plugin` class your plugin extends |
+| `@jbrowse/core/pluggableElementTypes` | `ViewType`, `AdapterType`, `DisplayType`, `TrackType`, `WidgetType` in one import, for the `install` method that registers several |
+| `@jbrowse/core/pluggableElementTypes/ViewType` | Just the `ViewType` class, registered with `addViewType` |
+| `@jbrowse/core/pluggableElementTypes/AdapterType` | Just the `AdapterType` class, registered with `addAdapterType` |
+| `@jbrowse/core/pluggableElementTypes/DisplayType` | Just the `DisplayType` class, registered with `addDisplayType` |
+| `@jbrowse/core/pluggableElementTypes/TrackType` | Just the `TrackType` class, registered with `addTrackType` |
+| `@jbrowse/core/pluggableElementTypes/WidgetType` | Just the `WidgetType` class, registered with `addWidgetType` |
+| `@jbrowse/core/pluggableElementTypes/models` | Base MST models for tracks and displays to compose with |
+| `@jbrowse/core/configuration` | `ConfigurationSchema`, `ConfigurationReference`, `readConfObject`, `getConf` |
+| `@jbrowse/core/util/types/mst` | Reusable MST types like `ElementId` and `Region` |
+| `@jbrowse/core/ui` | Shared UI components — dialogs, menus, error and loading states |
+| `@jbrowse/core/ui/theme` | The JBrowse MUI theme |
+| `@jbrowse/core/util` | Core helpers: `getSession`, `getContainingView`, `Feature`, region and coordinate utilities |
+| `@jbrowse/core/util/color` | Color parsing and manipulation helpers |
+| `@jbrowse/core/util/layouts` | Feature layout (packing) helpers |
+| `@jbrowse/core/util/tracks` | Track and adapter config helpers |
+| `@jbrowse/core/util/Base1DViewModel` | The 1D (bp↔px) view model the linear views are built on |
+| `@jbrowse/core/util/io` | `openLocation` and the file-handle helpers |
+| `@jbrowse/core/util/mst-reflection` | Helpers for inspecting MST types |
+| `@jbrowse/core/util/rxjs` | The RxJS re-exports an adapter's `getFeatures` stream is built from |
+| `@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail` | `FeatureDetails`, `BaseCard` and the other feature-detail building blocks |
+| `@jbrowse/core/data_adapters/BaseAdapter` | `BaseFeatureDataAdapter` and the adapter base classes |
+
+<!-- REEXPORT_MODULES END -->
 
 ## What is _not_ re-exported
 
@@ -78,23 +89,34 @@ output. Nothing breaks from having more than one copy, so these aren't shared.
 
 ## Standalone helper packages
 
-JBrowse publishes several **framework-free utility packages** to npm. They have
-no React/MobX/`@jbrowse/core` dependency, so they aren't re-exported:
-`npm install` and `import` them like any other dependency (they get bundled).
-Reach for these instead of re-implementing the parsing/scale math yourself:
+JBrowse publishes several helper packages to npm alongside `@jbrowse/core`. None
+of them is re-exported, so reach for one instead of re-implementing the parsing
+or scale math yourself — but read the third column before you do, since they
+don't all cost the same to depend on.
 
-| Package                        | What it provides                                         |
-| ------------------------------ | -------------------------------------------------------- |
-| `@jbrowse/cigar-utils`         | CIGAR / MD / mismatch parsers and types                  |
-| `@jbrowse/modifications-utils` | MM/ML base-modification (methylation) tag parsers        |
-| `@jbrowse/wiggle-core`         | Score scale, normalization, and autoscale-domain helpers |
-| `@jbrowse/synteny-core`        | Synteny/dotplot color and coordinate helpers             |
-| `@jbrowse/sv-core`             | VCF breakend / structural-variant parsing helpers        |
+<!-- HELPER_PACKAGES START -->
 
-The exported functions for each are documented in the API reference
-([](/docs/api/cigar-utils), [](/docs/api/modifications-utils),
-[](/docs/api/wiggle-core), [](/docs/api/synteny-core), [](/docs/api/sv-core))
-and mirrored into each package's README on npm.
+<!-- prettier-ignore -->
+| Package | What it provides | How to use it |
+| --- | --- | --- |
+| [`@jbrowse/cigar-utils`](/docs/api/cigar-utils) | Pure CIGAR / MD / mismatch parsers and types — no rendering or framework deps | No framework or `@jbrowse/core` dependency — `npm install` and import it like any other dependency (it gets bundled) |
+| [`@jbrowse/modifications-utils`](/docs/api/modifications-utils) | Pure MM/ML base-modification tag parsers (methylation, etc.) | Depends on `@jbrowse/core` — those resolve to the host's copy, so import it from a build-step plugin that externalizes them |
+| [`@jbrowse/synteny-core`](/docs/api/synteny-core) | Shared utilities for synteny and dotplot rendering | Depends on `@jbrowse/core`, `@jbrowse/mobx-state-tree`, `mobx-react` — those resolve to the host's copy, so import it from a build-step plugin that externalizes them |
+| [`@jbrowse/wiggle-core`](/docs/api/wiggle-core) | Shared scale and autoscale utilities for wiggle and coverage displays | Depends on `@jbrowse/core`, `@jbrowse/mobx-state-tree`, `mobx-react`, `react` — those resolve to the host's copy, so import it from a build-step plugin that externalizes them |
+| [`@jbrowse/sv-core`](/docs/api/sv-core) | VCF breakend / structural-variant parsing and the shared SV launch helpers | Depends on `@jbrowse/core`, `@jbrowse/mobx-state-tree`, `mobx`, `mobx-react`, `react`, `react-dom` — those resolve to the host's copy, so import it from a build-step plugin that externalizes them |
+
+<!-- HELPER_PACKAGES END -->
+
+A package with no framework dependency is safe to bundle: two copies of a pure
+parser are wasteful at worst. One that depends on `@jbrowse/core` or the
+React/MobX stack is not, for the reason in
+[`@jbrowse/core` paths not in the list](#jbrowsecore-paths-not-in-the-list)
+below — bundling a second copy of core gives you a second configuration system
+and a second set of model types, which the host does not recognize. Import those
+from a build-step plugin, whose template externalizes the shared set.
+
+The exported functions for each are documented on the linked API pages and
+mirrored into the package's README on npm.
 
 ## How to import, by plugin type
 
