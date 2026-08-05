@@ -62,27 +62,23 @@ Put `myplugin.js` alongside your config file and reference it in `config.json`:
 
 This adds a menu item via the plugin's `configure` method:
 
-```js
-export default class MyPlugin {
-  name = 'MyPlugin'
-  version = '1.0'
-  install() {}
-  configure(pluginManager) {
-    // this is called in the web worker as well, which does not have a
-    // rootModel, so check for existence of pluginManager.rootModel before
-    // continuing
-    if (pluginManager.rootModel) {
-      // adding a new menu to the top toolbar
-      pluginManager.rootModel.insertMenu('Citations', 4)
+<!-- include: test_data/no_build_plugin/esmplugin.js#configure -->
 
-      // appending a menu item to the new menu
-      pluginManager.rootModel.appendToMenu('Citations', {
-        label: 'Cite this JBrowse session',
-        onClick: session => {
-          /* do nothing for now, see below for example */
-        },
-      })
-    }
+```js
+configure(pluginManager) {
+  // configure runs in the web worker too, and there is no rootModel there —
+  // so guard on it before touching any menu
+  if (pluginManager.rootModel) {
+    // a new menu in the top toolbar, at index 4
+    pluginManager.rootModel.insertMenu('Citations', 4)
+
+    pluginManager.rootModel.appendToMenu('Citations', {
+      label: 'Cite this JBrowse session',
+      onClick: session => {
+        const widget = session.addWidget('CiteWidget', 'citeWidget', {})
+        session.showWidget(widget)
+      },
+    })
   }
 }
 ```
@@ -102,7 +98,18 @@ const { types } = pluginManager.jbrequire('@jbrowse/mobx-state-tree')
 
 `esmplugin.js`
 
+<!-- include: test_data/no_build_plugin/esmplugin.js -->
+
 ```js
+// The "Complete example" no-build plugin from
+// website/docs/developer_guides/no_build_plugin.md, hosted so the tutorial's
+// result figure (no_build_final) can be generated automatically instead of
+// hand-captured.
+//
+// That guide's code fences are GENERATED FROM THIS FILE (`<!-- include: -->`),
+// so editing here edits the published guide — run `pnpm sync-doc-snippets`
+// after, and write comments for guide readers. The `// #region` marker is
+// load-bearing.
 export default class MyPlugin {
   name = 'MyPlugin'
   version = '1.0'
@@ -121,10 +128,9 @@ export default class MyPlugin {
 
     const React = pluginManager.jbrequire('react')
 
-    const CiteWidget = props => {
-      // React.createElement can be used to add html to our widget component.
-      // We write out raw React.createElement code because JSX requires a build
-      // step and can't be used very easily in the no build plugin context
+    const CiteWidget = () => {
+      // React.createElement rather than JSX: JSX needs a build step, which is
+      // the one thing a no-build plugin does not have.
       const header = React.createElement(
         'h1',
         null,
@@ -154,13 +160,15 @@ export default class MyPlugin {
   }
 
   configure(pluginManager) {
+    // configure runs in the web worker too, and there is no rootModel there —
+    // so guard on it before touching any menu
     if (pluginManager.rootModel) {
+      // a new menu in the top toolbar, at index 4
       pluginManager.rootModel.insertMenu('Citations', 4)
 
       pluginManager.rootModel.appendToMenu('Citations', {
         label: 'Cite this JBrowse session',
         onClick: session => {
-          // upon clicking on this menu item, we need to add and show our new widget
           const widget = session.addWidget('CiteWidget', 'citeWidget', {})
           session.showWidget(widget)
         },

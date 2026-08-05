@@ -1,7 +1,12 @@
 // The "Complete example" no-build plugin from
 // website/docs/developer_guides/no_build_plugin.md, hosted so the tutorial's
 // result figure (no_build_final) can be generated automatically instead of
-// hand-captured. Keep this in sync with that doc's code block.
+// hand-captured.
+//
+// That guide's code fences are GENERATED FROM THIS FILE (`<!-- include: -->`),
+// so editing here edits the published guide — run `pnpm sync-doc-snippets`
+// after, and write comments for guide readers. The `// #region` marker is
+// load-bearing.
 export default class MyPlugin {
   name = 'MyPlugin'
   version = '1.0'
@@ -21,6 +26,8 @@ export default class MyPlugin {
     const React = pluginManager.jbrequire('react')
 
     const CiteWidget = () => {
+      // React.createElement rather than JSX: JSX needs a build step, which is
+      // the one thing a no-build plugin does not have.
       const header = React.createElement(
         'h1',
         null,
@@ -49,8 +56,12 @@ export default class MyPlugin {
     })
   }
 
+  // #region configure
   configure(pluginManager) {
+    // configure runs in the web worker too, and there is no rootModel there —
+    // so guard on it before touching any menu
     if (pluginManager.rootModel) {
+      // a new menu in the top toolbar, at index 4
       pluginManager.rootModel.insertMenu('Citations', 4)
 
       pluginManager.rootModel.appendToMenu('Citations', {
@@ -62,4 +73,5 @@ export default class MyPlugin {
       })
     }
   }
+  // #endregion
 }
