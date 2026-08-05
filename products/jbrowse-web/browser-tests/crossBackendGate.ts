@@ -75,20 +75,32 @@ const THRESHOLD_OVERRIDES: { match: string; threshold: number }[] = [
   { match: 'arcs-paired-end-rnaseq', threshold: 0.1 },
   { match: 'arcs-rnaseq-sashimi', threshold: 0.1 },
   { match: 'arcs-collapse-introns-sashimi', threshold: 0.05 },
-  // dense simulated-long-read pileups + their coverage strip: measured 11-17%,
-  // the coverage strip inflated by a 45px-tall image. matches inversion-pbsim /
-  // -linked / -coverage.
+  // Dense simulated-long-read pileups + their coverage strip. This entry was
+  // 20% and excused as "uniform edge shimmer over identically-shaped reads".
+  // **That was wrong, and the ceiling was hiding two real bugs.** The drifts
+  // were byte-identical on a real GPU and under swiftshader (16.71 / 7.97 /
+  // 5.49 / 2.30) — AA noise cannot survive swapping the rasterizer, so the
+  // backends were drawing different pixels.
   //
-  // **The "uniform edge shimmer" explanation this comment used to give is
-  // refuted.** These four drifts came in at 16.71 / 7.97 / 5.49 / 2.30 on a real
-  // GPU, and at 16.71 / 7.97 / 5.49 / 2.30 under swiftshader — the same figures
-  // to two decimals across two completely different rasterizers. AA/MSAA noise
-  // cannot survive swapping the rasterizer; a systematic difference in what gets
-  // drawn can. So this is the entry in the list most likely to be hiding a real
-  // canvas2d-vs-GPU bug, and it is the one to audit before `Long Reads and
-  // Inversions` joins CI_GATE_SUITES — a "passing" 16.71% is not a check.
-  { match: 'inversion-pbsim', threshold: 0.2 },
-  // coverage histograms whose SNP/mismatch ticks are 1px-edge sensitive
+  // One is fixed: canvas2d anchored its sub-pixel minimum-width expansion at the
+  // mark's LEFT edge while the shader's expandMinWidthX centers it, so every
+  // coverage mark past 1bp/px sat half a pixel right of the GPU's. Centering the
+  // canvas side took the worst pair 16.71% -> 7.32%.
+  //
+  // The rest is a second bug, still open: TRIANGLE_H is 4.5, so the interbase
+  // bar's top edge lands mid-pixel on BOTH backends — and they resolve that
+  // differently. Canvas2D alpha-blends ~40 overlapping 1px bars per column and
+  // converges to opaque; the GPU's coverage resolve happens once and stays at
+  // exactly 50%, which is why one whole row reads 128,0,128 against 191,127,191.
+  // Snapping that edge to a whole pixel on both sides should close it.
+  //
+  // 10% until then — above the measured 7.32% and half what it was. This number
+  // should keep falling; it is a record of what is still broken, not a setting.
+  { match: 'inversion-pbsim', threshold: 0.1 },
+  // coverage histograms whose SNP/mismatch ticks are 1px-edge sensitive.
+  // The left-anchor fix above took this from 5.49% to 2.24% — under the 3%
+  // default, so this entry is a candidate for deletion. Left in on one
+  // post-fix measurement; take a second reading and drop it.
   { match: 'inversion-paired-coverage', threshold: 0.08 },
   // 1px-tall linked-read mate connectors land a row apart between backends
   { match: 'alignments-long-reads-sv-linked', threshold: 0.1 },

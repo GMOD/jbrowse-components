@@ -47,6 +47,25 @@ export function coverageLayout(coverageHeight: number) {
   }
 }
 
+// Left edge of a mark whose width is about to be clamped to a 1px minimum.
+// Sub-pixel marks are CENTERED on their span, which is what
+// `expandMinWidthX` in alignmentsUniforms.slang does — anchoring at the left
+// edge instead put every canvas2d coverage mark half a pixel right of the GPU's
+// once the view passed 1bp/px, since that is where the clamp starts firing.
+//
+// It measured as the largest cross-backend divergence in the suite:
+// `targeted_inversion-pbsim-coverage` went 16.71% -> 7.32% on centering these,
+// and the residual is a separate bug (see the inversion-pbsim entry in
+// browser-tests/crossBackendGate.ts). `drawInterbaseSegments` below already
+// centered, with a comment saying so — these three call sites were the odd ones
+// out, not the convention.
+//
+// Returns a number rather than a {left,width} pair: these loops run per covered
+// bp, and an object per bin would allocate.
+function minWidthLeft(px: number, px2: number, w: number) {
+  return w < 1 ? (px + px2) / 2 - 0.5 : px
+}
+
 // colorType: 1=A 2=C 3=G 4=T 5=N. N and any unknown type fall back to the muted
 // grey. Mirrors snpColor() in snpCoverage.slang so Canvas2D and GPU match.
 export function snpColorForType(colorType: number, colors: CigarOpDrawColors) {
@@ -145,8 +164,9 @@ export function drawCoverageBins(
     // the coverage histogram all but vanished on flipped regions past 1bp/px.
     // Ordering the edges also fixes the cull, which assumed px < px2 and so
     // dropped bins straddling either viewport edge when reversed.
-    // Kept inline rather than shared: this loop runs per covered bp, and
-    // returning a {left,right} would allocate per bin.
+    // The edge resolution stays inline — this loop runs per covered bp, and
+    // returning a {left,right} would allocate per bin. `minWidthLeft` is shared
+    // because it returns a number and so allocates nothing.
     const pxA = bpToX(pos)
     const pxB = bpToX(pos + 1)
     const px = Math.min(pxA, pxB)
@@ -158,10 +178,11 @@ export function drawCoverageBins(
       bottom - normalizeDepth(f32[off + FIELD.bandBottom]!) * effectiveH
     const bandTop =
       bottom - normalizeDepth(f32[off + FIELD.bandTop]!) * effectiveH
+    const w = px2 - px + widthCompensation
     ctx.fillRect(
-      px,
+      minWidthLeft(px, px2, w),
       bandTop,
-      Math.max(px2 - px + widthCompensation, 1),
+      Math.max(w, 1),
       bandBottom - bandTop,
     )
   }
@@ -204,7 +225,13 @@ export function drawSnpSegments(
     const segBottom = bottom - yOff * barH
     const segTop = segBottom - segH * barH
     ctx.fillStyle = snpColorForType(f32[off + SNP_FIELD.colorType]!, colors)
-    ctx.fillRect(px, segTop, Math.max(px2 - px, 1), segBottom - segTop)
+    const w = px2 - px
+    ctx.fillRect(
+      minWidthLeft(px, px2, w),
+      segTop,
+      Math.max(w, 1),
+      segBottom - segTop,
+    )
   }
 }
 
@@ -319,6 +346,12 @@ export function drawModCovSegments(
     const segBottom = bottom - yOffset * barH
     const segTop = segBottom - h * barH
     ctx.fillStyle = `rgba(${r},${g},${b},${a})`
-    ctx.fillRect(px, segTop, Math.max(px2 - px, 1), segBottom - segTop)
+    const w = px2 - px
+    ctx.fillRect(
+      minWidthLeft(px, px2, w),
+      segTop,
+      Math.max(w, 1),
+      segBottom - segTop,
+    )
   }
 }
