@@ -439,6 +439,21 @@ function stateModelFactory(pluginManager: PluginManager) {
         if (!self.displayedRegions.length) {
           return
         }
+        // The fit needs a measured width, and `setHeight` can arrive before the
+        // first `setWidth` — a restored session brings its own
+        // `displayedRegions`, so the regions guard above doesn't cover it, and
+        // `self.width` throws by design until the view is measured. The
+        // SvInspectorView binds the two dimensions in separate autoruns and
+        // sizes the circular view's height unconditionally while sizing its
+        // width only when the circle is shown, so height-before-width is the
+        // normal path there, not an edge case.
+        //
+        // Deferring rather than fitting on a guessed width loses nothing:
+        // `setWidth` re-runs this under the same `autoFit` flag, so the fit
+        // happens as soon as the measurement exists.
+        if (self.volatileWidth === undefined) {
+          return
+        }
         const targetRadiusPx = Math.max(
           Math.min(self.width, self.height) / 2 - self.paddingPx,
           self.minimumRadiusPx,

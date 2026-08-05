@@ -122,3 +122,37 @@ test('resetView refits and clears the zoom-to-cursor pan', () => {
   expect(view.panY).toBe(0)
   expect(view.figureSize).toBeCloseTo(400)
 })
+
+// A restored session hands the view its `displayedRegions` before anything has
+// measured it, and the SvInspectorView then sizes the circle's height in one
+// autorun while sizing its width in another that only runs when the circle is
+// actually shown. So `setHeight` lands first, `autoFit` calls `fitToWindow`,
+// and `self.width` throws by design because nothing has set volatileWidth —
+// surfacing as an uncaught mobx reaction error ("SvInspectorView height
+// binding") that kills the binding, leaving the subviews unsized.
+test('height before width does not throw, and the fit lands once width arrives', () => {
+  const pluginManager = new PluginManager()
+  pluginManager.createPluggableElements()
+  pluginManager.configure()
+  const Session = types
+    .model('Session', {
+      view: stateModelFactory(pluginManager),
+    })
+    .volatile(() => ({
+      rpcManager: {},
+      configuration: {},
+      assemblyManager: { get: () => ({ initialized: true }) },
+    }))
+  const { view } = Session.create({ view: { type: 'CircularView' } })
+
+  // the restored-session order: regions, then height, with no width yet
+  view.setDisplayedRegions([region('chr1', 1_000_000)])
+  expect(view.autoFit).toBe(true)
+  expect(() => {
+    view.setHeight(400)
+  }).not.toThrow()
+
+  // deferred, not skipped: the measurement arriving is what performs the fit
+  view.setWidth(800)
+  expect(view.figureSize).toBeCloseTo(400)
+})
