@@ -30,6 +30,10 @@ function isNetworkNoise(text: string): boolean {
   )
 }
 
+// An ordinary laptop, and the point is that it is wider than the 820px at which
+// these sites collapse their sidebar: the content column a reader actually gets.
+export const DESKTOP_VIEWPORT = { width: 1440, height: 900 }
+
 export interface SmokeOptions {
   // absolute path to the built Astro `dist/` directory
   distDir: string
@@ -44,6 +48,11 @@ export interface SmokeOptions {
   workerSlug?: string
   // ms to settle after networkidle before asserting (lets islands mount/draw)
   settleMs?: number
+  // the window every page is loaded in. Set explicitly because puppeteer's own
+  // default is 800x600, which is *under* these sites' 820px sidebar breakpoint —
+  // so left alone, every check any of them has ever run has run against the
+  // collapsed-sidebar layout, in a content column no reader on a desktop sees.
+  viewport?: { width: number; height: number }
   // extra per-page assertions, run once the page has settled. Return one
   // message per failure (empty array = passed); they are reported like any
   // other error on that page. For anything a load-only check can't see — a
@@ -68,6 +77,7 @@ export async function smokeExamplesSite({
   slugs,
   workerSlug,
   settleMs = 4000,
+  viewport = DESKTOP_VIEWPORT,
   check,
   log = () => {},
 }: SmokeOptions): Promise<number> {
@@ -99,6 +109,7 @@ export async function smokeExamplesSite({
     const url = `http://localhost:${port}${base}/${slug ? `${slug}/` : ''}`
     const name = slug || 'index'
     const page = await browser.newPage()
+    await page.setViewport(viewport)
     const errors: string[] = []
     const workers: string[] = []
     page.on('workercreated', w => {

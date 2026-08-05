@@ -115,8 +115,9 @@ async function muiThemedStyling(page, when) {
 
 // The third measured claim on this site, and the one a reader feels rather than
 // reads: every demo is `client:only`, so its box is empty until ~460 KB of
-// engine has arrived, and `src/siteMeta.ts` holds it open at the height the demo
-// settles at so the page doesn't jump when that happens.
+// engine has arrived, and demoHeights.json — written by
+// `pnpm measure-demo-heights`, never by hand — holds it open at the height the
+// demo settles at so the page doesn't jump when that happens.
 //
 // That only works while the reservation matches reality, and a stale one is
 // worse than none — the page then jumps in whichever direction the number is
@@ -151,22 +152,23 @@ async function demoHeightBudget(page) {
   return boxes.flatMap(({ reserved, settled }) => {
     if (reserved === 0) {
       return [
-        `demo box reserves no height (it settles at ${settled}px) — add it to ` +
-          'demoHeights in src/siteMeta.ts, or the page jumps when the island mounts',
+        `demo box reserves no height (it settles at ${settled}px), so the page ` +
+          'jumps when the island mounts — run `pnpm measure-demo-heights`, then ' +
+          'build again to ship the result',
       ]
     }
     if (settled > reserved + TALLER_PX) {
       return [
         `demo settles at ${settled}px, taller than the ${reserved}px reserved ` +
-          'for it, so the page jumps when it mounts — raise it in demoHeights ' +
-          'in src/siteMeta.ts',
+          'for it, so the page jumps when it mounts — re-run ' +
+          '`pnpm measure-demo-heights`',
       ]
     }
     if (settled < reserved - SHORTER_PX) {
       return [
         `demo settles at ${settled}px, ${reserved - settled}px under the ` +
-          `${reserved}px reserved for it, which is now dead space — lower it in ` +
-          'demoHeights in src/siteMeta.ts',
+          `${reserved}px reserved for it, which is now dead space — re-run ` +
+          '`pnpm measure-demo-heights`',
       ]
     }
     return []

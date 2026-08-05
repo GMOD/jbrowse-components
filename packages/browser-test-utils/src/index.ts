@@ -1,5 +1,6 @@
 export { createTestServer } from './server.ts'
-export { smokeExamplesSite } from './examplesSmoke.ts'
+export { DESKTOP_VIEWPORT, smokeExamplesSite } from './examplesSmoke.ts'
+export { measureDemoHeights } from './examplesDemoHeights.ts'
 export {
   checkPluginTookEffect,
   checkSessionUrlRoundTrip,
@@ -47,6 +48,7 @@ export { reviewClientScript } from './reviewClient.ts'
 
 export type { TestServerOptions } from './server.ts'
 export type { SmokeOptions } from './examplesSmoke.ts'
+export type { DemoHeightOptions } from './examplesDemoHeights.ts'
 export type {
   BrokenCrossLink,
   BrokenLink,
