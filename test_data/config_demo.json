@@ -1906,6 +1906,16 @@
       }
     },
     {
+      "type": "HicTrack",
+      "trackId": "hic_gm12878_encode",
+      "name": "GM12878 in situ Hi-C (ENCODE ENCSR730CER)",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "HicAdapter",
+        "uri": "https://encode-public.s3.amazonaws.com/2022/04/25/c70efe98-342c-4334-a188-43174ddfb155/ENCFF563JTY.hic"
+      }
+    },
+    {
       "type": "AlignmentsTrack",
       "trackId": "htsget_demo",
       "name": "Htsget DNANexus",
