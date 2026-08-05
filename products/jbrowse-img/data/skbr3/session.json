@@ -672,14 +672,8 @@
               {
                 "id": "LrkLmPyAPc",
                 "type": "LinearWiggleDisplay",
-                "height": 275,
                 "configuration": "ngmlr_cov-LinearWiggleDisplay",
-                "selectedRendering": "",
-                "resolution": 25,
-                "fill": false,
-                "autoscale": "localsd",
-                "displayCrossHatches": true,
-                "constraints": {}
+                "resolution": 25
               }
             ]
           }
@@ -705,6 +699,21 @@
     },
     "connectionInstances": {},
     "sessionTracks": [],
+    "trackConfigDeltas": {
+      "ngmlr_cov": {
+        "trackId": "ngmlr_cov",
+        "displays": [
+          {
+            "type": "LinearWiggleDisplay",
+            "displayId": "ngmlr_cov-LinearWiggleDisplay",
+            "height": 275,
+            "autoscale": "localsd",
+            "displayCrossHatches": true,
+            "defaultRendering": "scatter"
+          }
+        ]
+      }
+    },
     "sessionConnections": [],
     "sessionAssemblies": []
   }
