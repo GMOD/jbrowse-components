@@ -201,14 +201,25 @@ def main():
         # looking like a clean answer.
         check('every segment at MAPQ 60', [r['mapq'] for r in rows], [60] * 3)
 
-        # The junction edges are pinned by the splice. The OUTER edges are not:
-        # they are where the reads happened to start and where --min-depth
-        # stopped supporting the consensus, so they are only bounded.
-        check('the first arm runs up to its junction', rows[0]['tend'], ARM1[2])
-        check('the templated insert is placed exactly',
-              (rows[1]['tstart'], rows[1]['tend']), (INSERT[1], INSERT[2]))
-        check('the inverted arm runs back from its junction',
-              rows[2]['tend'], ARM2[2])
+        # The junction edges are placed by the splice, but not to the base: with
+        # a 1% error rate at the breakpoint the aligner hands a few bases either
+        # way to whichever arm extends better, and which way it goes is a
+        # property of its version -- the same trap as the interior N below.
+        # Across six seeds the edges landed within 7 bp of the truth and never
+        # further, so a window that a real mis-splice (hundreds of bases, or the
+        # wrong locus entirely) still fails is what these say. The OUTER edges
+        # are looser again: they are where the reads happened to start and where
+        # --min-depth stopped supporting the consensus, so they are only bounded.
+        def near(actual, expected, slack=25):
+            return abs(actual - expected) <= slack
+
+        check_true('the first arm runs up to its junction',
+                   near(rows[0]['tend'], ARM1[2]), f"at {rows[0]['tend']}")
+        check_true('the templated insert is placed at its junctions',
+                   near(rows[1]['tstart'], INSERT[1]) and near(rows[1]['tend'], INSERT[2]),
+                   f"at {(rows[1]['tstart'], rows[1]['tend'])}")
+        check_true('the inverted arm runs back from its junction',
+                   near(rows[2]['tend'], ARM2[2]), f"at {rows[2]['tend']}")
         check_true('the first arm starts near the contig start',
                    rows[0]['tstart'] < ARM1[1] + 1500, f"at {rows[0]['tstart']}")
         check_true('the inverted arm stops near the truth',
@@ -226,20 +237,28 @@ def main():
                    abs(len(contig) - truth_length) < 1500,
                    f'{len(contig)} vs {truth_length}')
         # A HOLE, not a base. `strip('Nn')` already removed the unsupported
-        # tails, and coverage inside cannot dip below --min-depth: a read covers
-        # every position at or after its start, so the count of reads over a
-        # position only rises across the left margin and only falls across the
-        # right one. An interior N is therefore `samtools consensus` declining to
-        # call an AMBIGUOUS base, not an unsupported one -- and with a 1% error
-        # rate over 26 kb, whether a given position crosses that threshold is a
-        # property of the consensus caller's version. Asserting zero passed on
-        # samtools 1.23 and failed on the 1.22 CI installs, over two bases.
+        # tails, and depth cannot dip below --min-depth in between -- but that is
+        # a property of THIS fixture, not of sv_multihop: `touches_all` keeps
+        # only the spanning reads, and build_inputs starts each within 800 bp of
+        # the allele's start and ends it within 800 bp of its end, so every one
+        # of them covers the whole middle. Depth rises across the left margin,
+        # sits at 12, and falls across the right one. (A real run whose reads
+        # stop mid-allele can have a genuine hole, which is what sv_multihop's
+        # own "unsupported bases inside the contig" warning is for.)
         #
-        # What this check is for is a segment nothing placed, which is hundreds
-        # or thousands of bases, so it is stated as a fraction. The reconstruction
-        # itself is guarded by the three checks above it: the contig's length
-        # against the truth, the segments tiling it without a gap, and each
-        # segment landing at its known coordinates.
+        # An interior N here is therefore `samtools consensus` declining to call
+        # an AMBIGUOUS base at full depth, not an unsupported one -- swap the
+        # caller to `-m simple` and one lands at offset 6990 of 25862 under all
+        # 12 reads. With a 1% error rate whether a given position crosses that
+        # threshold is a property of the caller's version: asserting zero passed
+        # on samtools 1.23 and failed on the 1.22 CI installs, over two bases.
+        #
+        # What this check is for is a segment nothing placed, so it is stated as
+        # a fraction instead. That is not redundant with the checks above: from
+        # about a kilobase up the run also splits an arm into a fourth PAF row,
+        # but a 300-base hole passes every one of them -- an N run preserves the
+        # length, the segments still tile, and each still lands on its
+        # coordinates -- and only the fraction fires.
         interior_n = contig.upper().count('N')
         check_true('no unsupported stretch survives inside the contig',
                    interior_n <= len(contig) // 1000,
@@ -303,6 +322,13 @@ def main():
         # --- the evidence ---------------------------------------------------
         # End-to-end coverage with no clipping is what makes the reconstruction
         # believable; a wrong contig shows up as reads clipped at its junctions.
+        #
+        # Only clipping AWAY from the contig's own ends says that. The contig is
+        # trimmed to where --min-depth stops supporting it, so the reads that
+        # start earliest and end latest necessarily hang over those ends and clip
+        # by however far they overhang -- counting that counts the trim, not a
+        # junction. It stays under 200 bp on this seed and reaches 264 bp on
+        # another, with the reconstruction correct in both.
         clipped = 0
         spanning = 0
         for line in sh(
@@ -312,9 +338,12 @@ def main():
             if not f[0].startswith('span'):
                 continue
             spanning += 1
-            head, tail = re.match(r'^(?:(\d+)[SH])?', f[5]), re.search(r'(\d+)[SH]$', f[5])
-            if (int(head.group(1) or 0) > 200) or (int(tail.group(1)) > 200
-                                                   if tail else False):
+            head, tail = re.match(r'^(\d+)[SH]', f[5]), re.search(r'(\d+)[SH]$', f[5])
+            start = int(f[3])
+            end = start + sum(int(n) for n, op in re.findall(r'(\d+)([MIDNSHP=X])', f[5])
+                              if op in 'MDN=X') - 1
+            if (start > 20 and head and int(head.group(1)) > 200) or (
+                    end < len(contig) - 20 and tail and int(tail.group(1)) > 200):
                 clipped += 1
         check('every spanning read realigns to the reconstruction', spanning, 12)
         check('none of them clips at a junction', clipped, 0)
@@ -325,6 +354,14 @@ def main():
 def report(derive):
     if failures:
         print(derive.stdout)
+        # Which samtools and which minimap2, because that is the first question
+        # a failure here raises and the answer differs between a workstation and
+        # the CI image: consensus calling and breakpoint placement both move
+        # between releases, and a check that passes locally and fails on CI is
+        # usually saying that rather than saying the pipeline broke.
+        for tool in ('samtools', 'minimap2'):
+            v = subprocess.run([tool, '--version'], capture_output=True, text=True)
+            print(f'    {v.stdout.splitlines()[0] if v.stdout else tool + " ?"}')
         for f in failures:
             print(f'FAIL {f}')
         sys.exit(f'{len(failures)} pipeline check(s) failed')
