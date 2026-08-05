@@ -1,3 +1,8 @@
+---
+name: pangenome-graphs
+description: How a graph reaches JBrowse — what rGFA and plain GFA can and cannot say about coordinates and carriage, the one-node-per-bubble level of detail, ceilings measured on the hosted HPRC index, and the decisions that look like bugs and are not. Read before touching a graph adapter, a pangenome figure, or a linearized-variation lane.
+---
+
 # Pangenome graphs
 
 How a graph reaches JBrowse, what each format can and cannot say, and the

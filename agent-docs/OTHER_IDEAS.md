@@ -1,6 +1,6 @@
 ---
 name: other-ideas
-description: Future and exploratory concepts plus folded proposals, not current work. Read when brainstorming product direction.
+description: Future and exploratory concepts plus folded proposals, not current work — grouped by subsystem, with an index. Read when brainstorming product direction, or before re-proposing something that may already have been thought through here.
 ---
 
 # Ideas and future directions
@@ -8,37 +8,97 @@ description: Future and exploratory concepts plus folded proposals, not current 
 Exploratory / fanciful concepts — not committed work. Concrete action items live
 in [TODO.md](TODO.md).
 
-## Configuration & spec layer
+This file is long because it is where a proposal lands once it has been thought
+through but not scheduled, so several entries already contain the reasoning that
+kills the obvious version of the idea. **Skim the index for your subsystem before
+proposing something here** — a fair number of these were written precisely so the
+next session doesn't re-derive them.
 
-**ConfigurationLayer (fanciful).** A construct that acts as a "layer over" another
-config schema: same slots/types, but every slot's default is whatever the parent
-schema's *current value* happens to be. Use case: cascading config for subtracks
-where a child overrides a handful of slots and inherits the rest dynamically. Never
-built; the current `baseConfiguration` extension covers most of the practical need
-(inherits the *schema*, not the live values).
+Other docs cite sections of this file by title, so treat a section heading as a
+reference others may hold, not as free-form prose.
 
-**Adapter-wrapper shorthands.** `refNameAliases`/`cytobands` still require the
-full `{ adapter: { type: 'RefNameAliasAdapter', uri: '...' } }` wrapper — a
-`refNameAliases: { uri: '...' }` shorthand (defaulting `adapter.type`) would trim
-that via the same `preProcessSnapshot` idiom already in place there. Riskier
-extension (deferred, only if you want maximal terseness): auto-detect adapter
-type from file extension (`fasta: 'foo.fa.gz'` → infer `BgzipFastaAdapter`) —
-implicit magic, do only if comfortable with that.
+## Index
 
-**Declarative JBrowse spec.** Current config is internal MST serialization. Extend
-`session-spec` to a simpler data → encoding → mark grammar (Vega-Lite style). Infer
-adapter/display types, map encoding → colorBy/filterBy, fall back to raw config for
-advanced features. End users write clean schemas; plugin authors keep MST power.
-(`readConfObject`/`getConf` are hot-path MST traversals — caching would help.)
+**Rendering and displays**
 
-**R/ggplot2 export** (branch exists). Export session as an R script using
-ggplot2/Bioconductor for publication figures and reproducibility:
-alignments→geom_rect, coverage→geom_area, variants→geom_point, synteny→geom_segment,
-with Gviz/ggbio where applicable.
+- [Alignments](#alignments) — read-pair links, coverage decomposition by MAPQ /
+  discordancy / HP, large-region viewing for dense BAM, SBX duplex `yc` coloring
+- [Methylation plotting](#methylation-plotting) — HP-stratified aggregate lines,
+  per-read matrix
+- [Multi-sample variant display](#multi-sample-variant-display) — genotype-quality
+  masking, pedigree awareness, `featureColor` presets, haplotype-block coloring
+- [Hi-C](#hi-c) — user color threshold, normalization availability, A/B
+  compartments, inter-chromosomal UI
+- [Canvas glyph system](#canvas-glyph-system-pluginscanvas-renderfeaturedatarpc) —
+  the compact-mode label bug, and the glyph registry that was rejected
+- [Display height system redesign](#display-height-system-redesign) — three options
+  for retiring the `heightOverride` name
+- [Vertical real estate](#vertical-real-estate--the-scrolls-within-scrolls-problem) —
+  the view-level height allocator, and what the wheel machinery already does
+- [UI / UX](#ui--ux) — highlight API, super-compact mode, the `TrackOverlay` slot
 
-**Jupyter/Quarto integration.** Embed JBrowse in notebooks via a simple API
-(`jbrowse.view()`). The spec layer would simplify wiring;
-`@jbrowse/react-linear-genome-view` exists but config is too complex.
+**Synteny and comparative**
+
+- [Synteny / comparative](#synteny--comparative) — SV-type classification,
+  `syntenyGroupId`, all-vs-all PAF, PIF limits, block-level chaining, the
+  precision ceilings, and the vendor-format survey
+- [Ortholog / multi-genome navigation](#ortholog--multi-genome-navigation) —
+  pangene-backed gene locator, anchor-assembly model, tiered MAF
+- [Multi-hop / fusion chaining](#multi-hop--fusion-chaining-splitthreader-style) —
+  one shared `Chain` type behind three triplicated copies
+
+**Data, formats and search**
+
+- [Data formats](#data-formats) — partial-feature cues, circular genomes, Zarr VCF
+- [Local sequence-to-coordinates search](#local-sequence-to-coordinates-search-no-ucsc) —
+  genome-wide exact search vs real BLAT locally
+- [Expressive SV search language](#expressive-sv-search-language-for-the-sv-inspector-import-form)
+- [packages/add-track-core](#packagesadd-track-core) — one source of truth for
+  adapter guessing
+
+**Config, sessions and the spec layer**
+
+- [Configuration & spec layer](#configuration--spec-layer) — ConfigurationLayer,
+  adapter shorthands, the declarative spec
+- [Config & sessions](#config--sessions) — relative-URI resolution and why a
+  single ambient base is wrong
+- [Promotable-slot UI](#promotable-slot-ui-config-editor--track-menus) — how far
+  one promotable flag drives generated UI
+- [Admin tier for promotable display-type defaults](#admin-tier-for-promotable-display-type-defaults)
+- [Large track catalogs (100k+ tracks)](#large-track-catalogs-100k-tracks) —
+  discovery metadata split from full config
+
+**Plugins, platform and performance**
+
+- [Plugin extension points](#plugin-extension-points-widgetdetail-customization) —
+  why the five widget points are a bad abstraction, and the registry that fixes it
+- [Build & dependencies](#build--dependencies) — the MUI v10 cleanup, lazy display
+  behavior via `extendInstance`
+- [Offline genome packages](#offline-genome-packages-for-jbrowse-desktop) —
+  relocatable genome packs plus a download manager
+- [Deferred architecture-review items](#deferred-architecture-review-items-type-safety--displaychrome) —
+  including the theme-free `makeStyles` half
+- [Interaction perf](#interaction-perf-which-components-re-render-per-frame) — the
+  measured culprit is the coordinate ruler, not the alignments overlays
+- [Search / misc](#search--misc)
+
+**Export and interoperability**
+
+- [R export](#r-export) — one brain, N pens, and the render IR that has to earn
+  itself against SVG export first
+- [Session-spec expressiveness](#session-spec-expressiveness-a-vega-lite-style-channel-grammar) —
+  versioning, a uniform encoding block, reusable scales
+
+**Website, docs and tutorials**
+
+- [Website: copy-as-markdown / LLM-readiness](#website-copy-as-markdown--llm-readiness)
+- [Website: screenshot spec ↔ PNG staleness guard](#website-screenshot-spec--png-staleness-guard)
+- [Cancer SV datasets not yet shot](#cancer-sv-datasets-not-yet-shot) — including
+  the dead ends, so nobody re-checks them
+- [C-GIAB tutorial follow-ups](#c-giab-tutorial-follow-ups-need-data-prep--s3-upload-not-sandbox-runnable)
+- [Two tutorials the focus pass left open](#two-tutorials-the-focus-pass-left-open)
+- [Tutorial ideas (2026-07 audit)](#tutorial-ideas-2026-07-audit) — the demand
+  tally, priorities, and the two tutorials deliberately removed
 
 ## Alignments
 
@@ -196,6 +256,440 @@ allele-specific methylation (ASM). Options by ROI:
   already be achievable via `colorBy: modifications` + `sortBy: HP tag` — verify before
   building; if UX suffices, C needs only docs.
 - **Sequence:** B first (~2h), then A (~1d), C last or never.
+
+## Multi-sample variant display
+
+Ideas from an analysis of `LinearMultiSampleVariantDisplay` /
+`LinearMultiSampleVariantMatrixDisplay` (both share
+`plugins/variants/src/shared/MultiSampleVariantBaseModel.ts`). Read
+`plugins/variants/src/CLAUDE.md` first — hot-loop rules and the fetch/layout/render
+invalidation tiers constrain all of these.
+
+**Opt-in genotype-quality masking/dimming (biggest untapped signal).** The
+GT-only fast path (`feature.processGenotypes`, `shared/alleleCounts.ts`) never
+surfaces DP/GQ/AD/PL — getting them requires the heavier `feature.get('samples')`
+escalation the PS-phasing coloring already takes
+(`computeVariantMatrixCells.ts:99`). MVP: a `genotypeQualityThreshold` config
+slot (default `0` = off = today's path unchanged); when set, a genotype with
+`GQ < threshold` renders as no-call grey instead of its allele color — masking
+chosen over continuous dimming because it reuses the existing no-call rendering
+end-to-end (no shader/legend work). Bake the decision into the existing
+`cellColors` `Uint32Array` worker-side (same place `featureColor` already
+applies) — no new per-cell arrays, no shader change, no bigger payload. It's a
+**fetch input** (belongs in `rpcProps()`), threaded through
+`VariantRPC/executeVariantCellData.ts` into both `computeVariantCells.ts` and
+`computeVariantMatrixCells.ts`, with a menu entry (presets GQ ≥ 20/≥ 30 + custom
+dialog) cloned from `createMAFFilterMenuItem` under the "Filter by" submenu.
+Open question: whether masking should also feed the MAF filter (a masked het
+shouldn't count toward AF) — couples to `minorAlleleFrequencyUtils.ts`, defer
+past the independent MVP. Same plumbing then unlocks **VAF coloring from AD**
+(color het cells by allelic fraction — a somatic/mosaic cohort view) and the
+`featureColor` presets below (cheaper still, no new RPC field). `sampleInfo`
+(per-sample `maxPloidy`/`isPhased`) is already computed and shipped but only
+used internally for haplotype expansion — never surfaced to the user.
+
+**Pedigree / inheritance awareness (biggest biological ceiling).** There is no
+pedigree, affected-status, or trio model today — "grouping" is a flat `colorBy` on
+arbitrary `samplesTsv` columns (`shared/variantLegend.ts::getSampleGroupLegendItems`).
+If the sample metadata carried `father`/`mother`/`affected`, the per-sample genotypes
+(already fetched) are enough to compute and highlight **de novo mutations**, **compound
+hets**, and **Mendelian-error sites**. Aligns with the existing trio-crossover work.
+Large but high-value; start by defining the pedigree metadata shape (columns in
+`samplesTsv`, or a dedicated pedigree file) and a worker-side per-site classification
+that bakes a highlight color into the existing `cellColors` array (same
+bake-into-color discipline as `featureColor`), rather than a new render pass.
+
+**More `featureColor` presets (cheapest wins — no new RPC field).** `featureColor`
+already supports arbitrary jexl plus one built-in preset (consequence impact,
+`shared/variantConsequence.ts`, surfaced in the "Color cells by" menu). These read
+`INFO` fields the feature already carries, so they are near-clones of the consequence
+preset with zero worker-plumbing changes:
+- **gnomAD / AF rarity** — color by `INFO/AF` or `AF_popmax` so ultra-rare variants pop
+  (the classic cohort-filtering read).
+- **ClinVar significance** — `INFO/CLNSIG` → pathogenic/benign tiers.
+- **Specific SO consequence** — missense vs synonymous vs LOF, not just the 4 impact
+  tiers `getVariantImpact` currently collapses to.
+Each is a new entry alongside `CONSEQUENCE_IMPACT_JEXL` plus a legend key.
+
+**Per-site summary lane.** The matrix already reserves a resizable `lineZoneHeight`
+band above the grid (`components/LinesConnectingMatrixToGenomicPosition.tsx`). A
+companion lane showing **carrier count / allele frequency / call-rate** per site would
+give the "which sites matter" read that's missing. `mostFrequentAlt`'s AF is already
+computed for the MAF filter (`shared/minorAlleleFrequencyUtils.ts`) and then discarded —
+surfacing it is mostly a rendering task.
+
+**Filter & sort samples by metadata attribute.** Today you can *color* rows by a
+metadata column but not *show only cases* / *only one population*, and sort is limited to
+one anchor variant (right-click → Sort by genotype, which ranks by genotype there and
+breaks ties by flanking agreement — `shared/anchoredHaplotypeSort.ts`). A
+metadata-based sample filter is a natural extension of the existing `subtreeFilter`
+mechanism; a metadata sort extends `sortByGenotype`. Core cohort operations that are
+currently missing.
+
+**Local haplotype-block coloring (the mosaic a dendrogram cannot show).** Clustering
+asks for one distance over the whole window, but a haplotype is a mosaic of segments
+with different histories, so past the first recombination breakpoint that distance
+describes no position in particular. `shared/anchoredHaplotypeSort.ts` addresses the
+*ordering* half of this; the other half is expressing local structure in the cells
+rather than the row order. Per (row, column), compute the id of the set of rows
+identical over a window around that column and paint it with a stable hash color, rows
+staying in whatever order they are in — a crossover then reads as a color change
+mid-row. The plumbing already exists: `computeVariantCells.ts` ships a per-cell
+`cellColors: Uint32Array`, so this is a worker-side computation plus a color mode, not
+new render infrastructure (same bake-into-color discipline as `featureColor`).
+
+Three things separate this from HaploBlocker, whose equivalent plot reads as confetti:
+carry colors across columns (greedily match each column's partition to the previous
+one's by membership overlap and inherit the id, rather than re-deriving blocks
+independently); require a minimum block size in *both* variants and rows, painting
+below-threshold blocks grey; and ship the cheap single-donor variant first — pick one
+row as reference and paint every other row by match-length to it, which is one color
+ramp, trivially computed, and already shows where each row's shared segment ends.
+
+The principled version of the whole problem is that there is no one tree, there is an
+ARG. A tree-sequence adapter (tsinfer / ARG-Needle `.trees`) supplying the local tree
+at the view centre would let the existing sidebar render it unchanged, updating as you
+pan.
+
+**Frequency weighting for the clustering distance.** Every variant contributes equally
+to the genotype-matrix distance, so the largest LD block in the window numerically
+dominates the row ordering — a 10 kb window that is one haplotype block gives a clean
+tree, a 1 Mb window gives mush, and neither states which locus it is describing. A
+GCTA-style `1/sqrt(2p(1-p))` scaling would weight rare variants (informative about
+recent shared ancestry) above common ones; it is a small change to the imputation pass
+in `VariantRPC/genotypeMatrixEncoding.ts`, which already walks every site computing
+per-site means. Deferred because it changes results and wants a UI knob (a
+"Distance" choice next to the linkage selector) rather than a silent switch. LD
+pruning is the same idea one level up and a bigger job.
+
+**Matrix connector-line hover is thin and O(features)/mousemove.** In
+`LinesConnectingMatrixToGenomicPosition.tsx` the hover shows only `feature.get('name')`
+and rescans every line with `pointToSegmentDist` on each mousemove
+(`AllLines.onMouseMove`, ~:160-190); `getLineGeometry` is recomputed by several sibling
+components each render, and the crosshair-line and hovered-line are separate code paths
+computing the same `idx*w + w/2` geometry. Enrich the tooltip (position / ref / alt),
+add click-through to feature detail, and dedupe the geometry.
+
+**Matrix ref/no-call cells are silently non-interactive.** Hover requires a decoded
+genotype (`LinearMultiSampleVariantMatrixDisplay/components/VariantMatrixComponent.tsx:86`),
+so blank grid regions give no tooltip — reads as "the UI is dead here." Small fix.
+
+**Bug: multiallelic sites lose their VCF description.** `shared/buildVariantHit.ts:51`
+overwrites the real `description` with the literal `'multiple ALT alleles'` when
+`alt.length >= 3`, discarding the actual annotation. Straightforward correctness fix.
+
+**jb2export population coloring (`samplesTsv:` modifier).** The multi-sample variant
+matrix now renders real 1000 Genomes data correctly in jb2export — the old "static SSR
+renders the genotype matrix empty for real data" blocker was **stale** (verified by
+rendering both `display:multivariant` and `display:multivariantmatrix` against
+`ALL.chr11.phase3…genotypes.vcf.gz` → full 2,504-sample matrix). The remaining gap for the
+flagship figure is `colorBy:'population'`: it needs the VCF adapter's `samplesTsv`
+(sample→population map), which the CLI can't yet pass. Add a `samplesTsv:<uri>` track
+modifier → `samplesTsvLocation` on the adapter so a genome-wide callset can be colored by
+super-population instead of reading as reference-dominant grey.
+
+## Hi-C
+
+**User-adjustable color threshold.** A draggable slider on the HiC color legend (like
+Juicebox) so users set the saturation threshold manually; store as a
+`colorThresholdMultiplier` override. The 95th-percentile auto-scale is a good default
+but some datasets benefit from manual tuning.
+
+**Normalization availability check.** Before calling hic-straw with a normalization (e.g.
+KR), check whether a normalization vector exists for the current resolution/chromosome;
+if not, warn and fall back to NONE (mirrors Juicebox `contactMatrixView.js:checkColorScale`).
+hic-straw doesn't expose `hasNormalizationVector` directly — detect by catching empty
+results or inspecting masterIndex keys.
+
+**A/B compartment ratio mode.** A÷B log-ratio display (diverging red/blue) when a
+control/background map is loaded — needs a second `hicLocation` and `RatioColorScale`
+logic.
+
+**Inter-chromosomal UI.** `getHeader` already computes `hasInterChromosomalData` but
+never surfaces it; when true, show a chromosome-pair selector (chr1 × chr2) to navigate
+inter-chromosomal contact blocks without a manual multi-region view.
+
+## Canvas glyph system (plugins/canvas RenderFeatureDataRPC)
+
+Context after the 2026-07 emit-dispatch unification (`emitGlyph` — one recursive
+switch replacing the old top-level `GLYPH_EMITTERS` record + hand-written
+`processSubfeaturesLayout` child if/else). Two follow-ups came out of that pass.
+
+**Bug (deferred, documented in `labelUtils.ts`): compact/superCompact +
+`subfeatureLabels: 'below'` under-reserves the label row → stacked transcript
+labels overlap the next row.** `applyLabelDimensions` reserves a raw
+`LABEL_FONT_SIZE` in the worker's normal-mode units, baked into child y offsets;
+the main thread then scales *all* geometry by `HEIGHT_MULTIPLIERS`
+(compact 0.6 / superCompact 0.3). But the label is drawn at
+`labelFontSize() = LABEL_FONT_SIZE × LABEL_FONT_MULTIPLIERS`
+(0.85 / 0.7 — deliberately gentler so superCompact labels stay legible). So the
+reserved slot ends up smaller than the drawn label in dense modes. Correct in
+normal mode (both ×1), which is why tests didn't catch it. **Why it's hard:** the
+worker→main boundary is flat parallel arrays and the intra-gene stacking is
+computed in the worker, which is intentionally mode-agnostic so a compact toggle
+never triggers a re-fetch (see ARCHITECTURE.md). Passing the mode/ratio to the
+worker would break that; the correct fix is to move the subfeature-label row
+reservation to the main thread's `packRef` (LinearBasicDisplay/layout.ts), where
+`labelFontPx` and the mode are already known — i.e. stop folding the label gap
+into worker geometry entirely and add it as a separately-scaled row during
+packing. Narrow cosmetic overlap, so left unfixed until it's worth a dedicated
+browser-verified pass. Cross-ref the "Display height system redesign" section.
+
+**Evaluated and rejected: co-locating each glyph's layout+emit into one
+`{layout, emit}` module (a `Record<GlyphType, Glyph>` registry).** Not a win, for
+four grounded reasons — don't re-litigate without new information:
+1. **Real one-way layer boundary.** `glyphs/` (layout) imports *zero* rendering
+   deps (no color/theme/peptide/Collector) — only `Feature`, `types.ts`, geometry
+   helpers; `glyphEmitters.ts` (emit) is saturated with them (~41 refs). They
+   communicate purely through the `FeatureLayout` tree + `glyphType` tag, and
+   layout output (heights) feeds main-thread row packing *before* emit runs — a
+   genuine phase split, not incidental file layout. Co-location forces every glyph
+   module to straddle both worlds.
+2. **Detection stays centralized regardless.** `findGlyph` is a precedence-ordered
+   decision tree (`guide_rna` → CDS+mature → repeat → containerTypes →
+   container-children → CDS-child → segments → box) — routing logic about relations
+   *between* glyphs, inherently central. So "everything about a glyph in one file"
+   is unachievable anyway.
+3. **Reintroduces the indirection just removed.** A registry brings back the
+   `Record` and makes `Subfeatures`' recursion dispatch *through* it
+   (`GLYPHS[child.glyphType].emit(...)`) instead of a visible recursive call. Two
+   readable switches (`findGlyph` routing, `emitGlyph` emit) beat a registry of
+   paired objects that call back into the registry.
+4. **No drift pressure to relieve.** After unification, adding a glyph touches
+   `types.ts` (tag) + `findGlyph` (route) + one `emitGlyph` case, and the
+   `never`-default makes a missing emit case a compile error — the compiler already
+   enforces the coupling proximity would. The remaining "two dispatches" are two
+   *different concerns in two layers*, not a redundant dual-dispatch over the same
+   thing (which the old `GLYPH_EMITTERS`/`processSubfeaturesLayout` pair *was*).
+
+   Lighter variant also considered and skipped as lateral: collapsing the five
+   one-line layout wrappers (`box/segments/processed/crisprGuide/repeatRegion.ts`)
+   into a layout `switch` symmetric with emit — trades small dependency-free files
+   (preferred) for a switch with no correctness/drift benefit.
+
+## Display height system redesign
+
+`TrackHeightMixin` persists `heightOverride` (`types.maybe`, `>= MIN_DISPLAY_HEIGHT`); the
+`height` getter resolves `heightOverride ?? config.height`, and a `preProcessSnapshot`
+migration rewrites a bare `height` (or legacy `heightPreConfig`) in incoming snapshots to
+`heightOverride` — the `<name>Override` convention resolves the prop/getter name
+collision. `LinearMultiRowFeatureDisplay` layers a second knob (`rowHeightOverride`: `0` =
+auto-fit rows to `heightOverride ?? config.height`, `>0` = pinned px/row).
+
+Friction: (1) you can't set `height` natively in a display snapshot — only
+`heightOverride` works, via the back-compat migration; (2) for multi-row,
+`heightOverride` means "total" while `height` means "resolved total," easy to confuse;
+(3) two override knobs (`heightOverride` total vs `rowHeightOverride` per-row) interact
+non-obviously — setting `height` silently no-ops when a non-zero `rowHeight` is pinned;
+(4) the serialized name carries `Override`, which the user would rather it didn't.
+
+Redesign options, not yet implemented: **A** — give one display a native settable
+`height`, smallest blast radius, doesn't help other displays; **B** — refactor
+`TrackHeightMixin` globally to a persisted native `height` seeded from the config default,
+delete the migration, touches every display + needs broad testing, and loses today's
+`heightOverride !== undefined` signal for "user explicitly set a height" vs "using
+config default"; **C** — `types.snapshotProcessor` exposing `height` externally while
+keeping `heightOverride` internally, medium blast radius, only half-satisfies "no
+Override in the name." Whichever is chosen, decide the `height` (total) vs `rowHeight`
+(per-row) precedence for multi-row — simplest model: setting `height` wins as auto-fit.
+Any change here should be reconciled with the `<name>Override` convention in
+`~/.claude/CLAUDE.md`, which would need an explicit exception (or revision) for
+resolved-default values like height.
+
+## Vertical real estate & the "scrolls within scrolls" problem
+
+The app nests scroll surfaces (page scroll, per-track synthetic scroll, horizontal
+genome pan) in ways that fight the expectation of an easily scrollable web page.
+`fit-to-display-height` already helps. This note captures where to push next.
+
+### The goodness hierarchy
+
+Rank the outcomes, best first:
+
+1. **Everything fits the viewport → no scroll at all.**
+2. **Doesn't fit → densify/summarize until it fits → still no scroll.**
+3. **Genuinely can't summarize → scroll, made clean.**
+
+Fit-to-height lives at levels 1-2; composite/nested scroll improvements live at
+level 3. Level 1 beats level 3 unconditionally: eliminated scroll dominates
+improved scroll. So the master lever is **minimizing vertical footprint**, not
+making nested scroll nicer.
+
+Why vertical is the right axis to optimize: the horizontal axis carries all the
+meaning (it is the genome, navigated by pan/zoom); the vertical axis carries no
+genomic information, it is pure stacking overhead. Every vertical pixel reclaimed
+is returned to genome context and removes potential scroll. It is the only axis
+where "use less" is strictly a win.
+
+### What the current wheel/scroll machinery already does (don't reinvent)
+
+Grounding check against the code corrected two tempting-but-wrong premises:
+
+- `useWheelScroll.ts` already separates axes: plain wheel `deltaX` -> horizontal
+  pan, `ctrl`/`meta` (or opt-in `scrollZoom`) -> zoom, `deltaY` -> the track's own
+  vertical scroll. `trackPointerPresence` drops accumulation when the cursor
+  leaves so gestures chain to the page. `scrollLatch.ts` reproduces native
+  scroll-chaining. So "gesture ambiguity" is largely already solved.
+- Per-track vertical scroll is **synthetic on purpose** (`TrackRenderingContainer`
+  is `overflow: hidden`; each canvas display owns a sticky-canvas +
+  `VerticalScrollbar` overlay redrawing at `scrollTop`). Native overflow here
+  previously produced double/flickering scrollbars. So "unify into one native
+  scroll surface" walks back into a fixed bug.
+
+The residual pain is therefore **panel count and handoff**, not gesture
+ambiguity - which is exactly why footprint reduction (fewer panels that need to
+scroll) is the higher lever.
+
+### Lever A: view-level height allocator (fit the whole stack, not each track)
+
+Today heights are **bottom-up**: `LinearGenomeView.height` = `Σ trackHeight(t) +
+chrome`, and `trackHeight(t)` (model.ts:742) reads `display.height` (config slot,
+or content-height in fit mode). Nothing constrains the sum to a viewport. Current
+fit-to-height fits each track to *its own* content; ten content-fit tracks can
+still overflow. The higher-lever version inverts to **top-down**: a budget `B` is
+distributed across tracks so the whole stack targets the viewport.
+
+Give each display three numbers instead of one:
+
+- `naturalHeight` - what content wants (content height in fit mode; the pinned
+  slot value if the user drag-resized)
+- `minHeight` - `MIN_DISPLAY_HEIGHT`
+- `allocatedHeight` - what the view grants
+
+The display renders at `allocatedHeight`; internal scroll appears only when
+`allocatedHeight < naturalHeight`.
+
+Allocation is **water-filling / max-min fairness**:
+
+```
+B = availableViewportHeight − chrome (headers, scalebar, resize handles)
+
+if Σ naturalHeight ≤ B:
+    grant everyone naturalHeight        // level 1 — fits, no scroll, done
+else:
+    waterfill:                          // max-min fairness
+      share = B / nTracks
+      tracks wanting ≤ share keep their full naturalHeight
+        and release their surplus back into the pool
+      repeat with the remaining tracks + remaining budget
+      the dense tracks split whatever's left, and only they scroll
+```
+
+This encodes the intuition: a 2-feature gene track costs 2 rows and shows whole;
+a deep pileup absorbs the deficit and scrolls internally; the **stack** fits the
+screen. Sweet spot is the common mixed session (genes + coverage + one pileup):
+one-panel-scroll -> zero. Degrades gracefully to "fair small shares" when every
+track is dense; when all are sparse, today's fit-to-height already handles it.
+
+**Where it slots in:** `trackHeight(track)` at model.ts:742 is already the single
+chokepoint deciding a track's vertical box (it centralizes minimized-collapse).
+It becomes:
+
+```
+trackHeight(track) = allocations.get(track.id) ?? track.displays[0].height
+```
+
+where `allocations` is one view-level MobX `computed` over
+`tracks.map(naturalHeight)` and `B`, recomputing reactively as content heights
+settle.
+
+**Four real wrinkles:**
+
+1. **Where `B` comes from** - embedded-vs-app split. Full app has a measurable
+   fixed shell; embedded LGV often lives in an unbounded, grow-to-content
+   container. So `B` must be **opt-in** (a `viewHeight`/budget config); unset ->
+   fall back to today's bottom-up behavior (also makes it non-breaking).
+2. **`naturalHeight` is async** - it comes from worker render/layout, so
+   allocation is reactive, settling as data arrives (MobX computed handles it).
+   Trap: `naturalHeight` must be the *unconstrained* content height, never
+   derived from the current `allocatedHeight`, or fit-scaling displays (the
+   wiggle `renderTransform` path) oscillate. Displays must expose
+   content-height-at-natural-density independent of what they're allocated.
+3. **One resolved getter** (the `effectiveRowHeight` pattern from CLAUDE.md):
+   every consumer - render container, SVG export (`svgcomponents/util.ts`
+   `totalHeight`), y-offset walk, overlays - reads `allocatedHeight`, never the
+   raw slot. `trackHeight()` already centralizes layout; route SVG export through
+   it too.
+4. **Drag-resize is a constraint, not a variable** - a user-pinned height enters
+   the waterfill as fixed (compressed last, or not at all), else the allocator
+   instantly undoes the drag. Maps onto the existing slot-set (pinned) vs
+   slot-unset (fit) distinction.
+
+### Lever B: reclaim non-data chrome (cheap, lossless)
+
+Data density is the hard, lossy lever. Label bars, headers, resize handles, and
+inter-track gaps are pure overhead with no genomic information, paid once per
+track. Ten tracks x ~30px is a whole track's worth of genome context spent on
+furniture. Overlaying labels onto data (floating-label machinery already exists),
+thinning gaps, and collapsing headers is footprint savings with **zero
+information loss**. Composes with Lever A: less chrome -> bigger `B` -> more fits
+natively before the waterfill ever compresses anything.
+
+### Honest floor & scoping
+
+- A 100-sample MAF or a very deep pileup cannot be fit without losing detail, so
+  level 3 (scroll) never fully disappears - but even there the right response is
+  summarize-to-fit (level 2), with scroll as the genuine last resort.
+- `useWheelScroll` is LGV-specific. Dotplot/synteny are genuinely 2D (vertical
+  *is* a genome axis); none of the "vertical = document" logic applies there.
+- Any grow / allocator change is gated on deployment context (embedded vs full
+  app), because `TrackRenderingContainer` is shared.
+- We lack data on which nesting users hit most; the allocator is a hypothesis.
+  Cheapest de-risk: prototype the `allocations` computed behind an opt-in
+  `viewHeight`, wire `trackHeight()` to it, and watch whether the async settling
+  behaves before investing further.
+
+## UI / UX
+
+**CSS Custom Highlight API for search text.** `HighlightText` in `FacetedSelector`
+manually splits strings and wraps matches in `<mark>` tags. The
+[CSS Custom Highlight API](https://developer.mozilla.org/en-US/docs/Web/API/Highlight)
+highlights `Range` objects without touching the DOM (no extra elements, no re-render on
+query change); jbrowse-desktop already uses it. Complication in the faceted selector:
+virtual rows mount/unmount on scroll, so ranges must be re-registered in a scroll-aware
+effect. Firefox ≥117, Chrome ≥105, Safari ≥17.2.
+
+**Height resize.** Double-click resize handle, drag to resize, prevent shrinking,
+auto-shrink toggle.
+
+**Canvas offscreen buffer.** Margin rendering to avoid feature re-juggling on small
+pans/zooms (like `plugins/sequence`).
+
+**Super-compact mode** for very dense gene annotations (pack features even tighter).
+
+**Side labels for genes.** Gene-name labels in the left/right margin instead of inline.
+
+**Global scrollZoom.** Per-view → global setting.
+
+**Isoform expansion.** Click a collapsed isoform to expand all for that gene.
+
+**Init/loading feedback.** Distinguish initialized vs loading state in LinearGenomeView.
+
+**Collapsed multi-transcript indicator.** When a gene track collapses to the longest
+coding transcript per gene, users have no cue it happened. Options considered, ranked by
+noise vs discoverability: (1) hover-tooltip-only ("4 transcripts · showing longest
+coding") — invisible until hovered, good companion to anything else but too quiet alone;
+(2) **recommended** — small stack/layers icon next to the track name in the header, shown
+only when collapse is active, tooltip explains + optionally toggles "show all"; one icon
+per track, not per gene, sits with existing track controls; (3) corner badge overlaid on
+the render area — more discoverable, but floats over the data; (4) per-gene stacked-shadow
+glyph — communicates without text but is the noisiest since it repeats per gene.
+
+**Display floating-chrome overlay slot (`TrackOverlay`).** A display that draws
+top-corner chrome inside its own render — today the MultiWiggle `OverlayColorLegend`, and
+any future in-canvas badge/score-key — is sealed inside `TrackRenderingContainer`'s
+`contain: strict` stacking context, so the sibling `PaddingBlocks` (region separators +
+elided/boundary blocks) *always* paints over it in multi-region / whole-genome views; the
+chrome can't `z-index` its way out of a contained box. `TrackLabel` dodges this only
+because it's a direct `TrackContainer` child (`zIndex:200`), outside the contained
+subtree. Generalize that escape: add an optional `TrackOverlay` component to the display
+(mirroring the existing `DisplayBlurb` hook, but rendered by `TrackContainer` *after*
+`<PaddingBlocks>`, `pointerEvents:none`, top-right by default). MultiWiggle feeds its color
+legend through it for the interactive path while `renderSvg` keeps compositing the legend
+into the exported SVG (add a suppress-in-SVG flag so the two paths don't double-draw).
+Fixes the `cnv` screenshot's masked legend at the source and gives any display a clean
+home for floating chrome that must sit above region separators. Blast radius = just the
+interactive overlay-multiwiggle legend.
 
 ## Synteny / comparative
 
@@ -724,11 +1218,406 @@ score (the `de:f:`/`pafIdentity` path exists), drawn by the GPU synteny renderer
 per-base fetch; (b) conservation graph — a per-bin "fraction matching the anchor" wiggle
 (or reuse a phastCons/phyloP bigWig); (c) fine — the current per-base `LinearMafDisplay`,
 only below a bp/px threshold. New work is the preprocessing CLI; rendering reuses
-synteny + wiggle + MAF. (Companion to the bigMafSummary work in TODO.md.)
+synteny + wiggle + MAF. (The `bigMafSummary` half of this shipped — `BigMafAdapter`'s
+`summaryAdapter` slot feeding `LinearMafDisplay`'s `showSummary` zoom-out path —
+so what is left here is the coarse synteny and conservation-graph tiers.)
 
 References: `~/src/vendor/{pangene,impg}`; PR GMOD/jbrowse-components#4985;
 [NCBI MCGV](https://www.ncbi.nlm.nih.gov/mcgv) (CGV paper
 <https://doi.org/10.1371/journal.pbio.3002405>).
+
+## Multi-hop / fusion chaining (SplitThreader-style)
+
+Design only, no code. Show cancer multi-hop rearrangements / gene fusions the
+way [SplitThreader](https://github.com/marianattestad/splitthreader) does —
+reference-space arcs (its panel A) *and* a linearized "fusion contig" axis with
+ribbons to the reference (its panel B). User's wish: *"chain everything
+together similar to launch → linear read vs ref."*
+
+A split read is a walk through a breakpoint graph (nodes = positions, edges =
+junctions); a read with SA segments `A→B→C` is a 2-hop path, a fusion is the
+consensus path many reads agree on. JBrowse **already has both panels**, but
+each is single-read / per-read, and the chain-walk logic is **triplicated**:
+
+- **Panel A (reference-space arcs):** bezier overlay (`readGroupConnections`/
+  `chainSubRead` — on-screen only) + coverage arcs (`unpairedReadChain`/
+  `unpairedChainArcs`, `features/arcs/compute.ts` — inserts off-screen SA
+  segments) + breakpoint-split-view `AlignmentConnections` (`readChainSegments`/
+  `markHiddenSegments` — SA-aware + marks hidden).
+- **Panel B (query-space linear chain):** the "Linear read vs ref" launcher —
+  `buildReadVsRefFeatures` (one read + SA → segments sorted by
+  `clipLengthAtStartOfRead`) → `buildReadVsRefTemporaryAssembly` (temp assembly
+  whose one chromosome *is* the read) → `LinearSyntenyView`.
+
+**Unifying model: sources → `Chain` → sinks.** Every current copy already builds
+the `segments` half; the enabling refactor is one shared `Chain` type
+(`{segments: ChainSegment[]; junctions: Junction[]}`) with an insert-node vs
+mark-hidden flag for off-screen hops, plus one `renderChainPaths(junctions,
+projector, style)` emitter over the shared `bezierConnectorPath`
+(`packages/core/src/util/bezierConnector.ts`). Shared primitives already
+single-source: `readEndpoints.ts` (`connectionEndpointBps`), `featurizeSA`,
+`splitInversion`. SA tags already cross the worker boundary
+(`PileupDataResult.readSuppAlignments`/`readClipAtStart`/`readNextPositions`),
+so chain-building stays main-thread — no worker changes for phase 1.
+
+Phasing: **P0** extract the shared `Chain` behind one builder (pure refactor;
+watch the "no leaky abstractions" rule — the only host seam should be a small
+`ChainProjector` of `screenX/screenY/reversed`; if it gets fat, keep the
+copies). **P1** generalize `buildReadVsRefFeatures` single-read → multi-segment
++ a multi-read "Linear fusion vs reference" launcher, and "linearize this
+rearrangement" from a breakpoint-split-view `layoutMatches` chunk (which is
+*already* an ordered `Chain`). **P2** SA-aware bezier overlay + off-screen
+anchor (A1 baseline-drop / A2 edge-clamp / A3 multi-region-only). **P3**
+`aggregateJunctions` consensus → breakend features → breakpoint-split-view
+renders them through its existing `getMatchedBreakendFeatures` path (a consensus
+junction *is* a breakend; the alignments track discovers the fusion, the
+breakpoint view renders it as it would a called SV — no new draw path).
+
+Open decisions (need user input before coding): what the fusion contig is built
+from (curated reads → consensus junctions → VCF breakend walk — all additive
+sources feeding the same sink, ship in that order); the single-region off-screen
+anchor (A1/A2/A3); aggregation scope (visible-reads main-thread vs whole-region
+worker scan); whether P3's breakend bridge is in scope. Minor findings noted:
+`PileupBezierOverlay` `onClick` always selects `arc.id1` (a multi-hop `id2`
+endpoint is unreachable via click); `arcIsVisible` culls by endpoint Y only (a
+same-row bowed curve just off-screen can be dropped, harmless).
+
+## Data formats
+
+**Partial-feature truncation cue.** NCBI eukaryote GFFs pervasively mark
+incomplete annotations with `partial=true` plus `start_range=.,N` / `end_range=N,.`
+(a `.` on the open side) — a gene/mRNA/CDS whose true boundary runs off the
+assembled sequence or past an assembly gap. Today these render with an ordinary
+square cap, so a biologically truncated feature looks identical to a complete one
+and the "this is partial" signal is silently dropped. Cue: draw a ragged/open
+(zig-zag or feathered) cap on the open end(s) — only the end flagged `.` gets it,
+so a 5'-partial gene is ragged on the left only. Cost is a full vertical slice, not
+a tweak: the **worker** reads the attrs in `RenderFeatureDataRPC` and derives a
+per-feature 2-bit open-end flag (5'/3', strand-corrected); that flag is threaded
+through the **packed render arrays** as a new per-feature byte (mind the
+byte-offset/UBO layout invariants called out in CLAUDE.md and
+`GpuCanvasFeatureRenderer.ts`); and the **glyph** draws the open cap in a new
+`.slang` source (run `pnpm gen:shaders`, never hand-edit `*.generated.ts`) with a
+matching Canvas2D fallback path. Worth a dedicated task with browser verification
+on a real NCBI eukaryote GFF (e.g. a partial gene near a contig edge) before
+sweeping the shader/packing layers. Companion to the gff-nostream parser fix that
+stopped dropping top-level discontinuous features (cDNA_match/EST_match).
+
+**Circular genomes / origin-spanning features.** NCBI GFF3 encodes a feature that
+crosses the origin of a circular replicon as a single line whose `end` runs past
+the sequence length into "virtual space" (and flags the landmark with
+`Is_circular=true`) — common in the bacterial/organellar/viral genomes we serve
+from jb2hubs. Today this misrenders three ways: the feature draws into virtual
+space past the contig end (best case clipped at the displayed-region edge); the
+wrapped portion is unreachable at the origin (its tabix-indexed start sits near
+the contig end, so a `0..N` query never returns it — and redispatch only expands
+to bounds of features *already found*); and there's no topology flag anywhere in
+core (`Region` is `refName/start/end/reversed` only; assembly/refseq have no
+`isCircular`; the parsed `Is_circular` is inert; the circular-view plugin is a
+chord diagram, not a feature viewer). Two architectures: **(B) a true circular
+(polar) viewer** — biologically honest but a whole new rendering + GPU-layout
+stack; the chords-only circular-view is not a starting point. **(A)
+repeated-linear concatenation (recommended)** — the key unlock is that
+`displayedRegions` *already is* linear concatenation (LGV space sums `Region[]`
+end-to-end, each region carrying true coords), so listing the contig twice gives
+the `2L` space, scroll-through-origin, and true-coordinate location box/search
+*for free*. Seam-abutment: region1 `chr:0-L` + region2 `chr:0-L` with zero
+`interRegionPadding` makes a `[L-1200, L+1200]` gene draw as `[L-1200,L]` +
+`[0,1200]` halves that *touch* at the seam and read continuous (the one
+unsolvable bit is a connector line crossing the seam — JBrowse never lays out one
+glyph across a region boundary). The only real new code is a **circular adapter
+decorator** (parameterized by `L`): re-emit any feature with `end > L` as two
+halves, issue a modular wrap-fetch of `[L-margin, L]` when querying near the
+origin (same muscle as `Gff3TabixAdapter.ts:84` redispatch), and key both halves
+by canonical `pos mod L` so copies/halves reconcile. De-risk cheaply: **Step 0 is
+zero code** — hand-set displayedRegions to the contig twice with seam padding
+zeroed on pneumobrowse to eyeball the UX before building the decorator. Confirm
+first whether jb2hubs has origin-*spanning features* or just `Is_circular`
+contigs with no crossing genes (if the latter, this is purely a cosmetic origin
+marker).
+
+**Multi-feature files.** Multiple types per row (e.g. chromatin BED with repeat types).
+
+**Zarr VCF.** Variant rendering from Zarr (more efficient than tabix for large cohorts).
+
+**Rolling average.** Smoothing option for wiggle/coverage (rolling mean, rendered as a
+line).
+
+## Local sequence-to-coordinates search (no UCSC)
+
+The BLAT/in-silico PCR dialogs only work for assemblies UCSC hosts; a genome
+opened from local files now gets an up-front "no UCSC database" warning instead
+of an errAbort after a round trip. That leaves "where is this sequence" genuinely
+unanswerable for a local assembly, and there are two very different ways to close
+it.
+
+**Genome-wide exact search (recommended).** What people paste is usually a
+primer, probe, exon or read, and they want exact-or-near-exact placement — a
+substring search, not an alignment. Most of it already exists:
+`SequenceSearchAdapter` plus the LGV's **Sequence search** dialog scan the
+reference and build an on-the-fly track. Two gaps: the adapter is scoped to the
+visible region ±10 kb (`SequenceSearchAdapter.ts`), so it cannot answer a
+genome-wide question, and it does not navigate — though the navigate-to-best-hit
+and notify path from `plugins/blat/src/ucscShared.ts` is now there to reuse.
+So: a genome-wide mode that runs per-refName in the RPC worker and emits features
+as it finds them (no eager materialization across the boundary), feeding the same
+track + navigate path. Cheap and fast for volvox, a bacterium, yeast, a single
+chromosome. hg38 means streaming ~3 GB of sequence, so the real design question
+is the size gate and cancellation, answerable from `assembly.regions`.
+
+**Real BLAT locally (separate decision, not an extension of the above).** kent's
+`blat` / `gfServer` + `gfClient` buys gapped, mismatch-tolerant and protein
+search that a substring scan cannot do. Costs: a per-platform native binary in
+the Desktop package (Electron main can shell out, the browser cannot, so this
+permanently splits the two products), a `gfServer` index built per assembly
+before any query works, and kent licensing that is free for academic/nonprofit
+but not commercial — a distribution question, not a technical one. Worth it only
+for a concrete need to align inexactly against a genome UCSC does not host.
+(Related: `dynablat-01.soe.ucsc.edu:4040` handshakes over raw TCP for GenArk
+hubs, which Electron main could reach and a browser could not, but raw gfServer
+returns seed/tile hits that gfClient has to stitch into PSL.)
+
+**Do not auto-fall-back** from BLAT to a local search. They answer differently
+precise questions, and silently swapping one for the other is how a user
+concludes their sequence "isn't in the genome" when it is there with two
+mismatches.
+
+## Expressive SV search language for the SV inspector import form
+
+Current import-form filtering matches query strings like `CHR2=17` against the
+spreadsheet columns — narrow (won't catch variants *originating* from chr17, only
+those naming it in a column). A richer SV query language (by breakend chrom/pos,
+type, length range, INFO fields, AND/OR) would be more useful. Net-new feature,
+not a screenshot defect. (Was: sv_inspector_importform_filtered review item.)
+
+## packages/add-track-core
+
+A minimal shared package (zero external deps) for adapter guessing logic, so the CLI and the
+plugins don't duplicate file-extension → adapter-type and adapter-type → track-type mappings.
+
+The CLI's `guessAdapter`/`guessFileNames`/`adapterTypesToTrackTypeMap` in
+`products/jbrowse-cli/src/commands/add-track-utils/adapter-utils.ts` and the plugins'
+`Core-guessAdapterForLocation` / `Core-guessTrackTypeForLocation` extension points both encode
+the same knowledge. When a new adapter is added the list must be updated in both places, which
+is how bugs creep in (e.g. missing BedGraphTabixAdapter, unescaped regex dots).
+
+A shared package would centralize at least the mappings (regex constants, type maps). The CLI
+flat-function path and the plugin extension-point path could remain separate consumers; they
+just import from one source of truth.
+
+Motivation: avoid CLI depending directly on `packages/core`, and eliminate the duplication
+that causes drift bugs.
+
+## Configuration & spec layer
+
+**ConfigurationLayer (fanciful).** A construct that acts as a "layer over" another
+config schema: same slots/types, but every slot's default is whatever the parent
+schema's *current value* happens to be. Use case: cascading config for subtracks
+where a child overrides a handful of slots and inherits the rest dynamically. Never
+built; the current `baseConfiguration` extension covers most of the practical need
+(inherits the *schema*, not the live values).
+
+**Adapter-wrapper shorthands.** `refNameAliases`/`cytobands` still require the
+full `{ adapter: { type: 'RefNameAliasAdapter', uri: '...' } }` wrapper — a
+`refNameAliases: { uri: '...' }` shorthand (defaulting `adapter.type`) would trim
+that via the same `preProcessSnapshot` idiom already in place there. Riskier
+extension (deferred, only if you want maximal terseness): auto-detect adapter
+type from file extension (`fasta: 'foo.fa.gz'` → infer `BgzipFastaAdapter`) —
+implicit magic, do only if comfortable with that.
+
+**Declarative JBrowse spec.** Current config is internal MST serialization. Extend
+`session-spec` to a simpler data → encoding → mark grammar (Vega-Lite style). Infer
+adapter/display types, map encoding → colorBy/filterBy, fall back to raw config for
+advanced features. End users write clean schemas; plugin authors keep MST power.
+(`readConfObject`/`getConf` are hot-path MST traversals — caching would help.)
+
+**R/ggplot2 export** (branch exists). Export session as an R script using
+ggplot2/Bioconductor for publication figures and reproducibility:
+alignments→geom_rect, coverage→geom_area, variants→geom_point, synteny→geom_segment,
+with Gviz/ggbio where applicable.
+
+**Jupyter/Quarto integration.** Embed JBrowse in notebooks via a simple API
+(`jbrowse.view()`). The spec layer would simplify wiring;
+`@jbrowse/react-linear-genome-view` exists but config is too complex.
+
+## Config & sessions
+
+**Global config overrides.** Admin-level defaults (e.g. show paired arcs by default)
+across all tracks.
+
+**Hash password in share links.** Password only needed at startup (read then deleted) —
+store in URL hash, clear on first navigation.
+
+**LGVSyntenyDisplay "Query name" coloring.** Re-implement the removed color-by-query-name
+(hash to color).
+
+**Breakpoint connectors.** Smooth out the awkward blue/green curves (currently arbitrary
+Y increase/loop).
+
+**BSV overlay: fix model-derived track Y positions.** `getTrackYOffset` sums
+`headerHeight + scalebarHeight + Σ(track.height + RESIZE_HANDLE_HEIGHT)` but diverges from
+the actual CSS layout (likely a gap/border/constant mismatch). The current workaround is a
+`getBoundingClientRect` rAF loop in `useDomTrackYOffsets` (~60fps re-renders). Finding the
+discrepancy — `console.log(view.getTrackYOffset(id), trackRef.top − svgRef.top)` on a
+loaded view — would let us delete the DOM measurement and rely on MobX reactivity alone.
+
+**Relative-URI resolution: `bigWigs` shorthand can't be relative (issue #3562), and
+`addRelativeUris` is shape-heuristic.** Today relative URLs resolve via a three-stage
+pipeline: `addRelativeUris` (`packages/product-core/src/sessionUtils.ts:333`) walks raw
+config JSON and stamps a synthetic `baseUri` next to every object with a `uri` key;
+`UriLocation` (`packages/core/src/util/types/mst.ts:49`) carries `baseUri` inline; and
+`resolveUriLocation` (`packages/core/src/util/io/index.ts:40`) does `new URL(uri, baseUri)`
+at fetch time. Coupled boilerplate hangs off it: each adapter's `preProcessSnapshot` threads
+`baseUri: snap.baseUri` into its real fileLocation slot + every sidecar (Gff3Tabix, Bam,
+Cram, TwoBit, Hic, Maf, Trix, Cytoband, the shared `normalizeUriSnapshot`); export strips the
+synthetic keys (`jbrowseModel.ts:35` `removeAttr(…, 'baseUri')`, `HeaderButtons.tsx:36`); and
+`addRelativeUris` must be re-invoked at every ingest site (jbrowse-web loader, desktop hubs,
+jbrowse-img `resolveHub`, connection `doConnect`, plus 3 hand-rolled copies in
+react-app examples-site).
+
+**Root cause of #3562:** the walk's detection rule is a heuristic on JSON *shape* — "an
+object with a `uri` key is a location." A MultiWiggle `bigWigs: ['a.bw', 'b.bw']` is an array
+of **bare strings** with no `uri` key, so nothing gets a base; `MultiWiggleAdapter.ts:99`
+then builds `{ uri: 'a.bw' }` with no base → 404. `subadapters` with `{ bigWigLocation:
+{ uri } }` works only because it happens to expose a literal `uri` key. Same blind spot exists
+for any `frozen` slot whose interior neither the walker nor the config schema can introspect.
+
+**A single ambient root base (tempting but wrong).** Investigated and rejected — the inline
+per-location `baseUri` is load-bearing exactly where a single root can't reach: (1) RPC
+workers build adapters from just a config snapshot + a bare `sessionId` routing string
+(`dataAdapterCache.ts:82`), no session/root context — the base reaches the worker *only*
+because it's embedded per-location (same reason `internetAccountPreAuthorization` is inline);
+(2) connections **nest** bases — `JB2TrackHubConnection/doConnect.ts:26` and UCSC hubs stamp
+*their own* config URL as the base for their tracks, so a live session holds N different bases
+on different hosts, and the `?? base.href` non-overwrite in `addRelativeUris:342` is what lets
+an inner connection base win; (3) shared sessions are origin-portable precisely because
+resolution is inline/self-contained (`sessionSharing.ts` reads no ambient state); (4) desktop
+has no single base (local paths use none, remote hubs use per-hub). Collapsing to one base
+loses the per-location→origin mapping irreversibly.
+
+**Proposed fixes (two independent decisions — don't conflate):**
+
+- *Fix #3562 pointwise (safe, ship it):* teach the walker the one URI-shorthand key it can't
+  see — a small explicit allowlist (`uri`, `bigWigs`) rather than adapter-name knowledge. This
+  is the same pointwise patch under any base model; it does *not* make the mechanism more
+  "systematic" (frozen slots stay opaque). Forces a matching `MultiWiggleAdapter.getAdaptersImpl`
+  tweak since it currently assumes `bigWigs` entries are strings.
+
+- *Migrate `addRelativeUris` to resolve-to-absolute at ingest (NOT unambiguously better —
+  reconsider carefully):* rewriting `uri = new URL(uri, base).href` instead of stamping a
+  sidecar would delete the strip logic and per-adapter `baseUri` threading and needs zero
+  worker plumbing (URIs arrive absolute). **But it regresses a real feature:** the current lazy
+  model never mutates `uri`, so the admin "Save config" flow round-trips relative-in →
+  relative-out (`jbrowseModel.ts:33` strips `baseUri` deliberately), making a saved config
+  **origin-relocatable** — move config+data dir to a new host and it re-resolves against the
+  new `window.location`. Resolve-at-ingest pins saved configs to one origin. So the "strip
+  boilerplate" isn't debt — it implements relocatability. Also, the per-adapter threading is
+  defensive (any path passing `{uri:'rel', baseUri}` straight to an adapter still needs it), so
+  it can't be fully removed anyway.
+
+**Recommendation:** ship the `bigWigs` allowlist fix (with the `getAdaptersImpl` change) to
+close #3562, keep the lazy per-location `baseUri` model, and treat relocatable configs as an
+intended property rather than debt. The resolve-to-absolute migration, if ever pursued, is a
+separate proposal that must first answer whether saved configs should be pinned to an origin
+(for most deployments: no).
+
+## Promotable-slot UI (config editor + track menus)
+
+Follow-on to the shipped display-type defaults (promotable config slots that
+resolve at read time — master doc `reference/DISPLAY_TYPE_DEFAULTS.md`): how far
+the single promotable flag can drive UI generation, and where it can't.
+
+**What the earlier sketch got wrong.** `ConfigurationEditorWidget.target` is not
+the live display model — it's either `track.configuration` or a temporary MST
+config `trackSchema.create(...)` (`DrawerWidgets.ts:184`), and edits are
+debounce-saved back as a `trackConfigDeltas` diff, not a live mutation. Three
+consequences:
+
+- The node can be **detached**, so `getSession(node)` inside `makeSlotFacade` can
+  throw. Session has to be threaded from the widget (which can reach it, as its
+  own debounce autorun proves) — prop-drilling/context, not a tidy SlotFacade
+  field.
+- **Two persistence axes in one form.** The value editor writes a per-track
+  delta; a promotion checkbox writes a session-wide preference. Mixing them in
+  one panel is conceptually muddy — workable, but not the clean "it's just more
+  chrome like the jexl toggle" story.
+- **Raw stripped values diverge from what's rendered.** An un-pinned track has
+  the slot stripped, so `slot.value` is the default (or the `'inherit'`
+  sentinel), while the track visually renders the active session default
+  (Compact). So the editor would show `displayMode: 'inherit'` on a track that's
+  drawing Compact. The "inheriting…" caption papers over it, but the
+  raw-vs-resolved gap is real, and worst exactly for the sentinel slots.
+
+**Calibrated confidence.**
+
+- Metadata-driven, single promotable flag feeds the UI (~85%): architecturally
+  sound; the badge already proves zero-per-slot enumeration works.
+- Track-menu auto-generation via the mixin (~80%): operates on the live display
+  model, where `resolveSlot`/`getConf` already work correctly and
+  reactively. The safe generalization.
+- Config-editor GUI as a clean drop-in (~40%): feasible, but it's the three
+  frictions above — detached target, two persistence axes, raw-vs-resolved
+  display — not a small SlotEditor addition.
+
+Unmeasured, and gating: the field-wise slot surface (how many existing
+subclasses override only `inherit`/`base`/`advanced`/`description` — unknown,
+potentially wide) and the test surface (`displayMode`/`showSoftClipping`
+overrides).
+
+**Recommendation.** Do the mixin-driven track-menu auto-generation first — the
+high-confidence generalization, running where the resolver already behaves, which
+gets per-slot cost down to a schema line without touching the editor's
+delta/detached-target problem. Treat the config-editor control as a separate,
+later spike, and only after deciding how raw-vs-resolved and the two-axes mixing
+should read — that's a UX call, not just code.
+
+## Admin tier for promotable display-type defaults
+
+Today a promoted display-type default (see `DISPLAY_TYPE_DEFAULTS.md`) is
+**user-only**: `session.setDisplayTypeDefault` writes `preferencesOverrides`,
+persisted to localStorage per browser. There is no way for an admin/embedder to
+ship a house default ("all alignments compact by default" baked into
+`config.json`). The design's historical note explicitly dropped the admin config
+slot when the cascade was simplified to resolve-on-read — this would add it back,
+minimally.
+
+**Not a new cascade tier.** `resolveSlot` already delegates its whole middle tier
+to one method, `getDisplayTypeDefault(type, slot)`, and doesn't care where the
+value comes from. Its sibling `getPreference` four lines above
+(`BaseSession.ts:156`) already layers `userOverride ?? getConf(['preferences',
+key])`; `getDisplayTypeDefault` (`BaseSession.ts:167`) reads the user map only.
+The two sibling preference-readers are asymmetric — this squares them off. The
+cascade stays three tiers; the admin fallback lives entirely inside
+`getDisplayTypeDefault`.
+
+Three separable pieces:
+
+- **Make it work (~15 lines, 2 files).** Add a `frozen` slot
+  `displayTypeDefaults` (nested `type → slot → value`, `defaultValue: {}`,
+  `advanced`) to `PreferencesConfigSchemaFactory` (`PreferencesConfig.ts`, next to
+  `theme`/`extraThemes`); in `getDisplayTypeDefault` fall back to
+  `getConf(self, ['preferences', 'displayTypeDefaults'])` when the user map has no
+  entry. Authored via `config.json` JSON, no new UI. **Safety property:** slot
+  unset → `getConf` returns `{}` → nested read `undefined` → byte-identical to
+  today, so no existing install can regress. `isUsableValue` gates the admin value
+  like any promoted value, so a malformed entry degrades to base.
+- **Checkbox honesty (small).** `resolveSlot.promoted` would now mean *effective*
+  (user-or-admin), and it drives the track-menu "make default" pin's `active`
+  (`isSlotValueSessionDefault` / `areSlotsAtSessionDefault`). So with an admin
+  default set, the pin reads checked (truthful) but a user un-checking it can't
+  clear the admin value and it snaps back — looks stuck. Fix: split
+  `SlotResolution` into `promoted` (effective, drives the cascade) vs
+  `userPromoted` (raw user map, drives the pin) — one field + one getter.
+- **Admin-mode write-back UI (biggest, defer).** Make the existing "make default
+  for all tracks" action write the config slot instead of localStorage when
+  `session.adminMode` — mirrors track editing (admin → `jbrowse.updateTrackConf`;
+  else a delta). Lets admins author by clicking instead of editing JSON.
+
+**Precedence** is user-wins (track pin > user type-default > admin type-default >
+base), consistent with `getPreference` and the "user choice wins" decision the
+promotable design kept. An admin who wants a *locked* (non-overridable) value is a
+separate, larger feature: a `locked` flag, inverted precedence, and greying out
+every pin/promote affordance — not this.
 
 ## Large track catalogs (100k+ tracks)
 
@@ -870,439 +1759,6 @@ no-op plugin classes; the example isn't there (`public/` copy is identical).
 `umd_plugin.js` is the natural home for live hand-written examples of these
 points.
 
-## Data formats
-
-**Partial-feature truncation cue.** NCBI eukaryote GFFs pervasively mark
-incomplete annotations with `partial=true` plus `start_range=.,N` / `end_range=N,.`
-(a `.` on the open side) — a gene/mRNA/CDS whose true boundary runs off the
-assembled sequence or past an assembly gap. Today these render with an ordinary
-square cap, so a biologically truncated feature looks identical to a complete one
-and the "this is partial" signal is silently dropped. Cue: draw a ragged/open
-(zig-zag or feathered) cap on the open end(s) — only the end flagged `.` gets it,
-so a 5'-partial gene is ragged on the left only. Cost is a full vertical slice, not
-a tweak: the **worker** reads the attrs in `RenderFeatureDataRPC` and derives a
-per-feature 2-bit open-end flag (5'/3', strand-corrected); that flag is threaded
-through the **packed render arrays** as a new per-feature byte (mind the
-byte-offset/UBO layout invariants called out in CLAUDE.md and
-`GpuCanvasFeatureRenderer.ts`); and the **glyph** draws the open cap in a new
-`.slang` source (run `pnpm gen:shaders`, never hand-edit `*.generated.ts`) with a
-matching Canvas2D fallback path. Worth a dedicated task with browser verification
-on a real NCBI eukaryote GFF (e.g. a partial gene near a contig edge) before
-sweeping the shader/packing layers. Companion to the gff-nostream parser fix that
-stopped dropping top-level discontinuous features (cDNA_match/EST_match).
-
-**Circular genomes / origin-spanning features.** NCBI GFF3 encodes a feature that
-crosses the origin of a circular replicon as a single line whose `end` runs past
-the sequence length into "virtual space" (and flags the landmark with
-`Is_circular=true`) — common in the bacterial/organellar/viral genomes we serve
-from jb2hubs. Today this misrenders three ways: the feature draws into virtual
-space past the contig end (best case clipped at the displayed-region edge); the
-wrapped portion is unreachable at the origin (its tabix-indexed start sits near
-the contig end, so a `0..N` query never returns it — and redispatch only expands
-to bounds of features *already found*); and there's no topology flag anywhere in
-core (`Region` is `refName/start/end/reversed` only; assembly/refseq have no
-`isCircular`; the parsed `Is_circular` is inert; the circular-view plugin is a
-chord diagram, not a feature viewer). Two architectures: **(B) a true circular
-(polar) viewer** — biologically honest but a whole new rendering + GPU-layout
-stack; the chords-only circular-view is not a starting point. **(A)
-repeated-linear concatenation (recommended)** — the key unlock is that
-`displayedRegions` *already is* linear concatenation (LGV space sums `Region[]`
-end-to-end, each region carrying true coords), so listing the contig twice gives
-the `2L` space, scroll-through-origin, and true-coordinate location box/search
-*for free*. Seam-abutment: region1 `chr:0-L` + region2 `chr:0-L` with zero
-`interRegionPadding` makes a `[L-1200, L+1200]` gene draw as `[L-1200,L]` +
-`[0,1200]` halves that *touch* at the seam and read continuous (the one
-unsolvable bit is a connector line crossing the seam — JBrowse never lays out one
-glyph across a region boundary). The only real new code is a **circular adapter
-decorator** (parameterized by `L`): re-emit any feature with `end > L` as two
-halves, issue a modular wrap-fetch of `[L-margin, L]` when querying near the
-origin (same muscle as `Gff3TabixAdapter.ts:84` redispatch), and key both halves
-by canonical `pos mod L` so copies/halves reconcile. De-risk cheaply: **Step 0 is
-zero code** — hand-set displayedRegions to the contig twice with seam padding
-zeroed on pneumobrowse to eyeball the UX before building the decorator. Confirm
-first whether jb2hubs has origin-*spanning features* or just `Is_circular`
-contigs with no crossing genes (if the latter, this is purely a cosmetic origin
-marker).
-
-**Multi-feature files.** Multiple types per row (e.g. chromatin BED with repeat types).
-
-**Zarr VCF.** Variant rendering from Zarr (more efficient than tabix for large cohorts).
-
-**Rolling average.** Smoothing option for wiggle/coverage (rolling mean, rendered as a
-line).
-
-## UI / UX
-
-**CSS Custom Highlight API for search text.** `HighlightText` in `FacetedSelector`
-manually splits strings and wraps matches in `<mark>` tags. The
-[CSS Custom Highlight API](https://developer.mozilla.org/en-US/docs/Web/API/Highlight)
-highlights `Range` objects without touching the DOM (no extra elements, no re-render on
-query change); jbrowse-desktop already uses it. Complication in the faceted selector:
-virtual rows mount/unmount on scroll, so ranges must be re-registered in a scroll-aware
-effect. Firefox ≥117, Chrome ≥105, Safari ≥17.2.
-
-**Height resize.** Double-click resize handle, drag to resize, prevent shrinking,
-auto-shrink toggle.
-
-**Canvas offscreen buffer.** Margin rendering to avoid feature re-juggling on small
-pans/zooms (like `plugins/sequence`).
-
-**Super-compact mode** for very dense gene annotations (pack features even tighter).
-
-**Side labels for genes.** Gene-name labels in the left/right margin instead of inline.
-
-**Global scrollZoom.** Per-view → global setting.
-
-**Isoform expansion.** Click a collapsed isoform to expand all for that gene.
-
-**Init/loading feedback.** Distinguish initialized vs loading state in LinearGenomeView.
-
-**Collapsed multi-transcript indicator.** When a gene track collapses to the longest
-coding transcript per gene, users have no cue it happened. Options considered, ranked by
-noise vs discoverability: (1) hover-tooltip-only ("4 transcripts · showing longest
-coding") — invisible until hovered, good companion to anything else but too quiet alone;
-(2) **recommended** — small stack/layers icon next to the track name in the header, shown
-only when collapse is active, tooltip explains + optionally toggles "show all"; one icon
-per track, not per gene, sits with existing track controls; (3) corner badge overlaid on
-the render area — more discoverable, but floats over the data; (4) per-gene stacked-shadow
-glyph — communicates without text but is the noisiest since it repeats per gene.
-
-**Display floating-chrome overlay slot (`TrackOverlay`).** A display that draws
-top-corner chrome inside its own render — today the MultiWiggle `OverlayColorLegend`, and
-any future in-canvas badge/score-key — is sealed inside `TrackRenderingContainer`'s
-`contain: strict` stacking context, so the sibling `PaddingBlocks` (region separators +
-elided/boundary blocks) *always* paints over it in multi-region / whole-genome views; the
-chrome can't `z-index` its way out of a contained box. `TrackLabel` dodges this only
-because it's a direct `TrackContainer` child (`zIndex:200`), outside the contained
-subtree. Generalize that escape: add an optional `TrackOverlay` component to the display
-(mirroring the existing `DisplayBlurb` hook, but rendered by `TrackContainer` *after*
-`<PaddingBlocks>`, `pointerEvents:none`, top-right by default). MultiWiggle feeds its color
-legend through it for the interactive path while `renderSvg` keeps compositing the legend
-into the exported SVG (add a suppress-in-SVG flag so the two paths don't double-draw).
-Fixes the `cnv` screenshot's masked legend at the source and gives any display a clean
-home for floating chrome that must sit above region separators. Blast radius = just the
-interactive overlay-multiwiggle legend.
-
-## Display height system redesign
-
-`TrackHeightMixin` persists `heightOverride` (`types.maybe`, `>= MIN_DISPLAY_HEIGHT`); the
-`height` getter resolves `heightOverride ?? config.height`, and a `preProcessSnapshot`
-migration rewrites a bare `height` (or legacy `heightPreConfig`) in incoming snapshots to
-`heightOverride` — the `<name>Override` convention resolves the prop/getter name
-collision. `LinearMultiRowFeatureDisplay` layers a second knob (`rowHeightOverride`: `0` =
-auto-fit rows to `heightOverride ?? config.height`, `>0` = pinned px/row).
-
-Friction: (1) you can't set `height` natively in a display snapshot — only
-`heightOverride` works, via the back-compat migration; (2) for multi-row,
-`heightOverride` means "total" while `height` means "resolved total," easy to confuse;
-(3) two override knobs (`heightOverride` total vs `rowHeightOverride` per-row) interact
-non-obviously — setting `height` silently no-ops when a non-zero `rowHeight` is pinned;
-(4) the serialized name carries `Override`, which the user would rather it didn't.
-
-Redesign options, not yet implemented: **A** — give one display a native settable
-`height`, smallest blast radius, doesn't help other displays; **B** — refactor
-`TrackHeightMixin` globally to a persisted native `height` seeded from the config default,
-delete the migration, touches every display + needs broad testing, and loses today's
-`heightOverride !== undefined` signal for "user explicitly set a height" vs "using
-config default"; **C** — `types.snapshotProcessor` exposing `height` externally while
-keeping `heightOverride` internally, medium blast radius, only half-satisfies "no
-Override in the name." Whichever is chosen, decide the `height` (total) vs `rowHeight`
-(per-row) precedence for multi-row — simplest model: setting `height` wins as auto-fit.
-Any change here should be reconciled with the `<name>Override` convention in
-`~/.claude/CLAUDE.md`, which would need an explicit exception (or revision) for
-resolved-default values like height.
-
-## Canvas glyph system (plugins/canvas RenderFeatureDataRPC)
-
-Context after the 2026-07 emit-dispatch unification (`emitGlyph` — one recursive
-switch replacing the old top-level `GLYPH_EMITTERS` record + hand-written
-`processSubfeaturesLayout` child if/else). Two follow-ups came out of that pass.
-
-**Bug (deferred, documented in `labelUtils.ts`): compact/superCompact +
-`subfeatureLabels: 'below'` under-reserves the label row → stacked transcript
-labels overlap the next row.** `applyLabelDimensions` reserves a raw
-`LABEL_FONT_SIZE` in the worker's normal-mode units, baked into child y offsets;
-the main thread then scales *all* geometry by `HEIGHT_MULTIPLIERS`
-(compact 0.6 / superCompact 0.3). But the label is drawn at
-`labelFontSize() = LABEL_FONT_SIZE × LABEL_FONT_MULTIPLIERS`
-(0.85 / 0.7 — deliberately gentler so superCompact labels stay legible). So the
-reserved slot ends up smaller than the drawn label in dense modes. Correct in
-normal mode (both ×1), which is why tests didn't catch it. **Why it's hard:** the
-worker→main boundary is flat parallel arrays and the intra-gene stacking is
-computed in the worker, which is intentionally mode-agnostic so a compact toggle
-never triggers a re-fetch (see ARCHITECTURE.md). Passing the mode/ratio to the
-worker would break that; the correct fix is to move the subfeature-label row
-reservation to the main thread's `packRef` (LinearBasicDisplay/layout.ts), where
-`labelFontPx` and the mode are already known — i.e. stop folding the label gap
-into worker geometry entirely and add it as a separately-scaled row during
-packing. Narrow cosmetic overlap, so left unfixed until it's worth a dedicated
-browser-verified pass. Cross-ref the "Display height system redesign" section.
-
-**Evaluated and rejected: co-locating each glyph's layout+emit into one
-`{layout, emit}` module (a `Record<GlyphType, Glyph>` registry).** Not a win, for
-four grounded reasons — don't re-litigate without new information:
-1. **Real one-way layer boundary.** `glyphs/` (layout) imports *zero* rendering
-   deps (no color/theme/peptide/Collector) — only `Feature`, `types.ts`, geometry
-   helpers; `glyphEmitters.ts` (emit) is saturated with them (~41 refs). They
-   communicate purely through the `FeatureLayout` tree + `glyphType` tag, and
-   layout output (heights) feeds main-thread row packing *before* emit runs — a
-   genuine phase split, not incidental file layout. Co-location forces every glyph
-   module to straddle both worlds.
-2. **Detection stays centralized regardless.** `findGlyph` is a precedence-ordered
-   decision tree (`guide_rna` → CDS+mature → repeat → containerTypes →
-   container-children → CDS-child → segments → box) — routing logic about relations
-   *between* glyphs, inherently central. So "everything about a glyph in one file"
-   is unachievable anyway.
-3. **Reintroduces the indirection just removed.** A registry brings back the
-   `Record` and makes `Subfeatures`' recursion dispatch *through* it
-   (`GLYPHS[child.glyphType].emit(...)`) instead of a visible recursive call. Two
-   readable switches (`findGlyph` routing, `emitGlyph` emit) beat a registry of
-   paired objects that call back into the registry.
-4. **No drift pressure to relieve.** After unification, adding a glyph touches
-   `types.ts` (tag) + `findGlyph` (route) + one `emitGlyph` case, and the
-   `never`-default makes a missing emit case a compile error — the compiler already
-   enforces the coupling proximity would. The remaining "two dispatches" are two
-   *different concerns in two layers*, not a redundant dual-dispatch over the same
-   thing (which the old `GLYPH_EMITTERS`/`processSubfeaturesLayout` pair *was*).
-
-   Lighter variant also considered and skipped as lateral: collapsing the five
-   one-line layout wrappers (`box/segments/processed/crisprGuide/repeatRegion.ts`)
-   into a layout `switch` symmetric with emit — trades small dependency-free files
-   (preferred) for a switch with no correctness/drift benefit.
-
-## Hi-C
-
-**User-adjustable color threshold.** A draggable slider on the HiC color legend (like
-Juicebox) so users set the saturation threshold manually; store as a
-`colorThresholdMultiplier` override. The 95th-percentile auto-scale is a good default
-but some datasets benefit from manual tuning.
-
-**Normalization availability check.** Before calling hic-straw with a normalization (e.g.
-KR), check whether a normalization vector exists for the current resolution/chromosome;
-if not, warn and fall back to NONE (mirrors Juicebox `contactMatrixView.js:checkColorScale`).
-hic-straw doesn't expose `hasNormalizationVector` directly — detect by catching empty
-results or inspecting masterIndex keys.
-
-**A/B compartment ratio mode.** A÷B log-ratio display (diverging red/blue) when a
-control/background map is loaded — needs a second `hicLocation` and `RatioColorScale`
-logic.
-
-**Inter-chromosomal UI.** `getHeader` already computes `hasInterChromosomalData` but
-never surfaces it; when true, show a chromosome-pair selector (chr1 × chr2) to navigate
-inter-chromosomal contact blocks without a manual multi-region view.
-
-## Multi-sample variant display
-
-Ideas from an analysis of `LinearMultiSampleVariantDisplay` /
-`LinearMultiSampleVariantMatrixDisplay` (both share
-`plugins/variants/src/shared/MultiSampleVariantBaseModel.ts`). Read
-`plugins/variants/src/CLAUDE.md` first — hot-loop rules and the fetch/layout/render
-invalidation tiers constrain all of these.
-
-**Opt-in genotype-quality masking/dimming (biggest untapped signal).** The
-GT-only fast path (`feature.processGenotypes`, `shared/alleleCounts.ts`) never
-surfaces DP/GQ/AD/PL — getting them requires the heavier `feature.get('samples')`
-escalation the PS-phasing coloring already takes
-(`computeVariantMatrixCells.ts:99`). MVP: a `genotypeQualityThreshold` config
-slot (default `0` = off = today's path unchanged); when set, a genotype with
-`GQ < threshold` renders as no-call grey instead of its allele color — masking
-chosen over continuous dimming because it reuses the existing no-call rendering
-end-to-end (no shader/legend work). Bake the decision into the existing
-`cellColors` `Uint32Array` worker-side (same place `featureColor` already
-applies) — no new per-cell arrays, no shader change, no bigger payload. It's a
-**fetch input** (belongs in `rpcProps()`), threaded through
-`VariantRPC/executeVariantCellData.ts` into both `computeVariantCells.ts` and
-`computeVariantMatrixCells.ts`, with a menu entry (presets GQ ≥ 20/≥ 30 + custom
-dialog) cloned from `createMAFFilterMenuItem` under the "Filter by" submenu.
-Open question: whether masking should also feed the MAF filter (a masked het
-shouldn't count toward AF) — couples to `minorAlleleFrequencyUtils.ts`, defer
-past the independent MVP. Same plumbing then unlocks **VAF coloring from AD**
-(color het cells by allelic fraction — a somatic/mosaic cohort view) and the
-`featureColor` presets below (cheaper still, no new RPC field). `sampleInfo`
-(per-sample `maxPloidy`/`isPhased`) is already computed and shipped but only
-used internally for haplotype expansion — never surfaced to the user.
-
-**Pedigree / inheritance awareness (biggest biological ceiling).** There is no
-pedigree, affected-status, or trio model today — "grouping" is a flat `colorBy` on
-arbitrary `samplesTsv` columns (`shared/variantLegend.ts::getSampleGroupLegendItems`).
-If the sample metadata carried `father`/`mother`/`affected`, the per-sample genotypes
-(already fetched) are enough to compute and highlight **de novo mutations**, **compound
-hets**, and **Mendelian-error sites**. Aligns with the existing trio-crossover work.
-Large but high-value; start by defining the pedigree metadata shape (columns in
-`samplesTsv`, or a dedicated pedigree file) and a worker-side per-site classification
-that bakes a highlight color into the existing `cellColors` array (same
-bake-into-color discipline as `featureColor`), rather than a new render pass.
-
-**More `featureColor` presets (cheapest wins — no new RPC field).** `featureColor`
-already supports arbitrary jexl plus one built-in preset (consequence impact,
-`shared/variantConsequence.ts`, surfaced in the "Color cells by" menu). These read
-`INFO` fields the feature already carries, so they are near-clones of the consequence
-preset with zero worker-plumbing changes:
-- **gnomAD / AF rarity** — color by `INFO/AF` or `AF_popmax` so ultra-rare variants pop
-  (the classic cohort-filtering read).
-- **ClinVar significance** — `INFO/CLNSIG` → pathogenic/benign tiers.
-- **Specific SO consequence** — missense vs synonymous vs LOF, not just the 4 impact
-  tiers `getVariantImpact` currently collapses to.
-Each is a new entry alongside `CONSEQUENCE_IMPACT_JEXL` plus a legend key.
-
-**Per-site summary lane.** The matrix already reserves a resizable `lineZoneHeight`
-band above the grid (`components/LinesConnectingMatrixToGenomicPosition.tsx`). A
-companion lane showing **carrier count / allele frequency / call-rate** per site would
-give the "which sites matter" read that's missing. `mostFrequentAlt`'s AF is already
-computed for the MAF filter (`shared/minorAlleleFrequencyUtils.ts`) and then discarded —
-surfacing it is mostly a rendering task.
-
-**Filter & sort samples by metadata attribute.** Today you can *color* rows by a
-metadata column but not *show only cases* / *only one population*, and sort is limited to
-one anchor variant (right-click → Sort by genotype, which ranks by genotype there and
-breaks ties by flanking agreement — `shared/anchoredHaplotypeSort.ts`). A
-metadata-based sample filter is a natural extension of the existing `subtreeFilter`
-mechanism; a metadata sort extends `sortByGenotype`. Core cohort operations that are
-currently missing.
-
-**Local haplotype-block coloring (the mosaic a dendrogram cannot show).** Clustering
-asks for one distance over the whole window, but a haplotype is a mosaic of segments
-with different histories, so past the first recombination breakpoint that distance
-describes no position in particular. `shared/anchoredHaplotypeSort.ts` addresses the
-*ordering* half of this; the other half is expressing local structure in the cells
-rather than the row order. Per (row, column), compute the id of the set of rows
-identical over a window around that column and paint it with a stable hash color, rows
-staying in whatever order they are in — a crossover then reads as a color change
-mid-row. The plumbing already exists: `computeVariantCells.ts` ships a per-cell
-`cellColors: Uint32Array`, so this is a worker-side computation plus a color mode, not
-new render infrastructure (same bake-into-color discipline as `featureColor`).
-
-Three things separate this from HaploBlocker, whose equivalent plot reads as confetti:
-carry colors across columns (greedily match each column's partition to the previous
-one's by membership overlap and inherit the id, rather than re-deriving blocks
-independently); require a minimum block size in *both* variants and rows, painting
-below-threshold blocks grey; and ship the cheap single-donor variant first — pick one
-row as reference and paint every other row by match-length to it, which is one color
-ramp, trivially computed, and already shows where each row's shared segment ends.
-
-The principled version of the whole problem is that there is no one tree, there is an
-ARG. A tree-sequence adapter (tsinfer / ARG-Needle `.trees`) supplying the local tree
-at the view centre would let the existing sidebar render it unchanged, updating as you
-pan.
-
-**Frequency weighting for the clustering distance.** Every variant contributes equally
-to the genotype-matrix distance, so the largest LD block in the window numerically
-dominates the row ordering — a 10 kb window that is one haplotype block gives a clean
-tree, a 1 Mb window gives mush, and neither states which locus it is describing. A
-GCTA-style `1/sqrt(2p(1-p))` scaling would weight rare variants (informative about
-recent shared ancestry) above common ones; it is a small change to the imputation pass
-in `VariantRPC/genotypeMatrixEncoding.ts`, which already walks every site computing
-per-site means. Deferred because it changes results and wants a UI knob (a
-"Distance" choice next to the linkage selector) rather than a silent switch. LD
-pruning is the same idea one level up and a bigger job.
-
-**Matrix connector-line hover is thin and O(features)/mousemove.** In
-`LinesConnectingMatrixToGenomicPosition.tsx` the hover shows only `feature.get('name')`
-and rescans every line with `pointToSegmentDist` on each mousemove
-(`AllLines.onMouseMove`, ~:160-190); `getLineGeometry` is recomputed by several sibling
-components each render, and the crosshair-line and hovered-line are separate code paths
-computing the same `idx*w + w/2` geometry. Enrich the tooltip (position / ref / alt),
-add click-through to feature detail, and dedupe the geometry.
-
-**Matrix ref/no-call cells are silently non-interactive.** Hover requires a decoded
-genotype (`LinearMultiSampleVariantMatrixDisplay/components/VariantMatrixComponent.tsx:86`),
-so blank grid regions give no tooltip — reads as "the UI is dead here." Small fix.
-
-**Bug: multiallelic sites lose their VCF description.** `shared/buildVariantHit.ts:51`
-overwrites the real `description` with the literal `'multiple ALT alleles'` when
-`alt.length >= 3`, discarding the actual annotation. Straightforward correctness fix.
-
-**jb2export population coloring (`samplesTsv:` modifier).** The multi-sample variant
-matrix now renders real 1000 Genomes data correctly in jb2export — the old "static SSR
-renders the genotype matrix empty for real data" blocker was **stale** (verified by
-rendering both `display:multivariant` and `display:multivariantmatrix` against
-`ALL.chr11.phase3…genotypes.vcf.gz` → full 2,504-sample matrix). The remaining gap for the
-flagship figure is `colorBy:'population'`: it needs the VCF adapter's `samplesTsv`
-(sample→population map), which the CLI can't yet pass. Add a `samplesTsv:<uri>` track
-modifier → `samplesTsvLocation` on the adapter so a genome-wide callset can be colored by
-super-population instead of reading as reference-dominant grey.
-
-## Config & sessions
-
-**Global config overrides.** Admin-level defaults (e.g. show paired arcs by default)
-across all tracks.
-
-**Hash password in share links.** Password only needed at startup (read then deleted) —
-store in URL hash, clear on first navigation.
-
-**LGVSyntenyDisplay "Query name" coloring.** Re-implement the removed color-by-query-name
-(hash to color).
-
-**Breakpoint connectors.** Smooth out the awkward blue/green curves (currently arbitrary
-Y increase/loop).
-
-**BSV overlay: fix model-derived track Y positions.** `getTrackYOffset` sums
-`headerHeight + scalebarHeight + Σ(track.height + RESIZE_HANDLE_HEIGHT)` but diverges from
-the actual CSS layout (likely a gap/border/constant mismatch). The current workaround is a
-`getBoundingClientRect` rAF loop in `useDomTrackYOffsets` (~60fps re-renders). Finding the
-discrepancy — `console.log(view.getTrackYOffset(id), trackRef.top − svgRef.top)` on a
-loaded view — would let us delete the DOM measurement and rely on MobX reactivity alone.
-
-**Relative-URI resolution: `bigWigs` shorthand can't be relative (issue #3562), and
-`addRelativeUris` is shape-heuristic.** Today relative URLs resolve via a three-stage
-pipeline: `addRelativeUris` (`packages/product-core/src/sessionUtils.ts:333`) walks raw
-config JSON and stamps a synthetic `baseUri` next to every object with a `uri` key;
-`UriLocation` (`packages/core/src/util/types/mst.ts:49`) carries `baseUri` inline; and
-`resolveUriLocation` (`packages/core/src/util/io/index.ts:40`) does `new URL(uri, baseUri)`
-at fetch time. Coupled boilerplate hangs off it: each adapter's `preProcessSnapshot` threads
-`baseUri: snap.baseUri` into its real fileLocation slot + every sidecar (Gff3Tabix, Bam,
-Cram, TwoBit, Hic, Maf, Trix, Cytoband, the shared `normalizeUriSnapshot`); export strips the
-synthetic keys (`jbrowseModel.ts:35` `removeAttr(…, 'baseUri')`, `HeaderButtons.tsx:36`); and
-`addRelativeUris` must be re-invoked at every ingest site (jbrowse-web loader, desktop hubs,
-jbrowse-img `resolveHub`, connection `doConnect`, plus 3 hand-rolled copies in
-react-app examples-site).
-
-**Root cause of #3562:** the walk's detection rule is a heuristic on JSON *shape* — "an
-object with a `uri` key is a location." A MultiWiggle `bigWigs: ['a.bw', 'b.bw']` is an array
-of **bare strings** with no `uri` key, so nothing gets a base; `MultiWiggleAdapter.ts:99`
-then builds `{ uri: 'a.bw' }` with no base → 404. `subadapters` with `{ bigWigLocation:
-{ uri } }` works only because it happens to expose a literal `uri` key. Same blind spot exists
-for any `frozen` slot whose interior neither the walker nor the config schema can introspect.
-
-**A single ambient root base (tempting but wrong).** Investigated and rejected — the inline
-per-location `baseUri` is load-bearing exactly where a single root can't reach: (1) RPC
-workers build adapters from just a config snapshot + a bare `sessionId` routing string
-(`dataAdapterCache.ts:82`), no session/root context — the base reaches the worker *only*
-because it's embedded per-location (same reason `internetAccountPreAuthorization` is inline);
-(2) connections **nest** bases — `JB2TrackHubConnection/doConnect.ts:26` and UCSC hubs stamp
-*their own* config URL as the base for their tracks, so a live session holds N different bases
-on different hosts, and the `?? base.href` non-overwrite in `addRelativeUris:342` is what lets
-an inner connection base win; (3) shared sessions are origin-portable precisely because
-resolution is inline/self-contained (`sessionSharing.ts` reads no ambient state); (4) desktop
-has no single base (local paths use none, remote hubs use per-hub). Collapsing to one base
-loses the per-location→origin mapping irreversibly.
-
-**Proposed fixes (two independent decisions — don't conflate):**
-
-- *Fix #3562 pointwise (safe, ship it):* teach the walker the one URI-shorthand key it can't
-  see — a small explicit allowlist (`uri`, `bigWigs`) rather than adapter-name knowledge. This
-  is the same pointwise patch under any base model; it does *not* make the mechanism more
-  "systematic" (frozen slots stay opaque). Forces a matching `MultiWiggleAdapter.getAdaptersImpl`
-  tweak since it currently assumes `bigWigs` entries are strings.
-
-- *Migrate `addRelativeUris` to resolve-to-absolute at ingest (NOT unambiguously better —
-  reconsider carefully):* rewriting `uri = new URL(uri, base).href` instead of stamping a
-  sidecar would delete the strip logic and per-adapter `baseUri` threading and needs zero
-  worker plumbing (URIs arrive absolute). **But it regresses a real feature:** the current lazy
-  model never mutates `uri`, so the admin "Save config" flow round-trips relative-in →
-  relative-out (`jbrowseModel.ts:33` strips `baseUri` deliberately), making a saved config
-  **origin-relocatable** — move config+data dir to a new host and it re-resolves against the
-  new `window.location`. Resolve-at-ingest pins saved configs to one origin. So the "strip
-  boilerplate" isn't debt — it implements relocatability. Also, the per-adapter threading is
-  defensive (any path passing `{uri:'rel', baseUri}` straight to an adapter still needs it), so
-  it can't be fully removed anyway.
-
-**Recommendation:** ship the `bigWigs` allowlist fix (with the `getAdaptersImpl` change) to
-close #3562, keep the lazy per-location `baseUri` model, and treat relocatable configs as an
-intended property rather than debt. The resolve-to-absolute migration, if ever pursued, is a
-separate proposal that must first answer whether saved configs should be pinned to an origin
-(for most deployments: no).
-
 ## Build & dependencies
 
 **Delete the jbrowse-img react-transition-group ESM workaround at MUI v10.** MUI v9's
@@ -1383,231 +1839,13 @@ synchronous saved-session hydration of a code-split view but needs every
 persisted prop hoisted to the thin base plus a render-path loading gate. Revisit
 only after the interaction-surface approach is proven.
 
-## Aborting in-flight network requests (mechanism landed; rollout partial)
-
-Cancel used to interrupt **processing**, not the **socket**: the `stopToken` was
-checked at await boundaries and inside sync worker loops, so on cancel we
-stopped computing and discarded the result while any HTTP read already on the
-wire downloaded to completion. `BaseOptions.signal` existed but was dead —
-present only for structural assignability to the gmod `Options { signal? }`
-interfaces.
-
-### What landed
-
-Cancellation is now two mechanisms behind one token, split by what a worker can
-actually observe (`packages/core/src/util/stopToken.ts` header has the full
-statement):
-
-- **Await boundaries** — `stopStopToken` records the token's id locally and
-  posts it to every booted worker; `RpcServer` applies it via
-  `markStopTokenStopped`, and `checkStopToken` is a set lookup. Free, exact, and
-  independent of the deployment. This replaced a synchronous XHR at all ~25
-  one-shot check sites, and it gives `MainThreadRpcDriver` working cancellation
-  for the first time (its work shares the module instance, so it needs no
-  message at all; the old string path was gated on `isWebWorker()` and was a
-  silent no-op there).
-- **Synchronous loops** — a loop that never yields can never be told anything,
-  so this needs a *synchronous* read: the SAB atomic flag where the page is
-  isolated, else the throttled blob-URL sync-XHR probe. **Both retained.** The
-  blob probe was briefly deleted after `cancel-bench` measured it at zero (median
-  513 ms settle either way on the 2000x BAM burst) and then restored: that
-  measurement was sound but scoped to the alignments path, where every loop is
-  already chunked by awaits at region granularity. `getLDMatrix.ts`'s O(n²)
-  Float32Array fill is the counter-example — millions of pair computations with no
-  await anywhere, where the probe is the only thing that can stop the work, and
-  which that bench never exercises. Re-deleting it needs a cancel measurement on
-  an await-free workload.
-
-`stopTokenSignal(stopToken)` bridges a token to an `AbortSignal` — string tokens
-off the same posted id, SAB tokens off `Atomics.waitAsync` (woken by an
-`Atomics.notify` added to `stopStopToken`), no polling either way. `BaseRpcDriver.call`
-also now refuses to dispatch a call whose token is already stopped, which closes
-the race between a stop notification and the call it means to cancel.
-
-`withStopTokenSignal(stopToken, signal => …)` is the shape to use at a read call
-— it releases the signal however the read settles. Wired through every adapter
-whose reader accepts a signal:
-
-| Reader | Adapters |
-| --- | --- |
-| `@gmod/bam` | BAM |
-| `@gmod/tabix` | GFF3-tabix, GTF-tabix (via `core/util/tabix.ts`), BED-tabix, bedGraph-tabix, VCF-tabix + split-VCF (via `shared/vcfAdapterUtils`), Plink LD, indexed PIF (via `comparative-adapters/util.ts`) |
-| `@gmod/bbi` | BigWig (single + multi-region), BigBed |
-
-**Two readers can't be wired**, and neither is our code to fix:
-
-- `@gmod/cram` takes a signal on `IndexOpts` (the .crai read) but **not** on
-  `getRecordsForRange`, so CRAM record reads have no abort seam. Needs an
-  upstream change.
-- `@gmod/indexedfasta` declares `signal` in its types but never forwards it —
-  0 references in the built JS. Passing one would typecheck and do nothing, which
-  is worse than not passing it.
-
-Also unwired by choice: `@gmod/hic`, and the VCF *export* path (user-initiated,
-not cancel-sensitive).
-
-The shared-fetch hazard is handled at every layer, and mostly not by us:
-`@gmod/tabix` and `@gmod/bbi` both route block reads through
-`@gmod/abortable-promise-cache`, whose `AggregateAbortController` fires only once
-**every** joined consumer has aborted — ref-counted by construction. `@gmod/bam`
-retries its chunk joins on a foreign abort. Only our own
-`RemoteFileWithRangeCache` needed the fix described below.
-
-### Why the uid-keyed abort protocol was not needed
-
-An earlier version of this proposal specified a `Map<uid, AbortController>` in
-`RpcServer`, an `{abort: uid}` frame, `RpcClient.abort(uid)`, and driver-side
-`stopToken → uid[]` bookkeeping. Broadcasting the stopped **token id** instead
-of routing per call is strictly simpler and handles more: one token is commonly
-in flight on several calls at once, a worker holding nothing under that id
-ignores the frame, and there is no "route the abort to the same worker the call
-landed on" problem to solve. `WorkerPoolRpcDriver` registers a broadcaster and
-never boots a worker just to notify it.
-
-### The coalescing trap, and where it is handled
-
-Two layers share one fetch between logical reads, and both had to answer "one
-sharer aborted, the others did not":
-
-- `@gmod/bam` ≥7.6.0 already retries its own chunk-cache joins when the read
-  they joined aborted and theirs did not (`bamFile.js` `_cachedChunkFeatures`).
-  Nothing to do.
-- `RemoteFileWithRangeCache` coalesces 256 KiB chunk fetches and did **not** —
-  its `inFlight` comment used to record precisely the assumption this work
-  breaks ("no waiter can cancel a fetch out from under the others, because
-  in-tree cancellation is stopToken-based"). It now records the owning signal
-  and `joinChunk` re-issues, once, on a foreign abort. Covered by three tests in
-  `RemoteFileWithRangeCache.test.ts`, verified to fail without the retry.
-
-Ref-counting was not needed: a single bounded retry makes the pathological case
-one duplicate 256 KiB fetch rather than a recursion whose depth depends on how
-the aborts interleave.
-
-**Don't:** make SAB / `crossOriginIsolated` a requirement (can't guarantee
-COOP/COEP from a client-side/embedded library); try to send an `AbortSignal`
-across `postMessage` (doesn't clone); add a synchronous probe at an *await*
-boundary (pointless — the message is already there); or remove the
-`stopToken` (it is still the only thing that
-interrupts *synchronous* worker loops).
-
-### How much the socket abort is actually worth (measured)
-
-The earlier open question here guessed the wasted-bandwidth problem might be too
-small to justify the work, on the reasoning that "index reads are short". That is
-backwards, because **our own chunk coalescing makes each range request large**:
-`RemoteFileWithRangeCache` merges a contiguous run of missing 256 KiB chunks into
-one request, so a single 4 kb viewport over the 2000x BAM issues one **6.5 MiB**
-range read (26 chunks).
-
-Measured on a 4-hop pan burst over that fixture, throttled to 50 KiB/s: 6 range
-requests issued, 3 aborted ~1.6 s in having transferred only ~80 KiB each. So
-each cancelled navigation abandoned ~6.5 MiB that would otherwise have been
-downloaded in full and discarded — **~19.5 MiB across the burst**.
-
-The saving is `range size − (rate × time-to-cancel)`, so it shrinks on a fast
-link: at 50 Mbps sustained a 6.5 MiB read completes inside a ~1 s pan interval and
-there is little left in flight to cancel. But the range size is large regardless
-of link speed, so on any connection slow enough for a user to out-pace a read —
-which is most of them — this is real bandwidth, not a rounding error.
-
-That number is also what justifies the `joinChunk` retry below: the coalescing
-hazard exists *because* of the signal, and a 6.5 MiB-per-cancel saving pays for a
-small retry path in shared I/O code.
-
-**Open:** CRAM and IndexedFasta need upstream signal support before they can join
-(above); whether to abort on *internal* `cancelFetch` (viewport change / settings
-invalidate) as well as user cancel.
-
-## Search / misc
-
-- Search advanced panel; may need a pagefind inverted index.
-- Check [LDZip](https://github.com/23andMe/LDZip).
-
-## Local sequence-to-coordinates search (no UCSC)
-
-The BLAT/in-silico PCR dialogs only work for assemblies UCSC hosts; a genome
-opened from local files now gets an up-front "no UCSC database" warning instead
-of an errAbort after a round trip. That leaves "where is this sequence" genuinely
-unanswerable for a local assembly, and there are two very different ways to close
-it.
-
-**Genome-wide exact search (recommended).** What people paste is usually a
-primer, probe, exon or read, and they want exact-or-near-exact placement — a
-substring search, not an alignment. Most of it already exists:
-`SequenceSearchAdapter` plus the LGV's **Sequence search** dialog scan the
-reference and build an on-the-fly track. Two gaps: the adapter is scoped to the
-visible region ±10 kb (`SequenceSearchAdapter.ts`), so it cannot answer a
-genome-wide question, and it does not navigate — though the navigate-to-best-hit
-and notify path from `plugins/blat/src/ucscShared.ts` is now there to reuse.
-So: a genome-wide mode that runs per-refName in the RPC worker and emits features
-as it finds them (no eager materialization across the boundary), feeding the same
-track + navigate path. Cheap and fast for volvox, a bacterium, yeast, a single
-chromosome. hg38 means streaming ~3 GB of sequence, so the real design question
-is the size gate and cancellation, answerable from `assembly.regions`.
-
-**Real BLAT locally (separate decision, not an extension of the above).** kent's
-`blat` / `gfServer` + `gfClient` buys gapped, mismatch-tolerant and protein
-search that a substring scan cannot do. Costs: a per-platform native binary in
-the Desktop package (Electron main can shell out, the browser cannot, so this
-permanently splits the two products), a `gfServer` index built per assembly
-before any query works, and kent licensing that is free for academic/nonprofit
-but not commercial — a distribution question, not a technical one. Worth it only
-for a concrete need to align inexactly against a genome UCSC does not host.
-(Related: `dynablat-01.soe.ucsc.edu:4040` handshakes over raw TCP for GenArk
-hubs, which Electron main could reach and a browser could not, but raw gfServer
-returns seed/tile hits that gfClient has to stitch into PSL.)
-
-**Do not auto-fall-back** from BLAT to a local search. They answer differently
-precise questions, and silently swapping one for the other is how a user
-concludes their sequence "isn't in the genome" when it is there with two
-mismatches.
-
-## Website: copy-as-markdown / LLM-readiness
-
-`entry.id` from the content collection is the repo-relative path (`config_guide` →
-`website/docs/config_guide.md`), so per-page Markdown export needs zero new
-infrastructure. "View as Markdown" → an `<a href>` to the GitHub raw URL; "Copy as
-Markdown" → `fetch(rawUrl).then(r => r.text()).then(navigator.clipboard.writeText)`
-(raw.githubusercontent.com sends `access-control-allow-origin: *`). Trade-offs: **version
-drift** (the deployed site is built from a specific commit — pin the URL to the
-build-time SHA to stay faithful, or accept `main`'s minor drift); frontmatter noise (LLMs
-handle it; non-issue); combined index files (`llms.txt` / `llms-full.txt`) can't come
-from GitHub — generate at build from frontmatter + `sidebars.json` and commit them.
-Recommendation: hybrid weighted toward GitHub — per-page button → GitHub raw pinned to
-build SHA; `llms.txt` curated index → generated at build with links pointing at GitHub
-raw URLs; `llms-full.txt` optional generate-and-commit. The only thing hosted is a tiny
-index file.
-
-## Website: screenshot spec ↔ PNG staleness guard
-
-Recurring drift: a screenshot spec is edited and committed but its PNG is not regenerated
-(regen needs a jbrowse-web build, so it is easy to skip), so reviewers keep seeing stale
-images and re-flag "already fixed" figures. This bit the `6f0392a387` batch hard — 8 specs
-fixed, **0 PNGs committed**, all 8 re-marked bad against the old images. A guard could catch
-it: hash each spec's *render inputs* (its serialized spec object + the git SHAs of the
-source/config files the render depends on) and record that hash next to the committed PNG (a
-sidecar, or a field in `screenshot-review.json`); a CI check fails when a spec's current
-input-hash ≠ the hash the committed PNG was built from. Cheaper heuristic: fail when a spec
-file's git commit time is newer than its PNG's. Either turns "forgot to regen" from a silent
-multi-session review loop into one red check. (Related: the review tool already hashes the
-PNG bytes to expire verdicts — this is the same idea one step upstream, keyed on the spec's
-inputs rather than its output.)
-
-## expressive SV search language for the SV inspector import form
-Current import-form filtering matches query strings like `CHR2=17` against the
-spreadsheet columns — narrow (won't catch variants *originating* from chr17, only
-those naming it in a column). A richer SV query language (by breakend chrom/pos,
-type, length range, INFO fields, AND/OR) would be more useful. Net-new feature,
-not a screenshot defect. (Was: sv_inspector_importform_filtered review item.)
-
-
-
 ## Offline genome packages for jbrowse-desktop
 
 Goal: let users download an offline "package" for key genomes (human hg38/hg19,
 mouse, etc.) so jbrowse-desktop works well with no internet.
 
 ### Existing hooks
+
 - **Quickstart system** (`electron/ipc/quickstartHandlers.ts`, `paths.ts`):
   pre-baked sessions in `userData/quickstart/*.json`. Legacy hg19/hg38/mm10
   quickstarts exist. Natural hook for "install a genome".
@@ -1649,116 +1887,111 @@ but not truly offline until browsed. Weakest fit.
 revisited regions work offline. Complementary, never gives a whole genome.
 
 ### Size reality
+
 hg38 FASTA bgzip ~900MB-1GB; gene models tiny. config-minimal ~= FASTA + faidx +
 one gene track ~1GB. Offer two SKUs per genome: *minimal* (ref + genes) and
 *full* (adds GC, repeats, clinvar, etc.).
 
 ### Recommendation
+
 Build **A as the format, B as the delivery**: relocatable genome-pack format +
 download-manager UI backed by a registry, each install registered as a
 quickstart. A also gives free offline sharing without a server.
 
 ### Make the app generally offline-friendly
+
 Audit startup/runtime net calls that degrade offline: plugin-store fetch,
 autoUpdater check (`electron/autoUpdater.ts`), internet-account probing. These
 should fail fast/silent offline instead of hanging or erroring noisily.
-## Promotable-slot UI (config editor + track menus)
 
-Follow-on to the shipped display-type defaults (promotable config slots that
-resolve at read time — master doc `reference/DISPLAY_TYPE_DEFAULTS.md`): how far
-the single promotable flag can drive UI generation, and where it can't.
+## Deferred architecture-review items (type-safety / DisplayChrome)
 
-**What the earlier sketch got wrong.** `ConfigurationEditorWidget.target` is not
-the live display model — it's either `track.configuration` or a temporary MST
-config `trackSchema.create(...)` (`DrawerWidgets.ts:184`), and edits are
-debounce-saved back as a `trackConfigDeltas` diff, not a live mutation. Three
-consequences:
+Deliberately left for a decision after the 2026-07 architecture-review fix pass
+(the code + doc fixes landed; `viewportMatchesLastDrawn` freshness gate, the
+clipPath-id and byte-limit fixes, etc.). The dotplot/circular export-freshness
+gap from the same pass is tracked in TODO.md.
 
-- The node can be **detached**, so `getSession(node)` inside `makeSlotFacade` can
-  throw. Session has to be threaded from the widget (which can reach it, as its
-  own debounce autorun proves) — prop-drilling/context, not a tidy SlotFacade
-  field.
-- **Two persistence axes in one form.** The value editor writes a per-track
-  delta; a promotion checkbox writes a session-wide preference. Mixing them in
-  one panel is conceptually muddy — workable, but not the clean "it's just more
-  chrome like the jexl toggle" story.
-- **Raw stripped values diverge from what's rendered.** An un-pinned track has
-  the slot stripped, so `slot.value` is the default (or the `'inherit'`
-  sentinel), while the track visually renders the active session default
-  (Compact). So the editor would show `displayMode: 'inherit'` on a track that's
-  drawing Compact. The "inheriting…" caption papers over it, but the
-  raw-vs-resolved gap is real, and worst exactly for the sentinel slots.
+- **DisplayChrome prop/height parity.** (a) `{...divProps}` spread only on the
+  ready branch, so terminal early-returns drop ref/handlers — already documented
+  as benign-by-design (ADR-025); (b) `TooLargeMessage` renders at intrinsic
+  height while `DisplayRenderErrorOverlay` gets `height={model.height}`.
+  Threading height through `TooLargeMessage`→`BlockMsg` could churn many
+  displays' too-large snapshots and the intrinsic height may be intentional —
+  needs a product call.
+- **Make `dataCurrent` a required member** (omission = compile error, not a
+  runtime export hang). MST mixin composition doesn't enforce "must override a
+  getter" cleanly, and [ADR-041](architecture-decision-records/adr-041-no-mixin-composed-into-basedisplay.md)
+  rules out the composition trick that would express it. Deferred; the default
+  is fail-hung rather than fail-stale, which is the safe side.
 
-**Calibrated confidence.**
+### A theme-free `makeStyles` — the build-your-own "weight" half
 
-- Metadata-driven, single promotable flag feeds the UI (~85%): architecturally
-  sound; the badge already proves zero-per-slot enumeration works.
-- Track-menu auto-generation via the mixin (~80%): operates on the live display
-  model, where `resolveSlot`/`getConf` already work correctly and
-  reactively. The safe generalization.
-- Config-editor GUI as a clean drop-in (~40%): feasible, but it's the three
-  frictions above — detached target, two persistence axes, raw-vs-resolved
-  display — not a small SlotEditor addition.
+The two bring-your-own seams shipped and a stock wiggle, feature or alignments
+display now renders **nothing styled by Material UI** when an embedder installs
+both plain sets (`reference/DISPLAYCHROME.md`, "The bring-your-own seams", has
+the census that proves it). What did not ship is *weight*: `makeStyles` imports
+`useTheme` from `@mui/material/styles`
+(`packages/core/src/util/tss-react/mui/mui.ts`), and
+`grep -rn 'makeStyles(' --include='*.ts*' packages plugins products` is ~269 call
+sites. While that holds, "Material UI never enters the module graph" is
+unreachable for anyone rendering a stock display, no matter how many providers
+they install. The build-your-own site says so plainly under "What you do not get
+rid of"; that is honesty, not a solution.
 
-Unmeasured, and gating: the field-wise slot surface (how many existing
-subclasses override only `inherit`/`base`/`advanced`/`description` — unknown,
-potentially wide) and the test surface (`displayMode`/`showSoftClipping`
-overrides).
+The fix, if it is worth it, is a theme-free `makeStyles` — or a
+`usePalette()`-backed styling helper — that stock display components are
+*required* to use. It would also close the census gap noted in DISPLAYCHROME.md
+(a themed `makeStyles` component that sets no typography passes both halves
+today). `pnpm measure-chrome-bundle` measures what the reach half costs now.
 
-**Recommendation.** Do the mixin-driven track-menu auto-generation first — the
-high-confidence generalization, running where the resolver already behaves, which
-gets per-slot cost down to a schema line without touching the editor's
-delta/detached-target problem. Treat the config-editor control as a separate,
-later spike, and only after deciding how raw-vs-resolved and the two-axes mixing
-should read — that's a UX call, not just code.
+**The examples site cannot demonstrate this half, and that was assessed rather
+than assumed.** `DisplayChromeBase` takes `model: ChromeModel &
+RenderLifecycleModel<B>` plus a backend `factory`, so a page showing it needs a
+display *model* — a config schema, a display type and a plugin to register them,
+on top of the ~300 lines of view boilerplate every page there repeats. Most of
+the file would be about how to write a display rather than about the seam, and
+the site's "one page adds one thing" arc has nowhere to put it. If it ever gets a
+demo it belongs outside the arc, and the honest scope is a custom-display page
+that happens to use `DisplayChromeBase` — not a `DisplayChromeBase` page.
 
-## Admin tier for promotable display-type defaults
+Two smaller loose ends from the same pass: alignments' bottom-right row doesn't
+reserve its `VerticalScrollbar`'s 12px (canvas reserves 14), cosmetic overlap
+with the thumb only, left alone to avoid churning PNG goldens that weren't
+verifiable in-session; and `plainTrackControl` carries one literal colour
+(`#d97706`) because there is no CSS system colour for "something is wrong" and
+the warning state exists precisely to be seen without hovering.
 
-Today a promoted display-type default (see `DISPLAY_TYPE_DEFAULTS.md`) is
-**user-only**: `session.setDisplayTypeDefault` writes `preferencesOverrides`,
-persisted to localStorage per browser. There is no way for an admin/embedder to
-ship a house default ("all alignments compact by default" baked into
-`config.json`). The design's historical note explicitly dropped the admin config
-slot when the cascade was simplified to resolve-on-read — this would add it back,
-minimally.
+## Interaction perf: which components re-render per frame
 
-**Not a new cascade tier.** `resolveSlot` already delegates its whole middle tier
-to one method, `getDisplayTypeDefault(type, slot)`, and doesn't care where the
-value comes from. Its sibling `getPreference` four lines above
-(`BaseSession.ts:156`) already layers `userOverride ?? getConf(['preferences',
-key])`; `getDisplayTypeDefault` (`BaseSession.ts:167`) reads the user map only.
-The two sibling preference-readers are asymmetric — this squares them off. The
-cascade stays three tiers; the admin fallback lives entirely inside
-`getDisplayTypeDefault`.
+### Where this leaves the perf story (all measured)
 
-Three separable pieces:
+- Interaction is main-thread-JS bound (frame time scales ~linearly with CPU
+  throttle), not GPU and not MobX.
+- The cost is React re-render + MUI/Emotion CSS-in-JS, and CSS-in-JS is a
+  per-render tax — so it's really the "too many components re-render per frame"
+  problem wearing a styling-cost hat.
+- tss-react is already optimized — no win there.
+- The tooltip wasn't the culprit. The remaining ~21ms/frame at 4× is the broader
+  set of components that re-render on `bpPerPx`/`offsetPx` — the
+  coverage/label/arc overlays and the LGV chrome.
 
-- **Make it work (~15 lines, 2 files).** Add a `frozen` slot
-  `displayTypeDefaults` (nested `type → slot → value`, `defaultValue: {}`,
-  `advanced`) to `PreferencesConfigSchemaFactory` (`PreferencesConfig.ts`, next to
-  `theme`/`extraThemes`); in `getDisplayTypeDefault` fall back to
-  `getConf(self, ['preferences', 'displayTypeDefaults'])` when the user map has no
-  entry. Authored via `config.json` JSON, no new UI. **Safety property:** slot
-  unset → `getConf` returns `{}` → nested read `undefined` → byte-identical to
-  today, so no existing install can regress. `isUsableValue` gates the admin value
-  like any promoted value, so a malformed entry degrades to base.
-- **Checkbox honesty (small).** `resolveSlot.promoted` would now mean *effective*
-  (user-or-admin), and it drives the track-menu "make default" pin's `active`
-  (`isSlotValueSessionDefault` / `areSlotsAtSessionDefault`). So with an admin
-  default set, the pin reads checked (truthful) but a user un-checking it can't
-  clear the admin value and it snaps back — looks stuck. Fix: split
-  `SlotResolution` into `promoted` (effective, drives the cascade) vs
-  `userPromoted` (raw user map, drives the pin) — one field + one getter.
-- **Admin-mode write-back UI (biggest, defer).** Make the existing "make default
-  for all tracks" action write the config slot instead of localStorage when
-  `session.adminMode` — mirrors track editing (admin → `jbrowse.updateTrackConf`;
-  else a delta). Lets admins author by clicking instead of editing JSON.
+### Honest next step
 
-**Precedence** is user-wins (track pin > user type-default > admin type-default >
-base), consistent with `getPreference` and the "user choice wins" decision the
-promotable design kept. An admin who wants a *locked* (non-overridable) value is a
-separate, larger feature: a `locked` flag, inverted precedence, and greying out
-every pin/promote affordance — not this.
+The only thing that reduces that per-frame cost is cutting the number of
+components that re-render each zoom frame. Pinning down which ones needs a
+React-render-level measurement (React DevTools profiler or render counters), not
+a CPU flame graph — that's the right tool for "who re-rendered and why."
+
+**Measured culprit (2026-07-11): the LGV coordinate ruler, not the alignments overlays.** A `MutationObserver` attributing every DOM mutation during a 5× zoom to its nearest `data-testid` subtree found ~2056 mutations dominated by `rubberband_controls` (the ScaleBar): 719 structural node add/remove + 439 style-attr, vs **2 of 2056** in the alignments overlays. The alignments display overlays are already zoom-invariant (`highlightBoxes` short-circuits to `[]` when nothing hovered; `renderSections`/`sections`/`groupLaidOutMap` read only vertical layout, never `offsetPx`/`bpPerPx`; sashimi/bezier default-off) — **do not chase them.** `VisibleLabelsOverlay` is a canvas, so it contributes no DOM churn.
+
+The churn is `ScalebarCoordinateLabels` (`plugins/linear-genome-view/.../ScalebarCoordinateLabels.tsx`): it creates/destroys ~144 tick `<div>` nodes per zoom click. Its `key`-by-base reuse works for *pan* (same bases scroll across) but not *zoom* — the scale changes, so the tick set + keys change every frame, forcing React to tear down + rebuild the whole tick list, each new node paying the emotion/tss `tickLabel` styling cost. Fix, lowest-risk first: **pool the tick `<div>`s** (fixed pool, reposition+relabel, no add/remove) → kills the 719 structural churn, keeps accessible DOM text; or a **canvas ruler** (bigger win, loses selectable text); or **coarsen ticks off `coarseBpPerPx`** during the zoom spring, snap exact on settle. Repro tool: `website/scripts/measure-zoom-churn.ts` (throwaway) + `~/src/jb2bench/scripts/interaction-profile.ts <url> <label> [pan|scroll|zoom|both]`, `THROTTLE=n`.
+
+Also, per-mousemove: `AlignmentsDisplayComponent` `setMouseCoord` on every `onMouseMove` re-runs the top observer; children are `observer`-memoized so blast radius is mostly the tooltip — confirm no inline object/array prop defeats a child's memo.
+
+## Search / misc
+
+- Search advanced panel; may need a pagefind inverted index.
+- Check [LDZip](https://github.com/23andMe/LDZip).
 
 ## R export
 
@@ -1908,122 +2141,114 @@ and `ref_name = seqnames(gr)[1]` hardcodes a single region; it's a stub.)
 Milestone 1 alone turns the BAM export from "wrong" to "correct reads with
 correct stacking" — the load-bearing piece; 2 and 3 layer on top.
 
-## expressiveness
+## Session-spec expressiveness: a Vega-Lite-style channel grammar
 
+Six changes that would make the session/figure spec behave like a published
+visualization grammar rather than an internal MST serialization. Written against
+the jb2export figure corpus, which is where the drift shows up. This is the
+worked-out version of the **Declarative JBrowse spec** note under
+[Configuration & spec layer](#configuration--spec-layer).
 
-1. Version + schema the session format (the #1 stability gap)
+### 1. Version + schema the session format (the #1 stability gap)
 
-The helpers file is littered with tells: "render against the local build because jbrowse.org/latest ignores this prop" (drawCurves, readConnections, geneGlyphMode). That is precisely the forward-compat problem Vega solved with a $schema stamp and additive-only evolution.
+The helpers file is littered with tells: "render against the local build because
+`jbrowse.org/latest` ignores this prop" (`drawCurves`, `readConnections`,
+`geneGlyphMode`). That is precisely the forward-compat problem Vega solved with a
+`$schema` stamp and additive-only evolution.
 
-- Add a formatVersion discriminator to sessions/configs and publish a JSON Schema per version.
-- Provide an upgrade/compat layer that lifts old specs forward, so a figure can pin a version and be guaranteed to render the same across releases.
-- Validate on load. Today a spec that's subtly malformed (see the synteny tracks: [[...]] vs flat string[] footgun, where a flat array silently collapsed to "level-0 only") fails by rendering wrong, not by erroring.
+- Add a `formatVersion` discriminator to sessions/configs and publish a JSON
+  Schema per version.
+- Provide an upgrade/compat layer that lifts old specs forward, so a figure can
+  pin a version and be guaranteed to render the same across releases.
+- Validate on load. Today a spec that's subtly malformed (see the synteny tracks:
+  `[[...]]` vs flat `string[]` footgun, where a flat array silently collapsed to
+  "level-0 only") fails by rendering wrong, not by erroring.
 
-Without this, every published figure is implicitly pinned to "whatever latest does today," which is the opposite of stable.
+Without this, every published figure is implicitly pinned to "whatever latest
+does today," which is the opposite of stable.
 
-2. A uniform encoding block = ggplot's aes() (the #1 expressiveness gap)
+### 2. A uniform encoding block = ggplot's aes() (the #1 expressiveness gap)
 
-Right now colorBy/sortBy/groupBy/filterBy are bespoke per display type — they mean something on alignments, something different or nothing on variants/synteny. Vega and ggplot feel expressive because channels are orthogonal to marks: any aesthetic maps onto any geom. Define one shared channel grammar:
+Right now `colorBy`/`sortBy`/`groupBy`/`filterBy` are bespoke per display type —
+they mean something on alignments, something different or nothing on
+variants/synteny. Vega and ggplot feel expressive because channels are orthogonal
+to marks: any aesthetic maps onto any geom. Define one shared channel grammar:
 
+```json
 "encoding": {
   "color":  { "field": "tag:HP", "scale": { "scheme": "haplotype" } },
   "sort":   { "field": "tag:HP" },
   "group":  { "field": "tag:HP" },
   "height": { "field": "score", "scale": { "type": "log", "domain": [1, 1024] } }
 }
+```
 
-and interpret it uniformly wherever a channel is meaningful, per display type declaring which channels it supports. This is the single change that most makes it "feel like ggplot."
+and interpret it uniformly wherever a channel is meaningful, per display type
+declaring which channels it supports. This is the single change that most makes
+it "feel like ggplot."
 
-3. First-class, reusable scales
+### 3. First-class, reusable scales
 
-scaletype:log + minmax:1:1024 (bigwig) is already a scale spec — it's just trapped inside one display's vocabulary. Generalize a Scale object (type, domain, range/scheme) usable by any quantitative channel: coverage height, feature color ramps, methylation, GWAS -log10(p). One scale abstraction shared everywhere, the way Vega scales are.
+`scaletype:log` + `minmax:1:1024` (bigwig) is already a scale spec — it's just
+trapped inside one display's vocabulary. Generalize a Scale object (type, domain,
+range/scheme) usable by any quantitative channel: coverage height, feature color
+ramps, methylation, GWAS -log10(p). One scale abstraction shared everywhere, the
+way Vega scales are.
 
-4. Collapse the three dialects to one canonical form + sugar
+### 4. Collapse the three dialects to one canonical form + sugar
 
-Make the jb2export CLI grammar (color:tag:HP, display:multivariant) a lowering onto the same displaySnapshot JSON that sessions use — one canonical schema, multiple front-ends (terse CLI sugar, full JSON). This structurally eliminates the CLI-vs-session drift, and it means the screenshot corpus's cli and url modes are testing the same code path.
+Make the jb2export CLI grammar (`color:tag:HP`, `display:multivariant`) a
+lowering onto the same `displaySnapshot` JSON that sessions use — one canonical
+schema, multiple front-ends (terse CLI sugar, full JSON). This structurally
+eliminates the CLI-vs-session drift, and it means the screenshot corpus's `cli`
+and `url` modes are testing the same code path.
 
-5. Formal view combinators
+### 5. Formal view combinators
 
-You already have layer/concat-like composition (stacked views, multi-level synteny tracks: [[…],[…]], circular). Name a small closed set of combinators — single / vstack / syntenyBetween / circular — with an explicit nesting contract, analogous to Vega's layer/concat/facet. That removes ambiguities like the "is this array a level or a single entry" trap and gives the schema a clean recursive shape.
+You already have layer/concat-like composition (stacked views, multi-level
+synteny tracks: `[[…],[…]]`, circular). Name a small closed set of combinators —
+single / vstack / syntenyBetween / circular — with an explicit nesting contract,
+analogous to Vega's layer/concat/facet. That removes ambiguities like the "is
+this array a level or a single entry" trap and gives the schema a clean recursive
+shape.
 
-6. No sentinels in the serialized/public form
+### 6. No sentinels in the serialized/public form
 
-Your own CLAUDE.md flags rowHeight === 0 = fit-to-height → effectiveRowHeight. A public schema must not leak that. Offer a getResolvedSession() that emits explicit resolved values — which is exactly what a portable, reproducible figure spec wants anyway. Keep sentinels internal.
+Your own CLAUDE.md flags `rowHeight === 0` = fit-to-height →
+`effectiveRowHeight`. A public schema must not leak that. Offer a
+`getResolvedSession()` that emits explicit resolved values — which is exactly
+what a portable, reproducible figure spec wants anyway. Keep sentinels internal.
 
-## Perf
+## Website: copy-as-markdown / LLM-readiness
 
-Where this leaves the perf story (all measured)
+`entry.id` from the content collection is the repo-relative path (`config_guide` →
+`website/docs/config_guide.md`), so per-page Markdown export needs zero new
+infrastructure. "View as Markdown" → an `<a href>` to the GitHub raw URL; "Copy as
+Markdown" → `fetch(rawUrl).then(r => r.text()).then(navigator.clipboard.writeText)`
+(raw.githubusercontent.com sends `access-control-allow-origin: *`). Trade-offs: **version
+drift** (the deployed site is built from a specific commit — pin the URL to the
+build-time SHA to stay faithful, or accept `main`'s minor drift); frontmatter noise (LLMs
+handle it; non-issue); combined index files (`llms.txt` / `llms-full.txt`) can't come
+from GitHub — generate at build from frontmatter + `sidebars.json` and commit them.
+Recommendation: hybrid weighted toward GitHub — per-page button → GitHub raw pinned to
+build SHA; `llms.txt` curated index → generated at build with links pointing at GitHub
+raw URLs; `llms-full.txt` optional generate-and-commit. The only thing hosted is a tiny
+index file.
 
-- Interaction is main-thread-JS bound (frame time scales ~linearly with CPU throttle), not GPU and not MobX.
-- The cost is React re-render + MUI/Emotion CSS-in-JS, and CSS-in-JS is a per-render tax — so it's really the "too many components re-render per frame" problem wearing a styling-cost hat.
-- tss-react is already optimized (you fixed it) — no win there.
-- The tooltip wasn't the culprit. The remaining ~21ms/frame at 4× is the broader set of components that re-render on bpPerPx/offsetPx — the coverage/label/arc overlays and the LGV chrome.
+## Website: screenshot spec ↔ PNG staleness guard
 
-Honest next step
-
-The only thing that reduces that per-frame cost is cutting the number of components that re-render each zoom frame. Pinning down which ones needs a React-render-level measurement (React DevTools profiler or render counters), not a CPU flame graph — that's the right tool for "who re-rendered and why."
-
-**Measured culprit (2026-07-11): the LGV coordinate ruler, not the alignments overlays.** A `MutationObserver` attributing every DOM mutation during a 5× zoom to its nearest `data-testid` subtree found ~2056 mutations dominated by `rubberband_controls` (the ScaleBar): 719 structural node add/remove + 439 style-attr, vs **2 of 2056** in the alignments overlays. The alignments display overlays are already zoom-invariant (`highlightBoxes` short-circuits to `[]` when nothing hovered; `renderSections`/`sections`/`groupLaidOutMap` read only vertical layout, never `offsetPx`/`bpPerPx`; sashimi/bezier default-off) — **do not chase them.** `VisibleLabelsOverlay` is a canvas, so it contributes no DOM churn.
-
-The churn is `ScalebarCoordinateLabels` (`plugins/linear-genome-view/.../ScalebarCoordinateLabels.tsx`): it creates/destroys ~144 tick `<div>` nodes per zoom click. Its `key`-by-base reuse works for *pan* (same bases scroll across) but not *zoom* — the scale changes, so the tick set + keys change every frame, forcing React to tear down + rebuild the whole tick list, each new node paying the emotion/tss `tickLabel` styling cost. Fix, lowest-risk first: **pool the tick `<div>`s** (fixed pool, reposition+relabel, no add/remove) → kills the 719 structural churn, keeps accessible DOM text; or a **canvas ruler** (bigger win, loses selectable text); or **coarsen ticks off `coarseBpPerPx`** during the zoom spring, snap exact on settle. Repro tool: `website/scripts/measure-zoom-churn.ts` (throwaway) + `~/src/jb2bench/scripts/interaction-profile.ts <url> <label> [pan|scroll|zoom|both]`, `THROTTLE=n`.
-
-Also, per-mousemove: `AlignmentsDisplayComponent` `setMouseCoord` on every `onMouseMove` re-runs the top observer; children are `observer`-memoized so blast radius is mostly the tooltip — confirm no inline object/array prop defeats a child's memo.
-
-## Multi-hop / fusion chaining (SplitThreader-style)
-
-Design only, no code. Show cancer multi-hop rearrangements / gene fusions the
-way [SplitThreader](https://github.com/marianattestad/splitthreader) does —
-reference-space arcs (its panel A) *and* a linearized "fusion contig" axis with
-ribbons to the reference (its panel B). User's wish: *"chain everything
-together similar to launch → linear read vs ref."*
-
-A split read is a walk through a breakpoint graph (nodes = positions, edges =
-junctions); a read with SA segments `A→B→C` is a 2-hop path, a fusion is the
-consensus path many reads agree on. JBrowse **already has both panels**, but
-each is single-read / per-read, and the chain-walk logic is **triplicated**:
-
-- **Panel A (reference-space arcs):** bezier overlay (`readGroupConnections`/
-  `chainSubRead` — on-screen only) + coverage arcs (`unpairedReadChain`/
-  `unpairedChainArcs`, `features/arcs/compute.ts` — inserts off-screen SA
-  segments) + breakpoint-split-view `AlignmentConnections` (`readChainSegments`/
-  `markHiddenSegments` — SA-aware + marks hidden).
-- **Panel B (query-space linear chain):** the "Linear read vs ref" launcher —
-  `buildReadVsRefFeatures` (one read + SA → segments sorted by
-  `clipLengthAtStartOfRead`) → `buildReadVsRefTemporaryAssembly` (temp assembly
-  whose one chromosome *is* the read) → `LinearSyntenyView`.
-
-**Unifying model: sources → `Chain` → sinks.** Every current copy already builds
-the `segments` half; the enabling refactor is one shared `Chain` type
-(`{segments: ChainSegment[]; junctions: Junction[]}`) with an insert-node vs
-mark-hidden flag for off-screen hops, plus one `renderChainPaths(junctions,
-projector, style)` emitter over the shared `bezierConnectorPath`
-(`packages/core/src/util/bezierConnector.ts`). Shared primitives already
-single-source: `readEndpoints.ts` (`connectionEndpointBps`), `featurizeSA`,
-`splitInversion`. SA tags already cross the worker boundary
-(`PileupDataResult.readSuppAlignments`/`readClipAtStart`/`readNextPositions`),
-so chain-building stays main-thread — no worker changes for phase 1.
-
-Phasing: **P0** extract the shared `Chain` behind one builder (pure refactor;
-watch the "no leaky abstractions" rule — the only host seam should be a small
-`ChainProjector` of `screenX/screenY/reversed`; if it gets fat, keep the
-copies). **P1** generalize `buildReadVsRefFeatures` single-read → multi-segment
-+ a multi-read "Linear fusion vs reference" launcher, and "linearize this
-rearrangement" from a breakpoint-split-view `layoutMatches` chunk (which is
-*already* an ordered `Chain`). **P2** SA-aware bezier overlay + off-screen
-anchor (A1 baseline-drop / A2 edge-clamp / A3 multi-region-only). **P3**
-`aggregateJunctions` consensus → breakend features → breakpoint-split-view
-renders them through its existing `getMatchedBreakendFeatures` path (a consensus
-junction *is* a breakend; the alignments track discovers the fusion, the
-breakpoint view renders it as it would a called SV — no new draw path).
-
-Open decisions (need user input before coding): what the fusion contig is built
-from (curated reads → consensus junctions → VCF breakend walk — all additive
-sources feeding the same sink, ship in that order); the single-region off-screen
-anchor (A1/A2/A3); aggregation scope (visible-reads main-thread vs whole-region
-worker scan); whether P3's breakend bridge is in scope. Minor findings noted:
-`PileupBezierOverlay` `onClick` always selects `arc.id1` (a multi-hop `id2`
-endpoint is unreachable via click); `arcIsVisible` culls by endpoint Y only (a
-same-row bowed curve just off-screen can be dropped, harmless).
+Recurring drift: a screenshot spec is edited and committed but its PNG is not regenerated
+(regen needs a jbrowse-web build, so it is easy to skip), so reviewers keep seeing stale
+images and re-flag "already fixed" figures. This bit the `6f0392a387` batch hard — 8 specs
+fixed, **0 PNGs committed**, all 8 re-marked bad against the old images. A guard could catch
+it: hash each spec's *render inputs* (its serialized spec object + the git SHAs of the
+source/config files the render depends on) and record that hash next to the committed PNG (a
+sidecar, or a field in `screenshot-review.json`); a CI check fails when a spec's current
+input-hash ≠ the hash the committed PNG was built from. Cheaper heuristic: fail when a spec
+file's git commit time is newer than its PNG's. Either turns "forgot to regen" from a silent
+multi-session review loop into one red check. (Related: the review tool already hashes the
+PNG bytes to expire verdicts — this is the same idea one step upstream, keyed on the spec's
+inputs rather than its output.)
 
 ## Cancer SV datasets not yet shot
 
@@ -2073,226 +2298,6 @@ multi-wiggle (denser, low-depth — use ≥1 Mb bins). New spec
 `sv_cgiab/single_cell_cnv`, placed right after "reading copy number" so
 per-clone heterogeneity visualizes the subclonal-fraction explanation for why
 SMAD4 reads muted vs TP53.
-
-## Deferred architecture-review items (type-safety / DisplayChrome)
-
-Deliberately left for a decision after the 2026-07 architecture-review fix pass
-(the code + doc fixes landed; `viewportMatchesLastDrawn` freshness gate, the
-clipPath-id and byte-limit fixes, etc.). The dotplot/circular export-freshness
-gap from the same pass is tracked in TODO.md.
-
-- **DisplayChrome prop/height parity.** (a) `{...divProps}` spread only on the
-  ready branch, so terminal early-returns drop ref/handlers — already documented
-  as benign-by-design (ADR-025); (b) `TooLargeMessage` renders at intrinsic
-  height while `DisplayRenderErrorOverlay` gets `height={model.height}`.
-  Threading height through `TooLargeMessage`→`BlockMsg` could churn many
-  displays' too-large snapshots and the intrinsic height may be intentional —
-  needs a product call.
-- **Make `dataCurrent` a required member** (omission = compile error, not a
-  runtime export hang). MST mixin composition doesn't enforce "must override a
-  getter" cleanly, and [ADR-041](architecture-decision-records/adr-041-no-mixin-composed-into-basedisplay.md)
-  rules out the composition trick that would express it. Deferred; the default
-  is fail-hung rather than fail-stale, which is the safe side.
-
-### A theme-free `makeStyles` — the build-your-own "weight" half
-
-The two bring-your-own seams shipped and a stock wiggle, feature or alignments
-display now renders **nothing styled by Material UI** when an embedder installs
-both plain sets (`reference/DISPLAYCHROME.md`, "The bring-your-own seams", has
-the census that proves it). What did not ship is *weight*: `makeStyles` imports
-`useTheme` from `@mui/material/styles`
-(`packages/core/src/util/tss-react/mui/mui.ts`), and
-`grep -rn 'makeStyles(' --include='*.ts*' packages plugins products` is ~269 call
-sites. While that holds, "Material UI never enters the module graph" is
-unreachable for anyone rendering a stock display, no matter how many providers
-they install. The build-your-own site says so plainly under "What you do not get
-rid of"; that is honesty, not a solution.
-
-The fix, if it is worth it, is a theme-free `makeStyles` — or a
-`usePalette()`-backed styling helper — that stock display components are
-*required* to use. It would also close the census gap noted in DISPLAYCHROME.md
-(a themed `makeStyles` component that sets no typography passes both halves
-today). `pnpm measure-chrome-bundle` measures what the reach half costs now.
-
-**The examples site cannot demonstrate this half, and that was assessed rather
-than assumed.** `DisplayChromeBase` takes `model: ChromeModel &
-RenderLifecycleModel<B>` plus a backend `factory`, so a page showing it needs a
-display *model* — a config schema, a display type and a plugin to register them,
-on top of the ~300 lines of view boilerplate every page there repeats. Most of
-the file would be about how to write a display rather than about the seam, and
-the site's "one page adds one thing" arc has nowhere to put it. If it ever gets a
-demo it belongs outside the arc, and the honest scope is a custom-display page
-that happens to use `DisplayChromeBase` — not a `DisplayChromeBase` page.
-
-Two smaller loose ends from the same pass: alignments' bottom-right row doesn't
-reserve its `VerticalScrollbar`'s 12px (canvas reserves 14), cosmetic overlap
-with the thumb only, left alone to avoid churning PNG goldens that weren't
-verifiable in-session; and `plainTrackControl` carries one literal colour
-(`#d97706`) because there is no CSS system colour for "something is wrong" and
-the warning state exists precisely to be seen without hovering.
-
-## Vertical real estate & the "scrolls within scrolls" problem
-
-The app nests scroll surfaces (page scroll, per-track synthetic scroll, horizontal
-genome pan) in ways that fight the expectation of an easily scrollable web page.
-`fit-to-display-height` already helps. This note captures where to push next.
-
-### The goodness hierarchy
-
-Rank the outcomes, best first:
-
-1. **Everything fits the viewport → no scroll at all.**
-2. **Doesn't fit → densify/summarize until it fits → still no scroll.**
-3. **Genuinely can't summarize → scroll, made clean.**
-
-Fit-to-height lives at levels 1-2; composite/nested scroll improvements live at
-level 3. Level 1 beats level 3 unconditionally: eliminated scroll dominates
-improved scroll. So the master lever is **minimizing vertical footprint**, not
-making nested scroll nicer.
-
-Why vertical is the right axis to optimize: the horizontal axis carries all the
-meaning (it is the genome, navigated by pan/zoom); the vertical axis carries no
-genomic information, it is pure stacking overhead. Every vertical pixel reclaimed
-is returned to genome context and removes potential scroll. It is the only axis
-where "use less" is strictly a win.
-
-### What the current wheel/scroll machinery already does (don't reinvent)
-
-Grounding check against the code corrected two tempting-but-wrong premises:
-
-- `useWheelScroll.ts` already separates axes: plain wheel `deltaX` -> horizontal
-  pan, `ctrl`/`meta` (or opt-in `scrollZoom`) -> zoom, `deltaY` -> the track's own
-  vertical scroll. `trackPointerPresence` drops accumulation when the cursor
-  leaves so gestures chain to the page. `scrollLatch.ts` reproduces native
-  scroll-chaining. So "gesture ambiguity" is largely already solved.
-- Per-track vertical scroll is **synthetic on purpose** (`TrackRenderingContainer`
-  is `overflow: hidden`; each canvas display owns a sticky-canvas +
-  `VerticalScrollbar` overlay redrawing at `scrollTop`). Native overflow here
-  previously produced double/flickering scrollbars. So "unify into one native
-  scroll surface" walks back into a fixed bug.
-
-The residual pain is therefore **panel count and handoff**, not gesture
-ambiguity - which is exactly why footprint reduction (fewer panels that need to
-scroll) is the higher lever.
-
-### Lever A: view-level height allocator (fit the whole stack, not each track)
-
-Today heights are **bottom-up**: `LinearGenomeView.height` = `Σ trackHeight(t) +
-chrome`, and `trackHeight(t)` (model.ts:742) reads `display.height` (config slot,
-or content-height in fit mode). Nothing constrains the sum to a viewport. Current
-fit-to-height fits each track to *its own* content; ten content-fit tracks can
-still overflow. The higher-lever version inverts to **top-down**: a budget `B` is
-distributed across tracks so the whole stack targets the viewport.
-
-Give each display three numbers instead of one:
-
-- `naturalHeight` - what content wants (content height in fit mode; the pinned
-  slot value if the user drag-resized)
-- `minHeight` - `MIN_DISPLAY_HEIGHT`
-- `allocatedHeight` - what the view grants
-
-The display renders at `allocatedHeight`; internal scroll appears only when
-`allocatedHeight < naturalHeight`.
-
-Allocation is **water-filling / max-min fairness**:
-
-```
-B = availableViewportHeight − chrome (headers, scalebar, resize handles)
-
-if Σ naturalHeight ≤ B:
-    grant everyone naturalHeight        // level 1 — fits, no scroll, done
-else:
-    waterfill:                          // max-min fairness
-      share = B / nTracks
-      tracks wanting ≤ share keep their full naturalHeight
-        and release their surplus back into the pool
-      repeat with the remaining tracks + remaining budget
-      the dense tracks split whatever's left, and only they scroll
-```
-
-This encodes the intuition: a 2-feature gene track costs 2 rows and shows whole;
-a deep pileup absorbs the deficit and scrolls internally; the **stack** fits the
-screen. Sweet spot is the common mixed session (genes + coverage + one pileup):
-one-panel-scroll -> zero. Degrades gracefully to "fair small shares" when every
-track is dense; when all are sparse, today's fit-to-height already handles it.
-
-**Where it slots in:** `trackHeight(track)` at model.ts:742 is already the single
-chokepoint deciding a track's vertical box (it centralizes minimized-collapse).
-It becomes:
-
-```
-trackHeight(track) = allocations.get(track.id) ?? track.displays[0].height
-```
-
-where `allocations` is one view-level MobX `computed` over
-`tracks.map(naturalHeight)` and `B`, recomputing reactively as content heights
-settle.
-
-**Four real wrinkles:**
-
-1. **Where `B` comes from** - embedded-vs-app split. Full app has a measurable
-   fixed shell; embedded LGV often lives in an unbounded, grow-to-content
-   container. So `B` must be **opt-in** (a `viewHeight`/budget config); unset ->
-   fall back to today's bottom-up behavior (also makes it non-breaking).
-2. **`naturalHeight` is async** - it comes from worker render/layout, so
-   allocation is reactive, settling as data arrives (MobX computed handles it).
-   Trap: `naturalHeight` must be the *unconstrained* content height, never
-   derived from the current `allocatedHeight`, or fit-scaling displays (the
-   wiggle `renderTransform` path) oscillate. Displays must expose
-   content-height-at-natural-density independent of what they're allocated.
-3. **One resolved getter** (the `effectiveRowHeight` pattern from CLAUDE.md):
-   every consumer - render container, SVG export (`svgcomponents/util.ts`
-   `totalHeight`), y-offset walk, overlays - reads `allocatedHeight`, never the
-   raw slot. `trackHeight()` already centralizes layout; route SVG export through
-   it too.
-4. **Drag-resize is a constraint, not a variable** - a user-pinned height enters
-   the waterfill as fixed (compressed last, or not at all), else the allocator
-   instantly undoes the drag. Maps onto the existing slot-set (pinned) vs
-   slot-unset (fit) distinction.
-
-### Lever B: reclaim non-data chrome (cheap, lossless)
-
-Data density is the hard, lossy lever. Label bars, headers, resize handles, and
-inter-track gaps are pure overhead with no genomic information, paid once per
-track. Ten tracks x ~30px is a whole track's worth of genome context spent on
-furniture. Overlaying labels onto data (floating-label machinery already exists),
-thinning gaps, and collapsing headers is footprint savings with **zero
-information loss**. Composes with Lever A: less chrome -> bigger `B` -> more fits
-natively before the waterfill ever compresses anything.
-
-### Honest floor & scoping
-
-- A 100-sample MAF or a very deep pileup cannot be fit without losing detail, so
-  level 3 (scroll) never fully disappears - but even there the right response is
-  summarize-to-fit (level 2), with scroll as the genuine last resort.
-- `useWheelScroll` is LGV-specific. Dotplot/synteny are genuinely 2D (vertical
-  *is* a genome axis); none of the "vertical = document" logic applies there.
-- Any grow / allocator change is gated on deployment context (embedded vs full
-  app), because `TrackRenderingContainer` is shared.
-- We lack data on which nesting users hit most; the allocator is a hypothesis.
-  Cheapest de-risk: prototype the `allocations` computed behind an opt-in
-  `viewHeight`, wire `trackHeight()` to it, and watch whether the async settling
-  behaves before investing further.
-
-
-
-## packages/add-track-core
-
-A minimal shared package (zero external deps) for adapter guessing logic, so the CLI and the
-plugins don't duplicate file-extension → adapter-type and adapter-type → track-type mappings.
-
-The CLI's `guessAdapter`/`guessFileNames`/`adapterTypesToTrackTypeMap` in
-`products/jbrowse-cli/src/commands/add-track-utils/adapter-utils.ts` and the plugins'
-`Core-guessAdapterForLocation` / `Core-guessTrackTypeForLocation` extension points both encode
-the same knowledge. When a new adapter is added the list must be updated in both places, which
-is how bugs creep in (e.g. missing BedGraphTabixAdapter, unescaped regex dots).
-
-A shared package would centralize at least the mappings (regex constants, type maps). The CLI
-flat-function path and the plugin extension-point path could remain separate consumers; they
-just import from one source of truth.
-
-Motivation: avoid CLI depending directly on `packages/core`, and eliminate the duplication
-that causes drift bugs.
 
 ## Two tutorials the focus pass left open
 

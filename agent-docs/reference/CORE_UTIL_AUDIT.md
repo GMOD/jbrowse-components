@@ -1,3 +1,8 @@
+---
+name: core-util-audit
+description: The 2026-07-31 audit of packages/core/src/util — what landed, the latent typing/contract items still open, the dead code that is a plugin-ABI decision rather than a reachability question, and the list verified clean. Read before re-auditing core/util or deleting something there that looks unused.
+---
+
 # packages/core/src/util audit — findings and next steps
 
 Audit of `packages/core/src/util/` (2026-07-31), six parallel read-only passes

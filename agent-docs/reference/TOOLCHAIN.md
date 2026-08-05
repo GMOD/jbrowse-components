@@ -1,3 +1,8 @@
+---
+name: toolchain
+description: Why we deliberately run TypeScript 6.x for lint and an aliased typescript7 for typecheck and build:esm, why unifying them breaks the eslint backstop, plus the project-reference, module-augmentation and clean-tree rules that follow. Read before changing a TypeScript version, a tsconfig references array, or a package entry point.
+---
+
 # Toolchain: TypeScript 6 vs 7 split
 
 We run two TypeScript versions on purpose. Don't "fix" this by unifying them.
@@ -32,7 +37,7 @@ Keep `typescript` on 6.x; keep `typescript7` as the aliased 7.x. Once
 typescript-eslint ships TS7 support, drop the alias and bump `typescript`
 itself to 7.
 
-# Project references
+## Project references
 
 Every `tsconfig.build.esm.json` is `extends` plus a `references` array mirroring
 its package.json `workspace:` deps — nothing else. The compiler options live in
@@ -75,7 +80,7 @@ Symptom when you get it wrong: `TS2488 Type 'unknown' must have a
 '[Symbol.iterator]()' method` at an `addToExtensionPoint` callback, because the
 overload fell back to the untyped signature.
 
-# `pnpm autogen` needs a clean tree
+## `pnpm autogen` needs a clean tree
 
 `pnpm gendocs` resolves sources through the `@jbrowse/*` workspace links, so in
 a shared worktree it emits `f(everyone's dirty tree)` and then fails the CI

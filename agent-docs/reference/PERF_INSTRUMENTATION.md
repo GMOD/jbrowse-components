@@ -303,8 +303,8 @@ The live lever is bundle *content* — see below.
 every worker, and a `SharedArrayBuffer` token additionally carries an atomic flag
 that a *synchronous* loop can read without yielding. Only the message path ever
 runs in practice, because SAB needs `crossOriginIsolated` and nothing sets
-COOP/COEP (see `agent-docs/OTHER_IDEAS.md` for why that is deliberate and not
-fixable for an embeddable library).
+COOP/COEP (see [NETWORK_ABORT.md](NETWORK_ABORT.md) for why that is deliberate
+and not fixable for an embeddable library).
 
 `node website/scripts/coi-probe.ts [--coi]` serves the build with and without
 `Cross-Origin-Opener-Policy: same-origin` + `Cross-Origin-Embedder-Policy:
@@ -374,7 +374,7 @@ Note `Cross-Origin-Embedder-Policy: credentialless` also produces
 `crossOriginIsolated` (verified: same SAB counts, 686 ms settle) and, unlike
 `require-corp`, does **not** require CORP headers on cross-origin subresources —
 so it is the variant that could make this live without breaking fetching public
-data from arbitrary hosts. `agent-docs/OTHER_IDEAS.md` only considered
+data from arbitrary hosts. [NETWORK_ABORT.md](NETWORK_ABORT.md) only considered
 `require-corp` when it concluded isolation was unusable.
 
 ## Getting UI code out of the RPC workers

@@ -1,9 +1,81 @@
 ---
 name: todo
-description: Action items to build or fix, the current backlog. Read when picking up work.
+description: The backlog — action items to build or fix, grouped by how ready each one is: small and self-contained, designed and ready to build, or blocked on a measurement that has to come first. Read when picking up work.
 ---
 
-## Give the comparative displays a cancel and a retry
+# Backlog
+
+Grouped by **what you have to do first**, because that is the thing most of these
+entries actually disagree on. A third of them are ordinary build work; another
+third carry a design that survived a rejected alternative and needs following
+rather than re-deriving; the rest open with an instruction to go measure
+something, because the premise or the cost attribution is not established and
+building first would be guessing.
+
+Exploratory concepts that are *not* committed work live in
+[OTHER_IDEAS.md](OTHER_IDEAS.md).
+
+| Item | Area | First move |
+| --- | --- | --- |
+| [Grey out the genomic-coordinate option](#grey-out-the-genomic-coordinate-option-instead-of-hiding-it) | feature details | render the radio disabled |
+| [Autofit height for the LGV demo](#autofit-height-for-the-lineargenomeview-example-site-demo) | embedded | no view-level auto-height exists yet |
+| [Extra large text SVG mode](#extra-large-text-svg-mode-for-pub-ready-figures) | SVG export | thread a scale the way `fontFamily` threads |
+| [Alignments / canvas odds and ends](#alignments--canvas) | alignments, canvas | five independent small items |
+| [Comparative cancel and retry](#give-the-comparative-displays-a-cancel-and-a-retry) | synteny, dotplot | read ADR-054 first; retry is a button, never automatic |
+| [Stop uploading every rect twice](#stop-uploading-every-rect-twice-for-the-continuation-pass) | GPU canvas | unify `ATTR4`, then verify headed on both backends |
+| [Linearize the pangenome](#linearize-the-pangenome-draw-graph-variation-as-alignment-style-glyphs) | pangenome | read PANGENOME_GRAPHS.md — four findings constrain the layout |
+| [Reads on the derivative allele](#reads-on-the-reconstructed-derivative-allele) | cancer SV | two open halves; the middle one is already built |
+| [WebGL2 context budget](#measure-the-webgl2-context-budget-in-the-shape-users-actually-hit) | GPU, limits | measure — the ceiling has only ever been synthetic |
+| [MAF fetch cost on long blocks](#maf-fetch-cost-on-long-blocks) | MAF | run the one-line block-size check; premise unconfirmed |
+| [Alignments main-thread repack](#alignments-still-repacks-every-row-instanced-pass-on-the-main-thread) | alignments, GPU | profile the pack/upload/clone split first |
+| [Stop rewriting the worker's arrays](#stop-rewriting-the-workers-arrays-to-lay-out-features) | canvas | count the consumers — they decide if it is worth it |
+| [`featureItemMap` O(N) build](#featureitemmap-is-an-on-build-serving-a-handful-of-point-queries) | canvas | pairs with the entry above |
+
+## Ready to build: small and self-contained
+
+### Grey out the genomic-coordinate option instead of hiding it
+
+`SequenceFeatureDetails/dialogs/SequenceFeatureMenu.tsx` drops the "Coordinates
+relative to genome" radio entirely when `showGenomicCoordsOption(mode)` is
+false, so the option disappears rather than explaining itself. Render it
+disabled, with the reason the label already carries.
+
+### Autofit height for the lineargenomeview example-site demo
+
+No view-level auto-height in `products/jbrowse-react-linear-genome-view`; only
+per-track `heightMode` grow/fit (demoed in `examples-site` `WithTrackSizing`).
+
+### Extra large text SVG mode for pub-ready figures
+
+`BaseExportSvgDialog` exposes font *family* only. Text size is per-element
+(explicit `fontSize` attrs plus `SvgCanvas` labels), so a scale factor has to
+thread through the same path `fontFamily` takes (`wrapSvgExport` →
+`SVGExportRoot`) and every explicit `fontSize` has to become relative, or
+labels will overflow the boxes laid out for them.
+
+### Alignments / canvas
+
+- Group by strand, `plugins/canvas`. Nothing in `plugins/canvas` groups today;
+  the vocabulary to copy is `plugins/alignments/src/shared/groupFeatures.ts`
+  (`GROUP_BY_DIMENSIONS`, section dividers).
+- Sample/library (SM/LB) grouping. `RG` already works via the generic tag
+  dimension, but SM/LB live in the header's `@RG` lines, not in the record, so
+  this needs an RG→SM/LB map from the adapter.
+- Separate quantitative splice-junction track. Sashimi exists only as an overlay
+  (`plugins/alignments/src/features/sashimi`).
+- Toggle off tooltips for `LinearMultiSampleVariantDisplay`. This is a re-add:
+  the old `showTooltips` prop was dropped in the rewrite (see the legacy-props
+  comment in `shared/MultiSampleVariantBaseModel.ts`).
+- Add a "hide this feature" option to `LinearMultiSampleVariantDisplay` (and
+  similar displays). `plugins/canvas` already has `hideFeature`
+  (`LinearBasicDisplay/baseModel.ts`) to copy.
+
+## Ready to build: the design is settled
+
+Each of these carries a design that already survived a rejected alternative.
+Read the linked ADR or reference doc before re-proposing the thing it rejected.
+
+### Give the comparative displays a cancel and a retry
 
 `LinearSyntenyDisplay` and `DotplotDisplay` are the only displays with no way to
 stop a slow load or retry a failed one. Every LGV display has both.
@@ -54,61 +126,7 @@ because `prepare` happens not to read it; the same hazard is why
 `installGlobalFetchAutorun` documents that `rpcProps()` must never return
 fetch-derived state.
 
-## Alignments / canvas
-
-- Group by strand, `plugins/canvas`. Nothing in `plugins/canvas` groups today;
-  the vocabulary to copy is `plugins/alignments/src/shared/groupFeatures.ts`
-  (`GROUP_BY_DIMENSIONS`, section dividers).
-- Sample/library (SM/LB) grouping. `RG` already works via the generic tag
-  dimension, but SM/LB live in the header's `@RG` lines, not in the record, so
-  this needs an RG→SM/LB map from the adapter.
-- Separate quantitative splice-junction track. Sashimi exists only as an overlay
-  (`plugins/alignments/src/features/sashimi`).
-- Toggle off tooltips for `LinearMultiSampleVariantDisplay`. This is a re-add:
-  the old `showTooltips` prop was dropped in the rewrite (see the legacy-props
-  comment in `shared/MultiSampleVariantBaseModel.ts`).
-- Add a "hide this feature" option to `LinearMultiSampleVariantDisplay` (and
-  similar displays). `plugins/canvas` already has `hideFeature`
-  (`LinearBasicDisplay/baseModel.ts`) to copy.
-
-## Stop rewriting the worker's arrays to lay out features
-
-`cloneMutableFields` (`plugins/canvas/src/LinearBasicDisplay/layout.ts`) is **~78%
-of a full layout** — 116ms of 148ms at 4k features, per-phase instrumented, against
-8.8ms for the actual packing. It is pure allocation: a fresh `Float32Array` per
-geometry channel plus an object spread per `flatbushItems` entry, per
-`subfeatureInfos` entry and per `floatingLabelsData` entry, all so
-`computeLaidOutData` can add each feature's row offset into the copy in place.
-
-`createContentHeightProbe` packs straight from the raw worker data and never
-clones, so the fit solve's height probes escape the cost. Every *committed*
-layout pays it: each settled zoom, each pan into new data, each label or
-display-mode toggle.
-
-The shape of the fix is to not rewrite the arrays at all — keep the per-feature row
-offset in its own `Float32Array` beside the raw result and add it where Y is
-consumed. Layout then becomes "compute a row map", i.e. the 8.8ms part.
-
-**Measure the consumers before building it**, because they are the cost, not the
-layout. `GpuCanvasFeatureRenderer` already takes per-instance Y so an offset
-attribute is cheap there, but `components/hitTesting.ts`,
-`components/useOverlayElements.tsx`, `renderSvg.tsx`, `yMorph.ts`
-(`interpolateYData`, `captureFeatureTops`) and `scaleLaidOutData` all read absolute
-`topPx`/`bottomPx`/`rectYs` today. Count those call sites first and decide whether
-they can share one "resolve Y" accessor, or whether enough of them need the offset
-folded in that the clone comes straight back — that answer decides whether the
-spike is worth it at all.
-
-Two cheaper fallbacks if that is too invasive. `flatbushItems` and
-`subfeatureInfos` are arrays of objects cloned by spread, so parallel typed
-arrays would remove most of the allocation without touching the render contract.
-And `rectDensityFade` is worker-allocated but layout-valued, with
-`applyLayoutToRegion` writing every element, so `computeLaidOutData` could
-allocate it rather than copy it — the catch being that `cloneMutableFields` is
-shared with `scaleLaidOutData`, which does not rewrite the array and still needs
-the copy, so that split costs a per-caller flag or a second clone helper.
-
-## Stop uploading every rect twice for the continuation pass
+### Stop uploading every rect twice for the continuation pass
 
 `GpuCanvasFeatureRenderer.uploadRegion` packs `numRects` continuation instances
 alongside `numRects` rect instances, so the densest tracks pay double the rect
@@ -131,7 +149,148 @@ Verify headed on a real GPU against both backends, since WebGL2 binds attributes
 through `vertexAttribPointer`/`vertexAttribIPointer` (int vs float matters) while
 WebGPU goes through `vertex.buffers`.
 
-## Alignments still repacks every row-instanced pass on the main thread
+### Linearize the pangenome: draw graph variation as alignment-style glyphs
+
+Requested framing: the graph in a *linear* view drawn the way
+`plugins/alignments` draws reads, insertions and deletions included, as the
+other half of the 2-D Bandage picture rather than a replacement for it.
+Correspondence between the two panels is **visual** — matching colors, matching
+features — not a shared pixel axis. Do not chase pixel-exact alignment: the
+anchored layout's `zoomToFit` pads by 40 px and centers, so its reference axis
+runs ~7% narrower than the linear view above it (`pangenome/hprc_mhc_anchored`:
+backbone at CSS x 44-955 against the segments track's 7-991), and that is
+accepted.
+
+The closest existing per-sample linearized display is
+`plugins/maf/src/LinearMafDisplay` (including its `coverageInsertion.ts`).
+
+The data is mostly there, in the two BEDs `scripts/build_rgfa_tabix.sh` emits:
+
+- **Insertions** fall out of `links.bed.gz`. Each L-line is written twice, once
+  under each endpoint, and carries *both* endpoints in full with their own
+  stable coordinates and ranks, so an off-reference neighbour of a rank-0
+  segment is an allele of known length attached at a known reference position.
+- **Deletions** are backbone-to-backbone links with a coordinate *gap*
+  (`tgtStart > srcEnd`, both ranks 0). Not `s_i -> s_i+2`: a skip can span more
+  than one segment, so test the gap, not the id arithmetic.
+- The **summary** layer is `MinigraphBubbleAdapter` (`gfatools bubble`, and it
+  lives in the external GraphGenomeView plugin bundle, not in this repo), which
+  already reports each bubble's reference span with its shortest and longest
+  allele, so "how much variation sits here" needs no new file.
+
+Two windows of `links.bed.gz` are measured out in
+[reference/PANGENOME_GRAPHS.md](reference/PANGENOME_GRAPHS.md#measured-on-the-hosted-hprc-link-index)
+— read it before designing the lane, because four of its findings constrain the
+layout: the haplotype label is a discovery attribution rather than carriage,
+clean deletions carry no donor at all, one segment id resolves 72 of 78 alleles
+without walking the chain, and the volume is tens of records per window.
+
+#### The record is a CIGAR
+
+`refConsumed = refEnd - refStart` against `altLen`, so `altLen > refConsumed` is
+an insertion, `<` a deletion, and either end falling outside the window is a
+clip (6 of 78 in MHC). `scripts/build_rgfa_alleles.sh` emits exactly that record
+— offline awk over the two BEDs, 845 alleles on the five-strain E. coli graph
+and 208,308 on HPRC in 23 s from the hosted indexes alone, columns named
+`firstSeenIn`/`discoveryRank` so the name carries the caveat above.
+
+Build the lane on `drawInsertionMarker` (`@jbrowse/alignments-core`) through an
+`OverlayCanvas` pass plus a second `PaintLayer` call on the SVG export, the seam
+two other displays already draw indels through — rules and counter-example in
+[reference/PANGENOME_GRAPHS.md](reference/PANGENOME_GRAPHS.md#indel-glyphs-shipped).
+Not a new display type, not a shader.
+
+#### One lane, not rows
+
+Donor rows are not merely sparse, they are misleading,
+and the numbers say so: in the MHC window rank 1
+(HG01433.2#2) accounts for 41 of 78 alleles, rank 2 is that sample's sibling
+haplotype with **0**, and ranks 230 and 345 have 1 each. Monotone decay in build
+order, because the earliest haplotype absorbs every allele later ones share. A
+donor-row plot reads "HG01433.2 is the most structurally variable haplotype
+here", which is an artifact of being added first. So: one lane, backbone as the
+body, insertion ticks at the attachment points sized by allele length, gaps at
+the skips, clip at the window edges. It works on any rGFA with no VCF and no
+re-mapping, and it is the panel that shares segment ids and rank colors with the
+Bandage view.
+
+Rank is also a weak rarity bound (rank r proves absence from haplotypes 1..r-1,
+nothing more), worth a color ramp only where no `AF` exists, i.e. a user's own
+graph rather than HPRC.
+
+### Reads on the reconstructed derivative allele
+
+Came out of the screenshot review on `cancer_sv/derivative_autogenerated`, which
+asked whether the reconstruction could load the reads across its loci and whether
+a wasm minimap2 could realign them to the derived contig.
+
+Three separate things, cheapest first. **The middle one is built** — see
+[reference/SV_MULTIHOP.md](reference/SV_MULTIHOP.md), "Reads on the allele"; the other
+two are open.
+
+**Reads on the reference panel: already possible, off on purpose.**
+`refPanelTrackIds` (`LinearDerivativeVsRef.tsx`) carries every open track onto
+the reference panel except `AlignmentsTrack`, because that panel merges every
+locus the path touches into one window and a pileup there refetches the reads
+already on screen in the launching view. A user can add the track from the track
+selector in the launched view. If the default is ever revisited, it's that filter.
+
+Now weaker than it was: the derivative panel carries the reads already, in
+derivative coordinates, so what the reference panel would add is the same reads
+in the frame that does NOT show whether they agree with the allele.
+
+**minimap2 in wasm: needs bases the feature deliberately does not build.** The
+temporary assembly's `FromConfigSequenceAdapter` carries `seq: ''` — "the path is
+a structure, not a consensus" — so there is nothing to align against. Getting
+bases means either concatenating each segment's reference sequence (revcomp for
+inverted segments; available in-app from the sequence adapter, but that is a
+*reference-derived* contig, not the sample's) or building a read consensus, which
+is what `scripts/sv_multihop.py derive` already does offline with samtools and
+minimap2. wasm in the browser is not itself exotic here — `@gmod/bgzf-filehandle`
+ships a 29 KB inflate wasm that every BAM/VCF read goes through — but a minimap2
+build is megabytes, so it belongs in an external plugin rather than in core for
+one menu item.
+
+## Measure first: the premise or the cost attribution is unconfirmed
+
+Every entry here opens with a measurement because the obvious build would be
+guessing. The instrumentation pattern for the render-path ones is
+[reference/PERF_INSTRUMENTATION.md](reference/PERF_INSTRUMENTATION.md).
+
+### Measure the WebGL2 context budget in the shape users actually hit
+
+The context ceiling in
+[reference/ARCHITECTURAL_LIMITS.md](reference/ARCHITECTURAL_LIMITS.md) §"One
+WebGL2 context per display canvas" has only ever been measured with a synthetic
+24-view harness (since deleted). One view holding 10 to 20 GPU tracks reaches the
+same context count and is an ordinary session, and nobody has run it. The number
+decides whether track-level mount/release is worth building or whether the
+Canvas2D-after-K-losses backstop is enough, so measure before building either.
+
+Home is `browser-tests/suites/gpu-quirks.ts`, beside its existing "recovers from
+WebGL context loss" test. Every piece exists: `navigateWithSessionSpec` takes one
+LGV with an arbitrary `tracks` array, `test_data/volvox/config.json` carries 124
+tracks, `WebGL2Hal` logs `init (live=N/total)` and `context LOST` under
+`?webgl2-debug=1`, and `runner.ts` has a `page.on('console')` hook to collect
+them. Walk N up, record where an **unforced** `context LOST` first appears and
+whether recovery settles or cascades.
+
+Report a diagnostic number first; a regression assertion only after, and well
+under the observed threshold (a "12 tracks lose no context" floor) so it doesn't
+flake. **The CI number is a floor, not the answer** — headless always falls back
+to SwiftShader ([reference/TEST_INFRASTRUCTURE.md](reference/TEST_INFRASTRUCTURE.md)),
+whose context cap need not match a real driver's, so the run that characterizes
+the limit is headed on a real GPU. Capture both, and say which is which.
+
+### MAF fetch cost on long blocks
+
+Design done, nothing built, premise unconfirmed — see
+[reference/MAF_LARGE_BLOCKS.md](reference/MAF_LARGE_BLOCKS.md). Run the one-line block-size
+check before building any of it. The byte-gate half (the estimate rescales by span
+while a tabix line's cost is quantized by feature) is not MAF-specific and is
+logged in ARCHITECTURAL_LIMITS.md.
+
+### Alignments still repacks every row-instanced pass on the main thread
 
 ADR-004's open item #3, and now the only large one left on that path: the
 per-region upload skip and the layout/color split cut the syncs that repack
@@ -180,7 +339,44 @@ for every plugin, and a stable buffer identity is also what would let WebGL2
 cache a VAO per (region, pass) instead of re-running `bindAttributes` on each
 `drawPass`.
 
-## `featureItemMap` is an O(N) build serving a handful of point queries
+### Stop rewriting the worker's arrays to lay out features
+
+`cloneMutableFields` (`plugins/canvas/src/LinearBasicDisplay/layout.ts`) is **~78%
+of a full layout** — 116ms of 148ms at 4k features, per-phase instrumented, against
+8.8ms for the actual packing. It is pure allocation: a fresh `Float32Array` per
+geometry channel plus an object spread per `flatbushItems` entry, per
+`subfeatureInfos` entry and per `floatingLabelsData` entry, all so
+`computeLaidOutData` can add each feature's row offset into the copy in place.
+
+`createContentHeightProbe` packs straight from the raw worker data and never
+clones, so the fit solve's height probes escape the cost. Every *committed*
+layout pays it: each settled zoom, each pan into new data, each label or
+display-mode toggle.
+
+The shape of the fix is to not rewrite the arrays at all — keep the per-feature row
+offset in its own `Float32Array` beside the raw result and add it where Y is
+consumed. Layout then becomes "compute a row map", i.e. the 8.8ms part.
+
+**Measure the consumers before building it**, because they are the cost, not the
+layout. `GpuCanvasFeatureRenderer` already takes per-instance Y so an offset
+attribute is cheap there, but `components/hitTesting.ts`,
+`components/useOverlayElements.tsx`, `renderSvg.tsx`, `yMorph.ts`
+(`interpolateYData`, `captureFeatureTops`) and `scaleLaidOutData` all read absolute
+`topPx`/`bottomPx`/`rectYs` today. Count those call sites first and decide whether
+they can share one "resolve Y" accessor, or whether enough of them need the offset
+folded in that the clone comes straight back — that answer decides whether the
+spike is worth it at all.
+
+Two cheaper fallbacks if that is too invasive. `flatbushItems` and
+`subfeatureInfos` are arrays of objects cloned by spread, so parallel typed
+arrays would remove most of the allocation without touching the render contract.
+And `rectDensityFade` is worker-allocated but layout-valued, with
+`applyLayoutToRegion` writing every element, so `computeLaidOutData` could
+allocate it rather than copy it — the catch being that `cloneMutableFields` is
+shared with `scaleLaidOutData`, which does not rewrite the array and still needs
+the copy, so that split costs a per-caller flag or a second clone helper.
+
+### `featureItemMap` is an O(N) build serving a handful of point queries
 
 `baseModel.ts`'s `featureItemMap` allocates one entry object per feature AND per
 subfeature across every visible region, on every layout change, pan, or zoom. Its
@@ -196,161 +392,3 @@ With it gone the map is built for roughly five lookups, so replace it with an
 on-demand region scan or a lazily-populated per-id cache. Worth pairing with the
 `cloneMutableFields` item above, since both are per-layout allocation over the same
 arrays.
-
-## Measure the WebGL2 context budget in the shape users actually hit
-
-The context ceiling in
-[reference/ARCHITECTURAL_LIMITS.md](reference/ARCHITECTURAL_LIMITS.md) §"One
-WebGL2 context per display canvas" has only ever been measured with a synthetic
-24-view harness (since deleted). One view holding 10 to 20 GPU tracks reaches the
-same context count and is an ordinary session, and nobody has run it. The number
-decides whether track-level mount/release is worth building or whether the
-Canvas2D-after-K-losses backstop is enough, so measure before building either.
-
-Home is `browser-tests/suites/gpu-quirks.ts`, beside its existing "recovers from
-WebGL context loss" test. Every piece exists: `navigateWithSessionSpec` takes one
-LGV with an arbitrary `tracks` array, `test_data/volvox/config.json` carries 124
-tracks, `WebGL2Hal` logs `init (live=N/total)` and `context LOST` under
-`?webgl2-debug=1`, and `runner.ts` has a `page.on('console')` hook to collect
-them. Walk N up, record where an **unforced** `context LOST` first appears and
-whether recovery settles or cascades.
-
-Report a diagnostic number first; a regression assertion only after, and well
-under the observed threshold (a "12 tracks lose no context" floor) so it doesn't
-flake. **The CI number is a floor, not the answer** — headless always falls back
-to SwiftShader ([reference/TEST_INFRASTRUCTURE.md](reference/TEST_INFRASTRUCTURE.md)),
-whose context cap need not match a real driver's, so the run that characterizes
-the limit is headed on a real GPU. Capture both, and say which is which.
-
-## Extra large text SVG mode for pub-ready figures
-
-`BaseExportSvgDialog` exposes font *family* only. Text size is per-element
-(explicit `fontSize` attrs plus `SvgCanvas` labels), so a scale factor has to
-thread through the same path `fontFamily` takes (`wrapSvgExport` →
-`SVGExportRoot`) and every explicit `fontSize` has to become relative, or
-labels will overflow the boxes laid out for them.
-
-## Autofit height for the lineargenomeview example-site demo
-
-No view-level auto-height in `products/jbrowse-react-linear-genome-view`; only
-per-track `heightMode` grow/fit (demoed in `examples-site` `WithTrackSizing`).
-
-## Grey out the genomic-coordinate option instead of hiding it
-
-`SequenceFeatureDetails/dialogs/SequenceFeatureMenu.tsx` drops the "Coordinates
-relative to genome" radio entirely when `showGenomicCoordsOption(mode)` is
-false, so the option disappears rather than explaining itself. Render it
-disabled, with the reason the label already carries.
-
-## Linearize the pangenome: draw graph variation as alignment-style glyphs
-
-Requested framing: the graph in a *linear* view drawn the way
-`plugins/alignments` draws reads, insertions and deletions included, as the
-other half of the 2-D Bandage picture rather than a replacement for it.
-Correspondence between the two panels is **visual** — matching colors, matching
-features — not a shared pixel axis. Do not chase pixel-exact alignment: the
-anchored layout's `zoomToFit` pads by 40 px and centers, so its reference axis
-runs ~7% narrower than the linear view above it (`pangenome/hprc_mhc_anchored`:
-backbone at CSS x 44-955 against the segments track's 7-991), and that is
-accepted.
-
-The closest existing per-sample linearized display is
-`plugins/maf/src/LinearMafDisplay` (including its `coverageInsertion.ts`).
-
-The data is mostly there, in the two BEDs `scripts/build_rgfa_tabix.sh` emits:
-
-- **Insertions** fall out of `links.bed.gz`. Each L-line is written twice, once
-  under each endpoint, and carries *both* endpoints in full with their own
-  stable coordinates and ranks, so an off-reference neighbour of a rank-0
-  segment is an allele of known length attached at a known reference position.
-- **Deletions** are backbone-to-backbone links with a coordinate *gap*
-  (`tgtStart > srcEnd`, both ranks 0). Not `s_i -> s_i+2`: a skip can span more
-  than one segment, so test the gap, not the id arithmetic.
-- The **summary** layer is `MinigraphBubbleAdapter` (`gfatools bubble`, and it
-  lives in the external GraphGenomeView plugin bundle, not in this repo), which
-  already reports each bubble's reference span with its shortest and longest
-  allele, so "how much variation sits here" needs no new file.
-
-Two windows of `links.bed.gz` are measured out in
-[reference/PANGENOME_GRAPHS.md](reference/PANGENOME_GRAPHS.md#measured-on-the-hosted-hprc-link-index)
-— read it before designing the lane, because four of its findings constrain the
-layout: the haplotype label is a discovery attribution rather than carriage,
-clean deletions carry no donor at all, one segment id resolves 72 of 78 alleles
-without walking the chain, and the volume is tens of records per window.
-
-### The record is a CIGAR
-
-`refConsumed = refEnd - refStart` against `altLen`, so `altLen > refConsumed` is
-an insertion, `<` a deletion, and either end falling outside the window is a
-clip (6 of 78 in MHC). `scripts/build_rgfa_alleles.sh` emits exactly that record
-— offline awk over the two BEDs, 845 alleles on the five-strain E. coli graph
-and 208,308 on HPRC in 23 s from the hosted indexes alone, columns named
-`firstSeenIn`/`discoveryRank` so the name carries the caveat above.
-
-Build the lane on `drawInsertionMarker` (`@jbrowse/alignments-core`) through an
-`OverlayCanvas` pass plus a second `PaintLayer` call on the SVG export, the seam
-two other displays already draw indels through — rules and counter-example in
-[reference/PANGENOME_GRAPHS.md](reference/PANGENOME_GRAPHS.md#indel-glyphs-shipped).
-Not a new display type, not a shader.
-
-### One lane, not rows
-
-Donor rows are not merely sparse, they are misleading,
-and the numbers say so: in the MHC window rank 1
-(HG01433.2#2) accounts for 41 of 78 alleles, rank 2 is that sample's sibling
-haplotype with **0**, and ranks 230 and 345 have 1 each. Monotone decay in build
-order, because the earliest haplotype absorbs every allele later ones share. A
-donor-row plot reads "HG01433.2 is the most structurally variable haplotype
-here", which is an artifact of being added first. So: one lane, backbone as the
-body, insertion ticks at the attachment points sized by allele length, gaps at
-the skips, clip at the window edges. It works on any rGFA with no VCF and no
-re-mapping, and it is the panel that shares segment ids and rank colors with the
-Bandage view.
-
-Rank is also a weak rarity bound (rank r proves absence from haplotypes 1..r-1,
-nothing more), worth a color ramp only where no `AF` exists, i.e. a user's own
-graph rather than HPRC.
-
-## maf fetch cost on long blocks
-
-Design done, nothing built, premise unconfirmed — see
-[reference/MAF_LARGE_BLOCKS.md](reference/MAF_LARGE_BLOCKS.md). Run the one-line block-size
-check before building any of it. The byte-gate half (the estimate rescales by span
-while a tabix line's cost is quantized by feature) is not MAF-specific and is
-logged in ARCHITECTURAL_LIMITS.md.
-
-
-
-
-## reads on the reconstructed derivative allele
-
-Came out of the screenshot review on `cancer_sv/derivative_autogenerated`, which
-asked whether the reconstruction could load the reads across its loci and whether
-a wasm minimap2 could realign them to the derived contig.
-
-Three separate things, cheapest first. **The middle one is built** — see
-[reference/SV_MULTIHOP.md](reference/SV_MULTIHOP.md), "Reads on the allele"; the other
-two are open.
-
-**Reads on the reference panel: already possible, off on purpose.**
-`refPanelTrackIds` (`LinearDerivativeVsRef.tsx`) carries every open track onto
-the reference panel except `AlignmentsTrack`, because that panel merges every
-locus the path touches into one window and a pileup there refetches the reads
-already on screen in the launching view. A user can add the track from the track
-selector in the launched view. If the default is ever revisited, it's that filter.
-
-Now weaker than it was: the derivative panel carries the reads already, in
-derivative coordinates, so what the reference panel would add is the same reads
-in the frame that does NOT show whether they agree with the allele.
-
-**minimap2 in wasm: needs bases the feature deliberately does not build.** The
-temporary assembly's `FromConfigSequenceAdapter` carries `seq: ''` — "the path is
-a structure, not a consensus" — so there is nothing to align against. Getting
-bases means either concatenating each segment's reference sequence (revcomp for
-inverted segments; available in-app from the sequence adapter, but that is a
-*reference-derived* contig, not the sample's) or building a read consensus, which
-is what `scripts/sv_multihop.py derive` already does offline with samtools and
-minimap2. wasm in the browser is not itself exotic here — `@gmod/bgzf-filehandle`
-ships a 29 KB inflate wasm that every BAM/VCF read goes through — but a minimap2
-build is megabytes, so it belongs in an external plugin rather than in core for
-one menu item.

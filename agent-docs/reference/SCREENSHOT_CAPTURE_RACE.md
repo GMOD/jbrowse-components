@@ -1,3 +1,8 @@
+---
+name: screenshot-capture-race
+description: Why a canvas/GPU figure occasionally captures with no features even though the spec renders fine, why that is a generator capture race rather than an adapter or refName bug, and the gate-on-a-data-derived-DOM-signal fix pattern. Read before diagnosing an "empty painting" screenshot as a data problem.
+---
+
 # Screenshot capture race: "empty canvas" figures
 
 A canvas/GPU display's figure occasionally captures **empty** (no features), even

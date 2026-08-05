@@ -1,3 +1,8 @@
+---
+name: row-height-and-fit
+description: The shared two-valued row-height convention every multi-row display implements — the `rowHeight` slot whose `0` means fit-to-height, the resolved `effectiveRowHeight` getter that is a cross-plugin ABI, and the two places a display legitimately differs. Read before adding a row-height setting or a fit-to-height mode.
+---
+
 # Row height and fit-to-display-height
 
 Every multi-row display has the same two-valued setting: a **raw per-row height
