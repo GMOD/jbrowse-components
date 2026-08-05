@@ -144,7 +144,7 @@ was published on CanFam3.1 and lifted to this assembly, so the bar and the
 genotype column below it come from two different publications by two different
 routes:
 
-```json
+```json addtrack
 {
   "type": "FeatureTrack",
   "trackId": "omia_dog_variants",
