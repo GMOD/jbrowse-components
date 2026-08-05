@@ -53,6 +53,15 @@ const RULES = [
     re: /&rarr;|▸/,
     what: 'HTML-entity or non-standard arrow',
   },
+  {
+    // **Color by... Consequence impact** — a path with no separator at all,
+    // which the rules above cannot see because there is no wrong character to
+    // match on. `Foo...` is this app's convention for an entry that opens a
+    // submenu or dialog, so trailing words after one are a second menu level
+    // that lost its arrow. Both live cases read as one long label.
+    re: /\*\*[^*]*\.\.\.\s+[^*→][^*]*\*\*/,
+    what: 'menu path with no separator after a `...` entry',
+  },
 ]
 
 const errorLines: string[] = []

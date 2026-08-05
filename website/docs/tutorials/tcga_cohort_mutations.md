@@ -113,7 +113,7 @@ Three choices there:
 - [`featureColor`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-featurecolor)
   with the `impactColor` helper takes each mutation's VEP impact tier out of the
   `CSQ` field, so truncating and missense cells are told apart without a
-  per-figure color table. It is the same **Color by... Consequence impact**
+  per-figure color table. It is the same **Color by... → Consequence impact**
   preset the track menu offers.
 - [`samplesTsvLocation`](/docs/config/vcftabixadapter/#slot-samplestsvlocation)
   on the adapter, which is what makes the clinical columns available to group
@@ -228,7 +228,7 @@ question is which clinical group carries it.
 
 ## Thin the matrix down to recurrent mutations
 
-The track menu's **Filter by... Minor allele frequency** slider (and its
+The track menu's **Filter by... → Minor allele frequency** slider (and its
 [`minorAlleleFrequencyFilter`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-minorallelefrequencyfilter)
 config slot) drops the low-frequency columns, which on somatic data means
 keeping only mutations recurrent across the cohort: at PIK3CA the hotspots

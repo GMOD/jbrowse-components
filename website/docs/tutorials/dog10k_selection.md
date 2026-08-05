@@ -155,8 +155,9 @@ CLUPGR000001	Greek gray wolf	Gray wolf
 ## Clustering the rows
 
 Rows arrive in the VCF's order, which is the order the panel was built in, so
-they start out grouped by breed. **Sort/cluster by...** in the track menu
-reorders them by genotype similarity and draws a dendrogram in the sidebar.
+they start out grouped by breed. **Clustering → Cluster rows by genotype...** in
+the track menu, then **Run clustering**, reorders them by genotype similarity
+and draws a dendrogram in the sidebar.
 
 The clustering reads genotypes only. The swatch is applied afterwards from the
 sample table, so the two are independent.
