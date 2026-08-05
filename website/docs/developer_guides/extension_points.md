@@ -15,6 +15,8 @@ it returns nothing.
 
 A producer fires a point:
 
+<!-- include: packages/core/src/extensionPointChaining.test.ts#fire -->
+
 ```typescript
 const ret = pluginManager.evaluateExtensionPoint('ExtensionPointName', {
   value: 1,
@@ -23,6 +25,8 @@ const ret = pluginManager.evaluateExtensionPoint('ExtensionPointName', {
 
 Consumers register callbacks against the same point (multiple plugins can each
 register one):
+
+<!-- include: packages/core/src/extensionPointChaining.test.ts#register -->
 
 ```typescript
 pluginManager.addToExtensionPoint(
@@ -33,9 +37,9 @@ pluginManager.addToExtensionPoint(
 )
 ```
 
-Callbacks are chained: each receives the previous one's return value. If the
-producer passes `{value:1}` and two such callbacks are registered, `ret` is
-`{value:3}`.
+Callbacks are chained: each receives the previous one's return value, so with
+two such callbacks registered `ret` is `{value:3}` — which is asserted by the
+test both snippets come from, not just claimed here.
 
 ## TypeScript types for extension points
 
@@ -106,9 +110,14 @@ pluginManager.observeExtensionPoint(extensionPointName, props => {
 })
 ```
 
-For `addToExtensionPoint`, `args` are accumulated: each callback's return value
-becomes the next callback's `args`. `props` is passed through unchanged by both.
-Either one creates the point if it doesn't exist yet.
+Only `addToExtensionPoint` accumulates: each callback's return value becomes the
+next callback's `args`. `props` is passed unchanged to every callback whichever
+method registered it, and any of the three creates the point if it doesn't exist
+yet.
+
+These are the only signatures on this page that are not generated from source —
+they name placeholder arguments so the four read side by side, which the real
+generic signatures do not.
 
 ## Extension point listing
 
