@@ -240,7 +240,7 @@ Note the decimation trick does **not** transfer to the identity plot or the
 conservation band: those paint a mean, and a mean needs its whole sample. See
 the note in `binning.ts`.
 
-### …except the identity plot at high row counts, which is still slow
+### The identity plot: measured, and where its limit really is
 
 Measured 2026-08-05, headless, synthetic 100bp-block shape, 1500px wide, rows
 fit to the 600px `maxAutoFitHeight` so the whole row set is on screen. One
@@ -248,6 +248,10 @@ fit to the 600px `maxAutoFitHeight` so the whole row set is on screen. One
 `visibleRegions`, whose `screenStartPx` is `block.offsetPx - self.offsetPx`,
 so it changes identity on every pan tick and the `TrackBandCanvas` autorun
 refires.
+
+Short version: the fill loop was doing real redundant work and is fixed; the
+walk underneath it is **not** where a 470-way's problem lives, and the two
+tables further down are the reason.
 
 | | before | after run-length fill |
 | --- | --- | --- |
@@ -264,32 +268,82 @@ on conservation-shaped data, 81% on the adversarial case where identity crosses
 a bucket boundary every pixel. The headless numbers above understate the win,
 since the benchmark's `fillRect` is a counter; a real 2D context pays per call.
 
-**What remains is the accumulate walk, and it is the real ceiling: O(visible bp
-x rows) per frame, on the main thread.** 72ms is ~14fps while panning a 470-way,
-and force-load removes the bound entirely. Two things keep it off most users'
-path — the identity plot is opt-in, and with a `summaryAdapter` configured the
-summary path takes the rows over at 20kb, which is where the table's ceiling
-comes from — so this is a deep-alignment problem, not a general one.
+What remains is the accumulate walk, which is O(visible bp x rows). **Do not
+optimize it without re-reading the rest of this section** — the row-count curve
+and the fetch comparison below are what say it is not the bottleneck it looks
+like, and both were nearly missed.
 
-Three options, none attempted:
+### The row-count curve, and why 470-way is the wrong target
 
-- **Subsampling is the one to be skeptical of**, and is why the "a mean needs
-  its whole sample" note above is *nearly* right. Estimating a pixel's identity
-  from a quarter of its bases has a standard error near 0.1 at p=0.5 — ten ramp
-  buckets — and the artifact is speckle in exactly the view whose job is to show
-  smooth conservation structure. Correlated neighbours make it better than that
-  bound in practice and it would still be visible. Don't reach for it first.
-- **Make the walk pan-independent.** The per-(row, bp) match/classifiable
-  classification does not change when the view moves — only the bp->px mapping
-  does. Per-region per-row prefix sums make any pixel O(1), but at 2 x 4 bytes x
-  bufferedBp x rows that is ~150MB for a 470-way over 40kb, so it needs a coarse
-  bucket size and a fallback, and the bucket has to be finer than one pixel.
-  This is the same observation already parked above for the insertion and
-  deletion walks; the identity plot is the case where it pays most.
-- **Move it to the worker.** It reads only `refSeqBytes`/`alignmentBytes`, which
-  the worker already has before it ships them, and the output (one float per
-  pixel per row) is far smaller than the input. Zoom-dependent, so it would
-  refetch-or-recompute on zoom the way the summary path already does.
+Same harness, 30% row density, at the 20kb ceiling:
+
+| rows | per frame | | row band |
+| --- | --- | --- | --- |
+| 26 (ce11 26-way) | 18.3ms | 55fps | 21.3px |
+| 30 (hg38 30-way) | 18.3ms | 55fps | 18.5px |
+| 60 | 22.4ms | 45fps | 9.3px |
+| 100 (hg38 100-way) | 26.2ms | 38fps | 5.6px |
+| 200 | 38.1ms | 26fps | 2.8px |
+| 470 (hg38 470-way) | 63.1ms | 16fps | 1.2px |
+
+18x the rows costs 3.4x the time — a large row-independent term (the per-block
+`columns.build` walk) dominates at every realistic size. There is no cliff, and
+every multiz anyone actually loads sits in the 38–55fps band. Only the 470-way
+lands in jank, and there each row's band is **1.2px**, which is the honest
+signal that the row count, not the loop, is what has run out.
+
+### Fetch dominates at 470-way, so render tuning there is the wrong term
+
+One 40kb buffered window through the adapter's own `split` + `parseMafTabixEntry`:
+
+| rows | split+parse | payload (uncompressed) |
+| --- | --- | --- |
+| 30 | 9ms | 1.6MB |
+| 100 | 33ms | 5.3MB |
+| 470 | 138ms | 25.1MB |
+
+Real MAF-BED compresses 2.9–4.0x (measured on
+`test_data/ce11.26way.chrI_subset.bed.gz` and `volvox.maf.bed.gz`), so a 470-way
+40kb window is **6–8MB on the wire, per buffered window**, versus 63ms to draw
+a frame from it. The transfer is two orders of magnitude above the render cost
+and recurs every time the user pans out of the buffer.
+
+This is the same conclusion `SYNTENY_LOD.md` reached by profiling — "~66% of
+cost is fetch + parse, so read-time binning caps at ~1.5x" — and it kills the
+same class of fix. Halving the 470-way's render cost would take 16fps to ~30fps
+behind a multi-second fetch. **The three render-side options below were costed
+and are not worth building.** Recorded so they aren't re-proposed:
+
+- **Subsampling the mean.** Also the one to be skeptical of on its own terms,
+  and why the "a mean needs its whole sample" note above is *nearly* right:
+  estimating a pixel from a quarter of its bases has a standard error near 0.1
+  at p=0.5 — ten ramp buckets — and the artifact is speckle in exactly the view
+  whose job is smooth conservation structure.
+- **Per-region per-row prefix sums**, making the walk pan-independent. Correct,
+  but 2 x 4 bytes x bufferedBp x rows is ~150MB for a 470-way over 40kb, so it
+  needs a coarse bucket finer than one pixel plus a fallback — a lot of
+  machinery for the term that isn't dominant.
+- **Moving the walk to the worker.** Cheapest of the three and the only one
+  worth reconsidering, but it buys main-thread responsiveness, not throughput,
+  and the thread is already waiting on the fetch.
+
+### What the LOD lesson actually points at
+
+MAF's level-of-detail answer is a **precomputed file tier**, exactly as synteny's
+is: `summaryAdapter` (`bigMafSummary`) is fetched instead of the alignment past
+the force-load floor. That is the mechanism that makes a deep alignment
+affordable, and it is already built. The two real gaps are both in it, not in
+the draw loop:
+
+- `MafTabixAdapter` has no summary tier at all (BigMaf-only), already listed
+  under "Still open" above. A 470-way tabix MAF has no cheap zoom-out path.
+- The identity plot is confined *below* the summary threshold — `showSummary`
+  makes `activeRowRendering` fall back to the bases — so the per-species view
+  built for "see all 470 species at once" is only available in the zoom range
+  where fetching all 470 species costs the most per useful pixel. The summary
+  overlay does draw a per-species band there (presence + score), so this is a
+  narrower gap than it sounds, but it is why widening the identity plot's zoom
+  range is a **fetch-tier** question rather than a rendering one.
 
 ## Measurements from the design pass
 
