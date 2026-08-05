@@ -34,21 +34,18 @@ whole restore. Your `views` prop still describes the starting state: `session`
 only decides what opens now, so File → New session returns to `views` rather
 than to whatever was restored.
 
-The encoding is JBrowse Web's own: `encodeSession` emits the same `encoded-…`
-value that app's `?session=` accepts, so a link built here opens there, and one
-built there opens here.
+The encoding is JBrowse Web's own, so a link built here opens there and one
+built there opens here. `encodeSession` does a little more than `getSnapshot`:
+display settings a user picks up from a promoted display-type default live in
+their own browser rather than in the session, so a raw snapshot can render
+differently for whoever opens the link. `encodeSession` folds those in before
+encoding.
 
-`encodeSession` does a little more than `getSnapshot`. Display settings a user
-picks up from a promoted display-type default live in their own browser rather
-than in the session, so a raw snapshot can render differently for whoever opens
-the link. `encodeSession` folds those settings into the snapshot before encoding
-it.
-
-The demo puts its save button above the app to keep the example short. In a real
-app it belongs in the toolbar: pass it as `headerButtons` and it renders beside
-the session name, where JBrowse Web puts its own Share button. The button has to
-be yours rather than built in — only your app knows the URL its page is served
-at, and whether that page restores a session on load.
+The demo puts its save button above the app to keep the example short; in a real
+app pass it as `headerButtons` and it renders beside the session name, where
+JBrowse Web puts its own Share button. The button has to be yours — only your
+app knows the URL its page is served at, and whether that page restores a
+session on load.
 
 For a session you want to keep rather than share — surviving a reload without a
 link — the same snapshot goes to `localStorage`; use the

@@ -18,7 +18,7 @@ export const pages: ExamplePage[] = [
     slug: 'pan-and-zoom',
     title: 'Pan and zoom',
     description:
-      'A measured div, one track, and enough wheel/pointer wiring to move around it. The view already owns the coordinate maths and clamps to the ends of the assembly; this is what it takes to drive it.',
+      'A measured div, one track, and enough wheel/pointer wiring to move around it.',
     group: 'The atoms',
     sections: [{ slug: 'pan-and-zoom', title: 'Wheel and drag' }],
   },
@@ -26,7 +26,7 @@ export const pages: ExamplePage[] = [
     slug: 'one-track',
     title: 'One track, no interaction',
     description:
-      'The same view with the pan/zoom wiring pulled back out: a measured div and one track, nothing else. No header, no ruler, no track labels, no palette to supply.',
+      'The same view with the pan/zoom wiring pulled back out: a measured div and one track, nothing else.',
     group: 'The atoms',
     sections: [{ slug: 'one-track', title: 'No pan, no zoom, no chrome' }],
   },
@@ -34,7 +34,7 @@ export const pages: ExamplePage[] = [
     slug: 'a-stack-of-tracks',
     title: 'A stack of tracks',
     description:
-      'Three display types in one column: a wiggle, a feature track, and an alignments pileup. The engine treats all three the same way, so the code that mounts them does too.',
+      'A wiggle, a feature track, and an alignments pileup in one column, all mounted by the same code.',
     group: 'The atoms',
     sections: [{ slug: 'a-stack-of-tracks', title: 'Wiggle, features, reads' }],
   },
@@ -42,7 +42,7 @@ export const pages: ExamplePage[] = [
     slug: 'bring-your-own-overlays',
     title: 'Bring your own overlays',
     description:
-      "Loading, errors, the too-large gate, and the controls in a track's corner are drawn by swappable components. Replace them and JBrowse's own displays render no Material UI at all — not one element, checked on every build.",
+      "Swap the components that draw a track's status states and corner controls, and JBrowse's own displays render no Material UI at all.",
     group: 'Making it yours',
     sections: [
       {
@@ -57,7 +57,7 @@ export const pages: ExamplePage[] = [
     slug: 'add-the-chrome-you-want',
     title: 'Add the chrome you want',
     description:
-      'Having removed all of it, add back only what your app needs. A coordinate ruler and track labels, written against the same view model the tracks read.',
+      'Add back only what your app needs: a coordinate ruler and track labels, written against the view model the tracks read.',
     group: 'Making it yours',
     sections: [
       { slug: 'add-the-chrome-you-want', title: 'A ruler and some labels' },
@@ -67,7 +67,7 @@ export const pages: ExamplePage[] = [
     slug: 'drive-it-from-your-app',
     title: 'Drive it from your app',
     description:
-      "A location box, zoom buttons and a track list, written against the view model. Navigating and showing tracks is a normal API, so your app's own header drives the browser as well as a header inside it would.",
+      'A location box, zoom buttons and a track list, written against the view model.',
     group: 'Making it yours',
     sections: [
       {
@@ -80,7 +80,7 @@ export const pages: ExamplePage[] = [
     slug: 'your-own-feature-details',
     title: 'Your own feature details',
     description:
-      'The other direction: getting data back out. Click a gene and the display writes it to the session selection — read that one field and the panel is yours to draw.',
+      'Click a gene and the display writes it to the session selection — read that one field and the panel is yours to draw.',
     group: 'Making it yours',
     sections: [{ slug: 'your-own-feature-details', title: 'Click a gene' }],
   },
@@ -88,7 +88,7 @@ export const pages: ExamplePage[] = [
     slug: 'run-it-in-a-worker',
     title: 'Run it in a worker',
     description:
-      'Every other page here parses its data on the main thread, which is fine for a demo and not for your app. Moving the whole engine off it is one option to `createViewState`, and nothing else in the page changes.',
+      'Move fetching, parsing and layout off the main thread with one option to createViewState.',
     group: 'In production',
     sections: [{ slug: 'run-it-in-a-worker', title: 'One option, one worker' }],
   },

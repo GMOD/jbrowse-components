@@ -32,14 +32,12 @@ The encoded value belongs in the hash fragment rather than the query string. The
 fragment is never sent to the server, so a long session won't overflow the
 request line and come back as an HTTP 414.
 
-Only the session travels in the link. The receiving page supplies its own
+Only the session travels in the link — the receiving page supplies its own
 `assembly` and `tracks`, and the snapshot refers to them by name. The encoding
-is JBrowse Web's own: `encodeSession` emits the same `encoded-…` value that
-app's `?session=` accepts, so a link built here opens there, and one built there
-opens here.
+is JBrowse Web's own, so a link built here opens there and one built there opens
+here.
 
-`encodeSession` does a little more than `getSnapshot`. Display settings a user
+`encodeSession` does a little more than `getSnapshot`: display settings a user
 picks up from a promoted display-type default live in their own browser rather
 than in the session, so a raw snapshot can render differently for whoever opens
-the link. `encodeSession` folds those settings into the snapshot before encoding
-it.
+the link. `encodeSession` folds those in before encoding.

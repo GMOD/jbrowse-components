@@ -1,16 +1,13 @@
 An `AlignmentsTrack` opens with a
 [`LinearAlignmentsDisplay`](https://jbrowse.org/jb2/docs/config/linearalignmentsdisplay/),
-whose behavior is controlled by a large set of config slots. You can set any of
-them up front, either inside `init.tracks[].displaySnapshot` (used here) or via
-the
+configured through a large set of slots. Set them up front in
+`init.tracks[].displaySnapshot` (used here) or via the
 [`displayDefaults` shorthand](https://jbrowse.org/jb2/docs/config_guides/tracks/)
 on the track config, and change them later from the track menu.
 
 This example loads HG002 haplotagged nanopore reads at the imprinted SNRPN
-locus. Because the reads carry an HP (haplotype) tag, coloring and grouping by
-that tag stacks the two parental alleles into separate, distinctly-colored
-groups. `displaySnapshot` is a property of the track entry, so it always travels
-with the full track config it applies to:
+locus. The reads carry an HP (haplotype) tag, so coloring and grouping by it
+stacks the two parental alleles into separate groups:
 
 ```js
 // register the track...

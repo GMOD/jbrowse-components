@@ -25,14 +25,7 @@ const pmCommands = {
   <p class="lead">
     <code>@jbrowse/react-linear-genome-view2</code> is a React component that embeds
     a full linear genome browser (tracks, search, zoom/pan, and track selection) in
-    your app. This page covers the basics. Browse the pattern-by-pattern examples
-    in the sidebar for specific features: custom themes, session persistence, plugins,
-    and more.
-  </p>
-  <p class="lead">
-    If you would rather have the parts than the finished component, because your
-    app already has a design system and should draw the ruler, labels and status
-    UI itself, the{' '}
+    your app. For the parts rather than the finished component, the{' '}
     <a href="https://jbrowse.org/storybook/byo/">Build your own</a> examples start
     from this same engine and add the chrome back one piece at a time.
   </p>
@@ -82,9 +75,8 @@ const pmCommands = {
       <code>assembly</code> and <code>tracks</code> as props (see the{' '}
       <a href="https://jbrowse.org/jb2/docs/config_guide/">config guide</a> for the
       full assembly/track config shape), plus an <code>init</code> for the starting
-      location and which tracks to show. No separate view-state setup is needed. Adapters
-      accept a plain <code>uri</code> shorthand too: JBrowse derives the index file
-      (e.g.{' '}
+      location and which tracks to show. Adapters accept a plain{' '}
+      <code>uri</code> shorthand: JBrowse derives the index file (e.g.{' '}
       <a href="https://jbrowse.org/jb2/docs/config/bamadapter/"
         ><code>.bam.bai</code></a
       >,{' '}
@@ -114,18 +106,15 @@ const pmCommands = {
 
     <h2>Bundlers and frameworks</h2>
     <p>
-      The view renders on the client only. It needs a real DOM, so we do not
-      support server-rendering it or hydrating it from server-rendered markup.
-      In a client-rendered app (Vite, rsbuild, plain script tags) it just works.
-      In a server-rendered framework you mount it client-side only, which is
-      what our Next.js demo does: it wraps the view in a{' '}
-      <code>'use client'</code> component loaded through{' '}
+      The view needs a real DOM, so it renders on the client only — we do not
+      support server-rendering or hydrating it. In a client-rendered app (Vite,
+      rsbuild, plain script tags) it just works. In an SSR framework, mount it
+      client-side only: our Next.js demo wraps it in a <code>'use client'</code>
+      {' '}component loaded through{' '}
       <a href="https://nextjs.org/docs/app/api-reference/functions/dynamic"
         ><code>next/dynamic</code></a
       >{' '}
-      with <code>{'{ ssr: false }'}</code>. The same trick (render{' '}
-      <code>null</code> until <code>useEffect</code> has run) works in any other SSR
-      framework.
+      with <code>{'{ ssr: false }'}</code>.
     </p>
     <p>
       We maintain a working starter repo per bundler, deployed and rebuilt each
@@ -149,20 +138,12 @@ const pmCommands = {
       <a href="https://jbrowse.org/jb2/docs/embedded_components/"
         >embedded components page</a
       >{' '}
-      lists all of them with live deployments. Start from one of those rather than
-      wiring a bundler up from scratch.
-    </p>
-    <p>
-      This site itself mounts every demo the same way: each one is an Astro
-      island marked <code>client:only="react"</code>.
+      lists all of them with live deployments.
     </p>
   </div>
 
   <h2>Browse the examples</h2>
-  <p class="intro">
-    Each example renders the component live and shows its full source. Pick a
-    pattern below, or use the grouped list in the sidebar.
-  </p>
+  <p class="intro">Each example renders live and shows its full source.</p>
   <Gallery examples={examples} />
 </Shell>
 

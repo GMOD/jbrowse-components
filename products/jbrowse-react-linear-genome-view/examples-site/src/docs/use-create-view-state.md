@@ -1,10 +1,8 @@
-`createViewState` builds a MobX-state-tree instance, an expensive, stateful
-object that must not be recreated on every React render. Calling it directly in
-a component body would throw away the view (and its scroll position, open
-tracks, and in-flight data) on each re-render of the parent.
-
-`useCreateViewState` is a thin hook wrapper that memoizes the instance for the
-lifetime of the component, so the view survives parent re-renders:
+`createViewState` builds a MobX-state-tree instance, an expensive stateful
+object that must not be recreated on every render — calling it in a component
+body throws away the view (its scroll position, open tracks, and in-flight data)
+each time the parent re-renders. `useCreateViewState` memoizes it for the
+lifetime of the component:
 
 ```jsx
 import {
@@ -18,19 +16,13 @@ function MyComponent() {
 }
 ```
 
-The `location` option is the hook-form equivalent of the declarative `init.loc`
-from the examples above, just passed to `createViewState` instead of the
-`<LinearGenomeView init={…}>` prop. It accepts either a locstring
-(`'ctgA:1,000..5,000'`, 1-based) or a `{ refName, start, end }` object
-(0-based). The object form is handy when you already have structured coordinates
-and don't want to format and reparse a string.
+`location` is the hook-form equivalent of the declarative `init.loc`. It accepts
+a locstring (`'ctgA:1,000..5,000'`, 1-based) or a `{ refName, start, end }`
+object (0-based), which is handy when you already have structured coordinates.
 
-If you instead call `createViewState` yourself, wrap it in `useState(() => …)`
-(as the other examples here do) to get the same stability. To skip
-`createViewState` altogether, the managed
-[`<LinearGenomeView>`](../setting-up-the-view/#with-init) owns the engine for
-you, with no hook or state plumbing required.
-
-See the
+Calling `createViewState` yourself works the same if you wrap it in
+`useState(() => …)`, as the other examples here do. To skip it altogether, the
+managed [`<LinearGenomeView>`](../setting-up-the-view/#with-init) owns the
+engine for you. The
 [Embedding JBrowse tutorial](https://jbrowse.org/jb2/docs/tutorials/embed_linear_genome_view/)
-for `createViewState` in a full worked example.
+has `createViewState` in a full worked example.

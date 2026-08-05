@@ -10,16 +10,9 @@ export const pages: ExamplePage[] = [
     slug: 'volvox',
     title: 'Volvox structural variants',
     description:
-      'A circular view of the volvox assembly showing a structural-variant VCF track, via the managed CircularGenomeView component.',
+      'A structural-variant VCF on the volvox assembly, via the managed CircularGenomeView component.',
     group: 'Getting started',
-    sections: [
-      {
-        slug: 'volvox',
-        title: 'Volvox structural variants',
-        description:
-          'A circular view of the volvox assembly showing a structural-variant VCF track, via the managed CircularGenomeView component.',
-      },
-    ],
+    sections: [{ slug: 'volvox', title: 'Volvox structural variants' }],
   },
   {
     slug: 'show-track',
@@ -27,29 +20,15 @@ export const pages: ExamplePage[] = [
     description:
       'Open a track imperatively via showTrack instead of through the init prop.',
     group: 'Getting started',
-    sections: [
-      {
-        slug: 'show-track',
-        title: 'Show a track programmatically',
-        description:
-          'Open a track imperatively via showTrack instead of through the init prop.',
-      },
-    ],
+    sections: [{ slug: 'show-track', title: 'Show a track programmatically' }],
   },
   {
     slug: 'session-in-url',
     title: 'Put the session in the URL',
     description:
-      'Serialize the live session with encodeSession and restore it with decodeSession, so the current view can be shared or bookmarked as a link.',
+      'Serialize the session with encodeSession and restore it with decodeSession, for a sharable link.',
     group: 'Getting started',
-    sections: [
-      {
-        slug: 'session-in-url',
-        title: 'Put the session in the URL',
-        description:
-          'Serialize the live session with encodeSession and restore it with decodeSession, so the current view can be shared or bookmarked as a link.',
-      },
-    ],
+    sections: [{ slug: 'session-in-url', title: 'Put the session in the URL' }],
   },
   {
     slug: 'human',
@@ -57,14 +36,7 @@ export const pages: ExamplePage[] = [
     description:
       'Browse HG002 PacBio breakend structural variants on hg19, LocusZoom-style circular layout.',
     group: 'Real-world demos',
-    sections: [
-      {
-        slug: 'human',
-        title: 'Human structural variants (hg19)',
-        description:
-          'Browse HG002 PacBio breakend structural variants on hg19, LocusZoom-style circular layout.',
-      },
-    ],
+    sections: [{ slug: 'human', title: 'Human structural variants (hg19)' }],
   },
 ]
 

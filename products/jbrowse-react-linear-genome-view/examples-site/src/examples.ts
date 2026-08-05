@@ -11,7 +11,7 @@ export const pages: ExamplePage[] = [
     slug: 'setting-up-the-view',
     title: 'View setup',
     description:
-      'The core ways to render the component and give it a starting state: the simplest declarative call, the same declarative form with a real-world assembly config, and the useCreateViewState hook for when the view state must survive parent re-renders.',
+      'Render the component and give it a starting state, declaratively or through the useCreateViewState hook.',
     group: 'Getting started',
     sections: [
       {
@@ -38,7 +38,7 @@ export const pages: ExamplePage[] = [
     slug: 'default-session',
     title: 'Session & drawer',
     description:
-      'Open on a predefined session snapshot, hide editing UI for a locked-down embed, and show widgets (track selector, feature details) in a side drawer.',
+      'Open on a session snapshot, hide the editing UI, or move widgets into a side drawer.',
     group: 'Getting started',
     sections: [
       {
@@ -66,7 +66,7 @@ export const pages: ExamplePage[] = [
     slug: 'navigate-to-location',
     title: 'Navigate & control',
     description:
-      'Drive the view from your own UI: navigate to a region, lock down zoom and pan, and toggle tracks on from your own code.',
+      'Navigate to a region, lock down zoom and pan, and toggle tracks from your own code.',
     group: 'Navigation',
     sections: [
       {
@@ -114,7 +114,7 @@ export const pages: ExamplePage[] = [
     slug: 'theming',
     title: 'Theming & styling',
     description:
-      'Apply a custom Material UI theme or the built-in dark theme, style the embed from your surrounding page, or isolate it inside a Shadow DOM.',
+      'A custom or dark Material UI theme, styling from the host page, or Shadow DOM isolation.',
     group: 'Styling & theming',
     sections: [
       {
@@ -167,7 +167,7 @@ export const pages: ExamplePage[] = [
     slug: 'alignments-tracks',
     title: 'Alignments',
     description:
-      'Open an alignments (BAM/CRAM) track with a chosen display, group reads by a SAM tag, and configure the full LinearAlignmentsDisplay options up front on real HG002 haplotagged data.',
+      'Open a BAM/CRAM track with a chosen display, group reads by SAM tag, and set the display options up front.',
     group: 'Track display & coloring',
     // the display-options section uses real HG002 nanopore reads (long,
     // modification-tagged), a heavy remote fetch, and modification rendering is
@@ -190,7 +190,7 @@ export const pages: ExamplePage[] = [
         slug: 'alignments-track-options',
         title: 'Custom alignments display options',
         description:
-          'Configure a LinearAlignmentsDisplay up front (color and group reads by haplotype, the HP tag) on real HG002 haplotagged nanopore data, with links to the full option reference.',
+          'Configure a LinearAlignmentsDisplay up front on real HG002 haplotagged nanopore data.',
       },
     ],
   },
@@ -224,7 +224,7 @@ export const pages: ExamplePage[] = [
     slug: 'track-sizing',
     title: 'Track sizing',
     description:
-      'Choose what a feature track does when it has more rows than fit: grow the track to show them all, or squeeze the rows into a fixed height.',
+      'What a feature track does with more rows than fit: grow, or squeeze them into a fixed height.',
     group: 'Track display & coloring',
     sections: [
       {
@@ -239,7 +239,7 @@ export const pages: ExamplePage[] = [
     slug: 'session-setup',
     title: 'Init & persistence',
     description:
-      'Use the advanced init blob for a richer initial view, add highlighted regions to the session, persist the live session to localStorage, and put it in the URL to share it.',
+      'A richer initial view with advanced init and highlights, then persisting or sharing the live session.',
     group: 'Sessions & state',
     sections: [
       {
@@ -263,7 +263,7 @@ export const pages: ExamplePage[] = [
         slug: 'session-in-url',
         title: 'Put the session in the URL',
         description:
-          'Serialize the live session with encodeSession and restore it with decodeSession, so the current view can be shared or bookmarked as a link.',
+          'Serialize the session with encodeSession and restore it with decodeSession, for a sharable link.',
       },
     ],
   },
@@ -271,7 +271,7 @@ export const pages: ExamplePage[] = [
     slug: 'multiple-views',
     title: 'Multiple views',
     description:
-      'React to the regions, features, and selection in the view from your own companion panels, and render several independent views on one page.',
+      'React to the view from your own companion panels, and render several independent views on one page.',
     group: 'Sessions & state',
     sections: [
       {
@@ -284,7 +284,7 @@ export const pages: ExamplePage[] = [
         slug: 'observe-selection',
         title: 'Observe the selected feature',
         description:
-          'Mirror the clicked feature (session.selection) into a companion panel with an observer, no click handler required.',
+          'Mirror the clicked feature (session.selection) into a companion panel with an observer.',
       },
       {
         slug: 'with-two-linear-genome-views',
@@ -344,7 +344,7 @@ export const pages: ExamplePage[] = [
     slug: 'plugins',
     title: 'Plugins & accounts',
     description:
-      'Extend the view with plugins loaded at runtime or defined inline, access authenticated data via internet accounts, and offload parsing/rendering to a web worker.',
+      'Plugins loaded at runtime or defined inline, authenticated data via internet accounts, and the web worker RPC.',
     group: 'Plugins & accounts',
     sections: [
       {
@@ -415,7 +415,7 @@ export const pages: ExamplePage[] = [
     slug: 'single-cell-umap',
     title: 'Single-cell UMAP',
     description:
-      'A UMAP of 5k PBMCs beside per-cell-type coverage. Selecting clusters filters the coverage rows, and clicking a gene colors the cells by its expression.',
+      'A UMAP of 5k PBMCs beside per-cell-type coverage: select clusters to filter rows, click a gene to color cells.',
     group: 'Real-world demos',
     sections: [
       {

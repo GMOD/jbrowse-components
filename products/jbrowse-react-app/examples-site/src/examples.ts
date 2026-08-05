@@ -13,20 +13,13 @@ export const pages: ExamplePage[] = [
     description:
       'The whole app in one declarative call: a { name, uri } assembly, one alignments track, opened in a linear genome view.',
     group: 'Getting started',
-    sections: [
-      {
-        slug: 'basic-example',
-        title: 'Basic example',
-        description:
-          'The whole app in one declarative call: a { name, uri } assembly, one alignments track, opened in a linear genome view.',
-      },
-    ],
+    sections: [{ slug: 'basic-example', title: 'Basic example' }],
   },
   {
     slug: 'customizing-the-app',
     title: 'Customizing the app',
     description:
-      'Small tweaks to the app: switch to the dark theme, observe state changes, put the session in the URL, fit it into a sized container, or offload data parsing to a web worker.',
+      'Dark theme, state observation, session URLs, container sizing, and the web worker RPC.',
     group: 'Getting started',
     sections: [
       {
@@ -45,13 +38,13 @@ export const pages: ExamplePage[] = [
         slug: 'session-in-url',
         title: 'Put the session in the URL',
         description:
-          'Serialize the live session with encodeSession and restore it with decodeSession, so the current view can be shared or bookmarked as a link.',
+          'Serialize the session with encodeSession and restore it with decodeSession, for a sharable link.',
       },
       {
         slug: 'fit-to-container',
         title: 'Fit the app to a container',
         description:
-          'By default the app fills the viewport (100vh). Set the --jbrowse-app-height CSS variable to make it fit a sized container instead — e.g. below your own header bar.',
+          'Set the --jbrowse-app-height CSS variable to fit the app into a sized container.',
       },
       {
         slug: 'with-web-worker',
@@ -67,7 +60,7 @@ export const pages: ExamplePage[] = [
     slug: 'loading-config',
     title: 'Loading configuration',
     description:
-      'Get a JBrowse config into the app: bundle it at build time, fetch it at runtime, add tracks programmatically, or launch a view imperatively.',
+      'Bundle a config at build time, fetch one at runtime, or add tracks and views after mount.',
     group: 'Loading config',
     sections: [
       {
@@ -102,7 +95,7 @@ export const pages: ExamplePage[] = [
     slug: 'comparative-views',
     title: 'Comparative views',
     description:
-      'Compare assemblies: a linear synteny view (declaratively or via the imperative mount), a dotplot, and a stacked multi-way synteny view.',
+      'Synteny and dotplot views, declaratively and through the imperative mount.',
     group: 'View types',
     sections: [
       {
@@ -119,7 +112,7 @@ export const pages: ExamplePage[] = [
         slug: 'create-app-synteny',
         title: 'Synteny via the imperative mount',
         description:
-          'Mount the app with createApp() — the framework-agnostic primitive non-React hosts (anywidget, htmlwidgets) use — and open a synteny view declaratively.',
+          'Mount the app imperatively with createApp(), the primitive non-React hosts wrap.',
       },
       {
         slug: 'multiway-synteny-example',
@@ -133,7 +126,7 @@ export const pages: ExamplePage[] = [
     slug: 'structural-variant-views',
     title: 'Structural variant views',
     description:
-      'Inspect structural variants in volvox: a circular overview, a breakpoint split view, a VCF spreadsheet, the SV inspector, and several of these stacked in one session.',
+      'Circular, breakpoint-split, spreadsheet and SV-inspector views over a volvox SV VCF.',
     group: 'View types',
     sections: [
       {
@@ -195,14 +188,7 @@ export const pages: ExamplePage[] = [
     description:
       'A richer hg38 session: genes, repeats, exome alignments, variants, and conservation.',
     group: 'Real-world demos',
-    sections: [
-      {
-        slug: 'human-demo',
-        title: 'Human demo (hg38)',
-        description:
-          'A richer hg38 session: genes, repeats, exome alignments, variants, and conservation.',
-      },
-    ],
+    sections: [{ slug: 'human-demo', title: 'Human demo (hg38)' }],
   },
 ]
 

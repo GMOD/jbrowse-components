@@ -6,9 +6,8 @@ serializes into its `?session=spec-…` URL parameter (see the
 examples are the programmatic equivalent of those URLs.
 
 `LinearSyntenyView` shows two linear genome views with a connecting ribbon for
-synteny features (PAF, MUMMER, etc.). The `init` field declares the two member
-assemblies and the synteny track that ties them together, much terser than
-hand-building two `LinearGenomeView` snapshots plus a synteny view snapshot:
+synteny features (PAF, MUMMER, etc.). `init` declares the two member assemblies
+and the synteny track that ties them together:
 
 ```js
 {

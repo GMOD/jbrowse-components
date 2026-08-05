@@ -231,6 +231,84 @@ export function findMissingDocs({
   return { missing, orphans: [...present].filter(d => !sections.has(d)) }
 }
 
+// An examples-site page is a live demo plus its own source; the prose exists to
+// name the API and flag the gotchas, not to explain the demo at length. Left
+// unchecked it grows back — these pages had drifted to 800-word essays with
+// "Where to stop" sections before this cap existed. The limits are deliberately
+// slack: they catch a page turning back into an essay, not ordinary editing.
+const DEFAULT_MAX_DOC_WORDS = 500
+// gallery-card and "On this page" descriptions, where one line is the format
+const DEFAULT_MAX_DESCRIPTION_CHARS = 160
+// advisory only — printed, never fatal, so the trend is visible before the cap
+const LONG_DOC_WORDS = 350
+
+export interface LongProse {
+  // what to name in the error, e.g. 'src/docs/pan-and-zoom.md' or a page slug
+  what: string
+  size: number
+  limit: number
+}
+
+function wordCount(text: string): number {
+  return text.split(/\s+/).filter(Boolean).length
+}
+
+// Docs over `maxWords` (fatal) and, separately, the ones merely getting long
+// (advisory). Fenced code blocks are excluded: a page whose length is a config
+// example is doing its job, and counting it would push prose out to make room.
+export function findLongDocs({
+  docsDir,
+  maxWords = DEFAULT_MAX_DOC_WORDS,
+  longWords = LONG_DOC_WORDS,
+}: {
+  docsDir: string
+  maxWords?: number
+  longWords?: number
+}): { over: LongProse[]; long: LongProse[] } {
+  const sized = listMarkdown(docsDir).map(f => ({
+    what: `src/docs/${f}`,
+    size: wordCount(
+      fs
+        .readFileSync(path.join(docsDir, f), 'utf8')
+        .replaceAll(/^```[\s\S]*?^```/gm, ''),
+    ),
+    limit: maxWords,
+  }))
+  return {
+    over: sized.filter(d => d.size > maxWords).sort((a, b) => b.size - a.size),
+    long: sized
+      .filter(d => d.size > longWords && d.size <= maxWords)
+      .sort((a, b) => b.size - a.size),
+  }
+}
+
+// Page and section descriptions render as a single line on a gallery card or in
+// the "On this page" card, so a description that runs to three clauses is
+// already the wrong shape for where it appears.
+export function findLongDescriptions({
+  pages,
+  maxChars = DEFAULT_MAX_DESCRIPTION_CHARS,
+}: {
+  pages: {
+    slug: string
+    description?: string
+    sections: { slug: string; description?: string }[]
+  }[]
+  maxChars?: number
+}): LongProse[] {
+  const all = pages.flatMap(p => [
+    { what: `page "${p.slug}"`, text: p.description },
+    ...p.sections.map(s => ({
+      what: `section "${s.slug}"`,
+      text: s.description,
+    })),
+  ])
+  return all
+    .filter(d => (d.text?.length ?? 0) > maxChars)
+    .map(d => ({ what: d.what, size: d.text!.length, limit: maxChars }))
+    .sort((a, b) => b.size - a.size)
+}
+
 export interface DocSuggestion {
   file: string
   // the config `type` value found, e.g. 'BigWigAdapter'

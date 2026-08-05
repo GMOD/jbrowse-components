@@ -1,12 +1,7 @@
 The view model is a [MobX-state-tree](https://mobx-state-tree.js.org) node, so
-anything outside the LGV can subscribe to its state with `mobx-react`'s
-`observer` HOC and re-render when relevant fields change. This is how you build
-companion panels (coordinate readouts, feature inspectors, summary tables) that
-stay in sync with the view without manual event wiring.
-
-Reading the visible regions is synchronous. An `observer` reading
-`view.dynamicBlocks` (updated on every pan/zoom) or its debounced variant
-`view.coarseDynamicBlocks` gets free reactivity:
+anything outside the view can subscribe with `mobx-react`'s `observer` and
+re-render when the fields it reads change — coordinate readouts, feature
+inspectors, summary tables, with no event wiring:
 
 ```jsx
 const VisibleRegions = observer(function VisibleRegions({ viewState }) {
@@ -15,21 +10,19 @@ const VisibleRegions = observer(function VisibleRegions({ viewState }) {
 })
 ```
 
-Reading actual feature data requires a round-trip through the RPC manager (the
-same path the renderer uses). Because the fetch is async and the visible region
-changes on every animation frame during a drag, key the query off the debounced
-`coarseDynamicBlocks` rather than `dynamicBlocks` so you don't fire a fetch per
-frame, tracking the region with an `autorun` inside an effect.
+Reading the visible regions is synchronous: `view.dynamicBlocks` updates on
+every pan/zoom, `view.coarseDynamicBlocks` is its debounced variant. Reading
+actual feature data goes through the RPC manager, so key that query off the
+coarse blocks with an `autorun` inside an effect, or you fire a fetch per
+animation frame of a drag.
 
 Every observable property and getter is listed in the
-[LinearGenomeView state model docs](https://jbrowse.org/jb2/docs/models/lineargenomeview/).
-Anything marked `#getter` or `#property` is reactive and safe to read.
+[LinearGenomeView state model docs](https://jbrowse.org/jb2/docs/models/lineargenomeview/);
+anything marked `#getter` or `#property` is reactive and safe to read.
 
-`createViewState` also takes an `onChange(patch, reversePatch)` callback that
-fires a raw MST JSON patch on every state change. Because you get the reverse
-patch too, it is what you'd build a change log or undo/redo on. For keeping UI
-in sync, though, prefer the `observer` approach above: it re-renders only the
-components that read the fields that changed, whereas `onChange` hands you every
-patch to route yourself. For persisting state,
+`createViewState` also takes an `onChange(patch, reversePatch)` callback firing
+a raw MST JSON patch on every state change — what you'd build a change log or
+undo/redo on. For keeping UI in sync prefer `observer`, which re-renders only
+the components that read what changed. For persisting state,
 [`onSnapshot`](../session-setup/#with-session-persistence) gives whole snapshots
 rather than patches.

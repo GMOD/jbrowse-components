@@ -24,8 +24,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '')
     If you only need a single track view, the lighter{' '}
     <a href="https://jbrowse.org/storybook/lgv/"
       ><code>@jbrowse/react-linear-genome-view2</code></a
-    > component is a better fit. And if you want neither finished component, because
-    your app should own everything drawn around the data, the{' '}
+    > component is a better fit, and the{' '}
     <a href="https://jbrowse.org/storybook/byo/">Build your own</a> examples keep
     the engine and rebuild the chrome from scratch.
   </p>
@@ -51,40 +50,14 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '')
     <h2>Quick start</h2>
     <p>
       Render the <code>JBrowse</code> component with your assemblies, tracks, and
-      the views to open on load. This minimal example shows one assembly and one alignments
-      track in a linear genome view:
+      the views to open on load:
     </p>
     <Code code={quickstart} lang="tsx" />
     <p>
-      For production, offload data parsing and rendering to a web worker so the
-      main thread stays responsive — see{' '}
-      <a href={`${base}/customizing-the-app/#with-web-worker`}>Web worker RPC</a
-      >{' '}
-      in the sidebar.
-    </p>
-
-    <h2>Next steps</h2>
-    <p>Browse the examples in the sidebar for specific patterns:</p>
-    <ul>
-      <li>
-        <strong>Getting started</strong> — the basic example above, plus theming,
-        observing state, and fitting the app to a container.
-      </li>
-      <li>
-        <strong>Loading config</strong> — bundle a <code>config.json</code>,
-        fetch one at runtime, add tracks programmatically, or launch a view
-        imperatively.
-      </li>
-      <li>
-        <strong>View types</strong> — comparative views (dotplot, synteny, multi-way)
-        and structural-variant views (circular, breakpoint-split, spreadsheet, SV-inspector,
-        multi-view sessions).
-      </li>
-      <li>
-        <strong>Plugins</strong> — extend the app with inline or runtime-loaded plugins.
-      </li>
-    </ul>
-    <p>
+      For production, offload data parsing and rendering to a{' '}
+      <a href={`${base}/customizing-the-app/#with-web-worker`}>web worker</a> so the
+      main thread stays responsive. The examples in the sidebar cover the rest: theming,
+      loading a <code>config.json</code>, the other view types, and plugins.
       Full API and configuration reference lives in the{' '}
       <a href="https://jbrowse.org/jb2/docs/embedded_components/"
         >embedding docs</a

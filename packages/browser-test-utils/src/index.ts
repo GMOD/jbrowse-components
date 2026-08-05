@@ -8,6 +8,8 @@ export {
   buildDocIndex,
   findBrokenCrossLinks,
   findBrokenDocLinks,
+  findLongDescriptions,
+  findLongDocs,
   findMissingDocs,
   suggestDocLinks,
 } from './docLinks.ts'
@@ -50,6 +52,7 @@ export type {
   BrokenLink,
   DocPage,
   DocSuggestion,
+  LongProse,
   MissingDoc,
 } from './docLinks.ts'
 export type { Verdict } from './reviewVerdicts.ts'
