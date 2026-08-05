@@ -664,7 +664,43 @@ const graphSettingsField = (
   }
 }
 
+// Both views run the same reorder — runDiagonalize, behind the identical
+// 'Re-order chromosomes' item — but reach it from different headers: the synteny
+// view's is in headerMenuItems, under the "View options" button
+// (ViewOptionsMenuButton), and the dotplot's is in the overflow menu in
+// DotplotControls. The init flag runs it once as the view opens rather than
+// naming a different feature, so the step is the menu item either way.
+const DIAGONALIZE_MENUS: Record<string, string> = {
+  LinearSyntenyView: 'Synteny view header → View options → Re-order chromosomes',
+  DotplotView: 'Dotplot header → the ⋮ menu → Re-order chromosomes',
+}
+
 export const viewFields: Record<string, FieldRecipe> = {
+  autoDiagonalize: (value, { viewType }) => {
+    const menu = viewType ? DIAGONALIZE_MENUS[viewType] : undefined
+    if (typeof value !== 'boolean' || !menu) {
+      return undefined
+    }
+    return value
+      ? {
+          path: menu,
+          note: 'Reorders and flips each row so the best-hit blocks line up on a diagonal. The spec runs it once as the view opens; the menu item is the same thing on demand.',
+        }
+      : {
+          path: "Nothing to run — the view keeps each assembly's own chromosome order.",
+          note: 'Re-order chromosomes is the opt-in, and this figure leaves it alone on purpose: the order along the axis is part of what the figure is showing.',
+        }
+  },
+  // Applied while the view is built (afterAttach sets scalebarOnly on any row
+  // the launch gave no tracks), so the control is the launch dialog's checkbox
+  // rather than anything on the finished view.
+  collapseEmptyRows: (value, { viewType }) =>
+    typeof value === 'boolean' && viewType === 'LinearSyntenyView'
+      ? {
+          path: `Launch synteny view dialog → Collapse panels to rulers (${value ? 'checked' : 'unchecked'})`,
+          note: 'Checked by default. A row the launch gave no tracks opens as its ruler alone instead of a "No tracks active" block; any row expands again from its own controls afterwards.',
+        }
+      : undefined,
   // Applied by initHelpers as levels[i].setHeight(h), and the only thing that
   // calls setHeight from the UI is the ResizeHandle bar under each level
   // (LinearComparativeRenderArea) — there is no menu entry or dialog for it.

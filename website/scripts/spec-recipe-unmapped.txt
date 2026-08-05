@@ -7,13 +7,11 @@
 # src/lib/spec-recipe/fields.ts. Removing one is the win.
 alpha
 arcColorByType
-autoDiagonalize
 autoscale
 bicolorPivot
 bubbleSpread
 cigarMode
 clusterRegion
-collapseEmptyRows
 collapseGroupRows
 color
 colorByChromosome
