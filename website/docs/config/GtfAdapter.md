@@ -33,9 +33,9 @@ into memory, so prefer the GtfTabixAdapter for large files.
 ## Related links
 
 - **Track:** [FeatureTrack](../featuretrack)
+- **Display:** [LinearBasicDisplay](../linearbasicdisplay)
 - **Display:** [LinearScoreDisplay](../linearscoredisplay)
 - **Display:** [LinearArcDisplay](../lineararcdisplay)
-- **Display:** [LinearBasicDisplay](../linearbasicdisplay)
 - **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
 
 ## Config slots
