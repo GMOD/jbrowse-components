@@ -10,7 +10,7 @@ tutorial_category: Structural variation
 
 **TL;DR:** JBrowse fetches a Hi-C matrix for every _pair_ of regions on screen,
 not just each region against itself. Put a chr9 window and a chr22 window in one
-linear view and the space between them fills with the contacts between the two —
+linear view and the space between them fills with the contacts between the two,
 which in a normal karyotype is background, and in K562 is the Philadelphia
 chromosome.
 
@@ -29,7 +29,7 @@ annotation files derived from the same matrix:
   sharply. ENCODE calls them with
   [Arrowhead](https://github.com/aidenlab/juicer/wiki/Arrowhead) and ships a
   BEDPE.
-- **Loops** are individual bright dots off the diagonal — two specific points
+- **Loops** are individual bright dots off the diagonal: two specific points
   contacting each other far more than their separation predicts, usually a pair
   of convergent CTCF sites. ENCODE calls them with
   [HiCCUPS](https://github.com/aidenlab/juicer/wiki/HiCCUPS), also a BEDPE.
@@ -37,7 +37,7 @@ annotation files derived from the same matrix:
 <Figure src="/img/hic/loops_and_domains.png" caption="GM12878 in situ Hi-C on 2.4 Mb of chr18 at 10 kb bins, with the Arrowhead contact domains and HiCCUPS loops called from it stacked above. Loops are colored by contact count: the one dark red arc spans the same interval as the matrix's largest block, and its two feet sit on that block's corner. MANE genes on top." links="Open this view=hic/loops_and_domains" />
 
 The dark arc is the point of the figure. A contact domain and the loop at its
-corner are the same object seen two ways — the block in the matrix and the arc
+corner are the same object seen two ways. The block in the matrix and the arc
 above it end at the same two coordinates, because the loop is what holds the
 domain together.
 
@@ -48,7 +48,7 @@ each bin of an inter-chromosomal matrix holds almost nothing, so the triangle
 renders as red speckle with no visible domain edges. The figure above sets
 [`resolutionBias`](/docs/config/linearhicdisplay/#slot-resolutionbias) to `2`,
 stepping two levels coarser to 10 kb, which is where blocks appear. If a Hi-C
-track looks like noise, this is the first thing to change — see
+track looks like noise, this is the first thing to change. See
 [adjusting resolution](/docs/user_guides/hic_track#adjusting-resolution).
 
 ## Two chromosomes in one view
@@ -56,7 +56,7 @@ track looks like noise, this is the first thing to change — see
 The matrix is fetched for every pair of displayed regions. With one region on
 screen that is just the region against itself; open a second and JBrowse also
 fetches the contacts _between_ the two and draws them in the wedge between their
-triangles. Nothing needs configuring for this — it falls out of navigating to
+triangles. Nothing needs configuring for this; it falls out of navigating to
 two locations at once, which you can do by typing both into the location box
 separated by a space.
 
@@ -68,14 +68,14 @@ are fused, they are neighbours, and they contact each other constantly.
 K562 is derived from a chronic myeloid leukaemia patient and carries the
 Philadelphia chromosome, t(9;22)(q34;q11)
 ([Rowley 1973](https://doi.org/10.1038/243290a0)), which joins _BCR_ on chr22 to
-_ABL1_ on chr9 — the fusion imatinib targets. GM12878 is a lymphoblastoid line
+_ABL1_ on chr9, the fusion imatinib targets. GM12878 is a lymphoblastoid line
 with a normal karyotype. Both have deep in situ Hi-C from the same lab and
 pipeline in ENCODE, so the two maps are directly comparable.
 
 <Figure src="/img/hic/bcr_abl1_translocation.png" caption="ABL1 (chr9) and BCR (chr22) open as two windows in one linear view, with GM12878 above and K562 below. Each panel's own two triangles are its intra-chromosomal contacts; the wedge between them is chr9 against chr22. It is empty in GM12878 and carries a dense block in K562, arrowed, whose apex sits where the two highlighted genes meet." links="Open this view=hic/bcr_abl1_translocation" />
 
-Read the two panels as one comparison. The paired triangles are the same in both
-— chr9 and chr22 each fold normally in K562. What differs is the space between
+Read the two panels as one comparison. The paired triangles are the same in both:
+chr9 and chr22 each fold normally in K562. What differs is the space between
 them, and that space is not a subtle enrichment: it is empty in one cell line
 and solid in the other.
 
@@ -89,7 +89,7 @@ karyotype.** ENCODE has several GM12878 Hi-C experiments; the "supernatant"
 fraction (`ENCSR730CER`) has a couple of hundred occupied bins in this window
 with a maximum of 7 contacts. Against K562 it looks like a spectacular result,
 but an empty panel is empty because nothing was sequenced. The figure above uses
-`ENCSR410MDC`, which is the _deeper_ of the two files — and that is the point.
+`ENCSR410MDC`, which is the _deeper_ of the two files, and that is the point.
 Run the scan below and the totals come out the wrong way round from what the
 figure suggests: across the whole chr9–chr22 block GM12878 has **more** contact
 than K562, 2,072,975 against 1,539,676. It is only at the junction bin that the
@@ -125,7 +125,7 @@ bash scan_hic_translocation.sh
 It needs `java` and `curl` and downloads `juicer_tools` itself; `CASE`, `CTRL`,
 `CHR1`, `CHR2` and `RES` are all overridable, so the same scan applies to any
 two `.hic` files that hold inter-chromosomal blocks. The top row it prints is
-`chr9:130,750,000 × chr22:23,000,000` — _ABL1_ intron 1 against the _BCR_ major
+`chr9:130,750,000 × chr22:23,000,000`, _ABL1_ intron 1 against the _BCR_ major
 breakpoint cluster region, the canonical CML fusion, at 161,282 contacts against
 149 in GM12878.
 
@@ -135,18 +135,49 @@ rearrangement, which is a good reminder that the ranked list is a list of
 candidates rather than a single answer.
 
 Purpose-built callers do this genome-wide with a trained model rather than one
-pair at a time — [EagleC](https://github.com/XiaoTaoWang/EagleC),
+pair at a time: [EagleC](https://github.com/XiaoTaoWang/EagleC),
 [hic_breakfinder](https://github.com/dixonlab/hic_breakfinder) and
 [HiNT](https://github.com/parklab/HiNT) are the usual ones. Their output is
 BEDPE, which loads here as a
 [paired-arc track](/docs/config_guides/hic_track#loops-and-interactions-as-arcs)
 next to the matrix it was called from.
 
+## The same control, one scale up
+
+The translocation is the sharpest thing these two cell lines differ by, but it is
+not the only one, and the largest-scale difference is read the same way. Above the
+domains and loops of the first figure, the matrix separates into two interleaved
+sets of regions that preferentially contact their own kind: the gene-rich, active
+A compartment and the inactive B compartment. ENCODE publishes that call for
+every Hi-C experiment as a
+[compartment eigenvector and a set of subcompartment classes](/docs/user_guides/hic_track#compartments-and-subcompartments),
+both derived from the matrix already loaded.
+
+<Figure src="/img/hic/compartment_switch.png" caption="10 Mb of chr18 with the GM12878 and K562 compartment eigenvectors on one shared scale, their subcompartment classes as colored strips between them, and the GM12878 matrix below. Over the highlighted TCF4 band the GM12878 eigenvector is negative and the K562 one positive, and the subcompartment class changes with it; the flanks, where both agree, are the control." links="Open this view=hic/compartment_switch" />
+
+The band over _TCF4_ is in the B compartment in GM12878 and the A compartment in
+K562, and the reason to believe it is the same reason the translocation was
+believable: the flanks. Ten megabases of surrounding sequence, from the same two
+files and the same pipeline, agree. A difference that appears in one block while
+its neighbours match is a difference in the data; one that appears everywhere is a
+difference in how the two files were made.
+
+Two things make this comparison harder than it looks, and both are set up in the
+figure rather than left to the reader. The eigenvector tracks are pinned to one
+shared scale, because autoscaling lets each fill its own lane from its own
+extremes and the two stop being comparable at all. And an eigenvector names the A
+compartment only up to a sign, so which sign means active is a property of the
+file rather than a convention: it is read off the gene track, since A is the
+gene-rich compartment by definition. The
+[user guide section](/docs/user_guides/hic_track#compartments-and-subcompartments)
+covers both, along with why the subcompartment class numbers cannot be compared
+between files on their own.
+
 ## Configure it yourself
 
 Every file in this tutorial is a public ENCODE object served with CORS and byte
 ranges, so this config works as-is with nothing to download or host. The `.hic`
-files are 20 GB and 55 GB and are never fetched whole — only the bins on screen
+files are 20 GB and 55 GB and are never fetched whole; only the bins on screen
 are requested.
 
 ```json addtrack
@@ -190,7 +221,7 @@ A contact domain is a `FeatureTrack`, not a paired-arc one. Arrowhead writes
 each domain with both BEDPE mates set to the same interval, so an arc would run
 from the domain to itself and draw nothing; read as plain features the same file
 gives one box per domain, with nested domains stacking into rows. Loops, whose
-two mates really are different places, are the paired-arc case — see the
+two mates really are different places, are the paired-arc case. See the
 [Hi-C track config guide](/docs/config_guides/hic_track#loops-and-interactions-as-arcs).
 
 For the loops file, set
@@ -198,13 +229,13 @@ For the loops file, set
 want to color or filter by a column. The adapter otherwise takes column names
 from the file's own header line, and juicer writes its version banner _after_
 the defline; the last header line therefore has no tab-separated fields, name
-resolution gives up, and every extra column reads back as `undefined` — a jexl
+resolution gives up, and every extra column reads back as `undefined`, and a jexl
 expression on `observed` then silently evaluates against nothing. Listing the 24
 columns in config skips the guesswork.
 
 ## See also
 
-- [](/docs/user_guides/hic_track) — resolution, color scales, normalization, and
+- [](/docs/user_guides/hic_track), for resolution, color scales, normalization, and
   the region-pair mechanism this tutorial leans on
 - [](/docs/config_guides/hic_track)
 - [](/docs/tutorials/chromhmm), the other ENCODE annotation stacked
