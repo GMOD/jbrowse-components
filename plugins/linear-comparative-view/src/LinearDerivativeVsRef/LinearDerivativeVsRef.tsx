@@ -33,6 +33,7 @@ import {
 import { buildSplitViewFromPath } from './buildSplitViewFromPath.ts'
 
 import type { AbstractTrackModel, AbstractViewModel } from '@jbrowse/core/util'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { DerivativeCandidate } from '@jbrowse/plugin-alignments'
 
 const useStyles = makeStyles()(theme => ({
@@ -152,17 +153,24 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
         return
       }
       const session = getSession(track)
+      // `IStateTreeNode`, not `unknown[]`: `getSnapshot` takes the live MST node
+      // and this is where it comes from, so typing it as a plain array both
+      // fails to compile and hides that `?? []` is not a fallback -- getSnapshot
+      // throws on a value that is not a tree node, so an empty literal would
+      // have been a runtime error rather than an empty track list.
       const view = getContainingView(track) as {
-        tracks?: unknown[]
+        tracks?: IStateTreeNode
       }
       const { viewSnapshot, locStrings } = buildSplitViewFromPath({
         candidate,
         // every track, alignments included: a read leaving one panel and
         // arriving in the next is the whole content of this view type, which is
         // the opposite of the synteny launch's reference panel
-        tracks: getSnapshot(view.tracks ?? []) as Parameters<
-          typeof buildSplitViewFromPath
-        >[0]['tracks'],
+        tracks: view.tracks
+          ? (getSnapshot(view.tracks) as Parameters<
+              typeof buildSplitViewFromPath
+            >[0]['tracks'])
+          : [],
       })
       const created = session.addView(
         'BreakpointSplitView',
