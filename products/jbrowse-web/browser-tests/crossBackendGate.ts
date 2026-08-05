@@ -63,18 +63,41 @@ export function recordCapture(
   byBackend.set(backend, png)
 }
 
-// Inherent backend disagreement that is NOT a bug: analytic-curve / MSAA arc
-// paths rasterize differently in the GLSL shaders than in canvas2d's arc
-// rasterizer. Measured webgl-vs-canvas2d floor: flat fills and discrete geometry
-// 0-2%, antialiased curves 6-8% (targeted). The default gate is 3%; these named
-// views raise it. Keyed by substring of the snapshot name (the targeted_ /
-// fullpage_ prefix is included, so a bare base name matches both).
+// Where the gate is told not to look. The default is 3%; a name listed here
+// raises its own ceiling. Keyed by substring of the snapshot name (the
+// targeted_ / fullpage_ prefix is included, so a bare base name matches both).
+//
+// **Every entry is a testable claim about why two backends disagree, and the
+// list is audited by testing them.** These all said "antialiasing" — which
+// predicts the drift MOVES when the rasterizer changes. So render the same build
+// twice, once with `--swiftshader` and once on the real GPU, and compare:
+//
+//   identical to two decimals -> not rasterization. Something is drawn
+//                                differently, and the ceiling is hiding it.
+//   moves                     -> rasterization, and the entry is doing its job.
+//
+// Audited that way on 2026-08-04, with every threshold temporarily zeroed so the
+// run prints each pair's exact drift. **Every pair came back identical across the
+// two rasterizers, so no entry's stated reason survived** — and seven of the
+// eight were also far under the 3% default and were deleted outright:
+//
+//   arcs-paired-end-rnaseq        10% ceiling, measured 0.02%
+//   arcs-rnaseq-sashimi           10% ceiling, measured 0.01%
+//   arcs-collapse-introns-sashimi  5% ceiling, measured 0.01%
+//   inversion-indels              10% ceiling, measured 0.09%
+//   workspaces-layout-url-param    8% ceiling, measured 0.00%
+//   alignments-long-reads-sv-linked 10% ceiling, measured 1.99%
+//   inversion-paired-coverage      8% ceiling, measured 2.22%
+//
+// The arc entries are the cautionary ones: they claimed a 6-8% analytic-curve
+// floor and the arcs now agree to 0.02%, because the drawing changed under them
+// and nobody re-measured. A stale override is worse than no override — those
+// five views could have regressed by 10% in silence.
+//
+// So: an entry needs a measured number and a reason that survives the rasterizer
+// test. Re-run the audit after any change to a shared draw path.
 const DEFAULT_THRESHOLD = 0.03
 const THRESHOLD_OVERRIDES: { match: string; threshold: number }[] = [
-  // antialiased analytic-curve arc paths (GLSL vs canvas2d arc rasterizer)
-  { match: 'arcs-paired-end-rnaseq', threshold: 0.1 },
-  { match: 'arcs-rnaseq-sashimi', threshold: 0.1 },
-  { match: 'arcs-collapse-introns-sashimi', threshold: 0.05 },
   // Dense simulated-long-read pileups + their coverage strip. This entry was
   // 20% and excused as "uniform edge shimmer over identically-shaped reads".
   // **That was wrong, and the ceiling was hiding two real bugs.** The drifts
@@ -103,19 +126,6 @@ const THRESHOLD_OVERRIDES: { match: string; threshold: number }[] = [
   // 10%, above the measured 6.59%. This number should keep falling; it is a
   // record of what is still broken, not a setting.
   { match: 'inversion-pbsim', threshold: 0.1 },
-  // coverage histograms whose SNP/mismatch ticks are 1px-edge sensitive.
-  // The left-anchor fix above took this from 5.49% to 2.24% — under the 3%
-  // default, so this entry is a candidate for deletion. Left in on one
-  // post-fix measurement; take a second reading and drop it.
-  { match: 'inversion-paired-coverage', threshold: 0.08 },
-  // 1px-tall linked-read mate connectors land a row apart between backends
-  { match: 'alignments-long-reads-sv-linked', threshold: 0.1 },
-  // ruler chevrons + glyph AA across a three-view workspace layout
-  { match: 'workspaces-layout-url-param', threshold: 0.08 },
-  // sparse fullpage (short indel track + whitespace) where the always-present
-  // full-width chevron-ruler AA dominates the pixel fraction; swiftshader
-  // rasterizes the chevrons/gridlines a hair off canvas2d (measured 8.5%).
-  { match: 'inversion-indels', threshold: 0.1 },
 ]
 
 function thresholdFor(name: string) {
