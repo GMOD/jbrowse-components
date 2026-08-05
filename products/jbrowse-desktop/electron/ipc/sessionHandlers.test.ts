@@ -223,6 +223,30 @@ test('renameSession renames both the list entry and the session file', async () 
   expect(snap.defaultSession.name).toBe('A better name')
 })
 
+// The session file and recent_sessions.json go out through a temp file and a
+// rename, so a crash mid-write can't leave a truncated file where a session used
+// to be. What a test can check is the visible half of that: the write lands, and
+// nothing is left lying next to it.
+test('saving leaves the session and the list intact, with no temp files behind', async () => {
+  const sessionPath = path.join(dir, 'atomic.jbrowse')
+
+  await invoke('saveSession', sessionPath, {
+    assemblies: [],
+    defaultSession: { name: 'atomic' },
+  })
+
+  expect(
+    (JSON.parse(fs.readFileSync(sessionPath, 'utf8')) as SessionSnap)
+      .defaultSession?.name,
+  ).toBe('atomic')
+  expect(fs.readdirSync(dir).filter(f => f.endsWith('.tmp'))).toEqual([])
+  expect(
+    fs
+      .readdirSync(path.dirname(paths.recentSessionsPath))
+      .filter(f => f.endsWith('.tmp')),
+  ).toEqual([])
+})
+
 test('renameSession leaves a config relative uris alone', async () => {
   // loadSession resolves a hand-written config's relative uris into absolute
   // localPaths for the renderer, in place. Renaming used to go through that same

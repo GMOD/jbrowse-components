@@ -28,6 +28,32 @@ function isNotFound(e: unknown) {
   return (e as NodeJS.ErrnoException | null)?.code === 'ENOENT'
 }
 
+// Session files and recent_sessions.json are rewritten whole, the autosave doing
+// so once a second for as long as a session is open. writeFile truncates the
+// destination first, so a crash, a full disk, or the app being killed mid-write
+// leaves a truncated file where the user's session used to be — and the odds of
+// landing in that window are proportional to how often it is written.
+//
+// Write a sibling temp file and rename it into place instead: rename is atomic,
+// so a reader sees the whole old file or the whole new one, never half of
+// either. The temp is in the destination's own directory, so the rename never
+// has to cross a filesystem, and its name carries the pid and a counter so two
+// writers (two saves of the same session racing) can't share one.
+let tmpFileCounter = 0
+
+async function writeFileAtomic(filePath: string, data: string) {
+  const tmpPath = `${filePath}.${process.pid}.${tmpFileCounter++}.tmp`
+  try {
+    await writeFile(tmpPath, data, ENCODING)
+    await rename(tmpPath, filePath)
+  } catch (e) {
+    // the write failed or never landed; don't leave the fragment next to the
+    // user's session file
+    await unlink(tmpPath).catch(() => {})
+    throw e
+  }
+}
+
 // A session that was never saved with a window up has no thumbnail, and a file
 // deleted outside the app is already gone: neither absence is worth a console
 // error, but anything else (a permissions problem) still is.
@@ -147,7 +173,7 @@ function updateRecentSessions(
 ) {
   return serializeRecentSessions(async () => {
     const next = update(await readRecentSessions(recentSessionsPath))
-    await writeFile(recentSessionsPath, stringify(next))
+    await writeFileAtomic(recentSessionsPath, stringify(next))
   })
 }
 
@@ -190,7 +216,7 @@ export function registerSessionHandlers(
       updateRecentSessions(paths.recentSessionsPath, rows =>
         upsertRecentSession(rows, entry),
       ),
-      writeFile(autosavePath, stringify(snap)),
+      writeFileAtomic(autosavePath, stringify(snap)),
     ])
 
     return autosavePath
@@ -213,7 +239,7 @@ export function registerSessionHandlers(
       updateRecentSessions(paths.recentSessionsPath, rows =>
         upsertRecentSession(rows, entry),
       ),
-      writeFile(sessionPath, stringify(snap)),
+      writeFileAtomic(sessionPath, stringify(snap)),
       // Thumbnail is cosmetic like the capturePage that produced it: a failed
       // write (e.g. an over-long path on Windows) must not reject the session
       // save. Still awaited as part of this handler, so a quit that waits for
@@ -273,8 +299,8 @@ export function registerSessionHandlers(
       session.defaultSession.name = newName
 
       await Promise.all([
-        writeFile(paths.recentSessionsPath, stringify(rows)),
-        writeFile(sessionPath, stringify(session)),
+        writeFileAtomic(paths.recentSessionsPath, stringify(rows)),
+        writeFileAtomic(sessionPath, stringify(session)),
       ])
     })
   })
