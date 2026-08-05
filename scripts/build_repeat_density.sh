@@ -4,30 +4,36 @@
 # per class per assembly, for the multi-wiggle lanes in
 # website/docs/tutorials/pangenome_hprc.md.
 #
-# WHY PER CLASS AND NOT ONE DENSITY LINE. The claim the figure needs to show is
-# that the megabase CHM13 adds to chr17q is repeat-dense in a way GRCh38's own
-# subtelomere is not. Total repeat density says that much (37% -> 76%) and stops
-# there. Split by class, over the last 650 kb of each assembly's chr17, it says
-# what KIND, and the answer is one class:
+# WHY PER CLASS AND NOT ONE DENSITY LINE. Over the last 650 kb of each
+# assembly's chr17, total repeat density says nothing at all: 37.22% against
+# 36.48%, the same sequence by the only measure a single density lane can draw.
+# Split by class it says the composition moved, in opposite directions:
 #
 #   class            GRCh38     CHM13
-#   LINE             13.71%     70.05%     <- 5.1x
-#   SINE             13.58%     10.53%     <- goes DOWN
-#   LTR               6.10%      9.81%
-#   DNA               2.29%      8.17%
-#   all (merged)     37.22%     76.37%
+#   LINE             13.71%     16.51%     <- up
+#   SINE             13.58%      9.00%     <- down
+#   LTR               6.10%      5.83%
+#   DNA               2.29%      3.01%
+#   all (merged)     37.22%     36.48%     <- flat
 #
-# and within LINE it is L1 specifically: 13.35% -> 66.70%, with L2 0.28% ->
-# 7.32%. So the added sequence is not "more repetitive" in the generic way a
-# single density line would draw it — it is an L1 field, and it is depleted of
-# Alu relative to the reference sequence it continues. That is also the
-# mechanism the tutorial already asserts in prose (long L1 is what a
-# BAC-and-Sanger reference had no way to place), which this makes visible.
+# The larger version of that is the insertion allele itself, the 142 kb of CHM13
+# chr17 that GRCh38 has no coordinates for. It runs LINE 23.70%
+# against 14.18% and 14.47% in its own two flanks, and SINE 8.57% against
+# 13.57% on the left flank — so the sequence the older reference was missing is
+# L1-dense and Alu-poor against the sequence it sits between, which is the
+# mechanism the tutorial asserts (long L1 is what a BAC-and-Sanger reference had
+# no way to place) at the scale where it is actually true. It is a 1.7x
+# enrichment, not a transformation: the 650 kb window dilutes it to 1.2x, which
+# is why the allele gets its own report below.
 #
 # The two assemblies are measured over their own last 650 kb rather than over a
 # lifted-over interval, because there is no lift-over for sequence one of them
 # does not have — the comparison is between what each assembly ends its
 # chromosome with.
+#
+# THESE NUMBERS REPLACE AN EARLIER SET THAT WAS AN ARTIFACT (LINE 13.71% ->
+# 70.05%, all 37.22% -> 76.37%, "5.1x"). See the normalizing step for what
+# produced it; anything quoting the old table is quoting the bug.
 #
 # Bin width is the figure's real constraint. The panes that show this contrast
 # are ~650 kb wide, so a 5 kb bin is ~8 screen px: wide enough to smooth single
@@ -93,8 +99,28 @@ fetch "$HG38_RMSK" rmsk_hg38.txt.gz
 fetch "$HS1_RMSK" chm13v2.0_rmsk.bb
 
 # Normalize both sources to chrom/start/end/class. The UCSC table has class in
-# its own column ($12); the bigBed packs `repName#Class/Family` into name, which
-# is also what the FeatureTrack lanes in the figure color off.
+# its own column ($12) and one row per RepeatMasker .out line, so its
+# genoStart/genoEnd are already the aligned interval.
+#
+# THE BIGBED IS NOT THAT, AND TAKING ITS chromStart/chromEnd IS THE ONE TRAP
+# HERE. `chm13v2.0_rmsk.bb` is a bigRmskBed, whose own autoSql calls those two
+# fields "position of VISUALIZATION on chromosome" and thickStart/thickEnd
+# "position of ALIGNED sequence": one record is a whole fragmented element
+# JOINED back together, and its outer span covers everything that interrupted
+# it, which is usually a younger element of another class. So the outer spans
+# overlap ACROSS classes, and summing them counts the same base as LINE and as
+# SINE at once. Measured on chr17 the four class fractions then sum over 1.0 in
+# 71% of bins (max 3.14), and LINE reads 72.5% of the chromosome against the
+# 14.7% hg38's per-fragment table gives -- an impossible number that lands in a
+# figure as a solid red field. In the last 650 kb it turned "LINE 13.71% ->
+# 16.51%" into "13.71% -> 70.05%", i.e. it invented the result.
+#
+# The aligned pieces are the BLOCKS whose blockStart is not -1 (-1 marks the
+# unaligned filler between fragments, and those carry junk sizes including
+# negatives and zero). Expanded that way, one bigBed record reproduces exactly
+# the .out lines its own `description` field lists, which is what the hg38 table
+# rows are -- so the two assemblies are then measured the same way, which is the
+# entire point of comparing them.
 echo "== normalizing =="
 if [[ ! -s rmsk_hg38.bed ]]; then
   zcat rmsk_hg38.txt.gz |
@@ -104,7 +130,12 @@ fi
 if [[ ! -s rmsk_hs1.bed ]]; then
   bigBedToBed chm13v2.0_rmsk.bb stdout |
     awk -F'\t' '$1 ~ /^chr[0-9XY]+$/ {
-      split($4, a, "#"); split(a[2], b, "/"); print $1"\t"$2"\t"$3"\t"b[1]
+      split($4, a, "#"); split(a[2], b, "/"); cls = b[1]
+      n = split($11, sizes, ","); split($12, starts, ",")
+      for (i = 1; i <= n; i++) {
+        if (starts[i] == "" || starts[i] == -1 || sizes[i] + 0 <= 0) continue
+        print $1"\t"($2 + starts[i])"\t"($2 + starts[i] + sizes[i])"\t"cls
+      }
     }' |
     sort -k1,1 -k2,2n > rmsk_hs1.bed
 fi
@@ -170,6 +201,16 @@ hg38_end=$(awk -F'\t' '$1=="chr17"{print $2}' hg38.chrom.sizes)
 hs1_end=$(awk -F'\t' '$1=="chr17"{print $2}' hs1.chrom.sizes)
 report rmsk_hg38.bed chr17 $((hg38_end - 650000)) "$hg38_end" "GRCh38"
 report rmsk_hs1.bed chr17 $((hs1_end - 650000)) "$hs1_end" "CHM13"
+
+# The insertion allele on its own, against the CHM13 sequence on either side of
+# it. This is where the contrast lives: the 650 kb windows above are mostly
+# flank, so they average it away. Bounds are the graph node's own span, the same
+# one website/scripts/specs/graph.ts highlights as CHM13_ALLELE.
+echo
+echo "== the 142 kb CHM13 insertion allele, against its own flanks =="
+report rmsk_hs1.bed chr17 83599576 83899576 "CHM13 left flank"
+report rmsk_hs1.bed chr17 83899576 84041803 "CHM13 allele"
+report rmsk_hs1.bed chr17 84041803 "$hs1_end" "CHM13 right flank"
 
 echo
 echo "Done. bigWigs in $PWD:"
