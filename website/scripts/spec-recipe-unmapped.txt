@@ -16,7 +16,6 @@ clusterRegion
 collapseEmptyRows
 collapseGroupRows
 color
-colorBy
 colorByChromosome
 colorDomain
 connectedView

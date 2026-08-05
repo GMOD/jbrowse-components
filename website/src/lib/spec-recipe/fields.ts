@@ -6,6 +6,7 @@ import {
   attributeColorJexl,
 } from '../../../../plugins/canvas/src/RenderFeatureDataRPC/featureColors.ts'
 import { isJexl } from '../../../../packages/core/src/util/jexlStrings.ts'
+import { capitalizeFirst } from '../../../../plugins/variants/src/shared/constants.ts'
 import { GROUP_BY_LABELS } from '../../../../plugins/alignments/src/shared/groupByLabels.ts'
 import { GENE_GLYPH_MODE_OPTIONS } from '../../../../plugins/canvas/src/LinearBasicDisplay/geneGlyphMode.ts'
 import { getHeightModeOptions } from '../../../../plugins/linear-genome-view/src/BaseLinearDisplay/models/heightMode.ts'
@@ -50,6 +51,10 @@ export interface FieldContext {
   // menu on different displays — without it they can only be written for one
   // display and be silently wrong on the rest.
   displayType?: string
+  // The view a viewFields recipe is describing. Same purpose one level up: a
+  // field like colorBy means a different control on a synteny view than on any
+  // other, and unlike a track entry a view always names its own type.
+  viewType?: string
 }
 
 export type FieldRecipe = (
@@ -92,7 +97,22 @@ const MODIFICATION_BY_TYPE = 'One color per modification type'
 const MODIFICATION_TWO_COLOR =
   'One color per type, plus low-probability & unmodified in blue'
 
-function colorByStep(value: unknown): FieldStep | undefined {
+function colorByStep(
+  value: unknown,
+  { displayType }: FieldContext,
+): FieldStep | undefined {
+  // The multi-sample variant displays reach colorBy through their own submenu
+  // and name a sample attribute rather than a scheme, so they are answered
+  // before the alignments registry is consulted at all.
+  if (displayType && MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)) {
+    const attribute = asString(value)
+    return attribute
+      ? {
+          path: `${TRACK_MENU} → Color by... → Samples → ${capitalizeFirst(attribute)}`,
+          note: `The Samples section lists whichever metadata columns your samples carry, so "${attribute}" appears only if yours have it.`,
+        }
+      : undefined
+  }
   const colorBy = asRecord(value)
   const mods = asRecord(colorBy?.modifications)
   const spelled = asString(colorBy?.type)
@@ -184,6 +204,35 @@ function groupByStep(value: unknown): FieldStep | undefined {
       }
     : undefined
 }
+
+// The synteny view's colour control is a palette button in the view header
+// (ColorBySelector), not a menu entry, and its radios come from COLOR_MODES in
+// synteny-core's colorByMenuItems.tsx. That module is .tsx and unimportable
+// here, so the labels are verified by hand — and they had to be, because the
+// neighbouring `colorByShortLabel` in the same package looks like the same
+// table and is not: it titles the floating legend, where these read 'Query
+// name' and 'Reference name'.
+const SYNTENY_COLOR_MODES: Record<string, string> = {
+  default: 'Default',
+  strand: 'Strand',
+  track: 'Distinct color per track',
+  query: 'Query',
+  target: 'Target',
+  reference: 'Reference',
+  identity: 'Identity',
+  meanQueryIdentity: 'Mean query identity',
+  mappingQuality: 'Mapping quality',
+}
+
+// The two multi-sample variant displays share one base model, so one path
+// serves both. Unlike every other colorBy here the value is not an enum — it is
+// whichever sample-metadata attribute the track carries, offered under a
+// 'Samples' subheader, so the recipe names the figure's attribute rather than
+// looking it up. capitalizeFirst is the menu's own label transform, imported.
+const MULTI_SAMPLE_VARIANT_DISPLAYS = new Set([
+  'LinearMultiSampleVariantDisplay',
+  'LinearMultiSampleVariantMatrixDisplay',
+])
 
 // Mirrors the canvas display's own `colorByMode` getter (its baseModel.ts),
 // which is what decides which of the three "Color by..." radios reads as
@@ -616,6 +665,19 @@ const graphSettingsField = (
 }
 
 export const viewFields: Record<string, FieldRecipe> = {
+  colorBy: (value, { viewType }) => {
+    const label =
+      typeof value === 'string' ? SYNTENY_COLOR_MODES[value] : undefined
+    return label && viewType === 'LinearSyntenyView'
+      ? {
+          path: `Synteny view header → palette button → ${label}`,
+          note:
+            value === 'reference'
+              ? 'The palette button\'s tooltip reads "Color by: ...". Reference is offered only in a stacked view of three or more genomes, where there is a shared reference to trace.'
+              : 'The palette button\'s tooltip reads "Color by: ...".',
+        }
+      : undefined
+  },
   // The file a spreadsheet-backed view opens on. Both launchers that accept it
   // (LaunchSvInspectorView, LaunchSpreadsheetView) hand it to the same import
   // wizard the view shows while its spreadsheet is uninitialized, so one path

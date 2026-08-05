@@ -181,6 +181,7 @@ function viewSteps(
 
   const viewFieldSteps = fieldSteps(Object.entries(view), viewFields, {
     noun: 'feature',
+    viewType: view.type,
   })
   steps.push(...viewFieldSteps.steps)
   unmapped.push(...viewFieldSteps.unmapped)
