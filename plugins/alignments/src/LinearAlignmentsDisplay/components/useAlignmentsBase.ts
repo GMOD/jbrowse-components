@@ -251,7 +251,8 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   // handleClick, and the note on the two handlers below), which was already the
   // rule so that a hover recorded a frame ago can't act. A hover that lands one
   // frame later than the cursor is, by construction, invisible.
-  const hoverRafRef = useRef<ReturnType<typeof requestAnimationFrame>>(undefined)
+  const hoverRafRef =
+    useRef<ReturnType<typeof requestAnimationFrame>>(undefined)
   const hoverPosRef = useRef<[number, number]>(undefined)
 
   // A queued hover must not outlive the component: the display is detached from

@@ -65,7 +65,10 @@ try {
   const { execSync } = await import('node:child_process')
   buildCommit = (
     process.env.GITHUB_SHA ??
-    execSync('git rev-parse HEAD', { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+    execSync('git rev-parse HEAD', {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    })
   )
     .trim()
     .slice(0, 7)
@@ -543,9 +546,11 @@ try {
         </div>
         <a href={docsHref}>Embedding docs</a>
         <a href="https://jbrowse.org/jb2/">jbrowse.org</a>
-        {/* the deployed commit — see `buildCommit` above. Also emitted as a
+        {
+          /* the deployed commit — see `buildCommit` above. Also emitted as a
             <meta> in <head>, so checking what is live is a curl and a grep
-            rather than a screenshot. */}
+            rather than a screenshot. */
+        }
         <span class="build-commit" title="deployed commit">{buildCommit}</span>
         <button
           type="button"
