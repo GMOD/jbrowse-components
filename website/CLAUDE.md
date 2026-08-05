@@ -8,7 +8,13 @@ gitignored). `deploy_staging.sh` wraps a staging deploy.
 
 `scripts/generate-screenshots.ts`, run with `node` — **not `npx tsx`**, whose
 `keepNames` breaks `page.evaluate`'d functions. Specs in
-`scripts/screenshot-specs.ts`.
+`scripts/screenshot-specs.ts`. The generator is the pipeline and the run pool;
+its neighbours own one concern each — `screenshot-options` (the CLI and what it
+derives), `-ready` (getting a page to the state a figure shows), `-asserts` (the
+gates a frame passes before it may exist), `-page` (per-page setup, network
+diagnosis), `-report` (what the run noticed and how it says so), `-embedded`.
+Adding a module means adding it to `GLOBAL_TRIGGERS` in `screenshot-impact.ts`,
+or `--affected` will not know it changes every capture.
 
 - **Display config in a session spec goes on the track**, inside its own
   `displays: [{ type, ...slots }]`. Slots on the view's `tracks` entry are
@@ -55,13 +61,14 @@ gitignored). `deploy_staging.sh` wraps a staging deploy.
   `@jbrowse/browser-test-utils/src/annotationOverlay.ts` (shared with the
   desktop harness), not to `scripts/`.
 - **A click anchors too.** `anchor: {track, locus, fracY}` on a
-  click/rightclick/hover resolves through the live view (`scripts/locusAnchor.ts`,
-  the LGV sibling of `graphAnchor.ts`), so a canvas feature is named by its
-  coordinate rather than by a pixel. A `from: {x, y}` is only correct for the
-  width, locus and layout it was measured against, and nothing tells you when one
-  of those moves: `alignments_sort_by_base` kept its 108bp-era coordinate after
-  the spec was narrowed to 31bp, which read as 17% render flakiness for months.
-  Share one anchor between the action and the callouts that explain it.
+  click/rightclick/hover resolves through the live view
+  (`scripts/locusAnchor.ts`, the LGV sibling of `graphAnchor.ts`), so a canvas
+  feature is named by its coordinate rather than by a pixel. A `from: {x, y}` is
+  only correct for the width, locus and layout it was measured against, and
+  nothing tells you when one of those moves: `alignments_sort_by_base` kept its
+  108bp-era coordinate after the spec was narrowed to 31bp, which read as 17%
+  render flakiness for months. Share one anchor between the action and the
+  callouts that explain it.
 - **Don't `convert -append` a before/after figure by hand** — use a `compose`
   spec, or `stages` when a state is only reachable through the UI.
 - **A UI click-chain waiting on a fixed timeout is a red flag.** Make the

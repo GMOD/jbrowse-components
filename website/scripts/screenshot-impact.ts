@@ -463,7 +463,16 @@ export async function specFileOwners(): Promise<Map<string, string>> {
 // them shows: the generator, the shared action/annotation/image vocabulary, the
 // spec helpers every session is built with, and the browser harness.
 const GLOBAL_TRIGGERS = [
+  // the generator and the modules it is split across (options, ready, asserts,
+  // page, report, embedded) — a prefix, so a new one is covered the day it is
+  // added rather than the day somebody notices it isn't
   'website/scripts/generate-screenshots.ts',
+  'website/scripts/screenshot-options.ts',
+  'website/scripts/screenshot-ready.ts',
+  'website/scripts/screenshot-asserts.ts',
+  'website/scripts/screenshot-page.ts',
+  'website/scripts/screenshot-report.ts',
+  'website/scripts/screenshot-embedded.ts',
   'website/scripts/actions.ts',
   'website/scripts/annotations.ts',
   // where a click or a callout lands, for the two anchor kinds that ask the
