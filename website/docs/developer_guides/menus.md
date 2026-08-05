@@ -20,27 +20,30 @@ ones, and nest sub-menus arbitrarily deep.
 Add menus in your plugin's `configure` method. Only Web and Desktop have
 top-level menus; embeddable products like JBrowse Linear View don't. Guard with
 `isAbstractMenuManager` so the rest of the plugin still works when there is no
-menu. This example adds an "Open My View" item to the `Add` menu.
+menu. This is how the spreadsheet-view plugin puts itself in the `Add` menu —
+`install` registers the view type, `configure` offers the way to open one:
 
-```js
-import Plugin from '@jbrowse/core/Plugin'
-import { isAbstractMenuManager } from '@jbrowse/core/util'
-import InfoIcon from '@mui/icons-material/Info'
+<!-- include: plugins/spreadsheet-view/src/index.ts#plugin -->
 
-class MyPlugin extends Plugin {
-  name = 'MyPlugin'
+```ts
+export default class SpreadsheetViewPlugin extends Plugin {
+  name = 'SpreadsheetViewPlugin'
 
-  install(pluginManager) {
-    // install MyView here
+  install(pluginManager: PluginManager) {
+    SpreadsheetViewF(pluginManager)
+    LaunchSpreadsheetViewF(pluginManager)
   }
 
-  configure(pluginManager) {
-    if (isAbstractMenuManager(pluginManager.rootModel)) {
-      pluginManager.rootModel.appendToMenu('Add', {
-        label: 'Open My View',
-        icon: InfoIcon,
-        onClick: session => {
-          session.addView('MyView', {})
+  configure(pluginManager: PluginManager) {
+    const { rootModel } = pluginManager
+    // configure also runs in the web worker, which has no rootModel — the
+    // guard is what keeps a menu contribution from throwing there
+    if (isAbstractMenuManager(rootModel)) {
+      rootModel.appendToMenu('Add', {
+        label: 'Spreadsheet view',
+        icon: ViewComfyIcon,
+        onClick: (session: AbstractSessionModel) => {
+          session.addView('SpreadsheetView', {})
         },
       })
     }
@@ -51,33 +54,26 @@ class MyPlugin extends Plugin {
 ## Adding track menu items
 
 A custom track populates its track menu via the `trackMenuItems` view on the
-track model. To append to the base display's items, capture the super
-`trackMenuItems` and redefine the getter (the same
+track model. It is a **method**, not a getter — `BaseTrackModel` calls
+`d.trackMenuItems()` on each of its displays — so an override redefines a method
+too. Capture the super version first (the same
 [super-capture pattern](/docs/developer_guides/mst_patterns#self-over-this-in-views)
 as any extended MST view):
 
-```js
-types
-  .model({
-    // model
-  })
-  .views(self => {
-    // capture before the new view is defined; accessing self.trackMenuItems
-    // inside the getter would recurse infinitely
-    const { trackMenuItems: superTrackMenuItems } = self
-    return {
-      get trackMenuItems() {
-        return [
-          ...superTrackMenuItems(),
-          {
-            label: 'Menu Item',
-            icon: AddIcon,
-            onClick: () => {},
-          },
-        ]
-      },
-    }
-  })
+<!-- include: plugins/maf/src/LinearMafDisplay/stateModel.ts#superMethod -->
+
+```ts
+.views(self => {
+  const { trackMenuItems: superTrackMenuItems } = self
+  return {
+    /**
+     * #method
+     */
+    trackMenuItems() {
+      return [...superTrackMenuItems(), ...buildMafTrackMenuItems(self)]
+    },
+  }
+})
 ```
 
 ## Adding track context-menu items
@@ -91,46 +87,64 @@ Extend the display model's `contextMenuItems` view via the
 `Core-extendPluggableElement`
 [extension point](/docs/developer_guides/extension_points):
 
-```js
-class SomePlugin extends Plugin {
-  name = 'SomePlugin'
+<!-- include: plugins/dotplot-view/src/DotplotReadVsRef/index.ts#contextMenu -->
 
-  install(pluginManager) {
-    pluginManager.addToExtensionPoint(
-      'Core-extendPluggableElement',
-      pluggableElement => {
-        if (pluggableElement.name === 'LinearAlignmentsDisplay') {
-          const { stateModel } = pluggableElement
-          const newStateModel = stateModel.extend(self => {
+```ts
+export default function DotplotReadVsRefMenuItem(pluginManager: PluginManager) {
+  pluginManager.addToExtensionPoint(
+    'Core-extendPluggableElement',
+    (pluggableElement: PluggableElementType) => {
+      if (pluggableElement.name === 'LinearAlignmentsDisplay') {
+        const { stateModel } = pluggableElement as DisplayType
+        const newStateModel = stateModel.extend(
+          (self: LinearAlignmentsDisplayModel) => {
             const superContextMenuItems = self.contextMenuItems
             return {
               views: {
+                // Offered from the read id, which the hit test carries, so the
+                // item is there when the menu opens rather than a fetch later;
+                // the feature it needs is resolved in the onClick (normally
+                // already in hand, since the fetch rebuilds this menu).
                 contextMenuItems() {
+                  const featureId = self.contextMenuFeatureId
                   const feature = self.contextMenuFeature
-                  if (!feature) {
-                    return superContextMenuItems()
-                  }
-                  return [
-                    ...superContextMenuItems(),
-                    {
-                      label: 'Some menu item',
-                      icon: SomeIcon,
+                  const track = getContainingTrack(self)
+                  const items = superContextMenuItems()
+                  if (featureId !== undefined) {
+                    pushLaunchViewMenuItem(items, {
+                      label: 'Dotplot of read vs ref',
+                      icon: AddIcon,
                       onClick: () => {
-                        // do some stuff
+                        withContextMenuFeature(
+                          self,
+                          featureId,
+                          feature,
+                          feat => {
+                            queueReadVsRefDialog({
+                              node: self,
+                              track,
+                              feature: feat,
+                              onSubmit: launchDotplotReadVsRef,
+                            })
+                          },
+                        )
                       },
-                    },
-                  ]
+                    })
+                  }
+                  return items
                 },
               },
             }
-          })
+          },
+        )
 
-          pluggableElement.stateModel = newStateModel
-        }
-        return pluggableElement
-      },
-    )
-  }
+        ;(pluggableElement as DisplayType).stateModel = newStateModel
+      }
+      // every callback must return the element, extended or not — the point is
+      // a chain, so swallowing it drops every later plugin's extensions too
+      return pluggableElement
+    },
+  )
 }
 ```
 
@@ -147,19 +161,114 @@ attributes. Types of `MenuItem`s:
 - SubHeader - text (not clickable) that can be used to visually label a section
   of a menu
 - SubMenu - contains menu items, for making nested menus
+- Custom - renders arbitrary React content inline (e.g. a slider) instead of a
+  clickable row
 
-| Name     | Description                                                                                                                                                                                              |
-| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| type     | Options are 'normal', 'radio', 'checkbox', 'subMenu', 'subHeader', or 'divider'. If not provided, defaults to 'normal', unless a `subMenu` attribute is present, in which case it defaults to 'subMenu'. |
-| label    | The text for the menu item. Not applicable to 'divider', required for all others.                                                                                                                        |
-| subLabel | Additional descriptive text for the menu item. Not applicable to 'divider' or 'subHeader', optional for all others.                                                                                      |
-| icon     | An icon for the menu item. Must be compatible with [MUI Icons](https://mui.com/material-ui/material-ui-icons/). Not applicable to 'divider' or 'subHeader', optional for all others.                     |
-| disabled | Whether or not the menu item is disabled (meaning grayed out and not clickable). Not applicable to 'divider' or 'subHeader', optional for all others.                                                    |
-| checked  | Whether or not the checkbox or radio button are selected. Only applicable to 'radio' and 'checkbox'                                                                                                      |
-| onClick  | Callback of action to perform on click. Function signature is `(session) => void`. Required for 'normal', 'radio', and 'checkbox', not applicable to any others.                                         |
-| subMenu  | An array of menu items. Applicable only to 'subMenu'.                                                                                                                                                    |
+Each shape, with the fields it requires. `icon` is any
+[MUI icon](https://mui.com/material-ui/material-ui-icons/); note `keepMenuOpen`,
+which decides whether a click dismisses the menu and defaults by row type rather
+than being a plain flag:
 
-An example array covering every type:
+<!-- include: packages/core/src/ui/MenuTypes.ts#menuItem -->
+
+```ts
+export interface MenuDivider {
+  priority?: number
+  type: 'divider'
+}
+
+export interface MenuSubHeader {
+  type: 'subHeader'
+  priority?: number
+  label: string
+}
+
+// onClick receives a context argument (e.g. the session or track-selector
+// model) whose concrete type varies by where the item is registered, while the
+// renderer invokes it with no argument. A single `MenuItem[]` array can hold
+// handlers expecting different context types, so the parameter list stays `any`
+// rather than a generic that callers would have to cast through.
+export type MenuItemClickHandler = (...args: any[]) => void
+
+export interface BaseMenuItem {
+  id?: string
+  label: React.ReactNode
+  priority?: number
+  subLabel?: string
+  icon?: React.ElementType
+  disabled?: boolean
+  helpText?: string
+  /** tooltip shown when the item is disabled, in place of helpText */
+  disabledHelpText?: string
+  /**
+   * Override whether the menu stays open after this row is clicked. Leave it
+   * unset and the row TYPE decides: a `checkbox`/`radio` is a setting, so the
+   * menu stays put (users flip several in one visit, and the menu content is an
+   * observer, so its checked marks update live), while every other row is an
+   * action and dismisses.
+   *
+   * Set `false` on a checkbox/radio whose click is really terminal — it opens a
+   * dialog ("Custom...", "Solid color...") or swaps the display out from under
+   * the menu. Set `true` on a non-checkbox row that should survive its click.
+   */
+  keepMenuOpen?: boolean
+  /**
+   * Extra content rendered at the trailing (right) edge of the row, after the
+   * checkbox/radio decoration and help icon — e.g. a secondary toggle. The
+   * content must `stopPropagation` on its own click so it doesn't fire the row's
+   * onClick or dismiss the menu.
+   */
+  endAdornment?: React.ReactNode
+}
+
+export interface NormalMenuItem extends BaseMenuItem {
+  type?: 'normal'
+  onClick: MenuItemClickHandler
+}
+
+export interface CheckboxMenuItem extends BaseMenuItem {
+  type: 'checkbox'
+  checked: boolean
+  onClick: MenuItemClickHandler
+}
+
+export interface RadioMenuItem extends BaseMenuItem {
+  type: 'radio'
+  checked: boolean
+  onClick: MenuItemClickHandler
+}
+
+export interface SubMenuItem extends BaseMenuItem {
+  type?: 'subMenu'
+  subMenu: MenuItem[]
+}
+
+// Renders arbitrary React content inline in the menu (e.g. a slider) instead of
+// a clickable row. The menu is not dismissed when interacting with it, so a
+// control can be dragged live; `onClose` is passed for content that wants to
+// close the menu explicitly. `label` is used only as a React key/testid.
+export interface CustomMenuItem extends BaseMenuItem {
+  type: 'custom'
+  render: (onClose: () => void) => React.ReactNode
+}
+```
+
+`MenuItem` is the union of them, and is what every menu-producing view returns:
+
+<!-- include: packages/core/src/ui/MenuTypes.ts#menuItemUnion -->
+
+```ts
+export type MenuItem =
+  | MenuDivider
+  | MenuSubHeader
+  | NormalMenuItem
+  | CheckboxMenuItem
+  | RadioMenuItem
+  | SubMenuItem
+  | CustomMenuItem
+```
+
+An example array covering the clickable and structural types:
 
 ```js
 ;[

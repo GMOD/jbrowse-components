@@ -8,6 +8,7 @@ import SpreadsheetViewF from './SpreadsheetView/index.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
+// #region plugin
 export default class SpreadsheetViewPlugin extends Plugin {
   name = 'SpreadsheetViewPlugin'
 
@@ -18,6 +19,8 @@ export default class SpreadsheetViewPlugin extends Plugin {
 
   configure(pluginManager: PluginManager) {
     const { rootModel } = pluginManager
+    // configure also runs in the web worker, which has no rootModel — the
+    // guard is what keeps a menu contribution from throwing there
     if (isAbstractMenuManager(rootModel)) {
       rootModel.appendToMenu('Add', {
         label: 'Spreadsheet view',
@@ -29,6 +32,7 @@ export default class SpreadsheetViewPlugin extends Plugin {
     }
   }
 }
+// #endregion
 
 export {
   type SpreadsheetViewModel,

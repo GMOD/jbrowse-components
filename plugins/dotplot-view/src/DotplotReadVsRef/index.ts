@@ -15,6 +15,7 @@ import type {
 } from '@jbrowse/core/pluggableElementTypes'
 import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'
 
+// #region contextMenu
 export default function DotplotReadVsRefMenuItem(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(
     'Core-extendPluggableElement',
@@ -65,7 +66,10 @@ export default function DotplotReadVsRefMenuItem(pluginManager: PluginManager) {
 
         ;(pluggableElement as DisplayType).stateModel = newStateModel
       }
+      // every callback must return the element, extended or not — the point is
+      // a chain, so swallowing it drops every later plugin's extensions too
       return pluggableElement
     },
   )
 }
+// #endregion

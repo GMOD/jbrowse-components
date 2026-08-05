@@ -1,3 +1,4 @@
+// #region menuItem
 export interface MenuDivider {
   priority?: number
   type: 'divider'
@@ -77,6 +78,7 @@ export interface CustomMenuItem extends BaseMenuItem {
   type: 'custom'
   render: (onClose: () => void) => React.ReactNode
 }
+// #endregion
 
 // A clickable row: what remains once divider/subHeader/subMenu/custom items are
 // handled — a plain action, or a checkbox/radio carrying a checked value.
@@ -85,6 +87,7 @@ export type ClickableMenuItem =
   | CheckboxMenuItem
   | RadioMenuItem
 
+// #region menuItemUnion
 export type MenuItem =
   | MenuDivider
   | MenuSubHeader
@@ -93,6 +96,7 @@ export type MenuItem =
   | RadioMenuItem
   | SubMenuItem
   | CustomMenuItem
+// #endregion
 
 /**
  * Whether clicking a row leaves the menu up — the rule `CascadingMenu` applies,
