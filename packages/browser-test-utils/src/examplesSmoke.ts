@@ -35,7 +35,9 @@ export interface SmokeOptions {
   distDir: string
   // the site's Astro `base`, e.g. '/storybook/lgv'
   base: string
-  // every example slug to load (one page per slug)
+  // every example slug to load (one page per slug). The empty string is the
+  // site's landing page, which is worth including wherever it runs a demo of
+  // its own rather than only linking to them
   slugs: string[]
   // a slug that must spawn an RPC web worker (the circular-dependency TDZ guard);
   // its page fails if no worker is created. omit if the site has no worker example
@@ -93,6 +95,9 @@ export async function smokeExamplesSite({
 
   let failures = 0
   for (const slug of slugs) {
+    // '' is the landing page: `${base}/${slug}/` would give it a double slash
+    const url = `http://localhost:${port}${base}/${slug ? `${slug}/` : ''}`
+    const name = slug || 'index'
     const page = await browser.newPage()
     const errors: string[] = []
     const workers: string[] = []
@@ -113,7 +118,7 @@ export async function smokeExamplesSite({
       errors.push(`pageerror: ${e instanceof Error ? e.message : String(e)}`)
     })
     try {
-      await page.goto(`http://localhost:${port}${base}/${slug}/`, {
+      await page.goto(url, {
         waitUntil: 'networkidle0',
         timeout: 45000,
       })
@@ -122,7 +127,7 @@ export async function smokeExamplesSite({
       // host) never quiesced — not a code regression. Proceed anyway: the
       // pageerror/console listeners and the demo-mounted + worker-spawn checks
       // below are the real health signals and don't depend on network idle.
-      log(`     (note) ${slug}: ${e instanceof Error ? e.message : String(e)}`)
+      log(`     (note) ${name}: ${e instanceof Error ? e.message : String(e)}`)
     }
     await new Promise(r => setTimeout(r, settleMs))
     const demoLen = await page
@@ -145,12 +150,12 @@ export async function smokeExamplesSite({
     }
     if (errors.length) {
       failures++
-      log(`FAIL ${slug}`)
+      log(`FAIL ${name}`)
       for (const e of errors) {
         log(`     ${e}`)
       }
     } else {
-      log(`ok   ${slug}`)
+      log(`ok   ${name}`)
     }
     await page.close()
   }

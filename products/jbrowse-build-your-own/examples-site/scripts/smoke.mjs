@@ -31,6 +31,8 @@ const here = path.dirname(fileURLToPath(import.meta.url))
 // display's render path has to be noticed here; so does one disappearing,
 // because that is the moment the prose needs rewriting too.
 const MUI_BUDGET = {
+  // the landing page, which runs the Pan and zoom demo rather than describing it
+  '': 0,
   'pan-and-zoom': 0,
   'one-track': 0,
   'a-stack-of-tracks': 3,
@@ -201,7 +203,9 @@ const failures = await smokeExamplesSite({
   distDir: path.join(here, '..', 'dist'),
   // single source of truth for the base path is astro.config.mjs
   base: config.base,
-  slugs: examples.filter(e => !e.skipSmoke).map(e => e.slug),
+  // '' first: the landing page runs a live demo, so it gets the same census as
+  // any example page rather than being the one page nothing loads
+  slugs: ['', ...examples.filter(e => !e.skipSmoke).map(e => e.slug)],
   // The one page that passes `makeWorkerInstance`. Every other demo here runs
   // main-thread RPC, so this slug is the site's only guard on the Rollup
   // circular-dependency TDZ that webpack tolerates and Vite does not — and the

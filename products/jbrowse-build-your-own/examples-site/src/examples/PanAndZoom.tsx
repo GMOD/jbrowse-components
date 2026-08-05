@@ -37,7 +37,7 @@ const wiggleTrack = {
   },
 }
 
-function makeView() {
+function makeView(scrollZoom: boolean) {
   const state = createViewState({
     assembly: volvox,
     tracks: [wiggleTrack],
@@ -51,7 +51,7 @@ function makeView() {
   // scroll-to-zoom is a *session* preference, off by default, and the displays
   // read it too -- see the note on `wheelPanZoom`. Set it here, not in a piece
   // of React state of your own.
-  view.setScrollZoom(true)
+  view.setScrollZoom(scrollZoom)
   return view
 }
 
@@ -347,10 +347,17 @@ function ZoomHint({ show }: { show: boolean }) {
   )
 }
 
-const PanAndZoom = observer(function PanAndZoom() {
-  const [view] = useState(makeView)
-  // `makeView` turns this on, because a browser that owns its area of the page
-  // should zoom the way a map does. Uncheck to see the other mode.
+const PanAndZoom = observer(function PanAndZoom({
+  scrollZoom = true,
+}: {
+  // Which gesture a bare wheel is, to begin with; the checkbox flips it after.
+  // On by default, because a browser that owns its area of the page should zoom
+  // the way a map does. Pass `false` when it sits partway down a longer
+  // document, where a wheel that swallowed the page scroll would trap the
+  // reader -- see the note on `wheelPanZoom`.
+  scrollZoom?: boolean
+}) {
+  const [view] = useState(() => makeView(scrollZoom))
   const ref = useViewWidth(view)
   const { hint, props } = usePanZoom(view, ref)
 
@@ -372,7 +379,7 @@ const PanAndZoom = observer(function PanAndZoom() {
             view.setScrollZoom(event.target.checked)
           }}
         />
-        Wheel zooms directly (uncheck to require ctrl, and see the prompt)
+        Wheel zooms directly — off, the page scrolls and ctrl + wheel zooms
       </label>
       <div
         ref={ref}

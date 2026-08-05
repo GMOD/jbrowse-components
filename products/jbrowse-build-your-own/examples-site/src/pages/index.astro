@@ -1,6 +1,5 @@
 ---
-import { Code } from 'astro:components'
-
+import PanAndZoom from '../examples/PanAndZoom.tsx'
 import { examples } from '../examples.ts'
 import Gallery from '../layouts/Gallery.astro'
 import Shell from '../layouts/Shell.astro'
@@ -11,37 +10,8 @@ import { componentLabel, mainMaxWidth } from '../siteMeta.ts'
 // astro.config.mjs -- and because it is a typed JSON import, a renamed field
 // fails `astro check` instead of rendering "undefined KB".
 import bundle from '~repo/scripts/chromeBundleSizes.json'
-// Same rule, wider question: what a page here downloads before it runs, written
-// by `pnpm measure-eager-bundle` and re-checked by `pnpm smoke`. The two are not
-// alternatives -- the file above is the chrome layer bundled on its own, this
-// one is the whole engine as these pages actually ship it.
-import eager from '../../eagerBundleSizes.json'
 
-// The engine call, spelled out. Every example page repeats this rather than
-// importing it from somewhere in this site, so each page's source is complete
-// and runs on its own.
-const engineCode = `import { createViewState } from '@jbrowse/react-linear-genome-view2'
-
-const state = createViewState({
-  assembly: {
-    name: 'volvox',
-    uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
-  },
-  tracks: [myTrackConfig],
-})
-
-// a LinearGenomeViewModel: knows bpPerPx, offsetPx, displayedRegions, and how
-// to zoomTo/horizontalScroll. Draws nothing.
-const { view } = state.session
-
-// the same declarative path a URL launch or a saved session takes, so the
-// assembly load, the navigation and the track show-ing happen in order
-view.setInit({
-  assembly: 'volvox',
-  loc: 'ctgA:1..50,000',
-  tracks: ['my_track_id'],
-})
-`
+const base = import.meta.env.BASE_URL
 ---
 
 <Shell
@@ -52,96 +22,36 @@ view.setInit({
 >
   <h1>Build your own genome browser</h1>
   <p class="lead">
-    JBrowse ships a finished linear genome browser, and most people should use
-    it. But underneath it is a set of parts, and if you are embedding genomic
-    data in an app that already has its own design system, you may want the
-    parts instead. These pages take the browser apart and put it back together
-    one piece at a time.
+    JBrowse's engine — assemblies, adapters, workers, coordinates — with your own
+    UI around it. Drag to pan; ctrl + wheel to zoom.
   </p>
 
-  <div class="doc">
-    <h2>The two halves</h2>
-    <p>
-      A genome browser is an <strong>engine</strong> and some <strong
-        >chrome</strong
-      >. The engine resolves assemblies, chooses adapters, fetches and parses
-      off the main thread, and keeps the coordinate state. The chrome is the
-      search box, the ruler, the track labels, the loading spinner: everything
-      around the data.
-    </p>
-    <p>
-      The engine is the hard half and you should not rebuild it. One call gets
-      you all of it, plus a view model that knows where it is in the genome and
-      draws nothing:
-    </p>
-    <Code code={engineCode} lang="ts" />
-    <p>
-      From there every page in the sidebar adds exactly one thing. By the end of
-      them you have a browser with pan, zoom, three kinds of track, your own
-      status overlays, your own ruler, your app driving it from outside, and
-      clicks coming back out into a panel you wrote — and then one last page
-      moves the whole engine off the main thread, which is the one change here
-      you cannot see.
-    </p>
+  {/*
+    The example runs here rather than being described, and it runs in the mode
+    it documents for exactly this situation: `scrollZoom` off, because a bare
+    wheel that zoomed would swallow the page scroll of the reader on their way
+    down to the gallery. The checkbox in it turns the other mode on.
+  */}
+  <div class="demo"><PanAndZoom client:only="react" scrollZoom={false} /></div>
 
-    <h2>What you actually save</h2>
-    <p>
-      Bundling the chrome layer on its own, with React and MobX external, it
-      costs <strong>{bundle.muiGzipKb} KB gzipped</strong> ({bundle.muiKb} KB raw)
-      with JBrowse's own status components and <strong
-        >{bundle.plainGzipKb} KB gzipped</strong
-      > ({bundle.plainKb} KB raw) with plain ones. The difference is almost entirely
-      Material UI. Both figures are the eager, pre-first-paint cost: no renderer and
-      no display is in either, because <code>RenderingComponent</code> is lazy in
-      every plugin.
-    </p>
-    <p>
-      Those numbers are produced by <code>pnpm measure-chrome-bundle</code>,
-      which builds both entry points and writes the result to a committed file
-      this page reads. CI re-runs it, so the figures above cannot drift away
-      from what the code costs.
-    </p>
-    <p>
-      That is the chrome layer weighed on its own. The other number, and the one
-      you actually pay, is what a page here downloads before it can run:
-      <strong>{eager['one-track'].gzipKb} KB gzipped</strong> for the sparsest page
-      on this site, across {eager['one-track'].chunks} chunks. Almost all of it is
-      the engine — every plugin registers its models, adapters and config schemas
-      before a session can be read, and that cannot be deferred. What can be, is:
-      each page's budget is committed and <code>pnpm smoke</code> fails if a page
-      goes over it, because the way this number grows is one static import from a
-      state model to a React component, which is invisible in a diff.
-    </p>
-    <p>
-      Bundle size is the smaller half of the argument. The larger half is that
-      nothing on screen has to be talked out of looking like a Material widget:
-      with both plain sets installed, JBrowse's own unforked wiggle, feature and
-      alignments displays render <strong>no Material UI at all</strong>. That is
-      checked rather than asserted — <code>pnpm smoke</code> in this site counts what
-      each page renders, at rest and with the pointer over a track, and fails if the
-      number moves.
-    </p>
-
-    <h2>What you do not get rid of</h2>
-    <p>
-      Two honest limits, both of which these pages hit and neither of which is
-      hidden in them.
-    </p>
-    <p>
-      <strong>The palette.</strong> Stock feature and alignments displays read a palette
-      to colour their own <em>content</em> (reading frames, highlight boxes), so they
-      need <code>resolvePalette</code> supplied through
-      <code>PaletteProvider</code>. That is a set of colour strings, not a UI
-      toolkit, and swapping the overlays changes the status UI rather than the
-      colours. A wiggle track needs neither; the first two pages here supply no
-      palette at all.
-    </p>
-    <p>
-      <strong>The engine.</strong> Nothing on this site rebuilds adapters, the RPC
-      layer, or the fetch lifecycle, and you should not either. What is on offer is
-      control of the chrome, not a smaller JBrowse.
-    </p>
-  </div>
+  <p class="note">
+    That is the <a href={`${base}pan-and-zoom/`}>Pan and zoom</a> example, running
+    its own source. Every page below adds one thing to it.
+  </p>
+  <p class="note">
+    None of them render any Material UI. The chrome around a track — its loading,
+    error and too-large states, the controls in its corner — is <strong
+      >{bundle.plainGzipKb} KB gzipped</strong
+    > with plain components, {bundle.muiGzipKb} KB with Material ones.
+  </p>
 
   <Gallery examples={examples} />
 </Shell>
+
+<style>
+  .note {
+    color: var(--muted);
+    max-width: 75ch;
+    margin: 12px 0 0;
+  }
+</style>

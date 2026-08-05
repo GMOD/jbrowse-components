@@ -58,8 +58,16 @@ for (const file of readdirSync(astroDir).filter(f => f.endsWith('.js'))) {
   })
 }
 
+// the landing page is `index`: it runs a demo of its own, so it downloads the
+// engine like every other page here, but it is dist/index.html rather than a
+// directory of its own
+const htmlFor = page =>
+  page === 'index'
+    ? path.join(dist, 'index.html')
+    : path.join(dist, page, 'index.html')
+
 function eagerSet(page) {
-  const html = readFileSync(path.join(dist, page, 'index.html'), 'utf8')
+  const html = readFileSync(htmlFor(page), 'utf8')
   const seen = new Set()
   const queue = [...html.matchAll(/_astro\/([\w.$-]+\.js)/g)].map(m => m[1])
   while (queue.length) {
@@ -73,10 +81,13 @@ function eagerSet(page) {
   return seen
 }
 
-const pages = readdirSync(dist, { withFileTypes: true })
-  .filter(d => d.isDirectory() && d.name !== '_astro')
-  .map(d => d.name)
-  .sort()
+const pages = [
+  'index',
+  ...readdirSync(dist, { withFileTypes: true })
+    .filter(d => d.isDirectory() && d.name !== '_astro')
+    .map(d => d.name)
+    .sort(),
+]
 
 const measured = {}
 for (const page of pages) {
