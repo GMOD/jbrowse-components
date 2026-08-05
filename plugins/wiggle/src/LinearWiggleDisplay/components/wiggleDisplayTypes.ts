@@ -9,6 +9,9 @@ import type { WiggleGpuDisplayModel } from '@jbrowse/wiggle-core'
 // component reads exactly the two below. See the contract assertion at the bottom
 // of ../model.ts, which is what caught the mismatch.
 export interface WiggleDisplayModel extends WiggleGpuDisplayModel {
+  // read by the registered wrapper's DisplayContainer, which emits the generic
+  // `display-${displayId}-done` testid the browser tests wait on
+  configuration: { displayId: string }
   domain: [number, number] | undefined
   scaleType: string
   // the resolved mode, never the raw `summaryScoreMode` slot: density draws

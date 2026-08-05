@@ -10,13 +10,17 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { WiggleGpuDisplayModel } from '@jbrowse/wiggle-core'
 
-// Component-facing slice of LinearManhattanDisplayModel. Hand-rolled to avoid
-// a circular type between stateModelFactory.ts (lazy-imports the component)
-// and the component (which would otherwise import the inferred model type).
+// Component-facing slice of LinearManhattanDisplayModel. Hand-rolled because
+// `renderSvg.tsx` intersects this with the wiggle-family SVG contract and
+// naming the inferred model there closes a type cycle; the component takes the
+// same slice so the two can't disagree about what a manhattan display is.
 export interface ManhattanDisplayModel extends WiggleGpuDisplayModel<
   ManhattanRenderingBackend,
   ManhattanRpcResult
 > {
+  // read by the registered wrapper's DisplayContainer, which emits the generic
+  // `display-${displayId}-done` testid the browser tests wait on
+  configuration: { displayId: string }
   lgv: LinearGenomeViewModel
   renderBlocks: RenderBlock[]
   regionRefNames: ReadonlyMap<number, string>

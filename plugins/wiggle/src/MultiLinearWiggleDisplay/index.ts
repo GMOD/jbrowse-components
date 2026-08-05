@@ -7,8 +7,8 @@ import stateModelFactory from './model.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-const BaseLinearDisplayComponent = lazy(
-  () => import('./components/BaseLinearDisplayComponent.ts'),
+const MultiLinearWiggleDisplayComponent = lazy(
+  () => import('./components/MultiLinearWiggleDisplayComponent.tsx'),
 )
 
 export default function MultiLinearWiggleDisplayF(
@@ -23,7 +23,7 @@ export default function MultiLinearWiggleDisplayF(
         stateModel: stateModelFactory(configSchema),
         trackType: 'MultiQuantitativeTrack',
         viewType: 'LinearGenomeView',
-        ReactComponent: BaseLinearDisplayComponent,
+        ReactComponent: MultiLinearWiggleDisplayComponent,
       }),
   )
 }

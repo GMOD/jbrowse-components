@@ -50,7 +50,6 @@ import type { WiggleRenderingBackend } from '@jbrowse/wiggle-core'
 
 export type { Region } from '@jbrowse/core/util'
 
-const WiggleComponent = lazy(() => import('./components/WiggleComponent.tsx'))
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
 
 /**
@@ -104,13 +103,6 @@ export default function stateModelFactory(
       }),
     )
     .views(self => ({
-      /**
-       * #getter
-       */
-      get DisplayMessageComponent() {
-        return WiggleComponent
-      },
-
       /**
        * #getter
        */

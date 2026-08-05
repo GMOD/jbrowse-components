@@ -1,5 +1,3 @@
-import { lazy } from 'react'
-
 import {
   ConfigurationReference,
   getConf,
@@ -48,10 +46,6 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
-
-const LinearManhattanDisplayComponent = lazy(
-  () => import('./components/LinearManhattanDisplayComponent.tsx'),
-)
 
 /**
  * #stateModel LinearManhattanDisplay
@@ -104,12 +98,6 @@ export function stateModelFactory(
         showLdLegend: true,
       }))
       .views(self => ({
-        /**
-         * #getter
-         */
-        get DisplayMessageComponent() {
-          return LinearManhattanDisplayComponent
-        },
         /**
          * #getter
          * Offset the track label above the plot so the -log10(p) y-axis stays
@@ -629,14 +617,13 @@ export type LinearManhattanDisplayModel =
   Instance<LinearManhattanDisplayStateModel>
 
 // Compile-time proof the real MST model still satisfies the structural type its
-// component takes. That type can't be `Instance<...>` here: the contract lives in
-// `@jbrowse/wiggle-core`, a package *below* this one, so it cannot import this
-// model — unlike the canvas display, which registers its component in index.ts and
-// types it off the model directly. Without this, a renamed/dropped field is a
-// silent runtime failure inside the lazy-loaded component, because the
-// `DisplayMessageComponent` getter is typed `React.FC<any>` and erases the check.
-// Type-only, so it's erased at runtime; it lives in this file (not a standalone
-// one) so a "remove files with no importers" sweep can't drop the guard.
+// component takes. A `DisplayType`'s `ReactComponent` is typed
+// `AnyReactComponentType`, so registering the pair erases the prop type and a
+// renamed/dropped field would be a silent runtime failure inside the lazy
+// component. The slice itself stays hand-rolled for `renderSvg.tsx`'s sake —
+// see manhattanDisplayTypes.ts. Type-only, so it's erased at runtime; it lives
+// in this file (not a standalone one) so a "remove files with no importers"
+// sweep can't drop the guard.
 type _ComponentContract<T extends ManhattanDisplayModel> = T
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type _ModelSatisfiesComponentContract =

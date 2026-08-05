@@ -59,9 +59,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 import type { WiggleRenderingBackend } from '@jbrowse/wiggle-core'
 
-const MultiWiggleComponent = lazy(
-  () => import('./components/MultiWiggleComponent.tsx'),
-)
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
 const WiggleClusterDialog = lazy(
   () => import('./components/WiggleClusterDialog.tsx'),
@@ -113,10 +110,6 @@ export default function stateModelFactory(
       sourcesVolatile: [] as SourceInfo[],
     }))
     .views(self => ({
-      get DisplayMessageComponent() {
-        return MultiWiggleComponent
-      },
-
       // overrides WiggleScoreConfigMixin's `false` base, which is what its
       // showCrossHatches / effectiveSummaryScoreMode getters key on
       get isDensityMode() {

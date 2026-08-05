@@ -16,10 +16,10 @@ const useStyles = makeStyles()({
 // The outer box a GPU display's ReactComponent paints into, and the single home
 // of the `display-<displayId>` / `-done` test-id convention that
 // browser-test-utils waits on — so no display hand-writes the `canvasDrawn`
-// ternary. Compose it directly when the display registers its own body
-// component (canvas: see LinearBasicDisplayComponent); go through
-// BaseLinearDisplay below when the body comes from the model's
-// `DisplayMessageComponent` getter (wiggle, multi-wiggle, gwas).
+// ternary. Every in-tree display that wants it now composes this directly in
+// the component it registers (canvas, wiggle, multi-wiggle, gwas), which is
+// what let their models drop the `DisplayMessageComponent` getter and the
+// model↔component cycle it forced.
 export const DisplayContainer = observer(function DisplayContainer({
   model,
   children,
@@ -44,8 +44,13 @@ export const DisplayContainer = observer(function DisplayContainer({
   )
 })
 
-// Thin container for the GPU displays whose body is a model getter: each sets
-// DisplayMessageComponent and renders its own canvas/tooltip/legend inside it.
+// `DisplayContainer` plus a body taken from the model's `DisplayMessageComponent`
+// getter (`BaseDisplayModel`). **No in-tree display registers this any more** —
+// the three that did (wiggle, multi-wiggle, gwas) now register their own
+// container+body pair, so nothing in this repo reads that getter on the GPU
+// path. It stays for two reasons: it is public plugin API, and ~15 test
+// harnesses register it as a stand-in `ReactComponent` for a display they never
+// actually render. Don't reach for it in new code — compose `DisplayContainer`.
 const BaseLinearDisplay = observer(function BaseLinearDisplay(props: {
   model: {
     configuration: { displayId: string }

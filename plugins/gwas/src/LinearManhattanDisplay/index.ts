@@ -7,8 +7,8 @@ import { stateModelFactory } from './stateModelFactory.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-const BaseLinearDisplayComponent = lazy(
-  () => import('./components/BaseLinearDisplayComponent.ts'),
+const ManhattanReactComponent = lazy(
+  () => import('./components/ManhattanReactComponent.tsx'),
 )
 
 export default function LinearManhattanDisplayF(pluginManager: PluginManager) {
@@ -20,7 +20,7 @@ export default function LinearManhattanDisplayF(pluginManager: PluginManager) {
       stateModel: stateModelFactory(pluginManager, configSchema),
       trackType: 'GWASTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: BaseLinearDisplayComponent,
+      ReactComponent: ManhattanReactComponent,
     })
   })
 }

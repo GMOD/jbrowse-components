@@ -10,6 +10,9 @@ import type { WiggleGpuDisplayModel } from '@jbrowse/wiggle-core'
 export interface MultiWiggleDisplayModel
   extends WiggleGpuDisplayModel, WiggleGpuProps {
   id: string
+  // read by the registered wrapper's DisplayContainer, which emits the generic
+  // `display-${displayId}-done` testid the browser tests wait on
+  configuration: { displayId: string }
   rpcDataMap: Map<number, WiggleDataResult>
   sources: { name: string; color?: string; labelColor?: string }[]
   sourcesWithoutLayout: { name: string }[]

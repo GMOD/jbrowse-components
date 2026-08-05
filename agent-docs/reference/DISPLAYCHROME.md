@@ -197,15 +197,21 @@ gap; that would undo the unmount the whole tree-shape rule exists for.
 ### Three testid shapes coexist — and why they aren't unified
 
 Two things vary per display: the `testid` base passed to DisplayChrome, and
-whether the outer `BaseLinearDisplay.tsx` container sits above it. Five displays
-render inside that second `position:relative` container, which emits
-`display-${id}-done` on its own — three of them (wiggle, manhattan,
-multi-wiggle) by registering `ReactComponent: BaseLinearDisplayComponent`, whose
-body comes from the model's `DisplayMessageComponent` getter; the canvas family
-(canvas-basic, LinearVariant) by composing that container itself
-(`DisplayContainer`, the same `-done` div, exported from the same file) around the
-canvas body in `LinearBasicDisplayComponent` — which is what let the canvas model
-drop the getter and with it the model↔component cycle.
+whether a `DisplayContainer` sits above it. Five displays render inside that
+second `position:relative` container, which emits `display-${id}-done` on its
+own, and **all five now compose it explicitly** in the component they register:
+the canvas family (canvas-basic, LinearVariant) in `LinearBasicDisplayComponent`,
+and wiggle / multi-wiggle / manhattan in a container+body pair of their own
+(`LinearWiggleDisplayComponent` and siblings).
+
+Those three used to register the shared `BaseLinearDisplayComponent` and reach
+their body through the model's `DisplayMessageComponent` getter, which made the
+*model* hold a lazy import of a React component. Nothing in the GPU path reads
+that getter any more; `BaseLinearDisplayComponent` survives as public plugin API
+and as a stand-in `ReactComponent` in ~15 test harnesses that never render it.
+The rewiring changed no DOM — `products/jbrowse-web/src/tests/BigWig.test.tsx`
+and `Manhattan.test.tsx` pin both emitters in jsdom, which is the half of the
+contract no local suite covered before.
 
 The canvas family shares that **one** registered component: LinearVariantDisplay
 borrows it via `pluginManager.getDisplayType('LinearBasicDisplay').ReactComponent`
@@ -222,7 +228,8 @@ the same `colorLegend` and bakes the key in (`renderSvg.tsx`, via the shared
 | --- | --- | --- |
 | maf, alignments | `display-${id}` | `display-${id}-done` (chrome) |
 | canvas-basic, LinearVariant | none — container only | `display-${id}-done` (container) |
-| wiggle, manhattan, multi-wiggle | `<type>-display` + wrapper | **both** `display-${id}-done` (wrapper) and `<type>-display-done` (chrome) |
+| wiggle, manhattan, multi-wiggle | `<type>-display` + container | **both** `display-${id}-done` (container) and `<type>-display-done` (chrome) |
+| gccontent (reuses wiggle's *body*) | `wiggle-display` | `wiggle-display-done` (chrome) — no container |
 | every other display | `<type>-display` | `<type>-display-done` (chrome) |
 
 LinearVariant additionally leans on the container to position its
@@ -240,18 +247,24 @@ of which (jest/jsdom) runs outside CI:
 - cypress (`component_tests/lgv-vite`) and website screenshot specs
   (`readySelector: '[data-testid="…-display-done"]'`) pin the static bases.
 
-So removing the wrapper (making DisplayChrome the sole emitter) changes which
+So removing the container (making DisplayChrome the sole emitter) changes which
 element carries `display-${id}-done`, which is unverifiable without a full
 build + GPU + headless-Chrome run. Any unification pass must land on a branch
 where the browser-test, website-spec, and cypress suites are green, not blind.
 Sequenced plan when that's available: (a) make DisplayChrome emit the generic
 `display-${id}-done` for every display; (b) migrate the static-base tests to it
-or keep both during a deprecation window; (c) drop `BaseLinearDisplay.tsx` from
-the GPU path, moving LinearVariant's `FloatingLegend` into its own DisplayChrome
-child. Until then, treat the redundancy as frozen. (Step (c) is half-prepared:
-canvas-basic and LinearVariant already compose `DisplayContainer` explicitly, so
-for them it's now a matter of moving the legend and deleting one wrapper element
-— no getter indirection in the way.)
+or keep both during a deprecation window; (c) delete the container from the GPU
+path, moving LinearVariant's `FloatingLegend` into its own DisplayChrome child.
+Until then, treat the redundancy as frozen.
+
+**Step (c) is now fully prepared.** All five container-using displays compose
+`DisplayContainer` explicitly in the component they register, so no getter
+indirection stands in the way for any of them — what remains is moving
+LinearVariant's legend and deleting one wrapper element per display. The jsdom
+pins added with that prep (`BigWig.test.tsx`, `Manhattan.test.tsx`) assert both
+emitters, so the first two steps are no longer entirely blind either: a local run
+now catches a display that stops emitting the generic id, which is the failure
+mode the freeze is guarding against.
 
 ## The bring-your-own seams
 
