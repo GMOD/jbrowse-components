@@ -202,6 +202,29 @@ portal can measure an offset the sidebar used to inherit from its container.
 Outside a `TrackContainer` the portal renders in place, so a standalone display
 and the component tests are unchanged.
 
+### maf's `top`, and why it is not `lineZoneHeight`
+
+`lineZoneHeight` is the same idea — px reserved above the rows — and maf's
+`rowsTopOffset` is exactly that number, so setting it looks like the obvious
+tidy-up. **It would be applied twice.** maf's sidebar sits inside its rows
+container, which is *already* translated by `rowsTopOffset`; the internals then
+offset by `lineZoneHeight` again. Only the portaled half escapes that container
+and needs to be told, which is what `top` is.
+
+Nor can the sidebar simply move to the display root the way every other
+display's does: maf binds its wheel-to-scroll listener to that rows element by
+DOM node, deliberately, so a wheel over the species names scrolls the rows it
+labels rather than falling through to the view. Moving the inline layer out takes
+the hit box with it.
+
+The cost of leaving it is that `treeContentHeight` is the display height rather
+than maf's rows viewport, so the panel, the dendrogram canvas and the hit box all
+run `rowsTopOffset` px past the last row — measured, a 195px canvas under a 150px
+rows area. All of it is clipped by `TrackRenderingContainer`'s `contain: strict`,
+so it is invisible and untouchable and costs only the oversized backing store.
+Buying that back means growing this component an API for maf to re-bind its wheel
+through, which is the more expensive side of the trade.
+
 ## SVG export: use `SvgTreeSidebar`, never `SvgRowLabels` alone
 
 Labels are offset right by `treeAreaWidth`, so rendering them without the tree
