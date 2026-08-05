@@ -1,15 +1,16 @@
-// Validates that every field a session-spec launcher accepts is named somewhere
-// in the URL params guide, and that every launchable view type has a section
-// there at all.
+// Validates that the public surfaces an outside caller writes against — the
+// session-spec launchers and the embedded products' mount options — are named in
+// the docs, field by field.
 //
-// The gap this closes: a `LaunchView-<type>` handler declares its accepted args
-// as a TypeScript type, and `urlparams.md` restates them as prose. Nothing tied
-// the two together, so the prose drifted into a subset — five of the seven
-// sections listed fewer fields than their launcher takes, and the reader's only
-// symptom is a setting that appears not to exist. The synteny launcher's own
-// comment already names this failure ("a hand-copied subset only ever meant that
-// a field the view already honored was rejected by the type while working
-// perfectly at runtime"); this is the same thing one level out, in the docs.
+// The gap this closes: each of these declares what it accepts as a TypeScript
+// type, and a guide restates it as prose. Nothing tied the two together, so the
+// prose drifted into a subset — five of seven session-spec sections listed fewer
+// fields than their launcher takes, and six embedded options appeared in no
+// hand-written page at all. The reader's only symptom is a setting that seems
+// not to exist. The synteny launcher's own comment already names this failure
+// ("a hand-copied subset only ever meant that a field the view already honored
+// was rejected by the type while working perfectly at runtime"); this is the
+// same thing one level out, in the docs.
 //
 // Resolution goes through the TypeScript *checker*, not a syntactic scan, which
 // is what makes it trustworthy: the seven arg types are built out of `extends`,
@@ -25,7 +26,13 @@
 //     a view type is guesswork, and a retired field leaves a harmless paragraph
 //     rather than a missing one.
 //
-// Run: `pnpm check-launch-fields`.
+// And one limit worth stating rather than discovering: a field with a generic
+// name (`session`, `config`, `tracks`, `plugins`) is vouched for by any mention
+// of that word anywhere, so it is effectively unchecked. The check earns its
+// keep on the distinctive names — which is where the drift was, since a
+// distinctive name is exactly the one a writer has to know about to mention.
+//
+// Run: `pnpm check-doc-surfaces`.
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -180,8 +187,55 @@ function registeredViewTypes() {
   return out
 }
 
+// The embedded products' mount options are the same kind of surface: a type an
+// outside caller writes against, restated as prose. Same failure too —
+// `makeWorkerInstance`, `onChange`, `localFiles`, `onFeatureSelect`,
+// `onLocationChange` and `onPluginsUpdated` were accepted by these types and
+// named in no hand-written page, which for the worker one meant every embedder
+// silently ran their BAM parsing on the main thread.
+//
+// The bar here is presence in ANY hand-written doc, not one page: an option can
+// belong to the authentication guide (`internetAccounts`) or the text-search
+// guide (`aggregateTextSearchAdapters`) as reasonably as to the embedding page,
+// and forcing them all into one would make this a nag instead of a gate.
+const OPTION_TYPES = [
+  {
+    label: '@jbrowse/react-linear-genome-view2 createViewState',
+    file: 'products/jbrowse-react-linear-genome-view/src/createViewState.ts',
+    optionsType: 'ViewStateOptions',
+  },
+  {
+    label: '@jbrowse/react-linear-genome-view2 createLinearGenomeView',
+    file: 'products/jbrowse-react-linear-genome-view/src/createLinearGenomeView.ts',
+    optionsType: 'CreateLinearGenomeViewOptions',
+  },
+  {
+    label: '@jbrowse/react-app2 createViewState',
+    file: 'products/jbrowse-react-app/src/createViewState.ts',
+    optionsType: 'CreateViewStateOptions',
+  },
+  {
+    label: '@jbrowse/react-circular-genome-view2 createViewState',
+    file: 'products/jbrowse-react-circular-genome-view/src/createViewState.ts',
+    optionsType: 'ViewStateOptions',
+  },
+]
+
+// Hand-written pages only: docs/config, docs/models and docs/api are generated
+// from the source these options come from, so counting them would let a surface
+// vouch for itself.
+function handWrittenDocs() {
+  return walkFiles(
+    join(root, 'website/docs'),
+    n => n.endsWith('.md'),
+    new Set(['config', 'models', 'api']),
+  )
+    .map(f => readFileSync(f, 'utf8'))
+    .join('\n')
+}
+
 const doc = readFileSync(join(root, DOC), 'utf8')
-const files = LAUNCHERS.map(l => join(root, l.file))
+const files = [...LAUNCHERS, ...OPTION_TYPES].map(l => join(root, l.file))
 const program = buildProgram(files)
 const checker = program.getTypeChecker()
 
@@ -216,12 +270,30 @@ for (const { viewType, file, argsType } of LAUNCHERS) {
 for (const viewType of registeredViewTypes()) {
   if (!LAUNCHERS.some(l => l.viewType === viewType)) {
     problems.push(
-      `LaunchView-${viewType} is registered but not listed in check-launch-fields.ts, so its fields are unchecked`,
+      `LaunchView-${viewType} is registered but not listed in check-doc-surfaces.ts, so its fields are unchecked`,
     )
+  }
+}
+
+const allDocs = handWrittenDocs()
+
+for (const { label, file, optionsType } of OPTION_TYPES) {
+  const fields = resolveFields(program, checker, join(root, file), optionsType)
+  if (!fields) {
+    problems.push(`${file}: no type named ${optionsType} — did it get renamed?`)
+    continue
+  }
+  for (const field of fields) {
+    checked++
+    if (!documents(allDocs, field)) {
+      problems.push(
+        `${label} accepts \`${field}\` (${optionsType} in ${file}), but no hand-written doc names it`,
+      )
+    }
   }
 }
 
 reportProblems(
   problems,
-  `All ${checked} session-spec launcher field(s) across ${LAUNCHERS.length} view types are documented in ${DOC}.`,
+  `All ${checked} launcher field(s) and embedded mount option(s) across ${LAUNCHERS.length} view types and ${OPTION_TYPES.length} option types are documented.`,
 )

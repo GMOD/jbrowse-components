@@ -71,6 +71,54 @@ changes should be an `observer` rather than subscribing to anything — that is
 how `state.session.selection` drives a companion panel with no click handler
 wiring.
 
+## Move the data work off the main thread
+
+**An embedded view parses and renders on the main thread by default**, so a deep
+BAM or CRAM stalls the page around it — including whatever else your app is
+drawing. Pass a `makeWorkerInstance` factory and JBrowse switches its RPC to a
+web worker instead; supplying the factory is the whole switch, no config slot
+needed.
+
+```js
+import RpcWorker from '@jbrowse/react-linear-genome-view2/esm/rpcWorker?worker'
+
+const state = useCreateViewState({
+  assembly,
+  tracks,
+  makeWorkerInstance: () => new RpcWorker(),
+})
+```
+
+It is off by default only because constructing a worker is bundler-specific, not
+because it is experimental — turn it on wherever your toolchain allows. Vite and
+other ESM bundlers handle the `?worker` import natively; webpack and CRA want
+`output.publicPath: 'auto'` and the package's prebuilt
+`@jbrowse/react-linear-genome-view2/esm/makeWorkerInstance` instead. If you also
+load plugins, they must be registered in **both** the main thread and the
+worker, since the worker resolves its own copy.
+
+## The remaining options
+
+`onChange` receives every MST JSON patch and its inverse, which is what you
+persist a session from, or build undo on.
+
+`disableAddTracks` hides the single-view components' own "add track"
+affordances, for a page where the track set is yours to decide rather than the
+reader's.
+
+`drawerViewHeight` (default `100vh`) matters for one case: an embedded view is
+normally content-height, so it grows with the page, but a view with an open
+drawer widget has to be clamped to something for the drawer's own scrolling to
+have a definite height. This is that clamp, and it applies only while a drawer
+is open.
+
+`@jbrowse/react-app2` adds `onPluginsUpdated`. The app cannot rebuild its own
+plugin manager — it never fetches plugins, and it does not own the React tree it
+is mounted into — so when a user adds one from the in-app plugin store it hands
+you what a rebuild needs: `await loadPlugins(plugins)`, then remount with the
+new `plugins` and the given `session` so the user lands where they were. Without
+it, the change is only reported to the user and never takes effect.
+
 ## Hosts that don't write JSX
 
 The same packages mount imperatively, with no React root for you to manage:
@@ -101,6 +149,18 @@ name brings the hub's own name-search adapters with it, so gene-name navigation
 works without wiring any up. `whenReady()` resolves once a build settles;
 `destroy()` tears down the React root, the RPC workers, and the MST tree's
 autoruns, which a bare React unmount does not.
+
+Data going the other way is two callbacks rather than a subscription:
+`onLocationChange` fires with the visible region as the user pans and zooms
+(throttled), and `onFeatureSelect` with the serialized feature when one is
+clicked. Those are what a notebook cell or a Shiny input reads.
+
+`localFiles` is the option that makes a host with no web server work at all: a
+map of `name -> bytes` that `tracks` may then refer to by that name as if it
+were a URL. They are read by byte range, so registering an index under its
+conventional sibling name (`peaks.bed.gz` plus `peaks.bed.gz.tbi`) keeps the
+file indexed — only the bytes the current view needs are touched, not the whole
+array. `addLocalFiles` registers more later, for data that arrives after mount.
 
 `createApp`'s controller is the session-shaped counterpart: `addView`,
 `removeView`, `setSession`, `destroy`.
