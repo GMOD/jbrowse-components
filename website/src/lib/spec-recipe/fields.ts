@@ -17,6 +17,16 @@ import {
 //
 // A step describes the *action*, not the demo data: the reader is doing this to
 // their own file, and the figure's value is shown only as the worked example.
+//
+// Some gaps are permanent for a reason worth knowing before you try to close
+// one. `gfaLocation`, `uniprotId` and `transcriptId` belong to third-party
+// plugins whose source is not in this repo (GraphGenomeView, protein3d), so
+// their labels can be neither imported nor watched by the label check that
+// covers plugins/, products/ and packages/ — a path written from them would
+// drift with nothing to catch it. `transcriptId` has no text input at all: the
+// dialog offers an isoform dropdown built from the right-clicked feature, so no
+// click sequence enters an accession. Leave all three reported rather than
+// hand-copying a label from a sibling checkout.
 
 export interface FieldStep {
   // click path through the UI, e.g. "Track menu → Color by... → Paired end"
@@ -248,6 +258,14 @@ export const trackFields: Record<string, FieldRecipe> = {
     'Show... → Show pileup',
     'Drops the stacked-read band and keeps the coverage curve, so several samples can be compared on depth alone.',
   ),
+  // Its own submenu rather than "Show...", because the arcs carry a placement
+  // and a score threshold alongside the toggle (menus/sashimi.ts). Unchecking
+  // leaves the coverage band, which is what a figure about the histogram wants:
+  // the arcs are strand-colored too, from the XS/TS tag, and outdraw it.
+  showSashimiArcs: checkbox(
+    'Sashimi arcs → Show sashimi arcs',
+    'Hides the splice-junction arcs and keeps the coverage band underneath them.',
+  ),
   // Same label in the same submenu on both displays that have the slot: the
   // alignments "Show..." menu (menus/reads.ts) and LGVSyntenyDisplay's trimmed
   // copy of it (LGVSyntenyDisplay/menus.ts), so one path serves both.
@@ -440,6 +458,23 @@ const graphSettingsField = (
 }
 
 export const viewFields: Record<string, FieldRecipe> = {
+  // The file a spreadsheet-backed view opens on. Both launchers that accept it
+  // (LaunchSvInspectorView, LaunchSpreadsheetView) hand it to the same import
+  // wizard the view shows while its spreadsheet is uninitialized, so one path
+  // serves both and only the Add entry differs — hence the note rather than a
+  // first segment this table has no view type to choose between (see the
+  // FieldContext comment above). Labels verified against ImportWizard.tsx
+  // (selectorTypes, the Open button), SourceTypeSelector.tsx (the File/URL
+  // toggles) and UrlChooser.tsx ('Enter URL').
+  uri: value => {
+    const uri = asString(value)
+    return uri
+      ? {
+          path: 'Import form → Open file from URL or local computer → URL → Enter URL → Open',
+          note: 'Open the form with Add → SV inspector (or Add → Spreadsheet view); set File Type and Assembly in the same form before clicking Open.',
+        }
+      : undefined
+  },
   // not a menu item: ViewContainerTitle renders the header title as an
   // EditableTypography whose tooltip is "(click to rename)"
   displayName: value => {
@@ -560,6 +595,13 @@ export const viewFields: Record<string, FieldRecipe> = {
 
 // Fields that describe the figure itself rather than a setting the reader would
 // reproduce — they get no step, and are not reported as gaps.
+//
+// Keep this list to fields that can never acquire a click-path. A field that has
+// no path *yet* belongs in the gap report, where writing its recipe is a visible
+// win; hiding one here retires it silently and makes the report's `+`/`-` lines
+// mean less. `id` qualifies because it is capture scaffolding — a spec pins it so
+// the screenshot's own actions and callouts can address one view among several,
+// and a reader reproducing the figure by hand never types it.
 export const IGNORED_FIELDS = new Set([
   'type',
   'trackId',
@@ -569,4 +611,5 @@ export const IGNORED_FIELDS = new Set([
   'views',
   'sessionTracks',
   'displayedRegionNames',
+  'id',
 ])

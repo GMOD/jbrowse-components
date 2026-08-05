@@ -23,7 +23,6 @@ connectedView
 conservationMode
 displayCrossHatches
 displayMode
-displaySnapshot
 drawInter
 drawLongRange
 featureColor
@@ -32,7 +31,6 @@ featureSpacing
 gfaLocation
 height
 hideSelfAlignments
-id
 jexlFilters
 jexlFiltersSetting
 layout
@@ -67,7 +65,6 @@ strokeColor
 subtreeFilter
 transcriptId
 uniprotId
-uri
 useBicolor
 useColorPercentile
 useLogScale

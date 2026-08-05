@@ -61,12 +61,30 @@ export function specTrackId(entry: SpecTrackEntry): string {
   return typeof entry === 'string' ? entry : entry.trackId
 }
 
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
 // The settings a track entry carries beyond its identity — every one of these is
 // a UI control the reader would otherwise have to find by hand.
+//
+// A spec may write those settings inline on the track entry or nested under
+// `displaySnapshot`; both forms reach the same display. Flattening the nested
+// one here mirrors `normalizeTrackInit` in core (packages/core/src/util/
+// tracks.ts), down to its precedence — an explicit `displaySnapshot` key wins
+// over an inline key of the same name. Without this the whole snapshot is one
+// opaque leaf, so every setting inside it reads as a gap even when the field
+// already has a click-path, and the two spellings of one figure describe
+// themselves differently.
 export function specTrackSettings(entry: SpecTrackEntry): [string, unknown][] {
-  return typeof entry === 'string'
-    ? []
-    : Object.entries(entry).filter(([field]) => field !== 'trackId')
+  if (typeof entry === 'string') {
+    return []
+  }
+  const { trackId, displaySnapshot, ...inline } = entry
+  return Object.entries({
+    ...inline,
+    ...(isPlainObject(displaySnapshot) ? displaySnapshot : {}),
+  })
 }
 
 // A synteny view nests its tracks one level deeper — `tracks: [[trackId]]`, one
