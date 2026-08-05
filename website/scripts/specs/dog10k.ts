@@ -145,9 +145,7 @@ const DOG_VCF_LAYOUT = NAMED.flatMap(([sample, label, color]) =>
   haplotypeRows({ sample, label, color }),
 )
 
-// The 1.5 Mb the genotype check runs in, shared by the whole-chromosome painting
-// that marks it and by the two halves of the figure that dissects it, so the
-// band and the blown-up view cannot drift apart. Same window as $BLOCK_START /
+// The 1.5 Mb the genotype check runs in. Same window as $BLOCK_START /
 // $BLOCK_END in scripts/build_dog10k_wolfdog_ancestry.sh, which writes the
 // genotype slice for it.
 const WOLF_BLOCK_WINDOW = 'chr1:112,000,000-113,500,000'
@@ -384,15 +382,19 @@ export const dog10kSpecs: ScreenshotSpec[] = [
   // Shiloh Shepherd and Tamaskan are the two breeds the Dog10K paper's allele
   // sharing / lookalike discussion raises. Built by
   // scripts/build_dog10k_wolfdog_ancestry.sh.
+  //
+  // NOTHING IS MARKED ON IT. It used to carry the genotype window as an in-app
+  // highlight plus a callout naming the block edges inside it, and a red box
+  // over 1.2% of the frame reads as "something happens here" whatever the label
+  // says, when what is inside it is an ordinary window picked for being
+  // checkable (review: "if we are making up a story we should not do that ... i
+  // just wanted to show ancestry painting"). The painting is the figure.
   {
     mode: 'url',
     name: 'dog10k-wolfdog-ancestry',
     url: lgvSession(DOG_CONFIG, {
       assembly: 'UU_Cfam_GSD_1.0',
       loc: 'chr1:1-123,556,469',
-      // the window the genotype figure below dissects, marked in-app so the two
-      // figures are visibly the same place
-      highlight: [WOLF_BLOCK_WINDOW],
       tracks: [
         {
           trackId: 'dog10k_wolfdog_named',
@@ -420,48 +422,6 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     settleMs: 3000,
     // all 64 haplotype rows plus the color legend, no page background below
     viewportHeight: 905,
-    // The in-app highlight alone did not say what it was for — "unclear the
-    // significance of the highlighted region, if needed, a red box text
-    // annotation should highlight what is trying to be shown" (review). Both
-    // callouts anchor on the locus and the track rather than on measured pixels,
-    // so they follow the band if the window or the row count ever moves.
-    //
-    // THE LABEL NAMES THE NINE AS A SAMPLE SIZE, NOT AS A FINDING. It used to
-    // read "nine of these rows end a wolf block inside it", full stop, which on
-    // a red box over 1.2% of the frame reads as "something happens here" — and
-    // nothing does. The build script tiles the chromosome: 9 ends against a
-    // median tile's 5, with 16 of 83 tiles holding as many or more, in a tile
-    // the genetic map gives 0.35 cM against a 0.75 cM median. An ordinary
-    // window. What it is picked for is that a painting can only be CHECKED at a
-    // block edge — inside a block, wolf alleles on a wolf-called haplotype are
-    // what the call was made on, so the check cannot come out wrong — and nine
-    // edges spread across four wolfdog and five ordinary-breed haplotypes is
-    // nine chances for it to. The label has to carry that clause or the count
-    // goes back to reading as a result. Nobody can count nine edges in the ~17
-    // px this band is wide, so the picture cannot be the evidence either way.
-    annotations: [
-      {
-        type: 'box',
-        anchor: {
-          track: 'dog10k_wolfdog_named',
-          locus: WOLF_BLOCK_WINDOW,
-        },
-      },
-      {
-        type: 'text',
-        anchor: {
-          track: 'dog10k_wolfdog_named',
-          locus: 'chr1:112,000,000',
-          alignX: 'left',
-          fracY: 0.18,
-          dx: -24,
-        },
-        textAlign: 'end',
-        maxWidth: 430,
-        fontSize: 15,
-        text: 'Where the genotype check below runs:\nnine block edges, where a painting can be wrong',
-      },
-    ],
   },
 
   // The spectrum: the same inference over 243 animals — one dog from each of the
@@ -527,99 +487,44 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     viewportHeight: 1305,
   },
 
-  // The LOCATOR half of dog10k-wolfdog-block-genotypes: the same 64 rows in the
-  // same order over the whole chromosome, with the checked window drawn on them.
-  //
-  // It exists because the marked band on dog10k-wolfdog-ancestry, six paragraphs
-  // earlier in the page, is ~17 px wide and its payoff was nowhere near it — the
-  // reader had to hold a coordinate in their head to connect the two. Stacked
-  // straight onto the blown-up view it becomes a path: this sliver, then what is
-  // inside it. Same 320 px track height as the painting in the lower half, so
-  // both are at the same row pitch and a row can be traced down between them.
-  //
-  // No annotation and no row labels. The band is the whole message here, and the
-  // names are spent once, on the matrix at the foot of the lower half.
-  {
-    mode: 'url',
-    name: 'dog10k-wolfdog-block-genotypes-chromosome',
-    url: lgvSession(DOG_CONFIG, {
-      assembly: 'UU_Cfam_GSD_1.0',
-      loc: 'chr1:1-123,556,469',
-      highlight: [WOLF_BLOCK_WINDOW],
-      tracks: [
-        {
-          trackId: 'dog10k_wolfdog_named',
-          type: 'LinearMultiRowFeatureDisplay',
-          height: 320,
-        },
-      ],
-    }),
-    readyText: 'chr1',
-    // same gate as dog10k-wolfdog-ancestry: the legend renders only once the
-    // features are loaded and binned, while canvasDrawn can flip on an empty
-    // first paint
-    readySelector: '[data-testid="multirow-color-legend"]',
-    readyTimeout: 60000,
-    settleMs: 3000,
-    // the 320px track and its header, nothing below
-    viewportHeight: 520,
-    // The view's own highlight is a pale tint, and at 1.2% of the frame that is
-    // easy to miss in a locator whose entire job is to be found. Same box as on
-    // dog10k-wolfdog-ancestry, anchored on the locus rather than on pixels, so
-    // the two figures mark the window the same way. No text: the caption and the
-    // half directly below say what it is.
-    annotations: [
-      {
-        type: 'box',
-        anchor: {
-          track: 'dog10k_wolfdog_named',
-          locus: WOLF_BLOCK_WINDOW,
-        },
-      },
-    ],
-  },
-
   // Does the painting survive contact with the genotypes it was inferred from?
   // The check is the markers in this window whose alt allele is common in the
   // wolf panel and rare in the dog panel (AF_wolf >= 0.8, AF_dog <= 0.15, both
   // written per site by the build script from the full panels).
   //
-  // 1.5 Mb, not the 15 kb this figure used to frame, per review ("we may want to
-  // zoom out at a minimum, add gene track"). The window is chosen for its EDGES:
-  // nine of the 64 haplotypes end a wolf block inside it, while the rest run wolf
-  // or dog straight through. Inside a single block the figure could only show
-  // that a wolf-called haplotype carries wolf alleles; at an edge there is
-  // something to be wrong about, and 49 markers rather than 21 to be wrong with.
+  // ONE VIEW, AND NO LOCATOR ABOVE IT. This used to be a compose whose upper
+  // half was the whole chromosome with this window boxed on it, and the painting
+  // six paragraphs up carried the same box — three marks for a window whose only
+  // property is that it holds block edges to check at. The build script tiles the
+  // chromosome: a median 1.5 Mb holds 5 wolf-block ends against this one's 9, in
+  // a tile the genetic map gives 0.35 cM against a 0.75 cM median. An ordinary
+  // window, so nothing points at it (review: "unclear why we are still focused on
+  // the 'nine block edges' ... if we are making up a story we should not do
+  // that"). What the figure shows is the check, not the place.
   //
-  // Those nine are why the window is USABLE, not a property that makes it
-  // special: the build script tiles the chromosome and finds a median 1.5 Mb
-  // holding 5 wolf-block ends, with 16 of 83 tiles at 9 or more. Do not let a
-  // caption or a callout promote the count into a finding.
-  //
-  // The build script counts the markers carried either side of each of those
-  // nine edges, and the answer is why the window is worth the height. Three of
-  // the four wolfdog edges are exact: 23/23 wolf alleles then 0/26 for both
-  // haplotypes ending at 112,576,175, and 41/43 then 0/6 for Saarloos 1 hap1 at
-  // 113,251,574. The five sweep-breed edges are not — the Chow Chow and the Kai
-  // Ken carry 13 of 23 on their wolf side, and the Thai Ridgeback's block ends
-  // before the first marker. Long blocks hold at their boundaries and short ones
-  // do not, which is the length argument the page makes, checked rather than
-  // asserted. Do not re-caption this as "the edges line up": the fourth wolfdog
-  // edge (Saarloos 2 hap2, 3/5 then 6/44) is a real drop and not a coordinate,
-  // and dropping that half of it would overstate the figure.
+  // The build script counts the markers carried either side of each edge in the
+  // window, and that is why the window is worth the height. Three of the four
+  // wolfdog edges are exact: 23/23 wolf alleles then 0/26 for both haplotypes
+  // ending at 112,576,175, and 41/43 then 0/6 for Saarloos 1 hap1 at 113,251,574.
+  // The five sweep-breed edges are not — the Chow Chow and the Kai Ken carry 13
+  // of 23 on their wolf side, and the Thai Ridgeback's block ends before the
+  // first marker. Long blocks hold at their boundaries and short ones do not,
+  // which is the length argument the page makes, checked rather than asserted.
+  // Do not re-caption this as "the edges line up": the fourth wolfdog edge
+  // (Saarloos 2 hap2, 3/5 then 6/44) is a real drop and not a coordinate, and
+  // dropping that half of it would overstate the figure.
   //
   // Three tracks, top to bottom, deliberately: the genes the window sits on, the
   // painting's call, and the genotypes the call was inferred from. The painting
-  // is in the frame now because at 1.5 Mb it is no longer a stack of solid
-  // stripes — the edges are visible in it — and it draws the same 32 animals in
-  // the same order as the matrix, so the two are read against each other by
-  // counting down from the top rather than by looking anything up. They are not
-  // at the same row PITCH: the painting is deliberately under the ~6px a row
-  // label needs so that the 32 names are spent once, on the matrix, instead of
-  // twice.
+  // is in the frame because at 1.5 Mb it is no longer a stack of solid stripes —
+  // the edges are visible in it — and it draws the same 32 animals in the same
+  // order as the matrix, so the two are read against each other by counting down
+  // from the top rather than by looking anything up. They are not at the same row
+  // PITCH: the painting is deliberately under the ~6px a row label needs so that
+  // the 32 names are spent once, on the matrix, instead of twice.
   {
     mode: 'url',
-    name: 'dog10k-wolfdog-block-genotypes-window',
+    name: 'dog10k-wolfdog-block-genotypes',
     url: lgvSession(DOG_CONFIG, {
       assembly: 'UU_Cfam_GSD_1.0',
       loc: WOLF_BLOCK_WINDOW,
@@ -670,15 +575,6 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     // gene track, the 320px painting, the 700px matrix, their headers and the
     // two keys, nothing below
     viewportHeight: 1363,
-  },
-
-  {
-    mode: 'compose',
-    name: 'dog10k-wolfdog-block-genotypes',
-    parts: [
-      'dog10k-wolfdog-block-genotypes-chromosome',
-      'dog10k-wolfdog-block-genotypes-window',
-    ],
   },
 
   // Both Great Anglo-French hound breeds, five dogs each, from the second FLARE

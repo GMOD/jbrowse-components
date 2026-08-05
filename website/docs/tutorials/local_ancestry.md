@@ -226,7 +226,7 @@ size: the small one is who, the big one is where.
 
 ## Reading the painting
 
-<Figure caption="Dog10K chr1 painted by FLARE against gray wolf and breed-dog panels, two rows per animal, in descending order of wolf fraction. Six of the eight held-out gray wolves paint near-solid wolf (orange); the wolfdogs below carry megabase blocks; the sweep breeds carry flecks, bar the Great Anglo-French Tricolour Hound's 11.4 Mb block; the German Shepherd lineage at the foot is solid dog. Highlighted: the window the genotype check further down runs in." src="/img/dog10k-wolfdog-ancestry.png" />
+<Figure caption="Dog10K chr1 painted by FLARE against gray wolf and breed-dog panels, two rows per animal, in descending order of wolf fraction. Six of the eight held-out gray wolves paint near-solid wolf (orange); the wolfdogs below carry megabase blocks; the sweep breeds carry flecks, bar the Great Anglo-French Tricolour Hound's 11.4 Mb block; the German Shepherd lineage at the foot is solid dog." src="/img/dog10k-wolfdog-ancestry.png" />
 
 Read each pair of rows as one animal's two chromosome copies. Wolf on one row
 and dog on the other is a heterozygous stretch; both orange is homozygous
@@ -365,25 +365,16 @@ a genome rather than a chromosome.
 
 A painted block is an inference, and the genotypes it was inferred from are
 right there in the panel. The check has to be run at a block's **edge** rather
-than in its middle, and that is the whole reason the window below is the window
-below. Inside a block, finding wolf alleles on a wolf-called haplotype is close
-to circular: those alleles are what the call was made on, so the check cannot
-come out wrong. At an edge the painting commits to something that can be: it
-says the wolf alleles stop at a particular coordinate, and they either do, or
-run past it, or stop well short of it.
+than in its middle. Inside a block, finding wolf alleles on a wolf-called
+haplotype is close to circular: those alleles are what the call was made on, so
+the check cannot come out wrong. At an edge the painting commits to something
+that can be: it says the wolf alleles stop at a particular coordinate, and they
+either do, or run past it, or stop well short of it.
 
-So a window is worth dissecting when it holds edges, and worth more when it
-holds edges from both wolfdogs and ordinary breeds, whose blocks are very
-different lengths. The window highlighted above holds nine of them, which is how
-many times the check gets to run rather than a property of the place: the same
-tiling the build script prints puts it among the ordinary windows on both block
-edges and recombination. The band marks an address; the result is what happens
-at the edges inside it.
-
-Underneath the gene track and the painting, the same window's phased genotypes
-go in as a matrix, filtered to the markers that carry ancestry information at
-all — the ones whose alt allele is common in the wolf panel and rare in the dog
-panel:
+Any 1.5 Mb of chr1 holding a few edges will do, and the one below is an ordinary
+one. Underneath the gene track and the painting, its phased genotypes go in as a
+matrix, filtered to the markers that carry ancestry information at all — the
+ones whose alt allele is common in the wolf panel and rare in the dog panel:
 
 ```
 "jexlFilters": [
@@ -397,7 +388,7 @@ description of the 32 animals in the file. Without the filter the lane draws
 every common site in 1.5 Mb, nearly all of them shared between wolves and dogs,
 and the figure is a wall of salt-and-pepper.
 
-<Figure caption="Top: the whole of chr1 in the same 64 rows, the checked 1.5 Mb banded. Below: that window, its genes, FLARE's painting for 32 named animals, and their phased genotypes at the 49 markers separating the panels, one column per marker, orange for the wolf allele. A wolfdog's row carries the markers up to its painted edge and none after; a sweep breed's short block is only half-carried." src="/img/dog10k-wolfdog-block-genotypes.png" links="Whole chromosome=dog10k-wolfdog-block-genotypes-chromosome,The 1.5 Mb window=dog10k-wolfdog-block-genotypes-window" />
+<Figure caption="1.5 Mb of chr1: its genes, FLARE's painting for 32 named animals, and their phased genotypes at the 49 markers separating the panels, one column per marker, orange for the wolf allele. A wolfdog's row carries the markers up to its painted edge and none after; a sweep breed's short block is only half-carried." src="/img/dog10k-wolfdog-block-genotypes.png" />
 
 The matrix draws one column per marker rather than placing each at its
 coordinate, so a run of carriers reads as a band instead of as speckle; the
