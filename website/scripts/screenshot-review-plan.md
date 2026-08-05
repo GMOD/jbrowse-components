@@ -173,6 +173,36 @@ tolerance ball for "did this figure move".
     `#c000c0`, and antialiasing along a solid bar's edge lands inside a ball
     around any paler shade of it. Match exactly for "is this color used at all";
     keep the ball only for "did this figure move".
+- **Hi-C: three things that cost hours, for whoever picks up the demo.** The
+  `hic/whole_genome` figure needs a `.hic` whose master index holds
+  **inter-chromosomal** pairs; the demo's own `intra_nofrag_30.hic` has 26
+  entries and every one is a self-pair, which is why its off-diagonal was empty.
+  Read the footer rather than trusting a file name — the same check ruled out an
+  ENCODE "contact matrix" that was actually ChIA-PET.
+  - **juicer_tools' region-restricted dump (`chr3:x1:x2`) silently returns ZERO
+    records below 250 kb** on ENCODE's v9 files. No error, no warning, an empty
+    output file. It works at 250 kb / 500 kb / 1 Mb and returns nothing at 100
+    kb, 50 kb, 25 kb, 10 kb and 5 kb. This is how you ship an empty subset
+    without noticing; whole-chromosome-pair dumps are unaffected, so the
+    workaround is to dump the whole pair and filter with `awk` — and check the
+    record count before believing the result.
+  - **The display picks its binsize from the FILE's own resolution list** —
+    largest `<= 2*bpPerPx`, falling back to the finest when nothing qualifies
+    (`LinearHicDisplay`'s `availableResolutions`). So a file carrying one
+    resolution degrades rather than breaks when zoomed: it keeps drawing that
+    binsize and the stepper offers no finer step. This is also the mechanism
+    `resolutionBias` biases.
+  - **These files are enormous and almost all of it is resolution you never
+    draw.** The GM12878 whole-genome source is 1.72 GB, and its sibling intact
+    file is **74 GB** across 18 resolutions down to 1 bp.
+    `scripts/build_gm12878_wholegenome_hic.sh` shrinks one to its coarsest
+    binsize (~1000x smaller) by dumping every chromosome pair and rebuilding
+    with `juicer_tools pre`; it verifies the rebuild reproduces the source
+    counts **exactly** by round-tripping a pair, and fails if not. `SRC`, `NAME`
+    and `RES` are overridable, so it applies to whichever whole-genome file a
+    demo settles on. Nothing is hosted from it yet — deploying is a deliberate
+    step, not something the script does.
+
 - **A legend that gains a section can outgrow its lane.** Adding one to the
   multi-sample variant display pushed it past the 120px `height` the
   `pangenome/maf` spec gave the track, and the last swatch was sliced in half by
