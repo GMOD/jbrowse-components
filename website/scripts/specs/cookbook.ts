@@ -107,7 +107,14 @@ export const cookbookSpecs: ScreenshotSpec[] = [
           assembly: 'hg38',
           loc: 'chr17:45,700,000-45,750,000',
           tracks: [
-            { trackId: 'rmsk_hg38_ucsc', height: 380, color: RMSK_CLASS_COLOR },
+            {
+              trackId: 'rmsk_hg38_ucsc',
+              // a sessionTracks entry, so the recipe builder has no track
+              // config to read the display off — name it here
+              type: 'LinearBasicDisplay',
+              height: 380,
+              color: RMSK_CLASS_COLOR,
+            },
           ],
         },
       ],

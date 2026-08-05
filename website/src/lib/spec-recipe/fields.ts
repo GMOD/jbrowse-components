@@ -31,11 +31,8 @@ import {
 // A step describes the *action*, not the demo data: the reader is doing this to
 // their own file, and the figure's value is shown only as the worked example.
 //
-// Some gaps are permanent for a reason worth knowing before you try to close
-// one.
-//
-// Two view types are third-party plugins whose source is not in this repo, so
-// every field of theirs stays reported: GraphGenomeView (`gfaLocation`,
+// Everything still in the gap report belongs to one of two third-party view
+// types whose source is not in this repo: GraphGenomeView (`gfaLocation`,
 // `colorDomain`, `bubbleSpread`) and protein3d's ProteinView (`uniprotId`,
 // `transcriptId`, `connectedView`, `sideBySide`, `zoomToBaseLevel`, and its
 // `height`). Their labels can be neither imported nor watched by the label check
@@ -45,12 +42,17 @@ import {
 // right-clicked feature, so no click sequence enters an accession. Leave them
 // reported rather than hand-copying a label from a sibling checkout.
 //
-// The rest of the list is spec entries that named no display type, for fields
-// several displays share (`displayMode`, `color`, `showLegend`,
-// `jexlFiltersSetting`). Where only one display declares a field the name
-// settles it — that is what isAlignmentsOnlyField and isHicOnlyField do — but
-// these are genuinely ambiguous, and `pickDisplayForView` resolves them through
-// a plugin registry no static script can reach.
+// The other way an entry lands in the report is a field several displays share
+// on a track whose display type went unresolved, and the fix for that one is
+// not here. Where only one display declares a field the name settles it, which
+// is what isAlignmentsOnlyField and isHicOnlyField do; otherwise the display
+// comes from `specDisplayType` — the spec's own `type` — falling back to the
+// track config's sole declared display. A figure loading a hosted config has no
+// track config to read at build time, so the spec has to name the display it
+// means. Adding `type` to the spec entry is the fix, not a looser gate here:
+// it is a no-op at render (`pickDisplayForView` takes the requested type first,
+// and these all name what the track would have opened with anyway) and it is
+// the only statement of intent a static script can trust.
 
 export interface FieldStep {
   // click path through the UI, e.g. "Track menu → Color by... → Paired end"
@@ -266,18 +268,56 @@ const MULTI_SAMPLE_VARIANT_DISPLAYS = new Set([
 // fallback: every field in the gap report is a config slot too, so answering
 // them all that way would close the report by making it say nothing.
 //
-// Gated on LinearBasicDisplay because the neighbouring displays that also take a
-// `color` override this submenu (LinearVariantDisplay) or never had it
-// (LinearPairedArcDisplay).
+// Three displays take a `color`, and the submenu is the same one on two of
+// them: LinearVariantDisplay is built on the same canvas base model, so its
+// 'Solid color...' and 'Attribute...' rows open the identical dialogs and write
+// the identical strings. It only swaps the radio list — no Strand row (variants
+// have no strand) and two one-click presets in its place, from its own
+// colorBySubMenuItems. LinearPairedArcDisplay is the odd one out and handled
+// first: same slot, no color control at all.
+//
+// The two preset expressions are written out rather than imported, unlike every
+// other value in this file. variantSvType.ts reaches the core util barrel
+// through VcfFeature/util.ts, and this module is bundled into the site, so the
+// import would pull the barrel onto the page to compare two short strings. The
+// specs that set these presets (scripts/specs/ui.ts) hardcode them for the same
+// reason. Drift degrades to the Settings fallback below rather than to a wrong
+// path.
+const VARIANT_COLOR_PRESETS: Record<string, string> = {
+  // SV_TYPE_COLOR_JEXL, plugins/variants/src/shared/variantSvType.ts
+  'jexl:svTypeColor(feature)': 'SV type',
+  // CONSEQUENCE_IMPACT_JEXL, plugins/variants/src/shared/variantConsequence.ts
+  'jexl:impactColor(feature)': 'Consequence impact',
+}
+
 function colorStep(
   value: unknown,
   { displayType }: FieldContext,
 ): FieldStep | undefined {
-  if (typeof value !== 'string' || displayType !== 'LinearBasicDisplay') {
+  if (typeof value !== 'string') {
+    return undefined
+  }
+  // Its menu adds one row to the shared base — a line-width slider — so an arc
+  // color is authored on the config however simple the expression is.
+  if (displayType === 'LinearPairedArcDisplay') {
+    return {
+      path: `${TRACK_MENU} → Settings → color`,
+      note: 'Arc color is jexl-evaluated per (feature, alt) and no menu writes it: the only control this display adds is its line-width slider.',
+    }
+  }
+  if (
+    displayType !== 'LinearBasicDisplay' &&
+    displayType !== 'LinearVariantDisplay'
+  ) {
     return undefined
   }
   const colorBy = `${TRACK_MENU} → Color by...`
-  if (value === STRAND_COLOR_JEXL) {
+  if (displayType === 'LinearVariantDisplay') {
+    const preset = VARIANT_COLOR_PRESETS[value]
+    if (preset) {
+      return { path: `${colorBy} → ${preset}` }
+    }
+  } else if (value === STRAND_COLOR_JEXL) {
     return { path: `${colorBy} → Strand` }
   }
   if (!isJexl(value)) {
@@ -290,7 +330,11 @@ function colorStep(
     ? { path: `${colorBy} → Attribute... → ${attribute}` }
     : {
         path: `${TRACK_MENU} → Settings → color`,
-        note: 'A per-feature expression. The Color by... radios write a solid color, the strand preset, or a per-attribute palette only, so an expression of any other shape is authored on the track config.',
+        note: `A per-feature expression. The Color by... radios write a solid color, a per-attribute palette, and ${
+          displayType === 'LinearVariantDisplay'
+            ? 'the SV-type and consequence-impact presets'
+            : 'the strand preset'
+        } only, so an expression of any other shape is authored on the track config.`,
       }
 }
 
@@ -482,6 +526,16 @@ function sortByLabel(type: string, noun: string) {
 const SHOW_SUBMENU_DISPLAYS = new Set([
   'LinearAlignmentsDisplay',
   'LGVSyntenyDisplay',
+])
+
+// The Hi-C display has the same 'Show...' submenu spelled the same way and the
+// same 'Show legend' row at the top of it (LinearHicDisplay/trackMenuItems.ts),
+// but none of the read-oriented rows beside it — so it joins the legend alone
+// rather than the set above, which also answers showCoverage and
+// collapseGroupRows.
+const SHOW_LEGEND_DISPLAYS = new Set([
+  ...SHOW_SUBMENU_DISPLAYS,
+  'LinearHicDisplay',
 ])
 
 // linkedReads, drawInter, drawLongRange, readConnectionsHeight and sortedBy are
@@ -751,7 +805,7 @@ export const trackFields: Record<string, FieldRecipe> = {
   showLegend: (value, { displayType }) =>
     typeof value === 'boolean' &&
     displayType &&
-    SHOW_SUBMENU_DISPLAYS.has(displayType)
+    SHOW_LEGEND_DISPLAYS.has(displayType)
       ? {
           path: `${TRACK_MENU} → Show... → Show legend (${value ? 'checked' : 'unchecked'})`,
         }

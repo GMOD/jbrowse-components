@@ -6,14 +6,10 @@
 # Adding a name here is a coverage regression — prefer a verified click-path in
 # src/lib/spec-recipe/fields.ts. Removing one is the win.
 bubbleSpread
-color
 colorDomain
 connectedView
-displayMode
 gfaLocation
 height
-jexlFiltersSetting
-showLegend
 sideBySide
 transcriptId
 uniprotId

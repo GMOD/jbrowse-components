@@ -72,6 +72,7 @@ export const qtlSpecs: ScreenshotSpec[] = [
         // density gate runs on the region's byte size, before any filter.
         {
           trackId: 'mm10_ncbi_refseq',
+          type: 'LinearBasicDisplay',
           jexlFiltersSetting: ["jexl:get(feature,'name')=='Tyrp1'"],
           forceLoad: true,
           // one box per gene: Tyrp1's 17 kb of exon structure is a fifth of a

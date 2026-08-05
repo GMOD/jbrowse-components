@@ -378,6 +378,7 @@ export const svSpecs: ScreenshotSpec[] = [
             '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
             {
               trackId: 'HG02768.final',
+              type: 'LinearAlignmentsDisplay',
               linkedReads: 'normal',
               readConnections: 'arc',
               // arcs drawn below the coverage band (reviewer)
@@ -516,6 +517,7 @@ export const svSpecs: ScreenshotSpec[] = [
             '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
             {
               trackId: 'HG02768.final',
+              type: 'LinearAlignmentsDisplay',
               linkedReads: 'normal',
               readConnections: 'arc',
               readConnectionsDown: true,

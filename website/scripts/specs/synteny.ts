@@ -519,6 +519,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 tracks: [
                   {
                     trackId: 'peach_genes',
+                    // Named even though it is what the track would open with
+                    // anyway: the config is hosted, so the figure-recipe
+                    // builder can't look the track up to learn its display,
+                    // and without one it can't say where 'compact' is set.
+                    type: 'LinearBasicDisplay',
                     showOnlyGenes: true,
                     displayMode: 'compact',
                     showDescriptions: false,
@@ -531,6 +536,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 tracks: [
                   {
                     trackId: 'grape_genes',
+                    type: 'LinearBasicDisplay',
                     showOnlyGenes: true,
                     displayMode: 'compact',
                     showDescriptions: false,
@@ -543,6 +549,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 tracks: [
                   {
                     trackId: 'cacao_genes',
+                    type: 'LinearBasicDisplay',
                     showOnlyGenes: true,
                     displayMode: 'compact',
                     showDescriptions: false,
@@ -592,6 +599,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             tracks: [
               {
                 trackId: 'grape_genes',
+                type: 'LinearBasicDisplay',
                 showOnlyGenes: true,
                 displayMode: 'compact',
                 showDescriptions: false,
@@ -1043,6 +1051,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 tracks: [
                   {
                     trackId: 'K12_genes',
+                    type: 'LinearBasicDisplay',
                     showOnlyGenes: true,
                     displayMode: 'compact',
                     showDescriptions: false,
@@ -1058,6 +1067,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 tracks: [
                   {
                     trackId: 'Sakai_genes',
+                    type: 'LinearBasicDisplay',
                     showOnlyGenes: true,
                     displayMode: 'compact',
                     showDescriptions: false,
@@ -1169,6 +1179,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             tracks: [
               {
                 trackId: 'K12_genes',
+                type: 'LinearBasicDisplay',
                 showOnlyGenes: true,
                 displayMode: 'compact',
                 showDescriptions: false,
@@ -1766,6 +1777,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             // rather than four tracks across two.
             {
               trackId: 'hg38-rmsk',
+              type: 'LinearBasicDisplay',
               displayMode: 'compact',
               // labels on: at 18 kb this window holds about a dozen elements, so
               // the names fit on one row, and the one on the L1HS is what the

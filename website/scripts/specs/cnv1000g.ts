@@ -225,7 +225,12 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
       assembly: 'hg38',
       loc: CCL3L1_WINDOW,
       tracks: [
-        { trackId: 'ncbi_refseq_hg38', displayMode: 'compact', height: 80 },
+        {
+          trackId: 'ncbi_refseq_hg38',
+          type: 'LinearBasicDisplay',
+          displayMode: 'compact',
+          height: 80,
+        },
         {
           ...CN_HEATMAP_SETTINGS,
           trackId: 'cnv_1000g_zarr',

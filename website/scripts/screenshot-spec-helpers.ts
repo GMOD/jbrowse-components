@@ -680,6 +680,9 @@ export function hpyloriSyntenyWithGenes({
   // boxes
   const geneTrack = (trackId: string) => ({
     trackId,
+    // the hosted config can't be read at build time, so the figure recipe only
+    // knows which display a `color` expression belongs to if the spec says
+    type: 'LinearBasicDisplay',
     showOnlyGenes: true,
     ...(geneColor ? { color: geneColor } : {}),
   })
