@@ -34,6 +34,12 @@ function isNetworkNoise(text: string): boolean {
 // these sites collapse their sidebar: the content column a reader actually gets.
 export const DESKTOP_VIEWPORT = { width: 1440, height: 900 }
 
+// Deadline for the island to hydrate. A liveness bound, not a perf budget —
+// generous on purpose, because the cost of it being too tight is a red CI run
+// on healthy code, while the cost of it being loose is only that a genuinely
+// dead page takes this long to say so.
+const MOUNT_TIMEOUT_MS = 15000
+
 export interface SmokeOptions {
   // absolute path to the built Astro `dist/` directory
   distDir: string
@@ -140,13 +146,39 @@ export async function smokeExamplesSite({
       // below are the real health signals and don't depend on network idle.
       log(`     (note) ${name}: ${e instanceof Error ? e.message : String(e)}`)
     }
-    await new Promise(r => setTimeout(r, settleMs))
-    const demoLen = await page
-      .$eval('.demo', el => el.innerHTML.length)
-      .catch(() => 0)
-    if (demoLen < 50) {
-      errors.push(`empty demo (innerHTML len ${demoLen})`)
+    // Wait for the island to mount, rather than trusting a fixed delay to have
+    // covered it. `.demo` is empty until React hydrates, and when several of
+    // these suites (or a stray puppeteer probe) share a machine, hydration can
+    // land after the settle has already elapsed — which reports as "empty demo"
+    // on a page that is perfectly healthy. Waiting on the condition costs
+    // nothing when it is already true and only stretches when the box is busy,
+    // which is exactly when a fixed delay lies.
+    //
+    // The settle still runs afterwards: mounting is not drawing, and the
+    // censuses below need the canvas painted, not just the island hydrated.
+    const mounted = await page
+      .waitForFunction(
+        () => (document.querySelector('.demo')?.innerHTML.length ?? 0) >= 50,
+        { timeout: MOUNT_TIMEOUT_MS },
+      )
+      .then(() => true)
+      .catch(() => false)
+    if (!mounted) {
+      // Two failures the old check reported with one message, though they have
+      // nothing to do with each other: a demo that never hydrated, and a page
+      // with no `.demo` on it at all (a 404, a renamed slug, a route the build
+      // didn't emit). `$eval` rejects on a missing selector, so `undefined`
+      // here means absent and a number means present-but-empty.
+      const len = await page
+        .$eval('.demo', el => el.innerHTML.length)
+        .catch(() => undefined)
+      errors.push(
+        len === undefined
+          ? `no .demo element on the page — did this route build?`
+          : `demo never mounted (innerHTML len ${len} after ${MOUNT_TIMEOUT_MS}ms)`,
+      )
     }
+    await new Promise(r => setTimeout(r, settleMs))
     if (slug === workerSlug && !workers.some(u => u.includes('rpcWorker'))) {
       errors.push(`no rpc worker spawned (workers: ${JSON.stringify(workers)})`)
     }
