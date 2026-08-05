@@ -1,8 +1,11 @@
 import {
   DEMO_CONFIG,
   HG38_GENCODE_PROMOTER_TRACK,
+  cascadeBoxes,
   lgvSession,
+  menuCascade,
   sessionSpec,
+  trackMenuIcon,
 } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
@@ -267,6 +270,21 @@ export const methylationSpecs: ScreenshotSpec[] = [
     settleMs: 15000,
     // cpg(40) + gene(90) + reads(320) + chrome
     viewportHeight: 730,
+    // the track menu icon keeps its "Track settings" tooltip after the click,
+    // and the cursor parks over the pileup, which raises the read tooltip
+    hideSelectors: ['.MuiTooltip-popper'],
+    hideTooltip: true,
+    // The menu path that produces the lower half, open on the upper one
+    // (reviewer: "the first screenshot may want to show the track menu for
+    // group by->tag"). The ungrouped state is the honest place for it: the
+    // radio is not yet set, so the item reads plain 'Tag...' and the picture is
+    // "here is where you go", not "here is where it already is". Same shape as
+    // sv.ts's split-read grouping figure.
+    actions: [
+      trackMenuIcon('HG002_snrpn_5mC_reads'),
+      ...menuCascade(['Group by...', 'Tag...']),
+    ],
+    annotations: cascadeBoxes(['Group by...', 'Tag...']),
   },
 
   // The other half: identical to the spec above but for `groupBy` on the HP tag,
@@ -308,6 +326,35 @@ export const methylationSpecs: ScreenshotSpec[] = [
     settleMs: 15000,
     // cpg(40) + gene(90) + reads(320) + chrome
     viewportHeight: 730,
+    // The result, said out loud (reviewer: "may want red annotation text saying
+    // HP1,HP2,HP unknown in bottom"). The display already writes `HP: 1` /
+    // `HP: 2` / `HP: none` at each group's top left, but in small grey type that
+    // a reader scanning the figure does not stop on -- and those labels name
+    // the group without naming what it shows, which is the whole result here.
+    //
+    // Anchored to those labels by text, so the callouts follow the groups
+    // wherever the layout puts them; `dx` only clears the "Show all reads"
+    // control that sits beside each one. Which haplotype is which is read off
+    // this capture (HP1 red across the island, HP2 blue) rather than assumed:
+    // the tags are arbitrary, so a rebuild of the BAM could swap them, and the
+    // pills are checked against the render on regen.
+    annotations: [
+      {
+        type: 'text',
+        text: 'HP1: methylated across the island',
+        anchor: { text: 'HP: 1', alignX: 'right', dx: 90 },
+      },
+      {
+        type: 'text',
+        text: 'HP2: unmethylated',
+        anchor: { text: 'HP: 2', alignX: 'right', dx: 90 },
+      },
+      {
+        type: 'text',
+        text: 'HP unknown: reads with no haplotype tag',
+        anchor: { text: 'HP: none', alignX: 'right', dx: 90 },
+      },
+    ],
   },
 
   {

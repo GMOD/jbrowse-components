@@ -549,17 +549,30 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
   // diagonal (rendered it that way first). On log they are solid, and the
   // centromeres show as the notch out of each one.
   //
-  // The off-diagonal blocks are empty because the FILE has nothing to put there,
-  // not because the fetch or the binsize failed: intra_nofrag_30.hic's master
-  // index (footer at the header's masterIndexPos) holds 26 entries and every one
-  // is a self-pair, `0_0` through `25_25`. Worth knowing before reading this as
-  // "JBrowse doesn't draw translocations" — hic/two_regions is the same
-  // machinery finding real cross-region signal within chr8.
+  // A FILE WITH INTER-CHROMOSOMAL BLOCKS IN IT (reviewer: "ideally the whole
+  // genome hic we use has inter-chromosomal connections"). The demo's own
+  // hg19 intra_nofrag_30.hic cannot draw them: its master index (footer at the
+  // header's masterIndexPos) holds 26 entries and every one is a self-pair,
+  // `0_0` through `25_25`, so the off-diagonal came back empty and the figure
+  // taught the geometry rather than the data. jbrowse.org has no whole-genome
+  // .hic either -- the only two in the bucket are the HG008-T read-pair maps,
+  // which carry inter blocks but only for chr3 and chr13.
+  //
+  // ENCFF563JTY is GM12878 in situ Hi-C from ENCODE (ENCSR730CER), hg38, .hic
+  // v9, and its footer holds 326 entries: 26 self-pairs and all 300 pairs of
+  // the 25 chromosomes. Coarsest binsize is 2.5 Mb, which is the one this view
+  // asks for. Checked by reading the footer directly rather than by trusting
+  // the file name; the same check is what ruled out an ENCODE ChIA-PET matrix
+  // that is also shaped like a whole-genome .hic and would have been captioned
+  // as Hi-C.
+  //
+  // hg38 rather than hg19 with it, and the file names chromosomes chr1..chrY,
+  // which is the same style as the demo's hg38 (hg38.prefix.fa.gz).
   {
     mode: 'url',
     name: 'hic/whole_genome',
     url: lgvSession(DEMO_CONFIG, {
-      assembly: 'hg19',
+      assembly: 'hg38',
       displayedRegionNames: [
         ...Array.from({ length: 22 }, (_, i) => `chr${i + 1}`),
         'chrX',
@@ -570,14 +583,21 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       // triangle is half as tall as its region is wide, and the widest region
       // here is chr1 at ~113px of the 1450px genome, so 57px is the tallest
       // thing the display has to hold
-      tracks: [{ trackId: 'hic', useLogScale: true, height: 100 }],
+      tracks: [
+        { trackId: 'hic_gm12878_encode', useLogScale: true, height: 100 },
+      ],
     }),
     viewportHeight: 302,
     readySelector: '[data-testid="hic-display-done"]',
-    // 24 regions is 300 region pairs to fetch, so both waits are well past what
-    // a single-region figure needs
-    readyTimeout: 180000,
-    settleMs: 20000,
+    // 24 regions is 300 region pairs to fetch, and every one of them is a real
+    // fetch now that the file answers them -- through ENCODE's signed redirect,
+    // which costs a round trip each. Both waits are well past what a
+    // single-region figure needs.
+    // 300 region pairs, and all 300 answer now. Measured serially in node
+    // against this file at the 2.5 Mb binsize: 685,098 records in 224s, so the
+    // wait is minutes rather than the seconds an intra-only file needed.
+    readyTimeout: 900000,
+    settleMs: 30000,
   },
 
   // The two halves of the faint-contacts comparison. Same region, same ramp;

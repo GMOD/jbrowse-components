@@ -458,10 +458,39 @@ export const uiSpecs: ScreenshotSpec[] = [
   // alt-carrying cell takes its variant's structural-variant class color and
   // the legend names the five present here (DEL, DUP, INS, INV, CNV). This is
   // the half that carries the gene lane for the composed pair.
+  //
+  // It also carries the ORDINARY variant display of the same callset, between
+  // the matrix and the genes (reviewer: "so the user can see which sv is
+  // which"). A matrix column is a genotype wash — 26 records over this window
+  // overlap, so a cell says "this sample carries something here" and the
+  // boundary between two calls is only visible where their carrier sets differ.
+  // The same 26 records in a LinearVariantDisplay lay out in rows and separate:
+  // HGSV_1821 (the 70kb RHD deletion) is one bar, and the duplications and
+  // inversions over RHCE are their own. Same colors on both, since the lane
+  // takes the `svTypeColor` jexl the SV-type preset is built on
+  // (SV_TYPE_COLOR_JEXL in plugins/variants/src/shared/variantSvType.ts —
+  // hardcoded rather than imported, since that module pulls the core util
+  // barrel and specs are read under plain node).
+  //
+  // A second display of the same *track* is not possible — showTrack resolves by
+  // trackId and returns the open one — so the lane is a sessionTrack pointing at
+  // the same VCF under its own id.
   {
     mode: 'url',
     name: 'multisv_rhd_svtype',
     url: kgUrl({
+      sessionTracks: [
+        {
+          type: 'VariantTrack',
+          trackId: 'kgp_sv_records',
+          name: '1KGP ensemble SV calls',
+          assemblyNames: ['hg38'],
+          adapter: {
+            type: 'VcfTabixAdapter',
+            uri: 'https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20210124.SV_Illumina_Integration/1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf.gz',
+          },
+        },
+      ],
       views: [
         {
           type: 'LinearGenomeView',
@@ -474,6 +503,15 @@ export const uiSpecs: ScreenshotSpec[] = [
               forceLoad: true,
               height: 400,
               featureColor: 'svType',
+            },
+            {
+              trackId: 'kgp_sv_records',
+              type: 'LinearVariantDisplay',
+              forceLoad: true,
+              // enough for the four rows the 26 records pack into plus their
+              // name/type labels; at 130 the last row was under the lane's fold
+              height: 170,
+              color: 'jexl:svTypeColor(feature)',
             },
             // showLabels:'on' forces gene names on at this zoom; showOnlyGenes
             // drops the per-transcript subfeatures so RHD/RHCE read as single
@@ -492,7 +530,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     }),
     readyText: '1KGP',
     readyTimeout: 90000,
-    viewportHeight: 800,
+    viewportHeight: 980,
     settleMs: 35000,
     hideTooltip: true,
     actions: [
@@ -545,10 +583,9 @@ export const uiSpecs: ScreenshotSpec[] = [
           assembly: 'hg38',
           loc: '1:25,250,000-25,350,000',
           // RHD's own span, from the RefSeq annotation the gene lane draws
-          // (chr1:25,272,393-25,330,445). The lane's label ladder will not put
-          // a name on RHD at this zoom — RSRP1 spans the whole window and takes
-          // the top rows — so the band is what ties the coverage hole to the
-          // gene, and it is taken from the annotation rather than measured.
+          // (chr1:25,272,393-25,330,445), taken from the annotation rather than
+          // measured. It bands the coverage hole in all three read tracks at
+          // once, which no per-track glyph can do.
           highlight: [
             {
               refName: '1',
@@ -561,9 +598,17 @@ export const uiSpecs: ScreenshotSpec[] = [
             {
               trackId: 'ncbi_refseq_109_hg38',
               type: 'LinearBasicDisplay',
-              // showOnlyGenes + fit: RSRP1 spans the whole window and its
-              // transcript rows pushed RHD, the subject, below the lane's fold
-              height: 110,
+              // RHD -- the subject of the figure -- used to sit below this
+              // lane's 110px fold, and the reviewer reasonably reported not
+              // seeing it. Two settings fix that together: `longestCoding`
+              // draws one glyph per gene (`showOnlyGenes` alone still stacked a
+              // dozen RHD transcript rows at this zoom, which grew the lane to
+              // 470px and pushed the coverage tracks off instead), and
+              // heightMode 'grow' sizes the lane to whatever rows that leaves,
+              // so the gene cannot be clipped out of its own figure by a number
+              // in this file.
+              heightMode: 'grow',
+              geneGlyphMode: 'longestCoding',
               showLabels: 'on',
               showDescriptions: false,
               showOnlyGenes: true,
@@ -584,68 +629,8 @@ export const uiSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'HG00097.final',
     readyTimeout: 240000,
-    viewportHeight: 960,
+    viewportHeight: 875,
     settleMs: 60000,
-  },
-
-  // Why the RHD hole is not quite empty. RHCE sits next door at ~97% identity,
-  // so in a sample with no RHD the gene's footprint still collects reads that
-  // belong to the paralog. Measured inside RHD (chr1:25,295,000-25,305,000):
-  //
-  //   HG00113 (no RHD)     144 reads   62% MAPQ 0    29% MAPQ>=20
-  //   HG00097 (two copies) 2484 reads   6% MAPQ 0    93% MAPQ>=20
-  //
-  // Two stages over the same 15kb inside RHD in HG00113: the default coloring,
-  // then Color by -> Mapping quality, where the MAPQ-0 residue paints red on
-  // the legend's 0-to-60 ramp. Each stage declares its own session URL rather
-  // than driving the menu, so the pair is reproducible without a click chain.
-  {
-    mode: 'url',
-    name: 'multisv_rhd_mapq',
-    url: kgUrl({
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: '1:25,295,000-25,310,000',
-          tracks: [
-            {
-              trackId: 'HG00113.final',
-              type: 'LinearAlignmentsDisplay',
-              forceLoad: true,
-              height: 320,
-            },
-          ],
-        },
-      ],
-    }),
-    readyText: 'HG00113',
-    readyTimeout: 180000,
-    viewportHeight: 530,
-    settleMs: 30000,
-    stages: [
-      {},
-      {
-        url: kgUrl({
-          views: [
-            {
-              type: 'LinearGenomeView',
-              assembly: 'hg38',
-              loc: '1:25,295,000-25,310,000',
-              tracks: [
-                {
-                  trackId: 'HG00113.final',
-                  type: 'LinearAlignmentsDisplay',
-                  forceLoad: true,
-                  height: 320,
-                  colorBy: { type: 'mappingQuality' },
-                },
-              ],
-            },
-          ],
-        }),
-      },
-    ],
   },
 
   // Trio SV: the Kinh-Vietnamese trio (HG02030 child / HG02031 mother / HG02032

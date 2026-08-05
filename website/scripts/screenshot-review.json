@@ -2204,9 +2204,9 @@
   },
   "dog10k-wolfdog-ancestry": {
     "name": "dog10k-wolfdog-ancestry",
-    "status": "answered",
+    "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-05T03:13:33.306Z",
+    "reviewedAt": "2026-08-05T03:43:41.580Z",
     "hash": "38c99710801094942c6e7510ce1cec64e386a4de"
   },
   "mcscan_anchors": {
@@ -2681,15 +2681,15 @@
     "name": "multisv_rhd",
     "status": "bad",
     "note": "the second screenshot uses yellow for no-call but it is not in legend. also potentially we could just change this to one figure where the regular linearvariantdisplay and the multisamplevariantdisplay of same data was visible. then user can see which sv is which.",
-    "reviewedAt": "2026-08-05T03:16:32.809Z",
-    "hash": "e4e4be97250cfd41cee9708637e0a31326752b97"
+    "reviewedAt": "2026-08-05T04:19:38.394Z",
+    "hash": "a15f02ee8be48350af3a7e66fb46918571449e87"
   },
   "multisv_rhd_dosage": {
     "name": "multisv_rhd_dosage",
-    "status": "bad",
-    "note": "i dont see the rhd gene so somewhat unclear",
-    "reviewedAt": "2026-08-05T03:17:01.968Z",
-    "hash": "b34f0ec43753b17a49811834cafad1e3ccafdb72"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-05T04:19:48.235Z",
+    "hash": "3fce39522e0d2b74314ddfc2ed0f4f63f19cafb6"
   },
   "multisv_rhd_mapq": {
     "name": "multisv_rhd_mapq",

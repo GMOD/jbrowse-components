@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
-import { displayReady, sessionSpec } from '../screenshot-spec-helpers.ts'
+import { sessionSpec } from '../screenshot-spec-helpers.ts'
 import { ECOLI_DEMO_BASE, usingLocalDemo } from './demoBase.ts'
 
 import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'

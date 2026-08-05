@@ -60,91 +60,6 @@ const CEA_GROUPS = [
   },
 ]
 
-// Sidebar rows for the marker figure, and the row order of the named-subset
-// painting drawn above it. The VCF keeps the Dog10K sample IDs (they are the
-// data's identity, and the build script writes this same order); `layout` only
-// relabels the rows, two per sample since the matrix is drawn in phased mode.
-//
-// The order is not editorial: it is `named.tsv`, which
-// scripts/build_dog10k_wolfdog_ancestry.sh writes sorted by descending chr1
-// wolf fraction out of FLARE's own per-sample output. So the figure reads down
-// the page as a ranking, and the eight breeds at the bottom of the sweep's
-// wolf-fraction list are there because the sweep put them there rather than
-// because they sound wolfish. Regenerate with:
-//   cut -f2 dog10k_wolfdog_build/named.tsv
-//
-// The swatch marks which of the five groups a row belongs to. It deliberately
-// does NOT encode the painting's per-haplotype call the way this figure's
-// earlier version did: the window now spans block EDGES, so a haplotype is
-// wolf-called over part of it and dog-called over the rest, and one letter per
-// row would be a summary rather than the fact. The painting track directly
-// above carries the call, at the same row order and the same row heights, so
-// the two line up row for row.
-const WOLF = '#E69F00'
-const WOLFDOG = '#D55E00'
-const LOOKALIKE = '#CC79A7'
-const GSD = '#0072B2'
-const SWEEP = '#999999'
-
-const NAMED: [string, string, string][] = [
-  ['CLUPPT000001', 'Gray wolf 7', WOLF],
-  ['CLUPRU000003', 'Gray wolf 3', WOLF],
-  ['CLUPPT000002', 'Gray wolf 8', WOLF],
-  ['CLUPRU000001', 'Gray wolf 1', WOLF],
-  ['CLUPRU000002', 'Gray wolf 2', WOLF],
-  ['CLUPRU000004', 'Gray wolf 4', WOLF],
-  ['CLUPSE000001', 'Gray wolf 5', WOLF],
-  ['CLUPSE000002', 'Gray wolf 6', WOLF],
-  ['SAAR000001', 'Saarloos 1', WOLFDOG],
-  ['SAAR000003', 'Saarloos 3', WOLFDOG],
-  ['SAAR000002', 'Saarloos 2', WOLFDOG],
-  ['SAAR000004', 'Saarloos 4', WOLFDOG],
-  ['CZEC000003', 'Czechoslovakian 3', WOLFDOG],
-  ['SHIL000001', 'Shiloh Shepherd', LOOKALIKE],
-  ['CZEC000001', 'Czechoslovakian 1', WOLFDOG],
-  ['CZEC000004', 'Czechoslovakian 4', WOLFDOG],
-  ['THAI000009', 'Thai Ridgeback', SWEEP],
-  ['CHOW000004', 'Chow Chow', SWEEP],
-  ['CAUC000004', 'Caucasian Ovcharka', SWEEP],
-  ['GAFT000006', 'Great Anglo-French Tricolour Hound', SWEEP],
-  ['KAIK000005', 'Kai Ken', SWEEP],
-  ['ANAT000007', 'Anatolian Shepherd Dog', SWEEP],
-  ['TMSK000001', 'Tamaskan', LOOKALIKE],
-  ['SPEI000006', 'Chinese Shar-Pei', SWEEP],
-  ['KARS000006', 'Kars', SWEEP],
-  ['CZEC000002', 'Czechoslovakian 2', WOLFDOG],
-  ['OLGS000001', 'Old German Shepherd 1', GSD],
-  ['WSSD000003', 'White Swiss Shepherd 1', GSD],
-  ['GRSD000002', 'German Shepherd', GSD],
-  ['OLGS000002', 'Old German Shepherd 2', GSD],
-  ['OLGS000003', 'Old German Shepherd 3', GSD],
-  ['WSSD000004', 'White Swiss Shepherd 2', GSD],
-]
-
-// HP is 0-based on the wire (`<sample> HP0`/`HP1`, see makeHaplotypeSources);
-// the labels count from 1 to match the painting track's row names
-function haplotypeRows({
-  sample,
-  label,
-  color,
-}: {
-  sample: string
-  label: string
-  color: string
-}) {
-  return [0, 1].map(hp => ({
-    name: `${sample} HP${hp}`,
-    sampleName: sample,
-    HP: hp,
-    label: `${label} hap${hp + 1}`,
-    color,
-  }))
-}
-
-const DOG_VCF_LAYOUT = NAMED.flatMap(([sample, label, color]) =>
-  haplotypeRows({ sample, label, color }),
-)
-
 // Row labels for the CYP1A2 figure. Breeds carrying the nonsense allele first,
 // then two that do not, then the wolves — which is where the control lives: no
 // wolf or coyote in the whole collection carries it.
@@ -506,40 +421,34 @@ export const dog10kSpecs: ScreenshotSpec[] = [
   // the scale the other figures carry, so the hound rows are read between a
   // known ceiling and a known floor rather than against each other alone.
   //
-  // 26 rows in 560px is ~21px a row, well above the ~6px a row label needs, so
-  // unlike the 486-row spectrum this figure names every animal — with only ten
-  // hounds in it, WHICH dog carries the block is the result rather than a detail
-  // spent on a label.
+  // ONE PANEL, FOUR GROUP CALLOUTS, NO PER-ANIMAL LABELS. This was three
+  // stacked panels of the same 66 rows -- chr1 labelled, chr1 unlabelled, chr38
+  // -- and the reviewer's verdict on that was "frankly just kind of confusing
+  // and too large. what is the point". It was: each panel answered an objection
+  // to the one above it (the row labels draw ON the plot and cover the first
+  // ~17 Mb of every row, so the unlabelled copy existed to show the blocks two
+  // dogs carry there; chr38 existed because WHICH individual looks wolfish
+  // changes with the chromosome). Answering objections stacked a 6,900px figure
+  // whose actual finding -- orange in the Great Anglo-French rows and nowhere
+  // else in the clade -- was buried under two near-identical repeats of itself.
   //
-  // THREE PANELS, AND NEITHER OF THE LOWER TWO IS DECORATION.
+  // So the claim is now the clade-level one the picture can carry on its own,
+  // and the per-animal reading it cannot (which dog, which chromosome) is left
+  // to the prose and to Lin et al.'s genome-wide numbers. That drops the
+  // per-animal labels, which drops the covered start, which drops the panel
+  // that existed to uncover it, and drops chr38 with the individual-level claim
+  // it was guarding. Four anchored pills name the row groups instead: each is
+  // ~40px against the 190-570px its group occupies, so it covers the left edge
+  // of about three rows rather than of all 66.
   //
-  // Panel 1 is chr1 with the labels on, which is the only place the ten animals
-  // are named.
-  //
-  // Panel 2 is the same chr1 view with `showRowLabels: false`. The labels draw
-  // as an overlay ON the plot, each as wide as its own text, so over a 123.5 Mb
-  // view they cover roughly the first 17 Mb of every row — and two of these ten
-  // dogs carry their block inside that span (Tricolour 5 an 11.4 Mb terminal
-  // block, Wh/Orange 3 a 4.3 Mb one at 6 Mb). Panel 1 alone therefore paints
-  // both of them as cleaner than they are, which is the one error a figure about
-  // which individual carries what cannot afford. This panel is the same data
-  // with nothing on top of it. (It used to be a 25 Mb zoom; the `showRowLabels`
-  // slot this bug produced is the better fix, since the zoom recovered the start
-  // at the cost of showing only a fifth of the chromosome.)
-  //
-  // Panel 3 is chr38, same ten animals, same order, labels off. It is here
-  // because panel 1 on its own is misleading in a second and worse way: it reads
-  // as "Tricolour 1 and 2 are the wolf-carrying ones", and on chr38 those two
-  // are the empty ones while Tricolour 3 and 5 carry a fifth of the chromosome.
-  // Lin et al.'s claim is about GENOME-WIDE ancestry; per chromosome, which
-  // individual looks wolfy is close to arbitrary, because a few percent of
-  // genome scattered in blocks lands on some chromosomes and not others. Without
-  // this panel the page invites exactly the over-reading its own caveat warns
-  // about. Same 560px track height in all three so the rows keep one pitch and a
-  // dog can be followed down the whole stack.
+  // The fracY values are (firstRow + lastRow + 1) / 2 / 66 over the display's
+  // `rowOrder` in test_data/dog10k/config.json -- rows 0-3 wolf + wolfdog, 4-23
+  // both Great Anglo-French breeds, 24-63 the stocks they were bred from, 64-65
+  // German Shepherd. Derived from that list rather than measured off a PNG, so
+  // adding a dog to the build moves the pills by editing one arithmetic line.
   {
     mode: 'url',
-    name: 'dog10k-anglofrench-hounds-chromosome',
+    name: 'dog10k-anglofrench-hounds',
     url: lgvSession(DOG_CONFIG, {
       assembly: 'UU_Cfam_GSD_1.0',
       loc: 'chr1:1-123,556,469',
@@ -548,32 +457,12 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           trackId: 'dog10k_anglofrench',
           type: 'LinearMultiRowFeatureDisplay',
           height: 940,
+          // off: the per-animal names are what covered the first ~17 Mb of
+          // every row, and the four group pills below say what this figure
+          // needs said
+          showRowLabels: false,
           // ~14px a row, above both MIN_SEPARATOR_ROW_PX and the ~6px a label
           // needs; the rows come in pairs that read as one animal each
-          showRowSeparators: true,
-        },
-      ],
-    }),
-    readyText: 'chr1',
-    readySelector: '[data-testid="multirow-color-legend"]',
-    readyTimeout: 60000,
-    settleMs: 3000,
-    viewportHeight: 1145,
-  },
-
-  {
-    mode: 'url',
-    name: 'dog10k-anglofrench-hounds-unlabelled',
-    url: lgvSession(DOG_CONFIG, {
-      assembly: 'UU_Cfam_GSD_1.0',
-      loc: 'chr1:1-123,556,469',
-      tracks: [
-        {
-          trackId: 'dog10k_anglofrench',
-          type: 'LinearMultiRowFeatureDisplay',
-          height: 940,
-          // the whole reason this panel exists, see above
-          showRowLabels: false,
           showRowSeparators: true,
         },
       ],
@@ -586,38 +475,47 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     settleMs: 3000,
     viewportHeight: 1145,
-  },
-
-  {
-    mode: 'url',
-    name: 'dog10k-anglofrench-hounds-chr38',
-    url: lgvSession(DOG_CONFIG, {
-      assembly: 'UU_Cfam_GSD_1.0',
-      loc: 'chr38:1-24,803,098',
-      tracks: [
-        {
-          trackId: 'dog10k_anglofrench_chr38',
-          type: 'LinearMultiRowFeatureDisplay',
-          height: 940,
-          showRowLabels: false,
-          showRowSeparators: true,
+    annotations: [
+      {
+        type: 'text',
+        text: 'gray wolf, then a wolfdog',
+        anchor: {
+          track: 'dog10k_anglofrench',
+          fracY: 2 / 66,
+          alignX: 'left',
+          dx: 12,
         },
-      ],
-    }),
-    readyText: 'chr38',
-    readySelector: '[data-testid="multirow-color-legend"]',
-    readyTimeout: 60000,
-    settleMs: 3000,
-    viewportHeight: 1145,
-  },
-
-  {
-    mode: 'compose',
-    name: 'dog10k-anglofrench-hounds',
-    parts: [
-      'dog10k-anglofrench-hounds-chromosome',
-      'dog10k-anglofrench-hounds-unlabelled',
-      'dog10k-anglofrench-hounds-chr38',
+      },
+      {
+        type: 'text',
+        text: 'Great Anglo-French hounds:\nfive Tricolour, then five White & Orange',
+        anchor: {
+          track: 'dog10k_anglofrench',
+          fracY: 14 / 66,
+          alignX: 'left',
+          dx: 12,
+        },
+      },
+      {
+        type: 'text',
+        text: 'the stocks they were bred from:\nFrench pack hounds and English foxhounds',
+        anchor: {
+          track: 'dog10k_anglofrench',
+          fracY: 44 / 66,
+          alignX: 'left',
+          dx: 12,
+        },
+      },
+      {
+        type: 'text',
+        text: 'German Shepherd',
+        anchor: {
+          track: 'dog10k_anglofrench',
+          fracY: 65 / 66,
+          alignX: 'left',
+          dx: 12,
+        },
+      },
     ],
   },
 
@@ -1349,13 +1247,15 @@ export const dog10kSpecs: ScreenshotSpec[] = [
   // upstream and 44 kb past it downstream and the frame is not the gene.
   //
   // It was 400 kb, narrowed to 220 kb on review ("i cant really tell what the
-  // 'story' is here"), and is now 320 kb on the next one ("zoom out if it helps
-  // show larger patterns"). Both moves are real and they pull opposite ways:
+  // 'story' is here"), widened to 320 kb on the next ("zoom out if it helps show
+  // larger patterns"), and is now the full 410 kb the data covers on the next
+  // again ("zoomout even farther"). Both directions were real while the row
+  // order depended on the window:
   //
-  //   - The MATRIX wants the window tight. Equal-width columns are what make it
+  //   - The MATRIX wanted the window tight. Equal-width columns are what make it
   //     legible and also what make a wide frame expensive, since an
   //     undifferentiated column is exactly as wide as a separating one.
-  //   - The FST LANE wants the window wide. At 220 kb the run of differentiated
+  //   - The FST LANE wanted the window wide. At 220 kb the run of differentiated
   //     sites filled the frame edge to edge, so the lane could not show that it
   //     IS a run: there was no background in view to see it rise out of.
   //
@@ -1364,14 +1264,16 @@ export const dog10kSpecs: ScreenshotSpec[] = [
   // colour blocks down the size swatch (the row order's own summary: fewer, longer
   // blocks means the clustering recovered the size classes better) gives 19
   // blocks at 220 kb, 21 at 320 kb and 18 at 450 kb, with the two longest blocks
-  // covering 63%, 52% and 52% of painted rows. So the row order is essentially
-  // unaffected across the whole sweep, and the trade is only about how much of
-  // the matrix is noise columns.
+  // covering 63%, 52% and 52% of painted rows.
   //
-  // 320 kb is where the Fst lane gains a visible baseline at both edges while
-  // the toy/small block is still one run of 452 px. 450 kb buys no more Fst
-  // context and dilutes the matrix further, so it is not the answer to "zoom
-  // out" either.
+  // `clusterRegion` then removed the trade entirely: the row order is now
+  // computed over the 140 kb core whatever is on screen, so widening the drawn
+  // window cannot move a row and only dilutes columns. THIS IS THE END OF THE
+  // ZOOM-OUT ROAD, and not for a taste reason: the build script's VCF and Fst
+  // BED both stop at chr15:41,350,031-41,749,214, so a wider frame adds flank
+  // with no sites in it. That flank would read as "no differentiation out here"
+  // when it means "no data out here", which is worse than a tight window. A
+  // genuinely wider figure is a rebuild of the callset, not a locstring.
   //
   // CLUSTERED ON THE CORE, DRAWN WIDE, which is the other half of the same
   // review ("not sure if it should may cluster in narrower area and then zoom
@@ -1409,7 +1311,10 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     name: 'dog10k-igf1-haplotype',
     url: lgvSession(DOG_CONFIG, {
       assembly: 'UU_Cfam_GSD_1.0',
-      loc: 'chr15:41,375,000-41,695,000',
+      // the callset's own extent (41,350,031-41,749,214) with a hair of margin,
+      // so every site the build produced is on screen and no empty flank is
+      // painted past them
+      loc: 'chr15:41,348,000-41,752,000',
       tracks: [
         {
           trackId: 'canFam4_ncbi_refseq',
