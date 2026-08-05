@@ -236,6 +236,13 @@ export function createLinearGenomeView(
   // old view would blank out for the whole async build.
   let mounted: ViewModel | undefined
   let destroyed = false
+  // which build is the current request. Resolving an assembly is async and two
+  // rebuilds can be in flight at once (a host switching genomes twice, or
+  // syncing several traits in one go), and they finish in whatever order their
+  // fetches do — not the order they were asked for. Without this the last to
+  // *finish* won, so a slow first request could overwrite the genome actually
+  // asked for and destroy the engine that was showing it.
+  let generation = 0
 
   function teardown() {
     for (const dispose of disposers) {
@@ -261,10 +268,14 @@ export function createLinearGenomeView(
   }
 
   async function build() {
+    const gen = ++generation
     teardown()
     current = undefined
     const resolved = await resolveAssembly(assemblyInput)
-    assemblyName =
+    // local until this build is known to have won: `assemblyName` is what later
+    // addTrack/setTracks calls stamp onto bare configs, so a superseded build
+    // promoting its own would misname every track added afterwards
+    const name =
       typeof resolved.assembly.name === 'string'
         ? resolved.assembly.name
         : undefined
@@ -276,10 +287,7 @@ export function createLinearGenomeView(
       tracks: tracks
         .filter((track): track is TrackConf => !isLooseTrack(track))
         .map(track =>
-          resolveLocalFileUris(
-            withAssemblyName(track, assemblyName),
-            localFiles,
-          ),
+          resolveLocalFileUris(withAssemblyName(track, name), localFiles),
         ),
       aggregateTextSearchAdapters: mergeSearchAdapters(
         resolved.aggregateTextSearchAdapters,
@@ -294,6 +302,18 @@ export function createLinearGenomeView(
       // through createViewState's init flow (spinner while loading) otherwise
       location: hasSession ? undefined : location,
     })
+    // Nothing will ever reach this engine, so it dies here rather than leaking
+    // a worker pool — and, in the superseded case, rather than overwriting the
+    // genome that was actually asked for. `destroyed` is reachable from React
+    // StrictMode, which runs a ref callback's cleanup right after setup, i.e.
+    // before any build can finish; the stale generation from any host that
+    // rebuilds twice. Checked before the autoruns below are registered, so a
+    // dead engine never gets one pointed at it.
+    if (destroyed || gen !== generation) {
+      destroyViewState(viewState)
+      return viewState
+    }
+    assemblyName = name
     const { session } = viewState
     const { view } = session
     // a defaultSession owns the initial track layout; without one, open the
@@ -323,15 +343,6 @@ export function createLinearGenomeView(
           }
         }),
       )
-    }
-    if (destroyed) {
-      // destroy() ran while this build was still resolving its assembly. There
-      // is no root left to render onto, and nothing else will ever reach this
-      // engine, so it dies here instead of leaking a worker pool. Reachable
-      // from React StrictMode, which calls a ref callback's cleanup right after
-      // setup — i.e. before any build can finish.
-      destroyViewState(viewState)
-      return viewState
     }
     current = viewState
     swapIn(viewState)

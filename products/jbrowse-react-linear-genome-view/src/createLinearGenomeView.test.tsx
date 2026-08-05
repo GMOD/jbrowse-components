@@ -1,8 +1,14 @@
+import { fetchHub } from '@jbrowse/core/util/fetchHub'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import { createLinearGenomeView } from './index.ts'
 
+import type { HubConfig } from '@jbrowse/core/util/fetchHub'
+
 jest.mock('./makeWorkerInstance', () => () => {})
+// resolving an assembly by hub name is the one await in a build, so gating it is
+// how a test decides which of two in-flight rebuilds finishes first
+jest.mock('@jbrowse/core/util/fetchHub', () => ({ fetchHub: jest.fn() }))
 
 const assembly = {
   name: 'volvox',
@@ -155,6 +161,43 @@ test('destroy is idempotent, and works before the first build settles', async ()
     controller.destroy()
   }).not.toThrow()
   await controller.whenReady()
+})
+
+// Two rebuilds in flight resolve in whatever order their assembly fetches
+// finish, which is not the order they were asked for — a host switching genomes
+// twice, or syncing several traits at once (anywidget, htmlwidgets), gets both.
+// Whichever build lands last used to win outright, so a slow first request could
+// overwrite the genome the user actually asked for, destroy the engine that was
+// showing it, and leave whenReady() resolving with that dead engine.
+test('the last rebuild requested wins, not the last to resolve', async () => {
+  const gates = new Map<string, (hub: HubConfig) => void>()
+  jest.mocked(fetchHub).mockImplementation(
+    async (name: string) =>
+      await new Promise<HubConfig>(resolve => {
+        gates.set(name, resolve)
+      }),
+  )
+  const openGate = async (name: string) => {
+    gates.get(name)!({ assemblies: [{ ...assembly, name }] })
+    // two ticks: one for the fetch, one for the build that awaited it
+    await Promise.resolve()
+    await Promise.resolve()
+  }
+
+  const controller = createLinearGenomeView(document.createElement('div'), {
+    assembly: 'slow',
+  })
+  controller.setAssembly('quick')
+  await Promise.resolve()
+
+  await openGate('quick')
+  await openGate('slow')
+  const state = await controller.whenReady()
+
+  expect(controller.viewState).toBe(state)
+  expect(isAlive(state)).toBe(true)
+  expect(state.session.assemblyNames).toEqual(['quick'])
+  controller.destroy()
 })
 
 // setAssembly/setSession rebuild the engine from scratch. The previous one has
