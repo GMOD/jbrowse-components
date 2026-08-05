@@ -302,6 +302,9 @@ const PAGE = /* html */ `<!doctype html>
   .cardmsg:empty { display: none; }
   .cardmsg.error { color: #b91c1c; }
   .cardmsg.warn { color: #b45309; }
+  /* whether what is in the note box has reached the report yet */
+  .unsaved { font-size: 12px; font-weight: 500; color: #b45309; }
+  .unsaved:empty { display: none; }
   .loaderror { color: #b91c1c; font-size: 14px; line-height: 1.5; white-space: pre-wrap; }
 </style>
 </head>
@@ -445,6 +448,16 @@ async function load() {
       esc(err.message) + '</div>'
     return
   }
+  // Drop drafts the report has caught up with, and drafts for figures that no
+  // longer exist. Without this a note saved in one session comes back as an
+  // "unsaved" draft in the next, and deleted specs accumulate in the store
+  // forever.
+  for (const [name, typed] of [...pendingNotes]) {
+    if (!data.some(s => s.name === name) || typed === savedNote(name)) {
+      pendingNotes.delete(name)
+    }
+  }
+  saveDrafts()
   buildGroupOptions()
   // canonicalize: drops a shared-URL group that no longer names a real group
   writeUrl()
@@ -526,7 +539,10 @@ function card(spec) {
       renderUsages(spec.usages) +
       renderParts(spec) +
       (spec.liveUrl ? '<a class="livelink" href="' + esc(spec.liveUrl) + '" target="_blank" rel="noopener">Open live in JBrowse ↗</a>' : '') +
-      '<textarea class="note" rows="2" placeholder="note (optional)" onchange="saveNote(this)">' + esc(v ? v.note : '') + '</textarea>' +
+      // the leading newline is eaten by the HTML parser, so a note that opens
+      // with a blank line round-trips without it unless one is spent here
+      '<textarea class="note" rows="2" placeholder="note (optional)" onchange="saveNote(this)">\\n' + esc(v ? v.note : '') + '</textarea>' +
+      '<div class="unsaved">' + esc(draftHint(spec)) + '</div>' +
       '<div class="actions">' +
         '<button class="approve ' + (status === 'good' ? 'active' : '') + '" onclick="setVerdict(this,\\'good\\')">✓ Approve</button>' +
         '<button class="deny ' + (status === 'bad' ? 'active' : '') + '" onclick="setVerdict(this,\\'bad\\')">✗ Deny</button>' +
@@ -664,7 +680,13 @@ async function setVerdict(btn, status) {
     // the last saved note is the best text we have — better than dropping the
     // verdict on the floor.
     const noteEl = cardOf(name)?.querySelector('.note')
-    const note = noteEl ? noteEl.value : spec.verdict ? spec.verdict.note : ''
+    const note = noteEl
+      ? noteEl.value
+      : pendingNotes.has(name)
+        ? pendingNotes.get(name)
+        : spec.verdict
+          ? spec.verdict.note
+          : ''
     try {
       const result = await postVerdict(spec, status, note)
       if (result.conflict) {
@@ -725,6 +747,10 @@ async function saveNote(input) {
     } catch (err) {
       setMessage(name, 'Note not saved — ' + err.message, 'error')
     }
+    // the draft clears itself once the report holds the same text, and stays put
+    // when the write failed — which is the case the reviewer needs it for
+    setDraft(name, note)
+    paintDraft(name)
     paintMessage(name)
   })
 }
@@ -807,21 +833,88 @@ function matchesFilters(s, q) {
 // DOM, and the next repaint threw it away. Typing a reason and then reaching for
 // the search box was enough to lose it. Carried across every repaint instead,
 // and dropped once what is on the card matches what is saved.
-const pendingNotes = new Map()
+//
+// It outlives the page too, in localStorage. A note only reaches the server when
+// the textarea blurs, and on an entry with no verdict it never reaches it at
+// all, so a reload — the one thing a reviewer does constantly, since regenerate/
+// reload/look again IS the loop — used to throw away whatever had been typed
+// since the last click elsewhere. Whether the words survived came down to
+// whether the reviewer happened to click away first, which reads as random.
+const DRAFTS_KEY = 'screenshot-review-drafts'
+
+function loadDrafts() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(DRAFTS_KEY) || '[]')
+    return Array.isArray(raw)
+      ? raw.filter(e => Array.isArray(e) && typeof e[0] === 'string' && typeof e[1] === 'string')
+      : []
+  } catch {
+    // unparseable or unavailable: a lost draft is bad, a review tool that will
+    // not open is worse
+    return []
+  }
+}
+
+const pendingNotes = new Map(loadDrafts())
+
+// One write per event-loop turn. harvestNotes touches every rendered card and a
+// render runs on every search keystroke, so persisting per card would be a few
+// hundred synchronous localStorage writes per keypress. A microtask still drains
+// before the page could go anywhere, so nothing typed is at risk in the gap.
+let draftFlush = null
+
+function saveDrafts() {
+  draftFlush ??= Promise.resolve().then(() => {
+    draftFlush = null
+    try {
+      localStorage.setItem(DRAFTS_KEY, JSON.stringify([...pendingNotes]))
+    } catch {
+      // a full or disabled store is not worth failing the review over
+    }
+  })
+}
+
+const savedNote = name =>
+  (data.find(s => s.name === name)?.verdict?.note) || ''
+
+// Record what is in the box right now. A draft is only a draft while it differs
+// from what the report holds, so this doubles as the cleanup: the save paths
+// call it with the text they just persisted and it drops itself.
+function setDraft(name, typed) {
+  if (typed === savedNote(name)) {
+    pendingNotes.delete(name)
+  } else {
+    pendingNotes.set(name, typed)
+  }
+  saveDrafts()
+}
 
 function harvestNotes() {
   for (const el of document.querySelectorAll('.card')) {
-    const name = el.dataset.name
     const typed = el.querySelector('.note')?.value
-    if (typed === undefined) {
-      continue
+    if (typed !== undefined) {
+      setDraft(el.dataset.name, typed)
     }
-    const saved = (data.find(s => s.name === name)?.verdict?.note) || ''
-    if (typed === saved) {
-      pendingNotes.delete(name)
-    } else {
-      pendingNotes.set(name, typed)
-    }
+  }
+}
+
+// Say plainly whether the words in the box are in the report yet. The two ways
+// out differ — an entry with a verdict saves on blur, one without cannot save at
+// all until there is a verdict to attach to — and guessing which case you are in
+// is what makes a note field feel unreliable.
+const draftHint = spec =>
+  !pendingNotes.has(spec.name)
+    ? ''
+    : spec.verdict
+      ? 'unsaved — click outside the box to save'
+      : 'unsaved — approve or deny to save this note'
+
+function paintDraft(name) {
+  const el = cardOf(name)
+  const flag = el && el.querySelector('.unsaved')
+  const spec = data.find(s => s.name === name)
+  if (flag && spec) {
+    flag.textContent = draftHint(spec)
   }
 }
 
@@ -862,6 +955,8 @@ function updateCard(name) {
     // this is exactly what was saved anyway; on one that failed or conflicted
     // it is the difference between "try again" and losing the words typed.
     const typed = el.querySelector('.note').value
+    // record before the swap so the rebuilt card renders the right draft hint
+    setDraft(name, typed)
     el.outerHTML = card(spec)
     cardOf(name).querySelector('.note').value = typed
   }
@@ -875,6 +970,18 @@ $('header').addEventListener('click', e => {
     changeFilter('status', statusBtn.dataset.status)
   } else if (toggleBtn) {
     changeFilter('changedOnly', !filters.changedOnly)
+  }
+})
+// Capture the draft on every keystroke rather than waiting for a repaint to
+// harvest it. A reload is not a repaint: it fires no 'change' on the focused
+// textarea and runs no render, so text typed since the last one had nothing
+// holding it anywhere.
+$('#main').addEventListener('input', e => {
+  const note = e.target.closest('.note')
+  if (note) {
+    const name = note.closest('.card').dataset.name
+    setDraft(name, note.value)
+    paintDraft(name)
   }
 })
 $('#search').addEventListener('input', () => {
