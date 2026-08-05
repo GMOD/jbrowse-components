@@ -70,6 +70,10 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
       style={{
         width: totalWidth,
         height,
+        // inherited from `DisplayContainer` until it was deleted; kept verbatim
+        // so the row labels and legend lay out the same
+        whiteSpace: 'nowrap',
+        textAlign: 'left',
       }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}

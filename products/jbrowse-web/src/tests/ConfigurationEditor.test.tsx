@@ -47,7 +47,7 @@ xtest('change color on track', async () => {
   await user.type(elt, 'green')
   await new Promise(res => setTimeout(res, 1000))
 
-  const displays = await findAllByTestId(/^display-.*-done$/, {}, delay)
+  const displays = await findAllByTestId(/-display-done$/, {}, delay)
   await waitFor(() => {
     expectCanvasMatch(findCanvasIn(displays[0]!), 0)
   }, delay)

@@ -25,7 +25,7 @@ xtest('click on subfeature label (EDEN.1) opens feature details', async () => {
   await user.click(await screen.findByTestId(hts('gff3tabix_genes'), ...opts))
 
   // Wait for the track to render
-  await findAllByTestId(/^display-.*-done$/, ...opts)
+  await findAllByTestId(/-display-done$/, ...opts)
 
   // Open track menu and enable subfeature labels
   await user.click(await screen.findByTestId('track_menu_icon', ...opts))

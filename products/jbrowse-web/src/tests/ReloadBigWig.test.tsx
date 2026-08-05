@@ -11,7 +11,7 @@ test('reloads bigwig (BW 404)', async () => {
     failingFile: 'volvox_microarray.bw',
     trackId: 'volvox_microarray',
     viewLocation: [10, 0],
-    expectedCanvas: /^display-.*-done$/,
+    expectedCanvas: /-display-done$/,
     timeout: 50000,
   })
 }, 50000)

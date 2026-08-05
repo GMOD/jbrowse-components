@@ -154,14 +154,6 @@ function stateModelFactory() {
       },
 
       /**
-       * #getter
-       * if a display-level message should be displayed instead, make this
-       * return a react component
-       */
-      get DisplayMessageComponent() {
-        return undefined as undefined | React.FC<any>
-      },
-      /**
        * #method
        */
       trackMenuItems(): MenuItem[] {

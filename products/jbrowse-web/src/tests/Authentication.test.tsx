@@ -56,7 +56,7 @@ test('open a bigwig track that needs oauth authentication and has existing token
   fireEvent.click(
     await findByTestId(hts('volvox_microarray_dropbox'), {}, delay),
   )
-  const displays = await findAllByTestId(/^display-.*-done$/, {}, delay)
+  const displays = await findAllByTestId(/-display-done$/, {}, delay)
   expectCanvasMatch(findCanvasIn(displays[0]!))
 }, 25000)
 
@@ -103,6 +103,6 @@ test('opens a bigwig track that needs external token authentication', async () =
   expect(Object.keys(sessionStorage)).toContain('ExternalTokenTest-token')
   expect(Object.values(sessionStorage)).toContain('testentry')
 
-  const displays = await findAllByTestId(/^display-.*-done$/, {}, delay)
+  const displays = await findAllByTestId(/-display-done$/, {}, delay)
   expectCanvasMatch(findCanvasIn(displays[0]!))
 }, 25000)

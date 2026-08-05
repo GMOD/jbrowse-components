@@ -8,6 +8,7 @@ import { isAlive } from '@jbrowse/mobx-state-tree'
 import {
   BottomRightIndicators,
   DisplayChrome,
+  FloatingLegend,
   TrackHeightIndicator,
 } from '@jbrowse/plugin-linear-genome-view'
 import { ScrollLockedOverlay } from '@jbrowse/render-core/ScrollLockedOverlay'
@@ -52,6 +53,10 @@ const useStyles = makeStyles()({
   root: {
     position: 'relative',
     width: '100%',
+    // inherited from `DisplayContainer` until it was deleted; kept verbatim so
+    // the label overlays below still lay out the same way
+    whiteSpace: 'nowrap',
+    textAlign: 'left',
     // no text cursor / drag-selection over the canvas and its label overlays —
     // selectable text there shows an I-beam and a drag hijacks the mouseover
     userSelect: 'none',
@@ -131,11 +136,18 @@ const FeatureComponent = observer(function FeatureComponent({
     <DisplayChrome
       model={model}
       factory={CanvasFeatureRenderer}
+      testid="feature-display"
       className={classes.root}
       style={{ height: model.height }}
     >
       {({ canvasRef, canvas }) => (
-        <FeatureBody model={model} canvasRef={canvasRef} canvas={canvas} />
+        <>
+          <FeatureBody model={model} canvasRef={canvasRef} canvas={canvas} />
+          {/* Inside the chrome, which is the `position:relative` box it pins
+              itself to. It used to sit in `DisplayContainer` one level up —
+              also relative, so the geometry is unchanged. */}
+          <ColorLegendOverlay model={model} />
+        </>
       )}
     </DisplayChrome>
   )
@@ -424,6 +436,21 @@ const FeatureBody = observer(function FeatureBody({
       />
     </>
   )
+})
+
+// Its own observer so a coloring change repaints the key alone, not the body.
+const ColorLegendOverlay = observer(function ColorLegendOverlay({
+  model,
+}: LinearBasicDisplayComponentProps) {
+  const legend = model.colorLegend
+  return legend ? (
+    <FloatingLegend
+      items={legend.items}
+      onDismiss={() => {
+        legend.dismiss()
+      }}
+    />
+  ) : null
 })
 
 export default FeatureComponent

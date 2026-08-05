@@ -90,9 +90,14 @@ true (this silently burned full snapshot timeouts).
   (generic; used by `waitForLoadingToComplete` / `waitForDataLoaded` and the
   snapshot waits).
 - `${base}-done` testid → canvas finished **painting** (gated on `canvasDrawn`,
-  owned by `DisplayChrome` via its `testid` base prop). Per-display base, e.g.
-  `wiggle-display-done`, `hic-display-done`, `ld-display-done`,
-  `display-${displayId}-done` (alignments/maf). For tests that pixel-match or
+  owned by `DisplayChrome` via its **required** `testid` base prop). One base per
+  display type — `wiggle-display-done`, `hic-display-done`, `ld-display-done`,
+  `pileup-display-done`, … — and every display now also carries
+  `data-display-id` (which instance) and `data-display-drawn` (paint state as a
+  stable attribute) on that **same element**. Prefer those two for anything that
+  needs to name one track's display or test paint state; the testid is the type,
+  it is shared between instances, and it mutates. See DISPLAYCHROME.md, "One
+  element per display". For tests that pixel-match or
   screenshot the canvas element, the inner `<canvas>` carries a **static**
   selector (`hic_canvas`, `ld_canvas`, `variant_canvas`,
   `variant_matrix_canvas`): wait on `${base}-done`, then read the static canvas

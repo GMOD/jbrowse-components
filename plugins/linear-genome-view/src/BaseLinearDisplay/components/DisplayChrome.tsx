@@ -83,7 +83,7 @@ export default function DisplayChrome<B extends { dispose(): void }>(
       canvasRef: (node: HTMLCanvasElement | null) => void
       canvas: HTMLCanvasElement | null
     }) => ReactNode
-    testid?: string
+    testid: string
   } & Omit<ComponentPropsWithRef<'div'>, 'children'>,
 ) {
   return <DisplayChromeBase {...props} overlays={useChromeOverlays()} />
@@ -108,7 +108,7 @@ export function DisplayStatusChrome(
     model: StatusChromeModel
     phase: DisplayStatusPhase
     drawn: boolean
-    testid?: string
+    testid: string
     children?: ReactNode
   } & Omit<ComponentPropsWithRef<'div'>, 'children'>,
 ) {

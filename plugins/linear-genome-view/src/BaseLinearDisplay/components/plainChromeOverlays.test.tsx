@@ -32,7 +32,10 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 // context (reach -- it redirects the stock displays, which import
 // `DisplayChrome` directly and so cannot be redirected at the import level).
 
-function renderPlain(model: Instance<typeof TestChromeModel>, testid?: string) {
+function renderPlain(
+  model: Instance<typeof TestChromeModel>,
+  testid = 'probe-display',
+) {
   return render(
     <DisplayChromeBase
       model={model}
@@ -195,7 +198,7 @@ describe('DisplayChromeOverlayProvider', () => {
   ) {
     return render(
       node(
-        <DisplayChrome model={model} factory={stubFactory}>
+        <DisplayChrome model={model} factory={stubFactory} testid="probe-display">
           {({ canvasRef }) => (
             <canvas data-testid="probe-canvas" ref={canvasRef} />
           )}

@@ -387,17 +387,15 @@ export const CGIAB_ASM_PIF_TRACK = {
 // phase covers the whole fetch, where `-done` is `canvasDrawn`, i.e. first
 // paint, which an empty canvas reaches on its own.
 //
-// The catch this exists to hide: the two attributes are not always on the same
-// element. DisplayChromeBase carries both for most displays, so they AND on one
-// element; the alignments display derives its chrome testid from `displayId`
-// and puts `pileup-display-done` on an inner div, so there they have to be
-// related with `:has()`. Each form matches nothing in the other's case, and the
-// symptom is a capture that times out rather than an error at authoring time.
-// The selector list below accepts either arrangement.
+// This used to accept two arrangements, because the two attributes were not
+// always on the same element: alignments derived its chrome testid from
+// `displayId` and hand-wrote `pileup-display-done` on an inner div, so there
+// they had to be related with `:has()`. Each form matched nothing in the other's
+// case, and the symptom was a capture that timed out rather than an error at
+// authoring time. Every display now emits both from its one chrome element, so
+// the plain conjunction is the whole selector.
 export function displayReady(testid: string) {
-  const done = `[data-testid="${testid}-done"]`
-  const ready = '[data-display-phase="ready"]'
-  return `${ready}${done}, ${ready}:has(${done})`
+  return `[data-display-phase="ready"][data-testid="${testid}-done"]`
 }
 
 export function sessionSpec(config: string, session: object) {

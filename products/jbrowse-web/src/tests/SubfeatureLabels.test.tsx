@@ -6,6 +6,7 @@ import {
   doBeforeEach,
   expectCanvasMatch,
   findCanvasIn,
+  findDisplayById,
   hts,
   setup,
 } from './util.tsx'
@@ -33,9 +34,6 @@ test('toggle subfeature labels and verify eden.1 label appears', async () => {
 
   await screen.findByText('EDEN.1', ...opts)
 
-  const display = await screen.findByTestId(
-    'display-gff3tabix_genes-LinearBasicDisplay-done',
-    ...opts,
-  )
+  const display = await findDisplayById('gff3tabix_genes-LinearBasicDisplay')
   expectCanvasMatch(findCanvasIn(display))
 }, 50000)

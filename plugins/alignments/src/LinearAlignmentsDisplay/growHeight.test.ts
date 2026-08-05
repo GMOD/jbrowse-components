@@ -11,7 +11,6 @@ import {
 } from '@jbrowse/core/pluggableElementTypes/models'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
-  BaseLinearDisplayComponent,
   GROW_MAX_HEIGHT,
   linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -59,7 +58,8 @@ function createEnv() {
         stateModel: stateModelFactory(configSchema),
         trackType: 'AlignmentsTrack',
         viewType: 'LinearGenomeView',
-        ReactComponent: BaseLinearDisplayComponent,
+        // never rendered here; this harness exercises the model
+        ReactComponent: () => null,
       }),
   )
 

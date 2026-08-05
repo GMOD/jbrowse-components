@@ -35,25 +35,23 @@ test('open a bigwig density track', async () => {
   })
 }, 25000)
 
-// The wiggle display emits TWO first-paint testids and both are load-bearing:
-// `wiggle-display-done` from DisplayChrome (cypress + the website screenshot
-// specs pin the static base) and the generic `display-${displayId}-done` from
-// the DisplayContainer its registered component composes (puppeteer's
-// browser-tests wait on the `display-${trackId}` prefix for every feature/canvas
-// track). The generic one is the half no local suite covered, so a change to how
-// wiggle registers its component — it used to reach the body through the model's
-// `DisplayMessageComponent` getter — could drop it and stay green until a full
-// GPU + headless-Chrome run. See agent-docs/reference/DISPLAYCHROME.md, "Three
-// testid shapes coexist".
-test('a wiggle track emits both the chrome and container -done testids', async () => {
+// The half no local suite used to cover. A wiggle track's first-paint testid,
+// its display id and its phase must all land on ONE element: the website
+// screenshot specs AND the puppeteer browser-tests both key off this element,
+// and they used to key off two different ones (`wiggle-display-done` on
+// DisplayChrome, `display-${displayId}-done` on a `DisplayContainer` wrapper).
+// Collapsing that wrapper is invisible to jest unless the co-location is
+// asserted, and the suites that would notice need a full GPU + headless-Chrome
+// run. See agent-docs/reference/DISPLAYCHROME.md, "One element per display".
+test('a wiggle track emits its testid, display id and phase on one element', async () => {
   const { view, findByTestId } = await createView()
   view.setNewView(5, 0)
   fireEvent.click(await findByTestId(hts('volvox_microarray'), {}, { timeout }))
 
-  await findByTestId('wiggle-display-done', {}, { timeout })
-  await findByTestId(
-    'display-volvox_microarray-LinearWiggleDisplay-done',
-    {},
-    { timeout },
+  const el = await findByTestId('wiggle-display-done', {}, { timeout })
+  expect(el.getAttribute('data-display-id')).toBe(
+    'volvox_microarray-LinearWiggleDisplay',
   )
+  expect(el.getAttribute('data-display-drawn')).toBe('true')
+  expect(el.getAttribute('data-display-phase')).toBeTruthy()
 }, 25000)

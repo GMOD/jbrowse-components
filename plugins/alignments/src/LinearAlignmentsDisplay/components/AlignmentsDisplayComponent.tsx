@@ -1,6 +1,5 @@
 import { Suspense, useRef, useState } from 'react'
 
-import { getConf } from '@jbrowse/core/configuration'
 import { ContextMenu, LoadingOverlay } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -96,7 +95,13 @@ const AlignmentsDisplayComponent = observer(
         model={model}
         factory={AlignmentsRenderer}
         ref={ref}
-        testid={`display-${getConf(model, 'displayId')}`}
+        // `pileup-display`, the name the screenshot specs and cypress already
+        // wait on. It used to be `display-${displayId}` here with
+        // `pileup-display-done` hand-written on an inner div, which is why
+        // `displayReady()` in screenshot-spec-helpers needed a `:has()` variant:
+        // the testid and `data-display-phase` sat on different elements. The
+        // display id now rides `data-display-id` on this same element.
+        testid="pileup-display"
         className={classes.display}
         onMouseMove={event => {
           if (ref.current) {

@@ -1,6 +1,7 @@
 import {
   assertVirtualScrollStructure,
   findByTestId,
+  waitForDisplayDrawn,
   navigateWithSessionSpec,
   waitForDataLoaded,
 } from '../helpers.ts'
@@ -8,7 +9,7 @@ import {
 import type { TestSuite } from '../types.ts'
 import type { Page } from 'puppeteer'
 
-const DISPLAY = '[data-testid^="display-volvox_maf-LinearMafDisplay"]'
+const DISPLAY = '[data-display-id^="volvox_maf-LinearMafDisplay"]'
 // the rows canvas is the one inside the rows container; the coverage band has
 // its own canvas above it
 const ROWS = `${DISPLAY} > div:has(> canvas + canvas)`
@@ -134,7 +135,7 @@ function wheel(page: Page, init: { deltaY: number; shiftKey?: boolean }) {
 
 async function openPinned(page: Page) {
   await navigateWithSessionSpec(page, pinnedRowHeightSpec)
-  await findByTestId(page, 'display-volvox_maf-LinearMafDisplay-done', 60000)
+  await waitForDisplayDrawn(page, 'volvox_maf-LinearMafDisplay')
   await waitForDataLoaded(page)
 }
 
@@ -231,11 +232,7 @@ const suite: TestSuite = {
       name: 'fit-to-height does not scroll',
       fn: async page => {
         await navigateWithSessionSpec(page, fitToHeightSpec)
-        await findByTestId(
-          page,
-          'display-volvox_maf-LinearMafDisplay-done',
-          60000,
-        )
+        await waitForDisplayDrawn(page, 'volvox_maf-LinearMafDisplay')
         await waitForDataLoaded(page)
         const g = await readGeometry(page)
         if (g.scrollableHeight !== 0) {

@@ -28,7 +28,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 function renderChrome(
   model: Instance<typeof TestChromeModel>,
-  testid?: string,
+  testid = 'probe-display',
 ) {
   return render(
     <DisplayChrome model={model} factory={stubFactory} testid={testid}>
@@ -243,7 +243,7 @@ describe('context-lost Canvas2D escape hatch', () => {
 describe('DisplayStatusChrome (no rendering backend)', () => {
   function renderStatusChrome(
     model: Instance<typeof TestChromeModel>,
-    testid?: string,
+    testid = 'probe-display',
   ) {
     // a backend-less display never reaches `renderError`, which is exactly what
     // DisplayStatusPhase encodes — so the phase is passed through unchanged
@@ -358,5 +358,32 @@ describe('fresh canvas element per re-init', () => {
       model.setStatus('Clustering samples', 0.25)
     })
     expect(getByTestId('probe-canvas')).toBe(first)
+  })
+})
+
+// One element carries the display's whole identity. Three testid shapes and a
+// second wrapper element used to split this across two nodes, which is what
+// forced `PENDING_DISPLAYS` into a three-way union and `displayReady()` into a
+// `:has()` variant. Both now assume co-location, so it is pinned here.
+describe('the chrome element publishes the display identity', () => {
+  test('testid, display id, phase and drawn all land on one element', async () => {
+    const model = TestChromeModel.create({})
+    const { findByTestId } = renderChrome(model, 'probe-display')
+
+    const el = await findByTestId('probe-display')
+    expect(el.getAttribute('data-display-id')).toBe('test-display')
+    expect(el.getAttribute('data-display-phase')).toBe('ready')
+    // `false`, not absent: `PENDING_DISPLAYS` selects on
+    // `[data-display-drawn="false"]`, so an omitted attribute would make every
+    // unpainted display look finished and every screenshot wait return early.
+    expect(el.getAttribute('data-display-drawn')).toBe('false')
+
+    act(() => {
+      model.setCanvasDrawn(true)
+    })
+    const done = await findByTestId('probe-display-done')
+    expect(done).toBe(el)
+    expect(done.getAttribute('data-display-drawn')).toBe('true')
+    expect(done.getAttribute('data-display-id')).toBe('test-display')
   })
 })

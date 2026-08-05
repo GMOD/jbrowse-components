@@ -23,6 +23,11 @@ export function stubFactory() {
 // rather than hard-coding a phase string.
 export const TestChromeModel = types
   .model('TestChromeModel', {
+    // the chrome reads `configuration.displayId` for its `data-display-id`
+    configuration: types.optional(
+      types.frozen<{ displayId: string }>(),
+      () => ({ displayId: 'test-display' }),
+    ),
     height: 100,
     regionTooLarge: false,
     regionTooLargeReason: '',

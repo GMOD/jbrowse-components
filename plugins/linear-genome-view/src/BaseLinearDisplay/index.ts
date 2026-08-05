@@ -1,11 +1,7 @@
 export { default as baseLinearDisplayConfigSchema } from './models/configSchema.ts'
 export type { ExportSvgDisplayOptions, LayoutRecord } from './types.ts'
 
-export {
-  BlockMsg,
-  DisplayContainer,
-  default as BaseLinearDisplayComponent,
-} from './components/BaseLinearDisplay.tsx'
+export { default as BlockMsg } from '../shared/BlockMsg.tsx'
 export type { LegendItem, LegendSection } from './components/FloatingLegend.tsx'
 export { default as DisplayChrome } from './components/DisplayChrome.tsx'
 export type { ChromeModel } from './components/DisplayChrome.tsx'

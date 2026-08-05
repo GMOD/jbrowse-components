@@ -18,8 +18,8 @@ export interface ManhattanDisplayModel extends WiggleGpuDisplayModel<
   ManhattanRenderingBackend,
   ManhattanRpcResult
 > {
-  // read by the registered wrapper's DisplayContainer, which emits the generic
-  // `display-${displayId}-done` testid the browser tests wait on
+  // read by DisplayChrome, which publishes it as `data-display-id` — the stable
+  // hook the browser tests use to target one track's display
   configuration: { displayId: string }
   lgv: LinearGenomeViewModel
   renderBlocks: RenderBlock[]

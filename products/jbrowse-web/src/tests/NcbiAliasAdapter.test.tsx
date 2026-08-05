@@ -16,6 +16,6 @@ test('ncbi config', async () => {
   doBeforeEach(url => require.resolve(`../../test_data/cfam2/${url}`))
   const { findAllByTestId } = await createView(config)
 
-  const displays = await findAllByTestId(/^display-.*-done$/, ...opts)
+  const displays = await findAllByTestId(/-display-done$/, ...opts)
   expectCanvasMatch(findCanvasIn(displays[0]!))
 }, 50000)

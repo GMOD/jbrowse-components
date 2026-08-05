@@ -8,12 +8,17 @@ import type { ComponentPropsWithRef, ReactNode } from 'react'
 
 // The model contract is the *union of what the sub-overlays read*, composed
 // directly from each overlay's own model prop type so it can't drift: add or
-// remove a field an overlay reads and this updates with no edit here. This
-// component itself reads nothing off the model — it only routes it.
+// remove a field an overlay reads and this updates with no edit here — plus the
+// one field this component reads for itself, spelled out separately for that
+// reason. `configuration.displayId` is the same structural shape the repo-wide
+// display check uses (see configurationSchema.ts), so every concrete display
+// satisfies it already.
 export type StatusChromeModel = DisplayErrorBarModel &
   TooLargeMessageModel &
   DisplayLoadingOverlayModel &
-  DisplayBackgroundProgressModel
+  DisplayBackgroundProgressModel & {
+    configuration: { displayId: string }
+  }
 
 // Everything the status chrome is, minus the rendering backend: the phase
 // branch, the positioning container, the `-done` testid, the published
@@ -65,8 +70,13 @@ export default function DisplayStatusChromeBase({
    */
   drawn: boolean
   overlays: DisplayChromeOverlays
-  /** base first-paint selector; this owns the `-done` convention */
-  testid?: string
+  /**
+   * Base first-paint selector; this owns the `-done` convention. **Required** —
+   * it used to be optional, and the displays that omitted it leaned on a second
+   * wrapper element (`DisplayContainer`) to emit an id instead, which is how the
+   * repo ended up with three testid shapes and a test-infra union to match them.
+   */
+  testid: string
   children?: ReactNode
 } & Omit<ComponentPropsWithRef<'div'>, 'children'>) {
   if (phase === 'tooLarge') {
@@ -81,9 +91,19 @@ export default function DisplayStatusChromeBase({
       // so the ones that didn't — hic, ld — stop leaking their overlays to an
       // ancestor). Caller `style` still wins if it overrides `position`.
       style={{ position: 'relative', ...style }}
-      data-testid={
-        testid === undefined ? undefined : `${testid}${drawn ? '-done' : ''}`
-      }
+      data-testid={`${testid}${drawn ? '-done' : ''}`}
+      // The display's identity, stable across its whole life. `data-testid`
+      // cannot serve this: it is the *base*, shared by every instance of a
+      // display type, and it mutates on first paint. Targeting one track's
+      // display used to mean a second wrapper emitting `display-${displayId}` as
+      // its testid — a whole extra element, and a second `-done` emitter with
+      // the same gate.
+      data-display-id={model.configuration.displayId}
+      // First paint as its own stable attribute, rather than only as the `-done`
+      // suffix mutating `data-testid`. "Has every display painted?" is then one
+      // selector (`[data-display-drawn="false"]`) instead of a union that had to
+      // enumerate the testid shapes and go negative on the suffix.
+      data-display-drawn={drawn}
       // The `-done` suffix above is FIRST PAINT — it flips on an empty canvas
       // while the fetch is still in flight, so it can't answer "is this display
       // finished". `phase` can: it is the model's own mutually-exclusive state,

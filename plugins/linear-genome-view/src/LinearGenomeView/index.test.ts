@@ -22,7 +22,6 @@ import { waitFor } from '@testing-library/react'
 import { autorun } from 'mobx'
 
 import TrackHeightMixin from '../BaseLinearDisplay/models/TrackHeightMixin.tsx'
-import { BaseLinearDisplayComponent } from '../index.ts'
 import { getTrackOrderSubMenu } from './components/trackLabelMenuItems.ts'
 import hg38Regions from './hg38DisplayedRegions.json' with { type: 'json' }
 import { stateModelFactory } from './index.ts'
@@ -83,7 +82,8 @@ function initialize() {
       stateModel: stubDisplayStateModel(configSchema),
       trackType: 'BasicTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: BaseLinearDisplayComponent,
+      // never rendered here; this harness exercises the model
+        ReactComponent: () => null,
     })
   })
   stubManager.createPluggableElements()
@@ -1929,7 +1929,8 @@ describe('TrackInit with display configuration', () => {
         stateModel: stubDisplayStateModel(configSchema),
         trackType: 'BasicTrack',
         viewType: 'LinearGenomeView',
-        ReactComponent: BaseLinearDisplayComponent,
+        // never rendered here; this harness exercises the model
+        ReactComponent: () => null,
       })
     })
 

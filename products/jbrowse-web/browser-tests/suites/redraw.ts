@@ -49,7 +49,7 @@ const suite: TestSuite = {
           lgvSpec('ctgA:1000-2000', 'volvox_filtered_vcf'),
         )
         await findByText(page, 'ctgA')
-        await page.waitForSelector('[data-testid^="display-"]', {
+        await page.waitForSelector('[data-display-id]', {
           timeout: 60000,
         })
         await waitForDataLoaded(page)
@@ -64,7 +64,7 @@ const suite: TestSuite = {
           lgvSpec('ctgA:1000-3000', 'volvox_cram_snpcoverage'),
         )
         await findByText(page, 'ctgA')
-        await page.waitForSelector('[data-testid^="display-"]', {
+        await page.waitForSelector('[data-display-id]', {
           timeout: 60000,
         })
         await waitForDataLoaded(page)

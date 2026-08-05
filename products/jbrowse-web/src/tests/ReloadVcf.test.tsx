@@ -11,7 +11,7 @@ test('reloads vcf (VCF.GZ 404)', async () => {
     failingFile: 'volvox.filtered.vcf.gz',
     trackId: 'volvox_filtered_vcf',
     viewLocation: [0.05, 5000],
-    expectedCanvas: /^display-.*-done$/,
+    expectedCanvas: /-display-done$/,
     timeout: 30000,
   })
 }, 40000)
@@ -21,7 +21,7 @@ test('reloads vcf (VCF.GZ.TBI 404)', async () => {
     failingFile: 'volvox.filtered.vcf.gz.tbi',
     trackId: 'volvox_filtered_vcf',
     viewLocation: [0.05, 5000],
-    expectedCanvas: /^display-.*-done$/,
+    expectedCanvas: /-display-done$/,
     timeout: 30000,
   })
 }, 40000)

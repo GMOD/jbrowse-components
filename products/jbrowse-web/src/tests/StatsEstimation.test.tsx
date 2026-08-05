@@ -78,7 +78,7 @@ test('test stats estimation on vcf track, zoom in to see', async () => {
   window.requestAnimationFrame = origRAF
   performance.now = origPerfNow
 
-  const displays = await findAllByTestId(/^display-.*-done$/, ...o)
+  const displays = await findAllByTestId(/-display-done$/, ...o)
   expectCanvasMatch(findCanvasIn(displays[0]!))
 }, 30000)
 
@@ -89,6 +89,6 @@ test('test stats estimation on vcf track, force load to see', async () => {
   await findAllByText('ctgA', ...o)
   fireEvent.click(await findByTestId(hts('variant_colors'), ...o))
   fireEvent.click((await findAllByText(/Force load/, ...o))[0]!)
-  const displays = await findAllByTestId(/^display-.*-done$/, ...o)
+  const displays = await findAllByTestId(/-display-done$/, ...o)
   expectCanvasMatch(findCanvasIn(displays[0]!))
 }, 30000)

@@ -22,7 +22,7 @@ test('collapse introns on gene feature', async () => {
 
   await view.navToLocString('ctgA:907..10,000')
   await user.click(await screen.findByTestId(hts('gff3tabix_genes'), ...opts))
-  await findAllByTestId(/^display-.*-done$/, ...opts)
+  await findAllByTestId(/-display-done$/, ...opts)
 
   const label = await screen.findByTestId('feature-name-EDEN', ...opts)
   fireEvent.contextMenu(label)
@@ -59,7 +59,7 @@ test('collapse introns dialog lists the transcripts to scope to', async () => {
 
   await view.navToLocString('ctgA:907..10,000')
   await user.click(await screen.findByTestId(hts('gff3tabix_genes'), ...opts))
-  await findAllByTestId(/^display-.*-done$/, ...opts)
+  await findAllByTestId(/-display-done$/, ...opts)
 
   const label = await screen.findByTestId('feature-name-EDEN', ...opts)
   fireEvent.contextMenu(label)

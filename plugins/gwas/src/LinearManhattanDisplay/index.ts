@@ -8,7 +8,7 @@ import { stateModelFactory } from './stateModelFactory.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 const ManhattanReactComponent = lazy(
-  () => import('./components/ManhattanReactComponent.tsx'),
+  () => import('./components/LinearManhattanDisplayComponent.tsx'),
 )
 
 export default function LinearManhattanDisplayF(pluginManager: PluginManager) {

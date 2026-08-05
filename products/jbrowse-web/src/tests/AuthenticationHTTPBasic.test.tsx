@@ -58,6 +58,6 @@ test('opens a bigwig track that needs httpbasic authentication', async () => {
     sessionStorage.getItem('HTTPBasicInternetAccount-HTTPBasicTest-token'),
   ).toContain(btoa('username:password'))
 
-  const displays = await findAllByTestId(/^display-.*-done$/, {}, delay)
+  const displays = await findAllByTestId(/-display-done$/, {}, delay)
   expectCanvasMatch(findCanvasIn(displays[0]!))
 }, 25000)

@@ -66,15 +66,15 @@ Result: content-stable (0.000% diff across runs), always the full painting; and
 if data genuinely never loads, the wait times out and the spec **fails loudly**
 instead of committing an empty PNG.
 
-### Gotcha: the `-done` wrapper is 0-height
+### Gotcha: the chrome element is 0-height
 
 The obvious signal, `[data-testid="<name>-display-done"]`, does **not** work
 through a `readySelector` (which uses puppeteer `waitForSelector({visible:true})`):
 the GPU displays paint into a `position:absolute` canvas, so the DisplayChrome
-wrapper collapses to **height 0** and never passes the visibility check (it
+element collapses to **height 0** and never passes the visibility check (it
 `EXISTS` but is not `VISIBLE`). The generator's own `waitForDisplaysDone` gets
-away with it because it queries the wrappers by **existence**
-(`querySelectorAll`), not visibility — but it's an early (`canvasDrawn`) signal
+away with it because it queries by **existence** (`querySelectorAll`, now on
+`[data-display-drawn="false"]`), not visibility — but it's an early (`canvasDrawn`) signal
 and swallows timeouts, so it isn't a reliable capture gate on its own. Pick a
 data-derived, actually-drawn element (legend, a rendered label) for
 `readySelector`.

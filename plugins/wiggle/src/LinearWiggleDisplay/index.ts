@@ -8,7 +8,7 @@ import stateModelFactory from './model.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 const LinearWiggleDisplayComponent = lazy(
-  () => import('./components/LinearWiggleDisplayComponent.tsx'),
+  () => import('./components/WiggleComponent.tsx'),
 )
 
 export default function LinearWiggleDisplayF(pluginManager: PluginManager) {

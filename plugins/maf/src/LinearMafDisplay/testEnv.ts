@@ -12,7 +12,6 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { types } from '@jbrowse/mobx-state-tree'
 import LinearGenomeViewPlugin, {
-  BaseLinearDisplayComponent,
   linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory,
 } from '@jbrowse/plugin-linear-genome-view'
 
@@ -100,7 +99,8 @@ export function createMafTestEnvironment({
         stateModel: stateModelFactory(configSchema),
         trackType: 'MafTrack',
         viewType: 'LinearGenomeView',
-        ReactComponent: BaseLinearDisplayComponent,
+        // never rendered here; this harness exercises the model
+        ReactComponent: () => null,
       }),
   )
   pluginManager.createPluggableElements()

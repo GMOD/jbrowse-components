@@ -109,7 +109,9 @@ const PileupBody = observer(function PileupBody({
 
   return (
     <div
-      data-testid={model.canvasDrawn ? 'pileup-display-done' : 'pileup-display'}
+      // No testid: `pileup-display[-done]` is DisplayChrome's now, on the same
+      // element as `data-display-phase`. This div stays for its layout role (it
+      // sizes the pileup below the sticky coverage band), not as a query target.
       style={{ position: 'relative', width: '100%', height }}
     >
       <PileupCanvas

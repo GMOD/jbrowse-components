@@ -81,7 +81,7 @@ test('canvas feature display SVG vector export', async () => {
   const { view, findByTestId } = await createView()
   await view.navToLocString('ctgA:1..5000')
   fireEvent.click(await findByTestId(hts('gff3tabix_genes'), ...opts))
-  await findByTestId(/^display-.*-done$/, ...opts)
+  await findByTestId(/-display-done$/, ...opts)
 
   await view.exportSvg({ rasterizeLayers: false })
   const svg = getSavedSvg()
@@ -93,7 +93,7 @@ test('canvas feature display SVG rasterized export embeds PNG', async () => {
   const { view, findByTestId } = await createView()
   await view.navToLocString('ctgA:1..5000')
   fireEvent.click(await findByTestId(hts('gff3tabix_genes'), ...opts))
-  await findByTestId(/^display-.*-done$/, ...opts)
+  await findByTestId(/-display-done$/, ...opts)
 
   await view.exportSvg({ rasterizeLayers: true, createCanvas: canvasFactory })
   const svg = getSavedSvg()
@@ -140,7 +140,7 @@ test('refName label stays on-canvas when zoomed into a chromosome interior', asy
   // (far off-canvas) block start
   await view.navToLocString('ctgA:30000..40000')
   fireEvent.click(await findByTestId(hts('gff3tabix_genes'), ...opts))
-  await findByTestId(/^display-.*-done$/, ...opts)
+  await findByTestId(/-display-done$/, ...opts)
 
   await view.exportSvg({ rasterizeLayers: false })
   const svg = getSavedSvg()

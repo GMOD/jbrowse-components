@@ -10,7 +10,6 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
-  BaseLinearDisplayComponent,
   linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory,
 } from '@jbrowse/plugin-linear-genome-view'
 
@@ -55,7 +54,8 @@ function createDisplay() {
         stateModel: stateModelF(configSchema),
         trackType: 'SyntenyTrack',
         viewType: 'LinearGenomeView',
-        ReactComponent: BaseLinearDisplayComponent,
+        // never rendered here; this harness exercises the model
+        ReactComponent: () => null,
       }),
   )
 

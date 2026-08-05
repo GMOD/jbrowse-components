@@ -30,7 +30,7 @@ test('renders peptide letters on CDS features', async () => {
   fireEvent.click(await findByTestId(hts('bedtabix_genes'), ...opts))
 
   // Get canvas snapshot
-  const displays = await findAllByTestId(/^display-.*-done$/, ...opts)
+  const displays = await findAllByTestId(/-display-done$/, ...opts)
   expectCanvasMatch(findCanvasIn(displays[0]!))
 }, 25000)
 
@@ -42,6 +42,6 @@ test('renders peptide letters without color by CDS', async () => {
   // shaded and lettered over the track's own feature color
   fireEvent.click(await findByTestId(hts('bedtabix_genes'), ...opts))
 
-  const displays = await findAllByTestId(/^display-.*-done$/, ...opts)
+  const displays = await findAllByTestId(/-display-done$/, ...opts)
   expectCanvasMatch(findCanvasIn(displays[0]!))
 }, 25000)

@@ -10,7 +10,7 @@ import modelFactory from './model.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 const LinearBasicDisplayComponent = lazy(
-  () => import('./components/LinearBasicDisplayComponent.tsx'),
+  () => import('./components/FeatureComponent.tsx'),
 )
 
 export default function register(pluginManager: PluginManager) {

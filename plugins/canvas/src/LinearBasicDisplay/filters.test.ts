@@ -9,7 +9,7 @@ import {
 import { types } from '@jbrowse/mobx-state-tree'
 import { linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory } from '@jbrowse/plugin-linear-genome-view'
 
-import LinearBasicDisplayComponent from './components/LinearBasicDisplayComponent.tsx'
+import FeatureComponent from './components/FeatureComponent.tsx'
 import configSchemaFactory from './configSchema.ts'
 import stateModelFactory from './model.ts'
 
@@ -55,7 +55,7 @@ function createDisplay(jexlFilters?: string[]) {
       stateModel: stateModelFactory(configSchema),
       trackType: 'FeatureTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: LinearBasicDisplayComponent,
+      ReactComponent: FeatureComponent,
     })
   })
 

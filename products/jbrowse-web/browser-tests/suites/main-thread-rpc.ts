@@ -32,7 +32,7 @@ const suite: TestSuite = {
       fn: async page => {
         await navigateToApp(page, 'test_data/volvox/config_main_thread.json')
         await openTrack(page, 'gff3tabix_genes')
-        await page.waitForSelector('[data-testid^="display-gff3tabix_genes"]', {
+        await page.waitForSelector('[data-display-id^="gff3tabix_genes"]', {
           timeout: 120000,
         })
       },

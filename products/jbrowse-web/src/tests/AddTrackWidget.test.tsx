@@ -47,7 +47,7 @@ test('adds a PAF via the add track workflow', async () => {
   fireEvent.click(within(await findByRole('listbox')).getByText('volvox_del'))
   fireEvent.click(getAllByTestId('addTrackNextButton')[0]!)
 
-  const displays = await findAllByTestId(/^display-.*-done$/, ...opts)
+  const displays = await findAllByTestId(/-display-done$/, ...opts)
   expectCanvasMatch(findCanvasIn(displays[0]!))
 }, 60000)
 

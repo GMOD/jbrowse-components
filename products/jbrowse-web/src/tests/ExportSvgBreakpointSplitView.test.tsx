@@ -20,15 +20,15 @@ const delay = { timeout: 50000 }
 test('export svg of breakpoint split view', async () => {
   await mockConsoleWarn(async () => {
     doBeforeEach(url => require.resolve(`../../test_data/breakpoint/${url}`))
-    const { findByTestId, findAllByText, findByText, findAllByTestId } =
+    const { findByTestId, findAllByText, findByText } =
       await createView(breakpointConfig)
 
     // Wait for both alignment displays (one per view) to finish rendering
     await waitFor(async () => {
-      const done = await findAllByTestId(
-        'display-pacbio_hg002_breakpoints-LinearAlignmentsDisplay-done',
-        {},
-        delay,
+      // by display id, not testid: both views' alignments displays share the
+      // `pileup-display-done` base, and this test is specifically counting them
+      const done = document.querySelectorAll(
+        '[data-display-id="pacbio_hg002_breakpoints-LinearAlignmentsDisplay"][data-display-drawn="true"]',
       )
       expect(done.length).toBe(2)
     }, delay)

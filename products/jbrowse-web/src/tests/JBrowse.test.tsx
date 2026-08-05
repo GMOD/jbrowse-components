@@ -70,7 +70,7 @@ test('assembly aliases', async () => {
   fireEvent.click(
     await findByTestId(hts('volvox_filtered_vcf_assembly_alias'), {}, delay),
   )
-  const displays = await findAllByTestId(/^display-.*-done$/, {}, delay)
+  const displays = await findAllByTestId(/-display-done$/, {}, delay)
   expectCanvasMatch(findCanvasIn(displays[0]!))
 }, 30000)
 

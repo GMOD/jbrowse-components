@@ -40,8 +40,11 @@ description: The shared display status chrome that owns loading, error, and retr
 - 15 LGV displays use it, plus arc/paired-arc on the backend-free half. Off it by
   design: dotplot and synteny (non-LGV, drop to `useRenderingBackend`),
   circular-view (radial, own banners).
-- The three `-done` testid shapes are redundant but frozen: a contract across
-  four test systems.
+- **One element per display**, carrying `data-testid` (`<base>` → `<base>-done`),
+  `data-display-id`, `data-display-phase` and `data-display-drawn`. `testid` is
+  required. The three coexisting testid shapes, `DisplayContainer`,
+  `BaseLinearDisplayComponent` and the model's `DisplayMessageComponent` getter
+  are all gone.
 
 Related: banner content for `tooLarge` is in
 [REGION_TOO_LARGE.md](REGION_TOO_LARGE.md); the rejected refactors (don't
@@ -99,12 +102,12 @@ multi-sample-variant, variant-matrix.
 **Reuse one of those components (3):** `LGVSyntenyDisplay` → LinearAlignmentsDisplay's
 component; `LinearGCContentDisplay` → wiggle's; `LinearVariantDisplay` →
 LinearBasicDisplay's (borrowed off the DisplayType registry, so no cross-plugin
-component import). They get the chrome for free — but note they borrow at three
-different levels, so they inherit three different testid shapes: GC content
-registers wiggle's *inner* `WiggleComponent` (chrome only, so
-`wiggle-display-done` and **no** `display-${id}` element — `browser-tests/suites/bigwig.ts`
-waits on the former for exactly this reason), LinearVariant registers the *outer*
-container component, and LGVSynteny alignments' whole component.
+component import). They get the chrome for free, and since the wrapper layer was
+deleted they now borrow the *same* level in every case — the component the
+display type registers. GC content and wiggle register the identical
+`WiggleComponent`; LinearVariant and canvas-basic the identical
+`FeatureComponent`; LGVSynteny alignments' whole component. Each pair therefore
+shares a `data-testid` base and is told apart by `data-display-id`.
 
 **SVG exception (2): arc / paired-arc.** These render main-thread SVG (no worker,
 no GPU backend, all features in one array), so they can't wrap `DisplayChrome`,
@@ -235,17 +238,73 @@ be conflated:
   features") don't fit a radial view. Arc, by contrast, is an *LGV* SVG display,
   so it can reuse the LGV banners; circular's radial medium is why it can't.
 
-## First-paint `-done` testid
+## One element per display: testid, id, phase, drawn
+
+Every LGV display emits **one** chrome element, and it carries four attributes:
+
+| attribute | value | stable? |
+| --- | --- | --- |
+| `data-testid` | `<base>` → `<base>-done` on first paint | mutates |
+| `data-display-id` | the display's `configuration.displayId` | stable |
+| `data-display-phase` | `ready` / `loading` / `error` | tracks the model |
+| `data-display-drawn` | `true` / `false` | tracks first paint |
 
 The readiness gate is `canvasDrawn` (GPU) / `svgReady` (arc), expressed once.
-DisplayChrome takes a `testid` base and appends `-done` on `canvasDrawn`, so
-consumers never hand-write the ternary. Two other emitters coexist by design
-(ADR-026 "distinct roles, not drift"): the generic `display-${id}-done` from the
-`BaseLinearDisplay.tsx` wrapper, and the standalone `synteny_canvas_done` /
-`dotplot_webgl_canvas_done` on the non-LGV views. Displays that pixel-match the
-canvas give the inner `<canvas>` a static selector (`hic_canvas`, `ld_canvas`,
+`DisplayChrome` takes a **required** `testid` base and appends `-done`, so no
+consumer hand-writes the ternary. Displays that pixel-match the canvas also give
+the inner `<canvas>` a static selector (`hic_canvas`, `ld_canvas`,
 `variant_canvas`, `variant_matrix_canvas`, `multirow_canvas`) as a query target:
-tests wait on `${base}-done`, then read the static selector.
+tests wait on `${base}-done`, then read the static selector. The non-LGV views
+keep their own standalone `synteny_canvas_done` / `dotplot_webgl_canvas_done`,
+since they have no chrome at all.
+
+**Why two id attributes and not one.** `data-testid` is the *base* — shared by
+every instance of a display type, and it mutates on first paint. Neither
+property suits "which track is this", so targeting one track's display had its
+own attribute-shaped hole, previously filled by a second wrapper element
+emitting `display-${displayId}` as *its* testid. `data-display-id` fills it on
+the same element. Likewise `data-display-drawn` exists so paint state can be
+read without decoding a suffix: "has everything painted?" is
+`[data-display-drawn="false"]` — one selector.
+
+**This replaced three coexisting testid shapes, and the cost was never just the
+extra `<div>`.** Two things used to vary per display: the `testid` base passed to
+DisplayChrome, and whether a `DisplayContainer` sat above it emitting
+`display-${id}-done` on its own. The knock-on effects were all in the test
+infrastructure, which had to accept every shape:
+
+- `PENDING_DISPLAYS` (`browser-test-utils/waits.ts`) was a three-way union —
+  `display-…` not ending in `-done`, plus anything ending in `-display`, plus
+  synteny — because paint state was encoded by a mutating id whose base could
+  take either shape. It is now two selectors, one of which is only synteny.
+- `displayReady()` (`website/scripts/screenshot-spec-helpers.ts`) had to emit
+  **two** selectors joined by a comma, because alignments put its `-done` testid
+  on an inner div while `data-display-phase` stayed on the chrome, so the two
+  could only be related with `:has()`. Each form matched nothing in the other's
+  case and the symptom was a capture that timed out rather than an authoring
+  error. It is now one selector.
+
+**What was deleted with it.** `DisplayContainer` and `BaseLinearDisplayComponent`
+are gone, and with them `BaseDisplayModel`'s `DisplayMessageComponent` getter —
+`BaseLinearDisplay.tsx` was its last reader, so the model no longer has any view
+of its own UI. Four registered components (`LinearBasicDisplayComponent`,
+`LinearWiggleDisplayComponent`, `MultiLinearWiggleDisplayComponent`,
+`ManhattanReactComponent`) existed *only* to wrap a body in that container; each
+became a pass-through and was deleted, with the display type now registering the
+body directly. Wiggle and GC-content consequently register the identical
+component, which is what the container arrangement was working around.
+
+Two follow-through details worth knowing, because neither is visible in a diff:
+
+- The container contributed `whiteSpace: nowrap` / `textAlign: left` by
+  inheritance to everything under it. Those are re-stated on each de-containered
+  display's chrome, deliberately verbatim, so no label overlay changes how it
+  wraps. They were **not** pushed onto `DisplayChrome` for everyone: seven
+  displays never had them, and `white-space: nowrap` on a display root would
+  stop long error-banner text from wrapping.
+- The canvas family's `FloatingLegend` moved inside `DisplayChrome`'s child.
+  The chrome is `position: relative` exactly as the container was, so its
+  geometry is unchanged.
 
 **`data-display-phase` is published for three of the five phases.** The two
 subtree-replacing ones (`tooLarge`, `renderError`) render their banner *instead
@@ -255,77 +314,47 @@ not as terminal — correct for the "nothing is loading" waits built on it
 (`waits.ts`), which is why it stays this way. Don't nest the banner to close the
 gap; that would undo the unmount the whole tree-shape rule exists for.
 
-### Three testid shapes coexist — and why they aren't unified
+### Why the canvas family shares one registered component
 
-Two things vary per display: the `testid` base passed to DisplayChrome, and
-whether a `DisplayContainer` sits above it. Five displays render inside that
-second `position:relative` container, which emits `display-${id}-done` on its
-own, and **all five now compose it explicitly** in the component they register:
-the canvas family (canvas-basic, LinearVariant) in `LinearBasicDisplayComponent`,
-and wiggle / multi-wiggle / manhattan in a container+body pair of their own
-(`LinearWiggleDisplayComponent` and siblings).
-
-Those three used to register the shared `BaseLinearDisplayComponent` and reach
-their body through the model's `DisplayMessageComponent` getter, which made the
-*model* hold a lazy import of a React component. Nothing in the GPU path reads
-that getter any more; `BaseLinearDisplayComponent` survives as public plugin API
-and as a stand-in `ReactComponent` in ~15 test harnesses that never render it.
-The rewiring changed no DOM — `products/jbrowse-web/src/tests/BigWig.test.tsx`
-and `Manhattan.test.tsx` pin both emitters in jsdom, which is the half of the
-contract no local suite covered before.
-
-The canvas family shares that **one** registered component: LinearVariantDisplay
-borrows it via `pluginManager.getDisplayType('LinearBasicDisplay').ReactComponent`
-(the LGVSyntenyDisplay move) rather than importing a component across the plugin
+`LinearVariantDisplay` borrows the canvas body via
+`pluginManager.getDisplayType('LinearBasicDisplay').ReactComponent` (the
+LGVSyntenyDisplay move) rather than importing a component across the plugin
 boundary. Chrome only one of them has arrives through overridable hooks on the
 canvas base model — `colorLegend` (variants' color key) and `geneGlyphNotice`
 (the isoform-collapse chip) — each defaulting to absent, so the shared component
 never reads a field the display it's rendering doesn't have. Because the state
 lives on the model rather than in a per-display component, the SVG export reads
 the same `colorLegend` and bakes the key in (`renderSvg.tsx`, via the shared
-`SvgColorLegend`). The resulting emitters:
+`SvgColorLegend`).
 
-| Display(s) | Base → DisplayChrome | `-done` testid(s) emitted |
-| --- | --- | --- |
-| maf, alignments | `display-${id}` | `display-${id}-done` (chrome) |
-| canvas-basic, LinearVariant | none — container only | `display-${id}-done` (container) |
-| wiggle, manhattan, multi-wiggle | `<type>-display` + container | **both** `display-${id}-done` (container) and `<type>-display-done` (chrome) |
-| gccontent (reuses wiggle's *body*) | `wiggle-display` | `wiggle-display-done` (chrome) — no container |
-| every other display | `<type>-display` | `<type>-display-done` (chrome) |
+That sharing is also why the two emit the same `data-testid` base
+(`feature-display`): they are one component. `data-display-id` is what tells two
+instances — or two display types sharing a body — apart.
 
-LinearVariant additionally leans on the container to position its
-`FloatingLegend` child.
+### How the unification was verified
 
-This is genuine redundancy: a nested container duplicating DisplayChrome's own
-`position:relative` and `-done`. It is deliberately not collapsed, because the
-`-done` selectors are a load-bearing contract across four test systems, only one
-of which (jest/jsdom) runs outside CI:
+The freeze on this was real: the `-done` selectors are a contract across four
+test systems, only one of which (jest/jsdom) runs outside CI. What made it
+tractable was checking *which* system depends on *which* shape, rather than
+assuming all of them depend on all of it:
 
-- puppeteer browser-tests wait `[data-testid^="display-${trackId}"]`
-  (`browser-tests/helpers.ts`), `[data-testid^="display-"]`
-  (`redraw`/`demo-inventory`/`main-thread-rpc`); these hard-require the generic
-  `display-${id}` prefix for feature/canvas tracks,
-- cypress (`component_tests/lgv-vite`) and website screenshot specs
-  (`readySelector: '[data-testid="…-display-done"]'`) pin the static bases.
+- **website screenshot specs and cypress only ever used the static bases**
+  (`pileup-display-done`, `wiggle-display-done`, …), never the generic
+  `display-${id}`. Keeping `data-testid` exactly as it was means ~50 spec
+  selectors, the cypress spec and the plugin-vite smoke test needed **no edit at
+  all**. The one spec-side change was `displayReady()` getting simpler.
+- **only puppeteer's browser-tests used the generic id** — seven selectors, all
+  migrated to `data-display-id`, which is a better hook anyway (it doesn't
+  mutate, and `[data-display-id]` beats `[data-testid^="display-"]` for "any
+  display").
+- **jest/jsdom** pins the co-location directly now: `BigWig.test.tsx` and
+  `Manhattan.test.tsx` assert that the testid, `data-display-id` and
+  `data-display-drawn` are on **one** element. That is the assertion that would
+  have caught this refactor going wrong, and it runs locally.
 
-So removing the container (making DisplayChrome the sole emitter) changes which
-element carries `display-${id}-done`, which is unverifiable without a full
-build + GPU + headless-Chrome run. Any unification pass must land on a branch
-where the browser-test, website-spec, and cypress suites are green, not blind.
-Sequenced plan when that's available: (a) make DisplayChrome emit the generic
-`display-${id}-done` for every display; (b) migrate the static-base tests to it
-or keep both during a deprecation window; (c) delete the container from the GPU
-path, moving LinearVariant's `FloatingLegend` into its own DisplayChrome child.
-Until then, treat the redundancy as frozen.
-
-**Step (c) is now fully prepared.** All five container-using displays compose
-`DisplayContainer` explicitly in the component they register, so no getter
-indirection stands in the way for any of them — what remains is moving
-LinearVariant's legend and deleting one wrapper element per display. The jsdom
-pins added with that prep (`BigWig.test.tsx`, `Manhattan.test.tsx`) assert both
-emitters, so the first two steps are no longer entirely blind either: a local run
-now catches a display that stops emitting the generic id, which is the failure
-mode the freeze is guarding against.
+The browser suite was run locally against a real build before and after
+(`pnpm test:browser --swiftshader --filter=…`), which is what the old plan
+called for and could not previously assume.
 
 ## The bring-your-own seams
 

@@ -11,7 +11,6 @@ import {
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { types } from '@jbrowse/mobx-state-tree'
 import LinearGenomeViewPlugin, {
-  BaseLinearDisplayComponent,
   linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory,
 } from '@jbrowse/plugin-linear-genome-view'
 
@@ -76,7 +75,8 @@ export function createTestEnvironment() {
         stateModel: stateModelFactory(pluginManager, configSchema),
         trackType: 'GWASTrack',
         viewType: 'LinearGenomeView',
-        ReactComponent: BaseLinearDisplayComponent,
+        // never rendered here; this harness exercises the model
+        ReactComponent: () => null,
       }),
   )
 

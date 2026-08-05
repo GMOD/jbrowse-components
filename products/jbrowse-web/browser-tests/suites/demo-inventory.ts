@@ -109,7 +109,7 @@ const localDemos: TestSuite = {
 
         const hasCanvas = await page.evaluate(() => {
           const canvases = document.querySelectorAll(
-            '[data-testid^="display-"] canvas',
+            '[data-display-id] canvas',
           )
           for (const c of canvases) {
             const canvas = c as HTMLCanvasElement
@@ -145,7 +145,7 @@ const localDemos: TestSuite = {
 
         await findByText(page, 'ctgA')
         await waitForDataLoaded(page)
-        await waitForElementCount(page, '[data-testid^="display-"]', 3)
+        await waitForElementCount(page, '[data-display-id]', 3)
         await delay(2000)
         await pageSnapshot(page, 'demo-volvox-multitrack-fullpage')
       },

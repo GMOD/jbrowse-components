@@ -24,7 +24,7 @@ test('clicking a variant description label opens feature details', async () => {
 
   await view.navToLocString('ctgA:6257..6305')
   await user.click(await screen.findByTestId(hts('volvox_test_vcf'), ...opts))
-  await findAllByTestId(/^display-.*-done$/, ...opts)
+  await findAllByTestId(/-display-done$/, ...opts)
 
   fireEvent.click(await screen.findByTestId('feature-desc-C -> T', ...opts))
 

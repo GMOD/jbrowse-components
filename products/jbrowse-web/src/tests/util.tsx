@@ -107,6 +107,29 @@ export function findCanvasIn(container: HTMLElement) {
   return canvas
 }
 
+/**
+ * Wait for one specific display to finish first paint, by `data-display-id`.
+ *
+ * Not a testid: `data-testid` is the display *type*'s base, so two alignments
+ * displays in a breakpoint-split view share `pileup-display-done` and only the
+ * display id tells them apart. This replaced `display-<displayId>-done`, which
+ * worked only while a second wrapper element existed to emit that id.
+ */
+export async function findDisplayById(displayId: string, timeout = 20000) {
+  return waitFor(
+    () => {
+      const el = document.querySelector<HTMLElement>(
+        `[data-display-id="${displayId}"][data-display-drawn="true"]`,
+      )
+      if (!el) {
+        throw new Error(`display ${displayId} has not painted`)
+      }
+      return el
+    },
+    { timeout },
+  )
+}
+
 /** Wait for a display to finish rendering and return its canvas element. */
 export async function waitForRenderedCanvas(
   findAllByTestId: (
@@ -116,7 +139,7 @@ export async function waitForRenderedCanvas(
   ) => Promise<HTMLElement[]>,
   timeout = 20000,
 ) {
-  const displays = await findAllByTestId(/^display-.*-done$/, {}, { timeout })
+  const displays = await findAllByTestId(/-display-done$/, {}, { timeout })
   return findCanvasIn(displays[0]!)
 }
 

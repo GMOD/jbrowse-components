@@ -258,7 +258,28 @@ export async function waitForDisplay(
   trackId: string,
   timeout = 60000,
 ) {
-  await page.waitForSelector(`[data-testid^="display-${trackId}"]`, { timeout })
+  await page.waitForSelector(`[data-display-id^="${trackId}"]`, { timeout })
+}
+
+/**
+ * Wait for one specific display to finish its first paint.
+ *
+ * `data-display-id` + `data-display-drawn`, not a testid: a `data-testid` is the
+ * display *type*'s base (`maf-display`, `feature-display`), so two tracks of the
+ * same type share it, and it encodes paint state by mutating to `-done`. This
+ * pair says which display and whether it painted, without either ambiguity.
+ * Replaced `findByTestId(page, 'display-<displayId>-done')`, which worked only
+ * while a second wrapper element existed to emit that id.
+ */
+export async function waitForDisplayDrawn(
+  page: Page,
+  displayId: string,
+  timeout = 60000,
+) {
+  await page.waitForSelector(
+    `[data-display-id="${displayId}"][data-display-drawn="true"]`,
+    { timeout },
+  )
 }
 
 // A display that is reporting the region-size gate, found by walking the session

@@ -90,7 +90,8 @@ const LinearManhattanDisplayComponent = observer(
         factory={ManhattanRenderer}
         ref={containerRef}
         testid="manhattan-display"
-        style={{ width, height }}
+        // inherited from `DisplayContainer` until it was deleted; kept verbatim
+        style={{ width, height, whiteSpace: 'nowrap', textAlign: 'left' }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         onClick={handleClick}

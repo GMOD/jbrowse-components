@@ -70,7 +70,9 @@ const WiggleComponent = observer(function WiggleComponent({
       factory={WiggleRenderer}
       ref={containerRef}
       testid="wiggle-display"
-      style={{ width, height }}
+      // whiteSpace/textAlign were inherited from `DisplayContainer` until it was
+      // deleted; kept verbatim so the legend and y-axis labels lay out the same
+      style={{ width, height, whiteSpace: 'nowrap', textAlign: 'left' }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       onClick={handleClick}

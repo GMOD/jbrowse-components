@@ -4,7 +4,13 @@ import { saveAs } from '@jbrowse/core/util'
 import { fireEvent, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 
-import { createView, doBeforeEach, hts, setup } from './util.tsx'
+import {
+  createView,
+  doBeforeEach,
+  findDisplayById,
+  hts,
+  setup,
+} from './util.tsx'
 
 let mockCounter = 0
 jest.mock('@jbrowse/core/util/nanoid', () => ({
@@ -42,7 +48,7 @@ test('export session with alignments and gff tracks', async () => {
   // teardown throws "require a file after the Jest environment has been torn
   // down" from RenderFeatureData's dynamic import.
   await findByTestId('pileup-display-done', ...opts)
-  await findByTestId(/^display-gff3tabix_genes-.*-done$/, ...opts)
+  await findDisplayById('gff3tabix_genes-LinearBasicDisplay')
 
   const user = userEvent.setup()
   await user.click(await findByText('File'))

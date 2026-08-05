@@ -100,20 +100,23 @@ export async function waitForQuiescent(
     .catch(() => {})
 }
 
-// A display wrapper mounts carrying its base test-id and flips that id in place
-// to `<base>-done` when canvasDrawn fires (DisplayChrome owns the suffix), so
-// "every display has painted" is exactly "no wrapper is still wearing its base
-// id". Bases come in three shapes: `display-<displayId>` (BaseLinearDisplay,
-// alignments, maf), `<name>-display` (wiggle, variant, hic, ld, manhattan,
-// arc, pileup, …), and synteny's `synteny_canvas`.
+// "Every display has painted" = no display is still reporting
+// `data-display-drawn="false"`. DisplayChrome publishes that directly, so this
+// no longer has to infer paint state from the *shape* of a test id: it used to
+// be a three-way union — `display-<displayId>` not ending in `-done`, plus
+// anything ending in `-display`, plus synteny — because the id both identified
+// the display and encoded its paint state by mutating, and the bases came in
+// three shapes depending on whether a second wrapper element was involved. One
+// element per display and one stable attribute retire all of that. Synteny
+// stays listed because it is a non-LGV view with no chrome at all.
+//
 // Exported so a caller can re-check the post-condition after the wait and say
 // whether it actually settled or merely timed out. `waitForDisplaysDone` (like
 // its neighbours) swallows its own timeout on purpose, which leaves "every
 // display painted" and "we gave up waiting" indistinguishable at the call site —
 // and that ambiguity is what makes a blank capture unattributable.
 export const PENDING_DISPLAYS = [
-  '[data-testid^="display-"]:not([data-testid$="-done"])',
-  '[data-testid$="-display"]',
+  '[data-display-drawn="false"]',
   '[data-testid="synteny_canvas"]',
 ].join(',')
 

@@ -4,10 +4,7 @@ import { isAbstractMenuManager } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import LineStyleIcon from '@mui/icons-material/LineStyle'
 
-import {
-  BaseLinearDisplayComponent,
-  baseLinearDisplayConfigSchema,
-} from './BaseLinearDisplay/index.ts'
+import { baseLinearDisplayConfigSchema } from './BaseLinearDisplay/index.ts'
 import FeatureTrackF from './FeatureTrack/index.ts'
 import LaunchLinearGenomeViewF from './LaunchLinearGenomeView/index.ts'
 import ZoomControls from './LinearGenomeView/components/HeaderZoomControls.tsx'
@@ -24,7 +21,6 @@ export default class LinearGenomeViewPlugin extends Plugin {
   name = 'LinearGenomeViewPlugin'
 
   exports = {
-    BaseLinearDisplayComponent,
     baseLinearDisplayConfigSchema,
     SearchBox,
     ZoomControls,
@@ -84,13 +80,11 @@ export type {
 } from './BaseLinearDisplay/index.ts'
 
 export {
-  BaseLinearDisplayComponent,
   BlockMsg,
   BottomRightIndicators,
   DisplayChrome,
   DisplayChromeBase,
   DisplayChromeOverlayProvider,
-  DisplayContainer,
   DisplayErrorBar,
   DisplayLoadingOverlay,
   DisplayStatusChrome,

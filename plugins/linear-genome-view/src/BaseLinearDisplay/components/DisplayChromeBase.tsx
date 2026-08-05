@@ -87,7 +87,7 @@ function DisplayChromeBaseInner<B extends { dispose(): void }>({
   model: ChromeModel & RenderLifecycleModel<B>
   factory: (canvas: HTMLCanvasElement) => Promise<B>
   children: (handle: CanvasHandle) => ReactNode
-  testid?: string
+  testid: string
   overlays: DisplayChromeOverlays
 } & Omit<ComponentPropsWithRef<'div'>, 'children'>) {
   // eslint-plugin-react-compiler (react-compiler@19.1.0-rc.2) thinks this

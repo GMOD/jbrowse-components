@@ -35,7 +35,7 @@ test('variant display exposes one "Color by..." menu and applies a solid color',
 
   await view.navToLocString('ctgA:1..50000')
   await user.click(await screen.findByTestId(hts('volvox_test_vcf'), ...opts))
-  await findAllByTestId(/^display-.*-done$/, ...opts)
+  await findAllByTestId(/-display-done$/, ...opts)
 
   const display = view.tracks[0]!.displays[0] as VariantDisplay
 
@@ -65,7 +65,7 @@ test('the consequence-impact color key renders, and dismissing it removes it', a
 
   await view.navToLocString('ctgA:1..50000')
   await user.click(await screen.findByTestId(hts('volvox_test_vcf'), ...opts))
-  await findAllByTestId(/^display-.*-done$/, ...opts)
+  await findAllByTestId(/-display-done$/, ...opts)
 
   const display = view.tracks[0]!.displays[0] as VariantDisplay
   expect(display.colorLegend).toBeUndefined()
