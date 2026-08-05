@@ -2218,9 +2218,9 @@
   },
   "dog10k-wolfdog-ancestry": {
     "name": "dog10k-wolfdog-ancestry",
-    "status": "answered",
-    "note": "Nothing is marked on it any more. The in-app highlight and the 'nine block edges' callout are both gone, so the figure is the painting: gray wolves solid orange at the head, the wolfdogs' megabase blocks under them, the sweep breeds' flecks, the German Shepherd lineage solid dog at the foot. The caption lost its 'Highlighted:' clause too. On the framing itself, you are right and the numbers say so: the build script tiles chr1 and that window holds 9 wolf-block ends against a median tile's 5, with 16 of 83 tiles at 9 or more, in a tile the genetic map gives 0.35 cM against a 0.75 cM median. It was an ordinary window with three marks pointing at it. WHAT SURVIVES, and why it is not the same story: the genotype figure below still exists as one plain view (see its own note), because a painting is an inference and the tutorials standard is to end by checking the inference against the raw data. It no longer claims the window is special -- the prose now says any 1.5 Mb holding a few edges will do.",
-    "reviewedAt": "2026-08-05T01:08:11.909Z",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-05T02:03:49.257Z",
     "hash": "38c99710801094942c6e7510ce1cec64e386a4de"
   },
   "mcscan_anchors": {
@@ -2239,10 +2239,10 @@
   },
   "dog10k-nhej1-cea-deletion": {
     "name": "dog10k-nhej1-cea-deletion",
-    "status": "bad",
-    "note": "if we have clinvar  or omia dog variants would be interesting. RESOLVED, same ask applied to this figure (the note's 'stop codon' wording is from the CYP1A2 item; here the effect belongs to the deletion). New callout left of the column, arrow into it: '7.8 kb intron deletion, recessive: / homozygotes have Collie eye anomaly'. Recessive is the load-bearing word -- CEA is recessive (Parker et al. 2007, OMIA 000218-9615), so dark = affected and light = unaffected carrier, which is what a reader could not get from 'heterozygous alt / homozygous alt'. The pill covers only lane the filtered single-record display paints nothing in, so no cell is hidden. Also fixed a real blemish while here: the window ran to 25,600,000, reaching past NHEJ1 (ends 25,595,616) into SLC23A3/LOC111094448, whose packed row overflowed the 110px gene track -- the capture carried the track's overflow widget and a half-cut gene label. Right edge now 25,596,000, so the gene track holds NHEJ1's three transcripts alone. Gallery links regenerated for the new loc. One sentence in dog10k_svs.md backs the recessive claim.",
-    "reviewedAt": "2026-08-05T00:54:45.478Z",
-    "hash": "9e7cd39da335e12dad21c59fd3b42f2f0707f0a9"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-05T02:03:43.000Z",
+    "hash": "4970e300805ba446d0b4b29e6347bb6413c0c62a"
   },
   "pangenome/hprc_amylase_graph": {
     "name": "pangenome/hprc_amylase_graph",
@@ -2254,9 +2254,9 @@
   "dog10k-igf1-haplotype": {
     "name": "dog10k-igf1-haplotype",
     "status": "bad",
-    "note": "go for it, add fst if it makes a good figure. the variants are just a 'cool tapestry' but hard to say this is meaningful in any way, it just is like, what is the biological meaning? anything?  previous notes: The complementary track exists and it is already on the page, one figure up: dog10k-size-fst-scan, the Hudson Fst between the same toy/small and giant panels, whole genome with IGF1 labelled and then two megabases of chr15 with the peak window banded. So the page already runs scan -> peak -> haplotype, and the evidence this figure needs is the thing a reader has just scrolled past. It CANNOT be a lane inside this frame: the scan is binned at 200 kb and this window is 220 kb, so an Fst lane here would be one or two points. Nothing else in the dog10k config is about this locus -- the other tracks are CYP1A2, FGF4, NHEJ1 and the chr1 wolfdog set -- and there is no recombination or conservation track in the demo to hang beside it. VERIFIED WHAT THE CAPTION CLAIMS, by sampling the size-swatch column down the rendered matrix: the toy and small breeds are one contiguous block over the top ~43% of the rows, the four gray wolves are a contiguous red run immediately below them, and the giants are the rest, with a handful of toy/small rows inside the giant block. So 'the upper cluster is the toy and small breeds and the lower one the giants; the wolves are the red run between them' is exact, and the clustering genuinely recovers the size split from genotype alone -- which is the figure's whole claim. WHAT I DID NOT ADD, and why: labels naming the two clusters on the figure. The only way to place them is fracY, a fraction of the display height, and the fractions come from where the clustering happened to put the blocks -- so they would be hand-measured positions that silently drift if the clustering moves. The sidebar swatch plus the Size key already name the blocks, and the caption names them in order. ONE THING TRIED AND REVERTED as a no-op, recorded so it is not tried again: pinning geneGlyphMode 'longestCoding' on the gene lane to match dog10k-size-fst-scan-igf1 above it. The re-render came back byte-identical -- the display is already in that mode without the slot being set, which the 'Longest isoform' chip in the lane's corner was already saying. NO FIGURE CHANGE, then: the window, the clustering and the two keys are right, the complementary evidence is the figure above, and what remains open is a way to label rows of a clustered matrix that does not encode where the clustering happened to put them.",
-    "reviewedAt": "2026-08-05T00:54:18.482Z",
-    "hash": "3d35b1f1c1d5ff96d4882ed7994881c40b72b60a"
+    "note": "zoom out if it helps show larger patterns.  not sure if it should may cluster in narrower area and then zoom out. previous agent notes Fst added, and it is the answer to the 'what is the biological meaning' half rather than a second decoration. THE OBSTACLE THE LAST PASS HIT was real but only for the scan as built: 200 kb bins are wider than this whole 220 kb window, so a lane of it would be one or two points. So the estimator is run again at this locus -- igf1_site_fst.py, same Hudson estimator, same two breed panels, one site at a time over the very VCF the matrix draws. That last part is what makes it worth having: every point in the lane is one column of the matrix under it, so the two lanes cannot disagree and no second callset is involved. WHAT IT SAYS: the differentiated sites are a RUN, not a scatter -- near zero at both window edges, a band at 0.5-0.7 across the gene and its upstream flank, peaking at 0.72 inside IGF1 -- and that run is the block the clustering found. The tapestry now has a reason: the columns the two clusters differ on are the ones under the peak. Axis pinned to the scan's 0-0.8 so the two figures are one scale. viewportHeight 1080 -> 1263, and scripts/build_dog10k_igf1.sh now emits the lane's BED so it reproduces with everything else. No callout and no highlight on it -- the shape is the point and it does not need pointing at.",
+    "reviewedAt": "2026-08-05T02:03:36.421Z",
+    "hash": "3d7cc417ea7be206ee22b5a341c98108e6628a9e"
   },
   "dog10k-slc28a3-copy-number": {
     "name": "dog10k-slc28a3-copy-number",
@@ -2455,9 +2455,9 @@
   },
   "cancer_sv/multihop_reads": {
     "name": "cancer_sv/multihop_reads",
-    "status": "bad",
-    "note": "it is unclear how this multi-hop figure was generated. if from a series of ui actions, we may want to record this as a series of screensots for multipart figure, capturing the menus and dialogs. making it as easy as possible is also valuable. REPLACES cancer_sv/multihop_tumour_vs_normal + cancer_sv/multihop_split_view, whose review notes were: (1) 'if this is a multi-step with cancer_sv/multihop_split_view, consider making it a multi-part figure. since this are large, maybe side by side' and (2) 'this is a great screenshot, but is there a way to visualize what is happening in a linearsyntenyview also? it can be more intuitive as a linearsyntenyview style rendering.' SIDE BY SIDE DONE: one horizontal compose, the two halves as parts (so each still opens as its own live session), 950px and 960px tall each rather than two 1000x1100 figures a screen apart. Both halves were re-tuned to fill that height rather than pad it -- the read tracks are the size of their own pileups at one row per pixel, and the split view's three panels came down proportionally -- so the pair is one figure with no blank page in it. The review log now carries this one card instead of two; the parts are machinery. SYNTENY: the page already has it, two sections down, and the fix was that nothing pointed at it. cancer_sv/derivative_synteny IS the linear synteny rendering of this event: the three source loci along the top, the reconstructed derivative allele along the bottom, one ribbon per segment, with the foldback drawn as the crossing ribbon -- which is exactly the intuitive layout, and it is built from the reads rather than drawn by hand. The prose under the split view now says so, and also names the per-read route ('Linear read vs ref' on a right-clicked read, the Ribbon-style view of one read against every locus it touches).",
-    "reviewedAt": "2026-08-05T00:53:18.182Z",
+    "status": "answered",
+    "note": "Both halves, and the second one turned out to be a product gap rather than a figure. HOW IT WAS GENERATED: the three-panel view comes from Add -> Breakpoint split view, whose import form takes one row per locus, so the tutorial's own --loci line fills it in; the prose now says that outright, and another session in this worktree has a steps figure of that route in flight (cancer_sv/multihop_split_view_steps). EASIER: a breakend's split view was reachable only through the feature details panel, under whatever INFO the caller wrote -- a hundred rows of SnpEff ANN on this VCF, so the link sat below a table you have to scroll past to learn it exists. LinearVariantDisplay now carries the row in the feature right-click menu (c4fe814fc0), gated on the record's own type so a variant with no mate never offers it, and cancer_sv/split_view_from_breakend is the new four-frame figure: the menu, the dialog's shape step, its window-size step, then the two panels with the reads that cross the junction drawn as connectors between them. Worth knowing if you drive that dialog from a spec: its submit cannot be clicked by text or by .MuiDialogActions-root button (the first is Back), and the menu item queues one dialog while the click helper's covered-element fallback can dispatch twice, so a second copy stands behind the first -- the result frame is loaded as a session instead, which is the harness's own stage.url case.",
+    "reviewedAt": "2026-08-05T02:04:25.806Z",
     "hash": "577c5578df93cbfb6e1d81817fafb396b14045cd"
   },
   "cancer_sv/derivative_inserts": {
@@ -2624,9 +2624,9 @@
   "cancer_sv/derivative_autogenerated": {
     "name": "cancer_sv/derivative_autogenerated",
     "status": "answered",
-    "note": "On THIS figure they cannot be, and the reason is the feature's own design: the in-app reconstruction builds an allele that is a structure with no bases (its temporary assembly carries an empty sequence), so the lane is a coordinate projection of each read rather than an alignment, and a pileup would have nothing to compute mismatches against. THE REAL ONE IS NOW DRAWN, as its own figure: cancer_sv/realigned_reads, new in the 'Checking the reconstruction' section. sv_multihop.py derive already ends by realigning the spanning reads to the consensus it builds, and that BAM is hosted; two figures carried it as a lane inside a synteny view, where 'these reads cross the junction' is a picture of reads not doing anything in particular. The new figure is the pair that makes it evidence: the tumour BAM on hg38 at chr3:25,359,568, where the reads carrying the allele end and their tails hang off as mismatch-coloured clip, beside derive's realigned BAM over the same junction (32,732 on the allele, from its own PAF), crossing it at flat depth. Real AlignmentsTracks on both sides, soft clipping ON in both, so the right pane is the same setting over reads with none to draw. Both windows are 380 bp with the junction at 49% of the width, banded in each assembly's coordinates with an in-app highlight. Checked against the hosted BAM before claiming it: 18 primary alignments cross the junction column, samtools depth 27-28 with no dip.",
-    "reviewedAt": "2026-08-05T01:11:56.791Z",
-    "hash": "3d2e1134ea88765fd9d6e9da382d700076d5c7cd"
+    "note": "CORRECTION to my earlier reply on this figure. I said the reads lane answered 'why are the reads not shown using alignmentstrack'; that lane has since been reverted (e7b4f2b29b), on grounds I agree with: the projection could not fail at base level, because the in-app allele has no sequence for a read's own bases to disagree with, so it drew like evidence without being any. The figure no longer carries it and its caption no longer claims it. The alignmentstrack answer is cancer_sv/realigned_reads, one section down: derive's consensus with the spanning reads realigned onto it, beside the same molecules against hg38 where they are torn in four. That one is a real BAM on both sides, with real mismatches and real clipping against real bases.",
+    "reviewedAt": "2026-08-05T02:04:40.967Z",
+    "hash": "11a6e1ac6227757e0676726d2d387bc255ef06c2"
   },
   "cancer_sv/foldback_reconstruction": {
     "name": "cancer_sv/foldback_reconstruction",
@@ -2637,9 +2637,9 @@
   },
   "dog10k-wolfdog-ancestry-clustered": {
     "name": "dog10k-wolfdog-ancestry-clustered",
-    "status": "answered",
-    "note": "KEPT, and the reason is that it is not the block-edge figure. What was wrong with dog10k-wolfdog-ancestry was a story pinned to it -- a boxed window and a callout about nine edges; this one carries no annotation, no highlight and no claim beyond what the display did. It is the same ancestry painting over 243 animals instead of 32, with the rows ordered by the track menu's own clustering rather than by FLARE's per-sample summary, and the point a reader takes from it is that an order derived from the paintings alone puts the held-out wolves at one end and the wolfdogs under them without being told which animal is which. Deleting it would take the page's only view of the full sweep and its only clustered display. The two product bugs the previous note describes (the tree sidebar's translucent panel, the always-on provenance chip) are still fixed. Say the word if you want it gone anyway.",
-    "reviewedAt": "2026-08-05T01:08:49.492Z",
+    "status": "bad",
+    "note": "you can consider deleting",
+    "reviewedAt": "2026-08-05T02:04:20.512Z",
     "hash": "cf24d6a2cbf4a28572a76c7a85586cbc50438012"
   },
   "hic/overlay_controls": {
