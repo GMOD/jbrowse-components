@@ -112,7 +112,8 @@ assembly's chromosomes, in the order given, handy for dropping unplaced/alt
 contigs or reordering. Names resolve through the assembly's aliases. It is
 ignored when `&loc=` is set (which navigates to a single region instead), and it
 requires `&assembly=`. This is the simple-URL form of the session-spec
-[`displayedRegionNames`](#linear-genome-view) field.
+[`displayedRegionNames`](#linear-genome-view) field, and takes the same
+[globs](#glob-region-names).
 
 ### &highlight=
 
@@ -372,10 +373,16 @@ showing only its two contigs, order reversed:
 }
 ```
 
+Names may be [globs](#glob-region-names).
+
 A `LinearGenomeView` view object accepts the same fields as the simple params
-above: `nav`, `tracklist`, `highlight`, plus `showCenterLine`, `colorByCDS`,
-`showAminoAcids`, and `trackLabels` (`"overlapping"`, `"offset"`, or
-`"hidden"`).
+above — `nav`, `tracklist`, `highlight` — plus `grow` (expand `loc` by this
+fraction on each side for context, so `0.2` pads 20%; ignored without a `loc`),
+`showCenterLine`, `colorByCDS`, `showAminoAcids`, `showHighlightChips` (draw the
+interactive chip on each highlight band, otherwise a bare colored band), and
+`trackLabels` (`"overlapping"`, `"offset"`, or `"hidden"`). A key in neither set
+is a typo, and the launcher names it in a console warning rather than dropping
+it silently.
 
 A top-level `sessionTracks` array can dynamically register tracks into the
 session before the views open, equivalent to combining `&sessionTracks=` with a
@@ -481,6 +488,25 @@ name:
 ```
 &session=spec-{...}&sessionName=My%20Analysis
 ```
+
+#### Glob region names
+
+An entry in `displayedRegionNames` containing `*` is a glob matched against the
+refName, which is what makes a fragmented assembly tractable: `["*_hap1"]` beats
+hand-listing sixteen scaffolds and survives the assembly being rebuilt. `*` is
+the only metacharacter, so a refName with regex punctuation in it (`chr1.1`,
+`scaffold[2]`) still matches literally.
+
+A glob contributes its matches in the **assembly's** order, since that is the
+only order it can mean; exact names contribute in the order you wrote them, so
+an explicit list still controls layout. Entries already taken are skipped, which
+makes `["chr1_hap1", "*_hap1"]` read as "chr1 first, then the rest of hap1". A
+name matching nothing is dropped, and a list that matches nothing at all is
+reported rather than silently showing the whole genome.
+
+The same field, and the same matching, is available on [`&regions=`](#regions),
+on the [circular view](#circular-view), and on each axis of a
+[dotplot](#dotplot-view).
 
 #### Advanced track configuration
 
@@ -628,8 +654,11 @@ To color by a feature attribute, use a jexl expression, e.g.
 
 ### Circular view
 
-The circular view shows the whole genome, so it takes only `assembly` and
-`tracks`. There is no `loc`.
+The circular view shows the whole genome, so there is no `loc`. It takes
+`assembly`, `tracks`, `displayedRegionNames` (which chromosomes get an arc, in
+that order — [globs](#glob-region-names) allowed, so a circle can drop the
+unplaced contigs that would otherwise each claim a wedge), and `height`. The
+circle auto-fits its container, so `height` is what sizes the drawing.
 
 ```json live config=test_data/volvox/config.json
 {
@@ -668,7 +697,13 @@ Example (self-vs-self alignment):
 
 Each entry in the `views` array also accepts an optional `loc` to navigate that
 axis to a specific region (`views[0]` is the horizontal axis, `views[1]` the
-vertical); omit `loc` for a whole-genome overview:
+vertical); omit `loc` for a whole-genome overview. An entry can also carry
+`displayedRegionNames`, which is a different thing: `loc` navigates _within_
+what an axis displays, `displayedRegionNames` changes what it displays at all.
+That is what a haplotype-resolved assembly needs — `["*_hap1"]` on one axis
+plots one haplotype against the reference instead of interleaving both
+([globs](#glob-region-names) allowed). It is applied before `autoDiagonalize`,
+so the reorder runs over the restricted set.
 
 ```json
 {
@@ -696,6 +731,8 @@ on load:
 - `minAlignmentLength`: hide alignments shorter than this many bp.
 - `autoDiagonalize`: reorder the vertical axis to follow the horizontal axis
   after the first render, lining up the main diagonal.
+- `showColorLegend`: set `false` to hide the floating color-by legend, for a
+  curated figure where it would clutter the plot.
 
 ```json
 {
@@ -754,6 +791,14 @@ resolves by refName against whichever axis contains it.
 }
 ```
 
+`uri` is optional: with only an `assembly` the view opens on its import form
+with that assembly already selected, rather than the first one in the config.
+
+`fileType` is one of `VCF`, `BED`, `BEDPE`, or `STAR-Fusion`. It is otherwise
+detected from the extension and falls back to `VCF`, so name it for a file the
+extension doesn't identify — a URL with no extension, or the `STAR-Fusion`
+output, which has none of its own.
+
 ### SV inspector
 
 ```json live config=test_data/volvox/config.json
@@ -767,6 +812,9 @@ resolves by refName against whichever axis contains it.
   ]
 }
 ```
+
+It takes the same optional `uri` and `fileType` as the spreadsheet view above,
+plus a `height`.
 
 ### Linear synteny view
 
@@ -836,6 +884,26 @@ Supported init fields:
 - `levelHeights`: array of pixel heights, one per synteny strip (level). For a
   multi-way view, `levelHeights[i]` is the strip between `views[i]` and
   `views[i+1]`.
+- `showColorLegend`: set `false` to hide the floating color-by legend.
+- `cigarMode`: `off`, `matches`, or `full` — how much of each alignment's CIGAR
+  to resolve into the ribbon.
+- `fadeThinAlignmentsMode`: `auto` (default), `on`, or `off`. `auto` fades
+  sub-pixel ribbons only once the view is dense enough to tangle, so a sparse
+  comparison between distant species isn't washed out by the fade.
+- `collapseEmptyRows`: open any genome row this spec gives no tracks collapsed
+  to its ruler. The "No tracks active" block costs ~90px a row, which across a
+  five-row launch is more of the viewport than the ribbons.
+- `sameScale`: put every genome row on one bp/px — the coarsest row's — instead
+  of fitting each to the pane width, so a size difference between rows (a genome
+  duplication, polyploidy) shows as length rather than being hidden by the
+  per-row stretch. Applied after `autoDiagonalize`.
+
+Each entry in `views` is a linear genome view, so besides `loc`, `assembly` and
+`tracks` it takes that view's own launch props (`trackLabels`, `colorByCDS`,
+`showAminoAcids`, `showCenterLine`, `showHighlightChips`), and its `tracks`
+entries take inline display options the same way the
+[LGV's do](#advanced-track-configuration) — a shorter `LGVSyntenyDisplay`
+height, say.
 
 ### Breakpoint split view
 
@@ -863,7 +931,14 @@ Supported init fields:
 
 The `views` array specifies the two (or more) linear genome views that make up
 the breakpoint split view. Each view can have its own location, assembly, and
-tracks.
+tracks, and each `tracks` entry takes inline display options the same way the
+[LGV's do](#advanced-track-configuration).
+
+Alongside `views`, the spec accepts every setting the view's menu offers:
+`height`, `showIntraviewLinks` (the links that stay within one panel, on by
+default), `linkViews` (sync scroll and zoom across the panels, off by default),
+`interactiveOverlay` (clickable alignment squiggles, on by default), and
+`showHeader`.
 
 ### Linear synteny view (multi-way)
 
