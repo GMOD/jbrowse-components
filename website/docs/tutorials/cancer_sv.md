@@ -322,7 +322,7 @@ the same chr9/chr22 junction.
 Narrowing the circle to the two chromosomes those calls name is a view setting,
 not a filter: type them into the view's region selector, or open the view on
 them. The chord display has no `jexlFilters` slot, so support is expressible
-here as a color and not as a filter — which is why both circles below carry the
+here as a color and not as a filter, which is why both circles below carry the
 same `strokeColor` expression.
 
 <Figure caption="Left: K562 STAR-Fusion calls as chords over every chromosome, colored by junction-read support. Red is the reciprocal chr9/chr22 pair plus one intrachromosomal call on chr6; the fan converging on chrM, between chrY and chr1, is the artifact tail. Right: the same track with only chr9 and chr22 displayed, which is the next step of the triage and a change to the view rather than to the data. The artifact tail goes with chrM and what is left is the reciprocal pair, its ends on 9q34 and 22q11." src="/img/cancer_sv/k562_starfusion_triage.png" links="Every chromosome=cancer_sv/k562_fusion_circle_all,chr9 and chr22 only=cancer_sv/k562_fusion_circle_pair" />
