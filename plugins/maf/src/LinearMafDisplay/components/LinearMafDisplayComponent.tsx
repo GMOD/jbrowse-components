@@ -236,6 +236,7 @@ const MafBody = observer(function MafBody({
             package CLAUDE.md. */}
         {showTree ? (
           <RowLabelsOverlay
+            testId="maf-row-labels"
             sources={sources}
             rowHeight={effectiveRowHeight}
             labelOffset={sidebarOffset}

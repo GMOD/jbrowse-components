@@ -85,11 +85,19 @@ function readGeometry(page: Page) {
 
 // The species names drawn beside the rows — culled to the viewport, so this is
 // "which rows can the user see", read from the DOM rather than from the model.
+//
+// Addressed by its own test id, NOT as `${DISPLAY} svg text`. The labels are
+// portaled into the TrackContainer's overlay node so the inter-region masks
+// don't paint over them (see RowLabelsOverlay), which puts them outside the
+// display's subtree entirely — the display-scoped query silently kept matching,
+// and returned the coverage band's axis ticks `["0","10"]` instead of species.
+const ROW_LABELS = '[data-testid="maf-row-labels"]'
+
 function visibleSpecies(page: Page) {
   return page.evaluate(
     (sel: string) =>
-      [...document.querySelectorAll(`${sel} svg text`)].map(t => t.textContent),
-    DISPLAY,
+      [...document.querySelectorAll(`${sel} text`)].map(t => t.textContent),
+    ROW_LABELS,
   )
 }
 
