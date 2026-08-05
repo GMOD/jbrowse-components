@@ -6,10 +6,13 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * #config CramAdapter
  * #trackType AlignmentsTrack
  * #fileFormat alignments | CRAM
- * used to configure CRAM adapter
+ * `sequenceAdapter` is filled in automatically from the enclosing assembly's
+ * sequence track — you never specify it.
  *
- * Note: `sequenceAdapter` does **not** need to be specified manually — JBrowse
- * automatically supplies it from the enclosing assembly's sequence track.
+ * Reads CRAM alignments, fetching only the containers overlapping the visible
+ * region through the `.crai` index. Decoding happens against that assembly's
+ * sequence, so it has to be the reference the file was compressed against; a
+ * mismatched one isn't rejected, it just decodes into mismatches.
  *
  * #example
  * The `uri` shorthand auto-resolves the `.crai` index:
@@ -53,10 +56,7 @@ const configSchema = ConfigurationSchema(
 
     /**
      * #slot cramLocation
-     * location of the CRAM file. CRAM stores each read as differences from the
-     * reference it was compressed against, so the assembly's sequence has to be
-     * that same reference — pointing this at an assembly built from a different
-     * FASTA shows up as widespread false mismatches rather than as an error.
+     * location of the CRAM file
      */
     cramLocation: {
       type: 'fileLocation',
@@ -68,9 +68,8 @@ const configSchema = ConfigurationSchema(
 
     /**
      * #slot craiLocation
-     * location of the CRAM index (`.crai`) written by `samtools index`. Only
-     * needed when the index is not named `<file>.cram.crai`, which is what the
-     * `uri` shorthand assumes.
+     * location of the CRAM index (`.crai`). Only needed when it is not named
+     * `<file>.cram.crai`, which is what the `uri` shorthand assumes.
      */
     craiLocation: {
       type: 'fileLocation',

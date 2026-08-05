@@ -132,9 +132,6 @@ WebSessionManagementMixin
 WiggleCommonMixin
 WiggleScoreConfigMixin
 
-# config slots with a blank Description cell (0)
-# fix: add a JSDoc body under #slot, or a `description` in the slot object
-
 # configs that fell back to the General category (0)
 # fix: add #category to the #config JSDoc
 

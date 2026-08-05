@@ -153,11 +153,6 @@ async function main() {
       names: modelGaps.noExample,
     },
     {
-      title: 'config slots with a blank Description cell',
-      fix: 'add a JSDoc body under #slot, or a `description` in the slot object',
-      names: configGaps.noDescription,
-    },
-    {
       title: 'configs that fell back to the General category',
       fix: 'add #category to the #config JSDoc',
       names: configGaps.general,

@@ -1111,14 +1111,52 @@ function adaptersMissingTrackType(configs: ConfigWithHeader[]) {
 }
 
 // A slot with neither a JSDoc comment nor an in-object `description` renders a
-// blank Description cell — a name and a type with no explanation. Listed as
-// `Config.slot` so each gap names the exact place to fix.
+// blank Description cell — a name and a type with no explanation, which reads
+// as "this setting does nothing" rather than as a missing sentence.
+//
+// Container sub-schemas are exempt because `slotsTable` already hides their
+// rows (see isContainerSlot): they carry no type, default or prose of their
+// own, their children are listed as `index.*` rows, and describing one only
+// surfaces a row whose Type cell is a dumped `ConfigurationSchema(...)`. Asking
+// for a description there sends the next author hunting for a sentence that
+// makes the page worse.
 function slotsMissingDescription(configs: ConfigWithHeader[]) {
   return configs.flatMap(c =>
     c.slots
-      .filter(s => !(s.docs || slotMetaFor(s).meta.description))
-      .map(s => `${c.header.name}.${s.name}`),
+      .filter(s => {
+        const { meta } = slotMetaFor(s)
+        return (
+          !(s.docs || meta.description) && !isContainerSlot(s, meta, c.slots)
+        )
+      })
+      .map(s => ({ file: c.filename, name: `${c.header.name}.${s.name}` })),
   )
+}
+
+// Fatal, for the same reason an untagged `#slot` is (see assertNoUntaggedSlots).
+// This spent a long time as a line in the committed coverage list, which cannot
+// hold a count at zero: the command that reports a new gap is the same command
+// that records it as accepted, so a slot only has to be committed undescribed
+// once to stay that way. 99 of them accumulated that way across ~50 schemas
+// before anyone counted, including both location slots of CramAdapter — the
+// entire useful surface of that page. The count is zero now, and the fix is one
+// sentence at a definition site the error names exactly, so it can be held
+// there. Gaps with a real backlog (a missing #example) stay in the coverage
+// list; this one graduates.
+function assertNoBlankSlotDescriptions(gaps: { file: string; name: string }[]) {
+  if (gaps.length) {
+    const byFile = new Map<string, string[]>()
+    for (const gap of gaps) {
+      byFile.set(gap.file, [...(byFile.get(gap.file) ?? []), gap.name])
+    }
+    throw new Error(
+      `${gaps.length} config slot(s) would render a blank Description cell. Write the prose as a JSDoc body under the slot's #slot tag — the generator prefers it over an in-object \`description\`, and unlike \`description\` a comment is not shipped in the plugin bundle (that field is the config editor's helper text, so use it only when someone editing the slot in the UI needs the hint):\n${[
+        ...byFile,
+      ]
+        .map(([file, list]) => `  ${file}: ${list.join(', ')}`)
+        .join('\n')}`,
+    )
+  }
 }
 
 // Group every documented adapter by the track type it declares via #trackType,
@@ -1207,6 +1245,9 @@ export function writeConfigDocs(
   const byName = mapByKey(withHeader, c => c.header.name)
   const index: ConfigIndex = { byDeclId, byName }
   resolveInheritedSlotMeta(withHeader, index)
+  // Before the write loop, so a run that would emit a blank cell fails without
+  // leaving the page it would have appeared on rewritten on disk.
+  assertNoBlankSlotDescriptions(slotsMissingDescription(withHeader))
   const extendedBy = extendedByMap(withHeader, index)
   const links: DisplayLinkContext = {
     displayTypesByTrack,
@@ -1240,7 +1281,6 @@ export function writeConfigDocs(
       isGeneralCategory: c =>
         configCategory(c.header.name, c.header.category) === 'General',
     }),
-    noDescription: slotsMissingDescription(withHeader),
     unresolvedBase: unresolvedBases(withHeader, index),
     adapterNoTrackType: adaptersMissingTrackType(withHeader),
   }

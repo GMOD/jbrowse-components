@@ -28,10 +28,13 @@ The `uri` shorthand auto-resolves the `.crai` index:
 
 _See the **Config slots** section below for all available configuration fields._
 
-used to configure CRAM adapter
+`sequenceAdapter` is filled in automatically from the enclosing assembly's
+sequence track — you never specify it.
 
-Note: `sequenceAdapter` does **not** need to be specified manually — JBrowse
-automatically supplies it from the enclosing assembly's sequence track.
+Reads CRAM alignments, fetching only the containers overlapping the visible
+region through the `.crai` index. Decoding happens against that assembly's
+sequence, so it has to be the reference the file was compressed against; a
+mismatched one isn't rejected, it just decodes into mismatches.
 
 ## Related links
 
@@ -53,5 +56,5 @@ surface.
 | Slot | Description |
 | --- | --- |
 | <span id="slot-fetchsizelimit">**fetchSizeLimit**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>3_000_000</code> | size in bytes over which to display a warning to the user that too much data will be fetched<br>_advanced_ |
-| <span id="slot-cramlocation">**cramLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.cram', locationType: 'UriLocation' }</code> | location of the CRAM file. CRAM stores each read as differences from the reference it was compressed against, so the assembly's sequence has to be that same reference — pointing this at an assembly built from a different FASTA shows up as widespread false mismatches rather than as an error. |
-| <span id="slot-crailocation">**craiLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.cram.crai', locationType: 'UriLocation' }</code> | location of the CRAM index (`.crai`) written by `samtools index`. Only needed when the index is not named `<file>.cram.crai`, which is what the `uri` shorthand assumes. |
+| <span id="slot-cramlocation">**cramLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.cram', locationType: 'UriLocation' }</code> | location of the CRAM file |
+| <span id="slot-crailocation">**craiLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.cram.crai', locationType: 'UriLocation' }</code> | location of the CRAM index (`.crai`). Only needed when it is not named `<file>.cram.crai`, which is what the `uri` shorthand assumes. |
