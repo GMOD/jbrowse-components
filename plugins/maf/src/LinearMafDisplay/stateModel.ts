@@ -2084,13 +2084,17 @@ export default function stateModelFactory(
         },
       }))
       .actions(self => ({
+        // #region renderSvgAction
         /**
          * #action
+         * Dynamic import so the export path — and everything it pulls in — stays
+         * out of the bundle until someone actually exports.
          */
         async renderSvg(opts: ExportSvgDisplayOptions) {
           const { renderSvg } = await import('./renderSvg.tsx')
           return renderSvg(self as LinearMafDisplayModel, opts)
         },
+        // #endregion
         // No superAfterAttach() call: @jbrowse/mobx-state-tree auto-chains hooks,
         // so MultiRegionDisplayMixin's afterAttach already runs (see
         // afterAttachAutoChain.test.ts). Calling it explicitly would double-install

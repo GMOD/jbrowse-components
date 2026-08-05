@@ -4,10 +4,12 @@ import { createSvgRasterCanvas } from './createSvgRasterCanvas.ts'
 import type { SvgRasterCanvasOpts } from './createSvgRasterCanvas.ts'
 import type React from 'react'
 
+// #region ctx2d
 // Shared 2D-context type for the SVG-export draw pipeline. Real
 // CanvasRenderingContext2D when rasterizing to PNG; SvgCanvas when emitting
 // vector. Most plugin draw functions duck-type against this union.
 export type Ctx2D = CanvasRenderingContext2D | SvgCanvas
+// #endregion
 
 export type PaintLayerOpts = SvgRasterCanvasOpts & {
   rasterizeLayers?: boolean
