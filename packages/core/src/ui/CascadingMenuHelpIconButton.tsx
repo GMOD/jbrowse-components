@@ -37,6 +37,11 @@ export default function CascadingMenuHelpIconButton({
     <>
       <IconButton
         size="small"
+        // an icon-only button has no text for a screen reader to announce, so
+        // without this it reads as a bare "button" sitting inside the row
+        aria-label={
+          typeof label === 'string' ? `Help for ${label}` : 'Help for this item'
+        }
         onClick={event => {
           event.stopPropagation()
           setHelpDialogOpen(true)

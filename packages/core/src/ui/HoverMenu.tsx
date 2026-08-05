@@ -36,6 +36,16 @@ function HoverMenu({
       transformOrigin={transformOrigin}
       style={{ pointerEvents: 'none' }}
       slotProps={{ paper: { style: { pointerEvents: 'auto' } } }}
+      // A submenu is portaled in the DOM but is still a React *descendant* of
+      // the parent menu's list, so React replays its key events into the parent
+      // MenuList's own arrow handler. That parent then moves focus to one of its
+      // rows, the submenu's focus trap yanks it back to the paper, and arrow
+      // navigation inside a submenu dies on its first row. The submenu's own
+      // MenuList sits below this root in the real DOM and has already handled
+      // the key by the time it gets here, so stopping it costs nothing.
+      onKeyDown={e => {
+        e.stopPropagation()
+      }}
     >
       {children}
     </Menu>

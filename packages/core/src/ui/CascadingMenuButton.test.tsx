@@ -68,6 +68,25 @@ describe('CascadingMenuButton', () => {
     expect(await screen.findByText('Sub Item 1')).toBeTruthy()
   })
 
+  // a submenu is portaled but is still a React descendant of the parent list, so
+  // without HoverMenu stopping the key at its root the parent MenuList also
+  // handles the arrow, moves focus to one of its own rows, and the submenu's
+  // focus trap drags focus back to the paper — leaving the caret stuck on the
+  // submenu's first row forever
+  it('should arrow through a submenu without focus escaping to the parent', async () => {
+    const user = await setup()
+    await user.click(screen.getByTestId('menu-button'))
+    await user.keyboard('{ArrowDown}{ArrowDown}{ArrowRight}')
+    expect(await screen.findByText('Sub Item 1')).toBeTruthy()
+    expect(document.activeElement).toBe(
+      screen.getByRole('menuitem', { name: 'Sub Item 1' }),
+    )
+    await user.keyboard('{ArrowDown}')
+    expect(document.activeElement).toBe(
+      screen.getByRole('menuitem', { name: 'Sub Item 2' }),
+    )
+  })
+
   it('should close submenu on ArrowLeft key', async () => {
     const user = await setup()
     await user.click(screen.getByTestId('menu-button'))
@@ -240,6 +259,19 @@ describe('CascadingMenuButton', () => {
     const row = (await screen.findByText('Item 1')).closest('li')!
     await user.click(within(row).getByRole('button'))
     expect(await screen.findByText('the explanation')).toBeTruthy()
+  })
+
+  // an icon-only button is announced as a bare "button" without this. The label
+  // names the row it belongs to, since a menu can carry several help buttons
+  it('should give the help button an accessible name', async () => {
+    const user = await setup([
+      { label: 'Item 1', helpText: 'the explanation', onClick: () => {} },
+    ])
+    await user.click(screen.getByTestId('menu-button'))
+    const row = await screen.findByRole('menuitem', { name: 'Item 1' })
+    expect(
+      within(row).getByRole('button', { name: 'Help for Item 1' }),
+    ).toBeTruthy()
   })
 
   it('shares one trailing column when help and adornment never share a row', async () => {
