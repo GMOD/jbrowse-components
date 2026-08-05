@@ -45,7 +45,7 @@ import { autorun, observable } from 'mobx'
 import {
   arcColorLegendCategory,
   computeArcsByGroup,
-  computeReadChains,
+  computeNamedReadChains,
 } from '../features/arcs/compute.ts'
 import { anyArcsDrawn } from '../features/arcs/types.ts'
 import { computeDerivativePaths } from '../features/derivativePaths/computePaths.ts'
@@ -129,6 +129,7 @@ import type {
   GroupedAlignmentsResult,
   PileupDataResult,
 } from '../RenderAlignmentDataRPC/types'
+import type { NamedReadChain } from '../features/arcs/compute.ts'
 import type { ArcsUploadData } from '../features/arcs/types.ts'
 import type { DerivativeCandidate } from '../features/derivativePaths/computePaths.ts'
 import type { IndicatorHitResult } from '../features/indicator/types.ts'
@@ -1669,17 +1670,16 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * Derivative-allele paths the reads in view describe, most-supported
-         * first. Each read's SA chain is already an ordered, oriented list of
-         * reference intervals — a derivative path — so the proposal is a
-         * grouping of those chains rather than any new analysis. Empty when no
-         * reads are loaded, which `hasReadsForDerivativePaths` distinguishes.
+         * Every loaded read's segment chain, named. The input to both halves of
+         * a reconstruction — the paths the chains propose, and the reads drawn
+         * back onto the one a user picks — so the picture cannot be built from a
+         * different read set than the proposal was.
          *
          * Deliberately NOT gated on `readConnections`: this reads the chains,
          * not the arcs, and a user who wants a reconstruction should not first
          * have to turn on a display option that draws something else.
          */
-        get derivativePathCandidates(): DerivativeCandidate[] {
+        get derivativeReadChains(): NamedReadChain[] {
           if (!this.hasReadsForDerivativePaths) {
             return []
           }
@@ -1708,10 +1708,23 @@ export default function stateModelFactory(
           // four. Chaining within a group loses nothing, because a segment
           // sitting in another lane is named by the read's own SA tag and
           // `unpairedReadChain` folds it in from there.
-          const chains = [...this.rawDataByGroup.values()].flatMap(byRegion =>
-            computeReadChains(byRegion, regionInfos, canonicalRefName),
+          return [...this.rawDataByGroup.values()].flatMap(byRegion =>
+            computeNamedReadChains(byRegion, regionInfos, canonicalRefName),
           )
-          return computeDerivativePaths({ chains })
+        },
+
+        /**
+         * #getter
+         * Derivative-allele paths the reads in view describe, most-supported
+         * first. Each read's SA chain is already an ordered, oriented list of
+         * reference intervals — a derivative path — so the proposal is a
+         * grouping of those chains rather than any new analysis. Empty when no
+         * reads are loaded, which `hasReadsForDerivativePaths` distinguishes.
+         */
+        get derivativePathCandidates(): DerivativeCandidate[] {
+          return computeDerivativePaths({
+            chains: this.derivativeReadChains.map(named => named.chain),
+          })
         },
       }))
       .views(self => ({
