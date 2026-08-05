@@ -25,8 +25,8 @@ ideas that used to sit at the bottom of this file are in
 | `website/scripts/specs/cancer_sv.ts` | the figure specs |
 | `https://jbrowse.org/demos/cancer_sv/` | hosted data, 2.3 GB, 18 files |
 
-Behavior checks for both python helpers live in `scripts/check-build-scripts.py`
-(54 checks total, was 24). It also gained a `contextlib`/`tempfile` import.
+Behavior checks for both python helpers live in `scripts/check-build-scripts.py`,
+53 of them for `sv_multihop` alone. Every bug below is pinned by one.
 
 ## Verified facts, do not re-derive
 
@@ -74,6 +74,16 @@ whose endpoints sit within `--max-segment` on the same chromosome. That
 threshold is the one real knob: it is the longest reference segment you believe
 one read can bridge, so it should track the read-length distribution.
 
+The union is done by bucketing endpoints at `--max-segment`, not by comparing
+every pair of junctions: every endpoint in a bucket is within the threshold of
+every other by construction, so a bucket is one component outright and two
+neighbouring buckets join exactly when their closest pair does. 4,000 junctions
+took 9 s pairwise and 0.01 s bucketed, and a whole-genome GRIDSS callset is
+several times that — which matters for a tool whose claim is that it runs
+against any somatic callset. The two forms agree on the partition over 300
+random callsets wherever no two endpoints coincide exactly; coinciding endpoints
+are the case the pairwise form got wrong (below).
+
 `derive` makes exactly one pass over the alignment file, which may be a remote
 URL, then works from a local slice. It picks the longest spanning read as a
 backbone, polishes it to a consensus with the rest, trims leading/trailing `N`
@@ -96,16 +106,18 @@ Three things about the contig-to-reference alignment are not obvious:
 added for building a fusion-transcript contig from Iso-Seq and nothing has run
 that path yet.
 
-## Four bugs worth knowing about
+## Bugs worth knowing about
 
-All four produced a plausible wrong answer rather than an error, and all four
-are now pinned by behavior checks:
+Every one of these produced a plausible wrong answer rather than an error, and
+every one is now pinned by a behavior check.
+
+Found while building the demo:
 
 - `touches_all` originally tested proximity to a segment's **start** rather than
   containment. A read's chr3 arm can begin 50 kb from the breakpoint it crosses
   at its far end, so this found 14 of the 29 spanning reads, missed the 57 kb
   backbone, and built the reconstruction from what was left.
-- Reciprocal breakend dedup needs the mate refName lower-cased, because callers
+- Reciprocal breakend dedup needs the mate refName case-folded, because callers
   write it upper-cased in the ALT bracket. Without it a 3-junction chain reports
   as 6.
 - `depmap_to_jbrowse` must emit the `#`-prefixed header; `StarFusionAdapter`
@@ -118,6 +130,45 @@ are now pinned by behavior checks:
   alone. COLO829's own run passed one locus per chromosome and never hit it.
   Found by running the pipeline on a synthetic foldback (below); fixed by
   merging the windows.
+
+Found in a later read of the tool itself. None of them changes COLO829's own
+run — verified by re-deriving it, byte for byte, before and after — which is the
+point: the demo dataset is not a test of this tool, it is one input to it.
+
+- **`END=` matched inside `CIEND=`.** INFO keys were matched unanchored and
+  `re.search` takes the first hit, so a symbolic DEL/DUP/INV that writes its
+  confidence interval before its END (`SVTYPE=DUP;CIEND=5,10;END=9000`) got a
+  junction at position 5. A negative first bound (`CIEND=-50,50`) doesn't match
+  the digits, so whether it bites depends on the caller and on the sign.
+  `OLDSVTYPE=DEL` satisfied `SVTYPE` the same way, making a `<CNV>` record a
+  deletion. `info_field` now matches from the start of a field.
+- **Two junctions leaving the same reference base did not link.** `find_chains`
+  guarded its endpoint comparison with `endpoint_a != endpoint_b`, which
+  excludes exactly the strongest link a chain can have: one breakpoint that two
+  adjacencies both leave from. The chain came back as unrelated singletons, so
+  the event was not reported at all rather than reported wrongly.
+- **The lower-cased mate refName leaked into `--loci`.** Case-folding the mate is
+  what collapses reciprocal pairs, but the folded spelling was also what
+  `chain_loci` handed to `derive` — so on any assembly not spelled in lower case
+  (`Chr1`, mixed-case scaffolds) the loci were regions the reference does not
+  have. Mates now resolve to the spelling the VCF's own `##contig`/CHROM lines
+  use, which collapses the pairs *and* stays a valid region. hg38 is lower-case
+  throughout, which is why the demo never showed it.
+- **A multi-parent GFF3 feature lost all but its last parent.** `project_gff`
+  suffixes `ID`/`Parent` per segment so a foldback's two copies keep separate
+  hierarchies. `Parent=t1,t2` took one suffix on the whole list, leaving `t1`
+  pointing at an ID no copy carries — the orphan-exon problem the suffixing
+  exists to prevent.
+- **`derive` never deleted its temp directory.** 19 MB for COLO829's own chain,
+  and it scales with depth × `--window` × loci, since the first intermediate is
+  an uncompressed SAM of every read near every locus. On the session tmpfs
+  ([below](#traps-in-this-worktree)) that is the thing that fills it.
+
+Three more failures were loud but useless, and now say what happened: nothing
+supported at `--min-depth` and nothing aligned back above `--min-mapq` both used
+to write an empty "reconstruction" and exit 0, and a locus naming a sequence the
+reference does not have died inside samtools *after* the fetch rather than
+against the `.fai` before it.
 
 ## The VCF-side sibling: derivative-chromosome-utils
 
@@ -160,7 +211,24 @@ The mate refName case trap applies too, though the library dodges it —
 is handed to consumers exactly as the caller wrote it (`CHR10` against a `chr10`
 CHROM), so anything grouping on it needs to normalize.
 
-## How to exercise `derive` without the demo data
+## How to exercise `derive`
+
+**Against the real data it is a 9-second run, not a demo rebuild.** samtools
+fetches only the slices around the loci from the hosted CRAM, so
+
+```bash
+python3 scripts/sv_multihop.py derive \
+  --aln https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829_tumor.ht.cram \
+  --ref GRCh38.fa --loci chr10:58717464,chr12:72273112,chr3:25359111 --out der3
+```
+
+reproduces `der3_RARB.vs_reference.paf` **byte for byte** against what the demo
+serves (`fusion_demo_build/demo/`), off a local `GRCh38.fa` and nothing else.
+That is the cheapest real-data regression test this tool has, and the one that
+says a change to it did not move the published figures. `chains` against
+`COLO829.somatic-sv.vcf.gz` is the same kind of check for the other subcommand:
+its output is quoted in the tutorial (100 junctions, 4 chains, chain 1 is the
+RARB one), so a diff of it is a diff of the docs.
 
 A synthetic foldback runs the whole pipeline in seconds and has a known answer,
 which is how the MAPQ-0 bug above surfaced. Build a two-contig reference, splice
@@ -229,7 +297,8 @@ consume a walk — rather than to move it.
 - **The session scratchpad is a 16 GB tmpfs.** A `samtools sort` of a few GB
   filled it and wedged the sandbox so hard that `echo` failed. Set `TMPDIR` to
   real disk and keep large intermediates out of `/tmp`. Working data for this
-  build is in `/home/cdiesh/fusion_demo_build/`.
+  build is in `/home/cdiesh/fusion_demo_build/`. `derive` no longer contributes
+  to this — it used to leave its whole temp directory behind, every run.
 - **Port 3334 is exclusive to one screenshot run.** Other agents use it. Wait on
   it (`until ! ss -lptn 'sport = :3334' | grep -q LISTEN`), never kill it.
 - **`galleryLinks.generated.ts` must be committed surgically.** Regenerating it

@@ -18,7 +18,7 @@ and then rebuilds the allele from the reads that span it.
            and realign the reads to it -- so the reconstruction can be shown as a
            synteny view and checked against the reads rather than hand-drawn
 
-Requires: samtools, minimap2 (both on PATH).
+Requires: samtools and minimap2 on PATH, plus tabix for --genes.
 
 Usage:
   sv_multihop.py chains somatic.sv.vcf.gz [--max-segment 20000]
@@ -29,20 +29,34 @@ Usage:
 
 import argparse
 import gzip
-import itertools
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
 import urllib.parse
 
 BND_MATE = re.compile(r'[\[\]]([^\[\]:]+):(\d+)[\[\]]')
+CONTIG_ID = re.compile(r'##contig=<[^>]*ID=([^,>]+)')
 
 
 def open_maybe_gzip(path):
     return gzip.open(path, 'rt') if path.endswith('.gz') else open(path)
+
+
+def info_field(info, key):
+    r"""One INFO value, matched from the start of its own field.
+
+    Unanchored, `END=(\d+)` also matches the END inside `CIEND=5,10`, and
+    re.search takes the first hit -- so a record that writes its confidence
+    interval before its END gets a junction at position 5 and no complaint. The
+    same applies to any caller-specific INFO key ending in the one being asked
+    for (`OLDSVTYPE=DEL` for `SVTYPE`).
+    """
+    m = re.search(rf'(?:^|;){key}=([^;]*)', info)
+    return m.group(1) if m else None
 
 
 def parse_junctions(vcf):
@@ -53,28 +67,42 @@ def parse_junctions(vcf):
     so they are collapsed.
     """
     junctions = []
+    contigs = {}
     for line in open_maybe_gzip(vcf):
         if line.startswith('#'):
+            m = CONTIG_ID.match(line)
+            if m:
+                contigs.setdefault(m.group(1).lower(), m.group(1))
             continue
         f = line.rstrip('\n').split('\t')
         if len(f) < 8:
             continue
         chrom, pos, alt, info = f[0], int(f[1]), f[4], f[7]
-        svtype = re.search(r'SVTYPE=(\w+)', info)
-        if not svtype:
-            continue
-        if svtype.group(1) == 'BND':
+        contigs.setdefault(chrom.lower(), chrom)
+        svtype = info_field(info, 'SVTYPE')
+        if svtype == 'BND':
             m = BND_MATE.search(alt)
             if m:
-                # callers vary on refName case in the ALT bracket
-                junctions.append(((chrom, pos), (m.group(1).lower(), int(m.group(2)))))
-        elif svtype.group(1) in ('DEL', 'DUP', 'INV'):
-            m = re.search(r'END=(\d+)', info)
-            if m:
-                junctions.append(((chrom, pos), (chrom, int(m.group(1)))))
+                junctions.append(((chrom, pos), (m.group(1), int(m.group(2)))))
+        elif svtype in ('DEL', 'DUP', 'INV'):
+            end = info_field(info, 'END')
+            if end and end.isdigit():
+                junctions.append(((chrom, pos), (chrom, int(end))))
+
+    # Callers vary on refName case in the ALT bracket (CHR12 against a chr12
+    # CHROM). Resolving the mate to the spelling the file itself uses does two
+    # jobs at once: reciprocal pairs match, so they collapse, and the loci
+    # `chains` prints stay usable as samtools regions against the reference the
+    # callset was made on. Lower-casing them reaches only the first -- on any
+    # assembly not spelled in lower case (Chr1, scaffold names, 1/2/3 with a
+    # `chr` prefix elsewhere) `derive` is then handed a region that does not
+    # exist.
+    def canonical(endpoint):
+        return (contigs.get(endpoint[0].lower(), endpoint[0]), endpoint[1])
 
     deduped, seen = [], set()
     for a, b in junctions:
+        a, b = canonical(a), canonical(b)
         key = tuple(sorted([(a[0].lower(), a[1]), (b[0].lower(), b[1])]))
         if key not in seen:
             seen.add(key)
@@ -89,10 +117,14 @@ def find_chains(junctions, max_segment, min_hops):
     an endpoint of the other on the same chromosome: that intervening reference
     segment is short enough for a single read to carry both junctions. Chains are
     the connected components of that relation.
-    """
-    def same_locus(p, q):
-        return p[0].lower() == q[0].lower() and abs(p[1] - q[1]) <= max_segment
 
+    Endpoints are bucketed by max_segment rather than compared pairwise. Every
+    endpoint in one bucket is within max_segment of every other by construction,
+    so a bucket is one component outright, and two neighbouring buckets join
+    exactly when their closest pair does -- which leaves nothing at all to
+    compare against the rest of the callset. A whole-genome VCF is tens of
+    thousands of junctions and the pairwise form is quadratic in that.
+    """
     parent = list(range(len(junctions)))
 
     def find(i):
@@ -101,13 +133,26 @@ def find_chains(junctions, max_segment, min_hops):
             i = parent[i]
         return i
 
-    for (i, ja), (j, jb) in itertools.combinations(enumerate(junctions), 2):
-        linked = any(
-            same_locus(ea, eb) and ea != eb
-            for ea, eb in itertools.product(ja, jb)
-        )
-        if linked:
-            parent[find(i)] = find(j)
+    def union(i, j):
+        parent[find(i)] = find(j)
+
+    width = max(1, max_segment)
+    buckets = {}
+    for i, junction in enumerate(junctions):
+        for chrom, pos in junction:
+            buckets.setdefault((chrom.lower(), pos // width), []).append((pos, i))
+
+    for (chrom, b), entries in buckets.items():
+        for _, i in entries[1:]:
+            union(entries[0][1], i)
+        # Two junctions sharing a breakpoint EXACTLY are the strongest link there
+        # is -- one reference position that two adjacencies both leave from -- and
+        # an earlier `endpoint_a != endpoint_b` guard here excluded precisely that
+        # pair, so a chain hinged on a reused breakpoint came back as unrelated
+        # singletons. Nothing below treats equality as a special case.
+        nxt = buckets.get((chrom, b + 1))
+        if nxt and min(p for p, _ in nxt) - max(p for p, _ in entries) <= max_segment:
+            union(entries[0][1], nxt[0][1])
 
     groups = {}
     for i in range(len(junctions)):
@@ -201,6 +246,45 @@ def run(cmd, **kw):
     return subprocess.run(cmd, check=True, **kw)
 
 
+def run_out(cmd, path, **kw):
+    """run(), writing stdout to a file that is then closed."""
+    with open(path, 'w') as fh:
+        return run(cmd, stdout=fh, **kw)
+
+
+def require_tools(*tools):
+    """Fail before the expensive fetch, not after it.
+
+    `derive` reads the alignment file once and it may be a remote URL, so a
+    minimap2 that is not installed otherwise surfaces as a traceback several
+    minutes into the run.
+    """
+    missing = [t for t in tools if shutil.which(t) is None]
+    if missing:
+        sys.exit(f'not on PATH: {", ".join(missing)}')
+
+
+def align_and_sort(target_fa, reads_fa, out_bam, preset, threads, tmp):
+    """minimap2 -ax | sort | index, which derive does twice: once to polish the
+    backbone into a consensus, once to realign the reads to the result."""
+    sam = os.path.join(tmp, os.path.basename(out_bam) + '.sam')
+    run_out(['minimap2', '-ax', preset, '-t', str(threads), target_fa, reads_fa],
+            sam, stderr=subprocess.DEVNULL)
+    run(['samtools', 'sort', '-@', str(threads), '-o', out_bam, sam])
+    run(['samtools', 'index', out_bam])
+
+
+def read_fai(fasta):
+    """Reference sequence lengths, from the FASTA index."""
+    if not os.path.exists(fasta + '.fai'):
+        run(['samtools', 'faidx', fasta])
+    lengths = {}
+    for line in open(fasta + '.fai'):
+        f = line.split('\t')
+        lengths[f[0]] = int(f[1])
+    return lengths
+
+
 def merge_spans(spans, pad):
     """Padded, merged (chrom, start, end) windows, one per stretch of reference.
 
@@ -215,6 +299,43 @@ def merge_spans(spans, pad):
         else:
             merged.append(window)
     return merged
+
+
+def unplaced_gaps(rows, contig_length, min_segment):
+    """Stretches of the contig that no first-pass alignment covers.
+
+    A templated insert of a couple of hundred bases will not survive chaining
+    against a 30 kb arm, however fine the seeding, so each of these is realigned
+    on its own afterwards. Those inserts are the whole point of the figure, so
+    losing them is not an option.
+    """
+    gaps, cursor = [], 0
+    for f in sorted(rows, key=lambda f: int(f[2])):
+        if int(f[2]) - cursor >= min_segment:
+            gaps.append((cursor, int(f[2])))
+        cursor = max(cursor, int(f[3]))
+    if contig_length - cursor >= min_segment:
+        gaps.append((cursor, contig_length))
+    return gaps
+
+
+def lift_to_chromosome(rows, chrom_length):
+    """PAF rows aligned against `chrom:start-end` window sequences, rewritten
+    against whole chromosomes.
+
+    The contig is aligned to windows around the chain's own loci rather than to
+    the genome -- seeding fine enough to catch a 200 bp insert matches every
+    repeat there is -- so every target coordinate arrives window-relative, and a
+    PAF that says so is one no browser can place.
+    """
+    for f in rows:
+        chrom, span = f[5].rsplit(':', 1)
+        window_start = int(span.split('-')[0])
+        f[5] = chrom
+        f[6] = str(chrom_length[chrom])
+        f[7] = str(int(f[7]) + window_start - 1)
+        f[8] = str(int(f[8]) + window_start - 1)
+    return rows
 
 
 def track_ids(name, ref_name):
@@ -290,7 +411,16 @@ def project_gff(rows, lines, name, types=GFF_FEATURE_TYPES):
                 continue
             ds, de, dstrand = hit
             attrs = re.sub(r'\bID=([^;]*)', rf'ID=\1.seg{i}', f[8])
-            attrs = re.sub(r'\bParent=([^;]*)', rf'Parent=\1.seg{i}', attrs)
+            # GFF3 lets a feature name several parents, comma-separated; a single
+            # suffix on the whole list renames only the last and leaves the rest
+            # pointing at IDs no copy carries.
+            attrs = re.sub(
+                r'\bParent=([^;]*)',
+                lambda m: 'Parent=' + ','.join(
+                    f'{p}.seg{i}' for p in m.group(1).split(',')
+                ),
+                attrs,
+            )
             out.append('\t'.join([
                 name, f[1], f[2], str(ds + 1), str(de), f[5],
                 '-' if dstrand < 0 else '+', f[7], attrs,
@@ -395,8 +525,10 @@ def session_spec(name, ref_name, rows, contig_length, pad=2000):
     templated inserts -- the reason for the reconstruction -- pointing at nothing.
     """
     ids = track_ids(name, ref_name)
+    # PAF target coordinates are 0-based half-open; a locstring is 1-based
+    # inclusive, which is the same convention --genes hands to tabix.
     spans = merge_spans(
-        [(f[5], int(f[7]), int(f[8])) for f in rows], pad
+        [(f[5], int(f[7]) + 1, int(f[8])) for f in rows], pad
     )
     return {
         'views': [
@@ -422,6 +554,16 @@ def session_spec(name, ref_name, rows, contig_length, pad=2000):
 
 
 def cmd_derive(args):
+    require_tools('samtools', 'minimap2', *(['tabix'] if args.genes else []))
+    # Every intermediate is a whole uncompressed SAM -- of every read near the
+    # loci, then of those reads against the backbone and against the result. On a
+    # tumour BAM that is gigabytes, and on a session tmpfs it is enough to wedge
+    # the machine, so they do not outlive the run.
+    with tempfile.TemporaryDirectory(prefix='sv_multihop.') as tmp:
+        derive(args, tmp)
+
+
+def derive(args, tmp):
     loci = []
     for token in args.loci.split(','):
         chrom, pos = token.rsplit(':', 1)
@@ -431,14 +573,23 @@ def cmd_derive(args):
     for c, p in loci:
         print(f'    {c}:{p:,}')
 
-    tmp = tempfile.mkdtemp(prefix='sv_multihop.')
-    regions = [f'{c}:{max(1, p - args.window)}-{p + args.window}' for c, p in loci]
+    chrom_length = read_fai(args.ref)
+    missing = sorted({c for c, _ in loci if c not in chrom_length})
+    if missing:
+        sys.exit(f'{args.ref} has no reference sequence named: {", ".join(missing)}')
+
+    def window(chrom, pos, half):
+        """A (chrom, start, end) window around a locus, inside the chromosome."""
+        return chrom, max(1, pos - half), min(pos + half, chrom_length[chrom])
+
+    regions = [f'{c}:{s}-{e}'
+               for c, s, e in (window(c, p, args.window) for c, p in loci)]
 
     # One pass over the alignment file, which may be a remote URL, so everything
     # after this works against a local slice.
     slice_sam = os.path.join(tmp, 'slice.sam')
-    run(['samtools', 'view', '-F', '0x900', '-T', args.ref, args.aln, *regions],
-        stdout=open(slice_sam, 'w'))
+    run_out(['samtools', 'view', '-F', '0x900', '-T', args.ref, args.aln, *regions],
+            slice_sam)
 
     spanning = {
         name: seq
@@ -465,11 +616,7 @@ def cmd_derive(args):
         fh.write(f'>{args.name}\n{seq}\n')
 
     polished_bam = os.path.join(tmp, 'polish.bam')
-    run(['minimap2', '-ax', args.preset, '-t', str(args.threads), backbone, reads_fa],
-        stdout=open(os.path.join(tmp, 'polish.sam'), 'w'), stderr=subprocess.DEVNULL)
-    run(['samtools', 'sort', '-@', str(args.threads), '-o', polished_bam,
-         os.path.join(tmp, 'polish.sam')])
-    run(['samtools', 'index', polished_bam])
+    align_and_sort(backbone, reads_fa, polished_bam, args.preset, args.threads, tmp)
 
     derivative = f'{args.out}.derivative.fa'
     raw_consensus = os.path.join(tmp, 'consensus.fa')
@@ -483,6 +630,10 @@ def cmd_derive(args):
         line.strip() for line in open(raw_consensus) if not line.startswith('>')
     )
     trimmed = consensus.strip('Nn')
+    if not trimmed:
+        sys.exit(f'no base of the backbone is supported by >={args.min_depth} '
+                 'reads, so there is no contig to reconstruct; lower --min-depth '
+                 'or widen --window')
     interior_n = trimmed.upper().count('N')
     if interior_n:
         print(f'warning: {interior_n} unsupported bases inside the contig')
@@ -507,21 +658,15 @@ def cmd_derive(args):
     # survives is the templated insert alone -- a reconstruction that looks like
     # a clean answer and is missing both arms.
     windows = merge_spans(
-        [(c, max(1, p - args.flank), p + args.flank) for c, p in loci], 0
+        [window(c, p, args.flank) for c, p in loci], 0
     )
-    with open(subset, 'w') as fh:
-        run(['samtools', 'faidx', args.ref,
-             *(f'{c}:{s}-{e}' for c, s, e in windows)], stdout=fh)
-
-    chrom_length = {}
-    for line in open(args.ref + '.fai'):
-        name, length = line.split('\t')[:2]
-        chrom_length[name] = int(length)
+    run_out(['samtools', 'faidx', args.ref,
+             *(f'{c}:{s}-{e}' for c, s, e in windows)], subset)
 
     def align(query_fa, extra):
         out = os.path.join(tmp, 'pass.paf')
-        run(['minimap2', '-c', '--cs', '-t', str(args.threads), *extra, subset, query_fa],
-            stdout=open(out, 'w'), stderr=subprocess.DEVNULL)
+        run_out(['minimap2', '-c', '--cs', '-t', str(args.threads), *extra,
+                 subset, query_fa], out, stderr=subprocess.DEVNULL)
         kept = []
         for line in open(out):
             f = line.rstrip('\n').split('\t')
@@ -536,25 +681,14 @@ def cmd_derive(args):
                               '-s', '40', '-N', '20', '-p', '0.1'])
     rows.sort(key=lambda f: int(f[2]))
 
-    # A templated insert of a couple of hundred bases will not survive chaining
-    # against a 30 kb arm, however fine the seeding, so any stretch of the contig
-    # the first pass left unplaced is re-aligned on its own. Those inserts are
-    # the whole point of the figure, so losing them is not an option.
-    gaps, cursor = [], 0
-    for f in rows:
-        if int(f[2]) - cursor >= args.min_segment:
-            gaps.append((cursor, int(f[2])))
-        cursor = max(cursor, int(f[3]))
-    if len(trimmed) - cursor >= args.min_segment:
-        gaps.append((cursor, len(trimmed)))
-
-    for start, end in gaps:
+    for start, end in unplaced_gaps(rows, len(trimmed), args.min_segment):
         fragment = os.path.join(tmp, f'gap_{start}.fa')
         with open(fragment, 'w') as fh:
             fh.write(f'>gap\n{trimmed[start:end]}\n')
         found = align(fragment, [*splice, '-k', '9', '-w', '3', '-m', '20',
                                  '-s', '30', '-N', '5', '-p', '0.5'])
-        for f in sorted(found, key=lambda r: -int(r[9]))[:1]:
+        if found:
+            f = max(found, key=lambda r: int(r[9]))
             f[0] = args.name
             f[1] = str(len(trimmed))
             f[2] = str(int(f[2]) + start)
@@ -562,14 +696,11 @@ def cmd_derive(args):
             rows.append(f)
             print(f'    gap {start}-{end} placed by second pass')
 
-    for f in rows:
-        chrom, span = f[5].rsplit(':', 1)
-        window_start = int(span.split('-')[0])
-        f[5] = chrom
-        f[6] = str(chrom_length[chrom])
-        f[7] = str(int(f[7]) + window_start - 1)
-        f[8] = str(int(f[8]) + window_start - 1)
+    if not rows:
+        sys.exit('no part of the contig aligned back to the reference above MAPQ '
+                 f'{args.min_mapq}; widen --flank or lower --min-mapq')
 
+    lift_to_chromosome(rows, chrom_length)
     rows.sort(key=lambda f: int(f[2]))
     with open(paf, 'w') as fh:
         for f in rows:
@@ -602,9 +733,9 @@ def cmd_derive(args):
     if args.genes:
         genes_gff = f'{args.out}.derivative_genes.gff3'
         spans = merge_spans([(f[5], int(f[7]) + 1, int(f[8])) for f in rows], 0)
-        lines = subprocess.run(
+        lines = run(
             ['tabix', args.genes, *(f'{c}:{s}-{e}' for c, s, e in spans)],
-            check=True, stdout=subprocess.PIPE, text=True,
+            stdout=subprocess.PIPE, text=True,
         ).stdout.splitlines()
         projected = project_gff(rows, lines, args.name)
         with open(genes_gff, 'w') as fh:
@@ -616,11 +747,7 @@ def cmd_derive(args):
     # The reads, realigned to the reconstruction: end-to-end coverage with no
     # clipping is the evidence that the reconstruction is right.
     proof = f'{args.out}.reads_vs_derivative.bam'
-    run(['minimap2', '-ax', args.preset, '-t', str(args.threads), derivative, reads_fa],
-        stdout=open(os.path.join(tmp, 'proof.sam'), 'w'), stderr=subprocess.DEVNULL)
-    run(['samtools', 'sort', '-@', str(args.threads), '-o', proof,
-         os.path.join(tmp, 'proof.sam')])
-    run(['samtools', 'index', proof])
+    align_and_sort(derivative, reads_fa, proof, args.preset, args.threads, tmp)
     print(f'wrote {proof}')
 
     if args.jbrowse_out:
@@ -665,7 +792,8 @@ def main():
     d.add_argument('--out', required=True, help='output prefix')
     d.add_argument('--name', default='derivative', help='contig name')
     d.add_argument('--tolerance', type=int, default=5000,
-                   help='how near a read segment must start to count as touching a locus')
+                   help='how far outside an aligned segment a locus may sit and '
+                        'still count as covered by it')
     d.add_argument('--window', type=int, default=2000,
                    help='half-width of the region fetched around each locus')
     d.add_argument('--flank', type=int, default=200000,

@@ -338,6 +338,45 @@ check("parse_junctions collapses a reciprocal breakend pair", len(junctions), 4)
 check("parse_junctions reads a symbolic DEL's END",
       ("chr5", 2000) in [e for j in junctions for e in j], True)
 
+# INFO keys have to be matched from the start of their own field. `END=(\d+)`
+# unanchored also matches inside CIEND=5,10, and re.search takes the FIRST hit,
+# so a caller that writes the confidence interval before the END gets a junction
+# at position 5 -- a plausible locus, no warning, wrong chain.
+vcf2 = os.path.join(os.path.dirname(vcf), "info.vcf")
+with open(vcf2, "w") as fh:
+    fh.write(
+        "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n"
+        "chr6\t1000\te\tN\t<DUP>\t.\tPASS\tSVTYPE=DUP;CIEND=5,10;END=9000\n"
+        # a key ENDING in SVTYPE is not SVTYPE: this record is a CNV, not a DEL
+        "chr7\t1000\tf\tN\t<CNV>\t.\tPASS\tOLDSVTYPE=DEL;END=2000\n"
+    )
+check("parse_junctions reads END, not the END inside CIEND",
+      sv_multihop.parse_junctions(vcf2), [(("chr6", 1000), ("chr6", 9000))])
+check("info_field matches a key at the start of its own field only",
+      [sv_multihop.info_field("SVTYPE=DUP;CIEND=5,10;END=9000", "END"),
+       sv_multihop.info_field("OLDSVTYPE=DEL", "SVTYPE")],
+      ["9000", None])
+
+# The mate refName is resolved to the spelling the FILE uses, not lower-cased.
+# Lower-casing collapses the reciprocal pair (above) but leaves `chains` printing
+# a --loci string that is not a region of the reference on any assembly not
+# spelled in lower case, and `derive` is then handed a locus that does not exist.
+vcf3 = os.path.join(os.path.dirname(vcf), "case.vcf")
+with open(vcf3, "w") as fh:
+    fh.write(
+        "##contig=<ID=Chr1,length=1000000>\n"
+        "##contig=<ID=Chr2,length=1000000>\n"
+        "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n"
+        "Chr1\t100\ta\tG\tG[CHR2:500[\t.\tPASS\tSVTYPE=BND\n"
+        "Chr2\t520\tb\tG\tG]chr1:900]\t.\tPASS\tSVTYPE=BND\n"
+    )
+cased = sv_multihop.parse_junctions(vcf3)
+check("parse_junctions spells the mate the way the VCF's own contigs do",
+      sorted({c for j in cased for c, _ in j}), ["Chr1", "Chr2"])
+check("chain_loci hands derive loci in that spelling",
+      sv_multihop.chain_loci(sv_multihop.find_chains(cased, 20000, 2)[0], 20000),
+      [("Chr1", 100), ("Chr2", 500)])
+
 chains = sv_multihop.find_chains(junctions, 20000, 3)
 check("find_chains groups junctions bridged by a short segment", len(chains), 1)
 check("find_chains leaves the unrelated DEL out", len(chains[0]), 3)
@@ -346,6 +385,22 @@ check("chain_loci reports one position per distinct locus",
       ["chr10", "chr12", "chr3"])
 check("find_chains needs the segment to be short",
       sv_multihop.find_chains(junctions, 100, 3), [])
+
+# Two junctions leaving the SAME reference base are the strongest link a chain
+# can have, and an `endpoint_a != endpoint_b` guard excluded exactly that pair --
+# so a chain hinged on a reused breakpoint came back as unrelated singletons and
+# the event simply was not reported.
+shared = [(("chr3", 100), ("chr10", 200)), (("chr3", 100), ("chr12", 300))]
+check("find_chains links two junctions that share a breakpoint exactly",
+      sv_multihop.find_chains(shared, 20000, 2), [shared])
+check("find_chains links across a bucket boundary",
+      len(sv_multihop.find_chains(
+          [(("chr3", 19999), ("chr10", 1)), (("chr3", 20001), ("chr12", 1))],
+          20000, 2)), 1)
+check("find_chains still separates junctions further apart than max_segment",
+      sv_multihop.find_chains(
+          [(("chr3", 100), ("chr10", 1)), (("chr3", 20101), ("chr12", 1))],
+          20000, 2), [])
 
 check("reference_span counts only reference-consuming ops",
       sv_multihop.reference_span("10S5M2I3D4N6M2H"), 18)
@@ -382,6 +437,29 @@ check("merge_spans pads before merging",
       [("chrA", 3000, 11000)])
 check("merge_spans clamps a padded start to 1",
       sv_multihop.merge_spans([("chrA", 100, 200)], 2000)[0][1], 1)
+
+# The second alignment pass, and what decides it runs. Seeding fine enough to
+# place a 200 bp templated insert against a 30 kb arm does not exist, so an
+# unplaced stretch is realigned alone; miss one and the figure loses the very
+# segment it is about.
+check("unplaced_gaps finds the stretch between two placed segments",
+      sv_multihop.unplaced_gaps(
+          [["q", "0", "500", "900"], ["q", "0", "0", "400"]], 1000, 50),
+      [(400, 500), (900, 1000)])
+check("unplaced_gaps ignores a stretch shorter than min_segment",
+      sv_multihop.unplaced_gaps([["q", "0", "10", "1000"]], 1000, 50), [])
+check("unplaced_gaps does not count a stretch two segments overlap",
+      sv_multihop.unplaced_gaps(
+          [["q", "0", "0", "600"], ["q", "0", "300", "1000"]], 1000, 50), [])
+
+# The contig is aligned against windows cut out of the reference, so every PAF
+# target coordinate arrives window-relative; unlifted, the reconstruction points
+# at the top of each chromosome instead of at the chain.
+check("lift_to_chromosome rewrites window coordinates as chromosome ones",
+      sv_multihop.lift_to_chromosome(
+          [["q", "0", "0", "10", "+", "chrA:5000-6000", "0", "100", "200"]],
+          {"chrA": 40000})[0][5:9],
+      ["chrA", "40000", "5099", "5199"])
 
 # --jbrowse-out: the four output files are useless to a reader without a
 # statement of which assembly each belongs to and which side of the PAF is the
@@ -424,6 +502,15 @@ check("session_spec puts the synteny track on the view, not a panel",
 check("session_spec track ids match the emitted config",
       sorted(view["views"][1]["tracks"]),
       sorted(t["trackId"] for t in cfg["tracks"][1:]))
+# PAF targets are 0-based half-open, a locstring is 1-based inclusive -- the same
+# conversion --genes already makes before handing spans to tabix
+check("session_spec converts the PAF's target start to a 1-based locstring",
+      sv_multihop.session_spec(
+          "der1", "hg38",
+          [["der1", "0", "0", "100", "+", "chrA", "0", "100000", "100100"]
+           + ["60"] * 4],
+          100, pad=0)["views"][0]["views"][0]["loc"],
+      "chrA:100001-100100")
 
 # --genes: the reference annotation projected onto the derivative. A junction
 # cuts wherever it cuts, so the interesting features are the clipped ones, and an
@@ -485,6 +572,14 @@ check("a projected exon's Parent is its own copy's transcript",
 check("a projected transcript's Parent is its own copy's gene",
       [by_id["t1.seg0"][8].split(";")[1], by_id["t1.seg1"][8].split(";")[1]],
       ["Parent=g1.seg0", "Parent=g1.seg1"])
+# GFF3 lets one feature name several parents. Suffixing the list rather than each
+# member of it renames only the last, and the exon lands under one transcript
+# instead of both -- an orphan again, in the case the suffixing exists to fix.
+check("project_gff suffixes every Parent in a comma-separated list",
+      sv_multihop.project_gff(
+          [fwd], ["chrA\tRefSeq\texon\t5101\t5200\t.\t+\t.\tID=e1;Parent=t1,t2"],
+          "der1")[0].split("\t")[8],
+      "ID=e1.seg0;Parent=t1.seg0,t2.seg0")
 
 genes_cfg = sv_multihop.jbrowse_config("der1", "hg38", "/data/GRCh38.fa", "/data/der1",
                                        "/data", genes=True)
