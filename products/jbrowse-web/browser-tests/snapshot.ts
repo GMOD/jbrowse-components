@@ -8,6 +8,7 @@ import {
   waitForDisplaysDone,
 } from '@jbrowse/browser-test-utils'
 
+import { waitForAppMounted } from './appMounted.ts'
 import { analyzeCanvasPng, assertNonBlank } from './canvasContent.ts'
 import { recordCapture } from './crossBackendGate.ts'
 import { comparePngBuffers } from './pngDiff.ts'
@@ -191,43 +192,6 @@ function compareImages(
 // corrupted on 2026-08-04, and it is invisible afterwards — the tests go green
 // against their own garbage.
 //
-// `#root` with children, rather than any single test-id, because it is the one
-// element every page of the app has and no non-app page does (see
-// src/index.tsx). It also catches a mount that threw, where the element exists
-// and stays empty. The canvas-element captures need no such guard: they wait on
-// a selector that a non-app page cannot satisfy.
-//
-// A *wait* rather than an assertion, because "not mounted yet" is the common
-// case and it is a race, not an error: `page.goto` resolves before the bundle
-// has executed, and the wait every caller runs first — `waitForLoadingToComplete`
-// — counts `loading-overlay` elements, which is vacuously zero on a page that has
-// rendered nothing at all. So a slow load could reach the capture with an empty
-// `#root` and photograph a blank page. Waiting collapses that race; only a page
-// that never mounts reaches the throw.
-async function waitForAppMounted(page: Page, timeout = 30000) {
-  try {
-    await page.waitForFunction(
-      () => (document.getElementById('root')?.childElementCount ?? 0) > 0,
-      { timeout, polling: 100 },
-    )
-  } catch {
-    const state = await page.evaluate(() => ({
-      hasRoot: !!document.getElementById('root'),
-      title: document.title,
-      url: window.location.href,
-    }))
-    throw new Error(
-      `refusing to capture: the JBrowse app never mounted (#root ${
-        state.hasRoot ? 'stayed empty' : 'is absent'
-      }, title "${state.title}", url ${state.url}). #root absent means the ` +
-        'server served something that is not the app — a build mid-write ' +
-        'removes build/index.html and the static server answers with a ' +
-        'directory listing. #root empty means the bundle loaded and the app ' +
-        'failed to render.',
-    )
-  }
-}
-
 export async function capturePageSnapshot(
   page: Page,
   name: string,

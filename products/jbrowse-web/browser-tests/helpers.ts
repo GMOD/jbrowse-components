@@ -7,6 +7,7 @@ import {
   waitForViewPhases,
 } from '@jbrowse/browser-test-utils'
 
+import { waitForAppMounted } from './appMounted.ts'
 import { analyzeCanvasPng, assertNonBlank } from './canvasContent.ts'
 import { canvasSelfReport, snapshotConfig } from './snapshot.ts'
 
@@ -54,6 +55,36 @@ export async function findByTestId(
   return handle
 }
 
+// What the page looked like when a wait gave up. Separates the two failures
+// that a bare "not found" conflates — the deadline expired with the app in some
+// state, versus the evaluation never got to run — and reports the app's own
+// startup stages, so "never mounted", "mounted but the assembly never arrived"
+// and "loaded fine, the text is simply absent" are distinguishable from the
+// message alone. Best-effort: a destroyed context can't be queried either, and
+// saying so is itself the answer.
+async function describePage(page: Page, timeout: number, cause: unknown) {
+  const reason = String(cause)
+  const timedOut = /waiting failed|timeout/i.test(reason)
+  const stage = timedOut
+    ? `waited ${timeout}ms`
+    : `the wait itself failed (${reason.split('\n')[0]})`
+  try {
+    const state = await page.evaluate(() => ({
+      rootChildren: document.getElementById('root')?.childElementCount ?? -1,
+      loadingOverlays: document.querySelectorAll(
+        '[data-testid="loading-overlay"]',
+      ).length,
+      url: window.location.href,
+      // enough to tell an error boundary or a "no assembly" message from a
+      // rendered view, without pasting a whole page into the log
+      text: document.body.textContent.replaceAll(/\s+/g, ' ').slice(0, 300),
+    }))
+    return `${stage}; #root children ${state.rootChildren}, ${state.loadingOverlays} loading overlay(s), url ${state.url}, body text: "${state.text}"`
+  } catch {
+    return `${stage}; the page could not be queried afterwards (context gone)`
+  }
+}
+
 // Wait for the deepest element whose trimmed text matches, and hand back a
 // handle to it. The predicate crosses into the page, so it takes a regex as
 // source+flags rather than as a RegExp.
@@ -84,8 +115,18 @@ async function waitForTextMatch(
       source,
       flags,
     )
-    .catch(() => {
-      throw new Error(`no element with text ${describe}`)
+    .catch(async (cause: unknown) => {
+      // `waitForFunction` rejects for two unrelated reasons and this used to
+      // report both as "no element with text X": the deadline expired, or the
+      // evaluation itself blew up (execution context destroyed by a navigation,
+      // target closed). They need opposite responses — wait longer vs. look at
+      // what the page did — so say which one happened, and describe the page
+      // rather than only the text that was missing. Diagnosing the `ctgA` flake
+      // was guesswork without this.
+      throw new Error(
+        `no element with text ${describe} — ${await describePage(page, timeout, cause)}`,
+        { cause },
+      )
     })
   const el = handle.asElement()
   if (!el) {
@@ -163,6 +204,10 @@ function gotoWaitUntil(): 'load' | 'networkidle0' {
 export async function navigateToUrl(page: Page, query: string) {
   const url = appendGpuParam(`http://localhost:${PORT}/?${query}`)
   await page.goto(url, { waitUntil: gotoWaitUntil(), timeout: 60000 })
+  // Navigation isn't finished until the app is on screen: `goto` resolves
+  // before the bundle executes, so without this every caller's own wait is also
+  // paying for Chrome's cold start out of its deadline. See waitForAppMounted.
+  await waitForAppMounted(page)
 }
 
 export async function navigateToApp(
