@@ -1,0 +1,112 @@
+import type { TooLargeMessageModel } from '../../shared/TooLargeMessage.tsx'
+import type { DisplayBackgroundProgressModel } from './DisplayBackgroundProgress.tsx'
+import type { DisplayErrorBarModel } from './DisplayErrorBar.tsx'
+import type { DisplayLoadingOverlayModel } from './DisplayLoadingOverlay.tsx'
+import type { DisplayChromeOverlays } from './chromeOverlays.ts'
+import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
+import type { ComponentPropsWithRef, ReactNode } from 'react'
+
+// The model contract is the *union of what the sub-overlays read*, composed
+// directly from each overlay's own model prop type so it can't drift: add or
+// remove a field an overlay reads and this updates with no edit here. This
+// component itself reads nothing off the model — it only routes it.
+export type StatusChromeModel = DisplayErrorBarModel &
+  TooLargeMessageModel &
+  DisplayLoadingOverlayModel &
+  DisplayBackgroundProgressModel
+
+// Everything the status chrome is, minus the rendering backend: the phase
+// branch, the positioning container, the `-done` testid, the published
+// `data-display-phase`, and the four overlays that need no `retry()`.
+//
+// It exists as its own component because two displays need exactly this and
+// only one of them has a GPU backend. `DisplayChromeBase` wraps it with
+// `useRenderingBackend` + the `renderError` phase (the only phase whose banner
+// needs the hook's `retry`); arc, which renders main-thread SVG and has no
+// backend to fail, renders it directly with `svgReady`'s looser sibling as
+// `drawn`. Before this split arc hand-copied the whole branch and had already
+// drifted — it rendered no background-progress chip at all. A display's
+// alignment with the chrome should cost it a prop, not a copy.
+//
+// Deliberately NOT an observer, and it reads no observable: `phase` and `drawn`
+// arrive as props so the *caller* is the one tracking them (both callers are
+// observers). That keeps the tracked set exactly where it was and leaves this
+// component safe for babel-plugin-react-compiler to compile — there is no MobX
+// read here to stale.
+//
+// The `tooLarge` phase **early-`return`s** its own root rather than nesting
+// under the container below. For a GPU display that unmount is what fires
+// `canvasRef(null)` → `backend.dispose()` (ADR-025), and it is why the caller's
+// className/ref/handlers are absent in that state: a too-large region has no
+// canvas to interact with, and the ref re-attaches on force-load. Don't "fix"
+// it by nesting the banner. `error` and `loading` are overlays drawn *over* the
+// still-mounted body.
+export default function DisplayStatusChromeBase({
+  model,
+  phase,
+  drawn,
+  overlays,
+  testid,
+  style,
+  children,
+  ...divProps
+}: {
+  model: StatusChromeModel
+  /**
+   * The display's own mutually-exclusive state, ranked by
+   * `computeDisplayStatusPhase`. Never re-derived here — this component only
+   * branches on it, so a display and its chrome can't disagree.
+   */
+  phase: DisplayStatusPhase
+  /**
+   * First paint: `canvasDrawn` for a GPU display, arc's `drawn` for SVG. Drives
+   * the `-done` testid suffix and suppresses the loading overlay's anti-flash
+   * delay while there is nothing on screen to flash over.
+   */
+  drawn: boolean
+  overlays: DisplayChromeOverlays
+  /** base first-paint selector; this owns the `-done` convention */
+  testid?: string
+  children?: ReactNode
+} & Omit<ComponentPropsWithRef<'div'>, 'children'>) {
+  if (phase === 'tooLarge') {
+    return <overlays.TooLarge model={model} />
+  }
+  return (
+    <div
+      {...divProps}
+      // The chrome owns the positioning context: the loading scrim and error
+      // bar below are position:absolute children, so the container must be the
+      // containing block. Centralized here so no caller has to remember it (and
+      // so the ones that didn't — hic, ld — stop leaking their overlays to an
+      // ancestor). Caller `style` still wins if it overrides `position`.
+      style={{ position: 'relative', ...style }}
+      data-testid={
+        testid === undefined ? undefined : `${testid}${drawn ? '-done' : ''}`
+      }
+      // The `-done` suffix above is FIRST PAINT — it flips on an empty canvas
+      // while the fetch is still in flight, so it can't answer "is this display
+      // finished". `phase` can: it is the model's own mutually-exclusive state,
+      // and `loading` covers the whole fetch, not just the paint. Published so a
+      // screenshot/e2e run can wait on the real signal instead of inferring it
+      // from paint flags and overlay text. NOTE the two subtree-replacing
+      // phases (`tooLarge` above, `renderError` in DisplayChromeBase) publish no
+      // attribute at all, since they don't render this container — a
+      // `[data-display-phase]` census counts them as absent, not as terminal.
+      data-display-phase={phase}
+    >
+      {children}
+      <overlays.ErrorBar model={model} />
+      <overlays.Loading
+        model={model}
+        visible={phase === 'loading'}
+        // initial load (nothing painted yet) shows the indicator immediately;
+        // a refetch over already-drawn content keeps the anti-flash delay
+        immediate={!drawn}
+      />
+      {/* the same status channel, for work with no fetch behind it (clustering)
+          — a corner chip, since the drawn content stays usable meanwhile */}
+      <overlays.BackgroundProgress model={model} visible={phase === 'ready'} />
+    </div>
+  )
+}

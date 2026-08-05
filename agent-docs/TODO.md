@@ -3,25 +3,6 @@ name: todo
 description: Action items to build or fix, the current backlog. Read when picking up work.
 ---
 
-## Committed image snapshots are stale, in two unrelated ways
-
-`npx jest products/jbrowse-web/src/tests` fails 39 snapshots. Measured 2026-08,
-and they are **not one problem**:
-
-- **76 are pure size mismatches** (e.g. `808x250` → `806x250`), all from
-  `be6d18b4a1` moving the alignments canvas from `view.width` to
-  `view.trackWidthPx` — 2px of track outline. Content is unaffected.
-- **2 are a genuine content diff**: `VcfCluster.test.tsx` "opens a vcf track and
-  clusters genotypes", 1.15% / 2135 pixels. Unrelated to the width change and
-  nobody has explained it. Whatever is done about the width, **this one wants a
-  cause before a `-u`.**
-
-Don't blanket-regenerate. Beyond the two causes being different, the 2px change
-is exactly what the browser gate cannot see — it is a canvas-vs-GPU
-*differential* check, so a width both backends read identically passes it while
-every golden image is wrong. What validates that half is launching the app with
-track outlines on and off and looking, then regenerating in its own commit.
-
 ## Give the comparative displays a cancel and a retry
 
 `LinearSyntenyDisplay` and `DotplotDisplay` are the only displays with no way to
@@ -149,6 +130,55 @@ wrong attribute offset shows up as garbled geometry that no unit test catches.
 Verify headed on a real GPU against both backends, since WebGL2 binds attributes
 through `vertexAttribPointer`/`vertexAttribIPointer` (int vs float matters) while
 WebGPU goes through `vertex.buffers`.
+
+## Alignments still repacks every row-instanced pass on the main thread
+
+ADR-004's open item #3, and now the only large one left on that path: the
+per-region upload skip and the layout/color split cut the syncs that repack
+*unchanged* data, but a genuine relayout (sort, row height, a new fetch) still
+packs read / gap / mismatch / insertion / clip / softclip / modification /
+per-base-quality / per-base-letter from scratch on the main thread, because a
+read's row isn't known until every visible region is laid out together.
+
+**The fix is not "move layout to the worker"** — that has been proposed and
+rejected repeatedly, and
+[ADR-053](architecture-decision-records/adr-053-alignments-layout-stays-on-the-main-thread.md)
+records the four properties that depend on layout staying local. What is
+separable is the *pack*.
+
+Y is the only layout-dependent field in most of those structs. Three ways to stop
+shipping the rest through a main-thread packer, cheapest first:
+
+- **Worker packs with `y = 0`, main thread patches the Y lane.** One strided
+  `u32[o + F.y] = readYs[readIndices[i]]` write per instance replaces the whole
+  gather, and the buffer arrives transferable so the pack allocation goes away.
+  No shader or HAL change. The catch is that it mutates a worker-owned buffer,
+  which is in tension with "per-region upload values must be freshly constructed,
+  never mutated" — the upload memo would need a layout-generation token instead
+  of `readYs` identity.
+- **Y as a second instance buffer** (divisor 1 on GL, a second `vertex.buffers`
+  entry on WebGPU). `PassDescriptor` and both HALs grow multi-buffer support;
+  relayout then uploads a `Uint16Array` per pass instead of the full struct.
+- **Y as an indirection** — instances carry `readIndex`, the shader reads the row
+  from a per-read table. Makes relayout O(reads) rather than O(bases) and deletes
+  `cloneWithLayout`'s `remapYs` entirely (Canvas2D can index
+  `readYs[mismatchReadIndices[i]]` at draw time). Needs region-keyed textures
+  (`uploadTexture` is per-pass today) plus a `.slang` edit per row-instanced
+  pass.
+
+**Measure before building.** Nobody has profiled the split between `pack*`,
+`uploadBuffer` and `cloneWithLayout` on this tree; the instrumentation pattern is
+[reference/PERF_INSTRUMENTATION.md](reference/PERF_INSTRUMENTATION.md). Do it at a deep
+pileup with per-base quality on, which is where the per-base passes (one instance
+per base per read) dominate — at gene-scale defaults the read pass alone may not
+justify any of this.
+
+Related and independent: both HALs `deleteBuffer` + recreate on every
+`uploadBuffer` (`webgpuHal.ts` `createVertexBuffer`, `webgl2Hal.ts`
+`bufferData`). Reusing the allocation when capacity allows would drop the churn
+for every plugin, and a stable buffer identity is also what would let WebGL2
+cache a VAO per (region, pass) instead of re-running `bindAttributes` on each
+`drawPass`.
 
 ## `featureItemMap` is an O(N) build serving a handful of point queries
 
@@ -281,11 +311,6 @@ Rank is also a weak rarity bound (rank r proves absence from haplotypes 1..r-1,
 nothing more), worth a color ramp only where no `AF` exists, i.e. a user's own
 graph rather than HPRC.
 
-## consider rehosting
-
-https://jbrowse.org/jb2-staging/docs/tutorials/population_genomics/
-
-
 ## maf fetch cost on long blocks
 
 Design done, nothing built, premise unconfirmed — see
@@ -303,7 +328,9 @@ Came out of the screenshot review on `cancer_sv/derivative_autogenerated`, which
 asked whether the reconstruction could load the reads across its loci and whether
 a wasm minimap2 could realign them to the derived contig.
 
-Three separate things, cheapest first.
+Three separate things, cheapest first. **The middle one is built** — see
+[reference/SV_MULTIHOP.md](reference/SV_MULTIHOP.md), "Reads on the allele"; the other
+two are open.
 
 **Reads on the reference panel: already possible, off on purpose.**
 `refPanelTrackIds` (`LinearDerivativeVsRef.tsx`) carries every open track onto
@@ -312,14 +339,9 @@ locus the path touches into one window and a pileup there refetches the reads
 already on screen in the launching view. A user can add the track from the track
 selector in the launched view. If the default is ever revisited, it's that filter.
 
-**Reads on the DERIVATIVE panel: no aligner needed, and this is the piece worth
-building.** The derivative axis is a piecewise-linear map from reference
-coordinates — `buildDerivativeVsRefSpec` lays each segment end to end with
-`${length}M` and an offset walk — and a read's own alignment already maps read to
-reference. Composing the two puts a read on the derivative axis by transformation,
-which is the same coordinate trick `Linear read vs ref` uses in the other
-direction. A read whose SA chain follows the path lands contiguous; one that does
-not breaks, which is the signal. No sequence and no realignment involved.
+Now weaker than it was: the derivative panel carries the reads already, in
+derivative coordinates, so what the reference panel would add is the same reads
+in the frame that does NOT show whether they agree with the allele.
 
 **minimap2 in wasm: needs bases the feature deliberately does not build.** The
 temporary assembly's `FromConfigSequenceAdapter` carries `seq: ''` — "the path is

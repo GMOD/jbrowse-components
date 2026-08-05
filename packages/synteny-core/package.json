@@ -33,7 +33,7 @@
   "dependencies": {
     "@jbrowse/cigar-utils": "workspace:^",
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^6.0.0",
+    "@jbrowse/mobx-state-tree": "^6.1.0",
     "@mui/icons-material": "^9.2.0",
     "@mui/material": "^9.2.0",
     "mobx-react": "^10.0.0"

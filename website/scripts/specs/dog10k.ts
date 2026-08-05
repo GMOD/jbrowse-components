@@ -503,6 +503,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           trackId: 'dog10k_wolfdog_ancestry',
           type: 'LinearMultiRowFeatureDisplay',
           height: 1100,
+          treeAreaWidth: 260,
           runClustering: true,
         },
       ],

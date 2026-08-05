@@ -39,12 +39,10 @@ export function rowLayout({
     ...topFrames.map((frame): SequenceRow => ({ type: 'translation', frame })),
     ...(showForward ? [{ type: 'base', strand: 1 } as const] : []),
     ...(showReverse ? [{ type: 'base', strand: -1 } as const] : []),
-    ...bottomFrames.map(
-      (frame): SequenceRow => ({
-        type: 'translation',
-        frame,
-      }),
-    ),
+    ...bottomFrames.map((frame): SequenceRow => ({
+      type: 'translation',
+      frame,
+    })),
   ]
 }
 

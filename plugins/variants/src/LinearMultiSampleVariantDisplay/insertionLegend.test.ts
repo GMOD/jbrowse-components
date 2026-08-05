@@ -73,7 +73,11 @@ function setup(insertedBp: number, showInsertionGlyphs = true, bpPerPx = 100) {
   return display
 }
 
-function sectionIds(insertedBp: number, showInsertionGlyphs = true, bpPerPx = 100) {
+function sectionIds(
+  insertedBp: number,
+  showInsertionGlyphs = true,
+  bpPerPx = 100,
+) {
   return setup(insertedBp, showInsertionGlyphs, bpPerPx)
     .legendSections()
     .map(s => s.id)

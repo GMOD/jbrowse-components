@@ -118,34 +118,34 @@ for (const s of specs) {
 Revert the ones with zero delta — sweeping them in misattributes another agent's
 work to your commit, which the shared worktree makes easy to do by accident. Two
 traps in that scan, both hit: **numpy `int16` overflows on a squared channel
-difference** (255² wraps negative, passes any `< threshold` test, and matched all
-283 figures — cast to `int32`), and a color-distance ball catches unrelated
+difference** (255² wraps negative, passes any `< threshold` test, and matched
+all 283 figures — cast to `int32`), and a color-distance ball catches unrelated
 palettes, so for "is this color used at all" match **exactly** and keep the
 tolerance ball for "did this figure move".
 
 ## Useful facts learned (durable, not tied to any one session)
 
-- **"Did MY change move this figure" cannot be answered by diffing the PNG.**
-  A forced regen rewrites figures other agents' landed commits already moved, so
-  a whole-image diff says "changed" for nearly everything — measured:
+- **"Did MY change move this figure" cannot be answered by diffing the PNG.** A
+  forced regen rewrites figures other agents' landed commits already moved, so a
+  whole-image diff says "changed" for nearly everything — measured:
   `variants/population_1000genomes` differed from HEAD by 59k pixels while
-  containing not one pixel of the color the change was about. Counting the
-  color a change introduces is much better, and is what to reach for first, but
-  it is blind in the other direction: a legend or label **text** edit moves no
-  colored pixels at all and reads as "unchanged". Neither measure decides it on
-  its own. What does is a structural claim about which specs can possibly be
-  affected — "only a display that draws an insertion marker gets the Insertions
-  section" — with the pixel count used to confirm it. Then revert the rest,
-  because sweeping them in puts another agent's work under your commit message.
-  Two traps in the counting itself, both hit for real:
+  containing not one pixel of the color the change was about. Counting the color
+  a change introduces is much better, and is what to reach for first, but it is
+  blind in the other direction: a legend or label **text** edit moves no colored
+  pixels at all and reads as "unchanged". Neither measure decides it on its own.
+  What does is a structural claim about which specs can possibly be affected —
+  "only a display that draws an insertion marker gets the Insertions section" —
+  with the pixel count used to confirm it. Then revert the rest, because
+  sweeping them in puts another agent's work under your commit message. Two
+  traps in the counting itself, both hit for real:
   - **numpy `int16` overflows on a squared channel difference** (255² = 65025
     wraps negative), which passes any `< threshold` test and matches every
     figure in the tree. Cast to `int32`.
   - **A tolerance ball catches near colors.** `chromhmm_hoxa_9celltype`'s
     ChromHMM state color `#cf0bc6` sits inside a distance-900 ball around
     `#c000c0`, and antialiasing along a solid bar's edge lands inside a ball
-    around any paler shade of it. Match exactly for "is this color used at
-    all"; keep the ball only for "did this figure move".
+    around any paler shade of it. Match exactly for "is this color used at all";
+    keep the ball only for "did this figure move".
 - **A legend that gains a section can outgrow its lane.** Adding one to the
   multi-sample variant display pushed it past the 120px `height` the
   `pangenome/maf` spec gave the track, and the last swatch was sliced in half by
@@ -204,8 +204,8 @@ tolerance ball for "did this figure move".
   at the widest/longest feature in view.
 - **Two `LinearMultiSampleVariantDisplay`s in one view kill the right-click
   context menu on both.** Same callset, distinct trackIds (the
-  `variants/potato_missingness` pattern): the right-click reaches the canvas (the
-  hover crosshair draws) but nothing opens, so a spec gated on
+  `variants/potato_missingness` pattern): the right-click reaches the canvas
+  (the hover crosshair draws) but nothing opens, so a spec gated on
   `waitForText: 'Sort by genotype'` times out against a fully-rendered matrix.
   One lane alone works every time. Not fixed — the workaround is a capture per
   colouring plus `mode: 'compose'`.
@@ -214,9 +214,9 @@ tolerance ball for "did this figure move".
   before re-designing a sort spec.
 - **A `compose` has no annotation layer.** `ComposeSpec` extends
   `BaseSpecFields`, which carries no `annotations`, and the parts are separate
-  captures `+append`ed afterwards — so nothing can draw across the seam. An arrow
-  from one half to the other is not available; number the two halves' anchors
-  instead, as `pangenome/hprc_mhc_anchored` does with `circle` badges.
+  captures `+append`ed afterwards — so nothing can draw across the seam. An
+  arrow from one half to the other is not available; number the two halves'
+  anchors instead, as `pangenome/hprc_mhc_anchored` does with `circle` badges.
 - **A callout anchored to a node can land under another callout.** Render and
   look before believing an offset — the MHC pair's two landmarks are an allele
   and the reference stretch it replaces, so the force layout draws them touching
@@ -226,9 +226,9 @@ tolerance ball for "did this figure move".
   like `hprc2/mhc_clustered`. The pixels are the oracle, not the spec text.
 - **Insertion markers take the theme's `palette.insertion` (#800080), not
   alignments-core's `INSERTION_COLOR` (#c000c0).** The latter is the
-  theme-agnostic fallback in `DEFAULT_CIGAR_OP_DRAW_COLORS`, for worker code with
-  no theme to read. Drawing the same event in both purples in one figure is how
-  that was found.
+  theme-agnostic fallback in `DEFAULT_CIGAR_OP_DRAW_COLORS`, for worker code
+  with no theme to read. Drawing the same event in both purples in one figure is
+  how that was found.
 - `bcftools` in this sandbox is broken (`bcf_format_gt_v2`) — slice a remote VCF
   with `tabix -h <url> <region> | bgzip` instead.
 - **Rebuilding the E. coli Minigraph-Cactus pangenome** (`~/ecoli_cactus5/`,
@@ -300,14 +300,14 @@ invalidates CloudFront — **ask before running it.** Last published
 
 The gate is not optional: it is what catches a bundle importing a host global
 that does not exist. Two of its failure modes read as real breakage and are not.
-**A wave of `[$type]` / assignability errors across unrelated files is two copies
-of MST**, from the plugin pinning a different `@jbrowse/mobx-state-tree`/`mobx`
-than core — both are host globals at runtime, so the bump is types-only. And a
-suite that fails to **load** is usually a `vi.mock`/`jest.mock` of
-`@jbrowse/core/configuration` wholesale for one `readConfObject` stub, which
-leaves anything transitively pulling a schema with an undefined
-`ConfigurationSchema` at module-eval time; `importOriginal` fixes it, and once
-gave back 58 tests that had silently not been running.
+**A wave of `[$type]` / assignability errors across unrelated files is two
+copies of MST**, from the plugin pinning a different
+`@jbrowse/mobx-state-tree`/`mobx` than core — both are host globals at runtime,
+so the bump is types-only. And a suite that fails to **load** is usually a
+`vi.mock`/`jest.mock` of `@jbrowse/core/configuration` wholesale for one
+`readConfObject` stub, which leaves anything transitively pulling a schema with
+an undefined `ConfigurationSchema` at module-eval time; `importOriginal` fixes
+it, and once gave back 58 tests that had silently not been running.
 
 Regenerating the whole `pangenome/` set with `--force` after a publish sweeps in
 churn the publish did not cause: the E. coli figures that mount no graph view at
@@ -327,7 +327,7 @@ next regen either way.
 
 **Iterating against a local plugin build** is `GRAPH_PLUGIN_LOCAL=1` (header of
 `scripts/specs/graph.ts`) plus the plugin's `dist/` copied to
-`test_data/graphgenomeview/_localdist/` **at the repo root** — *not* under
+`test_data/graphgenomeview/_localdist/` **at the repo root** — _not_ under
 `products/jbrowse-web/build/test_data/`, which is never consulted for it
 (`createTestServer` routes `/test_data/*` to `jbrowseWebRoot`, and
 `products/jbrowse-web/test_data` is a symlink to the root's). The tell that you
@@ -336,10 +336,10 @@ confirm by reading a marker off the model rather than by re-diffing images.
 Switch back before committing figures — `pnpm check-live-configs` is the
 tripwire. The `*_local.json` configs are **written by `graph.ts` from their
 tracked siblings** on every run; don't reintroduce a hand-maintained copy, since
-a gitignored copy of a tracked config drifts and nothing notices (`hprc_local.json`
-predated two CFHR gene tracks, so under `GRAPH_PLUGIN_LOCAL` those tracks were
-absent and a figure failed on annotation anchors resolving to nothing — which
-reads as a regression in whatever you are testing).
+a gitignored copy of a tracked config drifts and nothing notices
+(`hprc_local.json` predated two CFHR gene tracks, so under `GRAPH_PLUGIN_LOCAL`
+those tracks were absent and a figure failed on annotation anchors resolving to
+nothing — which reads as a regression in whatever you are testing).
 
 **Scraping a `--filter` list from `name:` properties misses compose parts.** Six
 part specs (`graph_context_none/_hop1`, `hprc_mhc_layout_*`, `local_subgraph_*`)
@@ -348,14 +348,15 @@ and the parent silently recomposes from stale halves. Scrape every
 `'pangenome/...'` string literal instead.
 
 **Escape does not close a JBrowse cascade menu.** Measured live: three presses
-with focus verifiably inside the list leave both levels and both modals standing,
-while one backdrop click takes the whole cascade down. `closeMenusFirst` used to
-be Escape plus a 300ms delay, so a stage asking for a clean slate got the
-previous stage's menu, and `clickElement`'s covered-element fallback dispatched
-on the node anyway — nothing errored, and a `::-p-text()` match then resolved
-against two overlapping copies of the same menu. It now clicks each menu-bearing
-modal's backdrop, loops, and **throws if a menu is still open**; that was the
-whole of the two launch-out specs' one-in-six flakiness.
+with focus verifiably inside the list leave both levels and both modals
+standing, while one backdrop click takes the whole cascade down.
+`closeMenusFirst` used to be Escape plus a 300ms delay, so a stage asking for a
+clean slate got the previous stage's menu, and `clickElement`'s covered-element
+fallback dispatched on the node anyway — nothing errored, and a `::-p-text()`
+match then resolved against two overlapping copies of the same menu. It now
+clicks each menu-bearing modal's backdrop, loops, and **throws if a menu is
+still open**; that was the whole of the two launch-out specs' one-in-six
+flakiness.
 
 **Which colour scheme a graph figure uses is settled, so it does not get
 relitigated: a graph shown beside a linear view uses reference-position, a graph
@@ -369,16 +370,16 @@ and the graph's cut cannot drift.
 one class II MHC bubble reports 510,105,601 and 406 of release 2's bubbles
 saturate int32, while C4 and LPA show 98 and 584 and are informative. If it ever
 needs suppressing, that is a **spec** edit with no plugin publish — the drawn
-second line is `labels.description` on the canvas display and the feature carries
-`segmentCount`, so
-`labels: { description: "jexl:get(feature,'segmentCount') + ' segments'" }` drops
-the count from the label while leaving it in the details popup.
+second line is `labels.description` on the canvas display and the feature
+carries `segmentCount`, so
+`labels: { description: "jexl:get(feature,'segmentCount') + ' segments'" }`
+drops the count from the label while leaving it in the details popup.
 
 **The anchored graph pane's aspect ratio is pinned** (row spacing is a fraction
 of the reference span), so it is two rows tall whatever `viewportHeight` says.
-Growing the viewport only adds page under it, and a three-line text pill anchored
-below a node falls through the pane's border into the composite's padding. Put
-long callouts on the force half.
+Growing the viewport only adds page under it, and a three-line text pill
+anchored below a node falls through the pane's border into the composite's
+padding. Put long callouts on the force half.
 
 ## Choosing a pangenome locus from the data, not from a locus list
 

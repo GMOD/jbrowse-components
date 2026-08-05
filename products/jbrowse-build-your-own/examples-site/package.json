@@ -14,7 +14,7 @@
   "dependencies": {
     "@astrojs/react": "^6.0.2",
     "@jbrowse/core": "workspace:*",
-    "@jbrowse/mobx-state-tree": "^6.0.0",
+    "@jbrowse/mobx-state-tree": "^6.1.0",
     "@jbrowse/plugin-alignments": "workspace:*",
     "@jbrowse/plugin-linear-genome-view": "workspace:*",
     "@jbrowse/plugin-wiggle": "workspace:*",

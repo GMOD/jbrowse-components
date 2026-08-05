@@ -1,10 +1,7 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
 
 import { getInsertedBp } from '../../shared/alleleLength.ts'
-import {
-  BLACK_ABGR,
-  NO_CALL_COLOR,
-} from '../../shared/constants.ts'
+import { BLACK_ABGR, NO_CALL_COLOR } from '../../shared/constants.ts'
 import {
   featureHasPhaseSet,
   getPhasedColor,

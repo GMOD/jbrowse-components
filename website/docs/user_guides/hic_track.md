@@ -89,8 +89,8 @@ cross-block is absent while the intra-chromosomal triangles still draw. Step
 **Coarser** until it appears.
 
 The same thing scales to the whole genome. **View → Show all regions in
-assembly** puts every chromosome in the view at once, which makes the fetch every
-chromosome against every other one and the drawing a block diagonal.
+assembly** puts every chromosome in the view at once, which makes the fetch
+every chromosome against every other one and the drawing a block diagonal.
 
 <Figure caption="hg19 chr1 to chrY in one view, log scale. Each chromosome is its own triangle and the notch out of each one is its centromere. The blocks between them are empty because this file stores intra-chromosomal contacts only." src="/img/hic/whole_genome.png" />
 

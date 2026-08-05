@@ -64,10 +64,10 @@ literal, never `?raw` a private helper of this site.
   `--use-gl=swiftshader`, settle ~7s, then measure. Write it as a `.tmp.mjs`
   **inside this directory** (workspace module resolution does not reach `/tmp`)
   and delete it after; `oxlint` will flag it if you forget. Two traps that cost
-  time: `page.mouse.click` uses **viewport** coordinates, so `scrollIntoView` the
-  element and re-read its `boundingBox()` first or every click lands on `<html>`;
-  and whether a hover lands on a feature in a headless swiftshader render is
-  luck, which is why `BaseTooltip.test.tsx` in `@jbrowse/core` is the
+  time: `page.mouse.click` uses **viewport** coordinates, so `scrollIntoView`
+  the element and re-read its `boundingBox()` first or every click lands on
+  `<html>`; and whether a hover lands on a feature in a headless swiftshader
+  render is luck, which is why `BaseTooltip.test.tsx` in `@jbrowse/core` is the
   deterministic half of the tooltip's coverage and the half to extend first.
 - **Every section needs `src/docs/<slug>.md`.** `ExampleSection` renders nothing
   when the file is absent, so a page can ship as a title, a one-line lead and

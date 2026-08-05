@@ -283,7 +283,9 @@ export async function canvasSelfReport(page: Page, selector: string) {
     .evaluate(sel => {
       const el = document.querySelector(sel)
       const canvas =
-        el instanceof HTMLCanvasElement ? el : (el?.querySelector('canvas') ?? null)
+        el instanceof HTMLCanvasElement
+          ? el
+          : (el?.querySelector('canvas') ?? null)
       if (!canvas) {
         return ' [self-report: no canvas element found]'
       }

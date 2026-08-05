@@ -64,9 +64,9 @@ keeping both leaves two views of one place stacked, with the taller of the two
 below the fold.
 
 The figure below walks those steps on a second pair, **hg38 to Chimp (panTro6)
-liftOver** across an intron of _FTO_, because a cross-species target is where the
-tracks each panel ends up with are worth following. Every click is the same on
-the hs1 track this page opened with.
+liftOver** across an intron of _FTO_, because a cross-species target is where
+the tracks each panel ends up with are worth following. Every click is the same
+on the hs1 track this page opened with.
 
 <Figure caption="The four steps on the hg38-to-panTro6 liftOver track across an FTO intron: right-click a chain block, confirm the framing, launch, then add the chimp panel's genes and repeats. The last frame also switches the ribbon to curves and to Transparent indels, which is what turns the one gap in it into a hole you can line up against the RepeatMasker track above: the element under it is an L1HS, the youngest human LINE-1 subfamily, and the chimp panel keeps every flanking repeat but not that one." src="/img/genomes_synteny/launch_sequence.png" />
 
@@ -75,10 +75,10 @@ on, which is why the human side arrives with its genes and repeats already;
 **Copy this view's tracks into its panel** in the dialog turns that off. Nothing
 in the launching view says what the chimp panel should show, so that one opens
 empty, and its tracks come from its own track selector, whose button in the view
-header lists one per panel. On genomes.jbrowse.org the chimp panel offers
-**NCBI RefSeq - RefSeq All** and **RepeatMasker**, because naming panTro6 also
-brought in the panTro6 hub's gene, repeat and gap tracks. (RefSeq Curated exists
-there too but is a human-first product, and chimp's copy of it leaves this window
+header lists one per panel. On genomes.jbrowse.org the chimp panel offers **NCBI
+RefSeq - RefSeq All** and **RepeatMasker**, because naming panTro6 also brought
+in the panTro6 hub's gene, repeat and gap tracks. (RefSeq Curated exists there
+too but is a human-first product, and chimp's copy of it leaves this window
 empty.) The rest of that hub is not loaded with them; open it from **File → Open
 connection** as a JBrowse 2 hub at
 `https://jbrowse.org/ucsc/panTro6/config.json` when you want its conservation or

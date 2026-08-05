@@ -63,8 +63,16 @@ export { createKeyedUploadSync, sharedBackendKey } from './keyedUploadSync.ts'
 // --- Render blocks + display phase ---
 export { buildRenderBlocks } from './renderBlock.ts'
 export type { BpRegionBounds, RenderBlock } from './renderBlock.ts'
-export { computeDisplayPhase } from './displayPhase.ts'
-export type { DisplayPhase, DisplayPhaseInputs } from './displayPhase.ts'
+export {
+  computeDisplayPhase,
+  computeDisplayStatusPhase,
+} from './displayPhase.ts'
+export type {
+  DisplayPhase,
+  DisplayPhaseInputs,
+  DisplayStatusPhase,
+  DisplayStatusPhaseInputs,
+} from './displayPhase.ts'
 
 // --- Clip + Canvas2D geometry utilities ---
 export {

@@ -12,17 +12,27 @@
  * `backend.dispose()`). `error` and `loading` are overlays rendered *over* the
  * still-mounted canvas, so they share the `ready` branch's root.
  */
-export type DisplayPhase =
-  | 'renderError'
-  | 'tooLarge'
-  | 'error'
-  | 'loading'
-  | 'ready'
+export type DisplayPhase = 'renderError' | DisplayStatusPhase
 
-export interface DisplayPhaseInputs {
-  renderError: unknown
+/**
+ * The phases a display without a rendering backend can be in — every phase
+ * except the one that reports a backend failure. Its own type because
+ * `renderError` is the only phase whose UI needs something no model can supply
+ * (the backend hook's `retry()`), which is exactly the line between the shared
+ * status chrome and the GPU chrome wrapped around it: `DisplayStatusChrome`
+ * takes this, `DisplayChrome` takes the wider union and peels off `renderError`
+ * before delegating. A main-thread SVG display (arc) computes this one and is
+ * then *unable* to claim a phase whose banner has no retry to offer.
+ */
+export type DisplayStatusPhase = 'tooLarge' | 'error' | 'loading' | 'ready'
+
+export interface DisplayStatusPhaseInputs {
   regionTooLarge: boolean
   error: unknown
+}
+
+export interface DisplayPhaseInputs extends DisplayStatusPhaseInputs {
+  renderError: unknown
 }
 
 /**
@@ -49,11 +59,27 @@ export function computeDisplayPhase(
 ): DisplayPhase {
   return renderError
     ? 'renderError'
-    : regionTooLarge
-      ? 'tooLarge'
-      : error
-        ? 'error'
-        : loading()
-          ? 'loading'
-          : 'ready'
+    : computeDisplayStatusPhase({ regionTooLarge, error }, loading)
+}
+
+/**
+ * The same ranking minus `renderError`, for a display with no rendering backend
+ * to fail (arc's main-thread SVG). `computeDisplayPhase` delegates here rather
+ * than restating the tail, so there is still exactly one place the order lives —
+ * and the narrower return type is what lets `DisplayStatusChrome` accept a
+ * backend-less display without either a cast or a dead branch.
+ *
+ * `loading` is a thunk here for the same reason as above.
+ */
+export function computeDisplayStatusPhase(
+  { regionTooLarge, error }: DisplayStatusPhaseInputs,
+  loading: () => boolean,
+): DisplayStatusPhase {
+  return regionTooLarge
+    ? 'tooLarge'
+    : error
+      ? 'error'
+      : loading()
+        ? 'loading'
+        : 'ready'
 }

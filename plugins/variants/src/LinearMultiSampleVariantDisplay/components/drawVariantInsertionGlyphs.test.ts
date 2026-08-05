@@ -2,7 +2,6 @@ import { insertionBarWidth } from '@jbrowse/alignments-core'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 
 import { getInsertionColorForDosage } from '../../shared/constants.ts'
-
 import { drawVariantInsertionGlyphs } from './drawVariantInsertionGlyphs.ts'
 
 import type { VariantInsertionGlyphData } from './drawVariantInsertionGlyphs.ts'

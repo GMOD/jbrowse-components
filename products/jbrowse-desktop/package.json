@@ -47,7 +47,7 @@
     "@gmod/faidx": "^3.0.0",
     "@jbrowse/app-core": "workspace:^",
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^6.0.0",
+    "@jbrowse/mobx-state-tree": "^6.1.0",
     "@jbrowse/plugin-alignments": "workspace:^",
     "@jbrowse/plugin-arc": "workspace:^",
     "@jbrowse/plugin-authentication": "workspace:^",
@@ -100,10 +100,10 @@
   },
   "devDependencies": {
     "@electron/notarize": "^3.1.1",
+    "@electron/packager": "^20.1.1",
     "@jbrowse/browser-test-utils": "workspace:*",
-    "@electron/packager": "^20.0.4",
     "@types/selenium-webdriver": "^4.35.6",
-    "electron": "^43.2.0",
+    "electron": "^43.3.0",
     "electron-chromedriver": "^43.2.0",
     "esbuild": "^0.28.1",
     "selenium-webdriver": "^4.46.0"

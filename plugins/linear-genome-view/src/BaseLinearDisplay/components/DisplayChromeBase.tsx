@@ -1,31 +1,23 @@
 import { useRenderingBackend } from '@jbrowse/render-core/useRenderingBackend'
 import { observer } from 'mobx-react'
 
-import type { TooLargeMessageModel } from '../../shared/TooLargeMessage.tsx'
-import type { DisplayBackgroundProgressModel } from './DisplayBackgroundProgress.tsx'
-import type { DisplayErrorBarModel } from './DisplayErrorBar.tsx'
-import type { DisplayLoadingOverlayModel } from './DisplayLoadingOverlay.tsx'
+import DisplayStatusChromeBase from './DisplayStatusChromeBase.tsx'
+
+import type { StatusChromeModel } from './DisplayStatusChromeBase.tsx'
 import type { DisplayChromeOverlays } from './chromeOverlays.ts'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 import type { RenderLifecycleModel } from '@jbrowse/render-core/useRenderingBackend'
 import type { ComponentPropsWithRef, ReactNode } from 'react'
 
-// The model contract is the *union of what the chrome and its sub-overlays
-// read*, composed directly from each overlay's own model prop type so it can't
-// drift: add/remove a field an overlay reads and this updates with no edit here.
-// The chrome itself reads only `displayPhase`/`height`/`canvasDrawn`; everything
-// else flows through to a named overlay. (`renderError`/`setRenderError` are NOT
-// here — they live on `RenderLifecycleModel`, always intersected in below.
-// Loading-overlay *visibility* is derived from `displayPhase` by the chrome, so
-// the overlay model doesn't re-encode `=== 'loading'`.)
+// What the chrome itself reads, on top of everything the overlays read
+// (`StatusChromeModel`, composed from their own prop types in
+// DisplayStatusChromeBase). (`renderError`/`setRenderError` are NOT here — they
+// live on `RenderLifecycleModel`, always intersected in below.)
 export type ChromeModel = {
   displayPhase: DisplayPhase
   height: number
   canvasDrawn: boolean
-} & DisplayErrorBarModel &
-  TooLargeMessageModel &
-  DisplayLoadingOverlayModel &
-  DisplayBackgroundProgressModel
+} & StatusChromeModel
 
 interface CanvasHandle {
   canvasRef: (node: HTMLCanvasElement | null) => void
@@ -38,21 +30,22 @@ interface CanvasHandle {
 // model and collapse to one getter, `model.displayPhase`
 // ('renderError' | 'tooLarge' | 'error' | 'loading' | 'ready'). The precedence
 // among them is single-sourced in `computeDisplayPhase` (see displayPhase.ts);
-// this component branches on it, and the loading scrim's visibility is just
-// `displayPhase === 'loading'` (computed here once and passed to
-// `overlays.Loading`, never re-encoded as a per-model getter). So a display
-// can't show a canvas while skipping a terminal state, can't bury the hook
-// somewhere the chrome can't see (the seam alignments drifted through), and the
-// loading-vs-terminal precedence isn't re-encoded by subtraction per display.
+// this component branches on it. So a display can't show a canvas while skipping
+// a terminal state, can't bury the hook somewhere the chrome can't see (the seam
+// alignments drifted through), and the loading-vs-terminal precedence isn't
+// re-encoded by subtraction per display.
+//
+// This file owns only what the backend makes possible: the hook, and the
+// `renderError` phase — the one phase whose banner needs the hook's `retry()`
+// and so cannot live in the backend-free `DisplayStatusChromeBase` below it.
+// Everything after that (the container, the `-done` testid,
+// `data-display-phase`, the four remaining overlays) is shared verbatim with
+// arc, which has no backend. See that file for the tree-shape rule.
 //
 // What it does NOT own is what those states look like. The five components come
 // in via `overlays` so this file stays free of any UI toolkit; `DisplayChrome`
 // binds the MUI set and is what every in-tree display imports. See
 // chromeOverlays.ts for why that split exists.
-//
-// The two subtree-replacing states (renderError, tooLarge) **early-`return`**
-// their own component; `error` and `loading` are overlays drawn *over* the
-// still-mounted canvas (the `ready` branch).
 //
 // `displayPhase`'s loading term is evaluated lazily (a thunk in
 // `computeDisplayPhase`) so that when a terminal flag is set this observer tracks
@@ -61,13 +54,6 @@ interface CanvasHandle {
 // `'use no memo'`, so the react-compiler staleness that once made the terminal
 // branches sensitive to early-`return`-vs-ternary no longer applies; see the
 // directive below and `agent-docs/reference/COMPILER_TERNARY_FINDING.md`.)
-//
-// Early-`return` also gives the canvas a clean dispose/re-init: unmounting the
-// body fires `canvasRef(null)` → effect cleanup → `backend.dispose()` +
-// `stopRenderingBackend()`, then force-load remounts (ADR-025). It looks like a
-// leak (caller className/ref/mouse handlers are absent in those two states) but
-// the leak is benign — a too-large region has no canvas to interact with, and
-// the ref re-attaches on force-load. Don't "fix" it by nesting the banner.
 //
 // The body is a function so callers mount the canvas wherever it belongs. It
 // returns a named observer component (every display does) so observable reads
@@ -93,10 +79,8 @@ function DisplayChromeBaseInner<B extends { dispose(): void }>({
   model,
   factory,
   children,
-  testid,
-  style,
   overlays,
-  ...divProps
+  ...chromeProps
 }: {
   model: ChromeModel & RenderLifecycleModel<B>
   factory: (canvas: HTMLCanvasElement) => Promise<B>
@@ -120,44 +104,19 @@ function DisplayChromeBaseInner<B extends { dispose(): void }>({
       />
     )
   }
-  if (phase === 'tooLarge') {
-    return <overlays.TooLarge model={model} />
-  }
+  // `phase` is narrowed to DisplayStatusPhase by the return above, which is the
+  // whole point of the two phase types: the backend-free chrome can't be handed
+  // a state whose banner it has no `retry()` to build.
   return (
-    <div
-      {...divProps}
-      // DisplayChrome owns the positioning context: the loading scrim and error
-      // bar below are position:absolute children, so the container must be the
-      // containing block. Centralized here so no caller has to remember it (and
-      // so the two that didn't — hic, ld — stop leaking their overlays to an
-      // ancestor). Caller `style` still wins if it overrides `position`.
-      style={{ position: 'relative', ...style }}
-      data-testid={
-        testid === undefined
-          ? undefined
-          : `${testid}${model.canvasDrawn ? '-done' : ''}`
-      }
-      // The `-done` suffix above is `canvasDrawn`, i.e. FIRST PAINT — it flips
-      // on an empty canvas while the fetch is still in flight, so it can't
-      // answer "is this display finished". `phase` can: it is the model's own
-      // mutually-exclusive state, and `loading` covers the whole fetch, not
-      // just the paint. Published so a screenshot/e2e run can wait on the real
-      // signal instead of inferring it from paint flags and overlay text.
-      data-display-phase={phase}
+    <DisplayStatusChromeBase
+      {...chromeProps}
+      model={model}
+      phase={phase}
+      drawn={model.canvasDrawn}
+      overlays={overlays}
     >
       {children({ canvasRef, canvas })}
-      <overlays.ErrorBar model={model} />
-      <overlays.Loading
-        model={model}
-        visible={phase === 'loading'}
-        // initial load (nothing painted yet) shows the indicator immediately;
-        // a refetch over already-drawn content keeps the anti-flash delay
-        immediate={!model.canvasDrawn}
-      />
-      {/* the same status channel, for work with no fetch behind it (clustering)
-          — a corner chip, since the drawn content stays usable meanwhile */}
-      <overlays.BackgroundProgress model={model} visible={phase === 'ready'} />
-    </div>
+    </DisplayStatusChromeBase>
   )
 }
 

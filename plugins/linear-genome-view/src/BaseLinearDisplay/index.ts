@@ -9,6 +9,11 @@ export {
 export type { LegendItem, LegendSection } from './components/FloatingLegend.tsx'
 export { default as DisplayChrome } from './components/DisplayChrome.tsx'
 export type { ChromeModel } from './components/DisplayChrome.tsx'
+// Same chrome for a display with no rendering backend (arc's main-thread SVG):
+// it supplies the phase and the first-paint flag itself. See DisplayChrome.tsx.
+export { DisplayStatusChrome } from './components/DisplayChrome.tsx'
+export { default as DisplayStatusChromeBase } from './components/DisplayStatusChromeBase.tsx'
+export type { StatusChromeModel } from './components/DisplayChrome.tsx'
 // The toolkit-free half of the chrome, for embedders supplying their own
 // overlays. Importing DisplayChromeBase + plainChromeOverlays instead of
 // DisplayChrome keeps MUI out of the graph entirely; see chromeOverlays.ts.
