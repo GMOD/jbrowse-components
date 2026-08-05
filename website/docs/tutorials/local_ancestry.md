@@ -372,10 +372,57 @@ Which individual, though, is the reading this picture cannot carry on its own.
 The two Tricolour Hounds that hold most of the wolf on chr1 are not the two that
 hold it on chr38: a few percent of a genome, scattered in blocks, lands on some
 chromosomes and not others, so which animal looks wolfish is a property of the
-chromosome you happened to open. The paper's ranking is genome-wide and no
-single chromosome reproduces it. What survives at one chromosome is the
-clade-level claim above — wolf in the Great Anglo-French rows, and in none of
-the stocks around them.
+chromosome you happened to open. The paper's ranking is genome-wide, so
+reproducing it takes the genome.
+
+### The same clade across all 38 autosomes
+
+[`build_dog10k_ancestry_genomewide.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_ancestry_genomewide.sh)
+drives the per-chromosome build over chr1 to chr38, against the same two panels,
+the same map and the same held-out wolf, and concatenates the 38 paintings into
+one BED. The view draws it with no `loc` and the 38 autosomes as its displayed
+regions, so one frame is the whole autosomal genome.
+
+<Figure caption="The Anglo-French hound clade across all 38 autosomes, one row per haplotype, in breed order. The held-out gray wolf runs orange end to end and the Saarloos Wolfdog below it carries wolf on every chromosome; the Great Anglo-French rows carry blocks scattered genome-wide, two far more than the rest; the stocks they were bred from and the German Shepherd at the foot run dog." src="/img/dog10k-anglofrench-hounds-genome.png" links="38 autosomes=dog10k-anglofrench-hounds-genome" />
+
+The build then weights each chromosome's FLARE fraction by the sequence it
+painted and prints one number per animal:
+
+```
+Anglo-French hound clade, genome-wide
+  38 autosomes, 2228 Mb painted per animal
+    Gray wolf (held out)            0.998
+    Saarloos Wolfdog                0.250
+    Gt Anglo-French Tricolour 1     0.037
+    Gt Anglo-French Tricolour 2     0.031
+    Gt Anglo-French Tricolour 3     0.017
+    Gt Anglo-French Wh/Orange 3     0.013
+    Gt Anglo-French Tricolour 5     0.010
+```
+
+The remaining twenty-six animals of the clade come in at or under 0.002,
+including five of the ten Great Anglo-French hounds, which is the within-breed
+spread the section opened on: the breed is not a number, and half of it is
+indistinguishable from the stocks it was made from.
+
+The two ends hold, and the middle is where an independent pipeline shows its
+seams. The Saarloos Wolfdog is the positive control at this scale, a documented
+20th-century cross, and it comes out at 0.250 against the 11% to 12% Lin et al.
+report for that breed and the 18% to 33% they report for the Czechoslovakian. On
+the breed this section is about, the ranking reproduces and the magnitudes do
+not: the Great Anglo-French Tricolour Hound spans 0.1% to 3.7% here against the
+paper's 0.03% to 5.47%, and in both runs two of its dogs stand clear of the
+rest.
+
+The disagreement does not run one way. The control comes out high and the hounds
+low, so it is not one bias applied to every animal, and the two runs are not the
+same measurement to begin with: that paper infers local ancestry across the
+whole collection of 1929 genomes, while the run here paints 33 animals against a
+fixed panel of 28 European gray wolves, the ones left after the held-out animals
+come out, and one dog per breed. Both the size of the wolf panel and the
+one-per-breed dog sampling change what a block is compared against, and a wolf
+fraction is a number about the panels as much as about the animal. What carries
+across the two is the ordering, which is what the figure claims.
 
 Which is the same reading the eighth wolfdog forced above, one level up: what
 carries ancestry is an animal rather than a breed, and what carries a number is
@@ -413,6 +460,23 @@ block edge, how many ancestry-informative markers each haplotype carries on
 either side of it. That is the check on the painting itself, and it is worth
 reading before building anything on a block: the long wolfdog blocks hold at
 their edges, and the short blocks in ordinary breeds do not.
+
+[`build_dog10k_ancestry_genomewide.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_ancestry_genomewide.sh)
+drives that script over every autosome, for the genome-wide figure:
+
+```bash
+bash build_dog10k_ancestry_genomewide.sh   # chr1..chr38, into ./dog10k_genomewide_build
+```
+
+Each chromosome is built in a scratch directory removed before the next one
+starts, so peak disk is one chromosome's working set rather than 38, and a
+chromosome that already carries a `.done` marker is skipped, so an interrupted
+sweep resumes. It writes the concatenated `dog10k_anglofrench.autosomes.bed.gz`
+and prints the per-animal fractions above, each chromosome weighted by the
+sequence it painted
+([`dog10k_ancestry_genomewide.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/dog10k_ancestry_genomewide.py),
+which also runs on its own against a finished `keep` directory). Expect around
+five hours.
 
 ## See also
 

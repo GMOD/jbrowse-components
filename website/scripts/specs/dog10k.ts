@@ -534,6 +534,58 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     ],
   },
 
+  // The same 66 rows across all 38 autosomes, from the genome-wide run of
+  // scripts/build_dog10k_ancestry_genomewide.sh.
+  //
+  // WHY A SECOND FIGURE OF THE SAME CLADE. The chr1 figure above carries the
+  // clade-level claim -- wolf in the Great Anglo-French rows and nowhere else --
+  // and explicitly cannot carry the per-animal one, because which individual
+  // looks wolfish is a property of the chromosome you happened to open. This is
+  // the frame where that stops being true: a few percent of a genome scattered
+  // in blocks is a rank only across the whole genome, so the two Tricolour
+  // Hounds that lead here are the two that lead, full stop.
+  //
+  // No `loc`, so the view lays out whole regions; `displayedRegionNames`
+  // restricts it to the 38 autosomes in order, matching the painting (the panel
+  // BCF is AutoAndXPAR, and the run is autosomal).
+  //
+  // ROW LABELS ON AND NO CALLOUT PILLS, the opposite of the chr1 figure above,
+  // and both halves of that follow from the scale. An overlay is as wide as its
+  // own text in pixels, and a pixel here is about 2 Mb, so the ~300px the
+  // "Great Anglo-French hounds" pill needs covers ~500 Mb: a pill at either
+  // edge would hide whole chromosomes of the rows it names. The per-animal
+  // labels are the cheaper overlay at this scale rather than the dearer one --
+  // they reach about 240 Mb, roughly chr1 and chr2, and they are what the
+  // figure is for, since naming the two Tricolour Hounds that lead is the
+  // reading chr1 alone could not carry.
+  //
+  // Checked against the BED rather than judged off the picture: no row has all
+  // of its wolf under the labels, and the worst-covered row (Tricolour 2 hap2)
+  // still draws 55% of its wolf clear of them, against a chr1-only figure where
+  // the same overlay hid the whole of two dogs' blocks. The labels are also
+  // translucent, so a covered block dims rather than disappears.
+  {
+    mode: 'url',
+    name: 'dog10k-anglofrench-hounds-genome',
+    url: lgvSession(DOG_CONFIG, {
+      assembly: 'UU_Cfam_GSD_1.0',
+      displayedRegionNames: Array.from({ length: 38 }, (_, i) => `chr${i + 1}`),
+      tracks: [
+        {
+          trackId: 'dog10k_anglofrench_autosomes',
+          type: 'LinearMultiRowFeatureDisplay',
+          height: 940,
+          showRowLabels: true,
+          showRowSeparators: true,
+        },
+      ],
+    }),
+    readySelector: '[data-testid="multirow-color-legend"]',
+    readyTimeout: 120000,
+    settleMs: 10000,
+    viewportHeight: 1145,
+  },
+
   // The Collie eye anomaly deletion (Schall & Kidd 2025, Fig 9): a 7.8 kb
   // deletion inside an NHEJ1 intron, genotyped across breeds from the Dog10K
   // SV callset. The Collie-clade breeds carry it, including homozygotes; the

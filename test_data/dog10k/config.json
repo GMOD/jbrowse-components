@@ -721,18 +721,18 @@
     },
     {
       "type": "FeatureTrack",
-      "trackId": "dog10k_anglofrench_chr38",
-      "name": "Local ancestry, the Anglo-French hound clade (FLARE, chr38)",
+      "trackId": "dog10k_anglofrench_autosomes",
+      "name": "Local ancestry, the Anglo-French hound clade (FLARE, 38 autosomes)",
       "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "BedTabixAdapter",
         "disableGeneHeuristic": true,
-        "uri": "dog10k_anglofrench.chr38.bed.gz"
+        "uri": "dog10k_anglofrench.autosomes.bed.gz"
       },
       "displays": [
         {
           "type": "LinearMultiRowFeatureDisplay",
-          "displayId": "dog10k_anglofrench_chr38-LinearMultiRowFeatureDisplay",
+          "displayId": "dog10k_anglofrench_autosomes-LinearMultiRowFeatureDisplay",
           "partitionField": "sample",
           "rowOrder": [
             "Gray wolf (held out) hap1",
