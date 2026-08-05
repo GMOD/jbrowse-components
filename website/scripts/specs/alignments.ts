@@ -80,76 +80,6 @@ function strandSpecificParts(): ScreenshotSpec[] {
   ]
 }
 
-// Strand-split coverage, as a mirror pair rather than one frame. Grouping splits
-// the coverage band as well as the pileup — each section's band is computed from
-// only that section's reads — so hiding the pileup leaves two histograms sharing
-// one autoscaled axis. One frame can only show "one band is full, the other is
-// empty", which reads as a property of the track; two frames on opposite-strand
-// genes show the fill FOLLOWING the gene's strand, which is the actual claim.
-//
-// firstOfPairStrand, NOT strand: this is a stranded paired-end library, so the
-// transcript strand is which mate the read is. Grouping on the raw read strand
-// sends the two mates of every pair to opposite sections, so neither band is the
-// transcript strand — the same distinction the coloring figure above draws.
-//
-// These two genes were picked by rendering candidates, not by reputation. Both
-// land on a ~2000 axis, so the panels read as parallel. Rejected: SURF1/SURF2
-// (the obvious choice next to the coloring figure's locus, but too shallow in
-// this library — linear renders the reverse band as an empty strip); GAPDH
-// (intronic spikes over 5000 blow the autoscale and flatten its own exons, and
-// its isoform stack is six rows deep); the whole four-gene surfeit cluster on a
-// log axis (low-level antisense fills both bands and blurs the alternation).
-function strandBandParts(): ScreenshotSpec[] {
-  const part = (
-    name: string,
-    loc: string,
-    readyText: string,
-    label: string,
-  ): ScreenshotSpec => ({
-    mode: 'url',
-    name,
-    url: lgvSession(DEMO_CONFIG, {
-      assembly: 'hg19',
-      loc,
-      trackLabels: 'offset',
-      tracks: [
-        { trackId: 'ncbi_gff_hg19', type: 'LinearBasicDisplay', height: 105 },
-        {
-          trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
-          type: 'LinearAlignmentsDisplay',
-          groupBy: { type: 'firstOfPairStrand' },
-          showPileup: false,
-          showSashimiArcs: false,
-          coverageHeight: 120,
-          height: 270,
-        },
-      ],
-    }),
-    readyText,
-    readyTimeout: 60000,
-    settleMs: 15000,
-    viewportHeight: 640,
-    hideTooltip: true,
-    annotations: [
-      { type: 'text', x: 24, y: 56, fontSize: 22, maxWidth: 800, text: label },
-    ],
-  })
-  return [
-    part(
-      'rnaseq/strand_split_coverage_fwd',
-      'chr9:136,215,000-136,217,300',
-      'RPL7A',
-      'RPL7A is on the + strand',
-    ),
-    part(
-      'rnaseq/strand_split_coverage_rev',
-      'chr7:5,566,500-5,570,600',
-      'ACTB',
-      'ACTB is on the - strand',
-    ),
-  ]
-}
-
 export const alignmentsSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
@@ -1315,13 +1245,55 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     parts: ['rnaseq/strand_specific_default', 'rnaseq/strand_specific_pair'],
   },
 
-  ...strandBandParts(),
+  // Strand-split coverage: grouping splits the coverage band as well as the
+  // pileup — each section's band is computed from only that section's reads — so
+  // hiding the pileup leaves two histograms sharing one autoscaled axis.
+  //
+  // NELFE(-) abutting SKIV2L(+) in MHC class III, the most gene-dense stretch in
+  // the human genome. The forward band is empty over NELFE and carries all the
+  // signal over SKIV2L; the reverse band does the exact opposite, and the switch
+  // lands on the gene boundary. One frame beats the RPL7A/ACTB mirror pair this
+  // replaces: a two-panel compose shows the fill following the strand only if
+  // the reader holds both panels in their head, while the switch inside a single
+  // view is the claim itself.
+  //
+  // firstOfPairStrand, NOT strand: this is a stranded paired-end library, so the
+  // transcript strand is which mate the read is. Grouping on the raw read strand
+  // sends the two mates of every pair to opposite sections, so neither band is
+  // the transcript strand — the same distinction the coloring figure above draws.
+  //
+  // Found by rendering, not by reputation: gene-dense regions were swept at
+  // 400 kb looking for BOTH bands carrying signal, which is the thing that is
+  // actually rare, then the candidates zoomed. Rejected along the way, so they
+  // are not re-tried: the whole surfeit cluster (RPL7A runs ~100x SURF1, so a
+  // linear axis empties the reverse band and a log axis fills both with
+  // antisense); SURF1/SURF2 alone (too shallow); GAPDH (intronic spikes over
+  // 5000 flatten its own exons); HSPA1L/HSPA1B (a ~9x split and a long dead gap
+  // between them); C6orf47/GPANK1 (comparable depth, but antisense over GPANK1
+  // muddies the switch).
   {
-    mode: 'compose',
+    mode: 'url',
     name: 'rnaseq/strand_split_coverage',
-    parts: [
-      'rnaseq/strand_split_coverage_fwd',
-      'rnaseq/strand_split_coverage_rev',
-    ],
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: 'chr6:31,920,500-31,933,000',
+      tracks: [
+        { trackId: 'ncbi_gff_hg19', type: 'LinearBasicDisplay', height: 90 },
+        {
+          trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
+          type: 'LinearAlignmentsDisplay',
+          groupBy: { type: 'firstOfPairStrand' },
+          showPileup: false,
+          showSashimiArcs: false,
+          coverageHeight: 135,
+          height: 300,
+        },
+      ],
+    }),
+    readySelector: '[data-testid="pileup-display-done"]',
+    readyTimeout: 90000,
+    settleMs: 12000,
+    viewportHeight: 620,
+    hideTooltip: true,
   },
 ]

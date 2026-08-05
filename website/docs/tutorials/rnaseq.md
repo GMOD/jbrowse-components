@@ -98,11 +98,15 @@ it for a whole gene: pick **Group by... → First-of-pair strand**, then turn of
 computed from only that section's reads, so with the pileup hidden what is left
 is two histograms, forward and reverse, sharing one autoscaled axis.
 
-<Figure caption="Two genes on opposite strands, same stranded RNA-seq track, pileup hidden. RPL7A fills the forward band and leaves the reverse one empty; ACTB does the opposite. Peaks sit on the exons in the gene model above." src="/img/rnaseq/strand_split_coverage.png" links="RPL7A (+ strand)=rnaseq/strand_split_coverage_fwd,ACTB (- strand)=rnaseq/strand_split_coverage_rev" />
+The MHC class III region is the most gene-dense stretch of the human genome, and
+`NELFE` and `SKIV2L` sit back to back there on opposite strands:
 
-Which band fills follows the gene, not the track. Swapping to **Strand** groups
-on the read's own strand instead, which for a paired-end library sends the two
-mates of every pair to opposite bands, so neither one is the transcript strand.
+<Figure caption="NELFE and SKIV2L, adjacent and on opposite strands, in stranded RNA-seq with the pileup hidden. The forward band is empty over NELFE and carries the signal over SKIV2L; the reverse band does the opposite, and the switch falls on the boundary between the two genes." src="/img/rnaseq/strand_split_coverage.png" />
+
+Nothing about the two bands knows where the genes are, so the boundary is a
+result rather than a setting. Swapping to **Strand** groups on the read's own
+strand instead, which for a paired-end library sends the two mates of every pair
+to opposite bands, so neither one is the transcript strand.
 
 ## Short reads vs long reads
 
