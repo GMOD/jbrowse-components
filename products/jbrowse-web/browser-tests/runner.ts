@@ -12,6 +12,7 @@ import {
 import { launch } from 'puppeteer'
 
 import {
+  CI_GATE_SUITES,
   enableCrossBackendCollection,
   runCrossBackendGate,
 } from './crossBackendGate.ts'
@@ -58,6 +59,16 @@ const { values } = parseArgs({
     // Capture + run the cross-backend gate but skip the golden comparison. The
     // CI-facing mode: goldens are environment-specific, the gate is not.
     'gate-only': { type: 'boolean', default: false },
+    // Restrict to the suites the blocking CI job renders (CI_GATE_SUITES) and
+    // force remote data off. Scoping, not configuration — it composes with
+    // --backend/--swiftshader/--gate-only, so running it on a real GPU locally
+    // shows exactly what CI compares.
+    'ci-gate': { type: 'boolean', default: false },
+    // Extra attempts for a failing test, each in a fresh browser. Defaults to 1
+    // under --ci-gate and 0 otherwise: a hand run wants the failure, a blocking
+    // job wants the rare capture race not to block a merge — while still saying
+    // out loud that it happened.
+    retries: { type: 'string' },
     quiet: { type: 'boolean', default: false },
     debug: { type: 'boolean', default: false },
     firefox: { type: 'string' },
@@ -82,9 +93,19 @@ const testFilter = values.test?.toLowerCase() ?? ''
 // --smoke runs every suite including the requiresRemote ones (grape/peach +
 // hs1/mm39 synteny), whose data is fetched straight from S3/UCSC at runtime.
 const smoke = values.smoke
+const ciGate = values['ci-gate']
+const retries = values.retries ? Number(values.retries) : ciGate ? 1 : 0
+// Tests that failed and then passed on a later attempt, for the end-of-run
+// report. Never folded into the pass count: the whole value of a retry is that
+// it is visible.
+const retriedTests: string[] = []
 // Auto-enable remote when a filter is specified — no need to also pass
-// --include-remote when targeting a specific suite by name.
-const includeRemote = values['include-remote'] || smoke || filters.length > 0
+// --include-remote when targeting a specific suite by name. --ci-gate overrides
+// that: no push should depend on S3/UCSC being up, and CI_GATE_SUITES listing
+// only local suites is not enough on its own, since a *test* inside a listed
+// suite can carry requiresRemote of its own.
+const includeRemote =
+  !ciGate && (values['include-remote'] || smoke || filters.length > 0)
 const backendValue = values.backend
 const skipWebGPU = values['skip-webgpu']
 const swiftshader = values.swiftshader
@@ -151,7 +172,33 @@ function suiteIncluded(suite: TestSuite, includeAuth: boolean) {
   const filterOk =
     filters.length === 0 ||
     filters.some(f => suite.name.toLowerCase().includes(f))
-  return authOk && remoteOk && filterOk
+  // Exact match, unlike --filter's substring: the CI list is a contract about
+  // what CI compares, and a substring that stops matching after a rename would
+  // shrink it silently. checkCiGateSuites turns that into a hard failure.
+  const ciOk = !ciGate || CI_GATE_SUITES.includes(suite.name)
+  return authOk && remoteOk && filterOk && ciOk
+}
+
+// A name in CI_GATE_SUITES that matches nothing is coverage that vanished — a
+// renamed or deleted suite leaves the job green while rendering less. Fail the
+// run instead, naming what went missing.
+function checkCiGateSuites(suites: TestSuite[]) {
+  const discovered = new Set(suites.map(s => s.name))
+  const missing = CI_GATE_SUITES.filter(n => !discovered.has(n))
+  if (missing.length > 0) {
+    console.error(
+      `\nCI_GATE_SUITES names ${missing.length} suite(s) that no longer exist:`,
+    )
+    for (const n of missing) {
+      console.error(`    ✗ ${n}`)
+    }
+    console.error(
+      'Renamed? Update crossBackendGate.ts CI_GATE_SUITES to match, so the ' +
+        'blocking gate keeps rendering what it claims to.\n',
+    )
+    return false
+  }
+  return true
 }
 
 // Reason this individual test is skipped (logged), or undefined to run it.
@@ -250,12 +297,43 @@ async function runSuites(
       while (queue.length > 0) {
         const item = queue.shift()!
         const progress = `[${++started}/${total}]`
-        const error = await runOneTest(
+        let error = await runOneTest(
           launchBrowser,
           item.suite.name,
           item.test,
           progress,
         )
+        // A second attempt, in a FRESH browser and page. The capture race this
+        // exists for is per-page and load-sensitive, so a whole-test re-run is
+        // the retry that has no shared state to go wrong: the reverted capture
+        // retry (cb2f8524fd) re-took the screenshot inside the same page and
+        // turned diagnosable failures into "Node is detached from document".
+        // Nothing is reused here — new browser, new page, the selector waited
+        // for again from scratch.
+        //
+        // Loud on purpose, and counted separately from `passed`: a retry that
+        // succeeds is still evidence of the defect, and a quiet one would let
+        // the rate climb unnoticed. Only test failures are retried — a
+        // cross-backend drift verdict is computed once, after every test, and
+        // is never retried away.
+        for (
+          let attempt = 2;
+          error !== undefined && attempt <= 1 + retries;
+          attempt++
+        ) {
+          console.log(
+            `    ↻ ${progress} retrying ${item.suite.name} > ${item.test.name} (attempt ${attempt}/${1 + retries})`,
+          )
+          error = await runOneTest(
+            launchBrowser,
+            item.suite.name,
+            item.test,
+            progress,
+          )
+          if (error === undefined) {
+            retriedTests.push(`${item.suite.name} > ${item.test.name}`)
+          }
+        }
         if (error === undefined) {
           passed++
         } else {
@@ -466,6 +544,9 @@ async function main() {
     console.log('Discovering test suites...')
     const suites = await discoverSuites()
     console.log(`Found ${suites.length} test suites`)
+    if (ciGate && !checkCiGateSuites(suites)) {
+      process.exit(1)
+    }
 
     let backends: RenderingBackend[]
     if (backendValue === 'all') {
@@ -539,6 +620,12 @@ async function main() {
       }
     }
     console.log(`  Tests: ${totalPassed} passed, ${totalFailed} failed`)
+    if (retriedTests.length > 0) {
+      console.log(
+        `  Passed only on a retry: ${retriedTests.length}` +
+          ` (${[...new Set(retriedTests)].join(', ')})`,
+      )
+    }
     if (backends.length > 1) {
       console.log(`  RenderingBackends tested: ${backends.join(', ')}`)
     }
@@ -605,6 +692,18 @@ async function main() {
       if (failures.length > 0) {
         crossBackendFailed = true
         console.log(`\n  Backend diff images: ${diffDir}`)
+      }
+      // Under --ci-gate an uncompared pair is a failure too, not a note. Every
+      // structurally single-backend case (gpu-quirks' context-loss test) is
+      // outside CI_GATE_SUITES, so within that list a snapshot only one backend
+      // captured means one side didn't get there — the coverage loss the whole
+      // "0 over threshold across 130 pairs, then 149" episode was about. Hand
+      // runs keep the softer behaviour, where the printed list is enough.
+      if (ciGate && skipped > 0) {
+        crossBackendFailed = true
+        console.log(
+          `\n  ${skipped} snapshot(s) reached only one backend — under --ci-gate that fails the run.`,
+        )
       }
       console.log(`${'─'.repeat(50)}\n`)
     }

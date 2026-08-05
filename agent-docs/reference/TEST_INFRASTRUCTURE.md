@@ -31,6 +31,13 @@ in `browser-tests/__snapshots__/{canvas2d,webgl,webgpu}/`. Cross-backend compare
 (`compare-backends.ts`): identical / `<5%` similar / `≥5%` different. Intentional
 change → `--update-snapshots`.
 
+**Goldens never run in CI** — they encode one machine's rendering. The
+*cross-backend gate* does, blocking, since 2026-08-04: `pnpm test:browser:gate:ci`
+renders `CI_GATE_SUITES` (`crossBackendGate.ts`) with canvas2d and swiftshader
+webgl in one run and diffs the two, so it needs no committed baseline. Scope and
+its reasons live next to the list; `agent-docs/handoffs/cross-backend-gate-ci.md`
+is what to read before widening it.
+
 **The 10-25% blank-capture flake was `fullPage: true`** (fixed 2026-07-26).
 Puppeteer implements `fullPage` by resizing the viewport to the scroll size and
 restoring it afterwards; that resize invalidates the page raster, and under load

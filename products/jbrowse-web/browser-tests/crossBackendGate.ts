@@ -16,14 +16,24 @@ const diffDir = path.resolve(__dirname, '__snapshots__', 'backend-diffs')
 // process). Its counterpart is compare-backends.ts, which diffs the committed
 // per-backend snapshot dirs for local visual review.
 //
-// Run this by hand (`pnpm test:browser:gate`) when touching a shader or a
-// backend. It no longer runs in CI: it was non-blocking, so it only ever
-// published drift logs nobody read, while costing a build plus a two-backend
-// render of every suite per push (removed 2026-07-16). Note it is a
-// *differential* oracle — it is blind to a bug both backends share, so it would
-// not have caught either real render bug found on 2026-07-16 (a stale mobx read
-// in the breakpoint overlay, and GC content rendering empty). See
-// browser-tests/README.md for what making it a blocking gate would take.
+// Two ways to run it, both under swiftshader (drop `--swiftshader` from either
+// to exercise the machine's real GPU):
+//
+//   pnpm test:browser:gate      every local suite — by hand, when touching a
+//                               shader or a backend
+//   pnpm test:browser:gate:ci   CI_GATE_SUITES, remote off — what the blocking
+//                               `cross_backend_gate` push job runs
+//
+// It ran non-blocking over every suite until 2026-07-16 and was removed
+// (f3cb3b962b) because it only published drift logs nobody read while costing a
+// build plus a two-backend render per push. It is back as of 2026-08-04 with
+// the two things that were missing: a verdict that counts, and a scope narrow
+// enough for that verdict to be trustworthy (CI_GATE_SUITES below).
+//
+// Note it is a *differential* oracle — it is blind to a bug both backends share,
+// so it would not have caught either real render bug found on 2026-07-16 (a
+// stale mobx read in the breakpoint overlay, and GC content rendering empty).
+// The committed goldens are the other half, and they still only refresh by hand.
 //
 // Captures are collected in memory during a multi-backend run (see
 // recordCapture, tapped from snapshot.ts) and compared pairwise once every
@@ -115,6 +125,48 @@ const EXCLUDED_SUBSTRINGS: string[] = []
 function isExcluded(name: string) {
   return EXCLUDED_SUBSTRINGS.some(s => name.includes(s))
 }
+
+// The suites the blocking CI job renders (`--ci-gate`). Exact suite names, not
+// substrings, and the runner fails if one no longer matches a discovered suite:
+// a gate that quietly compares less is the one failure mode a blocking gate
+// cannot have, and a renamed suite dropping out of CI while everything stays
+// green is exactly that.
+//
+// Two criteria, both load-bearing:
+//
+//   - **Local data only.** The remote suites (grape/peach, hs1/mm39,
+//     GWAS LocusZoom LD, Demo Inventory) fetch from S3/UCSC at runtime, so they
+//     would make every push depend on someone else's uptime. `--ci-gate` forces
+//     remote off rather than trusting this list to stay in sync.
+//   - **No alignments pileups.** Every over-threshold failure ever recorded here
+//     has been an alignments view, and the drift is a capture-timing race rather
+//     than a shader disagreement (see the comment above and
+//     agent-docs/handoffs/cross-backend-gate-ci.md). They come back when that is
+//     fixed, not before — one flaky suite is enough to get a blocking job
+//     switched off, which is how this check ended up decoration the first time.
+//
+// Measured under swiftshader (the CI configuration) 2026-08-04: three
+// consecutive clean runs, 106 tests and 66 pairs each, 0 over threshold, worst
+// passing drift 0.51% against a 3% default — and byte-identical drift figures
+// across every run. That headroom is the argument for blocking: these views are
+// nowhere near their thresholds.
+//
+// The list is meant to grow as more view types are shown clean; growing it is a
+// measurement, not an edit.
+export const CI_GATE_SUITES = [
+  'Additional Track Types',
+  'BasicLinearGenomeView',
+  'BigWig Tracks',
+  'Dotplot View',
+  'GWAS Tracks',
+  'HiC Track',
+  'MAF Track',
+  'Miscellaneous Tracks',
+  'Multi-Way Synteny Views',
+  'Synteny Views',
+  'Variants Track',
+  'Wiggle Color Change',
+]
 
 // Which backend pairs to compare for one snapshot. canvas2d is the reference
 // implementation, so compare it against each GPU backend present; if canvas2d

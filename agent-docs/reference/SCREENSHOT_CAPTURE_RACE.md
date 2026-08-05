@@ -80,6 +80,64 @@ a menu, widget, or import-form figure) proceeds immediately. It used to burn the
 full duration whenever no wrapper matched, which made it read like a fixed
 sleep and invited tuning it as one.
 
+## The other blank capture: `el.screenshot()` vs the compositor
+
+The section above is the **website generator's** race, and its fix is a better
+readiness wait. The browser-test suite
+(`products/jbrowse-web/browser-tests`) has a second, unrelated one that no wait
+can fix, and the two get confused because the symptom is identical.
+
+There, a capture came back blank while **every** app-level signal was legitimately
+true — loading overlay down, no display in its `loading` phase, every display
+reporting `canvasDrawn`, morph idle. Measured 34 of 34 blanks that way, on both
+the canvas2d and webgl backends, so it is neither a GPU-driver story nor a
+slowness one. `preserveDrawingBuffer` and a compositor double-rAF were both
+tested and neither helped (see the handoff for the tables).
+
+The question was settled by asking the canvas instead of arguing about it.
+`el.screenshot()` goes through Chrome's capture path, which serves **composited
+layers**; `canvas.toDataURL()` reads the **backing store** and never touches the
+compositor. So on a blank capture the two answers separate the causes, and one
+occurrence decides it:
+
+```
+[self-report: canvas 1193x529 HAS content (19442b) while the screenshot is blank
+              -> capture/compositing side]
+[self-report: canvas 1268x100 is ALSO blank -> render side]
+```
+
+Both verdicts have now been observed. The first is the one that matters: the app
+had drawn, and the capture path handed back an empty image.
+
+### Those bytes diagnose the blank. They are not a substitute capture.
+
+The obvious next step — use the `toDataURL` bytes as the capture, since they are
+demonstrably the render — was implemented, measured, and reverted the same day.
+A recovered `targeted_variants-assembly-aliases` came back **93.65% different**
+from the other backend's screenshot of the same view, and the diff image showed
+every glyph landing in an identical place over a wholly different background:
+
+- `toDataURL` returns the canvas's own pixels with **alpha unflattened**;
+  `el.screenshot()` returns the element box **composited** over what is behind it.
+- `el.screenshot()` also captures any DOM drawn over the canvas, and the selector
+  can name a wrapper holding more than one canvas. `toDataURL` sees neither.
+
+The drawings agree; the capture paths do not. A differential oracle that compares
+one backend's backing store against another's composited layers is comparing
+capture paths, not renderers — and a false 93% drift is much worse for a blocking
+gate than a re-run. So a blank capture fails its test, and the CI gate's
+fresh-browser retry takes it again through the same path on both sides.
+
+`assertCanvasHasContent` is the one place the backing store *is* authoritative:
+it asks "did this display draw" and compares no bytes against anything.
+
+Two further limits:
+
+- **A "render side" verdict on webgl is not conclusive** — a cleared drawing
+  buffer reads identically. On canvas2d it is conclusive.
+- **None of this masks a shader that draws nothing.** That canvas self-reports
+  blank too, and still fails with the render-side verdict.
+
 ## Debugging tips that saved time here
 
 - `page.on('console')` **does** forward web-worker console in current puppeteer,

@@ -453,6 +453,51 @@ jobs:
       - name: Smoke-test examples-site
         run: pnpm --filter ${{ matrix.site }} smoke
 
+  # Differential render test: build jbrowse-web, then render the CI_GATE_SUITES
+  # views with both the canvas2d and (swiftshader) webgl backends and diff the
+  # two in memory. canvas2d and webgl are independent implementations of the same
+  # drawing, so a pair that disagrees past its threshold means one backend is
+  # wrong — a shader-regression oracle that needs no GPU (swiftshader) and no
+  # committed golden (the two renders are compared to each other in one run, so
+  # there is no cross-machine baseline to drift, and nothing to refresh by hand).
+  #
+  # BLOCKING, unlike the version removed in f3cb3b962b. That one ran
+  # continue-on-error over every suite, so it published a drift log nobody read;
+  # this one is scoped to views measured clean under swiftshader and its verdict
+  # counts. What that scoping costs is written down in crossBackendGate.ts
+  # (CI_GATE_SUITES): no alignments pileups, no remote data. Widening it is a
+  # measurement, not an edit.
+  #
+  # ~2.5 min of rendering after the build (53 tests x 2 backends), because the
+  # whole suite is not on the table: swiftshader leaks ~29 MB per WebGL context
+  # (ADR-024), which is what moved this suite onto real GPUs locally.
+  cross_backend_gate:
+    name: Cross-backend render gate
+    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: sudo apt-get update && sudo apt-get -y install tabix
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: Build jbrowse-web
+        uses: ./.github/actions/build-jbrowse-web
+      - name: Run cross-backend render gate
+        run: pnpm test:browser:gate:ci
+        working-directory: products/jbrowse-web
+      # Only written when a pair is over threshold, so this is the failure
+      # artifact: the two renders and their pixel diff, which is the whole
+      # evidence for the verdict.
+      - name: Upload backend diff images
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: backend-diffs
+          path: products/jbrowse-web/browser-tests/__snapshots__/backend-diffs/*.png
+          retention-days: 7
+          if-no-files-found: ignore
+
   buildwebsite:
     name: Build website
     if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}

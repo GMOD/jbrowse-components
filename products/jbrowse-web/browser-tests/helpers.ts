@@ -1,3 +1,5 @@
+import { Buffer } from 'node:buffer'
+
 import {
   delay,
   encodeSessionSpec,
@@ -382,18 +384,35 @@ export async function assertCanvasHasContent(
     throw new Error(`assertCanvasHasContent: element not found: ${selector}`)
   }
   const buf = await el.screenshot({ type: 'png' })
-  const stats = analyzeCanvasPng(buf)
+  let stats = analyzeCanvasPng(buf)
   // Same render-vs-capture question canvasSnapshot asks, on the other path that
   // can report a blank — a blank arriving through here was invisible to that
   // instrumentation and is how the first run with it produced no verdict.
   const wouldFail =
     stats.distinctColors < minDistinctColors ||
     stats.nonBgFraction < minNonBgFraction
-  const selfReport = wouldFail ? await canvasSelfReport(page, selector) : ''
-  assertNonBlank(stats, `assertCanvasHasContent: ${selector}${selfReport}`, {
-    minDistinctColors,
-    minNonBgFraction,
-  })
+  const selfReport = wouldFail
+    ? await canvasSelfReport(page, selector)
+    : { note: '' }
+  // The question this helper asks is "did the display draw", and the backing
+  // store answers it directly when the compositor hands back an empty capture.
+  // Safe here, and ONLY here, because no bytes are compared against anything —
+  // feeding a backing-store read into a snapshot comparison mixes capture paths
+  // and produces false drift (see the block above canvasSelfReport). A canvas
+  // that self-reports blank has no dataUrl and still fails.
+  if (selfReport.dataUrl) {
+    stats = analyzeCanvasPng(
+      Buffer.from(
+        selfReport.dataUrl.slice(selfReport.dataUrl.indexOf(',') + 1),
+        'base64',
+      ),
+    )
+  }
+  assertNonBlank(
+    stats,
+    `assertCanvasHasContent: ${selector}${selfReport.note}`,
+    { minDistinctColors, minNonBgFraction },
+  )
   return stats
 }
 

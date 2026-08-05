@@ -277,8 +277,14 @@ async function waitForCaptureSettled(page: Page) {
 //                                           stay indistinguishable from here)
 //
 // Comparing against a same-size blank canvas is exact, rather than guessing a
-// byte-length threshold.
-export async function canvasSelfReport(page: Page, selector: string) {
+// byte-length threshold. The data URL comes back with the verdict so that
+// `assertCanvasHasContent` can answer its own question ("did the display draw")
+// off the backing store — read the block below before reaching for it anywhere
+// a capture gets compared.
+export async function canvasSelfReport(
+  page: Page,
+  selector: string,
+): Promise<{ note: string; dataUrl?: string }> {
   return page
     .evaluate(sel => {
       const el = document.querySelector(sel)
@@ -287,7 +293,7 @@ export async function canvasSelfReport(page: Page, selector: string) {
           ? el
           : (el?.querySelector('canvas') ?? null)
       if (!canvas) {
-        return ' [self-report: no canvas element found]'
+        return { note: ' [self-report: no canvas element found]' }
       }
       const blank = document.createElement('canvas')
       blank.width = canvas.width
@@ -295,12 +301,36 @@ export async function canvasSelfReport(page: Page, selector: string) {
       const url = canvas.toDataURL()
       const size = `${canvas.width}x${canvas.height}`
       return url === blank.toDataURL()
-        ? ` [self-report: canvas ${size} is ALSO blank -> render side]`
-        : ` [self-report: canvas ${size} HAS content (${url.length}b) while the ` +
-            `screenshot is blank -> capture/compositing side]`
+        ? {
+            note: ` [self-report: canvas ${size} is ALSO blank -> render side]`,
+          }
+        : {
+            note:
+              ` [self-report: canvas ${size} HAS content (${url.length}b) while the ` +
+              `screenshot is blank -> capture/compositing side]`,
+            dataUrl: url,
+          }
     }, selector)
-    .catch(() => ' [self-report: unavailable]')
+    .catch(() => ({ note: ' [self-report: unavailable]' }))
 }
+
+// **Those bytes diagnose the blank; they must not become the capture.** Feeding
+// them to the gate was tried and reverted the same day, on the evidence: a
+// recovered `targeted_variants-assembly-aliases` came back 93.65% different from
+// the other backend's screenshot of the same view, and the diff image showed the
+// glyphs landing in identical places over a wholly different background.
+// `toDataURL` returns the canvas's own pixels with alpha unflattened, while
+// `el.screenshot()` returns the element box composited over whatever is behind
+// it (and including any DOM drawn over the canvas). The drawings agree; the two
+// capture paths do not.
+//
+// A differential oracle that compares one backend's backing store against
+// another's composited layers is comparing capture paths, not renderers — a
+// false 93% drift is far worse for a blocking gate than a re-run, so a blank
+// capture fails its test and `--ci-gate`'s fresh-browser retry takes it again
+// through the same path on both sides. `assertCanvasHasContent` is the one place
+// the backing store is authoritative, because it asks "did the display draw"
+// and compares no bytes.
 
 // Suffix for a failure message: what was still unsettled when we gave up waiting.
 const unsettledNote = (unsettled: string[]) =>
@@ -402,10 +432,12 @@ export async function canvasSnapshot(
     // when it is about to throw (and costs nothing on the passing path).
     const wouldFail =
       analysis.distinctColors < 3 || analysis.nonBgFraction < 0.0005
-    const selfReport = wouldFail ? await canvasSelfReport(page, selector) : ''
+    const selfReport = wouldFail
+      ? await canvasSelfReport(page, selector)
+      : { note: '' }
     assertNonBlank(
       analysis,
-      `${name} (${selector})${unsettledNote(unsettled)}${selfReport}`,
+      `${name} (${selector})${unsettledNote(unsettled)}${selfReport.note}`,
     )
   }
   const result = compareImages(name, screenshot, targetedThreshold(threshold))

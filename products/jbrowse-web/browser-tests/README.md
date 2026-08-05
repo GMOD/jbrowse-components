@@ -45,6 +45,12 @@ node browser-tests/runner.ts --filter=synteny --test="chr7"
 # Include suites that require remote data (S3/UCSC):
 node browser-tests/runner.ts --include-remote
 # (not needed when --filter is given — remote is auto-enabled)
+
+# Exactly what the blocking CI job renders — CI_GATE_SUITES, remote forced off.
+# Scoping only, so it composes: drop --swiftshader to run the same set on the
+# real GPU. --retries=N (default 1 under --ci-gate, 0 otherwise) re-runs a
+# failing test in a fresh browser and names it in the summary.
+node browser-tests/runner.ts --backend=all --skip-webgpu --swiftshader --gate-only --ci-gate
 ```
 
 ## How It Works
@@ -84,30 +90,68 @@ Pass `--force-snapshots` to rewrite everything regardless. Reach for it when a
 change is real but smaller than the gate — a renamed label moves well under half
 a percent of a full-page capture.
 
-### Nothing here runs in CI — these are local tools
+### What runs in CI: the cross-backend gate, blocking, on a curated scope
 
-**No part of this directory runs on `push`.** Not the goldens, and (since
-2026-07-16) not the cross-backend gate either. Rendering is checked when a human
-runs it, and only then.
+The **goldens never run in CI** — they encode one machine's rendering, so they
+are checked when a human runs them and only then. The **cross-backend gate**
+does, as the blocking `cross_backend_gate` job on every push:
 
-The gate used to run non-blocking (`continue-on-error`) purely to publish drift
-logs and diff artifacts. Nobody read them, its own premise turned out to be
-false (see "Pileup goldens" below), and it cost a full jbrowse-web build plus a
-two-backend render of every suite on every push. A check that gates nothing and
-nobody reads is decoration, so it was removed. `pnpm test:browser:gate` is still
-the right tool to run **by hand** when touching shaders or a backend — that is a
-differential canvas2d-vs-webgl oracle and it does not need goldens.
+```bash
+pnpm test:browser:gate:ci    # CI_GATE_SUITES, remote off — exactly what CI runs
+pnpm test:browser:gate       # every local suite — the hand-run tool
+```
 
-Bringing it back as a real CI gate needs, in order: the pileup drift explained
-(**done 2026-07-26 — it was `fullPage`, see "Pileup goldens" below**), a few
-consecutive clean runs on an idle machine to prove the false-positive rate is 0
-(7/7 on the alignments suite so far), and then `continue-on-error` dropped.
-Re-adding it non-blocking just recreates the decoration.
+Both software-render webgl (`--swiftshader`), which is what CI has to do; drop
+that flag from either to exercise the machine's real GPU.
 
-Note the gate needs a GPU backend, and GitHub runners have none — swiftshader is
-the only GPU-less option and it leaks ~29 MB per WebGL context (ADR-024), which
-is what drove this suite onto real GPUs. A full-suite CI gate is therefore not
-on the table; a curated set of ~10 deterministic views is.
+It is differential (canvas2d vs webgl, both rendered in the one run), so it
+needs no committed baseline and cannot drift between machines. `--ci-gate` scopes
+it to `CI_GATE_SUITES` in `crossBackendGate.ts`, which is where the reasoning for
+the scope lives; it also forces remote data off, so no push depends on S3/UCSC.
+
+Blocking, this time, is the point. It ran `continue-on-error` over every suite
+until 2026-07-16 and was removed, because a check that gates nothing and nobody
+reads is decoration. What it needed was not a bigger scope but a verdict that
+counts, and a scope narrow enough to deserve one:
+
+- **Only views measured clean under swiftshader.** 66 pairs per run, 0 over
+  threshold, worst passing drift 0.51% against a 3% default — the headroom is the
+  argument. Alignments pileups are deliberately out (every over-threshold failure
+  ever recorded here has been one) and so is anything fetching remote data.
+- **A failing test fails the run.** A test that dies before its screenshot
+  removes a pair from the comparison, and a snapshot only one backend captured is
+  skipped rather than failed — so ignoring test failures let a run report "0 over
+  threshold" having compared 19 fewer pairs than the run before it. Under
+  `--ci-gate` an uncompared pair is a failure too.
+- **One retry per test, in a fresh browser, reported by name.** For the capture
+  race described below, which no wait can fix. A drift verdict is computed once,
+  after every test, and is never retried away.
+
+Note the gate needs a GPU backend and GitHub runners have none — swiftshader is
+the only GPU-less option, and it leaks ~29 MB per WebGL context (ADR-024), which
+is what drove this suite onto real GPUs locally. A full-suite CI gate is
+therefore not on the table; the curated set is ~2.5 min of rendering after the
+build. Widening it is a measurement, not an edit.
+
+### Blank captures: ask the canvas, don't wait harder
+
+A capture can come back blank with every app-level signal legitimately true —
+overlay down, no display `loading`, `canvasDrawn` set, morph idle (34 of 34
+measured that way, on both backends). No amount of extra waiting fixes that, so
+`canvasSnapshot` asks the canvas itself and puts the answer in the failure
+message: `el.screenshot()` serves *composited* layers, `canvas.toDataURL()` reads
+the backing store, so content in one and not the other names the capture path
+rather than the render.
+
+**That answer diagnoses the blank; it is not a substitute capture.** Feeding
+those bytes to the gate was tried and reverted on the evidence — a recovered
+snapshot came back 93.65% different from the other backend's screenshot of the
+same view, glyphs in identical places over a wholly different background, because
+`toDataURL` does not flatten alpha and does not include DOM drawn over the
+canvas. Comparing one backend's backing store against another's composited layers
+compares capture paths, not renderers. A blank fails its test, and `--ci-gate`'s
+retry takes it again through the same path on both sides. See
+`agent-docs/reference/SCREENSHOT_CAPTURE_RACE.md`.
 
 Because nothing refreshes the goldens but `-u`, they drift silently: as of
 2026-07, 133 of 187 came from a single 2026-05-30 commit. **A large diff usually
