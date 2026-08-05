@@ -99,9 +99,10 @@ configuration.
 If the VCF's `INFO` field carries SnpEff `ANN` or VEP `CSQ` annotations, each
 variant's alt-carrying cells can be colored by the severity of its most severe
 predicted consequence instead of by genotype. From the track menu, open **Color
-by...** and choose **Consequence impact** under **Cells** (this option only
-appears once the track detects real annotations in the loaded data, hidden
-rather than disabled for unannotated VCFs).
+by...** and choose **Consequence impact** under **Cells**. The entry stays
+visible on a VCF that carries no annotations, but is greyed out and names why:
+_(checking for annotations...)_ while the scan runs, then _(no SnpEff/VEP
+annotations found)_.
 
 Every annotation is bucketed into one of four impact tiers and painted with a
 fixed color, so the legend is the same across tracks:
@@ -126,9 +127,9 @@ To have the track load already colored this way, preset the display's
 
 Structural variants can be colored by their class instead of by genotype: each
 alt-carrying cell takes the color of its variant's structural-variant type. From
-the track menu, open **Color by...** and choose **SV type** under **Cells**
-(like the consequence option, it only appears once the track detects structural
-variants in the loaded data).
+the track menu, open **Color by...** and choose **SV type** under **Cells**.
+Like the consequence option it greys out rather than disappearing, reading _(no
+structural variants found)_ on a callset that carries none.
 
 The common classes get fixed colors, so the legend reads the same across tracks:
 deletion (red), duplication (blue), insertion (green), inversion (orange), copy

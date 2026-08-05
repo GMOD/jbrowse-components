@@ -20,8 +20,9 @@ glyph** option in the track menu controls how a gene's transcripts are drawn:
   each gene to its single longest coding transcript when you are zoomed out, so
   dense regions stay legible.
 - All transcripts - always draws every transcript on its own row.
-- Longest coding transcript - always draws only the longest coding isoform of
-  each gene.
+- Longest coding transcript - collapses each gene to one isoform: the longest by
+  protein length, or, for a gene with no coding isoform at all, the one with the
+  widest genomic span.
 
 ## Collapsing introns
 

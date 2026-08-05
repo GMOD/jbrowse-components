@@ -52,9 +52,13 @@ showing, is remembered for the next consensus you run.
   nothing otherwise. Defaults to 0.5.
 - **Include insertions supported by the reads** - with this off, the output
   stays in the reference coordinate frame.
-- **Exclude secondary alignments** - on by default. Unmapped, QC-fail, and
-  duplicate reads are always excluded, as are reads stored without a sequence,
-  which have no bases to vote with.
+- **Exclude secondary alignments** - on by default, and the one flag this dialog
+  sets for itself: unchecking it includes secondary reads even on a track whose
+  own filter drops them. Every other flag is inherited from the track's
+  [**Filter by**](/docs/user_guides/alignments_track#filtering-reads) settings,
+  which by default exclude unmapped, QC-fail and duplicate reads — so a track
+  you have re-filtered feeds that same filter to the consensus. Reads stored
+  without a sequence are always skipped, having no bases to vote with.
 
 ## Ambiguity codes
 
