@@ -109,7 +109,7 @@ direction, worthless on its own, and it makes the import path worse.
 **Shrinking the worker pool** so fewer workers pay the parse cost. Measured
 separately and rejected: forcing `rpc.workerCount: 1` is a wash (3430 vs
 3534 ms to settled) because the boots overlap and are not on the wall-clock
-critical path. See [PERF_INSTRUMENTATION.md](../guides/PERF_INSTRUMENTATION.md).
+critical path. See [PERF_INSTRUMENTATION.md](../reference/PERF_INSTRUMENTATION.md).
 
 ## Consequences
 

@@ -8,7 +8,7 @@ summary: "Desktop vets remote-config plugins at the `fetchConfig` funnel, not pe
 ## Status
 
 Accepted (2026-07). Mitigation only — the underlying privilege is the subject of
-`guides/DESKTOP_CONTEXT_ISOLATION.md`, which this ADR does not resolve.
+`reference/DESKTOP_CONTEXT_ISOLATION.md`, which this ADR does not resolve.
 
 ## Context
 
@@ -93,7 +93,7 @@ This is a mitigation, not the fix. It narrows *which configs* can reach
 `require()`; it does not remove `require()` from the renderer. Any injected
 content is still RCE, and a user who clicks "Load plugins" still gets a plugin
 with full Node. The fix is `contextIsolation`, which
-`guides/DESKTOP_CONTEXT_ISOLATION.md` plans and `electron/preload.ts` +
+`reference/DESKTOP_CONTEXT_ISOLATION.md` plans and `electron/preload.ts` +
 `electron/requireShim.ts` prepare for. Once that lands, this gate goes back to
 being defense-in-depth rather than the thing standing between a link click and
 code execution.

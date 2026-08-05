@@ -90,7 +90,7 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
           color legend serves this role for categorical paintings but renders
           nothing when the palette is continuous (MAX_LEGEND_ENTRIES), so the row
           labels are the signal that holds in both modes. See
-          agent-docs/guides/SCREENSHOT_CAPTURE_RACE.md. */}
+          agent-docs/reference/SCREENSHOT_CAPTURE_RACE.md. */}
       <RowLabelsOverlay
         testId="multirow-row-labels"
         sources={sources}

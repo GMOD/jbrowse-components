@@ -211,5 +211,5 @@ Three structural findings from that sweep, so it need not be redone:
   deliberately not exported.
 - [ADR-005](../architecture-decision-records/adr-005-shader-codegen-slang.md) —
   Slang codegen generally.
-- [reference/GPU_RENDERING.md](../reference/GPU_RENDERING.md) §"Keeping the two
+- [reference/GPU_RENDERING.md](GPU_RENDERING.md) §"Keeping the two
   backends in parity" — where this sits among the other parity mechanisms.

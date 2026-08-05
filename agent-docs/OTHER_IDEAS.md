@@ -2028,7 +2028,7 @@ same-row bowed curve just off-screen can be dropped, harmless).
 ## Cancer SV datasets not yet shot
 
 Lifted from the `cancer_sv` build; the tool and the verified COLO829/K562 facts
-are in [guides/SV_MULTIHOP.md](guides/SV_MULTIHOP.md).
+are in [reference/SV_MULTIHOP.md](reference/SV_MULTIHOP.md).
 
 - **HCC1395 multi-caller copy number.** SEQC2 publishes CNV output from six
   callers plus SNP arrays on one tumour, all hg38, and PacBio Revio HiFi

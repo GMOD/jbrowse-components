@@ -660,7 +660,7 @@ async function captureBlatDialogs(driver: WebDriver): Promise<void> {
 
 // Opening a genome hangs some fraction of the time: the assembly sits at
 // `initialized: false` with no error and the import form reads "Loading"
-// forever (see agent-docs/guides/DESKTOP_SCREENSHOTS.md). openVolvoxGenome
+// forever (see agent-docs/reference/DESKTOP_SCREENSHOTS.md). openVolvoxGenome
 // gates on the assembly manager and says exactly that, which is what lets the
 // flow start the session over instead of losing every figure downstream of it
 // to an app-level race.

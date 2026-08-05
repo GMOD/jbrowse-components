@@ -326,7 +326,7 @@ needs stopping, so there is no ceiling on the path that needs one.
 **Retire when** the gate can re-measure per view instead of rescaling (an
 opt-in, since canvas/LD/alignments share the mixin) and the byte axis is allowed
 to fire below the floor. Sketch and the MAF-specific fixes in
-[MAF_LARGE_BLOCKS.md](../guides/MAF_LARGE_BLOCKS.md).
+[MAF_LARGE_BLOCKS.md](MAF_LARGE_BLOCKS.md).
 
 ---
 
@@ -501,7 +501,7 @@ which would be a clean limitation. It half-supports the case.
 Nobody has confirmed how it looks on screen, and no LD spec or test uses a
 multi-region view, so the size of the error is unknown. Found by grepping for
 the `contentBlocks[0]` pattern behind the region-launch fix in
-[REGION_VIEW_LAUNCH.md](../guides/REGION_VIEW_LAUNCH.md) convention 6.
+[REGION_VIEW_LAUNCH.md](REGION_VIEW_LAUNCH.md) convention 6.
 
 **Retire when** either the layout takes the whole `regions` array and accumulates
 the inter-region offset the way the launch pickers now do, or the display

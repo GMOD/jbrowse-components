@@ -29,7 +29,7 @@ answer if you assume them:
 - `agent-docs/reference/DOG10K_DATASETS.md` — which callset carries DUP/INV,
   per-sample copy number from the hosted CRAMs, and why every dog coordinate
   from a paper is canFam3.1 until proven otherwise.
-- `agent-docs/guides/SV_MULTIHOP.md` — the COLO829/K562 reconstruction behind
+- `agent-docs/reference/SV_MULTIHOP.md` — the COLO829/K562 reconstruction behind
   `cancer_sv`, and four bugs in it that each returned a plausible wrong answer.
 - `agent-docs/reference/PANGENOME_GRAPHS.md` — the HPRC/E. coli graphs.
 - `agent-docs/OTHER_IDEAS.md` — proposed tutorials, and the dead-end datasets

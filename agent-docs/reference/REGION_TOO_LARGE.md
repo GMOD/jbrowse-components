@@ -387,7 +387,7 @@ paths can't drift apart.
   rescales the estimate toward zero while the real cost is unchanged, and the
   20kb floor means the gate isn't consulted at all. The gate under-reports
   exactly the fetch that needs stopping. See
-  [MAF_LARGE_BLOCKS.md](../guides/MAF_LARGE_BLOCKS.md) for the failure mode and
+  [MAF_LARGE_BLOCKS.md](MAF_LARGE_BLOCKS.md) for the failure mode and
   the opt-out sketch (re-measure instead of rescale; let the byte axis fire
   below the floor). Unfixed as of 2026-07-29.
 - `resolveByteLimit({ adapterFetchSizeLimit, configFetchSizeLimit })` is the one

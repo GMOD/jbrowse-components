@@ -186,7 +186,7 @@ export interface Sample {
    * ids are UCSC db names in some alignments, scientific names in others (which
    * map to several assemblies, so a name lookup can silently land on the wrong
    * one), and lab-internal ids in others still. See
-   * `agent-docs/guides/MAF_CROSS_VIEW_NAVIGATION.md`.
+   * `agent-docs/reference/MAF_CROSS_VIEW_NAVIGATION.md`.
    */
   assemblyName?: string
   /**

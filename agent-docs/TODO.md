@@ -188,7 +188,7 @@ whether recovery settles or cascades.
 Report a diagnostic number first; a regression assertion only after, and well
 under the observed threshold (a "12 tracks lose no context" floor) so it doesn't
 flake. **The CI number is a floor, not the answer** — headless always falls back
-to SwiftShader ([guides/TEST_INFRASTRUCTURE.md](guides/TEST_INFRASTRUCTURE.md)),
+to SwiftShader ([reference/TEST_INFRASTRUCTURE.md](reference/TEST_INFRASTRUCTURE.md)),
 whose context cap need not match a real driver's, so the run that characterizes
 the limit is headed on a real GPU. Capture both, and say which is which.
 
@@ -289,7 +289,7 @@ https://jbrowse.org/jb2-staging/docs/tutorials/population_genomics/
 ## maf fetch cost on long blocks
 
 Design done, nothing built, premise unconfirmed — see
-[guides/MAF_LARGE_BLOCKS.md](guides/MAF_LARGE_BLOCKS.md). Run the one-line block-size
+[reference/MAF_LARGE_BLOCKS.md](reference/MAF_LARGE_BLOCKS.md). Run the one-line block-size
 check before building any of it. The byte-gate half (the estimate rescales by span
 while a tabix line's cost is quantized by feature) is not MAF-specific and is
 logged in ARCHITECTURAL_LIMITS.md.

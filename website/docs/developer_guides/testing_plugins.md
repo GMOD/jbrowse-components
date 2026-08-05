@@ -127,7 +127,7 @@ assert on a fixed timeout; wait on a signal:
 
 Run with `pnpm test:browser` (builds `@jbrowse/web` first) or
 `pnpm test:browser:update` to refresh snapshots. See
-`agent-docs/guides/TEST_INFRASTRUCTURE.md` for the full harness reference.
+`agent-docs/reference/TEST_INFRASTRUCTURE.md` for the full harness reference.
 
 ## Running tests
 
