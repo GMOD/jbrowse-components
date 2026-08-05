@@ -2,7 +2,7 @@ import { isModelType, isType, types } from '@jbrowse/mobx-state-tree'
 
 import CorePlugin from './CorePlugin.ts'
 import PhasedScheduler from './PhasedScheduler.ts'
-import ReExports from './ReExports/index.ts'
+import { getReExportRegistry } from './ReExports/registry.ts'
 import {
   ConfigurationSchema,
   isBareConfigurationSchemaType,
@@ -35,7 +35,7 @@ import type {
 } from '@jbrowse/mobx-state-tree'
 import type { ComponentType } from 'react'
 
-type PluggableElementTypeGroup =
+export type PluggableElementTypeGroup =
   | 'adapter'
   | 'display'
   | 'track'
@@ -190,10 +190,39 @@ export interface ReplaceWidgetProps {
 }
 // #endregion
 
+/**
+ * Typed registries of the view and display types a plugin can extend, in the
+ * same shape as {@link ExtensionPointRegistry} and augmented the same way:
+ *
+ *   declare module '@jbrowse/core/PluginManager' {
+ *     interface ViewTypeRegistry {
+ *       LinearGenomeView: LinearGenomeViewStateModel
+ *     }
+ *   }
+ *
+ * That is what makes `extendViewType(pm, 'LinearGenomeView', …)` hand back a
+ * typed state model, and a misspelled or renamed name a compile error rather
+ * than an extension that quietly never applies. Declaring them here rather than
+ * beside the helpers is load-bearing: an interface can only be augmented
+ * through the module that declares it, and a barrel re-exporting the type would
+ * give every augmentation its own unrelated copy.
+ */
+export interface ViewTypeRegistry {}
+export interface DisplayTypeRegistry {}
+
+export type ViewTypeName = keyof ViewTypeRegistry
+export type DisplayTypeName = keyof DisplayTypeRegistry
+
 export interface ExtensionPointRegistry {
   'Core-extendPluggableElement': {
     args: PluggableElementType
     result: PluggableElementType
+    // Which kind of element this is. The point fires for every one of them, so
+    // without this a callback can only match on `name` and then *assert* the
+    // element is the kind that name implies — which is what every hand-written
+    // one did, in two independently reinvented lying type guards. `addElementType`
+    // has known the group all along; it just never said.
+    props: { group: PluggableElementTypeGroup }
   }
   // accumulates an array of panels — every callback appends its own component
   // (scoping itself via the model) and returns the array, so multiple plugins
@@ -590,6 +619,7 @@ export default class PluginManager {
             /** #extensionPoint Core-extendPluggableElement | sync | Mutate any pluggable element after it is created */
             'Core-extendPluggableElement',
             newElement,
+            { group: groupName },
           ),
         )
       }
@@ -671,7 +701,11 @@ export default class PluginManager {
 
   jbrequireCache = new Map()
 
-  lib = ReExports
+  // populated by PluginLoader once a runtime plugin is actually being loaded,
+  // which is the only thing that can call jbrequire — see ReExports/registry.ts
+  get lib() {
+    return getReExportRegistry()
+  }
 
   load = <FTYPE extends AnyFunction>(lib: FTYPE): ReturnType<FTYPE> => {
     if (!this.jbrequireCache.has(lib)) {

@@ -244,16 +244,48 @@ export default function SequenceFeatureHoverHighlightExtensionF(
 type: synchronous
 
 - `args` - `PluggableElementType` - the pluggable element being installed
-- `props` - none
+- `props` - `{ group }`, which of the ten kinds it is (`'view'`, `'display'`,
+  `'adapter'`, …)
 
 Add functionality to pluggable elements, e.g. extra right-click context menus.
-Your callback receives every pluggable element registered to the system. See
-[](/docs/developer_guides/menus) for a worked example adding track context-menu
-items.
+Your callback receives **every** pluggable element registered to the system, so
+it must select the one it means.
 
-Reference:
-[`DotplotReadVsRef`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotReadVsRef/index.ts),
-which adds a read-vs-reference item to the alignments context menu.
+For the two common cases, don't register on this point yourself — use
+`extendViewType` / `extendDisplayType`, which check the `group` and look the
+name up in a registry:
+
+<!-- include: products/jbrowse-react-linear-genome-view/examples-site/src/examples/WithDisableZoomAndSideScroll.tsx#extend -->
+
+```tsx
+extendViewType(pluginManager, 'LinearGenomeView', stateModel =>
+  types.compose(
+    stateModel,
+    types.model().actions(() => ({
+      zoomTo: () => {},
+      scrollTo: () => {},
+    })),
+  ),
+)
+```
+
+`stateModel` arrives typed, so `self` is typed through the rest of the chain
+with no `as`. The name is checked too: register your view or display in the
+registry beside its state model type, and a typo or a rename becomes a compile
+error instead of an extension that silently stops applying.
+
+<!-- include: plugins/linear-genome-view/src/LinearGenomeView/model.ts#registry -->
+
+```typescript
+declare module '@jbrowse/core/PluginManager' {
+  interface ViewTypeRegistry {
+    LinearGenomeView: LinearGenomeViewStateModel
+  }
+}
+```
+
+See [](/docs/developer_guides/menus) for a worked example adding track
+context-menu items.
 
 ### Core-guessAdapterForLocation
 

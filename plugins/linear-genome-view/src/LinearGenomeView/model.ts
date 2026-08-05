@@ -2495,3 +2495,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
 export type LinearGenomeViewStateModel = ReturnType<typeof stateModelFactory>
 export type LinearGenomeViewModel = Instance<LinearGenomeViewStateModel>
+
+// #region registry
+declare module '@jbrowse/core/PluginManager' {
+  interface ViewTypeRegistry {
+    LinearGenomeView: LinearGenomeViewStateModel
+  }
+}
+// #endregion
