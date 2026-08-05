@@ -26,7 +26,14 @@ type TrackConf = Record<string, unknown>
 type TrackInput = string | TrackConf
 type AssemblyConfig = Record<string, unknown>
 type SearchAdapters = ViewStateOptions['aggregateTextSearchAdapters']
-type SessionSnapshot = ViewStateOptions['defaultSession']
+// What the controller accepts as a session. This API's audience is hosts that
+// don't write TypeScript (anywidget, htmlwidgets, plain JS), and what they hand
+// over — a decodeSession result, a snapshot they stored — is runtime-shaped by
+// construction. So it takes the open form and routes it through
+// createViewState's `session` door, which validates as MST applies it; the
+// compiler-checked `defaultSession` slot could not accept a decoded session at
+// all, which is what `decodeSession`'s own docs used to point hosts at.
+type SessionSnapshot = ViewStateOptions['session']
 
 function isLooseTrack(track: TrackInput): track is string | LooseTrackInput {
   return typeof track === 'string' || (!('adapter' in track) && 'uri' in track)
@@ -297,8 +304,8 @@ export function createLinearGenomeView(
       plugins: opts.plugins,
       makeWorkerInstance: opts.makeWorkerInstance,
       configuration: opts.configuration,
-      defaultSession,
-      // a defaultSession already positions the view; only route location
+      session: defaultSession,
+      // a session already positions the view; only route location
       // through createViewState's init flow (spinner while loading) otherwise
       location: hasSession ? undefined : location,
     })

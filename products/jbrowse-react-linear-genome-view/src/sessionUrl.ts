@@ -18,9 +18,11 @@ export async function encodeSession(viewState: ViewModel): Promise<string> {
 
 /**
  * Inverse of {@link encodeSession}: decode a session string back into a
- * snapshot to hand to `createViewState` as `defaultSession` (or to the
- * controller's `setSession`). Accepts the value with or without the `encoded-`
- * prefix.
+ * snapshot to hand to `createViewState` as **`session`** (or to the
+ * controller's `setSession`), not `defaultSession` — that slot is the
+ * compiler-checked shape for a session you author in TypeScript, and a decoded
+ * one is only known at runtime, so it goes through the door that validates it
+ * as MST applies it. Accepts the value with or without the `encoded-` prefix.
  *
  * Throws on anything that isn't a decodable session, so a host can fall back to
  * its normal launch state instead of opening a half-built one.
