@@ -244,4 +244,107 @@ export const hicSpecs: ScreenshotSpec[] = [
     readyTimeout: 240000,
     settleMs: 20000,
   },
+
+  // Compartments: the OTHER pair of annotation files ENCODE derives from the same
+  // matrix, and the one place a raw contact map genuinely cannot show you the
+  // answer. A/B compartmentalisation is a modulation on top of a steep
+  // distance-decay, so it only becomes a checkerboard once the matrix is turned
+  // into observed/expected and then correlated — which JBrowse does not do. Both
+  // ends of the ramp were tried on this exact view: linear+percentile leaves the
+  // plaid near-white, and `useLogScale` on a file this deep returns solid red.
+  // Balanced (SCALE) + linear is the best available and shows blocky texture
+  // aligned with the eigenvector, which is why the matrix is kept in frame here
+  // rather than dropped: it is the evidence for why the eigenvector track exists.
+  //
+  // Normalization is SCALE, the deliberate opposite of the translocation figure's
+  // NONE. Balancing is right for reading structure and wrong for reading
+  // rearrangements; those two figures are the two halves of that statement.
+  //
+  // THE SIGN IS ANCHORED, NOT ASSUMED. An eigenvector identifies the A
+  // compartment only up to a sign, and juicer emits whichever the
+  // eigendecomposition produced, so "positive = A" is an assumption until
+  // checked. Measured on these two files over chr8/14/18/19, mean eigenvector in
+  // bins with >=3 gene TSSs vs bins with none: GM12878 +0.0039 vs -0.0021, K562
+  // +0.0067 vs -0.0009. Positive is the gene-rich side in both, on every
+  // chromosome tested, so positive is A.
+  //
+  // The two files are also mutually oriented, which a cross-cell-line comparison
+  // needs and nothing guarantees: 87-93% of 100kb bins agree in sign, and each
+  // file is ~50/50 positive/negative. Arbitrary relative orientation would sit at
+  // 50% agreement, so the ~10% that disagree are real differences.
+  //
+  // The locus is the largest run where BOTH signals disagree between the lines --
+  // slice cluster id AND eigenvector sign -- which is TCF4. Requiring both is
+  // what makes it a compartment switch rather than a relabelling: a cluster
+  // renumbering moves ids without moving the eigenvector, and a whole-chromosome
+  // orientation difference would flip the sign everywhere while the ids agreed.
+  // The 10Mb window is deliberate: the flanks, where the two lines agree, are the
+  // control that makes the one discordant block mean something.
+  {
+    mode: 'url',
+    name: 'hic/compartment_switch',
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg38',
+      loc: 'chr18:51,000,000-61,000,000',
+      trackLabels: 'offset',
+      highlight: [
+        {
+          refName: 'chr18',
+          start: 55_400_000,
+          end: 56_500_000,
+          label: 'TCF4',
+          color: 'rgba(30,110,190,0.14)',
+        },
+      ],
+      tracks: [
+        {
+          trackId: 'mane_hg38',
+          type: 'LinearBasicDisplay',
+          showLabels: 'name',
+          height: 62,
+        },
+        // Both eigenvector tracks are pinned to the SAME scale. Left to
+        // autoscale they each fill their own lane and the two panels stop being
+        // comparable, which is the whole point of stacking them.
+        {
+          trackId: 'hic_gm12878_compartments',
+          height: 84,
+          minScore: -0.03,
+          maxScore: 0.03,
+        },
+        {
+          trackId: 'hic_gm12878_subcompartments',
+          type: 'LinearBasicDisplay',
+          height: 30,
+          displayMode: 'collapsed',
+        },
+        {
+          trackId: 'hic_k562_subcompartments',
+          type: 'LinearBasicDisplay',
+          height: 30,
+          displayMode: 'collapsed',
+        },
+        {
+          trackId: 'hic_k562_compartments',
+          height: 84,
+          minScore: -0.03,
+          maxScore: 0.03,
+        },
+        {
+          trackId: 'hic_gm12878_insitu',
+          type: 'LinearHicDisplay',
+          height: 300,
+          resolutionBias: 2,
+          useLogScale: false,
+          useColorPercentile: true,
+          selectedNormalization: 'SCALE',
+          squashToHeight: true,
+        },
+      ],
+    }),
+    viewportHeight: 968,
+    readySelector: '[data-testid="hic-display-done"]',
+    readyTimeout: 240000,
+    settleMs: 20000,
+  },
 ]

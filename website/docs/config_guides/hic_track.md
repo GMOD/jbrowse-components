@@ -103,7 +103,79 @@ example draws only the high-scoring calls, in dark red, as thin arcs:
 }
 ```
 
+## Compartments and subcompartments
+
+The compartment eigenvector is a BigWig and needs nothing beyond its location.
+The bicolor rendering around zero is what a
+[quantitative track](/docs/config_guides/quantitative_track) does with signed
+data by default; set
+[`minScore`](/docs/config/linearwiggledisplay/#slot-minscore) and
+[`maxScore`](/docs/config/linearwiggledisplay/#slot-maxscore) when two of these
+tracks have to be read against each other, so neither autoscales to its own
+extremes:
+
+```json addtrack
+{
+  "type": "QuantitativeTrack",
+  "trackId": "hic_compartments",
+  "name": "Compartment eigenvector",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BigWigAdapter",
+    "uri": "https://encode-public.s3.amazonaws.com/2021/10/28/5b488af0-df49-4b9b-9feb-8ad671b7eaef/ENCFF661LPK.bigWig"
+  },
+  "displayDefaults": {
+    "minScore": -0.03,
+    "maxScore": 0.03
+  }
+}
+```
+
+Subcompartments are a BED whose color column carries the class color. ENCODE's
+copies are not tabix-indexed, so they load with the plain
+[`BedAdapter`](/docs/config/bedadapter), which reads the whole file — a few
+hundred kilobytes here:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "hic_subcompartments",
+  "name": "Subcompartments",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BedAdapter",
+    "uri": "https://encode-public.s3.amazonaws.com/2022/08/26/7165fc3e-f186-4fba-be87-f4ea600404b0/ENCFF247IAA.bed.gz",
+    "columnNames": [
+      "chrom",
+      "chromStart",
+      "chromEnd",
+      "name",
+      "score",
+      "strand",
+      "thickStart",
+      "thickEnd",
+      "itemRgb",
+      "numAltClusterings",
+      "altClusterNum",
+      "altClusterAssignment"
+    ]
+  }
+}
+```
+
+[`columnNames`](/docs/config/bedadapter/#slot-columnnames) is doing two jobs
+here, and without it this file is misread twice over. It has twelve columns whose
+last three are not BED12's block fields, so left to the positional BED layout the
+cluster count is taken for a `blockCount` and every feature grows a row of
+nonexistent subfeatures. And naming column nine `itemRgb` is what makes the
+classes paint their own colors: the file's own header spells it `itemRGB`, which
+is not the name JBrowse looks for, and the header would not be consulted anyway
+because a second comment line follows the column line — the parser takes the last
+header line as the definition, and that one has no tab-separated fields. Neither
+failure raises an error.
+
 ## See also
 
 - [](/docs/user_guides/hic_track)
 - [LinearPairedArcDisplay config schema](/docs/config/linearpairedarcdisplay)
+- [](/docs/tutorials/hic_structural_variants)

@@ -1998,6 +1998,78 @@
       }
     },
     {
+      "type": "QuantitativeTrack",
+      "trackId": "hic_gm12878_compartments",
+      "name": "GM12878 compartment eigenvector (ENCFF661LPK)",
+      "assemblyNames": ["hg38"],
+      "category": ["Hi-C", "GM12878 vs K562"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "uri": "https://encode-public.s3.amazonaws.com/2021/10/28/5b488af0-df49-4b9b-9feb-8ad671b7eaef/ENCFF661LPK.bigWig"
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "hic_k562_compartments",
+      "name": "K562 compartment eigenvector (ENCFF699RSL)",
+      "assemblyNames": ["hg38"],
+      "category": ["Hi-C", "GM12878 vs K562"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "uri": "https://encode-public.s3.amazonaws.com/2021/10/28/1180b7b2-99fd-429a-bfe1-f76cc8aa751a/ENCFF699RSL.bigWig"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hic_gm12878_subcompartments",
+      "name": "GM12878 subcompartments (slice 100kb, ENCFF247IAA)",
+      "assemblyNames": ["hg38"],
+      "category": ["Hi-C", "GM12878 vs K562"],
+      "adapter": {
+        "type": "BedAdapter",
+        "uri": "https://encode-public.s3.amazonaws.com/2022/08/26/7165fc3e-f186-4fba-be87-f4ea600404b0/ENCFF247IAA.bed.gz",
+        "columnNames": [
+          "chrom",
+          "chromStart",
+          "chromEnd",
+          "name",
+          "score",
+          "strand",
+          "thickStart",
+          "thickEnd",
+          "itemRgb",
+          "numAltClusterings",
+          "altClusterNum",
+          "altClusterAssignment"
+        ]
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hic_k562_subcompartments",
+      "name": "K562 subcompartments (slice 100kb, ENCFF601ALX)",
+      "assemblyNames": ["hg38"],
+      "category": ["Hi-C", "GM12878 vs K562"],
+      "adapter": {
+        "type": "BedAdapter",
+        "uri": "https://encode-public.s3.amazonaws.com/2022/10/10/17c9d9af-2710-4fc6-9259-a4dc107bf7bb/ENCFF601ALX.bed.gz",
+        "columnNames": [
+          "chrom",
+          "chromStart",
+          "chromEnd",
+          "name",
+          "score",
+          "strand",
+          "thickStart",
+          "thickEnd",
+          "itemRgb",
+          "numAltClusterings",
+          "altClusterNum",
+          "altClusterAssignment"
+        ]
+      }
+    },
+    {
       "type": "AlignmentsTrack",
       "trackId": "htsget_demo",
       "name": "Htsget DNANexus",

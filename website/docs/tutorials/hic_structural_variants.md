@@ -149,7 +149,7 @@ ranges, so this config works as-is with nothing to download or host. The `.hic`
 files are 20 GB and 55 GB and are never fetched whole — only the bins on screen
 are requested.
 
-```json
+```json addtrack
 {
   "type": "HicTrack",
   "trackId": "hic_k562_insitu",
@@ -173,7 +173,7 @@ comes back as a 403. The S3 URL for any ENCODE file is in its metadata under
 
 The loop and domain BEDPEs need one extra slot each, for opposite reasons:
 
-```json
+```json addtrack
 {
   "type": "FeatureTrack",
   "trackId": "hic_gm12878_domains",
