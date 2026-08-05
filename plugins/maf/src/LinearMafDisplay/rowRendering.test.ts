@@ -143,6 +143,42 @@ describe('what paints is the selection, overridden only by zoom and summary', ()
     }
   })
 
+  // ...and the base canvas can't draw from it either. `activeRowRendering`
+  // resolving to `bases` above says only that no *alternative* applies; the
+  // summary fetch clears `rpcDataMap` on purpose and the rows on screen are the
+  // summary overlay's. Reading the second question off the first pinned the
+  // display in `loading` forever: the render callback painted from the empty
+  // map, `renderBlocks` reported `painted: false` every frame, `canvasDrawn`
+  // never flipped, and the scrim sat over a fully loaded track. Nothing caught
+  // it because the summary bars underneath rendered correctly the whole time.
+  it('does not hand the rows to the base canvas on the summary path', () => {
+    const { display, view } = framesEnv({
+      summaryAdapter: { type: 'BigBedAdapter' },
+    }).createDisplay()
+    zoomAndSettle(view, 100)
+    expect(display.showSummary).toBe(true)
+
+    expect(display.activeRowRendering).toBe('bases')
+    expect(display.basesRenderingActive).toBe(false)
+
+    // and the per-base overlays that gate on it stay off, so no frame pays for
+    // markers drawn over a rendering that isn't theirs
+    expect(display.visibleLabels).toEqual([])
+    expect(display.visibleInsertions).toEqual([])
+  })
+
+  // The same track below the floor takes the real alignment path, so the base
+  // canvas owns the rows again — the exclusion above is the summary path's, not
+  // a blanket "a summary adapter is configured".
+  it('hands the rows back to the base canvas below the summary floor', () => {
+    const { display, view } = framesEnv({
+      summaryAdapter: { type: 'BigBedAdapter' },
+    }).createDisplay()
+    zoomAndSettle(view, 0.5)
+    expect(display.showSummary).toBe(false)
+    expect(display.basesRenderingActive).toBe(true)
+  })
+
   // The state the old menu of independent checkboxes could reach, and a
   // hand-written config still can. Re-deriving precedence let the losing slot
   // take over at the zooms where the winner couldn't draw, so the menu ticked

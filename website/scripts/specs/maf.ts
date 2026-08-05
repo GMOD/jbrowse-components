@@ -466,10 +466,11 @@ export const mafSpecs: ScreenshotSpec[] = [
     readyText: '12',
     readyTimeout: 120000,
     viewportWidth: 1000,
-    // the height maf_470way_codon settled on for the same 30 rows at the same
-    // 460px display height; this pair shows no conservation band, so a first
-    // render will report blank space to trim rather than clipping
-    viewportHeight: 765,
+    // 765 (what maf_470way_codon settled on for the same 30 rows at the same
+    // 460px display height) guessed wrong in the other direction: the run
+    // reported 32.3 css px CLIPPED below the fold, not blank space to trim, and
+    // what it cut was the annotation's second line. Raised by that measurement.
+    viewportHeight: 800,
     settleMs: 18000,
     hideTooltip: true,
     annotations: [
@@ -478,9 +479,7 @@ export const mafSpecs: ScreenshotSpec[] = [
         text: label,
         fontSize: 20,
         // bottom-left of the track band, `dx` clear of the tree sidebar and its
-        // species names. UNVERIFIED — UCSC was unreachable, so this placement
-        // has never been seen against a real capture; check it before trusting
-        // the figure.
+        // species names.
         anchor: {
           track: 'hg38.multiz470way',
           alignX: 'left' as const,

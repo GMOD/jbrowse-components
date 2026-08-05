@@ -1597,9 +1597,22 @@ export default function stateModelFactory(
          * the insertion click, and SVG export — and a mode added to
          * `activeRowRendering` has to reach all six or the markers keep drawing
          * over a rendering that isn't theirs.
+         *
+         * **Not simply `activeRowRendering === 'bases'`.** That getter answers
+         * which of the *selectable* renderings wins, and summary mode resolves
+         * to `bases` there because none of the alternatives can draw from
+         * summary rows. But the base canvas can't draw from them either:
+         * `fetchMafSummaryData` clears `rpcDataMap` on purpose, and the rows the
+         * user sees are the summary overlay's. So the two questions genuinely
+         * differ here, and answering this one with that one pinned the display
+         * in `loading` forever — the render callback took the paint-from-
+         * `rpcDataMap` branch, `renderBlocks` returned `painted: false` over an
+         * empty map every frame, and `canvasDrawn` never flipped, so
+         * `computeLoadingTerm`'s `rendersCanvas && !canvasDrawn` stayed true
+         * under a track that was fully loaded and visibly drawn.
          */
         get basesRenderingActive() {
-          return self.activeRowRendering === 'bases'
+          return self.activeRowRendering === 'bases' && !self.showSummary
         },
         /**
          * #getter
@@ -2012,11 +2025,14 @@ export default function stateModelFactory(
                     self.renderState,
                   )
                 } else {
-                  // Zoomed out the identity plot owns the visible rows, on a
+                  // Zoomed out the identity plot — or, past the summary
+                  // threshold, the summary bars — owns the visible rows, on a
                   // sibling canvas. Render no blocks so this canvas clears to
-                  // transparent and the identity one shows through — a cleared
-                  // frame nothing painted into, but still a real paint for
+                  // transparent and the sibling shows through — a cleared frame
+                  // nothing painted into, but still a real paint for
                   // canvasDrawn, since the rows the user sees did get drawn.
+                  // Returning false here instead is what left summary mode
+                  // scrimmed forever; see `basesRenderingActive`.
                   b.renderBlocks([], self.rpcDataMap, self.renderState)
                   return true
                 }
