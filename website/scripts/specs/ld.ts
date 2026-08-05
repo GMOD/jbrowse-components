@@ -637,4 +637,130 @@ export const ldSpecs: ScreenshotSpec[] = [
     // visible edges, the highlight names the gene and the ClinVar tick names the
     // causal variant.
   },
+  // THE HAPLOBLOCK FIGURE, and the reason it exists: an LD triangle is a
+  // pairwise matrix rotated 45 degrees, so its VERTICAL axis is the distance
+  // between the two variants being compared rather than any value. Nothing on
+  // screen says that, no other track in the browser works that way, and the
+  // review that retired ld/anopheles_r2_vs_dprime landed on the same thing here
+  // ("ld is really the only thing that really makes me ask 'wtf'").
+  //
+  // r² is the statistic; the haplotype block is the THING. So this draws the
+  // thing, on the same locus as the triangle above: one row per haplotype, one
+  // column per variant.
+  //
+  // ORDERING IS WHAT MAKES THE BLOCK APPEAR, not colour and not row count. A
+  // block is a set of alleles travelling together, and which of them is the ALT
+  // allele varies site to site, so a matrix of common variants in adapter order
+  // is a plaid at ANY row count — measured, and the real reason the first
+  // attempt (removed in 7dd1e36ece) had no block in it, with the 5008-row
+  // sub-pixel problem sitting on top of it. Clustering fixes it: near-identical
+  // haplotypes become adjacent, and the lactase-persistence haplotype is young
+  // enough to be internally uniform, so it lands as one solid slab against the
+  // mosaic of everything else.
+  //
+  // CLUSTERED, NOT GROUPED, which is the reverse of what the first attempt tried
+  // and is the whole design. Grouping by population puts labelled bands down the
+  // sidebar but leaves each band in adapter order, so the slab never forms. The
+  // population information is not lost — `colorBy` puts it in the sidebar stripe
+  // — and it now arrives as a RESULT: the clustering is given no knowledge of
+  // rs4988235, and the clade it finds is the one whose stripe is CEU and FIN.
+  //
+  // rs4988235 itself is MAF 0.30 across these samples and so sits below the 0.35
+  // filter — it is not one of the columns drawn. The ClinVar tick above the
+  // matrix is therefore an independent marker of where the causal variant is,
+  // not a column the clustering was steered by.
+  //
+  // 150 SAMPLES, NOT 2504, from scripts/build_lct_haploblock.sh: six populations
+  // at 25 each, spanning rs4988235-A from 73.7% (CEU) to 0% (YRI, CHB). The full
+  // release is 5008 haplotype rows, which is 0.18 px a row in this lane and
+  // averages to a flat wash; 300 rows is 2.7 px. That script prints the
+  // arithmetic and the per-population frequencies rather than asserting them.
+  {
+    mode: 'url',
+    name: 'ld/lct_haploblock',
+    url: `${HG19_HUB}&session=${encodeSessionSpec({
+      sessionTracks: [
+        {
+          type: 'VariantTrack',
+          trackId: 'kgp_lct_haplotypes',
+          name: '1000 Genomes haplotypes across LCT (one row per haplotype)',
+          assemblyNames: ['hg19'],
+          adapter: {
+            type: 'VcfTabixAdapter',
+            uri: `${AG_POPGEN}/lct_1kg_chr2_6pop.vcf.gz`,
+            // the release's own sample table, already hosted for the
+            // config_demo chr1 track. Sample ids are the same across
+            // chromosomes, so it applies to this chr2 slice unchanged.
+            samplesTsvLocation: {
+              uri: 'https://jbrowse.org/genomes/hg19/1000g.sorted.csv.gz',
+            },
+          },
+        },
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg19',
+          // 1.5 Mb: the block plus enough flank on both sides that the slab has
+          // somewhere to stop. Matrix mode gives every variant an equal-width
+          // column regardless of how the variants bunch genomically, so the
+          // window is chosen for what it contains rather than to keep columns
+          // above a pixel — at the triangles' 3.1 Mb it would be 1470 columns
+          // and sub-pixel again.
+          loc: 'chr2:135,500,000-137,000,000',
+          highlight: LCT_HIGHLIGHT,
+          tracks: [
+            {
+              trackId: 'hg19-ncbiRefSeqCurated',
+              type: 'LinearBasicDisplay',
+              height: 60,
+              showOnlyGenes: true,
+            },
+            // Same filtered ClinVar lane as ld/lct_lactase above, so a reader
+            // moving between the two figures sees the causal variant marked the
+            // same way in both.
+            {
+              trackId: 'hg19-clinvarMain',
+              type: 'LinearBasicDisplay',
+              height: 70,
+              jexlFiltersSetting: [
+                "jexl:get(feature,'phenotypeList')=='LACTASE PERSISTENCE'",
+              ],
+            },
+            {
+              trackId: 'kgp_lct_haplotypes',
+              type: 'LinearMultiSampleVariantMatrixDisplay',
+              height: 800,
+              lineZoneHeight: 34,
+              // one row per haplotype rather than per sample. Phased is the
+              // point: a haplotype is what travels as one piece, and a diploid
+              // row would average a carrier chromosome with a non-carrier one.
+              renderingMode: 'phased',
+              runClustering: true,
+              // the same window the view shows. dog10k-igf1-haplotype clusters
+              // on a narrower core than it draws, which is right when the
+              // separating sites are concentrated; here they are not —
+              // clustering on the 135.7-136.15 Mb sub-window where per-site
+              // agreement separates carriers best puts only 48% of carriers in
+              // the top clade, against 100% for the full window.
+              clusterRegion: 'chr2:135,500,000-137,000,000',
+              colorBy: 'population',
+              // the common, block-tagging variants. Unfiltered, this window is
+              // mostly rare variation and the slab is buried in speckle.
+              minorAlleleFrequencyFilter: 0.35,
+            },
+          ],
+        },
+      ],
+    })}&sessionName=Screenshot`,
+    // the dendrogram only renders once the clustering RPC lands, so this waits
+    // on real completion rather than on a duration guess
+    readySelector: '[data-testid="tree_sidebar_dendrogram"]',
+    readyTimeout: 120000,
+    settleMs: 5000,
+    // gene(60) + clinvar(70) + the 800px matrix, their headers and the ruler.
+    // Provisional: size it from the run's own CONTENT CLIPPED / blank-below
+    // report on the first successful capture, not off the image.
+    viewportHeight: 1200,
+  },
 ]
