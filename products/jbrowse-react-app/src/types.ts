@@ -15,6 +15,10 @@ interface TrackConfig {
   trackId: string
   [key: string]: unknown
 }
+interface ConnectionConfig {
+  connectionId: string
+  [key: string]: unknown
+}
 
 // re-exported so hosts get them from this package rather than reaching into
 // product-core; both are shared with the other embedded products
@@ -23,6 +27,12 @@ export type { PluginInput, SessionSnapshot }
 export interface Config {
   assemblies: SnapshotIn<BaseAssemblyConfigSchema>[]
   tracks?: TrackConfig[]
+  /**
+   * Connections this app offers — a UCSC track hub, a JBrowse 1 data directory.
+   * They are listed in the track selector and fetched when the user opens one,
+   * the same as a connection added through File → Open connection.
+   */
+  connections?: ConnectionConfig[]
   internetAccounts?: InternetAccountConfig[]
   aggregateTextSearchAdapters?: TextSearchAdapterConfig[]
   configuration?: Record<string, unknown>

@@ -143,6 +143,20 @@ test('setSession with nothing returns to the launch views', () => {
   controller.destroy()
 })
 
+// with no id given the view gets a generated one, which the host has no other
+// way to learn — leaving removeView, which takes an id, unusable for it
+test('addView returns the id removeView takes', () => {
+  const controller = createApp(mount(), { assemblies })
+
+  const id = controller.addView({ type: 'LinearGenomeView' })
+  expect(id).toBeTruthy()
+
+  controller.removeView(id)
+  expect(controller.viewState.session.views).toHaveLength(0)
+
+  controller.destroy()
+})
+
 test('removeView closes a view, and ignores an unknown id', () => {
   const controller = createApp(mount(), {
     assemblies,

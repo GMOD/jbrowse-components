@@ -64,6 +64,7 @@ export function createViewStateFromProps(opts: CreateAppOptions) {
   const {
     assemblies,
     tracks,
+    connections,
     internetAccounts,
     aggregateTextSearchAdapters,
     configuration,
@@ -79,6 +80,7 @@ export function createViewStateFromProps(opts: CreateAppOptions) {
     config: {
       assemblies,
       tracks,
+      connections,
       internetAccounts,
       aggregateTextSearchAdapters,
       configuration,

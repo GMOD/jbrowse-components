@@ -1,3 +1,9 @@
+import {
+  dedupePlugins,
+  dropVendoredPlugins,
+  pluginLabel,
+  samePlugin,
+} from '@jbrowse/core/pluginDefinitions'
 import { onPatch } from '@jbrowse/mobx-state-tree'
 
 import createModel from './createModel.ts'
@@ -45,9 +51,22 @@ export default function createViewState(opts: CreateViewStateOptions) {
     runtimePlugins: plugins,
     makeWorkerInstance,
   })
+  // what the plugin manager actually installed at runtime, i.e. the subset of
+  // `plugins` that carried a definition (a bare plugin class carries none)
+  const loaded = pluginManager.runtimePluginDefinitions
   const stateTree = model.create(
     {
-      jbrowse: config,
+      jbrowse: {
+        ...config,
+        // The plugins the host loaded for us belong in the app's own plugin
+        // list, not only in the plugin manager. `onPluginsUpdated` answers
+        // "what does a rebuild have to load" out of `jbrowse.plugins`, so a
+        // list holding only the config's own entries hands the host back a set
+        // missing everything it passed as `plugins` — and remounting on that
+        // set silently drops them. <JBrowse>/createApp take no `config.plugins`
+        // at all, so for those this is the only place they are written down.
+        plugins: dedupePlugins([...(config.plugins ?? []), ...loaded]),
+      },
       session: session ?? defaultSession,
     },
     { pluginManager },
@@ -64,16 +83,24 @@ export default function createViewState(opts: CreateViewStateOptions) {
   // shared or saved out of jbrowse-web can carry its own in `sessionPlugins`.
   // That app fetches both itself; this one can't, because fetching is async and
   // this function is synchronous, so the host has to await loadPlugins and pass
-  // the result in. Silently opening a session whose plugins are all missing is
-  // the worst outcome — every track that needed one then fails on its own, far
-  // from the cause — so say it here instead.
-  const named = [
-    ...(config.plugins ?? []),
-    ...(stateTree.session?.sessionPlugins ?? []),
-  ]
-  if (named.length > 0 && plugins.length === 0) {
+  // the result in. Silently opening a session whose plugins are missing is the
+  // worst outcome — every track that needed one then fails on its own, far from
+  // the cause — so name the ones that never arrived.
+  //
+  // Compared against what was actually loaded rather than "did the host pass
+  // anything at all": a host that loads two of the three a config names has the
+  // same problem for the third, and used to hear nothing. Vendored names go
+  // first, since core already bundles those and `loadPlugins` drops them, so
+  // they are never among the loaded definitions.
+  const missing = dropVendoredPlugins(
+    dedupePlugins([
+      ...(config.plugins ?? []),
+      ...(stateTree.session?.sessionPlugins ?? []),
+    ]),
+  ).filter(named => !loaded.some(l => samePlugin(l, named)))
+  if (missing.length > 0) {
     console.warn(
-      `This config/session names ${named.length} plugin(s), which createViewState does not fetch. Load them yourself: const plugins = await loadPlugins(defs); createViewState({ config, plugins })`,
+      `This config/session names ${missing.length} plugin(s) that were not passed in, and createViewState does not fetch them: ${missing.map(d => pluginLabel(d)).join(', ')}. Load them yourself: const plugins = await loadPlugins(defs); createViewState({ config, plugins })`,
     )
   }
 

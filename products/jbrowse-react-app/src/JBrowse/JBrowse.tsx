@@ -23,6 +23,7 @@ export interface ManagedView {
 export interface JBrowseProps {
   assemblies: Config['assemblies']
   tracks?: Config['tracks']
+  connections?: Config['connections']
   internetAccounts?: Config['internetAccounts']
   aggregateTextSearchAdapters?: Config['aggregateTextSearchAdapters']
   configuration?: Config['configuration']

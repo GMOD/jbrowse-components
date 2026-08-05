@@ -47,5 +47,7 @@ export function getSessionSnapshot(viewState: ViewModel): SessionSnapshot {
   if (!session) {
     throw new Error('no session to snapshot')
   }
-  return getShareableSessionSnapshot(session) as SessionSnapshot
+  // `name` is restated rather than the whole thing cast: the bake returns an
+  // open record, but the model guarantees the session has one
+  return { ...getShareableSessionSnapshot(session), name: session.name }
 }
