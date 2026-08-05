@@ -45,7 +45,9 @@ export interface SelectorProps {
   radioOption: string
 }
 
+// #region fileFormatOption
 export interface SyntenyFileFormatOption {
+  /** label and radio button value, e.g. '.maf' */
   extension: string
   Component: React.FC<{
     assembly1: string
@@ -53,6 +55,7 @@ export interface SyntenyFileFormatOption {
     onAdapterChange: (r: { adapter: object; name: string } | undefined) => void
   }>
 }
+// #endregion
 
 // The dotplot and linear synteny import forms each expose their own point, but
 // share one option shape — ImportSyntenyOpenCustomTrack takes the name as a prop

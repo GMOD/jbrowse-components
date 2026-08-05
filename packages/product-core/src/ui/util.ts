@@ -13,12 +13,14 @@ import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 import type { ComponentType } from 'react'
 
+// #region aboutPanelProps
 export type AboutConfig = AnyConfigurationModel | Record<string, unknown>
 
 export interface AboutPanelProps {
   session: AbstractSessionModel
   config: AboutConfig
 }
+// #endregion
 
 // Augmentation lives here (not in the consuming components) because
 // AboutDialogContents imports from this module, so the registry entries are

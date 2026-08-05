@@ -280,12 +280,16 @@ type: synchronous
 Provide a different component for the "About this track" dialog.
 
 - `args` - a `ReactComponent`, by default the AboutTrack dialog
-- `props` - an object of the format below
+- `props` - `AboutPanelProps`, shared by all three About points:
+
+<!-- include: packages/product-core/src/ui/util.ts#aboutPanelProps -->
 
 ```typescript
-interface props {
+export type AboutConfig = AnyConfigurationModel | Record<string, unknown>
+
+export interface AboutPanelProps {
   session: AbstractSessionModel
-  config: AnyConfigurationModel
+  config: AboutConfig
 }
 ```
 
@@ -311,14 +315,8 @@ built-in Configuration/Metadata cards. Return a React component that renders its
 own card chrome (use `BaseCard` for a titled section).
 
 - `args` - a `ReactComponent`, by default a no-op that renders nothing
-- `props` - the object below, also passed to your component
-
-```typescript
-interface props {
-  session: AbstractSessionModel
-  config: AnyConfigurationModel
-}
-```
+- `props` - [`AboutPanelProps`](#core-replaceabout), also passed to your
+  component
 
 Return value: the React component to render. It receives the `props` above.
 
@@ -348,14 +346,7 @@ Transform the config snapshot shown in the "About this track" dialog, after any
 
 - `args` - an object of the form `{ config: Record<string, unknown> }`, the
   track config snapshot with `formatAbout` already merged in
-- `props` - an object of the form below
-
-```typescript
-interface props {
-  session: AbstractSessionModel
-  config: AnyConfigurationModel
-}
-```
+- `props` - [`AboutPanelProps`](#core-replaceabout)
 
 Return value: an object of the same `{ config }` shape, with your modifications
 
@@ -647,12 +638,15 @@ doesn't leave stale fields behind.
 
 type: synchronous
 
-- `args` - `MenuItem[]` - an array of items that you can accumulate on
-- `props` - an object of the form below
+Registered contract:
+
+<!-- include: plugins/data-management/src/HierarchicalTrackSelectorWidget/index.ts#multiTrackMenuItems -->
 
 ```typescript
-interface props {
-  session: AbstractSessionModel
+'TrackSelector-multiTrackMenuItems': {
+  args: MenuItem[]
+  result: MenuItem[]
+  props: { session: AbstractSessionModel }
 }
 ```
 
@@ -673,24 +667,22 @@ scoped to that category; use this point to provide custom UI for a specific
 category.
 
 - `args` - a React component (the default `DefaultFolderDialog`)
-- `props` - an object of the type below
+- `props` - `FolderDialogProps`
+
+Return value: a React component rendered as the dialog. It receives the same
+`FolderDialogProps` the point was fired with:
+
+<!-- include: plugins/data-management/src/HierarchicalTrackSelectorWidget/components/tree/TrackCategory.tsx#folderDialogProps -->
 
 ```typescript
-interface props {
-  categoryId: string // internal ID of the folder category, e.g. "Tracks-Wiggle,My Subcategory"
+export interface FolderDialogProps {
   model: HierarchicalTrackSelectorModel
-  subtracks: TreeNode[] // flat list of all track nodes under this category (recursive)
-}
-```
-
-Return value: A React component that will be rendered as the dialog. The
-component receives the following props:
-
-```typescript
-interface DialogProps {
-  model: HierarchicalTrackSelectorModel
-  title: string // the display name of the category
-  subtracks: TreeNode[] // same flat list of track nodes passed in props above
+  /** e.g. "Tracks-Wiggle,My Subcategory" */
+  categoryId: string
+  /** display name of the category */
+  title: string
+  /** flat list of every track node under this category, recursively */
+  subtracks: TreeTrackNode[]
   handleClose: () => void
 }
 ```
@@ -739,13 +731,16 @@ created, so it works for plugin-provided types whose launcher never heard of it.
 
 type: synchronous
 
-- `args` - `ReactNode[]` - accumulator array of React nodes rendered inside the
-  TracksContainer div
-- `props` - an object of the type below
+Registered contract, an accumulator of nodes rendered inside the TracksContainer
+div:
+
+<!-- include: plugins/linear-genome-view/src/LinearGenomeView/index.ts#tracksContainer -->
 
 ```typescript
-interface props {
-  model: LinearGenomeViewModel
+'LinearGenomeView-TracksContainerComponent': {
+  args: ReactNode[]
+  result: ReactNode[]
+  props: { model: LinearGenomeViewModel }
 }
 ```
 
@@ -757,14 +752,16 @@ return it.
 
 type: synchronous
 
-- `args` - `ReactNode[]` - accumulator array of React nodes rendered inside the
-  overview scalebar
-- `props` - an object of the type below
+Registered contract, an accumulator of nodes rendered inside the overview
+scalebar:
+
+<!-- include: plugins/linear-genome-view/src/LinearGenomeView/index.ts#overviewScalebar -->
 
 ```typescript
-interface props {
-  model: LinearGenomeViewModel
-  overview: Base1DViewModel
+'LinearGenomeView-OverviewScalebarComponent': {
+  args: ReactNode[]
+  result: ReactNode[]
+  props: { model: LinearGenomeViewModel; overview: ViewLayout }
 }
 ```
 
@@ -775,15 +772,22 @@ Append to the array and return it.
 
 type: async
 
-- `args` - `undefined` (notification point, no accumulator)
-- `props` - an object of the type below
+Registered contract:
+
+<!-- include: plugins/linear-genome-view/src/searchUtils.ts#searchResultSelected -->
 
 ```typescript
-interface props {
-  session: AbstractSessionModel
-  result: BaseResult // the search result that was selected
-  model: LinearGenomeViewModel
-  assemblyName: string
+'LinearGenomeView-searchResultSelected': {
+  // nothing to accumulate: the point exists to react to the selection
+  args: undefined
+  result: undefined
+  props: {
+    session: AbstractSessionModel
+    /** the search result that was selected */
+    result: BaseResult
+    model: LinearGenomeViewModel
+    assemblyName: string
+  }
 }
 ```
 
@@ -796,17 +800,9 @@ payload lives in `props` (passed unchanged to every callback) rather than
 Example:
 
 ```typescript
-import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
 pluginManager.addToExtensionPoint(
   'LinearGenomeView-searchResultSelected',
-  (_, props) => {
-    const { result, model } = props as {
-      result: BaseResult
-      model: LinearGenomeViewModel
-      assemblyName: string
-    }
+  (_, { result, model }) => {
     const trackId = result.getTrackId()
     if (trackId === 'my_custom_track') {
       // perform custom action
@@ -819,25 +815,35 @@ pluginManager.addToExtensionPoint(
 
 type: synchronous
 
-- `args` - `DotplotImportFormSyntenyOption[]` - an array of custom radio options
-  to add to the dotplot import form's synteny track selector
-- `props` - an object of the type below
+Registered contract:
+
+<!-- include: plugins/dotplot-view/src/DotplotView/components/ImportForm/TrackSelector.tsx#registry -->
 
 ```typescript
-interface props {
-  model: DotplotViewModel // instance of the dotplot view model
-  assembly1: string // name of the y-axis assembly
-  assembly2: string // name of the x-axis assembly
+'DotplotView-ImportFormSyntenyOptions': {
+  args: DotplotImportFormSyntenyOption[]
+  result: DotplotImportFormSyntenyOption[]
+  props: {
+    model: DotplotViewModel
+    /** name of the y-axis assembly */
+    assembly1: string
+    /** name of the x-axis assembly */
+    assembly2: string
+  }
 }
 ```
 
 Add custom radio options to the DotplotView import form; selecting one renders
 the plugin's React component. Each option:
 
+<!-- include: plugins/dotplot-view/src/DotplotView/components/ImportForm/TrackSelector.tsx#option -->
+
 ```typescript
-interface DotplotImportFormSyntenyOption {
-  value: string // unique identifier for the radio option
-  label: string // display text for the radio option
+export interface DotplotImportFormSyntenyOption {
+  /** unique identifier for the radio option */
+  value: string
+  /** display text for the radio option */
+  label: string
   ReactComponent: React.FC<{
     model: DotplotViewModel
     assembly1: string
@@ -881,9 +887,12 @@ built-in formats (`.paf`, `.delta`, `.out`, `.chain`, `.anchors`,
 `.anchors.simple`, `.pif.gz`) are the initial value; each callback appends to or
 replaces entries. Each option:
 
+<!-- include: packages/synteny-core/src/SelectorTypes.ts#fileFormatOption -->
+
 ```typescript
-interface SyntenyFileFormatOption {
-  extension: string // label and radio button value, e.g. '.maf'
+export interface SyntenyFileFormatOption {
+  /** label and radio button value, e.g. '.maf' */
+  extension: string
   Component: React.FC<{
     assembly1: string
     assembly2: string
@@ -921,38 +930,52 @@ pluginManager.addToExtensionPoint(
 type: synchronous
 
 Same as `DotplotView-SyntenyFileFormats` but for the LinearSyntenyView import
-form. Includes `selectedRow` context in props but the `Component` interface is
-identical. The parent handles `selectedRow` internally.
+form: same `SyntenyFileFormatOption[]` in and out, and neither point declares
+props. One component (`ImportSyntenyOpenCustomTrack`) fires whichever of the two
+it was handed, which is why the shapes are declared together in
+`@jbrowse/synteny-core`.
 
 ### LinearSyntenyView-ImportFormSyntenyOptions
 
 type: synchronous
 
-- `args` - `LinearSyntenyImportFormSyntenyOption[]` - an array of custom radio
-  options to add to the linear synteny view import form's synteny track selector
-- `props` - an object of the type below
+Registered contract:
+
+<!-- include: plugins/linear-comparative-view/src/LinearSyntenyView/components/ImportForm/ImportSyntenyTrackSelectorArea.tsx#registry -->
 
 ```typescript
-interface props {
-  model: LinearSyntenyViewModel
-  assembly1: string // name of the top assembly
-  assembly2: string // name of the bottom assembly
+'LinearSyntenyView-ImportFormSyntenyOptions': {
+  args: LinearSyntenyImportFormSyntenyOption[]
+  result: LinearSyntenyImportFormSyntenyOption[]
+  props: {
+    model: LinearSyntenyViewModel
+    /** name of the top assembly */
+    assembly1: string
+    /** name of the bottom assembly */
+    assembly2: string
+    /** which synteny row of the import form the option is rendering for */
+    selectedRow: number
+  }
 }
 ```
 
 Add custom radio options to the LinearSyntenyView import form. Same pattern as
-`DotplotView-ImportFormSyntenyOptions`. Each option:
+`DotplotView-ImportFormSyntenyOptions`, with the extra `selectedRow` telling you
+which synteny row of the form you are rendering for. Each option:
+
+<!-- include: plugins/linear-comparative-view/src/LinearSyntenyView/components/ImportForm/ImportSyntenyTrackSelectorArea.tsx#option -->
 
 ```typescript
-import type { LinearSyntenyImportFormSyntenyOption } from '@jbrowse/plugin-linear-comparative-view'
-// LinearSyntenyImportFormSyntenyOption:
-interface option {
+export interface LinearSyntenyImportFormSyntenyOption {
+  /** unique identifier for the radio option */
   value: string
+  /** display text for the radio option */
   label: string
   ReactComponent: React.FC<{
     model: LinearSyntenyViewModel
     assembly1: string
     assembly2: string
+    selectedRow: number
   }>
 }
 ```

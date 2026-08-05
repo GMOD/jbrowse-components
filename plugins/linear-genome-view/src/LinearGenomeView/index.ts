@@ -11,11 +11,13 @@ import type { ReactNode } from 'react'
 
 declare module '@jbrowse/core/PluginManager' {
   interface ExtensionPointRegistry {
+    // #region tracksContainer
     'LinearGenomeView-TracksContainerComponent': {
       args: ReactNode[]
       result: ReactNode[]
       props: { model: LinearGenomeViewModel }
     }
+    // #endregion
     'LinearGenomeView-ScalebarHighlightComponent': {
       args: ReactNode[]
       result: ReactNode[]
@@ -26,11 +28,13 @@ declare module '@jbrowse/core/PluginManager' {
       result: ReactNode[]
       props: { model: LinearGenomeViewModel; height: number }
     }
+    // #region overviewScalebar
     'LinearGenomeView-OverviewScalebarComponent': {
       args: ReactNode[]
       result: ReactNode[]
       props: { model: LinearGenomeViewModel; overview: ViewLayout }
     }
+    // #endregion
   }
 }
 

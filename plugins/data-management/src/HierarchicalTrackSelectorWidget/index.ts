@@ -11,11 +11,13 @@ import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 declare module '@jbrowse/core/PluginManager' {
   interface ExtensionPointRegistry {
+    // #region multiTrackMenuItems
     'TrackSelector-multiTrackMenuItems': {
       args: MenuItem[]
       result: MenuItem[]
       props: { session: AbstractSessionModel }
     }
+    // #endregion
   }
 }
 

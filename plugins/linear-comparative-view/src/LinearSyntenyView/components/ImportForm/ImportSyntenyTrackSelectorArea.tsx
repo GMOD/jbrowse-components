@@ -15,8 +15,11 @@ import { observer } from 'mobx-react'
 
 import type { LinearSyntenyViewModel } from '../../model.ts'
 
+// #region option
 export interface LinearSyntenyImportFormSyntenyOption {
+  /** unique identifier for the radio option */
   value: string
+  /** display text for the radio option */
   label: string
   ReactComponent: React.FC<{
     model: LinearSyntenyViewModel
@@ -25,19 +28,25 @@ export interface LinearSyntenyImportFormSyntenyOption {
     selectedRow: number
   }>
 }
+// #endregion
 
 declare module '@jbrowse/core/PluginManager' {
   interface ExtensionPointRegistry {
+    // #region registry
     'LinearSyntenyView-ImportFormSyntenyOptions': {
       args: LinearSyntenyImportFormSyntenyOption[]
       result: LinearSyntenyImportFormSyntenyOption[]
       props: {
         model: LinearSyntenyViewModel
+        /** name of the top assembly */
         assembly1: string
+        /** name of the bottom assembly */
         assembly2: string
+        /** which synteny row of the import form the option is rendering for */
         selectedRow: number
       }
     }
+    // #endregion
   }
 }
 

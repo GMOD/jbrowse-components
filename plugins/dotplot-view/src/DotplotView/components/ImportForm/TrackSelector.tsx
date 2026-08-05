@@ -15,8 +15,11 @@ import { observer } from 'mobx-react'
 import type { DotplotViewModel } from '../../model.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
+// #region option
 export interface DotplotImportFormSyntenyOption {
+  /** unique identifier for the radio option */
   value: string
+  /** display text for the radio option */
   label: string
   ReactComponent: React.FC<{
     model: DotplotViewModel
@@ -24,14 +27,23 @@ export interface DotplotImportFormSyntenyOption {
     assembly2: string
   }>
 }
+// #endregion
 
 declare module '@jbrowse/core/PluginManager' {
   interface ExtensionPointRegistry {
+    // #region registry
     'DotplotView-ImportFormSyntenyOptions': {
       args: DotplotImportFormSyntenyOption[]
       result: DotplotImportFormSyntenyOption[]
-      props: { model: DotplotViewModel; assembly1: string; assembly2: string }
+      props: {
+        model: DotplotViewModel
+        /** name of the y-axis assembly */
+        assembly1: string
+        /** name of the x-axis assembly */
+        assembly2: string
+      }
     }
+    // #endregion
   }
 }
 

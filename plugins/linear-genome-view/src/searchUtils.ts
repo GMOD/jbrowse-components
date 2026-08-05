@@ -18,16 +18,20 @@ import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 declare module '@jbrowse/core/PluginManager' {
   interface ExtensionPointRegistry {
+    // #region searchResultSelected
     'LinearGenomeView-searchResultSelected': {
+      // nothing to accumulate: the point exists to react to the selection
       args: undefined
       result: undefined
       props: {
         session: AbstractSessionModel
+        /** the search result that was selected */
         result: BaseResult
         model: LinearGenomeViewModel
         assemblyName: string
       }
     }
+    // #endregion
   }
 }
 

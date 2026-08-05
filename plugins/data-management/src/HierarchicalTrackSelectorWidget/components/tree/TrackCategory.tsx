@@ -26,13 +26,18 @@ import type {
 } from '../../types.ts'
 import type { ComponentType } from 'react'
 
+// #region folderDialogProps
 export interface FolderDialogProps {
   model: HierarchicalTrackSelectorModel
+  /** e.g. "Tracks-Wiggle,My Subcategory" */
   categoryId: string
+  /** display name of the category */
   title: string
+  /** flat list of every track node under this category, recursively */
   subtracks: TreeTrackNode[]
   handleClose: () => void
 }
+// #endregion
 
 declare module '@jbrowse/core/PluginManager' {
   interface ExtensionPointRegistry {
