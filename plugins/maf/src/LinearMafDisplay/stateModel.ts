@@ -178,6 +178,7 @@ export default function stateModelFactory(
 ) {
   return (
     types
+      // #region compose
       .compose(
         'LinearMafDisplay',
         BaseDisplay,
@@ -195,6 +196,7 @@ export default function stateModelFactory(
           configuration: ConfigurationReference(configSchema),
         }),
       )
+      // #endregion
       .volatile(() => ({
         /**
          * #volatile
@@ -1893,6 +1895,7 @@ export default function stateModelFactory(
             : undefined
         },
       }))
+      // #region superMethod
       .views(self => {
         const { trackMenuItems: superTrackMenuItems } = self
         return {
@@ -1904,6 +1907,7 @@ export default function stateModelFactory(
           },
         }
       })
+      // #endregion
       .views(self => ({
         /**
          * #getter
