@@ -8,10 +8,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { PluggableElementType } from '@jbrowse/core/pluggableElementTypes'
 import type DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type {
-  DerivativeCandidate,
-  NamedReadChain,
-} from '@jbrowse/plugin-alignments'
+import type { DerivativeCandidate } from '@jbrowse/plugin-alignments'
 
 const DerivativeVsRefDialog = lazy(() => import('./LinearDerivativeVsRef.tsx'))
 
@@ -56,7 +53,6 @@ export default function LinearDerivativeVsRefMenuItemF(pm: PluginManager) {
                     {
                       model: self as {
                         derivativePathCandidates: DerivativeCandidate[]
-                        derivativeReadChains: NamedReadChain[]
                         hasReadsForDerivativePaths: boolean
                       },
                       track: getContainingTrack(self),

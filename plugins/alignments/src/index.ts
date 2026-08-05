@@ -73,20 +73,6 @@ export type {
   DerivativeCandidate,
   DerivativeSegment,
 } from './features/derivativePaths/computePaths.ts'
-// The reads-on-the-allele half of a reconstruction: `derivativeOffsets` is the
-// offset walk both the ribbons and the reads are laid out by, and
-// `projectReadsOntoDerivative` is what puts a read on that axis. Values, not
-// just types — `plugin-linear-comparative-view` draws the picture and this
-// package owns the coordinate math and the reads it runs on.
-export {
-  derivativeOffsets,
-  projectReadsOntoDerivative,
-} from './features/derivativePaths/projectReads.ts'
-export type {
-  ProjectedRead,
-  ProjectedReadPiece,
-} from './features/derivativePaths/projectReads.ts'
-export type { NamedReadChain } from './features/arcs/compute.ts'
 export type { IndicatorHitResult } from './features/indicator/types.ts'
 export type { LinkedPair } from './features/linkedReads/compute.ts'
 export type { ModificationHitResult } from './features/modification/hitTest.ts'

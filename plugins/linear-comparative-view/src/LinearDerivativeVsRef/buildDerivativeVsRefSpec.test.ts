@@ -3,10 +3,7 @@ import {
   derivativeName,
 } from './buildDerivativeVsRefSpec.ts'
 
-import type {
-  DerivativeCandidate,
-  ProjectedRead,
-} from '@jbrowse/plugin-alignments'
+import type { DerivativeCandidate } from '@jbrowse/plugin-alignments'
 
 // The COLO829 der(3) path: two chr3 arms in opposite orientations with short
 // pieces of chr10 and chr12 spliced in at the turn.
@@ -23,59 +20,16 @@ const CANDIDATE: DerivativeCandidate = {
   extendsOffScreen: false,
 }
 
-function build(candidate = CANDIDATE, projectedReads?: ProjectedRead[]) {
+function build(candidate = CANDIDATE) {
   let n = 0
   return buildDerivativeVsRefSpec({
     candidate,
     trackAssembly: 'hg38',
     viewWidth: 1000,
     sequenceTrackConf: { trackId: 'hg38-ReferenceSequenceTrack' },
-    projectedReads,
     now: () => 1234,
     rand: () => ++n,
   })
-}
-
-// A read that crosses the whole allele and one that leaves it at the chr12
-// insert, in the derivative coordinates `projectReadsOntoDerivative` produces.
-function piece(start: number, end: number, segmentIndex: number) {
-  return {
-    start,
-    end,
-    strand: 1,
-    refName: CANDIDATE.segments[segmentIndex]!.refName,
-    refStart: 1,
-    refEnd: 2,
-    segmentIndex,
-    onScreen: true,
-  }
-}
-
-const UNBROKEN: ProjectedRead = {
-  readName: 'unbroken-read',
-  pieces: [
-    piece(20_000, 32_747, 0),
-    piece(32_747, 32_946, 1),
-    piece(32_946, 33_129, 2),
-    piece(33_129, 39_557, 3),
-  ],
-  start: 20_000,
-  end: 39_557,
-  unplacedCount: 0,
-  maxGap: 0,
-  strand: -1,
-  followsPath: true,
-}
-
-const BROKEN: ProjectedRead = {
-  readName: 'broken-read',
-  pieces: [piece(30_000, 32_747, 0), piece(32_946, 39_557, 3)],
-  start: 30_000,
-  end: 39_557,
-  unplacedCount: 0,
-  maxGap: 199,
-  strand: 1,
-  followsPath: false,
 }
 
 describe('buildDerivativeVsRefSpec', () => {
@@ -249,97 +203,6 @@ describe('buildDerivativeVsRefSpec', () => {
     expect(build().viewSpec.displayName).toBe(
       'der_chr3_chr10_chr12 (29 reads) vs hg38',
     )
-  })
-
-  it('draws each read as one feature per read, one box per placed piece', () => {
-    // A read that follows the allele has boxes that abut, so it draws as an
-    // unbroken bar; one that leaves it draws as boxes with a connector across
-    // the jump. That is the whole picture, and it is the only thing in the view
-    // that can disagree with the reconstruction — the ribbons are built FROM
-    // these reads.
-    const { readsTrack } = build(CANDIDATE, [UNBROKEN, BROKEN])
-    const [unbroken, broken] = readsTrack!.adapter.features
-    expect(unbroken!.name).toBe('unbroken-read')
-    expect(unbroken!.subfeatures.map(f => [f.start, f.end])).toEqual([
-      [20_000, 32_747],
-      [32_747, 32_946],
-      [32_946, 33_129],
-      [33_129, 39_557],
-    ])
-    expect(broken!.subfeatures.map(f => [f.start, f.end])).toEqual([
-      [30_000, 32_747],
-      [32_946, 39_557],
-    ])
-  })
-
-  it('places the reads on the axis the ribbons are drawn on', () => {
-    // Reads and ribbons share one offset walk. A second spelling of it would put
-    // a read a segment's width away from the ribbon it belongs to, with neither
-    // side looking wrong on its own.
-    const { readsTrack, viewSpec, segmentsTrack } = build(CANDIDATE, [UNBROKEN])
-    const synteny = viewSpec.viewTrackConfigs[0] as {
-      adapter: { features: { mate?: { start: number; end: number } }[] }
-    }
-    const mates = synteny.adapter.features
-      .map(f => f.mate)
-      .filter(m => m !== undefined)
-    // From the second box on: the read begins partway into the first segment
-    // (reads start where they happen to), so only its junctions are the
-    // ribbons' junctions.
-    const boxes = readsTrack!.adapter.features[0]!.subfeatures
-    expect(boxes.slice(1).map(f => f.start)).toEqual(
-      mates.slice(1).map(m => m.start),
-    )
-    expect(boxes.at(-1)!.end).toBe(mates.at(-1)!.end)
-    expect(readsTrack!.assemblyNames).toEqual(segmentsTrack.assemblyNames)
-    expect(readsTrack!.adapter.features[0]!.refName).toBe(
-      segmentsTrack.adapter.features[0]!.refName,
-    )
-  })
-
-  it('colors the boxes that get painted, not only their parent', () => {
-    // The Segments glyph paints one box per subfeature and each resolves its own
-    // color, so a callback reading the flag off the parent paints every piece of
-    // every read the same.
-    const { readsTrack, readsDisplay } = build(CANDIDATE, [UNBROKEN, BROKEN])
-    expect(readsDisplay!.configuration.color).toMatch(
-      /^jexl:get\(feature,'followsPath'\)\?/,
-    )
-    const [unbroken, broken] = readsTrack!.adapter.features
-    expect(unbroken!.subfeatures.every(f => f.followsPath)).toBe(true)
-    expect(broken!.subfeatures.some(f => f.followsPath)).toBe(false)
-  })
-
-  it('says in the track name how many reads the allele accounts for', () => {
-    const { readsTrack } = build(CANDIDATE, [UNBROKEN, BROKEN, BROKEN])
-    expect(readsTrack!.name).toBe('Reads on this allele (1/3 unbroken)')
-  })
-
-  it('carries the numbers behind the color onto the feature', () => {
-    // "This read leaves the allele by 8 kb" and "by 200 bp" are different
-    // claims, and a fill color cannot say which — so the break size and the
-    // count of segments the path does not contain ride on the feature, where
-    // the detail panel shows them.
-    const { readsTrack } = build(CANDIDATE, [BROKEN])
-    expect(readsTrack!.adapter.features[0]).toMatchObject({
-      followsPath: false,
-      largestBreak: 199,
-      segmentsOffPath: 0,
-    })
-  })
-
-  it('omits the reads panel rather than shipping an empty one', () => {
-    // A candidate can be built entirely from SA tags naming loci no displayed
-    // region covers, and an empty track on the panel reads as "no reads support
-    // this" rather than as "no reads were placed".
-    expect(build(CANDIDATE, []).readsTrack).toBeUndefined()
-    expect(build().readsDisplay).toBeUndefined()
-  })
-
-  it('caps the reads panel so the segment legend cannot be pushed off', () => {
-    const many = Array.from({ length: 100 }, () => UNBROKEN)
-    expect(build(CANDIDATE, many).readsDisplay!.height).toBe(180)
-    expect(build(CANDIDATE, [UNBROKEN]).readsDisplay!.height).toBe(29)
   })
 
   it('does not collide with a still-open view built from the same path', () => {

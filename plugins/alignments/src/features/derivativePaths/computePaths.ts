@@ -106,7 +106,7 @@ function totalSpan(chain: SegAln[]) {
 // SA segments this reads are not strand-normalized into the read's reference
 // orientation, so both readings really do occur in one fetch: on COLO829's
 // der(3), 16 reads describe it one way and 10 the other.
-export function reverseComplementChain(chain: SegAln[]): SegAln[] {
+function reverseComplementChain(chain: SegAln[]): SegAln[] {
   return [...chain].reverse().map(seg => ({ ...seg, strand: -seg.strand }))
 }
 

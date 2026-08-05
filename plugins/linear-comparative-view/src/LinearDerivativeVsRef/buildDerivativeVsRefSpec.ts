@@ -3,12 +3,8 @@ import {
   gatherOverlaps,
   getBpDisplayStr,
 } from '@jbrowse/core/util'
-import { derivativeOffsets } from '@jbrowse/plugin-alignments'
 
-import type {
-  DerivativeCandidate,
-  ProjectedRead,
-} from '@jbrowse/plugin-alignments'
+import type { DerivativeCandidate } from '@jbrowse/plugin-alignments'
 
 // "Linear read vs ref" for a reconstruction rather than a read. Same view, same
 // synthetic-assembly trick, one axis swapped: the bottom panel is the
@@ -20,14 +16,6 @@ import type {
 // is all the ribbons draw: each segment is one alignment block joining a
 // reference interval to its slot in derivative coordinates, and a reversed
 // segment's block is twisted, which is what makes a foldback legible.
-
-// A read consistent with the allele over its whole length, and one that leaves
-// it. Blue against orange rather than green against red: the second read is not
-// an error — the interesting ones in COLO829 are three reads that skip the
-// templated insert the reconstruction claims — and a red/green pair both says
-// "bad" and is the one pair a red-green colorblind reader cannot separate.
-const FOLLOWS_COLOR = '#4472a8'
-const BREAKS_COLOR = '#e07b39'
 
 export interface DerivativeVsRefSpec {
   // A feature per segment, in derivative coordinates, named for the reference
@@ -68,54 +56,6 @@ export interface DerivativeVsRefSpec {
       displayMode: string
     }
   }
-  // The reads placed on the allele, in derivative coordinates, one feature per
-  // read with one subfeature per placed piece. Undefined when no read in view
-  // touches the path — which is possible: a candidate can be built entirely from
-  // SA tags naming loci no displayed region covers.
-  //
-  // Shown the same way as `segmentsTrack`, and for the same reason.
-  readsTrack?: {
-    type: 'FeatureTrack'
-    trackId: string
-    name: string
-    assemblyNames: string[]
-    adapter: {
-      type: 'FromConfigAdapter'
-      features: {
-        uniqueId: string
-        refName: string
-        start: number
-        end: number
-        strand: number
-        name: string
-        type: string
-        followsPath: boolean
-        largestBreak: number
-        segmentsOffPath: number
-        subfeatures: {
-          uniqueId: string
-          refName: string
-          start: number
-          end: number
-          strand: number
-          type: string
-          source: string
-          followsPath: boolean
-        }[]
-      }[]
-    }
-  }
-  readsDisplay?: {
-    type: 'LinearBasicDisplay'
-    height: number
-    configuration: {
-      type: 'LinearBasicDisplay'
-      displayId: string
-      displayMode: string
-      color: string
-      showLabels: string
-    }
-  }
   temporaryAssembly: {
     name: string
     displayName: string
@@ -151,10 +91,6 @@ export interface BuildDerivativeVsRefArgs {
   trackAssembly: string
   viewWidth: number
   sequenceTrackConf: { trackId: string }
-  // The reads in view placed on this candidate's axis
-  // (`projectReadsOntoDerivative`). Optional: without them the reconstruction is
-  // the same picture minus the evidence panel.
-  projectedReads?: ProjectedRead[]
   // Reference-side padding around each segment, so a junction is not flush
   // against a panel edge. The candidate's own outer flank is already applied.
   windowSize?: number
@@ -187,7 +123,6 @@ export function buildDerivativeVsRefSpec(
     trackAssembly,
     viewWidth,
     sequenceTrackConf,
-    projectedReads = [],
     windowSize = 1000,
     now,
     rand,
@@ -201,18 +136,15 @@ export function buildDerivativeVsRefSpec(
   const seqTrackId = `${refName}_seq_${stamp}`
   const syntenyTrackId = `derivative-${stamp}`
   const segmentsTrackId = `derivative-segments-${stamp}`
-  const readsTrackId = `derivative-reads-${stamp}`
 
   // Segments are laid end to end in derivative coordinates, in path order. That
   // offset walk is the whole reconstruction: it is what turns a set of reference
-  // intervals into one continuous allele. `derivativeOffsets` rather than a
-  // local accumulator because the reads are placed on the axis it defines, and
-  // two spellings of one walk put a read somewhere other than the ribbon it
-  // belongs to without either side looking wrong on its own.
-  const offsets = derivativeOffsets(candidate.segments)
+  // intervals into one continuous allele.
+  let offset = 0
   const features = candidate.segments.map((seg, idx) => {
     const length = seg.end - seg.start
-    const mateStart = offsets[idx]!
+    const mateStart = offset
+    offset += length
     return {
       uniqueId: `${refName}-${idx}`,
       syntenyId: idx,
@@ -232,7 +164,7 @@ export function buildDerivativeVsRefSpec(
       },
     }
   })
-  const totalLength = offsets[candidate.segments.length]!
+  const totalLength = offset
 
   // The same walk again, as a feature track on the derivative panel. Without it
   // that panel is an empty axis: the allele has no sequence and no annotation of
@@ -257,48 +189,6 @@ export function buildDerivativeVsRefSpec(
       // least room to the panel edge for it.
       feat.strand === -1 ? ', inv' : ''
     })`,
-  }))
-
-  // The reads, on the same axis. One feature per read, one subfeature per piece
-  // of it the path accounts for — so a read that follows the allele draws as an
-  // unbroken bar and one that leaves it draws as boxes with a connector across
-  // the jump. That break is the only thing in the view that can disagree with
-  // the reconstruction: the ribbons are built FROM these reads, so they always
-  // agree with them.
-  const readFeatures = projectedReads.map((read, idx) => ({
-    uniqueId: `${refName}-read-${idx}`,
-    refName,
-    start: read.start,
-    end: read.end,
-    strand: read.strand,
-    name: read.readName,
-    type: 'read',
-    // Read back by the display's `color` callback below, and shown in the
-    // feature detail panel — where `largestBreak` is the number behind the
-    // color, since "this read leaves the allele by 8 kb" and "by 200 bp" are
-    // different claims and the fill alone cannot say which.
-    followsPath: read.followsPath,
-    largestBreak: read.maxGap,
-    segmentsOffPath: read.unplacedCount,
-    subfeatures: read.pieces.map((piece, pieceIdx) => ({
-      uniqueId: `${refName}-read-${idx}-${pieceIdx}`,
-      refName,
-      start: piece.start,
-      end: piece.end,
-      strand: piece.strand,
-      type: 'match',
-      // where this piece of the read actually aligned, so a click on a broken
-      // read says which locus each surviving piece came from
-      source: assembleLocString({
-        refName: piece.refName,
-        start: piece.refStart,
-        end: piece.refEnd,
-      }),
-      // The boxes are what get painted, and each resolves its own color, so the
-      // flag has to ride on them too — a callback reading it off the parent
-      // paints every piece of every read the same.
-      followsPath: read.followsPath,
-    })),
   }))
 
   const lgvRegions = gatherOverlaps(
@@ -344,49 +234,6 @@ export function buildDerivativeVsRefSpec(
         displayMode: 'compact',
       },
     },
-    ...(readFeatures.length > 0
-      ? {
-          readsTrack: {
-            type: 'FeatureTrack' as const,
-            trackId: readsTrackId,
-            name: `Reads on this allele (${
-              readFeatures.filter(read => read.followsPath).length
-            }/${readFeatures.length} unbroken)`,
-            assemblyNames: [derivativeAssembly],
-            adapter: {
-              type: 'FromConfigAdapter' as const,
-              features: readFeatures,
-            },
-          },
-          readsDisplay: {
-            type: 'LinearBasicDisplay' as const,
-            // Deep enough to see the pileup is a pileup, capped well under the
-            // segment labels' share of the panel: this is the evidence, the
-            // labels are the legend, and a hundred-read window must not push the
-            // legend off the panel. Past the cap it scrolls.
-            //
-            // Sized in compact rows (0.6 of a normal one), which is what this
-            // panel is worth: the claim it makes is about the whole read set —
-            // how many agree and how many break — so a mode showing nine of
-            // thirty-eight reads makes it at a scale that cannot say it.
-            height: Math.min(9 * readFeatures.length + 20, 180),
-            configuration: {
-              type: 'LinearBasicDisplay' as const,
-              displayId: `${readsTrackId}-LinearBasicDisplay`,
-              displayMode: 'compact',
-              // The whole point of the panel in one slot: a read consistent with
-              // the allele over its whole length against one that is not. Read
-              // off the feature rather than from a per-feature color, so the
-              // rule is legible in the config and a reader can change it.
-              color: `jexl:get(feature,'followsPath')?'${FOLLOWS_COLOR}':'${BREAKS_COLOR}'`,
-              // 36-character UUIDs on an ONT read set, one per row, over
-              // features that are mostly narrower than their own name. The name
-              // is a click away in the feature detail panel.
-              showLabels: 'none',
-            },
-          },
-        }
-      : {}),
     temporaryAssembly: {
       name: derivativeAssembly,
       // the name above is an id, and the stamp in it is only there so a relaunch

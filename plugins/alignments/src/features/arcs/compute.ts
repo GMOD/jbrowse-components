@@ -258,11 +258,6 @@ export interface SegAln {
   onScreen: boolean
 }
 
-export interface NamedReadChain {
-  readName: string
-  chain: SegAln[]
-}
-
 interface ArcEndpoint {
   refName: string
   bp: number
@@ -550,26 +545,6 @@ export function computeReadChains(
   regions: RegionInfo[],
   canonicalRefName?: (refName: string) => string,
 ): SegAln[][] {
-  return computeNamedReadChains(rpcDataMap, regions, canonicalRefName).map(
-    named => named.chain,
-  )
-}
-
-/**
- * #api
- * `computeReadChains` with each chain still attached to the read it came from.
- *
- * The name is only a label to the grouping — reads are grouped by it and then
- * the name is dropped — but a chain DRAWN somewhere has to say which read it is,
- * so a consumer that draws one (`projectReadsOntoDerivative`) needs the same
- * pairing the grouping already had rather than a second walk of the pileup
- * arrays to recover it.
- */
-export function computeNamedReadChains(
-  rpcDataMap: ReadonlyMap<number, PileupDataResult>,
-  regions: RegionInfo[],
-  canonicalRefName?: (refName: string) => string,
-): NamedReadChain[] {
   const ctx: ArcChainContext = {
     // Not the user's off-screen-mate setting: a derivative path is exactly the
     // thing whose segments leave the current view, so the SA walk always runs.
@@ -577,17 +552,15 @@ export function computeNamedReadChains(
     drawLongRange: true,
     canonicalRefName: canonicalRefName ?? (refName => refName),
   }
-  const chains: NamedReadChain[] = []
-  for (const [readName, entries] of groupReadsByName(rpcDataMap, regions)) {
+  const chains: SegAln[][] = []
+  for (const entries of groupReadsByName(rpcDataMap, regions).values()) {
     chains.push(
       ...resolveReadGroup<ReadEntry, SegAln[]>(entries, {
         chainMate: segs => [unpairedReadChain(segs, ctx)],
         // A mate link joins two mates of one fragment; it is not a junction on
         // a single molecule, so it contributes no segment to a path.
         mateLink: () => [],
-      })
-        .filter(chain => chain.length > 1)
-        .map(chain => ({ readName, chain })),
+      }).filter(chain => chain.length > 1),
     )
   }
   return chains
