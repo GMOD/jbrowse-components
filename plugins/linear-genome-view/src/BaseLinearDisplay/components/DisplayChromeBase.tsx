@@ -59,9 +59,22 @@ interface CanvasHandle {
 //
 // The body is a function so callers mount the canvas wherever it belongs. It
 // returns a named observer component (every display does) so observable reads
-// scope to the body rather than re-rendering the chrome. An outer hook bound to
-// the chrome container (maf's drag-select, alignments' mouse tracking) stays in
-// the caller and threads its state down as a prop.
+// scope to the body rather than re-rendering the chrome.
+//
+// A hook bound to the chrome *container* (pointer tracking, maf's drag-select)
+// does have to be called in the caller, because that is where the ref is — but
+// **do not hold its per-event state there too.** Every consumer of
+// `useMouseTracking` once did, and the bill was a whole display's chrome
+// re-rendering because the cursor moved a pixel over it: this component
+// (re-running `useRenderingBackend`), the status container with a fresh inline
+// `style` object, all three overlays, and only then the body that actually
+// wanted the coordinate. Publish the value and read it in the body instead —
+// `useMouseTracking` returns a `mouseTracker` for exactly this and
+// `useMouseState` reads it, which also coalesces to one update per frame.
+//
+// maf's `useDragSelection` is the one holdout: its pointer position shares a
+// `useState` with the drag rectangle, and `useDragSelection.test.ts` asserts on
+// that state synchronously, so splitting them needs the test reworked too.
 //
 // `testid` is the *base* first-paint selector; the chrome owns the `-done`
 // convention, appending it once `canvasDrawn` flips, so no consumer hand-writes
