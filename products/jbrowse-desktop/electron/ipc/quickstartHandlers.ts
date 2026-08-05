@@ -28,7 +28,29 @@ export function registerQuickstartHandlers(paths: AppPaths) {
   })
 
   ipcHandle('addToQuickstartList', async (_, sessionPath, sessionName) => {
-    await copyFile(sessionPath, getQuickstartPath(paths, sessionName))
+    // A quickstart is named after the session it came from, and session names
+    // are not unique — two sessions can share one, and a nameless one reaches
+    // here as "Untitled session". A plain copy let the second silently replace
+    // the first, with nothing to undo it from. COPYFILE_EXCL turns that into an
+    // EEXIST instead, and it is the open(O_EXCL) the copy already does, so two
+    // adds racing each other can't both claim one name either. Retry under a
+    // suffixed name the way a file manager would: a duplicate entry the user can
+    // delete beats a quickstart they can't get back.
+    for (let i = 1; ; i++) {
+      const name = i === 1 ? sessionName : `${sessionName} (${i})`
+      try {
+        await copyFile(
+          sessionPath,
+          getQuickstartPath(paths, name),
+          fs.constants.COPYFILE_EXCL,
+        )
+        return
+      } catch (e) {
+        if ((e as NodeJS.ErrnoException).code !== 'EEXIST') {
+          throw e
+        }
+      }
+    }
   })
 
   ipcHandle('getQuickstart', async (_, name) => {

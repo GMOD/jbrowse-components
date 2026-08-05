@@ -67,7 +67,9 @@ function InstalledGlobalPlugins({
       ) : (
         <List dense>
           {matching.map(({ index, label }) => (
-            <ListItem key={label}>
+            // keyed by position, which is also what remove() addresses: the
+            // stored list is not deduped, so two entries can share a label
+            <ListItem key={index}>
               <Tooltip title="Remove global plugin">
                 <IconButton
                   onClick={() => {

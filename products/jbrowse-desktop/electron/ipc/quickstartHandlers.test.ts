@@ -62,6 +62,35 @@ test.each(['plain', 'my genome', 'GRCh38 (patched)', 'a/b', 'ünïcode'])(
   },
 )
 
+// Session names are not unique — two sessions can carry one, and a nameless one
+// arrives here as "Untitled session". Adding the second used to overwrite the
+// first's quickstart with no way back.
+test('a second quickstart of the same name is suffixed, not written over', async () => {
+  await invoke(
+    'addToQuickstartList',
+    writeSessionFile('first.jbrowse', { assemblies: [], marker: 'first' }),
+    'My genome',
+  )
+  await invoke(
+    'addToQuickstartList',
+    writeSessionFile('second.jbrowse', { assemblies: [], marker: 'second' }),
+    'My genome',
+  )
+
+  expect((await invoke('listQuickstarts')).toSorted()).toEqual([
+    'My genome',
+    'My genome (2)',
+  ])
+  expect(await invoke('getQuickstart', 'My genome')).toEqual({
+    assemblies: [],
+    marker: 'first',
+  })
+  expect(await invoke('getQuickstart', 'My genome (2)')).toEqual({
+    assemblies: [],
+    marker: 'second',
+  })
+})
+
 test('listQuickstarts ignores the deleted-marker files beside the json', async () => {
   await invoke('addToQuickstartList', writeSessionFile('s.jbrowse'), 'kept')
   fs.writeFileSync(getDeletedMarkerPath(paths, 'hg19'), '')
