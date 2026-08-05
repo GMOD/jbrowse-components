@@ -66,30 +66,23 @@ export default function WithInitAdvanced() {
 
 ## Managing widgets programmatically
 
-Opening a widget from your own code means holding the engine, so these use the
+Opening a widget from your own code means holding the engine, so this needs the
 `useCreateViewState` form rather than the props form above — same object either
 way, see
-[driving the view from your own code](/docs/embedded_components#driving-the-view-from-your-own-code):
+[driving the view from your own code](/docs/embedded_components#driving-the-view-from-your-own-code).
 
-```javascript
-// open a widget in the drawer
-const editor = state.session.addWidget(
-  'ConfigurationEditorWidget',
-  'configEditor',
-  {},
-)
-state.session.showWidget(editor)
-
-// switch drawer position
-state.session.setDrawerPosition('left')
-
-// minimize/show drawer
-state.session.minimizeWidgetDrawer()
-state.session.showWidgetDrawer()
-
-// close a widget
-state.session.hideWidget(editor)
-```
+Every drawer action is on the session, so they read
+`state.session.setDrawerPosition('left')` and so on:
+[`showWidget`](/docs/models/DrawerWidgetSessionMixin#action-showwidget) and
+[`hideWidget`](/docs/models/DrawerWidgetSessionMixin#action-hidewidget) for one
+widget,
+[`minimizeWidgetDrawer`](/docs/models/DrawerWidgetSessionMixin#action-minimizewidgetdrawer)
+and
+[`showWidgetDrawer`](/docs/models/DrawerWidgetSessionMixin#action-showwidgetdrawer)
+for the drawer itself, and
+[`setDrawerPosition`](/docs/models/DrawerWidgetSessionMixin#action-setdrawerposition)
+for which side it sits on. Showing a widget un-minimizes the drawer, so a
+minimized drawer does not swallow the widget you just opened.
 
 ## Init state options
 
@@ -161,17 +154,12 @@ load.
 
 ## Showing a custom widget
 
-```javascript
-// assuming you've registered a custom widget type
-const myWidget = state.session.addWidget('MyCustomWidget', 'myWidgetId', {
-  /* initial state */
-})
-
-state.session.showWidget(myWidget)
-```
-
-Widgets are lazily loaded via React Suspense, so a custom widget's code is only
-fetched when it first opens.
+A widget you registered yourself opens exactly like a built-in one, by the
+`name` its `WidgetType` carries:
+`session.showWidget(session.addWidget('MyCustomWidget', 'myWidgetId', {}))`. See
+[](/docs/developer_guides/creating_widget) for the registration and the worked
+call. Widgets are lazily loaded via React Suspense, so a custom widget's code is
+only fetched when it first opens.
 
 ## Storybook example
 

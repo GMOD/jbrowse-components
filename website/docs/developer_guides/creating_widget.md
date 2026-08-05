@@ -9,63 +9,79 @@ app (the config editor, feature detail popups, the add-track form). A widget
 pairs a state model with a React component, registered via
 `pluginManager.addWidgetType`.
 
-Register a widget in `index.tsx`:
+Register a widget in `index.ts`. `HelpWidget` is a whole one — the config
+schema, the state model and the registration, in the file that exports the
+plugin-install function:
 
-```tsx
+<!-- include: plugins/menus/src/HelpWidget/index.ts -->
+
+```ts
+import { lazy } from 'react'
+
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
-import PluginManager from '@jbrowse/core/PluginManager'
+import { WidgetType } from '@jbrowse/core/pluggableElementTypes'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { types } from '@jbrowse/mobx-state-tree'
-import { observer } from 'mobx-react'
 
-const ReactComponent = observer(function ({
-  model,
-}: {
-  model: { mydata: unknown }
-}) {
-  return <div>Message: {`${model.mydata}`}</div>
+import type PluginManager from '@jbrowse/core/PluginManager'
+
+const configSchema = ConfigurationSchema('HelpWidget', {})
+
+const stateModel = types.model('HelpWidget', {
+  id: ElementId,
+  type: types.literal('HelpWidget'),
 })
 
-const configSchema = ConfigurationSchema('MyWidget', {})
-
-const stateModel = types
-  .model('MyWidget', {
-    id: ElementId,
-    type: types.literal('MyWidget'),
-    mydata: types.frozen(),
+export default function HelpWidgetF(pluginManager: PluginManager) {
+  pluginManager.addWidgetType(() => {
+    return new WidgetType({
+      name: 'HelpWidget',
+      heading: 'Help',
+      configSchema,
+      stateModel,
+      ReactComponent: lazy(() => import('./components/HelpWidget.tsx')),
+    })
   })
-  .actions(self => ({
-    setMyData(data: unknown) {
-      self.mydata = data
-    },
-    clearMyData() {
-      self.mydata = undefined
-    },
-  }))
+}
+```
 
-export default (pluginManager: PluginManager) => {
-  pluginManager.addWidgetType(
-    () =>
-      new WidgetType({
-        name: 'MyWidget',
-        heading: 'My custom widget',
-        configSchema,
-        stateModel,
-        ReactComponent,
-      }),
+`id` and `type` are what every widget state model carries: `ElementId` generates
+the instance id `addWidget` keys it by, and the `types.literal` is what tells
+MST which model to rehydrate a saved session into. `ReactComponent` is
+`lazy`-loaded, so a widget's UI code is only fetched the first time it opens.
+
+A widget that displays something declares those fields on the state model
+alongside those two, and receives them as `addWidget`'s third argument —
+`UcscResultsWidget` in the BLAT plugin is that shape, holding the hits its table
+renders.
+
+## Opening one
+
+A widget is opened by the `name` its `WidgetType` was registered under. BLAT
+opens its results table that way when a search returns hits:
+
+<!-- include: plugins/blat/src/ucscShared.ts#showWidget -->
+
+```ts
+// addWidget constructs the widget and returns it; showWidget is what puts it
+// in the drawer. The third argument is the initial state, so its keys are the
+// properties UcscResultsWidget's state model declares. Not every session has
+// a drawer — an embedded component may be built without one — so the guard is
+// not optional.
+if (isSessionModelWithWidgets(session)) {
+  session.showWidget(
+    session.addWidget('UcscResultsWidget', 'ucscResults', {
+      features,
+      assembly,
+      trackName,
+      resultNoun,
+    }),
   )
 }
 ```
 
-Use it:
-
-```typescript
-const widget = session.addWidget('MyWidget', 'instanceOfMyWidget', {
-  mydata: 'Hello from my widget',
-})
-session.showWidget(widget)
-```
+See [](/docs/developer_guides/drawer_widgets) for the rest of the drawer:
+position, width, minimizing, and closing a widget again.
 
 ## See also
 

@@ -163,6 +163,12 @@ export async function addResultTrack({
       'warning',
     )
   }
+  // #region showWidget
+  // addWidget constructs the widget and returns it; showWidget is what puts it
+  // in the drawer. The third argument is the initial state, so its keys are the
+  // properties UcscResultsWidget's state model declares. Not every session has
+  // a drawer — an embedded component may be built without one — so the guard is
+  // not optional.
   if (isSessionModelWithWidgets(session)) {
     session.showWidget(
       session.addWidget('UcscResultsWidget', 'ucscResults', {
@@ -173,4 +179,5 @@ export async function addResultTrack({
       }),
     )
   }
+  // #endregion
 }
