@@ -118,10 +118,12 @@ const FUSION_ARC_COLOR =
 // cross the junction" is a picture of reads not doing anything in particular;
 // what makes it evidence is that the SAME molecules are torn in four against
 // hg38. The review asked for it from the other end -- "why are the reads not
-// shown using alignmentstrack? that is potentially important" -- which on the
-// in-app reconstruction they cannot be (its allele is a structure with no
-// bases, so its lane is a coordinate projection), and here they are: a real BAM
-// on both sides, `derive`'s own `reads_vs_derivative` output on the right.
+// shown using alignmentstrack? that is potentially important" -- and this is
+// where the answer is: a real BAM on both sides, `derive`'s own
+// `reads_vs_derivative` output on the right. The in-app reconstruction cannot
+// be the place, which e7b4f2b29b settled by reverting the lane that tried: its
+// allele has no bases, so a read's own sequence never touches it and no
+// junction error can show.
 //
 // The chr3 junction at 25,359,568, which is the first one the allele takes, at
 // 380 bp on both sides so a pane's width is the same number of bases. The

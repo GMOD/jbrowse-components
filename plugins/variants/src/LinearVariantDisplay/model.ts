@@ -10,8 +10,10 @@ import {
   PREDEFINED_SV_TYPES,
   SV_TYPE_COLOR_JEXL,
 } from '../shared/variantSvType.ts'
+import { breakendMenuItems } from './breakendMenu.ts'
 
 import type { LinearVariantDisplayConfigModel } from './configSchema.ts'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
@@ -65,6 +67,21 @@ export default function stateModelFactory(
         self.colorLegendDismissed = arg
       },
     }))
+    .views(self => {
+      const superContextMenuItems = self.contextMenuItems
+      return {
+        /**
+         * #method
+         * The shared feature menu plus, on a breakend record, the row that
+         * opens the split view for it. Super-captured rather than replaced, so
+         * every generic row (details, zoom to, highlight, show/hide, copy)
+         * stays where a reader already learned it.
+         */
+        contextMenuItems(): MenuItem[] {
+          return [...superContextMenuItems(), ...breakendMenuItems(self)]
+        },
+      }
+    })
     .views(self => ({
       /**
        * #getter
