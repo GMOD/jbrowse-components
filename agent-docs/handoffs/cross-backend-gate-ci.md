@@ -207,13 +207,30 @@ took the worst pair **16.71% → 7.32%** and halved the differing pixels; the
 override came down 20% → 10%. Eight canvas2d goldens moved, all in Long Reads and
 Inversions — no other view is zoomed out far enough for the clamp to fire.
 
-The residual 7.32% is a **second bug, diagnosed but open**: `TRIANGLE_H` is 4.5,
-so the interbase bar's top edge lands mid-pixel on *both* backends, and they
-resolve that differently — canvas2d alpha-blends ~40 overlapping 1px bars per
-column and converges to opaque, the GPU's coverage resolve happens once and stays
-at exactly 50%. One whole row reads `128,0,128` against `191,127,191`. Snapping
-that edge to a whole pixel on both sides should close it; the shader half needs
-`pnpm gen:shaders`, not `autogen`.
+The second is also fixed (`990648d3c6`), for a smaller gain: `TRIANGLE_H` is 4.5,
+so the interbase bar's edges landed mid-pixel on *both* backends, and they
+resolve a half-covered row differently — canvas2d composites ~40 overlapping 1px
+bars per column separately and saturates to opaque, the GPU resolves the union
+coverage once and correctly stays at exactly 50%. Snapping both edges to whole
+pixels took **7.32% → 6.59%**.
+
+**That fix's first attempt made things worse (7.69%), and the reason generalizes:
+`Math.round(4.5)` is 5 in JS, but GLSL's `round()` at exactly .5 is
+implementation-defined and rounded down.** Snapping "the same" number on both
+sides moved the bar a pixel apart. Both use `floor(x + 0.5)` now. Every
+hand-written canvas twin of a shader has this available to it, and ADR-051's
+codegen does not cover them — it covers generated twins, not paired ones.
+
+### What is left, and why it stops here
+
+The remaining 6.59% is the same accumulate-vs-resolve asymmetry on marks that
+**cannot** be snapped: SNP ticks and indicator triangles sit at arbitrary
+sub-pixel x, ~40 deep per column at this zoom. Canvas2D is the wrong one —
+drawing the same opaque shape twice should not make it more opaque — but closing
+it means canvas2d drawing one merged mark per pixel column instead of 40
+overlapping antialiased ones. That is a change to the drawing model, not an
+offset fix, and it was left deliberately: 16.71% → 6.59% with the override at 10%
+is enough headroom, and the remaining gap is understood rather than mysterious.
 
 The method is the transferable part: **a threshold override is a claim about why
 two backends disagree, and claims are testable.** This one said "antialiasing",
@@ -259,11 +276,11 @@ verdict is a 5-17% divergence the gate is configured to ignore.
 
 ## Next, in order
 
-1. **Close the second pbsim bug** (above): snap the interbase bar's top edge off
-   `TRIANGLE_H = 4.5` to a whole pixel on both backends, then take the
-   `inversion-pbsim` override below 10% again. `inversion-paired-coverage` is
-   already down to 2.24% against a 3% default — take a second reading and delete
-   that entry outright.
+1. **Delete the `inversion-paired-coverage` override.** The two fixes took it to
+   2.24%, under the 3% default, so the entry earns nothing. Left in on a single
+   post-fix measurement — take a second reading and drop it. (The
+   `inversion-pbsim` entry stays at 10%: the remaining 6.59% is understood and
+   deliberately not being chased, see above.)
 2. **Widen `CI_GATE_SUITES`** with the two alignments suites, then the local
    deterministic ones never measured under swiftshader (arcs, workspaces, redraw,
    cursor-guides, svg-export, custom-url, variant-force-load). Arcs and
