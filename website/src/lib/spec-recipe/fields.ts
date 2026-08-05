@@ -40,6 +40,11 @@ export interface FieldStep {
 // height'), so a recipe passes the singular noun for the track it is describing.
 export interface FieldContext {
   noun: string
+  // The display the spec named, or undefined when it left the choice to the app
+  // (see specDisplayType). Read by the recipes whose field names a different
+  // menu on different displays — without it they can only be written for one
+  // display and be silently wrong on the rest.
+  displayType?: string
 }
 
 export type FieldRecipe = (
@@ -190,9 +195,42 @@ const SUBFEATURE_LABELS: Record<string, string> = {
   overlay: 'Overlay',
 }
 
-// getFeatureHeightMenuItem titles its submenu after what the track holds
-const heightMenu = (noun: string) =>
-  `${TRACK_MENU} → ${noun.charAt(0).toUpperCase()}${noun.slice(1)} height`
+// The two displays that own a per-feature size submenu title it differently:
+// the canvas display hard-codes 'Set feature height' (its trackMenus.ts), while
+// getFeatureHeightMenuItem — used by the alignments display and
+// LGVSyntenyDisplay — titles it after what the track holds. Both then group the
+// sizing radios under the same 'Track sizing' subheader.
+//
+// An entry that named no display keeps the noun form this table has always
+// emitted. That is an assumption, not a resolution, and it is the one place
+// here that can still be wrong; resolving it needs pickDisplayForView's plugin
+// registry.
+const heightMenu = (noun: string, displayType?: string) =>
+  displayType === 'LinearBasicDisplay'
+    ? `${TRACK_MENU} → Set feature height`
+    : `${TRACK_MENU} → ${noun.charAt(0).toUpperCase()}${noun.slice(1)} height`
+
+// The canvas display's two flat radio groups. Like SPECIAL_COLOR_MENUS these
+// labels are inline in canvas/LinearBasicDisplay/trackMenus.ts
+// (displayModeOptions, SHOW_LABELS_OPTION_LABELS) rather than in a registry the
+// website can import, so they are verified by hand and cited. Both recipes are
+// gated on the display type because both field names mean a different menu
+// elsewhere — the alignments display has its own displayMode, and showLabels on
+// an LD display is a 'Show variant labels' checkbox.
+const DISPLAY_MODES: Record<string, string> = {
+  normal: 'Normal',
+  compact: 'Compact',
+  superCompact: 'Super-compact',
+  collapsed: 'Collapsed',
+}
+
+const SHOW_LABELS_MODES: Record<string, string> = {
+  auto: 'Auto',
+  nameAndDescription: 'Name + description',
+  name: 'Name only',
+  description: 'Description only',
+  none: 'None',
+}
 
 const SASHIMI_PLACEMENT: Record<string, string> = {
   auto: 'Auto (minimize overlap)',
@@ -265,21 +303,39 @@ export const trackFields: Record<string, FieldRecipe> = {
   geneGlyphMode: geneGlyphStep,
   // the size presets carry their own pixel heights, so the figure's number
   // names its preset without a second table to keep in sync
-  featureHeight: (value, { noun }) => {
+  featureHeight: (value, { noun, displayType }) => {
     const preset = Object.values(COMPACTNESS_PRESETS).find(
       p => p.featureHeight === value,
     )
+    const menu = heightMenu(noun, displayType)
     return {
       path: preset
-        ? `${heightMenu(noun)} → ${preset.label}`
-        : `${heightMenu(noun)} → Custom... → ${String(value)}px`,
+        ? `${menu} → ${preset.label}`
+        : `${menu} → Custom... → ${String(value)}px`,
     }
   },
   // 'Track sizing' is a subheader inside the same submenu as the size presets
-  heightMode: (value, { noun }) => {
+  heightMode: (value, { noun, displayType }) => {
     const option = getHeightModeOptions(noun).find(o => o.value === value)
     return option
-      ? { path: `${heightMenu(noun)} → Track sizing → ${option.label}` }
+      ? {
+          path: `${heightMenu(noun, displayType)} → Track sizing → ${option.label}`,
+        }
+      : undefined
+  },
+  // Both radios sit directly in the canvas display's size submenu, above the
+  // 'Track sizing' subheader that heightMode lands under.
+  displayMode: (value, { displayType }) => {
+    const label = typeof value === 'string' ? DISPLAY_MODES[value] : undefined
+    return label && displayType === 'LinearBasicDisplay'
+      ? { path: `${TRACK_MENU} → Set feature height → ${label}` }
+      : undefined
+  },
+  showLabels: (value, { displayType }) => {
+    const label =
+      typeof value === 'string' ? SHOW_LABELS_MODES[value] : undefined
+    return label && displayType === 'LinearBasicDisplay'
+      ? { path: `${TRACK_MENU} → Show... → Labels → ${label}` }
       : undefined
   },
   height: numberField(() => ({

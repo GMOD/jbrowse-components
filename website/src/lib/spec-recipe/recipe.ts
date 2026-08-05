@@ -1,6 +1,7 @@
 import { fileKind, lookupAssembly, lookupTrack } from './configs.ts'
 import {
   decodeSpecUrl,
+  specDisplayType,
   specTrackId,
   specTrackSettings,
   specTracks,
@@ -86,7 +87,10 @@ function trackStep(
   const trackId = specTrackId(entry)
   const info = lookupTrack(config, trackId)
   const kind = info ? fileKind(info.adapterType) : undefined
-  const context: FieldContext = { noun: trackNoun(info?.type) }
+  const context: FieldContext = {
+    noun: trackNoun(info?.type),
+    displayType: specDisplayType(entry),
+  }
   const { steps: settings, unmapped } = fieldSteps(
     specTrackSettings(entry),
     trackFields,
