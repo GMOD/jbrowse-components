@@ -346,9 +346,10 @@ once after refreshing, since a credential can lapse between two chunk fetches of
 a file already open on screen.
 
 Bucket CORS then has to allow the headers the signature covers (`Authorization`,
-`Range`, `x-amz-date`, `x-amz-content-sha256`) and expose `Content-Range`.
-Without that last one JBrowse cannot determine the object's size, and the track
-fails with an error saying so.
+`Range`, `x-amz-date`, `x-amz-content-sha256`). Exposing `Content-Range` is
+worth doing but is not required: reads walk the file by range and detect its end
+from a short response, so a track loads either way. See
+[the CORS FAQ](/docs/faq#why-do-i-get-a-cors-error-when-loading-remote-files).
 
 CloudFront signed cookies are the one route that needs no JBrowse code and
 refreshes without it, since your app renews the cookie and the browser attaches

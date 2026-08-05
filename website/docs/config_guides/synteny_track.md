@@ -166,14 +166,20 @@ The per-adapter slots are on each adapter's config page (see
 [Choosing an adapter](#choosing-an-adapter) above). Four rules apply across all
 of them:
 
-- `assemblyNames` is always `["query", "target"]`, query first. The
-  alignment-file adapters (`PAFAdapter`, `DeltaAdapter`, `ChainAdapter`) also
-  accept the named `queryAssembly`/`targetAssembly` fields, which cannot be read
-  in the wrong order. The MCScan adapters take only `assemblyNames`. The
-  all-vs-all adapters are the exception: their `assemblyNames` is the full list
-  of genomes in the file, in no particular order.
-- All file locations accept gzip-compressed input, and all adapters accept the
-  [`uri` shorthand](/docs/config_guides/file_types#the-uri-shorthand).
+- `assemblyNames` is always `["query", "target"]`, query first. Every pairwise
+  adapter except the three MCScan ones also accepts the named
+  `queryAssembly`/`targetAssembly` fields, which cannot be read in the wrong
+  order — that is `PAFAdapter`, `PairwiseIndexedPAFAdapter`, `DeltaAdapter`,
+  `ChainAdapter`, `MashMapAdapter` and `BlastTabularAdapter`. The MCScan
+  adapters take only `assemblyNames`. The all-vs-all adapters are the exception:
+  their `assemblyNames` is the full list of genomes in the file, in no
+  particular order.
+- All file locations accept gzip-compressed input. Most adapters also accept the
+  [`uri` shorthand](/docs/config_guides/file_types#the-uri-shorthand); three do
+  not, and want their location slot written out — `AllVsAllPAFAdapter`
+  (`pafLocation`), `BlastTabularAdapter` (`blastTableLocation`) and
+  `MCScanBlocksAdapter` (`mcscanBlocksLocation`). Each adapter's config page
+  lists what it takes.
 - Every adapter except the two indexed ones (`PairwiseIndexedPAFAdapter` and
   `AllVsAllIndexedPAFAdapter`) reads the whole file into memory. For large
   alignments, convert to PIF and use one of those instead.
