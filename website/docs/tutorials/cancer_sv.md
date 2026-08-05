@@ -126,7 +126,8 @@ junction its segment carries rather than on the whole segment, whose length is a
 property of the reads that happened to describe it.
 
 **Add → Breakpoint split view** is still there for a view whose loci you already
-know, and takes one row per panel. That is how the three-panel figure above was made.
+know, and takes one row per panel. That is how the three-panel figure above was
+made.
 
 One record needs no typing at all. Right-click it in the variant track and
 choose **Open breakpoint split view**: the dialog asks for the shape, two
