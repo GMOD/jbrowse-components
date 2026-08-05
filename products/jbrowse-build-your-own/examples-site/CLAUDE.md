@@ -68,6 +68,27 @@ literal, never `?raw` a private helper of this site.
   module to a React component; `agent-docs/reference/EAGER_BUNDLE.md` names the
   three shapes and how to attribute a new one. Don't raise a budget to make it
   pass, for the same reason `MUI_BUDGET` isn't raised.
+- **`demoHeights.json` is the third, and it is an input to the build.** Every
+  demo is a `client:only` island, and Astro gives an island `display: contents`,
+  so its box is empty and 0 high until React hydrates — several hundred KB
+  later. The generated height is reserved on that box as a `min-height` so the
+  page doesn't drop everything below it when the demo lands (measured on the
+  landing page: 153px of movement, CLS 0.0558 → 0.0000). Write it with
+  `pnpm build && pnpm measure-demo-heights && pnpm build` — twice, because
+  unlike the other two artifacts this one is consumed by the build rather than
+  only checked after it. Never by hand.
+
+  The figure is the **tallest** the demo gets: too small jumps the page, too
+  large only leaves space inside the demo's own border, which is why the
+  generator measures at two widths and why the smoke check's two edges have
+  different tolerances. The narrow probe is 840px because a content column is
+  narrowest just _above_ the 820px sidebar breakpoint. A demo whose height
+  depends on its data (a fit-height mode) can't be pinned this way at all.
+
+  The skeleton in the reserved box is styled on `astro-island:empty`, so it ends
+  itself when React appends — no JS and no timer. It has to be out of flow:
+  these boxes are `border-box`, so an in-flow child sized off the same
+  min-height overflows by the border and leaves 2px of shift.
 - **For anything smoke can't see, a throwaway puppeteer probe against the built
   `dist/` is the pattern** — serve `dist/`, strip the Astro base,
   `--use-gl=swiftshader`, settle ~7s, then measure. Write it as a `.tmp.mjs`
