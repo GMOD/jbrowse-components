@@ -31,16 +31,25 @@ fixes. Diagnostic logs are for the duration of an investigation, not forever.
 The synteny render pipeline goes:
 
 ```
-wheel/drag event
-  → flushHorizontalScroll() → rAF
-    → transaction(() => v.horizontalScroll(...))
-      → offsetPx changes (MobX observable mutation)
-        → autorun deps fire (renderState getter, etc.)
-          → render autorun callback runs
-            → GpuSyntenyRenderer.render(state)
-              → hal.beginFrame / writeUniforms / drawPass / endFrame
-        → mobx-react flushes observer() re-renders (React commit)
+drag (mousemove on the synteny canvas)     wheel
+  → dragPan(dx), synchronously               → createWheelZoomController
+      ↓                                          ↓
+  transaction(() => for each v: v.horizontalScroll(dx) / zoomTo(...))
+    → offsetPx / bpPerPx change (MobX observable mutation)
+      → autorun deps fire (renderState getter, etc.)
+        → render autorun callback runs
+          → GpuSyntenyRenderer.render(state)
+            → hal.beginFrame / writeUniforms / drawPass / endFrame
+      → mobx-react flushes observer() re-renders (React commit)
 ```
+
+**There is no rAF in the synteny drag path, deliberately** — `dragPan`
+(`LevelSyntenyCanvas.tsx`) flushes on every mousemove, since those already
+arrive at ~60Hz and `transaction` is what coalesces the several views a stack
+drives from one gesture. Don't go looking for a frame boundary to measure
+across; the batching is the transaction. The rAF-coalesced path is the *LGV*'s
+own side-scroll (`useSideScroll`'s `flushScroll`), which is a different pipeline
+reached by dragging a track rather than the connector canvas.
 
 Time each step independently. The slow one is the bottleneck.
 
