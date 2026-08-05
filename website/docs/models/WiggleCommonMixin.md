@@ -27,10 +27,9 @@ the whole surface.
 ## Properties
 
 <!-- prettier-ignore -->
-| Member | Description | Defined by |
-| --- | --- | --- |
-| <span id="property-resolution">**resolution**</span><br><code>resolution: types.stripDefault(types.number, 1)</code> |  | WiggleCommonMixin |
-| <span id="property-displaycrosshatches">**displayCrossHatches**</span><br><code>displayCrossHatches: types.stripDefault(types.boolean, false)</code> |  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#property-displaycrosshatches) |
+| Member | Description |
+| --- | --- |
+| <span id="property-resolution">**resolution**</span><br><code>resolution: types.stripDefault(types.number, 1)</code> |  |
 
 ## Volatiles
 
@@ -61,8 +60,9 @@ the whole surface.
 | <span id="getter-visiblescorerange">**visibleScoreRange**</span><br><code>[number, number] &#124; undefined</code> |  | WiggleCommonMixin |
 | <span id="getter-domain">**domain**</span><br><code>[number, number] &#124; undefined</code> |  | WiggleCommonMixin |
 | <span id="getter-scatterpointsize">**scatterPointSize**</span><br><code>number</code> |  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#getter-scatterpointsize) |
+| <span id="getter-displaycrosshatches">**displayCrossHatches**</span><br><code>boolean</code> | <span data-pagefind-ignore>The configured cross-hatch setting. A config slot rather than a display prop — like `scatterPointSize` beside it — because a prop cannot be set from a config at all: MST drops a snapshot key the schema never declares, so `demos/cgiab` had asked for hatches on its CNV track and never got them. Read `showCrossHatches` below for what actually draws; this is the raw setting the menu toggles.</span> | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#getter-displaycrosshatches) |
 | <span id="getter-isdensitymode">**isDensityMode**</span><br><code>boolean</code> | <span data-pagefind-ignore>Whether score maps to color instead of height. Each display overrides this from its own rendering-type table (`density` / `multirowdensity`); the base is false so this mixin's resolved getters below can key on it, the same override idiom `autoscaleSourceNames` uses in WiggleCommonMixin.</span> | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#getter-isdensitymode) |
-| <span id="getter-showcrosshatches">**showCrossHatches**</span><br><code>boolean</code> | <span data-pagefind-ignore>Whether the score-axis cross hatches draw. Density spends color, not height, on the score, so there is no axis for them to rule — and the track menu drops the toggle there, which would strand hatches enabled in another plot type with no way to turn them off. Every consumer (on-screen overlay, multi-row overlay lines, SVG export) reads this, never the raw `displayCrossHatches` prop.</span> | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#getter-showcrosshatches) |
+| <span id="getter-showcrosshatches">**showCrossHatches**</span><br><code>boolean</code> | <span data-pagefind-ignore>Whether the score-axis cross hatches draw. Density spends color, not height, on the score, so there is no axis for them to rule — and the track menu drops the toggle there, which would strand hatches enabled in another plot type with no way to turn them off. Every consumer (on-screen overlay, multi-row overlay lines, SVG export) reads this, never the raw `displayCrossHatches` setting.</span> | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#getter-showcrosshatches) |
 | <span id="getter-scaletype">**scaleType**</span><br><code>string</code> |  | [ScoreScaleMixin](../scorescalemixin#getter-scaletype) |
 | <span id="getter-autoscaletype">**autoscaleType**</span><br><code>string</code> |  | [ScoreScaleMixin](../scorescalemixin#getter-autoscaletype) |
 | <span id="getter-numstddev">**numStdDev**</span><br><code>number</code> |  | [ScoreScaleMixin](../scorescalemixin#getter-numstddev) |

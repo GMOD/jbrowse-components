@@ -1,4 +1,4 @@
-import { resolveConf, setConf } from '@jbrowse/core/configuration'
+import { getConf, resolveConf, setConf } from '@jbrowse/core/configuration'
 import { getContainingView } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import { ScoreScaleMixin } from '@jbrowse/wiggle-core'
@@ -60,16 +60,7 @@ export const RESOLUTION_STEP = 2
  */
 export function WiggleScoreConfigMixin() {
   return types
-    .compose(
-      'WiggleScoreConfigMixin',
-      ScoreScaleMixin(),
-      types.model({
-        /**
-         * #property
-         */
-        displayCrossHatches: types.stripDefault(types.boolean, false),
-      }),
-    )
+    .compose('WiggleScoreConfigMixin', ScoreScaleMixin(), types.model({}))
     .volatile(() => ({
       /**
        * #volatile
@@ -82,6 +73,18 @@ export function WiggleScoreConfigMixin() {
        */
       get scatterPointSize(): number {
         return resolveConf(confNode(self), 'scatterPointSize')
+      },
+      /**
+       * #getter
+       * The configured cross-hatch setting. A config slot rather than a display
+       * prop — like `scatterPointSize` beside it — because a prop cannot be set
+       * from a config at all: MST drops a snapshot key the schema never
+       * declares, so `demos/cgiab` had asked for hatches on its CNV track and
+       * never got them. Read `showCrossHatches` below for what actually draws;
+       * this is the raw setting the menu toggles.
+       */
+      get displayCrossHatches(): boolean {
+        return getConf(confNode(self), 'displayCrossHatches')
       },
       /**
        * #getter
@@ -100,7 +103,11 @@ export function WiggleScoreConfigMixin() {
        * #action
        */
       toggleCrossHatches() {
-        self.displayCrossHatches = !self.displayCrossHatches
+        setConf(
+          confNode(self),
+          'displayCrossHatches',
+          !self.displayCrossHatches,
+        )
       },
       /**
        * #action
@@ -136,7 +143,7 @@ export function WiggleScoreConfigMixin() {
        * track menu drops the toggle there, which would strand hatches enabled
        * in another plot type with no way to turn them off. Every consumer
        * (on-screen overlay, multi-row overlay lines, SVG export) reads this,
-       * never the raw `displayCrossHatches` prop.
+       * never the raw `displayCrossHatches` setting.
        */
       get showCrossHatches() {
         return self.displayCrossHatches && !self.isDensityMode

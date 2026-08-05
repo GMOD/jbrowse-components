@@ -52,6 +52,12 @@ export const scoreAxisConfigSchemaFields = {
       'Number of standard deviations to use for the localsd autoscale type',
     advanced: true,
   },
+  displayCrossHatches: {
+    type: 'boolean',
+    defaultValue: false,
+    description:
+      'Rule the score axis with horizontal cross hatches at the tick positions — the config form of the score menu\'s "Show cross hatches". Ignored by the density rendering types, which spend color rather than height on the score and so have no axis to rule',
+  },
 } as const
 
 export const wiggleConfigSchemaFields = {

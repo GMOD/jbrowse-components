@@ -28,7 +28,7 @@ export interface WiggleGpuDisplayModel<
   regionTooLargeReason: string
   forceLoad: () => void
   // the resolved "do the hatches draw" getter, never the raw
-  // `displayCrossHatches` prop — density mode has no score axis for them to
+  // `displayCrossHatches` setting — density mode has no score axis for them to
   // rule and drops the track-menu toggle
   showCrossHatches: boolean
 }

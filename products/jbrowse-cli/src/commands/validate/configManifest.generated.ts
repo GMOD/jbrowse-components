@@ -4023,6 +4023,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | number)"
         },
         {
+          "name": "displayCrossHatches",
+          "type": "(JexlString | boolean)"
+        },
+        {
           "name": "posColor",
           "type": "(JexlString | string)"
         },
@@ -4089,6 +4093,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "numStdDev",
           "type": "(JexlString | number)"
+        },
+        {
+          "name": "displayCrossHatches",
+          "type": "(JexlString | boolean)"
         },
         {
           "name": "posColor",
@@ -4199,6 +4207,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | number)"
         },
         {
+          "name": "displayCrossHatches",
+          "type": "(JexlString | boolean)"
+        },
+        {
           "name": "posColor",
           "type": "(JexlString | string)"
         },
@@ -4293,6 +4305,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "numStdDev",
           "type": "(JexlString | number)"
+        },
+        {
+          "name": "displayCrossHatches",
+          "type": "(JexlString | boolean)"
         },
         {
           "name": "posColor",
@@ -4696,6 +4712,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "numStdDev",
           "type": "(JexlString | number)"
+        },
+        {
+          "name": "displayCrossHatches",
+          "type": "(JexlString | boolean)"
         },
         {
           "name": "minimalTicks",
