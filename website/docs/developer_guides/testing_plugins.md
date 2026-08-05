@@ -99,7 +99,10 @@ React components render in jsdom with `@testing-library/react`. Build a model
 with `createTestSession`, pass it to the component, and assert on the DOM:
 
 ```tsx
+import { createTestSession } from '@jbrowse/web/testUtils'
 import { render } from '@testing-library/react'
+
+import MyWidgetComponent from './MyWidgetComponent.tsx'
 
 test('renders the widget', () => {
   const session = createTestSession()

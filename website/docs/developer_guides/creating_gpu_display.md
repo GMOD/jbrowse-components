@@ -26,10 +26,15 @@ and
 [Adding a new GPU display type](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_RENDERING.md#adding-a-new-gpu-display-type)
 sections mirror the steps below.
 
-`@jbrowse/render-core` is published but `@experimental`: names and signatures
-may still change before it's frozen under semver, so pin an exact version and
-expect to rebuild on upgrade. Its GPU surface is static-import-only (not exposed
-through JBrowse's runtime `ReExports` registry), so a GPU display must be a
+`@jbrowse/render-core` and `@jbrowse/shader-tools` are **not on npm yet** — they
+first publish in the next release. Until then, author against a
+`jbrowse-components` checkout and copy the emitted `*.generated.ts` into your
+plugin. Both are `@experimental` when they land: names and signatures may change
+before they're frozen under semver, so pin an exact version and expect to
+rebuild on upgrade.
+
+`render-core`'s GPU surface is static-import-only (not exposed through JBrowse's
+runtime `ReExports` registry), so a GPU display must be a
 [build-step plugin](/docs/developer_guides/simple_plugin), not a
 [no-build plugin](/docs/developer_guides/no_build_plugin).
 
@@ -84,6 +89,7 @@ src/LinearScoreDisplay/
     ├── ScoreRendererFactory.ts    createRenderingBackend dispatch
     ├── GpuScoreRenderer.ts        extends GpuPerRegionRenderingBackend
     ├── Canvas2DScoreRenderer.ts   extends Canvas2DPerRegionRenderingBackend
+    ├── drawScore.ts               pure draw function (also used by SVG export)
     ├── scoreTypes.ts              ScoreRenderState + backend type
     └── shaders/score.slang        vertex + fragment for one pass
 src/ScoreRPC/
@@ -216,14 +222,6 @@ on first use, and writes each `*.generated.ts` next to its source (`hpmath` /
 `colorPack` resolve from your installed `@jbrowse/render-core`). Inside this
 repo the same tool runs as `pnpm gen:shaders`.
 
-:::note
-
-`@jbrowse/shader-tools` and `@jbrowse/render-core` first publish to npm in the
-next release. Until then, author `.slang` against a `jbrowse-components`
-checkout and copy the emitted `*.generated.ts` into your plugin.
-
-:::
-
 Genomic positions travel as absolute `uint` attributes; convert them with the
 `bpToClipX` wrapper above and nothing else. The `bpHi`/`bpLo` split it hides
 exists because float32 can't represent every base past ~16.7 Mbp, and it stays
@@ -322,35 +320,13 @@ Implement the same interface using `ctx.fillRect` etc. Canvas2D is
 [the floor every display must ship](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_RENDERING.md#canvas2d-is-the-floor-gpu-is-the-optional-accelerator):
 **SVG export runs the Canvas2D path**, and the GPU shader is the optional
 accelerator layered on top. This renderer also runs when WebGPU and WebGL2 are
-both unavailable:
+both unavailable.
 
-<!-- include: example-plugins/score-example/src/LinearScoreDisplay/components/Canvas2DScoreRenderer.ts -->
-
-```ts
-import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
-
-import { drawScoreBlocks } from './drawScore.ts'
-
-import type { ScoreRegionData } from '../../ScoreRPC/rpcTypes.ts'
-import type { ScoreRenderState } from './scoreTypes.ts'
-import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
-
-// The base class owns renderBlocks (DPR-aware canvas sizing, then calls draw);
-// this subclass implements only the pure paint step. Runs both as the WebGPU/
-// WebGL2 fallback and as the SVG-export path.
-export class Canvas2DScoreRenderer extends Canvas2DPerRegionRenderingBackend<
-  ScoreRegionData,
-  ScoreRenderState
-> {
-  protected draw(
-    blocks: RenderBlock[],
-    regions: ReadonlyMap<number, ScoreRegionData>,
-    state: ScoreRenderState,
-  ) {
-    drawScoreBlocks(this.ctx, regions, blocks, state)
-  }
-}
-```
+It is not a GPU-specific artifact, so it is written once and unchanged here:
+[Plotting features, Step 4](/docs/developer_guides/plotting_features#step-4-the-renderer)
+builds `drawScore.ts` and `Canvas2DScoreRenderer.ts` in full. The only
+difference on this path is the factory in Step 5 below, which now has a GPU
+backend to prefer.
 
 ## Step 5: RenderingBackend factory
 
@@ -386,129 +362,36 @@ lifecycle with `installPerRegionLifecycle`. This is the **per-region streamed**
 upload pattern from the
 [architecture spec's three upload patterns](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_RENDERING.md#three-upload-patterns),
 the right shape when each region's data is independent (no cross-region layout
-coupling). It's identical in structure to the Canvas2D model in
-[Plotting features](/docs/developer_guides/plotting_features#step-3-the-mst-model);
-only the renderer differs.
+coupling).
 
-<!-- include: example-plugins/score-example/src/LinearScoreDisplay/model.ts -->
+The model is **identical** to the Canvas2D one, not merely similar:
+[Plotting features, Step 3](/docs/developer_guides/plotting_features#step-3-the-mst-model)
+builds it in full (`rpcDataMap`, `rpcProps`, `renderState`, `fetchNeeded`), and
+none of it changes when a shader appears. The one action worth reading again
+here is the render wiring:
+
+<!-- include: example-plugins/score-example/src/LinearScoreDisplay/model.ts#startRenderingBackend -->
 
 ```ts
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
-import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { getContainingView, getSession } from '@jbrowse/core/util'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { types } from '@jbrowse/mobx-state-tree'
-import {
-  MultiRegionDisplayMixin,
-  TrackHeightMixin,
-  fetchEachRegion,
-} from '@jbrowse/plugin-linear-genome-view'
-import { installPerRegionLifecycle } from '@jbrowse/render-core/installPerRegionLifecycle'
-import { observable } from 'mobx'
-
-import type { ScoreRegionData } from '../ScoreRPC/rpcTypes.ts'
-import type {
-  ScoreRenderState,
-  ScoreRenderingBackend,
-} from './components/scoreTypes.ts'
-import type { LinearScoreDisplayConfigModel } from './configSchema.ts'
-import type { Region } from '@jbrowse/core/util'
-import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
-  return types
-    .compose(
-      'LinearScoreDisplay',
-      BaseDisplay,
-      TrackHeightMixin(),
-      MultiRegionDisplayMixin(),
-      types.model({
-        type: types.literal('LinearScoreDisplay'),
-        configuration: ConfigurationReference(configSchema),
-      }),
-    )
-    .volatile(() => ({
-      // fetched data keyed by displayedRegionIndex; the render lifecycle
-      // uploads/draws one region at a time from this map
-      rpcDataMap: observable.map<number, ScoreRegionData>(),
-    }))
-    .views(self => ({
-      get view() {
-        return getContainingView(self) as LinearGenomeViewModel
-      },
-      // fetch inputs watched by SettingsInvalidate; any change refetches. Put
-      // settings that change what the worker computes here; never scroll/zoom
-      // (those change every frame) or the fetch results themselves.
-      rpcProps() {
-        return { scoreColumn: getConf(self, 'scoreColumn') }
-      },
-      // recomputed cheaply every frame without fetching; carries the canvas
-      // dimensions (required) plus whatever the draw path reads
-      get renderState(): ScoreRenderState {
-        return {
-          canvasWidth: this.view.trackWidthPx,
-          canvasHeight: self.height,
-          color: getConf(self, 'color'),
-        }
-      },
-    }))
-    .actions(self => ({
-      setRpcData(idx: number, data: ScoreRegionData) {
-        self.rpcDataMap.set(idx, data)
-      },
-      clearDisplaySpecificData() {
-        self.rpcDataMap.clear()
-      },
-    }))
-    .actions(self => ({
-      // called by the fetch autorun for the regions that need loading;
-      // fetchEachRegion handles cancellation, stop tokens and staleness
-      fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
-        const { adapterConfig } = self
-        if (!adapterConfig) {
-          return undefined
-        }
-        const sessionId = getRpcSessionId(self)
-        const { rpcManager } = getSession(self)
-        return fetchEachRegion(self, needed, {
-          // rpcManager.call injects sessionId itself, so it is not in the args
-          call: (region, ctx, displayedRegionIndex) =>
-            rpcManager.call(sessionId, 'GetScoreData', {
-              adapterConfig,
-              region,
-              ...self.rpcProps(),
-              stopToken: ctx.stopToken,
-              statusCallback:
-                self.makeRegionStatusCallback(displayedRegionIndex),
-            }),
-          onResult: (idx, result) => {
-            self.setRpcData(idx, result)
-          },
-        })
-      },
-      // called once by DisplayChrome when the backend is created. Streams each
-      // region into the backend and draws every frame from renderState.
-      startRenderingBackend(backend: ScoreRenderingBackend) {
-        installPerRegionLifecycle(
-          self,
-          self.rpcDataMap,
-          backend,
-          data => data,
-          (b, regions) => {
-            if (regions.size === 0) {
-              return false // keep the loading overlay up until data lands
-            }
-            b.renderBlocks(self.renderBlocks, regions, self.renderState)
-            return true
-          },
-        )
-      },
-    }))
-}
-
-export type LinearScoreDisplayStateModel = ReturnType<typeof modelFactory>
-export type LinearScoreDisplayModel = Instance<LinearScoreDisplayStateModel>
+// called once by DisplayChrome when the backend is created. Streams each
+// region into the backend and draws every frame from renderState. This is
+// the only part of the model that knows a backend exists, and it is
+// identical whether that backend is the GPU or the Canvas2D one.
+startRenderingBackend(backend: ScoreRenderingBackend) {
+  installPerRegionLifecycle(
+    self,
+    self.rpcDataMap,
+    backend,
+    data => data,
+    (b, regions) => {
+      if (regions.size === 0) {
+        return false // keep the loading overlay up until data lands
+      }
+      b.renderBlocks(self.renderBlocks, regions, self.renderState)
+      return true
+    },
+  )
+},
 ```
 
 `installPerRegionLifecycle` wraps the lower-level
@@ -539,58 +422,18 @@ called; a display must not call the hook itself
 ([a hard invariant](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_RENDERING.md#the-api)).
 Its render-prop child keeps it agnostic to how many canvases a display draws.
 
-<!-- include: example-plugins/score-example/src/LinearScoreDisplay/components/ScoreDisplayComponent.tsx -->
-
-```tsx
-import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
-import { observer } from 'mobx-react'
-
-import { ScoreRenderer } from './ScoreRendererFactory.ts'
-
-import type { LinearScoreDisplayModel } from '../model.ts'
-
-// DisplayChrome supplies the display's chrome (loading scrim, error bar,
-// region-too-large banner) and WebGL/WebGPU context-loss recovery, and is the
-// only place useRenderingBackend is called. Its render-prop hands back the
-// canvasRef to attach to the <canvas>.
-const ScoreDisplayComponent = observer(function ScoreDisplayComponent({
-  model,
-}: {
-  model: LinearScoreDisplayModel
-}) {
-  return (
-    <DisplayChrome
-      model={model}
-      factory={ScoreRenderer}
-      testid="score-display"
-      style={{ width: '100%', height: model.height }}
-    >
-      {({ canvasRef }) => (
-        <canvas
-          ref={canvasRef}
-          style={{ width: '100%', height: '100%', display: 'block' }}
-        />
-      )}
-    </DisplayChrome>
-  )
-})
-
-export default ScoreDisplayComponent
-```
-
-`DisplayChrome` creates the HAL via `useRenderingBackend`, calls
-`model.startRenderingBackend(backend)` once the backend is live, and hands back
-the `canvasRef` to attach to your `<canvas>`. This is the same component the
-Canvas2D display in
-[Plotting features](/docs/developer_guides/plotting_features#step-5-the-react-component)
-uses. The two paths share it unchanged.
+It is the same component the Canvas2D path uses, unchanged —
+[Plotting features, Step 5](/docs/developer_guides/plotting_features#step-5-the-react-component)
+shows it in full. `DisplayChrome` creates the HAL via `useRenderingBackend`,
+calls `model.startRenderingBackend(backend)` once the backend is live, and hands
+back the `canvasRef` to attach to your `<canvas>`; nothing in it knows whether
+the factory it was given resolved to a GPU or a Canvas2D backend.
 
 ## Step 8: Register the display
 
 In your plugin's `install()`, register the display type pointing at your model
-factory and React component (see
-[](/docs/developer_guides/creating_display) for the
-full registration pattern).
+factory and React component (see [](/docs/developer_guides/creating_display) for
+the full registration pattern).
 
 ## Key invariants
 

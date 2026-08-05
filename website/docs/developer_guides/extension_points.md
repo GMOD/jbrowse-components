@@ -174,10 +174,12 @@ type: synchronous
 
 Add functionality to pluggable elements, e.g. extra right-click context menus.
 Your callback receives every pluggable element registered to the system. See
-[](/docs/developer_guides/menus) for a worked example adding track
-context-menu items.
+[](/docs/developer_guides/menus) for a worked example adding track context-menu
+items.
 
-https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotReadVsRef/index.ts#L12-L45
+Reference:
+[`DotplotReadVsRef`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotReadVsRef/index.ts),
+which adds a read-vs-reference item to the alignments context menu.
 
 ### Core-guessAdapterForLocation
 
@@ -657,8 +659,9 @@ interface props {
 Add menu items to the "shopping cart" in the header of the hierarchical track
 menu when tracks are added to the selection.
 
-Example:
-https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/CreateMultiWiggleExtension/index.ts#L10-L67
+Example: Reference:
+[`CreateMultiWiggleExtension`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/CreateMultiWiggleExtension/index.ts),
+which turns a multi-track selection into one multi-wiggle track.
 
 ### TrackSelector-folderDialog
 
@@ -722,7 +725,8 @@ interface args {
 }
 ```
 
-https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/index.ts#L131-L189
+Reference:
+[the LGV plugin's registration](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/index.ts).
 
 ### LaunchView-CircularView
 
@@ -740,7 +744,8 @@ interface args {
 }
 ```
 
-https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/index.ts#L30-L66
+Reference:
+[the circular-view plugin's registration](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/index.ts).
 
 ### LaunchView-SvInspectorView
 
@@ -759,7 +764,8 @@ interface args {
 }
 ```
 
-https://github.com/GMOD/jbrowse-components/blob/main/plugins/sv-inspector/src/index.ts#L21-L61
+Reference:
+[the sv-inspector plugin's registration](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sv-inspector/src/index.ts).
 
 ### LaunchView-SpreadsheetView
 
@@ -778,7 +784,8 @@ interface args {
 }
 ```
 
-https://github.com/GMOD/jbrowse-components/blob/main/plugins/spreadsheet-view/src/index.ts#L26-L59
+Reference:
+[the spreadsheet-view plugin's registration](https://github.com/GMOD/jbrowse-components/blob/main/plugins/spreadsheet-view/src/index.ts).
 
 ### LaunchView-DotplotView
 
@@ -798,7 +805,8 @@ interface args {
 }
 ```
 
-https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/LaunchDotplotView.ts#L7-L46
+Reference:
+[`LaunchDotplotView`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/LaunchDotplotView.ts).
 
 ### LaunchView-LinearSyntenyView
 
@@ -818,7 +826,8 @@ interface args {
 }
 ```
 
-https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LaunchLinearSyntenyView.ts#L9-L68
+Reference:
+[`LaunchLinearSyntenyView`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LaunchLinearSyntenyView.ts).
 
 ### LinearGenomeView-TracksContainerComponent
 

@@ -19,7 +19,9 @@ composes mixins from `@jbrowse/plugin-linear-genome-view`, neither of which a
 [no-build plugin](/docs/developer_guides/no_build_plugin) can pull in. You build
 against those packages' exported APIs, a larger and faster-moving surface than
 [`@jbrowse/core`](/docs/developer_guides/imports_and_reexports), so pin the
-versions you develop against.
+versions you develop against. `@jbrowse/render-core` is not on npm yet — it
+first publishes in the next release; until then, build against a
+`jbrowse-components` checkout.
 
 <Figure src="/img/gwas/manhattan.png" caption="A real feature-plotting display built the way this guide describes: plugins/gwas/src/LinearManhattanDisplay fetches scored points in a worker as typed arrays and plots them per block on the main thread. Each point is a GWAS variant positioned by genome coordinate (X) and −log₁₀(p-value) (Y); the tall peak on hg19 chr2 is a strong association."/>
 
@@ -67,8 +69,7 @@ src/LinearScoreDisplay/
 ├── configSchema.ts                config slots (color, height, …)
 └── components/
     ├── ScoreDisplayComponent.tsx  React: <DisplayChrome> + <canvas>
-    ├── ScoreRendererFactory.ts    createRenderingBackend dispatch
-    ├── Canvas2DScoreRenderer.ts   extends Canvas2DPerRegionRenderingBackend
+    ├── Canvas2DScoreRenderer.ts   the backend, plus its one-line factory
     ├── drawScore.ts               pure draw function (also used by SVG export)
     └── scoreTypes.ts              ScoreRenderState + backend type
 src/ScoreRPC/
@@ -246,7 +247,9 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
         })
       },
       // called once by DisplayChrome when the backend is created. Streams each
-      // region into the backend and draws every frame from renderState.
+      // region into the backend and draws every frame from renderState. This is
+      // the only part of the model that knows a backend exists, and it is
+      // identical whether that backend is the GPU or the Canvas2D one.
       startRenderingBackend(backend: ScoreRenderingBackend) {
         installPerRegionLifecycle(
           self,
@@ -368,6 +371,23 @@ export class Canvas2DScoreRenderer extends Canvas2DPerRegionRenderingBackend<
   ) {
     drawScoreBlocks(this.ctx, regions, blocks, state)
   }
+}
+```
+
+Export the factory `DisplayChrome` will call from the same file. A Canvas2D-only
+display skips `createRenderingBackend`'s WebGPU→WebGL2→Canvas2D ladder entirely
+and returns its backend through `createCanvas2DBackend`, which is the whole
+difference from the GPU path's factory. `plugins/sequence` does exactly this:
+
+<!-- include: plugins/sequence/src/LinearReferenceSequenceDisplay/components/Canvas2DSequenceRenderer.ts#factory -->
+
+```ts
+// A Canvas2D-only display needs no separate factory file and no HAL ladder:
+// createCanvas2DBackend just wraps the backend in the Promise DisplayChrome
+// awaits. Swap in createRenderingBackend (and its createGpuBackend option) only
+// once a profile shows Canvas2D can't hold 60fps.
+export function SequenceRenderer(canvas: HTMLCanvasElement) {
+  return createCanvas2DBackend(canvas, c => new Canvas2DSequenceRenderer(c))
 }
 ```
 
@@ -493,8 +513,10 @@ implementation. Add a `renderSvg` action per
 Stay on Canvas2D until a profile shows it can't keep up. The GPU path (WebGPU
 with WebGL2/Canvas2D fallback) is worth its extra cost (a `.slang` shader, an
 instance packer, a GPU backend class) only at high feature counts. The model,
-fetch chain, `renderState`, and hit-testing carry over unchanged; you add a GPU
-renderer and swap `createCanvas2DBackend` for `createRenderingBackend`. See
+fetch chain, `renderState`, hit-testing, and the Canvas2D renderer you just
+wrote all carry over unchanged — SVG export keeps running through that renderer
+either way. You add a GPU renderer and move the factory from
+`createCanvas2DBackend` to `createRenderingBackend`. See
 [](/docs/developer_guides/creating_gpu_display).
 
 ## In-tree references
@@ -509,3 +531,11 @@ renderer and swap `createCanvas2DBackend` for `createRenderingBackend`. See
   one model, plus hit-testing and LD coloring
 - `plugins/canvas/src/LinearBasicDisplay/` - the fullest reference: the generic
   feature display with the dual GPU + Canvas2D path
+
+## See also
+
+- [](/docs/developer_guides/creating_display)
+- [](/docs/developer_guides/data_fetching)
+- [](/docs/developer_guides/rpc_workers)
+- [](/docs/developer_guides/svg_export)
+- [](/docs/developer_guides/creating_gpu_display)

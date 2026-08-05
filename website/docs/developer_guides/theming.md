@@ -24,30 +24,30 @@ Set `configuration.theme` to one of these names:
 
 These extend MUI's standard `primary`/`secondary`/`error`/etc:
 
-| Key               | Type           | Default                    | Used for                               |
-| ----------------- | -------------- | -------------------------- | -------------------------------------- |
-| `tertiary`        | PaletteColor   | forest teal                | Accordion headers, some toolbar chrome |
-| `quaternary`      | PaletteColor   | mandarin gold              | FAB secondary background               |
-| `highlight`       | PaletteColor   | mandarin gold              | Selection highlights                   |
-| `coverage`        | `string`       | grey                       | Coverage track fill                    |
-| `insertion`       | `string`       | purple                     | Insertion markers in alignments        |
-| `deletion`        | `string`       | grey                       | Deletion markers in alignments         |
-| `softclip`        | `string`       | blue                       | Soft-clipped bases                     |
-| `hardclip`        | `string`       | red                        | Hard-clipped bases                     |
-| `skip`            | `string`       | teal                       | Skipped regions (introns)              |
-| `modificationFwd` | `string`       | light grey                 | Base modifications, forward strand     |
-| `modificationRev` | `string`       | pale green                 | Base modifications, reverse strand     |
-| `mutedSnpBase`    | `string`       | grey                       | Low-frequency SNP bases                |
-| `startCodon`      | `string`       | green                      | Start codon in gene/CDS tracks         |
-| `stopCodon`       | `string`       | red                        | Stop codon in gene/CDS tracks          |
-| `bases.A`         | PaletteColor   | green                      | Adenine                                |
-| `bases.C`         | PaletteColor   | blue                       | Cytosine                               |
-| `bases.G`         | PaletteColor   | orange                     | Guanine                                |
-| `bases.T`         | PaletteColor   | red                        | Thymine                                |
-| `frames[1..6]`    | PaletteColor[] | grey shades                | Reading frame coloring (non-CDS)       |
-| `framesCDS[1..6]` | PaletteColor[] | red/green/blue alternating | Reading frame coloring (CDS)           |
+| Key               | Type           | Used for                               |
+| ----------------- | -------------- | -------------------------------------- |
+| `tertiary`        | PaletteColor   | Accordion headers, some toolbar chrome |
+| `quaternary`      | PaletteColor   | FAB secondary background               |
+| `highlight`       | PaletteColor   | Selection highlights                   |
+| `coverage`        | `string`       | Coverage track fill                    |
+| `insertion`       | `string`       | Insertion markers in alignments        |
+| `deletion`        | `string`       | Deletion markers in alignments         |
+| `softclip`        | `string`       | Soft-clipped bases                     |
+| `hardclip`        | `string`       | Hard-clipped bases                     |
+| `skip`            | `string`       | Skipped regions (introns)              |
+| `modificationFwd` | `string`       | Base modifications, forward strand     |
+| `modificationRev` | `string`       | Base modifications, reverse strand     |
+| `mutedSnpBase`    | `string`       | Low-frequency SNP bases                |
+| `startCodon`      | `string`       | Start codon in gene/CDS tracks         |
+| `stopCodon`       | `string`       | Stop codon in gene/CDS tracks          |
+| `bases.A`         | PaletteColor   | Adenine                                |
+| `bases.C`         | PaletteColor   | Cytosine                               |
+| `bases.G`         | PaletteColor   | Guanine                                |
+| `bases.T`         | PaletteColor   | Thymine                                |
+| `frames[1..6]`    | PaletteColor[] | Reading frame coloring (non-CDS)       |
+| `framesCDS[1..6]` | PaletteColor[] | Reading frame coloring (CDS)           |
 
-Hex values for the `string`-valued feature colors, generated from the
+Defaults for the `string`-valued feature colors, generated from the
 `#color`-tagged definitions in `theme.ts` (the `insertion`/`softclip`/`hardclip`
 indicators are tagged under a separate `alignments-indicators` group):
 

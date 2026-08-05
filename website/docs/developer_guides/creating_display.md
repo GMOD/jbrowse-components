@@ -98,10 +98,16 @@ same `VariantTrack`.
 
 ## Walkthroughs
 
-- [plugin templates](/docs/developer_guides/simple_plugin) - full scaffold and
-  build setup
-- [no-build plugin tutorial](/docs/developer_guides/no_build_plugin) - same idea
-  without a bundler
+Two end-to-end guides build the same display, differing only in the renderer.
+Start with the first:
+
+- [](/docs/developer_guides/plotting_features) - fetch in a worker, draw with
+  Canvas2D. Right for gene-scale tracks, and no shaders involved.
+- [](/docs/developer_guides/creating_gpu_display) - the same display with a
+  `.slang` shader behind it, for roughly ≳100K features per frame.
+
+Both are build-step plugins; [](/docs/developer_guides/simple_plugin) covers the
+scaffold and build setup they assume.
 
 In-tree references:
 

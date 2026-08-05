@@ -1,5 +1,6 @@
 import {
   type DocListEntry,
+  docsInCategory,
   docsInDir,
   docsInDirGrouped,
 } from './autogen-links.ts'
@@ -13,10 +14,18 @@ import type { Plugin } from 'unified'
 // directory's titles/descriptions, which then drift as pages are added.
 //
 // Flags (space-separated, any order):
-//   nodesc   list titles only, omitting descriptions
-//   grouped  bucket entries by sidebar_label category under `### <Category>`
-//            headings (for the config/models reference index pages)
-const markerRe = /^<!--\s*doclist:([a-z0-9_-]+)((?:\s+(?:nodesc|grouped))*)\s*-->$/
+//   nodesc            list titles only, omitting descriptions
+//   grouped           bucket entries by category under `### <Category>`
+//                     headings (for the config/models reference index pages)
+//   category="Name"   list only the pages in that one category, in the
+//                     sidebar's order. A guide page uses this to point at the
+//                     rest of its own section without hand-listing it.
+//
+// A category naming nothing is a typo, not an empty section, so it throws the
+// same way an unknown dir does — otherwise the list just silently empties the
+// next time a category is renamed.
+const markerRe =
+  /^<!--\s*doclist:([a-z0-9_-]+)((?:\s+(?:nodesc|grouped|category="[^"]+"))*)\s*-->$/
 
 function listItem(entry: DocListEntry, showDescription: boolean): ListItem {
   const children: PhrasingContent[] = [
@@ -69,12 +78,24 @@ const remarkDocList: Plugin<[], Root> = () => tree => {
       if (docsInDir(dir).length === 0) {
         throw new Error(`<!-- doclist:${dir} --> matched no docs`)
       }
-      const nodes: Root['children'] = flags.includes('grouped')
-        ? docsInDirGrouped(dir).flatMap(g => [
-            heading(g.category),
-            list(g.entries, showDescription),
-          ])
-        : [list(docsInDir(dir), showDescription)]
+      const category = /category="([^"]+)"/.exec(flags)?.[1]
+      let nodes: Root['children']
+      if (category) {
+        const entries = docsInCategory(dir, category)
+        if (entries.length === 0) {
+          throw new Error(
+            `<!-- doclist:${dir} category="${category}" --> matched no docs`,
+          )
+        }
+        nodes = [list(entries, showDescription)]
+      } else if (flags.includes('grouped')) {
+        nodes = docsInDirGrouped(dir).flatMap(g => [
+          heading(g.category),
+          list(g.entries, showDescription),
+        ])
+      } else {
+        nodes = [list(docsInDir(dir), showDescription)]
+      }
       edits.push({ index: i, nodes })
     }
   })

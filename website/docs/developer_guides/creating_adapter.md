@@ -41,6 +41,7 @@ drawing, state, and menus.
 
 ```ts
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -55,9 +56,12 @@ export default class MyAdapter extends BaseFeatureDataAdapter<MyAdapterConfig> {
     return []
   }
 
-  // features overlapping region, positions 0-based half-open
+  // features overlapping region, positions 0-based half-open. The next section
+  // fills this in.
   getFeatures(region: Region, opts?: BaseOptions): Observable<Feature> {
-    // ...
+    return ObservableCreate<Feature>(async observer => {
+      observer.complete()
+    }, opts?.stopToken)
   }
 }
 ```

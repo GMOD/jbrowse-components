@@ -92,8 +92,11 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
           },
         })
       },
+      // #region startRenderingBackend
       // called once by DisplayChrome when the backend is created. Streams each
-      // region into the backend and draws every frame from renderState.
+      // region into the backend and draws every frame from renderState. This is
+      // the only part of the model that knows a backend exists, and it is
+      // identical whether that backend is the GPU or the Canvas2D one.
       startRenderingBackend(backend: ScoreRenderingBackend) {
         installPerRegionLifecycle(
           self,
@@ -109,6 +112,7 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
           },
         )
       },
+      // #endregion
     }))
 }
 

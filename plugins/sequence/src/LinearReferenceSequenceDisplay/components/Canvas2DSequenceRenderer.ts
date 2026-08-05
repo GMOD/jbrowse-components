@@ -26,6 +26,12 @@ export class Canvas2DSequenceRenderer extends Canvas2DPerRegionRenderingBackend<
   }
 }
 
+// #region factory
+// A Canvas2D-only display needs no separate factory file and no HAL ladder:
+// createCanvas2DBackend just wraps the backend in the Promise DisplayChrome
+// awaits. Swap in createRenderingBackend (and its createGpuBackend option) only
+// once a profile shows Canvas2D can't hold 60fps.
 export function SequenceRenderer(canvas: HTMLCanvasElement) {
   return createCanvas2DBackend(canvas, c => new Canvas2DSequenceRenderer(c))
 }
+// #endregion
