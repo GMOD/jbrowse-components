@@ -1187,17 +1187,19 @@ export interface DotplotImportFormSyntenyOption {
 
 Example: adding a custom synteny option that fetches data from a server
 
-```typescript
-import type { DotplotImportFormSyntenyOption } from '@jbrowse/plugin-dotplot-view'
+<!-- include: plugins/dotplot-view/src/DotplotView/components/ImportForm/syntenyOptions.test.tsx#register -->
 
-pluginManager.contributeToExtensionPoint(
-  'DotplotView-ImportFormSyntenyOptions',
-  ({ model, assembly1, assembly2 }) => ({
-    value: 'my-server-synteny',
-    label: 'Load from my server',
-    ReactComponent: MySyntenyServerComponent,
-  }),
-)
+```typescript
+function addSyntenyOption(pluginManager: PluginManager) {
+  pluginManager.contributeToExtensionPoint(
+    'DotplotView-ImportFormSyntenyOptions',
+    ({ assembly1, assembly2 }) => ({
+      value: `my-server-${assembly1}-${assembly2}`,
+      label: 'Load from my server',
+      ReactComponent: MySyntenyServerComponent,
+    }),
+  )
+}
 ```
 
 ### DotplotView-SyntenyFileFormats
@@ -1371,23 +1373,31 @@ loaded yet and cannot extend this screen.
 `setPluginManager` hands it to the app, so a menu item can open a session
 itself:
 
+<!-- include: products/jbrowse-desktop/src/components/StartScreen/startScreenExtensionPoints.test.ts#register -->
+
 ```typescript
-pluginManager.contributeToExtensionPoint(
-  'Desktop-StartScreenMenuItems',
-  ({ setPluginManager, loadPluginManager }) => ({
-    label: 'Open my thing...',
-    onClick: () => {
-      loadPluginManager(myConfigPath)
-        .then(setPluginManager)
-        .catch(console.error)
-    },
-  }),
-)
+function addStartScreenMenuItem(
+  pluginManager: PluginManager,
+  configPath: string,
+) {
+  pluginManager.contributeToExtensionPoint(
+    'Desktop-StartScreenMenuItems',
+    ({ setPluginManager, loadPluginManager }) => ({
+      label: 'Open my thing...',
+      onClick: () => {
+        loadPluginManager(configPath)
+          .then(setPluginManager)
+          .catch(console.error)
+      },
+    }),
+  )
+}
 ```
 
-A callback that throws here costs the plugin its menu items only — the start
-screen still renders, so the dialog that can uninstall a misbehaving global
-plugin stays reachable.
+A callback that throws here costs the plugin its menu items only: the fold
+reports it and carries on, so the other plugins' items still appear and the
+dialog that can uninstall the misbehaving one stays reachable. That is asserted
+alongside the registration above.
 
 ### Desktop-StartScreenLaunchPanel
 
