@@ -109,10 +109,23 @@ clipping**.
 A breakpoint split view, the right half of the figure above, stacks the loci and
 draws the reads that leave one panel and arrive in another.
 
-**Add → Breakpoint split view** opens an import form with one row per panel. The
-`+` button adds rows, and each row takes an assembly and a location, so the
-three loci from the `--loci` line above give that view without writing any
-session JSON. That is how the three-panel figure above was made.
+The reads already know which loci those are and in what order, so the view is
+built from them rather than typed in. On the tumor track, **Launch view →
+Reconstruct derivative allele...** groups the reads in the window by their split
+alignments and lists the routes through the reference they describe; picking one
+and choosing **Open as split view** opens a panel per segment of that route, in
+the order the reads cross it, carrying the tracks the view was launched from:
+
+<Figure caption="Left to right in the reconstruction dialog: the routes the reads in the chr3 window describe, ranked by how many reads describe each. Opening the top one as a split view gives a panel per segment of it, in the order the reads cross them, with the reads that leave one panel and arrive in the next drawn between them." src="/img/cancer_sv/multihop_split_view_steps.png" />
+
+One panel per segment rather than per chromosome, which is the difference
+between the two routes: this chain leaves chr3 and returns to it, so it gets two
+chr3 panels, and a form filled in by hand gets one. Each panel opens on the
+junction its segment carries rather than on the whole segment, whose length is a
+property of the reads that happened to describe it.
+
+**Add → Breakpoint split view** is still there for a view whose loci you already
+know, and takes one row per panel. That is how the three-panel figure above was made.
 
 One record needs no typing at all. Right-click it in the variant track and
 choose **Open breakpoint split view**: the dialog asks for the shape, two

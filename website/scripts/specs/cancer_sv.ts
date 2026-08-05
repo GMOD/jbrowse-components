@@ -58,12 +58,6 @@ const MULTIHOP_HEIGHT = 885
 const MULTIHOP_WIDTH = 940
 const MULTIHOP_NARROW_WIDTH = 660
 
-// The nth location field of the breakpoint split view's import form. Every row
-// draws the same placeholder, so the row has to be picked by index; XPath is
-// what expresses that, and puppeteer accepts it wherever a CSS selector goes.
-const LOC_FIELD = (n: number) =>
-  `::-p-xpath((//input[starts-with(@placeholder,"e.g. chr1")])[${n}])`
-
 // K562's Iso-Seq is ~600x over BCR and the split-read subset of it is still
 // ~250 rows, so the row height is what decides whether the pileup ends inside
 // the figure or behind a scrollbar. Two pixels fits all of it and still leaves
@@ -337,68 +331,72 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     direction: 'horizontal',
   },
 
-  // How the split view above is made, since the figure is a session spec and
-  // says nothing about the route ("it is unclear how this multi-hop figure was
-  // generated ... we may want to record this as a series of screenshots ...
-  // capturing the menus and dialogs", review). Two frames, both driving the
-  // real UI: the Add menu, then the import form filled in.
+  // How the multi-hop split view is made, since the figure above is a session
+  // spec and says nothing about the route ("it is unclear how this multi-hop
+  // figure was generated ... capturing the menus and dialogs", review).
   //
-  // It stops at the filled form rather than clicking Open, because the frame
-  // after Open is the figure two sections up. What is worth showing is that
-  // three loci and a track go in as text, which is the part the tutorial's
-  // `--loci` line feeds directly.
+  // NOT THE IMPORT FORM. Add -> Breakpoint split view opens a form with one row
+  // per panel, and teaching that means teaching a person to type three loci in
+  // the right order, which they can only get by reading them off a script's
+  // output ("if you are suggesting the user manually constructs the multi-hop
+  // one by one, we should try to avoid this", review). The reads already know
+  // the loci AND their order, so the route worth showing is the one that reads
+  // them: the same reconstruction dialog the next figure uses, with its new
+  // `Open as split view` action.
   //
-  // The loc fields are addressed by XPath INDEX, not by placeholder alone:
-  // every row's field carries the same placeholder, so a plain selector
-  // resolves to row 1 three times over and the form comes out with one locus in
-  // it. `(//input[...])[n]` is the only form that distinguishes them without a
-  // testid the app does not have; puppeteer takes `::-p-xpath(...)` in the same
-  // slot as CSS.
+  // Two frames: the dialog over the pileup it scanned, and the split view it
+  // built. Stage 1 gates on the picker's own testid rather than a delay, so the
+  // capture waits for the SA-chain pass.
   {
     mode: 'url',
     name: 'cancer_sv/multihop_split_view_steps',
-    viewportWidth: 1100,
-    viewportHeight: 620,
-    // The window the previous figure ends on, so the two read as one sitting.
-    // The pileup is behind the menu and the form either way; it is here to say
-    // the route starts from the view you are already in rather than from an
-    // empty session.
+    viewportWidth: 1300,
+    // 560, not less: the track menu and its Launch view submenu are as tall as
+    // they are, and in a shorter viewport the item this spec clicks is below the
+    // fold and puppeteer reports it as not clickable rather than as missing
+    viewportHeight: 560,
+    // the chr3 breakpoint window: every read carrying the chain clips here, so
+    // this is where their SA tags are in view to be grouped
     url: lgvSession(CONFIG, {
       assembly: 'hg38',
-      loc: HOPS.rarb,
+      loc: 'chr3:25,357,600-25,361,000',
       tracks: [
         { ...GENE_TRACK, height: 60 },
-        { trackId: TUMOUR, height: 300, ...SUPER_COMPACT },
+        // 150, not the 240 the sibling figures use: this height is carried
+        // onto every panel of the view the dialog builds, so a tall track here
+        // is four tall tracks there and the second frame becomes a scroll
+        {
+          trackId: TUMOUR,
+          showSoftClipping: true,
+          height: 150,
+          ...SUPER_COMPACT,
+        },
       ],
     }),
     stages: [
       {
-        // the app menu bar, not a track menu: a split view is a session-level
-        // thing and there is no track it belongs to
-        actions: [{ type: 'click', text: 'Add' }],
-      },
-      {
         actions: [
-          { type: 'click', text: 'Breakpoint split view' },
-          // The form opens with two rows and this chain has three loci, so the
-          // figure has to show where the third comes from.
-          { type: 'click', text: 'Add row' },
+          trackMenuIcon(TUMOUR),
+          { type: 'click', text: 'Launch view' },
+          { type: 'click', text: 'Reconstruct derivative allele...' },
           {
-            type: 'type',
-            selector: LOC_FIELD(1),
-            value: HOPS.rarb,
-          },
-          {
-            type: 'type',
-            selector: LOC_FIELD(2),
-            value: HOPS.bicc1,
-          },
-          {
-            type: 'type',
-            selector: LOC_FIELD(3),
-            value: HOPS.trhde,
+            type: 'waitForSelector',
+            selector: '[data-testid="derivative-path-candidates"]',
+            timeout: 60000,
           },
         ],
+      },
+      {
+        // `button::-p-text(...)`, not a bare text match: the dialog's own prose
+        // now names this action, so a text selector resolves to the paragraph
+        // -- which is an element, and clicking it succeeds and does nothing
+        actions: [
+          { type: 'click', selector: 'button::-p-text(Open as split view)' },
+        ],
+        // the split view it created, under the pileup it was launched from:
+        // one panel per segment of the path, four here (the chain returns to
+        // chr3), measured off the run's own below-the-fold report
+        viewportHeight: 1729,
       },
     ],
   },

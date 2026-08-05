@@ -15,8 +15,14 @@ import {
   toLocale,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { isAlive } from '@jbrowse/mobx-state-tree'
-import { FormControlLabel, Radio, RadioGroup, Typography } from '@mui/material'
+import { getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
+import {
+  Button,
+  FormControlLabel,
+  Radio,
+  RadioGroup,
+  Typography,
+} from '@mui/material'
 import { when } from 'mobx'
 import { observer } from 'mobx-react'
 
@@ -24,6 +30,7 @@ import {
   buildDerivativeVsRefSpec,
   derivativePathLabel,
 } from './buildDerivativeVsRefSpec.ts'
+import { buildSplitViewFromPath } from './buildSplitViewFromPath.ts'
 
 import type { AbstractTrackModel, AbstractViewModel } from '@jbrowse/core/util'
 import type { DerivativeCandidate } from '@jbrowse/plugin-alignments'
@@ -132,6 +139,56 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
   const [error, setError] = useState<unknown>()
   const canReplace = isSessionWithViewReplacement(getSession(track))
 
+  // The same candidate, drawn the other way the tutorial contrasts: stacked
+  // reference panels rather than the derivative's own axis. It exists because
+  // the alternative is the import form, where a person types one row per
+  // chromosome by hand -- which loses the ORDER the reads cross the loci in, and
+  // silently merges a path that visits one chromosome twice into a single
+  // panel. The candidate already knows both, so nothing here is typed.
+  async function onOpenSplitView() {
+    try {
+      const candidate = candidates[selected]
+      if (!candidate) {
+        return
+      }
+      const session = getSession(track)
+      const view = getContainingView(track) as {
+        tracks?: unknown[]
+      }
+      const { viewSnapshot, locStrings } = buildSplitViewFromPath({
+        candidate,
+        // every track, alignments included: a read leaving one panel and
+        // arriving in the next is the whole content of this view type, which is
+        // the opposite of the synteny launch's reference panel
+        tracks: getSnapshot(view.tracks ?? []) as Parameters<
+          typeof buildSplitViewFromPath
+        >[0]['tracks'],
+      })
+      const created = session.addView(
+        'BreakpointSplitView',
+        viewSnapshot,
+      ) as unknown as {
+        views: { navToLocString: (l: string, asm: string) => Promise<void> }[]
+      }
+      // The assembly has to be named. A panel created by this action has no
+      // displayedRegions yet, so it has no assembly to infer one from, and a
+      // bare navToLocString reports `assemblyName:undefined`. It is also what
+      // makes the path's refNames resolve: the reads carry `3`/`10`/`12` where
+      // the assembly is `chr3`/`chr10`/`chr12`, and refName aliasing runs off
+      // the named assembly.
+      const [trackAssembly] = getConf(track, 'assemblyNames') as string[]
+      await Promise.all(
+        locStrings.map((loc, idx) =>
+          created.views[idx]?.navToLocString(loc, trackAssembly!),
+        ),
+      )
+      handleClose()
+    } catch (e) {
+      console.error(e)
+      setError(e)
+    }
+  }
+
   async function onSubmit(replace = false) {
     try {
       const candidate = candidates[selected]
@@ -213,14 +270,28 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
       submitText={canReplace ? 'Draw in new view' : 'Draw it'}
       submitDisabled={candidates.length === 0}
       actions={
-        canReplace ? (
-          <ReplaceCurrentViewButton
+        <>
+          <Button
+            // SubmitForm renders `actions` inside its <form>, where a button
+            // with no type is a submit button: without this the click runs this
+            // handler AND the form's, so the dialog draws the synteny view too
+            type="button"
             disabled={candidates.length === 0}
             onClick={() => {
-              void onSubmit(true)
+              void onOpenSplitView()
             }}
-          />
-        ) : null
+          >
+            Open as split view
+          </Button>
+          {canReplace ? (
+            <ReplaceCurrentViewButton
+              disabled={candidates.length === 0}
+              onClick={() => {
+                void onSubmit(true)
+              }}
+            />
+          ) : null}
+        </>
       }
       onCancel={() => {
         handleClose()
@@ -257,7 +328,9 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
               reads independently describe, laid out in the order and
               orientation the reads cross it. Drawing one opens it as a synteny
               view, one ribbon per segment, so the reconstruction can be read
-              against the reference it came from.
+              against the reference it came from. Open as split view stacks the
+              same loci as reference panels instead, one per segment and in the
+              same order, with the reads that cross between them drawn.
             </Typography>
             <Typography className={classes.caveat}>
               Read counts rank these paths; they do not vouch for them. The size
