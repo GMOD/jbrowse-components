@@ -32,14 +32,25 @@ import {
 // their own file, and the figure's value is shown only as the worked example.
 //
 // Some gaps are permanent for a reason worth knowing before you try to close
-// one. `gfaLocation`, `uniprotId` and `transcriptId` belong to third-party
-// plugins whose source is not in this repo (GraphGenomeView, protein3d), so
-// their labels can be neither imported nor watched by the label check that
-// covers plugins/, products/ and packages/ — a path written from them would
-// drift with nothing to catch it. `transcriptId` has no text input at all: the
-// dialog offers an isoform dropdown built from the right-clicked feature, so no
-// click sequence enters an accession. Leave all three reported rather than
-// hand-copying a label from a sibling checkout.
+// one.
+//
+// Two view types are third-party plugins whose source is not in this repo, so
+// every field of theirs stays reported: GraphGenomeView (`gfaLocation`,
+// `colorDomain`, `bubbleSpread`) and protein3d's ProteinView (`uniprotId`,
+// `transcriptId`, `connectedView`, `sideBySide`, `zoomToBaseLevel`, and its
+// `height`). Their labels can be neither imported nor watched by the label check
+// that covers plugins/, products/ and packages/, so a path written from them
+// would drift with nothing to catch it. `transcriptId` additionally has no text
+// input at all — the dialog offers an isoform dropdown built from the
+// right-clicked feature, so no click sequence enters an accession. Leave them
+// reported rather than hand-copying a label from a sibling checkout.
+//
+// The rest of the list is spec entries that named no display type, for fields
+// several displays share (`displayMode`, `color`, `showLegend`,
+// `jexlFiltersSetting`). Where only one display declares a field the name
+// settles it — that is what isAlignmentsOnlyField and isHicOnlyField do — but
+// these are genuinely ambiguous, and `pickDisplayForView` resolves them through
+// a plugin registry no static script can reach.
 
 export interface FieldStep {
   // click path through the UI, e.g. "Track menu → Color by... → Paired end"
@@ -482,6 +493,10 @@ function isAlignmentsOnlyField(displayType: string | undefined) {
   return displayType === undefined || displayType === 'LinearAlignmentsDisplay'
 }
 
+function isHicOnlyField(displayType: string | undefined) {
+  return displayType === undefined || displayType === 'LinearHicDisplay'
+}
+
 const READ_CONNECTIONS_MENU = `${TRACK_MENU} → Read connections`
 const BAND_OPTIONS = `${READ_CONNECTIONS_MENU} → Arc / read cloud band options`
 
@@ -607,6 +622,39 @@ export const trackFields: Record<string, FieldRecipe> = {
   color: colorStep,
   jexlFilters: filterStep,
   jexlFiltersSetting: filterStep,
+  // These three are declared by LinearHicDisplay alone, so as with the
+  // alignments-only fields the name settles the display and an unresolved entry
+  // can still be answered. All three are checkboxes in its Show submenu.
+  useLogScale: (value, { displayType }) =>
+    typeof value === 'boolean' && isHicOnlyField(displayType)
+      ? {
+          path: `${TRACK_MENU} → Show... → Log scale (${value ? 'checked' : 'unchecked'})`,
+        }
+      : undefined,
+  showResolutionControls: (value, { displayType }) =>
+    typeof value === 'boolean' && isHicOnlyField(displayType)
+      ? {
+          path: `${TRACK_MENU} → Show... → Show resolution controls (${value ? 'checked' : 'unchecked'})`,
+          note: 'Puts a binsize dropdown in the track overlay, which is how a chosen resolution gets baked into a screenshot.',
+        }
+      : undefined,
+  useColorPercentile: (value, { displayType }) =>
+    typeof value === 'boolean' && isHicOnlyField(displayType)
+      ? {
+          path: `${TRACK_MENU} → Show... → Show faint contacts (95th percentile) (${value ? 'checked' : 'unchecked'})`,
+          note: 'Saturates the color scale at the 95th percentile instead of the maximum, so faint off-diagonal contacts read more strongly.',
+        }
+      : undefined,
+  // ChordVariantDisplay's only, and it has no control — Chord.tsx reads the slot
+  // straight through to the stroke.
+  strokeColor: (value, { displayType }) =>
+    typeof value === 'string' &&
+    (displayType === undefined || displayType === 'ChordVariantDisplay')
+      ? {
+          path: `${TRACK_MENU} → Settings → strokeColor`,
+          note: 'The chord outline color. No menu writes it, so it is set on the config like the other per-feature color expressions.',
+        }
+      : undefined,
   renderingMode: (value, { displayType }) =>
     typeof value === 'string' &&
     displayType &&
@@ -1203,6 +1251,17 @@ export const viewFields: Record<string, FieldRecipe> = {
         }
       : undefined
   },
+  // A view's own height, which both of these give a drag bar for rather than a
+  // menu entry (CircularView's ResizeHandle, the SvInspectorView's between its
+  // panes). ProteinView also takes one but is a third-party plugin, so it is
+  // left reported with the rest of its fields.
+  height: (value, { viewType }) =>
+    typeof value === 'number' &&
+    (viewType === 'CircularView' || viewType === 'SvInspectorView')
+      ? {
+          path: `Drag the bar at the bottom edge of the view to resize it (${value}px here).`,
+        }
+      : undefined,
   showHighlightChips: (value, { viewType }) =>
     typeof value === 'boolean' && viewType === 'LinearGenomeView'
       ? {

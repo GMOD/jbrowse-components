@@ -15,11 +15,7 @@ gfaLocation
 height
 jexlFiltersSetting
 showLegend
-showResolutionControls
 sideBySide
-strokeColor
 transcriptId
 uniprotId
-useColorPercentile
-useLogScale
 zoomToBaseLevel
