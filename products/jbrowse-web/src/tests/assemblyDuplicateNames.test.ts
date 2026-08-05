@@ -100,11 +100,10 @@ test('a new name still goes in', () => {
 test('Core-handleUnrecognizedAssembly hears each name once per session', () => {
   const session = setup()
   const reported: string[] = []
-  getEnv(session).pluginManager.addToExtensionPoint(
+  getEnv(session).pluginManager.observeExtensionPoint(
     'Core-handleUnrecognizedAssembly',
-    (defaultResult: unknown, props: Record<string, unknown>) => {
-      reported.push(props.assemblyName as string)
-      return defaultResult
+    ({ assemblyName }) => {
+      reported.push(assemblyName)
     },
   )
 
@@ -119,11 +118,10 @@ test('Core-handleUnrecognizedAssembly hears each name once per session', () => {
 test('a name supplied after being reported is not reported again', () => {
   const session = setup()
   const reported: string[] = []
-  getEnv(session).pluginManager.addToExtensionPoint(
+  getEnv(session).pluginManager.observeExtensionPoint(
     'Core-handleUnrecognizedAssembly',
-    (defaultResult: unknown, props: Record<string, unknown>) => {
-      reported.push(props.assemblyName as string)
-      return defaultResult
+    ({ assemblyName }) => {
+      reported.push(assemblyName)
     },
   )
 

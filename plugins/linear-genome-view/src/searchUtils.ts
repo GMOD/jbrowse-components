@@ -22,7 +22,7 @@ declare module '@jbrowse/core/PluginManager' {
     'LinearGenomeView-searchResultSelected': {
       // nothing to accumulate: the point exists to react to the selection
       args: undefined
-      result: undefined
+      result: undefined | Promise<void>
       props: {
         session: AbstractSessionModel
         /** the search result that was selected */

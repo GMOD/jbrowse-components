@@ -108,9 +108,9 @@ test('nav to synteny from right click, with launch connection plugin', async () 
     const user = userEvent.setup()
     const { session, view, findByTestId, findByText } = await createView()
 
-    getEnv(session).pluginManager.addToExtensionPoint(
+    getEnv(session).pluginManager.observeExtensionPoint(
       'Core-handleUnrecognizedAssembly',
-      (_defaultResult, { assemblyName, session }) => {
+      ({ assemblyName, session }) => {
         const jb2asm = `jb2hub-${assemblyName}`
         const s = session as AbstractSessionModel & SessionWithConnections
         if (

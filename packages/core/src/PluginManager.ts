@@ -214,6 +214,33 @@ export type ViewTypeName = keyof ViewTypeRegistry
 export type DisplayTypeName = keyof DisplayTypeRegistry
 
 export interface ExtensionPointRegistry {
+  // the session model type, extended and handed back. Callbacks compose, each
+  // building on the model the one before it returned
+  'Core-extendSession': {
+    args: IAnyModelType
+    result: IAnyModelType
+  }
+  // A notification: a handler works out of band (adding a connection, say) and
+  // the assembly turning up is what the manager reacts to. Nothing reads a
+  // returned *value* — but an async handler is awaited, which is what tells
+  // waitForAssembly it has finished trying, the difference between waiting on
+  // an event and waiting on a clock.
+  'Core-handleUnrecognizedAssembly': {
+    args: undefined
+    // the completion signal, not data: an async observer's promise is what a
+    // producer awaits to learn that handlers have finished trying
+    result: undefined | Promise<void>
+    props: {
+      assemblyName: string
+      /**
+       * the session the lookup came from. `unknown` because the assembly
+       * manager holds it as the narrow shape it needs rather than the whole
+       * session model, and nothing in tree reads it — narrow it yourself if you
+       * do
+       */
+      session?: unknown
+    }
+  }
   'Core-extendPluggableElement': {
     args: PluggableElementType
     result: PluggableElementType
@@ -263,6 +290,15 @@ export type ExtensionPointProps<N extends ExtensionPointName> =
  * {@link PluginManager.contributeToExtensionPoint}, never
  * {@link PluginManager.addToExtensionPoint} — see the entry type below for why.
  */
+/**
+ * Points that carry their whole payload in `props` and whose return value
+ * nothing reads — a notification rather than a fold. Registered with
+ * {@link PluginManager.observeExtensionPoint}.
+ */
+export type NotificationPointName = {
+  [N in ExtensionPointName]: ExtensionPointArgs<N> extends undefined ? N : never
+}[ExtensionPointName]
+
 export type AccumulatingPointName = {
   [N in ExtensionPointName]: ExtensionPointArgs<N> extends readonly unknown[]
     ? N
@@ -882,6 +918,33 @@ export default class PluginManager {
               ...entries,
               ...(Array.isArray(contributed) ? contributed : [contributed]),
             ]
+      },
+    )
+  }
+
+  /**
+   * React to a notification point — one that carries its payload in `props` and
+   * whose return value nothing reads.
+   *
+   * Every point is a fold, which meant a callback on one of these had to
+   * `return arg`: returning the nothing the point carries, so the chain stayed
+   * intact for whoever registered after it. Forgetting cost the later plugins
+   * their callbacks, for a value that was never data in the first place. That
+   * bookkeeping is this method's job now, and the callback returns nothing.
+   */
+  observeExtensionPoint<N extends NotificationPointName & ExtensionPointName>(
+    extensionPointName: N,
+    callback: (props: ExtensionPointProps<N>) => void | Promise<void>,
+  ): void {
+    this.addToExtensionPoint<undefined>(
+      extensionPointName,
+      (extendee, props) => {
+        const ret = callback(props as ExtensionPointProps<N>)
+        // An async observer is awaited — by evaluateAsyncExtensionPoint, or by
+        // a producer that checks the folded value for a thenable to learn when
+        // handlers have finished. A sync one passes through whatever an earlier
+        // observer left, so its promise is not dropped on the way past.
+        return ret instanceof Promise ? ret.then(() => undefined) : extendee
       },
     )
   }

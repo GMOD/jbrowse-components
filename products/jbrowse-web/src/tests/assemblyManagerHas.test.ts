@@ -20,14 +20,10 @@ function setup() {
     },
   })
   const reported: string[] = []
-  getEnv(session).pluginManager.addToExtensionPoint(
+  getEnv(session).pluginManager.observeExtensionPoint(
     'Core-handleUnrecognizedAssembly',
-    (defaultResult: unknown, props: Record<string, unknown>) => {
-      const { assemblyName } = props
-      if (typeof assemblyName === 'string') {
-        reported.push(assemblyName)
-      }
-      return defaultResult
+    ({ assemblyName }) => {
+      reported.push(assemblyName)
     },
   )
   return { session, reported }

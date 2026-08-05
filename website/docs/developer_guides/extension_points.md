@@ -8,7 +8,8 @@ guide_category: Core concepts
 `evaluateExtensionPoint`; plugins register callbacks with `addToExtensionPoint`,
 each receiving the previous callback's return value. Points that accumulate a
 list take `contributeToExtensionPoint` instead, where a callback returns only
-its own entries.
+its own entries, and points that only notify take `observeExtensionPoint`, where
+it returns nothing.
 
 ## Using extension points
 
@@ -97,6 +98,12 @@ pluginManager.addToExtensionPoint(extensionPointName, args => {
 pluginManager.contributeToExtensionPoint(extensionPointName, props => {
   return myEntry // or [myEntry, ...], or undefined to contribute nothing
 })
+
+// points whose args are `undefined` carry everything in props and read nothing
+// back — see "Notification points" below
+pluginManager.observeExtensionPoint(extensionPointName, props => {
+  react(props) // returns nothing; an async callback is awaited
+})
 ```
 
 For `addToExtensionPoint`, `args` are accumulated: each callback's return value
@@ -114,8 +121,7 @@ accumulates, so every plugin's contribution survives. A `single` point threads
 one value along, so each callback overwrites what the one before it returned and
 only the last plugin to register is visible. The names don't carry this:
 `DotplotView-OverlaySVGComponent` accumulates and
-`DotplotView-OverlayHTMLComponent` does not. A blank shape means the point isn't
-in `ExtensionPointRegistry` yet.
+`DotplotView-OverlayHTMLComponent` does not.
 
 ### Accumulating points
 
@@ -169,6 +175,33 @@ plugin manager, so no plugin can write the `[MyEntry]` that drops every other
 plugin's entries. `addToExtensionPoint` covers the points that thread a single
 value, and type-errors on a `list` point.
 
+### Notification points
+
+A point declaring `args: undefined` carries its whole payload in `props` and
+reads nothing back. Register on it with **`observeExtensionPoint`**, whose
+callback returns nothing:
+
+<!-- include: plugins/canvas/src/index.ts#searchResultSelected -->
+
+```typescript
+pluginManager.observeExtensionPoint(
+  'LinearGenomeView-searchResultSelected',
+  ({ result, model, assemblyName }) => {
+    highlightSearchResultFeature({ result, model, assemblyName })
+  },
+)
+```
+
+Every point is a fold, so a callback on one of these used to have to
+`return arg` — returning the nothing the point carries, so the chain stayed
+intact for whoever registered after it. Forgetting cost the later plugins their
+callbacks, for a value that was never data.
+
+An `async` callback is still awaited. That is how
+`Core-handleUnrecognizedAssembly` works: a handler supplies the assembly out of
+band, and its promise is what lets `waitForAssembly` stop waiting on an event
+rather than on a clock.
+
 For `list` points that accumulate rendered elements, register with
 `addExtensionElement` rather than by hand, so the array spread and the React
 `key` aren't yours to get right:
@@ -201,14 +234,14 @@ export default function SequenceFeatureHoverHighlightExtensionF(
 | `Core-addTrackComponent` | sync | single | Inject a custom React component into the add-track widget |
 | `Core-customizeAbout` | sync | single | Transform the config shown in a track's About dialog |
 | `Core-extendPluggableElement` | sync | single | Mutate any pluggable element after it is created |
-| `Core-extendSession` | sync |  | Extend the session model with extra state or actions |
+| `Core-extendSession` | sync | single | Extend the session model with extra state or actions |
 | `Core-extendWorker` | sync | single | Register extra RPC methods on the web worker |
 | `Core-extraAboutPanel` | sync | list | Add extra panels to a track's About dialog |
 | `Core-extraFeaturePanel` | sync | list | Add extra panels to the feature details widget |
 | `Core-extraTrackMenuItems` | sync | list | Add items to a single track's menu |
 | `Core-guessAdapterForLocation` | sync | single | Guess an adapter config from a file location |
 | `Core-guessTrackTypeForLocation` | sync | single | Guess a track type from a file location |
-| `Core-handleUnrecognizedAssembly` | sync |  | Supply an assembly config when a referenced assembly is unknown. May return a promise settling when the handler has finished trying, which is what lets waitForAssembly stop waiting without a timeout |
+| `Core-handleUnrecognizedAssembly` | sync | single | Supply an assembly config when a referenced assembly is unknown. May return a promise settling when the handler has finished trying, which is what lets waitForAssembly stop waiting without a timeout |
 | `Core-preferencesDialogPanels` | sync | list | Add panels to the preferences dialog |
 | `Core-preProcessTrackConfig` | sync | single | Rewrite a track config snapshot before it is instantiated |
 | `Core-replaceAbout` | sync | single | Replace or wrap a track's About dialog body |
@@ -377,7 +410,8 @@ type: synchronous
 
 Extend the session model itself with new features.
 
-- `args` - `AbstractSessionModel` - instance of the session model
+- `args` - `IAnyModelType` - the session model type, not an instance. Callbacks
+  compose: each one builds on the model the one before it returned.
 
 ### Core-replaceAbout
 
@@ -1044,7 +1078,7 @@ Registered contract:
 'LinearGenomeView-searchResultSelected': {
   // nothing to accumulate: the point exists to react to the selection
   args: undefined
-  result: undefined
+  result: undefined | Promise<void>
   props: {
     session: AbstractSessionModel
     /** the search result that was selected */
@@ -1067,14 +1101,10 @@ rather than only the region the search navigated to:
 <!-- include: plugins/canvas/src/index.ts#searchResultSelected -->
 
 ```typescript
-pluginManager.addToExtensionPoint(
+pluginManager.observeExtensionPoint(
   'LinearGenomeView-searchResultSelected',
-  (arg, { result, model, assemblyName }) => {
+  ({ result, model, assemblyName }) => {
     highlightSearchResultFeature({ result, model, assemblyName })
-    // args is `undefined` for this point, but returning what came in is
-    // the convention every callback follows: the fold passes a callback's
-    // return value to the next one, so dropping it truncates the chain
-    return arg
   },
 )
 ```

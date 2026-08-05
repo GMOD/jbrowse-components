@@ -39,12 +39,11 @@ function setup() {
 
 function onUnrecognized(
   session: ReturnType<typeof setup>,
-  cb: (assemblyName: string) => unknown,
+  cb: (assemblyName: string) => void | Promise<void>,
 ) {
-  getEnv(session).pluginManager.addToExtensionPoint(
+  getEnv(session).pluginManager.observeExtensionPoint(
     'Core-handleUnrecognizedAssembly',
-    (defaultResult: unknown, props: Record<string, unknown>) =>
-      cb(props.assemblyName as string) ?? defaultResult,
+    ({ assemblyName }) => cb(assemblyName),
   )
 }
 
