@@ -4,9 +4,10 @@
 # figure at LCT needs: one row per haplotype, columns of variants, the swept
 # haplotype a solid slab.
 #
-# NO FIGURE READS THIS YET, and the reason is recorded at the bottom of this
-# header. The file and its arithmetic are checked in so the next attempt starts
-# from a measured position rather than from zero.
+# NO FIGURE READS THIS YET: the output is not hosted, and website/scripts/specs
+# gates its live links on assets that resolve. Build it, upload it (the command
+# is printed at the end), and the spec can then be added. Everything else the
+# figure needs has been verified against a local build.
 #
 # WHY A SUBSAMPLE EXISTS AT ALL. The figure was first attempted against the
 # hosted full-release slices and never rendered (removed in 7dd1e36ece). The
@@ -64,28 +65,13 @@
 #   1000 Genomes Project Consortium. A global reference for human genetic
 #   variation. Nature 2015;526:68-74.
 #
-# WHAT STILL BLOCKS THE FIGURE. The picture above needs `renderingMode: 'phased'`
-# (two-tone, one row per chromosome) together with `runClustering: true`, and
-# that combination does not land from a session spec. Rendered against a local
-# build at 150 samples, three ways:
-#
-#   phased + runClustering    the clustering never applies. The rows stay in
-#                             adapter order, no dendrogram, and the display sits
-#                             on "Downloading features" past 90 s of settle. One
-#                             earlier run got as far as "Tree hidden — rows
-#                             changed since clustering" with about half the rows
-#                             drawn blank, so the failure is not deterministic.
-#   phased, no clustering     renders correctly, all 300 rows, and is the plaid
-#                             described above — right rows, no block.
-#   unphased + runClustering  renders correctly, dendrogram and all, which is
-#                             what dog10k-igf1-haplotype already does. Diploid
-#                             rows are three-tone and average a carrier
-#                             chromosome with a non-carrier one in every het, so
-#                             the slab is much muddier than the phased picture.
-#
-# `clusteringReady` requires `sampleInfo` in phased mode, and `sampleInfo`
-# arrives on `cellData` — a fetch result — so phased clustering waits on a fetch
-# that in this configuration does not complete. That is where to start looking.
+# THE SETTINGS THE PICTURE NEEDS are `renderingMode: 'phased'` (two-tone, one row
+# per chromosome, so a het is not averaged into one row) and `runClustering: true`
+# over this window. That pair used to draw nothing — no dendrogram, rows in
+# adapter order — because `applyClusterOrder` re-appended every sample on top of
+# its own haplotypes and the layout then expanded twice: 300 haplotypes became
+# 450 layout rows and 600 drawn rows against a 300-leaf tree. Fixed, with the
+# measurement, in the commit that added this line's neighbour.
 #
 # Requires: bcftools (>= 1.17, with libcurl), tabix, curl, awk
 # Usage:    bash scripts/build_lct_haploblock.sh [outdir]
