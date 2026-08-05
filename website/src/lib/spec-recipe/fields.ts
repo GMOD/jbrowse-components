@@ -277,6 +277,29 @@ function colorStep(
       }
 }
 
+// One shared slider row (makeScatterPointSizeMenuItem) under a submenu each
+// display titles for itself: the wiggle displays call it 'Scatter point size',
+// the GWAS Manhattan display 'Point size'. The submenu label is what a reader
+// looks for, so it is what varies here.
+const POINT_SIZE_MENUS: Record<string, string> = {
+  LinearWiggleDisplay: 'Scatter point size',
+  MultiLinearWiggleDisplay: 'Scatter point size',
+  LinearManhattanDisplay: 'Point size',
+}
+
+// `showTree` is one config name over two genuinely different controls, so the
+// label is not shared even though the sidebar is. On the multi-wiggle display it
+// reveals the dendrogram alone and lives inside the Clustering submenu; on the
+// multi-row and MAF displays it gates the whole sidebar — dendrogram and row
+// labels together — which is useful with no clustering run at all, so those keep
+// it top-level under a fuller name. treeMenuItems.ts spells out the split, and
+// the multi-row display opts out of the Clustering copy for exactly this reason.
+const TREE_SIDEBAR_TOGGLE = 'Show sidebar with tree and labels'
+const TREE_SIDEBAR_DISPLAYS = new Set([
+  'LinearMafDisplay',
+  'LinearMultiRowFeatureDisplay',
+])
+
 function geneGlyphStep(value: unknown): FieldStep | undefined {
   const option = GENE_GLYPH_MODE_OPTIONS.find(o => o.value === value)
   return option
@@ -397,6 +420,37 @@ const numberField =
 export const trackFields: Record<string, FieldRecipe> = {
   colorBy: colorByStep,
   color: colorStep,
+  scatterPointSize: (value, { displayType }) => {
+    const menu = displayType ? POINT_SIZE_MENUS[displayType] : undefined
+    return typeof value === 'number' && menu
+      ? {
+          path: `${TRACK_MENU} → ${menu} → drag the slider to ${value}px`,
+          // sizeSubMenu gates the wiggle one on renderingType.includes('scatter')
+          note:
+            displayType === 'LinearManhattanDisplay'
+              ? undefined
+              : 'The submenu is offered only while the plot type is one of the scatter renderings.',
+        }
+      : undefined
+  },
+  showTree: (value, { displayType }) => {
+    if (typeof value !== 'boolean' || !displayType) {
+      return undefined
+    }
+    const state = value ? 'checked' : 'unchecked'
+    if (displayType === 'MultiLinearWiggleDisplay') {
+      return {
+        path: `${TRACK_MENU} → Clustering → Show tree (${state})`,
+        note: 'On by default. The item is disabled until clustering has been run, and drops out entirely in the overlay plot types, which collapse every source onto one row for a dendrogram to align to.',
+      }
+    }
+    return TREE_SIDEBAR_DISPLAYS.has(displayType)
+      ? {
+          path: `${TRACK_MENU} → ${TREE_SIDEBAR_TOGGLE} (${state})`,
+          note: 'This one toggle covers the dendrogram and the row labels together; the labels have their own toggle beneath it once the sidebar is on.',
+        }
+      : undefined
+  },
   groupBy: groupByStep,
   geneGlyphMode: geneGlyphStep,
   // the size presets carry their own pixel heights, so the figure's number

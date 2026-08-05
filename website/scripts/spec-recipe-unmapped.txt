@@ -44,7 +44,6 @@ rowIdentityAutoZoom
 rowIdentityMode
 rowProportion
 scaleType
-scatterPointSize
 showColorLegend
 showConservation
 showCoverage
@@ -54,7 +53,6 @@ showLabels
 showLegend
 showResolutionControls
 showRowSeparators
-showTree
 sideBySide
 sortedBy
 strokeColor
