@@ -1373,6 +1373,25 @@ export const dog10kSpecs: ScreenshotSpec[] = [
   // context and dilutes the matrix further, so it is not the answer to "zoom
   // out" either.
   //
+  // CLUSTERED ON THE CORE, DRAWN WIDE, which is the other half of the same
+  // review ("not sure if it should may cluster in narrower area and then zoom
+  // out"). It works and it is measurably better: clustering is region-scoped, so
+  // over the whole 320 kb the estimator is fed as many undifferentiated columns
+  // as separating ones. Running it over the 140 kb core instead and then
+  // navigating to the published window takes the row order from 22 colour
+  // blocks down the size swatch to 17, and the two longest blocks from 49% of
+  // painted rows to 67% -- the same summary the window sweep above is scored
+  // on, so the two are comparable.
+  //
+  // It is a `clusterRegion` on the display rather than a click-chain in this
+  // spec. The first version drove the UI -- open at the core, cluster, type the
+  // wide window into the location box -- which worked and was wrong twice: the
+  // figure's live link opened the core rather than the frame a reader is
+  // looking at, and the knowledge "cluster here, look there" lived in the
+  // capture instead of in the session, so no shared link could carry it. The
+  // property makes the whole figure declarative again, and says the same thing
+  // to a user.
+  //
   // `runClustering` orders the rows by genotype similarity. The size swatch
   // comes from the samples TSV and is applied afterwards, so the row order and
   // the swatch are independent.
@@ -1426,6 +1445,10 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           height: 760,
           lineZoneHeight: 34,
           runClustering: true,
+          // the 140 kb differentiated core, not the 320 kb on screen: the rows
+          // are ordered on the columns that separate the panels, then drawn
+          // against the flank that shows where the signal stops
+          clusterRegion: 'chr15:41,440,000-41,580,000',
           colorBy: 'size',
         },
       ],

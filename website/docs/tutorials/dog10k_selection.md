@@ -176,9 +176,21 @@ the signal starts or stops. Neither edge of the window is the gene's: _IGF1_ is
 41,495,479-41,567,874 and the haplotype runs 40 kb past it upstream and 44 kb
 past it downstream.
 
+Clustering reads the region on screen, so where you run it matters as much as
+what you frame afterwards. Run it at the differentiated core and the estimator
+sees the separating columns; run it over the whole window and those columns are
+diluted by the flank around them. Zoom to the core, cluster there, then widen
+back out: the row order is kept, because it orders rows by name rather than
+being re-derived from what is in view.
+
+A session can say that instead of performing it. The display takes
+`clusterRegion` beside `runClustering`, so a link can open at the window you
+want to read and cluster on the locus you want the rows ordered by, which is
+what the figure below does.
+
 ## Reading it
 
-<Figure caption="SNVs across 320 kb at IGF1 as a matrix, one row per canid and one column per variant, clustered by genotype with size class as the sidebar swatch, under per-site Fst between the same two panels. The upper cluster is the toy and small breeds and the lower the giants, with the wolves between. Fst is near zero at both window edges and high across the gene, so the clusters differ under it." src="/img/dog10k-igf1-haplotype.png" />
+<Figure caption="SNVs across 320 kb at IGF1 as a matrix, one row per canid and one column per variant, with size class as the sidebar swatch, under per-site Fst between the same two panels. The upper cluster is the toy and small breeds and the lower the giants, with the wolves between. Fst is near zero at both window edges and high across the gene, so the clusters differ under it." src="/img/dog10k-igf1-haplotype.png" />
 
 The panel separates into two clusters that correspond to the size classes, and
 the block's boundaries fall within the window, so its extent reads against the

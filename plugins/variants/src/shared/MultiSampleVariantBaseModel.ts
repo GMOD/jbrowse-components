@@ -365,6 +365,17 @@ export default function MultiSampleVariantBaseModelF(
           // getMultiSampleVariantClusterAutorun and cleared afterwards so a
           // saved session never re-triggers it.
           runClustering: types.maybe(types.boolean),
+          /**
+           * #property
+           * Where that run reads its genotypes from, as a locstring
+           * (whitespace-separated for several). Clustering is region-scoped, so
+           * running it over the visible window feeds the estimator as many
+           * undifferentiated columns as separating ones; naming the locus
+           * instead lets a session cluster on the signal and then show it
+           * against its context, which is otherwise a zoom the user has to
+           * perform in the right order. Cleared with `runClustering`.
+           */
+          clusterRegion: types.maybe(types.string),
         }),
       )
       // Unknown keys in an old display snapshot (blockState, showTooltips, the
@@ -741,6 +752,17 @@ export default function MultiSampleVariantBaseModelF(
 
         setRunClustering(arg?: boolean) {
           self.runClustering = arg
+          // the region is the trigger's argument, not a setting of its own: a
+          // saved session must not keep one that no run is coming for
+          if (!arg) {
+            self.clusterRegion = undefined
+          }
+        },
+        /**
+         * #action
+         */
+        setClusterRegion(arg?: string) {
+          self.clusterRegion = arg
         },
         /**
          * #action
