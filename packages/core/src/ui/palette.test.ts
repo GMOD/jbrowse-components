@@ -11,9 +11,18 @@
  * Both sides are flattened to the same plain shape so a mismatch reads as one
  * diff instead of forty assertions.
  */
+import { readFileSync } from 'fs'
+import path from 'path'
+
 import { createTheme } from '@mui/material'
 
-import { augmentColor, resolvePalette } from './palette.ts'
+import {
+  augmentColor,
+  methylated5hmC,
+  methylated5mC,
+  resolvePalette,
+  unmethylated5mC,
+} from './palette.ts'
 import { createJBrowseTheme, defaultThemes } from './theme.ts'
 
 import type {
@@ -243,4 +252,73 @@ test('an extraThemes entry with brand colors of its own', () => {
       },
     },
   })
+})
+
+// The methylation colors are deliberately not palette members. The alignments
+// worker packs them to ABGR per modified base and returns them *inside* its
+// vertex data, so unlike `modificationFwd`/`modificationRev` — which the
+// renderer sets as shader uniforms, and which are palette members for exactly
+// that reason — a theme cannot move them without invalidating the fetch that
+// produced the vertices. Promoting one to `StringColors` compiles, redraws
+// nothing, and leaves the legend swatch reading the new color while the pixels
+// keep the old one until the next fetch.
+test('the methylation colors are constants, not palette members', () => {
+  for (const color of [methylated5mC, unmethylated5mC, methylated5hmC]) {
+    expect(color).toMatch(/^#[0-9a-f]{6}$/)
+  }
+  for (const themeName of Object.keys(defaultThemes)) {
+    for (const key of ['methylated5mC', 'unmethylated5mC', 'methylated5hmC']) {
+      expect(key in resolvePalette({ themeName })).toBe(false)
+      expect(
+        key in createJBrowseTheme({}, defaultThemes, themeName).palette,
+      ).toBe(false)
+    }
+  }
+})
+
+// `@jbrowse/core/ui/palette` is the entry that gets those constants without
+// Material UI: `ui/theme` re-exports them but imports `createTheme`, so a
+// worker reaching through it for one color pulls the toolkit into its bundle.
+// That property is not visible from inside the file — one convenience import of
+// `alpha` or `getContrastText` from MUI would end it silently, which is why
+// this module has its own copies of both — and it is transitive, so walk it
+// rather than reading the import block. Value imports only; `import type` is
+// erased.
+function toolkitReachedFrom(entry: string) {
+  const bare = new Set<string>()
+  const seen = new Set<string>()
+  const walk = (file: string) => {
+    if (seen.has(file)) {
+      return
+    }
+    seen.add(file)
+    const specs = [
+      ...readFileSync(file, 'utf8').matchAll(
+        /^(?:import|export)\s+(type\s+)?[^;]*?from\s+'([^']+)'/gm,
+      ),
+    ]
+      .filter(m => !m[1])
+      .map(m => m[2]!)
+    for (const spec of specs) {
+      if (spec.startsWith('.')) {
+        walk(path.join(path.dirname(file), spec))
+      } else {
+        bare.add(spec)
+      }
+    }
+  }
+  walk(path.join(__dirname, entry))
+  return [...bare].filter(s => /^(react|@mui\/|@emotion\/)/.test(s))
+}
+
+test('the palette entry reaches no React, MUI or emotion', () => {
+  expect(toolkitReachedFrom('palette.ts')).toEqual([])
+})
+
+// The walk is only worth trusting if it can see a violation, and `theme.ts` is
+// the exact negative case: it re-exports every constant `palette.ts` declares
+// and brings `createTheme` with them, which is the whole reason worker code is
+// pointed at the other entry.
+test('the walk would catch it (theme.ts, which re-exports these, fails)', () => {
+  expect(toolkitReachedFrom('theme.ts')).toEqual(['@mui/material'])
 })

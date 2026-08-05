@@ -92,16 +92,21 @@ Defaults for the `string`-valued feature colors, generated from the
 
 ## Exported color constants
 
-Some colors are used in RPC workers (no MUI theme context) and are exported as
-plain constants from `@jbrowse/core/ui/theme`:
+A few colors are plain `const` strings rather than palette members. The
+methylation colors are the worked case: the RPC worker packs them to ABGR per
+modified base and returns them inside its vertex data, and the legend on the
+main thread labels those same pixels.
 
-```ts
-import {
-  methylated5mC,
-  unmethylated5mC,
-  methylated5hmC,
-} from '@jbrowse/core/ui/theme'
-```
+The line between the two mechanisms is where the color is applied, not what it
+means. `modificationFwd` and `modificationRev` sit right beside these and are
+palette members, because the renderer sets them as shader uniforms, so a theme
+switch recomputes a getter and redraws. A color the worker has already baked
+into vertex data cannot follow a theme without a theme switch invalidating the
+alignments fetch, so it is fixed instead.
+
+Import them from `@jbrowse/core/ui/palette`, which has no toolkit in its module
+graph, or from `@jbrowse/core/ui/theme`, which re-exports the same values
+alongside Material UI.
 
 <!-- COLOR_TABLE theme-methylation START -->
 
@@ -114,8 +119,9 @@ import {
 
 <!-- COLOR_TABLE theme-methylation END -->
 
-Use these constants directly; don't re-derive them from `theme.palette` in
-worker code.
+The palette carries no such key, so there is nothing on `theme.palette` to
+re-derive one from and no way for the worker, the legend and an SVG export to
+disagree about what a methylated base looks like.
 
 ## Example config
 
@@ -150,8 +156,8 @@ is a rendering input:
 - **`session.theme`** is the resolved MUI `Theme`, for components that are MUI.
 
 Derive a display's colors in a **model getter** over `session.palette`, and read
-that getter from `renderState` or whatever you hand the renderer. MAF's
-is the worked case:
+that getter from `renderState` or whatever you hand the renderer. MAF's is the
+worked case:
 
 <!-- include: plugins/maf/src/LinearMafDisplay/stateModel.ts#colorPalette -->
 
@@ -173,19 +179,20 @@ why the export path resolves its own rather than reading the session's.
 
 ## Adding theme colors in plugins
 
-Colors only used in React components belong in the `Palette` / `PaletteOptions`
-module augmentation. Follow the existing `modificationFwd` / `modificationRev`
-pattern: declare the field on `StringColors` in `palette.ts`, tag it with
+Colors the main thread applies, whether in a React component or as a shader
+uniform the renderer sets, belong in the `Palette` / `PaletteOptions` module
+augmentation. Follow the existing `modificationFwd` / `modificationRev` pattern:
+declare the field on `StringColors` in `palette.ts`, tag it with
 `#color <group> | <label> | <description>` so it surfaces as a swatch row in
 these guides, and give it a value in `lightStringColors` — plus
 `darkStringColors` if dark mode needs a different one, which is a
 `Partial<StringColors>` overlay on the light set rather than a second full
 table.
 
-Colors shared with worker code must be plain `const` strings declared in
-`palette.ts` — `theme.ts` re-exports them, so consumers still import from
-`@jbrowse/core/ui/theme`. Never thread one through `theme.palette` to reach
-worker code, which has no theme context to read it from.
+A color a worker bakes into its output goes the other way: declare it as a plain
+`const` in `palette.ts` and leave it off `StringColors`, for the reason in
+[Exported color constants](#exported-color-constants). Worker code imports those
+from `@jbrowse/core/ui/palette`, which keeps Material UI out of its bundle.
 
 ## See also
 
