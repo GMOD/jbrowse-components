@@ -151,9 +151,9 @@
   },
   "multisv": {
     "name": "multisv",
-    "status": "answered",
-    "note": "Restored to the chr19 window and the 1.12Mb HGSV_73318 inversion, unchanged otherwise. The RHD version is not gone, it moved: multisv_rhd_genotype / multisv_rhd_svtype, composed as multisv_rhd, and only the SV-multisamples tutorial shows it. This figure now lives in user_guides/multivariant_track (the 'Regular' section had no figure) and keeps the gallery card, whose description was already about the inversion. The chr19 story is scale: a megabase-scale call drawn at its real span across 3202 rows. It is not a reads story -- 9 chr19 inversions are segmental-duplication mediated and short reads cannot settle their breakpoints, which is why the tutorial moved to RHD in the first place.",
-    "reviewedAt": "2026-08-04T21:03:34.913Z",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-05T00:00:25.939Z",
     "hash": "2641a4bf57811761d6ba1e14e60001bf7ac5364b"
   },
   "breakpoint_split_view": {
@@ -1608,10 +1608,10 @@
   },
   "pangenome/maf": {
     "name": "pangenome/maf",
-    "status": "answered",
+    "status": "good",
     "note": "The numbered purple boxes are insertion markers: an insertion consumes no reference, so a record that inserts 7.8 kb lands on the same 2px floor a SNP does and its length can only be drawn as a widened marker with the bp count in it. Two fixes since the review. (1) The marker now takes the theme's palette.insertion, the same color plugin-alignments' pileup and the MAF lane below it use, instead of the theme-agnostic #c000c0 fallback -- it used to take its cell's own genotype color, which in genotype coloring is the same dark blue as the neighbouring cells it paints across, so only the white number showed and it read as a number floating in the matrix. (2) NCTC86 no longer gets a marker on a row the VCF calls '.' for: cellCarriesAlt was read back off the resolved cell color, and allele-count mode blends its no-call shade through colord to a hex that is never string-equal to the NO_CALL_COLOR literal, so every no-call was flagged alt-carrying. Both fixed; figure regenerated. On the MAF lane not showing it: that is the data, not an inconsistency. The three strains stop aligning to K12 at exactly 4,579,961 (MAF block4717 carries only the K12 row) and their inserted sequence sits between MAF blocks rather than as reference-gap columns inside one, so there is no gap for an insertion marker to anchor to; the nearest real one, in block4715, is 72 bp = 1.2 px at 60 kb. The blank MAF row and the variant lane's marker are the same event said two ways.",
-    "reviewedAt": "2026-08-04T22:26:25.071Z",
-    "hash": "870ad62292e47cdc6d419c5f33d5b02a39982d7a"
+    "reviewedAt": "2026-08-05T00:02:53.763Z",
+    "hash": "b40fa31c7430e430ab759554c0a87b688c73c325"
   },
   "phylop_ncbi_refseq_tp53": {
     "name": "phylop_ncbi_refseq_tp53",
@@ -1654,9 +1654,9 @@
   },
   "multisv_svtype": {
     "name": "multisv_svtype",
-    "status": "answered",
-    "note": "Restored to chr19 as well, and it is now sorted like its sibling rather than left in file order, so the inversion band is the same band in both. The user-guide caption at multivariant_track.md:146 already said 'on chr19' -- it had never been updated when the spec moved to chr1, so the figure and its caption now agree again. The RHD SV-type lane is multisv_rhd_svtype, the lower half of the composed multisv_rhd, which is the combining you asked for: same data, same region, same sorted row order, one figure.",
-    "reviewedAt": "2026-08-04T21:03:35.386Z",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-05T00:00:27.821Z",
     "hash": "8fbe9697f44511dfd173b6a149140a59fce5814b"
   },
   "scatac/alb_hepatocyte": {
@@ -1952,9 +1952,9 @@
   },
   "pangenome/local_subgraph": {
     "name": "pangenome/local_subgraph",
-    "status": "answered",
-    "note": "Both halves now ring segment 20 and name it. WHY IT IS BLUNT, on the force half where there is room to say it: 93 bp of CFT073 (CFT073:1,048,515-1,048,608) carrying one link inside this file and two in the whole graph, so the free end is where the odgi extract -r K12#1#chr:1004500-1004900 fell rather than a dead end in the graph. The event it belongs to is a 7 kb deletion whose far anchor is 7 kb outside that range; widening to reach it is not available, 7 kb of this pggb graph is ~900 segments against the 48 here. SIZE IN THE BACKBONE HALF: that half gets '93 bp' beside the same ring, which is the thing its rank-1 marks never said. Both anchored by segment id through the view's nodePositions, so neither layout has to hold still. Longer text does not fit the anchored pane: its aspect ratio is pinned (row spacing is a fraction of the reference span), so it is two rows tall whatever the viewport is.",
-    "reviewedAt": "2026-08-04T21:13:04.487Z",
+    "status": "bad",
+    "note": "a person not familiar with graphs might not understand what is meant by 'the cut',  use precise language please",
+    "reviewedAt": "2026-08-05T00:02:51.720Z",
     "hash": "25d257a85d76713716a7f60cc958e5bcb6f26f71"
   },
   "pangenome/rgfa_subgraph_launch": {
@@ -1989,8 +1989,8 @@
     "name": "multiway_synteny/ecoli_launch_from_selection",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-04T17:33:54.881Z",
-    "hash": "9d649e03e06e1a89218944b7925dad51798679db"
+    "reviewedAt": "2026-08-05T00:00:30.350Z",
+    "hash": "796c13304884f61273910fedc959f04f59dd0702"
   },
   "desktop-ispcr-results": {
     "name": "desktop-ispcr-results",
@@ -2044,15 +2044,15 @@
   "pangenome/hprc_graph_vs_callset": {
     "name": "pangenome/hprc_graph_vs_callset",
     "status": "good",
-    "note": "HEIGHT DONE, and the 'alt vs other alt' point is right and is a variants-plugin question rather than a spec one. HEIGHT: 520 -> 340, and the frame is 1420 rather than 1600. 464 haplotype rows do not fit in any height a figure can afford, so the lane is a texture either way; the extra 180 px bought more of the same texture and took it off the graph pane, which is the half this figure is about. WHY 'OTHER ALT ALLELE' IS EVERYWHERE, which is the real content of the note: the display keys a cell on whether the genotype is the FIRST ALT of the record or a different one, and on a graph-derived callset that is close to arbitrary. vcfwave decomposition leaves a site with many long alleles, and which of them ALT[0] is comes from the order vg deconstruct wrote them, so blue means 'carries the allele that happens to be listed first' and red means 'carries one of the others'. On SNPs, where the scheme was designed, multiallelic sites are rare and red is a genuine flag; here red is the common case and says nothing about WHICH allele. The scheme that would say something is per-site allele identity or allele length, i.e. color by which alt rather than by first-vs-rest, and that is a change to the multi-sample variant display's cell coloring (plugins/variants), not to this figure. Flagged rather than done, and deliberately so this round: another change is in flight in that plugin. BANDAGE COMPARISON: answered under pangenome/graph_resolution.",
-    "reviewedAt": "2026-08-04T08:09:52.068Z",
-    "hash": "47d80840edaf296e1b858bfa43f618f70ea28211"
+    "note": "",
+    "reviewedAt": "2026-08-05T00:01:39.114Z",
+    "hash": "ffe62f0dfcd3dc08d5ac53beb05b33be4b1de0c7"
   },
   "pangenome/hprc_mhc_anchored": {
     "name": "pangenome/hprc_mhc_anchored",
-    "status": "answered",
-    "note": "Numbered both rings instead, 1 and 2, the same numbers in both halves. An arrow across the seam is not drawable: the halves are two separate captures +appended afterwards, so no overlay spans them, and they are different heights besides. The badges are anchored to the segment ids through the view's nodePositions, so they survive either layout moving its nodes. Two follow-on fixes the numbering exposed: the force half's caption sat exactly on top of the second ring (the two landmarks are an allele and the reference stretch it replaces, so that layout draws them touching) and has moved to the top right, and the two badges now go opposite ways off their rings there. Caption updated to name them.",
-    "reviewedAt": "2026-08-04T21:13:54.749Z",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-05T00:02:01.482Z",
     "hash": "5b330752f6b7e51f1c921b878d9fd7b0a53f50c9"
   },
   "pangenome/hprc_mhc_sample_rows": {
@@ -2136,8 +2136,8 @@
     "name": "pangenome/hprc_lpa_kiv2",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-04T00:28:38.397Z",
-    "hash": "03a791950da3fa27ac6e29dfad7f838b15570fa0"
+    "reviewedAt": "2026-08-05T00:01:48.144Z",
+    "hash": "8e72a97c92f4a4582bad9bd38c256230cba64aa0"
   },
   "pangenome/rgfa_segment_neighbourhood": {
     "name": "pangenome/rgfa_segment_neighbourhood",
@@ -2518,9 +2518,9 @@
   },
   "pangenome/hprc_chm13_allele": {
     "name": "pangenome/hprc_chm13_allele",
-    "status": "answered",
-    "note": "Both halves of the note are now closed, one of them by a file that did not exist when it was written. NOT COLLAPSED ANY MORE: the lane is a LinearBasicDisplay in normal layout with heightMode 'grow', so it stacks to its own row count and every element is its own bar -- long red L1s against grey everything-else, colored off the class the bigBed writes into the name after a '#'. The wording of this note matches the review the previous pass was answering, so if it was re-marked against a cached image, this is what the current one shows. THE BACKGROUND QUESTION now has a figure, which is the one thing the previous answer left open. It said the real contrast could not be drawn here (measured: the allele is 84.6% repeat, its own flanks 79.0% and 70.4%, and 50 kb bins across the megabase CHM13 adds run 70-92%, so there IS no local contrast at any zoom) and that drawing the between-assembly contrast needed a repeat-density quantitative track, \"a file to build and host, not a display setting\". That got built -- scripts/build_repeat_density.sh, one bigWig per RepeatMasker class per assembly -- and it is the NEXT figure on the page, pangenome/hprc_repeat_classes, with the section between them (\"What kind of sequence GRCh38 was missing\") saying exactly why the lane above cannot answer it. LINE 13.71% -> 70.05% against SINE 13.58% -> 10.53%. WHAT CHANGED THIS PASS: the lane's two colors carried no key, so the bottom pane read as an abstract pattern until a reader reached the caption -- which is the \"not very interesting / glitchy\" half. A 'red = LINE, nearly all L1' label now sits on the lane, anchored to the track at the top of its own band so it stays put as the lane grows to its row count.",
-    "reviewedAt": "2026-08-04T23:09:59.262Z",
+    "status": "bad",
+    "note": "ideally we would zoom out the lineargenomeview even more to show how these L1 transposons are more frequent here than elsewhere. Both halves of the note are now closed, one of them by a file that did not exist when it was written. NOT COLLAPSED ANY MORE: the lane is a LinearBasicDisplay in normal layout with heightMode 'grow', so it stacks to its own row count and every element is its own bar -- long red L1s against grey everything-else, colored off the class the bigBed writes into the name after a '#'. The wording of this note matches the review the previous pass was answering, so if it was re-marked against a cached image, this is what the current one shows. THE BACKGROUND QUESTION now has a figure, which is the one thing the previous answer left open. It said the real contrast could not be drawn here (measured: the allele is 84.6% repeat, its own flanks 79.0% and 70.4%, and 50 kb bins across the megabase CHM13 adds run 70-92%, so there IS no local contrast at any zoom) and that drawing the between-assembly contrast needed a repeat-density quantitative track, \"a file to build and host, not a display setting\". That got built -- scripts/build_repeat_density.sh, one bigWig per RepeatMasker class per assembly -- and it is the NEXT figure on the page, pangenome/hprc_repeat_classes, with the section between them (\"What kind of sequence GRCh38 was missing\") saying exactly why the lane above cannot answer it. LINE 13.71% -> 70.05% against SINE 13.58% -> 10.53%. WHAT CHANGED THIS PASS: the lane's two colors carried no key, so the bottom pane read as an abstract pattern until a reader reached the caption -- which is the \"not very interesting / glitchy\" half. A 'red = LINE, nearly all L1' label now sits on the lane, anchored to the track at the top of its own band so it stays put as the lane grows to its row count.",
+    "reviewedAt": "2026-08-05T00:01:30.703Z",
     "hash": "5f051a3b69d2d0c0e6dcc6faf7b66f40e01bc16c"
   },
   "dotplot_self_chry": {
@@ -2567,9 +2567,9 @@
   },
   "methylation/arabidopsis_wgbs_two_color": {
     "name": "methylation/arabidopsis_wgbs_two_color",
-    "status": "answered",
-    "note": "Kept, with the MethylDackel lane you say these figures need. The config's aggregate track is three contexts; only the CpG subadapter is drawn here, since both pileups are coloured by CpG and CHG/CHH would be a different question (that is arabidopsis_wgbs_contexts). It earns its place rather than decorating: every red column in the two pileups has a bar above it, and the blue stretches over the gene body sit where the aggregate reads near zero, so 'sequenced and unmethylated rather than cytosine-free' is a number in the frame instead of an argument in the caption.",
-    "reviewedAt": "2026-08-04T21:04:00.708Z",
+    "status": "bad",
+    "note": "we can likely delete this figure. we already extensively showed this with the other methyldackyl screenshot",
+    "reviewedAt": "2026-08-05T00:00:20.791Z",
     "hash": "3335a29eb093b0bd279710082298dfb425284058"
   },
   "methylation/hg002_snrpn_ungrouped": {
@@ -2581,9 +2581,9 @@
   },
   "orthofinder_synteny/wheat_4a": {
     "name": "orthofinder_synteny/wheat_4a",
-    "status": "answered",
-    "note": "Yes, with one caption fix, and the claim is now verified rather than asserted. VERIFIED: joined the demo's own files -- tauschii.blocks.gz to tauschii.bed.gz and wheat.bed.gz -- and counted where each tauschii chromosome's orthogroup partners land on 4A. 2,874 links reach 4A. 4D contributes 2,045 of them, 5th-95th percentile 9.9 Mb to 602.1 Mb; 5D contributes 295 over 604.0 to 641.4 Mb; 7D contributes 407 over 647.3 to 742.4 Mb. Three consecutive, non-overlapping blocks in exactly the order the caption claims. Every other tauschii sequence contributes 30 links or fewer over the whole chromosome (2D 30, 3D 25, 1D 19, 6D 18), which is the 'scattered singletons' the prose already says. THE ONE REAL PROBLEM was a misreading risk, now fixed in the caption: the red bundle's apex sits a few pixels from the 6D tick label, so it reads as 6D at a glance, when 6D reaches 4A 18 times in 745 Mb. It is the right-hand end of 5D. The caption says so now, and names the three blocks in their order along 4A. WHAT I COULD NOT DO, recorded in the spec so it is not re-derived: put the three block names ON the figure. A synteny view's sub-panels have no view-container-<id> element -- only top-level views get one, ViewContainer.tsx -- so a {view:[0,1], locus} anchor resolves to nothing and the generator says so. The fallback, an in-app highlight on the bottom row, paints into that row's tracks area, and this row is a bare scalebar with no tracks, so it has nowhere to draw either. Both were rendered before being removed. Labelling this row needs either a track on it (there is no useful one at 745 Mb -- a gene lane over three quarters of a gigabase is a solid smear) or a locus anchor that works on a sub-panel.",
-    "reviewedAt": "2026-08-04T23:40:39.421Z",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-05T00:00:52.539Z",
     "hash": "8f16149e5841b8f05adf36a38c8de561c4216e87"
   },
   "pangenome_cactus/builders": {
