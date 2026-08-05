@@ -74,6 +74,14 @@ const GENERATORS: Generator[] = [
   },
   { name: 'guide indexes', argv: web('generate-guide-indexes.ts') },
   { name: 'ADR index', argv: web('generate-adr-index.ts') },
+  {
+    // agent-docs/CLAUDE.md makes reading a directory's `description:` lines the
+    // way to find the right reference doc, which meant opening all 36 of them.
+    // This renders them into one page and, more to the point, fails when a doc
+    // carries no frontmatter — the convention was previously enforced by nothing.
+    name: 'reference index',
+    argv: web('generate-reference-index.ts'),
+  },
   // Before the README is mirrored into the docs site, since this rewrites it.
   { name: 'jbrowse-img README commands', argv: web('sync-img-readme.ts') },
   { name: 'jbrowse-img doc', argv: web('generate-img-doc.ts') },

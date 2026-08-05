@@ -1,11 +1,11 @@
 import * as ts from 'typescript'
 
 import {
+  lastTaggedLine,
   markdownTable,
   parseSourceFileSyntactic,
   rewriteMarkerBlock,
   runMarkerScript,
-  startsWithTag,
 } from './util.ts'
 
 // Render the fetch-lifecycle autorun table into the data-fetching guide and the
@@ -102,22 +102,23 @@ function thirdArg(node: ts.CallExpression) {
 // The comment attaches to the enclosing *statement*, so this climbs: the call's
 // own expression statement first, then outward — `SettingsInvalidate` is
 // installed inside an `if (self.rpcProps)`, and its comment sits above the `if`.
-// The tag must *head* its comment line, so prose that merely mentions
-// `#autorun` — a comment explaining the convention, most likely — is not read
-// as one. Same reason `startsWithTag` exists; the sibling re-export generator
-// hit exactly that.
+// `lastTaggedLine` enforces that the tag heads its comment line, so prose that
+// merely mentions `#autorun` is not read as one — see its comment for why that
+// matters.
 function tagAbove(node: ts.Node, text: string) {
   for (let cur: ts.Node | undefined = node; cur; cur = cur.parent) {
     if (ts.isStatement(cur)) {
-      const line = (ts.getLeadingCommentRanges(text, cur.getFullStart()) ?? [])
-        .flatMap(r => text.slice(r.pos, r.end).split('\n'))
-        .findLast(l => startsWithTag(l.replace(/^\s*\/\//, ''), 'autorun'))
-      if (line) {
-        const value = line.replace(/^.*?#autorun\s*/, '')
+      const value = lastTaggedLine(
+        (ts.getLeadingCommentRanges(text, cur.getFullStart()) ?? [])
+          .map(r => text.slice(r.pos, r.end))
+          .join('\n'),
+        'autorun',
+      )
+      if (value) {
         const [firesOn, ...rest] = value.split('|').map(s => s.trim())
         if (!firesOn || !rest.length) {
           throw new Error(
-            `${SOURCE}: malformed #autorun tag "${line.trim()}" — expected \`#autorun <fires on> | <action>\``,
+            `${SOURCE}: malformed #autorun tag "${value}" — expected \`#autorun <fires on> | <action>\``,
           )
         }
         return { firesOn, action: rest.join(' | ') }

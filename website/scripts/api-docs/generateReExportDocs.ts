@@ -1,11 +1,11 @@
 import * as ts from 'typescript'
 
 import {
+  lastTaggedLine,
   markdownTable,
   parseSourceFileSyntactic,
   rewriteMarkerBlock,
   runMarkerScript,
-  startsWithTag,
 } from './util.ts'
 
 // Render the `@jbrowse/core` re-export table into the dependencies guide from
@@ -44,23 +44,14 @@ interface Module {
 
 // The `#reexport` description attached above an array element. The scan starts
 // at the element's full start, so it sees only the trivia between the previous
-// element and this one.
-//
-// The tag must *head* its comment line, and the last such line wins. Both
-// matter: the block comment introducing the convention a few lines up says the
-// words "#reexport <what it provides>" inside a sentence, and it is leading
-// trivia of the first tagged element — so a bare substring search documented
-// `@jbrowse/core/Plugin` as "<what it provides>` line,". Same failure
-// `startsWithTag` was written for.
+// element and this one; `lastTaggedLine` handles the head-of-line and last-wins
+// rules, and its comment explains why both are needed here.
 function tagAbove(node: ts.Node, text: string) {
-  const lines = (ts.getLeadingCommentRanges(text, node.getFullStart()) ?? [])
-    .flatMap(r => text.slice(r.pos, r.end).split('\n'))
-    .filter(line => startsWithTag(line.replace(/^\s*\/\//, ''), 'reexport'))
-  return (
-    lines
-      .at(-1)
-      ?.replace(/^.*?#reexport\s*/, '')
-      .trim() || undefined
+  return lastTaggedLine(
+    (ts.getLeadingCommentRanges(text, node.getFullStart()) ?? [])
+      .map(r => text.slice(r.pos, r.end))
+      .join('\n'),
+    'reexport',
   )
 }
 

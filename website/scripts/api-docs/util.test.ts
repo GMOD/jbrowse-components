@@ -4,6 +4,7 @@ import {
   elideSignature,
   exampleSection,
   filterUnseenByName,
+  lastTaggedLine,
   overviewSection,
   parseTaggedComment,
   removeComments,
@@ -12,6 +13,51 @@ import {
   stripComposedBlock,
   stripPropertyName,
 } from './util.ts'
+
+describe('lastTaggedLine', () => {
+  test('reads the value after a tag heading a comment line', () => {
+    expect(
+      lastTaggedLine('// #reexport The base Plugin class', 'reexport'),
+    ).toBe('The base Plugin class')
+  })
+
+  test('returns undefined when no line carries the tag', () => {
+    expect(lastTaggedLine('// just an ordinary comment', 'reexport')).toBe(
+      undefined,
+    )
+  })
+
+  // The bug this helper exists for. The comment that documents the convention
+  // sits directly above the first tagged entry, so it is part of that entry's
+  // leading trivia — and a substring match took its sentence as the value,
+  // rendering `@jbrowse/core/Plugin` as "<what it provides>` line,".
+  test('ignores a tag mentioned mid-sentence rather than heading the line', () => {
+    expect(
+      lastTaggedLine(
+        '// Each carries a `#reexport <what it provides>` line, which renders\n// the table in the guide.',
+        'reexport',
+      ),
+    ).toBe(undefined)
+  })
+
+  test('takes the last tagged line, the one nearest the entry', () => {
+    expect(
+      lastTaggedLine(
+        '// #autorun the viewport | refetch\n// #autorun regionTooLarge | clear hover',
+        'autorun',
+      ),
+    ).toBe('regionTooLarge | clear hover')
+  })
+
+  // `#autorunSomething` is a different tag, not this one with a suffix.
+  test('does not match a tag that is a prefix of a longer word', () => {
+    expect(lastTaggedLine('// #autorunOptions foo', 'autorun')).toBe(undefined)
+  })
+
+  test('treats a tag with no value as absent rather than empty', () => {
+    expect(lastTaggedLine('// #reexport', 'reexport')).toBe(undefined)
+  })
+})
 
 describe('parseTaggedComment', () => {
   test('reads the name after the tag and keeps prose as docs', () => {

@@ -1630,6 +1630,30 @@ export function parsePipeTags(
   return out
 }
 
+// The value of a `#<tag> <value>` line inside a run of `//`-comment text, for
+// the generators that read their prose from a comment above a *call or an array
+// element* rather than from a JSDoc block on a declaration (the autorun install
+// sites, the re-export list). Returns undefined when no line carries the tag.
+//
+// Two rules, both learned the hard way:
+//
+//   - the tag must HEAD its line. A comment explaining the convention says the
+//     words "#reexport <what it provides>" inside a sentence, and that comment
+//     is leading trivia of the first tagged entry — so a substring search
+//     documented `@jbrowse/core/Plugin` as "<what it provides>` line,". Same
+//     failure `startsWithTag` was added for on the JSDoc side.
+//   - the LAST match wins, so the tag nearest the entry is the one read, not
+//     whatever appeared earliest in the accumulated trivia.
+export function lastTaggedLine(comment: string, tag: string) {
+  const value = comment
+    .split('\n')
+    .filter(line => startsWithTag(line.replace(/^\s*\/\//, ''), tag))
+    .at(-1)
+    ?.replace(new RegExp(`^.*?#${tag}\\s*`), '')
+    .trim()
+  return value || undefined
+}
+
 const SKIP_DIRS = new Set(['node_modules', 'dist', 'esm', 'cjs', 'build'])
 
 // Recursively list every non-test .ts/.tsx source under a directory, skipping

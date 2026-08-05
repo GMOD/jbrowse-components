@@ -25,10 +25,17 @@ against the code, write the generator instead of the table.
   into `reference/` or an ADR first, not summarizing it into a commit message.
 
 **Every doc outside `architecture-decision-records/` carries `name:` /
-`description:` frontmatter, and that is load-bearing.** `ls` a directory and read
-the descriptions — that is how you find the right doc without opening all of
-them, so a new doc without one is invisible. ADRs are the exception because the
-generated README index serves the same purpose.
+`description:` frontmatter, and that is load-bearing.** It is how you find the
+right doc without opening all of them, so a new doc without one is invisible.
+ADRs are the exception because the generated README index serves the same
+purpose.
+
+For `reference/`, don't `ls` and guess — read
+[reference/README.md](reference/README.md), whose table is generated from those
+same `description:` lines and gives you all of them in one read. `pnpm autogen
+--check` fails on a reference doc that carries no frontmatter, so the rule above
+is now enforced rather than merely stated. Writing a good `description:` is
+therefore the whole job of making a new doc findable.
 
 `TODO.md` and `OTHER_IDEAS.md` are both long enough to need their own index, and
 each opens with one. **Other docs and a few source comments cite their sections
