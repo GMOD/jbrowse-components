@@ -4,6 +4,7 @@ import { useLocalStorage } from '@jbrowse/core/util/hooks'
 import { parseSamplesPerPixel } from './parseSamplesPerPixel.ts'
 
 import type { ReducedModel } from '../clusterModelTypes.ts'
+import type { Region } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // One sample per pixel. The declarative `runClustering` autorun deliberately
@@ -31,15 +32,28 @@ export function useClusterSamplingOptions() {
 // MultiWiggleGetScoreMatrix (manual). bpPerPx is divided by the sampling
 // density so both RPCs bin at the same resolution and produce comparable
 // matrices.
+//
+// `regions` overrides the visible blocks for a `clusterRegion` run, and the
+// density is then derived from that span rather than from the view's own zoom.
+// It has to be: the columns are pixel bins, so clustering a 140 kb locus while
+// the view shows 10 Mb would bin it into a handful of columns and the matrix
+// would be degenerate without anything saying so. Deriving it from the span is
+// the density the same locus would have if you had zoomed to it, which is what
+// the setting means.
 export function clusterScoreMatrixArgs(
   model: ReducedModel,
   samplesPerPixel: string,
+  regions?: Region[],
 ) {
   const view = getContainingView(model) as LinearGenomeViewModel
+  const density = parseSamplesPerPixel(samplesPerPixel)
+  const width = view.width || 1
+  const span = regions?.reduce((a, r) => a + (r.end - r.start), 0)
+  const bpPerPx = span ? span / width : view.bpPerPx
   return {
-    regions: view.dynamicBlocks.contentBlocks,
+    regions: regions ?? view.dynamicBlocks.contentBlocks,
     sources: model.sourcesWithoutLayout,
     adapterConfig: model.adapterConfig,
-    bpPerPx: view.bpPerPx / parseSamplesPerPixel(samplesPerPixel),
+    bpPerPx: bpPerPx / density,
   }
 }

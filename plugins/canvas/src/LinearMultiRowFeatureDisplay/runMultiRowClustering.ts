@@ -27,16 +27,17 @@ export interface MultiRowClusterModel {
 
 export async function runMultiRowClustering({
   model,
-  view,
+  regions,
   rpcManager,
   sessionId,
   stopToken,
   statusCallback,
 }: {
   model: MultiRowClusterModel
-  // just the visible-regions the matrix is built over — the autorun's `run`
-  // already hands us the view, so we don't re-resolve it via getContainingView
-  view: { dynamicBlocks: { contentBlocks: Region[] } }
+  // The regions the matrix is built over, resolved by the caller: the autorun
+  // hands them down (a `clusterRegion` locus, or the visible blocks) and the
+  // dialog passes the visible blocks, so neither re-resolves them here.
+  regions: Region[]
   rpcManager: MultiRowClusterCaller
   sessionId: string
   stopToken: StopToken
@@ -47,7 +48,6 @@ export async function runMultiRowClustering({
   if (sourcesWithoutLayout.length < 2) {
     return
   }
-  const regions = view.dynamicBlocks.contentBlocks
   const ret = await rpcManager.call(sessionId, 'MultiRowClusterFeatures', {
     regions,
     sources: sourcesWithoutLayout.map(s => s.name),

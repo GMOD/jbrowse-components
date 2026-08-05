@@ -4,13 +4,9 @@ import { runMultiRowClustering } from './runMultiRowClustering.ts'
 
 import type { MultiRowClusterModel } from './runMultiRowClustering.ts'
 
-const view = {
-  dynamicBlocks: {
-    contentBlocks: [
-      { refName: 'ctgA', start: 0, end: 100, assemblyName: 'volvox' },
-    ],
-  },
-} as Parameters<typeof runMultiRowClustering>[0]['view']
+const regions = [
+  { refName: 'ctgA', start: 0, end: 100, assemblyName: 'volvox' },
+]
 
 function makeModel(names: string[]) {
   const setLayoutAndClusterTree = jest.fn()
@@ -33,7 +29,7 @@ test('calls the registry RPC and applies the clustered order + tree', async () =
 
   await runMultiRowClustering({
     model,
-    view,
+    regions,
     rpcManager: { call },
     sessionId: 'sess1',
     stopToken: createStopToken(),
@@ -61,7 +57,7 @@ test('skips the RPC when fewer than two rows', async () => {
 
   await runMultiRowClustering({
     model,
-    view,
+    regions,
     rpcManager: { call },
     sessionId: 'sess1',
     stopToken: createStopToken(),

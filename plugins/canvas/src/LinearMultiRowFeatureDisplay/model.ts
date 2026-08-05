@@ -123,6 +123,15 @@ export default function stateModelFactory(
         runClustering: types.maybe(types.boolean),
         /**
          * #property
+         * Where that run reads from, as a locstring (whitespace-separated for
+         * several). Clustering is region-scoped, so running it over the visible
+         * window feeds the estimator whatever is on screen; naming the locus
+         * instead lets a session cluster on the signal and show it against its
+         * context. Cleared with `runClustering`.
+         */
+        clusterRegion: types.maybe(types.string),
+        /**
+         * #property
          * Transient declarative launch spec (like `runClustering`): set
          * `{refName, pos}` to sort the rows once by the value each carries at
          * that genomic position — the in-app, session-expressible equivalent of a
@@ -731,6 +740,12 @@ export default function stateModelFactory(
        */
       setRunClustering(arg?: boolean) {
         self.runClustering = arg
+      },
+      /**
+       * #action
+       */
+      setClusterRegion(arg?: string) {
+        self.clusterRegion = arg
       },
       /**
        * #action

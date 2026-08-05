@@ -1,10 +1,12 @@
-import { getContainingView } from '@jbrowse/core/util'
+import { getContainingView, getSession } from '@jbrowse/core/util'
 import { isAbortException } from '@jbrowse/core/util/aborting'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import type { RpcStatus } from '@jbrowse/core/util'
+import { parseClusterRegion } from './clusterRegion.ts'
+
+import type { Region, RpcStatus } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -38,7 +40,11 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 export function setupRunClusteringAutorun(
   self: IStateTreeNode & {
     runClustering?: boolean
+    // The locus the run reads from, if the session named one. Optional on the
+    // type because a display can adopt the trigger without the region.
+    clusterRegion?: string
     setRunClustering: (arg?: boolean) => void
+    setClusterRegion?: (arg?: string) => void
     setStatusMessage: (status?: RpcStatus) => void
     makeStatusCallback: () => (status: RpcStatus) => void
   },
@@ -49,6 +55,10 @@ export function setupRunClusteringAutorun(
       view: LinearGenomeViewModel,
       stopToken: StopToken,
       statusCallback: (status: RpcStatus) => void,
+      // What to cluster over: `clusterRegion` resolved, or the visible blocks.
+      // Handed to `run` rather than left for each flavor to read off the view,
+      // so all three answer "where did this clustering read from" the same way.
+      regions: Region[],
     ) => Promise<void>
   },
 ) {
@@ -70,11 +80,17 @@ export function setupRunClusteringAutorun(
         const stopToken = createStopToken()
         const report = self.makeStatusCallback()
         try {
-          await opts.run(view, stopToken, status => {
-            if (applying) {
-              report(status)
-            }
-          })
+          const regions = await clusterRegions(self, view)
+          await opts.run(
+            view,
+            stopToken,
+            status => {
+              if (applying) {
+                report(status)
+              }
+            },
+            regions,
+          )
         } catch (e) {
           if (!isAbortException(e) && isAlive(self)) {
             console.error(e)
@@ -83,7 +99,10 @@ export function setupRunClusteringAutorun(
           stopStopToken(stopToken)
           if (isAlive(self)) {
             self.setStatusMessage(undefined)
+            // both halves of the trigger, since the region is its argument: a
+            // saved session must not keep a locus that no run is coming for
             self.setRunClustering(undefined)
+            self.setClusterRegion?.(undefined)
           }
           applying = false
         }
@@ -91,4 +110,27 @@ export function setupRunClusteringAutorun(
       { delay: 500, name: opts.name },
     ),
   )
+}
+
+// The declared locus if there is one, else what is on screen. Resolved on the
+// client because the assembly is what turns a locstring into a region, and only
+// the client has one.
+async function clusterRegions(
+  self: IStateTreeNode & { clusterRegion?: string },
+  view: LinearGenomeViewModel,
+): Promise<Region[]> {
+  const { clusterRegion } = self
+  const assemblyName = view.assemblyNames[0]
+  if (!clusterRegion || !assemblyName) {
+    return view.dynamicBlocks.contentBlocks
+  }
+  // waitForAssembly, not `get`: the autorun can fire on the first ready tick,
+  // before the assembly manager has finished loading refNames, and a locstring
+  // cannot be validated without them
+  const assembly =
+    await getSession(self).assemblyManager.waitForAssembly(assemblyName)
+  if (!assembly) {
+    throw new Error(`assembly ${assemblyName} not found`)
+  }
+  return parseClusterRegion(clusterRegion, assembly, assemblyName)
 }

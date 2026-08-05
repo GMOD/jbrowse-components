@@ -13,12 +13,15 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 // clustering autorun: fires once on `runClustering: true` and runs the real
 // score-matrix RPC at the default sampling density (see
 // DEFAULT_SAMPLES_PER_PIXEL for why this ignores the dialog's persisted
-// preference). Refuses a single row, matching the track menu's gate.
+// preference), over the `clusterRegion` locus if the session named one and the
+// visible blocks if not. Refuses a single row, matching the track menu's gate.
 export function getWiggleClusterAutorun(
   self: IStateTreeNode &
     ReducedModel & {
       runClustering?: boolean
+      clusterRegion?: string
       setRunClustering: (arg?: boolean) => void
+      setClusterRegion: (arg?: string) => void
       setStatusMessage: (status?: RpcStatus) => void
       makeStatusCallback: () => (status: RpcStatus) => void
     },
@@ -26,12 +29,13 @@ export function getWiggleClusterAutorun(
   setupRunClusteringAutorun(self, {
     name: 'AutoRunMultiWiggleClustering',
     ready: () => self.sourcesWithoutLayout.length > 1,
-    run: (_view, stopToken, statusCallback) =>
+    run: (_view, stopToken, statusCallback, regions) =>
       runWiggleClustering({
         model: self,
         rpcManager: getSession(self).rpcManager,
         sessionId: getRpcSessionId(self),
         samplesPerPixel: DEFAULT_SAMPLES_PER_PIXEL,
+        regions,
         stopToken,
         statusCallback,
       }),

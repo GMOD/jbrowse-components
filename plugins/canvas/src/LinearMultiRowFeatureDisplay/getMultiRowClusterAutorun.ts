@@ -9,12 +9,15 @@ import type { RpcStatus } from '@jbrowse/core/util'
 
 // The multi-row "Cluster rows by similarity" flavor of the shared declarative-
 // clustering autorun: fires once when `runClustering` flips true (from the
-// track menu or a saved session) and runs the real feature-matrix RPC, then
-// clears the flag.
+// track menu or a saved session) and runs the real feature-matrix RPC over
+// whatever the autorun resolved -- the `clusterRegion` locus if the session
+// named one, the visible blocks if not -- then clears the flag.
 export function getMultiRowClusterAutorun(
   self: MultiRowClusterModel & {
     runClustering?: boolean
+    clusterRegion?: string
     setRunClustering: (arg?: boolean) => void
+    setClusterRegion: (arg?: string) => void
     setStatusMessage: (status?: RpcStatus) => void
     makeStatusCallback: () => (status: RpcStatus) => void
   },
@@ -22,10 +25,10 @@ export function getMultiRowClusterAutorun(
   setupRunClusteringAutorun(self, {
     name: 'AutoRunMultiRowClustering',
     ready: () => self.sourcesWithoutLayout.length > 1,
-    run: (view, stopToken, statusCallback) =>
+    run: (_view, stopToken, statusCallback, regions) =>
       runMultiRowClustering({
         model: self,
-        view,
+        regions,
         rpcManager: getSession(self).rpcManager,
         sessionId: getRpcSessionId(self),
         stopToken,

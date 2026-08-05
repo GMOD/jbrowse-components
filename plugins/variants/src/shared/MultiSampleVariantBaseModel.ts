@@ -752,11 +752,6 @@ export default function MultiSampleVariantBaseModelF(
 
         setRunClustering(arg?: boolean) {
           self.runClustering = arg
-          // the region is the trigger's argument, not a setting of its own: a
-          // saved session must not keep one that no run is coming for
-          if (!arg) {
-            self.clusterRegion = undefined
-          }
         },
         /**
          * #action

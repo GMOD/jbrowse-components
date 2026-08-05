@@ -104,6 +104,14 @@ export default function stateModelFactory(
         // getWiggleClusterAutorun and cleared afterwards so a saved session
         // never re-triggers it.
         runClustering: types.maybe(types.boolean),
+        // Where that run reads from, as a locstring (whitespace-separated for
+        // several). Clustering is region-scoped, so running it over the visible
+        // window feeds the estimator whatever is on screen; naming the locus
+        // instead lets a session cluster on the signal and show it against its
+        // context. Cleared with `runClustering`. The sampling density then
+        // comes from the named span rather than from the view's zoom, since the
+        // columns are pixel bins (clusterScoreMatrixArgs).
+        clusterRegion: types.maybe(types.string),
       }),
     )
     .volatile(() => ({
@@ -380,6 +388,12 @@ export default function stateModelFactory(
 
         setRunClustering(arg?: boolean) {
           self.runClustering = arg
+        },
+        /**
+         * #action
+         */
+        setClusterRegion(arg?: string) {
+          self.clusterRegion = arg
         },
       }
     })
