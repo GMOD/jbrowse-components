@@ -333,6 +333,19 @@ export class RemoteFileWithRangeCache extends RemoteFile {
   private joinRun(state: RunState, signal: RequestInit['signal']) {
     if (!signal) {
       state.pinned = true
+    } else if (signal.aborted) {
+      // A reader that has already given up is not a waiter, and must not be
+      // counted as one: an `abort` listener never fires on a signal that
+      // aborted before it was added, so nothing would ever take this signal
+      // back out of the set. The count would never reach zero and the request
+      // would be uncancellable for everyone sharing it, silently.
+      //
+      // `getCachedRange` rejects such a reader before it gets here, so this is
+      // the belt to that braces — the invariant is too quiet to fail to be left
+      // resting on a check several frames away.
+      if (!state.pinned && state.signals.size === 0) {
+        state.controller.abort(signal.reason)
+      }
     } else if (!state.signals.has(signal)) {
       // guarded so one signal joining twice — a read spanning several chunks of
       // the same run — does not add two listeners
@@ -378,6 +391,12 @@ export class RemoteFileWithRangeCache extends RemoteFile {
     length: number,
     init?: RequestInit,
   ) {
+    // A read whose caller has already given up must not join, or even open, a
+    // request. On a pan the abort routinely lands while the index is still
+    // being read — nothing between there and here looks at the signal — so a
+    // whole batch of reads arrives already cancelled, and letting them through
+    // both wastes the fetch and poisons the reference count (see joinRun).
+    init?.signal?.throwIfAborted()
     // Clamp to a known file size. @gmod/bam and @gmod/tabix compute
     // fetchedSize() = maxv.blockPosition + (1<<16) - minv.blockPosition to
     // guarantee they read the complete final bgzf block, so their last read of

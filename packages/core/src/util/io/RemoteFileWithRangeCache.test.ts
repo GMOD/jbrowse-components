@@ -817,6 +817,39 @@ describe('RemoteFileWithRangeCache aborted-chunk sharing', () => {
     expect(calls).toHaveLength(1)
   })
 
+  test('a reader that already aborted does not keep the request alive', async () => {
+    const { mockFetch } = createGatedFetch()
+    const file = makeFile(mockFetch)
+    const live = new AbortController()
+    const dead = new AbortController()
+    dead.abort()
+
+    const liveRead = file.fetch('https://example.com/data.bin', {
+      headers: { range: 'bytes=0-99' },
+      signal: live.signal,
+    })
+    const deadRead = file.fetch('https://example.com/data.bin', {
+      headers: { range: 'bytes=100-199' },
+      signal: dead.signal,
+    })
+
+    // A caller that has already given up is not a waiter. Registering it would
+    // put a signal into the run's set that nothing can ever take out — an
+    // `abort` listener never fires on a signal that aborted before it was added
+    // — so the count would never reach zero and the request would be
+    // uncancellable for everyone, silently.
+    //
+    // This is the ordinary pan, not an edge case: the abort lands while the
+    // index is still being read, and nothing between there and here looks at
+    // the signal, so a whole batch of reads arrives already cancelled.
+    await expect(deadRead).rejects.toThrow(/abort/i)
+
+    live.abort()
+    // the gate is never released; if the dead reader had been counted, this
+    // request would still be in flight and this would hang
+    await expect(liveRead).rejects.toThrow(/abort/i)
+  })
+
   test('cancels the request once every sharer has aborted', async () => {
     const { calls, mockFetch } = createGatedFetch()
     const file = makeFile(mockFetch)
