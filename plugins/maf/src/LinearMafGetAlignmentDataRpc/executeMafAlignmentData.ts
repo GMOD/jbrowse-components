@@ -234,6 +234,7 @@ export async function executeMafAlignmentData({
   // returning to the caller, whose type is the RpcRegistry
   // `LinearMafGetAlignmentData.return` declaration. Hence no return annotation
   // on this function and no cast here.
+  // #region zeroCopy
   const regionData: MafWireRegionData = { blocks, coverage, refSampleId }
   const result: LinearMafGetAlignmentDataResult = {
     samples,
@@ -241,5 +242,9 @@ export async function executeMafAlignmentData({
     samplesCanonical: hasConfiguredSamples,
     regionData,
   }
+  // second arg is the transfer list: these buffers are moved to the main
+  // thread, not structured-cloned. collectMafTransferables walks the result and
+  // gathers every ArrayBuffer in it.
   return rpcResult(result, collectMafTransferables(regionData))
+  // #endregion
 }

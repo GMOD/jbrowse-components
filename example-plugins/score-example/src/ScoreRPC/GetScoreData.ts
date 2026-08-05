@@ -5,6 +5,10 @@ import { buildScoreResult } from './buildScoreResult.ts'
 
 import type { GetScoreDataArgs, ScoreRegionData } from './rpcTypes.ts'
 
+// #region registry
+// Registering the name here is what types `rpcManager.call(…, 'GetScoreData', …)`
+// at every call site: the args are checked and the return type is inferred,
+// instead of both being `any`.
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     GetScoreData: {
@@ -13,6 +17,7 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
     }
   }
 }
+// #endregion
 
 export default class GetScoreData extends RpcMethodType {
   name = 'GetScoreData'

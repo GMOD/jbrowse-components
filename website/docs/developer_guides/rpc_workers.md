@@ -32,107 +32,190 @@ adapter caches stay warm across calls from the same session.
 
 ## Implementing an RPC method
 
-Extend `RpcMethodType` and implement `execute()`:
+Extend `RpcMethodType` and implement `execute()`. `GetScoreData` from
+[`example-plugins/score-example`](/docs/developer_guides/plotting_features) is a
+complete one — it deserializes, resolves the adapter, fetches, and packs the
+result into typed arrays:
+
+<!-- include: example-plugins/score-example/src/ScoreRPC/GetScoreData.ts -->
 
 ```ts
+import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type PluginManager from '@jbrowse/core/PluginManager'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
+import { buildScoreResult } from './buildScoreResult.ts'
 
-interface MyRpcArgs {
-  sessionId: string
-  adapterConfig: AnyConfigurationModel
-  region: { refName: string; start: number; end: number; assemblyName: string }
-  stopToken?: StopToken
+import type { GetScoreDataArgs, ScoreRegionData } from './rpcTypes.ts'
+
+// Registering the name here is what types `rpcManager.call(…, 'GetScoreData', …)`
+// at every call site: the args are checked and the return type is inferred,
+// instead of both being `any`.
+declare module '@jbrowse/core/rpc/RpcRegistry' {
+  interface RpcRegistry {
+    GetScoreData: {
+      args: GetScoreDataArgs
+      return: ScoreRegionData
+    }
+  }
 }
 
-export default class MyRpcMethod extends RpcMethodType {
-  name = 'MyRpcMethod'
+export default class GetScoreData extends RpcMethodType {
+  name = 'GetScoreData'
 
-  async execute(args: MyRpcArgs, rpcDriverClassName: string) {
-    // deserialize first: handles the blob map and other transport concerns
-    const { sessionId, adapterConfig, region, stopToken } =
+  async execute(args: GetScoreDataArgs, rpcDriverClassName: string) {
+    const { sessionId, adapterConfig, region, scoreColumn, stopToken } =
       await this.deserializeArguments(args, rpcDriverClassName)
-
-    const { dataAdapter } = await getAdapter(
-      this.pluginManager,
+    const dataAdapter = await getFeatureAdapterOrThrow({
+      pluginManager: this.pluginManager,
       sessionId,
       adapterConfig,
-    )
-
-    return computeResult(dataAdapter, region, stopToken)
+    })
+    const features = await dataAdapter.getFeaturesArray(region, { stopToken })
+    return buildScoreResult(features, scoreColumn)
   }
 }
 ```
 
+`deserializeArguments` comes first because it handles the blob map and the other
+transport concerns; read the args off its result, not off the raw `args`.
+
 ### Renaming regions
 
-If your method receives `Region` objects, call `renameRegions` inside
-`serializeArguments` to resolve refName aliases before the args cross the worker
-boundary:
+If your method receives `Region` objects, their refNames are in the _assembly's_
+naming scheme and the data adapter may use another (`chr1` vs `1`). Don't write
+the `serializeArguments` override yourself — extend
+`RpcMethodTypeWithRenameRegions`, which is that override:
+
+<!-- include: packages/core/src/pluggableElementTypes/RpcMethodTypeWithRenameRegions.ts -->
 
 ```ts
-async serializeArguments(args: MyRpcArgs, rpcDriverClassName: string) {
-  return super.serializeArguments(
-    await this.renameRegions(args),
-    rpcDriverClassName,
-  )
+import RpcMethodType from './RpcMethodType.ts'
+
+import type { RenameRegionsArgs } from './RpcMethodType.ts'
+
+// Base for RPC methods whose serialize step just maps region refNames into the
+// data adapter's naming scheme. Subclasses get region renaming for free;
+// override serializeArguments only to add extra transforms, calling super to
+// keep the renaming.
+export default abstract class RpcMethodTypeWithRenameRegions<
+  MethodName extends string = string,
+> extends RpcMethodType<MethodName> {
+  async serializeArguments<T extends RenameRegionsArgs>(
+    args: T,
+    rpcDriverClassName: string,
+  ) {
+    return super.serializeArguments(
+      await this.renameRegions(args),
+      rpcDriverClassName,
+    )
+  }
 }
 ```
+
+There are two siblings for the shapes that differ:
+`RpcMethodTypeWithRenameRegion` for a method taking a single `region` rather
+than a `regions` array, and `RpcMethodTypeWithFiltersAndRenameRegions`, which
+additionally deserializes a serialized filter chain. Core's `CoreGetFeatures`
+and `CoreGetRegionByteEstimate` both use the plural one.
 
 ### Returning ArrayBuffers zero-copy
 
-Wrap results with `rpcResult` to transfer `ArrayBuffer`s without copying:
+Wrap the result with `rpcResult` to transfer `ArrayBuffer`s instead of copying
+them. The MAF alignment method returns several typed arrays this way:
+
+<!-- include: plugins/maf/src/LinearMafGetAlignmentDataRpc/executeMafAlignmentData.ts#zeroCopy -->
 
 ```ts
-import { rpcResult } from '@jbrowse/core/util/librpc'
-
-async execute(args: MyRpcArgs, rpcDriverClassName: string) {
-  const { sessionId, adapterConfig, region } =
-    await this.deserializeArguments(args, rpcDriverClassName)
-  const buf = await buildBuffer(...)
-  // second arg is the transfer list: buffers are moved, not copied
-  return rpcResult(buf, [buf.buffer])
+const regionData: MafWireRegionData = { blocks, coverage, refSampleId }
+const result: LinearMafGetAlignmentDataResult = {
+  samples,
+  treeNewick,
+  samplesCanonical: hasConfiguredSamples,
+  regionData,
 }
+// second arg is the transfer list: these buffers are moved to the main
+// thread, not structured-cloned. collectMafTransferables walks the result and
+// gathers every ArrayBuffer in it.
+return rpcResult(result, collectMafTransferables(regionData))
 ```
+
+A transferred buffer is **neutered** in the worker — it has zero length there
+afterwards. That is fine for a value you are returning and never touch again,
+and a bug if the worker keeps it in a cache.
 
 ## Registering the method
 
-In your plugin's `install()`:
+`addRpcMethod` takes a factory, called once per realm — the main thread and each
+worker construct their own instance:
+
+<!-- include: example-plugins/score-example/src/ScoreRPC/index.ts -->
+
+```ts
+import GetScoreData from './GetScoreData.ts'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+
+export default function ScoreRPCF(pluginManager: PluginManager) {
+  pluginManager.addRpcMethod(() => new GetScoreData(pluginManager))
+}
+```
+
+Call that from your plugin's `install()`, alongside whatever else the plugin
+registers:
+
+<!-- include: example-plugins/score-example/src/index.ts -->
 
 ```ts
 import Plugin from '@jbrowse/core/Plugin'
+
+import LinearScoreDisplayF from './LinearScoreDisplay/index.ts'
+import ScoreRPCF from './ScoreRPC/index.ts'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-import MyRpcMethod from './MyRpcMethod.ts'
-
-export default class MyPlugin extends Plugin {
-  name = 'MyPlugin'
+export default class ScoreExamplePlugin extends Plugin {
+  name = 'ScoreExamplePlugin'
 
   install(pluginManager: PluginManager) {
-    pluginManager.addRpcMethod(() => new MyRpcMethod(pluginManager))
+    LinearScoreDisplayF(pluginManager)
+    ScoreRPCF(pluginManager)
   }
 }
 ```
 
 ## Calling from the main thread
 
+`getRpcSessionId(self)` is the sticky session id and
+`getSession(self).rpcManager` dispatches. Note that `sessionId` is **not**
+repeated inside the args object — `call` injects it from its first parameter,
+and a registered method's args type is `Omit<…, 'sessionId'>`, so passing it
+again is a type error:
+
 ```ts
 import { getRpcSessionId, getSession } from '@jbrowse/core/util'
 
-// Inside an MST action or async function that has access to a model
+// inside an MST action on a model
 const sessionId = getRpcSessionId(self)
 const { rpcManager } = getSession(self)
 
-const result = await rpcManager.call(sessionId, 'MyRpcMethod', {
-  sessionId,
+const result = await rpcManager.call(sessionId, 'GetScoreData', {
   adapterConfig: self.adapterConfig,
-  region: { refName: 'chr1', start: 0, end: 1000, assemblyName: 'hg38' },
+  region,
+  scoreColumn: 'score',
+  stopToken,
 })
 ```
+
+A per-region display does not call it this way. `fetchEachRegion` owns
+cancellation, stop tokens and staleness, and `LinearScoreDisplay`'s
+`fetchNeeded` hands the call to it — see
+[](/docs/developer_guides/data_fetching) and the worked model in
+[](/docs/developer_guides/plotting_features).
+
+This goes through `fetchEachRegion`, which owns cancellation, stop tokens and
+staleness for a per-region display — see
+[](/docs/developer_guides/data_fetching). A one-off call needs none of that and
+can `await rpcManager.call(...)` directly.
 
 ## What can cross the worker boundary
 
@@ -154,40 +237,51 @@ The worker boundary uses the [Structured Clone Algorithm][sca]. Safe types:
 ### Status callbacks
 
 The RPC layer intercepts `statusCallback` props and channels them back to the
-main thread via a side-channel. Pass it through to your adapter calls:
+main thread, which is the one exception to "no functions cross the boundary" —
+the function never actually goes; a side-channel does. The main-thread half is
+the `statusCallback` in the call above; a per-region display gets it from
+`makeRegionStatusCallback`, which routes each region's messages to that region's
+slot in the loading UI.
+
+In the worker it arrives deserialized and is called normally — pass it down to
+whatever does the slow work, usually the adapter:
 
 ```ts
-// main thread
-await rpcManager.call(sessionId, 'MyRpcMethod', {
-  statusCallback: (msg: string) => {
-    if (isAlive(self)) self.setStatusMessage(msg)
-  },
+const { statusCallback, stopToken } = await this.deserializeArguments(
+  args,
+  rpcDriverClassName,
+)
+statusCallback?.('Loading index…')
+const features = await dataAdapter.getFeaturesArray(region, {
+  stopToken,
+  statusCallback,
 })
-
-// worker: statusCallback arrives deserialized and can be called normally
-async execute(args, rpcDriverClassName) {
-  const { statusCallback } = await this.deserializeArguments(args, rpcDriverClassName)
-  statusCallback?.('Loading index…')
-}
 ```
 
 ## Type-registering your method
 
-Add an augmentation to `RpcRegistry` so `rpcManager.call` is fully typed:
+Add an augmentation to `RpcRegistry` so `rpcManager.call` is fully typed. It
+goes in the file that defines the method, which is why it appears at the top of
+`GetScoreData` above:
+
+<!-- include: example-plugins/score-example/src/ScoreRPC/GetScoreData.ts#registry -->
 
 ```ts
-// myPlugin/MyRpcMethod.ts
-import type { MyRpcArgs, MyReturnType } from './types.ts'
-
+// Registering the name here is what types `rpcManager.call(…, 'GetScoreData', …)`
+// at every call site: the args are checked and the return type is inferred,
+// instead of both being `any`.
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
-    MyRpcMethod: {
-      args: MyRpcArgs
-      return: MyReturnType
+    GetScoreData: {
+      args: GetScoreDataArgs
+      return: ScoreRegionData
     }
   }
 }
 ```
+
+Without it both overloads fall back to `any`, so a misspelled arg or a wrong
+assumption about the return type compiles.
 
 ## Worker count and configuration
 

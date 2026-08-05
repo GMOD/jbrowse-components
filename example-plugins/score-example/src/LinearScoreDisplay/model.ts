@@ -84,6 +84,8 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
               region,
               ...self.rpcProps(),
               stopToken: ctx.stopToken,
+              // the RPC layer replaces this function with a side-channel and
+              // calls it on the main thread as the worker reports progress
               statusCallback:
                 self.makeRegionStatusCallback(displayedRegionIndex),
             }),

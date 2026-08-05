@@ -116,6 +116,9 @@ import { buildScoreResult } from './buildScoreResult.ts'
 
 import type { GetScoreDataArgs, ScoreRegionData } from './rpcTypes.ts'
 
+// Registering the name here is what types `rpcManager.call(…, 'GetScoreData', …)`
+// at every call site: the args are checked and the return type is inferred,
+// instead of both being `any`.
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     GetScoreData: {
@@ -238,6 +241,8 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
               region,
               ...self.rpcProps(),
               stopToken: ctx.stopToken,
+              // the RPC layer replaces this function with a side-channel and
+              // calls it on the main thread as the worker reports progress
               statusCallback:
                 self.makeRegionStatusCallback(displayedRegionIndex),
             }),
