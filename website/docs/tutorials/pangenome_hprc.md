@@ -591,15 +591,16 @@ all Satellite). Pin `minScore`/`maxScore` to 0 and 1 rather than autoscaling, or
 each row rescales to its own maximum and the comparison the track exists for
 disappears.
 
-<Figure caption="Repeat density by class over the last 650 kb of chr17 in each assembly, on the same 0-1 scale. Top: GRCh38, where LINE and SINE run at about the same level. Bottom: CHM13's own last 650 kb, where the LINE row is near-saturated and the SINE row is lower than GRCh38's. The sequence the older reference was missing is not generically repetitive: it is an L1 field, and it holds less Alu than the reference sequence it continues." src="/img/pangenome/hprc_repeat_classes.png" />
+<Figure caption="Repeat density by class over the last 650 kb of chr17 in each assembly, on the same 0-1 scale. Top: GRCh38, where the LINE and SINE rows run at about the same level. Bottom: CHM13's own last 650 kb, where the LINE row sits higher and the SINE row lower. The two windows hold the same total amount of repeat, so what separates them is composition rather than quantity: more L1, less Alu." src="/img/pangenome/hprc_repeat_classes.png" />
 
 Each pane is its own assembly's last 650 kb, not a lifted-over interval: there
 is no lift-over for sequence one of them does not have, so what is being
 compared is what each assembly ends the chromosome with. Over those two windows
-`build_repeat_density.sh` reports LINE at 13.71% against 70.05%, SINE at 13.58%
-against 10.53%, and total repeat at 37.22% against 76.37%, so a single density
-lane would have shown the doubling and hidden that one class went up fivefold
-while another went down.
+`build_repeat_density.sh` reports LINE at 13.71% against 16.51%, SINE at 13.58%
+against 9.00%, and total repeat at 37.22% against 36.48%, so a single density
+lane would have reported no difference between the two windows at all. The
+insertion allele on its own is the sharper version of the same contrast, at
+23.70% LINE against 14.18% and 14.47% in the CHM13 sequence either side of it.
 
 ## The bubble track
 

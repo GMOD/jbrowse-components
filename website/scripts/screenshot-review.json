@@ -206,9 +206,9 @@
   },
   "sv_cgiab/cnv_with_bed_track": {
     "name": "sv_cgiab/cnv_with_bed_track",
-    "status": "answered",
+    "status": "good",
     "note": "BAF added, and the coverage lane fixed so it can be read. Both halves of the note. (1) THE BAF TRACK: chr5 is the chromosome that most rewards one -- the benchmark calls three allelic states on it where chr3 (cnv_depth_baf) has two. Measured off the hosted bigWig per 2 Mb of het sites: chr5:20-22 Mb CN 2 (1|1) is 84% between 0.4 and 0.6, chr5:37-39 Mb CN 3 (2|1) is 45% at 0.15-0.4 and 49% at 0.6-0.85, chr5:60-62 Mb CN 1 (0|1) is 48% below 0.15 and 51% above 0.85 with nothing between. So the lane draws one band, then the 1/3-2/3 fork the tutorial's own table predicts for a gain, then the two LOH bands. (2) NORMALIZED READ DEPTH, and the tool that does it: that is what the coverage lane already was -- goleft indexcov normalizes each sample to its own median, which is the only reason the two rows can be read against each other. It did not LOOK like it because the display was on localsd autoscale while the walkthrough text tells the reader to apply a manual min/max cap: indexcov's centromere and repeat spikes run to 497, so every plateau sat in the bottom fifth of the lane as one cloud. Fixed 0..3 with crosshatches now, where the tumor's three levels (0.6 / 1.1 / 1.9 by median) step against the normal's flat 1.0. Caption and the walkthrough paragraph updated; viewport 690 -> 830.",
-    "reviewedAt": "2026-08-05T00:40:09.899Z",
+    "reviewedAt": "2026-08-05T00:57:38.361Z",
     "hash": "fb95af4ddcaf56cce21a3cd96d6ff3f7e68b3058"
   },
   "sv_cgiab/synteny_view": {
@@ -1170,9 +1170,9 @@
   "maf_codon_tooltip": {
     "name": "maf_codon_tooltip",
     "status": "good",
-    "note": "might consider deleting this, the tooltip is uninteresting users will find it KEPT: this is the only figure illustrating the '## Tooltips' section of maf_track.md, the concrete readout (species codon/AA vs reference, nonsynonymous label, CDS frame/gene) the prose promises. maf_470way_codon shows colored codon cells with no readout, so nothing else demonstrates what hovering surfaces. No image change.",
-    "reviewedAt": "2026-07-27T06:00:00.000Z",
-    "hash": "8c26281197d3f9a9b2395bc305bd4b1fe9d6fd87"
+    "note": "",
+    "reviewedAt": "2026-08-05T00:57:25.812Z",
+    "hash": "2b5f0c14368c7c81699152978fea67e80c90461c"
   },
   "gc_content": {
     "name": "gc_content",
@@ -1841,10 +1841,10 @@
   },
   "hprc2/mhc_clustered": {
     "name": "hprc2/mhc_clustered",
-    "status": "good",
-    "note": "add the variant as a plain old linearvariantdisplay also. if needed, we might want to even make the multisamplevariantdisplay support this...as an option...above the display...since it may be a common need DONE, as a lane above the haplotype rows: same VCF, same >=50bp / LV==0 filter, one collapsed row of glyphs, so a column of the matrix now has a variant with a width and a type over it. It needs a second track config because a track appears once in a view, and the two lanes share the adapter and the filter so they cannot disagree about which sites they show. Worth knowing if you write this yourself: the plain display's filter goes in jexlFiltersSetting (already 'jexl:'-prefixed), NOT the jexlFilters the multi-sample display takes -- that slot holds unprefixed expressions and prefixes on read, so passing prefixed strings gives 'jexl:jexl:' and an error banner. ON THE BUILT-IN OPTION: not built, and the two-track form is what proves out what it should do before a slot exists. If you want it, the natural shape is a display-level boolean that reserves a row above the matrix for the site glyphs and shares the display's filter/colorBy, which is a variants-plugin change (model slot, layout in the display component, SVG export, config doc). Say the word.",
-    "reviewedAt": "2026-08-02T20:05:56.642Z",
-    "hash": "f11467a7ef358dc4bb01917e1f49aa8225a6f1b5"
+    "status": "bad",
+    "note": "hard to tell what is going on with the hprc2 structural alleles. is this 'collapsed' from plugins/canvas? need proper layout i think to see nested features. add the variant as a plain old linearvariantdisplay also. if needed, we might want to even make the multisamplevariantdisplay support this...as an option...above the display...since it may be a common need DONE, as a lane above the haplotype rows: same VCF, same >=50bp / LV==0 filter, one collapsed row of glyphs, so a column of the matrix now has a variant with a width and a type over it. It needs a second track config because a track appears once in a view, and the two lanes share the adapter and the filter so they cannot disagree about which sites they show. Worth knowing if you write this yourself: the plain display's filter goes in jexlFiltersSetting (already 'jexl:'-prefixed), NOT the jexlFilters the multi-sample display takes -- that slot holds unprefixed expressions and prefixes on read, so passing prefixed strings gives 'jexl:jexl:' and an error banner. ON THE BUILT-IN OPTION: not built, and the two-track form is what proves out what it should do before a slot exists. If you want it, the natural shape is a display-level boolean that reserves a row above the matrix for the site glyphs and shares the display's filter/colorBy, which is a variants-plugin change (model slot, layout in the display component, SVG export, config doc). Say the word.",
+    "reviewedAt": "2026-08-05T00:56:54.788Z",
+    "hash": "5d75c6f683f915aacabf7c412930928ae7f3be1a"
   },
   "multirow/display_types_menu": {
     "name": "multirow/display_types_menu",
@@ -2212,16 +2212,16 @@
   "dog10k-wolfdog-block-genotypes": {
     "name": "dog10k-wolfdog-block-genotypes",
     "status": "answered",
-    "note": "DONE, all three asks. ZOOMED OUT 15 kb -> 1.5 Mb, and the window is picked for its EDGES rather than for sitting inside a block: NINE of the 64 haplotypes end a wolf block in it. That is the answer to 'what is it supposed to show' -- inside a block, a wolf-called haplotype carrying wolf alleles is barely a claim; at an edge the painting says the alleles stop at a coordinate and either they do or they don't. 49 markers now rather than 21. The build script counts the markers carried each side of every edge, so the figure is not the only place the claim lives, and the count says something better than 'the edges line up': three of the four WOLFDOG edges are exact (23/23 wolf alleles then 0/26 for both haplotypes ending at 112,576,175; 41/43 then 0/6 for Saarloos 1 hap1), the five sweep-breed edges are not (Chow Chow and Kai Ken 13/23 on their wolf side, Thai Ridgeback's block ends before the first marker), and the fourth wolfdog edge is the honest middle at 3/5 then 6/44. Long blocks hold at their boundaries and short ones do not -- the page's block-length argument arriving as an independent measurement. GENE TRACK added on top (NCBI RefSeq, canFam4). MORE DOGS: rows are now the same 32 named animals as the painting above, in the same order, so the two tracks are read against each other by counting down from the top. The painting is in the frame for the first time (at 15 kb it was a stack of solid stripes), deliberately under the label threshold so the 32 names are spent once.  REGENERATED after the tree-sidebar sidebar/chip fixes and the track rename ('Local ancestry, the 32 named animals of the 243'), so the PNG matches the two figures above.",
-    "reviewedAt": "2026-08-04T20:59:22.663Z",
+    "note": "Not deleted, but cut down to one view and stripped of the story. It was a compose: upper half the whole chromosome with the checked window boxed on it, lower half the window itself -- and the painting six paragraphs above carried the same box, so one ordinary window was marked three times. The locator half and its spec are gone, the box is gone, and what is left is the single frame: the genes, FLARE's painting for the 32 named animals, and the phased genotypes those calls were inferred from, at the 49 markers that separate the panels. KEPT RATHER THAN DELETED because it is the page's check on its own inference rather than another picture of ancestry: at a block edge the painting commits to a coordinate the genotypes can contradict, and for the long wolfdog blocks they do not (23/23 wolf alleles then 0/26) while the short sweep-breed blocks are only half-carried (13/23) or unsupported (Thai Ridgeback). The prose no longer says the window is special -- any 1.5 Mb with a few edges in it would do. If you would still rather the page ended at the painting, say so and it goes, along with the section.",
+    "reviewedAt": "2026-08-05T01:08:22.391Z",
     "hash": "b3cb8c48505bd0d045a5448a6fdc19d3b3ccec15"
   },
   "dog10k-wolfdog-ancestry": {
     "name": "dog10k-wolfdog-ancestry",
     "status": "answered",
-    "note": "DONE. New display setting rather than a figure tweak: LinearMultiRowFeatureDisplay now has a showRowSeparators slot (config slot + 'Show row separators' in the track menu's Show... submenu + SVG export), and this figure sets it. It was worth doing as a product feature because the reason the lines help here is general: rows are haplotypes, two per animal, and most of this painting is one solid dog color, so without a boundary neither the row count nor which pair of rows belongs to which sidebar name can be read off the image. Drawn as a theme-divider hairline on each row boundary, half-pixel offset so it stays 1px crisp, shared by the live display and the SVG export so they can't drift. Gated at 4px a row (rowBand's MIN_SEPARATOR_ROW_PX): below that the line is as thick as the row it borders and the grid becomes the figure, which is why the 486-row clustered figure at ~2.3px a row deliberately does not set it. The track menu item stays clickable there but carries a 'Needs rows 4px or taller' subLabel rather than being disabled.",
-    "reviewedAt": "2026-08-04T22:23:26.220Z",
-    "hash": "c0cefef5eeb9c86e6fab53b5b0d71621e26dd284"
+    "note": "Nothing is marked on it any more. The in-app highlight and the 'nine block edges' callout are both gone, so the figure is the painting: gray wolves solid orange at the head, the wolfdogs' megabase blocks under them, the sweep breeds' flecks, the German Shepherd lineage solid dog at the foot. The caption lost its 'Highlighted:' clause too. On the framing itself, you are right and the numbers say so: the build script tiles chr1 and that window holds 9 wolf-block ends against a median tile's 5, with 16 of 83 tiles at 9 or more, in a tile the genetic map gives 0.35 cM against a 0.75 cM median. It was an ordinary window with three marks pointing at it. WHAT SURVIVES, and why it is not the same story: the genotype figure below still exists as one plain view (see its own note), because a painting is an inference and the tutorials standard is to end by checking the inference against the raw data. It no longer claims the window is special -- the prose now says any 1.5 Mb holding a few edges will do.",
+    "reviewedAt": "2026-08-05T01:08:11.909Z",
+    "hash": "38c99710801094942c6e7510ce1cec64e386a4de"
   },
   "mcscan_anchors": {
     "name": "mcscan_anchors",
@@ -2239,10 +2239,10 @@
   },
   "dog10k-nhej1-cea-deletion": {
     "name": "dog10k-nhej1-cea-deletion",
-    "status": "good",
-    "note": "RESOLVED, same ask applied to this figure (the note's 'stop codon' wording is from the CYP1A2 item; here the effect belongs to the deletion). New callout left of the column, arrow into it: '7.8 kb intron deletion, recessive: / homozygotes have Collie eye anomaly'. Recessive is the load-bearing word -- CEA is recessive (Parker et al. 2007, OMIA 000218-9615), so dark = affected and light = unaffected carrier, which is what a reader could not get from 'heterozygous alt / homozygous alt'. The pill covers only lane the filtered single-record display paints nothing in, so no cell is hidden. Also fixed a real blemish while here: the window ran to 25,600,000, reaching past NHEJ1 (ends 25,595,616) into SLC23A3/LOC111094448, whose packed row overflowed the 110px gene track -- the capture carried the track's overflow widget and a half-cut gene label. Right edge now 25,596,000, so the gene track holds NHEJ1's three transcripts alone. Gallery links regenerated for the new loc. One sentence in dog10k_svs.md backs the recessive claim.",
-    "reviewedAt": "2026-08-04T23:16:55.122Z",
-    "hash": "467142a41660e6dfa6adb956ece2a6acc6920683"
+    "status": "bad",
+    "note": "if we have clinvar  or omia dog variants would be interesting. RESOLVED, same ask applied to this figure (the note's 'stop codon' wording is from the CYP1A2 item; here the effect belongs to the deletion). New callout left of the column, arrow into it: '7.8 kb intron deletion, recessive: / homozygotes have Collie eye anomaly'. Recessive is the load-bearing word -- CEA is recessive (Parker et al. 2007, OMIA 000218-9615), so dark = affected and light = unaffected carrier, which is what a reader could not get from 'heterozygous alt / homozygous alt'. The pill covers only lane the filtered single-record display paints nothing in, so no cell is hidden. Also fixed a real blemish while here: the window ran to 25,600,000, reaching past NHEJ1 (ends 25,595,616) into SLC23A3/LOC111094448, whose packed row overflowed the 110px gene track -- the capture carried the track's overflow widget and a half-cut gene label. Right edge now 25,596,000, so the gene track holds NHEJ1's three transcripts alone. Gallery links regenerated for the new loc. One sentence in dog10k_svs.md backs the recessive claim.",
+    "reviewedAt": "2026-08-05T00:54:45.478Z",
+    "hash": "9e7cd39da335e12dad21c59fd3b42f2f0707f0a9"
   },
   "pangenome/hprc_amylase_graph": {
     "name": "pangenome/hprc_amylase_graph",
@@ -2253,9 +2253,9 @@
   },
   "dog10k-igf1-haplotype": {
     "name": "dog10k-igf1-haplotype",
-    "status": "answered",
-    "note": "The complementary track exists and it is already on the page, one figure up: dog10k-size-fst-scan, the Hudson Fst between the same toy/small and giant panels, whole genome with IGF1 labelled and then two megabases of chr15 with the peak window banded. So the page already runs scan -> peak -> haplotype, and the evidence this figure needs is the thing a reader has just scrolled past. It CANNOT be a lane inside this frame: the scan is binned at 200 kb and this window is 220 kb, so an Fst lane here would be one or two points. Nothing else in the dog10k config is about this locus -- the other tracks are CYP1A2, FGF4, NHEJ1 and the chr1 wolfdog set -- and there is no recombination or conservation track in the demo to hang beside it. VERIFIED WHAT THE CAPTION CLAIMS, by sampling the size-swatch column down the rendered matrix: the toy and small breeds are one contiguous block over the top ~43% of the rows, the four gray wolves are a contiguous red run immediately below them, and the giants are the rest, with a handful of toy/small rows inside the giant block. So 'the upper cluster is the toy and small breeds and the lower one the giants; the wolves are the red run between them' is exact, and the clustering genuinely recovers the size split from genotype alone -- which is the figure's whole claim. WHAT I DID NOT ADD, and why: labels naming the two clusters on the figure. The only way to place them is fracY, a fraction of the display height, and the fractions come from where the clustering happened to put the blocks -- so they would be hand-measured positions that silently drift if the clustering moves. The sidebar swatch plus the Size key already name the blocks, and the caption names them in order. ONE THING TRIED AND REVERTED as a no-op, recorded so it is not tried again: pinning geneGlyphMode 'longestCoding' on the gene lane to match dog10k-size-fst-scan-igf1 above it. The re-render came back byte-identical -- the display is already in that mode without the slot being set, which the 'Longest isoform' chip in the lane's corner was already saying. NO FIGURE CHANGE, then: the window, the clustering and the two keys are right, the complementary evidence is the figure above, and what remains open is a way to label rows of a clustered matrix that does not encode where the clustering happened to put them.",
-    "reviewedAt": "2026-08-04T23:49:08.318Z",
+    "status": "bad",
+    "note": "go for it, add fst if it makes a good figure. the variants are just a 'cool tapestry' but hard to say this is meaningful in any way, it just is like, what is the biological meaning? anything?  previous notes: The complementary track exists and it is already on the page, one figure up: dog10k-size-fst-scan, the Hudson Fst between the same toy/small and giant panels, whole genome with IGF1 labelled and then two megabases of chr15 with the peak window banded. So the page already runs scan -> peak -> haplotype, and the evidence this figure needs is the thing a reader has just scrolled past. It CANNOT be a lane inside this frame: the scan is binned at 200 kb and this window is 220 kb, so an Fst lane here would be one or two points. Nothing else in the dog10k config is about this locus -- the other tracks are CYP1A2, FGF4, NHEJ1 and the chr1 wolfdog set -- and there is no recombination or conservation track in the demo to hang beside it. VERIFIED WHAT THE CAPTION CLAIMS, by sampling the size-swatch column down the rendered matrix: the toy and small breeds are one contiguous block over the top ~43% of the rows, the four gray wolves are a contiguous red run immediately below them, and the giants are the rest, with a handful of toy/small rows inside the giant block. So 'the upper cluster is the toy and small breeds and the lower one the giants; the wolves are the red run between them' is exact, and the clustering genuinely recovers the size split from genotype alone -- which is the figure's whole claim. WHAT I DID NOT ADD, and why: labels naming the two clusters on the figure. The only way to place them is fracY, a fraction of the display height, and the fractions come from where the clustering happened to put the blocks -- so they would be hand-measured positions that silently drift if the clustering moves. The sidebar swatch plus the Size key already name the blocks, and the caption names them in order. ONE THING TRIED AND REVERTED as a no-op, recorded so it is not tried again: pinning geneGlyphMode 'longestCoding' on the gene lane to match dog10k-size-fst-scan-igf1 above it. The re-render came back byte-identical -- the display is already in that mode without the slot being set, which the 'Longest isoform' chip in the lane's corner was already saying. NO FIGURE CHANGE, then: the window, the clustering and the two keys are right, the complementary evidence is the figure above, and what remains open is a way to label rows of a clustered matrix that does not encode where the clustering happened to put them.",
+    "reviewedAt": "2026-08-05T00:54:18.482Z",
     "hash": "3d35b1f1c1d5ff96d4882ed7994881c40b72b60a"
   },
   "dog10k-slc28a3-copy-number": {
@@ -2352,8 +2352,8 @@
     "name": "dog10k-fgf4-retrogene-synteny",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-04T23:16:53.551Z",
-    "hash": "c9d11eacfd8269b5ef53513c1d40ba19e4f3fe43"
+    "reviewedAt": "2026-08-05T00:53:18.231Z",
+    "hash": "514318f703c757694afe574274ea70d13cd9e69d"
   },
   "pangenome/pggb_collapsed_repeat": {
     "name": "pangenome/pggb_collapsed_repeat",
@@ -2378,9 +2378,9 @@
   },
   "tcga/mutations_cdh1_histology": {
     "name": "tcga/mutations_cdh1_histology",
-    "status": "answered",
-    "note": "Removed, and the figure keeps one label instead of two. The 'ductal' pill named the empty majority band -- the absence of the thing the figure is about -- and having a pill in each band read as a comparison between equals rather than a result in one of them. The lobular pill and the arrow into that band are what is left; the histology color strip in the gutter and its legend still say which range is which.",
-    "reviewedAt": "2026-08-05T00:27:46.512Z",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-05T00:57:58.419Z",
     "hash": "c5425a4edd80008d9b0efc133ff9068df5a5b60f"
   },
   "scrna/ms4a1_bcell": {
@@ -2455,10 +2455,10 @@
   },
   "cancer_sv/multihop_reads": {
     "name": "cancer_sv/multihop_reads",
-    "status": "good",
-    "note": "REPLACES cancer_sv/multihop_tumour_vs_normal + cancer_sv/multihop_split_view, whose review notes were: (1) 'if this is a multi-step with cancer_sv/multihop_split_view, consider making it a multi-part figure. since this are large, maybe side by side' and (2) 'this is a great screenshot, but is there a way to visualize what is happening in a linearsyntenyview also? it can be more intuitive as a linearsyntenyview style rendering.' SIDE BY SIDE DONE: one horizontal compose, the two halves as parts (so each still opens as its own live session), 950px and 960px tall each rather than two 1000x1100 figures a screen apart. Both halves were re-tuned to fill that height rather than pad it -- the read tracks are the size of their own pileups at one row per pixel, and the split view's three panels came down proportionally -- so the pair is one figure with no blank page in it. The review log now carries this one card instead of two; the parts are machinery. SYNTENY: the page already has it, two sections down, and the fix was that nothing pointed at it. cancer_sv/derivative_synteny IS the linear synteny rendering of this event: the three source loci along the top, the reconstructed derivative allele along the bottom, one ribbon per segment, with the foldback drawn as the crossing ribbon -- which is exactly the intuitive layout, and it is built from the reads rather than drawn by hand. The prose under the split view now says so, and also names the per-read route ('Linear read vs ref' on a right-clicked read, the Ribbon-style view of one read against every locus it touches).",
-    "reviewedAt": "2026-08-03T02:18:13.984Z",
-    "hash": "ef60b2496351d35015b1dee03624e454f09dc5e0"
+    "status": "bad",
+    "note": "it is unclear how this multi-hop figure was generated. if from a series of ui actions, we may want to record this as a series of screensots for multipart figure, capturing the menus and dialogs. making it as easy as possible is also valuable. REPLACES cancer_sv/multihop_tumour_vs_normal + cancer_sv/multihop_split_view, whose review notes were: (1) 'if this is a multi-step with cancer_sv/multihop_split_view, consider making it a multi-part figure. since this are large, maybe side by side' and (2) 'this is a great screenshot, but is there a way to visualize what is happening in a linearsyntenyview also? it can be more intuitive as a linearsyntenyview style rendering.' SIDE BY SIDE DONE: one horizontal compose, the two halves as parts (so each still opens as its own live session), 950px and 960px tall each rather than two 1000x1100 figures a screen apart. Both halves were re-tuned to fill that height rather than pad it -- the read tracks are the size of their own pileups at one row per pixel, and the split view's three panels came down proportionally -- so the pair is one figure with no blank page in it. The review log now carries this one card instead of two; the parts are machinery. SYNTENY: the page already has it, two sections down, and the fix was that nothing pointed at it. cancer_sv/derivative_synteny IS the linear synteny rendering of this event: the three source loci along the top, the reconstructed derivative allele along the bottom, one ribbon per segment, with the foldback drawn as the crossing ribbon -- which is exactly the intuitive layout, and it is built from the reads rather than drawn by hand. The prose under the split view now says so, and also names the per-read route ('Linear read vs ref' on a right-clicked read, the Ribbon-style view of one read against every locus it touches).",
+    "reviewedAt": "2026-08-05T00:53:18.182Z",
+    "hash": "577c5578df93cbfb6e1d81817fafb396b14045cd"
   },
   "cancer_sv/derivative_inserts": {
     "name": "cancer_sv/derivative_inserts",
@@ -2518,10 +2518,10 @@
   },
   "pangenome/hprc_chm13_allele": {
     "name": "pangenome/hprc_chm13_allele",
-    "status": "bad",
-    "note": "ideally we would zoom out the lineargenomeview even more to show how these L1 transposons are more frequent here than elsewhere. Both halves of the note are now closed, one of them by a file that did not exist when it was written. NOT COLLAPSED ANY MORE: the lane is a LinearBasicDisplay in normal layout with heightMode 'grow', so it stacks to its own row count and every element is its own bar -- long red L1s against grey everything-else, colored off the class the bigBed writes into the name after a '#'. The wording of this note matches the review the previous pass was answering, so if it was re-marked against a cached image, this is what the current one shows. THE BACKGROUND QUESTION now has a figure, which is the one thing the previous answer left open. It said the real contrast could not be drawn here (measured: the allele is 84.6% repeat, its own flanks 79.0% and 70.4%, and 50 kb bins across the megabase CHM13 adds run 70-92%, so there IS no local contrast at any zoom) and that drawing the between-assembly contrast needed a repeat-density quantitative track, \"a file to build and host, not a display setting\". That got built -- scripts/build_repeat_density.sh, one bigWig per RepeatMasker class per assembly -- and it is the NEXT figure on the page, pangenome/hprc_repeat_classes, with the section between them (\"What kind of sequence GRCh38 was missing\") saying exactly why the lane above cannot answer it. LINE 13.71% -> 70.05% against SINE 13.58% -> 10.53%. WHAT CHANGED THIS PASS: the lane's two colors carried no key, so the bottom pane read as an abstract pattern until a reader reached the caption -- which is the \"not very interesting / glitchy\" half. A 'red = LINE, nearly all L1' label now sits on the lane, anchored to the track at the top of its own band so it stays put as the lane grows to its row count.",
-    "reviewedAt": "2026-08-05T00:01:30.703Z",
-    "hash": "5f051a3b69d2d0c0e6dcc6faf7b66f40e01bc16c"
+    "status": "answered",
+    "note": "Zoom-out tried at 360 kb and at 627 kb, and NOT kept -- but the previous answer's reason for that was wrong, so here is the corrected one. The measurement it rested on (allele 84.6% repeat, flanks 79.0% and 70.4%, 'no local contrast at any zoom') came from build_repeat_density.sh reading CHM13's RepeatMasker bigBed outer spans as if they were aligned intervals. chm13v2.0_rmsk.bb is a bigRmskBed: one record is a fragmented element JOINED back together, its span covers whatever interrupted it, and those spans overlap ACROSS classes -- the four class fractions summed past 1.0 in 71% of chr17's bins and LINE read 72.5% of the chromosome against the 14.7% hg38's per-fragment table gives. Fixed in 296ebd9df8 (expand the blocks whose blockStart is not -1) and the hosted hs1 bigWigs were rebuilt and re-uploaded. CORRECTED: your instinct was right, there IS an enrichment -- the allele is 23.70% LINE against 14.18% and 14.47% in the CHM13 sequence either side, and 8.57% SINE against 13.57% on the left, so it is L1-dense AND Alu-poor. It is 1.7x as a mean over 142 kb and it is not a shape: per 20 kb the allele runs 0.07-0.42 and the flanks run 0.00-0.40, so there is no block to see and a wider window only adds neighbourhood that looks the same. 627 kb also does not draw at all -- the bigBed carries a long description per record, so past ~400 kb the lane hits its byte budget and comes back empty under FORCE LOAD. Window is back at 180 kb. What DID change is the next figure: pangenome/hprc_repeat_classes was drawing the bug (its 'LINE near-saturated', 13.71% -> 70.05%, 37% -> 76%) and now draws 13.71% -> 16.51%, SINE 13.58% -> 9.00%, total 37.22% -> 36.48% -- the same amount of repeat, a different composition. Its caption, the tutorial paragraph and the spec comments are corrected; it is left with its old verdict hash on purpose so it comes back to you as changed.",
+    "reviewedAt": "2026-08-05T01:09:37.868Z",
+    "hash": "0a58006355bd946d7db258be00bf6ea2218f583b"
   },
   "dotplot_self_chry": {
     "name": "dotplot_self_chry",
@@ -2560,9 +2560,9 @@
   },
   "ld/anopheles_r2_vs_dprime": {
     "name": "ld/anopheles_r2_vs_dprime",
-    "status": "answered",
-    "note": "Kept. What is notable is the metric comparison itself, and it is the only figure that draws it: over the same Cameroon file and the same arm, D' saturates across the 2La block AND leaves a haze over the rest of chr2L, while r2 is dimmer inside the block but near-white outside it. That is the reason LDDisplay defaults to r2 and the reason ldMetric exists, and it is not visible on either lane alone. It is also the only illustration of the ldMetric slot.",
-    "reviewedAt": "2026-08-04T21:03:12.885Z",
+    "status": "bad",
+    "note": "please double review the notes:  i am still not super convined this is worth keeping. previous notes: Kept. What is notable is the metric comparison itself, and it is the only figure that draws it: over the same Cameroon file and the same arm, D' saturates across the 2La block AND leaves a haze over the rest of chr2L, while r2 is dimmer inside the block but near-white outside it. That is the reason LDDisplay defaults to r2 and the reason ldMetric exists, and it is not visible on either lane alone. It is also the only illustration of the ldMetric slot.",
+    "reviewedAt": "2026-08-05T00:57:17.828Z",
     "hash": "58d9499e4b5e92afff7d9499e5ea0cdcdd7b2ef0"
   },
   "methylation/hg002_snrpn_ungrouped": {
@@ -2623,24 +2623,24 @@
   },
   "cancer_sv/derivative_autogenerated": {
     "name": "cancer_sv/derivative_autogenerated",
-    "status": "answered",
-    "note": "The reads are on the derived allele now -- the ask, built as the feature it needed rather than as a spec change (4ac24b5c32, projectReadsOntoDerivative). The result frame carries 'Reads on this allele (29/38 unbroken)' under the provenance track: each read placed on the allele's own axis by composing its alignment with the piecewise-linear derivative map, blue where it follows the path end to end, orange where it leaves, the break drawn as the gap between its boxes. No aligner and no consensus needed, which is what the previous pass argued was the piece actually worth building. Re-rendered against a fresh production build of the current source and the result is pixel-identical to the committed PNG, so the figure is reproducible and already current. One thing you may want next: the app caps the reads lane at 180px (9px per read, min(9n+20,180)), so on der(3) about 17 of the 38 rows are in frame and the lane scrolls -- deliberate for a launched view, but it means the figure shows a subset of the count in its own track name.",
-    "reviewedAt": "2026-08-05T00:49:27.466Z",
+    "status": "bad",
+    "note": "why are the reads not shown using alignmentstrack?that is potentially important. previous agent notes: DONE, and it is the thing the note asked for rather than a reply about it: the derivative panel now carries the reads. projectReadsOntoDerivative composes each read's alignment with the path's own reference-to-allele map, so a read lands on the allele by coordinate transformation -- no aligner, no consensus contig, nothing that needs the allele's bases (that was item (2) of the previous answer, the piece worth building; minimap2-in-wasm stays unnecessary). The lane under 'Where each segment came from' reads 'Reads on this allele (29/38 unbroken)': blue where a read follows the path end to end, orange where it leaves, with the jump drawn as the gap between its boxes. Stage 2's viewportHeight 660 -> 850 because the new lane was 187 px below the fold. Caption and the tutorial prose now name the lane.",
+    "reviewedAt": "2026-08-05T00:52:13.788Z",
     "hash": "3d2e1134ea88765fd9d6e9da382d700076d5c7cd"
   },
   "cancer_sv/foldback_reconstruction": {
     "name": "cancer_sv/foldback_reconstruction",
     "status": "answered",
-    "note": "Same feature as derivative_autogenerated, and this frame is where it says something the der(3) one cannot: 'Reads on this allele (9/19 unbroken)', where a read crossing the turnaround lands as one blue bar spanning both arms of the fold-back and the orange ones are reads whose SA chain goes somewhere this path does not. The picker frame above it now lists three candidates, two of them the genuinely distinct fold-backs COLO829's breakage-fusion-bridge cycle left 28 bp apart. On the wasm minimap2 half of the note: still not needed and still not built, because the projection is a coordinate composition rather than an alignment -- the derivative axis is piecewise-linear in reference coordinates and a read already carries its own alignment to the reference. Re-rendered against a fresh production build; pixel-identical to the committed PNG.",
-    "reviewedAt": "2026-08-05T00:49:27.936Z",
+    "note": "why are the reads not shown using alignmentstrack?that is potentially important. previous agent notes: Not a boring screenshot any more, and the answer to 'can it load the reads across the different areas' is yes, without the wasm minimap2. The reads are placed on the allele by transforming their own alignments through the path's piecewise-linear map (projectReadsOntoDerivative), so the frame now ends in 'Reads on this allele (9/19 unbroken)': a molecule that crosses the fold-back draws as ONE blue bar spanning both arms -- which is the picture the ribbons cannot make, since they are built from the reads and so can never disagree with them -- and the orange ones are chains this path does not account for. Stage 2's viewportHeight 610 -> 800, the lane having been 186 px below the fold. Caption updated.",
+    "reviewedAt": "2026-08-05T00:52:27.910Z",
     "hash": "71da710724f4b1ff3b91fb140e7c7dee181d541a"
   },
   "dog10k-wolfdog-ancestry-clustered": {
     "name": "dog10k-wolfdog-ancestry-clustered",
     "status": "answered",
-    "note": "BOTH FIXED, and both were product bugs rather than figure choices. (1) The 'sidebar label colors' you could not distinguish were not labels at all: the rendering canvas runs the full track width and the tree sidebar overlays its left edge, and its panel was 0.8 opaque, so a fifth of the painting came through behind the dendrogram — one clean tint per row, in the track's own palette, sitting exactly where a group swatch would sit. packages/tree-sidebar/src/TreeSidebar.tsx now paints the panel opaque. The gutter means nothing unless something is drawn in it, and where a swatch IS drawn (the IGF1 size column) it now reads against white instead of against a ghost of its own track. (2) The chr1:1..123,556,469 chip is gone from the frame. ClusterProvenanceHint now draws ONLY when the view has drifted off the clustered span -- the case that is silently wrong -- and the quiet 'clustered on what you are looking at' state, which is what a reader already assumes, draws nothing. The locus is still always reachable: new clusterProvenanceMenuItems puts 'Clustered on <locus>' in the Clustering submenu, and the SVG export still captions it. Tests updated to the new contract plus a new treeMenuItems.test.ts, since that menu item is now the only always-on route to the locus. NOTE: this changes every clustered figure's sidebar, not just this one. I regenerated the four dog10k ones only -- the other ~14 want a sweep, and doing it now would bake another agent's in-flight variants work into them.",
-    "reviewedAt": "2026-08-04T20:58:52.153Z",
-    "hash": "90bbd0e37fd0cf2fb59a3a03b10252b5a281b6fb"
+    "note": "KEPT, and the reason is that it is not the block-edge figure. What was wrong with dog10k-wolfdog-ancestry was a story pinned to it -- a boxed window and a callout about nine edges; this one carries no annotation, no highlight and no claim beyond what the display did. It is the same ancestry painting over 243 animals instead of 32, with the rows ordered by the track menu's own clustering rather than by FLARE's per-sample summary, and the point a reader takes from it is that an order derived from the paintings alone puts the held-out wolves at one end and the wolfdogs under them without being told which animal is which. Deleting it would take the page's only view of the full sweep and its only clustered display. The two product bugs the previous note describes (the tree sidebar's translucent panel, the always-on provenance chip) are still fixed. Say the word if you want it gone anyway.",
+    "reviewedAt": "2026-08-05T01:08:49.492Z",
+    "hash": "cf24d6a2cbf4a28572a76c7a85586cbc50438012"
   },
   "hic/overlay_controls": {
     "name": "hic/overlay_controls",

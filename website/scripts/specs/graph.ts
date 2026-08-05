@@ -659,8 +659,23 @@ const CHM13_NODE = 's504955'
 // reference span, longest allele 146,023 bp (`tabix bubbles.bed.gz
 // 'GRCh38#0#chr17:83,022,000-83,024,000'`).
 const CHM13_BUBBLE = { refName: 'chr17', start: 83022357, end: 83023380 }
-// The node's own span on CHM13, from its `SN`/`SO` tags, padded to a round window.
+// The node's own span on CHM13, from its `SN`/`SO` tags.
 const CHM13_ALLELE = { refName: 'chr17', start: 83899576, end: 84041803 }
+// The node's own span padded to a round window, and it STAYS this tight
+// (review: "ideally we would zoom out the lineargenomeview even more to show
+// how these L1 transposons are more frequent here than elsewhere"). Rendered at
+// 360 kb and at 627 kb before concluding, and the enrichment is real but is not
+// a picture. build_repeat_density.sh puts the allele at 23.70% LINE against
+// 14.18% and 14.47% in the flanks either side, which is 1.7x as a mean over
+// 142 kb; per 20 kb the allele runs 0.07-0.42 and the flanks run 0.00-0.40, so
+// there is no block for a reader to see and a wider window only adds
+// neighbourhood that looks the same. (The measurement the earlier pass made
+// here, "no local contrast, the allele sits in a subtelomere that is repeat-
+// dense end to end", was the joined-span bug in that script -- there IS a
+// contrast, it is just a mean rather than a shape.) 627 kb also does not draw
+// at all: the RepeatMasker bigBed carries a long `description` per record, so
+// past ~400 kb the lane hits its byte budget and comes back empty under a
+// FORCE LOAD prompt.
 const CHM13_ALLELE_WINDOW = 'chr17:83,880,000-84,060,000'
 
 const AMY_WINDOW = 'chr1:103,500,000-103,850,000'
@@ -821,26 +836,24 @@ const HS1_RMSK_TRACK = {
 // that are right, and the second one is what decides the first.
 //
 // A collapsed strip is a density read, and a density read is the one thing this
-// annotation cannot support here. Measured from the two files the lanes
-// themselves load: the CHM13 allele is 84.6% repeat, its own left and right
-// flanks are 79.0% and 70.4%, and 50 kb bins across the megabase CHM13 adds to
-// chr17 run 70-92% throughout. So there is no local contrast to see — the allele
-// is not repeat-dense against its neighbourhood, it sits in a subtelomere that
-// is repeat-dense end to end. The contrast that IS real is between assemblies
-// (GRCh38's last 650 kb of chr17 is 37.5% repeat, the megabase CHM13 adds is
-// ~80%), and two panes at 30 bp/px and 180 bp/px cannot be compared by eye
-// whatever the layout — which is what made the strip read as a glitch rather
-// than as a measurement. Drawing that one needs a repeat-density quantitative
-// track, i.e. a file to build and host, not a display setting.
+// annotation cannot support here. scripts/build_repeat_density.sh puts the
+// allele at 23.70% LINE against 14.18% and 14.47% in the CHM13 sequence either
+// side of it: real, and 1.7x, but only as a mean over the whole 142 kb. Per
+// 20 kb the allele runs 0.07-0.42 and its flanks run 0.00-0.40, so a strip has
+// no block to draw and a wider window only adds neighbourhood that looks the
+// same — rendered at 360 kb and 627 kb before concluding that. (An earlier pass
+// concluded something stronger here, that there is no contrast at all because
+// the allele is 84.6% repeat against flanks at 79.0% and 70.4%. Those were the
+// joined-span bug in that script; every one of them is roughly double.)
 //
 // What the annotation CAN say without a density read is what the sequence is
-// made of, and that is a per-element statement: 48 LINE elements cover 116 kb of
-// the allele's 142 kb, 34 of them over 4 kb and the longest a 13.6 kb L1MD. In
-// normal layout those are individual long bars stacked in rows, which is the
-// picture of a subtelomere built out of L1 — and it is the mechanism the lane
-// was added for, since that is the sequence a BAC-and-Sanger reference had no
-// way to place. Labels stay off: 171 repeat names over 180 kb is a wall of small
-// print, and the classes are the caption's business.
+// made of, and that is a per-element statement: 48 LINE elements in the allele's
+// 142 kb, the longest a 13.6 kb L1MD. In normal layout those are individual long
+// bars stacked in rows, which is the picture of a subtelomere built out of L1 —
+// and it is the mechanism the lane was added for, since that is the sequence a
+// BAC-and-Sanger reference had no way to place. Labels stay off: 171 repeat
+// names over 180 kb is a wall of small print, and the classes are the caption's
+// business.
 function repeatLane(trackId: string) {
   return {
     trackId,
@@ -3061,8 +3074,9 @@ export const graphSpecs: ScreenshotSpec[] = [
   // add that"). There is no gene, and there is no assembly gap either -- UCSC's
   // hg38 `gap` track has one record past 82.5 Mb on chr17 and it is the terminal
   // 10 kb telomere, so this is a real insertion allele rather than a hole GRCh38
-  // never closed. What the lane shows is the mechanism: the inserted 142 kb is
-  // 48 LINE elements covering 116 kb of it, 34 of them over 4 kb -- a stack of
+  // never closed. What the lane shows is the mechanism: the inserted 142 kb
+  // carries 48 LINE elements, 23.70% of it against 14.18% and 14.47% in the
+  // CHM13 sequence either side, and the longest is a 13.6 kb L1MD -- a stack of
   // L1, which is the sequence a BAC-and-Sanger reference had no way to place.
   //
   // ONE lane, where there were two, and not a collapsed density strip: see
@@ -3201,20 +3215,34 @@ export const graphSpecs: ScreenshotSpec[] = [
   // tutorial was asserting in prose.
   //
   // Per CLASS rather than one density line, and that is the whole result. Total
-  // repeat density says 37% -> 76% and stops. Split by class it says which:
+  // repeat density over the two windows says nothing at all — 37.22% against
+  // 36.48%, the same sequence by the only measure one lane can draw. Split by
+  // class it says the composition moved, and in opposite directions:
   //
-  //   LINE  13.71% -> 70.05%     SINE  13.58% -> 10.53%
-  //   LTR    6.10% ->  9.81%     DNA    2.29% ->  8.17%
+  //   LINE  13.71% -> 16.51%     SINE  13.58% ->  9.00%
+  //   LTR    6.10% ->  5.83%     DNA    2.29% ->  3.01%
   //
-  // so the added sequence is not generically repetitive — it is an L1 field
-  // (within LINE, L1 alone goes 13.35% -> 66.70%) that is DEPLETED of Alu
-  // relative to GRCh38's own last stretch of the same chromosome. One class up
-  // 5x while another goes down is a shape a single density lane cannot draw, and
-  // it is the mechanism the page already claimed: long L1 is the sequence a
-  // BAC-and-Sanger reference had no way to place.
+  // so what CHM13 ends the chromosome with is not more repeat than GRCh38 ends
+  // it with, it is more L1 and less Alu — the mechanism the page claims, long L1
+  // being the sequence a BAC-and-Sanger reference had no way to place.
   //
-  // Both numbers come out of scripts/build_repeat_density.sh, which also builds
-  // these bigWigs, so the table is regenerable rather than remembered.
+  // THESE NUMBERS ARE NOT THE ONES THIS FIGURE USED TO CARRY (13.71% -> 70.05%,
+  // 37% -> 76%, "one class up fivefold"). That set came from reading CHM13's
+  // bigRmskBed outer spans as aligned intervals, and a bigRmskBed record is a
+  // fragmented element JOINED back together, so its span covers whatever
+  // interrupted it and the classes overlap: the four summed past 1.0 in 71% of
+  // chr17's bins. scripts/build_repeat_density.sh expands the aligned blocks now,
+  // and the hosted hs1 bigWigs were rebuilt from it (2026-08-04).
+  //
+  // The larger version of the contrast is the insertion allele itself rather
+  // than these 650 kb windows, which are mostly the flank around it: the allele
+  // runs LINE 23.70% against 14.18% and 14.47% either side, SINE 8.57% against
+  // 13.57% on the left. That is 1.7x as a mean and NOT a shape a reader can see
+  // per bin, which is why hprc_chm13_allele stays a per-element lane at 180 kb
+  // rather than zooming out to draw it.
+  //
+  // Every number here comes out of scripts/build_repeat_density.sh, which also
+  // builds these bigWigs, so the table is regenerable rather than remembered.
   //
   // Each pane is its OWN assembly's last 650 kb, not a lifted-over interval:
   // there is no lift-over for sequence one of them does not have, so the
