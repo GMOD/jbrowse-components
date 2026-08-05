@@ -1058,14 +1058,96 @@ region and refetches stale ones.
 
 ## What not to do
 
+The index of this doc's rules, meant to be complete: a rule stated anywhere
+above gets a line here, so scanning this section is scanning the spec. Each is
+stated flat and argued where it's linked; the longer entries kept their
+reasoning because it lives nowhere else. Nearly all of them fail *silently* —
+that is what makes them worth listing rather than trusting to review.
+
+### State, config and composition
+
+- Don't reach for a new MST property when a config slot would do — the slot is
+  the default, and a user's edit persists through `trackConfigDeltas` either
+  way. And don't write a slot name onto a *session* display node: that node is
+  built by the state model, so the key is dropped in silence. See [where a
+  display's state lives](#where-a-displays-state-lives).
+- Don't re-implement a cross-cutting mixin's policy in a display. `scrollTop`
+  clamping, grow-mode height and the score axis each arrive by overriding one
+  hook (see [Cross-cutting
+  mixins](#cross-cutting-mixins-orthogonal-to-the-fetch-foundation)); a
+  hand-rolled copy is how four displays came to hold four spellings of the same
+  scroll clamp.
+- Don't compose `HeightModeMixin()` before `TrackHeightMixin()`. It overrides
+  that mixin's `height` and `resizeHeight`, and `types.compose` gives the
+  collision to the later argument, so the wrong order silently drops grow mode.
+  Nothing checks this one yet —
+  [ordering is the contract](reference/ARCHITECTURAL_LIMITS.md#ordering-is-the-contract).
+- Don't chain to `super` in a display's own `afterAttach`. Our MST fork
+  auto-chains lifecycle hooks, so calling it installs every fetch autorun twice;
+  `assertDisplayContract` reports it in dev. Regular actions still use
+  super-capture.
+
+### Fetch
+
+- Don't put fetch-result derivatives (`cellData`, `sampleInfo`, etc.) into
+  `rpcProps()`; it is an infinite fetch loop. See
+  [the trap](#rpcprops-loop-trap-and-how-to-break-it).
+- Don't declare `rpcProps` or `isCacheValid` in `.actions()`. MST runs an action
+  `untracked`, so their reads register no dependency and callers silently keep a
+  stale answer; `assertDisplayContract` `console.error`s on it in dev. See
+  [the pattern](#rpcprops--gpuprops-pattern).
+- Don't put a pure "go again" signal under a fetch gate. `reloadCounter` and
+  friends must be read unconditionally, above the bail-outs — a read inside the
+  gate drops out of the dependency set on the run that declines, and nothing
+  ever wakes the autorun again. All three fetch families carry one; see [the
+  trigger list](#the-global-fetch-trigger-list-must-be-read-unconditionally).
+- Don't override `fetchNeeded` to return early *without* fetching unless
+  something `FetchVisibleRegions` already tracks will wake it. A fetch bumps
+  `fetchGeneration`; an early return that skips the fetch breaks that chain and
+  must supply its own wake path.
+- Don't ship a `rpcProps()` field whose distinct states serialize identically.
+  `JSON.stringify` *is* the comparison, so a class without `toJSON` flattens to
+  `{}` and an `undefined` drops its key — a silently dead cache axis that raises
+  no error. See [the cache key](#the-cache-key-is-the-return-value-not-the-reads).
+- Don't let a feature RPC that decodes against the reference omit
+  `sequenceAdapter`. `dataAdapterCache` keys on `adapterConfig` alone, so the
+  first call to resolve an adapter primes it for that instance's lifetime — don't
+  assume a prior call did it.
+- Don't override `adapterConfig` to *annotate* it; only to change what the
+  adapter is. The cache keys on the config object, so a key the adapter never
+  reads still forks the cache into a second instance and a second parse of the
+  same file. Pass a worker-side value as a sibling RPC arg instead.
+- Don't send row *order* to the worker. A fetch argument may name the row set —
+  real work — but the order is a permutation the main thread applies for free,
+  and sent unsorted it re-enters the cache key anyway. See [row
+  order](#row-order-is-not-a-fetch-input).
+- Don't leave `isCacheValid` alone without checking what you inherit. A display
+  composing a wiggle mixin gets wiggle's strict-`bpPerPx` version whether or not
+  its data is zoom-dependent. See
+  [per-region zoom-staleness](#per-region-zoom-staleness).
+
+### Upload and render
+
 - Don't put upload/render logic in React `useEffect`/`useLayoutEffect` — it
   belongs in the MST autorun pair spawned by `attachRenderingBackend`.
 - Don't destructure model methods; call on the model.
 - Don't use `useMemo` for observable-dependent values; use a cached MST view.
 - Don't mutate per-region values in place; emit fresh objects.
+- Don't key a shared backend by a list index. Use `sharedBackendKey(self.id)` —
+  an index renumbers the moment a sibling is hidden, aliasing one display's
+  buffer onto another's slot. See [display stacks](#display-stacks).
+- Don't size a shared canvas from the displays drawing on it; the model that
+  owns it lays it out. A band with no display is legal, and reserving 0px there
+  while the canvas still paints overlaps the row below.
 - Don't skip a shared canvas's render tick when there is nothing to draw — an
   empty frame is what erases a hidden track (see "the empty frame is
   load-bearing" above).
+- Don't fold a scalar into a per-instance array. If a setting multiplies every
+  element by the same number — plot-wide opacity is the case that bit — it
+  belongs in the uniform or draw params, not re-packed across every instance.
+- Don't fold cheap work into an expensive derived map. Split the tier so a
+  recolor doesn't re-run row placement; see [derived region
+  maps](#gpuprops-and-derived-region-maps--re-upload-without-refetch).
 - Don't make a renderer class the *owner* of per-region data. The model's
   `rpcDataMap` / `laidOutDataMap` is the single source of truth. Most displays
   pass it in per frame (`renderBlocks(blocks, regions, state)`), and that is the
@@ -1084,34 +1166,38 @@ region and refetches stale ones.
   or the `isReady` view owned by `MultiRegionDisplayMixin`. `renderError` in
   particular is the single source for the `renderError` terminal phase — don't fork
   it into a display-local volatile.
-- Don't hand-edit `*.generated.ts` or hand-maintain WGSL/GLSL/offset tables. Edit
-  `.slang` and run `pnpm gen:shaders`; CI's `git diff --exit-code` catches stale
-  outputs. Consume generated constants by name from TS — never copy a literal
-  offset into a renderer.
-- Don't put fetch-result derivatives (`cellData`, `sampleInfo`, etc.) into
-  `rpcProps()`; it is an infinite fetch loop. See
-  [the trap](#rpcprops-loop-trap-and-how-to-break-it).
-- Don't declare `rpcProps` or `isCacheValid` in `.actions()`. MST runs an action
-  `untracked`, so their reads register no dependency and callers silently keep a
-  stale answer; `assertDisplayContract` `console.error`s on it in dev. See
-  [the pattern](#rpcprops--gpuprops-pattern).
-- Don't reach for a new MST property when a config slot would do — the slot is
-  the default, and a user's edit persists through `trackConfigDeltas` either
-  way. And don't write a slot name onto a *session* display node: that node is
-  built by the state model, so the key is dropped in silence. See [where a
-  display's state lives](#where-a-displays-state-lives).
-- Don't re-implement a cross-cutting mixin's policy in a display. `scrollTop`
-  clamping, grow-mode height and the score axis each arrive by overriding one
-  hook (see [Cross-cutting
-  mixins](#cross-cutting-mixins-orthogonal-to-the-fetch-foundation)); a
-  hand-rolled copy is how four displays came to hold four spellings of the same
-  scroll clamp.
+
+### Chrome, readiness and export
+
+- Don't leave a resting state that never fetches non-terminal. `awaitSvgReady`
+  has no time bound, so a user toggle, an unmet prerequisite or a static "zoom
+  in" mode must reach `svgReady` through `error`, `regionTooLarge` or
+  `svgReadyExtraTerminal` — otherwise one track hangs the whole view's export
+  with the dialog spinner up. Enumerate every way the prerequisite fails, not
+  just the throw. See [SVG export](#svg-export).
+- Don't derive the export's terminal set separately from the loading overlay's.
+  They are the same states, plus a reader outside the display
+  (`displaysSettled`), which is why `fetchInert` is a mixin hook rather than a
+  getter each display invents.
+- Don't stage theme-derived colors in a volatile that a React `useEffect`
+  pushes in. The effect only runs on mount, so SVG export and RPC — neither of
+  which has a component — render blank; derive them in a getter. And read
+  `session.palette`, not `session.theme`: the palette is the serializable,
+  toolkit-free one that crosses the RPC boundary. See [theme-derived render
+  inputs](#theme-derived-render-inputs-are-session-getters-not-pushed-volatiles).
 - Don't clear a hover on `bpPerPx` alone. Content moves under a stationary
   cursor on three axes — zoom, `offsetPx` (a side-scroll or locstring pan fires
   no pointer event at all), and the display's own `scrollTop` — and a sticky
   canvas gets no `mousemove`/`mouseleave` for any of them. Use
   `installClearHoverOnViewportChange`, which is a `reaction` precisely so its
   effect can read hover state without setting a hover re-firing it.
+
+### Backends and generated code
+
+- Don't hand-edit `*.generated.ts` or hand-maintain WGSL/GLSL/offset tables. Edit
+  `.slang` and run `pnpm gen:shaders`; CI's `git diff --exit-code` catches stale
+  outputs. Consume generated constants by name from TS — never copy a literal
+  offset into a renderer.
 - Don't diverge the two render backends. Import shader constants into TS rather
   than retyping them, put shared glyph geometry/color math in one draw helper, and
   keep multi-layer order/gating in one exhaustively-keyed registry. And don't go
@@ -1153,4 +1239,22 @@ up):
   the renderer (config → MST snapshot → plain object → RPC).
 - [reference/DISPLAYCHROME.md](reference/DISPLAYCHROME.md) — the shared
   loading/error/retry chrome every display renders through.
+- [reference/ROW_HEIGHT_AND_FIT.md](reference/ROW_HEIGHT_AND_FIT.md) — the
+  two-valued row-height convention behind `HeightModeMixin`: the `rowHeight` slot
+  whose `0` means fit-to-height, and the resolved `effectiveRowHeight` getter that
+  is a cross-plugin ABI. Read before adding a row-height or fit-to-height setting.
+- [reference/VIEW_INIT.md](reference/VIEW_INIT.md) — the launch state machine
+  behind `view.initialized`, which is the precondition `canRender` carries and
+  the reason an `afterAttach` must not read view geometry synchronously.
+- [reference/NETWORK_ABORT.md](reference/NETWORK_ABORT.md) — where a stop token
+  actually reaches the socket: the two mechanisms behind one token, which
+  adapters are wired, and the shared-fetch coalescing trap. The other half of
+  cancellation from PROGRESS_REPORTING's UI side.
+- [reference/SHADER_JS_CODEGEN.md](reference/SHADER_JS_CODEGEN.md) — the
+  `//! js-export` set that keeps a scalar decision identical in the shader and in
+  TS, and how to add one. Read with the "don't diverge the two backends" rule
+  above.
+- [reference/TEST_INFRASTRUCTURE.md](reference/TEST_INFRASTRUCTURE.md) — browser
+  and unit tests, WebGPU CI, and RPC validation. This doc has no testing section;
+  that one is it.
 
