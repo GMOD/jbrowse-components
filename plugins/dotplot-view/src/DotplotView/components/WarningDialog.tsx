@@ -5,6 +5,8 @@ import { DialogContentText } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
+import type { ComparativeWarning } from '@jbrowse/synteny-core'
+
 const useStyles = makeStyles()({
   content: {
     minWidth: 600,
@@ -16,16 +18,13 @@ const useStyles = makeStyles()({
   },
 })
 
-interface Warning {
-  message: string
-  effect: string
-}
-
 // Already flattened to (track name, its warnings) by the caller, which is what
-// knows how to reach a display's warnings.
+// knows how to reach a display's warnings. The row type is the display's own
+// `ComparativeWarning`, so a field added there is a compile error here rather
+// than a column this grid silently drops.
 export interface TrackWarning {
   name: string
-  warnings: Warning[]
+  warnings: ComparativeWarning[]
 }
 
 function getTrackWarnings({

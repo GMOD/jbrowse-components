@@ -120,11 +120,24 @@ export function displaysSettled(
   )
 }
 
+/**
+ * One thing that went wrong during a comparative fetch, as the warning dialog
+ * lists it: what happened, and what it means for the plot on screen. Named here
+ * rather than spelled inline at each of the three places that had it (the
+ * display's held list, the swap warning below, the dialog's row type), so a
+ * field added to one is a type error at the others rather than a silently
+ * dropped column.
+ */
+export interface ComparativeWarning {
+  message: string
+  effect: string
+}
+
 // Both displays detect the same misconfiguration — the file's chromosome names
 // match the opposite axis/row — so they must say the same thing about it. Only
 // the remedy differs (which control the user reaches for), so the caller
 // supplies that and the diagnosis is written once.
-export function swappedAssembliesWarning(effect: string) {
+export function swappedAssembliesWarning(effect: string): ComparativeWarning {
   return {
     message: 'The assemblies appear to be in the wrong order',
     effect,

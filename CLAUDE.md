@@ -26,6 +26,13 @@ Background lives in `agent-docs/` (start at `ARCHITECTURE.md`, then
   for the argument order `self.someAction(getSnapshot(self))`, which works only
   because the snapshot is taken before the action is entered. Duplicate the
   reads instead and say why.
+- **Export a model's instance type as `interface X extends Instance<…> {}`**,
+  not `type X = Instance<…>`. A view naming its displays and a display naming
+  its view is an ordinary pair of getters and a mutual type reference; only the
+  interface form defers it. As aliases the pair collapses — TS7023 on the
+  factory, TS2456 on the type, then ~20 implicit-any errors in unrelated files,
+  which is what you'll actually see first. Don't route around it by duck-typing
+  the view. ADR-055.
 - A duck-typed `interface XSelf` extends **`IStateTreeNode`**, never
   `IAnyStateTreeNode` — the latter resolves through `STNValue<any, …>` to `any`,
   so extending it silently turns off checking for every member you just

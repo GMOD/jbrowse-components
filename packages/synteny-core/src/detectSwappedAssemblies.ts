@@ -1,5 +1,7 @@
 import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
+import { autorun } from 'mobx'
 
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -74,13 +76,19 @@ export async function detectAssembliesSwapped({
     : false
 }
 
+// The display slice both entry points below read: the adapter to interrogate,
+// and (for the installer) where the answer is written.
+interface SwapCheckHost extends IStateTreeNode {
+  adapterConfig: Record<string, unknown>
+}
+
 /**
  * {@link detectAssembliesSwapped} wired to a synteny/dotplot display: pulls the
  * adapter refNames via the CoreGetRefNames RPC and the assembly refNames from
  * the session's assemblyManager.
  */
 export function detectDisplayAssembliesSwapped(
-  self: IStateTreeNode & { adapterConfig: Record<string, unknown> },
+  self: SwapCheckHost,
   topAssembly: string | undefined,
   bottomAssembly: string | undefined,
 ) {
@@ -99,4 +107,54 @@ export function detectDisplayAssembliesSwapped(
     getCanonicalRefName: (name, refName) =>
       assemblyManager.get(name)?.getCanonicalRefName(refName) ?? refName,
   })
+}
+
+/**
+ * Install the one-shot reversed-assembly check both comparative displays run at
+ * view load: read the two axis assemblies, ask the adapter which one its
+ * refNames belong to, and record the verdict on the display.
+ *
+ * Deliberately off the per-render fetch path, so it never re-fires (or
+ * misfires) on zoom — it re-runs only when `axisAssemblies` reads something
+ * that changed, which is why that callback must do its own tracked reads
+ * (returning undefined until the view is ready still tracks whatever decided
+ * that, so the autorun rewakes).
+ *
+ * Shared rather than written per display because of the two `isAlive` guards:
+ * the first because teardown fires the parent atom that `axisAssemblies` reads
+ * and `getContainingView` throws on a detached node, the second because the
+ * RPC resolves long after a view can be closed and writing to a dead node
+ * throws out of an unawaited promise. Both are invisible until a user closes a
+ * view mid-load.
+ */
+export function installAssemblySwapCheck(
+  self: SwapCheckHost & { setAssembliesSwapped: (arg: boolean) => void },
+  {
+    name,
+    axisAssemblies,
+  }: {
+    name: string
+    /** the two axis assembly names, or undefined while the view isn't ready */
+    axisAssemblies: () => [string | undefined, string | undefined] | undefined
+  },
+) {
+  addDisposer(
+    self,
+    autorun(
+      async function assemblySwapCheck() {
+        if (!isAlive(self)) {
+          return
+        }
+        const axes = axisAssemblies()
+        if (!axes) {
+          return
+        }
+        const swapped = await detectDisplayAssembliesSwapped(self, ...axes)
+        if (isAlive(self)) {
+          self.setAssembliesSwapped(swapped)
+        }
+      },
+      { name },
+    ),
+  )
 }

@@ -1221,7 +1221,11 @@ export default function stateModelFactory(pm: PluginManager) {
 }
 
 export type DotplotViewStateModel = ReturnType<typeof stateModelFactory>
-export type DotplotViewModel = Instance<DotplotViewStateModel>
+// An interface, not `type … = Instance<…>`: `dotplotDisplays` names the display
+// model and the display names this view back (`self.view`), and only the
+// interface form defers that mutual reference instead of collapsing it. See
+// ADR-055.
+export interface DotplotViewModel extends Instance<DotplotViewStateModel> {}
 
 export { Dotplot1DView, type Dotplot1DViewModel } from './1dview.ts'
 

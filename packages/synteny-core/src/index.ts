@@ -20,6 +20,7 @@ export { isDataCurrent } from '@jbrowse/core/util'
 export {
   detectAssembliesSwapped,
   detectDisplayAssembliesSwapped,
+  installAssemblySwapCheck,
 } from './detectSwappedAssemblies.ts'
 // Lives in @jbrowse/cigar-utils (no synteny deps); re-exported here so the
 // comparative-view consumers keep importing it from @jbrowse/synteny-core.
@@ -101,6 +102,7 @@ export {
   displaysSettled,
   swappedAssembliesWarning,
 } from './SyntenyFetchStateMixin.ts'
+export type { ComparativeWarning } from './SyntenyFetchStateMixin.ts'
 export { default as MinLengthSlider } from './MinLengthSlider.tsx'
 export { defaultSyntenyFileFormats } from './defaultSyntenyFileFormats.tsx'
 export {

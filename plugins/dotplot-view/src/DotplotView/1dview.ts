@@ -24,6 +24,30 @@ const Dotplot1DView = Base1DView.extend(self => {
 
       /**
        * #getter
+       * The on-screen content blocks under the field names
+       * `LinearGenomeView.visibleRegions` uses, so this axis and a synteny row
+       * hand the shared comparative fetch window (`syntenyFetchRegions`) the
+       * same thing and the two displays' `fetchRegions` are one call each.
+       * Carries only what that window reads; the screen-px pair an LGV also
+       * exposes has no reader here, and deriving it would make this recompute
+       * with `offsetPx`.
+       */
+      get visibleRegions() {
+        return this.dynamicBlocks.contentBlocks.map(block => ({
+          refName: block.refName,
+          start: block.start,
+          end: block.end,
+          assemblyName: block.assemblyName,
+          reversed: block.reversed,
+          // set by calculateDynamicBlocks on every content block; optional only
+          // on the base block type, which also covers the elided/inter-region
+          // blocks this list has neither of
+          displayedRegionIndex: block.displayedRegionIndex!,
+        }))
+      },
+
+      /**
+       * #getter
        */
       get maxBpPerPx() {
         // Floor the divisor. This axis' width is the view's viewWidth/viewHeight,

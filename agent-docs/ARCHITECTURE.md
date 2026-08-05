@@ -167,7 +167,13 @@ the overridable `fetchInert` hook (see "the on-screen twin" under SVG export),
 together with the loading/error flags and the refName rename into one skeleton
 both displays install, so each supplies only a `prepare` gate (the tracked
 reads), a `run` (every await), and a synchronous `commit` the skeleton calls
-only while the fetch is still current. They also answer the
+only while the fetch is still current. The skeleton logs whatever it `setError`s,
+so neither display overrides `setError` to log it a second time.
+`installAssemblySwapCheck` is the companion installer for the one-shot
+reversed-assembly check, off the fetch path — shared for its two `isAlive`
+guards (teardown fires the parent atom the gate reads; the RPC resolves long
+after a view can be closed), each invisible until a user closes a view
+mid-load. They also answer the
 shared `dataCurrent` freshness question and run the shared `computeSvgReady`
 policy, just via a signature compare (`isDataCurrent` over `dotplotFetchKey` /
 synteny's `currentFetchKey`) rather than spatial coverage — which is where the

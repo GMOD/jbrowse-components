@@ -1,16 +1,38 @@
 ---
-status: Rejected
-summary: "Keep dotplot's and synteny's assembly-swap-check autoruns separate; a shared installer would put a mobx dependency on synteny-core to dedup ~12 lines"
+status: Superseded
+summary: "Kept dotplot's and synteny's assembly-swap-check autoruns separate while a shared installer would have added mobx to synteny-core — superseded 2026-08 when the fetch skeleton brought mobx there anyway, which is the revisit condition this ADR named"
 ---
 
 # ADR-042: No shared assembly-swap-check autorun installer
 
 ## Status
 
-Rejected (2026-07). Same genre as
-[ADR-040](adr-040-no-genome-quad-vertex-helper.md): a real duplication that does
-not clear the bar for extraction, recorded so the next reader doesn't re-derive
-it.
+Rejected (2026-07-25). **Superseded 2026-08-04** — the installer now exists as
+`installAssemblySwapCheck` (`@jbrowse/synteny-core`, alongside
+`detectDisplayAssembliesSwapped`), and both displays call it.
+
+Nothing about the reasoning below was wrong; its load-bearing premise expired.
+The decision rested on the installer being the *sole* justification for a `mobx`
+dependency on `synteny-core`. Six days later `installComparativeFetchAutorun`
+landed in that same package (df2eab1b66, 2026-07-31), for an unrelated reason —
+the shared fetch skeleton — and brought `import { autorun } from 'mobx'` with
+it. That is verbatim the revisit condition in "Consequences" below: *"if
+`synteny-core` picks up a `mobx` dependency for an unrelated reason — at that
+point the installer costs one function and no new dependency, and the calculus
+flips."* It flipped.
+
+What tipped it past break-even rather than merely to it: the two `isAlive`
+guards. The first exists because teardown fires the parent atom the gate reads
+and `getContainingView` throws on a detached node; the second because the RPC
+resolves long after a view can be closed, and writing to a dead node throws out
+of an unawaited promise. Neither is visible in a diff that omits it, and neither
+fails until a user closes a view mid-load — the class of duplication where
+"twelve lines" undercounts what is actually being copied.
+
+One loose end this surfaced, unrelated to the extraction: `synteny-core` imports
+`mobx` (in `installComparativeFetchAutorun`) without declaring it in its
+`package.json`, unlike every sibling package that imports it. Worth fixing at a
+moment when the lockfile can be regenerated.
 
 ## Context
 

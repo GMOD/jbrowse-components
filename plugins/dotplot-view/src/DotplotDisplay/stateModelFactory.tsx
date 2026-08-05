@@ -26,7 +26,11 @@ import type { DotplotInstanceData } from './dotplotRenderingBackendTypes.ts'
 import type { DotplotRpcData } from './types.ts'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { LodTier, SyntenyColorBy } from '@jbrowse/synteny-core'
+import type {
+  ComparativeWarning,
+  LodTier,
+  SyntenyColorBy,
+} from '@jbrowse/synteny-core'
 import type { ThemeOptions } from '@mui/material'
 
 /**
@@ -64,10 +68,29 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
            * `geometry` getter.
            */
           instanceData: undefined as DotplotInstanceData | undefined,
-          fetchWarnings: [] as { message: string; effect: string }[],
+          /**
+           * #volatile
+           * What the last completed fetch had to say about itself, written with
+           * the data it describes (see `setRpcData`).
+           */
+          fetchWarnings: [] as ComparativeWarning[],
         })),
     )
     .views(self => ({
+      /**
+       * #getter
+       * The plot this display draws into. One getter rather than a
+       * `getContainingView` cast per reader, the same way
+       * `LinearSyntenyDisplay.view` answers it.
+       *
+       * This names the view type even though the view names this display back
+       * (`dotplotDisplays`). That mutual reference resolves only because both
+       * model types are declared as `interface … extends Instance<…>` rather
+       * than `type … = Instance<…>` — see ADR-055.
+       */
+      get view() {
+        return getContainingView(self) as DotplotViewModel
+      },
       /**
        * #getter
        * Stable slot on the view-shared backend. Hashed from the node id, not
@@ -115,8 +138,7 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
        * else the plot-wide mode.
        */
       get colorBy(): SyntenyColorBy {
-        const view = getContainingView(self) as DotplotViewModel
-        return view.resolveColorBy(this.trackId)
+        return this.view.resolveColorBy(this.trackId)
       },
       /**
        * #getter
@@ -125,8 +147,7 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
        * which automatic slots its siblings can take.
        */
       get trackColor(): string {
-        const view = getContainingView(self) as DotplotViewModel
-        return view.trackColorFor(this.trackId)
+        return this.view.trackColorFor(this.trackId)
       },
       /**
        * #getter
@@ -178,19 +199,7 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
        * the window's only job is to be a superset of what's on screen.
        */
       get fetchRegions(): Region[] {
-        const { hview } = getContainingView(self) as DotplotViewModel
-        return syntenyFetchRegions({
-          visibleRegions: hview.dynamicBlocks.contentBlocks.map(b => ({
-            refName: b.refName,
-            start: b.start,
-            end: b.end,
-            assemblyName: b.assemblyName,
-            displayedRegionIndex: b.displayedRegionIndex!,
-          })),
-          displayedRegions: hview.displayedRegions,
-          width: hview.width,
-          bpPerPx: hview.bpPerPx,
-        })
+        return syntenyFetchRegions(this.view.hview)
       },
       /**
        * #getter
@@ -202,7 +211,7 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
        * quiet through sub-buffer pans.
        */
       get currentFetchKey(): string {
-        const view = getContainingView(self) as DotplotViewModel
+        const { view } = this
         return dotplotFetchKey(
           this.lodTier,
           {
@@ -225,7 +234,7 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
        * no-CIGAR tier is only safe once both are past the threshold.
        */
       get lodTier(): LodTier {
-        const view = getContainingView(self) as DotplotViewModel
+        const { view } = this
         return resolveLodTier({
           bpPerPx: Math.min(view.hview.bpPerPx, view.vview.bpPerPx),
           coarseBpPerPxThreshold: getCoarseBpPerPxThreshold(self.parentTrack),
@@ -293,39 +302,38 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
     .actions(self => ({
       /**
        * #action
-       * Commits a fetch result, tagged with the key it was fetched for. The
-       * loading flags are deliberately NOT touched here: this runs as
+       * Commits a fetch result and the warnings it raised, tagged with the key
+       * it was fetched for. One action, not three: the warnings describe this
+       * result, so writing them separately let a failed refetch leave the last
+       * result's warnings standing over data they no longer describe, and each
+       * extra action is another round of the view's warning/upload observers
+       * per RPC completion. Same reason `LinearSyntenyDisplay.setRpcData` takes
+       * its feature and instance data together.
+       *
+       * The loading flags are deliberately NOT touched here: this runs as
        * `installComparativeFetchAutorun`'s `commit`, whose `finally` clears
        * `fetching` and the status line under the same staleness guard. Clearing
        * them here too meant one of the two comparative displays wrote
        * `fetching` directly instead of through `setFetching`, for no effect the
        * skeleton wasn't about to have anyway.
+       *
+       * `setError` is not overridden either: the two callers that set one
+       * (the fetch skeleton's `catch`, `afterAttach`'s) already log it, so the
+       * override this display used to carry printed every fetch failure twice
+       * — and had to special-case `undefined` because the skeleton clears the
+       * error through the same setter before every fetch.
        */
-      setRpcData(data: DotplotRpcData, fetchKey: string) {
+      setRpcData(
+        data: DotplotRpcData,
+        fetchKey: string,
+        warnings: ComparativeWarning[],
+      ) {
         self.rpcData = data
         self.loadedFetchKey = fetchKey
-      },
-      setWarnings(w: { message: string; effect: string }[]) {
-        self.fetchWarnings = w
+        self.fetchWarnings = warnings
       },
       setInstanceData(data: DotplotInstanceData | undefined) {
         self.instanceData = data
-      },
-      /**
-       * #action
-       */
-      setError(error: unknown) {
-        // `setError(undefined)` is the clear-the-error path every fetch runs
-        // through before it starts (installComparativeFetchAutorun), so logging
-        // unconditionally printed a bare "undefined" to stderr on each
-        // successful fetch — noise that a headless caller (jbrowse-img) reports
-        // as if the render had a problem
-        if (error !== undefined) {
-          console.error(error)
-        }
-        self.error = error
-        // fetching/status stay with the skeleton, same as setRpcData above:
-        // its `finally` clears them on every exit an error can reach it by.
       },
     }))
     .actions(self => ({
@@ -344,4 +352,10 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
     }))
 }
 
-export type DotplotDisplayModel = Instance<ReturnType<typeof stateModelFactory>>
+// An interface, not `type … = Instance<…>`: this display names its view
+// (`self.view`) and the view names this list of displays back, and only the
+// interface form defers that mutual reference instead of collapsing it. See
+// ADR-055.
+export interface DotplotDisplayModel extends Instance<
+  ReturnType<typeof stateModelFactory>
+> {}

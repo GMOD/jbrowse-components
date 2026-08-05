@@ -1,10 +1,9 @@
 import { getSession } from '@jbrowse/core/util'
-import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import {
-  detectDisplayAssembliesSwapped,
+  installAssemblySwapCheck,
   installComparativeFetchAutorun,
 } from '@jbrowse/synteny-core'
-import { autorun, untracked } from 'mobx'
+import { untracked } from 'mobx'
 
 import type { LinearSyntenyDisplayModel } from './model.ts'
 
@@ -112,30 +111,20 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
     },
   })
 
-  // One-shot at view load: compare the adapter's reported refNames per row
-  // against each assembly's full refNames to flag a reversed row order. Runs
-  // off the per-render fetch path so it never re-fires (or misfires) on zoom.
-  addDisposer(
-    self,
-    autorun(
-      async function syntenyAssemblySwapCheck() {
-        if (!isAlive(self)) {
-          return
-        }
-        const { view, level } = self
-        if (!view.initialized || level + 1 >= view.views.length) {
-          return
-        }
-        const swapped = await detectDisplayAssembliesSwapped(
-          self,
-          view.views[level]!.assemblyNames[0],
-          view.views[level + 1]!.assemblyNames[0],
-        )
-        if (isAlive(self)) {
-          self.setAssembliesSwapped(swapped)
-        }
-      },
-      { name: 'SyntenyAssemblySwapCheck' },
-    ),
-  )
+  // Compare the adapter's reported refNames per row against each assembly's
+  // full refNames to flag a reversed row order. The top row of this level is
+  // the one the adapter's names are checked against, so the pair goes in row
+  // order.
+  installAssemblySwapCheck(self, {
+    name: 'SyntenyAssemblySwapCheck',
+    axisAssemblies: () => {
+      const { view, level } = self
+      return view.initialized && level + 1 < view.views.length
+        ? [
+            view.views[level]!.assemblyNames[0],
+            view.views[level + 1]!.assemblyNames[0],
+          ]
+        : undefined
+    },
+  })
 }

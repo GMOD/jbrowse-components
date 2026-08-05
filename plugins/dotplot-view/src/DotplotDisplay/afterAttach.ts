@@ -1,7 +1,7 @@
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import {
-  detectDisplayAssembliesSwapped,
+  installAssemblySwapCheck,
   installComparativeFetchAutorun,
 } from '@jbrowse/synteny-core'
 import { autorun, untracked } from 'mobx'
@@ -9,7 +9,6 @@ import { autorun, untracked } from 'mobx'
 import { buildLineSegments } from './dotplotGeometry.ts'
 
 import type { Dotplot1DViewModel } from '../DotplotView/1dview.ts'
-import type { DotplotViewModel } from '../DotplotView/model.ts'
 import type { DotplotDisplayModel } from './stateModelFactory.tsx'
 import type { AssemblyManager, Region } from '@jbrowse/core/util'
 import type { BpIndexViewSnap } from '@jbrowse/synteny-core'
@@ -71,7 +70,7 @@ export function doAfterAttach(
     name: 'DotplotFetch',
     delay: RPC_DEBOUNCE_MS,
     prepare: () => {
-      const view = getContainingView(self) as DotplotViewModel
+      const { view } = self
       if (view.initialized) {
         // The only tracked view dep. `currentFetchKey` folds every input this
         // fetch depends on — LOD tier, both axes' zoom and displayed-region
@@ -151,8 +150,9 @@ export function doAfterAttach(
       return { result, mismatched }
     },
     commit: ({ result, mismatched }, { fetchKey }) => {
-      self.setRpcData(result, fetchKey)
-      self.setWarnings(
+      self.setRpcData(
+        result,
+        fetchKey,
         mismatched
           ? [
               {
@@ -170,14 +170,15 @@ export function doAfterAttach(
     self,
     autorun(
       function dotplotGeometryRecompute() {
-        // getContainingView reads the parent atom (a tracked MST observable);
-        // removeView detaches self and fires that atom, re-running this autorun
-        // before its disposer teardown. Bail while dead so getContainingView
-        // doesn't dereference a node no longer in the tree.
+        // `self.view` resolves through getContainingView, which reads the
+        // parent atom (a tracked MST observable); removeView detaches self and
+        // fires that atom, re-running this autorun before its disposer
+        // teardown. Bail while dead so it doesn't dereference a node no longer
+        // in the tree.
         if (!isAlive(self)) {
           return
         }
-        const view = getContainingView(self) as DotplotViewModel
+        const { view } = self
         // colorBy/alpha are deliberately absent: colors are a separate
         // main-thread pass over instanceFeatureIdx (the `computedColors`
         // getter), so a palette change never re-walks the CIGARs here.
@@ -210,27 +211,14 @@ export function doAfterAttach(
     ),
   )
 
-  // One-shot at view load: compare the adapter's reported refNames per axis
-  // against each assembly's full refNames to flag a reversed X/Y setup. Runs
-  // off the per-render fetch path so it never re-fires (or misfires) on zoom.
-  addDisposer(
-    self,
-    autorun(
-      async function dotplotAssemblySwapCheck() {
-        if (!isAlive(self)) {
-          return
-        }
-        const view = getContainingView(self) as DotplotViewModel
-        const [hAsm, vAsm] = view.assemblyNames
-        if (!view.initialized) {
-          return
-        }
-        const swapped = await detectDisplayAssembliesSwapped(self, hAsm, vAsm)
-        if (isAlive(self)) {
-          self.setAssembliesSwapped(swapped)
-        }
-      },
-      { name: 'DotplotAssemblySwapCheck' },
-    ),
-  )
+  // Compare the adapter's reported refNames per axis against each assembly's
+  // full refNames to flag a reversed X/Y setup. The h axis is the one the
+  // adapter's names are checked against, so the pair goes in axis order.
+  installAssemblySwapCheck(self, {
+    name: 'DotplotAssemblySwapCheck',
+    axisAssemblies: () => {
+      const { assemblyNames, initialized } = self.view
+      return initialized ? [assemblyNames[0], assemblyNames[1]] : undefined
+    },
+  })
 }

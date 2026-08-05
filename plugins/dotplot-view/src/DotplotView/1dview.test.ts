@@ -1,3 +1,5 @@
+import { syntenyFetchRegions } from '@jbrowse/synteny-core'
+
 import { Dotplot1DView } from './1dview.ts'
 
 // 1000bp of content in a 500px view. At bpPerPx=4 the content is 250px — half
@@ -45,6 +47,49 @@ test('zooming in holds an off-center locus under its anchor when zoomed out', ()
   // the previous bounds pinned offsetPx to the new centered offset, landing the
   // locus at 85px — 55px from the cursor — on this very first step
   expect(Math.abs(locusPx(view, coord) - anchorPx)).toBeLessThan(2)
+})
+
+// Two 100kb regions on one axis — the second starting at 50000, so a block
+// clamped against the wrong one lands somewhere else — with 500px of viewport
+// scrolled to straddle the join, so both are partly on screen.
+function setupTwoRegions() {
+  const view = Dotplot1DView.create({
+    bpPerPx: 1,
+    offsetPx: 0,
+    displayedRegions: [
+      { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100000 },
+      { assemblyName: 'volvox', refName: 'ctgB', start: 50000, end: 150000 },
+    ],
+  })
+  view.setVolatileWidth(500)
+  view.scrollTo(99900)
+  return view
+}
+
+test('visibleRegions names each block its own displayed region', () => {
+  const view = setupTwoRegions()
+  // the index is what the shared fetch window clamps against, so a block
+  // carrying the wrong one silently truncates the other region's fetch
+  expect(
+    view.visibleRegions.map(r => [r.refName, r.displayedRegionIndex]),
+  ).toEqual([
+    ['ctgA', 0],
+    ['ctgB', 1],
+  ])
+  expect(view.visibleRegions.every(r => r.assemblyName === 'volvox')).toBe(true)
+})
+
+test('a dotplot axis feeds the shared comparative fetch window directly', () => {
+  const view = setupTwoRegions()
+  // the display passes the axis itself (as a synteny row does) rather than
+  // rebuilding this shape, so the fields have to line up here: each visible
+  // block widened by the 2000bp pan buffer, snapped out to that grid, and
+  // clamped to its OWN displayed region — ctgB's floor is its 50000 start, not
+  // the 48000 the grid snapped to
+  expect(syntenyFetchRegions(view)).toEqual([
+    { refName: 'ctgA', assemblyName: 'volvox', start: 96000, end: 100000 },
+    { refName: 'ctgB', assemblyName: 'volvox', start: 50000, end: 54000 },
+  ])
 })
 
 test('anchored zoom stays stable across repeated steps', () => {
