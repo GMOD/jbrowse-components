@@ -1081,6 +1081,23 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * Whether a single group's pileup height can be set on its own, and so
+         * whether the two surfaces that write `groupMaxHeightOverrides` are
+         * offered: the label chip's expand/fit button and the per-group drag
+         * handles. Both write the same volatile, so they answer this together —
+         * the chip used to be offered where the handle was hidden.
+         *
+         * Nothing to size with the pileup hidden, and in fit mode an override is
+         * a lane opting out of the fit the mode just computed: the extra rows
+         * overflow the display it was sized to fill. The truncation banner
+         * (`pileupTruncated`) steps aside in fit mode for the same reason.
+         */
+        get canSizeGroupHeights() {
+          return self.showPileup && !self.fitHeightToDisplay
+        },
+
+        /**
+         * #getter
          */
         get coverageIsLog() {
           return self.scaleType === 'log'
@@ -1495,57 +1512,66 @@ export default function stateModelFactory(
         },
 
         /**
-         * #getter
-         * Renderer-facing per-region layout. Stage 2 draws a single section, so
-         * this exposes the first (for ungrouped, the only) group; Stage 3
-         * switches the renderers to loop `sections` directly.
+         * #method
+         * Which cap hid reads from a group's pileup, if any: `'budget'` for the
+         * group's slice of the fit-to-viewport split, `'ceiling'` for the
+         * display-wide `maxHeight`, `undefined` when nothing was hidden (or when
+         * the user sized this group explicitly, which makes any clipping their
+         * own doing).
+         *
+         * The two are different questions because different controls answer
+         * them, and only one of them can be right: expanding a group banks an
+         * override of `maxHeight` px, so a group ALREADY clipped at that ceiling
+         * gets the identical cap back — not one extra read appears, while the
+         * override silences the flag. A single-section grouping sat wholly in
+         * that hole, since one group takes the ungrouped `maxRowsFor(maxHeight)`
+         * cap and never a slice. A truncated group lays out exactly as many rows
+         * as its cap, so comparing its rows to the ceiling recovers which cap
+         * bound it without threading the caps back out of the layout pass.
          */
-        get laidOutPileupMap() {
-          return this.groupLaidOutMap(this.groupOrder[0]?.key ?? '')
-        },
-
-        /**
-         * #getter
-         * Row count of the primary group across its regions. This reads only the
-         * first group (`laidOutPileupMap`), so it is meaningful only on the
-         * single-section/ungrouped path. Grouped layout sizes each section from its
-         * own `groupMaxY`; don't use this as a cross-group aggregate.
-         */
-        get maxY() {
-          return groupMaxY(this.laidOutPileupMap)
+        groupClippedBy(key: string): 'budget' | 'ceiling' | undefined {
+          const map = this.groupLaidOutMap(key)
+          if (
+            self.groupMaxHeightOverrides.has(key) ||
+            !anyRegionTruncated(map)
+          ) {
+            return undefined
+          }
+          return groupMaxY(map) < maxRowsFor(this.maxHeight, this.rowHeight)
+            ? 'budget'
+            : 'ceiling'
         },
 
         /**
          * #method
-         * True when the row cap clipped reads from a group's pileup and the user
-         * hasn't explicitly sized that group (a height drag/expand makes any
-         * truncation intentional, so it isn't flagged). Drives the per-group
-         * "show all" affordance on the section label.
+         * True when a group's pileup was clipped by a cap the per-group expand
+         * can actually raise. Drives the "show all" affordance on the section
+         * label, which must not appear where it would do nothing.
          */
         isGroupTruncated(key: string) {
-          return (
-            !self.groupMaxHeightOverrides.has(key) &&
-            anyRegionTruncated(this.groupLaidOutMap(key))
-          )
+          return this.groupClippedBy(key) === 'budget'
         },
 
         /**
          * #getter
-         * True when the ungrouped pileup hit `maxHeight` and overflow reads were
-         * collapsed — drives the "max height reached" / "show all" banner. Only
-         * the ungrouped (single-group) case: grouped sections surface their own
-         * truncation per-label (`isGroupTruncated`), where raising `maxHeight`
-         * wouldn't lift the fit-to-viewport cap anyway — expanding the group does.
-         * Suppressed in fit-to-display mode for the same reason: reads there are
-         * already clamped to a 1px floor, so "Show all" can't deliver a fit — it
-         * only deepens the 1px scroll. The overflow indicator still flags the
-         * scroll in that case.
+         * True when a pileup hit the display-wide `maxHeight` and overflow reads
+         * were collapsed — drives the "max height reached" / "show all" banner,
+         * whose action raises that ceiling. Reads every group, not just an
+         * ungrouped one: the ceiling is display-wide, so a stacked lane clipped
+         * by it is exactly as unreachable as an ungrouped pileup would be, and
+         * the per-label affordance deliberately steps aside for it.
+         *
+         * Suppressed in fit-to-display mode: reads there are already clamped to a
+         * 1px floor, so "Show all" can't deliver a fit — it only deepens the 1px
+         * scroll. The overflow indicator still flags the scroll in that case. And
+         * with the pileup hidden nothing is drawn for the ceiling to clip, so
+         * offering to raise it is noise on a coverage-only stack.
          */
         get pileupTruncated() {
           return (
+            self.showPileup &&
             !self.fitHeightToDisplay &&
-            this.groupOrder.length <= 1 &&
-            this.isGroupTruncated(this.groupOrder[0]?.key ?? '')
+            this.groupOrder.some(g => this.groupClippedBy(g.key) === 'ceiling')
           )
         },
 
@@ -1892,6 +1918,9 @@ export default function stateModelFactory(
             hasArcsBand: sec.hasArcsBand,
             hasSashimiBand: sec.hasSashimiBand,
             pileupHeight: sec.pileupHeight,
+            // The strip down to the next section, which is what the label chip
+            // heads — see `Section.height`.
+            height: sec.height,
           }))
         },
 

@@ -38,12 +38,28 @@ still name that section. `rpcDataMap.size === 0` is whether data arrived; never
 gate first paint on a laid-out map, since a grouped fetch over an empty region
 partitions to zero groups and the overlay never clears.
 
+**Anything dodging the chips asks `showsGroupLabels`**, not `isGrouped` — the
+coverage y-axis (on screen and in `renderSvg`) moves to the right for exactly
+that reason, and a single named section draws a chip while `scalebarOverlapLeft`
+resolves to 0, so keying on the section count put the axis under it.
+
 `hiddenGroupKeys` must be filtered out of the **cross-group** derivations too
 (coverage stats, legend, sashimi, arcs) or a hidden lane sizes the axis the
 visible ones share — for arcs, before `poolArcScale`.
 
 `collapseGroupRows` puts depth in the overlap tint, so the collapsed path must
 **not** run `mergeSpans`.
+
+## Two row caps, two affordances
+
+A pileup can be clipped by its group's slice of the viewport or by the
+display-wide `maxHeight`, and a different control raises each: the label chip's
+expand (per-group override) versus the corner banner (`setMaxHeight`).
+`groupClippedBy` is the single classifier, because offering the wrong one is a
+button that does nothing — an expand banks an override OF `maxHeight`, so a lane
+already clipped there gets the identical cap back while the override silences
+the flag. Both surfaces that write `groupMaxHeightOverrides` (chip and drag
+handle) gate on `canSizeGroupHeights`.
 
 ## Read height vs track height
 

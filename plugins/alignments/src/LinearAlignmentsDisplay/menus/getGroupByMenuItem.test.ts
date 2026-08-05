@@ -105,9 +105,3 @@ test('the tag radio names the tag being grouped on', () => {
     'Tag (RG)...',
   ])
 })
-
-// No radio carries helpText: the menu reserves a help column across every row as
-// soon as one does, and none of these dimensions needs a sentence to explain it.
-test('the dimension radios need no help column', () => {
-  expect(radios(makeModel().model).filter(i => i.helpText)).toEqual([])
-})

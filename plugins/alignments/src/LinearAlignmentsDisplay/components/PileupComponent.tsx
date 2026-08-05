@@ -297,11 +297,11 @@ const GroupResizeHandles = observer(function GroupResizeHandles({
 }: {
   model: LinearAlignmentsDisplayModel
 }) {
-  // In fit-to-height mode the read height is derived to fill the display, so a
-  // per-group pileup drag has nothing to act on — hide the handles. Likewise
-  // with the pileup hidden (coverage-only stack) every section is height 0, so a
-  // drag would only bank a phantom override + "fit to view" affordance.
-  if (!model.isGrouped || model.fitHeightToDisplay || !model.showPileup) {
+  // `canSizeGroupHeights` is the shared gate with the label chip's expand
+  // button — both write `groupMaxHeightOverrides`, so neither is offered where
+  // the other is hidden. Only stacked lanes get a drag: one section's pileup
+  // bottom is the display's own bottom edge, which the track height owns.
+  if (!model.isGrouped || !model.canSizeGroupHeights) {
     return null
   }
   const { height, scrollModel: scroll } = model
@@ -510,12 +510,19 @@ const UngroupedCoverageAxis = observer(function UngroupedCoverageAxis({
 
 // Split so scroll-dependent tracking (GroupedCoverageAxis) is isolated —
 // UngroupedCoverageAxis won't re-render on scroll.
+//
+// `showsGroupLabels`, NOT `isGrouped`: the right-hand axis exists to clear the
+// group label chips (see coverageAxisStyle.ts), so the question is whether the
+// chips are drawn, not whether there is more than one section. A grouping that
+// yields a single named section draws them — and `scalebarOverlapLeft` is 0
+// there, so the left axis landed straight on top of the chip. GroupedCoverageAxis
+// projects through `bandScreenTop`, which keeps that lone section's band sticky.
 const CoverageAxisHost = observer(function CoverageAxisHost({
   model,
 }: {
   model: LinearAlignmentsDisplayModel
 }) {
-  return model.isGrouped ? (
+  return model.showsGroupLabels ? (
     <GroupedCoverageAxis model={model} />
   ) : (
     <UngroupedCoverageAxis model={model} />
@@ -530,12 +537,13 @@ const InsertSizeAxisHost = observer(function InsertSizeAxisHost({
 }: {
   model: LinearAlignmentsDisplayModel
 }) {
-  const { insertSizeTicks, readConnectionsDown, isGrouped, scrollTop, height } =
-    model
+  const { insertSizeTicks, readConnectionsDown, height } = model
   if (!insertSizeTicks) {
     return null
   }
-  const yShift = isGrouped ? -scrollTop : 0
+  // The arc band is a sticky-capable band top like coverage — same tier, same
+  // projection, rather than a second inline `isGrouped ? -scrollTop : 0`.
+  const yShift = bandScreenTop(0, model.scrollModel)
   return (
     <svg
       style={{

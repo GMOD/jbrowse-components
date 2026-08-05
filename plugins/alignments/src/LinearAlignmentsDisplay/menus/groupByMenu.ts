@@ -5,10 +5,14 @@ import type { GroupByType } from '../../shared/types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 // A directly-selectable dimension: picking it calls `onSelect(type)`.
+//
+// Label only, no help text: the menu reserves a help column across every row as
+// soon as one row carries one, and a dimension that needs a sentence to explain
+// it is better renamed. The radios are typed without the field rather than
+// merely left empty, so that stays a compile error instead of a convention.
 export interface GroupByRadioOption {
   type: GroupByType
   label: string
-  helpText?: string
 }
 
 // A dimension that activates through a custom flow rather than a direct select
@@ -58,12 +62,11 @@ export function groupByRadioMenuItem({
   // Direct selects keep the menu open; `extra` radios open a dialog, so they
   // dismiss it.
   const radio = (
-    o: { type?: GroupByType; label: string; helpText?: string },
+    o: { type?: GroupByType; label: string },
     onClick: () => void,
     keepMenuOpen?: boolean,
   ) => ({
     label: o.label,
-    helpText: o.helpText,
     type: 'radio' as const,
     checked: checked === o.type,
     keepMenuOpen,

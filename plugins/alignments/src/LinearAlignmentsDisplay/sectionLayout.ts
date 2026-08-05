@@ -30,6 +30,15 @@ export interface Section {
   hasSashimiBand: boolean
   pileupTop: number
   pileupHeight: number
+  // The whole strip this section owns: the distance from its coverage top to
+  // the next section's, so the last section's bottom is `contentHeight`.
+  //
+  // Not `pileupTop + pileupHeight - coverageTop`: a section shorter than its own
+  // label chip is padded out to `minSectionHeight`, and that pad belongs to it.
+  // Carried rather than left to consumers to reconstruct from the next section —
+  // the label chips need exactly this to cull and to pin, and re-deriving it
+  // there put a group's name over the next group's.
+  height: number
   // Laid-out row count for this group (== max rows across its visible regions).
   maxY: number
 }
@@ -222,6 +231,8 @@ export function computeStackedSections(
     const coverageTop = top
     const pileupTop = coverageTop + stack.pileupTop
     const pileupHeight = g.maxY * opts.rowHeight
+    // `top` becomes this section's bottom edge — and so the next one's top,
+    // which is what makes `height` below the strip this section owns.
     top = Math.max(
       pileupTop + pileupHeight,
       coverageTop + (opts.minSectionHeight ?? 0),
@@ -241,6 +252,7 @@ export function computeStackedSections(
       hasSashimiBand,
       pileupTop,
       pileupHeight,
+      height: top - coverageTop,
       maxY: g.maxY,
     }
   })

@@ -115,9 +115,11 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   }
 
   function resolveSectionForCanvasY(canvasY: number) {
+    // The model's own scroll projection inputs, not a second hand-assembled
+    // copy of them — the overlays all read `scrollModel`, and a hit test that
+    // re-spelled the same fields is exactly how the two tiers drift apart.
     return findSectionAtY(model.renderSections, canvasY, {
-      isGrouped: model.isGrouped,
-      scrollTop: model.scrollTop,
+      ...model.scrollModel,
       contentHeight: model.sections.contentHeight,
     })
   }

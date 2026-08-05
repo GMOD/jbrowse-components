@@ -1,3 +1,5 @@
+import { Fragment } from 'react'
+
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
@@ -50,11 +52,17 @@ const useStyles = makeStyles()(theme => {
       alignItems: 'center',
       gap: 2,
       zIndex: 6,
+      // The row is only as wide as its chips, but it still sits over the left
+      // edge of every coverage band; without this the gap around the chips (and
+      // the whole non-interactive label, when the pileup is hidden) swallowed
+      // the coverage hover there. The chips take pointer events back below.
+      pointerEvents: 'none' as const,
     },
     button: {
       ...chip,
       cursor: 'pointer',
       border: 'none',
+      pointerEvents: 'auto' as const,
       '&:hover': {
         opacity: 1,
       },
@@ -67,6 +75,43 @@ const useStyles = makeStyles()(theme => {
     },
   }
 })
+
+// The second chip: what the group's height button does, says and looks like.
+// One place decides all three, because they have to describe the same action —
+// four parallel ternaries over the same two flags drifted apart every time one
+// of them gained a case.
+//
+// Collapsed-rows lanes hide nothing (overlapping alignments are drawn as tint
+// depth on the one row), so the action there is "expand this lane into a true
+// stack", not "show what was clipped". They also go icon-only: a
+// one-row-per-group track exists to fit many groups on screen, and a word of
+// button text beside every one of them covers the left of every lane.
+function groupHeightAffordance({
+  collapseGroupRows,
+  hasOverride,
+  featureNoun,
+}: {
+  collapseGroupRows: boolean
+  hasOverride: boolean
+  featureNoun: string
+}) {
+  if (hasOverride) {
+    return {
+      Icon: UnfoldLessIcon,
+      title: collapseGroupRows
+        ? 'Collapse this group back to one row'
+        : 'Fit group to view',
+      text: collapseGroupRows ? undefined : 'Fit to view',
+    }
+  }
+  return {
+    Icon: UnfoldMoreIcon,
+    title: collapseGroupRows
+      ? 'Expand this group into a stacked layout'
+      : `Show all ${featureNoun}s in this group`,
+    text: collapseGroupRows ? undefined : `Show all ${featureNoun}s`,
+  }
+}
 
 // Inline section dividers + labels between stacked groups (in-track group-by).
 // Only rendered when grouping is active; ungrouped displays show nothing. The
@@ -84,36 +129,53 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
   }
   // With the pileup hidden every group's pileup height is 0, so collapse and
   // "show all"/"fit to view" have nothing to act on — render plain labels.
-  const { scrollModel: scroll, showPileup, collapseGroupRows } = model
-  // Collapsed lanes hide nothing — overlapping alignments are drawn as tint
-  // depth on the one row — so the affordance there is "expand this lane into a
-  // true stack", not "show what was clipped". It also goes icon-only: a
-  // one-row-per-group track exists to fit many groups on screen, and a word of
-  // button text beside every one of them covers the left of every lane.
-  const expandTitle = collapseGroupRows
-    ? 'Expand this group into a stacked layout'
-    : `Show all ${model.featureNoun}s in this group`
-  const collapseTitle = collapseGroupRows
-    ? 'Collapse this group back to one row'
-    : 'Fit group to view'
+  const {
+    scrollModel: scroll,
+    showPileup,
+    collapseGroupRows,
+    canSizeGroupHeights,
+    renderSections,
+  } = model
   return (
     <>
-      {model.renderSections.map((section, i) => {
+      {renderSections.map((section, i) => {
         const top = bandScreenTop(section.coverageTop, scroll)
-        if (!bandOnScreen(top, section.coverageHeight, scroll)) {
+        // A section owns the strip from its own coverage top down to the next
+        // one's (`Section.height`), which is what the chip is a header for.
+        // Culling — and the sticky pin below — on the coverage band alone
+        // dropped the label of a group still filling the viewport, and with
+        // coverage hidden that band is 0px, so the label went the moment the
+        // section's top edge crossed the top of the canvas.
+        const { height } = section
+        if (!bandOnScreen(top, height, scroll)) {
           return null
         }
         const label = groupSectionLabel(section.label)
         const collapsed = model.isGroupCollapsed(section.groupKey)
         const hasOverride = model.hasGroupHeightOverride(section.groupKey)
-        const truncated = model.isGroupTruncated(section.groupKey)
+        // Sticky: hold the chip at the top of the canvas while its section
+        // scrolls past, then let it go with the section's own bottom edge, so a
+        // group on its way off the top doesn't park its name over the next
+        // group's. Pin first, release second — the other order floors the
+        // release at 0 and the chip never yields.
+        const chipTop = Math.min(
+          Math.max(0, top),
+          top + height - GROUP_LABEL_HEIGHT,
+        )
+        const heightButton =
+          canSizeGroupHeights &&
+          !collapsed &&
+          (hasOverride || model.isGroupTruncated(section.groupKey))
+            ? groupHeightAffordance({
+                collapseGroupRows,
+                hasOverride,
+                featureNoun: model.featureNoun,
+              })
+            : undefined
         return (
-          <div key={sectionKey(section.groupKey)}>
+          <Fragment key={sectionKey(section.groupKey)}>
             {i > 0 ? <div className={classes.divider} style={{ top }} /> : null}
-            <div
-              className={classes.controls}
-              style={{ top: Math.max(0, top) + 1 }}
-            >
+            <div className={classes.controls} style={{ top: chipTop + 1 }}>
               {showPileup ? (
                 <button
                   type="button"
@@ -121,7 +183,11 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
                   onClick={() => {
                     model.toggleGroupCollapsed(section.groupKey)
                   }}
-                  title={collapsed ? 'Expand group' : 'Collapse group'}
+                  title={
+                    collapsed
+                      ? 'Show this group’s pileup'
+                      : 'Collapse this group to coverage only'
+                  }
                 >
                   {collapsed ? (
                     <ChevronRightIcon className={classes.icon} />
@@ -134,37 +200,24 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
                 <span className={classes.label}>{label}</span>
               )}
               {/* Restore a manually-sized group to the fit budget; otherwise a
-                  "show all" affordance only when reads were actually clipped, so
-                  the button's presence signals hidden reads. Gated on showPileup
-                  since both actions resize the (hidden) pileup. */}
-              {!showPileup ||
-              collapsed ||
-              (!hasOverride && !truncated) ? null : (
+                  "show all" affordance only when reads were actually clipped by
+                  a cap this button can raise, so its presence signals reachable
+                  hidden reads. */}
+              {heightButton ? (
                 <button
                   type="button"
                   className={classes.button}
                   onClick={() => {
                     model.toggleGroupExpanded(section.groupKey)
                   }}
-                  title={hasOverride ? collapseTitle : expandTitle}
+                  title={heightButton.title}
                 >
-                  {hasOverride ? (
-                    <>
-                      <UnfoldLessIcon className={classes.icon} />
-                      {collapseGroupRows ? null : 'Fit to view'}
-                    </>
-                  ) : (
-                    <>
-                      <UnfoldMoreIcon className={classes.icon} />
-                      {collapseGroupRows
-                        ? null
-                        : `Show all ${model.featureNoun}s`}
-                    </>
-                  )}
+                  <heightButton.Icon className={classes.icon} />
+                  {heightButton.text}
                 </button>
-              )}
+              ) : null}
             </div>
-          </div>
+          </Fragment>
         )
       })}
     </>

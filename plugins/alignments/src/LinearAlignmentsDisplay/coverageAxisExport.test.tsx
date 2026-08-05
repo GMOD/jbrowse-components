@@ -31,11 +31,11 @@ function section(overrides: Partial<RenderSection>) {
 
 function draw({
   sections,
-  grouped = false,
+  hasGroupLabels = false,
   left = 0,
 }: {
   sections: RenderSection[]
-  grouped?: boolean
+  hasGroupLabels?: boolean
   left?: number
 }) {
   const { container } = render(
@@ -45,7 +45,7 @@ function draw({
           sections={sections}
           ticks={ticks}
           left={left}
-          grouped={grouped}
+          hasGroupLabels={hasGroupLabels}
           canvasWidth={CANVAS_WIDTH}
         />
       </svg>
@@ -82,8 +82,11 @@ describe('coverage y-axis export geometry', () => {
     }
   })
 
-  it('puts a grouped full axis on the right, clear of the group labels', () => {
-    const xs = labelXs(draw({ sections: [section({})], grouped: true }))
+  // Keyed off the label chips being drawn, not off the section count: a
+  // grouping that yields a single named section still draws one at the left
+  // edge, and the axis has to clear it.
+  it('puts a labelled full axis on the right, clear of the group labels', () => {
+    const xs = labelXs(draw({ sections: [section({})], hasGroupLabels: true }))
     expect(xs.length).toBeGreaterThan(0)
     for (const x of xs) {
       // past the midpoint, and still inside the image
@@ -93,10 +96,10 @@ describe('coverage y-axis export geometry', () => {
   })
 
   it('right-aligns the compact label in both groupings', () => {
-    for (const grouped of [false, true]) {
+    for (const hasGroupLabels of [false, true]) {
       const t = draw({
         sections: [section({ coverageHeight: 20 })],
-        grouped,
+        hasGroupLabels,
       }).querySelector('text')
       expect(t?.getAttribute('text-anchor')).toBe('end')
       const x = Number(t?.getAttribute('x'))

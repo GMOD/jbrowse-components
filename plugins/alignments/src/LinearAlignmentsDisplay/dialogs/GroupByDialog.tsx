@@ -41,6 +41,21 @@ function isColoringByTag(colorBy: ColorBy, tag: string) {
   return colorBy.type === 'tag' && colorBy.tag === tag
 }
 
+// Whether "also color by this tag" should be ticked, absent an explicit click:
+// yes when the reads already carry that tag's colors, and yes when they carry no
+// tag colors at all (grouping by a tag usually pairs with coloring by it). No
+// only when a DIFFERENT tag's colors are in force, which the checkbox would
+// replace.
+//
+// Derived from the tag in the box rather than seeded once from the model: the
+// box is where the tag is chosen, so a state read at open time describes a tag
+// the user hasn't typed yet. Typing the tag the reads are already colored by
+// then left the box unticked over colors that were on — and, since unticking
+// means "don't color by this tag", submitting turned those colors off.
+function defaultColorByTag(colorBy: ColorBy, tag: string) {
+  return colorBy.type !== 'tag' || isColoringByTag(colorBy, tag)
+}
+
 // The scheme to apply after grouping by `tag`: color by it when checked; when
 // unchecked, undo only the coloring this dialog set (same tag), else leave the
 // existing scheme (undefined) alone.
@@ -67,15 +82,12 @@ const GroupByDialog = observer(function GroupByDialog(props: {
   const { model, handleClose } = props
   // Pre-fill from the active grouping so reopening tweaks it rather than resets.
   const [groupByTag, setGroupByTag] = useState(model.groupBy?.tag ?? '')
-  // Defaults on (grouping by a tag usually pairs with coloring by it) unless
-  // reads are already colored by a different tag.
-  const [colorByTag, setColorByTag] = useState(() => {
-    const { colorBy } = model
-    return (
-      colorBy.type !== 'tag' ||
-      isColoringByTag(colorBy, model.groupBy?.tag ?? '')
-    )
-  })
+  // Undefined until the box is actually clicked, so until then it tracks the tag
+  // being typed (`defaultColorByTag`); a click pins the answer, since from then
+  // on it is the user's and not a default.
+  const [colorByTagChoice, setColorByTagChoice] = useState<boolean>()
+  const colorByTag =
+    colorByTagChoice ?? defaultColorByTag(model.colorBy, groupByTag)
   const debouncedTag = useDebounce(groupByTag, 1000)
   // Keyed by the display's id, never the node itself: useFetch JSON-stringifies
   // its key, and an MST node stringifies to its whole snapshot — so the key both
@@ -152,7 +164,7 @@ const GroupByDialog = observer(function GroupByDialog(props: {
         <LabeledCheckbox
           checked={colorByTag}
           onChange={val => {
-            setColorByTag(val)
+            setColorByTagChoice(val)
           }}
           label="Also color reads by this tag"
         />

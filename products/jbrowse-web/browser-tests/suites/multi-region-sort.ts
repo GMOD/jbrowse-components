@@ -16,10 +16,13 @@ const pileup = 'pileup-display-done'
 interface Display {
   setColorScheme: (colorBy: { type: string }) => void
   setSortedByAtPosition: (type: string, pos: number, refName: string) => void
-  laidOutPileupMap: ReadonlyMap<
-    number,
-    { readIds: string[]; readYs: ArrayLike<number> }
-  >
+  // One entry per stacked group; ungrouped (this suite) is the single section.
+  sourceSections: {
+    laidOutPileupMap: ReadonlyMap<
+      number,
+      { readIds: string[]; readYs: ArrayLike<number> }
+    >
+  }[]
 }
 interface LiveModel {
   JBrowseSession: {
@@ -67,8 +70,11 @@ async function assertSpanningReadsShareRows(page: Page) {
   const spanningCount = await page.evaluate(() => {
     const { JBrowseSession } = window as unknown as LiveModel
     const display = JBrowseSession.views[0]!.tracks[0]!.displays[0]!
+    // The one (ungrouped) section's per-region layout, read the way the
+    // renderers read it — the sole source of laid-out rows on the model.
+    const byRegion = [...display.sourceSections[0]!.laidOutPileupMap.values()]
     const rowsById = new Map<string, Set<number>>()
-    for (const data of display.laidOutPileupMap.values()) {
+    for (const data of byRegion) {
       data.readIds.forEach((id, i) => {
         const set = rowsById.get(id) ?? new Set<number>()
         set.add(data.readYs[i]!)
@@ -79,9 +85,7 @@ async function assertSpanningReadsShareRows(page: Page) {
     for (const [id, rows] of rowsById) {
       // present in >1 region only if the same id was added from >1 entry; a
       // read on a single row across N entries has a 1-element set
-      const seenIn = [...display.laidOutPileupMap.values()].filter(d =>
-        d.readIds.includes(id),
-      ).length
+      const seenIn = byRegion.filter(d => d.readIds.includes(id)).length
       if (seenIn > 1) {
         spanning++
         if (rows.size !== 1) {

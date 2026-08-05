@@ -1,4 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
+import { Fragment } from 'react'
+
 import {
   SvgColorLegend,
   createJBrowseTheme,
@@ -139,7 +141,7 @@ function AlignmentsSvgBody({
           sections={renderSections}
           ticks={coverageTicks}
           left={contentLeft}
-          grouped={model.isGrouped}
+          hasGroupLabels={model.showsGroupLabels}
           canvasWidth={canvasWidth}
         />
       ) : null}
@@ -154,6 +156,7 @@ function AlignmentsSvgBody({
         <GroupLabelBoxes
           sections={renderSections}
           left={contentLeft}
+          width={canvasWidth}
           theme={theme}
         />
       ) : null}
@@ -202,19 +205,22 @@ function ColorKey({
 // scrollTop 0, so each `coverageTop` is the section's final y. Mirrors the
 // on-screen `CoverageAxisHost`, which makes a three-way choice: a band under
 // COMPACT_AXIS_HEIGHT can't fit tick labels and shows a single `[0, max]`
-// right-aligned; a full axis goes right when grouped, so it clears the group
-// label chips, and left otherwise.
+// right-aligned; a full axis goes right whenever the group label chips are
+// drawn, so it clears them, and left otherwise.
+//
+// The side keys off the chips (`showsGroupLabels`), not off the section count:
+// a grouping that yields one named section still draws a chip at the left edge.
 export function CoverageScaleBars({
   sections,
   ticks,
   left,
-  grouped,
+  hasGroupLabels,
   canvasWidth,
 }: {
   sections: RenderSection[]
   ticks: NonNullable<LinearAlignmentsDisplayModel['coverageTicks']>
   left: number
-  grouped: boolean
+  hasGroupLabels: boolean
   canvasWidth: number
 }) {
   return (
@@ -235,10 +241,15 @@ export function CoverageScaleBars({
           <g
             key={sectionKey(section.groupKey)}
             transform={`translate(${
-              grouped ? rightAxisSpineX(canvasWidth) : leftAxisSpineX(left)
+              hasGroupLabels
+                ? rightAxisSpineX(canvasWidth)
+                : leftAxisSpineX(left)
             }, ${section.coverageTop})`}
           >
-            <YScaleBar ticks={ticks} orientation={grouped ? 'right' : 'left'} />
+            <YScaleBar
+              ticks={ticks}
+              orientation={hasGroupLabels ? 'right' : 'left'}
+            />
           </g>
         ),
       )}
@@ -275,27 +286,46 @@ function InsertSizeScaleBar({
   )
 }
 
-// Group name boxes, one per section. Rendered last (highest z-order) so a
-// group's label always sits on top of the pileup/coverage/arcs it labels.
+// Group name boxes + the rules between sections, one per section. Rendered last
+// (highest z-order) so a group's label always sits on top of the
+// pileup/coverage/arcs it labels.
+//
+// The divider is the on-screen overlay's `classes.divider`: without it an
+// exported stack of lanes ran together, since the chip is the only other thing
+// marking where one group ends — the same drift `groupLabelStyle.ts` exists to
+// prevent for the chip itself.
 function GroupLabelBoxes({
   sections,
   left,
+  width,
   theme,
 }: {
   sections: RenderSection[]
   left: number
+  width: number
   theme: Theme
 }) {
   return (
     <>
-      {sections.map(section => (
-        <GroupLabelBox
-          key={sectionKey(section.groupKey)}
-          x={left + 4}
-          y={section.coverageTop + 1}
-          text={groupSectionLabel(section.label)}
-          theme={theme}
-        />
+      {sections.map((section, i) => (
+        <Fragment key={sectionKey(section.groupKey)}>
+          {i > 0 ? (
+            <line
+              x1={0}
+              x2={width}
+              y1={section.coverageTop}
+              y2={section.coverageTop}
+              stroke={theme.palette.divider}
+              strokeWidth={1}
+            />
+          ) : null}
+          <GroupLabelBox
+            x={left + 4}
+            y={section.coverageTop + 1}
+            text={groupSectionLabel(section.label)}
+            theme={theme}
+          />
+        </Fragment>
       ))}
     </>
   )
