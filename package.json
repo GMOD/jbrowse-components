@@ -33,6 +33,7 @@
     "autogen": "node --experimental-strip-types scripts/autogen.ts",
     "gen:shaders": "node packages/shader-tools/src/build-shaders.ts",
     "sync-doc-snippets": "node website/scripts/sync-doc-snippets.ts",
+    "sync-img-readme": "node website/scripts/sync-img-readme.ts",
     "check-docs": "node --experimental-strip-types scripts/check-docs.ts",
     "fix-extensions": "node scripts/add-extensions.ts",
     "release": "node scripts/release.ts",

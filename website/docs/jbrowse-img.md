@@ -39,15 +39,16 @@ the `1` / `chr1` / `NC_000001.10` refname styles across the files):
 
 <Figure src="/img/jbrowse-img/1.png" caption="A multi-track hg19 view: NCBI RefSeq genes, ClinGen gene-disease mapping, phyloP conservation, and SKBR3 nanopore reads" />
 
+<!-- jb2export: 1 -->
+
 ```bash
-jb2export \
-  --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
+jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
   --aliases https://jbrowse.org/genomes/hg19/hg19_aliases.txt \
   --gffgz https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz '{"showOnlyGenes":true}' \
   --bigbed https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinGen/clinGenGeneDisease.bb \
   --bigwig https://hgdownload.soe.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw \
   --cram https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.cram \
-  --loc 1:19,190,000-19,240,000 --width 1200 --out overview.png
+  --loc 1:19,190,000-19,240,000 --width 1200 --out 1.png
 ```
 
 The `'{"showOnlyGenes":true}'` after the GFF is a raw-JSON per-track override
@@ -220,9 +221,11 @@ used here.
 A `--bam`/`--cram` track renders a coverage histogram over a read pileup, with
 mismatches highlighted. Reproducible with the bundled volvox alignments:
 
+<!-- jb2export: alignments_pileup -->
+
 ```bash
 jb2export --fasta data/volvox/volvox.fa --bam data/volvox/volvox-sorted.bam \
-  --loc ctgA:1-20000 --width 1200 --out pileup.png
+  --loc ctgA:1-20000 --width 1200 --out alignments_pileup.png
 ```
 
 <Figure src="/img/jbrowse-img/alignments_pileup.png" caption="A coverage histogram over a read pileup, with mismatches highlighted" />
@@ -233,10 +236,13 @@ reads over the `CUZD1` gene, where the sort pulls every read carrying a ~1.8 kb
 somatic deletion into one contiguous band so the heterozygous deletion (and its
 coverage dip) pops out of the pileup:
 
+<!-- jb2export: alignments_readgroup -->
+
 ```bash
 jb2export --hub hg38 --track hg38-ncbiRefSeqCurated height:55 \
   --bam https://jbrowse.org/demos/cgiab/HG008-T_chr10_CUZD1_deletion.bam sort:base height:420 \
-  --loc chr10:122,831,700-122,840,800 --width 1200 --out sorted.png
+  --loc chr10:122,831,700-122,840,800 --width 1200 \
+  --out alignments_readgroup.png
 ```
 
 <Figure src="/img/jbrowse-img/alignments_readgroup.png" caption="HG008-T PacBio HiFi reads over CUZD1, sorted by the base at the center position so the reads carrying a ~1.8 kb somatic deletion cluster into one band" />
@@ -246,11 +252,12 @@ HG002 ultralong-ONT example (hg19, streamed from the GIAB FTP) groups and colors
 by the `HP` tag: the heterozygous deletion shows in one haplotype and not the
 other:
 
+<!-- jb2export: alignments_haplotype -->
+
 ```bash
 jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
-  --bam https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/Ultralong_OxfordNanopore/combined_2018-08-10/HG002_ONTrel2_16x_RG_HP10xtrioRTG.cram.bam \
-  group:tag:HP color:tag:HP height:400 \
-  --loc 1:63,005,675-63,007,432 --width 1200 --out haplotype.png
+  --bam https://jbrowse.org/demos/hg002/HG002.ONTrel2.HP.hs37d5.demo_slices.bam group:tag:HP color:tag:HP height:400 \
+  --loc 1:63,005,675-63,007,432 --width 1200 --out alignments_haplotype.png
 ```
 
 <Figure src="/img/jbrowse-img/alignments_haplotype.png" caption="Reads grouped and colored by haplotype (HP tag), showing a heterozygous deletion in one haplotype" />
@@ -261,9 +268,10 @@ nanopore CRAM (hg38, streamed from the ONT open-data S3) with the UCSC
 CpG-island BED on top shows the methylated flanks giving way to the unmethylated
 island cores, read against the annotated island boundaries:
 
+<!-- jb2export: methylation -->
+
 ```bash
-jb2export \
-  --fasta https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz \
+jb2export --fasta https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz \
   --aliases https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt \
   --bedgz https://jbrowse.org/ucsc/hg38/cpgIslandExt.bed.gz index:https://jbrowse.org/ucsc/hg38/cpgIslandExt.bed.gz.csi \
   --cram https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829_tumor.ht.cram color:methylation height:350 \
@@ -279,10 +287,12 @@ This strand-specific paired-end RNA-seq (hg19, public) over `B2M` shows the long
 first intron as one big arc and the closely-spaced downstream exons as smaller
 arcs, with the spliced read pairs (green mate lines) below:
 
+<!-- jb2export: sashimi_junctions -->
+
 ```bash
 jb2export --hub hg19 --track hg19-ncbiRefSeqCurated height:90 \
-  --bam https://s3.amazonaws.com/jbrowse.org/genomes/hg19/paired_end_rnaseq/Pairend_StrandSpecific_51mer_Human_hg19.bam sashimi:auto coverageHeight:170 height:420 \
-  --loc B2M --width 1400 --out sashimi.png
+  --bam https://s3.amazonaws.com/jbrowse.org/genomes/hg19/paired_end_rnaseq/Pairend_StrandSpecific_51mer_Human_hg19.bam sashimi:auto coverageHeight:170 featureHeight:super-compact height:420 \
+  --loc B2M --width 1400 --out sashimi_junctions.png
 ```
 
 <Figure src="/img/jbrowse-img/sashimi_junctions.png" caption="RNA-seq sashimi plot over B2M: splice-junction arcs on the coverage band sized by junction read depth, over the spliced read pileup" />
@@ -298,10 +308,12 @@ reverse-strand core between red forward-strand flanks**, spanning breakpoint to
 breakpoint. `group:splitRead` puts those reads in their own labelled section
 above the flat background pileup.
 
+<!-- jb2export: sv_read_arcs -->
+
 ```bash
 jb2export --hub hg38 \
   --bam https://1000g-ont.s3.amazonaws.com/PROCESSED_DATA/ALIGNED_TO_HG38/MINIMAP2_ALIGNED_BAMS/HG00151-ONT-hg38-R9-LSK110-guppy-sup-5mC.phased.bam arcs:down linkedReads:normal group:splitRead coverageHeight:80 height:560 \
-  --loc chr1:197,786,900-197,789,700 --width 1400 --out sv_arcs.png
+  --loc chr1:197,786,900-197,789,700 --width 1400 --out sv_read_arcs.png
 ```
 
 <Figure src="/img/jbrowse-img/sv_read_arcs.png" caption="HG00151 ONT long reads over a ~1.2 kb chr1 inversion, grouped on SA-tag presence: the split reads sit in their own section under the purple junction arcs, chained so a blue reverse-strand core runs between red forward-strand flanks" />
@@ -339,11 +351,12 @@ This logscale, manual-minmax example plots the SKBR3 breast-cancer cell line's
 read coverage genome-wide (hg19, public bigwig), where the amplifications and
 deletions of the cancer karyotype stand out:
 
+<!-- jb2export: skbr3_cov -->
+
 ```bash
-jb2export --loc all \
-  --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
+jb2export --loc all --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
   --bigwig https://jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.regions.bw scaletype:log fill:false resolution:superfine height:400 color:purple minmax:1:1024 \
-  --width 1400 --out skbr3_coverage.png
+  --width 1900 --out skbr3_cov.png
 ```
 
 <Figure src="/img/jbrowse-img/skbr3_cov.png" caption="SKBR3 cell-line read coverage genome-wide, log scale, showing cancer amplifications and deletions" />
@@ -384,10 +397,12 @@ cell type that expresses GCG) shows strong open chromatin across the gene while
 the other 15 cell types stay quiet on the shared scale, a clean readout of
 cell-type-specific chromatin accessibility at a marker gene:
 
+<!-- jb2export: scatac_multiwiggle -->
+
 ```bash
 jb2export --hub hg38 --track hg38-ncbiRefSeqCurated height:60 \
-  --multiwig data/scatac_catlas.json height:520 \
-  --loc GCG --width 1400 --out scatac.png
+  --multiwig data/scatac_catlas.json 'name:CATlas single-cell ATAC (accessibility by cell type)' height:440 \
+  --loc chr2:162,000,000-162,300,000 --width 1400 --out scatac_multiwiggle.png
 ```
 
 <Figure src="/img/jbrowse-img/scatac_multiwiggle.png" caption="CATlas single-cell ATAC accessibility across 16 cell types over the GCG locus, with the Alpha (glucagon) row showing cell-type-specific open chromatin" />
@@ -397,9 +412,12 @@ jb2export --hub hg38 --track hg38-ncbiRefSeqCurated height:60 \
 A `--vcfgz` track draws each variant with its reference-to-alternate change.
 Reproducible with the bundled volvox VCF:
 
+<!-- jb2export: variants -->
+
 ```bash
-jb2export --fasta data/volvox/volvox.fa --vcfgz data/volvox/volvox.filtered.vcf.gz \
-  --loc ctgA:1-20000 --width 1200 --out variants.png
+jb2export --fasta data/volvox/volvox.fa \
+  --vcfgz data/volvox/volvox.filtered.vcf.gz --loc ctgA:1-20000 --width 1200 \
+  --out variants.png
 ```
 
 <Figure src="/img/jbrowse-img/variants.png" caption="A variant track drawing each SNV with its reference-to-alternate change" />
@@ -415,10 +433,12 @@ HBB β-globin locus, with the NCBI RefSeq gene track (via `--hub`/`--track`) for
 context. Common variants read as solid vertical bands, rarer ones as sparse
 speckle:
 
+<!-- jb2export: multisample_variants -->
+
 ```bash
 jb2export --hub hg19 --track hg19-ncbiRefSeqCurated \
   --vcfgz https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.chr11.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes.vcf.gz display:multivariant height:450 force:true \
-  --loc chr11:5,246,000-5,251,000 --width 1200 --out multisample.png
+  --loc chr11:5,246,000-5,251,000 --width 1200 --out multisample_variants.png
 ```
 
 <Figure src="/img/jbrowse-img/multisample_variants.png" caption="The 1000 Genomes phase 3 chr11 callset (2,504 samples) as a multi-sample genotype matrix over the HBB locus, with the NCBI RefSeq gene track above" />
@@ -429,9 +449,10 @@ A `--hic` track draws the contact matrix as a triangular heatmap. This example
 streams the public hg19 demo `.hic` and shows the TAD structure along chr1, with
 the NCBI RefSeq gene track (via `--hub`/`--track`) on top for context:
 
+<!-- jb2export: hic -->
+
 ```bash
-jb2export --hub hg19 \
-  --track hg19-ncbiRefSeqCurated \
+jb2export --hub hg19 --track hg19-ncbiRefSeqCurated \
   --hic https://jbrowse.org/genomes/hg19/intra_nofrag_30.hic height:400 \
   --loc 1:2,500,000-12,500,000 --width 1200 --out hic.png
 ```
@@ -449,9 +470,12 @@ the intron thins to a connector line, the coding exon begins as a solid CDS
 block, and that block edge lines up with a specific reference base and reading
 frame. `showOnlyGenes` keeps the RefSeq track to its gene features:
 
+<!-- jb2export: gene_track -->
+
 ```bash
-jb2export --hub hg38 --track hg38-ncbiRefSeqCurated height:150 '{"showOnlyGenes":true}' --refseq \
-  --loc chr17:7,675,018-7,675,098 --width 1500 --out gene_track.png
+jb2export --hub hg38 \
+  --track hg38-ncbiRefSeqCurated height:60 '{"showOnlyGenes":true,"geneGlyphMode":"longestCoding"}' \
+  --refseq --loc chr17:7,675,018-7,675,098 --width 1500 --out gene_track.png
 ```
 
 <Figure src="/img/jbrowse-img/gene_track.png" caption="A TP53 intron/CDS boundary at base level: the reference sequence's DNA bases and six-frame translation above the NCBI RefSeq gene track, whose CDS exon block begins where the intron connector ends" />
@@ -462,11 +486,12 @@ jb2export --hub hg38 --track hg38-ncbiRefSeqCurated height:150 '{"showOnlyGenes"
 `darkStock`, or `darkMinimal`. (Plain `dark`/`light` are not theme names, use
 the keys above.)
 
+<!-- jb2export: dark_theme -->
+
 ```bash
-jb2export --hub hg38 \
-  --track hg38-ncbiRefSeqCurated height:100 \
-  --track hg38-phyloP100way height:140 \
-  --loc chr10:87,860,000-87,975,000 --themeName darkStock --width 1200 --out dark.png
+jb2export --hub hg38 --track hg38-ncbiRefSeqCurated height:100 \
+  --track hg38-phyloP100way height:140 --loc chr10:87,860,000-87,975,000 \
+  --themeName darkStock --width 1200 --out dark_theme.png
 ```
 
 <Figure src="/img/jbrowse-img/dark_theme.png" caption="The hg38 PTEN locus: NCBI RefSeq genes over phyloP conservation, rendered with the darkStock theme" />
@@ -606,12 +631,14 @@ A whole-genome dotplot: every query contig on x, every target contig on y.
 `--autoDiagonalize` reorders the target contigs so the main alignment forms a
 clean diagonal instead of a staircase:
 
+<!-- jb2export: yeast_dotplot -->
+
 ```bash
 jb2export dotplot \
   --fasta https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/yjm1447.fa \
   --fasta2 https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64.fa \
   --paf https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64_vs_yjm1447.paf \
-  --autoDiagonalize --out dotplot.png
+  --autoDiagonalize --width 1100 --out yeast_dotplot.png
 ```
 
 <Figure src="/img/jbrowse-img/yeast_dotplot.png" caption="Whole-genome dotplot of two yeast assemblies (R64 vs the YJM1447 strain)" />
@@ -620,12 +647,16 @@ A linear synteny ribbon between one chromosome in each assembly (here YJM1447
 chr `I` vs R64 chr `I`, accession `NC_001133.9`). `--drawCurves` renders the
 ribbon as a smooth bezier instead of straight trapezoids:
 
+<!-- jb2export: yeast_synteny -->
+
 ```bash
 jb2export synteny \
-  --fasta https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/yjm1447.fa --loc I \
-  --fasta2 https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64.fa --loc2 NC_001133.9 \
+  --fasta https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/yjm1447.fa \
+  --loc I \
+  --fasta2 https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64.fa \
+  --loc2 NC_001133.9 \
   --paf https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64_vs_yjm1447.paf \
-  --drawCurves --levelHeights 150 --out synteny.png
+  --drawCurves --width 1400 --out yeast_synteny.png
 ```
 
 <Figure src="/img/jbrowse-img/yeast_synteny.png" caption="Linear synteny ribbon between YJM1447 chr I and R64 chr I" />
@@ -705,13 +736,14 @@ than drawn between the wrong two genomes.
 A whole-genome example (peach vs grape, the chrom.sizes come from this repo and
 the alignment PAF from S3):
 
+<!-- jb2export: grape_peach_synteny -->
+
 ```bash
-jb2export synteny \
-  --chromSizes data/comparative/peach.chrom.sizes \
+jb2export synteny --chromSizes data/comparative/peach.chrom.sizes \
   --paf https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_grape.paf.gz \
-  --chromSizes data/comparative/grape.chrom.sizes \
-  --autoDiagonalize --colorBy query --alpha 0.4 --levelHeights 350 --drawCurves \
-  --width 1400 --out grape_peach.png
+  --chromSizes data/comparative/grape.chrom.sizes --autoDiagonalize \
+  --colorBy query --alpha 0.4 --levelHeights 350 --drawCurves --width 1400 \
+  --out grape_peach_synteny.png
 ```
 
 <Figure src="/img/jbrowse-img/grape_peach_synteny.png" caption="Whole-genome synteny, grape vs peach, with autoDiagonalize and colorBy query" />
@@ -722,13 +754,14 @@ spaghetti. `--chromSizes` means no multi-GB sequence is downloaded (whole-genome
 synteny draws none); the chrom.sizes are committed and the liftOver chain
 streams from the web, so this reproduces with only the public chain:
 
+<!-- jb2export: hs1_mm39_synteny -->
+
 ```bash
-jb2export synteny \
-  --chromSizes data/comparative/hs1.chrom.sizes \
+jb2export synteny --chromSizes data/comparative/hs1.chrom.sizes \
   --chain https://jbrowse.org/demos/hs1ToMm39/hs1ToMm39.over.chain.gz \
-  --chromSizes data/comparative/mm39.chrom.sizes \
-  --minAlignmentLength 500000 --autoDiagonalize --colorBy query --alpha 0.4 --levelHeights 350 --drawCurves \
-  --width 1400 --out hs1_mm39.png
+  --chromSizes data/comparative/mm39.chrom.sizes --minAlignmentLength 500000 \
+  --autoDiagonalize --colorBy query --alpha 0.4 --levelHeights 350 --drawCurves \
+  --cigarMode matches --width 1400 --out hs1_mm39_synteny.png
 ```
 
 <Figure src="/img/jbrowse-img/hs1_mm39_synteny.png" caption="Mammalian-scale synteny, human (hs1) vs mouse (mm39)" />
@@ -739,15 +772,16 @@ diverged hs1↔mm39 human–mouse synteny below. Each UCSC liftOver `.chain` sit
 between the two assemblies it relates (`hg38ToHs1` between hg38 and hs1,
 `hs1ToMm39` between hs1 and mm39):
 
+<!-- jb2export: hg38_hs1_mm39_synteny -->
+
 ```bash
-jb2export synteny \
-  --chromSizes data/comparative/hg38.chrom.sizes \
+jb2export synteny --chromSizes data/comparative/hg38.chrom.sizes \
   --chain data/comparative/hg38ToHs1.over.chain.gz \
   --chromSizes data/comparative/hs1.chrom.sizes \
   --chain https://jbrowse.org/demos/hs1ToMm39/hs1ToMm39.over.chain.gz \
-  --chromSizes data/comparative/mm39.chrom.sizes \
-  --minAlignmentLength 500000 --autoDiagonalize --colorBy query --alpha 0.4 --levelHeights 300,300 --drawCurves \
-  --width 1400 --out hg38_hs1_mm39.png
+  --chromSizes data/comparative/mm39.chrom.sizes --minAlignmentLength 500000 \
+  --autoDiagonalize --colorBy query --alpha 0.4 --levelHeights 300,300 \
+  --drawCurves --cigarMode matches --width 1400 --out hg38_hs1_mm39_synteny.png
 ```
 
 <Figure src="/img/jbrowse-img/hg38_hs1_mm39_synteny.png" caption="Three-level synteny stack: hg38, hs1, and mm39" />
@@ -773,11 +807,12 @@ on hg19: each inter-chromosomal chord is a translocation, the classic dense
 rearranged-cancer-genome view. `--fasta` reads only the `.fai` for chromosome
 names and lengths (the circular view fetches no sequence):
 
+<!-- jb2export: circular_chords -->
+
 ```bash
-jb2export circular \
-  --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
+jb2export circular --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
   --vcfgz https://jbrowse.org/genomes/hg19/SKBR3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.filtered.vcf.gz \
-  --width 800 --out circular.png
+  --width 800 --out circular_chords.png
 ```
 
 <Figure src="/img/jbrowse-img/circular_chords.png" caption="Circular chord plot of SKBR3 structural variants on hg19, inter-chromosomal chords marking translocations" />

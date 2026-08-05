@@ -74,6 +74,8 @@ const GENERATORS: Generator[] = [
   },
   { name: 'guide indexes', argv: web('generate-guide-indexes.ts') },
   { name: 'ADR index', argv: web('generate-adr-index.ts') },
+  // Before the README is mirrored into the docs site, since this rewrites it.
+  { name: 'jbrowse-img README commands', argv: web('sync-img-readme.ts') },
   { name: 'jbrowse-img doc', argv: web('generate-img-doc.ts') },
   { name: 'CLI doc', argv: web('generate-cli-doc.ts') },
   { name: 'gallery links', argv: web('gen-gallery-links.ts') },
