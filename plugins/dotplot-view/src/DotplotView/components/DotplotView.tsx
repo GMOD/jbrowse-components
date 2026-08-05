@@ -1,5 +1,6 @@
 import { ErrorBanner, ResizeHandle, ViewLoadingScreen } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import RenderCanvas from '@jbrowse/render-core/RenderCanvas'
 import { useRenderingBackend } from '@jbrowse/render-core/useRenderingBackend'
 import { ColorByLegend, DiagonalizeLoadingScreen } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
@@ -48,18 +49,11 @@ const DotplotCanvas = observer(function DotplotCanvas({
   model: DotplotViewModel
 }) {
   const { viewWidth, viewHeight } = model
-  const {
-    canvasRef,
-    error: gpuError,
-    canvasKey,
-  } = useRenderingBackend(createDotplotRenderer, model)
+  const handle = useRenderingBackend(createDotplotRenderer, model)
   return (
     <>
-      <canvas
-        // fresh element per re-init: neither WebGL nor Canvas2D can bind to one
-        // that already held a lost context (see useRenderingBackend)
-        key={canvasKey}
-        ref={canvasRef}
+      <RenderCanvas
+        handle={handle}
         data-testid={
           model.settled ? 'dotplot_webgl_canvas_done' : 'dotplot_webgl_canvas'
         }
@@ -68,7 +62,7 @@ const DotplotCanvas = observer(function DotplotCanvas({
           height: viewHeight,
         }}
       />
-      {gpuError ? <ErrorBanner error={gpuError} /> : null}
+      {handle.error ? <ErrorBanner error={handle.error} /> : null}
     </>
   )
 })

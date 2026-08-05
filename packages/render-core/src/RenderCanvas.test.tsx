@@ -1,0 +1,131 @@
+import { useState } from 'react'
+
+import { fireEvent, render } from '@testing-library/react'
+
+import RenderCanvas from './RenderCanvas.tsx'
+
+// The reason this component exists. A backend re-init needs an element that
+// never held a context: `getContext('webgl2')` hands back the same *lost*
+// context, and `getContext('2d')` returns null on any element that once had
+// WebGL — so reusing the element turns a recoverable loss into a permanent
+// "Canvas 2D context not available". `canvasKey` is what forces a fresh one,
+// and until this component it was a `key={canvasKey}` each drop-to-primitive
+// consumer had to remember to write.
+//
+// Driven from a stable parent, NOT from RTL's `rerender()`: in this repo's setup
+// `rerender()` unmounts and remounts the tree, so a key test written with it
+// passes whether or not the key is there (see the note in
+// SequenceFeatureDetails, and `reference-rtl-rerender-remounts`). Both
+// assertions below were confirmed to fail with `key={handle.canvasKey}` removed.
+function Harness({
+  canvasRef,
+}: {
+  canvasRef: (node: HTMLCanvasElement | null) => void
+}) {
+  const [canvasKey, setCanvasKey] = useState(0)
+  const [done, setDone] = useState(false)
+  return (
+    <>
+      <button
+        type="button"
+        data-testid="bump-key"
+        onClick={() => {
+          setCanvasKey(k => k + 1)
+        }}
+      />
+      <button
+        type="button"
+        data-testid="toggle-done"
+        onClick={() => {
+          setDone(d => !d)
+        }}
+      />
+      <RenderCanvas
+        handle={{ canvasRef, canvasKey }}
+        data-testid={done ? 'synteny_canvas_done' : 'synteny_canvas'}
+      />
+    </>
+  )
+}
+
+function setup() {
+  const canvasRef = jest.fn()
+  const { container, getByTestId } = render(<Harness canvasRef={canvasRef} />)
+  return {
+    canvasRef,
+    getByTestId,
+    canvas: () => container.querySelector('canvas'),
+  }
+}
+
+test('a changed canvasKey mounts a fresh element', () => {
+  const { canvas, getByTestId } = setup()
+  const first = canvas()
+  expect(first).not.toBeNull()
+
+  fireEvent.click(getByTestId('bump-key'))
+  expect(canvas()).not.toBe(first)
+})
+
+test('an unrelated prop change keeps the live element', () => {
+  const { canvas, getByTestId } = setup()
+  const first = canvas()
+
+  // A remount here would drop a live GPU context and re-run the whole backend
+  // factory for a changed attribute, so "the key is the *only* thing that
+  // remounts" is half the invariant.
+  fireEvent.click(getByTestId('toggle-done'))
+  expect(canvas()).toBe(first)
+  expect(canvas()?.getAttribute('data-testid')).toBe('synteny_canvas_done')
+})
+
+test('the hook is handed each fresh element through canvasRef', () => {
+  const { canvasRef, getByTestId } = setup()
+  canvasRef.mockClear()
+
+  fireEvent.click(getByTestId('bump-key'))
+  // detach of the old element, then attach of the new one — the remount is only
+  // useful if the hook actually learns about the replacement. First argument
+  // only: React 19 passes further args to a detaching callback ref.
+  expect(canvasRef.mock.calls.map(c => c[0])).toEqual([
+    null,
+    expect.any(HTMLCanvasElement),
+  ])
+})
+
+// The testid convention deliberately does NOT live in this component: these two
+// views spell their suffix `_done`, not `DisplayChrome`'s `-done`, and those
+// selectors are frozen across four test systems. Forwarding it verbatim is what
+// keeps the separator the call site's business.
+test('forwards data-testid verbatim rather than composing one', () => {
+  const { canvas } = setup()
+  expect(canvas()?.getAttribute('data-testid')).toBe('synteny_canvas')
+})
+
+test('emits no testid attribute when none is passed', () => {
+  const { container } = render(
+    <RenderCanvas handle={{ canvasRef: jest.fn(), canvasKey: 0 }} />,
+  )
+  expect(container.querySelector('canvas')?.hasAttribute('data-testid')).toBe(
+    false,
+  )
+})
+
+test('forwards the caller half — sizing, class and handlers', () => {
+  const onMouseMove = jest.fn()
+  const { container } = render(
+    <RenderCanvas
+      handle={{ canvasRef: jest.fn(), canvasKey: 0 }}
+      className="lvl"
+      style={{ width: 120, height: 40 }}
+      onMouseMove={onMouseMove}
+    />,
+  )
+  const canvas = container.querySelector('canvas')!
+  expect(canvas.className).toBe('lvl')
+  expect(canvas.style.width).toBe('120px')
+  expect(canvas.style.height).toBe('40px')
+
+  fireEvent.mouseMove(canvas)
+  expect(onMouseMove).toHaveBeenCalled()
+})

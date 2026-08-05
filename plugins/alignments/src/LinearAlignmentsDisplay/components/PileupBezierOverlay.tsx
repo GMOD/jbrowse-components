@@ -40,11 +40,20 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
   const [hoveredArcId, setHoveredArcId] = useState<string | null>(null)
   const view = getContainingView(model) as LinearGenomeViewModel
   const { showBezierConnections, scrollTop, height } = model
-  const { initialized, width } = view
 
-  if (!showBezierConnections || !initialized) {
+  // `view.width` is read AFTER this gate, never destructured alongside
+  // `initialized` above it: destructuring evaluates the getter, and `width`
+  // throws by design before the view is measured — so `const { initialized,
+  // width } = view` throws on the very run the `!initialized` check exists to
+  // handle. It read as guarded and wasn't. Nothing caught it because
+  // `AlignmentsDisplayComponent` doesn't mount this body until the view is
+  // measured (see the `!view.initialized` branch there, which is load-bearing
+  // for exactly this family of reads); the guard here is what keeps that a
+  // belt-and-braces arrangement rather than the only thing holding.
+  if (!showBezierConnections || !view.initialized) {
     return null
   }
+  const { width } = view
 
   const arcs = computePileupBezierArcsFromModel(model, view, scrollTop)
 

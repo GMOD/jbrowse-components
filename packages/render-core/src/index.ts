@@ -26,6 +26,8 @@ export type { RenderLifecycleModel } from './useRenderingBackend.ts'
 export { useTabVisibilityRerender } from './useTabVisibilityRerender.ts'
 export { ScrollLockedOverlay } from './ScrollLockedOverlay.tsx'
 export { default as OverlayCanvas } from './OverlayCanvas.tsx'
+export { default as RenderCanvas } from './RenderCanvas.tsx'
+export type { RenderCanvasHandle } from './RenderCanvas.tsx'
 
 // --- Backend factories ---
 export {

@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react'
 import { ErrorBanner } from '@jbrowse/core/ui'
 import { openFeatureWidget } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import RenderCanvas from '@jbrowse/render-core/RenderCanvas'
 import { useRenderingBackend } from '@jbrowse/render-core/useRenderingBackend'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
@@ -256,16 +257,13 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
 
   return (
     <div className={classes.root} style={{ width, height }}>
-      <canvas
-        // fresh element per re-init: neither WebGL nor Canvas2D can bind to one
-        // that already held a lost context (see useRenderingBackend)
-        key={canvasKey}
-        ref={canvasRef}
+      <RenderCanvas
+        handle={{ canvasRef, canvasKey }}
+        data-testid={model.settled ? 'synteny_canvas_done' : 'synteny_canvas'}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         onMouseDown={handleMouseDown}
         onContextMenu={handleContextMenu}
-        data-testid={model.settled ? 'synteny_canvas_done' : 'synteny_canvas'}
         className={classes.canvas}
         style={{ width, height }}
       />

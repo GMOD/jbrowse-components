@@ -287,9 +287,24 @@ even the Canvas2D fallback can bind there, turning a recoverable loss into
 "Canvas 2D context not available". DisplayChrome consumers get a fresh element
 free, since `renderError` unmounts the canvas. The drop-to-primitive consumers
 keep theirs mounted through an error by design (ADR-025's mount-lifetime rule,
-written for a _live_ context), so they put the hook's `canvasKey` on
-`<canvas key=…>`: dotplot's `DotplotView.tsx`, synteny's `LevelSyntenyCanvas.tsx`.
-Any new consumer rendering its own banner must too.
+written for a _live_ context), so their canvas has to be keyed on the hook's
+`canvasKey`.
+
+**That is structural now, not a rule to remember**: they render
+`RenderCanvas` (`@jbrowse/render-core/RenderCanvas`), which owns the
+`key={canvasKey}` and forwards everything else — so there is no way to mount
+that canvas without the key. `RenderCanvas.test.tsx` pins both halves (a changed
+key mounts a fresh element; an unrelated prop change does **not**), driven from
+a stable parent rather than RTL's `rerender()`, which remounts the tree in this
+repo's setup and would make the key assertion pass with the key deleted.
+
+It owns the key and nothing else, and the thing it pointedly does *not* own is
+worth stating: folding `DisplayChrome`'s `-done` testid convention in was tried
+and reverted, because these two views spell the suffix `synteny_canvas_done` /
+`dotplot_webgl_canvas_done` — **underscore** — and those selectors are frozen
+across four test systems. Their readiness flag differs too (`settled`, not
+`canvasDrawn`, since a shared canvas repaints unconditionally — ADR-009's scope
+clause), so the ternary stays at the call site where both facts are visible.
 
 **Tab visibility.** `useTabVisibilityRerender` calls `model.renderNow()` on
 `visibilitychange`, bumping `renderTick`. WebGPU swap-chain textures are reissued

@@ -159,6 +159,23 @@ button is present, looks live, and does nothing. Two shapes have failed it:
 The check when adding a display: raise each error it can produce, press retry,
 and confirm the display can actually leave that state. Cancel is one of them.
 
+**One display bypasses the chrome for one state, and it is load-bearing.**
+`AlignmentsDisplayComponent` early-returns its own "Initializing" overlay while
+`!view.initialized`, rather than letting `displayPhase` resolve to `loading` the
+way every other display does. It reads like an oversight and isn't: it is the
+component-side twin of the model's `canRender`, gating in one place a family of
+pre-init reads that would otherwise each need a guard — `SashimiArcsOverlay`
+reads `view.width` outright, and `visibleLabels`/`highlightBoxes` reach
+`view.visibleRegions` through the model. All three throw by design before the
+view is measured, and a throw in a component is a React error boundary, not a
+banner. The cost is that alignments publishes no `data-display-phase` for that
+frame; the price of removing it is guarding three call sites instead of one. If
+you do move them, note that `PileupBezierOverlay` had a guard that didn't guard
+— `const { initialized, width } = view` evaluates `width` *before* the
+`!initialized` check, so it threw on exactly the run it was written for. That is
+the shape to watch for anywhere a throwing getter is destructured next to the
+flag that gates it.
+
 **Not on DisplayChrome, by design (non-LGV views).** Two distinct reasons, not to
 be conflated:
 
@@ -168,10 +185,13 @@ be conflated:
   `height`), so the chrome doesn't fit. This is the sanctioned
   drop-to-primitive path, not partial adoption. Don't force them onto
   DisplayChrome. What they owe in exchange: because their canvas stays mounted
-  through an error rather than being replaced by a banner, they must key it on the
-  hook's `canvasKey` (`<canvas key={canvasKey}>`) so a re-init gets an element
-  that never held a context. Neither WebGL nor Canvas2D can bind to one that did
-  — see GPU_RENDERING.md "Context-loss recovery".
+  through an error rather than being replaced by a banner, a re-init must get an
+  element that never held a context — neither WebGL nor Canvas2D can bind to one
+  that did (GPU_RENDERING.md "Context-loss recovery"). Both render
+  **`RenderCanvas`** (`@jbrowse/render-core/RenderCanvas`), which owns that
+  `key={canvasKey}` so it can't be forgotten; it was a hand-written key plus a
+  copied comment in each until 2026-08, with "any new consumer must too" as the
+  only thing enforcing it.
 - **Main-thread SVG, own radial banners:** `circular-view` (ChordVariant) is not
   a GPU display at all, having no `useRenderingBackend`, `RenderLifecycleMixin`,
   or `canvasDrawn`. It renders SVG chords (`SVChordsReactComponent`) gated on

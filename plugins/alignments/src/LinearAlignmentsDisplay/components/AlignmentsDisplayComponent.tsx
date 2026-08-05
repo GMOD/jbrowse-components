@@ -64,6 +64,17 @@ const AlignmentsDisplayComponent = observer(
     }
     const view = getContainingView(model) as LinearGenomeViewModel
 
+    // LOAD-BEARING, and it looks removable — it is the component-side twin of
+    // the model's `canRender`, gating a whole family of pre-init reads in one
+    // place rather than in each of them. `SashimiArcsOverlay` reads `view.width`
+    // outright, and `visibleLabels` / `highlightBoxes` read `view.visibleRegions`
+    // through the model; all three throw by design before the view is measured,
+    // and a throw here is a React error boundary, not a banner. Handing the
+    // pre-init window to `DisplayChrome` (whose `displayPhase` resolves to
+    // `loading` perfectly well) therefore means guarding all three first — a
+    // wider surface than the one guard it would replace, for a state the user
+    // sees for a frame. It also carries a message the shared scrim has nothing
+    // to put in. Don't "unify" it away without moving those reads.
     if (!view.initialized) {
       return (
         <div className={classes.display}>

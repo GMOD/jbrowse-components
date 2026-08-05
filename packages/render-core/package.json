@@ -27,6 +27,7 @@
   ],
   "exports": {
     ".": "./src/index.ts",
+    "./RenderCanvas": "./src/RenderCanvas.tsx",
     "./RenderLifecycleMixin": "./src/RenderLifecycleMixin.ts",
     "./blockClipUtils": "./src/blockClipUtils.ts",
     "./canvas2dUtils": "./src/canvas2dUtils.ts",
