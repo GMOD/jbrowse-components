@@ -537,13 +537,10 @@ export default function stateModelFactory(
        * Render state passed to the GPU/Canvas2D backend each frame.
        */
       get renderState(): MultiRowRenderState {
-        const view = self.lgv
         return {
-          // trackWidthPx, not view.width: the track container subtracts the 2px
-          // outline, and the render blocks scissored against this come from the
-          // same buildRenderBlocks every other display uses. (SVG export has no
-          // outline, so renderSvg.tsx stays on view.width.)
-          canvasWidth: view.trackWidthPx,
+          // the mixin's resolved canvas box — see `canvasWidthPx` for why this
+          // is not `view.width` and what SVG export does instead
+          canvasWidth: self.canvasWidthPx,
           canvasHeight: self.height,
           rowHeight: self.effectiveRowHeight,
           rowProportion: self.rowProportion,

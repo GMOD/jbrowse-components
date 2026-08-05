@@ -38,7 +38,7 @@ const MafCoverageBand = observer(function MafCoverageBand({
       draw={ctx => {
         drawMafCoverage(ctx, model.renderBlocks, model.rpcDataMap, {
           coverageHeight,
-          canvasWidth: model.lgv.width,
+          canvasWidth: model.canvasWidthPx,
           domainMax: model.coverageDomain?.[1] ?? 0,
           theme,
         })

@@ -41,7 +41,7 @@ const MafRowsCanvas = observer(function MafRowsCanvas({
           rowHeight: effectiveRowHeight,
           rowProportion,
           nRows,
-          canvasWidth: model.lgv.width,
+          canvasWidth: model.canvasWidthPx,
           canvasHeight: rowsHeight,
           scrollTop,
         }

@@ -220,8 +220,7 @@ export function stateModelFactory(
          * points.
          */
         get renderState(): ManhattanRenderState {
-          const view = self.lgv
-          const canvasWidth = view.trackWidthPx
+          const canvasWidth = self.canvasWidthPx
           const canvasHeight = self.height - 2 * YSCALEBAR_LABEL_OFFSET
           return resolveRenderState(self.domain, domainY => ({
             domainY,

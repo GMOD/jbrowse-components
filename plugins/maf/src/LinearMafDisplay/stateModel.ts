@@ -1093,7 +1093,6 @@ export default function stateModelFactory(
          * coverage band is drawn on a separate Canvas2D overlay above.
          */
         get renderState(): MafGPURenderState {
-          const view = self.lgv
           // Resolved geometry, never undefined — every field is view/settings
           // derived and safe with zero sources (nrow floors at 1). "No fetch has
           // landed" is the render callback's first-paint gate (`hasFetched`), not
@@ -1104,7 +1103,7 @@ export default function stateModelFactory(
           // callback returning false, so `canvasDrawn` never flipped and the
           // loading overlay spun forever.
           return {
-            canvasWidth: view.width,
+            canvasWidth: self.canvasWidthPx,
             canvasHeight: self.rowsHeight,
             rowHeight: self.effectiveRowHeight,
             rowProportion: self.rowProportion,

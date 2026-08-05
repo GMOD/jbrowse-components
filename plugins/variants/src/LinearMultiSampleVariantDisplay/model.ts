@@ -67,9 +67,8 @@ export function stateModelFactory(
           // the mixin-wide `canRender` gate, and "no regular-mode payload" falls
           // out of an empty perRegionCellMap — neither is a nullable state.
           get renderState() {
-            const view = self.lgv
             return {
-              canvasWidth: view.trackWidthPx,
+              canvasWidth: self.canvasWidthPx,
               canvasHeight: self.availableHeight,
               rowHeight: self.effectiveRowHeight,
               scrollTop: self.scrollTop,

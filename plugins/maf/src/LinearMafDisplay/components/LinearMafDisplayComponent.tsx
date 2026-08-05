@@ -107,7 +107,9 @@ const MafBody = observer(function MafBody({
     useState(false)
   const resizeActive = coverageResizeActive || conservationResizeActive
   const view = model.lgv
-  const { width } = view
+  // the canvas box, not the viewport: must equal renderState.canvasWidth, and
+  // every overlay below is positioned in the same space — see canvasWidthPx
+  const width = model.canvasWidthPx
 
   const { isDragging, selectionRect, mouse, contextCoord, setContextCoord } =
     drag

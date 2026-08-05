@@ -491,10 +491,9 @@ export default function baseStateModelFactory(
          * #getter
          */
         get renderState() {
-          const view = getView(self)
           return {
             scrollY: self.scrollTop,
-            canvasWidth: view.trackWidthPx,
+            canvasWidth: self.canvasWidthPx,
             canvasHeight: self.height,
           }
         },

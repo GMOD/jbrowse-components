@@ -53,7 +53,7 @@ const MafConservationBand = observer(function MafConservationBand({
       draw={ctx => {
         const state = {
           conservationHeight,
-          canvasWidth: model.lgv.width,
+          canvasWidth: model.canvasWidthPx,
           theme,
         }
         if (codonConservationActive) {

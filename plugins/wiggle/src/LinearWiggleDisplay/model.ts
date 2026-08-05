@@ -175,9 +175,8 @@ export default function stateModelFactory(
        * #getter
        */
       get renderState() {
-        const view = self.lgv
         return makeWiggleRenderState(self, {
-          width: view.trackWidthPx,
+          width: self.canvasWidthPx,
           // inset by the scalebar label gutter at top and bottom so the plot
           // never overlaps the axis labels drawn in those bands
           height: self.height - 2 * YSCALEBAR_LABEL_OFFSET,

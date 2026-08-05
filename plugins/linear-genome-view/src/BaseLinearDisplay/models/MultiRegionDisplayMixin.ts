@@ -108,6 +108,35 @@ export default function MultiRegionDisplayMixin() {
 
         /**
          * #getter
+         * The CSS width of this display's on-screen canvas, in px — and the
+         * `canvasWidth` its `renderState` must carry, since the two have to
+         * agree or the bp→px mapping is scaled against a box it doesn't fill.
+         *
+         * `trackWidthPx`, **not** `view.width`: `TrackRenderingContainer` insets
+         * the rendering component by the 2px track outline and applies
+         * `contain: strict`, so a `view.width`-wide canvas overhangs its own
+         * container and the browser clips the overhang away. It renders almost
+         * identically, which is why this drifted — MAF sized itself off
+         * `view.width` until 2026-08 and nothing caught it.
+         *
+         * It is a getter rather than a note on each display because the choice
+         * was being made by copying whichever neighbour the author read first,
+         * out of four plausible view getters: `width` (the viewport),
+         * `trackWidthPx` (this one), and `totalWidthPx` /
+         * `totalWidthPxWithoutBorders` (the *content* width, which the global
+         * family's heatmaps legitimately want and which is a different question,
+         * not a different answer to this one).
+         *
+         * SVG export is the one place it does not apply: the export shell has no
+         * track outline, so `renderSvg` overrides `canvasWidth` with the shell's
+         * own width (see `LgvSvgBodyProps`).
+         */
+        get canvasWidthPx(): number {
+          return this.lgv.trackWidthPx
+        },
+
+        /**
+         * #getter
          * The render-lifecycle precondition for every LGV display (overrides
          * `RenderLifecycleMixin`'s default-true hook): don't run the upload/render
          * callbacks until the view is measured. Before that, `renderBlocks` →

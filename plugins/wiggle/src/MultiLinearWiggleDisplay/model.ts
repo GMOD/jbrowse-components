@@ -222,9 +222,8 @@ export default function stateModelFactory(
       },
 
       get renderState() {
-        const view = self.lgv
         return makeWiggleRenderState(self, {
-          width: view.trackWidthPx,
+          width: self.canvasWidthPx,
           // Full height, no YSCALEBAR_LABEL_OFFSET inset (unlike single-wiggle):
           // rows stack edge-to-edge for maximum density. Don't "unify" with
           // LinearWiggleDisplay's inset — the divergence is intentional.

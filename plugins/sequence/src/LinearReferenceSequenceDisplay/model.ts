@@ -243,7 +243,7 @@ export function modelFactory(
           rowHeight: self.rowHeight,
           palette,
           textColors,
-          canvasWidth: view.trackWidthPx,
+          canvasWidth: self.canvasWidthPx,
           canvasHeight: self.height,
         }
       },

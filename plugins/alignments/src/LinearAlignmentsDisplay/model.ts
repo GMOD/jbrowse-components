@@ -2410,7 +2410,6 @@ export default function stateModelFactory(
          * #getter
          */
         get renderState() {
-          const view = self.lgv
           const palette = self.colorPalette
           return {
             scrollTop: self.scrollTop,
@@ -2440,14 +2439,9 @@ export default function stateModelFactory(
               scrollTop: self.scrollTop,
               canvasHeight: self.height,
             }),
-            // trackWidthPx, not view.width: the track container subtracts the
-            // 2px outline, and the render blocks scissored against this come
-            // from the same buildRenderBlocks every other display uses — so a
-            // view.width-wide canvas overhangs its own container and the
-            // rightmost column of pileup is clipped away by paint containment.
-            // (SVG export has no outline; renderSvg.tsx overrides this field
-            // with the shell's view.width, per LgvSvgBodyProps.)
-            canvasWidth: view.trackWidthPx,
+            // the mixin's resolved canvas box — see `canvasWidthPx` for why
+            // this is not `view.width` and what SVG export does instead
+            canvasWidth: self.canvasWidthPx,
             canvasHeight: self.height,
             selectedFeatureId: self.selectedFeatureId,
             // Chain selection is only valid in 'normal' linked-reads mode.
