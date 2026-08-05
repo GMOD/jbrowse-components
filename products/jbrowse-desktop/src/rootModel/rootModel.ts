@@ -286,6 +286,12 @@ export default function rootModelFactory({
                           try {
                             const path = await invokeIpc('promptOpenFile')
                             if (path) {
+                              // opening replaces this plugin manager, and the
+                              // Loader destroys the one it replaces: flush
+                              // first, exactly as Exit and "Return to start
+                              // screen" do, or the last second of edits goes
+                              // with it
+                              await self.flushSession()
                               await self.openNewSessionCallback(path)
                             }
                           } catch (e) {
@@ -306,7 +312,13 @@ export default function rootModelFactory({
                             session.queueDialog(handleClose => [
                               OpenLinkDialog,
                               {
-                                onSubmit: self.openLinkCallback,
+                                // flushed for the same reason opening a file
+                                // above is: the link's session replaces this
+                                // one, and the Loader destroys what it replaces
+                                onSubmit: async (link: string) => {
+                                  await self.flushSession()
+                                  await self.openLinkCallback(link)
+                                },
                                 onClose: handleClose,
                               },
                             ])
