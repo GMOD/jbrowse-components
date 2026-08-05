@@ -20,6 +20,20 @@ Two things about it are easy to get wrong:
 - It **throws** on anything it cannot resolve. A box with no `.catch` looks like
   it ignored the typo.
 
+## Two regions, and the line between them
+
+Several regions in one locstring become several `displayedRegions`, laid out
+**contiguously** — no gap and no marker between them. JBrowse's own boundary is
+drawn by the container it wraps around a track, not by the display, so mounting
+`RenderingComponent` yourself gets you both regions and no seam. Until you draw
+one, two regions look like one region that scrolled somewhere strange.
+
+`view.staticBlocks` is the block layout the view just rendered, spanning every
+displayed region, and `view.offsetPx` is where the viewport sits in it — so a
+block's screen x is `block.offsetPx - view.offsetPx`, and the ones flagged
+`isRightEndOfDisplayedRegion` are where a region ends. `RegionBoundaries` in the
+source below is the whole thing: a filter and an absolutely positioned div.
+
 ## Reading the location back
 
 `view.coarseVisibleLocStrings` is the location as a string, recomputed on a

@@ -83,10 +83,19 @@ const catalogue = [
 // Somewhere to send the reader that isn't "type a locstring and hope". Real
 // apps usually have this list already -- a gene of interest, a saved view, the
 // row someone clicked in a table next to the browser.
+//
+// Both halves of the two-region entry are on ctgA, and that is not incidental:
+// this assembly's bigWig only covers ctgA, so a second region on ctgB would
+// leave the microarray track blank over half the screen -- which looks exactly
+// like a navigation that failed. Two genes on one contig is the usual reason to
+// want two regions anyway.
 const bookmarks = [
   { label: 'EDEN', loc: 'ctgA:1,050..9,000' },
   { label: 'A whole contig', loc: 'ctgA' },
-  { label: 'Two regions at once', loc: 'ctgA:1..8000 ctgB:1..4000' },
+  {
+    label: 'Two regions at once',
+    loc: 'ctgA:1,050..9,000 ctgA:17,400..23,000',
+  },
 ]
 
 function makeView() {
@@ -312,6 +321,63 @@ function ZoomHint({ show }: { show: boolean }) {
 }
 
 /**
+ * The line between two displayed regions, which you have to draw.
+ *
+ * A locstring with two regions in it gives the view two `displayedRegions`, and
+ * they are laid out **contiguously** -- no gap, no marker. JBrowse's own
+ * boundary is drawn by its track container, not by the display, so a host that
+ * mounts `RenderingComponent` directly gets two regions butted edge to edge
+ * with nothing to say where one ends. A two-region view then looks like a
+ * one-region view that scrolled somewhere strange, which is worth knowing
+ * before you conclude the navigation didn't work.
+ *
+ * The geometry is two numbers off the view. `staticBlocks` is the block layout
+ * it just rendered, in a pixel space that spans every displayed region;
+ * `offsetPx` is where the viewport sits in that space. So a block's screen x is
+ * `block.offsetPx - view.offsetPx`, and the blocks flagged
+ * `isRightEndOfDisplayedRegion` are the region ends.
+ *
+ * The *last* region's right end is skipped, because it is not a seam between
+ * two regions -- it is where the genome runs out. JBrowse marks that one too,
+ * but it also greys out everything past it, so the line reads as the edge of a
+ * filled area rather than as a stray rule floating in the track.
+ *
+ * Opaque rather than a translucent hairline, for the same reason JBrowse's is:
+ * with the regions contiguous, both sides are drawn right up to the edge, so a
+ * see-through line tints two regions' features instead of separating them.
+ */
+const RegionBoundaries = observer(function RegionBoundaries({
+  view,
+}: {
+  view: BrowserView
+}) {
+  const { staticBlocks, offsetPx, displayedRegions } = view
+  const lastRegionIndex = displayedRegions.length - 1
+  return staticBlocks.blocks
+    .filter(
+      block =>
+        block.isRightEndOfDisplayedRegion &&
+        block.displayedRegionIndex !== lastRegionIndex,
+    )
+    .map(block => (
+      <div
+        key={block.key}
+        aria-hidden
+        style={{
+          position: 'absolute',
+          top: 0,
+          bottom: 0,
+          left: block.offsetPx + block.widthPx - offsetPx - 1,
+          width: 3,
+          zIndex: 2,
+          pointerEvents: 'none',
+          background: 'color-mix(in srgb, CanvasText 45%, Canvas)',
+        }}
+      />
+    ))
+})
+
+/**
  * A location box.
  *
  * `navToLocString` takes what a user would type -- `ctgA`, `ctgA:1,050..9,000`,
@@ -363,7 +429,9 @@ const LocationBox = observer(function LocationBox({
         <input
           aria-label="Location"
           value={draft ?? shown}
-          size={26}
+          // wide enough for the two-region locstring, which is the longest
+          // thing the buttons beside it can put in here
+          size={38}
           style={{
             fontFamily: 'inherit',
             fontSize: '0.85rem',
@@ -608,15 +676,23 @@ const DriveItFromYourApp = observer(function DriveItFromYourApp() {
             }}
           >
             <ZoomHint show={hint} />
-            {isViewReady(view)
-              ? view.tracks.map(track => (
+            {/* `RegionBoundaries` is inside the same gate as the tracks, not
+              * beside it: `staticBlocks` reads `view.width`, which *throws*
+              * ("make sure to check for model.initialized") until the
+              * ResizeObserver has reported one. Anything of your own that
+              * reads block geometry needs the same guard. */}
+            {isViewReady(view) ? (
+              <>
+                {view.tracks.map(track => (
                   <TrackRow
                     key={track.configuration.trackId}
                     view={view}
                     trackId={track.configuration.trackId}
                   />
-                ))
-              : null}
+                ))}
+                <RegionBoundaries view={view} />
+              </>
+            ) : null}
           </div>
         </TrackControlProvider>
       </DisplayChromeOverlayProvider>
