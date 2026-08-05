@@ -580,7 +580,9 @@ describe('showMismatches off stops hit-testing the layers it stops drawing', () 
       mismatchYs: new Uint16Array([0]),
       mismatchBases: new Uint8Array([65]),
     })
-    expect(performHitTest(100, 60, resolved, ZOOMED_OUT_OPTS).type).toBe('cigar')
+    expect(performHitTest(100, 60, resolved, ZOOMED_OUT_OPTS).type).toBe(
+      'cigar',
+    )
     expect(performHitTest(100, 60, resolved, NO_MISMATCHES).type).toBe('none')
   })
 
@@ -593,7 +595,9 @@ describe('showMismatches off stops hit-testing the layers it stops drawing', () 
       interbaseSequences: ['A'],
       interbaseFrequencies: new Uint8Array([255]),
     })
-    expect(performHitTest(100, 60, resolved, ZOOMED_OUT_OPTS).type).toBe('cigar')
+    expect(performHitTest(100, 60, resolved, ZOOMED_OUT_OPTS).type).toBe(
+      'cigar',
+    )
     expect(performHitTest(100, 60, resolved, NO_MISMATCHES).type).toBe('none')
   })
 
@@ -610,7 +614,9 @@ describe('showMismatches off stops hit-testing the layers it stops drawing', () 
       readYs: new Uint16Array([0]),
       readIds: ['read1'],
     })
-    expect(performHitTest(100, 60, resolved, ZOOMED_OUT_OPTS).type).toBe('cigar')
+    expect(performHitTest(100, 60, resolved, ZOOMED_OUT_OPTS).type).toBe(
+      'cigar',
+    )
     const off = performHitTest(100, 60, resolved, NO_MISMATCHES)
     expect(off.type).toBe('feature')
     if (off.type === 'feature') {
@@ -624,7 +630,9 @@ describe('showMismatches off stops hit-testing the layers it stops drawing', () 
       gapYs: new Uint16Array([0]),
       gapTypes: new Uint8Array([0]),
     })
-    expect(performHitTest(100, 60, resolved, ZOOMED_OUT_OPTS).type).toBe('cigar')
+    expect(performHitTest(100, 60, resolved, ZOOMED_OUT_OPTS).type).toBe(
+      'cigar',
+    )
     expect(performHitTest(100, 60, resolved, NO_MISMATCHES).type).toBe('none')
   })
 

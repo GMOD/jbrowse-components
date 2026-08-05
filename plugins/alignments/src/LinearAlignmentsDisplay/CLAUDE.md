@@ -83,13 +83,13 @@ is `TrackHeightMixin`'s, off `scrollableHeight`.
 `PILEUP_LAYERS` decides what is painted; `performHitTest` decides what answers a
 hover, click and right-click. **Nothing keeps the two lists in step**, and the
 settings that gate them are repaint-tier — the arrays are fetched either way —
-so a layer switched off keeps its marks hoverable, clickable and
-right-clickable over blank pixels. `showMismatches` and `pileupVisible` are in
-`HitTestOptions` for exactly that reason; `clip` is deliberately absent because
-its layer draws unconditionally. The sharp case is `hitTestGap`: the read body
-is split at skips but **not** at deletions, so an ungated gap test intercepts
-the whole span of a read that draws as solid body, and the read stops being
-selectable across its own deletion.
+so a layer switched off keeps its marks hoverable, clickable and right-clickable
+over blank pixels. `showMismatches` and `pileupVisible` are in `HitTestOptions`
+for exactly that reason; `clip` is deliberately absent because its layer draws
+unconditionally. The sharp case is `hitTestGap`: the read body is split at skips
+but **not** at deletions, so an ungated gap test intercepts the whole span of a
+read that draws as solid body, and the read stops being selectable across its
+own deletion.
 
 The converse gap is a layer with no hit test at all. Soft-clipped bases are the
 one that bit: `readPositions` carries the read's TRUE aligned extent (the

@@ -199,9 +199,9 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
         views: { navToLocString: (l: string, asm: string) => Promise<void> }[]
       }
       await Promise.all(
-        locStrings.map((loc, idx) =>
-          created.views[idx]?.navToLocString(loc, trackAssembly!),
-        ),
+        locStrings.map(async (loc, idx) => {
+          await created.views[idx]?.navToLocString(loc, trackAssembly!)
+        }),
       )
       handleClose()
     } catch (e) {

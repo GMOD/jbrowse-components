@@ -105,9 +105,10 @@ Both software-render webgl (`--swiftshader`), which is what CI has to do; drop
 that flag from either to exercise the machine's real GPU.
 
 It is differential (canvas2d vs webgl, both rendered in the one run), so it
-needs no committed baseline and cannot drift between machines. `--ci-gate` scopes
-it to `CI_GATE_SUITES` in `crossBackendGate.ts`, which is where the reasoning for
-the scope lives; it also forces remote data off, so no push depends on S3/UCSC.
+needs no committed baseline and cannot drift between machines. `--ci-gate`
+scopes it to `CI_GATE_SUITES` in `crossBackendGate.ts`, which is where the
+reasoning for the scope lives; it also forces remote data off, so no push
+depends on S3/UCSC.
 
 Blocking, this time, is the point. It ran `continue-on-error` over every suite
 until 2026-07-16 and was removed, because a check that gates nothing and nobody
@@ -115,13 +116,14 @@ reads is decoration. What it needed was not a bigger scope but a verdict that
 counts, and a scope narrow enough to deserve one:
 
 - **Only views measured clean under swiftshader.** 66 pairs per run, 0 over
-  threshold, worst passing drift 0.51% against a 3% default — the headroom is the
-  argument. Alignments pileups are deliberately out (every over-threshold failure
-  ever recorded here has been one) and so is anything fetching remote data.
+  threshold, worst passing drift 0.51% against a 3% default — the headroom is
+  the argument. Alignments pileups are deliberately out (every over-threshold
+  failure ever recorded here has been one) and so is anything fetching remote
+  data.
 - **A failing test fails the run.** A test that dies before its screenshot
-  removes a pair from the comparison, and a snapshot only one backend captured is
-  skipped rather than failed — so ignoring test failures let a run report "0 over
-  threshold" having compared 19 fewer pairs than the run before it. Under
+  removes a pair from the comparison, and a snapshot only one backend captured
+  is skipped rather than failed — so ignoring test failures let a run report "0
+  over threshold" having compared 19 fewer pairs than the run before it. Under
   `--ci-gate` an uncompared pair is a failure too.
 - **One retry per test, in a fresh browser, reported by name.** For the capture
   race described below, which no wait can fix. A drift verdict is computed once,
@@ -139,18 +141,18 @@ A capture can come back blank with every app-level signal legitimately true —
 overlay down, no display `loading`, `canvasDrawn` set, morph idle (34 of 34
 measured that way, on both backends). No amount of extra waiting fixes that, so
 `canvasSnapshot` asks the canvas itself and puts the answer in the failure
-message: `el.screenshot()` serves *composited* layers, `canvas.toDataURL()` reads
-the backing store, so content in one and not the other names the capture path
-rather than the render.
+message: `el.screenshot()` serves _composited_ layers, `canvas.toDataURL()`
+reads the backing store, so content in one and not the other names the capture
+path rather than the render.
 
 **That answer diagnoses the blank; it is not a substitute capture.** Feeding
 those bytes to the gate was tried and reverted on the evidence — a recovered
 snapshot came back 93.65% different from the other backend's screenshot of the
-same view, glyphs in identical places over a wholly different background, because
-`toDataURL` does not flatten alpha and does not include DOM drawn over the
-canvas. Comparing one backend's backing store against another's composited layers
-compares capture paths, not renderers. A blank fails its test, and `--ci-gate`'s
-retry takes it again through the same path on both sides. See
+same view, glyphs in identical places over a wholly different background,
+because `toDataURL` does not flatten alpha and does not include DOM drawn over
+the canvas. Comparing one backend's backing store against another's composited
+layers compares capture paths, not renderers. A blank fails its test, and
+`--ci-gate`'s retry takes it again through the same path on both sides. See
 `agent-docs/reference/SCREENSHOT_CAPTURE_RACE.md`.
 
 Because nothing refreshes the goldens but `-u`, they drift silently: as of

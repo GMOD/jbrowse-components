@@ -299,12 +299,7 @@ describe('DisplayStatusChrome (no rendering backend)', () => {
       model.setCanvasDrawn(true)
     })
     rerender(
-      <DisplayStatusChrome
-        model={model}
-        phase="loading"
-        drawn
-        testid="status"
-      >
+      <DisplayStatusChrome model={model} phase="loading" drawn testid="status">
         <div data-testid="probe-body" />
       </DisplayStatusChrome>,
     )

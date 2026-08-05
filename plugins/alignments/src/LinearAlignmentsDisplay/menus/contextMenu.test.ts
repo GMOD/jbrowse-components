@@ -184,7 +184,12 @@ describe('a gap cigar hit sorts at the clicked column, not the gap start', () =>
 
   test('skip', () => {
     const model = makeModel({
-      contextMenuCigarHit: { type: 'skip', index: 0, position: 100, length: 900 },
+      contextMenuCigarHit: {
+        type: 'skip',
+        index: 0,
+        position: 100,
+        length: 900,
+      },
       contextMenuGenomicPos: 550,
     })
     firstSubMenuItem(run(model)[0]).onClick()
@@ -235,7 +240,12 @@ describe('a gap cigar hit sorts at the clicked column, not the gap start', () =>
 // swap above must not move it.
 test('a mismatch still sorts at its own base', () => {
   const model = makeModel({
-    contextMenuCigarHit: { type: 'mismatch', index: 0, position: 42, length: 1 },
+    contextMenuCigarHit: {
+      type: 'mismatch',
+      index: 0,
+      position: 42,
+      length: 1,
+    },
     contextMenuGenomicPos: 42,
   })
   firstSubMenuItem(run(model)[0]).onClick()
@@ -260,7 +270,12 @@ test('an interbase (insertion) cigar hit sorts by the interbase type', () => {
 // its hit tolerance the cursor happened to land.
 test('an interbase hit anchors on the mark even with a clicked column', () => {
   const model = makeModel({
-    contextMenuCigarHit: { type: 'insertion', index: 0, position: 7, length: 3 },
+    contextMenuCigarHit: {
+      type: 'insertion',
+      index: 0,
+      position: 7,
+      length: 3,
+    },
     contextMenuGenomicPos: 9,
   })
   firstSubMenuItem(run(model)[0]).onClick()
