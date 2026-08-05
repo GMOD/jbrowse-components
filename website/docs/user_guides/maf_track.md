@@ -122,6 +122,34 @@ reference's and labels the change synonymous or nonsynonymous.
 
 <Figure src="/img/maf_codon_tooltip.png" caption="The codon-view hover tooltip on the ce11 26-way alignment. Hovering a codon cell reads out the substitution against the reference, so a nonsynonymous change is named rather than inferred from the cell color."/>
 
+## Getting the alignment out as FASTA
+
+Drag a selection across the track and right-click it for **View subsequences
+(all rows)**, or **(selected rows)** to take only the rows the drag covered.
+Either opens the aligned columns for that window, one sequence per species, with
+**Download as FASTA** and **Copy to clipboard** in its menu. That is the slice a
+downstream alignment viewer or tree builder wants, without re-extracting it from
+the source MAF.
+
+The same menu offers **Show only differences**, which blanks every base matching
+the reference so substitutions are all that remain, plus **Include insertions**,
+**Single line format**, **Color background**, and **Show sample names**.
+
+A drag crossing a region boundary clips to the region it began in.
+
+## Jumping to a species' own genome
+
+The rows of a MAF carry each species' own coordinates, so a row can be opened in
+its own genome rather than read through the reference. The same right-click menu
+lists **one entry per species** the selection covers, naming that species' locus
+in its own coordinates; clicking one opens a view there.
+
+Only rows with aligned bases in the selection are listed, and only those whose
+sample is configured with an `assemblyName`. If the session does not already
+hold that assembly, JBrowse fetches just that one at click time, which is what
+lets a 26-way or 470-way alignment stay navigable without every species' genome
+being present in the config. Past six species the entries move into a submenu.
+
 ## Row layout and the species tree
 
 The sidebar at the left shows the species labels, drawn as a dendrogram when the

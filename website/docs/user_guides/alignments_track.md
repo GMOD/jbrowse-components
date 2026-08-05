@@ -236,6 +236,12 @@ properly-paired reads. You can also filter to a specific read name or tag value
 
 <Figure caption="The Filter by dialog. The two flag columns are an include/exclude bitmask; by default unmapped, QC-fail, and duplicate reads are excluded." src="/img/alignments/filter_dialog.png" />
 
+To filter by what a read in front of you actually carries, right-click it and
+use the **Filter** submenu: _Filter for this read_, _Filter for this haplotype
+(HP:n)_, and _Filter for this read group (RG:x)_ each read their value off that
+read, so there is nothing to type. They combine rather than replace each other,
+and **Clear read/tag filters** appears once any is active.
+
 ## Sashimi arcs
 
 Sashimi-style arcs are drawn automatically over spliced alignments (reads with
@@ -245,11 +251,10 @@ the transcript strand directly, while minimap2's `ts` gives the orientation
 relative to the read and is combined with the read's own strand. A read carrying
 none of the three (default STAR output without `--outSAMstrandField`, for one)
 contributes to the junction without a strand, so tagged and untagged reads mix
-freely on the same arc. The track menu's
-**Sashimi arcs** submenu controls them: _Show labels_ prints each junction's
-supporting-read count on its arc, _Arc placement_ splits the arcs above/below
-the coverage row, and _Filter by score_ drops low-support junctions. Turn the
-arcs off from the same submenu. See the
+freely on the same arc. The track menu's **Sashimi arcs** submenu controls them:
+_Show labels_ prints each junction's supporting-read count on its arc, _Arc
+placement_ splits the arcs above/below the coverage row, and _Filter by score_
+drops low-support junctions. Turn the arcs off from the same submenu. See the
 [RNA-seq tutorial](/docs/tutorials/rnaseq) for a worked splice-junction example.
 
 When one exon-junction peak dominates the coverage histogram behind the arcs,
@@ -281,6 +286,22 @@ arcs flatten separate clearly, for example short-insert (insertion-supporting)
 pairs drawn pink lift away from the background.
 
 <Figure caption="Read cloud on a synthetic SV dataset. Reads are stratified by log distance between mates, surfacing insertion pairs (pink) against the background." src="/img/alignments/read_cloud.png" />
+
+## Going to a read's mate
+
+When a pair is discordant, the question is usually what is at the other end.
+Right-click a read and open the **View mate** submenu:
+
+- **Split current view to show mate** replaces the view's displayed regions with
+  two: the read's locus and its mate's, side by side in the one view, each
+  padded by a read length. An inter-chromosomal mate is simply a second region
+  on another chromosome. A snackbar offers **Undo** to put the original view
+  back, so this is cheap to try and reverse.
+- **Open breakpoint split view** puts the two loci in
+  [their own stacked panels](/docs/user_guides/sv_visualization#breakpoint-split-view)
+  instead, which is the heavier option that draws the connecting splines.
+
+The submenu appears only for a read whose mate is mapped.
 
 ## One read against the reference
 
