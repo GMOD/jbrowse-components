@@ -77,10 +77,12 @@ export default class VariantsPlugin extends Plugin {
         | undefined
       return genotypes ? calculateAlleleCounts(genotypes) : undefined
     }
+    /** #jexlFunction Variant functions | maf(feature) | minor allele frequency over the called alleles */
     jexl.addFunction('maf', (feature: Feature) => {
       const counts = featureAlleleCounts(feature)
       return counts ? calculateMinorAlleleFrequency(counts) : 0
     })
+    /** #jexlFunction Variant functions | missingness(feature) | fraction of samples with no call */
     jexl.addFunction('missingness', (feature: Feature) => {
       const counts = featureAlleleCounts(feature)
       return counts ? calculateMissingnessFrequency(counts) : 0
@@ -90,15 +92,20 @@ export default class VariantsPlugin extends Plugin {
     // `consequence` return strings for custom color-by-attribute expressions
     // (e.g. jexl:randomColor(consequence(feature))); `impactColor` powers the
     // one-click "Color by consequence impact" menu item.
+    /** #jexlFunction Variant functions | impact(feature) | HIGH, MODERATE, LOW or MODIFIER, from SnpEff ANN / VEP CSQ */
     jexl.addFunction('impact', getVariantImpact)
+    /** #jexlFunction Variant functions | consequence(feature) | e.g. missense_variant, from the same annotation */
     jexl.addFunction('consequence', getVariantConsequence)
+    /** #jexlFunction Variant functions | impactColor(feature) | the color the "Color by consequence impact" menu item uses */
     jexl.addFunction('impactColor', getVariantImpactColor)
     // `svTypeColor` powers the one-click "Color by SV type" menu item on the
     // single-variant display (fixed class colors + copy-number rainbow).
+    /** #jexlFunction Variant functions | svTypeColor(feature) | the color "Color by SV type" uses */
     jexl.addFunction('svTypeColor', getVariantSvTypeColor)
     // Longest allele in bp, so a filter can select the SV tier of a decomposed
     // pangenome callset (`jexl:alleleLength(feature) >= 50`) without missing
     // insertions, which consume no reference and so have a span of 1.
+    /** #jexlFunction Variant functions | alleleLength(feature) >= 50 | longest allele in bp, so an insertion is not measured by its reference span */
     jexl.addFunction('alleleLength', getAlleleLength)
   }
 }

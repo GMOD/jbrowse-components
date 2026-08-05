@@ -13,6 +13,7 @@ export default class ArcPlugin extends Plugin {
     LinearArcDisplayF(pluginManager)
     LinearPairedArcDisplayF(pluginManager)
 
+    /** #jexlFunction Slot defaults from plugins | logThickness(feature, 'score') | log(attribute + 1), the arc display's default thickness */
     pluginManager.jexl.addFunction(
       'logThickness',
       (feature: Feature, attributeName: string) =>
@@ -25,6 +26,7 @@ export default class ArcPlugin extends Plugin {
       ['<TRA', set1[3]!],
       ['<CNV', set1[4]!],
     ]
+    /** #jexlFunction Slot defaults from plugins | defaultPairedArcColor(feature, alt) | a color per SV type read off the ALT (DEL, DUP, INV, TRA, CNV) */
     pluginManager.jexl.addFunction(
       'defaultPairedArcColor',
       (_feature: Feature, alt?: string) =>

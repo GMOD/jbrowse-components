@@ -158,11 +158,40 @@ jexl: log(feature) // console.logs output and returns value
 jexl: feature.flags & 2 // bitwise and to check if BAM or CRAM feature flags has 2 set
 ```
 
+**Slot defaults from plugins**
+
+```js
+jexl: logThickness(feature, 'score') // log(attribute + 1), the arc display's default thickness
+jexl: defaultPairedArcColor(feature, alt) // a color per SV type read off the ALT (DEL, DUP, INV, TRA, CNV)
+jexl: lgvSyntenyTooltip(feature) // both sides of a synteny feature, the LGVSyntenyDisplay's default mouseover
+jexl: defaultOnChordClick(feature, track, pluginManager) // opens a breakpoint split view on the clicked chord
+```
+
+**Variant functions**
+
+```js
+jexl: maf(feature) // minor allele frequency over the called alleles
+jexl: missingness(feature) // fraction of samples with no call
+jexl: impact(feature) // HIGH, MODERATE, LOW or MODIFIER, from SnpEff ANN / VEP CSQ
+jexl: consequence(feature) // e.g. missense_variant, from the same annotation
+jexl: impactColor(feature) // the color the "Color by consequence impact" menu item uses
+jexl: svTypeColor(feature) // the color "Color by SV type" uses
+jexl: alleleLength(feature) >= 50 // longest allele in bp, so an insertion is not measured by its reference span
+```
+
 <!-- JEXL_CATALOG END -->
 
-The catalog above is generated from the jexl function definitions in
-`packages/core/src/util/jexl.ts`, so it never drifts from the available
-functions.
+The catalog above is generated from the registrations themselves — core's in
+`packages/core/src/util/jexl.ts`, and each plugin's alongside the display it
+serves — so it never drifts from the available functions. A plugin you install
+can add more; those are documented by the plugin.
+
+The last two groups come from plugins that ship with JBrowse. The variant ones
+are the same functions the variant track's filter and color menus write for you,
+so a menu choice can be copied into a config and then edited (see
+[](/docs/config_guides/variant_track)). The slot defaults are what those slots
+already evaluate to when you leave them alone, listed so you can compose with
+one instead of replacing it.
 
 **Template strings**
 

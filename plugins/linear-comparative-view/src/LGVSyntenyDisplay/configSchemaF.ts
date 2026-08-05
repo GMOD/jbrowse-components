@@ -36,6 +36,7 @@ import type { Feature } from '@jbrowse/core/util'
  * ```
  */
 function configSchemaF(pluginManager: PluginManager) {
+  /** #jexlFunction Slot defaults from plugins | lgvSyntenyTooltip(feature) | both sides of a synteny feature, the LGVSyntenyDisplay's default mouseover */
   pluginManager.jexl.addFunction('lgvSyntenyTooltip', (f: Feature) => {
     const mate = getMate(f)
     const l1name = f.get('name') || f.get('id')

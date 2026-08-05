@@ -1,7 +1,10 @@
+import fs from 'node:fs'
+
 import * as ts from 'typescript'
 
 import {
   jsDocText,
+  listSources,
   parsePipeTags,
   parseSourceFileSyntactic,
   rewriteMarkerBlock,
@@ -27,8 +30,19 @@ import {
 //   <!-- JEXL_CATALOG END -->
 //
 // Editing between the markers is pointless — it is overwritten on regen.
+//
+// Core is not the only registrar: a plugin adds its own with
+// `pluginManager.jexl.addFunction(...)`, and those are as callable from a config
+// as core's. Scanning only core's file made the catalog complete-looking while
+// silently omitting eleven of them (the variant helpers, the arc and synteny
+// slot defaults), which is the same failure the tag was introduced to end. So
+// the whole source tree is scanned, and a file with no tag in it is skipped
+// before the TypeScript parser sees it — the text test is what keeps this from
+// costing a full parse of every source file in the repo.
 
-const JEXL_SOURCE = 'packages/core/src/util/jexl.ts'
+const CORE_SOURCE = 'packages/core/src/util/jexl.ts'
+const SOURCE_DIRS = ['packages', 'plugins', 'products']
+const TAG = '#jexlFunction'
 
 interface Entry {
   category: string
@@ -44,25 +58,38 @@ function parseJexlTags(comment: string | undefined, where: string): Entry[] {
   )
 }
 
+// Every file carrying at least one tag: core's first, so its categories keep
+// leading the catalog, then the rest in path order so a plugin's position in the
+// output does not depend on directory-listing order.
+function taggedSources() {
+  const rest = SOURCE_DIRS.flatMap(dir => listSources(dir))
+    .filter(f => f !== CORE_SOURCE)
+    .filter(f => fs.readFileSync(f, 'utf8').includes(TAG))
+    .sort()
+  return [CORE_SOURCE, ...rest]
+}
+
 // Collect tagged functions grouped by their category, preserving source order of
 // both the categories and the functions within each. Tags sit on the expression
 // statement wrapping each `j.addFunction(...)` / `j.addBinaryOp(...)` call.
-function collectFunctions(file: string) {
+function collectFunctions(files: string[]) {
   const groups = new Map<string, Entry[]>()
-  const visit = (node: ts.Node) => {
-    if (ts.isExpressionStatement(node)) {
-      for (const entry of parseJexlTags(jsDocText(node), file)) {
-        const list = groups.get(entry.category)
-        if (list) {
-          list.push(entry)
-        } else {
-          groups.set(entry.category, [entry])
+  for (const file of files) {
+    const visit = (node: ts.Node) => {
+      if (ts.isExpressionStatement(node)) {
+        for (const entry of parseJexlTags(jsDocText(node), file)) {
+          const list = groups.get(entry.category)
+          if (list) {
+            list.push(entry)
+          } else {
+            groups.set(entry.category, [entry])
+          }
         }
       }
+      node.forEachChild(visit)
     }
-    node.forEachChild(visit)
+    visit(parseSourceFileSyntactic(file))
   }
-  visit(parseSourceFileSyntactic(file))
   return groups
 }
 
@@ -87,7 +114,7 @@ function renderCatalog(groups: Map<string, Entry[]>) {
 export function writeJexlDocs({ check = false } = {}) {
   return rewriteMarkerBlock(
     'JEXL_CATALOG',
-    renderCatalog(collectFunctions(JEXL_SOURCE)),
+    renderCatalog(collectFunctions(taggedSources())),
     { check },
   )
 }
