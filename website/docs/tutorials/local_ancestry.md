@@ -304,7 +304,7 @@ blocks themselves: the track menu's **Clustering** → **Cluster rows by
 similarity** reorders rows by how alike their painting is across the region in
 view, and draws the tree it built beside them.
 
-<Figure caption="486 haplotype rows — 219 breeds at one dog each, the eight wolfdogs, the two wolf-lookalike breeds, the German Shepherd lineage and eight held-out gray wolves — clustered on their chr1 painting. Wolf-carrying rows collect at the top; below them the sweep fades into the solid dog field 193 of the 219 breeds sit in. No row labels at 2px a row: this figure is where, the one above is who." src="/img/dog10k-wolfdog-ancestry-clustered.png" />
+<Figure caption="486 haplotype rows — 219 breeds at one dog each, the eight wolfdogs, the two wolf-lookalike breeds, the German Shepherd lineage and eight held-out gray wolves — clustered on their chr1 painting, beside the tree that ordered them. The wolf-carrying rows come off a deep branch at the top; the rest merge at almost no height into the dog field 193 of the 219 breeds sit in. No row labels at 2px a row." src="/img/dog10k-wolfdog-ancestry-clustered.png" />
 
 Nothing in that order was declared. The clustering has no access to the breed
 names, and it still puts the held-out wolves at one end, the wolfdogs under

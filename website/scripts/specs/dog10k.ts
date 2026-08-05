@@ -492,6 +492,15 @@ export const dog10kSpecs: ScreenshotSpec[] = [
   // the locus the tree was computed over (whole-chromosome here), which is not a
   // decoration — cluster on a 5 Mb view and the same rows come out in a different
   // order.
+  //
+  // treeAreaWidth 260, against the mixin's default of 80. At 80 over a 3000px
+  // capture the tree is a 2.7%-wide smear: the deep split that separates the
+  // wolves from everything else and the near-zero-height comb the 193 flat-dog
+  // breeds merge in are both in there, and neither is resolvable. Since the
+  // whole claim of this figure is that an unlabelled clustering recovers the
+  // structure, an unreadable tree is the one thing it cannot afford. The gutter
+  // is otherwise unused here — the rows are far below the height at which labels
+  // draw text — so the width costs nothing but frame.
   {
     mode: 'url',
     name: 'dog10k-wolfdog-ancestry-clustered',
