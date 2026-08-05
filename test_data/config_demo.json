@@ -1491,7 +1491,6 @@
       "name": "Encode global autoscale",
       "assemblyNames": ["hg19"],
       "category": ["ENCODE bigWigs"],
-      "autoscale": "global",
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -5296,12 +5295,12 @@
       "name": "Nanopore PAY22766 (6mA rep2)",
       "assemblyNames": ["hg38"],
       "category": ["Methylation"],
+      "metadata": {
+        "source": "https://epi2me.nanoporetech.com/chromatin-acc-hg002/"
+      },
       "adapter": {
         "type": "BamAdapter",
-        "uri": "https://ont-open-data.s3.amazonaws.com/chrom_acc_2025.06/basecalls/PAY22766/basecalls.bam",
-        "metadata": {
-          "source": "https://epi2me.nanoporetech.com/chromatin-acc-hg002/"
-        }
+        "uri": "https://ont-open-data.s3.amazonaws.com/chrom_acc_2025.06/basecalls/PAY22766/basecalls.bam"
       }
     },
     {
@@ -5310,12 +5309,12 @@
       "name": "Nanopore PBA15131 (native, no-enzyme control)",
       "category": ["Methylation"],
       "assemblyNames": ["hg38"],
+      "metadata": {
+        "source": "https://epi2me.nanoporetech.com/chromatin-acc-hg002/"
+      },
       "adapter": {
         "type": "BamAdapter",
-        "uri": "https://ont-open-data.s3.amazonaws.com/chrom_acc_2025.06/basecalls/PBA15131/basecalls.bam",
-        "metadata": {
-          "source": "https://epi2me.nanoporetech.com/chromatin-acc-hg002/"
-        }
+        "uri": "https://ont-open-data.s3.amazonaws.com/chrom_acc_2025.06/basecalls/PBA15131/basecalls.bam"
       }
     },
     {
@@ -5324,12 +5323,12 @@
       "name": "Nanopore PBA15156 (6mA rep1)",
       "assemblyNames": ["hg38"],
       "category": ["Methylation"],
+      "metadata": {
+        "source": "https://epi2me.nanoporetech.com/chromatin-acc-hg002/"
+      },
       "adapter": {
         "type": "BamAdapter",
-        "uri": "https://ont-open-data.s3.amazonaws.com/chrom_acc_2025.06/basecalls/PBA15156/basecalls.bam",
-        "metadata": {
-          "source": "https://epi2me.nanoporetech.com/chromatin-acc-hg002/"
-        }
+        "uri": "https://ont-open-data.s3.amazonaws.com/chrom_acc_2025.06/basecalls/PBA15156/basecalls.bam"
       }
     },
     {

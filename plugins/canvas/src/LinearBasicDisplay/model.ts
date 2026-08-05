@@ -96,7 +96,6 @@ export default function stateModelFactory(
   return baseStateModelFactory(configSchema)
     .props({
       type: types.literal('LinearBasicDisplay'),
-      showOnlyGenes: types.stripDefault(types.boolean, false),
     })
     .volatile(() => ({
       // Session-only acknowledgement of the "showing longest isoform" chip.
@@ -116,6 +115,15 @@ export default function stateModelFactory(
 
       get geneGlyphMode() {
         return getConf(self, 'geneGlyphMode')
+      },
+
+      // Config slot rather than a display prop, like every other toggle in this
+      // menu. It was a prop until a config carrying `showOnlyGenes` was found to
+      // do nothing at all — MST drops a snapshot key the schema never declared,
+      // so test_data/config_demo.json had asked eleven NCBI gene tracks to show
+      // only genes since June and none of them had.
+      get showOnlyGenes(): boolean {
+        return getConf(self, 'showOnlyGenes')
       },
 
       // Promotable `maybeBoolean` slot (see baseConfigSchema.ts): getConf
@@ -193,7 +201,7 @@ export default function stateModelFactory(
       },
 
       setShowOnlyGenes(value: boolean) {
-        self.showOnlyGenes = value
+        setConf(self, 'showOnlyGenes', value)
       },
 
       setDisplayDirectionalChevrons(value: boolean) {

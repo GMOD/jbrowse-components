@@ -87,6 +87,18 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
           'maximum data to attempt to download for a given feature track',
         advanced: true,
       },
+      /**
+       * #slot
+       * Draw only gene-like top-level features, dropping everything else the
+       * file carries — the config form of the track menu's "Show only genes".
+       * Useful on an NCBI/Ensembl annotation whose non-gene records (regions,
+       * match features, biological regions) would otherwise crowd the genes out.
+       * ANDed with `jexlFilters` when both are set.
+       */
+      showOnlyGenes: {
+        type: 'boolean',
+        defaultValue: false,
+      },
     },
     {
       /**

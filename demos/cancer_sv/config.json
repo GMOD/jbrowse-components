@@ -77,10 +77,6 @@
         },
         "craiLocation": {
           "uri": "https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829_tumor.ht.cram.crai"
-        },
-        "sequenceAdapter": {
-          "type": "BgzipFastaAdapter",
-          "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
         }
       }
     },
