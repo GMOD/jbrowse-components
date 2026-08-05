@@ -781,9 +781,51 @@ Registered contract:
 Add menu items to the "shopping cart" in the header of the hierarchical track
 menu when tracks are added to the selection.
 
-Example: Reference:
-[`CreateMultiWiggleExtension`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/CreateMultiWiggleExtension/index.ts),
-which turns a multi-track selection into one multi-wiggle track.
+`CreateMultiWiggleExtension`, which turns a multi-track selection into one
+multi-wiggle track, is the whole registration:
+
+<!-- include: plugins/wiggle/src/CreateMultiWiggleExtension/index.ts#register -->
+
+```typescript
+export default function CreateMultiWiggleExtensionF(pm: PluginManager) {
+  pm.addToExtensionPoint(
+    'TrackSelector-multiTrackMenuItems',
+    (items, props) => {
+      const { session } = props
+      return [
+        ...items,
+        ...(isSessionWithAddTracks(session)
+          ? [
+              {
+                label: 'Create multi-wiggle track...',
+                onClick: (model: HierarchicalTrackSelectorModel) => {
+                  getSession(model).queueDialog(handleClose => [
+                    ConfirmDialog,
+                    {
+                      tracks: model.selection,
+                      onClose: (result?: MakeTrackArg) => {
+                        if (result) {
+                          makeTrack({ model, arg: result })
+                        }
+                        handleClose()
+                      },
+                    },
+                  ])
+                },
+              },
+            ]
+          : []),
+      ]
+    },
+  )
+}
+```
+
+Note the second spread. A plugin whose item does not apply contributes `[]`
+rather than returning early, so the accumulated items pass through either way —
+returning `items` unchanged and returning `[...items, ...[]]` are the same
+thing, and writing it as one expression removes the branch where someone forgets
+the first spread.
 
 ### TrackSelector-folderDialog
 

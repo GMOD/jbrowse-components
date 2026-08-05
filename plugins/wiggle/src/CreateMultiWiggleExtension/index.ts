@@ -47,6 +47,7 @@ function makeTrack({
   }
 }
 
+// #region register
 export default function CreateMultiWiggleExtensionF(pm: PluginManager) {
   pm.addToExtensionPoint(
     'TrackSelector-multiTrackMenuItems',
@@ -79,3 +80,4 @@ export default function CreateMultiWiggleExtensionF(pm: PluginManager) {
     },
   )
 }
+// #endregion
