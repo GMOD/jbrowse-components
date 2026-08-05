@@ -122,6 +122,25 @@ export default function FetchMixin() {
         return self.activeStopToken !== undefined
       },
     }))
+    .views(self => ({
+      /**
+       * #getter
+       * `isLoading` widened to cover a user-canceled load. **This, not
+       * `isLoading`, is what a `displayPhase` loading term wants.**
+       * `cancelFetchByUser` clears the stop token synchronously, so `isLoading`
+       * goes false the instant the user clicks Cancel — and the loading overlay
+       * that unmounts on it is carrying the Retry button, which is the only way
+       * back: the state is deliberately durable, so no autorun restarts the
+       * fetch on its own. A bare `isLoading` therefore reads as `ready` over a
+       * display that is stopped, empty and offering nothing.
+       *
+       * Arc read `isLoading` directly and had exactly that hole. It is a getter
+       * here so no family has to remember the second term.
+       */
+      get isLoadingOrCanceled() {
+        return self.isLoading || self.fetchCanceled
+      },
+    }))
     .actions(self => {
       // One window per display instance, shared by both callback factories
       // below, so N parallel per-region fetches thin to one stream between them

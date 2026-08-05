@@ -2,13 +2,13 @@ import { isDataCurrent } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   GlobalFetchMixin,
-  computeDisplayPhase,
+  computeDisplayStatusPhase,
 } from '@jbrowse/plugin-linear-genome-view'
 
 import { currentRegionSignature } from './regionSignature.ts'
 
 import type { Feature } from '@jbrowse/core/util'
-import type { DisplayPhase } from '@jbrowse/plugin-linear-genome-view'
+import type { DisplayStatusPhase } from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * Shared fetch/gating model for both arc displays. Composes the
@@ -76,21 +76,19 @@ export function ArcFetchModel() {
         /**
          * #getter
          * The same mutually-exclusive visual state every GPU display exposes,
-         * over the same shared `computeDisplayPhase` — arc just has no
-         * `renderError` phase, having no GPU backend. On the model rather than
-         * derived inside `BaseDisplayComponent` so the component can't disagree
-         * with the model, and so arc publishes `data-display-phase` for tests
-         * like every other display.
+         * over the same shared ranking — arc just has no `renderError` phase,
+         * having no GPU backend, which is what the `Status` variant expresses:
+         * the type cannot name that phase, so `DisplayStatusChrome` (whose
+         * banners have no backend `retry()` to offer) accepts this display with
+         * neither a cast nor a dead branch. On the model rather than derived
+         * inside `BaseDisplayComponent` so the component can't disagree with the
+         * model, and so arc publishes `data-display-phase` for tests like every
+         * other display.
+         *
+         * `isLoadingOrCanceled`, never a bare `isLoading` — see that getter.
          */
-        get displayPhase(): DisplayPhase {
-          return computeDisplayPhase(
-            {
-              renderError: undefined,
-              regionTooLarge: self.regionTooLarge,
-              error: self.error,
-            },
-            () => self.isLoading,
-          )
+        get displayPhase(): DisplayStatusPhase {
+          return computeDisplayStatusPhase(self, () => self.isLoadingOrCanceled)
         },
       }))
       .actions(self => {

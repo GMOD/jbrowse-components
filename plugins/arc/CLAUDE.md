@@ -5,13 +5,21 @@ Main-thread SVG — no RPC worker, no GPU backend, no `RenderLifecycleMixin`.
 `LinearPairedArcDisplay` connects two independent endpoints each with their own
 refName.
 
-## Chrome: shares the DisplayChrome _concept_, not the component
+## Chrome: renders `DisplayStatusChrome`, the backend-free half of DisplayChrome
 
-With no GPU backend arc can't wrap `DisplayChrome`, but it must not re-encode
-the terminal-state precedence by hand. `displayPhase` comes from the shared
-`computeDisplayPhase` and lives on the **model**, like every GPU display's — a
-component-side derivation is free to drift from what the model believes. Don't
-reintroduce arc-local loading/error components.
+With no GPU backend arc can't wrap `DisplayChrome` (that owns
+`useRenderingBackend`), so it renders the component `DisplayChrome` itself
+delegates to, passing `phase` and `drawn`. Container, `-done` testid,
+`data-display-phase`, banners and progress chip all come from that one file.
+Don't reintroduce arc-local loading/error components or an arc-local container —
+arc used to assemble them by hand and drifted into being the only display with
+no background-progress chip.
+
+`displayPhase` stays on the **model** (a component-side derivation is free to
+disagree with what the model believes) and is `DisplayStatusPhase`, the union
+minus `renderError`: arc has no backend to fail, and the type says so rather
+than a comment. Its loading term must read `isLoadingOrCanceled`, never
+`isLoading` — see `shared/displayPhase.test.ts` for the hole that leaves.
 
 ## `reload()` must invalidate `dataCurrent`, not just bump the counter
 

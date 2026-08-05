@@ -103,13 +103,12 @@ export default function GlobalDataDisplayMixin() {
        * lives here, not in GlobalFetchMixin.
        */
       get displayPhase(): DisplayPhase {
-        // fetchCanceled keeps the overlay up (showing its retry affordance)
-        // even though isLoading has gone false after the user canceled
+        // isLoadingOrCanceled, not isLoading: a canceled fetch keeps the overlay
+        // up so its retry affordance stays reachable (see FetchMixin)
         return computeDisplayPhase(
           self,
           () =>
-            self.isLoading ||
-            self.fetchCanceled ||
+            self.isLoadingOrCanceled ||
             (self.rendersCanvas && !self.canvasDrawn),
         )
       },

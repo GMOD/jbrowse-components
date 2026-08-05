@@ -41,7 +41,12 @@ export interface DisplayChromeOverlays {
   /**
    * The loading scrim. `visible` is `displayPhase === 'loading'`; `immediate`
    * asks it to skip its anti-flash delay because nothing is painted yet.
-   * Mounted unconditionally, so it must handle `visible === false` itself.
+   *
+   * Mounted unconditionally, so it must handle `visible === false` itself — and
+   * that is load-bearing rather than a style choice: the anti-flash delay is
+   * component state, so a chrome that mounted this only while loading would
+   * restart the timer on every activation and never reach it. Keep any
+   * replacement mountable-while-hidden for the same reason.
    */
   Loading: ComponentType<{
     model: DisplayLoadingOverlayModel

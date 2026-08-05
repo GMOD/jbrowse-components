@@ -24,7 +24,6 @@ import {
   TrackHeightMixin,
   fetchEachRegion,
 } from '@jbrowse/plugin-linear-genome-view'
-import { computeDisplayPhase } from '@jbrowse/render-core/displayPhase'
 import { installPerRegionLifecycle } from '@jbrowse/render-core/installPerRegionLifecycle'
 import { observable } from 'mobx'
 
@@ -39,7 +38,6 @@ import type { LinearReferenceSequenceDisplayConfigModel } from './configSchema.t
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
-import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 
 const ZOOMED_OUT_BP_PER_PX = 10
 const ROW_HEIGHT_PX = 15
@@ -189,6 +187,16 @@ export function modelFactory(
       get svgReadyExtraTerminal() {
         return this.zoomedOut
       },
+      /**
+       * #getter
+       * Same fact on the other axis: zoomed past base resolution the body shows
+       * a static "zoom in" message and fetches nothing, so the loading scrim
+       * must not cover it. One term, not a `displayPhase` override — see
+       * MultiRegionDisplayMixin.loadingSuppressed.
+       */
+      get loadingSuppressed() {
+        return this.zoomedOut
+      },
       get numRows() {
         const baseRows =
           (self.showForward ? 1 : 0) + (self.effectiveShowReverse ? 1 : 0)
@@ -238,26 +246,6 @@ export function modelFactory(
           canvasWidth: view.trackWidthPx,
           canvasHeight: self.height,
         }
-      },
-      /**
-       * #getter
-       * Same precedence as MultiRegionDisplayMixin plus a zoom gate: when zoomed
-       * past base resolution the body shows a "zoom in" message, so suppress the
-       * loading phase (fall through to `ready`) and let that message show. The
-       * chrome's loading-overlay visibility derives from this overridden getter.
-       */
-      get displayPhase(): DisplayPhase {
-        // fetchCanceled keeps the overlay up (with its retry affordance) after
-        // a mid-load cancel, matching MultiRegionDisplayMixin; scoped inside the
-        // zoom gate so a zoomed-out state (nothing fetched) still falls through.
-        return computeDisplayPhase(
-          self,
-          () =>
-            !self.zoomedOut &&
-            (!self.isReady ||
-              !self.viewportWithinLoadedData ||
-              self.fetchCanceled),
-        )
       },
     }))
     .actions(self => ({

@@ -305,10 +305,10 @@ zoom-staleness").
 Arc is the one display class that draws **neither** GPU canvas nor Canvas2D: its
 components emit JSX `<path>` elements, on screen and in SVG export alike. So it
 composes no `RenderLifecycleMixin`, and instead of `DisplayChrome` it renders
-`BaseDisplayComponent` (plugins/arc), which re-uses the shared
-`computeDisplayPhase` precedence plus the shared `DisplayErrorBar` /
-`DisplayLoadingOverlay` / `TooLargeMessage` so its chrome stays identical to a
-GPU display's. `features !== undefined || !!error` is its `canvasDrawn`
+`DisplayStatusChrome` — the backend-free half `DisplayChrome` itself delegates
+to, so its chrome is not merely identical to a GPU display's but the same
+component, minus the one phase (`renderError`) that needs a rendering backend to
+fail. `features !== undefined || !!error` is its `canvasDrawn`
 analogue — the first-paint signal that gates the `-done` testid and the loading
 anti-flash. The stricter, staleness-aware `svgReady` is the export gate.
 

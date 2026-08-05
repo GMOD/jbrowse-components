@@ -13,6 +13,16 @@ description: The shared display status chrome that owns loading, error, and retr
 - It branches on one getter, `model.displayPhase`, whose precedence
   (`renderError > tooLarge > error > loading > ready`) is single-sourced in
   `computeDisplayPhase`. Never re-encode it as `&& !error && !regionTooLarge`.
+- **Two components, split at the backend.** `DisplayChromeBase` owns only the
+  hook and the `renderError` phase — the one phase whose banner needs the hook's
+  `retry()`. Everything below it (container, `-done` testid,
+  `data-display-phase`, the other four overlays) is `DisplayStatusChromeBase`,
+  which a display with no rendering backend renders directly. That is how arc
+  gets the chrome instead of a copy of it.
+- The **loading term** is per-family, but customize it through the
+  `loadingSuppressed` hook, never by overriding `displayPhase` — an override
+  restates every term and then silently misses the next one added. Same rule the
+  precedence has, one level down.
 - `renderError`/`tooLarge` replace the subtree (canvas unmounts,
   `backend.dispose()`); `error`/`loading` are overlays over a live canvas.
 - A status set while the phase is `ready` — work with no fetch behind it, e.g.
@@ -25,9 +35,9 @@ description: The shared display status chrome that owns loading, error, and retr
 - Load-bearing: a terminal state **replaces the subtree** (that is what disposes
   the backend) and `displayPhase`'s loading term is a **thunk**. Early-`return`
   vs ternary is style only, since `'use no memo'`.
-- 15 LGV displays use it. Off it by design: arc/paired-arc (main-thread SVG),
-  dotplot and synteny (non-LGV, drop to `useRenderingBackend`), circular-view
-  (radial, own banners).
+- 15 LGV displays use it, plus arc/paired-arc on the backend-free half. Off it by
+  design: dotplot and synteny (non-LGV, drop to `useRenderingBackend`),
+  circular-view (radial, own banners).
 - The three `-done` testid shapes are redundant but frozen: a contract across
   four test systems.
 
@@ -49,6 +59,16 @@ does three things:
 - branches on `model.displayPhase`, whose precedence is computed by
   `computeDisplayPhase` (`packages/render-core/src/displayPhase.ts`),
 - hands `{ canvasRef, canvas }` to the body via a render-prop child.
+
+It is two files, split exactly where the backend stops mattering.
+`DisplayChromeBase` holds the hook and the `renderError` branch;
+`DisplayStatusChromeBase` holds the rest and takes `phase`/`drawn` as **props**,
+so it reads no observable and needs no `observer`. The split exists because arc
+needs everything except the hook — see the SVG exception below. Two phase types
+carry the distinction into the type system: `DisplayPhase` for a display with a
+backend, `DisplayStatusPhase` (the same union minus `renderError`) for one
+without, so the status chrome can't be handed a state whose banner it has no
+`retry()` to build, and a backend-less model can't claim that state.
 
 The lifecycle state (`canvasDrawn`, `renderError`, `currentRenderingBackend`,
 `renderTick`) lives on `RenderLifecycleMixin`
@@ -77,20 +97,31 @@ multi-sample-variant, variant-matrix.
 **Reuse one of those components (3):** `LGVSyntenyDisplay` → LinearAlignmentsDisplay's
 component; `LinearGCContentDisplay` → wiggle's; `LinearVariantDisplay` →
 LinearBasicDisplay's (borrowed off the DisplayType registry, so no cross-plugin
-component import). They get the chrome for free.
+component import). They get the chrome for free — but note they borrow at three
+different levels, so they inherit three different testid shapes: GC content
+registers wiggle's *inner* `WiggleComponent` (chrome only, so
+`wiggle-display-done` and **no** `display-${id}` element — `browser-tests/suites/bigwig.ts`
+waits on the former for exactly this reason), LinearVariant registers the *outer*
+container component, and LGVSynteny alignments' whole component.
 
 **SVG exception (2): arc / paired-arc.** These render main-thread SVG (no worker,
 no GPU backend, all features in one array), so they can't wrap `DisplayChrome`,
-which owns the backend hook. They share the concept without the backend:
-`ArcFetchModel` exposes `displayPhase` off the same `computeDisplayPhase` (with
-`renderError: undefined` — arc has no GPU error phase), and
-`plugins/arc/src/shared/BaseDisplayComponent.tsx` branches on `model.displayPhase`
-exactly as the chrome does, rendering the same shared banners
-(`DisplayErrorBar`, `DisplayLoadingOverlay`, `TooLargeMessage`) and publishing
-the same `data-display-phase` attribute. The phase lives on the model, not in the
-component, for the same reason it does for a GPU display: the component then
-can't disagree with it. Only the container and the readiness flag (`svgReady`,
-not `canvasDrawn`) are arc-local, so precedence and visuals stay single-sourced. See `plugins/arc/CLAUDE.md`.
+which owns the backend hook. They render `DisplayStatusChrome` — the *same
+component* the GPU chrome delegates to, not a parallel implementation — and
+supply the two facts it can't derive for a display whose canvas it doesn't own:
+`phase` (off `ArcFetchModel.displayPhase`, computed by `computeDisplayStatusPhase`)
+and `drawn` (arc's `canvasDrawn` analogue). Container, `-done` testid,
+`data-display-phase`, banners and progress chip all come from the shared file.
+The phase lives on the model, not in the component, for the same reason it does
+for a GPU display: the component then can't disagree with it. See
+`plugins/arc/CLAUDE.md`.
+
+**This was a hand-written copy until 2026-08, and it had already drifted** — arc
+rendered no `BackgroundProgress` chip at all, and its loading term read a bare
+`isLoading` (see below). That is the argument against "shares the concept": a
+concept shared by convention decays silently, since nothing renders both
+versions side by side. A display's alignment with the chrome should cost it a
+prop, not a copy.
 
 Arc's fetch autorun is `error`-gated, so its `reload()` clears `error` to re-fire
 it. Without that override the shared error bar's retry would be dead.
@@ -109,9 +140,17 @@ button is present, looks live, and does nothing. Two shapes have failed it:
   back onto the permanent scrim — the header was never re-read. It now runs from
   an autorun tracking `reloadCounter`, which is what makes the button real.
   Pinned by `LinearHicDisplay/infoFetchFailure.test.ts`.
+- **A phase that unmounts the affordance.** The loading overlay carries Retry
+  after a user cancel, so a loading term written as bare `isLoading` destroys it:
+  `cancelFetchByUser` drops the stop token synchronously, the phase falls to
+  `ready`, and the display sits stopped and empty with nothing to click —
+  nothing restarts it, the canceled state being deliberately durable. Read
+  **`isLoadingOrCanceled`** (FetchMixin), which exists so no family has to
+  remember the second term. Arc had this hole; pinned by
+  `plugins/arc/src/shared/displayPhase.test.ts`.
 
 The check when adding a display: raise each error it can produce, press retry,
-and confirm the display can actually leave that state.
+and confirm the display can actually leave that state. Cancel is one of them.
 
 **Not on DisplayChrome, by design (non-LGV views).** Two distinct reasons, not to
 be conflated:
@@ -144,8 +183,16 @@ consumers never hand-write the ternary. Two other emitters coexist by design
 `BaseLinearDisplay.tsx` wrapper, and the standalone `synteny_canvas_done` /
 `dotplot_webgl_canvas_done` on the non-LGV views. Displays that pixel-match the
 canvas give the inner `<canvas>` a static selector (`hic_canvas`, `ld_canvas`,
-`variant_canvas`, `variant_matrix_canvas`) as a query target: tests wait on
-`${base}-done`, then read the static selector.
+`variant_canvas`, `variant_matrix_canvas`, `multirow_canvas`) as a query target:
+tests wait on `${base}-done`, then read the static selector.
+
+**`data-display-phase` is published for three of the five phases.** The two
+subtree-replacing ones (`tooLarge`, `renderError`) render their banner *instead
+of* the container that carries the attribute, so a `[data-display-phase]` census
+(`browser-tests/suites/fetch-cancellation.ts`) counts such a display as absent,
+not as terminal — correct for the "nothing is loading" waits built on it
+(`waits.ts`), which is why it stays this way. Don't nest the banner to close the
+gap; that would undo the unmount the whole tree-shape rule exists for.
 
 ### Three testid shapes coexist — and why they aren't unified
 
@@ -298,7 +345,15 @@ restated in the `DisplayChrome.tsx` comment block.
   *entire* output rather than sitting beside a still-mounted canvas. That unmount
   is what fires `canvasRef(null)` → effect cleanup → `backend.dispose()` +
   `stopRenderingBackend()`, with force-load re-initializing through the callback
-  ref.
+  ref. (`renderError` early-returns in `DisplayChromeBase`, `tooLarge` in
+  `DisplayStatusChromeBase` — the split is about which one needs the hook's
+  `retry()`, not about the tree shape, which is identical for both.)
+- **The loading overlay is mounted unconditionally and gates on `visible`
+  itself (load-bearing).** Its 250 ms anti-flash delay lives in component state
+  (`useDelayedFlag` in `core/ui/LoadingOverlay`), so rewriting the chrome as
+  `{phase === 'loading' ? <Loading/> : null}` — the obvious tidy-up — remounts it
+  on every activation, resets the timer, and turns the delay into a no-op that
+  flashes the scrim on every fast pan.
 - **Laziness (load-bearing):** `displayPhase`'s loading term is a thunk,
   evaluated only after the terminal flags are ruled out, so a banner state
   doesn't subscribe to the view's churning `visibleRegions`/`loadedRegions`.

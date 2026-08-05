@@ -33,6 +33,7 @@ capture, status reporting); consumers see only `runFetch`, `cancelFetch`,
 | Member | Description |
 | --- | --- |
 | <span id="getter-isloading">**isLoading**</span><br><code>boolean</code> | true while a fetch is active |
+| <span id="getter-isloadingorcanceled">**isLoadingOrCanceled**</span><br><code>boolean</code> | `isLoading` widened to cover a user-canceled load. **This, not `isLoading`, is what a `displayPhase` loading term wants.** `cancelFetchByUser` clears the stop token synchronously, so `isLoading` goes false the instant the user clicks Cancel — and the loading overlay that unmounts on it is carrying the Retry button, which is the only way back: the state is deliberately durable, so no autorun restarts the fetch on its own. A bare `isLoading` therefore reads as `ready` over a display that is stopped, empty and offering nothing.<br><br>Arc read `isLoading` directly and had exactly that hole. It is a getter here so no family has to remember the second term. |
 
 ## Methods
 

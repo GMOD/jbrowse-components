@@ -140,8 +140,10 @@ MultiRegionDisplayMixin  (composes RenderLifecycleMixin)
     isReady: boolean              canvasDrawn && !isLoading
     viewportWithinLoadedData      every visible block ⊆ a loaded region
     displayPhase                  'renderError' | 'tooLarge' | 'error' | 'loading' | 'ready'
-                                  computeDisplayPhase(self, () => !isReady || !viewportWithinLoadedData || fetchCanceled)
-                                  (fetchCanceled keeps the overlay — and its retry affordance — up after a user cancel)
+                                  computeDisplayPhase(self, () => !loadingSuppressed &&
+                                    (!isReady || !viewportWithinLoadedData || fetchCanceled))
+                                  (fetchCanceled keeps the overlay — and its retry affordance — up after a user cancel;
+                                   customize via the loadingSuppressed hook, never by overriding this getter)
 ```
 
 Loading-scrim visibility is derived once by `DisplayChrome` as `displayPhase ===

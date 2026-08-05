@@ -160,6 +160,25 @@ export default function MultiRegionDisplayMixin() {
 
         /**
          * #getter
+         * Overridable hook (default false): a subclass returns true when its
+         * body is deliberately showing a static message instead of data, so the
+         * loading scrim must not cover it. Sequence sets it when zoomed past
+         * base resolution ("Zoom in to see sequence"); the global family's
+         * `rendersCanvas` is the same idea for LD's placeholder.
+         *
+         * A hook rather than a `displayPhase` override, because overriding the
+         * getter means restating the whole loading condition — which is how
+         * sequence came to hold a verbatim copy of the three terms below, one
+         * `git blame` away from silently missing a fourth. The terminal
+         * precedence stays single-sourced in `computeDisplayPhase`; this keeps
+         * the *loading* term single-sourced too.
+         */
+        get loadingSuppressed(): boolean {
+          return false
+        },
+
+        /**
+         * #getter
          * Overridable hook (default false): whether a searchable feature layout
          * currently exists. Any display defining a feature-lookup method
          * (`searchFeatureByID`, `getFeatureById`) must override it, so callers can
@@ -236,6 +255,9 @@ export default function MultiRegionDisplayMixin() {
          * in `computeDisplayPhase`. Here `loading` means data isn't ready yet, or
          * stale data (viewport past loaded) is still on screen through the
          * pre-refetch debounce.
+         *
+         * A subclass customizes this through `loadingSuppressed`, never by
+         * overriding the getter — see that hook.
          */
         get displayPhase(): DisplayPhase {
           // fetchCanceled keeps the overlay up (showing its retry affordance)
@@ -243,9 +265,10 @@ export default function MultiRegionDisplayMixin() {
           return computeDisplayPhase(
             self,
             () =>
-              !self.isReady ||
-              !self.viewportWithinLoadedData ||
-              self.fetchCanceled,
+              !self.loadingSuppressed &&
+              (!self.isReady ||
+                !self.viewportWithinLoadedData ||
+                self.fetchCanceled),
           )
         },
 

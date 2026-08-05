@@ -1,9 +1,11 @@
 import { types } from '@jbrowse/mobx-state-tree'
+import { computeDisplayPhase } from '@jbrowse/render-core/displayPhase'
 
 // MultiRegionDisplayMixin exposes overridable *getter* hooks with base defaults
 // that a subclass is expected to replace: `svgReadyExtraTerminal` (default
-// false, sequence overrides it) and `layoutReady` (default false, alignments and
-// canvas override it). Unlike the action hooks, nothing about a getter override
+// false, sequence overrides it), `loadingSuppressed` (default false, sequence
+// overrides it) and `layoutReady` (default false, alignments and canvas override
+// it). Unlike the action hooks, nothing about a getter override
 // is enforced by the type system — a base default and a subclass getter are both
 // just properties, so if composition order ever stopped favoring the subclass
 // the base's value would win SILENTLY.
@@ -58,5 +60,45 @@ describe('overridable getter hooks', () => {
     const Sub = types.compose('Sub', Base, types.model({}))
 
     expect(Sub.create({}).layoutReady).toBe(false)
+  })
+})
+
+// `loadingSuppressed` is the same mechanism carrying the `displayPhase` loading
+// term, and it exists because the alternative — overriding `displayPhase`
+// itself — means restating every term the base ORs together. Sequence held such
+// a copy; the day the base grows a fourth term, the copy is wrong and nothing
+// says so. This models the real shape: a base phase getter built from the
+// production `computeDisplayPhase` over a hook a subclass replaces.
+describe('loadingSuppressed drives displayPhase without a getter override', () => {
+  const PhaseBase = types
+    .model('PhaseBase', { fetching: types.boolean })
+    .views(() => ({
+      get loadingSuppressed(): boolean {
+        return false
+      },
+    }))
+    .views(self => ({
+      get displayPhase() {
+        return computeDisplayPhase(
+          { renderError: undefined, regionTooLarge: false, error: undefined },
+          () => !self.loadingSuppressed && self.fetching,
+        )
+      },
+    }))
+
+  test('without an override a fetch shows the loading phase', () => {
+    expect(PhaseBase.create({ fetching: true }).displayPhase).toBe('loading')
+  })
+
+  test('a subclass suppressing it falls through to ready, so its own static message shows', () => {
+    const ZoomedOut = types
+      .compose('ZoomedOut', PhaseBase, types.model({}))
+      .views(() => ({
+        get loadingSuppressed() {
+          return true
+        },
+      }))
+
+    expect(ZoomedOut.create({ fetching: true }).displayPhase).toBe('ready')
   })
 })
