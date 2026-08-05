@@ -350,9 +350,36 @@ function checkAssembly(
   if (typeof assembly.name !== 'string' || !assembly.name) {
     report.error(`${where}.name`, 'missing assembly "name"')
   }
-  const sequence = assembly.sequence
+  // An assembly has three levels of shorthand, all filled in by
+  // assemblyConfigSchema's preProcessSnapshot, and this used to reject every one
+  // of them — including `{ name, uri }`, which the cookbook calls the smallest
+  // possible config:
+  //
+  //   1. `{ name, uri }`                          -> sequence: { adapter: { uri } }
+  //   2. `sequence: { adapter: { uri } }`         -> adapter type from the extension
+  //   3. sequence with no type/trackId            -> ReferenceSequenceTrack, derived id
+  //
+  // Only (2) can't be checked here, and deliberately: the type is guessed
+  // through the `Core-guessAdapterForLocation` extension point, and this command
+  // loads no plugins on purpose. A `uri` is therefore taken as enough — saying
+  // nothing about an adapter we can't name beats calling a working config broken.
+  const sequence =
+    assembly.sequence ??
+    (typeof assembly.uri === 'string' ? { adapter: { uri: assembly.uri } } : undefined)
   if (!isRecord(sequence)) {
-    report.error(`${where}.sequence`, 'missing "sequence" track')
+    report.error(
+      `${where}.sequence`,
+      'missing "sequence" track (or a `uri` naming the sequence file)',
+    )
+    return
+  }
+  if (isRecord(sequence.adapter) && !('type' in sequence.adapter)) {
+    if (typeof sequence.adapter.uri !== 'string') {
+      report.error(
+        `${where}.sequence.adapter`,
+        'adapter has neither a "type" nor a "uri" to infer one from',
+      )
+    }
     return
   }
   checkAdapter(sequence.adapter, manifest, `${where}.sequence.adapter`, report)

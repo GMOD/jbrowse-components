@@ -95,29 +95,46 @@ a tick.
 ```
 
 The sample rows keep the Dog10K IDs, which are the data's identity but say
-nothing to a reader. The display's `layout` renames them for the sidebar and
-gives each group a swatch, without touching the VCF:
+nothing to a reader. `layout` renames them for the sidebar and gives each group
+a swatch, without touching the VCF.
+
+It is display **state**, not track configuration — the same thing the tree
+sidebar writes when you rearrange rows by hand — so it goes on the track entry
+of a session, not in the track's `displays`. Put in a `displays` array it is
+silently ignored, since a display config accepts only its declared slots:
 
 ```json
 {
-  "type": "VariantTrack",
-  "trackId": "dog10k_nhej1_svs",
-  "name": "Dog10K structural variants at NHEJ1",
-  "assemblyNames": ["UU_Cfam_GSD_1.0"],
-  "adapter": {
-    "type": "VcfTabixAdapter",
-    "uri": "dog10k_nhej1_svs.vcf.gz"
-  },
-  "displays": [
-    {
-      "type": "LinearMultiSampleVariantDisplay",
-      "displayId": "dog10k_nhej1_svs-LinearMultiSampleVariantDisplay",
-      "layout": [
-        { "name": "COLL000001", "label": "Collie 1", "color": "#0072B2" },
-        { "name": "CLUPGR000001", "label": "Wolf 1", "color": "#E69F00" }
-      ]
-    }
-  ]
+  "defaultSession": {
+    "name": "NHEJ1 deletion",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "init": {
+          "assembly": "UU_Cfam_GSD_1.0",
+          "loc": "chr37:25,570,000-25,580,000",
+          "tracks": [
+            {
+              "trackId": "dog10k_nhej1_svs",
+              "type": "LinearMultiSampleVariantDisplay",
+              "layout": [
+                {
+                  "name": "COLL000001",
+                  "label": "Collie 1",
+                  "color": "#0072B2"
+                },
+                {
+                  "name": "CLUPGR000001",
+                  "label": "Wolf 1",
+                  "color": "#E69F00"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }
 }
 ```
 
