@@ -464,22 +464,27 @@ export const dog10kSpecs: ScreenshotSpec[] = [
   // different row pitches, where reading it at all meant counting down from the
   // top of one lane to match a row in the other.
   //
-  // THE CHECK ITSELF IS NOT DELETED and must not be, since a tutorial here ends
-  // by checking its inference against the raw data. It is the counts the build
-  // script prints, one line per painted block edge, which local_ancestry.md
-  // quotes under "Checking a block against the genotypes": three of the four
-  // wolfdog edges are exact (23/23 wolf alleles then 0/26 for both haplotypes
-  // ending at 112,576,175, and 41/43 then 0/6 for Saarloos 1 hap1), the five
-  // sweep-breed edges are not (13/23 for the Chow Chow and the Kai Ken, and the
-  // Thai Ridgeback's block ends before the first marker), and Saarloos 2 hap2 at
-  // 3/5 then 6/44 is a real drop that is not a coordinate. A table of counts is
-  // what that argument is; it was never a picture.
+  // THE WHOLE SECTION WENT WITH IT on the follow-up ("yes delete that section
+  // too"), so local_ancestry.md no longer carries the block-edge check as a
+  // section, the quoted count table, or the jexl marker filter. Note this
+  // deliberately spends the tutorial convention that a page ends by checking its
+  // inference against the raw data (website/docs/tutorials/CLAUDE.md): the check
+  // now survives only as two sentences under Reproduce it end to end, pointing
+  // at what the build script prints. Do not re-add a figure for it.
   //
-  // The jexl marker filter stays in the tutorial too, because it is the reusable
-  // part: AF_wolf >= 0.8 && AF_dog <= 0.15 over frequencies the build script
-  // wrote per site across the FULL panels rather than across the 32 animals in
-  // the slice. Without it the lane is every common site in 1.5 Mb and reads as
-  // salt-and-pepper.
+  // The check still exists offline and is worth knowing before anyone re-derives
+  // it: build_dog10k_wolfdog_ancestry.sh writes a genotype slice of
+  // chr1:112,000,000-113,500,000 and prints, per painted block edge, how many
+  // ancestry-informative markers a haplotype carries either side. Three of the
+  // four wolfdog edges are exact (23/23 wolf alleles then 0/26 for both
+  // haplotypes ending at 112,576,175, and 41/43 then 0/6 for Saarloos 1 hap1),
+  // the five sweep-breed edges are not (13/23 for the Chow Chow and the Kai Ken,
+  // and the Thai Ridgeback's block ends before the first marker), and Saarloos 2
+  // hap2 at 3/5 then 6/44 is a real drop that is not a coordinate. The lane that
+  // drew it needed AF_wolf >= 0.8 && AF_dog <= 0.15 as a jexl filter, over
+  // frequencies the script wrote per site across the FULL panels rather than
+  // across the 32 animals in the slice; unfiltered it is every common site in
+  // 1.5 Mb and reads as salt-and-pepper.
 
   // Both Great Anglo-French hound breeds, five dogs each, from the second FLARE
   // run in scripts/build_dog10k_wolfdog_ancestry.sh.

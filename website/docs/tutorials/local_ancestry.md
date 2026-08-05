@@ -377,72 +377,6 @@ Which is the same reading the eighth wolfdog forced above, one level up: what
 carries ancestry is an animal rather than a breed, and what carries a number is
 a genome rather than a chromosome.
 
-## Checking a block against the genotypes
-
-A painted block is an inference, and the genotypes it was inferred from are
-right there in the panel. The check has to be run at a block's **edge** rather
-than in its middle. Inside a block, finding wolf alleles on a wolf-called
-haplotype is close to circular: those alleles are what the call was made on, so
-the check cannot come out wrong. At an edge the painting commits to something
-that can be: it says the wolf alleles stop at a particular coordinate, and they
-either do, or run past it, or stop well short of it.
-
-Any 1.5 Mb of chr1 holding a few edges will do. To run the check in the browser,
-put the phased genotypes in as a matrix lane under the painting, filtered to the
-markers that carry ancestry information at all: the ones whose alt allele is
-common in the wolf panel and rare in the dog panel.
-
-```
-"jexlFilters": [
-  "jexl:get(feature,'INFO').AF_wolf[0] >= 0.8 && get(feature,'INFO').AF_dog[0] <= 0.15"
-]
-```
-
-Both frequencies were written per site by the build script over the full panels,
-before the sample subset, so they are panel-wide estimates rather than a
-description of the 32 animals in the file. Without the filter the lane draws
-every common site in 1.5 Mb, nearly all of them shared between wolves and dogs,
-and it is a wall of salt-and-pepper. Ancestry-informative, there are 49 of them
-across the window, so a run of carriers is a band a block edge can be lined up
-against.
-
-The build script does the same comparison as a count, one line per edge, and
-that is where the claim actually lives:
-
-```
-Wolf alleles carried either side of a painted block edge:
-  Thai Ridgeback hap1        edge 112,044,711   wolf side     n/a   dog side    4/49
-  Saarloos 2 hap2            edge 112,136,175   wolf side     3/5   dog side    6/44
-  Chow Chow hap2             edge 112,453,902   wolf side   13/23   dog side    0/26
-  Tamaskan hap2              edge 112,563,501   wolf side   16/23   dog side    0/26
-  Czechoslovakian 4 hap1     edge 112,576,175   wolf side   23/23   dog side    0/26
-  Saarloos 3 hap1            edge 112,576,175   wolf side   23/23   dog side    0/26
-  Kai Ken hap1               edge 112,846,876   wolf side   13/23   dog side    0/26
-  Caucasian Ovcharka hap2    edge 113,109,578   wolf side   19/36   dog side    1/13
-  Saarloos 1 hap1            edge 113,251,574   wolf side   41/43   dog side     0/6
-```
-
-**The long blocks hold at their edges and the short ones do not.** Both wolfdog
-haplotypes ending at 112,576,175 carry every one of the 23 markers before it and
-none of the 26 after; Saarloos 1 hap1 carries 41 of 43 and then none. The sweep
-breeds' edges sit in the same window under the same markers and are nothing like
-as sharp: the Chow Chow and the Kai Ken carry 13 of 23 on the side the painting
-calls wolf, and the Thai Ridgeback's block ends before the first marker, so
-nothing in the window supports it at all.
-
-That is the block-length argument from the previous section arriving as a
-second, independent measurement. A boundary left by a recent cross is a real
-boundary in the genotypes; a short assignment in an ordinary breed is a stretch
-where the model had little to go on, and it is worth knowing which of the two a
-given block is before building anything on it. Saarloos 2 hap2's edge, at 3 of 5
-then 6 of 44, is the honest middle: a real drop, but not one you would put a
-coordinate on.
-
-This is the check worth running on any local-ancestry call before building
-anything on top of it: the painting is a summary, and the summary should be
-visible in the raw genotypes. It is also how you would follow up the Shiloh
-Shepherd's blocks, or the Great Anglo-French Tricolour Hound's.
-
 ## Repartitioning the same display
 
 The row structure comes entirely from the BED column `partitionField` names.
@@ -468,7 +402,13 @@ the per-sample ancestry fractions, the wolf-block length distribution, the
 FLARE-independent allele count and the per-window block-edge and recombination
 tiling behind the readings above, and writes both painted BEDs
 ([`flare_anc_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/flare_anc_to_bed.py))
-plus their indexes and the genotype slice the edge check uses.
+plus their indexes.
+
+It also writes a genotype slice of one 1.5 Mb window and prints, per painted
+block edge, how many ancestry-informative markers each haplotype carries on
+either side of it. That is the check on the painting itself, and it is worth
+reading before building anything on a block: the long wolfdog blocks hold at
+their edges, and the short blocks in ordinary breeds do not.
 
 ## See also
 
