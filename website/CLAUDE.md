@@ -55,6 +55,10 @@ gitignored). `deploy_staging.sh` wraps a staging deploy.
 - **Captions name the tracks and the one visual takeaway.** If a caption needs a
   paragraph of background, fix the figure. On-image text is a label, not a
   paragraph.
+- **A figure a non-specialist can't read is a bad figure**, however correct. If
+  it needs the field's vocabulary to mean anything, delete it — a caption won't
+  rescue it. Separate from density: `ld/anopheles_r2_vs_dprime` was two clean
+  triangles and still failed.
 - **Card titles**: dataset first, then the pipeline that produced the picture.
   No numerals, no JBrowse vocabulary, no biology lessons. ~32 characters.
 
