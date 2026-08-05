@@ -5,6 +5,7 @@ import {
   abgrRed,
 } from '@jbrowse/core/util/colorBits'
 import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
+import { acquireCanvas2D } from '@jbrowse/render-core/canvasContext'
 
 import {
   fillShade,
@@ -262,11 +263,7 @@ export class Canvas2DSyntenyRenderer implements SyntenyRenderingBackend {
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
-    const ctx = canvas.getContext('2d')
-    if (!ctx) {
-      throw new Error('Canvas 2D context not available')
-    }
-    this.ctx = ctx
+    this.ctx = acquireCanvas2D(canvas)
   }
 
   resize(width: number, height: number) {

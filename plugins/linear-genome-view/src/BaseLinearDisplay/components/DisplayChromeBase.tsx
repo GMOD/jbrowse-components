@@ -1,3 +1,5 @@
+import { Fragment } from 'react'
+
 import { useRenderingBackend } from '@jbrowse/render-core/useRenderingBackend'
 import { observer } from 'mobx-react'
 
@@ -93,7 +95,10 @@ function DisplayChromeBaseInner<B extends { dispose(): void }>({
   // compile this fn — version skew. The directive is load-bearing; keep it.
   // eslint-disable-next-line react-compiler/react-compiler
   'use no memo'
-  const { canvas, canvasRef, retry } = useRenderingBackend(factory, model)
+  const { canvas, canvasRef, retry, canvasKey } = useRenderingBackend(
+    factory,
+    model,
+  )
   const phase = model.displayPhase
   if (phase === 'renderError') {
     return (
@@ -115,7 +120,24 @@ function DisplayChromeBaseInner<B extends { dispose(): void }>({
       drawn={model.canvasDrawn}
       overlays={overlays}
     >
-      {children({ canvasRef, canvas })}
+      {/* Keyed on `canvasKey` so a backend re-init always gets a canvas element
+          that never held a context, whichever path triggered it. The old
+          reasoning — "DisplayChrome consumers get this free, the `renderError`
+          phase unmounts the canvas" — holds only for a *reported* loss. Three
+          re-init paths bump `canvasKey` without ever setting `renderError`
+          (`webglcontextrestored`, WebGPU `onDeviceLost`, a bfcache `pageshow`),
+          and on those the element was reused. Usually fine, since the same
+          context kind is re-acquirable; not fine when the HAL ladder lands on a
+          *different* rung than last time, because a canvas's context kind is
+          permanent — a device loss that can't re-acquire WebGPU falls to WebGL2
+          and finds the element already committed, which is unrecoverable on
+          that element. This makes the guarantee unconditional rather than a
+          property of which path happened to fire, and it costs a remount of the
+          body on an event that is rebuilding the whole backend anyway. The
+          overlays deliberately sit OUTSIDE the key: remounting the loading
+          scrim would reset its 250ms anti-flash timer (see
+          DisplayStatusChromeBase). */}
+      <Fragment key={canvasKey}>{children({ canvasRef, canvas })}</Fragment>
     </DisplayStatusChromeBase>
   )
 }

@@ -19,8 +19,7 @@ const CONTEXT_RECOVER_BASE_MS = 1000
 
 // A lost context reports itself because nothing else will: calls on it are
 // silent no-ops, and it can't be re-acquired on its element (see `canvasKey`
-// below). `renderError` is the only state that unmounts the canvas, so it's also
-// the mechanism that gets a fresh one.
+// below, which is what gets every consumer a fresh element).
 //
 // The report waits out a grace window first — a race against
 // `webglcontextrestored`, which lands within a frame or two for the recoverable
@@ -340,12 +339,19 @@ export function useRenderingBackend<
   // standalone consumers (dotplot, synteny) that render their own banner;
   // DisplayChrome reads `model.renderError` directly.
   //
-  // `canvasKey` goes on those same consumers' `<canvas key=…>`. A re-init needs
-  // an element that never held a context: `getContext('webgl2')` keeps returning
-  // the lost one, and `getContext('2d')` returns null on any element that once
-  // had WebGL, so reusing it turns a recoverable loss into "Canvas 2D context not
-  // available". DisplayChrome consumers get this free — the `renderError` phase
-  // unmounts the canvas and the remount is a new element.
+  // `canvasKey` must reach the `<canvas key=…>` of EVERY consumer, not just the
+  // standalone ones. A re-init needs an element that never held a context:
+  // `getContext('webgl2')` keeps returning the lost one, `getContext('2d')`
+  // returns null on any element that once had WebGL, and more generally a
+  // canvas's context kind is permanent — so a re-init whose ladder lands on a
+  // different rung than last time cannot bind at all.
+  //
+  // This used to say DisplayChrome consumers got it free, because `renderError`
+  // unmounts the canvas. That covers only a *reported* loss: `onRestored`,
+  // `onDeviceLost` and the bfcache `pageshow` above all bump `contextVersion`
+  // and deliberately set no `renderError`, and those reused the element.
+  // `DisplayChromeBase` now keys its render-prop body on this value, and the
+  // standalone consumers get it from `RenderCanvas`.
   return {
     canvas,
     canvasRef,

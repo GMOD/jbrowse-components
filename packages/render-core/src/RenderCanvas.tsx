@@ -19,9 +19,13 @@ export interface RenderCanvasHandle {
  * held a context — `getContext('webgl2')` hands back the *same lost* context,
  * and `getContext('2d')` returns **null** on any element that once had WebGL, so
  * reusing the element turns a recoverable context loss into a permanent "Canvas
- * 2D context not available". `DisplayChrome` consumers get a fresh element for
- * free, since the `renderError` phase unmounts the canvas; these consumers keep
- * theirs mounted through an error by design (ADR-025), so they must key it.
+ * 2D context not available" — and more generally a canvas's context kind is
+ * permanent, so a re-init whose HAL ladder lands on a different rung than last
+ * time cannot bind at all. These consumers keep their canvas mounted through an
+ * error by design (ADR-025), so they must key it; `DisplayChromeBase` keys its
+ * render-prop body on the same value for the displays on the chrome, which it
+ * does *not* get for free from the `renderError` unmount (that covers only a
+ * reported loss — see the `canvasKey` note in useRenderingBackend.ts).
  * GPU_RENDERING.md said so and ended with "any new consumer rendering its own
  * banner must too" — a rule enforced by remembering to read the doc. Rendering
  * the element here makes it structural instead: there is no way to mount this

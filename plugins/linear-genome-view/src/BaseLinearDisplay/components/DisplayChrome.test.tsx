@@ -318,3 +318,45 @@ describe('DisplayStatusChrome (no rendering backend)', () => {
     expect(queryByTestId('loading-overlay')).toBeNull()
   })
 })
+
+// A backend re-init needs a canvas element that never held a context: a canvas's
+// context kind is permanent, so re-running the HAL ladder on a used element can
+// find it committed to a rung the ladder no longer wants (canvasContext.ts).
+// This used to be covered only for the `renderError` path — that phase replaces
+// the subtree, so the remount came free — while three other paths bump
+// `canvasKey` with no `renderError` at all and silently reused the element.
+describe('fresh canvas element per re-init', () => {
+  test('a browser context restore remounts the canvas without any renderError', async () => {
+    const model = TestChromeModel.create({})
+    const { findByTestId, getByTestId } = renderChrome(model, 'chrome')
+    const first = await findByTestId('probe-canvas')
+    const container = getByTestId('chrome')
+
+    // the real path: `webglcontextrestored` bumps canvasKey and deliberately
+    // sets no error, since the browser recovered on its own
+    act(() => {
+      first.dispatchEvent(new Event('webglcontextrestored'))
+    })
+
+    await waitFor(() => {
+      expect(getByTestId('probe-canvas')).not.toBe(first)
+    })
+    expect(model.renderError).toBeUndefined()
+    // scoped to the body: the chrome container (and with it the loading scrim,
+    // whose 250ms anti-flash delay lives in component state) must NOT remount
+    expect(getByTestId('chrome')).toBe(container)
+  })
+
+  test('an ordinary re-render keeps the live element', async () => {
+    const model = TestChromeModel.create({})
+    const { findByTestId, getByTestId } = renderChrome(model, 'chrome')
+    const first = await findByTestId('probe-canvas')
+
+    // half the invariant: remounting on anything but a re-init would drop a live
+    // GPU context and re-run the backend factory for a changed status message
+    act(() => {
+      model.setStatus('Clustering samples', 0.25)
+    })
+    expect(getByTestId('probe-canvas')).toBe(first)
+  })
+})

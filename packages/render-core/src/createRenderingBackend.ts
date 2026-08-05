@@ -24,8 +24,29 @@ export async function createRenderingBackend<TRenderingBackend>(
     createCanvas2DBackend,
   }: RenderingBackendOptions<TRenderingBackend>,
 ): Promise<TRenderingBackend> {
-  const hal = await createGpuHal(canvas, passes, uniformByteSize)
-  return hal ? createGpuBackend(hal) : createCanvas2DBackend(canvas)
+  // Each rung's reason is collected rather than dropped in the console: if
+  // Canvas2D — the rung that cannot itself be fallen back from — also fails,
+  // "Canvas 2D context not available" on its own says nothing about *why* the
+  // two rungs above it declined, and those are usually the interesting part (a
+  // committed context from a previous init, a driver that lost the device). The
+  // error UI's stack-trace dialog walks `AggregateError.errors`, so bundling
+  // them is what puts them in front of whoever reports the bug.
+  const ladderFailures: unknown[] = []
+  const hal = await createGpuHal(canvas, passes, uniformByteSize, ladderFailures)
+  if (hal) {
+    return createGpuBackend(hal)
+  }
+  try {
+    return createCanvas2DBackend(canvas)
+  } catch (e) {
+    if (ladderFailures.length === 0) {
+      throw e
+    }
+    throw new AggregateError(
+      [...ladderFailures, e],
+      `No rendering backend could be created for this canvas: ${e}`,
+    )
+  }
 }
 
 /**

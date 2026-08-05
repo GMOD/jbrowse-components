@@ -284,13 +284,31 @@ Chrome: `getContext('webgl2')` returns the same lost context (the HAL ctor then
 throws in shader compile, `getShaderParameter` reporting null), _and_
 `getContext('2d')` returns **null** on any element that once had WebGL — so not
 even the Canvas2D fallback can bind there, turning a recoverable loss into
-"Canvas 2D context not available". DisplayChrome consumers get a fresh element
-free, since `renderError` unmounts the canvas. The drop-to-primitive consumers
-keep theirs mounted through an error by design (ADR-025's mount-lifetime rule,
-written for a _live_ context), so their canvas has to be keyed on the hook's
-`canvasKey`.
+"Canvas 2D context not available". More generally: **a canvas's context kind is
+permanent**, so any re-init whose HAL ladder lands on a different rung than last
+time is stuck — a WebGPU device loss that cannot re-acquire a device falls to
+WebGL2 and finds the element already committed to `webgpu`. When that happens
+the error now says so, instead of reporting "WebGL2 not supported" on a machine
+that supports WebGL2 fine (`canvasContext.ts`, below).
 
-**That is structural now, not a rule to remember**: they render
+**Both families get the fresh element unconditionally, and the reasoning that
+used to distinguish them was wrong.** "DisplayChrome consumers get it free,
+since `renderError` unmounts the canvas" holds only for a *reported* loss —
+three re-init paths bump `canvasKey` and deliberately set **no** `renderError`
+at all (`webglcontextrestored`, WebGPU `onDeviceLost`, a bfcache `pageshow`),
+and on those the element was reused. Usually harmless, since the same rung is
+normally re-acquirable; the device-loss case is the one that isn't.
+`DisplayChromeBase` therefore keys the render-prop body itself
+(`<Fragment key={canvasKey}>`), so no display has to know any of this. The
+overlays sit **outside** that key on purpose: remounting the loading scrim would
+reset the 250 ms anti-flash delay it holds in component state.
+`DisplayChrome.test.tsx` pins both halves under "fresh canvas element per
+re-init", driving the real `webglcontextrestored` event rather than a mock.
+
+The drop-to-primitive consumers keep their canvas mounted through an error by
+design (ADR-025's mount-lifetime rule, written for a _live_ context), so theirs
+must be keyed at the mount site. **That is structural too, not a rule to
+remember**: they render
 `RenderCanvas` (`@jbrowse/render-core/RenderCanvas`), which owns the
 `key={canvasKey}` and forwards everything else — so there is no way to mount
 that canvas without the key. `RenderCanvas.test.tsx` pins both halves (a changed
@@ -305,6 +323,26 @@ and reverted, because these two views spell the suffix `synteny_canvas_done` /
 across four test systems. Their readiness flag differs too (`settled`, not
 `canvasDrawn`, since a shared canvas repaints unconditionally — ADR-009's scope
 clause), so the ternary stays at the call site where both facts are visible.
+
+**`getContext` returns one undifferentiated `null` for every failure**, which is
+why the ladder used to report the wrong cause. `canvasContext.ts` records the
+kind each canvas was committed to (a `WeakMap`, since the platform gives no way
+to ask an element what it holds) and turns that `null` into a reason: either
+"already committed to a WebGPU context, this is a re-init on a reused element,
+mount it with `RenderCanvas`" or an honest statement of the two possibilities
+when we never took a context on that element. Every acquisition goes through it
+— `acquireCanvas2D` replaced four hand-written copies of the
+`getContext('2d')` + throw ritual, three of them belonging to the consumers
+whose canvas never unmounts.
+
+**A ladder that fails at every rung reports every rung.** Falling through a rung
+is ordinary and stays a `console.warn`, but Canvas2D cannot be fallen back from,
+so when it fails too, `createRenderingBackend` throws an `AggregateError`
+carrying each rung's reason. That is not decoration: core's `formatErrorStack`
+already walks `.errors` and `.cause`, so the stack-trace dialog shows why WebGPU
+and WebGL2 declined — previously visible only in a console the person reporting
+the bug never had open. A lone Canvas2D failure with nothing collected is
+rethrown bare rather than wrapped, so the one real cause doesn't sink a level.
 
 **Tab visibility.** `useTabVisibilityRerender` calls `model.renderNow()` on
 `visibilitychange`, bumping `renderTick`. WebGPU swap-chain textures are reissued

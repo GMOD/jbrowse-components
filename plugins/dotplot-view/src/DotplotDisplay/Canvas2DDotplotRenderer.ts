@@ -1,4 +1,5 @@
 import { prepareCanvas } from '@jbrowse/render-core/canvas2dUtils'
+import { acquireCanvas2D } from '@jbrowse/render-core/canvasContext'
 
 import { drawDotplotInstances } from './drawDotplot.ts'
 
@@ -17,11 +18,7 @@ export class Canvas2DDotplotRenderer implements DotplotRenderingBackend {
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
-    const ctx = canvas.getContext('2d')
-    if (!ctx) {
-      throw new Error('Canvas 2D context not available')
-    }
-    this.ctx = ctx
+    this.ctx = acquireCanvas2D(canvas)
   }
 
   // Just records the CSS size; the backing store is sized in `render` by

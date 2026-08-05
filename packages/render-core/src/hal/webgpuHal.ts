@@ -1,6 +1,7 @@
 /// <reference types="@webgpu/types" />
 
 import { syncCanvasSize } from '../canvas2dUtils.ts'
+import { canvasContextError, noteCanvasContext } from '../canvasContext.ts'
 import { getGpuDevice } from '../gpuDevice.ts'
 import {
   STANDARD_BLEND_STATE,
@@ -305,11 +306,13 @@ export class WebGPUHal implements GpuHal {
     const pipelines = await compilePipelines(device, descriptors, layoutState)
     const context = canvas.getContext('webgpu')
     if (!context) {
-      console.warn(
-        '[WebGPUHal] WebGPU device available but canvas context failed',
-      )
-      return null
+      // Returning null (rather than throwing) keeps the ladder running, so this
+      // is the one rung whose reason would otherwise be console-only. It is
+      // recorded as the rung's failure so `createGpuHal` can attach it to
+      // whatever the ladder eventually fails with.
+      throw canvasContextError(canvas, 'webgpu')
     }
+    noteCanvasContext(canvas, 'webgpu')
     context.configure({
       device,
       format: navigator.gpu.getPreferredCanvasFormat(),

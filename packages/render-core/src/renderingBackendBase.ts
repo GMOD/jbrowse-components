@@ -1,3 +1,5 @@
+import { acquireCanvas2D } from './canvasContext.ts'
+
 import type { GpuHal } from './hal/types.ts'
 
 /**
@@ -41,12 +43,12 @@ export abstract class Canvas2DRenderingBackendBase {
   protected ctx: CanvasRenderingContext2D
 
   constructor(canvas: HTMLCanvasElement) {
-    const ctx = canvas.getContext('2d')
-    if (!ctx) {
-      throw new Error('Canvas 2D context not available')
-    }
+    // Canvas2D is the ladder's last rung, so this is where a re-init on a reused
+    // element lands — and a bare "not available" sends the reader looking for a
+    // missing browser feature instead of the committed context actually in the
+    // way. `acquireCanvas2D` names which (canvasContext.ts).
+    this.ctx = acquireCanvas2D(canvas)
     this.canvas = canvas
-    this.ctx = ctx
   }
 
   // Canvas2D allocates no GPU resources, so there is no OOM channel to forward.

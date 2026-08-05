@@ -28,6 +28,13 @@ export { ScrollLockedOverlay } from './ScrollLockedOverlay.tsx'
 export { default as OverlayCanvas } from './OverlayCanvas.tsx'
 export { default as RenderCanvas } from './RenderCanvas.tsx'
 export type { RenderCanvasHandle } from './RenderCanvas.tsx'
+export {
+  acquireCanvas2D,
+  acquiredCanvasContext,
+  canvasContextError,
+  noteCanvasContext,
+} from './canvasContext.ts'
+export type { CanvasContextKind } from './canvasContext.ts'
 
 // --- Backend factories ---
 export {

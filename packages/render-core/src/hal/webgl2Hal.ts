@@ -1,4 +1,5 @@
 import { syncCanvasSize } from '../canvas2dUtils.ts'
+import { canvasContextError, noteCanvasContext } from '../canvasContext.ts'
 import { OomReporter } from './oomReporter.ts'
 import { RegionRegistry } from './regionRegistry.ts'
 
@@ -229,8 +230,12 @@ export class WebGL2Hal implements GpuHal {
       premultipliedAlpha: true,
     })
     if (!gl) {
-      throw new Error('WebGL2 not supported')
+      // Was a bare 'WebGL2 not supported', which is the wrong diagnosis for the
+      // case that actually reaches here in production: a re-init on a canvas the
+      // WebGPU rung already committed. See canvasContext.ts.
+      throw canvasContextError(canvas, 'webgl2')
     }
+    noteCanvasContext(canvas, 'webgl2')
     this.gl = gl
 
     this.ubo = gl.createBuffer()!

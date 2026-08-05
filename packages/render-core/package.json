@@ -31,6 +31,7 @@
     "./RenderLifecycleMixin": "./src/RenderLifecycleMixin.ts",
     "./blockClipUtils": "./src/blockClipUtils.ts",
     "./canvas2dUtils": "./src/canvas2dUtils.ts",
+    "./canvasContext": "./src/canvasContext.ts",
     "./createRenderingBackend": "./src/createRenderingBackend.ts",
     "./displayPhase": "./src/displayPhase.ts",
     "./globalRenderingBackend": "./src/globalRenderingBackend.ts",

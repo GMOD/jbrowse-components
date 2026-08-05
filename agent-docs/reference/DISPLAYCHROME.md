@@ -204,9 +204,13 @@ be conflated:
   `height`), so the chrome doesn't fit. This is the sanctioned
   drop-to-primitive path, not partial adoption. Don't force them onto
   DisplayChrome. What they owe in exchange: because their canvas stays mounted
-  through an error rather than being replaced by a banner, a re-init must get an
-  element that never held a context — neither WebGL nor Canvas2D can bind to one
-  that did (GPU_RENDERING.md "Context-loss recovery"). Both render
+  through an error rather than being replaced by a banner, they must key it at
+  the mount site. (Every re-init needs an element that never held a context —
+  a canvas's context kind is permanent — but `DisplayChromeBase` now keys its
+  render-prop body on `canvasKey` for the displays *on* the chrome, so this is
+  the only family that still carries the rule itself. See GPU_RENDERING.md
+  "Context-loss recovery" for why the old "DisplayChrome gets it free" reasoning
+  covered only one of the four re-init paths.) Both render
   **`RenderCanvas`** (`@jbrowse/render-core/RenderCanvas`), which owns that
   `key={canvasKey}` so it can't be forgotten; it was a hand-written key plus a
   copied comment in each until 2026-08, with "any new consumer must too" as the
