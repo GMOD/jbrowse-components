@@ -25,7 +25,7 @@
     "check-config-cli": "node scripts/check-config-cli.ts",
     "check-config-blocks": "node scripts/check-config-blocks.ts",
     "check-doc-slots": "node scripts/check-doc-slots.ts",
-    "check-doc-slots": "node scripts/check-doc-slots.ts",
+    "check-launch-fields": "node scripts/check-launch-fields.ts",
     "gen:gallery-links": "node scripts/gen-gallery-links.ts",
     "gen:gallery-thumbs": "node scripts/gen-gallery-thumbs.ts",
     "gen:tutorial-thumbs": "node scripts/gen-tutorial-thumbs.ts",

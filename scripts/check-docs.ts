@@ -73,6 +73,14 @@ const VALIDATORS: Validator[] = [
     argv: web('check-doc-slots.ts'),
   },
   {
+    // The URL params guide restates each LaunchView-<type>'s accepted args as
+    // prose, and had drifted into a subset of them on five of seven view types.
+    // Resolves the args types through the TypeScript checker and requires the
+    // page to name each field.
+    name: 'session-spec launcher fields are documented',
+    argv: web('check-launch-fields.ts'),
+  },
+  {
     name: 'menu paths use the → separator',
     argv: web('check-menu-paths.ts'),
   },
