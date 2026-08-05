@@ -29,6 +29,15 @@ export interface LinearGenomeViewProps extends CreateViewStateBaseOptions {
  *
  * `init` is the declarative input; for imperative control after launch take a
  * `ref` to the live engine.
+ *
+ * This owns its engine for the lifetime of the page and does not tear it down:
+ * the engine is not owned by React, so unmounting leaves its RPC worker threads
+ * and autoruns running. That is fine for a page that mounts one and keeps it,
+ * and a leak for a host that mounts and discards repeatedly — an SPA route, a
+ * notebook cell re-run. Those should build the engine themselves
+ * ({@link useCreateViewState} + `<JBrowseLinearGenomeView>`, or
+ * `createLinearGenomeView`, which owns the whole lifecycle) and hand it to
+ * `destroyViewState` when they let go of it.
  */
 const LinearGenomeView = observer(function LinearGenomeView({
   init,
