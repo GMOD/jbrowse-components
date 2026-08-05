@@ -17,12 +17,26 @@ interface PendingChunk {
   chunk: Promise<Uint8Array>
 }
 
+// Reference count for one range request. The unit of *fetching* is a run of
+// contiguous chunks covered by a single request, while the unit of *joining* is
+// a chunk — so the count lives on the run, and every chunk it produced points
+// back at it. The request is cancelled only once every reader interested in any
+// of its chunks has given up.
+interface RunState {
+  // signals of the readers still waiting on this request
+  signals: Set<AbortSignal>
+  // true once a reader joins without a signal, which pins the request
+  pinned: boolean
+  // aborts when every reader has given up. what the request runs under
+  controller: AbortController
+  // aborted to take this run's listeners back off its readers' signals
+  dispose: AbortController
+  settled: boolean
+}
+
 interface InFlightChunk {
   chunk: Promise<Uint8Array>
-  // the signal of the read that opened this fetch, so a joiner can tell that
-  // read's cancellation apart from a real failure. Typed off RequestInit, which
-  // is where it comes from and which admits an explicit null.
-  signal: RequestInit['signal']
+  run: RunState
 }
 
 let cache = new Map<string, Uint8Array>()
@@ -247,14 +261,33 @@ export class RemoteFileWithRangeCache extends RemoteFile {
    * awaits these chunks instead of asking for the same bytes again.
    */
   private fetchRun(url: string, run: ChunkRun, init?: RequestInit) {
+    const state: RunState = {
+      signals: new Set(),
+      pinned: false,
+      controller: new AbortController(),
+      dispose: new AbortController(),
+      settled: false,
+    }
+    // The request runs under the run's own signal, not the opening reader's: it
+    // is shared, so it must outlive any one reader giving up. joinRun registers
+    // them, starting with the reader that opened it.
     const data = limitConcurrency(() =>
       this.fetchRange(
         url,
         run.start * CHUNK_SIZE,
         (run.end + 1) * CHUNK_SIZE - 1,
-        init,
+        { ...init, signal: state.controller.signal },
       ),
     )
+    this.joinRun(state, init?.signal)
+    const settle = () => {
+      state.settled = true
+      // nothing reads these once the request has settled, and holding them
+      // would pin each reader's AbortController behind this run
+      state.dispose.abort()
+      state.signals.clear()
+    }
+    data.then(settle, settle)
     const pending: PendingChunk[] = []
     for (let index = run.start; index <= run.end; index++) {
       const key = cacheKey(url, index)
@@ -271,7 +304,7 @@ export class RemoteFileWithRangeCache extends RemoteFile {
         putCached(key, copy)
         return copy
       })
-      const entry = { chunk, signal: init?.signal }
+      const entry = { chunk, run: state }
       inFlight.set(key, entry)
       const forget = () => {
         // only if still the owner: clearCache, or a later run for the same
@@ -289,45 +322,54 @@ export class RemoteFileWithRangeCache extends RemoteFile {
   }
 
   /**
-   * Await a chunk fetch another read already had in flight, and re-issue it if
-   * that read was canceled out from under us.
+   * Register a reader's interest in a run, so its request survives until that
+   * reader has given up too.
+   *
+   * A reader with **no signal cannot give up**, so it pins the run: there is no
+   * longer any set of aborts that should stop it. That is the honest reading of
+   * a caller that never asked to be cancellable, and it means one signal-free
+   * read makes that request uncancellable for everyone sharing it.
+   */
+  private joinRun(state: RunState, signal: RequestInit['signal']) {
+    if (!signal) {
+      state.pinned = true
+    } else if (!state.signals.has(signal)) {
+      // guarded so one signal joining twice — a read spanning several chunks of
+      // the same run — does not add two listeners
+      state.signals.add(signal)
+      signal.addEventListener(
+        'abort',
+        () => {
+          state.signals.delete(signal)
+          if (!state.pinned && state.signals.size === 0) {
+            state.controller.abort(signal.reason)
+          }
+        },
+        // `once` covers the abort firing; `dispose` covers it never firing
+        { once: true, signal: state.dispose.signal },
+      )
+    }
+  }
+
+  /**
+   * Await a chunk fetch another read already had in flight.
    *
    * Sharing one fetch between reads is what makes a row of adjacent genomic
-   * blocks cheap, but it also means another reader's `AbortSignal` can reject a
-   * chunk this read still needs — a failure that says nothing about this read.
-   * Our own abort, and every other error, propagates untouched. `@gmod/bam`
-   * applies the same retry to its own chunk cache one layer up.
-   *
-   * Retried exactly once, then propagated: the re-issue prefers the cache or a
-   * live sibling, and bounding it means the pathological case is one duplicate
-   * 256 KiB fetch *per joined chunk* — this runs once per chunk, so a read that
-   * joined N chunks of a cancelled owner can re-issue N of them — rather than a
-   * recursion whose depth depends on how the aborts interleave.
+   * blocks cheap. It used to mean another reader's `AbortSignal` could reject a
+   * chunk this read still needed, which was handled by re-issuing the fetch —
+   * correct, but it threw away a 256 KiB request that was already in flight and
+   * that somebody still wanted. Joining the run's reference count instead means
+   * the request is simply not cancelled while anyone is still waiting on it, so
+   * there is nothing to re-issue. `@gmod/bam` and `@gmod/cram` do the same at
+   * their own cache layers.
    */
-  private async joinChunk(
-    url: string,
-    index: number,
-    flight: InFlightChunk,
-    init?: RequestInit,
-  ) {
-    try {
-      return await flight.chunk
-    } catch (e) {
-      if (flight.signal?.aborted !== true || init?.signal?.aborted === true) {
-        throw e
-      }
-      // a sibling joiner may have re-opened this chunk already; its owner is a
-      // live reader in every case but another interleaved abort, which is what
-      // the single-retry bound covers
-      const key = cacheKey(url, index)
-      const cached = getCached(key)
-      const sibling = inFlight.get(key)
-      return cached === undefined
-        ? sibling !== undefined && sibling !== flight
-          ? sibling.chunk
-          : this.fetchRun(url, { start: index, end: index }, init)[0]!.chunk
-        : cached
+  private joinChunk(flight: InFlightChunk, init?: RequestInit) {
+    // a settled run has dropped its abort listeners, so joining it would add a
+    // signal nothing will ever take back out
+    if (!flight.run.settled) {
+      this.joinRun(flight.run, init?.signal)
     }
+    return flight.chunk
   }
 
   private async getCachedRange(
@@ -380,10 +422,7 @@ export class RemoteFileWithRangeCache extends RemoteFile {
             runs.push({ start: index, end: index })
           }
         } else {
-          pending.push({
-            index,
-            chunk: this.joinChunk(url, index, flight, init),
-          })
+          pending.push({ index, chunk: this.joinChunk(flight, init) })
         }
       } else {
         chunks.set(index, cached)
@@ -402,6 +441,10 @@ export class RemoteFileWithRangeCache extends RemoteFile {
         chunks.set(index, await chunk)
       }),
     )
+    // The bytes arrived, but this read gave up while waiting for them — the
+    // request it was sharing kept going because somebody else still wanted it.
+    // Cancellation is per-reader even though the fetch is not.
+    init?.signal?.throwIfAborted()
 
     const result = new Uint8Array(Math.max(0, end - start))
     let dataEnd = end

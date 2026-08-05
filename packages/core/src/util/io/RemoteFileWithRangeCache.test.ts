@@ -789,7 +789,7 @@ function createGatedFetch() {
 }
 
 describe('RemoteFileWithRangeCache aborted-chunk sharing', () => {
-  test('re-fetches a shared chunk when the read that opened it aborts', async () => {
+  test('does not re-fetch a shared chunk when the read that opened it aborts', async () => {
     const { calls, mockFetch, release } = createGatedFetch()
     const file = makeFile(mockFetch)
     const controller = new AbortController()
@@ -803,15 +803,44 @@ describe('RemoteFileWithRangeCache aborted-chunk sharing', () => {
     const joiner = fetchRange(file, 100, 199)
     expect(calls).toHaveLength(1)
 
+    // The joiner never asked to be canceled, so the request it is sharing is
+    // not canceled either — it is still in flight, waiting to be released. The
+    // owner's abort is the owner's business.
     controller.abort()
-    await expect(owner).rejects.toThrow(/abort/i)
-
-    // the joiner never asked to be canceled, so it re-issues under its own
-    // request instead of inheriting the owner's abort
-    await Promise.resolve()
     release()
+
+    await expect(owner).rejects.toThrow(/abort/i)
     expect(await joiner).toEqual(slice(100, 199))
-    expect(calls).toHaveLength(2)
+    // One request, not two. Nothing was re-issued because nothing was
+    // canceled; this asserted 2 back when a joiner had to re-fetch the 256 KiB
+    // an aborting owner dropped on the floor.
+    expect(calls).toHaveLength(1)
+  })
+
+  test('cancels the request once every sharer has aborted', async () => {
+    const { calls, mockFetch } = createGatedFetch()
+    const file = makeFile(mockFetch)
+    const owner = new AbortController()
+    const joiner = new AbortController()
+
+    const ownerRead = file.fetch('https://example.com/data.bin', {
+      headers: { range: 'bytes=0-99' },
+      signal: owner.signal,
+    })
+    const joinerRead = file.fetch('https://example.com/data.bin', {
+      headers: { range: 'bytes=100-199' },
+      signal: joiner.signal,
+    })
+    expect(calls).toHaveLength(1)
+
+    // the other half of the contract: with nobody left wanting these bytes the
+    // request is torn down rather than run to completion and discarded. The
+    // gate is never released — the abort is what unblocks the fetch.
+    owner.abort()
+    joiner.abort()
+
+    await expect(ownerRead).rejects.toThrow(/abort/i)
+    await expect(joinerRead).rejects.toThrow(/abort/i)
   })
 
   test('propagates the abort to a joiner that was itself canceled', async () => {
