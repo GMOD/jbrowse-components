@@ -295,7 +295,8 @@ const LDDisplayComponent = observer(function LDDisplayComponent({
   const containerHeight = canvasOnlyHeight + effectiveLineZoneHeight
 
   const ref = useRef<HTMLDivElement>(null)
-  const { mouseState, handleMouseMove, handleMouseLeave } = useMouseTracking(ref)
+  const { mouseState, handleMouseMove, handleMouseLeave } =
+    useMouseTracking(ref)
 
   // Derived from the one measurement rather than stored beside it, so the
   // tooltip, the crosshairs and the view's vertical guides all describe the

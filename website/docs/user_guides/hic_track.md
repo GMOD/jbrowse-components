@@ -104,8 +104,8 @@ decayed long-range bins off the floor, and a dense one comes back solid under
 the same setting, since every bin then reaches the top of the scale.
 
 The track has to be tall here. A pair's contacts are drawn in the wedge between
-its two regions, so the drawing is as tall as the widest pair on screen is
-wide, and at whole-genome zoom that is chr1 against chrY: half the view. A
+its two regions, so the drawing is as tall as the widest pair on screen is wide,
+and at whole-genome zoom that is chr1 against chrY: half the view. A
 hundred-pixel track shows the top slice of that pyramid, which is its faintest
 corner.
 

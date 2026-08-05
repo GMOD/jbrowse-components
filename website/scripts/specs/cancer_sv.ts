@@ -433,7 +433,10 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         // replace a view, which is everywhere except embedded -- see
         // LinearDerivativeVsRef's button.
         actions: [
-          { type: 'click', selector: 'button::-p-text(Replace with split view)' },
+          {
+            type: 'click',
+            selector: 'button::-p-text(Replace with split view)',
+          },
         ],
         // the split view it created, IN the launching view's place: one panel
         // per segment of the path, four here (the chain returns to chr3),

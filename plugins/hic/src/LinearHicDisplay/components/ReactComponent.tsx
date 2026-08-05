@@ -87,7 +87,8 @@ const LinearHicReactComponent = observer(function LinearHicReactComponent({
   const { height, lgv } = model
   const width = lgv.totalWidthPx
   const ref = useRef<HTMLDivElement>(null)
-  const { mouseState, handleMouseMove, handleMouseLeave } = useMouseTracking(ref)
+  const { mouseState, handleMouseMove, handleMouseLeave } =
+    useMouseTracking(ref)
 
   return (
     <DisplayChrome
@@ -139,7 +140,9 @@ const HicBody = observer(function HicBody({
   // `item` is absent over an empty bin, where the guide still draws (reading a
   // position off the axes is exactly what you want somewhere with no contact)
   // but there is nothing to put in a tooltip.
-  const item = mouseState ? model.hitTest(mouseState.x, mouseState.y) : undefined
+  const item = mouseState
+    ? model.hitTest(mouseState.x, mouseState.y)
+    : undefined
 
   return (
     <>
