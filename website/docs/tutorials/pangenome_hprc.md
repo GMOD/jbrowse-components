@@ -843,7 +843,7 @@ up with the genes above. **Clustering → Cluster rows by genotype... → Run
 clustering** in the track menu reorders the 464 rows by genotype similarity and
 draws a dendrogram beside them:
 
-<Figure caption="Top-level sites holding a structural allele (50 bp and up) across the HPRC2 haplotypes, one row each, clustered by genotype and drawn under the HLA class II genes they fall in. Haplotypes that share whole sets of alleles cluster into solid blocks spanning several genes, with no HLA typing involved." src="/img/hprc2/mhc_clustered.png" />
+<Figure caption="Top-level sites holding a structural allele (50 bp and up) across the HPRC2 haplotypes, one row each, clustered by genotype and drawn under the HLA class II genes they fall in. The lane between the two stacks the same calls by overlap, so each allele has a width and the ones nested inside a longer allele are visible as such. Haplotypes that share whole sets of alleles cluster into solid blocks spanning several genes, with no HLA typing involved." src="/img/hprc2/mhc_clustered.png" />
 
 ## Structure, not sequence
 

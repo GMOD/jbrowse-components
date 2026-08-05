@@ -138,11 +138,22 @@ export const hprc2Specs: ScreenshotSpec[] = [
               // prefixes them on read, so passing the multi-sample display's
               // already-prefixed strings there produces `jexl:jexl:...`
               jexlFiltersSetting: SV_FILTER,
-              // one row of glyphs: the sites are what this lane is for, and
-              // stacking them by overlap would spend the frame's remaining
-              // height on the same 198 calls
-              displayMode: 'collapsed',
-              height: 45,
+              // NOT collapsed. Collapsed packs every call onto one row, and
+              // these calls overlap — a 55 kb allele with dozens of shorter ones
+              // inside it came out as one continuous bar, so the lane said
+              // "something structural here" and nothing about how many alleles
+              // or how big ("hard to tell what is going on with the hprc2
+              // structural alleles ... need proper layout i think to see nested
+              // features", review). Normal layout stacks them by overlap and
+              // `grow` gives the lane however many rows that takes, so a nested
+              // allele is drawn inside the span of the one that contains it.
+              displayMode: 'normal',
+              heightMode: 'grow',
+              // Every one of these calls is named for the graph nodes it walks
+              // (`>161033067>161046240_24`), so labels on cost more vertical
+              // space than the glyphs and say nothing a reader can use. The
+              // popup still carries the id.
+              showLabels: 'none',
             },
             {
               trackId: TRACK,
@@ -161,11 +172,13 @@ export const hprc2Specs: ScreenshotSpec[] = [
     readySelector: clusteredReady(REGULAR_READY),
     readyTimeout: 360000,
     viewportWidth: 1200,
-    // the gene lane, the matrix in full, and the view's own bottom edge: at 780
-    // the last haplotype rows ran off the frame, which reads as a clipped track
-    // rather than as the bottom of the cohort (the run's own below-the-fold
-    // report is what this is measured against, not the PNG)
-    viewportHeight: 910,
+    // the gene lane, the SV lane at whatever row count `grow` gives it, the
+    // matrix in full, and the view's own bottom edge: at 780 the last haplotype
+    // rows ran off the frame, which reads as a clipped track rather than as the
+    // bottom of the cohort, and the un-collapsed SV lane added 182 more (the
+    // run's own below-the-fold report is what both are measured against, not the
+    // PNG)
+    viewportHeight: 1092,
     settleMs: 5000,
     hideTooltip: true,
     actions: [
