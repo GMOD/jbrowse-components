@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 
-import { useMouseTracking } from '@jbrowse/core/ui'
+import { useMouseState, useMouseTracking } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import {
   getBpDisplayStr,
@@ -23,7 +23,7 @@ import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGen
 
 import type { LDFlatbushItem } from '../../RenderLDDataRPC/types.ts'
 import type { SharedLDModel } from '../shared.ts'
-import type { MouseState } from '@jbrowse/core/ui'
+import type { MouseTracker } from '@jbrowse/core/ui'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -127,20 +127,31 @@ const RecombinationOverlay = observer(function RecombinationOverlay({
 const LDCanvas = observer(function LDCanvas({
   model,
   canvasRef,
-  mouseState,
-  hoveredItem,
+  mouseTracker,
   width,
   canvasOnlyHeight,
   containerHeight,
 }: {
   model: SharedLDModel
   canvasRef: (node: HTMLCanvasElement | null) => void
-  mouseState?: MouseState
-  hoveredItem?: LDFlatbushItem
+  mouseTracker: MouseTracker
   width: number
   canvasOnlyHeight: number
   containerHeight: number
 }) {
+  // The pointer is read here, not beside the handlers in the component that
+  // mounts the chrome: there it would re-render `DisplayChrome` and all three
+  // status overlays on every mousemove (see `useMouseTracking`). This component
+  // only renders when `showLDTriangle`, which is half of the old guard.
+  //
+  // Derived from the one measurement rather than stored beside it, so the
+  // tooltip, the crosshairs and the view's vertical guides all describe the
+  // same cell in the same frame.
+  const mouseState = useMouseState(mouseTracker)
+  const hoveredItem =
+    mouseState && !model.isLoading
+      ? model.hitTest(mouseState.x, mouseState.y)
+      : undefined
   const view = getContainingView(model) as LGV
   const {
     showLegend,
@@ -197,6 +208,11 @@ const LDCanvas = observer(function LDCanvas({
           position: 'absolute',
           left: 0,
           top: effectiveLineZoneHeight,
+          // on the canvas rather than on the chrome container, so the hovered
+          // cell doesn't have to travel back up to a component whose re-render
+          // costs the whole chrome. Same pixels either way: `hitTest` only
+          // answers inside the triangle, which is inside this canvas.
+          cursor: hoveredItem ? 'crosshair' : undefined,
         }}
       />
 
@@ -295,16 +311,8 @@ const LDDisplayComponent = observer(function LDDisplayComponent({
   const containerHeight = canvasOnlyHeight + effectiveLineZoneHeight
 
   const ref = useRef<HTMLDivElement>(null)
-  const { mouseState, handleMouseMove, handleMouseLeave } =
+  const { mouseTracker, handleMouseMove, handleMouseLeave } =
     useMouseTracking(ref)
-
-  // Derived from the one measurement rather than stored beside it, so the
-  // tooltip, the crosshairs and the view's vertical guides all describe the
-  // same cell in the same frame.
-  const hoveredItem =
-    mouseState && showLDTriangle && !isLoading
-      ? model.hitTest(mouseState.x, mouseState.y)
-      : undefined
 
   return (
     <DisplayChrome
@@ -315,7 +323,6 @@ const LDDisplayComponent = observer(function LDDisplayComponent({
       style={
         showLDTriangle
           ? {
-              cursor: hoveredItem ? 'crosshair' : undefined,
               width,
               height: containerHeight,
               overflow: 'hidden',
@@ -344,8 +351,7 @@ const LDDisplayComponent = observer(function LDDisplayComponent({
           <LDCanvas
             model={model}
             canvasRef={canvasRef}
-            mouseState={mouseState}
-            hoveredItem={hoveredItem}
+            mouseTracker={mouseTracker}
             width={width}
             canvasOnlyHeight={canvasOnlyHeight}
             containerHeight={containerHeight}

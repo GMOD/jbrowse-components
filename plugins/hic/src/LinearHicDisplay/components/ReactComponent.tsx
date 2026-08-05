@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 
-import { useMouseTracking } from '@jbrowse/core/ui'
+import { useMouseState, useMouseTracking } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { reducePrecision, toLocale } from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
@@ -11,7 +11,7 @@ import { HicRenderer } from './HicRenderer.ts'
 
 import type { HicDataResult } from '../../RenderHicDataRPC/types.ts'
 import type { LinearHicDisplayModel } from '../model.ts'
-import type { MouseState } from '@jbrowse/core/ui'
+import type { MouseTracker } from '@jbrowse/core/ui'
 
 function formatLocus(data: HicDataResult, regionIdx: number, bin: number) {
   const refName = data.regionRefNames[regionIdx]
@@ -87,7 +87,7 @@ const LinearHicReactComponent = observer(function LinearHicReactComponent({
   const { height, lgv } = model
   const width = lgv.totalWidthPx
   const ref = useRef<HTMLDivElement>(null)
-  const { mouseState, handleMouseMove, handleMouseLeave } =
+  const { mouseTracker, handleMouseMove, handleMouseLeave } =
     useMouseTracking(ref)
 
   return (
@@ -114,7 +114,7 @@ const LinearHicReactComponent = observer(function LinearHicReactComponent({
         <HicBody
           model={model}
           canvasRef={canvasRef}
-          mouseState={mouseState}
+          mouseTracker={mouseTracker}
           width={width}
         />
       )}
@@ -125,14 +125,17 @@ const LinearHicReactComponent = observer(function LinearHicReactComponent({
 const HicBody = observer(function HicBody({
   model,
   canvasRef,
-  mouseState,
+  mouseTracker,
   width,
 }: {
   model: LinearHicDisplayModel
   canvasRef: (node: HTMLCanvasElement | null) => void
-  mouseState?: MouseState
+  mouseTracker: MouseTracker
   width: number
 }) {
+  // read here rather than beside the handlers, so a mousemove re-renders this
+  // body instead of the whole DisplayChrome above it
+  const mouseState = useMouseState(mouseTracker)
   const { height, yScalar } = model
   // Derived rather than stored beside the coordinates: one measurement per
   // frame already gives the guide and the tooltip the same position, so a

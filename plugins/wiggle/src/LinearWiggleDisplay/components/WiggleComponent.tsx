@@ -13,7 +13,10 @@ import { observer } from 'mobx-react'
 import ScoreLegend, { scoreLegendHeight } from '../../shared/ScoreLegend.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import WiggleTooltip from '../../shared/WiggleTooltip.tsx'
-import { useWiggleMouseHandlers } from '../../shared/useWiggleMouseHandlers.ts'
+import {
+  useWiggleMouseCoords,
+  useWiggleMouseHandlers,
+} from '../../shared/useWiggleMouseHandlers.ts'
 import {
   findSourceHit,
   hitTestMouse,
@@ -21,6 +24,7 @@ import {
 } from '../../shared/wiggleComponentUtils.ts'
 
 import type { WiggleDisplayModel } from './wiggleDisplayTypes.ts'
+import type { MouseTracker } from '@jbrowse/core/ui'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -57,8 +61,7 @@ const WiggleComponent = observer(function WiggleComponent({
 
   const {
     containerRef,
-    clientMouseCoord,
-    offsetMouseCoord,
+    mouseTracker,
     handleMouseMove,
     handleMouseLeave,
     handleClick,
@@ -86,8 +89,7 @@ const WiggleComponent = observer(function WiggleComponent({
           // the full track width (see legendRightEdgePx).
           legendWidth={legendRightEdgePx(view.visibleRegions, width)}
           height={height}
-          clientMouseCoord={clientMouseCoord}
-          offsetMouseCoord={offsetMouseCoord}
+          mouseTracker={mouseTracker}
         />
       )}
     </DisplayChrome>
@@ -100,17 +102,19 @@ const WiggleBody = observer(function WiggleBody({
   width,
   legendWidth,
   height,
-  clientMouseCoord,
-  offsetMouseCoord,
+  mouseTracker,
 }: {
   model: WiggleDisplayModel
   canvasRef: (node: HTMLCanvasElement | null) => void
   width: number
   legendWidth: number
   height: number
-  clientMouseCoord: [number, number]
-  offsetMouseCoord: [number, number]
+  mouseTracker: MouseTracker
 }) {
+  // read here rather than beside the handlers, so a mousemove re-renders this
+  // body instead of the whole DisplayChrome above it
+  const { clientMouseCoord, offsetMouseCoord } =
+    useWiggleMouseCoords(mouseTracker)
   return (
     <>
       <canvas

@@ -12,7 +12,10 @@ import { observer } from 'mobx-react'
 
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import WiggleTooltip from '../../shared/WiggleTooltip.tsx'
-import { useWiggleMouseHandlers } from '../../shared/useWiggleMouseHandlers.ts'
+import {
+  useWiggleMouseCoords,
+  useWiggleMouseHandlers,
+} from '../../shared/useWiggleMouseHandlers.ts'
 import { legendRightEdgePx } from '../../shared/wiggleComponentUtils.ts'
 import MultiWiggleOverlayLines from '../MultiWiggleOverlayLines.tsx'
 import MultiWiggleSvgScales from '../MultiWiggleSvgScales.tsx'
@@ -21,6 +24,7 @@ import MultiWiggleLegendOverlay from './MultiWiggleLegendOverlay.tsx'
 import { findMultiWiggleHit } from './findHit.ts'
 
 import type { MultiWiggleDisplayModel } from './multiWiggleDisplayTypes.ts'
+import type { MouseTracker } from '@jbrowse/core/ui'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export type { MultiWiggleDisplayModel } from './multiWiggleDisplayTypes.ts'
@@ -49,8 +53,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
 
   const {
     containerRef,
-    clientMouseCoord,
-    offsetMouseCoord,
+    mouseTracker,
     handleMouseMove,
     handleMouseLeave,
     handleClick,
@@ -85,8 +88,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
           canvasRef={canvasRef}
           totalWidth={totalWidth}
           height={height}
-          clientMouseCoord={clientMouseCoord}
-          offsetMouseCoord={offsetMouseCoord}
+          mouseTracker={mouseTracker}
         />
       )}
     </DisplayChrome>
@@ -98,16 +100,18 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
   canvasRef,
   totalWidth,
   height,
-  clientMouseCoord,
-  offsetMouseCoord,
+  mouseTracker,
 }: {
   model: MultiWiggleDisplayModel
   canvasRef: (node: HTMLCanvasElement | null) => void
   totalWidth: number
   height: number
-  clientMouseCoord: [number, number]
-  offsetMouseCoord: [number, number]
+  mouseTracker: MouseTracker
 }) {
+  // read here rather than beside the handlers, so a mousemove re-renders this
+  // body instead of the whole DisplayChrome above it
+  const { clientMouseCoord, offsetMouseCoord } =
+    useWiggleMouseCoords(mouseTracker)
   const labelOffset = treeSidebarOffset(model)
 
   // Pin the right-aligned legends to the content's right edge, not the full

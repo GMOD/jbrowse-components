@@ -2,7 +2,10 @@ import { useCallback, useState } from 'react'
 
 import { ContextMenu } from '@jbrowse/core/ui'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
-import { useWiggleMouseHandlers } from '@jbrowse/plugin-wiggle'
+import {
+  useWiggleMouseCoords,
+  useWiggleMouseHandlers,
+} from '@jbrowse/plugin-wiggle'
 import {
   CrossHatches,
   YSCALEBAR_LABEL_OFFSET,
@@ -19,7 +22,7 @@ import TooltipComponent from './TooltipComponent.tsx'
 
 import type { ManhattanHit } from '../findManhattanHit.ts'
 import type { ManhattanDisplayModel } from './manhattanDisplayTypes.ts'
-import type { ContextMenuAnchor } from '@jbrowse/core/ui'
+import type { ContextMenuAnchor, MouseTracker } from '@jbrowse/core/ui'
 
 // The right-clicked point and the SNP it resolved to, held together so the menu
 // can't be anchored without a hit to build it from.
@@ -58,7 +61,7 @@ const LinearManhattanDisplayComponent = observer(
 
     const {
       containerRef,
-      clientMouseCoord,
+      mouseTracker,
       handleMouseMove,
       handleMouseLeave,
       handleClick,
@@ -105,7 +108,7 @@ const LinearManhattanDisplayComponent = observer(
             canvasRef={canvasRef}
             width={width}
             height={height}
-            clientMouseCoord={clientMouseCoord}
+            mouseTracker={mouseTracker}
             contextMenu={contextMenu}
             setContextMenu={setContextMenu}
           />
@@ -120,7 +123,7 @@ const ManhattanBody = observer(function ManhattanBody({
   canvasRef,
   width,
   height,
-  clientMouseCoord,
+  mouseTracker,
   contextMenu,
   setContextMenu,
 }: {
@@ -128,10 +131,13 @@ const ManhattanBody = observer(function ManhattanBody({
   canvasRef: (node: HTMLCanvasElement | null) => void
   width: number
   height: number
-  clientMouseCoord: [number, number]
+  mouseTracker: MouseTracker
   contextMenu?: ManhattanContextMenu
   setContextMenu: (v?: ManhattanContextMenu) => void
 }) {
+  // read here rather than beside the handlers, so a mousemove re-renders this
+  // body instead of the whole DisplayChrome above it
+  const { clientMouseCoord } = useWiggleMouseCoords(mouseTracker)
   const { ticks, featureUnderMouse, showCrossHatches, ldColoringActive } = model
   const ldMode = ldColoringActive && model.canvasDrawn && model.showLdLegend
 

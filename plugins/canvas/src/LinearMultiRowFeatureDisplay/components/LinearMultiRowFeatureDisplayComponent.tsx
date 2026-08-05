@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 
-import { ContextMenu, useMouseTracking } from '@jbrowse/core/ui'
+import { ContextMenu, useMouseState, useMouseTracking } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import {
@@ -23,8 +23,33 @@ import MultiRowSeparatorLines from './MultiRowSeparatorLines.tsx'
 import MultiRowTooltip from './MultiRowTooltip.tsx'
 
 import type { LinearMultiRowFeatureDisplayModel } from '../model.ts'
+import type { MouseTracker } from '@jbrowse/core/ui'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type React from 'react'
+
+// The guides and the tooltip, in their own component so that following the
+// pointer re-renders these two and nothing else. Read in the component that
+// binds the handlers instead, this would re-render `DisplayChrome`, its status
+// container and all three overlays on every mousemove — see `useMouseTracking`.
+function PointerLayer({
+  model,
+  mouseTracker,
+}: {
+  model: LinearMultiRowFeatureDisplayModel
+  mouseTracker: MouseTracker
+}) {
+  const mouseState = useMouseState(mouseTracker)
+  return mouseState ? (
+    <>
+      <DisplayCrosshairs
+        model={model}
+        mouseX={mouseState.x}
+        mouseY={mouseState.y}
+      />
+      <MultiRowTooltip model={model} mouseState={mouseState} />
+    </>
+  ) : null
+}
 
 const MultiRowCanvas = observer(function MultiRowCanvas({
   model,
@@ -137,14 +162,12 @@ const LinearMultiRowFeatureDisplayComponent = observer(
     const ref = useRef<HTMLDivElement>(null)
     // One pointer source for the whole display: the hit-test, the tooltip, and
     // the guides all come off this measurement, in one frame.
-    const { mouseState, handleMouseMove, handleMouseLeave } = useMouseTracking(
-      ref,
-      state => {
+    const { mouseTracker, handleMouseMove, handleMouseLeave } =
+      useMouseTracking(ref, state => {
         model.setHoveredFeature(
           state ? model.featureAt(state.x, state.y) : undefined,
         )
-      },
-    )
+      })
     function onClick(e: React.MouseEvent<HTMLDivElement>) {
       const rect = e.currentTarget.getBoundingClientRect()
       const hit = model.featureAt(e.clientX - rect.left, e.clientY - rect.top)
@@ -194,16 +217,7 @@ const LinearMultiRowFeatureDisplayComponent = observer(
         {({ canvasRef }) => (
           <>
             <MultiRowCanvas model={model} canvasRef={canvasRef} />
-            {mouseState ? (
-              <>
-                <DisplayCrosshairs
-                  model={model}
-                  mouseX={mouseState.x}
-                  mouseY={mouseState.y}
-                />
-                <MultiRowTooltip model={model} mouseState={mouseState} />
-              </>
-            ) : null}
+            <PointerLayer model={model} mouseTracker={mouseTracker} />
           </>
         )}
       </DisplayChrome>
