@@ -419,7 +419,7 @@ function scanRelativeAnchors(path: string, lines: string[]): Problem[] {
 // action, a context-menu anchor — each also wrong about more than its name) were
 // fixed directly. Re-run the scan after a big refactor rather than wiring it up.
 const SYMBOL_DIRS = [join(docsDir, 'developer_guides')]
-const SYMBOL_FILES = [join(root, 'agent-docs', 'ARCHITECTURE.md')]
+const SYMBOL_FILES = new Set([join(root, 'agent-docs', 'ARCHITECTURE.md')])
 // PascalCase, plus camelCase with an internal capital. The internal capital is
 // what keeps this from flagging ordinary backticked prose (`true`, `undefined`,
 // `error`) while still catching `renderProps`, `canvasWidthPx`, `isCacheValid`.
@@ -475,10 +475,7 @@ function collectSymbols() {
 let symbolCache: Set<string> | undefined
 
 function scanSymbols(path: string, lines: string[]): Problem[] {
-  if (
-    !SYMBOL_DIRS.some(d => path.startsWith(d)) &&
-    !SYMBOL_FILES.includes(path)
-  ) {
+  if (!SYMBOL_DIRS.some(d => path.startsWith(d)) && !SYMBOL_FILES.has(path)) {
     return []
   }
   symbolCache ??= collectSymbols()
@@ -525,11 +522,7 @@ const SECTION_CITE = /([\w./-]*\.md)\s*§\s*"([^"]+)"/g
 // rots the docs" does for a heading that italicizes *docs*. Underscores are
 // left alone — they appear in identifiers, not as emphasis, in these headings.
 function normalizeHeading(s: string) {
-  return s
-    .toLowerCase()
-    .replaceAll(/[`*]/g, '')
-    .replaceAll(/\s+/g, ' ')
-    .trim()
+  return s.toLowerCase().replaceAll(/[`*]/g, '').replaceAll(/\s+/g, ' ').trim()
 }
 
 const headingTextCache = new Map<string, string[] | undefined>()
@@ -561,7 +554,7 @@ function resolveCitedDoc(ref: string, fromFile: string) {
     return isFile(abs) ? abs : undefined
   }
   if (ref === 'CLAUDE.md') {
-    for (let dir = fromFile; dir.includes('/'); ) {
+    for (let dir = fromFile; dir.includes('/');) {
       dir = dir.slice(0, dir.lastIndexOf('/'))
       const abs = join(dir, 'CLAUDE.md')
       if (isFile(abs)) {

@@ -81,7 +81,7 @@ export function collectReferenceDocs(): Doc[] {
       file,
     )
     const name = fm.name?.trim()
-    const description = fm.description?.trim().replace(/\s+/g, ' ')
+    const description = fm.description?.trim().replaceAll(/\s+/g, ' ')
     if (!name || !description) {
       missing.push(`${file} (needs ${!name ? 'name' : 'description'})`)
     } else {
