@@ -62,7 +62,18 @@ const DotplotCanvas = observer(function DotplotCanvas({
           height: viewHeight,
         }}
       />
-      {handle.error ? <ErrorBanner error={handle.error} /> : null}
+      {/* `onReset` is not optional in practice here, though the prop is. This
+        is a drop-to-primitive consumer: the canvas stays mounted through the
+        error (ADR-025), so nothing unmounts it to force a re-init the way
+        DisplayChrome's `renderError` phase does. `useRenderingBackend`'s
+        auto-recovery gives a context loss two attempts on a backoff and then
+        stops "leaving the manual Retry button" — so without this the display
+        is stranded until a page reload. `retry()` bumps `canvasKey`, which is
+        what `RenderCanvas` turns into a fresh element. Synteny's level banner
+        has always passed it; this one was the odd one out. */}
+      {handle.error ? (
+        <ErrorBanner error={handle.error} onReset={handle.retry} />
+      ) : null}
     </>
   )
 })

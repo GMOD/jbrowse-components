@@ -64,17 +64,24 @@ const AlignmentsDisplayComponent = observer(
     }
     const view = getContainingView(model) as LinearGenomeViewModel
 
-    // LOAD-BEARING, and it looks removable — it is the component-side twin of
-    // the model's `canRender`, gating a whole family of pre-init reads in one
-    // place rather than in each of them. `SashimiArcsOverlay` reads `view.width`
-    // outright, and `visibleLabels` / `highlightBoxes` read `view.visibleRegions`
-    // through the model; all three throw by design before the view is measured,
-    // and a throw here is a React error boundary, not a banner. Handing the
-    // pre-init window to `DisplayChrome` (whose `displayPhase` resolves to
-    // `loading` perfectly well) therefore means guarding all three first — a
-    // wider surface than the one guard it would replace, for a state the user
-    // sees for a frame. It also carries a message the shared scrim has nothing
-    // to put in. Don't "unify" it away without moving those reads.
+    // NOT a gate holding back throwing reads, though it was written up as one.
+    // Checked read by read: `visibleLabels` and `highlightBoxes` each open with
+    // `view.initialized` and return `[]`; the one unguarded `view.width` in this
+    // subtree (`SashimiArcsOverlay`'s sub-band) is reached only from
+    // `sashimiArcSections`, which returns `[]` on that same check; and
+    // `PileupBezierOverlay` gates itself. `displayPhase` covers the window too —
+    // `viewportWithinLoadedData` is false while `!initialized`, so the phase
+    // resolves to `loading` rather than throwing. Nor is this branch reachable
+    // in the app: `LinearGenomeView` renders `ViewLoadingScreen` the whole time
+    // `showLoading` holds, and that includes `!initialized`, so no display
+    // mounts before its view is measured.
+    //
+    // It stays because it costs nothing and names the state ("Initializing")
+    // more precisely than the shared scrim can — it is the leftover of the
+    // `isVisible={debouncedLoading || !view.initialized}` overlay this component
+    // rendered inline until 2026-02, not a contract. The only thing it does buy
+    // that matters: alignments publishes no `data-display-phase` for this frame.
+    // If a pass wants that parity, deleting this branch is the whole change.
     if (!view.initialized) {
       return (
         <div className={classes.display}>

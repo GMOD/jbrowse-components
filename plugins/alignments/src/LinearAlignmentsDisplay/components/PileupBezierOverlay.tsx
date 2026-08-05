@@ -45,11 +45,13 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
   // `initialized` above it: destructuring evaluates the getter, and `width`
   // throws by design before the view is measured — so `const { initialized,
   // width } = view` throws on the very run the `!initialized` check exists to
-  // handle. It read as guarded and wasn't. Nothing caught it because
-  // `AlignmentsDisplayComponent` doesn't mount this body until the view is
-  // measured (see the `!view.initialized` branch there, which is load-bearing
-  // for exactly this family of reads); the guard here is what keeps that a
-  // belt-and-braces arrangement rather than the only thing holding.
+  // handle. It read as guarded and wasn't. Nothing caught it because no display
+  // mounts before its view is measured — `LinearGenomeView` shows
+  // `ViewLoadingScreen` for the whole of `showLoading`, which includes
+  // `!initialized` — so the branch never ran. That is what made it latent, and
+  // it is also why the fix is worth keeping rather than deleting the check: the
+  // gate below is now the only thing standing between this body and a throw if
+  // it is ever mounted somewhere that doesn't share the LGV's screen.
   if (!showBezierConnections || !view.initialized) {
     return null
   }

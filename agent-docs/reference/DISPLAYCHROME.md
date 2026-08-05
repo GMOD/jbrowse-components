@@ -159,22 +159,41 @@ button is present, looks live, and does nothing. Two shapes have failed it:
 The check when adding a display: raise each error it can produce, press retry,
 and confirm the display can actually leave that state. Cancel is one of them.
 
-**One display bypasses the chrome for one state, and it is load-bearing.**
-`AlignmentsDisplayComponent` early-returns its own "Initializing" overlay while
-`!view.initialized`, rather than letting `displayPhase` resolve to `loading` the
-way every other display does. It reads like an oversight and isn't: it is the
-component-side twin of the model's `canRender`, gating in one place a family of
-pre-init reads that would otherwise each need a guard — `SashimiArcsOverlay`
-reads `view.width` outright, and `visibleLabels`/`highlightBoxes` reach
-`view.visibleRegions` through the model. All three throw by design before the
-view is measured, and a throw in a component is a React error boundary, not a
-banner. The cost is that alignments publishes no `data-display-phase` for that
-frame; the price of removing it is guarding three call sites instead of one. If
-you do move them, note that `PileupBezierOverlay` had a guard that didn't guard
-— `const { initialized, width } = view` evaluates `width` *before* the
-`!initialized` check, so it threw on exactly the run it was written for. That is
-the shape to watch for anywhere a throwing getter is destructured next to the
-flag that gates it.
+**One display bypasses the chrome for one state, and it is not load-bearing —
+an earlier revision of this file said it was.** `AlignmentsDisplayComponent`
+early-returns its own "Initializing" overlay while `!view.initialized`, rather
+than letting `displayPhase` resolve to `loading` the way every other display
+does. That was written up as the component-side twin of the model's `canRender`,
+gating in one place a family of pre-init reads that would otherwise each need a
+guard. Checked read by read, none of them needs one:
+
+- `visibleLabels` and `highlightBoxes` each open with `view.initialized` and
+  return `[]` (`LinearAlignmentsDisplay/model.ts`),
+- the one unguarded `view.width` in the subtree — `SashimiArcsOverlay`'s
+  sub-band — is reached only from `sashimiArcSections`, which returns `[]` on
+  that same check,
+- `PileupBezierOverlay` gates itself (see below),
+- and `displayPhase` covers the window anyway: `viewportWithinLoadedData` is
+  `false` while `!initialized`, so the phase resolves to `loading` rather than
+  throwing.
+
+**Nothing mounts a display before its view is measured, either.**
+`LinearGenomeView` renders `ViewLoadingScreen` for the whole of `showLoading`,
+which includes `!initialized`, and every host reaches an LGV through that same
+component (breakpoint-split and comparative views render it off the view-type
+registry). So this branch is unreachable in the app. It stays because it costs
+nothing and names the state more precisely than the shared scrim can — it is
+what is left of the `isVisible={debouncedLoading || !view.initialized}` overlay
+this component rendered inline until 2026-02. The one thing it costs: alignments
+publishes no `data-display-phase` for that frame. Deleting the branch is the
+whole change if a pass wants that parity; nothing has to move first.
+
+What *is* worth carrying forward from the audit is the bug it found.
+`PileupBezierOverlay` had a guard that didn't guard — `const { initialized,
+width } = view` evaluates `width` *before* the `!initialized` check, so it threw
+on exactly the run it was written for, latent only because the branch never ran.
+That is the shape to watch for anywhere a throwing getter is destructured next
+to the flag that gates it.
 
 **Not on DisplayChrome, by design (non-LGV views).** Two distinct reasons, not to
 be conflated:
@@ -192,6 +211,17 @@ be conflated:
   `key={canvasKey}` so it can't be forgotten; it was a hand-written key plus a
   copied comment in each until 2026-08, with "any new consumer must too" as the
   only thing enforcing it.
+
+  **They owe the retry, too, and dotplot wasn't paying it.** The retry contract
+  above is a `DisplayChrome` guarantee; a consumer rendering its own banner has
+  to wire `useRenderingBackend`'s `retry()` to it by hand. `ErrorBanner`'s
+  `onReset` is optional and silently renders no button without it, which is what
+  dotplot did until 2026-08 — and dotplot is precisely where it matters, since
+  the canvas is never unmounted to force a re-init and auto-recovery quits after
+  two attempts on a context loss, so the display was stranded until a page
+  reload. `retry()` bumps `canvasKey`, which `RenderCanvas` turns into the fresh
+  element. Checked on both: synteny's `LevelSyntenyCanvas` passes it (for the
+  GPU half of its combined banner), dotplot now does.
 - **Main-thread SVG, own radial banners:** `circular-view` (ChordVariant) is not
   a GPU display at all, having no `useRenderingBackend`, `RenderLifecycleMixin`,
   or `canvasDrawn`. It renders SVG chords (`SVChordsReactComponent`) gated on
