@@ -77,6 +77,13 @@ const VALIDATORS: Validator[] = [
     argv: web('check-menu-paths.ts'),
   },
   {
+    // The separator check above says nothing about whether the labels are still
+    // the app's. A renamed menu item leaves every page walking a reader to it
+    // wrong, and only a reader who goes looking finds out.
+    name: 'menu-path labels still exist in the source',
+    argv: web('check-menu-labels.ts'),
+  },
+  {
     // Ratchets a tracked list, like check-spec-recipes above: `--check` fails
     // when a caption newly runs long, the bare run records the current set.
     name: 'no new over-length figure captions',

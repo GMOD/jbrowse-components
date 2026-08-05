@@ -45,7 +45,7 @@ bgzip-compressed and tabix-indexed, and the alignment tracks stream the
 published high-coverage CRAMs directly from the 1000 Genomes FTP.
 
 In the track selector, enable the 1KGP 2022 Illumina ensemble SV callset under
-**1000 Genomes → SV callsets**, listed by its file name
+**1000 Genomes → SV callsets**, <!-- menu-path-ok --> listed by its file name
 **1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf**, then navigate to
 `chr1:25,200,000-25,400,000`, the window the figures below use.
 
