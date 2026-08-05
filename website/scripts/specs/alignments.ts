@@ -226,7 +226,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'ctgA',
-    viewportHeight: 520,
+    viewportHeight: 805,
     settleMs: 25000,
   },
 
@@ -884,7 +884,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     // row labels don't already say (reviewer). Wide single frame, both rows'
     // full width visible.
     viewportWidth: 2000,
-    viewportHeight: 760,
+    viewportHeight: 875,
     annotations: [
       {
         type: 'text',
@@ -1220,7 +1220,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     readyText: 'ACTB',
     readyTimeout: 60000,
     settleMs: 15000,
-    viewportHeight: 700,
+    viewportHeight: 800,
   },
 
   // Compact read drawing mode: featureHeight 3 packs the full ACTB
@@ -1259,7 +1259,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     readyText: 'ACTB',
     readyTimeout: 60000,
     settleMs: 15000,
-    viewportHeight: 650,
+    viewportHeight: 760,
   },
 
   // Long-read IsoSeq RNA-seq at ACTB.
@@ -1290,7 +1290,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     settleMs: 15000,
     // tall enough for the 620px compact pileup + the coverage band + chrome
-    viewportHeight: 900,
+    viewportHeight: 960,
   },
 
   ...strandSpecificParts(),

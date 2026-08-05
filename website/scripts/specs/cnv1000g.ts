@@ -209,7 +209,7 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
     }),
     readySelector: CLUSTERED_READY,
     readyTimeout: 300000,
-    viewportHeight: 840,
+    viewportHeight: 865,
     settleMs: 15000,
   },
 

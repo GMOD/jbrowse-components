@@ -53,7 +53,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
     // trimmed 100px off both frames (reviewer); MUI reflows the Read-height
     // submenu upward to stay inside the shorter viewport, and the pin circle
     // anchors to the live element, so it follows
-    viewportHeight: 660,
+    viewportHeight: 740,
     // alignments pileups keep re-laying-out while reads stream in; wait long
     // enough that the menu geometry is stable before the click sequence
     settleMs: 8000,
@@ -278,7 +278,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
     readyText: 'NCBI genes',
     readyTimeout: 30000,
     settleMs: 4000,
-    viewportHeight: 360,
+    viewportHeight: 425,
   },
 
   // Collapse introns + RNA-seq sashimi: PTEN (hg38) with the MANE transcript
@@ -350,7 +350,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
     readyText: 'NCBI RefSeq',
     readyTimeout: 90000,
     settleMs: 6000,
-    viewportHeight: 480,
+    viewportHeight: 590,
     hideTooltip: true,
     // Two-stage walkthrough: (1) right-click the gene to reveal the Collapse
     // introns menu item, (2) the reshaped view with introns collapsed and the
@@ -604,6 +604,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'protein/connected',
+    viewportHeight: 967,
     url: sessionSpec(PROTEIN3D_CONFIG, {
       views: [
         {

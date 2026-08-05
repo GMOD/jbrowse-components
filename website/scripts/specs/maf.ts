@@ -141,7 +141,7 @@ export const mafSpecs: ScreenshotSpec[] = [
     readyText: 'chrI',
     readyTimeout: 90000,
     viewportWidth: 1000,
-    viewportHeight: 536,
+    viewportHeight: 716,
     settleMs: 18000,
     hideTooltip: true,
     // park the cursor in the nav bar so no coverage-band hover tooltip lingers
@@ -253,7 +253,7 @@ export const mafSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     viewportWidth: 1000,
     // taller frame so all 26 compact rows + the grow-mode gene lane sit inside
-    viewportHeight: 546,
+    viewportHeight: 716,
     settleMs: 12000,
     hideTooltip: true,
     actions: [

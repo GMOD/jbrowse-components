@@ -122,7 +122,7 @@ export const cookbookSpecs: ScreenshotSpec[] = [
     readyText: 'RepeatMasker',
     readyTimeout: 60000,
     settleMs: 6000,
-    viewportHeight: 520,
+    viewportHeight: 585,
   },
 
   // "Multiple signals on one track, each its own color" recipe: the eight-sample

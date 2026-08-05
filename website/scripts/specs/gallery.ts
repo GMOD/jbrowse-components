@@ -72,7 +72,7 @@ export const gallerySpecs: ScreenshotSpec[] = [
     url: '?config=test_data%2Fsars-cov2%2Fconfig.json&session=spec-{"views":[{"assembly":"Wuhan-Hu-1","loc":"NC_045512.2:266-21555","type":"LinearGenomeView","colorByCDS":true,"tracks":[{"trackId":"ncbi_genes_with_mature_peptides","displaySnapshot":{"type":"LinearBasicDisplay","subfeatureLabels":"below"}}]}]}',
     readyTimeout: 60000,
     settleMs: 6000,
-    viewportHeight: 600,
+    viewportHeight: 705,
   },
   {
     mode: 'url',
@@ -163,7 +163,7 @@ export const gallerySpecs: ScreenshotSpec[] = [
     // for; 57MB is an ordinary remote-data spec, so it renders in a normal run.
     readyTimeout: 600000,
     settleMs: 15000,
-    viewportHeight: 500,
+    viewportHeight: 535,
   },
   {
     mode: 'url',
@@ -198,7 +198,7 @@ export const gallerySpecs: ScreenshotSpec[] = [
     }),
     readyTimeout: 120000,
     settleMs: 15000,
-    viewportHeight: 560,
+    viewportHeight: 620,
   },
   {
     mode: 'url',

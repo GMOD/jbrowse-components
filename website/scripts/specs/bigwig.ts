@@ -87,7 +87,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
     readyText: 'Scatter',
     readyTimeout: 60000,
     settleMs: 6000,
-    viewportHeight: 640,
+    viewportHeight: 765,
   },
 
   // GC content / GC skew computed on the fly from the reference sequence — the

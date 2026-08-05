@@ -709,7 +709,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'HG02030',
     readyTimeout: 90000,
-    viewportHeight: 1200,
+    viewportHeight: 1250,
     settleMs: 25000,
   },
 
@@ -985,7 +985,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     readyText: 'ctgA',
     settleMs: 4000,
     viewportWidth: 1000,
-    viewportHeight: 220,
+    viewportHeight: 455,
     annotations: [
       {
         type: 'circle',

@@ -424,6 +424,6 @@ export const methylationSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     settleMs: 15000,
     // cpg(40) + gene(90) + two aggregate profiles(90 each) + reads(460) + chrome
-    viewportHeight: 960,
+    viewportHeight: 1115,
   },
 ]

@@ -852,6 +852,7 @@ export const svSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'sv_cgiab/deletion_sv_inspector_search',
+    viewportHeight: 850,
     url: cgiabUrl({
       sessionTracks: [
         // hg38 NCBI RefSeq genes (chr-named, CSI-indexed) so the LGV below the

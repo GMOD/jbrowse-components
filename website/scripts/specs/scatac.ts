@@ -41,7 +41,7 @@ export const scatacSpecs: ScreenshotSpec[] = [
     }),
     readyTimeout: 120000,
     settleMs: 15000,
-    viewportHeight: 680,
+    viewportHeight: 730,
   },
   // The output of scripts/build_scatac_pseudobulk.sh, hosted: SnapATAC2's
   // annotated 5k PBMC dataset pseudobulked to 12 per-cell-type BigWigs, with

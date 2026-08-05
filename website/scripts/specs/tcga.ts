@@ -596,7 +596,7 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     readySelector: CLUSTERED,
     readyTimeout: 180000,
     viewportWidth: 1500,
-    viewportHeight: 900,
+    viewportHeight: 1024,
     settleMs: 15000,
     diffThreshold: 0.02,
   },

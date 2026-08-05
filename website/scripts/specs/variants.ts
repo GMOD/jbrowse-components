@@ -126,9 +126,13 @@ export const variantsSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'chr1',
     readySelector: '[data-testid="tree_sidebar_dendrogram"]',
-    readyTimeout: 60000,
+    // the sample clustering is a real RPC over the 1000G panel and does not
+    // finish inside the 60s this used to allow — a sweep caught it at "Clustering
+    // samples 81%". 120000 also crosses SLOW_READY_TIMEOUT_MS, which is honest:
+    // a reader opening this figure's live link waits for the same computation.
+    readyTimeout: 120000,
     settleMs: 2000,
-    viewportHeight: 650,
+    viewportHeight: 705,
   },
 
   // Multi-sample variant display colored by population: the 1000 Genomes phase 3
@@ -154,7 +158,7 @@ export const variantsSpecs: ScreenshotSpec[] = [
     readyText: 'chr1',
     readyTimeout: 90000,
     settleMs: 18000,
-    viewportHeight: 650,
+    viewportHeight: 705,
   },
 
   // Variant feature-details panel for an SNV, with the per-sample genotype table

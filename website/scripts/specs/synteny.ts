@@ -353,7 +353,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     name: 'synteny_te_vapb_sva',
     url: hg38ChimpSynteny('full', VAPB_SVA_LOCUS),
     viewportWidth: 1200,
-    viewportHeight: 850,
+    viewportHeight: 878,
     readySelector: '[data-testid="synteny_canvas_done"]',
     readyTimeout: 60000,
     settleMs: 12000,
@@ -504,6 +504,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'multiway_synteny/grape_peach_cacao_gene_orthologs',
+    viewportHeight: 812,
     url: sessionSpec(
       encodeURIComponent(
         'https://jbrowse.org/demos/grape_peach_cacao/config.json',
@@ -2055,7 +2056,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // tall enough to include the optional synteny-track row below the assembly
     // selectors and the full wrapped helper text — 400 clipped the card's bottom
     // edge mid-sentence
-    viewportHeight: 450,
+    viewportHeight: 477,
     actions: [
       // Manual inherits Quick start's track, so the axes already read
       // HG008T v3.2 / GRCh38_GIABv3 with the synteny track selected — exactly
@@ -2120,7 +2121,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportWidth: 1800,
     // fit the taller curved synteny band + both LGV panels without a tall
     // white margin
-    viewportHeight: 500,
+    viewportHeight: 558,
     // giant remote assembly PAF; synteny_canvas_done can exceed 90s, so settle
     // long rather than gate on it
     settleMs: 45000,
@@ -2175,6 +2176,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'sv_synteny/linear_synteny_genes',
+    viewportHeight: 812,
     url: hpyloriSyntenyWithGenes(),
     readyText: 'NC_018939.1',
     readyTimeout: 60000,
