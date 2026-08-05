@@ -14,11 +14,7 @@ import type { SessionSnapshot } from './types.ts'
  * that app.
  */
 export async function encodeSession(viewState: ViewModel): Promise<string> {
-  const { session } = viewState
-  if (!session) {
-    throw new Error('no session to encode')
-  }
-  return encodeSessionToUrl(session)
+  return encodeSessionToUrl(viewState.session)
 }
 
 /**
@@ -44,9 +40,6 @@ export const decodeSession = decodeSessionFromUrl
  */
 export function getSessionSnapshot(viewState: ViewModel): SessionSnapshot {
   const { session } = viewState
-  if (!session) {
-    throw new Error('no session to snapshot')
-  }
   // `name` is restated rather than the whole thing cast: the bake returns an
   // open record, but the model guarantees the session has one
   return { ...getShareableSessionSnapshot(session), name: session.name }

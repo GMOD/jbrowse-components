@@ -61,16 +61,13 @@ export function createApp(
       return viewState
     },
     addView(view) {
-      const added: { id: string } = viewState.session.addView(view.type, {
+      return viewState.session.addView(view.type, {
         id: view.id,
         init: view.init,
-      })
-      return added.id
+      }).id
     },
     removeView(id) {
-      const view = viewState.session.views.find(
-        (v: { id: string }) => v.id === id,
-      )
+      const view = viewState.session.views.find(v => v.id === id)
       if (view) {
         viewState.session.removeView(view)
       }

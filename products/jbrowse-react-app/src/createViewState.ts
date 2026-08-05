@@ -8,6 +8,7 @@ import { onPatch } from '@jbrowse/mobx-state-tree'
 
 import createModel from './createModel.ts'
 
+import type { ViewModel } from './createModel.ts'
 import type { PluginsUpdate } from './rootModel/rootModel.ts'
 import type { Config, PluginInput, SessionSnapshot } from './types.ts'
 import type { IJsonPatch } from '@jbrowse/mobx-state-tree'
@@ -37,7 +38,9 @@ export interface CreateViewStateOptions {
   onPluginsUpdated?: (args: PluginsUpdate) => void
 }
 
-export default function createViewState(opts: CreateViewStateOptions) {
+export default function createViewState(
+  opts: CreateViewStateOptions,
+): ViewModel {
   const {
     config,
     plugins = [],
@@ -54,7 +57,9 @@ export default function createViewState(opts: CreateViewStateOptions) {
   // what the plugin manager actually installed at runtime, i.e. the subset of
   // `plugins` that carried a definition (a bare plugin class carries none)
   const loaded = pluginManager.runtimePluginDefinitions
-  const stateTree = model.create(
+  // annotated so the reads below are checked: `model` erases its session type
+  // (see ViewModel), and a session is always passed here
+  const stateTree: ViewModel = model.create(
     {
       jbrowse: {
         ...config,
@@ -95,7 +100,7 @@ export default function createViewState(opts: CreateViewStateOptions) {
   const missing = dropVendoredPlugins(
     dedupePlugins([
       ...(config.plugins ?? []),
-      ...(stateTree.session?.sessionPlugins ?? []),
+      ...stateTree.session.sessionPlugins,
     ]),
   ).filter(named => !loaded.some(l => samePlugin(l, named)))
   if (missing.length > 0) {
