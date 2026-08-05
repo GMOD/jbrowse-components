@@ -251,7 +251,13 @@ function checkDisplayDefaults(
 
 interface Ctx {
   assemblyNames: Set<string>
+  // trackIds declared in `tracks`, accumulated as they are checked — the set the
+  // duplicate-trackId check reads, so nothing may be pre-seeded into it
   seenTrackIds: Set<string>
+  // every id a session may legally name: the above plus each assembly's
+  // ReferenceSequenceTrack, which is a real showable track that lives on the
+  // assembly rather than in `tracks`
+  sequenceTrackIds: Set<string>
 }
 
 function checkTrack(
@@ -365,7 +371,9 @@ function checkAssembly(
   // nothing about an adapter we can't name beats calling a working config broken.
   const sequence =
     assembly.sequence ??
-    (typeof assembly.uri === 'string' ? { adapter: { uri: assembly.uri } } : undefined)
+    (typeof assembly.uri === 'string'
+      ? { adapter: { uri: assembly.uri } }
+      : undefined)
   if (!isRecord(sequence)) {
     report.error(
       `${where}.sequence`,
@@ -408,14 +416,24 @@ function checkSession(session: unknown, report: Report, ctx: Ctx) {
       )
     }
     if (Array.isArray(init.tracks)) {
-      for (const [j, entry] of init.tracks.entries()) {
+      // A LinearSyntenyView's `tracks` is one array PER LEVEL (`[[a], [b]]`) —
+      // the multi-way form — so flatten one level before reading entries.
+      // Treating those inner arrays as track entries reported every genome row
+      // of every synteny demo as a track with no trackId.
+      const entries = init.tracks.flatMap((t: unknown) =>
+        Array.isArray(t) ? (t as unknown[]) : [t],
+      )
+      for (const [j, entry] of entries.entries()) {
         const trackId = typeof entry === 'string' ? entry : entry?.trackId
         if (typeof trackId !== 'string') {
           report.error(`${where}.tracks[${j}]`, 'track entry has no trackId')
-        } else if (!ctx.seenTrackIds.has(trackId)) {
+        } else if (
+          !ctx.seenTrackIds.has(trackId) &&
+          !ctx.sequenceTrackIds.has(trackId)
+        ) {
           report.error(
             `${where}.tracks[${j}]`,
-            `trackId "${trackId}" is not defined in this config${didYouMean(trackId, [...ctx.seenTrackIds])}`,
+            `trackId "${trackId}" is not defined in this config${didYouMean(trackId, [...ctx.seenTrackIds, ...ctx.sequenceTrackIds])}`,
           )
         }
       }
@@ -459,6 +477,23 @@ export function validateConfig(
         .filter((n): n is string => typeof n === 'string'),
     ),
     seenTrackIds: new Set(),
+    // Each assembly's ReferenceSequenceTrack is a real track a session may show
+    // by id (`init.tracks: ['hg38-ReferenceSequenceTrack']`); it just lives on
+    // the assembly rather than in `tracks`, and collecting only `tracks`
+    // reported every such reference as undefined. Both the written trackId and
+    // the one the `{name, uri}` shorthand derives, since a config using the
+    // shorthand still gets the derived id at runtime.
+    sequenceTrackIds: new Set(
+      assemblies.flatMap(a => {
+        const declared = isRecord(a.sequence) ? a.sequence.trackId : undefined
+        return [
+          ...(typeof declared === 'string' ? [declared] : []),
+          ...(typeof a.name === 'string'
+            ? [`${a.name}-ReferenceSequenceTrack`]
+            : []),
+        ]
+      }),
+    ),
   }
 
   for (const [i, assembly] of assemblies.entries()) {

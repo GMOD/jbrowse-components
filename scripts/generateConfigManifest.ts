@@ -198,6 +198,17 @@ function shorthandKeysOf(adapterType) {
 //
 // The value matters — a migration keyed on a shape ("renderer" being an object
 // with lift-able props inside) does nothing for a probe of the wrong type.
+// Extra settings a candidate needs present before its effect is observable at
+// all. \`showDescriptions\` alone migrates to showLabels 'auto' — the slot's own
+// default, so stripDefault removes it again and the probe sees an unchanged
+// snapshot. Only alongside the legacy \`showLabels: 'off'\` does it choose
+// between 'none' and 'description'. Probed alone it read as unconsumed, and
+// test_data/dog10k, which carries exactly that pair, was told its
+// \`showDescriptions\` was an unknown slot rather than a legacy one.
+const LEGACY_COMPANIONS = {
+  showDescriptions: { showLabels: 'off' },
+}
+
 const LEGACY_CANDIDATES = {
   renderer: { color1: 'probe', color: 'probe', strokeColor: 'probe' },
   renderers: { XYPlotRenderer: { type: 'XYPlotRenderer', color: 'probe' } },
@@ -205,7 +216,7 @@ const LEGACY_CANDIDATES = {
   snpCoverageDisplay: { type: 'LinearSNPCoverageDisplay' },
   defaultRendering: 'probe',
   autoHeight: true,
-  showDescriptions: true,
+  showDescriptions: false,
   color1: 'probe',
   color2: 'probe',
   color3: 'probe',
@@ -238,19 +249,40 @@ function legacyKeysOf(configSchema, declaredSlots) {
   } catch {
     return []
   }
-  return Object.entries(LEGACY_CANDIDATES)
-    .filter(([key]) => !declared.has(key))
+  const candidates = Object.entries(LEGACY_CANDIDATES).filter(
+    ([key]) => !declared.has(key),
+  )
+  const snapshotOf = snap => {
+    try {
+      return JSON.stringify(
+        getSnapshot(configSchema.create({ ...pinnedIds, ...snap })),
+      )
+    } catch {
+      // A throw means the key is rejected outright rather than ignored, which
+      // is loud enough on its own — not a legacy key.
+      return undefined
+    }
+  }
+  return candidates
     .filter(([key, value]) => {
-      try {
-        const withKey = JSON.stringify(
-          getSnapshot(configSchema.create({ ...pinnedIds, [key]: value })),
-        )
-        return withKey !== baseline
-      } catch {
-        // A throw means the key is rejected outright rather than ignored, which
-        // is loud enough on its own — not a legacy key.
+      // Consumed on its own.
+      const alone = snapshotOf({ [key]: value })
+      if (alone !== undefined && alone !== baseline) {
+        return true
+      }
+      // Otherwise it may only be observable ALONGSIDE another setting, the way
+      // \`csi\` is on the shorthand probe above — except the companion here is a
+      // declared slot at a legacy VALUE, not another legacy key, so no
+      // combination of candidates finds it. LEGACY_COMPANIONS supplies it.
+      const companions = LEGACY_COMPANIONS[key]
+      if (!companions) {
         return false
       }
+      const withKey = snapshotOf({ ...companions, [key]: value })
+      const withoutKey = snapshotOf(companions)
+      return (
+        withKey !== undefined && withoutKey !== undefined && withKey !== withoutKey
+      )
     })
     .map(([key]) => key)
 }

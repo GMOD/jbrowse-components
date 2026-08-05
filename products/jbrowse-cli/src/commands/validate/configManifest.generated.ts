@@ -2832,6 +2832,7 @@ export const configManifest: ConfigManifest = {
       "legacyKeys": [
         "renderer",
         "autoHeight",
+        "showDescriptions",
         "color1",
         "color2",
         "color3",
@@ -3578,6 +3579,7 @@ export const configManifest: ConfigManifest = {
       "legacyKeys": [
         "renderer",
         "autoHeight",
+        "showDescriptions",
         "color1",
         "color2",
         "color3",
