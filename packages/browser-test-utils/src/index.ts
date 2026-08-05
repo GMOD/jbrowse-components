@@ -41,6 +41,7 @@ export {
   readBody,
   sendJson,
 } from './reviewServer.ts'
+export { reviewClientScript } from './reviewClient.ts'
 
 export type { TestServerOptions } from './server.ts'
 export type { SmokeOptions } from './examplesSmoke.ts'
@@ -53,3 +54,4 @@ export type {
 } from './docLinks.ts'
 export type { Verdict } from './reviewVerdicts.ts'
 export type { VerdictRouteOptions } from './reviewServer.ts'
+export type { ReviewClientOptions } from './reviewClient.ts'

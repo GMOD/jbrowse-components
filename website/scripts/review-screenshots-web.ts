@@ -6,6 +6,7 @@ import { parseArgs } from 'node:util'
 import {
   createVerdictRoutes,
   isVerdictStale,
+  reviewClientScript,
   sendJson,
 } from '@jbrowse/browser-test-utils'
 
@@ -45,6 +46,18 @@ ${path.relative(process.cwd(), reportPath)}.
 
 const portVal = values.port ? Number(values.port) : Number.NaN
 const port = Number.isFinite(portVal) ? portVal : 3335
+
+// Both image routes are content-addressed: the URL carries `?v=<hash of the
+// bytes>`, so a URL can only ever mean one picture and is safe to cache
+// forever. Without this the reviewer's loop — regenerate, RELOAD, look again —
+// re-downloaded all ~600 images (~120MB, and a `git show` per origin/main one)
+// on every single reload, because a bare 200 with no validators is not cacheable
+// at all. A missing hash means we cannot name the bytes, so don't store them.
+function cacheHeaders(hash: string | null) {
+  return hash
+    ? { 'Cache-Control': 'public, max-age=31536000, immutable' }
+    : { 'Cache-Control': 'no-store' }
+}
 
 function buildSpecPayload() {
   // Every load is a fresh look at the working tree. A review session is
@@ -100,7 +113,11 @@ function decodePath(s: string): string | undefined {
 }
 
 // Serve /img/<name>.png, guarding against path traversal outside imgDir
-function serveImage(res: http.ServerResponse, urlPath: string) {
+function serveImage(
+  res: http.ServerResponse,
+  urlPath: string,
+  v: string | null,
+) {
   const rel = decodePath(urlPath.slice('/img/'.length))
   const full = rel === undefined ? undefined : path.resolve(imgDir, rel)
   if (full === undefined || !full.startsWith(imgDir + path.sep)) {
@@ -117,6 +134,7 @@ function serveImage(res: http.ServerResponse, urlPath: string) {
   res.writeHead(200, {
     'Content-Type':
       contentTypes[path.extname(full)] ?? 'application/octet-stream',
+    ...cacheHeaders(v),
   })
   const stream = fs.createReadStream(full)
   // An unhandled stream 'error' is an uncaught exception that takes the whole
@@ -129,7 +147,11 @@ function serveImage(res: http.ServerResponse, urlPath: string) {
 }
 
 // Serve /img-main/<name>.png from origin/main via git show
-function serveMainImage(res: http.ServerResponse, urlPath: string) {
+function serveMainImage(
+  res: http.ServerResponse,
+  urlPath: string,
+  v: string | null,
+) {
   const name = decodePath(urlPath.slice('/img-main/'.length))?.replace(
     /\.png$/,
     '',
@@ -138,7 +160,7 @@ function serveMainImage(res: http.ServerResponse, urlPath: string) {
   if (!buf) {
     sendNotFound(res)
   } else {
-    res.writeHead(200, { 'Content-Type': 'image/png' })
+    res.writeHead(200, { 'Content-Type': 'image/png', ...cacheHeaders(v) })
     res.end(buf)
   }
 }
@@ -154,7 +176,11 @@ const { handleVerdict, handleClearVerdict } = createVerdictRoutes({
 
 const server = http.createServer((req, res) => {
   const url = req.url ?? '/'
-  const pathname = url.split('?')[0]!
+  const [rawPath, qs] = url.split('?')
+  const pathname = rawPath!
+  // the image routes are cacheable exactly when the URL names which bytes it
+  // wants; `?v=` is that name
+  const v = new URLSearchParams(qs ?? '').get('v') || null
   try {
     if (pathname === '/' || pathname === '/index.html') {
       res.writeHead(200, { 'Content-Type': 'text/html' })
@@ -170,9 +196,9 @@ const server = http.createServer((req, res) => {
         sendJson(res, 500, { error: `${err}` })
       })
     } else if (pathname.startsWith('/img-main/')) {
-      serveMainImage(res, pathname)
+      serveMainImage(res, pathname, v)
     } else if (pathname.startsWith('/img/')) {
-      serveImage(res, pathname)
+      serveImage(res, pathname, v)
     } else {
       sendNotFound(res)
     }
@@ -203,6 +229,14 @@ server.on('error', (err: NodeJS.ErrnoException) => {
 server.listen(port, () => {
   console.log(`Screenshot review UI: http://localhost:${port}`)
   console.log(`Writing verdicts to: ${path.relative(websiteRoot, reportPath)}`)
+})
+
+// The write protocol and the note-draft bookkeeping are shared with jbrowse-web's
+// browser-test snapshot review; this page supplies the two halves that differ —
+// what a card looks like and what the header counts.
+const CLIENT = reviewClientScript({
+  draftsKey: 'screenshot-review-drafts',
+  imageMovedPhrase: 'this figure was regenerated',
 })
 
 const PAGE = /* html */ `<!doctype html>
@@ -340,17 +374,9 @@ const PAGE = /* html */ `<!doctype html>
 </header>
 <main id="main"></main>
 <script>
-let data = []
-const filters = { status: 'needs', changedOnly: false, sortBy: 'default', group: '', kind: 'all' }
-// Names acted on since the current filter view was entered. They stay visible
-// even once their new verdict no longer matches the filter, so you can still
-// type a reason after clicking Deny in the unreviewed/denied queue.
-let justActed = new Set()
+${CLIENT}
 
-const $ = sel => document.querySelector(sel)
-const esc = s => String(s ?? '').replace(/[&<>"]/g, c =>
-  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
-const pill = (cls, text) => '<span class="pill ' + cls + '">' + text + '</span>'
+const filters = { status: 'needs', changedOnly: false, sortBy: 'default', group: '', kind: 'all' }
 
 // Most spec names are namespaced with '/' (gallery/x, multiway_synteny/x);
 // only the hand-listed desktop-* names use a hyphen instead. Grouping only on
@@ -413,7 +439,7 @@ const needsReview = s => !s.verdict || s.stale || s.verdict.status === 'answered
 
 function changeFilter(key, value) {
   filters[key] = value
-  justActed = new Set()
+  clearJustActed()
   writeUrl()
   render()
 }
@@ -422,7 +448,7 @@ function buildGroupOptions() {
   const sel = $('#group')
   const groups = [...new Set(data.map(s => nameGroup(s.name)))].sort()
   sel.innerHTML = '<option value="">All groups</option>' +
-    groups.map(g => '<option value="' + g + '">' + g + '</option>').join('')
+    groups.map(g => '<option value="' + esc(g) + '">' + esc(g) + '</option>').join('')
   // drop a restored group filter that no longer names an existing group
   if (!groups.includes(filters.group)) {
     filters.group = ''
@@ -448,16 +474,7 @@ async function load() {
       esc(err.message) + '</div>'
     return
   }
-  // Drop drafts the report has caught up with, and drafts for figures that no
-  // longer exist. Without this a note saved in one session comes back as an
-  // "unsaved" draft in the next, and deleted specs accumulate in the store
-  // forever.
-  for (const [name, typed] of [...pendingNotes]) {
-    if (!data.some(s => s.name === name) || typed === savedNote(name)) {
-      pendingNotes.delete(name)
-    }
-  }
-  saveDrafts()
+  dropStaleDrafts()
   buildGroupOptions()
   // canonicalize: drops a shared-URL group that no longer names a real group
   writeUrl()
@@ -512,7 +529,8 @@ function imgCol(label, inner) {
   '</div>'
 }
 
-function card(spec) {
+// the shared review client calls this to rebuild one card in place
+function renderCard(spec) {
   const v = spec.verdict
   const status = v ? v.status : 'none'
   const cls = spec.stale ? 'stale' : status
@@ -522,8 +540,11 @@ function card(spec) {
   const currentImg = spec.exists
     ? '<img src="/img/' + spec.name + '.png?v=' + esc(spec.imageHash || '') + '" onclick="window.open(this.src)" />'
     : '<div class="missing">⚠ image file missing — regenerate it</div>'
+  // the origin/main side carries its git blob sha for the same reason: a URL
+  // that names its bytes is cacheable forever, and still refetches by itself if
+  // origin/main moves under a session
   const mainImg = spec.existsOnMain
-    ? '<img src="/img-main/' + spec.name + '.png" onclick="window.open(this.src)" />'
+    ? '<img src="/img-main/' + spec.name + '.png?v=' + esc(spec.mainHash || '') + '" onclick="window.open(this.src)" />'
     : '<div class="missing" style="color:#aaa">not on origin/main</div>'
   return '<div class="card ' + cls + '" data-name="' + esc(spec.name) + '" data-status="' + status + '">' +
     '<div class="card-images">' +
@@ -554,234 +575,6 @@ function card(spec) {
   '</div>'
 }
 
-const cardEl = btn => btn.closest('.card')
-const cardOf = name =>
-  [...document.querySelectorAll('.card')].find(c => c.dataset.name === name)
-
-// Per-card outcome message: a write that failed, or one rejected because the
-// entry moved on disk. Kept outside \`data\` so a re-render reproduces it.
-const cardMessages = new Map()
-const messageText = name => (cardMessages.get(name) || {}).text || ''
-const msgClass = name =>
-  'cardmsg' + (cardMessages.has(name) ? ' ' + cardMessages.get(name).kind : '')
-
-function setMessage(name, text, kind) {
-  if (text) {
-    cardMessages.set(name, { text, kind })
-  } else {
-    cardMessages.delete(name)
-  }
-}
-
-// Update the message in place, for the paths that must not re-render (a note
-// textarea's own save — re-rendering there would put back the stored note and
-// throw away what the reviewer just typed).
-function paintMessage(name) {
-  const el = cardOf(name)
-  const box = el && el.querySelector('.cardmsg')
-  if (box) {
-    box.textContent = messageText(name)
-    box.className = msgClass(name)
-  }
-}
-
-// What this tab had in hand, sent with every write so the server can reject one
-// composed against state that has since moved. null means "there was none",
-// which is a precondition worth stating too: it catches a tab that would
-// otherwise resurrect an entry another process deleted. The image hash is the
-// half that matters most — it is what makes an approval mean "I looked at these
-// pixels" rather than "I clicked while these pixels were the current ones".
-const precondition = spec => (spec.verdict ? spec.verdict.reviewedAt : null)
-const imgPrecondition = spec => spec.imageHash || null
-
-// Never let a write that did not land look like one that did. Throws on
-// failure; returns { conflict: true, ... } when the server refused because the
-// entry changed underneath us.
-async function readWriteResponse(res) {
-  const body = await res.json().catch(() => null)
-  if (res.status === 409) {
-    return {
-      conflict: true,
-      reason: body ? body.reason : 'verdict',
-      current: body && body.current ? body.current : undefined,
-      stale: !!(body && body.stale),
-      imageHash: body ? body.imageHash : null,
-    }
-  }
-  if (!res.ok) {
-    throw new Error((body && body.error) || 'HTTP ' + res.status)
-  }
-  return { conflict: false, body: body }
-}
-
-async function postJson(url, payload) {
-  return readWriteResponse(await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  }))
-}
-
-// Writes for one card run one after another. Clicking Approve while the note
-// textarea has focus fires that textarea's change event first — the blur is part
-// of the click — so two writes for the same card are issued back to back.
-// Unserialized, the second still carries the reviewedAt the first has already
-// replaced, and the server refuses it as a conflict with a change that was us:
-// the reviewer's Approve silently does not land and the card says the entry
-// moved elsewhere.
-const writeChain = new Map()
-
-function queueWrite(name, fn) {
-  const run = (writeChain.get(name) || Promise.resolve()).then(fn)
-  // each caller reports its own failure; the chain itself must survive one
-  writeChain.set(name, run.catch(() => {}))
-  return run
-}
-
-function postVerdict(spec, status, note) {
-  return postJson('/api/verdict', {
-    name: spec.name,
-    status,
-    note,
-    ifReviewedAt: precondition(spec),
-    ifImageHash: imgPrecondition(spec),
-  })
-}
-
-// Take on what the server says is on disk, so the next write carries a
-// precondition that will actually match. Adopting the image hash also swaps the
-// <img> URL, so the re-render puts the new picture in front of the reviewer
-// instead of leaving the old one cached in place.
-function adoptRemote(spec, result) {
-  spec.verdict = result.current
-  spec.stale = result.stale
-  spec.imageHash = result.imageHash
-}
-
-const conflictText = result =>
-  result.reason === 'image'
-    ? 'Not saved — this figure was regenerated since the page loaded, so the ' +
-      'image you just judged is not the one on disk. The new one is above; ' +
-      'look again before deciding.'
-    : 'Not saved — this entry changed elsewhere since the page loaded (now: ' +
-      (result.current ? result.current.status : 'cleared') +
-      '). The card is back in sync; act again if you still want to.'
-
-async function setVerdict(btn, status) {
-  const name = cardEl(btn).dataset.name
-  const spec = data.find(s => s.name === name)
-  if (!spec) {
-    return
-  }
-  await queueWrite(name, async () => {
-    // Read the note now rather than when the button was clicked: a note save
-    // ahead of us in the queue may have re-rendered the card. The card can also
-    // be gone entirely by now (a filter changed since the click), in which case
-    // the last saved note is the best text we have — better than dropping the
-    // verdict on the floor.
-    const noteEl = cardOf(name)?.querySelector('.note')
-    const note = noteEl
-      ? noteEl.value
-      : pendingNotes.has(name)
-        ? pendingNotes.get(name)
-        : spec.verdict
-          ? spec.verdict.note
-          : ''
-    try {
-      const result = await postVerdict(spec, status, note)
-      if (result.conflict) {
-        adoptRemote(spec, result)
-        setMessage(name, conflictText(result), 'warn')
-      } else {
-        // adopt the server's own verdict: it carries the reviewedAt the next
-        // write has to match and the image hash this tab cannot compute. It was
-        // recorded against the current image, so it is not stale.
-        spec.verdict = result.body
-        spec.stale = false
-        setMessage(name, '')
-      }
-    } catch (err) {
-      setMessage(name, 'Not saved — ' + err.message, 'error')
-    }
-    justActed.add(name)
-    updateCard(name)
-  })
-}
-
-// Persist note edits on their own so a reason typed after Approve/Deny is saved
-// without needing to click the button again. Deliberately does not re-render:
-// the reviewer's text stays exactly as they left it whatever the outcome.
-async function saveNote(input) {
-  const name = cardEl(input).dataset.name
-  const spec = data.find(s => s.name === name)
-  const note = input.value
-  if (!spec) {
-    return
-  }
-  await queueWrite(name, async () => {
-    if (!spec.verdict) {
-      // a note has nothing to attach to until there is a verdict; say so rather
-      // than dropping the words silently, as this used to. An Approve/Deny click
-      // is usually right behind us in the queue, and it carries this text along.
-      setMessage(name, 'Note not saved yet — approve or deny and it goes with the verdict.', 'warn')
-      paintMessage(name)
-      return
-    }
-    // A note save carries the image precondition too, because the server
-    // restamps the verdict's hash from the current PNG on every write: without
-    // it, typing a note would quietly re-bless a figure that had been
-    // regenerated since, and clear its 'changed since review' flag with nobody
-    // having looked.
-    try {
-      const result = await postVerdict(spec, spec.verdict.status, note)
-      if (result.conflict) {
-        adoptRemote(spec, result)
-        setMessage(name, conflictText(result) + ' Your note text is still here — blur again to save it.', 'warn')
-        // re-render on this path only: it swaps in the image that is actually
-        // on disk, and updateCard carries the typed note across for us
-        updateCard(name)
-        return
-      }
-      spec.verdict = result.body
-      setMessage(name, '')
-    } catch (err) {
-      setMessage(name, 'Note not saved — ' + err.message, 'error')
-    }
-    // the draft clears itself once the report holds the same text, and stays put
-    // when the write failed — which is the case the reviewer needs it for
-    setDraft(name, note)
-    paintDraft(name)
-    paintMessage(name)
-  })
-}
-
-async function clearVerdict(btn) {
-  const name = cardEl(btn).dataset.name
-  const spec = data.find(s => s.name === name)
-  if (!spec) {
-    return
-  }
-  await queueWrite(name, async () => {
-    try {
-      const result = await postJson('/api/verdict/clear', {
-        name,
-        ifReviewedAt: precondition(spec),
-      })
-      if (result.conflict) {
-        adoptRemote(spec, result)
-        setMessage(name, conflictText(result), 'warn')
-      } else {
-        spec.verdict = undefined
-        spec.stale = false
-        setMessage(name, '')
-      }
-    } catch (err) {
-      setMessage(name, 'Not cleared — ' + err.message, 'error')
-    }
-    updateCard(name)
-  })
-}
-
 function syncControls() {
   for (const b of document.querySelectorAll('header [data-status]')) {
     b.classList.toggle('active', b.dataset.status === filters.status)
@@ -789,6 +582,10 @@ function syncControls() {
   $('[data-toggle="changed"]').classList.toggle('active', filters.changedOnly)
   $('#sortby').value = filters.sortBy
   $('#kind').value = filters.kind
+  // group belongs here with the other two rather than only in
+  // buildGroupOptions: it is the one control whose options are built from the
+  // data, so it is the one most likely to be reset out from under the filters
+  $('#group').value = filters.group
 }
 
 function renderCounts() {
@@ -827,107 +624,6 @@ function matchesFilters(s, q) {
   return matchesQuery && matchesGroup && matchesKind && (justActed.has(s.name) || (matchesStatus && matchesChanged))
 }
 
-// Note text typed but not yet saved, by figure name. A render rebuilds all of
-// #main from \`data\`, which knows only what the server has — so a note on a card
-// with no verdict yet (saveNote has nothing to attach it to) lived only in the
-// DOM, and the next repaint threw it away. Typing a reason and then reaching for
-// the search box was enough to lose it. Carried across every repaint instead,
-// and dropped once what is on the card matches what is saved.
-//
-// It outlives the page too, in localStorage. A note only reaches the server when
-// the textarea blurs, and on an entry with no verdict it never reaches it at
-// all, so a reload — the one thing a reviewer does constantly, since regenerate/
-// reload/look again IS the loop — used to throw away whatever had been typed
-// since the last click elsewhere. Whether the words survived came down to
-// whether the reviewer happened to click away first, which reads as random.
-const DRAFTS_KEY = 'screenshot-review-drafts'
-
-function loadDrafts() {
-  try {
-    const raw = JSON.parse(localStorage.getItem(DRAFTS_KEY) || '[]')
-    return Array.isArray(raw)
-      ? raw.filter(e => Array.isArray(e) && typeof e[0] === 'string' && typeof e[1] === 'string')
-      : []
-  } catch {
-    // unparseable or unavailable: a lost draft is bad, a review tool that will
-    // not open is worse
-    return []
-  }
-}
-
-const pendingNotes = new Map(loadDrafts())
-
-// One write per event-loop turn. harvestNotes touches every rendered card and a
-// render runs on every search keystroke, so persisting per card would be a few
-// hundred synchronous localStorage writes per keypress. A microtask still drains
-// before the page could go anywhere, so nothing typed is at risk in the gap.
-let draftFlush = null
-
-function saveDrafts() {
-  draftFlush ??= Promise.resolve().then(() => {
-    draftFlush = null
-    try {
-      localStorage.setItem(DRAFTS_KEY, JSON.stringify([...pendingNotes]))
-    } catch {
-      // a full or disabled store is not worth failing the review over
-    }
-  })
-}
-
-const savedNote = name =>
-  (data.find(s => s.name === name)?.verdict?.note) || ''
-
-// Record what is in the box right now. A draft is only a draft while it differs
-// from what the report holds, so this doubles as the cleanup: the save paths
-// call it with the text they just persisted and it drops itself.
-function setDraft(name, typed) {
-  if (typed === savedNote(name)) {
-    pendingNotes.delete(name)
-  } else {
-    pendingNotes.set(name, typed)
-  }
-  saveDrafts()
-}
-
-function harvestNotes() {
-  for (const el of document.querySelectorAll('.card')) {
-    const typed = el.querySelector('.note')?.value
-    if (typed !== undefined) {
-      setDraft(el.dataset.name, typed)
-    }
-  }
-}
-
-// Say plainly whether the words in the box are in the report yet. The two ways
-// out differ — an entry with a verdict saves on blur, one without cannot save at
-// all until there is a verdict to attach to — and guessing which case you are in
-// is what makes a note field feel unreliable.
-const draftHint = spec =>
-  !pendingNotes.has(spec.name)
-    ? ''
-    : spec.verdict
-      ? 'unsaved — click outside the box to save'
-      : 'unsaved — approve or deny to save this note'
-
-function paintDraft(name) {
-  const el = cardOf(name)
-  const flag = el && el.querySelector('.unsaved')
-  const spec = data.find(s => s.name === name)
-  if (flag && spec) {
-    flag.textContent = draftHint(spec)
-  }
-}
-
-function applyPendingNotes() {
-  for (const el of document.querySelectorAll('.card')) {
-    const typed = pendingNotes.get(el.dataset.name)
-    const note = el.querySelector('.note')
-    if (typed !== undefined && note) {
-      note.value = typed
-    }
-  }
-}
-
 function render() {
   syncControls()
   renderCounts()
@@ -941,26 +637,8 @@ function render() {
     })
   }
   harvestNotes()
-  $('#main').innerHTML = visible.map(card).join('')
+  $('#main').innerHTML = visible.map(renderCard).join('')
   applyPendingNotes()
-}
-
-// Re-render a single card in place rather than rebuilding all of main, so
-// acting on one card never wipes unsaved note text typed into other cards.
-function updateCard(name) {
-  const spec = data.find(s => s.name === name)
-  const el = cardOf(name)
-  if (spec && el) {
-    // Carry the textarea's live value across the swap. On a write that landed
-    // this is exactly what was saved anyway; on one that failed or conflicted
-    // it is the difference between "try again" and losing the words typed.
-    const typed = el.querySelector('.note').value
-    // record before the swap so the rebuilt card renders the right draft hint
-    setDraft(name, typed)
-    el.outerHTML = card(spec)
-    cardOf(name).querySelector('.note').value = typed
-  }
-  renderCounts()
 }
 
 $('header').addEventListener('click', e => {
@@ -970,18 +648,6 @@ $('header').addEventListener('click', e => {
     changeFilter('status', statusBtn.dataset.status)
   } else if (toggleBtn) {
     changeFilter('changedOnly', !filters.changedOnly)
-  }
-})
-// Capture the draft on every keystroke rather than waiting for a repaint to
-// harvest it. A reload is not a repaint: it fires no 'change' on the focused
-// textarea and runs no render, so text typed since the last one had nothing
-// holding it anywhere.
-$('#main').addEventListener('input', e => {
-  const note = e.target.closest('.note')
-  if (note) {
-    const name = note.closest('.card').dataset.name
-    setDraft(name, note.value)
-    paintDraft(name)
   }
 })
 $('#search').addEventListener('input', () => {
