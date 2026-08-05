@@ -1,6 +1,7 @@
 import { lazy } from 'react'
 
 import {
+  ConfigurationReference,
   getConf,
   makeCurrentValueDisplayTypeDefaultControl,
   makeDisplayTypeDefaultControl,
@@ -26,7 +27,7 @@ import { findSubfeatureById } from './baseModelHelpers.ts'
 import { GENE_GLYPH_MODE_OPTIONS } from './geneGlyphMode.ts'
 
 import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
-import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { LinearBasicDisplayConfigModel } from './configSchema.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const CollapseIntronsDialog = lazy(
@@ -91,11 +92,18 @@ function isGeneLikeType(type: string | undefined) {
  * ```
  */
 export default function stateModelFactory(
-  configSchema: AnyConfigurationSchemaType,
+  configSchema: LinearBasicDisplayConfigModel,
 ) {
   return baseStateModelFactory(configSchema)
     .props({
       type: types.literal('LinearBasicDisplay'),
+      // Reclaims this display's own slots for the config readers. The base
+      // declares `configuration` off the SHARED canvas schema (LinearVariantDisplay
+      // composes the same model), so `getConf`/`setConf`, which name their slots
+      // off `self.configuration`, could only see base slots — a read of
+      // `showOnlyGenes`, declared on this schema alone, was a type error. See
+      // core/configuration/CLAUDE.md, "Read type narrowing".
+      configuration: ConfigurationReference(configSchema),
     })
     .volatile(() => ({
       // Session-only acknowledgement of the "showing longest isoform" chip.
@@ -122,14 +130,8 @@ export default function stateModelFactory(
       // do nothing at all — MST drops a snapshot key the schema never declared,
       // so test_data/config_demo.json had asked eleven NCBI gene tracks to show
       // only genes since June and none of them had.
-      //
-      // Read through `self.conf` rather than `getConf(self, …)`: the slot is on
-      // this display's own schema, not the shared canvas base, and `getConf`
-      // types its slot name off `self.configuration`, which the base declares as
-      // the base schema (LinearVariantDisplay composes the same model). `conf`
-      // is the base's typed-off-the-concrete-schema getter for exactly this.
       get showOnlyGenes(): boolean {
-        return readConfObject(self.conf, 'showOnlyGenes')
+        return getConf(self, 'showOnlyGenes')
       },
 
       // Promotable `maybeBoolean` slot (see baseConfigSchema.ts): getConf
@@ -206,11 +208,8 @@ export default function stateModelFactory(
         self.geneGlyphNoticeDismissed = true
       },
 
-      // `self.conf` for the same reason the getter reads it: the slot is on this
-      // display's schema, and `setConf` names its slots off the base-typed
-      // `self.configuration`.
       setShowOnlyGenes(value: boolean) {
-        setConf({ configuration: self.conf }, 'showOnlyGenes', value)
+        setConf(self, 'showOnlyGenes', value)
       },
 
       setDisplayDirectionalChevrons(value: boolean) {

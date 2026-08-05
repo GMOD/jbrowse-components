@@ -110,6 +110,12 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
   )
 }
 
-export type LinearBasicDisplayConfigModel = Instance<
-  ReturnType<typeof configSchemaFactory>
+// Schema type and instance type, named the way every sibling display names them
+// (`LinearVariantDisplayConfigModel` / `…Config`). The schema type is what a
+// state model factory annotates its `configSchema` param with, which is the
+// only lever that narrows that model's config reads — see
+// core/configuration/CLAUDE.md, "Read type narrowing".
+export type LinearBasicDisplayConfigModel = ReturnType<
+  typeof configSchemaFactory
 >
+export type LinearBasicDisplayConfig = Instance<LinearBasicDisplayConfigModel>

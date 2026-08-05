@@ -110,7 +110,7 @@ import type {
   FlatbushRegionIndexes,
   VisibleRegion,
 } from './components/hitTesting.ts'
-import type { LinearBasicDisplayConfigModel } from './configSchema.ts'
+import type { LinearBasicDisplayConfig } from './configSchema.ts'
 import type { FeatureContextMenuInfo } from './featureContextMenu.ts'
 import type {
   FeatureHighlight,
@@ -454,7 +454,7 @@ export default function baseStateModelFactory(
          * erases `self.configuration` to `any`, so direct reads route through
          * this to stay typed (same move as `BaseAdapter<CONF>`).
          */
-        get conf(): LinearBasicDisplayConfigModel {
+        get conf(): LinearBasicDisplayConfig {
           return self.configuration
         },
       }))

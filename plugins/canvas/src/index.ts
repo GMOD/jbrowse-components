@@ -66,7 +66,10 @@ export type {
   FeatureItemEntry,
   FlatbushRegionIndexes,
 } from './LinearBasicDisplay/components/hitTesting.ts'
-export type { LinearBasicDisplayConfigModel } from './LinearBasicDisplay/configSchema.ts'
+export type {
+  LinearBasicDisplayConfig,
+  LinearBasicDisplayConfigModel,
+} from './LinearBasicDisplay/configSchema.ts'
 export type { FeatureContextMenuInfo } from './LinearBasicDisplay/featureContextMenu.ts'
 export type {
   FeatureHighlight,
