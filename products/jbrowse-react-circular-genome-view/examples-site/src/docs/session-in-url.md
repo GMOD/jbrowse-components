@@ -35,6 +35,11 @@ Only the session travels in the link — the receiving page supplies its own
 is JBrowse Web's own, so `encodeSession` emits the same `encoded-…` value that
 app's `?session=` accepts.
 
+`encodeSession` does a little more than `getSnapshot`: display settings a user
+picks up from a promoted display-type default live in their own browser rather
+than in the session, so a raw snapshot can render differently for whoever opens
+the link. `encodeSession` folds those in before encoding.
+
 To keep a session for one browser rather than share it, write the same snapshot
 to `localStorage` instead; `onSnapshot(state.session, …)` tells you when it
 changed.
