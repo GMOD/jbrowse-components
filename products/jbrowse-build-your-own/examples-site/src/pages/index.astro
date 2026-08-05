@@ -1,5 +1,5 @@
 ---
-import PanAndZoom from '../examples/PanAndZoom.tsx'
+import AScalebarNotARuler from '../examples/AScalebarNotARuler.tsx'
 import { examples } from '../examples.ts'
 import Gallery from '../layouts/Gallery.astro'
 import Shell from '../layouts/Shell.astro'
@@ -27,31 +27,36 @@ const base = import.meta.env.BASE_URL
 >
   <h1>Build your own genome browser</h1>
   <p class="lead">
-    JBrowse's engine — assemblies, adapters, workers, coordinates — with your own
-    UI around it. Drag to pan; ctrl + wheel to zoom.
+    JBrowse's engine — assemblies, adapters, workers, coordinates — with your
+    own UI around it. Drag to pan, ctrl + wheel to zoom, drag the scalebar to
+    zoom to a range.
   </p>
 
-  {/*
-    The example runs here rather than being described, and it runs in the mode
-    it documents for exactly this situation: `scrollZoom` off, because a bare
-    wheel that zoomed would swallow the page scroll of the reader on their way
-    down to the gallery. The checkbox in it turns the other mode on.
+  {
+    /*
+    The example runs here rather than being described, with `scrollZoom` off:
+    a bare wheel that zoomed would swallow the page scroll of the reader on
+    their way down to the gallery, so here the wheel scrolls and ctrl + wheel
+    zooms. The Pan and zoom page is where that decision is explained, and its
+    own demo has the checkbox that flips it.
 
     Its box is held open at the height it settles at, because this is the first
     thing on the page and everything below it would otherwise drop when the
     island mounts. See `demoHeights`.
-  */}
+  */
+  }
   <div class="demo reserved" style={`min-height:${demoHeights[landingDemo]}px`}>
-    <PanAndZoom client:only="react" scrollZoom={false} />
+    <AScalebarNotARuler client:only="react" scrollZoom={false} />
   </div>
 
   <p class="note">
-    That is the <a href={`${base}${landingDemo}/`}>Pan and zoom</a> example, running
-    its own source. Every page below adds one thing to it.
+    That is the <a href={`${base}${landingDemo}/`}>scalebar</a> example, running its
+    own source. Every page below is one file like it; the first strips this back to
+    a measured div and one track.
   </p>
   <p class="note">
-    None of them render any Material UI. The chrome around a track — its loading,
-    error and too-large states, the controls in its corner — is <strong
+    None of them render any Material UI. The chrome around a track — its
+    loading, error and too-large states, the controls in its corner — is <strong
       >{bundle.plainGzipKb} KB gzipped</strong
     > with plain components, {bundle.muiGzipKb} KB with Material ones.
   </p>

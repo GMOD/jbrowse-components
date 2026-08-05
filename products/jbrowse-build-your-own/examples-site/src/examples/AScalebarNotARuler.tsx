@@ -61,7 +61,7 @@ const trackIds = ['volvox_microarray', 'volvox_genes']
 
 const SCALEBAR_HEIGHT = 20
 
-function makeView() {
+function makeView(scrollZoom: boolean) {
   const state = createViewState({
     assembly: volvox,
     tracks: [wiggleTrack, featureTrack],
@@ -77,7 +77,7 @@ function makeView() {
   })
   // see the Pan and zoom page: scroll-to-zoom is a session preference, shared
   // with any display that scrolls vertically inside itself
-  view.setScrollZoom(true)
+  view.setScrollZoom(scrollZoom)
   return { view, session: state.session }
 }
 
@@ -687,8 +687,17 @@ function useSitePalette(session: BrowserSession) {
   return session.palette
 }
 
-const AScalebarNotARuler = observer(function AScalebarNotARuler() {
-  const [{ view, session }] = useState(makeView)
+const AScalebarNotARuler = observer(function AScalebarNotARuler({
+  scrollZoom = true,
+}: {
+  // Which gesture a bare wheel is. On by default, because a browser that owns
+  // its area of the page should zoom the way a map does. The landing page
+  // passes `false`, since it sits above a long document where a wheel that
+  // swallowed the page scroll would trap the reader -- see the Pan and zoom
+  // page, which is about that decision.
+  scrollZoom?: boolean
+}) {
+  const [{ view, session }] = useState(() => makeView(scrollZoom))
   const ref = useViewWidth(view)
   const { hint, props } = usePanZoom(view, ref)
   const rubberband = useRubberband(view)

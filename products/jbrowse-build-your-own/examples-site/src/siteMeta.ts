@@ -6,7 +6,7 @@ export const mainMaxWidth = '1400px'
 export const demoFillHeight = false
 
 // The example the landing page runs live, above the fold, rather than describing.
-export const landingDemo = 'pan-and-zoom'
+export const landingDemo = 'a-scalebar-not-a-ruler'
 
 // What each demo settles at, in px. Every demo here is `client:only`, so the
 // server sends an empty `<div class="demo">` — `astro-island` is
