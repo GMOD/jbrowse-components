@@ -49,6 +49,22 @@ literal, never `?raw` a private helper of this site.
 - Prose in `src/docs/*.md` must not restate a measurable number. If a page needs
   one, generate it. See `scripts/measureChromeBundle.ts` and its `pnpm autogen`
   entry, which is where the chrome bundle figures come from.
+- **Prose is capped, and `pnpm check-links` enforces it.** A `src/docs/*.md`
+  over 500 words (fenced code excluded, since a page whose length is a config
+  example is doing its job) or a page/section `description` over 160 characters
+  fails; over 350 words prints as advisory so the trend shows first. These pages
+  are a live demo plus its own source — the prose names the API and flags the
+  gotchas that cost an hour, and nothing more. It had drifted to 800-word essays
+  with "Where to stop" sections before the cap existed, so raise it only with an
+  argument, for the same reason `MUI_BUDGET` isn't raised. The limit is slack on
+  purpose: the densest pages here sit near it because they carry real mechanics
+  (the passive `wheel` listener, `setPointerCapture` on move not press), and
+  cutting those to hit a tighter number is the wrong trade. Implementation is
+  `findLongDocs`/`findLongDescriptions` in `@jbrowse/browser-test-utils`.
+- A single-section page's **section-level `description` renders nowhere** — the
+  "On this page" card is only drawn for multi-section pages — so don't write
+  one. Three sites had accumulated exact duplicates of the page description
+  there.
 - `scripts/smoke.mjs` holds the evidence for this site's central claim, in two
   halves: `MUI_BUDGET` counts `Mui*`-classed elements, and `muiThemedStyling`
   counts elements whose font came from MUI's default theme — which is the only
@@ -89,6 +105,7 @@ literal, never `?raw` a private helper of this site.
   itself when React appends — no JS and no timer. It has to be out of flow:
   these boxes are `border-box`, so an in-flow child sized off the same
   min-height overflows by the border and leaves 2px of shift.
+
 - **For anything smoke can't see, a throwaway puppeteer probe against the built
   `dist/` is the pattern** — serve `dist/`, strip the Astro base,
   `--use-gl=swiftshader`, settle ~7s, then measure. Write it as a `.tmp.mjs`

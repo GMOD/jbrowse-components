@@ -44,6 +44,19 @@ literal, never `?raw` a private helper of this site.
 - Prose in `src/docs/*.md` must not restate a measurable number. If a page needs
   one, generate it and register the generator in `pnpm autogen`, so CI re-checks
   it and the prose cannot drift.
+- **Prose is capped, and `pnpm check-links` enforces it.** A `src/docs/*.md`
+  over 500 words (fenced code excluded, since a page whose length is a config
+  example is doing its job) or a page/section `description` over 160 characters
+  fails; over 350 words prints as advisory so the trend shows first. These pages
+  are a live demo plus its own source — the prose names the API and flags the
+  gotchas that cost an hour, and nothing more. It had drifted into essays before
+  the cap existed, so raise it only with an argument. Implementation is
+  `findLongDocs`/`findLongDescriptions` in `@jbrowse/browser-test-utils`, shared
+  by all four sites.
+- A single-section page's **section-level `description` renders nowhere** — the
+  "On this page" card is only drawn for multi-section pages — so don't write
+  one. Three sites had accumulated exact duplicates of the page description
+  there.
 - The demo runs in the browser, so verify with `pnpm build && pnpm smoke` rather
   than reasoning about it. `pnpm typecheck` is `astro check`, and
   `pnpm check-links` validates doc references and internal cross-links.
