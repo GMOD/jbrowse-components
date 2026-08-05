@@ -40,6 +40,14 @@ export function readSessionFromStorage(query: string) {
 }
 
 export async function readSessionFromIDB(query: string) {
+  // no autosave database to read where there is no IndexedDB (jsdom, a locked
+  // down browser profile). Checked rather than caught so the absence stays
+  // silent: opening it anyway throws a ReferenceError that reads like a real
+  // failure, and it is the reason every test run had to filter "indexedDB" out
+  // of console.error wholesale. The root model gates setupSessionDB the same way.
+  if (typeof indexedDB === 'undefined') {
+    return undefined
+  }
   let db: Awaited<ReturnType<typeof openSessionDB>> | undefined
   try {
     db = await openSessionDB()
