@@ -1,12 +1,11 @@
 import { Suspense, lazy, useState } from 'react'
 
-import { Logomark } from '@jbrowse/core/ui'
+import { CascadingMenuButton, Logomark } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import MenuIcon from '@mui/icons-material/Menu'
 import { IconButton, Typography, alpha } from '@mui/material'
 import { observer } from 'mobx-react'
-
-import ViewMenu from './ViewMenu.tsx'
 
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 
@@ -50,14 +49,14 @@ const ViewTitle = observer(function ViewTitle({
   const session = getSession(view)
   return (
     <div className={classes.container}>
-      <ViewMenu
-        model={view}
-        IconButtonProps={{
-          classes: { root: classes.iconRoot },
-          edge: 'start',
-        }}
-        IconProps={{ className: classes.icon }}
-      />
+      <CascadingMenuButton
+        menuItems={() => view.menuItems()}
+        data-testid="view_menu_icon"
+        classes={{ root: classes.iconRoot }}
+        edge="start"
+      >
+        <MenuIcon className={classes.icon} />
+      </CascadingMenuButton>
       <div className={classes.grow} />
       {displayName ? (
         <Typography variant="body2" className={classes.displayName}>
