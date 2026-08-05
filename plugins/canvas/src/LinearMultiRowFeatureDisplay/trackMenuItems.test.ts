@@ -16,6 +16,8 @@ function makeSelf(
     showTree: true,
     showLegend: true,
     showRowSeparators: false,
+    showRowLabels: true,
+    setShowRowLabels: () => {},
     effectiveRowHeight: 14,
     colorLegend: [],
     hiddenCategories: [],
@@ -83,6 +85,7 @@ describe('multi-row track menu', () => {
     expect(items.every(i => 'icon' in i && i.icon)).toBe(true)
     expect(labels(subMenuOf(items, 'Show...'))).toEqual([
       'Show sidebar with tree and labels',
+      'Show row labels',
       'Show row separators',
       'Tree branch lengths',
     ])
@@ -94,7 +97,9 @@ describe('multi-row track menu', () => {
   it('explains the row separator toggle when rows are below the draw threshold', () => {
     const sub = (rowHeight: number) =>
       subMenuOf(
-        buildMultiRowTrackMenuItems(makeSelf({ effectiveRowHeight: rowHeight })),
+        buildMultiRowTrackMenuItems(
+          makeSelf({ effectiveRowHeight: rowHeight }),
+        ),
         'Show...',
       ).find(i => 'label' in i && i.label === 'Show row separators')
 

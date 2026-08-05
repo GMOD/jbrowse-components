@@ -107,6 +107,7 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
     hierarchy: undefined,
     showLegend: false,
     showRowSeparators: false,
+    showRowLabels: true,
     colorLegend: [],
     hiddenCategorySet: new Set<string>(),
     ...overrides,
@@ -162,6 +163,16 @@ describe('LinearMultiRowFeatureDisplay renderSvg', () => {
     // so the 1px stroke lands on a device pixel
     expect(html).toContain('y1="50.5"')
     expect(html.match(/<line /g)?.length).toBe(1)
+  })
+
+  it('omits the row names when showRowLabels is off', async () => {
+    const on = renderResult(await renderSvg(makeModel(), {}))
+    expect(on).toContain('>a<')
+    const off = renderResult(
+      await renderSvg(makeModel({ showRowLabels: false }), {}),
+    )
+    expect(off).not.toContain('>a<')
+    expect(off).not.toContain('>b<')
   })
 
   it('omits separators when rows are below the drawable threshold', async () => {

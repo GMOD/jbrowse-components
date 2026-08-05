@@ -49,6 +49,7 @@ export interface RenderSvgModel extends SvgExportable {
   clusterProvenance?: ClusterProvenance
   showLegend: boolean
   showRowSeparators: boolean
+  showRowLabels: boolean
   colorLegend: LegendEntry[]
   hiddenCategorySet: ReadonlySet<string>
 }
@@ -113,6 +114,7 @@ function MultiRowSvgBody({
       ) : null}
       <SvgTreeSidebar
         showTree={self.showTree}
+        showLabels={self.showRowLabels}
         hierarchy={self.hierarchy}
         sources={self.sources}
         rowHeight={self.effectiveRowHeight}

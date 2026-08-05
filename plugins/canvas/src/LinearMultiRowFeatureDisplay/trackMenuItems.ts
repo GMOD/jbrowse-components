@@ -55,6 +55,8 @@ interface MultiRowMenuSelf extends IStateTreeNode {
   showTree: boolean
   showLegend: boolean
   showRowSeparators: boolean
+  showRowLabels: boolean
+  setShowRowLabels: (f: boolean) => void
   effectiveRowHeight: number
   colorLegend: LegendEntry[]
   hiddenCategories: readonly string[]
@@ -90,6 +92,13 @@ function showMenuItems(self: MultiRowMenuSelf): MenuItem[] {
   return [
     checkboxItem('Show sidebar with tree and labels', self.showTree, () => {
       self.setShowTree(!self.showTree)
+    }),
+    // Separate from the sidebar toggle above, which owns the tree gutter. The
+    // labels are an overlay ON the plot rather than a gutter beside it, so on a
+    // wide view they cover the left of the rows they name — which is the reason
+    // this is a toggle at all. See the config slot.
+    checkboxItem('Show row labels', self.showRowLabels, () => {
+      self.setShowRowLabels(!self.showRowLabels)
     }),
     ...(self.colorLegend.length
       ? [

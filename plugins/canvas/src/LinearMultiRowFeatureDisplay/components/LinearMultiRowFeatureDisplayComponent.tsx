@@ -41,6 +41,7 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
     sidebarOffset,
     showLegend,
     showRowSeparators,
+    showRowLabels,
     colorLegend,
     hiddenCategorySet,
   } = model
@@ -97,6 +98,7 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
         labelOffset={sidebarOffset}
         width={view.trackWidthPx}
         height={height}
+        showLabels={showRowLabels}
       />
       {/* portaled above the inter-region masks (see FloatingSvgOverlay) so the
           legend isn't buried at multi-region scale */}

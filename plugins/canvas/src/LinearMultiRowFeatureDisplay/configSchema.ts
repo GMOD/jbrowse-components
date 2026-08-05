@@ -189,6 +189,24 @@ export default function configSchemaF(pluginManager: PluginManager) {
       },
       /**
        * #slot
+       * Draw each row's name over the left of the plot. On by default, because a
+       * row nobody can name is a stripe.
+       *
+       * Turn it off when the labels would cover the data they name. They are an
+       * overlay on the plot rather than a gutter beside it, and each one is as
+       * wide as its own text, so on a whole-chromosome view of a track with long
+       * row names the left megabases of every row sit under them — and a block
+       * that starts at the chromosome's beginning reads as absent rather than as
+       * covered. Pairing a labelled view with an unlabelled one of the same rows
+       * is the other way out, and is what a compose figure does.
+       */
+      showRowLabels: {
+        type: 'boolean',
+        defaultValue: true,
+        description: 'draw the row name over the left of each row',
+      },
+      /**
+       * #slot
        * Show the categorical color key (swatch + label per distinct per-feature
        * color). Only appears in per-feature color mode; in per-row palette /
        * sampleColorMap mode the sidebar labels are already the key, so nothing

@@ -21,6 +21,13 @@ import type { RowLabelSource } from './types.ts'
  * Renders nothing when there are no rows, so callers don't have to guard: a
  * label overlay with nothing in it is a `<svg>` swallowing nothing, but it is
  * also a DOM node that test selectors and screenshot doneness gates can see.
+ *
+ * `showLabels: false` keeps that `<svg>` and drops only the labels inside it,
+ * for the same reason: this element is the doneness signal several displays gate
+ * their capture on (it exists only once rows are derived from fetched data,
+ * unlike `canvasDrawn`, which flips on an empty first paint). Guarding the
+ * element itself instead would make turning labels off also turn off the gate,
+ * and the figure would capture blank.
  */
 export function RowLabelsOverlay({
   sources,
@@ -30,6 +37,7 @@ export function RowLabelsOverlay({
   height,
   scrollTop,
   testId,
+  showLabels = true,
 }: {
   sources: RowLabelSource[] | undefined
   // Resolved px row height, never a fit-to-height sentinel — same contract as
@@ -42,6 +50,8 @@ export function RowLabelsOverlay({
   height: number
   scrollTop?: number
   testId?: string
+  // Draw the names. False still renders the overlay element, see above.
+  showLabels?: boolean
 }) {
   return sources?.length ? (
     <svg
@@ -56,13 +66,15 @@ export function RowLabelsOverlay({
         zIndex: 2,
       }}
     >
-      <SvgRowLabels
-        sources={sources}
-        rowHeight={rowHeight}
-        labelOffset={labelOffset}
-        scrollTop={scrollTop}
-        availableHeight={height}
-      />
+      {showLabels ? (
+        <SvgRowLabels
+          sources={sources}
+          rowHeight={rowHeight}
+          labelOffset={labelOffset}
+          scrollTop={scrollTop}
+          availableHeight={height}
+        />
+      ) : null}
     </svg>
   ) : null
 }

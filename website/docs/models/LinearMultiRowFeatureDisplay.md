@@ -80,6 +80,7 @@ the whole surface.
 | <span id="getter-densitygateenabled">**densityGateEnabled**</span><br><code>boolean</code> | Multi-row paints features into fixed lanes, so a high total feature count (e.g. a whole-chromosome haplotype painting with many segments per row) is not a per-glyph render cost — only the byte/download budget should gate it. Disable the density axis of CanvasFeatureGateMixin so the "too many features" banner never shows here. | LinearMultiRowFeatureDisplay |
 | <span id="getter-showlegend">**showLegend**</span><br><code>boolean</code> |  | LinearMultiRowFeatureDisplay |
 | <span id="getter-showrowseparators">**showRowSeparators**</span><br><code>boolean</code> |  | LinearMultiRowFeatureDisplay |
+| <span id="getter-showrowlabels">**showRowLabels**</span><br><code>boolean</code> |  | LinearMultiRowFeatureDisplay |
 | <span id="getter-showtree">**showTree**</span><br><code>boolean</code> |  | LinearMultiRowFeatureDisplay |
 | <span id="getter-showbranchlength">**showBranchLength**</span><br><code>boolean</code> |  | LinearMultiRowFeatureDisplay |
 | <span id="getter-partitionfield">**partitionField**</span><br><code>string</code> |  | LinearMultiRowFeatureDisplay |
@@ -178,6 +179,7 @@ the whole surface.
 | <span id="action-setrowheight">**setRowHeight**</span><br><code>(n: number) =&gt; void</code> |  | LinearMultiRowFeatureDisplay |
 | <span id="action-setshowlegend">**setShowLegend**</span><br><code>(f: boolean) =&gt; void</code> |  | LinearMultiRowFeatureDisplay |
 | <span id="action-setshowrowseparators">**setShowRowSeparators**</span><br><code>(f: boolean) =&gt; void</code> |  | LinearMultiRowFeatureDisplay |
+| <span id="action-setshowrowlabels">**setShowRowLabels**</span><br><code>(f: boolean) =&gt; void</code> |  | LinearMultiRowFeatureDisplay |
 | <span id="action-togglecategory">**toggleCategory**</span><br><code>(label: string) =&gt; void</code> | Show/hide a legend category by label (render-time, no refetch). | LinearMultiRowFeatureDisplay |
 | <span id="action-sethiddencategories">**setHiddenCategories**</span><br><code>(labels: string[]) =&gt; void</code> |  | LinearMultiRowFeatureDisplay |
 | <span id="action-setshowtree">**setShowTree**</span><br><code>(f: boolean) =&gt; void</code> |  | LinearMultiRowFeatureDisplay |

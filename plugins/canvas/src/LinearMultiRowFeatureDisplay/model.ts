@@ -202,6 +202,12 @@ export default function stateModelFactory(
       /**
        * #getter
        */
+      get showRowLabels(): boolean {
+        return getConf(self, 'showRowLabels')
+      },
+      /**
+       * #getter
+       */
       get showTree(): boolean {
         return getConf(self, 'showTree')
       },
@@ -683,6 +689,12 @@ export default function stateModelFactory(
        */
       setShowRowSeparators(f: boolean) {
         setConf(self, 'showRowSeparators', f)
+      },
+      /**
+       * #action
+       */
+      setShowRowLabels(f: boolean) {
+        setConf(self, 'showRowLabels', f)
       },
       /**
        * #action
