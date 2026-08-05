@@ -172,19 +172,32 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
             >[0]['tracks'])
           : [],
       })
-      const created = session.addView(
-        'BreakpointSplitView',
-        viewSnapshot,
-      ) as unknown as {
-        views: { navToLocString: (l: string, asm: string) => Promise<void> }[]
-      }
       // The assembly has to be named. A panel created by this action has no
       // displayedRegions yet, so it has no assembly to infer one from, and a
       // bare navToLocString reports `assemblyName:undefined`. It is also what
       // makes the path's refNames resolve: the reads carry `3`/`10`/`12` where
       // the assembly is `chr3`/`chr10`/`chr12`, and refName aliasing runs off
       // the named assembly.
+      //
+      // Read BEFORE the replace below, like `onSubmit` reads its carried track
+      // list: replacing destroys the launching view, and `track` lives in it.
       const [trackAssembly] = getConf(track, 'assemblyNames') as string[]
+      // Replaces the launching view rather than opening below it, which is why
+      // this button says so. Unlike the synteny destinations, the split view
+      // this builds carries the launching view's OWN tracks and its first panel
+      // opens on the segment the pileup is already showing -- so leaving that
+      // view standing above it is a second copy of the same locus with the same
+      // tracks, one scroll apart. (Reviewer, on the figure of exactly that:
+      // "too chaotic ... should also use 'replace view'".) A session that
+      // refuses replacement, e.g. embedded, falls back to adding.
+      const created = addOrReplaceView({
+        session,
+        typeName: 'BreakpointSplitView',
+        initialState: viewSnapshot,
+        replacing: canReplace ? (view as AbstractViewModel) : undefined,
+      }) as unknown as {
+        views: { navToLocString: (l: string, asm: string) => Promise<void> }[]
+      }
       await Promise.all(
         locStrings.map((loc, idx) =>
           created.views[idx]?.navToLocString(loc, trackAssembly!),
@@ -296,7 +309,13 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
               void onOpenSplitView()
             }}
           >
-            Open as split view
+            {/* Names the destination AND what happens to this view, because
+                what happens differs from the other buttons': the split view
+                carries these very tracks at this very locus, so it takes this
+                view's place rather than stacking under it (see
+                onOpenSplitView). A session that cannot replace gets the
+                "Open as" wording, since there it does open below. */}
+            {canReplace ? 'Replace with split view' : 'Open as split view'}
           </Button>
           {canReplace ? (
             <ReplaceCurrentViewButton
