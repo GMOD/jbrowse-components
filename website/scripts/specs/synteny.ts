@@ -526,7 +526,14 @@ export const syntenySpecs: ScreenshotSpec[] = [
                     type: 'LinearBasicDisplay',
                     showOnlyGenes: true,
                     displayMode: 'compact',
-                    showDescriptions: false,
+                    // was `showDescriptions: false`, meaning "names suffice
+                    // here". That has no home on the unified labels enum, so
+                    // migrateBasicConfigSnapshot resolves it to 'auto' —
+                    // descriptions do come back at low density. Written as what
+                    // it actually resolved to; pinning 'name' would honor the
+                    // original intent but change the figure, so that is a call
+                    // for whoever regenerates it.
+                    showLabels: 'auto',
                   },
                 ],
               },
@@ -539,7 +546,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
                     type: 'LinearBasicDisplay',
                     showOnlyGenes: true,
                     displayMode: 'compact',
-                    showDescriptions: false,
+                    // as above: the retired `showDescriptions: false` resolved
+                    // to 'auto'
+                    showLabels: 'auto',
                   },
                 ],
               },
@@ -552,7 +561,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
                     type: 'LinearBasicDisplay',
                     showOnlyGenes: true,
                     displayMode: 'compact',
-                    showDescriptions: false,
+                    // as above: the retired `showDescriptions: false` resolved
+                    // to 'auto'
+                    showLabels: 'auto',
                   },
                 ],
               },
@@ -602,7 +613,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 type: 'LinearBasicDisplay',
                 showOnlyGenes: true,
                 displayMode: 'compact',
-                showDescriptions: false,
+                // as above: the retired `showDescriptions: false` resolved to
+                // 'auto'
+                showLabels: 'auto',
               },
               {
                 trackId: 'grape_peach_cacao_blocks',
@@ -1054,7 +1067,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
                     type: 'LinearBasicDisplay',
                     showOnlyGenes: true,
                     displayMode: 'compact',
-                    showDescriptions: false,
+                    // as above: the retired `showDescriptions: false` resolved
+                    // to 'auto'
+                    showLabels: 'auto',
                   },
                 ],
               },
@@ -1070,7 +1085,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
                     type: 'LinearBasicDisplay',
                     showOnlyGenes: true,
                     displayMode: 'compact',
-                    showDescriptions: false,
+                    // as above: the retired `showDescriptions: false` resolved
+                    // to 'auto'
+                    showLabels: 'auto',
                   },
                 ],
               },
@@ -1182,7 +1199,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 type: 'LinearBasicDisplay',
                 showOnlyGenes: true,
                 displayMode: 'compact',
-                showDescriptions: false,
+                // as above: the retired `showDescriptions: false` resolved to
+                // 'auto'
+                showLabels: 'auto',
               },
               {
                 trackId: 'ecoli_ava',

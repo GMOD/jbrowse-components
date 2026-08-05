@@ -434,7 +434,11 @@ function strainGeneLane(trackId: string) {
     type: 'LinearBasicDisplay',
     showOnlyGenes: true,
     displayMode: 'compact',
-    showDescriptions: false,
+    // was `showDescriptions: false`, which has no home on the unified labels
+    // enum — migrateBasicConfigSnapshot resolves it to 'auto', so descriptions
+    // do come back at low density. Written as what it actually resolved to;
+    // pinning 'name' would honor the original intent but change the figure.
+    showLabels: 'auto',
     height: 60,
   }
 }
@@ -1153,7 +1157,9 @@ function graphContextPartSpecs(): ScreenshotSpec[] {
               type: 'LinearBasicDisplay',
               showOnlyGenes: true,
               displayMode: 'compact',
-              showDescriptions: false,
+              // as in strainGeneLane: the retired `showDescriptions: false`
+              // resolved to 'auto'
+              showLabels: 'auto',
               height: 60,
             },
             {

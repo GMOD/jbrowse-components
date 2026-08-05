@@ -1115,19 +1115,15 @@ export const trackFields: Record<string, FieldRecipe> = {
     'Score → Summary score mode',
     SUMMARY_SCORE_MODES,
   ),
-  // There is no "Show descriptions" checkbox any more: it and the three-way
-  // name radio were folded into the one Labels group, because the old pair let
-  // 'off' hide names while descriptions kept painting — a state nothing in the
-  // UI named. migrateBasicConfigSnapshot rewrites a legacy pair into a rung and
-  // drops this key, so a link still carrying it has to be described as the rung
-  // it becomes.
-  showDescriptions: value =>
-    typeof value === 'boolean'
-      ? {
-          path: `${TRACK_MENU} → Show... → Labels → ${value ? 'Name + description' : 'Name only'}`,
-          note: 'Assumes the link also carried the legacy `showLabels: "on"`. On its own, `showDescriptions: false` has no home on the unified enum and resolves to Auto, where descriptions return at low density.',
-        }
-      : undefined,
+  // `showDescriptions` has no entry on purpose. There is no "Show descriptions"
+  // checkbox any more: it and the three-way name radio were folded into the one
+  // Labels group, because the old pair let 'off' hide names while descriptions
+  // kept painting — a state nothing in the UI named. Which rung a legacy key
+  // becomes depends on the `showLabels` beside it, and a field handler sees only
+  // its own value, so any path written here is right for one pairing and wrong
+  // for the other. The specs have all been converted to the rung
+  // migrateBasicConfigSnapshot resolves them to, so a `showDescriptions` showing
+  // up in the gap report again is a spec to convert, not a handler to add.
   resolution: numberField(n => ({
     path: `${TRACK_MENU} → Resolution → Finer / Coarser`,
     note: `Higher fetches finer bins. This figure uses ${resolutionLabel(n)}, stepped by 2× per click.`,

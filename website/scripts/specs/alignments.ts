@@ -563,10 +563,14 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'ncbi_gff_hg19',
-          // hide gene descriptions so the gene track stays compact next to
-          // the Hi-C display
+          // keep the gene track compact next to the Hi-C display. Was
+          // `showDescriptions: false`, which has no home on the unified labels
+          // enum — migrateBasicConfigSnapshot resolves it to 'auto', so
+          // descriptions do come back at low density. Written as what it
+          // actually resolved to; pinning 'name' would honor the original
+          // intent but change the figure.
           type: 'LinearBasicDisplay',
-          showDescriptions: false,
+          showLabels: 'auto',
         },
         'hic',
       ],
