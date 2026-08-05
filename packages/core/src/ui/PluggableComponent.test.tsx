@@ -89,9 +89,9 @@ test('a stable replacement component survives a parent rerender', () => {
 // whole subtree is thrown away along with its state
 test('a callback that declares its component inline remounts every render', () => {
   const pm = new PluginManager([])
-  let evaluations = 0
+  // #region inlineComponent
   pm.addToExtensionPoint('Core-replaceWidget', Default => {
-    evaluations++
+    // declared inside the callback, so every evaluation is a new component type
     return function NewWidget(props: ReplaceWidgetProps) {
       return (
         <div>
@@ -101,16 +101,19 @@ test('a callback that declares its component inline remounts every render', () =
       )
     }
   })
+  // #endregion
   const { getByText } = render(<Harness pluginManager={pm} />)
   fireEvent.click(getByText('count 0'))
   fireEvent.click(getByText('rerender'))
-  expect(evaluations).toBeGreaterThan(1)
+  // two mounts from one rerender is the callback having been re-evaluated: a
+  // callback run once would hand React the same type and nothing would remount
   expect(mounts).toBe(2)
   expect(getByText('count 0')).toBeTruthy()
 })
 
 test('addWidgetWrapper keeps the wrapped widget mounted across renders', () => {
   const pm = new PluginManager([])
+  // #region widgetWrapper
   addWidgetWrapper(pm, {
     wrapper: ({ DefaultWidget: Widget, ...rest }) => (
       <div>
@@ -119,6 +122,7 @@ test('addWidgetWrapper keeps the wrapped widget mounted across renders', () => {
       </div>
     ),
   })
+  // #endregion
   const { getByText } = render(<Harness pluginManager={pm} />)
   fireEvent.click(getByText('count 0'))
   fireEvent.click(getByText('rerender'))
@@ -156,10 +160,12 @@ test('wrappers from two plugins nest instead of clobbering', () => {
 
 test('a selector scopes a replacement to one track and leaves others alone', () => {
   const pm = new PluginManager([])
+  // #region replaceWidget
   addReplaceWidget(pm, {
     select: { trackId: 'volvox.inv.vcf' },
     component: () => <div>mine</div>,
   })
+  // #endregion
   const a = render(
     <Harness pluginManager={pm} model={{ trackId: 'volvox.inv.vcf' }} />,
   )

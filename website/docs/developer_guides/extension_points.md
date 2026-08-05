@@ -491,15 +491,16 @@ declare module '@jbrowse/core/PluginManager' {
 
 Example: returns a new about track dialog for a particular track
 
+<!-- include: packages/product-core/src/ui/aboutExtensionPoints.test.tsx#replaceAbout -->
+
 ```typescript
-pluginManager.addToExtensionPoint(
-  'Core-replaceAbout',
-  (DefaultAboutComponent, { session, config }) => {
-    return config.trackId === 'volvox.inv.vcf'
-      ? NewAboutComponent
-      : DefaultAboutComponent
-  },
-)
+function addReplaceAbout(pluginManager: PluginManager) {
+  pluginManager.addToExtensionPoint(
+    'Core-replaceAbout',
+    (Default, { config }) =>
+      config.trackId === 'volvox_sv_test' ? NewAboutComponent : Default,
+  )
+}
 ```
 
 ### Core-extraAboutPanel
@@ -521,28 +522,29 @@ own card chrome, so use `BaseCard` for a titled section.
 
 Example: adds an extra about dialog panel for a particular track ID
 
+<!-- include: packages/product-core/src/ui/aboutExtensionPoints.test.tsx#extraAboutPanel -->
+
 ```tsx
-import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
-
-function ExtraAboutPanel() {
-  return <BaseCard title="More info">{/* your content */}</BaseCard>
+function addExtraAboutPanel(pluginManager: PluginManager) {
+  pluginManager.contributeToExtensionPoint(
+    'Core-extraAboutPanel',
+    ({ config }) =>
+      config.trackId === 'volvox_sv_test' ? ExtraAboutPanel : undefined,
+  )
 }
-
-pluginManager.contributeToExtensionPoint(
-  'Core-extraAboutPanel',
-  ({ config }) =>
-    config.trackId === 'volvox_sv_test' ? ExtraAboutPanel : undefined,
-)
 ```
 
-Declare the component at module scope as above — one declared inside the
-callback is a new element type on each evaluation, so the panel remounts and
-loses its state. Panels render inside a `<Suspense>`, so `React.lazy` is fine.
+`ExtraAboutPanel` there is declared at module scope and renders its own card
+chrome (`BaseCard`, from
+`@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard`, gives a titled
+section). Declaring it inside the callback instead makes it a new element type
+on each evaluation, so the panel remounts and loses its state. Panels render
+inside a `<Suspense>`, so `React.lazy` is fine.
 
-Unlike `Core-extraFeaturePanel`, this point does not scope itself for you: the
-dialog fires it for whatever track was opened, so a callback that returns
-`[...panels, MyPanel]` unconditionally adds its panel to every track's About
-dialog. Read `props.config` to decide, as above.
+Unlike `Core-extraFeaturePanel` there is no helper doing the scoping, and the
+dialog fires this for whatever track was opened — so returning your panel
+unconditionally puts it on every track's About dialog. Read `props.config` and
+return `undefined` when it isn't yours, as above.
 
 ### Core-customizeAbout
 
@@ -559,12 +561,16 @@ Return value: an object of the same `{ config }` shape, with your modifications
 
 Example: add a derived field to a particular track's about dialog
 
+<!-- include: packages/product-core/src/ui/aboutExtensionPoints.test.tsx#customizeAbout -->
+
 ```typescript
-pluginManager.addToExtensionPoint('Core-customizeAbout', (arg, { config }) => {
-  return config.trackId === 'volvox.inv.vcf'
-    ? { config: { ...arg.config, 'Custom field': 'Custom value' } }
-    : arg
-})
+function addCustomizeAbout(pluginManager: PluginManager) {
+  pluginManager.addToExtensionPoint('Core-customizeAbout', (arg, { config }) =>
+    config.trackId === 'volvox_sv_test'
+      ? { config: { ...arg.config, 'Custom field': 'Custom value' } }
+      : arg,
+  )
+}
 ```
 
 ### Core-replaceWidget
@@ -608,12 +614,14 @@ for something neither one expresses.
 
 #### addReplaceWidget: render something else entirely
 
-```tsx
-import { addReplaceWidget } from '@jbrowse/core/ui'
+Both helpers come from `@jbrowse/core/ui`.
 
-addReplaceWidget(pluginManager, {
+<!-- include: packages/core/src/ui/PluggableComponent.test.tsx#replaceWidget -->
+
+```tsx
+addReplaceWidget(pm, {
   select: { trackId: 'volvox.inv.vcf' },
-  component: MyWidget,
+  component: () => <div>mine</div>,
 })
 ```
 
@@ -661,15 +669,14 @@ Most "replacements" really want to keep the default widget and put something
 around it. That is a different helper, because the wrapper has to receive the
 default rather than close over it:
 
-```tsx
-import { addWidgetWrapper } from '@jbrowse/core/ui'
+<!-- include: packages/core/src/ui/PluggableComponent.test.tsx#widgetWrapper -->
 
-addWidgetWrapper(pluginManager, {
-  select: { trackType: 'VariantTrack' },
-  wrapper: ({ DefaultWidget, ...props }) => (
+```tsx
+addWidgetWrapper(pm, {
+  wrapper: ({ DefaultWidget: Widget, ...rest }) => (
     <div>
-      <div>Custom content above the default details widget</div>
-      <DefaultWidget {...props} />
+      <div>custom</div>
+      <Widget {...rest} />
     </div>
   ),
 })
@@ -682,19 +689,24 @@ happens.
 
 :::caution Declare the wrapper outside the callback, or use `addWidgetWrapper`
 
+<!-- include: packages/core/src/ui/PluggableComponent.test.tsx#inlineComponent -->
+
 ```tsx
-// this remounts the widget on every render
-pluginManager.addToExtensionPoint('Core-replaceWidget', DefaultWidget => {
-  return function NewWidget(props) {
-    return <DefaultWidget {...props} />
+pm.addToExtensionPoint('Core-replaceWidget', Default => {
+  // declared inside the callback, so every evaluation is a new component type
+  return function NewWidget(props: ReplaceWidgetProps) {
+    return (
+      <div>
+        <div>custom</div>
+        <Default {...props} />
+      </div>
+    )
   }
 })
-
-// use addWidgetWrapper instead, which builds the component once
-addWidgetWrapper(pluginManager, {
-  wrapper: ({ DefaultWidget, ...props }) => <DefaultWidget {...props} />,
-})
 ```
+
+Use [`addWidgetWrapper`](#addwidgetwrapper-add-to-the-default-widget) instead,
+which builds the wrapped component once and caches it.
 
 `Core-replaceWidget` is re-evaluated on every render of the drawer, so returning
 a component declared inside the callback hands React a brand new component type
