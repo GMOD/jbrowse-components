@@ -240,6 +240,57 @@ Note the decimation trick does **not** transfer to the identity plot or the
 conservation band: those paint a mean, and a mean needs its whole sample. See
 the note in `binning.ts`.
 
+### …except the identity plot at high row counts, which is still slow
+
+Measured 2026-08-05, headless, synthetic 100bp-block shape, 1500px wide, rows
+fit to the 600px `maxAutoFitHeight` so the whole row set is on screen. One
+`drawRowIdentity` call = one pan frame: `renderBlocks` is built from
+`visibleRegions`, whose `screenStartPx` is `block.offsetPx - self.offsetPx`,
+so it changes identity on every pan tick and the `TrackBandCanvas` autorun
+refires.
+
+| | before | after run-length fill |
+| --- | --- | --- |
+| 470-way at the byte gate's 20kb ceiling, 30% row density | 94ms | 72ms |
+| same, adversarial per-pixel noise | 93ms | 88ms |
+| 30-way at the 20kb ceiling | 34ms | 29ms |
+| 470-way force-loaded to 150kb | 387ms | 335ms |
+
+The fill loop emitted a 1px rect **per pixel per row** and assigned `fillStyle`
+on each — 211k rects and 211k CSS-color assignments a frame at 470 rows. It is
+run-length encoded now (adjacent pixels quantizing into the same one of 101 ramp
+buckets share a rect), which is lossless and cuts canvas ops to 11–14% of that
+on conservation-shaped data, 81% on the adversarial case where identity crosses
+a bucket boundary every pixel. The headless numbers above understate the win,
+since the benchmark's `fillRect` is a counter; a real 2D context pays per call.
+
+**What remains is the accumulate walk, and it is the real ceiling: O(visible bp
+x rows) per frame, on the main thread.** 72ms is ~14fps while panning a 470-way,
+and force-load removes the bound entirely. Two things keep it off most users'
+path — the identity plot is opt-in, and with a `summaryAdapter` configured the
+summary path takes the rows over at 20kb, which is where the table's ceiling
+comes from — so this is a deep-alignment problem, not a general one.
+
+Three options, none attempted:
+
+- **Subsampling is the one to be skeptical of**, and is why the "a mean needs
+  its whole sample" note above is *nearly* right. Estimating a pixel's identity
+  from a quarter of its bases has a standard error near 0.1 at p=0.5 — ten ramp
+  buckets — and the artifact is speckle in exactly the view whose job is to show
+  smooth conservation structure. Correlated neighbours make it better than that
+  bound in practice and it would still be visible. Don't reach for it first.
+- **Make the walk pan-independent.** The per-(row, bp) match/classifiable
+  classification does not change when the view moves — only the bp->px mapping
+  does. Per-region per-row prefix sums make any pixel O(1), but at 2 x 4 bytes x
+  bufferedBp x rows that is ~150MB for a 470-way over 40kb, so it needs a coarse
+  bucket size and a fallback, and the bucket has to be finer than one pixel.
+  This is the same observation already parked above for the insertion and
+  deletion walks; the identity plot is the case where it pays most.
+- **Move it to the worker.** It reads only `refSeqBytes`/`alignmentBytes`, which
+  the worker already has before it ships them, and the output (one float per
+  pixel per row) is far smaller than the input. Zoom-dependent, so it would
+  refetch-or-recompute on zoom the way the summary path already does.
+
 ## Measurements from the design pass
 
 Encode cost, realistic multi-block synthetic data (1000bp blocks, 8% reference

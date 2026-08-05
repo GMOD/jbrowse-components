@@ -328,16 +328,40 @@ export function drawRowIdentity(
       }
     }
   } else {
+    // Run-length the fill rather than emitting a 1px rect per pixel. The band
+    // is quantized to the 101 ramp entries, so a stretch where the identity
+    // doesn't cross a bucket boundary is one rect — and a conservation heatmap
+    // is mostly such stretches, since a conserved run reads 100 across its
+    // whole width. Lossless: the pixels painted are identical either way.
+    //
+    // Worth doing because this loop is `visible rows x canvas width` — 705k
+    // iterations on a 470-way at 1500px — and each one both assigned
+    // `fillStyle` (a CSS color string the context re-parses on every
+    // assignment) and issued a draw call. Only a bucket change now costs
+    // either.
     for (let row = firstRow; row < lastRow; row++) {
       const rowTop = bandOffset + rowHeight * row
       const base = (row - firstRow) * width
+      // -1 is "nothing to flush": either no run open yet, or the pixels are
+      // unclassifiable (gap / ref `N`) and stay untouched, as they must — the
+      // GPU canvas beneath is what shows through there.
+      let runRamp = -1
+      let runStart = 0
       for (let x = 0; x < width; x++) {
         const c = classCount[base + x]!
-        if (c > 0) {
-          ctx.fillStyle =
-            IDENTITY_RAMP[Math.round((matchSum[base + x]! / c) * 100)]!
-          ctx.fillRect(x, rowTop, 1, bandH)
+        const ramp = c > 0 ? Math.round((matchSum[base + x]! / c) * 100) : -1
+        if (ramp !== runRamp) {
+          if (runRamp >= 0) {
+            ctx.fillStyle = IDENTITY_RAMP[runRamp]!
+            ctx.fillRect(runStart, rowTop, x - runStart, bandH)
+          }
+          runRamp = ramp
+          runStart = x
         }
+      }
+      if (runRamp >= 0) {
+        ctx.fillStyle = IDENTITY_RAMP[runRamp]!
+        ctx.fillRect(runStart, rowTop, width - runStart, bandH)
       }
     }
   }

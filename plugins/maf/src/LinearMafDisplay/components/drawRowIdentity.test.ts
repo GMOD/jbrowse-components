@@ -2,6 +2,7 @@ import {
   IdentityColumns,
   drawRowIdentity,
   identityColor,
+  identityRgb,
 } from './drawRowIdentity.ts'
 
 import type { MafBlock } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
@@ -309,5 +310,61 @@ describe('off-block MAF blocks cannot change the picture', () => {
     expect(paint([straddling, inView]).length).toBeGreaterThan(
       paint([inView]).length,
     )
+  })
+
+  // The heatmap emits one rect per RUN of pixels sharing a ramp bucket, not one
+  // per pixel: the loop is `visible rows x canvas width`, and on a conservation
+  // alignment most of that is one bucket wide. Both halves matter — that the
+  // merge happens at all, and that it is lossless.
+  describe('the heatmap fill is run-length encoded', () => {
+    // Expand the emitted rects back to a pixel -> color map, so losslessness is
+    // checked where it is claimed: on the pixels, not on the rect list.
+    function pixels(blocks: MafBlock[]) {
+      const map = new Map<number, string>()
+      for (const call of paint(blocks)) {
+        const [fill, pos, size] = call.split(' ') as [string, string, string]
+        const x = Number(pos.split(',')[0])
+        const w = Number(size.split('x')[0])
+        for (let i = x; i < x + w; i++) {
+          // a pixel painted twice would mean overlapping runs
+          expect(map.has(i)).toBe(false)
+          map.set(i, fill)
+        }
+      }
+      return map
+    }
+
+    // One bp per pixel here, so each pixel's identity is 0 or 1 and the ramp
+    // has exactly two values: a conserved stretch is one rect however long.
+    const oneMismatch = block(1040, 'ACGTACGTAC', 'ACGTACGAAC')
+
+    test('a conserved stretch is one rect, not one per pixel', () => {
+      // 10 painted pixels, mismatched only at offset 7 → runs [40,47) [47,48)
+      // [48,50)
+      expect(paint([oneMismatch])).toHaveLength(3)
+    })
+
+    test('the painted pixels are the same ones, in the same colors', () => {
+      const map = pixels([oneMismatch])
+      expect(map.size).toBe(10)
+      const conserved = map.get(40)!
+      expect(conserved).toBe(identityRgb(1))
+      for (const x of [41, 42, 43, 44, 45, 46, 48, 49]) {
+        expect(map.get(x)).toBe(conserved)
+      }
+      expect(map.get(47)).toBe(identityRgb(0))
+    })
+
+    test('unclassifiable pixels stay unpainted, so no run spans them', () => {
+      // A reference `N` column is not classifiable, so its pixel must be left
+      // for the canvas beneath — a run that merged across it would paint over
+      // a pixel the old loop skipped.
+      const withN = block(1040, 'ACGTNCGTAC', 'ACGTNCGTAC')
+      const map = pixels([withN])
+      expect(map.has(1040 - 1000 + 4)).toBe(false)
+      expect(map.size).toBe(9)
+      // and the gap splits it into two runs rather than one
+      expect(paint([withN])).toHaveLength(2)
+    })
   })
 })
