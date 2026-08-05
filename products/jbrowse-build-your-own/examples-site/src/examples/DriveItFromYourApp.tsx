@@ -86,9 +86,15 @@ const catalogue = [
 //
 // Both halves of the two-region entry are on ctgA, and that is not incidental:
 // this assembly's bigWig only covers ctgA, so a second region on ctgB would
-// leave the microarray track blank over half the screen -- which looks exactly
-// like a navigation that failed. Two genes on one contig is the usual reason to
-// want two regions anyway.
+// leave the microarray track blank over half the screen. Two genes on one
+// contig is the usual reason to want two regions anyway.
+//
+// A locstring takes as many regions as you give it, so `Every contig` is the
+// same call again. On a real assembly it reads `chr1 chr2 ... chrX chrY`, and
+// `view.showAllRegionsInAssembly()` is the same move without spelling them out
+// -- though note that on hg38 that call means 455 regions, not 24, because it
+// takes every sequence in the file including the _alt and _random scaffolds,
+// and all but the chromosomes land sub-pixel.
 const bookmarks = [
   { label: 'EDEN', loc: 'ctgA:1,050..9,000' },
   { label: 'A whole contig', loc: 'ctgA' },
@@ -96,6 +102,7 @@ const bookmarks = [
     label: 'Two regions at once',
     loc: 'ctgA:1,050..9,000 ctgA:17,400..23,000',
   },
+  { label: 'Every contig', loc: 'ctgA ctgB' },
 ]
 
 function makeView() {
