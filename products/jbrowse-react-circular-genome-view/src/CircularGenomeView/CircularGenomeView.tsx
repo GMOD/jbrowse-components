@@ -14,8 +14,9 @@ export interface CircularGenomeViewProps extends CreateViewStateBaseOptions {
   // declarative description of the initial view: optional tracks to show.
   // mirrors the view's own `init` shape (minus `assembly`, which is taken from
   // the `assembly` prop), so the same blob round-trips through saved sessions
-  // and URL specs. pass `init={{}}` to open the configured assembly with no
-  // extra tracks
+  // and URL specs. Optional, and `{}` is the same as leaving it off: the
+  // configured assembly is drawn either way, so this is how you name tracks to
+  // open with it, not how you ask for the genome
   init?: Omit<CircularViewInit, 'assembly'>
   // ref to the live engine, for imperative control after launch (showTrack, ...)
   ref?: Ref<ViewModel>
@@ -29,6 +30,14 @@ export interface CircularGenomeViewProps extends CreateViewStateBaseOptions {
  *
  * `init` is the declarative input; for imperative control after launch take a
  * `ref` to the live engine.
+ *
+ * This owns its engine for the lifetime of the page and does not tear it down:
+ * the engine is not owned by React, so unmounting leaves its RPC worker threads
+ * and autoruns running. That is fine for a page that mounts one and keeps it,
+ * and a leak for a host that mounts and discards repeatedly — an SPA route, a
+ * notebook cell re-run. Those should build the engine themselves
+ * ({@link useCreateViewState} + `<JBrowseCircularGenomeView>`) and hand it to
+ * `destroyViewState` when they let go of it.
  */
 const CircularGenomeView = observer(function CircularGenomeView({
   init,
@@ -38,9 +47,11 @@ const CircularGenomeView = observer(function CircularGenomeView({
   const [state] = useState(() =>
     createViewState({
       ...rest,
-      // with no init, createViewState shows the import form. otherwise wrap
-      // init in the session the view expects, filling in the configured
-      // assembly name so callers never repeat it
+      // wrap init in the session the view expects, filling in the configured
+      // assembly name so callers never repeat it. With no init there is no
+      // session to author: createViewState seeds the view's own `init` with
+      // the configured assembly, so the whole genome is drawn either way —
+      // unlike the linear product, where no init means the import form
       defaultSession: init
         ? {
             name: `New session ${new Date().toLocaleString()}`,
