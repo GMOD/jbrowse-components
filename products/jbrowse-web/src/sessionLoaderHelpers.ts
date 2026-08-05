@@ -40,12 +40,18 @@ export function readSessionFromStorage(query: string) {
 }
 
 export async function readSessionFromIDB(query: string) {
+  let db: Awaited<ReturnType<typeof openSessionDB>> | undefined
   try {
-    const db = await openSessionDB()
+    db = await openSessionDB()
     return await db.get('sessions', query)
   } catch (e) {
     console.error(e)
     return undefined
+  } finally {
+    // one-shot read at boot, from a connection the root model does not share.
+    // Left open it lives for the tab, and an open connection at the old version
+    // is what makes another tab's upgrade hang instead of run.
+    db?.close()
   }
 }
 

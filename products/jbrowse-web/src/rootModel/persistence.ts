@@ -3,11 +3,12 @@ import { sessionLastUsed } from '@jbrowse/web-core'
 import { autorun } from 'mobx'
 
 import { openSessionDB } from '../openSessionDB.ts'
+import { deleteSessionRows, upsertSessionRows } from '../sessionDbOps.ts'
 
-import type { Session, SessionDB } from '../types.ts'
+import type { SessionDBHandle } from '../sessionDbOps.ts'
+import type { Session } from '../types.ts'
 import type { WebRootModel } from './rootModel.ts'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
-import type { IDBPDatabase } from 'idb'
 
 // Autosaves accumulate in IndexedDB forever otherwise: every distinct session
 // leaves a full snapshot behind, eventually risking the storage quota. Keep all
@@ -16,7 +17,7 @@ import type { IDBPDatabase } from 'idb'
 const MAX_AUTOSAVED_SESSIONS = 100
 
 async function pruneOldSessions(
-  sessionDB: IDBPDatabase<SessionDB>,
+  sessionDB: SessionDBHandle,
   activeId: string | undefined,
 ) {
   const metadata = await sessionDB.getAll('metadata')
@@ -24,11 +25,9 @@ async function pruneOldSessions(
     .filter(m => !m.favorite && m.id !== activeId)
     .sort((a, b) => +sessionLastUsed(b) - +sessionLastUsed(a))
     .slice(MAX_AUTOSAVED_SESSIONS)
-  await Promise.all(
-    stale.flatMap(m => [
-      sessionDB.delete('sessions', m.id),
-      sessionDB.delete('metadata', m.id),
-    ]),
+  await deleteSessionRows(
+    sessionDB,
+    stale.map(m => m.id),
   )
 }
 
@@ -38,10 +37,29 @@ async function pruneOldSessions(
 export async function setupSessionDB(self: WebRootModel) {
   try {
     const sessionDB = await openSessionDB()
+    // a plugin-install rebuild can destroy this root while the open (and the
+    // two awaits below) are in flight. addDisposer on a dead node never fires,
+    // so the autorun would be installed and never torn down — left writing a
+    // destroyed session's snapshot for the life of the tab.
+    if (!isAlive(self)) {
+      sessionDB.close()
+      return
+    }
     self.setSessionDB(sessionDB)
     await pruneOldSessions(sessionDB, self.session?.id)
     await self.fetchSessionMetadata()
+    if (!isAlive(self)) {
+      return
+    }
 
+    // notifyError always pushes a fresh snackbar — its "report" action defeats
+    // the duplicate-message check in pushSnackbarMessage — and this autorun
+    // re-runs every 400ms for as long as the session keeps changing. So a
+    // failure that persists (quota exceeded, a connection the browser closed
+    // under us) would stack an unbounded pile of identical error toasts. Report
+    // the first, then stay quiet until it works again, exactly as
+    // setupSessionStorageAutosave does below.
+    let savingFailed = false
     addDisposer(
       self,
       autorun(
@@ -58,30 +76,27 @@ export async function setupSessionDB(self: WebRootModel) {
               const { id, name } = self.session
               const snap = getSnapshot<Session>(self.session)
               const configPath = self.configPath ?? ''
-              await sessionDB.put('sessions', snap, id)
-              const ret = await sessionDB.get('metadata', id)
-              const meta = {
-                favorite: ret?.favorite ?? false,
-                createdAt: ret?.createdAt ?? new Date(),
-                // a session id survives reloads, so createdAt is pinned to
-                // the day the session first appeared and says nothing about
-                // whether it is still in use. This is what the recent list,
-                // the pruner and the age-based delete all rank by.
-                updatedAt: new Date(),
-                name,
+              const meta = await upsertSessionRows(sessionDB, snap, {
                 id,
+                name,
                 configPath,
-              }
-              await sessionDB.put('metadata', meta, id)
+              })
               if (isAlive(self)) {
                 // the one row that changed is the one we just wrote, so merge it
                 // in rather than re-reading every session's metadata on each
                 // debounce tick (see upsertSessionMetadata)
                 self.upsertSessionMetadata(meta)
+                if (savingFailed) {
+                  savingFailed = false
+                  self.session?.notify('Session auto-saving restored', 'info')
+                }
               }
             } catch (e) {
               console.error(e)
-              self.session?.notifyError(`${e}`, e)
+              if (!savingFailed) {
+                savingFailed = true
+                self.session?.notifyError(`${e}`, e)
+              }
             }
           }
         },
@@ -90,7 +105,9 @@ export async function setupSessionDB(self: WebRootModel) {
     )
   } catch (e) {
     console.error(e)
-    self.session?.notifyError(`${e}`, e)
+    if (isAlive(self)) {
+      self.session?.notifyError(`${e}`, e)
+    }
   }
 }
 

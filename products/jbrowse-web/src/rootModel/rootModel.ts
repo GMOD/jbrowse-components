@@ -31,10 +31,16 @@ import packageJSON from '../../package.json' with { type: 'json' }
 import { gitCommit } from '../buildInfo.ts'
 import jbrowseWebFactory from '../jbrowseModel.ts'
 import makeWorkerInstance from '../makeWorkerInstance.ts'
+import {
+  deleteSessionRows,
+  renameSessionRows,
+  setSessionFavoriteRow,
+} from '../sessionDbOps.ts'
 import { setupSessionDB, setupSessionStorageAutosave } from './persistence.ts'
 import { savedSessionMenuItems } from './sessionMenus.ts'
 
-import type { Session, SessionDB, SessionMetadata } from '../types.ts'
+import type { SessionDBHandle } from '../sessionDbOps.ts'
+import type { Session, SessionMetadata } from '../types.ts'
 import type { MenuDefinition } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
@@ -42,7 +48,6 @@ import type {
   AbstractWebRootModel,
   AbstractWebSessionDbRootModel,
 } from '@jbrowse/web-core'
-import type { IDBPDatabase } from 'idb'
 
 // lazies
 const SetDefaultSession = lazy(
@@ -61,14 +66,17 @@ type SessionModelFactory = (args: {
   assemblyConfigSchema: AssemblyConfig
 }) => IAnyType
 
-// Wraps an async saved-session-DB operation so any failure is logged and
-// surfaced to the current session's snackbar, matching the autosave autorun's
-// error handling.
+interface SessionDbHost {
+  sessionDB?: SessionDBHandle
+  session?: { notifyError: (message: string, error?: unknown) => void }
+}
+
+// Every saved-session action is fired off with `void` from a menu or a grid
+// cell, so a rejection has nowhere to land: log it and surface it on the current
+// session's snackbar, matching the autosave autorun's error handling.
 async function withErrorNotify(
-  self: {
-    session?: { notifyError: (message: string, error?: unknown) => void }
-  },
-  fn: () => Promise<void>,
+  self: SessionDbHost,
+  fn: () => Promise<void> | void,
 ) {
   try {
     await fn()
@@ -76,6 +84,21 @@ async function withErrorNotify(
     console.error(e)
     self.session?.notifyError(`${e}`, e)
   }
+}
+
+// The same, for the actions that need the database itself. Skipped entirely
+// until setupSessionDB has opened it — nothing offers these before then, since
+// the menus and the manager widget are both built from savedSessionMetadata,
+// which only exists once it is open.
+async function withSessionDB(
+  self: SessionDbHost,
+  fn: (sessionDB: SessionDBHandle) => Promise<void>,
+) {
+  await withErrorNotify(self, async () => {
+    if (self.sessionDB) {
+      await fn(self.sessionDB)
+    }
+  })
 }
 
 /**
@@ -133,7 +156,7 @@ export default function RootModel({
       /**
        * #volatile
        */
-      sessionDB: undefined as IDBPDatabase<SessionDB> | undefined,
+      sessionDB: undefined as SessionDBHandle | undefined,
       /**
        * #volatile
        */
@@ -209,7 +232,7 @@ export default function RootModel({
       /**
        * #action
        */
-      setSessionDB(sessionDB: IDBPDatabase<SessionDB>) {
+      setSessionDB(sessionDB: SessionDBHandle) {
         self.sessionDB = sessionDB
       },
     }))
@@ -249,8 +272,8 @@ export default function RootModel({
        * #action
        */
       async activateSession(id: string) {
-        await withErrorNotify(self, async () => {
-          const ret = await self.sessionDB?.get('sessions', id)
+        await withSessionDB(self, async sessionDB => {
+          const ret = await sessionDB.get('sessions', id)
           if (ret) {
             self.setSession(ret)
           } else {
@@ -262,46 +285,48 @@ export default function RootModel({
        * #action
        */
       async setSavedSessionFavorite(id: string, favorite: boolean) {
-        await withErrorNotify(self, async () => {
-          if (self.sessionDB) {
-            const ret = await self.sessionDB.get('metadata', id)
-            if (ret) {
-              await self.sessionDB.put('metadata', { ...ret, favorite }, id)
-              await self.fetchSessionMetadata()
-            }
-          }
+        await withSessionDB(self, async sessionDB => {
+          await setSessionFavoriteRow(sessionDB, id, favorite)
+          await self.fetchSessionMetadata()
         })
       },
       /**
        * #action
        */
       async deleteSavedSession(id: string) {
-        await withErrorNotify(self, async () => {
-          if (self.sessionDB) {
-            await self.sessionDB.delete('metadata', id)
-            await self.sessionDB.delete('sessions', id)
-            await self.fetchSessionMetadata()
-          }
+        // the open session is the one the autosave autorun rewrites every 400ms,
+        // so deleting its rows only makes it vanish from the list until the next
+        // edit puts it back — with its favorite flag reset, since that lives in
+        // the row just deleted. Say so instead of doing that.
+        if (id === self.session?.id) {
+          await withErrorNotify(self, () => {
+            self.session?.notify(
+              'Cannot delete the session that is currently open',
+              'info',
+            )
+          })
+          return
+        }
+        await withSessionDB(self, async sessionDB => {
+          await deleteSessionRows(sessionDB, [id])
+          await self.fetchSessionMetadata()
         })
       },
       /**
        * #action
        */
       async renameSavedSession(id: string, name: string) {
-        await withErrorNotify(self, async () => {
-          // renaming the active session goes through the live model so the
-          // autosave autorun rewrites both stores; otherwise edit IDB directly
-          if (id === self.session?.id) {
+        // renaming the active session goes through the live model so the
+        // autosave autorun rewrites both stores; otherwise edit IDB directly
+        if (id === self.session?.id) {
+          await withErrorNotify(self, () => {
             self.renameCurrentSession(name)
-          } else if (self.sessionDB) {
-            const meta = await self.sessionDB.get('metadata', id)
-            const snap = await self.sessionDB.get('sessions', id)
-            if (meta && snap) {
-              await self.sessionDB.put('metadata', { ...meta, name }, id)
-              await self.sessionDB.put('sessions', { ...snap, name }, id)
-              await self.fetchSessionMetadata()
-            }
-          }
+          })
+          return
+        }
+        await withSessionDB(self, async sessionDB => {
+          await renameSessionRows(sessionDB, id, name)
+          await self.fetchSessionMetadata()
         })
       },
     }))

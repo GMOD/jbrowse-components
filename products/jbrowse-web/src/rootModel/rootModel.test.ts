@@ -404,3 +404,20 @@ describe('upsertSessionMetadata', () => {
     expect(root.savedSessionMetadata).toEqual([existing])
   })
 })
+
+describe('deleteSavedSession', () => {
+  test('refuses to delete the open session rather than letting it come back', async () => {
+    const root = getRootModel().create(mainThreadConfig)
+    root.setSession({ name: 'testSession' })
+    const session = root.session!
+
+    // the autosave autorun rewrites the open session's rows every 400ms, so a
+    // delete would only make it vanish until the next edit — and lose its
+    // favorite flag, which lives in the row deleted
+    await root.deleteSavedSession(session.id)
+
+    expect(
+      session.snackbarMessages.map((m: { message: string }) => m.message),
+    ).toEqual(['Cannot delete the session that is currently open'])
+  })
+})
