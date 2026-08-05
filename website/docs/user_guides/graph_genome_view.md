@@ -225,27 +225,21 @@ bubbles** and **Wide bubbles** give every allele a drawn length instead, at the
 cost that below the floor a node no longer draws proportional to its length.
 
 **View menu → Settings → Graph context** is how far the cut follows links past
-the region, and it defaults to **1 hop**. It is the in-app counterpart of
-`odgi extract -c N`, which expands a window by a bounded number of steps rather
-than taking everything between its ends the way `-E` does. An allele's interior
-segments are indexed under their own haplotype's sequence, so a query on the
-reference never reaches them, and a detour that leaves the backbone before the
-window and rejoins after it arrives as two stubs rather than as the one event it
-is. A hop closes those, costing a query per off-reference segment already
-reached. Drop it to **None** only to see what the region query alone reaches,
-which is one detour drawn as two unrelated insertions.
+the region, defaulting to **1 hop**. It is the in-app counterpart of
+`odgi extract -c N`. An allele's interior segments are indexed under their own
+haplotype's sequence, so a reference query never reaches them: a detour that
+leaves the backbone before the window and rejoins after it arrives as two stubs
+rather than as the one event it is. A hop closes those, costing a query per
+off-reference segment already reached. **None** shows what the region query
+alone reaches.
 
 <Figure caption="The paa island cut from the same segments track twice, each cut under the linear view it was made from. The genes and the segments lane are the same in both halves, and the long green block is the island, which the graph draws as the green node labelled 21.8 kb. One colour per node across the pair: the blue box is the 43 bp segment and the orange box the 558 bp one, the same two nodes in both halves, where one CFT073 detour leaves the backbone and rejoins it. Left, at Graph context None, they end in mid-air, because the sequence between them sits on that strain's own contig, which no K12 coordinate reaches. Right, at 1 hop, the red arrow marks the 5.5 kb interior the extra queries found, and the blue and orange nodes are now the two sides of a closed bubble (the node and edge counts in the header rise to match). A hop is one step, so the right half has a loose end of its own where the walk stopped, at 9.5 kb; it expands only over off-reference segments, so it no longer drags in the backbone either side of the window." src="/img/pangenome/graph_context.png" links="None=pangenome/graph_context_none,1 hop=pangenome/graph_context_hop1" />
 
-There is a **2 hops** setting as well, for a graph whose alleles have alleles of
-their own. A hop expands only over off-reference segments — it stops at the
-backbone every end-to-end walk has to traverse, which is gfabase's
-`--cutpoints 1` rule with the rank tag standing in for a connectivity index — so
-on this window the cut closes at 1 hop and 2 adds nothing. HPRC's amylase window
-keeps growing at 2. It stops at two because a frontier is still not a bubble
-decomposition, and never converges on an exact slice however far it runs. For an
-exact slice, cut one with `gfatools view -R <region> -r 1` and open it as a
-[file](#route-2-a-gfa-file).
+A **2 hops** setting handles a graph whose alleles have alleles of their own. On
+this window 1 hop already closes the cut; HPRC's amylase window keeps growing
+at 2. It stops at two because a frontier is not a bubble decomposition and never
+converges on an exact slice. For an exact slice, cut one with
+`gfatools view -R <region> -r 1` and open it as a [file](#route-2-a-gfa-file).
 
 ## Colors that mean the same thing in both panels
 
@@ -287,22 +281,11 @@ The `rank` branch is the graph's own off-ramp charcoal, and fires only on a lane
 opened on a contributing assembly, where rank>0 segments have coordinates of
 their own.
 
-Stable rank needs no window, so it is the one that can live in a hosted config:
+Stable rank needs no window, so it is the one that can live in a hosted config.
+Same track, different `color`:
 
-```json
-{
-  "type": "FeatureTrack",
-  "trackId": "ecoli_minigraph_segments",
-  "name": "minigraph graph: rGFA segments",
-  "assemblyNames": ["K12"],
-  "adapter": {
-    "type": "RgfaTabixAdapter",
-    "uri": "ecoli_minigraph"
-  },
-  "displayDefaults": {
-    "color": "jexl:feature.rank==0 ? 'rgb(52,152,219)' : 'rgb(237,137,44)'"
-  }
-}
+```
+jexl:feature.rank==0 ? 'rgb(52,152,219)' : 'rgb(237,137,44)'
 ```
 
 ## Hovering one panel highlights the other
@@ -359,18 +342,16 @@ where its gene track names it: `clbA` to `clbS`, the colibactin island.
 
 **Skip this if your graph is already indexed.**
 
-The figures above are a minigraph graph of the same five strains. minigraph
-takes its stable names from the input FASTA headers, so give it the PanSN-named
-records rather than the per-strain files (whose contig is called `chr` in all
-five), otherwise every segment lands on an ambiguous `chr` that no later command
-can query by strain. The [pangenome tutorials](/docs/tutorials/pangenome_ecoli)
-run the pipeline end to end.
+The figures above use a minigraph graph of five strains, built by the
+[pangenome tutorials](/docs/tutorials/pangenome_ecoli). One thing to get right:
+minigraph takes its stable names from the input FASTA headers, so feed it
+PanSN-named records rather than the per-strain files, whose contig is called
+`chr` in all five. Otherwise every segment lands on an ambiguous `chr` that no
+later command can query by strain.
 
-A minigraph graph is far less fragmented than a pggb one, since it records
-structural variation rather than every SNP, so a legible window is hundreds of
-kb rather than hundreds of bp.
-`gfatools view -R "K12#1#chr:1000000-1300000" -r 1` cuts a window in stable
-coordinates if you want a file rather than an index.
+A minigraph graph is far less fragmented than a pggb one, recording structural
+variation rather than every SNP, so a legible window is hundreds of kb rather
+than hundreds of bp.
 
 ## Which strain takes which path
 
@@ -481,36 +462,31 @@ alignment, so the BED carries a `CIGAR` column (`2062M63348I`) and an
 }
 ```
 
-`AlignmentsTrack` over a BED looks like a mistake and is the point: the display
-draws whatever carries a CIGAR, so the alleles pack into rows and each draws the
-same insertion marker and deletion bar a read does, at its real size. Without
-the CIGAR a 63 kb allele is a 1 bp feature with the number hidden in its label.
+`AlignmentsTrack` over a BED is deliberate: the display draws whatever carries a
+CIGAR, so the alleles pack into rows and each draws the same insertion marker
+and deletion bar a read does, at its real size. Without the CIGAR a 63 kb allele
+is a 1 bp feature with the number hidden in its label.
 
-The size is measured, the position inside the anchor span is not: a bubble does
+The size is measured; the position inside the anchor span is not. A bubble does
 not state where in the span its indel sits, so the CIGAR puts it at the end by
-convention. Over a 2 kb anchor that is invisible. Over a 100 kb one the marker
-is placed rather than located.
+convention — invisible over a 2 kb anchor, placed rather than located over a 100
+kb one.
 
 `altLen`, `nested`, `discoveryRank` and the traversed `segments` are in the
-popup. A size filter on `delta` is what scales this lane to the HPRC graph's two
-hundred thousand alleles, and it wants the same file on a `FeatureTrack`, whose
-default display has **Edit filters**: `jexl:abs(feature.delta)>10000`. Filter on
-`abs`, since `delta` is negative for a deletion.
+popup. Two filters matter, both from **Edit filters** on the same file loaded as
+a `FeatureTrack`, whose default display has one:
 
-`nested` says whether that `delta` is _the_ length. It is set when the walk
-passed a branch point, so the row is one route through a nested bubble rather
-than the only one, and the build script's closing summary prints how many rows
-carry it. Add `jexl:feature.nested==0` before reading lengths off the lane in
-bulk.
+- `jexl:abs(feature.delta)>10000` scales this lane to HPRC's two hundred
+  thousand alleles. Filter on `abs`, since `delta` is negative for a deletion.
+- `jexl:feature.nested==0` before reading lengths in bulk. `nested` marks a row
+  whose walk passed a branch point, so its `delta` is one route through a nested
+  bubble rather than the only one.
 
 The real limit is whose allele it is. `discoveryRank` and `firstSeenIn` name the
 **first** assembly to contribute a segment, because minigraph collapses: an
 allele four strains share is credited to whichever was added first. That is
-build order, not carriage, which is why this is a lane of alleles rather than
-rows of haplotypes, and a high rank does not mean the earlier assemblies lacked
-the sequence: theirs may have been merged into an existing path, or may not have
-aligned there. Use the per-strain route when you have the assemblies, this one
-when you do not.
+build order, not carriage, and a high rank does not mean the earlier assemblies
+lacked the sequence. Use the per-strain route when you have the assemblies.
 
 ## See also
 
