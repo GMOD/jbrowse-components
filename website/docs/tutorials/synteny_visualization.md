@@ -18,11 +18,16 @@ minimap2 argument order.
 - a JBrowse 2 instance (see the [web quickstart](/docs/quickstart_web), or the
   [desktop quickstart](/docs/quickstart_desktop); the steps below are identical
   on both, and on Desktop the FASTAs and alignments are local files)
-- the [jbrowse CLI](/docs/cli)
-- [minimap2](https://github.com/lh3/minimap2)
-- the three assemblies and their gene annotations, which
-  [`build_hpylori_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hpylori_synteny.sh)
-  downloads from NCBI (see [below](#reproduce-it-end-to-end))
+- [minimap2](https://github.com/lh3/minimap2), `samtools`, htslib (`bgzip`,
+  `tabix`), `unzip`
+- the NCBI
+  [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
+  CLI, which fetches the three assemblies and their gene annotations
+- `node`, for the [JBrowse CLI](/docs/cli)
+
+On Debian/Ubuntu, `apt install minimap2 samtools tabix unzip` covers most of
+these. The NCBI `datasets` CLI is a single-binary download, and `node` comes
+from [nodejs.org](https://nodejs.org/).
 
 ## Three strains, stacked
 
@@ -145,11 +150,10 @@ the remedy.
 
 <Figure caption="A synteny track whose assemblyNames are reversed. No chromosome name resolves, so the band is empty, and the header warning reports the reversal." src="/img/sv_synteny/assembly_order_warning.png" />
 
-| Problem                                          | Possible cause                                  | Solution                                                                                                                                                                    |
-| ------------------------------------------------ | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| The dotplot or synteny view is blank             | Assemblies or track names don't match           | Verify assembly names match your `jbrowse add-assembly` and `add-track -a` commands                                                                                         |
-| Lines don't appear, or appear scattered randomly | The PAF was generated with wrong parameters     | Ensure you passed `-c --eqx` and a preset matching your divergence (`asm5` up to ~5%, `asm10`/`asm20` for more divergent genomes, including divergent same-species strains) |
-| Alignments are reversed or flipped               | The PAF was generated in the opposite direction | Try swapping the order of input genomes: `minimap2 query.fa target.fa`                                                                                                      |
+A view that draws but scatters its blocks randomly is the other failure, and it
+is the alignment rather than the config: a preset too tight for the divergence
+leaves only short spurious anchors. Raise it, `asm5` up to about 5% and
+`asm10`/`asm20` past that, and check `-c --eqx` were passed.
 
 ## Reproduce it end to end
 
@@ -165,20 +169,8 @@ npx --yes serve hpylori_synteny_build/jbrowse2 # then open the printed URL
 It downloads the three RefSeq assemblies, aligns all three strain pairs with
 minimap2, downloads JBrowse, and writes a `config.json` with the three
 assemblies, a gene track per strain, the three pairwise synteny tracks, and a
-default session that stacks all three in one linear synteny view. It requires:
-
-- the NCBI
-  [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
-  CLI
-- `minimap2`
-- `samtools`
-- htslib (`bgzip`, `tabix`)
-- `unzip`
-- `node`
-
-On Debian/Ubuntu, `apt install minimap2 samtools tabix unzip` covers most of
-these. The NCBI `datasets` CLI is a single-binary download, and `node` comes
-from [nodejs.org](https://nodejs.org/).
+default session that stacks all three in one linear synteny view. It needs the
+same tools listed under [Prerequisites](#prerequisites).
 
 ## See also
 

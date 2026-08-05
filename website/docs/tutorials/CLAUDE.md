@@ -8,8 +8,17 @@ produce an input file belong in the tutorial's `scripts/build_*.sh` under
 `text-index` prep rather than re-pasting it.
 
 A tutorial with real requirements opens with a `## Prerequisites` section under
-the TL;DR: a bulleted list and nothing else. The intro goes under its own `##`
-heading, or the TOC files it under "Prerequisites".
+the TL;DR: a bulleted list, optionally followed by one short paragraph saying
+how to install what apt does not carry. Nothing else. The intro goes under its
+own `##` heading, or the TOC files it under "Prerequisites".
+
+A page closes with `## See also`, then `## References` if it has one.
+`## Reproduce it end to end` goes after the data preparation it wraps up, which
+on most pages is just before those two. `See also` is bare links, no sentence
+explaining each one; a reader can follow a link. Don't restate the prerequisite
+tool list inside Reproduce, point at `[Prerequisites](#prerequisites)`. Don't
+write a generic troubleshooting table: a failure worth documenting is one this
+dataset actually produces, and it goes in the prose where it happens.
 
 Don't sell the hosted data — the figures already carry their own live links.
 

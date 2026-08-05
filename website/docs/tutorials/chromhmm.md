@@ -34,7 +34,7 @@ instead we merge them into a single file with an extra `cellType` column and let
 the multi-row feature display split that one track back into a labeled sub-row
 per cell type. Every row shares one config, one adapter, and one fetch.
 
-<Figure src="/img/chromhmm_hoxa_9celltype.png" caption="The nine UCSC ENCODE Broad epigenomes over the HOXA cluster as a single multi-row track, one row per cell type, with hg19 RefSeq genes above. Boxed: the anterior genes HOXA1 to HOXA7, and the posterior genes HOXA9 to HOXA13. Every row except the two blood lines (GM12878, K562) and the embryonic stem line opens the anterior box in promoter red, enhancer orange and transcription green, and stops at the box's right edge. Labeled: the two rows that carry on into the posterior box, HUVEC and HSMM, and H1-hESC, which holds both halves in the magenta poised state rather than shutting them."/>
+<Figure src="/img/chromhmm_hoxa_9celltype.png" caption="The nine UCSC ENCODE Broad epigenomes over the HOXA cluster as one multi-row track, one row per cell type, with hg19 RefSeq genes above. Boxed: the anterior genes HOXA1 to HOXA7, and the posterior HOXA9 to HOXA13. Most rows open the anterior box in promoter red, enhancer orange and transcription green and stop at its right edge; the labeled rows are the exceptions."/>
 
 HOXA is the window the build script opens on because the painting there has a
 structure to find rather than just a lot of color. The genes are transcribed in
@@ -189,7 +189,7 @@ names are mnemonics (`12_EnhBiv`, `14_ReprPCWk`) and the auto-derived key would
 show them as they are. Fifteen `{label, color}` entries spell them out and fix
 their order at 1 to 15 rather than by how much of each is on screen.
 
-<Figure src="/img/chromhmm.png" caption="The same display at 127 epigenomes instead of nine, over the same two boxes with 500 kb of flank, and with the rows ordered by Cluster rows by similarity rather than by config so the dendrogram is in the sidebar. Each row is one epigenome, thin enough that the painting reads as a heatmap of state rather than as blocks. The clustering splits the rows into an upper block that opens the cluster — red active TSS, yellow enhancer, green transcription — and a lower block holding both boxes in grey Polycomb, speckled olive where the same bases are bivalent. Either side of the boxes is quiescent in every row, which is the edge of the domain."/>
+<Figure src="/img/chromhmm.png" caption="127 Roadmap epigenomes over the same two boxes with 500 kb of flank, one row each, ordered by Cluster rows by similarity so the dendrogram is in the sidebar. The clustering splits them in two: an upper block opening the cluster in red active TSS, yellow enhancer and green transcription, and a lower block holding both boxes in grey Polycomb, speckled olive where the same bases are bivalent."/>
 
 At that row count `rowOrder` is 127 lines of config whose only job is to keep
 related tissues adjacent, which is exactly what **Cluster rows by similarity**

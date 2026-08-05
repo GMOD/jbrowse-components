@@ -305,8 +305,8 @@ means four bands, so `tracks` has four entries, all served by the same track:
 }
 ```
 
-`tracks` is one entry per band: `tracks[0]` connects rows 0–1, `tracks[1]` rows
-1–2, and so on to `tracks[3]` for rows 3–4, all served by `ecoli_ava`.
+`tracks` is one entry per band: `tracks[0]` connects rows 0-1, `tracks[1]` rows
+1-2, and so on to `tracks[3]` for rows 3-4, all served by `ecoli_ava`.
 `minAlignmentLength` hides minimap2's many short alignments, which would
 otherwise bury the shared backbone under a dense noise band. Tune it to taste.
 The one-time load settings (row order, tracks, `drawCurves`,
@@ -433,7 +433,7 @@ the [graph genome view](/docs/user_guides/graph_genome_view) opens a window of
 it beside the alignment. Against the ribbons rather than the lanes, the same
 event reads twice over:
 
-<Figure caption="Above, the phenylacetate operon window with NCTC86 over K12 and Sakai under it, each row carrying its own genes and both bands from the all-vs-all PAF. The NCTC86 band runs unbroken across the island; the Sakai band breaks before it and resumes 6 kb past its right edge, with alignment on both flanks, so the gap is the event rather than the edge of the data. Below, the same window as a graph: the two rings mark one segment, s502, as a block in K-12's segments lane and as the long node carrying the island. Both panes take the same reference-position ramp, which is what makes the island green in each; the grey nodes are the ones the ramp has nothing to say about, because they carry no K-12 coordinate at all." src="/img/pangenome/rgfa_paa_bubble.png" />
+<Figure caption="Above, the phenylacetate operon window with NCTC86 over K12 and Sakai under it, each row carrying its own genes and both bands from the all-vs-all PAF. The NCTC86 band runs unbroken across the island; the Sakai band breaks before it and resumes 6 kb past its right edge, with alignment on both flanks. Below, the same window as a graph, on the same reference-position ramp: the two rings mark one segment, s502, as a block in K-12's segments lane and as the long node carrying the island." src="/img/pangenome/rgfa_paa_bubble.png" />
 
 ### From a lane to a stack, for one locus
 

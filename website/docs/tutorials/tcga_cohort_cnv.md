@@ -416,8 +416,8 @@ The binned store is a separate script,
 and not a step of the one above, because it needs none of what that one needed:
 its inputs are the BED and the clinical table, so it runs against the hosted
 copies in well under a minute rather than repeating the download. It needs
-`node` 22 or newer and nothing else, with no `npm install`, since the converter only
-reaches for a BigWig reader on the path this does not take.
+`node` 22 or newer and nothing else, with no `npm install`, since the converter
+only reaches for a BigWig reader on the path this does not take.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_tcga_cohort_cnv_zarr.sh

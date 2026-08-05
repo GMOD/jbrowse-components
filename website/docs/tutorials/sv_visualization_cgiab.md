@@ -13,15 +13,12 @@ HiFi data and its benchmark SV/CNV calls into JBrowse.
 
 ## Prerequisites
 
-- A Linux machine with HTTP access (either a public URL or `http://localhost`).
-  The instructions set up JBrowse 2 on Apache 2 under Ubuntu or Debian; the
-  data-preparation steps work on any platform.
+- A machine with HTTP access, either a public URL or `http://localhost`
 - Approximately 1 TB of free disk space to build the tracks from the raw reads,
   or ~1.5 TB to run the full reproduce pipeline below (the BAM/CRAM files are
   large)
-- At least 32 GB of RAM for the minimap2 alignment step (you can downsize the
-  machine after data prep is done, and a 2 GB instance is sufficient to host the
-  finished site)
+- At least 32 GB of RAM for the minimap2 alignment step. Only data preparation
+  needs it; a 2 GB instance hosts the finished site.
 - The following command-line tools, with versions tested at the time of writing
   in parentheses:
   - [JBrowse CLI](/docs/cli) (`@jbrowse/cli` v3.6.5 or later)
@@ -35,9 +32,6 @@ HiFi data and its benchmark SV/CNV calls into JBrowse.
     for the copy-number tracks
 
 ## The C-GIAB dataset
-
-All of the data-preparation commands below are also collected into one
-reproducible script (see [Reproduce it end to end](#reproduce-it-end-to-end)).
 
 This tutorial loads data from the
 [Cancer Genome in a Bottle (C-GIAB)](https://www.nist.gov/programs-projects/cancer-genome-bottle)
@@ -68,82 +62,35 @@ The SV-visualization concepts used below are covered in the
 [SV inspector guide](/docs/user_guides/sv_inspector_view). This tutorial focuses
 on the data-loading workflow and a few worked examples.
 
-## Install JBrowse 2 with Apache 2
+## Setting up
 
-Install system dependencies and the JBrowse CLI:
+The instance itself is the [web quickstart](/docs/quickstart_web) unchanged. Two
+of the prerequisites are release binaries rather than apt packages:
 
 ```bash
-export OUT=/var/www/html/jbrowse2
-sudo apt-get update
-sudo apt-get install wget apache2 tabix samtools minimap2
-sudo service apache2 start
-
-# Debian/Ubuntu's "nodejs" package is often older than the v18 minimum, so
-# install a current Node.js from NodeSource; see
-# https://github.com/nodesource/distributions
-curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
-sudo apt-get install -y nodejs
-
-# confirm node.js >= v18 is installed
-node --version
-sudo npm install -g @jbrowse/cli
-
-# confirm the jbrowse CLI is installed
-jbrowse --version
-
-# megadepth and HiFiCNV are release binaries (not in apt); fetch both onto PATH
 wget https://github.com/ChristopherWilks/megadepth/releases/download/1.2.0/megadepth
 chmod +x megadepth && sudo mv megadepth /usr/local/bin/
 curl -L https://github.com/PacificBiosciences/HiFiCNV/releases/latest/download/hificnv-linux_x86_64.tar.gz \
   | tar xz --strip-components=1 -C /usr/local/bin --wildcards '*/hificnv'
-
-# download and unzip the latest JBrowse 2, then move it into the web root
-jbrowse create tmpdir
-sudo mv tmpdir $OUT
 ```
 
-`jbrowse create` downloads the latest `jbrowse-web.zip` from the
-[GitHub releases page](https://github.com/GMOD/jbrowse-components/releases) and
-unzips it. See the [web quickstart](/docs/quickstart_web) for more on basic
-JBrowse 2 setup.
+The assembly is the C-GIAB build of GRCh38, with decoys and several masked
+regions. The build does not matter to the visualization, but the same one has to
+be used when converting the BAMs to CRAM below, or every position reads as a
+mismatch.
 
-## Load the human reference
+[Reproduce it end to end](#reproduce-it-end-to-end) fetches that reference and
+every file below. What follows is the part that is track config rather than data
+preparation.
 
-The C-GIAB project uses a specific build of GRCh38 with decoys and several
-masked regions. The build is not critical to the visualization itself, but it is
-important to use the same reference when converting the BAM files to CRAM in
-later steps.
+## The benchmark SV and CNV calls
 
-```bash
-# download and prepare the GRCh38 build used by the C-GIAB project
-curl https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/references/GRCh38/GRCh38_GIABv3_no_alt_analysis_set_maskedGRC_decoys_MAP2K3_KMT2C_KCNJ18.fasta.gz > GRCh38_GIABv3.fa.gz
-gunzip GRCh38_GIABv3.fa.gz
-samtools faidx GRCh38_GIABv3.fa
-jbrowse add-assembly GRCh38_GIABv3.fa --out $OUT --load copy
-
-# add NCBI RefSeq gene annotations
-jbrowse add-track https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz \
-  --indexFile https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz.csi --out $OUT
-```
-
-## Load the C-GIAB benchmark SV and CNV calls
-
-Load the V0.5 HG008-T draft benchmark SV calls (VCF) and CNV calls (BED), both
-kept as remote URL tracks:
-
-```bash
-BENCH=https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIST_HG008-T_somatic-stvar-CNV_DraftBenchmark_V0.5-20260318
-
-jbrowse add-track $BENCH/GRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf.gz \
-  --out $OUT --category "Variant calls"
-jbrowse add-track $BENCH/GRCh38_HG008-T-V0.5_somatic-CNV_PASS.draftbenchmark.calls.bed \
-  --out $OUT --category "Variant calls"
-```
+The V0.5 HG008-T draft benchmark SV calls (VCF) and CNV calls (BED) load as
+remote URL tracks, with nothing downloaded.
 
 The CNV BED ships without a header, so its columns beyond `chrom/start/end` load
 unnamed. Rather than editing the file, name them on the adapter with the
-[`columnNames`](/docs/config/bedadapter/#slot-columnnames) slot in
-`config.json`:
+[`columnNames`](/docs/config/bedadapter/#slot-columnnames) slot:
 
 ```json addtrack
 {
@@ -167,29 +114,14 @@ unnamed. Rather than editing the file, name them on the adapter with the
 }
 ```
 
-## Convert tumor and normal reads to CRAM, and compute coverage
+## The reads and their coverage
 
-The tumor and normal BAM files at the C-GIAB FTP are large and slow to access
-remotely, and lack `MD` tags (which JBrowse uses to display SNP positions
-without re-fetching the reference). Download them with `samtools view`, write
-them out as CRAM, and compute whole-genome coverage with megadepth:
-
-```bash
-# convert remote BAM files to local CRAM files
-# note: this downloads >200 GB of data
-samtools view -@8 ftp://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/PacBio_Revio_20240125/HG008-N-P_PacBio-HiFi-Revio_20240125_35x_GRCh38-GIABv3.bam \
-  --write-index -o HG008-N-P_PacBio-HiFi-Revio_20240125_35x_GRCh38-GIABv3.cram -T GRCh38_GIABv3.fa
-samtools view -@8 ftp://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/PacBio_Revio_20240125/HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3.bam \
-  --write-index -o HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3.cram -T GRCh38_GIABv3.fa
-
-# compute coverage and add both the CRAM and bigWig to the JBrowse config
-# note: this loop takes 10-15 minutes per CRAM
-for i in *.cram; do
-  megadepth $i --bigwig
-  jbrowse add-track $i --out $OUT --category "Reads" --load move
-  jbrowse add-track $i.all.bw --out $OUT --category "Coverage" --load move
-done
-```
+The tumor and normal BAMs at the C-GIAB FTP are large and slow to access
+remotely, and lack `MD` tags, which JBrowse uses to display SNP positions
+without re-fetching the reference. The build script pulls each one through
+`samtools view` into a local CRAM against the reference above and runs
+`megadepth --bigwig` over it, so every read-level figure below is a local CRAM
+with a whole-genome coverage bigWig beside it.
 
 ## Add copy-number tracks from a somatic CNV caller
 
@@ -224,25 +156,11 @@ BAM, and re-running with the normal's VCF instead of the tumor's leaves the
 MAF-informed. This tutorial plots BAF instead of `maf.bw` (below), so the
 `--maf` argument here only decides whether that one unused output is meaningful.
 
-```bash
-# Clair3 tumor calls published alongside C-GIAB's Wakhan CNA run
-curl -O https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIH_HiFi_Wakhan-CNA_20240308/vcf_inputs/merge_output_tumor.vcf.gz
-tabix -p vcf merge_output_tumor.vcf.gz
-
-hificnv \
-  --bam HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3.cram \
-  --ref GRCh38_GIABv3.fa \
-  --maf merge_output_tumor.vcf.gz \
-  --threads 8 --output-prefix hificnv
-# -> hificnv.<sample>.depth.bw, .maf.bw, .copynum.bedgraph, .vcf.gz
-# the depth track is named for the --bam sample, the maf track for the --maf
-# VCF's sample column, so the two file names differ
-
-tabix -p vcf hificnv.*.vcf.gz
-for f in hificnv.*.depth.bw hificnv.*.maf.bw hificnv.*.vcf.gz; do
-  jbrowse add-track "$f" --out $OUT --category "CNV" --load move
-done
-```
+The `--maf` VCF the script passes is the Clair3 tumor calls published alongside
+C-GIAB's own Wakhan CNA run. HiFiCNV writes `hificnv.<sample>.depth.bw`,
+`.maf.bw`, `.copynum.bedgraph` and `.vcf.gz`; the depth track is named for the
+`--bam` sample and the maf track for the `--maf` VCF's sample column, so the two
+file names differ.
 
 Plot the depth bigWig with the **scatter** rendering. The `copynum` bedGraph
 carries HiFiCNV's segmented integer copy number and the CNV VCF its discrete
@@ -258,20 +176,9 @@ have to be computed here. C-GIAB publishes the New York Genome Center's somatic
 pipeline run on this exact tumor/normal pair, and its
 [BIC-seq2](https://doi.org/10.1073/pnas.1110574108) output is one log2
 tumor-versus-normal copy ratio per segment, so both the normalization and the
-segmentation come from a published pipeline rather than from this tutorial.
-Reshaping it into a bedGraph is one line, and a whole-genome segmentation is
-small enough to need no index:
-
-```bash
-NYGC=https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NYGC-somatic-pipeline_20240412/GRCh38-GIABv3
-curl -fL -O "$NYGC/HG008-T--HG008-N.bicseq2.txt"
-
-# chrom, start, end, log2 copy ratio; the file is 1-based, bedGraph is not
-awk 'NR>1 {printf "%s\t%d\t%d\t%.4f\n", $1, $2-1, $3, $9}' \
-  HG008-T--HG008-N.bicseq2.txt > HG008-T_bicseq2_log2ratio.bedgraph
-
-jbrowse add-track HG008-T_bicseq2_log2ratio.bedgraph --out $OUT --category "CNV" --load move
-```
+segmentation come from a published pipeline rather than from this tutorial. It
+reshapes into a bedGraph in one `awk` line, and a whole-genome segmentation is
+small enough to need no index.
 
 Plot it as a **line (step)** over a fixed range, which also keeps a homozygous
 deletion (no reads, so no finite ratio) from setting the axis for the whole
@@ -350,7 +257,7 @@ loads with no local compute:
 
 ```bash
 jbrowse add-track https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/DRAGEN-v4.2.4_ILMN-WGS_20240312/standard/dragen_4.2.4_HG008-mosaic_tumor.cnv.vcf.gz \
-  --out $OUT --category "CNV"
+  --category "CNV"
 ```
 
 [CNVkit](https://github.com/etal/cnvkit) is an open-source alternative; its
@@ -362,17 +269,12 @@ Both callers above fold the two parental alleles into one frequency, so at
 whole-genome zoom an LOH block averages back toward balanced.
 [Wakhan](https://github.com/KolmogorovLab/Wakhan) phases the germline
 heterozygous SNPs and reports copy number _per haplotype_ instead, keeping the
-LOH signal clean. C-GIAB publishes Wakhan output for HG008-T, and it loads with
-nothing to recompute:
-
-```bash
-WAKHAN=https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIH_HiFi_Wakhan-CNA_20240308/bed_output
-jbrowse add-track $WAKHAN/HG008_HiFi_loh_segments.bed --out $OUT --category "CNV"
-```
+LOH signal clean. C-GIAB publishes Wakhan output for HG008-T, and both
+`HG008_HiFi_loh_segments.bed` and `HG008_HiFi_copynumbers_segments.bed` load
+from their FTP URLs with nothing to recompute.
 
 The copy-number file is worth a few more lines of config than `add-track`
-writes. `HG008_HiFi_copynumbers_segments.bed` is long format, one row per
-haplotype:
+writes. It is long format, one row per haplotype:
 
 ```
 #chr	start	end	copynumber_state	coverage	haplotype
@@ -457,33 +359,17 @@ same way.
 The C-GIAB project provides a near-complete telomere-to-telomere de novo
 assembly of HG008-T
 ([Wagner et al. 2026](https://doi.org/10.64898/2026.05.01.722316)),
-haplotype-resolved into T2T scaffolds. Aligning it against GRCh38 with minimap2
-gives a PAF file that JBrowse renders in the synteny and dotplot views, which
-are particularly helpful for complex SVs that are hard to read off the alignment
-track.
+haplotype-resolved into T2T scaffolds. The build script loads it as a second
+JBrowse assembly and aligns it to GRCh38 with `minimap2 -cx asm5`, giving a PAF
+that JBrowse renders in the synteny and dotplot views. Those are particularly
+helpful for complex SVs that are hard to read off the alignment track.
 
-```bash
-# download the T2T tumor assembly (v3.2) and load it as a JBrowse assembly
-curl -L https://nist-giab.s3.us-east-1.amazonaws.com/giab_tumor-normal/analysis/HG008/NIST_asm_dev/HG008T_v3.2/HG008T_v3.2.fasta.gz > HG008T_v3.2.fasta.gz
-gunzip HG008T_v3.2.fasta.gz
-samtools faidx HG008T_v3.2.fasta
-jbrowse add-assembly HG008T_v3.2.fasta --name HG008T_v3.2 --load copy --out $OUT
-
-# align to GRCh38 with minimap2 (about 20 minutes)
-minimap2 -t8 -cx asm5 GRCh38_GIABv3.fa HG008T_v3.2.fasta > HG008T_v3.2.paf
-
-# load the alignment as a synteny track
-jbrowse add-track HG008T_v3.2.paf -a HG008T_v3.2,GRCh38_GIABv3 --out $OUT --load copy
-```
-
-The `-c` flag asks minimap2 to emit base-level CIGAR strings, which encode the
-position of insertions and deletions. The `-x asm5` preset sets parameters for
-same-species assembly-to-assembly alignment. `add-track -a` takes the assemblies
-as `query,target`, the reverse of the `minimap2` argument order
-(`minimap2 target query`): minimap2 is given
-`GRCh38_GIABv3.fa HG008T_v3.2.fasta` (target then query), so the track loads
-with `-a HG008T_v3.2,GRCh38_GIABv3` (query then target). The matched normal
-assembly (`HG008N_v6.3.fasta.gz`, same S3 path) loads the same way. See the
+One argument order is worth stating, because getting it wrong draws an empty
+view: `add-track -a` takes the assemblies as `query,target`, the reverse of
+minimap2's `target query`. An alignment run as
+`minimap2 GRCh38_GIABv3.fa HG008T_v3.2.fasta` therefore loads with
+`-a HG008T_v3.2,GRCh38_GIABv3`. The matched normal assembly
+(`HG008N_v6.3.fasta.gz`, same S3 path) loads the same way. See the
 [synteny track config guide](/docs/config_guides/synteny_track) and the
 [linear synteny view guide](/docs/user_guides/linear_synteny_view).
 
@@ -508,10 +394,10 @@ with `add-track-json` rather than `add-track`, since the settings that make them
 readable (`resolutionMultiplier` on one, `partitionField` on the other) are
 track config rather than command-line flags.
 
-You will need `samtools`, `tabix`, `bcftools`, `bedGraphToBigWig`, `megadepth`,
-`hificnv`, `minimap2`, and `node`. Be warned that it pulls down more than 200
-GB, wants roughly 1.5 TB of free disk and 32 GB of RAM, and the alignment and
-copy-number steps take hours.
+It needs the tools listed under [Prerequisites](#prerequisites), plus `bcftools`
+and `bedGraphToBigWig`. Be warned that it pulls down more than 200 GB, wants
+roughly 1.5 TB of free disk and 32 GB of RAM, and the alignment and copy-number
+steps take hours.
 
 ## Walkthroughs
 
@@ -520,7 +406,7 @@ ways: the SV inspector for whole-genome triage, the linear genome view for
 read-level detail and copy number, and the dotplot/synteny views for
 chromosome-scale rearrangements in the assembly.
 
-### Walkthrough: a chr3–chr13 translocation
+### Walkthrough: a chr3-chr13 translocation
 
 Open your JBrowse 2 instance in a web browser. From the start screen, launch the
 SV inspector, then use **Open from track** to pick the C-GIAB benchmark VCF you
@@ -637,7 +523,7 @@ Nothing in a 60 kb window around this deletion is diploid, which is the point of
 the wider frame above it: chr9 runs CN 1, drops to CN 0 across the deletion,
 returns to CN 1, and only reaches CN 2 several hundred kilobases to the right.
 
-<Figure caption="Top, 1.3 Mb of chr9 with the segmented log2 ratio over the benchmark CNV calls: the lane reads CN 1, CN 0 across the deletion, CN 1, then a CN 2 (diploid) segment on the right, so the focal loss is two steps below diploid rather than one. Bottom, the same deletion at 60 kb: NCBI RefSeq genes, tumor and normal per-base coverage as two rows of one track on a shared fixed range, the PacBio HiFi read pileup, and the CNV calls again. Coverage drops out in the tumor row and not in the normal row; the thin lines crossing the gap in the pileup are single reads carrying the deletion as one gap in their alignment." src="/img/sv_cgiab/driver_cdkn2a_deletion.png" />
+<Figure caption="Top, 1.3 Mb of chr9 with the segmented log2 ratio over the benchmark CNV calls: CN 1, CN 0 across the deletion, CN 1, then a CN 2 segment on the right. Bottom, the same deletion at 60 kb: NCBI RefSeq genes, tumor and normal per-base coverage as two rows of one track on a shared fixed range, the PacBio HiFi read pileup, and the CNV calls again. Coverage drops out in the tumor row and not in the normal; the thin lines crossing the gap in the pileup are single reads carrying the deletion as one gap in their alignment." src="/img/sv_cgiab/driver_cdkn2a_deletion.png" />
 
 #### chr17: loss-with-LOH vs copy-neutral LOH
 
@@ -760,18 +646,6 @@ for the display modes, and the
 [methylation tutorial](/docs/tutorials/methylation) for the aggregate and
 allele-specific views.
 
-## Troubleshooting
-
-| Problem                                                             | Possible cause                                                     | Solution                                                                                                                                                              |
-| ------------------------------------------------------------------- | ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| The browser stalls when viewing SV regions                          | Too large a region is being loaded with full alignment data        | Use the **Force Load** option with care, downsample very high-depth data, or pre-filter to informative reads (e.g. discordant pairs, split reads with the `SA` tag)   |
-| The view is blank, or every position looks like a SNP               | Data was aligned to a different reference than the loaded assembly | Make sure the BAM/CRAM/VCF were aligned against the same FASTA loaded into JBrowse                                                                                    |
-| The synteny or dotplot view is blank                                | The assembly arguments to `add-track -a` are flipped               | If you ran `minimap2 ref.fa query.fa > out.paf`, then load with `jbrowse add-track -a query,ref`. The order matters                                                   |
-| Errors involving Node.js, or the wrong Node.js version is installed | The apt repository ships an older Node.js                          | Run `sudo apt-get purge -y nodejs npm`, then install from [nodejs.org](https://nodejs.org/en/download) or [NodeSource](https://nodesource.com/products/distributions) |
-
-If you hit a problem not covered above, please file an issue on the
-[JBrowse 2 GitHub repository](https://github.com/GMOD/jbrowse-components/issues).
-
 ## Where to go next
 
 Nothing above is specific to C-GIAB. Swap the VCF, the CRAMs and the assembly
@@ -796,14 +670,10 @@ Within C-GIAB itself there is more on the same FTP than this tutorial loads:
 
 ## See also
 
-- [Synteny visualization](/docs/tutorials/synteny_visualization) - the same
-  dotplot/synteny views, worked with bacterial genome assemblies
-- [](/docs/user_guides/sv_visualization) - reference for the SV display types
-  and read-signal patterns used throughout
-- [](/docs/user_guides/sv_inspector_view) - the SV inspector workflow used in
-  the translocation and CUZD1 walkthroughs
-- [](/docs/user_guides/multiquantitative_track) - tumor/normal coverage
-  comparison referenced in the CNV section
+- [](/docs/tutorials/synteny_visualization)
+- [](/docs/user_guides/sv_visualization)
+- [](/docs/user_guides/sv_inspector_view)
+- [](/docs/user_guides/multiquantitative_track)
 
 ## References
 

@@ -190,7 +190,7 @@ grouping step with its phenotype scans `3R` exactly as the steps above scan
 The windowed Fst scan summarizes the inversion into one number per window. To
 see which lines carry it, represent the whole arrangement as a single
 structural-variant call, one `<INV>` record spanning the In(2L)t breakpoints
-(`2L:2,225,744–13,154,180`), genotyped across every karyotyped line, and load it
+(`2L:2,225,744-13,154,180`), genotyped across every karyotyped line, and load it
 in the [multi-sample variant display](/docs/user_guides/multivariant_track). A
 per-SNP view can't hold a ~11 Mb inversion on screen: zoom out far enough to see
 both breakpoints and the individual markers shrink to nothing. One SV call

@@ -70,35 +70,36 @@ instead, so a BAM aligned by STAR without `--outSAMstrandField intronMotif`
 gives arcs of one neutral color. The track in the figure above is named
 `(BAM,XS)` for that reason.
 
-If you zoom into the pileup back at Normal read height, you can see each spliced
-read on its own: its two exon-aligned ends show up as grey boxes joined by a
-thin teal line across the skipped intron. The teal connector is drawn per read,
-separate from the red/blue arcs above, which aggregate every read crossing a
-junction. Mouse over any read to inspect it.
+At Normal read height each spliced read reads on its own: its two exon-aligned
+ends are grey boxes joined by a thin teal line across the skipped intron. That
+connector is drawn per read, separate from the red/blue arcs above it, which
+aggregate every read crossing a junction.
 
 ## Strand-specific RNA-seq
 
 The strand colors on the arcs above come from a per-read tag the aligner wrote
-from the splice-site motif. A _strand-specific_ library (like this one) records
-the strand a different way, in which mate of the pair the read is, so it carries
-the answer for every read rather than only for spliced ones. That matters
-wherever genes sit close together or overlap on opposite strands, since without
-strand information you can't tell which gene a read belongs to.
+from the splice-site motif. A _strand-specific_ library, which this one is,
+records the strand a different way, in which mate of the pair the read is, so it
+carries the answer for every read rather than only for spliced ones. That
+matters wherever genes sit close together or overlap on opposite strands, since
+without strand information nothing says which gene a read belongs to.
 
 The surfeit locus is a tightly-packed gene cluster with genes alternating
-strands (RPL7A, SURF1, SURF2, SURF4). Open the track menu and pick **Color by...
-→ Paired end → First of pair strand**:
+strands (RPL7A, SURF1, SURF2, SURF4), which makes it a window with its own
+control: the coloring is derived from the reads alone, so where it switches has
+to agree with an annotation that was no part of computing it. Open the track
+menu and pick **Color by... → Paired end → First of pair strand**:
 
 <Figure caption="The same reads under the two colorings at the surfeit locus. Default coloring is one grey pileup across the cluster; first-of-pair strand splits it into two colors that switch where the genes do." src="/img/rnaseq/strand_specific.png" links="Default=rnaseq/strand_specific_default,First of pair strand=rnaseq/strand_specific_pair" />
 
 ## Short reads vs long reads
 
 Short-read RNA-seq (usually Illumina, ~150 bp per read) fragments each
-transcript and is reassembled from many overlapping reads. Long-read RNA-seq
-(PacBio IsoSeq, Nanopore) often spans a whole transcript in one read, so a
-single read can align across every exon: its CIGAR carries one `N` skip per
-intron, and JBrowse derives the same splice arcs and per-read connectors from
-those skips:
+transcript, so a transcript is reassembled from many overlapping reads.
+Long-read RNA-seq (PacBio IsoSeq, Nanopore) often spans a whole transcript in
+one read, so a single read can align across every exon: its CIGAR carries one
+`N` skip per intron, and JBrowse derives the same splice arcs and per-read
+connectors from those skips:
 
 <Figure caption="Long-read (IsoSeq) RNA-seq in JBrowse 2. A long read often spans all of a transcript's exons at once, producing a long, clean spliced alignment." src="/img/rnaseq/longread_isoseq.png" />
 
@@ -107,8 +108,8 @@ one isoform, with no inference across junctions required.
 
 ## Loading your own RNA-seq data
 
-Once you have an aligned, sorted, and indexed BAM or CRAM, load it in JBrowse
-Web from **Add track**, or add it to a config as an `AlignmentsTrack`:
+An aligned, sorted and indexed BAM or CRAM loads from **Add track** in JBrowse
+Web, or as an `AlignmentsTrack` in a config:
 
 ```json addtrack
 {
@@ -124,14 +125,14 @@ Web from **Add track**, or add it to a config as an `AlignmentsTrack`:
 ```
 
 The track's `assemblyNames` must match an assembly already configured in
-JBrowse. If you don't have `hg38` set up yet, add it first (see the
-[assemblies configuration guide](/docs/config_guides/assemblies)). To produce
-the BAM, align reads with a spliced aligner such as STAR, then run
-`samtools sort` and `samtools index` so the `.bai` sits beside the BAM.
+JBrowse; see the
+[assemblies configuration guide](/docs/config_guides/assemblies). To produce the
+BAM, align reads with a spliced aligner such as STAR, then run `samtools sort`
+and `samtools index` so the `.bai` sits beside the BAM.
 
 See the [alignments track config guide](/docs/config_guides/alignments_track)
-for adapter and display options. For a precomputed coverage signal (e.g. a
-strand-specific BigWig produced by your aligner), load it separately as a
+for adapter and display options. A precomputed coverage signal, such as a
+strand-specific BigWig from the aligner, loads separately as a
 [quantitative track](/docs/user_guides/quantitative_track).
 
 ## See also
@@ -139,7 +140,5 @@ strand-specific BigWig produced by your aligner), load it separately as a
 - [](/docs/user_guides/alignments_track)
 - [](/docs/user_guides/quantitative_track)
 - [Gene tracks](/docs/user_guides/gene_track)
-- [JBrowse Jupyter / anywidget](/docs/jbrowse_jupyter), whose
-  differential-expression example takes a DE table straight to a gene track
-  colored by call, in a notebook
+- [JBrowse Jupyter / anywidget](/docs/jbrowse_jupyter)
 - [Gallery: alignments and long reads](/gallery/#alignments)
