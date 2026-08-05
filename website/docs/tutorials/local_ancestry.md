@@ -240,14 +240,17 @@ inference against the two panels it was given, and both of them are modern: gray
 wolves on one side, breed dogs on the other. Whatever the two share, which is
 everything domestication carried over, is in both panels and separates nothing,
 so it paints dog. Orange marks the stretches that still look like a present-day
-gray wolf and unlike a breed dog, and after that much divergence the only way to
-be in that state is to have acquired the haplotype recently. The 20th-century
-crosses are what the method can see; domestication is what it is blind to by
-construction. Both ends of the figure say so on their own: the held-out gray
-wolves paint near-solid orange, so the panels can tell wolf from dog where the
-difference is real, and the German Shepherd lineage at the foot paints solid
-dog, though it descends from wolves exactly as much as the Saarloos above it
-does.
+gray wolf and unlike a breed dog. A long run of that is hard to come by any way
+other than recently, for the reason above: recombination has had few generations
+to break it up. A short one is weaker evidence and need not be a cross at all,
+since some variation was never sorted cleanly between the two panels in the
+first place, which is why block length is read before wolf fraction. The
+20th-century crosses are what the method can see; domestication is what it is
+blind to by construction. Both ends of the figure say so on their own: the
+held-out gray wolves paint near-solid orange, so the panels can tell wolf from
+dog where the difference is real, and the German Shepherd lineage at the foot
+paints solid dog, though it descends from wolves exactly as much as the Saarloos
+above it does.
 
 One feature of the painting is not about the dogs at all. Blocks break up
 towards the end of chr1, and that is the genetic map rather than the animals.
@@ -308,8 +311,7 @@ in one animal is what a recent introgression looks like and also what a phasing
 error looks like, and one animal on one chromosome cannot separate those. The
 same paper reports this breed as the one with the most within-breed spread in
 wolf ancestry it found, which is a claim a one-dog-per-breed sweep cannot check,
-so the section below paints the breed again, beside the breeds it was
-made from.
+so the section below paints the breed again, beside the breeds it was made from.
 
 Those readings are all row-order arguments, and the order above came out of
 FLARE's per-sample summary, so it can only rank what the summary already ranked.
