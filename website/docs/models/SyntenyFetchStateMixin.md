@@ -34,6 +34,7 @@ here and are written identically in both; `loading` is not — synteny subtracts
 | <span id="volatile-fetching">**fetching**</span><br><code>fetching: false</code> | True while an RPC fetch is in-flight. Combined with `ready` it distinguishes a first load (no data yet — full overlay) from a refetch (stale content still on screen — corner indicator). |
 | <span id="volatile-loadedfetchkey">**loadedFetchKey**</span><br><code>loadedFetchKey: undefined as string &#124; undefined</code> | Fetch-input signature the currently held data was fetched for (each display builds its own `currentFetchKey`). Compared against the live inputs in `dataCurrent` to catch data gone stale after a region/zoom change — including during the pre-refetch debounce gap, where `fetching` is still false and would otherwise report done on content drawn against the old viewport. |
 | <span id="volatile-assembliesswapped">**assembliesSwapped**</span><br><code>assembliesSwapped: false</code> | Set once at view load by a refName-comparison check, independent of the per-render fetch, so it never re-fires or misfires on zoom. Surfaces through each display's `warnings`. |
+| <span id="volatile-reloadcounter">**reloadCounter**</span><br><code>reloadCounter: 0</code> | Bumped by `reload()`. Read unconditionally by `installComparativeFetchAutorun`, so it is always in the autorun's dependency set — which is the whole point: after an error the fetch inputs are unchanged, so nothing else would ever refire the autorun and the error banner's Retry would be a button that does nothing. |
 
 ## Getters
 
@@ -49,3 +50,4 @@ here and are written identically in both; `loading` is not — synteny subtracts
 | --- | --- |
 | <span id="action-setfetching">**setFetching**</span><br><code>(arg: boolean) =&gt; void</code> |  |
 | <span id="action-setassembliesswapped">**setAssembliesSwapped**</span><br><code>(arg: boolean) =&gt; void</code> |  |
+| <span id="action-reload">**reload**</span><br><code>() =&gt; void</code> | Re-run the fetch. The display's half of the retry contract (agent-docs/reference/DISPLAYCHROME.md, "The retry affordance is a contract"): every state that can raise an error banner must be one this actually undoes. Clearing the error is not enough on its own — the autorun re-clears it at the start of each run anyway — so this bumps a counter the autorun tracks, which is what makes the refetch happen. |
