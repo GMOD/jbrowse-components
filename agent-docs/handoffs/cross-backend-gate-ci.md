@@ -169,11 +169,14 @@ same entry.
 - **The gate is blind to a bug both backends share.** It would have caught
   neither render bug found on 2026-07-16. Goldens are the other half, and they
   only refresh by hand.
-- **Threshold overrides are where the gate is told not to look.**
-  `grep -c 'match:' crossBackendGate.ts` — nine entries, unchanged since
-  `333db010c9`. This file said seven for several rounds, so count them rather
-  than trusting the number. That list wants auditing, not growing — see the next
-  section for the entry to start with.
+- **Threshold overrides are where the gate is told not to look — and the list is
+  now audited down to one.** It held eight entries (not nine: this file said
+  nine, and the `grep -c 'match:'` it recommended returns nine because it counts
+  the type annotation on the declaration line — the exact miscount it was warning
+  about). Seven were deleted on 2026-08-05, measuring 0.00–2.22% against ceilings
+  of 5–10%. Only `inversion-pbsim` survives. **The audit method is written at the
+  top of `THRESHOLD_OVERRIDES`; re-run it after any change to a shared draw
+  path**, and never add an entry without a measured number.
 - **`EXCLUDED_SUBSTRINGS` is empty.** Scoping is `--ci-gate` / `--filter`.
 - **A stable drift percentage does not mean a stable failure.**
   `fullpage_methylation_snapshot` came in at exactly 37.98% in two runs hours
@@ -276,11 +279,10 @@ verdict is a 5-17% divergence the gate is configured to ignore.
 
 ## Next, in order
 
-1. **Delete the `inversion-paired-coverage` override.** The two fixes took it to
-   2.24%, under the 3% default, so the entry earns nothing. Left in on a single
-   post-fix measurement — take a second reading and drop it. (The
-   `inversion-pbsim` entry stays at 10%: the remaining 6.59% is understood and
-   deliberately not being chased, see above.)
+1. **Nothing on the override list.** It was audited to one entry on 2026-08-05
+   (see "Do not re-derive"), and `inversion-pbsim` stays at 10% because its
+   remaining 6.59% is understood and deliberately not being chased. The audit
+   is the thing to repeat, not revisit.
 2. **Widen `CI_GATE_SUITES`** with the two alignments suites, then the local
    deterministic ones never measured under swiftshader (arcs, workspaces, redraw,
    cursor-guides, svg-export, custom-url, variant-force-load). Arcs and
