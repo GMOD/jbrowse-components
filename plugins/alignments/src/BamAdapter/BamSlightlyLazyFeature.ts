@@ -292,6 +292,13 @@ class RegionBoundBamFeature implements MismatchFeature {
     return this.base.getTag(tagName)
   }
 
+  // Same duck-typing, same silence if it goes missing: modifications-utils'
+  // getTagAlt() falls back to two getTag calls, i.e. two full walks of the tag
+  // block, whenever a feature lacks this.
+  getTagAlt(tagName: string, altName: string) {
+    return this.base.getTagAlt(tagName, altName)
+  }
+
   // 'mismatches' is the one field that depends on the binding — everything else
   // is a property of the record and forwards.
   get(name: 'refName'): string

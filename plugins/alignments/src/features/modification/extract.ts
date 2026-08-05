@@ -7,7 +7,6 @@ import {
   CIGAR_N,
   CIGAR_S,
   CIGAR_X,
-  parseCigar2,
 } from '@jbrowse/cigar-utils'
 import {
   methylated5hmC,
@@ -29,6 +28,7 @@ import {
 } from '../../shared/types.ts'
 import { getFlags } from '../../shared/util.ts'
 import { getColorForModification, getTagAlt } from '../../util.ts'
+import { packedCigarOps } from '../alignedBaseWalk.ts'
 
 import type { ColorBy } from '../../shared/types.ts'
 import type { ModificationEntry } from '../../shared/webglRpcTypes.ts'
@@ -84,15 +84,21 @@ export function extractModifications(
   if (!mmTag) {
     return
   }
-  const cigarString = feature.get('CIGAR') as string | undefined
-  if (!cigarString) {
+  // packedCigarOps, not parseCigar2(feature.get('CIGAR')): parseCigar2 emits
+  // `(len << 4) | opIndex`, which is exactly what NUMERIC_CIGAR already holds,
+  // so the string form made BAM/CRAM build a CIGAR string out of their packed
+  // ops purely for this to parse straight back. This function runs per read on
+  // every render for anything carrying MM — not gated on colorBy — so that round
+  // trip was paid across a whole nanopore pileup. Text-only features still get
+  // the parse, inside the helper.
+  const cigarOps = packedCigarOps(feature)
+  if (!cigarOps?.length) {
     return
   }
   const seq = feature.get('seq') as string | undefined
   if (!seq) {
     return
   }
-  const cigarOps = parseCigar2(cigarString)
   const modifications = getModPositions(mmTag, seq, strand)
   const probabilities = getModProbabilities(feature)
 
@@ -230,12 +236,13 @@ export function extractBisulfite(
   twoColor: boolean,
   modificationsData: ModificationEntry[],
 ) {
-  const cigarString = feature.get('CIGAR') as string | undefined
+  // packed ops rather than a CIGAR string, for the reason in
+  // extractModifications above
+  const cigarOps = packedCigarOps(feature)
   const seq = feature.get('seq') as string | undefined
-  if (!cigarString || !seq) {
+  if (!cigarOps?.length || !seq) {
     return
   }
-  const cigarOps = parseCigar2(cigarString)
   const flags = getFlags(feature)
   const isReverse = strand === -1
   const isSecondOfPair = (flags & SAM_FLAG_SECOND_IN_PAIR) !== 0
