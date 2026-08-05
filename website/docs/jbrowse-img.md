@@ -846,6 +846,37 @@ The session names its tracks by trackId, so the `--config` you pass has to be
 the one those ids come from — `data/config.json` here, which defines hg19 and
 the `ngmlr_cov` coverage track that `data/skbr3/session.json` opens.
 
+`data/skbr3/session.json` is also worth reading as the short way to write one by
+hand. A view says where to go and what to open with an `init` block, and each
+track entry carries its own display settings inline:
+
+```json
+{
+  "session": {
+    "name": "SKBR3 whole-genome coverage",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "init": {
+          "assembly": "hg19",
+          "tracks": [
+            {
+              "trackId": "ngmlr_cov",
+              "height": 275,
+              "defaultRendering": "scatter"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+```
+
+Omitting `loc` shows the whole genome. Those inline track keys are the same
+vocabulary as the track's config — anything the track menu can set, a session
+can ask for here.
+
 ### Respects the order of the files you input
 
 Example:

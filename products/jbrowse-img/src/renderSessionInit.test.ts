@@ -33,6 +33,23 @@ import { renderRegion } from './renderRegion.tsx'
 // node.
 enableStaticRendering(true)
 
+// jsdom's realm has no `fetch`, and the bgzf wasm loader reads itself from an
+// inlined `data:` URL through one — so opening any bgzf-backed track here dies
+// on a missing global rather than on anything to do with the test. Decoding
+// data: is all that is wanted; nothing below touches the network.
+global.fetch = (async (input: RequestInfo | URL) => {
+  const url = String(input)
+  const payload = url.slice(url.indexOf(',') + 1)
+  const buf = Buffer.from(
+    url.includes(';base64,') ? payload : decodeURIComponent(payload),
+    url.includes(';base64,') ? 'base64' : 'utf8',
+  )
+  return {
+    arrayBuffer: async () =>
+      buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength),
+  }
+}) as unknown as typeof fetch
+
 const configFile = path.join(__dirname, '..', 'data', 'volvox', 'config.json')
 
 function writeSession(session: unknown) {
@@ -64,6 +81,42 @@ test('renders a session whose view carries an init blob', async () => {
   expect(svg).toContain('<svg')
   // the ruler labels the region it navigated to, so this fails on an empty view
   expect(svg).toContain('ctgA')
+}, 60000)
+
+// What data/skbr3/session.json relies on: an init track entry carries its
+// display settings inline, and `showTrackGeneric` routes the ones that are
+// config slots onto the display config. Written on the display node of a
+// snapshot-form session these would be dropped in silence, so the two forms are
+// not interchangeable and this is the one that works.
+test('applies display settings written inline on an init track', async () => {
+  const renderAtHeight = (height: number) =>
+    renderRegion({
+      ...opts,
+      noRasterize: true,
+      session: writeSession({
+        name: 'inline display settings',
+        views: [
+          {
+            ...view,
+            init: {
+              assembly: 'volvox',
+              loc: 'ctgA:1-4000',
+              tracks: [{ trackId: 'volvox_sv', height }],
+            },
+          },
+        ],
+      }),
+    })
+  const rootHeight = (svg: string) => Number(/height="(\d+)"/.exec(svg)![1])
+
+  // Two renders differing only in the inline height, so the assertion is the
+  // difference rather than an absolute that the ruler/header sizing owns. An
+  // ignored setting would make these identical.
+  const [short, tall] = await Promise.all([
+    renderAtHeight(100),
+    renderAtHeight(234),
+  ])
+  expect(rootHeight(tall) - rootHeight(short)).toBe(134)
 }, 60000)
 
 test('renders a session whose view spells out displayedRegions', async () => {
