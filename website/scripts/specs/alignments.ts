@@ -531,16 +531,19 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           // flagship sashimi shot: label each junction arc with its supporting-
           // read count, and use 'auto' placement so arcs split above/below by
           // strand instead of all stacking upward. super-compact
-          // (featureHeight 1 / spacing 0) packs the pileup so it fits in view
-          // instead of hitting "Max layout height reached". log coverage scale
-          // so a single tall pileup peak doesn't flatten the rest of the
-          // coverage histogram behind the arcs
+          // (featureHeight 1) packs the pileup so it fits in view instead of
+          // hitting "Max layout height reached". log coverage scale so a
+          // single tall pileup peak doesn't flatten the rest of the coverage
+          // histogram behind the arcs.
+          //
+          // Don't add a featureSpacing here: the inter-read gap is derived
+          // from featureHeight by featureSpacingForHeight (0 at or below 3px,
+          // 1 above) and is not a config slot, so the display would drop it.
           type: 'LinearAlignmentsDisplay',
           showSashimiLabels: true,
           sashimiArcsMode: 'auto',
           scaleType: 'log',
           featureHeight: 1,
-          featureSpacing: 0,
         },
       ],
     }),
@@ -1030,7 +1033,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
 
   // Compact read drawing on real human data: HG002 Illumina hs37d5 2x250 (high
   // coverage, so the difference compact mode makes is obvious). The display is
-  // preset to the compact preset (featureHeight 3 / spacing 0) so the pileup is
+  // preset to the compact preset (featureHeight 3) so the pileup is
   // already drawn compact; the track menu is opened to the "Read height"
   // submenu with the now-active Compact option boxed — i.e. the toggled state and
   // the menu path that sets it, in one figure. Remote DEMO_CONFIG data.
@@ -1045,7 +1048,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           trackId: 'illumina_hg002',
           type: 'LinearAlignmentsDisplay',
           featureHeight: 3,
-          featureSpacing: 0,
         },
       ],
     }),
@@ -1184,7 +1186,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     viewportHeight: 700,
   },
 
-  // Compact read drawing mode: featureHeight 3 / spacing 0 packs the full ACTB
+  // Compact read drawing mode: featureHeight 3 packs the full ACTB
   // read stack into view, with maxHeight raised so the whole pileup renders
   // instead of clipping at "Max layout height reached" — that full, dense stack
   // (deep = highly expressed) is the point compact mode makes, and what the
@@ -1203,7 +1205,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
           type: 'LinearAlignmentsDisplay',
           featureHeight: 3,
-          featureSpacing: 0,
           maxHeight: 2000,
           // taller SNPCoverage band + shorter pileup viewport + shorter
           // browser: coverageHeight is the LinearAlignmentsDisplay
@@ -1245,7 +1246,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           coverageHeight: 120,
           height: 620,
           featureHeight: 1,
-          featureSpacing: 0,
         },
       ],
     }),

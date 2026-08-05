@@ -10,7 +10,6 @@ color
 colorDomain
 connectedView
 displayMode
-featureSpacing
 gfaLocation
 height
 jexlFiltersSetting
