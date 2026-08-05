@@ -404,4 +404,98 @@ export const mafSpecs: ScreenshotSpec[] = [
       { type: 'delay', ms: 2000 },
     ],
   },
+
+  // The two halves of the summary tier, on one track at two zooms. Same
+  // session, same ~30 mammals, same region centre — only the width changes, so
+  // the figure isolates what the `summaryAdapter` does rather than confounding
+  // it with a different locus or a different species set.
+  //
+  // Both parts pin `height` and `subtreeFilter` identically so the two panels
+  // stack at the same width with their rows on the same lines; a reader
+  // comparing them is meant to see one track change behaviour, not two figures.
+  {
+    // ~180kb: past the 20kb force-load floor, which is exactly where the full
+    // alignment fetch would be blocked and where `showSummary` takes the rows
+    // over instead. One bar per species per aligned run, shaded by the
+    // summary's score and carrying no sequence at all — the whole point being
+    // that this renders without downloading 30 species' bases.
+    mode: 'url',
+    name: 'maf_summary_zoomed_out',
+    url: sessionSpec(HG38_470WAY, {
+      sessionTracks: [HG38_NCBI_GENE_TRACK],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: '12:6,450,000-6,630,000',
+          trackLabels: 'offset',
+          tracks: [
+            {
+              trackId: 'ncbi_genes_hg38_ucsc',
+              type: 'LinearBasicDisplay',
+              geneGlyphMode: 'longestCoding',
+              showOnlyGenes: true,
+            },
+            {
+              trackId: 'hg38.multiz470way',
+              type: 'LinearMafDisplay',
+              height: 460,
+              subtreeFilter: HG38_470WAY_30,
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: '6,4',
+    readyTimeout: 120000,
+    viewportWidth: 1000,
+    viewportHeight: 700,
+    settleMs: 18000,
+    hideTooltip: true,
+    actions: [{ type: 'delay', ms: 2000 }],
+  },
+  {
+    // The same track ~900x closer, inside a GAPDH exon: below the floor the
+    // alignment itself is affordable, so the rows resolve into per-base cells
+    // with mismatches to human colored.
+    mode: 'url',
+    name: 'maf_summary_zoomed_in',
+    url: sessionSpec(HG38_470WAY, {
+      sessionTracks: [HG38_NCBI_GENE_TRACK],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: '12:6,537,000-6,537,200',
+          trackLabels: 'offset',
+          tracks: [
+            {
+              trackId: 'ncbi_genes_hg38_ucsc',
+              type: 'LinearBasicDisplay',
+              geneGlyphMode: 'longestCoding',
+              showOnlyGenes: true,
+            },
+            {
+              trackId: 'hg38.multiz470way',
+              type: 'LinearMafDisplay',
+              height: 460,
+              subtreeFilter: HG38_470WAY_30,
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: '6,537',
+    readyTimeout: 120000,
+    viewportWidth: 1000,
+    viewportHeight: 700,
+    settleMs: 18000,
+    hideTooltip: true,
+    actions: [{ type: 'delay', ms: 2000 }],
+  },
+  {
+    mode: 'compose',
+    name: 'maf_summary_tier',
+    parts: ['maf_summary_zoomed_out', 'maf_summary_zoomed_in'],
+  },
 ]
