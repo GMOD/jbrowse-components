@@ -312,6 +312,15 @@ jobs:
         run: node scripts/pack.ts
       - name: Check emitted .d.ts don't name workspace source paths
         run: pnpm check-declaration-leaks
+      # 39 end-to-end jb2export renders (BAM/CRAM/VCF, dotplot, synteny,
+      # circular, track modifiers, the failure paths) that gated nothing until
+      # now. Lives here rather than in `test` because it runs the CLI from
+      # source against the workspace's BUILT esm — which the pack step above
+      # has just produced — and because this job already installs the cairo/
+      # pango/rsvg headers node-canvas needs. Fully offline: every fixture is
+      # local, including the --hub config.
+      - name: Test @jbrowse/img end-to-end renders
+        run: pnpm --filter @jbrowse/img test:integration
       - name: Test build
         run: BUILT_TESTS=1 pnpm built-test-ci
       - name: Upload packed artifacts for component tests

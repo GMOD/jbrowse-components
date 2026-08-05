@@ -109,6 +109,7 @@
     "products/jbrowse-desktop/scripts",
     "products/jbrowse-web/scripts",
     "products/jbrowse-img/src/**/*.test.mjs",
+    "**/*.tmp.*",
     "products/**/examples-site/scripts",
     "products/aws",
     "**/test_data",

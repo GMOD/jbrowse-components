@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs'
+import { statSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
 // ESM resolve hooks for the integration tests (see integrationRegister.mjs).
@@ -26,18 +26,35 @@ function transitionGroup(specifier) {
 // source: it is pure `.ts`, so a local edit is live with no rebuild.
 // The node_modules exclusion keeps this to workspace source; see resolve.ts.
 const SRC_PATH =
-  /^(file:\/\/(?!.*\/node_modules\/).*\/(?:packages|plugins|products)\/(?!jbrowse-img\/)[^/]+)\/src\/(.+)\.tsx?$/
+  /^(file:\/\/(?!.*\/node_modules\/).*\/((?:packages|plugins|products)\/(?!jbrowse-img\/)[^/]+))\/src\/(.+)\.tsx?$/
 
+const staleReported = new Set()
+
+// Missing esm/ is fatal, stale esm/ warns — see resolve.ts for why the second
+// can't be an error (incremental tsc legitimately leaves output older than a
+// src file whose mtime moved).
 function builtUrl(url) {
   const m = SRC_PATH.exec(url)
   if (!m) {
     return undefined
   }
-  const built = `${m[1]}/esm/${m[2]}.js`
-  if (!existsSync(fileURLToPath(built))) {
+  const [, pkgUrl, pkgName, modulePath] = m
+  const built = `${pkgUrl}/esm/${modulePath}.js`
+  let builtStat
+  try {
+    builtStat = statSync(fileURLToPath(built))
+  } catch {
     throw new Error(
       `${fileURLToPath(built)} is missing — run \`pnpm build\` at the repo root before running the integration tests`,
     )
+  }
+  if (!staleReported.has(pkgName)) {
+    if (statSync(fileURLToPath(url)).mtimeMs > builtStat.mtimeMs) {
+      staleReported.add(pkgName)
+      console.warn(
+        `${pkgName}/src is newer than its esm/ — run \`pnpm build\` if a recent change is missing`,
+      )
+    }
   }
   return built
 }

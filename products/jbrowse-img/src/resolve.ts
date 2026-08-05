@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs'
+import { statSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
 import type { Module } from 'node:module'
@@ -42,22 +42,47 @@ function transitionGroup(specifier: string) {
 // dependency that happens to ship .ts under a `products/`-shaped path must not
 // be dragged into the redirect (it would hit the throw below).
 const SRC_PATH =
-  /^(file:\/\/(?!.*\/node_modules\/).*\/(?:packages|plugins|products)\/(?!jbrowse-img\/)[^/]+)\/src\/(.+)\.tsx?$/
+  /^(file:\/\/(?!.*\/node_modules\/).*\/((?:packages|plugins|products)\/(?!jbrowse-img\/)[^/]+))\/src\/(.+)\.tsx?$/
 
+// Packages already reported stale, so the mtime pair is compared once per
+// package rather than once per module.
+const staleReported = new Set<string>()
+
+// The redirect's two failure modes, both of which otherwise present as
+// something other than what they are.
+//
+// Missing esm/ is fatal: left alone it surfaces as ERR_MODULE_NOT_FOUND naming
+// a path the user never wrote.
+//
+// STALE esm/ only warns. It is the more dangerous of the two — a figure or a
+// test renders old plugin code and looks entirely correct — but it cannot be
+// fatal, because `tsc --build` is incremental and legitimately leaves an
+// unchanged module's output older than a src file whose mtime moved (a branch
+// switch, a checkout). Failing there would demand a rebuild that then changes
+// nothing. A warning names the package, which is enough to explain a figure
+// that didn't pick up a change.
 function builtUrl(url: string) {
   const m = SRC_PATH.exec(url)
   if (!m) {
     return undefined
   }
-  const [, pkg, modulePath] = m
-  const built = `${pkg}/esm/${modulePath}.js`
-  if (!existsSync(fileURLToPath(built))) {
-    // A missing esm/ is the one failure mode of this redirect, and left alone
-    // it surfaces as ERR_MODULE_NOT_FOUND pointing at a path the user never
-    // wrote. Name the real cause instead.
+  const [, pkgUrl, pkgName, modulePath] = m
+  const built = `${pkgUrl}/esm/${modulePath}.js`
+  let builtStat
+  try {
+    builtStat = statSync(fileURLToPath(built))
+  } catch {
     throw new Error(
       `jb2export: ${fileURLToPath(built)} is missing — run \`pnpm build\` at the repo root before running this CLI from source`,
     )
+  }
+  if (!staleReported.has(pkgName!)) {
+    if (statSync(fileURLToPath(url)).mtimeMs > builtStat.mtimeMs) {
+      staleReported.add(pkgName!)
+      console.warn(
+        `jb2export: ${pkgName}/src is newer than its esm/ — run \`pnpm build\` if a recent change is missing from this render`,
+      )
+    }
   }
   return built
 }
