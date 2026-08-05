@@ -197,10 +197,27 @@ reads". **That explanation is refuted.** The four drifts were
 
 — the same figures to two decimals across **two completely different
 rasterizers**. AA/MSAA noise cannot survive swapping the rasterizer; a systematic
-difference in *what is drawn* can. So this is the entry most likely to be hiding
-a real canvas2d-vs-GPU bug, and a "passing" 16.71% is not a check. Start the
-override audit here, and do it before `Long Reads and Inversions` joins
-`CI_GATE_SUITES`.
+difference in *what is drawn* can.
+
+**Audited, and it was hiding two real bugs.** One is fixed (`ba14fd5669`):
+canvas2d anchored its sub-pixel minimum-width expansion at the mark's LEFT edge
+while the shader's `expandMinWidthX` centers it, so every coverage mark past
+1bp/px sat half a pixel right of the GPU's. Centering the three canvas call sites
+took the worst pair **16.71% → 7.32%** and halved the differing pixels; the
+override came down 20% → 10%. Eight canvas2d goldens moved, all in Long Reads and
+Inversions — no other view is zoomed out far enough for the clamp to fire.
+
+The residual 7.32% is a **second bug, diagnosed but open**: `TRIANGLE_H` is 4.5,
+so the interbase bar's top edge lands mid-pixel on *both* backends, and they
+resolve that differently — canvas2d alpha-blends ~40 overlapping 1px bars per
+column and converges to opaque, the GPU's coverage resolve happens once and stays
+at exactly 50%. One whole row reads `128,0,128` against `191,127,191`. Snapping
+that edge to a whole pixel on both sides should close it; the shader half needs
+`pnpm gen:shaders`, not `autogen`.
+
+The method is the transferable part: **a threshold override is a claim about why
+two backends disagree, and claims are testable.** This one said "antialiasing",
+which predicts the number moves when the rasterizer changes. It didn't.
 
 ## Alignments: re-measured, and the drift is gone
 
@@ -242,9 +259,11 @@ verdict is a 5-17% divergence the gate is configured to ignore.
 
 ## Next, in order
 
-1. **Audit the `inversion-pbsim` override** (above). It is now a well-posed bug
-   hunt rather than a vague cleanup, and it gates widening the CI scope to the
-   long-read suites.
+1. **Close the second pbsim bug** (above): snap the interbase bar's top edge off
+   `TRIANGLE_H = 4.5` to a whole pixel on both backends, then take the
+   `inversion-pbsim` override below 10% again. `inversion-paired-coverage` is
+   already down to 2.24% against a 3% default — take a second reading and delete
+   that entry outright.
 2. **Widen `CI_GATE_SUITES`** with the two alignments suites, then the local
    deterministic ones never measured under swiftshader (arcs, workspaces, redraw,
    cursor-guides, svg-export, custom-url, variant-force-load). Arcs and
