@@ -30,7 +30,6 @@ featureColor
 featureHighlights
 featureSpacing
 gfaLocation
-groupBy
 height
 heightOverride
 hideSelfAlignments
