@@ -76,6 +76,7 @@ export function doAfterAttach(
         // fetch depends on — LOD tier, both axes' zoom and displayed-region
         // order, and the snapped h-axis fetch window — into one computed, so
         // the autorun refires exactly when a refetch is actually needed.
+        // #region untracked
         const fetchKey = self.currentFetchKey
         // Untracked: the values behind that key. Reading them here rather than
         // as deps keeps raw offsetPx/width changes from refiring the fetch,
@@ -89,6 +90,7 @@ export function doAfterAttach(
           vViewSnap: makeViewSnap(view.vview),
           regions: self.fetchRegions,
         }))
+        // #endregion
       }
       return undefined
     },

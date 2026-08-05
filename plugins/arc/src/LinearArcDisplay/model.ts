@@ -79,6 +79,7 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
       }),
     )
     .views(self => ({
+      // #region chainedViews
       /**
        * #getter
        * the config typed off the concrete schema; `ConfigurationReference`
@@ -96,12 +97,14 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
       get displayMode() {
         return getConf(self, 'displayMode')
       },
+      // #endregion
       /**
        * #getter
        * per-feature arc styling, evaluated once when features/config change.
        * Kept out of the render loop so panning (which only changes pixel
        * positions) doesn't re-run these jexl expressions per feature per frame.
        */
+      // #region contextVariableRead
       get arcStyles() {
         // thickness/arcHeight are `type: 'number'` slots, so getConf types (and
         // returns) a number — both have a default, so the read is never unset.
@@ -118,6 +121,7 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
           ),
         }))
       },
+      // #endregion
       /**
        * #getter
        * returns the id of the globally-selected feature, used to highlight it

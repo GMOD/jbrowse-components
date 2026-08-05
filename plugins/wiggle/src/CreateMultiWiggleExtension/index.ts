@@ -30,6 +30,9 @@ function makeTrack({
       session,
       view: model.view,
       name,
+      // #region readConfObject
+      // `tracks` are the selected track *configs*, not track models, so these
+      // are readConfObject reads rather than getConf ones
       assemblyNames: [
         ...new Set(tracks.flatMap(c => readConfObject(c, 'assemblyNames'))),
       ],
@@ -39,6 +42,7 @@ function makeTrack({
           source: readConfObject(c, 'name'),
         })),
       },
+      // #endregion
     })
   }
 }

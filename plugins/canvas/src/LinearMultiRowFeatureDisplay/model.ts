@@ -139,9 +139,11 @@ export default function stateModelFactory(
          * region is loaded) and clears it, so the resulting `layout` persists but
          * the trigger never re-fires.
          */
+        // #region frozenProp
         sortRowsBy: types.maybe(
           types.frozen<{ refName: string; pos: number }>(),
         ),
+        // #endregion
         /**
          * #property
          * Legend categories toggled off (by label). Features painted in a hidden
@@ -152,6 +154,7 @@ export default function stateModelFactory(
       }),
     )
     .volatile(() => ({
+      // #region volatile
       rpcDataMap: observable.map<number, MultiRowRegionData>(),
       prefersOffset: true,
       /**
@@ -175,6 +178,7 @@ export default function stateModelFactory(
             hit?: MultiRowHit
           }
         | undefined,
+      // #endregion
     }))
     .views(self => ({
       /**

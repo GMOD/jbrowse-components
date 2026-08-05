@@ -89,7 +89,7 @@ const stale: string[] = []
 //
 // Only TS/JS fences count: a `json` config sample or a `bash` command has no
 // compiled source to point an include at.
-const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '47')
+const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '35')
 const INCLUDABLE = new Set([
   'ts',
   'tsx',
@@ -146,7 +146,13 @@ for (const path of walkFiles(docsDir, n => n.endsWith('.md'))) {
       continue
     }
     const fenceOpen = lines[openAt]!
-    const closeAt = lines.indexOf('```', openAt + 1)
+    // Match the opener's backtick run rather than assuming three. Most config
+    // schemas carry a JSDoc `#example` containing its own ``` fence, so a doc
+    // that includes one gets escalated to ```` by prettier — and emitting a
+    // hardcoded ``` closer against that opener leaves the fence unterminated,
+    // swallowing the rest of the page into one code block.
+    const delim = /^`+/.exec(fenceOpen)![0]
+    const closeAt = lines.indexOf(delim, openAt + 1)
     if (closeAt === -1) {
       problems.push(`${path}: unterminated fence after ${marker[1]}`)
       continue
@@ -166,7 +172,7 @@ for (const path of walkFiles(docsDir, n => n.endsWith('.md'))) {
       ...lines.slice(i + 1, openAt),
       fenceOpen,
       ...body.split('\n'),
-      '```',
+      delim,
     )
     i = closeAt
   }

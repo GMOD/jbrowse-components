@@ -686,6 +686,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         // display would drop straight back onto the permanent scrim.
         addDisposer(
           self,
+          // #region voidTracking
           autorun(
             () => {
               void self.reloadCounter
@@ -694,6 +695,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
             },
             { name: 'LinearHicDisplayInfo' },
           ),
+          // #endregion
         )
 
         installGlobalFetchAutorun(self, {

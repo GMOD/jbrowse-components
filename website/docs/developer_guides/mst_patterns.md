@@ -93,15 +93,32 @@ dependencies automatically. Use `reaction` only to separate the tracked
 expression from the effect.
 
 To read an observable inside an autorun **without** making it a dependency, wrap
-it in `untracked()`:
+it in `untracked()`. The dotplot's fetch tracks exactly one computed and reads
+everything else untracked:
+
+<!-- include: plugins/dotplot-view/src/DotplotDisplay/afterAttach.ts#untracked -->
 
 ```ts
-autorun(() => {
-  void self.fetchGeneration // tracked: re-run when generation changes
-  if (untracked(() => self.isLoading)) return // not tracked: just a guard
-  // ...
-})
+const fetchKey = self.currentFetchKey
+// Untracked: the values behind that key. Reading them here rather than
+// as deps keeps raw offsetPx/width changes from refiring the fetch,
+// while the worker still sees the current axes.
+return untracked(() => ({
+  fetchKey,
+  // the resolved tier, which is what `currentFetchKey` above carries —
+  // `view.lodMode` stays 'auto' while the tier flips under it
+  lodTier: self.lodTier,
+  hViewSnap: makeViewSnap(view.hview),
+  vViewSnap: makeViewSnap(view.vview),
+  regions: self.fetchRegions,
+}))
 ```
+
+That is the shape to copy for any expensive effect: fold every input that should
+trigger it into one computed, track only that, and read the raw values inside
+`untracked`. Tracking the underlying observables individually is strictly
+noisier — here an `offsetPx` change on every pan frame would refire a worker
+fetch whose result would be identical.
 
 ## Model composition
 
@@ -143,22 +160,31 @@ across files obscures the composition order and which views depend on which.
 
 ## Chaining multiple .views() blocks
 
-A later `.views()` block can call getters defined in an earlier block on `self`,
-because each block extends the type incrementally:
+`self` inside a `.views()` block is typed with everything the model had
+**before** that block. So a later block reaches an earlier block's getters on
+`self`, and that is the reason to split. `LinearArcDisplay` puts its typed
+`conf` getter in its own block so every getter after it can read `self.conf`:
+
+<!-- include: plugins/arc/src/LinearArcDisplay/model.ts#chainedViews -->
 
 ```ts
-const MyModel = types
-  .model({ type: types.literal('MyModel') })
-  .views(self => ({
-    get adapterConfig() {
-      return getConf(self, 'adapter')
-    },
-  }))
-  .views(self => ({
-    get adapterType() {
-      return pluginManager.getAdapterType(self.adapterConfig.type)
-    },
-  }))
+  /**
+   * #getter
+   * the config typed off the concrete schema; `ConfigurationReference`
+   * erases `self.configuration` to `any`, so reads route through this to
+   * stay typed (same move as `BaseAdapter<CONF>`)
+   */
+  get conf(): LinearArcDisplayConfig {
+    return self.configuration
+  },
+}))
+.views(self => ({
+  /**
+   * #getter
+   */
+  get displayMode() {
+    return getConf(self, 'displayMode')
+  },
 ```
 
 Use multiple blocks when a getter depends on another getter, making the
@@ -172,40 +198,110 @@ Use `types.frozen()` for data that is:
 - Stored as a plain JSON value and hydrated lazily into MST nodes on first
   access
 
+<!-- include: plugins/canvas/src/LinearMultiRowFeatureDisplay/model.ts#frozenProp -->
+
 ```ts
-const MyModel = types.model({
-  featureData: types.frozen<FeatureData>(),
-  displayedRegions: types.optional(types.frozen<Region[]>(), []),
-})
+sortRowsBy: types.maybe(
+  types.frozen<{ refName: string; pos: number }>(),
+),
 ```
+
+`types.frozen<T>()` takes the shape as a type parameter and stores a plain
+value. Wrap it in `types.maybe` or `types.optional` the same as any other type —
+frozen is about what MST does with the value, not about whether it is present.
 
 Frozen values are compared by reference; MST does not track fields inside them.
 For reactive access to a field inside a frozen value, copy it out into a regular
 MST property or a `.volatile()` field.
 
-To track a `types.frozen` field in an autorun, `void` the field rather than
-enumerating its properties:
+To make a field a dependency of an autorun without using its value, `void` it —
+for a frozen field that means the autorun fires when the whole value is
+replaced, without enumerating its properties. The Hi-C display does it to a
+counter so its retry button re-reads the file header:
+
+<!-- include: plugins/hic/src/LinearHicDisplay/model.ts#voidTracking -->
 
 ```ts
-autorun(() => {
-  void self.displayedRegions // fires when the array is replaced
-  doSomething()
-})
+autorun(
+  () => {
+    void self.reloadCounter
+    // errors are captured in setError; fire-and-forget is safe
+    void self.fetchHicInfo()
+  },
+  { name: 'LinearHicDisplayInfo' },
+),
 ```
+
+Give every autorun a `name` as that one does — it is what shows up when
+debugging which effect refired.
 
 ## self over this in .views()
 
-Inside a `.views(self => ...)` block, reference sibling views via `self.X`, not
-`this.X`. Both work at runtime, but only `self` dispatches to a subclass
-override:
+This is a **typing** rule, not a runtime one. `self` and `self`-via-`this` are
+the same object at runtime, and both dispatch to a later block's override; what
+differs is what TypeScript can see:
+
+- `self` is typed with everything the model had **before** the block. It reaches
+  earlier blocks, the properties, and the volatiles — and cannot see a sibling
+  in its own block.
+- `this` inside the returned object literal is typed as **that literal**. It
+  reaches same-block siblings and nothing else.
+
+So prefer `self.X`, and reach for `this.X` only for a sibling defined in the
+same block. `LinearVariantDisplay`'s legend getters use both, one line apart:
+
+<!-- include: plugins/variants/src/LinearVariantDisplay/model.ts#sameBlockThis -->
 
 ```ts
-.views(self => ({
-  get derivedThing() {
-    return compute(self.baseThing)
-  },
-}))
+/**
+ * #getter
+ */
+// True when features are colored by their most severe consequence impact.
+get colorsByConsequenceImpact() {
+  return self.conf.color === CONSEQUENCE_IMPACT_JEXL
+},
+/**
+ * #getter
+ */
+// True when features are colored by their structural-variant class.
+get colorsBySvType() {
+  return self.conf.color === SV_TYPE_COLOR_JEXL
+},
+/**
+ * #getter
+ */
+// Legend rows for whichever preset color key is active (impact tiers or SV
+// classes), or none. SV-type shows the fixed class key; copy-number and
+// unrecognized tokens aren't listed (the pure jexl has no present-set).
+get colorLegendItems(): LegendItem[] {
+  if (this.colorsByConsequenceImpact) {
+    return IMPACT_TIERS.map(t => ({ color: t.color, label: t.tier }))
+  }
+  if (this.colorsBySvType) {
+    return PREDEFINED_SV_TYPES.map(t => ({
+      color: t.color,
+      label: t.label,
+    }))
+  }
+  return []
+},
+/**
+ * #getter
+ */
+// Show the floating color key while a preset coloring is active, unless
+// the user dismissed it.
+get showColorLegend() {
+  // `this` for the sibling defined just above (same block), `self` for
+  // what earlier blocks and the volatile added — see the MST patterns guide
+  return this.colorLegendItems.length > 0 && !self.colorLegendDismissed
+},
 ```
+
+Note `colorLegendItems`' explicit `: LegendItem[]` return type. A getter read
+through `this` has to be annotated — without it TypeScript has to infer the
+literal's type from a member that refers to the literal, and gives up with a
+circular-reference error. That annotation is the cost of a same-block `this`
+read, and the reason splitting into another block is usually tidier.
 
 If you need to extend a parent view in a subclass, destructure the super version
 off `self` **outside** the returned object, before redefining it. Reading it
@@ -230,16 +326,40 @@ the inherited track menu:
 
 ## Volatile state
 
-Use `.volatile()` for state that should not be persisted in snapshots (loading
-flags, cached computed values, maps that are rebuilt from props):
+Use `.volatile(() => ({ … }))` for state that should not be persisted in
+snapshots — loading flags, fetched data, hover and menu state that a reload
+should reset. The multi-row display's block, in full:
+
+<!-- include: plugins/canvas/src/LinearMultiRowFeatureDisplay/model.ts#volatile -->
 
 ```ts
-.volatile(() => ({
-  rpcDataMap: observable.map<number, RegionData>(),
-  isLoading: false,
-  error: undefined as unknown,
-}))
+rpcDataMap: observable.map<number, MultiRowRegionData>(),
+prefersOffset: true,
+/**
+ * #volatile
+ * The feature under the mouse, or undefined when not hovering a block. Pure
+ * hover identity — the cursor position that places the tooltip is component
+ * state, so moving inside one block doesn't invalidate this.
+ */
+hoveredFeature: undefined as MultiRowHit | undefined,
+/**
+ * #volatile
+ * Right-click context menu anchor + the genomic position clicked (and the
+ * feature there, if any). Undefined when the menu is closed.
+ */
+contextMenuInfo: undefined as
+  | {
+      clientX: number
+      clientY: number
+      refName: string
+      pos: number
+      hit?: MultiRowHit
+    }
+  | undefined,
 ```
+
+`undefined as T | undefined` is the idiom for a volatile whose type MST cannot
+infer from its initial value.
 
 Observable maps (`.map<K, V>()`) give reactive key-level tracking: an autorun
 reading `map.get(key)` re-fires only when that key changes, not on every map

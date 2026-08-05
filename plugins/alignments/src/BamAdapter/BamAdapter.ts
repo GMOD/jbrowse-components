@@ -24,8 +24,12 @@ export default class BamAdapter extends BaseSamAdapter<BamAdapterConfig> {
 
   protected configure() {
     if (!this.configureResult) {
+      // #region nestedRead
+      // a path array reaches into the nested `index` sub-schema; reading
+      // `getConf('index').indexType` instead would bypass default resolution
       const csi = this.getConf(['index', 'indexType']) === 'CSI'
       const location = this.getConf(['index', 'location'])
+      // #endregion
       this.configureResult = {
         bam: new BamFile({
           bamFilehandle: openLocation(

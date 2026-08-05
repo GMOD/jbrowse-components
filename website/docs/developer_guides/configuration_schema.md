@@ -14,34 +14,100 @@ config node).
 
 ## Defining a schema
 
-```ts
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { types } from '@jbrowse/mobx-state-tree'
+`ConfigurationSchema(name, slots, options)`. `BedGraphAdapter` is about as small
+as a real one gets:
 
-const MyAdapterConfigSchema = ConfigurationSchema(
-  'MyAdapter', // schema name, must match the `type` field in config
+<!-- include: plugins/bed/src/BedGraphAdapter/configSchema.ts -->
+
+````ts
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
+
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
+/**
+ * #config BedGraphAdapter
+ * #trackType QuantitativeTrack
+ * #fileFormat quantitative | BedGraph (plain) | Loaded entirely into memory; for small files
+ * used to load plain-text bedGraph signal files. Loads the whole file into
+ * memory, so prefer the BedGraphTabixAdapter for large files.
+ *
+ * #example
+ * ```js
+ * {
+ *   type: 'BedGraphAdapter',
+ *   uri: 'https://example.com/signal.bedGraph',
+ * }
+ * ```
+ */
+
+export function normalizeSnapshot(snap: Record<string, unknown>) {
+  return snap.uri
+    ? {
+        ...snap,
+        bedGraphLocation: {
+          uri: snap.uri,
+          baseUri: snap.baseUri,
+        },
+      }
+    : snap
+}
+
+const BedGraphAdapter = ConfigurationSchema(
+  'BedGraphAdapter',
   {
-    // Slots, each becomes an observable MST property
-    endpoint: {
-      type: 'string',
-      defaultValue: 'https://api.example.com',
-      description: 'API endpoint URL',
+    /**
+     * #slot
+     */
+    bedGraphLocation: {
+      type: 'fileLocation',
+      defaultValue: {
+        uri: '/path/to/my.bedgraph',
+        locationType: 'UriLocation',
+      },
     },
-    maxResults: {
-      type: 'integer',
-      defaultValue: 100,
-    },
-    colorBy: {
-      type: 'stringEnum',
-      model: types.enumeration('ColorBy', ['strand', 'basemod', 'none']),
-      defaultValue: 'none',
+    /**
+     * #slot
+     */
+    columnNames: {
+      type: 'stringArray',
+      description: 'List of column names',
+      defaultValue: [],
     },
   },
   {
-    explicitlyTyped: true, // requires `type` field in config JSON
+    explicitlyTyped: true,
+
+    /**
+     * #preProcessSnapshot
+     *
+     *
+     * preprocessor to allow minimal config:
+     * ```json
+     * {
+     *   "type": "BedGraphAdapter",
+     *   "uri": "yourfile.bed"
+     * }
+     * ```
+     */
+    preProcessSnapshot: normalizeSnapshot,
   },
 )
-```
+export type BedGraphAdapterConfig = Instance<typeof BedGraphAdapter>
+
+export default BedGraphAdapter
+````
+
+The name must match the `type` field in config JSON, and `explicitlyTyped: true`
+is what requires that field to be present. Each slot becomes an observable MST
+property.
+
+The `Instance<typeof …>` export at the bottom is how the rest of the codebase
+gets a typed handle on the schema — it is the `CONF` in
+`BaseFeatureDataAdapter<BedGraphAdapterConfig>`, which types `this.getConf(...)`
+reads. Export one from every schema you write.
+
+The `#config`, `#slot`, and `#preProcessSnapshot` JSDoc tags generate the
+[config reference pages](/docs/config); they are not part of the schema API.
 
 ## Slot types
 
@@ -234,39 +300,58 @@ The full signatures for `getConf` and `readConfObject` are in the
 [configuration API reference](/docs/api/core-configuration).
 
 Use `getConf` when you hold a **state model** that has a `.configuration` member
-(a track model, display model, etc.):
+(a track model, display model, etc.) — `LinearArcDisplay`'s `displayMode`
+getter:
+
+<!-- include: plugins/arc/src/LinearArcDisplay/model.ts#chainedViews -->
 
 ```ts
-import { getConf } from '@jbrowse/core/configuration'
-
-// Inside a .views() or .actions() block
-get name() {
-  return getConf(self, 'name')
-},
-get adapterConfig() {
-  return getConf(self, 'adapter')
-},
+  /**
+   * #getter
+   * the config typed off the concrete schema; `ConfigurationReference`
+   * erases `self.configuration` to `any`, so reads route through this to
+   * stay typed (same move as `BaseAdapter<CONF>`)
+   */
+  get conf(): LinearArcDisplayConfig {
+    return self.configuration
+  },
+}))
+.views(self => ({
+  /**
+   * #getter
+   */
+  get displayMode() {
+    return getConf(self, 'displayMode')
+  },
 ```
 
-Use `readConfObject` when you hold the **config model itself** (e.g., an entry
-from `session.tracks`, or a sub-config you resolved yourself):
+Use `readConfObject` when you hold the **config model itself** — an entry from
+`session.tracks`, or a sub-config you resolved yourself. The multi-wiggle
+"combine selected tracks" menu item works on the track selector's selection,
+which is configs rather than models:
+
+<!-- include: plugins/wiggle/src/CreateMultiWiggleExtension/index.ts#readConfObject -->
 
 ```ts
-import { readConfObject } from '@jbrowse/core/configuration'
-
-const maxHeight = readConfObject(config, 'maxHeight')
-const displayMode = readConfObject(config, 'displayMode')
+// `tracks` are the selected track *configs*, not track models, so these
+// are readConfObject reads rather than getConf ones
+assemblyNames: [
+  ...new Set(tracks.flatMap(c => readConfObject(c, 'assemblyNames'))),
+],
+adapter: {
+  subadapters: tracks.map(c => ({
+    ...readConfObject(c, 'adapter'),
+    source: readConfObject(c, 'name'),
+  })),
+},
 ```
 
 A TypeScript error "Property 'configuration' is missing" is the signal that you
 have a raw config and should call `readConfObject` instead of `getConf`.
 
-Both accept a path array for nested access:
-
-```ts
-getConf(self, ['adapter', 'sequenceAdapter'])
-readConfObject(config, ['index', 'indexType'])
-```
+Both accept a path array for nested access —
+`getConf(self, ['adapter', 'sequenceAdapter'])`, or the adapter form shown under
+[configuration internals](#configuration-internals) below.
 
 ## ConfigurationReference
 
@@ -332,9 +417,34 @@ color: {
 },
 ```
 
-```js
-readConfObject(config, 'color', { feature })
+`LinearArcDisplay` reads all five of its per-feature slots that way, in one
+getter kept out of the render loop:
+
+<!-- include: plugins/arc/src/LinearArcDisplay/model.ts#contextVariableRead -->
+
+```ts
+get arcStyles() {
+  // thickness/arcHeight are `type: 'number'` slots, so getConf types (and
+  // returns) a number — both have a default, so the read is never unset.
+  // color/label/caption are string slots read through the typed self.conf.
+  return self.features?.map(feature => ({
+    feature,
+    color: readConfObject(self.conf, 'color', { feature }),
+    thickness: getConf(self, 'thickness', { feature }),
+    label: readConfObject(self.conf, 'label', { feature }),
+    caption: readConfObject(self.conf, 'caption', { feature }),
+    arcHeight: Math.min(
+      getConf(self, 'arcHeight', { feature }),
+      self.height,
+    ),
+  }))
+},
 ```
+
+`getConf` takes the context object in the same third position. Evaluate these
+once per feature when the features or config change, not per frame: panning only
+moves pixels, and re-running a jexl expression per feature per frame is the
+usual cause of a display that scrolls badly.
 
 Callbacks are written in [jexl](https://github.com/TomFrost/Jexl). For example,
 a `VariantTrack` display can color SNVs green and everything else purple:
@@ -408,10 +518,16 @@ index: ConfigurationSchema('BamIndex', {
 }),
 ```
 
-Read a nested slot with a path array:
+Read a nested slot with a path array. From inside an adapter that is
+`BaseAdapter<CONF>`, the read goes through `this.getConf`:
 
-```js
-const indexType = readConfObject(config, ['index', 'indexType'])
+<!-- include: plugins/alignments/src/BamAdapter/BamAdapter.ts#nestedRead -->
+
+```ts
+// a path array reaches into the nested `index` sub-schema; reading
+// `getConf('index').indexType` instead would bypass default resolution
+const csi = this.getConf(['index', 'indexType']) === 'CSI'
+const location = this.getConf(['index', 'location'])
 ```
 
 Avoid reading properties directly off the result (e.g.

@@ -101,6 +101,7 @@ export default function stateModelFactory(
       get featureWidgetType() {
         return VARIANT_FEATURE_WIDGET
       },
+      // #region sameBlockThis
       /**
        * #getter
        */
@@ -139,8 +140,11 @@ export default function stateModelFactory(
       // Show the floating color key while a preset coloring is active, unless
       // the user dismissed it.
       get showColorLegend() {
+        // `this` for the sibling defined just above (same block), `self` for
+        // what earlier blocks and the volatile added — see the MST patterns guide
         return this.colorLegendItems.length > 0 && !self.colorLegendDismissed
       },
+      // #endregion
 
       /**
        * #getter
