@@ -2,6 +2,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
 
+// #region regionModel
 export const NoAssemblyRegion = types
   .model('NoAssemblyRegion', {
     refName: types.string,
@@ -22,6 +23,7 @@ export const Region = types.compose(
     assemblyName: types.string,
   }),
 )
+// #endregion
 
 export const LocalPathLocation = types.model('LocalPathLocation', {
   locationType: types.literal('LocalPathLocation'),

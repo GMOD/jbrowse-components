@@ -2,6 +2,7 @@ import type { StatusCallback } from '../../util/progress.ts'
 import type { StopToken } from '../../util/stopToken.ts'
 import type { Region } from '../../util/types/index.ts'
 
+// #region baseOptions
 export interface BaseOptions {
   stopToken?: StopToken
   bpPerPx?: number
@@ -39,6 +40,7 @@ export interface BaseOptions {
   // zoom across the threshold came to leave a view holding the wrong tier.
   lodMode?: 'fine' | 'coarse'
 }
+// #endregion
 
 export interface BaseOptionsWithRegions extends BaseOptions {
   regions?: Region[]

@@ -122,6 +122,12 @@ export default class MyAdapter extends BaseFeatureDataAdapter<MyAdapterConfig> {
 }
 ```
 
+For a real one of comparable size, read
+[`Gff3Adapter`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gff3/src/Gff3Adapter/Gff3Adapter.ts),
+which parses a whole file up front, or
+[`MCScanAnchorsAdapter`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/MCScanAnchorsAdapter/MCScanAnchorsAdapter.ts)
+for one that wraps sub-adapters.
+
 To wrap another adapter (e.g. a sequence adapter for a feature adapter that
 needs the reference), resolve it lazily with `this.getSubAdapter` (it is
 `async`, so never call it from a constructor):
@@ -143,36 +149,93 @@ useful when files use different conventions (e.g. chr1 vs 1). See
 
 `getFeatures(region, options)`
 
-The region parameter:
+`Region` is a snapshot of this MST model:
+
+<!-- include: packages/core/src/util/types/mst.ts#regionModel -->
 
 ```typescript
-interface Region {
-  refName: string
-  start: number
-  end: number
-  originalRefName: string
-  assemblyName: string
-}
+export const NoAssemblyRegion = types
+  .model('NoAssemblyRegion', {
+    refName: types.string,
+    start: types.number,
+    end: types.number,
+    reversed: types.optional(types.boolean, false),
+  })
+  .actions(self => ({
+    setRefName(newRefName: string): void {
+      self.refName = newRefName
+    },
+  }))
+
+export const Region = types.compose(
+  'Region',
+  NoAssemblyRegion,
+  types.model({
+    assemblyName: types.string,
+  }),
+)
 ```
 
-`refName`/`start`/`end` specify the genomic range. `assemblyName` is used when
-your adapter handles multiple assemblies (e.g. synteny or a multi-assembly REST
-API). `originalRefName` is the queried refname before ref renaming: if the BAM
-uses chr1 but the reference uses 1, `originalRefName` is 1 and `refName` is
-chr1.
+`refName`/`start`/`end` specify the genomic range, half-open and 0-based.
+`assemblyName` is used when your adapter handles multiple assemblies (e.g.
+synteny or a multi-assembly REST API).
+
+`originalRefName` is **not** on `Region`. Refname renaming adds it to the object
+it passes you — as the sequence adapter's (FASTA) name for the refname you were
+queried with, so a CRAM/BAM adapter can fetch the matching reference sequence.
+It is added **only when a rename actually happened**, so it is absent whenever
+the track and the assembly already agree. To read it, type the parameter
+`AugmentedRegion` (from `@jbrowse/core/util`, which is `Region` plus an optional
+`originalRefName`) and handle the undefined case — the alignments adapters do
+exactly this.
 
 The options parameter is `BaseOptions` (from
-`@jbrowse/core/data_adapters/BaseAdapter`). Fields an adapter typically reads:
+`@jbrowse/core/data_adapters/BaseAdapter`). Most of it exists for a specific
+kind of adapter and is ignored by the rest:
+
+<!-- include: packages/core/src/data_adapters/BaseAdapter/types.ts#baseOptions -->
 
 ```typescript
-interface BaseOptions {
-  bpPerPx?: number
+export interface BaseOptions {
   stopToken?: StopToken
+  bpPerPx?: number
+  sessionId?: string
+  trackInstanceId?: string
+  // unused in-tree but kept so BaseOptions is structurally assignable to the
+  // `Options { signal? }` interfaces in @gmod/tabix, @gmod/bbi-js, etc. that
+  // adapters forward opts to
   signal?: AbortSignal
+  // The single out-of-band status transport. A plain string is an indeterminate
+  // phase label; a StatusWithProgress object adds a determinate fraction
+  // (`current`/`total` are units-agnostic — bytes for a download, blocks for an
+  // unzip, features for a scan). Adapters wrap the raw byte counts from the
+  // index reader (@gmod/tabix, @gmod/bam, @gmod/cram) into this object form.
+  statusCallback?: StatusCallback
   headers?: Record<string, string>
-  statusCallback?: (arg: string | StatusWithProgress) => void
+  statsEstimationMode?: boolean
+  // Used by synteny/comparative adapters in getRefNames to pick which side of
+  // the pairing to return refnames for. Single-assembly adapters ignore it.
+  assemblyName?: string
+  // The assembly on the *other* side of a synteny band, set by the synteny
+  // render RPC from the target view. Lets a multi-genome adapter (e.g.
+  // AllVsAllPAFAdapter) whose config lists all N assemblies isolate the exact
+  // pair a band draws — `assemblyName` alone can't, since one file backs every
+  // pair. Pairwise adapters (which already know their pair) ignore it.
+  targetAssemblyName?: string
+  // Which level-of-detail tier to read, for adapters that expose more than one
+  // (e.g. PIF's per-row CIGAR fine tier vs its no-CIGAR coarse tier). Absent, the
+  // fine tier is served; adapters without tiering ignore it entirely.
+  //
+  // This is a *resolved* tier, never the user's 'auto' setting: resolving auto
+  // needs a zoom, and it happens on the main thread in a display getter that
+  // feeds the fetch cache key (`resolveLodTier` in @jbrowse/synteny-core).
+  // Resolving it here instead hides a fetch input from that key, which is how a
+  // zoom across the threshold came to leave a view holding the wrong tier.
+  lodMode?: 'fine' | 'coarse'
 }
 ```
+
+The ones a typical adapter reads:
 
 - `bpPerPx` - resolution of the genome browser when features were fetched
 - `stopToken` - a JBrowse cancellation token; pass it to `ObservableCreate` and
