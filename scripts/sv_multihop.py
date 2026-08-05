@@ -41,6 +41,10 @@ import urllib.parse
 BND_MATE = re.compile(r'[\[\]]([^\[\]:]+):(\d+)[\[\]]')
 CONTIG_ID = re.compile(r'##contig=<[^>]*ID=([^,>]+)')
 
+# How far apart the two records of one reciprocal breakend pair may place the
+# same junction and still be read as one. See dedupe_junctions.
+DEDUP_TOLERANCE = 10
+
 
 def open_maybe_gzip(path):
     return gzip.open(path, 'rt') if path.endswith('.gz') else open(path)
@@ -59,7 +63,45 @@ def info_field(info, key):
     return m.group(1) if m else None
 
 
-def parse_junctions(vcf):
+def dedupe_junctions(junctions, tolerance):
+    """One entry per adjacency, from records that describe some of them twice.
+
+    A breakend and its mate are one junction written from both ends, so the pair
+    collapses on the two positions it names. Callers disagree about those
+    positions by a base or two -- which side of the junction the coordinate sits
+    on is a convention, and an imprecise caller carries a CIPOS besides -- and
+    matching them exactly then keeps both records, reporting every adjacency
+    twice and a 3-junction chain as 6.
+
+    The tolerance is a few bases on purpose, and is not --max-segment. Two
+    junctions joining the same pair of chromosomes 20 kb apart are two
+    junctions; linking those rather than merging them is the whole job of
+    `chains`, and a dedup wide enough to swallow them would delete the chain it
+    is looking for.
+    """
+    def ends(junction):
+        return tuple(sorted((c.lower(), p) for c, p in junction))
+
+    width = max(1, tolerance)
+    kept, index = [], {}
+    for junction in junctions:
+        (ca, pa), (cb, pb) = ends(junction)
+        # the same 3x3 bucket probe as find_chains: two positions within the
+        # tolerance share a bucket or sit in adjacent ones, on each axis
+        seen = any(
+            abs(qa - pa) <= tolerance and abs(qb - pb) <= tolerance
+            for da in (-1, 0, 1)
+            for db in (-1, 0, 1)
+            for qa, qb in index.get((ca, cb, pa // width + da, pb // width + db), ())
+        )
+        if seen:
+            continue
+        kept.append(junction)
+        index.setdefault((ca, cb, pa // width, pb // width), []).append((pa, pb))
+    return kept
+
+
+def parse_junctions(vcf, dedup_tolerance=DEDUP_TOLERANCE):
     """Every VCF record that joins two reference loci, as ((chrom, pos), ...).
 
     Breakend records name their partner in the ALT; symbolic DEL/DUP/INV records
@@ -100,14 +142,9 @@ def parse_junctions(vcf):
     def canonical(endpoint):
         return (contigs.get(endpoint[0].lower(), endpoint[0]), endpoint[1])
 
-    deduped, seen = [], set()
-    for a, b in junctions:
-        a, b = canonical(a), canonical(b)
-        key = tuple(sorted([(a[0].lower(), a[1]), (b[0].lower(), b[1])]))
-        if key not in seen:
-            seen.add(key)
-            deduped.append((a, b))
-    return deduped
+    return dedupe_junctions(
+        [(canonical(a), canonical(b)) for a, b in junctions], dedup_tolerance
+    )
 
 
 def find_chains(junctions, max_segment, min_hops):
@@ -176,7 +213,7 @@ def chain_loci(chain, max_segment):
 
 
 def cmd_chains(args):
-    junctions = parse_junctions(args.vcf)
+    junctions = parse_junctions(args.vcf, args.dedup_tolerance)
     print(f'{len(junctions)} distinct junctions in {args.vcf}')
     chains = find_chains(junctions, args.max_segment, args.min_hops)
     print(
@@ -783,6 +820,10 @@ def main():
     c.add_argument('--max-segment', type=int, default=20000,
                    help='longest reference segment a read may bridge between junctions')
     c.add_argument('--min-hops', type=int, default=2)
+    c.add_argument('--dedup-tolerance', type=int, default=DEDUP_TOLERANCE,
+                   help='how far apart the two records of one reciprocal breakend '
+                        'pair may place it and still count as one junction; keep '
+                        'this small, it is not --max-segment')
     c.set_defaults(func=cmd_chains)
 
     d = sub.add_parser('derive', help='rebuild the derivative allele from spanning reads')

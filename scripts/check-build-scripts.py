@@ -350,6 +350,39 @@ with open(vcf2, "w") as fh:
         # a key ENDING in SVTYPE is not SVTYPE: this record is a CNV, not a DEL
         "chr7\t1000\tf\tN\t<CNV>\t.\tPASS\tOLDSVTYPE=DEL;END=2000\n"
     )
+# The two records of a reciprocal pair are one adjacency, and which side of the
+# junction the coordinate sits on is a caller convention -- an exact match keeps
+# both, reporting every adjacency twice and this 3-junction chain as 6.
+vcf_off = os.path.join(os.path.dirname(vcf), "offby.vcf")
+with open(vcf_off, "w") as fh:
+    fh.write(
+        "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n"
+        "chr3\t300\tc\tG\tG]chr4:900]\t.\tPASS\tSVTYPE=BND\n"
+        "chr4\t901\td\tG\t]CHR3:300]G\t.\tPASS\tSVTYPE=BND\n"
+    )
+check("parse_junctions collapses a reciprocal pair written one base apart",
+      sv_multihop.parse_junctions(vcf_off), [(("chr3", 300), ("chr4", 900))])
+check("an exact dedup is still available, and is what tolerance 0 means",
+      len(sv_multihop.parse_junctions(vcf_off, 0)), 2)
+# ...but the tolerance is a few bases, NOT --max-segment: two junctions joining
+# one pair of chromosomes 20 kb apart are two junctions, and linking those rather
+# than merging them is the entire job of `chains`
+check("dedupe_junctions keeps two junctions further apart than the tolerance",
+      len(sv_multihop.dedupe_junctions(
+          [(("chr3", 300), ("chr4", 900)), (("chr3", 300), ("chr4", 20900))], 10)),
+      2)
+check("dedupe_junctions matches on both endpoints, not either",
+      len(sv_multihop.dedupe_junctions(
+          [(("chr3", 300), ("chr4", 900)), (("chr3", 305), ("chr10", 900))], 10)),
+      2)
+# a drifting run must not chain into one junction: each record is compared to
+# what was kept, so 300/308/316 keeps the ends and drops only the middle
+check("dedupe_junctions does not merge transitively",
+      [p for (_, p), _ in sv_multihop.dedupe_junctions(
+          [(("chr3", 300), ("chr4", 1)), (("chr3", 308), ("chr4", 1)),
+           (("chr3", 316), ("chr4", 1))], 10)],
+      [300, 316])
+
 check("parse_junctions reads END, not the END inside CIEND",
       sv_multihop.parse_junctions(vcf2), [(("chr6", 1000), ("chr6", 9000))])
 check("info_field matches a key at the start of its own field only",

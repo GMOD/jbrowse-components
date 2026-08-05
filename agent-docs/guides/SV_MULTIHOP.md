@@ -74,6 +74,28 @@ whose endpoints sit within `--max-segment` on the same chromosome. That
 threshold is the one real knob: it is the longest reference segment you believe
 one read can bridge, so it should track the read-length distribution.
 
+### The dedup tolerance, and why it is not `--max-segment`
+
+`--dedup-tolerance` (default 10 bp) is how far apart the two records of one
+reciprocal breakend pair may place it and still read as one junction. It is a
+*different* number from `--max-segment` and has to stay orders of magnitude
+smaller, because the two are asking opposite questions: the dedup asks "are
+these one adjacency written twice", the segment threshold asks "are these two
+adjacencies a read could carry together". A dedup as wide as `--max-segment`
+deletes exactly the junctions the chain is made of — on COLO829 the junction
+count is flat at 100 from 0 bp all the way to 1 kb and only starts falling
+(97) once the tolerance reaches 20 kb, which is that failure beginning.
+
+Tolerance 0 is the old exact behavior, byte for byte (checked against the
+previous implementation over 500 random callsets), so it is there if a caller
+ever needs it.
+
+Both COLO829 VCFs in `fusion_demo_build` are nanomonsv, which writes its
+reciprocal pairs at identical coordinates — so no callset on this machine
+exercises the off-by-one, and the fix is pinned by a synthetic pair plus the
+proof that it does not move the real ones. A Manta/DELLY/GRIDSS callset is
+where it would first show.
+
 The union is done by bucketing endpoints at `--max-segment`, not by comparing
 every pair of junctions: every endpoint in a bucket is within the threshold of
 every other by construction, so a bucket is one component outright and two
@@ -119,7 +141,8 @@ Found while building the demo:
   backbone, and built the reconstruction from what was left.
 - Reciprocal breakend dedup needs the mate refName case-folded, because callers
   write it upper-cased in the ALT bracket. Without it a 3-junction chain reports
-  as 6.
+  as 6. The positions need a tolerance for the same reason —
+  [below](#the-dedup-tolerance-and-why-it-is-not---max-segment).
 - `depmap_to_jbrowse` must emit the `#`-prefixed header; `StarFusionAdapter`
   finds `LeftBreakpoint`/`RightBreakpoint` by name off that line and otherwise
   loads an empty track without complaining.
@@ -159,6 +182,12 @@ point: the demo dataset is not a test of this tool, it is one input to it.
   hierarchies. `Parent=t1,t2` took one suffix on the whole list, leaving `t1`
   pointing at an ID no copy carries — the orphan-exon problem the suffixing
   exists to prevent.
+- **Reciprocal dedup matched positions exactly while chain-linking matched them
+  within `--max-segment`.** The two records of one adjacency then survived as two
+  junctions whenever a caller disagreed with itself by a base — which side of the
+  junction the coordinate sits on is a convention, and an imprecise caller
+  carries a `CIPOS` besides. Same symptom as the case bug above: every adjacency
+  counted twice, a 3-junction chain reported as 6.
 - **`derive` never deleted its temp directory.** 19 MB for COLO829's own chain,
   and it scales with depth × `--window` × loci, since the first intermediate is
   an uncompressed SAM of every read near every locus. On the session tmpfs
