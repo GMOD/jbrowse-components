@@ -13,37 +13,74 @@ preconfigured, so `pnpm test` works out of the box.
 
 ## Adapter tests
 
-Construct the adapter from its config schema and read features. Use
-`require.resolve` for `localPath` so tests reference bundled test data, and
-collect the observable into an array with rxjs before asserting:
+Construct the adapter from its config schema and read features. `Gff3Adapter`'s
+own test, in full:
+
+<!-- include: plugins/gff3/src/Gff3Adapter/Gff3Adapter.test.ts -->
 
 ```ts
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import MyAdapter from './MyAdapter.ts'
+import Gff3Adapter from './Gff3Adapter.ts'
 import configSchema from './configSchema.ts'
 
-test('reads features from a region', async () => {
-  const adapter = new MyAdapter(
-    configSchema.create({
-      myLocation: { localPath: require.resolve('../test_data/example.bed') },
-    }),
-  )
-  const features = adapter.getFeatures({
-    refName: 'ctgA',
-    start: 0,
-    end: 20000,
-    assemblyName: 'volvox',
+describe('adapter can fetch features from volvox.gff3', () => {
+  let adapter: Gff3Adapter
+  beforeEach(() => {
+    adapter = new Gff3Adapter(
+      configSchema.create({
+        gffLocation: {
+          localPath: require.resolve('../test_data/volvox.sort.gff3'),
+        },
+      }),
+    )
   })
-  const array = await firstValueFrom(features.pipe(toArray()))
-  expect(array.map(f => f.toJSON())).toMatchSnapshot()
+  it('test getfeatures on gff plain text adapter', async () => {
+    const features = adapter.getFeatures({
+      refName: 'ctgB',
+      start: 0,
+      end: 200000,
+    })
+    expect(await adapter.hasDataForRefName('ctgA')).toBe(true)
+    expect(await adapter.hasDataForRefName('ctgB')).toBe(true)
+    const featuresArray = await firstValueFrom(features.pipe(toArray()))
+    // There are only 4 features in ctgB
+    expect(featuresArray.length).toBe(4)
+    const featuresJsonArray = featuresArray.map(f => f.toJSON())
+    expect(featuresJsonArray).toMatchSnapshot()
+  })
+})
+
+describe('discontinuous feature parsing', () => {
+  it('keeps every segment of a CDS that shares one ID across lines', async () => {
+    const adapter = new Gff3Adapter(
+      configSchema.create({
+        gffLocation: {
+          localPath: require.resolve('../test_data/disjoint_cds.gff3'),
+        },
+      }),
+    )
+    const features = adapter.getFeatures({
+      refName: 'ctgA',
+      start: 0,
+      end: 1000,
+    })
+    const featuresArray = await firstValueFrom(features.pipe(toArray()))
+    const gene = featuresArray[0]!.toJSON()
+    const mrna = gene.subfeatures![0]!
+    const cds = mrna.subfeatures!.filter(f => f.type === 'CDS')
+    expect(cds.length).toBe(3)
+    expect(cds.map(f => f.start)).toEqual([0, 199, 399])
+  })
 })
 ```
 
-`getFeatures` returns an rxjs `Observable`;
-`firstValueFrom(obs.pipe(toArray()))` turns the stream into a promise of an
-array. Snapshotting `f.toJSON()` locks feature output.
+`require.resolve` for `localPath` keeps the path relative to the test file
+rather than the working directory. `getFeatures` returns an rxjs `Observable`,
+so `firstValueFrom(obs.pipe(toArray()))` turns the stream into a promise of an
+array. Snapshot `f.toJSON()` to lock the whole shape; assert on specific fields
+when the point of the test is one of them, as the second block does.
 
 ## Model and session tests
 
@@ -52,65 +89,153 @@ the core plugins and a main-thread RPC driver, so you can exercise session
 actions, views, widgets, and display models without a browser. Mock the worker
 factory, since jsdom has no real workers:
 
-```ts
+<!-- include: plugins/data-management/src/AddTrackWidget/wrongAssembly.test.tsx -->
+
+```tsx
 import { createTestSession } from '@jbrowse/web/testUtils'
+
+import { doSubmit } from './components/doSubmit.ts'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
-test('adds a view and a track', () => {
-  const session = createTestSession()
+function addAsm(session: ReturnType<typeof createTestSession>, name: string) {
   session.addAssemblyConf({
-    name: 'volvox',
+    name,
     sequence: {
-      trackId: 'volvox_refseq',
+      trackId: `ref-${name}`,
       type: 'ReferenceSequenceTrack',
       adapter: {
         type: 'FromConfigSequenceAdapter',
         features: [
           {
-            refName: 'ctgA',
-            uniqueId: 'firstId',
+            refName: 'ctg',
+            uniqueId: name,
             start: 0,
             end: 10,
-            seq: 'cattgttgcg',
+            seq: 'acgtacgtac',
           },
         ],
       },
     },
   })
+}
+
+test('adding a track for an assembly not open in the view notifies the user', () => {
+  const session = createTestSession()
+  addAsm(session, 'asmA')
+  addAsm(session, 'asmB')
+
   const view = session.addView('LinearGenomeView', {
     displayedRegions: [
-      { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10 },
+      { assemblyName: 'asmA', refName: 'ctg', start: 0, end: 10 },
     ],
   })
-  expect(view.type).toBe('LinearGenomeView')
+
+  const widget = session.addWidget('AddTrackWidget', 'addTrackWidget', {
+    view: view.id,
+  })
+  widget.setTrackData({ uri: 'foo.bam', locationType: 'UriLocation' })
+  widget.setAssembly('asmB')
+
+  doSubmit({ model: widget })
+
+  // track is still added to the session...
+  expect(session.tracks.some(t => t.assemblyNames?.[0] === 'asmB')).toBe(true)
+  // ...but not shown in the asmA view, and the user is told why
+  expect(view.tracks.length).toBe(0)
+  expect(
+    session.snackbarMessages.some(
+      m => m.level === 'warning' && m.message.includes('asmB'),
+    ),
+  ).toBe(true)
 })
 ```
 
 `createTestSession` accepts `sessionSnapshot`, `jbrowseConfig`, `adminMode`, and
-preloaded `runtimePlugins`. The returned object is the session model, so
-`session.addView`, `addWidget`, `showWidget`, `addTrackConf` are all available.
-To test a custom plugin's pluggable elements, add it to the `PluginManager` the
-way core plugins are added, or pass it via `runtimePlugins`.
+preloaded `runtimePlugins`, and returns the session model, so `addView`,
+`addWidget`, `showWidget`, and `addTrackConf` are all available. To test a
+custom plugin's pluggable elements, pass it via `runtimePlugins`.
+
+`FromConfigSequenceAdapter` is what keeps a session test off the network: the
+assembly's sequence is inline, so nothing is fetched and the assembly is ready
+immediately.
 
 ## Component tests
 
 React components render in jsdom with `@testing-library/react`. Build a model
 with `createTestSession`, pass it to the component, and assert on the DOM:
 
+<!-- include: plugins/grid-bookmark/src/GridBookmarkWidget/components/GridBookmarkWidget.test.tsx -->
+
 ```tsx
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { createTestSession } from '@jbrowse/web/testUtils'
+import { ThemeProvider } from '@mui/material'
 import { render } from '@testing-library/react'
 
-import MyWidgetComponent from './MyWidgetComponent.tsx'
+import GridBookmarkWidget from './GridBookmarkWidget.tsx'
 
-test('renders the widget', () => {
-  const session = createTestSession()
-  const widget = session.addWidget('MyWidget', 'myWidget')
-  const { getByText } = render(<MyWidgetComponent model={widget} />)
-  expect(getByText('Expected label')).toBeTruthy()
+import type { GridBookmarkModel } from '../model.ts'
+
+jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
+
+const theme = createJBrowseTheme()
+
+function setup() {
+  const session = createTestSession({
+    sessionSnapshot: {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          bpPerPx: 1,
+          offsetPx: 0,
+          displayedRegions: [
+            { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
+          ],
+        },
+      ],
+    },
+  })
+  const widget = session.addWidget(
+    'GridBookmarkWidget',
+    'GridBookmark',
+  ) as GridBookmarkModel
+  widget.addBookmark({
+    assemblyName: 'volvox',
+    refName: 'ctgA',
+    start: 0,
+    end: 100,
+  })
+  return widget
+}
+
+function renderWidget(widget: GridBookmarkModel) {
+  return render(
+    <ThemeProvider theme={theme}>
+      <GridBookmarkWidget model={widget} />
+    </ThemeProvider>,
+  )
+}
+
+test('single grid renders for bookmarks/highlights, two for both', () => {
+  const widget = setup()
+
+  widget.setGridView('bookmarks')
+  const { container, rerender } = renderWidget(widget)
+  expect(container.querySelectorAll('.MuiDataGrid-root')).toHaveLength(1)
+
+  widget.setGridView('both')
+  rerender(
+    <ThemeProvider theme={theme}>
+      <GridBookmarkWidget model={widget} />
+    </ThemeProvider>,
+  )
+  expect(container.querySelectorAll('.MuiDataGrid-root')).toHaveLength(2)
 })
 ```
+
+Wrap in a `ThemeProvider` as that does — JBrowse components read the theme, and
+MUI's default is not the one the app runs.
 
 Two jsdom gotchas: `Blob` has no `text()` method (use `FileReader.readAsText`),
 and virtualized trees/grids need a mocked measured height to render any rows

@@ -25,7 +25,7 @@ function setup() {
         },
       ],
     },
-  }) as any
+  })
   const widget = session.addWidget(
     'GridBookmarkWidget',
     'GridBookmark',
