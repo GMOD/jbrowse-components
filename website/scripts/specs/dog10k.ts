@@ -638,9 +638,9 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         {
           trackId: 'dog10k_anglofrench',
           type: 'LinearMultiRowFeatureDisplay',
-          height: 560,
-          // 21px a row is far above MIN_SEPARATOR_ROW_PX, and the rows come in
-          // pairs that have to be read as one animal each
+          height: 940,
+          // ~14px a row, above both MIN_SEPARATOR_ROW_PX and the ~6px a label
+          // needs; the rows come in pairs that read as one animal each
           showRowSeparators: true,
         },
       ],
@@ -649,7 +649,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     readySelector: '[data-testid="multirow-color-legend"]',
     readyTimeout: 60000,
     settleMs: 3000,
-    viewportHeight: 765,
+    viewportHeight: 1145,
   },
 
   {
@@ -662,7 +662,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         {
           trackId: 'dog10k_anglofrench',
           type: 'LinearMultiRowFeatureDisplay',
-          height: 560,
+          height: 940,
           // the whole reason this panel exists, see above
           showRowLabels: false,
           showRowSeparators: true,
@@ -676,7 +676,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     readySelector: '[data-testid="multirow-color-legend"]',
     readyTimeout: 60000,
     settleMs: 3000,
-    viewportHeight: 765,
+    viewportHeight: 1145,
   },
 
   {
@@ -689,7 +689,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         {
           trackId: 'dog10k_anglofrench_chr38',
           type: 'LinearMultiRowFeatureDisplay',
-          height: 560,
+          height: 940,
           showRowLabels: false,
           showRowSeparators: true,
         },
@@ -699,7 +699,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     readySelector: '[data-testid="multirow-color-legend"]',
     readyTimeout: 60000,
     settleMs: 3000,
-    viewportHeight: 765,
+    viewportHeight: 1145,
   },
 
   {
@@ -1474,6 +1474,20 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           // drawn two ways
           geneGlyphMode: 'longestCoding',
           height: 80,
+        },
+        // What the matrix below is a picture of, as a number ("hard to say this
+        // is meaningful in any way ... go for it, add fst if it makes a good
+        // figure", review). The genome-wide scan two figures up is binned at
+        // 200 kb, which is wider than this whole window, so it cannot say
+        // anything inside it; this is the same Hudson estimator between the same
+        // two panels computed one site at a time, over the very VCF the matrix
+        // draws. Every point is therefore one column of the matrix, and the
+        // block the clustering finds is the run of sites where the two panels
+        // differ rather than a pattern the eye is asked to take on trust.
+        {
+          trackId: 'dog10k_igf1_fst',
+          type: 'LinearManhattanDisplay',
+          height: 150,
         },
         {
           trackId: 'dog10k_igf1_haplotype',

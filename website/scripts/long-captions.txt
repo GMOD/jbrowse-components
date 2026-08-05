@@ -20,7 +20,6 @@ tutorials/dog10k_svs.md /img/dog10k-denr-sine-deletions.png
 tutorials/dog10k_svs.md /img/dog10k-fgf4-retrogene-synteny.png
 tutorials/genomes_synteny.md /img/genomes_synteny/launch_sequence.png
 tutorials/ld_mosquitoes.md /img/ld/anopheles_2la.png
-tutorials/local_ancestry.md /img/dog10k-wolfdog-ancestry.png
 tutorials/orthofinder_synteny.md /img/orthofinder_synteny/wheat_4a.png
 tutorials/pangenome_ecoli.md /img/pangenome/depth.png
 tutorials/pangenome_ecoli.md /img/pangenome/graph_resolution.png
@@ -28,7 +27,6 @@ tutorials/pangenome_ecoli.md /img/pangenome/long_reads.png
 tutorials/pangenome_hprc.md /img/pangenome/hprc_chm13_allele.png
 tutorials/pangenome_hprc.md /img/pangenome/hprc_inversion.png
 tutorials/pangenome_hprc.md /img/pangenome/hprc_mhc_anchored.png
-tutorials/pangenome_hprc.md /img/pangenome/hprc_repeat_classes.png
 tutorials/protein_structure.md /img/protein/connected.png
 tutorials/scatac_pseudobulk.md /img/scatac/pbmc5k_marker_swap.png
 tutorials/sv_multisamples.md /img/multisv_rhd.png

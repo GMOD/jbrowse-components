@@ -163,13 +163,31 @@ awk -F'\t' '$3=="Wolf" && $2=="Greece"{print $1}' keep.tsv > greek.txt
 awk -F'\t' '$3=="Breed_Dogs" && $2 ~ /German Shepherd/{print $1}' keep.tsv \
   | grep -v GRSD000002 > gsdref.txt
 
-# Every Great Anglo-French hound of both forms, for the within-breed run at the
-# foot of this script. The sweep takes one dog per breed, which is the wrong
-# sampling for a breed whose interest is that its individuals DISAGREE, so these
-# are pulled in whole here and painted separately. Only the slice needs them at
-# this point; which of them can be a target is decided down there.
-awk -F'\t' '$3=="Breed_Dogs" && $2 ~ /^Great Anglo-French/{print $1}' keep.tsv \
-  > anglofrench.all.txt
+# Every dog of the Anglo-French hound clade, for the run at the foot of this
+# script: both Great Anglo-French forms, the smaller Anglo-Francais form of the
+# same cross, and the French pack hounds and English foxhounds those crosses were
+# made from. The sweep takes one dog per breed, which is the wrong sampling for a
+# question about how individuals of a breed DIFFER and about whether the breed's
+# relatives share what it carries, so these are pulled in whole here and painted
+# separately. Only the slice needs them at this point; which of them can be a
+# target is decided down there.
+cat > hound_clade.txt <<'BREEDS'
+Great Anglo-French Tricolour Hound
+Great Anglo-French White and Orange Hound
+Anglo-Francais hound
+English Foxhound
+Billy
+Artois Hound
+Ariegeois
+Harrier
+Griffon Nivernais
+Grand Griffon Vendeen
+Grand Bleu de Gascogne
+Petit Bleu de Gascogne
+Blue Gascony Griffon
+BREEDS
+awk -F'\t' 'NR==FNR{b[$0]; next} FNR>1 && $12=="YES" && ($2 in b){print $1}' \
+  hound_clade.txt samples.txt > anglofrench.all.txt
 
 cat wolves.txt dogs.txt targets.txt greek.txt gsdref.txt anglofrench.all.txt \
   | sort -u > all.txt
@@ -281,7 +299,7 @@ echo "      $(pwd)/dog10k_wolfdog_named.$CHROM.bed.gz (the named subset),"
 echo "plus their .tbi. Load them with the track JSON in the local ancestry"
 echo "tutorial; the subset track's rowOrder is named.tsv, in that order."
 
-# ── The Great Anglo-French hounds, one breed at a time ───────────────────────
+# ── The Anglo-French hounds and their closest relatives ──────────────────────
 # Lin et al. 2025 (PNAS 122:e2421768122) ran local ancestry over the Dog10K
 # genomes and reported that the Great Anglo-French Tricolour Hound has the
 # HIGHEST VARIANCE IN WOLF ANCESTRY of any breed analysed (0.03 to 5.47%), with
@@ -296,25 +314,64 @@ echo "tutorial; the subset track's rowOrder is named.tsv, in that order."
 # because the sweep's own design (one dog per breed, 243 targets) is load-bearing
 # for the figures above it, and because these rows want breed order rather than
 # the sweep's descending-wolf-fraction order — the claim is within-breed spread,
-# so the two breeds have to sit in two blocks to be compared.
-# GAFT000001/GAWO000001 stay in the DOG PANEL and so cannot be painted: a
+# so the breeds have to sit in blocks to be compared.
+#
+# THE RELATED BREEDS ARE THE CONTROL, and they are what makes this a result
+# rather than an observation. Wolf-diagnostic alleles are picked as common in the
+# wolf panel and rare across the one-dog-per-breed dog panel — and a haplotype
+# carried by one BREED is rare across that panel too, because the breed
+# contributes a single dog to it. So "these hounds carry wolf alleles" and "these
+# hounds carry a hound haplotype the panel barely samples" predict the same
+# counts, and nothing above separates them.
+#
+# What separates them is the rest of the clade. The Great Anglo-French hounds
+# were made by crossing French pack hounds with English foxhounds, and Dog10K
+# holds both parent types plus the smaller Anglo-Francais form of the same cross.
+# A breed haplotype would be in them; wolf ancestry acquired after the breeds
+# formed would not. Measured over 275 wolf-diagnostic markers at chr1:16.2-17.2
+# Mb: four of the six Great Anglo-French Tricolour Hounds carry 0.46 to 0.83 of
+# them, while the Anglo-Francais hound sits at 0.04 and the English Foxhound at
+# 0.04. So they go in the painting too, as rows rather than as an argument.
+# One dog of every clade breed sits in the DOG PANEL and so cannot be painted: a
 # target matched against itself paints dog by construction. Everything else of
-# both forms is free, which is five of the collection's six of each. Reference
-# rows top and bottom are animals already held out of the panel by the run
-# above, so nothing here is both panel and target.
+# the clade is free. That costs the two single-dog breeds entirely and leaves
+# five of the collection's six of each Great Anglo-French form. Reference rows
+# top and bottom are animals already held out of the panel by the run above, so
+# nothing here is both panel and target.
 python3 - <<'PY' > anglofrench.tsv
-PANEL = {'GAFT000001', 'GAWO000001'}
+import collections
+
+# a target matched against itself paints dog by construction, so the one dog per
+# breed the reference panel holds is the one dog of it that cannot appear here
+panel = {line.strip() for line in open('dogs.txt')}
+breed_of = {}
+with open('samples.txt') as fh:
+    next(fh)
+    for line in fh:
+        f = line.rstrip('\n').split('\t')
+        breed_of[f[0]] = f[1]
+
+# breed order is the argument: the two breeds the claim is about, then the same
+# cross at a smaller size, then the stocks those crosses were made from
+ORDER = [line.rstrip('\n') for line in open('hound_clade.txt') if line.strip()]
+SHORT = {
+    'Great Anglo-French Tricolour Hound': 'Gt Anglo-French Tricolour',
+    'Great Anglo-French White and Orange Hound': 'Gt Anglo-French Wh/Orange',
+}
+
+bybreed = collections.defaultdict(list)
+for sample in sorted(open('anglofrench.all.txt').read().split()):
+    if sample not in panel:
+        bybreed[breed_of[sample]].append(sample)
+
 ROWS = [('CLUPRU000001', 'Gray wolf (held out)'),
         ('SAAR000001', 'Saarloos Wolfdog')]
-for prefix, name in (('GAFT', 'Gt Anglo-French Tricolour'),
-                     ('GAWO', 'Gt Anglo-French Wh/Orange')):
-    n = 0
-    for i in range(1, 7):
-        sample = '%s%06d' % (prefix, i)
-        if sample in PANEL:
-            continue
-        n += 1
-        ROWS.append((sample, '%s %d' % (name, n)))
+for breed in ORDER:
+    ids = bybreed.get(breed, [])
+    label = SHORT.get(breed, breed)
+    for n, sample in enumerate(ids, 1):
+        ROWS.append((sample, label if len(ids) == 1
+                     else '%s %d' % (label, n)))
 ROWS.append(('GRSD000002', 'German Shepherd'))
 for sample, label in ROWS:
     print('%s\t%s' % (sample, label))
@@ -332,10 +389,10 @@ python3 "$SCRIPT_DIR/flare_anc_to_bed.py" "anglofrench_$CHROM.anc.vcf.gz" \
 tabix -f -p bed "dog10k_anglofrench.$CHROM.bed.gz"
 
 echo
-echo "Ancestry fractions for the Anglo-French run on $CHROM:"
+echo "Ancestry fractions for the Anglo-French hound clade on $CHROM:"
 zcat "anglofrench_$CHROM.global.anc.gz"
 echo
-echo "Wolf blocks per Anglo-French animal on $CHROM (count, median kb, longest kb):"
+echo "Wolf blocks per clade animal on $CHROM (count, median kb, longest kb):"
 awk -F'\t' '$11=="Wolf" {
     split($10, a, " hap"); len[a[1]] = len[a[1]] " " ($3-$2)
   }

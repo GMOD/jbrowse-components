@@ -294,8 +294,8 @@ in one animal is what a recent introgression looks like and also what a phasing
 error looks like, and one animal on one chromosome cannot separate those. The
 same paper reports this breed as the one with the most within-breed spread in
 wolf ancestry it found, which is a claim a one-dog-per-breed sweep cannot check,
-so the section below paints the breed again with every animal of it the
-collection allows.
+so the section below paints the breed again, beside the breeds it was
+made from.
 
 Those readings are all row-order arguments, and the order above came out of
 FLARE's per-sample summary, so it can only rank what the summary already ranked.
@@ -316,7 +316,7 @@ view, so panning to a 5 Mb window and re-clustering gives a different order for
 the same rows. A dendrogram beside a painting is an answer to a question that
 includes where you were looking.
 
-## One breed, five dogs
+## One breed, and the breeds it came from
 
 A sweep that draws one dog per breed reports a breed as whatever that dog is,
 which is the wrong instrument for a breed whose individuals disagree. Running
@@ -328,19 +328,29 @@ date the admixture within recorded breed history. The related Great Anglo-French
 White and Orange Hound is lower but also variable. Where that ancestry came from
 is not known.
 
-The collection holds six of each. One of each stays in the dog reference panel,
-since an animal painted against itself paints dog by construction, which leaves
-five of each to paint. The build script runs those ten as a second FLARE job,
-against the same two panels, the same map and the same held-out wolf as
-everything above, and prints their ancestry fractions and block lengths beside
-the ones behind the figures above.
+One alternative has to be closed off before a painting of that breed means
+anything, and it is the panels that open it. A block is called wolf by comparing
+against a dog panel that holds one dog per breed, so a haplotype carried by a
+single breed is rare in that panel too. "These hounds carry wolf haplotypes" and
+"these hounds carry a hound haplotype the panel barely samples" predict the same
+picture, and nothing above tells them apart.
 
-<Figure caption="Five Great Anglo-French Tricolour Hounds and five White and Orange Hounds, between a held-out gray wolf and a German Shepherd. Top: chr1, with the rows named. Middle: the same chr1 view with the labels off, since they cover the start of every row. Bottom: chr38, same animals in the same order. Two Tricolour rows carry wolf blocks on chr1 and three barely do; on chr38 it is the other three." src="/img/dog10k-anglofrench-hounds.png" links="chr1=dog10k-anglofrench-hounds-chromosome,chr1 unlabelled=dog10k-anglofrench-hounds-unlabelled,chr38=dog10k-anglofrench-hounds-chr38" />
+What separates them is the rest of the clade. The Great Anglo-French hounds were
+made by crossing French pack hounds with English foxhounds, and the collection
+holds both stocks along with the smaller Anglo-Francais form of the same cross.
+A breed haplotype would be in them. So the build script paints them: every dog
+of the clade the reference panel does not already hold, run as a second FLARE
+job against the same two panels, the same map and the same held-out wolf as
+everything above.
 
-Two of the Tricolour Hounds are painted like the wolfdog above them and three
-are not. Of the White and Orange Hounds one carries a block and the rest are
-painted dog end to end, like the German Shepherd at the foot. These are ten
-registered members of two closely related French pack breeds.
+<Figure caption="The Anglo-French hound clade on chr1: both Great Anglo-French forms above the French pack hounds and English foxhounds they were made from, between a held-out gray wolf and a German Shepherd. Top: named. Middle: the same view unlabelled, since the labels cover the chromosome start. Bottom: chr38. Wolf blocks sit in the Great Anglo-French rows and nowhere else in the clade." src="/img/dog10k-anglofrench-hounds.png" links="chr1=dog10k-anglofrench-hounds-chromosome,chr1 unlabelled=dog10k-anglofrench-hounds-unlabelled,chr38=dog10k-anglofrench-hounds-chr38" />
+
+The blocks stop at the breed. The stocks the Great Anglo-French hounds were
+crossed from run dog end to end, like the German Shepherd at the foot, and so
+does the smaller form of the same cross; what the Great Anglo-French rows carry
+is not something their clade carries. Within those rows the painting is uneven,
+which is the spread the paper reports arriving as a picture rather than as a
+statistic.
 
 The row labels are an overlay on the plot rather than a gutter beside it, so on
 a whole-chromosome view they cover the left of the rows they name. Two of these
@@ -351,11 +361,12 @@ off.
 
 Then read the bottom panel against the top one. The two Tricolour Hounds that
 carry most of the wolf on chr1 are the two that carry almost none on chr38, and
-the pair that carries it there is a different pair. A few percent of a genome,
-scattered in blocks, lands on some chromosomes and not others, so which
-individual looks wolfish is a property of the chromosome you happened to open.
-The paper's ranking is genome-wide; a single chromosome cannot reproduce it, and
-this pair of panels is what that costs.
+the pair that carries it there is a different pair, while the clade around them
+stays empty on both. A few percent of a genome, scattered in blocks, lands on
+some chromosomes and not others, so which individual looks wolfish is a property
+of the chromosome you happened to open. The paper's ranking is genome-wide; a
+single chromosome cannot reproduce it, and this pair of panels is what that
+costs.
 
 Which is the same reading the eighth wolfdog forced above, one level up: what
 carries ancestry is an animal rather than a breed, and what carries a number is
