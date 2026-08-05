@@ -187,23 +187,32 @@ export function registerSessionHandlers(
   })
 
   ipcHandle('saveSession', async (_, sessionPath, snap) => {
-    const png = await captureThumbnail(getMainWindow(), sessionPath)
     const entry: RecentSession = {
       path: sessionPath,
       updated: Date.now(),
       name: snap.defaultSession?.name,
     }
+    // Started, not awaited, before the writes below: capturePage stalls on a
+    // full framebuffer readback, and this handler is also the quit flush
+    // (rootModel.flushSession) — the one save whose whole job is to land the
+    // last second of edits before the app goes away. Awaiting a cosmetic
+    // thumbnail ahead of the session bytes put that at the back of the queue.
+    const thumbnail = captureThumbnail(getMainWindow(), sessionPath)
 
     await Promise.all([
       updateRecentSessions(paths.recentSessionsPath, rows =>
         upsertRecentSession(rows, entry),
       ),
-      // Thumbnail is cosmetic like the capturePage above it: a failed write
-      // (e.g. an over-long path on Windows) must not reject the session save
-      ...(png
-        ? [writeFile(getThumbnailPath(paths, sessionPath), png).catch(logError)]
-        : []),
       writeFile(sessionPath, stringify(snap)),
+      // Thumbnail is cosmetic like the capturePage that produced it: a failed
+      // write (e.g. an over-long path on Windows) must not reject the session
+      // save. Still awaited as part of this handler, so a quit that waits for
+      // the save also gets the thumbnail when one was captured.
+      thumbnail.then(png =>
+        png
+          ? writeFile(getThumbnailPath(paths, sessionPath), png).catch(logError)
+          : undefined,
+      ),
     ])
   })
 

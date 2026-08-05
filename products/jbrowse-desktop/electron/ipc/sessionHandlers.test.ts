@@ -42,6 +42,17 @@ afterEach(() => {
   fs.rmSync(dir, { recursive: true, force: true })
 })
 
+// Yields to the microtask/IO queue until `pred` holds. Causal, not timed: the
+// work it waits on is already started, so this only lets the loop drain.
+async function waitFor(pred: () => boolean) {
+  for (let i = 0; i < 100 && !pred(); i++) {
+    await new Promise(resolve => setImmediate(resolve))
+  }
+  if (!pred()) {
+    throw new Error('condition never held')
+  }
+}
+
 function writeSession(name: string) {
   const sessionPath = path.join(dir, name)
   fs.writeFileSync(
@@ -277,4 +288,40 @@ test('reset clears the list, autosaves and thumbnails, and the global plugins', 
   )
   expect(fs.existsSync(autosave)).toBe(false)
   expect(fs.existsSync(thumbnail)).toBe(false)
+})
+
+// saveSession is also the quit flush (rootModel.flushSession), the one save
+// whose job is to land the last second of edits before the app goes away.
+// capturePage stalls on a full framebuffer readback, so the session bytes must
+// not queue behind it — they used to, because the capture was awaited first.
+test('the session is written without waiting for the thumbnail capture', async () => {
+  let releaseCapture: (page: unknown) => void = () => {}
+  const capturePage = jest.fn(
+    () =>
+      new Promise(resolve => {
+        releaseCapture = resolve
+      }),
+  )
+  const win = { capturePage } as unknown as Electron.BrowserWindow
+  const withWindow = captureHandlers(() => {
+    registerSessionHandlers(paths, () => win)
+  })
+
+  const sessionPath = path.join(dir, 'quitting.jbrowse')
+  const save = withWindow('saveSession', sessionPath, {
+    assemblies: [],
+    defaultSession: { name: 'quitting' },
+  })
+
+  // the capture is in flight and has not resolved; the session file is already
+  // on disk rather than queued behind it
+  await waitFor(() => fs.existsSync(sessionPath))
+  expect(capturePage).toHaveBeenCalled()
+
+  releaseCapture({
+    resize: () => ({ toDataURL: () => 'data:image/png;base64,x' }),
+  })
+  await save
+  // and the thumbnail still lands, because the handler awaits it too
+  expect(fs.existsSync(getThumbnailPath(paths, sessionPath))).toBe(true)
 })
