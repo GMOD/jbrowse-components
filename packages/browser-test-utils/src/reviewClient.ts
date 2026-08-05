@@ -24,6 +24,8 @@
 //   setVerdict saveNote clearVerdict   the inline button/field handlers
 //   updateCard        re-render one card in place
 //   harvestNotes applyPendingNotes     call around a full #main repaint
+//                     (applyPendingNotes also sizes the note fields to their
+//                     text, so a page that repaints #main gets that for free)
 //   dropStaleDrafts   call once after load(), when data is first populated
 //   draftHint pendingNotes setDraft paintDraft   draft state for the renderer
 //
@@ -175,6 +177,33 @@ function applyPendingNotes() {
     if (typed !== undefined && note) {
       note.value = typed
     }
+  }
+  autosizeNotes()
+}
+
+// A denial reason is the one field here that runs long — it is a paragraph
+// arguing with a picture — and a fixed two-row box showed only the last line of
+// what was being typed, with the rest scrolled out of reach of the eye that
+// needed to reread it. Grow the box with its text instead, up to a cap past
+// which it scrolls: the note sits under the figure it is about, and a box that
+// grew without limit would push that figure off the screen.
+//
+// Guarded on textarea because the other review UI's note field is an <input>,
+// which has no content height to grow to.
+const NOTE_MAX_PX = 320
+function autosizeNote(el) {
+  if (!el || el.tagName !== 'TEXTAREA') {
+    return
+  }
+  // shrink first: scrollHeight can never report less than the current height,
+  // so without this the box only ever grows, including after a deletion
+  el.style.height = 'auto'
+  el.style.height = Math.min(el.scrollHeight, NOTE_MAX_PX) + 'px'
+}
+
+function autosizeNotes() {
+  for (const el of document.querySelectorAll('.note')) {
+    autosizeNote(el)
   }
 }
 
@@ -433,7 +462,9 @@ function updateCard(name) {
     // record before the swap so the rebuilt card renders the right draft hint
     setDraft(name, typed)
     el.outerHTML = renderCard(entry)
-    cardOf(name).querySelector('.note').value = typed
+    const note = cardOf(name).querySelector('.note')
+    note.value = typed
+    autosizeNote(note)
   }
   renderCounts()
 }
@@ -448,6 +479,7 @@ $('#main').addEventListener('input', e => {
     const name = note.closest('.card').dataset.name
     setDraft(name, note.value)
     paintDraft(name)
+    autosizeNote(note)
   }
 })
 // ---- end shared review client
