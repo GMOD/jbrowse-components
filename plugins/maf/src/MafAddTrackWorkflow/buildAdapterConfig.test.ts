@@ -105,6 +105,47 @@ describe('buildAdapterConfig', () => {
     })
   })
 
+  // The tabix adapter is the one that most needs a summary — every species'
+  // bases ride on one BED line, so a wide query pulls the whole alignment and
+  // the size gate blocks it, leaving the track with no zoom-out view. The form
+  // had a summary field all along but only wired it for BigMaf, so a tabix user
+  // who filled it in got a track that silently ignored the file.
+  test('MafTabixAdapter with summary emits a BedTabix summaryAdapter', () => {
+    const summaryBed: FileLocation = {
+      uri: 'data.summary.bed.gz',
+      locationType: 'UriLocation',
+    }
+    expect(
+      buildAdapterConfig({
+        fileTypeChoice: 'MafTabixAdapter',
+        indexTypeChoice: 'TBI',
+        loc,
+        indexLoc,
+        nhLoc,
+        summaryLoc: summaryBed,
+        sampleNames,
+      }),
+    ).toEqual({
+      type: 'MafTabixAdapter',
+      bedGzLocation: loc,
+      nhLocation: nhLoc,
+      index: { indexType: 'TBI', location: indexLoc },
+      samples: sampleNames,
+      summaryAdapter: {
+        type: 'BedTabixAdapter',
+        bedGzLocation: summaryBed,
+        // derived, not asked for — the same sibling-suffix assumption both
+        // this adapter's and BedTabixAdapter's `uri` shorthands already make
+        index: {
+          location: {
+            uri: 'data.summary.bed.gz.tbi',
+            locationType: 'UriLocation',
+          },
+        },
+      },
+    })
+  })
+
   test('BgzipTaffyAdapter', () => {
     expect(
       buildAdapterConfig({

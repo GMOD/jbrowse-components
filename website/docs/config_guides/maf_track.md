@@ -155,11 +155,10 @@ rooted on different genomes, as `pggb -M` produces, needs re-rooting first; see
 Two optional sub-adapters hang off the MAF **adapter**, alongside the main
 location:
 
-- **`summaryAdapter`**: a UCSC `bigMafSummary` (a `BigBedAdapter` over
-  `bigMafSummary.bb`) used for cheap rendering when zoomed far out. Its bars are
-  shaded by the summary's normalized alignment score, a different metric from
-  the per-base percent identity the conservation band computes from the
-  alignment itself (that needs no file).
+- **`summaryAdapter`**: the zoom-out tier, described in its own section
+  [below](#the-zoom-out-tier). Either a UCSC `bigMafSummary` (a `BigBedAdapter`
+  over `bigMafSummary.bb`) or a `BedTabixAdapter` over the summary
+  [maf2bed](https://github.com/cmdcolin/maf2bed) writes.
 - **`annotationAdapter`**: a UCSC `mafFrames` file (a `BigBedAdapter` over
   `multiz<N>wayFrames.bb`) carrying each gene's CDS reading frame projected
   through the alignment, one record per (species, region), keyed by `src`
@@ -167,6 +166,75 @@ location:
   (amino acids)" row coloring, neither on by default. When the file carries a
   record for the reference `src`, the reference row shows its own gene structure
   too.
+
+## The zoom-out tier
+
+Every MAF format packs each block's species sequences together, so a zoomed-out
+query downloads them all: on a deep alignment a single screen can be tens of
+megabytes. JBrowse blocks that with a "requested too much data" prompt, which
+means a track with no `summaryAdapter` has no zoom-out view — only the prompt.
+
+The `summaryAdapter` slot points at a second, much smaller file holding one row
+per species per aligned region, with a score but **no sequence**. Where it is
+configured, zooming out past the force-load threshold swaps the per-base rows
+for per-species presence bars read from that file instead of blocking.
+
+For a **BigMaf** track, UCSC ships one alongside the alignment:
+
+```json
+"summaryAdapter": {
+  "type": "BigBedAdapter",
+  "bigBedLocation": { "uri": "https://example.com/multiz470waySummary.bb" }
+}
+```
+
+For a **tabix MAF**, `maf2bed --summary` writes one in the same pass that
+converts the alignment, so it costs no extra scan of the MAF:
+
+```bash
+export LC_ALL=C
+
+maf2bed hg38 --summary summary.bed < file.maf \
+  | sort -k1,1 -k2,2n | bgzip > file.bed.gz
+tabix -p bed file.bed.gz
+
+sort -k1,1 -k2,2n summary.bed | bgzip > summary.bed.gz
+tabix -p bed summary.bed.gz
+```
+
+Its `#` header names the columns, so the sub-adapter needs no `columnNames`:
+
+```json addtrack
+{
+  "type": "MafTrack",
+  "trackId": "multiz_with_summary",
+  "name": "Multiz alignment (with zoom-out tier)",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "MafTabixAdapter",
+    "uri": "https://example.com/multiz.bed.gz",
+    "samples": ["hg38", "panTro6", "mm39"],
+    "summaryAdapter": {
+      "type": "BedTabixAdapter",
+      "bedGzLocation": { "uri": "https://example.com/multiz.summary.bed.gz" },
+      "index": {
+        "location": { "uri": "https://example.com/multiz.summary.bed.gz.tbi" }
+      }
+    }
+  }
+}
+```
+
+The bars are shaded by the summary's score. The two producers put different
+metrics there — UCSC a normalized alignment score, `maf2bed` percent identity to
+the reference — but both are 0..1, both shade the same way, and neither is shown
+as a number. Both are distinct from the conservation band, which is computed
+from the alignment itself and needs no file.
+
+`BgzipTaffyAdapter` takes no `summaryAdapter`: TAF's `.tai` index already seeks
+within an alignment, so a read costs what is on screen rather than what the
+blocks happen to span, and the zoom-out problem this solves does not arise the
+same way.
 
 ## Display options
 

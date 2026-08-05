@@ -1514,6 +1514,10 @@ importers:
       rxjs:
         specifier: ^7.8.2
         version: 7.8.2
+    devDependencies:
+      '@jbrowse/plugin-bed':
+        specifier: workspace:^
+        version: link:../bed
 
   plugins/menus:
     dependencies:

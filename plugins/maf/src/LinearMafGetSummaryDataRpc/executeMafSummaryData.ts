@@ -32,9 +32,11 @@ export interface LinearMafGetSummaryDataResult {
  * zoom-level reduction makes wide reads small, where the full alignment fetch
  * would download every species' bases.
  *
- * Only BigMafAdapter ships a summary sub-adapter; when `getSummaryFeatures` is
- * absent (tabix/TAF adapters) the records come back empty and the display
- * falls back to the byte-estimate force-load gate.
+ * BigMafAdapter and MafTabixAdapter both take a `summaryAdapter` slot; when it
+ * is unset — or on BgzipTaffyAdapter, which has no slot, since TAF's `.tai`
+ * already makes a read O(visible span) rather than O(alignment) — the records
+ * come back empty and the display falls back to the byte-estimate force-load
+ * gate.
  */
 export async function executeMafSummaryData({
   pluginManager,

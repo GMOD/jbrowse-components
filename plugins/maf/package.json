@@ -46,6 +46,9 @@
     "mobx-react": "^10.0.0",
     "rxjs": "^7.8.2"
   },
+  "devDependencies": {
+    "@jbrowse/plugin-bed": "workspace:^"
+  },
   "peerDependencies": {
     "react": ">=19.0.0"
   },

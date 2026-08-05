@@ -1,3 +1,5 @@
+import { makeIndex } from '@jbrowse/core/util/tracks'
+
 import type { FileLocation } from '@jbrowse/core/util'
 
 export type AdapterTypeOptions =
@@ -82,6 +84,20 @@ export function buildAdapterConfig(args: BuildArgs) {
           location: indexLoc,
         },
         samples: sampleNames,
+        // The `maf2bed --summary` BED, read through a BedTabixAdapter. Its
+        // sibling `.tbi` is derived rather than asked for: that is the suffix
+        // both this adapter's and BedTabixAdapter's own `uri` shorthands
+        // already assume, and making an optional feature cost two file pickers
+        // is what would stop people turning it on.
+        ...(summaryLoc
+          ? {
+              summaryAdapter: {
+                type: 'BedTabixAdapter',
+                bedGzLocation: summaryLoc,
+                index: { location: makeIndex(summaryLoc, '.tbi') },
+              },
+            }
+          : {}),
       }
     case 'BgzipTaffyAdapter':
       if (!indexLoc) {

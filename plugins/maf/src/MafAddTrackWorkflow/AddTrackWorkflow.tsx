@@ -148,6 +148,18 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
                 setIndexLoc(arg)
               }}
             />
+            {/* Without this the track has no zoom-out view at all: a tabix MAF
+                keeps every species' bases on one line, so a wide query pulls
+                the whole alignment and the size gate blocks it. The sibling
+                .tbi is assumed, as everywhere else in this adapter. */}
+            <FileSelector
+              location={summaryLoc}
+              name="Path to summary BED (.bed.gz from `maf2bed --summary`, optional — enables zoom-out rendering)"
+              rootModel={rootModel}
+              setLocation={arg => {
+                setSummaryLoc(arg)
+              }}
+            />
           </>
         ) : (
           <FileSelector

@@ -3,6 +3,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import MafFeature from '../MafFeature.ts'
 import { buildSampleFilter, getSamplesMemoized } from '../util/getSamples.ts'
+import { mafSummaryFeatures } from '../util/loadMafSummaryAdapter.ts'
 import { lazyInit, loadSubAdapter } from '../util/loadSubAdapter.ts'
 import { subscribeToObservable } from '../util/observableUtils.ts'
 import {
@@ -12,6 +13,7 @@ import {
 
 import type { AlignmentRecord, MafAdapterOptions } from '../types.ts'
 import type { SamplesHolder } from '../util/getSamples.ts'
+import type { MafSummaryHolder } from '../util/loadMafSummaryAdapter.ts'
 import type { MafTabixAdapterConfig } from './configSchema.ts'
 import type {
   BaseFeatureDataAdapter as BaseAdapter,
@@ -28,6 +30,8 @@ export default class MafTabixAdapter extends BaseFeatureDataAdapter<MafTabixAdap
   public setupP?: Promise<{ adapter: TabixByteAdapter }>
 
   public samplesP?: SamplesHolder['samplesP']
+
+  public summaryAdapterP?: MafSummaryHolder['summaryAdapterP']
 
   async setupPre(opts?: BaseOptions): Promise<{ adapter: TabixByteAdapter }> {
     return lazyInit(this, () =>
@@ -102,6 +106,15 @@ export default class MafTabixAdapter extends BaseFeatureDataAdapter<MafTabixAdap
       this.getConf('nhLocation'),
       this.getConf('samples'),
     )
+  }
+
+  // The zoom-out tier. A tabix MAF is the format that needs one most: every
+  // species' bases ride on one BED line, so a wide read downloads the whole
+  // alignment and the byte gate blocks it — without a summary this track has no
+  // zoom-out path at all, only a force-load prompt. Same slot and same reader as
+  // BigMaf's; `maf2bed --summary` is the producer.
+  getSummaryFeatures(query: Region, opts?: BaseOptions) {
+    return mafSummaryFeatures(this, query, opts)
   }
 
   // Byte budget for the fetch gate comes straight from the tabix index (the

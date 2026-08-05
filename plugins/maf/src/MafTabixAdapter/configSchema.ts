@@ -83,6 +83,21 @@ const configSchema = ConfigurationSchema(
     },
     /**
      * #slot
+     * The zoom-out tier. A tabix MAF carries every species' bases on one line,
+     * so a wide read downloads the whole alignment and the byte gate blocks it;
+     * without this slot the track simply has no zoom-out path. Point it at a
+     * `BedTabixAdapter` over the summary BED `maf2bed --summary` writes (one
+     * merged run per species, no sequence), or at a `BigBedAdapter` over a UCSC
+     * `bigMafSummary.bb` covering the same alignment.
+     */
+    summaryAdapter: {
+      type: 'frozen',
+      description:
+        'optional swappable sub-adapter (a BedTabixAdapter over a maf2bed --summary BED, or a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; null disables it',
+      defaultValue: null,
+    },
+    /**
+     * #slot
      */
     annotationAdapter: {
       type: 'frozen',
