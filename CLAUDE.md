@@ -59,9 +59,12 @@ Background lives in `agent-docs/` (start at `ARCHITECTURE.md`, then
   check is wrong. Edit the `.slang`, never the generated module.
 - Two TypeScript versions on purpose: `typescript` 6.x for lint, aliased
   `typescript7` for `pnpm typecheck`. Don't unify them.
-- `@jbrowse/core/util`'s exports are the ABI external plugins resolve against.
-  Changing `publicApi.test.ts`'s snapshot needs a deliberate note on which
-  plugins you checked.
+- The `@jbrowse/core/*` modules in `ReExports/modules.ts` are the ABI external
+  plugins resolve against, guarded by `ReExports/abi.test.ts` against
+  `abiBaseline.json`. Removals fail there; additions don't. To drop a name,
+  delete it from the baseline in the same commit and say in the message which
+  published plugins you checked. (Replaced `util/publicApi.test.ts`, which
+  guarded the util barrel alone.)
 - `demos/<name>/config.json` deploys via `scripts/deploy-demo.sh`. Never
   `aws s3 cp` a config from elsewhere — the bucket has no versioning, so an
   overwrite that drops a track is unrecoverable.
