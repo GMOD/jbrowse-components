@@ -57,6 +57,8 @@ const BedGraphAdapter = ConfigurationSchema(
   {
     /**
      * #slot
+     * location of the plain-text bedGraph (`chrom start end value`, one line
+     * per interval). May be gzipped.
      */
     bedGraphLocation: {
       type: 'fileLocation',
@@ -484,6 +486,9 @@ that way:
 ```ts
 /**
  * #slot
+ * location of the BAM file. Per-base mismatches come from the record's MD
+ * tag when it has one, and are otherwise computed against the assembly's
+ * reference sequence.
  */
 bamLocation: {
   type: 'fileLocation',
@@ -496,6 +501,8 @@ bamLocation: {
 index: ConfigurationSchema('BamIndex', {
   /**
    * #slot index.indexType
+   * `BAI` is the usual `samtools index` output. `CSI` is required for a
+   * reference longer than 512 Mb, which BAI cannot address.
    */
   indexType: {
     model: types.enumeration('IndexType', ['BAI', 'CSI']),
@@ -504,6 +511,9 @@ index: ConfigurationSchema('BamIndex', {
   },
   /**
    * #slot index.location
+   * location of the index. Only needed when it is not named
+   * `<file>.bam.bai` (or `.bam.csi`), which is what the `uri` shorthand
+   * assumes.
    */
   location: {
     type: 'fileLocation',
