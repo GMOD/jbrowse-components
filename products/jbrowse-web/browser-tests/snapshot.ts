@@ -176,11 +176,64 @@ function compareImages(
 // return the comparison result instead, and its one caller ignored it — so the
 // gwas-locuszoom context-menu golden was read and compared on every run and its
 // verdict discarded, i.e. that figure had no assertion behind it at all.
+// A full-page capture photographs whatever is on screen, so it is the one path
+// that can record a page that isn't JBrowse at all and have it look like a
+// result. That is not hypothetical: `pnpm build` empties `build/` and writes
+// index.html last, so a run overlapping someone else's build (a shared worktree
+// makes that ordinary) gets the static server's directory listing for every
+// navigation. `page.goto` resolves, the waits settle against a page with
+// nothing to wait for, and the capture is a file index.
+//
+// Comparing it against a real golden fails loudly, which is fine. Under
+// `--update-snapshots` it does not: an update run never compares, so the file
+// index is simply written as the new truth. That is how
+// fullpage_methylation_snapshot and fullpage_breakpoint_split_view_snapshot were
+// corrupted on 2026-08-04, and it is invisible afterwards — the tests go green
+// against their own garbage.
+//
+// `#root` with children, rather than any single test-id, because it is the one
+// element every page of the app has and no non-app page does (see
+// src/index.tsx). It also catches a mount that threw, where the element exists
+// and stays empty. The canvas-element captures need no such guard: they wait on
+// a selector that a non-app page cannot satisfy.
+//
+// A *wait* rather than an assertion, because "not mounted yet" is the common
+// case and it is a race, not an error: `page.goto` resolves before the bundle
+// has executed, and the wait every caller runs first — `waitForLoadingToComplete`
+// — counts `loading-overlay` elements, which is vacuously zero on a page that has
+// rendered nothing at all. So a slow load could reach the capture with an empty
+// `#root` and photograph a blank page. Waiting collapses that race; only a page
+// that never mounts reaches the throw.
+async function waitForAppMounted(page: Page, timeout = 30000) {
+  try {
+    await page.waitForFunction(
+      () => (document.getElementById('root')?.childElementCount ?? 0) > 0,
+      { timeout, polling: 100 },
+    )
+  } catch {
+    const state = await page.evaluate(() => ({
+      hasRoot: !!document.getElementById('root'),
+      title: document.title,
+      url: window.location.href,
+    }))
+    throw new Error(
+      `refusing to capture: the JBrowse app never mounted (#root ${
+        state.hasRoot ? 'stayed empty' : 'is absent'
+      }, title "${state.title}", url ${state.url}). #root absent means the ` +
+        'server served something that is not the app — a build mid-write ' +
+        'removes build/index.html and the static server answers with a ' +
+        'directory listing. #root empty means the bundle loaded and the app ' +
+        'failed to render.',
+    )
+  }
+}
+
 export async function capturePageSnapshot(
   page: Page,
   name: string,
   threshold = 0.1,
 ) {
+  await waitForAppMounted(page)
   const screenshot = await page.screenshot()
   const result = compareImages(name, screenshot, threshold)
   if (!result.passed) {
@@ -345,6 +398,7 @@ export async function pageSnapshot(page: Page, name: string, threshold = 0.1) {
   const base = name.replace(/^fullpage_/, '').replace(/-fullpage$/, '')
   await waitForCaptureSettled(page)
 
+  await waitForAppMounted(page)
   const screenshot = await page.screenshot()
   const result = compareImages(`fullpage_${base}`, screenshot, threshold)
   if (!result.passed) {

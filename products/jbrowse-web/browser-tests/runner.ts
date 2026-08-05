@@ -509,9 +509,19 @@ function killStaleTestBrowsers() {
 
 async function main() {
   killStaleTestBrowsers()
-  if (!fs.existsSync(buildPath)) {
+  // index.html, not just the directory: `pnpm build` empties `build/` and
+  // writes index.html near the end, so a run that starts while someone else in
+  // this worktree is rebuilding finds the directory present and the entry point
+  // gone. The static server then answers `/` with a directory listing, every
+  // navigation "succeeds", and the tests photograph the file index — which
+  // under `--update-snapshots` is written straight into the goldens, since an
+  // update run never compares. Two goldens were corrupted that way on
+  // 2026-08-04 before the capture guard in snapshot.ts existed.
+  if (!fs.existsSync(path.join(buildPath, 'index.html'))) {
     console.error(
-      'Error: Build directory not found. Run `pnpm build` in products/jbrowse-web first.',
+      fs.existsSync(buildPath)
+        ? 'Error: build/index.html is missing. A build is probably in progress — wait for it to finish and re-run.'
+        : 'Error: Build directory not found. Run `pnpm build` in products/jbrowse-web first.',
     )
     process.exit(1)
   }
