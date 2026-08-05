@@ -19,11 +19,11 @@ state, which drives dendrogram rendering.
   dosage matrix (`0/1/2/-1`), one row per haplotype in phased mode.
 - `TreeSidebarMixin` holds the persistent state (`layout`, `clusterTree` Newick,
   `treeAreaWidth`, `subtreeFilter`) and is shared by both plugins.
-- **Variants need `pendingClusterTree`**: clustering finishes before `cellData`
-  arrives, so the tree is applied atomically in `setCellData`. Wiggle renders
-  from the score matrix directly and doesn't.
+- **Both plugins commit layout and tree together**, through one
+  `setLayoutAndClusterTree`. Variants used to defer the tree; it doesn't any
+  more (see [Why the tree no longer waits](#why-the-tree-no-longer-waits)).
 - Manual mode emits an R script and takes a pasted Newick, then joins the exact
-  same `buildClusteredLayout` + `setLayout*` path.
+  same `buildClusteredLayout` + `setLayoutAndClusterTree` path.
 
 ---
 
@@ -45,8 +45,7 @@ Worker
   Return { order: number[], tree: string }
 Dialog callback
   buildClusteredLayout(baseSources, existingLayout, order)
-  model.setLayoutAndClusterTree(layout, tree)        ← wiggle
-  model.setLayoutAndPendingClusterTree(layout, tree) ← variants (see below)
+  model.setLayoutAndClusterTree(layout, tree)        ← both plugins
 MST state updated (TreeSidebarMixin)
   layout[]     → row order
   clusterTree  → Newick string
@@ -133,13 +132,24 @@ purpose. Only a change to what rows are *called* invalidates it — variants'
 
 ---
 
-## Pending tree (variants only)
+## Why the tree no longer waits
 
-Variants have a `pendingClusterTree` volatile. The problem: clustering finishes
-before `cellData` (the render grid) arrives. Applying the tree immediately would
-reorder rows that don't yet have computed data. `setCellData()` applies the
-pending tree atomically when data lands. Wiggle doesn't need this because it
-renders from the score matrix directly.
+Variants used to hold the dendrogram in a `pendingClusterTree` volatile and
+apply it in `setCellData`, because `layout` was an RPC input: a clustering run
+refetched, and until the new cells arrived the rows on screen were still in the
+old order while the tree already showed the new one.
+
+**Row order stopped being a fetch input**, so that window closed — the worker
+names its rows and `rowRemap` places them onto screen rows, re-derived from
+`sources` the moment `layout` changes (ARCHITECTURE.md, "Row order is not a
+fetch input"). Deferring anyway then meant the tree waited on a refetch that no
+longer happens, and a `runClustering: true` display drew no dendrogram at all.
+Layout and tree now land together, immediately, on both plugins.
+`clusterTreeLands.test.ts` is the regression guard.
+
+This is the shape to expect when a "wait for the other half to arrive"
+mechanism outlives the asynchrony it was written for: it doesn't fail loudly,
+it just never fires.
 
 ---
 
@@ -186,7 +196,8 @@ Clicking a tree node calls `setSubtreeFilter` to collapse/expand that clade.
 | `plugins/variants/src/VariantRPC/getGenotypeMatrix.ts` | Dosage matrix construction |
 | `plugins/variants/src/VariantRPC/getPhasedGenotypeMatrix.ts` | Phased haplotype matrix |
 | `plugins/variants/src/shared/components/MultiSampleVariantClusterDialog.tsx` | Dialog (Auto + Manual) |
-| `plugins/variants/src/shared/MultiSampleVariantBaseModel.ts` | Base model; `pendingClusterTree` + `hierarchy` |
+| `plugins/variants/src/shared/MultiSampleVariantBaseModel.ts` | Base model; `hierarchy` |
+| `plugins/variants/src/shared/applyClusterOrder.ts` | Turns an order into the next `layout`; expands haplotypes in phased mode |
 | `packages/tree-sidebar/src/TreeSidebarMixin.ts` | Shared MST state |
 | `packages/tree-sidebar/src/clusterUtils.ts` | `buildClusteredLayout`, `buildTree`, `applySubtreeFilter` |
 | `packages/tree-sidebar/src/newick.ts` | Newick parser |
