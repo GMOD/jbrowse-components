@@ -11,7 +11,21 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # Cancel superseded runs on ordinary branches — that is what keeps pushing
+  # cheap. NOT on main or a tag, because those runs *deploy*: jbrowse-web to
+  # code/jb2/<ref>, and the four examples-sites to /storybook/<prefix>. A cancel
+  # lands wherever the run happens to be, frequently before or during the deploy
+  # step, so the push silently never reaches the site. With several people
+  # pushing main in a burst this dropped deploys routinely, and the symptom is
+  # only ever "the site looks stale", which reads as a caching problem.
+  #
+  # This does not queue runs without bound. GitHub keeps at most one running and
+  # one pending per concurrency group, cancelling the older *pending* run — so a
+  # burst still collapses to "let the current deploy finish, then deploy the
+  # newest commit", which is the behaviour you want from a deploy.
+  cancel-in-progress:
+    ${{ github.ref != 'refs/heads/main' && !startsWith(github.ref,
+    'refs/tags/') }}
 
 permissions:
   contents: read
