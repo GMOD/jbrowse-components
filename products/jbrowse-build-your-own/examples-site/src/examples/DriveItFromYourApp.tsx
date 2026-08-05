@@ -337,6 +337,14 @@ function ZoomHint({ show }: { show: boolean }) {
  * `block.offsetPx - view.offsetPx`, and the blocks flagged
  * `isRightEndOfDisplayedRegion` are the region ends.
  *
+ * That flag is the only thing that means "the region ends here", which is worth
+ * saying because `view.scalebarRegionEndPx` looks like a shortcut for the whole
+ * filter and is not one. It is the rightmost edge per region of the blocks
+ * *currently loaded*, and static blocks are ~800px chunks picked by window
+ * rather than clipped to it -- so for a region wider than the viewport it is
+ * the end of the last chunk, and a separator drawn there would sit inside a
+ * region and slide as you scroll.
+ *
  * The *last* region's right end is skipped, because it is not a seam between
  * two regions -- it is where the genome runs out. JBrowse marks that one too,
  * but it also greys out everything past it, so the line reads as the edge of a
@@ -677,10 +685,10 @@ const DriveItFromYourApp = observer(function DriveItFromYourApp() {
           >
             <ZoomHint show={hint} />
             {/* `RegionBoundaries` is inside the same gate as the tracks, not
-              * beside it: `staticBlocks` reads `view.width`, which *throws*
-              * ("make sure to check for model.initialized") until the
-              * ResizeObserver has reported one. Anything of your own that
-              * reads block geometry needs the same guard. */}
+             * beside it: `staticBlocks` reads `view.width`, which *throws*
+             * ("make sure to check for model.initialized") until the
+             * ResizeObserver has reported one. Anything of your own that
+             * reads block geometry needs the same guard. */}
             {isViewReady(view) ? (
               <>
                 {view.tracks.map(track => (
