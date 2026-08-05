@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 
+import { useMouseTracking } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import {
   getBpDisplayStr,
@@ -22,6 +23,7 @@ import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGen
 
 import type { LDFlatbushItem } from '../../RenderLDDataRPC/types.ts'
 import type { SharedLDModel } from '../shared.ts'
+import type { MouseState } from '@jbrowse/core/ui'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -125,12 +127,21 @@ const RecombinationOverlay = observer(function RecombinationOverlay({
 const LDCanvas = observer(function LDCanvas({
   model,
   canvasRef,
+  mouseState,
+  hoveredItem,
+  width,
+  canvasOnlyHeight,
+  containerHeight,
 }: {
   model: SharedLDModel
   canvasRef: (node: HTMLCanvasElement | null) => void
+  mouseState?: MouseState
+  hoveredItem?: LDFlatbushItem
+  width: number
+  canvasOnlyHeight: number
+  containerHeight: number
 }) {
   const view = getContainingView(model) as LGV
-  const width = view.totalWidthPxWithoutBorders
   const {
     showLegend,
     // the metric the loaded values ACTUALLY are, not the one asked for. A
@@ -139,24 +150,10 @@ const LDCanvas = observer(function LDCanvas({
     // the config would name a statistic that is not on screen.
     effectiveLdMetric,
     lineZoneHeight,
-    squashToHeight,
-    ldCanvasHeight,
     useGenomicPositions,
     signedLD,
-    isLoading,
     effectiveLineZoneHeight,
   } = model
-
-  const triangleHeight = width / 2
-  const canvasOnlyHeight = squashToHeight ? ldCanvasHeight : triangleHeight
-  const containerHeight = canvasOnlyHeight + effectiveLineZoneHeight
-
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [hoveredItem, setHoveredItem] = useState<LDFlatbushItem>()
-  const [mousePosition, setMousePosition] = useState<{
-    x: number
-    y: number
-  }>()
 
   const region = view.dynamicBlocks.contentBlocks[0]
   const bpPerPx = view.bpPerPx
@@ -189,54 +186,8 @@ const LDCanvas = observer(function LDCanvas({
     }
   }, [genomicX1, genomicX2, model.showVerticalGuides, view, viewOffsetX])
 
-  const onMouseMove = (event: React.MouseEvent) => {
-    const container = containerRef.current
-    if (!container || isLoading) {
-      setHoveredItem(undefined)
-      setMousePosition(undefined)
-      return
-    }
-    const rect = container.getBoundingClientRect()
-    setMousePosition({ x: event.clientX, y: event.clientY })
-    setHoveredItem(
-      model.hitTest(event.clientX - rect.left, event.clientY - rect.top),
-    )
-  }
-
-  const onMouseLeave = () => {
-    setHoveredItem(undefined)
-    setMousePosition(undefined)
-  }
-
-  // Click a cell to pin its row SNP as focal (highlights that SNP's LD with
-  // every other variant); click empty space to clear.
-  const onClick = (event: React.MouseEvent) => {
-    const container = containerRef.current
-    if (!container || isLoading) {
-      return
-    }
-    const rect = container.getBoundingClientRect()
-    const item = model.hitTest(
-      event.clientX - rect.left,
-      event.clientY - rect.top,
-    )
-    model.setFocalSnp(item?.snp1)
-  }
-
   return (
-    <div
-      ref={containerRef}
-      style={{
-        cursor: hoveredItem && mousePosition ? 'crosshair' : undefined,
-        position: 'relative',
-        width,
-        height: containerHeight,
-        overflow: 'hidden',
-      }}
-      onMouseMove={onMouseMove}
-      onMouseLeave={onMouseLeave}
-      onClick={onClick}
-    >
+    <>
       <canvas
         data-testid="ld_canvas"
         ref={canvasRef}
@@ -263,11 +214,11 @@ const LDCanvas = observer(function LDCanvas({
         />
       ) : null}
 
-      {hoveredItem && mousePosition ? (
+      {hoveredItem && mouseState ? (
         <LDTooltip
           item={hoveredItem}
-          x={mousePosition.x}
-          y={mousePosition.y}
+          x={mouseState.clientX}
+          y={mouseState.clientY}
           ldMetric={effectiveLdMetric}
           signedLD={signedLD}
         />
@@ -298,21 +249,17 @@ const LDCanvas = observer(function LDCanvas({
           bpPerPx={bpPerPx}
         />
       ) : null}
-    </div>
+    </>
   )
 })
 
-const EmptyState = observer(function EmptyState({
-  model,
-}: {
-  model: SharedLDModel
-}) {
-  const view = getContainingView(model) as LGV
+// Fills the chrome, which owns the box in both branches.
+function EmptyState() {
   return (
     <div
       style={{
-        width: view.totalWidthPxWithoutBorders,
-        height: model.height,
+        width: '100%',
+        height: '100%',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -322,20 +269,88 @@ const EmptyState = observer(function EmptyState({
       Enable LD triangle in display settings to view data
     </div>
   )
-})
+}
 
+// Thin outer: owns the chrome and the pointer measurement bound to its
+// container. There is no inner positioning div — the chrome already IS the
+// `position:relative` box its own overlays need (DisplayStatusChromeBase), so
+// sizing it here rather than nesting a second identically-sized container is
+// what lets `mouseState` be measured against the same element the canvas fills.
 const LDDisplayComponent = observer(function LDDisplayComponent({
   model,
 }: {
   model: SharedLDModel
 }) {
+  const view = getContainingView(model) as LGV
+  const width = view.totalWidthPxWithoutBorders
+  const {
+    showLDTriangle,
+    squashToHeight,
+    ldCanvasHeight,
+    effectiveLineZoneHeight,
+    isLoading,
+  } = model
+
+  const canvasOnlyHeight = squashToHeight ? ldCanvasHeight : width / 2
+  const containerHeight = canvasOnlyHeight + effectiveLineZoneHeight
+
+  const ref = useRef<HTMLDivElement>(null)
+  const { mouseState, handleMouseMove, handleMouseLeave } = useMouseTracking(ref)
+
+  // Derived from the one measurement rather than stored beside it, so the
+  // tooltip, the crosshairs and the view's vertical guides all describe the
+  // same cell in the same frame.
+  const hoveredItem =
+    mouseState && showLDTriangle && !isLoading
+      ? model.hitTest(mouseState.x, mouseState.y)
+      : undefined
+
   return (
-    <DisplayChrome model={model} factory={LDRenderer} testid="ld-display">
+    <DisplayChrome
+      model={model}
+      factory={LDRenderer}
+      ref={ref}
+      testid="ld-display"
+      style={
+        showLDTriangle
+          ? {
+              cursor: hoveredItem ? 'crosshair' : undefined,
+              width,
+              height: containerHeight,
+              overflow: 'hidden',
+            }
+          : { width, height: model.height }
+      }
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      onClick={event => {
+        // Click a cell to pin its row SNP as focal (highlights that SNP's LD
+        // with every other variant); click empty space to clear. Hit-tested
+        // from the click itself, not from the hover a previous frame recorded —
+        // the measurement is rAF-coalesced, so that one can be a frame stale.
+        const rect = ref.current?.getBoundingClientRect()
+        if (rect && showLDTriangle && !isLoading) {
+          const item = model.hitTest(
+            event.clientX - rect.left,
+            event.clientY - rect.top,
+          )
+          model.setFocalSnp(item?.snp1)
+        }
+      }}
+    >
       {({ canvasRef }) =>
-        model.showLDTriangle ? (
-          <LDCanvas model={model} canvasRef={canvasRef} />
+        showLDTriangle ? (
+          <LDCanvas
+            model={model}
+            canvasRef={canvasRef}
+            mouseState={mouseState}
+            hoveredItem={hoveredItem}
+            width={width}
+            canvasOnlyHeight={canvasOnlyHeight}
+            containerHeight={containerHeight}
+          />
         ) : (
-          <EmptyState model={model} />
+          <EmptyState />
         )
       }
     </DisplayChrome>

@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useRef } from 'react'
 
+import { useMouseTracking } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { reducePrecision, toLocale } from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
@@ -8,22 +9,9 @@ import { observer } from 'mobx-react'
 import HicOverlayPanel from './HicOverlayPanel.tsx'
 import { HicRenderer } from './HicRenderer.ts'
 
-import type {
-  HicContactItem,
-  HicDataResult,
-} from '../../RenderHicDataRPC/types.ts'
+import type { HicDataResult } from '../../RenderHicDataRPC/types.ts'
 import type { LinearHicDisplayModel } from '../model.ts'
-
-// `item` is absent over an empty bin, where the guide still draws (reading a
-// position off the axes is exactly what you want somewhere with no contact) but
-// there is nothing to put in a tooltip.
-interface Hover {
-  item: HicContactItem | undefined
-  clientX: number
-  clientY: number
-  localX: number
-  localY: number
-}
+import type { MouseState } from '@jbrowse/core/ui'
 
 function formatLocus(data: HicDataResult, regionIdx: number, bin: number) {
   const refName = data.regionRefNames[regionIdx]
@@ -38,7 +26,7 @@ function HicTooltip({
   x,
   y,
 }: {
-  item: HicContactItem
+  item: NonNullable<ReturnType<LinearHicDisplayModel['hitTest']>>
   data: HicDataResult
   x: number
   y: number
@@ -86,50 +74,75 @@ function Crosshairs({
   )
 }
 
-const HicCanvas = observer(function HicCanvas({
+// Thin outer: owns the chrome and the pointer measurement bound to its
+// container. There is no inner positioning div — the chrome already IS the
+// `position:relative` box its own overlays need (DisplayStatusChromeBase), so
+// sizing it here rather than nesting a second identically-sized container is
+// what lets `mouseState` be measured against the same element the canvas fills.
+const LinearHicReactComponent = observer(function LinearHicReactComponent({
+  model,
+}: {
+  model: LinearHicDisplayModel
+}) {
+  const { height, lgv } = model
+  const width = lgv.totalWidthPx
+  const ref = useRef<HTMLDivElement>(null)
+  const { mouseState, handleMouseMove, handleMouseLeave } = useMouseTracking(ref)
+
+  return (
+    <DisplayChrome
+      model={model}
+      factory={HicRenderer}
+      ref={ref}
+      testid="hic-display"
+      style={{ cursor: 'crosshair', width, height, overflow: 'hidden' }}
+      onMouseMove={event => {
+        // The overlay panel (resolution dropdown, legend) is portaled out of
+        // this container, so its React events still bubble here even though its
+        // DOM node isn't a descendant. Suppress the guide/tooltip while over it.
+        const { target } = event
+        if (target instanceof Node && event.currentTarget.contains(target)) {
+          handleMouseMove(event)
+        } else {
+          handleMouseLeave()
+        }
+      }}
+      onMouseLeave={handleMouseLeave}
+    >
+      {({ canvasRef }) => (
+        <HicBody
+          model={model}
+          canvasRef={canvasRef}
+          mouseState={mouseState}
+          width={width}
+        />
+      )}
+    </DisplayChrome>
+  )
+})
+
+const HicBody = observer(function HicBody({
   model,
   canvasRef,
+  mouseState,
+  width,
 }: {
   model: LinearHicDisplayModel
   canvasRef: (node: HTMLCanvasElement | null) => void
+  mouseState?: MouseState
+  width: number
 }) {
-  const { height, yScalar, lgv } = model
-  const width = lgv.totalWidthPx
-  const [hover, setHover] = useState<Hover>()
+  const { height, yScalar } = model
+  // Derived rather than stored beside the coordinates: one measurement per
+  // frame already gives the guide and the tooltip the same position, so a
+  // second copy of the hit in component state could only disagree with it.
+  // `item` is absent over an empty bin, where the guide still draws (reading a
+  // position off the axes is exactly what you want somewhere with no contact)
+  // but there is nothing to put in a tooltip.
+  const item = mouseState ? model.hitTest(mouseState.x, mouseState.y) : undefined
 
   return (
-    <div
-      style={{
-        cursor: 'crosshair',
-        position: 'relative',
-        width,
-        height,
-        overflow: 'hidden',
-      }}
-      onMouseMove={event => {
-        // The overlay panel (resolution dropdown, legend) is portaled out of
-        // this div, so its React events still bubble here even though its DOM
-        // node isn't a descendant. Suppress the guide/tooltip while over it.
-        const { target } = event
-        if (target instanceof Node && event.currentTarget.contains(target)) {
-          const rect = event.currentTarget.getBoundingClientRect()
-          const localX = event.clientX - rect.left
-          const localY = event.clientY - rect.top
-          setHover({
-            item: model.hitTest(localX, localY),
-            clientX: event.clientX,
-            clientY: event.clientY,
-            localX,
-            localY,
-          })
-        } else {
-          setHover(undefined)
-        }
-      }}
-      onMouseLeave={() => {
-        setHover(undefined)
-      }}
-    >
+    <>
       <canvas
         data-testid="hic_canvas"
         ref={canvasRef}
@@ -141,38 +154,26 @@ const HicCanvas = observer(function HicCanvas({
         }}
       />
       <HicOverlayPanel model={model} />
-      {hover ? (
+      {mouseState ? (
         <>
           <Crosshairs
-            x={hover.localX}
-            y={hover.localY}
+            x={mouseState.x}
+            y={mouseState.y}
             yScalar={yScalar}
             width={width}
             height={height}
           />
-          {hover.item && model.rpcData ? (
+          {item && model.rpcData ? (
             <HicTooltip
-              item={hover.item}
+              item={item}
               data={model.rpcData}
-              x={hover.clientX}
-              y={hover.clientY}
+              x={mouseState.clientX}
+              y={mouseState.clientY}
             />
           ) : null}
         </>
       ) : null}
-    </div>
-  )
-})
-
-const LinearHicReactComponent = observer(function LinearHicReactComponent({
-  model,
-}: {
-  model: LinearHicDisplayModel
-}) {
-  return (
-    <DisplayChrome model={model} factory={HicRenderer} testid="hic-display">
-      {({ canvasRef }) => <HicCanvas model={model} canvasRef={canvasRef} />}
-    </DisplayChrome>
+    </>
   )
 })
 
