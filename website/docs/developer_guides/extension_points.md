@@ -119,10 +119,10 @@ in `ExtensionPointRegistry` yet.
 
 ### Accumulating points
 
-Register on a `list` point with **`contributeToExtensionPoint`**, not
-`addToExtensionPoint`. Your callback receives the props and returns what it
-wants to add — one entry, an array of them, or `undefined` to add nothing. The
-GC content plugin adding an item to the reference sequence track's menu:
+Register on a `list` point with **`contributeToExtensionPoint`**. The callback
+gets the props and returns what to add — one entry, an array, or `undefined` for
+none. The GC content plugin, adding an item to the reference sequence track's
+menu:
 
 <!-- include: plugins/gccontent/src/extraTrackMenuItems.ts -->
 
@@ -164,14 +164,10 @@ export default function GCContentExtraTrackMenuItemsF(
 }
 ```
 
-It is never handed the array, and that is deliberate: the concatenation happens
-once inside the plugin manager, so no plugin can write the `[MyEntry]` that
-drops every other plugin's entries. That mistake used to be easy to make and
-impossible to notice, because with one plugin registered there is nothing to
-drop.
-
-`addToExtensionPoint` is for the points that thread a single value, and passing
-it a `list` point is a type error naming the method to use instead.
+Withholding the array is the point: the concatenation happens once inside the
+plugin manager, so no plugin can write the `[MyEntry]` that drops every other
+plugin's entries. `addToExtensionPoint` covers the points that thread a single
+value, and type-errors on a `list` point.
 
 For `list` points that accumulate rendered elements, register with
 `addExtensionElement` rather than by hand, so the array spread and the React
@@ -460,10 +456,9 @@ pluginManager.contributeToExtensionPoint(
 )
 ```
 
-Declare the component at module scope as above. Returning one declared inside
-the callback hands React a new element type on each evaluation, so the panel
-remounts and loses whatever state it held. Each panel renders inside a
-`<Suspense>`, so `React.lazy` is fine.
+Declare the component at module scope as above — one declared inside the
+callback is a new element type on each evaluation, so the panel remounts and
+loses its state. Panels render inside a `<Suspense>`, so `React.lazy` is fine.
 
 Unlike `Core-extraFeaturePanel`, this point does not scope itself for you: the
 dialog fires it for whatever track was opened, so a callback that returns
@@ -876,9 +871,8 @@ export default function CreateMultiWiggleExtensionF(pm: PluginManager) {
 }
 ```
 
-Note what a plugin whose item does not apply returns: `undefined`, meaning
-"nothing from me". There is no accumulated array in scope to pass through, so
-the not-applicable branch cannot accidentally return the wrong thing.
+A plugin whose item does not apply returns `undefined`. With no accumulated
+array in scope, that branch has nothing it can get wrong.
 
 ### TrackSelector-folderDialog
 

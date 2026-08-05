@@ -74,68 +74,127 @@ your [config schema](/docs/developer_guides/configuration_schema)) so
 
 ## Example feature adapter
 
+`Gff3Adapter` in full. It parses the whole file up front, so `getFeatures` is a
+lookup:
+
+<!-- include: plugins/gff3/src/Gff3Adapter/Gff3Adapter.ts -->
+
 ```ts
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { SimpleFeature } from '@jbrowse/core/util'
+import {
+  BaseFeatureDataAdapter,
+  cachedSetup,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
+import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
+import { openLocation } from '@jbrowse/core/util/io'
+import {
+  groupLinesByRef,
+  makeFeatureIntervalTreeMap,
+} from '@jbrowse/core/util/parseLineByLine'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import SimpleFeature from '@jbrowse/core/util/simpleFeature'
+import { parseLines } from 'gff-nostream'
 
+import type { Gff3AdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Feature, Region } from '@jbrowse/core/util'
-import type { MyAdapterConfig } from './configSchema.ts'
+import type { Feature } from '@jbrowse/core/util/simpleFeature'
+import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
+import type { GffFeature } from 'gff-nostream'
 
-interface GeneJson {
-  refName: string
-  start: number
-  end: number
-}
+type Gff3Feature = GffFeature & { uniqueId: string }
 
-export default class MyAdapter extends BaseFeatureDataAdapter<MyAdapterConfig> {
-  async getRefNames(_opts?: BaseOptions) {
-    // hardcode if known ahead of time, or read them from a file header
-    return ['chr1', 'chr2', 'chr3']
+export default class Gff3Adapter extends BaseFeatureDataAdapter<Gff3AdapterConfig> {
+  // the whole file is resident after one load, so the fetch/parse status comes
+  // from inside the load itself rather than a label wrapped around it
+  private loadData = cachedSetup({
+    setup: async (opts?: BaseOptions) => {
+      const buffer = await fetchAndMaybeUnzip(
+        openLocation(this.getConf('gffLocation'), this.pluginManager),
+        opts,
+      )
+
+      const { headerLines, linesByRef } = groupLinesByRef(
+        buffer,
+        opts?.statusCallback,
+      )
+
+      const intervalTreeMap = makeFeatureIntervalTreeMap<Gff3Feature>(
+        linesByRef,
+        // lines are already split and comment/FASTA-filtered by
+        // groupLinesByRef, so feed them straight to parseLines rather than
+        // re-joining and re-splitting through parseStringSync
+        (lines, refName) =>
+          parseLines(lines).map((feature, i) => ({
+            ...feature,
+            uniqueId: `${this.id}-${refName}-${i}`,
+          })),
+        'Parsing GFF data',
+      )
+
+      return { header: headerLines.join('\n'), intervalTreeMap }
+    },
+  })
+
+  public async getRefNames(opts: BaseOptions = {}) {
+    const { intervalTreeMap } = await this.loadData(opts)
+    return Object.keys(intervalTreeMap)
   }
 
-  getFeatures(region: Region, opts?: BaseOptions) {
+  public async getHeader(opts: BaseOptions = {}) {
+    const { header } = await this.loadData(opts)
+    return header
+  }
+
+  public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      const { refName, start, end } = region
-      const endpoint = this.getConf('endpoint')
-      const response = await fetch(
-        `${endpoint}/genes/${refName}/${start}-${end}`,
-        { headers: opts?.headers, signal: opts?.signal },
-      )
-      if (!response.ok) {
-        // thrown errors are routed to observer.error() by ObservableCreate
-        throw new Error(`${response.status} ${response.statusText}`)
+      try {
+        const { start, end, refName } = query
+        const { intervalTreeMap } = await this.loadData(opts)
+        const tree = intervalTreeMap[refName]
+        if (tree) {
+          for (const f of tree(opts.statusCallback).search([start, end])) {
+            observer.next(new SimpleFeature({ data: f, id: f.uniqueId }))
+          }
+        }
+        observer.complete()
+      } catch (e) {
+        observer.error(e)
       }
-      const genes = (await response.json()) as GeneJson[]
-      for (const gene of genes) {
-        observer.next(
-          new SimpleFeature({
-            uniqueId: `${gene.refName}-${gene.start}-${gene.end}`,
-            ...gene,
-          }),
-        )
-      }
-      observer.complete()
-    }, opts?.stopToken)
+    }, opts.stopToken)
   }
 }
 ```
 
-For a real one of comparable size, read
-[`Gff3Adapter`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gff3/src/Gff3Adapter/Gff3Adapter.ts),
-which parses a whole file up front, or
-[`MCScanAnchorsAdapter`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/MCScanAnchorsAdapter/MCScanAnchorsAdapter.ts)
-for one that wraps sub-adapters.
+- `cachedSetup` memoizes the parse for every method that awaits it, and clears
+  the memo on rejection so a failed load retries. Range-streaming adapters (BAM,
+  tabix) skip it and read the index per query.
+- Prefix `uniqueId` with `this.id`: two tracks over one file must not collide.
+- The `try`/`catch` is redundant, see [getFeatures](#getfeatures).
+
+For an API instead of a file, only the callback body changes: `fetch` with
+`opts?.signal`, then `observer.next(new SimpleFeature(...))` per hit.
 
 To wrap another adapter (e.g. a sequence adapter for a feature adapter that
-needs the reference), resolve it lazily with `this.getSubAdapter` (it is
-`async`, so never call it from a constructor):
+needs the reference), resolve it lazily with `this.getSubAdapter` — it is
+`async`, so it cannot be called from a constructor:
+
+<!-- include: plugins/gccontent/src/GCContentAdapter/GCContentAdapter.ts#subAdapter -->
 
 ```ts
-const sub = await this.getSubAdapter?.(this.getConf('sequenceAdapter'))
-const sequenceAdapter = sub?.dataAdapter
+public async configure() {
+  const adapter = await this.getSubAdapter?.(this.getConf('sequenceAdapter'))
+  if (!adapter) {
+    throw new Error('Error getting subadapter')
+  }
+  return adapter.dataAdapter as BaseSequenceAdapter
+}
 ```
+
+`getSubAdapter` is optional on the base class, hence the `?.` and the check;
+`dataAdapter` is the base union, so cast it. Resolve it in one `configure()` the
+other methods await rather than in each of them.
+
+Larger example:
+[`MCScanAnchorsAdapter`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/MCScanAnchorsAdapter/MCScanAnchorsAdapter.ts).
 
 ## Feature adapter API
 

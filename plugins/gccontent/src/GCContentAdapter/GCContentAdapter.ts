@@ -14,6 +14,7 @@ import type {
 import type { Feature, Region } from '@jbrowse/core/util'
 
 export default class GCContentAdapter extends BaseFeatureDataAdapter<GCContentAdapterConfig> {
+  // #region subAdapter
   public async configure() {
     const adapter = await this.getSubAdapter?.(this.getConf('sequenceAdapter'))
     if (!adapter) {
@@ -21,6 +22,7 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter<GCContentAd
     }
     return adapter.dataAdapter as BaseSequenceAdapter
   }
+  // #endregion
 
   public async getRefNames(opts?: BaseOptions) {
     const adapter = await this.configure()
