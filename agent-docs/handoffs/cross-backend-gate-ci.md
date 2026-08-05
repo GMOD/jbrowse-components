@@ -239,31 +239,52 @@ there is no tight reproducer to substitute — the blanks are spread thinly acro
 many different captures rather than concentrated in one. **Stop running
 whole-suite A/Bs against this.**
 
-### Blank captures are now re-taken (and the timeout mode is what is left)
+### Blank retry + timeout attribution: BOTH TRIED, BOTH REVERTED
 
-A blank is detectable — `assertNonBlank` is that detector — so it is now
-re-taken up to 3 times before being believed, on both paths that can report one.
-This does not blunt the gate: a display that draws nothing is blank on every
-attempt and still fails; only a transient capture recovers. The counts print in
-the run summary (`Blank re-captures: N (M recovered, …)`) because a silent retry
-is how a real regression would hide.
+Two changes were landed and then reverted together (`28c6ee6d90` reverts
+`839113dabe` and `cb2f8524fd`). The idea in each was sound and the execution made
+things **worse in the one dimension they existed to improve** — how legible a
+failure is.
 
-**The retry deliberately does not re-run `waitForCaptureSettled` between
-attempts.** The first version did, and it was actively harmful: 10 passed / 8
-failed against a baseline of 18 / 0 on the same filter and machine minutes
-apart. It can add ~100 s per retry, and `assertCanvasHasContent` is called
-mid-test by callers who have *not* finished loading, so page-wide waits change
-what that helper means. A 250 ms delay and a re-take is all a transient miss
-needs, and re-measures at 18 / 0. **Always baseline a change to this suite
-against HEAD on the same filter — the run-to-run variance will otherwise hide a
-regression this large.**
+- **Re-take a blank capture** up to 3 times before believing it, on both paths
+  that report one, counting the retries out loud.
+- **Say what a display was doing** when its `-done` wait expired, instead of an
+  opaque timeout.
 
-The retry also settles render-vs-capture for free when it fires: a second
-screenshot of the same page, no reload, isolates the capture from the render.
+What actually happened, from a full-suite control at `cb2f8524fd~1` on the same
+build and machine:
 
-**It has not fired yet.** The two most recent full runs produced *zero* blank
-captures — the failure mode has shifted to timeouts (below). So the blank
-machinery is instrumented and waiting rather than proven.
+| build | tests | failure modes |
+| --- | --- | --- |
+| control (pre-retry) | 303 / **9** | 4 `-done` timeouts, 5 blank captures |
+| retry only | 307 / 5 | 1 "Node is detached from document" |
+| retry + attribution | 303 / **9** | **9 × "Node is detached from document"** |
+
+Same failure *count*, completely different *mode*: a diagnosable mix became nine
+opaque puppeteer internal errors, three of them on the very tests that had been
+reporting a timeout or a blank. "Node is detached" appeared in **zero of the
+nineteen full runs before `cb2f8524fd`**.
+
+Reverted rather than patched, because the mechanism is not understood. Nothing in
+either diff obviously holds an `ElementHandle` across a re-render on the *first*
+attempt, and the retry loop never ran a second iteration in any of these runs —
+no `Blank re-captures` line was ever printed, so the retry was never even
+exercised.
+
+**A next attempt should**: re-query the selector on each attempt rather than
+reusing the handle from the initial wait, and prove the mechanism on a targeted
+reproduction before landing anything.
+
+An earlier version of the retry was worse still and was caught the same way — it
+re-ran `waitForCaptureSettled` between attempts, scoring 10 passed / 8 failed
+against a baseline of 18 / 0 on the same filter minutes apart (it can add ~100 s
+per retry, and `assertCanvasHasContent` is called mid-test by callers who have
+*not* finished loading, so page-wide waits change what that helper means).
+
+**The lesson is the durable part, and it now has two scalps: baseline any change
+to this suite against HEAD on the same filter, and compare failure MODES, not
+just totals.** The second run of this pair had an identical failure count to its
+control and was still a regression.
 
 ### There are (at least) two failure modes, not one
 
@@ -317,7 +338,11 @@ determinism from a repeated number; check whether the pair was compared at all.
 
 ## Next, in order
 
-1. **Attribute the TIMEOUT mode, which is now the dominant one.** The last two
+1. **Re-attempt the timeout attribution and the blank retry, carefully.** Both
+   were reverted (see above); the ideas stand, the executions did not. Re-query
+   the selector per attempt rather than holding the handle, and prove the
+   mechanism on a targeted reproduction first.
+2. **Attribute the TIMEOUT mode, which is the dominant one.** The last two
    full runs produced zero blanks and 4–5 timeouts each: a display never reports
    `-done` inside 60 s. Apply exactly the move that worked for blanks — when the
    wait expires, report what state the display is actually in (`data-display-phase`,
@@ -325,7 +350,8 @@ determinism from a repeated number; check whether the pair was compared at all.
    an opaque timeout. `waits.ts` already notes the likely shape: a display in a
    terminal `tooLarge`/`renderError` state renders no wrapper and so can never
    report done, which would read as a timeout forever.
-2. **Read the blank self-report verdict off the next run that blanks.** Already
+3. **Read the blank self-report verdict off the next run that blanks** (that
+   instrumentation went out with the revert too — restore it as part of step 1). Already
    wired on both paths, costs nothing until something fails, no experiment to
    design. Then fix whichever side it names.
 
