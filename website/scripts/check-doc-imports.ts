@@ -1,4 +1,7 @@
-// Validates four kinds of code references in the docs so they can't go stale:
+// Validates the cross-references between docs and code that can go stale
+// silently. The list below is the count; don't restate its length in this line,
+// which said "four kinds" against five entries the day a section heading in
+// ARCHITECTURAL_LIMITS.md was found asserting "five places" over a list of six.
 //
 //   1. Every `@jbrowse/*` import in a fenced code block, resolved against the
 //      actual workspace package `exports` maps / on-disk files. Catches e.g. a
@@ -12,25 +15,33 @@
 //      to the anchor. Catches a cross-doc deep link (e.g. the developer guides
 //      pointing at `agent-docs/ARCHITECTURE.md#three-upload-patterns`, and the
 //      reverse) left dangling by a renamed heading.
-//   4. Every backticked identifier in developer-guide and ARCHITECTURE.md prose
+//   4. Every relative markdown link between docs (`](../ARCHITECTURE.md#x)`),
+//      the same check as 3 for the way agent-docs actually cross-links itself.
+//      Its CLAUDE.md warns that other docs cite sections by title and to rename
+//      one only after grepping — which is a rule that wants a checker.
+//   5. Every backticked identifier in developer-guide and ARCHITECTURE.md prose
 //      — `PascalCase`, or `camelCase` with an internal capital — checked to
 //      appear somewhere in source. Catches a symbol renamed out from under the
 //      prose (e.g. `AlignmentsFeatureDetailWidget` for what is really
 //      `AlignmentsFeatureWidget`, or `renderProps` for a method deleted with the
 //      server-side block system) — the fence checks above can't see prose, and
 //      `sync-doc-snippets` only guards fences that opted into an include.
+//   6. Every section citation by quoted title — `SOME_DOC.md §"A heading"` —
+//      checked so a heading still starts with the quoted text. This is the
+//      checker 4 asks for, and the only reference that runs *from* code *into*
+//      the docs, so it scans source as well as docs.
 //
-// All four are the same failure — a plausible-looking reference that no longer
-// resolves — and nothing else in CI reads doc code fences, prose paths, blob
-// anchors, or prose symbols. Scans both the website guides (website/docs) and
-// the agent-docs knowledge base.
+// They are all the same failure — a plausible-looking reference that no longer
+// resolves — and nothing else in CI reads doc code fences, prose paths, blob or
+// relative anchors, prose symbols, or section citations. Scans both the website
+// guides (website/docs) and the agent-docs knowledge base.
 //
 // Only workspace-local `@jbrowse/*` specifiers are checked; third-party and
 // out-of-workspace scopes are skipped, as are relative imports. Path references
 // are only held to account when their package anchor is real, so illustrative
 // placeholder paths pass. Run: `pnpm check-doc-imports`.
 import { readFileSync, readdirSync, statSync } from 'node:fs'
-import { join } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 
 import { isFile, reportProblems, walkFiles } from './check-utils.ts'
 
@@ -331,6 +342,54 @@ function scanBlobAnchors(path: string, lines: string[]): Problem[] {
   return problems
 }
 
+// A relative markdown link between two docs in the same tree —
+// `[text](reference/FOO.md#some-heading)`, `[text](../ARCHITECTURE.md#x)` — held
+// to the same standard as the GitHub blob links above. It is the *same* check
+// with a different way of naming the target, and it was the half not covered:
+// the agent-docs knowledge base cross-links itself relatively rather than
+// through github.com, and its own CLAUDE.md warns that "other docs and a few
+// source comments cite their sections by title — rename one only after grepping
+// for it", which is precisely a rule that wants a checker rather than a
+// reminder. ARCHITECTURE.md pointed at
+// `ARCHITECTURAL_LIMITS.md#ordering-is-the-contract-in-five-places` for as long
+// as it took someone to shorten that heading.
+//
+// Resolved against the linking doc's own directory, and only for targets inside
+// the repo. Anything that escapes the tree, or is a URL, is left alone.
+const RELATIVE_MD =
+  /\]\((\.{0,2}\/?[A-Za-z0-9_./-]*\.mdx?)(#[A-Za-z0-9._-]+)?\)/g
+
+function scanRelativeAnchors(path: string, lines: string[]): Problem[] {
+  const problems: Problem[] = []
+  const dir = dirname(path)
+  lines.forEach((line, i) => {
+    for (const match of line.matchAll(RELATIVE_MD)) {
+      const target = resolve(dir, match[1]!)
+      const anchor = match[2]?.slice(1).toLowerCase()
+      const shown = `${match[1]}${match[2] ?? ''}`
+      if (!target.startsWith(root)) {
+        continue
+      }
+      if (!isFile(target)) {
+        problems.push({
+          file: path,
+          line: i + 1,
+          specifier: shown,
+          reason: `linked doc does not exist`,
+        })
+      } else if (anchor && !headingSlugs(target).has(anchor)) {
+        problems.push({
+          file: path,
+          line: i + 1,
+          specifier: shown,
+          reason: `no heading in ${match[1]} slugifies to "#${anchor}"`,
+        })
+      }
+    }
+  })
+  return problems
+}
+
 // A backticked PascalCase token in prose is almost always a symbol claim ("the
 // `BaseFeatureWidget` base class"), and it goes stale silently when the symbol
 // is renamed. Membership in the source-wide symbol set is a weak but very cheap
@@ -449,6 +508,110 @@ function scanSymbols(path: string, lines: string[]): Problem[] {
   return problems
 }
 
+// A source comment or doc that cites a section by quoted title —
+// `ARCHITECTURAL_LIMITS.md §"Ordering is the contract"` — is a link with no
+// link syntax, so checks 2 and 3 never see it and CI never notices when the
+// heading is reworded. This is the one reference direction that was entirely
+// unguarded, and it drifted: `assertDisplayContract.ts` cited "…, in four
+// places" against a heading that had since said five, over a list of six.
+//
+// Numbers in a heading are the common way this happens, which is why the
+// convention is now to keep a count out of any heading a citation can name.
+const SECTION_CITE = /([\w./-]*\.md)\s*§\s*"([^"]+)"/g
+// A citation may quote a stable prefix of a longer heading (`§"Synteny +
+// dotplot"` for "Synteny + dotplot: window-relative Float32 cumulative-bp"), so
+// prefix — not equality — is the test. Case, backticks and `*` emphasis are all
+// noise: a citation reasonably drops them, as the one naming "The same disease
+// rots the docs" does for a heading that italicizes *docs*. Underscores are
+// left alone — they appear in identifiers, not as emphasis, in these headings.
+function normalizeHeading(s: string) {
+  return s
+    .toLowerCase()
+    .replaceAll(/[`*]/g, '')
+    .replaceAll(/\s+/g, ' ')
+    .trim()
+}
+
+const headingTextCache = new Map<string, string[] | undefined>()
+
+function headingTexts(absPath: string) {
+  if (!headingTextCache.has(absPath)) {
+    let texts: string[] | undefined
+    try {
+      texts = readFileSync(absPath, 'utf8')
+        .split('\n')
+        .map(l => /^#{1,6}\s+(.*?)\s*#*\s*$/.exec(l)?.[1])
+        .filter(t => t !== undefined)
+        .map(normalizeHeading)
+    } catch {
+      texts = undefined // unreadable / missing — reported by the caller
+    }
+    headingTextCache.set(absPath, texts)
+  }
+  return headingTextCache.get(absPath)
+}
+
+// Resolve the doc a citation names. A path resolves from the repo root; a bare
+// `CLAUDE.md` is the nearest one at or above the citing file (that is what a
+// sibling-doc reference means); any other bare basename is looked up in
+// agent-docs, which is where the cited knowledge base lives.
+function resolveCitedDoc(ref: string, fromFile: string) {
+  if (ref.includes('/')) {
+    const abs = join(root, ref)
+    return isFile(abs) ? abs : undefined
+  }
+  if (ref === 'CLAUDE.md') {
+    for (let dir = fromFile; dir.includes('/'); ) {
+      dir = dir.slice(0, dir.lastIndexOf('/'))
+      const abs = join(dir, 'CLAUDE.md')
+      if (isFile(abs)) {
+        return abs
+      }
+      if (dir === root) {
+        break
+      }
+    }
+    return undefined
+  }
+  return walkFiles(agentDocsDir, name => name === ref)[0]
+}
+
+function scanSectionCites(path: string, lines: string[]): Problem[] {
+  const problems: Problem[] = []
+  const strip = (l: string) => l.replace(/^\s*(\/\/|\*|\/\*\*?)\s?/, '')
+  lines.forEach((line, i) => {
+    // A citation may wrap across two comment lines; only join when this line
+    // opens a quote it doesn't close, so a single-line hit isn't matched twice.
+    const opensUnclosed = /§\s*"[^"]*$/.test(line)
+    const text = opensUnclosed
+      ? `${strip(line)} ${strip(lines[i + 1] ?? '')}`
+      : line
+    for (const m of text.matchAll(SECTION_CITE)) {
+      const ref = m[1]!
+      const title = m[2]!
+      const doc = resolveCitedDoc(ref, path)
+      const problem = (reason: string) => {
+        problems.push({
+          file: path,
+          line: i + 1,
+          specifier: `${ref} §"${title}"`,
+          reason,
+        })
+      }
+      const texts = doc && headingTexts(doc)
+      if (!texts) {
+        problem(`cannot resolve the cited doc "${ref}"`)
+      } else {
+        const want = normalizeHeading(title)
+        if (!texts.some(h => h.startsWith(want))) {
+          problem(`no heading in ${ref} starts with "${title}"`)
+        }
+      }
+    }
+  })
+  return problems
+}
+
 function isAutogen(file: string) {
   // Only website/docs has autogenerated subtrees; agent-docs is all hand-written.
   return (
@@ -491,10 +654,32 @@ const problems = [
       : [
           ...scanFilePaths(file, lines),
           ...scanBlobAnchors(file, lines),
+          ...scanRelativeAnchors(file, lines),
           ...scanSymbols(file, lines),
+          ...scanSectionCites(file, lines),
         ]),
   ]
 })
+
+// Section citations are the one reference that points *from* the code *into*
+// the docs, so this walk is over source rather than over docs. Cheap: the same
+// tree collectSymbols already reads, and only files containing `§` are parsed.
+// `esm/` and `dist/` are build output — they carry a stale copy of every
+// comment until the next build, so checking them reports the previous edit.
+const isSource = (name: string) => /\.tsx?$/.test(name)
+const isBuildOutput = (file: string) =>
+  file.includes('/esm/') || file.includes('/dist/')
+for (const base of ['packages', 'plugins', 'products', 'example-plugins']) {
+  for (const file of walkFiles(join(root, base), isSource)) {
+    if (isBuildOutput(file)) {
+      continue
+    }
+    const text = readFileSync(file, 'utf8')
+    if (text.includes('§')) {
+      problems.push(...scanSectionCites(file, text.split('\n')))
+    }
+  }
+}
 
 const errorLines: string[] = []
 if (problems.length > 0) {
