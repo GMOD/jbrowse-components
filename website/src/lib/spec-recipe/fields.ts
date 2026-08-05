@@ -1,6 +1,11 @@
 import { COMPACTNESS_PRESETS } from '../../../../plugins/alignments/src/LinearAlignmentsDisplay/menus/compactnessPresets.ts'
 import { COLOR_SCHEMES } from '../../../../plugins/alignments/src/shared/colorSchemes.ts'
 import { cytosineContextOptions } from '../../../../plugins/alignments/src/shared/modificationData.ts'
+import {
+  STRAND_COLOR_JEXL,
+  attributeColorJexl,
+} from '../../../../plugins/canvas/src/RenderFeatureDataRPC/featureColors.ts'
+import { isJexl } from '../../../../packages/core/src/util/jexlStrings.ts'
 import { GROUP_BY_LABELS } from '../../../../plugins/alignments/src/shared/groupByLabels.ts'
 import { GENE_GLYPH_MODE_OPTIONS } from '../../../../plugins/canvas/src/LinearBasicDisplay/geneGlyphMode.ts'
 import { getHeightModeOptions } from '../../../../plugins/linear-genome-view/src/BaseLinearDisplay/models/heightMode.ts'
@@ -180,6 +185,49 @@ function groupByStep(value: unknown): FieldStep | undefined {
     : undefined
 }
 
+// Mirrors the canvas display's own `colorByMode` getter (its baseModel.ts),
+// which is what decides which of the three "Color by..." radios reads as
+// checked: the exact strand expression is 'strand', any other jexl is
+// 'attribute', anything else is a solid color. Both jexl strings are imported
+// rather than retyped — the menu that writes them and the getter that
+// recognizes them already share them by exact comparison, so a copy here would
+// be a third place to drift.
+//
+// The 'attribute' radio opens a dialog that writes only attributeColorJexl(name),
+// so an expression of any other shape lands in that mode without being reachable
+// through it, and the config editor is the only way to author one. That is why
+// this is the single recipe pointing at Settings, and it is not a general
+// fallback: every field in the gap report is a config slot too, so answering
+// them all that way would close the report by making it say nothing.
+//
+// Gated on LinearBasicDisplay because the neighbouring displays that also take a
+// `color` override this submenu (LinearVariantDisplay) or never had it
+// (LinearPairedArcDisplay).
+function colorStep(
+  value: unknown,
+  { displayType }: FieldContext,
+): FieldStep | undefined {
+  if (typeof value !== 'string' || displayType !== 'LinearBasicDisplay') {
+    return undefined
+  }
+  const colorBy = `${TRACK_MENU} → Color by...`
+  if (value === STRAND_COLOR_JEXL) {
+    return { path: `${colorBy} → Strand` }
+  }
+  if (!isJexl(value)) {
+    return { path: `${colorBy} → Solid color... → ${value}` }
+  }
+  // Reconstructed through the exported builder rather than trusted from the
+  // regex, so only the dialog's exact output claims the dialog's path.
+  const attribute = /randomColor\(get\(feature,'([^']+)'\)\)/.exec(value)?.[1]
+  return attribute && attributeColorJexl(attribute) === value
+    ? { path: `${colorBy} → Attribute... → ${attribute}` }
+    : {
+        path: `${TRACK_MENU} → Settings → color`,
+        note: 'A per-feature expression. The Color by... radios write a solid color, the strand preset, or a per-attribute palette only, so an expression of any other shape is authored on the track config.',
+      }
+}
+
 function geneGlyphStep(value: unknown): FieldStep | undefined {
   const option = GENE_GLYPH_MODE_OPTIONS.find(o => o.value === value)
   return option
@@ -299,6 +347,7 @@ const numberField =
 
 export const trackFields: Record<string, FieldRecipe> = {
   colorBy: colorByStep,
+  color: colorStep,
   groupBy: groupByStep,
   geneGlyphMode: geneGlyphStep,
   // the size presets carry their own pixel heights, so the figure's number
