@@ -74,6 +74,17 @@ jq -r '[to_entries[]|select(.value.status=="bad")]|.[]|"\(.value.name)\t\(.value
     file, which churns lines you didn't touch (inflates the diff, entangles with
     other agents' edits — see the worktree note below).
 
+- **Another agent rebuilding `jbrowse-web` mid-regen fails the spec that was in
+  flight**, with `ChunkLoadError: Loading chunk NNNN failed` and a handful of
+  404s in the browser log, then a ready-gate timeout. The build writes
+  content-hashed chunks, so a page that loaded `index.html` before the swap asks
+  for chunks that no longer exist. It reads as a broken spec and is not one —
+  `popgen/in2lt_per_sample` failed this way and passed unchanged on a re-run
+  against the settled build. `stat -c %y products/jbrowse-web/build/index.html`
+  against the run's start time is the check, and the fix is just to re-run the
+  failed spec. Nothing is corrupted: a failed spec leaves its committed PNG
+  alone.
+
 - **`until ! pgrep -f "generate-screenshots"` never exits**: the waiting shell's
   own command line contains the pattern, so it matches itself and spins forever
   — and any regen chained after it never starts, silently. Match the process
@@ -283,16 +294,25 @@ thinning, use `jexlFiltersSetting: ["jexl:...", ...]` on its display snapshot
 
 ## Known blockers (check `screenshot-review.json` for current status first)
 
-- **`hgdownload.soe.ucsc.edu` is unreachable**, so every spec built on
-  `HG19_HUB` (and any other UCSC-hub config) cannot be regenerated. It presents
-  as three pending requests (`hg19.2bit`, `hg19.chromAlias.txt`,
-  `cytoBand.txt.gz`) and then a ready-gate timeout, which reads like a data or
-  CORS problem in the spec's own track. Check UCSC first.
+- ~~`hgdownload.soe.ucsc.edu` is unreachable~~ — **resolved 2026-08-05**, and
+  all 12 UCSC-dependent specs re-render against the real host. Kept because it
+  will happen again and the symptom is misleading: an outage presents as three
+  pending requests (`hg19.2bit`, `hg19.chromAlias.txt`, `cytoBand.txt.gz`) and
+  then a ready-gate timeout, which reads like a data or CORS problem in the
+  spec's own track. `curl -sI` the 2bit before believing the spec is broken.
+
+  The specs that go dark with it: the four naming `hgdownload` directly
+  (`phylop_ncbi_refseq_tp53`, `pangenome/hprc_chm13_allele`,
+  `embed_linear_genome_view/final`, `jbrowse-img/1`) and the eight reaching it
+  through a UCSC hub config, whose hg19 `TwoBitAdapter` points there
+  (`genomes_synteny/launch_sequence`, `ld/lct_pooled_vs_panel`,
+  `ld/anopheles_2la`, `ld/lct_lactase`, `ld/lct_haploblock`,
+  `popgen/fst_in2lt_2L`, `popgen/tajimad_cyp6g1`, `popgen/in2lt_per_sample`).
 
   **`hgdownload2.soe.ucsc.edu` serves the same paths** (200 on the 2bit,
   chromAlias, cytoBand and the gbdb bigBeds, with ranges and
-  `Access-Control-Allow-Origin: *`). `ld/lct_haploblock` was captured through it
-  by adding, temporarily, to the Chrome args in `generate-screenshots.ts`:
+  `Access-Control-Allow-Origin: *`), so next outage the recipe is to add,
+  temporarily, to the Chrome args in `generate-screenshots.ts`:
 
   ```
   '--host-resolver-rules=MAP hgdownload.soe.ucsc.edu <hgdownload2 IP>',
@@ -303,6 +323,9 @@ thinning, use `jexlFiltersSetting: ["jexl:...", ...]` on its display snapshot
   HTTP cache and stalled even local chunk requests until the run timed out.
   **Revert it before committing** — it is a workaround for an outage, not a
   setting, and the cert override is not something to leave in a figure pipeline.
+  It is also faithful: `ld/lct_haploblock` was captured through the mirror, and
+  re-rendering it against the real host once UCSC returned reproduced the
+  committed PNG **byte for byte**, so the detour costs the figure nothing.
 
 - `jbrowse-img/multisample_variants` — `jb2export`'s static SSR renders the
   per-sample genotype matrix **empty** for the 1000G phase3 callset (volvox's
