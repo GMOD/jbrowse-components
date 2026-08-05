@@ -125,7 +125,14 @@ export const gallerySpecs: ScreenshotSpec[] = [
                 type: 'modifications',
                 modifications: { shownModifications: ['a'] },
               },
-              displayMode: 'compact',
+              // The reviewer's "compact mode on the alignments" was written as
+              // `displayMode: 'compact'`, which this display has no slot for —
+              // that is the canvas base schema's, and the key was dropped in
+              // silence. It is left off rather than translated to the pair that
+              // would work here (heightMode 'fixed' + featureHeight 3), because
+              // the `height` above already answers what compact was for: ~50
+              // reads at the default 8px pitch is 400px inside a 450px track,
+              // so compacting them to 3px would spend 300px of it on blank.
               showLegend: true,
             },
           ],
