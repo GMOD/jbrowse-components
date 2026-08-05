@@ -2,7 +2,6 @@ import { getInsertedBp } from '../../shared/alleleLength.ts'
 import {
   BLACK_ABGR,
   NO_CALL_COLOR,
-  REFERENCE_COLOR,
 } from '../../shared/constants.ts'
 import {
   featureHasPhaseSet,
@@ -191,21 +190,21 @@ export function computeVariantMatrixCells({
             continue
           }
           if (isPhasedOrHaploid(genotype)) {
-            const c = getPhasedColor(
-              splitPhasedAlleles(genotype),
-              HP!,
-              mostFrequentAlt,
-              s.PS?.[0],
-            )
+            const alleles = splitPhasedAlleles(genotype)
+            const allele = alleles[HP!]
+            const c = getPhasedColor(alleles, HP!, mostFrequentAlt, s.PS?.[0])
             if (c) {
-              const isRefCell = c === REFERENCE_COLOR
+              // From the ALLELE, not from the color `getPhasedColor` returned
+              // for it — see the same spot in computeVariantCells, and
+              // `altDosageByte` for the bug the color comparison shipped.
+              const isRefCell = allele === '0'
               // Only alt-carrying cells take the per-variant override; ref and
               // no-call keep their own color so a missing call is never painted
               // as though it carried the variant.
+              const isAltCell =
+                allele !== undefined && allele !== '.' && !isRefCell
               const cellColor =
-                overrideColor !== undefined && !isRefCell && c !== NO_CALL_COLOR
-                  ? overrideColor
-                  : c
+                overrideColor !== undefined && isAltCell ? overrideColor : c
               addCell(idx, j, getCachedABGR(cellColor), isRefCell)
             }
           } else if (isNoCall(genotype)) {

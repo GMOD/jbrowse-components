@@ -24,24 +24,27 @@ export interface VariantCellStyle {
   altDosage: number
 }
 
-// Only alt-carrying cells take a per-variant override color; ref and no-call
-// keep their own, so a missing call is never painted as though it carried the
-// variant.
+// One haplotype's cell, classified from the ALLELE rather than from the color
+// that allele produced. Only alt-carrying cells take a per-variant override; ref
+// and no-call keep their own, so a missing call is never painted as though it
+// carried the variant.
 //
-// Reading `isRef`/`isAlt` back off the color is sound **only for
-// `getPhasedColor`**, which returns the `REFERENCE_COLOR` / `NO_CALL_COLOR`
-// constants themselves. It is not a general rule — see `genotypeCarriesAlt`,
-// and `buildAlleleCountStyle` below, whose color function blends and returns a
-// hex.
-function styleFromColor(
+// The allele is the input because the color is not a safe proxy for it. Reading
+// `isRef`/`isAlt` back off the returned string worked only as long as every
+// color function returned the `REFERENCE_COLOR` / `NO_CALL_COLOR` constants by
+// identity, and the moment one blended a no-call to a hex instead, every
+// no-call in that mode was flagged alt-carrying (see `altDosageByte`). Nothing
+// in this file compares a color to a constant any more.
+function styleForAllele(
   color: string,
+  allele: string | undefined,
   overrideColor: string | undefined,
 ): VariantCellStyle | null {
   if (!color) {
     return null
   }
-  const isRef = color === REFERENCE_COLOR
-  const isAlt = !isRef && color !== NO_CALL_COLOR
+  const isRef = allele === '0'
+  const isAlt = allele !== undefined && allele !== '.' && !isRef
   return {
     abgr: getCachedABGR(
       isAlt && overrideColor !== undefined ? overrideColor : color,
@@ -129,8 +132,9 @@ export function buildPhasedStyles(
   if (isPhasedOrHaploid(genotype)) {
     const alleles = splitPhasedAlleles(genotype)
     for (let hp = 0; hp < numHaplotypes; hp++) {
-      out[hp] = styleFromColor(
+      out[hp] = styleForAllele(
         getPhasedColor(alleles, hp, mostFrequentAlt, undefined, drawRef),
+        alleles[hp],
         overrideColor,
       )
     }

@@ -4,7 +4,6 @@ import { getInsertedBp } from '../../shared/alleleLength.ts'
 import {
   BLACK_ABGR,
   NO_CALL_COLOR,
-  REFERENCE_COLOR,
 } from '../../shared/constants.ts'
 import {
   featureHasPhaseSet,
@@ -264,19 +263,28 @@ export function computeVariantCells({
             continue
           }
           if (isPhasedOrHaploid(genotype)) {
+            const alleles = splitPhasedAlleles(genotype)
+            const allele = alleles[HP!]
             const c = getPhasedColor(
-              splitPhasedAlleles(genotype),
+              alleles,
               HP!,
               mostFrequentAlt,
               s.PS?.[0],
               drawRef,
             )
             if (c) {
-              const isRefCell = c === REFERENCE_COLOR
+              // From the ALLELE, not from the color `getPhasedColor` returned
+              // for it. Comparing the color against the constants happens to
+              // work here — this file's color functions return them by identity
+              // — but it is the exact test that shipped a bug once the
+              // allele-count path started blending its no-call shade to a hex
+              // (see `altDosageByte`). One rule, and it cannot rot.
+              const isRefCell = allele === '0'
               // Only alt-carrying cells take the per-variant override; ref and
               // no-call keep their own color so a missing call is never painted
               // as though it carried the variant.
-              const isAltCell = !isRefCell && c !== NO_CALL_COLOR
+              const isAltCell =
+                allele !== undefined && allele !== '.' && !isRefCell
               addCell(
                 start,
                 end,

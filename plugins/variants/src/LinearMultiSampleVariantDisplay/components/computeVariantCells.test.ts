@@ -847,3 +847,76 @@ describe('computeVariantCells cellAltDosage', () => {
     expect(byRow.get(1)).toBe(0) // `./0`
   })
 })
+
+describe('phase-set coloring classifies from the allele, not the color', () => {
+  // The PS path is the one place left that resolves a color per cell rather
+  // than through a memoized style, and it used to read `isRef`/`isAlt` back off
+  // that color by comparing it to the constants. That is the exact test that
+  // shipped a marker onto a no-call row once the allele-count path started
+  // blending its no-call shade to a hex. Sound here only because
+  // `getPhasedColor` happens to return the constants by identity — so the
+  // classification now comes from the allele, and this pins it.
+  const sources: ProcessedSource[] = [
+    { name: 'S1 HP0', sampleName: 'S1', HP: 0 },
+    { name: 'S1 HP1', sampleName: 'S1', HP: 1 },
+    { name: 'S2 HP0', sampleName: 'S2', HP: 0 },
+    { name: 'S2 HP1', sampleName: 'S2', HP: 1 },
+  ]
+  // S1 carries the insertion on one haplotype and no-calls the other; S2 is
+  // hom-ref. A PS is declared, so the per-cell colour path runs.
+  const feature = makeFeature({
+    genotypes: { S1: '1|.', S2: '0|0' },
+    samples: {
+      S1: { GT: ['1|.'], PS: ['77'] },
+      S2: { GT: ['0|0'], PS: ['77'] },
+    },
+    FORMAT: 'GT:PS',
+    ALT: ['ACGTACGTACGT'],
+    REF: 'A',
+    name: 'ins1',
+    description: '',
+    type: 'insertion',
+    start: 100,
+    end: 101,
+  })
+
+  function run(featureColor?: () => string) {
+    const result = computeVariantCells({
+      filteredVariants: [{ feature, mostFrequentAlt: '1' }],
+      sources,
+      renderingMode: 'phased',
+      referenceDrawingMode: 'draw',
+      colorByPhaseSet: true,
+      featureColor,
+      featureGenotypes: genotypeLookup([feature]),
+    })
+    const byRow = new Map<number, { dosage: number; color: number }>()
+    for (let i = 0; i < result.numCells; i++) {
+      byRow.set(result.cellRowIndices[i]!, {
+        dosage: result.cellAltDosage[i]!,
+        color: result.cellColors[i]!,
+      })
+    }
+    return byRow
+  }
+
+  test('a no-call haplotype under PS coloring carries no alt', () => {
+    const byRow = run()
+    expect(byRow.get(0)!.dosage).toBe(255) // S1 HP0 `1` — the insertion
+    expect(byRow.get(1)!.dosage).toBe(0) // S1 HP1 `.` — no call
+    expect(byRow.get(2)!.dosage).toBe(0) // S2 HP0 `0`
+    expect(byRow.get(3)!.dosage).toBe(0) // S2 HP1 `0`
+  })
+
+  test('the per-variant override reaches the alt haplotype and nothing else', async () => {
+    const { getCachedABGR } = await import('../../shared/variantWebglUtils.ts')
+    const { NO_CALL_COLOR, REFERENCE_COLOR } =
+      await import('../../shared/constants.ts')
+    const override = 'rgb(1,2,3)'
+    const byRow = run(() => override)
+    expect(byRow.get(0)!.color).toBe(getCachedABGR(override))
+    // a missing call must never be painted as though it carried the variant
+    expect(byRow.get(1)!.color).toBe(getCachedABGR(NO_CALL_COLOR))
+    expect(byRow.get(2)!.color).toBe(getCachedABGR(REFERENCE_COLOR))
+  })
+})
