@@ -164,18 +164,23 @@ export async function smokeExamplesSite({
       .then(() => true)
       .catch(() => false)
     if (!mounted) {
-      // Two failures the old check reported with one message, though they have
-      // nothing to do with each other: a demo that never hydrated, and a page
-      // with no `.demo` on it at all (a 404, a renamed slug, a route the build
-      // didn't emit). `$eval` rejects on a missing selector, so `undefined`
-      // here means absent and a number means present-but-empty.
+      // Three outcomes the original check reported with one message, though
+      // they have nothing to do with each other. Re-read rather than assume the
+      // deadline means "empty": a page can fill in the moment between the
+      // timeout and this line, and reporting that as "never mounted" while
+      // printing a five-figure innerHTML length is worse than the message it
+      // replaced. `$eval` rejects on a missing selector, so `undefined` is
+      // absent and a number is present.
       const len = await page
         .$eval('.demo', el => el.innerHTML.length)
         .catch(() => undefined)
       errors.push(
         len === undefined
-          ? `no .demo element on the page — did this route build?`
-          : `demo never mounted (innerHTML len ${len} after ${MOUNT_TIMEOUT_MS}ms)`,
+          ? 'no .demo element on the page — did this route build?'
+          : len >= 50
+            ? `demo mounted only after ${MOUNT_TIMEOUT_MS}ms — alive, but slow ` +
+              'enough that every check below raced it'
+            : `demo never mounted (innerHTML len ${len} after ${MOUNT_TIMEOUT_MS}ms)`,
       )
     }
     await new Promise(r => setTimeout(r, settleMs))
