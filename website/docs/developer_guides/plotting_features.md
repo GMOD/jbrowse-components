@@ -248,7 +248,9 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
         const sessionId = getRpcSessionId(self)
         const { rpcManager } = getSession(self)
         return fetchEachRegion(self, needed, {
-          // rpcManager.call injects sessionId itself, so it is not in the args
+          // rpcManager.call injects sessionId from its first argument, so it
+          // does not go in the args object — a registered method's args are
+          // Omit<…, 'sessionId'>, and passing it again is a type error
           call: (region, ctx, displayedRegionIndex) =>
             rpcManager.call(sessionId, 'GetScoreData', {
               adapterConfig,

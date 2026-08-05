@@ -78,28 +78,37 @@ byte estimation. Most displays don't call it directly: they use the
 `fetchEachRegion` wrapper, which runs one RPC per region in parallel and applies
 the two `ctx.isStale()` guards for you. Forgetting either guard is a stale-data
 write, so the wrapper is a correctness primitive, not just a convenience. Prefer
-it:
+it. `LinearScoreDisplay`'s is a whole one, sitting in an
+`.actions(self => ({ ... }))` block, with `getRpcSessionId` from
+`@jbrowse/core/util/tracks`, `getSession` from `@jbrowse/core/util` and
+`fetchEachRegion` from `@jbrowse/plugin-linear-genome-view`:
+
+<!-- include: example-plugins/score-example/src/LinearScoreDisplay/model.ts#fetchNeeded -->
 
 ```ts
-import { getSession } from '@jbrowse/core/util'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { fetchEachRegion } from '@jbrowse/plugin-linear-genome-view'
-
-// Inside your display's .actions(self => ({ ... }))
-async fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
+// called by the fetch autorun for the regions that need loading;
+// fetchEachRegion handles cancellation, stop tokens and staleness
+fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
   const { adapterConfig } = self
+  if (!adapterConfig) {
+    return undefined
+  }
   const sessionId = getRpcSessionId(self)
   const { rpcManager } = getSession(self)
-  await fetchEachRegion(self, needed, {
-    // rpcManager.call injects sessionId from its first argument, so it does not
-    // go in the args object — a registered method's args are Omit<…,'sessionId'>
+  return fetchEachRegion(self, needed, {
+    // rpcManager.call injects sessionId from its first argument, so it
+    // does not go in the args object — a registered method's args are
+    // Omit<…, 'sessionId'>, and passing it again is a type error
     call: (region, ctx, displayedRegionIndex) =>
-      rpcManager.call(sessionId, 'MyRpcMethod', {
+      rpcManager.call(sessionId, 'GetScoreData', {
         adapterConfig,
-        ...self.rpcProps(),
         region,
+        ...self.rpcProps(),
         stopToken: ctx.stopToken,
-        statusCallback: self.makeRegionStatusCallback(displayedRegionIndex),
+        // the RPC layer replaces this function with a side-channel and
+        // calls it on the main thread as the worker reports progress
+        statusCallback:
+          self.makeRegionStatusCallback(displayedRegionIndex),
       }),
     onResult: (idx, result) => {
       self.setRpcData(idx, result)
@@ -266,47 +275,11 @@ a reactive dependency.
 
 `MultiRegionDisplayMixin` supplies only the fetch/render lifecycle. Compose it
 alongside `BaseDisplay` and `TrackHeightMixin`, which supply the display
-identity and `height` respectively. This one is elided rather than generated;
-for the same model whole and compiling, read `LinearScoreDisplay` in
-[](/docs/developer_guides/plotting_features):
-
-```ts
-import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import {
-  MultiRegionDisplayMixin,
-  TrackHeightMixin,
-} from '@jbrowse/plugin-linear-genome-view'
-
-export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
-  return types
-    .compose(
-      'LinearMyDisplay',
-      BaseDisplay,
-      TrackHeightMixin(),
-      MultiRegionDisplayMixin(),
-      types.model({
-        type: types.literal('LinearMyDisplay'),
-        configuration: ConfigurationReference(configSchema),
-      }),
-    )
-    .volatile(() => ({
-      rpcDataMap: observable.map<number, MyData>(),
-    }))
-    .views(self => ({
-      rpcProps() {
-        return { adapterConfig: readConfObject(self.configuration, 'adapter') }
-      },
-    }))
-    .actions(self => ({
-      setRpcData(regionIndex: number, data: MyData) {
-        self.rpcDataMap.set(regionIndex, data)
-      },
-      fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
-        // ... (see example above)
-      },
-    }))
-}
-```
+identity and `height` respectively, then add the `rpcDataMap` volatile, the
+`rpcProps` view and the `setRpcData`/`fetchNeeded` actions above.
+`LinearScoreDisplay` in [](/docs/developer_guides/plotting_features) is that
+model whole and compiling; read the composition there rather than from a
+skeleton here.
 
 ## Full flow summary
 
