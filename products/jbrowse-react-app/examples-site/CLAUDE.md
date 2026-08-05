@@ -50,6 +50,13 @@ literal, never `?raw` a private helper of this site.
   "On this page" card is only drawn for multi-section pages — so don't write
   one. Three sites had accumulated exact duplicates of the page description
   there.
+- **This site reserves no demo heights, and shouldn't.** `demoFillHeight` fixes
+  every demo box at `80vh` in CSS, so it already owns its space from first paint
+  and there is no layout shift to remove — `checkDemoHeights` in `pnpm smoke`
+  skips a `.fill` box for that reason. What the box does get is the loading
+  skeleton, styled on the `client:only` island's `:empty` state so it ends
+  itself the moment React puts something there. The sibling sites, whose demos
+  size themselves, carry a generated `demoHeights.json` instead.
 - The demo runs in the browser, so verify with `pnpm build && pnpm smoke` rather
   than reasoning about it. `pnpm typecheck` is `astro check`, and
   `pnpm check-links` validates doc references and internal cross-links.

@@ -6,7 +6,16 @@ import code from '../examples/WithInit.tsx?raw'
 import { examples } from '../examples.ts'
 import Gallery from '../layouts/Gallery.astro'
 import Shell from '../layouts/Shell.astro'
-import { componentLabel, mainMaxWidth } from '../siteMeta.ts'
+import {
+  componentLabel,
+  demoHeights,
+  landingDemo,
+  mainMaxWidth,
+} from '../siteMeta.ts'
+
+// the landing demo is one of the examples, so it reserves that example's own
+// measured height rather than a second entry that could drift away from it
+const reserved = demoHeights[landingDemo]
 
 const pmCommands = {
   yarn: 'yarn add @jbrowse/react-linear-genome-view2',
@@ -36,7 +45,14 @@ const pmCommands = {
       Human genes on hg38, opened at the <em>SHH</em> locus. Everything below is the
       source that produced it.
     </p>
-    <div class="demo"><Example client:only="react" /></div>
+    {/* held open at the height it settles at, so the install steps below don't
+    slide down the page when the island mounts. See `demoHeights`. */}
+    <div
+      class:list={['demo', { reserved: !!reserved }]}
+      style={reserved ? `min-height:${reserved}px` : undefined}
+    >
+      <Example client:only="react" />
+    </div>
     <details class="source" open>
       <summary>View source</summary>
       <Code code={code} lang="tsx" />

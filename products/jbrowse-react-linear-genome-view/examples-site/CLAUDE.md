@@ -57,6 +57,17 @@ literal, never `?raw` a private helper of this site.
   "On this page" card is only drawn for multi-section pages — so don't write
   one. Three sites had accumulated exact duplicates of the page description
   there.
+- **`demoHeights.json` is generated, and it is an input to the build.** Every
+  demo is a `client:only` island, and Astro gives an island `display: contents`,
+  so its box is empty and 0 high until React hydrates — several hundred KB
+  later, at which point everything below it drops. The generated height is
+  reserved on the box as a `min-height` so that doesn't happen, and it is what
+  earns the box its loading skeleton (styled on the island's `:empty` state, so
+  it ends itself when the demo lands). Write it with
+  `pnpm build && pnpm measure-demo-heights && pnpm build` — twice, because this
+  artifact is consumed by the build rather than only checked after it. Never by
+  hand. `pnpm smoke` re-measures every box and fails a page that outgrew its
+  reservation, naming the command to re-run.
 - The demo runs in the browser, so verify with `pnpm build && pnpm smoke` rather
   than reasoning about it. `pnpm typecheck` is `astro check`, and
   `pnpm check-links` validates doc references and internal cross-links.

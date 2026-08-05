@@ -7,6 +7,82 @@ import type { Page } from 'puppeteer'
 // don't-factor-anything-out rule in each site's CLAUDE.md is about the *example
 // files*, which a reader has to be able to paste; scripts are not that.)
 
+// How far a demo may sit from the space held for it. The two edges are not
+// symmetric, because the two mistakes are not. A demo taller than its
+// reservation jumps the page, which is the whole failure being prevented, so
+// that edge is tight — and note that under-reserving is not a return to no
+// reservation at all: what jumps is only the leftover, not the whole demo.
+//
+// A demo *shorter* than its reservation just leaves space inside its own
+// border, and is routinely correct: the figure reserved is the tallest the demo
+// gets across widths, and this viewport is the wide one, where a demo that
+// reflows is legitimately shorter. lgv's single-cell-umap is 1546px here and
+// 1714px narrow, reproducibly — 168px apart, and neither is wrong. So the loose
+// edge is a ratio rather than a distance, and it is only trying to catch a
+// figure that has gone stale by an amount no reflow explains.
+const TALLER_PX = 12
+const SHORTEST_FRACTION = 0.5
+
+/**
+ * Check that every demo box on the page still holds the space its demo needs.
+ *
+ * These demos are all `client:only`, and Astro gives an island
+ * `display: contents`, so a demo box is empty and 0 high until React hydrates —
+ * several hundred KB later. `demoHeights.json` (written by
+ * `pnpm measure-demo-heights`) is reserved on the box as a min-height so the
+ * page doesn't drop everything below it when the demo lands.
+ *
+ * Measured with each box's own reservation neutralised, and read off the
+ * element rather than re-importing the table, so this checks what the page
+ * actually shipped and covers a page stacking several demos without having to
+ * know which section is which.
+ *
+ * A `.fill` box is skipped: that site fixes its demo height in CSS, so it owns
+ * its space already and has nothing to reserve.
+ */
+export async function checkDemoHeights(page: Page): Promise<string[]> {
+  const boxes = await page.$$eval('.demo', els =>
+    els.map(el => {
+      const before = el.style.minHeight
+      el.style.minHeight = '0px'
+      const settled = Math.round(el.getBoundingClientRect().height)
+      el.style.minHeight = before
+      return {
+        fill: el.classList.contains('fill'),
+        reserved: Math.round(Number.parseFloat(el.style.minHeight) || 0),
+        settled,
+      }
+    }),
+  )
+  return boxes.flatMap(({ fill, reserved, settled }) => {
+    if (fill) {
+      return []
+    }
+    if (reserved === 0) {
+      return [
+        `demo box reserves no height (it settles at ${settled}px), so the page ` +
+          'jumps when the island mounts — run `pnpm measure-demo-heights`, then ' +
+          'build again to ship the result',
+      ]
+    }
+    if (settled > reserved + TALLER_PX) {
+      return [
+        `demo settles at ${settled}px, taller than the ${reserved}px reserved ` +
+          'for it, so the page jumps when it mounts — re-run ' +
+          '`pnpm measure-demo-heights`',
+      ]
+    }
+    if (settled < reserved * SHORTEST_FRACTION) {
+      return [
+        `demo settles at ${settled}px, less than half the ${reserved}px ` +
+          'reserved for it, which is too far apart for a reflow to explain — ' +
+          're-run `pnpm measure-demo-heights`',
+      ]
+    }
+    return []
+  })
+}
+
 /**
  * Drive a session-in-url demo's real round trip: save the live session into the
  * URL, reload, and confirm the app came back up from it. Both halves are

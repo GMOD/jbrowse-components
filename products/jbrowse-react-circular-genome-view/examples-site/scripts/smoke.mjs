@@ -6,6 +6,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 
 import {
+  checkDemoHeights,
   checkSessionUrlRoundTrip,
   smokeExamplesSite,
 } from '@jbrowse/browser-test-utils'
@@ -20,8 +21,10 @@ const failures = await smokeExamplesSite({
   // single source of truth for the base path is astro.config.mjs
   base: config.base,
   slugs: examples.map(e => e.slug),
-  check: (page, slug) =>
-    slug === 'session-in-url' ? checkSessionUrlRoundTrip(page) : [],
+  check: async (page, slug) => [
+    ...(await checkDemoHeights(page)),
+    ...(slug === 'session-in-url' ? await checkSessionUrlRoundTrip(page) : []),
+  ],
   log: m => {
     console.log(m)
   },

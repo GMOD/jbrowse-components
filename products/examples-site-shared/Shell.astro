@@ -376,23 +376,33 @@ try {
       Only on a box that reserves its height (`.reserved`, from the site's
       demoHeights): in a box that doesn't, this line would itself be the layout
       shift it is here to avoid. */
-      .demo.reserved {
-        position: relative;
-      }
-      /* out of flow, so the skeleton cannot contribute height of its own: these
-      boxes are `border-box`, so an in-flow child sized off the same min-height
-      overflows the content box by the border and leaves 2px to shift back. */
-      .demo.reserved > astro-island:empty {
-        position: absolute;
-        inset: 0;
+      .demo.reserved > astro-island:empty,
+      .demo.fill > astro-island:empty {
         display: flex;
         align-items: center;
         justify-content: center;
         color: var(--muted);
         font-size: 0.85em;
       }
-      .demo.reserved > astro-island:empty::after {
+      .demo.reserved > astro-island:empty::after,
+      .demo.fill > astro-island:empty::after {
         content: 'loading…';
+      }
+      /* The two ways a box can already own its space need different sizing, and
+      neither may add any of its own. `.fill` has a definite height, so `100%`
+      resolves against it. `.reserved` has only a min-height, against which
+      `100%` would resolve to auto — and an in-flow child given that same
+      min-height overflows the content box by the border, because these boxes are
+      `border-box`, which is 2px of shift straight back. So: out of flow. */
+      .demo.reserved {
+        position: relative;
+      }
+      .demo.reserved > astro-island:empty {
+        position: absolute;
+        inset: 0;
+      }
+      .demo.fill > astro-island:empty {
+        height: 100%;
       }
       details.source {
         border: 1px solid var(--border);

@@ -6,6 +6,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 
 import {
+  checkDemoHeights,
   checkPluginTookEffect,
   checkSessionUrlRoundTrip,
   smokeExamplesSite,
@@ -30,7 +31,10 @@ const failures = await smokeExamplesSite({
   // an RPC worker — guards the Rollup circular-dependency TDZ that webpack
   // tolerates. See MIGRATION.md.
   workerSlug: 'plugins',
-  check: (page, slug) => checks[slug]?.(page) ?? [],
+  check: async (page, slug) => [
+    ...(await checkDemoHeights(page)),
+    ...(await (checks[slug]?.(page) ?? [])),
+  ],
   log: m => {
     console.log(m)
   },

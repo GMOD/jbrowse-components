@@ -1,7 +1,7 @@
 ---
 import { Code } from 'astro:components'
 
-import { demoFillHeight } from '../siteMeta.ts'
+import { demoFillHeight, demoHeights } from '../siteMeta.ts'
 
 import type { MarkdownInstance } from 'astro'
 
@@ -22,6 +22,10 @@ interface Props {
 
 const { slug, title, code } = Astro.props
 
+// Hold the demo's space before its island mounts, so nothing below it moves
+// when it does. See `demoHeights` for where the figure comes from.
+const reserved = demoHeights[slug]
+
 const docs = import.meta.glob<MarkdownInstance<Record<string, unknown>>>(
   '../docs/*.md',
 )
@@ -39,7 +43,12 @@ const Doc = doc?.Content
       </div>
     )
   }
-  <div class:list={['demo', { fill: demoFillHeight }]}><slot /></div>
+  <div
+    class:list={['demo', { fill: demoFillHeight, reserved: !!reserved }]}
+    style={reserved ? `min-height:${reserved}px` : undefined}
+  >
+    <slot />
+  </div>
   <details class="source" open>
     <summary>View source</summary>
     <Code code={code} lang="tsx" />
