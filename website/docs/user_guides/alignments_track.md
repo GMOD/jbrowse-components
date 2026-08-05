@@ -152,11 +152,11 @@ reads sit on one haplotype; see
 [phasing heterozygous SVs](/docs/user_guides/sv_visualization#phasing-heterozygous-svs).
 
 Each section's coverage band is built from only that section's reads, which is
-how you get strand-split coverage. Group by **Strand** and turn off
-**Show... → Show pileup**, and the band becomes a forward histogram and a reverse
-histogram on a shared scale, each carrying its own mismatch coloring. On a
-strand-specific paired-end library group by **First-of-pair strand** instead,
-since there the transcript strand is which mate the read is; the
+how you get strand-split coverage. Group by **Strand** and turn off **Show... →
+Show pileup**, and the band becomes a forward histogram and a reverse histogram
+on a shared scale, each carrying its own mismatch coloring. On a strand-specific
+paired-end library group by **First-of-pair strand** instead, since there the
+transcript strand is which mate the read is; the
 [RNA-seq tutorial](/docs/tutorials/rnaseq#strand-specific-rna-seq) shows that on
 a pair of genes transcribed in opposite directions.
 

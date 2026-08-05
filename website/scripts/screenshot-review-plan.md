@@ -291,17 +291,19 @@ thinning, use `jexlFiltersSetting: ["jexl:...", ...]` on its display snapshot
 
   **`hgdownload2.soe.ucsc.edu` serves the same paths** (200 on the 2bit,
   chromAlias, cytoBand and the gbdb bigBeds, with ranges and
-  `Access-Control-Allow-Origin: *`). `ld/lct_haploblock` was captured through
-  it by adding, temporarily, to the Chrome args in `generate-screenshots.ts`:
+  `Access-Control-Allow-Origin: *`). `ld/lct_haploblock` was captured through it
+  by adding, temporarily, to the Chrome args in `generate-screenshots.ts`:
+
   ```
   '--host-resolver-rules=MAP hgdownload.soe.ucsc.edu <hgdownload2 IP>',
   '--ignore-certificate-errors',
   ```
+
   Host resolution rather than `page.setRequestInterception`, which disables the
   HTTP cache and stalled even local chunk requests until the run timed out.
   **Revert it before committing** — it is a workaround for an outage, not a
-  setting, and the cert override is not something to leave in a figure
-  pipeline.
+  setting, and the cert override is not something to leave in a figure pipeline.
+
 - `jbrowse-img/multisample_variants` — `jb2export`'s static SSR renders the
   per-sample genotype matrix **empty** for the 1000G phase3 callset (volvox's
   simpler path works); a real fix needs a `jb2export` matrix-render bug chase.
