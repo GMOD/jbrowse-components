@@ -269,7 +269,9 @@ const PAGE = /* html */ `<!doctype html>
   button.deny { border-color: #ef4444; color: #7f1d1d; }
   button.deny.active { background: #ef4444; color: #fff; }
   button.clear { border-color: #ccc; color: #666; }
-  .note { width: 100%; padding: 6px 9px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; }
+  /* height is set by the client's autosizeNote as you type; min-height keeps an
+     empty box at two rows and overflow-y lets it scroll at the cap */
+  .note { width: 100%; min-height: 3.6em; padding: 6px 9px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; font-family: inherit; resize: none; overflow-y: auto; }
   /* a write that did not land, or one rejected because the entry moved. Empty
      for the overwhelmingly common case where it just worked. */
   .cardmsg { font-size: 13px; font-weight: 500; }
@@ -406,7 +408,11 @@ function renderCard(s) {
         (s.stale ? ' ' + pill('stale', 'image changed since ' + status) : '') +
         (compare[s.name] ? ' ' + driftPill(maxDrift(s.name)) : '') + '</h2>' +
       '<div class="reviewedAt">present in: ' + esc(where) + '</div>' +
-      '<input class="note" placeholder="note (optional)" value="' + esc(v ? v.note : '') + '" onchange="saveNote(this)" />' +
+      // a textarea, not an input: a denial reason is a paragraph, and the
+      // shared client grows this one to fit it. The leading newline is eaten by
+      // the HTML parser, so a note that opens with a blank line only
+      // round-trips because one is spent here.
+      '<textarea class="note" rows="2" placeholder="note (optional)" onchange="saveNote(this)">\\n' + esc(v ? v.note : '') + '</textarea>' +
       '<div class="unsaved">' + esc(draftHint(s)) + '</div>' +
       '<div class="actions">' +
         '<button class="approve ' + (status === 'good' ? 'active' : '') + '" onclick="setVerdict(this,\\'good\\')">✓ Approve</button>' +

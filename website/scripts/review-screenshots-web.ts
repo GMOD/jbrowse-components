@@ -330,8 +330,10 @@ const PAGE = /* html */ `<!doctype html>
   button.clear { border-color: ButtonBorder; color: GrayText; }
   /* height is set by the client's autosizeNote as you type; min-height keeps an
      empty box the two rows it was, and overflow-y lets it scroll once it hits
-     the cap rather than clipping */
-  .note { width: 100%; min-height: 3.6em; padding: 6px 9px; border: 1px solid ButtonBorder; border-radius: 6px; font-size: 13px; background: Field; color: FieldText; font-family: inherit; resize: vertical; overflow-y: auto; }
+     the cap rather than clipping. No resize handle: autosize owns the height,
+     so a dragged box snapped back on the next keystroke — a control that
+     undoes itself is worse than no control. */
+  .note { width: 100%; min-height: 3.6em; padding: 6px 9px; border: 1px solid ButtonBorder; border-radius: 6px; font-size: 13px; background: Field; color: FieldText; font-family: inherit; resize: none; overflow-y: auto; }
   .reviewedAt { font-size: 11px; color: GrayText; }
   /* a write that did not land, or one rejected because the entry moved. Empty
      for the overwhelmingly common case where it just worked. */
