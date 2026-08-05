@@ -27,6 +27,16 @@ set -euo pipefail
 
 OUTDIR="${1:-dog10k_genomewide_build}"
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+
+# Sibling helpers this script runs, fetched next to it when absent, so a bare
+# `curl -fO` of this one file behaves the same as a repo checkout. The
+# per-chromosome script fetches its own helpers the same way once it runs.
+HELPERS=(build_dog10k_wolfdog_ancestry.sh dog10k_ancestry_genomewide.py)
+for h in "${HELPERS[@]}"; do
+  [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
+    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
+done
+
 mkdir -p "$OUTDIR/keep"
 OUTDIR=$(cd "$OUTDIR" && pwd)
 KEEP="$OUTDIR/keep"
