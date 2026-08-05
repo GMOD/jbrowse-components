@@ -809,6 +809,15 @@ describe('BgzipTaffyAdapter integration tests', () => {
         { assemblyName: 'ce10', refName: 'chrNope', start: 0, end: 1000 },
       ]),
     ).toBe(0)
+
+    // Only an unknown chromosome costs nothing. A query landing inside one
+    // sparse bracket, and one running past the chromosome's last entry, both
+    // resolve to a zero-width block span — but the read is still a whole bgzf
+    // block, and reporting the span alone had the gate treat them as free.
+    expect(await adapter.getRegionByteSize([region(3700, 4000)])).toBe(65536)
+    expect(
+      await adapter.getRegionByteSize([region(15_000_000, 15_100_000)]),
+    ).toBe(65536)
   })
 
   test('adapter returns empty array for region with no data', async () => {

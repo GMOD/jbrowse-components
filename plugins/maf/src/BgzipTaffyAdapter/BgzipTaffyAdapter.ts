@@ -201,16 +201,17 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
           observer.complete()
           return
         }
-        const { firstEntry, nextEntry, ranPastEnd, startBlock, endBlock } = span
+        const {
+          firstEntry,
+          nextEntry,
+          ranPastEnd,
+          startBlock,
+          endBlock,
+          readLength,
+        } = span
 
         // Read and decompress the data
         const file = openLocation(this.getConf('tafGzLocation'))
-
-        const MIN_BLOCK_SIZE = 65536
-        const readLength =
-          endBlock > startBlock
-            ? endBlock - startBlock + MIN_BLOCK_SIZE
-            : MIN_BLOCK_SIZE
 
         const response = await updateStatus(
           'Downloading alignments',
@@ -270,8 +271,10 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
     )
   }
 
-  // Byte budget from the .tai index alone: the compressed span `getFeatures`
-  // would read, via the same `queryBlockSpan`. No block download.
+  // Byte budget from the .tai index alone: exactly the `readLength`
+  // `getFeatures` above passes to `file.read`, via the same `queryBlockSpan`.
+  // No block download. A chromosome absent from the index resolves no span and
+  // so costs nothing, which is the only case that reports 0.
   async getRegionByteSize(regions: Region[]) {
     const { index } = await this.setup()
     let bytes = 0
@@ -283,7 +286,7 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
         region.end,
       )
       if (span) {
-        bytes += Math.max(0, span.endBlock - span.startBlock)
+        bytes += span.readLength
       }
     }
     return bytes

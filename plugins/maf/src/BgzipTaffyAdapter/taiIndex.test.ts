@@ -249,6 +249,22 @@ describe('queryBlockSpan', () => {
     expect(span.endBlock).toBe(span.startBlock)
   })
 
+  // `readLength` is what both `getFeatures` and `getRegionByteSize` use. A
+  // zero-width block span still costs one whole bgzf block to read, and
+  // reporting the raw span told the fetch gate that read was free.
+  test('readLength covers the one-block cushion the read adds', () => {
+    const index: IndexData = {
+      chr1: [entry(0, 0), entry(100, 1000), entry(200, 2000), entry(300, 3000)],
+    }
+    const wide = queryBlockSpan(index, 'chr1', 50, 120)!
+    expect(wide.readLength).toBe(wide.endBlock - wide.startBlock + 65536)
+
+    // A query resolving to a single block: zero span, one block of real read.
+    const narrow = queryBlockSpan({ chr1: [entry(0, 0)] }, 'chr1', 0, 10)!
+    expect(narrow.endBlock).toBe(narrow.startBlock)
+    expect(narrow.readLength).toBe(65536)
+  })
+
   test('a chromosome absent from the index has no span', () => {
     expect(
       queryBlockSpan({ chr1: [entry(0, 0)] }, 'chrZ', 0, 10),

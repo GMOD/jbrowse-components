@@ -175,8 +175,11 @@ export interface MafGpuProps {
 // or the underlying `regionData` changes. Pre-encoded on the main thread
 // because encoding depends on theme + user toggles (`MafGpuProps`).
 export interface MafUploadPayload {
-  // A view, not a bare ArrayBuffer: the encoder over-allocates and hands back
-  // a subarray, and both HAL backends upload only the view's byte range.
+  // A typed array rather than a bare ArrayBuffer, so both HAL backends upload
+  // exactly the encoded byte range. `InstanceWriter.finish` right-sizes it with
+  // a copy rather than handing back a subarray of its over-allocation — the
+  // payload is retained for as long as the region is loaded, and a view would
+  // pin the dead tail with it.
   instanceBuffer: Uint32Array
   instanceCount: number
 }

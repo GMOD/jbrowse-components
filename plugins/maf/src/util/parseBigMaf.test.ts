@@ -27,7 +27,7 @@ test('parses s lines with strand + srcSize, first as reference', () => {
   })
 })
 
-test('attaches i-line context to the preceding s line', () => {
+test('attaches i-line context to the row the i line names', () => {
   const { alignments } = parseBigMafStanza(stanza, parseAssemblyAndChr)
   expect(alignments.panTro1!.context).toEqual({
     leftStatus: 'N',
@@ -41,6 +41,40 @@ test('attaches i-line context to the preceding s line', () => {
     rightStatus: 'n',
     rightCount: 19,
   })
+})
+
+// UCSC emits each `i` directly after its `s`, so "the preceding s line" and
+// "the row the i line names" agree there — but only there. A stanza carrying
+// `i` lines for some rows only, or listing them together after the `s` block,
+// hung one species' context on another's row.
+test('i-line context does not fall through to an unrelated row', () => {
+  const s = [
+    's hg18.chr7 100 4 + 1000 ACGT',
+    's panTro1.chr6 200 4 + 900 acgt',
+    's baboon 300 4 + 800 acgt',
+    'i panTro1.chr6 N 0 C 0',
+  ].join(';')
+  const { alignments } = parseBigMafStanza(s, parseAssemblyAndChr)
+  expect(alignments.panTro1!.context).toEqual({
+    leftStatus: 'N',
+    leftCount: 0,
+    rightStatus: 'C',
+    rightCount: 0,
+  })
+  expect(alignments.baboon!.context).toBeUndefined()
+})
+
+// The resolver is the sample filter, so an `i` line for a species the track
+// does not list has no row to attach to and is dropped rather than landing on
+// whichever row happened to be parsed last.
+test('an i line for an unresolved species attaches to nothing', () => {
+  const s = ['s hg18.chr7 100 4 + 1000 ACGT', 'i rheMac3.chr1 N 0 C 0'].join(
+    ';',
+  )
+  const { alignments } = parseBigMafStanza(s, token =>
+    token.startsWith('hg18') ? parseAssemblyAndChr(token) : undefined,
+  )
+  expect(alignments.hg18!.context).toBeUndefined()
 })
 
 test('parses e lines into empties, not alignments', () => {

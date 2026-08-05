@@ -1445,15 +1445,6 @@ export default function stateModelFactory(
           },
           /**
            * #getter
-           * Positioned insertion markers (interbase) for the visible aligned rows.
-           */
-          get visibleInsertions() {
-            return self.rowsVisible
-              ? computeVisibleInsertions(overlayParams())
-              : []
-          },
-          /**
-           * #getter
            * Positioned deletion runs for the visible aligned rows; the overlay draws
            * the deleted-base count inside each run when it fits.
            */
@@ -1614,6 +1605,34 @@ export default function stateModelFactory(
                 ...self.rowGeometry(),
                 showAllLetters: self.showAllLetters,
                 showAsUpperCase: self.showAsUpperCase,
+              })
+            : []
+        },
+        /**
+         * #getter
+         * Positioned insertion markers (interbase) for the visible aligned rows.
+         *
+         * Lives here, past `basesRenderingActive`, rather than beside the other
+         * block overlays: the markers are drawn only in `bases` mode (the
+         * overlay and the SVG export both gate on it), so the identity plot,
+         * codon view and color-by-chromosome were each paying a full per-column
+         * insertion walk of every visible block × row, every frame, for markers
+         * nothing rendered. The identity plot is the expensive case — it is the
+         * zoom-out default once `rowIdentityMode` is set, which is exactly where
+         * the walk covers the most blocks. Same mistake, and same fix, as the
+         * deletion overlay building 679k markers to draw none; see
+         * agent-docs/reference/MAF_LARGE_BLOCKS.md.
+         *
+         * The hover hit-test does NOT read this — it resolves insertions from
+         * the blocks directly (`findRowHoverAtBp`) — so gating costs no
+         * interactivity.
+         */
+        get visibleInsertions() {
+          return self.rowsVisible && self.basesRenderingActive
+            ? computeVisibleInsertions({
+                view: self.lgv,
+                rpcDataMap: self.rpcDataMap,
+                ...self.rowGeometry(),
               })
             : []
         },

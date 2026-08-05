@@ -16,9 +16,12 @@ type Resolver = (organismChr: string) => ParsedAssemblyName | undefined
 
 /**
  * Parse one bigMaf stanza (the ';'-joined `mafBlock` field) into aligned rows
- * (`s` lines, with strand/srcSize and any following `i`-line context) and
- * bridged/empty rows (`e` lines). `q` lines are ignored. The reference sequence
- * is the first `s` line. `resolve` maps a `genome.chr` token to a sample id.
+ * (`s` lines, with strand/srcSize and their `i`-line context) and bridged/empty
+ * rows (`e` lines). `q` lines are ignored. The reference sequence is the first
+ * `s` line — taken before `resolve`, since a reference filtered out of the
+ * sample set still defines the block's genomic extent. `resolve` maps a
+ * `genome.chr` token to a sample id, and every line type goes through it, so
+ * line order carries no meaning here.
  */
 export function parseBigMafStanza(
   maf: string,
@@ -27,7 +30,6 @@ export function parseBigMafStanza(
   const alignments: Record<string, AlignmentRecord> = {}
   const empties: Record<string, EmptyRecord> = {}
   let referenceSeq: string | undefined
-  let lastAlignmentAssembly: string | undefined
 
   for (const rawBlock of maf.split(';')) {
     const block = rawBlock.trim()
@@ -45,20 +47,19 @@ export function parseBigMafStanza(
           strand: parseStrand(parts[4]),
           srcSize: parseInt(parts[5]!, 10),
         }
-        lastAlignmentAssembly = parsed.assemblyName
-      } else {
-        lastAlignmentAssembly = undefined
       }
     } else if (type === 'i') {
-      // i src leftStatus leftCount rightStatus rightCount — attaches to the
-      // immediately preceding s line. Relies on the UCSC MAF invariant that an
-      // `i` line directly follows its `s` line: `e`/`q` lines don't reset
-      // `lastAlignmentAssembly`, so a reordered stanza would misattach context.
-      const rec = lastAlignmentAssembly
-        ? alignments[lastAlignmentAssembly]
-        : undefined
+      // i src leftStatus leftCount rightStatus rightCount — context for the
+      // row it NAMES, resolved through the same `resolve` as the `s` and `e`
+      // lines. This used to attach to whichever `s` line came last, which is
+      // the same row on well-formed UCSC output but silently misattaches one
+      // species' context to another the moment a stanza carries `i` lines for
+      // only some of its rows, or lists them apart from their `s` lines. The
+      // `i` line names its own src, so there is nothing to infer from order.
+      const parts = block.split(WHITESPACE_REGEX)
+      const assemblyName = resolve(parts[1]!)?.assemblyName
+      const rec = assemblyName ? alignments[assemblyName] : undefined
       if (rec) {
-        const parts = block.split(WHITESPACE_REGEX)
         rec.context = {
           leftStatus: toMafStatus(parts[2]),
           leftCount: parseInt(parts[3]!, 10),

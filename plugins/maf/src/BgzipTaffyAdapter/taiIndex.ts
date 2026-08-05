@@ -147,20 +147,42 @@ export interface QueryBlockSpan {
   /** compressed byte offset of the bgzf block the read starts in */
   startBlock: number
   /** compressed byte offset the read is bounded at (== startBlock for a
-   * single-block read; the caller still adds the one-block cushion) */
+   * single-block read; `readLength` adds the one-block cushion) */
   endBlock: number
+  /**
+   * Compressed bytes a read of this span actually pulls, cushion included —
+   * what `getFeatures` passes to `file.read` and what `getRegionByteSize`
+   * reports to the fetch gate.
+   *
+   * The cushion is not slack to be dropped from the estimate: the bounding
+   * entry names the bgzf block the next bracket *starts* in, so the block
+   * itself still has to be read whole, and `endBlock === startBlock` (a query
+   * inside one bracket, or one running past a chromosome's last sparse entry)
+   * makes the span zero-width while the read is a full block. Reporting the
+   * span alone told the gate a real 64KB download was free.
+   */
+  readLength: number
 }
+
+/**
+ * Minimum compressed bytes to read for any span. A bgzf block holds at most
+ * 64KiB *uncompressed*, so one block is always covered — and the block the span
+ * ends in has to be read whole to decode the entries inside it.
+ */
+const MIN_BLOCK_SIZE = 65536
 
 /**
  * Resolve a `[queryStart, queryEnd)` region on `refName` to the bgzf block span
  * a read of it covers. Undefined when the chromosome isn't in the index.
  *
  * The single source for both the read in `getFeatures` and the byte estimate in
- * `getRegionByteSize`, which derived `endBlock` differently: the estimate
- * measured to the fallback entry and skipped the past-the-end chromosome bound,
- * so a query running past a chromosome's last sparse entry under-reported — 0
- * bytes for a single-entry chromosome — while the read pulled everything up to
- * the next chromosome. That is exactly the case the fetch gate exists to catch.
+ * `getRegionByteSize` — hence `readLength` rather than each caller deriving its
+ * own from `startBlock`/`endBlock`. They already disagreed twice: the estimate
+ * once measured to the fallback entry and skipped the past-the-end chromosome
+ * bound, and it then went on reporting the raw span while the read added a
+ * one-block cushion, so both a narrow query inside a single bracket and one
+ * running past a chromosome's last sparse entry estimated 0 bytes for a real
+ * 64KB download. That is exactly the case the fetch gate exists to catch.
  */
 export function queryBlockSpan(
   index: IndexData,
@@ -186,7 +208,17 @@ export function queryBlockSpan(
     const endBlock = ranPastEnd
       ? (nextChrStartBlock(index, refName) ?? startBlock)
       : (nextEntry?.virtualOffset.blockPosition ?? startBlock)
-    span = { firstEntry, nextEntry, ranPastEnd, startBlock, endBlock }
+    span = {
+      firstEntry,
+      nextEntry,
+      ranPastEnd,
+      startBlock,
+      endBlock,
+      readLength:
+        endBlock > startBlock
+          ? endBlock - startBlock + MIN_BLOCK_SIZE
+          : MIN_BLOCK_SIZE,
+    }
   }
   return span
 }
