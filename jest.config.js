@@ -81,7 +81,7 @@ export default {
     {
       // Pure helpers behind the docs autogeneration scripts
       displayName: 'docs',
-      testMatch: ['<rootDir>/website/scripts/api-docs/**/*.test.ts'],
+      testMatch: ['<rootDir>/website/scripts/**/*.test.ts'],
       testEnvironment: 'node',
       ...baseConfig,
     },

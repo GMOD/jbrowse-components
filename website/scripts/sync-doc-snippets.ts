@@ -31,6 +31,7 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 import { walkFiles } from './check-utils.ts'
+import { extractRegion, stripRegionMarkers } from './docFenceRegions.ts'
 
 const root = join(import.meta.dirname, '..', '..')
 const docsDir = join(import.meta.dirname, '..', 'docs')
@@ -38,46 +39,6 @@ const guidesDir = join(docsDir, 'developer_guides')
 const check = process.argv.includes('--check')
 
 const MARKER = /^<!--\s*include:\s*(\S+?)\s*-->$/
-
-function extractRegion(source: string, file: string, region: string) {
-  const lines = source.split('\n')
-  const start = lines.findIndex(l =>
-    new RegExp(`^\\s*(//|#)\\s*#region\\s+${region}\\b`).test(l),
-  )
-  if (start === -1) {
-    throw new Error(`${file}: no "#region ${region}"`)
-  }
-  // Match the *paired* #endregion, not the first one: a region may contain
-  // regions. The no-build plugin is the case — the whole class is one region so
-  // the published "complete example" can start below the note explaining that
-  // the guide is generated from it, and the sections above it slice pieces of
-  // that same class. Taking the first #endregion silently truncated the outer
-  // one at the first inner marker, which reads as a doc that lost its second
-  // half rather than as an error.
-  const rest = lines.slice(start + 1)
-  let depth = 0
-  const end = rest.findIndex(l => {
-    if (/^\s*(\/\/|#)\s*#region\b/.test(l)) {
-      depth++
-    } else if (/^\s*(\/\/|#)\s*#endregion\b/.test(l)) {
-      if (depth === 0) {
-        return true
-      }
-      depth--
-    }
-    return false
-  })
-  if (end === -1) {
-    throw new Error(`${file}: "#region ${region}" has no "#endregion"`)
-  }
-  const body = rest.slice(0, end).filter(l => !REGION_MARKER.test(l))
-  const indent = Math.min(
-    ...body.filter(l => l.trim()).map(l => l.length - l.trimStart().length),
-  )
-  return body.map(l => l.slice(indent)).join('\n')
-}
-
-const REGION_MARKER = /^\s*(\/\/|#)\s*#(end)?region\b/
 
 function resolve(spec: string) {
   const [file, region] = spec.split('#')
@@ -87,11 +48,7 @@ function resolve(spec: string) {
   }
   // A whole-file include still drops the region markers: they exist so *other*
   // docs can pull a slice, and they'd read as noise here.
-  return source
-    .replace(/\n+$/, '')
-    .split('\n')
-    .filter(l => !REGION_MARKER.test(l))
-    .join('\n')
+  return stripRegionMarkers(source)
 }
 
 const problems: string[] = []
