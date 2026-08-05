@@ -10,9 +10,7 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { SimpleFeature, getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
-import {
-  linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory,
-} from '@jbrowse/plugin-linear-genome-view'
+import { linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory } from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
 
 import configSchemaFactory from './configSchema.ts'
@@ -58,7 +56,7 @@ function createDisplay() {
       trackType: 'AlignmentsTrack',
       viewType: 'LinearGenomeView',
       // never rendered here; this harness exercises the model
-        ReactComponent: () => null,
+      ReactComponent: () => null,
     })
   })
 

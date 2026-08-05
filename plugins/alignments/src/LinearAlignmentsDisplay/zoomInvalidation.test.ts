@@ -9,9 +9,7 @@ import {
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { types } from '@jbrowse/mobx-state-tree'
-import {
-  linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory,
-} from '@jbrowse/plugin-linear-genome-view'
+import { linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory } from '@jbrowse/plugin-linear-genome-view'
 
 import configSchemaFactory from './configSchema.ts'
 import stateModelFactory from './model.ts'
@@ -54,7 +52,7 @@ function createTestEnvironment() {
       trackType: 'AlignmentsTrack',
       viewType: 'LinearGenomeView',
       // never rendered here; this harness exercises the model
-        ReactComponent: () => null,
+      ReactComponent: () => null,
     })
   })
 

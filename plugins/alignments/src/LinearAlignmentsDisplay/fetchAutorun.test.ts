@@ -8,9 +8,7 @@ import {
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
 import { types } from '@jbrowse/mobx-state-tree'
-import {
-  linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory,
-} from '@jbrowse/plugin-linear-genome-view'
+import { linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory } from '@jbrowse/plugin-linear-genome-view'
 import { waitFor } from '@testing-library/react'
 
 import configSchemaFactory from './configSchema.ts'
@@ -79,7 +77,7 @@ function createTestEnvironment(opts?: {
       trackType: 'AlignmentsTrack',
       viewType: 'LinearGenomeView',
       // never rendered here; this harness exercises the model
-        ReactComponent: () => null,
+      ReactComponent: () => null,
     })
   })
 

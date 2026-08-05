@@ -198,7 +198,11 @@ describe('DisplayChromeOverlayProvider', () => {
   ) {
     return render(
       node(
-        <DisplayChrome model={model} factory={stubFactory} testid="probe-display">
+        <DisplayChrome
+          model={model}
+          factory={stubFactory}
+          testid="probe-display"
+        >
           {({ canvasRef }) => (
             <canvas data-testid="probe-canvas" ref={canvasRef} />
           )}

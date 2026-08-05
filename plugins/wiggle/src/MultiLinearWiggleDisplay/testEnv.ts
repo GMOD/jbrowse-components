@@ -9,9 +9,7 @@ import {
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
 import { types } from '@jbrowse/mobx-state-tree'
-import {
-  linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory,
-} from '@jbrowse/plugin-linear-genome-view'
+import { linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory } from '@jbrowse/plugin-linear-genome-view'
 
 import configSchema from './configSchema.ts'
 import stateModelFactory from './model.ts'
@@ -102,7 +100,7 @@ export function createTestEnvironment() {
       trackType: 'MultiQuantitativeTrack',
       viewType: 'LinearGenomeView',
       // never rendered here; this harness exercises the model
-        ReactComponent: () => null,
+      ReactComponent: () => null,
     })
   })
 

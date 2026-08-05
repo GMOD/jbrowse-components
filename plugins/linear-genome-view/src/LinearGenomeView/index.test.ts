@@ -83,7 +83,7 @@ function initialize() {
       trackType: 'BasicTrack',
       viewType: 'LinearGenomeView',
       // never rendered here; this harness exercises the model
-        ReactComponent: () => null,
+      ReactComponent: () => null,
     })
   })
   stubManager.createPluggableElements()

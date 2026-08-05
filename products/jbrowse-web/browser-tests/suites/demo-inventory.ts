@@ -108,9 +108,7 @@ const localDemos: TestSuite = {
         await waitForDataLoaded(page)
 
         const hasCanvas = await page.evaluate(() => {
-          const canvases = document.querySelectorAll(
-            '[data-display-id] canvas',
-          )
+          const canvases = document.querySelectorAll('[data-display-id] canvas')
           for (const c of canvases) {
             const canvas = c as HTMLCanvasElement
             if (canvas.width > 0 && canvas.height > 0) {

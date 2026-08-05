@@ -32,7 +32,12 @@ export async function createRenderingBackend<TRenderingBackend>(
   // error UI's stack-trace dialog walks `AggregateError.errors`, so bundling
   // them is what puts them in front of whoever reports the bug.
   const ladderFailures: unknown[] = []
-  const hal = await createGpuHal(canvas, passes, uniformByteSize, ladderFailures)
+  const hal = await createGpuHal(
+    canvas,
+    passes,
+    uniformByteSize,
+    ladderFailures,
+  )
   if (hal) {
     return createGpuBackend(hal)
   }

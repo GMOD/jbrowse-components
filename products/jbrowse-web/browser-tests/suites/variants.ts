@@ -183,7 +183,10 @@ const suite: TestSuite = {
       name: 'plain variant display scrolls virtually (no native scroll container)',
       fn: async page => {
         await navigateWithSessionSpec(page, overflowingPlainVariantSpec)
-        await waitForDisplayDrawn(page, 'volvox_filtered_vcf-LinearVariantDisplay')
+        await waitForDisplayDrawn(
+          page,
+          'volvox_filtered_vcf-LinearVariantDisplay',
+        )
         await waitForDataLoaded(page)
         // an overflowing display renders the draggable VerticalScrollbar overlay
         await findByTestId(page, 'vertical-scrollbar')

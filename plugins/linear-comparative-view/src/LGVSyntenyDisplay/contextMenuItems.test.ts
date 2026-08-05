@@ -9,9 +9,7 @@ import {
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
-import {
-  linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory,
-} from '@jbrowse/plugin-linear-genome-view'
+import { linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory } from '@jbrowse/plugin-linear-genome-view'
 
 import configSchemaF from './configSchemaF.ts'
 import stateModelF from './model.ts'
