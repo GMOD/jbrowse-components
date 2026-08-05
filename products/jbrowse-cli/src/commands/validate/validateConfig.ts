@@ -424,7 +424,12 @@ function checkSession(session: unknown, report: Report, ctx: Ctx) {
         Array.isArray(t) ? (t as unknown[]) : [t],
       )
       for (const [j, entry] of entries.entries()) {
-        const trackId = typeof entry === 'string' ? entry : entry?.trackId
+        const trackId =
+          typeof entry === 'string'
+            ? entry
+            : isRecord(entry)
+              ? entry.trackId
+              : undefined
         if (typeof trackId !== 'string') {
           report.error(`${where}.tracks[${j}]`, 'track entry has no trackId')
         } else if (

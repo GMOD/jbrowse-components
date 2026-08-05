@@ -122,8 +122,14 @@ export default function stateModelFactory(
       // do nothing at all — MST drops a snapshot key the schema never declared,
       // so test_data/config_demo.json had asked eleven NCBI gene tracks to show
       // only genes since June and none of them had.
+      //
+      // Read through `self.conf` rather than `getConf(self, …)`: the slot is on
+      // this display's own schema, not the shared canvas base, and `getConf`
+      // types its slot name off `self.configuration`, which the base declares as
+      // the base schema (LinearVariantDisplay composes the same model). `conf`
+      // is the base's typed-off-the-concrete-schema getter for exactly this.
       get showOnlyGenes(): boolean {
-        return getConf(self, 'showOnlyGenes')
+        return readConfObject(self.conf, 'showOnlyGenes')
       },
 
       // Promotable `maybeBoolean` slot (see baseConfigSchema.ts): getConf
@@ -200,8 +206,11 @@ export default function stateModelFactory(
         self.geneGlyphNoticeDismissed = true
       },
 
+      // `self.conf` for the same reason the getter reads it: the slot is on this
+      // display's schema, and `setConf` names its slots off the base-typed
+      // `self.configuration`.
       setShowOnlyGenes(value: boolean) {
-        setConf(self, 'showOnlyGenes', value)
+        setConf({ configuration: self.conf }, 'showOnlyGenes', value)
       },
 
       setDisplayDirectionalChevrons(value: boolean) {

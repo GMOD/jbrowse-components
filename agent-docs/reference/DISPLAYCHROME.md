@@ -304,9 +304,9 @@ component, which is what the container arrangement was working around.
 Two follow-through details worth knowing, because neither is visible in a diff:
 
 - The container contributed `whiteSpace: nowrap` / `textAlign: left` by
-  inheritance to everything under it. Those are re-stated on each de-containered
-  display's chrome, deliberately verbatim, so no label overlay changes how it
-  wraps. They were **not** pushed onto `DisplayChrome` for everyone: seven
+  inheritance to everything under it. Those are re-stated on the chrome of each
+  display the container no longer wraps, deliberately verbatim, so no label
+  overlay changes how it wraps. They were **not** pushed onto `DisplayChrome` for everyone: seven
   displays never had them, and `white-space: nowrap` on a display root would
   stop long error-banner text from wrapping.
 - The canvas family's `FloatingLegend` moved inside `DisplayChrome`'s child.

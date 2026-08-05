@@ -114,8 +114,13 @@ interface Problem {
 // Returns a problem string if the specifier is a broken workspace import, or
 // undefined if it resolves (or is external and thus skipped).
 function checkSpecifier(specifier: string): string | undefined {
-  const m = /^(@[^/]+\/[^/]+)(\/.*)?$/.exec(specifier)
-  const pkgName = m ? m[1] : specifier
+  // Bundler query suffixes (`?worker`, `?raw`, `?url`) are Vite's, not part of
+  // the package's exports map — the embedded docs' worker snippet imports
+  // `.../esm/rpcWorker?worker`, which resolves to the plain `./esm/rpcWorker`
+  // export. Strip it before matching so the real subpath is what gets checked.
+  const specifierPath = specifier.split('?')[0]!
+  const m = /^(@[^/]+\/[^/]+)(\/.*)?$/.exec(specifierPath)
+  const pkgName = m ? m[1] : specifierPath
   const subpath = m?.[2] ? `.${m[2]}` : '.'
 
   const pkg = packages.get(pkgName!)

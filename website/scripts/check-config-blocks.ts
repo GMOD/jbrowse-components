@@ -93,7 +93,7 @@ function validateBlock(parsed: Record<string, unknown>, kind: string) {
     // fragment and false of the page.
     return {
       ...result,
-      problems: result.problems.filter(p => !p.where?.startsWith('assemblies')),
+      problems: result.problems.filter(p => !p.where.startsWith('assemblies')),
     }
   }
   const names = Array.isArray(parsed.assemblyNames)
