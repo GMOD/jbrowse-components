@@ -86,10 +86,12 @@ Keep the current layering. Each layer maps to a genuine concern boundary:
 - **"Body owns its own div; chrome renders overlays around it."** Rejected —
   refuted by the positioning requirement above. The overlays must share the
   canvas's relative container, so the chrome must own it. The outer/body
-  two-component split in maf/alignments/canvas is a consequence of React
-  hook-ordering (the drag/mouse hook needs the container ref at the same level as
-  `useRenderingBackend`, which lives inside DisplayChrome), not a flaw to design
-  away.
+  two-component split in maf/alignments/canvas is a consequence of observer
+  scoping — the body is the named observer, so a MobX read re-renders it and not
+  the chrome — not a flaw to design away. (It was also hook-ordering while each
+  display called `useMouseTracking` itself, needing the container ref at the same
+  level as `useRenderingBackend`. The chrome owns that measurement now, so maf's
+  drag-select is the only hook left with the constraint.)
 - **Hand `canvasRef` to the body via context (plain children) instead of a
   render-prop.** Tempting because the render-prop only hands the ref to the
   *immediate* child, so the two multi-level bodies still drill it a hop or two

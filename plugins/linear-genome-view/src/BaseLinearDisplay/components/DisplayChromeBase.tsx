@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useRef } from 'react'
+import { Fragment } from 'react'
 
 // deep subpath, never the `@jbrowse/core/ui` barrel: this file is the
 // toolkit-free half of the chrome and the barrel pulls in MUI
@@ -29,7 +29,7 @@ export type ChromeModel = {
   painted: boolean
 } & StatusChromeModel
 
-interface CanvasHandle {
+export interface CanvasHandle {
   canvasRef: (node: HTMLCanvasElement | null) => void
   canvas: HTMLCanvasElement | null
   /**
@@ -39,8 +39,6 @@ interface CanvasHandle {
    * got wrong: there is no longer a position to hold up here.
    */
   mouseTracker: MouseTracker
-  /** The chrome container, for a handler that needs its rect off-event. */
-  containerRef: React.RefObject<HTMLDivElement | null>
 }
 
 // Single home for every GPU display's render lifecycle AND status chrome.
@@ -89,12 +87,12 @@ interface CanvasHandle {
 // coordinate. Now there is no position at this level to hold: `mouseTracker`
 // goes out through the handle and the body reads it with `useMouseState`.
 //
-// A display that hit-tests as the cursor moves passes `onPointerPosition`, so its
-// hit comes off the same single measurement as its guides. A display that needs
-// the container node itself still passes a `ref` (merged, not displaced) — maf,
-// whose drag-selection resolves window-level drag coordinates against it and
-// whose `useDragSelection.test.ts` asserts synchronously on state it shares with
-// the rubberband rect.
+// A display that hit-tests as the cursor moves passes `onPointerPosition`, so
+// its hit comes off the same single measurement as its guides. A display that
+// needs the container node itself still passes a plain `ref` — maf, whose
+// drag-selection resolves window-level drag coordinates against it — and gets
+// it, because the measurement here reads `currentTarget` and holds no ref to
+// collide with.
 //
 // `testid` is the *base* first-paint selector; the chrome owns the `-done`
 // convention, appending it once `canvasDrawn` flips, so no consumer hand-writes
@@ -118,7 +116,6 @@ function DisplayChromeBaseInner<B extends { dispose(): void }>({
   onPointerPosition,
   onMouseMove,
   onMouseLeave,
-  ref,
   ...chromeProps
 }: {
   model: ChromeModel & RenderLifecycleModel<B>
@@ -149,26 +146,11 @@ function DisplayChromeBaseInner<B extends { dispose(): void }>({
   // keeps it cheap ("publish the position, don't hold it here") survived only as
   // an identical comment copied into eight files, with alignments having already
   // dropped `onMouseLeave`. Owning it makes the rule structural: there is no
-  // position at this level to hold.
-  const containerRef = useRef<HTMLDivElement | null>(null)
-  const setContainer = useCallback(
-    (node: HTMLDivElement | null) => {
-      containerRef.current = node
-      // a caller may still want the node itself (maf's drag-selection binds
-      // window listeners and has to resolve coordinates against it), so its ref
-      // is merged rather than displaced
-      if (typeof ref === 'function') {
-        ref(node)
-      } else if (ref) {
-        ref.current = node
-      }
-    },
-    [ref],
-  )
-  const { mouseTracker, handleMouseMove, handleMouseLeave } = useMouseTracking(
-    containerRef,
-    onPointerPosition,
-  )
+  // position at this level to hold. The hook measures off `currentTarget`, so
+  // the chrome needs no ref of its own and a caller's `ref` rides the spread
+  // below untouched — nothing to merge, nothing to displace.
+  const { mouseTracker, handleMouseMove, handleMouseLeave } =
+    useMouseTracking(onPointerPosition)
   const phase = model.displayPhase
   if (phase === 'renderError') {
     // destructured for the same reason as in DisplayStatusChromeBase: a plain
@@ -189,7 +171,6 @@ function DisplayChromeBaseInner<B extends { dispose(): void }>({
   return (
     <DisplayStatusChromeBase
       {...chromeProps}
-      ref={setContainer}
       // Composed, never replacing: a caller still binding its own pointer
       // handlers (maf's drag-selection, which owns a rubberband rect and a
       // window-level drag) would otherwise be silently overridden by the
@@ -226,7 +207,7 @@ function DisplayChromeBaseInner<B extends { dispose(): void }>({
           scrim would reset its 250ms anti-flash timer (see
           DisplayStatusChromeBase). */}
       <Fragment key={canvasKey}>
-        {children({ canvasRef, canvas, mouseTracker, containerRef })}
+        {children({ canvasRef, canvas, mouseTracker })}
       </Fragment>
     </DisplayStatusChromeBase>
   )

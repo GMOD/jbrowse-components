@@ -8,10 +8,10 @@ import DisplayLoadingOverlay from './DisplayLoadingOverlay.tsx'
 import DisplayRenderErrorOverlay from './DisplayRenderErrorOverlay.tsx'
 import DisplayStatusChromeBase from './DisplayStatusChromeBase.tsx'
 
-import type { ChromeModel } from './DisplayChromeBase.tsx'
+import type { CanvasHandle, ChromeModel } from './DisplayChromeBase.tsx'
 import type { StatusChromeModel } from './DisplayStatusChromeBase.tsx'
 import type { DisplayChromeOverlays } from './chromeOverlays.ts'
-import type { MouseState, MouseTracker } from '@jbrowse/core/ui/useMouseTracking'
+import type { MouseState } from '@jbrowse/core/ui/useMouseTracking'
 import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 import type { RenderLifecycleModel } from '@jbrowse/render-core/useRenderingBackend'
 import type { ComponentPropsWithRef, ReactNode } from 'react'
@@ -80,12 +80,9 @@ export default function DisplayChrome<B extends { dispose(): void }>(
   props: {
     model: ChromeModel & RenderLifecycleModel<B>
     factory: (canvas: HTMLCanvasElement) => Promise<B>
-    children: (handle: {
-      canvasRef: (node: HTMLCanvasElement | null) => void
-      canvas: HTMLCanvasElement | null
-      mouseTracker: MouseTracker
-      containerRef: React.RefObject<HTMLDivElement | null>
-    }) => ReactNode
+    // the handle type itself, not a copy of its shape: this file forwards to
+    // `DisplayChromeBase` and has no business restating what it hands the body
+    children: (handle: CanvasHandle) => ReactNode
     testid: string
     onPointerPosition?: (state?: MouseState) => void
   } & Omit<ComponentPropsWithRef<'div'>, 'children'>,

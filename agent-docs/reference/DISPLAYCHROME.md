@@ -41,6 +41,10 @@ description: The shared display status chrome that owns loading, error, and retr
   shows up; don't add a phase for it.
 - Always: a thin outer owns the chrome, a named observer body owns the canvas
   and overlays, joined by a render-prop child.
+- **The pointer measurement is the chrome's too**, because it owns the element
+  the position is measured against. It publishes `mouseTracker` through the
+  handle and the body reads it with `useMouseState` — never hold the position
+  beside the chrome, and don't call `useMouseTracking` in a display.
 - Load-bearing: a terminal state **replaces the subtree** (that is what disposes
   the backend) and `displayPhase`'s loading term is a **thunk**. Early-`return`
   vs ternary is style only, since `'use no memo'`.
@@ -66,13 +70,16 @@ the mount/dispose contract is in
 
 `DisplayChrome`
 (`plugins/linear-genome-view/src/BaseLinearDisplay/components/DisplayChrome.tsx`)
-does three things:
+does four things:
 
 - calls `useRenderingBackend(factory, model)`, so the backend hook lives in
   exactly one place,
 - branches on `model.displayPhase`, whose precedence is computed by
   `computeDisplayPhase` (`packages/render-core/src/displayPhase.ts`),
-- hands `{ canvasRef, canvas }` to the body via a render-prop child.
+- binds the pointer handlers, since it owns the element a position is measured
+  against,
+- hands `{ canvasRef, canvas, mouseTracker }` to the body via a render-prop
+  child.
 
 It is two files, split exactly where the backend stops mattering.
 `DisplayChromeBase` holds the hook and the `renderError` branch;
@@ -97,9 +104,46 @@ Every GPU display follows one shape:
 </DisplayChrome>
 ```
 
-The thin outer owns the chrome, plus any hook bound to its container ref (maf's
-drag-select, alignments' mouse tracking). The named observer body owns the canvas
+The thin outer owns the chrome, plus any hook that needs a ref to its container
+(maf's drag-select, the only one left). The named observer body owns the canvas
 and overlays, so observable reads scope to the body rather than the chrome.
+
+## The pointer position is published, never held
+
+The chrome binds `onMouseMove`/`onMouseLeave` itself and puts `mouseTracker` in
+the handle. Nine displays used to call `useMouseTracking` and wire three props
+each, and **the rule that keeps it cheap — publish the position, never hold it
+above the chrome — survived only as an identical comment copied into eight of
+them**, one of which (alignments) had already dropped `onMouseLeave`. Holding it
+at chrome level costs a whole display's chrome re-rendering because the cursor
+moved a pixel: the chrome (re-running `useRenderingBackend`), the status
+container with a fresh inline `style` object, every overlay, and only then the
+body that wanted the coordinate. Owning the measurement makes the rule
+structural rather than remembered — there is no position at that level to hold.
+
+- **Read it in the body**, with `useMouseState(mouseTracker)`, in the smallest
+  component that draws the cursor-following thing. That is what the per-display
+  `CrosshairLayer`/`PointerLayer` components are for; passing the tracker down is
+  free, passing the position down is the bug.
+- **A display that hit-tests as the cursor moves passes `onPointerPosition`**,
+  so its hit comes off the same single measurement as its guides. Named for the
+  measured position, not `onPointerMove`, which collides with React's DOM
+  handler on the spread div props and silently widens the callback's parameter
+  type.
+- **Caller `onMouseMove`/`onMouseLeave` are composed, not replaced.** Overriding
+  a caller's handler would surface only as maf's drag quietly not dragging.
+- **The measurement is off `event.currentTarget`**, which is the chrome
+  container — so there is no ref to pass, no way to bind the handlers and the
+  measured box to different elements, and a caller's own `ref` needs no merging.
+  `wiggleMouseHandlers`' click path resolves its hit the same way, from the
+  click rather than from a hover a previous frame recorded (the viewport moves
+  under a stationary cursor).
+- **A portaled overlay still bubbles its React events to the container** even
+  though its DOM node is not a descendant, so the position would be measured
+  against a box the pointer is not in. `useMouseTracking` treats that as a leave
+  — the guides should drop rather than freeze. HiC guarded this by hand for its
+  resolution dropdown; it is a hazard for every display with a portaled overlay,
+  so the guard is universal.
 
 ## Adoption map
 
@@ -518,7 +562,7 @@ restated in the `DisplayChrome.tsx` comment block.
   doesn't subscribe to the view's churning `visibleRegions`/`loadedRegions`.
 - **Early `return` vs ternary (style):** once a correctness constraint, because
   react-compiler could memoize a MobX read on `model`'s stable identity. Not one
-  since `DisplayChromeInner` took `'use no memo'` —
+  since `DisplayChromeBaseInner` took `'use no memo'` —
   [COMPILER_TERNARY_FINDING.md](COMPILER_TERNARY_FINDING.md).
 
 Full "why" for the tree-shape rule: ARCHITECTURE.md §"Terminal states early-return

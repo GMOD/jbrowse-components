@@ -54,31 +54,30 @@ const getServerSnapshot = () => undefined
  * Container-relative mouse position for the overlays that follow the pointer
  * (`Crosshairs`, tooltips), coalesced to one update per frame.
  *
- * Bind the handlers and the ref to the same element — the position is measured
- * against that element's box, which is what the overlays are positioned in. A
- * display that also hit-tests takes `onMove`, so its hit and its guides come off
- * one measurement in one frame instead of two pointer paths that have to agree.
+ * The position is measured against the box of whatever element the handlers are
+ * bound to, which is what the overlays are positioned in — off `currentTarget`,
+ * so there is no ref to pass and no way to bind the two to different elements.
+ * A display that also hit-tests takes `onMove`, so its hit and its guides come
+ * off one measurement in one frame instead of two pointer paths that have to
+ * agree.
  *
  * **It returns a `mouseTracker` rather than the position, and that is the
- * load-bearing part.** The handlers get bound to the chrome container, so the
- * component that calls this hook is the one *above* `DisplayChrome` — and if the
- * position were state here, every mouse move would re-render `DisplayChrome`,
- * `DisplayChromeBase` (which re-runs `useRenderingBackend`), the status
- * container with a fresh inline `style` object, all three overlays, and only
- * then the body that actually wanted the coordinate. That is a whole display's
- * chrome repainting because the cursor moved a pixel over it; it cost a full
- * document `Layout` plus three `Paint`s per mousemove on the wiggle displays,
- * and every consumer of this hook had it.
+ * load-bearing part.** Its one caller is `DisplayChromeBase`, which owns the
+ * container the handlers bind to — so if the position were state here, every
+ * mouse move would re-render the chrome itself (re-running
+ * `useRenderingBackend`), the status container with a fresh inline `style`
+ * object, all three overlays, and only then the body that actually wanted the
+ * coordinate. That is a whole display's chrome repainting because the cursor
+ * moved a pixel over it; it cost a full document `Layout` plus three `Paint`s
+ * per mousemove on the wiggle displays, back when each display called this hook
+ * itself and every one of them had it.
  *
  * So the position is published instead, and whoever wants it calls
  * `useMouseState(mouseTracker)` — from inside the chrome's body, where the
  * overlays live. Re-rendering then starts at the component that reads it.
  * Passing the tracker down a prop is free; passing `mouseState` down is the bug.
  */
-export function useMouseTracking(
-  ref: React.RefObject<HTMLDivElement | null>,
-  onMove?: (state?: MouseState) => void,
-) {
+export function useMouseTracking(onMove?: (state?: MouseState) => void) {
   const rafRef = useRef<ReturnType<typeof requestAnimationFrame> | undefined>(
     undefined,
   )
@@ -112,9 +111,15 @@ export function useMouseTracking(
     }
     const clientX = event.clientX
     const clientY = event.clientY
+    // Captured here rather than read in the frame: React clears `currentTarget`
+    // once the handler returns. `isConnected` then stands in for the ref check
+    // this used to do — a display unmounted between the move and the frame
+    // measures as a zero rect, and would publish the client point as if the
+    // pointer were at the origin of a box that is gone.
+    const container = event.currentTarget
     rafRef.current = requestAnimationFrame(() => {
-      const rect = ref.current?.getBoundingClientRect()
-      if (rect) {
+      if (container.isConnected) {
+        const rect = container.getBoundingClientRect()
         const state = {
           x: clientX - rect.left,
           y: clientY - rect.top,
