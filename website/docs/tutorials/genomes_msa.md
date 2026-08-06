@@ -104,8 +104,8 @@ through to the BLAST tab.
 
 ## See also
 
-- [Synteny on genomes.jbrowse.org](/docs/tutorials/genomes_synteny) for the
-  other hosted click-path on the same site
+- [](/docs/tutorials/genomes_synteny), the other hosted click-path on the same
+  site
 - [](/docs/user_guides/gene_track)
 - [](/docs/user_guides/plugin_store)
 - [react-msaview](https://gmod.org/JBrowseMSA/), the viewer this plugin embeds

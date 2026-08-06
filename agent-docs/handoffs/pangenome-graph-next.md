@@ -23,8 +23,8 @@ bundle in the three fixtures predates it. Bump the pin and regenerate the graph
 figures in the same commit, per §2.
 
 Durable spillover from §5 lives outside this file and should not be copied back
-in: the wasm string-decode defect it turned up is `gmod/bgzf-filehandle`
-`agent-docs/adr/0002` (same fix in `bbi-js`), and the jsdom blindness that hid
+in: the wasm string-decode defect it turned up is ADR 0002 in the
+`gmod/bgzf-filehandle` repo (same fix in `bbi-js`), and the jsdom blindness that hid
 that whole class is enforced by `config/jest/textEncoder.js` in this repo.
 
 The view is a third-party plugin,

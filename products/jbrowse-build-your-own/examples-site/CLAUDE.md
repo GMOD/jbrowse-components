@@ -14,12 +14,12 @@ helpers. Check with:
 grep "from '\./\|from '\.\./" src/examples/*.tsx
 ```
 
-**Do not factor the shared parts out.** Pulling `TrackRow`, `isViewReady`,
-`ZoomHint` and the engine setup into a `src/browser/` module is the obvious
-tidy-up, it makes the site pleasant to maintain, and it destroys the product:
-every page's source becomes a list of paths the reader cannot resolve. This site
-was built that way first and rewritten. A second `?raw` code block showing the
-helper is not a fix. It is the admission that the first block was incomplete.
+**Do not factor the shared parts out.** Pulling `TrackRow`, `ZoomHint` and the
+engine setup into a `src/browser/` module is the obvious tidy-up, it makes the
+site pleasant to maintain, and it destroys the product: every page's source
+becomes a list of paths the reader cannot resolve. This site was built that way
+first and rewritten. A second `?raw` code block showing the helper is not a fix.
+It is the admission that the first block was incomplete.
 
 **There is one other way out, and it is the good one: publish the block.** A
 repeated block falls into two kinds, and only one of them is this site's
