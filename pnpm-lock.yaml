@@ -2126,6 +2126,9 @@ importers:
       jsdom:
         specifier: ^30.0.1
         version: 30.0.1(canvas@3.2.3)
+      mobx:
+        specifier: ^7.0.0
+        version: 7.0.0
       mobx-react:
         specifier: ^10.0.0
         version: 10.0.0(mobx@7.0.0)(react@19.2.8)

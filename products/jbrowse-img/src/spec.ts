@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 
-import { modeDescriptors, viewModes } from './modes.ts'
+import { viewTypeModes } from './modes.ts'
 import { STDIN_ARG, readStdin } from './util.ts'
 
 import type { ViewMode } from './modes.ts'
@@ -39,22 +39,11 @@ export function parseSpec(spec: string): ViewSpec {
   return view as ViewSpec
 }
 
-// Inverse of modeDescriptors[mode].viewType: maps a --spec view `type` to the
-// render mode. Built from the single mode table so a new view type is wired in
-// one place.
-const specTypeToMode: Record<string, ViewMode> = {}
-for (const mode of viewModes) {
-  const { viewType } = modeDescriptors[mode]
-  if (viewType) {
-    specTypeToMode[viewType] = mode
-  }
-}
-
 export function specMode(spec: ViewSpec): ViewMode {
-  const mode = specTypeToMode[spec.type]
+  const mode = viewTypeModes.get(spec.type)
   if (!mode) {
     throw new Error(
-      `unsupported view type in --spec: ${spec.type} (supported: ${Object.keys(specTypeToMode).join(', ')})`,
+      `unsupported view type in --spec: ${spec.type} (supported: ${[...viewTypeModes.keys()].join(', ')})`,
     )
   }
   return mode

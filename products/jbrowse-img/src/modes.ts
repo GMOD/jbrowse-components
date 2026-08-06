@@ -52,3 +52,18 @@ export function subcommandMode(token: string) {
 export const subcommandTokens = viewModes.map(
   mode => modeDescriptors[mode].subcommand,
 )
+
+// Inverse of modeDescriptors[mode].viewType: MST view type -> mode. Used by
+// --spec to pick its renderer, and to point a user at the right subcommand when
+// a --session carries a view the mode they asked for can't draw.
+export const viewTypeModes = new Map(
+  viewModes.flatMap(mode => {
+    const { viewType } = modeDescriptors[mode]
+    return viewType ? ([[viewType, mode]] as const) : []
+  }),
+)
+
+export function subcommandForViewType(viewType: string) {
+  const mode = viewTypeModes.get(viewType)
+  return mode && modeDescriptors[mode].subcommand
+}

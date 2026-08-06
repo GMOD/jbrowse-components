@@ -3,12 +3,11 @@ import { fileURLToPath } from 'node:url'
 
 import type { Module } from 'node:module'
 
-// ESM resolve hooks installed by bin.ts before the heavy module graph loads.
-// Two rewrites, both fixing resolutions that bundlers do for free and raw
-// `node` does not.
-//
-// Kept in sync with src/integrationResolve.mjs (the node:test equivalent, which
-// must stay hand-authored .mjs so the loader thread can read it pre-build).
+// The two ESM resolve rewrites this CLI needs, both fixing resolutions that
+// bundlers do for free and raw `node` does not. bin.ts installs them as
+// synchronous in-thread hooks before the heavy module graph loads;
+// integrationResolve.mjs wraps the same two for the node:test loader thread,
+// which needs the async hook signature.
 
 // (1) @mui/material's `internal/Transition.mjs` deep-imports the bare subpath
 // `react-transition-group/TransitionGroupContext`. That subpath is a directory
@@ -16,7 +15,7 @@ import type { Module } from 'node:module'
 // Node's ESM loader rejects it with ERR_UNSUPPORTED_DIR_IMPORT. Rewrite the
 // react-transition-group subpath dirs to their real ESM file, resolved relative
 // to the importer so each installed copy keeps its own colocated package.
-function transitionGroup(specifier: string) {
+export function transitionGroup(specifier: string) {
   const m = /^react-transition-group\/([A-Za-z]+)$/.exec(specifier)
   return m ? `react-transition-group/esm/${m[1]}.js` : specifier
 }
@@ -61,7 +60,7 @@ const staleReported = new Set<string>()
 // switch, a checkout). Failing there would demand a rebuild that then changes
 // nothing. A warning names the package, which is enough to explain a figure
 // that didn't pick up a change.
-function builtUrl(url: string) {
+export function builtUrl(url: string) {
   const m = SRC_PATH.exec(url)
   if (!m) {
     return undefined

@@ -50,6 +50,7 @@
     "@types/jsdom": "^28.0.3",
     "canvas": "^3.2.3",
     "jsdom": "^30.0.1",
+    "mobx": "^7.0.0",
     "mobx-react": "^10.0.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",

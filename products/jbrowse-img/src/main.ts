@@ -69,12 +69,7 @@ async function main() {
   const mode = isSubcommand ? subcommandMode(first) : undefined
   const args = isSubcommand ? argv.slice(1) : argv
 
-  // `list` is a text-only discovery command (no rendering), so it's handled
-  // ahead of the render path: `list` prints hosted assemblies, `list <hub>
-  // [filter]` prints that hub's tracks.
-  if (first === 'list') {
-    console.log(await runList(argv.slice(1)))
-  } else if (isSubcommand && !mode) {
+  if (isSubcommand && !mode && first !== 'list') {
     console.error(
       `Unknown subcommand "${first}". Known subcommands: ${subcommandTokens.join(', ')}, list`,
     )
@@ -84,7 +79,13 @@ async function main() {
     args.includes('--help') ||
     args.includes('-h')
   ) {
+    // ahead of `list`, so `jb2export list --help` prints help rather than going
+    // to the network for a hub literally named "--help"
     console.log(buildHelp(scriptName, trackTypes, syntenyTrackTypes, mode))
+  } else if (first === 'list') {
+    // a text-only discovery command (no rendering): `list` prints the hosted
+    // assemblies, `list <hub> [filter]` prints that hub's tracks
+    console.log(await runList(argv.slice(1)))
   } else if (args.includes('--version') || args.includes('-v')) {
     const { version } = JSON.parse(
       fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8'),

@@ -17,6 +17,7 @@ import {
   resolveTrackId,
 } from './applyTrackOpts.ts'
 import { dotplotInit, syntenyInit } from './comparativeInit.ts'
+import { subcommandForViewType } from './modes.ts'
 import { DEFAULT_FONT_FAMILY, DEFAULT_WIDTH } from './options.ts'
 import { readData } from './readData.ts'
 import { resolveConfigObject } from './resolveHub.ts'
@@ -204,13 +205,6 @@ function throwOnDisplayError(tracks: { displays: { error?: unknown }[] }[]) {
   }
 }
 
-// Backstop for a view whose init autorun never completes AND never reports an
-// error (a promise inside it that neither resolves nor rejects). Generous
-// because init only awaits assembly load + navigation + track attach — the
-// feature-data fetch happens later in renderToSvg — so a legitimate render
-// clears `init` well under this, while a true hang no longer runs forever.
-const INIT_TIMEOUT_MS = 120_000
-
 interface InitView {
   setWidth: (n: number) => void
   initialized: boolean
@@ -232,20 +226,18 @@ interface InitView {
 // `init.highlight` to place. Rendering there would emit a positioned view with
 // its tracks missing. `init` is cleared only once the whole pass is done, which
 // is the question this is actually asking.
+//
+// Deliberately unbounded. A time limit here can only mislabel a stuck fetch as
+// "the view didn't initialize", and the same reasoning already removed the 60s
+// bound from core's awaitSvgReady: if a view can reach a state where neither
+// disjunct ever becomes true, that view's init is the bug, not this wait.
 async function whenViewReady(view: InitView, session: RenderErrorSources) {
   await when(
     () =>
       (view.initialized && !view.init) ||
       firstRenderError(session) !== undefined,
-    { timeout: INIT_TIMEOUT_MS },
-  ).catch(() => {
-    // swallow the timeout rejection; the checks below turn an unresolved init
-    // into a descriptive error
-  })
+  )
   throwOnRenderError(session)
-  if (view.init) {
-    throw new Error(`view did not initialize within ${INIT_TIMEOUT_MS / 1000}s`)
-  }
 }
 
 // Shared lifecycle for the self-initializing views (dotplot/synteny/circular):
@@ -284,12 +276,31 @@ async function readyView<T extends InitView>(view: T, ctx: ModeContext) {
   return view
 }
 
+// session.views[] elements are typed `any` (pluggableMstType), so the view-type
+// discriminator is read through this rather than off `any`.
+function sessionViewType(session: Model['session']): string | undefined {
+  return session.views[0]?.type
+}
+
+// The view to render: the one a --session/--defaultSession supplied, if it is of
+// this type, else one built from `init`.
+//
+// `--session` is listed in every subcommand's help, but only renderLinear ever
+// adopted the view it carried — dotplot/synteny/circular each added a SECOND
+// view from CLI flags and rendered that, so a saved synteny session exported a
+// view the user never arranged. `--spec` is the opposite case: it describes a
+// view to construct, so it wins over whatever the session holds.
 async function addInitView<T extends InitView>(
   ctx: ModeContext,
   viewType: string,
   init: SpecInit | DotplotViewInit | LinearSyntenyViewInit | CircularViewInit,
 ) {
-  return readyView(ctx.model.session.addView(viewType, { init }) as T, ctx)
+  const { session } = ctx.model
+  const existing =
+    !ctx.spec && sessionViewType(session) === viewType
+      ? session.views[0]
+      : session.addView(viewType, { init })
+  return readyView(existing as T, ctx)
 }
 
 const renderLinear: ModeRenderer = async ctx => {
@@ -305,6 +316,16 @@ const renderLinear: ModeRenderer = async ctx => {
   } = opts
 
   const { session } = model
+  // A session can hold any view type, and this renderer draws only an LGV;
+  // casting whatever it holds died several statements later on
+  // `view.displayedRegions.length` (a dotplot has no such field), which reads as
+  // a corrupt session rather than the wrong subcommand.
+  const suppliedType = sessionViewType(session)
+  if (suppliedType !== undefined && suppliedType !== 'LinearGenomeView') {
+    throw new Error(
+      `the ${sessionParam ? '--session' : 'defaultSession'} holds a ${suppliedType}; render it with "jb2export ${subcommandForViewType(suppliedType) ?? '<subcommand>'}"`,
+    )
+  }
   // Adopted from the session when one supplied a view, else synthesized. Either
   // way it goes through readyView, so an `init` the session carried is applied
   // before anything below reads the view's position — and before `--loc`, which
@@ -499,7 +520,7 @@ const renderCircular: ModeRenderer = async ctx => {
 // leave the non-linear direction silent.
 function warnLinearOnlyOptions(mode: ViewMode, opts: Opts) {
   if (mode === 'linear') {
-    return []
+    return
   }
   const ignored = [
     opts.showTracks?.length ? '--track' : '',
@@ -511,7 +532,6 @@ function warnLinearOnlyOptions(mode: ViewMode, opts: Opts) {
       `Warning: ${ignored.join(', ')} ${ignored.length > 1 ? 'have' : 'has'} no effect on a ${mode} view`,
     )
   }
-  return ignored
 }
 
 // Registry of every render mode. The exhaustive Record means adding a ViewMode
