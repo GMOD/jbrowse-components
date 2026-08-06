@@ -295,6 +295,50 @@ tolerance ball for "did this figure move".
   inside the display rather than below the fold. Long item labels ellipsize
   rather than wrap, so the tail of a label is lost silently too. Look at the
   legend after a change that adds to it.
+- **A Hi-C figure's locus should be scored out of the call files, not picked.**
+  `scripts/hic_pick_loop.py` (new) ranks every 250-900 kb Arrowhead domain by
+  the strongest HiCCUPS loop sitting on its two corners, which is the pair worth
+  drawing: the domain, the arc and the block in the matrix are then one object
+  seen three ways. 1,142 GM12878 domains carry such a loop. Its `--window` mode
+  prints what a candidate frame contains, which is the check that matters — a
+  domain crossing the frame edge draws as a bar rather than a box, and a loop
+  with one anchor outside adds an arc going nowhere. That is what the old chr18
+  window of `hic/loops_and_domains` was: four edge-to-edge bars and a forty-arc
+  fan (review: "where is the 'logic'?").
+- **`LinearPairedArcDisplay` has no filter slot, so colour is the filter.**
+  `color: "jexl:get(feature,'observed')>200?'#8b1a1a':'rgba(0,0,0,0)'"` draws
+  the weak calls fully transparent. Used in `hic/loops_and_domains` to drop the
+  calls whose other anchor is off-frame.
+- **A raw matrix cannot argue for compartments, so don't spend a lane on it.**
+  `hic/compartment_switch` carried a 300 px squashed matrix under four lanes
+  that state the answer outright, and the guide's own paragraph says why it
+  could not work (compartments only become a checkerboard in an
+  observed/expected matrix, which JBrowse does not compute). Dropping it and
+  narrowing 10 Mb to 4 Mb is what made the 100 kb subcompartment strips read as
+  blocks rather than as noise (review: "there is too much going on in this
+  image").
+- **The 1000 Genomes copy-number Zarr is per-window, and adding a window is
+  cheap.** `scripts/build_1000g_cnv_zarr.sh` lists the regions it builds; adding
+  one re-runs in well under a minute for 2504 samples and appends columns, so
+  the existing chunks stay byte-identical and figures on the old windows do not
+  move. That is how `multisv_rhd` got a depth lane under the callset (review:
+  "the nested cnv are hard to see with vcf"). A figure that needs the Zarr
+  plugin has to load `test_data/1000g_cnv/config.json`, since a plugin can only
+  be declared by a config — the callset then comes in as session tracks.
+- **A clustered display needs `data-clustered=true` waited on, not a settle.**
+  `multisv_rhd`'s first render came back mid-clustering with a "Clustering
+  samples 62%" overlay and the rows in panel order. The attribute rides on the
+  same element as the first-paint testid, so
+  `[data-testid="multi-wiggle-display-done"][data-clustered="true"]` as a
+  `waitForSelector` action (with its own `timeout`) is the gate.
+- **hgdownload can fail INSIDE the browser while `curl` from the same box gets
+  200s.** Three consecutive renders of `pangenome/hprc_chm13_allele` drew the
+  hs1 RepeatMasker lane as an error banner (360 MB bigBed, repeated ranged
+  reads, plausibly throttling) while `curl -I -H Range:` returned 206 with
+  `Access-Control-Allow-Origin: *`. That spec sets `allowUnsettled: true`, so
+  the run SUCCEEDS and commits the banner — check the lane before committing any
+  figure of that page, and restore the committed PNG rather than shipping one
+  with a banner in it.
 - **Point at a graph node by NAME, never by pixel.**
   `anchor: { view, graphNode: 's2037' }` works on a click, a rightclick, a hover
   and on any annotation; it resolves through the view's own `nodePositions` and
@@ -617,6 +661,26 @@ Making the deletion legible is a product change (a per-haplotype presence
 channel), not a spec edit.
 
 ## Open plugin work
+
+- **`paneHeight` is committed in the plugin and NOT PUBLISHED** (plugin commit
+  `449bae4`, 2026-08-06). A `GraphGenomeView` session prop that replaces
+  `MAX_CANVAS_HEIGHT` for that view, with the `MIN_CANVAS_HEIGHT` hover floor
+  still winning; three tests in `model.test.ts`. It exists because the pane is
+  as tall as the drawing's aspect ratio, which one very long node makes all arc:
+  `pangenome/hprc_chm13_allele` pins the 600 px ceiling and spends most of it on
+  a 142 kb loop (review: "we might want to consider ways to reduce height of the
+  graph genome viewer"). Rendered against a local plugin build at
+  `paneHeight: 420`: the drawing goes 24.6% to 16.1%, the boxed arc is still
+  what the eye lands on, the chain stays legible, 180 px back. **After the next
+  `betabuild`, the spec edit is one line** — `paneHeight: 420` on that figure's
+  `GraphGenomeView` — and the figure's `viewportHeight` drops from 1495 to
+  ~1315. Do not add it before the publish: the hosted bundle has no such prop.
+- **`bubbleSpread: 'compress'` is not a height fix, and was tried on that same
+  figure.** It does shorten the arc, and the result is worse: the subject node
+  becomes a ~20 px box at the end of a long thin chain and the annotation box
+  marking it becomes the most prominent thing in the pane. The setting is for a
+  cut spanning kb and bp whose SHAPE is the subject, which is what its
+  description says.
 
 - **A launch's tracks are the assembly's annotation, and only for the single
   view.** `launchTracks` scans the session for FeatureTracks on the assembly
