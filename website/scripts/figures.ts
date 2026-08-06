@@ -303,7 +303,18 @@ function push() {
   // Only after every blob is in the store. No CloudFront invalidation: these
   // keys are new, and a content-addressed key is never re-served with different
   // bytes, so there is nothing cached to be stale.
-  writeFileSync(manifestPath, formatManifest(entries))
+  //
+  // Skipped when the bytes would be identical. Rewriting regardless is
+  // harmless to git's content comparison but it moves the mtime, which leaves
+  // figures.lock reading as ` M` in `git status` with an empty `git diff` — and
+  // in a worktree several agents share, a file that looks modified but has no
+  // diff is precisely what gets swept into somebody else's commit.
+  const next = formatManifest(entries)
+  if (readFileSync(manifestPath, 'utf8') === next) {
+    console.log(`figures.lock already matches (${entries.length} figures)`)
+    return
+  }
+  writeFileSync(manifestPath, next)
   console.log(
     `wrote figures.lock (${entries.length} figures)\n` +
       'Commit it — that diff is the record of what moved.',
