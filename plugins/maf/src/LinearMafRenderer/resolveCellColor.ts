@@ -28,6 +28,11 @@ import { DASH, LOWER_BIT, SPACE } from '../util/asciiBytes.ts'
  */
 const SHOW_ALL_NO_MISMATCH_FALLBACK = 'lightblue'
 
+// Only ever used as stand-in reference bytes while filling `packedByRefAln`.
+const LOWER_A = 97
+const UPPER_A = 65
+const UPPER_C = 67
+
 export interface MafCellColorConfig {
   /** A/C/G/T/N → hex, derived from `theme.palette.bases`. */
   colorForBase: Record<string, string>
@@ -119,7 +124,7 @@ export function resolveCellColor(
  * `buildInstanceBuffer` call via `packMafCellColorConfig`; the GPU hot loop
  * does a direct byte→packed-int lookup (no Map.get, no String allocation).
  */
-export interface MafCellPackedConfig {
+export interface MafCellPackedColors {
   /**
    * Indexed by lowercase ASCII byte. Pre-filled with `unknownBase` so the
    * hot loop needs no fallback branch on miss. Known bases (a/c/g/t/n/u
@@ -132,6 +137,57 @@ export interface MafCellPackedConfig {
   showAllNoMismatchFallback: number
   showAllLetters: boolean
   mismatchRendering: boolean
+}
+
+export interface MafCellPackedConfig extends MafCellPackedColors {
+  /**
+   * `resolveCellPacked` memoized over its whole input domain, indexed
+   * `(refByte << 8) | alnByte`. Both inputs are `Uint8Array` elements, so that
+   * is 65536 entries — 256KB. It buys the encoder one array read per cell in
+   * place of `classifyCell`'s branch cascade plus the five-way mapping after it,
+   * which is worth doing because the encoder runs on the *main thread* over
+   * every base of every row: 3.3x, 16ns → 6ns a cell, interleaved A/B over 2M
+   * cells.
+   *
+   * Resolving all 65536 entries through the cascade is what would make that a
+   * bad trade — 1.3-2ms of it on every encode, only earned back past ~78k cells,
+   * so a narrow viewport would pay for a table it never amortizes. Hence the
+   * memcpy build below, which lands the same table in ~0.2ms; breakeven drops to
+   * ~19k cells, under a single 26-way screenful.
+   *
+   * Unsigned, so it cannot hold `RESOLVE_PACKED_SKIP`: a packed ABGR is a full
+   * uint32, and as a signed int the pure-white `0xffffffff` *is* -1. Keeping the
+   * table unsigned and testing for the skip case outside it is what stops an
+   * unknown base in a white-on-dark theme from reading as "don't draw".
+   */
+  packedByRefAln: Uint32Array
+}
+
+/** The branch cascade, run only while filling the table above. */
+function resolvePackedUncached(
+  refByte: number,
+  alnByte: number,
+  cfg: MafCellPackedColors,
+) {
+  const category = classifyCell(
+    refByte,
+    alnByte,
+    cfg.showAllLetters,
+    cfg.mismatchRendering,
+  )
+  let packed = 0
+  if (category === CellCategory.Gap) {
+    packed = cfg.gap
+  } else if (category === CellCategory.Match) {
+    packed = cfg.match
+  } else if (category === CellCategory.ShowAllNoMismatch) {
+    packed = cfg.showAllNoMismatchFallback
+  } else if (category === CellCategory.MismatchOff) {
+    packed = cfg.mismatchOff
+  } else if (category === CellCategory.Base) {
+    packed = cfg.packedByLowerByte[(alnByte | LOWER_BIT) & 0x7f]!
+  }
+  return packed
 }
 
 export function packMafCellColorConfig(
@@ -147,7 +203,7 @@ export function packMafCellColorConfig(
       packedByLowerByte[code] = cssColorToABGR(css)
     }
   }
-  return {
+  const colors: MafCellPackedColors = {
     packedByLowerByte,
     match: cssColorToABGR(cfg.matchColor),
     gap: cssColorToABGR(cfg.gapColor),
@@ -156,6 +212,29 @@ export function packMafCellColorConfig(
     showAllLetters: cfg.showAllLetters,
     mismatchRendering: cfg.mismatchRendering,
   }
+  // Every row of the table is the same 256 entries — one per aligned byte, all
+  // of them mismatching — except the two that case-fold equal to that row's
+  // reference. So resolve the mismatch row once and stamp it per reference with
+  // `set`, which is a memcpy.
+  const mismatchRow = new Uint32Array(256)
+  for (let alnByte = 0; alnByte < 256; alnByte++) {
+    // `A` mismatches every aligned byte except an A, where `C` does. Neither is
+    // `-`, so neither strays into the skip branch.
+    const differingRef = (alnByte | LOWER_BIT) === LOWER_A ? UPPER_C : UPPER_A
+    mismatchRow[alnByte] = resolvePackedUncached(differingRef, alnByte, colors)
+  }
+  const packedByRefAln = new Uint32Array(256 * 256)
+  for (let refByte = 0; refByte < 256; refByte++) {
+    const row = refByte << 8
+    packedByRefAln.set(mismatchRow, row)
+    // The aligned bytes matching this reference are exactly the two that differ
+    // from it in bit 5 alone.
+    const lower = refByte | LOWER_BIT
+    const upper = refByte & ~LOWER_BIT
+    packedByRefAln[row | lower] = resolvePackedUncached(refByte, lower, colors)
+    packedByRefAln[row | upper] = resolvePackedUncached(refByte, upper, colors)
+  }
+  return { ...colors, packedByRefAln }
 }
 
 /** Sentinel meaning "skip this cell" (reference insertion). Negative so it
@@ -167,23 +246,12 @@ export function resolveCellPacked(
   alnByte: number,
   cfg: MafCellPackedConfig,
 ): number {
-  const category = classifyCell(
-    refByte,
-    alnByte,
-    cfg.showAllLetters,
-    cfg.mismatchRendering,
-  )
+  // The one case the table cannot carry — see `packedByRefAln`. A predictable
+  // branch in the hot loop, which never reaches it: `colForGpos` holds only
+  // columns with a genomic position, and a `-` reference column has none.
   let packed = RESOLVE_PACKED_SKIP
-  if (category === CellCategory.Gap) {
-    packed = cfg.gap
-  } else if (category === CellCategory.Match) {
-    packed = cfg.match
-  } else if (category === CellCategory.ShowAllNoMismatch) {
-    packed = cfg.showAllNoMismatchFallback
-  } else if (category === CellCategory.MismatchOff) {
-    packed = cfg.mismatchOff
-  } else if (category === CellCategory.Base) {
-    packed = cfg.packedByLowerByte[(alnByte | LOWER_BIT) & 0x7f]!
+  if (refByte !== DASH) {
+    packed = cfg.packedByRefAln[(refByte << 8) | alnByte]!
   }
   return packed
 }
