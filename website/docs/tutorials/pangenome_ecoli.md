@@ -212,7 +212,7 @@ paralogy a pairwise PAF has no way to express.
 printf 'K12#1#chr\n' > target.txt
 printf 'Sakai#1#chr\nCFT073#1#chr\nNCTC86#1#chr\nIAI39#1#chr\n' > query.txt
 in_pggb odgi untangle -i "/data/$og" \
-  -R /data/target.txt -Q /data/query.txt -m 1000 -j 0.5 -p -t "$(nproc)" \
+  -R /data/target.txt -Q /data/query.txt -m 1000 -j 0.5 -e 5000 -p -t "$(nproc)" \
   > ecoli_pggb_untangle.paf
 jbrowse make-pif ecoli_pggb_untangle.paf
 ```
@@ -224,18 +224,38 @@ jaccard over graph steps rather than a base alignment, so fill column 10 from
 its own `id:f:` tag before indexing or every block reads as 0% identity. The
 build script does that in one `awk` pass.
 
-Expect coarser blocks than the PAF gives. untangle starts a segment where the
-graph stops agreeing, and on a near-colinear bacterial pangenome that is rare,
-so a pair collapses to a handful of long blocks. `-e` forces a boundary every N
-bp of the sorted graph if you want a finer grid; the
+`-e` is the one to think about. untangle starts a segment where the graph stops
+agreeing, and on a near-colinear bacterial pangenome that is rare, so without it
+this graph gives a few dozen blocks per pair and every ribbon spans its frame.
+`-e` forces a boundary every N bp of the sorted graph instead, which is what
+makes both figures below readable, and it costs a couple of minutes. It is not
+free: the cut is baked into the file and cannot be undone downstream, so on a
+graph with many haplotypes, where untangle finds plenty of boundaries by itself,
+leave it off. The
 [Minigraph-Cactus tutorial](/docs/tutorials/pangenome_cactus#all-vs-all-synteny-projection)
 hits the same limit from the other direction and uses `halSynteny` instead.
 
-Load it exactly like the track above, with its own `trackId`. One difference
-matters when you stack it: untangle projects queries onto a **target** path, so
-every record has K12 on one side, where the wfmash PAF is genuinely all-vs-all.
-Put the reference between the strains you want to compare rather than at the top
-of the stack, or the bands between two non-reference rows have nothing to draw.
+Load it as its own `SyntenyTrack`, the same adapter as the wfmash track above:
+
+```json addtrack
+{
+  "type": "SyntenyTrack",
+  "trackId": "ecoli_pggb_untangle",
+  "name": "pggb graph: synteny from the graph (odgi untangle)",
+  "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"],
+  "adapter": {
+    "type": "AllVsAllIndexedPAFAdapter",
+    "uri": "ecoli_pggb_untangle.pif.gz",
+    "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"]
+  }
+}
+```
+
+One difference matters when you stack it: untangle projects queries onto a
+**target** path, so every record has K12 on one side, where the wfmash PAF is
+genuinely all-vs-all. Put the reference between the strains you want to compare
+rather than at the top of the stack, or the bands between two non-reference rows
+have nothing to draw.
 
 Whole-genome, the result is the near-colinear diagonals the wfmash figure
 already shows. Where the two files part company is a repeat. Find one by looking
@@ -246,10 +266,11 @@ zcat ecoli_pggb_untangle.pif.gz | awk -F'\t' 'substr($1,1,1)=="q"' \
   | cut -f1,3,4,8,9 | sort -k4,4n
 ```
 
-In this graph that is `chr:3,941,447-3,946,786` on K12, the _rrnC_ operon, where
-Sakai, NCTC86 and IAI39 each land twice. Put the same strain in the rows above
-and below K12, each opened on one of its two copies, and both bands narrow onto
-the one K12 span.
+Two K12 spans come back that way, `chr:3,941,447-3,944,255` and
+`chr:4,169,192-4,171,723`, and Sakai, NCTC86 and IAI39 each reach both of them
+from two places. CFT073 reaches neither twice, which is the control. Put the
+same strain in the rows above and below K12, each opened on one of its two
+copies, and both bands narrow onto the one K12 span.
 
 <Figure caption="Sakai's rrnC operon above K12 and its rrnB operon below, both drawn against the same K12 span. The gene lanes name the two copies (rrsC/gltU/rrlC/rrfC and rrsB/gltT/rrlB/rrfB) and the K12 span they both land on: seqwish collapsed them into one set of nodes, so the graph has one place where the genome has several." src="/img/pangenome/pggb_untangle.png" />
 
@@ -257,9 +278,78 @@ A pairwise PAF has no way to say this. Its records are one query interval
 against one target interval, so a collapsed repeat is either dropped or
 arbitrarily assigned to one copy.
 
+The same file in a [dotplot](/docs/user_guides/dotplot_view) says it without a
+locus to find first, and it needs no extra file: a dotplot reads the same PIF.
+One K12 span reached from two places is two marks sharing an x, and a strain
+running backwards through the reference is a run that descends instead of
+climbing.
+
+<Figure caption="The untangle projection as a dotplot, K12 on x against IAI39 on y. The long descending run between 1 Mb and 2.2 Mb of K12 is an inversion, the detached run at the top right is the rRNA operons the graph collapsed, and everything else is the shared backbone on the diagonal." src="/img/pangenome/pggb_untangle_dotplot.png" />
+
 Untangle is the slower of the two by a wide margin, because it indexes every
 step of every path rather than reading an alignment off disk. On a base-level
 graph budget for it accordingly, or restrict `-Q` to the paths you need.
+
+### One lane per strain, on the K12 axis
+
+A dotplot takes two genomes at a time. The same records drawn as a
+[multi-row feature track](/docs/config/LinearMultiRowFeatureDisplay) put every
+strain on the reference at once, one row each, so orientation becomes something
+you read down a column rather than pair by pair. PAF column 5 is the strand each
+segment traverses the reference in, which is the only column here the variant
+and MAF projections cannot state at all.
+
+`untangle_to_bed.py` projects the PAF onto the per-strain BED schema
+[`build_minigraph_paths.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_minigraph_paths.sh)
+already defines, so this is a second producer of an existing format rather than
+a new one, and the same display config reads both:
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/untangle_to_bed.py
+python3 untangle_to_bed.py ecoli_pggb_untangle.paf chr > ecoli_pggb_untangle_rows.bed
+(head -1 ecoli_pggb_untangle_rows.bed
+ tail -n +2 ecoli_pggb_untangle_rows.bed | sort -k1,1 -k2,2n) | bgzip > rows.bed.gz
+mv rows.bed.gz ecoli_pggb_untangle_rows.bed.gz
+tabix -p bed ecoli_pggb_untangle_rows.bed.gz
+```
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "ecoli_pggb_untangle_rows",
+  "name": "pggb graph: untangle per strain (orientation, vs K12)",
+  "assemblyNames": ["K12"],
+  "adapter": {
+    "type": "BedTabixAdapter",
+    "uri": "ecoli_pggb_untangle_rows.bed.gz"
+  },
+  "displays": [
+    {
+      "type": "LinearMultiRowFeatureDisplay",
+      "partitionField": "strain",
+      "rowOrder": ["Sakai", "CFT073", "NCTC86", "IAI39"],
+      "legend": [
+        { "label": "Same orientation as K12", "color": "rgb(153,153,153)" },
+        { "label": "Inverted", "color": "rgb(214,39,40)" }
+      ]
+    }
+  ]
+}
+```
+
+`partitionField` gives each strain its own row, and the colors are in the file's
+own `itemRgb`, so nothing here can drift from what the file says. The white gaps
+are where a strain has no untangle segment on that stretch of K12 at all, which
+is the same accessory sequence the depth and presence projections below measure.
+
+<Figure caption="odgi untangle over the whole K12 chromosome, one row per strain, grey where the strain runs the same way as K12 and red where it runs backwards. IAI39 is inverted over five long stretches and the other three strains over none, so the comparison and its control are the same picture." src="/img/pangenome/pggb_untangle_rows.png" />
+
+The same inversions are in the synteny figures above as ribbon crossings, but
+only whole-genome and only between the two rows in view. `selfCov` is in the
+popup and carries the other half: above 1 where a segment lands on a reference
+span the same strain also lands on elsewhere, so
+`jexl:feature.selfCov>1` in **Edit filters** cuts the lane to the collapsed
+repeats.
 
 ## Pangenome variants projection
 

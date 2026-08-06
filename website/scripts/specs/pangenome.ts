@@ -177,14 +177,23 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
   // this file draws the same near-colinear diagonals as the wfmash figure above
   // and the difference between the two projections is invisible.
   //
-  // The locus is read off the file, not chosen: K12 chr:3,941,447-3,946,786 is
-  // the only span in ecoli_pggb_untangle.pif.gz that more than one segment of a
-  // query lands on, and three of the four strains do it there —
-  //   zcat ecoli_pggb_untangle.pif.gz | awk -F'\t' 'substr($1,1,1)=="q"'
-  // has Sakai at 4,735,016 and 4,975,690, NCTC86 at 4,313,805 and 4,538,509,
-  // IAI39 at 3,134,233 and 4,546,355, all 5.3-5.4 kb and all onto that one K12
-  // span. It is an rRNA operon: seqwish collapsed the copies into one set of
-  // nodes, so the graph has one place where the genome has several.
+  // The locus is read off the file, not chosen. Two K12 spans are reached from
+  // two distant query loci each, and the same three strains do it at both —
+  //   chr:3,941,447-3,944,255   Sakai 4,735,016 + 4,975,690
+  //                             NCTC86 4,313,805 + 4,538,509
+  //                             IAI39  3,136,192 + 4,546,355
+  //   chr:4,169,192-4,171,723   the same three, ~2.8 kb along each query
+  // CFT073 reaches neither twice, which is the control. This figure takes the
+  // first, the rrnC operon: seqwish collapsed the copies into one set of nodes,
+  // so the graph has one place where the genome has several.
+  //
+  // Those coordinates are the -e 5000 rebuild. The file this spec was first
+  // framed against had no -e, so it was 174 records for all four pairs and the
+  // operon was ONE 5.3 kb block per copy; it is 3,923 records now and the same
+  // copy is two blocks, the second of which lands on the OTHER collapsed span
+  // 228 kb away. That is why the K12 window below is wide enough to hold the
+  // gene context but the wedge only covers part of it: the rest of each Sakai
+  // window points off-screen, at K12's own second rRNA operon.
   //
   // ONE STRAIN, TWICE: Sakai's rrnC copy on top, K12 in the middle, Sakai's
   // rrnB copy underneath. The same assembly fills two rows, each opened on one
@@ -203,13 +212,18 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
   // rrsB/gltT/rrlB/rrfB, so the rows name the two operons the graph folded
   // together, and K12's lane names the one place they both land on.
   //
-  // Window widths are set from the block rather than round: 6.6 kb on the Sakai
-  // rows is the 5.34 kb segment with a flank either side, and 16 kb on K12
-  // leaves it a third of the middle row, so each band is a wedge narrowing onto
-  // the same third of K12 rather than a slab filling its band. The Sakai windows
-  // stop just past their block on purpose — Sakai 4,740,356 onwards continues
-  // colinearly onto K12 3,946,786 onwards, and a window wide enough to include
-  // much of that joins the wedge to a second ribbon that fills the top band.
+  // Window widths are set from the block rather than round: 4.2 kb on the Sakai
+  // rows is the 2.81 kb segment with a ~700 bp flank either side, and 16 kb on
+  // K12 leaves it a sixth of the middle row, so each band is a wedge narrowing
+  // onto the same part of K12 rather than a slab filling its band.
+  //
+  // The Sakai windows were 6.6 kb while the untangle file had no -e and the
+  // operon was ONE 5.34 kb block per copy. At -e 5000 that block is two, and the
+  // second lands on the other collapsed span 228 kb away — off this K12 window —
+  // so a 6.6 kb window drew a wedge over its left half and dead white space over
+  // its right. Trimming to the block that lands here is the fix; the fact that
+  // the rest of the operon points at K12's OTHER rRNA locus is the same collapse
+  // one level up, and the prose says it rather than the picture.
   {
     mode: 'url',
     name: 'pangenome/pggb_untangle',
@@ -220,7 +234,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
           views: [
             {
               assembly: 'Sakai',
-              loc: 'chr:4,734,390-4,740,990',
+              loc: 'chr:4,734,300-4,738,500',
               tracks: [
                 {
                   trackId: 'Sakai_genes',
@@ -242,7 +256,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
             },
             {
               assembly: 'Sakai',
-              loc: 'chr:4,975,060-4,981,660',
+              loc: 'chr:4,974,970-4,979,180',
               tracks: [
                 {
                   trackId: 'Sakai_genes',
@@ -265,6 +279,92 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     readySelector: '[data-testid="synteny_canvas_done"]',
     readyTimeout: 120000,
     settleMs: 15000,
+  },
+
+  // Projection 1c: the same untangle file as one lane per strain on the K12
+  // axis, rather than as ribbons between two genome rows.
+  //
+  // What only this framing shows is ORIENTATION. Column 5 of the untangle PAF is
+  // the strand each query segment traverses the reference in, and a large
+  // inversion is a long contiguous run of them. Measured on the -e 5000 file:
+  // 310 of IAI39's 956 segments are reverse, merging into five runs on K12
+  // (213,443-262,948; 302,899-501,436; 914,963-1,239,923; 1,635,838-2,229,302;
+  // 3,941,447-4,171,723), while Sakai and NCTC86 have zero and CFT073 has one.
+  // So the control is three flat grey rows in the same picture, from the same
+  // file, and the claim is not "the graph has inversions" but "this strain does
+  // and those three do not".
+  //
+  // The synteny figures already carry these as ribbon crossings, but only
+  // whole-genome and only between the two rows in view; here they are placed on
+  // the reference. Independent agreement with the minigraph `--call` route is in
+  // agent-docs/reference/PANGENOME_GRAPHS.md (IAI39-only, one run at
+  // 1,671,139-1,870,074, inside the fourth run above).
+  //
+  // Whole-chromosome and no gene lane, same as the depth and pav figures: at
+  // 4.6 Mb the ~4,300 K12 genes only trip the FeatureTrack too-many-features
+  // gate. The colors come from the BED's own itemRgb (scripts/untangle_to_bed.py)
+  // so nothing here can drift from what the file says.
+  {
+    mode: 'url',
+    name: 'pangenome/pggb_untangle_rows',
+    url: sessionSpec(CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'K12',
+          loc: 'chr:1-4,641,652',
+          tracks: [
+            {
+              trackId: 'ecoli_pggb_untangle_rows',
+              type: 'LinearMultiRowFeatureDisplay',
+              // four strain rows; rowHeight 0 (the default) auto-fits them to
+              // this height, so each is ~55px and a run of red reads as a band
+              height: 240,
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'untangle per strain',
+    readyTimeout: 90000,
+    viewportWidth: 1000,
+    // the 240px lane plus its legend and the view chrome
+    viewportHeight: 450,
+    settleMs: 15000,
+    hideTooltip: true,
+    actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
+  },
+
+  // The same untangle file in a dotplot, which is the idiomatic comparative
+  // picture for both things this projection has to say and needs no new file:
+  // it reads the PIF the synteny track already loads.
+  //
+  // K12 on x against IAI39 on y, whole genome. An inversion is an anti-diagonal
+  // run (IAI39's five, the same ones the per-strain lane places on K12), and a
+  // collapsed repeat is two points sharing an x — one K12 span reached from two
+  // IAI39 loci. Every other figure on the page states one of those two and not
+  // the other.
+  //
+  // IAI39 rather than another strain because it is the one carrying both
+  // signals: 310 of its 956 untangle segments are reverse, and it reaches both
+  // collapsed rRNA spans twice. Sakai or NCTC86 would draw a clean diagonal with
+  // four off-diagonal points, which is the control the lane figure already
+  // carries.
+  {
+    mode: 'url',
+    name: 'pangenome/pggb_untangle_dotplot',
+    url: sessionSpec(CONFIG, {
+      views: [
+        {
+          type: 'DotplotView',
+          tracks: ['ecoli_pggb_untangle'],
+          // x is views[0] (hview), y is views[1] (vview)
+          views: [{ assembly: 'K12' }, { assembly: 'IAI39' }],
+        },
+      ],
+    }),
+    readyTimeout: 120000,
+    settleMs: 20000,
   },
 
   // Projection 4: pangenome depth (core vs accessory) from `odgi depth`, as a

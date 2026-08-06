@@ -64,8 +64,12 @@
 #
 #   - A graph that already carries its haplotypes as W/P lines (pggb, odgi, the
 #     base-level Minigraph-Cactus graph) does not need the assemblies at all,
-#     but it also does not need this: `vg deconstruct` / `pggb -V` turns those
-#     walks into a VCF, which a multi-sample variant track reads directly.
+#     and for CARRIAGE it does not need this either: `vg deconstruct` / `pggb -V`
+#     turns those walks into a VCF, which a multi-sample variant track reads
+#     directly. What the VCF cannot state is ORIENTATION, so `untangle_to_bed.py`
+#     fills this schema from `odgi untangle` for that one column: which way each
+#     strain traverses the reference, which is how a large inversion reads. It
+#     leaves the bubble-decomposition columns empty rather than inventing them.
 #   - An rGFA with neither paths nor the assemblies to re-map still yields an
 #     allele inventory from the links index (`build_rgfa_tabix.sh`), but the
 #     only haplotype label there is the one that first contributed each allele,

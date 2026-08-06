@@ -234,13 +234,24 @@ jbrowse make-pif ecoli_pggb_ava.paf   # -> ecoli_pggb_ava.pif.gz (+ .tbi)
 # every SNP node starts a new one), -j keeps mappings at or above a jaccard, and
 # -p asks for PAF so `make-pif` reads it with nothing in between.
 #
-# -e 5000 IS LOAD-BEARING, and it costs 2m13s on this graph. untangle starts a
-# segment where the graph stops agreeing, which on a near-colinear bacterial
-# pangenome is rare: without it this file is 174 records for all four pairs, so
-# every ribbon spans the frame and nothing about the projection is legible. -e
-# forces a boundary every N bp of the sorted graph, which takes it to 3,923 --
-# ~980 per strain, a regular grid on the reference. That is also what makes the
-# per-strain lane below worth drawing: 174 blocks cannot carry orientation.
+# -e 5000 IS LOAD-BEARING HERE, AND IT CONTRADICTS adr-024, deliberately.
+# That ADR (from the removed gfa-to-tabix effort; read it at
+# `git show 3b98dbb985^:agent-docs/architecture-decision-records/adr-024-untangle-replaces-synteny-build.md`)
+# says leave -e off, because it changes segment boundaries irreversibly and the
+# rule there was bake permissive, filter up at runtime. Two things differ:
+#
+#   * that file fed a runtime display that could filter; this one feeds static
+#     figures, and there is no runtime merge to filter up with.
+#   * the regime is not the same. adr-024 measured HPRC chr20 at 90 haplotypes,
+#     where untangle finds plenty of boundaries on its own. A five-strain
+#     near-colinear bacterial pangenome gives 174 records for ALL FOUR PAIRS
+#     without -e, so every ribbon spans its frame. That is not a coarser figure,
+#     it is no figure -- it is what the reviewer verdict on pangenome/pggb_untangle
+#     was about.
+#
+# -e forces a boundary every N bp of the sorted graph: 3,923 records, ~980 per
+# strain, for 2m13s. Keep the flag out of any file a display is expected to
+# filter, and keep the ADR's advice for a human-scale graph.
 #
 # untangle leaves PAF column 10 (residue matches) at 0 and writes no CIGAR --
 # it reports a jaccard over graph steps, not a base alignment -- so a consumer
