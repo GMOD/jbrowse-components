@@ -60,6 +60,13 @@ one (BAM) and the full tags object otherwise (CRAM/synteny).
 Read a tag by its canonical name, falling back to a lowercase-suffixed alias
 (e.g. MM/Mm, ML/Ml) as emitted by some aligners.
 
+Prefers the feature's own one-pass alias lookup when it has one. The plain
+`getTag(tag) ?? getTag(alt)` form walks the record's whole tag block TWICE
+whenever neither name is present — which is every read in a file without base
+modifications, and this is called per read on every render. On jb2bench's
+1000x.shortread that pair of walks was 12.9% of the whole BAM query, more than
+the CIGAR/SEQ/MD reads the pileup actually uses.
+
 ```js
 // type signature
 (feature: Feature, tag: string, alt: string) => unknown
