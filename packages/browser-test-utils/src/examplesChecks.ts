@@ -42,17 +42,22 @@ const SHORTEST_FRACTION = 0.5
  */
 export async function checkDemoHeights(page: Page): Promise<string[]> {
   const boxes = await page.$$eval('.demo', els =>
-    els.map(el => {
-      const before = el.style.minHeight
-      el.style.minHeight = '0px'
-      const settled = Math.round(el.getBoundingClientRect().height)
-      el.style.minHeight = before
-      return {
-        fill: el.classList.contains('fill'),
-        reserved: Math.round(Number.parseFloat(el.style.minHeight) || 0),
-        settled,
-      }
-    }),
+    // narrowed rather than asserted: `.demo` is not a tag selector, so
+    // puppeteer types the callback's elements as bare `Element`, which has no
+    // `style`
+    els
+      .filter(el => el instanceof HTMLElement)
+      .map(el => {
+        const before = el.style.minHeight
+        el.style.minHeight = '0px'
+        const settled = Math.round(el.getBoundingClientRect().height)
+        el.style.minHeight = before
+        return {
+          fill: el.classList.contains('fill'),
+          reserved: Math.round(Number.parseFloat(el.style.minHeight) || 0),
+          settled,
+        }
+      }),
   )
   return boxes.flatMap(({ fill, reserved, settled }) => {
     if (fill) {

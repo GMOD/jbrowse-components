@@ -5,6 +5,7 @@ import GetScoreData from './GetScoreData.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { StatusCallback } from '@jbrowse/core/util'
 
 // The RPC guide tells plugin authors to pass `statusCallback` and `stopToken`
 // down to whatever does the slow work rather than consuming them in the method,
@@ -20,7 +21,7 @@ jest
 
 const region = { refName: 'ctgA', start: 0, end: 100, assemblyName: 'volvox' }
 
-function args(statusCallback?: (arg: string) => void) {
+function args(statusCallback?: StatusCallback) {
   return {
     sessionId: 'test',
     adapterConfig: {},

@@ -44,11 +44,14 @@ export interface DemoHeightOptions {
 // number already committed. A `.demo` outside a section is skipped: that is a
 // landing page running one of the examples a second time, which takes its
 // reservation from that example's own entry rather than earning one of its own.
-const MEASURE = `(() => {
-  const out = {}
+// A function rather than a source string so its return type is checked here and
+// carries into `page.evaluate`; puppeteer serializes it either way. It must stay
+// closure-free — nothing in this module exists in the page.
+const MEASURE = () => {
+  const out: Record<string, number> = {}
   for (const el of document.querySelectorAll('.demo')) {
     const slug = el.closest('section.example-section')?.id
-    if (!slug) {
+    if (!slug || !(el instanceof HTMLElement)) {
       continue
     }
     const before = el.style.minHeight
@@ -57,7 +60,7 @@ const MEASURE = `(() => {
     el.style.minHeight = before
   }
   return out
-})()`
+}
 
 export async function measureDemoHeights({
   distDir,
@@ -103,7 +106,7 @@ export async function measureDemoHeights({
         // shows up as an implausible height rather than being silently believed
       }
       await new Promise(r => setTimeout(r, settleMs))
-      const measured: Record<string, number> = await page.evaluate(MEASURE)
+      const measured = await page.evaluate(MEASURE)
       for (const [key, height] of Object.entries(measured)) {
         tallest[key] = Math.max(tallest[key] ?? 0, height)
       }
