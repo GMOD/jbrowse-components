@@ -274,9 +274,9 @@
   "alignments/select_arc_display": {
     "name": "alignments/select_arc_display",
     "status": "good",
-    "note": "FIXED: the readConnectionsHeight default went 25 -> 35 (LinearAlignmentsDisplay configSchema); 25 was chosen alongside the per-section band reservation, and a lane that draws no arcs now gets no band, so only the lanes using the height pay for it. Regenerated against a build carrying the change.",
-    "reviewedAt": "2026-08-06T06:10:18.666Z",
-    "hash": "643af7f6dce784f39e6a4dd3be9ef66a3723c542"
+    "note": "FIXED in the app, not the spec: readConnectionsHeight's default went 40 -> 25 with the per-section arc reservation (6821f0198e), but that reservation is what fixed the grouped stack a lane at a time, so the height drop was paying for a problem already solved and the arcs had no room to separate. Default is 35 now; this figure takes it (it sets no height of its own).",
+    "reviewedAt": "2026-08-06T06:16:48.194Z",
+    "hash": "6d7580fe9998989d3bc60d50caec3cdef34238e0"
   },
   "bookmark_widget_create": {
     "name": "bookmark_widget_create",
@@ -681,8 +681,8 @@
     "name": "multi-sv-trio",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-06T05:39:58.775Z",
-    "hash": "8f6ee04e8499d5e35718ba31eaf6b56032b7b472"
+    "reviewedAt": "2026-08-06T06:17:04.419Z",
+    "hash": "2b5da25f5593409a60ac7c99dbdabb656855e0eb"
   },
   "product_architecture": {
     "name": "product_architecture",
@@ -922,9 +922,9 @@
   "alignments/haplotype_groupby": {
     "name": "alignments/haplotype_groupby",
     "status": "good",
-    "note": "FIXED in the app, not the capture: the Group by 'Tag...' radio left keepMenuOpen unset, which the radio default turns back into 'stay open', so the dialog opened behind two levels of standing menu. It now passes false, matching the sort and color menus' tag rows; getGroupByMenuItem.test.ts asserts the whole row set through staysOpenOnClick.",
-    "reviewedAt": "2026-08-06T06:10:18.875Z",
-    "hash": "ebe69775ea6c83af3ecd37c8049061cf03e08c7c"
+    "note": "FIXED in the app. groupByRadioMenuItem passed keepMenuOpen: undefined for the radios that open a dialog, where its own comment said they dismiss — and staysOpenOnClick defaults a radio to staying open, so Group by -> Tag... opened its dialog behind the submenu AND the track menu, both of which then sat in the result frame too. Passes false now; getGroupByMenuItem.test.ts asserts it through staysOpenOnClick rather than the flag, since the flag is what silently inverted.",
+    "reviewedAt": "2026-08-06T06:16:48.422Z",
+    "hash": "fe579d16561ce217632c66d33c7b9ed5a64807a4"
   },
   "gene_track_selenocysteine": {
     "name": "gene_track_selenocysteine",
@@ -1560,8 +1560,8 @@
   "feature_height_default": {
     "name": "feature_height_default",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-06T06:01:54.229Z",
+    "note": "stageColumns 2, so the menu frame and the result frame sit side by side with the grid's gutter between them; viewport narrowed 1100 -> 950 so the pair is not a 4400px-wide PNG the page scales the menu text out of.",
+    "reviewedAt": "2026-08-06T06:16:49.644Z",
     "hash": "8ffe574c6d72847d8feb0688fd37e17ea136417c"
   },
   "multiway_synteny/ecoli_stx_island": {
@@ -1584,13 +1584,6 @@
     "note": "REBUILT rather than defended this time. Root cause of dull was measurable: scanning all 104 PUR bigWigs over the AMY1A window gives one flat integer copy number per sample, 1 to 4, and the three samples in the figure happened to sit on adjacent levels -- so the picture was three colored plateaus with nothing to compare. Two changes. Eight individuals instead of three, picked to cover every level and every step pattern the population has here (4 across the whole cluster, 4 over one block and 3 over the other, the reference-flat 2, and a lost copy at 1), on the Okabe-Ito palette the other multi-sample figures use. And the scale is pinned 0-5 on the display: autoscale is per row, so a sample that never leaves the baseline drew the same full-height plot as one with a real gain, which is what actually destroyed the comparison. Rendering moved multirowxy -> multirowline for the same reason: filled areas over flat integer plateaus paint each row as a solid bar whose only readable feature is its top edge. As step traces you read the level and where it steps. On the zarr suggestion: NOT used for this figure, deliberately. The section it illustrates is the subadapters-with-a-color-each recipe, and a MultiWiggleZarrAdapter track has no per-signal colors, so a zarr capture here would picture a different recipe than the one printed above it -- and the 2504-sample zarr cohort figure already exists as cnv1000g/zarr_cohort. Instead cookbook.md now points at population_cnv's Scaling past one population section at exactly the place it says 'past a handful of samples, generate it from your samplesheet', plus a line on why an absolute quantity wants minScore/maxScore. Say the word if you want the zarr store over AMY1 as its own figure and I will build it.",
     "reviewedAt": "2026-07-30T06:19:26.245Z",
     "hash": "467c35a95271771171d1ad58161494630169acfe"
-  },
-  "ld/lct_lactase": {
-    "name": "ld/lct_lactase",
-    "status": "bad",
-    "note": "see notes in ld/lct_haploblock ",
-    "reviewedAt": "2026-08-06T05:25:17.767Z",
-    "hash": "adfb909821ef76986892177d7d749ac1d5d04bb7"
   },
   "ld/mapt_17q21_inversion": {
     "name": "ld/mapt_17q21_inversion",
@@ -1786,9 +1779,9 @@
   "gallery/inverted_duplication": {
     "name": "gallery/inverted_duplication",
     "status": "good",
-    "note": "FIXED: readConnectionsHeight 200 -> 150. An arc apex is its genomic span in px clamped to the band, so at 0.41 px/bp everything spanning the 1.3 kb duplication was clamped either way; 150 still resolves a concordant ~370bp pair below the ceiling and gives the pileup back 50px.",
-    "reviewedAt": "2026-08-06T06:10:19.112Z",
-    "hash": "f886c0d489d3d4aa1b44ec3d87a648de90a47cf2"
+    "note": "read-arcs band 200 -> 150. An arc's apex is its genomic span in px clamped to the band, and this card is 0.41 px/bp, so everything spanning the 1.3 kb duplication was over the ceiling either way — the extra 50px was clamped mass. 150 still resolves a pair up to ~370bp below the ceiling, where this library's concordant inserts sit. Viewport came down 50px with it (the run's blank-below-content report).",
+    "reviewedAt": "2026-08-06T06:16:48.672Z",
+    "hash": "9146ea36f2cd16c43a95ee3aa806eee02c719616"
   },
   "genomes_synteny/launch_dialog": {
     "name": "genomes_synteny/launch_dialog",
@@ -2659,8 +2652,8 @@
   "alignments/strand_split_coverage": {
     "name": "alignments/strand_split_coverage",
     "status": "good",
-    "note": "FIXED: reads are back on screen at featureHeight 9 (not the 3px compact height, which drew a solid pink and purple stripe with no reads in it) and coverage came down 150 -> 110, so each strand section is now ~110px of coverage over ~130px of pileup instead of coverage alone. Colored by strand as well as grouped by it.",
-    "reviewedAt": "2026-08-06T06:10:30.821Z",
+    "note": "reads shown, not hidden: showPileup is back on with colorBy strand, so each band has its own pileup under it in the section's colour. featureHeight 9 rather than the compact 3 — there are only ~12 reads per strand here, and at 3px they drew as one solid pink and one solid purple stripe with no reads in them.",
+    "reviewedAt": "2026-08-06T06:16:48.922Z",
     "hash": "47970feddc6f6e04776e60431605cb3cb37dad1b"
   },
   "hic/bcr_abl1_translocation": {
@@ -2728,23 +2721,23 @@
   },
   "ld/lct_haploblock": {
     "name": "ld/lct_haploblock",
-    "status": "bad",
-    "note": "please combine this with linkage disequilibrium track in same view. then consider deleting the linkage disequilibrium track standalone since combined will be better. ",
-    "reviewedAt": "2026-08-06T05:25:04.216Z",
-    "hash": "9ff14413dc941886099ebc0ba084046d60fd1492"
+    "status": "good",
+    "note": "COMBINED, and the standalone LD figure deleted, as asked. The triangle is now the top data lane of this view, directly over the matrix, so a column and a corner are the same variant. Two things had to move with it: the LD band is 360 rather than 510 (its subject is the block shape and its two edges, both of which survive a shorter band), and the window widened from 1.5 Mb to 2.4 Mb (chr2:135.0-137.4) — at the matrix window the triangle filled the frame corner to corner, the failure the tutorial warns about, since r2 against rs4988235 is still 0.72 at 135.8 Mb and 0.37 at 136.8 Mb. Clustering still runs on the measured 135.5-137.0 core. variant_track.md and ld_human.md now share this figure.",
+    "reviewedAt": "2026-08-06T06:16:44.782Z",
+    "hash": "0a6c793045c9726f85b372d393b617a8ef7e54f2"
   },
   "rnaseq/strand_split_coverage": {
     "name": "rnaseq/strand_split_coverage",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-06T06:01:17.434Z",
-    "hash": "f506dd3b5c6bd7b8a195cbc0623b900a93d4882f"
+    "note": "reads shown and coloured by first-of-pair strand, the same dimension that grouped them, so the switch at the NELFE/SKIV2L boundary reads twice: as the fill of the two histograms and as which section the reads stack in.",
+    "reviewedAt": "2026-08-06T06:16:49.178Z",
+    "hash": "9d909e103437af675e0cd5f55b22f38a0639aa46"
   },
   "maf_summary_tier": {
     "name": "maf_summary_tier",
     "status": "good",
-    "note": "please show left/right split instead of top bottom, and decrease browser width and height in each",
-    "reviewedAt": "2026-08-06T06:01:54.299Z",
+    "note": "left/right instead of top/bottom, and both halves smaller: 1000x800 each became 780x720 with the display at 380. Horizontal composes now take the same white gutter a stageColumns grid does, so the two app windows are separated rather than sharing an edge.",
+    "reviewedAt": "2026-08-06T06:16:49.415Z",
     "hash": "13a6997db593efa8aed42a1904216dc5ff979d16"
   },
   "mcscan_synteny/gene_level": {
