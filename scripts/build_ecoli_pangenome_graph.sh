@@ -362,8 +362,31 @@ done
 # of the picture was empty brackets. 20 keeps the band present — it is real
 # graph structure when there is any — without letting emptiness dominate a
 # figure whose point is the five strain rows. Same value and same reasoning as
-# build_ecoli_pangenome_cactus.sh; the shipped PNG still predates this and needs
-# a pggb rebuild to catch up.
+# build_ecoli_pangenome_cactus.sh.
+#
+# THE SHIPPED static/img/pangenome/graph.png STILL PREDATES THIS, and refreshing
+# it is a full demo rebuild rather than one odgi viz call. Measured on a rebuild
+# from these same accessions and this same pinned image:
+#
+#   -y does not touch the path rows. The five rows are byte-identical between
+#   -y 20 and -y 260 on one graph, so the change costs the figure nothing.
+#
+#   -y re-lays the link band out; it does not crop it. 34% of the band's pixels
+#   differ between the two, so taking the top 25 px off the shipped 448 px PNG
+#   is NOT the same picture — it keeps the innermost brackets and drops the
+#   long-range links, which are the ones worth drawing.
+#
+#   smoothxg is not deterministic. The rebuild came back with 606,509 nodes
+#   against the 605,544 recorded above and the same 8.34 Mb of graph sequence,
+#   and its raster differs from the shipped one in 24% of the path-row pixels —
+#   the same character, different detail. So a raster re-rendered on its own
+#   would no longer be a picture of the graph every other pggb figure on the
+#   page came from, which is what the page's odgi-viz-vs-projections comparison
+#   rests on. Refresh it when the demo is rebuilt end to end and all of them
+#   move together.
+#
+# Until then the tutorial's caption names the band, so the figure is not
+# carrying 56% unexplained.
 in_pggb odgi viz -i "/data/$GFA" -o /data/ecoli_pggb_graph.png -x 1500 -a 40 -y 20
 
 # ── Graph-view assets: two subgraphs for the Graph genome view ────────────────
