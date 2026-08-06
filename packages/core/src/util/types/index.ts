@@ -99,6 +99,11 @@ export interface JBrowsePlugin {
   versions?: JBrowsePluginVersion[]
   license: string
   image?: string
+  // Free-form labels from the store manifest, used to filter the store list.
+  // Deliberately `string[]` and not a union: the vocabulary lives in
+  // jbrowse-plugin-list's plugins.json, so the store discovers whatever tags are
+  // actually published rather than needing a release here to learn a new one.
+  tags?: string[]
 }
 
 export type DialogComponentType =

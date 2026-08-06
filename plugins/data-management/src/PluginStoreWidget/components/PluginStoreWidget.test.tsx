@@ -269,3 +269,93 @@ test('plugin store admin - removes a custom plugin correctly', async () => {
     expect(session.jbrowse.plugins).toHaveLength(0)
   })
 })
+
+// Tags come from the store manifest as free-form strings, so the widget has to
+// discover the vocabulary from whatever it fetched rather than know it up front.
+function taggedStore() {
+  const entry = (name: string, tags: string[]) => ({
+    name,
+    packageName: `jbrowse-plugin-${name.toLowerCase()}`,
+    authors: [],
+    description: `${name} description`,
+    location: 'https://example.com',
+    license: 'MIT',
+    url: `https://jbrowse.org/plugins/jbrowse-plugin-${name.toLowerCase()}/1.0.0/dist/x.umd.js`,
+    tags,
+  })
+  return {
+    plugins: [
+      entry('MsaView', ['plug-and-play', 'alignment']),
+      entry('TView', ['bring-your-own-data', 'alignment']),
+      entry('Apollo', ['needs-setup', 'annotation']),
+    ],
+  }
+}
+
+test('filters the available plugin list by tag, ANDing multiple tags', async () => {
+  jest
+    .spyOn(global, 'fetch')
+    .mockImplementation(async () => new Response(JSON.stringify(taggedStore())))
+  const { model, session, user } = setup()
+  const { findByText, findByTestId, queryByText } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <DialogQueue session={session} />
+      <PluginStoreWidget model={model} />
+    </ThemeProvider>,
+  )
+  // everything is listed before any tag is picked
+  await findByText('MsaView description')
+  expect(queryByText('TView description')).not.toBeNull()
+  expect(queryByText('Apollo description')).not.toBeNull()
+
+  // one tag narrows to the plugins carrying it
+  await user.click(await findByTestId('tagFilter-alignment'))
+  await waitFor(() => {
+    expect(queryByText('Apollo description')).toBeNull()
+  })
+  expect(queryByText('MsaView description')).not.toBeNull()
+  expect(queryByText('TView description')).not.toBeNull()
+
+  // a second tag narrows further rather than widening — AND, not OR
+  await user.click(await findByTestId('tagFilter-plug-and-play'))
+  await waitFor(() => {
+    expect(queryByText('TView description')).toBeNull()
+  })
+  expect(queryByText('MsaView description')).not.toBeNull()
+  expect(model.tagFilters.slice()).toEqual(['alignment', 'plug-and-play'])
+
+  // clicking a selected tag again deselects it
+  await user.click(await findByTestId('tagFilter-plug-and-play'))
+  await waitFor(() => {
+    expect(queryByText('TView description')).not.toBeNull()
+  })
+
+  // and Clear tags drops the rest
+  await user.click(await findByText('Clear tags'))
+  await waitFor(() => {
+    expect(queryByText('Apollo description')).not.toBeNull()
+  })
+  expect(model.tagFilters.slice()).toEqual([])
+})
+
+test('a tag combination matching nothing says so instead of rendering blank', async () => {
+  jest
+    .spyOn(global, 'fetch')
+    .mockImplementation(async () => new Response(JSON.stringify(taggedStore())))
+  const { model, session, user } = setup()
+  const { findByText, findByTestId } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <DialogQueue session={session} />
+      <PluginStoreWidget model={model} />
+    </ThemeProvider>,
+  )
+  await findByText('MsaView description')
+  await user.click(await findByTestId('tagFilter-alignment'))
+  // no plugin is both alignment and annotation; the selected chips must stay
+  // clickable so the user can undo it
+  await user.click(await findByTestId('tagFilter-annotation'))
+  await findByText('No plugins match these filters.')
+  expect(model.tagFilters.slice()).toEqual(['alignment', 'annotation'])
+  await user.click(await findByTestId('tagFilter-annotation'))
+  await findByText('MsaView description')
+})

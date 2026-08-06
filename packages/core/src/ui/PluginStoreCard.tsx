@@ -6,6 +6,7 @@ import {
   Card,
   CardActions,
   CardContent,
+  Chip,
   Typography,
 } from '@mui/material'
 
@@ -29,6 +30,12 @@ const useStyles = makeStyles()({
   },
   mr: {
     marginRight: '0.5em',
+  },
+  tagRow: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '0.3em',
+    marginTop: '0.5em',
   },
 })
 
@@ -70,6 +77,13 @@ export default function PluginStoreCard({
         </div>
         <Typography className={classes.bold}>Description:</Typography>
         <Typography>{plugin.description}</Typography>
+        {plugin.tags?.length ? (
+          <div className={classes.tagRow}>
+            {plugin.tags.map(tag => (
+              <Chip key={tag} label={tag} size="small" variant="outlined" />
+            ))}
+          </div>
+        ) : null}
         {compatible ? null : (
           <Typography color="error">
             Not compatible with this version of JBrowse (requires JBrowse{' '}

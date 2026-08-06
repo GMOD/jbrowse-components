@@ -7,7 +7,13 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getEnv } from '@jbrowse/mobx-state-tree'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
-import { Accordion, AccordionSummary, Button, Typography } from '@mui/material'
+import {
+  Accordion,
+  AccordionSummary,
+  Button,
+  Chip,
+  Typography,
+} from '@mui/material'
 import { observer } from 'mobx-react'
 
 import ClearableSearchField from '../../shared/ClearableSearchField.tsx'
@@ -16,6 +22,7 @@ import PluginCard from './PluginCard.tsx'
 import { useFetchPlugins } from './util.ts'
 
 import type { PluginStoreModel } from '../model.ts'
+import type { JBrowsePlugin } from '@jbrowse/core/util/types'
 
 // lazies
 const AddCustomPluginDialog = lazy(() => import('./AddCustomPluginDialog.tsx'))
@@ -41,7 +48,27 @@ const useStyles = makeStyles()(theme => ({
   m: {
     margin: '1em',
   },
+  tagRow: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '0.3em',
+    margin: '0.5em 0',
+  },
+  noMatches: {
+    margin: '1em',
+  },
 }))
+
+// Entries this product could install at all, before any user filter. A plugin
+// with only a cjsUrl (no web build) can't load on web, and one since vendored
+// into core (e.g. MafViewer) is dropped at load so installing it does nothing.
+function installableHere(plugins: JBrowsePlugin[]) {
+  return plugins.filter(
+    plugin =>
+      !vendoredPluginNames.has(plugin.name) &&
+      (isElectron || Boolean(plugin.esmUrl || plugin.url || plugin.umdUrl)),
+  )
+}
 
 const PluginStoreWidget = observer(function PluginStoreWidget({
   model,
@@ -50,10 +77,26 @@ const PluginStoreWidget = observer(function PluginStoreWidget({
 }) {
   const { classes } = useStyles()
   const { plugins, error } = useFetchPlugins()
-  const { filterText } = model
+  const { filterText, selectedTags } = model
   const session = getSession(model)
   const { adminMode } = session
   const { pluginManager } = getEnv(model)
+
+  const textMatched = installableHere(plugins ?? []).filter(plugin =>
+    plugin.name.toLowerCase().includes(filterText.toLowerCase()),
+  )
+  // Offer a tag if something surviving the text filter carries it, plus any tag
+  // already selected — otherwise the last chip in a narrow result set vanishes
+  // out from under the click that would have cleared it.
+  const availableTags = [
+    ...new Set([...textMatched.flatMap(p => p.tags ?? []), ...selectedTags]),
+  ].sort()
+  // AND, not OR: each tag added narrows the list, which is what makes combining
+  // a setup tag with a topic tag ("plug-and-play" + "alignment") useful.
+  const shown = textMatched.filter(plugin => {
+    const tags = new Set(plugin.tags ?? [])
+    return [...selectedTags].every(tag => tags.has(tag))
+  })
 
   return (
     <div>
@@ -117,25 +160,46 @@ const PluginStoreWidget = observer(function PluginStoreWidget({
         {error ? (
           <ErrorMessage error={error} />
         ) : plugins ? (
-          plugins
-            .filter(plugin => {
-              // a plugin with only a cjsUrl (no web build) can't load on web,
-              // so hide it unless we're on desktop
-              const hasWebBuild = Boolean(
-                plugin.esmUrl || plugin.url || plugin.umdUrl,
-              )
-              // plugins since vendored into core (e.g. MafViewer) are dropped at
-              // load, so installing one does nothing — hide it from the store
-              const vendored = vendoredPluginNames.has(plugin.name)
-              return (
-                !vendored &&
-                (isElectron || hasWebBuild) &&
-                plugin.name.toLowerCase().includes(filterText.toLowerCase())
-              )
-            })
-            .map(plugin => (
-              <PluginCard key={plugin.name} plugin={plugin} model={model} />
-            ))
+          <>
+            {availableTags.length > 0 && (
+              <div className={classes.tagRow}>
+                {availableTags.map(tag => (
+                  <Chip
+                    key={tag}
+                    data-testid={`tagFilter-${tag}`}
+                    label={tag}
+                    size="small"
+                    color={selectedTags.has(tag) ? 'primary' : 'default'}
+                    variant={selectedTags.has(tag) ? 'filled' : 'outlined'}
+                    onClick={() => {
+                      model.toggleTagFilter(tag)
+                    }}
+                  />
+                ))}
+                {selectedTags.size > 0 && (
+                  <Button
+                    size="small"
+                    onClick={() => {
+                      model.clearTagFilters()
+                    }}
+                  >
+                    Clear tags
+                  </Button>
+                )}
+              </div>
+            )}
+            {shown.length > 0 ? (
+              shown.map(plugin => (
+                <PluginCard key={plugin.name} plugin={plugin} model={model} />
+              ))
+            ) : (
+              <Typography className={classes.noMatches}>
+                {selectedTags.size > 0 || filterText
+                  ? 'No plugins match these filters.'
+                  : 'No plugins available.'}
+              </Typography>
+            )}
+          </>
         ) : (
           <LoadingEllipses />
         )}
