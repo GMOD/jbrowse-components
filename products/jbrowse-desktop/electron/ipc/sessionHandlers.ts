@@ -326,14 +326,22 @@ export function registerSessionHandlers(
   })
 
   ipcHandle('reset', async () => {
-    const [autosaveFiles, thumbnailFiles] = await Promise.all([
-      fs.promises.readdir(paths.autosaveDir).catch(() => []),
-      fs.promises.readdir(paths.thumbnailDir).catch(() => []),
-    ])
-    const filesToDelete = [
-      ...autosaveFiles.map(f => path.join(paths.autosaveDir, f)),
-      ...thumbnailFiles.map(f => path.join(paths.thumbnailDir, f)),
-    ]
+    // Every directory of app-generated files. faiDir belongs here and was
+    // missing: indexFasta writes one .fai per FASTA opened — the name carries a
+    // timestamp, so re-opening the same file writes another — and nothing else
+    // ever removes them. They are derived from the user's own FASTA and get
+    // rebuilt on next open, so a factory reset should not be the one thing that
+    // leaves them behind.
+    const generatedDirs = [paths.autosaveDir, paths.thumbnailDir, paths.faiDir]
+    const filesToDelete = (
+      await Promise.all(
+        generatedDirs.map(async dir =>
+          (await fs.promises.readdir(dir).catch(() => [])).map(f =>
+            path.join(dir, f),
+          ),
+        ),
+      )
+    ).flat()
     await Promise.all([
       updateRecentSessions(paths.recentSessionsPath, () => []),
       // a global plugin loads into every session, so one that crashes on load

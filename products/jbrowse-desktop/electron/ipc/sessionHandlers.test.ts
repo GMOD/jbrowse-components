@@ -320,12 +320,17 @@ test('loadThumbnail returns undefined when there is no thumbnail at all', async 
   ).toBeUndefined()
 })
 
-test('reset clears the list, autosaves and thumbnails, and the global plugins', async () => {
+test('reset clears the list, autosaves, thumbnails, fai indexes and global plugins', async () => {
   fs.mkdirSync(paths.autosaveDir, { recursive: true })
+  fs.mkdirSync(paths.faiDir, { recursive: true })
   const autosave = path.join(paths.autosaveDir, '1.json')
   const thumbnail = path.join(paths.thumbnailDir, 'x.data')
+  // indexFasta writes one of these per FASTA opened, under a timestamped name,
+  // and nothing else ever removes them
+  const fai = path.join(paths.faiDir, 'volvox.fa-123.fai')
   fs.writeFileSync(autosave, '{}')
   fs.writeFileSync(thumbnail, 'data:')
+  fs.writeFileSync(fai, 'ctgA\t50001\t7\t60\t61\n')
   fs.writeFileSync(paths.recentSessionsPath, '[{"path":"a","updated":1}]')
   // a global plugin loads into every session, so one that crashes on load makes
   // the app unusable; a reset that left it installed would come back to it
@@ -341,6 +346,7 @@ test('reset clears the list, autosaves and thumbnails, and the global plugins', 
   )
   expect(fs.existsSync(autosave)).toBe(false)
   expect(fs.existsSync(thumbnail)).toBe(false)
+  expect(fs.existsSync(fai)).toBe(false)
 })
 
 // saveSession is also the quit flush (rootModel.flushSession), the one save
