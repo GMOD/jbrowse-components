@@ -206,13 +206,32 @@ jobs:
       - uses: ./.github/actions/setup
         with:
           install: 'false'
-      # Just main's tip, not the full history — this repo's pack is ~1.6 GiB and
-      # all the report needs is one file out of one commit.
+      # The base is `github.event.before`, the tip this push replaced — NOT
+      # origin/main. By the time a job starts, the push has already landed, so
+      # on a push to main origin/main IS the commit under test and the report
+      # compares it against itself: the first run of this job said "0 changes"
+      # for a commit that introduced all 452 figures. Work lands directly on
+      # main here, so that was not an edge case, it was every run.
+      #
+      # `before` is all-zeros for a newly created branch, which has no previous
+      # tip; fall back to main so a new branch reports against what it forked
+      # from rather than against nothing.
+      #
+      # Fetched one commit deep, not the full history — this repo's pack is
+      # ~1.6 GiB and all the report needs is one file out of one commit.
       - name: Fetch the base manifest
-        run: git fetch --depth=1 origin main
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          case "$BEFORE" in
+            ''|0000000000000000000000000000000000000000) BASE=main ;;
+            *) BASE=$BEFORE ;;
+          esac
+          echo "FIGURE_BASE=$BASE" >> "$GITHUB_ENV"
+          git fetch --depth=1 origin "$BASE"
       - name: Report what moved
         run: |
-          pnpm figures:report --base origin/main --markdown --out /tmp/figures.md
+          pnpm figures:report --base "$FIGURE_BASE" --markdown --out /tmp/figures.md
           cat /tmp/figures.md >> "$GITHUB_STEP_SUMMARY"
 
   # The docs validators with no fix mode — link/reference/round-trip checks
