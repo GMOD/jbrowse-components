@@ -16,10 +16,11 @@ export interface LinearMafGetSummaryDataResult {
   treeNewick: string | undefined
   /**
    * Whether `samples` is the authoritative row set (see the alignment RPC's
-   * result). This path never discovers: samples are config/tree-derived, so an
-   * empty list means a sample-discovery track, whose rows only the alignment
-   * path can name. Reporting it as non-canonical keeps the client from
-   * replacing its discovered rows with nothing on zoom-out.
+   * result). True only when the set came from config or the guide tree. On a
+   * sample-discovery track this path names the genomes its own summary records
+   * carry, which is a per-region set like the alignment path's — so it is
+   * reported non-canonical and the client unions it into the rows it already
+   * has rather than replacing them.
    */
   samplesCanonical: boolean
   records: MafSummaryRecord[]
@@ -54,32 +55,50 @@ export async function executeMafSummaryData({
     subtreeFilter,
   } = args
   const region = regions[0]!
-  const { adapter, samples, treeNewick } = await loadMafSamplesAdapter(
-    pluginManager,
-    sessionId,
-    adapterConfig,
-  )
+  const {
+    adapter,
+    samples: configSamples,
+    treeNewick,
+  } = await loadMafSamplesAdapter(pluginManager, sessionId, adapterConfig)
+  const hasConfiguredSamples = configSamples.length > 0
 
   // Rows outside the active subtree are dropped here rather than shipped and
   // hidden, exactly as the detail path does. `samples` stays the full set so
-  // the sidebar tree and "clear filter" still see every genome.
+  // the sidebar tree and "clear filter" still see every genome — so discovery
+  // reads every record's `src`, before the filter, as the alignment path
+  // discovers from every block row before narrowing `blocks`.
   const visible = subtreeFilter?.length ? new Set(subtreeFilter) : undefined
   const records: MafSummaryRecord[] = []
+  // Insertion-ordered, so a discovered row set has a stable order the way the
+  // alignment path's `discoveredOrder` does.
+  const discovered = new Set<string>()
   const obs = adapter.getSummaryFeatures?.(region, {
     stopToken,
     statusCallback,
   })
   if (obs) {
     await subscribeToObservable(obs, record => {
+      if (!hasConfiguredSamples) {
+        discovered.add(record.src)
+      }
       if (!visible || visible.has(record.src)) {
         records.push(record)
       }
     })
   }
   return {
-    samples,
+    // A sample-discovery track (no `samples`, no `nhLocation`) has no row set
+    // until something names one, and only the alignment path used to. A track
+    // opened already zoomed out past the summary threshold therefore resolved
+    // zero sources, so `rowIndexBySrc` matched no `src` and the summary overlay
+    // drew nothing at all — a blank, fully-"loaded" track until the user zoomed
+    // in far enough to fetch detail. The records name their species, so this
+    // path can answer for itself.
+    samples: hasConfiguredSamples
+      ? configSamples
+      : [...discovered].map(id => ({ id, label: id })),
     treeNewick,
-    samplesCanonical: samples.length > 0,
+    samplesCanonical: hasConfiguredSamples,
     records,
   }
 }

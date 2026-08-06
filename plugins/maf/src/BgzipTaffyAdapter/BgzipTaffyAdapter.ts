@@ -185,82 +185,78 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
   getFeatures(query: Region, opts?: MafAdapterOptions) {
     const { statusCallback = () => {} } = opts ?? {}
     return ObservableCreate<Feature>(async observer => {
-      try {
-        const { index, runLengthEncodeBases } = await this.setup(opts)
-        const sampleIds = buildSampleFilter(opts)
+      const { index, runLengthEncodeBases } = await this.setup(opts)
+      const sampleIds = buildSampleFilter(opts)
 
-        // Byte range for this query — the same span `getRegionByteSize`
-        // estimates from, so the gate can't disagree with the download.
-        const span = queryBlockSpan(
-          index,
-          query.refName,
-          query.start,
-          query.end,
-        )
-        if (!span) {
-          observer.complete()
-          return
-        }
-        const {
-          firstEntry,
-          nextEntry,
-          ranPastEnd,
-          startBlock,
-          endBlock,
-          readLength,
-        } = span
-
-        // Read and decompress the data
-        const file = openLocation(this.getConf('tafGzLocation'))
-
-        const response = await updateStatus(
-          'Downloading alignments',
-          statusCallback,
-          () => file.read(readLength, startBlock),
-        )
-        const buffer = await unzip(response)
-
-        const startOffset = firstEntry.virtualOffset.dataPosition
-        const nextOffset = nextEntry?.virtualOffset.dataPosition ?? 0
-        // Trim to the cushion entry only for interior reads sharing the start
-        // block; a past-the-end read keeps everything decoded to the chr end.
-        const endOffset =
-          !ranPastEnd && endBlock === startBlock && nextOffset > startOffset
-            ? nextOffset
-            : buffer.length
-
-        // subarray (not slice) — TextDecoder.decode handles either, and
-        // subarray avoids a Uint8Array copy of what can be a sizable chunk.
-        const slice = buffer.subarray(startOffset, endOffset)
-
-        // Stream features using generator - no caching, immediate GC eligible
-        for (const feat of this.parseTafBlocksStreaming(
-          slice,
-          runLengthEncodeBases,
-          sampleIds,
-        )) {
-          // Filter features that overlap with query region
-          if (feat.end > query.start && feat.start < query.end) {
-            observer.next(
-              new MafFeature(
-                feat.uniqueId,
-                feat.start,
-                feat.end,
-                query.refName,
-                feat.strand,
-                feat.alignments,
-                feat.seq,
-              ),
-            )
-          }
-        }
-
-        statusCallback('')
+      // Byte range for this query — the same span `getRegionByteSize`
+      // estimates from, so the gate can't disagree with the download.
+      const span = queryBlockSpan(index, query.refName, query.start, query.end)
+      if (!span) {
         observer.complete()
-      } catch (e) {
-        observer.error(e)
+        return
       }
-    })
+      const {
+        firstEntry,
+        nextEntry,
+        ranPastEnd,
+        startBlock,
+        endBlock,
+        readLength,
+      } = span
+
+      // Read and decompress the data
+      const file = openLocation(this.getConf('tafGzLocation'))
+
+      const response = await updateStatus(
+        'Downloading alignments',
+        statusCallback,
+        () => file.read(readLength, startBlock),
+      )
+      const buffer = await unzip(response)
+
+      const startOffset = firstEntry.virtualOffset.dataPosition
+      const nextOffset = nextEntry?.virtualOffset.dataPosition ?? 0
+      // Trim to the cushion entry only for interior reads sharing the start
+      // block; a past-the-end read keeps everything decoded to the chr end.
+      const endOffset =
+        !ranPastEnd && endBlock === startBlock && nextOffset > startOffset
+          ? nextOffset
+          : buffer.length
+
+      // subarray (not slice) — TextDecoder.decode handles either, and
+      // subarray avoids a Uint8Array copy of what can be a sizable chunk.
+      const slice = buffer.subarray(startOffset, endOffset)
+
+      // Stream features using generator - no caching, immediate GC eligible
+      for (const feat of this.parseTafBlocksStreaming(
+        slice,
+        runLengthEncodeBases,
+        sampleIds,
+      )) {
+        // Filter features that overlap with query region
+        if (feat.end > query.start && feat.start < query.end) {
+          observer.next(
+            new MafFeature(
+              feat.uniqueId,
+              feat.start,
+              feat.end,
+              query.refName,
+              feat.strand,
+              feat.alignments,
+              feat.seq,
+            ),
+          )
+        }
+      }
+
+      statusCallback('')
+      observer.complete()
+      // The stop token, like the tabix and bigMaf adapters pass: without it a
+      // cancelled fetch (any pan or zoom) kept delivering into a subscriber
+      // whose result was already discarded, and the abort never reached the
+      // rxjs chain at all. The body's own errors need no try/catch either —
+      // ObservableCreate forwards a rejected promise to `observer.error`.
+    }, opts?.stopToken)
   }
 
   async getSamples() {

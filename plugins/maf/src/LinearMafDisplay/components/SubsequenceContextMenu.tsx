@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { ContextMenu } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'

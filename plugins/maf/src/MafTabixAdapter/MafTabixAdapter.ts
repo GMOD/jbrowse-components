@@ -15,28 +15,20 @@ import type { AlignmentRecord, MafAdapterOptions } from '../types.ts'
 import type { SamplesHolder } from '../util/getSamples.ts'
 import type { MafSummaryHolder } from '../util/loadMafSummaryAdapter.ts'
 import type { MafTabixAdapterConfig } from './configSchema.ts'
-import type {
-  BaseFeatureDataAdapter as BaseAdapter,
-  BaseOptions,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
-// BedTabixAdapter exposes an index-only byte estimate (tabix bytesForRegions).
-type TabixByteAdapter = BaseAdapter & {
-  getRegionByteSize: (regions: Region[], opts?: BaseOptions) => Promise<number>
-}
-
 export default class MafTabixAdapter extends BaseFeatureDataAdapter<MafTabixAdapterConfig> {
-  public setupP?: Promise<{ adapter: TabixByteAdapter }>
+  public setupP?: Promise<{ adapter: BaseFeatureDataAdapter }>
 
   public samplesP?: SamplesHolder['samplesP']
 
   public summaryAdapterP?: MafSummaryHolder['summaryAdapterP']
 
-  async setupPre(opts?: BaseOptions): Promise<{ adapter: TabixByteAdapter }> {
-    return lazyInit(this, () =>
-      loadSubAdapter<TabixByteAdapter>(this, 'BedTabixAdapter', opts),
-    )
+  async setupPre(
+    opts?: BaseOptions,
+  ): Promise<{ adapter: BaseFeatureDataAdapter }> {
+    return lazyInit(this, () => loadSubAdapter(this, 'BedTabixAdapter', opts))
   }
 
   async getRefNames(opts?: BaseOptions) {

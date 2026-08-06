@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { YScaleBar } from '@jbrowse/wiggle-core'
 
 import type { YScaleTicks } from '@jbrowse/wiggle-core'

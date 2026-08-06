@@ -1,3 +1,4 @@
+import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -917,5 +918,52 @@ describe('BgzipTaffyAdapter integration tests', () => {
     expect(firstOrganism).toHaveProperty('chr')
     expect(firstOrganism).toHaveProperty('start')
     expect(firstOrganism).toHaveProperty('seq')
+  })
+})
+
+// Every other MAF adapter passes `opts.stopToken` into `ObservableCreate`, which
+// is what wires a cancel through to the rxjs chain. TAF's didn't, so a pan or
+// zoom that rotated the stop token left this fetch delivering into a subscriber
+// whose result had already been discarded — no error, no cancellation, just work
+// nobody was waiting for on the one adapter whose reads are whole bgzf blocks.
+describe('BgzipTaffyAdapter honors the stop token', () => {
+  function tafAdapter() {
+    return new BgzipTaffyAdapter(
+      configSchema.create({
+        tafGzLocation: {
+          localPath: require.resolve('../../test_data/celegans/chrI.taf.gz'),
+          locationType: 'LocalPathLocation',
+        },
+        taiLocation: {
+          localPath:
+            require.resolve('../../test_data/celegans/chrI.taf.gz.tai'),
+          locationType: 'LocalPathLocation',
+        },
+      }),
+    )
+  }
+  const region = {
+    assemblyName: 'ce10',
+    refName: 'chrI',
+    start: 3700,
+    end: 50_000,
+  }
+
+  test('a token stopped before subscribe errors instead of delivering', async () => {
+    const stopToken = createStopToken()
+    stopStopToken(stopToken)
+    await expect(
+      firstValueFrom(
+        tafAdapter().getFeatures(region, { stopToken }).pipe(toArray()),
+      ),
+    ).rejects.toThrow()
+  })
+
+  test('a live token delivers as before', async () => {
+    const stopToken = createStopToken()
+    const out = await firstValueFrom(
+      tafAdapter().getFeatures(region, { stopToken }).pipe(toArray()),
+    )
+    expect(out.length).toBeGreaterThan(0)
   })
 })
