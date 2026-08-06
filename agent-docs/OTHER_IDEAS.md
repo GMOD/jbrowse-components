@@ -98,7 +98,8 @@ reference others may hold, not as free-form prose.
 - [C-GIAB tutorial follow-ups](#c-giab-tutorial-follow-ups-need-data-prep--s3-upload-not-sandbox-runnable)
 - [Two tutorials the focus pass left open](#two-tutorials-the-focus-pass-left-open)
 - [Tutorial ideas (2026-07 audit)](#tutorial-ideas-2026-07-audit) — the demand
-  tally, priorities, and the two tutorials deliberately removed
+  tally, priorities, the two tutorials deliberately removed, and the 2026-08
+  re-inventory of the 196 hosted tracks no page or spec names
 
 ## Alignments
 
@@ -2352,6 +2353,38 @@ Two tutorials were deliberately removed, so do not re-propose them as written:
   `methylation.md` is the pattern to copy: the enzyme-treated sample sits above
   the native no-enzyme control in the same figure.
 
+### What shipped since, and what that changes (2026-08-06)
+
+36 tutorials now, in seven sections: synteny and comparative 9, population
+genomics 8, epigenomics and single cell 5, structural variation 4, cancer
+genomics 4, transcriptomics and proteins 3, configuration and embedding 3.
+Cancer genomics is a section the audit did not have.
+
+Closed off the lists below: **Hi-C** is `hic_structural_variants.md`. Everything
+else named below is still open, so the lists stand as written. Two of them moved
+without closing:
+
+- **The jbrowse-img page is now the UI half only.** `docs/automating.md` grew
+  the `init` fields, URL params, embedded `createViewState`, config and session
+  files, and a headless/puppeteer section, which is the URL-and-CLI automation
+  the proposal wanted demoted anyway. What is left is exporting a figure from
+  the app, which is the half Colin asked to lead with. Smaller page than the
+  proposal describes.
+- **The notebook tutorial is unblocked.** `resolveAssemblies` moved to
+  product-core, so `JBrowseApp(assemblies=["hg38","mm39"])` and
+  `JBrowseRApp(assemblies = list("hg38","mm39"))` both work; `localFiles` now
+  registers on the app widget, not just the single view; both hosts render a
+  visible error instead of logging to devtools. `~/src/jbrowse-anywidget/
+  examples/` already carries ten notebooks and JBrowseR carries two Colab
+  notebooks plus five vignettes, so the website page is a narrative over
+  existing runnable material rather than new material. The loop nothing teaches
+  is still the loop: compute in the kernel, put the bytes behind a track with
+  `add_local_file` (no web server), set `location`, read it back after the user
+  pans. Note the two-way half is single-view only — `JBrowseApp`'s
+  `view_locations` is read-back only and every config trait rebuilds the app
+  (`~/src/jbrowse-anywidget/agent-docs/IDEAS.md`), so do not write the page
+  around panning a synteny view from Python.
+
 ### Demand evidence (GitHub, pulled 2026-07-26)
 
 The topic list above came from what the code supports. This is what people
@@ -2548,6 +2581,72 @@ or the hosted instance, and cross-link the other.
 `MEI_Callset_GRCh38.ALL.20241211` and the T2T callset are hosted and unused. Has
 the same non-reference caveat as tandem repeats below, but the callsets are at
 least reference-anchored point annotations.
+
+### Re-inventory 2026-08-06: the hosted tracks nothing names
+
+Method, so it can be re-run: walk `test_data/config_demo.json`'s tracks and grep
+each `trackId` against every `.ts`/`.md`/`.astro`/`.json` under
+`website/scripts/specs`, `website/docs` and `website/src`. **196 of 262 tracks
+appear nowhere** — not in a spec, not in a doc, not in the gallery. That is the
+pool every idea below comes out of, and it is the cheapest pool we have: these
+are URLs that already resolve, so a page or a demo costs a config and a figure,
+never an upload.
+
+Clusters big enough to carry a page, with the assembly traps that will otherwise
+eat a session:
+
+- **Mappability, blacklists and segdups as a QC layer under a call.** Not in the
+  2026-07 list. Eight mappability bigWigs (CRG 24/36/40/50/75/100mer, Duke
+  20/35bp), the Duke and DAC excludable BEDs, `segdups_ucsc_hg19`, `dgvGold`,
+  `dgvMerged_hg19`, `dgvSupporting_hg19` — all unused. The workflow is "why this
+  CNV or SV call is an artifact": lay the layer under a callset and the true call
+  in unique sequence sits in the same figure as the false one in a segdup, so the
+  control the house style asks for is intrinsic and free. **hg19 only** — hg38
+  has `segdups_ucsc_hg38` and the two DGV tracks but no mappability bigWig, so
+  either the page is hg19 or a hg38 mappability track gets hosted first.
+- **UniProt protein features on the genome.** 34 tracks (17 hg19, 17 hg38),
+  zero uses: domains, disulfide bonds, transmembrane segments, modified
+  residues, variants, chains, splice isoforms. They are genomic-coordinate
+  bigBeds from UCSC, so they lay directly under the gene with no protein
+  coordinate mapping involved. Transcriptomics and proteins is the thinnest
+  section at 3, and this connects to the two pages already in it — a variant
+  lands in a named domain, and `protein_structure.md`'s "How positions are
+  mapped" is the next click. Control: a variant in an unannotated loop.
+- **Genes and annotation.** `tiberius_grch38`, `gencode_47` and `ncbi_08_24` are
+  all hg38, all unused, and are exactly the three tracks the "annotating and
+  QC-ing a new assembly" idea above wants. Nothing is missing for it.
+- **Variant interpretation, with the assembly trap the audit missed.** On hg38
+  you get ClinVar (UCSC, NCBI, and the pathogenic / non-pathogenic SV splits),
+  ClinGen haplo / triplo / gene-disease, MANE 1.4 in both RefSeq and Ensembl ID
+  flavors, `encodeCcreCombined`, `mastermind_hg38`, `dbsuper`, `snp151_hg38`.
+  **The gnomAD tracks are hg19 only** (`missenseConstrained`, `pliByGene`,
+  `gnomad_v2.1_sv.sites`), so the constraint half of the argument and the
+  ClinVar half cannot sit in one hg38 view off this config.
+- **Long-read isoforms.** `NA12878-DirectRNA...minimap2.sorted` as a
+  whole-genome BAM plus a chr1 CRAM subset, unused. This is the dataset the
+  "`rnaseq.md` needs a finding" entry above is waiting on.
+- **Mobile element insertions.** `MEI_Callset_GRCh38.ALL.20241211`,
+  `Ortho_MEI_GRCh38.ALL.20241211`, `MEI_Callset_T2T-CHM13.ALL.20241211` and the
+  three NA12878 ALU / LINE1 / SVA callsets.
+- **HGSVC 2024.** A whole family unused on both hg38 and CHM13 — SNV, indel,
+  symbolic insdel, inversions, a complex-event BED, `vamos.VNTR`, and the
+  PanGenie genotypes. Enough for "one sample, five callsets, which do you
+  believe", though it overlaps `sv_multisamples.md`.
+
+One correction to carry forward: **do not build the somatic SNV/indel page on
+the hg19 COLO829 MinION pair** listed under "Workflow and admin" below.
+`cancer_sv.md` already runs on COLO829 ONT R10 against hg38 (`specs/cancer_sv.ts`),
+and putting the germline-vs-somatic page on the older hg19 alignments splits one
+cell line across two assemblies for no gain.
+
+**Demos are the cheap half of all of this.** Every cluster above is remote URLs
+plus a `demos/<name>/config.json` and a `scripts/deploy-demo.sh` run, with no
+data upload — which is unlike the ten demos we have, all of which carry hosted
+assets. The four worth having, in order: `variant_interpretation` (hg38, the
+ClinVar / ClinGen / MANE / cCRE stack open at one locus), `mappability_qc`
+(hg19, the QC layer under a DGV callset), `uniprot_hg38` (34 tracks in a
+category tree, one click), `directrna_isoforms`. A demo also derisks the
+matching tutorial: it is the config the page would have to write anyway.
 
 ### Workflow and admin
 
