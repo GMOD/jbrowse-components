@@ -47,16 +47,16 @@ jq -r '[to_entries[]|select(.value.status=="bad")]|.[]|"\(.value.name)\t\(.value
   an edit needs a rebuild or a `cp`). That is not what the code does:
   `generate-screenshots.ts` passes `testDataRoot = products/jbrowse-web` — the
   **source** tree — to `createTestServer`, which serves `/test_data/*` from
-  there, and that path is the `test_data -> ../../test_data` symlink. It has been
-  that way since the astro migration (May 2026). Verified directly while adding
-  the Hi-C compartment tracks: `build/test_data/config_demo.json` did **not**
-  contain them and the figure rendered them anyway, naming them in its track
-  labels. Only non-`test_data` URLs come out of `build/`, so an **app or plugin
-  source** change still needs `NODE_ENV=production node scripts/build.ts`.
-  Whatever cost the hour on that earlier new-Hi-C-track spec, this mechanism was
-  not it — so don't spend a rebuild on a config edit, and if a new track's
-  `readySelector` times out, suspect the track (adapter, CORS, an empty region)
-  rather than a stale copy.
+  there, and that path is the `test_data -> ../../test_data` symlink. It has
+  been that way since the astro migration (May 2026). Verified directly while
+  adding the Hi-C compartment tracks: `build/test_data/config_demo.json` did
+  **not** contain them and the figure rendered them anyway, naming them in its
+  track labels. Only non-`test_data` URLs come out of `build/`, so an **app or
+  plugin source** change still needs
+  `NODE_ENV=production node scripts/build.ts`. Whatever cost the hour on that
+  earlier new-Hi-C-track spec, this mechanism was not it — so don't spend a
+  rebuild on a config edit, and if a new track's `readySelector` times out,
+  suspect the track (adapter, CORS, an empty region) rather than a stale copy.
 - **Viewing PNGs**: capture is ~1500w@2x ≈ 3000px, too big for the Read tool —
   downscale first: `convert static/img/<name>.png -resize 1100x /tmp/x.png`,
   then Read `/tmp/x.png`. Whole-genome/many-row figures (470-way, dotplots,
@@ -248,16 +248,17 @@ tolerance ball for "did this figure move".
     its else-branch — which looks exactly like a threshold that is merely wrong.
     Set the adapter's `columnNames` explicitly on any juicer BEDPE.
 
-- **Hi-C compartments: the checkerboard is not renderable here, and three ways to
-  compare them wrongly.** From adding `hic/compartment_switch`.
+- **Hi-C compartments: the checkerboard is not renderable here, and three ways
+  to compare them wrongly.** From adding `hic/compartment_switch`.
   - **A/B compartmentalisation cannot be drawn from a `.hic` in JBrowse.** The
     published checkerboard comes from an _observed/expected_ matrix (each bin
     divided by the mean at its separation, then correlated), and there is no O/E
     transform — so against the distance decay the plaid stays a faint texture.
     Both ends of the ramp were tried on one view: linear+percentile leaves it
-    near-white, `useLogScale` on a deep file returns solid red. Balanced (SCALE) +
-    linear shows the most, and is what the figure uses. Don't burn time hunting a
-    ramp that produces a checkerboard; load the pipeline's eigenvector instead.
+    near-white, `useLogScale` on a deep file returns solid red. Balanced
+    (SCALE) + linear shows the most, and is what the figure uses. Don't burn
+    time hunting a ramp that produces a checkerboard; load the pipeline's
+    eigenvector instead.
   - **The eigenvector's sign is a property of the FILE, not a convention.** A
     compartment eigenvector is equally valid negated, so "positive = A" is an
     assumption. Anchor it against gene density (A is gene-rich by definition):
@@ -265,27 +266,27 @@ tolerance ball for "did this figure move".
     bins with none came out positive-vs-negative in both files, so positive is A
     for these two. **And cross-file comparison needs the orientations to agree,
     which nothing guarantees** — checked at 87-93% same-sign agreement per 100kb
-    bin with each file ~50/50 positive, where arbitrary relative orientation would
-    sit at 50%. Without that check a whole-chromosome orientation difference reads
-    as compartment switching everywhere.
+    bin with each file ~50/50 positive, where arbitrary relative orientation
+    would sit at 50%. Without that check a whole-chromosome orientation
+    difference reads as compartment switching everywhere.
   - **Subcompartment cluster numbers are arbitrary labels**, not the published
     A1/A2/B1/B2/B3 naming, so a number means nothing alone and two files only
-    compare because the same pipeline gave the same colours. `hic/compartment_switch`
-    therefore requires BOTH the cluster id and the eigenvector sign to differ
-    before calling a region switched: a renumbering moves ids without moving the
-    eigenvector. Note the slice run matters — `ENCSR742SAT` emits SIX clusters
-    where the two used here emit five.
+    compare because the same pipeline gave the same colours.
+    `hic/compartment_switch` therefore requires BOTH the cluster id and the
+    eigenvector sign to differ before calling a region switched: a renumbering
+    moves ids without moving the eigenvector. Note the slice run matters —
+    `ENCSR742SAT` emits SIX clusters where the two used here emit five.
   - **Pin `minScore`/`maxScore` on every eigenvector track you stack.**
     Autoscaling makes each fill its own lane from its own extremes, which is
     exactly the comparison the figure is making.
   - **A 12-column BED that is not BED12 is misread twice, silently.** ENCODE's
-    subcompartment BED has no tabix index (use `BedAdapter`, it is ~150kB) and its
-    last three columns are cluster metadata, not block fields — so positionally
-    the cluster count becomes `blockCount` and every feature grows phantom
-    subfeatures. Its colour column is also spelled `itemRGB`, which is not the
-    name JBrowse looks for, and the header is not consulted anyway because a
-    second comment line follows the column line (same last-header-line rule as
-    the juicer BEDPE above). Explicit `columnNames` fixes both.
+    subcompartment BED has no tabix index (use `BedAdapter`, it is ~150kB) and
+    its last three columns are cluster metadata, not block fields — so
+    positionally the cluster count becomes `blockCount` and every feature grows
+    phantom subfeatures. Its colour column is also spelled `itemRGB`, which is
+    not the name JBrowse looks for, and the header is not consulted anyway
+    because a second comment line follows the column line (same last-header-line
+    rule as the juicer BEDPE above). Explicit `columnNames` fixes both.
 
 - **A legend that gains a section can outgrow its lane.** Adding one to the
   multi-sample variant display pushed it past the 120px `height` the

@@ -28,8 +28,8 @@
     "name": "bigwig_line",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-27T01:24:49.505Z",
-    "hash": "56bd1ab3f60ec83291f2f6e5ec35b08c0293f791"
+    "reviewedAt": "2026-08-06T05:17:08.387Z",
+    "hash": "fd47866438185dd9a2d1454ac74aed99b5e5ca79"
   },
   "sequence_track": {
     "name": "sequence_track",
@@ -54,9 +54,9 @@
   "alignments/read_cloud": {
     "name": "alignments/read_cloud",
     "status": "good",
-    "note": "FIXED in code: the arc/cloud legend section now MERGES into the read-colors key whenever the overlay paints from the reads own scheme (arcColorsMatchReads in LinearAlignmentsDisplay/model.ts maps arc mode -> its equivalent read scheme), so the same swatches are no longer listed twice under two headings; the single merged list is untitled. When the two schemes genuinely differ the overlay keeps its own section, and its heading is now named after the overlay drawn (Read cloud colors vs Arc colors), so cloud mode is no longer called arcs. Regenerated. FIXED in code (arcs/compute.ts): mate-link arc endpoints now use each mate's own outer (5') edge instead of the inward gap edge, so a pair's geometric radius matches the TLEN driving its long/short-insert color instead of understating it by both mates' read lengths. Regenerated.",
-    "reviewedAt": "2026-07-27T14:30:38.000Z",
-    "hash": "450b7832a27676e77edeec72ec191ebd6fd91702"
+    "note": "",
+    "reviewedAt": "2026-08-06T05:16:06.817Z",
+    "hash": "334a2d5a34bce396c00a0f1912c04d97838bddc0"
   },
   "dotplot": {
     "name": "dotplot",
@@ -252,10 +252,10 @@
   },
   "alignments_sort_by_base": {
     "name": "alignments_sort_by_base",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-27T04:44:03.279Z",
-    "hash": "0c00b1b795325166e6c36a4ae1991bb35c4b3501"
+    "status": "bad",
+    "note": "the first screenshot shows sorted reads which is unexpected",
+    "reviewedAt": "2026-08-06T05:15:46.261Z",
+    "hash": "d5ec8c2b811fcda4943a2f5faeff4a64800b5fb2"
   },
   "alignments/filter_dialog": {
     "name": "alignments/filter_dialog",
@@ -847,16 +847,16 @@
   "alignments/modifications2": {
     "name": "alignments/modifications2",
     "status": "good",
-    "note": "FIXED: both callouts now lead with the verbatim Color-by menu radio labels (not a Plus... paraphrase); regenerated.",
-    "reviewedAt": "2026-07-27T19:39:20.147Z",
-    "hash": "5bed7e41105c487e4c1f7d6d31783cf332d52844"
+    "note": "reduce width and height of browser",
+    "reviewedAt": "2026-08-06T05:16:01.000Z",
+    "hash": "cebca7eb233ffb4930aab56a72d6c1b432a8cbe0"
   },
   "gene_track_collapse_introns": {
     "name": "gene_track_collapse_introns",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-04T00:21:42.572Z",
-    "hash": "b804bf111a7b4821968e10f6fcd695021a6ede20"
+    "reviewedAt": "2026-08-06T05:21:19.803Z",
+    "hash": "dfdc8884bddf6178f1f2ed56459ef5c137419b4f"
   },
   "gene_track_color_by_cds": {
     "name": "gene_track_color_by_cds",
@@ -869,8 +869,8 @@
     "name": "gene_track_mature_peptides",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-27T01:28:01.676Z",
-    "hash": "245e38d4d99704e68cd5b2e868e5374b9433a5f3"
+    "reviewedAt": "2026-08-06T05:21:24.510Z",
+    "hash": "cb48049d0c30af31e2cb5bc9e6d022e89df827a8"
   },
   "rnaseq/single_read": {
     "name": "rnaseq/single_read",
@@ -1143,8 +1143,8 @@
     "name": "maf_color_by_chromosome",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-01T15:26:40.003Z",
-    "hash": "de2f9b4f1cf2cc101af8607390f778380b2a9d93"
+    "reviewedAt": "2026-08-06T05:25:19.678Z",
+    "hash": "0e30d247479d6cdee9ba5e930992bbe1c1ac7595"
   },
   "sv_cgiab/cnv_log2_baf": {
     "name": "sv_cgiab/cnv_log2_baf",
@@ -1261,8 +1261,8 @@
     "name": "gallery/hg002_dipcall",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-22T20:43:37.275Z",
-    "hash": "abdac8599462394fe82753dda22fff1564f6847b"
+    "reviewedAt": "2026-08-06T05:21:11.668Z",
+    "hash": "80f2f3ce69738dab27e6e796528960cda01091fd"
   },
   "gallery/hg19_vs_hg38": {
     "name": "gallery/hg19_vs_hg38",
@@ -1288,15 +1288,15 @@
     "name": "gallery/sarscov2_polyprotein",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-27T12:48:52.151Z",
-    "hash": "c879f76cdff93a84959c5a6d51348d78108a0e61"
+    "reviewedAt": "2026-08-06T05:21:14.744Z",
+    "hash": "a7bd6c5e553e4f2ca8d5ad40a949427633915ec5"
   },
   "gallery/scatac_catlas": {
     "name": "gallery/scatac_catlas",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-27T12:48:57.542Z",
-    "hash": "58b887d6257c46004d473286bcacaf7b8393f921"
+    "reviewedAt": "2026-08-06T05:21:17.360Z",
+    "hash": "f77fce5a76e7da5d63f844b17c6b48436d6580a8"
   },
   "gallery/yeast_dotplot": {
     "name": "gallery/yeast_dotplot",
@@ -1566,10 +1566,10 @@
   },
   "feature_height_default": {
     "name": "feature_height_default",
-    "status": "good",
-    "note": "FIXED: viewportHeight 760 -> 660, trimming 100px off both frames as asked. MUI reflows the Read-height submenu upward to stay inside the shorter viewport (all rows through \"Fit read height to display\" still visible) and the pin circle anchors to the live element, so it followed. Regenerated + verified.",
-    "reviewedAt": "2026-07-27T13:43:01.476Z",
-    "hash": "6f69de8b18273d5506d0434df949b45b85cba83f"
+    "status": "bad",
+    "note": "consider using left right split instead of top bottom. add margin between left and right when doing so",
+    "reviewedAt": "2026-08-06T05:21:10.127Z",
+    "hash": "61be83ee30017b35b946cd999399ae2c0ebf1bfa"
   },
   "multiway_synteny/ecoli_stx_island": {
     "name": "multiway_synteny/ecoli_stx_island",
@@ -1580,10 +1580,10 @@
   },
   "cookbook_color_by_type": {
     "name": "cookbook_color_by_type",
-    "status": "good",
-    "note": "RESOLVED. The stale 'NCBI RefSeq genes ... CDS red, exons green' caption the reviewer saw survives only in the gitignored website/dist/ build artifact; docs/cookbook.md source was already corrected (commit b3f4ec801b) to the RepeatMasker figure it actually shows (SINE red, LINE blue, LTR green, DNA purple, simple orange, low-complexity brown). The jexl lookup table sits directly above the figure and the feature labels (AluJb=SINE red, L2a=LINE blue, THE1D/LTR54B=LTR green, Tigger=DNA purple) let a reader verify the scheme, so the color meaning is documented without overbuilding a one-off legend.",
-    "reviewedAt": "2026-07-20T18:49:10.000Z",
-    "hash": "3788d7c87f0550d562e9f51d3e8f16cdad930b42"
+    "status": "bad",
+    "note": "unclear what the coloring is. need legend. RESOLVED. The stale 'NCBI RefSeq genes ... CDS red, exons green' caption the reviewer saw survives only in the gitignored website/dist/ build artifact; docs/cookbook.md source was already corrected (commit b3f4ec801b) to the RepeatMasker figure it actually shows (SINE red, LINE blue, LTR green, DNA purple, simple orange, low-complexity brown). The jexl lookup table sits directly above the figure and the feature labels (AluJb=SINE red, L2a=LINE blue, THE1D/LTR54B=LTR green, Tigger=DNA purple) let a reader verify the scheme, so the color meaning is documented without overbuilding a one-off legend.",
+    "reviewedAt": "2026-08-06T05:20:09.971Z",
+    "hash": "98c5b0e8460c16730e5b73a1ef451d313e07b541"
   },
   "cookbook_multiwig": {
     "name": "cookbook_multiwig",
@@ -1594,9 +1594,9 @@
   },
   "ld/lct_lactase": {
     "name": "ld/lct_lactase",
-    "status": "answered",
-    "note": "Out of ld_human.md, as you decided. The opening section is rebuilt around the pooled-vs-panel figure, which carries the same gene track, the same LCT band and the same block on its lower lane, plus the Fst lane; the recombination-curve paragraph now reads across both lanes and the two subsections that follow it are unchanged. The tutorial card thumb had to move with it (a card has to come from a figure its page embeds) and is now the single-panel triangle cropped out of that figure. The spec and PNG stay for config_guides/variant_track.md, which uses it as the LD track's config example.",
-    "reviewedAt": "2026-08-04T21:03:36.452Z",
+    "status": "bad",
+    "note": "see notes in ld/lct_haploblock ",
+    "reviewedAt": "2026-08-06T05:25:17.767Z",
     "hash": "adfb909821ef76986892177d7d749ac1d5d04bb7"
   },
   "ld/mapt_17q21_inversion": {
@@ -2010,8 +2010,8 @@
     "name": "cnv1000g/ugt2b17_biallelic",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-27T01:27:33.258Z",
-    "hash": "30205136970f73874fbb83a15253200c2382b1ae"
+    "reviewedAt": "2026-08-06T05:19:42.292Z",
+    "hash": "0876d00ac573d36c21dec387d64119800822a10f"
   },
   "cnv1000g/zarr_cohort": {
     "name": "cnv1000g/zarr_cohort",
@@ -2239,9 +2239,9 @@
   },
   "dog10k-igf1-haplotype": {
     "name": "dog10k-igf1-haplotype",
-    "status": "answered",
-    "note": "Widened to the full 410 kb the callset covers (chr15:41,348,000-41,752,000), and this is the end of that road rather than one more step along it. clusterRegion had already removed what a wider window used to cost: the row order comes from the 140 kb differentiated core whatever is on screen, so widening can no longer move a row and only dilutes columns -- which is why the earlier 220/320/450 kb sweep does not apply any more. The hard stop is the data: the build's VCF and Fst BED both end at chr15:41,350,031-41,749,214, so a wider frame paints flank with no sites in it, and empty-for-lack-of-data reads exactly like no-differentiation-here. Wider than this is a rebuild of the callset, not a locstring.",
-    "reviewedAt": "2026-08-05T04:56:30.344Z",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-06T05:20:45.275Z",
     "hash": "86b6812a680bb9e3a696e2f3b1d487d607cee64a"
   },
   "dog10k-slc28a3-copy-number": {
@@ -2421,9 +2421,9 @@
   "pangenome/hprc_inversion": {
     "name": "pangenome/hprc_inversion",
     "status": "good",
-    "note": "BOTH ASKS DONE, and the third row is now the one that carries the figure's proof, so it stays. GENE LANES: HPRC annotates every release 2 assembly with CAT, so build_hprc_inversion_synteny.sh now slices each haplotype's own gff3 the way the CFHR build already did, and both haplotype rows carry one. Inside the boxed bubble the carrier's named genes run PPIAL4F, RNVU1-28, RNVU1-2A, RNVU1-26, NBPF15, RNVU1-15, PPIAL4E and the non-carrier's run PPIAL4E through PPIAL4F, i.e. the reference's order. The lanes drop the 29 of 45 loci CAT has no symbol for (it names those by Ensembl gene id, and unfiltered they are most of the lane at the same width and colour, packing it three deep); every CAT row carries gene_name gene-through-exon so that is one filter, not a parent walk. THE THIRD ROW: keeping it, and the gene lane is why. A lone crossing ribbon is equally what a contig deposited in the opposite orientation draws — which is exactly the failure mode the build script's flank test exists to exclude — so the non-carrier row is the control that makes the top row an inversion rather than an assembly artefact, and it now shows that in the frame instead of only in the script. What WAS fair in the note is the 150 px of flat pink under it: the lower band is 90 now, and the height goes to the gene lane instead. Row labels hang off the two new lanes, same as the CFHR figure's.",
-    "reviewedAt": "2026-08-04T03:01:23.090Z",
-    "hash": "785ed76d48b0a7922ddf139b021740bdc2e34594"
+    "note": "",
+    "reviewedAt": "2026-08-06T05:30:00.864Z",
+    "hash": "bc6e1eca01da32b4efbf6654143591db85f70c09"
   },
   "tcga/cohort_cnv_recurrence_subtype": {
     "name": "tcga/cohort_cnv_recurrence_subtype",
@@ -2441,9 +2441,9 @@
   },
   "cancer_sv/multihop_reads": {
     "name": "cancer_sv/multihop_reads",
-    "status": "answered",
-    "note": "The route is now a feature rather than a set of instructions. HOW IT WAS GENERATED, which was the ask: a session spec, and the only route the tutorial documented was Add -> Breakpoint split view with three loci typed into the import form -- loci a reader can only get by reading sv_multihop.py's output. That is the thing you said to avoid, so instead of screenshotting the form, the dialog that already knows the answer got a second destination. WHAT WAS BUILT: 'Open as split view' in the Reconstruct derivative allele dialog (fd705fd256). The dialog already scans the reads in the window, groups them by their SA chains and ranks the routes through the reference they describe; picking one and choosing this builds a BreakpointSplitView with one panel per SEGMENT of that route, in the order the reads cross it, carrying the launching view's tracks. Nothing is typed. One panel per segment rather than per chromosome is the part a hand-filled form cannot do: this chain leaves chr3 and returns to it, so it gets four panels and a person filling in rows types three. Each panel opens on the junction its segment carries rather than on the whole segment -- an outer segment is as long as the longest read that described it, and at 200x ONT a panel over 33 kb of one is a 17 MB fetch the alignments track refuses. NEW FIGURE cancer_sv/multihop_split_view_steps, two frames driving the real UI: the dialog over the pileup it scanned, and the view it built with the reads drawn crossing between panels. The tutorial teaches that route now and mentions the import form only as the way in when you already know the loci. Tests: buildSplitViewFromPath.test.ts covers the order, the revisit case, the junction windowing and the id stripping.",
-    "reviewedAt": "2026-08-05T02:27:54.107Z",
+    "status": "bad",
+    "note": "i dont like that it was manually generated like this. i want it more automatic. similar to the reconstruct derived allele made that work, it should be able to launch  multilevel breakpoint split view automatic too. if that is done in cancer_sv/multihop_split_view_steps  then just delete this figure. HOW IT WAS GENERATED, which was the ask: a session spec, and the only route the tutorial documented was Add -> Breakpoint split view with three loci typed into the import form -- loci a reader can only get by reading sv_multihop.py's output. That is the thing you said to avoid, so instead of screenshotting the form, the dialog that already knows the answer got a second destination. WHAT WAS BUILT: 'Open as split view' in the Reconstruct derivative allele dialog (fd705fd256). The dialog already scans the reads in the window, groups them by their SA chains and ranks the routes through the reference they describe; picking one and choosing this builds a BreakpointSplitView with one panel per SEGMENT of that route, in the order the reads cross it, carrying the launching view's tracks. Nothing is typed. One panel per segment rather than per chromosome is the part a hand-filled form cannot do: this chain leaves chr3 and returns to it, so it gets four panels and a person filling in rows types three. Each panel opens on the junction its segment carries rather than on the whole segment -- an outer segment is as long as the longest read that described it, and at 200x ONT a panel over 33 kb of one is a 17 MB fetch the alignments track refuses. NEW FIGURE cancer_sv/multihop_split_view_steps, two frames driving the real UI: the dialog over the pileup it scanned, and the view it built with the reads drawn crossing between panels. The tutorial teaches that route now and mentions the import form only as the way in when you already know the loci. Tests: buildSplitViewFromPath.test.ts covers the order, the revisit case, the junction windowing and the id stripping.",
+    "reviewedAt": "2026-08-06T05:19:07.542Z",
     "hash": "577c5578df93cbfb6e1d81817fafb396b14045cd"
   },
   "cancer_sv/derivative_inserts": {
@@ -2595,17 +2595,17 @@
   },
   "cancer_sv/derivative_autogenerated": {
     "name": "cancer_sv/derivative_autogenerated",
-    "status": "answered",
+    "status": "good",
     "note": "Answering the ribbon question first, because it is the one with a fact behind it: yes, expected, and real. The two right-hand pieces are 199 bp of chr10 and 183 bp of chr12 inverted, against a 61 kb allele that is 52.3 kb of chr3 plus an 8.4 kb inverted chr3 return -- the sizes are on the figure itself, written by the segment track along the allele, and they come from derive's PAF rather than from the picture. So the ribbons are hairlines because the segments are hairlines, about 0.3% of the allele each, not because anything failed to align. They are templated inserts at the junction, they are the reason this event needs four segments rather than two, and the very next figure (cancer_sv/derivative_inserts) opens those junctions at base scale where the same two pieces are ribbons as wide as the chr3 arms and the realigned reads cross every join at flat depth. Incidental would look like one read's worth of support; this path has 26 reads crossing it in the same order and orientation. The gene track is chaotic for the same reason and the caption now says so rather than leaving it to be discovered: the reference row is a three-locus window whose second and third loci are a few hundred bases wide, so at the right-hand edge two loci's genes plus the gene track carried up from the launching view collide in a few pixels. That crowding IS the 199 bp and 183 bp, drawn honestly. On aligning reads to the derived contig outside JBrowse and plotting them here: that is cancer_sv/realigned_reads, one section down -- derive's consensus with the spanning reads realigned onto it, beside the same molecules against hg38 where they are torn in four, a real BAM on both sides, and both panes now labelled with which assembly they were aligned to.",
-    "reviewedAt": "2026-08-05T04:58:03.379Z",
-    "hash": "40d86a2a010ff18ddbe4bc62a9269c2a2f6755ba"
+    "reviewedAt": "2026-08-06T05:17:13.859Z",
+    "hash": "b509e730571512119b61a1d813e31f4aa3fc7e31"
   },
   "cancer_sv/foldback_reconstruction": {
     "name": "cancer_sv/foldback_reconstruction",
-    "status": "answered",
+    "status": "good",
     "note": "Aligning the reads to the derived contig outside JBrowse and plotting them here is done, and it is cancer_sv/realigned_reads: scripts/sv_multihop.py derive polishes the spanning reads into a consensus and realigns them onto it, and the figure puts that pileup beside the same molecules against hg38, where they are torn in four. A real BAM on both sides, real mismatches, real clipping against real bases, and both panes now carry a label saying which assembly their reads were aligned to -- which is what this note was asking for. Worth saying what it is NOT, since that was tried and reverted (e7b4f2b29b): a reads lane on the IN-APP reconstruction cannot be that check, because the path the dialog builds has no sequence, so a read's own bases never disagree with anything and the lane draws like evidence without being any. The dialog itself is also smaller than when this note was written: eight lines of grey text above the buttons became one sentence plus the single caveat that changes which row you pick, and all three destinations are contained buttons now, so Cancel is the odd one out -- which is right, since it is the one that draws nothing.",
-    "reviewedAt": "2026-08-05T04:58:55.349Z",
-    "hash": "72199127963eee71df1cf1c575476335d0b2f5e4"
+    "reviewedAt": "2026-08-06T05:17:24.798Z",
+    "hash": "f7ae104d80e929186224a4c241912e042355d50c"
   },
   "hic/overlay_controls": {
     "name": "hic/overlay_controls",
@@ -2637,16 +2637,16 @@
   },
   "cancer_sv/multihop_split_view_steps": {
     "name": "cancer_sv/multihop_split_view_steps",
-    "status": "answered",
-    "note": "Took 'should also use replace view' as a change to the app rather than to the capture, because the split-view destination could not replace: it was the one button in that dialog that always added a view. It now routes through addOrReplaceView and says so ('Replace with split view'; a session that cannot replace, e.g. embedded, still reads 'Open as split view'). The reason it is the right default there and not for the synteny destinations: this view is built from the launching view's OWN tracks and its first panel opens on the segment the pileup is already showing, so keeping that view above it was the same locus with the same tracks twice, one scroll apart. The figure is 3,780px where it was 4,578 and the second frame is now just the result. On the left-right split: not done, and the reason is mechanical -- the two frames are 560px and 1,330px tall, and a row is +append'ed, so side by side the short one pads with 770px of white. The 2x2 you asked for on split_view_from_breakend works because its four frames are two matched pairs.",
-    "reviewedAt": "2026-08-05T04:57:07.033Z",
-    "hash": "b0ae9c5a45f9ab734fadfae3c5e4d8e2d425b095"
+    "status": "bad",
+    "note": "the zoom levels are not right here breakpoint split views alignmentsconnections go offscreen. Took 'should also use replace view' as a change to the app rather than to the capture, because the split-view destination could not replace: it was the one button in that dialog that always added a view. It now routes through addOrReplaceView and says so ('Replace with split view'; a session that cannot replace, e.g. embedded, still reads 'Open as split view'). The reason it is the right default there and not for the synteny destinations: this view is built from the launching view's OWN tracks and its first panel opens on the segment the pileup is already showing, so keeping that view above it was the same locus with the same tracks twice, one scroll apart. The figure is 3,780px where it was 4,578 and the second frame is now just the result. On the left-right split: not done, and the reason is mechanical -- the two frames are 560px and 1,330px tall, and a row is +append'ed, so side by side the short one pads with 770px of white. The 2x2 you asked for on split_view_from_breakend works because its four frames are two matched pairs.",
+    "reviewedAt": "2026-08-06T05:19:08.698Z",
+    "hash": "ea1373cb60670fcb919006fba0d88150da0677c5"
   },
   "cancer_sv/realigned_reads": {
     "name": "cancer_sv/realigned_reads",
-    "status": "answered",
-    "note": "I think the left side should potentially show a breakpoint split view, so that the user can see the split alignment from chr3 to chr10. Done -- the left half is now a BreakpointSplitView, chr3:25,359,568 above and chr10:58,717,464 below, and the curves between the panels are the split alignments themselves. The earlier reply declined this as a repeat of cancer_sv/split_view_from_breakend one section up; that was wrong for the reason you gave, since one pileup can only show that the molecules are torn and never where the other piece went. Both panels are 380 bp, the same window the derivative pane shows, so the halves stay comparable base for base and the pileup fits without a scrollbar. Three things this cost, all worth recording. The panels are authored as `views` on the session spec and NOT as `init` -- the launcher takes the panels flat and rejects `init` by name, which is the config/defaultSession spelling. A panel's track height applies but is capped by the split view's own `height`, so both have to move together; raising a track alone moves nothing on screen and only leaves blank page under the view. And a `highlight` authored on a panel is dropped, since the view forwards only {loc, assembly, tracks} to each panel -- so the junction band is now on the derivative pane only, where the curves are not there to mark it.",
-    "reviewedAt": "2026-08-05T18:31:51.997Z",
+    "status": "bad",
+    "note": "this captured a very weird glitch in the first screenshot. also, need margins between the two screenshots and maybe even numbering. I think the left side should potentially show a breakpoint split view, so that the user can see the split alignment from chr3 to chr10. Done -- the left half is now a BreakpointSplitView, chr3:25,359,568 above and chr10:58,717,464 below, and the curves between the panels are the split alignments themselves. The earlier reply declined this as a repeat of cancer_sv/split_view_from_breakend one section up; that was wrong for the reason you gave, since one pileup can only show that the molecules are torn and never where the other piece went. Both panels are 380 bp, the same window the derivative pane shows, so the halves stay comparable base for base and the pileup fits without a scrollbar. Three things this cost, all worth recording. The panels are authored as `views` on the session spec and NOT as `init` -- the launcher takes the panels flat and rejects `init` by name, which is the config/defaultSession spelling. A panel's track height applies but is capped by the split view's own `height`, so both have to move together; raising a track alone moves nothing on screen and only leaves blank page under the view. And a `highlight` authored on a panel is dropped, since the view forwards only {loc, assembly, tracks} to each panel -- so the junction band is now on the derivative pane only, where the curves are not there to mark it.",
+    "reviewedAt": "2026-08-06T05:19:39.265Z",
     "hash": "5e4d88e0ecc074c762c09f9124188261d33446f6"
   },
   "cancer_sv/split_view_from_breakend": {
@@ -2690,5 +2690,82 @@
     "note": "",
     "reviewedAt": "2026-08-05T03:19:17.781Z",
     "hash": "222159182712418e103505295419b938be4b8148"
+  },
+  "alignments/strand_split_coverage": {
+    "name": "alignments/strand_split_coverage",
+    "status": "bad",
+    "note": "confusing. should show reads instead of hiding with with color by strand also",
+    "reviewedAt": "2026-08-06T05:17:05.813Z",
+    "hash": "40c747109f872f0325db40b1813433fe64d0a60f"
+  },
+  "hic/bcr_abl1_translocation": {
+    "name": "hic/bcr_abl1_translocation",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-06T05:21:29.090Z",
+    "hash": "0bd61f802d4faf5a00b1ecc3470a128b6d5f98af"
+  },
+  "hic/compartment_switch": {
+    "name": "hic/compartment_switch",
+    "status": "bad",
+    "note": "there is too much going on in this image and the 'squash' looks weird, the subcompartments are just sort of 'noisy' why should i care here? might consider deleting or improving if not deleting",
+    "reviewedAt": "2026-08-06T05:22:22.842Z",
+    "hash": "a941dd2c259d35efa42cd2df75eacc8c446ec3b8"
+  },
+  "hic/loops_and_domains": {
+    "name": "hic/loops_and_domains",
+    "status": "bad",
+    "note": "the loops are just noisy and non-sense. the contact domains are also. its just everywhere. where is the 'logic'? need publication quality loops that have a story",
+    "reviewedAt": "2026-08-06T05:23:54.750Z",
+    "hash": "c342c69cbf29209f20a841898637eb45d023987d"
+  },
+  "jbrowse-img/gene_name_search": {
+    "name": "jbrowse-img/gene_name_search",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-06T05:24:09.270Z",
+    "hash": "aa77761a1a13193090b3f57320feb85710ec5cb7"
+  },
+  "jbrowse-img/hub_tracks": {
+    "name": "jbrowse-img/hub_tracks",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-06T05:24:11.204Z",
+    "hash": "aa1cd4244ad6902870b7f4ef6cab586f21e092a9"
+  },
+  "jbrowse-img/remote_files": {
+    "name": "jbrowse-img/remote_files",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-06T05:24:14.343Z",
+    "hash": "c8949c7cffc55c34821c143341c493dafecf7374"
+  },
+  "jbrowse-img/skbr3_session": {
+    "name": "jbrowse-img/skbr3_session",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-06T05:24:16.630Z",
+    "hash": "1efbf845baf365921ef0bacf577cb59793d6dbc7"
+  },
+  "jbrowse-img/snpcov": {
+    "name": "jbrowse-img/snpcov",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-06T05:24:19.153Z",
+    "hash": "a169c2de8e44f6d67821167dbfbdec29e8a6e1c2"
+  },
+  "jbrowse-img/volvox_config": {
+    "name": "jbrowse-img/volvox_config",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-06T05:24:21.699Z",
+    "hash": "a2c7b92a39049bef55416dc167ffc7d598c6f2e2"
+  },
+  "ld/lct_haploblock": {
+    "name": "ld/lct_haploblock",
+    "status": "bad",
+    "note": "please combine this with linkage disequilibrium track in same view. then consider deleting the linkage disequilibrium track standalone since combined will be better. ",
+    "reviewedAt": "2026-08-06T05:25:04.216Z",
+    "hash": "9ff14413dc941886099ebc0ba084046d60fd1492"
   }
 }
