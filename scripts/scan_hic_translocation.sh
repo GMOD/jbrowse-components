@@ -126,7 +126,11 @@ echo "════ top $TOP bin pairs in $CASE_LABEL, with the SAME bin in $CTRL
 echo "     (a breakpoint is hot in the case and cold in the control; a bin hot in"
 echo "      both is an artifact, not a rearrangement)"
 printf '     %14s %14s %10s %10s\n' "$CHR1" "$CHR2" "case" "ctrl"
-sort -k3,3 -rn case.txt | head -"$TOP" | while IFS=$'\t' read -r b1 b2 c; do
+# awk does the head: `| head -N` closes the pipe on sort, which dies of
+# SIGPIPE, and under `set -o pipefail` the script exits 141 here — after
+# printing the case table, so the control ranking below (the whole point of
+# the comparison) never runs.
+sort -k3,3 -rn case.txt | awk -v n="$TOP" 'NR<=n' | while IFS=$'\t' read -r b1 b2 c; do
   ctrl=$(awk -F'\t' -v a="$b1" -v b="$b2" '$1==a && $2==b { print $3; found=1 }
                                            END { if (!found) print 0 }' ctrl.txt)
   printf '     %14d %14d %10.0f %10.0f\n' "$b1" "$b2" "$c" "$ctrl"
@@ -135,7 +139,7 @@ done
 echo
 echo "════ the same ranking for $CTRL_LABEL, to show what background looks like"
 printf '     %14s %14s %10s\n' "$CHR1" "$CHR2" "ctrl"
-sort -k3,3 -rn ctrl.txt | head -5 | while IFS=$'\t' read -r b1 b2 c; do
+sort -k3,3 -rn ctrl.txt | awk 'NR<=5' | while IFS=$'\t' read -r b1 b2 c; do
   printf '     %14d %14d %10.0f\n' "$b1" "$b2" "$c"
 done
 

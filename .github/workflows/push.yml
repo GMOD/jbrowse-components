@@ -138,6 +138,11 @@ jobs:
       # rides lint's checkout rather than earning a job.
       - name: Check gated adapters declare a byte budget
         run: pnpm check-gated-adapter-budgets
+      # Source-only and instant for the same reason, and it guards a failure
+      # nothing else can see: `| head` under pipefail exits 141, so the script
+      # stops mid-run having printed something that looks like it finished.
+      - name: Check no `| head` under `set -o pipefail`
+        run: pnpm check-shell-pipefail
 
   # Every artifact that is generated and committed, behind one driver. Adding a
   # generator to scripts/autogen.ts is all it takes to gate it here.
