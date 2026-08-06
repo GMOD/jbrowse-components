@@ -194,7 +194,7 @@ done
 cp "$OUT" "$OUT.tbi" "$POOLED" "$POOLED.tbi" "$FST_BW" "$HAP" "$HAP.tbi" "$APP"/
 
 python3 - "$APP/config.json" "$OUT" "$POOLED" "$FST_BW" "$HAP" "$MAF" <<'PY'
-import json, sys, urllib.parse, urllib.request
+import json, os, sys, urllib.parse, urllib.request
 
 path, panel, pooled, fst, hap, maf = sys.argv[1:7]
 maf = float(maf)
@@ -215,7 +215,11 @@ def absolutize(node):
             absolutize(v)
 
 
-cfg = json.load(open(path))
+# `jb create` unpacks the app but writes no config.json (the sibling scripts
+# get theirs as a side effect of `jb add-assembly`, which this skips so the
+# reference is never downloaded), so start from nothing when it is absent.
+# Every key used below is assigned outright, so there is nothing to preserve.
+cfg = json.load(open(path)) if os.path.exists(path) else {}
 cfg['assemblies'] = hub['assemblies']
 # The two context lanes both figures carry, taken from the hub by id rather than
 # rebuilt: RefSeq genes for what the block sits on, ClinVar for where the causal

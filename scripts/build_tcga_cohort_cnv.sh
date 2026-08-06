@@ -229,7 +229,7 @@ cp "$OUT.bed.gz" "$OUT.bed.gz.tbi" \
    "$BY.gz" "$BY.gz.tbi" "$CLINICAL" "$APP"/
 
 python3 - "$APP/config.json" "$OUT" "$BY" "$CLINICAL" "$PROJECT" "$GROUPBY" <<'PY'
-import json, sys, urllib.parse, urllib.request
+import json, os, sys, urllib.parse, urllib.request
 
 path, out, by, clinical, project, groupby = sys.argv[1:7]
 HUB = 'https://jbrowse.org/ucsc/hg38/config.json'
@@ -249,7 +249,11 @@ def absolutize(node):
             absolutize(v)
 
 
-cfg = json.load(open(path))
+# `jb create` unpacks the app but writes no config.json (the sibling scripts
+# get theirs as a side effect of `jb add-assembly`, which this skips so the
+# reference is never downloaded), so start from nothing when it is absent.
+# Every key used below is assigned outright, so there is nothing to preserve.
+cfg = json.load(open(path)) if os.path.exists(path) else {}
 cfg['assemblies'] = hub['assemblies']
 cfg['tracks'] = [t for t in hub['tracks'] if t.get('trackId') == 'hg38-ncbiRefSeqCurated']
 absolutize(cfg['assemblies'])
