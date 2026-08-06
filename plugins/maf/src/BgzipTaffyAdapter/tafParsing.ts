@@ -1,10 +1,7 @@
 import { DASH } from '../util/asciiBytes.ts'
-import {
-  matchSampleId,
-  parseAssemblyAndChr,
-} from '../util/parseAssemblyName.ts'
 
 import type { AlignmentRecord } from '../types.ts'
+import type { SourceResolver } from '../util/parseAssemblyName.ts'
 import type { RowInstruction } from './rowInstructions.ts'
 
 // Represents a row in the alignment (like Alignment_Row in C)
@@ -176,13 +173,13 @@ export function finalizeBlock(
 }
 
 /**
- * Build a TafFeature from a finalized block, optionally filtering rows
- * whose assembly isn't in `sampleIds`. Reference row (`row0`) determines
+ * Build a TafFeature from a finalized block, dropping rows the caller's
+ * `makeSourceResolver` doesn't resolve. Reference row (`row0`) determines
  * the feature's genomic span; alignments are keyed by assembly name.
  */
 export function blockToFeature(
   block: AlignmentBlock,
-  sampleIds?: Set<string>,
+  resolve: SourceResolver,
 ): TafFeature | undefined {
   if (block.rows.length === 0 || block.columnNumber === 0) {
     return undefined
@@ -192,9 +189,7 @@ export function blockToFeature(
   const alignments: Record<string, AlignmentRecord> = {}
 
   for (const row of block.rows) {
-    const parsed = sampleIds
-      ? matchSampleId(row.sequenceName, sampleIds)
-      : parseAssemblyAndChr(row.sequenceName)
+    const parsed = resolve(row.sequenceName)
     if (parsed?.assemblyName) {
       alignments[parsed.assemblyName] = {
         chr: parsed.chr,

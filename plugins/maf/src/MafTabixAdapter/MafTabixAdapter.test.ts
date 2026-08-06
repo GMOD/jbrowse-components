@@ -127,6 +127,7 @@ describe('MafTabixAdapter reads a maf_to_bed BED', () => {
   // With a sample set the tokens resolve exactly (`matchSampleId`) instead of
   // heuristically, and species outside it are dropped rather than given a row.
   it('narrows to the passed sample set', async () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
     const out = await features(adapter(), [
       { id: 'volvox', label: 'volvox' },
       { id: 'simvolvox', label: 'simvolvox' },
@@ -135,6 +136,28 @@ describe('MafTabixAdapter reads a maf_to_bed BED', () => {
       'simvolvox',
       'volvox',
     ])
+    // narrowing is the *point* of the slot, so dropping the other eight species
+    // must stay silent
+    expect(warn).not.toHaveBeenCalled()
+    warn.mockRestore()
+  })
+
+  // The one case that isn't narrowing: ids that describe some other file, so
+  // every row drops. The track then paints the configured species as labelled
+  // rows with not one base under them, which is indistinguishable from a region
+  // the alignment doesn't cover — except here, where the file's tokens and the
+  // configured ids are both in hand.
+  it('warns when the sample ids match nothing in the file', async () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    const out = await features(adapter(), [
+      { id: 'Volvox_carteri', label: 'Volvox' },
+    ])
+    expect(Object.keys(alignmentsOf(out[0]!))).toEqual([])
+    expect(warn).toHaveBeenCalledTimes(1)
+    const msg = warn.mock.calls[0]![0] as string
+    expect(msg).toContain('"volvox.ctgA"')
+    expect(msg).toContain('"Volvox_carteri"')
+    warn.mockRestore()
   })
 
   it('resolves its sample set and guide tree from the .nh', async () => {

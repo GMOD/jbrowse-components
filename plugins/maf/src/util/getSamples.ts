@@ -26,12 +26,24 @@ function isStringArray(r: SampleConfig): r is string[] {
   return r.length === 0 || typeof r[0] === 'string'
 }
 
+/**
+ * Sample ids are matched against the file's source tokens character for
+ * character (`matchSampleId`), so a stray space is a total mismatch that looks
+ * like a correct config — and these come from a hand-written JSON array or a
+ * pasted-in list. Trimmed at the source rather than at the comparison so the id
+ * the sidebar labels a row with, the id `rowIndexBySrc` keys on and the id the
+ * adapter matches are all the same string.
+ */
+function trimId(id: string) {
+  return id.trim()
+}
+
 export function normalizeSamples(r: SampleConfig): Sample[] {
   return isStringArray(r)
-    ? r.map(id => ({ id, label: id }))
+    ? r.map(id => ({ id: trimId(id), label: trimId(id) }))
     : r.map(s => ({
-        id: s.id,
-        label: s.label ?? s.id,
+        id: trimId(s.id),
+        label: s.label ?? trimId(s.id),
         color: s.color,
         ...(s.assemblyName ? { assemblyName: s.assemblyName } : {}),
         ...(s.assemblyConfigLocation
@@ -40,14 +52,20 @@ export function normalizeSamples(r: SampleConfig): Sample[] {
       }))
 }
 
-/** Depth-first collection of the leaf (tip) names of a parsed Newick tree. */
+/**
+ * Depth-first collection of the leaf (tip) names of a parsed Newick tree.
+ *
+ * Trimmed for the same reason config ids are: a leaf name is a sample id, and a
+ * `.nh` written with a space after a comma carries it into the name, where it
+ * matches no source token in the file.
+ */
 export function collectLeafNames(node: NewickNode, acc: string[] = []) {
   if (node.children?.length) {
     for (const child of node.children) {
       collectLeafNames(child, acc)
     }
-  } else if (node.name) {
-    acc.push(node.name)
+  } else if (node.name?.trim()) {
+    acc.push(node.name.trim())
   }
   return acc
 }

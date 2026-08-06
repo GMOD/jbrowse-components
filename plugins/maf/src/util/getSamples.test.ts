@@ -117,3 +117,31 @@ describe('resolveSamplesFromTree', () => {
     expect(samples.map(s => s.id)).toEqual(['Species1.1', 'Species1.2'])
   })
 })
+
+// Ids are matched against the file's source tokens character for character, so
+// a stray space is a total mismatch that reads as a correct config. Trimmed at
+// the source, so the id the sidebar labels with, the id `rowIndexBySrc` keys on
+// and the id the adapter matches are one string.
+describe('sample ids are trimmed where they are created', () => {
+  test('the string-array config form', () => {
+    expect(normalizeSamples([' hg38', 'panTro4 '])).toEqual([
+      { id: 'hg38', label: 'hg38' },
+      { id: 'panTro4', label: 'panTro4' },
+    ])
+  })
+
+  test('the object config form, label left alone when given', () => {
+    expect(normalizeSamples([{ id: ' hg38 ', label: 'Human ' }])).toEqual([
+      { id: 'hg38', label: 'Human ' },
+    ])
+    expect(normalizeSamples([{ id: ' hg38 ' }])).toEqual([
+      { id: 'hg38', label: 'hg38' },
+    ])
+  })
+
+  test('Newick leaf names', () => {
+    expect(collectLeafNames(parseNewick('(( hg38 , panTro4 ),mm10);'))).toEqual(
+      ['hg38', 'panTro4', 'mm10'],
+    )
+  })
+})

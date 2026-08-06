@@ -7,6 +7,7 @@ import { mafSummaryFeatures } from '../util/loadMafSummaryAdapter.ts'
 import { lazyInit, loadSubAdapter } from '../util/loadSubAdapter.ts'
 import { subscribeToObservable } from '../util/observableUtils.ts'
 import {
+  makeSourceResolver,
   parseMafTabixEntry,
   selectReferenceSequenceString,
 } from '../util/parseAssemblyName.ts'
@@ -71,7 +72,7 @@ export default class MafTabixAdapter extends BaseFeatureDataAdapter<MafTabixAdap
     return ObservableCreate<Feature>(async observer => {
       const { adapter } = await this.setupPre(opts)
       const refAssemblyName = this.getConf('refAssemblyName')
-      const sampleIds = buildSampleFilter(opts)
+      const resolver = makeSourceResolver(buildSampleFilter(opts))
 
       await subscribeToObservable(adapter.getFeatures(query, opts), feature => {
         const data = alignmentColumn(feature).split(',')
@@ -86,7 +87,7 @@ export default class MafTabixAdapter extends BaseFeatureDataAdapter<MafTabixAdap
         let firstAssemblyNameFound: string | undefined
 
         for (let j = 0, l = data.length; j < l; j++) {
-          const entry = parseMafTabixEntry(data[j]!, sampleIds)
+          const entry = parseMafTabixEntry(data[j]!, resolver.resolve)
           if (entry) {
             const { assemblyName, chr, start, strand, srcSize, seq } = entry
             if (!firstAssemblyNameFound) {
@@ -114,6 +115,7 @@ export default class MafTabixAdapter extends BaseFeatureDataAdapter<MafTabixAdap
         )
       })
 
+      resolver.reportUnmatched()
       observer.complete()
     }, opts?.stopToken)
   }

@@ -1,4 +1,5 @@
 import {
+  makeSourceResolver,
   matchSampleId,
   parseAssemblyAndChr,
   parseMafTabixEntry,
@@ -6,7 +7,7 @@ import {
 } from './parseAssemblyName.ts'
 
 describe('parseMafTabixEntry', () => {
-  const samples = new Set(['ce11', 'caeRem4'])
+  const samples = makeSourceResolver(new Set(['ce11', 'caeRem4'])).resolve
 
   test('parses strand and srcSize from a + entry', () => {
     expect(
@@ -412,5 +413,153 @@ describe('refName renaming compatibility', () => {
     // It should not include the chr portion
     const { assemblyName } = parseAssemblyAndChr('ce10.chrI')
     expect(assemblyName).toBe('ce10')
+  })
+})
+
+// Dropping a row whose token matches no configured sample is normal — listing
+// five species of a thirty-way is how you ask for five rows. The failure this
+// watches for is the all-or-nothing one: ids that describe some *other* file, so
+// every row drops and the track paints the configured species as labelled rows
+// with not one base under them. Only here are both sides in hand to tell those
+// apart.
+describe('makeSourceResolver reports a sample set that matches nothing', () => {
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  afterEach(() => {
+    warn.mockClear()
+  })
+  afterAll(() => {
+    warn.mockRestore()
+  })
+
+  it('says nothing when a subset config matches some of the file', () => {
+    const r = makeSourceResolver(new Set(['hg38']))
+    expect(r.resolve('hg38.chr1')).toEqual({
+      assemblyName: 'hg38',
+      chr: 'chr1',
+    })
+    expect(r.resolve('panTro4.chr1')).toBeUndefined()
+    r.reportUnmatched()
+    expect(warn).not.toHaveBeenCalled()
+  })
+
+  it('names both sides when nothing at all matched', () => {
+    const r = makeSourceResolver(new Set(['Pan_troglodytes', 'Mus_musculus']))
+    for (const token of ['hg38.chr1', 'panTro4.chr1', 'mm10.chr1']) {
+      expect(r.resolve(token)).toBeUndefined()
+    }
+    r.reportUnmatched()
+    expect(warn).toHaveBeenCalledTimes(1)
+    const msg = warn.mock.calls[0]![0] as string
+    // the file's tokens, so the user can see what the ids should have looked like
+    expect(msg).toContain('"hg38.chr1"')
+    // ...and their own ids back, so they can see which side is wrong
+    expect(msg).toContain('"Pan_troglodytes"')
+  })
+
+  it('caps both lists rather than printing a 447-way', () => {
+    const ids = Array.from({ length: 40 }, (_, i) => `sample${i}`)
+    const r = makeSourceResolver(new Set(ids))
+    for (let i = 0; i < 40; i++) {
+      r.resolve(`other${i}.chr1`)
+    }
+    r.reportUnmatched()
+    const msg = warn.mock.calls[0]![0] as string
+    expect(msg).toContain('(+37 more)')
+    expect(msg).toContain('(+35 more)')
+  })
+
+  // No configured set is the discovery path, where every token resolves by the
+  // dot heuristic and there is nothing to report.
+  it('stays silent with no sample set at all', () => {
+    const r = makeSourceResolver()
+    expect(r.resolve('hg38.chr1')).toEqual({
+      assemblyName: 'hg38',
+      chr: 'chr1',
+    })
+    r.reportUnmatched()
+    expect(warn).not.toHaveBeenCalled()
+  })
+
+  it('reports once per fetch, not once per row', () => {
+    const r = makeSourceResolver(new Set(['nope']))
+    for (let i = 0; i < 100; i++) {
+      r.resolve('hg38.chr1')
+    }
+    r.reportUnmatched()
+    expect(warn).toHaveBeenCalledTimes(1)
+  })
+})
+
+// PanSN (`sample#haplotype#contig`) is a written spec with `#` as its declared
+// delimiter, and this repo's own `build_ecoli_pangenome_graph.sh` emits it. The
+// resolver knew only `.`, so a PanSN file discovered one row per *contig* named
+// with the whole token and an empty `chr` — and with a configured `samples` list
+// it matched nothing whatsoever.
+describe('PanSN source tokens', () => {
+  test('discovery keeps the haplotype on the row and the contig as chr', () => {
+    expect(parseAssemblyAndChr('HG002#1#chr1')).toEqual({
+      assemblyName: 'HG002#1',
+      chr: 'chr1',
+    })
+    // this repo's E. coli pangenome naming
+    expect(parseAssemblyAndChr('K12#1#chr')).toEqual({
+      assemblyName: 'K12#1',
+      chr: 'chr',
+    })
+  })
+
+  // Collapsing both haplotypes onto `HG002` would make them one key in the
+  // per-block `alignments` record, so the second would overwrite the first and a
+  // diploid assembly would lose half its rows.
+  test('two haplotypes of one sample stay two rows', () => {
+    expect(parseAssemblyAndChr('HG002#1#chr1').assemblyName).not.toBe(
+      parseAssemblyAndChr('HG002#2#chr1').assemblyName,
+    )
+  })
+
+  test('tolerates the two-field form and a contig containing #', () => {
+    expect(parseAssemblyAndChr('HG002#chr1')).toEqual({
+      assemblyName: 'HG002',
+      chr: 'chr1',
+    })
+    expect(parseAssemblyAndChr('HG002#1#ctg#7')).toEqual({
+      assemblyName: 'HG002#1',
+      chr: 'ctg#7',
+    })
+  })
+
+  test('matches at a # boundary, longest id first', () => {
+    expect(matchSampleId('K12#1#chr', new Set(['K12']))).toEqual({
+      assemblyName: 'K12',
+      chr: '1#chr',
+    })
+    expect(matchSampleId('K12#1#chr', new Set(['K12#1']))).toEqual({
+      assemblyName: 'K12#1',
+      chr: 'chr',
+    })
+    // both listed: the more specific one wins, as with dotted haplotypes
+    expect(matchSampleId('K12#1#chr', new Set(['K12', 'K12#1']))).toEqual({
+      assemblyName: 'K12#1',
+      chr: 'chr',
+    })
+  })
+
+  // Widening the separator set can only resolve tokens that resolved to
+  // nothing, or resolve one to a longer id the config explicitly listed — it
+  // never invents a genome.
+  test('leaves dotted tokens resolving exactly as before', () => {
+    expect(parseAssemblyAndChr('hg38.chr1')).toEqual({
+      assemblyName: 'hg38',
+      chr: 'chr1',
+    })
+    expect(parseAssemblyAndChr('Species1.1.chr3')).toEqual({
+      assemblyName: 'Species1.1',
+      chr: 'chr3',
+    })
+    expect(matchSampleId('mm10.chr1.random', new Set(['mm10']))).toEqual({
+      assemblyName: 'mm10',
+      chr: 'chr1.random',
+    })
+    expect(matchSampleId('nope.chr1', new Set(['mm10']))).toBeUndefined()
   })
 })

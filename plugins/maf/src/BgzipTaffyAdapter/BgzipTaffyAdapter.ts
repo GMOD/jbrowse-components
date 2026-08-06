@@ -7,6 +7,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import MafFeature from '../MafFeature.ts'
 import { buildSampleFilter, getSamplesMemoized } from '../util/getSamples.ts'
 import { lazyInit } from '../util/loadSubAdapter.ts'
+import { makeSourceResolver } from '../util/parseAssemblyName.ts'
 import {
   filterFirstLineInstructions,
   parseRowInstructions,
@@ -21,6 +22,7 @@ import { parseTaiIndex, queryBlockSpan } from './taiIndex.ts'
 
 import type { MafAdapterOptions } from '../types.ts'
 import type { SamplesHolder } from '../util/getSamples.ts'
+import type { SourceResolver } from '../util/parseAssemblyName.ts'
 import type { AlignmentBlock, TafFeature } from './tafParsing.ts'
 import type { IndexData } from './types.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -57,11 +59,11 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
   *parseTafBlocksStreaming(
     buffer: Uint8Array,
     runLengthEncodeBases: boolean,
-    sampleIds?: Set<string>,
+    resolve: SourceResolver,
   ): Generator<TafFeature> {
     const buildFeature = (block: AlignmentBlock, cols: string[]) => {
       finalizeBlock(block, cols, this.decoder)
-      return blockToFeature(block, sampleIds)
+      return blockToFeature(block, resolve)
     }
     let pBlock: AlignmentBlock | undefined
     let currentBlock: AlignmentBlock | undefined
@@ -159,20 +161,31 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
     return { index, runLengthEncodeBases }
   }
 
+  /**
+   * Whether the file's bases are run-length encoded, from its `#taf` header
+   * line. A TAF may legitimately carry no header, and non-RLE is the right
+   * answer there — so a *missing* header returns false.
+   *
+   * A failed **read** is not that, and used to be swallowed into the same
+   * `false`. It is the one wrong answer this function can give that produces no
+   * error: `parseBases` would take `"A 3 T 2"` for a literal sequence, so every
+   * base of an RLE file would be silently wrong rather than the track failing.
+   * Nothing was gained by absorbing it either — the read is the first 64KB of
+   * the same file `getFeatures` reads its blocks from, so anything that breaks
+   * it breaks them too, and `lazyInit` clears the memo so a transient error
+   * retries.
+   */
   async readHeader(): Promise<boolean> {
-    try {
-      const file = openLocation(this.getConf('tafGzLocation'))
-      const response = await file.read(65536, 0)
-      const buffer = await unzip(response)
-      const text = this.decoder.decode(buffer)
-      const firstLine = text.split('\n', 1)[0] ?? ''
-      if (firstLine.startsWith('#taf')) {
-        return firstLine.includes('run_length_encode_bases:1')
-      }
-    } catch {
-      // If we can't read the header, assume non-RLE
-    }
-    return false
+    const file = openLocation(this.getConf('tafGzLocation'))
+    // One bgzf block is at most 64KiB compressed, so this always spans a whole
+    // one; `unzip` decodes the complete blocks and stops, ignoring the partial
+    // tail.
+    const buffer = await unzip(await file.read(65536, 0))
+    const firstLine = this.decoder.decode(buffer).split('\n', 1)[0] ?? ''
+    return (
+      firstLine.startsWith('#taf') &&
+      firstLine.includes('run_length_encode_bases:1')
+    )
   }
 
   async readTaiFile() {
@@ -186,7 +199,7 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
     const { statusCallback = () => {} } = opts ?? {}
     return ObservableCreate<Feature>(async observer => {
       const { index, runLengthEncodeBases } = await this.setup(opts)
-      const sampleIds = buildSampleFilter(opts)
+      const resolver = makeSourceResolver(buildSampleFilter(opts))
 
       // Byte range for this query — the same span `getRegionByteSize`
       // estimates from, so the gate can't disagree with the download.
@@ -231,7 +244,7 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
       for (const feat of this.parseTafBlocksStreaming(
         slice,
         runLengthEncodeBases,
-        sampleIds,
+        resolver.resolve,
       )) {
         // Filter features that overlap with query region
         if (feat.end > query.start && feat.start < query.end) {
@@ -249,6 +262,7 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
         }
       }
 
+      resolver.reportUnmatched()
       statusCallback('')
       observer.complete()
       // The stop token, like the tabix and bigMaf adapters pass: without it a

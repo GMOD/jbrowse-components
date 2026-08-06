@@ -107,6 +107,23 @@ describe('parseTaiIndex', () => {
   test('a token with no assembly prefix is the chromosome itself', () => {
     expect(Object.keys(parseTaiIndex('chrI\t0\t0\n'))).toEqual(['chrI'])
   })
+
+  // The `.tai` keys are what `getRefNames` advertises and what
+  // `queryBlockSpan` looks a query's refName up under, so a PanSN source name
+  // that keeps its whole token as the key advertises a name no region ever
+  // queries — the track resolves no span and draws nothing. The JBrowse
+  // assembly for this repo's E. coli pangenome calls the reference `chr`.
+  test('PanSN source names key on the contig, not the whole token', () => {
+    const index = parseTaiIndex('K12#1#chr\t0\t0\nK12#1#chr\t500\t9000\n')
+    expect(Object.keys(index)).toEqual(['chr'])
+    expect(index.chr).toHaveLength(2)
+  })
+
+  test('a PanSN contig keeps its own separators', () => {
+    expect(Object.keys(parseTaiIndex('HG002#1#ctg#7\t0\t0\n'))).toEqual([
+      'ctg#7',
+    ])
+  })
 })
 
 describe('lowerBound', () => {

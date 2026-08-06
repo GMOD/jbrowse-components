@@ -2,6 +2,7 @@ import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
+import { makeSourceResolver } from '../util/parseAssemblyName.ts'
 import BgzipTaffyAdapter from './BgzipTaffyAdapter.ts'
 import configSchema from './configSchema.ts'
 import {
@@ -523,6 +524,10 @@ describe('BgzipTaffyAdapter methods', () => {
 })
 
 describe('blockToFeature', () => {
+  // No sample set: tokens split on the dot heuristic (`makeSourceResolver`'s
+  // other half), which is the discovery path all three adapters share.
+  const splitResolve = makeSourceResolver().resolve
+
   const makeRow = (sequenceName: string, bases: string) => ({
     sequenceName,
     start: 100,
@@ -537,7 +542,7 @@ describe('blockToFeature', () => {
       rows: [makeRow('hg38.chr1', 'ACGT'), makeRow('mm10.chr2', 'ACGT')],
       columnNumber: 4,
     }
-    const feature = blockToFeature(block)
+    const feature = blockToFeature(block, splitResolve)
     expect(feature).toBeDefined()
     expect(feature!.alignments).toHaveProperty('hg38')
     expect(feature!.alignments).toHaveProperty('mm10')
@@ -554,7 +559,7 @@ describe('blockToFeature', () => {
       rows: [makeRow('hg38.chr1', 'ACGT'), makeRow('HG002.1.chr1', 'ACGT')],
       columnNumber: 4,
     }
-    const aln = blockToFeature(block)!.alignments
+    const aln = blockToFeature(block, splitResolve)!.alignments
     expect(aln['HG002.1']).toBeDefined()
     expect(aln['HG002.1']!.chr).toBe('chr1')
   })
@@ -565,7 +570,7 @@ describe('blockToFeature', () => {
       rows: [makeRow('hg38.CM000663.2', 'ACGT')],
       columnNumber: 4,
     }
-    const aln = blockToFeature(block)!.alignments
+    const aln = blockToFeature(block, splitResolve)!.alignments
     expect(aln.hg38!.chr).toBe('CM000663.2')
   })
 
@@ -579,7 +584,7 @@ describe('blockToFeature', () => {
       columnNumber: 4,
     }
     const filter = new Set(['hg38', 'panTro6'])
-    const feature = blockToFeature(block, filter)
+    const feature = blockToFeature(block, makeSourceResolver(filter).resolve)
     expect(feature!.alignments).toHaveProperty('hg38')
     expect(feature!.alignments).toHaveProperty('panTro6')
     expect(feature!.alignments).not.toHaveProperty('mm10')
@@ -595,7 +600,7 @@ describe('blockToFeature', () => {
       columnNumber: 4,
     }
     const filter = new Set(['Species1.1', 'Species1.2'])
-    const feature = blockToFeature(block, filter)
+    const feature = blockToFeature(block, makeSourceResolver(filter).resolve)
     const aln = feature!.alignments
     expect(aln['Species1.1']).toBeDefined()
     expect(aln['Species1.2']).toBeDefined()
@@ -604,13 +609,50 @@ describe('blockToFeature', () => {
     expect(aln['Species1.2']!.seq).toBe('TGCA')
   })
 
+  // A pangenome TAF names its rows PanSN (`sample#haplotype#contig`) — what
+  // cactus/taffy emit, and what this repo's own E. coli pangenome build writes.
+  // Discovery used to take the whole token as the sample and leave `chr` empty,
+  // so every contig became its own row and both the features that key on `chr`
+  // (color-by-source-chromosome, the inversion consensus) had nothing to key on.
+  test('PanSN rows discover per haplotype, with the contig as chr', () => {
+    const block = {
+      rows: [
+        makeRow('K12#1#chr', 'ACGT'),
+        makeRow('HG002#1#chr1', 'ACGT'),
+        makeRow('HG002#2#chr1', 'ACGT'),
+      ],
+      columnNumber: 4,
+    }
+    const aln = blockToFeature(block, splitResolve)!.alignments
+    expect(Object.keys(aln)).toEqual(['K12#1', 'HG002#1', 'HG002#2'])
+    expect(aln['HG002#1']!.chr).toBe('chr1')
+  })
+
+  test('PanSN rows narrow to a configured sample set', () => {
+    const block = {
+      rows: [makeRow('K12#1#chr', 'ACGT'), makeRow('O157#1#chr', 'TGCA')],
+      columnNumber: 4,
+    }
+    const aln = blockToFeature(
+      block,
+      makeSourceResolver(new Set(['K12#1'])).resolve,
+    )!.alignments
+    expect(Object.keys(aln)).toEqual(['K12#1'])
+    expect(aln['K12#1']!.chr).toBe('chr')
+  })
+
   test('returns undefined for empty block', () => {
-    expect(blockToFeature({ rows: [], columnNumber: 0 })).toBeUndefined()
     expect(
-      blockToFeature({
-        rows: [makeRow('hg38.chr1', 'ACGT')],
-        columnNumber: 0,
-      }),
+      blockToFeature({ rows: [], columnNumber: 0 }, splitResolve),
+    ).toBeUndefined()
+    expect(
+      blockToFeature(
+        {
+          rows: [makeRow('hg38.chr1', 'ACGT')],
+          columnNumber: 0,
+        },
+        splitResolve,
+      ),
     ).toBeUndefined()
   })
 
@@ -619,7 +661,7 @@ describe('blockToFeature', () => {
       rows: [makeRow('hg38.chr1', 'AC-GT')],
       columnNumber: 5,
     }
-    const feature = blockToFeature(block)!
+    const feature = blockToFeature(block, splitResolve)!
     expect(feature.start).toBe(100)
     expect(feature.end).toBe(104) // 4 non-gap bases
   })
@@ -965,5 +1007,47 @@ describe('BgzipTaffyAdapter honors the stop token', () => {
       tafAdapter().getFeatures(region, { stopToken }).pipe(toArray()),
     )
     expect(out.length).toBeGreaterThan(0)
+  })
+})
+
+// `readHeader` decides whether the file's bases are run-length encoded. A
+// missing `#taf` header legitimately means non-RLE; a failed *read* does not,
+// and used to be swallowed into the same answer — which would have taken an RLE
+// file's `"A 3 T 2"` for a literal sequence and rendered every base wrong with
+// no error anywhere.
+describe('BgzipTaffyAdapter RLE detection', () => {
+  function tafAdapter(tafGzLocation: unknown) {
+    return new BgzipTaffyAdapter(
+      configSchema.create({
+        tafGzLocation,
+        taiLocation: {
+          localPath:
+            require.resolve('../../test_data/celegans/chrI.taf.gz.tai'),
+          locationType: 'LocalPathLocation',
+        },
+      }),
+    )
+  }
+
+  test('reads the header of a real (non-RLE) file rather than guessing', async () => {
+    const adapter = tafAdapter({
+      localPath: require.resolve('../../test_data/celegans/chrI.taf.gz'),
+      locationType: 'LocalPathLocation',
+    })
+    await expect(adapter.readHeader()).resolves.toBe(false)
+    // ...and it got there by reading, not by failing: the same call resolves
+    // the whole setup
+    await expect(adapter.setup()).resolves.toEqual(
+      expect.objectContaining({ runLengthEncodeBases: false }),
+    )
+  })
+
+  test('surfaces an unreadable file instead of assuming non-RLE', async () => {
+    const adapter = tafAdapter({
+      localPath: '/nonexistent/missing.taf.gz',
+      locationType: 'LocalPathLocation',
+    })
+    await expect(adapter.readHeader()).rejects.toThrow()
+    await expect(adapter.setup()).rejects.toThrow()
   })
 })

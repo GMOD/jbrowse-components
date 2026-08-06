@@ -6,10 +6,7 @@ import { buildSampleFilter, getSamplesMemoized } from '../util/getSamples.ts'
 import { mafSummaryFeatures } from '../util/loadMafSummaryAdapter.ts'
 import { lazyInit, loadSubAdapter } from '../util/loadSubAdapter.ts'
 import { subscribeToObservable } from '../util/observableUtils.ts'
-import {
-  matchSampleId,
-  parseAssemblyAndChr,
-} from '../util/parseAssemblyName.ts'
+import { makeSourceResolver } from '../util/parseAssemblyName.ts'
 import { parseBigMafStanza } from '../util/parseBigMaf.ts'
 
 import type { MafAdapterOptions } from '../types.ts'
@@ -66,19 +63,14 @@ export default class BigMafAdapter extends BaseFeatureDataAdapter {
   getFeatures(query: Region, opts?: MafAdapterOptions) {
     return ObservableCreate<Feature>(async observer => {
       const { adapter } = await this.setupPre(opts)
-      const sampleIds = buildSampleFilter(opts)
-
       // bigMaf packs the full MAF stanza (s/i/e/q lines) into one ';'-joined
       // `mafBlock` field; parseBigMafStanza turns it into aligned + empty rows.
-      const resolve = (organismChr: string) =>
-        sampleIds
-          ? matchSampleId(organismChr, sampleIds)
-          : parseAssemblyAndChr(organismChr)
+      const resolver = makeSourceResolver(buildSampleFilter(opts))
 
       await subscribeToObservable(adapter.getFeatures(query, opts), feature => {
         const { alignments, empties, referenceSeq } = parseBigMafStanza(
           mafBlockField(feature),
-          resolve,
+          resolver.resolve,
         )
         observer.next(
           new MafFeature(
@@ -94,6 +86,7 @@ export default class BigMafAdapter extends BaseFeatureDataAdapter {
         )
       })
 
+      resolver.reportUnmatched()
       observer.complete()
     }, opts?.stopToken)
   }
