@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from '@testing-library/react'
+import { act, renderHook, waitFor } from '@testing-library/react'
 
 import { checkStopToken } from './stopToken.ts'
 import { useFetch } from './useFetch.ts'
@@ -111,6 +111,74 @@ test('clears data when the fetcher goes null under an unchanged key', async () =
     expect(result.current.data).toBeUndefined()
   })
   expect(result.current.isLoading).toBe(false)
+})
+
+// A mutate() refetch asks the same question again, so the answer on screen is a
+// stale version of the same thing. Blanking it made every consumer flash its
+// empty state on each revalidate — the desktop start screen showed "No sessions
+// available" after each rename or delete.
+test('a mutate() refetch keeps the previous data visible while it runs', async () => {
+  // each call parks its resolver, so the test decides when a fetch finishes and
+  // can look at the hook while the second one is still in flight
+  const resolvers: ((answer: string) => void)[] = []
+  const { result } = renderHook(() =>
+    useFetch(
+      ['stable'] as const,
+      () =>
+        new Promise<string>(resolve => {
+          resolvers.push(resolve)
+        }),
+    ),
+  )
+
+  await waitFor(() => {
+    expect(resolvers).toHaveLength(1)
+  })
+  act(() => {
+    resolvers[0]!('first')
+  })
+  await waitFor(() => {
+    expect(result.current.data).toBe('first')
+  })
+
+  act(() => {
+    result.current.mutate()
+  })
+  await waitFor(() => {
+    expect(resolvers).toHaveLength(2)
+  })
+
+  // in flight, and the previous answer is still on screen rather than a blank
+  expect(result.current.isLoading).toBe(true)
+  expect(result.current.data).toBe('first')
+
+  act(() => {
+    resolvers[1]!('second')
+  })
+  await waitFor(() => {
+    expect(result.current.data).toBe('second')
+  })
+})
+
+// The other half: a different key is a different question, so its old answer
+// must not sit there looking like the new one.
+test('a key change still clears the previous data', async () => {
+  const { result, rerender } = renderHook(
+    ({ id }: { id: string }) =>
+      useFetch([id] as const, async key => `answer for ${key}`),
+    { initialProps: { id: 'a' } },
+  )
+
+  await waitFor(() => {
+    expect(result.current.data).toBe('answer for a')
+  })
+
+  rerender({ id: 'b' })
+
+  expect(result.current.data).toBeUndefined()
+  await waitFor(() => {
+    expect(result.current.data).toBe('answer for b')
+  })
 })
 
 // What the token is for: a fetcher forwarding it to an RPC stops the worker

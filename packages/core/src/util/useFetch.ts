@@ -8,7 +8,8 @@ import type { StopToken } from './stopToken.ts'
 // {data, error, isLoading, mutate} subset with background revalidation off
 // (every data source is stable for the lifetime of the dialog/widget that
 // opens it), so we fetch once per key — which also keeps SWR out of the
-// eagerly-loaded bundle.
+// eagerly-loaded bundle. A mutate() refetch keeps the previous data visible
+// while it runs, as SWR does; see the setState in the fetch effect.
 
 export type FetchKey = string | readonly unknown[] | null | undefined | false
 
@@ -117,6 +118,9 @@ export function useFetch<Data = unknown, Key extends FetchKey = FetchKey>(
   fetcherRef.current = fetcher
   const keyRef = useRef(key)
   keyRef.current = key
+  // the key the last fetch ran under, to tell a mutate()-driven refetch from a
+  // key change — see the setState below
+  const fetchedKeyRef = useRef<string | null>(null)
 
   useEffect(() => {
     const key = keyRef.current
@@ -124,12 +128,29 @@ export function useFetch<Data = unknown, Key extends FetchKey = FetchKey>(
     if (serialized === null || !fetcher) {
       // when the key becomes null, callers see undefined data again rather
       // than the prior fetch's result
+      fetchedKeyRef.current = null
       setState({ data: undefined, error: undefined, isLoading: false })
       return undefined
     } else {
       let alive = true
       const stopToken = createStopToken()
-      setState({ data: undefined, error: undefined, isLoading: true })
+      // A refetch under the same key — mutate(), or the cross-component
+      // mutate(key) — is the same question asked again, so what is on screen is
+      // a stale answer to it rather than an answer to something else: leave it
+      // up and let `isLoading` say it is being rechecked. A key *change* still
+      // clears, because the old data describes a different question.
+      //
+      // Blanking on every refetch is what made the desktop start screen flash
+      // "No sessions available" after each rename, delete, or cancelled dialog.
+      // Consumers that want the old view gone during a revalidate already have
+      // it: they gate on `isLoading`, which is unchanged.
+      const sameKey = fetchedKeyRef.current === serialized
+      fetchedKeyRef.current = serialized
+      setState(prev => ({
+        data: sameKey ? prev.data : undefined,
+        error: undefined,
+        isLoading: true,
+      }))
       // The runtime counterpart of FetcherArgs: an array key becomes one
       // argument per element, anything else a single argument, then the stop
       // token. A conditional type over an unresolved `Key` can't be discharged
