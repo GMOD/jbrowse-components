@@ -154,13 +154,50 @@ written under `src/**/*.test.ts` will keep passing. **Reproduce in a real
 browser**, and treat "the Node repro passes" as saying nothing about this class
 of bug.
 
-The mechanism that fits every row of the table above and is not yet tested: a
-wasm-backed Uint8Array reaches `TextDecoder` only on some decompress paths, and
-which path a query takes may depend on how many bgzf blocks it spans. The tier
-files are small and dense (a whole chromosome in very few blocks) where the
-hosted fine pair is large and sparse, so a single-block fast path that returns a
-*view* rather than a `.slice()` copy would split exactly the way these results
-do. Check `unzipChunkSlice` against a one-block query before anything else.
+**`bgzf-filehandle` is NOT the source — eliminated 2026-08-05**, so do not start
+there. Everything below was checked in the shipped bundle, not just the source:
+
+- both 6.2.0 and 6.3.2 `.slice()` out of the wasm heap on the array return path
+  (`getArrayU8FromWasm0(r0, r1).slice()`), and 6.3.2's own comment says why;
+- patching `unzipChunkSlice` to copy in both versions changes nothing;
+- serving the tier from the CDN instead of the dev server changes nothing, so it
+  is not range requests or `Content-Encoding`;
+- the plugin's store had a **stale duplicate** bgzf 6.2.0 beside 6.3.2 after the
+  tabix bump, which made several intermediate readings wrong. `rm -rf
+  node_modules && pnpm install` leaves exactly one (6.3.2). Re-verified on that
+  clean single-copy build: still fails.
+
+**One real upstream defect was found along the way, worth reporting regardless
+of this bug.** wasm-bindgen's string path does *not* copy where the array path
+does:
+
+```js
+cachedTextDecoder.decode(getUint8ArrayMemory0().subarray(ptr, ptr + len))  // no .slice()
+```
+
+`getStringFromWasm0` feeds `Error(getStringFromWasm0(...))` at two call sites, so
+**the bgzf wasm module cannot report any error in Chrome** — every Rust-side
+error message becomes this same TypeError. That is a real hazard for every
+consumer (bam-js, tabix-js), and it also means a `TextDecoder ... resizable`
+error anywhere near bgzf may be *masking* the actual failure rather than being
+it. Patching it here did not unmask a different error, so it is not what this
+bug is, but it should still go upstream.
+
+This is **generic to wasm-bindgen, not to bgzf**: that `getStringFromWasm0` body
+is wasm-bindgen's own emitted code, unchanged, and
+[MDN states that `WebAssembly.Memory().buffer` *is* a resizable ArrayBuffer](https://developer.mozilla.org/en-US/docs/WebAssembly/Reference/JavaScript_interface/Memory/Memory).
+So the platform changed under every wasm-bindgen module that decodes strings,
+and the same shape has already bitten the ecosystem from the other side
+([Safari's 2 GB TextDecoder limit hitting the identical call site](https://github.com/rustwasm/wasm-bindgen/discussions/4185)).
+Not something to fix by "not using wasm-bindgen" — it is vendored inside
+`@gmod/bgzf-filehandle`'s wasm build, and the only non-wasm path there is the
+`DecompressionStream`/pako fallback for *non*-BGZF input, which a bgzf file
+never takes.
+
+So the source is something else in the worker handing `TextDecoder` a view over
+a resizable buffer. Next step is a **devtools breakpoint on
+`TextDecoder.prototype.decode` in the worker**, checking `input.buffer.resizable`
+— one session closes it, where nine rounds of file-level bisection did not.
 
 Rebuild the inputs in about a minute — none of this needs the 842 MB graph:
 
