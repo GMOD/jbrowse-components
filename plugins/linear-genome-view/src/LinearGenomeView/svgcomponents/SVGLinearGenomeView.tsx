@@ -3,10 +3,8 @@ import { awaitViewInitialized } from '@jbrowse/core/svg/svgReady'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
 import { getSession } from '@jbrowse/core/util'
 
-import SVGGridlines from './SVGGridlines.tsx'
 import SVGHeader from './SVGHeader.tsx'
-import SVGHighlightsOverlay from './SVGHighlightsOverlay.tsx'
-import SVGTracks from './SVGTracks.tsx'
+import SVGView from './SVGView.tsx'
 import { renderViewTracks } from './renderViewTracks.ts'
 import {
   defaultTextHeight,
@@ -95,33 +93,30 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
     Wrapper,
     children: (
       <g transform={`translate(${exportMargin} 0)`}>
-        <g transform={`translate(${trackLabelOffset})`}>
-          <SVGHeader
-            model={model}
-            fontSize={fontSize}
-            rulerHeight={rulerHeight}
-          />
-        </g>
-        {showGridlines ? (
-          <g transform={`translate(${trackLabelOffset} ${tracksTop})`}>
-            <SVGGridlines model={model} height={tracksHeight} />
-          </g>
-        ) : null}
-        <g transform={`translate(0 ${tracksTop})`}>
-          <SVGTracks
-            textHeight={textHeight}
-            fontSize={fontSize}
-            model={model}
-            displayResults={displayResults}
-            trackLabels={trackLabels}
-            trackLabelOffset={trackLabelOffset}
-            leftBuffer={exportMargin}
-            legendWidth={legendWidth}
-          />
-        </g>
-        <g transform={`translate(${trackLabelOffset} ${tracksTop})`}>
-          <SVGHighlightsOverlay model={model} tracksHeight={tracksHeight} />
-        </g>
+        <SVGView
+          view={model}
+          displayResults={displayResults}
+          // the standalone export is the one with room above the tracks, so its
+          // header is the full one: cytoband overview and total-bp scalebar as
+          // well as the assembly name and ruler. `tracksTop` is the height
+          // getHeaderLayout gave it.
+          header={
+            <SVGHeader
+              model={model}
+              fontSize={fontSize}
+              rulerHeight={rulerHeight}
+            />
+          }
+          fontSize={fontSize}
+          textHeight={textHeight}
+          trackLabels={trackLabels}
+          trackLabelOffset={trackLabelOffset}
+          contentTop={tracksTop}
+          tracksHeight={tracksHeight}
+          showGridlines={showGridlines}
+          leftBuffer={exportMargin}
+          legendWidth={legendWidth}
+        />
       </g>
     ),
   })

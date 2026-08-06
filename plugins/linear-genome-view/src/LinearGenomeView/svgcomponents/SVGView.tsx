@@ -1,22 +1,22 @@
-import { stripAlpha } from '@jbrowse/core/util'
-import { useTheme } from '@mui/material'
-
 import SVGGridlines from './SVGGridlines.tsx'
 import SVGHighlightsOverlay from './SVGHighlightsOverlay.tsx'
-import SVGRuler from './SVGRuler.tsx'
 import SVGTracks from './SVGTracks.tsx'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { TrackLabelMode } from '../types.ts'
 import type { SvgDisplayResult } from './util.ts'
+import type { ReactNode } from 'react'
 
-// One LGV's worth of exported SVG: assembly label + ruler on top, then optional
-// gridlines, the track bodies, and the highlight layer over them. Shared
-// verbatim by the linear-synteny and breakpoint-split exports so their per-view
-// layout can't drift.
+// One LGV's worth of exported SVG: a caller-supplied header on top, then
+// optional gridlines, the track bodies, and the highlight layer over them.
+// Shared by all three exports that stack an LGV — the standalone one, and the
+// linear-synteny and breakpoint-split rows — so their per-view layout can't
+// drift. It did drift while the standalone export kept its own copy of these
+// four groups: only that copy widened the per-track clip by `legendWidth`.
 export default function SVGView({
   view,
   displayResults,
+  header,
   fontSize,
   textHeight,
   trackLabels,
@@ -25,18 +25,26 @@ export default function SVGView({
   tracksHeight,
   showGridlines,
   leftBuffer = 0,
+  legendWidth = 0,
 }: {
   view: LinearGenomeViewModel
   displayResults: SvgDisplayResult[]
+  // What sits above the track bodies, drawn from this component's own origin
+  // and inset by `trackLabelOffset` like everything else that lines up with the
+  // genome. SVGRowHeader (assembly name + ruler) for a stacked row, SVGHeader
+  // (which adds the cytoband overview and the total-bp scalebar) for the
+  // standalone LGV export. A slot rather than a flag: the two differ in what
+  // they draw *and* in how tall they are, and `contentTop` is where the caller
+  // states the second half of that.
+  header: ReactNode
   fontSize: number
   textHeight: number
   trackLabels: TrackLabelMode
   trackLabelOffset: number
-  // Where the track bodies start, i.e. the ruler's height: the ruler hangs its
-  // ticks off the bottom of this budget so they meet the tracks. Callers that
-  // want more space above a view put it above this component's origin (where
-  // the assembly label floats), not in here — a gap inside would detach the
-  // ruler from the tracks it labels.
+  // Height of `header`, i.e. where the track bodies start. Callers that want
+  // more space above a view put it above this component's origin (where a
+  // header's assembly label floats), not in here — a gap inside would detach
+  // the header from the tracks it labels.
   contentTop: number
   tracksHeight: number
   showGridlines: boolean
@@ -44,29 +52,14 @@ export default function SVGView({
   // (a wiggle Y-scalebar) isn't clipped. Callers that translate the whole view
   // by a margin pass that margin here.
   leftBuffer?: number
+  // Right gutter the caller widened its canvas by for legends, so the per-track
+  // clip reaches them. 0 for a stacked export, which has no room to give and
+  // whose displays float their legends over the plot instead.
+  legendWidth?: number
 }) {
-  const theme = useTheme()
   return (
     <>
-      <g transform={`translate(${trackLabelOffset})`}>
-        {/*
-          This group's origin (y=0) is the top of the ruler. The assembly label
-          uses the default alphabetic baseline (glyphs ascend above y=0) so it
-          floats into the fontSize-tall band that the caller reserves *above*
-          this group — synteny/breakpoint each offset the whole view by
-          +fontSize for exactly this. Don't switch to dominantBaseline="hanging"
-          without also reworking those callers' offsets, or the label collides
-          with the ruler.
-        */}
-        <text
-          x={0}
-          fontSize={fontSize}
-          fill={stripAlpha(theme.palette.text.primary)}
-        >
-          {view.assemblyNames.join(', ')}
-        </text>
-        <SVGRuler model={view} rulerHeight={contentTop} />
-      </g>
+      <g transform={`translate(${trackLabelOffset})`}>{header}</g>
       {showGridlines ? (
         <g transform={`translate(${trackLabelOffset} ${contentTop})`}>
           <SVGGridlines model={view} height={tracksHeight} />
@@ -81,6 +74,7 @@ export default function SVGView({
           displayResults={displayResults}
           trackLabelOffset={trackLabelOffset}
           leftBuffer={leftBuffer}
+          legendWidth={legendWidth}
         />
       </g>
       {/*

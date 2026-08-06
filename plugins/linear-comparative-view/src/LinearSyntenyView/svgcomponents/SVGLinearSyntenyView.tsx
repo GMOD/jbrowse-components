@@ -3,6 +3,7 @@ import { awaitViewInitialized } from '@jbrowse/core/svg/svgReady'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
 import { getSession } from '@jbrowse/core/util'
 import {
+  SVGRowHeader,
   SVGView,
   defaultTextHeight,
   labelBaselineFromTop,
@@ -120,6 +121,13 @@ export async function renderToSvg(
           <SVGView
             view={view}
             displayResults={rowTracks[i]!.displayResults}
+            header={
+              <SVGRowHeader
+                view={view}
+                fontSize={fontSize}
+                rulerHeight={rulerHeight}
+              />
+            }
             fontSize={fontSize}
             textHeight={textHeight}
             trackLabels={trackLabels}
