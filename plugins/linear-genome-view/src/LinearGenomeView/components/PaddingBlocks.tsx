@@ -51,41 +51,25 @@ const PaddingBlocks = observer(function PaddingBlocks({
   offset?: number
 }) {
   const { classes } = useStyles()
-  const { staticBlocks } = model
-  const blocks = staticBlocks.blocks
-  const firstBlockOffset = blocks[0]?.offsetPx ?? 0
+  // the geometry is `model.paddingSpans` -- shared with any host drawing this
+  // itself, so a seam here and a seam in an embedder's own chrome can't be
+  // computed two different ways. This file owns only what the spans look like.
+  const kindClass = {
+    seam: classes.regionSeparator,
+    elided: classes.elided,
+    boundary: classes.boundaryBlock,
+  }
 
   return (
     <ZoomTransform model={model} offset={offset}>
       <div className={classes.absoluteFill}>
-        {blocks.map(block => {
-          if (block.type === 'ContentBlock') {
-            return block.isRightEndOfDisplayedRegion ? (
-              <div
-                key={`${block.key}-sep`}
-                className={cx(classes.block, classes.regionSeparator)}
-                style={{
-                  transform: `translateX(${block.offsetPx - firstBlockOffset + block.widthPx - 1}px)`,
-                  width: 3,
-                }}
-              />
-            ) : null
-          }
-          const bgClass =
-            block.type === 'ElidedBlock'
-              ? classes.elided
-              : classes.boundaryBlock
-          return (
-            <div
-              key={block.key}
-              className={cx(classes.block, bgClass)}
-              style={{
-                transform: `translateX(${block.offsetPx - firstBlockOffset}px)`,
-                width: block.widthPx,
-              }}
-            />
-          )
-        })}
+        {model.paddingSpans.map(({ key, x, width, kind }) => (
+          <div
+            key={key}
+            className={cx(classes.block, kindClass[kind])}
+            style={{ transform: `translateX(${x}px)`, width }}
+          />
+        ))}
       </div>
     </ZoomTransform>
   )

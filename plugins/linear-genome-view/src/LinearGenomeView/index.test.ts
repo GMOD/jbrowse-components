@@ -2794,3 +2794,132 @@ describe('scalebar coordinate labels', () => {
     ).toBe(true)
   })
 })
+
+// `scalebarRefNameLabels` is what ScalebarRefNameLabels draws, as data. Two of
+// its rules are the ones a host re-deriving this off block flags misses, and
+// both are silent: a repeated name, and a name clipped into a different one.
+describe('scalebar refName labels', () => {
+  function makeView(regions: { refName: string; end: number }[]) {
+    const { Session, LinearGenomeModel } = initialize()
+    const model = Session.create({ configuration: {} }).setView(
+      LinearGenomeModel.create({ type: 'LinearGenomeView' }),
+    )
+    model.setWidth(800)
+    model.setDisplayedRegions(
+      regions.map(({ refName, end }) => ({
+        assemblyName: 'volvox',
+        refName,
+        start: 0,
+        end,
+      })),
+    )
+    model.showAllRegions()
+    return model
+  }
+
+  // two displayed regions of one contig — what a locstring with two intervals
+  // on the same chromosome gives you, and what the byo scalebar page shows
+  test('adjacent regions of one refName share a label', () => {
+    const model = makeView([
+      { refName: 'ctgA', end: 100000 },
+      { refName: 'ctgA', end: 80000 },
+    ])
+    expect(model.scalebarRefNameLabels.labels.map(l => l.text)).toEqual([
+      'ctgA',
+    ])
+  })
+
+  test('a name that will not fit its region is dropped, not abbreviated', () => {
+    const model = makeView([
+      { refName: 'ctgA', end: 100000000 },
+      { refName: 'a_very_long_contig_name', end: 2000000 },
+    ])
+    // the narrow region is still drawn -- it is a content block, not elided, so
+    // the label is missing on the fit test rather than for want of a block
+    const narrow = model.staticBlocks.contentBlocks.find(
+      b => b.refName === 'a_very_long_contig_name',
+    )
+    expect(narrow).toBeDefined()
+    expect(narrow!.widthPx).toBeGreaterThan(model.minimumBlockWidth)
+
+    expect(model.scalebarRefNameLabels.labels.map(l => l.text)).toEqual([
+      'ctgA',
+    ])
+  })
+
+  // a plain LGV sets no assembly-name prefix; only a container view (synteny)
+  // opts its sub-views in
+  test('no prefix, so no prefix fallback', () => {
+    const model = makeView([{ refName: 'ctgA', end: 100000 }])
+    expect(model.scalebarRefNameLabels.showPrefixFallback).toBe(false)
+  })
+})
+
+// `paddingSpans` is what PaddingBlocks draws, as data, so a host writing its
+// own chrome computes a seam the same way JBrowse does rather than re-deriving
+// it off `isRightEndOfDisplayedRegion` and getting a thinner answer.
+describe('padding spans', () => {
+  function makeView(regions: { refName: string; end: number }[]) {
+    const { Session, LinearGenomeModel } = initialize()
+    const model = Session.create({ configuration: {} }).setView(
+      LinearGenomeModel.create({ type: 'LinearGenomeView' }),
+    )
+    model.setWidth(800)
+    model.setDisplayedRegions(
+      regions.map(({ refName, end }) => ({
+        assemblyName: 'volvox',
+        refName,
+        start: 0,
+        end,
+      })),
+    )
+    model.showAllRegions()
+    return model
+  }
+
+  // Regions are laid out contiguously, so the seam is the *only* marker between
+  // two of them — there is no inter-region padding block to fall back on, and a
+  // host that skips it renders two regions butted edge to edge.
+  test('a seam at each region end, boundaries at the genome ends', () => {
+    const model = makeView([
+      { refName: 'ctgA', end: 100000 },
+      { refName: 'ctgB', end: 80000 },
+    ])
+    expect(model.paddingSpans.map(s => s.kind)).toEqual([
+      'boundary',
+      'seam',
+      'seam',
+      'boundary',
+    ])
+
+    // the first seam sits at the first region's right edge, in the staticBlocks
+    // frame that gridlineTicks and scalebarLabels also use
+    const { contentBlocks, offsetPx: frame } = model.staticBlocks
+    const firstRegionEnd = contentBlocks.findLast(
+      b => b.displayedRegionIndex === 0,
+    )!
+    const seam = model.paddingSpans.find(s => s.kind === 'seam')!
+    expect(seam.x).toBeCloseTo(
+      firstRegionEnd.offsetPx + firstRegionEnd.widthPx - frame - 1,
+    )
+    expect(seam.width).toBe(3)
+  })
+
+  // A region under minimumBlockWidth (3px) elides. Whole-genome on a real
+  // assembly is mostly these, so a host that draws only seams renders that
+  // tail as nothing at all.
+  test('a sub-pixel region is an elided span and gets no seam', () => {
+    const model = makeView([
+      { refName: 'ctgA', end: 100000000 },
+      { refName: 'tiny', end: 50 },
+    ])
+    const elided = model.paddingSpans.filter(s => s.kind === 'elided')
+    expect(elided).toHaveLength(1)
+    expect(elided[0]!.width).toBeLessThan(model.minimumBlockWidth)
+
+    // one seam, for ctgA -- not two. At the zoom where regions elide, a bar per
+    // region is a solid grey wall, so an elided block carries the flag and is
+    // deliberately not given one.
+    expect(model.paddingSpans.filter(s => s.kind === 'seam')).toHaveLength(1)
+  })
+})

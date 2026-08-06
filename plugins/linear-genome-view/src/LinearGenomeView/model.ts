@@ -70,6 +70,7 @@ import {
   cytobandLabelGutterWidth,
   expandRegion,
   generateLocations,
+  getScalebarRefNameLabels,
   groupContiguousBlocks,
   labelFitsInBlock,
   makeBlockTicks,
@@ -1934,6 +1935,115 @@ export function stateModelFactory(pluginManager: PluginManager) {
             }
           }
           return labels
+        },
+        /**
+         * #getter
+         * The bold refName labels drawn along the scalebar, as plain data:
+         * `{key, refName, displayedRegionIndex, transform, maxWidth,
+         * paddingLeft, text}` each. One per run of same-refName regions, plus a
+         * "sticky" one pinned to the viewport's left edge naming the refName
+         * under it, so panning into a chromosome does not scroll its own name
+         * off the screen.
+         *
+         * Three rules live in here that a host drawing region names will
+         * otherwise rediscover the hard way, and two of them are invisible until
+         * the data is awkward:
+         *
+         * - the sticky label rides the rightmost block that has scrolled off the
+         *   left, not the region's first block — that one is gone from
+         *   staticBlocks entirely once you zoom into a region's interior, taking
+         *   the chromosome name off screen at exactly the zoom where nothing
+         *   else names it.
+         * - adjacent regions of the same refName (collapsed introns) get one
+         *   label between them, not one each.
+         * - a name is drawn whole or not at all, measured against the space its
+         *   region leaves. Clipped to its own width, `chr16` reads as `chr1` —
+         *   a different chromosome rather than a shortened name, which is why
+         *   this is a fit test rather than an ellipsis.
+         *
+         * **Viewport frame, unlike its siblings.** `transform` is a screen x,
+         * already net of `offsetPx`, where gridlineTicks / scalebarLabels /
+         * paddingSpans are all in the staticBlocks frame. The sticky label's
+         * position is a function of `offsetPx` rather than of block geometry, so
+         * it has no fixed position in that frame — and for the same reason this
+         * getter recomputes on every scroll frame where those three do not.
+         *
+         * `showPrefixFallback` accompanies the labels for the assembly-name chip
+         * a container view (synteny) can opt into; a plain LGV never sets a
+         * prefix and always gets `false`. The SVG export deliberately calls
+         * `getScalebarRefNameLabels` itself with no prefix rather than reading
+         * this, since it draws its own assembly name above the ruler.
+         */
+        get scalebarRefNameLabels() {
+          return getScalebarRefNameLabels({
+            blocks: this.staticBlocks.blocks,
+            offsetPx: self.offsetPx,
+            regionEndPx: this.scalebarRegionEndPx,
+            prefix: self.scalebarDisplayPrefix,
+          })
+        },
+        /**
+         * #getter
+         * Every span along the row that is not track data, as plain geometry in
+         * the staticBlocks frame — the same frame as gridlineTicks and
+         * scalebarLabels, so one `translateX(staticBlocks.offsetPx - offsetPx)`
+         * places all three. Three kinds, and a host drawing its own chrome
+         * needs all of them:
+         *
+         * - `seam`: the 3px bar at a region's right edge. Displayed regions are
+         *   laid out **contiguously** — calculateStaticBlocks emits boundary
+         *   padding only before the first region and after the last — so this
+         *   bar is the only thing separating two of them. Without it a
+         *   two-region view reads as a one-region view scrolled somewhere
+         *   strange. `isRightEndOfDisplayedRegion` is what marks it;
+         *   `scalebarRegionEndPx` looks like a shortcut for the same filter and
+         *   is not one, being the right edge of the blocks currently *loaded*.
+         * - `elided`: a region too narrow to draw at this zoom. Whole-genome on
+         *   a real assembly is mostly these — hg38 has 455 sequences and all
+         *   but the 24 chromosomes land sub-pixel — so a host that skips them
+         *   renders that tail as nothing at all.
+         * - `boundary`: past the start of the first region or the end of the
+         *   last. Greying it is what makes the last region's seam read as the
+         *   edge of a filled area rather than a rule floating in the track.
+         *
+         * Elided blocks get no seam even though they carry the flag: at the
+         * zoom where regions elide, one bar per region is a solid grey wall.
+         * PaddingBlocks is the in-tree consumer and SVGRegionSeparators is the
+         * export-side one; the latter still walks dynamicBlocks in the viewport
+         * frame and is not on this yet.
+         */
+        get paddingSpans(): {
+          key: string
+          x: number
+          width: number
+          kind: 'seam' | 'elided' | 'boundary'
+        }[] {
+          const { blocks, offsetPx: firstBlockOffset } = this.staticBlocks
+          const spans = []
+          for (const block of blocks) {
+            const x = block.offsetPx - firstBlockOffset
+            if (block.type === 'ContentBlock') {
+              if (block.isRightEndOfDisplayedRegion) {
+                spans.push({
+                  key: `${block.key}-sep`,
+                  x: x + block.widthPx - 1,
+                  width: 3,
+                  kind: 'seam' as const,
+                })
+              }
+            } else {
+              spans.push({
+                key: block.key,
+                x,
+                width: block.widthPx,
+                kind:
+                  block.type === 'ElidedBlock'
+                    ? ('elided' as const)
+                    : ('boundary' as const),
+              })
+            }
+          }
+          return spans
         },
         /**
          * #getter

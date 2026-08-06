@@ -6,7 +6,6 @@ import { observer } from 'mobx-react'
 
 import {
   REF_NAME_LABEL_FONT_SIZE,
-  getScalebarRefNameLabels,
   regionMoveActions,
   withRegionMoved,
   withRegionRemoved,
@@ -69,12 +68,11 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
   const [menuState, setMenuState] = useState<MenuState>()
 
   const prefix = model.scalebarDisplayPrefix
-  const { labels, showPrefixFallback } = getScalebarRefNameLabels({
-    blocks: model.staticBlocks.blocks,
-    offsetPx: model.offsetPx,
-    regionEndPx: model.scalebarRegionEndPx,
-    prefix,
-  })
+  // `model.scalebarRefNameLabels`, not a getScalebarRefNameLabels call of its
+  // own: a host drawing its own region names reads the same getter, so the
+  // sticky/dedup/fit rules can't be one thing here and another there. The SVG
+  // export still calls the helper directly, deliberately and with no prefix.
+  const { labels, showPrefixFallback } = model.scalebarRefNameLabels
 
   return (
     <>
