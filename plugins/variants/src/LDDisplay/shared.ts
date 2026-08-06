@@ -196,12 +196,18 @@ export default function sharedModelFactory(
       },
       /**
        * #getter
-       * Returns true if this display uses pre-computed LD data (PLINK, ldmat)
-       * rather than computing LD from VCF genotypes
+       * The loaded matrix's SNPs, in the order they are drawn along the column
+       * axis (the worker puts them in screen order — see
+       * `RenderLDDataRPC/reversedRegions.ts`). Empty until data arrives.
        */
       get snps(): LDSnp[] {
         return self.rpcData?.snps ?? []
       },
+      /**
+       * #getter
+       * Fetch-time width of one column in the un-rotated frame (`uniformW`).
+       * Read through `columnX`, which rescales it to the live viewport.
+       */
       get cellWidth() {
         return self.rpcData?.uniformW ?? 0
       },
@@ -262,6 +268,13 @@ export default function sharedModelFactory(
       get svgReadyExtraTerminal(): boolean {
         return !getConf(self, 'showLDTriangle')
       },
+      /**
+       * #getter
+       * True when this display reads LD out of a file (PLINK, ldmat) rather
+       * than computing it from a VCF's genotypes — which decides the fetch
+       * path, whether the filter menus mean anything, and whether the byte gate
+       * has a `getFeatures` to measure with.
+       */
       get isPrecomputedLD() {
         return isPrecomputedLDAdapter(self.adapterConfig?.type)
       },
