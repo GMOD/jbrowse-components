@@ -1,8 +1,8 @@
 import { getSession, stringify } from '@jbrowse/core/util'
-import { pxToBp } from '@jbrowse/core/util/Base1DUtils'
 import { observer } from 'mobx-react'
 
 import { GuideLabel } from '../../shared/coordLabels.tsx'
+import { overviewPxToBp } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
@@ -27,7 +27,7 @@ const OverviewRubberbandHoverTooltip = observer(
     const { cytobandOffset } = model
     const { assemblyManager } = getSession(model)
 
-    const px = pxToBp(overview, guideX - cytobandOffset)
+    const px = overviewPxToBp(overview, guideX, cytobandOffset)
     const assembly = assemblyManager.get(px.assemblyName)
     const cytoband = assembly?.cytobands?.find(
       f =>
@@ -37,17 +37,15 @@ const OverviewRubberbandHoverTooltip = observer(
     )
 
     return (
-      <>
-        <GuideLabel
-          coordX={guideX}
-          viewWidth={overview.width}
-          stickyTop={undefined}
-        >
-          {[stringify(px), cytoband?.get('name'), cytoband?.get('type')]
-            .filter(Boolean)
-            .join(' ')}
-        </GuideLabel>
-      </>
+      <GuideLabel
+        coordX={guideX}
+        viewWidth={overview.width}
+        stickyTop={undefined}
+      >
+        {[stringify(px), cytoband?.get('name'), cytoband?.get('type')]
+          .filter(Boolean)
+          .join(' ')}
+      </GuideLabel>
     )
   },
 )

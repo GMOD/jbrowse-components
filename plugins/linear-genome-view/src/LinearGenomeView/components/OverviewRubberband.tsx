@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { getSession, stringify } from '@jbrowse/core/util'
-import { pxToBp } from '@jbrowse/core/util/Base1DUtils'
 import { getRelativeX } from '@jbrowse/core/util/getRelativeX'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import RubberbandSpan from '../../shared/RubberbandSpan.tsx'
 import OverviewRubberbandHoverTooltip from './OverviewRubberbandHoverTooltip.tsx'
+import { overviewPxToBp } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
@@ -64,11 +64,11 @@ const OverviewRubberband = observer(function OverviewRubberband({
           const leftPx = Math.min(startX, offsetX)
           const rightPx = Math.max(startX, offsetX)
           model.moveTo(
-            pxToBp(overview, leftPx - cytobandOffset),
-            pxToBp(overview, rightPx - cytobandOffset),
+            overviewPxToBp(overview, leftPx, cytobandOffset),
+            overviewPxToBp(overview, rightPx, cytobandOffset),
           )
         } else {
-          const click = pxToBp(overview, startX - cytobandOffset)
+          const click = overviewPxToBp(overview, startX, cytobandOffset)
           if (click.refName) {
             model.centerAt(click.coord0, click.refName, click.index)
           } else {
@@ -128,8 +128,12 @@ const OverviewRubberband = observer(function OverviewRubberband({
       ) : null}
       {mouseDragging ? (
         <RubberbandSpan
-          leftLabel={stringify(pxToBp(overview, leftPx - cytobandOffset))}
-          rightLabel={stringify(pxToBp(overview, rightPx - cytobandOffset))}
+          leftLabel={stringify(
+            overviewPxToBp(overview, leftPx, cytobandOffset),
+          )}
+          rightLabel={stringify(
+            overviewPxToBp(overview, rightPx, cytobandOffset),
+          )}
           width={rightPx - leftPx}
           left={leftPx}
           viewWidth={overview.width}
