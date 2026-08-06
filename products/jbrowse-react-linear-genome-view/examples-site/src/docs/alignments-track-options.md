@@ -9,8 +9,8 @@ configured up front in `init.tracks[].displaySnapshot` (below) or via
 changeable afterwards from the track menu. The slots worth knowing:
 
 - **`colorBy`** — `{ type, tag? }`, where `type` is `strand`, `pairOrientation`,
-  `insertSize`, `modifications`, `tag`, … (the enum is on the config page below;
-  restating it here would drift the first time one is added)
+  `insertSize`, `modifications`, `tag`, … (the config page linked above carries
+  the current enum; restating it here would drift the first time one is added)
 - **`groupBy`** — stacked lanes, e.g. `{ type: 'tag', tag: 'HP' }`
 - **`filterBy`** — SAM flags plus read-name/tag filters, e.g.
   `{ flagInclude: 0, flagExclude: 3844 }`

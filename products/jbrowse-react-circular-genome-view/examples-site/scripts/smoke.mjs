@@ -6,6 +6,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 
 import {
+  checkDemoAboveFold,
   checkDemoHeights,
   checkSessionUrlRoundTrip,
   smokeExamplesSite,
@@ -23,6 +24,7 @@ const failures = await smokeExamplesSite({
   slugs: examples.map(e => e.slug),
   check: async (page, slug) => [
     ...(await checkDemoHeights(page)),
+    ...(await checkDemoAboveFold(page)),
     ...(slug === 'session-in-url' ? await checkSessionUrlRoundTrip(page) : []),
   ],
   log: m => {

@@ -6,6 +6,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 
 import {
+  checkDemoAboveFold,
   checkDemoHeights,
   checkPluginTookEffect,
   checkSessionUrlRoundTrip,
@@ -33,6 +34,7 @@ const failures = await smokeExamplesSite({
   workerSlug: 'plugins',
   check: async (page, slug) => [
     ...(await checkDemoHeights(page)),
+    ...(await checkDemoAboveFold(page)),
     ...(await (checks[slug]?.(page) ?? [])),
   ],
   log: m => {

@@ -71,6 +71,14 @@ A fence that is a slice of the example file is the commonest way one of these
 pages gets long; write the fence only when it shows something the source can't —
 an alternative form, a bundler setting, a CLI invocation.
 
+`checkDemoAboveFold` in `pnpm smoke` holds the order to its actual claim: the
+first `.demo` on every page has to begin above the fold at 1440x900. It is
+geometry, not paint, so it works whether or not the island drew — the box owns
+its height first, which is what `demoHeights` is for. Measured across all four
+sites the worst page starts at 553px of 900, so there is real headroom before it
+fires; what it catches is the quiet regression, a paragraph added to a lead or a
+fourth section added to a page's "On this page" card.
+
 ### Why `ExampleSection.astro` is four copies and stays that way
 
 `Shell.astro`, `Gallery.astro` and `exampleModel.ts` live in

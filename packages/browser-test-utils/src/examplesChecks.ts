@@ -155,3 +155,44 @@ export async function checkPluginTookEffect(
     ? [`${globalName} loaded but the app did not register its types`]
     : []
 }
+
+/**
+ * The first demo on a page has to begin above the fold.
+ *
+ * This is the whole premise of the page order — heading, then demo, then the
+ * prose annotating it — and it is a property nothing else checks. It regresses
+ * the same quiet way every time: someone adds a paragraph to a lead, or a
+ * fourth section to a page's "On this page" card, and the demo slides under the
+ * fold on a laptop while every existing check stays green, because the page
+ * still builds and the island still mounts.
+ *
+ * Geometry only, so it does not care whether the demo actually drew: the box
+ * owns its height before React arrives, which is what `demoHeights` (and, on
+ * react-app, the `80vh` `.fill` rule) exist to guarantee.
+ *
+ * The bound is the viewport height rather than a tuned number — the claim is
+ * "the demo starts on the first screen", nothing finer. At the time of writing
+ * the worst page sits at 553 of 900, so there is real headroom before this
+ * fires.
+ */
+export async function checkDemoAboveFold(page: Page): Promise<string[]> {
+  const found = await page.evaluate(() => {
+    const demo = document.querySelector('.demo')
+    if (!demo) {
+      return null
+    }
+    return {
+      top: Math.round(demo.getBoundingClientRect().top + window.scrollY),
+      fold: window.innerHeight,
+    }
+  })
+  // a page with no demo is a page this has nothing to say about
+  if (!found || found.top <= found.fold) {
+    return []
+  }
+  return [
+    `the first demo starts at ${found.top}px, below the ${found.fold}px fold — ` +
+      'a reader meets only prose on the first screen. Shorten what precedes it ' +
+      'rather than moving the demo down the page',
+  ]
+}

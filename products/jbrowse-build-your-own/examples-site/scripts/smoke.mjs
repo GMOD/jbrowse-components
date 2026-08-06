@@ -5,6 +5,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 
 import {
+  checkDemoAboveFold,
   checkDemoHeights,
   smokeExamplesSite,
 } from '@jbrowse/browser-test-utils'
@@ -224,6 +225,7 @@ const failures = await smokeExamplesSite({
   check: async (page, slug) => [
     ...(await muiBudget(page, slug)),
     ...(await checkDemoHeights(page)),
+    ...(await checkDemoAboveFold(page)),
     ...(await muiThemedStyling(page, 'at rest')),
     ...(await censusWhileHovering(page)),
     ...(await clicksReachTheTrack(page)),

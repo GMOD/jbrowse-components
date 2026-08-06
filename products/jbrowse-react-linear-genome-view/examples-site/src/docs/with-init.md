@@ -10,7 +10,7 @@ into its `?session=spec-…`
 has panned; to drive it after mount, take a `ref` and call
 [navigation actions](../navigate-to-location/#external-navigate).
 
-Three assembly fields above start mattering past a toy genome:
+Three of the assembly fields in the source start mattering past a toy genome:
 
 - [`refNameAliases`](https://jbrowse.org/jb2/docs/config/refnamealiasadapter/)
   resolves `chr1`, `1` and `NC_000001.11` to the same contig. Point it at UCSC's

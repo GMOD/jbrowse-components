@@ -12,6 +12,10 @@ jbrowse text-index --file genes.gff3.gz --fileId volvox_genes \
                    --file vars.vcf.gz   --fileId volvox_vars
 ```
 
-**`--fileId` must match the runtime `trackId`**, or a hit has no way to know
-which track to open. For one index per track instead, see
+Two ways to get this wrong, both quiet: **`--fileId` must match the runtime
+`trackId`**, or a hit has no way to know which track to open; and the two flags
+are paired **by position**, so a `--fileId` list that doesn't run in the same
+order as the `--file` list indexes each track under its neighbour's id.
+
+For one index per track instead, see
 [per-track text searching](../text-searching/#with-per-track-text-searching).
