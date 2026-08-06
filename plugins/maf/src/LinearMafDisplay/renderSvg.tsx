@@ -8,7 +8,6 @@ import {
 } from '@jbrowse/core/ui'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { colorLongreadInv } from '@jbrowse/core/ui/palette'
-import { getFillProps } from '@jbrowse/core/util'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
   SvgClipRect,
@@ -32,12 +31,8 @@ import {
   getFrameColors,
   getMafColorPalette,
 } from '../LinearMafRenderer/util.ts'
+import { SvgBandLabels } from './components/MafBandLabels.tsx'
 import { SvgYScaleGutter } from './components/MafYScaleGutter.tsx'
-import {
-  BAND_LABEL_FONT_SIZE,
-  BAND_LABEL_X,
-  bandLabelBaselineY,
-} from './components/bandLabelLayout.ts'
 import {
   conservationTicks,
   drawCodonConservation,
@@ -226,17 +221,7 @@ function MafSvgBody({
       {/* The same titles the display shows on screen (`MafBandLabels`), and for
           the same reason: with both bands drawn they are told apart only by
           their Y-axis units, and an exported figure can't be hovered. */}
-      {model.bandLabels.map(({ text, top }) => (
-        <text
-          key={text}
-          x={BAND_LABEL_X}
-          y={bandLabelBaselineY(top)}
-          fontSize={BAND_LABEL_FONT_SIZE}
-          {...getFillProps(theme.palette.text.secondary)}
-        >
-          {text}
-        </text>
-      ))}
+      <SvgBandLabels labels={model.bandLabels} theme={theme} />
       {coverageBandActive && coverageTicks ? (
         <SvgYScaleGutter y={0} ticks={coverageTicks} />
       ) : null}
