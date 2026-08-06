@@ -61,6 +61,13 @@ Mitigations in place, both bounding rather than fixing:
 - **View-level lazy mount** (`packages/app-core/src/ui/App/useViewVisibility.ts`)
   gates whether a view mounts its GPU subtree, falling back to always-visible
   where IntersectionObserver is absent (jsdom/SSR). Took the 72-canvas case to 6.
+  It buys that by **rebuilding the pipeline every time a view scrolls back into
+  view** — a fresh context, recompiling the whole program set, measured at 2.3 s
+  of blocked main thread per scroll pass over 12 views x 3 tracks. So it bounds
+  simultaneous contexts and converts the cap into a per-scroll cost; it is not a
+  free win, and it does not bound anything across a multi-panel workspace, where
+  every panel is on screen at once. See
+  [handoffs/workspaces-freeze.md](../handoffs/workspaces-freeze.md).
 - **Bounded auto-recovery** in `useRenderingBackend`: at most
   `MAX_CONTEXT_RECOVER_ATTEMPTS` re-inits on backoff, and the budget resets only
   on a genuine `webglcontextrestored` or a manual retry, so a flapping context

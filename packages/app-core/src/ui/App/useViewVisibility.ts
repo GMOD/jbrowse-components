@@ -17,7 +17,19 @@ function intersectionObserverAvailable() {
  *
  * `root: null` (viewport) is container-agnostic: it reports on-screen-ness the
  * same way whether the views scroll inside the classic container or a dockview
- * panel, so neither container needs to know about windowing.
+ * panel, so neither container needs to know about windowing. It also means
+ * **`rootMargin` has no effect** — an observer clips the target against each
+ * scrolling ancestor before intersecting with the root box that the margin
+ * expands, and both containers are `overflow-y: auto`. So this is a hard
+ * window with no hysteresis: a view is torn down the moment it leaves its
+ * container and rebuilt when it returns, which on a GPU backend costs a fresh
+ * WebGL2 context and a full shader recompile per display.
+ *
+ * That is deliberate as of 2026-08-05, not an oversight. Rooting the observer at
+ * the scroll port restores the band and measures as a wash on scroll cost while
+ * roughly doubling live contexts — the cap bites before the rebuild saving pays
+ * for itself. agent-docs/handoffs/workspaces-freeze.md has the numbers and the
+ * three other fixes that were measured and eliminated.
  *
  * Starts hidden so a cold load with N crammed views doesn't mount them all at
  * once; the observer's first callback mounts only what's near the viewport.
