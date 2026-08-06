@@ -191,7 +191,10 @@ TS4023 (`LDFilterModel` here). Export the interface.
 The first five pins are one mistake — an eagerly evaluated module naming a React
 component. This one is a different shape, and it is the exception to "plugin
 registration is not reducible" above: **a screen that renders no session does not
-need the registry at all**, and JBrowse Desktop opens on exactly such a screen.
+need the registry before it paints**, and JBrowse Desktop opens on exactly such a
+screen.
+
+Before it paints, not never — see "the part that did not work" below.
 
 `products/jbrowse-desktop/src/components/StartScreen/util.tsx` was the one static
 path from the desktop renderer's entry to `corePlugins`, and through it to every
@@ -224,12 +227,37 @@ Loader, and the start screen's two dialogs-behind-buttons.
 `StartScreen/pluginManagers.eager.test.ts` guards it, because one static import
 anywhere puts the graph back and nothing about that diff would say so.
 
+**The part that did not work, because you will think of it too.** The start
+screen still *loads* the graph — just after first paint, when its own plugin
+manager is built, rather than before. `createStartScreenPluginManager` needs no
+corePlugins (it exists for the three `Desktop-StartScreen*` extension points, and
+a plugin contributing a panel has no use for `BamAdapter` being registered), so
+splitting it into a module of its own should have deferred the graph all the way
+to session-open. It was tried, and reverted:
+
+- it bought **nothing** — `main.js` measured 1,357,376 B with the split against
+  1,357,165 B without, i.e. identical, since the graph was already behind the
+  dynamic import either way. The only prize was *when* the graph loads, and on
+  Desktop that is `file://`, so it is parse/eval time and never bytes;
+- it **broke the packaged app**. The volvox assembly hung at
+  `initialized: false` with an empty error — an RPC worker that never answers.
+
+Typecheck, 3135 unit tests and every bundle measurement stayed green through
+that, because unit tests use MainThreadRpc and never exercise worker chunk
+loading. Only `pnpm package:linux:no-installer && pnpm test:e2e:headless` caught
+it. Suspected mechanism, unconfirmed: `src/util.tsx` (`fetchCJS`) is imported by
+`rpcWorker.ts`, a **separate webpack entry**; a second async renderer consumer
+appears to tip `splitChunks` into extracting a shared chunk the worker must then
+load at runtime, which is what `scripts/config.ts` already warns about for
+`publicPath: './'` under `file://`. Confirm that before retrying.
+
 **The general form, for the next host that opens on something other than a
 session:** the registry is eager relative to *reading a session snapshot*, not
 relative to first paint. Anything a host draws before a session exists — a start
-screen, a config picker, a login — can be reached without it, and the thing that
+screen, a config picker, a login — can paint without it, and the thing that
 usually prevents that is one static import on a module that had no other reason
-to be light.
+to be light. Going further, to not *loading* it at all, is a separate and much
+riskier claim on a host whose workers share a chunk graph with its renderer.
 
 ## What is left, and what is not worth chasing
 
