@@ -871,9 +871,6 @@ importers:
 
   plugins/breakpoint-split-view:
     dependencies:
-      '@gmod/vcf':
-        specifier: ^7.0.10
-        version: 7.0.10
       '@jbrowse/alignments-core':
         specifier: workspace:^
         version: link:../../packages/alignments-core
@@ -2117,9 +2114,6 @@ importers:
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../../plugins/linear-genome-view
-      '@jbrowse/product-core':
-        specifier: workspace:^
-        version: link:../../packages/product-core
       '@jbrowse/react-app2':
         specifier: workspace:^
         version: link:../jbrowse-react-app
@@ -2277,9 +2271,6 @@ importers:
       '@jbrowse/web-core':
         specifier: workspace:^
         version: link:../../packages/web-core
-      '@mui/icons-material':
-        specifier: ^9.3.0
-        version: 9.3.0(@mui/material@9.3.0(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@types/react@19.2.18)(react@19.2.8)
       '@mui/material':
         specifier: ^9.3.0
         version: 9.3.0(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)

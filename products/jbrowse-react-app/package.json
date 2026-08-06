@@ -77,7 +77,6 @@
     "@jbrowse/plugin-wiggle": "workspace:^",
     "@jbrowse/product-core": "workspace:^",
     "@jbrowse/web-core": "workspace:^",
-    "@mui/icons-material": "^9.3.0",
     "@mui/material": "^9.3.0",
     "dockview-react": "^7.0.4",
     "mobx": "^7.0.0",

@@ -90,3 +90,50 @@ check, which regenerates from committed source. A temp worktree does not escape
 it either: symlinking the real `node_modules` in makes pnpm's workspace entries
 resolve back to the dirty main checkout. Run `pnpm autogen` on a clean tree and
 commit the output by itself.
+
+## A `dependencies` entry can be load-bearing without being imported
+
+Sweeping for dead dependencies is worth doing, and a scanner alone will get it
+wrong in both directions. "No package in this repo imports it" is the *start* of
+the argument, not the end — four whole classes are real requirements that no
+import statement records:
+
+- **Peer satisfaction.** `@jbrowse/core` declares `react` and `react-dom` as
+  peers, and `@mui/material` declares the `@emotion/*` packages. A consumer must
+  install them even if its own source never mentions them. `jbrowse-img` is the
+  case that looks most deletable and is not: it is a pure CLI with no `.tsx`
+  file anywhere, and it still needs both React packages because the plugins it
+  renders through do.
+- **Implicit `@types`.** Nothing imports `@types/jsdom`; `tsc` picks it up
+  because something imports `jsdom`. Check the *base* package, not the types
+  package.
+- **Resolved by name at build time.** `@iconify-json/mdi` is never imported —
+  `astro-icon` loads it because an `.astro` file wrote `<Icon name="mdi:github"/>`.
+  A scanner sees the icon name, not the package.
+- **Invoked as a CLI.** `@astrojs/check` exists so `astro check` runs, and only
+  the script says so.
+
+What is left after those is small and worth removing, since a published
+`dependencies` entry is an install every consumer pays for. The three found in
+the 2026-08-06 sweep were `@gmod/vcf` in breakpoint-split-view (surviving only
+in a test *comment* describing breakend syntax), `@jbrowse/product-core` in
+jbrowse-img and `@mui/icons-material` in jbrowse-react-app (each appearing
+nowhere but its own `package.json`). Two prior removals in jbrowse-web are in
+`ccdcf301cb`.
+
+Two things to do when one goes:
+
+- **Re-run `scripts/generate-tsconfig-references.ts`.** A workspace dependency
+  has a project reference derived from it, so the reference is stale the moment
+  the dep leaves — see § Project references.
+- **Check nothing was leaning on it.** Removing a dep another package imports
+  without declaring turns a working install into a hoisting accident that breaks
+  on someone else's package manager. Grep for the importers and confirm each
+  declares it.
+
+`pnpm install --lockfile-only` is enough to update the lockfile and leaves
+`node_modules` alone, which matters in a shared worktree — a full install
+re-links every package under whatever else is mid-build. The tradeoff is that
+typecheck then proves less than it looks: the symlinks are still there, so it
+cannot fail on a dep you removed. The greps are the evidence; typecheck only
+catches the unrelated damage.
