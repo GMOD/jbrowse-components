@@ -66,6 +66,15 @@ describe('makeOverviewTicks', () => {
     const ticks = makeOverviewTicks(1_100_000, 1_900_000, SCALE, false)
     expect(ticks).toEqual([])
   })
+
+  // this loop is sized in bp, and chooseGridPitch bottoms out at a 5bp pitch
+  // when handed a zero scale, so a chromosome-length region asked Array.from for
+  // ~50M ticks. createOverviewLayout reports bpPerPx 0 for a zero-width overview
+  test('a non-positive scale yields no ticks rather than tens of millions', () => {
+    expect(makeOverviewTicks(0, 250_000_000, 0)).toEqual([])
+    expect(makeOverviewTicks(0, 250_000_000, -1)).toEqual([])
+    expect(makeOverviewTicks(0, 250_000_000, Number.NaN)).toEqual([])
+  })
 })
 
 describe('makeOverviewTickLabels', () => {
