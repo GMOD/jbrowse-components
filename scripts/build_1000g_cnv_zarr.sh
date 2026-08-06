@@ -122,6 +122,11 @@ du -sh "$OUT"
 # What test_data/1000g_cnv/config.json points at. A zarr chunk key is named from
 # its position, not its content, so a rebuild that changes a chunk overwrites
 # it — and the bucket has no versioning. Read the diff before you sync.
+#
+# Derived from $STORE_NAME rather than written out: this line had the windowed
+# store's name hardcoded, so --whole-genome printed a command that would have
+# synced a 10kb genome-wide store over the 1kb windowed one, stranding every
+# bin1000 chunk under a root that no longer mentions them.
 echo
-echo "to publish: aws s3 sync $OUT s3://jbrowse.org/demos/1000g/qm2_cn_1kb.zarr"
+echo "to publish: aws s3 sync $OUT s3://jbrowse.org/demos/1000g/$STORE_NAME"
 echo "  (serves as $STORE_URL)"
