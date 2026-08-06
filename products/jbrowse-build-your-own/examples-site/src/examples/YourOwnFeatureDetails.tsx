@@ -1,9 +1,10 @@
-import { Suspense, useEffect, useRef, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 
 import { setConf } from '@jbrowse/core/configuration'
 import { PaletteProvider } from '@jbrowse/core/ui/PaletteContext'
+import { useWidthSetter } from '@jbrowse/core/util/hooks'
 import { isFeature } from '@jbrowse/core/util/simpleFeature'
-import { normalizeWheelDelta } from '@jbrowse/core/util/wheelZoom'
+import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
 import {
   DisplayChromeOverlayProvider,
   TrackControlProvider,
@@ -65,27 +66,6 @@ function makeView() {
 type BrowserView = ReturnType<typeof makeView>['view']
 type BrowserSession = ReturnType<typeof makeView>['session']
 
-function useViewWidth(view: BrowserView) {
-  const ref = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    const el = ref.current
-    if (!el) {
-      return
-    }
-    const ro = new ResizeObserver(() => {
-      const w = el.clientWidth
-      if (w > 0) {
-        view.setWidth(w)
-      }
-    })
-    ro.observe(el)
-    return () => {
-      ro.disconnect()
-    }
-  }, [view])
-  return ref
-}
-
 // see the One track page for why this is not `view.initialized`
 function isViewReady(view: BrowserView) {
   return !view.showLoading && !view.error
@@ -122,129 +102,8 @@ const TrackRow = observer(function TrackRow({
   )
 })
 
-// see the Pan and zoom page for why the wheel listener is native and
-// non-passive, and for what `scrollZoom` decides
-function wheelPanZoom(
-  view: BrowserView,
-  el: HTMLElement,
-  { scrollZoom, onNeedsCtrl }: { scrollZoom: boolean; onNeedsCtrl: () => void },
-) {
-  return (event: WheelEvent) => {
-    if (event.shiftKey && scrollZoom) {
-      return
-    }
-    const deltaX = normalizeWheelDelta(event.deltaX, event.deltaMode)
-    const deltaY = normalizeWheelDelta(event.deltaY, event.deltaMode)
-    const ctrlZoom = event.ctrlKey || event.metaKey
-    if (ctrlZoom || (scrollZoom && Math.abs(deltaY) >= Math.abs(deltaX))) {
-      event.preventDefault()
-      if (deltaY !== 0) {
-        const rect = el.getBoundingClientRect()
-        view.zoomTo(
-          view.bpPerPx * (deltaY > 0 ? 1.1 : 1 / 1.1),
-          event.clientX - rect.left,
-        )
-      }
-    } else if (Math.abs(deltaX) > Math.abs(deltaY)) {
-      event.preventDefault()
-      view.horizontalScroll(deltaX)
-    } else if (deltaY !== 0) {
-      onNeedsCtrl()
-    }
-  }
-}
-
-const HINT_LINGER_MS = 1200
-
-// This threshold is what makes this page work at all. A press that has not
-// travelled this far stays a click, so the display underneath still gets it and
-// still selects a feature; only past it does the gesture become a pan and
-// capture the pointer. Capture on pointerdown instead and every click is
-// retargeted at the panning div, so nothing is ever selectable again. See the
-// Pan and zoom page for the rest of that story.
-const DRAG_THRESHOLD_PX = 4
-
-function usePanZoom(
-  view: BrowserView,
-  ref: React.RefObject<HTMLDivElement | null>,
-) {
-  const draggingRef = useRef<{ x: number; panning: boolean } | undefined>(
-    undefined,
-  )
-  const [hint, setHint] = useState(false)
-  const { scrollZoom } = view
-
-  useEffect(() => {
-    const el = ref.current
-    if (!el) {
-      return
-    }
-    let timer: ReturnType<typeof setTimeout> | undefined
-    const onWheel = wheelPanZoom(view, el, {
-      scrollZoom,
-      onNeedsCtrl() {
-        setHint(true)
-        clearTimeout(timer)
-        timer = setTimeout(() => {
-          setHint(false)
-        }, HINT_LINGER_MS)
-      },
-    })
-    el.addEventListener('wheel', onWheel, { passive: false })
-    return () => {
-      el.removeEventListener('wheel', onWheel)
-      clearTimeout(timer)
-    }
-  }, [view, ref, scrollZoom])
-
-  return {
-    hint,
-    props: {
-      onPointerDown(event: React.PointerEvent<HTMLDivElement>) {
-        // see the Pan and zoom page for both halves of this: why a press on a
-        // control must not start a drag, and why the pointer is captured on
-        // move rather than here
-        if (
-          event.target instanceof Element &&
-          event.target.closest('button, [data-gesture-owner]')
-        ) {
-          return
-        }
-        if (event.button === 0) {
-          draggingRef.current = { x: event.clientX, panning: false }
-        }
-      },
-      onPointerMove(event: React.PointerEvent<HTMLDivElement>) {
-        const drag = draggingRef.current
-        if (!drag) {
-          return
-        }
-        if (!drag.panning) {
-          if (Math.abs(event.clientX - drag.x) < DRAG_THRESHOLD_PX) {
-            return
-          }
-          drag.panning = true
-          event.currentTarget.setPointerCapture(event.pointerId)
-        }
-        view.horizontalScroll(drag.x - event.clientX)
-        drag.x = event.clientX
-      },
-      onPointerUp(event: React.PointerEvent<HTMLDivElement>) {
-        draggingRef.current = undefined
-        if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-          event.currentTarget.releasePointerCapture(event.pointerId)
-        }
-      },
-      onPointerCancel(event: React.PointerEvent<HTMLDivElement>) {
-        draggingRef.current = undefined
-        if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-          event.currentTarget.releasePointerCapture(event.pointerId)
-        }
-      },
-    },
-  }
-}
-
+// the prompt for a wheel the view ignored; `showZoomHint` is raised for
+// exactly that and clears itself. See the Pan and zoom page.
 function ZoomHint({ show }: { show: boolean }) {
   return (
     <div
@@ -430,8 +289,8 @@ function useSitePalette(session: BrowserSession) {
 
 const YourOwnFeatureDetails = observer(function YourOwnFeatureDetails() {
   const [{ view, session }] = useState(makeView)
-  const ref = useViewWidth(view)
-  const { hint, props } = usePanZoom(view, ref)
+  const ref = useWidthSetter(view)
+  const { containerProps, showZoomHint } = usePanZoom(ref, view)
   const palette = useSitePalette(session)
 
   return (
@@ -441,7 +300,7 @@ const YourOwnFeatureDetails = observer(function YourOwnFeatureDetails() {
           <div style={{ display: 'flex' }}>
             <div
               ref={ref}
-              {...props}
+              {...containerProps}
               style={{
                 flex: 1,
                 minWidth: 0,
@@ -451,7 +310,7 @@ const YourOwnFeatureDetails = observer(function YourOwnFeatureDetails() {
                 cursor: 'grab',
               }}
             >
-              <ZoomHint show={hint} />
+              <ZoomHint show={showZoomHint} />
               {isViewReady(view) ? (
                 <TrackRow view={view} trackId="volvox_genes" />
               ) : null}

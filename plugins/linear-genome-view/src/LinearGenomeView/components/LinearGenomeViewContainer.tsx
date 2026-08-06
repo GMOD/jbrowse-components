@@ -4,6 +4,7 @@ import { VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { useFocusOnInteraction } from '@jbrowse/core/util/hooks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { useWheelZoom } from '@jbrowse/core/util/usePanZoom'
 import Paper from '@mui/material/Paper'
 import { observer } from 'mobx-react'
 
@@ -11,7 +12,6 @@ import { SCALE_BAR_HEIGHT } from '../consts.ts'
 import Scalebar from './Scalebar.tsx'
 import TrackContainer from './TrackContainer.tsx'
 import TracksContainer from './TracksContainer.tsx'
-import { useWheelScroll } from './useWheelScroll.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 
@@ -58,7 +58,9 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
   const rectLeftRef = useRef(0)
   const MiniControlsComponent = model.MiniControlsComponent()
   const HeaderComponent = model.HeaderComponent()
-  useWheelScroll(ref, model)
+  // wheel on the whole view; the click-drag half is on the tracks area, so a
+  // drag over the header doesn't pan (see TracksContainer's useSideScroll)
+  useWheelZoom(ref, model)
   useEffect(() => {
     const curr = ref.current
     if (!curr) {

@@ -2,7 +2,8 @@ import { Suspense, useEffect, useRef, useState } from 'react'
 
 import { setConf } from '@jbrowse/core/configuration'
 import { PaletteProvider, usePalette } from '@jbrowse/core/ui/PaletteContext'
-import { normalizeWheelDelta } from '@jbrowse/core/util/wheelZoom'
+import { useWidthSetter } from '@jbrowse/core/util/hooks'
+import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
 import {
   DisplayChromeOverlayProvider,
   TrackControlProvider,
@@ -84,27 +85,6 @@ function makeView(scrollZoom: boolean) {
 type BrowserView = ReturnType<typeof makeView>['view']
 type BrowserSession = ReturnType<typeof makeView>['session']
 
-function useViewWidth(view: BrowserView) {
-  const ref = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    const el = ref.current
-    if (!el) {
-      return
-    }
-    const ro = new ResizeObserver(() => {
-      const w = el.clientWidth
-      if (w > 0) {
-        view.setWidth(w)
-      }
-    })
-    ro.observe(el)
-    return () => {
-      ro.disconnect()
-    }
-  }, [view])
-  return ref
-}
-
 // see the One track page for why this is not `view.initialized`
 function isViewReady(view: BrowserView) {
   return !view.showLoading && !view.error
@@ -141,126 +121,8 @@ const TrackRow = observer(function TrackRow({
   )
 })
 
-// see the Pan and zoom page for why the wheel listener is native and
-// non-passive, for what `scrollZoom` decides, and for why shift+wheel is left
-// to whatever is under the cursor
-function wheelPanZoom(
-  view: BrowserView,
-  el: HTMLElement,
-  { scrollZoom, onNeedsCtrl }: { scrollZoom: boolean; onNeedsCtrl: () => void },
-) {
-  return (event: WheelEvent) => {
-    if (event.shiftKey && scrollZoom) {
-      return
-    }
-    const deltaX = normalizeWheelDelta(event.deltaX, event.deltaMode)
-    const deltaY = normalizeWheelDelta(event.deltaY, event.deltaMode)
-    const ctrlZoom = event.ctrlKey || event.metaKey
-    if (ctrlZoom || (scrollZoom && Math.abs(deltaY) >= Math.abs(deltaX))) {
-      event.preventDefault()
-      if (deltaY !== 0) {
-        const rect = el.getBoundingClientRect()
-        view.zoomTo(
-          view.bpPerPx * (deltaY > 0 ? 1.1 : 1 / 1.1),
-          event.clientX - rect.left,
-        )
-      }
-    } else if (Math.abs(deltaX) > Math.abs(deltaY)) {
-      event.preventDefault()
-      view.horizontalScroll(deltaX)
-    } else if (deltaY !== 0) {
-      onNeedsCtrl()
-    }
-  }
-}
-
-const HINT_LINGER_MS = 1200
-
-// how far a press has to travel before it counts as a pan rather than a click;
-// see the Pan and zoom page
-const DRAG_THRESHOLD_PX = 4
-
-function usePanZoom(
-  view: BrowserView,
-  ref: React.RefObject<HTMLDivElement | null>,
-) {
-  const draggingRef = useRef<{ x: number; panning: boolean } | undefined>(
-    undefined,
-  )
-  const [hint, setHint] = useState(false)
-  const { scrollZoom } = view
-
-  useEffect(() => {
-    const el = ref.current
-    if (!el) {
-      return
-    }
-    let timer: ReturnType<typeof setTimeout> | undefined
-    const onWheel = wheelPanZoom(view, el, {
-      scrollZoom,
-      onNeedsCtrl() {
-        setHint(true)
-        clearTimeout(timer)
-        timer = setTimeout(() => {
-          setHint(false)
-        }, HINT_LINGER_MS)
-      },
-    })
-    el.addEventListener('wheel', onWheel, { passive: false })
-    return () => {
-      el.removeEventListener('wheel', onWheel)
-      clearTimeout(timer)
-    }
-  }, [view, ref, scrollZoom])
-
-  return {
-    hint,
-    props: {
-      onPointerDown(event: React.PointerEvent<HTMLDivElement>) {
-        // see the Pan and zoom page for both halves of this: why a press on a
-        // control (here, the scalebar, which owns its own drag) must not start
-        // a pan, and why the pointer is captured on move rather than here
-        if (
-          event.target instanceof Element &&
-          event.target.closest('button, [data-gesture-owner]')
-        ) {
-          return
-        }
-        if (event.button === 0) {
-          draggingRef.current = { x: event.clientX, panning: false }
-        }
-      },
-      onPointerMove(event: React.PointerEvent<HTMLDivElement>) {
-        const drag = draggingRef.current
-        if (!drag) {
-          return
-        }
-        if (!drag.panning) {
-          if (Math.abs(event.clientX - drag.x) < DRAG_THRESHOLD_PX) {
-            return
-          }
-          drag.panning = true
-          event.currentTarget.setPointerCapture(event.pointerId)
-        }
-        view.horizontalScroll(drag.x - event.clientX)
-        drag.x = event.clientX
-      },
-      onPointerUp(event: React.PointerEvent<HTMLDivElement>) {
-        draggingRef.current = undefined
-        if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-          event.currentTarget.releasePointerCapture(event.pointerId)
-        }
-      },
-      onPointerCancel(event: React.PointerEvent<HTMLDivElement>) {
-        draggingRef.current = undefined
-        if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-          event.currentTarget.releasePointerCapture(event.pointerId)
-        }
-      },
-    },
-  }
-}
-
+// the prompt for a wheel the view ignored; `showZoomHint` is raised for
+// exactly that and clears itself. See the Pan and zoom page.
 function ZoomHint({ show }: { show: boolean }) {
   return (
     <div
@@ -703,8 +565,8 @@ const AScalebarNotARuler = observer(function AScalebarNotARuler({
   scrollZoom?: boolean
 }) {
   const [{ view, session }] = useState(() => makeView(scrollZoom))
-  const ref = useViewWidth(view)
-  const { hint, props } = usePanZoom(view, ref)
+  const ref = useWidthSetter(view)
+  const { containerProps, showZoomHint } = usePanZoom(ref, view)
   const rubberband = useRubberband(view)
   const palette = useSitePalette(session)
 
@@ -714,7 +576,7 @@ const AScalebarNotARuler = observer(function AScalebarNotARuler({
         <TrackControlProvider value={plainTrackControl}>
           <div
             ref={ref}
-            {...props}
+            {...containerProps}
             style={{
               position: 'relative',
               overflow: 'hidden',
@@ -722,7 +584,7 @@ const AScalebarNotARuler = observer(function AScalebarNotARuler({
               cursor: 'grab',
             }}
           >
-            <ZoomHint show={hint} />
+            <ZoomHint show={showZoomHint} />
             {/* every piece below reads block geometry, and `staticBlocks`
              * *throws* until the ResizeObserver has reported a width -- so all
              * of it sits inside one gate rather than each guarding itself. See

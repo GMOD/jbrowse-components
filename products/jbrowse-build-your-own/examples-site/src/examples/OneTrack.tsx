@@ -1,5 +1,6 @@
-import { Suspense, useEffect, useRef, useState } from 'react'
+import { Suspense, useState } from 'react'
 
+import { useWidthSetter } from '@jbrowse/core/util/hooks'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
@@ -78,33 +79,6 @@ function makeView() {
 type BrowserView = ReturnType<typeof makeView>
 
 /**
- * A view renders nothing until it knows its width in pixels, and it needs to be
- * told again whenever that changes. This is the one piece of wiring with no
- * alternative: everything downstream (block layout, what to fetch, bpPerPx on a
- * zoom-to-fit) is derived from it.
- */
-function useViewWidth(view: BrowserView) {
-  const ref = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    const el = ref.current
-    if (!el) {
-      return
-    }
-    const ro = new ResizeObserver(() => {
-      const w = el.clientWidth
-      if (w > 0) {
-        view.setWidth(w)
-      }
-    })
-    ro.observe(el)
-    return () => {
-      ro.disconnect()
-    }
-  }, [view])
-  return ref
-}
-
-/**
  * Is there anything to draw yet?
  *
  * The obvious gate is `view.initialized`, and on its own it is the wrong one.
@@ -171,7 +145,14 @@ const TrackRow = observer(function TrackRow({
 
 const OneTrack = observer(function OneTrack() {
   const [view] = useState(makeView)
-  const ref = useViewWidth(view)
+  // A view renders nothing until it knows its width in pixels, and it has to be
+  // told again whenever that changes. This is the one piece of wiring with no
+  // alternative: everything downstream (block layout, what to fetch, bpPerPx on
+  // a zoom-to-fit) is derived from it. `useWidthSetter` is the hook JBrowse's
+  // own views use -- it hands back a ref to put on the element to measure, and
+  // reports the width a frame later, which is what keeps a ResizeObserver from
+  // measuring inside its own callback.
+  const ref = useWidthSetter(view)
 
   return (
     <div ref={ref} style={{ overflow: 'hidden' }}>

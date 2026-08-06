@@ -173,6 +173,7 @@
     "./util/useFetch": "./src/util/useFetch.ts",
     "./util/useFetchPlugins": "./src/util/useFetchPlugins.ts",
     "./util/useMeasure": "./src/util/useMeasure.ts",
+    "./util/usePanZoom": "./src/util/usePanZoom.ts",
     "./util/useRowVirtualScroll": "./src/util/useRowVirtualScroll.ts",
     "./util/useVirtualScrollWheel": "./src/util/useVirtualScrollWheel.ts",
     "./util/virtualRange": "./src/util/virtualRange.ts",
@@ -838,6 +839,10 @@
         "types": "./esm/util/useMeasure.d.ts",
         "import": "./esm/util/useMeasure.js"
       },
+      "./util/usePanZoom": {
+        "types": "./esm/util/usePanZoom.d.ts",
+        "import": "./esm/util/usePanZoom.js"
+      },
       "./util/useRowVirtualScroll": {
         "types": "./esm/util/useRowVirtualScroll.d.ts",
         "import": "./esm/util/useRowVirtualScroll.js"
@@ -1315,6 +1320,9 @@
         ],
         "util/useMeasure": [
           "esm/util/useMeasure.d.ts"
+        ],
+        "util/usePanZoom": [
+          "esm/util/usePanZoom.d.ts"
         ],
         "util/useRowVirtualScroll": [
           "esm/util/useRowVirtualScroll.d.ts"
