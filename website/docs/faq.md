@@ -590,13 +590,13 @@ usually with the estimated size that tripped it, and the banner's **Force load**
 button downloads the region anyway.
 
 On alignments and MAF tracks the message can appear at any zoom, and there it
-offers only **Force load**. Those two formats cost bytes per reference base times
-something zooming does not reduce — read depth, and the number of aligned species
-— so a gene-sized window over a deep pileup or a 470-way alignment is still tens
-of megabytes. Other tracks stop being guarded below about 20 kb, on the
-assumption that a small region is a small download; for these two that assumption
-is wrong, so the guard stays on and the banner drops the "zoom in" suggestion
-rather than sending you after a download that will not get smaller.
+offers only **Force load**. Those two formats cost bytes per reference base
+times something zooming does not reduce — read depth, and the number of aligned
+species — so a gene-sized window over a deep pileup or a 470-way alignment is
+still tens of megabytes. Other tracks stop being guarded below about 20 kb, on
+the assumption that a small region is a small download; for these two that
+assumption is wrong, so the guard stays on and the banner drops the "zoom in"
+suggestion rather than sending you after a download that will not get smaller.
 
 #### Raising the feature limit
 

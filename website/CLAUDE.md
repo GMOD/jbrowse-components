@@ -19,15 +19,15 @@ immutable; git tracks `figures.lock` at the repo root, one line per figure.
   catches that anyway — a fresh runner has no figures, so its `pull` verifies
   every entry.
 - **A figure change is now a one-line hash swap**, so `pnpm figures:report`
-  (`--base`, `--markdown`) is how you *look* at one. Every revision ever pushed
-  is still at its own URL, so it renders before/after side by side. The `Figures
-  moved` CI job posts that to the run summary on every branch.
+  (`--base`, `--markdown`) is how you _look_ at one. Every revision ever pushed
+  is still at its own URL, so it renders before/after side by side. The
+  `Figures moved` CI job posts that to the run summary on every branch.
 - **The line carries `WxH`**, which is the one change a pixel diff cannot see —
   `pngDiffFraction` returns null on a size mismatch. A resize shows up in
   `git diff` as `1400x900 -> 1400x1240`.
 - **`push` is also the restore path.** It uploads any blob the store lacks, so
   any checkout with figures on disk rebuilds the whole store in ~25s. What is
-  genuinely single-copy is *superseded* revisions, not the current set.
+  genuinely single-copy is _superseded_ revisions, not the current set.
 - **An unpushed regen is invisible to git**, so a regen you never push means
   everyone else keeps getting the old image with nothing saying so. CI can't
   catch it — the evidence is a file on your disk. So a sweep ends on
@@ -37,7 +37,7 @@ immutable; git tracks `figures.lock` at the repo root, one line per figure.
   the next time that figure is regenerated, and a stale one shows the wrong
   picture indefinitely. Site docs use `/img/...` and never a store URL at all.
   The jbrowse-img README is the one exception, because GitHub and npm render it
-  outside the site: its image URLs point at the store and are *generated* by
+  outside the site: its image URLs point at the store and are _generated_ by
   `sync-img-readme.ts` from `figures.lock`, with `autogen --check` failing on
   drift. `/jb2/img/...` is not an option there — it 404s until a production
   deploy, and deploys currently go to `/jb2-staging`.
