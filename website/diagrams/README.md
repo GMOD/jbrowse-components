@@ -1,13 +1,14 @@
 # Architecture diagrams
 
-Graphviz sources for the architecture figures used in the developer guide. These
-replace the old hand-drawn PNGs so the figures are version-controllable and easy
-to edit.
+Graphviz sources for the architecture and pipeline figures used in the docs.
+These replace hand-drawn PNGs and ASCII diagrams so the figures are
+version-controllable and easy to edit.
 
-| Source                     | Rendered output                          | Used in                                          |
-| -------------------------- | ---------------------------------------- | ------------------------------------------------ |
-| `products_and_plugins.dot` | `../static/img/products_and_plugins.png` | `docs/developer_guide.md` (Products and plugins) |
-| `product_architecture.dot` | `../static/img/product_architecture.png` | `docs/developer_guide.md` (state model / React)  |
+| Source                          | Rendered output                               | Used in                                           |
+| ------------------------------- | --------------------------------------------- | ------------------------------------------------- |
+| `products_and_plugins.dot`      | `../static/img/products_and_plugins.png`      | `docs/developer_guide.md` (Products and plugins)  |
+| `product_architecture.dot`      | `../static/img/product_architecture.png`      | `docs/developer_guide.md` (state model / React)   |
+| `wolfdog_ancestry_pipeline.dot` | `../static/img/wolfdog_ancestry_pipeline.png` | `docs/tutorials/local_ancestry.md` (The pipeline) |
 
 ## Rendering
 
@@ -17,6 +18,7 @@ or `apt install graphviz`):
 ```sh
 dot -Tpng -Gdpi=150 products_and_plugins.dot -o ../static/img/products_and_plugins.png
 dot -Tpng -Gdpi=150 product_architecture.dot -o ../static/img/product_architecture.png
+dot -Tpng -Gdpi=150 wolfdog_ancestry_pipeline.dot -o ../static/img/wolfdog_ancestry_pipeline.png
 ```
 
 Edit the `.dot` source and re-run the command above to update a figure. The

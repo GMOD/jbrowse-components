@@ -1,0 +1,98 @@
+digraph wolfdog_ancestry_pipeline {
+  rankdir=TB
+  labelloc=t
+  fontname="Helvetica"
+  fontsize=18
+  label="Dog10K wolfdog local ancestry: published panel to painted track"
+  nodesep=0.35
+  ranksep=0.55
+
+  node [shape=box, fontname="Helvetica", fontsize=12, style=filled, fillcolor="#ffffff"]
+  edge [fontname="Helvetica", fontsize=10, color="#555555"]
+
+  // ── Published inputs ─────────────────────────────────────────────
+  subgraph cluster_inputs {
+    label="Published inputs"
+    labelloc=t
+    fontname="Helvetica"
+    fontsize=13
+    style=filled
+    fillcolor="#e3f2fd"
+    color="#90caf9"
+
+    sampletable [label="Dog10K sample table\nbreed + category per animal"]
+    phasedbcf [label="Dog10K phased BCF\n1929 canids, UU_Cfam_GSD_1.0"]
+    campbell [label="Campbell genetic map\ncanFam4"]
+
+    { rank=same; sampletable; phasedbcf; campbell
+      sampletable -> phasedbcf -> campbell [style=invis] }
+  }
+
+  // ── Derived FLARE inputs ─────────────────────────────────────────
+  subgraph cluster_flareinputs {
+    label="FLARE inputs (build_dog10k_wolfdog_ancestry.sh)"
+    labelloc=t
+    fontname="Helvetica"
+    fontsize=13
+    style=filled
+    fillcolor="#f1f8e9"
+    color="#aed581"
+
+    panels [label="wolves.txt  dogs.txt\ntargets.txt  refpanel.txt", fillcolor="#dcedc8"]
+    refvcf [label="chr1.ref.vcf.gz\nreference panel haplotypes"]
+    gtvcf [label="chr1.gt.vcf.gz\ntarget haplotypes"]
+    map [label="chr1.map"]
+
+    { rank=same; refvcf; gtvcf; map; refvcf -> gtvcf -> map [style=invis] }
+  }
+
+  // ── FLARE output ─────────────────────────────────────────────────
+  subgraph cluster_flare {
+    label="FLARE"
+    labelloc=t
+    fontname="Helvetica"
+    fontsize=13
+    style=filled
+    fillcolor="#fff3e0"
+    color="#ffcc80"
+
+    ancvcf [label="wolfdog_chr1.anc.vcf.gz\nper-marker AN1/AN2 calls", fillcolor="#ffe0b2"]
+    globalanc [label="wolfdog_chr1.global.anc.gz\nper-sample summary"]
+  }
+
+  // ── Track files ──────────────────────────────────────────────────
+  subgraph cluster_bed {
+    label="Track files"
+    labelloc=t
+    fontname="Helvetica"
+    fontsize=13
+    style=filled
+    fillcolor="#f3e5f5"
+    color="#ce93d8"
+
+    bedall [label="dog10k_wolfdog_ancestry.chr1.bed.gz\nall 243 animals"]
+    bednamed [label="dog10k_wolfdog_named.chr1.bed.gz\nthe named subset"]
+
+    { rank=same; bedall; bednamed; bedall -> bednamed [style=invis] }
+  }
+
+  painted [label="BedTabixAdapter +\nLinearMultiRowFeatureDisplay\none painted row per haplotype", fillcolor="#e1f5fe", shape=box, peripheries=2]
+
+  sampletable -> panels [label="derive panel lists"]
+  phasedbcf -> refvcf [label="bcftools view -r"]
+  phasedbcf -> gtvcf [label="bcftools view -r"]
+  panels -> refvcf [label="-S refpanel.txt", style=dashed]
+  panels -> gtvcf [label="-S targets.txt", style=dashed]
+  campbell -> map
+
+  refvcf -> ancvcf
+  gtvcf -> ancvcf
+  map -> ancvcf
+  ancvcf -> globalanc [style=dashed, label="same run"]
+
+  ancvcf -> bedall [label="flare_anc_to_bed.py\n+ labels.tsv"]
+  ancvcf -> bednamed [label="flare_anc_to_bed.py\n+ named.tsv"]
+
+  bedall -> painted
+  bednamed -> painted
+}

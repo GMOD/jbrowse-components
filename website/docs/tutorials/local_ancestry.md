@@ -69,22 +69,7 @@ the panels are wolves and dogs.
 Five artifacts stand between the published panel and the painted track. Each one
 is a plain text or VCF file you can open and check:
 
-```
-Dog10K sample table ──> wolves.txt, dogs.txt, targets.txt, refpanel.txt
-Dog10K phased BCF ────> chr1.ref.vcf.gz + chr1.gt.vcf.gz   (bcftools view -r)
-                        chr1.map                            (Campbell, canFam4)
-                              │
-                              v  FLARE
-                        wolfdog_chr1.anc.vcf.gz   per-marker AN1/AN2 calls
-                        wolfdog_chr1.global.anc.gz  per-sample summary
-                              │
-                              v  flare_anc_to_bed.py + labels.tsv / named.tsv
-                        dog10k_wolfdog_ancestry.chr1.bed.gz  all 243 animals
-                        dog10k_wolfdog_named.chr1.bed.gz     the named subset
-                              │
-                              v  BedTabixAdapter + LinearMultiRowFeatureDisplay
-                        one painted row per haplotype
-```
+<Figure caption="The Dog10K sample table and phased BCF at the top, the panel lists and per-chromosome VCFs FLARE takes as input in the middle, and the BED9 files the track reads at the bottom." src="/img/wolfdog_ancestry_pipeline.png" />
 
 ### Who goes in which panel
 
