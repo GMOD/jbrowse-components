@@ -17,12 +17,24 @@ export function renderToStaticMarkup(node: React.ReactElement) {
   // jbrowse-img) loads @emotion/react before `document` exists, so its default
   // cache context is null — provide one explicitly here.
   const cache = createCache({ key: 'css' })
-  // eslint-disable-next-line @eslint-react/dom-no-flush-sync
-  flushSync(() => {
-    createRoot(div).render(
-      React.createElement(CacheProvider, { value: cache }, node),
-    )
-  })
+  const root = createRoot(div)
+  let html: string
+  try {
+    // eslint-disable-next-line @eslint-react/dom-no-flush-sync
+    flushSync(() => {
+      root.render(React.createElement(CacheProvider, { value: cache }, node))
+    })
+    html = div.innerHTML
+  } finally {
+    // This is a *real* client root, not a server render: its effects run, so
+    // every `observer` in the tree ends up with a live MobX reaction. Leaving
+    // the root mounted therefore keeps the whole detached export tree — and an
+    // SVG export of a full view is tens of thousands of nodes — subscribed to
+    // the session's models for the rest of the session, re-rendering it into a
+    // dead <div> on every pan and zoom, once per export ever taken. Unmount
+    // once the markup is a string, which no longer depends on the DOM.
+    root.unmount()
+  }
   // SVG 1.1 presentation attributes (`fill`, `stroke`) take a <color>, which
   // does not include rgba() — alpha belongs in a separate fill-opacity /
   // stroke-opacity. Illustrator and older Inkscape drop an element whose fill
@@ -35,5 +47,5 @@ export function renderToStaticMarkup(node: React.ReactElement) {
   // would preserve the appearance and let those two drop their workarounds, but
   // it changes the pixels of every export carrying an rgba color, so it needs a
   // visual pass before the snapshots are regenerated.
-  return div.innerHTML.replaceAll(/\brgba\((.+?),[^,]+?\)/g, 'rgb($1)')
+  return html.replaceAll(/\brgba\((.+?),[^,]+?\)/g, 'rgb($1)')
 }
