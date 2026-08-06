@@ -163,8 +163,10 @@ echo
 echo "windows scored: $(zcat dog10k_size_fst.bed.gz | wc -l)"
 echo
 echo "top 20 windows by Fst:"
-zcat dog10k_size_fst.bed.gz | sort -k5,5gr | head -20 \
-  | awk 'BEGIN{OFS="\t"} {print NR, $1":"$2"-"$3, $5, $6" sites"}'
+# awk does the head: `| head -20` closes the pipe on sort, which dies of
+# SIGPIPE, and under `set -o pipefail` the script exits 141 right here.
+zcat dog10k_size_fst.bed.gz | sort -k5,5gr |
+  awk 'BEGIN{OFS="\t"} NR<=20 {print NR, $1":"$2"-"$3, $5, $6" sites"}'
 
 echo
 echo "Wrote $(pwd)/dog10k_size_fst.bed.gz (plus its .tbi)"

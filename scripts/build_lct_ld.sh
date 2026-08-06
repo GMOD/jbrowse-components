@@ -126,7 +126,12 @@ echo "wrote $FST_BW"
 if [ -f fst_site.weir.fst ]; then
   echo
   echo "top per-site Fst ($PANEL_CODE vs rest); rs4988235 is chr2:136,608,646:"
-  sort -k3,3gr fst_site.weir.fst | head -5 | awk '{printf "  chr%s:%s  %.3f\n",$1,$2,$3}'
+  # awk does the head: under `set -o pipefail`, `| head -5` closes the pipe on
+  # sort, which dies of SIGPIPE, and the script exits 141 right here — after
+  # printing a table that looks like the run finished. That is what silently
+  # cut this script off before its plink tables and its jbrowse2 app.
+  sort -k3,3gr fst_site.weir.fst |
+    awk 'NR<=5 {printf "  chr%s:%s  %.3f\n",$1,$2,$3}'
 fi
 
 # ── Evidence ─────────────────────────────────────────────────────────────────
