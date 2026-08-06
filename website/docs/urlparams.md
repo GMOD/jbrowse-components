@@ -965,9 +965,10 @@ the synteny tracks at one level of the multi-way view:
 
 A plugin makes its view launchable from a spec by registering a
 `LaunchView-<type>` [extension point](/docs/developer_guides/extension_points).
-Once the plugin is loaded (via the config's `plugins`, `&session=json-`
-`sessionPlugins`, or a hosted config), a session spec can launch its view by
-`type`. Their spec fields are documented by each plugin, not here:
+Once the plugin is loaded (via the config's `plugins`, a hosted config, or a
+session's own [`sessionPlugins`](#loading-a-plugin-from-a-url) — a spec has no
+field of its own for it), a session spec can launch its view by `type`. Their
+spec fields are documented by each plugin, not here:
 
 - `ProteinView` (3D structures) from `jbrowse-plugin-protein3d`. Fields such as
   `uniprotId`, `transcriptId`, `url`, and `connectedView` are documented in the
@@ -1228,10 +1229,51 @@ actually contains.
 Example
 
 ```
-&session=json-{"session":{"id":"xSHu7qGJN","name":"test","sessionPlugins":[{"url":"https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js"}]}}
+&session=json-{"session":{"id":"xSHu7qGJN","name":"test","sessionPlugins":[{"name":"MsaView","url":"https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js"}]}}
 ```
 
 This loads a session with an extra plugin loaded.
+
+#### Loading a plugin from a URL
+
+The `sessionPlugins` array above is the only way to name a plugin in the URL
+itself: no query parameter takes one, and a [session spec](#session-spec) has no
+field for it, so anything else has to come from the config JBrowse loads. It
+takes the same definitions a config's `plugins` array takes, and works in every
+session format that carries a snapshot — `json-`, `encoded-`, `share-` and
+`local-`. A plugin loaded this way belongs to that session rather than being
+installed for the user, and travels with it through the Share button.
+
+Four things to know before writing one by hand:
+
+- **`name` is required for a UMD bundle** — the `.umd.production.min.js` builds
+  the plugin store publishes. The loader resolves the bundle as the global
+  `JBrowsePlugin<Name>`, so a definition carrying only a `url` loads the script
+  and then finds nothing in it.
+- **An unrecognized plugin prompts the visitor.** Anything not served from
+  `https://jbrowse.org/plugins/` and not listed in the
+  [plugin store](https://jbrowse.org/jb2/plugin_store/) opens a "this session
+  has the following unknown plugins" dialog, naming each one, before the session
+  loads — a plugin is arbitrary javascript running with the page's privileges,
+  and a session URL arrives from whoever sent it. Accepting can remember that
+  url for this origin. A config's `plugins` are gated the same way, but only
+  when the config is cross-origin, which is why a config served beside JBrowse
+  never prompts.
+- **A JSON session is state, not spec shorthand.** Opening a plugin's view type
+  this way means writing that view's real snapshot, not the flat
+  [spec](#plugin-provided-view-types) arguments its launcher takes. Build the
+  session in the app and copy it out of Share → gear → "Plaintext JSON" rather
+  than authoring one from scratch.
+- **These URLs get long.** Put the session
+  [in the fragment](#query-string-or-hash-fragment) to stay under the
+  request-line limit that answers a long query string with HTTP 414 — and note
+  that a fragment containing `=` makes JBrowse ignore the query string
+  altogether, so `?config=…#session=json-…` loads the default `config.json`, not
+  the named one. Move `config=` into the fragment as well.
+
+If the point is for everyone opening a config to have the plugin, put it in that
+config's own `plugins` array instead. `sessionPlugins` is for one session, or
+one link.
 
 ### &session=encoded-
 
