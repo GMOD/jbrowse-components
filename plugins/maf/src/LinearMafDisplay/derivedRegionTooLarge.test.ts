@@ -215,6 +215,67 @@ describe('MAF measures the tier it is about to fetch', () => {
     expect(display.regionTooLargeReason).toBe('Requested too much data (20 Mb)')
   })
 
+  // The estimate is about a fetch, and past the swap it is about a fetch nobody
+  // is making. Rescaling it across the tier boundary banners the cheap summary
+  // read with the alignment's number — and wedges, because the fetch autoruns
+  // skip while `regionTooLarge` holds and the pre-flight is the only thing that
+  // re-measures. `RegionTooLargeMixin`'s ClearByteEstimateOnTierSwap autorun
+  // drops it, the same rule chromosome nav applies on the other axis.
+  it('drops the detail estimate when the view zooms out into the summary tier', () => {
+    const { display, view } = createMafTestEnvironment({
+      summaryAdapter: { type: 'BigBedAdapter' },
+    }).createDisplay()
+
+    view.zoomTo(20)
+    expect(display.showSummary).toBe(false)
+    // a 470-way over a gene-sized window, captured against the MAF adapter
+    display.setByteEstimate({
+      bytes: 3_000_000,
+      measuredSpanBp: view.visibleBp,
+    })
+    expect(display.regionTooLarge).toBe(true)
+
+    // zoom out past the swap: the fetch about to happen is now the summary one
+    view.zoomTo(200)
+    expect(display.showSummary).toBe(true)
+    expect(display.byteEstimate).toBeUndefined()
+    // ...so the banner is gone and the pre-flight can measure the tier we're
+    // actually about to read, rather than quoting ~29 Mb of alignment for it
+    expect(display.regionTooLarge).toBe(false)
+  })
+
+  it('drops the summary estimate when the view zooms back into the detail tier', () => {
+    const { display, view } = createMafTestEnvironment({
+      summaryAdapter: { type: 'BigBedAdapter' },
+    }).createDisplay()
+
+    view.zoomTo(200)
+    expect(display.showSummary).toBe(true)
+    display.setByteEstimate({ bytes: 60_000, measuredSpanBp: view.visibleBp })
+
+    view.zoomTo(20)
+    expect(display.showSummary).toBe(false)
+    expect(display.byteEstimate).toBeUndefined()
+  })
+
+  // The clear is keyed on the tier, not on the zoom: a track with no summary
+  // adapter reads one file at every zoom, so its estimate has to survive the
+  // 20kb crossing or the banner would re-derive itself on every pass.
+  it('keeps the estimate across 20kb when there is no tier to swap to', () => {
+    const { display, view } = createMafTestEnvironment().createDisplay()
+
+    view.zoomTo(20)
+    display.setByteEstimate({
+      bytes: 3_000_000,
+      measuredSpanBp: view.visibleBp,
+    })
+
+    view.zoomTo(200)
+    expect(display.showSummary).toBe(false)
+    expect(display.byteEstimate).toBeDefined()
+    expect(display.regionTooLarge).toBe(true)
+  })
+
   it('leaves an ordinary summary read alone', () => {
     const { display, view } = createMafTestEnvironment({
       summaryAdapter: { type: 'BigBedAdapter' },

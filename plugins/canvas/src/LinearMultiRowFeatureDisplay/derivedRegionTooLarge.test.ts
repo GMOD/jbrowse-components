@@ -59,8 +59,8 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
   // settled viewport, which is why every other test here can't tell them apart —
   // this one zooms between the measurement and the commit so they diverge. Both
   // spans stay above AUTO_FORCE_LOAD_BP so the floor isn't what clears the
-  // banner. Re-anchored at commit time the estimate would read the full 1.5MB,
-  // stay over the 1MB cap, and wedge: `FetchVisibleRegions` skips while
+  // banner. Re-anchored at commit time the estimate would read the full 7.5MB,
+  // stay over the 5MB cap, and wedge: `FetchVisibleRegions` skips while
   // `regionTooLarge` holds, so nothing would refetch to correct it.
   it('anchors the estimate to the measured span, not the span at commit time', () => {
     const { display, view } = createTestEnvironment().createDisplay()
@@ -73,15 +73,15 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
     expect(view.visibleBp).toBeGreaterThan(20_000)
 
     display.setByteEstimate({
-      bytes: 1_500_000,
+      bytes: 7_500_000,
       measuredSpanBp: measuredSpanBp,
     })
 
     expect(display.byteEstimate?.measuredSpanBp).toBe(measuredSpanBp)
     expect(display.estimatedBytesForVisibleSpan).toBeCloseTo(
-      (1_500_000 * view.visibleBp) / measuredSpanBp,
+      (7_500_000 * view.visibleBp) / measuredSpanBp,
     )
-    expect(display.resolvedByteLimit()).toBe(1_000_000)
+    expect(display.resolvedByteLimit()).toBe(5_000_000)
     expect(display.regionTooLarge).toBe(false)
   })
 
@@ -234,42 +234,42 @@ describe('multi-region rescale denominator (accepted behavior)', () => {
     view.moveTo({ index: 0, offset: 0 }, { index: 1, offset: 10_000_000 })
     expect(view.visibleBp).toBe(20_000_000)
 
-    // ctgA's fetch reports 4 Mb of index, ctgB's a tenth of that. The gate keeps
-    // the max (each region is gated against the same per-region budget) with the
-    // total span as its anchor.
+    // ctgA's fetch reports 20 Mb of index, ctgB's a tenth of that. The gate
+    // keeps the max (each region is gated against the same per-region budget)
+    // with the total span as its anchor.
     display.commitGateMeasurements(
       [
         {
           displayedRegionIndex: 0,
           region: { start: 0, end: 10_000_000 },
-          result: { bytes: 4_000_000 },
+          result: { bytes: 20_000_000 },
         },
         {
           displayedRegionIndex: 1,
           region: { start: 0, end: 10_000_000 },
-          result: { bytes: 400_000 },
+          result: { bytes: 2_000_000 },
         },
       ],
       view.visibleBp,
     )
     expect(display.byteEstimate).toEqual({
-      bytes: 4_000_000,
+      bytes: 20_000_000,
       measuredSpanBp: 20_000_000,
     })
     expect(display.regionTooLarge).toBe(true)
 
     // zoom into 4 Mb of ctgA alone: the total span fell 5x, so the estimate
-    // rescales to 0.8 Mb and clears the 1 Mb budget...
+    // rescales to 4 Mb and clears the 5 Mb budget...
     view.moveTo({ index: 0, offset: 0 }, { index: 0, offset: 4_000_000 })
     expect(view.visibleBp).toBe(4_000_000)
-    expect(display.estimatedBytesForVisibleSpan).toBeCloseTo(800_000)
+    expect(display.estimatedBytesForVisibleSpan).toBeCloseTo(4_000_000)
     expect(display.regionTooLarge).toBe(false)
 
     // ...where ctgA's own span fell only 2.5x: a per-region denominator would
-    // read 1.6 Mb and keep the banner up. That is the accepted gap. What still
+    // read 8 Mb and keep the banner up. That is the accepted gap. What still
     // holds is the worker budget the next fetch enforces per region, so the
     // release costs a round trip rather than an unguarded download.
-    expect(display.resolvedByteLimit()).toBe(1_000_000)
+    expect(display.resolvedByteLimit()).toBe(5_000_000)
   })
 })
 

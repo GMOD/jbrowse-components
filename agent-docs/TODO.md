@@ -21,6 +21,7 @@ Exploratory concepts that are *not* committed work live in
 | [Autofit height for the LGV demo](#autofit-height-for-the-lineargenomeview-example-site-demo) | embedded | no view-level auto-height exists yet |
 | [Extra large text SVG mode](#extra-large-text-svg-mode-for-pub-ready-figures) | SVG export | thread a scale the way `fontFamily` threads |
 | [Alignments / canvas odds and ends](#alignments--canvas) | alignments, canvas | five independent small items |
+| [`autogen` for two new config slots](#pnpm-autogen-for-the-two-new-fetchsizelimit-slots) | tooling, docs | needs a clean tree — that is the whole entry |
 | [Comparative cancel and retry](#give-the-comparative-displays-a-cancel-and-a-retry) | synteny, dotplot | read ADR-054 first; retry is a button, never automatic |
 | [Stop uploading every rect twice](#stop-uploading-every-rect-twice-for-the-continuation-pass) | GPU canvas | unify `ATTR4`, then verify headed on both backends |
 | [Linearize the pangenome](#linearize-the-pangenome-draw-graph-variation-as-alignment-style-glyphs) | pangenome | read PANGENOME_GRAPHS.md — four findings constrain the layout |
@@ -69,6 +70,23 @@ labels will overflow the boxes laid out for them.
 - Add a "hide this feature" option to `LinearMultiSampleVariantDisplay` (and
   similar displays). `plugins/canvas` already has `hideFeature`
   (`LinearBasicDisplay/baseModel.ts`) to copy.
+
+### `pnpm autogen` for the two new `fetchSizeLimit` slots
+
+`LinearMultiRowFeatureDisplay` and `SplitVcfTabixAdapter` each gained a
+`fetchSizeLimit` slot (REGION_TOO_LARGE.md § Shared primitives, the budget
+table). Both are generator inputs, so `website/docs/config/*` and
+`products/jbrowse-cli/src/commands/validate/configManifest.generated.ts` are
+stale until someone runs `pnpm autogen`.
+
+**Deliberately not run in the session that added them**, and the reason
+generalizes: the worktree held ~100 files of other agents' in-flight work,
+including edits to a dozen state models. `autogen` regenerates from the whole
+current tree, so the doc tables would have been rebuilt from half-finished
+JSDoc and the diff would have been impossible to split back apart. The config
+manifest alone would have come out clean — no other dirty file was a
+`configSchema.ts` — but there is no way to ask for just that. Run it on a clean
+tree; the same run settles the state-model rename debt ADR-045 mentions.
 
 ## Ready to build: the design is settled
 

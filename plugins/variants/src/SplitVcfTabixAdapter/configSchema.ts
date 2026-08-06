@@ -74,6 +74,23 @@ const SplitVcfTabixAdapter = ConfigurationSchema(
         locationType: 'UriLocation',
       },
     },
+
+    /**
+     * #slot
+     * The same 5 Mb `VcfTabixAdapter` declares, for the same reason: this
+     * adapter implements `getRegionByteSize`, so its reads are byte-gated, and
+     * without a limit of its own the gate falls back to the display config's
+     * conservative 1 Mb (`resolveByteLimit` prefers the adapter's). That gated
+     * a split VCF five times tighter than the single-file VCF beside it, on a
+     * block-granular tabix estimate that already over-quotes small regions.
+     */
+    fetchSizeLimit: {
+      type: 'number',
+      description:
+        'size in bytes over which to display a warning to the user that too much data will be fetched',
+      defaultValue: 5_000_000,
+      advanced: true,
+    },
   },
   {
     explicitlyTyped: true,

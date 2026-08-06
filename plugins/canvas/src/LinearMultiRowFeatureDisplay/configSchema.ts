@@ -304,6 +304,27 @@ export default function configSchemaF(pluginManager: PluginManager) {
         defaultValue: true,
         description: 'position tree nodes by branch length (dendrogram)',
       },
+      /**
+       * #slot
+       * The same 5 Mb `LinearBasicDisplay` uses, raised from the base display's
+       * conservative 1 Mb, and for the reason that slot gives: this display
+       * reads the same BED/BigBed/tabix files, none of whose adapters declare a
+       * limit of their own, and the index estimate is block-granular — a single
+       * region still pulls whole BGZF blocks, so a tighter gate banners a view
+       * that is not actually large.
+       *
+       * It matters more here than there. The byte axis is the *only* gate this
+       * display has: multi-row paints into fixed lanes, so it turns the density
+       * axis off (`densityGateEnabled`) and has no second backstop to fall
+       * through to.
+       */
+      fetchSizeLimit: {
+        type: 'number',
+        defaultValue: 5_000_000,
+        description:
+          'maximum data to attempt to download for a given feature track',
+        advanced: true,
+      },
     },
     {
       baseConfiguration: baseLinearDisplayConfigSchema,

@@ -5,7 +5,8 @@ import {
   getSession,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import { autorun } from 'mobx'
 
 import {
   AUTO_FORCE_LOAD_BP,
@@ -273,6 +274,25 @@ export default function RegionTooLargeMixin() {
        */
       get derivedRegionTooLargeEnabled(): boolean {
         return self.byteGateEnabled || self.gateFoldedIntoFetch
+      },
+      /**
+       * #getter
+       * Which tier the stored estimate is *about*, as a comparable value. The
+       * cached estimate answers "how many bytes would the fetch pull", and a
+       * display that swaps `byteGateAdapterConfig` by zoom changes which fetch
+       * that is — so past the swap the stored number describes a download nobody
+       * is going to do, exactly the way a stale estimate describes the previous
+       * chromosome's. Both are dropped, and for the same reason.
+       *
+       * Stringified rather than compared by reference: `byteGateAdapterConfig`
+       * is a snapshot getter, and whether a given display's is referentially
+       * stable is not something this mixin should have to rely on. An identity
+       * comparison that turned out unstable would clear the estimate on every
+       * recompute — a banner that flickers on pan, which is the property the
+       * cached estimate exists to provide.
+       */
+      get byteGateAdapterKey(): string {
+        return JSON.stringify(self.byteGateAdapterConfig)
       },
       /**
        * #getter
@@ -550,6 +570,49 @@ export default function RegionTooLargeMixin() {
         // × current viewport, and the estimate was just captured at that
         // viewport.
         return self.regionTooLarge
+      },
+    }))
+    .actions(self => ({
+      // The fork auto-chains afterAttach, so this runs alongside the composing
+      // display's own without either calling super.
+      afterAttach() {
+        // Drop the cached estimate when the tier it measured stops being the
+        // tier we would fetch. `clearByteEstimate` on chromosome nav already
+        // handles "these bytes are about a different region"; this is the same
+        // rule on the other axis, "these bytes are about a different file", and
+        // it wedges the same way if skipped: MAF captures a 470-way detail
+        // estimate below 20kb, zooms out into the cheap summary tier, and the
+        // detail number rescales UP (3 Mb over 8 kb reads as 29 Mb over 80 kb)
+        // and banners a summary read that would have measured ~60 kB. The fetch
+        // autoruns skip while `regionTooLarge` holds and the pre-flight is the
+        // only thing that re-measures, so nothing corrects it and zooming out
+        // further only makes it worse.
+        //
+        // Owned here rather than left to the swapping display, for the reason
+        // CanvasFeatureGateMixin owns its own stale-stat cleanup: overriding
+        // `byteGateAdapterConfig` is the whole opt-in, and a display that has to
+        // remember a second wire is a display that silently mis-gates when it
+        // doesn't. The read is the autorun's own — an MST action runs untracked,
+        // so factoring it into one would leave this with no dependencies and
+        // fire it exactly once.
+        addDisposer(
+          self,
+          autorun(
+            () => {
+              // Guarded so a display that never gates never evaluates
+              // `byteGateAdapterConfig` — that getter reaches through the
+              // `host()` cast for members this mixin doesn't declare, and
+              // "nothing below the opt-in is evaluated" is a property the
+              // non-byte composers (wiggle, Manhattan, sequence) rely on.
+              if (!self.derivedRegionTooLargeEnabled) {
+                return
+              }
+              void self.byteGateAdapterKey
+              self.clearByteEstimate()
+            },
+            { name: 'ClearByteEstimateOnTierSwap' },
+          ),
+        )
       },
     }))
 }

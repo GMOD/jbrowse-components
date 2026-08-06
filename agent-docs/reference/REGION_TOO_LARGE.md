@@ -85,7 +85,7 @@ For the wider picture and the five fetch autoruns that consult the verdict, see
 
 ## How the verdict is built
 
-Four steps, all on `RegionTooLargeMixin`:
+Four steps and a note, all on `RegionTooLargeMixin`:
 
 - `byteGateBlocksFetch(regions, ctx)` is the whole pre-flight, in one action:
   read `visibleBp`, run `CoreGetRegionByteEstimate`, `setByteEstimate`, return
@@ -107,7 +107,8 @@ Four steps, all on `RegionTooLargeMixin`:
   of a rule each call site has to honor.
 - `estimatedBytesForVisibleSpan` rescales that estimate to the span visible now
   (`bytes × visibleBp / measuredSpanBp`). It reads the span through
-  `gateVisibleBp`, the mixin's **only** read of its container, which is
+  `gateVisibleBp`, the mixin's **only** read of the view (it reaches the
+  containing *track* in one other place, `adapterFetchSizeLimit`), which is
   `undefined` until `view.initialized` — `visibleBp` reads `view.width`, which
   throws before the view is measured, and a bare getter must never throw. Both
   this getter and `gateActive` take the span from there, so the pre-init guard
@@ -121,20 +122,50 @@ Four steps, all on `RegionTooLargeMixin`:
   flips it to false, `FetchVisibleRegions` notices and re-fires on its own.
 
 The estimate deliberately survives `clearAllRpcData()`, so an ordinary viewport
-change doesn't flicker the banner. Only chromosome navigation drops it, since
-`displayedRegionIndex` values are reused across chromosomes and a stale estimate
-would gate the new region against the previous chromosome's numbers. That drop
-is `clearByteEstimate()`, fired from `MultiRegionDisplayMixin`'s
-`DisplayedRegionsChange` autorun — every display in that family gets it without
-wiring anything. LD and arc run on `GlobalFetchMixin` instead and call it from
-their own `onDisplayedRegionsChange`.
+change doesn't flicker the banner. **Two things drop it, and they are one rule on
+two axes**: the estimate describes a particular fetch, and each of them changes
+which fetch that is.
+
+- **Chromosome navigation**, since `displayedRegionIndex` values are reused
+  across chromosomes and a stale estimate would gate the new region against the
+  previous chromosome's numbers. That drop is `clearByteEstimate()`, fired from
+  `MultiRegionDisplayMixin`'s `DisplayedRegionsChange` autorun — every display in
+  that family gets it without wiring anything. LD and arc run on
+  `GlobalFetchMixin` instead and call it from their own
+  `onDisplayedRegionsChange`.
+- **A tier swap** — `byteGateAdapterConfig` changing under a display that reads a
+  different file at different zooms. `RegionTooLargeMixin`'s own `afterAttach`
+  installs `ClearByteEstimateOnTierSwap`, an autorun over `byteGateAdapterKey`
+  (the config, stringified), so overriding `byteGateAdapterConfig` stays the
+  whole opt-in and no display has to remember a second wire — the same call
+  `CanvasFeatureGateMixin` makes for its own stale-stat cleanup. Guarded on
+  `derivedRegionTooLargeEnabled`, so a display that never gates still never
+  evaluates the adapter getters below the opt-in.
+
+  Skipping it wedges, and MAF is the worked example. It gates below the floor, so
+  it captures a 470-way *detail* estimate inside a gene-sized window; zoom out
+  past 20kb and `showSummary` flips to the cheap tier while that number rescales
+  **up** — 3 Mb over 8.4 kb reads as 29 Mb over 80 kb — bannering a summary read
+  that would have measured ~60 kB. Nothing corrects it: `FetchVisibleRegions`
+  skips while `regionTooLarge` holds and the pre-flight is the only thing that
+  re-measures, so zooming out further only makes it worse, and the summary tier —
+  the entire reason that file exists — is unreachable until force-load or
+  chromosome nav. Note the direction: the *other* crossing is safe on its own,
+  because a stale summary estimate under-reports, the fetch proceeds, and the
+  pre-flight re-measures before `work()` runs. Pinned both ways in
+  `plugins/maf/src/LinearMafDisplay/derivedRegionTooLarge.test.ts`, along with
+  "keeps the estimate across 20kb when there is no tier to swap to" — the clear
+  is keyed on the tier, never on the zoom, or a single-file track would re-derive
+  its banner on every pass across the floor.
 
 `clearByteEstimate()` deliberately does **not** touch `forceLoadTrack`: that flag
 is a track-wide approval, so expiring it here would reinstate exactly the
 per-locus re-prompting it exists to avoid. See § Force-load.
 
-One smaller wire: `onRegionTooLarge()` fires on the false→true transition
-(alignments overrides it to clear its hover).
+One smaller wire, and it lives on `MultiRegionDisplayMixin` rather than here:
+`onRegionTooLarge()` fires on the false→true transition (alignments overrides it
+to clear its hover), so the two displays outside that family — LD and arc — don't
+get it.
 
 **The `AUTO_FORCE_LOAD_BP` comparison lives in `aboveForceLoadFloor`, and only
 there.** `gateActive` adds the opt-in and exemption terms on top of it — and,
@@ -225,7 +256,17 @@ Canvas overrides it with its feature-density gate; byte-only displays leave it.
 to the display's own. A display that swaps files by zoom overrides it so the
 estimate always describes the fetch about to happen — MAF points it at the
 `summaryAdapter` sub-adapter while `showSummary`, and at the MAF adapter below
-the swap.
+the swap. Overriding it is the whole opt-in: the cached estimate is dropped when
+this getter's value changes, so a measurement can't outlive the tier it measured
+(§ How the verdict is built).
+
+One thing it does **not** move is the budget. `adapterFetchSizeLimit` reads
+`['adapter','fetchSizeLimit']` off the containing track, so a swapped-in
+sub-adapter is measured against the *parent* adapter's declared limit. Inert
+today — no MAF adapter declares the slot, so both tiers land on the display
+config — but a tiered display whose sub-adapter declares one would gate against
+the wrong number, and the fix is to override `adapterFetchSizeLimit` alongside
+this getter rather than to teach the slot path about tiers.
 
 That getter is what lets a tiered display keep `byteGateEnabled` on for **both**
 tiers, and the alternative is worth naming because it was the shape here until
@@ -286,10 +327,36 @@ refuses, which is the wedge the anchoring rules exist to prevent. It also gives
 canvas a different estimate semantic from the pre-flight path, which measures a
 region *set* in one adapter call and has no per-region number to keep.
 
+**The pre-flight has its own version of the same mismatch, in the other
+direction.** `fetchRegions` measures `needed` — only the regions the loaded data
+doesn't already cover — but `byteGateBlocksFetch` anchors to the whole
+`gateVisibleBp`. With one of several visible regions uncovered, the stored rate
+is bytes-for-one over span-of-all and under-reports. `ByteEstimate`'s own note
+argues the buffer cancels because it scales with `visibleBp`; the
+covered/uncovered split doesn't. It costs a round trip and never a download — the
+pre-flight re-measures before `work()` runs — which is why it is left alone
+rather than threaded through a per-region anchor the single-region case would
+never use.
+
 `commitGateMeasurements` records the maximum per-region byte count, not the sum,
 because every region is gated against the same per-region budget — a
 multi-region view where each region individually fits should never be blanked
-just because the regions add up. **A batch that measured no bytes at all writes
+just because the regions add up.
+
+**The pre-flight path does the opposite, and that is the one place the two halves
+genuinely disagree.** `CoreGetRegionByteEstimate` hands the whole region set to
+`getRegionByteSize` in one call, and `bytesForRegions` sums the merged index
+chunks across all of them — so alignments/MAF/MSV/LD/arc gate on the *total*
+download while canvas gates on the *worst region*. Two 3 Mb regions against a
+5 Mb budget: the pre-flight banners at 6 Mb, canvas allows it and pulls 6 Mb. The
+same VCF reaches opposite verdicts through `LinearMultiSampleVariantDisplay` and
+`LinearVariantDisplay`. Both readings are defensible — one is what the wire
+actually costs, the other is what any single region costs — and neither is
+cheaply convertible to the other: the pre-flight measures a region set in one
+adapter call and has no per-region number to keep, while canvas has no
+cross-region call to sum. Left as is, and recorded here so the divergence is a
+known one rather than something the next reader has to re-derive from the two
+call sites. **A batch that measured no bytes at all writes
 nothing** — not `bytes: undefined`. Two ways that happens and they mean the same
 thing: the adapter offers no index estimate, or the fetch carried no `byteLimit`
 because `gateActive` was false when it was issued (under the force-load floor,
@@ -489,6 +556,28 @@ paths can't drift apart.
   Note an adapter-declared limit **outranks** the display config, so a
   display-level `fetchSizeLimit` cannot lower a BAM/CRAM/VCF adapter's own default.
   Lower it on the adapter.
+
+  Which means the budget an over-large fetch is actually measured against is
+  spread over two schemas, and the two have to be read together to see what a
+  given track gets:
+
+  | tier | value | applies to |
+  | --- | --- | --- |
+  | adapter slot | BAM 5 Mb, CRAM 3 Mb, VcfTabix 5 Mb, SplitVcfTabix 5 Mb | those four adapter types, whatever display |
+  | display slot | `LinearBasicDisplay` 5 Mb, `LinearMultiRowFeatureDisplay` 5 Mb | every other adapter under those displays |
+  | display slot | `baseLinearDisplayConfigSchema` 1 Mb | every other adapter under every other display |
+
+  **An adapter that implements `getRegionByteSize` and declares no
+  `fetchSizeLimit` inherits whichever display it lands under**, which is how two
+  gaps got in and both are closed: `SplitVcfTabixAdapter` gated five times
+  tighter than the single-file VCF beside it, and `LinearMultiRowFeatureDisplay`
+  sat on the base 1 Mb while `LinearBasicDisplay` read the same BED/BigBed/tabix
+  files at 5 Mb. That second one bites hardest, because multi-row turns the
+  density axis off — the byte budget is the only gate it has, with no backstop to
+  fall through to. The reasoning for 5 Mb is the same in both places and worth
+  restating: the index estimate is block-granular, so a single gene still pulls
+  whole BGZF blocks and a tighter gate banners a view that isn't large. When you
+  add a `getRegionByteSize` to an adapter, decide its budget in the same commit.
 - `rescaleByteEstimateToVisibleSpan` holds the span-scaling math.
 - `bytesTooLargeReason(bytes)` and `TOO_MANY_FEATURES_REASON` are the only two
   banner strings.
