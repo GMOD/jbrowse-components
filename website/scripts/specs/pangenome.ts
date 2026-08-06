@@ -335,21 +335,31 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
   },
 
-  // The same untangle file in a dotplot, which is the idiomatic comparative
-  // picture for both things this projection has to say and needs no new file:
-  // it reads the PIF the synteny track already loads.
+  // The same untangle file in a dotplot: the idiomatic comparative picture for
+  // how two genomes are ARRANGED, and it needs no new file since it reads the
+  // PIF the synteny track already loads.
   //
-  // K12 on x against IAI39 on y, whole genome. An inversion is an anti-diagonal
-  // run (IAI39's five, the same ones the per-strain lane places on K12), and a
-  // collapsed repeat is two points sharing an x — one K12 span reached from two
-  // IAI39 loci. Every other figure on the page states one of those two and not
-  // the other.
+  // K12 on x against IAI39 on y, whole genome. Ascending runs are shared
+  // sequence in the same orientation; descending runs are inversions. Merging
+  // the records into arms gives five reverse ones:
+  //   K12   213,443-  262,948  -> IAI39   493,004-  449,188   (50 kb)
+  //   K12   302,899-  501,436  -> IAI39   443,280-  228,426  (199 kb)
+  //   K12   914,963-1,194,177  -> IAI39 2,336,701-2,058,958  (279 kb)
+  //   K12 1,635,838-2,229,302  -> IAI39 1,574,975-  906,630  (594 kb)
+  //   K12 3,946,786-4,171,723  -> IAI39 3,330,675-3,083,154  (225 kb)
+  // the last of which is the pair detached from the diagonal near 4 Mb.
   //
-  // IAI39 rather than another strain because it is the one carrying both
-  // signals: 310 of its 956 untangle segments are reverse, and it reaches both
-  // collapsed rRNA spans twice. Sakai or NCTC86 would draw a clean diagonal with
-  // four off-diagonal points, which is the control the lane figure already
-  // carries.
+  // IT DOES NOT SHOW THE COLLAPSED REPEAT, and an earlier caption here claimed
+  // it did. At K12 3,941,447 the big forward arm ends (IAI39 4,546,355) and the
+  // fifth reverse arm begins (IAI39 3,136,192), so the two records sharing that
+  // x ARE a rearrangement breakpoint and look like every other junction on the
+  // plot. The collapse is legible in the synteny figure above, where both copies
+  // are framed, and filterable on `selfCov` in the lane below. Do not put it
+  // back in this figure's caption.
+  //
+  // IAI39 rather than another strain because it is the only one with inversions
+  // at all: 310 of its 956 untangle segments are reverse against 0 for Sakai and
+  // NCTC86 and 1 for CFT073.
   {
     mode: 'url',
     name: 'pangenome/pggb_untangle_dotplot',
