@@ -1320,19 +1320,24 @@ function graphContextPartSpecs(): ScreenshotSpec[] {
   ]
 }
 
-// The halves of pangenome/local_subgraph: the same pggb subgraph over the same
-// linear view, anchored on the K12 path and force-directed. The anchored half is
-// the figure's original claim (the strip's green-to-yellow step is the same step
-// in the graph's backbone, at the same x); the force half is what the drawing
-// looks like with nothing holding it to that axis, which is what makes the claim
-// legible as a choice.
+// pangenome/local_subgraph: the pggb subgraph read from a GFA FILE rather than
+// from the tabix index, over a linear view of the same locus, anchored on the
+// K12 path.
 //
-// One height for both, because `+append` pads the shorter one: the anchored
-// layout sizes its pane to two rows and the force drawing is much taller, so the
-// height is the force one's and the anchored half carries the difference as page
-// background.
-function localSubgraphPartSpecs(): ScreenshotSpec[] {
-  const part = (
+// ANCHORED ONLY, where this was an anchored+force pair (reviewer: "is this a
+// dupe of pangenome/local_subgraph in a way?", on pggb_locus_sample_rows).
+// Partly yes, and this is the half of it that was: the two figures sit ~100
+// lines apart in the E. coli tutorial on the same 460 bp, and their force
+// panes drew nearly the same nodes twice (54/70 from the index against 48/63
+// from the file). What does not duplicate is this figure's own claim, which
+// needs the anchored layout: anchoring on the K12 path makes every node the
+// walk reaches rank 0 at that offset, so the strip above and the backbone
+// below share an axis as well as the Depth ramp, and the green-to-yellow step
+// lands at the same x in both. The force drawing of this locus is one figure
+// up, as the right half of pggb_locus_sample_rows, and the tutorial's prose
+// about the blunt 93 bp end now points there.
+function localSubgraphSpec(): ScreenshotSpec {
+  const build = (
     name: string,
     layoutMode: 'auto' | 'force',
     viewportHeight: number,
@@ -1380,14 +1385,11 @@ function localSubgraphPartSpecs(): ScreenshotSpec[] {
     readyTimeout: 90000,
     allowUnsettled: true,
     settleMs: 8000,
-    // half the composed width each
-    viewportWidth: 830,
-    // Each half sized to its own content, not to the taller of the two: the
-    // anchored layout has a pinned aspect ratio — row spacing is a fraction of
-    // the reference span — so its pane is two rows, while the force drawing
-    // fills a 600px box. `+append` pads the shorter one to match, so the
-    // composite carries the difference as background while each half stays a
-    // right-sized figure on its own live link.
+    // full width now that this is one frame rather than half of a `+append`
+    viewportWidth: 1000,
+    // sized to its own content: the anchored layout has a pinned aspect ratio —
+    // row spacing is a fraction of the reference span — so the pane is two rows
+    // whatever the viewport says.
     viewportHeight,
     hideTooltip: true,
     // The blunt end, named in both halves. Review, twice: "why is it blunt? why
@@ -1466,10 +1468,7 @@ function localSubgraphPartSpecs(): ScreenshotSpec[] {
       },
     ],
   })
-  return [
-    part('pangenome/local_subgraph_anchored', 'auto', 640),
-    part('pangenome/local_subgraph_force', 'force', 1025),
-  ]
+  return build('pangenome/local_subgraph', 'auto', 640)
 }
 
 // The two landmark nodes both halves circle, so the pair states its own
@@ -2057,22 +2056,12 @@ export const graphSpecs: ScreenshotSpec[] = [
   // and nothing in the file marks one as the reference, and a whole-file import
   // has no region to infer it from either. 'K12' matches on the PanSN sample
   // name of `K12#1#chr:1004500-1004961`.
-  ...localSubgraphPartSpecs(),
-  {
-    mode: 'compose',
-    name: 'pangenome/local_subgraph',
-    parts: [
-      'pangenome/local_subgraph_anchored',
-      'pangenome/local_subgraph_force',
-    ],
-    // Left+right, per review ("should have the force directed bandage graph
-    // version also. potentially as a 'left+right' two part image"). The anchored
-    // half is the one that makes the shared-axis claim, so it goes first; the
-    // force half is the same subgraph with nothing holding it to the axis, which
-    // is what says the axis in the other half is a real thing rather than the
-    // only way a graph can be drawn.
-    direction: 'horizontal',
-  },
+  //
+  // It was a left+right pair with a force half, added on review ("should have
+  // the force directed bandage graph version also"); that half is gone and the
+  // force drawing of this locus is one figure up, in pggb_locus_sample_rows —
+  // see the note on localSubgraphSpec.
+  localSubgraphSpec(),
   // The haplotype paths drawn: every edge carries one stroke per P record that
   // crosses it, so each arm of a bubble is coloured by the strains that take
   // it. That is the one thing the graph states and none of the linear

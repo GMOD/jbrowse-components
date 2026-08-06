@@ -771,13 +771,15 @@ drawn width is a visibility floor rather than their length in bp, which the node
 tooltip gives.
 
 One of them is worth naming, because a cut graph always has ends and this one
-has a conspicuous one: the dark 93 bp node hanging off the green-to-yellow
-junction in the force pane. It is where CFT073 rejoins, and in the whole graph
-that segment links to `K12:1,004,686` **and** to `K12:997,574`, so CFT073
-carries 93 bp where K12 carries 7.1 kb. The open end is the far side of that
-deletion, 7 kb outside the window `odgi extract -E` was given. A one-sided node
-in any extracted subgraph means the same thing: sequence continuing past the
-window, not a dead end in the graph.
+has a conspicuous one: the 93 bp node at the green-to-yellow junction, ringed in
+the figure below and drawn with its free end hanging off the junction in the
+force pane of the [sample-rows figure](#browsing-the-whole-graph-by-locus)
+above, which covers the same 460 bp. It is where CFT073 rejoins, and in the
+whole graph that segment links to `K12:1,004,686` **and** to `K12:997,574`, so
+CFT073 carries 93 bp where K12 carries 7.1 kb. The open end is the far side of
+that deletion, 7 kb outside the window `odgi extract -E` was given. A one-sided
+node in any extracted subgraph means the same thing: sequence continuing past
+the window, not a dead end in the graph.
 
 Widening until it closes is the obvious next move and the index says what it
 costs before you spend it on. Both anchors are in view only from
@@ -803,7 +805,7 @@ tabix https://jbrowse.org/demos/ecoli_pangenome/ecoli_minigraph.links.bed.gz \
 CFT073 around it, where `s2025` is this same CFT073 sequence. Which resolution
 holds an event is a property of the graph, not of the window you asked for.
 
-<Figure caption="One slice of the five-strain graph drawn both ways, under a linear view of the same locus. Left, anchored on the graph's K12 path: both panels share an axis and the Depth colors, so the green-to-yellow step where the fifth strain rejoins the shared sequence sits at the same x in both. Right, force-directed: the same nodes and colors with nothing holding them to the axis." src="/img/pangenome/local_subgraph.png" links="Anchored=pangenome/local_subgraph_anchored,Force-directed=pangenome/local_subgraph_force" />
+<Figure caption="The extracted file opened beside a linear view of the same locus, anchored on the graph's K12 path so both panels share an axis and the Depth colors. The green-to-yellow step where the fifth strain rejoins the shared sequence sits at the same x in both, and the ringed 93 bp node is the one whose second link falls outside the extracted window." src="/img/pangenome/local_subgraph.png" />
 
 ### Drawing the haplotype paths
 
