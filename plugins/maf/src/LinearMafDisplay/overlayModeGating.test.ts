@@ -1,9 +1,8 @@
+import { testWireRegionData } from '../LinearMafGetAlignmentDataRpc/testWire.ts'
 import { emptyMafCoverage } from './components/coverageTestFixture.ts'
 import { createMafTestEnvironment } from './testEnv.ts'
 
 import type { LinearMafDisplayModel } from './stateModel.ts'
-
-const enc = new TextEncoder()
 
 // One block with a reference-gap column, so `blockHasRefGap` lets the insertion
 // walk in and both rows emit a marker.
@@ -16,22 +15,23 @@ function seedRegion(display: LinearMafDisplayModel) {
     treeNewick: undefined,
     samplesCanonical: true,
   })
-  display.setRpcData(0, {
-    blocks: [
-      {
-        startBp: 100,
-        endBp: 104,
-        //                  ref has a `-` at column 2 → an insertion column
-        refSeqBytes: enc.encode('ACG-T'),
-        rows: [
-          { sampleId: 'hg38', alignmentBytes: enc.encode('ACGTT') },
-          { sampleId: 'panTro4', alignmentBytes: enc.encode('ACGTT') },
-        ],
-        empties: [],
-      },
-    ],
-    coverage: emptyMafCoverage(100),
-  })
+  display.setRpcData(
+    0,
+    testWireRegionData(
+      [
+        {
+          startBp: 100,
+          // ref has a `-` at column 3 → an insertion column
+          refSeq: 'ACG-T',
+          rows: [
+            { sampleId: 'hg38', seq: 'ACGTT' },
+            { sampleId: 'panTro4', seq: 'ACGTT' },
+          ],
+        },
+      ],
+      { coverage: emptyMafCoverage(100) },
+    ),
+  )
 }
 
 // The insertion markers are drawn only by the `bases` rendering — the overlay

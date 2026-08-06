@@ -1,5 +1,7 @@
 import { waitFor } from '@testing-library/react'
 
+import { testWireRegionData } from '../LinearMafGetAlignmentDataRpc/testWire.ts'
+import { emptyMafCoverage } from './components/coverageTestFixture.ts'
 import { createMafTestEnvironment } from './testEnv.ts'
 
 // The LinearMafGetAlignmentData result for a region with no alignment blocks on
@@ -10,24 +12,7 @@ function makeEmptyMafResult() {
     samples: [],
     treeNewick: undefined,
     samplesCanonical: false,
-    regionData: {
-      blocks: [],
-      coverage: {
-        coverageDepths: new Float32Array(0),
-        coverageStartPos: 0,
-        coverageMaxDepth: 0,
-        identityScores: new Float32Array(0),
-        mismatchPositions: new Uint32Array(0),
-        mismatchBases: new Uint8Array(0),
-        insertionPositions: new Uint32Array(0),
-        insertionLengths: new Uint32Array(0),
-        coveragePackedBuffer: { data: new Uint8Array(0), width: 0, height: 0 },
-        snpPackedBuffer: new ArrayBuffer(0),
-        interbasePackedBuffer: new ArrayBuffer(0),
-        interbaseMaxCount: 0,
-        indicatorPackedBuffer: new ArrayBuffer(0),
-      },
-    },
+    regionData: testWireRegionData([], { coverage: emptyMafCoverage() }),
   }
 }
 

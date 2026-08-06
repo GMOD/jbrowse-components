@@ -1,15 +1,12 @@
 import { rpcResult } from '@jbrowse/core/util/librpc'
 
-import { DASH } from '../util/asciiBytes.ts'
 import { loadMafSamplesAdapter } from '../util/loadMafSamplesAdapter.ts'
 import { subscribeToObservable } from '../util/observableUtils.ts'
 import { buildMafCoverageRegion } from './buildMafCoverageRegion.ts'
 import { collectMafTransferables } from './collectTransferables.ts'
+import { MafWirePacker } from './mafWirePacker.ts'
 
-import type {
-  MafWireBlock,
-  MafWireRegionData,
-} from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
+import type { MafWireRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type {
   AlignmentRecord,
   BaseMafRpcArgs,
@@ -80,15 +77,18 @@ export function referenceSampleId(
 
 /**
  * Fetch MAF alignment features for a single region. Returns raw
- * `MafWireRegionData` (one or more blocks; each carries its own ref seq + rows,
- * named by species rather than placed at a screen row —
- * see `mafRenderingBackendTypes.ts`). The GPU instance buffer is built on the
- * main thread (in `startRenderingBackend`'s per-region encode) from this raw
- * data plus the current `gpuProps()` — that way color/style toggles never
- * round-trip through the RPC.
+ * `MafWireRegionData`: one byte arena holding every block's reference and every
+ * row's aligned sequence, plus parallel typed-array columns naming the species
+ * each row belongs to rather than the screen row it lands on (placement is the
+ * client's — see `mafRenderingBackendTypes.ts`). The GPU instance buffer is
+ * built on the main thread (in `startRenderingBackend`'s per-region encode)
+ * from this raw data plus the current `gpuProps()` — that way color/style
+ * toggles never round-trip through the RPC.
  *
- * All heavy sequence data uses Uint8Array for zero-copy transfer across the
- * worker boundary.
+ * Nothing per-row is ever allocated as an object here. The packer is fed
+ * streaming and its columns go out on the transfer list as a fixed handful of
+ * buffers, which is what makes a wide region's reply cost microseconds instead
+ * of seconds — see `collectMafTransferables` for the measurement.
  */
 export async function executeMafAlignmentData({
   pluginManager,
@@ -112,13 +112,12 @@ export async function executeMafAlignmentData({
   // hand-listed sample list.
   const opts = hasConfiguredSamples ? { ...args, samples: configSamples } : args
 
-  const enc = new TextEncoder()
-
-  // Pass 1: buffer blocks + collect sample order. Row indices are assigned in
-  // pass 2 once the full set is known; encoding is deferred to then too.
+  // Pass 1: buffer blocks + collect sample order. Nothing is encoded yet — the
+  // subtree filter decides which rows reach the arena, and the arena is sized
+  // from the surviving rows in pass 2.
   const rawBlocks: {
     startBp: number
-    refSeqBytes: Uint8Array
+    refSeq: string
     alignments: Record<string, AlignmentRecord>
     empties: Record<string, EmptyRecord>
   }[] = []
@@ -152,7 +151,7 @@ export async function executeMafAlignmentData({
       }
       rawBlocks.push({
         startBp: feature.get('start'),
-        refSeqBytes: enc.encode(refSeq),
+        refSeq,
         alignments,
         empties,
       })
@@ -168,52 +167,57 @@ export async function executeMafAlignmentData({
   const visible = subtreeFilter?.length ? new Set(subtreeFilter) : undefined
   const isVisible = (sampleId: string) => !visible || visible.has(sampleId)
 
-  // One MAF feature = one alignment block. A single fetched region can contain
-  // many disjoint blocks at unrelated genomic anchors.
-  const blocks: MafWireBlock[] = rawBlocks.map(
-    ({ startBp, refSeqBytes, alignments, empties }) => {
-      // for...in + push avoids the Object.entries+flatMap temp array
-      // allocations on a per-block hot path.
-      const rows: MafWireBlock['rows'] = []
-      for (const sampleId in alignments) {
-        if (isVisible(sampleId)) {
-          const a = alignments[sampleId]!
-          rows.push({
-            sampleId,
-            alignmentBytes: enc.encode(a.seq),
-            chr: a.chr,
-            start: a.start,
-            strand: a.strand ?? 1,
-            srcSize: a.srcSize,
-            context: a.context,
-          })
-        }
+  // Pass 2: size the pack. Every count here is exact, so the packer allocates
+  // each column and the arena once — the arena is the largest thing the worker
+  // holds, and letting it double its way up would memcpy tens of megabytes
+  // several times over. Only string lengths and record keys are touched; no
+  // sequence bytes move until pass 3.
+  const reserve = { blocks: rawBlocks.length, rows: 0, empties: 0, bytes: 0 }
+  for (const { refSeq, alignments, empties } of rawBlocks) {
+    reserve.bytes += refSeq.length
+    for (const sampleId in alignments) {
+      if (isVisible(sampleId)) {
+        reserve.rows++
+        reserve.bytes += alignments[sampleId]!.seq.length
       }
-      const emptyRows: MafWireBlock['empties'] = []
-      for (const sampleId in empties) {
-        if (isVisible(sampleId)) {
-          const e = empties[sampleId]!
-          emptyRows.push({ sampleId, ...e })
-        }
+    }
+    for (const sampleId in empties) {
+      if (isVisible(sampleId)) {
+        reserve.empties++
       }
-      // Genomic extent of the block = non-dash reference columns.
-      let refLen = 0
-      for (const b of refSeqBytes) {
-        if (b !== DASH) {
-          refLen++
-        }
-      }
-      return {
-        startBp,
-        endBp: startBp + refLen,
-        refSeqBytes,
-        rows,
-        empties: emptyRows,
-      }
-    },
-  )
+    }
+  }
 
-  // `blocks` already contains exactly the visible rows (narrowed by the subtree
+  // Pass 3: pack. One MAF feature = one alignment block; a single fetched
+  // region can contain many disjoint blocks at unrelated genomic anchors.
+  // for...in + push avoids the Object.entries+flatMap temp array allocations on
+  // a per-block hot path.
+  const packer = new MafWirePacker(reserve)
+  for (const { startBp, refSeq, alignments, empties } of rawBlocks) {
+    packer.startBlock(startBp, refSeq)
+    for (const sampleId in alignments) {
+      if (isVisible(sampleId)) {
+        const a = alignments[sampleId]!
+        packer.addRow({
+          sampleId,
+          seq: a.seq,
+          chr: a.chr,
+          start: a.start,
+          strand: a.strand ?? 1,
+          srcSize: a.srcSize,
+          context: a.context,
+        })
+      }
+    }
+    for (const sampleId in empties) {
+      if (isVisible(sampleId)) {
+        packer.addEmpty(sampleId, empties[sampleId]!)
+      }
+    }
+  }
+  const packed = packer.finishBlocks()
+
+  // `packed` already contains exactly the visible rows (narrowed by the subtree
   // filter above), so coverage over them is automatically scoped to the visible
   // subtree — no separate row filtering needed.
   //
@@ -224,7 +228,7 @@ export async function executeMafAlignmentData({
   // names one.
   const refRowId = refSampleId ?? region.assemblyName
   const coverage = buildMafCoverageRegion(
-    blocks,
+    packed,
     region.start,
     region.end,
     isVisible(refRowId) ? refRowId : undefined,
@@ -235,7 +239,7 @@ export async function executeMafAlignmentData({
   // `LinearMafGetAlignmentData.return` declaration. Hence no return annotation
   // on this function and no cast here.
   // #region zeroCopy
-  const regionData: MafWireRegionData = { blocks, coverage, refSampleId }
+  const regionData: MafWireRegionData = { ...packed, coverage, refSampleId }
   const result: LinearMafGetAlignmentDataResult = {
     samples,
     treeNewick,
@@ -244,7 +248,9 @@ export async function executeMafAlignmentData({
   }
   // second arg is the transfer list: these buffers are moved to the main
   // thread, not structured-cloned. collectMafTransferables walks the result and
-  // gathers every ArrayBuffer in it.
+  // gathers every ArrayBuffer in it — a fixed handful, because the wire is
+  // columnar; see that function for why the length of this list is what the
+  // whole shape is designed around.
   return rpcResult(result, collectMafTransferables(regionData))
   // #endregion
 }

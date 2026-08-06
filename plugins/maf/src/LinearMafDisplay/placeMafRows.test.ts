@@ -1,22 +1,18 @@
+import { testWireRegionData } from '../LinearMafGetAlignmentDataRpc/testWire.ts'
 import { placeMafRegionData } from './placeMafRows.ts'
 
 import type { MafWireRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 
-const enc = new TextEncoder()
-
-// Only the fields placement touches; `coverage` rides through untouched, so it
-// is stubbed rather than built.
+// Packed by the real `MafWirePacker`, so these cases cover the round trip —
+// pack then place — rather than only the placing half. `coverage` rides through
+// untouched, so it is stubbed rather than built.
 function wireData(rows: string[], empties: string[] = []): MafWireRegionData {
-  return {
-    blocks: [
+  return testWireRegionData(
+    [
       {
         startBp: 10,
-        endBp: 14,
-        refSeqBytes: enc.encode('ACGT'),
-        rows: rows.map(sampleId => ({
-          sampleId,
-          alignmentBytes: enc.encode('ACGT'),
-        })),
+        refSeq: 'ACGT',
+        rows: rows.map(sampleId => ({ sampleId, seq: 'ACGT' })),
         empties: empties.map(sampleId => ({
           sampleId,
           status: 'C' as const,
@@ -28,8 +24,8 @@ function wireData(rows: string[], empties: string[] = []): MafWireRegionData {
         })),
       },
     ],
-    coverage: undefined as unknown as MafWireRegionData['coverage'],
-  }
+    { coverage: undefined as unknown as MafWireRegionData['coverage'] },
+  )
 }
 
 test('places rows at their index in the drawn row list', () => {
@@ -81,13 +77,18 @@ test('a genome the display is not drawing is dropped, not shifted', () => {
   ])
 })
 
-test('shares the alignment buffers rather than copying them', () => {
-  // Placement runs on every reorder, so it copies row objects only — the
-  // per-species sequence is the whole payload and must not be duplicated.
+test('views the arena rather than copying out of it', () => {
+  // Placement runs on every reorder, so it rebuilds row objects only — the
+  // per-species sequence is the whole payload and must not be duplicated. With
+  // the columnar wire that means every sequence field is a `subarray` of the
+  // one arena, which `.buffer` identity is the only way to assert: a copy would
+  // compare equal by content and pass a value check.
   const wire = wireData(['hg38'])
   const { blocks } = placeMafRegionData(wire, new Map([['hg38', 0]]))
-  expect(blocks[0]!.rows[0]!.alignmentBytes).toBe(
-    wire.blocks[0]!.rows[0]!.alignmentBytes,
-  )
-  expect(blocks[0]!.refSeqBytes).toBe(wire.blocks[0]!.refSeqBytes)
+  const { rows, refSeqBytes } = blocks[0]!
+  expect(rows[0]!.alignmentBytes.buffer).toBe(wire.arena.buffer)
+  expect(refSeqBytes.buffer).toBe(wire.arena.buffer)
+  // ...and viewing the right window of it, not just any window
+  expect(new TextDecoder().decode(rows[0]!.alignmentBytes)).toBe('ACGT')
+  expect(new TextDecoder().decode(refSeqBytes)).toBe('ACGT')
 })

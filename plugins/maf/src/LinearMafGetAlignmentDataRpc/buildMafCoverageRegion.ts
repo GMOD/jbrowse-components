@@ -7,30 +7,28 @@ import {
 
 import { computeMafCoverage } from './computeMafCoverage.ts'
 
-import type {
-  MafCoverageRegion,
-  MafWireBlock,
-} from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
+import type { MafWireBlocksInput } from './computeMafCoverage.ts'
+import type { MafCoverageRegion } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 
 /**
  * Build the packed coverage region (depth bars + SNP segments + interbase
- * insertions + indicators) from MAF blocks. Called from the worker
- * (`LinearMafGetAlignmentData`) over the blocks it already narrowed to the
+ * insertions + indicators) from packed MAF blocks. Called from the worker
+ * (`LinearMafGetAlignmentData`) over the rows it already narrowed to the
  * display/subtree row set, so coverage is automatically scoped to the visible
- * rows. Kept pure over its `blocks` argument so a subtree recompute would just
- * pass a filtered block list.
+ * rows. Kept pure over its `packed` argument so a subtree recompute would just
+ * pass a differently filtered pack.
  *
  * `refSampleId` (the reference assembly's own sample id) is forwarded to the
  * identity computation so the reference's self-match is excluded; undefined
  * when the reference is not one of the rows.
  */
 export function buildMafCoverageRegion(
-  blocks: MafWireBlock[],
+  packed: MafWireBlocksInput,
   regionStart: number,
   regionEnd: number,
   refSampleId?: string,
 ): MafCoverageRegion {
-  const mafCov = computeMafCoverage(blocks, regionStart, regionEnd, refSampleId)
+  const mafCov = computeMafCoverage(packed, regionStart, regionEnd, refSampleId)
   const coverageForSnp = {
     depths: mafCov.depths,
     maxDepth: mafCov.maxDepth,

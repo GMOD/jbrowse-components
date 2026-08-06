@@ -113,7 +113,10 @@ describe('MAF gating below the force-load floor', () => {
 
     // the re-measure lands: the index really does quote the same blocks down
     // here, so the banner stays — and now it also stops advertising zoom
-    display.setByteEstimate({ bytes: 3_000_000, viewport: display.gateViewport! })
+    display.setByteEstimate({
+      bytes: 3_000_000,
+      viewport: display.gateViewport!,
+    })
     expect(display.regionTooLarge).toBe(true)
     expect(display.zoomCanReleaseGate).toBe(false)
   })
@@ -412,7 +415,10 @@ describe('MAF derived regionTooLarge', () => {
     expect(display.regionTooLarge).toBe(true)
 
     view.zoomTo(400)
-    display.setByteEstimate({ bytes: 6_000_000, viewport: display.gateViewport! })
+    display.setByteEstimate({
+      bytes: 6_000_000,
+      viewport: display.gateViewport!,
+    })
     expect(display.regionTooLarge).toBe(true)
 
     display.setForceLoadTrack(true)

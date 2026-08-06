@@ -1,25 +1,19 @@
 import { buildCoverageTooltipBin } from '@jbrowse/alignments-core'
 
 import { computeMafCoverage } from './computeMafCoverage.ts'
+import { packTestWire } from './testWire.ts'
 
-import type { MafWireBlock } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
-
-const enc = new TextEncoder()
+import type { TestWireBlock } from './testWire.ts'
 
 function block(
   startBp: number,
   refSeq: string,
   rows: { sampleId: string; sample: string }[],
-): MafWireBlock {
+): TestWireBlock {
   return {
     startBp,
-    endBp: startBp + refSeq.replaceAll('-', '').length,
-    refSeqBytes: enc.encode(refSeq),
-    rows: rows.map(r => ({
-      sampleId: r.sampleId,
-      alignmentBytes: enc.encode(r.sample),
-    })),
-    empties: [],
+    refSeq,
+    rows: rows.map(r => ({ sampleId: r.sampleId, seq: r.sample })),
   }
 }
 
@@ -30,11 +24,11 @@ function block(
  * (position → depth + per-base counts) contract end-to-end.
  */
 function makeBin(
-  blocks: MafWireBlock[],
+  blocks: TestWireBlock[],
   regionStart: number,
   regionEnd: number,
 ) {
-  const mafCov = computeMafCoverage(blocks, regionStart, regionEnd)
+  const mafCov = computeMafCoverage(packTestWire(blocks), regionStart, regionEnd)
   const { mismatchPositions, mismatchBases } = mafCov
   return (pos: number) =>
     buildCoverageTooltipBin(

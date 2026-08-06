@@ -32,51 +32,108 @@ export interface MafGPURenderState {
 
 // One MAF "block" is a single ungapped alignment stanza emitted by the
 // adapter; one region may contain many disjoint blocks at different
-// genomic anchors. Heavy sequence data is Uint8Array for zero-copy transfer.
+// genomic anchors.
 //
-// The `Wire*` shapes are what the worker emits: rows name their species and
-// nothing else. Screen position is assigned on the main thread by
-// `placeMafRegionData`, against the row list the display is actually drawing —
-// so the worker never needs to know the display's order, and a reorder cannot
-// leave fetched rows pointing at another row's label.
-export interface MafWireRow {
-  sampleId: string
-  alignmentBytes: Uint8Array
-  // Per-row species coords + context, retained for hover tooltips only (the
-  // per-base color encoder and coverage code ignore them). Optional because
-  // they are tooltip metadata, not needed to render.
-  chr?: string
-  start?: number
-  strand?: number
-  srcSize?: number
-  context?: AlignmentContext
-}
-
-// A bridged/empty row (MAF `e` line): the species has no aligned bases in this
-// block but its flanking blocks are chained. Drawn as a single/double line or
-// pale bar across the block's reference extent (see emptyLines.ts).
-export interface MafWireEmptyRow {
-  sampleId: string
-  status: MafStatus
-  chr: string
-  start: number
-  size: number
-  strand: number
-  srcSize: number
-}
-
-export interface MafWireBlock {
-  startBp: number
-  // Absolute genomic end (startBp + count of non-dash reference bytes). Lets
-  // the e-line overlay span the block without re-walking refSeqBytes.
-  endBp: number
-  refSeqBytes: Uint8Array
-  rows: MafWireRow[]
-  empties: MafWireEmptyRow[]
-}
-
+// `MafWireRegionData` is what the worker emits, and it is **columnar**: one
+// byte arena holding every sequence, plus parallel typed arrays of per-row and
+// per-block fields, plus small string dictionaries. Nothing in it is per-row
+// object structure. That shape is the whole reason the reply is affordable.
+//
+// The object-per-row shape this replaced put one `Uint8Array` on every row and
+// every one of them in `postMessage`'s transfer list, and the cost of a
+// transfer list is superlinear in its length: measured in Chrome at 26 species,
+// a 3200-block region (83k rows, 10MB of sequence) blocked the worker inside
+// `postMessage` for 3.3 SECONDS. Cloning those same buffers instead of
+// transferring them took 159ms — at this granularity "zero-copy" was 20x slower
+// than copying, because the per-entry bookkeeping dwarfs a 120-byte payload.
+// Columnar makes the transfer list a fixed ~20 entries regardless of row count,
+// and the same reply costs 0.03ms. Rows are rehydrated into the `MafBlock`
+// shape below by `placeMafRegionData`, which already had to rebuild every row
+// object to stamp `rowIndex` on it, so the rehydration is nearly free (measured
+// 30ms -> 47ms at 83k rows) and no render, hit-test or measuring code changed.
+//
+// Adding a per-row field therefore means adding a parallel typed array here,
+// never a property on a row object. Strings go through a dictionary
+// (`sampleIds`/`chrNames`) so a repeated species or contig name is cloned once
+// per region rather than once per row.
+//
+// Rows still name their species and nothing else — screen position is assigned
+// on the main thread against the row list the display is actually drawing, so
+// the worker never needs to know the display's order and a reorder cannot leave
+// fetched rows pointing at another row's label.
 export interface MafWireRegionData {
-  blocks: MafWireBlock[]
+  /**
+   * Every block's reference bytes and every row's aligned bytes, end to end.
+   * A row's slice is `arena.subarray(rowOffset[i], rowOffset[i] + rowLength[i])`
+   * and is only ever viewed, never copied, on the way to the GPU encoder.
+   *
+   * The reference is stored again as its own slice rather than aliasing the
+   * reference species' row: that row is normally present but a `subtreeFilter`
+   * can exclude it, and a malformed stanza can resolve no reference row at all.
+   * It costs one row's bytes per block (~4% of the arena on a 26-way).
+   */
+  arena: Uint8Array
+
+  // ---- per row, `rowCount` entries ----
+  rowOffset: Uint32Array
+  rowLength: Uint32Array
+  /** index into `sampleIds` */
+  rowSample: Uint32Array
+  /** index into `chrNames` */
+  rowChr: Uint32Array
+  rowStart: Uint32Array
+  /** +1/-1 */
+  rowStrand: Int8Array
+  /** total source sequence length; 0 when the adapter supplied none */
+  rowSrcSize: Uint32Array
+
+  /**
+   * `i`-line context, present only when some adapter supplied it (bigMaf does,
+   * MAF-tabix and TAF never do) so the other two ship nothing rather than five
+   * zero-filled arrays. `rowHasContext[i]` is the presence flag — a row can
+   * carry an `i` line whose statuses are both unrecognized, which is not the
+   * same as carrying no `i` line. Statuses are `MAF_STATUS_WIRE` codes.
+   */
+  rowHasContext?: Uint8Array
+  rowLeftStatus?: Uint8Array
+  rowLeftCount?: Uint32Array
+  rowRightStatus?: Uint8Array
+  rowRightCount?: Uint32Array
+
+  // ---- per block, `blockCount` entries ----
+  blockStartBp: Uint32Array
+  /**
+   * Absolute genomic end (startBp + count of non-dash reference bytes). Lets
+   * the e-line overlay span the block without re-walking the reference.
+   */
+  blockEndBp: Uint32Array
+  blockRefOffset: Uint32Array
+  blockRefLength: Uint32Array
+  /**
+   * Block `b` owns rows `blockRowStart[b] .. blockRowStart[b + 1]`, and
+   * likewise for empties. Length `blockCount + 1`, so the last block needs no
+   * special case.
+   */
+  blockRowStart: Uint32Array
+  blockEmptyStart: Uint32Array
+
+  // ---- per empty (`e`-line) row ----
+  // A species with no aligned bases in this block whose flanking blocks are
+  // chained. Drawn as a single/double line or pale bar across the block's
+  // reference extent (see emptyLines.ts).
+  emptySample: Uint32Array
+  emptyChr: Uint32Array
+  /** `MAF_STATUS_WIRE` code */
+  emptyStatus: Uint8Array
+  emptyStart: Uint32Array
+  emptySize: Uint32Array
+  emptyStrand: Int8Array
+  emptySrcSize: Uint32Array
+
+  // ---- dictionaries; small, so structured-cloned rather than transferred ----
+  sampleIds: string[]
+  chrNames: string[]
+
   coverage: MafCoverageRegion
   /**
    * The sample whose row the reference sequence came from, resolved by the
@@ -95,17 +152,41 @@ export interface MafWireRegionData {
 // measures rows consumes these, and keys on `rowIndex` alone — `sampleId` rides
 // along as provenance, so it stays optional here rather than becoming a second
 // row identity the render path could disagree with.
-export interface MafAlignedRow extends Omit<MafWireRow, 'sampleId'> {
+//
+// These are what `placeMafRegionData` rehydrates the columnar wire into, and
+// they are unchanged from when the wire itself was object-shaped — which is why
+// the ~17 files downstream of placement were untouched by the switch.
+export interface MafAlignedRow {
   rowIndex: number
   sampleId?: string
+  /** a view into `MafWireRegionData.arena`, never a copy of it */
+  alignmentBytes: Uint8Array
+  // Per-row species coords + context, retained for hover tooltips only (the
+  // per-base color encoder and coverage code ignore them). Optional because
+  // they are tooltip metadata, not needed to render.
+  chr?: string
+  start?: number
+  strand?: number
+  srcSize?: number
+  context?: AlignmentContext
 }
 
-export interface MafEmptyRow extends Omit<MafWireEmptyRow, 'sampleId'> {
+export interface MafEmptyRow {
   rowIndex: number
   sampleId?: string
+  status: MafStatus
+  chr: string
+  start: number
+  size: number
+  strand: number
+  srcSize: number
 }
 
-export interface MafBlock extends Omit<MafWireBlock, 'rows' | 'empties'> {
+export interface MafBlock {
+  startBp: number
+  endBp: number
+  /** a view into `MafWireRegionData.arena`, never a copy of it */
+  refSeqBytes: Uint8Array
   rows: MafAlignedRow[]
   empties: MafEmptyRow[]
 }
