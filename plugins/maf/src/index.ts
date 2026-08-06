@@ -1,5 +1,6 @@
 import Plugin from '@jbrowse/core/Plugin'
 
+import BgzipMafAdapterF from './BgzipMafAdapter/index.ts'
 import BgzipTaffyAdapterF from './BgzipTaffyAdapter/index.ts'
 import BigMafAdapterF from './BigMafAdapter/index.ts'
 import LinearMafDisplayF from './LinearMafDisplay/index.ts'
@@ -18,6 +19,7 @@ export default class MafPlugin extends Plugin {
   name = 'MafPlugin'
 
   install(pluginManager: PluginManager) {
+    BgzipMafAdapterF(pluginManager)
     BgzipTaffyAdapterF(pluginManager)
     BigMafAdapterF(pluginManager)
     MafTrackF(pluginManager)

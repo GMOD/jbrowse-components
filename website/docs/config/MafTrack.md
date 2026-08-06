@@ -46,6 +46,7 @@ identifies it (not one of the config slots below).
 
 - **Display:** [LinearMafDisplay](../linearmafdisplay)
   ([state model](../../models/linearmafdisplay))
+- **Adapter:** [BgzipMafAdapter](../bgzipmafadapter)
 - **Adapter:** [BgzipTaffyAdapter](../bgziptaffyadapter)
 - **Adapter:** [BigMafAdapter](../bigmafadapter)
 - **Adapter:** [MafTabixAdapter](../maftabixadapter)

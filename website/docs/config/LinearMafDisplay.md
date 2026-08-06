@@ -16,6 +16,7 @@ show/hide defaults and band sizes.
 
 ## Related links
 
+- **Adapter:** [BgzipMafAdapter](../bgzipmafadapter)
 - **Adapter:** [BgzipTaffyAdapter](../bgziptaffyadapter)
 - **Adapter:** [BigMafAdapter](../bigmafadapter)
 - **Adapter:** [MafTabixAdapter](../maftabixadapter)
