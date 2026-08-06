@@ -704,6 +704,20 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           ],
           tracks: [['der3_vs_hg38']],
           drawCurves: true,
+          // A COLOUR PER SOURCE CHROMOSOME (reviewer: any other ways to make
+          // this more compelling). Every ribbon drew in the same default pink,
+          // so a composition of three reference loci read as one wedge and the
+          // two templated inserts as slivers of the same thing. 'reference'
+          // keys the colour on the anchor assembly's refNames — hg38 here, the
+          // topmost of the two rows — so chr3, chr10 and chr12 each get their
+          // own, and the ribbons say what the 'Where each segment came from'
+          // lane below says in words.
+          //
+          // Only this figure. Its zoomed sibling (derivative_inserts) draws the
+          // same four ribbons across three narrow windows, where each fills its
+          // own panel — the flat colour costs nothing there, and it is a figure
+          // review already passed.
+          colorBy: 'reference',
           levelHeights: [200],
         },
       ],

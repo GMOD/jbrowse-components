@@ -135,6 +135,13 @@ stacked panels or one row spanning both breakends, then for the window each
 panel opens at. The panels it builds are the two loci the record's own ALT
 names, with the tracks from the launching view copied onto both.
 
+Two loci is all a record can give: a BND names one partner, so this route opens
+one hop of a chain however many hops it has. Chaining records to reach the rest
+would mean assuming that two junctions sharing a locus sit on the same molecule,
+which is the thing a caller does not assert and the reads do — so the multi-hop
+route is the reconstruction dialog above rather than a second walker over the
+VCF.
+
 <Figure caption="Opening the split view from the record rather than the import form. Right-click the breakend, choose Open breakpoint split view, pick the stacked shape, and set the window each panel opens at. The result is the chr3 and chr10 loci this record names, with the reads that cross the junction drawn as connectors between the two pileups." src="/img/cancer_sv/split_view_from_breakend.png" />
 
 For one read rather than the pileup, right-click a read and choose **Linear read
@@ -289,7 +296,7 @@ This allele carries RARB's first coding exon and its start codon, then the 183
 bp of chr12 that the second junction splices in, which is TRHDE coding sequence
 in reverse, then RARB again inverted.
 
-<Figure caption="The reconstructed derivative against its three source loci: RefSeq genes on the reference row, the same annotation projected onto the allele on the derivative row, with each segment labelled with the interval it came from. RARB's transcript starts partway along the allele and is cut off at the first junction. The wide ribbon is the chr3 arm; the crossing ribbon at right is chr3 returning inverted." src="/img/cancer_sv/derivative_synteny.png" />
+<Figure caption="The reconstructed derivative against its three source loci: RefSeq genes on the reference row, the same annotation projected onto the allele on the derivative row, with each segment labelled with the interval it came from. RARB's transcript starts partway along the allele and is cut off at the first junction. Ribbons are colored by the reference chromosome they come from, so the wide green one is the chr3 arm and the crossing ribbons at right are the chr10 and chr12 inserts with chr3 returning inverted." src="/img/cancer_sv/derivative_synteny.png" />
 
 ## Checking the reconstruction
 

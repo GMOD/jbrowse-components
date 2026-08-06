@@ -2441,10 +2441,10 @@
   },
   "cancer_sv/derivative_synteny": {
     "name": "cancer_sv/derivative_synteny",
-    "status": "bad",
-    "note": "good figure, any other ways to make this even more compelling?",
-    "reviewedAt": "2026-08-06T05:36:27.677Z",
-    "hash": "1ba820e38ea2426906592a0ba8c54bfc4ea2ee85"
+    "status": "good",
+    "note": "A COLOUR PER SOURCE CHROMOSOME. Every ribbon drew in the same default pink, so a composition of three reference loci read as one wedge with the two templated inserts as slivers of the same thing; colorBy 'reference' keys the colour on the anchor assembly's own refName order (hg38, the topmost row), so chr3 is green and the chr10/chr12 inserts are their own colours — the ribbons now say what the 'Where each segment came from' lane says in words. Deliberately not applied to derivative_inserts: at that zoom each of the three windows fills its own panel, so the flat colour costs nothing there and the figure had already passed review. Caption updated.",
+    "reviewedAt": "2026-08-06T06:59:39.280Z",
+    "hash": "1a6f03b2c65d122d6c20752077b3e39d5576a910"
   },
   "dog10k-size-fst-scan-genome": {
     "name": "dog10k-size-fst-scan-genome",
@@ -2595,9 +2595,9 @@
   },
   "cancer_sv/split_view_from_breakend": {
     "name": "cancer_sv/split_view_from_breakend",
-    "status": "bad",
-    "note": "this achieved the 'one hop' but we had a 'two hop' situation. do we need to make a system for this? 2x2 (stageColumns: 2). It was 6,160px of column, most of it the same app chrome four times, with the result -- the frame the other three exist to reach -- below three screens of scroll; it is 3,528px now and the result sits beside the dialog step that produced it. Two things had to move with the layout: the viewport narrowed from 1400 to 1000, since a grid is two frames wide and 1400 made a 5,600px PNG the page then scales the text out of; and the third frame keeps the dialog frames' height rather than matching the result's, so +append pads it with white. Matching the heights was tried first and is worse -- the app's own page is ~667px here, so the extra 400 came back as grey app background rather than as more pileup.",
-    "reviewedAt": "2026-08-05T12:52:22.435Z",
+    "status": "answered",
+    "note": "Answered rather than built, and the reason is what a record can assert. A BND names exactly ONE partner locus, so this route opens one hop however long the chain is. Chaining records to reach the rest means assuming two junctions that share a locus sit on the same molecule — which the caller does not assert and the READS do, one SA chain at a time. That system already exists and is the figure two sections up: Launch view -> Reconstruct derivative allele ranks the routes the reads in the window describe and 'Replace with split view' opens a panel per segment of the chosen one, in the order the reads cross it (four panels for this chain, including chr3 twice). Building a second, record-driven walker would give a worse answer from weaker evidence. The tutorial now says this where the one-hop route is taught, instead of leaving the reader to notice the limit.",
+    "reviewedAt": "2026-08-06T06:59:39.495Z",
     "hash": "2f73042d8973037aea3b93da4e5cccf02aefd3a0"
   },
   "hic/whole_genome": {
