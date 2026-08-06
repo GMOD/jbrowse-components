@@ -10,6 +10,7 @@ colorDomain
 connectedView
 gfaLocation
 height
+paneHeight
 sideBySide
 transcriptId
 uniprotId
