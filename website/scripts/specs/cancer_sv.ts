@@ -29,14 +29,6 @@ export const CANCER_SV_BASE =
 
 const CONFIG = encodeURIComponent(`${CANCER_SV_BASE}/config.json`)
 
-// The three loci the RARB/BICC1/TRHDE chain joins. Every panel that shows the
-// event is built from this one list so a coordinate can't drift between figures.
-const HOPS = {
-  rarb: 'chr3:25,352,000-25,362,000',
-  bicc1: 'chr10:58,715,000-58,720,000',
-  trhde: 'chr12:72,271,000-72,276,000',
-}
-
 const GENES = 'ncbi_refseq_hg38'
 const TUMOUR = 'COLO829_tumor_ont'
 const NORMAL = 'COLO829BL_normal_ont'
