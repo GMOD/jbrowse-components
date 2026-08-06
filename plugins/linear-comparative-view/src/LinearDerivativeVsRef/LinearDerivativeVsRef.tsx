@@ -45,8 +45,8 @@ const useStyles = makeStyles()(theme => ({
     fontWeight: 'bold',
   },
   row: {
-    // the strip is the row's width, so give it room to breathe from the radio
-    // and from the next candidate
+    // a three-line row against its neighbour's three lines reads as six lines
+    // of one thing; the gap is what makes each row a row
     paddingBlock: theme.spacing(0.5),
   },
   detail: {
@@ -118,13 +118,32 @@ function showWhenMeasured(panel: SyntenyPanel, show: () => void) {
   )
 }
 
+// `extendsOffScreen` is documented as purely informational and as the normal
+// case for an interchromosomal event — which is to say it is usually true of
+// every row at once, and on COLO829's two loci it is true of all four. A fact
+// that every row states is a fact about the list, and this row has three lines
+// to spend: printed per row it only pushed the sizes onto a wrapped fourth.
+//
+// So it is shown when, and only when, the candidates disagree about it, which
+// is the case where it tells a reader which row to pick — the same rule the
+// dialog's own opening comment sets for what may take a line here.
+function showsOffScreenFlag(candidates: DerivativeCandidate[]) {
+  return new Set(candidates.map(c => c.extendsOffScreen)).size > 1
+}
+
 // One candidate: what it is, what it looks like, and what backs it. The strip
 // carries the shape and the size list the exact figures, which between them are
 // the evidence the caveat above the list asks a reader to weigh — the path's
 // total span, which this row used to print instead, is the same ~60kb whether
 // the path is one 52kb arm carrying three sub-kilobase inserts or four
 // read-length fragments an aligner split apart.
-function CandidateRow({ candidate }: { candidate: DerivativeCandidate }) {
+function CandidateRow({
+  candidate,
+  showOffScreen,
+}: {
+  candidate: DerivativeCandidate
+  showOffScreen: boolean
+}) {
   const { classes } = useStyles()
   return (
     <div className={classes.row}>
@@ -133,7 +152,9 @@ function CandidateRow({ candidate }: { candidate: DerivativeCandidate }) {
       <div className={classes.detail}>
         {candidate.readCount} reads · {candidate.segments.length} segments ·{' '}
         {segmentSizeSummary(candidate.segments)}
-        {candidate.extendsOffScreen ? ' · extends beyond this window' : ''}
+        {showOffScreen && candidate.extendsOffScreen
+          ? ' · extends beyond this window'
+          : ''}
       </div>
     </div>
   )
@@ -161,6 +182,8 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
   // so the overflow is reported rather than dropped: it is the difference
   // between "here is the event" and "these reads map everywhere".
   const candidates = ranked.slice(0, MAX_SHOWN)
+  // decided once, for the list, because that is what it is a property of
+  const showOffScreen = showsOffScreenFlag(candidates)
   const [selected, setSelected] = useState(0)
   const [error, setError] = useState<unknown>()
   const canReplace = isSessionWithViewReplacement(getSession(track))
@@ -412,7 +435,13 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
                 data-testid="derivative-path-candidates"
                 className={classes.soleCandidate}
               >
-                <CandidateRow candidate={candidates[0]!} />
+                {/* always false here — one candidate cannot disagree with
+                    itself — and rightly so: with nothing to pick between, an
+                    informational flag has even less claim on the row */}
+                <CandidateRow
+                  candidate={candidates[0]!}
+                  showOffScreen={showOffScreen}
+                />
               </div>
             ) : (
               <RadioGroup
@@ -427,7 +456,12 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
                     key={candidate.locString}
                     value={idx}
                     control={<Radio />}
-                    label={<CandidateRow candidate={candidate} />}
+                    label={
+                      <CandidateRow
+                        candidate={candidate}
+                        showOffScreen={showOffScreen}
+                      />
+                    }
                   />
                 ))}
               </RadioGroup>

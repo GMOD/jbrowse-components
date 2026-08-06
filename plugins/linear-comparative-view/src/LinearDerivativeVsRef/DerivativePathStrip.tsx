@@ -72,8 +72,12 @@ export default function DerivativePathStrip({
       // description of the same row.
       aria-hidden="true"
     >
-      {blocks.map(block => (
-        <g key={block.x}>
+      {/* Keyed by position in the path, which is what a block IS — a segment's
+          `x` is a float that only happens to be unique, and a refName repeats
+          whenever a path returns to a chromosome. */}
+      {blocks.map((block, i) => (
+        // eslint-disable-next-line @eslint-react/no-array-index-key -- position in the path IS the block's identity; it is rebuilt whole per candidate and never reordered
+        <g key={i}>
           <title>{block.title}</title>
           <rect
             x={block.x}
