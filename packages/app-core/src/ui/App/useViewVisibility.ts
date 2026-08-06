@@ -29,8 +29,8 @@ function intersectionObserverAvailable() {
  * the scroll port restores the band and measures as a wash on scroll cost while
  * roughly doubling live contexts — and the ceiling is 16 live contexts, so the
  * cap bites before the rebuild saving pays for itself.
- * agent-docs/handoffs/workspaces-freeze.md has the numbers and the three other
- * fixes that were measured and eliminated.
+ * agent-docs/reference/GPU_CONTEXT_BUDGET.md has the numbers and the three
+ * other fixes that were measured and eliminated.
  *
  * Starts hidden so a cold load with N crammed views doesn't mount them all at
  * once; the observer's first callback mounts only what's near the viewport.

@@ -23,7 +23,7 @@ import type {
 // while holding 9-13 live GPU canvases instead of 6. The mount band trades
 // pipeline rebuilds for live contexts, and with the ceiling at 16 live WebGL2
 // contexts the contexts are the tighter constraint.
-// See agent-docs/handoffs/workspaces-freeze.md.
+// See agent-docs/reference/GPU_CONTEXT_BUDGET.md.
 //
 // So don't tune this number expecting an effect, and don't make it live without
 // first cutting contexts per display.

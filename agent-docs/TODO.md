@@ -263,7 +263,8 @@ The ceiling is **16 live contexts** and one LGV with 17 GPU tracks crosses it โ€
 measured 2026-08-05, same on a real Intel GPU and on SwiftShader, so it is a
 browser property. See [reference/ARCHITECTURAL_LIMITS.md](reference/ARCHITECTURAL_LIMITS.md)
 ยง"One WebGL2 context per display canvas" for the walk and
-[handoffs/workspaces-freeze.md](handoffs/workspaces-freeze.md) for the harness.
+[reference/GPU_CONTEXT_BUDGET.md](reference/GPU_CONTEXT_BUDGET.md) for the
+harness and the fixes already eliminated.
 That was the number this entry used to ask for, and it answers the question it
 was gating: an unremarkable session reaches the ceiling, so **track-level
 mount/release is worth building**, and so is anything that shares a context

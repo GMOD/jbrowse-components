@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
-// The many-view freeze harness for agent-docs/handoffs/workspaces-freeze.md.
+// The many-view freeze harness; findings in
+// agent-docs/reference/GPU_CONTEXT_BUDGET.md.
 //
 // Loads N views x K real volvox tracks in classic and in tiled (dockview) mode
 // and reports where the main thread goes: long tasks, frame times, WebGL

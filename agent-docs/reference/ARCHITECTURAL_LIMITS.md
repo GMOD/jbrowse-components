@@ -62,9 +62,8 @@ unmeasured.
 The same rebuild churn costs ~10x more under software rendering than on a real
 GPU (shader compilation on a CPU rasterizer), which is why Canvas2D beats WebGL
 by ~25x on SwiftShader and loses to it by ~2x on real hardware. `preferredRenderer`
-does not know the difference. See
-[handoffs/workspaces-freeze.md](../handoffs/workspaces-freeze.md) for the tables
-and the harness (`browser-tests/workspaces-freeze-stress.ts`).
+does not know the difference. [GPU_CONTEXT_BUDGET.md](GPU_CONTEXT_BUDGET.md)
+has the tables, the harness, and the fixes already eliminated.
 
 Mitigations in place, both bounding rather than fixing:
 
@@ -77,8 +76,7 @@ Mitigations in place, both bounding rather than fixing:
   per-scroll cost: cheap on a real GPU (1.4 s a pass over 12 views x 3 tracks),
   ~10x that under software rendering. It is not a free win, and it does not bound
   anything across a multi-panel workspace, where every panel is on screen at
-  once. See
-  [handoffs/workspaces-freeze.md](../handoffs/workspaces-freeze.md).
+  once. See [GPU_CONTEXT_BUDGET.md](GPU_CONTEXT_BUDGET.md).
 - **Bounded auto-recovery** in `useRenderingBackend`: at most
   `MAX_CONTEXT_RECOVER_ATTEMPTS` re-inits on backoff, and the budget resets only
   on a genuine `webglcontextrestored` or a manual retry, so a flapping context
