@@ -1,10 +1,10 @@
-#
-#
-# <path> <width>x<height> <bytes> <sha256>
 # Figure store manifest — the bytes live in S3, this file is what git tracks.
+#
 # One line per figure, sorted by path, so a commit that changes three figures
 # changes three lines. Run `pnpm figures` for the CLI; `pnpm figures:report`
 # renders what moved, with before/after images, against any base ref.
+#
+# <path> <width>x<height> <bytes> <sha256>
 products/jbrowse-img/img/1.png 1200x713 83273 325b21c2873e0e871e609fe580fe3978d03bfe6a5a61926ebdcc9a1b223f677c
 products/jbrowse-img/img/alignments_haplotype.png 1200x514 40157 070a6f6821a3751da32b2efea59abd1ca23f8f3aebf229de2c70c89aa783e656
 products/jbrowse-img/img/alignments_pileup.png 1200x375 44051 de1a3ac6c0a26d19916d38791168299b0f314342ca649ecd56fac5542c29f3bd
@@ -310,6 +310,7 @@ website/static/img/pangenome/local_subgraph.png 2000x1280 63797 f28bf3d2addf75df
 website/static/img/pangenome/long_reads.png 2000x1730 97276 e6e2b1c6716989eeea1181b64f6336b5beb142bd805a57af4e297cffc787b363
 website/static/img/pangenome/maf.png 2000x1320 72011 c04f06db378bbcb8e997198952a7da20614c6721e568b8c691c43ad3ef9e49ad
 website/static/img/pangenome/pav.png 2000x1280 52750 7acc1ed3f740269d05555b4fcdff062ca16b97e6edee2e8d0d30f171a82be6ad
+website/static/img/pangenome/pggb_carriage.png 2200x2000 94404 a66010c3a38a98ff8b7809fc0acd9f3c76e2ac3ba9f174c2120d7d99a53b7035
 website/static/img/pangenome/pggb_haplotype_paths.png 2000x1526 69395 74e5512e4704453f7159596e1b9025e2ae8eb1e8a481c6711cd037cee5046ded
 website/static/img/pangenome/pggb_locus_graph.png 2000x2100 88951 b257249f1b3065c66142e0067416a5ca0486079d41ea2943a58321b5427ee72d
 website/static/img/pangenome/pggb_locus_sample_rows.png 3368x2484 163586 77df14e8f076e8177b95fe5d372115cc363b6706ea0dd551716bba0143f0ca71

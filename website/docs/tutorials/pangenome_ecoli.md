@@ -805,6 +805,24 @@ instead. The MAF row above says the same thing base by base.
 
 <Figure caption="460 bp at the ycbF/pyrD boundary, the same graph in both layouts under the same MAF lane. Left, Sample rows. Right, the same nodes with the reference axis let go, where the segment CFT073 takes instead is the one branch off the chain." src="/img/pangenome/pggb_locus_sample_rows.png" links="Sample rows=pangenome/pggb_locus_sample_rows_rows,Force-directed=pangenome/pggb_locus_sample_rows_force" />
 
+#### Who carries a segment
+
+Clicking a node opens its details, and on a graph indexed this way they include
+**`carriedBy`**: every haplotype whose path walks that segment.
+`build_pggb_tabix.sh` records them as an `SM:Z:` tag while it walks the paths, so
+the answer travels with the index rather than being recomputed.
+
+This is the one thing none of the projections above can state. They all flatten
+onto K12, and an allele no reference carries has no K12 coordinate to be drawn
+at, so the variant and alignment lanes answer what is here rather than who has
+it.
+
+Read it against **`contributingAssembly`** in the same panel, which is the field
+an rGFA has to use: there `SR` is build order, so it names whichever assembly
+minigraph added the segment first and says nothing about the rest.
+
+<Figure caption="A 59 bp backbone segment at chr:1,004,605-1,004,663 clicked in the graph. carriedBy lists K12, Sakai, NCTC86 and IAI39 but not CFT073, which is the same absence the sample-rows figure above draws as a gap; contributingAssembly says only K12, which is all an rGFA of the same five strains could report." src="/img/pangenome/pggb_carriage.png" />
+
 #### Where this stops, and what to do instead
 
 This gives browsing by locus rather than seamless browsing of any graph.

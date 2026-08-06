@@ -1973,6 +1973,56 @@ export const graphSpecs: ScreenshotSpec[] = [
   // holding them to the reference axis, so the bubbles are visible as bubbles.
   // Same window, same tracks, same colors, differing only in layoutMode, which
   // is what makes the pair readable as one graph rather than two.
+  // Carriage, which is the one statement a pggb index makes that an rGFA cannot
+  // and that NO linear projection on this page can make at all.
+  //
+  // An alternate allele has no reference coordinate, so nothing flattened onto
+  // K12 can say who carries it; the variant and MAF lanes answer "what is here"
+  // rather than "who has it". The graph answers it because the walk that built
+  // the index recorded every haplotype visiting each segment as an `SM:Z:` tag,
+  // and clicking a node puts that in the drawer as `carriedBy`.
+  //
+  // The node is read off the index, not chosen: over this window
+  //   tabix ecoli_pggb.segs.bed.gz 'K12#1#chr:1004500-1004961'
+  // s119715 is the longest segment (59 bp) whose carriage is a proper subset —
+  // K12, Sakai, NCTC86 and IAI39 but not CFT073 — which is the same fact the
+  // surrounding prose states from the other side, that CFT073's path covers only
+  // the last 293 bp of this window. Longer segments here (s119733, 158 bp) are
+  // carried by all five and would show a full house, which says nothing.
+  //
+  // Needs the plugin bundle pinned in the fixture to be bfe47428e7ae or later.
+  // Before that the tag was parsed and dropped: `carriedBy` was empty on every
+  // node of every INDEXED graph, because node.samples was only ever populated by
+  // the in-app P/W walk a file-loaded graph gets. Measured over this same window
+  // at the time: 0 of 53 nodes carried samples, against 53 of 53 after.
+  {
+    mode: 'url',
+    name: 'pangenome/pggb_carriage',
+    // FORCE, not sample rows, for two reasons that are both about the drawer.
+    // It takes ~40% of the width, which is the axis sample rows needs for its
+    // labels and its backbone; and sample rows packs every rank-0 node into one
+    // line, so at this zoom a 59 bp segment is ~10px with 1 bp neighbours either
+    // side and the click resolved to s119713 instead. Force separates them.
+    url: pggbLocusSession('force', {
+      region: PGGB_ROWS_LOCUS,
+      window: PGGB_ROWS_WINDOW,
+    }),
+    readySelector: TOOLBAR_READY,
+    readyTimeout: 120000,
+    settleMs: 8000,
+    viewportWidth: 1100,
+    // 780 clipped the drawer's attribute table by 221 css px, from the run's own
+    // report; the drawer is the taller half here, not the graph
+    viewportHeight: 1000,
+    hideTooltip: true,
+    actions: [
+      { type: 'click', anchor: { view: 1, graphNode: '119715-' } },
+      // gate on the drawer's own content rather than a delay: a missed click
+      // would otherwise commit a figure of a graph with no panel open
+      { type: 'waitForText', text: 'carriedBy' },
+      { type: 'delay', ms: 1500 },
+    ],
+  },
   {
     mode: 'url',
     name: 'pangenome/pggb_locus_sample_rows_rows',
