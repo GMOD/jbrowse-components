@@ -25,7 +25,7 @@ Exploratory concepts that are *not* committed work live in
 | [Stop uploading every rect twice](#stop-uploading-every-rect-twice-for-the-continuation-pass) | GPU canvas | unify `ATTR4`, then verify headed on both backends |
 | [Linearize the pangenome](#linearize-the-pangenome-draw-graph-variation-as-alignment-style-glyphs) | pangenome | read PANGENOME_GRAPHS.md — four findings constrain the layout |
 | [Reads on the derivative allele](#reads-on-the-reconstructed-derivative-allele) | cancer SV | two open halves; the middle one is already built |
-| [WebGL2 context budget](#measure-the-webgl2-context-budget-in-the-shape-users-actually-hit) | GPU, limits | measure — the ceiling has only ever been synthetic |
+| [Cut WebGL2 contexts per display](#cut-webgl2-contexts-per-display) | GPU, limits | build — ceiling measured at 16, one ordinary view crosses it |
 | [MAF fetch cost on long blocks](#maf-fetch-cost-on-long-blocks) | MAF | run the one-line block-size check; premise unconfirmed |
 | [Alignments main-thread repack](#alignments-still-repacks-every-row-instanced-pass-on-the-main-thread) | alignments, GPU | profile the pack/upload/clone split first |
 | [Stop rewriting the worker's arrays](#stop-rewriting-the-workers-arrays-to-lay-out-features) | canvas | count the consumers — they decide if it is worth it |
@@ -257,30 +257,23 @@ Every entry here opens with a measurement because the obvious build would be
 guessing. The instrumentation pattern for the render-path ones is
 [reference/PERF_INSTRUMENTATION.md](reference/PERF_INSTRUMENTATION.md).
 
-### Measure the WebGL2 context budget in the shape users actually hit
+### Cut WebGL2 contexts per display
 
-The context ceiling in
-[reference/ARCHITECTURAL_LIMITS.md](reference/ARCHITECTURAL_LIMITS.md) §"One
-WebGL2 context per display canvas" has only ever been measured with a synthetic
-24-view harness (since deleted). One view holding 10 to 20 GPU tracks reaches the
-same context count and is an ordinary session, and nobody has run it. The number
-decides whether track-level mount/release is worth building or whether the
-Canvas2D-after-K-losses backstop is enough, so measure before building either.
+The ceiling is **16 live contexts** and one LGV with 17 GPU tracks crosses it —
+measured 2026-08-05, same on a real Intel GPU and on SwiftShader, so it is a
+browser property. See [reference/ARCHITECTURAL_LIMITS.md](reference/ARCHITECTURAL_LIMITS.md)
+§"One WebGL2 context per display canvas" for the walk and
+[handoffs/workspaces-freeze.md](handoffs/workspaces-freeze.md) for the harness.
+That was the number this entry used to ask for, and it answers the question it
+was gating: an unremarkable session reaches the ceiling, so **track-level
+mount/release is worth building**, and so is anything that shares a context
+across displays.
 
-Home is `browser-tests/suites/gpu-quirks.ts`, beside its existing "recovers from
-WebGL context loss" test. Every piece exists: `navigateWithSessionSpec` takes one
-LGV with an arbitrary `tracks` array, `test_data/volvox/config.json` carries 124
-tracks, `WebGL2Hal` logs `init (live=N/total)` and `context LOST` under
-`?webgl2-debug=1`, and `runner.ts` has a `page.on('console')` hook to collect
-them. Walk N up, record where an **unforced** `context LOST` first appears and
-whether recovery settles or cascades.
-
-Report a diagnostic number first; a regression assertion only after, and well
-under the observed threshold (a "12 tracks lose no context" floor) so it doesn't
-flake. **The CI number is a floor, not the answer** — headless always falls back
-to SwiftShader ([reference/TEST_INFRASTRUCTURE.md](reference/TEST_INFRASTRUCTURE.md)),
-whose context cap need not match a real driver's, so the run that characterizes
-the limit is headed on a real GPU. Capture both, and say which is which.
+Do the cheap environment check first, though. `preferredRenderer` picks WebGL2
+whenever a context exists, and under software rendering that is ~25x more
+main-thread cost than Canvas2D for the same session (on a real GPU the ordering
+reverses, ~2x the other way). Reading `UNMASKED_RENDERER_WEBGL` off the probe
+`getGraphicsCapabilities` already creates is free.
 
 ### MAF fetch cost on long blocks
 

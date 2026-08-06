@@ -55,13 +55,36 @@ const RENDERER = args.renderer ?? 'webgl'
 const TRACE = args.trace
 const PATTERN = args.pattern ?? 'sweep'
 
-// Real data, all on ctgA (the volvox fixtures only cover ctgA; ctgB draws empty)
+// Real data, all on ctgA (the volvox fixtures only cover ctgA; ctgB draws
+// empty). Long enough to walk `--tracks` up into the context ceiling with a
+// single view, which is the shape agent-docs/TODO.md asks about — CRAM (needs a
+// reference), the *_nonexist fixtures and the duplicate _folder/_altname
+// variants are left out so every entry actually renders.
 const TRACK_POOL = [
   'volvox_bam_pileup',
   'volvox_microarray',
   'volvox_filtered_vcf',
   'volvox_bam_snpcoverage',
   'gff3tabix_genes',
+  'volvox_gc',
+  'volvox_sv_test',
+  'volvox_alignments',
+  'volvox_gwas',
+  'volvox_test_vcf',
+  'volvox_microarray_color',
+  'volvox_microarray_line',
+  'volvox_microarray_density',
+  'volvox_microarray_multi',
+  'volvox_microarray_multi2',
+  'volvox_mouse_inheritance_painting',
+  'nclist_long_names',
+  'volvox_alignments_grouped_by_strand',
+  'volvox_bam_small_max_height',
+  'volvox_alignments_pileup_coverage',
+  'volvox-long-reads-bam',
+  'volvox-long-reads-sv-bam',
+  'volvox_samspec',
+  'volvox_sv',
 ]
 
 function views() {

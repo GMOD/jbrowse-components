@@ -44,17 +44,27 @@ one GPU buffer per `displayedRegionIndex` and one scissored draw per render
 block. **This ceiling is a primary motivation for targeting WebGPU**, which
 shares one device across displays (next entry) and so has no per-canvas cap.
 
-Measured once, synthetically, with a many-*views* harness because that was the
-reported symptom: 72 canvases (24 views x 3 tracks) gave 56 `context LOST` events
-and a 143s frozen frame, while 20 canvases stayed smooth, and the freeze followed
-run order rather than dockview-vs-classic. Read that as bracketing the cascade
-between 20 and 72 live contexts on the tested Chrome, and nothing more. Two
-caveats that matter more than the numbers:
+**The ceiling is 16 live contexts** (Chrome 151, measured 2026-08-05 on both a
+real Intel UHD 630 and SwiftShader — it is a browser/ANGLE property, not a
+driver one). One LGV with 16 GPU tracks holds 17 contexts counting the
+`getGraphicsCapabilities` probe and loses none; the 17th track evicts, and the
+re-acquire cascades — headed, one view with 20 tracks creates 57 contexts and
+takes 41 losses. So RFC-001 §12b's "Firefox around 16" is the figure that
+generalizes; its "Chrome around 8" does not.
 
-- **The realistic shape is unmeasured.** A 24-view session is not a workload; one
-  or two views holding 10 to 20 GPU tracks is, and reaches the same count.
-- **Don't trust caps quoted elsewhere.** RFC-001 §12b says "Firefox around 16,
-  Chrome around 8", which the 20-canvas result contradicts.
+**A single ordinary view reaches it.** No many-view session and nothing synthetic
+required — 17 GPU tracks on one LGV is an unremarkable thing to open. That
+retires the older reading of this entry, which bracketed the cascade "between 20
+and 72" from a synthetic 24-view harness and called the realistic shape
+unmeasured.
+
+**The cascade past the ceiling is violent; the per-context cost is the driver's.**
+The same rebuild churn costs ~10x more under software rendering than on a real
+GPU (shader compilation on a CPU rasterizer), which is why Canvas2D beats WebGL
+by ~25x on SwiftShader and loses to it by ~2x on real hardware. `preferredRenderer`
+does not know the difference. See
+[handoffs/workspaces-freeze.md](../handoffs/workspaces-freeze.md) for the tables
+and the harness (`browser-tests/workspaces-freeze-stress.ts`).
 
 Mitigations in place, both bounding rather than fixing:
 
@@ -62,11 +72,12 @@ Mitigations in place, both bounding rather than fixing:
   gates whether a view mounts its GPU subtree, falling back to always-visible
   where IntersectionObserver is absent (jsdom/SSR). Took the 72-canvas case to 6.
   It buys that by **rebuilding the pipeline every time a view scrolls back into
-  view** — a fresh context, recompiling the whole program set, measured at 2.3 s
-  of blocked main thread per scroll pass over 12 views x 3 tracks. So it bounds
-  simultaneous contexts and converts the cap into a per-scroll cost; it is not a
-  free win, and it does not bound anything across a multi-panel workspace, where
-  every panel is on screen at once. See
+  view** — a fresh context, recompiling the whole program set, one per display per
+  scroll pass. So it bounds simultaneous contexts and converts the cap into a
+  per-scroll cost: cheap on a real GPU (1.4 s a pass over 12 views x 3 tracks),
+  ~10x that under software rendering. It is not a free win, and it does not bound
+  anything across a multi-panel workspace, where every panel is on screen at
+  once. See
   [handoffs/workspaces-freeze.md](../handoffs/workspaces-freeze.md).
 - **Bounded auto-recovery** in `useRenderingBackend`: at most
   `MAX_CONTEXT_RECOVER_ATTEMPTS` re-inits on backoff, and the budget resets only
@@ -74,13 +85,14 @@ Mitigations in place, both bounding rather than fixing:
   climbs to the cap and stops rather than spinning.
 
 Still exposed: tracks inside a mounted view are not virtualized, so one LGV with
-15+ GPU tracks allocates 15+ contexts.
+17 GPU tracks allocates 17 contexts and crosses the ceiling above.
 
 **Retire when** WebGL2 retires (RFC-001 §13a) or track-level mount/release lands.
-Measure before building either: [../TODO.md](../TODO.md) §"Measure the WebGL2
-context budget in the shape users actually hit". The other unbuilt interim move is
+The measurement that used to gate both is done — the ceiling above — and it says
+track-level mount/release is worth building. The other unbuilt interim moves are
 dropping a display to Canvas2D after K context losses, so the failure is one slow
-track rather than a wedged page.
+track rather than a wedged page, and picking Canvas2D up front when the renderer
+string says software.
 
 ### WebGPU shares one device across every display
 

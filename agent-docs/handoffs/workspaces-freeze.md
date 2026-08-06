@@ -1,6 +1,6 @@
 ---
 name: workspaces-freeze
-description: Many-view sessions freeze on a GPU backend; measured 2026-08-05 as per-remount shader recompilation, not dockview and not MST write amplification — Classic and Tiled are indistinguishable at one panel, and panel count is the only workspaces-specific amplifier
+description: Many-view freeze — measured 2026-08-05 as driver-dependent, not workspaces; Classic and Tiled are identical, the GPU context ceiling is 16, and the wedge only reproduces under software rendering, where Canvas2D is 25x cheaper than WebGL
 ---
 
 # The many-view freeze
@@ -14,56 +14,82 @@ scroll" is the symptom people report; it is the freeze, not a scroll bug
 
 Reproduce with
 `products/jbrowse-web/browser-tests/workspaces-freeze-stress.ts` (build first).
-It needs **real tracks on a GPU backend** — the first harness used empty views on
-canvas2d, which is why it came back clean.
+It needs **real tracks** — the first harness used empty views, which is why it
+came back clean.
 
-## Measured 2026-08-05 — do not re-derive
+## Read this before trusting any number here
 
-12 views x 3 volvox tracks, 1400x900, real GPU, one full scroll pass per
-"pass". Context counts are deterministic to the integer across every run.
+**Headless Chrome renders WebGL on SwiftShader on this machine**, confirmed via
+`UNMASKED_RENDERER_WEBGL`: headless reports `SwiftShader driver`, headed reports
+`Mesa Intel(R) UHD Graphics 630`. The two differ by ~10x on exactly the cost this
+thread is about, so a headless measurement of it is not a measurement of what a
+user sees. **Pass `--headed=true`.** Every number below says which it is.
 
-- **It reproduces, and it is not workspaces.** Five paired runs, each mode in its
-  own process: Classic scroll 10.6 / 11.4 / 10.0 / 9.7 / 10.7 s of long tasks,
-  Tiled 10.2 / 8.7 / 9.8 / 8.7 s. Indistinguishable. Load is likewise identical
-  (~2.8 s, 31 contexts, 15 losses in **both** modes).
+This bit an earlier pass of this very investigation, which reported a 10-second
+scroll freeze that is a SwiftShader artifact.
+
+## Established — do not re-derive
+
+12 views x 3 volvox tracks, 1400x900, one full scroll pass per "pass".
+
+- **It is not workspaces.** Classic and Tiled are indistinguishable on both
+  drivers. Headed: Classic load 1.5 s / scroll 1.0, 1.2 s; Tiled load 2.1 s /
+  scroll 1.5, 1.4 s. Headless: five paired runs, Classic 10.6/11.4/10.0/9.7/10.7
+  s against Tiled 10.2/8.7/9.8/8.7 s.
 - **A 2.4x Tiled result is an artifact of sharing one node process.** The first
-  pairing measured Tiled at 25.9 s in second position; `classic,classic` in one
-  process reproduces no such penalty (10.0 then 9.7 s) and `tiled,tiled` gives
-  8.7/9.8 s. Compare modes across processes only.
-- **The cost is one full GPU-pipeline rebuild per display per scroll pass.**
-  Contexts created climb +36 per pass (31 -> 61 -> 97 -> 133) — exactly
-  views x tracks — while at most 3-6 canvases are ever live, because
-  `useViewVisibility` unmounts a view's body when it scrolls out and remounts it
-  on the way back, and each remount takes a **fresh WebGL2 context**.
-- **It is shader compilation.** A CPU trace over one scroll pass
-  (`analyze-trace.ts`) attributes 2320 ms of 4233 ms main-thread busy time to
-  `getShaderParameter` — the synchronous COMPILE_STATUS query in
-  `webgl2Hal.ts:createShader`, where Chrome's async compile lands. Programs are
-  per-context, so every fresh context recompiles the whole set.
-- **Canvas2D is the control and it is clean.** Identical mount/unmount churn (2D
-  contexts also climb +36 a pass), 208-452 ms of long tasks per pass against
-  9800-11100 ms on webgl, p95 frame 17 ms. So React, MST, dockview and the
-  windowing are all exonerated: the delta is entirely the GPU pipeline rebuild.
-- **The context-loss cascade is real but secondary.** At 3 tracks it runs hot (45
-  losses a pass, 0 browser restorations ever). At 1 track it never triggers
-  (losses stay at 1) and a scroll pass *still* costs 7.3-9.1 s.
+  pairing put Tiled at 25.9 s in second position; `classic,classic` in one
+  process reproduces no such penalty. Compare modes across processes only.
+- **The window has no hysteresis, so every display's GPU pipeline is rebuilt
+  once per scroll pass.** Contexts created climb +36 a pass (31 -> 61 -> 97 ->
+  133) — exactly views x tracks — while at most 3-6 canvases are live. This is
+  byte-identical headed and headless: the churn is app behavior, not driver.
+- **The main-thread cost of that churn is almost entirely the driver's.** Same
+  session, same churn, per scroll pass:
 
-### The one thing that IS workspaces-specific: panel count
+  | backend  | SwiftShader (headless) | real GPU (headed) |
+  | -------- | ---------------------- | ----------------- |
+  | webgl2   | 9.8 - 12.0 s           | 1.4 - 1.5 s       |
+  | canvas2d | 0.21 - 0.45 s          | 1.8 - 3.2 s       |
 
-`useViewVisibility` windows each panel's stack against the viewport, so live
-views scale with the number of panels on screen. Classic is one column and is
-always bounded to ~2-3; a grid is not. Same 12-view session, at load, no
-scrolling:
+  Note the crossover: **Canvas2D is ~25x cheaper than WebGL under software
+  rendering and ~2x more expensive on a real GPU.** A CPU trace of the
+  SwiftShader case puts 2320 of 4233 ms of busy time in `getShaderParameter`,
+  the COMPILE_STATUS query where Chrome's async compile lands — programs are
+  per-context, so each rebuilt context recompiles the set, and compiling on a CPU
+  rasterizer is what costs.
+- **No wedge reproduces on real hardware with volvox.** Every shape tried stays
+  under 2.6 s at load and 1.5 s per scroll pass headed. The freeze is real, but
+  this harness only produces it under software rendering.
 
-| panels | live canvases | contexts | losses | long tasks |
-| ------ | ------------- | -------- | ------ | ---------- |
-| 1      | 6             | 31       | 15     | 2.8 s      |
-| 2      | 12            | 49       | 33     | 6.5 s      |
-| 4      | 16            | 61       | 45     | 11.2 s     |
+### The context ceiling is 16, and one ordinary view reaches it
 
-A 4-panel workspace wedges the main thread for 11 s on load alone. If the
-reporter's session splits across panels, this is the Tiled-only difference they
-are seeing — and windowing cannot bound it, because every panel is on screen.
+Answers what TODO.md §"Cut WebGL2 contexts per display" used to ask for. One
+LGV, walking `--tracks` up, contexts created (the +1 is the
+`getGraphicsCapabilities` probe, which is also the `lost=1`):
+
+| tracks | headed contexts / losses | headless contexts / losses |
+| ------ | ------------------------ | -------------------------- |
+| 16     | 17 / 1                   | 17 / 1                     |
+| 17     | 31 / 15                  | 25-26 / 9-10               |
+| 20     | 57 / 41                  | 25 / 9                     |
+| 24     | 73 / 57                  | 33 / 9                     |
+
+**16 live contexts is the ceiling on both drivers**, reproducible across repeats,
+and the 17th evicts. So the ceiling is a browser/ANGLE property, while the
+*cascade past it* is far more violent on the real GPU. This retires the old
+"bracketed between 20 and 72" reading, and it lands on RFC-001 §12b's Firefox
+figure rather than its Chrome one.
+
+That threshold is reachable by a single ordinary view — 17 GPU tracks — with no
+workspace, no many-view session, and nothing synthetic about it.
+
+### What workspaces contributes: panel count, and only that
+
+The window is per scroll port, so live views scale with panels on screen.
+Classic is one column and stays bounded; a grid is not. Same 12-view session at
+load, headless: 1/2/4 panels -> 6/12/16 live canvases, 31/49/61 contexts,
+15/33/45 losses. Headed at 4 panels: 16 canvases, 85 contexts, 69 losses.
+A 4-panel workspace sits at the ceiling on arrival.
 
 ## Disproven fixes — measured, don't retry
 
@@ -71,55 +97,52 @@ are seeing — and windowing cannot bound it, because every panel is on screen.
   sync autorun observes `init`, `dockviewLayout`, `views`, `panelViewAssignments`
   and `activePanelId`; none change while scrolling or panning, so reconcile does
   not run per interaction at all. The canvas2d control settles it independently:
-  same session, same writes, 2% of the cost.
+  same session, same writes, a fraction of the cost.
 - **Releasing the context on dispose** (gating `WEBGL_lose_context.loseContext()`
-  on non-Firefox in `webgl2Hal.dispose`). Contexts created were unchanged
-  (31/61/97/133) and long tasks the same or worse. The cost is in *acquiring*
-  contexts, not in holding them.
-- **Dropping the eager COMPILE_STATUS / LINK_STATUS queries.** 11.8/15.9 s a
-  pass, no better than baseline. `getShaderParameter` is where the wait
-  *surfaces*, not an avoidable API call — remove it and the driver blocks at
-  link or first draw instead.
+  on non-Firefox in `webgl2Hal.dispose`). Contexts created unchanged
+  (31/61/97/133), long tasks the same or worse. The cost is in *acquiring*
+  contexts, not holding them.
+- **Dropping the eager COMPILE_STATUS / LINK_STATUS queries.** No better than
+  baseline. `getShaderParameter` is where the wait *surfaces*, not an avoidable
+  call — remove it and the driver blocks at link or first draw instead.
 - **Giving the mount band real hysteresis.** `VIEW_VISIBILITY_ROOT_MARGIN` is
   inert: an observer clips the target against each scrolling ancestor *before*
   applying the margin, which expands only the root box, and both view containers
   are `overflow-y: auto`. Measured through a nested scroller, `150% 0px`
   qualifies exactly the items a `0px` margin would. Rooting the observer at the
-  scroll port (`scrollPortOf`) does restore the band — live canvases 6 -> 9-13 —
-  and on a reading-style scroll (`--pattern=jitter`) it comes out **a wash**:
-  19.6/15.8/10.8 s against a baseline 11.6/15.4/14.5 s, while *creating more*
-  contexts per pass (66/57/33 vs 33/39/39) and triggering browser restorations
-  for the first time. The band trades pipeline rebuilds for live contexts, and
-  the cap is the tighter constraint. Reverted; both call sites now say so.
+  scroll port (`scrollPortOf`) restores the band — live canvases 6 -> 9-13 — and
+  on a reading-style scroll (`--pattern=jitter`) came out a wash headless
+  (19.6/15.8/10.8 s against a baseline 11.6/15.4/14.5 s) while creating *more*
+  contexts per pass. Headed it can only be worse: the rebuild it saves is the
+  cheap half on a real GPU, while the extra live contexts push toward a ceiling
+  whose cascade is the violent half. Reverted; both call sites say so.
 - **View-stack windowing** was disproven earlier as a Tiled/Classic
   differentiator, and remains so: `ClassicViewsContainer` renders the same
   `ViewStack` over `session.views` entire.
 
-The shape of all four: nothing that redistributes *when* a display's GPU
-pipeline is built helps, because both ends are expensive — building one costs a
-context and a shader recompile, and holding one costs against the cap. Only
-cutting contexts per display moves the floor.
-
 ## Where to go next
 
-Every cheap fix is gone; what is left is structural, and all of it is "stop
-building a per-display GPU pipeline over and over":
+**1. Detect the software rasterizer and prefer Canvas2D on it.** The strongest
+lead, and cheap. `getGraphicsCapabilities` returns `webgl2: !!gl` and
+`preferredRenderer` takes WebGL2 whenever a context exists, so a user whose
+Chrome is software-rendering — GPU blocklisted, a VM, remote desktop, an old
+driver — gets the one combination the table above says is 25x the cost. That
+also fits the report better than anything else here: Classic and Tiled are
+identical on this machine, and the reporter sees a difference, so something about
+their environment is not this machine. The probe already creates a context, so
+`WEBGL_debug_renderer_info` / `UNMASKED_RENDERER_WEBGL` is free to read. **Ask
+the reporter for their `chrome://gpu` before building it** — one line of
+confirmation beats the inference.
 
-1. **Don't dispose the backend when a view scrolls out of view.** Kills the
-   per-pass rebuild outright, but re-exposes the context cap
-   ([ARCHITECTURAL_LIMITS](../reference/ARCHITECTURAL_LIMITS.md), "One WebGL2
-   context per display canvas") — so it needs a global LRU budget over live
-   backends rather than a per-view visibility decision.
-2. **Share one WebGL2 context across displays** (pool, or one canvas with
-   scissored draws). Compiles the program set once for the page.
-3. **WebGPU**, which shares one device across displays and has no per-canvas cap
-   — already the stated direction for the same reason.
+**2. Cut contexts per display**, since 16 is the ceiling and one view with 17
+tracks crosses it: pool contexts, or share one across displays (one canvas,
+scissored draws), or WebGPU, which shares a device and has no per-canvas cap.
+Track-level mount/release is the cheaper version and the ceiling now says it is
+worth building.
 
-Note (1) and the panel-count table point at the same missing thing: a *global*
-budget for live GPU displays. `useViewVisibility` is a per-view proxy for one,
-and the panel grid is where the proxy breaks. But a budget alone only chooses
-*which* displays pay the rebuild — the mount-band result above is what says a
-policy change cannot be the whole fix. Pair it with (2) or (3).
+Nothing that redistributes *when* a pipeline is built helps — that is what the
+four disproven fixes have in common. Both ends are expensive: building one costs
+a context and a shader recompile, holding one costs against the cap.
 
 Related: [ADR-057](../architecture-decision-records/adr-057-dockview-stays-external.md),
 [ARCHITECTURAL_LIMITS](../reference/ARCHITECTURAL_LIMITS.md),

@@ -19,10 +19,11 @@ import type {
 // the margin, which expands only the root's box — and both view containers are
 // `overflow-y: auto`, so through one of them `150% 0px` qualifies exactly the
 // views a `0px` margin would. Rooting the observer at the scroll port instead
-// (`scrollPortOf`) does restore the band, and it comes out a wash on scroll cost
-// while holding 9-13 live GPU canvases instead of 6: the mount band trades
-// pipeline rebuilds for live contexts, and the context cap is the tighter
-// constraint. See agent-docs/handoffs/workspaces-freeze.md.
+// (`scrollPortOf`) does restore the band, and it came out a wash on scroll cost
+// while holding 9-13 live GPU canvases instead of 6. The mount band trades
+// pipeline rebuilds for live contexts, and with the ceiling at 16 live WebGL2
+// contexts the contexts are the tighter constraint.
+// See agent-docs/handoffs/workspaces-freeze.md.
 //
 // So don't tune this number expecting an effect, and don't make it live without
 // first cutting contexts per display.
