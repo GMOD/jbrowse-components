@@ -2,6 +2,12 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 import { linearWiggleDisplayConfigSchema } from '@jbrowse/plugin-wiggle'
 
+// Deliberately carries no `#example` — the two concrete types do. `isBaseSchema`
+// in the doc generator reads "extended by others, not itself registered as a
+// DisplayType, and carrying no example" as the definition of a base schema, and
+// only that reading stops this page's slot table from instructing
+// `"type": "SharedGCContentDisplay"`, which nothing accepts. An example here
+// would put it back.
 /**
  * #config SharedGCContentDisplay
  * #category display
@@ -10,54 +16,7 @@ import { linearWiggleDisplayConfigSchema } from '@jbrowse/plugin-wiggle'
  * `ReferenceSequenceTrack`, deriving GC from the track's own sequence adapter)
  * and `LinearGCContentTrackDisplay` (on a standalone `GCContentTrack`). Both
  * register the same slots against different track types, so the slots live here
- * once.
- *
- * #example
- * On a `ReferenceSequenceTrack` — no extra adapter needed, GC is derived from
- * the track's sequence adapter. `gcMode` is `content` or `skew`:
- * ```js
- * {
- *   type: 'ReferenceSequenceTrack',
- *   trackId: 'refseq',
- *   name: 'Reference sequence',
- *   assemblyNames: ['hg38'],
- *   adapter: {
- *     type: 'IndexedFastaAdapter',
- *     uri: 'https://example.com/genome.fa',
- *   },
- *   displays: [
- *     {
- *       type: 'LinearGCContentDisplay',
- *       displayId: 'refseq-LinearGCContentDisplay',
- *       windowSize: 100,
- *       windowDelta: 100,
- *       gcMode: 'content',
- *     },
- *   ],
- * }
- * ```
- *
- * #example
- * On a standalone `GCContentTrack` whose `GCContentAdapter` wraps a sequence
- * adapter (use this instead of the `ReferenceSequenceTrack` display when you
- * want GC as its own track):
- * ```js
- * {
- *   type: 'GCContentTrack',
- *   trackId: 'gc',
- *   name: 'GC content',
- *   assemblyNames: ['hg38'],
- *   adapter: {
- *     type: 'GCContentAdapter',
- *     sequenceAdapter: {
- *       type: 'IndexedFastaAdapter',
- *       fastaLocation: { uri: 'https://example.com/genome.fa' },
- *       faiLocation: { uri: 'https://example.com/genome.fa.fai' },
- *     },
- *   },
- *   displayDefaults: { gcMode: 'skew', windowSize: 50, windowDelta: 10 },
- * }
- * ```
+ * once; a config always names one of the two concrete types.
  */
 export default function sharedGCContentConfigSchema() {
   return ConfigurationSchema(

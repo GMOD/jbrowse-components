@@ -21,11 +21,22 @@ const JsonEditor = observer(function JsonEditor({
     name: string
     description: string
     value: unknown
+    // what unset resolves to on a promotable slot, absent on a plain one
+    promotedBase?: unknown
     set: (arg: unknown) => void
   }
 }) {
   const { classes } = useStyles()
-  const [contents, setContents] = useState(JSON.stringify(slot.value, null, 2))
+  // A `maybeFrozen` slot is `undefined` when unset — the promotable inherit
+  // state (alignments/synteny `colorBy`). `JSON.stringify(undefined)` returns
+  // the *value* `undefined`, not a string, so seeding straight off `slot.value`
+  // handed MonospaceTextField an undefined `value` and made the field
+  // uncontrolled until the first keystroke (React then warns on the switch).
+  // Show what unset resolves to instead, as BooleanEditor does.
+  const [contents, setContents] = useState(() => {
+    const shown = slot.value ?? slot.promotedBase
+    return shown === undefined ? '' : JSON.stringify(shown, null, 2)
+  })
   const [error, setError] = useState<unknown>()
 
   return (

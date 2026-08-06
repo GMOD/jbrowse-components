@@ -112,6 +112,15 @@ function sizeMenu(
   return {
     label,
     type: 'custom',
+    // Declared even though `SizeSliderRow` below is what draws it: a custom row
+    // never reaches the shared trailing column, so without this the pin exists
+    // on screen and is invisible to `pinnedSlots` — which is the difference
+    // between a promotable slot that is genuinely unreachable and one that just
+    // renders its own control. See `hasMenuItemAdornment` for why declaring it
+    // costs no layout.
+    ...(displayTypeDefault && {
+      defaultForAll: { control: displayTypeDefault, label: title },
+    }),
     render: () => (
       <Suspense
         fallback={

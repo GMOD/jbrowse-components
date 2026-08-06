@@ -59,10 +59,8 @@ is drawn).
   [SharedLDDisplay](https://jbrowse.org/jb2/docs/config/sharedlddisplay.md)
 - [LinearWiggleDisplay](https://jbrowse.org/jb2/docs/config/linearwiggledisplay.md)
 - [MultiLinearWiggleDisplay](https://jbrowse.org/jb2/docs/config/multilinearwiggledisplay.md)
-- LinearGCContentDisplay — slots documented under
-  [SharedGCContentDisplay](https://jbrowse.org/jb2/docs/config/sharedgccontentdisplay.md)
-- LinearGCContentTrackDisplay — slots documented under
-  [SharedGCContentDisplay](https://jbrowse.org/jb2/docs/config/sharedgccontentdisplay.md)
+- [LinearGCContentDisplay](https://jbrowse.org/jb2/docs/config/lineargccontentdisplay.md)
+- [LinearGCContentTrackDisplay](https://jbrowse.org/jb2/docs/config/lineargccontenttrackdisplay.md)
 - [LinearMafDisplay](https://jbrowse.org/jb2/docs/config/linearmafdisplay.md)
 - [LinearHicDisplay](https://jbrowse.org/jb2/docs/config/linearhicdisplay.md)
 - [LinearArcDisplay](https://jbrowse.org/jb2/docs/config/lineararcdisplay.md)

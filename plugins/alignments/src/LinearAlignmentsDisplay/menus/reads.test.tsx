@@ -9,7 +9,11 @@ import type { MenuItem } from '@jbrowse/core/ui'
 
 afterEach(cleanup)
 
-const noPin: DisplayTypeDefaultControl = { active: false, toggle: () => {} }
+const noPin: DisplayTypeDefaultControl = {
+  slot: 'unused',
+  active: false,
+  toggle: () => {},
+}
 
 // Only the fields "Show..." reads.
 function makeModel(overrides?: Partial<{ canCollapseGroupRows: boolean }>) {

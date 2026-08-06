@@ -176,6 +176,17 @@ export function getTrackConfigWithPromotables(
  * the subsystem that rewrites a track.
  */
 export interface DisplayTypeDefaultControl {
+  /**
+   * The promotable slot this pin promotes a value of. Nothing in the UI reads
+   * it — a pin renders from `active` and `toggle` alone. It is here so a *built
+   * menu* can be asked which promotable slots it offers a pin for, which is the
+   * only way that question has an answer: `promotable` is a schema fact and the
+   * pin is a menu fact, and a display that inherits the flag but never builds a
+   * row has a slot nothing can ever promote, silently
+   * (`promotableSlotsWithoutPin`, guarded by
+   * `products/jbrowse-web/src/tests/PromotablePinCoverage.test.ts`).
+   */
+  slot: string
   active: boolean
   toggle: () => void
 }
@@ -379,6 +390,7 @@ export function makeDisplayTypeDefaultControl(
 ): DisplayTypeDefaultControl {
   const active = isPromotableDefault(self, slot, onValue)
   return {
+    slot,
     active,
     toggle: () => {
       applyDefaultToggle(self, slot, onValue, !active)

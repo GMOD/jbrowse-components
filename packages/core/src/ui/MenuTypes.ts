@@ -64,6 +64,12 @@ export interface BaseMenuItem {
    * reference/EAGER_BUNDLE.md.
    *
    * Set it through `promotableToggleItem`/`promotableRadioItem`, not by hand.
+   *
+   * A `type: 'custom'` row (`makePromotableSizeMenu`) draws its own pin inside
+   * its rendered content and still sets this — the declaration is what lets a
+   * built menu be asked which promotable slots it offers a pin for at all. Such
+   * a row is excluded from the trailing-column reservation; see
+   * `hasMenuItemAdornment`.
    */
   defaultForAll?: MenuItemDefaultForAll
 }

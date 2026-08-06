@@ -3,6 +3,7 @@ import { lazy } from 'react'
 import {
   ConfigurationReference,
   getConf,
+  makeDisplayTypeDefaultControl,
   setConf,
 } from '@jbrowse/core/configuration'
 import { getContainingTrack, getSession } from '@jbrowse/core/util'
@@ -35,6 +36,7 @@ import { getSyntenyGroupByMenuItem, getSyntenyShowMenuItem } from './menus.ts'
 
 import type { LGVSyntenyDisplayConfigModel } from './configSchemaF.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { ColorBy } from '@jbrowse/plugin-alignments'
 import type { LodMode } from '@jbrowse/synteny-core'
 
 const LaunchSyntenyViewDialog = lazy(
@@ -333,6 +335,15 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
                 'mappingQuality',
                 'mateRefName',
               ),
+              // This display's `colorBy` is promotable in its own right — the
+              // schema override in configSchemaF.ts exists precisely to give it
+              // a synteny `promotedBase` (`strand`, not `normal`). Without the
+              // pin the slot was promotable with nowhere to promote from: a
+              // promoted default is keyed by display type, so no alignments pin
+              // could ever write LGVSyntenyDisplay's key either, and the slot
+              // resolved to its base forever unless a track customized it.
+              displayTypeDefault: (colorBy: ColorBy) =>
+                makeDisplayTypeDefaultControl(self, 'colorBy', colorBy),
             }),
             // No base pair / tag: a PAF block has no per-base sequence to sort a
             // column by, and no SAM tags. 'Longest features first' is the

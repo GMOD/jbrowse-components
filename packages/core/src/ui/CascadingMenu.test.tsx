@@ -139,6 +139,7 @@ describe('CascadingMenu endAdornment', () => {
               checked: false,
               onClick: () => {},
               displayTypeDefault: {
+                slot: 'displayMode',
                 active: promoted.get() === 'compact',
                 toggle: () => {},
               },

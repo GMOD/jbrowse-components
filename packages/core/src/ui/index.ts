@@ -141,6 +141,13 @@ export {
   promotableRadioItem,
   promotableToggleItem,
 } from './promotableMenuItems.ts'
+// Not on the React-free `menuItems.ts` entry beside the two builders above: this
+// reads a config's slot table, so it pulls `configuration/util.ts` in, and that
+// entry exists precisely to stay out of every plugin's eager graph.
+export {
+  pinnedSlots,
+  promotableSlotsWithoutPin,
+} from './promotablePinCoverage.ts'
 export const VIEW_HEADER_HEIGHT = 28
 export {
   GRADIENT_LEGEND_HEIGHT,

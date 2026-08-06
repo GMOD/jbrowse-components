@@ -31,7 +31,23 @@ export function menuItemAdornment(item: MenuItem) {
   ) : undefined
 }
 
+/**
+ * Whether this row draws something in the shared trailing column — the question
+ * `getMenuColumnFlags` asks to decide whether to reserve that column on every
+ * row of the menu.
+ *
+ * **Not the same question as "does this row offer a pin"** (`pinnedSlots`, which
+ * counts a `defaultForAll` wherever it appears). A `type: 'custom'` row renders
+ * its own content edge to edge and never reaches `menuItemAdornment`, so it
+ * cannot draw in that column however it is declared — counting it would reserve
+ * a spacer on its siblings for a control that never appears. It still declares
+ * `defaultForAll` when it draws a pin of its own (`makePromotableSizeMenu`),
+ * which is what keeps the pin findable. Don't "fix" the two into agreement.
+ */
 export function hasMenuItemAdornment(item: MenuItem) {
+  if (item.type === 'custom') {
+    return false
+  }
   return (
     ('endAdornment' in item && !!item.endAdornment) ||
     ('defaultForAll' in item && !!item.defaultForAll)

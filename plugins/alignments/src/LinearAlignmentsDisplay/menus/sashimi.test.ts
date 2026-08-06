@@ -6,9 +6,11 @@ import type { DisplayTypeDefaultControl } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 // stateful stand-in for a DisplayTypeDefaultControl (the menu builder only touches
-// active/toggle)
-function control(): DisplayTypeDefaultControl {
+// active/toggle; `slot` is what a built menu is later asked for by
+// promotableSlotsWithoutPin, and is unread here)
+function control(slot: string): DisplayTypeDefaultControl {
   return {
+    slot,
     active: false,
     toggle() {
       this.active = !this.active
@@ -22,15 +24,15 @@ function makeModel() {
     setShowSashimiArcs(v: boolean) {
       this.showSashimiArcs = v
     },
-    showSashimiArcsDisplayTypeDefault: control(),
+    showSashimiArcsDisplayTypeDefault: control('showSashimiArcs'),
     showSashimiLabels: false,
     setShowSashimiLabels() {},
-    showSashimiLabelsDisplayTypeDefault: control(),
+    showSashimiLabelsDisplayTypeDefault: control('showSashimiLabels'),
     sashimiArcsMode: 'auto' as SashimiArcsMode,
     setSashimiArcsMode(mode: SashimiArcsMode) {
       this.sashimiArcsMode = mode
     },
-    sashimiArcsModeDisplayTypeDefault: () => control(),
+    sashimiArcsModeDisplayTypeDefault: () => control('sashimiArcsMode'),
     minSashimiScore: DEFAULT_MIN_SASHIMI_SCORE,
     setMinSashimiScore() {},
   }

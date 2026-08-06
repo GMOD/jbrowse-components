@@ -47,6 +47,27 @@ test('facade derives stringEnum choices from the metadata model', () => {
   expect(facade.choices).toEqual(['a', 'b', 'c'])
 })
 
+// The editors that render an unset slot need it: a promotable slot's
+// `defaultValue` is always the inherit sentinel, so `promotedBase` is the only
+// concrete value the facade can show for one nobody has customized.
+test('facade carries promotedBase for a promotable slot, and not otherwise', () => {
+  const schema = ConfigurationSchema('Test', {
+    chevrons: {
+      type: 'maybeBoolean',
+      defaultValue: undefined,
+      promotedBase: true,
+      promotable: true,
+    },
+    plain: { type: 'boolean', defaultValue: false },
+  })
+  const node = create(schema)
+  const promotable = makeSlotFacade(node, 'chevrons')
+  expect(promotable.value).toBeUndefined()
+  expect(promotable.defaultValue).toBeUndefined()
+  expect(promotable.promotedBase).toBe(true)
+  expect(makeSlotFacade(node, 'plain').promotedBase).toBeUndefined()
+})
+
 test('facade finds slots inherited via baseConfiguration', () => {
   const base = ConfigurationSchema('Base', {
     shared: { type: 'string', defaultValue: 'inherited' },

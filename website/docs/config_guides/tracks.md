@@ -145,14 +145,14 @@ pick which:
 | --- | --- |
 | [](/docs/config/alignmentstrack) | [](/docs/config/linearalignmentsdisplay) |
 | [](/docs/config/featuretrack) | [](/docs/config/lineararcdisplay)<br/>[](/docs/config/linearbasicdisplay)<br/>[](/docs/config/linearmultirowfeaturedisplay)<br/>[](/docs/config/linearscoredisplay) |
-| [](/docs/config/gccontenttrack) | LinearGCContentTrackDisplay |
+| [](/docs/config/gccontenttrack) | [](/docs/config/lineargccontenttrackdisplay) |
 | [](/docs/config/gwastrack) | [](/docs/config/linearmanhattandisplay) |
 | [](/docs/config/hictrack) | [](/docs/config/linearhicdisplay) |
 | [](/docs/config/ldtrack) | LDTrackDisplay |
 | [](/docs/config/maftrack) | [](/docs/config/linearmafdisplay) |
 | [](/docs/config/multiquantitativetrack) | [](/docs/config/multilinearwiggledisplay) |
 | [](/docs/config/quantitativetrack) | [](/docs/config/linearwiggledisplay) |
-| [](/docs/config/referencesequencetrack) | LinearGCContentDisplay<br/>[](/docs/config/linearreferencesequencedisplay) |
+| [](/docs/config/referencesequencetrack) | [](/docs/config/lineargccontentdisplay)<br/>[](/docs/config/linearreferencesequencedisplay) |
 | [](/docs/config/syntenytrack) | [](/docs/config/dotplotdisplay)<br/>[](/docs/config/lgvsyntenydisplay)<br/>[](/docs/config/linearsyntenydisplay) |
 | [](/docs/config/varianttrack) | [](/docs/config/chordvariantdisplay)<br/>LDDisplay<br/>[](/docs/config/linearmultisamplevariantdisplay)<br/>[](/docs/config/linearmultisamplevariantmatrixdisplay)<br/>[](/docs/config/linearpairedarcdisplay)<br/>[](/docs/config/linearvariantdisplay) |
 

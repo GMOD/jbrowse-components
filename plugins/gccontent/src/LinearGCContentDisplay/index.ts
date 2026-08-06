@@ -1,8 +1,8 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
 import { LinearWiggleDisplayReactComponent } from '@jbrowse/plugin-wiggle'
 
-import sharedGCContentConfigSchema from './sharedConfigSchema.ts'
+import linearGCContentDisplayConfigSchema from './configSchemaReferenceSequence.ts'
+import linearGCContentTrackDisplayConfigSchema from './configSchemaTrack.ts'
 import stateModelReferenceSequenceF from './stateModelReferenceSequence.ts'
 import stateModelTrackF from './stateModelTrack.ts'
 
@@ -14,27 +14,29 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 // definition site, which is the only place that can actually keep the wiggle
 // shader source out of the eager chunk.
 
-// both displays share every slot (see sharedConfigSchema); they only differ in
-// which track type they attach to and how they resolve their adapter, so the
-// per-type config is just an empty schema deriving from the shared one
-function makeConfigSchema(name: string) {
-  return ConfigurationSchema(
-    name,
-    {},
-    {
-      baseConfiguration: sharedGCContentConfigSchema(),
-      explicitlyTyped: true,
-    },
-  )
-}
+// Both displays share every slot (see sharedConfigSchema); they differ only in
+// which track type they attach to and how they resolve their adapter, so each
+// per-type config is an empty schema deriving from the shared one — identical
+// types, which is what lets the single `LinearGCContentDisplayConfigSchema`
+// below serve both state models.
+//
+// They are two annotated files rather than one `makeConfigSchema(name)` helper
+// because the doc generator keys a `#config` block to its file: with the schemas
+// built from one un-annotated helper, neither registered display type had a page
+// at all. `SharedGCContentDisplay` had the only page, and — being the only
+// documented name — its slot table told readers to write
+// `type: 'SharedGCContentDisplay'`, which nothing accepts. Both displays were
+// also missing from the "settings with a session-wide default" table
+// (`agent-docs/reference/DISPLAY_TYPE_DEFAULTS.md`), though their promotable
+// `lineWidth`/`scatterPointSize` pins have always worked.
 
 export type LinearGCContentDisplayConfigSchema = ReturnType<
-  typeof makeConfigSchema
+  typeof linearGCContentDisplayConfigSchema
 >
 
 export default function LinearGCContentDisplayF(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
-    const configSchema = makeConfigSchema('LinearGCContentDisplay')
+    const configSchema = linearGCContentDisplayConfigSchema()
     return new DisplayType({
       name: 'LinearGCContentDisplay',
       configSchema,
@@ -47,7 +49,7 @@ export default function LinearGCContentDisplayF(pluginManager: PluginManager) {
   })
 
   pluginManager.addDisplayType(() => {
-    const configSchema = makeConfigSchema('LinearGCContentTrackDisplay')
+    const configSchema = linearGCContentTrackDisplayConfigSchema()
     return new DisplayType({
       name: 'LinearGCContentTrackDisplay',
       configSchema,

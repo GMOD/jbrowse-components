@@ -77,9 +77,10 @@ accidental.
 | Session/display type surface | `packages/core/src/util/types/index.ts` |
 | Track-selector badge | `plugins/data-management/.../tree/OverrideBadge.tsx` |
 | Pin adornment + row builders | `packages/core/src/ui/{DefaultForAllAdornment.tsx,promotableMenuItems.tsx}` |
+| Config-editor view of a promotable slot (`SlotFacade.promotedBase`, consumed by `BooleanEditor` / `JsonEditor` / `StringEnumEditor`) | `packages/core/src/configuration/slotFacade.ts`, `plugins/config/src/ConfigurationEditorWidget/components/` |
 | `endAdornment` menu-row primitive + renderer | `packages/core/src/ui/{MenuTypes.ts,CascadingMenu.tsx,MenuItemTrailing.tsx}` |
-| Adopters: `displayMode` / `heightMode` / `subfeatureLabels` / `displayDirectionalChevrons` | `plugins/canvas/src/LinearBasicDisplay/{baseConfigSchema,baseModel,model}.ts`. All four slots are **inherited by every `linearCanvasBaseDisplayStateModelFactory` consumer** (e.g. `LinearVariantDisplay`) via `baseConfiguration`, and all four resolve into its worker payload through the base `rpcProps`. Only two of the *pins* come along, though: `displayMode` and `heightMode` are built in the shared `trackMenus.ts`, while the `subfeatureLabels` / `displayDirectionalChevrons` rows **and their `resolveConf` getters** live in the concrete `LinearBasicDisplay/model.ts` — so a variant track resolves those two slots but can't promote them. Move the rows + getters down to `baseModel.ts` if that's wanted |
-| Adopters: `featureHeight` / `heightMode` / `colorBy` / `mismatchAlpha` / `linkedReads` / `readConnections` / `readConnectionsDown` / `sashimiArcsMode` / `showSashimiLabels` / `showSoftClipping` | `plugins/alignments/src/LinearAlignmentsDisplay/{configSchema,model}.ts` |
+| Adopters: `displayMode` / `heightMode` / `subfeatureLabels` / `displayDirectionalChevrons` | `plugins/canvas/src/LinearBasicDisplay/{baseConfigSchema,baseModel,model}.ts`. All four slots are **inherited by every `linearCanvasBaseDisplayStateModelFactory` consumer** (e.g. `LinearVariantDisplay`) via `baseConfiguration`, and all four resolve into its worker payload through the base `rpcProps`. Only two of the *pins* come along: `displayMode` and `heightMode` are built in the shared `trackMenus.ts`, while the `subfeatureLabels` / `displayDirectionalChevrons` rows **and their `resolveConf` getters** live in the concrete `LinearBasicDisplay/model.ts`. That split is right — both are transcript-structure settings, inert on a variant track — so don't move them down; see the variant row in [the pin table](#promotable-is-a-schema-fact-the-pin-is-a-menu-fact) |
+| Adopters: `featureHeight` / `heightMode` / `colorBy` / `mismatchAlpha` / `linkedReads` / `readConnections` / `readConnectionsDown` / `showSashimiArcs` / `sashimiArcsMode` / `showSashimiLabels` / `showSoftClipping` | `plugins/alignments/src/LinearAlignmentsDisplay/{configSchema,model}.ts` |
 | Adopters: `scatterPointSize` + `lineWidth` (wiggle), `lineWidth` (paired-arc), `scatterPointSize` (Manhattan) | `plugins/wiggle/src/shared/{wiggleConfigSchemaFields.ts,WiggleScoreConfigMixin.ts}`, `plugins/arc/src/LinearPairedArcDisplay/{configSchema,model}.ts`, `plugins/gwas/src/LinearManhattanDisplay/configSchemaFactory.ts` |
 | Shared `heightMode` mixin (canvas + alignments) | `plugins/linear-genome-view/src/BaseLinearDisplay/models/{HeightModeMixin.ts,heightMode.ts}` |
 
@@ -99,26 +100,89 @@ but the **pin** is built by whichever track menu happens to construct a row for
 that slot. A display that inherits the flag and curates its own menu therefore
 has a promotable slot with **no pin anywhere** — and since a promoted default is
 keyed by *display type*, no other display's pin can write it either, so the slot
-resolves to `promotedBase` forever unless a track customizes it. Eleven such
-pairs exist today, all inherited rather than declared:
+resolves to `promotedBase` forever unless a track customizes it. Ten such pairs
+exist today, all inherited rather than declared:
+
+**The list is no longer kept here.** It is
+`KNOWN_UNPINNED` in `products/jbrowse-web/src/tests/PromotablePinCoverage.test.ts`,
+which opens one display of every type that declares a promotable slot, drives it
+through the states that reveal its rows, and diffs the pins it finds against
+`promotableSlotNames`. Wiring a missing row makes that test fail, and the fix is
+to delete a line from the baseline. This prose table was the previous
+arrangement and it drifted twice in the obvious two directions — a row for a
+slot that had been deleted, and a missing row for one that had been added — which
+is the whole argument for the check.
+
+As of writing it holds ten, in two groups:
 
 | Display | Slots promotable with no pin | Why |
 | --- | --- | --- |
-| `LGVSyntenyDisplay` | `colorBy`, `linkedReads`, `mismatchAlpha`, `readConnections`, `readConnectionsDown`, `sashimiArcsMode`, `showSashimiLabels`, `showSoftClipping` | composes the alignments state model, but `LGVSyntenyDisplay/menus.ts` builds its own curated menu; only `getFeatureHeightMenuItem` brings pins (`featureHeight`, `heightMode`) |
-| `LinearVariantDisplay` | `subfeatureLabels`, `displayDirectionalChevrons` | the row 79 asymmetry: rows + getters live in the concrete `LinearBasicDisplay/model.ts` |
-| `LinearManhattanDisplay` | `lineWidth` | inherits it with the `wiggleConfigSchemaFields` spread, but `makeLineWidthMenuItems` is gated on a line rendering and only the two wiggle displays call it |
+| `LGVSyntenyDisplay` | `linkedReads`, `mismatchAlpha`, `readConnections`, `readConnectionsDown`, `showSashimiArcs`, `sashimiArcsMode`, `showSashimiLabels`, `showSoftClipping` | composes the alignments state model, but `LGVSyntenyDisplay/menus.ts` builds its own curated menu; only `getFeatureHeightMenuItem` (`featureHeight`, `heightMode`) and `getColorByMenuItem` (`colorBy`) bring pins |
+| `LinearVariantDisplay` | `subfeatureLabels`, `displayDirectionalChevrons` | **inherited but inert.** Both are transcript-structure settings — chevrons are emitted by `emitIntronLines` between a transcript's exons, `subfeatureLabels` labels transcript children — and a VCF feature has no such subfeatures. They reach the variant schema only because they sit on the shared canvas base, and their `resolveConf` getters live in the concrete `LinearBasicDisplay/model.ts`, which variants don't compose |
 
-**`promotable: false` is not the fix for the synteny or Manhattan rows.** Those
-slots are read through the *shared* model's `resolveConf` getters, which throw on
-a non-promotable slot — turning the flag off breaks the display outright. Wiring
-the missing rows is the only fix, and it is a product decision (new pins), not a
-cleanup.
+The mechanism the check reads: `DisplayTypeDefaultControl` carries the `slot` it
+promotes (nothing draws it — the pin renders from `active`/`toggle` alone), so a
+built menu can be walked for the slots it offers. A `type: 'custom'` row —
+`makePromotableSizeMenu`, the three sliders — draws its own pin and declares
+`defaultForAll` anyway; `hasMenuItemAdornment` excludes it from the shared
+trailing-column reservation, which it could never draw in regardless. Those two
+questions look like one and are not; both sites say so.
+
+`colorBy` was a ninth synteny row until the display started passing
+`getColorByMenuItem`'s optional `displayTypeDefault` factory. It is the shape to
+copy: the builder already took the factory, the schema override existed *only* to
+give the slot a synteny `promotedBase` (`{type:'strand'}`), and the wiring was two
+lines. `trackMenuItems.test.ts` pins it at the **call site** — the shared
+builder's own test can't, since passing no factory is a legitimate call for a
+display whose slot isn't promotable.
+
+**`promotable: false` is not the fix for the synteny rows.** Those slots are read
+through the *shared* model's `resolveConf` getters, which throw on a
+non-promotable slot — turning the flag off breaks the display outright. Wiring
+the missing rows is the only fix, and it is a product decision (new pins on
+settings synteny deliberately curated out), not a cleanup.
+
+**Neither is it the fix for the two variant rows, and neither is a pin.** This
+file used to say "move the rows + getters down to `baseModel.ts` if that's
+wanted"; don't — it would put a "Show chevrons" row on every variant track menu
+for a setting that draws nothing there. `promotable: false` is the tempting other
+direction and is also wrong: the base `rpcProps` ships
+`getConfigSnapshotWithPromotables(self)`, so a slot that stops being promotable
+stops being resolved and reaches the worker as its bare `undefined` sentinel,
+against a `renderConfig` that declares `boolean`. Making it a genuinely plain
+slot means redeclaring `type` and a concrete `defaultValue` on the variant
+schema. The two entries buy nothing today and are recorded rather than fixed.
+
+`LinearManhattanDisplay` used to be a third row, for a `lineWidth` inherited with
+the `wiggleConfigSchemaFields` spread. It isn't one any more: the schema now
+declares its own slots (`configSchemaFactory.ts` says why) and takes only
+`scoreAxisConfigSchemaFields`, so `lineWidth` is gone entirely and its one
+promotable slot, `scatterPointSize`, does have a pin.
 
 The generated user-guide table
-(`writePromotableSlotDocs`) is derived from the flag, so it lists all eleven; its
+(`writePromotableSlotDocs`) is derived from the flag, so it lists all ten; its
 column therefore claims "settings with a session-wide default", not "with a pin",
 and the guide says where the pin actually lives. Nothing static can see a menu
 row, so don't try to make that table exact.
+
+**A row needs a `#config` block whose name equals a `new DisplayType({name})`**,
+which is a real way for a working display to fall out of the table entirely —
+the two GC-content displays did. Their schemas came from one un-annotated
+`makeConfigSchema(name)` helper while the `#config` block sat on
+`SharedGCContentDisplay`, a name nothing registers, so neither registered type
+had a config page at all: no promotable row, unlinked names in the DISPLAY_TYPES
+table, and — since `isBaseSchema` only exempts a schema that is extended by a
+documented config and carries no `#example` — a `SharedGCContentDisplay` page
+whose slot table told readers to write a display type that does not exist. Both
+displays always did inherit promotable `lineWidth` / `scatterPointSize` from
+`linearWiggleDisplayConfigSchema` and always did build the pins (their model
+composes `linearWiggleDisplayModelFactory`, so `makePointSizeMenuItems` /
+`makeLineWidthMenuItems` come along, gated on `scatter` / `line` renderings as in
+wiggle) — only the docs were missing. Fixed by giving each its own annotated
+file (`configSchemaReferenceSequence.ts` / `configSchemaTrack.ts`) and moving the
+examples off the shared base; **one `#config` per file is a hard limit**
+(`assertSingleHeader`), so a shared factory serving two registered types always
+needs two files.
 
 ## The cascade
 
@@ -224,8 +288,11 @@ default, and there is deliberately no callback case
 
 ### What a display has to be
 
-One shape: **`ResolvableDisplay`** — `IAnyStateTreeNode` + `type` +
-`configuration`. Everything the cascade needs, and what **every public entry
+One shape: **`ResolvableDisplay`** — `IStateTreeNode` + `type` +
+`configuration` (`IStateTreeNode`, never `IAnyStateTreeNode`: the latter
+resolves through `STNValue<any, …>` to `any` and would turn off checking for the
+two members this interface exists to declare — see the repo `CLAUDE.md`).
+Everything the cascade needs, and what **every public entry
 point takes**: `resolveConf`, both `make*Control` builders, `isSlotCustomized`,
 `getConfigSnapshotWithPromotables`, `getDisplayTypeDefaultChanges`,
 `clearPromotedDefaults`, `resetSlotToInherit`.
@@ -601,6 +668,37 @@ displays each re-declaring `configuration` a second time and a silent
 never-badges failure for any display that forgot to compose it. Don't reintroduce
 it.
 
+### The config editor is the other surface, and it sees only two tiers
+
+`ConfigurationEditorWidget` renders every display slot, promotable ones included,
+and its target is often a **detached** config node (`trackSchema.create(...)` in
+`DrawerWidgets.ts`) — so it cannot reach the session and cannot resolve the
+middle tier. What it *can* show is the bottom one, which is why `SlotFacade`
+carries `promotedBase` alongside `defaultValue`: on a promotable slot
+`defaultValue` is always the `undefined` sentinel, so an editor rendering it
+renders nothing at all.
+
+Each `maybe*` editor has to say so in its own vocabulary, and the two that
+didn't both mis-reported an unset slot as a concrete value:
+
+- `StringEnumEditor` prepends an `<em>default</em>` choice for
+  `maybeStringEnum` — the model the others follow.
+- `NumberEditor` shows an empty field for an unset `maybeNumber`.
+- `BooleanEditor` coerced with `!!`, so every unset slot read *unchecked* — the
+  opposite of the truth for the three whose base is `true`
+  (`displayDirectionalChevrons`, `showSashimiArcs`, `readConnectionsDown`).
+  Ticking the box then wrote the value the track already had: nothing changed on
+  screen, but the slot silently left the cascade. It renders
+  `value ?? promotedBase` now.
+- `JsonEditor` seeded its buffer from `JSON.stringify(slot.value)`, which for an
+  unset `maybeFrozen` (`colorBy`) returns the *value* `undefined`, not a string
+  — the field went uncontrolled until the first keystroke. Same fix.
+
+The reset button is still what separates *inherited* from *customized* (it keys
+off `SlotFacade.modified`, i.e. presence in the stripped snapshot). Adding the
+pin itself to this panel is the parked "Promotable-slot UI" proposal in
+`OTHER_IDEAS.md`; read the three frictions it names before starting.
+
 ## Adding a promotable slot
 
 1. In the display's config schema, use a `maybe*` slot type
@@ -622,10 +720,15 @@ it.
    genuinely plain slot writes `promotable: false`.
 2. Read it on the display with **`resolveConf(self, slot)`**, not `getConf` —
    `get x(): X { return resolveConf(self, 'x') }`, no post-guard and no cast. If
-   you forget, tsc catches it: the raw `getConf` read type is `X | undefined`
-   (the unset sentinel) and won't assign to `X`. `resolveConf` throws on a slot
-   that isn't promotable, so the two readers can't be swapped by accident in
-   either direction.
+   you forget, tsc usually catches it: the raw `getConf` read type is
+   `X | undefined` (the unset sentinel) and won't assign to `X`. `resolveConf`
+   throws on a slot that isn't promotable, so the two readers can't be swapped by
+   accident in either direction.
+
+   **`maybeFrozen` is the exception** — `SlotValueRawFromDef` maps it to `any`
+   (arbitrary dynamic JSON the caller asserts at the read boundary), so a raw
+   `getConf(self, 'colorBy')` type-checks and hands back the sentinel. That one
+   slot is on the reviewer, not the compiler.
 
    The same slot name can be promotable in one schema and plain in another
    (`colorBy` is promotable on alignments, not on gwas/variants; `featureHeight`

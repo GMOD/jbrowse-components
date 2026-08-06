@@ -35,6 +35,7 @@ function displayTypeDefault(model: Model) {
   return (colorBy: ColorBy): DisplayTypeDefaultControl => {
     const key = JSON.stringify(colorBy)
     return {
+      slot: 'colorBy',
       active: model.pinned.has(key),
       toggle() {
         if (model.pinned.has(key)) {

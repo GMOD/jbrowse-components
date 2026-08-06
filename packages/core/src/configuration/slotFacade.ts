@@ -72,6 +72,20 @@ export interface SlotFacade {
   type: ConfigSlotType
   contextVariable: string[]
   defaultValue: unknown
+  /**
+   * For a `promotable` slot, the value its unset state resolves to when nothing
+   * is promoted (see `promotableResolve.ts`). Undefined on a plain slot, whose
+   * `defaultValue` is already the concrete value.
+   *
+   * Here because a promotable slot's `defaultValue` is always the `undefined`
+   * inherit sentinel, so an editor rendering `defaultValue` for an unset slot
+   * shows nothing at all — for a `maybeBoolean` that reads as a concrete
+   * `false`, which is wrong for every slot whose base is `true`. The editor
+   * still cannot see the *session* tier of the cascade (its target is often a
+   * detached config node), so this is the honest answer it can give: what unset
+   * means with nothing promoted.
+   */
+  promotedBase?: unknown
   /** enum choices, present only for `stringEnum`/`maybeStringEnum` slots */
   choices?: string[]
   pluginManager: PluginManager
@@ -112,6 +126,7 @@ export function makeSlotFacade(
     type,
     description = '',
     defaultValue,
+    promotedBase,
     contextVariable = [],
     model,
   } = getSlotDefinition(node, slotName)
@@ -121,6 +136,7 @@ export function makeSlotFacade(
     type,
     contextVariable,
     defaultValue,
+    promotedBase,
     choices:
       (type === 'stringEnum' || type === 'maybeStringEnum') && model
         ? getEnumerationValues(model)

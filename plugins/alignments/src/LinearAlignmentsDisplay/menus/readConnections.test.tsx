@@ -5,9 +5,11 @@ import { getReadConnectionsMenuItem } from './readConnections.ts'
 import type { DisplayTypeDefaultControl } from '@jbrowse/core/configuration'
 
 // stateful stand-in for a DisplayTypeDefaultControl (the menu builder and the promote
-// path only touch active/toggle)
-function control(): DisplayTypeDefaultControl {
+// path only touch active/toggle; `slot` is what a built menu is later asked for
+// by promotableSlotsWithoutPin, and is unread here)
+function control(slot: string): DisplayTypeDefaultControl {
   return {
+    slot,
     active: false,
     toggle() {
       this.active = !this.active
@@ -21,18 +23,18 @@ function makeModel() {
     setLinkedReads(mode: 'off' | 'normal') {
       this.linkedReads = mode
     },
-    pairsDisplayTypeDefault: control(),
+    pairsDisplayTypeDefault: control('linkedReads'),
     readConnections: 'off' as 'off' | 'arc' | 'cloud',
     setReadConnections(mode: 'off' | 'arc' | 'cloud') {
       this.readConnections = mode
     },
-    arcsDisplayTypeDefault: control(),
-    readCloudDisplayTypeDefault: control(),
+    arcsDisplayTypeDefault: control('readConnections'),
+    readCloudDisplayTypeDefault: control('readConnections'),
     readConnectionsDown: false,
     setReadConnectionsDown(v: boolean) {
       this.readConnectionsDown = v
     },
-    readConnectionsDownDisplayTypeDefault: control(),
+    readConnectionsDownDisplayTypeDefault: control('readConnectionsDown'),
     drawLongRange: true,
     setDrawLongRange(v: boolean) {
       this.drawLongRange = v

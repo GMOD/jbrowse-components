@@ -48,3 +48,31 @@ test('does not call slot.set on initial render', () => {
   render(<JsonEditor slot={slot} />)
   expect(slot.set).not.toHaveBeenCalled()
 })
+
+// An unset `maybeFrozen` slot is the promotable inherit sentinel (alignments
+// `colorBy`). `JSON.stringify(undefined)` is the value `undefined`, not a
+// string, so the field went uncontrolled until the first keystroke.
+test('unset promotable slot shows promotedBase and stays controlled', () => {
+  const slot = {
+    name: 'colorBy',
+    description: 'test',
+    value: undefined,
+    promotedBase: { type: 'normal' },
+    set: jest.fn(),
+  }
+  const { container } = render(<JsonEditor slot={slot} />)
+  const textarea = getTextarea(container)
+  expect(textarea.value).toBe(JSON.stringify({ type: 'normal' }, null, 2))
+  expect(slot.set).not.toHaveBeenCalled()
+})
+
+test('unset slot with no promotedBase renders an empty controlled field', () => {
+  const slot = {
+    name: 'testJson',
+    description: 'test',
+    value: undefined,
+    set: jest.fn(),
+  }
+  const { container } = render(<JsonEditor slot={slot} />)
+  expect(getTextarea(container).value).toBe('')
+})

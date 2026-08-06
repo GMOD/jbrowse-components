@@ -8,12 +8,13 @@ import type { DisplayTypeDefaultControl } from '../configuration/promotableDefau
 
 const theme = createJBrowseTheme()
 
-// test double: the pin reads `active` and calls `toggle` on click
+// test double: the pin reads `active` and calls `toggle` on click — never
+// `slot`, which only a menu-wide pin-coverage walk reads
 function fakeControl(
   active: boolean,
   toggle: () => void = () => {},
 ): DisplayTypeDefaultControl {
-  return { active, toggle }
+  return { slot: 'unused', active, toggle }
 }
 
 function renderAdornment(control: DisplayTypeDefaultControl, label = 'this') {
