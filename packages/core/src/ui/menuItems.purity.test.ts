@@ -52,7 +52,7 @@ test('the menu-item entry reaches no React, MUI or emotion', () => {
   const bare = reach(path.join(__dirname, 'menuItems.ts'))
   const offenders = [...bare].filter(([spec]) => forbidden.test(spec))
   // the trail is the whole diagnostic — "menuItems.ts pulls MUI" is unactionable,
-  // "via ./promotableMenuItems.ts -> ./DefaultForAllAdornment.tsx" is a fix
+  // "via ./promotableMenuItems.ts -> ./PinAdornment.tsx" is a fix
   expect(
     offenders.map(([spec, trail]) => `${spec} via ${trail.join(' -> ')}`),
   ).toEqual([])

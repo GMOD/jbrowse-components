@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 
-import { makeDisplayTypeDefaultControl } from '@jbrowse/core/configuration'
+import { makePin } from '@jbrowse/core/configuration'
 import { promotableRadioItem } from '@jbrowse/core/ui/menuItems'
 import { capitalizeFirst, getSession } from '@jbrowse/core/util'
 import { heightModeMenuItems } from '@jbrowse/plugin-linear-genome-view'
@@ -93,7 +93,7 @@ export function getFeatureHeightMenuItem(
           onClick: () => {
             model.setFeatureHeight(preset.featureHeight)
           },
-          displayTypeDefault: makeDisplayTypeDefaultControl(
+          pin: makePin(
             model,
             'featureHeight',
             preset.featureHeight,

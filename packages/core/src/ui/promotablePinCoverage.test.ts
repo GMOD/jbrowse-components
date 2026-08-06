@@ -4,11 +4,11 @@ import {
   promotableSlotsWithoutPin,
 } from './promotablePinCoverage.ts'
 
-import type { DisplayTypeDefaultControl } from '../configuration/promotableDefaults.ts'
+import type { Pin } from '../configuration/promotableDefaults.ts'
 import type { ResolvableDisplay } from '../configuration/promotableResolve.ts'
 import type { MenuItem } from './MenuTypes.ts'
 
-function pin(slot: string): DisplayTypeDefaultControl {
+function pin(slot: string): Pin {
   return { slot, active: false, toggle: () => {} }
 }
 
@@ -18,7 +18,7 @@ function pinnedRow(label: string, slot: string): MenuItem {
     type: 'checkbox',
     checked: false,
     onClick: () => {},
-    defaultForAll: { control: pin(slot), label },
+    pin: { control: pin(slot), label },
   }
 }
 
@@ -27,13 +27,11 @@ const schema = ConfigurationSchema('PinCoverageTest', {
     type: 'maybeBoolean',
     defaultValue: undefined,
     promotedBase: true,
-    promotable: true,
   },
   softClip: {
     type: 'maybeBoolean',
     defaultValue: undefined,
     promotedBase: false,
-    promotable: true,
   },
   height: { type: 'number', defaultValue: 10 },
 })

@@ -9,8 +9,7 @@ import { getSequenceAdapterConfig } from '@jbrowse/core/assemblyManager/assembly
 import {
   ConfigurationReference,
   getConf,
-  makeCurrentValueDisplayTypeDefaultControl,
-  makeDisplayTypeDefaultControl,
+  makePin,
   resolveConf,
   setConf,
 } from '@jbrowse/core/configuration'
@@ -401,7 +400,7 @@ export default function stateModelFactory(
         // "make view-as-pairs the default for all tracks" control (pin): active
         // when 'normal' is the session default for this display type
         get pairsDisplayTypeDefault() {
-          return makeDisplayTypeDefaultControl(self, 'linkedReads', 'normal')
+          return makePin(self, 'linkedReads', 'normal')
         },
         /** #getter */
         get showBezierConnections(): boolean {
@@ -472,13 +471,13 @@ export default function stateModelFactory(
         // 'arc' is the session default. Independent of read cloud (both toggles
         // share the readConnections slot but target different on-values).
         get arcsDisplayTypeDefault() {
-          return makeDisplayTypeDefaultControl(self, 'readConnections', 'arc')
+          return makePin(self, 'readConnections', 'arc')
         },
         /** #getter */
         // "make read cloud the default for all tracks" control (pin): active when
         // 'cloud' is the session default
         get readCloudDisplayTypeDefault() {
-          return makeDisplayTypeDefaultControl(self, 'readConnections', 'cloud')
+          return makePin(self, 'readConnections', 'cloud')
         },
         /** #getter */
         // Resolved through the promotable-slot tiers (resolveConf): a
@@ -493,7 +492,7 @@ export default function stateModelFactory(
         // track's current resolved value, so either direction (below or above the
         // coverage band) can be made the session-wide default.
         get readConnectionsDownDisplayTypeDefault() {
-          return makeCurrentValueDisplayTypeDefaultControl(
+          return makePin(
             self,
             'readConnectionsDown',
           )
@@ -510,7 +509,7 @@ export default function stateModelFactory(
          * control (pin) for the submenu's own checkbox.
          */
         get showSashimiArcsDisplayTypeDefault() {
-          return makeCurrentValueDisplayTypeDefaultControl(
+          return makePin(
             self,
             'showSashimiArcs',
           )
@@ -531,7 +530,7 @@ export default function stateModelFactory(
          * unpinnable.
          */
         sashimiArcsModeDisplayTypeDefault(mode: SashimiArcsMode) {
-          return makeDisplayTypeDefaultControl(self, 'sashimiArcsMode', mode)
+          return makePin(self, 'sashimiArcsMode', mode)
         },
         /** #getter */
         get minSashimiScore(): number {
@@ -560,7 +559,7 @@ export default function stateModelFactory(
         // control (pin): symmetric, so it promotes whichever value the track
         // currently shows.
         get softClippingDisplayTypeDefault() {
-          return makeCurrentValueDisplayTypeDefaultControl(
+          return makePin(
             self,
             'showSoftClipping',
           )
@@ -906,7 +905,7 @@ export default function stateModelFactory(
          * currently shows.
          */
         get showSashimiLabelsDisplayTypeDefault() {
-          return makeCurrentValueDisplayTypeDefaultControl(
+          return makePin(
             self,
             'showSashimiLabels',
           )
@@ -955,7 +954,7 @@ export default function stateModelFactory(
         // control (pin): symmetric, so it promotes whichever value the track
         // currently shows.
         get mismatchAlphaDisplayTypeDefault() {
-          return makeCurrentValueDisplayTypeDefaultControl(
+          return makePin(
             self,
             'mismatchAlpha',
           )
@@ -3585,8 +3584,8 @@ export default function stateModelFactory(
                   self.setColorSupplementaryChains(flag)
                 },
               },
-              displayTypeDefault: (colorBy: ColorBy) =>
-                makeDisplayTypeDefaultControl(self, 'colorBy', colorBy),
+              pin: (colorBy: ColorBy) =>
+                makePin(self, 'colorBy', colorBy),
             }),
             // Both reasons an ordering can't take effect live in
             // `canSortReads`; only the copy naming the one in force is here.

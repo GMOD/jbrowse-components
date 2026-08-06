@@ -2,12 +2,12 @@ import { staysOpenOnClick } from '@jbrowse/core/ui'
 
 import { getReadConnectionsMenuItem } from './readConnections.ts'
 
-import type { DisplayTypeDefaultControl } from '@jbrowse/core/configuration'
+import type { Pin } from '@jbrowse/core/configuration'
 
-// stateful stand-in for a DisplayTypeDefaultControl (the menu builder and the promote
+// stateful stand-in for a Pin (the menu builder and the promote
 // path only touch active/toggle; `slot` is what a built menu is later asked for
 // by promotableSlotsWithoutPin, and is unread here)
-function control(slot: string): DisplayTypeDefaultControl {
+function control(slot: string): Pin {
   return {
     slot,
     active: false,
@@ -80,12 +80,12 @@ function checkboxByLabel(model: ReturnType<typeof makeModel>, label: string) {
 }
 
 // A promotable row is a native checkbox item carrying a "default for all" pin,
-// always present. It is a description (`{ control, label }`) rather than a
+// always present. It is a description (`{ ...pin, label }`) rather than a
 // rendered element — see ui/MenuTypes.ts — so the control is read straight off
 // the row instead of out of a React element's props.
-function defaultForAll(model: ReturnType<typeof makeModel>, label: string) {
+function pinOfRow(model: ReturnType<typeof makeModel>, label: string) {
   const item = findByLabel(model, label)
-  return item && 'defaultForAll' in item ? item.defaultForAll : undefined
+  return item && 'pin' in item ? item.pin : undefined
 }
 
 // Promote a row's value (what clicking its pin does), exercising the menu's
@@ -94,7 +94,7 @@ function promoteDefaultForAll(
   model: ReturnType<typeof makeModel>,
   label: string,
 ) {
-  const pin = defaultForAll(model, label)
+  const pin = pinOfRow(model, label)
   if (!pin) {
     throw new Error(`no default-for-all control on ${label}`)
   }
@@ -171,9 +171,9 @@ describe('promote-as-default (default for all) pin', () => {
 
   test('the pin is always shown, even while the mode is off', () => {
     const model = makeModel()
-    expect(defaultForAll(model, pairs)).toBeDefined()
-    expect(defaultForAll(model, 'Show read arcs')).toBeDefined()
-    expect(defaultForAll(model, 'Show read cloud')).toBeDefined()
+    expect(pinOfRow(model, pairs)).toBeDefined()
+    expect(pinOfRow(model, 'Show read arcs')).toBeDefined()
+    expect(pinOfRow(model, 'Show read cloud')).toBeDefined()
   })
 
   test('the pin toggles the view-as-pairs session default', () => {

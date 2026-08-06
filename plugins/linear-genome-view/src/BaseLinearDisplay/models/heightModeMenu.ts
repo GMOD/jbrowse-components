@@ -1,4 +1,4 @@
-import { makeDisplayTypeDefaultControl } from '@jbrowse/core/configuration'
+import { makePin } from '@jbrowse/core/configuration'
 import { promotableRadioItem } from '@jbrowse/core/ui/menuItems'
 
 import { getHeightModeOptions } from './heightMode.ts'
@@ -9,7 +9,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 
 // The minimal display surface the "Track sizing" radio group drives: the
 // resolved mode (for the radio's `checked`), the setter (for `onClick`), and the
-// promotable-slot plumbing `makeDisplayTypeDefaultControl` needs for the pin.
+// promotable-slot plumbing `makePin` needs for the pin.
 export type HeightModeMenuModel = ResolvableDisplay & {
   heightMode: HeightMode
   setHeightMode: (mode: HeightMode) => void
@@ -40,7 +40,7 @@ export function heightModeMenuItems(
       onClick: () => {
         model.setHeightMode(option.value)
       },
-      displayTypeDefault: makeDisplayTypeDefaultControl(
+      pin: makePin(
         model,
         'heightMode',
         option.value,

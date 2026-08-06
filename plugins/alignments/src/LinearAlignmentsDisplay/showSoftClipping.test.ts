@@ -147,8 +147,8 @@ function heightModePinProps(
 ) {
   const sub = getFeatureHeightMenuItem(display, 'read').subMenu
   const row = sub.find(i => 'label' in i && i.label === label)
-  // a description (`{ control, label }`), not a rendered element — ui/MenuTypes.ts
-  return row && 'defaultForAll' in row ? row.defaultForAll : undefined
+  // a description (`{ ...pin, label }`), not a rendered element — ui/MenuTypes.ts
+  return row && 'pin' in row ? row.pin : undefined
 }
 
 describe('alignments showSoftClipping session default', () => {
@@ -394,7 +394,7 @@ describe('alignments compactness session default', () => {
 })
 
 // The "Read height" submenu surfaces the promote-as-default control as
-// a per-preset pin (defaultForAll) on each value row — not the former standalone
+// a per-preset pin (pin) on each value row — not the former standalone
 // "Use X as the default" checkbox. Each pin's isDefault/onToggleDefault is
 // independent, so only the promoted preset reads as customized.
 describe('feature-height menu per-preset pins', () => {
@@ -405,7 +405,7 @@ describe('feature-height menu per-preset pins', () => {
     const row = getFeatureHeightMenuItem(display, 'read').subMenu.find(
       i => 'label' in i && i.label === label,
     )
-    return row && 'defaultForAll' in row ? row.defaultForAll : undefined
+    return row && 'pin' in row ? row.pin : undefined
   }
 
   it('has no standalone "as the default" checkbox row', () => {
@@ -442,8 +442,7 @@ describe('feature-height menu per-preset pins', () => {
     expect(pinProps(display, 'Normal')?.control.active).toBe(false)
     expect(pinProps(display, 'Super-compact')?.control.active).toBe(false)
     expect(
-      heightModePinProps(display, 'Fit read height to track height')?.control
-        .active,
+      heightModePinProps(display, 'Fit read height to track height')?.control.active,
     ).toBe(false)
     expect(
       heightModePinProps(display, 'Fixed read height + autogrow track height')

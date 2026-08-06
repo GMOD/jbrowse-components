@@ -26,7 +26,7 @@ const useStyles = makeStyles()(theme => ({
 
 // Lists both sources that make a track's effective settings differ from its
 // configured defaults: per-track edits (`changes`, resettable) and settings
-// imposed by a session-wide displayTypeDefault (`displayTypeDefaults`, clearable).
+// imposed by a session-wide pin (`displayTypeDefaults`, clearable).
 // The two are kept visually separate so a global preference never reads as an
 // individual edit of this track.
 const TrackSettingsChangesDialog = observer(

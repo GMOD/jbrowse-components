@@ -4,12 +4,12 @@ import { cleanup, fireEvent, render } from '@testing-library/react'
 
 import { getReadsMenuItem } from './reads.ts'
 
-import type { DisplayTypeDefaultControl } from '@jbrowse/core/configuration'
+import type { Pin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 afterEach(cleanup)
 
-const noPin: DisplayTypeDefaultControl = {
+const noPin: Pin = {
   slot: 'unused',
   active: false,
   toggle: () => {},

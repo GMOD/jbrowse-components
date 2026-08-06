@@ -6,7 +6,7 @@ import { pickColorOptions } from '../../shared/colorSchemes.ts'
 import { getColorByMenuItem } from './colorBy.ts'
 
 import type { ColorBy } from '../../shared/types.ts'
-import type { DisplayTypeDefaultControl } from '@jbrowse/core/configuration'
+import type { Pin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 // Minimal model: enough for schemeRadios + the Paired end submenu (modModel is
@@ -29,10 +29,10 @@ function makeModel() {
 type Model = ReturnType<typeof makeModel>
 
 // A per-value pin control backed by the model's `pinned` set, keyed on the
-// colorBy value — mirrors makeDisplayTypeDefaultControl over the colorBy
+// colorBy value — mirrors makePin over the colorBy
 // slot.
-function displayTypeDefault(model: Model) {
-  return (colorBy: ColorBy): DisplayTypeDefaultControl => {
+function fakePinFactory(model: Model) {
+  return (colorBy: ColorBy): Pin => {
     const key = JSON.stringify(colorBy)
     return {
       slot: 'colorBy',
@@ -82,25 +82,25 @@ describe('color by menu', () => {
   test('basic scheme radios carry a session-default pin when promotable', () => {
     const model = makeModel()
     const strand = byLabel(model, 'Strand', {
-      displayTypeDefault: displayTypeDefault(model),
+      pin: fakePinFactory(model),
     })
     expect(
-      strand && 'defaultForAll' in strand && strand.defaultForAll,
+      strand && 'pin' in strand && strand.pin,
     ).toBeTruthy()
   })
 
   test('paired-end radios (First of pair strand) carry a pin', () => {
     const model = makeModel()
     const item = byLabel(model, 'First of pair strand', {
-      displayTypeDefault: displayTypeDefault(model),
+      pin: fakePinFactory(model),
     })
-    expect(item && 'defaultForAll' in item && item.defaultForAll).toBeTruthy()
+    expect(item && 'pin' in item && item.pin).toBeTruthy()
   })
 
   test('no standalone "Make ... the default" checkbox remains', () => {
     const model = makeModel()
     const labels = allItems(model, {
-      displayTypeDefault: displayTypeDefault(model),
+      pin: fakePinFactory(model),
     })
       .map(i => ('label' in i ? i.label : ''))
       .filter(Boolean)
@@ -110,9 +110,9 @@ describe('color by menu', () => {
   test('a scheme pin promotes that exact scheme value', () => {
     const model = makeModel()
     const item = byLabel(model, 'Strand', {
-      displayTypeDefault: displayTypeDefault(model),
+      pin: fakePinFactory(model),
     })
-    const pin = item && 'defaultForAll' in item ? item.defaultForAll : undefined
+    const pin = item && 'pin' in item ? item.pin : undefined
     if (!pin) {
       throw new Error('no pin on Strand radio')
     }
@@ -120,11 +120,11 @@ describe('color by menu', () => {
     expect(model.pinned.has(JSON.stringify({ type: 'strand' }))).toBe(true)
   })
 
-  test('no pins when the display is not promotable (synteny omits displayTypeDefault)', () => {
+  test('no pins when the display is not promotable (synteny omits pin)', () => {
     const model = makeModel()
     const strand = byLabel(model, 'Strand')
     expect(
-      strand && 'defaultForAll' in strand && strand.defaultForAll,
+      strand && 'pin' in strand && strand.pin,
     ).toBeFalsy()
   })
 
@@ -166,9 +166,9 @@ describe('color by menu', () => {
     model.colorBy = { type: 'tag', tag: 'HP' }
     const item = byLabel(model, 'Tag (HP)...', {
       includeTagOption: true,
-      displayTypeDefault: displayTypeDefault(model),
+      pin: fakePinFactory(model),
     })
-    const pin = item && 'defaultForAll' in item ? item.defaultForAll : undefined
+    const pin = item && 'pin' in item ? item.pin : undefined
     if (!pin) {
       throw new Error('no pin on the tag radio')
     }
@@ -265,9 +265,9 @@ describe('color by modifications menu', () => {
   test('the 2-color pin promotes the methylation view for cytosine data', () => {
     const model = makeModModel(['m', 'h'])
     const item = byLabel(model, TWO_COLOR, {
-      displayTypeDefault: displayTypeDefault(model),
+      pin: fakePinFactory(model),
     })
-    const pin = item && 'defaultForAll' in item ? item.defaultForAll : undefined
+    const pin = item && 'pin' in item ? item.pin : undefined
     if (!pin) {
       throw new Error('no pin on 2-color radio')
     }

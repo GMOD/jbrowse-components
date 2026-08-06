@@ -31,7 +31,7 @@ import type { MenuItem } from './MenuTypes.ts'
  * Every promotable slot some row of `items` carries a pin for, submenus
  * included.
  *
- * Reads `defaultForAll.control.slot` and nothing else. A raw `endAdornment` is
+ * Reads `pin.control.slot` and nothing else. A raw `endAdornment` is
  * deliberately not counted: it is an arbitrary element (synteny's colour
  * swatch), so it cannot say which slot it promotes, and a pin built by hand
  * rather than through `promotableToggleItem`/`promotableRadioItem` is a thing to
@@ -41,8 +41,8 @@ export function pinnedSlots(items: MenuItem[]): Set<string> {
   const found = new Set<string>()
   const walk = (list: MenuItem[]) => {
     for (const item of list) {
-      if ('defaultForAll' in item && item.defaultForAll) {
-        found.add(item.defaultForAll.control.slot)
+      if ('pin' in item && item.pin) {
+        found.add(item.pin.control.slot)
       }
       if ('subMenu' in item) {
         walk(item.subMenu)

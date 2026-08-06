@@ -59,9 +59,9 @@ describe('Feature height submenu', () => {
       ),
     ).toHaveLength(1)
     // each size preset carries a "make default" pin
-    expect(radio(subMenu, 'Normal').defaultForAll).toBeDefined()
-    expect(radio(subMenu, 'Compact').defaultForAll).toBeDefined()
-    expect(radio(subMenu, 'Super-compact').defaultForAll).toBeDefined()
+    expect(radio(subMenu, 'Normal').pin).toBeDefined()
+    expect(radio(subMenu, 'Compact').pin).toBeDefined()
+    expect(radio(subMenu, 'Super-compact').pin).toBeDefined()
   })
 
   it('resolves the session-wide default and lets a track pin any preset back', () => {
@@ -126,14 +126,14 @@ describe('Feature height submenu', () => {
     ).toBe(true)
     // each mode carries a "make default" pin, like the size presets
     expect(
-      radio(sizing, 'Fixed feature height + fixed track height').defaultForAll,
+      radio(sizing, 'Fixed feature height + fixed track height').pin,
     ).toBeDefined()
     expect(
       radio(sizing, 'Fixed feature height + autogrow track height')
-        .defaultForAll,
+        .pin,
     ).toBeDefined()
     expect(
-      radio(sizing, 'Fit feature height to track height').defaultForAll,
+      radio(sizing, 'Fit feature height to track height').pin,
     ).toBeDefined()
 
     display.setHeightMode('grow')

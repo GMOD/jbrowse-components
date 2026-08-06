@@ -167,22 +167,33 @@ export function getTrackConfigWithPromotables(
 
 /**
  * #api core/configuration
- * A promotable "default for all tracks of this type" control, bundled so a menu
- * row's trailing pin consumes it as a single prop. `active` = this value is
- * currently the session default (a filled pin); `toggle` sets it as the default
- * or clears it, touching no track's own value (see `applyDefaultToggle`). On
- * set it raises a snackbar with an "Override N customized tracks" action for every
- * open track not already showing this value — that action is the only thing in
- * the subsystem that rewrites a track.
+ * The "make this the default for all tracks of this type" affordance on a menu
+ * row — the trailing `PushPin`, bundled so the row consumes it as one prop.
+ * Built by {@link makePin}.
+ *
+ * `active` = this value is currently the session default (a filled pin);
+ * `toggle` sets it as the default or clears it, touching no track's own value
+ * (see `applyDefaultToggle`). On set it raises a snackbar with an "Override N
+ * customized tracks" action for every open track not already showing this value
+ * — that action is the only thing in the subsystem that rewrites a track.
+ *
+ * **`toggle` rather than a `promote`/`clear` pair**, which was tried and dropped:
+ * the sole renderer is a MUI `ToggleButton` whose `onChange` means exactly
+ * "flip", so splitting it adds a member *and* a branch at the one call site that
+ * never needed one. `active` is already public for a caller that wants to state a
+ * direction. (The house preference for explicit setters over toggles is about MST
+ * actions, where a toggle destroys the ability to set a known state; nothing here
+ * stores a value.) ADR-048's requirement is that the flip be *symmetric* —
+ * pin-then-unpin discards nothing — not that it be two functions.
  */
-export interface DisplayTypeDefaultControl {
+export interface Pin {
   /**
    * The promotable slot this pin promotes a value of. Nothing in the UI reads
-   * it — a pin renders from `active` and `toggle` alone. It is here so a *built
-   * menu* can be asked which promotable slots it offers a pin for, which is the
-   * only way that question has an answer: `promotable` is a schema fact and the
-   * pin is a menu fact, and a display that inherits the flag but never builds a
-   * row has a slot nothing can ever promote, silently
+   * it — a pin renders from `active` and the two setters alone. It is here so a
+   * *built menu* can be asked which promotable slots it offers a pin for, which
+   * is the only way that question has an answer: declaring `promotedBase` is a
+   * schema fact and the pin is a menu fact, and a display that inherits the slot
+   * but never builds a row has a slot nothing can ever promote, silently
    * (`promotableSlotsWithoutPin`, guarded by
    * `products/jbrowse-web/src/tests/PromotablePinCoverage.test.ts`).
    */
@@ -378,16 +389,36 @@ function applyDefaultToggle(
 
 /**
  * #api core/configuration
- * Per-value control: "make `slot === onValue` the session default". The meaning
- * is per-value ("make arcs the default"), independent of the track's current
- * value — so an always-visible control never promotes a meaningless value, and
- * two toggles sharing one slot (arcs vs read cloud) stay independent.
+ * The pin for one promotable slot: "make this value the default for every track
+ * of this display type".
+ *
+ * `value` chooses between the subsystem's two meanings, which are otherwise
+ * identical:
+ *
+ * - **Give it** for a per-value pin — "make *arcs* the default" — independent of
+ *   what the track currently shows. Use on an always-visible pin so it can never
+ *   promote a meaningless value, and so two rows sharing one slot (arcs `'arc'`
+ *   vs read cloud `'cloud'`; sashimi `'down'` vs `'auto'`) stay independent.
+ * - **Omit it** for "whatever I'm showing", resolved through the cascade. Use for
+ *   a symmetric or continuous setting where no fixed on-value makes sense
+ *   (wiggle point size, arc line width, `mismatchAlpha`).
+ *
+ * One function with an optional argument, rather than the two exported builders
+ * it replaces — a per-value one and a `…CurrentValue…` one, the second of which
+ * was exactly the first applied to `resolveSlot(self, slot).value`. The pair was
+ * one function plus a doc section explaining which name to reach for; omitting
+ * the argument now says what the longer name said.
  */
-export function makeDisplayTypeDefaultControl(
+export function makePin(
   self: ResolvableDisplay,
   slot: string,
-  onValue: unknown,
-): DisplayTypeDefaultControl {
+  ...value: [] | [unknown]
+): Pin {
+  // rest-tuple, not `value?: unknown`: the promote-current case has to be
+  // distinguishable from an explicit `undefined`, which is the inherit sentinel
+  // and would promote "unset" as a default — a value `isUsableValue` rejects, so
+  // the pin would silently never light up.
+  const onValue = value.length ? value[0] : resolveSlot(self, slot).value
   const active = isPromotableDefault(self, slot, onValue)
   return {
     slot,
@@ -396,24 +427,6 @@ export function makeDisplayTypeDefaultControl(
       applyDefaultToggle(self, slot, onValue, !active)
     },
   }
-}
-
-/**
- * #api core/configuration
- * Promote-current control: "make this track's current resolved value the
- * session default". Use for a symmetric setting (a `maybeBoolean` toggle, or a
- * multi-mode slot like displayMode) where the pin means "whatever I'm showing",
- * not a fixed on-value.
- */
-export function makeCurrentValueDisplayTypeDefaultControl(
-  self: ResolvableDisplay,
-  slot: string,
-): DisplayTypeDefaultControl {
-  return makeDisplayTypeDefaultControl(
-    self,
-    slot,
-    resolveSlot(self, slot).value,
-  )
 }
 
 /**

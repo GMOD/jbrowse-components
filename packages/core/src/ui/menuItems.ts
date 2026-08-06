@@ -14,7 +14,7 @@
  * @emotion, and `menuItems.purity.test.ts` fails if it starts to — including
  * transitively, which is the only way the failure would ever show up.
  *
- * The other half of keeping that true is `MenuItemDefaultForAll`: a row's pin is
+ * The other half of keeping that true is `MenuItemPin`: a row's pin is
  * described here and built by the renderer, because an element in a descriptor
  * pulls its whole component graph back in.
  */
@@ -32,7 +32,7 @@ export type {
   MenuDivider,
   MenuItem,
   MenuItemClickHandler,
-  MenuItemDefaultForAll,
+  MenuItemPin,
   MenuItemsGetter,
   MenuSubHeader,
   NormalMenuItem,

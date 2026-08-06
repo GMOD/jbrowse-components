@@ -8,7 +8,7 @@ import AltRouteIcon from '@mui/icons-material/AltRoute'
 import { DEFAULT_MIN_SASHIMI_SCORE } from '../constants.ts'
 
 import type { SashimiArcsMode } from '../constants.ts'
-import type { DisplayTypeDefaultControl } from '@jbrowse/core/configuration'
+import type { Pin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 // Every option carries a pin, the base value 'up' included — once a non-base
@@ -24,15 +24,15 @@ const SASHIMI_MODE_OPTIONS: { value: SashimiArcsMode; label: string }[] = [
 interface SashimiModel {
   showSashimiArcs: boolean
   setShowSashimiArcs: (show: boolean) => void
-  showSashimiArcsDisplayTypeDefault: DisplayTypeDefaultControl
+  showSashimiArcsDisplayTypeDefault: Pin
   showSashimiLabels: boolean
   setShowSashimiLabels: (show: boolean) => void
-  showSashimiLabelsDisplayTypeDefault: DisplayTypeDefaultControl
+  showSashimiLabelsDisplayTypeDefault: Pin
   sashimiArcsMode: SashimiArcsMode
   setSashimiArcsMode: (mode: SashimiArcsMode) => void
   sashimiArcsModeDisplayTypeDefault: (
     mode: SashimiArcsMode,
-  ) => DisplayTypeDefaultControl
+  ) => Pin
   minSashimiScore: number
   setMinSashimiScore: (score: number) => void
 }
@@ -48,7 +48,7 @@ export function getSashimiMenuItem(model: SashimiModel) {
       onToggle: () => {
         model.setShowSashimiArcs(!model.showSashimiArcs)
       },
-      displayTypeDefault: model.showSashimiArcsDisplayTypeDefault,
+      pin: model.showSashimiArcsDisplayTypeDefault,
     }),
     ...(model.showSashimiArcs
       ? [
@@ -58,7 +58,7 @@ export function getSashimiMenuItem(model: SashimiModel) {
             onToggle: () => {
               model.setShowSashimiLabels(!model.showSashimiLabels)
             },
-            displayTypeDefault: model.showSashimiLabelsDisplayTypeDefault,
+            pin: model.showSashimiLabelsDisplayTypeDefault,
           }),
           {
             label: 'Arc placement',
@@ -70,7 +70,7 @@ export function getSashimiMenuItem(model: SashimiModel) {
                 onClick: () => {
                   model.setSashimiArcsMode(option.value)
                 },
-                displayTypeDefault: model.sashimiArcsModeDisplayTypeDefault(
+                pin: model.sashimiArcsModeDisplayTypeDefault(
                   option.value,
                 ),
               }),

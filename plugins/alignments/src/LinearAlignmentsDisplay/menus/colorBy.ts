@@ -15,7 +15,7 @@ import { modificationsMenu } from './modificationsMenu.ts'
 import type { ColorOption } from '../../shared/colorSchemes.ts'
 import type { ArcColorByType, ColorBy } from '../../shared/types.ts'
 import type { ModificationsMenuModel } from './modificationsMenu.ts'
-import type { DisplayTypeDefaultControl } from '@jbrowse/core/configuration'
+import type { Pin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 const ColorByTagDialog = lazy(() => import('../dialogs/ColorByTagDialog.tsx'))
@@ -79,7 +79,7 @@ interface ColorByMenuOptions {
   // returns the pin control for making that exact scheme the session-wide
   // default, so each scheme radio carries its own pin (like every other
   // promotable setting) instead of a standalone mouthful checkbox.
-  displayTypeDefault?: (colorBy: ColorBy) => DisplayTypeDefaultControl
+  pin?: (colorBy: ColorBy) => Pin
 }
 
 // Derived from the shared COLOR_SCHEMES registry (single source of menu
@@ -130,7 +130,7 @@ const arcColorOptions: {
 function colorRadio(
   model: AnyColorByModel,
   { label, type }: ColorOption,
-  displayTypeDefault: ColorByMenuOptions['displayTypeDefault'],
+  pin: ColorByMenuOptions['pin'],
 ): MenuItem {
   return promotableRadioItem({
     label,
@@ -138,7 +138,7 @@ function colorRadio(
     onClick: () => {
       model.setColorScheme({ type })
     },
-    displayTypeDefault: displayTypeDefault?.({ type }),
+    pin: pin?.({ type }),
   })
 }
 
@@ -148,7 +148,7 @@ function colorRadio(
 // plain radios, pinning the tag actually in use.
 function tagItem(
   model: AnyColorByModel,
-  displayTypeDefault: ColorByMenuOptions['displayTypeDefault'],
+  pin: ColorByMenuOptions['pin'],
 ): MenuItem {
   const { colorBy } = model
   const active = colorBy.type === 'tag' && colorBy.tag !== undefined
@@ -165,8 +165,8 @@ function tagItem(
         { model, handleClose: onClose },
       ])
     },
-    displayTypeDefault: active
-      ? displayTypeDefault?.({ type: 'tag', tag: colorBy.tag })
+    pin: active
+      ? pin?.({ type: 'tag', tag: colorBy.tag })
       : undefined,
   })
 }
@@ -177,12 +177,12 @@ function tagItem(
 // modification state.
 function pairedEndItem(
   model: AnyColorByModel,
-  displayTypeDefault: ColorByMenuOptions['displayTypeDefault'],
+  pin: ColorByMenuOptions['pin'],
 ): MenuItem {
   return {
     label: 'Paired end',
     subMenu: pairedEndColorOptions.map(o =>
-      colorRadio(model, o, displayTypeDefault),
+      colorRadio(model, o, pin),
     ),
   }
 }
@@ -201,7 +201,7 @@ function pairedEndItem(
 // back to the modification settings without first navigating elsewhere.
 function modificationsItems(
   model: ModificationsModel,
-  displayTypeDefault: ColorByMenuOptions['displayTypeDefault'],
+  pin: ColorByMenuOptions['pin'],
 ): MenuItem[] {
   const detecting = !model.modificationsReady && !model.regionTooLarge
   const active = model.colorBy.type === 'modifications'
@@ -209,7 +209,7 @@ function modificationsItems(
     model.modificationsReady && model.detectedModificationTypes.length > 0
   return [
     ...(active || detected
-      ? [modificationsMenu(model, displayTypeDefault)]
+      ? [modificationsMenu(model, pin)]
       : []),
     ...(detecting
       ? [{ label: 'Loading modifications...', disabled: true, onClick() {} }]
@@ -265,7 +265,7 @@ export function getColorByMenuItem(
     includeModifications,
     arcColor,
     supplementaryColoring,
-    displayTypeDefault: pin,
+    pin,
   } = options
   const mods = includeModifications ? modModel(model) : undefined
   // Everything above the header picks the read fill scheme — the radios and the

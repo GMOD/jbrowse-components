@@ -1,11 +1,11 @@
-import type { DisplayTypeDefaultControl } from '../configuration/promotableDefaults.ts'
+import type { Pin } from '../configuration/promotableDefaults.ts'
 import type { CheckboxMenuItem, RadioMenuItem } from './MenuTypes.ts'
 
-// Both builders describe the trailing pin (`defaultForAll`) rather than
+// Both builders describe the trailing pin (`pin`) rather than
 // rendering it. That is what keeps this module — and therefore every state
 // model and menu file that calls it — free of React and of MUI's
 // ToggleButton/Tooltip. `menuItemAdornment.tsx` turns the description into
-// `DefaultForAllAdornment` at the point the menu is drawn. See
+// `PinAdornment` at the point the menu is drawn. See
 // reference/EAGER_BUNDLE.md; `menuItems.purity.test.ts` holds it.
 
 // A promotable setting as one native checkbox menu row: the value toggles the
@@ -22,14 +22,14 @@ export function promotableToggleItem({
   helpText,
   checked,
   onToggle,
-  displayTypeDefault,
+  pin,
   keepMenuOpen,
 }: {
   label: string
   helpText?: string
   checked: boolean
   onToggle: () => void
-  displayTypeDefault: DisplayTypeDefaultControl
+  pin: Pin
   keepMenuOpen?: boolean
 }): CheckboxMenuItem {
   return {
@@ -41,7 +41,7 @@ export function promotableToggleItem({
     onClick: () => {
       onToggle()
     },
-    defaultForAll: { control: displayTypeDefault, label },
+    pin: { control: pin, label },
   }
 }
 
@@ -49,7 +49,7 @@ export function promotableToggleItem({
 // slot). EVERY option in a group gets a pin, the `promotedBase` value included:
 // once a non-base value is promoted, pinning the base back is the only per-value
 // way to undo it from its own row, and a radio group with one row silently
-// missing its trailing control reads as a bug. `displayTypeDefault` stays
+// missing its trailing control reads as a bug. `pin` stays
 // optional only for a row that has no single value to promote yet (the colorBy
 // "Tag..." row before a tag is picked) or a display whose slot isn't promotable
 // at all (the shared colorBy menu on gwas/variants). `keepMenuOpen` is passed
@@ -60,7 +60,7 @@ export function promotableRadioItem({
   helpText,
   checked,
   onClick,
-  displayTypeDefault,
+  pin,
   keepMenuOpen,
 }: {
   label: string
@@ -68,7 +68,7 @@ export function promotableRadioItem({
   helpText?: string
   checked: boolean
   onClick: () => void
-  displayTypeDefault?: DisplayTypeDefaultControl
+  pin?: Pin
   keepMenuOpen?: boolean
 }): RadioMenuItem {
   return {
@@ -79,8 +79,8 @@ export function promotableRadioItem({
     checked,
     onClick,
     keepMenuOpen,
-    ...(displayTypeDefault && {
-      defaultForAll: { control: displayTypeDefault, label },
+    ...(pin && {
+      pin: { control: pin, label },
     }),
   }
 }

@@ -55,7 +55,7 @@ accidental.
   (top of the cascade). `resolveSlot(...).customized` is the flag.
 - **pin / promoted default** — the display-type default itself, and the UI
   affordance that sets it: a trailing `PushPin` toggle
-  (`DefaultForAllAdornment`) on each promotable menu row. A **filled** pin means
+  (`PinAdornment`) on each promotable menu row. A **filled** pin means
   "this value is the default for all tracks of this type"; **outline** means it
   isn't. "Pin" is *not* the track's own value — that's "customized".
 
@@ -67,7 +67,7 @@ accidental.
 | The usable-value gate (`isUsableValue`, `SHAPE_CHECKS`), shared by the resolver and by `ConfigSlot`'s `promotedBase` guard | `packages/core/src/configuration/slotShape.ts` |
 | Cached per-schema promotable-slot list (`promotableSlotNames`) + the raw walker `fullConfSnapshot` and its nested-schema guard | `packages/core/src/configuration/util.ts` |
 | Resolution-aware reader (`resolveConf`; `getConf` alongside it stays raw) | `packages/core/src/configuration/getConf.ts` |
-| Control builders + share/worker helpers (`make*Control`, `getConfigSnapshotWithPromotables`, `getDisplayTypeDefaultChanges`, `openPromotableDisplays`) | `packages/core/src/configuration/promotableDefaults.ts` |
+| Pin builder + share/worker helpers (`makePin`, `getConfigSnapshotWithPromotables`, `getDisplayTypeDefaultChanges`, `openPromotableDisplays`) | `packages/core/src/configuration/promotableDefaults.ts` |
 | `promotedBase` slot metadata (the promotable marker) + its authoring guards | `packages/core/src/configuration/configurationSlot.ts` |
 | Slot-definition inheritance (an override merges over the base slot, so `promotedBase` survives) | `packages/core/src/configuration/configurationSchema.ts` (`mergeSchemaDefinition`) |
 | Resolved read type (`SlotValueResolvedFromDef` excludes the sentinel for `promotedBase` slots) | `packages/core/src/configuration/types.ts` |
@@ -76,7 +76,7 @@ accidental.
 | About "Copy config" flatten (`getTrackConfigWithPromotables`) | `packages/core/src/configuration/promotableDefaults.ts`, consumed in `packages/product-core/src/ui/{AboutDialogContents,HeaderButtons}.tsx` |
 | Session/display type surface | `packages/core/src/util/types/index.ts` |
 | Track-selector badge | `plugins/data-management/.../tree/OverrideBadge.tsx` |
-| Pin adornment + row builders | `packages/core/src/ui/{DefaultForAllAdornment.tsx,promotableMenuItems.tsx}` |
+| Pin adornment + row builders | `packages/core/src/ui/{PinAdornment.tsx,promotableMenuItems.ts}` |
 | Config-editor view of a promotable slot (`SlotFacade.promotedBase`, consumed by `BooleanEditor` / `JsonEditor` / `StringEnumEditor`) | `packages/core/src/configuration/slotFacade.ts`, `plugins/config/src/ConfigurationEditorWidget/components/` |
 | `endAdornment` menu-row primitive + renderer | `packages/core/src/ui/{MenuTypes.ts,CascadingMenu.tsx,MenuItemTrailing.tsx}` |
 | Adopters: `displayMode` / `heightMode` / `subfeatureLabels` / `displayDirectionalChevrons` | `plugins/canvas/src/LinearBasicDisplay/{baseConfigSchema,baseModel,model}.ts`. All four slots are **inherited by every `linearCanvasBaseDisplayStateModelFactory` consumer** (e.g. `LinearVariantDisplay`) via `baseConfiguration`, and all four resolve into its worker payload through the base `rpcProps`. Only two of the *pins* come along: `displayMode` and `heightMode` are built in the shared `trackMenus.ts`, while the `subfeatureLabels` / `displayDirectionalChevrons` rows **and their `resolveConf` getters** live in the concrete `LinearBasicDisplay/model.ts`. That split is right — both are transcript-structure settings, inert on a variant track — so don't move them down; see the variant row in [the pin table](#promotable-is-a-schema-fact-the-pin-is-a-menu-fact) |
@@ -84,12 +84,12 @@ accidental.
 | Adopters: `scatterPointSize` + `lineWidth` (wiggle), `lineWidth` (paired-arc), `scatterPointSize` (Manhattan) | `plugins/wiggle/src/shared/{wiggleConfigSchemaFields.ts,WiggleScoreConfigMixin.ts}`, `plugins/arc/src/LinearPairedArcDisplay/{configSchema,model}.ts`, `plugins/gwas/src/LinearManhattanDisplay/configSchemaFactory.ts` |
 | Shared `heightMode` mixin (canvas + alignments) | `plugins/linear-genome-view/src/BaseLinearDisplay/models/{HeightModeMixin.ts,heightMode.ts}` |
 
-Tests: `promotableDefaults.test.ts` (resolver + control builders),
+Tests: `promotableDefaults.test.ts` (resolver + `makePin`),
 `promotedValueCloneable.test.ts` (node env: a resolved value must survive
 `postMessage`), `showSoftClipping.test.ts` (adopters
 `showSoftClipping`/`featureHeight` + per-preset pins end-to-end),
 `colorBy.test.tsx` / `readConnections.test.tsx` / `sashimi.test.ts` (per-row
-pins), `DefaultForAllAdornment.test.tsx` (the pin), `OverrideBadge.test.tsx`
+pins), `PinAdornment.test.tsx` (the pin), `OverrideBadge.test.tsx`
 (badge), `ShareablePromotedDefaults.test.ts` (the share/export bake +
 the sender-at-base case it deliberately does not cover, jbrowse-web).
 
@@ -120,11 +120,11 @@ As of writing it holds ten, in two groups:
 | `LGVSyntenyDisplay` | `linkedReads`, `mismatchAlpha`, `readConnections`, `readConnectionsDown`, `showSashimiArcs`, `sashimiArcsMode`, `showSashimiLabels`, `showSoftClipping` | composes the alignments state model, but `LGVSyntenyDisplay/menus.ts` builds its own curated menu; only `getFeatureHeightMenuItem` (`featureHeight`, `heightMode`) and `getColorByMenuItem` (`colorBy`) bring pins |
 | `LinearVariantDisplay` | `subfeatureLabels`, `displayDirectionalChevrons` | **inherited but inert.** Both are transcript-structure settings — chevrons are emitted by `emitIntronLines` between a transcript's exons, `subfeatureLabels` labels transcript children — and a VCF feature has no such subfeatures. They reach the variant schema only because they sit on the shared canvas base, and their `resolveConf` getters live in the concrete `LinearBasicDisplay/model.ts`, which variants don't compose |
 
-The mechanism the check reads: `DisplayTypeDefaultControl` carries the `slot` it
+The mechanism the check reads: `Pin` carries the `slot` it
 promotes (nothing draws it — the pin renders from `active`/`toggle` alone), so a
 built menu can be walked for the slots it offers. A `type: 'custom'` row —
 `makePromotableSizeMenu`, the three sliders — draws its own pin and declares
-`defaultForAll` anyway; `hasMenuItemAdornment` excludes it from the shared
+`pin` anyway; `hasMenuItemAdornment` excludes it from the shared
 trailing-column reservation, which it could never draw in regardless. Those two
 questions look like one and are not; both sites say so.
 
@@ -309,7 +309,7 @@ One shape: **`ResolvableDisplay`** — `IStateTreeNode` + `type` +
 resolves through `STNValue<any, …>` to `any` and would turn off checking for the
 two members this interface exists to declare — see the repo `CLAUDE.md`).
 Everything the cascade needs, and what **every public entry
-point takes**: `resolveConf`, both `make*Control` builders, `isSlotCustomized`,
+point takes**: `resolveConf`, `makePin`, `isSlotCustomized`,
 `getConfigSnapshotWithPromotables`, `getDisplayTypeDefaultChanges`,
 `clearPromotedDefaults`, `resetSlotToInherit`.
 
@@ -376,7 +376,7 @@ to the inherited value, in lockstep with every other unusable value. No consumer
 branches, and `SlotResolution.value` is always readable.
 
 This replaced a discriminated union whose callback arm carried `evaluate()`, a
-`disabled` state on `DisplayTypeDefaultControl`, a greyed pin with its own
+`disabled` state on the pin control, a greyed pin with its own
 tooltip and live-wrapper `<span>`, and a branch in four consumers — all for a
 state nothing could author and which was already degenerate wherever it did
 appear (the pin disabled itself, the badge couldn't report it, and
@@ -396,14 +396,14 @@ exactly one slot. Reintroduce the group only alongside a real multi-slot pin.
 | --- | --- | --- |
 | `resolveConf(self, slot)` | the cascaded `.value`; throws on a non-promotable slot. Takes a `ResolvableDisplay`, so a bare `{ configuration }` is a compile error | the display's own value getter |
 | `getConfigSnapshotWithPromotables(self)` | config snapshot with every promotable slot replaced by its resolved value | the worker payload (see [Worker boundary](#adding-a-promotable-slot)) |
-| `makeDisplayTypeDefaultControl(self, slot, onValue)` | `DisplayTypeDefaultControl` `{ active, toggle }`, on one fixed value | an always-visible pin on one on-value ("make arcs the default") |
-| `makeCurrentValueDisplayTypeDefaultControl(self, slot)` | same, over the track's *current* resolved value | "promote whatever I'm showing" for symmetric / continuous settings |
+| `makePin(self, slot, onValue)` | `Pin` `{ slot, active, toggle }` on one fixed value | an always-visible pin on one on-value ("make arcs the default") |
+| `makePin(self, slot)` — value omitted | same, over the track's *current* resolved value | "promote whatever I'm showing" for symmetric / continuous settings |
 | `getDisplayTypeDefaultChanges(self)` | `TrackConfigChange[]` — promotable slots where a following track's resolved value differs from base | track-selector badge diff |
 | `clearPromotedDefaults(self, slots?)` | clears the named promoted defaults for this display's type (every promotable slot when `slots` is omitted) | badge "clear session default", which passes the slots it listed |
 | `isSlotCustomized(self, slot)` | whether the track holds its own value rather than following the default | a slider row's "reset to default" enablement (wiggle point size, arc line width) |
 | `getTrackConfigWithPromotables(session, trackConfig)` | a whole track's config snapshot with every display's promotable slots resolved, plus the `<displayType>.<slot>` list of what came from a session default. Takes a config, not a display — no open track required | the About dialog's "Copy config" (see [Serialization boundaries](#serialization-boundaries-getcomputedstyle)) |
 
-`DisplayTypeDefaultControl` is `{ active: boolean; toggle: () => void }`.
+`Pin` is `{ slot: string; active: boolean; toggle: () => void }`.
 `active` = this value is the current default (filled pin); `toggle` sets or
 clears it. There is no disabled state — a pin always has a value to promote (see
 [No callbacks](#no-callbacks-jexl)).
@@ -427,16 +427,16 @@ The low-level primitives behind the builders —
 `tracksDifferingFrom(self, slot, value)`, and
 `resetSlotToInherit(displays, slot)` — are **module-internal** (exercised by
 `promotableDefaults.test.ts`), *not* on the public barrel. Consume the two
-`make*Control` builders, not these.
+`makePin`, not these.
 
-**Which builder?**
+**Give the value, or omit it?**
 
-- **`makeDisplayTypeDefaultControl` (per-value, fixed)** — the meaning is "make
+- **`makePin(self, slot, value)` (per-value, fixed)** — the meaning is "make
   *this specific value* the default", independent of the track's current value.
   Use for an always-visible pin so it never promotes a meaningless value, and so
   two toggles sharing one slot (arcs `'arc'` vs read cloud `'cloud'`; sashimi
   `'down'` vs `'auto'`) stay independent.
-- **`makeCurrentValueDisplayTypeDefaultControl` (promote-current)** — the pin
+- **`makePin(self, slot)`, value omitted (promote-current)** — the pin
   means "whatever I'm showing", not a fixed on-value. Use for symmetric or
   continuous settings where a fixed value makes no sense (wiggle point size, arc
   line width, `mismatchAlpha`).
@@ -615,9 +615,9 @@ it.
 ## UI surface
 
 Every promotable setting renders **one row per value**, and every such row
-carries the same trailing pin — the `DefaultForAllAdornment` (`PushPin`
+carries the same trailing pin — the `PinAdornment` (`PushPin`
 `ToggleButton`) as the menu item's **`endAdornment`**, driven by a
-`DisplayTypeDefaultControl`. There is no separate "make default" checkbox row
+`Pin`. There is no separate "make default" checkbox row
 anymore; the pin *is* the make-default affordance, and it lives beside the value
 control on the same row. `endAdornment` is a general `BaseMenuItem` field;
 `MenuItemTrailing` renders it in a fixed-width column (reserved on every row when
@@ -632,7 +632,7 @@ The row builders in `promotableMenuItems.tsx`:
   hover/sizing/keyboard) for a flat boolean setting (`showSoftClipping`,
   `readConnectionsDown`, `showSashimiLabels`). The checkbox toggles the track's
   value; the pin promotes the setting's on-value. Takes a `displayTypeDefault`
-  control (per-value, from `makeDisplayTypeDefaultControl`).
+  control (per-value, from `makePin` with a value).
 - **`promotableRadioItem`** — a `type:'radio'` row for one option of a
   multi-value slot (a `colorBy` scheme, a `heightMode`/`sashimiArcsMode` option,
   a feature-height preset). **Every option in a group gets a pin, the
@@ -754,9 +754,8 @@ pin itself to this panel is the parked "Promotable-slot UI" proposal in
    getter. `readConfObject` is the raw read from a bare config (the resolver
    itself uses it), and `getConf` is that same raw read through a state model's
    `.configuration`.
-3. Track menu: expose a `DisplayTypeDefaultControl` getter from the model built
-   with the fitting `make*Control` builder, and pass it as `displayTypeDefault`
-   to `promotableToggleItem` / `promotableRadioItem`. The track-selector badge
+3. Track menu: build a `Pin` with `makePin(self, slot, value?)` and pass it as
+   `pin` to `promotableToggleItem` / `promotableRadioItem`. The track-selector badge
    needs **nothing** — it reads the cascade directly off any display.
 4. **Serialization boundaries** (see
    [that section](#serialization-boundaries-getcomputedstyle)): promotable slots
@@ -837,6 +836,6 @@ A naming pass also **reclaimed "pin"**: the track's own value is now
 "customized", and "pin" names the make-default affordance. The prior API's
 `isSlotPinned` / `areSlotsAtSessionDefault` / `setSlotsSessionDefault` /
 `isSlotValueSessionDefault` / `setSlotValueSessionDefault` /
-`getSlotInheritedValue` collapsed into the two `make*Control` builders (public)
+`getSlotInheritedValue` collapsed into `makePin` (public)
 over `isPromotableDefault` (internal), and the `SessionDefault*` names became
 `DisplayTypeDefault*`.

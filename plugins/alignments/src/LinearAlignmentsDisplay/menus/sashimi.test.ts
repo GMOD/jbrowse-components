@@ -2,13 +2,13 @@ import { DEFAULT_MIN_SASHIMI_SCORE } from '../constants.ts'
 import { getSashimiMenuItem } from './sashimi.ts'
 
 import type { SashimiArcsMode } from '../constants.ts'
-import type { DisplayTypeDefaultControl } from '@jbrowse/core/configuration'
+import type { Pin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
-// stateful stand-in for a DisplayTypeDefaultControl (the menu builder only touches
+// stateful stand-in for a Pin (the menu builder only touches
 // active/toggle; `slot` is what a built menu is later asked for by
 // promotableSlotsWithoutPin, and is unread here)
-function control(slot: string): DisplayTypeDefaultControl {
+function control(slot: string): Pin {
   return {
     slot,
     active: false,
@@ -39,9 +39,9 @@ function makeModel() {
 }
 
 // the "default for all tracks of this type" pin, carried as a description
-// (`defaultForAll`) rather than a rendered element — see ui/MenuTypes.ts
+// (`pin`) rather than a rendered element — see ui/MenuTypes.ts
 function defaultForAllOf(item: MenuItem | undefined) {
-  return item && 'defaultForAll' in item ? item.defaultForAll : undefined
+  return item && 'pin' in item ? item.pin : undefined
 }
 
 function labels(model: ReturnType<typeof makeModel>) {

@@ -4,7 +4,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import { collapseGroupRowsItems } from './groupByMenu.ts'
 
 import type { CollapseGroupRowsModel } from './groupByMenu.ts'
-import type { DisplayTypeDefaultControl } from '@jbrowse/core/configuration'
+import type { Pin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 interface ReadsModel extends CollapseGroupRowsModel {
@@ -18,12 +18,12 @@ interface ReadsModel extends CollapseGroupRowsModel {
   setShowMismatches: (show: boolean) => void
   showSoftClipping: boolean
   setShowSoftClipping: (show: boolean) => void
-  softClippingDisplayTypeDefault: DisplayTypeDefaultControl
+  softClippingDisplayTypeDefault: Pin
   showInterbaseIndicators: boolean
   setShowInterbaseIndicators: (show: boolean) => void
   mismatchAlpha: boolean
   setMismatchAlpha: (value: boolean) => void
-  mismatchAlphaDisplayTypeDefault: DisplayTypeDefaultControl
+  mismatchAlphaDisplayTypeDefault: Pin
   drawProperPairs: boolean
   setDrawProperPairs: (v: boolean) => void
   drawSingletons: boolean
@@ -70,7 +70,7 @@ export function getReadsMenuItem(model: ReadsModel) {
         onToggle: () => {
           model.setMismatchAlpha(!model.mismatchAlpha)
         },
-        displayTypeDefault: model.mismatchAlphaDisplayTypeDefault,
+        pin: model.mismatchAlphaDisplayTypeDefault,
       }),
       promotableToggleItem({
         label: 'Show soft clipping',
@@ -78,7 +78,7 @@ export function getReadsMenuItem(model: ReadsModel) {
         onToggle: () => {
           model.setShowSoftClipping(!model.showSoftClipping)
         },
-        displayTypeDefault: model.softClippingDisplayTypeDefault,
+        pin: model.softClippingDisplayTypeDefault,
       }),
       // Every interbase mark — the count bars and the fixed-size triangles
       // alike — draws inside the coverage band (`coveragePassPlan`, and the

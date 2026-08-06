@@ -137,11 +137,11 @@ Three parts:
   eager code needs (`checkboxItem`, `radioItems`, `promotableRadioItem`,
   `promotableToggleItem`) plus the menu types. 23 call sites repointed. The rule
   is *menu builders from here, components from `@jbrowse/core/ui`*.
-- **`endAdornment` → `defaultForAll` for the promotable pin.** The two
-  `promotable*Item` builders returned a `<DefaultForAllAdornment>` **element**,
+- **`endAdornment` → `pin` for the promotable pin.** The two
+  `promotable*Item` builders returned a `<PinAdornment>` **element**,
   so the module — and every state model calling it — pulled MUI's `ToggleButton`,
   `Tooltip` and two icons. The row now carries a *description*
-  (`MenuItemDefaultForAll`) and `menuItemAdornment.tsx` builds the element where
+  (`MenuItemPin`) and `menuItemAdornment.tsx` builds the element where
   the menu is drawn. `endAdornment` stays for genuinely arbitrary content
   (synteny's colour swatch), which is what it was added for.
 - **`makeSizeMenu`'s slider row behind `lazy()`.** `type: 'custom'` already made

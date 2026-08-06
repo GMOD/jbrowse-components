@@ -37,9 +37,7 @@ test('the curated colour schemes are the four synteny ones', () => {
 test('every colour row carries a session-default pin', () => {
   const rows = colorRows(createDisplay())
   expect(rows.length).toBeGreaterThan(0)
-  expect(
-    rows.filter(i => 'defaultForAll' in i && i.defaultForAll),
-  ).toHaveLength(rows.length)
+  expect(rows.filter(i => 'pin' in i && i.pin)).toHaveLength(rows.length)
 })
 
 // A promoted default is keyed by display type, so this key is LGVSyntenyDisplay's
@@ -50,8 +48,7 @@ test('a colour pin promotes that scheme for this display type', () => {
   const strand = colorRows(display).find(
     i => 'label' in i && i.label === 'Strand',
   )
-  const pin =
-    strand && 'defaultForAll' in strand ? strand.defaultForAll : undefined
+  const pin = strand && 'pin' in strand ? strand.pin : undefined
   if (!pin) {
     throw new Error('no pin on the Strand row')
   }
@@ -61,9 +58,7 @@ test('a colour pin promotes that scheme for this display type', () => {
   const after = colorRows(display).find(
     i => 'label' in i && i.label === 'Strand',
   )
-  expect(
-    after && 'defaultForAll' in after
-      ? after.defaultForAll?.control.active
-      : undefined,
-  ).toBe(true)
+  expect(after && 'pin' in after ? after.pin?.control.active : undefined).toBe(
+    true,
+  )
 })

@@ -15,7 +15,7 @@ import {
 } from '../../shared/types.ts'
 
 import type { ColorBy, ModificationColorBy } from '../../shared/types.ts'
-import type { DisplayTypeDefaultControl } from '@jbrowse/core/configuration'
+import type { Pin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { CytosineContext } from '@jbrowse/modifications-utils'
 
@@ -138,8 +138,8 @@ export function modificationsMenu(
   // The per-value session-default pin factory, absent for a display whose
   // colorBy slot isn't promotable. Spelled out rather than reached back for from
   // colorBy.ts's options bag, which would make the import cycle.
-  displayTypeDefault:
-    | ((colorBy: ColorBy) => DisplayTypeDefaultControl)
+  pin:
+    | ((colorBy: ColorBy) => Pin)
     | undefined,
 ): MenuItem {
   const mods = currentMods(model)
@@ -163,7 +163,7 @@ export function modificationsMenu(
         onClick: () => {
           patchMods(model, clearView)
         },
-        displayTypeDefault: displayTypeDefault?.({ type: 'modifications' }),
+        pin: pin?.({ type: 'modifications' }),
       }),
       promotableRadioItem({
         label: 'One color per type, plus low-probability & unmodified in blue',
@@ -173,7 +173,7 @@ export function modificationsMenu(
         onClick: () => {
           patchMods(model, { ...clearView, ...twoColorView })
         },
-        displayTypeDefault: displayTypeDefault?.({
+        pin: pin?.({
           type: 'modifications',
           modifications: twoColorView,
         }),

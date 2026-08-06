@@ -2,11 +2,11 @@ import { Suspense, lazy } from 'react'
 
 import {
   isSlotCustomized,
-  makeCurrentValueDisplayTypeDefaultControl,
+  makePin,
 } from '../configuration/promotableDefaults.ts'
 import { INLINE_MENU_ROW_WIDTH } from './inlineMenuRowWidth.ts'
 
-import type { DisplayTypeDefaultControl } from '../configuration/promotableDefaults.ts'
+import type { Pin } from '../configuration/promotableDefaults.ts'
 import type { ResolvableDisplay } from '../configuration/promotableResolve.ts'
 import type { MenuItem } from './MenuTypes.ts'
 import type { SliderScale } from './sliderScale.ts'
@@ -86,14 +86,14 @@ export function makePromotableSizeMenu(
   return sizeMenu(
     opts,
     !isSlotCustomized(display, slot),
-    makeCurrentValueDisplayTypeDefaultControl(display, slot),
+    makePin(display, slot),
   )
 }
 
 function sizeMenu(
   opts: SizeMenuOptions,
   isDefault: boolean,
-  displayTypeDefault?: DisplayTypeDefaultControl,
+  pin?: Pin,
 ): MenuItem {
   const {
     label,
@@ -118,8 +118,8 @@ function sizeMenu(
     // between a promotable slot that is genuinely unreachable and one that just
     // renders its own control. See `hasMenuItemAdornment` for why declaring it
     // costs no layout.
-    ...(displayTypeDefault && {
-      defaultForAll: { control: displayTypeDefault, label: title },
+    ...(pin && {
+      pin: { control: pin, label: title },
     }),
     render: () => (
       <Suspense
@@ -144,7 +144,7 @@ function sizeMenu(
           commitOnRelease={commitOnRelease}
           onChange={onChange}
           onReset={onReset}
-          displayTypeDefault={displayTypeDefault}
+          pin={pin}
         />
       </Suspense>
     ),

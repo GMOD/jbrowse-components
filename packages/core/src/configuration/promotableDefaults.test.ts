@@ -7,8 +7,7 @@ import {
   getDisplayTypeDefaultChanges,
   isPromotableDefault,
   isSlotCustomized,
-  makeCurrentValueDisplayTypeDefaultControl,
-  makeDisplayTypeDefaultControl,
+  makePin,
   resetSlotToInherit,
   getConfigSnapshotWithPromotables,
   tracksDifferingFrom,
@@ -250,7 +249,7 @@ describe('apply a promoted default to open tracks', () => {
     const self = displayOf(0, 0)
     const otherView = displayOf(1, 0)
 
-    makeCurrentValueDisplayTypeDefaultControl(self, 'customHeight').toggle()
+    makePin(self, 'customHeight').toggle()
 
     // setting the default doesn't touch the customized track in the other view
     expect(isSlotCustomized(otherView, 'customHeight')).toBe(true)
@@ -278,7 +277,7 @@ describe('apply a promoted default to open tracks', () => {
     const self = displayOf(0, 0)
     const otherView = displayOf(1, 0)
 
-    makeDisplayTypeDefaultControl(self, 'customHeight', 10).toggle()
+    makePin(self, 'customHeight', 10).toggle()
 
     // default set; the track with its own different value keeps it until applied
     expect(isPromotableDefault(self, 'customHeight', 10)).toBe(true)
@@ -305,7 +304,7 @@ describe('apply a promoted default to open tracks', () => {
     const self = displayOf(0, 0)
     const otherView = displayOf(1, 0)
 
-    makeDisplayTypeDefaultControl(self, 'customHeight', 10).toggle()
+    makePin(self, 'customHeight', 10).toggle()
 
     // the clicked track keeps its own value; the snackbar counts it like any
     // other track not yet showing the new default
@@ -321,8 +320,8 @@ describe('apply a promoted default to open tracks', () => {
     const { displayOf } = createViews([[{ customHeight: 20 }]])
     const self = displayOf(0, 0)
 
-    makeDisplayTypeDefaultControl(self, 'customHeight', 10).toggle()
-    makeDisplayTypeDefaultControl(self, 'customHeight', 10).toggle()
+    makePin(self, 'customHeight', 10).toggle()
+    makePin(self, 'customHeight', 10).toggle()
 
     expect(resolveConf(self, 'customHeight')).toBe(20)
   })
@@ -336,7 +335,7 @@ describe('apply a promoted default to open tracks', () => {
     const follower = displayOf(1, 0)
     expect(resolveConf(follower, 'customHeight')).toBe(1)
 
-    makeDisplayTypeDefaultControl(self, 'customHeight', 10).toggle()
+    makePin(self, 'customHeight', 10).toggle()
 
     expect(resolveConf(follower, 'customHeight')).toBe(10)
     expect(session.lastNotify?.action).toBeUndefined()
@@ -346,7 +345,7 @@ describe('apply a promoted default to open tracks', () => {
     const { session, displayOf } = createViews([[{ customHeight: 10 }]])
     const self = displayOf(0, 0)
 
-    makeDisplayTypeDefaultControl(self, 'customHeight', 10).toggle()
+    makePin(self, 'customHeight', 10).toggle()
 
     expect(session.lastNotify?.message).toBe('Set as the default')
     expect(session.lastNotify?.action).toBeUndefined()
@@ -363,7 +362,7 @@ describe('apply a promoted default to open tracks', () => {
     const self = displayOf(0, 0)
     const survivor = displayOf(1, 1)
 
-    makeDisplayTypeDefaultControl(self, 'customHeight', 10).toggle()
+    makePin(self, 'customHeight', 10).toggle()
     // all three open tracks hold their own value, `self` included
     expect(session.lastNotify?.action?.name).toBe(
       'Override 3 customized tracks',
@@ -384,7 +383,7 @@ describe('apply a promoted default to open tracks', () => {
     const self = displayOf(0, 0)
     const other = displayOf(1, 0)
 
-    makeDisplayTypeDefaultControl(self, 'customHeight', 10).toggle()
+    makePin(self, 'customHeight', 10).toggle()
 
     // the pin's own track is closed: the whole walk hangs off its session
     session.views[0]!.closeTrack(0)
@@ -408,11 +407,11 @@ describe('apply a promoted default to open tracks', () => {
     const self = displayOf(0, 0)
     const other = displayOf(1, 0)
 
-    makeDisplayTypeDefaultControl(self, 'customHeight', 10).toggle()
+    makePin(self, 'customHeight', 10).toggle()
     const apply = session.lastNotify!.action!
 
     // user unpins (a fresh control reads as active, so its toggle clears)
-    makeDisplayTypeDefaultControl(self, 'customHeight', 10).toggle()
+    makePin(self, 'customHeight', 10).toggle()
     expect(isPromotableDefault(self, 'customHeight', 10)).toBe(false)
 
     apply.onClick()
@@ -430,7 +429,7 @@ describe('apply a promoted default to open tracks', () => {
     session.setDisplayTypeDefault('TestDisplay', 'customHeight', 10)
 
     // control is active (default already 10), so toggle clears it
-    makeDisplayTypeDefaultControl(self, 'customHeight', 10).toggle()
+    makePin(self, 'customHeight', 10).toggle()
 
     expect(isPromotableDefault(self, 'customHeight', 10)).toBe(false)
     expect(isSlotCustomized(otherView, 'customHeight')).toBe(true)
@@ -529,7 +528,7 @@ describe('promotable maybeBoolean slot', () => {
     const { session, display } = createDisplay(configSchema, {
       chevrons: false,
     })
-    const control = makeCurrentValueDisplayTypeDefaultControl(
+    const control = makePin(
       display,
       'chevrons',
     )
@@ -537,10 +536,10 @@ describe('promotable maybeBoolean slot', () => {
     control.toggle()
     expect(session.getDisplayTypeDefault('TestDisplay', 'chevrons')).toBe(false)
     expect(
-      makeCurrentValueDisplayTypeDefaultControl(display, 'chevrons').active,
+      makePin(display, 'chevrons').active,
     ).toBe(true)
 
-    makeCurrentValueDisplayTypeDefaultControl(display, 'chevrons').toggle()
+    makePin(display, 'chevrons').toggle()
     expect(
       session.getDisplayTypeDefault('TestDisplay', 'chevrons'),
     ).toBeUndefined()
@@ -653,7 +652,7 @@ describe('promotable frozen slot structural equality', () => {
       tag: 'XT',
     })
     expect(
-      makeCurrentValueDisplayTypeDefaultControl(display, 'colorBy').active,
+      makePin(display, 'colorBy').active,
     ).toBe(true)
   })
 
@@ -661,16 +660,16 @@ describe('promotable frozen slot structural equality', () => {
     const { session, display } = createDisplay(configSchema, {
       colorBy: { tag: 'XT', type: 'tag' },
     })
-    makeCurrentValueDisplayTypeDefaultControl(display, 'colorBy').toggle()
+    makePin(display, 'colorBy').toggle()
     expect(session.getDisplayTypeDefault('TestDisplay', 'colorBy')).toEqual({
       tag: 'XT',
       type: 'tag',
     })
     expect(
-      makeCurrentValueDisplayTypeDefaultControl(display, 'colorBy').active,
+      makePin(display, 'colorBy').active,
     ).toBe(true)
 
-    makeCurrentValueDisplayTypeDefaultControl(display, 'colorBy').toggle()
+    makePin(display, 'colorBy').toggle()
     expect(
       session.getDisplayTypeDefault('TestDisplay', 'colorBy'),
     ).toBeUndefined()
@@ -920,7 +919,7 @@ describe('promotable slot holding a stray jexl callback', () => {
     })
     // this used to evaluate `get(feature,...)` against nothing and throw out of
     // the whole menu, then disabled itself to avoid that
-    makeCurrentValueDisplayTypeDefaultControl(display, 'height').toggle()
+    makePin(display, 'height').toggle()
     expect(session.getDisplayTypeDefault('TestDisplay', 'height')).toBe(7)
   })
 

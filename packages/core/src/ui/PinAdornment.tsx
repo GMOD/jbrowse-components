@@ -4,7 +4,7 @@ import { ToggleButton, Tooltip } from '@mui/material'
 
 import { makeStyles } from '../util/tss-react/index.ts'
 
-import type { DisplayTypeDefaultControl } from '../configuration/promotableDefaults.ts'
+import type { MenuItemPin } from './MenuTypes.ts'
 
 const useStyles = makeStyles()(theme => ({
   // compact enough to sit inline with the value check: drop the default
@@ -22,23 +22,14 @@ const useStyles = makeStyles()(theme => ({
 // (native button a11y + a clear selected tint) with a pin — distinct from the
 // value checkbox — reads as "this is the default": outline pin = not the
 // default, filled pin on an accent-tinted button = the default. One click sets or
-// clears it; on set, `control.toggle` raises an "apply to open tracks" snackbar
+// clears it; on set, `pin.toggle` raises an "apply to open tracks" snackbar
 // for any open tracks not already showing this value. Always shown so the
 // capability is discoverable. stopPropagation keeps the click off the row value / menu
 // dismissal. "of this type" because a promoted default is scoped to the display
 // type (e.g. every LinearAlignmentsDisplay), not literally all tracks.
-export function DefaultForAllAdornment({
-  control,
-  label,
-}: {
-  control: DisplayTypeDefaultControl
-  // the setting this pin promotes (e.g. a preset name); names it in the
-  // tooltip/aria-label so screen readers and tests can tell sibling pins apart.
-  // Required: every row builder has a label to hand, and a pin that can't name
-  // what it promotes reads as a bug rather than a generic control
-  label: string
-}) {
+export function PinAdornment({ pin }: { pin: MenuItemPin }) {
   const { classes } = useStyles()
+  const { label, control } = pin
   const isDefault = control.active
   return (
     <Tooltip

@@ -1,4 +1,4 @@
-import { DefaultForAllAdornment } from './DefaultForAllAdornment.tsx'
+import { PinAdornment } from './PinAdornment.tsx'
 
 import type { MenuItem } from './MenuTypes.ts'
 
@@ -7,8 +7,8 @@ import type { MenuItem } from './MenuTypes.ts'
  *
  * Two fields feed it and they are not equivalent. `endAdornment` is an element
  * the builder already made — the escape hatch, for content nothing else can
- * describe. `defaultForAll` is a *description* of the "default for all tracks of
- * this type" pin, and turning it into `DefaultForAllAdornment` here is the whole
+ * describe. `pin` is a *description* of the "default for all tracks of
+ * this type" pin, and turning it into `PinAdornment` here is the whole
  * point: the builders that set it (`promotableToggleItem`,
  * `promotableRadioItem`) are called from state models and menu modules, which
  * are eager, so a module that constructs the element instead puts MUI's
@@ -23,11 +23,8 @@ export function menuItemAdornment(item: MenuItem) {
   if ('endAdornment' in item && item.endAdornment) {
     return item.endAdornment
   }
-  return 'defaultForAll' in item && item.defaultForAll ? (
-    <DefaultForAllAdornment
-      control={item.defaultForAll.control}
-      label={item.defaultForAll.label}
-    />
+  return 'pin' in item && item.pin ? (
+    <PinAdornment pin={item.pin} />
   ) : undefined
 }
 
@@ -37,11 +34,11 @@ export function menuItemAdornment(item: MenuItem) {
  * row of the menu.
  *
  * **Not the same question as "does this row offer a pin"** (`pinnedSlots`, which
- * counts a `defaultForAll` wherever it appears). A `type: 'custom'` row renders
+ * counts a `pin` wherever it appears). A `type: 'custom'` row renders
  * its own content edge to edge and never reaches `menuItemAdornment`, so it
  * cannot draw in that column however it is declared — counting it would reserve
  * a spacer on its siblings for a control that never appears. It still declares
- * `defaultForAll` when it draws a pin of its own (`makePromotableSizeMenu`),
+ * `pin` when it draws a pin of its own (`makePromotableSizeMenu`),
  * which is what keeps the pin findable. Don't "fix" the two into agreement.
  */
 export function hasMenuItemAdornment(item: MenuItem) {
@@ -50,6 +47,6 @@ export function hasMenuItemAdornment(item: MenuItem) {
   }
   return (
     ('endAdornment' in item && !!item.endAdornment) ||
-    ('defaultForAll' in item && !!item.defaultForAll)
+    ('pin' in item && !!item.pin)
   )
 }

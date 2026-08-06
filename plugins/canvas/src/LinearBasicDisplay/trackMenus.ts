@@ -1,4 +1,4 @@
-import { makeDisplayTypeDefaultControl } from '@jbrowse/core/configuration'
+import { makePin } from '@jbrowse/core/configuration'
 import { Highlighter } from '@jbrowse/core/ui/Icons'
 import { checkboxItem, promotableRadioItem } from '@jbrowse/core/ui/menuItems'
 import { pluralize } from '@jbrowse/core/util'
@@ -214,7 +214,7 @@ export function featureHeightMenuItems(self: FeatureHeightSelf): MenuItem[] {
             onClick: () => {
               self.setDisplayMode(option.value)
             },
-            displayTypeDefault: makeDisplayTypeDefaultControl(
+            pin: makePin(
               self,
               'displayMode',
               option.value,

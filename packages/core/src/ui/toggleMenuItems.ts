@@ -8,7 +8,7 @@ import type { CheckboxMenuItem, RadioMenuItem } from './MenuTypes.ts'
 //
 // The promotable variants (a trailing pin that sets the display-type default)
 // live in `promotableMenuItems.ts`; reach for those when the setting has a
-// `DisplayTypeDefaultControl`.
+// `Pin`.
 
 export function checkboxItem(
   label: string,

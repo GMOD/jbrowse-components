@@ -203,13 +203,13 @@ export interface BaseMenuItem {
    * An **element**, so a module that sets it drags React and whatever it renders
    * into its own graph. That is fine for the one-off it exists for (synteny's
    * color swatch) and wrong for the common case, which is why the pin below is
-   * a description instead. Prefer `defaultForAll`; reach for this only when the
+   * a description instead. Prefer `pin`; reach for this only when the
    * content is genuinely arbitrary.
    */
   endAdornment?: React.ReactNode
   /**
    * The trailing "default for all tracks of this type" pin, as a **description**
-   * rather than an element — the renderer builds `DefaultForAllAdornment` from
+   * rather than an element — the renderer builds `PinAdornment` from
    * it. Same rule as a `TrackControlProps` icon name (reference/DISPLAYCHROME.md):
    * menu-item builders are called from state models and menu modules, which are
    * eager, so an element here puts MUI's `ToggleButton`, `Tooltip` and two icons
@@ -224,11 +224,25 @@ export interface BaseMenuItem {
    * a row is excluded from the trailing-column reservation; see
    * `hasMenuItemAdornment`.
    */
-  defaultForAll?: MenuItemDefaultForAll
+  pin?: MenuItemPin
 }
 
-export interface MenuItemDefaultForAll {
-  control: DisplayTypeDefaultControl
+/**
+ * A row's pin declaration: the {@link Pin} `makePin` built, plus the one thing
+ * the row knows and the pin doesn't — what to call the setting.
+ *
+ * **`control` holds the pin by reference; don't flatten this into
+ * `interface MenuItemPin extends Pin`.** That was tried, to save the hop every
+ * reader spells (`item.pin.control.active`), and it turns the declaration into a
+ * *copy* of the control — so a `Pin` whose `toggle` resolves anything through
+ * `this` silently mutates the copy and the real control never changes. Nothing in
+ * `Pin` promises copy-safety: `makePin` happens to close over what it needs, but
+ * the interface is a plain object a plugin can build by hand, and the failure is
+ * a pin that draws correctly and does nothing. Two hops in `pinnedSlots` and
+ * `menuItemAdornment` is the whole cost of not having that.
+ */
+export interface MenuItemPin {
+  control: Pin
   /**
    * Names the setting in the pin's tooltip and aria-label. Carried here rather
    * than read off the row's `label`, which is a `ReactNode` and may not be a

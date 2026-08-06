@@ -40,13 +40,12 @@ export {
   clearPromotedDefaults,
   getDisplayTypeDefaultChanges,
   isSlotCustomized,
-  makeCurrentValueDisplayTypeDefaultControl,
-  makeDisplayTypeDefaultControl,
+  makePin,
   openPromotableDisplays,
   getConfigSnapshotWithPromotables,
   getTrackConfigWithPromotables,
 } from './promotableDefaults.ts'
 export type {
-  DisplayTypeDefaultControl,
+  Pin,
   TrackConfigWithPromotables,
 } from './promotableDefaults.ts'

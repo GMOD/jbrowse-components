@@ -28,18 +28,6 @@ whose badge was clicked.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
-## DisplayTypeDefaultControl
-
-A promotable "default for all tracks of this type" control, bundled so a menu
-row's trailing pin consumes it as a single prop. `active` = this value is
-currently the session default (a filled pin); `toggle` sets it as the default or
-clears it, touching no track's own value (see `applyDefaultToggle`). On set it
-raises a snackbar with an "Override N customized tracks" action for every open
-track not already showing this value — that action is the only thing in the
-subsystem that rewrites a track.
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
-
 ## getConf
 
 Reads a configuration value from a state model that has a `.configuration`
@@ -123,30 +111,31 @@ promoted default, so the reset control lights up on a no-op.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
-## makeCurrentValueDisplayTypeDefaultControl
+## makePin
 
-Promote-current control: "make this track's current resolved value the session
-default". Use for a symmetric setting (a `maybeBoolean` toggle, or a multi-mode
-slot like displayMode) where the pin means "whatever I'm showing", not a fixed
-on-value.
+The pin for one promotable slot: "make this value the default for every track of
+this display type".
+
+`value` chooses between the subsystem's two meanings, which are otherwise
+identical:
+
+- **Give it** for a per-value pin — "make _arcs_ the default" — independent of
+  what the track currently shows. Use on an always-visible pin so it can never
+  promote a meaningless value, and so two rows sharing one slot (arcs `'arc'` vs
+  read cloud `'cloud'`; sashimi `'down'` vs `'auto'`) stay independent.
+- **Omit it** for "whatever I'm showing", resolved through the cascade. Use for
+  a symmetric or continuous setting where no fixed on-value makes sense (wiggle
+  point size, arc line width, `mismatchAlpha`).
+
+One function with an optional argument, rather than the two exported builders it
+replaces — a per-value one and a `…CurrentValue…` one, the second of which was
+exactly the first applied to `resolveSlot(self, slot).value`. The pair was one
+function plus a doc section explaining which name to reach for; omitting the
+argument now says what the longer name said.
 
 ```js
 // type signature
-(self: ResolvableDisplay, slot: string) => DisplayTypeDefaultControl
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
-
-## makeDisplayTypeDefaultControl
-
-Per-value control: "make `slot === onValue` the session default". The meaning is
-per-value ("make arcs the default"), independent of the track's current value —
-so an always-visible control never promotes a meaningless value, and two toggles
-sharing one slot (arcs vs read cloud) stay independent.
-
-```js
-// type signature
-(self: ResolvableDisplay, slot: string, onValue: unknown) => DisplayTypeDefaultControl
+(self: ResolvableDisplay, slot: string, ...value: [] | [unknown]) => Pin
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
@@ -173,6 +162,29 @@ each display whether it has anything to promote.
 // type signature
 (session: AbstractSessionModel) => ResolvableDisplay[]
 ```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
+
+## Pin
+
+The "make this the default for all tracks of this type" affordance on a menu row
+— the trailing `PushPin`, bundled so the row consumes it as one prop. Built by
+makePin.
+
+`active` = this value is currently the session default (a filled pin); `toggle`
+sets it as the default or clears it, touching no track's own value (see
+`applyDefaultToggle`). On set it raises a snackbar with an "Override N
+customized tracks" action for every open track not already showing this value —
+that action is the only thing in the subsystem that rewrites a track.
+
+**`toggle` rather than a `promote`/`clear` pair**, which was tried and dropped:
+the sole renderer is a MUI `ToggleButton` whose `onChange` means exactly "flip",
+so splitting it adds a member _and_ a branch at the one call site that never
+needed one. `active` is already public for a caller that wants to state a
+direction. (The house preference for explicit setters over toggles is about MST
+actions, where a toggle destroys the ability to set a known state; nothing here
+stores a value.) ADR-048's requirement is that the flip be _symmetric_ —
+pin-then-unpin discards nothing — not that it be two functions.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
@@ -214,7 +226,7 @@ not free and not universal: it consults the session (so it's main-thread only,
 and throws on a detached node) and it means something only for the ~15
 promotable slots out of 1300-odd config reads in the repo. Hiding it inside
 `getConf` made every one of those reads a maybe-cascade whose behavior you
-couldn't see at the call site and which turned on a `promotable: true` flag in
+couldn't see at the call site and which turned on a `promotedBase` declared in
 another file. Naming it at the call site costs one word and restores `getConf`
 to being what everyone already believed it was.
 

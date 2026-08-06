@@ -37,7 +37,7 @@ function openDisplays(model: HierarchicalTrackSelectorModel, trackId: string) {
 // shown when a track's effective settings differ from its configured defaults,
 // for either reason: a per-track config edit shadowing an admin track (see
 // session.getTrackConfigChanges / updateTrackConfiguration) or a session-wide
-// displayTypeDefault the user promoted. One pencil marks both; the tooltip and
+// pin the user promoted. One pencil marks both; the tooltip and
 // the dialog it opens name the actual source (and its reset) in words.
 const OpenTrackBadge = observer(function OpenTrackBadge({
   model,

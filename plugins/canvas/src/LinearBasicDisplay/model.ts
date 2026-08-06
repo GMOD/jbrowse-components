@@ -3,8 +3,7 @@ import { lazy } from 'react'
 import {
   ConfigurationReference,
   getConf,
-  makeCurrentValueDisplayTypeDefaultControl,
-  makeDisplayTypeDefaultControl,
+  makePin,
   readConfObject,
   resolveConf,
   setConf,
@@ -295,7 +294,7 @@ export default function stateModelFactory(
                   !self.displayDirectionalChevrons,
                 )
               },
-              displayTypeDefault: makeCurrentValueDisplayTypeDefaultControl(
+              pin: makePin(
                 self,
                 'displayDirectionalChevrons',
               ),
@@ -315,7 +314,7 @@ export default function stateModelFactory(
                 onClick: () => {
                   self.setSubfeatureLabels(option.value)
                 },
-                displayTypeDefault: makeDisplayTypeDefaultControl(
+                pin: makePin(
                   self,
                   'subfeatureLabels',
                   option.value,

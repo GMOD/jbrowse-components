@@ -33,6 +33,14 @@ function isAnimationMode(val: unknown): val is AnimationMode {
 // a reader of another (every promotable display's `rpcProps` reads one via
 // `getDisplayTypeDefault`) — and collapse the get/set/diff logic to one lookup.
 // The `\0` delimiter can't appear in a display type or slot name.
+// The literal is a **persisted localStorage key prefix**, so treat it as data
+// rather than as an identifier a rename should sweep — a blanket
+// `displayTypeDefault` → `pin` pass did sweep it, and orphans every promoted
+// default already in a browser's storage. Nothing released stores these yet, so
+// the reason it keeps this spelling is naming, not compatibility: the key names
+// *what is stored* (a display-type default, reached through
+// `get/setDisplayTypeDefault`), while `Pin` names the menu control that writes
+// it.
 const DISPLAY_TYPE_DEFAULT_PREFIX = 'displayTypeDefault\0'
 
 // Module-private on purpose: the composite-key spelling is a storage detail of

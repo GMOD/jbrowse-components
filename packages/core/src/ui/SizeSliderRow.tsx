@@ -7,13 +7,13 @@ import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { makeStyles } from '../util/tss-react/index.ts'
-import { DefaultForAllAdornment } from './DefaultForAllAdornment.tsx'
+import { PinAdornment } from './PinAdornment.tsx'
 import { ResetToDefaultButton } from './InlineMenuControls.tsx'
 import SingleSlider from './SingleSlider.tsx'
 import { INLINE_MENU_ROW_WIDTH } from './inlineMenuRowWidth.ts'
 import { sliderScale } from './sliderScale.ts'
 
-import type { DisplayTypeDefaultControl } from '../configuration/promotableDefaults.ts'
+import type { Pin } from '../configuration/promotableDefaults.ts'
 import type { SliderScale } from './sliderScale.ts'
 
 const useStyles = makeStyles()(theme => ({
@@ -42,7 +42,7 @@ export const SizeSliderRow = observer(function SizeSliderRow({
   commitOnRelease,
   onChange,
   onReset,
-  displayTypeDefault,
+  pin,
 }: {
   title: string
   getValue: () => number
@@ -55,7 +55,7 @@ export const SizeSliderRow = observer(function SizeSliderRow({
   commitOnRelease?: boolean
   onChange: (n: number) => void
   onReset: () => void
-  displayTypeDefault?: DisplayTypeDefaultControl
+  pin?: Pin
 }) {
   const { classes } = useStyles()
   const modelValue = getValue()
@@ -79,14 +79,13 @@ export const SizeSliderRow = observer(function SizeSliderRow({
             onReset()
           }}
         />
-        {displayTypeDefault ? (
+        {pin ? (
           // include the current value so the pin's tooltip reads as a concrete
           // value ("Line width (2px)") — the copy assumes the label is a value,
           // but a bare setting name reads oddly ("Use 'Line width' as the
           // default")
-          <DefaultForAllAdornment
-            label={`${title} (${format(value)})`}
-            control={displayTypeDefault}
+          <PinAdornment
+            pin={{ control: pin, label: `${title} (${format(value)})` }}
           />
         ) : null}
       </div>

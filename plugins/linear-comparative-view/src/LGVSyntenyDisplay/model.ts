@@ -3,7 +3,7 @@ import { lazy } from 'react'
 import {
   ConfigurationReference,
   getConf,
-  makeDisplayTypeDefaultControl,
+  makePin,
   setConf,
 } from '@jbrowse/core/configuration'
 import { getContainingTrack, getSession } from '@jbrowse/core/util'
@@ -342,8 +342,7 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
               // promoted default is keyed by display type, so no alignments pin
               // could ever write LGVSyntenyDisplay's key either, and the slot
               // resolved to its base forever unless a track customized it.
-              displayTypeDefault: (colorBy: ColorBy) =>
-                makeDisplayTypeDefaultControl(self, 'colorBy', colorBy),
+              pin: (colorBy: ColorBy) => makePin(self, 'colorBy', colorBy),
             }),
             // No base pair / tag: a PAF block has no per-base sequence to sort a
             // column by, and no SAM tags. 'Longest features first' is the

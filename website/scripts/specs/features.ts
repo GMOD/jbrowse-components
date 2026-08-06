@@ -21,7 +21,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
     // featureHeight is a promotable slot (track value → session default →
     // promotedBase 7; spacing is derived from it, never stored). Each height row
     // in the "Read height" submenu carries a trailing pin
-    // (DefaultForAllAdornment, aria-label "make <preset> the default for all
+    // (PinAdornment, aria-label "make <preset> the default for all
     // tracks") that toggles that preset as the session default on click. The pin
     // writes *only* the default — it never rewrites a track's own value — so the
     // two open tracks are seeded differently to show both halves of that: the

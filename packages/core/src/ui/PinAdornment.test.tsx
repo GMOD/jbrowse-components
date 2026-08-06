@@ -1,10 +1,10 @@
 import { ThemeProvider } from '@mui/material'
 import { fireEvent, render } from '@testing-library/react'
 
-import { DefaultForAllAdornment } from './DefaultForAllAdornment.tsx'
+import { PinAdornment } from './PinAdornment.tsx'
 import { createJBrowseTheme } from './theme.ts'
 
-import type { DisplayTypeDefaultControl } from '../configuration/promotableDefaults.ts'
+import type { Pin } from '../configuration/promotableDefaults.ts'
 
 const theme = createJBrowseTheme()
 
@@ -13,19 +13,19 @@ const theme = createJBrowseTheme()
 function fakeControl(
   active: boolean,
   toggle: () => void = () => {},
-): DisplayTypeDefaultControl {
+): Pin {
   return { slot: 'unused', active, toggle }
 }
 
-function renderAdornment(control: DisplayTypeDefaultControl, label = 'this') {
+function renderAdornment(control: Pin, label = 'this') {
   return render(
     <ThemeProvider theme={theme}>
-      <DefaultForAllAdornment control={control} label={label} />
+      <PinAdornment pin={{ control, label }} />
     </ThemeProvider>,
   )
 }
 
-describe('DefaultForAllAdornment', () => {
+describe('PinAdornment', () => {
   it('renders a labeled pin button', () => {
     const { getByRole } = renderAdornment(fakeControl(false))
     expect(
@@ -61,7 +61,7 @@ describe('DefaultForAllAdornment', () => {
             rowClick()
           }}
         >
-          <DefaultForAllAdornment control={fakeControl(false)} label="this" />
+          <PinAdornment pin={{ control: fakeControl(false), label: 'this' }} />
         </div>
       </ThemeProvider>,
     )
