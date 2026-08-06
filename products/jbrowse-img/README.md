@@ -280,7 +280,7 @@ jb2export --fasta https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz \
   --loc chr20:18,503,000-18,509,000 --width 1200 --out methylation.png
 ```
 
-![COLO829 nanopore reads colored by per-base CpG methylation over a CpG island](https://jbrowse.org/jb2-figures/jbrowse-img/methylation.8dac27239393.png)
+![COLO829 nanopore reads colored by per-base CpG methylation over a CpG island](https://jbrowse.org/jb2-figures/jbrowse-img/methylation.feaea7c613e9.png)
 
 `sashimi:auto` overlays splice-junction arcs on the coverage band, sized by the
 number of reads spanning each junction: the standard RNA-seq splice view.
