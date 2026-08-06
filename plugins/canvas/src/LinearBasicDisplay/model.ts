@@ -294,10 +294,7 @@ export default function stateModelFactory(
                   !self.displayDirectionalChevrons,
                 )
               },
-              pin: makePin(
-                self,
-                'displayDirectionalChevrons',
-              ),
+              pin: makePin(self, 'displayDirectionalChevrons'),
             }),
           ]
         },
@@ -314,11 +311,7 @@ export default function stateModelFactory(
                 onClick: () => {
                   self.setSubfeatureLabels(option.value)
                 },
-                pin: makePin(
-                  self,
-                  'subfeatureLabels',
-                  option.value,
-                ),
+                pin: makePin(self, 'subfeatureLabels', option.value),
               }),
             ),
           ]

@@ -214,11 +214,7 @@ export function featureHeightMenuItems(self: FeatureHeightSelf): MenuItem[] {
             onClick: () => {
               self.setDisplayMode(option.value)
             },
-            pin: makePin(
-              self,
-              'displayMode',
-              option.value,
-            ),
+            pin: makePin(self, 'displayMode', option.value),
           }),
         ),
         { type: 'subHeader' as const, label: 'Track sizing' },
