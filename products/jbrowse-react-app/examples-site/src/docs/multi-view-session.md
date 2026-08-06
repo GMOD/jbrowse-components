@@ -1,20 +1,13 @@
-The full app can hold **multiple views in one session** at the same time, the
-capability the lighter
-[`@jbrowse/react-linear-genome-view2`](https://jbrowse.org/storybook/lgv/)
-component doesn't have. Each entry in the `views` prop becomes its own stacked
-view with an independent toolbar and track selector, and the menu bar's **Add**
-menu can open more at runtime.
+The full app holds **multiple views in one session** — the thing the lighter
+[`@jbrowse/react-linear-genome-view2`](https://jbrowse.org/storybook/lgv/) can't
+do. Each `views` entry becomes its own stacked view with an independent toolbar
+and track selector, and the menu bar's **Add** menu opens more at runtime.
 
-Here a whole-genome
-[`CircularView`](https://jbrowse.org/jb2/docs/models/circularview/) gives an
-overview of the structural-variant calls and a
-[`LinearGenomeView`](https://jbrowse.org/jb2/docs/models/lineargenomeview/)
-below it shows the read-level detail — the same declarative `<JBrowse>`
-component as the [basic example](../basic-example/), with two entries in `views`
-instead of one.
+Here a whole-genome `CircularView` overviews the structural-variant calls and a
+`LinearGenomeView` below shows read-level detail — the same `<JBrowse>` as the
+[basic example](../basic-example/) with two entries instead of one.
 
-By default the views stack vertically. The app also has a **workspaces** mode
-(`session.setUseWorkspaces(true)`) that arranges views into a tiled, tabbed
-dockview layout. The session-spec `layout` syntax for describing such a tiling
-is documented under
+Views stack vertically by default. There is also a **workspaces** mode
+(`session.setUseWorkspaces(true)`) that tiles them into a tabbed dockview
+layout; its session-spec `layout` syntax is under
 [Tiled views / Workspaces](https://jbrowse.org/jb2/docs/urlparams/#tiled-views--workspaces).

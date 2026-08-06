@@ -1,27 +1,18 @@
 A [LocusZoom](https://locuszoom.org/)-style view: genome-wide GIANT BMI GWAS
-summary statistics rendered as a Manhattan plot and colored by linkage
-disequilibrium (LD r²) to the lead SNP. Both data files are read straight from
-LocusZoom's hosted demo data: the GWAS via a tabix-indexed `GWASAdapter`, the LD
-via a `PlinkLDTabixAdapter` (PLINK `--r2` output).
+summary statistics as a Manhattan plot, colored by linkage disequilibrium (r²)
+to the lead SNP. Both files are read straight from LocusZoom's hosted demo data
+— the GWAS through a tabix-indexed `GWASAdapter`, the LD through a
+`PlinkLDTabixAdapter` over PLINK `--r2` output.
 
-The track is a `GWASTrack` whose `LinearManhattanDisplay` sets `colorBy: 'ld'`,
-which pulls r² values from the LD adapter and shades each SNP accordingly. The
-index SNP auto-tracks the top genome-wide hit (rs1121980 at the FTO locus), so
+The track is a `GWASTrack` whose `LinearManhattanDisplay` sets `colorBy: 'ld'`.
+The index SNP auto-tracks the top genome-wide hit (rs1121980, at FTO), so
 zooming to FTO shows the characteristic colored peak. **Right-click any SNP to
-re-anchor LD to it.**
+re-anchor LD to it.** GWAS rendering is built in — no plugin loading.
 
-GWAS rendering is built in, so no runtime plugin loading is needed. See
-[Pan-UKB GWAS](../pan-ukb-gwas/) for browsing many phenotypes, and the
+See [Pan-UKB GWAS](../pan-ukb-gwas/) for browsing many phenotypes, the
 [GWAS track guide](https://jbrowse.org/jb2/docs/config_guides/gwas_track/) for
-setup end to end.
-
-Reference: [GWASTrack](https://jbrowse.org/jb2/docs/config/gwastrack/),
-[GWASAdapter](https://jbrowse.org/jb2/docs/config/gwasadapter/),
-[PlinkLDTabixAdapter](https://jbrowse.org/jb2/docs/config/plinkldtabixadapter/),
-the
-[LinearManhattanDisplay](https://jbrowse.org/jb2/docs/config/linearmanhattandisplay/)
-`colorBy` slot, and the two LD tutorials:
-[LD at a selective sweep](https://jbrowse.org/jb2/docs/tutorials/ld_human/),
-which computes a triangle live from phased genotypes, and
-[LD across an inversion](https://jbrowse.org/jb2/docs/tutorials/ld_mosquitoes/),
-which reads precomputed PLINK LD through the adapter above.
+setup, and the two LD tutorials:
+[at a selective sweep](https://jbrowse.org/jb2/docs/tutorials/ld_human/)
+(computed live from phased genotypes) and
+[across an inversion](https://jbrowse.org/jb2/docs/tutorials/ld_mosquitoes/)
+(precomputed, as here).

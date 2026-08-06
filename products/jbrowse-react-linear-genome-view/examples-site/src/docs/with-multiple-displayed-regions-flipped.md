@@ -1,20 +1,15 @@
-A linear genome view can show several regions at once. Pass a space-separated
-multi-region locstring to `init.loc`:
+A space-separated multi-region locstring in `init.loc` shows several regions at
+once:
 
 ```js
 init: {
-  assembly: 'GRCh38',
-  loc: 'chr1:113073119..113073695 chr1:113091267..113091433',
-  tracks: ['ncbi-refseq-genes'],
+  loc: 'chr1:113073119..113073695 chr1:113091267..113091433'
 }
 ```
 
-An external **Flip** button toggles orientation via `view.horizontallyFlip()`,
-and an `observer`-wrapped component reads `view.displayedRegions[0].reversed` to
-keep its label in sync. Multi-region views are the building block for
-gene-centric layouts and synteny ribbons.
+The **Flip** button calls `view.horizontallyFlip()`, and an `observer` reading
+`view.displayedRegions[0].reversed` keeps its label in sync. Multi-region views
+are the building block for gene-centric layouts and synteny ribbons.
 
-See [horizontally flip the view](../flipping-regions/#horizontally-flip) for the
-single-region cases, and the
-[LinearGenomeView state model](https://jbrowse.org/jb2/docs/models/lineargenomeview/)
-for `displayedRegions` and the other view properties read here.
+See [horizontally flip](../flipping-regions/#horizontally-flip) for the
+single-region cases.

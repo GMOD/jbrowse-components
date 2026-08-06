@@ -58,21 +58,52 @@ it belongs in a package and the example imports it like any reader would — whi
 also puts it under a real test, where a site-local helper never is. If no, it
 stays copied.
 
+## The demo comes first on the page
+
+`ExampleSection` renders **heading → demo → doc → source**, and all four sites
+agree on it. The demo is the argument and the prose is the annotation on it;
+with the doc first a reader met several paragraphs and a code fence before any
+evidence that any of it worked. The source stays last, open rather than behind a
+collapsed toggle, because it is what you read once the demo has convinced you.
+
+The corollary is that **a doc must not restate what the source below it says.**
+A fence that is a slice of the example file is the commonest way one of these
+pages gets long; write the fence only when it shows something the source can't —
+an alternative form, a bundler setting, a CLI invocation.
+
+## Pages and groups
+
+One page is one sidebar entry, and a page may stack several sections — that is
+what `ExamplePage.sections` is for, and it is how the sidebar stays short while
+the examples stay separate. **Cap a page at four sections**: each one is a
+`client:only` island that hydrates a whole genome engine on load, so a fifth is
+paid for on every visit.
+
+**A group holding one page is a heading that costs a line and earns nothing.**
+Text search belongs under Navigation, theming under Tracks, plugins under
+Getting started. The sidebar and the index gallery both derive their group order
+from first appearance in `pages`, so **keep that array group-contiguous** —
+moving a page between groups means moving it in the array too, or its group box
+gets a second, separated run of entries.
+
 ## Prose
 
 - **Never restate a measurable number.** If a page needs one, generate it and
   register the generator in `pnpm autogen`, so CI re-checks it and the prose
   cannot drift.
 - **Prose is capped, and `pnpm check-links` enforces it.** A `src/docs/*.md`
-  over 500 words (fenced code excluded, since a page whose length is a config
+  over 300 words (fenced code excluded, since a page whose length is a config
   example is doing its job) or a page/section `description` over 160 characters
-  fails; over 350 words prints as advisory so the trend shows first. These pages
+  fails; over 200 words prints as advisory so the trend shows first. These pages
   are a live demo plus its own source — the prose names the API and flags the
-  gotchas that cost an hour, and nothing more. They had drifted into 800-word
-  essays with "Where to stop" sections before the cap existed, so raise it only
-  with an argument. The limit is slack on purpose: the densest pages sit near it
-  because they carry real mechanics, and cutting those to hit a tighter number
-  is the wrong trade.
+  gotchas that cost an hour, and nothing more.
+
+  The cap was 500/350, and every doc on all four sites was rewritten against
+  300/200, because a doc allowed 500 words reliably spends them: on a demo the
+  reader can just look at, on a paragraph restating the source directly below
+  it, and on a closing pile of reference links. 300 words is roughly a screen,
+  which is the right budget for an annotation. A page that needs more than that
+  is a tutorial on `website/docs` with a link to it from here, not a longer doc.
 - A single-section page's **section-level `description` renders nowhere** — the
   "On this page" card is only drawn for multi-section pages — so don't write
   one. Three sites had accumulated exact duplicates of the page description

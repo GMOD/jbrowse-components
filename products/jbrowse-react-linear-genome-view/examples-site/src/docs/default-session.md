@@ -1,48 +1,15 @@
 A _session_ is JBrowse's runtime representation of "what's open": which views,
-which tracks, which display settings. Passing `defaultSession` to
-`createViewState` restores that state on first paint.
+which tracks, which display settings. `defaultSession` restores one on first
+paint. Each entry in `view.tracks` names a track config and the display(s) to
+activate, by `trackId` / `displayId`.
 
-```js
-const defaultSession = {
-  name: 'My session',
-  view: {
-    id: 'linearGenomeView',
-    type: 'LinearGenomeView',
-    tracks: [
-      // open tracks, in render order
-    ],
-  },
-}
-```
+For most embeds the declarative [`init`](../setting-up-the-view/#with-init)
+field is far easier to author. Reach for `defaultSession` when you need
+per-track display settings init can't express, or when you're round-tripping a
+session out of JBrowse Web.
 
-Each entry in `tracks` references a track configuration plus the display(s) you
-want active. The `configuration` strings are the `trackId` (or `displayId`) of
-the matching entry in `tracks` / its `displays` array:
-
-```js
-{
-  type: 'ReferenceSequenceTrack',
-  configuration: 'GRCh38-ReferenceSequenceTrack',
-  displays: [
-    {
-      type: 'LinearReferenceSequenceDisplay',
-      configuration:
-        'GRCh38-ReferenceSequenceTrack-LinearReferenceSequenceDisplay',
-    },
-  ],
-}
-```
-
-For most use cases the declarative [`init`](../setting-up-the-view/#with-init)
-field is easier to author by hand. Reach for the full `defaultSession` when you
-need finer control over per-track display settings, or when you're
-round-tripping a session exported from JBrowse Web.
-
-### Exporting from JBrowse Web
-
-The fastest way to get a working `defaultSession` is to build the view
-graphically in JBrowse Web, use **File → Export session** to download a
-`session.json`, then pull out the view:
+The fastest way to get one is to build the view graphically in JBrowse Web, use
+**File → Export session**, and lift the view out of the download:
 
 ```js
 import sessionJson from './session.json'
@@ -53,6 +20,5 @@ const defaultSession = {
 }
 ```
 
-This avoids hand-authoring the deeply-nested track/display tree. The exact
-fields available come from the
-[LinearGenomeView state model docs](https://jbrowse.org/jb2/docs/models/lineargenomeview/).
+The available fields come from the
+[LinearGenomeView state model](https://jbrowse.org/jb2/docs/models/lineargenomeview/).

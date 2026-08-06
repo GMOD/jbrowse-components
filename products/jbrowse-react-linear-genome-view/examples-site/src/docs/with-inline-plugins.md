@@ -1,23 +1,10 @@
-JBrowse plugins extend the embedded view with new track types, adapters,
-renderers, view types, and menu items. They're passed to `createViewState` as
-the `plugins` option and integrated into the view's plugin manager at startup.
+Plugins extend the view with new track types, adapters, renderers, view types
+and menu items. The simplest form: define a `Plugin` subclass in your own source
+and pass the class in `plugins`. An npm-installed plugin looks identical — you
+`import` the class and pass it the same way.
 
-The simplest pattern: define a `Plugin` subclass in your own source and pass it
-directly.
-
-```js
-const state = createViewState({
-  assembly,
-  tracks,
-  plugins: [MyInlinePlugin],
-  location: 'ctgA:1105..1221',
-})
-```
-
-NPM-installed plugins look identical from your app's perspective. `import` the
-class and pass it the same way. Plugins can also be
-[loaded from a URL](../plugins/#with-external-plugin) at runtime. See the
-[plugin development guide](https://jbrowse.org/jb2/docs/developer_guide/) for
-authoring. Note: if you enable the
-[web worker RPC](../plugins/#with-web-worker), plugins must be registered in
-both the main thread and the worker.
+Plugins can also be [loaded from a URL](../plugins/#with-external-plugin) at
+runtime. If you enable the [web worker RPC](../plugins/#with-web-worker), a
+plugin has to be registered in the worker as well as the main thread. Authoring
+is covered in the
+[plugin development guide](https://jbrowse.org/jb2/docs/developer_guide/).

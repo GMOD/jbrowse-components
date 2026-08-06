@@ -1,40 +1,20 @@
-A multi-sample VCF (one genotype column per sample) can render each sample as a
-row, grouped and colored by sample metadata. Provide the metadata via a samples
-TSV on the adapter. Its first column is the sample name, and the remaining
-columns (`population`, `phenotype`, …) become groupable attributes:
+A multi-sample VCF renders one row per sample, grouped and colored by sample
+metadata. The metadata comes from a samples TSV on the adapter
+(`samplesTsvLocation`): first column the sample name, the rest (`population`,
+`phenotype`, …) groupable attributes.
 
-```js
-adapter: {
-  type: 'VcfTabixAdapter',
-  vcfGzLocation: { uri: 'volvox.sv.vcf.gz' },
-  index: { location: { uri: 'volvox.sv.vcf.gz.tbi' } },
-  samplesTsvLocation: { uri: 'volvox.sv.samples.tsv' }, // name<TAB>population
-}
-```
+Two things are easy to get wrong:
 
-Set `colorBy` on the display configuration (not a session
-[`displaySnapshot`](../session-setup/#with-init-advanced), `colorBy` is a config
-slot, read once when sources load) and list `LinearMultiSampleVariantDisplay`
-first in the track's `displays` array. A track opens its first configured
-display by default, so opening it by `trackId` shows the multi-sample display
-with `colorBy` already applied:
+- `colorBy` is a **config slot**, read once when sources load — put it on the
+  display configuration, not on a session
+  [`displaySnapshot`](../session-setup/#with-init-advanced).
+- a track opens its **first** configured display, so
+  `LinearMultiSampleVariantDisplay` has to come first in `displays` for opening
+  the track by `trackId` to land on it.
 
-```js
-displays: [
-  {
-    type: 'LinearMultiSampleVariantDisplay',
-    displayId: 'volvox_multisample_sv-LinearMultiSampleVariantDisplay',
-    colorBy: 'population', // groups + colors samples by this column on load
-  },
-]
-```
-
-See [VariantTrack](https://jbrowse.org/jb2/docs/config/varianttrack/),
-[VcfTabixAdapter](https://jbrowse.org/jb2/docs/config/vcftabixadapter/)
-(including `samplesTsvLocation`), and
-[LinearMultiSampleVariantDisplay](https://jbrowse.org/jb2/docs/config/linearmultisamplevariantdisplay/)
-([state model](https://jbrowse.org/jb2/docs/models/linearmultisamplevariantdisplay/)).
+Reference:
+[VcfTabixAdapter](https://jbrowse.org/jb2/docs/config/vcftabixadapter/),
+[LinearMultiSampleVariantDisplay](https://jbrowse.org/jb2/docs/config/linearmultisamplevariantdisplay/).
 The
 [1000 Genomes SVs tutorial](https://jbrowse.org/jb2/docs/tutorials/sv_multisamples/)
-works through population SVs and a family trio in a multi-sample display end to
-end.
+works through population SVs and a family trio end to end.

@@ -1,37 +1,20 @@
-A `ref` on `<LinearGenomeView>` gives you the live `LinearGenomeViewModel`. Its
-`.session.view` can be read, mutated, and have its actions called from
-components outside the view tree, which is how you wire up "jump to this gene"
-buttons, search-result lists, or programmatic tours.
+A `ref` on `<LinearGenomeView>` gives you the live view model. Its
+`.session.view` can be read, mutated and driven from components outside the view
+tree — "jump to this gene" buttons, search-result lists, programmatic tours.
 
 [`navToLocString`](https://jbrowse.org/jb2/docs/models/lineargenomeview/#action-navtolocstring)
-takes a JBrowse-style locstring like `ctgA:1-5,000` or `chr1:1m-2m`. It's async,
-re-sets the displayed regions if needed, and rejects on invalid input so you can
-surface errors in a banner:
-
-```js
-ref.current?.session.view
-  .navToLocString('ctgA:1,000..5,000')
-  .catch(e => console.error(e))
-```
-
+takes what a user would type (`ctgA:1-5,000`, `chr1:1m-2m`).
 [`navToLocations`](https://jbrowse.org/jb2/docs/models/lineargenomeview/#action-navtolocations)
-takes an array of `{ refName, start, end, assemblyName? }` objects, plus an
-optional second `assemblyName` default. Use it when you already have numeric
-coordinates (e.g. bridging from a backend search service) to skip the string
-formatting and parsing round-trip. Pass multiple regions to land in a
-multi-region view:
+takes `{ refName, start, end }` objects, which skips a formatting round-trip
+when you already have coordinates from a backend; pass several to land in a
+multi-region view.
 
-```js
-ref.current?.session.view
-  .navToLocations([{ refName: 'ctgA', start: 1050, end: 9000 }], 'volvox')
-  .catch(e => console.error(e))
-```
+Both are async and both **reject on input they can't resolve**, so a box with no
+`.catch` looks like it ignored the typo.
 
-There's also a lower-level
-[`navTo(query)`](https://jbrowse.org/jb2/docs/models/lineargenomeview/#action-navto)
-that only navigates if the target lies **inside the currently displayed
-regions**. It won't re-set them, so `navToLocations`/`navToLocString` are almost
-always what you want for external navigation. The full set of navigation actions
-(`zoomTo`, `centerAt`, `showAllRegions`, `moveTo`, …) is enumerated in the
-[LinearGenomeView state model docs](https://jbrowse.org/jb2/docs/models/lineargenomeview/).
-Anything marked `#action` there is callable on `ref.current.session.view`.
+There is also a lower-level
+[`navTo`](https://jbrowse.org/jb2/docs/models/lineargenomeview/#action-navto)
+that only moves within the currently displayed regions and won't re-set them —
+rarely what external navigation wants. Anything marked `#action` in the
+[state model](https://jbrowse.org/jb2/docs/models/lineargenomeview/) is callable
+the same way.

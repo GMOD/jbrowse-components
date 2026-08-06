@@ -1,37 +1,25 @@
-The declarative `init` prop is the recommended way to embed JBrowse: a starting
-locstring and the trackIds to open on first paint. `init.loc` accepts any
-locstring, including space-separated multi-region strings
-(`'chr1:100-200 chr1:500-600'`). It is the same `init` shape JBrowse Web
-serializes into its `?session=spec-…`
-[URL query parameter](https://jbrowse.org/jb2/docs/urlparams/), passed directly.
+The same call against a real assembly. `init` is the recommended way to embed: a
+starting locstring and the trackIds to open on first paint. `init.loc` takes any
+locstring, including space-separated multi-region ones
+(`'chr1:100-200 chr1:500-600'`). It is the same shape JBrowse Web serializes
+into its `?session=spec-…`
+[URL query parameter](https://jbrowse.org/jb2/docs/urlparams/).
 
-`init` only runs once, when the view is first created — think of it like an
-input's `defaultValue`. Re-rendering with a different `loc` won't move a view
-the user has panned. To drive the view after mount (a "jump to gene" button,
-search results, syncing to the URL), grab a `ref` and call its navigation
-actions instead; see
-[external navigation](../navigate-to-location/#external-navigate).
+**`init` runs once**, when the view is created — think of an input's
+`defaultValue`. Re-rendering with a different `loc` won't move a view the user
+has panned; to drive it after mount, take a `ref` and call
+[navigation actions](../navigate-to-location/#external-navigate).
 
-Adapters accept a plain `uri` shorthand: JBrowse derives the standard index file
-(e.g. [`.bam.bai`](https://jbrowse.org/jb2/docs/config/bamadapter/),
-[`.gff3.gz.tbi`](https://jbrowse.org/jb2/docs/config/gff3tabixadapter/)), so you
-rarely spell out the nested `bamLocation`/`index` form. The full config shape is
-in the [config guide](https://jbrowse.org/jb2/docs/config_guide/).
-
-Three fields on the hg38 assembly above start mattering once you move past a toy
-genome:
+Three assembly fields above start mattering past a toy genome:
 
 - [`refNameAliases`](https://jbrowse.org/jb2/docs/config/refnamealiasadapter/)
-  maps equivalent reference names so `chr1`, `1` and `NC_000001.11` all resolve
-  to the same contig. Point it at UCSC's `chromAlias` file and tracks that name
-  chromosomes differently than your sequence still line up.
+  resolves `chr1`, `1` and `NC_000001.11` to the same contig. Point it at UCSC's
+  `chromAlias` and differently-named tracks still line up.
 - `chromSizes` gives the sequence adapter chromosome lengths directly, so the
-  view can lay out the genome without reading them out of the `.2bit` first.
-- `csi: true` selects a CSI index (`.gff.gz.csi`) instead of the default Tabix
-  `.tbi`, required for chromosomes longer than ~512 Mb.
+  view lays out the genome without reading the `.2bit` first.
+- `csi: true` selects a `.csi` index instead of Tabix `.tbi`, required past ~512
+  Mb.
 
-See [Advanced init](../session-setup/#with-init-advanced) for per-track display
-snapshots and view-level settings
-([cytobands](https://jbrowse.org/jb2/docs/config/cytobandadapter/), gridlines,
-colorByCDS, …), and [Default session](../default-session/#default-session) for
-the full imperative snapshot form.
+See [advanced init](../session-setup/#with-init-advanced) for per-track display
+snapshots, and the [config guide](https://jbrowse.org/jb2/docs/config_guide/)
+for the full track/assembly shape.

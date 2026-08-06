@@ -164,7 +164,7 @@ only fetched when it first opens.
 ## Storybook example
 
 See the `WithDrawerWidget` example:
-https://jbrowse.org/storybook/lgv/with-drawer-widget/
+https://jbrowse.org/storybook/lgv/default-session/#with-drawer-widget
 
 ## See also
 

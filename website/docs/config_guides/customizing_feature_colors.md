@@ -94,7 +94,7 @@ override that, or to read a color from some other column.
 `myplugin.js` doesn't need the jbrowse-plugin-template if it's self-contained
 and has no external imports. If it does import other modules, use the template.
 For embedded components, see the
-[inline plugins example](https://jbrowse.org/storybook/lgv/with-inline-plugins/).
+[inline plugins example](https://jbrowse.org/storybook/lgv/plugins/#with-inline-plugins).
 
 ## Reading the type list off the file
 

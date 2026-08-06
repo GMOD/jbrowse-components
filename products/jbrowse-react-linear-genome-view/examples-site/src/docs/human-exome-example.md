@@ -1,13 +1,9 @@
-A real-world dataset on GRCh38: the NA12878 CEU exome (a CRAM alignments track
-from the 1000 Genomes project) shown alongside NCBI RefSeq genes, opened at a
-gene locus on chromosome 1.
+The NA12878 CEU exome from the 1000 Genomes Project — a CRAM alignments track on
+GRCh38 — beside NCBI RefSeq genes, opened at a gene locus on chromosome 1.
 
-It uses the managed [`<LinearGenomeView>`](../setting-up-the-view/#with-init).
-The CRAM track is fetched directly over HTTP range requests from S3, so no
-server-side component is required. For the config slots, see
-[CramAdapter](https://jbrowse.org/jb2/docs/config/cramadapter/) and
-[AlignmentsTrack](https://jbrowse.org/jb2/docs/config/alignmentstrack/).
-
-On large alignments datasets like this, consider enabling the
-[web worker RPC](../plugins/#with-web-worker) to keep parsing off the main
-thread.
+The CRAM is fetched over HTTP range requests straight from S3, so there is no
+server-side component. Config slots:
+[CramAdapter](https://jbrowse.org/jb2/docs/config/cramadapter/),
+[AlignmentsTrack](https://jbrowse.org/jb2/docs/config/alignmentstrack/). On
+alignments data this size, turn on the
+[web worker RPC](../plugins/#with-web-worker).

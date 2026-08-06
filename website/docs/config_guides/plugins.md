@@ -9,7 +9,7 @@ guide_category: Core configuration
 `url` in the top-level `plugins` array.
 
 Embedded components use a different approach. See the
-[inline plugins example](https://jbrowse.org/storybook/lgv/with-inline-plugins/).
+[inline plugins example](https://jbrowse.org/storybook/lgv/plugins/#with-inline-plugins).
 
 ```json
 {

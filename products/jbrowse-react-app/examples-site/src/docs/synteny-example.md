@@ -1,26 +1,15 @@
-A `react-app2` session can hold any number of views of any type, side by side.
-Each view type launches the same declarative way: a [`views`](../basic-example/)
-entry with a `type` and an `init` field. `init` is the same shape JBrowse Web
-serializes into its `?session=spec-…` URL parameter (see the
-[URL query parameter API](https://jbrowse.org/jb2/docs/urlparams/)), so these
-examples are the programmatic equivalent of those URLs.
+A `react-app2` session holds any number of views of any type. Each launches the
+same declarative way — a [`views`](../basic-example/) entry with a `type` and an
+`init`. `init` is the same shape JBrowse Web serializes into its
+`?session=spec-…` [URL parameter](https://jbrowse.org/jb2/docs/urlparams/), so
+these examples are the programmatic equivalent of those URLs.
 
-`LinearSyntenyView` shows two linear genome views with a connecting ribbon for
-synteny features (PAF, MUMMER, etc.). `init` declares the two member assemblies
-and the synteny track that ties them together:
+`LinearSyntenyView` puts two linear genome views one above the other with a
+ribbon for the synteny features between them (PAF, MUMmer, …). `init` names the
+two member assemblies and the track that ties them together.
 
-```js
-{
-  type: 'LinearSyntenyView',
-  init: {
-    views: [{ assembly: 'volvox' }, { assembly: 'volvox_del' }],
-    tracks: ['volvox_del.paf'],
-  },
-}
-```
-
-The exact fields each view's `init`/snapshot accepts come from its
-[state model docs](https://jbrowse.org/jb2/docs/models/). See
-[LinearSyntenyView](https://jbrowse.org/jb2/docs/models/linearsyntenyview/). For
-preparing your own alignment (PAF/MUMmer/etc.) and a full walkthrough, see the
+Fields are per view type under
+[docs/models](https://jbrowse.org/jb2/docs/models/) — here
+[LinearSyntenyView](https://jbrowse.org/jb2/docs/models/linearsyntenyview/). To
+prepare your own alignment, see the
 [synteny visualization tutorial](https://jbrowse.org/jb2/docs/tutorials/synteny_visualization/).

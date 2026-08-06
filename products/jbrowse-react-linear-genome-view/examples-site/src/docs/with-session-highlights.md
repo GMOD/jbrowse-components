@@ -1,29 +1,23 @@
-The view can paint highlighted regions over the genome, useful for calling out a
-region of interest, a search hit, or a variant locus. Highlights live on the
-session, so they round-trip through saved sessions.
+Highlights paint a region over the genome — a locus of interest, a search hit, a
+variant. They live on the session, so they round-trip through saved sessions.
 
-Authoring them on the view snapshot lets each highlight carry its own color and
+Authoring them on the **view snapshot** lets each one carry its own color and
 label:
 
 ```js
-view: {
-  type: 'LinearGenomeView',
-  highlight: [
-    {
-      assemblyName: 'hg38',
-      refName: 'chr1',
-      start: 11_130_000,
-      end: 11_145_000,
-      color: 'rgba(255, 0, 0, 0.25)',
-      label: 'Region of interest',
-    },
-  ],
-  init: { loc: 'chr1:11,106,077-11,261,675', assembly: 'hg38', tracks: [/* ... */] },
-}
+highlight: [
+  {
+    assemblyName: 'hg38',
+    refName: 'chr1',
+    start: 11_130_000,
+    end: 11_145_000,
+    color: 'rgba(255, 0, 0, 0.25)',
+    label: 'Region of interest',
+  },
+]
 ```
 
-There is also a simpler [`init.highlight`](../session-setup/#with-init-advanced)
-field, which takes plain loc-strings and so has no room for a per-highlight
-color or label. The `highlight` property and its
-`addToHighlights`/`removeHighlight` actions are documented in the
-[LinearGenomeView state model](https://jbrowse.org/jb2/docs/models/lineargenomeview/).
+There is also [`init.highlight`](../session-setup/#with-init-advanced), which
+takes plain locstrings and so has nowhere to put a color or a label.
+`addToHighlights` / `removeHighlight` are in the
+[state model](https://jbrowse.org/jb2/docs/models/lineargenomeview/).

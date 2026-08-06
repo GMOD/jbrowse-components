@@ -5,6 +5,8 @@ import type { ExamplePage } from './exampleModel.ts'
 export type { ExamplePage, ExampleSection } from './exampleModel.ts'
 export { section } from './exampleModel.ts'
 
+// Three groups on purpose. Loading config and Plugins each used to be a sidebar
+// heading over a single page, which costs a line and earns nothing.
 export const pages: ExamplePage[] = [
   // --- Getting started ---
   {
@@ -55,13 +57,12 @@ export const pages: ExamplePage[] = [
     ],
   },
 
-  // --- Loading config ---
   {
     slug: 'loading-config',
     title: 'Loading configuration',
     description:
       'Bundle a config at build time, fetch one at runtime, or add tracks and views after mount.',
-    group: 'Loading config',
+    group: 'Getting started',
     sections: [
       {
         slug: 'with-import-config-json',
@@ -86,6 +87,26 @@ export const pages: ExamplePage[] = [
         title: 'Launch a view imperatively',
         description:
           'Open a linear genome view after mount via the LaunchView extension point, instead of the declarative views prop.',
+      },
+    ],
+  },
+  {
+    slug: 'plugins',
+    title: 'Plugins',
+    description:
+      'Extend the app with plugins — defined inline in your bundle, or loaded at runtime from a URL.',
+    group: 'Getting started',
+    sections: [
+      {
+        slug: 'embedded-plugin',
+        title: 'Embedded (inline) plugin',
+        description:
+          'Register a plugin defined inline in your code — here adding a rubber-band menu item.',
+      },
+      {
+        slug: 'with-external-plugin',
+        title: 'External plugin',
+        description: 'Load a plugin at runtime from a URL with loadPlugins.',
       },
     ],
   },
@@ -155,28 +176,6 @@ export const pages: ExamplePage[] = [
         title: 'Multiple views in one session',
         description:
           'Stack a circular SV overview and a linear detail view — the app manages both at once.',
-      },
-    ],
-  },
-
-  // --- Plugins ---
-  {
-    slug: 'plugins',
-    title: 'Plugins',
-    description:
-      'Extend the app with plugins — defined inline in your bundle, or loaded at runtime from a URL.',
-    group: 'Plugins',
-    sections: [
-      {
-        slug: 'embedded-plugin',
-        title: 'Embedded (inline) plugin',
-        description:
-          'Register a plugin defined inline in your code — here adding a rubber-band menu item.',
-      },
-      {
-        slug: 'with-external-plugin',
-        title: 'External plugin',
-        description: 'Load a plugin at runtime from a URL with loadPlugins.',
       },
     ],
   },

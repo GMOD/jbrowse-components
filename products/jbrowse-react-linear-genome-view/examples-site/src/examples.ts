@@ -5,6 +5,9 @@ import type { ExamplePage } from './exampleModel.ts'
 export type { ExamplePage, ExampleSection } from './exampleModel.ts'
 export { section } from './exampleModel.ts'
 
+// Five groups on purpose. Every one-page group is a sidebar heading that costs a
+// line and earns nothing, so text search sits under Navigation and theming under
+// Tracks rather than each holding a heading of its own.
 export const pages: ExamplePage[] = [
   // --- Getting started ---
   {
@@ -17,20 +20,17 @@ export const pages: ExamplePage[] = [
       {
         slug: 'one-linear-genome-view',
         title: 'The simplest example',
-        description:
-          'The whole component in one declarative call: an assembly, tracks, and a starting location.',
+        description: 'One component, three props: assembly, tracks, init.',
       },
       {
         slug: 'with-init',
         title: 'Declarative init',
-        description:
-          'Initialize the view with an assembly, a track, and a starting location.',
+        description: 'The same call against a real assembly (hg38).',
       },
       {
         slug: 'use-create-view-state',
         title: 'useCreateViewState',
-        description:
-          'useCreateViewState keeps view state stable across parent re-renders.',
+        description: 'Hold the view state yourself, stable across re-renders.',
       },
     ],
   },
@@ -44,8 +44,7 @@ export const pages: ExamplePage[] = [
       {
         slug: 'default-session',
         title: 'Open on a default session',
-        description:
-          'Open the view on a predefined session that shows specific tracks.',
+        description: 'The full snapshot form, for when init is not enough.',
       },
       {
         slug: 'disable-add-track',
@@ -55,25 +54,24 @@ export const pages: ExamplePage[] = [
       {
         slug: 'with-drawer-widget',
         title: 'Widgets in a side drawer',
-        description:
-          'Render widgets (track selector, feature details) in a resizable side drawer via drawerViewHeight.',
+        description: 'Put the track selector and feature details in a drawer.',
       },
     ],
   },
 
-  // --- Navigation ---
+  // --- Navigation & search ---
   {
     slug: 'navigate-to-location',
     title: 'Navigate & control',
     description:
       'Navigate to a region, lock down zoom and pan, and toggle tracks from your own code.',
-    group: 'Navigation',
+    group: 'Navigation & search',
     sections: [
       {
         slug: 'external-navigate',
         title: 'External navigation',
         description:
-          'Drive the view from your own UI with navToLocString (a location string) or navToLocations (a {refName, start, end} object).',
+          'navToLocString for a locstring, navToLocations for coordinates.',
       },
       {
         slug: 'with-disable-zoom-and-side-scroll',
@@ -92,74 +90,62 @@ export const pages: ExamplePage[] = [
     title: 'Flip regions',
     description:
       'Reverse-complement the whole view, or mix orientations across multiple displayed regions.',
-    group: 'Navigation',
+    group: 'Navigation & search',
     sections: [
       {
         slug: 'horizontally-flip',
         title: 'Horizontally flip the view',
-        description:
-          'Reverse-complement the view, either imperatively with a button or by opening on a [rev] location string.',
+        description: 'A horizontallyFlip() button, or a [rev] locstring.',
       },
       {
         slug: 'with-multiple-displayed-regions-flipped',
         title: 'Multiple displayed regions, some flipped',
-        description:
-          'Show several regions at once, with individual regions reverse-complemented.',
+        description: 'Several regions at once, individually reversed.',
       },
     ],
   },
-
-  // --- Styling & theming ---
   {
-    slug: 'theming',
-    title: 'Theming & styling',
+    slug: 'text-searching',
+    title: 'Text search',
     description:
-      'A custom or dark Material UI theme, styling from the host page, or Shadow DOM isolation.',
-    group: 'Styling & theming',
+      'Search by gene name or ID, across all tracks with an aggregate adapter, or per-track.',
+    group: 'Navigation & search',
     sections: [
       {
-        slug: 'with-custom-theme',
-        title: 'Custom theme',
-        description: 'Apply a custom Material UI theme to the view.',
+        slug: 'with-aggregate-text-searching',
+        title: 'Aggregate text searching',
+        description: 'One trix index spanning every track.',
       },
       {
-        slug: 'with-dark-theme',
-        title: 'Dark theme',
-        description: 'Use the built-in dark theme.',
-      },
-      {
-        slug: 'with-outside-styling',
-        title: 'Styling from outside the component',
-        description: 'Style the embed from your surrounding page CSS.',
-      },
-      {
-        slug: 'shadow-dom',
-        title: 'Package as a custom element',
-        description:
-          'Register the view as a <jbrowse-linear-view> web component, shadow-isolated from the host page.',
+        slug: 'with-per-track-text-searching',
+        title: 'Per-track text searching',
+        description: 'An index attached to one track config.',
       },
     ],
   },
 
-  // --- Track display & coloring ---
+  // --- Tracks & styling ---
   {
     slug: 'feature-colors-and-labels',
-    title: 'Colors & labels',
+    title: 'Colors, labels & sizing',
     description:
-      'Color and label features dynamically with jexl callbacks, or quickly with the displayDefaults color shorthand.',
-    group: 'Track display & coloring',
+      'How a feature track looks: color and label per feature with jexl, and what it does when rows overflow.',
+    group: 'Tracks & styling',
     sections: [
-      {
-        slug: 'with-jexl-feature-colors-and-labels',
-        title: 'Jexl feature colors and labels',
-        description:
-          'Color and label features dynamically with jexl callback expressions.',
-      },
       {
         slug: 'with-track-color-shorthand',
         title: 'Track color shorthand',
-        description:
-          'Set a track color with the displayDefaults color shorthand.',
+        description: 'displayDefaults routes a setting to the right display.',
+      },
+      {
+        slug: 'with-jexl-feature-colors-and-labels',
+        title: 'Jexl feature colors and labels',
+        description: 'Color and re-label each feature from its own attributes.',
+      },
+      {
+        slug: 'track-sizing',
+        title: 'Track sizing: grow & fit',
+        description: 'heightMode, with the same crowded locus opened twice.',
       },
     ],
   },
@@ -168,7 +154,7 @@ export const pages: ExamplePage[] = [
     title: 'Alignments',
     description:
       'Open a BAM/CRAM track with a chosen display, group reads by SAM tag, and set the display options up front.',
-    group: 'Track display & coloring',
+    group: 'Tracks & styling',
     // the display-options section uses real HG002 nanopore reads (long,
     // modification-tagged), a heavy remote fetch, and modification rendering is
     // a GPU path CI's headless software-WebGL can choke on. Ships in a real
@@ -178,19 +164,17 @@ export const pages: ExamplePage[] = [
       {
         slug: 'with-init-alignments-display',
         title: 'Initialize an alignments display',
-        description:
-          'Open an alignments (BAM/CRAM) track with a chosen display.',
+        description: 'A displaySnapshot on an init.tracks entry.',
       },
       {
         slug: 'with-group-by-tag',
         title: 'Group alignments by tag',
-        description: 'Group reads in an alignments track by a SAM tag.',
+        description: 'groupBy splits the pileup into labeled lanes.',
       },
       {
         slug: 'alignments-track-options',
         title: 'Custom alignments display options',
-        description:
-          'Configure a LinearAlignmentsDisplay up front on real HG002 haplotagged nanopore data.',
+        description: 'The slots worth knowing, on real haplotagged ONT reads.',
       },
     ],
   },
@@ -198,72 +182,84 @@ export const pages: ExamplePage[] = [
     slug: 'specialized-track-types',
     title: 'Signal, gene, variant',
     description:
-      'Load specific data types: quantitative signal from a BigWig, gene models from a GTF, and a multi-sample VCF as a matrix.',
-    group: 'Track display & coloring',
+      'Quantitative signal from a BigWig, gene models from a GTF, and a multi-sample VCF as a matrix.',
+    group: 'Tracks & styling',
     sections: [
       {
         slug: 'with-wiggle-track',
         title: 'Quantitative (BigWig) track',
-        description:
-          'Render quantitative signal from a BigWig as a wiggle display, configured via the displayDefaults shorthand.',
+        description: 'A wiggle display, configured through displayDefaults.',
       },
       {
         slug: 'with-gtf-track',
         title: 'GTF gene model track',
-        description:
-          'Load gene models from a GTF file, with genes/transcripts built from per-feature lines via aggregateField.',
+        description: 'Genes and transcripts built from per-feature lines.',
       },
       {
         slug: 'with-multi-sample-variant-display',
         title: 'Multi-sample variant display',
-        description: 'Show a multi-sample VCF as a matrix display.',
+        description: 'One row per sample, grouped by a samples TSV column.',
       },
     ],
   },
   {
-    slug: 'track-sizing',
-    title: 'Track sizing',
+    slug: 'theming',
+    title: 'Theming & styling',
     description:
-      'What a feature track does with more rows than fit: grow, or squeeze them into a fixed height.',
-    group: 'Track display & coloring',
+      'A custom or dark Material UI theme, styling from the host page, or Shadow DOM isolation.',
+    group: 'Tracks & styling',
     sections: [
       {
-        slug: 'track-sizing',
-        title: 'Track sizing: grow & fit',
+        slug: 'with-custom-theme',
+        title: 'Custom theme',
+        description: 'Four named palette colors drive most of the chrome.',
+      },
+      {
+        slug: 'with-dark-theme',
+        title: 'Dark theme',
+        description: 'palette.mode: dark.',
+      },
+      {
+        slug: 'with-outside-styling',
+        title: 'Styling from outside the component',
+        description: 'The view inherits CSS from its host by default.',
+      },
+      {
+        slug: 'shadow-dom',
+        title: 'Package as a custom element',
+        description: 'A <jbrowse-linear-view> tag, shadow-isolated.',
       },
     ],
   },
 
-  // --- Sessions & state ---
+  // --- Sessions & integration ---
   {
     slug: 'session-setup',
     title: 'Init & persistence',
     description:
       'A richer initial view with advanced init and highlights, then persisting or sharing the live session.',
-    group: 'Sessions & state',
+    group: 'Sessions & integration',
     sections: [
       {
         slug: 'with-init-advanced',
         title: 'Advanced init',
         description:
-          'Use the advanced init blob to set up a richer initial view.',
+          'displaySnapshot, trackSnapshot, tracklist, nav, highlight.',
       },
       {
         slug: 'with-session-highlights',
         title: 'Session highlights',
-        description: 'Add highlighted regions to the session.',
+        description: 'Painted regions that carry a color and a label.',
       },
       {
         slug: 'with-session-persistence',
         title: 'Persist & restore the session',
-        description:
-          'Mirror the live session to localStorage with onSnapshot, and restore it as defaultSession on reload.',
+        description: 'onSnapshot out, defaultSession back in.',
       },
       {
         slug: 'session-in-url',
         title: 'Put the session in the URL',
-        description:
-          'Serialize the session with encodeSession and restore it with decodeSession, for a sharable link.',
+        description: 'encodeSession / decodeSession, for a sharable link.',
       },
     ],
   },
@@ -272,24 +268,22 @@ export const pages: ExamplePage[] = [
     title: 'Multiple views',
     description:
       'React to the view from your own companion panels, and render several independent views on one page.',
-    group: 'Sessions & state',
+    group: 'Sessions & integration',
     sections: [
       {
         slug: 'observe-visible',
         title: 'Observe the visible view',
-        description:
-          'React to the regions and features currently visible in the view from your own companion panels.',
+        description: 'An observer reading the regions currently on screen.',
       },
       {
         slug: 'observe-selection',
         title: 'Observe the selected feature',
-        description:
-          'Mirror the clicked feature (session.selection) into a companion panel with an observer.',
+        description: 'Mirror session.selection into your own panel.',
       },
       {
         slug: 'with-two-linear-genome-views',
         title: 'Two linear genome views',
-        description: 'Render two independent views on one page.',
+        description: 'Two independent views on one page.',
       },
     ],
   },
@@ -298,7 +292,7 @@ export const pages: ExamplePage[] = [
     title: 'Export & errors',
     description:
       'Render the whole view to a vector SVG (or rasterized PNG), and catch and render view errors with your own UI.',
-    group: 'Sessions & state',
+    group: 'Sessions & integration',
     // exportSvg re-renders every track's GPU layer through the SVG path, which
     // crashes CI's headless software-WebGL
     skipSmoke: true,
@@ -306,66 +300,42 @@ export const pages: ExamplePage[] = [
       {
         slug: 'export-svg',
         title: 'Export the view (SVG/PNG)',
-        description:
-          'Render the whole view to a vector SVG (or rasterized PNG) with the exportSvg action.',
+        description: 'The exportSvg action, through a ref.',
       },
       {
         slug: 'with-error-handler',
         title: 'Custom error handling',
-        description: 'Catch and render view errors with your own UI.',
-      },
-    ],
-  },
-
-  // --- Text searching ---
-  {
-    slug: 'text-searching',
-    title: 'Text search',
-    description:
-      'Search by gene name or ID, across all tracks with an aggregate adapter, or per-track.',
-    group: 'Text searching',
-    sections: [
-      {
-        slug: 'with-aggregate-text-searching',
-        title: 'Aggregate text searching',
         description:
-          'Search across tracks with an aggregate text-search adapter.',
-      },
-      {
-        slug: 'with-per-track-text-searching',
-        title: 'Per-track text searching',
-        description: 'Attach a text-search adapter to an individual track.',
+          'Construction errors throw; runtime errors go on view.error.',
       },
     ],
   },
-
-  // --- Plugins & accounts ---
   {
     slug: 'plugins',
     title: 'Plugins & accounts',
     description:
       'Plugins loaded at runtime or defined inline, authenticated data via internet accounts, and the web worker RPC.',
-    group: 'Plugins & accounts',
+    group: 'Sessions & integration',
     sections: [
       {
         slug: 'with-external-plugin',
         title: 'External plugin',
-        description: 'Load a plugin at runtime from a URL.',
+        description: 'loadPlugins fetches a bundle at runtime.',
       },
       {
         slug: 'with-inline-plugins',
         title: 'Inline plugins',
-        description: 'Register a plugin defined inline in your own code.',
+        description: 'Pass a Plugin subclass from your own source.',
       },
       {
         slug: 'with-internet-accounts',
         title: 'Internet accounts (authentication)',
-        description: 'Access authenticated data sources via internet accounts.',
+        description: 'A per-track fetch override, usually a bearer token.',
       },
       {
         slug: 'with-web-worker',
         title: 'Web worker RPC',
-        description: 'Offload data parsing/rendering to a web worker.',
+        description: 'Move parsing and rendering off the main thread.',
       },
     ],
   },
@@ -387,7 +357,7 @@ export const pages: ExamplePage[] = [
     slug: 'nextstrain-pathogens',
     title: 'Nextstrain pathogens',
     description:
-      'Genes, diversity, and a per-sample genotype matrix for SARS-CoV-2, Zika, Ebola, measles, and RSV-A. Pick a pathogen from the dropdown.',
+      'Genes, diversity, and a per-sample genotype matrix for SARS-CoV-2, Zika, Ebola, measles, and RSV-A.',
     group: 'Real-world demos',
     // the genotype-matrix GPU render crashes CI's headless software-WebGL
     skipSmoke: true,

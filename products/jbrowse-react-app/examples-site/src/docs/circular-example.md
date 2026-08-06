@@ -1,17 +1,6 @@
-`CircularView` renders structural variants as arcs around a circular ideogram.
-`init` takes a single `assembly` and the `tracks` to show:
+`CircularView` draws structural variants as arcs around a circular ideogram.
+`init` takes one `assembly` and the `tracks` to show.
 
-```js
-{
-  type: 'CircularView',
-  init: {
-    assembly: 'volvox',
-    tracks: ['volvox_sv'],
-  },
-}
-```
-
-Like every view type, this is declared as a `defaultSession.views` entry (see
-[Linear synteny view](../comparative-views/#synteny-example) for the general
-pattern). The fields `init` accepts come from the
-[CircularView model docs](https://jbrowse.org/jb2/docs/models/circularview/).
+Fields: [CircularView](https://jbrowse.org/jb2/docs/models/circularview/). The
+general `{ type, init }` pattern is on
+[Linear synteny view](../comparative-views/#synteny-example).

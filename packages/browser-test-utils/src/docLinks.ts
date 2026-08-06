@@ -234,13 +234,19 @@ export function findMissingDocs({
 // An examples-site page is a live demo plus its own source; the prose exists to
 // name the API and flag the gotchas, not to explain the demo at length. Left
 // unchecked it grows back — these pages had drifted to 800-word essays with
-// "Where to stop" sections before this cap existed. The limits are deliberately
-// slack: they catch a page turning back into an essay, not ordinary editing.
-const DEFAULT_MAX_DOC_WORDS = 500
+// "Where to stop" sections before this cap existed.
+//
+// The cap was 500/350 and every doc was rewritten against 300/200, because a
+// doc allowed 500 words reliably spends them: on a demo the reader can just
+// look at, on a paragraph restating the source rendered directly below it, and
+// on a closing pile of reference links. 300 words is roughly a screen, which is
+// the right budget for an annotation on a demo. A page needing more than that
+// is a tutorial on website/docs with a link to it from here, not a longer doc.
+const DEFAULT_MAX_DOC_WORDS = 300
 // gallery-card and "On this page" descriptions, where one line is the format
 const DEFAULT_MAX_DESCRIPTION_CHARS = 160
 // advisory only — printed, never fatal, so the trend is visible before the cap
-const LONG_DOC_WORDS = 350
+const LONG_DOC_WORDS = 200
 
 export interface LongProse {
   // what to name in the error, e.g. 'src/docs/pan-and-zoom.md' or a page slug
