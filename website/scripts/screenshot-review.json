@@ -2330,9 +2330,9 @@
   "pangenome/pggb_untangle": {
     "name": "pangenome/pggb_untangle",
     "status": "answered",
-    "note": "Reframed onto ONE strain's two copies: Sakai's rrnC operon on top, K12 in the middle, Sakai's rrnB operon underneath, so both bands narrow onto the same K12 span. The old framing put both copies of a strain in one 240kb window, where a 5.3kb segment is a 25px sliver and each band drew a washed-out fan. All three rows now carry a gene lane, which is what names the two copies (rrsC/gltU/rrlC/rrfC above, rrsB/gltT/rrlB/rrfB below) and the one K12 span they land on.",
-    "reviewedAt": "2026-08-06T19:42:44.543Z",
-    "hash": "3dd4b21c5c9b15aa5bfb541fc8793632988d6e20"
+    "note": "Reframed onto one strain's two rRNA copies (d83aab8303), then the data under it changed: odgi untangle is rebuilt with -e 5000, so the projection is 3,923 records rather than 174 for all four pairs. Each Sakai copy is now two blocks and the second lands on K12's OTHER collapsed rRNA span 228 kb away, which left the old 6.6 kb Sakai windows drawing a wedge over their left half and dead white space over their right. Windows trimmed to the block that lands in the K12 window (4.2 kb each); the fact that the rest of the operon points at K12's second rRNA locus is stated in prose instead of half-drawn. Two figures added beside it rather than reworking this one further: pangenome/pggb_untangle_dotplot (same PIF, no new file, and it carries BOTH untangle claims at once -- a descending run is an inversion, two marks sharing an x are one span reached twice) and pangenome/pggb_untangle_rows (one lane per strain on K12, colored by orientation: IAI39 inverted over five long stretches, the other three over none). Both are new and unreviewed.",
+    "reviewedAt": "2026-08-06T20:05:28.525Z",
+    "hash": "ff8da84a2c81ffca9ee094aa2c44644a92c454e6"
   },
   "tcga/mutations_cdh1_histology": {
     "name": "tcga/mutations_cdh1_histology",
