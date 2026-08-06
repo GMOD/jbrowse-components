@@ -1,4 +1,4 @@
-import { svgSafeId } from '@jbrowse/core/svg/svgId'
+import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { getSession } from '@jbrowse/core/util'
 
 import SVGRegionSeparators from './SVGRegionSeparators.tsx'
@@ -43,31 +43,26 @@ export default function SVGTracks({
         const conf = track.configuration
         const trackName = svgTrackName(track, session)
         const display = track.displays[0]!
-        // hand-rolled rather than SvgClipRect because the rect is inset by
-        // `textOffset`, so it owns the sanitizing SvgClipRect would have done:
-        // a trackId is arbitrary config text and lands inside a `url(#...)`
-        const clipId = svgSafeId(`track-clip-${model.id}-${conf.trackId}`)
         const currentOffset = offsets[i]!
         return (
           <g key={conf.trackId} transform={`translate(0 ${currentOffset})`}>
-            <defs>
-              <clipPath id={clipId}>
-                <rect
-                  x={-leftBuffer}
-                  y={textOffset}
-                  width={
-                    model.width + trackLabelOffset + leftBuffer + legendWidth
-                  }
-                  height={display.height}
-                />
-              </clipPath>
-            </defs>
-            <g clipPath={`url(#${clipId})`}>
+            {/* the box is inset by `textOffset` (the label band above the
+            body) and bleeds `leftBuffer` into the export's left gutter, so
+            left-of-zero content like a wiggle Y-scalebar survives. The id
+            carries a trackId — arbitrary config text landing inside a
+            `url(#...)` — and SvgClipRect is what sanitizes it. */}
+            <SvgClipRect
+              id={`track-clip-${model.id}-${conf.trackId}`}
+              x={-leftBuffer}
+              y={textOffset}
+              width={model.width + trackLabelOffset + leftBuffer + legendWidth}
+              height={display.height}
+            >
               <g transform={`translate(${trackLabelOffset} ${textOffset})`}>
                 {result}
                 <SVGRegionSeparators model={model} height={display.height} />
               </g>
-            </g>
+            </SvgClipRect>
             <SVGTrackLabel
               trackName={trackName}
               fontSize={fontSize}

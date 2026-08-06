@@ -35,7 +35,7 @@ export const trackSpacing = 2
 // x shift from the staticBlocks frame (which `gridlineTicks`/`scalebarLabels`
 // are computed in, and which overhangs the viewport on both sides) into the
 // view frame. The on-screen counterpart is ZoomTransform's translateX.
-export function staticBlocksDx(model: {
+function staticBlocksDx(model: {
   staticBlocks: { offsetPx: number }
   offsetPx: number
 }) {

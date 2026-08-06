@@ -35,12 +35,6 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   } = opts
   const session = getSession(model)
   const theme = session.getActiveThemeOptions?.(themeName)
-  const { width, effectiveShowCytobands } = model
-  const { tracksTop } = getHeaderLayout({
-    fontSize,
-    showCytobands: effectiveShowCytobands,
-    rulerHeight,
-  })
 
   // owns the two orderings this used to spell out by hand: legendWidth before
   // the awaits, tracksHeight after them. Every display's `renderSvg` owns its
@@ -58,6 +52,19 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
       // canvas below so a legend sits beside the plot rather than over it
       reserveLegendWidth: true,
     })
+
+  // The view geometry is read *after* the displays' waits, never before —
+  // SVGHeader re-reads both of these when it renders (later still, inside
+  // wrapSvgExport) and lays itself out with the same getHeaderLayout call, so a
+  // value that moved during the awaits would leave the reserved `tracksTop` and
+  // the drawn header describing different rows. Same rule the dotplot, circular
+  // and synteny exports each shipped a violation of.
+  const { width, effectiveShowCytobands } = model
+  const { tracksTop } = getHeaderLayout({
+    fontSize,
+    showCytobands: effectiveShowCytobands,
+    rulerHeight,
+  })
   const height = tracksHeight + tracksTop + exportMargin
 
   const trackLabelOffset = trackLabelLeftOffset({

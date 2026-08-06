@@ -144,6 +144,8 @@ export function SvgChrome({
 
 export function SvgClipRect({
   id,
+  x = 0,
+  y = 0,
   width,
   height,
   children,
@@ -152,6 +154,13 @@ export function SvgClipRect({
   // raw: sanitizing happens here, where the id and the `url()` pointing at it
   // are both emitted, and svgSafeId must not be applied twice
   id: string
+  // Origin of the clip rect in the caller's own coordinate space. Defaults to
+  // the origin, which is what a clip fitted to its group wants; a clip inset
+  // into a box that starts elsewhere (SVGTracks, whose track body sits below a
+  // label band and may bleed into a left gutter) sets them rather than
+  // hand-rolling the <clipPath>, which meant hand-rolling svgSafeId too.
+  x?: number
+  y?: number
   width: number
   height: number
   children: React.ReactNode
@@ -161,7 +170,7 @@ export function SvgClipRect({
     <>
       <defs>
         <clipPath id={safeId}>
-          <rect x={0} y={0} width={width} height={height} />
+          <rect x={x} y={y} width={width} height={height} />
         </clipPath>
       </defs>
       <g clipPath={`url(#${safeId})`}>{children}</g>
