@@ -64,10 +64,11 @@ the tooltip — which is why the fix is one prop, not a re-architecture.
 ## Decision
 
 **A tooltip that already re-renders per mouse move passes a controlled
-`clientPoint`.** MAF now threads client coordinates from `useDragSelection`
-(`mouseClientX`/`mouseClientY`) through to `MAFTooltip`, which forwards them as
-`clientPoint`. This removes the `window` listener and the per-move allocation;
-positioning rides the re-render the component was doing anyway.
+`clientPoint`.** MAF threaded client coordinates from `useDragSelection` through
+to `MAFTooltip`, which forwarded them as `clientPoint`. This removed the `window`
+listener and the per-move allocation; positioning rode the re-render the
+component was doing anyway. (Superseded 2026-08-06 — see the second amendment
+below. The conclusion holds; the coordinates now come from the chrome.)
 
 **Pointer-tracking mode stays a legitimate choice — for tooltips that do *not*
 have their own per-move driver.** `SyntenyTooltip` and `ArcTooltip` render
@@ -100,6 +101,30 @@ It is not only cosmetic drift. A nudge baked into the coordinate moves the
 *reference point*, and only `offset()` knows the resolved placement — so when
 `flip()` puts the tooltip to the LEFT of the cursor near the right edge of the
 viewport, a `+15` on `x` pushes it *toward* the cursor rather than away.
+
+### Amendment (2026-08-06): MAF's second per-move driver is gone
+
+The premise above — "MAF already re-renders per mouse move, so positioning rides
+a render it was doing anyway" — was true and is no longer. That driver was
+`useDragSelection` writing `mouse: {x, y, clientX, clientY}` into React state on
+every move, and the state lived in the component that renders `DisplayChrome`,
+so a plain hover over a maf track re-ran `useRenderingBackend`, rebuilt the
+status container's inline style and every overlay, and then re-rendered the
+body — to move a crosshair. It was the *last* display holding a pointer position
+in React state, and the most expensive place to hold one.
+
+`useDragSelection` now keeps only what is genuinely state: the rubberband's two
+corners, written while a button is held. The position comes from the chrome's
+`mouseTracker` (`useMouseState`), read in the body — which is the
+`useFollowPointer()` helper this ADR's "what would justify revisiting" section
+anticipated, arrived at from the other direction.
+
+`MAFTooltip`'s `clientX`/`clientY` were **optional**, so the allocating
+pointer-tracking mode this ADR is about was one missing prop away with nothing
+at the call site to say so. It takes a required `mouseState` now, and the body
+only renders it when there is a pointer, so the absent case no longer exists to
+model. The two consumers that still omit `clientPoint` on purpose
+(`SyntenyTooltip`, `ArcTooltip`) are unaffected and still correct.
 
 ### Companion decision: per-move highlight is an overlay, not a redraw input
 

@@ -153,10 +153,9 @@ const FeatureComponent = observer(function FeatureComponent({
               This was a `clientXY` useState inside `FeatureBody`, written from
               the canvas's own `onMouseMove`, which re-rendered the body and
               every overlay under it on each raw (uncoalesced) move while a
-              feature was hovered. See `useMouseTracking`. maf is the one
-              display still doing this — `useDragSelection` holds the live
-              position because the rubberband rect needs it as state, and the
-              hover half rides along. */}
+              feature was hovered. See `useMouseTracking`. maf was the last
+              other one and is converted too, so no display holds a pointer
+              position in React state now. */}
           <FeatureTooltipLayer model={model} mouseTracker={mouseTracker} />
         </>
       )}

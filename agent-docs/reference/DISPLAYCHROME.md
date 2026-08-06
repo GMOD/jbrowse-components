@@ -125,6 +125,14 @@ structural rather than remembered — there is no position at that level to hold
   component that draws the cursor-following thing. That is what the per-display
   `CrosshairLayer`/`PointerLayer` components are for; passing the tracker down is
   free, passing the position down is the bug.
+- **No display holds a pointer position in React state**, and that is the whole
+  rule rather than a tidiness preference. The two that did were canvas (a
+  `clientXY` `useState` in the body) and maf (`useDragSelection`'s `mouse`,
+  which lived in the component that renders the chrome — so a hover re-ran
+  `useRenderingBackend`). A drag is the one thing that legitimately needs
+  pointer state, and only its anchors do: maf keeps the rubberband's two
+  corners, written while a button is held, and takes the hover position off the
+  tracker like everything else.
 - **A display that hit-tests as the cursor moves passes `onPointerPosition`**,
   so its hit comes off the same single measurement as its guides. Named for the
   measured position, not `onPointerMove`, which collides with React's DOM

@@ -1,6 +1,6 @@
 import { useId, useRef, useState } from 'react'
 
-import { VerticalScrollbar } from '@jbrowse/core/ui'
+import { VerticalScrollbar, useMouseState } from '@jbrowse/core/ui'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import {
   DisplayCrosshairs,
@@ -35,6 +35,7 @@ import { useDragSelection } from './useDragSelection.ts'
 import { useMafVirtualScroll } from './useMafVirtualScroll.ts'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
+import type { MouseTracker } from '@jbrowse/core/ui'
 
 // Thin outer: owns the DisplayChrome + the drag-selection hook, which needs a
 // ref to the chrome container (so it can't live in the body). The drag object
@@ -67,8 +68,13 @@ const LinearMafDisplay = observer(function LinearMafDisplay(props: {
       }}
       onMouseLeave={drag.handleMouseLeave}
     >
-      {({ canvasRef }) => (
-        <MafBody model={model} canvasRef={canvasRef} drag={drag} />
+      {({ canvasRef, mouseTracker }) => (
+        <MafBody
+          model={model}
+          canvasRef={canvasRef}
+          drag={drag}
+          mouseTracker={mouseTracker}
+        />
       )}
     </DisplayChrome>
   )
@@ -78,10 +84,12 @@ const MafBody = observer(function MafBody({
   model,
   canvasRef,
   drag,
+  mouseTracker,
 }: {
   model: LinearMafDisplayModel
   canvasRef: (node: HTMLCanvasElement | null) => void
   drag: ReturnType<typeof useDragSelection>
+  mouseTracker: MouseTracker
 }) {
   const {
     height,
@@ -110,8 +118,18 @@ const MafBody = observer(function MafBody({
   // every overlay below is positioned in the same space — see canvasWidthPx
   const width = model.canvasWidthPx
 
-  const { isDragging, selectionRect, mouse, contextCoord, setContextCoord } =
-    drag
+  const { isDragging, selectionRect, contextCoord, setContextCoord } = drag
+  // Read here rather than in the component above, which is the one that renders
+  // `DisplayChrome`: this display used to hold the position in `useDragSelection`'s
+  // state, so every hover re-rendered the whole chrome. Read in the body it
+  // re-renders the body, whose children are all observers taking stable model
+  // getters and so memo-skip (ADR-028 measured exactly this).
+  //
+  // Measured against the chrome container, which is the same element
+  // `useDragSelection`'s own `relativeXY` measures against — maf passes that
+  // container as its `ref` — so `x`/`y` here and the drag rect's corners are in
+  // one coordinate space, as they were when both came off the same state.
+  const mouse = useMouseState(mouseTracker)
 
   const sidebarOffset = treeSidebarOffset(model)
   // Mouse guides/tooltips hide left of the sidebar's resize-handle edge.
@@ -274,9 +292,7 @@ const MafBody = observer(function MafBody({
           <MAFTooltip
             model={model}
             hit={pointer.hit}
-            mouseY={pointer.mouse.y}
-            clientX={pointer.mouse.clientX}
-            clientY={pointer.mouse.clientY}
+            mouseState={pointer.mouse}
             origMouseX={isDragging ? selectionRect?.startX : undefined}
           />
         </div>

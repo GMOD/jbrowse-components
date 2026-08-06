@@ -8,31 +8,31 @@ import MafInterbaseTooltipContents from './MafInterbaseTooltipContents.tsx'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
 import type { MafPointerHit } from './mafHitTest.ts'
+import type { MouseState } from '@jbrowse/core/ui'
 
 const MAFTooltip = observer(function ({
   model,
   hit,
-  mouseY,
-  clientX,
-  clientY,
+  mouseState,
   origMouseX,
 }: {
   /** the cursor already projected + hit-tested by the display body */
   hit: MafPointerHit
-  mouseY: number
-  clientX?: number
-  clientY?: number
+  /**
+   * The chrome's measured pointer, **required**: an omitted `clientPoint` puts
+   * floating-ui into pointer-tracking mode, which allocates a virtual reference
+   * on every window mousemove (ADR-028). This used to arrive as optional
+   * `clientX`/`clientY`, so the expensive mode was one missing prop away and
+   * nothing said so at the call site. The body only renders this with a
+   * pointer, so there is no absent case to model.
+   */
+  mouseState: MouseState
   model: LinearMafDisplayModel
   origMouseX?: number
 }) {
   const { coverageBandActive, coverageDisplayHeight } = model
-  // Controlled point for floating-ui. Without it, `useClientPoint` enters
-  // pointer-tracking mode: a window `mousemove` listener that allocates a fresh
-  // virtual reference every move. Every other display tooltip passes this.
-  const clientPoint =
-    clientX !== undefined && clientY !== undefined
-      ? { x: clientX, y: clientY }
-      : undefined
+  const clientPoint = { x: mouseState.clientX, y: mouseState.clientY }
+  const mouseY = mouseState.y
   const view = model.lgv
   const p1 = origMouseX !== undefined ? view.pxToBp(origMouseX) : undefined
   const { pos: p2, gposFrac, rowIndex, inBands, onRow, hover } = hit

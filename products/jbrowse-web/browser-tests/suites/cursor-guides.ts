@@ -230,6 +230,91 @@ export const suite: TestSuite = {
         )
       },
     },
+    {
+      // maf is the display where hover and drag share one pointer, and the two
+      // halves are now sourced differently: the hover position comes from the
+      // chrome's tracker, the rubberband's corners from `useDragSelection`'s own
+      // state, written only while a button is held. Nothing else asserts either
+      // — the `MAF Track` suite is all geometry — so a hover that stopped
+      // appearing, or a drag whose move handler stopped firing, was invisible.
+      name: 'maf: guides and tooltip on hover, rubberband on drag',
+      fn: async page => {
+        await navigateWithSessionSpec(page, {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              loc: 'ctgA:1-4000',
+              assembly: 'volvox',
+              tracks: [{ trackId: 'volvox_maf' }],
+            },
+          ],
+        })
+        await page.waitForSelector('[data-testid="maf-display-done"]', {
+          timeout: 60000,
+        })
+        await waitForDataLoaded(page, 60000)
+        await delay(2000)
+
+        assert(
+          (await countGuideLines(page)) === 0,
+          'guides drawn before the pointer arrived',
+        )
+
+        // well right of the tree sidebar: maf suppresses guides and tooltips
+        // left of its resize-handle edge, where a genomic coordinate would be
+        // the one the sidebar is covering
+        const { x, y } = await hoverFraction(
+          page,
+          '[data-testid="maf-display-done"]',
+          0.7,
+          0.6,
+        )
+        assert(
+          (await countGuideLines(page)) === 2,
+          'expected both guides while hovering the maf rows',
+        )
+        const tip = await tooltipText(page)
+        assert(
+          tip.includes('ctgA:'),
+          `maf tooltip missing its locus readout: ${tip}`,
+        )
+
+        const before = await tooltipX(page)
+        await page.mouse.move(x + 25, y, { steps: 3 })
+        await delay(400)
+        const after = await tooltipX(page)
+        assert(
+          before !== undefined && after !== undefined && after > before,
+          `maf tooltip did not follow the cursor: ${before} -> ${after}`,
+        )
+
+        // The drag: press, travel past the 3px threshold, release. The
+        // rubberband is drawn from state that only a live drag writes, so a
+        // move handler that stopped updating mid-drag shows up here as a
+        // selection that never reaches the menu.
+        await page.mouse.move(x, y)
+        await page.mouse.down()
+        await page.mouse.move(x + 120, y, { steps: 6 })
+        await delay(300)
+        await page.mouse.up()
+        await delay(800)
+        assert(
+          await page.evaluate(() =>
+            document.body.textContent.includes('View subsequences'),
+          ),
+          'drag-selection did not open the subsequence menu',
+        )
+        await page.keyboard.press('Escape')
+        await delay(500)
+
+        await page.mouse.move(5, 5)
+        await delay(500)
+        assert(
+          (await countGuideLines(page)) === 0,
+          'guides survived the pointer leaving the maf display',
+        )
+      },
+    },
   ],
 }
 

@@ -20,21 +20,10 @@ export interface ContextCoord extends DragRect {
   anchor: ContextMenuAnchor
 }
 
-/** The cursor in both coordinate systems the display needs it in. */
-export interface MousePos {
-  /** display-relative px, for hit-testing and the crosshairs */
-  x: number
-  y: number
-  /** viewport-relative px, for floating-ui's controlled client point */
-  clientX: number
-  clientY: number
-}
-
 interface DragState {
   drag?: DragRect
   isDragging: boolean
   showSelectionBox: boolean
-  mouse?: MousePos
 }
 
 function relativeXY(
@@ -92,18 +81,33 @@ export function useDragSelection(
         isDragging: true,
         showSelectionBox: false,
         drag: { startX: x, startY: y, endX: x, endY: y },
-        mouse: { x, y, clientX: e.clientX, clientY: e.clientY },
       })
     }
   }
 
+  // Only a live drag writes state here. The plain hover position used to be
+  // written on every move too, which re-rendered the component that renders
+  // `DisplayChrome` — so moving the cursor over a maf track re-ran
+  // `useRenderingBackend`, rebuilt the status container's inline style and every
+  // overlay, to move a crosshair. That position now comes from the chrome's
+  // `mouseTracker` (see `useMouseTracking`), which publishes rather than holds;
+  // this hook keeps only what is genuinely state, the rubberband's two corners.
   function handleMouseMove(e: React.MouseEvent) {
+    // The early return is what keeps a plain hover free: no `setState`, and no
+    // `getBoundingClientRect` either, since `relativeXY` reads layout. It tests
+    // the render-time `state`, so the updater re-tests its own — and returns `s`
+    // unchanged when there is no drag, which React bails out of rather than
+    // re-rendering. The final rect doesn't depend on either: `handleMouseUp`
+    // re-measures from its own event.
+    if (!state.isDragging) {
+      return
+    }
     const { x, y } = relativeXY(ref, e)
-    setState(s => ({
-      ...s,
-      mouse: { x, y, clientX: e.clientX, clientY: e.clientY },
-      drag: s.isDragging && s.drag ? { ...s.drag, endX: x, endY: y } : s.drag,
-    }))
+    setState(s =>
+      s.isDragging && s.drag
+        ? { ...s, drag: { ...s.drag, endX: x, endY: y } }
+        : s,
+    )
   }
 
   function handleMouseUp(e: React.MouseEvent) {
@@ -138,7 +142,7 @@ export function useDragSelection(
   }
 
   function handleMouseLeave() {
-    setState(s => ({ ...s, mouse: undefined, isDragging: false }))
+    setState(s => ({ ...s, isDragging: false }))
   }
 
   useEffect(() => {
@@ -163,7 +167,7 @@ export function useDragSelection(
     }
   }, [ref, state.showSelectionBox])
 
-  const { drag, mouse, isDragging, showSelectionBox } = state
+  const { drag, isDragging, showSelectionBox } = state
   // A press that hasn't travelled is a click, not a selection.
   const dragging = isDragging && drag !== undefined && movedFarEnough(drag)
 
@@ -178,8 +182,6 @@ export function useDragSelection(
      */
     selectionRect: dragging || showSelectionBox ? drag : undefined,
     showSelectionBox,
-    /** undefined when the cursor is outside the display */
-    mouse,
     contextCoord,
     setContextCoord,
     handleMouseDown,
