@@ -1,4 +1,4 @@
-// adapted from https://github.com/mobxjs/mobx-state-tree/blob/master/packages/mst-middlewares/src/time-traveller.ts
+// adapted from https://github.com/mobxjs/mobx-state-tree
 import {
   applySnapshot,
   getEnv,

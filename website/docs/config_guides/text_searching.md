@@ -86,12 +86,15 @@ options including CSI index support and `dontRedispatch`.
 The trix format is based on the
 [UCSC trix format](https://genome.ucsc.edu/goldenPath/help/trix.html). Use
 [jbrowse text-index](/docs/cli#jbrowse-text-index) to generate the index files
-and config automatically. The adapter reads three files, and the `uri` shorthand
-above names the first and derives the other two:
+and config automatically. `text-index` writes three files, and the `uri`
+shorthand above names the first and derives the other two:
 
-- `ixFilePath` - the trix `.ix` file, the one `uri` points at
-- `ixxFilePath` - the trix `.ixx` file, `uri` plus an `x`
-- `metaFilePath` - the metadata JSON, `uri` with `.ix` replaced by `_meta.json`
+- `ixFilePath` - the trix `.ix` file, the one `uri` points at, and the index the
+  search box reads
+- `ixxFilePath` - the trix `.ixx` prefix index, `uri` plus an `x`, read
+  alongside it
+- `metaFilePath` - the metadata JSON, `uri` with `.ix` replaced by `_meta.json`,
+  recording what the index was built from
 
 Set the three slots individually when the files do not sit together under those
 names.

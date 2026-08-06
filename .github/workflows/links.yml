@@ -1,0 +1,39 @@
+# Weekly probe of every external URL written in the repo — docs prose, tutorial
+# reproduce scripts, demo and test configs, screenshot specs.
+#
+# Off the PR path on purpose, same reasoning as the figure sweep: nearly every
+# URL here belongs to somebody else (jbrowse.org's own bucket, hgdownload, ENCODE,
+# a journal, a GitHub release), so a required check built on them fails on their
+# outage rather than on the change under review. The failure this catches is slow
+# — a bucket key moves, a release asset gains a version, a vendor reorganizes its
+# docs — so a weekly run finds it long before a reader does.
+name: Links
+
+on:
+  schedule:
+    # Mondays 07:00 UTC, an hour after the figure sweep so the two aren't
+    # hammering jbrowse.org's bucket at once
+    - cron: '0 7 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  external:
+    name: External link sweep
+    runs-on: ubuntu-latest
+    # The sweep is ~6 minutes; the ceiling is for a host that hangs rather than
+    # refuses, which the per-request --max-time already bounds.
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: Probe every external URL
+        run: pnpm --filter @jbrowse/website-astro check-external-links

@@ -5304,27 +5304,6 @@
       "assemblyNames": ["hg38"]
     },
     {
-      "type": "VariantTrack",
-      "trackId": "sgdp_memstrs_1.release.sorted.vcf",
-      "name": "sgdp_memstrs_1.release.sorted.vcf",
-      "adapter": {
-        "type": "VcfTabixAdapter",
-        "vcfGzLocation": {
-          "uri": "https://ftp.ncbi.nlm.nih.gov/pub/dbVar/data/Homo_sapiens/by_study/genotype/nstd128/sgdp_memstrs_1.release.sorted.vcf.gz",
-          "locationType": "UriLocation"
-        },
-        "index": {
-          "location": {
-            "uri": "https://ftp.ncbi.nlm.nih.gov/pub/dbVar/data/Homo_sapiens/by_study/genotype/nstd128/sgdp_memstrs_1.release.sorted.vcf.gz.tbi",
-            "locationType": "UriLocation"
-          },
-          "indexType": "TBI"
-        }
-      },
-      "category": ["1000 Genomes", "STRs"],
-      "assemblyNames": ["hg38"]
-    },
-    {
       "type": "FeatureTrack",
       "trackId": "clinvar_non_pathogenic",
       "category": ["Annotation", "ClinVar"],

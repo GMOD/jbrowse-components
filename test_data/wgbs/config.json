@@ -14,10 +14,6 @@
           "faiLocation": {
             "uri": "ref.fa.fai",
             "locationType": "UriLocation"
-          },
-          "metadataLocation": {
-            "uri": "https://raw.githubusercontent.com/FFRGS/FFRGS-Specification/main/examples/example.yaml",
-            "locationType": "UriLocation"
           }
         }
       }

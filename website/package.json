@@ -14,6 +14,7 @@
     "check-captions": "node scripts/check-captions.ts",
     "check-remote-hosts": "node scripts/check-remote-hosts.ts",
     "check-links": "node scripts/check-links.ts",
+    "check-external-links": "node scripts/check-external-links.ts",
     "check-menu-paths": "node scripts/check-menu-paths.ts",
     "check-menu-labels": "node scripts/check-menu-labels.ts",
     "check-llms": "node scripts/check-llms.ts",
