@@ -100,6 +100,16 @@ const CLUSTERED_READY =
 // graphgenomeviewer, so the figures below need network for the plugin itself.
 const CNV_CONFIG = 'test_data/1000g_cnv/config.json'
 
+// The 24 contigs the whole-genome store actually covers, chr-prefixed to match
+// that config's hg38 (the bgzip FASTA) and the store's own refNames. Passed as
+// `displayedRegionNames` so the view holds these rather than every unplaced
+// contig, whose elided far-right column is clutter in a genome-wide overview.
+const HG38_MAIN_CHROMS = [
+  ...Array.from({ length: 22 }, (_, i) => `chr${i + 1}`),
+  'chrX',
+  'chrY',
+]
+
 export const cnv1000gSpecs: ScreenshotSpec[] = [
   // The hero figure. 104 individuals as one row each, clustered on this window
   // so the copy-number classes separate, over the SV map's own record of the
@@ -250,5 +260,55 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
     settleMs: 10000,
     // 2504 rows floored to 1px: sub-pixel row-boundary jitter between runs
     diffThreshold: 0.02,
+  },
+
+  // The two halves of the summary-bin figure. Same store, same window, same
+  // settings, one slot apart: the top reads each bin's mean, the bottom its max.
+  //
+  // Genome-wide is the only zoom where this can be shown at all. The adapter
+  // takes the coarsest level whose bins fit in a pixel, so anything narrower
+  // than about 42Mb lands on a level with no summary and the two halves would
+  // be identical. Here it reads bin1000000, where one bin is 100 of the store's
+  // own finest bins and a 20kb amplification is 1/50th of the average.
+  ...(['avg', 'max'] as const).map(mode => ({
+    mode: 'url' as const,
+    name: `cnv1000g/genome_${mode}`,
+    url: sessionSpec(CNV_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          displayedRegionNames: HG38_MAIN_CHROMS,
+          tracks: [
+            {
+              ...CN_HEATMAP_SETTINGS,
+              trackId: 'cnv_1000g_zarr_wg',
+              summaryScoreMode: mode,
+              height: 420,
+              // Not clustered, unlike the window figures. Clustering is scoped
+              // to the visible region, so genome-wide it would order the rows
+              // by whole-genome similarity and the two halves would sort
+              // differently, which is the one thing this figure cannot afford:
+              // a row has to be the same individual in both.
+              showTree: false,
+            },
+          ],
+        },
+      ],
+    }),
+    readyTimeout: 300000,
+    viewportHeight: 560,
+    settleMs: 10000,
+    diffThreshold: 0.02,
+  })),
+
+  {
+    mode: 'compose',
+    name: 'cnv1000g/genome_summary_bins',
+    parts: ['cnv1000g/genome_avg', 'cnv1000g/genome_max'],
+    // Stacked rather than side by side, against the usual rule for one view
+    // drawn two ways: the x axis is genomic coordinate, so stacking is what
+    // puts a locus in the top half directly above itself in the bottom.
+    direction: 'vertical',
   },
 ]
