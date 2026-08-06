@@ -62,18 +62,26 @@ const RowLabel = function ({
   idx,
   rowHeight,
   fill,
+  hasColors,
 }: {
   source: Source
   idx: number
   rowHeight: number
   fill: string
+  // Whether the gutter reserves a swatch column at all — a whole-gutter fact,
+  // not a per-row one. Indenting on the row's OWN color instead left the label
+  // column ragged whenever some rows had a color and others didn't (a
+  // samplesTsv with a partly-filled `color` column): colored rows indented past
+  // the swatch, uncolored rows started under it. `gutterWidth` below already
+  // reserves the column for every row, so this is the alignment it assumes.
+  hasColors: boolean
 }) {
-  const { color, name, label } = source
+  const { name, label } = source
   const svgFontSize = Math.min(rowHeight, 12)
   return (
     <text
       y={(idx + 0.5) * rowHeight}
-      x={color ? COLOR_BOX_WIDTH + 2 : 0}
+      x={hasColors ? COLOR_BOX_WIDTH + 2 : 0}
       fontSize={svgFontSize}
       dominantBaseline="central"
       fill={fill}
@@ -145,6 +153,7 @@ const SvgSampleRowLabels = observer(function SvgSampleRowLabels({
               idx={startIdx + i}
               rowHeight={rowHeight}
               fill={fill}
+              hasColors={hasColors}
             />
           ))
         : null}

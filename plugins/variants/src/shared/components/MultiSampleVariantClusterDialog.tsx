@@ -28,7 +28,14 @@ const MultiSampleVariantClusterDialog = observer(
         description="This procedure will cluster the visible genotype data using hierarchical clustering"
         matrixLabel="genotype matrix"
         tsvFilename="genotypes.tsv"
-        canRun={!!model.sourcesVolatile}
+        // The same gate the auto path uses (`ready: () => self.clusteringReady`
+        // in getMultiSampleVariantClusterAutorun), not just "are there sources".
+        // In phased mode the haplotype matrix needs `sampleInfo`, which arrives
+        // with cellData; running before it builds a sample-level tree whose
+        // leaves never match the haplotype rows, so the run appears to do
+        // nothing. Reachable while the display is showing "region too large" —
+        // this RPC fetches its own regions, so it happily succeeds there.
+        canRun={model.clusteringReady}
         matrixKey={model.sourcesBase ? ['genotypeMatrix', model] : null}
         run={async ({ stopToken, statusCallback }) => {
           if (!view.initialized) {

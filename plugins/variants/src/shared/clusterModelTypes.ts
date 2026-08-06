@@ -21,6 +21,15 @@ export interface ReducedModel {
   adapterConfig: AnyConfigurationModel
   renderingMode: string
   sampleInfo?: Record<string, SampleInfo>
+  // Whether the fetched inputs clustering needs have arrived. Phased mode
+  // clusters haplotypes, which needs per-sample ploidy from `sampleInfo` — and
+  // that rides with `cellData`, later than the header-only `sourcesVolatile`.
+  // On this interface rather than only on the autorun's own type because BOTH
+  // entry points have to gate on it: run before it, and `buildGenotypeMatrix`
+  // silently builds the sample-level matrix instead, so the tree's leaves
+  // ("HG001") never match the haplotype rows ("HG001 HP0") and
+  // `treeDescribesRows` refuses to draw the dendrogram the run just produced.
+  clusteringReady: boolean
   setClusterTree: (arg?: string) => void
   setLayout: (arg: Source[]) => void
   setLayoutAndClusterTree: (

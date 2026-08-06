@@ -46,6 +46,32 @@ test('sidebar sample labels render in fit mode', () => {
   getByText('HG003')
 })
 
+// A samplesTsv `color` column can be filled for some rows and blank for others
+// (parseSamplesTsv writes '' for a missing cell, which reads as no color). The
+// label indent used to key off each row's OWN color, so those two groups
+// started at different x and the label column came out ragged — while
+// `gutterWidth` reserved the swatch column for every row either way.
+test('sidebar labels share one indent when only some rows carry a color', () => {
+  const m = createDisplay()
+  m.setSources([
+    { name: 'HG001', color: 'red' },
+    { name: 'HG002' },
+    { name: 'HG003', color: 'blue' },
+  ])
+
+  const { getByText } = render(
+    <svg>
+      <SvgSampleRowLabelGutter model={m} />
+    </svg>,
+  )
+  const xs = ['HG001', 'HG002', 'HG003'].map(n =>
+    getByText(n).getAttribute('x'),
+  )
+  expect(new Set(xs).size).toBe(1)
+  // and it is the indented one, since the gutter reserves the swatch column
+  expect(Number(xs[0])).toBeGreaterThan(0)
+})
+
 describe('getMaxLabelWidth', () => {
   const sources: Source[] = [
     { name: 'a', color: '#a' },

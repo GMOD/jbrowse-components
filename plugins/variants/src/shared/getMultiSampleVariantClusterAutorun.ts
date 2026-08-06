@@ -15,7 +15,8 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 export function getMultiSampleVariantClusterAutorun(
   self: IStateTreeNode &
     ReducedModel & {
-      clusteringReady: boolean
+      // `clusteringReady` comes from ReducedModel — both clustering entry
+      // points gate on it, so it lives with the rest of the shared shape.
       runClustering?: boolean
       clusterRegion?: string
       setRunClustering: (arg?: boolean) => void
