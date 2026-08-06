@@ -22,11 +22,11 @@ read one section, read [The cascade](#the-cascade).
   of the snapshot, so "unset" *is* "follows the default".
 - The promoted value lives in the **session**, not the track, so setting a
   default rewrites nothing. Objects compare with `deepEqual`, not `!==`.
-- **The inherit sentinel is always `undefined`**, enforced by `ConfigSlot`: a
-  promotable slot must be a `maybe*` type, must leave `defaultValue` undefined,
-  and must declare `promotedBase` for what being unset resolves to. This keeps
-  every real value customizable over an opposite default, and keeps the
-  mechanism out of the slot's own vocabulary.
+- **Declaring `promotedBase` is what makes a slot promotable**, and the inherit
+  sentinel is always `undefined`: such a slot is a `maybe*` type with no
+  `defaultValue`, both enforced by `ConfigSlot`. That keeps every real value
+  customizable over an opposite default, and keeps the mechanism out of the
+  slot's own vocabulary.
 - **Standing rule at every serialization boundary:** flatten the cascade like
   `getComputedStyle`. Worker RPC → `getConfigSnapshotWithPromotables`;
   share/export → `bakePromotedDefaultsIntoSnapshot`. Never emit a raw promotable
@@ -98,13 +98,12 @@ the sender-at-base case it deliberately does not cover, jbrowse-web).
 
 A slot's `promotedBase` travels down `baseConfiguration` to every subclass,
 but the **pin** is built by whichever track menu happens to construct a row for
-that slot. A display that inherits the flag and curates its own menu therefore
+that slot. A display that inherits the slot and curates its own menu therefore
 has a promotable slot with **no pin anywhere** — and since a promoted default is
 keyed by *display type*, no other display's pin can write it either, so the slot
-resolves to `promotedBase` forever unless a track customizes it. Ten such pairs
-exist today, all inherited rather than declared:
+resolves to `promotedBase` forever unless a track customizes it.
 
-**The list is no longer kept here.** It is
+**The list lives in one place, and it is not here.** It is
 `KNOWN_UNPINNED` in `products/jbrowse-web/src/tests/PromotablePinCoverage.test.ts`,
 which opens one display of every type that declares a promotable slot, drives it
 through the states that reveal its rows, and diffs the pins it finds against
@@ -112,14 +111,11 @@ through the states that reveal its rows, and diffs the pins it finds against
 to delete a line from the baseline. This prose table was the previous
 arrangement and it drifted twice in the obvious two directions — a row for a
 slot that had been deleted, and a missing row for one that had been added — which
-is the whole argument for the check.
-
-As of writing it holds ten, in two groups:
-
-| Display | Slots promotable with no pin | Why |
-| --- | --- | --- |
-| `LGVSyntenyDisplay` | `linkedReads`, `mismatchAlpha`, `readConnections`, `readConnectionsDown`, `showSashimiArcs`, `sashimiArcsMode`, `showSashimiLabels`, `showSoftClipping` | composes the alignments state model, but `LGVSyntenyDisplay/menus.ts` builds its own curated menu; only `getFeatureHeightMenuItem` (`featureHeight`, `heightMode`) and `getColorByMenuItem` (`colorBy`) bring pins |
-| `LinearVariantDisplay` | `subfeatureLabels`, `displayDirectionalChevrons` | **inherited but inert.** Both are transcript-structure settings — chevrons are emitted by `emitIntronLines` between a transcript's exons, `subfeatureLabels` labels transcript children — and a VCF feature has no such subfeatures. They reach the variant schema only because they sit on the shared canvas base, and their `resolveConf` getters live in the concrete `LinearBasicDisplay/model.ts`, which variants don't compose |
+is the whole argument for the check. Two displays account for every entry —
+`LGVSyntenyDisplay`, which composes the alignments state model but curates its own
+menu, and `LinearVariantDisplay`, which inherits two transcript-structure settings
+that draw nothing on a VCF feature. The baseline names the slots and says why, per
+entry; a second copy here is a copy to drift.
 
 The mechanism the check reads: `Pin` carries the `slot` it
 promotes (nothing draws it — the pin renders from `active`/`toggle` alone), so a
@@ -129,13 +125,13 @@ built menu can be walked for the slots it offers. A `type: 'custom'` row —
 trailing-column reservation, which it could never draw in regardless. Those two
 questions look like one and are not; both sites say so.
 
-`colorBy` was a ninth synteny row until the display started passing
-`getColorByMenuItem`'s optional `displayTypeDefault` factory. It is the shape to
-copy: the builder already took the factory, the schema override existed *only* to
-give the slot a synteny `promotedBase` (`{type:'strand'}`), and the wiring was two
-lines. `trackMenuItems.test.ts` pins it at the **call site** — the shared
-builder's own test can't, since passing no factory is a legitimate call for a
-display whose slot isn't promotable.
+**The shape to copy when wiring one of these** is `colorBy`, which used to be a
+synteny entry: the shared `getColorByMenuItem` already took an optional `pin`
+factory, so the wiring was two lines over a schema override that existed only to
+give the slot a synteny `promotedBase` (`{type:'strand'}`).
+`trackMenuItems.test.ts` pins it at the **call site** — the shared builder's own
+test can't, since passing no factory is legitimate for a display whose slot isn't
+promotable.
 
 **Dropping `promotedBase` is not the fix for the synteny rows.** Those slots are read
 through the *shared* model's `resolveConf` getters, which throw on a
@@ -154,36 +150,50 @@ against a `renderConfig` that declares `boolean`. Making it a genuinely plain
 slot means redeclaring `type` and a concrete `defaultValue` on the variant
 schema. The two entries buy nothing today and are recorded rather than fixed.
 
-`LinearManhattanDisplay` used to be a third row, for a `lineWidth` inherited with
-the `wiggleConfigSchemaFields` spread. It isn't one any more: the schema now
-declares its own slots (`configSchemaFactory.ts` says why) and takes only
-`scoreAxisConfigSchemaFields`, so `lineWidth` is gone entirely and its one
-promotable slot, `scatterPointSize`, does have a pin.
+The generated user-guide table (`writePromotableSlotDocs`) is derived from
+`promotedBase`, so it lists the pin-less slots too; its column therefore claims
+"settings with a session-wide default", not "with a pin", and the guide says where
+the pin actually lives. Nothing static can see a menu row, so don't try to make
+that table exact.
 
-The generated user-guide table
-(`writePromotableSlotDocs`) is derived from the flag, so it lists all ten; its
-column therefore claims "settings with a session-wide default", not "with a pin",
-and the guide says where the pin actually lives. Nothing static can see a menu
-row, so don't try to make that table exact.
+A display only reaches that table if it has a `#config` block whose name equals a
+`new DisplayType({name})`. The two GC-content displays once had promotable slots,
+working pins and no table row, because their annotated block sat on a shared base
+nothing registers — a docs-generator rule rather than a cascade one, and
+`website/scripts/api-docs/README.md` owns it (`assertSingleHeader`,
+`isBaseSchema`).
 
-**A row needs a `#config` block whose name equals a `new DisplayType({name})`**,
-which is a real way for a working display to fall out of the table entirely —
-the two GC-content displays did. Their schemas came from one un-annotated
-`makeConfigSchema(name)` helper while the `#config` block sat on
-`SharedGCContentDisplay`, a name nothing registers, so neither registered type
-had a config page at all: no promotable row, unlinked names in the DISPLAY_TYPES
-table, and — since `isBaseSchema` only exempts a schema that is extended by a
-documented config and carries no `#example` — a `SharedGCContentDisplay` page
-whose slot table told readers to write a display type that does not exist. Both
-displays always did inherit promotable `lineWidth` / `scatterPointSize` from
-`linearWiggleDisplayConfigSchema` and always did build the pins (their model
-composes `linearWiggleDisplayModelFactory`, so `makePointSizeMenuItems` /
-`makeLineWidthMenuItems` come along, gated on `scatter` / `line` renderings as in
-wiggle) — only the docs were missing. Fixed by giving each its own annotated
-file (`configSchemaReferenceSequence.ts` / `configSchemaTrack.ts`) and moving the
-examples off the shared base; **one `#config` per file is a hard limit**
-(`assertSingleHeader`), so a shared factory serving two registered types always
-needs two files.
+### Alignments names each pin twice, and that is the price of its menu split
+
+Every other adopter builds a pin where it builds the row — `makePin(self, slot)`
+inline, with nothing declared anywhere else. Alignments looks worse: its
+`menus/{reads,readConnections,sashimi}.ts` each declare one `Pin` member per slot
+on a duck-typed `…Model` interface, and `LinearAlignmentsDisplay/model.ts` exposes
+a matching getter to satisfy it. Eight interface members, nine getters, for eight
+slots.
+
+**Deleting them was tried, and reverted.** The obvious fix is to have those
+modules extend `ResolvableDisplay` and call `makePin` themselves, exactly as
+canvas, LGV, synteny and `makeSizeMenu` do. It works, and it costs more than it
+saves: `makePin` reaches the session through `getSession`, so the *whole* fake in
+each of those three menu tests has to become a live MST display under a session
+shim. Today they are plain object literals — 108, 209 and 124 lines testing menu
+*structure* — and they would each become a `PluginManager`-booting integration
+test to assert the same thing.
+
+The asymmetry with the other adopters is real but not the same shape: those build
+pins in a model file where `self` is in scope, not in a separate module handed a
+duck-typed model. The per-slot members are what buys that separation. Two things
+do keep the copies honest — the getter and the interface member are both typed, so
+a mismatch is a compile error, and `promotableSlotsWithoutPin` catches a slot no
+row offers at all.
+
+One genuine sharp edge found on the way: the plain fakes define `toggle()` as a
+method that flips `this.active`, which no real `Pin` does (`makePin` closes over
+what it needs). So those tests assert against a `Pin` that behaves unlike the
+production one — harmless while `MenuItemPin` holds the control by reference, and
+the reason flattening that wrapper into `interface MenuItemPin extends Pin` breaks
+them. `MenuTypes.ts` says so at the declaration.
 
 ## The cascade
 
@@ -311,8 +321,8 @@ resolves through `STNValue<any, …>` to `any` and would turn off checking for t
 two members this interface exists to declare — see the repo `CLAUDE.md`).
 Everything the cascade needs, and what **every public entry
 point takes**: `resolveConf`, `makePin`, `isSlotCustomized`,
-`getConfigSnapshotWithPromotables`, `getDisplayTypeDefaultChanges`,
-`clearPromotedDefaults`, `resetSlotToInherit`.
+`getConfigSnapshotWithPromotables`, `getDisplayTypeDefaultChanges` and
+`clearPromotedDefaults`.
 
 There is deliberately no write-capable variant. A `PromotableDisplay` used to
 exist for the single member the subsystem wrote — `setIgnorePromotedDefaults` —
@@ -397,8 +407,8 @@ exactly one slot. Reintroduce the group only alongside a real multi-slot pin.
 | --- | --- | --- |
 | `resolveConf(self, slot)` | the cascaded `.value`; throws on a non-promotable slot. Takes a `ResolvableDisplay`, so a bare `{ configuration }` is a compile error | the display's own value getter |
 | `getConfigSnapshotWithPromotables(self)` | config snapshot with every promotable slot replaced by its resolved value | the worker payload (see [Worker boundary](#adding-a-promotable-slot)) |
-| `makePin(self, slot, onValue)` | `Pin` `{ slot, active, toggle }` on one fixed value | an always-visible pin on one on-value ("make arcs the default") |
-| `makePin(self, slot)` — value omitted | same, over the track's *current* resolved value | "promote whatever I'm showing" for symmetric / continuous settings |
+| `makePin(self, slot, onValue)` | `Pin` `{ slot, active, toggle }` on one fixed value — "make arcs the default", independent of what the track shows, so two rows sharing a slot (arcs `'arc'` vs cloud `'cloud'`) stay independent | an always-visible per-value pin |
+| `makePin(self, slot)` — value omitted | same, over the track's *current* resolved value | a symmetric or continuous setting with no sensible fixed on-value (wiggle point size, arc line width, `mismatchAlpha`) |
 | `getDisplayTypeDefaultChanges(self)` | `TrackConfigChange[]` — promotable slots where a following track's resolved value differs from base | track-selector badge diff |
 | `clearPromotedDefaults(self, slots?)` | clears the named promoted defaults for this display's type (every promotable slot when `slots` is omitted) | badge "clear session default", which passes the slots it listed |
 | `isSlotCustomized(self, slot)` | whether the track holds its own value rather than following the default | a slider row's "reset to default" enablement (wiggle point size, arc line width) |
@@ -429,18 +439,6 @@ The low-level primitives behind the builders —
 `resetSlotToInherit(displays, slot)` — are **module-internal** (exercised by
 `promotableDefaults.test.ts`), *not* on the public barrel. Consume the two
 `makePin`, not these.
-
-**Give the value, or omit it?**
-
-- **`makePin(self, slot, value)` (per-value, fixed)** — the meaning is "make
-  *this specific value* the default", independent of the track's current value.
-  Use for an always-visible pin so it never promotes a meaningless value, and so
-  two toggles sharing one slot (arcs `'arc'` vs read cloud `'cloud'`; sashimi
-  `'down'` vs `'auto'`) stay independent.
-- **`makePin(self, slot)`, value omitted (promote-current)** — the pin
-  means "whatever I'm showing", not a fixed on-value. Use for symmetric or
-  continuous settings where a fixed value makes no sense (wiggle point size, arc
-  line width, `mismatchAlpha`).
 
 Note `resolveSlot` reads the session even for a customized track — required so
 the "customized value equals the promoted default → pin filled" case works. This
@@ -627,23 +625,23 @@ their own column). Pins are **always shown** (discoverable) and their content
 `stopPropagation`s so a click sets the default without toggling the row value or
 dismissing the menu.
 
-The row builders in `promotableMenuItems.tsx`:
+The row builders in `promotableMenuItems.ts`:
 
 - **`promotableToggleItem`** — a `type:'checkbox'` row (native
   hover/sizing/keyboard) for a flat boolean setting (`showSoftClipping`,
   `readConnectionsDown`, `showSashimiLabels`). The checkbox toggles the track's
-  value; the pin promotes the setting's on-value. Takes a `displayTypeDefault`
-  control (per-value, from `makePin` with a value).
+  value; the pin promotes the setting's on-value. Takes a `pin`, per-value —
+  `makePin(self, slot, onValue)`.
 - **`promotableRadioItem`** — a `type:'radio'` row for one option of a
   multi-value slot (a `colorBy` scheme, a `heightMode`/`sashimiArcsMode` option,
   a feature-height preset). **Every option in a group gets a pin, the
   `promotedBase` value included.** Once a non-base value is promoted, pinning the
   base back is the only per-value way to undo it from its own row, and a radio
   group with one row silently missing its trailing control reads as a bug.
-  `displayTypeDefault` stays optional on the row builder, but a group that omits
-  it on some rows and not others is the thing to avoid — expose one
-  `f(value) => control` method on the model rather than a named getter per value,
-  which is what made `sashimiArcsMode`'s base look unpinnable.
+  `pin` stays optional on the row builder, but a group that omits it on some rows
+  and not others is the thing to avoid — build it per option inside the `.map`
+  over the group's values, rather than naming each combination, which is what made
+  `sashimiArcsMode`'s base look unpinnable.
 
 Selecting a value **customizes** the track to it (`promotedBase` included), and
 **no radio or checkbox group offers a "follow default" row** — picking a value
@@ -821,6 +819,21 @@ deletions, listed here only so a reader doesn't go looking for them:
   `markIgnorePromotedDefaults`, the second snapshot walk that stamped it. See
   [Received sessions](#received-sessions) for what it covered and why the trade
   went the other way.
+- **The `promotable: true` flag**, which said nothing `promotedBase` didn't and
+  cost two `ConfigSlot` throws to keep the pair in agreement — see
+  [The inherit sentinel](#the-inherit-sentinel) and ADR-047. A subclass now turns
+  an inherited promotable slot off with `promotedBase: undefined`.
+- **The second pin builder.** `makeCurrentValueDisplayTypeDefaultControl(self,
+  slot)` was exactly `make…Control(self, slot, resolveSlot(self, slot).value)`, so
+  the pair was one function plus a section explaining which name to reach for.
+  `makePin`'s optional value argument says what the longer name said. The same
+  pass renamed `DisplayTypeDefaultControl` → `Pin`, `defaultForAll` → `pin` and
+  `DefaultForAllAdornment` → `PinAdornment`, finishing a rename the prose, the
+  helpers and the test names had already made.
+- **The open-display walk**, moved rather than deleted: `openPromotableDisplays`
+  and its structural guards are in `core/src/util/openDisplays.ts`, since "which
+  displays is the user looking at" is not a cascade question and the share/export
+  bake wants the same answer.
 
 The optionality of the session store went too: `get/setDisplayTypeDefault` (with
 `setPreferenceOverride` / `clearPreferenceOverrides` / `setScrollZoom`) are
