@@ -98,8 +98,10 @@ Left to do:
 
 - **show it.** The node popup lists `carriedBy` when set. Nothing yet maps
   `tags.SM` onto it, which is the cheap win.
-- **rebuild and rehost the E. coli pggb pair**, whose column 6 predates the tag
-  format and is dropped by the grammar check.
+- ~~**rebuild and rehost the E. coli pggb pair**~~ done 2026-08-06. The hosted
+  pair now carries `SM:Z:` per haplotype; see the tag section in
+  [reference/PANGENOME_GRAPHS.md](../reference/PANGENOME_GRAPHS.md). This makes
+  the first bullet the only thing between the index and visible carriage.
 - **draw a node once per carrier**, still the bigger change this section
   described: `sampleRowLayout` emits one position per node id and the renderer
   keys geometry by that id, so real multi-row carriage needs synthetic

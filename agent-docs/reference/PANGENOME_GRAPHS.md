@@ -71,9 +71,21 @@ change.
 built before this column existed put a bare comma list there, and passing that
 through would put a non-tag field on an S-line, which is a malformed GFA rather
 than a missing annotation. Non-conforming fields are dropped, so an old file
-degrades to pre-tag behaviour. **The hosted E. coli pggb pair is one of those
-files and wants rebuilding** with the current `build_pggb_tabix.sh`, which is
-also what upgrades its carriage from sample to haplotype.
+degrades to pre-tag behaviour.
+
+**The hosted E. coli pggb pair was one of those files. Rebuilt and rehosted
+2026-08-06** with the current `build_pggb_tabix.sh` (605,979 segments / 814,027
+links, 14.7 s, 4.9 MB + 21 MB), so `demos/ecoli_pangenome/ecoli_pggb.segs.bed.gz`
+now carries `SM:Z:K12.1,Sakai.1,NCTC86.1,IAI39.1` per haplotype where it used to
+carry a bare `CFT073,NCTC86` that the grammar check dropped.
+
+**The display side is still open, and this is the thing to know before claiming
+carriage works on the indexed route.** `node.samples` — what the popup renders as
+`carriedBy` — is populated only in `pathAnchoring.ts`, the in-app P/W walk used
+when a GFA is loaded as a **file**. Nothing maps `tags.SM` onto it, so the tabix
+route has the data in hand and shows none of it. Verified in the plugin source
+2026-08-06, not inferred from the handoff. That is handoff §3's "show it" bullet
+and it is still the cheap win.
 
 **Carriage is per haplotype**, written `HG002.1`. Keying it on the PanSN sample
 alone merged a diploid sample's two haplotypes, so a segment carried only on the
@@ -184,13 +196,33 @@ Facts behind it, each measured rather than assumed:
   fully covered and still branched" — of the 5,719 windows at full depth, 11.8%
   land in the global top decile of degree, which is what chance gives. Don't
   rebuild it; if graph tangledness needs a lane, it needs a different statistic.
-- **`odgi untangle` is usable** as a general-graph lane:
-  `odgi untangle -i graph.og -r K12#1#chr -e 5000 -m 1000 -t 8`, 2m14s, 5,433
-  rows, ~1,100 reference-anchored segments per strain with orientation and
-  self-coverage. Drops into `LinearMultiRowFeatureDisplay` with `partitionField`
-  on the strain. Does not scale to human at that cost. `-e` is
-  graph-dependent — few haplotypes need it, many do not (adr-024 says leave it
-  off, but that was HPRC chr20 at 90 haplotypes).
+- **`odgi untangle` is usable** as a general-graph lane, and it shipped
+  2026-08-06: the hosted E. coli projection is rebuilt with
+  `-R target -Q queries -m 1000 -j 0.5 -e 5000 -p`, 2m13s, **3,923 records**
+  (CFT073 919 / IAI39 956 / Sakai 981 / NCTC86 1,067). `scripts/untangle_to_bed.py`
+  drops it into `LinearMultiRowFeatureDisplay` with `partitionField` on the
+  strain. Does not scale to human at that cost.
+
+  **`-e` is the decision to re-read before reusing this, because it contradicts
+  adr-024** (in the removed gfa-to-tabix tree;
+  `git show 3b98dbb985^:agent-docs/architecture-decision-records/adr-024-untangle-replaces-synteny-build.md`).
+  That ADR says leave `-e` off: the cut is irreversible and the rule was bake
+  permissive, filter up at runtime. Both premises differ here — these files feed
+  static figures with no runtime merge to filter up with, and the regime is a
+  five-strain near-colinear bacterial graph rather than HPRC chr20 at 90
+  haplotypes. Without `-e` this graph returns **174 records for all four pairs**,
+  which is not a coarser figure but no figure; it is what the `bad` verdict on
+  `pangenome/pggb_untangle` was about. Keep the ADR's advice for a human-scale
+  graph and for anything a display is expected to filter.
+
+  What the finer file then says, measured: 310 of IAI39's 956 segments are
+  reverse-strand, merging into five runs on K12 (213,443-262,948;
+  302,899-501,436; 914,963-1,239,923; 1,635,838-2,229,302; 3,941,447-4,171,723),
+  while Sakai and NCTC86 have **zero** and CFT073 has one — the control is in the
+  same file. That agrees independently with the minigraph `--call` route below
+  (IAI39-only, run at 1,671,139-1,870,074, inside the fourth). And two K12 spans
+  (`3,941,447-3,944,255`, `4,169,192-4,171,723`) are each reached from two
+  distant query loci by those same three strains, which is the rRNA collapse.
 
 ## Carriage: the one thing rGFA cannot say
 
