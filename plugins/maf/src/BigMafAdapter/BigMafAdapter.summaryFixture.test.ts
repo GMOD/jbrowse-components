@@ -67,3 +67,19 @@ test('getSummaryFeatures reads a real bigMafSummary.bb through BigBedAdapter', a
   expect(statuses.has('C')).toBe(true)
   expect(statuses.has('I')).toBe(true)
 })
+
+// The mirror mistake: the summary `.bb` put into `bigBedLocation` instead of
+// into `summaryAdapter`. Both are BigBeds built from the same alignment, so
+// nothing upstream objects — but a bigMafSummary carries no `mafBlock` field,
+// and reading it as one used to reach `.split` on `undefined` for every
+// feature. (Until `subscribeToObservable` learned to propagate, that exception
+// was swallowed too, so it rendered as an empty track with no error at all.)
+test('getFeatures says what is wrong when handed a summary .bb', async () => {
+  const adapter = new BigMafAdapter(
+    configSchema.create({ type: 'BigMafAdapter' }),
+    getSummarySubAdapter,
+  )
+  await expect(
+    firstValueFrom(adapter.getFeatures(query).pipe(toArray())),
+  ).rejects.toThrow(/no mafBlock field/)
+})

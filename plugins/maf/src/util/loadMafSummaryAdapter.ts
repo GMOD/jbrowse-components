@@ -72,12 +72,28 @@ export function mafSummaryFeatures(
     const adapter = await loadMafSummaryAdapter(self)
     if (adapter) {
       await subscribeToObservable(adapter.getFeatures(query, opts), f => {
+        const src = f.get('src')
+        // `src` is what maps a row to its species — the display looks it up in
+        // `rowIndexBySrc` and the summary RPC discovers the row set from it —
+        // so a file without the column renders no bars at all rather than wrong
+        // ones. Said once, here, instead of as an empty band with no error.
+        if (typeof src !== 'string') {
+          throw new Error(
+            `MAF summary: no \`src\` column at ${f.get('refName')}:${f.get('start')}. ` +
+              'Expected a UCSC bigMafSummary.bb, or the BED `maf2bed --summary` ' +
+              'writes (whose `#` header names the column) — check the ' +
+              'summaryAdapter points at one of those.',
+          )
+        }
         observer.next({
           refName: f.get('refName'),
           start: f.get('start'),
           end: f.get('end'),
-          src: f.get('src') as string,
-          score: f.get('score')!,
+          src,
+          // Absent shades the bar at the `MIN_ALPHA` floor, which still reads as
+          // "this species aligns here". `!` gave `undefined`, and the alpha math
+          // then produced `NaN` and an unpaintable color.
+          score: f.get('score') ?? 0,
           leftStatus: toMafStatus(f.get('leftStatus') as string | undefined),
           rightStatus: toMafStatus(f.get('rightStatus') as string | undefined),
         })

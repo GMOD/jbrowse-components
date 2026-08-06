@@ -123,6 +123,45 @@ describe('a maf2bed --summary BED round-trips into summary records', () => {
     const out = await records(mafAdapter(null))
     expect(out).toEqual([])
   })
+
+  // The mirror mistake to the one MafTabixAdapter.test.ts covers: the alignment
+  // BED put into `summaryAdapter` instead of into `bedGzLocation`. It is
+  // headerless, so its columns are `field*` and there is no `src` — and `src` is
+  // the whole mapping from a summary row to a display row, so every bar dropped
+  // silently through `rowIndexBySrc`. (The summary RPC now also discovers its
+  // row set from `src`, which would have produced a row named `undefined`.)
+  it('says what is wrong when the summary file has no src column', async () => {
+    const adapter = new MafTabixAdapter(
+      MafTabixConfigSchema.create({
+        bedGzLocation: {
+          localPath: require.resolve('./test_data/volvox.maf.summary.bed.gz'),
+          locationType: 'LocalPathLocation',
+        },
+        summaryAdapter: { type: 'BedTabixAdapter' },
+      }),
+      () =>
+        Promise.resolve({
+          dataAdapter: new BedTabixAdapter(
+            BedTabixConfigSchema.create({
+              bedGzLocation: {
+                localPath:
+                  require.resolve('../../../../test_data/volvox/volvox.maf.bed.gz'),
+                locationType: 'LocalPathLocation',
+              },
+              index: {
+                location: {
+                  localPath:
+                    require.resolve('../../../../test_data/volvox/volvox.maf.bed.gz.tbi'),
+                  locationType: 'LocalPathLocation',
+                },
+              },
+            }),
+          ) as BaseFeatureDataAdapter,
+          sessionIds: new Set<string>(),
+        }),
+    )
+    await expect(records(adapter)).rejects.toThrow(/no `src` column/)
+  })
 })
 
 // `showSummary` is `!!readConfObject(self.adapterConfig, 'summaryAdapter') &&
