@@ -131,6 +131,13 @@ jobs:
         run: pnpm lint
       - name: Lint backstop (eslint — react-compiler + guards oxlint can't do)
         run: pnpm lint:eslint
+      # A ratchet, not a generated artifact, so it is deliberately NOT a
+      # scripts/autogen.ts generator: autogen would quietly write a new gated
+      # adapter into the baseline, which is exactly the decision this exists to
+      # force. Same doctrine as abiBaseline.json. Source-only and instant, so it
+      # rides lint's checkout rather than earning a job.
+      - name: Check gated adapters declare a byte budget
+        run: pnpm check-gated-adapter-budgets
 
   # Every artifact that is generated and committed, behind one driver. Adding a
   # generator to scripts/autogen.ts is all it takes to gate it here.

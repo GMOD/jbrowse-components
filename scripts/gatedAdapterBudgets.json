@@ -1,0 +1,13 @@
+{
+  "BamAdapter": "own:5000000",
+  "BedTabixAdapter": "display",
+  "BgzipTaffyAdapter": "display",
+  "BigBedAdapter": "display",
+  "BigMafAdapter": "display",
+  "CramAdapter": "own:3000000",
+  "Gff3TabixAdapter": "display",
+  "GtfTabixAdapter": "display",
+  "MafTabixAdapter": "display",
+  "SplitVcfTabixAdapter": "own:5000000",
+  "VcfTabixAdapter": "own:5000000"
+}

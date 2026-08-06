@@ -599,8 +599,24 @@ paths can't drift apart.
   density axis off — the byte budget is the only gate it has, with no backstop to
   fall through to. The reasoning for 5 Mb is the same in both places and worth
   restating: the index estimate is block-granular, so a single gene still pulls
-  whole BGZF blocks and a tighter gate banners a view that isn't large. When you
-  add a `getRegionByteSize` to an adapter, decide its budget in the same commit.
+  whole BGZF blocks and a tighter gate banners a view that isn't large.
+
+  **You no longer have to remember that.** `scripts/check-gated-adapter-budgets.ts`
+  scans for `getRegionByteSize` implementations, resolves each one's budget from
+  its sibling `configSchema.ts`, and diffs the result against
+  `scripts/gatedAdapterBudgets.json` — the table above, in machine-checkable
+  form. A new gated adapter fails CI (the `lint` job) until someone writes down
+  which budget it gets; `--write` regenerates the baseline once the decision is
+  made. Inheriting the display's is a fine answer, and the check only insists it
+  be an answer.
+
+  Deliberately **not** a `scripts/autogen.ts` generator, though it looks like
+  one: autogen would silently write the new adapter into the baseline, which is
+  precisely the decision the file exists to force. Same reason
+  `abiBaseline.json` is hand-edited. A method declaration is what counts, so the
+  gate's own callers (`measureRegionBytes` and the two feature RPCs) don't
+  register as adapters, and `BaseFeatureDataAdapter`'s `undefined` default is
+  excluded — that default *is* the no-gate path, not an implementation of one.
 - `rescaleByteEstimateToVisibleSpan` holds the span-scaling math.
 - `bytesTooLargeReason(bytes)` and `TOO_MANY_FEATURES_REASON` are the only two
   banner strings.

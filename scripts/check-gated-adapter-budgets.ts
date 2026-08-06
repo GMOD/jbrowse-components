@@ -1,0 +1,130 @@
+// Fails when an adapter that implements `getRegionByteSize` has not made a
+// deliberate decision about the byte budget it is gated against.
+//
+// An adapter implementing that method opts into the region-too-large gate (see
+// agent-docs/reference/REGION_TOO_LARGE.md). The budget it is compared against
+// comes from `resolveByteLimit`: the adapter's own `fetchSizeLimit` slot if it
+// declares one, otherwise whatever the *display* it happens to land under
+// configures. Inheriting is a legitimate choice; inheriting *by accident* is
+// how both 2026-08-06 bugs happened — `SplitVcfTabixAdapter` gated five times
+// tighter than the single-file VCF beside it, and multi-row sat on the base
+// 1 Mb while `LinearBasicDisplay` read the same files at 5 Mb. Neither is
+// visible without reading two schemas together, which is what this automates.
+//
+// The baseline is the budget table in prose form, and updating it is the point:
+// a new gated adapter fails here until someone writes down which budget it gets.
+// `--write` regenerates it.
+import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
+import { basename, dirname, join, relative } from 'node:path'
+
+const root = join(import.meta.dirname, '..')
+const baselinePath = join(root, 'scripts', 'gatedAdapterBudgets.json')
+const workspaceDirs = ['packages', 'plugins', 'products']
+
+// A method DECLARATION, not a call site: `dataAdapter.getRegionByteSize(...)`
+// in the RPC workers must not count, or the gate's own callers would register
+// as adapters.
+const declaration = /^\s*(?:public\s+)?(?:async\s+)?getRegionByteSize\s*[(<]/m
+// `fetchSizeLimit: { ... defaultValue: 123 ... }` inside a config schema
+const slot = /fetchSizeLimit\s*:\s*\{[^}]*?defaultValue\s*:\s*([\d_]+)/s
+
+// The base class declares the method as its `undefined` default — that IS the
+// "no estimate, no gate" path, not an implementation of one.
+const baseDefault = join(
+  'packages',
+  'core',
+  'src',
+  'data_adapters',
+  'BaseAdapter',
+  'BaseFeatureDataAdapter.ts',
+)
+
+function* sourceFiles(dir: string): Generator<string> {
+  let entries: string[]
+  try {
+    entries = readdirSync(dir)
+  } catch {
+    return
+  }
+  for (const entry of entries) {
+    if (entry === 'node_modules' || entry === 'esm' || entry === 'dist') {
+      continue
+    }
+    const path = join(dir, entry)
+    if (statSync(path).isDirectory()) {
+      yield* sourceFiles(path)
+    } else if (entry.endsWith('.ts') && !entry.endsWith('.test.ts')) {
+      yield path
+    }
+  }
+}
+
+// name -> declared budget, or 'display' when it inherits the display's
+const found: Record<string, string> = {}
+for (const workspaceDir of workspaceDirs) {
+  for (const file of sourceFiles(join(root, workspaceDir))) {
+    const rel = relative(root, file)
+    if (rel === baseDefault) {
+      continue
+    }
+    if (!declaration.test(readFileSync(file, 'utf8'))) {
+      continue
+    }
+    // Adapters live in a directory named for them, alongside their configSchema
+    const dir = dirname(file)
+    const name = basename(dir)
+    let budget = 'display'
+    try {
+      const match = slot.exec(readFileSync(join(dir, 'configSchema.ts'), 'utf8'))
+      if (match) {
+        budget = `own:${Number(match[1]!.replaceAll('_', ''))}`
+      }
+    } catch {
+      // no sibling configSchema.ts — inherits, same as declaring no slot
+    }
+    found[name] = budget
+  }
+}
+
+const sorted = Object.fromEntries(Object.entries(found).sort())
+
+if (process.argv.includes('--write')) {
+  writeFileSync(baselinePath, `${JSON.stringify(sorted, null, 2)}\n`)
+  console.log(
+    `wrote ${relative(root, baselinePath)}: ${Object.keys(sorted).length} gated adapters`,
+  )
+  process.exit(0)
+}
+
+const baseline: Record<string, string> = JSON.parse(
+  readFileSync(baselinePath, 'utf8'),
+)
+
+const added = Object.keys(sorted).filter(k => !(k in baseline))
+const removed = Object.keys(baseline).filter(k => !(k in sorted))
+const changed = Object.keys(sorted).filter(
+  k => k in baseline && baseline[k] !== sorted[k],
+)
+
+if (added.length || removed.length || changed.length) {
+  const lines = [
+    ...added.map(
+      k =>
+        `  + ${k} is byte-gated and not in the baseline. It resolves to ${
+          sorted[k] === 'display'
+            ? "the DISPLAY's fetchSizeLimit, which differs per display (1 Mb base, 5 Mb LinearBasicDisplay / LinearMultiRowFeatureDisplay). Declare a fetchSizeLimit slot on the adapter if that is wrong for this format"
+            : `${sorted[k]}`
+        }.`,
+    ),
+    ...removed.map(k => `  - ${k} no longer implements getRegionByteSize.`),
+    ...changed.map(k => `  ~ ${k}: ${baseline[k]} -> ${sorted[k]}`),
+  ]
+  console.error(
+    `Gated-adapter byte budgets changed.\n\n${lines.join(
+      '\n',
+    )}\n\nAn adapter implementing getRegionByteSize is byte-gated, so its budget has to be a\nchoice rather than whatever display it lands under. Decide, then run:\n  node --experimental-strip-types scripts/check-gated-adapter-budgets.ts --write\nSee agent-docs/reference/REGION_TOO_LARGE.md.\n`,
+  )
+  process.exit(1)
+}
+
+console.log(`${Object.keys(sorted).length} gated adapters, all budgets declared`)
