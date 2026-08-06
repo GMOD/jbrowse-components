@@ -301,7 +301,7 @@ export const HG008_WAKHAN_HAP_TRACK = {
   adapter: {
     type: 'BedAdapter',
     bedLocation: {
-      uri: 'https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIH_HiFi_Wakhan-CNA_20240308/bed_output/HG008_HiFi_copynumbers_segments.bed',
+      uri: 'https://jbrowse.org/genomes/GRCh38/cgiab/HG008_HiFi_copynumbers_segments.bed',
       locationType: 'UriLocation',
     },
   },
@@ -875,7 +875,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
     // glyphs) so the RefSeq track reads cleanly at this multi-gene zoom
     '{"showOnlyGenes":true}',
     '--bigbed',
-    'https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinGen/clinGenGeneDisease.bb',
+    'https://jbrowse.org/genomes/hg19/clinGen/clinGenGeneDisease.bb',
     '--bigwig',
     'https://hgdownload.soe.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw',
     '--cram',
@@ -1190,7 +1190,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '--track',
     'hg19-ncbiRefSeqCurated',
     '--vcfgz',
-    'https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.chr11.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes.vcf.gz',
+    'https://jbrowse.org/genomes/hg19/1000genomes/ALL.chr11.phase3_v5b.HBB_5.2-5.3Mb.vcf.gz',
     'display:multivariant',
     'height:450',
     'force:true',

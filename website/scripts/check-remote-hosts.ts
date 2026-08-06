@@ -75,9 +75,21 @@ const sources = [
     .map(f => join(import.meta.dirname, f)),
 ]
 
+// Line comments are stripped before matching. A spec that cites where its data
+// came from is not a spec that fetches from there: epi2me.nanoporetech.com
+// appeared in this list on the strength of two provenance comments, while the
+// tracks themselves read the copy already on jbrowse.org. Counting those
+// overstates the surface and, worse, makes mirroring look undone when it is
+// already done.
+const stripComments = (text: string) =>
+  text
+    .split('\n')
+    .map(l => l.replace(/^\s*\/\/.*$/, '').replace(/\s\/\/\s.*$/, ''))
+    .join('\n')
+
 const hosts = new Set<string>()
 for (const path of sources) {
-  const text = readFileSync(path, 'utf8')
+  const text = stripComments(readFileSync(path, 'utf8'))
   for (const m of text.matchAll(
     /https?:\/\/([a-zA-Z0-9.-]+)(\/[^"'`\s)]*)?/g,
   )) {

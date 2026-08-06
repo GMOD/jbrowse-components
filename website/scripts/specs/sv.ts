@@ -33,7 +33,7 @@ const MANE_TRACK = {
   adapter: {
     type: 'BigBedAdapter',
     bigBedLocation: {
-      uri: 'https://ftp.ncbi.nlm.nih.gov/refseq/MANE/trackhub/data/release_1.4/MANE.GRCh38.v1.4.refseq.bb',
+      uri: 'https://jbrowse.org/genomes/GRCh38/mane/MANE.GRCh38.v1.4.refseq.bb',
       locationType: 'UriLocation',
     },
   },
@@ -706,7 +706,7 @@ export const svSpecs: ScreenshotSpec[] = [
         {
           type: 'SvInspectorView',
           assembly: 'GRCh38_GIABv3',
-          uri: 'https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIST_HG008-T_somatic-stvar-CNV_DraftBenchmark_V0.5-20260318/GRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf.gz',
+          uri: 'https://jbrowse.org/genomes/GRCh38/cgiab/GRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf.gz',
           // SV_20 sorts to row 27 of the V0.5 benchmark's 210 PASS calls, past
           // the DataGrid's virtualization buffer at the 550px default height,
           // so the row never enters the DOM and the hover below can't find it.
@@ -898,7 +898,7 @@ export const svSpecs: ScreenshotSpec[] = [
           // shorter inspector so the LGV below gets more room (not so
           // tall)
           height: 420,
-          uri: 'https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIST_HG008-T_somatic-stvar-CNV_DraftBenchmark_V0.5-20260318/GRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf.gz',
+          uri: 'https://jbrowse.org/genomes/GRCh38/cgiab/GRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf.gz',
         },
         {
           type: 'LinearGenomeView',

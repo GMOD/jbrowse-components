@@ -23,7 +23,7 @@ const HG38_MANE_TRACK = {
   adapter: {
     type: 'BigBedAdapter',
     bigBedLocation: {
-      uri: 'https://ftp.ncbi.nlm.nih.gov/refseq/MANE/trackhub/data/release_1.4/MANE.GRCh38.v1.4.refseq.bb',
+      uri: 'https://jbrowse.org/genomes/GRCh38/mane/MANE.GRCh38.v1.4.refseq.bb',
       locationType: 'UriLocation',
     },
   },
