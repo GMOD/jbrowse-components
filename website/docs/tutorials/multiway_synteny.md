@@ -125,13 +125,11 @@ python3 orthogroups_to_blocks.py Orthogroups.tsv -o grape.blocks \
   --bed grape=grape.bed --bed peach=peach.bed
 ```
 
-`blockAssemblies` comes from the header row rather than from the order the
-FASTAs were given to OrthoFinder, and the script prints it. Reducing a cell that
-holds several genes is the part worth choosing deliberately: by default a
-duplicated gene becomes one row per copy, so a polyploid draws a ribbon to each,
-rather than one link to whichever gene happened to be listed first. See
-[](/docs/tutorials/orthofinder_synteny), which builds a five-genome view this
-way.
+The script prints the column order `blockAssemblies` needs, which comes from the
+header row rather than from the order the FASTAs were given to OrthoFinder, and
+by default a duplicated gene becomes one row per copy rather than a link to
+whichever copy was listed first. [](/docs/tutorials/orthofinder_synteny) builds
+a six-genome view this way and covers both choices.
 
 ### From reciprocal best BLAST hits
 
@@ -172,13 +170,13 @@ awk -F'\t' -v OFS='\t' '$3 == "gene" {
 ```
 
 Column 1 must use the same sequence names as the JBrowse assembly, and column 4
-must match the table's gene ids byte for byte. That last point is the usual
-failure: the track loads without an error and draws nothing, because no cell
-resolved to a BED entry. Ids get mangled by isoform suffixes, by BLAST
-truncating a FASTA header at the first space, and by jcvi stripping suffixes
-unless run with `--no_strip_names` (which is why the
-[script](#reproduce-it-end-to-end) passes it). Spot-check a few ids from each
-side against each other before loading.
+must match the table's gene ids byte for byte. Ids get mangled by isoform
+suffixes, by BLAST truncating a FASTA header at the first space, and by jcvi
+stripping suffixes unless run with `--no_strip_names` (which is why the
+[script](#reproduce-it-end-to-end) passes it). A table that resolves nowhere
+fails the track rather than drawing empty, and the
+[adapter's gotchas](/docs/config_guides/synteny_track#gene-ids-are-the-join-in-the-mcscan-adapters)
+cover which mismatches are loud and which are not.
 
 ## Setting up the three assemblies
 

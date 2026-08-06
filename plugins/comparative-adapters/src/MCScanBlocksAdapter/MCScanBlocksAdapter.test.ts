@@ -164,6 +164,43 @@ test('throws a clear error when a column has no BED', async () => {
   )
 })
 
+// The silent failure this adapter used to have: blockAssemblies/bedLocations
+// are positional against the file's columns, so permuting them looks every gene
+// up in the wrong genome's BED. Nothing resolves, and an empty track reads as a
+// region with no orthologs rather than as a broken config.
+test('throws when the BEDs are permuted against the file columns', async () => {
+  const permuted = new Adapter(
+    configSchema.create({
+      mcscanBlocksLocation: bed('grape.blocks'),
+      blockAssemblies: ['grape', 'peach', 'cacao'],
+      bedLocations: [bed('peach.bed'), bed('cacao.bed'), bed('grape.bed')],
+      assemblyNames: ['grape', 'peach', 'cacao'],
+    }),
+  )
+  const obs = permuted.getFeatures({
+    refName: 'chr1',
+    start: 0,
+    end: 1000,
+    assemblyName: 'grape',
+  } as never)
+  await expect(firstValueFrom(obs.pipe(toArray()))).rejects.toThrow(
+    /have to be in the file's own column order/,
+  )
+})
+
+// One genome pair sharing no row is not the same failure, and must not throw:
+// only two of the four rows fill both peach and cacao, and a table where some
+// pair happens to fill none is a legitimate table.
+test('a single empty pair is not treated as a broken config', async () => {
+  const fa = await feats(['grape', 'peach', 'cacao'], {
+    refName: 'chr1',
+    start: 0,
+    end: 1000,
+    assemblyName: 'grape',
+  })
+  expect(fa.length).toBe(6)
+})
+
 test('throws when the pair is not present in blockAssemblies', async () => {
   const obs = makeAdapter(['grape', 'rice']).getFeatures({
     refName: 'chr1',

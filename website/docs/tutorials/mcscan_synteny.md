@@ -202,6 +202,21 @@ runs, and the ribbons above it show whether the genes inside it hold their
 order. Strand is the `LGVSyntenyDisplay` **Color by** default, and the menu
 offers the other modes.
 
+## What an anchor looks like up close
+
+At whole-chromosome zoom a ribbon is a hairline. Zoom to one block, turn each
+genome's gene track on and set it to **Show only genes**, and the unit the file
+is made of is on screen: one ribbon per `.anchors` line, spanning the gene it
+starts from and the gene it ends at.
+
+<Figure caption="One MCScan block on grape chr19 against peach Pp04, both gene tracks set to Show only genes. Each ribbon is one .anchors line, one grape gene to one peach gene, drawn across each gene's own extent. The genes between them have no anchor in this run, so nothing is drawn for them." src="/img/mcscan_synteny/gene_level.png" />
+
+Most of the genes in these two windows carry no ribbon, which is the ordinary
+case inside a block: MCScan anchors the ones it could pair confidently and says
+nothing about the rest. This is also the resolution limit from the top of the
+page made concrete. Zooming further widens the ribbons and adds nothing, because
+the anchors file has nothing finer to say than which gene pairs with which.
+
 ## The same anchors as a dotplot
 
 Either anchor track also loads in a dotplot (**Add → Dotplot view**, then pick

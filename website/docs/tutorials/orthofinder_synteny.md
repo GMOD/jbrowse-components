@@ -197,11 +197,11 @@ prepares the proteomes, so both sides speak gene ids.
 
 Pass `--bed name=file` per column and the script reports how many ids each one
 resolved, and drops the rest from the table rather than writing a row that
-cannot be drawn. A table whose ids resolve nowhere loads without an error and
-draws nothing, so that per-column count is the thing to read before loading
+cannot be drawn. That per-column count is the thing to read before loading
 anything: a column reporting near zero is an id mismatch, not a biological
-result. The same line reports how many orthogroups held a duplicated gene and
-became several rows.
+result, and it is the case the browser cannot warn about, since the other
+columns still resolve and the track loads. The same line reports how many
+orthogroups held a duplicated gene and became several rows.
 
 ## Loading it
 
@@ -257,8 +257,8 @@ and `bedLocations` are positional against the table's own columns, which follow
 OrthoFinder's proteome scan (alphabetical here) rather than the order the
 proteomes were passed to it, while the track's `assemblyNames` is the set of
 genomes in the order the stack draws them. Take the column order from what the
-conversion printed, or every gene lookup reads the wrong genome's BED and the
-track loads with no error and draws nothing.
+conversion printed: get it wrong and every gene lookup reads another genome's
+BED, which the adapter catches and reports as a track error naming both lists.
 
 Unlike a
 [jcvi `.blocks` table](/docs/tutorials/multiway_synteny#direct-vs-transitive-pairs),
@@ -303,13 +303,6 @@ is guarded on its output file, so a re-run picks up where it stopped. The
 `wheat` set is the one that needs the NCBI datasets CLI, to name T.
 timopheevii's chromosomes from its
 [sequence report](/docs/config/ncbisequencereportaliasadapter).
-
-`jbrowse create` fetches the latest tagged release, which for a stack of
-`ChromSizesAdapter` assemblies is not the build these figures were made on: they
-render against the continuous `/code/jb2/main/` build this site also serves. If
-the locally-served app opens to a fatal error on the stacked session, point that
-build at the local `config.json` instead, `/code/jb2/main/?config=` plus the
-served URL, and the same config loads.
 
 ## See also
 

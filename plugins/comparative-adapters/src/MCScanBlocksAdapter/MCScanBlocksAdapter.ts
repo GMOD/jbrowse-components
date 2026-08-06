@@ -11,6 +11,38 @@ import type { MCScanBlocksAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, FileLocation, Region } from '@jbrowse/core/util'
 
+// A table where no row resolves on any pair of columns is a misconfiguration,
+// and overwhelmingly one particular misconfiguration: blockAssemblies and
+// bedLocations are positional against the FILE's column order, so a config
+// listing them in the order the genomes are displayed in, or the order they
+// were passed to whatever wrote the table, looks every gene up in another
+// genome's BED. That resolved nothing and drew an empty track, which is
+// indistinguishable from a region with no orthologs in it.
+//
+// Scoped to the whole table rather than to one pair on purpose: two particular
+// genomes filling no common row is possible, a table filling none anywhere is
+// not. Stops at the first row that joins, so a healthy file pays for one row.
+function checkAnyColumnsJoined(
+  blockLines: string[][],
+  bedMaps: Map<string, BareFeature>[],
+  blockAssemblies: string[],
+) {
+  for (const cols of blockLines) {
+    let joined = 0
+    for (let i = 0; i < bedMaps.length; i++) {
+      const name = cols[i]
+      if (name && bedMaps[i]!.has(name) && ++joined > 1) {
+        return
+      }
+    }
+  }
+  if (blockLines.length > 0) {
+    throw new Error(
+      `none of the ${blockLines.length} rows in this .blocks file name genes present in two of its BED files; blockAssemblies ${JSON.stringify(blockAssemblies)} and bedLocations have to be in the file's own column order, which is not necessarily the order assemblyNames lists`,
+    )
+  }
+}
+
 // A .blocks file has one column per genome (column 0 is the reference). Because
 // it describes N genomes at once, one track can back every band of a multi-way
 // view: parse all columns + BEDs once, then resolve which pair to draw per query
@@ -49,14 +81,13 @@ export default class MCScanBlocksAdapter extends BaseFeatureDataAdapter<MCScanBl
       ],
       opts,
     )
-    return {
-      blockAssemblies,
-      bedMaps: bedtexts.map(t => parseBed(t)),
-      blockLines: blockstext!
-        .split(/\n|\r\n|\r/)
-        .filter(f => !!f)
-        .map(l => l.split('\t')),
-    }
+    const bedMaps = bedtexts.map(t => parseBed(t))
+    const blockLines = blockstext!
+      .split(/\n|\r\n|\r/)
+      .filter(f => !!f)
+      .map(l => l.split('\t'))
+    checkAnyColumnsJoined(blockLines, bedMaps, blockAssemblies)
+    return { blockAssemblies, bedMaps, blockLines }
   }
 
   async hasDataForRefName() {

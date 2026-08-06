@@ -1666,6 +1666,81 @@ export const syntenySpecs: ScreenshotSpec[] = [
     settleMs: 8000,
   },
 
+  // mcscan_synteny.md's own thesis, which had no figure: an anchor is a gene
+  // pair, so there is nothing to draw below the gene and no CIGAR under the
+  // ribbon. Every other figure on that page is whole-chromosome, where that is
+  // invisible.
+  //
+  // The window is chosen off the anchors file rather than by eye: this MCScan
+  // block is 12 consecutive pairs, collinear, and its grape and peach spans are
+  // the same 126 kb, so the ribbons run parallel instead of fanning and the
+  // one-gene-to-one-gene reading is the obvious one. It is also the control -
+  // 34 grape genes and 24 peach genes sit in these two windows and 12 of them
+  // are anchored, so the genes MCScan did not pair are on screen beside the
+  // ones it did, which is what stops the figure reading as "every gene has an
+  // ortholog".
+  //
+  // showOnlyGenes on both rows: the default draws every mRNA isoform, and the
+  // figure is about which gene pairs with which, not about transcript
+  // structure. Straight chords, not curves - at this zoom a curve leaves its
+  // gene vertically and only aims at its partner mid-band, which is exactly the
+  // information the figure exists to carry.
+  {
+    mode: 'url',
+    name: 'mcscan_synteny/gene_level',
+    url: sessionSpec(DOTPLOT_CONFIG, {
+      views: [
+        {
+          type: 'LinearSyntenyView',
+          views: [
+            {
+              assembly: 'grape',
+              loc: 'chr19:4,950,000-5,100,000',
+              tracks: [
+                {
+                  trackId: 'grape_genes',
+                  type: 'LinearBasicDisplay',
+                  showOnlyGenes: true,
+                  displayMode: 'compact',
+                  showLabels: 'auto',
+                  height: 70,
+                },
+              ],
+            },
+            {
+              assembly: 'peach',
+              loc: 'Pp04:11,975,000-12,125,000',
+              tracks: [
+                {
+                  trackId: 'peach_genes',
+                  type: 'LinearBasicDisplay',
+                  showOnlyGenes: true,
+                  displayMode: 'compact',
+                  showLabels: 'auto',
+                  height: 70,
+                },
+              ],
+            },
+          ],
+          tracks: [['grape_peach_synteny_mcscan']],
+          drawCurves: false,
+          levelHeights: [220],
+          // well over the 0.2 default, which is tuned for whole-genome bands
+          // where thousands of ribbons pile up. Twelve of them over a 220px
+          // band came out as pale wash, and which gene pairs with which is the
+          // entire figure.
+          alpha: 0.75,
+        },
+      ],
+    }),
+    readySelector: '[data-testid="synteny_canvas_done"]',
+    readyTimeout: 60000,
+    settleMs: 8000,
+    // two 70px gene lanes, their scalebars and a 220px band; 560 cut 53px off
+    // the bottom, which is the peach gene lane the figure is half about
+    viewportHeight: 616,
+  },
+
   // Whole-genome human (hs1/T2T-CHM13) vs mouse (mm39) synteny, mirroring the
   // hs1_vs_mm39 config defaultSession: 500k minlen drops short-alignment
   // hairball noise, autoDiagonalize reorders mm39 chroms into clean diagonals,
