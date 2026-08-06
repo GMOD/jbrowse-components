@@ -17,8 +17,9 @@ its premise corrected — it is not a drop-in). Open: §4 colour/legend, §6 the
 axis, §7 in-view navigation, §8 the UI debts, and the demo list. Nothing is
 blocked.
 
-**Published 2026-08-06 as `bfe47428e7ae`**, which clears the betabuild this file
-had been asking for: the tier fix, two dependency bumps, the hoverSync
+**Published 2026-08-06, latest `aee5e17f4b2c`** (which added `maxRegionBp`; the
+carriage read went out just before it as `bfe47428e7ae`). This clears the
+betabuild this file had been asking for: the tier fix, two dependency bumps, the hoverSync
 registration fix, the drawing-pane ceiling and the carriage read (§3) all went
 out together, and the unversioned entry point now serves them.
 
@@ -205,8 +206,18 @@ What is actually left:
 - **expand-on-click** (PangyPlot's `/pop`). The tier node id *is* the bubble's
   source segment, so expanding is a fine-index query over the same span with no
   cross-reference to maintain.
-- **build and host the tiers** beside the fine pair for HPRC, and rebuild the
-  E. coli pggb pair while there (its column 6 predates the tag format).
+- ~~**build and host the tiers**~~ done. The HPRC pair is hosted as
+  `hprc-v2.0-mc-grch38.tier10000.*`, and the E. coli pggb pair was rebuilt with
+  the tag format on 2026-08-06.
+
+**The payoff is now proven rather than projected**, which is the one thing that
+changed here on 2026-08-06: `pangenome/hprc_whole_chromosome` draws all 249 Mb
+of chr1 as 474 nodes in 18 ms. What stood in the way was not the producer but
+the bp ceiling, which is a session prop (`maxRegionBp`) as of plugin
+`aee5e17f4b2c` — an interim mechanism that the first bullet above retires. The
+scale thread, including two negatives worth not re-deriving (the tier is a dud
+on a bacterial rGFA; `gfatools bubble` returns nothing on a pggb GFA), is in
+`pangenome-scale-ladder.md`.
 
 Two findings to respect, both already paid for, and both now moot for this route
 since the bubbles are precomputed upstream:

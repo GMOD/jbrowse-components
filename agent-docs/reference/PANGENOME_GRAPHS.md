@@ -139,6 +139,35 @@ over. That is the same shape as [SYNTENY_LOD.md](SYNTENY_LOD.md)'s two PIF
 tiers, so the view change is picking a prefix by `bpPerPx` rather than a new
 rendering mode.
 
+**It draws, and the figure is published** (2026-08-06,
+`pangenome/hprc_whole_chromosome`): all 249 Mb of chr1 as 474 nodes / 473 edges,
+layout 18 ms. The chr1 tier is **237 backbone nodes alternating strictly with
+237 bubbles** and covers 0–248.6 Mb with no gap over 1 Mb — the stretch that
+looks empty is one **18.7 Mb backbone node at 125.2–143.8 Mb**, the centromere
+and 1q12 heterochromatin, not a coverage hole.
+
+**The bp ceiling was the only blocker, and it is a session prop now.**
+`MAX_GRAPH_REGION_BP` is a proxy for node count and a fair one only at segment
+granularity (5 Mb of the fine index is 3,034 segments; the same span is 35 tier
+nodes). `maxRegionBp` defaults to the same 5 Mb and a session pointed at a tier
+raises it; `maxGraphNodes` counts what came back and remains the real backstop.
+The launch menus keep the constant deliberately.
+
+**The bubble file also plots as a curve with no adapter change.**
+`MinigraphBubbleAdapter` sets `score` to the segment count and extends
+`BaseFeatureDataAdapter`, which supplies `getRegionQuantitativeStats` off
+`scoresToStats` — only the track *type* changes, since a `FeatureTrack` offers
+no wiggle display. chr1 is 9,444 bubbles, scores into the hundreds.
+
+**Two negatives, each expensive to re-find.** `gfatools bubble` returns **0
+bubbles on a pggb GFA** — it needs rGFA `SN`/`SO`/`SR` to place a bubble on a
+reference — so the graph that most needs coarsening cannot be coarsened this
+way, and a pggb tier needs `vg snarls`/BubbleGun at the costs recorded below.
+And the tier is **a dud on a bacterial rGFA**: the five-strain E. coli minigraph
+graph gives 601 bubbles → 358 nodes at `--min-content 2000`, but its fine index
+is already only 1,508 segments for the whole 4.64 Mb chromosome, so the tier
+buys ~4× where HPRC gets ~1,600×.
+
 Facts behind it, each measured rather than assumed:
 
 - **Bubbles do not overlap.** 0 overlapping adjacent pairs across all 24 GRCh38
