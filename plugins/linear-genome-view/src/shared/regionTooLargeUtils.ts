@@ -49,7 +49,16 @@ export interface ByteEstimate {
    * instead of reading a zero as a measured value.
    */
   bytes: number | undefined
-  /** The span `bytes` covers — captured before the measurement round trip. */
+  /**
+   * The **visible** span at the moment the measurement was requested, captured
+   * before the round trip — the anchor the rescale divides by, not the span
+   * `bytes` covers. Those differ by the fetch buffer: `byteGateBlocksFetch`
+   * measures the regions it is about to fetch, which for the
+   * `MultiRegionDisplayMixin` family are `bufferedVisibleRegions` — half a screen
+   * each side, so twice the visible span. Deliberate, and it cancels: the buffer
+   * scales with `visibleBp`, so the ratio stays right and the number the banner
+   * quotes is the whole download rather than the on-screen slice of it.
+   */
   measuredSpanBp: number
 }
 
@@ -111,6 +120,15 @@ export function resolveByteLimit({
  * Undefined with no estimate, an unmeasurable one, or a zero span — keeping the
  * byte axis out of the verdict rather than comparing an unscaled (or infinite)
  * number against the budget.
+ *
+ * **The downward half of this is the gate's only release mechanism, not a
+ * convenience.** The estimate is refreshed only by `byteGateBlocksFetch`, which
+ * runs only from a fetch, which `FetchVisibleRegions` skips while
+ * `regionTooLarge` holds. Take away the shrink-on-zoom-in and a track gated at
+ * 200kb stays gated at 2kb forever, with nothing left that could re-measure it.
+ * That is why the known-wrong linear model survives an index whose real
+ * granularity is block-quantized — see ARCHITECTURAL_LIMITS.md, "The byte gate
+ * assumes bytes scale with span".
  */
 export function rescaleByteEstimateToVisibleSpan({
   byteEstimate,

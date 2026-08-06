@@ -767,7 +767,8 @@ export default function stateModelFactory(
          * threshold (`RegionTooLargeMixin`), read rather than restated so the swap
          * and the gate can't end up disagreeing about where the floor is. It
          * deliberately excludes the opt-in terms, which is what keeps this from
-         * being a cycle — `byteGateEnabled` below is false while we summarize.
+         * being a cycle — everything below that reads this getter
+         * (`byteGateAdapterConfig`) sits downstream of the floor, never upstream.
          *
          * The swap point is 20kb and stays there even though the byte gate no
          * longer stops at the floor (`gateBelowForceLoadFloor` below): where the
@@ -2193,16 +2194,46 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * Enable byte-estimate gating: the adapter's MAF-aware byte estimate
-         * (per-species sequence × span) is checked against `fetchSizeLimit`,
-         * blocking the detail fetch with a force-load prompt rather than
-         * downloading hundreds of species' bases at genome scale.
+         * Enable byte-estimate gating: a MAF-aware byte estimate (per-species
+         * sequence × span) is checked against `fetchSizeLimit`, blocking the
+         * fetch with a force-load prompt rather than downloading hundreds of
+         * species' bases at genome scale.
          *
-         * Off in summary mode — the summary read is cheap (zoom-reduced BigBed),
-         * so it must never be blocked by the gate.
+         * On for **both** tiers, and `byteGateAdapterConfig` below is what makes
+         * that safe: each is measured against the file it actually reads. This
+         * used to be `!showSummary`, exempting the summary tier on the grounds
+         * that it is the cheap one. It is cheap *per base* — no sequence — but it
+         * is still a whole-feature download (`BigBedAdapter.getFeatures`), and
+         * `showSummary` covers every zoom from 20kb to the whole genome. So the
+         * one path that existed to escape the gate was also the one that could
+         * pull an unbounded number of per-species records with nothing quoting
+         * the size. A genuinely small summary read is nowhere near
+         * `fetchSizeLimit` and never sees a banner; that is the estimate's job to
+         * decide, not this getter's.
          */
         get byteGateEnabled() {
-          return !self.showSummary
+          return true
+        },
+        /**
+         * #getter
+         * Measure whichever tier is about to be fetched: the `summaryAdapter`
+         * sub-adapter while `showSummary`, otherwise the MAF adapter itself.
+         * Without this the summary tier would be gated against the *alignment's*
+         * estimate — a number describing a download that isn't happening, which
+         * at genome scale would block the cheap tier on the expensive one's cost.
+         *
+         * A plain snapshot off the frozen slot, handed straight to `getAdapter`
+         * in the worker — the same shape and the same journey as
+         * `annotationAdapterConfig`. Reading `showSummary` here is not a cycle:
+         * it resolves through `aboveForceLoadFloor`, which deliberately excludes
+         * every opt-in term (`RegionTooLargeMixin`), so nothing in the gate is
+         * upstream of it.
+         */
+        get byteGateAdapterConfig(): Record<string, unknown> {
+          const summary = self.showSummary
+            ? readConfObject(self.adapterConfig, 'summaryAdapter')
+            : undefined
+          return summary ?? self.adapterConfig
         },
         /**
          * #getter

@@ -61,9 +61,10 @@ reduction the move was really after is done directly.**
   That is a strict improvement over the move: the floor was applied in four
   places that had to agree by hand, and MAF's copy was one of them.
 - `aboveForceLoadFloor` deliberately excludes the opt-in and force-load terms
-  (`gateActive` adds those on top), because MAF's `byteGateEnabled` is itself a
-  function of `showSummary` — a floor getter that read the opt-in would be a
-  cycle.
+  (`gateActive` adds those on top), because MAF's `showSummary` is itself a
+  function of the floor and gate getters then read *it* — a floor getter that
+  read the opt-in would close the loop. (The reader was `byteGateEnabled` when
+  this was written and is `byteGateAdapterConfig` now; the shape is the point.)
 
 ## Consequences
 

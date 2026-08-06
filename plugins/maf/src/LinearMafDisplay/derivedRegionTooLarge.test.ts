@@ -18,9 +18,9 @@ test('the reactive method hooks are views, not actions', () => {
 
 // The summary swap and the gate ask the same "how zoomed out am I" question, so
 // `showSummary` reads the gate's own `aboveForceLoadFloor` rather than restating
-// the threshold. These pin both directions of that read, and the mutual
-// exclusion it creates: `byteGateEnabled` is `!showSummary`, so a getter chain
-// that let the floor read the opt-in would be a cycle.
+// the threshold. These pin both directions of that read. `aboveForceLoadFloor`
+// excludes every opt-in term, which is what keeps the read acyclic — the gate
+// getters that read `showSummary` (`byteGateAdapterConfig`) sit downstream of it.
 describe('MAF summary swap vs the force-load floor', () => {
   it('never summarizes without a summary adapter, however wide the view', () => {
     const { display, view } = createMafTestEnvironment().createDisplay()
@@ -39,9 +39,12 @@ describe('MAF summary swap vs the force-load floor', () => {
 
     view.zoomTo(100)
     expect(display.showSummary).toBe(true)
-    // the cheap zoom-reduced read must never be blocked by the byte gate
-    expect(display.byteGateEnabled).toBe(false)
-    expect(display.gateActive).toBe(false)
+    // The summary tier is gated too — it is a whole-feature read, not a
+    // zoom-reduced one — but against its own file, so a small summary read is
+    // nowhere near the cap and never sees a banner.
+    expect(display.byteGateEnabled).toBe(true)
+    expect(display.gateActive).toBe(true)
+    expect(display.byteGateAdapterConfig).toEqual({ type: 'BigBedAdapter' })
 
     view.zoomTo(20)
     expect(view.visibleBp).toBeLessThan(20_000)
@@ -117,18 +120,16 @@ describe('MAF gating below the force-load floor', () => {
       summaryAdapter: { type: 'BigBedAdapter' },
     }).createDisplay()
 
-    // below the floor the gate is now live, but the summary tier is not: where
-    // the cheap tier draws a better picture is a rendering question and did not
-    // move with the byte gate.
+    // below the floor the gate is live but the summary tier has not kicked in:
+    // where the cheap tier draws a better picture is a rendering question and
+    // did not move with the byte gate.
     view.zoomTo(20)
     expect(display.showSummary).toBe(false)
     expect(display.gateActive).toBe(true)
 
-    // and summary mode still outranks it — the zoom-reduced read is cheap and
-    // must never be blocked
+    // and the swap still happens at 20kb, independently of the gate
     view.zoomTo(100)
     expect(display.showSummary).toBe(true)
-    expect(display.gateActive).toBe(false)
   })
 
   it('force-load still clears it below the floor', () => {
@@ -152,6 +153,77 @@ describe('MAF gating below the force-load floor', () => {
     })
     expect(display.gateBelowForceLoadFloor).toBe(true)
     expect(display.gateActive).toBe(false)
+    expect(display.regionTooLarge).toBe(false)
+  })
+})
+
+// Both MAF tiers are gated, each against the file it actually reads
+// (`byteGateAdapterConfig`). The summary tier used to be exempt on the grounds
+// that it is the cheap one — but a `BigBedAdapter` read is a whole-feature
+// download and `showSummary` covers every zoom from 20kb to the whole genome, so
+// the exemption was the one path that could pull an unbounded number of records
+// with no size quoted. These pin that the gate follows the swap.
+describe('MAF measures the tier it is about to fetch', () => {
+  it('measures the summary sub-adapter while summarizing', () => {
+    const { display, view } = createMafTestEnvironment({
+      summaryAdapter: { type: 'BigBedAdapter' },
+    }).createDisplay()
+
+    view.zoomTo(100)
+    expect(display.showSummary).toBe(true)
+    // not the MAF adapter: quoting the alignment's cost for a fetch nobody is
+    // doing would block the cheap tier on the expensive one's number
+    expect(display.byteGateAdapterConfig).toEqual({ type: 'BigBedAdapter' })
+  })
+
+  it('measures the MAF adapter itself below the swap point', () => {
+    const { display, view } = createMafTestEnvironment({
+      summaryAdapter: { type: 'BigBedAdapter' },
+    }).createDisplay()
+
+    view.zoomTo(20)
+    expect(display.showSummary).toBe(false)
+    expect(display.byteGateAdapterConfig).toMatchObject({
+      type: 'MafTabixAdapter',
+    })
+  })
+
+  it('measures the MAF adapter at every zoom when no summary is configured', () => {
+    const { display, view } = createMafTestEnvironment().createDisplay()
+
+    view.zoomTo(400)
+    expect(display.showSummary).toBe(false)
+    expect(display.byteGateAdapterConfig).toMatchObject({
+      type: 'MafTabixAdapter',
+    })
+  })
+
+  it('gates an over-budget summary read instead of downloading it', () => {
+    const { display, view } = createMafTestEnvironment({
+      summaryAdapter: { type: 'BigBedAdapter' },
+    }).createDisplay()
+
+    // genome-scale: one record per species per aligned run adds up, and this is
+    // the read that used to be exempt from the gate entirely
+    view.zoomTo(2000)
+    expect(display.showSummary).toBe(true)
+    display.setByteEstimate({
+      bytes: 20_000_000,
+      measuredSpanBp: view.visibleBp,
+    })
+    expect(display.regionTooLarge).toBe(true)
+    expect(display.regionTooLargeReason).toBe('Requested too much data (20 Mb)')
+  })
+
+  it('leaves an ordinary summary read alone', () => {
+    const { display, view } = createMafTestEnvironment({
+      summaryAdapter: { type: 'BigBedAdapter' },
+    }).createDisplay()
+
+    view.zoomTo(100)
+    // a real summary read at this zoom: no sequence, just per-species runs
+    display.setByteEstimate({ bytes: 60_000, measuredSpanBp: view.visibleBp })
+    expect(display.gateActive).toBe(true)
     expect(display.regionTooLarge).toBe(false)
   })
 })
@@ -204,7 +276,7 @@ describe('MAF derived regionTooLarge', () => {
     expect(display.regionTooLarge).toBe(true)
   })
 
-  it('force-load raises the limit and clears the banner', () => {
+  it('force-load exempts the track and clears the banner', () => {
     const { display, view } = createMafTestEnvironment().createDisplay()
     view.zoomTo(100)
     display.setByteEstimate({

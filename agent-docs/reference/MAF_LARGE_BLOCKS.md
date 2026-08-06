@@ -147,10 +147,9 @@ correct**. Splitting restores the assumption the whole gating system is built on
 Two contained changes, both worth doing on their own merits since the rescaling
 bug applies to any format with unbounded feature size:
 
-- **Opt out of rescaling.** Invalidate the cached `byteEstimate` on view change
-  so the pre-flight re-runs and `measuredSpanBp == visibleBp`. `bytesForRegions`
-  is index-only, so this costs no data download and is truthful at any zoom.
-  **Still unbuilt.**
+- **Opt out of rescaling.** **Still unbuilt, and the sketch that used to sit here
+  — "invalidate the cached `byteEstimate` on view change so the pre-flight
+  re-runs" — does not work.** See the next section before building anything.
 - ~~**Let the gate fire below `AUTO_FORCE_LOAD_BP`** when the estimate is over
   budget.~~ **Done** — `gateBelowForceLoadFloor` on `RegionTooLargeMixin`, an
   opt-in defaulting false that removes the floor term from `gateActive` and
@@ -169,6 +168,52 @@ Result: zooming into a megabase block shows "Requested too much data (47 Mb)"
 and the user chooses, instead of a 30-second freeze. Pair it with a cheap safety
 valve in the adapter: if a single line's payload exceeds a budget, fail with a
 message naming the block and pointing at the splitter rather than OOMing.
+
+### Why the rescale can't just be removed
+
+Measured 2026-08-06 with `bytesForRegions` against files in this repo. The
+estimate is not approximately proportional to span down there — it is **flat**,
+because an index reports whole blocks:
+
+| file | 200bp | 1kb | 5kb | 16kb | 50kb |
+| --- | --- | --- | --- | --- | --- |
+| `volvox/volvox.maf.bed.gz` | 213,443 | 213,443 | 213,443 | 238,685 | 306,719 |
+| `breakpoint/hs37d5.HG002…sv.vcf.gz` | 15,408 | 15,408 | 15,408 | 15,408 | 15,408 |
+| `ce11.26way.chrI_subset.bed.gz` | 92,757 | 92,757 | 92,757 | 92,757 | 92,757 |
+
+Constant until the tabix linear index's 16kb bins start splitting — i.e. flat
+across exactly the range `gateBelowForceLoadFloor` just switched the gate on for.
+BigBed is the same shape (`getBlockSizeForRangeMulti` sums whole R-tree leaf
+blocks). This is *why* the ce11 26-way never gates, incidentally: 92,757 bytes
+against a 1 Mb cap, two orders of magnitude of headroom at every zoom.
+
+The consequence for an over-budget track: the rescale releases the banner on
+zoom-in, the pre-flight re-measures the same flat number, the banner returns. One
+aborted fetch cycle and a banner flash per zoom step, never settling. **It never
+downloads** — `byteGateBlocksFetch` re-measures before `work()` — so this costs a
+round trip, not data. That is the wart, and the honest outcome underneath it
+(force-load or nothing, for a genuinely unaffordable file) is correct.
+
+Two obvious fixes, both wrong:
+
+- **"Stop rescaling; use the measurement as-is."** Deadlocks. The estimate only
+  updates inside `byteGateBlocksFetch`, which only runs from a fetch, which
+  `FetchVisibleRegions` skips while `regionTooLarge` holds. With no downward
+  rescale nothing ever re-measures, so a BAM gated at 200kb stays gated at 2kb
+  forever. **The downward rescale is the release mechanism**, not a convenience.
+- **"Invalidate the estimate on view change so the pre-flight re-runs."** No
+  deadlock, same flash: a dropped estimate reads as "not too large", so the
+  banner still disappears, a fetch still starts, and the scrim still shows before
+  the new measurement puts the banner back.
+
+The fix that does work is to **decouple measuring from fetching**: re-measure on
+viewport change *while the gate is blocking*, so the verdict updates without a
+fetch cycle having to be started and abandoned. Then a display can honestly opt
+out of the rescale, because there is another way for its estimate to refresh.
+That is an autorun on the fetch mixins (not on `RegionTooLargeMixin`, which has
+non-LGV consumers and must stay view-only), gated on the opt-out so canvas, LD
+and alignments are untouched. Not built — it is a real change to shared fetch
+machinery for a flash on tracks that are already force-load-only.
 
 ## Recommendation
 
@@ -367,6 +412,21 @@ the draw loop:
   overlay does draw a per-species band there (presence + score), so this is a
   narrower gap than it sounds, but it is why widening the identity plot's zoom
   range is a **fetch-tier** question rather than a rendering one.
+
+A third gap was in it and is now closed, worth recording because the reasoning
+generalizes. The summary tier used to turn the byte gate off outright
+(`byteGateEnabled = !showSummary`), on the grounds that it is the cheap tier. It
+is cheap per base — no sequence — but `mafSummaryFeatures` calls
+`adapter.getFeatures` on the sub-adapter, and a `BigBedAdapter` read is a
+whole-feature download; `showSummary` covers 20kb to the whole genome; and a
+470-way emits a record per species per aligned run. So the escape hatch from the
+gate was itself capable of an unbounded ungated download — the exact failure the
+gate exists to prevent, in the one place nothing was watching. Both tiers are
+gated now, each measured against the file it actually reads
+(`byteGateAdapterConfig` on `RegionTooLargeMixin`). **Exempting a tier assumes it
+is bounded; measuring it doesn't have to** — and a genuinely small summary read
+is orders of magnitude under the cap, so nothing that worked before now sees a
+banner.
 
 ## Measurements from the design pass
 

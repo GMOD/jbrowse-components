@@ -328,22 +328,34 @@ then chunked typed-array delivery or a streaming RPC primitive, neither built.
 
 ### The byte gate assumes bytes scale with span, so block-quantized formats slip past it
 
-**Status:** Open.
+**Status:** Open, narrowed 2026-08-06.
 
 `rescaleByteEstimateToVisibleSpan` scales one cached measurement by
-`visibleBp / measuredSpanBp`, and `AUTO_FORCE_LOAD_BP` skips gating below 20kb.
+`visibleBp / measuredSpanBp`, and `AUTO_FORCE_LOAD_BP` skipped gating below 20kb.
 Both assume a smaller view means a smaller fetch. Tabix returns whole
 overlapping lines, so for a format that puts an unbounded amount of data on one
 line — MAF-tabix stores an entire alignment block, every species, in column 6 —
-the cost is quantized by feature, not by view. Zooming into a megabase block
-divides the estimate by the zoom factor while the fetch stays the same size, and
-the floor means nothing checks. The gate under-reports precisely the fetch that
-needs stopping, so there is no ceiling on the path that needs one.
+the cost is quantized by feature, not by view.
 
-**Retire when** the gate can re-measure per view instead of rescaling (an
-opt-in, since canvas/LD/alignments share the mixin) and the byte axis is allowed
-to fire below the floor. Sketch and the MAF-specific fixes in
-[MAF_LARGE_BLOCKS.md](MAF_LARGE_BLOCKS.md).
+**The floor half is closed.** `gateBelowForceLoadFloor` on
+`RegionTooLargeMixin` is an opt-in (default false, `LinearMafDisplay` sets it)
+that removes the floor term from `gateActive` and nothing else, so the byte axis
+is on duty at every zoom for the displays whose bytes don't follow span.
+
+**The rescale half is open**, and it is worse than "imprecise": measurement says
+the estimate is *flat* across the whole sub-16kb range, since an index reports
+whole blocks. So below the floor the rescale releases the banner on a number that
+isn't real, the pre-flight re-measures the same flat value, and the banner
+returns — an aborted fetch cycle per zoom step. No data is downloaded either way
+(the pre-flight re-measures before the fetch body runs), which is what keeps this
+a wart rather than the missing ceiling it used to be.
+
+**Retire when** measuring is decoupled from fetching — a re-measure on viewport
+change while the gate is blocking — so a display can opt out of the rescale
+without deadlocking. Simply removing the rescale does not work and neither does
+invalidating the estimate on view change; both are costed in
+[MAF_LARGE_BLOCKS.md](MAF_LARGE_BLOCKS.md) § "Why the rescale can't just be
+removed". Read that before proposing a fix.
 
 ---
 

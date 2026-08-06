@@ -26,7 +26,11 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 function host(self: object) {
   return self as {
     configuration: AnyConfigurationModel
-    adapterConfig: AnyConfigurationModel
+    // A resolved snapshot (`getConf(track, 'adapter')`), not a config node —
+    // which is why `adapterFetchSizeLimit` below reads its slot off the track's
+    // live config instead. Typed as what it is, so `byteGateAdapterConfig` can
+    // be overridden with a sub-adapter snapshot without a cast.
+    adapterConfig: Record<string, unknown>
   }
 }
 
@@ -124,11 +128,36 @@ export default function RegionTooLargeMixin() {
        * fetch and gate on it". `byteGateBlocksFetch` reads it (so a display that
        * calls the gate unconditionally still pays no RPC when it's off) and so
        * does the verdict, which is why requesting the estimate and gating on it
-       * can't drift apart. MAF flips it off in summary mode, LD for
-       * pre-computed adapters.
+       * can't drift apart.
+       *
+       * Turn it off only for a fetch that **cannot be measured** — LD's
+       * pre-computed adapters aren't feature adapters, so
+       * `CoreGetRegionByteEstimate` would throw. Not for one believed to be
+       * small: a display that reads a cheaper file at some zooms points
+       * `byteGateAdapterConfig` at that file and stays gated, which is what MAF
+       * does. Off means nothing is watching, and "this tier is cheap" is a
+       * premise, not a bound.
        */
       get byteGateEnabled(): boolean {
         return false
+      },
+      /**
+       * #getter
+       * Which adapter the pre-flight measures. The display's own by default —
+       * correct wherever a display has one fetch path.
+       *
+       * A display that swaps tiers by zoom overrides it, so the estimate always
+       * describes the fetch that is actually about to happen. MAF is the case it
+       * was built for: past the force-load floor it reads a `summaryAdapter`
+       * instead of the alignment, and measuring the alignment there would quote a
+       * download nobody is doing. The alternative it replaced — turning
+       * `byteGateEnabled` off for the cheap tier — exempted that tier from the
+       * gate entirely, which is only safe if the tier really is bounded. A
+       * `BigBedAdapter` read is a full-feature download (see its `getFeatures`),
+       * so at genome scale it is not, and the exemption was hiding it.
+       */
+      get byteGateAdapterConfig(): Record<string, unknown> {
+        return host(self).adapterConfig
       },
       /**
        * #getter
@@ -463,8 +492,11 @@ export default function RegionTooLargeMixin() {
       ) {
         // Skip the RPC when this display doesn't measure by pre-flight at all
         // (canvas folds the check into its feature fetch), and when nothing could
-        // act on an estimate right now — unmeasured view, exempt track, or under
-        // the force-load floor.
+        // act on an estimate right now — exempt track, unmeasured view, or under
+        // the force-load floor unless the display opted out of it. `gateActive`
+        // already implies a measured view on both of its branches; the
+        // `undefined` test survives only because `setByteEstimate` below needs
+        // the narrowed number.
         const measuredSpanBp = self.gateVisibleBp
         if (
           !self.byteGateEnabled ||
@@ -476,7 +508,7 @@ export default function RegionTooLargeMixin() {
         const bytes = await getSession(self).rpcManager.call(
           getRpcSessionId(self),
           'CoreGetRegionByteEstimate',
-          { regions, adapterConfig: host(self).adapterConfig },
+          { regions, adapterConfig: self.byteGateAdapterConfig },
         )
         if (ctx.isStale()) {
           return true

@@ -158,8 +158,9 @@ gate (`shared/regionTooLargeUtils.ts`), not on the view, which never reads it.
 MAF's `showSummary` asks the same "how zoomed out am I" question — it flips to the
 cheap summary adapter exactly where the detail fetch would be blocked — so it
 reads `aboveForceLoadFloor` rather than the constant. That getter deliberately
-excludes the opt-in terms, which is what keeps the read from being a cycle: MAF's
-`byteGateEnabled` is *itself* a function of `showSummary`.
+excludes the opt-in terms, which is what keeps the read from being a cycle:
+everything downstream of the swap (`byteGateAdapterConfig`) reads it, and nothing
+upstream does.
 
 **Live vs debounced.** The byte axis reads live `view.visibleBp`, so the banner
 releases the instant you zoom past the threshold — that responsiveness is the
@@ -220,10 +221,30 @@ today.
 **`densityTooLarge`** supplies a second gating axis, false in the base mixin.
 Canvas overrides it with its feature-density gate; byte-only displays leave it.
 
+**`byteGateAdapterConfig`** is which adapter the pre-flight measures, defaulting
+to the display's own. A display that swaps files by zoom overrides it so the
+estimate always describes the fetch about to happen — MAF points it at the
+`summaryAdapter` sub-adapter while `showSummary`, and at the MAF adapter below
+the swap.
+
+That getter is what lets a tiered display keep `byteGateEnabled` on for **both**
+tiers, and the alternative is worth naming because it was the shape here until
+2026-08-06 and it read as obviously safe. MAF used to spell the swap as
+`byteGateEnabled = !showSummary`, exempting the summary tier on the grounds that
+it is the cheap one. Cheap *per base* — it carries no sequence — but a
+`BigBedAdapter` read is still a whole-feature download (see the comment on its
+`getFeatures`), and `showSummary` is on from 20kb to the whole genome. So the one
+path that existed to escape the gate was also the one that could pull an
+unbounded number of per-species records with no size quoted and no way to
+decline: the exact failure the gate exists to prevent, sitting inside the gate's
+own escape hatch. **Exempting a tier assumes it is bounded; measuring it doesn't
+have to.** A genuinely small summary read is orders of magnitude under
+`fetchSizeLimit` and never sees a banner.
+
 LD turns `byteGateEnabled` off for pre-computed adapters (PlinkLD\*), which
 aren't feature adapters — `CoreGetRegionByteEstimate` measures through
-`getFeatures` and would throw. MAF turns it off in summary mode, where the read
-is a cheap zoom-reduced BigBed.
+`getFeatures` and would throw. That is the remaining legitimate use: not "this
+read is cheap" but "this adapter cannot be measured at all".
 
 ## Canvas folds the byte check into its fetch RPC
 
@@ -402,15 +423,30 @@ paths can't drift apart.
     estimate against `fetchSizeLimit`, so a shallow alignment at the same zoom
     never gates and no row-count threshold is needed to make it safe. The gate
     keeps self-releasing on zoom-in, against the bytes rather than the floor.
-  - **Unbounded feature size.** Tabix returns whole overlapping lines, and
-    MAF-tabix puts an entire alignment block (every species' sequence) on one
-    line — so zooming into a megabase block rescales the estimate toward zero
-    while the real cost is unchanged. **Still unfixed** (the rescaling half of
-    [MAF_LARGE_BLOCKS.md](MAF_LARGE_BLOCKS.md)'s option 3: re-measure instead of
-    rescale, by invalidating the cached estimate on view change). Note the fix
-    above does not address this one — it puts the gate on duty down there, but
-    the number it is comparing is still a rescale of a measurement taken
-    elsewhere.
+  - **Index granularity.** The estimate is not merely imprecise below the floor,
+    it is **flat**: an index reports whole blocks, so the same query costs the
+    same bytes at every span inside one block. Measured on files in this repo
+    (`bytesForRegions`, 2026-08-06), constant from 200bp up to where the linear
+    index's 16kb bins start splitting:
+
+    | file | 200bp | 1kb | 5kb | 16kb | 50kb |
+    | --- | --- | --- | --- | --- | --- |
+    | `volvox/volvox.maf.bed.gz` | 213,443 | 213,443 | 213,443 | 238,685 | 306,719 |
+    | `breakpoint/hs37d5.HG002…sv.vcf.gz` | 15,408 | 15,408 | 15,408 | 15,408 | 15,408 |
+    | `ce11.26way.chrI_subset.bed.gz` | 92,757 | 92,757 | 92,757 | 92,757 | 92,757 |
+
+    So for an over-budget track below the floor, `rescaleByteEstimateToVisibleSpan`
+    releases the banner on zoom-in against a number that isn't real, the pre-flight
+    re-measures the same flat value, and the banner comes back — one aborted fetch
+    cycle and a banner flash per zoom step, settling only when the track is
+    force-loaded. **No data is downloaded either way**: the pre-flight re-measures
+    before `work()` runs, so the under-report costs a round trip, never a fetch.
+
+    **Still unfixed**, and the obvious fixes don't work — see
+    [MAF_LARGE_BLOCKS.md](MAF_LARGE_BLOCKS.md) § "Why the rescale can't just be
+    removed" before proposing one. The short version: the downward rescale is the
+    *only* release mechanism, because the pre-flight is the only thing that
+    re-measures and it can only run when the verdict is already false.
 - `resolveByteLimit({ adapterFetchSizeLimit, configFetchSizeLimit })` is the one
   place a byte budget gets resolved: the adapter's limit, else the display config.
   Those two arguments are the only byte-budget *inputs* in the system — force-load
