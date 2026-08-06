@@ -88,7 +88,7 @@ gives one row per chromosome and one column per variant. Its sidebar stripe is
 population, and above both lanes sit RefSeq genes and the ClinVar
 lactase-persistence records.
 
-<Figure src="/img/ld/lct_haploblock.png" caption="The triangle and the haplotypes it summarises, in one view over the same window. Below the triangle, 1000 Genomes haplotypes at LCT/MCM6, one row per chromosome, clustered rather than left in file order: the pale slab across the upper rows is one haplotype carried by many chromosomes, ending either side of the highlighted gene where the mosaic resumes, at the coordinates the block's edges sit at above."/>
+<Figure src="/img/ld/lct_haploblock.png" caption="The triangle and the haplotypes it summarises, in one view over the same window. Below the triangle, 1000 Genomes haplotypes at LCT/MCM6, one row per chromosome, clustered rather than left in file order: the pale slab across the upper rows is one haplotype carried by many chromosomes, ending either side of the highlighted gene, under the block's edges above."/>
 
 **Ordering is what makes a block visible, not colour and not row count.** Left
 in file order the same matrix is a plaid at any size, because a block is a set

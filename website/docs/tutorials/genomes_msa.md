@@ -96,12 +96,14 @@ InterProScan for domains...** to compute them.
 ## Checking it against the raw alignment
 
 A whole-protein view cannot tell "no domain annotated" from "no sequence", so
-read the residues. Scroll to the columns under the pyrin block and use the
-alignment's **Zoom in** button until the letters are legible again.
+read the residues. The zoom the view opened at is already the right one: scroll
+back to it, or use the alignment's **Zoom in** button until the letters return.
 
-The rows without a pyrin domain are not empty there. Several of them carry
-ordinary sequence in those columns with no domain called over it, which is a
-different statement from the sequence being absent. Only some rows are gap.
+The rows without a pyrin domain are not empty there. Most of them carry ordinary
+sequence in those columns with no domain called over it, which is a different
+statement from the sequence being absent. One row is gap.
+
+<Figure src="/img/genomes_msa/pyrin_residues.png" caption="The same alignment at the residue zoom it opens on, over the columns the pyrin block covers. The block is on the human query row alone; dog, cattle and pig carry ordinary residues under it with nothing called over them, and mouse is the one row that is gap there." />
 
 ## Trying other genes
 

@@ -453,6 +453,16 @@ export const gallerySections: readonly GallerySection[] = [
         description:
           'TP53 with RefSeq models and ClinVar variants beside its AlphaFold structure, connected through the genome-to-structure alignment. Hovering a variant in the genome highlights the residue it hits on the structure.',
       },
+      {
+        // pyrin_residues, not the tutorial's three-frame click-path figure: a
+        // stack fits inside 1200x600 as a sliver, and this is the same view
+        // anyway, left at the zoom it opens on.
+        label: 'Cross-species protein alignment',
+        spec: 'genomes_msa/pyrin_residues',
+        guide: 'tutorials/genomes_msa',
+        description:
+          "NLRP1 aligned across the species NCBI has an ortholog gene for, built by right-clicking the gene rather than from a file, with NCBI's conserved-domain calls drawn in alignment columns. The pyrin domain is called on the human row only.",
+      },
     ],
   },
   {

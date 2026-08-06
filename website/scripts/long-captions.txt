@@ -6,7 +6,6 @@
 # visual takeaway, and move the color/stroke/row glossary into the prose that
 # introduces the figure. Removing one is the win. A multi-panel figure that has
 # to name each panel is the legitimate reason to stay listed.
-config_guides/variant_track.md /img/ld/lct_lactase.png
 tutorials/allvsall_synteny.md /img/multiway_synteny/ecoli_launch_from_selection.png
 tutorials/allvsall_synteny.md /img/multiway_synteny/ecoli_one_vs_all.png
 tutorials/allvsall_synteny.md /img/pangenome/rgfa_paa_bubble.png

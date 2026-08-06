@@ -1,6 +1,9 @@
 import { UCSC_HG38_CONFIG, sessionSpec } from '../screenshot-spec-helpers.ts'
 
-import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
+import type {
+  ScreenshotAction,
+  ScreenshotSpec,
+} from '../screenshot-spec-types.ts'
 
 // Figures for the genomes_msa tutorial.
 //
@@ -33,50 +36,90 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // tutorial's last section says.
 const NLRP1_WINDOW = 'chr17:5,495,000-5,591,000'
 
+// The gene track carries an explicit height and longestCoding glyph mode: the
+// right-click is resolved against the track's band, and an auto height is a
+// function of how many isoforms RefSeq draws at this locus, so the click
+// coordinate would move whenever that changed.
+const NLRP1_SESSION = sessionSpec(UCSC_HG38_CONFIG, {
+  views: [
+    {
+      type: 'LinearGenomeView',
+      assembly: 'hg38',
+      loc: NLRP1_WINDOW,
+      tracks: [
+        {
+          trackId: 'hg38-ncbiRefSeqCurated',
+          geneGlyphMode: 'longestCoding',
+          height: 60,
+        },
+      ],
+    },
+  ],
+})
+
+const RIGHT_CLICK_NLRP1: ScreenshotAction = {
+  type: 'rightclick',
+  anchor: {
+    track: 'hg38-ncbiRefSeqCurated',
+    locus: 'chr17:5,543,000',
+    // near the top of the band, not its middle. `longestCoding` draws this
+    // locus as a single gene row, so the lower two thirds of a 60px track are
+    // empty canvas: a centered right-click opens the view's own menu with no
+    // feature items in it, and the stage then fails on the launcher it was
+    // waiting for rather than on the click that missed.
+    fracY: 0.2,
+  },
+}
+
+// Open the launch dialog and wait for it to be usable. The tab label paints
+// before the dialog has resolved the transcript's protein sequence, and the
+// isoform selector is still filling in at that point. Submit is disabled until
+// that sequence arrives, so an enabled Submit is the declarative "dialog is
+// ready" rather than a guess at how long the fetch takes.
+const OPEN_LAUNCH_DIALOG: ScreenshotAction[] = [
+  { type: 'click', text: 'Launch MSA view' },
+  { type: 'waitForText', text: 'Orthologs (fast)' },
+  {
+    type: 'waitForSelector',
+    selector: 'button:not([disabled])::-p-text(Submit)',
+    // Longer than the 30s default, because what gates it is a range read out of
+    // hgdownload's hg38.2bit for the transcript's CDS. hgdownload is the
+    // slowest host any of these figures touch, and at 30s this failed on a
+    // pending 2bit request often enough to read as a broken selector.
+    timeout: 120000,
+  },
+]
+
+// Submit, then wait out a live NCBI lookup plus an EBI Clustal Omega job.
+// Seconds rather than minutes, which is the tutorial's whole point, but
+// network-bound: the domain overlay is a second round trip after the alignment
+// itself lands.
+//
+// Gate on the RESULT, not on a timer, and specifically on the entry these
+// figures are OF. The legend lists one row per domain type present anywhere in
+// the alignment, and the human row is the only one with a pyrin, so
+// `Pyrin_NALPs` appears only once NCBI has returned the human protein record. A
+// looser gate on NACHT passes without it: eutils answers a burst of these runs
+// with HTTP 429, the human row silently loses its domain calls, and the frame
+// is an overlay missing the one block the page is about. Which is what it
+// shipped as, once.
+const SUBMIT_AND_WAIT: ScreenshotAction[] = [
+  { type: 'click', selector: 'button::-p-text(Submit)' },
+  { type: 'waitForText', text: 'Pyrin_NALPs', timeout: 180000 },
+]
+
 export const msaSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'genomes_msa/launch_sequence',
-    // The gene track carries an explicit height and longestCoding glyph mode:
-    // the right-click is resolved against the track's band, and an auto height
-    // is a function of how many isoforms RefSeq draws at this locus, so the
-    // click coordinate would move whenever that changed.
-    url: sessionSpec(UCSC_HG38_CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: NLRP1_WINDOW,
-          tracks: [
-            {
-              trackId: 'hg38-ncbiRefSeqCurated',
-              geneGlyphMode: 'longestCoding',
-              height: 60,
-            },
-          ],
-        },
-      ],
-    }),
+    url: NLRP1_SESSION,
     // A menu, the dialog it opens, and the view that dialog builds: each stage
     // is reachable only by driving the one before it, so they are stages of one
     // spec rather than three specs.
     stages: [
       {
         actions: [
-          {
-            type: 'rightclick',
-            anchor: {
-              track: 'hg38-ncbiRefSeqCurated',
-              locus: 'chr17:5,543,000',
-              // near the top of the band, not its middle. `longestCoding` draws
-              // this locus as a single gene row, so the lower two thirds of a
-              // 60px track are empty canvas: a centered right-click opens the
-              // view's own menu with no feature items in it, and the stage then
-              // fails on the launcher it was waiting for rather than on the
-              // click that missed.
-              fracY: 0.2,
-            },
-          },
+          RIGHT_CLICK_NLRP1,
           { type: 'waitForText', text: 'Launch MSA view' },
         ],
         // Both boxes are assertions, not decoration: an anchor that resolves to
@@ -95,25 +138,7 @@ export const msaSpecs: ScreenshotSpec[] = [
         viewportHeight: 540,
       },
       {
-        actions: [
-          { type: 'click', text: 'Launch MSA view' },
-          { type: 'waitForText', text: 'Orthologs (fast)' },
-          // The tab label paints before the dialog has resolved the
-          // transcript's protein sequence, and the isoform selector is still
-          // filling in at that point. Submit is disabled until that sequence
-          // arrives, so an enabled Submit is the declarative "dialog is ready"
-          // rather than a guess at how long the fetch takes.
-          {
-            type: 'waitForSelector',
-            selector: 'button:not([disabled])::-p-text(Submit)',
-            // Longer than the 30s default, because what gates it is a range
-            // read out of hgdownload's hg38.2bit for the transcript's CDS.
-            // hgdownload is the slowest host any of these figures touch, and at
-            // 30s this stage failed on a pending 2bit request often enough to
-            // read as a broken selector.
-            timeout: 120000,
-          },
-        ],
+        actions: OPEN_LAUNCH_DIALOG,
         annotations: [
           { type: 'box', anchor: { text: 'Orthologs (fast)' } },
           { type: 'box', anchor: { text: 'Species to include' } },
@@ -126,25 +151,11 @@ export const msaSpecs: ScreenshotSpec[] = [
         viewportHeight: 880,
       },
       {
-        // Submit, then wait out a live NCBI lookup plus an EBI Clustal Omega
-        // job. Seconds rather than minutes, which is the tutorial's whole
-        // point, but network-bound: the domain overlay is a second round trip
-        // after the alignment itself lands.
         actions: [
-          { type: 'click', selector: 'button::-p-text(Submit)' },
-          // Gate on the RESULT, not on a timer, and specifically on the entry
-          // this figure is OF. The legend lists one row per domain type present
-          // anywhere in the alignment, and the human row is the only one with a
-          // pyrin, so `Pyrin_NALPs` appears only once NCBI has returned the
-          // human protein record. A looser gate on NACHT passes without it:
-          // eutils answers a burst of these runs with HTTP 429, the human row
-          // silently loses its domain calls, and the frame is a whole-protein
-          // overlay missing the one block the page is about. Which is what it
-          // shipped as, once.
-          { type: 'waitForText', text: 'Pyrin_NALPs', timeout: 180000 },
+          ...SUBMIT_AND_WAIT,
           // The view opens at colWidth 12, which is residue zoom: about a
           // hundred columns of a ~1500-column alignment, and none of the domain
-          // blocks the figure is of. Fit horizontally is the one action that
+          // blocks this frame is of. Fit horizontally is the one action that
           // puts the whole protein on screen, and it computes the width instead
           // of stepping 0.75x per click toward a floor that would still leave
           // the C terminus off the right edge.
@@ -172,6 +183,27 @@ export const msaSpecs: ScreenshotSpec[] = [
     viewportHeight: 900,
     // the UCSC hub config is ~570 tracks and pulls four remote plugins, the
     // same reason genomes_synteny raises this
+    readyTimeout: 120000,
+  },
+  {
+    // The same alignment left at the zoom it OPENS at, which is the one thing
+    // the fitted whole-protein frame above cannot show: individual residues.
+    // The tutorial's control check is that the rows without a pyrin block are
+    // not empty under it, and "no domain annotated" and "no sequence" are the
+    // same picture at whole-protein zoom. scrollX starts at 0 and the pyrin
+    // call is at query residue 9, so the columns the view opens on are the
+    // columns the check is about, with no scrolling to write down.
+    //
+    // Single frame rather than a fourth stage on the spec above: a stack is
+    // unusable as a gallery card (gen-gallery-thumbs fits inside 1200x600, so a
+    // 3000x4600 stack paints as a 170px-wide sliver), and this is the figure
+    // the gallery card is cut from.
+    mode: 'url',
+    name: 'genomes_msa/pyrin_residues',
+    url: NLRP1_SESSION,
+    actions: [RIGHT_CLICK_NLRP1, ...OPEN_LAUNCH_DIALOG, ...SUBMIT_AND_WAIT],
+    hideTooltip: true,
+    viewportHeight: 878,
     readyTimeout: 120000,
   },
 ]

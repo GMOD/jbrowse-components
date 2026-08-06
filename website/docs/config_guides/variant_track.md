@@ -270,13 +270,14 @@ skips the coloring.
 ## Linkage disequilibrium (LD) display
 
 JBrowse renders a triangular heatmap of pairwise r² (or D') between variants,
-from either of two sources.
+from either of two sources. The figure below is computed live from phased 1000
+Genomes genotypes.
 
 Point an LD track at a single population panel: r² is a correlation across the
 samples in the file, so a pooled multi-population callset averages the block
 away.
 
-<Figure src="/img/ld/lct_haploblock.png" caption="An LD triangle at the human lactase locus (LCT/MCM6), computed live from phased 1000 Genomes genotypes, over the haplotypes it summarises. Red means a pair of SNPs is almost always inherited together, so the block over the highlighted gene is one long haplotype with LD decaying into the paler flanks; the matrix below is one row per chromosome, and the pale slab is the same haplotype in the rows that carry it."/>
+<Figure src="/img/ld/lct_haploblock.png" caption="An LD triangle at the human lactase locus (LCT/MCM6), over the haplotypes it summarises. Red means a pair of SNPs is almost always inherited together, so the block over the highlighted gene is one long haplotype, with LD decaying into the paler flanks; the matrix below is one row per chromosome, and the pale slab is that haplotype in the rows carrying it."/>
 
 **Computed from a VCF.** Add an `LDDisplay` to a normal `VariantTrack`. No extra
 files are needed, and because the raw genotypes are present, the filtering
