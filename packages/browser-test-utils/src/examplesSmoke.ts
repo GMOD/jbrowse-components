@@ -116,6 +116,32 @@ export async function smokeExamplesSite({
     const name = slug || 'index'
     const page = await browser.newPage()
     await page.setViewport(viewport)
+    // Stamp the moment the island fills, from inside the page and before any
+    // of its own script runs.
+    //
+    // Observing this from outside does not work on a heavy page. `goto` only
+    // returns at the networkidle *timeout* when a demo keeps fetching, and by
+    // then a track dense enough to stall software WebGL has the main thread —
+    // so a watcher that starts after `goto` is blind to a mount that already
+    // happened. single-cell-umap mounts at ~290ms and then rasterizes for over
+    // a minute under swiftshader; every observer that looked afterwards
+    // concluded it had never mounted.
+    //
+    // A stamp taken at the moment it happens survives that, because reading it
+    // late still reports the right time. `setInterval` rather than a
+    // MutationObserver on purpose: this runs before `document.documentElement`
+    // exists, and `observe(null)` throws and takes the whole init script with
+    // it (silently — the page still loads, the stamp just never appears).
+    await page.evaluateOnNewDocument(() => {
+      const timer = setInterval(() => {
+        const el = document.querySelector('.demo')
+        if (el && el.innerHTML.length >= 50) {
+          ;(window as unknown as Record<string, unknown>).__demoMountedAt =
+            performance.now()
+          clearInterval(timer)
+        }
+      }, 50)
+    })
     const errors: string[] = []
     const workers: string[] = []
     page.on('workercreated', w => {
@@ -146,44 +172,45 @@ export async function smokeExamplesSite({
       // below are the real health signals and don't depend on network idle.
       log(`     (note) ${name}: ${e instanceof Error ? e.message : String(e)}`)
     }
-    // Wait for the island to mount, rather than trusting a fixed delay to have
-    // covered it. `.demo` is empty until React hydrates, and when several of
-    // these suites (or a stray puppeteer probe) share a machine, hydration can
-    // land after the settle has already elapsed — which reports as "empty demo"
-    // on a page that is perfectly healthy. Waiting on the condition costs
-    // nothing when it is already true and only stretches when the box is busy,
-    // which is exactly when a fixed delay lies.
-    //
-    // The settle still runs afterwards: mounting is not drawing, and the
-    // censuses below need the canvas painted, not just the island hydrated.
-    const mounted = await page
+    // Wait on the condition rather than trusting a fixed delay to have covered
+    // it: when several of these suites share a machine, hydration can land
+    // after a fixed settle has elapsed, which reported as "empty demo" on a
+    // page that was perfectly healthy. Costs nothing when the stamp is already
+    // there. A timeout here is not a verdict — the stamp below is — because
+    // this poll needs the main thread and a stalled renderer owns it.
+    await page
       .waitForFunction(
-        () => (document.querySelector('.demo')?.innerHTML.length ?? 0) >= 50,
+        () =>
+          (window as unknown as Record<string, unknown>).__demoMountedAt !==
+          undefined,
         { timeout: MOUNT_TIMEOUT_MS },
       )
-      .then(() => true)
-      .catch(() => false)
-    if (!mounted) {
-      // Three outcomes the original check reported with one message, though
-      // they have nothing to do with each other. Re-read rather than assume the
-      // deadline means "empty": a page can fill in the moment between the
-      // timeout and this line, and reporting that as "never mounted" while
-      // printing a five-figure innerHTML length is worse than the message it
-      // replaced. `$eval` rejects on a missing selector, so `undefined` is
-      // absent and a number is present.
+      .catch(() => {})
+    // The settle still runs: mounting is not drawing, and the censuses below
+    // need the canvas painted, not just the island hydrated.
+    await new Promise(r => setTimeout(r, settleMs))
+    const mountedAt = await page
+      .evaluate(
+        () =>
+          (window as unknown as Record<string, number | undefined>)
+            .__demoMountedAt,
+      )
+      .catch(() => undefined)
+    if (mountedAt === undefined) {
+      // Two failures the original check reported with one message, though they
+      // have nothing to do with each other: a page with no `.demo` on it at all
+      // (a 404, or a route the build didn't emit) and one whose island never
+      // hydrated. `$eval` rejects on a missing selector, so `undefined` is
+      // absent and a number is present-but-empty.
       const len = await page
         .$eval('.demo', el => el.innerHTML.length)
         .catch(() => undefined)
       errors.push(
         len === undefined
           ? 'no .demo element on the page — did this route build?'
-          : len >= 50
-            ? `demo mounted only after ${MOUNT_TIMEOUT_MS}ms — alive, but slow ` +
-              'enough that every check below raced it'
-            : `demo never mounted (innerHTML len ${len} after ${MOUNT_TIMEOUT_MS}ms)`,
+          : `demo never mounted (innerHTML len ${len})`,
       )
     }
-    await new Promise(r => setTimeout(r, settleMs))
     if (slug === workerSlug && !workers.some(u => u.includes('rpcWorker'))) {
       errors.push(`no rpc worker spawned (workers: ${JSON.stringify(workers)})`)
     }
