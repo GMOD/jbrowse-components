@@ -27,6 +27,14 @@
 // landing just under a level's bin size fetches up to 10x more bins than it can
 // draw. 10000,30000,100000,... holds that to ~3x.
 //
+// Every level above the finest is written three times: the mean, and the min
+// and max of the finer bins under it, as sibling `<path>_min`/`<path>_max`
+// arrays named in the level's metadata. Without them a zoomed-out view can only
+// show a mean, and a focal event narrower than a coarse bin averages away at
+// exactly the zoom someone would be scanning for it. That triples the coarse
+// levels on disk and at peak memory, which is why the spacing above is worth
+// getting right: it is what decides how big "the coarse levels" are.
+//
 // The store is written by hand rather than through zarrita's `create`/`set`:
 // zarrita's gzip codec is decode-only, and writing the chunk files directly
 // keeps the build free of a wasm codec while producing exactly what the browser
@@ -47,6 +55,7 @@ const { values } = parseArgs({
     region: { type: 'string', multiple: true },
     levels: { type: 'string', default: '1000' },
     'chunk-bins': { type: 'string', default: '256' },
+    decimals: { type: 'string' },
     concurrency: { type: 'string', default: '24' },
     help: { type: 'boolean', default: false },
   },
@@ -67,7 +76,23 @@ input, one of:
   --region chr:start-end  repeatable; omit for whole genome
   --levels 1000,10000     resolution pyramid, finest first
   --chunk-bins 256        bins per chunk; the sample axis is always whole
-  --concurrency 24        parallel BigWig reads (--samples only)`
+  --decimals <n>          round stored values to n decimal places (lossy)
+  --concurrency 24        parallel BigWig reads (--samples only)
+
+The last two are the size knobs, and both are read-side transparent: a chunk is
+nSamples x chunk-bins values however you set them, and rounding is applied to
+the stored bytes, so no reader needs to know either was used.
+
+  --chunk-bins trades requests against bytes per request. A chunk holds every
+  sample, so at cohort scale it is large whatever you do: 2504 samples x 256
+  bins is 2.5MB before compression, and a view that can only draw 900 rows
+  still downloads all of them. Lower it on the coarse levels of a big cohort.
+
+  --decimals is usually the bigger lever, because gzip on this layout is mostly
+  matching repeated values rather than modelling a distribution. Copy number
+  quantized to 0.01 roughly halves a store; full float32 keeps every digit of a
+  number whose last five are noise. Measure your own data before assuming
+  either way, and leave it off if the values are genuinely continuous.`
 
 if (values.help || !values.out || !(values.samples || values.bed)) {
   console.log(USAGE)
@@ -76,6 +101,14 @@ if (values.help || !values.out || !(values.samples || values.bed)) {
 
 const outDir = values.out
 const chunkBins = Number(values['chunk-bins'])
+// Held as the multiplier rather than the digit count, so the write loop is a
+// multiply and a divide instead of a per-value exponentiation.
+const roundTo =
+  values.decimals === undefined ? undefined : 10 ** Number(values.decimals)
+if (roundTo !== undefined && !Number.isFinite(roundTo)) {
+  console.error(`--decimals must be a number, got "${values.decimals}"`)
+  process.exit(1)
+}
 const concurrency = Number(values.concurrency)
 const levelBinSizes = values.levels
   .split(',')
@@ -317,31 +350,47 @@ console.log(
   `${samples.length} samples x ${baseLayout.totalBins} bins of ${baseBinSize}bp = ${(baseBytes / 1e6).toFixed(1)} MB uncompressed`,
 )
 
-// Only the FINEST level is held whole, so the first entry of --levels is what
-// decides whether a run is possible at all, and dropping --region without
-// touching it is the way to find that out the hard way: over hg38 a 2504-sample
-// panel is a few GB of matrix at 10kb bins and ~31 GB at 1kb. Refused here
-// rather than left to the OOM killer, which reports a dead process and nothing
-// about which knob turns it. Half of RAM because the coarser levels allocate
-// their own output beside this one while it is still live.
+// The base level is held whole for the entire run (every coarser level derives
+// from it), so the first entry of --levels is what decides whether a run is
+// possible at all, and dropping --region without touching it is how you find
+// that out the hard way: over hg38 a 2504-sample panel is ~3 GB of matrix at
+// 10kb bins and ~31 GB at 1kb. Refused here rather than left to the OOM killer,
+// which reports a dead process and nothing about which knob turns it.
+//
+// Peak is the base plus the widest coarse level's mean/min/max, which are
+// allocated together beside it. Computed from the actual levels rather than
+// assumed, because the ratio between them is the user's to choose: at the ~3x
+// spacing this asks for, the summary triple costs about as much again as the
+// base, and at 10x spacing it is nearly free.
+function levelBytes(binSize: number) {
+  return samples.length * layoutLevel(binSize).totalBins * 4
+}
+
+function peakBytes(binSizes: number[]) {
+  const [finest, ...coarser] = binSizes
+  return (
+    levelBytes(finest!) +
+    Math.max(0, ...coarser.map(binSize => 3 * levelBytes(binSize)))
+  )
+}
+
 const memBudget = totalmem() / 2
-if (baseBytes > memBudget) {
-  let suggestion: number | undefined
+const peak = peakBytes(levelBinSizes)
+if (peak > memBudget) {
+  let suggestion: number[] | undefined
   for (let decade = baseBinSize; !suggestion && decade <= 1e9; decade *= 10) {
     for (const step of [1, 2, 5]) {
       const bin = decade * step
-      if (
-        bin > baseBinSize &&
-        samples.length * layoutLevel(bin).totalBins * 4 <= memBudget
-      ) {
-        suggestion = bin
+      const candidate = [bin, bin * 3, bin * 10]
+      if (bin > baseBinSize && peakBytes(candidate) <= memBudget) {
+        suggestion = candidate
         break
       }
     }
   }
   console.error(
-    `the ${baseBinSize}bp level is ${(baseBytes / 1e9).toFixed(1)} GB and is held whole in memory, over this machine's ${(memBudget / 1e9).toFixed(1)} GB budget.
-Coarsen the finest level (or narrow the input with --region):${suggestion ? ` --levels ${[suggestion, suggestion * 3, suggestion * 10].join(',')}` : ' no bin size up to 1Gb fits, so use --region'}`,
+    `the ${baseBinSize}bp level is ${(baseBytes / 1e9).toFixed(1)} GB and is held whole in memory (${(peak / 1e9).toFixed(1)} GB at peak, with the coarser levels' mean/min/max beside it), over this machine's ${(memBudget / 1e9).toFixed(1)} GB budget.
+Coarsen the finest level (or narrow the input with --region):${suggestion ? ` --levels ${suggestion.join(',')}` : ' no bin size up to 1Gb fits, so use --region'}`,
   )
   process.exit(1)
 }
@@ -503,6 +552,14 @@ function writeLevel(
         s * chunkBins,
       )
     }
+    // Rounded here, at write time, rather than on the matrix: the coarser
+    // levels derive from the full-precision base, so this loses precision once
+    // in the stored bytes instead of compounding it through the pyramid.
+    if (roundTo !== undefined) {
+      for (let i = 0; i < buf.length; i++) {
+        buf[i] = Math.round(buf[i]! * roundTo) / roundTo
+      }
+    }
     const gz = gzipSync(Buffer.from(buf.buffer, 0, buf.byteLength), {
       level: 9,
     })
@@ -519,6 +576,20 @@ function writeLevel(
 
 // A coarser level averages the finer bins under it, skipping the unmeasured
 // ones, so a gap stays a gap instead of being diluted toward zero.
+//
+// It also keeps their min and max, which is the difference between a pyramid
+// and a set of separately-binned tracks: a mean is not a summary on its own. A
+// focal amplification inside a 1Mb bin averages back to the diploid baseline
+// and disappears at the zoom where someone is most likely to be looking for it,
+// and there is nothing in a mean-only store that could bring it back. BigWig's
+// zoom records carry validCount/min/max/sum/sumSquares for exactly this reason,
+// and @jbrowse/plugin-wiggle already renders min and max as their own layers
+// when an adapter supplies them (`summaryScoreMode` whiskers/min/max).
+//
+// The min and max are over this store's own finer bins, not over whatever the
+// input was, and only levels above the base carry them. That keeps the claim
+// honest: the base level is the finest thing the store knows, so a summary of
+// something below it would be a resolution the store cannot show anywhere else.
 function downsample(
   values: Float32Array,
   from: { refs: Record<string, RefSpan>; totalBins: number },
@@ -528,13 +599,17 @@ function downsample(
   nSamples: number,
 ) {
   const ratio = toBinSize / fromBinSize
-  const out = new Float32Array(nSamples * to.totalBins).fill(Number.NaN)
+  const mean = new Float32Array(nSamples * to.totalBins).fill(Number.NaN)
+  const min = new Float32Array(nSamples * to.totalBins).fill(Number.NaN)
+  const max = new Float32Array(nSamples * to.totalBins).fill(Number.NaN)
   for (let s = 0; s < nSamples; s++) {
     for (const [refName, dst] of Object.entries(to.refs)) {
       const src = from.refs[refName]!
       for (let i = 0; i < dst.numBins; i++) {
         let sum = 0
         let n = 0
+        let lo = Number.POSITIVE_INFINITY
+        let hi = Number.NEGATIVE_INFINITY
         const base = Math.round(
           (dst.start - src.start) / fromBinSize + i * ratio,
         )
@@ -545,36 +620,58 @@ function downsample(
             if (!Number.isNaN(v)) {
               sum += v
               n++
+              if (v < lo) {
+                lo = v
+              }
+              if (v > hi) {
+                hi = v
+              }
             }
           }
         }
         if (n > 0) {
-          out[s * to.totalBins + dst.binOffset + i] = sum / n
+          const at = s * to.totalBins + dst.binOffset + i
+          mean[at] = sum / n
+          min[at] = lo
+          max[at] = hi
         }
       }
     }
   }
-  return out
+  return { mean, min, max }
 }
 
 rmSync(outDir, { recursive: true, force: true })
 
+// `minPath`/`maxPath` are additive: a reader that predates them opens `path`
+// and behaves exactly as before, which is why they are sibling arrays rather
+// than a third axis on the existing one. Both or neither, since a min without a
+// max is not a summary anything can draw.
 const levels = levelBinSizes.map(binSize => {
-  const layout = binSize === baseBinSize ? baseLayout : layoutLevel(binSize)
-  const values =
-    binSize === baseBinSize
-      ? matrix
-      : downsample(
-          matrix,
-          baseLayout,
-          baseBinSize,
-          layout,
-          binSize,
-          samples.length,
-        )
   const path = `bin${binSize}`
-  writeLevel(path, values, layout.totalBins, samples.length)
-  return { path, binSize, refs: layout.refs }
+  if (binSize === baseBinSize) {
+    writeLevel(path, matrix, baseLayout.totalBins, samples.length)
+    return { path, binSize, refs: baseLayout.refs }
+  }
+  const layout = layoutLevel(binSize)
+  const { mean, min, max } = downsample(
+    matrix,
+    baseLayout,
+    baseBinSize,
+    layout,
+    binSize,
+    samples.length,
+  )
+  writeLevel(path, mean, layout.totalBins, samples.length)
+  writeLevel(`${path}_min`, min, layout.totalBins, samples.length)
+  writeLevel(`${path}_max`, max, layout.totalBins, samples.length)
+  return {
+    path,
+    binSize,
+    refs: layout.refs,
+    minPath: `${path}_min`,
+    maxPath: `${path}_max`,
+  }
 })
 
 writeJson(join(outDir, 'zarr.json'), {
@@ -582,11 +679,21 @@ writeJson(join(outDir, 'zarr.json'), {
   node_type: 'group',
   attributes: {
     jbrowse_signal_matrix: {
-      version: 1,
+      // 2 adds per-level minPath/maxPath. A reader should key off their
+      // presence rather than off this number: they are optional (the base level
+      // has none) and additive, so a v1 reader opens a v2 store correctly.
+      version: 2,
       samples: samples.map(s =>
         s.group ? { name: s.name, group: s.group } : { name: s.name },
       ),
       levels,
+      // Provenance, not instruction: the values are already rounded in the
+      // stored bytes, so nothing reads this to decode them. It is here so a
+      // store can be asked what precision it actually carries, which is
+      // otherwise unrecoverable once the digits are gone.
+      ...(values.decimals === undefined
+        ? {}
+        : { decimals: Number(values.decimals) }),
     },
   },
 })
