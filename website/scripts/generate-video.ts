@@ -4,15 +4,12 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import {
-  BASE_CHROME_ARGS,
-  createTestServer,
-  findChromeExecutable,
   waitForLoadingComplete,
   waitForQuiescent,
 } from '@jbrowse/browser-test-utils'
-import { launch } from 'puppeteer'
 
 import { delay, textSelector, waitForVisible } from './actions.ts'
+import { withHarness } from './dev-harness.ts'
 import { VOLVOX, lgvSession } from './screenshot-spec-helpers.ts'
 
 import type { Page } from 'puppeteer'
@@ -27,8 +24,6 @@ process.on('unhandledRejection', (reason: unknown) => {
 })
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const repoRoot = path.resolve(__dirname, '..', '..')
-const testDataRoot = path.resolve(repoRoot, 'products', 'jbrowse-web')
 const outDir = path.resolve(__dirname, '..', 'static', 'video')
 
 const headed = process.argv.includes('--headed')
@@ -145,89 +140,79 @@ async function zoomTour(page: Page, dir: 'in' | 'out', times: number) {
   }
 }
 
+// Typed as a `.webm` template literal so it satisfies screencast's branded
+// path type without a cast.
+const webmPath: `${string}.webm` = `${outDir}/volvox_tour.webm`
+
 async function main() {
   fs.mkdirSync(outDir, { recursive: true })
-  const server = await createTestServer(PORT, {
-    jbrowseWebRoot: testDataRoot,
-    repoRoot,
-  })
-  const browser = await launch({
-    headless: !headed,
-    defaultViewport: VIEWPORT,
-    executablePath: findChromeExecutable(),
-    args: [...BASE_CHROME_ARGS, '--enable-unsafe-swiftshader'],
-  })
-  // Typed as a `.webm` template literal so it satisfies screencast's branded
-  // path type without a cast.
-  const webmPath: `${string}.webm` = `${outDir}/volvox_tour.webm`
-  try {
-    const page = await browser.newPage()
-    // Surface a tab crash / uncaught page error instead of only seeing its
-    // downstream "Target closed" when the next command runs.
-    page.on('error', err => {
-      log('PAGE CRASH:')
-      console.error(err)
-    })
-    page.on('pageerror', err => {
-      log('PAGE ERROR:')
-      console.error(err)
-    })
-    // Light tracks (wiggle + genes) keep the main thread free so button clicks
-    // never stall and the zoom springs stay smooth on camera. A per-read CRAM
-    // pileup under swiftshader blocks the thread for seconds per zoom frame.
-    const url = lgvSession(VOLVOX, {
-      assembly: 'volvox',
-      loc: 'ctgA:1-50,000',
-      tracks: ['volvox_microarray', 'gff3tabix_genes'],
-    })
-    await page.goto(`http://localhost:${PORT}/${url}`, {
-      waitUntil: 'networkidle0',
-      timeout: 60000,
-    })
-    log('page loaded, waiting for quiescence')
-    await waitForVisible(page, textSelector('ctgA'))
-    await waitForLoadingComplete(page, { waitForDownloads: true })
-    await waitForQuiescent(page)
-    await injectCursor(page)
-    await moveCursor(page, VIEWPORT.width / 2, VIEWPORT.height / 2)
-    await delay(800)
+  await withHarness(
+    { port: PORT, headless: !headed, viewport: VIEWPORT },
+    async ({ page }) => {
+      // Surface a tab crash / uncaught page error instead of only seeing its
+      // downstream "Target closed" when the next command runs.
+      page.on('error', err => {
+        log('PAGE CRASH:')
+        console.error(err)
+      })
+      page.on('pageerror', err => {
+        log('PAGE ERROR:')
+        console.error(err)
+      })
+      // Light tracks (wiggle + genes) keep the main thread free so button clicks
+      // never stall and the zoom springs stay smooth on camera. A per-read CRAM
+      // pileup under swiftshader blocks the thread for seconds per zoom frame.
+      const url = lgvSession(VOLVOX, {
+        assembly: 'volvox',
+        loc: 'ctgA:1-50,000',
+        tracks: ['volvox_microarray', 'gff3tabix_genes'],
+      })
+      await page.goto(`http://localhost:${PORT}/${url}`, {
+        waitUntil: 'networkidle0',
+        timeout: 60000,
+      })
+      log('page loaded, waiting for quiescence')
+      await waitForVisible(page, textSelector('ctgA'))
+      await waitForLoadingComplete(page, { waitForDownloads: true })
+      await waitForQuiescent(page)
+      await injectCursor(page)
+      await moveCursor(page, VIEWPORT.width / 2, VIEWPORT.height / 2)
+      await delay(800)
 
-    log('starting screencast')
-    const recorder = await page.screencast({ path: webmPath, fps: 30 })
-    // Always stop the recorder, however the motion ends — stop() flushes the
-    // remaining frames and closes ffmpeg's stdin so the webm isn't left
-    // truncated ("File ended prematurely" on later reads).
-    try {
-      await delay(600)
-      log('zoom in')
-      await zoomTour(page, 'in', 6)
-      await delay(700)
-      log('zoom out')
-      await zoomTour(page, 'out', 6)
-      await delay(700)
-      log('motion complete')
-    } catch (err: unknown) {
-      log('motion threw:')
-      console.error(err)
-    } finally {
-      log('calling recorder.stop()')
-      const stopped = await Promise.race([
-        recorder
-          .stop()
-          .then(() => 'ok')
-          .catch(
-            (err: unknown) =>
-              `stop rejected: ${err instanceof Error ? err.message : err}`,
-          ),
-        delay(15000).then(() => 'TIMEOUT after 15s'),
-      ])
-      log(`recorder.stop() → ${stopped}`)
-    }
-    log(`wrote ${webmPath}`)
-  } finally {
-    await browser.close()
-    server.close()
-  }
+      log('starting screencast')
+      const recorder = await page.screencast({ path: webmPath, fps: 30 })
+      // Always stop the recorder, however the motion ends — stop() flushes the
+      // remaining frames and closes ffmpeg's stdin so the webm isn't left
+      // truncated ("File ended prematurely" on later reads).
+      try {
+        await delay(600)
+        log('zoom in')
+        await zoomTour(page, 'in', 6)
+        await delay(700)
+        log('zoom out')
+        await zoomTour(page, 'out', 6)
+        await delay(700)
+        log('motion complete')
+      } catch (err: unknown) {
+        log('motion threw:')
+        console.error(err)
+      } finally {
+        log('calling recorder.stop()')
+        const stopped = await Promise.race([
+          recorder
+            .stop()
+            .then(() => 'ok')
+            .catch(
+              (err: unknown) =>
+                `stop rejected: ${err instanceof Error ? err.message : err}`,
+            ),
+          delay(15000).then(() => 'TIMEOUT after 15s'),
+        ])
+        log(`recorder.stop() → ${stopped}`)
+      }
+      log(`wrote ${webmPath}`)
+    },
+  )
 
   // Transcode to broadly-embeddable mp4 (h264/yuv420p) and a preview gif. The
   // screencast's piped VP9/webm has no container-level duration header

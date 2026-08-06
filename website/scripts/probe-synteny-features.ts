@@ -69,8 +69,8 @@ const dump = await withHarness(
         })[]
         levels?: Level[]
       }
-      const view = (window as unknown as { JBrowseSession?: View }).JBrowseSession
-        ?.views?.[index]
+      const view = (window as unknown as { JBrowseSession?: View })
+        .JBrowseSession?.views?.[index]
       return {
         rows: (view?.views ?? []).map(v => ({
           regions: (v.displayedRegions ?? []).map(

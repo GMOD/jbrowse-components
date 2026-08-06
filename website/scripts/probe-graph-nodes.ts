@@ -34,16 +34,18 @@ const specName = positionals[0]
 const viewIndex = Number(values.view ?? 1)
 const timeout = Number(values.timeout ?? 300000)
 
-const spec = resolveUrlSpec(
-  specName,
-  `no url-mode spec named "${specName}"`,
-)
+const spec = resolveUrlSpec(specName, `no url-mode spec named "${specName}"`)
 
 const dump = await withHarness(
   { port: PORT, protocolTimeout: 1200000, viewport: specViewport(spec) },
   async ({ page }) => {
-    await page.goto(specUrl(spec, PORT), { waitUntil: 'domcontentloaded', timeout })
-    await page.waitForSelector('[data-testid="graph-layout-select"]', { timeout })
+    await page.goto(specUrl(spec, PORT), {
+      waitUntil: 'domcontentloaded',
+      timeout,
+    })
+    await page.waitForSelector('[data-testid="graph-layout-select"]', {
+      timeout,
+    })
     // the auto-fit lands after the layout does, and the transform is what turns a
     // node position into the coordinate a click would use
     await new Promise(r => setTimeout(r, 8000))
@@ -69,8 +71,8 @@ const dump = await withHarness(
               hoveredNode?: string | null
               hoverHighlight?: unknown
             }
-            const v = (window as unknown as { JBrowseSession?: V }).JBrowseSession
-              ?.views?.[index]
+            const v = (window as unknown as { JBrowseSession?: V })
+              .JBrowseSession?.views?.[index]
             return { hoveredNode: v?.hoveredNode, highlight: v?.hoverHighlight }
           }, viewIndex),
         )

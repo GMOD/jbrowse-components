@@ -3,11 +3,7 @@ import { getCollection } from 'astro:content'
 
 import BlogLayout from '../../layouts/BlogLayout.astro'
 import { baseUrl } from '../../lib/base-url.ts'
-import {
-  blogExcerpt,
-  blogPath,
-  formatBlogDate,
-} from '../../lib/blog-path.ts'
+import { blogExcerpt, blogPath, formatBlogDate } from '../../lib/blog-path.ts'
 import { renderMarkdown } from '../../lib/markdown.ts'
 import blog from '../../styles/blog.module.css'
 import prose from '../../styles/prose.module.css'
@@ -40,7 +36,7 @@ const renderedPosts = await Promise.all(
                 {post.data.title}
               </a>
             </h2>
-            <div class="article-meta">
+            <div class={blog.meta}>
               <time datetime={post.data.date.toISOString()}>
                 {formatBlogDate(post.data.date)}
               </time>
@@ -100,20 +96,6 @@ const renderedPosts = await Promise.all(
   }
   article h2 a:hover {
     text-decoration: underline;
-  }
-  .article-meta {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-  time {
-    font-size: 0.875rem;
-    color: var(--color-text-muted);
-  }
-  .author {
-    font-size: 0.875rem;
-    color: var(--color-text-muted);
   }
   .post-body {
     line-height: 1.7;

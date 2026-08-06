@@ -17,9 +17,6 @@
 // shape before concluding anything about the probe.
 //
 //   node scripts/cancel-bench.ts [--coi] [--runs=3] [--hops=6]
-import http from 'node:http'
-import path from 'node:path'
-
 import {
   SANDBOX_CHROME_ARGS,
   findChromeExecutable,
@@ -29,50 +26,17 @@ import {
   waitForQuiescent,
 } from '@jbrowse/browser-test-utils'
 import { launch } from 'puppeteer'
-import handler from 'serve-handler'
 
+import { serveCoi } from './coi-server.ts'
+import { flagArg as arg } from './dev-harness.ts'
 import { lgvSession } from './screenshot-spec-helpers.ts'
 
 import type { Browser } from 'puppeteer'
 
-const repoRoot = path.resolve(import.meta.dirname, '..', '..')
-const webRoot = path.join(repoRoot, 'products', 'jbrowse-web')
-const buildPath = path.join(webRoot, 'build')
-
-const arg = (name: string, fallback: string) =>
-  process.argv.find(a => a.startsWith(`--${name}=`))?.split('=')[1] ?? fallback
 const coi = process.argv.includes('--coi')
 const runs = Number(arg('runs', '3'))
 const hops = Number(arg('hops', '6'))
 const PORT = coi ? 3391 : 3392
-
-function serve() {
-  return new Promise<http.Server>(resolve => {
-    const server = http.createServer((req, res) => {
-      if (coi) {
-        res.setHeader('Cross-Origin-Opener-Policy', 'same-origin')
-        res.setHeader(
-          'Cross-Origin-Embedder-Policy',
-          process.argv.includes('--credentialless')
-            ? 'credentialless'
-            : 'require-corp',
-        )
-        res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin')
-      }
-      res.setHeader('Access-Control-Allow-Origin', '*')
-      const url = req.url ?? '/'
-      const pub = url.startsWith('/extra_test_data/')
-        ? repoRoot
-        : url.startsWith('/test_data/')
-          ? webRoot
-          : buildPath
-      void handler(req, res, { public: pub })
-    })
-    server.listen(PORT, () => {
-      resolve(server)
-    })
-  })
-}
 
 // Windows stay under AUTO_FORCE_LOAD_BP (20kb) so the display auto-loads instead
 // of showing the force-load prompt and rendering nothing.
@@ -180,7 +144,11 @@ async function once(browser: Browser) {
 const median = (xs: number[]) =>
   [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)] ?? 0
 
-const server = await serve()
+const server = await serveCoi({
+  port: PORT,
+  coi,
+  credentialless: process.argv.includes('--credentialless'),
+})
 const browser = await launch({
   headless: true,
   defaultViewport: { width: 1280, height: 900 },

@@ -26,8 +26,8 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { reportProblems, walkFiles } from './check-utils.ts'
-import { docsDir, repoRoot } from './paths.ts'
+import { docFiles, reportProblems, walkFiles } from './check-utils.ts'
+import { docRelative, docsDir, repoRoot } from './paths.ts'
 
 const GENERATED_PREFIXES = ['config/', 'models/', 'api/']
 const SUPPRESS = '<!-- menu-path-ok -->'
@@ -133,11 +133,8 @@ const resolves = (segment: string) => {
 
 const errorLines: string[] = []
 const seenPages = new Set<string>()
-for (const file of walkFiles(
-  docsDir,
-  name => name.endsWith('.md') && name !== 'CLAUDE.md',
-)) {
-  const rel = file.slice(docsDir.length + 1)
+for (const file of docFiles(docsDir)) {
+  const rel = docRelative(file)
   seenPages.add(rel)
   if (
     GENERATED_PREFIXES.some(p => rel.startsWith(p)) ||

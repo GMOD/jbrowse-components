@@ -2,26 +2,17 @@
 // identifiable subtree, to find what actually re-renders per frame. Zero source
 // changes, runs the built bundle. Headed = real GPU (no swiftshader stall).
 //   node scripts/measure-zoom-churn.ts [--headed]
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
-
 import {
-  BASE_CHROME_ARGS,
-  createTestServer,
-  findChromeExecutable,
   waitForLoadingComplete,
   waitForQuiescent,
 } from '@jbrowse/browser-test-utils'
-import { launch } from 'puppeteer'
 
 import { delay, textSelector, waitForVisible } from './actions.ts'
+import { withHarness } from './dev-harness.ts'
 import { VOLVOX, lgvSession } from './screenshot-spec-helpers.ts'
 
 import type { Page } from 'puppeteer'
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const repoRoot = path.resolve(__dirname, '..', '..')
-const testDataRoot = path.resolve(repoRoot, 'products', 'jbrowse-web')
 const headed = process.argv.includes('--headed')
 const PORT = 3336
 const VIEWPORT = { width: 1280, height: 720, deviceScaleFactor: 1 }
@@ -85,19 +76,9 @@ async function zoomClicks(page: Page, times: number) {
   }
 }
 
-async function main() {
-  const server = await createTestServer(PORT, {
-    jbrowseWebRoot: testDataRoot,
-    repoRoot,
-  })
-  const browser = await launch({
-    headless: !headed,
-    defaultViewport: VIEWPORT,
-    executablePath: findChromeExecutable(),
-    args: [...BASE_CHROME_ARGS, '--enable-unsafe-swiftshader'],
-  })
-  try {
-    const page = await browser.newPage()
+await withHarness(
+  { port: PORT, headless: !headed, viewport: VIEWPORT },
+  async ({ page }) => {
     const url = lgvSession(VOLVOX, {
       assembly: 'volvox',
       loc: 'ctgA:1-20,000',
@@ -126,13 +107,5 @@ async function main() {
       process.stderr.write(`${String(n).padStart(6)}  ${k}\n`)
     }
     process.stderr.write(`total mutations: ${total}\n`)
-  } finally {
-    await browser.close()
-    server.close()
-  }
-}
-
-main().catch((err: unknown) => {
-  console.error(err)
-  process.exit(1)
-})
+  },
+)

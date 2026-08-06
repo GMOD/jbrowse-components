@@ -14,7 +14,6 @@ import { visibleTooltipText } from './annotations.ts'
 import {
   CLIP_WARN_PX,
   DEVICE_SCALE_FACTOR,
-  SLACK_WARN_PX,
   check,
   diffThreshold,
 } from './screenshot-options.ts'

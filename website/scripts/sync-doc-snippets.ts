@@ -30,7 +30,7 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
-import { check, walkFiles } from './check-utils.ts'
+import { check, docFiles } from './check-utils.ts'
 import {
   countUnIncludedFences,
   extractRegion,
@@ -72,7 +72,7 @@ const stale: string[] = []
 const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '19')
 let unIncluded = 0
 
-for (const path of walkFiles(docsDir, n => n.endsWith('.md'))) {
+for (const path of docFiles(docsDir)) {
   const text = readFileSync(path, 'utf8')
   const lines = text.split('\n')
   const out: string[] = []

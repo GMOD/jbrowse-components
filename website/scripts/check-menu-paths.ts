@@ -28,8 +28,8 @@
 // reaches it.
 import { readFileSync } from 'node:fs'
 
-import { reportProblems, walkFiles } from './check-utils.ts'
-import { docsDir } from './paths.ts'
+import { docFiles, reportProblems } from './check-utils.ts'
+import { docRelative, docsDir } from './paths.ts'
 
 const GENERATED_PREFIXES = ['config/', 'models/', 'api/']
 const SUPPRESS = '<!-- menu-path-ok -->'
@@ -64,11 +64,8 @@ const RULES = [
 ]
 
 const errorLines: string[] = []
-for (const file of walkFiles(
-  docsDir,
-  name => name.endsWith('.md') && name !== 'CLAUDE.md',
-)) {
-  const rel = file.slice(docsDir.length + 1)
+for (const file of docFiles(docsDir)) {
+  const rel = docRelative(file)
   if (GENERATED_PREFIXES.some(p => rel.startsWith(p))) {
     continue
   }

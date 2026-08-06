@@ -29,8 +29,8 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { check, checkOrWrite, walkFiles } from './check-utils.ts'
-import { docsDir } from './paths.ts'
+import { check, checkOrWrite, docFiles } from './check-utils.ts'
+import { docRelative, docsDir } from './paths.ts'
 
 const listFile = join(import.meta.dirname, 'long-captions.txt')
 
@@ -55,11 +55,8 @@ const figureRe = /<Figure\b[^>]*?caption="((?:[^"\\]|\\.)*)"[^>]*?>/g
 const srcRe = /\bsrc="([^"]*)"/
 
 const entries: string[] = []
-for (const file of walkFiles(
-  docsDir,
-  name => name.endsWith('.md') && name !== 'CLAUDE.md',
-)) {
-  const rel = file.slice(docsDir.length + 1)
+for (const file of docFiles(docsDir)) {
+  const rel = docRelative(file)
   if (GENERATED_PREFIXES.some(p => rel.startsWith(p))) {
     continue
   }

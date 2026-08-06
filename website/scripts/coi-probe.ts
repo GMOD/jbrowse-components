@@ -5,9 +5,6 @@
 //     mints them on any path, so this is a regression check both ways)
 //   - worker: no synchronous XHR to a blob: URL
 //   - the session still loads (SAB has to survive the RPC arg serialization)
-import http from 'node:http'
-import path from 'node:path'
-
 import {
   SANDBOX_CHROME_ARGS,
   findChromeExecutable,
@@ -18,39 +15,14 @@ import {
   waitForQuiescent,
 } from '@jbrowse/browser-test-utils'
 import { launch } from 'puppeteer'
-import handler from 'serve-handler'
 
+import { serveCoi } from './coi-server.ts'
 import { VOLVOX, lgvSession } from './screenshot-spec-helpers.ts'
 
-const repoRoot = '/home/cdiesh/src/jbrowse-components'
-const webRoot = path.join(repoRoot, 'products', 'jbrowse-web')
-const buildPath = path.join(webRoot, 'build')
 const coi = process.argv.includes('--coi')
 const PORT = coi ? 3381 : 3382
 
-// COOP+COEP is what makes SharedArrayBuffer available at all. CORP on every
-// response so same-origin subresources survive require-corp.
-function serve() {
-  return new Promise<http.Server>(resolve => {
-    const server = http.createServer((req, res) => {
-      if (coi) {
-        res.setHeader('Cross-Origin-Opener-Policy', 'same-origin')
-        res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp')
-        res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin')
-      }
-      res.setHeader('Access-Control-Allow-Origin', '*')
-      const url = req.url ?? '/'
-      void handler(req, res, {
-        public: url.startsWith('/test_data/') ? webRoot : buildPath,
-      })
-    })
-    server.listen(PORT, () => {
-      resolve(server)
-    })
-  })
-}
-
-const server = await serve()
+const server = await serveCoi({ port: PORT, coi })
 const browser = await launch({
   headless: true,
   defaultViewport: { width: 1280, height: 800 },

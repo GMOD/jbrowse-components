@@ -1,8 +1,8 @@
 import { getCollection } from 'astro:content'
 
 import { baseUrl } from '../lib/base-url.ts'
-import { escapeAttr } from '../lib/inline-html.ts'
 import { blogExcerpt, blogPath } from '../lib/blog-path.ts'
+import { escapeAttr } from '../lib/inline-html.ts'
 import { renderMarkdown } from '../lib/markdown.ts'
 
 import type { APIRoute } from 'astro'

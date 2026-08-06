@@ -17,8 +17,8 @@ import {
 } from '@jbrowse/browser-test-utils'
 import { launch } from 'puppeteer'
 
-import { specs } from './screenshot-specs.ts'
 import { repoRoot } from './paths.ts'
+import { specs } from './screenshot-specs.ts'
 
 import type { SessionUrlSpec } from './screenshot-specs.ts'
 import type { Browser, Page } from 'puppeteer'
@@ -30,7 +30,8 @@ export const jbrowseWebRoot = path.join(repoRoot, 'products', 'jbrowse-web')
 // `--name=value` off argv, for the scripts that predate parseArgs.
 export function flagArg(name: string, fallback: string) {
   return (
-    process.argv.find(a => a.startsWith(`--${name}=`))?.split('=')[1] ?? fallback
+    process.argv.find(a => a.startsWith(`--${name}=`))?.split('=')[1] ??
+    fallback
   )
 }
 
@@ -73,18 +74,20 @@ export async function withHarness<T>(
     chromeArgs = ['--enable-unsafe-swiftshader'],
     protocolTimeout,
     viewport,
+    headless = true,
   }: {
     port: number
     // appended to BASE_CHROME_ARGS
     chromeArgs?: string[]
     protocolTimeout?: number
-    viewport?: { width: number; height: number; deviceScaleFactor: number }
+    viewport?: { width: number; height: number; deviceScaleFactor?: number }
+    headless?: boolean
   },
   body: (ctx: { page: Page; browser: Browser }) => Promise<T>,
 ): Promise<T> {
   const server = await createTestServer(port, { jbrowseWebRoot, repoRoot })
   const browser = await launch({
-    headless: true,
+    headless,
     executablePath: findChromeExecutable(),
     args: [...BASE_CHROME_ARGS, ...chromeArgs],
     ...(viewport ? { defaultViewport: viewport } : {}),

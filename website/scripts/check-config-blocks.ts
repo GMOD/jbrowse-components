@@ -41,8 +41,8 @@ import { validateConfig } from '../../products/jbrowse-cli/src/commands/validate
 import { deriveAddAssembly } from '../src/lib/derive-add-assembly.ts'
 import { deriveAddTrack } from '../src/lib/derive-add-track.ts'
 import { isAddassembly, isAddtrack } from '../src/lib/remark-config-cli-tabs.ts'
-import { reportProblems, walkFiles } from './check-utils.ts'
-import { docsDir } from './paths.ts'
+import { docFiles, reportProblems } from './check-utils.ts'
+import { docRelative, docsDir } from './paths.ts'
 
 // A doc block is one track or one assembly, so wrap it in the smallest config
 // that makes it checkable. A track's `assemblyNames` are stubbed out as real
@@ -106,7 +106,6 @@ function validateBlock(parsed: Record<string, unknown>, kind: string) {
   )
 }
 
-
 // blocks that stay untagged on purpose, keyed `<docs-relative path>#<trackId or
 // assembly name>` so an exception survives the block moving down its page
 const ALLOWED = new Map([
@@ -145,8 +144,8 @@ function shape(obj: Record<string, unknown>) {
 }
 
 const problems: string[] = []
-for (const file of walkFiles(docsDir, n => n.endsWith('.md'))) {
-  const rel = file.slice(docsDir.length + 1)
+for (const file of docFiles(docsDir)) {
+  const rel = docRelative(file)
   if (/^(config|models|api)\//.test(rel) || rel.endsWith('CLAUDE.md')) {
     continue
   }

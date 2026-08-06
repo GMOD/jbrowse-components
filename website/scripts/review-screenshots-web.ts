@@ -19,7 +19,7 @@ import {
   refreshWorkingTreeScans,
   reportPath,
   syncJbrowseImgMirror,
-  websiteRoot,
+  websiteDir,
 } from './screenshot-review-lib.ts'
 import { screenshotLiveUrls, specs } from './screenshot-specs.ts'
 
@@ -228,7 +228,7 @@ server.on('error', (err: NodeJS.ErrnoException) => {
 
 server.listen(port, () => {
   console.log(`Screenshot review UI: http://localhost:${port}`)
-  console.log(`Writing verdicts to: ${path.relative(websiteRoot, reportPath)}`)
+  console.log(`Writing verdicts to: ${path.relative(websiteDir, reportPath)}`)
 })
 
 // The write protocol and the note-draft bookkeeping are shared with jbrowse-web's

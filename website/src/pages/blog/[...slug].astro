@@ -43,7 +43,7 @@ const { html } = await renderMarkdown(post.body ?? '')
   <article class="post">
     <header>
       <h1>{post.data.title}</h1>
-      <div class="meta">
+      <div class={blog.meta}>
         <time datetime={post.data.date.toISOString()}>
           {formatBlogDate(post.data.date)}
         </time>
@@ -131,20 +131,6 @@ const { html } = await renderMarkdown(post.body ?? '')
     font-size: 2rem;
     font-weight: 400;
     margin: 0 0 0.5rem;
-  }
-  .meta {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-  time {
-    font-size: 0.875rem;
-    color: var(--color-text-muted);
-  }
-  .author {
-    font-size: 0.875rem;
-    color: var(--color-text-muted);
   }
   .author a {
     color: var(--color-accent);

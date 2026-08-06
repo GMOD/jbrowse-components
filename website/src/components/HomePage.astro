@@ -5,42 +5,6 @@ import NewsletterSignup from './NewsletterSignup.astro'
 import { baseUrl } from '../lib/base-url.ts'
 import { newsletterApiUrl } from '../lib/newsletter.ts'
 import btn from '../styles/button.module.css'
-
-// Teaser cards for the gallery preview grid. `img` names a thumbnail in
-// static/img/home-gallery/; the destination is a /gallery/#<anchor> section, or
-// a /docs/<guide>/ page for capabilities the gallery has no section for.
-interface GalleryCard {
-  img: string
-  label: string
-  anchor?: string
-  guide?: string
-}
-const galleryPreview: GalleryCard[] = [
-  {
-    img: 'synteny',
-    label: 'Synteny & whole-genome comparison',
-    anchor: 'synteny',
-  },
-  { img: 'sv', label: 'Structural variants', anchor: 'sv' },
-  {
-    img: 'alignments',
-    label: 'Long reads & base modifications',
-    anchor: 'alignments',
-  },
-  { img: 'variants', label: 'GWAS & population variants', anchor: 'variants' },
-  { img: 'hic', label: 'Hi-C contact maps', anchor: 'coverage' },
-  { img: 'copynumber', label: 'Copy number & coverage', anchor: 'coverage' },
-  {
-    img: 'genes',
-    label: 'Collapsed introns & gene browsing',
-    anchor: 'genes',
-  },
-  {
-    img: 'protein',
-    label: '3D protein structures',
-    guide: 'tutorials/protein_structure',
-  },
-]
 ---
 
 <div class="outer-box">
@@ -331,19 +295,11 @@ const galleryPreview: GalleryCard[] = [
     line-height: 1.6;
   }
 
-  /* Explicit tracks rather than auto-fit: with 8 cards, auto-fit picks 5
-     columns on a wide screen and leaves a two-cell hole in the second row. */
-  .gallery-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.6rem;
-  }
   .cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
     gap: 1rem;
   }
-  .gallery-card,
   .card {
     display: flex;
     flex-direction: column;
@@ -351,29 +307,9 @@ const galleryPreview: GalleryCard[] = [
     border-radius: var(--card-radius);
     background: var(--color-surface);
   }
-  .gallery-card:hover,
-  .gallery-card:focus-visible,
   .card:hover {
     border-color: var(--card-hover-border);
     box-shadow: var(--card-hover-shadow);
-  }
-  .gallery-card {
-    overflow: hidden;
-    text-decoration: none;
-    color: inherit;
-  }
-  .gallery-thumb {
-    width: 100%;
-    height: 110px;
-    object-fit: cover;
-    object-position: center top;
-    display: block;
-    border-bottom: 1px solid var(--color-border);
-  }
-  .gallery-card-label {
-    padding: 0.45rem 0.6rem;
-    font-size: 0.8rem;
-    font-weight: 500;
   }
 
   .card {
@@ -418,13 +354,10 @@ const galleryPreview: GalleryCard[] = [
   /* Declared here rather than undone in a `reduce` block, so the hover lift
      simply never exists for a reader who asked for less motion. */
   @media (prefers-reduced-motion: no-preference) {
-    .gallery-card,
     .card {
       transition: 150ms ease;
       transition-property: border-color, box-shadow, transform;
     }
-    .gallery-card:hover,
-    .gallery-card:focus-visible,
     .card:hover {
       transform: translateY(-2px);
     }
@@ -434,24 +367,12 @@ const galleryPreview: GalleryCard[] = [
     .btn-row > * {
       flex: 0 0 auto;
     }
-    /* Hero pair only — the gallery's row stays left-aligned under its copy. */
     .hero-text .btn-row {
       justify-content: center;
     }
   }
 
   @media (min-width: 900px) {
-    .gallery-grid {
-      grid-template-columns: repeat(4, 1fr);
-      gap: 1rem;
-    }
-    .gallery-thumb {
-      height: 150px;
-    }
-    .gallery-card-label {
-      padding: 0.55rem 0.75rem;
-      font-size: 0.9rem;
-    }
     .hero-row,
     .hubs-row {
       flex-direction: row;

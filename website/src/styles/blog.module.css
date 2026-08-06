@@ -3,6 +3,21 @@
   gap: 6px;
   flex-wrap: wrap;
 }
+/* The byline row under a post title — date, author, tags — on the feed and on
+   the post itself. The two had drifted to a 10px and a 12px gap for the same
+   row of the same content; 10px is now both. */
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.meta time,
+.meta :global(.author) {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
 .tag {
   background: color-mix(in srgb, var(--color-accent) 12%, white);
   color: var(--color-accent-dark);

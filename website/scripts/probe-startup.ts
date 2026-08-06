@@ -3,31 +3,18 @@
 // by wrapping the platform APIs before any app code runs.
 //
 //   node scripts/probe-startup.ts [--headed] [--tracks=a,b] [--loc=...]
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
-
 import {
-  BASE_CHROME_ARGS,
-  createTestServer,
-  findChromeExecutable,
   delay,
   waitForDisplayPhases,
   waitForDisplaysDone,
   waitForLoadingComplete,
   waitForQuiescent,
 } from '@jbrowse/browser-test-utils'
-import { launch } from 'puppeteer'
 
+import { flagArg as arg, withHarness } from './dev-harness.ts'
 import { VOLVOX, lgvSession } from './screenshot-spec-helpers.ts'
 
 import type { Page } from 'puppeteer'
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const repoRoot = path.resolve(__dirname, '..', '..')
-const jbrowseWebRoot = path.resolve(repoRoot, 'products', 'jbrowse-web')
-
-const arg = (name: string, fallback: string) =>
-  process.argv.find(a => a.startsWith(`--${name}=`))?.split('=')[1] ?? fallback
 
 const headed = process.argv.includes('--headed')
 const deferStatus = process.argv.includes('--defer-shader-status')
@@ -236,16 +223,14 @@ async function install(page: Page, deferStatus: boolean) {
   }, deferStatus)
 }
 
-async function main() {
-  const server = await createTestServer(PORT, { jbrowseWebRoot, repoRoot })
-  const browser = await launch({
+await withHarness(
+  {
+    port: PORT,
     headless: !headed,
-    defaultViewport: VIEWPORT,
-    executablePath: findChromeExecutable(),
-    args: [...BASE_CHROME_ARGS, '--use-angle=gl'],
-  })
-  try {
-    const page = await browser.newPage()
+    viewport: VIEWPORT,
+    chromeArgs: ['--use-angle=gl'],
+  },
+  async ({ page }) => {
     await install(page, deferStatus)
     const url = `http://localhost:${PORT}/${lgvSession(VOLVOX, {
       assembly: 'volvox',
@@ -321,13 +306,5 @@ async function main() {
         ...probe.workers.map(w => `  ${w.slice(0, 120)}`),
       ].join('\n')}\n`,
     )
-  } finally {
-    await browser.close()
-    server.close()
-  }
-}
-
-main().catch((err: unknown) => {
-  console.error(err)
-  process.exit(1)
-})
+  },
+)

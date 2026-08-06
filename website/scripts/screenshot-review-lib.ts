@@ -1,7 +1,6 @@
 import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 
 import {
   hashFile,
@@ -10,24 +9,28 @@ import {
   updateReport as updateReportFile,
 } from '@jbrowse/browser-test-utils'
 
+import { walkFiles } from './check-utils.ts'
+import { repoRoot, websiteDir } from './paths.ts'
+
 import type { ScreenshotSpec } from './screenshot-specs.ts'
 import type { Verdict } from '@jbrowse/browser-test-utils'
 
 export type { Verdict } from '@jbrowse/browser-test-utils'
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-
-export const websiteRoot = path.resolve(__dirname, '..')
-export const imgDir = path.resolve(websiteRoot, 'static', 'img')
-export const reportPath = path.resolve(__dirname, 'screenshot-review.json')
+export { websiteDir }
+export const imgDir = path.resolve(websiteDir, 'static', 'img')
+export const reportPath = path.resolve(
+  import.meta.dirname,
+  'screenshot-review.json',
+)
 
 // Directories scanned for doc usages of each image
 const docRoots = ['docs', 'blog', 'src/pages'].map(d =>
-  path.resolve(websiteRoot, d),
+  path.resolve(websiteDir, d),
 )
 
 export interface DocUsage {
-  file: string // relative to websiteRoot
+  file: string // relative to websiteDir
   line: number
   caption: string // Figure caption / markdown alt text
 }
@@ -59,28 +62,17 @@ export interface Screenshot extends ScreenshotPart {
   parts: ScreenshotPart[]
 }
 
-function walkMarkdown(dir: string): string[] {
-  const out: string[] = []
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const full = path.join(dir, entry.name)
-    if (entry.isDirectory()) {
-      out.push(...walkMarkdown(full))
-    } else if (/\.mdx?$/.test(entry.name)) {
-      out.push(full)
-    }
-  }
-  return out
-}
-
 function findMarkdownFiles() {
-  return docRoots.filter(d => fs.existsSync(d)).flatMap(d => walkMarkdown(d))
+  return docRoots
+    .filter(d => fs.existsSync(d))
+    .flatMap(d => walkFiles(d, n => /\.mdx?$/.test(n)))
 }
 
 // gallery.ts is the single source of truth for /gallery/ (see
 // website/CLAUDE.md); its items reference images via `spec`/`img` fields, not
 // literal "/img/<name>.png" text, so it needs its own scan rather than being
 // added to docRoots.
-const galleryFile = path.resolve(websiteRoot, 'src/lib/gallery.ts')
+const galleryFile = path.resolve(websiteDir, 'src/lib/gallery.ts')
 
 // Pull the caption="..." attribute out of a <Figure .../> line if present
 function extractFigureCaption(line: string) {
@@ -124,6 +116,21 @@ function galleryItemImageName(itemText: string): string | undefined {
   return spec?.[2]
 }
 
+// One figure can be used by several docs, and one doc line by several figures,
+// so every usage appends to its name's list.
+function addUsage(
+  index: Map<string, DocUsage[]>,
+  name: string,
+  usage: DocUsage,
+) {
+  const list = index.get(name)
+  if (list) {
+    list.push(usage)
+  } else {
+    index.set(name, [usage])
+  }
+}
+
 // gallery.ts has no markup to walk line-by-line; instead split on each
 // object literal `{ ... }` in the `items:` arrays and pull `label`/`img`/`spec`
 // out of each. Good enough for gallery.ts's own flat, unnested item shape.
@@ -132,7 +139,7 @@ function scanGalleryUsages(): Map<string, DocUsage[]> {
   if (!fs.existsSync(galleryFile)) {
     return index
   }
-  const rel = path.relative(websiteRoot, galleryFile)
+  const rel = path.relative(websiteDir, galleryFile)
   const text = fs.readFileSync(galleryFile, 'utf8')
   const lines = text.split('\n')
   let itemStart = -1
@@ -151,12 +158,7 @@ function scanGalleryUsages(): Map<string, DocUsage[]> {
           line: itemStart + 1,
           caption: label,
         }
-        const list = index.get(name)
-        if (list) {
-          list.push(usage)
-        } else {
-          index.set(name, [usage])
-        }
+        addUsage(index, name, usage)
       }
       itemStart = -1
     }
@@ -177,7 +179,7 @@ function buildUsageIndex(): Map<string, DocUsage[]> {
       continue
     }
     const lines = text.split('\n')
-    const rel = path.relative(websiteRoot, file)
+    const rel = path.relative(websiteDir, file)
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i]!
       const names = imageNamesOnLine(line)
@@ -191,12 +193,7 @@ function buildUsageIndex(): Map<string, DocUsage[]> {
             : extractMarkdownAlt(line),
         }
         for (const name of names) {
-          const list = index.get(name)
-          if (list) {
-            list.push(usage)
-          } else {
-            index.set(name, [usage])
-          }
+          addUsage(index, name, usage)
         }
       }
     }
@@ -221,7 +218,7 @@ function getUsageIndex() {
 // absent from) the mirror, copy it over before anyone hashes or serves it.
 const jbrowseImgPrefix = 'jbrowse-img/'
 const jbrowseImgSrcDir = path.resolve(
-  websiteRoot,
+  websiteDir,
   '..',
   'products',
   'jbrowse-img',
@@ -271,8 +268,6 @@ export function imageHash(name: string): string | undefined {
   syncJbrowseImgMirror(name)
   return hashFile(path.join(imgDir, `${name}.png`))
 }
-
-const repoRoot = path.resolve(websiteRoot, '..')
 
 // git paths are always repo-root-relative, unlike imgDir (an absolute path
 // that already accounts for where this script happens to be run from).

@@ -12,12 +12,12 @@ import { join } from 'node:path'
 
 import {
   assertBaseMatches,
+  docFiles,
   isFile,
   reportProblems,
   walkFiles,
 } from './check-utils.ts'
-import { distDir, docsDir } from './paths.ts'
-
+import { distDir, docRelative, docsDir } from './paths.ts'
 
 function hasRootSlug(file: string): boolean {
   const fm = /^---\n([\s\S]*?)\n---/.exec(readFileSync(file, 'utf8'))
@@ -41,12 +41,9 @@ if (!isFile(join(distDir, 'llms.txt'))) {
 const problems: string[] = []
 
 // CLAUDE.md is excluded from the docs collection (content.config.ts).
-const docFiles = walkFiles(
-  docsDir,
-  name => name.endsWith('.md') && name !== 'CLAUDE.md',
-)
-const expectedSlugs = docFiles.map(full =>
-  emittedSlug(full.slice(docsDir.length + 1), hasRootSlug(full)),
+const pages = docFiles(docsDir)
+const expectedSlugs = pages.map(full =>
+  emittedSlug(docRelative(full), hasRootSlug(full)),
 )
 const missing = expectedSlugs.filter(
   slug => !isFile(join(distDir, 'docs', `${slug}.md`)),

@@ -38,8 +38,8 @@ import { join } from 'node:path'
 
 import * as ts from 'typescript'
 
-import { reportProblems, walkFiles } from './check-utils.ts'
-import { repoRoot } from './paths.ts'
+import { isDocFile, reportProblems, walkFiles } from './check-utils.ts'
+import { docsDir, repoRoot } from './paths.ts'
 
 const DOC = 'website/docs/urlparams.md'
 
@@ -224,11 +224,7 @@ const OPTION_TYPES = [
 // from the source these options come from, so counting them would let a surface
 // vouch for itself.
 function handWrittenDocs() {
-  return walkFiles(
-    join(repoRoot, 'website/docs'),
-    n => n.endsWith('.md'),
-    new Set(['config', 'models', 'api']),
-  )
+  return walkFiles(docsDir, isDocFile, new Set(['config', 'models', 'api']))
     .map(f => readFileSync(f, 'utf8'))
     .join('\n')
 }
@@ -277,7 +273,12 @@ for (const viewType of registeredViewTypes()) {
 const allDocs = handWrittenDocs()
 
 for (const { label, file, optionsType } of OPTION_TYPES) {
-  const fields = resolveFields(program, checker, join(repoRoot, file), optionsType)
+  const fields = resolveFields(
+    program,
+    checker,
+    join(repoRoot, file),
+    optionsType,
+  )
   if (!fields) {
     problems.push(`${file}: no type named ${optionsType} — did it get renamed?`)
     continue

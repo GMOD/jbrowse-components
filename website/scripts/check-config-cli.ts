@@ -39,7 +39,7 @@ import { visit } from 'unist-util-visit'
 import { deriveAddAssemblyArgs } from '../src/lib/derive-add-assembly.ts'
 import { asRecord, deriveAddTrackArgs } from '../src/lib/derive-add-track.ts'
 import { isAddassembly, isAddtrack } from '../src/lib/remark-config-cli-tabs.ts'
-import { reportProblems, walkFiles } from './check-utils.ts'
+import { docFiles, reportProblems } from './check-utils.ts'
 import { docsDir, repoRoot } from './paths.ts'
 
 const cli = join(repoRoot, 'products', 'jbrowse-cli', 'dist', 'bin.js')
@@ -306,7 +306,7 @@ function checkBlock(json: string, kind: 'track' | 'assembly'): string {
 
 const errorLines: string[] = []
 let checked = 0
-for (const file of walkFiles(docsDir, n => n.endsWith('.md'))) {
+for (const file of docFiles(docsDir)) {
   for (const block of taggedBlocks(readFileSync(file, 'utf8'), file)) {
     checked++
     const reason = checkBlock(block.json, block.kind)

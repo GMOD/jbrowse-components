@@ -20,19 +20,17 @@
 //   print(f['head'].unitsPerEm, x, ''.join(parts))
 //   PY
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 
 import sharp from 'sharp'
 
+import { websiteDir } from './paths.ts'
 import {
   wordmarkAdvance,
   wordmarkPaths,
   wordmarkUnitsPerEm,
 } from './wordmark-path.ts'
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const websiteRoot = path.resolve(__dirname, '..')
-const outPath = path.join(websiteRoot, 'static', 'img', 'jbrowse-og.png')
+const outPath = path.join(websiteDir, 'static', 'img', 'jbrowse-og.png')
 
 const WIDTH = 1200
 const HEIGHT = 630
@@ -70,4 +68,4 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${
 </svg>`
 
 await sharp(new TextEncoder().encode(svg)).png().toFile(outPath)
-console.log(`wrote ${path.relative(websiteRoot, outPath)}`)
+console.log(`wrote ${path.relative(websiteDir, outPath)}`)

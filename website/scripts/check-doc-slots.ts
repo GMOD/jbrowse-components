@@ -41,9 +41,8 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { reportProblems, walkFiles } from './check-utils.ts'
-import { docsDir } from './paths.ts'
-
+import { docFiles, reportProblems } from './check-utils.ts'
+import { docRelative, docsDir } from './paths.ts'
 
 // Slot rows come in two spellings, because only the kinds with a glossary entry
 // are linked:
@@ -111,9 +110,7 @@ function buildInventory() {
   const knownNames = new Set<string>(STRUCTURAL_KEYS.map(k => k.toLowerCase()))
   let schemaCount = 0
 
-  for (const file of walkFiles(join(docsDir, 'config'), n =>
-    n.endsWith('.md'),
-  )) {
+  for (const file of docFiles(join(docsDir, 'config'))) {
     const text = readFileSync(file, 'utf8')
     if (!/^title:\s*\S+/m.test(text)) {
       continue
@@ -332,8 +329,8 @@ function main() {
   const inv = buildInventory()
   const problems: Problem[] = []
 
-  for (const file of walkFiles(docsDir, n => n.endsWith('.md'))) {
-    const rel = file.slice(docsDir.length + 1)
+  for (const file of docFiles(docsDir)) {
+    const rel = docRelative(file)
     // config/, models/ and api/ are generated from source, so a violation there
     // is fixed at the definition site, not here
     if (/^(config|models|api)\//.test(rel)) {

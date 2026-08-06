@@ -9,3 +9,10 @@ export const websiteDir = join(import.meta.dirname, '..')
 export const repoRoot = join(websiteDir, '..')
 export const docsDir = join(websiteDir, 'docs')
 export const distDir = join(websiteDir, 'dist')
+
+// A doc's path relative to website/docs ("tutorials/foo.md") — the form every
+// validator reports a problem against and prefix-matches the generated
+// directories on.
+export function docRelative(file: string): string {
+  return file.slice(docsDir.length + 1)
+}

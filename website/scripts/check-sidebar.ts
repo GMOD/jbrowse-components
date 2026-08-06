@@ -14,7 +14,7 @@ import { join } from 'node:path'
 
 import { docId, entrySlug } from '../src/lib/doc-slug.ts'
 import { docFiles, parseFrontmatter, reportProblems } from './check-utils.ts'
-import { docsDir, websiteDir } from './paths.ts'
+import { docRelative, docsDir, websiteDir } from './paths.ts'
 
 const sidebarPath = join(websiteDir, 'sidebars.json')
 
@@ -27,7 +27,7 @@ type SidebarItem =
 // CLAUDE.md is excluded from the docs collection (content.config.ts).
 const allSlugs = new Map(
   docFiles(docsDir).map(full => {
-    const rel = full.slice(docsDir.length + 1)
+    const rel = docRelative(full)
     const fm = parseFrontmatter(readFileSync(full, 'utf8')) ?? {}
     return [entrySlug(docId(rel, fm.slug)), rel]
   }),

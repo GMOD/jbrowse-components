@@ -17,7 +17,7 @@ import { readFileSync } from 'node:fs'
 
 import { docId, entrySlug } from '../src/lib/doc-slug.ts'
 import { docFiles, parseFrontmatter, reportProblems } from './check-utils.ts'
-import { docsDir } from './paths.ts'
+import { docRelative, docsDir } from './paths.ts'
 
 const GENERATED_PREFIXES = ['config/', 'models/', 'api/']
 const SUPPRESS = '<!-- wiki-title-ok -->'
@@ -29,7 +29,7 @@ const files = docFiles(docsDir)
 const titleByUrl = new Map<string, string>()
 const relPathOf = new Map<string, string>()
 for (const file of files) {
-  const rel = file.slice(docsDir.length + 1)
+  const rel = docRelative(file)
   const fm = parseFrontmatter(readFileSync(file, 'utf8')) ?? {}
   relPathOf.set(file, rel)
   if (fm.title) {
