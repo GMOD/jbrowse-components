@@ -957,6 +957,66 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // two collapsed scalebar rows and one 430px band
     viewportHeight: 640,
   },
+
+  // orthofinder_synteny.md: the same wheat 4A, against Triticum urartu instead
+  // of Aegilops tauschii. Deliberately the same locus, the same seven-donor-
+  // chromosomes-over-one row shape and the same settings as the figure above,
+  // because the two are read against each other: what changes between them is
+  // the answer, not the framing.
+  //
+  // VERIFIED against the demo's own files the same way the tauschii figure was.
+  // Joining tauschii.blocks.gz to urartu.bed.gz and wheat.bed.gz gives 2,695
+  // links landing on 4A:
+  //   4   1996 links   5th-95th pct    15.1 Mb - 636.7 Mb
+  //   7    340 links   5th-95th pct   642.2 Mb - 742.5 Mb
+  // with every other urartu chromosome under 40 links over the whole of 4A. Two
+  // blocks where tauschii gave three, and the boundary between them sits where
+  // tauschii's 5D block ends rather than where it starts: urartu chromosome 4
+  // covers both the 4D and the 5D intervals. That is the 4AL/5AL exchange
+  // already present in the diploid A-genome donor. The distal segment is still
+  // on urartu chromosome 7, so the 4AL/7BS exchange is not, which dates it after
+  // the diploid.
+  //
+  // The other three rows of the stack finish the argument and need no figure:
+  // durum and emmer (the AB tetraploids that carry both events) answer for the
+  // whole of 4A on their own 4A, and T. timopheevii - the independently formed
+  // AG tetraploid - sits with urartu, Chr4At over the first two blocks and a
+  // chromosome 7 over the distal one.
+  {
+    mode: 'url',
+    name: 'orthofinder_synteny/wheat_4a_urartu',
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/orthofinder_wheat/config.json',
+      ),
+      {
+        views: [
+          {
+            type: 'LinearSyntenyView',
+            views: [
+              // named rather than left to the assembly, same as the tauschii
+              // row above: this genome's chrom.sizes is largest-first too, and
+              // its IGDB assembly carries unplaced contigs among the seven
+              // chromosomes
+              { assembly: 'urartu', loc: '1 2 3 4 5 6 7' },
+              { assembly: 'wheat', loc: '4A' },
+            ],
+            tracks: [['wheat_orthogroups']],
+            colorBy: 'query',
+            autoDiagonalize: false,
+            collapseEmptyRows: true,
+            levelHeights: [430],
+            alpha: 0.5,
+            drawCurves: false,
+          },
+        ],
+      },
+    ),
+    readySelector: '[data-testid="synteny_canvas_done"]',
+    readyTimeout: 120000,
+    settleMs: 15000,
+    viewportHeight: 640,
+  },
   {
     mode: 'url',
     name: 'multiway_synteny/ecoli_pangenome',

@@ -73,8 +73,9 @@ whatever your annotation used, and the BED files are what resolve them.
 
 ### BED files
 
-jcvi writes one BED per genome alongside the anchors. Only the first six columns
-are read, and column 4 must match the anchor gene ids byte for byte:
+One BED per genome, prepared from its GFF3 before the ortholog run. Only the
+first six columns are read, and column 4 must match the anchor gene ids byte for
+byte:
 
 ```
 chr1	12836	26777	VIT_201s0011g00010.1	0	+
@@ -83,10 +84,12 @@ chr1	33170	35791	VIT_201s0011g00030.1	0	+
 
 Column 1 must use the same reference sequence names as the JBrowse assembly.
 
-Both MCScan anchor adapters throw on an id that isn't in the BED, so a mismatch
-surfaces as a track error rather than an empty view. Ids get mangled by isoform
-suffixes and by jcvi stripping suffixes unless run with `--no_strip_names`,
-which is why the [script](#reproduce-it-end-to-end) passes it.
+A row naming a gene neither BED carries is dropped, so a partial mismatch draws
+fewer ribbons than the file holds rather than erroring; a file where no row
+resolves at all fails the track, naming the two BED slots. Ids get mangled by
+isoform suffixes and by jcvi stripping suffixes unless run with
+`--no_strip_names`, which is why the [script](#reproduce-it-end-to-end) passes
+it.
 
 ## Producing the data
 
@@ -107,6 +110,121 @@ python -m jcvi.compara.catalog ortholog --no_strip_names grape peach
 That leaves `grape.peach.anchors` and `grape.peach.anchors.simple` in the
 working directory. The adapters read anchors and BED files plain or gzipped.
 
+## Loading both tracks
+
+Each adapter takes the anchor file plus the two BEDs, and `assemblyNames` lists
+the genomes in the order the anchor columns are in (column 1's genome first):
+
+```json addtrack
+{
+  "type": "SyntenyTrack",
+  "trackId": "grape_peach_anchors",
+  "name": "Grape peach synteny (MCScan, anchors)",
+  "assemblyNames": ["grape", "peach"],
+  "adapter": {
+    "type": "MCScanAnchorsAdapter",
+    "uri": "grape.peach.anchors.gz",
+    "bed1": "grape.bed.gz",
+    "bed2": "peach.bed.gz",
+    "assemblyNames": ["grape", "peach"]
+  }
+}
+```
+
+The simple-anchors track is the same shape with the adapter type and file
+swapped:
+
+```json addtrack
+{
+  "type": "SyntenyTrack",
+  "trackId": "grape_peach_anchors_simple",
+  "name": "Grape peach synteny (MCScan, simple anchors)",
+  "assemblyNames": ["grape", "peach"],
+  "adapter": {
+    "type": "MCScanSimpleAnchorsAdapter",
+    "uri": "grape.peach.anchors.simple.gz",
+    "bed1": "grape.bed.gz",
+    "bed2": "peach.bed.gz",
+    "assemblyNames": ["grape", "peach"]
+  }
+}
+```
+
+Both BEDs are `jbrowse add-track` flags, which is the CLI tab on each block
+above: `--bed1` and `--bed2` beside the anchors file, and `--load copy` copies
+all three into the config's directory.
+
+Both adapters read the whole file into memory. That is fine at MCScan's scale,
+where a whole-genome anchor set is a small text file, but it is why there is no
+indexed variant the way PAF has [PIF](/docs/config_guides/synteny_track).
+
+## Using both at once
+
+The two tracks describe the same run at different granularity, so they
+complement each other in one view. Add a linear synteny view (**Add → Linear
+synteny view**), pick peach and grape, and turn on both tracks.
+
+<Figure caption="Peach and grape with both MCScan tracks loaded. The ribbons between the panels are the per-gene .anchors pairs; the strand-colored bars inside each panel are the .anchors.simple blocks, red where the block is collinear and blue where it is inverted." src="/img/mcscan_anchors.png" />
+
+The block track is shown here as an `LGVSyntenyDisplay`, a synteny track dropped
+into an ordinary linear genome view row and drawn as features rather than as a
+ribbon band. Set that up by adding the track to a panel and picking the display
+type, or declaratively. This is the simple-anchors config again with a
+`displays` array, which no `add-track` flag covers, so it goes in with
+`jbrowse add-track-json`: that inserts a config verbatim and copies no data
+files, so the anchors and BEDs have to already sit where their `uri`s point.
+
+```json
+{
+  "type": "SyntenyTrack",
+  "trackId": "grape_peach_anchors_simple",
+  "name": "Grape peach synteny (MCScan, simple anchors)",
+  "assemblyNames": ["grape", "peach"],
+  "adapter": {
+    "type": "MCScanSimpleAnchorsAdapter",
+    "uri": "grape.peach.anchors.simple.gz",
+    "bed1": "grape.bed.gz",
+    "bed2": "peach.bed.gz",
+    "assemblyNames": ["grape", "peach"]
+  },
+  "displays": [
+    {
+      "type": "LGVSyntenyDisplay",
+      "displayId": "grape_peach_anchors_simple-LGVSyntenyDisplay",
+      "height": 60
+    }
+  ]
+}
+```
+
+Read the two together: a bar states that a block is there and which way round it
+runs, and the ribbons above it show whether the genes inside it hold their
+order. Strand is the `LGVSyntenyDisplay` **Color by** default, and the menu
+offers the other modes.
+
+## The same anchors as a dotplot
+
+Either anchor track also loads in a dotplot (**Add → Dotplot view**, then pick
+it in Quick start), where a gene pair is one point and a synteny block is a run
+of them.
+
+The two axes start in the order each assembly's index has, which for 19 grape
+chromosomes against 8 peach ones scatters the runs over the plot. **Re-order
+chromosomes** in the view menu sorts the vertical axis to follow the horizontal
+one, using the alignments themselves.
+
+<Figure caption="Grape against peach after Re-order chromosomes, every point one orthologous gene pair from the .anchors file. Each run of points is one MCScan block, and a peach column crossing several grape rows is one peach chromosome matching several grape ones." src="/img/mcscan_synteny/dotplot.png" />
+
+Reordering puts each peach chromosome's strongest grape partner on the diagonal
+and leaves the rest of its partners off it, which is a property of these two
+genomes rather than of the ordering. The [script](#reproduce-it-end-to-end)
+reads that off the `.anchors.simple` file directly: for each peach chromosome it
+prints the grape chromosomes it shares blocks with and how many anchors each
+pairing carries, and every one of the eight answers to several. Both genomes
+descend from the ancestral eudicot hexaploidy (Jaillon et al.) and have
+rearranged differently since, so a one-to-one dotplot was never available to
+order into.
+
 ## Coming from MCScanX
 
 [MCScanX](https://github.com/wyp1125/MCScanX) is a different program from jcvi's
@@ -116,7 +234,8 @@ cross-species together, and tells the genomes apart only by the two-letter tag
 it requires on each chromosome name in its `.gff`.
 
 [`mcscanx_to_anchors.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/mcscanx_to_anchors.py)
-splits a run into the four files above:
+splits a run into the same four files jcvi writes, in place of the
+[jcvi step](#producing-the-data):
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/mcscanx_to_anchors.py
@@ -125,9 +244,10 @@ python3 mcscanx_to_anchors.py --gff xyz.gff --collinearity xyz.collinearity \
 ```
 
 That writes `grape.bed`, `peach.bed`, `grape.peach.anchors` and
-`grape.peach.anchors.simple`, which the track configs below load unchanged.
-`--species` is given twice, and its order is the anchors column order, so it has
-to match the track's `assemblyNames`.
+`grape.peach.anchors.simple`, which the track configs
+[above](#loading-both-tracks) load unchanged. `--species` is given twice, and
+its order is the anchors column order, so it has to match the track's
+`assemblyNames`.
 
 Two options decide whether the result draws:
 
@@ -192,109 +312,6 @@ wherever you are looking. A dotplot of the track puts the genome on both axes,
 where each duplicated block is a run of points away from the diagonal: there is
 no diagonal itself, since a gene is not its own anchor.
 
-## Loading both tracks
-
-Each adapter takes the anchor file plus the two BEDs, and `assemblyNames` lists
-the genomes in the order the anchor columns are in (column 1's genome first):
-
-```json addtrack
-{
-  "type": "SyntenyTrack",
-  "trackId": "grape_peach_anchors",
-  "name": "Grape peach synteny (MCScan, anchors)",
-  "assemblyNames": ["grape", "peach"],
-  "adapter": {
-    "type": "MCScanAnchorsAdapter",
-    "uri": "grape.peach.anchors.gz",
-    "bed1": "grape.bed.gz",
-    "bed2": "peach.bed.gz",
-    "assemblyNames": ["grape", "peach"]
-  }
-}
-```
-
-The simple-anchors track is the same shape with the adapter type and file
-swapped:
-
-```json addtrack
-{
-  "type": "SyntenyTrack",
-  "trackId": "grape_peach_anchors_simple",
-  "name": "Grape peach synteny (MCScan, simple anchors)",
-  "assemblyNames": ["grape", "peach"],
-  "adapter": {
-    "type": "MCScanSimpleAnchorsAdapter",
-    "uri": "grape.peach.anchors.simple.gz",
-    "bed1": "grape.bed.gz",
-    "bed2": "peach.bed.gz",
-    "assemblyNames": ["grape", "peach"]
-  }
-}
-```
-
-Neither `bed1`/`bed2` is expressible as a `jbrowse add-track` flag, so these go
-in with `jbrowse add-track-json`, which inserts a full track config verbatim.
-Unlike `add-track` it does not copy data files, so put the anchors and BEDs
-where their `uri`s point, or reference them by URL.
-
-Both adapters read the whole file into memory. That is fine at MCScan's scale,
-where a whole-genome anchor set is a small text file, but it is why there is no
-indexed variant the way PAF has [PIF](/docs/config_guides/synteny_track).
-
-## Using both at once
-
-The two tracks describe the same run at different granularity, so they
-complement each other in one view. Add a linear synteny view (**Add → Linear
-synteny view**), pick peach and grape, and turn on both tracks.
-
-<Figure caption="Peach and grape with both MCScan tracks loaded. The ribbons between the panels are the per-gene .anchors pairs; the strand-colored bars inside each panel are the .anchors.simple blocks, red where the block is collinear and blue where it is inverted." src="/img/mcscan_anchors.png" />
-
-The block track is shown here as an `LGVSyntenyDisplay`, a synteny track dropped
-into an ordinary linear genome view row and drawn as features rather than as a
-ribbon band. Set that up by adding the track to a panel and picking the display
-type, or declaratively:
-
-```json
-{
-  "type": "SyntenyTrack",
-  "trackId": "grape_peach_anchors_simple",
-  "name": "Grape peach synteny (MCScan, simple anchors)",
-  "assemblyNames": ["grape", "peach"],
-  "adapter": {
-    "type": "MCScanSimpleAnchorsAdapter",
-    "uri": "grape.peach.anchors.simple.gz",
-    "bed1": "grape.bed.gz",
-    "bed2": "peach.bed.gz",
-    "assemblyNames": ["grape", "peach"]
-  },
-  "displays": [
-    {
-      "type": "LGVSyntenyDisplay",
-      "displayId": "grape_peach_anchors_simple-LGVSyntenyDisplay",
-      "height": 60
-    }
-  ]
-}
-```
-
-Read the two together: a bar states that a block is there and which way round it
-runs, and the ribbons above it show whether the genes inside it hold their
-order. Strand is the `LGVSyntenyDisplay` **Color by** default, and the menu
-offers the other modes.
-
-## The same anchors as a dotplot
-
-Either anchor track also loads in a dotplot (**Add → Dotplot view**, then pick
-it in Quick start), where a gene pair is one point and a synteny block is a run
-of them.
-
-The two axes start in the order each assembly's index has, which for 19 grape
-chromosomes against 8 peach ones scatters the runs over the plot. **Re-order
-chromosomes** in the view menu sorts the vertical axis to follow the horizontal
-one, using the alignments themselves.
-
-<Figure caption="Grape against peach after Re-order chromosomes, every point one orthologous gene pair from the .anchors file. Each run of points is one MCScan block, and a peach column crossing several grape rows is one peach chromosome matching several grape ones." src="/img/mcscan_synteny/dotplot.png" />
-
 ## Reproduce it end to end
 
 [`build_grape_peach_anchors.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_grape_peach_anchors.sh)
@@ -321,3 +338,11 @@ whatever the GFF3 carried.
 - [Synteny track config guide](/docs/config_guides/synteny_track)
 - [MCScanAnchorsAdapter config](/docs/config/mcscananchorsadapter)
 - [MCScanSimpleAnchorsAdapter config](/docs/config/mcscansimpleanchorsadapter)
+
+## References
+
+- Tang et al. (2008).
+  [Unraveling ancient hexaploidy through multiply-aligned angiosperm gene maps](https://doi.org/10.1101/gr.080978.108),
+  the MCScan method jcvi implements
+- Jaillon et al. (2007).
+  [The grapevine genome sequence suggests ancestral hexaploidization in major angiosperm phyla](https://doi.org/10.1038/nature06148)

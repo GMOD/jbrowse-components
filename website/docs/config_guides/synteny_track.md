@@ -188,6 +188,66 @@ of them:
   `bed2`), which are intermediate outputs of the
   [MCScan workflow](<https://github.com/tanghaibao/jcvi/wiki/MCscan-(Python-version)>).
 
+### Gene ids are the join, in the MCScan adapters
+
+These three place a feature by looking its gene id up in a BED rather than by
+reading a coordinate out of the alignment file, so the two files agreeing on
+those ids is a precondition, not a detail.
+
+<!-- GOTCHA MCScanAnchorsAdapter START -->
+
+:::caution Gotcha
+
+The anchors file carries no coordinates: a gene is placed by matching its id
+against column 4 of a BED, byte for byte. A row naming a gene neither BED has is
+dropped, so a partial mismatch draws fewer ribbons than the file holds rather
+than erroring, and only a file where no row resolves fails the track. Ids get
+mangled by isoform suffixes, by BLAST truncating a FASTA header at the first
+space, and by jcvi stripping suffixes unless run with `--no_strip_names`. BED
+column 1 has to match the assembly's reference sequence names too, and a name
+the assembly does not have draws nothing at all.
+
+:::
+
+<!-- GOTCHA MCScanAnchorsAdapter END -->
+
+<!-- GOTCHA MCScanSimpleAnchorsAdapter START -->
+
+:::caution Gotcha
+
+A block row names four genes, the first and last on each side, and all four are
+placed by matching column 4 of a BED byte for byte. A row with any of the four
+missing is dropped, so a partial mismatch draws fewer blocks than the file holds
+rather than erroring, and only a file where no row resolves fails the track. Ids
+get mangled by isoform suffixes and by jcvi stripping suffixes unless run with
+`--no_strip_names`. BED column 1 has to match the assembly's reference sequence
+names too, and a name the assembly does not have draws nothing at all.
+
+:::
+
+<!-- GOTCHA MCScanSimpleAnchorsAdapter END -->
+
+<!-- GOTCHA MCScanBlocksAdapter START -->
+
+:::caution Gotcha
+
+`blockAssemblies` and `bedLocations` are positional against the table's own
+columns, which is not necessarily the order `assemblyNames` lists or the order
+the genomes were given to whatever wrote the table. Get it wrong and every gene
+is looked up in another genome's BED, which resolves nothing and draws an empty
+track with no error. The table carries no coordinates: a gene is placed by
+matching its id against column 4 of its column's BED, byte for byte, and BED
+column 1 has to match the assembly's reference sequence names.
+
+:::
+
+<!-- GOTCHA MCScanBlocksAdapter END -->
+
+Both tutorials that build these files check the ids before loading anything:
+[MCScan anchors](/docs/tutorials/mcscan_synteny) and
+[OrthoFinder orthogroups](/docs/tutorials/orthofinder_synteny), whose converter
+reports how many ids each column resolved.
+
 ### PanSN depth: sample or haplotype
 
 The two all-vs-all adapters match a JBrowse assembly to PAF records by the

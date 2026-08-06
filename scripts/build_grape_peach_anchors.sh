@@ -48,12 +48,50 @@ for sp in grape peach; do
 done
 
 # ── jcvi: one ortholog run writes both anchor files ──────────────────────────
-# --no_strip_names keeps the gene ids byte-identical to the BEDs; the adapters
-# throw on an id they can't resolve.
+# --no_strip_names keeps the gene ids byte-identical to the BEDs. Without it the
+# adapters drop every row whose gene neither BED has, which for a whole-file
+# suffix mismatch is every row, and the track fails with "none of the N rows
+# ... name genes present in both BED files".
 python -m jcvi.compara.catalog ortholog --no_strip_names grape peach
 
 # ── Compress anchors + BEDs (the adapters read plain or gzipped) ─────────────
 gzip -kf grape.peach.anchors grape.peach.anchors.simple grape.bed peach.bed
+
+# ── How many grape chromosomes does each peach chromosome answer to? ─────────
+# The dotplot's own claim, read off the file instead of off the picture: resolve
+# each block's first gene on each side through the BEDs, and count blocks and
+# anchors per chromosome pair. A peach chromosome with one strong grape partner
+# would put its blocks on the diagonal once the axes are ordered; several strong
+# partners is a column crossing several rows, which no ordering removes.
+python3 - <<'PY'
+import collections
+import gzip
+
+
+def bed(path):
+    with gzip.open(path, 'rt') as fh:
+        rows = (line.split('\t') for line in fh)
+        return {r[3].strip(): r[0] for r in rows if len(r) > 3}
+
+
+grape, peach = bed('grape.bed.gz'), bed('peach.bed.gz')
+anchors = collections.Counter()
+with gzip.open('grape.peach.anchors.simple.gz', 'rt') as fh:
+    for line in fh:
+        f = line.rstrip('\n').split('\t')
+        if len(f) >= 6 and f[0] in grape and f[2] in peach:
+            anchors[(peach[f[2]], grape[f[0]])] += int(f[4])
+
+partners = collections.defaultdict(list)
+for (pp, gr), n in anchors.items():
+    partners[pp].append((n, gr))
+print()
+print('grape chromosomes each peach chromosome shares blocks with:')
+for pp in sorted(partners):
+    strong = sorted((t for t in partners[pp] if t[0] >= 100), reverse=True)
+    named = ', '.join(f'{gr} ({n} anchors)' for n, gr in strong)
+    print(f'  {pp:6s} {len(strong):2d} partners over 100 anchors: {named}')
+PY
 
 # ── Set up JBrowse (uses an installed `jbrowse`, else the CLI via npx) ────────
 if command -v jbrowse >/dev/null 2>&1; then

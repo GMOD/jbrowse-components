@@ -29,18 +29,11 @@ what makes the polyploid case readable.
 
 OrthoFinder bundles its own DIAMOND, so one install covers the first bullet:
 [bioconda](https://bioconda.github.io/) has `orthofinder`, and the project
-publishes a `davidemms/orthofinder` container with the same bundle. Without
-root, [Apptainer](https://apptainer.org/) runs that container as a shim on
-`PATH`, which is all the script below expects:
-
-```bash
-apptainer pull orthofinder.sif docker://davidemms/orthofinder:latest
-mkdir -p ~/.local/bin && cat > ~/.local/bin/orthofinder <<'EOF'
-#!/usr/bin/env bash
-exec apptainer exec --bind "$PWD" ~/orthofinder.sif orthofinder "$@"
-EOF
-chmod +x ~/.local/bin/orthofinder
-```
+publishes a `davidemms/orthofinder` container with the same bundle. Nothing here
+calls it by any path other than `orthofinder` on `PATH`, so without root that
+container works too, wrapped as a shim; the
+[build script](#reproduce-it-end-to-end) header has the
+[Apptainer](https://apptainer.org/) version.
 
 ## Orthology where alignment runs out
 
@@ -56,40 +49,34 @@ Nothing in an orthogroup asserts synteny. Any collinearity in the ribbons is a
 property of the genomes rather than of the method, which is the opposite of an
 MCScan track, where collinearity is what the input file is made of.
 
-## Three genome sets
-
-The [script](#reproduce-it-end-to-end) builds any of them.
-
-`vertebrates` stacks human, chicken, frog, spotted gar and zebrafish. These
-share a common ancestor a few hundred million years back, and the orthologs
-still fall into chromosome-scale blocks. The teleost genome duplication shows up
-as a matter of counting: a human chromosome answers to one or two chicken
-chromosomes, and to more zebrafish ones.
+Five vertebrate genomes are the case for the method. Human, chicken, frog,
+spotted gar and zebrafish share a common ancestor a few hundred million years
+back, and their orthologs still fall into chromosome-scale blocks. The teleost
+genome duplication shows up as a matter of counting: a human chromosome answers
+to one or two chicken chromosomes, and to more zebrafish ones.
 
 <Figure caption="Five vertebrate genomes stacked on OrthoFinder orthogroups: human, chicken, frog, spotted gar, zebrafish. One vertebrates_orthogroups track backs all four bands. autoDiagonalize has reordered each row's chromosomes; Color by → Reference anchors every band on the row above. Chicken against frog is nearly one chromosome to one; gar against zebrafish, past the teleost duplication, is the dense band." src="/img/orthofinder_synteny/vertebrates.png" />
 
 Every band draws one line per ortholog, so a band resolves into wedges only
 where a chromosome's orthologs mostly land on one chromosome of the row below.
-The build script prints that share for each adjacent pair, and it is what
-decides how a band can look: where it is high the row order alone produces a
-diagonal, and where it is near a third the typical chromosome answers to three
-or more partners, so no ordering of either row can make that band diagonal. The
-gar to zebrafish band is the low one, on the far side of the teleost genome
-duplication. Its density is the measurement, not a rendering problem.
+The build script prints that share for each adjacent pair. Where it is high, row
+order alone produces a diagonal. Where it is near a third, the typical
+chromosome answers to three or more partners, and no ordering of either row can
+make that band diagonal. The gar to zebrafish band is the low one, on the far
+side of the teleost genome duplication: its density is the measurement, not a
+rendering problem.
 
-`grasses` stacks rice, sorghum, maize, brachypodium and foxtail millet. Maize
-carries a whole-genome duplication the others do not, so a rice gene commonly
-has two maize orthologs, and the conversion has to decide what to do about that.
+## Stacking the wheat lineage
 
-<Figure caption="Five grass genomes stacked on OrthoFinder orthogroups: rice, sorghum, maize, brachypodium, foxtail millet. Maize's whole-genome duplication shows up as visibly more ribbons per gene in its two bands than in the non-duplicated pairs." src="/img/orthofinder_synteny/grasses.png" />
-
-`wheat` stacks wheat's own polyploidy history rather than an abstract
-duplication: Aegilops tauschii (the diploid D-genome donor), bread wheat
-(hexaploid, genomes A+B+D), durum (domesticated tetraploid, A+B), wild emmer
-(durum's wild tetraploid ancestor), Triticum urartu (the diploid A-genome donor)
-and T. timopheevii (a second, independent tetraploid that also traces to the
-A-genome donor). Stacked in that order, each adjacent pair is a real
-evolutionary step rather than an arbitrary one.
+The rest of this page follows one set, which the
+[script](#reproduce-it-end-to-end) builds under the name `wheat`. It stacks
+wheat's own polyploidy history rather than an abstract duplication: Aegilops
+tauschii (the diploid D-genome donor), bread wheat (hexaploid, genomes A+B+D),
+durum (domesticated tetraploid, A+B), wild emmer (durum's wild tetraploid
+ancestor), Triticum urartu (the diploid A-genome donor) and T. timopheevii (a
+second, independent tetraploid that also traces to the A-genome donor). Stacked
+in that order, each adjacent pair is a real evolutionary step rather than an
+arbitrary one.
 
 Diagonalizing this stack lands on the layout wheat figures are conventionally
 drawn in: it brings each homoeologous group's chromosomes together, so the
@@ -114,22 +101,39 @@ over bread wheat 4A alone, with **Color by → Query** painting each link by the
 tauschii chromosome it leaves rather than by the single chromosome they all
 arrive at.
 
-<Figure caption="Aegilops tauschii's seven D-genome chromosomes over bread wheat chromosome 4A, from the same wheat_orthogroups track as the six-row figure. Color by → Query gives each tauschii chromosome its own color. 4A resolves into three blocks in order along it: 4D over most of its length, then 5D, then 7D at the far end. The red bundle leaves the right-hand end of 5D, not 6D: its apex sits close to the 6D tick, but 6D reaches 4A only as singletons, like the other three uninvolved chromosomes." src="/img/orthofinder_synteny/wheat_4a.png" />
+<Figure caption="Aegilops tauschii's seven D-genome chromosomes over bread wheat chromosome 4A, from the same wheat_orthogroups track as the six-row figure. Color by → Query gives each chromosome its own color. 4A resolves into three blocks in order along it: 4D over most of its length, then 5D, then 7D at the far end." src="/img/orthofinder_synteny/wheat_4a.png" />
 
-Those blocks are the 4AL/5AL and 4AL/7BS translocation pair, RFLP-mapped in
-[Devos et al. 1995](https://doi.org/10.1007/BF00220890) and revisited against
-the reference assemblies in
-[Dvorak et al. 2018](https://doi.org/10.1007/s00122-018-3165-8). The four
-uninvolved D-genome chromosomes reach 4A only as scattered singletons, and
-nothing was aligned to draw any of it: the input is orthogroup membership and
-each gene's position.
+The middle bundle leaves the right-hand end of 5D rather than 6D, whose tick it
+nearly touches: 6D reaches 4A only as scattered singletons, like the other three
+uninvolved chromosomes. Those are the control on the whole picture, and they are
+what the blocks have to be read against.
 
-The rest of the stack dates the two events. The 4AL/5AL exchange happened at the
-diploid level and the 4AL/7BS one in polyploid wheat, so the diploid A-genome
-donor row should carry the first and not the second, and T. timopheevii, a
-tetraploid formed independently of the durum and bread wheat lineage, is the row
-to check that against: the same two-row view with two other assemblies named in
-it.
+The blocks themselves are the 4AL/5AL and 4AL/7BS translocation pair,
+RFLP-mapped by Devos et al. and revisited against the reference assemblies by
+Dvorak et al. Nothing was aligned to draw any of it: the input is orthogroup
+membership and each gene's position.
+
+## Dating the two exchanges
+
+Those two papers put the 4AL/5AL exchange at the diploid level and the 4AL/7BS
+one in polyploid wheat. Both claims are checkable against the rows already in
+the stack, with no new file and no second track: name two other assemblies in
+the same two-row view. Triticum urartu, the diploid A-genome donor, should carry
+the first and not the second.
+
+<Figure caption="Triticum urartu's seven chromosomes over bread wheat 4A, the same track and locus as the figure above. Where tauschii gave three blocks, urartu gives two: chromosome 4 covers both of the first two, the second from its own distal end, and chromosome 7 covers the far end of 4A." src="/img/orthofinder_synteny/wheat_4a_urartu.png" />
+
+It carries the first. Where tauschii answered for 4A with three chromosomes,
+urartu answers with two, its chromosome 4 taking both of the first two blocks,
+so the 4AL/5AL exchange is already there in the diploid donor. The distal block
+is still on urartu's chromosome 7, so the 4AL/7BS one is not.
+
+Two more rows finish the dating. Durum and wild emmer, the A+B tetraploids,
+answer for the whole of 4A on their own 4A, distal block included. T.
+timopheevii, formed from the same A-genome donor but independently of that
+lineage, sits with urartu instead: its 4At carries the first two blocks and the
+distal one is on a chromosome 7. The 7BS exchange therefore happened in the
+durum and bread wheat lineage, after it split from timopheevii's.
 
 ## The conversion
 
@@ -139,18 +143,32 @@ cell reduced to a gene id, and an empty cell marked `.`:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/orthogroups_to_blocks.py
-python3 orthogroups_to_blocks.py Orthogroups.tsv -o rice.blocks \
-  --bed rice=rice.bed --bed maize=maize.bed --bed sorghum=sorghum.bed
+python3 orthogroups_to_blocks.py Orthogroups.tsv -o tauschii.blocks \
+  --bed tauschii=tauschii.bed --bed wheat=wheat.bed --bed durum=durum.bed \
+  --bed emmer=emmer.bed --bed urartu=urartu.bed --bed timopheevii=timopheevii.bed
 ```
 
+The table is named after one genome by convention only. Unlike a jcvi `.blocks`
+file no column anchors it, so which one it is carries no meaning.
+
 The script prints the column order it read off the header row, which is what
-`blockAssemblies` has to be.
+`blockAssemblies` has to be. A column is named after the proteome file
+OrthoFinder read, with the extensions taken off, so a `--bed` key is the
+assembly name only where the proteomes were named that way;
+`--assembly COLUMN=NAME` renames the ones that were not, and a key matching no
+column is an error rather than a silently skipped check.
 
 ### What to do with a duplicated gene
 
 A cell holds every gene of that genome in the orthogroup, and a synteny link
-runs from one gene to one gene, so a cell holding two maize genes has no single
-correct answer. Three treatments:
+runs from one gene to one gene, so a cell holding two genes has no single
+correct answer. The five-grass set is where this decides the picture: maize
+carries a whole-genome duplication the other four do not, so a rice gene
+commonly has two maize orthologs.
+
+<Figure caption="Five grass genomes stacked on OrthoFinder orthogroups: rice, sorghum, maize, brachypodium, foxtail millet. Maize's whole-genome duplication shows up as visibly more ribbons per gene in its two bands than in the non-duplicated pairs." src="/img/orthofinder_synteny/grasses.png" />
+
+Three treatments:
 
 | `--pick`           | A rice gene with two maize orthologs                         | Use when                                                  |
 | ------------------ | ------------------------------------------------------------ | --------------------------------------------------------- |
@@ -178,11 +196,12 @@ The build script settles this by renaming each protein to its gene id when it
 prepares the proteomes, so both sides speak gene ids.
 
 Pass `--bed name=file` per column and the script reports how many ids each one
-resolved, and drops the rest. A table whose ids resolve nowhere loads without an
-error and draws nothing, so that per-column count is the thing to read before
-loading anything: a column reporting near zero is an id mismatch, not a
-biological result. The same line reports how many orthogroups held a duplicated
-gene and became several rows.
+resolved, and drops the rest from the table rather than writing a row that
+cannot be drawn. A table whose ids resolve nowhere loads without an error and
+draws nothing, so that per-column count is the thing to read before loading
+anything: a column reporting near zero is an id mismatch, not a biological
+result. The same line reports how many orthogroups held a duplicated gene and
+became several rows.
 
 ## Loading it
 
@@ -192,48 +211,72 @@ One track backs every band of the stack, the same as the
 ```json
 {
   "type": "SyntenyTrack",
-  "trackId": "grasses_orthogroups",
-  "name": "Grasses orthogroups (OrthoFinder)",
-  "assemblyNames": ["rice", "sorghum", "maize"],
+  "trackId": "wheat_orthogroups",
+  "name": "Wheat orthogroups (OrthoFinder)",
+  "assemblyNames": [
+    "tauschii",
+    "wheat",
+    "durum",
+    "emmer",
+    "urartu",
+    "timopheevii"
+  ],
   "adapter": {
     "type": "MCScanBlocksAdapter",
-    "uri": "rice.blocks.gz",
-    "blockAssemblies": ["maize", "rice", "sorghum"],
-    "bedLocations": [
-      { "uri": "maize.bed.gz" },
-      { "uri": "rice.bed.gz" },
-      { "uri": "sorghum.bed.gz" }
+    "uri": "tauschii.blocks.gz",
+    "blockAssemblies": [
+      "durum",
+      "emmer",
+      "tauschii",
+      "timopheevii",
+      "urartu",
+      "wheat"
     ],
-    "assemblyNames": ["maize", "rice", "sorghum"]
+    "bedLocations": [
+      { "uri": "durum.bed.gz" },
+      { "uri": "emmer.bed.gz" },
+      { "uri": "tauschii.bed.gz" },
+      { "uri": "timopheevii.bed.gz" },
+      { "uri": "urartu.bed.gz" },
+      { "uri": "wheat.bed.gz" }
+    ],
+    "assemblyNames": [
+      "tauschii",
+      "wheat",
+      "durum",
+      "emmer",
+      "urartu",
+      "timopheevii"
+    ]
   }
 }
 ```
 
-The two lists are not the same list. `blockAssemblies` and `bedLocations` are
-positional against the table's own columns, which follow OrthoFinder's proteome
-scan (alphabetical by filename here) and not the order the proteomes were passed
-to it; the track's `assemblyNames` is the set of genomes, in whatever order.
-Take the column order from what the conversion printed, or every gene lookup
-reads the wrong genome's BED and the track loads with no error and draws
-nothing.
+The two lists are not the same list, and this one shows it: `blockAssemblies`
+and `bedLocations` are positional against the table's own columns, which follow
+OrthoFinder's proteome scan (alphabetical here) rather than the order the
+proteomes were passed to it, while the track's `assemblyNames` is the set of
+genomes in the order the stack draws them. Take the column order from what the
+conversion printed, or every gene lookup reads the wrong genome's BED and the
+track loads with no error and draws nothing.
 
 Unlike a
 [jcvi `.blocks` table](/docs/tutorials/multiway_synteny#direct-vs-transitive-pairs),
 no column anchors this one. An orthogroup is a set, so any two columns filled on
 a row are a direct statement about that pair, and a row with nothing in column 0
-is kept like any other. Row order in the stack is free, and the genome the file
-is named after is only a filename.
+is kept like any other. That is why row order in the stack is free, and why any
+pair of the six opens as a two-row view.
 
 ### Assemblies without sequence
 
 A gene-level synteny view never reads a base, so these assemblies are
 [`ChromSizesAdapter`](/docs/config/chromsizesadapter) rather than a FASTA, built
-from the `##sequence-region` header of each GFF3. Five vertebrate genomes as
-sequence is several gigabytes to host; as names and lengths it is a few
+from the `##sequence-region` header of each GFF3. Six wheat-lineage genomes as
+sequence is tens of gigabytes to host; as names and lengths it is a few
 kilobytes, and the view is the same.
 
 ```bash
-jbrowse add-assembly zebrafish.chrom.sizes --name zebrafish --load copy
+jbrowse add-assembly wheat.chrom.sizes --name wheat --load copy
 ```
 
 Ensembl lists every unplaced scaffold in that header, so the script keeps the
@@ -250,8 +293,8 @@ synteny track and a stacked default session.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_orthofinder_synteny.sh
-bash build_orthofinder_synteny.sh vertebrates   # or: grasses, wheat
-npx --yes serve -S orthofinder_vertebrates_build/jbrowse2  # then open the printed URL
+bash build_orthofinder_synteny.sh wheat   # or: vertebrates, grasses
+npx --yes serve orthofinder_wheat_build/jbrowse2  # then open the printed URL
 ```
 
 The OrthoFinder step is the long one: it searches every proteome against every
@@ -261,12 +304,12 @@ is guarded on its output file, so a re-run picks up where it stopped. The
 timopheevii's chromosomes from its
 [sequence report](/docs/config/ncbisequencereportaliasadapter).
 
-A tagged `jbrowse-web` release (what `jbrowse create` fetches, and what
-`/code/jb2/latest/` on this site serves) may not yet include the fix a
-`ChromSizesAdapter` assembly needs inside a `LinearSyntenyView`; the continuous
-`/code/jb2/main/` build does. If the locally-served app opens to a fatal error,
-point that build at the local `config.json` instead: `/code/jb2/main/?config=`
-plus the served URL.
+`jbrowse create` fetches the latest tagged release, which for a stack of
+`ChromSizesAdapter` assemblies is not the build these figures were made on: they
+render against the continuous `/code/jb2/main/` build this site also serves. If
+the locally-served app opens to a fatal error on the stacked session, point that
+build at the local `config.json` instead, `/code/jb2/main/?config=` plus the
+served URL, and the same config loads.
 
 ## See also
 
@@ -277,3 +320,12 @@ plus the served URL.
 - [](/docs/user_guides/linear_synteny_view)
 - [Synteny track config guide](/docs/config_guides/synteny_track)
 - [MCScanBlocksAdapter config](/docs/config/mcscanblocksadapter)
+
+## References
+
+- Emms and Kelly (2019).
+  [OrthoFinder: phylogenetic orthology inference for comparative genomics](https://doi.org/10.1186/s13059-019-1832-y)
+- Devos et al. (1995).
+  [Structural evolution of wheat chromosomes 4A, 5A, and 7B and its impact on recombination](https://doi.org/10.1007/BF00220890)
+- Dvorak et al. (2018).
+  [Reassessment of the evolution of wheat chromosomes 4A, 5A, and 7B](https://doi.org/10.1007/s00122-018-3165-8)

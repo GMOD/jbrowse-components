@@ -37,6 +37,17 @@
 # Requires: orthofinder + diamond, python3, bgzip/tabix (htslib), wget, and
 #           node (JBrowse CLI, fetched via npx unless `jbrowse` is on PATH).
 #           The wheat set also needs the NCBI datasets CLI (see ALIASES below).
+#
+# Nothing below calls orthofinder by any path other than `orthofinder` on PATH,
+# so the project's container covers the first requirement without root. As an
+# Apptainer shim:
+#
+#   apptainer pull orthofinder.sif docker://davidemms/orthofinder:latest
+#   mkdir -p ~/.local/bin && cat > ~/.local/bin/orthofinder <<'EOF'
+#   #!/usr/bin/env bash
+#   exec apptainer exec --bind "$PWD" ~/orthofinder.sif orthofinder "$@"
+#   EOF
+#   chmod +x ~/.local/bin/orthofinder
 # Usage:    bash scripts/build_orthofinder_synteny.sh [vertebrates|grasses|wheat] [outdir]
 #
 set -euo pipefail

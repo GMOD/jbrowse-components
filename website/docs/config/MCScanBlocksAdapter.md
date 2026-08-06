@@ -35,6 +35,18 @@ Auto-generated config schema for the current JBrowse release — see the
 
 _See the **Config slots** section below for all available configuration fields._
 
+:::caution Gotcha
+
+`blockAssemblies` and `bedLocations` are positional against the table's own
+columns, which is not necessarily the order `assemblyNames` lists or the order
+the genomes were given to whatever wrote the table. Get it wrong and every gene
+is looked up in another genome's BED, which resolves nothing and draws an empty
+track with no error. The table carries no coordinates: a gene is placed by
+matching its id against column 4 of its column's BED, byte for byte, and BED
+column 1 has to match the assembly's reference sequence names.
+
+:::
+
 Loads a multi-genome MCScan (jcvi) `.blocks` file: a reference-anchored,
 tab-delimited table where column 0 is a reference gene and each further column
 is that gene's ortholog in another genome (`.` = no ortholog), produced by
