@@ -1113,9 +1113,9 @@
   },
   "chromhmm": {
     "name": "chromhmm",
-    "status": "answered",
+    "status": "good",
     "note": "Three things it was missing, all now in the figure. (1) THE BOXES WERE UNLABELED: the anterior/posterior names lived on the nine-cell-type twin, and when that was deleted this figure inherited its coordinates but not its key — two colored rectangles a reader had to leave the picture to identify. Each box now carries its name in its own colour, placed in the quiescent flank beside it rather than over the painting (127 rows at 480px is 3.7px a row, so anything drawn inside covers a dozen epigenomes). (2) THE GENE LANE was five pseudogenes and their descriptions (RPL7AP38, HMGB3P20, NHP2P2, TPM3P4, RPL35P4) competing with HOXA for the reader's eye — the flanks are a pseudogene desert, which is why the window reaches into them, but nothing needed them drawn. A type filter drops them; NOT showOnlyGenes, whose gene-like set admits 'pseudogene' by name and changes nothing here, which is worth knowing before reaching for it. (3) The caption said 'the same two boxes', pointing at the deleted figure. What I did NOT change: the legend stays where it is (it overlays the right flank, which is uniform quiescent in all 127 rows) and the 500 kb window stays — inside the cluster there is no background to read the domain against.",
-    "reviewedAt": "2026-08-06T06:33:38.065Z",
+    "reviewedAt": "2026-08-06T07:39:57.636Z",
     "hash": "6a8e05a290273fb01290c4a4a53804d944065bed"
   },
   "jbrowse-img/hic": {
@@ -2462,10 +2462,10 @@
   },
   "pangenome/hprc_chm13_allele": {
     "name": "pangenome/hprc_chm13_allele",
-    "status": "answered",
-    "note": "BOTH ASKS MEASURED; nothing committed for either yet. (1) The fourth screenshot: I rendered one, an hs1 pane over the last 1.3 Mb of chr17 with the segments lane, and it is nearly empty — CHM13 entered this graph at rank 61, so barely any segments are credited to it (the tutorial says 60 for the whole of chr1), and the pane shows the one dark bar plus two ticks. Widening the existing hs1 pane instead was already settled in an earlier round and the note is in the spec: tried at 360 kb and 627 kb, the LINE enrichment is a mean (23.70% in the allele against 14.18/14.47% in the flanks) rather than a block a reader can see, and past ~400 kb the RepeatMasker bigBed hits its byte budget and the lane comes back empty behind a FORCE LOAD prompt. So no fourth panel unless you want the chromosome-end position stated, which is a number (the allele ends 235 kb from the end of chr17) rather than a picture. (2) The graph pane height is not a spec choice: canvasHeight is min(600, drawing aspect x width) in the plugin and this drawing pins the 600 ceiling. bubbleSpread compress does shorten the 142 kb arc and I rendered it — it is worse, the subject node becomes a ~20px box at the end of a long thin chain and the annotation box marking it becomes the most prominent thing in the pane. A real reduction is a plugin change (a per-view pane height honoured by canvasHeight, or a lower cap), which needs a betabuild publish before any figure moves, so it is waiting on your go-ahead. Also note: three consecutive renders had the hs1 RepeatMasker lane fail to fetch from hgdownload with an error banner while curl to the same URL returned 200, so the committed PNG was restored rather than replaced with one carrying the banner.",
-    "reviewedAt": "2026-08-06T07:14:03.797Z",
-    "hash": "8f51983bf970621888db06006a170da03710f473"
+    "status": "good",
+    "note": "HEIGHT FIXED AT THE SOURCE, and the fourth screenshot declined with the measurement. The graph pane is 420px rather than the 600px ceiling it pinned: paneHeight is a new GraphGenomeView prop (plugin commit 449bae4, published bundle 35eccae5db30, fixtures repinned) that replaces MAX_CANVAS_HEIGHT for one view while the MIN_CANVAS_HEIGHT hover floor still wins, with three tests. The drawing scales 24.6% to 16.1%, the boxed 142 kb arc is still what the eye lands on, the chain stays legible, and the figure is 2630px rather than 2990. bubbleSpread compress was tried first and is worse (the subject node becomes a 20px box at the end of a thin chain). The fourth panel was rendered too, an hs1 pane over the last 1.3 Mb of chr17, and it is nearly empty: CHM13 entered at rank 61 so almost no segments are credited to it. Widening the existing hs1 pane was already settled in an earlier round (tried at 360 and 627 kb; the LINE enrichment is a mean, not a shape, and past ~400 kb the RepeatMasker bigBed hits its byte budget).",
+    "reviewedAt": "2026-08-06T08:18:53.734Z",
+    "hash": "fd00b14fc0a57b4b4f365da0407dbb7f72f93039"
   },
   "dotplot_self_chry": {
     "name": "dotplot_self_chry",
@@ -2595,17 +2595,17 @@
   },
   "cancer_sv/split_view_from_breakend": {
     "name": "cancer_sv/split_view_from_breakend",
-    "status": "answered",
+    "status": "good",
     "note": "Answered rather than built, and the reason is what a record can assert. A BND names exactly ONE partner locus, so this route opens one hop however long the chain is. Chaining records to reach the rest means assuming two junctions that share a locus sit on the same molecule — which the caller does not assert and the READS do, one SA chain at a time. That system already exists and is the figure two sections up: Launch view -> Reconstruct derivative allele ranks the routes the reads in the window describe and 'Replace with split view' opens a panel per segment of the chosen one, in the order the reads cross it (four panels for this chain, including chr3 twice). Building a second, record-driven walker would give a worse answer from weaker evidence. The tutorial now says this where the one-hop route is taught, instead of leaving the reader to notice the limit.",
-    "reviewedAt": "2026-08-06T06:59:39.495Z",
+    "reviewedAt": "2026-08-06T07:39:53.657Z",
     "hash": "2f73042d8973037aea3b93da4e5cccf02aefd3a0"
   },
   "hic/whole_genome": {
     "name": "hic/whole_genome",
-    "status": "bad",
-    "note": "if it is not gigantic file, we might consider rehosting this on jbrowse.org so we dont hammer encode servers. Found one, and it is not in our bucket. s3://jbrowse.org holds exactly two .hic files, both HG008-T read-pair maps that carry inter blocks for chr3 and chr13 only; the demo's own intra_nofrag_30.hic has 26 master-index entries and every one is a self-pair, which is why the off-diagonal was empty. The figure now loads ENCFF563JTY, GM12878 in situ Hi-C from ENCODE (ENCSR730CER), hg38, .hic v9 -- its footer holds 326 entries: 26 self-pairs and all 300 pairs of the 25 chromosomes. I read the footer directly rather than trusting file names, which is also what ruled out a 155 MB ENCODE 'contact matrix' that turned out to be ChIA-PET and would have been captioned as Hi-C. Two settings had to move with it, both for the same reason -- the old ones were compensating for a sparse file. The track is 700px where it was 100: a pair's contacts draw in the wedge between its two regions, so the drawing is as tall as the widest pair is wide, and at whole-genome zoom that is chr1 against chrY, half the view; at 100px the figure was the top slice of that pyramid painted at full saturation. And the ramp is linear where it was log: log lifts a decayed self-contact signal off the floor, and on a file that fills the whole pyramid it pushes every bin to the top and the map comes back solid red. Cost note for the live link: 300 real region-pair fetches, measured at 685,098 records in 224s serially against this file.",
-    "reviewedAt": "2026-08-05T12:56:12.321Z",
-    "hash": "73296548cd51b6c4a7b3de92007e215e48b82597"
+    "status": "good",
+    "note": "REHOSTED. ENCFF563JTY is 1.72 GB and nearly all of it is resolution a whole-genome view never asks for, so scripts/build_gm12878_wholegenome_hic.sh kept the 2.5 Mb binsize and rebuilt with juicer_tools pre: 1.72 GB -> 1.6 MB, and the round-trip check the script runs came back exact (8,917 records on chr1 x chr2 match the source dump). Uploaded to s3://jbrowse.org/demos/hic/gm12878_wholegenome_2500kb.hic with a CloudFront invalidation, and hic_gm12878_encode in config_demo.json now points there, so no reader of the live link pulls 300 region-pair range requests off ENCODE any more. The capture went from minutes to 58 s, so readyTimeout came down 900 s to 180 s and settle 30 s to 15 s. The picture is the same pyramid with the same centromere bands. The cost, which the spec and the script both state: the file carries one resolution, so zooming in keeps drawing 2.5 Mb blocks and the resolution stepper offers no finer step.",
+    "reviewedAt": "2026-08-06T08:24:03.540Z",
+    "hash": "006fc02a1890e03a94cc765a9e4f960959632f51"
   },
   "methylation/hg002_snrpn_group_by_hp": {
     "name": "methylation/hg002_snrpn_group_by_hp",
@@ -2739,5 +2739,19 @@
     "note": "KEPT after all. It was deleted per the note, then restored: two sections of the tutorial read off it — the dosage series itself, and 'Look again at the top row and the deleted span is not at zero', which opens the RHCE mismapping section. Removing the picture left both narrating a frame that was no longer there, which is worse than an unexciting figure.",
     "reviewedAt": "2026-08-06T06:10:30.441Z",
     "hash": "3fce39522e0d2b74314ddfc2ed0f4f63f19cafb6"
+  },
+  "genomes_msa/launch_sequence": {
+    "name": "genomes_msa/launch_sequence",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-06T07:40:10.631Z",
+    "hash": "0ad3512c9afeb1cddcdf1c2e537b57e3acc82d71"
+  },
+  "genomes_msa/pyrin_residues": {
+    "name": "genomes_msa/pyrin_residues",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-06T07:40:13.197Z",
+    "hash": "26c8d466903732facd71fcd0175ebd4f9ea6828d"
   }
 }

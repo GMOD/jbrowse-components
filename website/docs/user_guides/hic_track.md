@@ -92,7 +92,7 @@ The same thing scales to the whole genome. **View → Show all regions in
 assembly** puts every chromosome in the view at once, which makes the fetch
 every chromosome against every other one and the drawing a block diagonal.
 
-<Figure caption="GM12878 in situ Hi-C (ENCODE ENCSR730CER), hg38 chr1 to chrY in one view. Each chromosome is a triangle along the bottom edge and each pair of chromosomes is the block between their two triangles, so the whole pyramid is the genome against itself. The white bands crossing it are centromeres and the acrocentric short arms, where there is nothing to contact." src="/img/hic/whole_genome.png" />
+<Figure caption="GM12878 in situ Hi-C (ENCODE ENCSR730CER, rebuilt at its coarsest 2.5 Mb binsize and rehosted), hg38 chr1 to chrY in one view. Each chromosome is a triangle along the bottom edge and each pair of chromosomes is the block between their two triangles, so the whole pyramid is the genome against itself. The white bands crossing it are centromeres and the acrocentric short arms, where there is nothing to contact." src="/img/hic/whole_genome.png" />
 
 How much figure this is depends on the file. A file storing only
 intra-chromosomal contacts draws its per-chromosome triangles and leaves every

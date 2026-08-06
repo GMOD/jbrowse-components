@@ -670,6 +670,19 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
   // that is also shaped like a whole-genome .hic and would have been captioned
   // as Hi-C.
   //
+  // REHOSTED, and the track in config_demo.json now points at ours (reviewer:
+  // "if it is not gigantic file, we might consider rehosting this on
+  // jbrowse.org so we dont hammer encode servers"). ENCFF563JTY is 1.72 GB,
+  // nearly all of it resolutions a whole-genome view never asks for, and every
+  // reader who opened the live link pulled 300 region-pair range requests off
+  // ENCODE's bucket. scripts/build_gm12878_wholegenome_hic.sh keeps only the
+  // 2.5 Mb binsize and rebuilds with `juicer_tools pre`, verifying the rebuild
+  // by dumping a pair back out and diffing: 1.72 GB -> 1.6 MB, round trip exact
+  // (8,917 records on chr1 x chr2). The cost is that zooming in no longer gets
+  // finer, which degrades rather than breaks -- the display picks a binsize
+  // from the file's own list, so it keeps drawing 2.5 Mb blocks and the
+  // resolution stepper offers no finer step.
+  //
   // hg38 rather than hg19 with it, and the file names chromosomes chr1..chrY,
   // which is the same style as the demo's hg38 (hg38.prefix.fa.gz).
   {
@@ -703,12 +716,13 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     // track above
     viewportHeight: 910,
     readySelector: '[data-testid="hic-display-done"]',
-    // 300 region pairs, and all 300 answer now, where the intra-only file
-    // answered 24 of them. Measured serially in node against this file at the
-    // 2.5 Mb binsize: 685,098 records in 224s, so the wait is minutes rather
-    // than the seconds an intra-only file needed.
-    readyTimeout: 900000,
-    settleMs: 30000,
+    // 300 region pairs, and all 300 answer, where the intra-only file answered
+    // 24 of them. Against ENCODE's own 1.72 GB file that was 685,098 records in
+    // 224 s measured serially, which is what the 900 s here used to be for; off
+    // the rehosted 1.6 MB file (see the track note above) the whole capture is
+    // under a minute, so this is headroom rather than an expectation.
+    readyTimeout: 180000,
+    settleMs: 15000,
   },
 
   // The two halves of the faint-contacts comparison. Same region, same ramp;
