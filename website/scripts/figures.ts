@@ -487,15 +487,27 @@ function manifestAt(ref: string) {
 
 function report() {
   const base = option('base') ?? 'origin/main'
-  // Against the WORKTREE, not against figures.lock. The lock only moves on
-  // `push`, so diffing it against the base made the state you are usually in
-  // when you want to look at a figure — regenerated, not yet pushed —
-  // report as nothing at all. Measured: a run that rewrote eight figures
-  // reported the two that a concurrent agent's push had already written into
-  // the lock, while `figures status` listed all of them. On a CI runner the two
-  // agree, because there the worktree is whatever the lock says.
-  const onDisk = new Map(listFigureFiles().map(p => [p, describeFile(p)]))
-  const changes = diffManifests(manifestAt(base), onDisk)
+  // "Now", per figure, is its BYTES if they are on disk and its figures.lock
+  // line if they are not. One rule, and each half of it is load-bearing.
+  //
+  // The bytes, because the lock only moves on `push` — so diffing base against
+  // the lock alone made the state you are usually in when you want to look at a
+  // figure, regenerated and not yet pushed, report as nothing at all. Measured:
+  // a run that rewrote eight figures reported the two a concurrent push had
+  // already written into the lock, while `figures status` listed all of them.
+  //
+  // The lock line, because push.yml runs this on a plain checkout with no sweep
+  // and no `figures:pull`, and figure bytes are gitignored — so nothing is on
+  // disk there and it wants exactly the lock-against-lock diff it always got.
+  // Hashing the worktree unconditionally would have reported all 452 as removed
+  // on every push. The fallback makes that job byte-for-byte what it was, and
+  // does the sensible thing for a partial checkout in between.
+  const manifest = readManifest()
+  const now = new Map(manifest)
+  for (const path of listFigureFiles()) {
+    now.set(path, describeFile(path))
+  }
+  const changes = diffManifests(manifestAt(base), now)
   // An `after` whose bytes were never uploaded has a store URL (the key is the
   // hash) and that URL 404s, so the report has to say which ones those are
   // rather than hand over a broken image.
