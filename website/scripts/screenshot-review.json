@@ -1113,10 +1113,10 @@
   },
   "chromhmm": {
     "name": "chromhmm",
-    "status": "bad",
-    "note": "anything else you would suggest to improve this figure?",
-    "reviewedAt": "2026-08-06T05:36:47.603Z",
-    "hash": "98aaa4cf3e06f2afb67b94ecc5d8afd9ccf9dde7"
+    "status": "answered",
+    "note": "Three things it was missing, all now in the figure. (1) THE BOXES WERE UNLABELED: the anterior/posterior names lived on the nine-cell-type twin, and when that was deleted this figure inherited its coordinates but not its key — two colored rectangles a reader had to leave the picture to identify. Each box now carries its name in its own colour, placed in the quiescent flank beside it rather than over the painting (127 rows at 480px is 3.7px a row, so anything drawn inside covers a dozen epigenomes). (2) THE GENE LANE was five pseudogenes and their descriptions (RPL7AP38, HMGB3P20, NHP2P2, TPM3P4, RPL35P4) competing with HOXA for the reader's eye — the flanks are a pseudogene desert, which is why the window reaches into them, but nothing needed them drawn. A type filter drops them; NOT showOnlyGenes, whose gene-like set admits 'pseudogene' by name and changes nothing here, which is worth knowing before reaching for it. (3) The caption said 'the same two boxes', pointing at the deleted figure. What I did NOT change: the legend stays where it is (it overlays the right flank, which is uniform quiescent in all 127 rows) and the 500 kb window stays — inside the cluster there is no background to read the domain against.",
+    "reviewedAt": "2026-08-06T06:33:38.065Z",
+    "hash": "6a8e05a290273fb01290c4a4a53804d944065bed"
   },
   "jbrowse-img/hic": {
     "name": "jbrowse-img/hic",

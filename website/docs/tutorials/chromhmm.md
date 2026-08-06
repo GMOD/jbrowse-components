@@ -187,7 +187,7 @@ names are mnemonics (`12_EnhBiv`, `14_ReprPCWk`) and the auto-derived key would
 show them as they are. Fifteen `{label, color}` entries spell them out and fix
 their order at 1 to 15 rather than by how much of each is on screen.
 
-<Figure src="/img/chromhmm.png" caption="127 Roadmap epigenomes over the same two boxes with 500 kb of flank, one row each, ordered by Cluster rows by similarity so the dendrogram is in the sidebar. The clustering splits them in two: an upper block opening the cluster in red active TSS, yellow enhancer and green transcription, and a lower block holding both boxes in grey Polycomb, speckled olive where the same bases are bivalent."/>
+<Figure src="/img/chromhmm.png" caption="127 Roadmap epigenomes over HOXA with 500 kb of flank, one row each, ordered by Cluster rows by similarity so the dendrogram is in the sidebar. Boxed and labeled: the anterior genes HOXA1 to HOXA7, and the posterior HOXA9 to HOXA13. The clustering splits the rows in two: an upper block opening the cluster in red active TSS, yellow enhancer and green transcription, and a lower block holding both boxes in grey Polycomb, speckled olive where the same bases are bivalent."/>
 
 At that row count `rowOrder` is 127 lines of config whose only job is to keep
 related tissues adjacent, which is exactly what **Cluster rows by similarity**

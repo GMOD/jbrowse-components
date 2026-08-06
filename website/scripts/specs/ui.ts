@@ -2006,6 +2006,14 @@ export const uiSpecs: ScreenshotSpec[] = [
           // pinning 'name' would honor the original intent but change the
           // figure, so that is a call for whoever regenerates it.
           showLabels: 'auto',
+          // the flanks are a pseudogene desert (RPL7AP38, HMGB3P20, NHP2P2,
+          // TPM3P4, RPL35P4), which is exactly why the window extends into them
+          // — but drawn, they crowd the lane with names that have nothing to do
+          // with the boundary the figure is about. NOT `showOnlyGenes`, whose
+          // gene-like set admits `pseudogene` by name (featureAdmission.ts) and
+          // so changes nothing here; the type filter is what drops them,
+          // leaving HOXA1-A13, HOTAIRM1, the HOXA antisense transcripts, EVX1.
+          jexlFiltersSetting: ["jexl:feature.type!='pseudogene'"],
           height: 120,
         },
         {
@@ -2023,8 +2031,15 @@ export const uiSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    // the same two domains boxed on the same coordinates as the nine-row figure,
-    // so the boundary a reader learned there is the one they find again here
+    // The two domains, boxed and NAMED. Boxed alone they are two colored
+    // rectangles a reader has to go to the caption to identify, and the caption
+    // is where the nine-row twin's on-image labels went when it was deleted —
+    // so this figure inherited its coordinates and not its key. HOXA1 txStart to
+    // HOXA7 txEnd, then HOXA9 txStart to HOTTIP txEnd, hg19 refGene.
+    //
+    // Labels sit just above the track rather than inside it: 127 rows at 480px
+    // is 3.7px a row, so anything drawn over the painting covers a dozen
+    // epigenomes, and the strip above the boxes is the gene lane's own gutter.
     annotations: [
       {
         type: 'box',
@@ -2042,6 +2057,35 @@ export const uiSpecs: ScreenshotSpec[] = [
         },
         pad: 2,
         color: '#1565c0',
+      },
+      {
+        type: 'text',
+        text: 'anterior HOXA1-A7',
+        fontSize: 18,
+        textAlign: 'end',
+        anchor: {
+          track: 'roadmap_chromhmm_multirow_hg19',
+          locus: 'chr7:27,132,613',
+          alignX: 'left',
+          fracY: 0,
+        },
+        dx: -8,
+        dy: -8,
+      },
+      {
+        type: 'text',
+        text: 'posterior HOXA9-A13',
+        fontSize: 18,
+        color: '#1565c0',
+        textAlign: 'start',
+        anchor: {
+          track: 'roadmap_chromhmm_multirow_hg19',
+          locus: 'chr7:27,246,878',
+          alignX: 'right',
+          fracY: 0,
+        },
+        dx: 8,
+        dy: -8,
       },
     ],
     // clustering 127 rows is real WASM compute, and a settle long enough to
