@@ -62,7 +62,7 @@ export type {
   ColorByMenuTrack,
   TrackColorsModel,
 } from './colorByMenuItems.tsx'
-export { continuousRampConfig } from './colorRamps.ts'
+export { continuousRampConfig, dnDsRatio, rampNorm } from './colorRamps.ts'
 export type { Rgb } from './colorRamps.ts'
 export { ColorByLegend } from './ColorByLegend.tsx'
 export { SVGColorByLegend } from './SVGColorByLegend.tsx'

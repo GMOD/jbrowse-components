@@ -330,3 +330,68 @@ describe('real grape/peach/cacao blocks (chr1 subset)', () => {
     expect(fa[0]!.get('mate')).toMatchObject({ assemblyName: 'cacao' })
   })
 })
+
+// A `.blocks` table is gene ids and nothing else, so a measurement that came
+// with the orthology — Compara's per-pair identity, dN, dS, gene-order
+// conservation — is discarded at the point the table is written. Named columns
+// past the gene columns are where it rides in, and `identity` in particular
+// lands on a colorBy mode the view already has.
+describe('attributeColumns', () => {
+  const attrAdapter = () =>
+    new Adapter(
+      configSchema.create({
+        mcscanBlocksLocation: bed('grape_peach_attrs.blocks'),
+        blockAssemblies: ['grape', 'peach'],
+        bedLocations: [bed('grape.bed'), bed('peach.bed')],
+        assemblyNames: ['grape', 'peach'],
+        attributeColumns: ['identity', 'dn', 'ds', 'goc_score'],
+      }),
+    )
+  const attrFeats = () =>
+    firstValueFrom(
+      attrAdapter()
+        .getFeatures({
+          refName: 'chr1',
+          start: 0,
+          end: 1000,
+          assemblyName: 'grape',
+        })
+        .pipe(toArray()),
+    )
+
+  test('each named column lands on the feature as a number', async () => {
+    const fa = await attrFeats()
+    expect(fa.length).toBe(3)
+    expect(fa[0]!.get('identity')).toBe(0.91)
+    expect(fa[0]!.get('dn')).toBe(0.02)
+    expect(fa[0]!.get('ds')).toBe(0.4)
+    expect(fa[0]!.get('goc_score')).toBe(75)
+  })
+
+  // NULL is what Compara writes for a rate it could not estimate, and 0 there
+  // is a dN/dS of zero — total purifying selection — rather than no answer.
+  test('a NULL or . cell is absent rather than zero', async () => {
+    const fa = await attrFeats()
+    expect(fa[1]!.get('goc_score')).toBeUndefined()
+    expect(fa[2]!.get('dn')).toBeUndefined()
+    expect(fa[2]!.get('ds')).toBeUndefined()
+    // the columns that did parse on those rows are unaffected
+    expect(fa[1]!.get('dn')).toBe(0.3)
+    expect(fa[2]!.get('identity')).toBe(0.8)
+  })
+
+  // The gene columns are read positionally, so an attribute column must not be
+  // mistaken for one, and a table with no attributeColumns must be untouched.
+  test('the gene join is unaffected, with or without the extra columns', async () => {
+    const fa = await attrFeats()
+    expect(fa.map(f => f.get('name'))).toEqual(['g1', 'g2', 'g4'])
+    expect(fa[0]!.get('mate')).toMatchObject({ assemblyName: 'peach' })
+    const plain = await feats(['grape', 'peach'], {
+      refName: 'chr1',
+      start: 0,
+      end: 1000,
+      assemblyName: 'grape',
+    })
+    expect(plain[0]!.get('identity')).toBeUndefined()
+  })
+})

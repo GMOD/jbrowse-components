@@ -68,6 +68,7 @@ const syntenyColorByModes = [
   'identity',
   'meanQueryIdentity',
   'mappingQuality',
+  'dnds',
   'track',
 ] as const satisfies readonly SyntenyColorBy[]
 

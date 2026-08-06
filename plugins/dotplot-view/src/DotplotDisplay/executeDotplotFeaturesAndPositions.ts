@@ -2,7 +2,7 @@ import { parseCigar2Typed } from '@jbrowse/alignments-core'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { createProgressReporter, dedupe } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
-import { bpToCumBp, buildBpRegionIndex } from '@jbrowse/synteny-core'
+import { bpToCumBp, buildBpRegionIndex, dnDsRatio } from '@jbrowse/synteny-core'
 
 import { cigarWorthParsing } from './dotplotCigarDetail.ts'
 
@@ -29,6 +29,9 @@ export interface DotplotFeaturesAndPositionsResult {
   identities: Float32Array
   meanIdentities: Float32Array
   mappingQuals: Float32Array
+  // dN/dS per link, -1 where the source carried no dN and dS to divide. Comes
+  // from an ortholog table; an aligner has no view on it.
+  dnds: Float32Array
   refNames: string[]
   mateRefNames: string[]
   // Every feature's packed CIGAR ops concatenated into one transferable buffer,
@@ -142,6 +145,7 @@ export async function executeDotplotFeaturesAndPositions({
   const identities = new Float32Array(count)
   const meanIdentities = new Float32Array(count)
   const mappingQuals = new Float32Array(count)
+  const dnds = new Float32Array(count)
   const refNames: string[] = []
   const mateRefNames: string[] = []
   const cigarChunks: Uint32Array[] = []
@@ -217,6 +221,7 @@ export async function executeDotplotFeaturesAndPositions({
     identities[n] = (f.get('identity') as number | undefined) ?? -1
     meanIdentities[n] = (f.get('meanIdentity') as number | undefined) ?? -1
     mappingQuals[n] = (f.get('mappingQual') as number | undefined) ?? -1
+    dnds[n] = dnDsRatio(f)
     refNames.push(refName)
     mateRefNames.push(mateRefName)
     // Parse only what the geometry builder could actually walk at this zoom. A
@@ -261,6 +266,7 @@ export async function executeDotplotFeaturesAndPositions({
     identities: identities.subarray(0, n),
     meanIdentities: meanIdentities.subarray(0, n),
     mappingQuals: mappingQuals.subarray(0, n),
+    dnds: dnds.subarray(0, n),
     refNames,
     mateRefNames,
     cigarData,
@@ -281,6 +287,7 @@ export async function executeDotplotFeaturesAndPositions({
     result.identities.buffer,
     result.meanIdentities.buffer,
     result.mappingQuals.buffer,
+    result.dnds.buffer,
     result.cigarData.buffer,
     result.cigarOffsets.buffer,
   ])

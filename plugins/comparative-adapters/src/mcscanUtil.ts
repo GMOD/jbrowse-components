@@ -26,6 +26,11 @@ export interface BlockRow {
   rowNum: number
   strand: number
   score?: number
+  // Numeric columns the source file carried past its gene columns, named by
+  // config — `identity`, `dn`/`ds`, `goc_score`. They ride onto the feature so a
+  // colorBy mode or the detail panel can read them; the format itself is only
+  // gene ids, so a table with none is the ordinary case.
+  attrs?: Record<string, number> | undefined
 }
 
 // The two BED sides of a link joined by name, or undefined when either gene is
@@ -98,7 +103,7 @@ export function makeBlockFeatures(
   const out: Feature[] = []
   for (const index of facingSides(assemblyNames, region.assemblyName)) {
     const mateIndex = index === 0 ? 1 : 0
-    for (const { a, b, rowNum, strand, score } of feats) {
+    for (const { a, b, rowNum, strand, score, attrs } of feats) {
       const [f1, f2] = index === 0 ? [a, b] : [b, a]
       if (
         f1.refName === region.refName &&
@@ -106,6 +111,10 @@ export function makeBlockFeatures(
       ) {
         out.push(
           new SimpleFeature({
+            // first, so a column named after one of the feature's own fields
+            // cannot displace the coordinate the BED placed it at — a table is
+            // free to name its columns anything
+            ...attrs,
             ...f1,
             uniqueId: `${idPrefix}${index}-${rowNum}`,
             syntenyId: rowNum,

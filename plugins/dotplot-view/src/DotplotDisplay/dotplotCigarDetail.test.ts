@@ -50,6 +50,7 @@ describe('buildLineSegments over flat cigar buffers', () => {
       identities: new Float32Array([-1, -1, -1]),
       meanIdentities: new Float32Array([-1, -1, -1]),
       mappingQuals: new Float32Array([-1, -1, -1]),
+      dnds: new Float32Array(0),
       refNames: ['chr1', 'chr1', 'chr1'],
       mateRefNames: ['chr2', 'chr2', 'chr2'],
       cigarData: new Uint32Array([...first, ...last]),

@@ -113,6 +113,25 @@ const MCScanBlocksAdapter = ConfigurationSchema(
       type: 'stringArray',
       defaultValue: [],
     },
+    /**
+     * #slot
+     * names for the numeric columns that follow the gene columns, in order, so
+     * an ortholog table can carry per-link measurements the format itself has
+     * no place for: `["identity", "dn", "ds", "goc_score"]` reads column N as
+     * `identity` where N is `blockAssemblies.length`. Each becomes a feature
+     * attribute, so it shows in the detail panel, and `dn`/`ds` are what the
+     * synteny view's `Color by → dN/dS` reads. A cell of `.`, `NA`, `NULL`,
+     * empty or anything non-numeric is a missing value rather than a zero.
+     *
+     * These describe the ROW. On a two-genome table a row is one link, which is
+     * what makes a per-link measurement meaningful; on an N-genome table a row
+     * is an orthogroup spanning several pairs, so only a value that describes
+     * the whole group belongs there
+     */
+    attributeColumns: {
+      type: 'stringArray',
+      defaultValue: [],
+    },
   },
   { explicitlyTyped: true, preProcessSnapshot: normalizeSnapshot },
 )

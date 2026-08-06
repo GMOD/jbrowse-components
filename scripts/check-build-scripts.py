@@ -860,6 +860,30 @@ _, seen, resolved, _ = og.build_rows(
 check("the placed count is distinct ids, not the rows expansion wrote",
       [len(seen[0]), len(resolved[0])], [1, 1])
 
+# compara_to_blocks.py: Compara is the one ortholog source that publishes what
+# the inference measured, and those numbers are the whole reason for the
+# converter. Each has a unit the adapter or a ramp cares about, so a silent
+# change to one is a mis-colored track rather than a crash.
+cmp_mod = load("scripts/compara_to_blocks.py", "compara_to_blocks")
+# identity rides the [0,1] identity ramp; Compara's column is a percent
+check("identity is written as the fraction the ramp is defined on",
+      cmp_mod.cell("91.5", 0.01), "0.915")
+# a missing dS is not a dS of zero: zero divides into a dN/dS of zero, which
+# reads as total purifying selection rather than as no measurement
+check("a rate Compara could not estimate is a missing cell, not a zero",
+      [cmp_mod.cell(v) for v in ("NULL", "NA", "", ".", "\\N")],
+      [".", ".", ".", ".", "."])
+check("a rate it did estimate survives the round trip",
+      [cmp_mod.cell("0.4"), cmp_mod.cell("0")], ["0.4", "0"])
+# the four required BED columns are a valid BED, and only the last field carries
+# the newline — the same trap orthogroups_to_blocks.py had
+bd2 = tempfile.mkdtemp()
+minimal2 = os.path.join(bd2, "minimal.bed")
+with open(minimal2, "w") as fh:
+    fh.write("chr1\t100\t200\tENSG1\nchr1\t300\t400\tENSG2\t0\t+\n")
+check("compara read_bed_names reads a four-column BED",
+      cmp_mod.read_bed_names(minimal2), {"ENSG1", "ENSG2"})
+
 # The one line on stdout is a contract: build_orthofinder_synteny.sh captures it
 # and hands it to three consumers, which position blockAssemblies/bedLocations
 # and index the table's columns. A comma-splitting consumer against this

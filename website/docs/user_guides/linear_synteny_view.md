@@ -123,6 +123,15 @@ carries a **Show color legend** toggle:
 - Mean query identity - length-weighted identity across all alignments of a
   query/target pair, which smooths a contig split into many hits
 - Mapping quality - per-alignment PAF MAPQ on a cividis ramp
+- dN/dS - the ratio of non-synonymous to synonymous substitution rate, on a
+  diverging blue-yellow-red ramp whose pale middle is 1. Blue below it is
+  purifying selection, red above it positive selection, clamped at 2. An aligner
+  has no view on this, so it comes from an ortholog table carrying `dn` and `ds`
+  per link, which
+  [Ensembl Compara publishes](/docs/tutorials/multiway_synteny#from-ensembl-compara)
+
+A mode whose number a track does not carry leaves every ribbon the default
+color rather than painting them all at zero.
 
 **Customize per track** at the bottom of that menu overrides the choice above
 for one track at a time: each track can take its own mode, and its automatic

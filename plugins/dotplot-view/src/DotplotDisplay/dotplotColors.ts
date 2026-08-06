@@ -4,11 +4,12 @@ import {
   colorSchemes,
   continuousRampConfig,
   hashString,
+  rampNorm,
 } from '@jbrowse/synteny-core'
 
 import type { DotplotInstanceData } from './dotplotRenderingBackendTypes.ts'
 import type { DotplotRpcData } from './types.ts'
-import type { Rgb, SyntenyColorBy } from '@jbrowse/synteny-core'
+import type { SyntenyColorBy } from '@jbrowse/synteny-core'
 
 export type DotplotColorFn = (data: DotplotRpcData, index: number) => number
 
@@ -39,9 +40,9 @@ const nameColorAbgr = category10
 // missing-data sentinel and paint red.
 function rampColorFn(
   values: Float32Array,
-  toRgb: (norm: number) => Rgb,
-  max: number,
+  config: (typeof continuousRampConfig)[keyof typeof continuousRampConfig],
 ): DotplotColorFn {
+  const { toRgb } = config
   const missing = cssColorToABGR(colorSchemes.default.cigarColors.M)
   const lut = new Uint32Array(256)
   for (let i = 0; i < 256; i++) {
@@ -53,7 +54,9 @@ function rampColorFn(
     // Clamp to the LUT's 0..255 domain *before* truncating: applying Math.min to
     // the float (not to the already-`| 0`'d int) keeps a pathological v/max from
     // int32-overflowing to a negative index that would read past the LUT.
-    return v < 0 ? missing : lut[(Math.min(255, (v / max) * 255) + 0.5) | 0]!
+    return v < 0
+      ? missing
+      : lut[(Math.min(255, rampNorm(config, v) * 255) + 0.5) | 0]!
   }
 }
 
@@ -86,8 +89,7 @@ function rampConfigColorFn(
   values: Float32Array,
   mode: keyof typeof continuousRampConfig,
 ): DotplotColorFn {
-  const { toRgb, maxValue } = continuousRampConfig[mode]
-  return rampColorFn(values, toRgb, maxValue)
+  return rampColorFn(values, continuousRampConfig[mode])
 }
 
 export function createDotplotColorFunction(
@@ -116,6 +118,8 @@ export function createDotplotColorFunction(
       return rampConfigColorFn(data.meanIdentities, 'meanQueryIdentity')
     case 'mappingQuality':
       return rampConfigColorFn(data.mappingQuals, 'mappingQuality')
+    case 'dnds':
+      return rampConfigColorFn(data.dnds, 'dnds')
     // Dotplot keeps a plain black default (its conventional line color) rather
     // than the synteny ribbon's red.
     case 'default':

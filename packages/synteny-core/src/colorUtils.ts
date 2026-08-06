@@ -67,6 +67,7 @@ const syntenyColorByValues = [
   'identity',
   'meanQueryIdentity',
   'mappingQuality',
+  'dnds',
   'track',
 ] as const
 

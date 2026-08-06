@@ -114,6 +114,7 @@ export const colorByShortLabel: Record<SyntenyColorBy, string> = {
   identity: 'Identity',
   meanQueryIdentity: 'Mean query identity',
   mappingQuality: 'Mapping quality',
+  dnds: 'dN/dS',
   track: 'Track',
 }
 
@@ -187,6 +188,10 @@ export function getColorBySwatch(
       return ramp(continuousRampConfig.identity.toRgb, '0%', '100%')
     case 'mappingQuality':
       return ramp(continuousRampConfig.mappingQuality.toRgb, '0', '60')
+    // the pivot is the ramp's own pale middle, which is what a diverging scale
+    // buys and what the end labels alone cannot say
+    case 'dnds':
+      return ramp(continuousRampConfig.dnds.toRgb, '0', '≥2')
     case 'strand':
       return {
         kind: 'chips',

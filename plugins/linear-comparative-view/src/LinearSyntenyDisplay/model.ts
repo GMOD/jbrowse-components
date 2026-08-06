@@ -57,6 +57,9 @@ export interface SyntenyFeatureData {
   // pair, a true [0,1] fraction. -1 where missing. See
   // PAFAdapter/util.ts:getWeightedMeans.
   meanIdentities: Float32Array
+  // dN/dS per link, -1 where the source carried no dN and dS to divide. Ortholog
+  // tables are where this comes from; an aligner has no view on it.
+  dnds: Float32Array
   featureIds: string[]
   names: string[]
   refNames: string[]

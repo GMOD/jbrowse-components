@@ -11,6 +11,7 @@ import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 import {
   bpToCumBp,
   buildBpRegionIndex,
+  dnDsRatio,
   syntenyPanBufferPx,
 } from '@jbrowse/synteny-core'
 
@@ -226,6 +227,7 @@ export async function executeSyntenyFeaturesAndPositions({
   const identitiesArray = new Float32Array(count)
   const mappingQualsArray = new Float32Array(count)
   const meanIdentitiesArray = new Float32Array(count)
+  const dndsArray = new Float32Array(count)
 
   const featureIds: string[] = []
   const names: string[] = []
@@ -351,6 +353,7 @@ export async function executeSyntenyFeaturesAndPositions({
     identitiesArray[validCount] = getOptionalNumber(f, 'identity')
     mappingQualsArray[validCount] = getOptionalNumber(f, 'mappingQual')
     meanIdentitiesArray[validCount] = getOptionalNumber(f, 'meanIdentity')
+    dndsArray[validCount] = dnDsRatio(f)
 
     mateStartsArray[validCount] = mate.start
     mateEndsArray[validCount] = mate.end
@@ -398,6 +401,7 @@ export async function executeSyntenyFeaturesAndPositions({
     identities: identitiesArray.subarray(0, validCount),
     mappingQuals: mappingQualsArray.subarray(0, validCount),
     meanIdentities: meanIdentitiesArray.subarray(0, validCount),
+    dnds: dndsArray.subarray(0, validCount),
     featureIds,
     names,
     refNames,
@@ -444,6 +448,7 @@ export async function executeSyntenyFeaturesAndPositions({
     featureData.identities.buffer,
     featureData.mappingQuals.buffer,
     featureData.meanIdentities.buffer,
+    featureData.dnds.buffer,
     featureData.mateStarts.buffer,
     featureData.mateEnds.buffer,
     instanceData.bp1.buffer,

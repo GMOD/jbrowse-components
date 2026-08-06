@@ -70,6 +70,12 @@ const COLOR_MODES: {
     helpText:
       'Color by per-alignment PAF mapping quality (MAPQ, 0–60) on a perceptually-uniform cividis scale: low MAPQ dark blue, high MAPQ yellow. Highlights ambiguous or multi-mapping regions.',
   },
+  {
+    value: 'dnds',
+    label: 'dN/dS',
+    helpText:
+      'Color by the ratio of non-synonymous to synonymous substitution rate, on a diverging blue–yellow–red scale pivoted at 1: blue below is purifying selection, the pale middle is neutral, red above is positive selection (clamped at 2). Needs an ortholog table carrying dN and dS per link, such as an Ensembl Compara homology export.',
+  },
 ]
 
 export interface ColorByMenuTrack {

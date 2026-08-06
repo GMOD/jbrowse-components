@@ -19,6 +19,7 @@ const featureData = {
   identities: new Float32Array([0.9, 0.5]),
   mappingQuals: new Float32Array([60, 10]),
   meanIdentities: new Float32Array([0.9, 0.5]),
+  dnds: new Float32Array([-1]),
 }
 
 const instanceData = {
@@ -106,6 +107,7 @@ describe('chromosome painting', () => {
             identities: new Float32Array([-1]),
             mappingQuals: new Float32Array([-1]),
             meanIdentities: new Float32Array([-1]),
+            dnds: new Float32Array([-1]),
           },
           colorBy: 'query',
           trackColor: '#000',
@@ -178,6 +180,7 @@ test('scaffolds after the chromosomes do not compress the palette', () => {
           identities: new Float32Array([-1]),
           mappingQuals: new Float32Array([-1]),
           meanIdentities: new Float32Array([-1]),
+          dnds: new Float32Array([-1]),
         },
         colorBy: 'query',
         trackColor: '#000',

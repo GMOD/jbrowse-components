@@ -131,6 +131,69 @@ by default a duplicated gene becomes one row per copy rather than a link to
 whichever copy was listed first. [](/docs/tutorials/orthofinder_synteny) builds
 a six-genome view this way and covers both choices.
 
+### From Ensembl Compara
+
+Compara publishes one TSV per species holding that species' homologies against
+every other, so a two-genome ortholog track is a download rather than an
+all-against-all protein search:
+
+```bash
+curl -fO https://ftp.ensembl.org/pub/release-113/tsv/ensembl-compara/homologies/homo_sapiens/Compara.113.protein_default.homologies.tsv
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/compara_to_blocks.py
+python3 compara_to_blocks.py Compara.113.protein_default.homologies.tsv \
+  --reference homo_sapiens=human --species mus_musculus=mouse \
+  --bed human=human.bed --bed mouse=mouse.bed
+```
+
+That writes `human.mouse.blocks`. Unlike a table whose cells are bare gene ids,
+each row also carries what the orthology inference measured, which the script
+puts in the columns after the two gene columns and the adapter names with
+`attributeColumns`:
+
+```json
+{
+  "type": "SyntenyTrack",
+  "trackId": "human_mouse_compara",
+  "name": "Human / mouse orthologs (Ensembl Compara)",
+  "assemblyNames": ["human", "mouse"],
+  "adapter": {
+    "type": "MCScanBlocksAdapter",
+    "uri": "human.mouse.blocks.gz",
+    "blockAssemblies": ["human", "mouse"],
+    "bedLocations": [{ "uri": "human.bed.gz" }, { "uri": "mouse.bed.gz" }],
+    "assemblyNames": ["human", "mouse"],
+    "attributeColumns": [
+      "identity",
+      "homology_identity",
+      "dn",
+      "ds",
+      "goc_score",
+      "wga_coverage"
+    ]
+  }
+}
+```
+
+Each named column becomes a feature attribute, so it shows in the detail panel
+when a ribbon is clicked, and two of them drive the view's **Color by** menu:
+`identity` paints the viridis identity ramp, and `dn` with `ds` give
+**Color by → dN/dS**, which is the one measurement an aligner cannot produce.
+Its ramp pivots at 1, so a gene under purifying selection reads blue and one
+under positive selection reads red. `.` in a cell is a missing measurement
+rather than a zero, which matters here: Compara leaves dS unestimated for a
+distant pair, and a zero there would read as total purifying selection.
+
+The script keeps `ortholog_one2one` and `ortholog_one2many` by default; a
+reference gene with two orthologs becomes two rows, the same choice
+`orthogroups_to_blocks.py` makes. `--high-confidence-only` keeps just the pairs
+Compara flags, and `--homology-type` selects others, including
+`within_species_paralog` for a self-comparison.
+
+These columns describe the **row**, so they are meaningful where a row is one
+link. A table spanning N genomes has a row per orthogroup covering several
+pairs, with no single dN/dS, which is why the script writes one table per pair
+rather than one for the set.
+
 ### From reciprocal best BLAST hits
 
 Reduce each direction of an all-vs-all `blastp` or DIAMOND run (`-outfmt 6`) to

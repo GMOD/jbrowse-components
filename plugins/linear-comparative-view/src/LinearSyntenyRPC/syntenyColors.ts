@@ -5,6 +5,7 @@ import {
   colorSchemes,
   continuousRampConfig,
   hashString,
+  rampNorm,
 } from '@jbrowse/synteny-core'
 
 import {
@@ -69,13 +70,20 @@ function buildLut(toRgb: (norm: number) => readonly [number, number, number]) {
 // per-mode maxValue is applied at lookup.
 const IDENTITY_LUT = buildLut(continuousRampConfig.identity.toRgb)
 const MAPQ_LUT = buildLut(continuousRampConfig.mappingQuality.toRgb)
+const DNDS_LUT = buildLut(continuousRampConfig.dnds.toRgb)
 
-function lutLookup(lut: Uint32Array, value: number, max = 1) {
+// `config` rather than a bare max, so a mode whose domain is not a plain divide
+// (the diverging dN/dS pivot) normalizes through the same function the dotplot
+// evaluates per feature.
+function lutLookup(
+  lut: Uint32Array,
+  value: number,
+  config: (typeof continuousRampConfig)[keyof typeof continuousRampConfig] = continuousRampConfig.identity,
+) {
   if (value < 0) {
     return DEFAULT_COLOR
   }
-  const norm = Math.min(1, value / max)
-  return lut[Math.round(norm * 255)]!
+  return lut[Math.round(rampNorm(config, value) * 255)]!
 }
 
 interface ColorInputs {
@@ -85,6 +93,7 @@ interface ColorInputs {
   identities: Float32Array
   mappingQuals: Float32Array
   meanIdentities: Float32Array
+  dnds: Float32Array
 }
 
 function createColorFunction(
@@ -110,8 +119,11 @@ function createColorFunction(
         lutLookup(
           MAPQ_LUT,
           d.mappingQuals[index]!,
-          continuousRampConfig.mappingQuality.maxValue,
+          continuousRampConfig.mappingQuality,
         )
+    case 'dnds':
+      return index =>
+        lutLookup(DNDS_LUT, d.dnds[index]!, continuousRampConfig.dnds)
     case 'strand':
       return index => (d.strands[index] === -1 ? STRAND_NEG : STRAND_POS)
     case 'query':

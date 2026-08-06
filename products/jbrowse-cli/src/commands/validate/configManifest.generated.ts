@@ -1378,6 +1378,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "assemblyNames",
           "type": "(JexlString | string[])"
+        },
+        {
+          "name": "attributeColumns",
+          "type": "(JexlString | string[])"
         }
       ],
       "shorthandKeys": [

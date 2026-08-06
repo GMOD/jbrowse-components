@@ -45,7 +45,7 @@ the `1` / `chr1` / `NC_000001.10` refname styles across the files):
 jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
   --aliases https://jbrowse.org/genomes/hg19/hg19_aliases.txt \
   --gffgz https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz '{"showOnlyGenes":true}' \
-  --bigbed https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinGen/clinGenGeneDisease.bb \
+  --bigbed https://jbrowse.org/genomes/hg19/clinGen/clinGenGeneDisease.bb \
   --bigwig https://hgdownload.soe.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw \
   --cram https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.cram \
   --loc 1:19,190,000-19,240,000 --width 1200 --out 1.png
@@ -448,7 +448,7 @@ speckle:
 
 ```bash
 jb2export --hub hg19 --track hg19-ncbiRefSeqCurated \
-  --vcfgz https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.chr11.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes.vcf.gz display:multivariant height:450 force:true \
+  --vcfgz https://jbrowse.org/genomes/hg19/1000genomes/ALL.chr11.phase3_v5b.HBB_5.2-5.3Mb.vcf.gz display:multivariant height:450 force:true \
   --loc chr11:5,246,000-5,251,000 --width 1200 --out multisample_variants.png
 ```
 
@@ -1124,7 +1124,7 @@ Options:
   --loc2                Location on the second assembly
   --autoDiagonalize     Reorder the next assembly's chromosomes for least overlap (a clean diagonal) [default: false]
   --minAlignmentLength  Hide alignments shorter than N bp (de-spaghetti a busy plot)
-  --colorBy             Color synteny ribbons (e.g. "query" tints by query chromosome): default, strand, query, target, reference, identity, meanQueryIdentity, mappingQuality, or track
+  --colorBy             Color synteny ribbons (e.g. "query" tints by query chromosome): default, strand, query, target, reference, identity, meanQueryIdentity, mappingQuality, dnds, or track
   --showColorLegend     Show the floating colorBy legend [default: false]
 
 Examples:
@@ -1169,7 +1169,7 @@ Options:
   --autoDiagonalize     Reorder the next assembly's chromosomes for least overlap (a clean diagonal) [default: false]
   --drawCurves          Draw synteny ribbons as bezier curves instead of trapezoids [default: false]
   --minAlignmentLength  Hide alignments shorter than N bp (de-spaghetti a busy plot)
-  --colorBy             Color synteny ribbons (e.g. "query" tints by query chromosome): default, strand, query, target, reference, identity, meanQueryIdentity, mappingQuality, or track
+  --colorBy             Color synteny ribbons (e.g. "query" tints by query chromosome): default, strand, query, target, reference, identity, meanQueryIdentity, mappingQuality, dnds, or track
   --alpha               Ribbon opacity 0-1 (lower reveals density)
   --levelHeights        Comma-separated pixel height per level, e.g. 300,300 (one value applies to all)
   --cigarMode           CIGAR-level indel detail in synteny ribbons: 'off' (blocks only), 'matches' (indels see-through), or 'full' (indels colored) [default: full]

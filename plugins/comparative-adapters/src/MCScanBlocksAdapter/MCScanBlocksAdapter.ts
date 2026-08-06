@@ -120,6 +120,36 @@ function checkColumnsResolve(
   )
 }
 
+// The numeric columns a row carries past its gene columns, named by
+// `attributeColumns` in order. A `.blocks` table is gene ids and nothing else,
+// so a measurement that came with the orthology — Ensembl Compara's per-pair
+// identity, dN, dS and gene-order-conservation score — has nowhere to go
+// otherwise, and every one of them is discarded at the point the table is
+// written.
+//
+// Anything that is not a number is a missing value, not a zero. Compara writes
+// `NULL` for a dN it could not estimate, and a zero there is a dN/dS of zero,
+// which reads as total purifying selection rather than as no answer. Undefined
+// where a row carries none, so the common table allocates nothing per row.
+function parseRowAttrs(
+  cols: string[],
+  firstColumn: number,
+  attributeColumns: string[],
+) {
+  let attrs: Record<string, number> | undefined
+  for (let i = 0; i < attributeColumns.length; i++) {
+    const raw = cols[firstColumn + i]?.trim()
+    if (raw && raw !== '.' && raw !== 'NA' && raw !== 'NULL') {
+      const value = Number(raw)
+      if (Number.isFinite(value)) {
+        attrs ??= {}
+        attrs[attributeColumns[i]!] = value
+      }
+    }
+  }
+  return attrs
+}
+
 // A .blocks file has one column per genome (column 0 is the reference). Because
 // it describes N genomes at once, one track can back every band of a multi-way
 // view: parse all columns + BEDs once, then resolve which pair to draw per query
@@ -171,7 +201,15 @@ export default class MCScanBlocksAdapter extends BaseFeatureDataAdapter<MCScanBl
     // row objects, thrown away and rebuilt on every pan. The pairs are bounded
     // by the column count, and each holds what the file already holds.
     const pairRows = new Map<string, BlockRow[]>()
-    return { blockAssemblies, bedMaps, blockLines, pairRows }
+    // parsed once per row rather than once per row per pair: the columns sit
+    // past every gene column, so they say the same thing whichever pair is drawn
+    const attributeColumns = this.getConf('attributeColumns')
+    const rowAttrs = attributeColumns.length
+      ? blockLines.map(cols =>
+          parseRowAttrs(cols, blockAssemblies.length, attributeColumns),
+        )
+      : undefined
+    return { blockAssemblies, bedMaps, blockLines, rowAttrs, pairRows }
   }
 
   async hasDataForRefName() {
@@ -191,6 +229,7 @@ export default class MCScanBlocksAdapter extends BaseFeatureDataAdapter<MCScanBl
     {
       bedMaps,
       blockLines,
+      rowAttrs,
       pairRows,
     }: Awaited<ReturnType<typeof this.setupPre>>,
   ) {
@@ -198,7 +237,7 @@ export default class MCScanBlocksAdapter extends BaseFeatureDataAdapter<MCScanBl
     let rows = pairRows.get(key)
     if (!rows) {
       rows = blockLines
-        .map((cols, rowNum) => {
+        .map((cols, rowNum): BlockRow | undefined => {
           const pair = joinBedPair(
             bedMaps[colA]!,
             bedMaps[colB]!,
@@ -207,9 +246,14 @@ export default class MCScanBlocksAdapter extends BaseFeatureDataAdapter<MCScanBl
           )
           return pair === undefined
             ? undefined
-            : { ...pair, rowNum, strand: pair.a.strand * pair.b.strand }
+            : {
+                ...pair,
+                rowNum,
+                strand: pair.a.strand * pair.b.strand,
+                attrs: rowAttrs?.[rowNum],
+              }
         })
-        .filter((f): f is BlockRow => f !== undefined)
+        .filter(f => f !== undefined)
       pairRows.set(key, rows)
     }
     return rows
