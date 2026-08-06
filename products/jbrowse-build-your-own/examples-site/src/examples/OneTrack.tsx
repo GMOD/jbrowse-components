@@ -6,7 +6,7 @@ import { observer } from 'mobx-react'
 
 // The smallest thing that puts genomic data on screen: measure a div, mount one
 // track's display in it. No header, no ruler, no track label, no MUI theme --
-// and none of the wheel/pointer wiring the Pan and zoom page adds, either.
+// and no `usePanZoom`, so it doesn't move. The Pan and zoom page adds that.
 //
 // This file is complete. Everything it needs is either below or comes from a
 // published package, so you can copy the whole thing into an app and run it.

@@ -273,10 +273,10 @@ const TrackLabel = observer(function TrackLabel({
  * from where the press started, so a drag that runs into the minimum height
  * doesn't bank a debt the pointer has to pay back on the way up.
  *
- * `data-gesture-owner` is the marker the pan handler above tests for. Without
- * it, dragging this bar would pan the view sideways instead — a plain
- * `stopPropagation` would not do, since that handler runs on the same pointer
- * events this one needs.
+ * `data-gesture-owner` is the marker `usePanZoom` tests for before it starts a
+ * drag of its own. Without it, dragging this bar would pan the view sideways
+ * instead — a plain `stopPropagation` would not do, since that handler runs on
+ * the same pointer events this one needs.
  */
 const RESIZE_HANDLE_HEIGHT = 4
 

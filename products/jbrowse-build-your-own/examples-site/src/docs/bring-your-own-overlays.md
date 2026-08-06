@@ -3,13 +3,14 @@ to load, GPU gave up — and controls of its own in the bottom-right corner. By
 default all of those are Material UI, and they are the single biggest reason
 embedding a track drags a UI toolkit into your app.
 
-They are swappable. The demo below is JBrowse's own stock wiggle, feature and
-alignments displays, unforked, rendering **no Material UI at all** — toggle the
-checkbox to compare. The third track points at a URL that does not exist, so it
-holds still in its error state while you look.
+They are swappable. The demo above is JBrowse's own stock wiggle, feature and
+alignments displays, unforked, drawing their states three ways: a set written in
+the example file, the plain set JBrowse ships, and the Material default. The
+third track points at a URL that does not exist, so it holds still in its error
+state while you compare them.
 
 ```tsx
-<DisplayChromeOverlayProvider value={plainChromeOverlays}>
+<DisplayChromeOverlayProvider value={myOverlays}>
   <TrackControlProvider value={plainTrackControl}>
     {tracks}
   </TrackControlProvider>
@@ -23,6 +24,28 @@ badge. Two providers rather than one because two different things render them:
 the chrome around a display draws the first set, the display's own component
 draws the second.
 
+## Writing your own set
+
+`DisplayChromeOverlays` is five components with fixed prop shapes, so a set is
+an object literal: spread `plainChromeOverlays` and replace what you care about,
+as the source above does for the loading and error states.
+`TrackControlComponent` is one more, taking props that _describe_ the control —
+an icon **name**, never an element, or every display would import an icon set
+again.
+
+Two obligations the types can't carry. The error bar and the loading scrim are
+mounted **unconditionally** and decide for themselves whether to draw, which is
+what lets a replacement hold state across a fetch — an anti-flash delay, an
+animation. And every state has to offer its way out: `model.reload()` on the
+error bar, and `reload` again on the loading scrim's _canceled_ branch, since a
+canceled fetch is deliberately durable and nothing else restarts it.
+
+The `data-testid` values in the plain set (`loading-overlay`,
+`loading-overlay-cancel`, `loading-overlay-retry`, `progress-chip`,
+`reload_button`, `use_canvas2d_button`, `track-control-dismiss`) are a contract
+JBrowse's own test suites key on. Keep them and those suites run against your
+set too.
+
 ## Reach, and weight
 
 Every stock display imports `DisplayChrome` and `TrackControl` directly, so you
@@ -32,34 +55,12 @@ it, but nothing on screen renders it.
 
 To keep it out of the module graph entirely, write your own display component:
 import `DisplayChromeBase` and pass `overlays` as a prop, and render your own
-`TrackControlComponent` directly. Neither imports a toolkit. Avoid `makeStyles`
-from `@jbrowse/core/util/tss-react` there — it reads the Material UI theme,
-which puts the toolkit straight back.
+`TrackControlComponent`. Neither imports a toolkit. Avoid `makeStyles` from
+`@jbrowse/core/util/tss-react` there — it reads the Material UI theme, which
+puts the toolkit straight back.
 
 Swapping both sets removes Material UI _components_, not the _palette_.
 JBrowse's stock displays read one to colour their own content: the feature
 display reads `highlight`, the CDS renderer reads `framesCDS`. That arrives
-through `PaletteProvider`, as the source below does, carrying a plain object of
-colour strings from `resolvePalette` rather than a theme object.
-
-## Writing your own sets
-
-`DisplayChromeOverlays` is five components with fixed prop shapes.
-`TrackControlComponent` is one, taking a `TrackControlProps` that describes the
-control rather than drawing it — an icon _name_ (never an element, or every
-display would import an icon set again), a tooltip, an optional label, and
-either a list of options or a click handler.
-
-`plainChromeOverlays` and `plainTrackControl` are dependency-free reference
-implementations to read, copy, or write your own against. Two details in
-`plainTrackControl` worth stealing rather than rediscovering: its menu is
-portaled to `document.body` and positioned `fixed`, because these controls sit
-on a display's bottom edge inside a `contain: strict` box that would otherwise
-clip it; and it anchors the menu's _bottom_ to the trigger's top, so it opens
-upward without anyone having to measure its height.
-
-The `data-testid` values in the plain sets (`loading-overlay`,
-`loading-overlay-cancel`, `loading-overlay-retry`, `progress-chip`,
-`reload_button`, `use_canvas2d_button`, `track-control-dismiss`) are a contract
-JBrowse's own test suites key on. Keep them if you want those suites to run
-against your set.
+through `PaletteProvider`, carrying a plain object of colour strings from
+`resolvePalette` rather than a theme object.

@@ -1,5 +1,5 @@
-Click a gene below. The panel on the right is a plain `<dl>` in this file, and
-the only thing connecting it to JBrowse is one field:
+Click a gene in the demo above. The panel on the right is a plain `<dl>` in this
+file, and the only thing connecting it to JBrowse is one field:
 
 ```ts
 const { selection } = session

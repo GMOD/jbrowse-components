@@ -12,7 +12,7 @@ createViewState({
 
 Supplying `makeWorkerInstance` is the whole change: the RPC layer switches its
 default driver to the web-worker one, with no `defaultDriver` config to write.
-The demo below is the stack of tracks from earlier with the plain overlays
+The demo above is the stack of tracks from earlier with the plain overlays
 installed, and that one line is the only difference in its source.
 
 ## Constructing the worker

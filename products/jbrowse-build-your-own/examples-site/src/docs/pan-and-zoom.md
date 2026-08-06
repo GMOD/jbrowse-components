@@ -45,8 +45,8 @@ clears itself; the prompt in the demo is drawn from it.
   `pointerdown` stops every display's click-to-select-a-feature. A press becomes
   a drag after a few pixels, and captures then.
 - Presses that were never yours: JBrowse marks the parts that drag on their own
-  — a vertical scrollbar, a resize handle — with `data-gesture-owner`, and those,
-  buttons and shift-presses are left to them.
+  — a vertical scrollbar, a resize handle — with `data-gesture-owner`, and
+  those, buttons and shift-presses are left to them.
 
 `createWheelZoomController` is the primitive underneath, for a different gesture
 set.

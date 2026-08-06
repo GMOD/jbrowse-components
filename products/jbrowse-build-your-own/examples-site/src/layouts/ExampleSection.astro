@@ -6,11 +6,20 @@ import { demoFillHeight, demoHeights } from '../siteMeta.ts'
 import type { MarkdownInstance } from 'astro'
 
 // One live demo within an example page: an optional heading (only shown when a
-// page stacks several sections), the hand-written doc from src/docs/<slug>.md,
-// the live demo (slotted in), and its source. The source is the real, runnable
-// file for the demo above, so it's open by default rather than hidden behind a
-// collapsed toggle. Section-level descriptions from examples.ts are rendered by
-// ExampleLayout's "On this page" card, not here, so the doc carries the prose.
+// page stacks several sections), the live demo (slotted in), the hand-written
+// doc from src/docs/<slug>.md, and the demo's source. The source is the real,
+// runnable file for the demo, so it's open by default rather than hidden behind
+// a collapsed toggle. Section-level descriptions from examples.ts are rendered
+// by ExampleLayout's "On this page" card, not here, so the doc carries the
+// prose.
+//
+// **The demo goes above the prose**, which is the order the landing page
+// already uses and the reason it reads well: the demo is the argument, and the
+// prose is the annotation on it. Docs here run to a few hundred words, so with
+// the doc first the flagship page's demo started below 1400px — on a 1440x900
+// laptop the reader met three paragraphs and a code fence before any evidence
+// that any of it worked. The source stays last, since it is what you read once
+// the demo has convinced you.
 interface Props {
   slug: string
   title?: string
@@ -22,9 +31,9 @@ interface Props {
 
 const { slug, title, code } = Astro.props
 
-// Hold the demo's space before its island mounts, so the doc above it doesn't
-// slide up the page when it does. See `demoHeights` for where the figure comes
-// from and what re-checks it.
+// Hold the demo's space before its island mounts, so the prose below it doesn't
+// slide down the page when it does. See `demoHeights` for where the figure
+// comes from and what re-checks it.
 const reserved = demoHeights[slug]
 
 const docs = import.meta.glob<MarkdownInstance<Record<string, unknown>>>(
@@ -37,6 +46,12 @@ const Doc = doc?.Content
 
 <section id={slug} class="example-section">
   {title && <h2>{title}</h2>}
+  <div
+    class:list={['demo', { fill: demoFillHeight, reserved: !!reserved }]}
+    style={reserved ? `min-height:${reserved}px` : undefined}
+  >
+    <slot />
+  </div>
   {
     Doc && (
       <div class="doc">
@@ -44,12 +59,6 @@ const Doc = doc?.Content
       </div>
     )
   }
-  <div
-    class:list={['demo', { fill: demoFillHeight, reserved: !!reserved }]}
-    style={reserved ? `min-height:${reserved}px` : undefined}
-  >
-    <slot />
-  </div>
   <details class="source" open>
     <summary>View source</summary>
     <Code code={code} lang="tsx" />

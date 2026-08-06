@@ -130,11 +130,15 @@ export {
   viewportMatchesLastDrawn,
 } from './BaseLinearDisplay/index.ts'
 export type {
+  DisplayBackgroundProgressModel,
   DisplayChromeOverlays,
+  DisplayErrorBarModel,
+  DisplayLoadingOverlayModel,
   FetchContext,
   HeightMode,
   HeightModeMenuModel,
   StatusChromeModel,
+  TooLargeMessageModel,
 } from './BaseLinearDisplay/index.ts'
 // plain, toolkit-free overlays: pair with DisplayChromeOverlayProvider to make
 // JBrowse's own displays render without MUI, or with DisplayChromeBase to also

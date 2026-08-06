@@ -19,6 +19,14 @@ export { default as plainChromeOverlays } from './components/plainChromeOverlays
 export type { DisplayChromeOverlays } from './components/chromeOverlays.ts'
 export { default as DisplayErrorBar } from './components/DisplayErrorBar.tsx'
 export { default as DisplayLoadingOverlay } from './components/DisplayLoadingOverlay.tsx'
+// The model each overlay is handed. `DisplayChromeOverlays` names these types
+// structurally, but that is not enough to write a set against it: a component
+// wrapped in `observer()` gets no contextual type for its props, so a
+// replacement has to name the model itself. Exported for exactly that.
+export type { DisplayErrorBarModel } from './components/DisplayErrorBar.tsx'
+export type { DisplayLoadingOverlayModel } from './components/DisplayLoadingOverlay.tsx'
+export type { DisplayBackgroundProgressModel } from './components/DisplayBackgroundProgress.tsx'
+export type { TooLargeMessageModel } from '../shared/TooLargeMessage.tsx'
 export { default as TrackHeightMixin } from './models/TrackHeightMixin.tsx'
 export { installClearHoverOnViewportChange } from './models/installClearHoverOnViewportChange.ts'
 export {

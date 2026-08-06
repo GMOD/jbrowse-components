@@ -11,6 +11,6 @@ picture:
    exposes a `RenderingComponent`. Give it a box with a height and a positioning
    context and it draws.
 
-The track below is a BigWig, so this is a real fetch through a real adapter,
+The track above is a BigWig, so this is a real fetch through a real adapter,
 laid out by the same code that runs in the full product. No header, no ruler and
 no pan/zoom wiring — [Pan and zoom](../pan-and-zoom/#pan-and-zoom) adds those.

@@ -18,7 +18,7 @@ export const pages: ExamplePage[] = [
     slug: 'pan-and-zoom',
     title: 'Pan and zoom',
     description:
-      'A measured div, one track, and enough wheel/pointer wiring to move around it.',
+      'A measured div, one track, and the hook that turns a wheel and a drag into the two calls that move it.',
     group: 'The atoms',
     sections: [{ slug: 'pan-and-zoom', title: 'Wheel and drag' }],
   },
@@ -26,7 +26,7 @@ export const pages: ExamplePage[] = [
     slug: 'one-track',
     title: 'One track, no interaction',
     description:
-      'The same view with the pan/zoom wiring pulled back out: a measured div and one track, nothing else.',
+      'The same view with the pan/zoom hook taken back out: a measured div and one track, nothing else.',
     group: 'The atoms',
     sections: [{ slug: 'one-track', title: 'No pan, no zoom, no chrome' }],
   },
@@ -42,15 +42,12 @@ export const pages: ExamplePage[] = [
     slug: 'bring-your-own-overlays',
     title: 'Bring your own overlays',
     description:
-      "Swap the components that draw a track's status states and corner controls, and JBrowse's own displays render no Material UI at all.",
+      "Write the components that draw a track's status states, and JBrowse's own displays render no Material UI at all.",
     group: 'Making it yours',
+    // no section description: a single-section page draws no "On this page"
+    // card, so it would render nowhere
     sections: [
-      {
-        slug: 'bring-your-own-overlays',
-        title: 'Plain overlays, no MUI',
-        description:
-          'The same three tracks, drawing their status states and corner controls with dependency-free markup.',
-      },
+      { slug: 'bring-your-own-overlays', title: 'Plain overlays, no MUI' },
     ],
   },
   {

@@ -433,10 +433,10 @@ function RangeSelection({ range }: { range: { left: number; right: number } }) {
 }
 
 /**
- * The row itself. `data-gesture-owner` is the marker the page's pan handler
- * tests before starting a drag -- without it, dragging out a range here would
- * pan the view sideways at the same time. JBrowse's own scalebar carries the
- * same attribute for the same reason.
+ * The row itself. `data-gesture-owner` is the marker `usePanZoom` tests before
+ * starting a drag of its own -- without it, dragging out a range here would pan
+ * the view sideways at the same time. JBrowse's own scalebar carries the same
+ * attribute for the same reason.
  */
 const Scalebar = observer(function Scalebar({
   view,

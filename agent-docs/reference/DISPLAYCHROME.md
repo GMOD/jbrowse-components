@@ -384,6 +384,27 @@ They stay separate because `DisplayChromeBase` takes its overlay set as a *prop*
 and never renders a track control; folding the two would put entries in
 `DisplayChromeOverlays` that the chrome ignores.
 
+**A set is written against exported types, not inferred ones.** The four model
+shapes the overlays are handed (`DisplayErrorBarModel`,
+`DisplayLoadingOverlayModel`, `DisplayBackgroundProgressModel`,
+`TooLargeMessageModel`) are exported from the LGV barrel for that. Naming them
+structurally in `DisplayChromeOverlays` is not enough: a component wrapped in
+`observer()` gets no contextual type for its props, so without the export the
+only way to write a replacement is to redeclare the shape and drift from it.
+The build-your-own site's overlays page now writes a set this way, in the page's
+own source — until 2026-08 the page called "Bring your own overlays" only ever
+swapped in JBrowse's *other* set.
+
+**Gestures are published too, and are not a seam.** An embedder drawing their
+own chrome still has to get a wheel and a drag into `zoomTo`/`horizontalScroll`,
+and that has no interesting variants — so it is
+`@jbrowse/core/util/usePanZoom` (`useWheelZoom` for the wheel half, which
+`LinearGenomeViewContainer` itself renders), plus `useWidthSetter`
+(`@jbrowse/core/util/hooks`) for the width every view needs before it draws.
+Eight example pages each carried a hand-rolled copy of the first, all of them
+missing the rAF batching and the zoom rate limit; treat "the examples all write
+X" as a missing export rather than a duplication problem.
+
 **A third seam was considered for the tooltip and rejected.** `BaseTooltip` is
 rendered by each display directly, behind neither provider, and it used to style
 itself through `makeStyles(theme => …)` — so in a host that mounts no

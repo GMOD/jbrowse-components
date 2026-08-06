@@ -1,8 +1,8 @@
 The mouse is not the only thing that moves a genome browser. Your app knows
 things — a gene the user searched for, the row they clicked in a table, the
 region a job just finished analysing — and getting the browser there is four
-calls and one getter. None of them is a component, so the toolbar below could
-equally be your app's own header, three floors up the tree.
+calls and one getter. None of them is a component, so the toolbar in the demo
+could equally be your app's own header, three floors up the tree.
 
 ## Navigating
 

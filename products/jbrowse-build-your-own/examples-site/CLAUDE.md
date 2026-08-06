@@ -14,12 +14,29 @@ helpers. Check with:
 grep "from '\./\|from '\.\./" src/examples/*.tsx
 ```
 
-**Do not factor the shared parts out.** Pulling `useViewWidth`, `TrackRow`,
-`usePanZoom` and the engine setup into a `src/browser/` module is the obvious
+**Do not factor the shared parts out.** Pulling `TrackRow`, `isViewReady`,
+`ZoomHint` and the engine setup into a `src/browser/` module is the obvious
 tidy-up, it makes the site pleasant to maintain, and it destroys the product:
 every page's source becomes a list of paths the reader cannot resolve. This site
 was built that way first and rewritten. A second `?raw` code block showing the
 helper is not a fix. It is the admission that the first block was incomplete.
+
+**There is one other way out, and it is the good one: publish the block.** A
+repeated block falls into two kinds, and only one of them is this site's
+content. `TrackRow` is content — mounting a display is what the reader came to
+see, and the box it goes in is theirs to style. The gesture layer was not: every
+page carried ~150 identical lines of wheel handling, drag loop and hint timer,
+and what they carried was a *worse* implementation than the one JBrowse itself
+ships, since it batched nothing and rate-limited nothing. That is not a
+duplication problem, it is a missing export. It became
+`@jbrowse/core/util/usePanZoom` (with `useWidthSetter`, which already existed
+and nobody here had found), the LGV's own copy of the wheel half was deleted,
+and every page went down by a third with nothing lost from what it teaches.
+
+So when a block repeats: ask whether an embedder would have to write it. If yes,
+it belongs in a package and the example imports it like any reader would — which
+also puts it under a real test, where a site-local helper never is. If no, it
+stays copied.
 
 Duplication across example files is correct here. The pages diverge as they add
 features anyway, and each one has to read top to bottom on its own. Where a
@@ -61,6 +78,9 @@ literal, never `?raw` a private helper of this site.
   (the passive `wheel` listener, `setPointerCapture` on move not press), and
   cutting those to hit a tighter number is the wrong trade. Implementation is
   `findLongDocs`/`findLongDescriptions` in `@jbrowse/browser-test-utils`.
+  The cap stopped being load-bearing for *layout* when the demo moved above the
+  prose (`ExampleSection.astro`) — a long page no longer buries its own demo —
+  but it is still what keeps these from becoming essays.
 - A single-section page's **section-level `description` renders nowhere** — the
   "On this page" card is only drawn for multi-section pages — so don't write
   one. Three sites had accumulated exact duplicates of the page description
