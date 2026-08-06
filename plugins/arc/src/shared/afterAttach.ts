@@ -9,16 +9,15 @@ import type { ArcDisplayModel } from './ArcDisplayModel.ts'
 
 export function doAfterAttach(self: ArcDisplayModel) {
   // Same shared trigger every global display uses (LD, HiC, variant matrix): a
-  // debounced autorun that fetches when the region isn't too large and the data
-  // isn't already current. `regionTooLarge` (derived) tracks visibleBp so the
-  // banner self-releases on zoom-in; `dataCurrent` tracks the static-block region
-  // signature so panning past a block boundary refetches while a redundant pan
-  // within the loaded blocks does not. Both refire paths are already tracked:
-  // force-load flips `forceLoadTrack`, which `regionTooLarge` reads through
-  // `byteGateExempt` and `shouldFetch` reads unconditionally; reload bumps
+  // debounced autorun that fetches when the data isn't already current.
+  // `dataCurrent` tracks the static-block region signature so panning past a
+  // block boundary refetches while a redundant pan within the loaded blocks does
+  // not. `regionTooLarge` is deliberately not a term: the skeleton owns that
+  // skip, and it lets a blocked display fetch once per settled viewport so the
+  // pre-flight can re-measure — an index read, not a download. Reload bumps
   // `reloadCounter`, which the skeleton reads above its gate.
   installGlobalFetchAutorun(self, {
-    shouldFetch: () => !self.regionTooLarge && !self.dataCurrent,
+    shouldFetch: () => !self.dataCurrent,
     fetch: () => {
       // runFetch owns errors + cancellation; fire-and-forget is safe
       void fetchArcFeatures(self)

@@ -58,7 +58,7 @@ export interface RenderFeatureDataArgs {
   // Compressed-byte budget for this region. When set and the adapter offers a
   // cheap index estimate (getRegionByteSize), the fetch short-circuits before
   // downloading features if the estimate exceeds it. Undefined disables the
-  // byte gate (e.g. zoomed in past AUTO_FORCE_LOAD_BP, or after force-load).
+  // byte gate (i.e. after force-load).
   byteLimit?: number
   theme?: SerializableThemeArgs
   stopToken?: StopToken

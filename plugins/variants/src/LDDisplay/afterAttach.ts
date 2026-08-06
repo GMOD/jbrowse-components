@@ -16,16 +16,20 @@ interface LDModel extends IStateTreeNode {
   rpcProps(): Record<string, unknown>
   performLDFetch(): void
   clearByteEstimate(): void
+  gateMeasurementStale: boolean
 }
 
 export function doAfterAttach(self: LDModel) {
-  // `regionTooLarge` is a derived getter (see shared.ts): a pure function of the
-  // cached byte estimate, the viewport, and `forceLoadTrack`, so it self-releases
-  // on zoom-in and flips on force-load with no imperative clear, and `shouldFetch`
-  // reading it below is all the tracking either needs. `reload()` refires through
-  // `reloadCounter`, which the skeleton reads above its gate.
+  // `regionTooLarge` is deliberately NOT a term here. The skeleton owns the
+  // too-large skip, because a blocked display still has to run its fetch once
+  // per settled viewport to re-measure — `byteGateBlocksFetch` measures and
+  // stops, so it costs an index read, not a download. Restating it here would
+  // skip that and freeze the estimate at the viewport it was captured over,
+  // which is what used to leave the banner to be released by arithmetic.
+  // `reload()` refires through `reloadCounter`, which the skeleton reads above
+  // its gate.
   installGlobalFetchAutorun(self, {
-    shouldFetch: () => self.showLDTriangle && !self.regionTooLarge,
+    shouldFetch: () => self.showLDTriangle,
     fetch: () => {
       self.performLDFetch()
     },

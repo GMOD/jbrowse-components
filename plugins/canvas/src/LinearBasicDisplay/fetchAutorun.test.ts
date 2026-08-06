@@ -9,8 +9,16 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // RenderFeatureData responder that mimics executeRenderFeatureData's byte gate:
 // the index estimate scales with the queried span, and a region over
-// `byteLimit` short-circuits before any features are "downloaded". Canvas
-// makes no other RPC call, so this is the whole mock.
+// `byteLimit` short-circuits before any features are "downloaded". Canvas makes
+// no other RPC call, so this is the whole mock — including while the banner
+// holds, when `FetchVisibleRegions` re-runs this same fetch to re-measure and it
+// short-circuits here for an index read's worth of work (RegionTooLargeMixin
+// §"Measurement follows the viewport").
+//
+// A span-proportional estimate is the friendly case for the gate, and
+// deliberately so: these tests are about the wiring. Real index estimates are
+// quoted in whole blocks and go flat, which is why nothing downstream of the
+// worker scales one by span any more — see AUTO_FORCE_LOAD_BP.
 function makeByteGatedRender(bytesPerBp: number) {
   return (
     _sessionId: string,
@@ -657,13 +665,13 @@ describe('adapter fetchSizeLimit in the byte gate', () => {
   })
 })
 
-// Neither gate budget may be an RPC cache key. They are resolved values that
-// swing on the viewport — `gateActive` folds in AUTO_FORCE_LOAD_BP, so both go
-// undefined the instant the span drops under 20 kb — and as cache keys that made
-// `SettingsInvalidate` fire `clearAllRpcData()` at that one zoom, blanking and
-// refetching the display for data identical on both sides of the floor. They ride
-// as call-site arguments now; the config slots they resolve from stay in the
-// payload, so a real settings change still invalidates.
+// Neither gate budget may be an RPC cache key. They are resolved values that go
+// undefined the moment their axis stops gating — `densityGateActive` still folds
+// in AUTO_FORCE_LOAD_BP, so `maxFeatureDensity` swings at 20 kb — and as cache
+// keys that made `SettingsInvalidate` fire `clearAllRpcData()` at that one zoom,
+// blanking and refetching the display for data identical on both sides of the
+// floor. They ride as call-site arguments now; the config slots they resolve
+// from stay in the payload, so a real settings change still invalidates.
 describe('gate budgets are not RPC cache keys', () => {
   it('keeps the cache key stable across the force-load floor', () => {
     const { display, view } = createLargeDisplay()
@@ -676,9 +684,10 @@ describe('gate budgets are not RPC cache keys', () => {
 
     view.zoomTo(20)
     expect(view.visibleBp).toBeLessThan(20_000)
-    // both budgets have gone undefined — the whole point of the floor
-    expect(display.resolvedByteLimit()).toBeUndefined()
+    // the density budget goes undefined — that is the floor's whole remaining
+    // job — while the byte budget stays put, since the byte axis has no floor
     expect(display.maxFeatureDensity).toBeUndefined()
+    expect(display.resolvedByteLimit()).toBeDefined()
     expect(display.rpcPropsCacheKey).toBe(above)
   })
 
@@ -727,12 +736,22 @@ describe('derived regionTooLarge', () => {
 
     const callCount = mockRpcCall.mock.calls.length
 
+    // The new viewport has never been measured, so the autorun runs the fetch
+    // once to ask — the worker short-circuits on the density gate and returns
+    // without downloading features. That one call is the whole re-measure, and
+    // there is exactly one: `gateMeasurementStale` goes false as soon as it
+    // commits, so the `fetchGeneration` bump can't start another.
     view.zoomTo(55)
     jest.advanceTimersByTime(2000)
     await jest.runAllTimersAsync()
 
     expect(display.regionTooLarge).toBe(true)
-    expect(mockRpcCall.mock.calls.length).toBe(callCount)
+    expect(mockRpcCall.mock.calls.length).toBe(callCount + 1)
+
+    // and settling at that viewport costs nothing more
+    jest.advanceTimersByTime(5000)
+    await jest.runAllTimersAsync()
+    expect(mockRpcCall.mock.calls.length).toBe(callCount + 1)
   })
 
   it('flips false and refetches when visibleBp drops below the gate', async () => {
@@ -939,17 +958,17 @@ describe('derived regionTooLarge', () => {
       expect(display.regionTooLarge).toBe(true)
     })
 
-    // byteEstimate is preserved across clearAllRpcData (it's not in
-    // the clearing path), so the derived banner stays true on viewport
-    // change. The FetchVisibleRegions autorun is gated on regionTooLarge,
-    // so no new RPC calls happen.
+    // byteEstimate is preserved across clearAllRpcData (it's not in the
+    // clearing path), so the banner does not blink off while the new viewport
+    // is measured — and it is measured, once, because the gate only ever
+    // releases on a measurement. No flicker, one index read.
     const callCountBefore = mockRpcCall.mock.calls.length
     view.zoomTo(55)
     jest.advanceTimersByTime(2000)
     await jest.runAllTimersAsync()
 
     expect(display.regionTooLarge).toBe(true)
-    expect(mockRpcCall.mock.calls.length).toBe(callCountBefore)
+    expect(mockRpcCall.mock.calls.length).toBe(callCountBefore + 1)
   })
 
   // Regression: zoom out until the byte estimate trips, then zoom back into a
@@ -1414,7 +1433,7 @@ describe('byte estimate anchoring across an in-flight zoom', () => {
         }),
     )
 
-    const issuedSpanBp = view.visibleBp
+    const issuedSpanBp = display.gateViewport!.spanBp
     jest.advanceTimersByTime(800)
     await waitFor(() => {
       expect(display.isLoading).toBe(true)
@@ -1435,9 +1454,12 @@ describe('byte estimate anchoring across an in-flight zoom', () => {
       expect(display.byteEstimate?.bytes).toBe(4_000_000)
     })
     expect(display.byteEstimate?.measuredSpanBp).toBe(issuedSpanBp)
-    // scaled down by the zoom, so it stays under the 5MB config cap; anchored
-    // to the post-zoom span it would read as the full 4MB at every zoom level
-    expect(display.estimatedBytesForVisibleSpan).toBeLessThan(4_000_000)
+    // the number itself is untouched — nothing scales it — and it is under the
+    // 5MB config cap, so the banner stays down
+    expect(display.estimatedFetchBytes).toBe(4_000_000)
     expect(display.regionTooLarge).toBe(false)
+    // the mid-flight zoom is not evidence about zoom, because the bytes describe
+    // the wider span the fetch was issued at
+    expect(display.zoomCanReleaseGate).toBe(true)
   })
 })

@@ -356,7 +356,8 @@ export default function MultiRegionDisplayMixin() {
          * full reset: cancels fetch, clears error, loadedRegions,
          * display-specific data, and the canvas-drawn flag. The too-large gate is
          * derived (a pure function of the cached estimate × viewport), so it needs
-         * no explicit clear here — it self-releases when the viewport changes.
+         * no explicit clear here — the fetch autorun re-measures at the new
+         * viewport and the verdict follows.
          */
         clearAllRpcData() {
           self.cancelFetch()
@@ -506,12 +507,28 @@ export default function MultiRegionDisplayMixin() {
           // by loaded data. Fetches with an explicit buffer for smooth
           // scrolling without blank gaps.
           //
-          // #autorun the viewport, or `fetchGeneration` after a fetch ends | `fetchNeeded(needed)` for the visible blocks loaded data doesn't cover. Skipped while `error` / `regionTooLarge` / `fetchCanceled` is set, while a fetch is in flight, and while the track is minimized
+          // #autorun the viewport, or `fetchGeneration` after a fetch ends | `fetchNeeded(needed)` for the visible blocks loaded data doesn't cover, or `remeasureByteEstimate()` instead while `regionTooLarge` holds. Skipped while `error` / `fetchCanceled` is set, while a fetch is in flight, and while the track is minimized
           autorunOnReadyView(
             self,
             view => {
               void self.fetchGeneration
-              if (self.error || self.regionTooLarge || self.fetchCanceled) {
+              if (self.error || self.fetchCanceled) {
+                return
+              }
+              // A blocked gate skips the fetch it has already measured, not
+              // every fetch. Letting it run unconditionally would spin — a
+              // too-large region stores nothing, so it stays in `needed`, and
+              // the `fetchGeneration` bump after each attempt re-fires this
+              // body. Skipping unconditionally is what used to freeze the
+              // estimate at the viewport it was captured over, leaving the
+              // banner to be released by arithmetic instead
+              // (RegionTooLargeMixin §"Measurement follows the viewport").
+              //
+              // So the fetch runs once per settled viewport while blocked, and
+              // that costs an index read rather than a download: every gated
+              // display's fetch measures first and stops there when the answer
+              // is over budget. See `gateMeasurementStale`.
+              if (self.regionTooLarge && !self.gateMeasurementStale) {
                 return
               }
 
@@ -621,13 +638,14 @@ export default function MultiRegionDisplayMixin() {
 
           // When zoom or viewport position changes while an error or a canceled
           // fetch is set, clear so the fetch autorun retries. (The too-large gate
-          // is derived — a pure function of the viewport — so it self-releases and
+          // is derived — a pure function of the last measurement — so it clears
+          // on the next one and
           // needs no clear here; only the terminal error/cancel states, which are
           // imperative flags, do.) Reads them untracked so setting them doesn't
           // trigger this autorun to immediately wipe them — only the viewport read
           // should fire it.
           //
-          // #autorun `view.visibleRegions` | `clearAllRpcData()` when `error` or `fetchCanceled` is set, so the fetch autorun retries. Not `regionTooLarge`, which is derived and self-releasing
+          // #autorun `view.visibleRegions` | `clearAllRpcData()` when `error` or `fetchCanceled` is set, so the fetch autorun retries. Not `regionTooLarge`, which is derived and re-measured by the fetch autorun itself
           autorunOnReadyView(
             self,
             view => {

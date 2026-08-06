@@ -92,6 +92,7 @@ export {
   DisplayChrome,
   DisplayChromeBase,
   DisplayChromeOverlayProvider,
+  DisplayUIProvider,
   DisplayErrorBar,
   DisplayLoadingOverlay,
   DisplayStatusChrome,
@@ -162,6 +163,7 @@ export type {
 } from '@jbrowse/render-core/displayPhase'
 export type {
   ByteEstimate,
+  GateViewport,
   RegionTooLargeStatus,
 } from './shared/regionTooLargeUtils.ts'
 export {

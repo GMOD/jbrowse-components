@@ -19,7 +19,7 @@ describe('arc displayPhase', () => {
     view.zoomTo(2000)
     display.setByteEstimate({
       bytes: 1_500_000,
-      measuredSpanBp: view.visibleBp,
+      viewport: display.gateViewport!,
     })
     expect(display.displayPhase).toBe('tooLarge')
   })

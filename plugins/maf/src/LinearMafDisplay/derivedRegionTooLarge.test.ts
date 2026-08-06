@@ -2,10 +2,12 @@ import { getMembers } from '@jbrowse/mobx-state-tree'
 
 import { createMafTestEnvironment } from './testEnv.ts'
 
-// Derived regionTooLarge: a pure function of the cached byte estimate scaled to
-// the current viewport. These lock in the self-releasing behavior — a banner
-// that clears on zoom-in (not stuck), doesn't flicker on pan, and a force-load
-// that stays cleared even after a zoom-out (the invariant that once bit LD).
+// Derived regionTooLarge: a pure function of the cached byte estimate, which the
+// fetch autoruns keep describing the current viewport by re-measuring while the
+// banner holds. These lock in the behaviors around that — a banner that doesn't
+// flicker on pan, one that waits for a measurement rather than releasing on
+// arithmetic, and a force-load that stays cleared even after a bigger
+// re-measure (the invariant that once bit LD).
 // The method-shaped reactive hooks must stay in `.views()`: as actions MobX runs
 // them untracked and callers keep a stale answer (BaseLinearDisplay/CLAUDE.md,
 // "`isCacheValid` is a view, not an action").
@@ -43,7 +45,7 @@ describe('MAF summary swap vs the force-load floor', () => {
     // zoom-reduced one — but against its own file, so a small summary read is
     // nowhere near the cap and never sees a banner.
     expect(display.byteGateEnabled).toBe(true)
-    expect(display.gateActive).toBe(true)
+    expect(display.byteGateActive).toBe(true)
     expect(display.byteGateAdapterConfig).toEqual({ type: 'BigBedAdapter' })
 
     view.zoomTo(20)
@@ -62,12 +64,15 @@ describe('MAF summary swap vs the force-load floor', () => {
   })
 })
 
-// MAF opts out of the AUTO_FORCE_LOAD_BP floor (`gateBelowForceLoadFloor`),
-// because its bytes scale with span *times row count* — a 470-way pulls
-// megabytes out of a gene-sized window, which is the fetch the floor declines to
-// look at. These pin that the opt-out moved the gate and nothing else: the
-// summary swap still happens at 20kb, and the verdict is still the estimate
-// against the cap rather than a blanket "always gate when zoomed in".
+// The byte axis has no span floor. It used to, and MAF was one of two displays
+// that opted out of it one at a time, because its bytes cost span *times row
+// count* — a 470-way pulls megabytes out of a gene-sized window, which is the
+// fetch the floor declined to look at. The floor is gone for everyone now: the
+// gate re-measures at whatever is on screen, so "a small span is a small fetch"
+// is checked rather than assumed. These pin that removing it moved the gate and
+// nothing else — the summary swap still happens at 20kb, and the verdict is
+// still the estimate against the cap rather than a blanket "always gate when
+// zoomed in".
 describe('MAF gating below the force-load floor', () => {
   it('gates on an over-budget estimate even below the floor', () => {
     const { display, view } = createMafTestEnvironment().createDisplay()
@@ -79,72 +84,56 @@ describe('MAF gating below the force-load floor', () => {
     // what the floor used to hide: a deep alignment is still megabytes here
     display.setByteEstimate({
       bytes: 3_000_000,
-      measuredSpanBp: view.visibleBp,
+      viewport: display.gateViewport!,
     })
-    expect(display.gateActive).toBe(true)
+    expect(display.byteGateActive).toBe(true)
     expect(display.regionTooLarge).toBe(true)
     expect(display.regionTooLargeReason).toBe('Requested too much data (3 Mb)')
   })
 
-  // Zooming does not release it below the floor, because the bytes do not fall
-  // there: the estimate comes from an index whose smallest bin is 16kb, so the
-  // same MAF stanzas come down at 8kb as at 2kb. The verdict below the floor is
-  // the verdict at 20kb, and force-load is the way out — which is exactly what
-  // the banner offers down here, `zoomCanReleaseGate` having already dropped
-  // "zoom in to see features".
-  it('does not release on zoom below the floor, where the bytes are flat', () => {
+  // The verdict is the measurement, so zooming alone does not move it — what
+  // moves it is the next measurement, which the fetch autorun takes on the
+  // settled viewport while the banner holds. Scaling the stored number by
+  // `visibleBp` is what this replaced, and it released the banner against a
+  // figure the index never charges.
+  it('holds the verdict until a fresh measurement moves it', () => {
     const { display, view } = createMafTestEnvironment().createDisplay()
 
     view.zoomTo(20)
     display.setByteEstimate({
       bytes: 3_000_000,
-      measuredSpanBp: view.visibleBp,
+      viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
 
     view.zoomTo(5)
-    expect(view.visibleBp).toBeLessThan(20_000)
-    expect(display.gateActive).toBe(true)
-    expect(display.zoomCanReleaseGate).toBe(false)
+    expect(display.byteGateActive).toBe(true)
+    expect(display.estimatedFetchBytes).toBe(3_000_000)
     expect(display.regionTooLarge).toBe(true)
+
+    // the re-measure lands: the index really does quote the same blocks down
+    // here, so the banner stays — and now it also stops advertising zoom
+    display.setByteEstimate({ bytes: 3_000_000, viewport: display.gateViewport! })
+    expect(display.regionTooLarge).toBe(true)
+    expect(display.zoomCanReleaseGate).toBe(false)
   })
 
-  // The estimate below the floor is the one the index would really charge, so a
-  // measurement taken at one sub-floor zoom reads identically at another. No
-  // release, no re-measure, no flash.
-  it('quotes the same bytes at every zoom below the floor', () => {
-    const { display, view } = createMafTestEnvironment().createDisplay()
-
-    view.zoomTo(20)
-    display.setByteEstimate({
-      bytes: 3_000_000,
-      measuredSpanBp: view.visibleBp,
-    })
-    const atEightKb = display.estimatedBytesForVisibleSpan
-
-    view.zoomTo(2)
-    expect(view.visibleBp).toBeLessThan(20_000)
-    expect(display.estimatedBytesForVisibleSpan).toBe(atEightKb)
-    // and it is the measured number itself, not a rescale of it: both spans
-    // floor to 20kb, so the ratio is 1
-    expect(atEightKb).toBe(3_000_000)
-  })
-
-  // Above the floor the proportional model is real, and it is still the only
-  // thing that re-measures, so that half of the rescale is untouched.
-  it('still releases on the bytes above the floor', () => {
+  // ...and the same mechanism releases it when the bytes really do fall, at any
+  // zoom, without a threshold anywhere in the path.
+  it('releases when a re-measure comes back under the cap', () => {
     const { display, view } = createMafTestEnvironment().createDisplay()
 
     view.zoomTo(100)
     display.setByteEstimate({
       bytes: 1_500_000,
-      measuredSpanBp: view.visibleBp,
+      viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
 
     view.zoomTo(50)
-    expect(view.visibleBp).toBeGreaterThan(20_000)
+    display.setByteEstimate({ bytes: 700_000, viewport: display.gateViewport! })
     expect(display.regionTooLarge).toBe(false)
+    expect(display.zoomCanReleaseGate).toBe(true)
   })
 
   it('is the estimate that decides, so a shallow alignment never gates down here', () => {
@@ -152,8 +141,8 @@ describe('MAF gating below the force-load floor', () => {
 
     view.zoomTo(20)
     // a 26-way over the same window: two orders of magnitude under the cap
-    display.setByteEstimate({ bytes: 40_000, measuredSpanBp: view.visibleBp })
-    expect(display.gateActive).toBe(true)
+    display.setByteEstimate({ bytes: 40_000, viewport: display.gateViewport! })
+    expect(display.byteGateActive).toBe(true)
     expect(display.regionTooLarge).toBe(false)
   })
 
@@ -167,7 +156,7 @@ describe('MAF gating below the force-load floor', () => {
     // did not move with the byte gate.
     view.zoomTo(20)
     expect(display.showSummary).toBe(false)
-    expect(display.gateActive).toBe(true)
+    expect(display.byteGateActive).toBe(true)
 
     // and the swap still happens at 20kb, independently of the gate
     view.zoomTo(100)
@@ -180,12 +169,12 @@ describe('MAF gating below the force-load floor', () => {
     view.zoomTo(20)
     display.setByteEstimate({
       bytes: 3_000_000,
-      measuredSpanBp: view.visibleBp,
+      viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
 
     display.setForceLoadTrack(true)
-    expect(display.gateActive).toBe(false)
+    expect(display.byteGateActive).toBe(false)
     expect(display.regionTooLarge).toBe(false)
   })
 
@@ -193,8 +182,7 @@ describe('MAF gating below the force-load floor', () => {
     const { display } = createMafTestEnvironment().createDisplay({
       skipWidth: true,
     })
-    expect(display.gateBelowForceLoadFloor).toBe(true)
-    expect(display.gateActive).toBe(false)
+    expect(display.byteGateActive).toBe(false)
     expect(display.regionTooLarge).toBe(false)
   })
 })
@@ -251,18 +239,18 @@ describe('MAF measures the tier it is about to fetch', () => {
     expect(display.showSummary).toBe(true)
     display.setByteEstimate({
       bytes: 20_000_000,
-      measuredSpanBp: view.visibleBp,
+      viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
     expect(display.regionTooLargeReason).toBe('Requested too much data (20 Mb)')
   })
 
   // The estimate is about a fetch, and past the swap it is about a fetch nobody
-  // is making. Rescaling it across the tier boundary banners the cheap summary
-  // read with the alignment's number — and wedges, because the fetch autoruns
-  // skip while `regionTooLarge` holds and the pre-flight is the only thing that
-  // re-measures. `RegionTooLargeMixin`'s ClearByteEstimateOnTierSwap autorun
-  // drops it, the same rule chromosome nav applies on the other axis.
+  // is making — the alignment's megabytes quoted for a summary read that would
+  // have measured ~60 kB. `RegionTooLargeMixin`'s ClearByteEstimateOnTierSwap
+  // autorun drops it, the same rule chromosome nav applies on the other axis.
+  // The while-gated re-measure would correct it a beat later, but only after the
+  // banner had already shown the wrong number against the wrong file.
   it('drops the detail estimate when the view zooms out into the summary tier', () => {
     const { display, view } = createMafTestEnvironment({
       summaryAdapter: { type: 'BigBedAdapter' },
@@ -273,7 +261,7 @@ describe('MAF measures the tier it is about to fetch', () => {
     // a 470-way over a gene-sized window, captured against the MAF adapter
     display.setByteEstimate({
       bytes: 3_000_000,
-      measuredSpanBp: view.visibleBp,
+      viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
 
@@ -293,7 +281,7 @@ describe('MAF measures the tier it is about to fetch', () => {
 
     view.zoomTo(200)
     expect(display.showSummary).toBe(true)
-    display.setByteEstimate({ bytes: 60_000, measuredSpanBp: view.visibleBp })
+    display.setByteEstimate({ bytes: 60_000, viewport: display.gateViewport! })
 
     view.zoomTo(20)
     expect(display.showSummary).toBe(false)
@@ -309,7 +297,7 @@ describe('MAF measures the tier it is about to fetch', () => {
     view.zoomTo(20)
     display.setByteEstimate({
       bytes: 3_000_000,
-      measuredSpanBp: view.visibleBp,
+      viewport: display.gateViewport!,
     })
 
     view.zoomTo(200)
@@ -325,8 +313,8 @@ describe('MAF measures the tier it is about to fetch', () => {
 
     view.zoomTo(100)
     // a real summary read at this zoom: no sequence, just per-species runs
-    display.setByteEstimate({ bytes: 60_000, measuredSpanBp: view.visibleBp })
-    expect(display.gateActive).toBe(true)
+    display.setByteEstimate({ bytes: 60_000, viewport: display.gateViewport! })
+    expect(display.byteGateActive).toBe(true)
     expect(display.regionTooLarge).toBe(false)
   })
 })
@@ -342,26 +330,29 @@ describe('MAF derived regionTooLarge', () => {
     view.zoomTo(100) // visibleBp ≈ 80_000 > AUTO_FORCE_LOAD_BP
     display.setByteEstimate({
       bytes: 1_500_000,
-      measuredSpanBp: view.visibleBp,
+      viewport: display.gateViewport!,
     })
     expect(view.visibleBp).toBeGreaterThan(20_000)
     expect(display.regionTooLarge).toBe(true)
   })
 
-  it('self-releases on zoom-in via scaling, without an imperative clear', () => {
+  // Zoom on its own is not a verdict. It used to be — the stored bytes were
+  // scaled by `visibleBp`, so halving the span halved the estimate whatever the
+  // index would really have charged. The banner now waits for the next
+  // measurement, which is the point.
+  it('does not release on zoom alone, without a fresh measurement', () => {
     const { display, view } = createMafTestEnvironment().createDisplay()
     view.zoomTo(100)
     display.setByteEstimate({
       bytes: 1_500_000,
-      measuredSpanBp: view.visibleBp,
+      viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
 
-    // half the span → scaled estimate ~750kB < 1MB cap, still above the floor:
-    // clears via the derived scaling, not the AUTO_FORCE_LOAD_BP shortcut.
     view.zoomTo(50)
     expect(view.visibleBp).toBeGreaterThan(20_000)
-    expect(display.regionTooLarge).toBe(false)
+    expect(display.estimatedFetchBytes).toBe(1_500_000)
+    expect(display.regionTooLarge).toBe(true)
   })
 
   it('does not flicker on pan: estimate survives a viewport shift that stays too large', () => {
@@ -369,7 +360,7 @@ describe('MAF derived regionTooLarge', () => {
     view.zoomTo(100)
     display.setByteEstimate({
       bytes: 1_500_000,
-      measuredSpanBp: view.visibleBp,
+      viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
 
@@ -384,7 +375,7 @@ describe('MAF derived regionTooLarge', () => {
     view.zoomTo(100)
     display.setByteEstimate({
       bytes: 1_500_000,
-      measuredSpanBp: view.visibleBp,
+      viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
 
@@ -397,7 +388,7 @@ describe('MAF derived regionTooLarge', () => {
     view.zoomTo(100)
     display.setByteEstimate({
       bytes: 1_500_000,
-      measuredSpanBp: view.visibleBp,
+      viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
 
@@ -407,18 +398,21 @@ describe('MAF derived regionTooLarge', () => {
     expect(display.regionTooLarge).toBe(false)
   })
 
-  it('force-load clears the banner even after zooming out past the capture', () => {
+  // Force-load exempts the track outright rather than raising a ceiling past
+  // some number, which is what keeps it working after the view has moved and a
+  // re-measure has come back larger. The per-axis ceiling system this replaced
+  // shipped exactly that bug on LD.
+  it('force-load clears the banner even after a bigger re-measure', () => {
     const { display, view } = createMafTestEnvironment().createDisplay()
     view.zoomTo(100)
     display.setByteEstimate({
       bytes: 1_500_000,
-      measuredSpanBp: view.visibleBp,
+      viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
 
-    // zoom out: the scaled estimate grows past the raw captured bytes, so a
-    // limit raised only past the raw bytes would leave the banner up
     view.zoomTo(400)
+    display.setByteEstimate({ bytes: 6_000_000, viewport: display.gateViewport! })
     expect(display.regionTooLarge).toBe(true)
 
     display.setForceLoadTrack(true)
@@ -427,15 +421,15 @@ describe('MAF derived regionTooLarge', () => {
 
   // afterAttach installs the onDisplayedRegionsChange autorun that drops the
   // cached estimate on chromosome navigation. Without it, a previous region's
-  // estimate would gate the new region against the wrong stats and, because
-  // FetchVisibleRegions gates on !regionTooLarge, wedge the banner permanently.
+  // estimate would gate the new region against the wrong stats until the
+  // while-gated re-measure landed — a banner quoting another chromosome's cost.
   it('clears the cached estimate on region navigation so it cannot wedge', () => {
     const { display, view } = createMafTestEnvironment().createDisplay()
 
     view.zoomTo(100)
     display.setByteEstimate({
       bytes: 1_500_000,
-      measuredSpanBp: view.visibleBp,
+      viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
 

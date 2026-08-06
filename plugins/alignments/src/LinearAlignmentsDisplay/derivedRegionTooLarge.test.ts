@@ -169,59 +169,49 @@ describe('alignments derived regionTooLarge', () => {
     view.zoomTo(100) // visibleBp ≈ 80_000 > AUTO_FORCE_LOAD_BP
     display.setByteEstimate({
       bytes: 1_500_000,
-      measuredSpanBp: view.visibleBp,
+      viewport: display.gateViewport!,
     })
     expect(view.visibleBp).toBeGreaterThan(20_000)
     expect(display.regionTooLarge).toBe(true)
   })
 
-  // The AUTO_FORCE_LOAD_BP floor lives in `gateActive` — the one place that
-  // answers "may anything gate right now", shared by the verdict, the pre-flight
-  // estimate RPC and canvas's worker budgets. Alignments opts out of it
-  // (`gateBelowForceLoadFloor`): read cost scales with depth, so a gene-sized
-  // window over a deep pileup is tens of MB, and the floor declined to look at
-  // exactly that fetch.
+  // The byte axis has no span floor: `byteGateActive` carries the opt-in and
+  // force-load and nothing else, so a gene-sized window over a deep pileup —
+  // tens of MB, and exactly the fetch the old floor declined to look at — is
+  // judged the same way a whole-chromosome one is.
   it('keeps gating below the AUTO_FORCE_LOAD_BP floor', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({ bytes: 1e9, measuredSpanBp: view.visibleBp })
+    display.setByteEstimate({ bytes: 1e9, viewport: display.gateViewport! })
     expect(display.regionTooLarge).toBe(true)
 
-    // 1e9 rescaled by 1/100 is still 10 Mb, over the cap — so zooming past the
-    // floor is no longer a way to download what the gate just refused.
+    // zooming past the floor is not a way to download what the gate just
+    // refused: the verdict stands until a measurement moves it, and the BAI
+    // quotes whole blocks so the next one will not.
     view.zoomTo(1)
     expect(view.visibleBp).toBeLessThan(20_000)
-    expect(display.gateActive).toBe(true)
+    expect(display.byteGateActive).toBe(true)
     expect(display.regionTooLarge).toBe(true)
   })
 
-  // Below the floor the estimate stops shrinking, because the BAI stops
-  // resolving span there (16kb bins) and the same bytes come down however far
-  // the user zooms. So the verdict below the floor IS the verdict at 20kb —
-  // which is what the opt-out's monotonicity argument already assumed, and what
-  // the banner already says by dropping "zoom in to see features" down here.
-  it('stops releasing on zoom below the floor, where the bytes stop falling', () => {
+  // Two re-measures that come back identical at very different zooms are what
+  // tells the banner to stop offering "zoom in to see features" — the BAI stops
+  // resolving span at its 16kb bins, so the same bytes come down however far the
+  // user goes. Evidence, not a threshold: nothing here knows about 20kb.
+  it('stops offering zoom once two measurements say it does not help', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setByteEstimate({ bytes: 1e9, measuredSpanBp: view.visibleBp })
+    display.setByteEstimate({ bytes: 1e9, viewport: display.gateViewport! })
+    expect(display.zoomCanReleaseGate).toBe(true)
 
-    // 1e9 floored at 20kb over an 80kb measurement is 250 Mb: still far over the
-    // cap, and zooming further cannot lower it
     view.zoomTo(0.01)
     expect(view.visibleBp).toBeLessThan(20_000)
-    expect(display.gateActive).toBe(true)
+    display.setByteEstimate({ bytes: 1e9, viewport: display.gateViewport! })
+    expect(display.byteGateActive).toBe(true)
     expect(display.zoomCanReleaseGate).toBe(false)
     expect(display.regionTooLarge).toBe(true)
 
-    // it is flat, not merely still-too-large: two very different zooms below the
-    // floor quote the identical number, so there is no aborted fetch cycle to
-    // flash the banner between them
-    const deep = display.estimatedBytesForVisibleSpan
-    view.zoomTo(1)
-    expect(view.visibleBp).toBeLessThan(20_000)
-    expect(display.estimatedBytesForVisibleSpan).toBe(deep)
-
-    // and force-load is the way out the banner offers
+    // and force-load is the way out the banner offers instead
     display.setForceLoadTrack(true)
     expect(display.regionTooLarge).toBe(false)
   })
@@ -235,22 +225,28 @@ describe('alignments derived regionTooLarge', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(1)
     expect(view.visibleBp).toBeLessThan(20_000)
-    display.setByteEstimate({ bytes: 300_000, measuredSpanBp: view.visibleBp })
-    expect(display.gateActive).toBe(true)
+    display.setByteEstimate({ bytes: 300_000, viewport: display.gateViewport! })
+    expect(display.byteGateActive).toBe(true)
     expect(display.regionTooLarge).toBe(false)
   })
 
-  it('self-releases on zoom-in via scaling, without an imperative clear', () => {
+  it('releases when a re-measure comes back under the cap', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
     display.setByteEstimate({
       bytes: 1_500_000,
-      measuredSpanBp: view.visibleBp,
+      viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
 
+    // zoom alone changes nothing — the stored number is a measurement, not a
+    // rate to scale
     view.zoomTo(50)
     expect(view.visibleBp).toBeGreaterThan(20_000)
+    expect(display.regionTooLarge).toBe(true)
+
+    // the while-gated re-measure lands and the BAI really does quote less here
+    display.setByteEstimate({ bytes: 700_000, viewport: display.gateViewport! })
     expect(display.regionTooLarge).toBe(false)
   })
 
@@ -259,7 +255,7 @@ describe('alignments derived regionTooLarge', () => {
     view.zoomTo(100)
     display.setByteEstimate({
       bytes: 1_500_000,
-      measuredSpanBp: view.visibleBp,
+      viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
 
@@ -273,7 +269,7 @@ describe('alignments derived regionTooLarge', () => {
     view.zoomTo(100)
     display.setByteEstimate({
       bytes: 1_500_000,
-      measuredSpanBp: view.visibleBp,
+      viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
 
@@ -286,7 +282,7 @@ describe('alignments derived regionTooLarge', () => {
     view.zoomTo(100)
     display.setByteEstimate({
       bytes: 1_500_000,
-      measuredSpanBp: view.visibleBp,
+      viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
 
@@ -301,7 +297,7 @@ describe('alignments derived regionTooLarge', () => {
     view.zoomTo(100)
     display.setByteEstimate({
       bytes: 1_500_000,
-      measuredSpanBp: view.visibleBp,
+      viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
 
@@ -318,7 +314,7 @@ describe('alignments derived regionTooLarge', () => {
     view.zoomTo(100)
     display.setByteEstimate({
       bytes: 1_500_000,
-      measuredSpanBp: view.visibleBp,
+      viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
 
@@ -338,7 +334,7 @@ describe('alignments derived regionTooLarge', () => {
     view.zoomTo(100)
     display.setByteEstimate({
       bytes: 1_500_000,
-      measuredSpanBp: view.visibleBp,
+      viewport: display.gateViewport!,
     })
     display.setForceLoadTrack(true)
     expect(display.regionTooLarge).toBe(false)
@@ -348,7 +344,7 @@ describe('alignments derived regionTooLarge', () => {
     ])
     display.setByteEstimate({
       bytes: 1_500_000,
-      measuredSpanBp: view.visibleBp,
+      viewport: display.gateViewport!,
     })
     expect(display.forceLoadTrack).toBe(true)
     expect(display.regionTooLarge).toBe(false)
@@ -366,7 +362,7 @@ describe('alignments derived regionTooLarge', () => {
 
     display.setByteEstimate({
       bytes: 1_500_000,
-      measuredSpanBp: view.visibleBp,
+      viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
     expect(display.featureIdUnderMouse).toBeUndefined()

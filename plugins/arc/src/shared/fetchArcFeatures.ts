@@ -9,10 +9,12 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // Fetches every arc feature for the current static blocks. Structured like
 // LinearWiggle/LD's global fetch: probe the compressed byte size
 // (CoreGetRegionByteEstimate), commit it, and let the DERIVED regionTooLarge
-// getter (ArcFetchModel) decide — no imperative flag, no bespoke gating. The
-// installGlobalFetchAutorun trigger (afterAttach.ts) gates on regionTooLarge +
-// dataCurrent, so this only runs when a fetch is actually needed; runFetch makes
-// it cancel-safe so a superseded run can't clobber fresh features.
+// getter (ArcFetchModel) decide — no imperative flag, no bespoke gating.
+// `regionTooLarge` is deliberately not re-checked here or in `shouldFetch`:
+// installGlobalFetchAutorun owns that skip, and it lets a blocked display run
+// this once per settled viewport so `byteGateBlocksFetch` below can re-measure.
+// That costs an index read and returns before any features are fetched. runFetch
+// makes it cancel-safe so a superseded run can't clobber fresh features.
 export async function fetchArcFeatures(self: ArcDisplayModel) {
   if (self.isMinimized) {
     return
@@ -22,7 +24,7 @@ export async function fetchArcFeatures(self: ArcDisplayModel) {
     return
   }
   const regions = view.staticBlocks.contentBlocks
-  if (self.regionTooLarge || !regions.length) {
+  if (!regions.length) {
     return
   }
   const { adapterConfig } = self

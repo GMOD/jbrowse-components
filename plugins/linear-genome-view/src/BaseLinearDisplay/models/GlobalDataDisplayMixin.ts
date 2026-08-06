@@ -119,6 +119,11 @@ interface GlobalFetchAutorunHost extends IStateTreeNode {
   isMinimized: boolean
   reloadCounter: number
   rpcProps?: () => unknown
+  // Both from `RegionTooLargeMixin`, which `GlobalFetchMixin` composes — so
+  // every display reaching this helper has them, and one that opts into no byte
+  // gate reads `regionTooLarge` as a literal false.
+  regionTooLarge: boolean
+  gateMeasurementStale: boolean
 }
 
 /**
@@ -190,6 +195,20 @@ export function installGlobalFetchAutorun(
       void self.isMinimized
       void rpcPropsCacheKey.get()
       void self.reloadCounter
+
+      // The too-large skip lives here rather than in each composer's
+      // `shouldFetch`, because it is not "don't fetch" — it is "don't fetch a
+      // viewport you have already measured". A blocked display still runs its
+      // fetch once per settled viewport, which costs an index read rather than a
+      // download (`byteGateBlocksFetch` measures and stops), and that is the only
+      // thing that ever re-measures while the banner holds. Skipping
+      // unconditionally, which is what the composers used to do, froze the
+      // estimate at the viewport it was captured over. See RegionTooLargeMixin
+      // §"Measurement follows the viewport". A display with no byte gate reads
+      // `regionTooLarge` as a literal false and never gets here.
+      if (self.regionTooLarge && !self.gateMeasurementStale) {
+        return
+      }
 
       // The only gate here is the display's own. Each `fetch` re-checks
       // isMinimized / view.initialized / an empty viewport for its direct

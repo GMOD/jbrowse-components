@@ -770,11 +770,12 @@ export default function stateModelFactory(
          * being a cycle — everything below that reads this getter
          * (`byteGateAdapterConfig`) sits downstream of the floor, never upstream.
          *
-         * The swap point is 20kb and stays there even though the byte gate no
-         * longer stops at the floor (`gateBelowForceLoadFloor` below): where the
-         * summary tier starts being the better *picture* is a rendering question,
-         * and where the detail fetch gets too expensive is a bytes question. They
-         * coincided before only because the gate had nothing to say below 20kb.
+         * The swap point is 20kb and stays there even though the byte gate has no
+         * floor at all any more: where the summary tier starts being the better
+         * *picture* is a rendering question, and where the detail fetch gets too
+         * expensive is a bytes question. They coincided before only because the
+         * gate had nothing to say below 20kb. `aboveForceLoadFloor` survives for
+         * this and for the density axis; nothing else compares against 20kb.
          *
          * Declared this early in the chain — well before the fetch and rendering
          * getters that are its obvious neighbours — because the band layout
@@ -2234,26 +2235,6 @@ export default function stateModelFactory(
             ? readConfObject(self.adapterConfig, 'summaryAdapter')
             : undefined
           return summary ?? self.adapterConfig
-        },
-        /**
-         * #getter
-         * Keep gating below `AUTO_FORCE_LOAD_BP`. The floor's premise is "a small
-         * span is a small fetch", and an alignment breaks it by its row count: a
-         * 470-way costs ~470 bases per reference base, so a gene-sized window is
-         * megabytes on the wire (measured 6-8MB compressed for a 40kb window at
-         * 470 rows — MAF_LARGE_BLOCKS.md, "Fetch dominates at 470-way"). The
-         * floor declines to look at exactly that fetch, so it downloads silently
-         * and freezes the tab for seconds with no size quoted and no way to
-         * decline.
-         *
-         * No row-count threshold is needed to make this safe for shallow
-         * alignments: the estimate is still the thing compared against
-         * `fetchSizeLimit`, and a 26-way at the same zoom is two orders of
-         * magnitude under it. The gate keeps self-releasing as you zoom in, just
-         * against the bytes rather than against a span the bytes don't follow.
-         */
-        get gateBelowForceLoadFloor() {
-          return true
         },
       }))
       .actions(self => ({

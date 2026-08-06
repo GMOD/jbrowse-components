@@ -133,6 +133,7 @@ import type {
 import type {
   ExportSvgDisplayOptions,
   FetchContext,
+  GateViewport,
   LegendItem,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -952,11 +953,14 @@ export default function baseStateModelFactory(
           //                                `showLabels` auto gate
           // Both gate budgets — `resolvedByteLimit()` and `maxFeatureDensity` —
           // are added at the CALL SITE, not here, so neither is a cache key. Both
-          // are resolved values that go undefined the moment nothing may gate,
-          // and `gateActive` folds in `AUTO_FORCE_LOAD_BP`: as cache keys they
-          // made zooming across the 20 kb floor a full `clearAllRpcData()` +
-          // refetch, blanking the display at exactly the zoom people settle a
-          // gene at, for data identical on both sides of it. The slots they
+          // are resolved values that go undefined the moment their axis stops
+          // gating, and `densityGateActive` still folds in `AUTO_FORCE_LOAD_BP`:
+          // as a cache key `maxFeatureDensity` made zooming across the 20 kb
+          // floor a full `clearAllRpcData()` + refetch, blanking the display at
+          // exactly the zoom people settle a gene at, for data identical on both
+          // sides of it. The byte budget no longer moves at that span at all —
+          // `byteGateActive` has no floor term — but it swings on force-load, so
+          // the same rule holds for the same reason. The slots they
           // resolve from — fetchSizeLimit/forceLoad/maxFeatureScreenDensity —
           // deliberately STAY in the snapshot, so a config change to either
           // budget still refetches. Losing the floor as a trigger loses nothing:
@@ -2392,7 +2396,7 @@ export default function baseStateModelFactory(
 
         function applyFetchResults(
           fetches: RegionFetch[],
-          measuredSpanBp: number,
+          viewport: GateViewport,
         ) {
           for (const {
             displayedRegionIndex,
@@ -2409,7 +2413,7 @@ export default function baseStateModelFactory(
           // blanked by the cross-region total). `RegionFetch` already IS the
           // measurement shape — same helper the multi-row display uses, so the two
           // canvas gates can't drift.
-          self.commitGateMeasurements(fetches, measuredSpanBp)
+          self.commitGateMeasurements(fetches, viewport)
         }
 
         return {
@@ -2438,10 +2442,10 @@ export default function baseStateModelFactory(
             // keys.
             const byteLimit = self.resolvedByteLimit()
             const maxFeatureDensity = self.maxFeatureDensity
-            // captured here, not at commit time: the gate rescales the estimate
-            // from the span it was measured over, and a mid-fetch zoom would
-            // otherwise anchor it to the wrong one
-            const measuredSpanBp = view.visibleBp
+            const viewport = self.gateViewport!
+            // captured here, not at commit time: the measurement is labelled
+            // with the viewport it describes, and a mid-fetch zoom would
+            // otherwise label it with one it never covered
             // Drop cached entries (rpcDataMap + density stats) for regions no
             // longer visible. Keeps on-screen data so labels stay up during
             // the refetch window without letting either map grow unboundedly
@@ -2466,7 +2470,7 @@ export default function baseStateModelFactory(
               if (ctx.isStale()) {
                 return
               }
-              applyFetchResults(results, measuredSpanBp)
+              applyFetchResults(results, viewport)
             })
           },
         }

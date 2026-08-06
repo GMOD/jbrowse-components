@@ -18,13 +18,13 @@ beforeEach(() => {
 const delay = { timeout: 20000 }
 const o = [{}, delay]
 
-// Alignments sets `gateBelowForceLoadFloor`, so zooming past AUTO_FORCE_LOAD_BP
-// no longer waves an over-budget pileup through. That used to be the way out
-// here, and it was never real: read cost scales with depth, and the index is
-// flat below its 16kb bins, so the same bytes come down however far you zoom.
-// The banner has to stop offering it — otherwise it prints advice that cannot
-// work. The VCF case below still covers "zoom in to see", for the displays that
-// keep the floor.
+// The byte gate has no span floor, so zooming past 20kb no longer waves an
+// over-budget pileup through. That used to be the way out here, and it was never
+// real: read cost scales with depth, and a BAI quotes whole blocks, so the same
+// bytes come down however far you zoom. The banner stops offering zoom once two
+// measurements say it does not move the number — otherwise it prints advice that
+// cannot work. The VCF case below still covers "zoom in to see", where zooming
+// really does shrink the fetch.
 test('test stats estimation pileup, zooming past the floor keeps the banner', async () => {
   const { view, findAllByText, findByTestId, queryAllByText } =
     await createView()

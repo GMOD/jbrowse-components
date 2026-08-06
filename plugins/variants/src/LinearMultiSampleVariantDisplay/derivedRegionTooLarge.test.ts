@@ -15,23 +15,32 @@ describe('MultiSampleVariant derived regionTooLarge', () => {
     view.zoomTo(100) // visibleBp ≈ 80_000 > AUTO_FORCE_LOAD_BP
     display.setByteEstimate({
       bytes: 1_500_000,
-      measuredSpanBp: view.visibleBp,
+      viewport: display.gateViewport!,
     })
     expect(view.visibleBp).toBeGreaterThan(20_000)
     expect(display.regionTooLarge).toBe(true)
   })
 
-  it('self-releases on zoom-in via scaling, without an imperative clear', () => {
+  // Zoom is not a verdict: the stored figure is what the index quoted for the
+  // viewport it was taken at, not a rate to scale by span. The fetch autorun
+  // re-runs once per settled viewport while the banner holds, and the
+  // measurement it takes is what releases it.
+  it('holds until a fresh measurement releases it, not on zoom alone', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
     display.setByteEstimate({
       bytes: 1_500_000,
-      measuredSpanBp: view.visibleBp,
+      viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
 
     view.zoomTo(50)
-    expect(view.visibleBp).toBeGreaterThan(20_000)
+    expect(display.estimatedFetchBytes).toBe(1_500_000)
+    expect(display.regionTooLarge).toBe(true)
+    // ...and the autorun knows to go and ask again
+    expect(display.gateMeasurementStale).toBe(true)
+
+    display.setByteEstimate({ bytes: 700_000, viewport: display.gateViewport! })
     expect(display.regionTooLarge).toBe(false)
   })
 
@@ -40,7 +49,7 @@ describe('MultiSampleVariant derived regionTooLarge', () => {
     view.zoomTo(100)
     display.setByteEstimate({
       bytes: 1_500_000,
-      measuredSpanBp: view.visibleBp,
+      viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
 
@@ -54,7 +63,7 @@ describe('MultiSampleVariant derived regionTooLarge', () => {
     view.zoomTo(100)
     display.setByteEstimate({
       bytes: 1_500_000,
-      measuredSpanBp: view.visibleBp,
+      viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
 
@@ -67,7 +76,7 @@ describe('MultiSampleVariant derived regionTooLarge', () => {
     view.zoomTo(100)
     display.setByteEstimate({
       bytes: 1_500_000,
-      measuredSpanBp: view.visibleBp,
+      viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
 
@@ -82,7 +91,7 @@ describe('MultiSampleVariant derived regionTooLarge', () => {
     view.zoomTo(100)
     display.setByteEstimate({
       bytes: 1_500_000,
-      measuredSpanBp: view.visibleBp,
+      viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
 
@@ -99,7 +108,7 @@ describe('MultiSampleVariant derived regionTooLarge', () => {
     view.zoomTo(100)
     display.setByteEstimate({
       bytes: 1_500_000,
-      measuredSpanBp: view.visibleBp,
+      viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
 

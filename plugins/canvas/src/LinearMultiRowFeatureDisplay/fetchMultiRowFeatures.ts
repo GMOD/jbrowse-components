@@ -1,4 +1,4 @@
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { fetchEachRegion } from '@jbrowse/plugin-linear-genome-view'
 
@@ -10,7 +10,7 @@ import type { Region, RpcStatus } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type {
   FetchContext,
-  LinearGenomeViewModel,
+  GateViewport,
 } from '@jbrowse/plugin-linear-genome-view'
 
 type Needed = { region: Region; displayedRegionIndex: number }[]
@@ -45,9 +45,10 @@ interface FetchSelf extends IStateTreeNode {
   ) => Promise<void>
   makeRegionStatusCallback: (key: number) => (status: RpcStatus) => void
   setRpcData: (regionIndex: number, data: MultiRowRegionData) => void
+  gateViewport: GateViewport | undefined
   commitGateMeasurements: (
     measurements: RegionGateMeasurement[],
-    measuredSpanBp: number,
+    viewport: GateViewport,
   ) => void
 }
 
@@ -59,10 +60,9 @@ interface FetchSelf extends IStateTreeNode {
 export function fetchMultiRowFeatures(self: FetchSelf, needed: Needed) {
   const { rpcManager } = getSession(self)
   const sessionId = getRpcSessionId(self)
-  const view = getContainingView(self) as LinearGenomeViewModel
-  // captured before the fetch: the gate rescales the estimate from the span it
-  // was measured over, so a mid-fetch zoom must not re-anchor it
-  const measuredSpanBp = view.visibleBp
+  // captured before the fetch: the measurement is labelled with the viewport it
+  // describes, so a mid-fetch zoom must not re-label it
+  const viewport = self.gateViewport!
   const byteLimit = self.resolvedByteLimit()
   // Per-region gate measurements, keyed by the displayedRegionIndex onResult
   // reports back. A region whose fetch was skipped as stale never lands here.
@@ -99,7 +99,7 @@ export function fetchMultiRowFeatures(self: FetchSelf, needed: Needed) {
           measurements.push({ displayedRegionIndex, region, result })
         }
       }
-      self.commitGateMeasurements(measurements, measuredSpanBp)
+      self.commitGateMeasurements(measurements, viewport)
     },
   })
 }

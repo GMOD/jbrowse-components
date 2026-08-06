@@ -254,12 +254,10 @@ describe('FetchVisibleRegions autorun', () => {
     expect(mockRpcCall.mock.calls.length).toBe(callCount)
   })
 
-  // The floor short-circuits `gateActive`, which is also what stops the estimate
-  // RPC — nothing downstream could act on an estimate taken below it, so paying
-  // for one is pure waste.
-  // Alignments sets `gateBelowForceLoadFloor`: read cost scales with depth, so a
+  // The byte axis has no span floor — `byteGateActive` carries the opt-in and
+  // force-load and nothing else — because read cost scales with depth, so a
   // gene-sized window over an amplicon or mitochondrial pileup is tens of MB and
-  // the floor declined to look at it. The estimate is still what decides, so
+  // a floor would decline to look at it. The estimate is still what decides, so
   // ordinary data at this zoom measures small and loads.
   it('still measures below the AUTO_FORCE_LOAD_BP floor, and loads when it fits', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
@@ -383,8 +381,8 @@ describe('FetchVisibleRegions autorun', () => {
     })
 
     // Navigate to a small region whose measurement fits. The release is the
-    // estimate, not the zoom: `gateBelowForceLoadFloor` means dropping under
-    // 20kb no longer waves the fetch through on its own.
+    // estimate, not the zoom: dropping under 20kb does not wave the fetch
+    // through on its own, and nothing scales the stored number by span.
     mockRpcCall.mockImplementation((_sid: string, method: string) => {
       if (method === 'CoreGetRegionByteEstimate') {
         return Promise.resolve(50_000)

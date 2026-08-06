@@ -2,7 +2,7 @@ import {
   TOO_MANY_FEATURES_REASON,
   bytesTooLargeReason,
   evaluateRegionTooLarge,
-  rescaleByteEstimateToVisibleSpan,
+  nextByteEstimate,
   resolveByteLimit,
 } from './regionTooLargeUtils.ts'
 
@@ -45,141 +45,96 @@ describe('resolveByteLimit', () => {
   })
 })
 
-describe('rescaleByteEstimateToVisibleSpan', () => {
-  it('returns undefined with no measurement, or an unmeasurable one', () => {
-    expect(
-      rescaleByteEstimateToVisibleSpan({
-        byteEstimate: undefined,
-        visibleBp: 5,
-      }),
-    ).toBeUndefined()
-    // an adapter with no index estimate: "unmeasurable", not zero bytes
-    expect(
-      rescaleByteEstimateToVisibleSpan({
-        byteEstimate: { bytes: undefined, measuredSpanBp: 10 },
-        visibleBp: 5,
-      }),
-    ).toBeUndefined()
-    expect(
-      rescaleByteEstimateToVisibleSpan({
-        byteEstimate: { bytes: 0, measuredSpanBp: 10 },
-        visibleBp: 5,
-      }),
-    ).toBeUndefined()
-  })
+// A measurement is about a viewport: the span it was taken at, and an identity
+// for the exact stretch of genome it covered. Only the span matters to
+// `nextByteEstimate`, so the key is just something distinguishable.
+const vp = (spanBp: number) => ({ spanBp, key: `k${spanBp}` })
 
-  // `setByteEstimate` writes the estimate and its span as one value, so an
-  // estimate with no span is unrepresentable; a zero span is the only live case
-  // and must not divide.
-  it('yields undefined when the measured span is zero', () => {
+// `zoomIneffective` is the banner's only honest source for "will zooming help",
+// and it is evidence rather than a threshold: an index quotes whole blocks, so
+// whether a given file's fetch shrinks with span is a property of that file. See
+// the measurements on AUTO_FORCE_LOAD_BP.
+describe('nextByteEstimate', () => {
+  it('never calls zoom ineffective on the first measurement', () => {
     expect(
-      rescaleByteEstimateToVisibleSpan({
-        byteEstimate: { bytes: 1000, measuredSpanBp: 0 },
-        visibleBp: 5,
-      }),
-    ).toBeUndefined()
-  })
-
-  // Spans here are deliberately realistic (above AUTO_FORCE_LOAD_BP), because
-  // the proportional model only holds up there — see the clamp cases below.
-  it('scales proportionally: zoom-in (smaller visibleBp) shrinks the estimate', () => {
-    // measured 1MB over 400kb; zooming in to 100kb → quarter the data
-    expect(
-      rescaleByteEstimateToVisibleSpan({
-        byteEstimate: { bytes: 1_000_000, measuredSpanBp: 400_000 },
-        visibleBp: 100_000,
-      }),
-    ).toBe(250_000)
-  })
-
-  it('is a no-op at the span it was measured over', () => {
-    expect(
-      rescaleByteEstimateToVisibleSpan({
-        byteEstimate: { bytes: 1_000_000, measuredSpanBp: 100_000 },
-        visibleBp: 100_000,
-      }),
-    ).toBe(1_000_000)
-  })
-
-  // The whole point of scaling: a too-large verdict measured while zoomed out
-  // must self-release once the user zooms in, without any imperative re-clear.
-  it('lets the too-large verdict self-release on zoom-in', () => {
-    const byteLimit = 500_000
-    const byteEstimate = { bytes: 2_000_000, measuredSpanBp: 200_000 }
-
-    const zoomedOut = evaluateRegionTooLarge({
-      estimatedBytesForVisibleSpan: rescaleByteEstimateToVisibleSpan({
-        byteEstimate,
-        visibleBp: 200_000,
-      }),
-      byteLimit,
+      nextByteEstimate(undefined, { bytes: 4_000_000, viewport: vp(100_000) }),
+    ).toEqual({
+      bytes: 4_000_000,
+      measuredSpanBp: 100_000,
+      zoomIneffective: false,
     })
-    expect(zoomedOut.tooLarge).toBe(true)
-
-    // zoom in 5× (200kb → 40kb, still above the floor): 400_000 < the limit
-    const zoomedIn = evaluateRegionTooLarge({
-      estimatedBytesForVisibleSpan: rescaleByteEstimateToVisibleSpan({
-        byteEstimate,
-        visibleBp: 40_000,
-      }),
-      byteLimit,
-    })
-    expect(zoomedIn.tooLarge).toBe(false)
   })
 
-  // Below AUTO_FORCE_LOAD_BP an index reports whole blocks, so the same query
-  // costs the same bytes at every span inside one block and the proportional
-  // model is fiction. Both spans are floored there, which only a display that
-  // opted out of the floor can ever reach — everything else has `gateActive`
-  // false below it.
-  describe('the estimate goes flat below AUTO_FORCE_LOAD_BP', () => {
-    const byteEstimate = { bytes: 4_000_000, measuredSpanBp: 200_000 }
-
-    it('stops shrinking once the visible span drops under the floor', () => {
-      // 40kb is above the floor and still scales: a fifth of the measurement
-      expect(
-        rescaleByteEstimateToVisibleSpan({ byteEstimate, visibleBp: 40_000 }),
-      ).toBe(800_000)
-      // 20kb is the floor exactly
-      expect(
-        rescaleByteEstimateToVisibleSpan({ byteEstimate, visibleBp: 20_000 }),
-      ).toBe(400_000)
-      // and below it every zoom quotes that same number
-      for (const visibleBp of [10_000, 1_000, 200]) {
-        expect(
-          rescaleByteEstimateToVisibleSpan({ byteEstimate, visibleBp }),
-        ).toBe(400_000)
-      }
+  // The failure this exists to name: the user zoomed 8x and the index quoted the
+  // same blocks, so "zoom in to see features" is advice that cannot work.
+  it('marks zoom ineffective when a big zoom-in does not move the bytes', () => {
+    const first = nextByteEstimate(undefined, {
+      bytes: 306_719,
+      viewport: vp(100_000),
     })
+    expect(
+      nextByteEstimate(first, { bytes: 306_719, viewport: vp(12_500) })
+        .zoomIneffective,
+    ).toBe(true)
+  })
 
-    // The denominator is floored too. Without that, an estimate captured below
-    // the floor would be scaled UP by the ratio of the floor to the span it was
-    // measured at — a 4× inflation for a measurement taken at 5kb.
-    it('does not inflate an estimate that was measured below the floor', () => {
-      const measuredDeep = { bytes: 300_000, measuredSpanBp: 5_000 }
-      expect(
-        rescaleByteEstimateToVisibleSpan({
-          byteEstimate: measuredDeep,
-          visibleBp: 2_000,
-        }),
-      ).toBe(300_000)
-      expect(
-        rescaleByteEstimateToVisibleSpan({
-          byteEstimate: measuredDeep,
-          visibleBp: 20_000,
-        }),
-      ).toBe(300_000)
+  it('leaves it clear while zooming still buys something', () => {
+    const first = nextByteEstimate(undefined, {
+      bytes: 3_968_729,
+      viewport: vp(250_000_000),
     })
+    // one halving bought 47% on the whole-genome hs37d5 file
+    expect(
+      nextByteEstimate(first, { bytes: 2_117_393, viewport: vp(125_000_000) })
+        .zoomIneffective,
+    ).toBe(false)
+  })
 
-    // The zero-span guard runs on the raw value, before any flooring, so an
-    // unrepresentable estimate stays undefined rather than becoming divisible.
-    it('still refuses a zero measured span', () => {
-      expect(
-        rescaleByteEstimateToVisibleSpan({
-          byteEstimate: { bytes: 1000, measuredSpanBp: 0 },
-          visibleBp: 100_000,
-        }),
-      ).toBeUndefined()
+  // A pan re-measures at about the same span. Two such measurements say nothing
+  // about zoom either way, so neither set the flag nor clear one already earned.
+  it('treats a same-span or zoomed-out measurement as no evidence', () => {
+    const stuck = {
+      bytes: 306_719,
+      measuredSpanBp: 12_500,
+      zoomIneffective: true,
+    }
+    expect(
+      nextByteEstimate(stuck, { bytes: 306_719, viewport: vp(12_400) })
+        .zoomIneffective,
+    ).toBe(true)
+    expect(
+      nextByteEstimate(stuck, { bytes: 400_000, viewport: vp(100_000) })
+        .zoomIneffective,
+    ).toBe(true)
+  })
+
+  // ...but a zoom-in that DOES shrink the fetch takes the advice back, so a
+  // track that crosses out of one big block starts offering zoom again.
+  it('clears the flag when a later zoom-in does move the bytes', () => {
+    const stuck = {
+      bytes: 306_719,
+      measuredSpanBp: 12_500,
+      zoomIneffective: true,
+    }
+    expect(
+      nextByteEstimate(stuck, { bytes: 213_443, viewport: vp(6_250) })
+        .zoomIneffective,
+    ).toBe(false)
+  })
+
+  // An adapter with no index estimate is "unmeasurable", not "unchanged" — it
+  // must not read as evidence that zooming is hopeless.
+  it('says nothing about zoom when either measurement is unmeasurable', () => {
+    const first = nextByteEstimate(undefined, {
+      bytes: 306_719,
+      viewport: vp(100_000),
+    })
+    expect(
+      nextByteEstimate(first, { bytes: undefined, viewport: vp(10_000) }),
+    ).toEqual({
+      bytes: undefined,
+      measuredSpanBp: 10_000,
+      zoomIneffective: false,
     })
   })
 })
@@ -196,7 +151,7 @@ describe('evaluateRegionTooLarge', () => {
   it('gates on bytes over the limit', () => {
     expect(
       evaluateRegionTooLarge({
-        estimatedBytesForVisibleSpan: 2_000_000,
+        estimatedFetchBytes: 2_000_000,
         byteLimit: 1_000_000,
       }),
     ).toEqual({
@@ -208,7 +163,7 @@ describe('evaluateRegionTooLarge', () => {
   it('passes when bytes are within the limit', () => {
     expect(
       evaluateRegionTooLarge({
-        estimatedBytesForVisibleSpan: 500_000,
+        estimatedFetchBytes: 500_000,
         byteLimit: 1_000_000,
       }),
     ).toEqual({ tooLarge: false, reason: '' })
@@ -219,7 +174,7 @@ describe('evaluateRegionTooLarge', () => {
   it('does not gate on density when densityTooLarge is omitted (byte-only)', () => {
     expect(
       evaluateRegionTooLarge({
-        estimatedBytesForVisibleSpan: 500_000,
+        estimatedFetchBytes: 500_000,
         byteLimit: 1_000_000,
       }),
     ).toEqual({ tooLarge: false, reason: '' })
@@ -236,7 +191,7 @@ describe('evaluateRegionTooLarge', () => {
   it('bytes take precedence over density for the reason text', () => {
     expect(
       evaluateRegionTooLarge({
-        estimatedBytesForVisibleSpan: 2_000_000,
+        estimatedFetchBytes: 2_000_000,
         byteLimit: 1_000_000,
         densityTooLarge: true,
       }),
@@ -246,13 +201,14 @@ describe('evaluateRegionTooLarge', () => {
   it('ignores bytes when no limit is provided (density-only path)', () => {
     expect(
       evaluateRegionTooLarge({
-        estimatedBytesForVisibleSpan: 2_000_000,
+        estimatedFetchBytes: 2_000_000,
         densityTooLarge: false,
       }),
     ).toEqual({ tooLarge: false, reason: '' })
   })
 
-  // The AUTO_FORCE_LOAD_BP floor, force-load and `alwaysRender` adapters are
-  // NOT this function's business — they live in `gateActive`, pinned per display
-  // in each `derivedRegionTooLarge.test.ts`.
+  // Force-load, the opt-in, and the AUTO_FORCE_LOAD_BP floor on the density
+  // axis are NOT this function's business — they live in `byteGateActive` /
+  // `densityGateActive`, pinned per display in each
+  // `derivedRegionTooLarge.test.ts`.
 })

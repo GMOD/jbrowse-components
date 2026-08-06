@@ -8,7 +8,10 @@ import { screenDensity } from '../LinearBasicDisplay/baseModelHelpers.ts'
 
 import type { RegionDensityStats } from '../LinearBasicDisplay/baseModelHelpers.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  GateViewport,
+  LinearGenomeViewModel,
+} from '@jbrowse/plugin-linear-genome-view'
 
 // This ESM package builds without @types/node, but consuming bundlers still
 // string-replace `process.env.NODE_ENV`, so keep the reference and give it a
@@ -25,11 +28,12 @@ declare const process: { env: { NODE_ENV?: string } }
  */
 interface GateHost {
   configuration: AnyConfigurationModel
-  gateActive: boolean
-  setByteEstimate: (estimate: {
+  densityGateActive: boolean
+  setByteEstimate: (measurement: {
     bytes: number | undefined
-    measuredSpanBp: number
+    viewport: GateViewport
   }) => void
+  setGateMeasuredViewport: (viewport: GateViewport) => void
 }
 
 function host(self: object) {
@@ -155,12 +159,13 @@ export default function CanvasFeatureGateMixin() {
        * #getter
        * The density budget passed to the worker and used by the derived verdict:
        * undefined (gate off) when nothing gates, otherwise the config. Force-load
-       * reaches this through the shared `gateActive`, so approving a track's
-       * *size* no longer half-disables its *density* axis by side effect — both
-       * axes read the one boolean now.
+       * and the `AUTO_FORCE_LOAD_BP` floor both reach this through the shared
+       * `densityGateActive`, so approving a track's *size* no longer
+       * half-disables its *density* axis by side effect, and the floor is
+       * compared in one place rather than restated here.
        */
       get maxFeatureDensity(): number | undefined {
-        return !self.densityGateEnabled || !host(self).gateActive
+        return !self.densityGateEnabled || !host(self).densityGateActive
           ? undefined
           : getConf(host(self), 'maxFeatureScreenDensity')
       },
@@ -213,13 +218,21 @@ export default function CanvasFeatureGateMixin() {
        */
       commitGateMeasurements(
         measurements: RegionGateMeasurement[],
-        measuredSpanBp: number,
+        viewport: GateViewport,
       ) {
         // Nothing measured (every region's fetch went stale) — leave the
-        // previous estimate alone rather than replacing it with an empty one.
+        // previous estimate alone rather than replacing it with an empty one,
+        // and don't claim this viewport has been asked about either, or a
+        // blocked display would stop re-measuring after a superseded fetch.
         if (measurements.length === 0) {
           return
         }
+        // Stamped whatever the batch learned. A dense region short-circuits on
+        // its feature count and reports no bytes, but it did ask the adapter
+        // about this viewport, and that is what `gateMeasurementStale` answers —
+        // keying the stamp on bytes instead makes a density-blocked display
+        // refetch forever.
+        host(self).setGateMeasuredViewport(viewport)
         const byteCounts: number[] = []
         for (const { displayedRegionIndex, region, result } of measurements) {
           const { bytes, featureCount } = result
@@ -234,22 +247,20 @@ export default function CanvasFeatureGateMixin() {
           }
         }
         // No byte count in the batch — either the adapter has no index estimate,
-        // or the worker was handed no budget to measure against because the gate
-        // was inactive for this fetch (under the force-load floor, force-loaded).
-        // Either way this fetch measured nothing, so leave the previous estimate
-        // and the span it was anchored to untouched rather than overwriting them
-        // with an unmeasurable one. Overwriting used to cost a wasted round trip
-        // every time the gate re-activated: zooming in past the floor wiped a
-        // perfectly good estimate, so zooming back out had no verdict to release
-        // the banner from and had to re-derive it from a fresh worker rejection.
-        // The pre-flight path never had the problem — `byteGateBlocksFetch`
-        // skips the RPC outright when nothing could gate, and so writes nothing.
+        // or the worker was handed no budget to measure against because the byte
+        // gate was inactive for this fetch (force-loaded). Either way this fetch
+        // measured nothing, so leave the previous estimate and the span it was
+        // taken at untouched rather than overwriting them with an unmeasurable
+        // one: an empty write would also reset the zoom-effectiveness comparison
+        // that `nextByteEstimate` builds across two real measurements. The
+        // pre-flight path never had the problem — `byteGateBlocksFetch` skips the
+        // RPC outright when nothing could gate, and so writes nothing.
         if (byteCounts.length > 0) {
           host(self).setByteEstimate({
             // Per-region max, not sum: each region is gated against the same
             // per-region budget.
             bytes: Math.max(...byteCounts),
-            measuredSpanBp,
+            viewport,
           })
         }
       },

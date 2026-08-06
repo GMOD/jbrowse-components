@@ -35,54 +35,55 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
     view.zoomTo(100) // visibleBp > AUTO_FORCE_LOAD_BP
     display.setByteEstimate({
       bytes: 8_000_000,
-      measuredSpanBp: view.visibleBp,
+      viewport: display.gateViewport!,
     }) // over the 5MB config
     expect(view.visibleBp).toBeGreaterThan(20_000)
     expect(display.regionTooLarge).toBe(true)
   })
 
-  it('self-releases on zoom-in via scaling, without an imperative clear', () => {
+  it('releases when a re-measure comes back under the cap', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
     display.setByteEstimate({
       bytes: 8_000_000,
-      measuredSpanBp: view.visibleBp,
+      viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
 
+    // zoom alone is not a verdict — the stored figure is what the index quoted,
+    // not a rate to scale by span
     view.zoomTo(20)
+    expect(display.regionTooLarge).toBe(true)
+
+    display.setByteEstimate({ bytes: 1_600_000, viewport: display.gateViewport! })
     expect(display.regionTooLarge).toBe(false)
   })
 
-  // Regression: the estimate must be anchored to the span it was MEASURED over,
-  // not to whatever is on screen when the reply lands. The two coincide at a
-  // settled viewport, which is why every other test here can't tell them apart —
-  // this one zooms between the measurement and the commit so they diverge. Both
-  // spans stay above AUTO_FORCE_LOAD_BP so the floor isn't what clears the
-  // banner. Re-anchored at commit time the estimate would read the full 7.5MB,
-  // stay over the 5MB cap, and wedge: `FetchVisibleRegions` skips while
-  // `regionTooLarge` holds, so nothing would refetch to correct it.
-  it('anchors the estimate to the measured span, not the span at commit time', () => {
+  // The estimate carries the span it was MEASURED over, not whatever is on
+  // screen when the reply lands. The two coincide at a settled viewport, which
+  // is why every other test here can't tell them apart — this one zooms between
+  // the measurement and the commit so they diverge. Nothing divides by that span
+  // any more, but `zoomIneffective` compares consecutive ones, so labelling a
+  // measurement with a span it never covered would make the next zoom look like
+  // it bought nothing and drop "zoom in to see features" off the banner.
+  it('labels the estimate with the measured span, not the span at commit time', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(200)
-    const measuredSpanBp = view.visibleBp
+    const issued = display.gateViewport!
 
     // the user keeps zooming while the fetch is in flight
     view.zoomTo(100)
-    expect(view.visibleBp).toBeLessThan(measuredSpanBp)
-    expect(view.visibleBp).toBeGreaterThan(20_000)
+    expect(view.visibleBp).toBeLessThan(issued.spanBp)
 
-    display.setByteEstimate({
-      bytes: 7_500_000,
-      measuredSpanBp: measuredSpanBp,
-    })
+    display.setByteEstimate({ bytes: 7_500_000, viewport: issued })
 
-    expect(display.byteEstimate?.measuredSpanBp).toBe(measuredSpanBp)
-    expect(display.estimatedBytesForVisibleSpan).toBeCloseTo(
-      (7_500_000 * view.visibleBp) / measuredSpanBp,
-    )
+    expect(display.byteEstimate?.measuredSpanBp).toBe(issued.spanBp)
+    expect(display.estimatedFetchBytes).toBe(7_500_000)
     expect(display.resolvedByteLimit()).toBe(5_000_000)
-    expect(display.regionTooLarge).toBe(false)
+    expect(display.regionTooLarge).toBe(true)
+    // the mid-fetch zoom is not evidence about zoom, because the number it
+    // produced describes the wider span
+    expect(display.zoomCanReleaseGate).toBe(true)
   })
 
   it('honors an adapter-declared fetchSizeLimit over the display config', () => {
@@ -93,7 +94,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
     // 8MB is over the 5MB display config but under the 50MB adapter limit
     display.setByteEstimate({
       bytes: 8_000_000,
-      measuredSpanBp: view.visibleBp,
+      viewport: display.gateViewport!,
     })
     expect(display.resolvedByteLimit()).toBe(50_000_000)
     expect(display.regionTooLarge).toBe(false)
@@ -104,7 +105,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
     view.zoomTo(100)
     display.setByteEstimate({
       bytes: 8_000_000,
-      measuredSpanBp: view.visibleBp,
+      viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
 
@@ -119,7 +120,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
     view.zoomTo(100)
     display.setByteEstimate({
       bytes: 8_000_000,
-      measuredSpanBp: view.visibleBp,
+      viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
 
@@ -135,7 +136,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
     view.zoomTo(100)
     display.setByteEstimate({
       bytes: 8_000_000,
-      measuredSpanBp: view.visibleBp,
+      viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
 
@@ -148,24 +149,23 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
     expect(display.regionTooLarge).toBe(false)
   })
 
-  // A fetch issued while the gate is inactive (under the force-load floor, or
-  // force-loaded) hands the worker no byte budget, so the worker measures
-  // nothing and every result comes back with `bytes: undefined`. That is "not
-  // measured", not "measured as unmeasurable" — committing it would wipe a good
-  // estimate, and the next zoom back out would have no verdict to raise the
-  // banner from until a fresh worker rejection came back. The pre-flight path
-  // never had this: `byteGateBlocksFetch` skips the RPC and writes nothing.
+  // A fetch issued while the byte gate is inactive — force-loaded — hands the
+  // worker no budget, so the worker measures nothing and every result comes back
+  // with `bytes: undefined`. That is "not measured", not "measured as
+  // unmeasurable": committing it would wipe a good estimate, and putting the
+  // track back under the gate would have no verdict to raise the banner from
+  // until a fresh worker rejection came back. It would also reset the
+  // zoom-effectiveness comparison, which needs two real measurements. The
+  // pre-flight path never had this — `byteGateBlocksFetch` skips the RPC and
+  // writes nothing.
   it('keeps a good estimate when a batch measured no bytes', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    const measuredSpanBp = view.visibleBp
-    display.setByteEstimate({ bytes: 8_000_000, measuredSpanBp })
+    const issued = display.gateViewport!
+    display.setByteEstimate({ bytes: 8_000_000, viewport: issued })
     expect(display.regionTooLarge).toBe(true)
 
-    // zoom under AUTO_FORCE_LOAD_BP: nothing gates, so the fetch carries no
-    // budget and the worker reports no bytes
-    view.zoomTo(1)
-    expect(view.visibleBp).toBeLessThan(20_000)
+    display.setForceLoadTrack(true)
     expect(display.resolvedByteLimit()).toBeUndefined()
     display.commitGateMeasurements(
       [
@@ -175,13 +175,17 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
           result: { featureCount: 12 },
         },
       ],
-      view.visibleBp,
+      display.gateViewport!,
     )
-    expect(display.byteEstimate).toEqual({ bytes: 8_000_000, measuredSpanBp })
+    expect(display.byteEstimate).toEqual({
+      bytes: 8_000_000,
+      measuredSpanBp: issued.spanBp,
+      zoomIneffective: false,
+    })
 
-    // so zooming back out raises the banner straight off the kept estimate,
-    // with no round trip
-    view.zoomTo(100)
+    // so putting the track back under the gate raises the banner straight off
+    // the kept estimate, with no round trip
+    display.setForceLoadTrack(false)
     expect(display.regionTooLarge).toBe(true)
   })
 
@@ -190,7 +194,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
     view.zoomTo(100)
     display.setByteEstimate({
       bytes: 8_000_000,
-      measuredSpanBp: view.visibleBp,
+      viewport: display.gateViewport!,
     })
     display.forceLoad()
 
@@ -203,26 +207,21 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
 })
 
 // The in-fetch (canvas) path commits ONE estimate for a region set: the
-// per-region byte **max**, anchored to the **total** visibleBp across the visible
-// regions. Those are different denominators, and this test pins the consequence
-// rather than fixing it, because both routes out are worse:
+// per-region byte **max** (each region is gated against the same per-region
+// budget, so a multi-region view where every region individually fits is never
+// blanked by the cross-region total), labelled with the **total** visibleBp
+// across the visible regions.
 //
-//   - Anchoring to the fetched region's own span would understate the estimate at
-//     capture time — canvas fetches `bufferedVisibleRegions` (a half-screen of
-//     buffer each side), so the bytes cover roughly twice the span on screen. The
-//     banner would clear a region the worker's per-region gate still rejects,
-//     which is the wedge the anchoring rules exist to prevent.
-//   - Keeping a per-region rate would give canvas a different estimate semantic
-//     from the pre-flight path, which genuinely measures a region *set* in one
-//     adapter call and has no per-region number to keep.
-//
-// What the mismatch costs: in a multi-region (whole-genome) view, zooming into one
-// chromosome shrinks the total span faster than that chromosome's own bytes
-// shrink, so the banner releases early. The download stays protected — the worker
-// re-gates each region on the next fetch and the banner comes back — so the
-// symptom is one extra round trip and a banner flicker, not an unguarded fetch.
-describe('multi-region rescale denominator (accepted behavior)', () => {
-  it('releases early when the visible region set shrinks, and the worker budget still gates', () => {
+// Those used to be different denominators of a division, and the mismatch was
+// recorded here as accepted behavior: zooming into one chromosome shrank the
+// total span faster than that chromosome's own bytes shrank, so the banner
+// released a region the worker still refused, costing a round trip and a
+// flicker. There is no division any more — the span is a label, not a
+// denominator — so the whole mismatch is gone. Zooming into one chromosome
+// leaves the verdict alone and the while-gated re-measure decides it on the
+// region set actually on screen.
+describe('multi-region estimates over a shrinking region set', () => {
+  it('does not release on a shrinking region set until a re-measure says so', () => {
     const { createDisplay } = createTestEnvironment()
     const { display, view } = createDisplay()
     view.setDisplayedRegions([
@@ -235,8 +234,7 @@ describe('multi-region rescale denominator (accepted behavior)', () => {
     expect(view.visibleBp).toBe(20_000_000)
 
     // ctgA's fetch reports 20 Mb of index, ctgB's a tenth of that. The gate
-    // keeps the max (each region is gated against the same per-region budget)
-    // with the total span as its anchor.
+    // keeps the max, labelled with the total span.
     display.commitGateMeasurements(
       [
         {
@@ -250,25 +248,35 @@ describe('multi-region rescale denominator (accepted behavior)', () => {
           result: { bytes: 2_000_000 },
         },
       ],
-      view.visibleBp,
+      display.gateViewport!,
     )
-    expect(display.byteEstimate).toEqual({
+    expect(display.byteEstimate).toMatchObject({
       bytes: 20_000_000,
       measuredSpanBp: 20_000_000,
+      zoomIneffective: false,
     })
     expect(display.regionTooLarge).toBe(true)
 
-    // zoom into 4 Mb of ctgA alone: the total span fell 5x, so the estimate
-    // rescales to 4 Mb and clears the 5 Mb budget...
+    // zoom into 4 Mb of ctgA alone. The total span fell 5x, which under the old
+    // rescale read as 4 Mb and cleared the 5 Mb budget — for a region whose own
+    // bytes had fallen only 2.5x and which the worker would have refused again.
     view.moveTo({ index: 0, offset: 0 }, { index: 0, offset: 4_000_000 })
     expect(view.visibleBp).toBe(4_000_000)
-    expect(display.estimatedBytesForVisibleSpan).toBeCloseTo(4_000_000)
-    expect(display.regionTooLarge).toBe(false)
+    expect(display.estimatedFetchBytes).toBe(20_000_000)
+    expect(display.regionTooLarge).toBe(true)
 
-    // ...where ctgA's own span fell only 2.5x: a per-region denominator would
-    // read 8 Mb and keep the banner up. That is the accepted gap. What still
-    // holds is the worker budget the next fetch enforces per region, so the
-    // release costs a round trip rather than an unguarded download.
+    // it releases on a measurement of what is actually on screen now
+    display.commitGateMeasurements(
+      [
+        {
+          displayedRegionIndex: 0,
+          region: { start: 0, end: 4_000_000 },
+          result: { bytes: 8_000_000 },
+        },
+      ],
+      display.gateViewport!,
+    )
+    expect(display.regionTooLarge).toBe(true)
     expect(display.resolvedByteLimit()).toBe(5_000_000)
   })
 })

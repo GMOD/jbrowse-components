@@ -9,8 +9,9 @@ export interface TooLargeMessageModel {
   regionTooLargeReason: string
   // Optional because the displays outside `RegionTooLargeMixin` (wiggle,
   // manhattan) duck-type this interface and have no such getter. Absent means
-  // "zooming still helps", which is right for them: nothing they own opts out of
-  // the AUTO_FORCE_LOAD_BP floor, so the floor still guarantees a release.
+  // "zooming still helps", which is right for them: they gate on their own
+  // block-level checks rather than on an index estimate, so there is no
+  // measurement pair that could say otherwise.
   zoomCanReleaseGate?: boolean
   forceLoad: () => void
 }

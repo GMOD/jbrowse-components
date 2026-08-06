@@ -59,6 +59,10 @@ const TestDisplay = types
     // re-run is what rebuilds the dependency set without the trigger reads. A
     // plain closure variable flips silently and reproduces nothing.
     loaded: false,
+    // RegionTooLargeMixin's two, which the skeleton reads directly rather than
+    // leaving to each composer's `shouldFetch` — see the too-large test below.
+    regionTooLarge: false,
+    gateMeasurementStale: true,
   }))
   .views(self => ({
     rpcProps() {
@@ -78,6 +82,10 @@ const TestDisplay = types
     },
     setLoaded(flag: boolean) {
       self.loaded = flag
+    },
+    setTooLarge(tooLarge: boolean, stale = true) {
+      self.regionTooLarge = tooLarge
+      self.gateMeasurementStale = stale
     },
     reload() {
       self.reloadCounter += 1
@@ -202,5 +210,31 @@ describe('installGlobalFetchAutorun', () => {
     display.reload()
     await settle()
     expect(fetched.count).toBe(2)
+  })
+})
+
+// The too-large skip lives in the skeleton, not in each composer's
+// `shouldFetch`, and it is "don't fetch a viewport you have already measured"
+// rather than "don't fetch". A blocked display has to run its fetch once per
+// settled viewport, because that fetch IS the re-measure — every gated display
+// measures first and stops there when the answer is over budget — and it is the
+// only thing that can release the banner.
+describe('a blocked display still re-measures', () => {
+  it('skips a viewport whose estimate is current, and fetches once when it moves', async () => {
+    const { view, display, fetched } = setup(() => true)
+    await settle()
+    const afterFirst = fetched.count
+
+    // banner up, and the estimate describes what is on screen: nothing to do
+    display.setTooLarge(true, /* stale */ false)
+    view.setBlocks(['chr1:0-200'])
+    await settle()
+    expect(fetched.count).toBe(afterFirst)
+
+    // the user moves somewhere the estimate says nothing about
+    display.setTooLarge(true, /* stale */ true)
+    view.setBlocks(['chr1:0-300'])
+    await settle()
+    expect(fetched.count).toBe(afterFirst + 1)
   })
 })

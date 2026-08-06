@@ -95,8 +95,9 @@ export async function executeRenderFeatureData({
 
   // Stage 1.5 (cheap): estimate feature density from a small sample before
   // downloading the whole region. Only runs when maxFeatureDensity is set — the
-  // model leaves it undefined below AUTO_FORCE_LOAD_BP and when force-loaded, so
-  // small/forced renders skip it. The post-fetch count below is the backstop.
+  // model leaves it undefined below AUTO_FORCE_LOAD_BP (the floor's one
+  // remaining job, `densityGateActive`) and when force-loaded, so small/forced
+  // renders skip it. The post-fetch count below is the backstop.
   //
   // This deliberately runs even when a filter is active. It used to be skipped
   // whenever one was, because the sample counted the raw population and would
