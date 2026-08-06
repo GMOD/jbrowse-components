@@ -1,3 +1,7 @@
+// Byte-identical to the sibling embedded products' copy, and deliberately not
+// shared: the bundler resolves `./rpcWorker` relative to THIS file, and each
+// product's rpcWorker registers that product's own corePlugins. A shared module
+// would hand every product product-core's worker, with the wrong plugin set.
 // this is in a separate module here so it can be mocked out by jest. the
 // import.meta.url is not well recognized by jest and we use MainThreadRpc in
 // tests anyways right now

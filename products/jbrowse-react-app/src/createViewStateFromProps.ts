@@ -1,7 +1,7 @@
 import createViewState from './createViewState.ts'
 
 import type { JBrowseProps, ManagedView } from './JBrowse/index.ts'
-import type { SessionSnapshot } from './types.ts'
+import type { SessionObservers, SessionSnapshot } from './types.ts'
 
 /**
  * A declarative description of the app to mount. This is the framework-agnostic
@@ -27,8 +27,12 @@ import type { SessionSnapshot } from './types.ts'
  * ```
  */
 // `headerButtons` is dropped along with `ref`: both are React values, and this
-// is the shape a host that doesn't write JSX passes in
-export type CreateAppOptions = Omit<JBrowseProps, 'ref' | 'headerButtons'>
+// is the shape a host that doesn't write JSX passes in. The read-backs are added
+// rather than inherited for the same reason in reverse — a React host observes
+// the engine it already holds a ref to; these exist for a host whose state lives
+// off the page, and only createApp can reach one.
+export interface CreateAppOptions
+  extends Omit<JBrowseProps, 'ref' | 'headerButtons'>, SessionObservers {}
 
 // The `views`-derived session, narrowed from the open SessionSnapshot shape so
 // viewsToSession's mapping is checked. Assignable to SessionSnapshot (whose

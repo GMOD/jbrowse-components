@@ -157,6 +157,50 @@ test('addView returns the id removeView takes', () => {
   controller.destroy()
 })
 
+// The read-backs a host whose state lives off the page needs (a notebook
+// kernel, an R session). Both of ours hand-rolled these before they lived here,
+// and both captured `viewState.session` outside the autorun — which setSession
+// replaces wholesale, so every read-back went dead on the first session restore.
+test('the read-backs survive a setSession', () => {
+  const sessions: unknown[] = []
+  const controller = createApp(mount(), {
+    assemblies,
+    views: [{ type: 'LinearGenomeView', id: 'first' }],
+    onSessionChange: session => sessions.push(session),
+  })
+  expect(sessions).toHaveLength(1)
+
+  controller.setSession({
+    name: 'restored',
+    views: [{ id: 'v', type: 'CircularView' }],
+  })
+
+  // the restore itself reports, against the NEW session node
+  expect(sessions.length).toBeGreaterThan(1)
+
+  // and the new node is still observed: opening another view reports again
+  const before = sessions.length
+  controller.addView({ type: 'CircularView', id: 'later' })
+  expect(sessions.length).toBeGreaterThan(before)
+
+  controller.destroy()
+})
+
+test('destroy stops the read-backs', () => {
+  const locations: unknown[] = []
+  const controller = createApp(mount(), {
+    assemblies,
+    onLocationChange: locs => locations.push(locs),
+  })
+  controller.destroy()
+
+  const after = locations.length
+  expect(() => {
+    controller.addView({ type: 'CircularView' })
+  }).toThrow()
+  expect(locations).toHaveLength(after)
+})
+
 test('removeView closes a view, and ignores an unknown id', () => {
   const controller = createApp(mount(), {
     assemblies,

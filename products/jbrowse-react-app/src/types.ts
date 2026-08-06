@@ -1,7 +1,12 @@
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
-import type { PluginInput, SessionSnapshot } from '@jbrowse/product-core'
+import type {
+  PluginInput,
+  SessionObservers,
+  SessionSnapshot,
+  ViewLocation,
+} from '@jbrowse/product-core'
 
 interface TextSearchAdapterConfig {
   textSearchAdapterId: string
@@ -21,8 +26,8 @@ interface ConnectionConfig {
 }
 
 // re-exported so hosts get them from this package rather than reaching into
-// product-core; both are shared with the other embedded products
-export type { PluginInput, SessionSnapshot }
+// product-core; all four are shared with the other embedded products
+export type { PluginInput, SessionObservers, SessionSnapshot, ViewLocation }
 
 export interface Config {
   assemblies: SnapshotIn<BaseAssemblyConfigSchema>[]

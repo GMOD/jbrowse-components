@@ -1,7 +1,7 @@
 import {
   decodeSessionFromUrl,
   encodeSessionToUrl,
-  getShareableSessionSnapshot,
+  getSessionSnapshot as sessionSnapshotOf,
 } from '@jbrowse/product-core'
 
 import type { ViewModel } from './createModel.ts'
@@ -39,8 +39,5 @@ export const decodeSession = decodeSessionFromUrl
  * differently for whoever opens it.
  */
 export function getSessionSnapshot(viewState: ViewModel): SessionSnapshot {
-  const { session } = viewState
-  // `name` is restated rather than the whole thing cast: the bake returns an
-  // open record, but the model guarantees the session has one
-  return { ...getShareableSessionSnapshot(session), name: session.name }
+  return sessionSnapshotOf(viewState.session)
 }

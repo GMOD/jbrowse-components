@@ -1,11 +1,14 @@
 import { createElement } from 'react'
 
-import { getEnv, isFeature } from '@jbrowse/core/util'
+import { getEnv } from '@jbrowse/core/util'
 import { fetchHub } from '@jbrowse/core/util/fetchHub'
 import { isSequenceUri, makeAssembly } from '@jbrowse/core/util/makeAssembly'
 import { guessTrackConf } from '@jbrowse/core/util/tracks'
-import { registerLocalFiles, resolveLocalFileUris } from '@jbrowse/product-core'
-import { autorun } from 'mobx'
+import {
+  observeSession,
+  registerLocalFiles,
+  resolveLocalFileUris,
+} from '@jbrowse/product-core'
 import { createRoot } from 'react-dom/client'
 
 import JBrowseLinearGenomeView from './JBrowseLinearGenomeView/index.ts'
@@ -17,7 +20,7 @@ import type { ViewStateOptions } from './createViewState.ts'
 import type { BlobLocation } from '@jbrowse/core/util'
 import type { HubConfig } from '@jbrowse/core/util/fetchHub'
 import type { LooseTrackInput } from '@jbrowse/core/util/tracks'
-import type { LocalFileInput } from '@jbrowse/product-core'
+import type { LocalFileInput, SessionObservers } from '@jbrowse/product-core'
 
 type Tracks = NonNullable<ViewStateOptions['tracks']>
 type TrackConf = Record<string, unknown>
@@ -112,6 +115,11 @@ export interface CreateLinearGenomeViewOptions {
   onLocationChange?: (location: string) => void
   /** fires with the serialized feature when one is clicked/selected */
   onFeatureSelect?: (feature: unknown) => void
+  /**
+   * fires with the layout as plain JSON when it settles, in the shape
+   * `defaultSession`/`setSession` takes — for a host offering "save this view"
+   */
+  onSessionChange?: SessionObservers['onSessionChange']
 }
 
 export interface LinearGenomeViewController {
@@ -219,7 +227,7 @@ export function createLinearGenomeView(
   el: HTMLElement,
   opts: CreateLinearGenomeViewOptions,
 ): LinearGenomeViewController {
-  const { onLocationChange, onFeatureSelect } = opts
+  const { onLocationChange, onFeatureSelect, onSessionChange } = opts
 
   // desired state, kept across rebuilds and (re)applied at build time so calls
   // made before the async build resolves still land
@@ -321,8 +329,6 @@ export function createLinearGenomeView(
       return viewState
     }
     assemblyName = name
-    const { session } = viewState
-    const { view } = session
     // a defaultSession owns the initial track layout; without one, open the
     // configured tracks so they actually display
     if (!hasSession) {
@@ -331,26 +337,24 @@ export function createLinearGenomeView(
         resolveTracks(tracks, viewState, assemblyName, localFiles),
       )
     }
-    if (onLocationChange) {
-      disposers.push(
-        autorun(() => {
-          const locs = view.coarseVisibleLocStrings
-          if (locs) {
-            onLocationChange(locs)
-          }
-        }),
-      )
-    }
-    if (onFeatureSelect) {
-      disposers.push(
-        autorun(() => {
-          const { selection } = session
-          if (isFeature(selection)) {
-            onFeatureSelect(selection.toJSON())
-          }
-        }),
-      )
-    }
+    // The read-backs are product-core's, the same ones createApp wires, rather
+    // than a second pair written here: this product has exactly one view, so
+    // its single-string `onLocationChange` is that view's entry of the list.
+    disposers.push(
+      observeSession(viewState, {
+        onFeatureSelect,
+        onSessionChange,
+        onLocationChange: onLocationChange
+          ? ([loc]) => {
+              // an unpositioned view reports undefined; a single-view product's
+              // location is only ever the plain string
+              if (typeof loc === 'string') {
+                onLocationChange(loc)
+              }
+            }
+          : undefined,
+      }),
+    )
     current = viewState
     swapIn(viewState)
     return viewState

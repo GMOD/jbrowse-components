@@ -17,8 +17,13 @@ export type { ViewStateOptions } from './createViewState.ts'
 export { destroyViewState } from './destroyViewState.ts'
 export { default as loadPlugins } from './loadPlugins.ts'
 // serialize the live session to a URL-safe string and back, for hosts that keep
-// view state in the address bar
-export { decodeSession, encodeSession } from './sessionUrl.ts'
+// view state in the address bar; getSessionSnapshot is the plain-JSON twin, for
+// hosts that move snapshots rather than URLs (a notebook kernel, an R session)
+export {
+  decodeSession,
+  encodeSession,
+  getSessionSnapshot,
+} from './sessionUrl.ts'
 export { useCreateViewState } from './useCreateViewState.ts'
 export type { ViewModel } from './createModel/createModel.ts'
 export type { PluginInput, SessionSnapshot } from '@jbrowse/product-core'

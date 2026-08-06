@@ -1,5 +1,6 @@
 import { createElement } from 'react'
 
+import { observeSession } from '@jbrowse/product-core'
 import { createRoot } from 'react-dom/client'
 
 import JBrowseApp from './JBrowseApp/index.ts'
@@ -53,6 +54,7 @@ export function createApp(
   opts: CreateAppOptions,
 ): JBrowseAppController {
   const viewState = createViewStateFromProps(opts)
+  const disposeObservers = observeSession(viewState, opts)
   const root = createRoot(el)
   root.render(createElement(JBrowseApp, { viewState }))
 
@@ -81,8 +83,9 @@ export function createApp(
       }
     },
     destroy() {
-      // unmount first: destroying the tree out from under a mounted observer
-      // would have it re-render against dead nodes
+      // observers first, then unmount: destroying the tree out from under a
+      // mounted observer would have it re-render against dead nodes
+      disposeObservers()
       root.unmount()
       destroyViewState(viewState)
     },

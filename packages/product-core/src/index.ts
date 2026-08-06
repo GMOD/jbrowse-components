@@ -111,6 +111,13 @@ export type { SessionSnapshot } from './sessionUrl.ts'
 // indexed file stays indexed
 export { registerLocalFiles, resolveLocalFileUris } from './localFiles.ts'
 export type { LocalFileInput } from './localFiles.ts'
+// engine teardown, for a host that builds and discards engines — React unmount
+// alone leaves the RPC workers and autoruns running
+export { destroyViewState } from './destroyViewState.ts'
+// the JS -> host direction of an embedded controller: where each view is
+// looking, what got selected, and the layout as plain JSON
+export { getSessionSnapshot, observeSession } from './observeSession.ts'
+export type { SessionObservers, ViewLocation } from './observeSession.ts'
 export {
   MIGRATED_DISPLAY_INSTANCE_KEYS,
   migrateConfigSnapshot,
