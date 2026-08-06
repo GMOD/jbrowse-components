@@ -74,6 +74,7 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/tutorials/sv_multisamples)
 - [](/docs/tutorials/population_cnv)
 - [](/docs/tutorials/dog10k_svs)
+- [](/docs/tutorials/hic_structural_variants)
 
 ### Cancer genomics
 
