@@ -30,13 +30,35 @@ export type LocalFileInput = Record<string, Blob | BufferSource>
  */
 export function registerLocalFiles(files: LocalFileInput) {
   return Object.fromEntries(
-    Object.entries(files).map(([name, data]) => [
-      name,
-      storeBlobLocation({
-        blob: data instanceof File ? data : new File([data], name),
-      }) as BlobLocation,
-    ]),
+    Object.entries(files).map(([name, data]) => [name, register(name, data)]),
   )
+}
+
+// Registering the same bytes twice used to mint a second blobId and leave the
+// first in core's process-global blobMap forever. Nothing collects that map, so
+// a host that hands the same `localFiles` to a new controller each time it
+// rebuilds — which is how a host swaps genome or track set, now that the
+// controller has no setters that rebuild internally — grew it without bound.
+//
+// Keyed on the caller's own object, which is the only identity available: bytes
+// are not comparable cheaply, and two Uint8Arrays over the same buffer are
+// legitimately different files. A WeakMap so a host dropping its reference to
+// the data lets the entry go, and per name inside it because the same bytes can
+// legitimately be registered under two names and a BlobLocation carries one.
+const registered = new WeakMap<object, Map<string, BlobLocation>>()
+
+function register(name: string, data: LocalFileInput[string]): BlobLocation {
+  const byName = registered.get(data) ?? new Map<string, BlobLocation>()
+  const seen = byName.get(name)
+  if (seen) {
+    return seen
+  }
+  const location = storeBlobLocation({
+    blob: data instanceof File ? data : new File([data], name),
+  }) as BlobLocation
+  byName.set(name, location)
+  registered.set(data, byName)
+  return location
 }
 
 /**

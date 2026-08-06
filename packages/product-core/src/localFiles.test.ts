@@ -72,3 +72,24 @@ test('every registration is a distinct blob, so names never collide', () => {
   const b = registerLocalFiles({ 'x.bed': new Uint8Array([2]) })
   expect(a['x.bed']!.blobId).not.toBe(b['x.bed']!.blobId)
 })
+
+// A host swaps genome or track set by building a new controller with the same
+// `localFiles` dict, since the controller has no setter that rebuilds
+// internally. Minting a fresh blobId each time would leave the previous one in
+// core's process-global blobMap, which nothing collects.
+test('re-registering the same bytes is the same blob', () => {
+  const bytes = new Uint8Array([1])
+  const first = registerLocalFiles({ 'x.bed': bytes })
+  const second = registerLocalFiles({ 'x.bed': bytes })
+  expect(second['x.bed']!.blobId).toBe(first['x.bed']!.blobId)
+})
+
+// ...but the name is part of the identity: the same bytes under two names are
+// two files, and a BlobLocation carries the name it was registered under.
+test('the same bytes under a second name are a second blob', () => {
+  const bytes = new Uint8Array([1])
+  const asBed = registerLocalFiles({ 'x.bed': bytes })
+  const asWig = registerLocalFiles({ 'x.bw': bytes })
+  expect(asWig['x.bw']!.blobId).not.toBe(asBed['x.bed']!.blobId)
+  expect(asWig['x.bw']!.name).toBe('x.bw')
+})

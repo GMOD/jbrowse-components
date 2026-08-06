@@ -1,13 +1,11 @@
-import { fetchHub } from '@jbrowse/core/util/fetchHub'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import { createLinearGenomeView } from './index.ts'
 
-import type { HubConfig } from '@jbrowse/core/util/fetchHub'
-
 jest.mock('./makeWorkerInstance', () => () => {})
-// resolving an assembly by hub name is the one await in a build, so gating it is
-// how a test decides which of two in-flight rebuilds finishes first
+// Every assembly below is a config, so nothing here resolves a hub — this keeps
+// it that way. Passing a hub NAME would make a unit test fetch over the network,
+// and it is one character of difference from what these tests already write.
 jest.mock('@jbrowse/core/util/fetchHub', () => ({ fetchHub: jest.fn() }))
 
 const assembly = {
@@ -71,25 +69,20 @@ test('a full-config track seeds the catalog, not sessionTracks (no shadow copy)'
   controller.destroy()
 })
 
-test('setTracks opens the wanted set and closes the rest, idempotently', async () => {
+// The `tracks` option is what a host declares, and it is applied once, at
+// build. There is no setTracks to re-apply it with: a host that wants a
+// different set builds a different browser.
+test('the declared tracks are the ones shown', async () => {
   const el = document.createElement('div')
   const controller = createLinearGenomeView(el, {
     assembly,
-    tracks: [featureTrack('t1')],
+    tracks: [featureTrack('t1'), featureTrack('t2')],
   })
   const state = await controller.whenReady()
-  const { view } = state.session
 
-  controller.setTracks([featureTrack('t1'), featureTrack('t2')])
-  expect(shownIds(view)).toEqual(['t1', 't2'])
-
-  // re-applying the same set is a no-op, still no sessionTracks growth for the
-  // catalog track
-  controller.setTracks([featureTrack('t1'), featureTrack('t2')])
-  expect(shownIds(view)).toEqual(['t1', 't2'])
-
-  controller.setTracks([featureTrack('t2')])
-  expect(shownIds(view)).toEqual(['t2'])
+  expect(shownIds(state.session.view)).toEqual(['t1', 't2'])
+  // seeded into the config catalog, so opening them adds no session tracks
+  expect(state.session.sessionTracks).toHaveLength(0)
   controller.destroy()
 })
 
@@ -122,7 +115,7 @@ test('assemblyNames is stamped onto full configs arriving after mount', async ()
   controller.addTrack(unstampedTrack('t1'))
   expect(assemblyNamesOf(session, 't1')).toEqual(['volvox'])
 
-  controller.setTracks([unstampedTrack('t1'), unstampedTrack('t2')])
+  controller.addTrack(unstampedTrack('t2'))
   expect(assemblyNamesOf(session, 't2')).toEqual(['volvox'])
   expect(shownIds(session.view)).toEqual(['t1', 't2'])
   controller.destroy()
@@ -163,60 +156,25 @@ test('destroy is idempotent, and works before the first build settles', async ()
   await controller.whenReady()
 })
 
-// Two rebuilds in flight resolve in whatever order their assembly fetches
-// finish, which is not the order they were asked for — a host switching genomes
-// twice, or syncing several traits at once (anywidget, htmlwidgets), gets both.
-// Whichever build lands last used to win outright, so a slow first request could
-// overwrite the genome the user actually asked for, destroy the engine that was
-// showing it, and leave whenReady() resolving with that dead engine.
-test('the last rebuild requested wins, not the last to resolve', async () => {
-  const gates = new Map<string, (hub: HubConfig) => void>()
-  jest.mocked(fetchHub).mockImplementation(
-    async (name: string) =>
-      await new Promise<HubConfig>(resolve => {
-        gates.set(name, resolve)
-      }),
-  )
-  const openGate = async (name: string) => {
-    gates.get(name)!({ assemblies: [{ ...assembly, name }] })
-    // two ticks: one for the fetch, one for the build that awaited it
-    await Promise.resolve()
-    await Promise.resolve()
-  }
+// A host swapping genomes now destroys the controller and creates another,
+// which is what setAssembly did internally. What has to hold for that to be a
+// real replacement rather than a leak: the first engine is dead and its worker
+// pool with it, and the second is alive and independent. Two controllers over
+// the same element, since that is the host's actual sequence.
+test('destroying a controller and creating another swaps the genome cleanly', async () => {
+  const el = document.createElement('div')
+  const first = createLinearGenomeView(el, { assembly })
+  const firstState = await first.whenReady()
+  first.destroy()
 
-  const controller = createLinearGenomeView(document.createElement('div'), {
-    assembly: 'slow',
+  const second = createLinearGenomeView(el, {
+    assembly: { ...assembly, name: 'volvox2' },
   })
-  controller.setAssembly('quick')
-  await Promise.resolve()
+  const secondState = await second.whenReady()
 
-  await openGate('quick')
-  await openGate('slow')
-  const state = await controller.whenReady()
-
-  expect(controller.viewState).toBe(state)
-  expect(isAlive(state)).toBe(true)
-  expect(state.session.assemblyNames).toEqual(['quick'])
-  controller.destroy()
-})
-
-// setAssembly/setSession rebuild the engine from scratch. The previous one has
-// to die with them, or every swap orphans a worker pool — and it can only die
-// after its React tree is gone, which is why the swap unmounts first.
-test('a rebuild destroys the engine it replaced', async () => {
-  const controller = createLinearGenomeView(document.createElement('div'), {
-    assembly,
-  })
-  const first = await controller.whenReady()
-
-  controller.setSession({
-    name: 'restored',
-    view: { type: 'LinearGenomeView' },
-  })
-  const second = await controller.whenReady()
-
-  expect(second).not.toBe(first)
-  expect(isAlive(first)).toBe(false)
-  expect(isAlive(second)).toBe(true)
-  controller.destroy()
+  expect(secondState).not.toBe(firstState)
+  expect(isAlive(firstState)).toBe(false)
+  expect(isAlive(secondState)).toBe(true)
+  expect(secondState.session.assemblyNames).toEqual(['volvox2'])
+  second.destroy()
 })

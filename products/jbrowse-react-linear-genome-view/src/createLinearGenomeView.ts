@@ -127,11 +127,6 @@ export interface LinearGenomeViewController {
   /** resolves with the model once the (re)build settles */
   whenReady(): Promise<ViewModel>
   setLocation(location: string): Promise<void>
-  /** swap the genome; rebuilds the engine (any of the three assembly shapes) */
-  setAssembly(assembly: AssemblyInput): void
-  /** load/clear a serialized session; rebuilds the engine */
-  setSession(defaultSession?: SessionSnapshot): void
-  setTracks(tracks: TrackInput[]): void
   addTrack(track: TrackInput): void
   removeTrack(trackId: string): void
   /**
@@ -204,35 +199,22 @@ export function createLinearGenomeView(
     },
   } = opts
 
-  // desired state, kept across rebuilds and (re)applied at build time so calls
-  // made before the async build resolves still land
-  let assemblyInput = opts.assembly
+  // Wanted state the build applies, kept mutable because the live methods
+  // change it and because a call made before the async build resolves has to
+  // land: `addTrack` before `whenReady()` must open that track when the engine
+  // arrives, not be lost.
   let tracks: TrackInput[] = opts.tracks ?? []
-  let defaultSession = opts.defaultSession
   let location = opts.location
   // the resolved assembly name, stamped onto tracks guessed from a bare URL
   let assemblyName: string | undefined
-  // registered once and kept across rebuilds: each registration pushes a File
-  // into core's process-global blobMap, so re-registering per rebuild would
-  // grow it without bound
+  // each registration pushes a File into core's process-global blobMap, so
+  // addLocalFiles only ever registers names it has not seen
   let localFiles = registerLocalFiles(opts.localFiles ?? {})
 
-  let root = createRoot(el)
+  const root = createRoot(el)
   let disposers: (() => void)[] = []
   let current: ViewModel | undefined
-  // the engine whose React tree is actually mounted. Distinct from `current`,
-  // which a rebuild clears at once (so `viewState` reads undefined while
-  // rebuilding) — this one has to stay alive until its tree is replaced, or the
-  // old view would blank out for the whole async build.
-  let mounted: ViewModel | undefined
   let destroyed = false
-  // which build is the current request. Resolving an assembly is async and two
-  // rebuilds can be in flight at once (a host switching genomes twice, or
-  // syncing several traits in one go), and they finish in whatever order their
-  // fetches do — not the order they were asked for. Without this the last to
-  // *finish* won, so a slow first request could overwrite the genome actually
-  // asked for and destroy the engine that was showing it.
-  let generation = 0
 
   function teardown() {
     for (const dispose of disposers) {
@@ -241,27 +223,17 @@ export function createLinearGenomeView(
     disposers = []
   }
 
-  // Replace the mounted tree, then destroy the engine it was showing. Order
-  // matters both ways: unmount first (React must stop observing an engine
-  // before it dies), and destroy before rendering the replacement (so the
-  // outgoing engine's RPC workers don't outlive it). root.unmount() is
-  // synchronous, which is what makes this safe without waiting on a commit; a
-  // root can't be reused after unmounting, hence the fresh one.
-  function swapIn(viewState: ViewModel) {
-    if (mounted) {
-      root.unmount()
-      root = createRoot(el)
-      destroyViewState(mounted)
-    }
-    mounted = viewState
-    root.render(createElement(JBrowseLinearGenomeView, { viewState }))
-  }
-
+  // Runs exactly once: nothing here swaps the engine out from under a mounted
+  // tree any more. The genome, the session and the track list are what the
+  // engine is BUILT from, so changing one is a new browser — the host destroys
+  // this controller and creates another, which is what `setAssembly`,
+  // `setSession` and `setTracks` did internally before they were removed. That
+  // is what retired the generation counter and the mounted-versus-current
+  // split this function used to need: two builds could be in flight at once,
+  // finishing in whatever order their fetches did rather than the order they
+  // were asked for.
   async function build() {
-    const gen = ++generation
-    teardown()
-    current = undefined
-    const resolved = await resolveAssembly(assemblyInput)
+    const resolved = await resolveAssembly(opts.assembly)
     // local until this build is known to have won: `assemblyName` is what later
     // addTrack/setTracks calls stamp onto bare configs, so a superseded build
     // promoting its own would misname every track added afterwards
@@ -269,7 +241,7 @@ export function createLinearGenomeView(
       typeof resolved.assembly.name === 'string'
         ? resolved.assembly.name
         : undefined
-    const hasSession = defaultSession !== undefined
+    const hasSession = opts.defaultSession !== undefined
     const viewState = createViewState({
       assembly: resolved.assembly,
       // only full configs seed the config catalog; loose specs need the
@@ -287,19 +259,17 @@ export function createLinearGenomeView(
       plugins: opts.plugins,
       makeWorkerInstance: opts.makeWorkerInstance,
       configuration: opts.configuration,
-      session: defaultSession,
+      session: opts.defaultSession,
       // a session already positions the view; only route location
       // through createViewState's init flow (spinner while loading) otherwise
       location: hasSession ? undefined : location,
     })
     // Nothing will ever reach this engine, so it dies here rather than leaking
-    // a worker pool — and, in the superseded case, rather than overwriting the
-    // genome that was actually asked for. `destroyed` is reachable from React
-    // StrictMode, which runs a ref callback's cleanup right after setup, i.e.
-    // before any build can finish; the stale generation from any host that
-    // rebuilds twice. Checked before the autoruns below are registered, so a
-    // dead engine never gets one pointed at it.
-    if (destroyed || gen !== generation) {
+    // a worker pool. `destroyed` is reachable from React StrictMode, which runs
+    // a ref callback's cleanup right after setup — i.e. before any build can
+    // finish. Checked before the autoruns below are registered, so a dead
+    // engine never gets one pointed at it.
+    if (destroyed) {
       destroyViewState(viewState)
       return viewState
     }
@@ -331,17 +301,12 @@ export function createLinearGenomeView(
       }),
     )
     current = viewState
-    swapIn(viewState)
+    root.render(createElement(JBrowseLinearGenomeView, { viewState }))
     return viewState
   }
 
-  let ready = build()
+  const ready = build()
   ready.catch(onError)
-
-  function rebuild() {
-    ready = build()
-    ready.catch(onError)
-  }
 
   return {
     get viewState() {
@@ -359,23 +324,6 @@ export function createLinearGenomeView(
       // matched anyway (formatted "ctgA:1..100" vs a raw "ctgA:1-100"/gene input)
       if (view && loc) {
         await view.navToLocString(loc)
-      }
-    },
-    setAssembly(assembly) {
-      assemblyInput = assembly
-      rebuild()
-    },
-    setSession(session) {
-      defaultSession = session
-      rebuild()
-    },
-    setTracks(next) {
-      tracks = next
-      if (current) {
-        reconcileTracks(
-          current,
-          resolveTracks(next, current, assemblyName, localFiles),
-        )
       }
     },
     addTrack(track) {
@@ -399,19 +347,14 @@ export function createLinearGenomeView(
       current?.session.view.hideTrack(trackId)
     },
     destroy() {
+      // set first: a build still in flight reads it and destroys the engine it
+      // is about to hand back, rather than leaking that one's worker pool
       destroyed = true
       teardown()
       root.unmount()
-      // both, because a build that threw leaves the previous engine mounted
-      // while `current` is undefined. destroyViewState is idempotent, so the
-      // usual case (they're the same engine) costs nothing.
-      if (mounted) {
-        destroyViewState(mounted)
-      }
       if (current) {
         destroyViewState(current)
       }
-      mounted = undefined
       current = undefined
     },
   }

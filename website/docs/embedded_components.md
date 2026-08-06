@@ -207,15 +207,20 @@ await view.setLocation('chr1:1,000-2,000')
 view.destroy()
 ```
 
-The controller is where the remount rule above stops applying: `setAssembly` and
-`setSession` tear the engine down and rebuild it internally, so a host swaps
-genomes by calling one method rather than by managing a `key`. `assembly` takes
-four shapes — a sequence file URL (`.fa.gz`, `.2bit`), a hub name like `'hg38'`
-or a GenArk accession, a whole hub config, or a bare assembly config — and a hub
-name brings the hub's own name-search adapters with it, so gene-name navigation
-works without wiring any up. `whenReady()` resolves once a build settles;
-`destroy()` tears down the React root, the RPC workers, and the MST tree's
-autoruns, which a bare React unmount does not.
+The remount rule above applies here too, and the controller is deliberately
+small enough to make that obvious. The genome, the session and the track list
+are what a browser is *built from*, so changing one is a new browser: `destroy()`
+the controller and create another. The methods are the things that are not a
+rebuild — `setLocation`, `addTrack`, `removeTrack`, `addLocalFiles` — plus
+`whenReady()`, which resolves once the build settles, and `viewState`.
+
+`assembly` takes four shapes — a sequence file URL (`.fa.gz`, `.2bit`), a hub
+name like `'hg38'` or a GenArk accession, a whole hub config, or a bare assembly
+config — and a hub name brings the hub's own name-search adapters with it, so
+gene-name navigation works without wiring any up. `destroy()` tears down the
+React root, the RPC workers, and the MST tree's autoruns, which a bare React
+unmount does not — a host that swaps genomes without it orphans a worker pool
+per swap.
 
 Data going the other way is two callbacks rather than a subscription:
 `onLocationChange` fires with the visible region as the user pans and zooms
@@ -228,6 +233,8 @@ were a URL. They are read by byte range, so registering an index under its
 conventional sibling name (`peaks.bed.gz` plus `peaks.bed.gz.tbi`) keeps the
 file indexed — only the bytes the current view needs are touched, not the whole
 array. `addLocalFiles` registers more later, for data that arrives after mount.
+Handing the same bytes to a second controller is free: registration is keyed on
+the object you pass, so rebuilding does not re-register them.
 
 `createApp`'s controller is the session-shaped counterpart: `addView`,
 `removeView`, `setSession`, `destroy`.
