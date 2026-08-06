@@ -3,8 +3,76 @@ import {
   matchSampleId,
   parseAssemblyAndChr,
   parseMafTabixEntry,
+  scanMafTabixEntry,
   selectReferenceSequenceString,
 } from './parseAssemblyName.ts'
+
+// The form MafTabixAdapter actually uses: entries scanned in place out of the
+// one comma-joined alignment column, never split into their own strings.
+describe('scanMafTabixEntry over a comma-joined column', () => {
+  const resolve = makeSourceResolver(new Set(['ce11', 'caeRem4'])).resolve
+  const column =
+    'ce11.chrI:100:6:+:15072434:GAATTC,' +
+    'caeRem4.Crem_Contig89:203343:6:-:273340:gaattc'
+  const scanAll = (text: string) => {
+    const out = []
+    for (let from = 0; from < text.length; ) {
+      let to = text.indexOf(',', from)
+      if (to === -1) {
+        to = text.length
+      }
+      out.push(scanMafTabixEntry(text, from, to, resolve))
+      from = to + 1
+    }
+    return out
+  }
+
+  test('reads each entry at its own offset', () => {
+    expect(scanAll(column)).toEqual([
+      {
+        assemblyName: 'ce11',
+        chr: 'chrI',
+        start: 100,
+        strand: 1,
+        srcSize: 15072434,
+        seq: 'GAATTC',
+      },
+      {
+        assemblyName: 'caeRem4',
+        chr: 'Crem_Contig89',
+        start: 203343,
+        strand: -1,
+        srcSize: 273340,
+        seq: 'gaattc',
+      },
+    ])
+  })
+
+  // The hazard of scanning in place instead of splitting: `indexOf` does not
+  // stop at the entry boundary, so a truncated entry would happily take its
+  // fields from the species after it — a real sequence filed under the wrong
+  // genome at the wrong coordinate, which nothing downstream could detect.
+  test('a truncated entry is rejected, not completed from the next one', () => {
+    const truncated = 'ce11.chrI:100:6,caeRem4.Crem_Contig89:203343:6:-:273340:gaattc'
+    const [first, second] = scanAll(truncated)
+    expect(first).toBeUndefined()
+    // ...and the scan still picks the following entry up intact
+    expect(second).toMatchObject({ assemblyName: 'caeRem4', seq: 'gaattc' })
+  })
+
+  test('an entry with no sequence is rejected', () => {
+    expect(scanAll('ce11.chrI:100:6:+:15072434:')[0]).toBeUndefined()
+  })
+
+  test('a sequence runs to the entry end, so a stray colon cannot truncate it', () => {
+    // Colons cannot occur in MAF sequence characters, so taking the remainder
+    // is strictly safer than stopping at a sixth colon would be.
+    const entry = 'ce11.chrI:100:6:+:15072434:GA:TTC'
+    expect(scanMafTabixEntry(entry, 0, entry.length, resolve)?.seq).toBe(
+      'GA:TTC',
+    )
+  })
+})
 
 describe('parseMafTabixEntry', () => {
   const samples = makeSourceResolver(new Set(['ce11', 'caeRem4'])).resolve
@@ -478,6 +546,35 @@ describe('makeSourceResolver reports a sample set that matches nothing', () => {
     })
     r.reportUnmatched()
     expect(warn).not.toHaveBeenCalled()
+  })
+
+  // Memoization changed `matched`/`seen` from counting occurrences to counting
+  // distinct tokens. The diagnostic fires on `matched === 0`, which is the same
+  // statement either way — these pin that the two mixed cases still behave.
+  it('still stays silent when one of several distinct tokens matches', () => {
+    const r = makeSourceResolver(new Set(['hg38']))
+    for (let i = 0; i < 50; i++) {
+      r.resolve('hg38.chr1')
+      r.resolve('panTro4.chr1')
+      r.resolve('mm10.chr1')
+    }
+    r.reportUnmatched()
+    expect(warn).not.toHaveBeenCalled()
+  })
+
+  it('memoizes per token, including the undefined answer', () => {
+    const r = makeSourceResolver(new Set(['hg38']))
+    // same object back, which is only true if the walk was not redone — and the
+    // filtered-out species is the case that most needs it, since every one of
+    // its rows asks the same question
+    expect(r.resolve('hg38.chr1')).toBe(r.resolve('hg38.chr1'))
+    expect(r.resolve('panTro4.chr1')).toBeUndefined()
+    expect(r.resolve('panTro4.chr1')).toBeUndefined()
+    // ...and the memo did not corrupt the answers themselves
+    expect(r.resolve('hg38.chr2')).toEqual({
+      assemblyName: 'hg38',
+      chr: 'chr2',
+    })
   })
 
   it('reports once per fetch, not once per row', () => {

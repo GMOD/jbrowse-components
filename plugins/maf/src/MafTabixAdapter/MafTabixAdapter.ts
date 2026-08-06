@@ -8,7 +8,7 @@ import { lazyInit, loadSubAdapter } from '../util/loadSubAdapter.ts'
 import { subscribeToObservable } from '../util/observableUtils.ts'
 import {
   makeSourceResolver,
-  parseMafTabixEntry,
+  scanMafTabixEntry,
   selectReferenceSequenceString,
 } from '../util/parseAssemblyName.ts'
 
@@ -75,7 +75,7 @@ export default class MafTabixAdapter extends BaseFeatureDataAdapter<MafTabixAdap
       const resolver = makeSourceResolver(buildSampleFilter(opts))
 
       await subscribeToObservable(adapter.getFeatures(query, opts), feature => {
-        const data = alignmentColumn(feature).split(',')
+        const encoded = alignmentColumn(feature)
         const alignments: Record<string, AlignmentRecord> = {}
         // Per feature, not per query: the last-resort reference is this
         // stanza's own first species. MAF puts the reference first in every
@@ -86,8 +86,18 @@ export default class MafTabixAdapter extends BaseFeatureDataAdapter<MafTabixAdap
         // it vanished from the rows and from coverage.
         let firstAssemblyNameFound: string | undefined
 
-        for (let j = 0, l = data.length; j < l; j++) {
-          const entry = parseMafTabixEntry(data[j]!, resolver.resolve)
+        // Walked with `indexOf` rather than `split(',')`. This column holds
+        // every species' bases for the block, so it is nearly the whole line,
+        // and splitting it built an array of one string per species on every
+        // block — tens of thousands of throwaway strings per fetch, whose only
+        // surviving content is the `seq` each one ends with. `scanMafTabixEntry`
+        // slices out just that.
+        for (let from = 0, l = encoded.length; from < l; ) {
+          let to = encoded.indexOf(',', from)
+          if (to === -1) {
+            to = l
+          }
+          const entry = scanMafTabixEntry(encoded, from, to, resolver.resolve)
           if (entry) {
             const { assemblyName, chr, start, strand, srcSize, seq } = entry
             if (!firstAssemblyNameFound) {
@@ -95,6 +105,7 @@ export default class MafTabixAdapter extends BaseFeatureDataAdapter<MafTabixAdap
             }
             alignments[assemblyName] = { chr, start, strand, srcSize, seq }
           }
+          from = to + 1
         }
 
         observer.next(

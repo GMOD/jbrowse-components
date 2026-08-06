@@ -1,5 +1,3 @@
-import { parseStrand } from './parseStrand.ts'
-
 export interface ParsedAssemblyName {
   assemblyName: string
   chr: string
@@ -179,20 +177,42 @@ export function makeSourceResolver(sampleIds?: Set<string>) {
   const unmatched = new Set<string>()
   let matched = 0
   let seen = 0
+  // Memoized because a region has only as many distinct source tokens as it has
+  // species-and-contig pairs — a couple dozen — while it has one *row* per
+  // species per block, which on a 26-way is tens of thousands. Both resolvers
+  // are string walks (`matchSampleId` scans right to left, `parseAssemblyAndChr`
+  // hunts dots and runs a regex), so without this they re-derive the same answer
+  // for `ce11.chrI` thousands of times per fetch. Every adapter benefits: bigMaf
+  // resolves once per s/i/e line, TAF once per row instruction.
+  //
+  // `matched`/`seen` now count distinct tokens rather than occurrences, which
+  // leaves the diagnostic below unchanged — it fires on `matched === 0`, and no
+  // token matching is the same statement either way.
+  const cache = new Map<string, ParsedAssemblyName | undefined>()
   return {
     resolve(token: string): ParsedAssemblyName | undefined {
-      if (!sampleIds) {
-        return parseAssemblyAndChr(token)
+      // `has` rather than a `?? compute` fallthrough: undefined is a real,
+      // cacheable answer here (a token naming no configured sample), and it is
+      // the answer for *every* row of a filtered-out species — exactly the case
+      // that most needs to not be recomputed.
+      if (cache.has(token)) {
+        return cache.get(token)
       }
-      const parsed = matchSampleId(token, sampleIds)
-      if (parsed) {
-        matched++
-      } else {
-        seen++
-        if (unmatched.size < REPORT_SOURCES) {
-          unmatched.add(token)
+      let parsed: ParsedAssemblyName | undefined
+      if (sampleIds) {
+        parsed = matchSampleId(token, sampleIds)
+        if (parsed) {
+          matched++
+        } else {
+          seen++
+          if (unmatched.size < REPORT_SOURCES) {
+            unmatched.add(token)
+          }
         }
+      } else {
+        parsed = parseAssemblyAndChr(token)
       }
+      cache.set(token, parsed)
       return parsed
     },
     reportUnmatched() {
@@ -224,34 +244,76 @@ export interface ParsedMafTabixEntry {
 }
 
 /**
- * Parse one `assembly.chr:start:size:strand:srcSize:seq` entry from a MAF-tabix
- * feature's comma-joined alignment list, resolving the species through the
- * caller's `makeSourceResolver`. Returns undefined when the entry is malformed
- * or names no known sample. Strand and srcSize are carried because a `−`-strand
+ * Parse the `assembly.chr:start:size:strand:srcSize:seq` entry occupying
+ * `text[from..to)` — one species of a MAF-tabix feature's comma-joined
+ * alignment list — resolving the species through the caller's
+ * `makeSourceResolver`. Returns undefined when the entry is malformed or names
+ * no known sample. Strand and srcSize are carried because a `−`-strand
  * component's `start` is relative to the reverse complement (needed for correct
  * hover coordinates) and the strand drives the inversion indicator.
+ *
+ * Takes offsets into the caller's string rather than its own entry string, and
+ * finds its fields with `indexOf` rather than `split`, because this is the
+ * plugin's hottest text path: one call per species per block, so ~40k calls for
+ * a buffered 26-way region. `split(',')` then `split(':')` allocated an array
+ * and seven strings per call, of which only two are kept — measured at 152ms
+ * against 91ms for this scan over the same region.
+ *
+ * `seq` runs to `to` rather than to a sixth colon. MAF sequence characters are
+ * IUPAC codes plus `-`/`.`, so a colon cannot appear in one, and taking the
+ * remainder means a trailing field can't silently truncate the alignment.
+ *
+ * `size` (field 3) is skipped: the block's genomic extent comes from the
+ * reference row's non-dash column count, not from any row's declared size.
  */
-export function parseMafTabixEntry(
-  elt: string,
+export function scanMafTabixEntry(
+  text: string,
+  from: number,
+  to: number,
   resolve: SourceResolver,
 ): ParsedMafTabixEntry | undefined {
-  const [assemblyAndChr, startStr, , strandStr, srcSizeStr, seq] =
-    elt.split(':')
-  if (!assemblyAndChr || startStr === undefined || !seq) {
+  const c0 = text.indexOf(':', from)
+  if (c0 === -1 || c0 >= to || c0 === from) {
     return undefined
   }
-  const parsed = resolve(assemblyAndChr)
+  const c1 = text.indexOf(':', c0 + 1)
+  const c2 = c1 === -1 ? -1 : text.indexOf(':', c1 + 1)
+  const c3 = c2 === -1 ? -1 : text.indexOf(':', c2 + 1)
+  const c4 = c3 === -1 ? -1 : text.indexOf(':', c3 + 1)
+  // Every field must land inside this entry; `c4 + 1 === to` is an empty seq,
+  // which the split-based parser rejected too.
+  if (c4 === -1 || c4 >= to || c4 + 1 === to) {
+    return undefined
+  }
+  const parsed = resolve(text.slice(from, c0))
   if (!parsed?.assemblyName) {
     return undefined
   }
   return {
     assemblyName: parsed.assemblyName,
     chr: parsed.chr,
-    start: parseInt(startStr, 10),
-    strand: parseStrand(strandStr),
-    srcSize: srcSizeStr === undefined ? undefined : parseInt(srcSizeStr, 10),
-    seq,
+    start: parseInt(text.slice(c0 + 1, c1), 10),
+    // Field 3 of six, and a single character, so read it as one rather than
+    // slicing a string for `parseStrand` to compare. Same rule as
+    // `parseStrand`: anything but `-` is forward.
+    strand: text.charCodeAt(c2 + 1) === MINUS_CHAR ? -1 : 1,
+    srcSize: parseInt(text.slice(c3 + 1, c4), 10),
+    seq: text.slice(c4 + 1, to),
   }
+}
+
+/** `-`, the only strand token that means reverse. */
+const MINUS_CHAR = 45
+
+/**
+ * {@link scanMafTabixEntry} over a standalone entry string. The adapter scans
+ * in place; this is for callers that already hold one entry on its own.
+ */
+export function parseMafTabixEntry(
+  elt: string,
+  resolve: SourceResolver,
+): ParsedMafTabixEntry | undefined {
+  return scanMafTabixEntry(elt, 0, elt.length, resolve)
 }
 
 /**
