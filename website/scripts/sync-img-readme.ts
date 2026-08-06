@@ -34,7 +34,11 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
+import { readManifest } from './figure-paths.ts'
+import { storeUrl } from './figure-store.ts'
 import { jbrowseImgSpecs } from './screenshot-spec-helpers.ts'
+
+const manifest = readManifest()
 
 const README = join(
   import.meta.dirname,
@@ -44,8 +48,25 @@ const README = join(
   'jbrowse-img',
   'README.md',
 )
-const IMG_BASE =
-  'https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img'
+// Where the README's figures are served from, which is now the figure store.
+//
+// They were raw.githubusercontent URLs into products/jbrowse-img/img, and that
+// stopped working the moment figure bytes left git. The site's own
+// /jb2/img/jbrowse-img/ path is not an option either: it 404s until a
+// production deploy, deploys currently go to /jb2-staging, and this README is
+// rendered by GitHub and npm — outside the site entirely — so it cannot depend
+// on one having happened.
+//
+// A store URL is content-addressed, which for a hand-edited file would be a
+// maintenance trap: the URL changes whenever the figure does, and a stale one
+// shows the wrong picture forever. So it is not hand-edited. This generator
+// rewrites each image line's URL from figures.lock, keeping the hand-written
+// alt text, and `autogen --check` fails when one has drifted — the same
+// treatment the commands beside them already get, for the same reason.
+function storeUrlFor(name: string): string | undefined {
+  const entry = manifest.get(`products/jbrowse-img/img/${name}.png`)
+  return entry ? storeUrl(entry) : undefined
+}
 
 const check = process.argv.includes('--check')
 
@@ -254,17 +275,31 @@ function sync(source: string) {
     out.push(formatCommand(name, spec.args), lines[close]!)
     i = close + 1
 
-    const found = scanImage(lines, i, 1) ?? imageBefore
+    // Which array the image line lives in decides where the rewrite lands: a
+    // figure after the command is still sitting unread in `lines` and will be
+    // copied out by the loop below, while one before it has already been
+    // emitted into `out`.
+    const ahead = scanImage(lines, i, 1)
+    const found = ahead
+      ? { ...ahead, buf: lines }
+      : imageBefore
+        ? { ...imageBefore, buf: out }
+        : undefined
     if (!found) {
       problems.push({
         line: i,
         message: `"${name}" has no figure beside its command`,
       })
-    } else if (found.src !== `${IMG_BASE}/${name}.png`) {
-      problems.push({
-        line: found.line + 1,
-        message: `"${name}" shows ${found.src}, but its command writes ${name}.png`,
-      })
+    } else {
+      const want = storeUrlFor(name)
+      if (!want) {
+        problems.push({
+          line: found.line + 1,
+          message: `"${name}" is not in figures.lock — run \`pnpm figures:push\` so its image has a URL`,
+        })
+      } else if (found.src !== want) {
+        found.buf[found.line] = found.buf[found.line]!.replace(found.src, want)
+      }
     }
   }
 

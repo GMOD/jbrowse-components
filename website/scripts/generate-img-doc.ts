@@ -31,21 +31,22 @@ const imgDestDir = join(repoRoot, 'website', 'static', 'img', 'jbrowse-img')
 const githubBase =
   'https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-img'
 
-// The README points its example images at the copies the website publishes, so
-// they render on npm and on GitHub. They used to be raw.github URLs into
-// products/jbrowse-img/img, which stopped working when figure bytes moved out
-// of git and into the figure store (figure-store.ts) — and a store URL is
-// content-addressed, so putting one in the README would rewrite this file on
-// every regen. `/jb2/img/jbrowse-img/<name>` is the stable path the deploy
-// already publishes to, and it survives a figure changing.
+// The README points its example images at the figure store, so they render on
+// npm and on GitHub with no dependency on a website deploy having happened —
+// see the note in sync-img-readme.ts, which generates those URLs. They were
+// raw.github URLs into products/jbrowse-img/img until figure bytes left git.
 //
 // For the docs site we serve them from the website's own static dir instead, so
 // the page is self-contained: versioned with the docs, rendering in
-// offline/staging builds, with no runtime dependency on the deployed site.
-// Astro's rehype-base-urls prefixes the `/img/...` path with the site base
-// path, matching every other figure on the site.
+// offline/staging builds, with no runtime dependency on the store. Astro's
+// rehype-base-urls prefixes the `/img/...` path with the site base path,
+// matching every other figure on the site.
+//
+// The store URL carries a 12-hex content hash between the name and the
+// extension, which is dropped here: on the site the figure is just
+// `<name>.png`, and it is the copy generate-img-doc mirrors into static/img.
 const rawImgRe =
-  /https:\/\/jbrowse\.org\/jb2\/img\/jbrowse-img\/([\w.-]+)/g
+  /https:\/\/jbrowse\.org\/jb2-figures\/jbrowse-img\/([\w-]+)\.[0-9a-f]{12}(\.\w+)/g
 const localImgUrl = '/img/jbrowse-img/'
 
 const title = 'Static image export (@jbrowse/img)'
@@ -67,9 +68,11 @@ function rewriteRelativeLinks(md: string) {
 // filenames so they can be copied/verified alongside the doc.
 function rewriteImages(md: string) {
   const names = new Set<string>()
-  const out = md.replaceAll(rawImgRe, (_match, name: string) => {
-    names.add(name)
-    return `${localImgUrl}${name}`
+  // The hash segment between them is what gets dropped; `names` keeps the
+  // extension because it names the files to mirror into static/img.
+  const out = md.replaceAll(rawImgRe, (_match, name: string, ext: string) => {
+    names.add(name + ext)
+    return `${localImgUrl}${name}${ext}`
   })
   return { out, names }
 }

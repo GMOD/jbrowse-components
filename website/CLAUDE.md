@@ -33,10 +33,14 @@ immutable; git tracks `figures.lock` at the repo root, one line per figure.
   catch it — the evidence is a file on your disk. So a sweep ends on
   `NOT IN THE FIGURE STORE` and the review UI banners it; both report the whole
   worktree, not just that run, and both say so when there's nothing outstanding.
-- **Don't put a store URL in a doc or a README** — it is content-addressed, so
-  it would churn on every regen. Docs use `/img/...`; the jbrowse-img README
-  uses the stable `https://jbrowse.org/jb2/img/jbrowse-img/...` the deploy
-  publishes.
+- **Don't hand-write a store URL** — it is content-addressed, so it goes stale
+  the next time that figure is regenerated, and a stale one shows the wrong
+  picture indefinitely. Site docs use `/img/...` and never a store URL at all.
+  The jbrowse-img README is the one exception, because GitHub and npm render it
+  outside the site: its image URLs point at the store and are *generated* by
+  `sync-img-readme.ts` from `figures.lock`, with `autogen --check` failing on
+  drift. `/jb2/img/...` is not an option there — it 404s until a production
+  deploy, and deploys currently go to `/jb2-staging`.
 
 ## Screenshots (`static/img/`)
 
