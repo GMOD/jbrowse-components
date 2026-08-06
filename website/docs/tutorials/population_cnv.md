@@ -148,7 +148,7 @@ npm install @gmod/bbi generic-filehandle2
 
 node measure_signal_latency.ts --samples 1000g_cnv_build/samples.tsv \
   --region chr17:36,080,000-36,270,000 \
-  --zarr https://jbrowse.org/code/jb2/main/test_data/1000g_cnv/qm2_cn_1kb.zarr
+  --zarr https://jbrowse.org/demos/1000g/qm2_cn_1kb.zarr
 ```
 
 Against the hosted files, one BigWig per sample answers that window in 15,048

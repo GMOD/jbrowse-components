@@ -510,9 +510,9 @@ export const uiSpecs: ScreenshotSpec[] = [
             // by similarity over the window -- so clustering costs nothing and
             // is what makes the classes visible.
             //
-            // The store is test_data/1000g_cnv/qm2_cn_1kb.zarr, which
-            // scripts/build_1000g_cnv_zarr.sh now builds over this window as
-            // well as the two the CNV tutorial visits.
+            // The store is hosted at jbrowse.org/demos/1000g, built by
+            // scripts/build_1000g_cnv_zarr.sh over this window as well as the
+            // two the CNV tutorial visits.
             {
               trackId: 'cnv_1000g_zarr',
               type: 'MultiLinearWiggleDisplay',

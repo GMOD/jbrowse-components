@@ -16,7 +16,7 @@
 //   node scripts/measure_signal_latency.ts \
 //     --region chr17:36,080,000-36,270,000 \
 //     --config test_data/config_demo.json --track pur_copynumber_1000g \
-//     --zarr https://jbrowse.org/code/jb2/main/test_data/1000g_cnv/qm2_cn_1kb.zarr
+//     --zarr https://jbrowse.org/demos/1000g/qm2_cn_1kb.zarr
 import { readFileSync } from 'node:fs'
 import { parseArgs } from 'node:util'
 

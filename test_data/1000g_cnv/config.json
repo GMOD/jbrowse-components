@@ -40,7 +40,7 @@
       "assemblyNames": ["hg38"],
       "adapter": {
         "type": "MultiWiggleZarrAdapter",
-        "uri": "qm2_cn_1kb.zarr"
+        "uri": "https://jbrowse.org/demos/1000g/qm2_cn_1kb.zarr"
       },
       "displayDefaults": {
         "defaultRendering": "multirowdensity",

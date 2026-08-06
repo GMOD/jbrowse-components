@@ -30,8 +30,8 @@ case "${1:-}" in
 esac
 
 HERE=$(cd "$(dirname "$0")" && pwd)
-REPO=$(dirname "$HERE")
 RAW=https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts
+STORE_URL=https://jbrowse.org/demos/1000g/qm2_cn_1kb.zarr
 TRACKDB=https://raw.githubusercontent.com/KiddLab/kmer_1KG/master/kmer-1kg.trackDb.txt
 BW_BASE=https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv
 
@@ -47,19 +47,12 @@ done
 (cd "$HERE" && node --input-type=module -e 'await import("@gmod/bbi")') 2>/dev/null ||
   npm install --silent --no-save --prefix "$HERE" @gmod/bbi generic-filehandle2
 
-# In a checkout the default output is the store this repository commits, named
-# from $REPO so the run does not depend on the working directory: the checkout
-# test is absolute, so a relative default would resolve against the caller
-# instead and write a second test_data/1000g_cnv tree there. Standalone there is
-# no checkout to anchor to, so the build directory is relative to the caller,
-# which is what the tutorial documents.
-if [ -d "$REPO/test_data/1000g_cnv" ]; then
-  OUT=${OUT:-$REPO/test_data/1000g_cnv/qm2_cn_1kb.zarr}
-  SAMPLES=${SAMPLES:-$REPO/test_data/1000g_cnv/samples.tsv}
-else
-  OUT=${OUT:-1000g_cnv_build/qm2_cn_1kb.zarr}
-  SAMPLES=${SAMPLES:-1000g_cnv_build/samples.tsv}
-fi
+# The store this repository *reads* is the hosted one at $STORE_URL, not a tree
+# in the checkout — 1.7 MB of undeltifiable chunks that every clone pays for.
+# So the build always writes beside the caller, in a checkout or not, and
+# publishing is the explicit `aws s3 sync` below rather than a `git add`.
+OUT=${OUT:-1000g_cnv_build/qm2_cn_1kb.zarr}
+SAMPLES=${SAMPLES:-1000g_cnv_build/samples.tsv}
 
 mkdir -p "$(dirname "$SAMPLES")"
 
@@ -98,3 +91,10 @@ node "$HERE/build_signal_zarr.ts" \
   --concurrency 32
 
 du -sh "$OUT"
+
+# What test_data/1000g_cnv/config.json points at. A zarr chunk key is named from
+# its position, not its content, so a rebuild that changes a chunk overwrites
+# it — and the bucket has no versioning. Read the diff before you sync.
+echo
+echo "to publish: aws s3 sync $OUT s3://jbrowse.org/demos/1000g/qm2_cn_1kb.zarr"
+echo "  (serves as $STORE_URL)"

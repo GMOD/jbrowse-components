@@ -6,7 +6,7 @@
   "proseWrap": "always",
   "printWidth": 80,
   "sortPackageJson": false,
-  "ignorePatterns": ["**/*.toml"],
+  "ignorePatterns": ["**/*.toml", "**/*.zarr/**"],
   "sortImports": {
     "customGroups": [
       {
