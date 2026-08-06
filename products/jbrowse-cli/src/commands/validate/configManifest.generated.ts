@@ -3750,6 +3750,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | number)"
         },
         {
+          "name": "showLegend",
+          "type": "(JexlString | boolean)"
+        },
+        {
           "name": "colorBy",
           "type": "(JexlString | string)"
         },
@@ -3857,6 +3861,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "maxMissingnessFilter",
           "type": "(JexlString | number)"
+        },
+        {
+          "name": "showLegend",
+          "type": "(JexlString | boolean)"
         },
         {
           "name": "colorBy",

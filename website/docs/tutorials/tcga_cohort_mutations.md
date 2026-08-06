@@ -271,8 +271,13 @@ It needs `curl`, `python3`, and `bgzip` + `tabix` from
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_tcga_cohort_mutations.sh
 bash build_tcga_cohort_mutations.sh TCGA-BRCA 20 # 20 tumors, to test the pipeline
 bash build_tcga_cohort_mutations.sh TCGA-BRCA    # the full cohort, ~10 minutes
-# -> tcga_brca_mutations.vcf.gz (+ .tbi), tcga_brca_clinical.tsv
+npx --yes serve jbrowse2                         # then open the printed URL
 ```
+
+It writes `tcga_brca_mutations.vcf.gz` (+ `.tbi`) and `tcga_brca_clinical.tsv`,
+then a `jbrowse2/` opening on _PIK3CA_ with the matrix display above. The
+assembly is the hosted UCSC hg38 hub's own entry copied in, so the reference is
+never downloaded.
 
 The full run reports
 `87574 distinct mutations from 992 MAFs across 979 tumors (400 rows wrong sample type, 351 rows replicate aliquot)`

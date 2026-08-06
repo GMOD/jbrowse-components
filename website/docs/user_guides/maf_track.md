@@ -65,7 +65,13 @@ This works on large alignments: with all ~470 species of the UCSC hg38 470-way
 shown at once, the heatmap gives a per-base conservation view across the full
 set of species.
 
-<Figure src="/img/maf_470way.png" caption="The UCSC hg38 470-way multiz over the GAPDH locus. Fit-to-display-height mode squeezes all ~470 species into a 600px-tall display, so every row goes near-1px and the whole alignment reads as a texture with the guide tree (dendrogram) down the left. The per-row identity heatmap colors each base by whether it matches the reference row: blue where conserved, red where divergent (see the top-right legend). Conserved coding columns run blue top-to-bottom across the entire phylogeny, while gaps and less-conserved regions break up as red/white streaks."/>
+Fit-to-display-height mode takes every species into one display, so each row
+goes near-1px and the alignment reads as a texture, with the guide tree
+(dendrogram) down the left. The per-row identity heatmap colors each base by
+whether it matches the reference row: blue where conserved, red where divergent,
+per the top-right legend.
+
+<Figure src="/img/maf_470way.png" caption="The UCSC hg38 470-way multiz over the GAPDH locus, every species at once. Conserved coding columns run blue top-to-bottom across the whole phylogeny; gaps and less-conserved regions break up as red and white streaks."/>
 
 ## Color by source chromosome
 
@@ -124,7 +130,12 @@ On a large alignment, narrowing to a focused set of species first (see
 [Selecting a subtree](#selecting-a-subtree)) keeps the per-codon columns
 legible.
 
-<Figure src="/img/maf_470way_codon.png" caption="The hg38 470-way narrowed to ~30 representative mammals (one per major clade, plus opossum and platypus outgroups) in codon view at a conserved GAPDH exon: each species' coding sequence is translated in the human reading frame, so the conserved residues line up and the few amino-acid changes in the more distant lineages stand out. The left sidebar is the pruned ~30-leaf guide tree, not the full 470-species tree."/>
+In codon view each species' coding sequence is translated in the human reading
+frame, so conserved residues line up and the amino-acid changes in the more
+distant lineages stand out. The left sidebar is the pruned guide tree rather
+than the full one.
+
+<Figure src="/img/maf_470way_codon.png" caption="The hg38 470-way narrowed to representative mammals, one per major clade plus opossum and platypus outgroups, in codon view at a conserved GAPDH exon."/>
 
 ## Tooltips
 

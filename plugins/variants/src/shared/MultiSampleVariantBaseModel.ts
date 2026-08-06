@@ -386,12 +386,10 @@ export default function MultiSampleVariantBaseModelF(
       .volatile(() => ({
         /**
          * #volatile
-         */
-        showLegend: true,
-        /**
-         * #volatile
          * Ids of legend sections the user has individually closed (e.g.
          * 'genotypes' / 'group'); reset when the whole legend is re-shown.
+         * Stays volatile where `showLegend` did not: this is which sections a
+         * reader collapsed in one sitting, not how the track is configured.
          */
         dismissedLegendSections: [] as string[],
         /**
@@ -582,6 +580,17 @@ export default function MultiSampleVariantBaseModelF(
         get groupBy(): string {
           return getConf(self, 'groupBy')
         },
+        /**
+         * #getter
+         * Whether the floating legend is drawn over the display. Config-backed
+         * rather than volatile so a session or a track config can turn it off,
+         * which is what lets a short lane be sized to its rows: the legend is
+         * clipped to the display's bounds, so while it is on it sets a floor
+         * under the lane height.
+         */
+        get showLegend(): boolean {
+          return getConf(self, 'showLegend')
+        },
 
         /**
          * #getter
@@ -641,7 +650,7 @@ export default function MultiSampleVariantBaseModelF(
          * #action
          */
         setShowLegend(s: boolean) {
-          self.showLegend = s
+          setConf(self, 'showLegend', s)
           // Re-showing the legend restores any individually-closed sections.
           if (s) {
             self.dismissedLegendSections = []

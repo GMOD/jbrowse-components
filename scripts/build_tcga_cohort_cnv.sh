@@ -213,6 +213,140 @@ echo "== done: $OUT.bed.gz ($(du -h "$OUT.bed.gz" | cut -f1))"
 echo "         ${OUT}_recurrence.bedGraph.gz ($(du -h "${OUT}_recurrence.bedGraph.gz" | cut -f1))"
 echo "         $BY.gz ($(du -h "$BY.gz" | cut -f1))"
 echo "         $CLINICAL ($(du -h "$CLINICAL" | cut -f1))"
-echo "   upload with: aws s3 cp $OUT.bed.gz{,.tbi} s3://jbrowse.org/demos/tcga/"
-echo "                aws s3 cp ${OUT}_recurrence.bedGraph.gz{,.tbi} s3://jbrowse.org/demos/tcga/"
-echo "                aws s3 cp $BY.gz{,.tbi} s3://jbrowse.org/demos/tcga/"
+
+# ── JBrowse app ──────────────────────────────────────────────────────────────
+# The three files above are the cohort; this is what opens them, so "reproduce
+# it end to end" ends in a view rather than in a directory and an upload
+# command. The assembly is the hosted UCSC hg38 hub's own entry copied in, so
+# the reference is never downloaded; its relative uris are resolved against the
+# hub first, since they no longer sit beside it.
+if command -v jbrowse >/dev/null; then jb() { jbrowse "$@"; }
+else jb() { npx -y @jbrowse/cli "$@"; }; fi
+APP=jbrowse2
+[ -f "$APP/index.html" ] || jb create "$APP"
+cp "$OUT.bed.gz" "$OUT.bed.gz.tbi" \
+   "${OUT}_recurrence.bedGraph.gz" "${OUT}_recurrence.bedGraph.gz.tbi" \
+   "$BY.gz" "$BY.gz.tbi" "$CLINICAL" "$APP"/
+
+python3 - "$APP/config.json" "$OUT" "$BY" "$CLINICAL" "$PROJECT" "$GROUPBY" <<'PY'
+import json, sys, urllib.parse, urllib.request
+
+path, out, by, clinical, project, groupby = sys.argv[1:7]
+HUB = 'https://jbrowse.org/ucsc/hg38/config.json'
+hub = json.load(urllib.request.urlopen(HUB))
+
+
+def absolutize(node):
+    """Rewrite the hub's relative file references against the hub's own url."""
+    if isinstance(node, dict):
+        for k, v in node.items():
+            if k in ('uri', 'chromSizes') and isinstance(v, str) and '://' not in v:
+                node[k] = urllib.parse.urljoin(HUB, v)
+            else:
+                absolutize(v)
+    elif isinstance(node, list):
+        for v in node:
+            absolutize(v)
+
+
+cfg = json.load(open(path))
+cfg['assemblies'] = hub['assemblies']
+cfg['tracks'] = [t for t in hub['tracks'] if t.get('trackId') == 'hg38-ncbiRefSeqCurated']
+absolutize(cfg['assemblies'])
+absolutize(cfg['tracks'])
+
+# One row per tumor, colored by segment mean. The jexl and its legend are the
+# same pair the tutorial documents: the BED carries no itemRgb, so the color is
+# a threshold on the score rather than a column.
+SEGMEAN_COLOR = (
+    "jexl:feature.segmean<-1?'#2166ac'"
+    ":feature.segmean<-0.3?'#92c5de'"
+    ":feature.segmean<0.3?'#f7f7f7'"
+    ":feature.segmean<1?'#f4a582':'#b2182b'"
+)
+cfg['tracks'] += [
+    {
+        'type': 'FeatureTrack',
+        'trackId': out,
+        'name': f'{project} copy number',
+        'assemblyNames': ['hg38'],
+        'category': ['TCGA'],
+        'adapter': {
+            'type': 'BedTabixAdapter',
+            'uri': f'{out}.bed.gz',
+            'disableGeneHeuristic': True,
+        },
+        'displays': [{
+            'type': 'LinearMultiRowFeatureDisplay',
+            'displayId': f'{out}-LinearMultiRowFeatureDisplay',
+            'partitionField': 'sample',
+            'color': SEGMEAN_COLOR,
+            'legend': [
+                {'label': 'Deep loss (log2 < -1)', 'color': '#2166ac'},
+                {'label': 'Loss', 'color': '#92c5de'},
+                {'label': 'Balanced', 'color': '#f7f7f7'},
+                {'label': 'Gain', 'color': '#f4a582'},
+                {'label': 'Amplification (log2 > 1)', 'color': '#b2182b'},
+            ],
+        }],
+    },
+    {
+        'type': 'QuantitativeTrack',
+        'trackId': f'{out}_recurrence',
+        'name': f'{project} recurrence (% of tumors)',
+        'assemblyNames': ['hg38'],
+        'category': ['TCGA'],
+        'adapter': {
+            'type': 'BedGraphTabixAdapter',
+            'uri': f'{out}_recurrence.bedGraph.gz',
+        },
+    },
+    {
+        'type': 'MultiQuantitativeTrack',
+        'trackId': f'{out}_recurrence_by_{groupby}',
+        'name': f'{project} recurrence by {groupby}',
+        'assemblyNames': ['hg38'],
+        'category': ['TCGA'],
+        'adapter': {
+            'type': 'BedGraphTabixAdapter',
+            'uri': f'{by}.gz',
+        },
+    },
+]
+
+# ERBB2 on chr17, the amplification the tutorial reads first.
+cfg['defaultSession'] = {
+    'name': f'{project} copy number',
+    'views': [{
+        'type': 'LinearGenomeView',
+        'assembly': 'hg38',
+        'loc': 'chr17:39,000,000-40,500,000',
+        'tracks': [
+            'hg38-ncbiRefSeqCurated',
+            f'{out}_recurrence',
+            f'{out}_recurrence_by_{groupby}',
+            out,
+        ],
+    }],
+}
+json.dump(cfg, open(path, 'w'), indent=2)
+PY
+
+cat <<EOF
+
+Built $(pwd)/$APP/config.json, opening on ERBB2 with the two recurrence lanes
+over one row per tumor. Serve it, e.g.:
+
+  npx --yes serve $(pwd)/$APP
+
+or open $(pwd)/$APP/config.json in JBrowse Desktop via
+File -> Session -> Open config.json or .jbrowse file...
+
+Maintainers: the hosted figures read these files, so a change to what this
+builds needs them uploaded. The bucket has no versioning, so an overwrite is not
+recoverable.
+
+  aws s3 cp $OUT.bed.gz{,.tbi} s3://jbrowse.org/demos/tcga/
+  aws s3 cp ${OUT}_recurrence.bedGraph.gz{,.tbi} s3://jbrowse.org/demos/tcga/
+  aws s3 cp $BY.gz{,.tbi} s3://jbrowse.org/demos/tcga/
+EOF

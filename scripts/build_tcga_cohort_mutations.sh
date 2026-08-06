@@ -105,5 +105,97 @@ python3 "$SCRIPT_DIR/tcga_clinical_tsv.py" "$PROJECT" "$CLINICAL"
 
 echo "== done: $OUT.vcf.gz ($(du -h "$OUT.vcf.gz" | cut -f1))"
 echo "         $CLINICAL ($(du -h "$CLINICAL" | cut -f1))"
-echo "   upload with: aws s3 cp $OUT.vcf.gz{,.tbi} s3://jbrowse.org/demos/tcga/"
-echo "                aws s3 cp $CLINICAL s3://jbrowse.org/demos/tcga/"
+
+# ── JBrowse app ──────────────────────────────────────────────────────────────
+# The files above are the cohort; this is what opens them, so "reproduce it end
+# to end" ends in a view rather than in two files and an upload command. The
+# assembly is the hosted UCSC hg38 hub's own entry copied in, so the reference
+# is never downloaded; its relative uris are resolved against the hub first,
+# since they no longer sit beside it.
+if command -v jbrowse >/dev/null; then jb() { jbrowse "$@"; }
+else jb() { npx -y @jbrowse/cli "$@"; }; fi
+APP=jbrowse2
+[ -f "$APP/index.html" ] || jb create "$APP"
+cp "$OUT.vcf.gz" "$OUT.vcf.gz.tbi" "$CLINICAL" "$APP"/
+
+python3 - "$APP/config.json" "$OUT" "$CLINICAL" "$PROJECT" <<'PY'
+import json, sys, urllib.parse, urllib.request
+
+path, out, clinical, project = sys.argv[1:5]
+HUB = 'https://jbrowse.org/ucsc/hg38/config.json'
+hub = json.load(urllib.request.urlopen(HUB))
+
+
+def absolutize(node):
+    """Rewrite the hub's relative file references against the hub's own url."""
+    if isinstance(node, dict):
+        for k, v in node.items():
+            if k in ('uri', 'chromSizes') and isinstance(v, str) and '://' not in v:
+                node[k] = urllib.parse.urljoin(HUB, v)
+            else:
+                absolutize(v)
+    elif isinstance(node, list):
+        for v in node:
+            absolutize(v)
+
+
+cfg = json.load(open(path))
+cfg['assemblies'] = hub['assemblies']
+# Genes, so a mutation column has something to be read against.
+cfg['tracks'] = [t for t in hub['tracks'] if t.get('trackId') == 'hg38-ncbiRefSeqCurated']
+absolutize(cfg['assemblies'])
+absolutize(cfg['tracks'])
+
+cfg['tracks'].append({
+    'type': 'VariantTrack',
+    'trackId': f'{out}_track',
+    'name': f'{project} somatic mutations',
+    'assemblyNames': ['hg38'],
+    'category': ['TCGA'],
+    'adapter': {
+        'type': 'VcfTabixAdapter',
+        'uri': f'{out}.vcf.gz',
+        # what makes the clinical columns available to group and color rows by
+        'samplesTsvLocation': {'uri': clinical},
+    },
+    'displays': [{
+        'type': 'LinearMultiSampleVariantMatrixDisplay',
+        'displayId': f'{out}_track-LinearMultiSampleVariantMatrixDisplay',
+        'height': 1010,
+        # each mutation's VEP impact tier out of the CSQ field, so truncating
+        # and missense cells are told apart without a per-figure color table
+        'featureColor': 'jexl:impactColor(feature)',
+    }],
+})
+
+# PIK3CA, the locus the tutorial reads first.
+cfg['defaultSession'] = {
+    'name': f'{project} somatic mutations',
+    'views': [{
+        'type': 'LinearGenomeView',
+        'assembly': 'hg38',
+        'loc': 'chr3:179,148,000-179,240,000',
+        'tracks': ['hg38-ncbiRefSeqCurated', f'{out}_track'],
+    }],
+}
+json.dump(cfg, open(path, 'w'), indent=2)
+PY
+
+cat <<EOF
+
+Built $(pwd)/$APP/config.json, opening on PIK3CA with one row per tumor and one
+column per mutation. Group and color the rows by any column of $CLINICAL from
+the track menu. Serve it, e.g.:
+
+  npx --yes serve $(pwd)/$APP
+
+or open $(pwd)/$APP/config.json in JBrowse Desktop via
+File -> Session -> Open config.json or .jbrowse file...
+
+Maintainers: the hosted figures read these two files, so a change to what this
+builds needs them uploaded. The bucket has no versioning, so an overwrite is not
+recoverable.
+
+  aws s3 cp $OUT.vcf.gz{,.tbi} s3://jbrowse.org/demos/tcga/
+  aws s3 cp $CLINICAL s3://jbrowse.org/demos/tcga/
+EOF

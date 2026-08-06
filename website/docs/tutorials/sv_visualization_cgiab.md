@@ -523,7 +523,12 @@ Nothing in a 60 kb window around this deletion is diploid, which is the point of
 the wider frame above it: chr9 runs CN 1, drops to CN 0 across the deletion,
 returns to CN 1, and only reaches CN 2 several hundred kilobases to the right.
 
-<Figure caption="Top, 1.3 Mb of chr9 with the segmented log2 ratio over the benchmark CNV calls: CN 1, CN 0 across the deletion, CN 1, then a CN 2 segment on the right. Bottom, the same deletion at 60 kb: NCBI RefSeq genes, tumor and normal per-base coverage as two rows of one track on a shared fixed range, the PacBio HiFi read pileup, and the CNV calls again. Coverage drops out in the tumor row and not in the normal; the thin lines crossing the gap in the pileup are single reads carrying the deletion as one gap in their alignment." src="/img/sv_cgiab/driver_cdkn2a_deletion.png" />
+The lower panel stacks NCBI RefSeq genes, tumor and normal per-base coverage as
+two rows of one track on a shared fixed range, the PacBio HiFi read pileup, and
+the CNV calls again. The thin lines crossing the gap in the pileup are single
+reads carrying the deletion as one gap in their alignment.
+
+<Figure caption="Top, 1.3 Mb of chr9 with the segmented log2 ratio over the benchmark CNV calls. Bottom, the same deletion at 60 kb: coverage drops out in the tumor row and not in the normal." src="/img/sv_cgiab/driver_cdkn2a_deletion.png" />
 
 #### chr17: loss-with-LOH vs copy-neutral LOH
 

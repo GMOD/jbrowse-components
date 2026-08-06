@@ -68,7 +68,12 @@ liftOver** across an intron of _FTO_, because a cross-species target is where
 the tracks each panel ends up with are worth following. Every click is the same
 on the hs1 track this page opened with.
 
-<Figure caption="The four steps on the hg38-to-panTro6 liftOver track across an FTO intron: right-click a chain block, confirm the framing, launch, then add the chimp panel's genes and repeats. The last frame also switches the ribbon to curves and to Transparent indels, which is what turns the one gap in it into a hole you can line up against the RepeatMasker track above: the element under it is an L1HS, the youngest human LINE-1 subfamily, and the chimp panel keeps every flanking repeat but not that one." src="/img/genomes_synteny/launch_sequence.png" />
+The last frame also switches the ribbon to curves and to **Transparent indels**,
+which turns the one gap in it into a hole that lines up against the RepeatMasker
+track above. The element under it is an L1HS, the youngest human LINE-1
+subfamily, and the chimp panel keeps every flanking repeat but not that one.
+
+<Figure caption="The four steps on the hg38-to-panTro6 liftOver track across an FTO intron: right-click a chain block, confirm the framing, launch, then add the chimp panel's genes and repeats." src="/img/genomes_synteny/launch_sequence.png" />
 
 The panel for the assembly you launched from opens with the tracks that view had
 on, which is why the human side arrives with its genes and repeats already;

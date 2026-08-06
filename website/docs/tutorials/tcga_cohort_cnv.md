@@ -243,7 +243,11 @@ one row each. No subadapter list and no second file:
 }
 ```
 
-<Figure caption="Gain (red) and loss (blue) frequency per 100kb across the 22 autosomes and chrX, tallied separately for each receptor subtype and drawn one row per signal. 17q gain is confined to the HER2+ row, 5q loss and 10p gain to the triple-negative row, and 16q loss is the event the triple-negative row is missing; 1q and 8q gain are in every row. The bottom row of each block is the tumors whose receptor calls do not resolve a subtype." src="/img/tcga/cohort_cnv_recurrence_subtype.png" />
+Each subtype gets its own pair of rows, gain in red over loss in blue, with the
+bottom row of each block holding the tumors whose receptor calls do not resolve
+a subtype.
+
+<Figure caption="Gain and loss frequency per 100kb across the 22 autosomes and chrX, tallied separately for each receptor subtype. 17q gain is confined to the HER2+ row, 5q loss and 10p gain to the triple-negative row, and 16q loss is the event that row is missing; 1q and 8q gain are in every row." src="/img/tcga/cohort_cnv_recurrence_subtype.png" />
 
 The rows can only be read against each other because
 [`minScore`](/docs/config/multilinearwiggledisplay/#slot-minscore)/[`maxScore`](/docs/config/multilinearwiggledisplay/#slot-maxscore)
@@ -382,9 +386,13 @@ It needs `curl`, `python3`, and `bgzip` + `tabix` from
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_tcga_cohort_cnv.sh
 bash build_tcga_cohort_cnv.sh TCGA-BRCA 20 # 20 tumors, to test the pipeline
 bash build_tcga_cohort_cnv.sh TCGA-BRCA    # the full cohort, ~20 minutes
-# -> tcga_brca_cnv.bed.gz (+ .tbi), tcga_brca_cnv_recurrence.bedGraph.gz (+ .tbi),
-#    tcga_brca_cnv_recurrence_by_subtype.bedGraph.gz (+ .tbi), tcga_brca_clinical.tsv
+npx --yes serve jbrowse2                   # then open the printed URL
 ```
+
+It writes `tcga_brca_cnv.bed.gz` (+ `.tbi`), the two recurrence bedGraphs (+
+`.tbi`) and `tcga_brca_clinical.tsv`, then a `jbrowse2/` opening on _ERBB2_ with
+both recurrence lanes over one row per tumor. The assembly is the hosted UCSC
+hg38 hub's own entry copied in, so the reference is never downloaded.
 
 The full run is almost entirely downloading and produces 379,318 segments across
 1104 tumors in 5.7 MB, plus 22,592 recurrence bins in 148 KB and 24,048 grouped
