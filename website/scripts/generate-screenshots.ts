@@ -31,6 +31,7 @@ import {
   drawAnnotations,
   hideLingeringTooltip,
 } from './annotations.ts'
+import { fileExists, readManifest } from './figure-paths.ts'
 import {
   IM,
   commitScreenshot,
@@ -575,6 +576,31 @@ async function captureComposeSpec(spec: ComposeSpec) {
 }
 
 async function main() {
+  // The content-stable gate needs the figures it is comparing against.
+  //
+  // commitScreenshot treats a missing output as a brand-new figure and writes
+  // it unconditionally — correct for a new spec, catastrophic for all of them
+  // at once. Figure bytes are gitignored now, so a fresh clone has none, and a
+  // sweep there would rewrite all 452 as "new", never run pngDiffFraction once,
+  // and leave a push that reports every figure as changed. Nothing downstream
+  // could tell that from a run where the app really did move everything.
+  //
+  // `pnpm screenshots` pulls first, but website/CLAUDE.md tells people to run
+  // this file directly with node (npx tsx breaks page.evaluate), so the guard
+  // has to live here rather than only in the npm script. It refuses instead of
+  // pulling: a sweep is a long, expensive operation and silently going to the
+  // network at minute zero is not something to do on the user's behalf.
+  const manifest = readManifest()
+  const absent = [...manifest.keys()].filter(p => !fileExists(p))
+  if (absent.length > 0) {
+    console.error(
+      `${absent.length} of ${manifest.size} figures are not on disk, so the ` +
+        'diff gate cannot compare against them and every capture would be ' +
+        'written as new.\n  Run `pnpm figures:pull` first.',
+    )
+    process.exit(1)
+  }
+
   // Before anything is rendered: a duplicate name or a compose part that names
   // no spec is an hour of capture producing a wrong figure, and neither fails on
   // its own (see validateSpecs). Same check CI runs via check-specs.ts.
