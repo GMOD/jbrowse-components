@@ -116,6 +116,16 @@ export type getSubAdapterType = (
  * — a whole parsed GFF3, a BAM chunk cache — become unreachable and are
  * collected normally. There is nothing to free by hand.
  *
+ * "Collected normally" is not the same as "collected now", and for the indexed
+ * adapters it is not even soon. @gmod/bam, @gmod/cram and @gmod/tabix each hold
+ * their parsed chunks in a SharedReadCache that sweeps itself on a setInterval,
+ * and a pending timer is a GC root — so the instance stays reachable through its
+ * own sweep timer until that sweep empties the cache and stops itself, three
+ * minutes later. Measured: closing a panned alignments track reclaims nothing at
+ * the time it happens, and the worker falls from 296 MB to 7 MB four minutes on.
+ * Deleting the key is still the only thing to do here; just don't read a heap
+ * immediately after a close and conclude this did nothing.
+ *
  * The refcount is what makes this safe to call on any track close: an adapter
  * pulled in as a sub-adapter carries its parent's sessionId (getSubAdapter
  * passes it straight through), so a sequence adapter shared by two alignments

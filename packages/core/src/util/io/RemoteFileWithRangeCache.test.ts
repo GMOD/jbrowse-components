@@ -9,6 +9,9 @@ import {
 fetchMock.disableMocks()
 
 const CHUNK = 256 * 1024
+// the sweep runs at a quarter of the idle timeout, so advancing by timeout +
+// interval guarantees at least one sweep has seen an entry as idle
+const SWEEP_INTERVAL = (3 * 60 * 1000) / 4
 
 // Deterministic 1MB "file" where each byte equals its position mod 256
 const FILE_SIZE = 2 * 1024 * 1024
@@ -910,5 +913,130 @@ describe('RemoteFileWithRangeCache aborted-chunk sharing', () => {
     await expect(second).rejects.toThrow(/HTTP 500/)
     // no retry: the failure is real, and each read would have gotten it alone
     expect(calls).toHaveLength(1)
+  })
+})
+
+// The entry cap bounds this cache but never lowers it, and closing a track
+// lowers it by nothing: a worker measured at 400 chunks (100 MB) after one
+// panned alignments track was still holding all 400 four minutes later. These
+// cover the sweep that fixes that, including the property the whole design rests
+// on — that evicting under a live read is harmless.
+describe('RemoteFileWithRangeCache idle sweep', () => {
+  const IDLE = 3 * 60 * 1000
+
+  afterEach(() => {
+    jest.useRealTimers()
+  })
+
+  // resolve every pending microtask without advancing fake time, so a read that
+  // is waiting on a gated fetch has reached that fetch before we sweep
+  async function flush() {
+    for (let i = 0; i < 20; i++) {
+      await Promise.resolve()
+    }
+  }
+
+  test('a chunk nothing reads again is dropped, and re-fetched next time', async () => {
+    jest.useFakeTimers()
+    const { calls, mockFetch } = createMockFetch()
+    const file = makeFile(mockFetch)
+
+    await fetchRange(file, 0, 99)
+    expect(calls).toHaveLength(1)
+
+    jest.advanceTimersByTime(IDLE + SWEEP_INTERVAL)
+
+    await fetchRange(file, 0, 99)
+    expect(calls).toHaveLength(2)
+  })
+
+  test('a chunk that keeps being read is never dropped', async () => {
+    jest.useFakeTimers()
+    const { calls, mockFetch } = createMockFetch()
+    const file = makeFile(mockFetch)
+
+    await fetchRange(file, 0, 99)
+    expect(calls).toHaveLength(1)
+
+    // eight minutes of wall clock, but never three without a read
+    for (let i = 0; i < 8; i++) {
+      jest.advanceTimersByTime(60 * 1000)
+      await fetchRange(file, 0, 99)
+    }
+    expect(calls).toHaveLength(1)
+  })
+
+  // The sweep is the one reclamation that has to happen when nothing is calling
+  // in, so it runs on an interval — which then has to stop, or it is a live root
+  // in every worker forever and jest reports a worker that failed to exit.
+  test('the sweep timer starts with the first chunk and stops when the cache empties', async () => {
+    jest.useFakeTimers()
+    const { mockFetch } = createMockFetch()
+    const file = makeFile(mockFetch)
+    expect(jest.getTimerCount()).toBe(0)
+
+    await fetchRange(file, 0, 99)
+    expect(jest.getTimerCount()).toBe(1)
+
+    jest.advanceTimersByTime(IDLE + SWEEP_INTERVAL)
+    expect(jest.getTimerCount()).toBe(0)
+  })
+
+  test('clearCache stops the sweep timer too', async () => {
+    jest.useFakeTimers()
+    const { mockFetch } = createMockFetch()
+    const file = makeFile(mockFetch)
+
+    await fetchRange(file, 0, 99)
+    expect(jest.getTimerCount()).toBe(1)
+
+    clearCache()
+    expect(jest.getTimerCount()).toBe(0)
+  })
+
+  // What makes a sweep safe to run at any moment: getCachedRange captures every
+  // already-cached chunk into a local map before its first await, so evicting
+  // one from the module cache underneath it cannot leave the assembly short.
+  // Without that, this read assembles a buffer of zeros for its first chunk.
+  test('a sweep that evicts a chunk a live read already captured does not break it', async () => {
+    jest.useFakeTimers()
+    const calls: number[] = []
+    let release: (() => void) | undefined
+    const gatedFetch = async (
+      _input: RequestInfo | URL,
+      init?: RequestInit,
+    ) => {
+      const range = new Headers(init?.headers).get('range')!
+      const [start, end] = /bytes=(\d+)-(\d+)/
+        .exec(range)!
+        .slice(1)
+        .map(Number) as [number, number]
+      calls.push(start)
+      // hold the second chunk open so the sweep lands while it is in flight
+      if (start >= CHUNK) {
+        await new Promise<void>(resolve => {
+          release = resolve
+        })
+      }
+      return new Response(slice(start, Math.min(end, FILE_SIZE - 1)), {
+        status: 206,
+      })
+    }
+    const file = makeFile(gatedFetch)
+
+    await fetchRange(file, 0, 99)
+    const read = fetchRange(file, 0, CHUNK + 99)
+    await flush()
+    expect(release).toBeDefined()
+
+    jest.advanceTimersByTime(IDLE + SWEEP_INTERVAL)
+    release!()
+
+    expect(await read).toEqual(slice(0, CHUNK + 99))
+    // and the sweep really did take chunk 0 out from under that read, rather
+    // than the assertion above passing because nothing was evicted
+    expect(calls).toEqual([0, CHUNK])
+    await fetchRange(file, 0, 99)
+    expect(calls).toEqual([0, CHUNK, 0])
   })
 })

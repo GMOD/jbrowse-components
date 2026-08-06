@@ -1,18 +1,18 @@
 ---
 name: remotefile-range-cache-reclamation
-description: RemoteFileWithRangeCache holds up to 256 MB of raw file bytes per module instance — main thread plus every RPC worker — and never reclaims on idle, which as of b4a353c163 makes it the only layer in the fetch stack without idle reclamation. Now measured: 100 MB retained in one worker after one track was panned and closed, and still there four minutes later. What it holds, why its existing clearCache() is not a naive clear and must not be reimplemented, the three candidate designs, and why neither memstress nor Runtime.getHeapUsage can see this layer. Read before touching packages/core/src/util/io/RemoteFileWithRangeCache.ts.
+description: RemoteFileWithRangeCache holds up to 256 MB of raw file bytes per module instance — main thread plus every RPC worker — and used to reclaim none of it. Measured at 100 MB retained in one worker after one alignments track was panned and closed, still there four minutes later; a 3-minute idle sweep now returns it. Why clearCache() is not what an idle sweep should call, why neither memstress nor Runtime.getHeapUsage can see this layer, and what is still open — the tab-hidden broadcast, and whether the raw layer earns its budget at all next to @gmod/bam's parsed cache. Read before touching packages/core/src/util/io/RemoteFileWithRangeCache.ts.
 ---
 
-# RemoteFileWithRangeCache never gives memory back
+# RemoteFileWithRangeCache and the floor it used to keep
 
 This came out of a memory-leak audit of BAM/CRAM/GFF/VCF retention. The root
 finding of that audit — data adapters were never freed — is fixed in
 `b4a353c163`. This file is the largest thing that audit did **not** fix.
 
-The retention below is no longer inferred from the code. It was measured on
-2026-08-06 against `79080af254`; see [Measured](#measured), which supersedes the
-old caveat that these were the file's own documented bounds rather than
-observations.
+**The idle sweep has landed** — `sweepIdleCache`, three minutes, matching the
+convention. The retention this file describes is now measured on both sides of
+it, and what is left open is the tab-hidden broadcast (option 1) and the
+question underneath it in [Still open](#still-open).
 
 ## What it holds
 
@@ -20,38 +20,38 @@ observations.
 
 | | |
 | --- | --- |
-| `cache` (`:42`) | module-level `Map<string, Uint8Array>`, keyed `${url}:${chunkIndex}` |
+| `cache` | module-level `Map<string, CacheEntry>`, keyed `${url}:${chunkIndex}` |
 | `CHUNK_SIZE` | 256 KB |
 | `MAX_CACHE_ENTRIES` | 1000 |
 | bound | **256 MB per module instance** |
 | instances | main thread **+ each RPC worker**, each with its own module state |
 | eviction | entry-count LRU, via `Map` re-insertion order in `getCached`/`putCached` |
-| idle reclamation | **none** |
+| idle reclamation | 3 min per entry, `sweepIdleCache` — **was none** |
 
-These are raw compressed BAM/CRAM/BGZF bytes, and they are retained after every
-track is closed. With a worker pool that is N × 256 MB of floor.
+These are raw compressed BAM/CRAM/BGZF bytes. They used to be retained after
+every track closed, which with a worker pool was N × 256 MB of floor.
 
-**It is a well-built cache** — this is not a bug hunt. The entry count is a
+**It is a well-built cache** — this was never a bug hunt. The entry count is a
 *true* byte bound because `fetchRun` does `buffer.slice(...)` rather than
-`subarray` specifically so that evicting a chunk actually frees (`:299-301`
-says so). The problem is only that nothing ever lowers it.
+`subarray` specifically so that evicting a chunk actually frees. The problem was
+only that nothing ever lowered it.
 
-## Why it matters more now than it did
+## Why it mattered
 
-Every other layer of the fetch stack gained idle reclamation:
+Every other layer of the fetch stack had already gained idle reclamation:
 
 | library | budget | idle |
 | --- | --- | --- |
 | `@gmod/bam` 8.3.0 | 1 GB | 3 min |
 | `@gmod/tabix` 3.6.0 | 1 GB (jbrowse passes 50 MB) | 3 min |
 | `@gmod/cram` 11.3.0 | 1,000,000 records | 3 min |
-| this | 256 MB | **never** |
+| this | 256 MB | 3 min — **was never** |
 
 And since `b4a353c163` the adapters that own those caches are themselves evicted
 when the last track using them closes — though what actually returns the parsed
 bytes is still each library's own 3-minute sweep, not the close (see
-[Measured](#measured)). Either way the raw layer is left sitting at its
-high-water mark. This is the last floor.
+[Measured](#measured)). The raw layer was the one left sitting at its high-water
+mark, and was the last floor.
 
 `sizeCache` (`:47`) is also never reclaimed, but it holds one number per URL and
 is not worth designing around; a sweep should keep it. Nothing else here grows
@@ -72,13 +72,18 @@ non-overlapping 12 kb windows of a 250 kb contig — 102.8 MB pulled over the wi
 | tab hidden (`visibilitychange`) | 295.8 MB | — | — |
 | 4 minutes idle | 7.3 MB | 214.7 MB | 400 — **100.0 MB** |
 
-400 × 256 KB = 100.0 MB against 102.8 MB fetched: **every byte read is still
-held**, and the chunk count does not move at any of the three events that might
+400 × 256 KB = 100.0 MB against 102.8 MB fetched: **every byte read was still
+held**, and the chunk count did not move at any of the three events that might
 have reclaimed it. The cache reached 400 of its 1000 entries from one track and
 one pan, so the 256 MB bound is an ordinary working number, not a pathological
 one. Reproduces to the decimal across runs.
 
-Three things this run settles that the sections below were guessing at:
+With the sweep, the same run ends at **0 chunks / 0.0 MB** and a worker snapshot
+of 115.8 MB rather than 214.7 MB. Every row above it is unchanged — 400 chunks
+at the peak, still 400 immediately after the close — so the sweep costs nothing
+during use and returns the whole floor once nobody is reading.
+
+Three things these runs settle:
 
 - **Closing the track reclaims nothing at the time it happens.** Not 100 MB, not
   1 MB — the worker is byte-identical before and after. What eventually falls is
@@ -98,8 +103,10 @@ Three things this run settles that the sections below were guessing at:
   does report is largely the worker pool growing 3 → 5 across the run, a booted
   worker being 6-9 MB here. Use the probe for this layer; the only instrument
   that sees it is a heap snapshot.
-- **The tab-away sweep would have found 100 MB waiting for it.** `visibilitychange`
-  fires, `useTabVisibilityRerender` re-renders, and nothing else happens.
+- **A tab-away sweep would still find 100 MB waiting for it**, for the three
+  minutes before the idle sweep gets there. `visibilitychange` fires,
+  `useTabVisibilityRerender` re-renders, and nothing else happens. That is what
+  option 1 below is for.
 
 The probe needs a `test_data/jb2bench_link` you assemble by hand (gitignored, see
 `mem_config.json` there) and a built `products/jbrowse-web`. It streams the
@@ -136,8 +143,10 @@ reference to every chunk it will assemble from (`:411-418` says why); eviction
 under an await was designed for. So a sweep is a *narrower* function than
 `clearCache()`, not a variant of it.
 
-Note it is **not** re-exported from `util/io/index.ts` (`:187` exports only the
-class). Deciding that export surface is part of the job.
+Neither it nor `sweepIdleCache` is re-exported from `util/io/index.ts` (`:187`
+exports only the class). That was the deliberate answer to the export-surface
+question: `util/io` is plugin-facing ABI, and nothing outside this module needs
+either — the sweep drives itself, and a future broadcaster imports from the file.
 
 ## The design question, and the trap
 
@@ -164,18 +173,22 @@ how much they buy:
    `CoreFreeResources` path added in `b4a353c163` already runs in the right
    place at the right moment.
 
-**Do 2.** It is the convention every neighbouring layer already follows, it needs
-no plumbing, and it is the only one that works in every realm that has the module
-— worker, main thread, desktop, embedded, node — rather than only where a driver
-happens to be wired up. Mirror `SharedReadCache`'s lifecycle exactly (3 min,
+**2 is done.** It was the convention every neighbouring layer already follows, it
+needed no plumbing, and it is the only one that works in every realm that has the
+module — worker, main thread, desktop, embedded, node — rather than only where a
+driver happens to be wired up. It mirrors `SharedReadCache`'s lifecycle (3 min,
 interval at a quarter of that, `unref` where it exists, start on first insert,
-`stopSweep` when the sweep empties the cache) so the two behave alike under the
-same workload, and hang a `lastTouched` on each entry rather than sweeping the
-whole map off one global timestamp — a session polling one small file would
-otherwise pin all 256 MB. That is a `Map<string, {bytes, lastTouched}>`, which
-touches `getCached`/`putCached` and nothing else.
+`stopSweep` when the sweep empties the cache), and hangs a `lastTouched` on each
+entry rather than sweeping the whole map off one global timestamp — a session
+polling one small file would otherwise pin all 256 MB.
 
-Then add 1 on top; the two are complementary, not alternatives. A sweep bounded
+One thing that made it cheaper than expected: Chrome's intensive throttling of
+hidden pages does not reach the copies that matter, because worker timers are not
+throttled and the workers are where the bytes are.
+
+## Still open
+
+**Option 1, the tab-hidden broadcast.** A sweep bounded
 by a timer still leaves the full 256 MB alive for three minutes after a user
 tabs away, and the seam already exists: `RpcServer.handler` (`:84-97`) picks the
 `stopToken` frame out of the message stream ahead of the method lookup precisely
@@ -183,14 +196,32 @@ because it is out-of-band, and another field beside it costs a branch.
 `registerStopTokenBroadcaster` / `WorkerHandle.notifyStopToken`
 (`WorkerPoolRpcDriver.ts:93,123`) is the main-thread half.
 
-Option 3 is the one to drop. The URLs *are* reachable — `freeAdapterResources`
-holds each entry's `dataAdapter`, whose `config` walks to its `FileLocation`s —
-so the question the last session left open has an answer. But the cache is keyed
-by URL while the refcount is keyed by *adapter config*, and those are not the
-same partition: two tracks on one BAM, or a shared sequence adapter, mean closing
-one track evicts chunks another live adapter is still reading. Making it correct
+Option 3 is dropped. The URLs *are* reachable — `freeAdapterResources` holds each
+entry's `dataAdapter`, whose `config` walks to its `FileLocation`s — so the
+question the last session left open has an answer. But the cache is keyed by URL
+while the refcount is keyed by *adapter config*, and those are not the same
+partition: two tracks on one BAM, or a shared sequence adapter, mean closing one
+track evicts chunks another live adapter is still reading. Making it correct
 needs a second refcount at URL granularity, which is more machinery than the
-3-minute sweep that would have reclaimed the same bytes anyway.
+3-minute sweep that reclaims the same bytes anyway.
+
+**Whether the raw layer earns 256 MB for indexed formats at all.** This is the
+question underneath "should jbrowse own the whole cache stack, bam-js's included".
+The two caches are not obviously additive: `@gmod/bam` keys *parsed features* by
+bgzf chunk, so once a chunk is parsed a repeat query is answered upstairs and
+never reaches this filehandle — which would leave the raw layer earning its keep
+only on index blocks and on 256 KB blocks straddling two bgzf chunks. If that is
+what is happening, the lever is this module's **budget**, not a merger: a much
+smaller cap would give back most of the 100 MB at no latency cost.
+
+Do not merge the layers to find out. `@gmod/bam` has consumers outside jbrowse,
+the two caches key on different things (byte offsets vs bgzf chunk identity) and
+size in different units (entries of compressed bytes vs decompressed bytes), and
+this module is not BAM-specific — CRAM, tabix, bigwig, 2bit and every plain fetch
+sit on it. Measure the hit rate first: instrument `getCached` hit/miss per URL and
+run the probe's pan-and-return workload at `MAX_CACHE_ENTRIES` of 1000 vs
+something small, and compare bytes over the wire. A small cap that does not move
+the wire figure is the whole answer.
 
 ## Also still open, unrelated to this file
 

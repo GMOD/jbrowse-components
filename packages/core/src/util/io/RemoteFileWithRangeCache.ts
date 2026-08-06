@@ -7,6 +7,29 @@ const CHUNK_SIZE = 256 * 1024
 const MAX_CACHE_ENTRIES = 1000
 const MAX_CONCURRENT = 20
 
+// Drop a chunk nothing has read for three minutes.
+//
+// The entry cap above bounds this cache but never lowers it, and closing a track
+// lowers it by nothing at all: measured, one alignments track panned across
+// twenty windows of a 250 kb contig left 400 chunks — 100 MB, every byte it had
+// fetched — resident in its worker, still there after the track closed and after
+// four minutes idle. Every layer above this one already sweeps on the same three
+// minutes (@gmod/bam, @gmod/cram, @gmod/tabix all take a cacheIdleTimeoutMs);
+// this was the last one that never gave anything back.
+//
+// Three minutes rather than seconds for the reason those libraries pick it: the
+// point is to catch a reader who has gone away, not one looking at the screen. A
+// pan back a minute later should still hit.
+const CACHE_IDLE_TIMEOUT_MS = 3 * 60 * 1000
+// A quarter of the timeout, so the lag between a chunk going idle and being
+// dropped is ~1.25x it rather than 2x.
+//
+// Chrome's intensive throttling of a hidden page — timers checked once a minute
+// after five minutes hidden — does not reach this where it matters: workers are
+// not throttled, and the workers are where the bytes are. On the main thread it
+// costs some lag on a cache measured holding no chunks at all.
+const SWEEP_INTERVAL_MS = CACHE_IDLE_TIMEOUT_MS / 4
+
 interface ChunkRun {
   start: number
   end: number
@@ -39,7 +62,15 @@ interface InFlightChunk {
   run: RunState
 }
 
-let cache = new Map<string, Uint8Array>()
+interface CacheEntry {
+  bytes: Uint8Array
+  // when a read last looked at this chunk, for sweepIdleCache. Per entry rather
+  // than one timestamp for the whole cache: a session polling one small file
+  // would otherwise keep every cold chunk of every other file alive with it.
+  lastTouched: number
+}
+
+let cache = new Map<string, CacheEntry>()
 // File size is cached at the module level (keyed by URL), parallel to the chunk
 // cache. Per-instance state can't be used: a cache-hit serving bytes from a
 // previous instance's fetch would otherwise leave a new instance's stat() with
@@ -62,16 +93,17 @@ function cacheKey(url: string, chunkIndex: number) {
 }
 
 function getCached(key: string) {
-  const chunk = cache.get(key)
-  if (chunk !== undefined) {
+  const entry = cache.get(key)
+  if (entry !== undefined) {
     // Re-insert to move this key to the end of the Map's iteration order, which
     // is the end putCached evicts from. Without it eviction is FIFO by first
     // fetch, so a constantly-read chunk (bgzf header, bam index block) is
     // dropped as readily as a one-shot one.
     cache.delete(key)
-    cache.set(key, chunk)
+    cache.set(key, entry)
+    entry.lastTouched = Date.now()
   }
-  return chunk
+  return entry?.bytes
 }
 
 function putCached(key: string, chunk: Uint8Array) {
@@ -81,12 +113,83 @@ function putCached(key: string, chunk: Uint8Array) {
       cache.delete(oldestKey)
     }
   }
-  cache.set(key, chunk)
+  cache.set(key, { bytes: chunk, lastTouched: Date.now() })
+  startSweep()
+}
+
+let sweepTimer: ReturnType<typeof setInterval> | undefined
+
+/**
+ * `unref` the sweep timer where it exists.
+ *
+ * Duck-typed rather than cast because `setInterval` returns a number in the
+ * browser and a `Timeout` under node, and this module runs in both. Under jest
+ * it is the difference between the suite exiting and "a worker process has
+ * failed to exit gracefully".
+ */
+function unrefIfPossible(timer: unknown) {
+  if (
+    typeof timer === 'object' &&
+    timer !== null &&
+    'unref' in timer &&
+    typeof timer.unref === 'function'
+  ) {
+    timer.unref()
+  }
+}
+
+/**
+ * Drop every chunk no read has touched for {@link CACHE_IDLE_TIMEOUT_MS}.
+ *
+ * Safe to call at any moment, including mid-fetch, and that is not an accident:
+ * `getCachedRange` holds a strong local reference to every chunk it will
+ * assemble from before its first await, precisely so that eviction underneath it
+ * is harmless. A chunk dropped here that somebody still wants is re-fetched.
+ *
+ * Deliberately narrower than {@link clearCache}: it touches neither `inFlight`
+ * nor `queue`, whose entries are by definition active, and it keeps `sizeCache`,
+ * which is one number per URL and costs a round trip to re-derive.
+ *
+ * Exported so a caller can reclaim on its own schedule — a tab going hidden,
+ * say — rather than only on the interval. The interval is what makes this work
+ * for the case it exists for, though: an idle consumer is calling nothing, so a
+ * lazy check inside `getCached` would never fire for exactly the reader who has
+ * walked away.
+ */
+export function sweepIdleCache() {
+  const cutoff = Date.now() - CACHE_IDLE_TIMEOUT_MS
+  for (const [key, entry] of cache) {
+    if (entry.lastTouched <= cutoff) {
+      cache.delete(key)
+    }
+  }
+  if (cache.size === 0) {
+    stopSweep()
+  }
+}
+
+// Costs nothing while the cache is empty: the timer starts with the first chunk
+// and the sweep that empties the cache stops it again.
+function startSweep() {
+  if (sweepTimer === undefined) {
+    sweepTimer = setInterval(sweepIdleCache, SWEEP_INTERVAL_MS)
+    unrefIfPossible(sweepTimer)
+  }
+}
+
+function stopSweep() {
+  if (sweepTimer !== undefined) {
+    clearInterval(sweepTimer)
+    sweepTimer = undefined
+  }
 }
 
 export function clearCache() {
-  cache = new Map<string, Uint8Array>()
+  cache = new Map<string, CacheEntry>()
   sizeCache = new Map<string, number>()
+  // the new cache is empty, so nothing is left for the sweep to find; putCached
+  // starts it again with the next chunk
+  stopSweep()
   // A leaked fetch that settles after this still removes its own entry from the
   // new map only if it is still the owner, so dropping the old map is safe.
   inFlight = new Map<string, InFlightChunk>()

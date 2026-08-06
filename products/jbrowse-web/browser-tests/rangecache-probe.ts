@@ -332,6 +332,10 @@ console.log(
     `after pan ${mb(afterPan.total)}  after close+idle ${mb(afterClose.total)}`,
 )
 console.log(`  main heap Δ after close    ${mb(closed.main - base.main)}`)
+console.log(
+  `  main thread CHUNK_SIZE bufs ${mb(mainClose.exactBytes)} — the alignments ` +
+    'fetches are issued from the worker, so this instance is expected to be empty',
+)
 console.log(`  page errors: ${errors.length}`)
 for (const e of errors.slice(0, 5)) {
   console.log(`    ! ${e}`)
