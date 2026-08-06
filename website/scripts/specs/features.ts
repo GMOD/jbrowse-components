@@ -1,5 +1,6 @@
 import {
   DEMO_CONFIG,
+  PARK_CURSOR,
   PROTEIN3D_CONFIG,
   PTEN_RNASEQ_ADAPTER,
   VOLVOX,
@@ -520,7 +521,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'extrafield' },
       // the coordinate click leaves the cursor on the gene, so the hover overlay
       // shades it in the capture — move the pointer off the track to clear it
-      { type: 'hover', from: { x: 750, y: 30 } },
+      PARK_CURSOR,
       { type: 'delay', ms: 2000 },
     ],
     // ring the formatDetails-generated hyperlink in the feature-details panel,

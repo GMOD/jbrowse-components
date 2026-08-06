@@ -300,7 +300,15 @@ and streams while it does it, which matters at whole-genome scale; see
 }
 ```
 
-<Figure caption="The Minigraph-Cactus HAL projected onto K12 as a MAF: the coverage band on top, then one row per strain (K12 first), colored where each differs from K12. All five align continuously across this window, so the mismatch columns read as SNP divergence from K12." src="/img/pangenome_cactus/maf.png" />
+<Figure caption="The Minigraph-Cactus HAL projected onto K12 as a MAF: the coverage band on top, then one row per strain (K12 first), colored where each differs from K12. All five align continuously across this window, so the blank stretch through the middle is sequence matching K12, not missing alignment." src="/img/pangenome_cactus/maf.png" />
+
+A row can be blank for two reasons. A stretch with no colored columns is
+sequence that strain shares with K12, which is the case in the window above. A
+row that stops entirely is a strain with no alignment to K12 there, which is
+what the same track shows on the
+[pggb page's 60 kb window](/docs/tutorials/pangenome_ecoli#whole-genome-alignment-maf-projection).
+The coverage band separates the two: it drops where rows drop out and holds
+where they match.
 
 `samples` both names the rows and fixes their order. To order them by how much
 of the graph each pair of strains shares instead, run

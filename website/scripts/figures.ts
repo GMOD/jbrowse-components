@@ -29,6 +29,7 @@ import {
   manifestPath,
   readManifest,
   repoRoot,
+  unpublishedFigures,
 } from './figure-paths.ts'
 import {
   type FigureEntry,
@@ -486,11 +487,23 @@ function manifestAt(ref: string) {
 
 function report() {
   const base = option('base') ?? 'origin/main'
-  const changes = diffManifests(manifestAt(base), readManifest())
+  // Against the WORKTREE, not against figures.lock. The lock only moves on
+  // `push`, so diffing it against the base made the state you are usually in
+  // when you want to look at a figure — regenerated, not yet pushed —
+  // report as nothing at all. Measured: a run that rewrote eight figures
+  // reported the two that a concurrent agent's push had already written into
+  // the lock, while `figures status` listed all of them. On a CI runner the two
+  // agree, because there the worktree is whatever the lock says.
+  const onDisk = new Map(listFigureFiles().map(p => [p, describeFile(p)]))
+  const changes = diffManifests(manifestAt(base), onDisk)
+  // An `after` whose bytes were never uploaded has a store URL (the key is the
+  // hash) and that URL 404s, so the report has to say which ones those are
+  // rather than hand over a broken image.
+  const unpublished = new Set(unpublishedFigures())
   const markdown = flag('markdown')
   const text = markdown
-    ? formatMarkdownReport(changes, { base })
-    : formatTextReport(changes, { base })
+    ? formatMarkdownReport(changes, { base, unpublished })
+    : formatTextReport(changes, { base, unpublished })
   const out = option('out')
   if (out) {
     writeFileSync(out, text)

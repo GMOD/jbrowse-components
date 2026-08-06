@@ -2,6 +2,7 @@ import { SPLIT_VIEW_LINK_LABEL } from '../../../plugins/variants/src/VariantFeat
 import {
   DEMO_CONFIG,
   HG38_RMSK_TRACK,
+  PARK_CURSOR,
   VOLVOX,
   cascadeBoxes,
   dismissMenus,
@@ -337,7 +338,7 @@ export const uiSpecs: ScreenshotSpec[] = [
       { type: 'delay', ms: 6000 },
       // move the pointer off the matrix so the mouseover crosshair doesn't bake
       // into the capture
-      { type: 'hover', from: { x: 6, y: 6 } },
+      PARK_CURSOR,
       { type: 'delay', ms: 800 },
     ],
   },
@@ -392,7 +393,7 @@ export const uiSpecs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Sort by genotype' },
       { type: 'click', text: 'Sort by genotype' },
       { type: 'delay', ms: 6000 },
-      { type: 'hover', from: { x: 6, y: 6 } },
+      PARK_CURSOR,
       { type: 'delay', ms: 800 },
     ],
   },
@@ -587,7 +588,7 @@ export const uiSpecs: ScreenshotSpec[] = [
       { type: 'delay', ms: 6000 },
       // move the pointer off the matrix so the mouseover crosshair doesn't bake
       // into the capture
-      { type: 'hover', from: { x: 6, y: 6 } },
+      PARK_CURSOR,
       { type: 'delay', ms: 800 },
     ],
   },

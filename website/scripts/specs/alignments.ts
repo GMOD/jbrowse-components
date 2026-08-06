@@ -2,6 +2,7 @@ import { heightModeLabel } from '../../../plugins/linear-genome-view/src/BaseLin
 import {
   DEMO_CONFIG,
   HG002_NANOPORE_HP_TRACK,
+  PARK_CURSOR,
   VOLVOX,
   VOLVOX_SV_CRAM_ADAPTER,
   lgvSession,
@@ -285,7 +286,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           // "Track settings" tooltip stays up; a click on empty page below the
           // view blurs it and parks the cursor away from any read
           { type: 'click', selector: 'body' },
-          { type: 'hover', from: { x: 550, y: 605 } },
+          PARK_CURSOR,
           { type: 'delay', ms: 2500 },
         ],
       },
@@ -516,7 +517,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           },
           // move the pointer off the pileup so no hover tooltip lingers, then
           // let the re-sort settle and repaint
-          { type: 'hover', from: { x: 200, y: 100 } },
+          PARK_CURSOR,
           { type: 'delay', ms: 2500 },
         ],
         // make the (subtly-grouped) sort legible: point at the column where the

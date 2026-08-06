@@ -475,6 +475,14 @@ export const openFeatureHeightSubmenu = (): ScreenshotAction[] => [
 // wordmark is the only thing up there that is guaranteed inert — it is an svg
 // with no handlers — and it moves with the layout instead of having to be
 // re-measured when the layout moves.
+//
+// The swap is inert: of the 16 figures converted, every one whose spec changed
+// in no other way came back byte-identical. The six that did move moved on app
+// drift accumulated since they were last swept — `alignments_soft_clipped_menu`
+// gained a `Launch view` item and lost `Set max layout height...`, which is 12%
+// of its pixels and nothing to do with where the cursor sits. Those six were
+// restored from the store rather than committed, so the sweep can pick the drift
+// up on its own with nothing else in the diff.
 export const PARK_CURSOR: ScreenshotAction = {
   type: 'hover',
   selector: '[aria-label="JBrowse"]',

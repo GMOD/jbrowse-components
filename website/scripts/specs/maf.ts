@@ -4,6 +4,7 @@ import {
   HG38_470WAY,
   HG38_470WAY_30,
   HG38_NCBI_GENE_TRACK,
+  PARK_CURSOR,
   sessionSpec,
 } from '../screenshot-spec-helpers.ts'
 
@@ -146,10 +147,7 @@ export const mafSpecs: ScreenshotSpec[] = [
     hideTooltip: true,
     // park the cursor in the nav bar so no coverage-band hover tooltip lingers
     // over the capture
-    actions: [
-      { type: 'hover', from: { x: 250, y: 100 } },
-      { type: 'delay', ms: 2000 },
-    ],
+    actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
   },
   {
     // Codon-view hover tooltip: in the per-species codon translation, hovering a
@@ -256,10 +254,7 @@ export const mafSpecs: ScreenshotSpec[] = [
     viewportHeight: 716,
     settleMs: 12000,
     hideTooltip: true,
-    actions: [
-      { type: 'hover', from: { x: 250, y: 100 } },
-      { type: 'delay', ms: 2000 },
-    ],
+    actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
   },
   {
     // Dense comparative view: the UCSC hg38 470-way multiz (mammals + more), all
@@ -411,10 +406,7 @@ export const mafSpecs: ScreenshotSpec[] = [
     viewportHeight: 765,
     settleMs: 18000,
     hideTooltip: true,
-    actions: [
-      { type: 'hover', from: { x: 250, y: 60 } },
-      { type: 'delay', ms: 2000 },
-    ],
+    actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
   },
 
   // The two halves of the summary tier, on one track at two zooms. Same

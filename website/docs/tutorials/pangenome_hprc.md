@@ -275,11 +275,10 @@ window is cut, so an allele whose interior falls outside it draws as a short arm
 off the backbone rather than as a closed loop.
 
 The figure below is cut from `chr1:103,500,000-103,850,000`, wider than the
-amylase entry in the table further down and deliberately so: at the table's
-window the bubble filled the pane and had no flank to be localized against, so
-the drawing said nothing about where in the locus the complexity sits. Widening
-until the backbone chain is in frame is generally the move when a graph comes
-back as one tangle.
+amylase entry in the table further down. At the table's window the bubble fills
+the pane with no flank beside it, so the drawing does not say where in the locus
+the complexity sits. Widening until the backbone chain is in frame is the usual
+remedy when a cut comes back as a single tangle.
 
 <Figure caption="The amylase locus on chr1 as a force-directed graph, under the RefSeq genes and the rGFA segments for the same window. The flanks draw as one chain of backbone segments, and every crossing in the 126-node drawing is inside the amylase bubble at the end of that chain, so the window says where the complexity is as well as what it is." src="/img/pangenome/hprc_amylase_graph.png" />
 

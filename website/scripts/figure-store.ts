@@ -340,9 +340,19 @@ function sizeNote(c: FigureChange): string {
 // summary, and every store URL is immutable and public — so the BEFORE column
 // keeps rendering forever, from any commit's manifest. That is the whole reason
 // the store is content-addressed rather than a mirror of the tree.
+// `unpublished`, where given, is the set of figure paths whose bytes are on this
+// machine and not in the store. Their `after` URL is well-formed (the store key
+// is the hash) and 404s, so both formatters name them instead of linking a blob
+// that is not there. `push` passes nothing: everything it reports is about to be
+// uploaded.
+interface ReportOpts {
+  base: string
+  unpublished?: Set<string>
+}
+
 export function formatMarkdownReport(
   changes: FigureChange[],
-  { base }: { base: string },
+  { base, unpublished }: ReportOpts,
 ): string {
   if (!changes.length) {
     return `No figures changed against \`${base}\`.\n`
@@ -352,8 +362,16 @@ export function formatMarkdownReport(
     .filter(([, n]) => n > 0)
     .map(([k, n]) => `${n} ${k}`)
     .join(', ')
-  const img = (e: FigureEntry | undefined) =>
-    e ? `<img src="${storeUrl(e)}" width="380">` : '—'
+  // Only the `after` can be missing from the store. `unpublished` is keyed by
+  // path, and both sides of a change share one, so testing it on the `before`
+  // too would label the base ref's blob — which is in the store by construction,
+  // or the base could not have been pushed.
+  const img = (e: FigureEntry | undefined, isAfter = false) =>
+    e
+      ? isAfter && unpublished?.has(e.path)
+        ? '_not pushed yet_'
+        : `<img src="${storeUrl(e)}" width="380">`
+      : '—'
   return [
     `### ${changes.length} figure(s) moved against \`${base}\` — ${counts}`,
     '',
@@ -361,7 +379,7 @@ export function formatMarkdownReport(
     '| --- | --- | --- | --- |',
     ...changes.map(
       c =>
-        `| **${figureName(c.path)}**<br>${c.kind} | ${img(c.before)} | ${img(c.after)} | ${sizeNote(c)} |`,
+        `| **${figureName(c.path)}**<br>${c.kind} | ${img(c.before)} | ${img(c.after, true)} | ${sizeNote(c)} |`,
     ),
     '',
   ].join('\n')
@@ -369,12 +387,16 @@ export function formatMarkdownReport(
 
 export function formatTextReport(
   changes: FigureChange[],
-  { base }: { base: string },
+  { base, unpublished }: ReportOpts,
 ): string {
   if (!changes.length) {
     return `No figures changed against ${base}.`
   }
   const mark = { added: '+', changed: '~', removed: '-' }
+  const after = (e: FigureEntry) =>
+    unpublished?.has(e.path)
+      ? '      after   not pushed yet — `pnpm figures:push` to give it a URL'
+      : `      after  ${storeUrl(e)}`
   return [
     `${changes.length} figure(s) moved against ${base}:`,
     '',
@@ -383,7 +405,7 @@ export function formatTextReport(
         `  ${mark[c.kind]} ${figureName(c.path)}`,
         `      ${sizeNote(c).replaceAll('<br>', '  ').replaceAll('**', '')}`,
         c.before ? `      before ${storeUrl(c.before)}` : '',
-        c.after ? `      after  ${storeUrl(c.after)}` : '',
+        c.after ? after(c.after) : '',
       ]
         .filter(Boolean)
         .join('\n'),
