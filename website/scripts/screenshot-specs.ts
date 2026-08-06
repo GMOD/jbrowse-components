@@ -32,6 +32,7 @@ import { hicSpecs } from './specs/hic.ts'
 import { ldSpecs } from './specs/ld.ts'
 import { mafSpecs } from './specs/maf.ts'
 import { methylationSpecs } from './specs/methylation.ts'
+import { msaSpecs } from './specs/msa.ts'
 import { pangenomeSpecs } from './specs/pangenome.ts'
 import { pangenomeCactusSpecs } from './specs/pangenome_cactus.ts'
 import { popgenSpecs } from './specs/popgen.ts'
@@ -71,6 +72,7 @@ export const specs: ScreenshotSpec[] = [
   ...dog10kSpecs,
   ...gallerySpecs,
   ...mafSpecs,
+  ...msaSpecs,
   ...pangenomeSpecs,
   ...pangenomeCactusSpecs,
   ...graphSpecs,
