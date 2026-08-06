@@ -115,6 +115,23 @@ changes every capture.
   spec, or `stages` when a state is only reachable through the UI.
 - **A UI click-chain waiting on a fixed timeout is a red flag.** Make the
   trigger declarative and wait on a `data-testid` on the real result.
+- **The capture rasterizes in software, so a spec that dies on _volume_ is a
+  claim about swiftshader until you check it.** Run the same session in a real
+  browser, or the harness with `--use-angle=gl` (`scripts/cancel-bench.ts`
+  does), before concluding the app cannot draw it. A 2504-sample cohort over all
+  24 contigs is ~7.8M quads into a 1400x420 box: 34 minutes and then puppeteer's
+  `protocolTimeout` here, and quick on both WebGL and WebGPU on real hardware.
+  The cost of getting this backwards is not a missing figure — it is writing an
+  imaginary product limit into a spec comment, a caption, or an optimization
+  nobody needed. A figure that has to stay narrower than what users can actually
+  do is a capture limit; say so where the spec explains itself, and don't let it
+  leak into prose about the product.
+- **A killed run leaves its server on :3334**, so the next one fails instantly
+  with `EADDRINUSE` and looks like a new bug. Likewise a run that seems hung:
+  check the node process. Idle at ~0% CPU on `about:blank` means it is burning
+  `readyTimeout` and will fail; pegged high means it is working and the timeout
+  is the thing to raise. "Processes gone, no output" usually means the run is
+  still alive — its output is buffered behind whatever pipe it was written to.
 
 ## Prose, captions, cards
 
