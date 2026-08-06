@@ -29,7 +29,7 @@ handler tests before starting a drag of its own; JBrowse's own scalebar carries
 it for the same reason.
 
 Everything here reads block geometry, and `staticBlocks` throws until the
-ResizeObserver has reported a width, so it all sits inside one `isViewReady`
+ResizeObserver has reported a width, so it all sits inside one `view.ready`
 gate.
 
 Colors come from `usePalette()`, the toolkit-free counterpart to Material UI's

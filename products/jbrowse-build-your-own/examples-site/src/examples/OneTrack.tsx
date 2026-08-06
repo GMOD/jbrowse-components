@@ -79,29 +79,6 @@ function makeView() {
 type BrowserView = ReturnType<typeof makeView>
 
 /**
- * Is there anything to draw yet?
- *
- * The obvious gate is `view.initialized`, and on its own it is the wrong one.
- * That getter answers "have the assembly's regions loaded", which is only the
- * first of two async steps: navigating (what `setInit` above asks for) then
- * populates `displayedRegions`, and in the window between the two `initialized`
- * is already true while there is still nothing on screen. Mount a display into
- * that window and its `pxToBp`/block reads run against no regions.
- *
- * `showLoading` is the view's own composite of both halves -- it folds in
- * `initPending`, the getter that exists for exactly that gap -- and it is what
- * JBrowse's own `LinearGenomeView` component branches on. Read it rather than
- * reassembling the condition, and it stays correct if the sequencing changes.
- *
- * `error` is the third outcome: a failed assembly load also ends the loading
- * state, so a bare `!showLoading` would mount over the wreckage. These examples
- * just draw nothing; a real app renders `view.error` here.
- */
-function isViewReady(view: BrowserView) {
-  return !view.showLoading && !view.error
-}
-
-/**
  * One track. `activeDisplay` is the model that actually draws, and
  * `RenderingComponent` is its React component -- for a wiggle track that is the
  * canvas plus its y-axis, for alignments the pileup plus its scrollbar.
@@ -156,9 +133,7 @@ const OneTrack = observer(function OneTrack() {
 
   return (
     <div ref={ref} style={{ overflow: 'hidden' }}>
-      {isViewReady(view) ? (
-        <TrackRow view={view} trackId="volvox_microarray" />
-      ) : null}
+      {view.ready ? <TrackRow view={view} trackId="volvox_microarray" /> : null}
     </div>
   )
 })

@@ -77,11 +77,6 @@ function makeView(scrollZoom: boolean) {
 
 type BrowserView = ReturnType<typeof makeView>
 
-// see the One track page for why this is not `view.initialized`
-function isViewReady(view: BrowserView) {
-  return !view.showLoading && !view.error
-}
-
 const TrackRow = observer(function TrackRow({
   view,
   trackId,
@@ -196,7 +191,7 @@ const PanAndZoom = observer(function PanAndZoom({
         }}
       >
         <ZoomHint show={showZoomHint} />
-        {isViewReady(view) ? (
+        {view.ready ? (
           <TrackRow view={view} trackId="volvox_microarray" />
         ) : null}
       </div>
@@ -212,9 +207,7 @@ const Position = observer(function Position({ view }: { view: BrowserView }) {
   // The gate is not optional politeness: `view.width` throws by design before
   // the view has been measured, and the block getters read it, so anything
   // reading position has to check first.
-  const block = isViewReady(view)
-    ? view.dynamicBlocks.contentBlocks[0]
-    : undefined
+  const block = view.ready ? view.dynamicBlocks.contentBlocks[0] : undefined
   return (
     <div style={{ fontSize: '0.8rem', opacity: 0.7, paddingTop: 4 }}>
       {block

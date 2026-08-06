@@ -126,11 +126,6 @@ function makeView() {
 type BrowserView = ReturnType<typeof makeView>['view']
 type BrowserSession = ReturnType<typeof makeView>['session']
 
-// see the One track page for why this is not `view.initialized`
-function isViewReady(view: BrowserView) {
-  return !view.showLoading && !view.error
-}
-
 const TrackRow = observer(function TrackRow({
   view,
   trackId,
@@ -161,32 +156,6 @@ const TrackRow = observer(function TrackRow({
     </div>
   )
 })
-
-// the prompt for a wheel the view ignored; `showZoomHint` is raised for
-// exactly that and clears itself. See the Pan and zoom page.
-function ZoomHint({ show }: { show: boolean }) {
-  return (
-    <div
-      aria-hidden={!show}
-      style={{
-        position: 'absolute',
-        inset: 0,
-        zIndex: 3,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        pointerEvents: 'none',
-        background: 'color-mix(in srgb, Canvas 62%, transparent)',
-        color: 'CanvasText',
-        fontSize: '0.95rem',
-        opacity: show ? 1 : 0,
-        transition: 'opacity 150ms ease',
-      }}
-    >
-      Use ctrl + scroll to zoom
-    </div>
-  )
-}
 
 /**
  * The line between two displayed regions, which you have to draw.
@@ -464,15 +433,9 @@ function Bookmarks({ view }: { view: BrowserView }) {
   )
 }
 
-/**
- * The page around this demo has a light/dark toggle. JBrowse needs to be told,
- * because a display paints no background of its own: its labels are drawn
- * straight onto whatever is behind them, so light-theme text on a dark page is
- * near-black on near-black.
- *
- * The toggle writes an attribute on <html>, and the OS preference arrives as a
- * media query. Either can move without the other, so watch both.
- */
+// A display paints no background of its own -- its labels are drawn straight
+// onto whatever is behind them, so light-theme text on a dark page is near-black
+// on near-black. This is the page's own answer to "which mode am I in".
 function readSiteMode(): 'light' | 'dark' {
   const chosen = document.documentElement.dataset.theme
   if (chosen === 'light' || chosen === 'dark') {
@@ -483,7 +446,21 @@ function readSiteMode(): 'light' | 'dark' {
     : 'light'
 }
 
-function useSiteMode() {
+/**
+ * Follow whatever the page around this demo is themed as.
+ *
+ * **One line of this is JBrowse's half**, the `setConf`, and it is one write
+ * rather than two: the config theme is what the display ships to the renderer,
+ * so the feature labels baked there follow it, and `session.palette` is derived
+ * from the same slot, so what React draws follows it too. Setting only a
+ * React-side palette would leave the labels behind.
+ *
+ * The rest is this site's own theming and yours will look nothing like it -- the
+ * toggle writes an attribute on <html>, the OS preference arrives as a media
+ * query, and either can move without the other, so both are watched. Swap it
+ * for however your app already knows it is in dark mode.
+ */
+function useSitePalette(session: BrowserSession) {
   const [mode, setMode] = useState(readSiteMode)
   useEffect(() => {
     const update = () => {
@@ -501,16 +478,6 @@ function useSiteMode() {
       media.removeEventListener('change', update)
     }
   }, [])
-  return mode
-}
-
-/**
- * Write the mode onto the session's config theme, and read the resolved colors
- * back off the session. See the Bring your own overlays page for why this is
- * one write rather than two.
- */
-function useSitePalette(session: BrowserSession) {
-  const mode = useSiteMode()
   useEffect(() => {
     setConf(session, 'theme', { palette: { mode } })
   }, [session, mode])
@@ -520,7 +487,7 @@ function useSitePalette(session: BrowserSession) {
 const DriveItFromYourApp = observer(function DriveItFromYourApp() {
   const [{ view, session }] = useState(makeView)
   const ref = useWidthSetter(view)
-  const { containerProps, showZoomHint } = usePanZoom(ref, view)
+  const { containerProps } = usePanZoom(ref, view)
   const palette = useSitePalette(session)
 
   return (
@@ -551,13 +518,12 @@ const DriveItFromYourApp = observer(function DriveItFromYourApp() {
               cursor: 'grab',
             }}
           >
-            <ZoomHint show={showZoomHint} />
             {/* `RegionBoundaries` is inside the same gate as the tracks, not
              * beside it: `staticBlocks` reads `view.width`, which *throws*
              * ("make sure to check for model.initialized") until the
-             * ResizeObserver has reported one. Anything of your own that
-             * reads block geometry needs the same guard. */}
-            {isViewReady(view) ? (
+             * ResizeObserver has reported one. `view.ready` is that guard, and
+             * anything of your own reading block geometry needs it too. */}
+            {view.ready ? (
               <>
                 {view.tracks.map(track => (
                   <TrackRow
