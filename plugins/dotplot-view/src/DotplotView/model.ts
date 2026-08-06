@@ -55,7 +55,7 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { PxToBpResult } from '@jbrowse/core/util/Base1DUtils'
 import type { HighlightType } from '@jbrowse/core/util/highlights'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
-import type { LodMode } from '@jbrowse/synteny-core'
+import type { ComparativeTrackModel, LodMode } from '@jbrowse/synteny-core'
 import type { ComponentType, ReactNode } from 'react'
 import type React from 'react'
 
@@ -612,7 +612,7 @@ export default function stateModelFactory(pm: PluginManager) {
          * whatever color the user pinned on it.
          */
         colorableTrackConfigs() {
-          return self.tracks.map(t => {
+          return self.tracks.map((t: ComparativeTrackModel) => {
             const { trackId, name } = t.configuration
             return { trackId, name }
           })
@@ -625,12 +625,15 @@ export default function stateModelFactory(pm: PluginManager) {
          * adapter has no such slot contributes nothing.
          */
         colorableAttributeNames() {
-          return self.tracks.flatMap(
-            t =>
-              (getConf(t.configuration, ['adapter', 'attributeColumns']) as
-                | string[]
-                | undefined) ?? [],
-          )
+          // Annotated for the reason ComparativeTrackModel documents: this array
+          // is `any`, which switched off checking on the getConf call below
+          // until the shape was named.
+          return self.tracks.flatMap((t: ComparativeTrackModel) => {
+            const declared = getConf(t, ['adapter', 'attributeColumns']) as
+              | string[]
+              | undefined
+            return declared ?? []
+          })
         },
 
         /**

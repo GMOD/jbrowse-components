@@ -241,7 +241,13 @@ const SYNTENY_COLOR_MODES: Record<string, string> = {
   identity: 'Identity',
   meanQueryIdentity: 'Mean query identity',
   mappingQuality: 'Mapping quality',
+  dnds: 'dN/dS',
 }
+
+// `attribute:<column>` is the open arm of the mode list: a track's declared
+// numeric columns are each offered under the column's own name, below the
+// named presets. There is no fixed label to look up, so the column supplies it.
+const SYNTENY_ATTRIBUTE_PREFIX = 'attribute:'
 
 // The two multi-sample variant displays share one base model, so one path
 // serves both. Unlike every other colorBy here the value is not an enum — it is
@@ -1361,13 +1367,22 @@ export const viewFields: Record<string, FieldRecipe> = {
           path: `View menu → Show intra-view links (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
-  showColorLegend: (value, { viewType }) =>
-    typeof value === 'boolean' && viewType === 'DotplotView'
+  // Both comparative views carry the same palette button (ColorBySelector), so
+  // one entry serves them and only the header it sits in differs.
+  showColorLegend: (value, { viewType }) => {
+    const header =
+      viewType === 'DotplotView'
+        ? 'Dotplot header'
+        : viewType === 'LinearSyntenyView'
+          ? 'Synteny view header'
+          : undefined
+    return typeof value === 'boolean' && header
       ? {
-          path: `Dotplot header → palette button → Show color legend (${value ? 'checked' : 'unchecked'})`,
+          path: `${header} → palette button → Show color legend (${value ? 'checked' : 'unchecked'})`,
           note: 'The last item in the same menu the color modes are in.',
         }
-      : undefined,
+      : undefined
+  },
   minAlignmentLength: (value, { viewType }) => {
     const popover = viewType ? SETTINGS_POPOVERS[viewType] : undefined
     return typeof value === 'number' && popover
@@ -1422,7 +1437,12 @@ export const viewFields: Record<string, FieldRecipe> = {
   },
   colorBy: (value, { viewType }) => {
     const label =
-      typeof value === 'string' ? SYNTENY_COLOR_MODES[value] : undefined
+      typeof value === 'string'
+        ? (SYNTENY_COLOR_MODES[value] ??
+          (value.startsWith(SYNTENY_ATTRIBUTE_PREFIX)
+            ? value.slice(SYNTENY_ATTRIBUTE_PREFIX.length)
+            : undefined))
+        : undefined
     return label && viewType === 'LinearSyntenyView'
       ? {
           path: `Synteny view header → palette button → ${label}`,

@@ -36,7 +36,11 @@ import type {
 } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { CigarOpMask, LodMode } from '@jbrowse/synteny-core'
+import type {
+  CigarOpMask,
+  ComparativeTrackModel,
+  LodMode,
+} from '@jbrowse/synteny-core'
 
 const DEFAULT_OVERDRAW_PX = 1000
 
@@ -221,7 +225,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       get hasLodCapableAdapter() {
         return self.levels
           .flatMap(l => l.tracks)
-          .some(track => trackHasLodTiers(track))
+          .some((track: ComparativeTrackModel) => trackHasLodTiers(track))
       },
       /**
        * #getter
@@ -310,7 +314,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       colorableTrackConfigs() {
         return self.levels
           .flatMap(l => l.tracks)
-          .map(t => {
+          .map((t: ComparativeTrackModel) => {
             const { trackId, name } = t.configuration
             return { trackId, name }
           })
@@ -323,14 +327,19 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * adapter has no such slot contributes nothing.
        */
       colorableAttributeNames() {
-        return self.levels
-          .flatMap(l => l.tracks)
-          .flatMap(
-            t =>
-              (getConf(t.configuration, ['adapter', 'attributeColumns']) as
+        return (
+          self.levels
+            .flatMap(l => l.tracks)
+            // Annotated for the reason ComparativeTrackModel documents: this
+            // array is `any`, which switched off checking on the getConf call
+            // below until the shape was named.
+            .flatMap((t: ComparativeTrackModel) => {
+              const declared = getConf(t, ['adapter', 'attributeColumns']) as
                 | string[]
-                | undefined) ?? [],
-          )
+                | undefined
+              return declared ?? []
+            })
+        )
       },
     }))
     .views(self => ({

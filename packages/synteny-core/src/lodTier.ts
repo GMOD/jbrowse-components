@@ -81,6 +81,23 @@ export function getCoarseBpPerPxThreshold(track: {
  * the display cannot resolve a tier without the threshold, so a capability flag
  * on an adapter missing the slot would offer a menu whose 'auto' never switches.
  */
+/**
+ * #api
+ * The slice of a track model a comparative view reads off its track list.
+ *
+ * Annotated at every site that walks a synteny view's `levels[].tracks` or a
+ * dotplot's `tracks`, because those arrays type out as `any`: the level model is
+ * deliberately `IAnyModelType` to break a real type cycle, and `any` propagates
+ * through the array and switches off checking on everything read from it. That
+ * is not theoretical — it let `getConf(t.configuration, ...)` compile where
+ * getConf wants the MODEL, and it threw at runtime reading
+ * `configuration.configuration.adapter`. Naming the shape is what makes the
+ * compiler check those calls again.
+ */
+export interface ComparativeTrackModel {
+  configuration: AnyConfigurationModel & { trackId: string; name: string }
+}
+
 export function trackHasLodTiers(track: {
   configuration: AnyConfigurationModel
 }) {
