@@ -1319,6 +1319,7 @@ See
 
 ## See also
 
+- [](/docs/json_schema)
 - [](/docs/automating)
 - [](/docs/tutorials/embed_linear_genome_view)
 - [](/docs/config_guides/default_session)
