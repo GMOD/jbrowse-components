@@ -78,7 +78,14 @@ function setup() {
   })
   const win = makeWindow()
   guard.register(win.window)
-  return { invoke, quitApp, win, beforeQuit: () => onBeforeQuit() }
+  return {
+    invoke,
+    quitApp,
+    win,
+    beforeQuit: () => {
+      onBeforeQuit()
+    },
+  }
 }
 
 test('closes at once when no session is open', async () => {

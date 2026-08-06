@@ -13,6 +13,7 @@ export {
 export type {
   DockviewLayoutMixinType,
   DockviewLayoutNode,
+  PendingMove,
   SessionWithDockviewLayout,
 } from './DockviewLayout/index.ts'
 export { loadSessionSpec, parseSessionSpecUrl } from './SessionSpec/index.ts'

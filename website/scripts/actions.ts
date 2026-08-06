@@ -80,7 +80,7 @@ const RECT_SETTLE_CAP_MS = 600
 // tab is non-visible, where Chrome throttles in-page timers and can starve rAF
 // (see waitHiddenByNodePolling), and a bound that can itself be throttled is no
 // bound at all.
-async function waitForRectSettled(el: ElementHandle<Element>) {
+async function waitForRectSettled(el: ElementHandle) {
   await Promise.race([
     el
       .evaluate(

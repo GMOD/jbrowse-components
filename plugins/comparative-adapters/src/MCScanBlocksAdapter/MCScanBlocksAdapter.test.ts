@@ -182,7 +182,7 @@ test('throws when the BEDs are permuted against the file columns', async () => {
     start: 0,
     end: 1000,
     assemblyName: 'grape',
-  } as never)
+  })
   await expect(firstValueFrom(obs.pipe(toArray()))).rejects.toThrow(
     /have to be in the file's own column order/,
   )
