@@ -1,0 +1,129 @@
+import configSchema from './configSchema.ts'
+import stateModelFactory from './model.tsx'
+
+function makeAccount() {
+  return stateModelFactory(configSchema).create({
+    type: 'OAuthInternetAccount',
+    // a snapshot, not configSchema.create: ConfigurationReference stores an
+    // instance by identifier, which nothing in this bare tree can resolve
+    configuration: {
+      type: 'OAuthInternetAccount',
+      internetAccountId: 'testOAuth',
+      clientId: 'test-client',
+      authEndpoint: 'https://provider.example.com/authorize',
+      tokenEndpoint: 'https://provider.example.com/token',
+      domains: ['data.example.com'],
+    },
+  })
+}
+
+const location = {
+  locationType: 'UriLocation' as const,
+  uri: 'https://data.example.com/file.bw',
+}
+
+let fetchMock: jest.Mock<Promise<Response>, [RequestInfo, RequestInit?]>
+
+beforeEach(() => {
+  sessionStorage.clear()
+  localStorage.clear()
+  fetchMock = jest.fn()
+  globalThis.fetch = fetchMock as unknown as typeof fetch
+})
+
+test('a working token is not re-proven on every request', async () => {
+  sessionStorage.setItem('testOAuth-token', 'good-token')
+  fetchMock.mockResolvedValue(new Response('data'))
+  const fetcher = makeAccount().getFetcher(location)
+
+  for (let i = 0; i < 3; i++) {
+    await fetcher(location.uri)
+  }
+
+  // three reads, three requests — no validation round trip in between
+  expect(fetchMock).toHaveBeenCalledTimes(3)
+  for (const [, init] of fetchMock.mock.calls) {
+    expect(new Headers(init?.headers).get('Authorization')).toBe(
+      'Bearer good-token',
+    )
+  }
+})
+
+test('a 401 refreshes the token once and retries the request', async () => {
+  sessionStorage.setItem('testOAuth-token', 'expired-token')
+  localStorage.setItem('testOAuth-refreshToken', 'refresh-token')
+  fetchMock
+    // the read, with the expired token
+    .mockResolvedValueOnce(new Response('', { status: 401 }))
+    // validateToken's HEAD of the resource, also unauthorized
+    .mockResolvedValueOnce(new Response('', { status: 401 }))
+    // the refresh exchange
+    .mockResolvedValueOnce(
+      new Response(JSON.stringify({ access_token: 'fresh-token' })),
+    )
+    // the retried read
+    .mockResolvedValueOnce(new Response('data'))
+
+  const account = makeAccount()
+  const response = await account.getFetcher(location)(location.uri)
+
+  expect(response.status).toBe(200)
+  expect(await response.text()).toBe('data')
+  expect(
+    new Headers(fetchMock.mock.calls[3]?.[1]?.headers).get('Authorization'),
+  ).toBe('Bearer fresh-token')
+  // the refreshed token replaces the cached one, so the next read does not
+  // repeat the whole validate-and-refresh round trip
+  expect(sessionStorage.getItem('testOAuth-token')).toBe('fresh-token')
+
+  fetchMock.mockResolvedValue(new Response('more data'))
+  await account.getFetcher(location)(location.uri)
+  expect(fetchMock).toHaveBeenCalledTimes(5)
+})
+
+test('the authorization request carries a generated state and no provider-specific params', async () => {
+  const opened: URL[] = []
+  window.open = jest.fn(url => {
+    opened.push(new URL(String(url)))
+    return {} as Window
+  })
+
+  const promise = makeAccount().getTokenViaAuthFlow()
+  await Promise.resolve()
+
+  const url = opened[0]!
+  const state = url.searchParams.get('state')
+  // the config leaves `state` empty, so the flow mints a nonce rather than
+  // shipping the redirect's CSRF check turned off
+  expect(state).toMatch(/^[\w-]{16,}$/)
+  // token_access_type is Dropbox's spelling of offline access and lives on the
+  // Dropbox account now, not on every OAuth request
+  expect(url.searchParams.has('token_access_type')).toBe(false)
+
+  window.dispatchEvent(
+    new MessageEvent('message', {
+      origin: window.location.origin,
+      data: {
+        name: 'JBrowseAuthWindow-testOAuth',
+        redirectUri: `http://localhost/#access_token=granted&state=${state}`,
+      },
+    }),
+  )
+  expect(await promise).toBe('granted')
+})
+
+test('a blocked popup fails the flow instead of hanging', async () => {
+  window.open = jest.fn(() => null)
+  await expect(makeAccount().getTokenViaAuthFlow()).rejects.toThrow(
+    'Could not open the testOAuth login window',
+  )
+})
+
+test('a 401 with no refresh token surfaces the validation error', async () => {
+  sessionStorage.setItem('testOAuth-token', 'expired-token')
+  fetchMock.mockResolvedValue(new Response('nope', { status: 401 }))
+
+  await expect(
+    makeAccount().getFetcher(location)(location.uri),
+  ).rejects.toThrow('HTTP 401 - Error validating token - nope')
+})

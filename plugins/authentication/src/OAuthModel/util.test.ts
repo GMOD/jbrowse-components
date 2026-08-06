@@ -1,4 +1,8 @@
-import { finishOAuthWindow, waitForOAuthMessage } from './util.ts'
+import {
+  finishOAuthRedirect,
+  finishOAuthWindow,
+  waitForOAuthMessage,
+} from './util.ts'
 
 import type { OAuthWindowParams } from './util.ts'
 
@@ -12,30 +16,19 @@ function makeParams(overrides?: Partial<OAuthWindowParams>): OAuthWindowParams {
   }
 }
 
-function makeEvent(redirectUri: string) {
-  return new MessageEvent('message', {
-    data: { name: 'JBrowseAuthWindow-testAccount', redirectUri },
-  })
+function makeEvent(data: unknown, origin = window.location.origin) {
+  return new MessageEvent('message', { data, origin })
 }
 
-describe('finishOAuthWindow', () => {
-  it('returns undefined when event name does not match', async () => {
-    const event = new MessageEvent('message', {
-      data: {
-        name: 'JBrowseAuthWindow-otherAccount',
-        redirectUri: 'http://x/?code=abc',
-      },
-    })
-    expect(await finishOAuthWindow(event, makeParams())).toBeUndefined()
-  })
+function makeRedirectEvent(redirectUri: string) {
+  return makeEvent({ name: 'JBrowseAuthWindow-testAccount', redirectUri })
+}
 
+describe('finishOAuthRedirect', () => {
   it('returns access_token from implicit flow (hash fragment)', async () => {
     const stored: string[] = []
-    const event = makeEvent(
+    const token = await finishOAuthRedirect(
       'http://localhost/auth#access_token=my-token&token_type=bearer',
-    )
-    const token = await finishOAuthWindow(
-      event,
       makeParams({
         storeToken: t => {
           stored.push(t)
@@ -48,9 +41,8 @@ describe('finishOAuthWindow', () => {
 
   it('exchanges code and returns token from authorization code flow', async () => {
     const stored: string[] = []
-    const event = makeEvent('http://localhost/auth?code=auth-code')
-    const token = await finishOAuthWindow(
-      event,
+    const token = await finishOAuthRedirect(
+      'http://localhost/auth?code=auth-code',
       makeParams({
         exchangeAuthorizationCode: async (code, redirectUri) => {
           expect(code).toBe('auth-code')
@@ -67,37 +59,82 @@ describe('finishOAuthWindow', () => {
   })
 
   it('throws on state mismatch', async () => {
-    const event = makeEvent('http://localhost/auth?code=abc&state=wrong')
     await expect(
-      finishOAuthWindow(event, makeParams({ expectedState: 'expected' })),
+      finishOAuthRedirect(
+        'http://localhost/auth?code=abc&state=wrong',
+        makeParams({ expectedState: 'expected' }),
+      ),
     ).rejects.toThrow('OAuth state mismatch')
   })
 
   it('passes state check when state matches', async () => {
-    const event = makeEvent('http://localhost/auth?code=abc&state=correct')
-    const token = await finishOAuthWindow(
-      event,
+    const token = await finishOAuthRedirect(
+      'http://localhost/auth?code=abc&state=correct',
       makeParams({ expectedState: 'correct' }),
     )
     expect(token).toBe('exchanged-token')
   })
 
   it('throws "OAuth flow was cancelled" for access_denied error', async () => {
-    const event = makeEvent('http://localhost/auth?error=access_denied')
-    await expect(finishOAuthWindow(event, makeParams())).rejects.toThrow(
-      'OAuth flow was cancelled',
-    )
+    await expect(
+      finishOAuthRedirect(
+        'http://localhost/auth?error=access_denied',
+        makeParams(),
+      ),
+    ).rejects.toThrow('OAuth flow was cancelled')
   })
 
   it('throws "OAuth flow error: X" for other errors', async () => {
-    const event = makeEvent('http://localhost/auth?error=server_error')
-    await expect(finishOAuthWindow(event, makeParams())).rejects.toThrow(
-      'OAuth flow error: server_error',
-    )
+    await expect(
+      finishOAuthRedirect(
+        'http://localhost/auth?error=server_error',
+        makeParams(),
+      ),
+    ).rejects.toThrow('OAuth flow error: server_error')
   })
 
   it('returns undefined when redirect has no token, code, or error', async () => {
-    const event = makeEvent('http://localhost/auth')
+    expect(
+      await finishOAuthRedirect('http://localhost/auth', makeParams()),
+    ).toBeUndefined()
+  })
+})
+
+describe('finishOAuthWindow', () => {
+  it('completes the flow for this account', async () => {
+    const event = makeRedirectEvent('http://localhost/auth?code=auth-code')
+    expect(await finishOAuthWindow(event, makeParams())).toBe('exchanged-token')
+  })
+
+  it('returns undefined when event name does not match', async () => {
+    const event = makeEvent({
+      name: 'JBrowseAuthWindow-otherAccount',
+      redirectUri: 'http://x/?code=abc',
+    })
+    expect(await finishOAuthWindow(event, makeParams())).toBeUndefined()
+  })
+
+  it('ignores a message from another origin', async () => {
+    const event = makeEvent(
+      {
+        name: 'JBrowseAuthWindow-testAccount',
+        redirectUri: 'http://localhost/auth#access_token=injected',
+      },
+      'https://evil.example.com',
+    )
+    expect(await finishOAuthWindow(event, makeParams())).toBeUndefined()
+  })
+
+  it('ignores messages whose data is not an object', async () => {
+    for (const data of [null, undefined, 'a string', 42]) {
+      expect(
+        await finishOAuthWindow(makeEvent(data), makeParams()),
+      ).toBeUndefined()
+    }
+  })
+
+  it('ignores a matching message with no redirectUri', async () => {
+    const event = makeEvent({ name: 'JBrowseAuthWindow-testAccount' })
     expect(await finishOAuthWindow(event, makeParams())).toBeUndefined()
   })
 })

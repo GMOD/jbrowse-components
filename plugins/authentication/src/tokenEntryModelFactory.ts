@@ -2,7 +2,7 @@ import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import { getRoot, types } from '@jbrowse/mobx-state-tree'
 
-import { validateTokenWithHEAD } from './util.ts'
+import { getResponseError } from './util.ts'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type {
@@ -88,13 +88,22 @@ export function tokenEntryModelFactory<Type extends string>(
        * `validateWithHEAD` config slot.
        */
       async validateToken(token: string, location: UriLocation) {
-        return self.validateWithHEAD
-          ? validateTokenWithHEAD(
-              token,
-              location,
-              self.addAuthHeaderToInit({ method: 'HEAD' }, token),
-            )
-          : token
+        if (!self.validateWithHEAD) {
+          return token
+        }
+        const response = await fetch(
+          location.uri,
+          self.addAuthHeaderToInit({ method: 'HEAD' }, token),
+        )
+        if (!response.ok) {
+          throw new Error(
+            await getResponseError({
+              response,
+              reason: 'Error validating token',
+            }),
+          )
+        }
+        return token
       },
     }))
 }

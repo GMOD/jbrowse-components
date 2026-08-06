@@ -19,15 +19,14 @@ export function HTTPBasicLoginForm({
       maxWidth="xl"
       data-testid="login-httpbasic"
       title={`Log in for ${internetAccountId}`}
+      // an incomplete submit used to close as if cancelled, which the account
+      // reports as "User cancelled entry" — a failed login the user never made
+      submitDisabled={!username || !password}
       onCancel={() => {
         handleClose()
       }}
       onSubmit={() => {
-        if (username && password) {
-          handleClose(btoa(`${username}:${password}`))
-        } else {
-          handleClose()
-        }
+        handleClose(btoa(`${username}:${password}`))
       }}
     >
       <div style={{ display: 'flex', flexDirection: 'column' }}>

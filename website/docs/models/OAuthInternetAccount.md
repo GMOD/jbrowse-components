@@ -35,6 +35,7 @@ The configuration slots for this model are documented on its
 | <span id="getter-state">**state**</span><br><code>string</code> | OAuth state parameter: https://www.rfc-editor.org/rfc/rfc6749#section-4.1.1<br><br>Can override or extend if dynamic state is needed. |
 | <span id="getter-responsetype">**responseType**</span><br><code>"code" &#124; "token"</code> |  |
 | <span id="getter-refreshtokenkey">**refreshTokenKey**</span><br><code>string</code> |  |
+| <span id="getter-authflowparams">**authFlowParams**</span><br><code>Record&lt;string, string&gt;</code> | Extra parameters to add to the authorization request. Empty here; a provider that needs one of its own overrides this. |
 
 ## Methods
 
@@ -50,9 +51,11 @@ The configuration slots for this model are documented on its
 | --- | --- |
 | <span id="action-storerefreshtoken">**storeRefreshToken**</span><br><code>(refreshToken: string) =&gt; void</code> |  |
 | <span id="action-removerefreshtoken">**removeRefreshToken**</span><br><code>() =&gt; void</code> |  |
+| <span id="action-replacetoken">**replaceToken**</span><br><code>(token: string) =&gt; void</code> | Swap in an access token obtained from a refresh, in place of the one it replaces. |
 | <span id="action-exchangeauthorizationforaccesstoken">**exchangeAuthorizationForAccessToken**</span><br><code>(code: string, redirectUri: string) =&gt; Promise&lt;string&gt;</code> |  |
 | <span id="action-exchangerefreshforaccesstoken">**exchangeRefreshForAccessToken**</span><br><code>(refreshToken: string) =&gt; Promise&lt;string&gt;</code> |  |
 | <span id="action-gettokenviaauthflow">**getTokenViaAuthFlow**</span><br><code>() =&gt; Promise&lt;string&gt;</code> | Opens the provider's auth page and returns a promise for the resulting token. For Electron, drives the flow directly via IPC; for web, opens a popup and waits for the redirect message. |
 | <span id="action-gettokenfromuser">**getTokenFromUser**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(resolve: (token: string) =&gt; void, reject: (error: Error) =&gt; vo…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(resolve: (token: string) =&gt; void, reject: (error: Error) =&gt; void) =&gt; Promise&lt;void&gt;</code></pre></dialog></span> |  |
 | <span id="action-validatetoken">**validateToken**</span><br><code>(token: string, location: UriLocation) =&gt; Promise&lt;string&gt;</code> |  |
+| <span id="action-fetchwithtoken">**fetchWithToken**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(loc: UriLocation &#124; undefined, run: (token: string) =&gt; Promise&lt;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(loc: UriLocation &#124; undefined, run: (token: string) =&gt; Promise&lt;Response&gt;) =&gt; Promise&lt;Response&gt;</code></pre></dialog></span> | Run a request with the current token and, only if it comes back 401, refresh the token through `validateToken` and run it exactly once more. This is how the fetchers reach a resource. |
 | <span id="action-getfetcher">**getFetcher**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(loc?: UriLocation &#124; undefined) =&gt; (input: RequestInfo, init?:…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(loc?: UriLocation &#124; undefined) =&gt; (input: RequestInfo, init?: RequestInit &#124; undefined) =&gt; Promise&lt;Response&gt;</code></pre></dialog></span> |  |

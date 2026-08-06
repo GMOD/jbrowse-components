@@ -8,6 +8,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import { getResponseError } from '../util.ts'
 import {
+  finishOAuthRedirect,
   finishOAuthWindow,
   parseOAuthError,
   waitForOAuthMessage,
@@ -20,6 +21,13 @@ import type {
 import type { OAuthWindowParams } from './util.ts'
 import type { UriLocation } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+
+function randomBytes(length: number) {
+  return globalThis.crypto.getRandomValues(new Uint8Array(length))
+}
+
+// same probe core's InternetAccount uses: neither storage exists in a worker
+const inWebWorker = typeof sessionStorage === 'undefined'
 
 /**
  * #stateModel OAuthInternetAccount
@@ -57,11 +65,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
          * #getter
          */
         get codeVerifierPKCE() {
-          if (!codeVerifier) {
-            const array = new Uint8Array(32)
-            globalThis.crypto.getRandomValues(array)
-            codeVerifier = toBase64Url(array)
-          }
+          codeVerifier ??= toBase64Url(randomBytes(32))
           return codeVerifier
         },
       }
@@ -119,6 +123,14 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
       get refreshTokenKey() {
         return `${self.internetAccountId}-refreshToken`
       },
+      /**
+       * #getter
+       * Extra parameters to add to the authorization request. Empty here;
+       * a provider that needs one of its own overrides this.
+       */
+      get authFlowParams(): Record<string, string> {
+        return {}
+      },
     }))
 
     .actions(self => ({
@@ -139,6 +151,19 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
        */
       retrieveRefreshToken() {
         return localStorage.getItem(self.refreshTokenKey)
+      },
+      /**
+       * #action
+       * Swap in an access token obtained from a refresh, in place of the one it
+       * replaces.
+       */
+      replaceToken(token: string) {
+        // storeToken alone writes sessionStorage but cannot reach getToken's
+        // in-memory promise (a closure declared after it), so on its own it
+        // leaves the invalidated token cached and every later request pays the
+        // same refresh again. removeToken is what drops that promise.
+        self.removeToken()
+        self.storeToken(token)
       },
     }))
     .actions(self => {
@@ -236,10 +261,22 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
        * popup and waits for the redirect message.
        */
       async getTokenViaAuthFlow(): Promise<string> {
+        // the slot defaults to '', and `new URL('')` reports only
+        // "TypeError: Invalid URL:" — say which account is unconfigured
+        if (!self.authEndpoint) {
+          throw new Error(
+            `Internet account ${self.internetAccountId} has no authEndpoint configured`,
+          )
+        }
         const redirectUri = isElectron
           ? 'http://localhost/auth'
           : window.location.origin + window.location.pathname
-        const state = self.state
+        // RFC 6749 §10.12: without a state there is nothing tying the redirect
+        // back to the request this window started, so a page that can post to
+        // us can hand us its own authorization. A configured state is a
+        // constant and so guessable — generate a per-flow nonce unless one was
+        // set explicitly. Providers are required to echo it back.
+        const state = self.state || toBase64Url(randomBytes(16))
         const codeChallenge = self.needsPKCE
           ? await sha256Base64Url(self.codeVerifierPKCE)
           : undefined
@@ -247,8 +284,8 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           client_id: self.clientId,
           redirect_uri: redirectUri,
           response_type: self.responseType,
-          token_access_type: 'offline',
-          ...(state ? { state } : {}),
+          state,
+          ...self.authFlowParams,
           ...(self.scopes ? { scope: self.scopes } : {}),
           ...(codeChallenge
             ? { code_challenge: codeChallenge, code_challenge_method: 'S256' }
@@ -257,7 +294,6 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
 
         const url = new URL(self.authEndpoint)
         url.search = new URLSearchParams(data).toString()
-        const eventName = `JBrowseAuthWindow-${self.internetAccountId}`
         const oauthParams: OAuthWindowParams = {
           internetAccountId: self.internetAccountId,
           expectedState: state,
@@ -284,20 +320,33 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           if (electronRedirectUri === undefined) {
             throw new Error('OAuth flow was cancelled')
           }
-          const event = new MessageEvent('message', {
-            data: { name: eventName, redirectUri: electronRedirectUri },
-          })
-          const token = await finishOAuthWindow(event, oauthParams)
+          const token = await finishOAuthRedirect(
+            electronRedirectUri,
+            oauthParams,
+          )
           if (token === undefined) {
             throw new Error('Electron OAuth flow returned no token')
           }
           return token
         } else {
-          const tokenPromise = waitForOAuthMessage(event =>
+          const popup = window.open(
+            url,
+            `JBrowseAuthWindow-${self.internetAccountId}`,
+            'width=500,height=600,left=0,top=0',
+          )
+          // A blocked popup used to leave the returned promise pending forever,
+          // and `getToken` caches that promise — so the account stayed wedged
+          // for the rest of the session with nothing shown to the user
+          if (!popup) {
+            throw new Error(
+              `Could not open the ${self.internetAccountId} login window. Allow popups for this site and try again.`,
+            )
+          }
+          // no await between the open above and the listener below, so the
+          // redirect message cannot be delivered before we are listening
+          return waitForOAuthMessage(event =>
             finishOAuthWindow(event, oauthParams),
           )
-          window.open(url, eventName, 'width=500,height=600,left=0,top=0')
-          return tokenPromise
         }
       },
     }))
@@ -337,7 +386,11 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           const refreshToken = self.retrieveRefreshToken()
           if (refreshToken) {
             try {
-              return await self.exchangeRefreshForAccessToken(refreshToken)
+              const newToken =
+                await self.exchangeRefreshForAccessToken(refreshToken)
+              // removeToken above already dropped the cached one
+              self.storeToken(newToken)
+              return newToken
             } catch (err) {
               console.error('Token could not be refreshed', err)
             }
@@ -356,12 +409,45 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
     .actions(self => ({
       /**
        * #action
+       * Run a request with the current token and, only if it comes back 401,
+       * refresh the token through `validateToken` and run it exactly once more.
+       * This is how the fetchers reach a resource.
+       */
+      async fetchWithToken(
+        loc: UriLocation | undefined,
+        run: (token: string) => Promise<Response>,
+      ) {
+        // Deliberately not getValidatedToken, which pre-flights validateToken —
+        // a HEAD here, a metadata call for Dropbox and Google Drive — ahead of
+        // *every* request, to re-prove a token that had just worked. A
+        // range-read track issues hundreds of requests, so that doubled both
+        // the round trips and the provider quota each track spent.
+        const token = await self.getToken(loc)
+        const response = await run(token)
+        if (response.status !== 401 || !loc) {
+          return response
+        }
+        // A worker has neither storage nor a user to prompt, so it cannot mint
+        // a token — only the main thread can, and it re-validates before
+        // shipping the next pre-authorization. Going on into validateToken here
+        // died on `ReferenceError: sessionStorage is not defined` partway
+        // through a refresh; hand back the 401 so the caller reports it.
+        if (inWebWorker) {
+          return response
+        }
+        // validateToken refreshes the expired token, or throws if it can't
+        return run(await self.validateToken(token, loc))
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
        */
       getFetcher(loc?: UriLocation) {
-        return async (input: RequestInfo, init?: RequestInit) => {
-          const token = await self.getValidatedToken(loc)
-          return fetch(input, self.addAuthHeaderToInit(init, token))
-        }
+        return (input: RequestInfo, init?: RequestInit) =>
+          self.fetchWithToken(loc, token =>
+            fetch(input, self.addAuthHeaderToInit(init, token)),
+          )
       },
     }))
 }

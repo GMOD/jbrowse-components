@@ -74,12 +74,13 @@ export default function stateModelFactory(
             searchParams.append('alt', 'media')
           }
           driveUrl.search = searchParams.toString()
-          const authToken = await self.getValidatedToken(location)
-          const response = await fetch(
-            driveUrl,
-            self.addAuthHeaderToInit(
-              { ...init, method: 'GET', credentials: 'same-origin' },
-              authToken,
+          const response = await self.fetchWithToken(location, authToken =>
+            fetch(
+              driveUrl,
+              self.addAuthHeaderToInit(
+                { ...init, method: 'GET', credentials: 'same-origin' },
+                authToken,
+              ),
             ),
           )
           if (!response.ok) {
@@ -92,16 +93,16 @@ export default function stateModelFactory(
        * #action
        */
       async validateToken(token: string, location: UriLocation) {
-        const response = await fetch(getUri(location.uri), {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        if (!response.ok) {
-          const refreshToken = self.retrieveRefreshToken()
-          if (refreshToken) {
-            const newToken =
-              await self.exchangeRefreshForAccessToken(refreshToken)
-            return self.validateToken(newToken, location)
-          }
+        const uri = getUri(location.uri)
+        const fetchMetadata = (authToken: string) =>
+          fetch(uri, { headers: { Authorization: `Bearer ${authToken}` } })
+
+        const response = await fetchMetadata(token)
+        if (response.ok) {
+          return token
+        }
+        const refreshToken = self.retrieveRefreshToken()
+        if (!refreshToken) {
           throw new Error(
             await getDescriptiveErrorMessage(
               response,
@@ -109,7 +110,21 @@ export default function stateModelFactory(
             ),
           )
         }
-        return token
+        // Retry exactly once. Recursing here instead looped forever on a file
+        // that fails for a reason no new token fixes — one the account cannot
+        // see — refreshing against the token endpoint on every pass.
+        const newToken = await self.exchangeRefreshForAccessToken(refreshToken)
+        const retry = await fetchMetadata(newToken)
+        if (!retry.ok) {
+          throw new Error(
+            await getDescriptiveErrorMessage(
+              retry,
+              'Token could not be validated',
+            ),
+          )
+        }
+        self.replaceToken(newToken)
+        return newToken
       },
     }))
     .actions(self => ({
