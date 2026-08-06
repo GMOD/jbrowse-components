@@ -245,6 +245,10 @@ const PAGE = /* html */ `<!doctype html>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Screenshot review</title>
+<!-- inline, both to stop the /favicon.ico 404 putting a red line in the console
+     on every load and to tell this tab apart from the snapshot review UI, which
+     the two tools are expected to be open beside -->
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🖼️</text></svg>'>
 <style>
   /* Surfaces/text/borders use CSS system colors so light and dark themes both
      work with no media query — the browser maps Canvas/Field/etc per scheme.
