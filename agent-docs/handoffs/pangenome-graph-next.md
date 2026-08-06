@@ -10,6 +10,20 @@ behind it are in
 [reference/PANGENOME_GRAPHS.md](../reference/PANGENOME_GRAPHS.md) — read that
 first, this file assumes it.
 
+**State as of 2026-08-05.** Closed: §1 deterministic layout, §2 pinned bundle,
+§3 carriage read path, §9 reference-only index (built and hosted, and its
+premise corrected — it is not a drop-in). **§5 is the blocker**: the
+level-of-detail producer is done and its output hosted, but no bubble-tier file
+renders in a browser, and eight hypotheses plus bgzf itself are eliminated. Open
+and unblocked by it: §4 colour/legend, §6 the axis, §7 in-view navigation, §8 the
+UI debts, and the demo list.
+
+This file stays until §5 closes. Its durable spillover already lives elsewhere
+and should not be duplicated back in: the wasm string-decode defect found while
+chasing §5 is `gmod/bgzf-filehandle` `agent-docs/adr/0002` (with the same fix in
+`bbi-js`), and the jsdom blindness that hid it is enforced by
+`config/jest/textEncoder.js` in this repo.
+
 The view is a third-party plugin,
 `~/src/jb2plugins/jbrowse-plugin-graphgenomeview`; build and deploy traps are in
 the `key_pattern_graphgenomeview_plugin_deploy_and_autofit` memory. Never hand-run
