@@ -1,6 +1,7 @@
 import { lazy } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
+import { extendViewType } from '@jbrowse/core/pluggableElementTypes'
 import { launchTargetsMenuItem } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import NotesIcon from '@mui/icons-material/Notes'
@@ -8,11 +9,6 @@ import NotesIcon from '@mui/icons-material/Notes'
 import type { ConsensusDisplay } from './ConsensusSequenceDialog.tsx'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type {
-  PluggableElementType,
-  ViewType,
-} from '@jbrowse/core/pluggableElementTypes'
-import type { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
 
 // plugin install() runs at startup, so a static import would put the dialog
 // (and the MUI Slider it uses) in the first-paint bundle
@@ -51,53 +47,45 @@ function alignmentsDisplays(tracks: TrackLike[]) {
 }
 
 export default function ConsensusSequenceF(pluginManager: PluginManager) {
-  pluginManager.addToExtensionPoint(
-    'Core-extendPluggableElement',
-    (pluggableElement: PluggableElementType) => {
-      if (pluggableElement.name === 'LinearGenomeView') {
-        const viewType = pluggableElement as ViewType
-        const lgv = viewType.stateModel as LinearGenomeViewStateModel
-        viewType.stateModel = lgv.views(self => {
-          const superLaunchMenuItems = self.rubberBandLaunchMenuItems
-          return {
-            rubberBandLaunchMenuItems() {
-              return [
-                ...superLaunchMenuItems(),
-                ...launchTargetsMenuItem({
-                  label: CONSENSUS_LABEL,
-                  icon: NotesIcon,
-                  entries: alignmentsDisplays(self.tracks),
-                  entryLabel: entry => entry.name,
-                  onSelect:
-                    ({ name, display }) =>
-                    () => {
-                      const regions = self.getSelectedRegions(
-                        self.leftOffset,
-                        self.rightOffset,
-                      )
-                      if (regions.length) {
-                        getSession(self).queueDialog(handleClose => [
-                          ConsensusSequenceDialog,
-                          {
-                            model: self,
-                            display,
-                            trackName: name,
-                            regions,
-                            handleClose: () => {
-                              handleClose()
-                              self.setOffsets()
-                            },
-                          },
-                        ])
-                      }
-                    },
-                }),
-              ]
-            },
-          }
-        })
+  extendViewType(pluginManager, 'LinearGenomeView', stateModel =>
+    stateModel.views(self => {
+      const superLaunchMenuItems = self.rubberBandLaunchMenuItems
+      return {
+        rubberBandLaunchMenuItems() {
+          return [
+            ...superLaunchMenuItems(),
+            ...launchTargetsMenuItem({
+              label: CONSENSUS_LABEL,
+              icon: NotesIcon,
+              entries: alignmentsDisplays(self.tracks),
+              entryLabel: entry => entry.name,
+              onSelect:
+                ({ name, display }) =>
+                () => {
+                  const regions = self.getSelectedRegions(
+                    self.leftOffset,
+                    self.rightOffset,
+                  )
+                  if (regions.length) {
+                    getSession(self).queueDialog(handleClose => [
+                      ConsensusSequenceDialog,
+                      {
+                        model: self,
+                        display,
+                        trackName: name,
+                        regions,
+                        handleClose: () => {
+                          handleClose()
+                          self.setOffsets()
+                        },
+                      },
+                    ])
+                  }
+                },
+            }),
+          ]
+        },
       }
-      return pluggableElement
-    },
+    }),
   )
 }
