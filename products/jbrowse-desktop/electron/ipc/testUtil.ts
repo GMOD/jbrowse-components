@@ -37,7 +37,9 @@ export function captureHandlers(register: () => void) {
   ) => captured.get(channel)!(NO_EVENT, ...args)
 }
 
-/** A fresh temp directory and the AppPaths rooted at it. */
+/**
+ * A fresh temp directory and the AppPaths rooted at it.
+ */
 export function makeTestPaths() {
   const dir = fs.mkdtempSync(path.join(fs.realpathSync(os.tmpdir()), 'jb-ipc-'))
   const paths: AppPaths = {

@@ -48,7 +48,9 @@ function makeWindow() {
     window,
     sent,
     isDestroyed: () => destroyed,
-    /** emit 'close'; returns whether the guard prevented it */
+    /**
+     * emit 'close'; returns whether the guard prevented it
+     */
     close: () => {
       let prevented = false
       emit('close', {

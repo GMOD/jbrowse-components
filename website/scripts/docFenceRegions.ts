@@ -12,7 +12,9 @@ export const REGION_MARKER = /^\s*(\/\/|#)\s*#(end)?region\b/
 const REGION_START = /^\s*(\/\/|#)\s*#region\b/
 const REGION_END = /^\s*(\/\/|#)\s*#endregion\b/
 
-/** Drop every region marker line, for a whole-file include. */
+/**
+ * Drop every region marker line, for a whole-file include.
+ */
 export function stripRegionMarkers(source: string) {
   return source
     .replace(/\n+$/, '')

@@ -168,9 +168,7 @@ const { ConfigurationSchema } = pluginManager.jbrequire(
 const WidgetType = pluginManager.jbrequire(
   '@jbrowse/core/pluggableElementTypes/WidgetType',
 )
-const { ElementId } = pluginManager.jbrequire(
-  '@jbrowse/core/util/types/mst',
-)
+const { ElementId } = pluginManager.jbrequire('@jbrowse/core/util/types/mst')
 const { types } = pluginManager.jbrequire('@jbrowse/mobx-state-tree')
 
 const React = pluginManager.jbrequire('react')

@@ -45,8 +45,10 @@ const pmCommands = {
       Human genes on hg38, opened at the <em>SHH</em> locus. Everything below is the
       source that produced it.
     </p>
-    {/* held open at the height it settles at, so the install steps below don't
-    slide down the page when the island mounts. See `demoHeights`. */}
+    {
+      /* held open at the height it settles at, so the install steps below don't
+    slide down the page when the island mounts. See `demoHeights`. */
+    }
     <div
       class:list={['demo', { reserved: !!reserved }]}
       style={reserved ? `min-height:${reserved}px` : undefined}

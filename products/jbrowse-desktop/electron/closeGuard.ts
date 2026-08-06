@@ -27,7 +27,9 @@ import { ipcHandle, ipcSend } from './ipc/channels.ts'
  *   is in progress and re-issuing it after the flush is what prevents that.
  */
 export interface CloseGuard {
-  /** attach to the main window once it exists */
+  /**
+   * attach to the main window once it exists
+   */
   register: (window: Electron.BrowserWindow) => void
 }
 
@@ -35,9 +37,13 @@ export function createCloseGuard({
   onQuitting,
   quitApp,
 }: {
-  /** subscribe to app 'before-quit'; called with the unsubscribe-free listener */
+  /**
+   * subscribe to app 'before-quit'; called with the unsubscribe-free listener
+   */
   onQuitting: (listener: () => void) => void
-  /** re-issue the quit the held close interrupted */
+  /**
+   * re-issue the quit the held close interrupted
+   */
   quitApp: () => void
 }): CloseGuard {
   let sessionOpen = false

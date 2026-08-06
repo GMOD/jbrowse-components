@@ -56,8 +56,8 @@ track looks like noise, this is the first thing to change. See
 The matrix is fetched for every pair of displayed regions. With one region on
 screen that is just the region against itself; open a second and JBrowse also
 fetches the contacts _between_ the two and draws them in the wedge between their
-triangles. Nothing needs configuring for this; it falls out of navigating to
-two locations at once, which you can do by typing both into the location box
+triangles. Nothing needs configuring for this; it falls out of navigating to two
+locations at once, which you can do by typing both into the location box
 separated by a space.
 
 That makes a genome browser a translocation detector. Contact frequency decays
@@ -74,10 +74,10 @@ pipeline in ENCODE, so the two maps are directly comparable.
 
 <Figure src="/img/hic/bcr_abl1_translocation.png" caption="ABL1 (chr9) and BCR (chr22) open as two windows in one linear view, with GM12878 above and K562 below. Each panel's own two triangles are its intra-chromosomal contacts; the wedge between them is chr9 against chr22. It is empty in GM12878 and carries a dense block in K562, arrowed, whose apex sits where the two highlighted genes meet." links="Open this view=hic/bcr_abl1_translocation" />
 
-Read the two panels as one comparison. The paired triangles are the same in both:
-chr9 and chr22 each fold normally in K562. What differs is the space between
-them, and that space is not a subtle enrichment: it is empty in one cell line
-and solid in the other.
+Read the two panels as one comparison. The paired triangles are the same in
+both: chr9 and chr22 each fold normally in K562. What differs is the space
+between them, and that space is not a subtle enrichment: it is empty in one cell
+line and solid in the other.
 
 ## Why the control matters more than the sample
 
@@ -144,12 +144,12 @@ next to the matrix it was called from.
 
 ## The same control, one scale up
 
-The translocation is the sharpest thing these two cell lines differ by, but it is
-not the only one, and the largest-scale difference is read the same way. Above the
-domains and loops of the first figure, the matrix separates into two interleaved
-sets of regions that preferentially contact their own kind: the gene-rich, active
-A compartment and the inactive B compartment. ENCODE publishes that call for
-every Hi-C experiment as a
+The translocation is the sharpest thing these two cell lines differ by, but it
+is not the only one, and the largest-scale difference is read the same way.
+Above the domains and loops of the first figure, the matrix separates into two
+interleaved sets of regions that preferentially contact their own kind: the
+gene-rich, active A compartment and the inactive B compartment. ENCODE publishes
+that call for every Hi-C experiment as a
 [compartment eigenvector and a set of subcompartment classes](/docs/user_guides/hic_track#compartments-and-subcompartments),
 both derived from the matrix already loaded.
 
@@ -159,14 +159,14 @@ The band over _TCF4_ is in the B compartment in GM12878 and the A compartment in
 K562, and the reason to believe it is the same reason the translocation was
 believable: the flanks. Ten megabases of surrounding sequence, from the same two
 files and the same pipeline, agree. A difference that appears in one block while
-its neighbours match is a difference in the data; one that appears everywhere is a
-difference in how the two files were made.
+its neighbours match is a difference in the data; one that appears everywhere is
+a difference in how the two files were made.
 
 Two things make this comparison harder than it looks, and both are set up in the
 figure rather than left to the reader. The eigenvector tracks are pinned to one
 shared scale, because autoscaling lets each fill its own lane from its own
-extremes and the two stop being comparable at all. And an eigenvector names the A
-compartment only up to a sign, so which sign means active is a property of the
+extremes and the two stop being comparable at all. And an eigenvector names the
+A compartment only up to a sign, so which sign means active is a property of the
 file rather than a convention: it is read off the gene track, since A is the
 gene-rich compartment by definition. The
 [user guide section](/docs/user_guides/hic_track#compartments-and-subcompartments)
@@ -229,14 +229,14 @@ For the loops file, set
 want to color or filter by a column. The adapter otherwise takes column names
 from the file's own header line, and juicer writes its version banner _after_
 the defline; the last header line therefore has no tab-separated fields, name
-resolution gives up, and every extra column reads back as `undefined`, and a jexl
-expression on `observed` then silently evaluates against nothing. Listing the 24
-columns in config skips the guesswork.
+resolution gives up, and every extra column reads back as `undefined`, and a
+jexl expression on `observed` then silently evaluates against nothing. Listing
+the 24 columns in config skips the guesswork.
 
 ## See also
 
-- [](/docs/user_guides/hic_track), for resolution, color scales, normalization, and
-  the region-pair mechanism this tutorial leans on
+- [](/docs/user_guides/hic_track), for resolution, color scales, normalization,
+  and the region-pair mechanism this tutorial leans on
 - [](/docs/config_guides/hic_track)
 - [](/docs/tutorials/chromhmm), the other ENCODE annotation stacked
   many-rows-deep

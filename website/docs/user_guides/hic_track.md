@@ -133,14 +133,15 @@ set in config).
 ## Compartments and subcompartments
 
 At tens of megabases the matrix separates into two interleaved sets of regions
-that preferentially contact their own kind: the A compartment, which is gene-rich
-and active, and the B compartment, which is not. In a published figure this reads
-as a checkerboard, but that picture is drawn from an _observed/expected_ matrix,
-where each bin has been divided by the average contact at its separation and then
-correlated. JBrowse draws raw or matrix-balanced counts, and against the steep
-decay of contact with distance the compartment signal stays a faint texture
-rather than a checkerboard. Balanced counts on a linear ramp show the most of it;
-`Log scale` on a deeply sequenced file returns solid red.
+that preferentially contact their own kind: the A compartment, which is
+gene-rich and active, and the B compartment, which is not. In a published figure
+this reads as a checkerboard, but that picture is drawn from an
+_observed/expected_ matrix, where each bin has been divided by the average
+contact at its separation and then correlated. JBrowse draws raw or
+matrix-balanced counts, and against the steep decay of contact with distance the
+compartment signal stays a faint texture rather than a checkerboard. Balanced
+counts on a linear ramp show the most of it; `Log scale` on a deeply sequenced
+file returns solid red.
 
 What is worth loading instead is the compartment call itself, which the
 processing pipeline has already made. ENCODE publishes two such files per Hi-C
@@ -151,8 +152,8 @@ experiment, both derived from the matrix in the same track:
   ordinary [quantitative track](/docs/user_guides/quantitative_track) and draws
   as a two-color plot around zero.
 - **Subcompartments**, a BED. Clustering the interaction profiles splits A and B
-  further, and the file carries a color per class in its `itemRgb` column, so the
-  track paints itself with no color configuration.
+  further, and the file carries a color per class in its `itemRgb` column, so
+  the track paints itself with no color configuration.
 
 <Figure src="/img/hic/compartment_switch.png" caption="10 Mb of chr18 with the GM12878 and K562 compartment eigenvectors on one shared scale, their subcompartment classes as colored strips between them, and the GM12878 matrix below. Over the highlighted TCF4 band the GM12878 eigenvector is negative and the K562 one positive, and the subcompartment class changes with it; the flanks, where both agree, are the control." links="Open this view=hic/compartment_switch" />
 
@@ -169,16 +170,16 @@ produces it is equally valid negated, so which sign means "active" is a property
 of the file, not a convention you can assume — and comparing two files means
 their orientations have to agree as well. Both are checkable against the gene
 track: A is the gene-rich compartment by definition, so the sign that coincides
-with the dense stretches of the gene track is A. In the figure above the positive
-side carries the genes in both samples.
+with the dense stretches of the gene track is A. In the figure above the
+positive side carries the genes in both samples.
 
 The subcompartment classes need the same caution in a different place. The
 cluster numbers a caller emits are arbitrary labels rather than the published
 A1/A2/B1/B2/B3 naming, so a class number means nothing on its own and two files
-only compare because the same pipeline assigned the same colors. That is also why
-the figure requires _both_ signals to change before calling a region switched: a
-class number can move without the eigenvector moving at all, which is a
-relabelling and not a change in compartment.
+only compare because the same pipeline assigned the same colors. That is also
+why the figure requires _both_ signals to change before calling a region
+switched: a class number can move without the eigenvector moving at all, which
+is a relabelling and not a change in compartment.
 
 ## See also
 

@@ -164,15 +164,15 @@ hundred kilobytes here:
 ```
 
 [`columnNames`](/docs/config/bedadapter/#slot-columnnames) is doing two jobs
-here, and without it this file is misread twice over. It has twelve columns whose
-last three are not BED12's block fields, so left to the positional BED layout the
-cluster count is taken for a `blockCount` and every feature grows a row of
-nonexistent subfeatures. And naming column nine `itemRgb` is what makes the
-classes paint their own colors: the file's own header spells it `itemRGB`, which
-is not the name JBrowse looks for, and the header would not be consulted anyway
-because a second comment line follows the column line — the parser takes the last
-header line as the definition, and that one has no tab-separated fields. Neither
-failure raises an error.
+here, and without it this file is misread twice over. It has twelve columns
+whose last three are not BED12's block fields, so left to the positional BED
+layout the cluster count is taken for a `blockCount` and every feature grows a
+row of nonexistent subfeatures. And naming column nine `itemRgb` is what makes
+the classes paint their own colors: the file's own header spells it `itemRGB`,
+which is not the name JBrowse looks for, and the header would not be consulted
+anyway because a second comment line follows the column line — the parser takes
+the last header line as the definition, and that one has no tab-separated
+fields. Neither failure raises an error.
 
 ## See also
 

@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import type { RefObject } from 'react'
-
 import { isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import { onDeviceLost } from './gpuDevice.ts'
 import { RecoveryBudget } from './recoveryBudget.ts'
 import { useTabVisibilityRerender } from './useTabVisibilityRerender.ts'
+
+import type { RefObject } from 'react'
 
 // Auto-recovery from WebGL context loss. The browser force-loses the oldest
 // context when too many are live (and may never fire `webglcontextrestored`),

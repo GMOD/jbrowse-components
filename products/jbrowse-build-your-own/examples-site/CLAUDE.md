@@ -26,7 +26,7 @@ repeated block falls into two kinds, and only one of them is this site's
 content. `TrackRow` is content — mounting a display is what the reader came to
 see, and the box it goes in is theirs to style. The gesture layer was not: every
 page carried ~150 identical lines of wheel handling, drag loop and hint timer,
-and what they carried was a *worse* implementation than the one JBrowse itself
+and what they carried was a _worse_ implementation than the one JBrowse itself
 ships, since it batched nothing and rate-limited nothing. That is not a
 duplication problem, it is a missing export. It became
 `@jbrowse/core/util/usePanZoom` (with `useWidthSetter`, which already existed
@@ -77,8 +77,8 @@ literal, never `?raw` a private helper of this site.
   purpose: the densest pages here sit near it because they carry real mechanics
   (the passive `wheel` listener, `setPointerCapture` on move not press), and
   cutting those to hit a tighter number is the wrong trade. Implementation is
-  `findLongDocs`/`findLongDescriptions` in `@jbrowse/browser-test-utils`.
-  The cap stopped being load-bearing for *layout* when the demo moved above the
+  `findLongDocs`/`findLongDescriptions` in `@jbrowse/browser-test-utils`. The
+  cap stopped being load-bearing for _layout_ when the demo moved above the
   prose (`ExampleSection.astro`) — a long page no longer buries its own demo —
   but it is still what keeps these from becoming essays.
 - A single-section page's **section-level `description` renders nowhere** — the
