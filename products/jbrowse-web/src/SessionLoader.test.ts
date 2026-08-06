@@ -22,15 +22,13 @@ jest.mock('@jbrowse/core/util/io', () => ({
   }),
 }))
 
-jest.mock('./sessionSharing', () => ({
-  readSessionFromDynamo: jest.fn(),
-}))
-
 jest.mock('./util', () => ({
   addRelativeUris: jest.fn(),
   checkPlugins: jest.fn().mockResolvedValue(true),
   fromUrlSafeB64: jest.fn().mockResolvedValue('{"id":"test","name":"Test"}'),
-  readConf: jest.fn(),
+  readConf: jest.fn().mockReturnValue(''),
+  readSessionFromDynamo: jest.fn(),
+  shareEndpoint: jest.fn().mockReturnValue('load'),
 }))
 
 jest.mock('idb', () => ({
@@ -597,8 +595,8 @@ describe('SessionLoader', () => {
     // still routes to triage (no pre-set sessionSource → fetchSharedSession
     // path, which vets via checkPlugins without userAcceptedConfirmation).
     it('shared session with an untrusted plugin still triages on initial load', async () => {
-      const { readSessionFromDynamo } = jest.requireMock('./sessionSharing')
-      const { fromUrlSafeB64, checkPlugins } = jest.requireMock('./util')
+      const { readSessionFromDynamo, fromUrlSafeB64, checkPlugins } =
+        jest.requireMock('./util')
       readSessionFromDynamo.mockResolvedValueOnce('encrypted-blob')
       fromUrlSafeB64.mockResolvedValueOnce(
         JSON.stringify({
