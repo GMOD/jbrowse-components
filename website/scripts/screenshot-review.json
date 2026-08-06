@@ -2023,9 +2023,9 @@
   "pangenome/hprc_mhc_anchored": {
     "name": "pangenome/hprc_mhc_anchored",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-06T05:30:15.463Z",
-    "hash": "85d2b28efbc946fddb6a847fdac951c8ae618a4f"
+    "note": "Absorbed pangenome/hprc_node_menu: the force half now also shows the right-click route and the band it writes, so the MHC subgraph is drawn once in that tutorial rather than twice.",
+    "reviewedAt": "2026-08-06T06:53:37.256Z",
+    "hash": "5ffe8983ef4188be90cf57f9d0091fee1704fe83"
   },
   "pangenome/hprc_mhc_sample_rows": {
     "name": "pangenome/hprc_mhc_sample_rows",
@@ -2033,13 +2033,6 @@
     "note": "RETIRED in the same pass. Three sample-rows figures on the HPRC graph; this one taught the layout on a window where nothing in particular happens, while pangenome/hprc_lpa_kiv2 teaches it on KIV-2, where the length range is the finding. The tutorial section keeps LPA and the row-count caveat.",
     "reviewedAt": "2026-07-27T04:59:08.928Z",
     "hash": "e6b873ad6a521215e028f9a986b2ee14a1b83882"
-  },
-  "pangenome/hprc_node_menu": {
-    "name": "pangenome/hprc_node_menu",
-    "status": "bad",
-    "note": "may not need standalone figure combine with pangenome/hprc_mhc_anchored . look for consolidations like this elsewhere",
-    "reviewedAt": "2026-08-06T05:30:48.480Z",
-    "hash": "cd6edd9c52cd3b736082fee85c2d363289a6cffe"
   },
   "pangenome/pggb_synteny": {
     "name": "pangenome/pggb_synteny",

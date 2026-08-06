@@ -10,7 +10,11 @@ import { fileURLToPath } from 'node:url'
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
 import { ECOLI_DEMO_BASE, usingLocalDemo } from './demoBase.ts'
 
-import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
+import type {
+  Annotation,
+  ScreenshotAction,
+  ScreenshotSpec,
+} from '../screenshot-spec-types.ts'
 
 // The url the tracked fixture configs hardcode, and what ECOLI_DEMO_BASE
 // replaces in them when it is set.
@@ -287,9 +291,10 @@ const PATHS_REGION = {
 // pangenome/rgfa_hover_sync` prints the ids a cut contains.
 const HOVERED_ALLELE = 's2037'
 
-// The off-reference allele pangenome/hprc_node_menu right-clicks, named rather
-// than measured — see HOVERED_ALLELE. `node scripts/probe-graph-nodes.ts
-// pangenome/hprc_node_menu` prints the cut's ids with their lengths and ranks.
+// The off-reference allele the force half of pangenome/hprc_mhc_anchored
+// right-clicks, named rather than measured — see HOVERED_ALLELE. `node
+// scripts/probe-graph-nodes.ts pangenome/hprc_mhc_layout_force` prints the
+// cut's ids with their lengths and ranks.
 //
 // It is 1,775 bp of HG01433 hap 2 (`CM086511.1:32,520,440-32,522,215` in the
 // links index), and the two backbone segments it hangs off are s101144, ending
@@ -298,17 +303,14 @@ const HOVERED_ALLELE = 's2037'
 // writes into the linear view. That is also, near exactly, HLA-DRB5
 // (chr6:32,517,353-32,530,287), the gene present only on DR51 haplotypes.
 //
-// Which is why the frame needs the callout below (review: "it looks like this is
+// Which is why the caption has to say it (review: "it looks like this is
 // highlighting a 'black' node, instead of the green one, which is, afaict, the
 // reference path"). Under the reference-position ramp black means "no reference
 // position", i.e. this IS the allele the figure is about, and the green 12 kb
 // node beside it is the reference segment the highlight lands on. Nothing in the
-// frame joined the two, so a ring on a black node over a band 12 kb wide read as
-// the wrong node being ringed.
+// frame joins the two, so a ring on a black node over a band 12 kb wide reads as
+// the wrong node being ringed unless the words are there.
 const HPRC_ALLELE = 's318599'
-const HPRC_ALLELE_LABEL =
-  'HG01433.2 allele: 1.8 kb\nwhere hg38 has 12 kb (HLA-DRB5)'
-
 // K12's genes, so the linear half of a launch figure says which genes the
 // clicked segment covers rather than being a lane of anonymous blocks. Hosted
 // beside the graph indexes; the fixture config carries only the assembly.
@@ -1716,9 +1718,20 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
     // offset would land on the drawing in one of them.
     labelOffset: { dx: number; dy: number },
     label: string,
+    // The force half additionally carries the right-click route, which used to
+    // be pangenome/hprc_node_menu, a whole second capture of this same window
+    // and this same drawing (reviewer: "may not need standalone figure combine
+    // with pangenome/hprc_mhc_anchored"). What it added over this half was the
+    // menu, one ring and the band the menu leaves behind, so it is those three
+    // things rather than a figure.
+    nodeMenu?: {
+      actions: ScreenshotAction[]
+      annotations: Annotation[]
+    },
   ): ScreenshotSpec => ({
     mode: 'url',
     name,
+    ...(nodeMenu ? { actions: nodeMenu.actions } : {}),
     url: sessionSpec(HPRC_CONFIG, {
       views: [
         {
@@ -1803,6 +1816,7 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
         maxWidth: 300,
         fontSize: 20,
       },
+      ...(nodeMenu?.annotations ?? []),
     ],
   })
   return [
@@ -1821,6 +1835,42 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
         dy: -276,
       },
       'The same subgraph, force-directed',
+      // THE RIGHT-CLICK ROUTE, folded in from the deleted hprc_node_menu.
+      // `Highlight in hg38` writes the node's reference interval into the
+      // linear view's own highlight list, where it stays — which is what lets
+      // one frame carry both the menu and its result: click the item, then
+      // right-click the same node again, so the menu stands over a band it
+      // already left behind. The node is NAMED (`anchor: { graphNode }`,
+      // resolved through the view's nodePositions), so a layout change fails
+      // the capture rather than clicking empty canvas.
+      {
+        actions: [
+          // the auto-fit has to have finished before the anchor means anything
+          { type: 'delay', ms: 2000 },
+          { type: 'rightclick', anchor: { view: 1, graphNode: HPRC_ALLELE } },
+          { type: 'waitForText', text: 'Highlight in hg38' },
+          { type: 'click', text: 'Highlight in hg38' },
+          { type: 'delay', ms: 1500 },
+          { type: 'rightclick', anchor: { view: 1, graphNode: HPRC_ALLELE } },
+          { type: 'waitForText', text: 'Node details' },
+          { type: 'delay', ms: 500 },
+        ],
+        annotations: [
+          // which node the menu was opened on: a context menu opens AT the
+          // cursor, so it covers the thing it was opened on, and a force
+          // drawing has no row label to fall back on. Unnumbered, unlike the
+          // two landmark badges — it is a third node and the caption names it
+          // rather than pairing it across the seam.
+          {
+            type: 'circle',
+            anchor: { view: 1, graphNode: HPRC_ALLELE },
+            radius: 22,
+          },
+          // the item that produced the band. Without it the frame holds a menu
+          // and a highlight with nothing joining them.
+          { type: 'box', anchor: { text: 'Highlight in hg38' } },
+        ],
+      },
     ),
     // the one-hop default cut brings in more nodes than the old None cut, so
     // the anchored pane grew past the 775 this used to need. Its label goes in
@@ -3590,109 +3640,16 @@ export const graphSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The other half of the way out, on the graph where the contributing
-  // assemblies are NOT loadable: right-clicking one haplotype's allele. Its own
-  // coordinate is exact and unopenable (no session loads 464 haplotypes as
-  // assemblies), so what the menu offers is the GRCh38 interval the allele
-  // attaches to, which is the answer the HPRC tutorial's round trip needs.
-  //
-  // One frame holding both the menu and its result. Review: "need to be able to
-  // just highlight lineargenomeview coords", then "make into a single
-  // screenshot instead of two screenshots potentially where highlight and right
-  // click menu is visible". Hovering a node already draws a band in the linear
-  // view, but a hover band lives as long as the pointer does; **Highlight in
-  // hg38** writes the same interval into the view's own highlight list, where it
-  // stays. That persistence is what lets one frame carry both: the actions click
-  // the item, then right-click the same node again, so the menu is open over a
-  // band it already left behind. Two stacked frames paid for the whole app
-  // chrome twice to say that.
-  //
-  // The force-directed drawing, per review ("please change to force directed
-  // bandage graph"). The right-clicked node is NAMED rather than measured
-  // (`anchor: { graphNode }`, resolved through the view's own nodePositions), so
-  // the layout, the pane size and the tracks above the graph can all move
-  // without silently pointing the click at empty canvas. An anchor that resolves
-  // to nothing throws, and the waitForText below fails the capture rather than
-  // committing a figure of an unopened menu.
-  {
-    mode: 'url',
-    name: 'pangenome/hprc_node_menu',
-    url: sessionSpec(HPRC_CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: 'chr6:32,500,000-32,560,000',
-          tracks: [
-            {
-              trackId: 'hg38_ncbiRefSeq_ucsc',
-              type: 'LinearBasicDisplay',
-              // compact, as in the other HPRC figures: two HLA-DRB genes do not
-              // need a lane of their own, and every px here is one the graph
-              // rows under it do not get
-              geneGlyphMode: 'longestCoding',
-              displayMode: 'compact',
-              height: 60,
-            },
-            hprcSegmentsLane(MHC_REGION),
-          ],
-        },
-        {
-          type: 'GraphGenomeView',
-          loadedTrackId: SEGMENTS_TRACK,
-          loadedRegion: MHC_REGION,
-          colorScheme: 'reference-position',
-        },
-      ],
-    }),
-    readySelector: TOOLBAR_READY,
-    readyTimeout: 90000,
-    settleMs: 3000,
-    viewportWidth: 1000,
-    viewportHeight: 1100,
-    actions: [
-      // the auto-fit has to have finished before the anchor means anything
-      { type: 'delay', ms: 2000 },
-      { type: 'rightclick', anchor: { view: 1, graphNode: HPRC_ALLELE } },
-      { type: 'waitForText', text: 'Highlight in hg38' },
-      { type: 'click', text: 'Highlight in hg38' },
-      // the band is written into the view's highlight list, and the menu closes
-      { type: 'delay', ms: 1500 },
-      // the same node again, so the frame carries the menu and the band it left
-      { type: 'rightclick', anchor: { view: 1, graphNode: HPRC_ALLELE } },
-      { type: 'waitForText', text: 'Node details' },
-      { type: 'delay', ms: 500 },
-    ],
-    // The item that produced the band, boxed. Without it the frame holds a menu
-    // and a highlight with nothing joining them, and which of three items did it
-    // is a guess — the same complaint the launch figures drew in review. The ring
-    // says which node: a context menu opens AT the cursor, so it covers the thing
-    // it was opened on, and in a force drawing there is no row label to fall back
-    // on.
-    //
-    // The label is what the ring alone could not say (see HPRC_ALLELE): both
-    // numbers are the graph's own, so the frame states that a 1.8 kb node ringed
-    // in black produced a 12 kb band, rather than leaving the mismatch to be read
-    // as the wrong node being ringed. Placed up and left of the node, which is
-    // the empty corner of this drawing; the menu takes the other side.
-    annotations: [
-      {
-        type: 'circle',
-        anchor: { view: 1, graphNode: HPRC_ALLELE },
-        radius: 22,
-      },
-      {
-        type: 'text',
-        text: HPRC_ALLELE_LABEL,
-        anchor: { view: 1, graphNode: HPRC_ALLELE },
-        dx: -120,
-        dy: -170,
-        maxWidth: 230,
-        fontSize: 16,
-      },
-      { type: 'box', anchor: { text: 'Highlight in hg38' } },
-    ],
-  },
+  // pangenome/hprc_node_menu was here and is DELETED (reviewer: "may not need
+  // standalone figure combine with pangenome/hprc_mhc_anchored"). It was the
+  // same window, the same tracks and the same force drawing as that pair's left
+  // half, with a menu, one ring and the band the menu leaves behind on top —
+  // so those three things moved onto the half itself (see mhcLayoutPartSpecs)
+  // and the second capture of the MHC subgraph went away. The claim they carry
+  // is unchanged: `Highlight in hg38` on a 1.8 kb HG01433.2 allele writes the
+  // 12 kb GRCh38 backbone segment it attaches across, which is HLA-DRB5,
+  // because an off-reference node is drawn over the reference it replaces and
+  // never over its own length.
 
   // The way back out of the graph, on the one fixture where it can do more than
   // return to the reference: all five strains loaded as assemblies, so the graph

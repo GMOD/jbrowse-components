@@ -315,7 +315,7 @@ The [guide](/docs/user_guides/graph_genome_view#three-layouts) sets out what the
 three modes put on each axis. What that costs at this scale is the same MHC
 class II window drawn both ways:
 
-<Figure caption="One MHC class II subgraph drawn both ways, same window and same tracks above it. Left, force-directed: the drawing is the graph's shape and nothing in it lines up with the linear view. Right, anchored: every x is a GRCh38 coordinate, so the backbone is one straight line and each allele hangs below where it attaches, stacked by rank. Rings 1 and 2 are the same two nodes in both halves, a 12 kb reference stretch and the 12.3 kb allele over it: touching in the force drawing, rows apart on the anchored one." src="/img/pangenome/hprc_mhc_anchored.png" links="Force-directed=pangenome/hprc_mhc_layout_force,Anchored=pangenome/hprc_mhc_layout_anchored" />
+<Figure caption="One MHC class II subgraph drawn both ways, same window and same tracks above it. Left, force-directed: the drawing is the graph's shape and nothing in it lines up with the linear view. Right, anchored: every x is a GRCh38 coordinate, so the backbone is one straight line and each allele hangs below where it attaches, stacked by rank. Rings 1 and 2 are the same two nodes in both halves, a 12 kb reference stretch and the 12.3 kb allele over it: touching in the force drawing, rows apart on the anchored one. The unnumbered ring on the left is a third node, a 1.8 kb allele whose right-click menu is open; Highlight in hg38 wrote the orange band above it, the 12 kb backbone segment it attaches across." src="/img/pangenome/hprc_mhc_anchored.png" links="Force-directed=pangenome/hprc_mhc_layout_force,Anchored=pangenome/hprc_mhc_layout_anchored" />
 
 Each locus below is a window small enough to draw:
 
@@ -398,7 +398,11 @@ At HPRC scale the answer is a published file rather than a rebuild:
 is one record per snarl with a genotype per haplotype, so the site under the
 node you clicked states who walks it.
 
-<Figure caption="Right-clicking one haplotype's allele (circled), over the band Highlight in hg38 left in the linear view above. The band it produces is the 12 kb backbone segment the allele attaches across, which here is HLA-DRB5." src="/img/pangenome/hprc_node_menu.png" />
+That route is drawn in the [layout figure above](#the-layout-dropdown): its left
+half has the menu open on a 1.8 kb HG01433.2 allele, the black node ringed
+without a number, over the band **Highlight in hg38** left in the linear view.
+The band is the 12 kb backbone segment that allele attaches across, which here
+is _HLA-DRB5_.
 
 The lanes above combine into one route: rubberband a locus into a graph,
 right-click an allele to put the linear view on its GRCh38 interval, then read

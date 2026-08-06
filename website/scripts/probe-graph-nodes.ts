@@ -2,7 +2,7 @@
 /**
  * probe-graph-nodes.ts — dump the nodes a GraphGenomeView spec actually draws.
  *
- *   node scripts/probe-graph-nodes.ts pangenome/hprc_node_menu [--view=1]
+ *   node scripts/probe-graph-nodes.ts pangenome/hprc_mhc_layout_force [--view=1]
  *
  * A graph is one canvas, so a spec that clicks/hovers a node has to name it
  * (`anchor: { graphNode }`). Which ids the cut contains is a property of the
