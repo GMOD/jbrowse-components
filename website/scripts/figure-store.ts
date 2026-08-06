@@ -6,14 +6,19 @@
 // forever: 4,754 unique figure blobs, 0.67 GiB of a 1.64 GiB pack, growing
 // ~1.4 GiB/yr. Nobody ever reads the old ones, but everybody clones them.
 //
-// So the bytes move to `s3://jbrowse.org/jb2-figures/<ab>/<sha256>.<ext>` and
-// git tracks one line per figure instead. Three properties make that safe:
+// So the bytes move under `s3://jbrowse.org/jb2-figures/` and git tracks one
+// line per figure instead. See storeKey below for the shape of a key. Three
+// properties make that safe:
 //
-//   CONTENT-ADDRESSED, so a key is never overwritten. The bucket has no
-//   versioning (see the deploy-demo.sh warning in CLAUDE.md) and that is
-//   normally a loaded gun — here it cannot go off, because the only write is
-//   "create a key named after bytes that hash to it". Re-pushing identical
-//   content is a no-op; pushing different content writes a different key.
+//   CONTENT-ADDRESSED, so a key is never overwritten. The bucket's versioning
+//   is Suspended — it ran versioned 2021-2025, so old objects still have real
+//   version ids, but everything written since gets version id `null` and a PUT
+//   clobbers it in place. That is the deploy-demo.sh warning in CLAUDE.md, and
+//   it is a loaded gun for anything written by path. It cannot go off here,
+//   because the only write is "create a key named after bytes that hash to it":
+//   re-pushing identical content is a no-op, and different content is a
+//   different key. Turning versioning back on would add nothing for figures —
+//   there is no overwrite to protect against — only deletion cover.
 //
 //   IMMUTABLE, so every revision ever pushed stays fetchable at its own URL.
 //   That is what makes review work: `figures report` renders BEFORE and AFTER
