@@ -55,7 +55,10 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
     view.zoomTo(20)
     expect(display.regionTooLarge).toBe(true)
 
-    display.setByteEstimate({ bytes: 1_600_000, viewport: display.gateViewport! })
+    display.setByteEstimate({
+      bytes: 1_600_000,
+      viewport: display.gateViewport!,
+    })
     expect(display.regionTooLarge).toBe(false)
   })
 

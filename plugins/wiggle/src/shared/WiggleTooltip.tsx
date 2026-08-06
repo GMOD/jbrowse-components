@@ -93,9 +93,7 @@ const WiggleTooltip = observer(function WiggleTooltip({
 }) {
   const { featureUnderMouse } = model
   return featureUnderMouse && mouseState ? (
-    <BaseTooltip
-      clientPoint={{ x: mouseState.clientX, y: mouseState.clientY }}
-    >
+    <BaseTooltip clientPoint={{ x: mouseState.clientX, y: mouseState.clientY }}>
       <TooltipContents feature={featureUnderMouse} />
     </BaseTooltip>
   ) : null

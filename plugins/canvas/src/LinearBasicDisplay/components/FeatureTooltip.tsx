@@ -12,9 +12,7 @@ const FeatureTooltip = observer(function FeatureTooltip({
   mouseState: MouseState | undefined
 }) {
   return info && mouseState ? (
-    <BaseTooltip
-      clientPoint={{ x: mouseState.clientX, y: mouseState.clientY }}
-    >
+    <BaseTooltip clientPoint={{ x: mouseState.clientX, y: mouseState.clientY }}>
       <div>
         <SanitizedHTML html={info} />
       </div>

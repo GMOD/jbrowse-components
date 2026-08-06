@@ -13,12 +13,12 @@ import { observer } from 'mobx-react'
 import ScoreLegend, { scoreLegendHeight } from '../../shared/ScoreLegend.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import WiggleTooltip from '../../shared/WiggleTooltip.tsx'
-import { wiggleMouseHandlers } from '../../shared/wiggleMouseHandlers.ts'
 import {
   findSourceHit,
   hitTestMouse,
   legendRightEdgePx,
 } from '../../shared/wiggleComponentUtils.ts'
+import { wiggleMouseHandlers } from '../../shared/wiggleMouseHandlers.ts'
 
 import type { WiggleDisplayModel } from './wiggleDisplayTypes.ts'
 import type { MouseTracker } from '@jbrowse/core/ui'

@@ -30,8 +30,8 @@ import {
 import { FloatingLabelsLayer, HighlightLayer } from './overlayElements.tsx'
 
 import type { FlatbushItem } from '../../RenderFeatureDataRPC/rpcTypes.ts'
-import type { MouseTracker } from '@jbrowse/core/ui'
 import type { LinearCanvasBaseDisplayModel } from '../baseModel.ts'
+import type { MouseTracker } from '@jbrowse/core/ui'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel

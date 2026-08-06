@@ -75,7 +75,9 @@ for (const workspaceDir of workspaceDirs) {
     const name = basename(dir)
     let budget = 'display'
     try {
-      const match = slot.exec(readFileSync(join(dir, 'configSchema.ts'), 'utf8'))
+      const match = slot.exec(
+        readFileSync(join(dir, 'configSchema.ts'), 'utf8'),
+      )
       if (match) {
         budget = `own:${Number(match[1]!.replaceAll('_', ''))}`
       }
@@ -127,4 +129,6 @@ if (added.length || removed.length || changed.length) {
   process.exit(1)
 }
 
-console.log(`${Object.keys(sorted).length} gated adapters, all budgets declared`)
+console.log(
+  `${Object.keys(sorted).length} gated adapters, all budgets declared`,
+)
