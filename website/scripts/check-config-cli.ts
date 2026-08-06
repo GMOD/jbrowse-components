@@ -40,10 +40,9 @@ import { deriveAddAssemblyArgs } from '../src/lib/derive-add-assembly.ts'
 import { asRecord, deriveAddTrackArgs } from '../src/lib/derive-add-track.ts'
 import { isAddassembly, isAddtrack } from '../src/lib/remark-config-cli-tabs.ts'
 import { reportProblems, walkFiles } from './check-utils.ts'
+import { docsDir, repoRoot } from './paths.ts'
 
-const root = join(import.meta.dirname, '..', '..')
-const docsDir = join(import.meta.dirname, '..', 'docs')
-const cli = join(root, 'products', 'jbrowse-cli', 'dist', 'bin.js')
+const cli = join(repoRoot, 'products', 'jbrowse-cli', 'dist', 'bin.js')
 
 interface Block {
   file: string
@@ -313,7 +312,7 @@ for (const file of walkFiles(docsDir, n => n.endsWith('.md'))) {
     const reason = checkBlock(block.json, block.kind)
     if (reason) {
       errorLines.push(
-        `  ${block.file.slice(root.length + 1)}:${block.line}`,
+        `  ${block.file.slice(repoRoot.length + 1)}:${block.line}`,
         `    → ${reason}\n`,
       )
     }

@@ -34,6 +34,124 @@ export function isFile(path: string): boolean {
   }
 }
 
+// Build output, which is never an input to any of these. Gitignored, so a
+// developer with a stale local build and a CI runner with none at all would
+// otherwise disagree about what exists.
+export const BUILD_DIRS = new Set([
+  'node_modules',
+  'dist',
+  'esm',
+  'cjs',
+  'build',
+])
+
+// A published doc page. CLAUDE.md files are agent instructions rather than
+// pages, and they *describe* the marker syntax the generators scan for
+// (`<!-- GOTCHA <ConfigName> START -->`), so a generator that reads them parses
+// its own documentation as real input — which is how `pnpm gendocs` once died
+// on the placeholder name `<ConfigName>`.
+export function isDocFile(name: string): boolean {
+  return name.endsWith('.md') && name !== 'CLAUDE.md'
+}
+
+// A non-test TypeScript source, for the generators that read tags straight out
+// of source text rather than through the TypeScript program.
+export function isTsSource(name: string): boolean {
+  return /\.tsx?$/.test(name) && !/\.test\.tsx?$/.test(name)
+}
+
+// Every published doc page under a directory.
+export function docFiles(dir: string): string[] {
+  return walkFiles(dir, isDocFile)
+}
+
+const KEY_LINE = /^([A-Za-z_][\w-]*):(.*)$/
+
+// Strip one matched pair of surrounding quotes. Only the ADR `summary:` values
+// are quoted today, and one of them carries escaped inner quotes.
+function unquote(value: string): string {
+  const quote = value[0]
+  if (
+    value.length > 1 &&
+    (quote === '"' || quote === "'") &&
+    value.endsWith(quote)
+  ) {
+    const inner = value.slice(1, -1)
+    return quote === '"'
+      ? inner.replaceAll('\\"', '"').replaceAll('\\\\', '\\')
+      : inner
+  }
+  return value
+}
+
+// The `---`-delimited frontmatter block as a flat key/value map, or undefined
+// when the file has none — so a caller that requires frontmatter can throw its
+// own message and one that tolerates its absence can default.
+//
+// There were four of these, each a subset of this one, and the differences were
+// silent rather than deliberate: two truncated a wrapped `description:` at its
+// first newline, two left an ADR's quoted `summary:` with its quotes on. A
+// value therefore runs to the next `key:` line — continuation lines are
+// re-flowed onto it with single spaces, which is what a table cell wants.
+export function parseFrontmatter(
+  content: string,
+): Record<string, string> | undefined {
+  const match = /^---\n([\s\S]*?)\n---/.exec(content)
+  if (!match) {
+    return undefined
+  }
+  const result: Record<string, string> = {}
+  let key: string | undefined
+  for (const line of match[1]!.split('\n')) {
+    const kv = KEY_LINE.exec(line)
+    if (kv) {
+      key = kv[1]!
+      result[key] = unquote(kv[2]!.trim())
+    } else if (key !== undefined && line.trim()) {
+      result[key] += ` ${line.trim()}`
+    }
+  }
+  return result
+}
+
+// Compact pipe table. The generated index pages want it dense: the formatter
+// otherwise pads every cell out to its column's widest member, so one long
+// description reflows every row into the diff.
+export function markdownTable(headers: string[], rows: string[]): string[] {
+  return [
+    `| ${headers.join(' | ')} |`,
+    `| ${headers.map(() => '---').join(' | ')} |`,
+    ...rows,
+  ]
+}
+
+// Replace the region between `<!-- BEGIN GENERATED <marker> -->` and its END
+// twin, leaving the hand-maintained prose around it alone. The marker text is
+// built here rather than passed in whole so the convention has one spelling.
+export function spliceGeneratedBlock({
+  path,
+  marker,
+  body,
+}: {
+  path: string
+  marker: string
+  body: string[]
+}): string {
+  const begin = `<!-- BEGIN GENERATED ${marker} -->`
+  const end = `<!-- END GENERATED ${marker} -->`
+  const existing = readFileSync(path, 'utf8')
+  const from = existing.indexOf(begin)
+  const to = existing.indexOf(end)
+  if (from === -1 || to === -1) {
+    throw new Error(`${path}: missing ${begin} / ${end} markers`)
+  }
+  return (
+    existing.slice(0, from) +
+    [begin, '', ...body, ''].join('\n') +
+    existing.slice(to)
+  )
+}
+
 // The `--check`/write dance every generator repeated: in check mode fail with
 // `staleHint` when the committed file differs from freshly-generated `content`;
 // otherwise write it.

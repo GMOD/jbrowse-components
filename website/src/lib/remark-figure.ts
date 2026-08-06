@@ -4,13 +4,13 @@ import {
   screenshotLiveUrls,
   screenshotSlowSpecNames,
 } from '../../scripts/screenshot-specs.ts'
+import { escapeAttr, escapeHtml, parseAttrs } from './inline-html.ts'
 import { recipeButtonHtml, recipeDialogHtml } from './spec-recipe/html.ts'
 import { buildRecipe } from './spec-recipe/recipe.ts'
 
 import type { Image, Paragraph, Root } from 'mdast'
 import type { Plugin } from 'unified'
 
-const attrRe = /(\w+)=(?:"([^"]*)"|'([^']*)')/g
 const figureRe = /<Figure\s+([\s\S]*?)\s*\/>/
 
 // each figure's dialog needs an id unique to the page it renders on
@@ -34,25 +34,6 @@ function slowNote(name: string | undefined) {
   return name !== undefined && screenshotSlowSpecNames.has(name)
     ? ' <span class="figure-slow-note">(large dataset — this session takes a while to load)</span>'
     : ''
-}
-
-function parseAttrs(str: string): Record<string, string> {
-  const attrs: Record<string, string> = {}
-  attrRe.lastIndex = 0
-  let m: RegExpExecArray | null
-  while ((m = attrRe.exec(str)) !== null) {
-    attrs[m[1]!] = m[2] ?? m[3] ?? ''
-  }
-  return attrs
-}
-
-// Escape for HTML text content (rehype-raw parses this string, so a literal
-// `<DEL>` in a caption would otherwise become an actual element).
-function escapeHtml(s: string): string {
-  return s
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
 }
 
 const remarkFigure: Plugin<[{ base?: string }?], Root> = (options = {}) => {
@@ -90,7 +71,7 @@ const remarkFigure: Plugin<[{ base?: string }?], Root> = (options = {}) => {
       const rawSrc = attrs.src ?? ''
       const src = base && rawSrc.startsWith('/') ? `${base}${rawSrc}` : rawSrc
       const caption = escapeHtml(attrs.caption ?? '')
-      const altText = caption.replaceAll('"', '&quot;')
+      const altText = escapeAttr(attrs.caption ?? '')
       const img = `<img src="${src}" alt="${altText}"/>`
       const a = (url: string, inner: string) =>
         `<a href="${url}" target="_blank" rel="noopener noreferrer">${inner}</a>`

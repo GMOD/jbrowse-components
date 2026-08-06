@@ -9,40 +9,27 @@
 // A profile that shows both threads idle can't say whether the app is waiting on
 // a call or failing to make one; this can.
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
+
+import { waitForViewPhases } from '@jbrowse/browser-test-utils'
 
 import {
-  BASE_CHROME_ARGS,
-  createTestServer,
-  findChromeExecutable,
-  waitForViewPhases,
-} from '@jbrowse/browser-test-utils'
-import { launch } from 'puppeteer'
+  flagArg,
+  resolveUrlSpec,
+  specUrl,
+  specViewport,
+  withHarness,
+} from './dev-harness.ts'
 
-import { specs } from './screenshot-specs.ts'
-
-import type { SessionUrlSpec } from './screenshot-specs.ts'
 import type { CDPSession } from 'puppeteer'
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const repoRoot = path.resolve(__dirname, '..', '..')
-const jbrowseWebRoot = path.resolve(repoRoot, 'products', 'jbrowse-web')
 const PORT = 3343
 
-const arg = (name: string, fallback: string) =>
-  process.argv.find(a => a.startsWith(`--${name}=`))?.split('=')[1] ?? fallback
-const timeout = Number(arg('timeout', '900000'))
+const timeout = Number(flagArg('timeout', '900000'))
 
-function resolveSpec(name: string | undefined): SessionUrlSpec {
-  const found = specs.find(s => s.name === name)
-  if (!found || found.mode !== 'url') {
-    console.error('usage: node scripts/trace-rpc.ts <url-mode spec name>')
-    process.exit(1)
-  }
-  return found
-}
-
-const spec = resolveSpec(process.argv[2])
+const spec = resolveUrlSpec(
+  process.argv[2],
+  'usage: node scripts/trace-rpc.ts <url-mode spec name>',
+)
 
 interface RpcEvent {
   t: number
@@ -51,13 +38,12 @@ interface RpcEvent {
   uid: string
 }
 
-async function main() {
-  const server = await createTestServer(PORT, { jbrowseWebRoot, repoRoot })
-  const browser = await launch({
-    headless: true,
-    executablePath: findChromeExecutable(),
-    args: [
-      ...BASE_CHROME_ARGS,
+await withHarness(
+  {
+    port: PORT,
+    protocolTimeout: timeout,
+    viewport: specViewport(spec),
+    chromeArgs: [
       '--enable-unsafe-swiftshader',
       // suspects for the missing wall clock: Chrome throttles timers and
       // background tasks in a page it considers hidden (headless), and its IPC
@@ -72,15 +58,8 @@ async function main() {
           ]
         : []),
     ],
-    protocolTimeout: timeout,
-  })
-  try {
-    const page = await browser.newPage()
-    await page.setViewport({
-      width: spec.viewportWidth ?? 1500,
-      height: spec.viewportHeight ?? 800,
-      deviceScaleFactor: 1,
-    })
+  },
+  async ({ page }) => {
     // Patch before any app script runs: every RPC message in and out gets a
     // timestamp, keyed by the librpc uuid so a reply can be matched to its call.
     await page.evaluateOnNewDocument(() => {
@@ -201,9 +180,7 @@ async function main() {
         .catch(() => {})
     })
 
-    const url = spec.url.startsWith('http')
-      ? spec.url
-      : `http://localhost:${PORT}/${spec.url}`
+    const url = specUrl(spec, PORT)
     const t0 = Date.now()
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout })
     await waitForViewPhases(page, timeout)
@@ -295,10 +272,5 @@ async function main() {
     for (const e of log.slice(0, 40)) {
       console.log(`  ${(e.t / 1000).toFixed(2)}s ${e.dir} ${e.method}`)
     }
-  } finally {
-    await browser.close()
-    server.close()
-  }
-}
-
-await main()
+  },
+)

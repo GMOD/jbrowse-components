@@ -39,31 +39,6 @@
   text-decoration-thickness: 1px;
   text-underline-offset: 2px;
 }
-/* Blog posts render through the same markdown pipeline as the docs, so their
-   tables get the same grid. */
-.prose :global(table) {
-  border-collapse: collapse;
-  display: block;
-  width: fit-content;
-  max-width: 100%;
-  overflow-x: auto;
-  margin: 1.25rem 0;
-  font-size: 0.9rem;
-}
-.prose :global(th),
-.prose :global(td) {
-  border: 1px solid var(--color-border);
-  padding: 0.45rem 0.7rem;
-  text-align: left;
-  vertical-align: top;
-}
-.prose :global(th) {
-  background: var(--color-table-header-bg);
-  font-weight: 600;
-}
-.prose :global(tbody tr:nth-child(even)) {
-  background: var(--color-table-stripe);
-}
 .prose :global(blockquote) {
   border-left: 4px solid var(--color-accent);
   margin: 1rem 0;

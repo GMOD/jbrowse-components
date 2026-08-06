@@ -4,10 +4,11 @@ import { getCollection } from 'astro:content'
 import NewsletterSignup from '../../components/NewsletterSignup.astro'
 import BlogLayout from '../../layouts/BlogLayout.astro'
 import { baseUrl } from '../../lib/base-url.ts'
-import { blogPath } from '../../lib/blog-path.ts'
+import { blogPath, formatBlogDate } from '../../lib/blog-path.ts'
 import { newsletterApiUrl } from '../../lib/newsletter.ts'
 import { renderMarkdown } from '../../lib/markdown.ts'
 import blog from '../../styles/blog.module.css'
+import prose from '../../styles/prose.module.css'
 
 export async function getStaticPaths() {
   const posts = (await getCollection('blog')).sort(
@@ -44,13 +45,7 @@ const { html } = await renderMarkdown(post.body ?? '')
       <h1>{post.data.title}</h1>
       <div class="meta">
         <time datetime={post.data.date.toISOString()}>
-          {
-            post.data.date.toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })
-          }
+          {formatBlogDate(post.data.date)}
         </time>
         {
           post.data.author && (
@@ -80,7 +75,7 @@ const { html } = await renderMarkdown(post.body ?? '')
         }
       </div>
     </header>
-    <div class:list={['content', blog.prose]} data-pagefind-body>
+    <div class:list={['content', blog.prose, prose.prose]} data-pagefind-body>
       <Fragment set:html={html} />
     </div>
     <footer>

@@ -28,6 +28,7 @@ const defaultShow = toc.length >= 12
 
 <button
   id="toc-toggle"
+  class="rail-button"
   type="button"
   aria-pressed="false"
   title="Toggle table of contents"
@@ -100,27 +101,6 @@ const defaultShow = toc.length >= 12
 </script>
 
 <style>
-  #toc-toggle {
-    position: fixed;
-    top: calc(var(--nav-height) + 0.75rem);
-    right: 0.75rem;
-    z-index: 5;
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.35rem 0.7rem;
-    border: 1px solid var(--color-border);
-    border-radius: 6px;
-    background: var(--color-surface);
-    color: var(--color-text-muted);
-    font-size: 0.8rem;
-    font-weight: 600;
-    cursor: pointer;
-  }
-  #toc-toggle:hover {
-    color: var(--color-accent);
-    border-color: var(--color-accent);
-  }
   #toc-toggle[aria-pressed='true'] {
     color: var(--color-accent);
     border-color: var(--color-accent);

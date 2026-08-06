@@ -27,9 +27,8 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 import { reportProblems, walkFiles } from './check-utils.ts'
+import { docsDir, repoRoot } from './paths.ts'
 
-const root = join(import.meta.dirname, '..', '..')
-const docsDir = join(import.meta.dirname, '..', 'docs')
 const GENERATED_PREFIXES = ['config/', 'models/', 'api/']
 const SUPPRESS = '<!-- menu-path-ok -->'
 
@@ -92,7 +91,7 @@ function sourceLabels() {
   }
   for (const dir of ['plugins', 'products', 'packages']) {
     for (const file of walkFiles(
-      join(root, dir),
+      join(repoRoot, dir),
       name => /\.tsx?$/.test(name) && !/\.test\.tsx?$/.test(name),
       // Source only. `esm/` carries a `.d.ts` per module, which matched this
       // filter, so a renamed menu label went on being "found" in a stale local

@@ -11,36 +11,32 @@
 // parse, render) before the CPU tables attribute it to code.
 import fs from 'node:fs'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 
 import {
-  BASE_CHROME_ARGS,
-  createTestServer,
-  findChromeExecutable,
   waitForDisplayPhases,
   waitForDisplaysDone,
   waitForViewPhases,
 } from '@jbrowse/browser-test-utils'
-import { launch } from 'puppeteer'
 
+import {
+  flagArg,
+  jbrowseWebRoot,
+  resolveUrlSpec,
+  specUrl,
+  specViewport,
+  withHarness,
+} from './dev-harness.ts'
+import { repoRoot } from './paths.ts'
 import { aggregateProfile, renderTable } from './profile-resolve.ts'
-import { specs } from './screenshot-specs.ts'
 
-import type { SessionUrlSpec } from './screenshot-specs.ts'
 import type { CDPSession, Page } from 'puppeteer'
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const repoRoot = path.resolve(__dirname, '..', '..')
-const jbrowseWebRoot = path.resolve(repoRoot, 'products', 'jbrowse-web')
 const buildJsDir = path.join(jbrowseWebRoot, 'build', 'static', 'js')
 const PORT = 3342
 
-const arg = (name: string, fallback: string) =>
-  process.argv.find(a => a.startsWith(`--${name}=`))?.split('=')[1] ?? fallback
-
 const specName = process.argv[2]
-const outDir = arg('out', path.join(repoRoot, 'perf-out'))
-const timeout = Number(arg('timeout', '900000'))
+const outDir = flagArg('out', path.join(repoRoot, 'perf-out'))
+const timeout = Number(flagArg('timeout', '900000'))
 // Run with SharedArrayBuffer force-enabled, i.e. what the app gets on a
 // cross-origin-isolated (COOP/COEP) deployment. Stop tokens then use the atomic
 // fast path instead of the synchronous-XHR fallback — pass this to measure how
@@ -53,20 +49,10 @@ const sab = process.argv.includes('--sab')
 // scripts/trace-tasks.ts). Pass this to see what the same figure costs on a GPU.
 const angleGl = process.argv.includes('--angle-gl')
 
-// process.exit is `never`, so this hands `main` a narrowed SessionUrlSpec rather
-// than a possibly-undefined union it would have to re-check inside the closure
-function resolveSpec(name: string | undefined): SessionUrlSpec {
-  const found = specs.find(s => s.name === name)
-  if (!found || found.mode !== 'url') {
-    console.error(
-      'usage: node scripts/profile-spec.ts <url-mode spec name> [--out=dir] [--timeout=ms]',
-    )
-    process.exit(1)
-  }
-  return found
-}
-
-const spec = resolveSpec(specName)
+const spec = resolveUrlSpec(
+  specName,
+  'usage: node scripts/profile-spec.ts <url-mode spec name> [--out=dir] [--timeout=ms]',
+)
 
 // Requests, grouped by host and by the file they hit. A spec whose CPU profile
 // shows an idle worker is waiting on these, and a tabix/BAM read is many small
@@ -172,26 +158,19 @@ function attachWorkerProbes(page: Page, probes: Probe[], reqs: Req[]) {
   })
 }
 
-async function main() {
-  fs.mkdirSync(outDir, { recursive: true })
-  const server = await createTestServer(PORT, { jbrowseWebRoot, repoRoot })
-  const browser = await launch({
-    headless: true,
-    executablePath: findChromeExecutable(),
-    args: [
-      ...BASE_CHROME_ARGS,
+fs.mkdirSync(outDir, { recursive: true })
+
+await withHarness(
+  {
+    port: PORT,
+    protocolTimeout: timeout,
+    viewport: specViewport(spec),
+    chromeArgs: [
       ...(angleGl ? ['--use-angle=gl'] : ['--enable-unsafe-swiftshader']),
       ...(sab ? ['--enable-features=SharedArrayBuffer'] : []),
     ],
-    protocolTimeout: timeout,
-  })
-  try {
-    const page = await browser.newPage()
-    await page.setViewport({
-      width: spec.viewportWidth ?? 1500,
-      height: spec.viewportHeight ?? 800,
-      deviceScaleFactor: 1,
-    })
+  },
+  async ({ page }) => {
     const client = await page.createCDPSession()
     await client.send('Network.enable')
     const reqs = collectNetwork(client)
@@ -213,9 +192,7 @@ async function main() {
       )
     }
 
-    const url = spec.url.startsWith('http')
-      ? spec.url
-      : `http://localhost:${PORT}/${spec.url}`
+    const url = specUrl(spec, PORT)
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout })
     mark('domcontentloaded')
     await waitForViewPhases(page, timeout)
@@ -251,10 +228,5 @@ async function main() {
         console.log(`\nprofile: ${file}`)
       }
     }
-  } finally {
-    await browser.close()
-    server.close()
-  }
-}
-
-await main()
+  },
+)

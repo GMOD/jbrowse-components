@@ -8,14 +8,16 @@
 // for a reader to reach a live, interactive view.
 //
 // Run with: node scripts/audit-figures.ts
-import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
 import { format } from 'prettier'
 
+import { parseAttrs } from '../src/lib/inline-html.ts'
+import { walkFiles } from './check-utils.ts'
+import { docsDir, websiteDir } from './paths.ts'
 import { screenshotLiveUrls, screenshotSpecNames } from './screenshot-specs.ts'
 
-const DOCS_DIR = join(import.meta.dirname, '..', 'docs')
 const MANIFEST_PATH = join(import.meta.dirname, 'figure-manifest.json')
 
 interface FigureEntry {
@@ -38,34 +40,12 @@ function isJbrowseImg(name: string) {
   return name.startsWith('jbrowse-img/')
 }
 
-function findDocFiles(dir: string): string[] {
-  return readdirSync(dir).flatMap(entry => {
-    const path = join(dir, entry)
-    return statSync(path).isDirectory()
-      ? findDocFiles(path)
-      : /\.mdx?$/.test(entry)
-        ? [path]
-        : []
-  })
-}
-
 const figureRe = /<Figure\s+([\s\S]*?)\s*\/>/g
-const attrRe = /(\w+)=(?:"([^"]*)"|'([^']*)')/g
-
-function parseAttrs(str: string): Record<string, string> {
-  const attrs: Record<string, string> = {}
-  attrRe.lastIndex = 0
-  let m: RegExpExecArray | null
-  while ((m = attrRe.exec(str)) !== null) {
-    attrs[m[1]!] = m[2] ?? m[3] ?? ''
-  }
-  return attrs
-}
 
 const manifest: Record<string, FigureEntry> = {}
 
-for (const docPath of findDocFiles(DOCS_DIR)) {
-  const relPath = relative(join(import.meta.dirname, '..'), docPath)
+for (const docPath of walkFiles(docsDir, name => /\.mdx?$/.test(name))) {
+  const relPath = relative(websiteDir, docPath)
   const text = readFileSync(docPath, 'utf8')
   figureRe.lastIndex = 0
   let match: RegExpExecArray | null

@@ -9,40 +9,27 @@
 // chrome://tracing / Perfetto for a visual read.
 import fs from 'node:fs'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
+
+import { waitForViewPhases } from '@jbrowse/browser-test-utils'
 
 import {
-  BASE_CHROME_ARGS,
-  createTestServer,
-  findChromeExecutable,
-  waitForViewPhases,
-} from '@jbrowse/browser-test-utils'
-import { launch } from 'puppeteer'
+  flagArg,
+  resolveUrlSpec,
+  specUrl,
+  specViewport,
+  withHarness,
+} from './dev-harness.ts'
+import { repoRoot } from './paths.ts'
 
-import { specs } from './screenshot-specs.ts'
-
-import type { SessionUrlSpec } from './screenshot-specs.ts'
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const repoRoot = path.resolve(__dirname, '..', '..')
-const jbrowseWebRoot = path.resolve(repoRoot, 'products', 'jbrowse-web')
 const PORT = 3344
 
-const arg = (name: string, fallback: string) =>
-  process.argv.find(a => a.startsWith(`--${name}=`))?.split('=')[1] ?? fallback
-const timeout = Number(arg('timeout', '900000'))
-const outDir = arg('out', path.join(repoRoot, 'perf-out'))
+const timeout = Number(flagArg('timeout', '900000'))
+const outDir = flagArg('out', path.join(repoRoot, 'perf-out'))
 
-function resolveSpec(name: string | undefined): SessionUrlSpec {
-  const found = specs.find(s => s.name === name)
-  if (!found || found.mode !== 'url') {
-    console.error('usage: node scripts/trace-tasks.ts <url-mode spec name>')
-    process.exit(1)
-  }
-  return found
-}
-
-const spec = resolveSpec(process.argv[2])
+const spec = resolveUrlSpec(
+  process.argv[2],
+  'usage: node scripts/trace-tasks.ts <url-mode spec name>',
+)
 
 interface TraceEvent {
   name: string
@@ -140,22 +127,11 @@ function report(events: TraceEvent[]) {
   }
 }
 
-async function main() {
-  fs.mkdirSync(outDir, { recursive: true })
-  const server = await createTestServer(PORT, { jbrowseWebRoot, repoRoot })
-  const browser = await launch({
-    headless: true,
-    executablePath: findChromeExecutable(),
-    args: [...BASE_CHROME_ARGS, '--enable-unsafe-swiftshader'],
-    protocolTimeout: timeout,
-  })
-  try {
-    const page = await browser.newPage()
-    await page.setViewport({
-      width: spec.viewportWidth ?? 1500,
-      height: spec.viewportHeight ?? 800,
-      deviceScaleFactor: 1,
-    })
+fs.mkdirSync(outDir, { recursive: true })
+
+await withHarness(
+  { port: PORT, protocolTimeout: timeout, viewport: specViewport(spec) },
+  async ({ page }) => {
     const tracePath = path.join(
       outDir,
       `${spec.name.replaceAll('/', '_')}.trace.json`,
@@ -188,9 +164,7 @@ async function main() {
         ],
       },
     })
-    const url = spec.url.startsWith('http')
-      ? spec.url
-      : `http://localhost:${PORT}/${spec.url}`
+    const url = specUrl(spec, PORT)
     const t0 = Date.now()
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout })
     await waitForViewPhases(page, timeout)
@@ -207,10 +181,5 @@ async function main() {
     fs.writeFileSync(tracePath, JSON.stringify({ traceEvents: collected }))
     report(collected)
     console.log(`\ntrace: ${tracePath}`)
-  } finally {
-    await browser.close()
-    server.close()
-  }
-}
-
-await main()
+  },
+)

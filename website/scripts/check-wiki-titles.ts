@@ -1,8 +1,8 @@
 // Flags a hand-written `[Title](url)` link whose text is exactly the linked
 // page's own frontmatter title — that should be the wiki-style `[](url)` from
 // remark-wiki-title.ts instead (src/lib/remark-wiki-title.ts), so the text
-// can't drift from the target's title when it's renamed. Mirrors the id/url
-// derivation in src/content.config.ts and src/lib/docs-sidebar.ts#entrySlug.
+// can't drift from the target's title when it's renamed. The id/url derivation
+// is the site's own (src/lib/doc-slug.ts), not a copy of it.
 //
 // docs/config, docs/models, docs/api are generator output (generateConfigDocs
 // et al.), not hand-written, so their links are skipped — but every page,
@@ -14,54 +14,26 @@
 //
 // Run: `pnpm check-wiki-titles`.
 import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
 
-import { reportProblems, walkFiles } from './check-utils.ts'
+import { docId, entrySlug } from '../src/lib/doc-slug.ts'
+import { docFiles, parseFrontmatter, reportProblems } from './check-utils.ts'
+import { docsDir } from './paths.ts'
 
-const docsDir = join(import.meta.dirname, '..', 'docs')
 const GENERATED_PREFIXES = ['config/', 'models/', 'api/']
 const SUPPRESS = '<!-- wiki-title-ok -->'
 
-function parseFrontmatter(content: string): Record<string, string> {
-  const m = /^---\n([\s\S]*?)\n---/.exec(content)
-  if (!m) {
-    return {}
-  }
-  const fm: Record<string, string> = {}
-  for (const line of m[1]!.split('\n')) {
-    const kv = /^([a-zA-Z_]+):\s*(.*)$/.exec(line)
-    if (kv) {
-      fm[kv[1]!] = kv[2]!.trim().replaceAll(/^["']|["']$/g, '')
-    }
-  }
-  return fm
-}
+const files = docFiles(docsDir)
 
-// Mirrors entrySlug() in src/lib/docs-sidebar.ts.
-function entrySlug(id: string): string {
-  if (id === 'index') {
-    return ''
-  }
-  return id.endsWith('/index') ? id.slice(0, -6) : id
-}
-
-const files = walkFiles(
-  docsDir,
-  name => name.endsWith('.md') && name !== 'CLAUDE.md',
-)
-
-// url ("/docs/user_guides/foo") -> title, across every doc — mirrors the
-// titleByUrl index in src/lib/autogen-links.ts.
+// url ("/docs/user_guides/foo") -> title, across every doc — the same index
+// src/lib/autogen-links.ts builds at render time, off the same derivation.
 const titleByUrl = new Map<string, string>()
 const relPathOf = new Map<string, string>()
 for (const file of files) {
   const rel = file.slice(docsDir.length + 1)
-  const content = readFileSync(file, 'utf8')
-  const fm = parseFrontmatter(content)
-  const id = fm.slug === '/' ? 'index' : rel.replace(/\.md$/, '').toLowerCase()
+  const fm = parseFrontmatter(readFileSync(file, 'utf8')) ?? {}
   relPathOf.set(file, rel)
   if (fm.title) {
-    titleByUrl.set(`/docs/${entrySlug(id)}`, fm.title)
+    titleByUrl.set(`/docs/${entrySlug(docId(rel, fm.slug))}`, fm.title)
   }
 }
 

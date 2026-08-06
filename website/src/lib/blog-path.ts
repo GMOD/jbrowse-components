@@ -15,3 +15,12 @@ export function blogExcerpt(body: string): { text: string; truncated: boolean } 
   const truncated = body.length > EXCERPT_CHARS
   return { text: truncated ? body.slice(0, EXCERPT_CHARS) : body, truncated }
 }
+
+// The one date format the blog shows, on the post feed and on a post itself.
+export function formatBlogDate(date: Date): string {
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+}

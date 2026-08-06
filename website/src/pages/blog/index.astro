@@ -3,9 +3,14 @@ import { getCollection } from 'astro:content'
 
 import BlogLayout from '../../layouts/BlogLayout.astro'
 import { baseUrl } from '../../lib/base-url.ts'
-import { blogExcerpt, blogPath } from '../../lib/blog-path.ts'
+import {
+  blogExcerpt,
+  blogPath,
+  formatBlogDate,
+} from '../../lib/blog-path.ts'
 import { renderMarkdown } from '../../lib/markdown.ts'
 import blog from '../../styles/blog.module.css'
+import prose from '../../styles/prose.module.css'
 
 const posts = (await getCollection('blog')).sort(
   (a, b) => b.data.date.getTime() - a.data.date.getTime(),
@@ -37,11 +42,7 @@ const renderedPosts = await Promise.all(
             </h2>
             <div class="article-meta">
               <time datetime={post.data.date.toISOString()}>
-                {post.data.date.toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
+                {formatBlogDate(post.data.date)}
               </time>
               {post.data.author && (
                 <span class="author">{post.data.author}</span>
@@ -55,7 +56,7 @@ const renderedPosts = await Promise.all(
               )}
             </div>
           </header>
-          <div class:list={['post-body', blog.prose]}>
+          <div class:list={['post-body', blog.prose, prose.prose]}>
             <Fragment set:html={html} />
             {truncated && (
               <a class="read-more" href={`${baseUrl}/blog/${blogPath(post)}/`}>

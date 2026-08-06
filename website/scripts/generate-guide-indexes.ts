@@ -14,9 +14,8 @@ import {
   USER_CATEGORIES,
   guideRank,
 } from '../src/lib/guide-categories.ts'
-import { checkOrWrite } from './check-utils.ts'
-
-const docsDir = join(import.meta.dirname, '..', 'docs')
+import { checkOrWrite, parseFrontmatter } from './check-utils.ts'
+import { docsDir } from './paths.ts'
 
 interface Entry {
   title: string
@@ -25,36 +24,17 @@ interface Entry {
   dir: string
 }
 
-function parseFrontmatter(content: string) {
-  const match = /^---\n([\s\S]*?)\n---/.exec(content)
-  if (!match) {
-    return {}
-  }
-  const result: Record<string, string> = {}
-  let currentKey: string | null = null
-  const [, body = ''] = match
-  for (const line of body.split('\n')) {
-    if (currentKey !== null && /^\s+\S/.test(line)) {
-      // continuation of a multi-line block scalar value
-      const prev = result[currentKey]
-      result[currentKey] = prev ? `${prev} ${line.trim()}` : line.trim()
-    } else {
-      const colon = line.indexOf(':')
-      if (colon !== -1) {
-        currentKey = line.slice(0, colon).trim()
-        result[currentKey] = line.slice(colon + 1).trim()
-      }
-    }
-  }
-  return result
+// A page's frontmatter, or an empty map for one that has none — every caller
+// here reports its own "missing X" rather than distinguishing the two.
+function frontmatterOf(dir: string, file: string): Record<string, string> {
+  return parseFrontmatter(readFileSync(join(dir, file), 'utf8')) ?? {}
 }
 
 function collectEntries(dir: string, urlDir: string): Map<string, Entry[]> {
   const map = new Map<string, Entry[]>()
   const mdFiles = readdirSync(dir).filter(f => f.endsWith('.md'))
   for (const file of mdFiles) {
-    const content = readFileSync(join(dir, file), 'utf8')
-    const fm = parseFrontmatter(content)
+    const fm = frontmatterOf(dir, file)
     if (!fm.guide_category || !fm.description) {
       continue
     }
@@ -80,8 +60,7 @@ function checkMissingFrontmatter(
   const problems: { file: string; missing: string[] }[] = []
   const mdFiles = readdirSync(dir).filter(f => f.endsWith('.md'))
   for (const file of mdFiles) {
-    const content = readFileSync(join(dir, file), 'utf8')
-    const fm = parseFrontmatter(content)
+    const fm = frontmatterOf(dir, file)
     const missing = []
     if (!fm.description) {
       missing.push('description')
@@ -155,7 +134,7 @@ function buildTutorialSection(): string[] {
     .filter(f => f.endsWith('.md'))
     .map(file => ({
       slug: file.replace(/\.md$/, ''),
-      fm: parseFrontmatter(readFileSync(join(dir, file), 'utf8')),
+      fm: frontmatterOf(dir, file),
     }))
     .filter(({ fm }) => fm.guide_category === 'Tutorials')
     .map(({ slug, fm }) => ({
@@ -342,7 +321,7 @@ const badCategories = guideDirs.flatMap(({ dir, label, categories }) =>
   readdirSync(dir)
     .filter(f => f.endsWith('.md'))
     .flatMap(file => {
-      const fm = parseFrontmatter(readFileSync(join(dir, file), 'utf8'))
+      const fm = frontmatterOf(dir, file)
       return fm.guide_category && !categories.includes(fm.guide_category)
         ? [{ file: `${label}/${file}`, cat: fm.guide_category, categories }]
         : []

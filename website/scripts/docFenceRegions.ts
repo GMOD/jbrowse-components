@@ -61,9 +61,10 @@ export function extractRegion(source: string, file: string, region: string) {
   return body.map(l => l.slice(indent)).join('\n')
 }
 
-// Fence languages an `<!-- include: -->` could point at. A `json` config sample
-// or a `bash` command has no compiled source, so it is not debt.
-const INCLUDABLE = new Set([
+// Fence languages that compile — the ones an `<!-- include: -->` could point at
+// (a `json` config sample or a `bash` command has no source to point at, so it
+// is not debt), and the ones check-doc-imports.ts scans for import statements.
+export const CODE_FENCE_LANGS = new Set([
   'ts',
   'tsx',
   'js',
@@ -71,6 +72,9 @@ const INCLUDABLE = new Set([
   'typescript',
   'javascript',
 ])
+
+// Opening line of a fence, capturing its info string.
+export const FENCE = /^\s*```(\S*)/
 
 const INCLUDE_MARKER = /^<!--\s*include:\s*(\S+?)\s*-->$/
 // The other generator families — COLOR_TABLE, JEXL_CATALOG, PALETTE_KEYS and
@@ -101,7 +105,7 @@ export function countUnIncludedFences(text: string) {
       inGenerated = false
       return
     }
-    const fence = /^\s*```(\S*)/.exec(line)
+    const fence = FENCE.exec(line)
     if (!fence) {
       return
     }
@@ -117,7 +121,7 @@ export function countUnIncludedFences(text: string) {
     const marked = [1, 2].some(k =>
       INCLUDE_MARKER.test((lines[i - k] ?? '').trim()),
     )
-    if (!marked && INCLUDABLE.has(fence[1]!.toLowerCase())) {
+    if (!marked && CODE_FENCE_LANGS.has(fence[1]!.toLowerCase())) {
       count++
     }
   })
@@ -128,7 +132,7 @@ export function countUnIncludedFences(text: string) {
 // from a JSDoc tag at a definition site, so they are already tied to source and
 // are not the ratchet's business.
 const GENERATED_DIRS = ['config/', 'models/', 'api/']
-const GENERATED_PAGES = ['cli.md', 'jbrowse-img.md']
+const GENERATED_PAGES = new Set(['cli.md', 'jbrowse-img.md'])
 
 /**
  * Is this docs-relative path generated?
@@ -141,6 +145,6 @@ const GENERATED_PAGES = ['cli.md', 'jbrowse-img.md']
 export function isGeneratedDocPath(relativePath: string) {
   return (
     GENERATED_DIRS.some(d => relativePath.startsWith(d)) ||
-    GENERATED_PAGES.includes(relativePath)
+    GENERATED_PAGES.has(relativePath)
   )
 }

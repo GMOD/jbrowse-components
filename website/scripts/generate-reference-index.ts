@@ -20,19 +20,16 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { checkOrWrite } from './check-utils.ts'
+import {
+  checkOrWrite,
+  markdownTable,
+  parseFrontmatter,
+  spliceGeneratedBlock,
+} from './check-utils.ts'
+import { repoRoot } from './paths.ts'
 
-const referenceDir = join(
-  import.meta.dirname,
-  '..',
-  '..',
-  'agent-docs',
-  'reference',
-)
+const referenceDir = join(repoRoot, 'agent-docs', 'reference')
 const indexPath = join(referenceDir, 'README.md')
-
-const BEGIN = '<!-- BEGIN GENERATED REFERENCE INDEX -->'
-const END = '<!-- END GENERATED REFERENCE INDEX -->'
 
 // The index is the one file in here that isn't a subsystem writeup, so it does
 // not list itself.
@@ -44,31 +41,6 @@ interface Doc {
   description: string
 }
 
-// `description` is prose and routinely wraps across lines in these files, so a
-// line-oriented read would truncate most of them at the first newline. Values
-// run to the next `key:` line or the end of the block, and are re-flowed to one
-// line for the table cell.
-function parseFrontmatter(content: string, file: string) {
-  const match = /^---\n([\s\S]*?)\n---/.exec(content)
-  if (!match) {
-    throw new Error(
-      `agent-docs/reference/${file}: no frontmatter. Every doc here needs \`name:\` and \`description:\` — without them it is invisible to anyone scanning the directory (see agent-docs/CLAUDE.md)`,
-    )
-  }
-  const result: Record<string, string> = {}
-  let key: string | undefined
-  for (const line of match[1]!.split('\n')) {
-    const keyMatch = /^([A-Za-z_][\w-]*):(.*)$/.exec(line)
-    if (keyMatch) {
-      key = keyMatch[1]!
-      result[key] = keyMatch[2]!.trim()
-    } else if (key && line.trim()) {
-      result[key] += ` ${line.trim()}`
-    }
-  }
-  return result
-}
-
 export function collectReferenceDocs(): Doc[] {
   const docs: Doc[] = []
   const missing: string[] = []
@@ -76,10 +48,14 @@ export function collectReferenceDocs(): Doc[] {
     if (!file.endsWith('.md') || file === SELF) {
       continue
     }
-    const fm = parseFrontmatter(
-      readFileSync(join(referenceDir, file), 'utf8'),
-      file,
-    )
+    // `description` is prose and routinely wraps across lines in these files;
+    // parseFrontmatter re-flows a wrapped value onto one line for the cell.
+    const fm = parseFrontmatter(readFileSync(join(referenceDir, file), 'utf8'))
+    if (!fm) {
+      throw new Error(
+        `agent-docs/reference/${file}: no frontmatter. Every doc here needs \`name:\` and \`description:\` — without them it is invisible to anyone scanning the directory (see agent-docs/CLAUDE.md)`,
+      )
+    }
     const name = fm.name?.trim()
     const description = fm.description?.trim().replaceAll(/\s+/g, ' ')
     if (!name || !description) {
@@ -98,28 +74,18 @@ export function collectReferenceDocs(): Doc[] {
   return docs.sort((a, b) => a.file.localeCompare(b.file))
 }
 
-function buildIndex() {
-  const docs = collectReferenceDocs()
-  const existing = readFileSync(indexPath, 'utf8')
-  const begin = existing.indexOf(BEGIN)
-  const end = existing.indexOf(END)
-  if (begin === -1 || end === -1) {
-    throw new Error(`${indexPath}: missing ${BEGIN} / ${END} markers`)
-  }
-  const table = [
-    BEGIN,
-    '',
-    '| Doc | Read when |',
-    '| --- | --- |',
-    ...docs.map(d => `| [${d.name}](${d.file}) | ${d.description} |`),
-    '',
-  ].join('\n')
-  return existing.slice(0, begin) + table + existing.slice(end)
-}
-
 checkOrWrite({
   path: indexPath,
-  content: buildIndex(),
+  content: spliceGeneratedBlock({
+    path: indexPath,
+    marker: 'REFERENCE INDEX',
+    body: markdownTable(
+      ['Doc', 'Read when'],
+      collectReferenceDocs().map(
+        d => `| [${d.name}](${d.file}) | ${d.description} |`,
+      ),
+    ),
+  }),
   label: 'Reference index',
   staleHint: 'run `pnpm autogen`',
 })

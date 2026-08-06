@@ -1,5 +1,8 @@
+import { entrySlug } from './doc-slug.ts'
 import { GUIDE_CATEGORY_ORDER, guideRank } from './guide-categories.ts'
 import sidebarsJson from '../../sidebars.json'
+
+export { entrySlug }
 
 export interface SidebarLink {
   type: 'link'
@@ -40,13 +43,6 @@ export function containsSlug(entry: SidebarEntry, slug: string): boolean {
     ? entry.slug === slug
     : entry.slug === slug ||
         entry.items.some(child => containsSlug(child, slug))
-}
-
-export function entrySlug(id: string): string {
-  if (id === 'index') {
-    return ''
-  }
-  return id.endsWith('/index') ? id.slice(0, -6) : id
 }
 
 function docLabel(entry: DocEntry): string {

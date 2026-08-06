@@ -1,6 +1,7 @@
 import { getCollection } from 'astro:content'
 
 import { baseUrl } from '../lib/base-url.ts'
+import { escapeAttr } from '../lib/inline-html.ts'
 import { blogExcerpt, blogPath } from '../lib/blog-path.ts'
 import { renderMarkdown } from '../lib/markdown.ts'
 
@@ -10,14 +11,6 @@ const CHANNEL_TITLE = 'JBrowse Blog'
 const CHANNEL_DESCRIPTION =
   'Release announcements and news from the JBrowse project.'
 const MAX_ITEMS = 20
-
-function escapeXml(s: string) {
-  return s
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-}
 
 export const GET: APIRoute = async ({ site }) => {
   const abs = (p: string) => new URL(`${baseUrl}/${p}`, site).href
@@ -32,15 +25,15 @@ export const GET: APIRoute = async ({ site }) => {
       const { text } = blogExcerpt(post.body ?? '')
       const { html } = await renderMarkdown(text, '', { feed: true })
       return `    <item>
-      <title>${escapeXml(post.data.title)}</title>
+      <title>${escapeAttr(post.data.title)}</title>
       <link>${link}</link>
       <guid isPermaLink="true">${link}</guid>
       <pubDate>${post.data.date.toUTCString()}</pubDate>${
         post.data.author
-          ? `\n      <author>${escapeXml(post.data.author)}</author>`
+          ? `\n      <author>${escapeAttr(post.data.author)}</author>`
           : ''
       }${(post.data.tags ?? [])
-        .map(t => `\n      <category>${escapeXml(t)}</category>`)
+        .map(t => `\n      <category>${escapeAttr(t)}</category>`)
         .join('')}
       <description><![CDATA[${html}]]></description>
     </item>`

@@ -19,19 +19,16 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { checkOrWrite } from './check-utils.ts'
+import {
+  checkOrWrite,
+  markdownTable,
+  parseFrontmatter,
+  spliceGeneratedBlock,
+} from './check-utils.ts'
+import { repoRoot } from './paths.ts'
 
-const adrDir = join(
-  import.meta.dirname,
-  '..',
-  '..',
-  'agent-docs',
-  'architecture-decision-records',
-)
+const adrDir = join(repoRoot, 'agent-docs', 'architecture-decision-records')
 const indexPath = join(adrDir, 'README.md')
-
-const BEGIN = '<!-- BEGIN GENERATED ADR INDEX -->'
-const END = '<!-- END GENERATED ADR INDEX -->'
 
 const STATUSES = [
   'Accepted',
@@ -56,32 +53,6 @@ interface Adr {
   row: string
 }
 
-// Minimal frontmatter reader: these files only ever carry `status` and
-// `summary`, both single-line, `summary` optionally double-quoted.
-function parseFrontmatter(content: string, file: string) {
-  const match = /^---\n([\s\S]*?)\n---/.exec(content)
-  if (!match) {
-    throw new Error(`${file}: missing frontmatter (need status + summary)`)
-  }
-  const result: Record<string, string> = {}
-  const [, body = ''] = match
-  for (const line of body.split('\n')) {
-    const colon = line.indexOf(':')
-    if (colon !== -1) {
-      const key = line.slice(0, colon).trim()
-      let value = line.slice(colon + 1).trim()
-      if (value.startsWith('"') && value.endsWith('"')) {
-        value = value
-          .slice(1, -1)
-          .replaceAll('\\"', '"')
-          .replaceAll('\\\\', '\\')
-      }
-      result[key] = value
-    }
-  }
-  return result
-}
-
 function collectAdrs() {
   const adrs: Adr[] = []
   for (const file of readdirSync(adrDir)) {
@@ -89,7 +60,10 @@ function collectAdrs() {
     if (num === undefined) {
       continue
     }
-    const fm = parseFrontmatter(readFileSync(join(adrDir, file), 'utf8'), file)
+    const fm = parseFrontmatter(readFileSync(join(adrDir, file), 'utf8'))
+    if (!fm) {
+      throw new Error(`${file}: missing frontmatter (need status + summary)`)
+    }
     const { status, summary } = fm
     if (status === undefined || summary === undefined) {
       throw new Error(`${file}: frontmatter needs both status and summary`)
@@ -110,28 +84,16 @@ function collectAdrs() {
   return adrs.sort((a, b) => a.sortKey - b.sortKey)
 }
 
-function buildIndex() {
-  const adrs = collectAdrs()
-  const existing = readFileSync(indexPath, 'utf8')
-  const begin = existing.indexOf(BEGIN)
-  const end = existing.indexOf(END)
-  if (begin === -1 || end === -1) {
-    throw new Error(`${indexPath}: missing ${BEGIN} / ${END} markers`)
-  }
-  const table = [
-    BEGIN,
-    '',
-    '| ADR | Status | Decision |',
-    '| --- | --- | --- |',
-    ...adrs.map(a => a.row),
-    '',
-  ].join('\n')
-  return existing.slice(0, begin) + table + existing.slice(end)
-}
-
 checkOrWrite({
   path: indexPath,
-  content: buildIndex(),
+  content: spliceGeneratedBlock({
+    path: indexPath,
+    marker: 'ADR INDEX',
+    body: markdownTable(
+      ['ADR', 'Status', 'Decision'],
+      collectAdrs().map(a => a.row),
+    ),
+  }),
   label: 'ADR index',
   staleHint: 'run `pnpm autogen`',
 })

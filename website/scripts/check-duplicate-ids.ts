@@ -18,11 +18,11 @@
 // in the `buildwebsite` job right after the build. Run: `pnpm check-dupe-ids`,
 // or pass a directory to scan somewhere else.
 import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
 
 import { reportProblems, walkFiles } from './check-utils.ts'
+import { distDir as defaultDistDir } from './paths.ts'
 
-const distDir = process.argv[2] ?? join(import.meta.dirname, '..', 'dist')
+const distDir = process.argv[2] ?? defaultDistDir
 
 // blog/index.astro renders each post through its own renderMarkdown call and
 // concatenates them, so rehypeSlug — which only dedupes within one call — can't

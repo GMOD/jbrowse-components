@@ -5,6 +5,7 @@ import { promisify } from 'util'
 
 import * as ts from 'typescript'
 
+import { BUILD_DIRS, isDocFile, isTsSource, walkFiles } from '../check-utils.ts'
 import { writeDoc } from './format.ts'
 
 const exec2 = promisify(exec)
@@ -1654,42 +1655,19 @@ export function lastTaggedLine(comment: string, tag: string) {
   return value || undefined
 }
 
-const SKIP_DIRS = new Set(['node_modules', 'dist', 'esm', 'cjs', 'build'])
-
 // Recursively list every non-test .ts/.tsx source under a directory, skipping
 // build output. Used by the regex-scanning generators (extension points,
 // display foundations) that read tags straight from source text rather than
 // through the TypeScript program.
 export function listSources(dir: string): string[] {
-  return fs.readdirSync(dir, { withFileTypes: true }).flatMap(e => {
-    const full = path.join(dir, e.name)
-    return e.isDirectory()
-      ? SKIP_DIRS.has(e.name)
-        ? []
-        : listSources(full)
-      : /\.tsx?$/.test(e.name) && !/\.test\.tsx?$/.test(e.name)
-        ? [full]
-        : []
-  })
+  return walkFiles(dir, isTsSource, BUILD_DIRS)
 }
 
-// Recursively list every .md doc under a directory. Shared by the marker-block
-// generators (color/jexl/extension-point) that rewrite tagged regions embedded
-// in the hand-written guides.
-// CLAUDE.md files are agent instructions, not published pages, and they
-// *describe* the marker syntax the generators look for (`<!-- GOTCHA
-// <ConfigName> START -->`). Scanning them makes a generator parse its own
-// documentation as real input, which is how `pnpm gendocs` came to die on the
-// placeholder name `<ConfigName>`.
+// Recursively list every published .md doc under a directory. Shared by the
+// marker-block generators (color/jexl/extension-point) that rewrite tagged
+// regions embedded in the hand-written guides.
 export function listDocs(dir: string): string[] {
-  return fs.readdirSync(dir, { withFileTypes: true }).flatMap(e => {
-    const full = path.join(dir, e.name)
-    return e.isDirectory()
-      ? listDocs(full)
-      : e.name.endsWith('.md') && e.name !== 'CLAUDE.md'
-        ? [full]
-        : []
-  })
+  return walkFiles(dir, isDocFile)
 }
 
 // Quote a string for literal use inside a RegExp. The marker generators build

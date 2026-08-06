@@ -30,23 +30,20 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
-import { walkFiles } from './check-utils.ts'
+import { check, walkFiles } from './check-utils.ts'
 import {
   countUnIncludedFences,
   extractRegion,
   isGeneratedDocPath,
   stripRegionMarkers,
 } from './docFenceRegions.ts'
-
-const root = join(import.meta.dirname, '..', '..')
-const docsDir = join(import.meta.dirname, '..', 'docs')
-const check = process.argv.includes('--check')
+import { docsDir, repoRoot } from './paths.ts'
 
 const MARKER = /^<!--\s*include:\s*(\S+?)\s*-->$/
 
 function resolve(spec: string) {
   const [file, region] = spec.split('#')
-  const source = readFileSync(join(root, file!), 'utf8')
+  const source = readFileSync(join(repoRoot, file!), 'utf8')
   if (region) {
     return extractRegion(source, file!, region)
   }
@@ -137,7 +134,7 @@ for (const path of walkFiles(docsDir, n => n.endsWith('.md'))) {
   }
 
   if (changed) {
-    stale.push(path.replace(`${root}/`, ''))
+    stale.push(path.replace(`${repoRoot}/`, ''))
     if (!check) {
       writeFileSync(path, out.join('\n'))
     }

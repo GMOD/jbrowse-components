@@ -1,4 +1,31 @@
 /* Offscreen until keyboard focus, then a pill over the sticky nav. */
+/* The pill buttons pinned to the top-right of a docs page (the TOC toggle, the
+   copy-markdown button stacked under it). One treatment, not two: they sit in
+   the same rail and read as one control set, and each component keeps only its
+   own position offset and pressed-state colors. Global rather than scoped
+   because the two live in separate components. */
+:global(.rail-button) {
+  position: fixed;
+  top: calc(var(--nav-height) + 0.75rem);
+  right: 0.75rem;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+:global(.rail-button:hover) {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
 .skipLink {
   position: absolute;
   left: -9999px;

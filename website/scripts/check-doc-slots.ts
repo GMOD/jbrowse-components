@@ -42,8 +42,8 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 import { reportProblems, walkFiles } from './check-utils.ts'
+import { docsDir } from './paths.ts'
 
-const docsDir = join(import.meta.dirname, '..', 'docs')
 
 // Slot rows come in two spellings, because only the kinds with a glossary entry
 // are linked:

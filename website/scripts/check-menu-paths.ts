@@ -27,11 +27,10 @@
 // Run: `pnpm check-menu-paths`, or the root `pnpm check-docs`, which is how CI
 // reaches it.
 import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
 
 import { reportProblems, walkFiles } from './check-utils.ts'
+import { docsDir } from './paths.ts'
 
-const docsDir = join(import.meta.dirname, '..', 'docs')
 const GENERATED_PREFIXES = ['config/', 'models/', 'api/']
 const SUPPRESS = '<!-- menu-path-ok -->'
 

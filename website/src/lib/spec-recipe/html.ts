@@ -1,3 +1,5 @@
+import { escapeAttr } from '../inline-html.ts'
+
 import type { Recipe, RecipeStep } from './recipe.ts'
 
 // First Desktop release carrying the jbrowse:// handler + "Open JBrowse Web
@@ -9,17 +11,9 @@ const DESKTOP_LINK_MIN_VERSION = 'JBrowse Desktop 5.0'
 // Astro components, so this emits a plain <dialog> a small script in
 // DocsLayout opens. Tabs are radio inputs switched with CSS — no hydration.
 
-function escapeHtml(s: string): string {
-  return s
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-}
-
 // `**bold**` in a step title marks the literal UI label to click.
 function renderTitle(title: string): string {
-  return escapeHtml(title).replaceAll(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+  return escapeAttr(title).replaceAll(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
 }
 
 // A code block with a Copy button. The button copies the block's own
@@ -30,7 +24,7 @@ function copyableBlock(text: string, className: string): string {
   return [
     '<div class="spec-copywrap">',
     '<button type="button" class="spec-copy">Copy</button>',
-    `<pre class="${className}"><code>${escapeHtml(text)}</code></pre>`,
+    `<pre class="${className}"><code>${escapeAttr(text)}</code></pre>`,
     '</div>',
   ].join('')
 }
@@ -46,10 +40,10 @@ function renderStep(step: RecipeStep): string {
     '<li>',
     `<span class="spec-step-title">${renderTitle(step.title)}</span>`,
     step.note
-      ? `<span class="spec-step-note">${escapeHtml(step.note)}</span>`
+      ? `<span class="spec-step-note">${escapeAttr(step.note)}</span>`
       : '',
     step.example
-      ? `<span class="spec-step-example">${escapeHtml(step.example)}</span>`
+      ? `<span class="spec-step-example">${escapeAttr(step.example)}</span>`
       : '',
     '</li>',
   ].join('')
@@ -79,7 +73,7 @@ function panels(recipe: Recipe): Panel[] {
     {
       label: 'In Desktop',
       body: [
-        `<p class="spec-desktop-open"><a href="${escapeHtml(recipe.desktopUrl)}">Open this view in JBrowse Desktop ↗</a></p>`,
+        `<p class="spec-desktop-open"><a href="${escapeAttr(recipe.desktopUrl)}">Open this view in JBrowse Desktop ↗</a></p>`,
         note(`Opens JBrowse Desktop (<strong>${DESKTOP_LINK_MIN_VERSION}+</strong>) at this view and saves it as a reopenable session — swap in your own files afterwards.`),
         note('Nothing happens? Paste this link into Desktop\'s <strong>Open JBrowse Web link...</strong> (start screen, or <strong>File → Session</strong>):'),
         copyableBlock(recipe.desktopWebUrl, 'spec-json'),
@@ -90,7 +84,7 @@ function panels(recipe: Recipe): Panel[] {
       body: [
         note('This <a href="/docs/urlparams/#session-spec">session spec</a> pastes after <code>&amp;session=spec-</code> on any JBrowse Web instance.'),
         copyableBlock(recipe.specJson, 'spec-json'),
-        note(`Loaded against config: <code>${escapeHtml(recipe.config)}</code>`),
+        note(`Loaded against config: <code>${escapeAttr(recipe.config)}</code>`),
       ].join(''),
     },
     ...(recipe.python
@@ -121,7 +115,7 @@ export function recipeDialogHtml(recipe: Recipe, id: string): string {
     ...list.map((panel, i) =>
       [
         `<input type="radio" name="${name}" id="${id}-t${i}" class="spec-tab-input"${i === 0 ? ' checked' : ''}/>`,
-        `<label for="${id}-t${i}" class="spec-tab-label">${escapeHtml(panel.label)}</label>`,
+        `<label for="${id}-t${i}" class="spec-tab-label">${escapeAttr(panel.label)}</label>`,
       ].join(''),
     ),
     ...list.map(

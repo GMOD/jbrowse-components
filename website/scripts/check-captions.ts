@@ -30,8 +30,8 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 import { check, checkOrWrite, walkFiles } from './check-utils.ts'
+import { docsDir } from './paths.ts'
 
-const docsDir = join(import.meta.dirname, '..', 'docs')
 const listFile = join(import.meta.dirname, 'long-captions.txt')
 
 // Generator output (generateConfigDocs et al.); its figures are not hand-written.

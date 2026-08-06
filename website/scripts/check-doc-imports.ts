@@ -44,13 +44,13 @@ import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 
 import { isFile, reportProblems, walkFiles } from './check-utils.ts'
+import { CODE_FENCE_LANGS, FENCE } from './docFenceRegions.ts'
+import { docsDir, repoRoot } from './paths.ts'
 
-const root = join(import.meta.dirname, '..', '..')
-const docsDir = join(import.meta.dirname, '..', 'docs')
 // The agent-docs knowledge base (ARCHITECTURE.md et al.) is where architecture
 // prose accumulates the most path/symbol drift as code moves between packages —
 // scan it with the same checks as the website guides.
-const agentDocsDir = join(root, 'agent-docs')
+const agentDocsDir = join(repoRoot, 'agent-docs')
 
 interface PkgInfo {
   dir: string
@@ -63,7 +63,7 @@ interface PkgInfo {
 function collectPackages(dirs: string[]) {
   const map = new Map<string, PkgInfo>()
   for (const base of dirs) {
-    const abs = join(root, base)
+    const abs = join(repoRoot, base)
     for (const name of readdirSync(abs)) {
       const pkgDir = join(abs, name)
       try {
@@ -160,15 +160,6 @@ function checkSpecifier(specifier: string): string | undefined {
     : `cannot resolve "${specifier}" under ${pkgName}`
 }
 
-const FENCE = /^\s*```(\S*)/
-const CODE_LANGS = new Set([
-  'ts',
-  'tsx',
-  'js',
-  'jsx',
-  'typescript',
-  'javascript',
-])
 const IMPORT_FROM = /(?:from|import)\s+['"]([^'"]+)['"]/g
 
 function scanImports(path: string, lines: string[]): Problem[] {
@@ -179,7 +170,7 @@ function scanImports(path: string, lines: string[]): Problem[] {
     if (fence) {
       // Any ``` line closes an open block; only a known code language opens one
       // (so ```slang / ```bash / ```text blocks are skipped entirely).
-      inCode = inCode ? false : CODE_LANGS.has(fence[1]!.toLowerCase())
+      inCode = inCode ? false : CODE_FENCE_LANGS.has(fence[1]!.toLowerCase())
       return
     }
     if (inCode && line.includes('@jbrowse/')) {
@@ -222,7 +213,7 @@ const AUTOGEN_DIRS = new Set(['config', 'models', 'api'])
 
 function repoPathExists(rel: string) {
   try {
-    statSync(join(root, rel))
+    statSync(join(repoRoot, rel))
     return true
   } catch {
     return false
@@ -328,7 +319,7 @@ function scanBlobAnchors(path: string, lines: string[]): Problem[] {
       } else if (
         anchor &&
         MD_EXT.test(ref) &&
-        !headingSlugs(join(root, ref)).has(anchor)
+        !headingSlugs(join(repoRoot, ref)).has(anchor)
       ) {
         problems.push({
           file: path,
@@ -367,7 +358,7 @@ function scanRelativeAnchors(path: string, lines: string[]): Problem[] {
       const target = resolve(dir, match[1]!)
       const anchor = match[2]?.slice(1).toLowerCase()
       const shown = `${match[1]}${match[2] ?? ''}`
-      if (!target.startsWith(root)) {
+      if (!target.startsWith(repoRoot)) {
         continue
       }
       if (!isFile(target)) {
@@ -419,7 +410,7 @@ function scanRelativeAnchors(path: string, lines: string[]): Problem[] {
 // action, a context-menu anchor — each also wrong about more than its name) were
 // fixed directly. Re-run the scan after a big refactor rather than wiring it up.
 const SYMBOL_DIRS = [join(docsDir, 'developer_guides')]
-const SYMBOL_FILES = new Set([join(root, 'agent-docs', 'ARCHITECTURE.md')])
+const SYMBOL_FILES = new Set([join(repoRoot, 'agent-docs', 'ARCHITECTURE.md')])
 // Every CLAUDE.md is symbol-checked too — see claudeDocs() below for why, and
 // for the baseline. They describe current practice by definition, so the
 // "records superseded names on purpose" exemption that keeps reference/ out
@@ -488,7 +479,7 @@ function collectSymbols() {
     'scripts',
     'website/scripts',
   ]) {
-    for (const file of walkFiles(join(root, base), isSource, BUILD_DIRS)) {
+    for (const file of walkFiles(join(repoRoot, base), isSource, BUILD_DIRS)) {
       add(file)
     }
   }
@@ -497,9 +488,9 @@ function collectSymbols() {
   // `collectCoverageFrom`), and those are real references — they just don't
   // live under a workspace directory. Without this the check calls them dead
   // and the honest fix looks like deleting the sentence.
-  for (const name of readdirSync(root)) {
+  for (const name of readdirSync(repoRoot)) {
     if (isSource(name) || name.endsWith('.json')) {
-      const file = join(root, name)
+      const file = join(repoRoot, name)
       if (isFile(file)) {
         add(file)
       }
@@ -590,7 +581,7 @@ function headingTexts(absPath: string) {
 // agent-docs, which is where the cited knowledge base lives.
 function resolveCitedDoc(ref: string, fromFile: string) {
   if (ref.includes('/')) {
-    const abs = join(root, ref)
+    const abs = join(repoRoot, ref)
     return isFile(abs) ? abs : undefined
   }
   if (ref === 'CLAUDE.md') {
@@ -600,7 +591,7 @@ function resolveCitedDoc(ref: string, fromFile: string) {
       if (isFile(abs)) {
         return abs
       }
-      if (dir === root) {
+      if (dir === repoRoot) {
         break
       }
     }
@@ -681,7 +672,7 @@ function isPointInTimeDoc(file: string) {
 // since written out in full, and one deliberate past-tense mention below).
 function claudeDocs() {
   return ['packages', 'plugins', 'products', 'example-plugins'].flatMap(base =>
-    walkFiles(join(root, base), n => n === 'CLAUDE.md', BUILD_DIRS),
+    walkFiles(join(repoRoot, base), n => n === 'CLAUDE.md', BUILD_DIRS),
   )
 }
 
@@ -720,7 +711,7 @@ const isSource = (name: string) => /\.tsx?$/.test(name)
 const isBuildOutput = (file: string) =>
   file.includes('/esm/') || file.includes('/dist/')
 for (const base of ['packages', 'plugins', 'products', 'example-plugins']) {
-  for (const file of walkFiles(join(root, base), isSource)) {
+  for (const file of walkFiles(join(repoRoot, base), isSource)) {
     if (isBuildOutput(file)) {
       continue
     }
@@ -735,7 +726,7 @@ const errorLines: string[] = []
 if (problems.length > 0) {
   errorLines.push(`Found ${problems.length} broken reference(s) in docs:\n`)
   for (const p of problems) {
-    const rel = p.file.slice(root.length + 1)
+    const rel = p.file.slice(repoRoot.length + 1)
     errorLines.push(
       `  ${rel}:${p.line}`,
       `    ${p.specifier}`,

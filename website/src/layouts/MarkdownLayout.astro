@@ -2,6 +2,7 @@
 import SidebarLayout from './SidebarLayout.astro'
 import DocsSidebarNav from '../components/DocsSidebarNav.astro'
 import page from '../styles/page.module.css'
+import prose from '../styles/prose.module.css'
 
 import type { MarkdownLayoutProps } from 'astro'
 
@@ -21,7 +22,7 @@ const currentSlug = segments.at(-1) ?? ''
 >
   <DocsSidebarNav slot="nav" currentSlug={currentSlug} />
   <div class="showcase-main">
-    <div class:list={[page.content, 'md']}>
+    <div class:list={[page.content, 'md', prose.prose]}>
       <slot />
     </div>
   </div>
@@ -71,29 +72,6 @@ const currentSlug = segments.at(-1) ?? ''
     text-decoration: underline;
     text-decoration-thickness: 1px;
     text-underline-offset: 2px;
-  }
-  .md :global(table) {
-    border-collapse: collapse;
-    display: block;
-    width: fit-content;
-    max-width: 100%;
-    overflow-x: auto;
-    margin: 1.25rem 0;
-    font-size: 0.9rem;
-  }
-  .md :global(th),
-  .md :global(td) {
-    border: 1px solid var(--color-border);
-    padding: 0.45rem 0.7rem;
-    text-align: left;
-    vertical-align: top;
-  }
-  .md :global(th) {
-    background: var(--color-table-header-bg);
-    font-weight: 600;
-  }
-  .md :global(tbody tr:nth-child(even)) {
-    background: var(--color-table-stripe);
   }
   .md :global(hr) {
     margin: 2rem 0;

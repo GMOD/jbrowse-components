@@ -16,9 +16,8 @@ import {
   reportProblems,
   walkFiles,
 } from './check-utils.ts'
+import { distDir, docsDir } from './paths.ts'
 
-const docsDir = join(import.meta.dirname, '..', 'docs')
-const distDir = join(import.meta.dirname, '..', 'dist')
 
 function hasRootSlug(file: string): boolean {
   const fm = /^---\n([\s\S]*?)\n---/.exec(readFileSync(file, 'utf8'))

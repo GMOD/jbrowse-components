@@ -27,20 +27,24 @@ const pathname = Astro.url.pathname
 const ogImage = new URL(`${baseUrl}/img/jbrowse-og.png`, Astro.site).href
 
 // Only the most specific matching nav link highlights, so /docs/tutorials/ marks
-// Tutorials rather than both it and its Docs prefix.
-function isActive(href: string) {
-  const matches = (h: string) =>
-    pathname === h || (h !== `${baseUrl}/` && pathname.startsWith(h))
-  return (
-    matches(href) &&
-    !navLinks.some(
-      ({ path }) =>
-        `${baseUrl}/${path}/` !== href &&
-        `${baseUrl}/${path}/`.startsWith(href) &&
-        matches(`${baseUrl}/${path}/`),
-    )
-  )
-}
+// Tutorials rather than both it and its Docs prefix: of the links this path
+// matches, the longest href wins.
+const matches = (href: string) =>
+  pathname === href || (href !== `${baseUrl}/` && pathname.startsWith(href))
+const navHrefs = navLinks.map(({ path, label }) => ({
+  href: `${baseUrl}/${path}/`,
+  label,
+}))
+// Every matching href is a prefix of the pathname, so the matches are always
+// nested and the longest one is the most specific.
+const activeHref = navHrefs
+  .map(({ href }) => href)
+  .filter(matches)
+  .sort((a, b) => b.length - a.length)[0]
+const nav = navHrefs.map(link => ({
+  ...link,
+  active: link.href === activeHref,
+}))
 // CSS module access is always defined; ! silences noUncheckedIndexedAccess
 const navActive = styles.navActive!
 const year = new Date().getFullYear()
@@ -152,13 +156,11 @@ const year = new Date().getFullYear()
 
       <div class={styles.navLinks} id="nav-links">
         {
-          navLinks.map(({ path, label }) => (
+          nav.map(({ href, label, active }) => (
             <a
-              href={`${baseUrl}/${path}/`}
-              aria-current={
-                isActive(`${baseUrl}/${path}/`) ? 'page' : undefined
-              }
-              class:list={[{ [navActive]: isActive(`${baseUrl}/${path}/`) }]}
+              href={href}
+              aria-current={active ? 'page' : undefined}
+              class:list={[{ [navActive]: active }]}
             >
               {label}
             </a>

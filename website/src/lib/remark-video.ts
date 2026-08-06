@@ -1,5 +1,7 @@
 import { visit } from 'unist-util-visit'
 
+import { escapeHtml, parseAttrs } from './inline-html.ts'
+
 import type { Root } from 'mdast'
 import type { Plugin } from 'unified'
 
@@ -20,26 +22,6 @@ import type { Plugin } from 'unified'
 //            sound-on autoplay) and is best paired with loop + no controls
 
 const videoRe = /<Video\s+([\s\S]*?)\s*\/>/
-const attrRe = /(\w+)=(?:"([^"]*)"|'([^']*)')/g
-
-function parseAttrs(str: string): Record<string, string> {
-  const attrs: Record<string, string> = {}
-  attrRe.lastIndex = 0
-  let m: RegExpExecArray | null
-  while ((m = attrRe.exec(str)) !== null) {
-    attrs[m[1]!] = m[2] ?? m[3] ?? ''
-  }
-  return attrs
-}
-
-// rehype-raw parses this string, so escape caption text to keep a literal `<x>`
-// from becoming an element.
-function escapeHtml(s: string): string {
-  return s
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-}
 
 const remarkVideo: Plugin<[{ base?: string }?], Root> = (options = {}) => {
   const base = options.base?.replace(/\/$/, '') ?? ''

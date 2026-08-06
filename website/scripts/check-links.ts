@@ -24,8 +24,8 @@ import {
   reportProblems,
   walkFiles,
 } from './check-utils.ts'
+import { distDir } from './paths.ts'
 
-const distDir = join(import.meta.dirname, '..', 'dist')
 const BASE = process.env.SITE_BASE_PATH || '/jb2'
 
 // The file dist emitted for a site-absolute path (already stripped of BASE,
