@@ -89,3 +89,25 @@ test('an empty location map is reported rather than read as undefined', async ()
   )
   await expect(adapter.getSources()).rejects.toThrow(/empty vcfGzLocationMap/)
 })
+
+// The `.tbi` sibling is derived by appending to the uri, so a localPath/blob
+// entry with no indexLocationMap of its own used to build the literal string
+// "undefined.tbi" and fail inside tabix, naming a path nobody wrote. (This is
+// why makeAdapter above points at its index explicitly.)
+test('a non-uri entry with no configured index says so instead of fetching "undefined.tbi"', async () => {
+  const adapter = new Adapter(
+    configSchema.create({
+      vcfGzLocationMap: {
+        ctgA: {
+          localPath:
+            require.resolve('../VcfTabixAdapter/test_data/volvox.filtered.vcf.gz'),
+          locationType: 'LocalPathLocation',
+        },
+      },
+      indexType: 'TBI',
+    }),
+  )
+  await expect(
+    firstValueFrom(adapter.getFeatures(region).pipe(toArray())),
+  ).rejects.toThrow(/needs an indexLocationMap entry for "ctgA"/)
+})

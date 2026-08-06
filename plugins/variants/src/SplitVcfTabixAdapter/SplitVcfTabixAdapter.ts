@@ -10,7 +10,7 @@ import { getVcfSources, streamVcfFeatures } from '../shared/vcfAdapterUtils.ts'
 import type { SplitVcfTabixAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
-import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
+import type { FileLocation, NoAssemblyRegion } from '@jbrowse/core/util/types'
 
 export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVcfTabixAdapterConfig> {
   public static capabilities = ['getFeatures', 'getRefNames', 'exportData']
@@ -27,8 +27,9 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVc
 
   // Which contigs this adapter has a file for. `vcfGzLocationMap` is a frozen
   // slot, so nothing validates its shape at load (the keys are whatever the
-  // config author typed) and every read has to treat a miss as a real outcome.
-  private locationMap(): Record<string, { uri?: string }> {
+  // config author typed) and every read has to treat a miss as a real outcome —
+  // hence the `| undefined` the frozen slot's own `any` would otherwise hide.
+  private locationMap(): Record<string, FileLocation | undefined> {
     return this.getConf('vcfGzLocationMap')
   }
 
@@ -49,8 +50,19 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVc
           }`,
         )
       }
-      const indexLocation = this.getConf('indexLocationMap')[refName] ?? {
-        uri: `${vcfGzLocation.uri}.${indexType.toLowerCase()}`,
+      // The `.tbi`/`.csi` sibling can only be derived for a uri location: a
+      // localPath or blob has no name to append to, and the old fallback built
+      // the literal string "undefined.tbi" out of one and failed much later,
+      // inside tabix, as a fetch error naming a path nobody wrote.
+      const indexLocation: FileLocation | undefined =
+        this.getConf('indexLocationMap')[refName] ??
+        ('uri' in vcfGzLocation
+          ? { uri: `${vcfGzLocation.uri}.${indexType.toLowerCase()}` }
+          : undefined)
+      if (!indexLocation) {
+        throw new Error(
+          `SplitVcfTabixAdapter needs an indexLocationMap entry for "${refName}": its vcfGzLocationMap entry is not a uri, so the index location cannot be derived from it`,
+        )
       }
       const vcf = new TabixIndexedFile({
         filehandle: openLocation(vcfGzLocation, this.pluginManager),
