@@ -151,8 +151,11 @@ export async function run(args?: string[]) {
         `${(samples.size * (samples.size - 1)) / 2 - missing.length} of their ` +
         `${(samples.size * (samples.size - 1)) / 2} pairs. Synteny bands for the ` +
         `missing pairs (${shown}${rest > 0 ? `, and ${rest} more` : ''}) will draw ` +
-        `empty.\n  To fill them in by composing through a shared intermediate:\n` +
-        `    jbrowse transitive-paf ${file ?? '<input.paf>'} --out complete.paf && jbrowse make-pif complete.paf`,
+        `empty. That is what a reference-anchored alignment looks like — only ` +
+        `pairs involving the reference are stated. Order the synteny rows so the ` +
+        `reference sits between the others, use a complete all-vs-all if the ` +
+        `project publishes one, or view a larger cohort as a multiple alignment ` +
+        `(MAF) rather than a stack of pairwise bands.`,
     )
   }
 

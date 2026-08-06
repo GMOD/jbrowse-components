@@ -449,9 +449,9 @@ describe('an assembly the file has never heard of', () => {
     ).rejects.toThrow(/carry no PanSN sample prefix/)
   })
 
-  // A correctly configured track over a file that is not the complete
-  // all-vs-all it is being read as. Distinct from the errors above — nothing is
-  // misconfigured — so it names its own remedy rather than assemblyNameToPanSN.
+  // A correctly configured track over a reference-anchored alignment being read
+  // as all-vs-all — the shape HPRC publishes. Distinct from the errors above,
+  // since nothing is misconfigured, so it names what to do instead.
   describe('an incomplete all-vs-all', () => {
     // a star: both derivatives align to the reference, neither to each other
     const starPaf = () =>
@@ -468,7 +468,7 @@ describe('an assembly the file has never heard of', () => {
           { targetAssemblyName: 'B' },
         ),
       ).rejects.toThrow(
-        /no alignments between "A" and "B".*not a complete all-vs-all.*jbrowse transitive-paf/s,
+        /no alignments between "A" and "B".*reference-anchored.*multiple alignment/s,
       )
     })
 

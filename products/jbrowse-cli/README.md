@@ -59,7 +59,6 @@ COMMANDS
   admin-server         Start up a small admin server for JBrowse configuration
   upgrade              Upgrades JBrowse 2 to latest version
   make-pif             Creates pairwise indexed PAF (PIF), with bgzip and tabix
-  transitive-paf       Fill in the pairwise alignments an all-vs-all PAF is missing, by composing through a shared intermediate
   sort-gff             Helper utility to sort GFF files for tabix
   sort-bed             Helper utility to sort BED files for tabix
   add-connection       Add a connection to a JBrowse 2 configuration
@@ -646,99 +645,6 @@ $ jbrowse make-pif input.paf --coarse 0
 
 # emit only the per-row CIGAR fine tier, skipping the coarse tier
 $ jbrowse make-pif input.paf --no-coarse
-```
-
-## jbrowse transitive-paf
-
-```
-Fill in the pairwise alignments an all-vs-all PAF is missing, by composing
-through a shared intermediate
-
-Usage: jbrowse transitive-paf <file> [options]
-
-Options:
-  -h, --help                 Show help
-
-      --out                  Where to write the PAF. Writes to stdout when
-                             omitted, so this can pipe straight into make-pif.
-                             Progress and the summary always go to stderr.
-
-      --via                  Route every composition through this PanSN sample.
-                             Defaults to choosing, per missing pair, whichever
-                             sample has the most alignments to both ends of it.
-
-      --min-length           Discard a composed alignment carrying fewer than
-                             this many aligned bases. Composition intersects two
-                             alignments, so it always leaves a tail of short
-                             pieces; this is the control on how much of that
-                             tail is kept. Defaults to 1000, deliberately low —
-                             the synteny view has its own minAlignmentLength,
-                             and a cut here is permanent while a cut there is
-                             per-view.
-
-      --max-covered          Drop a composed alignment when at least this
-                             fraction of its span is already covered by longer
-                             ones on the same pair. Composition multiplies
-                             coverage DEPTH: a repeat where two haplotypes each
-                             have 200 alignments on the reference composes to
-                             40,000 rows stating one homology. On one chromosome
-                             of HPRC-vs-GRCh38 this turns 225,626 compositions
-                             into 9,084 carrying the same coverage. Set to 1 to
-                             keep every composition. Defaults to 0.5.
-
-      --only-composed        Write only the composed alignments, not the input
-                             rows. The default writes the input through first,
-                             so the output is a complete all-vs-all PAF ready
-                             for make-pif.
-
-Notes:
-
-An "all-vs-all" PAF frequently is not one. wfmash with a -p threshold drops
-distant pairs, and many real files are a star: every sample aligned to one
-reference and to nothing else. JBrowse loads those without complaint and then
-draws an empty synteny band for any pair the aligner never emitted, which looks
-exactly like a locus with no homology. This composes A-vs-R and B-vs-R into the
-A-vs-B they imply, for every sample pair the file does not state directly.
-
-A composed row is derived, not measured, and its identity is a LOWER BOUND: with
-no sequence to recompute from it is the product of the two legs’ identities,
-which assumes they diverge from the pivot independently. Related genomes do not,
-so the truth is higher — measured on a 5-strain E. coli pangenome by holding out
-one pair and composing it back, 1.3 percentage points low on average, 5.1 at
-worst, while recovering 88% of the real alignment at 99.8% precision. Every
-composed row carries a vi:Z: tag naming the pivot it was routed through, so it
-is never mistaken for a measured one.
-
-Sequence names must be PanSN-prefixed (sample#haplotype#contig) — that is what
-says which assembly each side belongs to. Rows carrying a CIGAR compose base by
-base; rows without one (odgi untangle projections, PIF coarse rows) compose to
-coordinates only, and the result carries no CIGAR either.
-
-This is not a replacement for impg (github.com/pangenome/impg), nor impg for
-this. impg projects a range through the alignment network to RETRIEVE homologous
-sequence, and its PAF output is "projected interval matches" — every row stays
-anchored on the sequence queried. Run it over a star-topology PAF and index the
-result and you get the same star back, with the empty band still empty (checked
-against the HPRC vs-GRCh38 alignment: zero output rows paired two non-reference
-haplotypes). Reaching A-vs-B through impg means -o fasta and realigning, or -o
-maf / -o gfa with the assembly FASTAs to hand. Use impg for retrieval,
-partitioning and graph building at pangenome scale; use this when what you want
-is the missing pairwise alignments themselves.
-
-Examples:
-
-# add every missing pair, then index the result
-$ jbrowse transitive-paf all_vs_all.paf --out complete.paf
-$ jbrowse make-pif complete.paf
-
-# or pipe it straight through
-$ jbrowse transitive-paf all_vs_all.paf | jbrowse make-pif --out complete.pif.gz
-
-# a star-topology mapping: everything was aligned to GRCh38, nothing to each other
-$ jbrowse transitive-paf vs_ref.paf --via GRCh38 --out complete.paf
-
-# cut the short tail harder (the view can also filter with minAlignmentLength)
-$ jbrowse transitive-paf all_vs_all.paf --min-length 10000 --out complete.paf
 ```
 
 ## jbrowse sort-gff

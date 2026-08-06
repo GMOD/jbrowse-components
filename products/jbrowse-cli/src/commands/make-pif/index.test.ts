@@ -470,8 +470,8 @@ test('warns when an all-vs-all PAF does not state every sample pair', async () =
     ])
     expect(warnings).toMatch(/states only 2 of their 3 pairs/)
     expect(warnings).toMatch(/volvox_del<->volvox_ins/)
-    // and names the command that fixes it, on the file it was actually given
-    expect(warnings).toMatch(/jbrowse transitive-paf star\.paf/)
+    // and says what shape the file actually is, rather than leaving it a puzzle
+    expect(warnings).toMatch(/reference-anchored/)
   })
 })
 

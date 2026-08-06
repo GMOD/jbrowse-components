@@ -17,10 +17,9 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * `AllVsAllPAFAdapter`: one-vs-all in a plain LGV, single-pair when the synteny
  * view supplies a `targetAssemblyName`.
  *
- * If the PAF does not in fact contain every pair — a wfmash run with a `-p`
- * threshold, or a star-topology "everything against the reference" mapping —
- * run `jbrowse transitive-paf` on it before `make-pif`, which fills the missing
- * pairs in by composing through a shared intermediate.
+ * A reference-anchored alignment read as all-vs-all draws an empty band for
+ * every pair not involving the reference; see `AllVsAllPAFAdapter` for what to do
+ * about that.
  *
  * #example
  * ```js

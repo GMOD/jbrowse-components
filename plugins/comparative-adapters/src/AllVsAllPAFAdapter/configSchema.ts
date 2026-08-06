@@ -19,11 +19,12 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * only needs to list the assemblies you actually load into JBrowse and want the
  * track to appear on.
  *
- * A file that does not in fact contain every pair — a wfmash run with a `-p`
- * threshold, or a star-topology "everything against the reference" mapping —
- * draws an empty band for the pairs its aligner never emitted, which is
- * indistinguishable from a locus with no homology. `jbrowse transitive-paf`
- * fills those in by composing through a shared intermediate.
+ * A reference-anchored alignment is not this — HPRC publishes 465 haplotypes
+ * against GRCh38 alongside its complete all-vs-all — and read as all-vs-all it
+ * draws an empty band for every pair not involving that reference. Order the
+ * synteny rows so the reference sits between the others, use a complete
+ * all-vs-all if the project publishes one, or view a larger cohort as a multiple
+ * alignment (MAF) rather than a stack of pairwise bands.
  *
  * #example
  * ```js

@@ -185,11 +185,18 @@ export function noPanSNMatchError({
  *
  * Distinct from {@link noPanSNMatchError}, which is a misconfigured track. This
  * one is a correctly configured track over a file that is not the complete
- * all-vs-all it is being read as: wfmash with a `-p` threshold drops distant
- * pairs, and a star-topology mapping states only the reference's pairs. Same
- * reason it throws rather than returning empty — the band would otherwise draw
- * nothing and say nothing, which is exactly what a locus with no homology looks
- * like — but the remedy is different, so it names the remedy.
+ * all-vs-all it is being read as: reference-anchored alignments are the norm
+ * (HPRC publishes 465 haplotypes vs GRCh38 alongside the complete all-vs-all),
+ * and every pair not involving that reference is absent. Same reason it throws
+ * rather than returning empty — the band would otherwise draw nothing and say
+ * nothing, which is exactly what a locus with no homology looks like.
+ *
+ * The remedies are all upstream, which is why none of them is a JBrowse command.
+ * Ordering the rows so the shared reference sits between the two assemblies uses
+ * the pairs the file does have; a project publishing a complete all-vs-all
+ * (HPRC's `hprc25272.aln.paf.gz`) has the missing pairs already; and a cohort
+ * larger than three rows is a multiple alignment rather than a stack of pairwise
+ * bands, which is what MAF tracks are for.
  */
 export function noSuchPairError({
   assemblyName,
@@ -199,7 +206,7 @@ export function noSuchPairError({
   targetAssemblyName: string
 }) {
   return new Error(
-    `This file contains no alignments between "${assemblyName}" and "${targetAssemblyName}", though both are in it. That usually means the PAF is not a complete all-vs-all — an aligner run with an identity threshold, or one that mapped everything to a single reference. Run \`jbrowse transitive-paf\` on the PAF to fill in the missing pairs by composing through a shared intermediate.`,
+    `This file contains no alignments between "${assemblyName}" and "${targetAssemblyName}", though both are in it. It is almost certainly reference-anchored rather than a complete all-vs-all, so only pairs involving the reference are present. Either order the synteny rows so that reference sits between these two, use a complete all-vs-all alignment if the project publishes one, or view more than three genomes as a multiple alignment (MAF) rather than a stack of pairwise bands.`,
   )
 }
 
