@@ -1973,6 +1973,84 @@ export const graphSpecs: ScreenshotSpec[] = [
   // holding them to the reference axis, so the bubbles are visible as bubbles.
   // Same window, same tracks, same colors, differing only in layoutMode, which
   // is what makes the pair readable as one graph rather than two.
+  // A WHOLE HUMAN CHROMOSOME AS A GRAPH. This is the scale claim, and the two
+  // numbers that make it are in the header: 249 Mb of GRCh38 chr1, drawn from
+  // the hosted level-of-detail tier.
+  //
+  // The tier is one node per BUBBLE rather than one per segment
+  // (scripts/build_bubble_tier.sh over the `gfatools bubble` decomposition HPRC
+  // publishes, hosted as hprc-v2.0-mc-grch38.tier10000.*). Measured off that
+  // file: 474 nodes for all of chr1, against ~751k segments in the graph and
+  // 3,034 for 5 Mb of the FINE index, which is already undrawable. So this is
+  // not the same picture zoomed out — it is a different granularity of the same
+  // graph, and the fine index is what the locus figures on this page use.
+  //
+  // maxRegionBp is why it can be drawn at all. The view's bp ceiling is 5 Mb,
+  // which is a proxy for node count and a good one only at fine granularity; a
+  // tier breaks the proxy, so a session pointed at one says so. maxGraphNodes
+  // is untouched and still counts what actually came back. Needs the plugin
+  // bundle pinned at aee5e17f4b2c or later.
+  //
+  // The segments lane above is the same tier file as an ordinary FeatureTrack,
+  // which is the other half of the claim: at 249 Mb the FINE segments track
+  // refuses with "Too many features", and this one draws.
+  {
+    mode: 'url',
+    name: 'pangenome/hprc_whole_chromosome',
+    url: sessionSpec(HPRC_CONFIG, {
+      sessionTracks: [
+        {
+          type: 'FeatureTrack',
+          trackId: 'hprc_tier',
+          name: 'HPRC release 2 graph: bubble tier (one node per bubble)',
+          assemblyNames: ['hg38'],
+          adapter: {
+            type: 'RgfaTabixAdapter',
+            uri: 'https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.tier10000',
+            assemblyNameToPanSN: { hg38: 'GRCh38' },
+          },
+        },
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr1',
+          tracks: [
+            {
+              trackId: 'hprc_tier',
+              type: 'LinearBasicDisplay',
+              showLabels: 'none',
+              height: 60,
+            },
+          ],
+        },
+        {
+          type: 'GraphGenomeView',
+          loadedTrackId: 'hprc_tier',
+          loadedRegion: {
+            refName: 'chr1',
+            assemblyName: 'hg38',
+            start: 0,
+            end: 248956422,
+          },
+          // the whole point: 249 Mb past the 5 Mb default
+          maxRegionBp: 250000000,
+          layoutMode: 'auto',
+          colorScheme: 'reference-position',
+        },
+      ],
+    }),
+    readySelector: TOOLBAR_READY,
+    readyTimeout: 300000,
+    settleMs: 15000,
+    viewportWidth: 1400,
+    // the tier lane plus a two-row anchored drawing and nothing under it, from
+    // the run's own "263 css px of blank below the last content" at 800
+    viewportHeight: 540,
+    hideTooltip: true,
+  },
+
   // Out of the graph and into the strain that carries the allele — the pggb
   // counterpart of rgfa_strain_launch, and the mirror case.
   //

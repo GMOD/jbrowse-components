@@ -613,6 +613,63 @@ combinatorially rather than haplotypes observed, and saturates at `2147483647`
 (the track labels those bubbles uncountable). HPRC publishes no bubble file, so
 this one is ours too, built with `gfatools bubble`.
 
+### A whole chromosome as a graph
+
+The graph track above draws one node per **segment**, so a window past a few
+hundred kilobases is more nodes than anything can lay out: 5 Mb of chr1 is 3,034
+segments, and the graph has about 751,000 of them.
+
+The bubble file is also a level of detail. Collapsing each bubble to a single
+node, with the invariant reference between bubbles as backbone, turns the same
+graph into something that fits on a screen —
+[`build_bubble_tier.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_bubble_tier.sh)
+does that in one pass over the file you already have:
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_bubble_tier.sh
+bash build_bubble_tier.sh hprc-v2.0-mc-grch38.bubbles.bed.gz \
+  hprc-v2.0-mc-grch38.tier10000 10000
+```
+
+The threshold is on **content**, not reference span: a pure insertion is an
+alternative to nothing, so 53,293 of the 130,510 bubbles are zero-length on
+GRCh38 and thresholding on `end - start` would drop every one of them, including
+the 100 kb insertions that are the whole point. Content is the larger of the
+reference span and the longest allele.
+
+The result reads through the same adapter as the fine index — a tier is a
+prefix, so choosing a level of detail is choosing a file:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "hprc_tier",
+  "name": "HPRC release 2 graph: bubble tier (one node per bubble)",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "RgfaTabixAdapter",
+    "uri": "https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.tier10000",
+    "assemblyNameToPanSN": { "hg38": "GRCh38" }
+  }
+}
+```
+
+One setting has to move with it. The view refuses a cut over 5 Mb, which is a
+proxy for node count and a fair one at segment granularity — but a tier breaks
+the proxy, so a view pointed at one raises **`maxRegionBp`**. The real ceiling
+is unchanged: `maxGraphNodes` counts what actually came back.
+
+<Figure caption="All 249 Mb of GRCh38 chr1 as a graph: 474 nodes against about 751,000 segments in the graph itself, laid out in 18 ms. The chain alternates 237 backbone nodes, labelled with the megabases they span, and 237 bubbles on the row below. The stretch with no bubbles under it is one 18.7 Mb backbone node covering the centromere and the 1q12 heterochromatin, where nothing varies by enough to pass the threshold." src="/img/pangenome/hprc_whole_chromosome.png" />
+
+The chain alternates strictly, 237 of each, because `gfatools bubble` reports
+top-level bubbles only and those never overlap — which is what makes one flat
+walk complete rather than lossy.
+
+This is the coarse end of a ladder, not a replacement: a tier node is a bubble,
+so it says where the graph varies and by how much, and nothing about the alleles
+inside it. The node id is the bubble's own source segment, so the same span in
+the fine index is the expanded view of it.
+
 ### Inversions
 
 Insertions are nodes and deletions are edges, and an inversion is neither: the
