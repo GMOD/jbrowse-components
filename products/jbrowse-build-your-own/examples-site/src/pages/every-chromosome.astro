@@ -1,0 +1,16 @@
+---
+import EveryChromosome from '../examples/EveryChromosome.tsx'
+import EveryChromosomeCode from '../examples/EveryChromosome.tsx?raw'
+import { getPage, section } from '../examples.ts'
+import Layout from '../layouts/ExampleLayout.astro'
+import Section from '../layouts/ExampleSection.astro'
+
+const page = getPage('every-chromosome')
+const sec = section(page, 'every-chromosome')
+---
+
+<Layout page={page}>
+  <Section {...sec} code={EveryChromosomeCode}>
+    <EveryChromosome client:only="react" />
+  </Section>
+</Layout>

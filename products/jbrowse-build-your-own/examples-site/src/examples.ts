@@ -87,6 +87,14 @@ export const pages: ExamplePage[] = [
     ],
   },
   {
+    slug: 'every-chromosome',
+    title: 'Every chromosome at once',
+    description:
+      'A whole-genome view is the same view with 24 displayed regions, a seam between each and a name on each.',
+    group: 'Making it yours',
+    sections: [{ slug: 'every-chromosome', title: 'hg38, end to end' }],
+  },
+  {
     slug: 'your-own-feature-details',
     title: 'Your own feature details',
     description:

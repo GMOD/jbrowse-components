@@ -23,6 +23,10 @@
     "chunks": 222,
     "gzipKb": 515
   },
+  "every-chromosome": {
+    "chunks": 222,
+    "gzipKb": 515
+  },
   "one-track": {
     "chunks": 181,
     "gzipKb": 464

@@ -459,7 +459,12 @@ const RegionNames = observer(function RegionNames({
           background: palette.background.paper,
           color: palette.text.primary,
           fontWeight: 'bold',
-          overflow: 'clip',
+          // ellipsis, not a bare clip: clipped to its own width, `chr16` reads
+          // as `chr1`, which is a different chromosome rather than a shortened
+          // name. Only shows up once regions get narrow -- see the Every
+          // chromosome page, where 8 of the 24 are too small for their label.
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
           whiteSpace: 'nowrap',
         }}
       >

@@ -43,6 +43,7 @@ const MUI_BUDGET = {
   'add-the-chrome-you-want': 0,
   'a-scalebar-not-a-ruler': 0,
   'drive-it-from-your-app': 0,
+  'every-chromosome': 0,
   'your-own-feature-details': 0,
   'run-it-in-a-worker': 0,
 }
