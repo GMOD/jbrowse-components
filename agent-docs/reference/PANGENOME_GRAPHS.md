@@ -93,7 +93,9 @@ ever regresses, that A/B is the check — the unit tests cover the segs row → 
 synthesized S-line → the parser → `node.samples`, and the end-to-end one is
 `rgfaBed.test.ts`'s "SM:Z: on a segs row reaches GraphNode.samples".
 
-**The linear side landed 2026-08-06 too.** `getFeatures` parsed the tag column
+**The linear side landed 2026-08-06 too** (plugin `f2108cc`, published as
+`0093d998d280`, which is what `test_data/graphgenomeview/*.json` now pins).
+`getFeatures` parsed the tag column
 and then dropped it, so the whole tag route ended at the graph view and a
 LinearGenomeView lane colored by carriage was not expressible. `segmentSamples`
 in `rgfaBed.ts` now puts `samples` (the haplotype list) and `carriers` (its

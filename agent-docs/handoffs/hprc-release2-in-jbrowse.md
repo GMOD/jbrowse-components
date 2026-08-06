@@ -80,7 +80,7 @@ a ~670 KB read.
 
 ## Open threads
 
-**The carriage lane. Built 2026-08-06; what is left is two deploys.** The
+**The carriage lane. Done and deployed 2026-08-06.** The
 blocking unknown had a plain answer: `RgfaTabixAdapter.getFeatures` parsed the
 tag column and then dropped it, so `SM:Z:` reached `GraphNode.tags` through
 `getSubgraph` and nothing else. `BedTabixAdapter` with `columnNames` was not
@@ -91,19 +91,19 @@ legend, beside the depth track it improves on. Verified in the app: the IS5
 element at K12 chr:1,299,499-1,300,693 draws as one 1,199 bp private box with
 `samples: K12.1` in its detail panel, against a core band either side.
 
-Two outward-facing steps remain, in this order, and nothing shows until both:
+Both deploys are done. The bundle is published as `0093d998d280` and the demo
+config is live; `test_data/graphgenomeview/*.json` is pinned at that bundle,
+which also closes an inconsistency the previous session left: `pggb_carriage`'s
+committed figure shows `carriedBy`, and the pin it was rendered against
+(`aee5e17f4b2c`) predates carriage entirely, so nothing in the tree could
+reproduce it.
 
-1. `pnpm betabuild` in `jbrowse-plugin-graphgenomeview` publishes the bundle the
-   unpinned demo `esmUrl` serves. Without it the lane draws flat in the fallback
-   color, since `carriers` is simply absent.
-2. `scripts/deploy-demo.sh ecoli_pangenome/config.json`, from the repo copy.
-
-Then the figure, which was deliberately not captured against a bundle that
-cannot draw it: a spec on the carriage lane over the IS5 window with the depth
-track above it, and the `test_data/graphgenomeview/*.json` pin bumped in the
-same commit per that directory's README. Note those fixtures still pin
-`aee5e17f4b2c` while `bfe47428e7ae` is what is published, so the bump is already
-one revision behind before this lands.
+`pangenome/pggb_carriage_lane` is the figure. One thing left undone and it is
+someone else's: `pangenome/hprc_whole_chromosome` was excluded from the
+pin-bump regen, because another agent has an uncommitted `hprc_bubble_score`
+variability track in the same spec and in `figures.lock`, and regenerating it
+here would have folded their change into this commit. It needs a regen against
+the new pin whenever that lands.
 
 **Launching the graph view from a clicked segment.** The data side is ready —
 `links.bed` states both endpoints in full precisely so a reference segment can

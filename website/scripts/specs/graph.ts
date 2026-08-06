@@ -38,6 +38,15 @@ const HOSTED_DEMO = 'https://jbrowse.org/demos/ecoli_pangenome'
 // Every fixture pins `esmUrl` to a content-addressed bundle
 // (test_data/graphgenomeview/README.md), so the plugin cannot change these
 // figures without a diff in this repo.
+//
+// Deterministic in PIXELS is not deterministic in BYTES, and a pin bump is
+// where that bites. Regenerating this set with `--filter` to check what a new
+// bundle moved rewrites all of them, because --filter implies --force and force
+// skips the 0.5% gate that normally absorbs the sub-pixel jitter two
+// consecutive renders of the same spec produce. The result reads as "the bundle
+// moved 25 figures" and is 25 figures of churn in figures.lock. Regenerate
+// UNFILTERED after a pin bump and let the gate answer, or accept that the
+// answer you get is not about the bundle.
 
 // Ready when the layout has landed (graph-perf-stats) AND the toolbar has
 // painted. Waiting on the stats alone raced: a slow subgraph fetch could leave
@@ -224,6 +233,62 @@ const PGGB_SEGMENTS_SESSION_TRACK = {
   adapter: {
     type: 'RgfaTabixAdapter',
     uri: `${DATA}/ecoli_pggb`,
+  },
+}
+
+// The same segments as PGGB_SEGMENTS_SESSION_TRACK, colored by how many
+// haplotypes walk each one rather than by reference position. The adapter puts
+// the walk's `SM:Z:` tag on the feature as `samples` and `carriers`, so this is
+// the graph's own statement of membership drawn along the reference instead of
+// read off one clicked node.
+//
+// Five discrete steps rather than a continuous ramp, because five strains is
+// five answers and the legend then names each one. Grey for all five: the core
+// backbone is the background this figure is not about, and the private boxes
+// have to be what the eye lands on. The last color is a fallback, not a sixth
+// step — an rGFA has no tag column, so `carriers` is absent there rather than 0.
+const PGGB_CARRIAGE_TRACK = 'ecoli_pggb_carriage'
+const CARRIAGE_COLORS = {
+  1: '#e31a1c',
+  2: '#fd8d3c',
+  3: '#feb24c',
+  4: '#fed976',
+  5: '#bdbdbd',
+} as const
+const PGGB_CARRIAGE_SESSION_TRACK = {
+  type: 'FeatureTrack',
+  trackId: PGGB_CARRIAGE_TRACK,
+  name: 'pggb graph: segment carriage',
+  assemblyNames: ['K12'],
+  adapter: {
+    type: 'RgfaTabixAdapter',
+    uri: `${DATA}/ecoli_pggb`,
+  },
+}
+const CARRIAGE_DISPLAY = {
+  color: `jexl:${[5, 4, 3, 2]
+    .map(n => `feature.carriers==${n}?'${CARRIAGE_COLORS[n as 5]}':`)
+    .join('')}feature.carriers==1?'${CARRIAGE_COLORS[1]}':'#eeeeee'`,
+  legend: [
+    { label: 'All 5 strains (core)', color: CARRIAGE_COLORS[5] },
+    { label: '4 strains', color: CARRIAGE_COLORS[4] },
+    { label: '3 strains', color: CARRIAGE_COLORS[3] },
+    { label: '2 strains', color: CARRIAGE_COLORS[2] },
+    { label: '1 strain (private)', color: CARRIAGE_COLORS[1] },
+  ],
+}
+
+// The aggregate the lane is read against: `odgi depth` over fixed windows,
+// hosted beside the graph indexes. Same question, different unit.
+const PGGB_DEPTH_TRACK = 'ecoli_pggb_depth'
+const PGGB_DEPTH_SESSION_TRACK = {
+  type: 'QuantitativeTrack',
+  trackId: PGGB_DEPTH_TRACK,
+  name: 'pggb graph: pangenome depth (paths over K12)',
+  assemblyNames: ['K12'],
+  adapter: {
+    type: 'BigWigAdapter',
+    bigWigLocation: { uri: `${DATA}/ecoli_pggb_depth.bw` },
   },
 }
 
@@ -2205,6 +2270,64 @@ export const graphSpecs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'carriedBy' },
       { type: 'delay', ms: 1500 },
     ],
+  },
+  // Carriage as a lane rather than as a drawer field. The figure above answers
+  // "who carries this segment" for one node someone clicked; this answers it for
+  // every segment across a window at once, which is what the tutorial's
+  // core/accessory prose is actually about.
+  //
+  // The depth track is in the frame because it is the lane's own control. Both
+  // read the same graph and disagree about the unit: `odgi depth` is a mean over
+  // fixed windows, the lane is one box per segment. Over the IS5 element they
+  // agree, and that agreement is the check — a curve stepping down to 1 across
+  // the same span the lane draws as a single private box, with the gene track
+  // naming the element that explains both.
+  //
+  // Needs the plugin bundle pinned in the fixture to be 0093d998d280 or later.
+  // Before that `getFeatures` parsed the tag column and dropped it, so `carriers`
+  // was absent on every feature and this whole lane rendered in the color the
+  // expression falls through to.
+  {
+    mode: 'url',
+    name: 'pangenome/pggb_carriage_lane',
+    url: sessionSpec(CONFIG, {
+      sessionTracks: [
+        K12_GENES_SESSION_TRACK,
+        PGGB_DEPTH_SESSION_TRACK,
+        PGGB_CARRIAGE_SESSION_TRACK,
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'K12',
+          loc: PGGB_LOCUS_WINDOW,
+          tracks: [
+            { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 70 },
+            {
+              trackId: PGGB_DEPTH_TRACK,
+              type: 'LinearWiggleDisplay',
+              height: 100,
+            },
+            {
+              trackId: PGGB_CARRIAGE_TRACK,
+              type: 'LinearBasicDisplay',
+              // one band, not a pile: the rank-0 segments tile K12 without
+              // overlapping, so collapsed is the true layout rather than a
+              // squeeze, and the lane reads as a single strip of membership
+              displayMode: 'collapsed',
+              showLabels: 'none',
+              height: 90,
+              ...CARRIAGE_DISPLAY,
+            },
+          ],
+        },
+      ],
+    }),
+    readyTimeout: 120000,
+    settleMs: 5000,
+    viewportWidth: 1000,
+    viewportHeight: 535,
+    hideTooltip: true,
   },
   {
     mode: 'url',

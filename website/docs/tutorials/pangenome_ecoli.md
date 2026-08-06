@@ -859,6 +859,8 @@ list and `carriers` is its length, which is the one a color expression wants:
 }
 ```
 
+<Figure caption="The IS5 element at K12 chr:1,299,499-1,300,693 in three lanes. The gene track names it insH21, the odgi depth curve steps from the strain count down to 1 across its span, and the carriage lane draws that same span as one box carried by K12 alone, with the core band either side." src="/img/pangenome/pggb_carriage_lane.png" />
+
 Read it against the [depth track](#pangenome-depth-projection-core-vs-accessory).
 Both answer core versus accessory, and they differ in unit: depth is a mean over
 the windows tiled above, so an accessory stretch shorter than one window is
