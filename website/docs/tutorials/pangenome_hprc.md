@@ -12,16 +12,6 @@ coordinates and the graph opens by locus from two small tabix indexes rather
 than the 842 MB file. Its `wave.vcf.gz` ships an index too, so 464 haplotypes
 draw as a genotype matrix straight off S3.
 
-[HPRC release 2](https://doi.org/10.64898/2026.07.21.739710) is roughly a
-fivefold expansion over release 1. This tutorial opens two of its products: the
-pangenome graph drawn as a graph, and the variant callset (464 haplotypes as a
-genotype matrix).
-
-Every track below is a URL you can paste. The callset ships tabix-indexed, so
-JBrowse reads the slice in view straight off HPRC's S3. The graph route reads
-projections we prebuilt and host, with the build script in
-[Reproduce it end to end](#reproduce-it-end-to-end).
-
 :::caution Experimental
 
 The graph view is a beta plugin, and this tutorial covers experimental ideas. We
@@ -31,12 +21,18 @@ welcome your [feedback](/contact).
 
 ## Prerequisites
 
-- every track on this page, assembled, at
-  [`https://jbrowse.org/demos/hprc/config.json`](https://jbrowse.org/demos/hprc/config.json)
-- or an instance of your own, with the four track configs below pasted in
-- the GraphGenomeView plugin, for two of those four: they use the
-  `RgfaTabixAdapter` and `MinigraphBubbleAdapter`, which ship in it rather than
-  in JBrowse Web
+- the GraphGenomeView plugin, for the two tracks below that use
+  `RgfaTabixAdapter` and `MinigraphBubbleAdapter`; the rest need nothing
+
+[HPRC release 2](https://doi.org/10.64898/2026.07.21.739710) is roughly a
+fivefold expansion over release 1. This tutorial opens two of its products: the
+pangenome graph drawn as a graph, and the variant callset (464 haplotypes as a
+genotype matrix).
+
+Every track below is a URL you can paste. The callset ships tabix-indexed, so
+JBrowse reads the slice in view straight off HPRC's S3. The graph route reads
+projections we prebuilt and host, with the build script in
+[Reproduce it end to end](#reproduce-it-end-to-end).
 
 ## The GraphGenomeView plugin
 
@@ -390,16 +386,6 @@ Either way a donor row names the haplotype the sequence was taken from, the same
 attribution the [allele inventory](#the-allele-inventory)'s `discoveryRank` and
 `firstSeenIn` carry, and not the set of haplotypes carrying it.
 
-### Hovering one panel highlights the other
-
-Hover a node in the graph and the reference interval it occupies is highlighted
-in every linear view beside it; hover the linear view and the segment under the
-cursor brightens in the graph. This needs no configuration. For a rank>0 allele
-the interval shown is not the allele's own sequence, but the span between the
-two backbone segments it detaches from and rejoins. Both directions are pictured
-in the
-[graph genome view guide](/docs/user_guides/graph_genome_view#hovering-one-panel-highlights-the-other).
-
 ### From a node back to a coordinate
 
 Hovering says where a node is only while the cursor is on it. **Right-click a
@@ -417,7 +403,9 @@ each segment's source sequence (`SN`) and offset (`SO`):
   `HG02717#1#chr6`. That coordinate is exact too, but no session loads 464
   haplotypes as assemblies, so there is nothing to open it in. What you get
   instead is the GRCh38 interval between the two backbone segments the allele
-  detaches from and rejoins, the same span the hover highlights.
+  detaches from and rejoins, the same span a
+  [hover](/docs/user_guides/graph_genome_view#hovering-one-panel-highlights-the-other)
+  highlights.
 
 Either way the node's haplotype is named, in the tooltip and in the details
 panel a left-click opens. Read that name as `contributingAssembly`, which is

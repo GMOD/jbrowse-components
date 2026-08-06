@@ -12,23 +12,6 @@ projections (synteny, pangenome variants, whole-genome MAF, depth and per-strain
 presence) as ordinary JBrowse tracks on the K12 axis, and draw the graph itself
 beside them.
 
-A pangenome graph collapses many genomes into one structure: shared sequence is
-a single path that every sample walks, and where samples differ the path
-branches. [pggb](https://github.com/pangenome/pggb),
-[Minigraph-Cactus](https://github.com/ComparativeGenomicsToolkit/cactus/blob/master/doc/pangenome.md),
-and [progressiveCactus](https://github.com/ComparativeGenomicsToolkit/cactus)
-build these graphs, and [odgi](https://github.com/pangenome/odgi) manipulates
-them.
-
-A bacterial pangenome is often built the other way, from annotations rather than
-from sequence: [Panaroo](https://github.com/gtonkinhill/panaroo),
-[Roary](https://sanger-pathogens.github.io/Roary/) and
-[PPanGGOLiN](https://github.com/labgem/PPanGGOLiN) cluster genes across
-assemblies into a core and an accessory set. Use those for the gene table and
-these tracks for where the sequence sits: a gene cluster no reference carries
-has no reference coordinate and cannot be drawn on the K12 axis at all, while
-the projections here place every base of the graph that K12 shares.
-
 :::caution Experimental
 
 The graph view is a beta plugin, and this tutorial covers experimental ideas. We
@@ -60,6 +43,23 @@ of at once; pggb's
 cover the alternatives.
 
 ## The linear projections
+
+A pangenome graph collapses many genomes into one structure: shared sequence is
+a single path that every sample walks, and where samples differ the path
+branches. [pggb](https://github.com/pangenome/pggb),
+[Minigraph-Cactus](https://github.com/ComparativeGenomicsToolkit/cactus/blob/master/doc/pangenome.md),
+and [progressiveCactus](https://github.com/ComparativeGenomicsToolkit/cactus)
+build these graphs, and [odgi](https://github.com/pangenome/odgi) manipulates
+them.
+
+A bacterial pangenome is often built the other way, from annotations rather than
+from sequence: [Panaroo](https://github.com/gtonkinhill/panaroo),
+[Roary](https://sanger-pathogens.github.io/Roary/) and
+[PPanGGOLiN](https://github.com/labgem/PPanGGOLiN) cluster genes across
+assemblies into a core and an accessory set. Use those for the gene table and
+these tracks for where the sequence sits: a gene cluster no reference carries
+has no reference coordinate and cannot be drawn on the K12 axis at all, while
+the projections here place every base of the graph that K12 shares.
 
 The graph is built here, not downloaded.
 
@@ -599,9 +599,7 @@ reference.
 do, but its horizontal axis is the graph's node order (the "pangenome
 sequence"), not any genome's coordinates. Sequence every strain walks is a
 filled column across all rows; accessory sequence is a gap in the rows that skip
-it. That is the graph's real structure, but no gene is numbered in node order,
-and the axis counts pangenome bases rather than reference ones, so a locus takes
-up more of it wherever the other strains carry sequence K12 lacks.
+it. That is the graph's real structure, but no gene is numbered in node order.
 
 The JBrowse projections keep the one-row-per-strain idea and re-draw everything
 on K12's coordinates. Depth is the raster's column coverage summed into one
@@ -609,10 +607,9 @@ curve, per-strain presence is its filled-vs-gap rows windowed, the MAF track is
 those same rows at single-base resolution colored by mismatch, and the variant
 track is the points where the rows branch, one column each.
 
-The
-[Minigraph-Cactus tutorial](/docs/tutorials/pangenome_cactus#compared-to-odgi-viz)
-marks one 100 kb window on both axes on the same five strains, which shows how
-much wider a locus is on the graph axis than on a reference one.
+What the two axes cost each other is
+[measured on the Minigraph-Cactus page](/docs/tutorials/pangenome_cactus#compared-to-odgi-viz),
+which marks the same 100 kb of K12 on both.
 
 `odgi layout`'s 2D drawing is the other comparison, and the closer one: it is
 path-guided stochastic gradient descent over the whole graph, where the graph

@@ -13,16 +13,6 @@ on the K12 axis: synteny, pangenome variants, a whole-genome MAF, depth,
 per-strain presence, and a pileup of an isolate that is not in the graph at all,
 mapped through it.
 
-[Minigraph-Cactus](https://github.com/ComparativeGenomicsToolkit/cactus/blob/master/doc/pangenome.md)
-(`cactus-pangenome`) builds a pangenome graph reference-first.
-[minigraph](https://github.com/lh3/minigraph) lays down a backbone from the
-reference you pick, every other sample is aligned onto it, and Cactus normalizes
-the result into a graph.
-
-This tutorial builds a graph from five _E. coli_ strains and loads it in JBrowse
-as synteny, variants, a whole-genome alignment, depth and presence, then maps a
-new isolate's reads through the finished graph.
-
 :::caution Experimental
 
 This tutorial covers experimental ideas, and the graph view it links to is a
@@ -55,6 +45,16 @@ runtime at all, Cactus also ships a statically linked
 [binary release](https://github.com/ComparativeGenomicsToolkit/cactus/blob/master/BIN-INSTALL.md).
 
 ## Cactus against pggb
+
+[Minigraph-Cactus](https://github.com/ComparativeGenomicsToolkit/cactus/blob/master/doc/pangenome.md)
+(`cactus-pangenome`) builds a pangenome graph reference-first.
+[minigraph](https://github.com/lh3/minigraph) lays down a backbone from the
+reference you pick, every other sample is aligned onto it, and Cactus normalizes
+the result into a graph.
+
+This tutorial builds a graph from five _E. coli_ strains and loads it in JBrowse
+as synteny, variants, a whole-genome alignment, depth and presence, then maps a
+new isolate's reads through the finished graph.
 
 The graph is built here, not downloaded.
 
