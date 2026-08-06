@@ -945,7 +945,21 @@ export const svSpecs: ScreenshotSpec[] = [
       },
     ],
     // remote VCF over the NCBI ftp-trace server: render timing jitters the
-    // circular overview slightly, so soften the content-stable diff gate
+    // circular overview slightly, so soften the content-stable diff gate.
+    //
+    // MEASURE BEFORE TRUSTING THAT. `--check` on this spec (two renders, one
+    // machine) reports 0.008% — three orders of magnitude under this gate — so
+    // whatever jitter motivated 0.02 is not reproducible here. Meanwhile the
+    // weekly sweep reports it under KEPT BEHIND A RAISED diffThreshold at
+    // 0.948%, and a local force-render differs from the committed bytes in
+    // 4.95%: the whole linear view below the inspector has shifted vertically,
+    // which the diff map shows as every track boundary outlined. That is app
+    // drift being held out of the figure by a gate raised for something else,
+    // the same way alignments_soft_clipped_menu kept a menu item that had moved.
+    //
+    // Not lowered here because this figure also hand-places its callouts (the
+    // `x`/`y` above), and a vertical shift is exactly what moves a callout off
+    // its target — so it wants anchors first, then a gate it can actually pass.
     diffThreshold: 0.02,
   },
 

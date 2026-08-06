@@ -283,6 +283,27 @@ export interface FigureChange {
   after?: FigureEntry
 }
 
+// What "now" is, per figure: its BYTES if they are on disk, its figures.lock
+// line if they are not. `report` diffs a base ref against this.
+//
+// Both halves are load-bearing, and getting either wrong is silent. Without the
+// bytes, the state you are usually in when you want to look at a figure —
+// regenerated and not yet pushed — reports as nothing at all, because the lock
+// only moves on `push`. Without the lock line, push.yml reports every figure as
+// removed on every push: it runs `report` on a plain checkout with no sweep and
+// no `figures:pull`, and figure bytes are gitignored, so nothing is on disk
+// there. A partial checkout gets the sensible thing per file.
+export function resolveNow(
+  manifest: Map<string, FigureEntry>,
+  onDisk: Iterable<FigureEntry>,
+): Map<string, FigureEntry> {
+  const now = new Map(manifest)
+  for (const entry of onDisk) {
+    now.set(entry.path, entry)
+  }
+  return now
+}
+
 export function diffManifests(
   before: Map<string, FigureEntry>,
   after: Map<string, FigureEntry>,

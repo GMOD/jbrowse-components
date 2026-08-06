@@ -20,6 +20,7 @@ import {
   formatTextReport,
   imageSize,
   parseManifest,
+  resolveNow,
   storeKey,
   storeUrl,
 } from './figure-store.ts'
@@ -191,4 +192,56 @@ test('gif and jpeg parse; an unknown format reports no dimensions', () => {
   expect(imageSize(jpeg)).toStrictEqual({ width: 320, height: 576 })
 
   expect(imageSize(Buffer.from('<svg/>'))).toStrictEqual({})
+})
+
+/**
+ * `resolveNow` is what `report` diffs a base ref against, and both of its two
+ * jobs failed silently the one time each was missing. Reporting against the
+ * lock alone hides a regen nobody has pushed, which is the state you are in
+ * whenever you want to look at a figure. Reporting against the worktree alone
+ * calls every figure removed on push.yml, which runs `report` on a plain
+ * checkout with no sweep and no `figures:pull`, where gitignored figure bytes
+ * mean nothing is on disk at all.
+ */
+describe('resolveNow', () => {
+  const lock = new Map([
+    ['website/static/img/a.png', entry('website/static/img/a.png', A)],
+    ['website/static/img/b.png', entry('website/static/img/b.png', A)],
+  ])
+
+  test('with nothing on disk it is the manifest, so push.yml is unchanged', () => {
+    const now = resolveNow(lock, [])
+    expect(now).toStrictEqual(lock)
+    expect(diffManifests(lock, now)).toStrictEqual([])
+  })
+
+  test('bytes on disk win, so an unpushed regen is visible', () => {
+    const regen = entry('website/static/img/a.png', B, 222)
+    const changes = diffManifests(lock, resolveNow(lock, [regen]))
+    expect(changes).toStrictEqual([
+      {
+        path: 'website/static/img/a.png',
+        kind: 'changed',
+        before: lock.get('website/static/img/a.png'),
+        after: regen,
+      },
+    ])
+  })
+
+  test('a figure only on disk is added, and the untouched ones stay quiet', () => {
+    const fresh = entry('website/static/img/c.png', B)
+    const changes = diffManifests(lock, resolveNow(lock, [fresh]))
+    expect(changes).toStrictEqual([
+      { path: 'website/static/img/c.png', kind: 'added', after: fresh },
+    ])
+  })
+
+  test('a partial checkout mixes the two per file', () => {
+    const onDisk = entry('website/static/img/b.png', B)
+    const now = resolveNow(lock, [onDisk])
+    expect(now.get('website/static/img/a.png')).toBe(
+      lock.get('website/static/img/a.png'),
+    )
+    expect(now.get('website/static/img/b.png')).toBe(onDisk)
+  })
 })

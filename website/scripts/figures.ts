@@ -40,6 +40,7 @@ import {
   formatTextReport,
   hashBuffer,
   parseManifest,
+  resolveNow,
   storeBucket,
   storeKey,
   storePrefix,
@@ -502,11 +503,7 @@ function report() {
   // Hashing the worktree unconditionally would have reported all 452 as removed
   // on every push. The fallback makes that job byte-for-byte what it was, and
   // does the sensible thing for a partial checkout in between.
-  const manifest = readManifest()
-  const now = new Map(manifest)
-  for (const path of listFigureFiles()) {
-    now.set(path, describeFile(path))
-  }
+  const now = resolveNow(readManifest(), listFigureFiles().map(describeFile))
   const changes = diffManifests(manifestAt(base), now)
   // An `after` whose bytes were never uploaded has a store URL (the key is the
   // hash) and that URL 404s, so the report has to say which ones those are
