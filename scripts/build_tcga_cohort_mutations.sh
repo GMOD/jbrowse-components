@@ -28,7 +28,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Sibling helpers this script runs, fetched next to it when absent, so a bare
 # `curl -fO` of this one file behaves the same as a repo checkout.
-HELPERS=(maf_to_vcf.py tcga_clinical_tsv.py)
+HELPERS=(maf_to_vcf.py tcga_clinical_tsv.py hosted_assembly.py)
 for h in "${HELPERS[@]}"; do
   [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
     "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
@@ -108,47 +108,25 @@ echo "         $CLINICAL ($(du -h "$CLINICAL" | cut -f1))"
 
 # ── JBrowse app ──────────────────────────────────────────────────────────────
 # The files above are the cohort; this is what opens them, so "reproduce it end
-# to end" ends in a view rather than in two files and an upload command. The
-# assembly is the hosted UCSC hg38 hub's own entry copied in, so the reference
-# is never downloaded; its relative uris are resolved against the hub first,
-# since they no longer sit beside it.
+# to end" ends in a view rather than in two files and an upload command.
+# hosted_assembly.py seeds the config with hg38 copied from its hosted UCSC hub
+# (so the reference is never downloaded) plus the gene track, and this appends
+# the cohort track to what it wrote.
 if command -v jbrowse >/dev/null; then jb() { jbrowse "$@"; }
 else jb() { npx -y @jbrowse/cli "$@"; }; fi
 APP=jbrowse2
 [ -f "$APP/index.html" ] || jb create "$APP"
 cp "$OUT.vcf.gz" "$OUT.vcf.gz.tbi" "$CLINICAL" "$APP"/
 
+# genes, so a mutation column has something to be read against
+python3 "$SCRIPT_DIR/hosted_assembly.py" "$APP/config.json" hg38 \
+  hg38-ncbiRefSeqCurated
+
 python3 - "$APP/config.json" "$OUT" "$CLINICAL" "$PROJECT" <<'PY'
-import json, os, sys, urllib.parse, urllib.request
+import json, sys
 
 path, out, clinical, project = sys.argv[1:5]
-HUB = 'https://jbrowse.org/ucsc/hg38/config.json'
-hub = json.load(urllib.request.urlopen(HUB))
-
-
-def absolutize(node):
-    """Rewrite the hub's relative file references against the hub's own url."""
-    if isinstance(node, dict):
-        for k, v in node.items():
-            if k in ('uri', 'chromSizes') and isinstance(v, str) and '://' not in v:
-                node[k] = urllib.parse.urljoin(HUB, v)
-            else:
-                absolutize(v)
-    elif isinstance(node, list):
-        for v in node:
-            absolutize(v)
-
-
-# `jb create` unpacks the app but writes no config.json (the sibling scripts
-# get theirs as a side effect of `jb add-assembly`, which this skips so the
-# reference is never downloaded), so start from nothing when it is absent.
-# Every key used below is assigned outright, so there is nothing to preserve.
-cfg = json.load(open(path)) if os.path.exists(path) else {}
-cfg['assemblies'] = hub['assemblies']
-# Genes, so a mutation column has something to be read against.
-cfg['tracks'] = [t for t in hub['tracks'] if t.get('trackId') == 'hg38-ncbiRefSeqCurated']
-absolutize(cfg['assemblies'])
-absolutize(cfg['tracks'])
+cfg = json.load(open(path))
 
 cfg['tracks'].append({
     'type': 'VariantTrack',

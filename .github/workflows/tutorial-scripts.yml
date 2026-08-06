@@ -1,0 +1,80 @@
+name: Tutorial scripts
+
+# The weekly smoke run of the tutorial build scripts that carry a limit
+# argument, from their first download through to a config the CLI validator
+# accepts.
+#
+# WHY THIS EXISTS. `scripts/build_*.sh` is what "Reproduce it end to end" on a
+# tutorial page points a reader at, and nothing else runs them. The failure that
+# prompted this was three of them dying on `FileNotFoundError` immediately after
+# printing "done" for the data files: `jbrowse create` unpacks an app but writes
+# no config.json, and the step that patched one opened a file that was never
+# there. It passed `bash -n`, it passed the embedded python exercised on a
+# hand-made config, and it passed every docs validator, because the defect was
+# in the seam between the shell and the python that each of those checks stubs
+# out. Only running the script finds that class of bug, so this runs the script.
+#
+# SCHEDULED, NOT A PR GATE, for the reason figures.yml spells out at greater
+# length: every script here downloads from the GDC, so a required check built on
+# them fails on somebody else's outage rather than on the change under review.
+# The GDC also rate-limits, which would make it flaky on a busy PR queue in a
+# way that teaches reviewers to ignore it.
+#
+# ONLY THE SCRIPTS WITH A SMOKE PATH. A `LIMIT` argument that fetches the first
+# N tumors is what makes a 10-to-20-minute cohort build a 2-minute one, and only
+# the two TCGA scripts take one. The rest are all-or-nothing and are not run
+# here; giving one a limit argument is what it takes to add it below, and is
+# worth doing for any script whose reproduce section a reader is likely to
+# follow.
+#
+# WHAT IT ASSERTS is that the script exits 0 and leaves a config.json the
+# jbrowse-cli validator passes with the data files beside it. It does NOT assert
+# the numbers: cohort sizes move as the GDC re-releases, and pinning them here
+# would turn somebody else's data release into a red build.
+
+on:
+  schedule:
+    # Mondays 07:00 UTC, an hour after the figure sweep so the two do not
+    # contend for runners
+    - cron: '0 7 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: ${{ matrix.script }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      # One job per script, and never fail-fast: which of them broke is the
+      # answer this run exists to give, so a red one must not cancel the others.
+      fail-fast: false
+      matrix:
+        include:
+          - script: build_tcga_cohort_mutations.sh
+            args: TCGA-BRCA 20
+          - script: build_tcga_cohort_cnv.sh
+            args: TCGA-BRCA 20
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      # htslib, which every one of these scripts uses to compress and index what
+      # it builds. Not in the base image.
+      - name: Install htslib
+        run: sudo apt-get update && sudo apt-get -y install tabix
+      - name: Run ${{ matrix.script }}
+        run: bash "$GITHUB_WORKSPACE/scripts/${{ matrix.script }}" ${{ matrix.args }}
+        working-directory: ${{ runner.temp }}
+      # The script's own success is not the whole assertion: it can exit 0
+      # having written a config JBrowse would refuse. This is the same checker
+      # `jbrowse validate` runs.
+      - name: Validate the config it wrote
+        run: node scripts/validate-built-config.ts "${{ runner.temp }}/jbrowse2/config.json"

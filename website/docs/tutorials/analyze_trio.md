@@ -204,6 +204,14 @@ of them is filled at any position, and that is which of the father's two copies
 the child got there. Every step between the blue rows is a crossover. The red
 rows work the same way for the maternal chromosome.
 
+That rule is also the figure's own control, and it is worth checking before
+reading any block off it. A child has one paternal chromosome, so exactly one
+blue row is filled wherever the data supports a call, and likewise one red row.
+Two filled blue rows at a position, or neither, is a contradiction rather than a
+result: hap-ibd has matched one child haplotype to both of the father's copies
+or to neither, and nothing there should be read as a crossover. The centromere
+is the legitimate blank, being a stretch with no markers to match on at all.
+
 The same display paints rows by whatever category is in the BED: point
 `partitionField` at a different column and the rows change with it. The
 [local-ancestry tutorial](/docs/tutorials/local_ancestry) partitions by

@@ -38,6 +38,13 @@
 # Usage:    bash scripts/build_lct_ld.sh [outdir]
 set -euo pipefail
 
+# Captured before the cd below, and the helper is fetched next to this file when
+# absent, so a bare `curl -fO` of this one script behaves like a repo checkout.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+[ -f "$SCRIPT_DIR/hosted_assembly.py" ] || curl -fsSL \
+  -o "$SCRIPT_DIR/hosted_assembly.py" \
+  "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/hosted_assembly.py"
+
 OUTDIR="${1:-lct_ld_build}"
 PLINK="${PLINK:-plink}"
 RELEASE=https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502
@@ -193,41 +200,18 @@ done
 
 cp "$OUT" "$OUT.tbi" "$POOLED" "$POOLED.tbi" "$FST_BW" "$HAP" "$HAP.tbi" "$APP"/
 
-python3 - "$APP/config.json" "$OUT" "$POOLED" "$FST_BW" "$HAP" "$MAF" <<'PY'
-import json, os, sys, urllib.parse, urllib.request
-
-path, panel, pooled, fst, hap, maf = sys.argv[1:7]
-maf = float(maf)
-HUB = 'https://jbrowse.org/ucsc/hg19/config.json'
-hub = json.load(urllib.request.urlopen(HUB))
-
-
-def absolutize(node):
-    """Rewrite the hub's relative file references against the hub's own url."""
-    if isinstance(node, dict):
-        for k, v in node.items():
-            if k in ('uri', 'chromSizes') and isinstance(v, str) and '://' not in v:
-                node[k] = urllib.parse.urljoin(HUB, v)
-            else:
-                absolutize(v)
-    elif isinstance(node, list):
-        for v in node:
-            absolutize(v)
-
-
-# `jb create` unpacks the app but writes no config.json (the sibling scripts
-# get theirs as a side effect of `jb add-assembly`, which this skips so the
-# reference is never downloaded), so start from nothing when it is absent.
-# Every key used below is assigned outright, so there is nothing to preserve.
-cfg = json.load(open(path)) if os.path.exists(path) else {}
-cfg['assemblies'] = hub['assemblies']
 # The two context lanes both figures carry, taken from the hub by id rather than
 # rebuilt: RefSeq genes for what the block sits on, ClinVar for where the causal
 # variant is (it is below the MAF floor, so it is never one of the LD columns).
-KEEP = ('hg19-ncbiRefSeqCurated', 'hg19-clinvarMain')
-cfg['tracks'] = [t for t in hub['tracks'] if t.get('trackId') in KEEP]
-absolutize(cfg['assemblies'])
-absolutize(cfg['tracks'])
+python3 "$SCRIPT_DIR/hosted_assembly.py" "$APP/config.json" hg19 \
+  hg19-ncbiRefSeqCurated hg19-clinvarMain
+
+python3 - "$APP/config.json" "$OUT" "$POOLED" "$FST_BW" "$HAP" "$MAF" <<'PY'
+import json, sys
+
+path, panel, pooled, fst, hap, maf = sys.argv[1:7]
+maf = float(maf)
+cfg = json.load(open(path))
 
 
 def ld_track(track_id, name, uri):
