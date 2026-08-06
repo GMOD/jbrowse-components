@@ -153,7 +153,8 @@ cat > session.json <<'JSON'
           ["ecoli_ava"]
         ],
         "drawCurves": false,
-        "minAlignmentLength": 10000
+        "minAlignmentLength": 10000,
+        "collapseEmptyRows": true
       }
     }
   ]

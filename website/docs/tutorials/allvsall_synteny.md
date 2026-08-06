@@ -44,29 +44,21 @@ how pangenome tools tell which genome a sequence belongs to, and later on the
 adapter uses that `sample` prefix to classify each PAF record.
 
 First obtain each strain's genome FASTA. This example uses five complete NCBI
-RefSeq assemblies, fetched with the NCBI
-[`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
-CLI (a `strain accession` table keeps the short names we use throughout):
+RefSeq assemblies, which the [script](#reproduce-it-end-to-end) downloads with
+the NCBI `datasets` CLI, annotation included, and reduces to one `chr` record
+apiece by dropping the plasmids and renaming the chromosome:
 
-```bash
-while read -r strain acc; do
-  datasets download genome accession "$acc" --include genome,gff3 --filename "$strain.zip"
-  unzip -o "$strain.zip" -d "$strain"
-  # keep only the chromosome (the first record; the rest are plasmids) and give
-  # it one short name, so every strain row reads `chr` rather than an accession
-  awk '/^>/{n++; if (n == 1) print ">chr"; next} n == 1' \
-    "$strain"/ncbi_dataset/data/*/*.fna > "$strain.fa"
-done <<'EOF'
-K12     GCF_000005845.2
-Sakai   GCF_000008865.2
-CFT073  GCF_000007445.1
-NCTC86  GCF_002007705.1
-IAI39   GCF_000026345.1
-EOF
-```
+| Strain | RefSeq accession |
+| ------ | ---------------- |
+| K12    | GCF_000005845.2  |
+| Sakai  | GCF_000008865.2  |
+| CFT073 | GCF_000007445.1  |
+| NCTC86 | GCF_002007705.1  |
+| IAI39  | GCF_000026345.1  |
 
-`gff3` pulls each strain's annotation down in the same call, and
-[gene tracks](#adding-gene-tracks) use it further below.
+Naming every chromosome `chr` is what makes each strain row read `chr` rather
+than an accession, and the annotations that come down in the same call are what
+[gene tracks](#adding-gene-tracks) use further below.
 
 Those five FASTAs become the JBrowse assemblies as-is. The PanSN names exist
 only inside the PAF, so make a separate concatenated copy for minimap2 rather
@@ -101,9 +93,9 @@ and index each one, then load it:
 
 ```bash
 for strain in K12 Sakai CFT073 NCTC86 IAI39; do
-  bgzip -f $strain.fa
-  samtools faidx $strain.fa.gz    # writes the .fai and .gzi JBrowse needs
-  jbrowse add-assembly $strain.fa.gz --name $strain --load copy
+  bgzip -f "$strain.fa"
+  samtools faidx "$strain.fa.gz"   # writes the .fai and .gzi JBrowse needs
+  jbrowse add-assembly "$strain.fa.gz" --name "$strain" --load copy
 done
 ```
 
@@ -230,9 +222,9 @@ per strain, with that one track wired up to back every band. Click **Launch**
 and you have the stacked view.
 
 **Manual** mode builds the stack by hand (**Add row** per strain, the connector
-button between each pair to pick its track) and inherits whatever Quick start
-had selected, but for an all-vs-all track Quick start already does all of this,
-so reach for Manual only when you want to start from a track and then adjust it.
+button between each pair to pick its track), starting from whatever Quick start
+had selected. For an all-vs-all track that is only worth reaching for when you
+want to adjust the rows Quick start already filled in.
 
 <Figure caption="The all-vs-all Quick start in the import form. The ecoli_ava track fills its five assemblies in as rows, and Launch opens the stack." src="/img/multiway_synteny/ecoli_import_form.png" />
 
@@ -245,7 +237,7 @@ means four bands, so `tracks` has four entries, all served by the same track:
 ```json
 {
   "defaultSession": {
-    "name": "E. coli 4-strain pangenome",
+    "name": "E. coli 5-strain pangenome",
     "views": [
       {
         "type": "LinearSyntenyView",
@@ -264,7 +256,8 @@ means four bands, so `tracks` has four entries, all served by the same track:
             ["ecoli_ava"]
           ],
           "drawCurves": false,
-          "minAlignmentLength": 10000
+          "minAlignmentLength": 10000,
+          "collapseEmptyRows": true
         }
       }
     ]
@@ -276,15 +269,12 @@ means four bands, so `tracks` has four entries, all served by the same track:
 1-2, and so on to `tracks[3]` for rows 3-4, all served by `ecoli_ava`.
 `minAlignmentLength` hides minimap2's many short alignments, which would
 otherwise bury the shared backbone under a dense noise band. Tune it to taste.
-The one-time load settings (row order, tracks, `drawCurves`,
-`minAlignmentLength`) go under `init`. See the
+`collapseEmptyRows` matters because none of these five rows carries a track of
+its own, so without it each opens with a "No tracks active" block where a
+ribbon-only row wants a bare scalebar. Every one of these is a one-time load
+setting and goes under `init`. See the
 [ortholog-tables tutorial](/docs/tutorials/multiway_synteny) for a fuller
 walk-through of the `defaultSession` structure.
-
-None of the five rows above carries its own track, so each would otherwise open
-with a "No tracks active" block where its ribbon-only rows are. Add
-`"collapseEmptyRows": true` to `init` to collapse any row with no `tracks` down
-to a bare scalebar instead. The figure below uses it.
 
 The row order here is a free choice. Unlike a reference-anchored `.blocks`
 table, an all-vs-all file is a complete graph, so every adjacent pair you happen
@@ -426,7 +416,8 @@ ones, and none.
 
 ## Reproduce it end to end
 
-Every command above is wrapped in one script,
+One script runs everything on this page, including the download and preparation
+steps described above but not pasted,
 [`build_ecoli_pangenome_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_ecoli_pangenome_synteny.sh):
 
 ```bash
