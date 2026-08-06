@@ -137,15 +137,17 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
         return
       }
       event.preventDefault()
-      if (event.deltaY !== 0) {
+      // whichever axis dominates, and only that one. A trackpad's horizontal
+      // swipe carries a little vertical noise (and vice versa), so running both
+      // arms meant every rotation gesture also crept the zoom
+      if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
+        model.rotate(event.deltaX * 0.003)
+      } else if (event.deltaY !== 0) {
         const cursorAngle = Math.atan2(dy, dx)
         model.zoomToPoint(
           model.bpPerPx * Math.exp(event.deltaY * 0.001),
           cursorAngle,
         )
-      }
-      if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
-        model.rotate(event.deltaX * 0.003)
       }
     }
     el.addEventListener('wheel', onWheel, { passive: false })
@@ -168,6 +170,16 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
   const handlePointerMove = (event: React.PointerEvent<SVGSVGElement>) => {
     const press = pressRef.current
     if (!press) {
+      return
+    }
+    // A press under the drag threshold never captures the pointer (see below),
+    // so if it is released anywhere but on this <svg> — the controls overlay
+    // that sits on top of the figure, the resize handle, outside the window —
+    // no pointerup reaches endDrag and the press stays latched. The next plain
+    // hover over the figure would then pass the threshold and rotate it with no
+    // button held down.
+    if (event.buttons === 0) {
+      pressRef.current = undefined
       return
     }
     if (!isDragging) {

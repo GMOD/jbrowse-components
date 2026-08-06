@@ -566,7 +566,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       zoomToPoint(newBpPerPx: number, cursorAngle: number) {
         self.autoFit = false
         const oldRadius = self.radiusPx
-        self.bpPerPx = clamp(newBpPerPx, self.minBpPerPx, self.maxBpPerPx)
+        this.setBpPerPx(newBpPerPx)
         // figureOriginXY keeps the circle's center pinned to the middle of the
         // box, so the only thing that moves the cursor's point is its own
         // offset from that center growing with the radius

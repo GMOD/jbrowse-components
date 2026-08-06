@@ -218,92 +218,77 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
       }
     })
     .actions(self => {
-      let renderStopToken: StopToken | undefined
-      let refNameStopToken: StopToken | undefined
+      let currentStopToken: StopToken | undefined
 
       return {
         afterAttach() {
           addDisposer(
             self,
-            autorun(async () => {
-              const { view } = self
-              if (view.displayedRegions.length) {
+            autorun(
+              // One fetch, not two: the features and the refName map are both
+              // prerequisites for drawing a single chord (`ready` waits on
+              // both), and they shared one `error` slot. Split across two
+              // autoruns with different dependencies, a refName map that failed
+              // to load never got asked for again — while the next
+              // displayedRegions change re-ran the *feature* fetch, whose
+              // `setFeatures(undefined)` cleared the error out from under it.
+              // The display then sat on the loading hatch forever with nothing
+              // said. Fetched together, any retrigger retries both, and
+              // `getRefNameMapForAdapter` is memoized per adapter config (and
+              // evicts on failure), so asking again alongside every feature
+              // fetch costs a resolved promise.
+              async function chordVariantFetch() {
+                const { view } = self
+                if (!view.displayedRegions.length) {
+                  return
+                }
                 const sessionId = getRpcSessionId(self)
                 const adapterConfig = structuredClone(self.adapterConfig)
                 const regions = structuredClone(view.displayedRegions)
-                const { rpcManager } = getSession(view)
+                const assemblyNames = getTrackAssemblyNames(self.parentTrack)
+                const adapter = getConf(self.parentTrack, 'adapter')
+                const { rpcManager, assemblyManager } = getSession(self)
 
-                if (renderStopToken) {
-                  stopStopToken(renderStopToken)
+                if (currentStopToken) {
+                  stopStopToken(currentStopToken)
                 }
                 const stopToken = createStopToken()
-                renderStopToken = stopToken
+                currentStopToken = stopToken
+                const current = () =>
+                  isAlive(self) && currentStopToken === stopToken
 
+                // the old map named the old assembly's refs; keeping it while
+                // the new one loads would let `ready` wave through a render
+                // keyed on names this adapter no longer has
+                self.setRefNameMap(undefined)
                 self.setFeatures(undefined)
 
                 try {
-                  const feats = await rpcManager.call(
-                    sessionId,
-                    'CoreGetFeatures',
-                    { adapterConfig, regions, stopToken },
-                  )
-                  if (isAlive(self) && renderStopToken === stopToken) {
+                  const [feats, refNameMap] = await Promise.all([
+                    rpcManager.call(sessionId, 'CoreGetFeatures', {
+                      adapterConfig,
+                      regions,
+                      stopToken,
+                    }),
+                    assemblyManager.getRefNameMapForAdapter(
+                      adapter,
+                      assemblyNames[0],
+                      { stopToken, sessionId },
+                    ),
+                  ])
+                  if (current()) {
+                    self.setRefNameMap(refNameMap)
                     self.setFeatures(feats)
                   }
                 } catch (e) {
-                  if (
-                    !isAbortException(e) &&
-                    isAlive(self) &&
-                    renderStopToken === stopToken
-                  ) {
+                  if (!isAbortException(e) && current()) {
                     console.error(e)
                     self.setError(e)
                   }
                 }
-              }
-            }),
-          )
-
-          addDisposer(
-            self,
-            autorun(async () => {
-              const assemblyNames = getTrackAssemblyNames(self.parentTrack)
-              const adapter = getConf(self.parentTrack, 'adapter')
-              const { assemblyManager } = getSession(self)
-              const sessionId = getRpcSessionId(self)
-
-              if (refNameStopToken) {
-                stopStopToken(refNameStopToken)
-              }
-              const stopToken = createStopToken()
-              refNameStopToken = stopToken
-
-              // the old map named the old assembly's refs; keeping it while the
-              // new one loads would let `ready` wave through a render keyed on
-              // names this adapter no longer has
-              self.setRefNameMap(undefined)
-
-              try {
-                const refNameMap =
-                  await assemblyManager.getRefNameMapForAdapter(
-                    adapter,
-                    assemblyNames[0],
-                    { stopToken, sessionId },
-                  )
-                if (isAlive(self) && refNameStopToken === stopToken) {
-                  self.setRefNameMap(refNameMap)
-                }
-              } catch (e) {
-                if (
-                  !isAbortException(e) &&
-                  isAlive(self) &&
-                  refNameStopToken === stopToken
-                ) {
-                  console.error(e)
-                  self.setError(e)
-                }
-              }
-            }),
+              },
+              { name: 'ChordVariantDisplayFetch' },
+            ),
           )
         },
       }

@@ -48,6 +48,24 @@ const widths = { perpendicular: 0.06, parallel: 0.45 }
 // bound as the user rotates, so orientation must not depend on its winding
 const offsets = [-Math.PI / 2, 0, Math.PI / 3, -Math.PI / 2 + 2 * Math.PI, -7]
 
+// the label brackets its count ("[2]") so it doesn't read as a refName; the
+// hover text is a sentence and used to inherit the brackets with it
+test('an elision names how many regions it swallowed', () => {
+  const { container } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <svg>
+        <Ruler model={makeModel(0)} slice={makeSlice(1, 0.45)} />
+      </svg>
+    </ThemeProvider>,
+  )
+  expect(container.querySelector('text')!.textContent).toBe(
+    '[2]2 regions too small to show',
+  )
+  expect(container.querySelector('title')!.textContent).toBe(
+    '2 regions too small to show',
+  )
+})
+
 describe.each(Object.entries(widths))('%s labels', (_name, widthRadians) => {
   test.each(offsets)('are never upside-down at offset %d', offsetRadians => {
     const model = makeModel(offsetRadians)

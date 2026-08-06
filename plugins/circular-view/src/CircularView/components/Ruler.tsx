@@ -3,6 +3,7 @@ import {
   polarToCartesian,
   radToDeg,
   stripAlpha,
+  toLocale,
 } from '@jbrowse/core/util'
 import { makeContrasting } from '@jbrowse/core/util/color'
 import { useTheme } from '@mui/material/styles'
@@ -16,7 +17,11 @@ import {
 } from '../rulerLabels.ts'
 
 import type { CircularViewModel } from '../model.ts'
-import type { Slice, SliceNonElidedRegion } from '../slices.ts'
+import type {
+  Slice,
+  SliceElidedRegion,
+  SliceNonElidedRegion,
+} from '../slices.ts'
 
 // the slice's own angular span as an SVG arc. A slice covers its region
 // exactly, so this is equally the arc from its first base to its last
@@ -156,18 +161,21 @@ const RulerArc = observer(function RulerArc({
 const ElisionRulerArc = observer(function ElisionRulerArc({
   model,
   slice,
+  region,
 }: {
   model: CircularViewModel
   slice: Slice
+  region: SliceElidedRegion
 }) {
   const theme = useTheme()
-  const regionCount = sliceLabelText(slice)
   return (
     <RulerArc
       model={model}
       slice={slice}
-      text={regionCount}
-      title={`${regionCount} more regions`}
+      // the label is bracketed ("[24]") to read as a count rather than as a
+      // refName; the hover text is a sentence, so it takes the bare number
+      text={sliceLabelText(slice)}
+      title={`${toLocale(region.regions.length)} regions too small to show`}
       labelColor={theme.palette.text.primary}
       strokeColor={theme.palette.text.secondary}
       dashed
@@ -216,7 +224,7 @@ const Ruler = observer(function Ruler({
   slice: Slice
 }) {
   return slice.region.elided ? (
-    <ElisionRulerArc model={model} slice={slice} />
+    <ElisionRulerArc region={slice.region} model={model} slice={slice} />
   ) : (
     <RegionRulerArc region={slice.region} model={model} slice={slice} />
   )
