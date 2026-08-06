@@ -1,7 +1,7 @@
 import { getSession, stripAlpha } from '@jbrowse/core/util'
 import {
   createOverviewLayout,
-  getContentBlocksPxSpan,
+  getOverviewRegionPxSpan,
 } from '@jbrowse/core/util/Base1DUtils'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import { useTheme } from '@mui/material'
@@ -28,17 +28,20 @@ function CytobandOverview({
   assembly: Assembly | undefined
   y: number
 }) {
-  const { width, displayedRegions, minimumBlockWidth } = model
+  const { width, displayedRegions, minimumBlockWidth, bpPerPx } = model
   const overview = createOverviewLayout({
     displayedRegions,
     width,
     minimumBlockWidth,
   })
   const block = calculateDynamicBlocks(overview).contentBlocks[0]
-  const span = getContentBlocksPxSpan(
+  // same span the polygon below draws its top edge from, so the rectangle and
+  // the trapezoid under it always cover the same regions
+  const span = getOverviewRegionPxSpan({
     overview,
-    model.dynamicBlocks.contentBlocks,
-  )
+    bpPerPx,
+    blocks: model.dynamicBlocks.blocks,
+  })
   return block && span ? (
     <g transform={`translate(0 ${y})`}>
       <Cytobands

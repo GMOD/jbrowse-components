@@ -2,8 +2,8 @@ import {
   basePaintedAt,
   bpToPx,
   computeMoveToLayout,
-  getContentBlocksPxSpan,
   getLayoutHighlightCoords,
+  getOverviewRegionPxSpan,
   moveTo,
   pxToBp,
 } from './Base1DUtils.ts'
@@ -594,36 +594,66 @@ describe('moveTo with clamped bpPerPx (extraBp path)', () => {
   })
 })
 
-// The overview's "you are here" rectangle is projected from the visible content
-// blocks. Each block knows which displayed region it came from; dropping that
-// made bpToPx take the first region with a matching refName, so a view showing
-// the same region twice pointed the rectangle at the first copy.
-describe('getContentBlocksPxSpan', () => {
-  const layout = makeSnap([
-    { refName: 'chr1', start: 0, end: 1000 },
-    { refName: 'chr1', start: 0, end: 1000 },
-  ])
+// The overview's "you are here" rectangle and the polygon under it are both
+// projected from this span, so it has to cover exactly the regions on screen —
+// including elided ones, whose coordinates are zeroed out by coalescing and so
+// can't be reached by projecting genomic coordinates at all.
+describe('getOverviewRegionPxSpan', () => {
+  // two 1000bp regions in an 800px-wide overview: 2.5 bp/px there against 1
+  // bp/px in the main view, so main-view px map to overview px at 1/2.5
+  const overview = { ...makeSnap([]), bpPerPx: 2.5 }
 
-  const block = (displayedRegionIndex: number) => ({
+  const content = (offsetPx: number, widthPx: number) => ({
     type: 'ContentBlock' as const,
-    key: `chr1:0-1000-${displayedRegionIndex}`,
-    offsetPx: 0,
-    widthPx: 1000,
+    key: `chr1:${offsetPx}`,
+    offsetPx,
+    widthPx,
     assemblyName: 'test',
     refName: 'chr1',
-    start: 200,
-    end: 400,
-    displayedRegionIndex,
+    start: 0,
+    end: widthPx,
+    displayedRegionIndex: 0,
+  })
+  const elided = (offsetPx: number, widthPx: number) => ({
+    type: 'ElidedBlock' as const,
+    key: `elided:${offsetPx}`,
+    offsetPx,
+    widthPx,
   })
 
-  it('projects onto the copy the block came from', () => {
-    expect(getContentBlocksPxSpan(layout, [block(0)])).toEqual({
-      leftPx: 200,
-      rightPx: 400,
-    })
-    expect(getContentBlocksPxSpan(layout, [block(1)])).toEqual({
-      leftPx: 1200,
-      rightPx: 1400,
-    })
+  it('scales the main-view block extent into the overview', () => {
+    expect(
+      getOverviewRegionPxSpan({
+        overview,
+        bpPerPx: 1,
+        blocks: [content(500, 1000)],
+      }),
+    ).toEqual({ leftPx: 200, rightPx: 600 })
+  })
+
+  it('extends to elided regions past the last content block', () => {
+    expect(
+      getOverviewRegionPxSpan({
+        overview,
+        bpPerPx: 1,
+        blocks: [content(0, 500), elided(500, 500)],
+      }),
+    ).toEqual({ leftPx: 0, rightPx: 400 })
+  })
+
+  it('spans a view scrolled entirely onto elided regions', () => {
+    expect(
+      getOverviewRegionPxSpan({
+        overview,
+        bpPerPx: 1,
+        blocks: [elided(1000, 250)],
+      }),
+    ).toEqual({ leftPx: 400, rightPx: 500 })
+  })
+
+  it('is undefined with no region blocks at all', () => {
+    expect(
+      getOverviewRegionPxSpan({ overview, bpPerPx: 1, blocks: [] }),
+    ).toBeUndefined()
   })
 })

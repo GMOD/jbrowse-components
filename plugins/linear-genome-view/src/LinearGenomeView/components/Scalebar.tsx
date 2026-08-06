@@ -21,14 +21,6 @@ const useStyles = makeStyles()({
     overflow: 'clip',
     position: 'relative',
   },
-  zoomContainer: {
-    position: 'relative',
-  },
-  scalebar: {
-    position: 'absolute',
-    display: 'flex',
-    pointerEvents: 'none',
-  },
 })
 
 interface ScalebarProps {
@@ -43,8 +35,6 @@ const Scalebar = observer(function Scalebar({
   className,
 }: ScalebarProps) {
   const { classes } = useStyles()
-  const { staticBlocks, offsetPx } = model
-  const offsetLeft = Math.round(staticBlocks.offsetPx - offsetPx)
 
   return (
     <Paper
@@ -60,17 +50,7 @@ const Scalebar = observer(function Scalebar({
       {/* offset 1px for left track border */}
       <Gridlines model={model} offset={1} />
       <PaddingBlocks model={model} offset={1} />
-      <div className={classes.zoomContainer}>
-        <div
-          className={classes.scalebar}
-          style={{
-            transform: `translateX(${offsetLeft - 1}px)`,
-            width: staticBlocks.totalWidthPx,
-          }}
-        >
-          <ScalebarCoordinateLabels model={model} />
-        </div>
-      </div>
+      <ScalebarCoordinateLabels model={model} />
       <ScalebarRefNameLabels model={model} />
     </Paper>
   )

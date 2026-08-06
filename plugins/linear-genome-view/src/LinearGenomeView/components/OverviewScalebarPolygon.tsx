@@ -1,4 +1,8 @@
 import { getFillProps, getStrokeProps } from '@jbrowse/core/util'
+import {
+  regionBlocksPxExtent,
+  transformPxSpan,
+} from '@jbrowse/core/util/Base1DUtils'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { alpha } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -6,28 +10,14 @@ import { observer } from 'mobx-react'
 import { HEADER_BAR_HEIGHT } from '../consts.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
-import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
-import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
-
-interface Span {
-  leftPx: number
-  rightPx: number
-}
-
-/** Project a span into another pixel space: each end becomes px * scale + translatePx. */
-function transformSpan(span: Span, scale: number, translatePx: number): Span {
-  return {
-    leftPx: span.leftPx * scale + translatePx,
-    rightPx: span.rightPx * scale + translatePx,
-  }
-}
+import type { PxSpan, ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 
 /**
  * SVG points for a trapezoid with horizontal top and bottom edges, wound as a
  * single non-self-intersecting loop (bottom-left → bottom-right → top-right →
  * top-left).
  */
-function trapezoidPoints(top: Span, bottom: Span, height: number) {
+function trapezoidPoints(top: PxSpan, bottom: PxSpan, height: number) {
   return [
     [bottom.leftPx, height],
     [bottom.rightPx, height],
@@ -36,25 +26,6 @@ function trapezoidPoints(top: Span, bottom: Span, height: number) {
   ]
     .map(([x, y]) => `${x},${y}`)
     .join(' ')
-}
-
-/**
- * Absolute pixel extent (measured from the layout origin) of the region blocks
- * — content and elided — but not the blank inter-region padding at the ends.
- * Since dynamic blocks only pad at the ends, the region blocks are contiguous,
- * so the first block's left edge to the last block's right edge is the full
- * extent. Uses block pixel geometry rather than projecting genomic coordinates
- * because coalesced elided blocks have their coordinates zeroed out.
- */
-function regionBlocksPxExtent(blocks: BaseBlock[]): Span | undefined {
-  const regions = blocks.filter(
-    b => b.type === 'ContentBlock' || b.type === 'ElidedBlock',
-  )
-  const first = regions.at(0)
-  const last = regions.at(-1)
-  return first && last
-    ? { leftPx: first.offsetPx, rightPx: last.offsetPx + last.widthPx }
-    : undefined
 }
 
 // Fill/stroke are theme-derived and zoom-invariant, so they live in a static
@@ -103,12 +74,12 @@ const OverviewScalebarPolygon = observer(function OverviewScalebarPolygon({
   // so a main-view pixel maps to the (more zoomed-out) overview by the bpPerPx
   // ratio; the bottom edge is the same extent in main-view space, shifted by
   // the scroll offset
-  const top = transformSpan(
+  const top = transformPxSpan(
     extent,
     bpPerPx / overview.bpPerPx,
     overviewOffsetPx,
   )
-  const bottom = transformSpan(extent, 1, -offsetPx)
+  const bottom = transformPxSpan(extent, 1, -offsetPx)
   const points = trapezoidPoints(top, bottom, HEADER_BAR_HEIGHT)
 
   return exportSvg ? (

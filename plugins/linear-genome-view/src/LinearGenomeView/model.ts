@@ -23,8 +23,8 @@ import {
   bpToPx,
   computeMoveToLayout,
   createOverviewLayout,
-  getContentBlocksPxSpan,
   getLayoutHighlightCoords,
+  getOverviewRegionPxSpan,
   moveTo,
   pxToBp,
 } from '@jbrowse/core/util/Base1DUtils'
@@ -1798,15 +1798,20 @@ export function stateModelFactory(pluginManager: PluginManager) {
         },
         /**
          * #getter
-         * leading/trailing pixel span of the visible content blocks projected
-         * onto the overviewLayout — the geometry shared by the overview's "you
-         * are here" rectangle and polygon
+         * leading/trailing pixel span of the visible regions projected onto the
+         * overviewLayout — the geometry of the overview's "you are here"
+         * rectangle, and of the top edge of the polygon drawn under it. Elided
+         * regions count: at whole-genome zoom the tail of an assembly is all
+         * coalesced tiny contigs, and stopping at the last *content* block left
+         * the rectangle short of (or, scrolled onto that tail, absent from) the
+         * polygon it sits on.
          */
-        get overviewContentBlocksPxSpan() {
-          return getContentBlocksPxSpan(
-            self.overviewLayout,
-            this.dynamicBlocks.contentBlocks,
-          )
+        get overviewRegionPxSpan() {
+          return getOverviewRegionPxSpan({
+            overview: self.overviewLayout,
+            bpPerPx: self.bpPerPx,
+            blocks: this.dynamicBlocks.blocks,
+          })
         },
         /**
          * #getter

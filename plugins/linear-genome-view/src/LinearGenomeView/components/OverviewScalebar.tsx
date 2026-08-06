@@ -193,16 +193,15 @@ const OverviewBox = observer(function OverviewBox({
 
 const VisibleRegionBox = observer(function VisibleRegionBox({
   model,
-  className,
 }: {
   model: LGV
-  className: string
 }) {
+  const { classes } = useStyles()
   const theme = useTheme()
   const {
     effectiveShowCytobands,
     cytobandOffset,
-    overviewContentBlocksPxSpan: span,
+    overviewRegionPxSpan: span,
   } = model
   if (!span) {
     return null
@@ -214,7 +213,7 @@ const VisibleRegionBox = observer(function VisibleRegionBox({
 
   return (
     <div
-      className={className}
+      className={classes.scalebarVisibleRegion}
       style={{
         width: span.rightPx - span.leftPx,
         transform: `translateX(${span.leftPx + cytobandOffset}px)`,
@@ -245,10 +244,7 @@ const OverviewScalebarContent = observer(function OverviewScalebarContent({
 
   return (
     <div className={classes.scalebar}>
-      <VisibleRegionBox
-        model={model}
-        className={classes.scalebarVisibleRegion}
-      />
+      <VisibleRegionBox model={model} />
       {overviewBlocks.map((block, i) =>
         block.type === 'ContentBlock' ? (
           <OverviewBox

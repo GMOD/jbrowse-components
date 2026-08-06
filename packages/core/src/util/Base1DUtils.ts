@@ -1,4 +1,4 @@
-import type { ContentBlock } from './blockTypes.ts'
+import type { BaseBlock } from './blockTypes.ts'
 
 export interface BpOffset {
   refName?: string
@@ -331,33 +331,68 @@ export function createOverviewLayout({
   }
 }
 
-// Leading and trailing pixel positions of the visible content blocks projected
-// onto `layout` — used to render the overview's "you are here" rectangle and
-// polygon.
-export function getContentBlocksPxSpan(
-  layout: ViewLayout,
-  contentBlocks: ContentBlock[],
-) {
-  const first = contentBlocks.at(0)
-  const last = contentBlocks.at(-1)
-  if (!first || !last) {
-    return undefined
+export interface PxSpan {
+  leftPx: number
+  rightPx: number
+}
+
+/** Project a span into another pixel space: each end becomes px * scale + translatePx. */
+export function transformPxSpan(
+  span: PxSpan,
+  scale: number,
+  translatePx = 0,
+): PxSpan {
+  return {
+    leftPx: span.leftPx * scale + translatePx,
+    rightPx: span.rightPx * scale + translatePx,
   }
-  // pass through the displayedRegionIndex each block already carries: without
-  // it bpToPx picks the first region with a matching refName, so a view showing
-  // the same region twice (or two overlapping copies) points the overview
-  // rectangle at the wrong copy
-  const leftPx = layoutBpToPx(layout, {
-    refName: first.refName,
-    coord: first.reversed ? first.end : first.start,
-    displayedRegionIndex: first.displayedRegionIndex,
-  })
-  const rightPx = layoutBpToPx(layout, {
-    refName: last.refName,
-    coord: last.reversed ? last.start : last.end,
-    displayedRegionIndex: last.displayedRegionIndex,
-  })
-  return leftPx !== undefined && rightPx !== undefined
-    ? { leftPx, rightPx }
+}
+
+/**
+ * Absolute pixel extent (measured from the layout origin) of the region blocks
+ * — content and elided — but not the blank inter-region padding at the ends.
+ * Since dynamic blocks only pad at the ends, the region blocks are contiguous,
+ * so the first block's left edge to the last block's right edge is the full
+ * extent.
+ *
+ * Uses block pixel geometry rather than projecting genomic coordinates because
+ * coalesced elided blocks have their coordinates zeroed out, so coordinate
+ * projection cannot reach them at all — and because pixel geometry is per-copy
+ * correct for free, where projecting a refName would land both copies of a
+ * twice-displayed region on the first.
+ */
+export function regionBlocksPxExtent(blocks: BaseBlock[]): PxSpan | undefined {
+  const regions = blocks.filter(
+    b => b.type === 'ContentBlock' || b.type === 'ElidedBlock',
+  )
+  const first = regions.at(0)
+  const last = regions.at(-1)
+  return first && last
+    ? { leftPx: first.offsetPx, rightPx: last.offsetPx + last.widthPx }
+    : undefined
+}
+
+/**
+ * The visible regions' pixel extent projected onto an overview layout: the span
+ * of the overview scalebar's "you are here" rectangle, and of the top edge of
+ * the polygon drawn under it. Both read this one extent so they always describe
+ * the same regions, elided ones included.
+ *
+ * The main view and the overview lay out the same regions from cumulative-bp 0,
+ * so a main-view pixel maps to the (more zoomed-out) overview by the bpPerPx
+ * ratio.
+ */
+export function getOverviewRegionPxSpan({
+  overview,
+  bpPerPx,
+  blocks,
+}: {
+  overview: ViewLayout
+  bpPerPx: number
+  blocks: BaseBlock[]
+}) {
+  const extent = regionBlocksPxExtent(blocks)
+  return extent
+    ? transformPxSpan(extent, bpPerPx / overview.bpPerPx)
     : undefined
 }
