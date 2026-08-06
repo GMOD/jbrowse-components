@@ -35,6 +35,20 @@ name: Figures
 # Weekly, not nightly: ~30 min of runner time, and figures do not rot faster than
 # that. Run it on demand with the Actions "Run workflow" button after a change
 # you expect to move things.
+#
+# IT DOES NOT COMMIT figures.lock, AND THAT IS THE DESIGN, not an oversight or a
+# missing permission. `contents: read` is deliberate. A red sweep is a prompt to
+# re-render locally and look at what moved, because adopting a whole sweep
+# unattended is how a run with one bad remote fetch, one font that failed to
+# load, or one display that never painted rewrites a pile of figures nobody
+# inspected — and the store keeps every revision, so there is no cheap undo of
+# the decision, only of the bytes. The blob upload below is safe to automate for
+# the opposite reason: it is content-addressed and additive, so a sweep nobody
+# adopts leaves orphan blobs and changes nothing anyone sees.
+#
+# So the loop is: this reports, a human re-renders. Take the run's figures.lock
+# from its artifact, drop it on a checkout, `pnpm figures:pull`, and you have
+# exactly what the runner drew, to diff against what is published.
 
 on:
   schedule:
