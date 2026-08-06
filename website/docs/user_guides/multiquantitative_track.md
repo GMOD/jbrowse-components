@@ -70,6 +70,22 @@ a result in a session URL.
 
 <Figure caption="Clustering a multi-quantitative track. Top: the 'Cluster rows by score' dialog with its auto/manual mode options. Bottom: after clustering, rows are reordered by signal similarity." src="/img/multiwig/cluster_dialog.png" />
 
+## Sorting rows by score at one position
+
+Right-click a multi-row plot at the column you want to rank on and choose **Sort
+rows by score here**. The subtracks are reordered by the score each carries at
+that base, highest at the top, so a cohort reads top-to-bottom at a candidate
+locus. Clustering orders the rows by the whole region in view; this orders them
+by a single column.
+
+**Reset row order** puts the subtracks back in the order they were loaded in. It
+appears in the same right-click menu and in the track menu, and it undoes a
+sort, a clustering run, and a hand-arranged order alike.
+
+A session can bake the sort in with `sortRowsBy`, the way `runClustering` bakes
+in a clustering run — see [](/docs/models/multilinearwiggledisplay) for both
+fields.
+
 ## See also
 
 - [](/docs/user_guides/quantitative_track)

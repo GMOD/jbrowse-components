@@ -293,7 +293,7 @@ graph budget for it accordingly, or restrict `-Q` to the paths you need.
 ### One lane per strain, on the K12 axis
 
 A dotplot takes two genomes at a time. The same records drawn as a
-[multi-row feature track](/docs/config/LinearMultiRowFeatureDisplay) put every
+[multi-row feature track](/docs/config/linearmultirowfeaturedisplay) put every
 strain on the reference at once, one row each, so orientation becomes something
 you read down a column rather than pair by pair. PAF column 5 is the strand each
 segment traverses the reference in, which is the only column here the variant
