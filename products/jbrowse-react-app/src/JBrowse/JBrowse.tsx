@@ -7,6 +7,7 @@ import type { ViewModel } from '../createModel.ts'
 import type { CreateViewStateOptions } from '../createViewState.ts'
 import type { Config, PluginInput, SessionSnapshot } from '../types.ts'
 import type { IJsonPatch } from '@jbrowse/mobx-state-tree'
+import type { LocalFileInput } from '@jbrowse/product-core'
 import type { Ref } from 'react'
 
 // one view to open at launch. `init` is the view-type-specific launch blob
@@ -28,6 +29,15 @@ export interface JBrowseProps {
   aggregateTextSearchAdapters?: Config['aggregateTextSearchAdapters']
   configuration?: Config['configuration']
   plugins?: PluginInput[]
+  /**
+   * In-memory files, `name -> bytes`, that `tracks` may then refer to by that
+   * name as if it were a URL — for a host whose data lives in a process rather
+   * than at a URL (a notebook kernel, an R session), with no web server and no
+   * CORS. They are read by byte range, so register an index under its
+   * conventional sibling name (`peaks.bed.gz` + `peaks.bed.gz.tbi`) and the
+   * file stays indexed: only the bytes the current view needs are touched.
+   */
+  localFiles?: LocalFileInput
   makeWorkerInstance?: () => Worker
   onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
   // called when the plugin set changes (the plugin store, addSessionPlugin).

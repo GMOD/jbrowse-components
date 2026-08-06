@@ -2,7 +2,10 @@ import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
 import type {
+  AssemblyInput,
+  LocalFileInput,
   PluginInput,
+  ResolvedAssemblies,
   SessionObservers,
   SessionSnapshot,
   ViewLocation,
@@ -26,8 +29,16 @@ interface ConnectionConfig {
 }
 
 // re-exported so hosts get them from this package rather than reaching into
-// product-core; all four are shared with the other embedded products
-export type { PluginInput, SessionObservers, SessionSnapshot, ViewLocation }
+// product-core; all of them are shared with the other embedded products
+export type {
+  AssemblyInput,
+  LocalFileInput,
+  PluginInput,
+  ResolvedAssemblies,
+  SessionObservers,
+  SessionSnapshot,
+  ViewLocation,
+}
 
 export interface Config {
   assemblies: SnapshotIn<BaseAssemblyConfigSchema>[]

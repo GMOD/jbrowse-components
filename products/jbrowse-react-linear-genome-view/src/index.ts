@@ -3,7 +3,6 @@ export { default as JBrowseLinearGenomeView } from './JBrowseLinearGenomeView/in
 // JSX (Jupyter anywidgets, R htmlwidgets, plain <script> pages)
 export { createLinearGenomeView } from './createLinearGenomeView.ts'
 export type {
-  AssemblyInput,
   CreateLinearGenomeViewOptions,
   LinearGenomeViewController,
 } from './createLinearGenomeView.ts'
@@ -26,4 +25,11 @@ export {
 } from './sessionUrl.ts'
 export { useCreateViewState } from './useCreateViewState.ts'
 export type { ViewModel } from './createModel/createModel.ts'
-export type { PluginInput, SessionSnapshot } from '@jbrowse/product-core'
+// the assembly vocabulary is product-core's, shared with the multi-view app
+export { resolveAssemblies } from '@jbrowse/product-core'
+export type {
+  AssemblyInput,
+  PluginInput,
+  ResolvedAssemblies,
+  SessionSnapshot,
+} from '@jbrowse/product-core'

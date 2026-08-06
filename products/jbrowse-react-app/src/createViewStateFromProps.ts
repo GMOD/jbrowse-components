@@ -1,3 +1,5 @@
+import { registerLocalFiles, resolveLocalFileUris } from '@jbrowse/product-core'
+
 import createViewState from './createViewState.ts'
 
 import type { JBrowseProps, ManagedView } from './JBrowse/index.ts'
@@ -79,11 +81,15 @@ export function createViewStateFromProps(opts: CreateAppOptions) {
     views,
     session,
     sessionName = 'session',
+    localFiles,
   } = opts
+  // registered once, here, rather than per track: each registration pushes a
+  // File into core's process-global blobMap
+  const blobs = localFiles ? registerLocalFiles(localFiles) : undefined
   return createViewState({
     config: {
       assemblies,
-      tracks,
+      tracks: blobs ? tracks?.map(t => resolveLocalFileUris(t, blobs)) : tracks,
       connections,
       internetAccounts,
       aggregateTextSearchAdapters,

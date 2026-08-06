@@ -12,7 +12,17 @@ export type { JBrowseProps, ManagedView } from './JBrowse/index.ts'
 // internal — it exists to keep this and <JBrowse> from drifting, not as API.
 export { createApp } from './createApp.ts'
 export type { CreateAppOptions, JBrowseAppController } from './createApp.ts'
-export type { SessionObservers, ViewLocation } from './types.ts'
+export type {
+  AssemblyInput,
+  LocalFileInput,
+  ResolvedAssemblies,
+  SessionObservers,
+  ViewLocation,
+} from './types.ts'
+// `assemblies` takes configs; this turns hub names ('hg38'), sequence URIs and
+// hub configs into them, so the app takes the same vocabulary the single-view
+// product does. Kept out of createApp deliberately — see its doc comment.
+export { resolveAssemblies } from '@jbrowse/product-core'
 export { default as createModel } from './createModel.ts'
 export { default as createViewState } from './createViewState.ts'
 export type { CreateViewStateOptions } from './createViewState.ts'

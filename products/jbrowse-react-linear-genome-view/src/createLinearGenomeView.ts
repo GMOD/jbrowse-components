@@ -1,12 +1,11 @@
 import { createElement } from 'react'
 
 import { getEnv } from '@jbrowse/core/util'
-import { fetchHub } from '@jbrowse/core/util/fetchHub'
-import { isSequenceUri, makeAssembly } from '@jbrowse/core/util/makeAssembly'
 import { guessTrackConf } from '@jbrowse/core/util/tracks'
 import {
   observeSession,
   registerLocalFiles,
+  resolveAssembly,
   resolveLocalFileUris,
 } from '@jbrowse/product-core'
 import { createRoot } from 'react-dom/client'
@@ -18,16 +17,18 @@ import { destroyViewState } from './destroyViewState.ts'
 import type { ViewModel } from './createModel/createModel.ts'
 import type { ViewStateOptions } from './createViewState.ts'
 import type { BlobLocation } from '@jbrowse/core/util'
-import type { HubConfig } from '@jbrowse/core/util/fetchHub'
 import type { LooseTrackInput } from '@jbrowse/core/util/tracks'
-import type { LocalFileInput, SessionObservers } from '@jbrowse/product-core'
+import type {
+  AssemblyInput,
+  LocalFileInput,
+  SessionObservers,
+} from '@jbrowse/product-core'
 
 type Tracks = NonNullable<ViewStateOptions['tracks']>
 type TrackConf = Record<string, unknown>
 /** A full track config, a bare data-file URL, or `{ uri, index?, ...extra }` —
  * the loose forms are expanded via core's guessTrackConf at mount time. */
 type TrackInput = string | TrackConf
-type AssemblyConfig = Record<string, unknown>
 type SearchAdapters = ViewStateOptions['aggregateTextSearchAdapters']
 // What the controller accepts as a session. This API's audience is hosts that
 // don't write TypeScript (anywidget, htmlwidgets, plain JS), and what they hand
@@ -78,15 +79,6 @@ function resolveTracks(
   })
 }
 
-/**
- * The shapes an assembly can take, discriminated at resolve time: a sequence
- * file URL (`'.../hg38.fa.gz'`, `.2bit`, ...) built into an assembly via
- * `makeAssembly`; a hub name (`'hg38'`, `'GCF_...'`) fetched from jbrowse.org;
- * a full hub config (as `fetchHub` returns); or a bare assembly config (e.g.
- * from `makeAssembly`) — the latter two both being plain config objects.
- */
-export type AssemblyInput = string | AssemblyConfig
-
 export interface CreateLinearGenomeViewOptions {
   assembly: AssemblyInput
   /** tracks to open (full configs, bare data-file URLs, or `{ uri, index? }`); a
@@ -120,6 +112,13 @@ export interface CreateLinearGenomeViewOptions {
    * `defaultSession`/`setSession` takes — for a host offering "save this view"
    */
   onSessionChange?: SessionObservers['onSessionChange']
+  /**
+   * fires when a build fails — a genome that won't resolve, a plugin that won't
+   * fetch, a bad track config. Building is asynchronous, so the throw cannot
+   * reach your call to this function; without this it only reaches the console
+   * and the host is left showing an empty box. Defaults to `console.error`.
+   */
+  onError?: (error: unknown) => void
 }
 
 export interface LinearGenomeViewController {
@@ -146,37 +145,6 @@ export interface LinearGenomeViewController {
    * and the MST tree's autoruns. The controller is unusable afterwards.
    */
   destroy(): void
-}
-
-interface ResolvedAssembly {
-  assembly: AssemblyConfig
-  aggregateTextSearchAdapters?: SearchAdapters
-}
-
-function fromHubConfig(hub: HubConfig): ResolvedAssembly {
-  const assembly = hub.assemblies?.[0]
-  if (assembly) {
-    return {
-      assembly,
-      aggregateTextSearchAdapters: hub.aggregateTextSearchAdapters,
-    }
-  } else {
-    throw new Error('hub config has no assemblies')
-  }
-}
-
-async function resolveAssembly(
-  input: AssemblyInput,
-): Promise<ResolvedAssembly> {
-  if (typeof input === 'string') {
-    return isSequenceUri(input)
-      ? { assembly: makeAssembly({ fastaUri: input }) }
-      : fromHubConfig(await fetchHub(input))
-  } else if ('assemblies' in input) {
-    return fromHubConfig(input)
-  } else {
-    return { assembly: input }
-  }
 }
 
 function mergeSearchAdapters(a: SearchAdapters, b: SearchAdapters) {
@@ -227,7 +195,14 @@ export function createLinearGenomeView(
   el: HTMLElement,
   opts: CreateLinearGenomeViewOptions,
 ): LinearGenomeViewController {
-  const { onLocationChange, onFeatureSelect, onSessionChange } = opts
+  const {
+    onLocationChange,
+    onFeatureSelect,
+    onSessionChange,
+    onError = (e: unknown) => {
+      console.error(e)
+    },
+  } = opts
 
   // desired state, kept across rebuilds and (re)applied at build time so calls
   // made before the async build resolves still land
@@ -361,15 +336,11 @@ export function createLinearGenomeView(
   }
 
   let ready = build()
-  ready.catch((e: unknown) => {
-    console.error(e)
-  })
+  ready.catch(onError)
 
   function rebuild() {
     ready = build()
-    ready.catch((e: unknown) => {
-      console.error(e)
-    })
+    ready.catch(onError)
   }
 
   return {

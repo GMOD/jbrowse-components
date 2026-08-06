@@ -111,6 +111,10 @@ export type { SessionSnapshot } from './sessionUrl.ts'
 // indexed file stays indexed
 export { registerLocalFiles, resolveLocalFileUris } from './localFiles.ts'
 export type { LocalFileInput } from './localFiles.ts'
+// hub names, sequence URIs and hub configs -> assembly configs, so every
+// product takes the same assembly vocabulary
+export { resolveAssemblies, resolveAssembly } from './resolveAssemblies.ts'
+export type { AssemblyInput, ResolvedAssemblies } from './resolveAssemblies.ts'
 // engine teardown, for a host that builds and discards engines — React unmount
 // alone leaves the RPC workers and autoruns running
 export { destroyViewState } from './destroyViewState.ts'
