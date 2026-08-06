@@ -66,8 +66,8 @@ the panels are wolves and dogs.
 
 ## The pipeline
 
-Five artifacts stand between the published panel and the painted track. Each one
-is a plain text or VCF file you can open and check:
+Every artifact between the published panel and the painted track is a plain
+text, VCF or BED file you can open and check:
 
 <Figure caption="The Dog10K sample table and phased BCF at the top, the panel lists and per-chromosome VCFs FLARE takes as input in the middle, and the BED9 files the track reads at the bottom." src="/img/wolfdog_ancestry_pipeline.png" />
 
