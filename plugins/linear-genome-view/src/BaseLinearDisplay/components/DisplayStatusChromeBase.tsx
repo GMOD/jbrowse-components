@@ -1,3 +1,5 @@
+import { TrackOverlayPortal } from '../../LinearGenomeView/TrackOverlayPortal.tsx'
+
 import type { TooLargeMessageModel } from '../../shared/TooLargeMessage.tsx'
 import type { DisplayBackgroundProgressModel } from './DisplayBackgroundProgress.tsx'
 import type { DisplayErrorBarModel } from './DisplayErrorBar.tsx'
@@ -134,17 +136,38 @@ export default function DisplayStatusChromeBase({
       data-display-phase={phase}
     >
       {children}
-      <ErrorBar model={model} visible={phase === 'error'} />
-      <Loading
-        model={model}
-        visible={phase === 'loading'}
-        // initial load (nothing painted yet) shows the indicator immediately;
-        // a refetch over already-drawn content keeps the anti-flash delay
-        immediate={!drawn}
-      />
-      {/* the same status channel, for work with no fetch behind it (clustering)
-          — a corner chip, since the drawn content stays usable meanwhile */}
-      <BackgroundProgress model={model} visible={phase === 'ready'} />
+      {/* The status overlays are the display's *chrome*, not its data, so they
+          belong in the TrackContainer's overlay layer rather than inside the
+          `contain:strict` sandbox the LGV's inter-region masks paint over.
+          Inline, a region separator bar drew straight across the loading chip
+          and the error banner at whole-genome / multi-region scale, and no
+          z-index inside the sandbox can win against a sibling painted after it.
+
+          One portal here rather than one per overlay: the group shares a box
+          (the display's own, which is what the portal target is), so it lands
+          in the coordinates it had inline, and — the reason it's at this level —
+          BOTH overlay sets inherit it. Put it in the MUI overlays and the plain
+          set silently keeps the bug, which is exactly how the two drifted
+          before. `children` stays behind: that's the canvas, and the masks are
+          supposed to cover it.
+
+          Outside a TrackContainer (unit tests, SVG export, a display an
+          embedder mounts standalone) the portal renders in place, so this is
+          invisible to everything but the LGV. */}
+      <TrackOverlayPortal>
+        <ErrorBar model={model} visible={phase === 'error'} />
+        <Loading
+          model={model}
+          visible={phase === 'loading'}
+          // initial load (nothing painted yet) shows the indicator immediately;
+          // a refetch over already-drawn content keeps the anti-flash delay
+          immediate={!drawn}
+        />
+        {/* the same status channel, for work with no fetch behind it
+            (clustering) — a corner chip, since the drawn content stays usable
+            meanwhile */}
+        <BackgroundProgress model={model} visible={phase === 'ready'} />
+      </TrackOverlayPortal>
     </div>
   )
 }

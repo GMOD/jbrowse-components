@@ -32,7 +32,19 @@ export default function ErrorBar({
   const message = `${error}`
   return (
     <div
-      style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 }}
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 10,
+        // explicit, because DisplayChrome portals this into a
+        // `pointer-events:none` overlay layer, where the default `auto` would be
+        // inherited away and Retry would stop responding. Same box it claimed
+        // inline — it already stops mousedown/click below, so it was never
+        // click-through.
+        pointerEvents: 'auto',
+      }}
       onMouseDown={e => {
         e.stopPropagation()
       }}

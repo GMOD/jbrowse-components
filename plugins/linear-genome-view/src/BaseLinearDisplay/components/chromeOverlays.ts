@@ -18,6 +18,15 @@ import type { ComponentType } from 'react'
 // Prop shapes are exactly what DisplayChromeBase passes today. A replacement
 // set is only obliged to render *something* for each state -- but see the
 // testids in `plainChromeOverlays.tsx`, which four test systems key on.
+//
+// One layout obligation, and it applies to any set: the three non-terminal
+// states (`ErrorBar`, `Loading`, `BackgroundProgress`) are portaled as a group
+// into the LGV's per-track overlay layer, so they clear the inter-region masks
+// that would otherwise stripe them at multi-region scale. That layer is
+// `pointer-events:none`, so anything of yours the user clicks -- a retry, a
+// cancel -- has to set `pointer-events:auto` on its own positioned box. The
+// shipped sets and the examples-site set all do; the states own their box, so
+// nothing can default it for them.
 export interface DisplayChromeOverlays {
   /**
    * GPU/render-backend failure. A subtree-replacing terminal state: the canvas

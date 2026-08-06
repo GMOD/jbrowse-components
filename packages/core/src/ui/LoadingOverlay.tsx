@@ -58,14 +58,20 @@ const useStyles = makeStyles()(theme => {
       paddingTop: '20px',
     },
     // the status chip is the only interactive element; the striped backdrop stays
-    // click-through so it never swallows track interactions
+    // click-through so it never swallows track interactions.
+    //
+    // Mostly-opaque paper (was 0.4, which let dense features and the striping
+    // read straight through the label): the chip sits over a canvas whose colors
+    // aren't known here, so the text needs its own backing to stay legible.
+    // `background.paper` rather than a literal white so dark mode gets the dark
+    // equivalent, and short of fully opaque so it still reads as an overlay.
     content: {
       pointerEvents: 'auto',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
       gap: 2,
-      background: alpha(theme.palette.background.paper, 0.4),
+      background: alpha(theme.palette.background.paper, 0.85),
       borderRadius: 4,
       padding: '2px 8px',
     },
