@@ -21,6 +21,7 @@ Exploratory concepts that are *not* committed work live in
 | [Autofit height for the LGV demo](#autofit-height-for-the-lineargenomeview-example-site-demo) | embedded | no view-level auto-height exists yet |
 | [Extra large text SVG mode](#extra-large-text-svg-mode-for-pub-ready-figures) | SVG export | thread a scale the way `fontFamily` threads |
 | [Alignments / canvas odds and ends](#alignments--canvas) | alignments, canvas | five independent small items |
+| [Explicit byte budget per gated adapter](#make-a-gated-adapters-byte-budget-an-explicit-choice) | config, region-too-large | pick where the check lives first |
 | [Comparative cancel and retry](#give-the-comparative-displays-a-cancel-and-a-retry) | synteny, dotplot | read ADR-054 first; retry is a button, never automatic |
 | [Stop uploading every rect twice](#stop-uploading-every-rect-twice-for-the-continuation-pass) | GPU canvas | unify `ATTR4`, then verify headed on both backends |
 | [Linearize the pangenome](#linearize-the-pangenome-draw-graph-variation-as-alignment-style-glyphs) | pangenome | read PANGENOME_GRAPHS.md — four findings constrain the layout |
@@ -69,6 +70,29 @@ labels will overflow the boxes laid out for them.
 - Add a "hide this feature" option to `LinearMultiSampleVariantDisplay` (and
   similar displays). `plugins/canvas` already has `hideFeature`
   (`LinearBasicDisplay/baseModel.ts`) to copy.
+
+### Make a gated adapter's byte budget an explicit choice
+
+An adapter that implements `getRegionByteSize` and declares no `fetchSizeLimit`
+inherits whichever display it lands under, silently. That produced two live bugs
+at once — `SplitVcfTabixAdapter` gating five times tighter than the single-file
+VCF beside it, and `LinearMultiRowFeatureDisplay` sitting on the base 1 Mb while
+`LinearBasicDisplay` read the same files at 5 Mb — both fixed, neither detectable
+without reading two schemas together. Seven adapters are in that position now
+(Gff3Tabix, GtfTabix, BedTabix, BigBed, MafTabix, BigMaf, BgzipTaffy); they are
+fine because the displays under them were fixed, not because anything checks.
+
+The budget table in REGION_TOO_LARGE.md § Shared primitives is the documentation
+half. The ratchet would fail a new `getRegionByteSize` override that neither
+declares a slot nor appears on a list saying "inherits the display budget
+deliberately" — same doctrine as `abiBaseline.json`.
+
+**The awkward part is where the check lives**, and it is why this isn't done:
+neither the config manifest nor the ABI baseline records which adapters implement
+the method, so it needs its own small baseline plus something that can see
+adapter *classes* across plugins. `scripts/autogen.ts` walks config schemas, not
+classes. A source-level scan is the cheap version and is crude; decide which
+before building.
 
 ## Ready to build: the design is settled
 

@@ -334,6 +334,12 @@ export default function RegionTooLargeMixin() {
        * the current view and lets it self-release on zoom-in — without it a large
        * zoomed-out estimate stays above the limit forever and gates refetch. Only
        * meaningful when `derivedRegionTooLargeEnabled`.
+       *
+       * Self-releasing **above `AUTO_FORCE_LOAD_BP`**. The rescale floors both
+       * of its spans there, because an index reports whole blocks and stops
+       * resolving span at roughly that width, so below it this getter is flat
+       * and the verdict is whatever it was at the floor. Only a display that
+       * opted out of the floor ever reads it down there.
        */
       get estimatedBytesForVisibleSpan() {
         const { gateVisibleBp } = self
@@ -376,6 +382,12 @@ export default function RegionTooLargeMixin() {
        * "zoom in to see features" safe to print unconditionally for as long as
        * nothing gated below it, and why opting out of the floor has to come with
        * this.
+       *
+       * The gate agrees rather than merely the banner: `rescaleByteEstimate
+       * ToVisibleSpan` floors both its spans at the same constant, so below the
+       * floor the estimate is flat and zooming genuinely cannot release it. It
+       * used to release anyway, on a number the index does not charge, and the
+       * pre-flight put the banner straight back.
        */
       get zoomCanReleaseGate(): boolean {
         return !self.gateBelowForceLoadFloor || self.aboveForceLoadFloor

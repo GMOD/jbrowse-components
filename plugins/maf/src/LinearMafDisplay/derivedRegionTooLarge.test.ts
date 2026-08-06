@@ -86,7 +86,13 @@ describe('MAF gating below the force-load floor', () => {
     expect(display.regionTooLargeReason).toBe('Requested too much data (3 Mb)')
   })
 
-  it('still releases below the floor once the scaled estimate fits the cap', () => {
+  // Zooming does not release it below the floor, because the bytes do not fall
+  // there: the estimate comes from an index whose smallest bin is 16kb, so the
+  // same MAF stanzas come down at 8kb as at 2kb. The verdict below the floor is
+  // the verdict at 20kb, and force-load is the way out — which is exactly what
+  // the banner offers down here, `zoomCanReleaseGate` having already dropped
+  // "zoom in to see features".
+  it('does not release on zoom below the floor, where the bytes are flat', () => {
     const { display, view } = createMafTestEnvironment().createDisplay()
 
     view.zoomTo(20)
@@ -96,12 +102,48 @@ describe('MAF gating below the force-load floor', () => {
     })
     expect(display.regionTooLarge).toBe(true)
 
-    // a quarter of the span → 750kB < the 1MB cap. The gate is still live down
-    // here (that is the point of the opt-out), so this clears on the bytes, not
-    // by falling off a threshold.
     view.zoomTo(5)
     expect(view.visibleBp).toBeLessThan(20_000)
     expect(display.gateActive).toBe(true)
+    expect(display.zoomCanReleaseGate).toBe(false)
+    expect(display.regionTooLarge).toBe(true)
+  })
+
+  // The estimate below the floor is the one the index would really charge, so a
+  // measurement taken at one sub-floor zoom reads identically at another. No
+  // release, no re-measure, no flash.
+  it('quotes the same bytes at every zoom below the floor', () => {
+    const { display, view } = createMafTestEnvironment().createDisplay()
+
+    view.zoomTo(20)
+    display.setByteEstimate({
+      bytes: 3_000_000,
+      measuredSpanBp: view.visibleBp,
+    })
+    const atEightKb = display.estimatedBytesForVisibleSpan
+
+    view.zoomTo(2)
+    expect(view.visibleBp).toBeLessThan(20_000)
+    expect(display.estimatedBytesForVisibleSpan).toBe(atEightKb)
+    // and it is the measured number itself, not a rescale of it: both spans
+    // floor to 20kb, so the ratio is 1
+    expect(atEightKb).toBe(3_000_000)
+  })
+
+  // Above the floor the proportional model is real, and it is still the only
+  // thing that re-measures, so that half of the rescale is untouched.
+  it('still releases on the bytes above the floor', () => {
+    const { display, view } = createMafTestEnvironment().createDisplay()
+
+    view.zoomTo(100)
+    display.setByteEstimate({
+      bytes: 1_500_000,
+      measuredSpanBp: view.visibleBp,
+    })
+    expect(display.regionTooLarge).toBe(true)
+
+    view.zoomTo(50)
+    expect(view.visibleBp).toBeGreaterThan(20_000)
     expect(display.regionTooLarge).toBe(false)
   })
 

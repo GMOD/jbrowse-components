@@ -515,18 +515,41 @@ paths can't drift apart.
     | `breakpoint/hs37d5.HG002…sv.vcf.gz` | 15,408 | 15,408 | 15,408 | 15,408 | 15,408 |
     | `ce11.26way.chrI_subset.bed.gz` | 92,757 | 92,757 | 92,757 | 92,757 | 92,757 |
 
-    So for an over-budget track below the floor, `rescaleByteEstimateToVisibleSpan`
-    releases the banner on zoom-in against a number that isn't real, the pre-flight
-    re-measures the same flat value, and the banner comes back — one aborted fetch
-    cycle and a banner flash per zoom step, settling only when the track is
-    force-loaded. **No data is downloaded either way**: the pre-flight re-measures
-    before `work()` runs, so the under-report costs a round trip, never a fetch.
+    **Fixed by flooring both spans in the rescale** at `AUTO_FORCE_LOAD_BP`:
+    `bytes × max(visibleBp, FLOOR) / max(measuredSpanBp, FLOOR)`. The linear
+    model is kept exactly where it holds and the estimate goes flat exactly where
+    the index is.
 
-    **Still unfixed**, and the obvious fixes don't work — see
-    [MAF_LARGE_BLOCKS.md](MAF_LARGE_BLOCKS.md) § "Why the rescale can't just be
-    removed" before proposing one. The short version: the downward rescale is the
-    *only* release mechanism, because the pre-flight is the only thing that
-    re-measures and it can only run when the verdict is already false.
+    It used to release the banner on zoom-in against a number that isn't real,
+    the pre-flight re-measured the same flat value, and the banner came back —
+    one aborted fetch cycle and a banner flash per zoom step, settling only when
+    the track was force-loaded. Below the floor the verdict is now simply the
+    verdict at 20kb.
+
+    Three things make that the honest answer rather than a stricter gate:
+
+    - It is what `gateBelowForceLoadFloor`'s own argument already assumed. Index
+      estimates are monotone non-decreasing in span, so a region failing the cap
+      below the floor failed it at 20kb too — the release was never real.
+    - The error it removes was in the **unsafe** direction. The linear model
+      under-reports as you zoom in: extrapolated from 50kb, volvox predicts 98kB
+      at 16kb where the index really charges 239kB.
+    - The gate now agrees with the banner. `zoomCanReleaseGate` already stops
+      offering "zoom in to see features" below the floor for a floor-opt-out
+      display; the gate used to release on zoom anyway.
+
+    Neither of the two fixes [MAF_LARGE_BLOCKS.md](MAF_LARGE_BLOCKS.md) § "Why
+    the rescale can't just be removed" rejects: dropping the rescale deadlocks
+    (it is the only release mechanism, since the pre-flight only runs when the
+    verdict is already false), and invalidating the estimate on view change
+    flashes just the same. Flooring keeps every rescale at or above the floor
+    untouched, so the release mechanism is intact and nothing deadlocks — and it
+    needs no re-measure-while-blocking autorun on the shared fetch mixins, which
+    is what that section proposed and why it stayed unbuilt.
+
+    The clamp is unreachable for a floor-keeping display: `gateActive` is false
+    below the floor, so neither the span it measured at nor the span it is read
+    at can be under one.
 - `resolveByteLimit({ adapterFetchSizeLimit, configFetchSizeLimit })` is the one
   place a byte budget gets resolved: the adapter's limit, else the display config.
   Those two arguments are the only byte-budget *inputs* in the system — force-load

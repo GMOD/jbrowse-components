@@ -3,8 +3,16 @@
  * a banner asking permission costs the user more than the download does. Lives
  * with the gate rather than on the view because the view never reads it — it is
  * a property of the gate, and `aboveForceLoadFloor` on `RegionTooLargeMixin` is
- * the only comparison against it (MAF's summary swap reads that getter, so the
- * threshold has one spelling).
+ * the only comparison against it *as a floor* (MAF's summary swap reads that
+ * getter, so the threshold has one spelling).
+ *
+ * It has a second, different use right below: `rescaleByteEstimateToVisibleSpan`
+ * floors both its spans here. Deliberately the same constant and not a copy,
+ * because the two are the same fact about the same thing. The floor was chosen
+ * at roughly a tabix/BAI linear index's own resolution (16kb bins) — that is
+ * what made "a small span is a small fetch" true enough to skip gating, and it
+ * is equally what makes the estimate flat below it. A second constant could
+ * drift from this one, and the two drifting apart has no coherent meaning.
  */
 export const AUTO_FORCE_LOAD_BP = 20_000
 
@@ -141,9 +149,34 @@ export function resolveByteLimit({
  * runs only from a fetch, which `FetchVisibleRegions` skips while
  * `regionTooLarge` holds. Take away the shrink-on-zoom-in and a track gated at
  * 200kb stays gated at 2kb forever, with nothing left that could re-measure it.
- * That is why the known-wrong linear model survives an index whose real
- * granularity is block-quantized — see ARCHITECTURAL_LIMITS.md, "The byte gate
- * assumes bytes scale with span".
+ *
+ * **Which is why both spans are floored rather than the rescale being dropped.**
+ * The linear model is honest above `AUTO_FORCE_LOAD_BP` and fiction below it: an
+ * index reports whole blocks, and 20kb is about where a tabix/BAI linear index
+ * stops resolving span at all (16kb bins), so the same query costs the same
+ * bytes at every span inside one block. Measured on files in this repo,
+ * `volvox.maf.bed.gz` reports an identical 213,443 bytes at 200bp, 1kb and 5kb
+ * (MAF_LARGE_BLOCKS.md). Flooring the numerator *and* the denominator keeps the
+ * proportional model exactly where it holds and makes the estimate flat exactly
+ * where the index is, which has three consequences worth stating:
+ *
+ * - The release mechanism survives intact. Everything at or above the floor
+ *   rescales as before, so a track gated at 200kb still releases on the way in
+ *   and still re-measures — no deadlock, which is what killed "just use the
+ *   measurement as-is".
+ * - Below the floor the verdict becomes exactly the verdict at 20kb. That is
+ *   the honest answer and the one `gateBelowForceLoadFloor`'s own argument
+ *   already assumes: index estimates are monotone non-decreasing in span, so a
+ *   region that fails the cap down here failed it at 20kb too. It used to
+ *   release anyway, against a number that isn't real, and the pre-flight put
+ *   the banner straight back — a flash and an aborted fetch cycle per zoom step.
+ * - It errs toward gating, and the error it removes was in the *unsafe*
+ *   direction. The linear model under-reports as you zoom in: extrapolated from
+ *   50kb, volvox predicts 98kB at 16kb where the index really charges 239kB.
+ *
+ * This is also what makes `zoomCanReleaseGate` true: a floor-opt-out display
+ * stops offering "zoom in to see features" below 20kb, and now the gate agrees
+ * with the banner instead of releasing on a span the bytes don't follow.
  */
 export function rescaleByteEstimateToVisibleSpan({
   byteEstimate,
@@ -152,8 +185,13 @@ export function rescaleByteEstimateToVisibleSpan({
   byteEstimate: ByteEstimate | undefined
   visibleBp: number
 }) {
+  // A floor-keeping display never reaches the clamp: `gateActive` is false below
+  // AUTO_FORCE_LOAD_BP, so neither the span it measured at nor the span it is
+  // read at can be under it. The clamp is live only for the displays that opted
+  // out of the floor, which are the only ones that gate down there at all.
   return byteEstimate?.bytes && byteEstimate.measuredSpanBp
-    ? (byteEstimate.bytes * visibleBp) / byteEstimate.measuredSpanBp
+    ? (byteEstimate.bytes * Math.max(visibleBp, AUTO_FORCE_LOAD_BP)) /
+        Math.max(byteEstimate.measuredSpanBp, AUTO_FORCE_LOAD_BP)
     : undefined
 }
 

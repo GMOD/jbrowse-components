@@ -80,12 +80,14 @@ describe('rescaleByteEstimateToVisibleSpan', () => {
     ).toBeUndefined()
   })
 
+  // Spans here are deliberately realistic (above AUTO_FORCE_LOAD_BP), because
+  // the proportional model only holds up there — see the clamp cases below.
   it('scales proportionally: zoom-in (smaller visibleBp) shrinks the estimate', () => {
-    // measured 1MB over a span of 100; zooming in to span 25 → quarter the data
+    // measured 1MB over 400kb; zooming in to 100kb → quarter the data
     expect(
       rescaleByteEstimateToVisibleSpan({
-        byteEstimate: { bytes: 1_000_000, measuredSpanBp: 100 },
-        visibleBp: 25,
+        byteEstimate: { bytes: 1_000_000, measuredSpanBp: 400_000 },
+        visibleBp: 100_000,
       }),
     ).toBe(250_000)
   })
@@ -93,8 +95,8 @@ describe('rescaleByteEstimateToVisibleSpan', () => {
   it('is a no-op at the span it was measured over', () => {
     expect(
       rescaleByteEstimateToVisibleSpan({
-        byteEstimate: { bytes: 1_000_000, measuredSpanBp: 100 },
-        visibleBp: 100,
+        byteEstimate: { bytes: 1_000_000, measuredSpanBp: 100_000 },
+        visibleBp: 100_000,
       }),
     ).toBe(1_000_000)
   })
@@ -103,26 +105,82 @@ describe('rescaleByteEstimateToVisibleSpan', () => {
   // must self-release once the user zooms in, without any imperative re-clear.
   it('lets the too-large verdict self-release on zoom-in', () => {
     const byteLimit = 500_000
-    const byteEstimate = { bytes: 2_000_000, measuredSpanBp: 200 }
+    const byteEstimate = { bytes: 2_000_000, measuredSpanBp: 200_000 }
 
     const zoomedOut = evaluateRegionTooLarge({
       estimatedBytesForVisibleSpan: rescaleByteEstimateToVisibleSpan({
         byteEstimate,
-        visibleBp: 200,
+        visibleBp: 200_000,
       }),
       byteLimit,
     })
     expect(zoomedOut.tooLarge).toBe(true)
 
-    // zoom in 5× (span 200 → 40): scaled estimate 400_000 < 500_000 limit
+    // zoom in 5× (200kb → 40kb, still above the floor): 400_000 < the limit
     const zoomedIn = evaluateRegionTooLarge({
       estimatedBytesForVisibleSpan: rescaleByteEstimateToVisibleSpan({
         byteEstimate,
-        visibleBp: 40,
+        visibleBp: 40_000,
       }),
       byteLimit,
     })
     expect(zoomedIn.tooLarge).toBe(false)
+  })
+
+  // Below AUTO_FORCE_LOAD_BP an index reports whole blocks, so the same query
+  // costs the same bytes at every span inside one block and the proportional
+  // model is fiction. Both spans are floored there, which only a display that
+  // opted out of the floor can ever reach — everything else has `gateActive`
+  // false below it.
+  describe('the estimate goes flat below AUTO_FORCE_LOAD_BP', () => {
+    const byteEstimate = { bytes: 4_000_000, measuredSpanBp: 200_000 }
+
+    it('stops shrinking once the visible span drops under the floor', () => {
+      // 40kb is above the floor and still scales: a fifth of the measurement
+      expect(
+        rescaleByteEstimateToVisibleSpan({ byteEstimate, visibleBp: 40_000 }),
+      ).toBe(800_000)
+      // 20kb is the floor exactly
+      expect(
+        rescaleByteEstimateToVisibleSpan({ byteEstimate, visibleBp: 20_000 }),
+      ).toBe(400_000)
+      // and below it every zoom quotes that same number
+      for (const visibleBp of [10_000, 1_000, 200]) {
+        expect(
+          rescaleByteEstimateToVisibleSpan({ byteEstimate, visibleBp }),
+        ).toBe(400_000)
+      }
+    })
+
+    // The denominator is floored too. Without that, an estimate captured below
+    // the floor would be scaled UP by the ratio of the floor to the span it was
+    // measured at — a 4× inflation for a measurement taken at 5kb.
+    it('does not inflate an estimate that was measured below the floor', () => {
+      const measuredDeep = { bytes: 300_000, measuredSpanBp: 5_000 }
+      expect(
+        rescaleByteEstimateToVisibleSpan({
+          byteEstimate: measuredDeep,
+          visibleBp: 2_000,
+        }),
+      ).toBe(300_000)
+      expect(
+        rescaleByteEstimateToVisibleSpan({
+          byteEstimate: measuredDeep,
+          visibleBp: 20_000,
+        }),
+      ).toBe(300_000)
+    })
+
+    // The zero-span guard runs on the raw value, before any flooring, so an
+    // unrepresentable estimate stays undefined rather than becoming divisible.
+    it('still refuses a zero measured span', () => {
+      expect(
+        rescaleByteEstimateToVisibleSpan({
+          byteEstimate: { bytes: 1000, measuredSpanBp: 0 },
+          visibleBp: 100_000,
+        }),
+      ).toBeUndefined()
+    })
   })
 })
 

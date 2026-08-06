@@ -346,18 +346,33 @@ index estimates are monotone in span, the opt-in can only stop regions that
 already bannered above the floor, which is what makes it safe to hand to a third
 display without a per-format threshold.
 
-**The rescale half is open**, and it is worse than "imprecise": measurement says
-the estimate is *flat* across the whole sub-16kb range, since an index reports
-whole blocks. So below the floor the rescale releases the banner on a number that
-isn't real, the pre-flight re-measures the same flat value, and the banner
-returns — an aborted fetch cycle per zoom step. No data is downloaded either way
-(the pre-flight re-measures before the fetch body runs), which is what keeps this
-a wart rather than the missing ceiling it used to be.
+**The rescale half is closed below the floor and open above it.**
 
-**Retire when** measuring is decoupled from fetching — a re-measure on viewport
-change while the gate is blocking — so a display can opt out of the rescale
-without deadlocking. Simply removing the rescale does not work and neither does
-invalidating the estimate on view change; both are costed in
+Below: measurement says the estimate is *flat* across the whole sub-16kb range,
+since an index reports whole blocks, so the rescale was releasing the banner on a
+number that isn't real — an aborted fetch cycle per zoom step that never settled.
+`rescaleByteEstimateToVisibleSpan` now floors both of its spans at
+`AUTO_FORCE_LOAD_BP`, making the estimate flat exactly where the index is, so the
+verdict below the floor is the verdict at 20kb. That is the same monotonicity
+argument the floor opt-in above rests on, and it removes an error that ran in the
+*unsafe* direction (extrapolated from 50kb, volvox predicts 98kB at 16kb where
+the index charges 239kB).
+
+Above: proportionality is still assumed and still under-reports on zoom-in —
+volvox charges 239kB at 16kb and 307kB at 50kb, not the 3× the model expects. The
+difference is that up there the bytes genuinely do fall, so each release-then-
+re-measure cycle makes progress and terminates; below the floor it could not. No
+data is downloaded either way (the pre-flight re-measures before the fetch body
+runs), which is what keeps this a wart rather than the missing ceiling it used to
+be.
+
+**Retire when** the estimate is a curve rather than a ratio — i.e. the adapter
+reports enough of the index's shape to interpolate, rather than one number the
+main thread scales. Note what is no longer needed: decoupling measurement from
+fetching (a re-measure on viewport change while the gate blocks) was the standing
+proposal, and flooring removed the case it existed for. Simply removing the
+rescale still does not work, and neither does invalidating the estimate on view
+change; both are costed in
 [MAF_LARGE_BLOCKS.md](MAF_LARGE_BLOCKS.md) § "Why the rescale can't just be
 removed". Read that before proposing a fix.
 

@@ -195,18 +195,37 @@ describe('alignments derived regionTooLarge', () => {
     expect(display.regionTooLarge).toBe(true)
   })
 
-  it('releases below the floor on the bytes, once they fit', () => {
+  // Below the floor the estimate stops shrinking, because the BAI stops
+  // resolving span there (16kb bins) and the same bytes come down however far
+  // the user zooms. So the verdict below the floor IS the verdict at 20kb —
+  // which is what the opt-out's monotonicity argument already assumed, and what
+  // the banner already says by dropping "zoom in to see features" down here.
+  it('stops releasing on zoom below the floor, where the bytes stop falling', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
     display.setByteEstimate({ bytes: 1e9, measuredSpanBp: view.visibleBp })
 
-    // far enough in that the rescaled estimate clears the cap: the banner goes
-    // on the estimate, not on crossing a zoom threshold
+    // 1e9 floored at 20kb over an 80kb measurement is 250 Mb: still far over the
+    // cap, and zooming further cannot lower it
     view.zoomTo(0.01)
     expect(view.visibleBp).toBeLessThan(20_000)
     expect(display.gateActive).toBe(true)
+    expect(display.zoomCanReleaseGate).toBe(false)
+    expect(display.regionTooLarge).toBe(true)
+
+    // it is flat, not merely still-too-large: two very different zooms below the
+    // floor quote the identical number, so there is no aborted fetch cycle to
+    // flash the banner between them
+    const deep = display.estimatedBytesForVisibleSpan
+    view.zoomTo(1)
+    expect(view.visibleBp).toBeLessThan(20_000)
+    expect(display.estimatedBytesForVisibleSpan).toBe(deep)
+
+    // and force-load is the way out the banner offers
+    display.setForceLoadTrack(true)
     expect(display.regionTooLarge).toBe(false)
   })
+
 
   // Ordinary depth is nowhere near the cap at gene zoom, which is what makes the
   // opt-out safe without a coverage threshold. Measured for reference: the

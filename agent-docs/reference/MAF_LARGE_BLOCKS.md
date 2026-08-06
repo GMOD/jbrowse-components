@@ -189,14 +189,14 @@ BigBed is the same shape (`getBlockSizeForRangeMulti` sums whole R-tree leaf
 blocks). This is *why* the ce11 26-way never gates, incidentally: 92,757 bytes
 against a 1 Mb cap, two orders of magnitude of headroom at every zoom.
 
-The consequence for an over-budget track: the rescale releases the banner on
+The consequence for an over-budget track was: the rescale releases the banner on
 zoom-in, the pre-flight re-measures the same flat number, the banner returns. One
 aborted fetch cycle and a banner flash per zoom step, never settling. **It never
-downloads** — `byteGateBlocksFetch` re-measures before `work()` — so this costs a
-round trip, not data. That is the wart, and the honest outcome underneath it
+downloads** — `byteGateBlocksFetch` re-measures before `work()` — so this cost a
+round trip, not data. That was the wart, and the honest outcome underneath it
 (force-load or nothing, for a genuinely unaffordable file) is correct.
 
-Two obvious fixes, both wrong:
+**Fixed**, by the third option below. Two obvious fixes, both wrong:
 
 - **"Stop rescaling; use the measurement as-is."** Deadlocks. The estimate only
   updates inside `byteGateBlocksFetch`, which only runs from a fetch, which
@@ -208,14 +208,35 @@ Two obvious fixes, both wrong:
   banner still disappears, a fetch still starts, and the scrim still shows before
   the new measurement puts the banner back.
 
-The fix that does work is to **decouple measuring from fetching**: re-measure on
-viewport change *while the gate is blocking*, so the verdict updates without a
-fetch cycle having to be started and abandoned. Then a display can honestly opt
-out of the rescale, because there is another way for its estimate to refresh.
-That is an autorun on the fetch mixins (not on `RegionTooLargeMixin`, which has
-non-LGV consumers and must stay view-only), gated on the opt-out so canvas, LD
-and alignments are untouched. Not built — it is a real change to shared fetch
-machinery for a flash on tracks that are already force-load-only.
+Both of those read as "the rescale is all-or-nothing", which is the premise that
+was wrong. **The fix is to floor both spans** in
+`rescaleByteEstimateToVisibleSpan`:
+
+```
+bytes × max(visibleBp, AUTO_FORCE_LOAD_BP) / max(measuredSpanBp, AUTO_FORCE_LOAD_BP)
+```
+
+The proportional model is kept exactly where the table above says it holds, and
+the estimate goes flat exactly where the index is. Every rescale at or above the
+floor is untouched, so the release mechanism is intact and there is no deadlock;
+below the floor the verdict is simply the verdict at 20kb, which is what the
+monotonicity of index estimates said it always was. Flooring the *denominator*
+too is not cosmetic — without it an estimate captured below the floor gets scaled
+up by the ratio of the floor to the span it was measured at.
+
+The same constant serves both uses deliberately: the floor was chosen at roughly
+the index's own resolution, which is what makes it both a reasonable place to
+stop gating and the exact place the estimate stops resolving. A second constant
+could only drift, and the drift would mean nothing.
+
+The earlier proposal here was to **decouple measuring from fetching**: re-measure
+on viewport change while the gate is blocking, so the verdict updates without a
+fetch cycle having to be started and abandoned. That is an autorun on the fetch
+mixins (not on `RegionTooLargeMixin`, which has non-LGV consumers and must stay
+view-only). It was never built — a real change to shared fetch machinery for a
+flash on tracks that are already force-load-only — and the floor removes the
+reason to build it: there is no longer a fetch cycle being started and abandoned
+down there to need re-measuring out of.
 
 ## Recommendation
 
