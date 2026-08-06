@@ -16,6 +16,10 @@ export type { StatusChromeModel } from './components/DisplayChrome.tsx'
 export { DisplayChromeOverlayProvider } from './components/DisplayChrome.tsx'
 export { default as DisplayChromeBase } from './components/DisplayChromeBase.tsx'
 export { default as plainChromeOverlays } from './components/plainChromeOverlays.tsx'
+// Both seams at once, defaulting to the plain sets — what an embedder who does
+// not want Material UI mounts, instead of the two providers by hand. The
+// contexts themselves still default to undefined; see the component's comment.
+export { default as DisplayUIProvider } from './components/DisplayUIProvider.tsx'
 export type { DisplayChromeOverlays } from './components/chromeOverlays.ts'
 export { default as DisplayErrorBar } from './components/DisplayErrorBar.tsx'
 export { default as DisplayLoadingOverlay } from './components/DisplayLoadingOverlay.tsx'
