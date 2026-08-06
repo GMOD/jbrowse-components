@@ -9,6 +9,7 @@ import { computed } from 'mobx'
 
 import GlobalFetchMixin from './GlobalFetchMixin.ts'
 import { autorunOnReadyView } from './MultiRegionDisplayMixin.ts'
+import { assertDisplayContract } from './assertDisplayContract.ts'
 import { serializeRpcProps } from './rpcPropsCacheKey.ts'
 
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -61,32 +62,6 @@ export default function GlobalDataDisplayMixin() {
         // hoisting it there.
         return self.lgv.initialized
       },
-
-      /**
-       * #getter
-       * Whether this display paints a canvas in its current configuration.
-       * Default true. Gates the pre-first-paint term of `displayPhase` below
-       * (`rendersCanvas && !canvasDrawn`), so a display that can be toggled to
-       * show a static non-canvas placeholder instead (LD with `showLDTriangle`
-       * off renders an EmptyState, never a canvas) overrides this to false in
-       * that state — otherwise the scrim would sit permanently over the
-       * placeholder, since `canvasDrawn` never flips without a canvas.
-       *
-       * Why this is a hook and not inlined away: the pre-paint scrim decision
-       * needs TWO facts — "nothing painted yet" (`!canvasDrawn`, on the model)
-       * AND "this isn't a deliberate empty placeholder" — and only the display
-       * knows the second. The alternative (render the placeholder OUTSIDE
-       * `DisplayChrome` so there's no scrim to gate) was considered and rejected:
-       * it would dispose/re-init the GPU backend on every toggle and move a
-       * render path out of the shared chrome (see ADR-026). So the hook is
-       * irreducible given LD's design — a future reader tempted to delete this
-       * "single-override" getter must first move LD's EmptyState, or the scrim
-       * regresses over the placeholder. Default lives here so the common case
-       * (HiC, always a canvas) needs no override.
-       */
-      get rendersCanvas(): boolean {
-        return true
-      },
     }))
     .views(self => ({
       /**
@@ -97,8 +72,9 @@ export default function GlobalDataDisplayMixin() {
        * and `isLoading` flipping true (on HiC that means the `CoreGetInfo`
        * round-trip its first fetch waits on). Mirror MultiRegion's `!isReady`
        * term with `!canvasDrawn` so the loading scrim shows immediately on open
-       * instead of after that gap — gated by `rendersCanvas` so a display
-       * showing a static non-canvas placeholder isn't stuck under it. Once
+       * instead of after that gap — gated by `RenderLifecycleMixin`'s
+       * `rendersCanvas` so a display showing a static non-canvas placeholder
+       * isn't stuck under it (LD with the triangle off). Once
        * painted, `canvasDrawn` stays true through viewport/setting changes
        * (StaleViewportRescaleMixin keeps the last frame up during refetch), so
        * this adds no scrim on pan or zoom — those keep the existing `isLoading`
@@ -111,9 +87,11 @@ export default function GlobalDataDisplayMixin() {
             {
               // Constant, not a hook: no global display renders a static message
               // in place of the whole display today. If one does, declare a
-              // `loadingSuppressed` getter beside `rendersCanvas` and read it
-              // here — the per-region family already declares that exact hook
-              // for sequence, and this is the seam it plugs into.
+              // `loadingSuppressed` getter and read it here — the per-region
+              // family already declares that exact hook for sequence, and this
+              // is the seam it plugs into. (`rendersCanvas`, the other half of
+              // that pair, now lives on `RenderLifecycleMixin` so both families
+              // read the same one.)
               loadingSuppressed: false,
               isLoadingOrCanceled: self.isLoadingOrCanceled,
               canvasDrawn: self.canvasDrawn,
@@ -186,6 +164,13 @@ export function installGlobalFetchAutorun(
   // stay immediate while zoom/pan refetches after it debounce exactly as
   // `{ delay }` did. See leadingEdgeDebounce for why MobX's own `{ delay }`
   // can't do this.
+  // Same dev-only contract check the per-region foundation runs from its
+  // `afterAttach`. This is that family's equivalent install point, and the
+  // check matters at least as much here: `rpcPropsCacheKey` below is this
+  // family's ONLY settings-invalidation path, and there is no
+  // `makeSettingsLoopGuard` on this side to notice anything either.
+  assertDisplayContract(self, 'installGlobalFetchAutorun')
+
   const debounce = leadingEdgeDebounce(opts.delay)
   // a computed, not a bare `rpcProps()` in the body: that tracks every
   // observable the payload merely read, refetching where the per-region family

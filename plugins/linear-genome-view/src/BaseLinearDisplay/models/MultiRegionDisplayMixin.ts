@@ -307,12 +307,14 @@ export default function MultiRegionDisplayMixin() {
                 // FetchMixin's getter exists to stop anyone having to do.
                 isLoadingOrCanceled: self.isLoadingOrCanceled,
                 canvasDrawn: self.canvasDrawn,
-                // Constant, not a hook: no per-region display shows a static
-                // non-canvas placeholder today. If one does, declare a
-                // `rendersCanvas` getter beside `loadingSuppressed` and read it
-                // here — the global family already declares that exact hook for
-                // LD, and this is the seam it plugs into.
-                rendersCanvas: true,
+                // `RenderLifecycleMixin`'s hook, not a hard-coded `true`: this
+                // family has a display that renders a static non-canvas
+                // placeholder too (sequence past base resolution), and while
+                // `loadingSuppressed` already answers the scrim for it, the
+                // flag has a second reader — `painted`, and through it
+                // `data-display-drawn` — that a constant here would go on
+                // getting wrong. One hook, both families.
+                rendersCanvas: self.rendersCanvas,
               },
               // this family's spatial-staleness axis; a thunk so a suppressed or
               // already-loading display doesn't subscribe to viewport churn

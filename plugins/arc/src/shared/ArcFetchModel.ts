@@ -3,6 +3,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import {
   GlobalFetchMixin,
   computeDisplayStatusPhase,
+  computeLoadingTerm,
 } from '@jbrowse/plugin-linear-genome-view'
 
 import { currentRegionSignature } from './regionSignature.ts'
@@ -88,7 +89,44 @@ export function ArcFetchModel() {
          * `isLoadingOrCanceled`, never a bare `isLoading` — see that getter.
          */
         get displayPhase(): DisplayStatusPhase {
-          return computeDisplayStatusPhase(self, () => self.isLoadingOrCanceled)
+          return computeDisplayStatusPhase(self, () =>
+            computeLoadingTerm(
+              {
+                // no static-placeholder state and no canvas to wait on, so both
+                // suppression axes constant out and the term reduces to
+                // `isLoadingOrCanceled` — exactly what this getter spelled by
+                // hand until 2026-08. Routed through the shared function anyway
+                // because arc is the *third* foundation, and a term added there
+                // for the other two would otherwise reach every display except
+                // this one. Same argument the precedence above already won.
+                loadingSuppressed: false,
+                rendersCanvas: false,
+                canvasDrawn: false,
+                isLoadingOrCanceled: self.isLoadingOrCanceled,
+              },
+              // no spatial-staleness axis: stale arcs stay on screen under the
+              // overlay through a refetch rather than blanking (see `reload`)
+              () => true,
+            ),
+          )
+        },
+
+        /**
+         * #getter
+         * Arc's first-paint signal — the `canvasDrawn` analogue for a display
+         * that paints main-thread SVG and composes no `RenderLifecycleMixin`.
+         * Stays true across a refetch so the `-done` testid and the loading
+         * anti-flash don't churn on pan; the stricter, staleness-aware
+         * `svgReady` is the export gate.
+         *
+         * On the model rather than derived in `BaseDisplayComponent`, for the
+         * same reason `displayPhase` is: a component-side derivation is free to
+         * disagree with what the model believes, and this one feeds an
+         * attribute (`data-display-drawn`) that the screenshot and browser
+         * harnesses wait on.
+         */
+        get painted(): boolean {
+          return self.features !== undefined || !!self.error
         },
       }))
       .actions(self => {

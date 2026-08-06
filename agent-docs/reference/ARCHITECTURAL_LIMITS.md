@@ -472,7 +472,10 @@ One failure shape recurs: behavior depends on an order no type can see, and
 getting it wrong is silent. The fix shape is equally uniform — make the order
 report itself at attach, the move `makeSettingsLoopGuard` already applied to the
 `rpcProps` loop trap. `assertDisplayContract` (called from
-`MultiRegionDisplayMixin.afterAttach`) is that generalization. It
+`MultiRegionDisplayMixin.afterAttach` and from `installGlobalFetchAutorun`, so
+both fetch families are covered — it was per-region only until 2026-08, which
+left HiC and LD, both of which define `rpcProps()`, checked by nothing) is that
+generalization. It
 `console.error`s rather than throws, deliberately: an error escaping
 `afterAttach` is read by the session loader as an invalid track and the display
 is dropped, which would hide the very violation being reported.

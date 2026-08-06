@@ -705,8 +705,11 @@ What the GPU doc covers, so you can jump straight in:
 
 ### Terminal states early-return their own root
 
-`DisplayChrome` branches on `model.displayPhase`. For the `renderError` /
-`tooLarge` banners it early-`return`s the banner as its *entire* output,
+The chrome branches on `model.displayPhase` (`renderError` in
+`DisplayChromeBase`, `tooLarge` one level down in `DisplayStatusChromeBase` —
+the split is about which banner needs the backend hook's `retry()`, not about
+the tree shape, which is identical for both). For either banner it
+early-`return`s it as the component's *entire* output,
 replacing the display subtree, rather than keeping the container `<div>` mounted
 and swapping the banner in beside the canvas. This looks like a leak — the
 caller's `className`/`ref`/mouse handlers are absent in those two states — but a
@@ -803,8 +806,10 @@ MST view methods (not getters), so subclasses extend them via the standard
 MobX runs an action inside `untracked`, so declaring either as an action makes
 its reads register no dependency and every caller silently keeps a stale answer
 — no error, no crash, and it has regressed twice. That is what
-`assertDisplayContract` checks: dev-only, called once from the per-region
-foundation's `afterAttach`, `console.error` rather than `throw` (an error
+`assertDisplayContract` checks: dev-only, called once per display from whichever
+fetch foundation installed its autoruns — `MultiRegionDisplayMixin`'s
+`afterAttach` for the per-region family, `installGlobalFetchAutorun` for the
+global one — and `console.error` rather than `throw` (an error
 escaping `afterAttach` reads as an invalid track and the display is dropped,
 hiding the very violation it reports). It also catches a display that wrongly
 chains to `super` in its own `afterAttach`, which re-enters the mixin's hook and

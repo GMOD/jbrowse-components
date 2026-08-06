@@ -15,6 +15,11 @@ export interface WiggleGpuDisplayModel<
   rpcDataMap: ReadonlyMap<number, TData>
   ticks?: YScaleTicks
   canvasDrawn: boolean
+  // `painted` is `canvasDrawn` widened by `rendersCanvas` — what `DisplayChrome`
+  // publishes as `data-display-drawn`, and what any consumer outside the display
+  // should ask. `canvasDrawn` stays because manhattan reads the raw flag
+  // directly to gate its LD legend on real pixels.
+  painted: boolean
   height: number
   // `unknown`, matching FetchMixin's volatile (it preserves whatever was thrown)
   // and DisplayChrome's error bar. Declaring `Error | null` here was a lie the

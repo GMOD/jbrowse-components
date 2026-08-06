@@ -197,6 +197,25 @@ export function modelFactory(
       get loadingSuppressed() {
         return this.zoomedOut
       },
+      /**
+       * #getter
+       * The same fact once more, on the axis every reader *outside* this
+       * display uses: zoomed out, `SequenceDisplayComponent` renders an
+       * `<Alert>` where the `<canvas>` would go, so `canvasRef` is never
+       * called and `canvasDrawn` can never flip. Overrides
+       * `RenderLifecycleMixin`'s default-true hook, which is what makes
+       * `painted` — and so `data-display-drawn`, which `PENDING_DISPLAYS`
+       * selects on — report finished instead of hanging every
+       * `waitForDisplaysDone` on a page that shows the reference sequence
+       * track zoomed out.
+       *
+       * Three hooks for one condition looks redundant and isn't: they answer
+       * the scrim, the SVG export and first paint, and each has a different
+       * set of readers.
+       */
+      get rendersCanvas() {
+        return !this.zoomedOut
+      },
       get numRows() {
         const baseRows =
           (self.showForward ? 1 : 0) + (self.effectiveShowReverse ? 1 : 0)

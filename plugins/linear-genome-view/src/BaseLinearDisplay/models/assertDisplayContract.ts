@@ -27,8 +27,21 @@ function report(message: string) {
 
 /**
  * Dev-only check of the display contracts that no type expresses and whose
- * violation is silent. Called once from the per-region fetch foundation's
- * `afterAttach`; no-op in production.
+ * violation is silent. No-op in production.
+ *
+ * Called once per display from **whichever fetch foundation installed its
+ * autoruns** — `MultiRegionDisplayMixin`'s `afterAttach` for the per-region
+ * family, `installGlobalFetchAutorun` for the global one. It was per-region
+ * only until 2026-08, which left the family with *fewer* safety nets
+ * unchecked: HiC and LD both define `rpcProps()`, `installGlobalFetchAutorun`
+ * serializes it into the autorun's trigger list, and an `rpcProps` declared in
+ * `.actions()` there fails exactly the same way — reads register no
+ * dependency, so a settings change stops invalidating — with no
+ * `makeSettingsLoopGuard` on that side to catch anything either.
+ *
+ * `installedBy` names the caller so the double-install message can describe the
+ * right thing; the WeakSet is shared, which is correct — a display composes one
+ * fetch foundation, so reaching here twice is the bug regardless of which.
  *
  * ARCHITECTURAL_LIMITS.md §"Ordering is the contract" asks for exactly this —
  * "each order becomes explicit data … `makeSettingsLoopGuard` is this move
@@ -42,16 +55,19 @@ function report(message: string) {
  * cost hours precisely because the symptom (a wedged display, a stale cache)
  * points nowhere near the cause.
  */
-export function assertDisplayContract(self: IAnyStateTreeNode) {
+export function assertDisplayContract(
+  self: IAnyStateTreeNode,
+  installedBy = "the per-region fetch foundation's afterAttach",
+) {
   if (process.env.NODE_ENV === 'production') {
     return
   }
   if (attached.has(self)) {
     report(
-      `${getMembers(self).name}: the fetch foundation's afterAttach ran twice on ` +
-        `one display, so all five fetch autoruns are installed twice (double ` +
-        `fetches, double clears). Our MST fork auto-chains lifecycle hooks — ` +
-        `delete the superAfterAttach() call from this display's afterAttach. ` +
+      `${getMembers(self).name}: ${installedBy} ran twice on one display, so ` +
+        `its fetch autoruns are installed twice (double fetches, double ` +
+        `clears). Our MST fork auto-chains lifecycle hooks — delete the ` +
+        `superAfterAttach() call from this display's afterAttach. ` +
         `See BaseLinearDisplay/CLAUDE.md, "Lifecycle traps".`,
     )
     return

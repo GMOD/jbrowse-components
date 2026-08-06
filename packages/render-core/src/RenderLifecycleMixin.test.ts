@@ -201,3 +201,46 @@ test('canvasDrawn resets to false when directly cleared (clearAllRpcData contrac
 
   expect(model.canvasDrawn).toBe(false)
 })
+
+// `painted`, the answer every reader outside the display should take. A display
+// that renders a deliberate static placeholder instead of a canvas (LD with the
+// triangle off, sequence past base resolution) never calls `canvasRef`, so no
+// backend is built and `canvasDrawn` can never flip. Read off the raw flag, its
+// `data-display-drawn` stayed `"false"` for the display's whole life and every
+// `waitForDisplaysDone` on the page timed out silently.
+const NoCanvasModel = types.compose(
+  'NoCanvasModel',
+  RenderLifecycleMixin(),
+  types.model({}).views(() => ({
+    get rendersCanvas() {
+      return false
+    },
+  })),
+)
+
+test('painted reports true for a display that renders no canvas', () => {
+  const model = NoCanvasModel.create()
+
+  expect(model.canvasDrawn).toBe(false)
+  expect(model.painted).toBe(true)
+})
+
+test('painted tracks canvasDrawn for a display that does render one', () => {
+  const model = TestModel.create()
+  const backend: FakeRenderingBackend = { uploads: [], renders: 0 }
+
+  expect(model.rendersCanvas).toBe(true)
+  expect(model.painted).toBe(false)
+
+  model.attachRenderingBackend<FakeRenderingBackend>(backend, {
+    upload: () => {},
+    render: () => true,
+  })
+
+  expect(model.painted).toBe(true)
+
+  // the teardown path resets it, so a display whose canvas unmounts goes back
+  // to reporting pending rather than claiming a paint it no longer has
+  model.stopRenderingBackend()
+  expect(model.painted).toBe(false)
+})

@@ -4,6 +4,7 @@ import {
 } from '@jbrowse/render-core/gpuDevice'
 import { createGpuContextLostError } from '@jbrowse/render-core/useRenderingBackend'
 import { act, render, waitFor } from '@testing-library/react'
+import { observer } from 'mobx-react'
 
 import DisplayChrome, { DisplayStatusChrome } from './DisplayChrome.tsx'
 import { TestChromeModel, stubFactory } from './chromeTestModel.ts'
@@ -150,6 +151,37 @@ test('data-display-phase reports loading even once canvasDrawn has flipped', asy
   expect(el.getAttribute('data-display-phase')).toBe('ready')
 })
 
+// The reader outside the display. `data-display-drawn` is what
+// `PENDING_DISPLAYS` (@jbrowse/browser-test-utils) selects on, and a display
+// that deliberately paints no canvas — sequence past base resolution, LD with
+// the triangle off — can never flip `canvasDrawn`. Read off the raw flag it
+// published `"false"` forever, so every `waitForDisplaysDone` on the page burned
+// its full timeout, silently (that wait swallows its own). `painted` is the
+// getter both states answer.
+test('a display that renders no canvas reports drawn, not pending', async () => {
+  const model = TestChromeModel.create({ rendersCanvas: false })
+  const { findByTestId } = renderChrome(model, 'chrome')
+
+  // `-done` and the attribute agree, and neither waits on a canvas that is
+  // never going to be mounted
+  const el = await findByTestId('chrome-done')
+  expect(el.getAttribute('data-display-drawn')).toBe('true')
+  expect(model.canvasDrawn).toBe(false)
+})
+
+test('a canvas-painting display still reports pending until first paint', async () => {
+  const model = TestChromeModel.create({})
+  const { findByTestId } = renderChrome(model, 'chrome')
+
+  const el = await findByTestId('chrome')
+  expect(el.getAttribute('data-display-drawn')).toBe('false')
+
+  act(() => {
+    model.setCanvasDrawn(true)
+  })
+  expect(el.getAttribute('data-display-drawn')).toBe('true')
+})
+
 test('terminal banner survives loading-condition churn (lazy-thunk guard)', async () => {
   const model = TestChromeModel.create({})
   model.setRegionTooLarge(true, 'Requested too much data')
@@ -241,26 +273,44 @@ describe('context-lost Canvas2D escape hatch', () => {
 // so "arc's chrome matches every other display's" is a claim under test rather
 // than one maintained by hand.
 describe('DisplayStatusChrome (no rendering backend)', () => {
-  function renderStatusChrome(
-    model: Instance<typeof TestChromeModel>,
-    testid = 'probe-display',
-  ) {
+  // An observer that reads `model.displayPhase` itself, because that is what
+  // both real callers are (`DisplayChromeBase`, and arc's
+  // `BaseDisplayComponent`): `DisplayStatusChrome` takes the phase as a prop
+  // precisely so the *caller* owns the tracking. Reading it once outside the
+  // render instead left the fixture pinned to a stale phase, and the suite
+  // passed only because `ErrorBar` used to re-derive its own visibility from
+  // `model.error` — i.e. only while an overlay was free to disagree with the
+  // phase it had been handed.
+  const StatusProbe = observer(function StatusProbe({
+    model,
+    testid,
+  }: {
+    model: Instance<typeof TestChromeModel>
+    testid: string
+  }) {
     // a backend-less display never reaches `renderError`, which is exactly what
     // DisplayStatusPhase encodes — so the phase is passed through unchanged
     const phase = model.displayPhase
     if (phase === 'renderError') {
       throw new Error('unreachable: the fixture sets no renderError here')
     }
-    return render(
+    return (
       <DisplayStatusChrome
         model={model}
         phase={phase}
-        drawn={model.canvasDrawn}
+        drawn={model.painted}
         testid={testid}
       >
         <div data-testid="probe-body" />
-      </DisplayStatusChrome>,
+      </DisplayStatusChrome>
     )
+  })
+
+  function renderStatusChrome(
+    model: Instance<typeof TestChromeModel>,
+    testid = 'probe-display',
+  ) {
+    return render(<StatusProbe model={model} testid={testid} />)
   }
 
   test('tooLarge replaces the body, same as the GPU chrome', async () => {
@@ -290,7 +340,7 @@ describe('DisplayStatusChrome (no rendering backend)', () => {
   test('owns the -done testid and publishes data-display-phase', async () => {
     const model = TestChromeModel.create({})
     model.setLoadingCondition(true)
-    const { findByTestId, rerender } = renderStatusChrome(model, 'status')
+    const { findByTestId } = renderStatusChrome(model, 'status')
 
     const el = await findByTestId('status')
     expect(el.getAttribute('data-display-phase')).toBe('loading')
@@ -298,11 +348,6 @@ describe('DisplayStatusChrome (no rendering backend)', () => {
     act(() => {
       model.setCanvasDrawn(true)
     })
-    rerender(
-      <DisplayStatusChrome model={model} phase="loading" drawn testid="status">
-        <div data-testid="probe-body" />
-      </DisplayStatusChrome>,
-    )
     await findByTestId('status-done')
   })
 

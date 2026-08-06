@@ -109,6 +109,48 @@ export function RenderLifecycleMixin() {
       get canRender(): boolean {
         return true
       },
+
+      /**
+       * #getter
+       * Overridable hook (default true): whether this display paints a canvas
+       * in its **current** configuration, as opposed to a deliberate static
+       * placeholder (LD with the triangle off, sequence past base resolution —
+       * both render a message where the `<canvas>` would go, so `canvasRef` is
+       * never called and `canvasDrawn` can never flip).
+       *
+       * Lives here, beside `canvasDrawn`, because every consumer of "has this
+       * display painted" needs the pair — and until 2026-08 each family
+       * declared its own copy (per-region hard-coded `true`, global carried the
+       * hook for LD), so a display could express the state only to whichever
+       * family it happened to compose. See `painted` below for the reader that
+       * was missed.
+       */
+      get rendersCanvas(): boolean {
+        return true
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * **The first-paint answer every consumer outside the display should
+       * read**, `canvasDrawn` being only the raw flag: a display that is
+       * deliberately not painting a canvas has finished, and saying otherwise
+       * is a lie that never resolves.
+       *
+       * The two `rendersCanvas: false` states each had three of their four
+       * consumers wired by hand — the loading scrim (`rendersCanvas` /
+       * `loadingSuppressed`) and the SVG export (`svgReadyExtraTerminal`) —
+       * while the fourth, `data-display-drawn`, went on publishing `"false"`
+       * forever off the raw flag. That attribute is what `PENDING_DISPLAYS`
+       * (`@jbrowse/browser-test-utils`) selects on, so a zoomed-out reference
+       * sequence track made every `waitForDisplaysDone` on the page burn its
+       * full timeout — silently, since that wait swallows its own. Same shape
+       * as `fetchInert` on the comparative side: the reader you forget is the
+       * one outside the display, so the display has to publish one name for it.
+       */
+      get painted(): boolean {
+        return self.canvasDrawn || !self.rendersCanvas
+      },
     }))
     .actions(self => ({
       /**

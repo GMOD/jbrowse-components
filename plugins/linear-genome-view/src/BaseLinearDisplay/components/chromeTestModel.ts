@@ -32,6 +32,9 @@ export const TestChromeModel = types
     regionTooLarge: false,
     regionTooLargeReason: '',
     canvasDrawn: false,
+    // the `rendersCanvas` half of `painted` below, so a suite can drive the
+    // "deliberate static placeholder" case the raw flag cannot express
+    rendersCanvas: true,
     statusMessage: types.maybe(types.string),
     statusProgress: types.maybe(types.number),
   })
@@ -47,6 +50,11 @@ export const TestChromeModel = types
     }),
   )
   .views(self => ({
+    // mirrors RenderLifecycleMixin.painted rather than restating a boolean, so
+    // the chrome suites exercise the production rule
+    get painted(): boolean {
+      return self.canvasDrawn || !self.rendersCanvas
+    },
     get displayPhase(): DisplayPhase {
       return computeDisplayPhase(
         {
@@ -76,6 +84,9 @@ export const TestChromeModel = types
     },
     setCanvasDrawn(value: boolean) {
       self.canvasDrawn = value
+    },
+    setRendersCanvas(value: boolean) {
+      self.rendersCanvas = value
     },
     setLoadingCondition(value: boolean) {
       self.loadingCondition = value

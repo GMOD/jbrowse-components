@@ -19,12 +19,19 @@ description: The shared display status chrome that owns loading, error, and retr
   `data-display-phase`, the other four overlays) is `DisplayStatusChromeBase`,
   which a display with no rendering backend renders directly. That is how arc
   gets the chrome instead of a copy of it.
-- The **loading term** is single-sourced too, in `computeLoadingTerm`: both
-  foundations evaluate the same expression and each constants out the one axis it
-  doesn't have (per-region the staleness term, global the `loadingSuppressed`
-  hook). Customize it through `loadingSuppressed` / `rendersCanvas`, never by
-  overriding `displayPhase` — an override restates every term and then silently
-  misses the next one added. Same rule the precedence has, one level down.
+- The **loading term** is single-sourced too, in `computeLoadingTerm`: all three
+  foundations (per-region, global, and arc's backend-free one) evaluate the same
+  expression and each constants out the axes it doesn't have — per-region the
+  staleness term, global the `loadingSuppressed` hook, arc both suppression axes
+  and the canvas. Customize it through `loadingSuppressed` / `rendersCanvas`,
+  never by overriding `displayPhase` — an override restates every term and then
+  silently misses the next one added. Same rule the precedence has, one level
+  down.
+- **`rendersCanvas` and `painted` live on `RenderLifecycleMixin`**, beside
+  `canvasDrawn`, so both LGV families read one hook rather than each hard-coding
+  the other's axis. A display that draws a deliberate static placeholder instead
+  of a canvas (sequence past base resolution, LD with the triangle off) answers
+  `rendersCanvas: false`; the chrome publishes `painted`, never the raw flag.
 - `renderError`/`tooLarge` replace the subtree (canvas unmounts,
   `backend.dispose()`); `error`/`loading` are overlays over a live canvas.
 - A status set while the phase is `ready` — work with no fetch behind it, e.g.
@@ -117,7 +124,7 @@ which owns the backend hook. They render `DisplayStatusChrome` — the *same
 component* the GPU chrome delegates to, not a parallel implementation — and
 supply the two facts it can't derive for a display whose canvas it doesn't own:
 `phase` (off `ArcFetchModel.displayPhase`, computed by `computeDisplayStatusPhase`)
-and `drawn` (arc's `canvasDrawn` analogue). Container, `-done` testid,
+and `drawn` (`ArcFetchModel.painted`, its `canvasDrawn` analogue). Container, `-done` testid,
 `data-display-phase`, banners and progress chip all come from the shared file.
 The phase lives on the model, not in the component, for the same reason it does
 for a GPU display: the component then can't disagree with it. See
@@ -255,7 +262,21 @@ Every LGV display emits **one** chrome element, and it carries four attributes:
 | `data-display-phase` | `ready` / `loading` / `error` | tracks the model |
 | `data-display-drawn` | `true` / `false` | tracks first paint |
 
-The readiness gate is `canvasDrawn` (GPU) / `svgReady` (arc), expressed once.
+**The readiness gate is `painted`, not `canvasDrawn`, and that distinction cost
+a silent timeout.** `painted` (`RenderLifecycleMixin`) is `canvasDrawn ||
+!rendersCanvas`: a display deliberately showing a static placeholder instead of
+a canvas never calls `canvasRef`, so no backend is built and the raw flag can
+never flip. Both such displays — sequence past base resolution, LD with the
+triangle off — had wired the *scrim* (`loadingSuppressed` / `rendersCanvas`) and
+the *export* (`svgReadyExtraTerminal`) by hand and missed the third reader,
+which is the one outside the display: `PENDING_DISPLAYS` selects
+`[data-display-drawn="false"]`, so a zoomed-out reference sequence track made
+every `waitForDisplaysDone` on the page burn its full timeout — invisibly, since
+that wait swallows its own. Same shape as `fetchInert` on the comparative side,
+same fix: one name the display publishes and every consumer reads. Arc, with no
+`RenderLifecycleMixin`, declares its own `painted` on `ArcFetchModel` for the
+same reason its `displayPhase` lives there — a component-side derivation is free
+to disagree with the model.
 `DisplayChrome` takes a **required** `testid` base and appends `-done`, so no
 consumer hand-writes the ternary. Displays that pixel-match the canvas also give
 the inner `<canvas>` a static selector (`hic_canvas`, `ld_canvas`,
@@ -475,7 +496,7 @@ elements per page and a direct import shows up there as a regression.
 
 ## Load-bearing gotchas
 
-Three things get cited here. Two are load-bearing, one is not, and conflating
+Four things get cited here. Three are load-bearing, one is not, and conflating
 them is why this section exists. All are guarded by `DisplayChrome.test.tsx` and
 restated in the `DisplayChrome.tsx` comment block.
 

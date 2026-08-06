@@ -149,7 +149,14 @@ test('opens reference sequence track and expects zoom in message', async () => {
   const { view, findByTestId, findAllByText } = await createView()
   fireEvent.click(await findByTestId(hts('volvox_refseq'), ...opts))
   view.setNewView(20, 0)
-  await findByTestId('sequence-display', {}, delay)
+  // `-done`, not the bare base: zoomed past base resolution the display renders
+  // the message instead of a `<canvas>`, so `canvasDrawn` can never flip — and
+  // it says so through `rendersCanvas: false`, which is what makes `painted`
+  // (and so `data-display-drawn`) report finished rather than pending forever.
+  // Waiting on the bare id here was the assertion that the old, wrong answer
+  // was in place; `PENDING_DISPLAYS` keys on the same signal, so every
+  // `waitForDisplaysDone` on a page showing this track used to time out.
+  await findByTestId('sequence-display-done', {}, delay)
   await findAllByText('Zoom in to see sequence')
 }, 30000)
 

@@ -64,9 +64,17 @@ export default function DisplayStatusChromeBase({
    */
   phase: DisplayStatusPhase
   /**
-   * First paint: `canvasDrawn` for a GPU display, arc's `drawn` for SVG. Drives
-   * the `-done` testid suffix and suppresses the loading overlay's anti-flash
-   * delay while there is nothing on screen to flash over.
+   * First paint: `painted` for a GPU display, arc's own `painted` for SVG.
+   * Drives the `-done` testid suffix, the published `data-display-drawn`, and
+   * the loading overlay's anti-flash suppression while there is nothing on
+   * screen to flash over.
+   *
+   * **`painted`, not the raw `canvasDrawn`.** A display showing a deliberate
+   * static placeholder instead of a canvas never mounts one, so `canvasDrawn`
+   * cannot flip and `data-display-drawn` reported `"false"` for the display's
+   * whole life — which is what `PENDING_DISPLAYS` selects on, so a zoomed-out
+   * reference sequence track timed out every `waitForDisplaysDone` on the page.
+   * See `RenderLifecycleMixin.painted`.
    */
   drawn: boolean
   overlays: DisplayChromeOverlays
@@ -79,8 +87,14 @@ export default function DisplayStatusChromeBase({
   testid: string
   children?: ReactNode
 } & Omit<ComponentPropsWithRef<'div'>, 'children'>) {
+  // Destructured so the JSX below reads as ordinary components rather than
+  // `<overlays.TooLarge/>` member expressions. `overlays` is a plain prop of
+  // component types (not an observable, not an MST model), so pulling the
+  // fields out has none of the staleness hazard the "don't destructure the
+  // model" rule is about.
+  const { TooLarge, ErrorBar, Loading, BackgroundProgress } = overlays
   if (phase === 'tooLarge') {
-    return <overlays.TooLarge model={model} />
+    return <TooLarge model={model} />
   }
   return (
     <div
@@ -116,8 +130,8 @@ export default function DisplayStatusChromeBase({
       data-display-phase={phase}
     >
       {children}
-      <overlays.ErrorBar model={model} />
-      <overlays.Loading
+      <ErrorBar model={model} visible={phase === 'error'} />
+      <Loading
         model={model}
         visible={phase === 'loading'}
         // initial load (nothing painted yet) shows the indicator immediately;
@@ -126,7 +140,7 @@ export default function DisplayStatusChromeBase({
       />
       {/* the same status channel, for work with no fetch behind it (clustering)
           — a corner chip, since the drawn content stays usable meanwhile */}
-      <overlays.BackgroundProgress model={model} visible={phase === 'ready'} />
+      <BackgroundProgress model={model} visible={phase === 'ready'} />
     </div>
   )
 }

@@ -21,15 +21,14 @@ const BaseDisplayComponent = observer(function BaseDisplayComponent({
   model: ArcDisplayModel
   children?: React.ReactNode
 }) {
-  const { error, features, displayPhase } = model
+  const { displayPhase, painted } = model
   return (
     <DisplayStatusChrome
       model={model}
       phase={displayPhase}
-      // first-paint signal (arc's `canvasDrawn` analogue): stays true across a
-      // refetch so the `-done` testid and the loading anti-flash don't churn on
-      // pan. The stricter, stale-aware `model.svgReady` is the export gate.
-      drawn={features !== undefined || !!error}
+      // first-paint signal (arc's `canvasDrawn` analogue), off the model for
+      // the same reason `phase` is — see `ArcFetchModel.painted`
+      drawn={painted}
       testid="arc-display"
     >
       {children}

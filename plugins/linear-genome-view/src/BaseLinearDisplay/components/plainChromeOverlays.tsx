@@ -172,10 +172,12 @@ const PlainTooLarge = observer(function PlainTooLarge({
 
 const PlainErrorBar = observer(function PlainErrorBar({
   model,
+  visible,
 }: {
   model: DisplayErrorBarModel
+  visible: boolean
 }) {
-  return model.error ? (
+  return visible && model.error ? (
     <div style={{ ...overlayBox, alignItems: 'flex-start' }} role="alert">
       <div style={chip}>
         <span style={{ wordBreak: 'break-word' }}>

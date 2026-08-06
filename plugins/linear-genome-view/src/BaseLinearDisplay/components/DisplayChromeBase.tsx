@@ -18,7 +18,11 @@ import type { ComponentPropsWithRef, ReactNode } from 'react'
 export type ChromeModel = {
   displayPhase: DisplayPhase
   height: number
-  canvasDrawn: boolean
+  // `painted`, never the raw `canvasDrawn`: a display deliberately showing a
+  // static placeholder instead of a canvas (sequence zoomed out, LD with the
+  // triangle off) has finished, and the raw flag can never say so. See
+  // `RenderLifecycleMixin.painted`.
+  painted: boolean
 } & StatusChromeModel
 
 interface CanvasHandle {
@@ -114,8 +118,12 @@ function DisplayChromeBaseInner<B extends { dispose(): void }>({
   )
   const phase = model.displayPhase
   if (phase === 'renderError') {
+    // destructured for the same reason as in DisplayStatusChromeBase: a plain
+    // component-typed prop reads better as `<RenderError/>` than as a member
+    // expression, and there is no observable here to stale
+    const { RenderError } = overlays
     return (
-      <overlays.RenderError
+      <RenderError
         error={model.renderError}
         onRetry={retry}
         height={model.height}
@@ -130,7 +138,7 @@ function DisplayChromeBaseInner<B extends { dispose(): void }>({
       {...chromeProps}
       model={model}
       phase={phase}
-      drawn={model.canvasDrawn}
+      drawn={model.painted}
       overlays={overlays}
     >
       {/* Keyed on `canvasKey` so a backend re-init always gets a canvas element

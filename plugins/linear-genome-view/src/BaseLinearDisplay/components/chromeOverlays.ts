@@ -34,10 +34,12 @@ export interface DisplayChromeOverlays {
    */
   TooLarge: ComponentType<{ model: TooLargeMessageModel }>
   /**
-   * Fetch error, drawn *over* a live canvas rather than replacing it. Renders
-   * null when `model.error` is unset -- the chrome mounts it unconditionally.
+   * Fetch error, drawn *over* a live canvas rather than replacing it. Mounted
+   * unconditionally like the two below, so `visible` (`displayPhase ===
+   * 'error'`) is the gate -- don't re-derive it from `model.error`, which is
+   * the same subtraction `displayPhase` exists to retire.
    */
-  ErrorBar: ComponentType<{ model: DisplayErrorBarModel }>
+  ErrorBar: ComponentType<{ model: DisplayErrorBarModel; visible: boolean }>
   /**
    * The loading scrim. `visible` is `displayPhase === 'loading'`; `immediate`
    * asks it to skip its anti-flash delay because nothing is painted yet.

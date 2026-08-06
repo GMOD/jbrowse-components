@@ -36,8 +36,8 @@ export interface RenderCanvasHandle {
  * `DisplayChrome`'s `-done` testid convention, which was the obvious extra to
  * hand it: these two views emit `synteny_canvas_done` /
  * `dotplot_webgl_canvas_done` with an **underscore**, and those selectors are a
- * frozen contract across four test systems (DISPLAYCHROME.md, "First-paint
- * `-done` testid"), only one of which runs outside CI. Centralizing the
+ * frozen contract across four test systems (DISPLAYCHROME.md, "One element per
+ * display"), only one of which runs outside CI. Centralizing the
  * convention here silently rewrote the separator; the jest suites caught it,
  * which is luckier than this class of change usually gets. Their readiness flag
  * is `settled`, not `canvasDrawn`, for a real reason too — a shared canvas
