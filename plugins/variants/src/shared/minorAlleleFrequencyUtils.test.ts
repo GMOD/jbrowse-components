@@ -105,6 +105,23 @@ describe('calculateAlleleCounts', () => {
     const result = calculateAlleleCounts(genotypes)
     expect(result).toEqual({ '0': 2, '1': 2, '2': 2 })
   })
+
+  // @gmod/vcf reports '' for a sample whose FORMAT fields stop before the GT
+  // column. It used to land in the counts as an allele named '', which entered
+  // the MAF denominator as a called allele and — once the empties outnumbered
+  // the real alt — became `mostFrequentAlt`, so every genuine alt cell painted
+  // as "other alt allele".
+  it('counts an empty genotype as a no-call, not an allele', () => {
+    const result = calculateAlleleCounts({
+      sample1: '0/0',
+      sample2: '0/1',
+      sample3: '',
+      sample4: '',
+    })
+    expect(result).toEqual({ '.': 2, '0': 3, '1': 1 })
+    expect(summarizeAlleleCounts(result).mostFrequentAlt).toBe('1')
+    expect(summarizeAlleleCounts(result).calledAlleleCount).toBe(4)
+  })
 })
 
 describe('calculateMinorAlleleFrequency', () => {

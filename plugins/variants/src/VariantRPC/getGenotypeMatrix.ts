@@ -184,7 +184,11 @@ export async function getGenotypeMatrix({
         }
       }
     } else {
-      const genotypes = feature.get('genotypes') as Record<string, string>
+      // `?? {}` for the sites-only case: a record with no genotypes at all has
+      // no `genotypes` field, and `readAltDosages` already reads '' as missing,
+      // so the whole row is MISSING rather than a crash on the lookup.
+      const genotypes =
+        (feature.get('genotypes') as Record<string, string> | undefined) ?? {}
       for (let k = 0; k < resolved.length; k++) {
         const gt = genotypes[resolved[k]!.key] ?? ''
         readAltDosages(gt, 0, gt.length, rowArrays[k]!, col, numAlts)

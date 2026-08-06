@@ -26,6 +26,14 @@ interface AlleleBuckets {
   otherCounts: Record<string, number>
 }
 
+// An EMPTY allele token is a no-call, not an allele index. @gmod/vcf reports an
+// empty GT string for a sample whose colon-separated FORMAT fields stop before
+// the GT column, and that string splits to `['']` — which fell through to
+// `otherCounts` as an allele named ''. Two consequences, both silent: it entered
+// the MAF denominator as a *called* allele, and once empties outnumbered the
+// real alt it became `mostFrequentAlt`, so every genuine alt cell compared
+// unequal and painted as "other alt allele". `readAltDosages` already reads the
+// same string as missing, so this is what puts the counters on its answer.
 function countStringAllele(allele: string, b: AlleleBuckets) {
   if (allele === '0') {
     b.count0++
@@ -35,7 +43,7 @@ function countStringAllele(allele: string, b: AlleleBuckets) {
     b.count2++
   } else if (allele === '3') {
     b.count3++
-  } else if (allele === '.') {
+  } else if (allele === '.' || allele === '') {
     b.countDot++
   } else {
     b.otherCounts[allele] = (b.otherCounts[allele] ?? 0) + 1
@@ -234,7 +242,8 @@ export function calculateAlleleCounts(genotypes: Record<string, string>) {
       continue
     }
 
-    // General case: polyploid or multi-digit alleles
+    // General case: polyploid or multi-digit alleles. '' is a no-call — see
+    // countStringAllele.
     for (const allele of genotype.split(GENOTYPE_SPLITTER)) {
       if (allele === '0') {
         count0++
@@ -244,7 +253,7 @@ export function calculateAlleleCounts(genotypes: Record<string, string>) {
         count2++
       } else if (allele === '3') {
         count3++
-      } else if (allele === '.') {
+      } else if (allele === '.' || allele === '') {
         countDot++
       } else {
         otherCounts[allele] = (otherCounts[allele] ?? 0) + 1

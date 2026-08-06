@@ -41,6 +41,14 @@ const DOT_CODE = 46 // '.'
  * the composite estimator runs on dosage, and one called allele doesn't pin the
  * dosage down. Its called allele still counts toward the allele totals, so MAF
  * uses every allele the file actually reports.
+ *
+ * A sample with no genotype at all is missing too. Both spellings of that are
+ * real: @gmod/vcf returns an EMPTY map when a record's FORMAT declares no GT
+ * column (so every lookup below is `undefined`), and an empty STRING for a
+ * sample whose colon-separated fields stop before GT's column. The first used to
+ * read `.length` off undefined and take the whole LD track down with a
+ * TypeError; the second split to `['']`, which is neither '.' nor '0', so it
+ * counted as a called alt allele and encoded the sample hom-alt.
  */
 function fillEncoded(
   out: Int8Array,
@@ -56,7 +64,11 @@ function fillEncoded(
   let nAltAlleles = 0
 
   for (let i = 0; i < samples.length; i++) {
-    const val = genotypes[samples[i]!]!
+    const val = genotypes[samples[i]!]
+    if (val === undefined || val.length === 0) {
+      out[i] = -1
+      continue
+    }
     const len = val.length
 
     if (len === 3) {

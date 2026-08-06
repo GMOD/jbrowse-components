@@ -1,5 +1,3 @@
-import { lazy } from 'react'
-
 import { makeSizeMenu } from '@jbrowse/core/ui'
 import { assembleLocString, getSession } from '@jbrowse/core/util'
 import { copyText } from '@jbrowse/core/util/copyText'
@@ -16,23 +14,19 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { capitalizeFirst } from './constants.ts'
 import { PHASE_SET_COLOR } from './getPhasedColor.ts'
+// lazy: this file is reached from a state model, so a dialog named here is in
+// every host's first paint — see ./lazyDialogs.ts
+import {
+  AddFiltersDialog,
+  MultiSampleVariantClusterDialog as ClusterDialog,
+  SetColorDialog,
+  SetRowHeightDialog,
+} from './lazyDialogs.ts'
 import { CONSEQUENCE_IMPACT_JEXL } from './variantConsequence.ts'
 import { SV_TYPE_COLOR } from './variantSvType.ts'
 
 import type { MultiSampleVariantBaseModel } from './MultiSampleVariantBaseModel.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
-
-// lazies
-const AddFiltersDialog = lazy(() => import('./components/AddFiltersDialog.tsx'))
-
-const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
-
-const ClusterDialog = lazy(
-  () => import('./components/MultiSampleVariantClusterDialog.tsx'),
-)
-const SetRowHeightDialog = lazy(
-  () => import('./components/SetRowHeightDialog.tsx'),
-)
 
 // Items for the "Show..." submenu — the toggles both displays share. Extended
 // by subclasses via super-capture (the regular display adds "Show reference

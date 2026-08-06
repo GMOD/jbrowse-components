@@ -42,7 +42,10 @@ function popcount32(v: number) {
  *
  * Genotypes without a `|` separator (unphased or haploid entries in an
  * otherwise-phased file) are left as all-zero — i.e. treated as missing at both
- * loci — rather than guessed at.
+ * loci — rather than guessed at. So is a sample with no genotype string at all,
+ * which is not a corner case: @gmod/vcf returns an EMPTY map for a record whose
+ * FORMAT declares no GT column, so every lookup here is `undefined` and reading
+ * `.length` off one took the whole LD track down with a TypeError.
  */
 export function packHaplotypesWithCounts(
   genotypes: Record<string, string>,
@@ -61,7 +64,10 @@ export function packHaplotypesWithCounts(
   let nCalledAlleles = 0
   let nAltAlleles = 0
   for (let s = 0; s < numSamples; s++) {
-    const val = genotypes[samples[s]!]!
+    const val = genotypes[samples[s]!]
+    if (val === undefined) {
+      continue
+    }
     const len = val.length
 
     if (len === 3 && val.charCodeAt(1) === PIPE_CODE) {

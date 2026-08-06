@@ -171,7 +171,9 @@ export async function getPhasedGenotypeMatrix({
           idx === -1 ? MISSING : indicators[idx * maxPloidy + rowHp[k]!]!
       }
     } else {
-      const genotypes = feature.get('genotypes') as Record<string, string>
+      // `?? {}` for the sites-only case — see getGenotypeMatrix.
+      const genotypes =
+        (feature.get('genotypes') as Record<string, string> | undefined) ?? {}
       // Rows of one sample are adjacent, so its genotype is scanned once and
       // read by each of its haplotype rows.
       let scannedKey: string | undefined

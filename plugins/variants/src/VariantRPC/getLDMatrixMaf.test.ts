@@ -34,8 +34,13 @@ function feature(start: number, genotypes: Record<string, string>): Feature {
   } as unknown as Feature
 }
 
-async function mafsFor(genotypesPerSnp: Record<string, string>[]) {
-  const samples = Object.keys(genotypesPerSnp[0]!)
+// The sample list comes from the adapter's header, not from any one record's
+// genotype map, so it is passed separately: a record can legitimately mention
+// fewer samples than the header declares (see the missing-GT cases below).
+async function mafsFor(
+  genotypesPerSnp: Record<string, string>[],
+  samples = Object.keys(genotypesPerSnp[0]!),
+) {
   jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
     getSources: async () => samples.map(name => ({ name })),
     getFeaturesInMultipleRegionsArray: async () =>
@@ -91,5 +96,33 @@ describe('LD minor allele frequency', () => {
   it('counts each phased haplotype allele, including a half-call', async () => {
     // dataIsPhased: 1 alt of 5 called haplotype alleles
     expect(await mafsFor([{ s1: '0|0', s2: '0|0', s3: '.|1' }])).toEqual([0.2])
+  })
+
+  // @gmod/vcf returns an EMPTY genotype map for a record whose FORMAT declares
+  // no GT column, and an empty STRING for a sample whose colon-separated fields
+  // stop before GT's. The first read `.length` off undefined and took the whole
+  // LD track down with a TypeError; the second counted as a called alt allele.
+  // Both are no-calls.
+  it('treats a sample with no genotype as a no-call, not an alt allele', async () => {
+    // s3 is absent from the map entirely: 1 alt of 4 called, not 1 of 5
+    expect(
+      await mafsFor([{ s1: '0/0', s2: '0/1' }], ['s1', 's2', 's3']),
+    ).toEqual([0.25])
+  })
+
+  it('treats an empty genotype string as a no-call', async () => {
+    expect(await mafsFor([{ s1: '0/0', s2: '0/1', s3: '' }])).toEqual([0.25])
+  })
+
+  it('survives a record whose FORMAT declares no GT at all', async () => {
+    expect(await mafsFor([{}], ['s1', 's2', 's3'])).toEqual([0])
+  })
+
+  it('treats a missing genotype as a no-call on a phased site', async () => {
+    // dataIsPhased comes off s1/s2; s3 has no entry, so 1 alt of 4 haplotype
+    // alleles. packHaplotypesWithCounts read `.length` off undefined here.
+    expect(
+      await mafsFor([{ s1: '0|0', s2: '0|1' }], ['s1', 's2', 's3']),
+    ).toEqual([0.25])
   })
 })
