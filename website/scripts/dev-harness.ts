@@ -14,6 +14,7 @@ import {
   BASE_CHROME_ARGS,
   createTestServer,
   findChromeExecutable,
+  waitForViewPhases,
 } from '@jbrowse/browser-test-utils'
 import { launch } from 'puppeteer'
 
@@ -99,4 +100,42 @@ export async function withHarness<T>(
     await browser.close()
     server.close()
   }
+}
+
+// Wait for the spec's own ready gate, if it declares one. Best-effort by
+// design: these are diagnostic scripts, so a selector that never appears is
+// worth saying out loud but not worth throwing away the measurement that was
+// about to be taken.
+export async function awaitReadySelector(
+  page: Page,
+  spec: SessionUrlSpec,
+  timeout: number,
+) {
+  if (spec.readySelector) {
+    await page
+      .waitForSelector(spec.readySelector, { visible: true, timeout })
+      .catch(() => {
+        console.log(`readySelector never appeared: ${spec.readySelector}`)
+      })
+  }
+}
+
+// Open the spec, wait for its view to come up, and print the wall clock — the
+// denominator every one of these scripts reports its own numbers against.
+// profile-spec doesn't use this: it times each phase separately, so it drives
+// the same waits itself with a mark between them.
+export async function openSpec(
+  page: Page,
+  spec: SessionUrlSpec,
+  port: number,
+  timeout: number,
+) {
+  const t0 = Date.now()
+  await page.goto(specUrl(spec, port), {
+    waitUntil: 'domcontentloaded',
+    timeout,
+  })
+  await waitForViewPhases(page, timeout)
+  await awaitReadySelector(page, spec, timeout)
+  console.log(`total wall ${((Date.now() - t0) / 1000).toFixed(1)}s`)
 }

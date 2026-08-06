@@ -10,12 +10,10 @@
 // a call or failing to make one; this can.
 import path from 'node:path'
 
-import { waitForViewPhases } from '@jbrowse/browser-test-utils'
-
 import {
   flagArg,
+  openSpec,
   resolveUrlSpec,
-  specUrl,
   specViewport,
   withHarness,
 } from './dev-harness.ts'
@@ -180,18 +178,7 @@ await withHarness(
         .catch(() => {})
     })
 
-    const url = specUrl(spec, PORT)
-    const t0 = Date.now()
-    await page.goto(url, { waitUntil: 'domcontentloaded', timeout })
-    await waitForViewPhases(page, timeout)
-    if (spec.readySelector) {
-      await page
-        .waitForSelector(spec.readySelector, { visible: true, timeout })
-        .catch(() => {
-          console.log(`readySelector never appeared: ${spec.readySelector}`)
-        })
-    }
-    console.log(`total wall ${((Date.now() - t0) / 1000).toFixed(1)}s`)
+    await openSpec(page, spec, PORT, timeout)
 
     const log = await page.evaluate(
       () => (window as unknown as { __rpcLog: RpcEvent[] }).__rpcLog,

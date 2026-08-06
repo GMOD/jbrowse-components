@@ -19,6 +19,7 @@ import {
 } from '@jbrowse/browser-test-utils'
 
 import {
+  awaitReadySelector,
   flagArg,
   jbrowseWebRoot,
   resolveUrlSpec,
@@ -202,11 +203,7 @@ await withHarness(
     await waitForDisplaysDone(page, timeout)
     mark('all displays painted')
     if (spec.readySelector) {
-      await page
-        .waitForSelector(spec.readySelector, { visible: true, timeout })
-        .catch(() => {
-          console.log(`readySelector never appeared: ${spec.readySelector}`)
-        })
+      await awaitReadySelector(page, spec, timeout)
       mark(`readySelector ${spec.readySelector}`)
     }
 
