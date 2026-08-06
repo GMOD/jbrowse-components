@@ -52,9 +52,8 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
 
   const { onPointerPosition, onClick } = wiggleMouseHandlers(model, computeHit)
 
-  // Resolved from the click, like `onClick` above — the hover a previous frame
-  // recorded can be stale, and in row mode it names one source anyway, where
-  // the sort ranks all of them at one column.
+  // Resolved from the click, like `onClick` above, rather than from the hover a
+  // previous frame recorded — the viewport moves under a stationary cursor.
   function onContextMenu(event: React.MouseEvent) {
     const rect = event.currentTarget.getBoundingClientRect()
     const hit = findMultiWiggleContextHit(
@@ -100,22 +99,13 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
       onContextMenu={onContextMenu}
     >
       {({ canvasRef, mouseTracker }) => (
-        <>
-          <MultiWiggleBody
-            model={model}
-            canvasRef={canvasRef}
-            totalWidth={totalWidth}
-            height={height}
-            mouseTracker={mouseTracker}
-          />
-          <ContextMenu
-            anchor={model.contextMenuInfo}
-            menuItems={() => model.contextMenuItems()}
-            onClose={() => {
-              model.closeContextMenu()
-            }}
-          />
-        </>
+        <MultiWiggleBody
+          model={model}
+          canvasRef={canvasRef}
+          totalWidth={totalWidth}
+          height={height}
+          mouseTracker={mouseTracker}
+        />
       )}
     </DisplayChrome>
   )
@@ -201,6 +191,17 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
         />
       ) : null}
       <WiggleTooltip model={model} mouseState={mouseState} />
+
+      {/* here rather than beside the handler that opens it: reading
+          `contextMenuInfo` in the outer component would attribute it to the
+          chrome's observer, re-rendering the whole subtree on every open */}
+      <ContextMenu
+        anchor={model.contextMenuInfo}
+        menuItems={() => model.contextMenuItems()}
+        onClose={() => {
+          model.closeContextMenu()
+        }}
+      />
     </>
   )
 })

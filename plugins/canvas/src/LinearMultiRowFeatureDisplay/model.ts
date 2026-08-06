@@ -22,11 +22,11 @@ import {
   computeClusterHierarchy,
   filterRowsBySubtree,
   reconcileLayout,
+  resetRowOrderMenuItems,
   treeSidebarOffset,
   treeSidebarRightEdge,
 } from '@jbrowse/tree-sidebar'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
-import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 import { observable } from 'mobx'
 
@@ -1000,19 +1000,9 @@ export default function stateModelFactory(
                 },
               ]
             : []),
-          // Same label and icon as the track menu's entry — one action,
-          // reachable from two places, so it must not read as two.
-          ...(self.layout.length
-            ? [
-                {
-                  label: 'Reset row order',
-                  icon: RestartAltIcon,
-                  onClick: () => {
-                    self.clearLayout()
-                  },
-                },
-              ]
-            : []),
+          // the same item the track menu spreads — one action reachable from
+          // two places, so it must not read as two
+          ...resetRowOrderMenuItems(self),
         ]
       },
     }))

@@ -1,4 +1,4 @@
-import { rowOrderByScoreAt } from './rowOrderByScoreAt.ts'
+import { sortSourcesByScoreAt } from './sortSourcesByScoreAt.ts'
 import { makeSource } from './testEnv.ts'
 
 import type { WiggleDataResult } from '../util.ts'
@@ -22,6 +22,16 @@ function data(
   return { sources: sources.map(([name, f]) => withFeatures(name, f)) }
 }
 
+// The rows being ordered: only `name` is read, so this stands in for the
+// display's layout-merged sources.
+function rows(...names: string[]) {
+  return names.map(name => ({ name }))
+}
+
+function order(sources: { name: string }[], d: WiggleDataResult, bp: number) {
+  return sortSourcesByScoreAt(sources, d, bp).map(s => s.name)
+}
+
 test('ranks the rows at the clicked base, highest score first', () => {
   const d = data(
     ['a', [[0, 100, 1]]],
@@ -29,7 +39,17 @@ test('ranks the rows at the clicked base, highest score first', () => {
     ['c', [[0, 100, 3]]],
   )
 
-  expect(rowOrderByScoreAt(['a', 'b', 'c'], d, 50)).toEqual(['b', 'c', 'a'])
+  expect(order(rows('a', 'b', 'c'), d, 50)).toEqual(['b', 'c', 'a'])
+})
+
+test('returns the rows it was handed, not just their names', () => {
+  // the caller writes the result straight to `layout`, so every field a row
+  // carries (a user's color, its group) has to survive the reorder
+  const d = data(['a', [[0, 100, 1]]], ['b', [[0, 100, 5]]])
+  const a = { name: 'a', color: 'red' }
+  const b = { name: 'b', color: 'blue' }
+
+  expect(sortSourcesByScoreAt([a, b], d, 50)).toEqual([b, a])
 })
 
 test('reads the feature covering the base, not the whole source', () => {
@@ -52,8 +72,8 @@ test('reads the feature covering the base, not the whole source', () => {
     ],
   )
 
-  expect(rowOrderByScoreAt(['a', 'b'], d, 50)).toEqual(['b', 'a'])
-  expect(rowOrderByScoreAt(['a', 'b'], d, 150)).toEqual(['a', 'b'])
+  expect(order(rows('a', 'b'), d, 50)).toEqual(['b', 'a'])
+  expect(order(rows('a', 'b'), d, 150)).toEqual(['a', 'b'])
 })
 
 test('sinks rows with no score at the base, keeping their order', () => {
@@ -66,12 +86,7 @@ test('sinks rows with no score at the base, keeping their order', () => {
     ['d', []],
   )
 
-  expect(rowOrderByScoreAt(['a', 'b', 'c', 'd'], d, 50)).toEqual([
-    'c',
-    'a',
-    'b',
-    'd',
-  ])
+  expect(order(rows('a', 'b', 'c', 'd'), d, 50)).toEqual(['c', 'a', 'b', 'd'])
 })
 
 test('treats NaN as no score rather than comparing it', () => {
@@ -81,7 +96,7 @@ test('treats NaN as no score rather than comparing it', () => {
     ['c', [[0, 100, 7]]],
   )
 
-  expect(rowOrderByScoreAt(['a', 'b', 'c'], d, 50)).toEqual(['c', 'b', 'a'])
+  expect(order(rows('a', 'b', 'c'), d, 50)).toEqual(['c', 'b', 'a'])
 })
 
 test('leaves tied rows in their incoming order', () => {
@@ -91,5 +106,5 @@ test('leaves tied rows in their incoming order', () => {
     ['c', [[0, 100, 4]]],
   )
 
-  expect(rowOrderByScoreAt(['b', 'a', 'c'], d, 50)).toEqual(['b', 'a', 'c'])
+  expect(order(rows('b', 'a', 'c'), d, 50)).toEqual(['b', 'a', 'c'])
 })

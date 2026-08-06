@@ -73,7 +73,7 @@ test('open a multibigwig multirowline track', async () => {
   )
 }, 60000)
 
-// The row-order sort itself is unit-tested (rowOrderByScoreAt, contextMenu);
+// The row-order sort itself is unit-tested (sortSourcesByScoreAt, contextMenu);
 // what only the real display can answer is whether the right-click reaches it —
 // the handler rides `DisplayChrome`'s prop spread onto the same container the
 // pointer measurement uses, and nothing else in the wiggle family binds one.

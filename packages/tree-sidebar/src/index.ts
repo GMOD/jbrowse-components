@@ -51,6 +51,7 @@ export {
   clearSubtreeFilterMenuItems,
   clusterProvenanceMenuItems,
   clusteringMenuItem,
+  resetRowOrderMenuItems,
   treeBranchLengthMenuItem,
 } from './treeMenuItems.ts'
 export {

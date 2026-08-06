@@ -1,5 +1,6 @@
 import { checkboxItem } from '@jbrowse/core/ui/menuItems'
 import AccountTreeIcon from '@mui/icons-material/AccountTree'
+import RestartAltIcon from '@mui/icons-material/RestartAlt'
 
 import { describeClusterProvenance } from './clusterProvenance.ts'
 
@@ -56,6 +57,38 @@ export function clearSubtreeFilterMenuItems(
           label: 'Clear subtree filter',
           onClick: () => {
             self.setSubtreeFilter(undefined)
+          },
+        },
+      ]
+    : []
+}
+
+interface RowOrderMenuModel {
+  layout: readonly unknown[]
+  clearLayout: () => void
+}
+
+// "Reset row order", or nothing when the rows are still in discovered order —
+// spread, don't insert.
+//
+// Gated on `layout` rather than on `clusterTree`, and so deliberately NOT in the
+// clustering submenu: three things write the order — a clustering run, the
+// colors/arrangement dialog, and the right-click sort — and only the first
+// leaves a tree behind, so an item filed under "Clustering" undoes one of them
+// while looking like it undoes all three. `clearLayout` resets any of them.
+//
+// Single-sourced here for the same reason as the subtree filter above: each
+// display offers it from both its track menu and its context menu, so spelled
+// out per call site it was four copies held together by a comment asserting
+// they were one action.
+export function resetRowOrderMenuItems(self: RowOrderMenuModel): MenuItem[] {
+  return self.layout.length
+    ? [
+        {
+          label: 'Reset row order',
+          icon: RestartAltIcon,
+          onClick: () => {
+            self.clearLayout()
           },
         },
       ]

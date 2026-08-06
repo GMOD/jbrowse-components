@@ -74,8 +74,8 @@ export function findRowHit(
     : undefined
 }
 
-// What findMultiWiggleHit reads off the display model — spelled out rather than
-// taking the full model so the hit logic stays unit-testable without MST.
+// What the hit functions below read off the display model — spelled out rather
+// than taking the full model so the hit logic stays unit-testable without MST.
 export interface MultiWiggleHitModel {
   effectiveRowHeight: number
   sources: VisibleSource[]
@@ -100,32 +100,6 @@ export interface MultiWiggleHitModel {
 // positions over them are excluded here. Doing it at the hit (rather than hiding
 // the tooltip downstream) is what keeps a click on a tree node from also opening
 // a feature widget behind the node menu.
-// Where a right-click landed: which loaded region, and the base under the
-// cursor. Deliberately not the hovered feature — in row mode that resolves the
-// one source the cursor is over, and the row-order sort needs every source's
-// score at the same column, which it reads back out of the region's data.
-export interface MultiWiggleContextHit {
-  displayedRegionIndex: number
-  bp: number
-}
-
-// The genomic column a right-click names, or undefined when the click wasn't
-// over loaded data. Same tree-sidebar exclusion as findMultiWiggleHit: the
-// sidebar overlays the left of this container and owns its own node menu.
-export function findMultiWiggleContextHit(
-  model: MultiWiggleHitModel,
-  regions: MouseRegion[],
-  offsetX: number,
-): MultiWiggleContextHit | undefined {
-  if (offsetX < treeSidebarRightEdge(model)) {
-    return undefined
-  }
-  const hit = hitTestMouse(regions, model.rpcDataMap, offsetX)
-  return hit
-    ? { displayedRegionIndex: hit.region.displayedRegionIndex, bp: hit.bp }
-    : undefined
-}
-
 export function findMultiWiggleHit(
   model: MultiWiggleHitModel,
   regions: MouseRegion[],
@@ -164,4 +138,35 @@ export function findMultiWiggleHit(
         region.refName,
         effectiveSummaryScoreMode,
       )
+}
+
+// Where a right-click landed: which loaded region, and the base under the
+// cursor. Deliberately not the hovered feature — in row mode that names the one
+// source the cursor is over, and the row-order sort ranks every source at the
+// same column, which it reads back out of that region's data.
+export interface MultiWiggleContextHit {
+  displayedRegionIndex: number
+  bp: number
+}
+
+// The genomic column a right-click names, or undefined when the click wasn't
+// over loaded data. Excludes the tree sidebar for the same reason
+// findMultiWiggleHit does. It resolves a column rather than a feature, so it
+// takes only the data map and the sidebar geometry — the row and score fields
+// of the hit model have no part in it.
+export function findMultiWiggleContextHit(
+  model: Pick<
+    MultiWiggleHitModel,
+    'rpcDataMap' | 'showTree' | 'hierarchy' | 'treeAreaWidth'
+  >,
+  regions: MouseRegion[],
+  offsetX: number,
+): MultiWiggleContextHit | undefined {
+  if (offsetX < treeSidebarRightEdge(model)) {
+    return undefined
+  }
+  const hit = hitTestMouse(regions, model.rpcDataMap, offsetX)
+  return hit
+    ? { displayedRegionIndex: hit.region.displayedRegionIndex, bp: hit.bp }
+    : undefined
 }

@@ -20,6 +20,7 @@ import {
   buildSpatialIndex,
   clusteringMenuItem,
   computeClusterHierarchy,
+  resetRowOrderMenuItems,
 } from '@jbrowse/tree-sidebar'
 import {
   computeYTicks,
@@ -27,7 +28,6 @@ import {
   makeShowSubMenu,
 } from '@jbrowse/wiggle-core'
 import PaletteIcon from '@mui/icons-material/Palette'
-import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
@@ -45,7 +45,7 @@ import {
   makeWiggleScoreSubMenu,
 } from '../shared/wiggleMenuItems.tsx'
 import { MULTI_WIGGLE_RENDERING_GROUPS } from '../util.ts'
-import { rowOrderByScoreAt } from './rowOrderByScoreAt.ts'
+import { sortSourcesByScoreAt } from './sortSourcesByScoreAt.ts'
 import {
   buildEditableSources,
   buildSources,
@@ -428,24 +428,13 @@ export default function stateModelFactory(
          */
         sortRowsByScoreAt({ displayedRegionIndex, bp }: MultiWiggleContextHit) {
           const data = self.rpcDataMap.get(displayedRegionIndex)
-          if (!data) {
-            return
+          if (data) {
+            // editableSources, not `sources`: layout-merged (so a user's colors
+            // survive the reorder) and unfiltered by the subtree, so a focused
+            // clade doesn't persist itself as the whole row order and drop
+            // everything it was hiding.
+            self.setLayout(sortSourcesByScoreAt(self.editableSources, data, bp))
           }
-          // editableSources, not `sources`: layout-merged (so a user's colors
-          // survive the reorder) and unfiltered by the subtree, so a focused
-          // clade doesn't persist itself as the whole row order and drop
-          // everything it was hiding.
-          const byName = new Map(self.editableSources.map(s => [s.name, s]))
-          const order = rowOrderByScoreAt(
-            self.editableSources.map(s => s.name),
-            data,
-            bp,
-          )
-          self.setLayout(
-            order
-              .map(n => byName.get(n))
-              .filter((s): s is Source => s !== undefined),
-          )
         },
 
         /**
@@ -601,24 +590,9 @@ export default function stateModelFactory(
               treeApplies: !self.isOverlay,
             },
           ),
-          // Top-level rather than inside the Clustering submenu, where it used
-          // to sit as "Clear clustering": three things now write the row order
-          // — clustering, the arrangement dialog, and the right-click score
-          // sort — and only the first leaves a `clusterTree`, so a
-          // clustering-gated reset couldn't undo the other two. Same label and
-          // icon as the context menu's copy (and as the multi-row feature
-          // display's), because it is one action reachable from two places.
-          ...(self.layout.length
-            ? [
-                {
-                  label: 'Reset row order',
-                  icon: RestartAltIcon,
-                  onClick: () => {
-                    self.clearLayout()
-                  },
-                },
-              ]
-            : []),
+          // top-level rather than inside the Clustering submenu, where it used
+          // to sit as "Clear clustering" — see resetRowOrderMenuItems
+          ...resetRowOrderMenuItems(self),
           ...makeResolutionSubMenu(self),
           makeWiggleScoreSubMenu(self),
           ...makeShowSubMenu(showItems),
@@ -672,17 +646,7 @@ export default function stateModelFactory(
             : []),
           // stays in an overlay mode, where the sort doesn't: an order set in a
           // row mode is still what that display comes back to
-          ...(self.layout.length
-            ? [
-                {
-                  label: 'Reset row order',
-                  icon: RestartAltIcon,
-                  onClick: () => {
-                    self.clearLayout()
-                  },
-                },
-              ]
-            : []),
+          ...resetRowOrderMenuItems(self),
         ]
       },
     }))

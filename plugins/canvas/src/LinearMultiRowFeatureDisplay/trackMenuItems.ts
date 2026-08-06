@@ -4,12 +4,12 @@ import { checkboxItem, radioItems } from '@jbrowse/core/ui/menuItems'
 import { getSession } from '@jbrowse/core/util'
 import {
   clusteringMenuItem,
+  resetRowOrderMenuItems,
   treeBranchLengthMenuItem,
 } from '@jbrowse/tree-sidebar'
 import HeightIcon from '@mui/icons-material/Height'
 import LegendToggleIcon from '@mui/icons-material/LegendToggle'
 import PaletteIcon from '@mui/icons-material/Palette'
-import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { MIN_SEPARATOR_ROW_PX } from './rendering/rowBand.ts'
@@ -220,23 +220,9 @@ export function buildMultiRowTrackMenuItems(
         ])
       },
     },
-    // Top-level rather than nested under "Clustering" (where the other
-    // clusterable displays keep theirs) because all three ways of reordering
-    // rows land in `layout`: clustering, the arrangement dialog, and the
-    // right-click sort. Only the first leaves a `clusterTree`, so a
-    // clustering-gated item left a dialog reorder undoable from the dialog
-    // alone.
-    ...(self.layout.length
-      ? [
-          {
-            label: 'Reset row order',
-            icon: RestartAltIcon,
-            onClick: () => {
-              self.clearLayout()
-            },
-          },
-        ]
-      : []),
+    // top-level rather than nested under "Clustering", which is only one of the
+    // three things that write `layout` — see resetRowOrderMenuItems
+    ...resetRowOrderMenuItems(self),
     clusteringMenuItem(
       self,
       {

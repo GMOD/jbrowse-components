@@ -2,7 +2,7 @@ import { findFeatureAtBp } from '../shared/wiggleComponentUtils.ts'
 
 import type { WiggleDataResult } from '../util.ts'
 
-// Order rows by the score each source carries at genomic `bp` — the wiggle
+// Rows ordered by the score each source carries at genomic `bp` — the wiggle
 // analogue of the multi-row feature display's "sort rows by color here" and of
 // alignments' "sort by base at position". Highest first, so the clicked column
 // reads top-to-bottom as a ranking: a cohort of coverage tracks sorted at a
@@ -21,11 +21,15 @@ import type { WiggleDataResult } from '../util.ts'
 // order; the sort is otherwise stable. NaN is treated as no score for the same
 // reason — a wig file may carry one, and comparing it scrambles the order
 // instead of sinking that row.
-export function rowOrderByScoreAt(
-  sourceNames: string[],
+//
+// Returns the sources themselves rather than their names, so the caller writes
+// the result straight to `layout` — the rows it hands in are already
+// layout-merged, and a name round-trip would only re-look-up what it had.
+export function sortSourcesByScoreAt<T extends { name: string }>(
+  sources: T[],
   data: WiggleDataResult,
   bp: number,
-): string[] {
+): T[] {
   const scoreByName = new Map<string, number>()
   for (const s of data.sources) {
     const i = findFeatureAtBp(s.featurePositions, s.numFeatures, bp)
@@ -36,12 +40,12 @@ export function rowOrderByScoreAt(
       }
     }
   }
-  return sourceNames
-    .map((name, idx) => ({ name, idx, v: scoreByName.get(name) }))
+  return sources
+    .map((source, idx) => ({ source, idx, v: scoreByName.get(source.name) }))
     .sort((a, b) => {
       const av = a.v ?? Number.NEGATIVE_INFINITY
       const bv = b.v ?? Number.NEGATIVE_INFINITY
       return av !== bv ? bv - av : a.idx - b.idx
     })
-    .map(x => x.name)
+    .map(x => x.source)
 }
