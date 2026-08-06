@@ -53,6 +53,26 @@
       }
     },
     {
+      "trackId": "cnv_1000g_zarr_wg",
+      "name": "1000 Genomes copy number, 2504 individuals, genome-wide (Zarr)",
+      "category": ["Copy number"],
+      "type": "MultiQuantitativeTrack",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "MultiWiggleZarrAdapter",
+        "uri": "https://jbrowse.org/demos/1000g/qm2_cn_wg_10kb.zarr"
+      },
+      "displayDefaults": {
+        "defaultRendering": "multirowdensity",
+        "bicolorPivot": 2,
+        "minScore": 0,
+        "maxScore": 4,
+        "posColor": "#b2182b",
+        "negColor": "#2166ac",
+        "height": 500
+      }
+    },
+    {
       "trackId": "ncbi_refseq_hg38",
       "name": "NCBI RefSeq genes",
       "category": ["Annotation"],
