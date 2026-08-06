@@ -108,16 +108,11 @@ export interface CanvasHandle {
 // babel-plugin-react-compiler, so it carries `'use no memo'` below to opt out —
 // otherwise the compiler can memoize a MobX read on stable identity and drop an
 // update (see agent-docs/reference/COMPILER_TERNARY_FINDING.md).
-function DisplayChromeBaseInner<B extends { dispose(): void }>({
-  model,
-  factory,
-  children,
-  overlays,
-  onPointerPosition,
-  onMouseMove,
-  onMouseLeave,
-  ...chromeProps
-}: {
+// Exported so `DisplayChrome` can bind `overlays` off it rather than restate it.
+// It restated the list by hand until 2026-08, and that is exactly how the handle
+// grew a `containerRef` no display ever read: declared here, copied there, and
+// then only removable in two places at once.
+export type DisplayChromeBaseProps<B> = {
   model: ChromeModel & RenderLifecycleModel<B>
   factory: (canvas: HTMLCanvasElement) => Promise<B>
   children: (handle: CanvasHandle) => ReactNode
@@ -130,7 +125,18 @@ function DisplayChromeBaseInner<B extends { dispose(): void }>({
    * come from two different rects in two different frames.
    */
   onPointerPosition?: (state?: MouseState) => void
-} & Omit<ComponentPropsWithRef<'div'>, 'children'>) {
+} & Omit<ComponentPropsWithRef<'div'>, 'children'>
+
+function DisplayChromeBaseInner<B extends { dispose(): void }>({
+  model,
+  factory,
+  children,
+  overlays,
+  onPointerPosition,
+  onMouseMove,
+  onMouseLeave,
+  ...chromeProps
+}: DisplayChromeBaseProps<B>) {
   // eslint-plugin-react-compiler (react-compiler@19.1.0-rc.2) thinks this
   // directive is unused, but the babel plugin (@1.0.0, the real build) DOES
   // compile this fn — version skew. The directive is load-bearing; keep it.

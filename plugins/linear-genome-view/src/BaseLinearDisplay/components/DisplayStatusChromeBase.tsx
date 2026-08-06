@@ -46,16 +46,9 @@ export type StatusChromeModel = DisplayErrorBarModel &
 // canvas to interact with, and the ref re-attaches on force-load. Don't "fix"
 // it by nesting the banner. `error` and `loading` are overlays drawn *over* the
 // still-mounted body.
-export default function DisplayStatusChromeBase({
-  model,
-  phase,
-  drawn,
-  overlays,
-  testid,
-  style,
-  children,
-  ...divProps
-}: {
+// Exported for the same reason `DisplayChromeBaseProps` is: `DisplayStatusChrome`
+// binds `overlays` off this type instead of restating the list.
+export type DisplayStatusChromeBaseProps = {
   model: StatusChromeModel
   /**
    * The display's own mutually-exclusive state, ranked by
@@ -86,7 +79,18 @@ export default function DisplayStatusChromeBase({
    */
   testid: string
   children?: ReactNode
-} & Omit<ComponentPropsWithRef<'div'>, 'children'>) {
+} & Omit<ComponentPropsWithRef<'div'>, 'children'>
+
+export default function DisplayStatusChromeBase({
+  model,
+  phase,
+  drawn,
+  overlays,
+  testid,
+  style,
+  children,
+  ...divProps
+}: DisplayStatusChromeBaseProps) {
   // Destructured so the JSX below reads as ordinary components rather than
   // `<overlays.TooLarge/>` member expressions. `overlays` is a plain prop of
   // component types (not an observable, not an MST model), so pulling the

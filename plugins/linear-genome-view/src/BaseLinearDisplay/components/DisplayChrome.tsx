@@ -8,13 +8,9 @@ import DisplayLoadingOverlay from './DisplayLoadingOverlay.tsx'
 import DisplayRenderErrorOverlay from './DisplayRenderErrorOverlay.tsx'
 import DisplayStatusChromeBase from './DisplayStatusChromeBase.tsx'
 
-import type { CanvasHandle, ChromeModel } from './DisplayChromeBase.tsx'
-import type { StatusChromeModel } from './DisplayStatusChromeBase.tsx'
+import type { DisplayChromeBaseProps } from './DisplayChromeBase.tsx'
+import type { DisplayStatusChromeBaseProps } from './DisplayStatusChromeBase.tsx'
 import type { DisplayChromeOverlays } from './chromeOverlays.ts'
-import type { MouseState } from '@jbrowse/core/ui/useMouseTracking'
-import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
-import type { RenderLifecycleModel } from '@jbrowse/render-core/useRenderingBackend'
-import type { ComponentPropsWithRef, ReactNode } from 'react'
 
 export type { ChromeModel } from './DisplayChromeBase.tsx'
 export type { StatusChromeModel } from './DisplayStatusChromeBase.tsx'
@@ -77,15 +73,11 @@ function useChromeOverlays() {
  * the observer.
  */
 export default function DisplayChrome<B extends { dispose(): void }>(
-  props: {
-    model: ChromeModel & RenderLifecycleModel<B>
-    factory: (canvas: HTMLCanvasElement) => Promise<B>
-    // the handle type itself, not a copy of its shape: this file forwards to
-    // `DisplayChromeBase` and has no business restating what it hands the body
-    children: (handle: CanvasHandle) => ReactNode
-    testid: string
-    onPointerPosition?: (state?: MouseState) => void
-  } & Omit<ComponentPropsWithRef<'div'>, 'children'>,
+  // The base's own props minus the one thing this file supplies. Restating the
+  // list here is how the render-prop handle grew a `containerRef` no display
+  // ever read: declared on `CanvasHandle`, copied into a second inline shape
+  // here, and then removable only in two places at once.
+  props: Omit<DisplayChromeBaseProps<B>, 'overlays'>,
 ) {
   return <DisplayChromeBase {...props} overlays={useChromeOverlays()} />
 }
@@ -105,13 +97,7 @@ export default function DisplayChrome<B extends { dispose(): void }>(
  * is the observer.
  */
 export function DisplayStatusChrome(
-  props: {
-    model: StatusChromeModel
-    phase: DisplayStatusPhase
-    drawn: boolean
-    testid: string
-    children?: ReactNode
-  } & Omit<ComponentPropsWithRef<'div'>, 'children'>,
+  props: Omit<DisplayStatusChromeBaseProps, 'overlays'>,
 ) {
   return <DisplayStatusChromeBase {...props} overlays={useChromeOverlays()} />
 }
