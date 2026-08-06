@@ -124,7 +124,7 @@ export interface CreateLinearGenomeViewOptions {
 export interface LinearGenomeViewController {
   /** the underlying MST model, or `undefined` until the first build resolves */
   readonly viewState: ViewModel | undefined
-  /** resolves with the model once the (re)build settles */
+  /** resolves with the model once the build settles */
   whenReady(): Promise<ViewModel>
   setLocation(location: string): Promise<void>
   addTrack(track: TrackInput): void
