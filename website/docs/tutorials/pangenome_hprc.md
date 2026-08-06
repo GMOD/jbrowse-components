@@ -213,44 +213,23 @@ segments. Where each one attaches comes from the
 the bubble lane and the [allele inventory](#the-allele-inventory) give their
 lengths.
 
-Two settings control whether that picture is readable.
-
-**Bubble spread**, in the graph's settings menu, sets a floor on how long a node
-is drawn. The force engine comes from Bandage, whose graphs are assembled
-contigs of kilobases to megabases, so its own floor is tiny; a pangenome allele
-is a few bases, which clamps to a stub whose two arms land inside one node
-thickness of each other, and the whole window draws as a single thread. **Open
-bubbles** gives every allele a drawn length. The cost is that below the floor a
-node no longer draws proportional to its length, so read lengths off the
-anchored layout or the [allele inventory](#the-allele-inventory), not off this
-picture.
-
-The other is the **window**, and wider is not better. The layout scales itself
-to a target node size, so a window with ten times the nodes draws ten times as
-long a thread at a tenth the size and inks the same fraction of the canvas: the
-loops that carry the figure become specks. The windows in the table below are
-around a hundred kb for that reason, and a whole chromosome is a linear view's
-job, not this one's.
-
-### A detour that starts outside the window
-
-**Graph context**, in the same settings menu, is how far the cut follows links
-out of the region, and it defaults to **1 hop**. That matters here more than on
-a small graph. An allele's interior segments are indexed under their own
-haplotype's sequence, not GRCh38, so a query on the reference never reaches
-them: at **None** a detour that leaves the backbone before the window and
-rejoins after it arrives as two short stubs, which read as small insertions
-rather than as the one large event they are. A hop closes those, at the cost of
-one tabix query per off-reference segment already reached, and it expands only
-over off-reference segments, so it does not walk the backbone out of the window.
-
-Raise it to **2 hops** when the graph still looks emptier than the bubble lane
-above it says it should be, which here means an allele that has alleles of its
-own; the
+**Bubble spread** and **Graph context** decide whether that picture is readable,
+and the
 [graph genome view guide](/docs/user_guides/graph_genome_view#two-settings-that-decide-what-is-drawn)
-draws the same window both ways on a graph small enough to see it happen. To cut
-an exact slice instead, `gfatools view -R <region> -r 1` walks the graph itself
-rather than a coordinate frontier.
+covers what each does on a graph small enough to watch it happen. Two things
+about them are specific to a graph this size.
+
+Raise **Graph context** to **2 hops** when the drawing looks emptier than the
+bubble lane above it says it should be. At this scale that means an allele with
+alleles of its own, which one hop reaches the entrance of and not the interior.
+To cut an exact slice instead of a coordinate frontier,
+`gfatools view -R <region> -r 1` walks the graph itself.
+
+And the **window** is not a free parameter: the layout scales to a target node
+size, so ten times the nodes draws ten times as long a thread at a tenth the
+size and inks the same fraction of the canvas, turning the loops that carry the
+figure into specks. That is why every window in the table below is around a
+hundred kb.
 
 ### What the graph shows that a linear view cannot
 
@@ -332,10 +311,9 @@ traversal is recoverable from the VCF.
 
 ### The Layout dropdown
 
-**Force-directed** draws the graph's own shape, with no axis. **Anchored**, the
-mode the deletion figure above uses, puts x back on GRCh38 and stacks the
-alternate alleles below the backbone by rank. The same MHC class II window drawn
-both ways:
+The [guide](/docs/user_guides/graph_genome_view#three-layouts) sets out what the
+three modes put on each axis. What that costs at this scale is the same MHC
+class II window drawn both ways:
 
 <Figure caption="One MHC class II subgraph drawn both ways, same window and same tracks above it. Left, force-directed: the drawing is the graph's shape and nothing in it lines up with the linear view. Right, anchored: every x is a GRCh38 coordinate, so the backbone is one straight line and each allele hangs below where it attaches, stacked by rank. Rings 1 and 2 are the same two nodes in both halves, a 12 kb reference stretch and the 12.3 kb allele over it: touching in the force drawing, rows apart on the anchored one." src="/img/pangenome/hprc_mhc_anchored.png" links="Force-directed=pangenome/hprc_mhc_layout_force,Anchored=pangenome/hprc_mhc_layout_anchored" />
 
@@ -368,14 +346,12 @@ invariant rather than checked and found nothing.
 
 ### Which haplotype an allele came from
 
-The **Layout** dropdown's third mode, **Sample rows**, keeps x on GRCh38 and
-gives each contributing assembly its own row, which at a dense locus is the only
-row that means anything: rank is build order, so one rank holds alleles from a
-dozen different haplotypes while a sample row is one haplotype. The
-[graph genome view guide](/docs/user_guides/graph_genome_view#three-layouts)
-pictures it on five strains, which is the scale it reads at. With 464
-haplotypes, what it says at a locus is which of them donated sequence there, and
-the drawing is a row per donor rather than a shape.
+**Sample rows** is the mode that answers this, because rank is build order: one
+rank holds alleles from a dozen haplotypes, where a sample row is one haplotype.
+The guide pictures it on five strains, which is the scale it reads as a shape
+at. With 464 it stops being a shape and becomes a list of donors, which is still
+the right answer to "whose sequence is this" and the wrong one to "what does
+this locus look like".
 
 LPA is the case for the shape instead, since its KIV-2 repeat sets Lp(a) level
 and copy number there is not callable from short reads:
