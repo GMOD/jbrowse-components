@@ -9,6 +9,12 @@ real pipeline steps. It downloads no data. The one pipeline it runs is
 sv_multihop's, against a synthetic allele it builds itself
 (check_sv_multihop_pipeline.py), and only when samtools and minimap2 are there.
 
+`scripts/check-shell-pipefail.ts` is the sibling guard for one thing shellcheck
+0.11 does not diagnose: `| head` under `set -o pipefail`, which exits 141 and
+stops a script mid-run having printed something that looks like completion. It
+reads every tracked *.sh rather than just build_*.sh, because two of the five
+instances it found were in scan_hic_translocation.sh.
+
 Usage: python3 scripts/check-build-scripts.py
 """
 import ast
