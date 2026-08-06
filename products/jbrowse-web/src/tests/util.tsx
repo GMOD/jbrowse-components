@@ -292,14 +292,37 @@ function assertNoDanglingSvgRefs(svg: string) {
 }
 
 /**
- * Extract the exported SVG string from the mocked `saveAs`. Relies on the
+ * Every SVG string exported so far in this test, in call order. Relies on the
  * `svgExportMocks.ts` Blob mock, which stores constructor args as
  * `{ content: [svgString], options }`.
  */
-export function getSavedSvg(): string {
+export function getSavedSvgs(): string[] {
   const mock = saveAs as unknown as { mock: { calls: unknown[][] } }
-  const blob = mock.mock.calls[0]![0] as { content: string[] }
-  return blob.content[0]!
+  return mock.mock.calls.map(call => {
+    const blob = call[0] as { content: string[] }
+    return blob.content[0]!
+  })
+}
+
+/**
+ * The SVG from the one export this test did.
+ *
+ * Throws rather than picking one when a test exported more than once. It used
+ * to return the first silently, which is a trap a comparison test falls into
+ * from the far side: export with an option off, export with it on, call this
+ * twice, and both reads hand back the *first* string — so the test passes or
+ * fails on whether the option had no effect, which is the opposite of what it
+ * says it checks. Use {@link getSavedSvgs} and index when comparing.
+ */
+export function getSavedSvg(): string {
+  const svgs = getSavedSvgs()
+  if (svgs.length !== 1) {
+    throw new Error(
+      `getSavedSvg expects exactly one export in a test, saw ${svgs.length}. ` +
+        `Use getSavedSvgs() and index if you are comparing two exports.`,
+    )
+  }
+  return svgs[0]!
 }
 
 export async function exportAndVerifySvg({

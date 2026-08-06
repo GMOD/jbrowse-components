@@ -6,7 +6,14 @@ import path from 'node:path'
 import { fireEvent } from '@testing-library/react'
 import { createCanvas as nodeCreateCanvas } from 'canvas'
 
-import { createView, doBeforeEach, getSavedSvg, hts, setup } from './util.tsx'
+import {
+  createView,
+  doBeforeEach,
+  getSavedSvg,
+  getSavedSvgs,
+  hts,
+  setup,
+} from './util.tsx'
 
 jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
 
@@ -247,6 +254,85 @@ test('SVG export labels ruler coordinates when many regions are visible', async 
 
   await view.exportSvg({ rasterizeLayers: false })
   expect(rulerLabelXs(getSavedSvg()).length).toBeGreaterThan(0)
+}, 45000)
+
+// The export dialog offers four track-label placements, a gridlines checkbox and
+// a font picker, and only the defaults ('offset', no gridlines, app font) were
+// ever exercised through a real export. Placement itself is unit-tested in
+// SVGTrackLabel.test.tsx; what only a whole export can check is that the *rest*
+// of the canvas was sized for what the labels do.
+
+// The 'left' gutter is `widest name + TRACK_LABEL_GAP`, and SVGTrackLabel
+// right-aligns at `trackLabelOffset - TRACK_LABEL_GAP`, so the label's own left
+// edge is the thing that has to stay on canvas.
+function leftLabelExtent(svg: string, name: string) {
+  const label = new RegExp(
+    `<text x="([\\d.-]+)" y="[\\d.-]+" text-anchor="end" font-size="(\\d+)"[^>]*>${name}</text>`,
+  ).exec(svg)
+  return label
+    ? { rightEdge: Number(label[1]), fontSize: Number(label[2]) }
+    : undefined
+}
+
+test('left track labels stay inside the gutter the export widened for them', async () => {
+  const { view, findByTestId } = await createView()
+  await view.navToLocString('ctgA:1..5000')
+  fireEvent.click(await findByTestId(hts('gff3tabix_genes'), ...opts))
+  await findByTestId(/-display-done$/, ...opts)
+
+  await view.exportSvg({ rasterizeLayers: false, trackLabels: 'left' })
+  const svg = getSavedSvg()
+  const label = leftLabelExtent(svg, 'GFF3Tabix genes')
+  expect(label).toBeDefined()
+
+  // the canvas is `width + gutter + 2 * exportMargin`, and the whole content is
+  // translated right by one margin — so a label whose left edge lands before
+  // -margin in content space is drawn off the canvas entirely
+  // fractional: the gutter is a measured text width, not a whole number
+  const width = Number(/<svg width="([\d.]+)"/.exec(svg)![1])
+  expect(label!.rightEdge).toBeGreaterThan(0)
+  expect(label!.rightEdge).toBeLessThan(width)
+}, 45000)
+
+test('a monospace export reserves the gutter in the font it draws the labels in', async () => {
+  const { view, findByTestId } = await createView()
+  await view.navToLocString('ctgA:1..5000')
+  fireEvent.click(await findByTestId(hts('gff3tabix_genes'), ...opts))
+  await findByTestId(/-display-done$/, ...opts)
+
+  await view.exportSvg({ rasterizeLayers: false, trackLabels: 'left' })
+  await view.exportSvg({
+    rasterizeLayers: false,
+    trackLabels: 'left',
+    fontFamily: 'monospace',
+  })
+  const [proportionalSvg, svg] = getSavedSvgs()
+  const proportional = leftLabelExtent(proportionalSvg!, 'GFF3Tabix genes')!
+  const mono = leftLabelExtent(svg!, 'GFF3Tabix genes')!
+
+  expect(svg).toContain('font-family="monospace"')
+  // 'GFF3Tabix genes' is mostly narrow glyphs, so the Helvetica table
+  // under-measures it in monospace. Measuring in the wrong font left the widest
+  // name overflowing the gutter it was reserved in, into the track body.
+  expect(mono.rightEdge).toBeGreaterThan(proportional.rightEdge)
+}, 45000)
+
+test('gridlines are exported behind the tracks when asked for', async () => {
+  const { view, findByTestId } = await createView()
+  await view.navToLocString('ctgA:1..5000')
+  fireEvent.click(await findByTestId(hts('gff3tabix_genes'), ...opts))
+  await findByTestId(/-display-done$/, ...opts)
+
+  await view.exportSvg({ rasterizeLayers: false })
+  await view.exportSvg({ rasterizeLayers: false, showGridlines: true })
+  const [off, on] = getSavedSvgs()
+
+  expect(off).not.toContain('gridline-clip')
+  // one clipped group holding the two collapsed tick paths (minor then major)
+  expect(on).toContain('gridline-clip')
+  const gridlines =
+    /<g clip-path="url\(#gridline-clip-[^)]*\)">(.*?)<\/g>/.exec(on!)
+  expect(gridlines![1]!.match(/<path /g)).toHaveLength(2)
 }, 45000)
 
 test('SVG export of a view holding no regions says so instead of saving a blank canvas', async () => {
