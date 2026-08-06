@@ -1,4 +1,10 @@
-import { readFileSync, writeFileSync } from 'node:fs'
+import {
+  cpSync,
+  existsSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
@@ -57,6 +63,32 @@ const localEsmUrl =
 // Repo root, off this module rather than off cwd: the spec paths are stated
 // relative to the root and this file is imported by more than the generator.
 const repoRoot = fileURLToPath(new URL('../../../', import.meta.url))
+
+// `_localdist` is COPIED from the plugin's dist/ on every GRAPH_PLUGIN_LOCAL
+// run, for the same reason the `_local.json` siblings above are written rather
+// than kept: a gitignored copy of something built elsewhere drifts and nothing
+// notices. It drifted, and it cost a full day. Every "I rebuilt the plugin and
+// the bug is still there" result in that session — across a dependency bump, two
+// upstream patches and two rounds of instrumentation — was read off a bundle
+// hours old, because this directory was a stale hand-copy. Four conclusions were
+// wrong and the real cause went unfound until the staleness was noticed.
+//
+// Missing dist/ is fatal rather than silently falling back to the pinned bundle:
+// a run that quietly tests the published plugin when you asked for the local one
+// is the same failure again.
+if (process.env.GRAPH_PLUGIN_LOCAL) {
+  const pluginDist =
+    process.env.GRAPH_PLUGIN_DIST ??
+    `${repoRoot}../jb2plugins/jbrowse-plugin-graphgenomeview/dist`
+  if (!existsSync(pluginDist)) {
+    throw new Error(
+      `GRAPH_PLUGIN_LOCAL is set but no plugin build at ${pluginDist} — run \`pnpm build\` in the plugin, or set GRAPH_PLUGIN_DIST`,
+    )
+  }
+  const dest = `${repoRoot}test_data/graphgenomeview/_localdist`
+  rmSync(dest, { force: true, recursive: true })
+  cpSync(pluginDist, dest, { recursive: true })
+}
 // The fixture configs also hardcode the hosted demo's data urls, so ECOLI_DEMO_BASE
 // has to rewrite them here too — otherwise a local-demo run renders the new
 // plugin against the OLD hosted files. Same gitignored-sibling mechanism, and it
