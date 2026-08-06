@@ -11,7 +11,8 @@ tutorial_category: Structural variation
 and render it as a `multirowdensity` heatmap, with the color pivot at the
 diploid baseline of 2. Every individual becomes one row, colored by copy number.
 Past a few hundred samples the per-file requests become the bottleneck, so the
-second half packs the same values into one Zarr store.
+second half packs the same values into one Zarr store, which answers the same
+window for all 2504 individuals in 3 requests.
 
 ## Prerequisites
 
@@ -151,11 +152,16 @@ node measure_signal_latency.ts --samples 1000g_cnv_build/samples.tsv \
   --zarr https://jbrowse.org/demos/1000g/qm2_cn_1kb.zarr
 ```
 
-Against the hosted files, one BigWig per sample answers that window in 15,048
-requests and 48.39 MB, six requests per file, and takes 24.5 seconds at a median
-range request of 25 ms. The store answers it in 3 requests and 0.22 MB, and
-takes 0.2 seconds: two metadata reads plus one chunk of 2504 samples by 256
-bins.
+Against the hosted files, at a median range request of 25 ms:
+
+| chr17:36,080,000-36,270,000, 2504 samples | 2504 BigWigs | Zarr store |
+| ----------------------------------------- | ------------ | ---------- |
+| requests                                  | 15,048       | 3          |
+| bytes                                     | 48.39 MB     | 0.22 MB    |
+| wall clock                                | 24.5 s       | 0.2 s      |
+
+Six reads per BigWig, against two metadata reads plus one chunk of 2504 samples
+by 256 bins.
 
 The bytes are not the problem. The request count is. Every BigWig needs a few
 reads to find where a region's values live before it can read them, and those
@@ -310,7 +316,9 @@ bash build_1000g_cnv_zarr.sh --whole-genome # every main contig
 - [Multi-quantitative tracks](/docs/user_guides/multiquantitative_track), the
   display's own menus and options
 - [](/docs/tutorials/tcga_cohort_cnv), the same one-row-per-sample idea for
-  somatic copy number across a tumor cohort
+  somatic copy number across a tumor cohort, read from a Zarr store of its own
+- [](/docs/tutorials/scrna_pseudobulk), the same store format holding one row
+  per single cell rather than per individual
 - [Structural variants across samples](/docs/tutorials/sv_multisamples), the
   balanced-rearrangement half of the same panel, and
   [](/docs/tutorials/dog10k_svs) for both on a canine one
