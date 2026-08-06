@@ -393,7 +393,7 @@ function mirror() {
     's3',
     'sync',
     `${storeBucket}/${storePrefix}/`,
-    dest.replace(/\/$/, '') + '/',
+    `${dest.replace(/\/$/, '')}/`,
     '--no-progress',
   ])
   console.log(`mirrored ${storeBucket}/${storePrefix}/ -> ${dest}`)

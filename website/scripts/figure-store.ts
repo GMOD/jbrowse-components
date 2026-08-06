@@ -88,13 +88,21 @@ const MANIFEST_HEADER = `\
 # <path> <width>x<height> <bytes> <sha256>
 `
 
+// Code-point order, never `localeCompare`: the manifest is checked in, so two
+// machines rewriting it have to agree on the order or the file churns on its
+// own. Same reasoning as `cmpStr` in packages/core, duplicated because this
+// script imports nothing from the workspace.
+function cmpStr(a: string, b: string): number {
+  return a < b ? -1 : a > b ? 1 : 0
+}
+
 // Path first because the file is sorted by it: the eye scans one flush-left
 // column, and a `git diff` hunk names the figure before it names the hash.
 // Single-spaced rather than aligned — padding would rewrite a neighbouring
 // line every time a byte count changed a digit.
 export function formatManifest(entries: FigureEntry[]): string {
   const lines = [...entries]
-    .sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0))
+    .sort((a, b) => cmpStr(a.path, b.path))
     .map(
       e =>
         `${e.path} ${e.width && e.height ? `${e.width}x${e.height}` : '-'} ${e.bytes} ${e.sha256}`,
@@ -288,7 +296,7 @@ export function diffManifests(
       changes.push({ path, kind: 'removed', before: entry })
     }
   }
-  return changes.sort((a, b) => (a.path < b.path ? -1 : 1))
+  return changes.sort((a, b) => cmpStr(a.path, b.path))
 }
 
 // "insertion", "hic/overlay_controls" — how a doc's <Figure src> names it, and
