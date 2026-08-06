@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 
 import { useMouseState, useMouseTracking } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
-import { getBpDisplayStr, getContainingView } from '@jbrowse/core/util'
+import { getBpDisplayStr } from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
@@ -12,17 +12,14 @@ import RecombinationYScaleBar from '../../shared/components/RecombinationYScaleB
 import Crosshairs from './Crosshairs.tsx'
 import FocalSnpHighlight from './FocalSnpHighlight.tsx'
 import LDColorLegend from './LDColorLegend.tsx'
-import LDLabelZone from './LDLabelZone.tsx'
+import LDColumnZone from './LDColumnZone.tsx'
 import { LDRenderer } from './LDRenderer.ts'
 import LDStatusBar from './LDStatusBar.tsx'
-import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'
+import { ldMetricLabel } from './ldColorRamp.ts'
 
 import type { LDFlatbushItem } from '../../RenderLDDataRPC/types.ts'
 import type { SharedLDModel } from '../shared.ts'
 import type { MouseTracker } from '@jbrowse/core/ui'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-type LGV = LinearGenomeViewModel
 
 function SnpRow({ snp }: { snp: LDFlatbushItem['snp1'] }) {
   return (
@@ -47,12 +44,6 @@ function LDTooltip({
   ldMetric: string
   signedLD: boolean
 }) {
-  let metricLabel: string
-  if (ldMetric === 'dprime') {
-    metricLabel = "D'"
-  } else {
-    metricLabel = signedLD ? 'R' : 'R²'
-  }
   const distance = Math.abs(item.snp1.start - item.snp2.start)
   // Sign only carries meaning when signed values were requested; positive =
   // coupling (alleles co-occur), negative = repulsion (opposite haplotypes).
@@ -68,7 +59,7 @@ function LDTooltip({
       <SnpRow snp={item.snp1} />
       <SnpRow snp={item.snp2} />
       <div>
-        {metricLabel}: {item.ldValue.toFixed(3)}
+        {ldMetricLabel(ldMetric, signedLD)}: {item.ldValue.toFixed(3)}
         {phase}
       </div>
       <div>Distance: {getBpDisplayStr(distance)}</div>
@@ -79,14 +70,11 @@ function LDTooltip({
 const RecombinationOverlay = observer(function RecombinationOverlay({
   model,
   width,
-  recombHeight,
-  top,
 }: {
   model: SharedLDModel
   width: number
-  recombHeight: number
-  top: number
 }) {
+  const { top, height } = model.recombinationZone
   return (
     <div
       style={{
@@ -94,7 +82,7 @@ const RecombinationOverlay = observer(function RecombinationOverlay({
         left: 0,
         top,
         width,
-        height: recombHeight,
+        height,
         pointerEvents: 'none',
       }}
     >
@@ -102,10 +90,10 @@ const RecombinationOverlay = observer(function RecombinationOverlay({
         points={model.recombinationCoords}
         maxValue={model.recombinationMax}
         width={width}
-        height={recombHeight}
+        height={height}
       />
       <RecombinationYScaleBar
-        height={recombHeight}
+        height={height}
         maxValue={model.recombinationMax}
       />
     </div>
@@ -116,16 +104,10 @@ const LDCanvas = observer(function LDCanvas({
   model,
   canvasRef,
   mouseTracker,
-  width,
-  canvasOnlyHeight,
-  containerHeight,
 }: {
   model: SharedLDModel
   canvasRef: (node: HTMLCanvasElement | null) => void
   mouseTracker: MouseTracker
-  width: number
-  canvasOnlyHeight: number
-  containerHeight: number
 }) {
   // The pointer is read here, not beside the handlers in the component that
   // mounts the chrome: there it would re-render `DisplayChrome` and all three
@@ -140,7 +122,7 @@ const LDCanvas = observer(function LDCanvas({
     mouseState && !model.isLoading
       ? model.hitTest(mouseState.x, mouseState.y)
       : undefined
-  const view = getContainingView(model) as LGV
+  const view = model.lgv
   const {
     showLegend,
     // the metric the loaded values ACTUALLY are, not the one asked for. A
@@ -148,13 +130,12 @@ const LDCanvas = observer(function LDCanvas({
     // and the cell ramp already follows the data (`d.metric`), so a label off
     // the config would name a statistic that is not on screen.
     effectiveLdMetric,
-    lineZoneHeight,
-    // the layout the loaded matrix actually has, not the one the slot asks for
-    // — a multi-region viewport falls back to uniform cells in the worker
-    effectiveUseGenomicPositions,
     signedLD,
     effectiveLineZoneHeight,
+    canvasWidth: width,
+    canvasHeight,
   } = model
+  const containerHeight = canvasHeight + effectiveLineZoneHeight
 
   // Through the model, in the connector lines' frame (viewport pixels): the
   // guides, the ticks and the lines all describe the same two loci, so they
@@ -205,7 +186,7 @@ const LDCanvas = observer(function LDCanvas({
         ref={canvasRef}
         style={{
           width,
-          height: canvasOnlyHeight,
+          height: canvasHeight,
           position: 'absolute',
           left: 0,
           top: effectiveLineZoneHeight,
@@ -248,22 +229,9 @@ const LDCanvas = observer(function LDCanvas({
         />
       ) : null}
       <LDStatusBar model={model} />
-      {effectiveUseGenomicPositions ? (
-        <LDLabelZone model={model} />
-      ) : (
-        <LinesConnectingMatrixToGenomicPosition model={model} />
-      )}
+      <LDColumnZone model={model} />
       {model.showRecombination && model.recombination ? (
-        <RecombinationOverlay
-          model={model}
-          width={width}
-          recombHeight={
-            effectiveUseGenomicPositions
-              ? effectiveLineZoneHeight
-              : lineZoneHeight / 2
-          }
-          top={effectiveUseGenomicPositions ? 0 : lineZoneHeight / 2}
-        />
+        <RecombinationOverlay model={model} width={width} />
       ) : null}
     </>
   )
@@ -297,18 +265,17 @@ const LDDisplayComponent = observer(function LDDisplayComponent({
 }: {
   model: SharedLDModel
 }) {
-  const view = getContainingView(model) as LGV
-  const width = view.totalWidthPxWithoutBorders
+  // The same box the backends size their backing store to (`renderState`), off
+  // the model: a width or height derived a second time here is a stretched
+  // matrix the moment the two derivations disagree.
   const {
     showLDTriangle,
-    squashToHeight,
-    ldCanvasHeight,
+    canvasWidth: width,
+    canvasHeight,
     effectiveLineZoneHeight,
     isLoading,
   } = model
-
-  const canvasOnlyHeight = squashToHeight ? ldCanvasHeight : width / 2
-  const containerHeight = canvasOnlyHeight + effectiveLineZoneHeight
+  const containerHeight = canvasHeight + effectiveLineZoneHeight
 
   const ref = useRef<HTMLDivElement>(null)
   const { mouseTracker, handleMouseMove, handleMouseLeave } =
@@ -352,9 +319,6 @@ const LDDisplayComponent = observer(function LDDisplayComponent({
             model={model}
             canvasRef={canvasRef}
             mouseTracker={mouseTracker}
-            width={width}
-            canvasOnlyHeight={canvasOnlyHeight}
-            containerHeight={containerHeight}
           />
         ) : (
           <EmptyState />

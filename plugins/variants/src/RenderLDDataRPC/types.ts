@@ -3,13 +3,25 @@ import type {
   LDMethod,
   LDMetric,
   LDSnp,
+  RecombinationData,
 } from '../VariantRPC/getLDMatrix.ts'
 
-export const PRECOMPUTED_LD_ADAPTERS = [
+const PRECOMPUTED_LD_ADAPTERS = [
   'PlinkLDAdapter',
   'PlinkLDTabixAdapter',
   'LdmatAdapter',
 ] as const
+
+/**
+ * Whether an adapter serves LD values read from a file rather than computed
+ * from VCF genotypes — which decides the fetch path, the filter menus, and the
+ * byte gate. The membership test lives here rather than at each of its three
+ * call sites, all of which had to widen the `as const` list back to
+ * `readonly string[]` to ask.
+ */
+export function isPrecomputedLDAdapter(type: string | undefined) {
+  return (PRECOMPUTED_LD_ADAPTERS as readonly string[]).includes(type ?? '')
+}
 
 export interface LDFlatbushItem {
   i: number
@@ -42,10 +54,7 @@ export interface LDDataResult {
   signedLD: boolean
   snps: LDSnp[]
   filterStats?: FilterStats
-  recombination?: {
-    values: Float32Array
-    positions: number[]
-  }
+  recombination?: RecombinationData
   // Only present for genomic positions mode (pre-computed per-cell positions
   // for the GPU interleaved buffer).
   positions?: Float32Array

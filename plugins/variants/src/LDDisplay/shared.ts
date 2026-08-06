@@ -18,7 +18,7 @@ import {
 import ClearAllIcon from '@mui/icons-material/ClearAll'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
-import { PRECOMPUTED_LD_ADAPTERS } from '../RenderLDDataRPC/types.ts'
+import { isPrecomputedLDAdapter } from '../RenderLDDataRPC/types.ts'
 import { clampLineZoneHeight } from '../shared/constants.ts'
 import { genomicViewportX } from '../shared/genomicViewportX.ts'
 // lazy: this is a state model, so a dialog named here is in every host's first
@@ -269,9 +269,7 @@ export default function sharedModelFactory(
         return !getConf(self, 'showLDTriangle')
       },
       get isPrecomputedLD() {
-        return (PRECOMPUTED_LD_ADAPTERS as readonly string[]).includes(
-          self.adapterConfig?.type,
-        )
+        return isPrecomputedLDAdapter(self.adapterConfig?.type)
       },
       /**
        * #getter
@@ -328,8 +326,6 @@ export default function sharedModelFactory(
               s => `${s.refName}:${s.start}` === locus,
             )
       },
-    }))
-    .views(self => ({
       /**
        * #getter
        * Opt into RegionTooLargeMixin's derived byte gate (byte axis only, no
@@ -339,8 +335,10 @@ export default function sharedModelFactory(
        * support retrieving features", and it ships pre-thinned files that need
        * no gate anyway.
        */
+      // `this`, not `self`: the sibling getter above is in this same block, so
+      // `self` isn't typed with it yet
       get byteGateEnabled() {
-        return !self.isPrecomputedLD
+        return !this.isPrecomputedLD
       },
     }))
     .views(self => ({
@@ -367,6 +365,19 @@ export default function sharedModelFactory(
       },
       /**
        * #getter
+       * Where the recombination plot sits inside that zone. Genomic-positions
+       * mode gives it the whole band; index mode tucks it into the lower half,
+       * under the connector lines. The live overlay and the SVG export place it
+       * from this one pair — restating the branch in both is how the export
+       * came to disagree with the screen about which mode was even loaded.
+       */
+      get recombinationZone() {
+        return self.effectiveUseGenomicPositions
+          ? { top: 0, height: this.effectiveLineZoneHeight }
+          : { top: self.lineZoneHeight / 2, height: self.lineZoneHeight / 2 }
+      },
+      /**
+       * #getter
        * Effective height for the LD canvas (total height minus the zone the
        * recombination overlay / variant lines occupy above the matrix).
        */
@@ -375,16 +386,36 @@ export default function sharedModelFactory(
       },
       /**
        * #getter
+       * The box the triangle is drawn in. One pair for all three of the canvas
+       * element's CSS size, the backing store the rendering backends resize to,
+       * and the SVG export's paint layer — they have to be the same number or
+       * the drawn matrix is stretched against the box it sits in, and they were
+       * previously derived independently on either side of that boundary.
+       * `totalWidthPxWithoutBorders` is the rounded content width, so this is
+       * the drawn width even when the genome doesn't fill the viewport.
+       */
+      get canvasWidth() {
+        return self.lgv.totalWidthPxWithoutBorders
+      },
+      /**
+       * #getter
+       * Height of that box: the triangle's natural apex height (half its
+       * width), or the display's own height when squashed to fit.
+       */
+      get canvasHeight() {
+        return self.squashToHeight ? this.ldCanvasHeight : this.canvasWidth / 2
+      },
+      /**
+       * #getter
        * Per-frame yScalar squash factor. When squashToHeight is on, squashes
        * the natural (canvasWidth/2) triangle into ldCanvasHeight. Lives on
        * the main thread so resize doesn't trigger a worker re-fetch.
        */
       get yScalar() {
-        const view = self.lgv
         return computeTriangleYScalar({
           squashToHeight: self.squashToHeight,
           displayHeight: this.ldCanvasHeight,
-          triangleWidth: view.dynamicBlocks.totalWidthPxWithoutBorders,
+          triangleWidth: this.canvasWidth,
         })
       },
 
@@ -417,17 +448,11 @@ export default function sharedModelFactory(
       // fields (signedLD, uniformW) ride with the payload instead — see
       // LDUploadData.
       get renderState(): LDRenderState {
-        const view = self.lgv
         const { scale, viewOffsetX } = self.renderTransform
-        const canvasWidth = Math.round(
-          view.dynamicBlocks.totalWidthPxWithoutBorders,
-        )
         return {
           yScalar: this.yScalar,
-          canvasWidth,
-          canvasHeight: self.squashToHeight
-            ? this.ldCanvasHeight
-            : canvasWidth / 2,
+          canvasWidth: this.canvasWidth,
+          canvasHeight: this.canvasHeight,
           viewScale: scale,
           viewOffsetX,
         }
@@ -439,13 +464,6 @@ export default function sharedModelFactory(
        * `VariantLabels` show. Only meaningful in index mode (genomic-positions
        * mode already draws columns at their genomic x).
        */
-      // Column centers ride the same forward transform the shader does —
-      // `cellWidth` (uniformW) is the fetch-time cell width and `renderTransform`
-      // rescales it to the live viewport, exactly like `hitTest` inverts it.
-      // Deriving the column pitch from the *current* block width instead would
-      // apply the zoom twice, sliding the lines off the triangle apexes for the
-      // whole debounce+RPC window after a zoom.
-      //
       // Horizontal flips need nothing here: the worker hands back `snps`
       // already in screen order (`RenderLDDataRPC/reversedRegions.ts`), so the
       // index axis and the genomic x agree.
@@ -453,8 +471,6 @@ export default function sharedModelFactory(
         const view = self.lgv
         const { assemblyManager } = getSession(self)
         const assembly = assemblyManager.get(view.assemblyNames[0]!)
-        const { scale, viewOffsetX } = self.renderTransform
-        const pitch = self.cellWidth * Math.SQRT2
         return assembly
           ? self.snps
               .map((snp, i) => {
@@ -466,14 +482,28 @@ export default function sharedModelFactory(
                 )
                 return gx === undefined
                   ? undefined
-                  : {
-                      mx: (i + 0.5) * pitch * scale + viewOffsetX,
-                      gx,
-                      label: snp.id,
-                    }
+                  : { mx: this.columnX(i + 0.5), gx, label: snp.id }
               })
               .filter(coord => coord !== undefined)
           : []
+      },
+      /**
+       * #method
+       * Viewport x of a position on the matrix's column axis, in fractional
+       * column indices: 0 is the triangle's left corner, `i + 0.5` the apex of
+       * column i, `i + 1` the boundary between columns i and i+1. Index-mode
+       * connector lines and the recombination curve both anchor through this.
+       *
+       * It rides the same forward transform the shader does — `cellWidth`
+       * (uniformW) is the fetch-time cell width and `renderTransform` rescales
+       * it to the live viewport, exactly like `hitTest` inverts it. Deriving
+       * the column pitch from the *current* block width instead applies the
+       * zoom twice, sliding everything anchored here off the triangle for the
+       * whole debounce+RPC window after a zoom.
+       */
+      columnX(column: number) {
+        const { scale, viewOffsetX } = self.renderTransform
+        return column * self.cellWidth * Math.SQRT2 * scale + viewOffsetX
       },
       /**
        * #method
@@ -536,15 +566,10 @@ export default function sharedModelFactory(
             out.push({ x: x ?? Number.NaN, value: values[i]! })
           }
         } else {
-          const { scale, viewOffsetX } = self.renderTransform
-          const pitch = self.cellWidth * Math.SQRT2
           for (let i = 0; i < values.length; i++) {
             // the boundary between columns i and i+1, which is where the pair
             // they measure sits
-            out.push({
-              x: (i + 1) * pitch * scale + viewOffsetX,
-              value: values[i]!,
-            })
+            out.push({ x: this.columnX(i + 1), value: values[i]! })
           }
         }
         return out
@@ -663,52 +688,17 @@ export default function sharedModelFactory(
         })
       },
     }))
-    .views(self => ({
-      /**
-       * #method
-       */
-      filterMenuItems() {
-        // Filter settings only available for VCF-computed LD, not pre-computed
-        if (self.isPrecomputedLD) {
-          return []
-        }
-        return [
-          {
-            label: 'LD-specific filters...',
-            onClick: () => {
-              getSession(self).queueDialog(handleClose => [
-                LDFilterDialog,
-                {
-                  model: self,
-                  handleClose,
-                },
-              ])
-            },
-          },
-          {
-            label: 'General JEXL filters...',
-            onClick: () => {
-              getSession(self).queueDialog(handleClose => [
-                AddFiltersDialog,
-                {
-                  model: self,
-                  handleClose,
-                },
-              ])
-            },
-          },
-        ]
-      },
-      /**
-       * #method
-       */
-      svgLegendWidth(): number {
-        return self.showLegend ? GRADIENT_LEGEND_SVG_AREA_WIDTH : 0
-      },
-    }))
     .views(self => {
       const { trackMenuItems: superTrackMenuItems } = self
       return {
+        /**
+         * #method
+         * How much room the SVG export's container reserves to the right of
+         * the plot for this display's legend (it maxes this across tracks).
+         */
+        svgLegendWidth(): number {
+          return self.showLegend ? GRADIENT_LEGEND_SVG_AREA_WIDTH : 0
+        },
         /**
          * #method
          */
@@ -836,7 +826,9 @@ export default function sharedModelFactory(
                 ),
               ],
             },
-            // Filter menu only available for VCF-computed LD, not pre-computed
+            // Filters act on the genotypes LD is computed from, so a
+            // pre-computed file — already thinned by whatever produced it — has
+            // nothing here to filter and shows no menu at all
             ...(self.isPrecomputedLD
               ? []
               : [
@@ -844,7 +836,26 @@ export default function sharedModelFactory(
                     label: 'Filter by...',
                     icon: ClearAllIcon,
                     type: 'subMenu',
-                    subMenu: self.filterMenuItems(),
+                    subMenu: [
+                      {
+                        label: 'LD-specific filters...',
+                        onClick: () => {
+                          getSession(self).queueDialog(handleClose => [
+                            LDFilterDialog,
+                            { model: self, handleClose },
+                          ])
+                        },
+                      },
+                      {
+                        label: 'General JEXL filters...',
+                        onClick: () => {
+                          getSession(self).queueDialog(handleClose => [
+                            AddFiltersDialog,
+                            { model: self, handleClose },
+                          ])
+                        },
+                      },
+                    ],
                   },
                 ]),
           ]

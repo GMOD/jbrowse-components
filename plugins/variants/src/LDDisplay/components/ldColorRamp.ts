@@ -82,6 +82,18 @@ export function mapLDValue(ldVal: number, signedLD: boolean) {
 }
 
 /**
+ * What to call the number in a cell. Signed r² is not r² but r, and D' keeps
+ * its name either way — the tooltip and the legend both have to say the same
+ * thing about the same value, so they say it from here.
+ */
+export function ldMetricLabel(metric: string, signedLD: boolean) {
+  if (metric === 'dprime') {
+    return "D'"
+  }
+  return signedLD ? 'R' : 'R²'
+}
+
+/**
  * The stops for one metric+sign combination. The 256-entry ramp the cells are
  * painted through and the SVG gradient in the legend are both built from this
  * one call, so the key can't say one thing and the plot another — the legend

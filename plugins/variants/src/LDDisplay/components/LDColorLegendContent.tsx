@@ -1,20 +1,17 @@
 import { SvgGradientLegend } from '@jbrowse/core/ui'
 
-import { getColorStops } from './getColorStops.ts'
+import { ldColorStops, ldMetricLabel } from './ldColorRamp.ts'
 
-function getLabels(ldMetric: string, signedLD: boolean) {
-  if (signedLD) {
-    return {
-      min: '-1',
-      max: '1',
-      metric: ldMetric === 'dprime' ? "D'" : 'R',
-    }
-  }
-  return {
-    min: '0',
-    max: '1',
-    metric: ldMetric === 'dprime' ? "D'" : 'R²',
-  }
+// The gradient, evenly spaced across the same color table the cells are painted
+// through. Derived rather than restated: the legend used to carry its own five
+// hand-picked colors per metric, which is a second place to edit a palette and a
+// key that can quietly stop describing the plot beside it.
+function gradientStops(ldMetric: string, signedLD: boolean) {
+  const stops = ldColorStops(ldMetric, signedLD)
+  return stops.map(([r, g, b], i) => ({
+    offset: `${((i / (stops.length - 1)) * 100).toFixed(2)}%`,
+    color: `rgb(${r},${g},${b})`,
+  }))
 }
 
 export default function LDColorLegendContent({
@@ -35,15 +32,15 @@ export default function LDColorLegendContent({
   x?: number
   y?: number
 }) {
-  const labels = getLabels(ldMetric, signedLD)
   return (
     <SvgGradientLegend
       gradientId={`ld-gradient-${ldMetric}-${signedLD ? 'signed' : 'unsigned'}-${idSuffix}`}
-      stops={getColorStops(ldMetric, signedLD)}
+      stops={gradientStops(ldMetric, signedLD)}
+      // signed ramps run -1..1 through white at zero; unsigned ones 0..1
       labels={[
-        { text: labels.min, position: 'start' },
-        { text: labels.metric, position: 'middle' },
-        { text: labels.max, position: 'end' },
+        { text: signedLD ? '-1' : '0', position: 'start' },
+        { text: ldMetricLabel(ldMetric, signedLD), position: 'middle' },
+        { text: '1', position: 'end' },
       ]}
       x={x}
       y={y}

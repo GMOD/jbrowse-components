@@ -1,9 +1,7 @@
-import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import type { LDFlatbushItem } from '../../RenderLDDataRPC/types.ts'
 import type { SharedLDModel } from '../shared.ts'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const Crosshairs = observer(function Crosshairs({
   model,
@@ -18,7 +16,6 @@ const Crosshairs = observer(function Crosshairs({
   genomicX2: number
   height: number
 }) {
-  const view = getContainingView(model) as LinearGenomeViewModel
   const {
     rpcData,
     effectiveLineZoneHeight,
@@ -47,7 +44,7 @@ const Crosshairs = observer(function Crosshairs({
         position: 'absolute',
         left: 0,
         top: 0,
-        width: view.totalWidthPxWithoutBorders,
+        width: model.canvasWidth,
         height,
         pointerEvents: 'none',
       }}

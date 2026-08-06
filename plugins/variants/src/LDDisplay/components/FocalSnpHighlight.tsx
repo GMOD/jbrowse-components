@@ -1,8 +1,6 @@
-import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import type { SharedLDModel } from '../shared.ts'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // Emphasizes the focal SNP's LD row+column: every pairwise cell involving the
 // focal SNP lies on the two diagonal lines meeting at its diagonal apex, so a
@@ -15,7 +13,6 @@ const FocalSnpHighlight = observer(function FocalSnpHighlight({
   model: SharedLDModel
   height: number
 }) {
-  const view = getContainingView(model) as LinearGenomeViewModel
   const { rpcData, renderTransform, focalSnpIndex: f } = model
   const boundaries = rpcData?.boundaries
   if (!boundaries || f < 0 || f + 1 >= boundaries.length) {
@@ -45,7 +42,7 @@ const FocalSnpHighlight = observer(function FocalSnpHighlight({
         position: 'absolute',
         left: 0,
         top: 0,
-        width: view.totalWidthPxWithoutBorders,
+        width: model.canvasWidth,
         height,
         pointerEvents: 'none',
       }}

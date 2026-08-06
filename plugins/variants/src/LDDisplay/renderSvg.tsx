@@ -8,9 +8,8 @@ import {
 import RecombinationTrack from '../shared/components/RecombinationTrack.tsx'
 import RecombinationYScaleBar from '../shared/components/RecombinationYScaleBar.tsx'
 import { drawLDBlocks } from './components/Canvas2DLDRenderer.ts'
-import LDLabelZone from './components/LDLabelZone.tsx'
+import LDColumnZone from './components/LDColumnZone.tsx'
 import LDSVGColorLegend from './components/LDSVGColorLegend.tsx'
-import LinesConnectingMatrixToGenomicPosition from './components/LinesConnectingMatrixToGenomicPosition.tsx'
 import { generateLDColorRamp } from './components/ldColorRamp.ts'
 
 import type { SharedLDModel } from './shared.ts'
@@ -31,19 +30,15 @@ export async function renderSvg(
 
 function LdSvgBody({
   model: self,
-  view,
   height,
   opts,
 }: LgvSvgBodyProps<SharedLDModel>) {
-  const { rpcData } = self
-
   const {
+    rpcData,
     effectiveLdMetric,
     showLegend,
     showRecombination,
-    lineZoneHeight,
     effectiveLineZoneHeight,
-    effectiveUseGenomicPositions,
     signedLD,
   } = self
 
@@ -55,24 +50,16 @@ function LdSvgBody({
   }
 
   const { ldValues, boundaries, numCells, uniformW } = rpcData
-  // Match the live canvas: the matrix, recombination plot, connector lines, and
-  // legend all lay out across totalWidthPxWithoutBorders (the rounded,
-  // border-excluded content width), not the raw viewport width — otherwise the
-  // export's index-mode recomb plot and legend drift from the matrix when the
-  // genome doesn't fill the viewport or spans multiple regions.
-  const visibleWidth = view.totalWidthPxWithoutBorders
+  // The live canvas's own box (`canvasWidth`), not the raw viewport width —
+  // otherwise the export's recombination plot and legend drift from the matrix
+  // when the genome doesn't fill the viewport or spans multiple regions.
+  const visibleWidth = self.canvasWidth
   const ramp = generateLDColorRamp(rpcData.metric, rpcData.signedLD)
   const triangleHeight = height - effectiveLineZoneHeight
 
-  // Match the live overlay's layout: genomic-positions mode places the
-  // recombination plot at the top spanning effectiveLineZoneHeight; index
-  // mode tucks it in the lower half of lineZoneHeight, above the matrix.
-  const recombTrackHeight = effectiveUseGenomicPositions
-    ? effectiveLineZoneHeight
-    : lineZoneHeight / 2
-  const recombTrackYOffset = effectiveUseGenomicPositions
-    ? 0
-    : lineZoneHeight / 2
+  // The live overlay's own layout, off the model, so the export can't place the
+  // plot somewhere the screen doesn't.
+  const { top: recombTop, height: recombHeight } = self.recombinationZone
 
   return (
     <>
@@ -102,22 +89,18 @@ function LdSvgBody({
             }}
           />
         </g>
-        {effectiveUseGenomicPositions ? (
-          <LDLabelZone model={self} exportSVG />
-        ) : (
-          <LinesConnectingMatrixToGenomicPosition model={self} exportSVG />
-        )}
+        <LDColumnZone model={self} exportSVG />
         {showRecombination && rpcData.recombination ? (
-          <g transform={`translate(0 ${recombTrackYOffset})`}>
+          <g transform={`translate(0 ${recombTop})`}>
             <RecombinationTrack
               points={self.recombinationCoords}
               maxValue={self.recombinationMax}
               width={visibleWidth}
-              height={recombTrackHeight}
+              height={recombHeight}
               exportSVG
             />
             <RecombinationYScaleBar
-              height={recombTrackHeight}
+              height={recombHeight}
               maxValue={self.recombinationMax}
               exportSVG
             />

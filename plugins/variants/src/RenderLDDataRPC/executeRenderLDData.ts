@@ -4,9 +4,9 @@ import { getLDMatrix } from '../VariantRPC/getLDMatrix.ts'
 import { getLDMatrixFromPlink } from '../VariantRPC/getLDMatrixFromPlink.ts'
 import { buildGenomicCellBuffers, computeBoundaries } from './ldLayout.ts'
 import { applyDisplayOrder, getDisplayOrder } from './reversedRegions.ts'
-import { PRECOMPUTED_LD_ADAPTERS } from './types.ts'
+import { isPrecomputedLDAdapter } from './types.ts'
 
-import type { LDMethod, LDMetric } from '../VariantRPC/getLDMatrix.ts'
+import type { LDMatrixResult } from '../VariantRPC/getLDMatrix.ts'
 import type { RenderLDDataArgs } from './RenderLDData.ts'
 import type { LDDataResult } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -16,10 +16,13 @@ type ExecuteArgs = RenderLDDataArgs & {
   statusCallback?: StatusCallback
 }
 
+// Nothing to lay out — no SNPs passed the filters, or there is no region to lay
+// them out in. `filterStats` rides along regardless: an empty triangle is
+// exactly when the status bar's "0 / 812 variants shown (812 MAF)" is the only
+// thing on screen explaining it.
 function emptyResult(
+  { metric, method, filterStats }: LDMatrixResult,
   signedLD: boolean,
-  metric: LDMetric,
-  method: LDMethod,
 ): LDDataResult {
   return {
     ldValues: new Float32Array(0),
@@ -32,6 +35,7 @@ function emptyResult(
     method,
     signedLD,
     snps: [],
+    filterStats,
   }
 }
 
@@ -58,9 +62,7 @@ export async function executeRenderLDData({
     statusCallback,
   } = args
 
-  const isPrecomputed = (PRECOMPUTED_LD_ADAPTERS as readonly string[]).includes(
-    adapterConfig.type,
-  )
+  const isPrecomputed = isPrecomputedLDAdapter(adapterConfig.type)
   const ldData = await (isPrecomputed
     ? updateStatus('Downloading LD data', statusCallback, () =>
         getLDMatrixFromPlink({
@@ -92,16 +94,9 @@ export async function executeRenderLDData({
         },
       }))
 
-  if (ldData.snps.length === 0) {
-    return {
-      ...emptyResult(signedLD, ldMetric, ldData.method),
-      filterStats: ldData.filterStats,
-    }
-  }
-
   const region = regions[0]
-  if (!region) {
-    return emptyResult(signedLD, ldMetric, ldData.method)
+  if (ldData.snps.length === 0 || !region) {
+    return emptyResult(ldData, signedLD)
   }
 
   // LD values themselves are orientation-free; only the axis is. A reversed
@@ -149,10 +144,7 @@ export async function executeRenderLDData({
     signedLD,
     snps,
     filterStats: ldData.filterStats,
-    recombination: {
-      values: recombination.values,
-      positions: recombination.positions,
-    },
+    recombination,
     ...cellBuffers,
   }
 }

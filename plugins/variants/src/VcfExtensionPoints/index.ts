@@ -9,7 +9,7 @@ import {
   makeIndexType,
 } from '@jbrowse/core/util/tracks'
 
-import { PRECOMPUTED_LD_ADAPTERS } from '../RenderLDDataRPC/types.ts'
+import { isPrecomputedLDAdapter } from '../RenderLDDataRPC/types.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -67,7 +67,7 @@ export default function VcfExtensionPointsF(pluginManager: PluginManager) {
     if (['VcfTabixAdapter', 'VcfAdapter'].includes(adapterName)) {
       return 'VariantTrack'
     }
-    if ((PRECOMPUTED_LD_ADAPTERS as readonly string[]).includes(adapterName)) {
+    if (isPrecomputedLDAdapter(adapterName)) {
       return 'LDTrack'
     }
     return undefined

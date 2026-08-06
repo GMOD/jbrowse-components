@@ -1,6 +1,8 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { isLDRecordSource } from '@jbrowse/ld-core'
 
+import { ldPairIndex } from './getLDMatrix.ts'
+
 import type {
   FilterStats,
   LDMatrixResult,
@@ -18,15 +20,6 @@ import type { PlinkLDRecord } from '@jbrowse/ld-core'
 // same SNP from many rows, so this key deduplicates and indexes them.
 function snpKey(refName: string, pos: number) {
   return `${refName}:${pos}`
-}
-
-// Row-major index into a lower-triangular matrix (diagonal excluded) for the
-// unordered pair {i, j}, i ≠ j. The larger index is the row, so the cell lives
-// at row*(row-1)/2 + col.
-function lowerTriIndex(i: number, j: number) {
-  const row = Math.max(i, j)
-  const col = Math.min(i, j)
-  return (row * (row - 1)) / 2 + col
 }
 
 function finiteOrZero(v: number | undefined) {
@@ -152,7 +145,7 @@ export async function getLDMatrixFromPlink({
     const i = indexByKey.get(snpKey(record.chrA, record.bpA))
     const j = indexByKey.get(snpKey(record.chrB, record.bpB))
     if (i !== undefined && j !== undefined && i !== j) {
-      ldValues[lowerTriIndex(i, j)] = metricValue(record, metric)
+      ldValues[ldPairIndex(i, j)] = metricValue(record, metric)
       if (Math.abs(i - j) === 1) {
         adjacentR2[Math.min(i, j)] = finiteOrZero(record.r2)
         adjacentPresent[Math.min(i, j)] = 1

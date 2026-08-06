@@ -1,4 +1,3 @@
-import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import {
@@ -8,7 +7,6 @@ import {
 import VariantLabels from './VariantLabels.tsx'
 
 import type { SharedLDModel } from '../shared.ts'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // Genomic-positions mode: the triangle already sits at each SNP's genomic x, so
 // there is nothing to connect and the zone holds only the labels. The handle
@@ -22,7 +20,7 @@ const LDLabelZone = observer(function LDLabelZone({
   exportSVG?: boolean
 }) {
   const { height, showLabels, effectiveLineZoneHeight } = model
-  const { width } = getContainingView(model) as LinearGenomeViewModel
+  const { width } = model.lgv
 
   return (
     <>
