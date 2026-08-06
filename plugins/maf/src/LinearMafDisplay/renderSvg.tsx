@@ -6,8 +6,7 @@ import {
   createJBrowseTheme,
   legendEntries,
 } from '@jbrowse/core/ui'
-import { resolvePalette } from '@jbrowse/core/ui/palette'
-import { colorLongreadInv } from '@jbrowse/core/ui/palette'
+import { resolvePalette, colorLongreadInv } from '@jbrowse/core/ui/palette'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
   SvgClipRect,
