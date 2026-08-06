@@ -14,3 +14,4 @@
 # loading one pulls from UCSC without naming it here.
 ftp.1000genomes.ebi.ac.uk
 hgdownload.soe.ucsc.edu
+s3.amazonaws.com

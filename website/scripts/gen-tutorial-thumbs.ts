@@ -200,6 +200,17 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     src: 'hic/loops_and_domains.png',
     band: [0.27, 1],
   },
+  mappability_qc: {
+    // The SMN1 half of the two-locus figure: the mappability lane mostly empty,
+    // the coverage lane low, and a pileup that is entirely red. The compose is
+    // the better figure and the worse card — a 5:3 crop of it either takes one
+    // panel anyway or straddles the two window frames.
+    src: 'qc/smn1_evidence.png',
+    band: [0.2, 1],
+    // Keeps the lane labels: the card is three lanes whose names are what say
+    // what the red is, and a centred crop cuts them off mid-word.
+    position: 'left',
+  },
   protein_structure: {
     // The structure itself, in the right-hand panel. Framing the whole panel
     // lands on its sequence-alignment table and a hover tooltip; the folded
