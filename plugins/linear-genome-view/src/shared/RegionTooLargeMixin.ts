@@ -104,7 +104,9 @@ export default function RegionTooLargeMixin() {
        * single measurement — written together by `setByteEstimate`, dropped
        * together by `clearByteEstimate`, and meaningless apart. Survives
        * `clearAllRpcData` so an ordinary viewport change doesn't flicker the
-       * banner; only chromosome navigation drops it. Ignored unless
+       * banner; the two things that do drop it are chromosome navigation and a
+       * tier swap, which are one rule on two axes — the measurement is about a
+       * fetch, and each changes which fetch that is. Ignored unless
        * `derivedRegionTooLargeEnabled`.
        */
       byteEstimate: undefined as ByteEstimate | undefined,
@@ -489,13 +491,17 @@ export default function RegionTooLargeMixin() {
 
       /**
        * #action
-       * Drops the cached estimate. Chromosome navigation only: the estimate
-       * intentionally survives `clearAllRpcData` so an ordinary viewport change
-       * doesn't flicker the banner.
+       * Drops the cached estimate. Two callers, and they are the same rule on
+       * two axes — the estimate describes one fetch, and each of them changes
+       * which fetch that is: chromosome navigation (`MultiRegionDisplayMixin`'s
+       * `DisplayedRegionsChange` autorun; LD and arc wire their own), and a tier
+       * swap (`ClearByteEstimateOnTierSwap`, this mixin's own `afterAttach`).
+       * Not an ordinary viewport change: the estimate intentionally survives
+       * `clearAllRpcData` so panning doesn't flicker the banner.
        *
-       * `forceLoadTrack` deliberately survives: it is a track-wide approval, so
-       * expiring it on navigation is exactly the per-locus re-approval the button
-       * exists to avoid.
+       * `forceLoadTrack` deliberately survives both: it is a track-wide
+       * approval, so expiring it here is exactly the per-locus re-approval the
+       * button exists to avoid.
        */
       clearByteEstimate() {
         self.byteEstimate = undefined

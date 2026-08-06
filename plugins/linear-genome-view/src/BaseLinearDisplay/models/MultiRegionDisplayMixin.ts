@@ -478,16 +478,21 @@ export default function MultiRegionDisplayMixin() {
           // theirs. Fires once at mount as a harmless no-op (nothing loaded
           // yet).
           //
-          // The cached byte estimate goes with it — and only here.
-          // displayedRegionIndex is reused across chromosomes, so a stale
-          // estimate would gate the new region against the previous
-          // chromosome's numbers and, since FetchVisibleRegions skips while
-          // regionTooLarge holds, wedge the banner with no refetch to correct
-          // it. clearAllRpcData deliberately leaves it alone (no banner flicker
-          // on an ordinary viewport-change clear), which is why the drop lives
-          // in this autorun rather than in that action.
+          // The cached byte estimate goes with it. displayedRegionIndex is
+          // reused across chromosomes, so a stale estimate would gate the new
+          // region against the previous chromosome's numbers and, since
+          // FetchVisibleRegions skips while regionTooLarge holds, wedge the
+          // banner with no refetch to correct it. clearAllRpcData deliberately
+          // leaves it alone (no banner flicker on an ordinary viewport-change
+          // clear), which is why the drop lives in this autorun rather than in
+          // that action.
           //
-          // #autorun `view.displayedRegions` changes | `clearAllRpcData()` **+ `clearByteEstimate()`** — the only place the cached byte estimate is dropped
+          // One of two drops, not the only one: RegionTooLargeMixin's own
+          // ClearByteEstimateOnTierSwap does the same when a display that swaps
+          // adapters by zoom crosses tiers. Same rule on the other axis — the
+          // estimate is about a fetch, and both change which fetch that is.
+          //
+          // #autorun `view.displayedRegions` changes | `clearAllRpcData()` **+ `clearByteEstimate()`** — one of the two places the cached byte estimate is dropped (the other is a tier swap)
           onDisplayedRegionsChange(
             self,
             () => {
