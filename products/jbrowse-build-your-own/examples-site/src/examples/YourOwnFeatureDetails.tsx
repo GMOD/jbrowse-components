@@ -7,12 +7,7 @@ import {
 import { useWidthSetter } from '@jbrowse/core/util/hooks'
 import { isFeature } from '@jbrowse/core/util/simpleFeature'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
-import {
-  DisplayChromeOverlayProvider,
-  TrackControlProvider,
-  plainChromeOverlays,
-  plainTrackControl,
-} from '@jbrowse/plugin-linear-genome-view'
+import { DisplayUIProvider } from '@jbrowse/plugin-linear-genome-view'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
@@ -75,7 +70,11 @@ const TrackRow = observer(function TrackRow({
   view: BrowserView
   trackId: string
 }) {
-  const track = view.tracks.find(t => t.configuration.trackId === trackId)
+  // `view.getTrack(id)`, not a scan of `view.tracks` comparing
+  // `configuration.trackId` by hand: the view keeps a map for exactly this. The
+  // guard stays -- `view.ready` says the view can draw, not that your track is
+  // instantiated yet.
+  const track = view.getTrack(trackId)
   if (!track) {
     return null
   }
@@ -260,40 +259,37 @@ const YourOwnFeatureDetails = observer(function YourOwnFeatureDetails() {
 
   return (
     <PaletteProvider palette={palette}>
-      <DisplayChromeOverlayProvider value={plainChromeOverlays}>
-        <TrackControlProvider value={plainTrackControl}>
-          <div style={{ display: 'flex' }}>
-            <div
-              ref={ref}
-              {...containerProps}
-              style={{
-                flex: 1,
-                minWidth: 0,
-                position: 'relative',
-                overflow: 'hidden',
-                touchAction: 'none',
-                cursor: 'grab',
-              }}
-            >
-              {view.ready ? (
-                <TrackRow view={view} trackId="volvox_genes" />
-              ) : null}
-            </div>
-            <div
-              style={{
-                width: PANEL_WIDTH,
-                flex: 'none',
-                borderLeft: '1px solid',
-                borderColor:
-                  'color-mix(in srgb, currentColor 25%, transparent)',
-                overflow: 'auto',
-              }}
-            >
-              <FeatureDetails session={session} />
-            </div>
+      <DisplayUIProvider>
+        <div style={{ display: 'flex' }}>
+          <div
+            ref={ref}
+            {...containerProps}
+            style={{
+              flex: 1,
+              minWidth: 0,
+              position: 'relative',
+              overflow: 'hidden',
+              touchAction: 'none',
+              cursor: 'grab',
+            }}
+          >
+            {view.ready ? (
+              <TrackRow view={view} trackId="volvox_genes" />
+            ) : null}
           </div>
-        </TrackControlProvider>
-      </DisplayChromeOverlayProvider>
+          <div
+            style={{
+              width: PANEL_WIDTH,
+              flex: 'none',
+              borderLeft: '1px solid',
+              borderColor: 'color-mix(in srgb, currentColor 25%, transparent)',
+              overflow: 'auto',
+            }}
+          >
+            <FeatureDetails session={session} />
+          </div>
+        </div>
+      </DisplayUIProvider>
     </PaletteProvider>
   )
 })

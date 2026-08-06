@@ -31,6 +31,16 @@ const here = path.dirname(fileURLToPath(import.meta.url))
 // `heightMode` slot draws a track-sizing button, and the feature display adds
 // the isoform-collapse notice while genes are collapsed.
 //
+// **`pan-and-zoom` and `one-track` install no provider either, and their zero is
+// unearned.** Both show a lone wiggle track, and the corner controls come from
+// canvas's FeatureComponent and the alignments component — wiggle draws none. So
+// those two score zero by having no Material widget to suppress, not by
+// suppressing one. The day a wiggle display grows an ambient control they will
+// fail this budget for a reason that has nothing to do with what they teach, and
+// the obvious fix — installing DisplayUIProvider on the page whose whole point is
+// "no chrome at all" — would be the wrong one. Raise it to what wiggle actually
+// draws and say so here instead.
+//
 // Exact equality, in both directions. A new Material widget appearing in a
 // display's render path has to be noticed here; so does one disappearing,
 // because that is the moment the prose needs rewriting too.

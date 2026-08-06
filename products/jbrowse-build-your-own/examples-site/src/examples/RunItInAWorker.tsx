@@ -6,12 +6,7 @@ import {
 } from '@jbrowse/core/ui/PaletteContext'
 import { useWidthSetter } from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
-import {
-  DisplayChromeOverlayProvider,
-  TrackControlProvider,
-  plainChromeOverlays,
-  plainTrackControl,
-} from '@jbrowse/plugin-linear-genome-view'
+import { DisplayUIProvider } from '@jbrowse/plugin-linear-genome-view'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
 // Vite's `?worker` suffix: it bundles the module as a worker entry point and
 // hands back a constructor. Astro is a Vite app, so this is the form that works
@@ -32,7 +27,7 @@ import { observer } from 'mobx-react'
 // millisecond your app's own UI is not repainting.
 //
 // The rest of the file is the earlier pages: the stack from A stack of tracks,
-// the two providers from Bring your own overlays. Self-contained, like every
+// the UI provider from Bring your own overlays. Self-contained, like every
 // page here, so you can copy the file and run it.
 
 const volvox = {
@@ -113,7 +108,11 @@ const TrackRow = observer(function TrackRow({
   view: BrowserView
   trackId: string
 }) {
-  const track = view.tracks.find(t => t.configuration.trackId === trackId)
+  // `view.getTrack(id)`, not a scan of `view.tracks` comparing
+  // `configuration.trackId` by hand: the view keeps a map for exactly this. The
+  // guard stays -- `view.ready` says the view can draw, not that your track is
+  // instantiated yet.
+  const track = view.getTrack(trackId)
   if (!track) {
     return null
   }
@@ -226,11 +225,9 @@ const RunItInAWorker = observer(function RunItInAWorker() {
   const palette = useSessionPalette(session, useSiteMode())
   return (
     <PaletteProvider palette={palette}>
-      <DisplayChromeOverlayProvider value={plainChromeOverlays}>
-        <TrackControlProvider value={plainTrackControl}>
-          <TrackStack view={view} />
-        </TrackControlProvider>
-      </DisplayChromeOverlayProvider>
+      <DisplayUIProvider>
+        <TrackStack view={view} />
+      </DisplayUIProvider>
     </PaletteProvider>
   )
 })

@@ -7,12 +7,7 @@ import {
 } from '@jbrowse/core/ui/PaletteContext'
 import { useWidthSetter } from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
-import {
-  DisplayChromeOverlayProvider,
-  TrackControlProvider,
-  plainChromeOverlays,
-  plainTrackControl,
-} from '@jbrowse/plugin-linear-genome-view'
+import { DisplayUIProvider } from '@jbrowse/plugin-linear-genome-view'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
@@ -94,7 +89,11 @@ const TrackRow = observer(function TrackRow({
   view: BrowserView
   trackId: string
 }) {
-  const track = view.tracks.find(t => t.configuration.trackId === trackId)
+  // `view.getTrack(id)`, not a scan of `view.tracks` comparing
+  // `configuration.trackId` by hand: the view keeps a map for exactly this. The
+  // guard stays -- `view.ready` says the view can draw, not that your track is
+  // instantiated yet.
+  const track = view.getTrack(trackId)
   if (!track) {
     return null
   }
@@ -573,39 +572,37 @@ const AScalebarNotARuler = observer(function AScalebarNotARuler({
 
   return (
     <PaletteProvider palette={palette}>
-      <DisplayChromeOverlayProvider value={plainChromeOverlays}>
-        <TrackControlProvider value={plainTrackControl}>
-          <div
-            ref={ref}
-            {...containerProps}
-            style={{
-              position: 'relative',
-              overflow: 'hidden',
-              touchAction: 'none',
-              cursor: 'grab',
-            }}
-          >
-            <ZoomHint show={showZoomHint} />
-            {/* every piece below reads block geometry, and `staticBlocks`
-             * *throws* until the ResizeObserver has reported a width -- so all
-             * of it sits inside one gate rather than each guarding itself. See
-             * the Drive it from your app page. */}
-            {view.ready ? (
-              <>
-                <Gridlines view={view} />
-                <Scalebar view={view} {...rubberband.props} />
-                {trackIds.map(id => (
-                  <TrackRow key={id} view={view} trackId={id} />
-                ))}
-                <RegionBoundaries view={view} />
-                {rubberband.range ? (
-                  <RangeSelection range={rubberband.range} />
-                ) : null}
-              </>
-            ) : null}
-          </div>
-        </TrackControlProvider>
-      </DisplayChromeOverlayProvider>
+      <DisplayUIProvider>
+        <div
+          ref={ref}
+          {...containerProps}
+          style={{
+            position: 'relative',
+            overflow: 'hidden',
+            touchAction: 'none',
+            cursor: 'grab',
+          }}
+        >
+          <ZoomHint show={showZoomHint} />
+          {/* every piece below reads block geometry, and `staticBlocks`
+           * *throws* until the ResizeObserver has reported a width -- so all
+           * of it sits inside one gate rather than each guarding itself. See
+           * the Drive it from your app page. */}
+          {view.ready ? (
+            <>
+              <Gridlines view={view} />
+              <Scalebar view={view} {...rubberband.props} />
+              {trackIds.map(id => (
+                <TrackRow key={id} view={view} trackId={id} />
+              ))}
+              <RegionBoundaries view={view} />
+              {rubberband.range ? (
+                <RangeSelection range={rubberband.range} />
+              ) : null}
+            </>
+          ) : null}
+        </div>
+      </DisplayUIProvider>
     </PaletteProvider>
   )
 })

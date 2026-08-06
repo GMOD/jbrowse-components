@@ -7,12 +7,7 @@ import {
 } from '@jbrowse/core/ui/PaletteContext'
 import { useWidthSetter } from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
-import {
-  DisplayChromeOverlayProvider,
-  TrackControlProvider,
-  plainChromeOverlays,
-  plainTrackControl,
-} from '@jbrowse/plugin-linear-genome-view'
+import { DisplayUIProvider } from '@jbrowse/plugin-linear-genome-view'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
@@ -98,7 +93,11 @@ const TrackRow = observer(function TrackRow({
   view: BrowserView
   trackId: string
 }) {
-  const track = view.tracks.find(t => t.configuration.trackId === trackId)
+  // `view.getTrack(id)`, not a scan of `view.tracks` comparing
+  // `configuration.trackId` by hand: the view keeps a map for exactly this. The
+  // guard stays -- `view.ready` says the view can draw, not that your track is
+  // instantiated yet.
+  const track = view.getTrack(trackId)
   if (!track) {
     return null
   }
@@ -279,41 +278,39 @@ const EveryChromosome = observer(function EveryChromosome() {
 
   return (
     <PaletteProvider palette={palette}>
-      <DisplayChromeOverlayProvider value={plainChromeOverlays}>
-        <TrackControlProvider value={plainTrackControl}>
-          <div
-            ref={ref}
-            {...containerProps}
-            style={{
-              position: 'relative',
-              overflow: 'hidden',
-              touchAction: 'none',
-              cursor: 'grab',
-            }}
-          >
-            {/* both overlays read block geometry, which throws until the
-             * ResizeObserver has reported a width -- see the Drive it from
-             * your app page */}
-            {view.ready ? (
-              <>
-                <div
-                  style={{
-                    position: 'relative',
-                    height: CHROM_STRIP_HEIGHT,
-                    fontSize: '0.7rem',
-                    lineHeight: `${CHROM_STRIP_HEIGHT}px`,
-                    overflow: 'clip',
-                  }}
-                >
-                  <RegionNames view={view} />
-                </div>
-                <TrackRow view={view} trackId="hg38_phylop" />
-                <RegionBoundaries view={view} />
-              </>
-            ) : null}
-          </div>
-        </TrackControlProvider>
-      </DisplayChromeOverlayProvider>
+      <DisplayUIProvider>
+        <div
+          ref={ref}
+          {...containerProps}
+          style={{
+            position: 'relative',
+            overflow: 'hidden',
+            touchAction: 'none',
+            cursor: 'grab',
+          }}
+        >
+          {/* both overlays read block geometry, which throws until the
+           * ResizeObserver has reported a width -- see the Drive it from
+           * your app page */}
+          {view.ready ? (
+            <>
+              <div
+                style={{
+                  position: 'relative',
+                  height: CHROM_STRIP_HEIGHT,
+                  fontSize: '0.7rem',
+                  lineHeight: `${CHROM_STRIP_HEIGHT}px`,
+                  overflow: 'clip',
+                }}
+              >
+                <RegionNames view={view} />
+              </div>
+              <TrackRow view={view} trackId="hg38_phylop" />
+              <RegionBoundaries view={view} />
+            </>
+          ) : null}
+        </div>
+      </DisplayUIProvider>
     </PaletteProvider>
   )
 })

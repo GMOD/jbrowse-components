@@ -6,12 +6,7 @@ import {
 } from '@jbrowse/core/ui/PaletteContext'
 import { useWidthSetter } from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
-import {
-  DisplayChromeOverlayProvider,
-  TrackControlProvider,
-  plainChromeOverlays,
-  plainTrackControl,
-} from '@jbrowse/plugin-linear-genome-view'
+import { DisplayUIProvider } from '@jbrowse/plugin-linear-genome-view'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
@@ -134,7 +129,11 @@ const TrackRow = observer(function TrackRow({
   view: BrowserView
   trackId: string
 }) {
-  const track = view.tracks.find(t => t.configuration.trackId === trackId)
+  // `view.getTrack(id)`, not a scan of `view.tracks` comparing
+  // `configuration.trackId` by hand: the view keeps a map for exactly this. The
+  // guard stays -- `view.ready` says the view can draw, not that your track is
+  // instantiated yet.
+  const track = view.getTrack(trackId)
   if (!track) {
     return null
   }
@@ -500,52 +499,50 @@ const DriveItFromYourApp = observer(function DriveItFromYourApp() {
 
   return (
     <PaletteProvider palette={palette}>
-      <DisplayChromeOverlayProvider value={plainChromeOverlays}>
-        <TrackControlProvider value={plainTrackControl}>
-          <div
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              alignItems: 'flex-start',
-              gap: 12,
-              paddingBottom: 8,
-            }}
-          >
-            <LocationBox view={view} />
-            <ZoomButtons view={view} />
-            <Bookmarks view={view} />
-            <TrackToggles view={view} />
-          </div>
-          <div
-            ref={ref}
-            {...containerProps}
-            style={{
-              position: 'relative',
-              overflow: 'hidden',
-              touchAction: 'none',
-              cursor: 'grab',
-            }}
-          >
-            {/* `RegionBoundaries` is inside the same gate as the tracks, not
-             * beside it: `staticBlocks` reads `view.width`, which *throws*
-             * ("make sure to check for model.initialized") until the
-             * ResizeObserver has reported one. `view.ready` is that guard, and
-             * anything of your own reading block geometry needs it too. */}
-            {view.ready ? (
-              <>
-                {view.tracks.map(track => (
-                  <TrackRow
-                    key={track.configuration.trackId}
-                    view={view}
-                    trackId={track.configuration.trackId}
-                  />
-                ))}
-                <RegionBoundaries view={view} />
-              </>
-            ) : null}
-          </div>
-        </TrackControlProvider>
-      </DisplayChromeOverlayProvider>
+      <DisplayUIProvider>
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'flex-start',
+            gap: 12,
+            paddingBottom: 8,
+          }}
+        >
+          <LocationBox view={view} />
+          <ZoomButtons view={view} />
+          <Bookmarks view={view} />
+          <TrackToggles view={view} />
+        </div>
+        <div
+          ref={ref}
+          {...containerProps}
+          style={{
+            position: 'relative',
+            overflow: 'hidden',
+            touchAction: 'none',
+            cursor: 'grab',
+          }}
+        >
+          {/* `RegionBoundaries` is inside the same gate as the tracks, not
+           * beside it: `staticBlocks` reads `view.width`, which *throws*
+           * ("make sure to check for model.initialized") until the
+           * ResizeObserver has reported one. `view.ready` is that guard, and
+           * anything of your own reading block geometry needs it too. */}
+          {view.ready ? (
+            <>
+              {view.tracks.map(track => (
+                <TrackRow
+                  key={track.configuration.trackId}
+                  view={view}
+                  trackId={track.configuration.trackId}
+                />
+              ))}
+              <RegionBoundaries view={view} />
+            </>
+          ) : null}
+        </div>
+      </DisplayUIProvider>
     </PaletteProvider>
   )
 })

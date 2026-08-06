@@ -9,16 +9,13 @@ the Material default. The third track's URL does not exist, so it holds its
 error state while you compare.
 
 ```tsx
-<DisplayChromeOverlayProvider value={myOverlays}>
-  <TrackControlProvider value={plainTrackControl}>
-    {tracks}
-  </TrackControlProvider>
-</DisplayChromeOverlayProvider>
+<DisplayUIProvider>{tracks}</DisplayUIProvider>
+<DisplayUIProvider overlays={myOverlays}>{tracks}</DisplayUIProvider>
 ```
 
-Two providers because two different things render them: the chrome around a
-display draws the status components, the display itself draws the corner
-control.
+Bare, both sets are plain and toolkit-free; `overlays` and `trackControl` take
+your own. Two contexts underneath, one provider over them — you always want
+both.
 
 ## Writing your own set
 
@@ -37,8 +34,7 @@ values and JBrowse's own suites run against yours.
 ## Reach, and weight
 
 Stock displays import `DisplayChrome` and `TrackControl` directly, so the
-providers are how you reach them — MUI stays in your bundle, but nothing on
-screen renders it. To keep it out of the module graph entirely, write your own
-display: `DisplayChromeBase` takes `overlays` as a prop and imports no toolkit.
-Avoid `makeStyles` from `@jbrowse/core/util/tss-react` there — it reads the MUI
-theme.
+provider is how you reach them — MUI stays in your bundle, but nothing on screen
+renders it. To keep it out of the graph entirely, write your own display:
+`DisplayChromeBase` takes `overlays` as a prop and imports no toolkit. Avoid
+`makeStyles` from `@jbrowse/core/util/tss-react` there — it reads the MUI theme.

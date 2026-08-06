@@ -7,12 +7,7 @@ import {
 import { chooseGridPitch } from '@jbrowse/core/util/chooseGridPitch'
 import { useWidthSetter } from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
-import {
-  DisplayChromeOverlayProvider,
-  TrackControlProvider,
-  plainChromeOverlays,
-  plainTrackControl,
-} from '@jbrowse/plugin-linear-genome-view'
+import { DisplayUIProvider } from '@jbrowse/plugin-linear-genome-view'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
@@ -112,7 +107,11 @@ const TrackRow = observer(function TrackRow({
   view: BrowserView
   trackId: string
 }) {
-  const track = view.tracks.find(t => t.configuration.trackId === trackId)
+  // `view.getTrack(id)`, not a scan of `view.tracks` comparing
+  // `configuration.trackId` by hand: the view keeps a map for exactly this. The
+  // guard stays -- `view.ready` says the view can draw, not that your track is
+  // instantiated yet.
+  const track = view.getTrack(trackId)
   if (!track) {
     return null
   }
@@ -207,7 +206,7 @@ const TrackLabel = observer(function TrackLabel({
   trackId: string
   label: string
 }) {
-  const track = view.tracks.find(t => t.configuration.trackId === trackId)
+  const track = view.getTrack(trackId)
   if (!track) {
     return null
   }
@@ -258,7 +257,7 @@ const TrackResizeHandle = observer(function TrackResizeHandle({
   trackId: string
 }) {
   const lastYRef = useRef(0)
-  const track = view.tracks.find(t => t.configuration.trackId === trackId)
+  const track = view.getTrack(trackId)
   if (!track) {
     return null
   }
@@ -358,45 +357,43 @@ const AddTheChromeYouWant = observer(function AddTheChromeYouWant() {
 
   return (
     <PaletteProvider palette={palette}>
-      <DisplayChromeOverlayProvider value={plainChromeOverlays}>
-        <TrackControlProvider value={plainTrackControl}>
-          <div style={{ display: 'flex' }}>
-            <div style={{ width: LABEL_WIDTH, flex: 'none' }}>
-              <div style={{ height: RULER_HEIGHT }} />
-              {tracks.map(t => (
-                // one spacer per resize bar, so a label stays level with its
-                // track as the stack grows
-                <div key={t.id}>
-                  <TrackLabel view={view} trackId={t.id} label={t.label} />
-                  <div style={{ height: RESIZE_HANDLE_HEIGHT }} />
-                </div>
-              ))}
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <Ruler view={view} />
-              <div
-                ref={ref}
-                {...containerProps}
-                style={{
-                  position: 'relative',
-                  overflow: 'hidden',
-                  touchAction: 'none',
-                  cursor: 'grab',
-                }}
-              >
-                {view.ready
-                  ? trackIds.map(id => (
-                      <div key={id}>
-                        <TrackRow view={view} trackId={id} />
-                        <TrackResizeHandle view={view} trackId={id} />
-                      </div>
-                    ))
-                  : null}
+      <DisplayUIProvider>
+        <div style={{ display: 'flex' }}>
+          <div style={{ width: LABEL_WIDTH, flex: 'none' }}>
+            <div style={{ height: RULER_HEIGHT }} />
+            {tracks.map(t => (
+              // one spacer per resize bar, so a label stays level with its
+              // track as the stack grows
+              <div key={t.id}>
+                <TrackLabel view={view} trackId={t.id} label={t.label} />
+                <div style={{ height: RESIZE_HANDLE_HEIGHT }} />
               </div>
+            ))}
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <Ruler view={view} />
+            <div
+              ref={ref}
+              {...containerProps}
+              style={{
+                position: 'relative',
+                overflow: 'hidden',
+                touchAction: 'none',
+                cursor: 'grab',
+              }}
+            >
+              {view.ready
+                ? trackIds.map(id => (
+                    <div key={id}>
+                      <TrackRow view={view} trackId={id} />
+                      <TrackResizeHandle view={view} trackId={id} />
+                    </div>
+                  ))
+                : null}
             </div>
           </div>
-        </TrackControlProvider>
-      </DisplayChromeOverlayProvider>
+        </div>
+      </DisplayUIProvider>
     </PaletteProvider>
   )
 })

@@ -7,10 +7,8 @@ import {
 import { useWidthSetter } from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
 import {
-  DisplayChromeOverlayProvider,
-  TrackControlProvider,
+  DisplayUIProvider,
   plainChromeOverlays,
-  plainTrackControl,
 } from '@jbrowse/plugin-linear-genome-view'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
@@ -27,7 +25,7 @@ import type {
 // sizing, and on this page's Genes track the isoform notice) go through one
 // more. By default both are JBrowse's own, which are Material UI.
 //
-// Two providers replace them for everything below, so the stock wiggle, feature
+// One provider replaces both for everything below, so the stock wiggle, feature
 // and alignments displays here render no Material UI at all. The radio switches
 // between three sets: `myOverlays`, written at the bottom of this file;
 // `plainChromeOverlays`, the dependency-free one JBrowse ships; and no provider
@@ -39,7 +37,7 @@ import type {
 //
 // Two seams, for two different problems:
 //
-//   these providers   -- reach.  Redirect JBrowse's own displays, which import
+//   this provider     -- reach.  Redirects JBrowse's own displays, which import
 //                        DisplayChrome and TrackControl directly and so cannot
 //                        be redirected at the import level. MUI still ends up
 //                        in the bundle; nothing on screen renders it.
@@ -125,7 +123,11 @@ const TrackRow = observer(function TrackRow({
   view: BrowserView
   trackId: string
 }) {
-  const track = view.tracks.find(t => t.configuration.trackId === trackId)
+  // `view.getTrack(id)`, not a scan of `view.tracks` comparing
+  // `configuration.trackId` by hand: the view keeps a map for exactly this. The
+  // guard stays -- `view.ready` says the view can draw, not that your track is
+  // instantiated yet.
+  const track = view.getTrack(trackId)
   if (!track) {
     return null
   }
@@ -436,14 +438,11 @@ const BringYourOwnOverlays = observer(function BringYourOwnOverlays() {
       </div>
       {/* No provider at all is the third state: the components a display
           imports directly are the Material ones, so an embedder who installs
-          nothing gets JBrowse's own look. The corner controls follow the same
-          rule through their own provider. */}
+          nothing gets JBrowse's own look. One provider covers both seams --
+          the status states and the corner controls -- because nobody wants
+          plain scrims with Material corner buttons. */}
       {overlays ? (
-        <DisplayChromeOverlayProvider value={overlays}>
-          <TrackControlProvider value={plainTrackControl}>
-            {stack}
-          </TrackControlProvider>
-        </DisplayChromeOverlayProvider>
+        <DisplayUIProvider overlays={overlays}>{stack}</DisplayUIProvider>
       ) : (
         stack
       )}
