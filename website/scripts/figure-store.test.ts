@@ -14,8 +14,10 @@
  * against ImageMagick over all 48 committed .webp figures at adoption.)
  */
 import {
+  compareToBaseline,
   diffManifests,
   figureName,
+  figurePath,
   formatManifest,
   formatTextReport,
   imageSize,
@@ -243,5 +245,106 @@ describe('resolveNow', () => {
       lock.get('website/static/img/a.png'),
     )
     expect(now.get('website/static/img/b.png')).toBe(onDisk)
+  })
+})
+
+// The review UI's baseline. It compared a branch against origin/main by running
+// `git ls-tree`/`git diff`/`git show` over website/static/img — which the move
+// to the store gitignored, so every one of those commands matched nothing. Git
+// asked about an untracked path does not answer "unchanged", it answers "no such
+// figure", and the two are the same silence: all 314 cards read "new", none read
+// "changed", and the whole origin/main column said "not on origin/main" for
+// months without a single error.
+//
+// So what is pinned here is the join. A card is a name, the manifest is keyed by
+// path, and a lookup that produces a key the manifest does not have degrades to
+// exactly that silence rather than to a failure.
+describe('a card against its baseline', () => {
+  // Keyed by literal path, the way figures.lock is, and NOT by figurePath():
+  // fixtures built with the function under test are self-consistent, so a key
+  // that drifts away from the manifest's shape still matches itself and every
+  // assertion passes. That is the same self-agreement that let the git-based
+  // baseline look fine — it, too, was consistent with itself and with nothing.
+  const disk = new Map([
+    ['website/static/img/same.png', entry('website/static/img/same.png', A)],
+    [
+      'website/static/img/moved.png',
+      entry('website/static/img/moved.png', B, 300, 800, 600),
+    ],
+    ['website/static/img/added.png', entry('website/static/img/added.png', B)],
+  ])
+  const base = new Map([
+    ['website/static/img/same.png', entry('website/static/img/same.png', A)],
+    [
+      'website/static/img/moved.png',
+      entry('website/static/img/moved.png', A, 200, 800, 600),
+    ],
+    ['website/static/img/gone.png', entry('website/static/img/gone.png', A)],
+  ])
+  const missing = new Set(['website/static/img/gone.png'])
+  const compare = (name: string) =>
+    compareToBaseline(figurePath(name), disk, base, missing)
+
+  test('an unchanged figure is not "new", and carries a baseline picture', () => {
+    // the assertion the dead baseline could not have passed: mainUrl present
+    // and changed false, rather than absent and everything flagged new
+    expect(compare('same')).toStrictEqual({
+      exists: true,
+      unpulled: false,
+      changed: false,
+      mainUrl: storeUrl(entry('website/static/img/same.png', A)),
+    })
+  })
+
+  test('a regenerated figure is changed, and its BEFORE url is the old sha', () => {
+    const c = compare('moved')
+    expect(c.changed).toBe(true)
+    // the point of the store baseline: the before-image is the superseded
+    // revision, still at its own immutable url, not the bytes now on disk
+    expect(c.mainUrl).toBe(storeUrl(entry('website/static/img/moved.png', A)))
+    expect(c.mainUrl).not.toBe(
+      storeUrl(entry('website/static/img/moved.png', B)),
+    )
+  })
+
+  test('a figure the branch added has no baseline to show', () => {
+    expect(compare('added')).toStrictEqual({
+      exists: true,
+      unpulled: false,
+      changed: false,
+    })
+  })
+
+  test('an unpulled figure is told apart from one that needs regenerating', () => {
+    // both are "no picture on the card", and they have opposite fixes:
+    // figures:pull for the first, a regen for the second
+    expect(compare('gone').unpulled).toBe(true)
+    expect(compare('never-existed').unpulled).toBe(false)
+    expect(compare('never-existed').exists).toBe(false)
+  })
+
+  test('the name a card carries round-trips to the path the manifest keys', () => {
+    // the two halves of the join, checked against each other. figureName is
+    // lossy on purpose; figurePath is its inverse for the one root a card can
+    // come from, and a card whose path misses is silently a card with no
+    // baseline.
+    for (const p of [
+      'website/static/img/insertion.png',
+      'website/static/img/hic/overlay_controls.png',
+      'website/static/img/desktop-landing.png',
+    ]) {
+      expect(figurePath(figureName(p))).toBe(p)
+      expect(base.has(figurePath(figureName(p)))).toBe(base.has(p))
+    }
+  })
+
+  test('a mirrored jb2export figure is NOT reachable by name', () => {
+    // figureName maps products/jbrowse-img/img/hic.png and the website's mirror
+    // of it to one name, so anything keyed on the name conflates the pair. A
+    // card is about the file the server serves, which is the mirror.
+    const src = 'products/jbrowse-img/img/hic.png'
+    const mirror = 'website/static/img/jbrowse-img/hic.png'
+    expect(figureName(src)).toBe(figureName(mirror))
+    expect(figurePath(figureName(src))).toBe(mirror)
   })
 })

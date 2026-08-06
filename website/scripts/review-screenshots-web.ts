@@ -11,14 +11,15 @@ import {
 } from '@jbrowse/browser-test-utils'
 
 import { readManifest, unpublishedFigures } from './figure-paths.ts'
-import { figureName } from './figure-store.ts'
+import { figureName, figurePath } from './figure-store.ts'
 import { type RunReport, runReportPath } from './screenshot-report.ts'
 import {
   collectScreenshots,
+  getBaselineState,
+  getWorktreeState,
   imageHash,
   imgDir,
   loadReport,
-  readMainPng,
   refreshWorkingTreeScans,
   reportPath,
   syncJbrowseImgMirror,
@@ -50,12 +51,15 @@ ${path.relative(process.cwd(), reportPath)}.
 const portVal = values.port ? Number(values.port) : Number.NaN
 const port = Number.isFinite(portVal) ? portVal : 3335
 
-// Both image routes are content-addressed: the URL carries `?v=<hash of the
+// The image route is content-addressed: the URL carries `?v=<hash of the
 // bytes>`, so a URL can only ever mean one picture and is safe to cache
 // forever. Without this the reviewer's loop — regenerate, RELOAD, look again —
-// re-downloaded all ~600 images (~120MB, and a `git show` per origin/main one)
-// on every single reload, because a bare 200 with no validators is not cacheable
-// at all. A missing hash means we cannot name the bytes, so don't store them.
+// re-downloaded every image (~70MB) on every single reload, because a bare 200
+// with no validators is not cacheable at all. A missing hash means we cannot
+// name the bytes, so don't store them.
+//
+// The baseline side needs nothing here: it is a store URL, already immutable and
+// already served with a year of cache by CloudFront.
 function cacheHeaders(hash: string | null) {
   return hash
     ? { 'Cache-Control': 'public, max-age=31536000, immutable' }
@@ -64,16 +68,22 @@ function cacheHeaders(hash: string | null) {
 
 function buildSpecPayload() {
   // Every load is a fresh look at the working tree. A review session is
-  // regenerate, reload, look again, so the git and doc-usage scans behind
-  // `changed`/`existsOnMain`/`usages` cannot be answered from what the tree
-  // looked like when the server started.
+  // regenerate, reload, look again, so the store and doc-usage scans behind
+  // `changed`/`mainUrl`/`usages` cannot be answered from what the tree looked
+  // like when the server started. Everything below reads through that one scan.
   refreshWorkingTreeScans()
   const report = loadReport()
   // Figure bytes live in the S3 store, so what a reviewer sees here is the file
   // on THIS disk, which is not necessarily what anyone else or the published
   // site gets. An unpushed regen is invisible to git, so without this a verdict
   // could be recorded against pixels nobody else will ever see.
-  const unpublished = new Set(unpublishedFigures().map(figureName))
+  //
+  // Kept as paths, like the unpulled set: figureName conflates the 27 mirrored
+  // jb2export figures, so a name-keyed set marks a card unpushed because the
+  // OTHER file of that name is. They travel together today — the mirror is a
+  // byte copy, so both sides go stale on the same jb2export — which is exactly
+  // why a name-keyed version of this would read as correct indefinitely.
+  const unpublished = new Set(unpublishedFigures(getWorktreeState()))
   const runStates = specRunStates(loadRunReport())
   return collectScreenshots(specs).map(shot => {
     const verdict = report[shot.name]
@@ -94,7 +104,7 @@ function buildSpecPayload() {
       })),
       verdict,
       stale,
-      unpublished: unpublished.has(shot.name),
+      unpublished: unpublished.has(figurePath(shot.name)),
       // undefined when the last run never touched this spec, which the UI
       // draws as "not covered" rather than as passing
       run: runStates.get(shot.name),
@@ -108,12 +118,22 @@ function buildSpecPayload() {
 // includes figures no spec produces — a hand-made diagram dropped into
 // static/img is exactly the kind that goes unpushed — and the banner should
 // report the whole store, not the part that happens to have a spec.
+//
+// It reads the scan /api/specs just took rather than repeating it. Hashing the
+// 62 MB of figures on disk is the most expensive thing either endpoint does, and
+// doing it twice per page load bought nothing: the client fetches this straight
+// after the spec list, off the same worktree.
 function buildFigureStatePayload() {
-  const outstanding = unpublishedFigures()
+  const state = getWorktreeState()
   const run = loadRunReport()
   return {
-    unpublished: outstanding.map(figureName),
+    unpublished: unpublishedFigures(state).map(figureName),
+    unpulled: state.missing.map(figureName),
     total: readManifest().size,
+    // which origin/main the whole "new"/"changed" column is against. Reads off
+    // the same memoized baseline /api/specs just used, so it costs a `git log -1`
+    // and not a second parse of the manifest.
+    baseline: getBaselineState(),
     run: run && {
       finishedAt: run.finishedAt,
       filter: run.filter,
@@ -231,25 +251,6 @@ function serveImage(
   stream.pipe(res)
 }
 
-// Serve /img-main/<name>.png from origin/main via git show
-function serveMainImage(
-  res: http.ServerResponse,
-  urlPath: string,
-  v: string | null,
-) {
-  const name = decodePath(urlPath.slice('/img-main/'.length))?.replace(
-    /\.png$/,
-    '',
-  )
-  const buf = name === undefined ? undefined : readMainPng(name)
-  if (!buf) {
-    sendNotFound(res)
-  } else {
-    res.writeHead(200, { 'Content-Type': 'image/png', ...cacheHeaders(v) })
-    res.end(buf)
-  }
-}
-
 const { handleVerdict, handleClearVerdict } = createVerdictRoutes({
   reportPath,
   hashOf: imageHash,
@@ -282,8 +283,6 @@ const server = http.createServer((req, res) => {
       handleClearVerdict(req, res).catch((err: unknown) => {
         sendJson(res, 500, { error: `${err}` })
       })
-    } else if (pathname.startsWith('/img-main/')) {
-      serveMainImage(res, pathname, v)
     } else if (pathname.startsWith('/img/')) {
       serveImage(res, pathname, v)
     } else {
@@ -547,11 +546,12 @@ function readUrl() {
 }
 
 // Diff vs origin/main, the screenshots a branch review cares about:
-// "new" = added on this branch (not on main); "changed" = on main but the
-// working-tree pixels differ (an update). \`s.changed\` is computed server-side.
-// A compose figure counts as changed when a part it stacks changed, even if the
-// stack itself wasn't recomposed — that gap is the bug the card warns about.
-const isNew = s => s.exists && !s.existsOnMain
+// "new" = added on this branch (not named by figures.lock on main); "changed" =
+// named there but the bytes on disk differ (an update). \`s.changed\` is computed
+// server-side against the store hashes. A compose figure counts as changed when
+// a part it stacks changed, even if the stack itself wasn't recomposed — that
+// gap is the bug the card warns about.
+const isNew = s => s.exists && !s.mainUrl
 const isChanged = s => s.changed || s.parts.some(p => p.changed || isNew(p))
 // parts moved but the published stack didn't: the figure on the site is stale
 const partsAhead = s => !s.changed && !isNew(s) && isChanged(s)
@@ -633,14 +633,53 @@ async function loadStoreState() {
         'a verdict recorded now is against pixels nobody else will see.' +
         '<div class="names">' + s.unpublished.map(esc).join(', ') + '</div>')
     }
+    // The mirror image of that, and just as invisible to git: figures.lock names
+    // a figure whose bytes were never fetched here. Those cards have no picture
+    // at all, which reads as a broken figure rather than an unfinished pull.
+    if (s.unpulled.length) {
+      parts.push('<strong>' + s.unpulled.length + ' figure(s) in <code>figures.lock</code> are not on this disk.</strong> ' +
+        'Run <code>pnpm figures:pull</code> — their cards are blank until you do.' +
+        '<div class="names">' + s.unpulled.map(esc).join(', ') + '</div>')
+    }
+    parts.push(describeBaseline(s.baseline))
     parts.push(describeRun(s.run))
-    el.className = s.unpublished.length || (s.run && s.run.failed) ? 'pending' : 'ok'
+    el.className =
+      s.unpublished.length || s.unpulled.length || !s.baseline.found || (s.run && s.run.failed) ? 'pending' : 'ok'
     el.innerHTML = parts.join('<div class="names"></div>')
     render()
   } catch (err) {
     el.className = 'pending'
     el.textContent = 'Could not read the figure store state: ' + err.message
   }
+}
+
+function agoText(iso) {
+  const hours = (Date.now() - new Date(iso).getTime()) / 3600000
+  return hours < 1 ? 'less than an hour ago'
+    : hours < 48 ? Math.round(hours) + 'h ago'
+    : Math.round(hours / 24) + ' days ago'
+}
+
+// Which origin/main every "new" and "changed" pill on this page is against.
+//
+// Two things only git knows and the cards cannot show. First, whether there is
+// a baseline at all: with no figures.lock at the ref, every figure reads "new"
+// and "Changed vs main" selects all of them — which looks exactly like a branch
+// that added everything, and was the shape of the bug this page had for months.
+// Second, how old it is: a remote-tracking ref is only as fresh as the last
+// fetch, so an unfetched checkout compares against a baseline that still calls
+// itself main.
+function describeBaseline(b) {
+  if (!b.found) {
+    return '<strong>No <code>figures.lock</code> at <code>' + esc(b.ref) + '</code>, so there is no baseline.</strong> ' +
+      'Every figure below is drawn as new and <em>Changed vs main</em> selects all of them — that is this page ' +
+      'having nothing to compare against, not a fact about your branch. <code>git fetch origin</code>.'
+  }
+  const at = b.commit
+    ? ' at <code>' + esc(b.commit) + '</code>' + (b.date ? ', ' + agoText(b.date) : '')
+    : ''
+  return 'Compared against <code>' + esc(b.ref) + '</code>' + at + ' — ' + b.figures + ' figures. ' +
+    'It is only as fresh as your last <code>git fetch</code>.'
 }
 
 // The last sweep, in one line. Says when, because a week-old run describes a
@@ -652,11 +691,7 @@ function describeRun(r) {
     return 'No sweep has run on this machine, so no figure here carries a render verdict. ' +
       '<code>pnpm screenshots</code> writes one.'
   }
-  const when = new Date(r.finishedAt)
-  const hours = (Date.now() - when.getTime()) / 3600000
-  const ago = hours < 1 ? 'less than an hour ago'
-    : hours < 48 ? Math.round(hours) + 'h ago'
-    : Math.round(hours / 24) + ' days ago'
+  const ago = agoText(r.finishedAt)
   const scope = r.filter.length
     ? 'filtered to <code>' + r.filter.map(esc).join(',') + '</code>'
     : 'a full sweep'
@@ -722,7 +757,9 @@ function renderParts(spec) {
         spec.parts.map(p =>
           '<div class="part">' +
             '<span class="partname">' + esc(p.name) + '</span>' +
-            (p.exists ? '' : ' ' + pill('bad', 'image missing')) +
+            (p.exists ? '' : ' ' + (p.unpulled
+              ? pill('bad', 'not pulled')
+              : pill('bad', 'image missing'))) +
             (isNew(p) ? ' ' + pill('new', 'new') : '') +
             (p.changed ? ' ' + pill('changed', 'changed') : '') +
             (p.liveUrl ? ' <a href="' + esc(p.liveUrl) + '" target="_blank" rel="noopener">open live ↗</a>' : '') +
@@ -753,12 +790,20 @@ function renderCard(spec) {
   // at a cached image while judging the one now on disk.
   const currentImg = spec.exists
     ? '<img src="/img/' + spec.name + '.png?v=' + esc(spec.imageHash || '') + '" onclick="window.open(this.src)" />'
-    : '<div class="missing">⚠ image file missing — regenerate it</div>'
-  // the origin/main side carries its git blob sha for the same reason: a URL
-  // that names its bytes is cacheable forever, and still refetches by itself if
-  // origin/main moves under a session
-  const mainImg = spec.existsOnMain
-    ? '<img src="/img-main/' + spec.name + '.png?v=' + esc(spec.mainHash || '') + '" onclick="window.open(this.src)" />'
+    // Two different holes with two different fixes. figures.lock naming a figure
+    // this checkout has not fetched is the ordinary one — the bytes are in the
+    // store and a regen would be wasted work.
+    : spec.unpulled
+      ? '<div class="missing">⚠ not on this machine — <code>pnpm figures:pull</code></div>'
+      : '<div class="missing">⚠ no image and nothing in the store — regenerate it</div>'
+  // Straight at the store. The URL is the baseline figure's content hash, so it
+  // is immutable, public and cached for a year by CloudFront — nothing for this
+  // server to proxy, and the link keeps resolving from any commit's manifest,
+  // which is what makes it worth pasting into an issue.
+  const mainImg = spec.mainUrl
+    ? '<img src="' + esc(spec.mainUrl) + '" loading="lazy" onclick="window.open(this.src)" ' +
+      'onerror="this.replaceWith(Object.assign(document.createElement(\\'div\\'),' +
+      '{className:\\'missing\\',textContent:\\'⚠ baseline bytes are not in the store\\'}))" />'
     : '<div class="missing" style="color:#aaa">not on origin/main</div>'
   return '<div class="card ' + cls + '" data-name="' + esc(spec.name) + '" data-status="' + status + '">' +
     '<div class="card-images">' +

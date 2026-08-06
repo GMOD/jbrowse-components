@@ -181,6 +181,32 @@ run 5:  316 succeeded,  6 failed   rsvg-convert (0 jb2export failures left)
   treating them as local work, so `pnpm build` published another commit's
   figures. Now it asks the store: bytes that are published are safe to replace,
   bytes that are not are kept and named.
+- **`review-screenshots-web` was still diffing the tree.** Its baseline was
+  `git ls-tree`/`git diff`/`git show` over `website/static/img`, which after the
+  move match nothing — so all 314 cards read "new", none read "changed", the
+  `Changed vs main` tab selected everything, and the entire origin/main column
+  said "not on origin/main". The failure is silent in the worst way: a git
+  command asked about an untracked path answers "no such figure", which is
+  indistinguishable from "unchanged". Now it reads `figures.lock` at
+  `origin/main` and renders the before-image from the store URL that line names
+  — no `git show` per image, and the link is one a reviewer can paste anywhere.
+- **The same failure had a second door, and the page now names its baseline.**
+  No `figures.lock` at the ref — a fork with no `origin`, a shallow clone, a ref
+  never fetched — produced an empty baseline, and an empty baseline draws all
+  316 cards "new" exactly like the tree-diffing bug did. `getBaselineState`
+  keeps "no baseline" apart from "a baseline naming nothing" and banners it. It
+  also names the commit and its age, because a remote-tracking ref is only as
+  fresh as the last fetch: an unfetched checkout compares against a week-old
+  main that still calls itself main, and nothing on the page said so.
+- **The card/baseline join is now pinned by tests.** `figurePath` and
+  `compareToBaseline` moved into `figure-store.ts` — the jest-parseable half,
+  since `figure-paths.ts` has `import.meta` — so the four states a card can be
+  in (unchanged, regenerated, added, unpulled) are checked without git or a
+  worktree. The fixtures are keyed by literal `website/static/img/…` paths and
+  **not** by `figurePath()`: fixtures built from the function under test agree
+  with themselves no matter what it returns, which is the same self-agreement
+  that let the git baseline look healthy while matching nothing. Breaking the
+  join key fails all six.
 
 ## Traps
 

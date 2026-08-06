@@ -26,6 +26,7 @@ import {
   describeFile,
   inspectWorktree,
   listFigureFiles,
+  manifestAt,
   manifestPath,
   readManifest,
   repoRoot,
@@ -39,7 +40,6 @@ import {
   formatMarkdownReport,
   formatTextReport,
   hashBuffer,
-  parseManifest,
   resolveNow,
   storeBucket,
   storeKey,
@@ -467,23 +467,15 @@ function check() {
 // report
 // ---------------------------------------------------------------------------
 
-function manifestAt(ref: string) {
-  try {
-    return parseManifest(
-      execFileSync('git', ['show', `${ref}:figures.lock`], {
-        encoding: 'utf8',
-        cwd: repoRoot,
-        stdio: ['ignore', 'pipe', 'ignore'],
-        maxBuffer: 64 * 1024 * 1024,
-      }),
-    )
-  } catch {
-    // No manifest at that ref — either it predates the store or the ref is
-    // unknown. Treat as empty so the first report reads as "everything is new"
-    // rather than failing.
+// No manifest at that ref — either it predates the store or the ref is unknown.
+// Treat as empty so the first report reads as "everything is new" rather than
+// failing.
+function baseManifest(ref: string) {
+  const manifest = manifestAt(ref)
+  if (!manifest) {
     console.error(`(no figures.lock at ${ref}; treating every figure as new)`)
-    return new Map()
   }
+  return manifest ?? new Map()
 }
 
 function report() {
@@ -504,7 +496,7 @@ function report() {
   // on every push. The fallback makes that job byte-for-byte what it was, and
   // does the sensible thing for a partial checkout in between.
   const now = resolveNow(readManifest(), listFigureFiles().map(describeFile))
-  const changes = diffManifests(manifestAt(base), now)
+  const changes = diffManifests(baseManifest(base), now)
   // An `after` whose bytes were never uploaded has a store URL (the key is the
   // hash) and that URL 404s, so the report has to say which ones those are
   // rather than hand over a broken image.

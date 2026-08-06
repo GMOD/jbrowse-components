@@ -327,11 +327,66 @@ export function diffManifests(
 
 // "insertion", "hic/overlay_controls" — how a doc's <Figure src> names it, and
 // how a reviewer talks about it.
+//
+// NOT injective, and the review tooling is the caller that gets bitten: 27 names
+// come from two paths each, because jb2export renders to
+// products/jbrowse-img/img and the website keeps a mirror of every one of them.
+// Anything keyed on the name conflates the pair — use figurePath below wherever
+// the question is about one specific file.
 export function figureName(path: string): string {
   return path
     .replace(/^website\/static\/img\//, '')
     .replace(/^products\/jbrowse-img\/img\//, 'jbrowse-img/')
     .replace(figureExtRe, '')
+}
+
+// The manifest key for the figure a review card is about: the exact file the
+// review server serves at /img/<name>.png. This is the join between a card and
+// the store, so it has to produce a key the manifest actually has — a lookup
+// that matches nothing reads as "no such figure", which is indistinguishable
+// from "unchanged" and is how the review baseline stayed dead for months.
+//
+// `.png` is not a simplification. Every source a card can come from produces
+// PNG: a generate-screenshots spec, the desktop capture list, and the doc
+// scanner, whose regex only matches `/img/<name>.png`. The other 51 figures
+// under this root (.webp, .jpg, .ico, .svg) are home-gallery art and derived
+// copies that never become cards. If a spec ever emits something else, this is
+// the line that has to learn about it.
+export function figurePath(name: string): string {
+  return `website/static/img/${name}.png`
+}
+
+// What a card says about one figure relative to the baseline. Pure over the two
+// manifests so it can be tested without git or a worktree: `disk` is the figures
+// on this machine, `base` is figures.lock at the review ref, `missing` is the
+// paths the manifest names that this checkout has not pulled.
+//
+// The four states are deliberately distinct. "not in base" is a new figure;
+// "in base, different sha" is an update; "not on disk but in the manifest" is an
+// unfinished pull, whose fix is `figures:pull` and NOT a regen; "not on disk and
+// not in the manifest" is the only one that means regenerate.
+export interface FigureComparison {
+  exists: boolean
+  unpulled: boolean
+  mainUrl?: string
+  changed: boolean
+}
+
+export function compareToBaseline(
+  path: string,
+  disk: Map<string, FigureEntry>,
+  base: Map<string, FigureEntry>,
+  missing: ReadonlySet<string>,
+): FigureComparison {
+  const here = disk.get(path)
+  const there = base.get(path)
+  return {
+    exists: here !== undefined,
+    unpulled: here === undefined && missing.has(path),
+    ...(there ? { mainUrl: storeUrl(there) } : {}),
+    changed:
+      here !== undefined && there !== undefined && here.sha256 !== there.sha256,
+  }
 }
 
 function dims(e: FigureEntry | undefined): string {

@@ -1,6 +1,7 @@
 // The filesystem half of the figure store — everything figure-store.ts cannot
 // hold because jest transforms that module to CJS, which cannot parse
 // `import.meta`. Same split, same reason, as check-utils.ts vs paths.ts.
+import { execFileSync } from 'node:child_process'
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -70,11 +71,66 @@ export function describeFile(relPath: string): FigureEntry {
   }
 }
 
+// Every figure on disk, hashed, keyed by repo-relative path.
+//
+// One pass. Hashing the whole set is 62 MB of reads and the single most
+// expensive thing any of these tools does, so a caller that wants both "what
+// disagrees with the manifest" and "what is the hash of this one figure" must
+// be able to ask once — see the review server, which used to pay for three
+// separate sweeps to answer one page load.
+export function describeWorktree(): Map<string, FigureEntry> {
+  return new Map(listFigureFiles().map(p => [p, describeFile(p)]))
+}
+
 export function fileExists(relPath: string): boolean {
   try {
     return statSync(join(repoRoot, relPath)).isFile()
   } catch {
     return false
+  }
+}
+
+// figures.lock as of a git ref — the tracked baseline a branch is reviewed
+// against, now that figure bytes themselves are gitignored and `git diff` over
+// static/img has nothing to say about them.
+//
+// undefined, not an empty map, when there is no manifest at that ref: it either
+// predates the store or the ref is unknown, and those want different words from
+// each caller rather than a silent "everything is new".
+export function manifestAt(ref: string): Map<string, FigureEntry> | undefined {
+  try {
+    return parseManifest(
+      execFileSync('git', ['show', `${ref}:figures.lock`], {
+        encoding: 'utf8',
+        cwd: repoRoot,
+        stdio: ['ignore', 'pipe', 'ignore'],
+        maxBuffer: 64 * 1024 * 1024,
+      }),
+    )
+  } catch {
+    return undefined
+  }
+}
+
+// The commit a ref currently names, and when it was authored.
+//
+// For saying which baseline a comparison is actually against. A remote-tracking
+// ref is only as fresh as the last fetch, so `origin/main` on a machine that has
+// not fetched in a week is a week-old baseline that still calls itself "main" —
+// invisible unless something names the commit. Empty when the ref is unknown,
+// which is the same condition manifestAt reports as undefined.
+export function describeRef(ref: string): { commit?: string; date?: string } {
+  try {
+    const [commit, date] = execFileSync(
+      'git',
+      ['log', '-1', '--format=%h%n%cI', ref],
+      { encoding: 'utf8', cwd: repoRoot, stdio: ['ignore', 'pipe', 'ignore'] },
+    )
+      .trim()
+      .split('\n')
+    return commit && date ? { commit, date } : {}
+  } catch {
+    return {}
   }
 }
 
@@ -101,19 +157,21 @@ export interface WorktreeState {
 // Deliberately the whole worktree rather than just this run's output: the case
 // worth catching is the figure you regenerated last week, and a --filter run
 // today should still say so.
-export function inspectWorktree(manifest = readManifest()): WorktreeState {
+export function inspectWorktree(
+  manifest = readManifest(),
+  onDisk = describeWorktree(),
+): WorktreeState {
   const state: WorktreeState = {
     ok: [],
     modified: [],
     untracked: [],
     missing: [],
   }
-  const onDisk = new Set(listFigureFiles())
-  for (const path of onDisk) {
+  for (const [path, file] of onDisk) {
     const entry = manifest.get(path)
     if (!entry) {
       state.untracked.push(path)
-    } else if (describeFile(path).sha256 === entry.sha256) {
+    } else if (file.sha256 === entry.sha256) {
       state.ok.push(path)
     } else {
       state.modified.push(path)
@@ -129,9 +187,8 @@ export function inspectWorktree(manifest = readManifest()): WorktreeState {
 
 // The figures whose bytes exist only on this machine. Empty means everything
 // you can see locally is also what everyone else and the published site get.
-export function unpublishedFigures(manifest?: Map<string, FigureEntry>) {
-  const { modified, untracked } = inspectWorktree(manifest)
-  return [...modified, ...untracked].sort()
+export function unpublishedFigures(state = inspectWorktree()) {
+  return [...state.modified, ...state.untracked].sort()
 }
 
 export function readManifest(): Map<string, FigureEntry> {
