@@ -11,12 +11,15 @@ all-against-all protein search:
       homo_sapiens/Compara.113.protein_default.homologies.tsv
 
 Unlike an OrthoFinder or jcvi table, whose cells are bare gene ids, each row here
-carries what the orthology inference measured: percent identity either way, dN
-and dS, and a gene-order-conservation score. Those ride out as the
-`attributeColumns` the adapter names, which is what makes the synteny view's
-`Color by -> Identity` and `Color by -> dN/dS` say anything about an ortholog
-track. `identity` is written as a FRACTION, because that is the domain the
-identity ramp is defined on; Compara's own column is a percent.
+carries what the orthology inference measured, and those ride out as the
+`attributeColumns` the adapter names. `identity` is written as a FRACTION,
+because that is the domain the identity ramp is defined on; Compara's own column
+is a percent.
+
+Which columns the export fills varies by division: `identity` and
+`homology_identity` are always there, `goc_score` on most vertebrate rows and no
+plant ones, and `wga_coverage`/`dn`/`ds` on none. Empty columns are still
+written, since what is null this release may not be next.
 
 **One table per pair, not one table for N genomes.** A `.blocks` row's attribute
 columns describe the ROW, and a per-link measurement is only meaningful where a
@@ -60,8 +63,14 @@ NEEDED = (
 
 # Written after the two gene columns, in this order. Matches the
 # `attributeColumns` the printed track config names.
+#
+# `copies` is not Compara's; it is counted here. It is how many orthologs the
+# reference gene has in the partner genome, so every row of a fanned-out gene
+# carries the same number. Against a polyploid that number IS the ploidy: a
+# diploid outgroup gene answers to three bread-wheat homoeologs, and the genes
+# answering to fewer are the ones that lost one.
 ATTRS = ("identity", "homology_identity", "dn", "ds", "goc_score",
-         "wga_coverage")
+         "wga_coverage", "copies")
 
 MISSING = {"", ".", "NA", "NULL", "\\N"}
 
@@ -140,67 +149,71 @@ def main():
     beds = {n: read_bed_names(f) for n, f in bed_files.items()}
     os.makedirs(args.outdir, exist_ok=True)
 
-    # streamed: the human file is ~600 MB, and every row belongs to exactly one
-    # output table, so nothing has to be held
-    handles = {}
+    # The input is streamed, but the OUTPUT rows are held: `copies` counts a
+    # reference gene's orthologs in one partner, and that total is only known
+    # once its last row has been read. A pairwise table is tens of thousands of
+    # rows against an input of millions, so what is held is the small end.
+    rows = {}
+    copies = {}
     seen = {n: set() for n in others.values()}
     placed = {n: set() for n in others.values()}
     ref_seen, ref_placed = set(), set()
     counts = {"rows": 0, "kept": 0, "unresolved": 0}
-    try:
-        with opener(args.homologies) as fh:
-            header = fh.readline().rstrip("\n").split("\t")
-            index = {}
-            for column in NEEDED:
-                if column not in header:
-                    sys.exit(f"{args.homologies} has no {column!r} column; its "
-                             f"header is {header}")
-                index[column] = header.index(column)
-            for line in fh:
-                f = line.rstrip("\n").split("\t")
-                if len(f) < len(header):
-                    continue
-                counts["rows"] += 1
-                if f[index["species"]] != ref_compara:
-                    continue
-                other = others.get(f[index["homology_species"]])
-                if other is None or f[index["homology_type"]] not in keep_types:
-                    continue
-                if args.high_confidence_only and \
-                        f[index["is_high_confidence"]] != "1":
-                    continue
-                ref_gene = f[index["gene_stable_id"]]
-                other_gene = f[index["homology_gene_stable_id"]]
-                ref_seen.add(ref_gene)
-                seen[other].add(other_gene)
-                ref_ok = ref_name not in beds or ref_gene in beds[ref_name]
-                other_ok = other not in beds or other_gene in beds[other]
-                if ref_ok:
-                    ref_placed.add(ref_gene)
-                if other_ok:
-                    placed[other].add(other_gene)
-                if not (ref_ok and other_ok):
-                    counts["unresolved"] += 1
-                    continue
-                out = handles.get(other)
-                if out is None:
-                    out = handles[other] = open(
-                        os.path.join(args.outdir, f"{ref_name}.{other}.blocks"),
-                        "w")
-                # identity as a fraction: the ramp's domain, not Compara's percent
-                out.write("\t".join([
-                    ref_gene, other_gene,
-                    cell(f[index["identity"]], 0.01),
-                    cell(f[index["homology_identity"]], 0.01),
-                    cell(f[index["dn"]]),
-                    cell(f[index["ds"]]),
-                    cell(f[index["goc_score"]]),
-                    cell(f[index["wga_coverage"]], 0.01),
-                ]) + "\n")
-                counts["kept"] += 1
-    finally:
-        for out in handles.values():
-            out.close()
+    with opener(args.homologies) as fh:
+        header = fh.readline().rstrip("\n").split("\t")
+        index = {}
+        for column in NEEDED:
+            if column not in header:
+                sys.exit(f"{args.homologies} has no {column!r} column; its "
+                         f"header is {header}")
+            index[column] = header.index(column)
+        for line in fh:
+            f = line.rstrip("\n").split("\t")
+            if len(f) < len(header):
+                continue
+            counts["rows"] += 1
+            if f[index["species"]] != ref_compara:
+                continue
+            other = others.get(f[index["homology_species"]])
+            if other is None or f[index["homology_type"]] not in keep_types:
+                continue
+            if args.high_confidence_only and \
+                    f[index["is_high_confidence"]] != "1":
+                continue
+            ref_gene = f[index["gene_stable_id"]]
+            other_gene = f[index["homology_gene_stable_id"]]
+            ref_seen.add(ref_gene)
+            seen[other].add(other_gene)
+            ref_ok = ref_name not in beds or ref_gene in beds[ref_name]
+            other_ok = other not in beds or other_gene in beds[other]
+            if ref_ok:
+                ref_placed.add(ref_gene)
+            if other_ok:
+                placed[other].add(other_gene)
+            if not (ref_ok and other_ok):
+                counts["unresolved"] += 1
+                continue
+            # identity as a fraction: the ramp's domain, not Compara's percent
+            rows.setdefault(other, []).append((ref_gene, [
+                ref_gene, other_gene,
+                cell(f[index["identity"]], 0.01),
+                cell(f[index["homology_identity"]], 0.01),
+                cell(f[index["dn"]]),
+                cell(f[index["ds"]]),
+                cell(f[index["goc_score"]]),
+                cell(f[index["wga_coverage"]], 0.01),
+            ]))
+            copies.setdefault(other, {})
+            copies[other][ref_gene] = copies[other].get(ref_gene, 0) + 1
+            counts["kept"] += 1
+    handles = {}
+    for other, table in rows.items():
+        path = os.path.join(args.outdir, f"{ref_name}.{other}.blocks")
+        handles[other] = path
+        with open(path, "w") as out:
+            for ref_gene, cells in table:
+                out.write("\t".join([*cells, str(copies[other][ref_gene])])
+                          + "\n")
 
     def share(name, seen_ids, placed_ids):
         if name not in beds:

@@ -125,10 +125,9 @@ carries a **Show color legend** toggle:
 - Mapping quality - per-alignment PAF MAPQ on a cividis ramp
 - dN/dS - the ratio of non-synonymous to synonymous substitution rate, on a
   diverging blue-yellow-red ramp whose pale middle is 1. Blue below it is
-  purifying selection, red above it positive selection, clamped at 2. An aligner
-  has no view on this, so it comes from an ortholog table carrying `dn` and `ds`
-  per link, which
-  [Ensembl Compara publishes](/docs/tutorials/multiway_synteny#from-ensembl-compara)
+  purifying selection, red above it positive selection, clamped at 2. It needs
+  an [ortholog table](/docs/tutorials/multiway_synteny) carrying `dn` and `ds`
+  per link
 
 A mode whose number a track does not carry leaves every ribbon the default color
 rather than painting them all at zero.

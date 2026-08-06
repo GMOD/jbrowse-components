@@ -875,6 +875,28 @@ check("a rate Compara could not estimate is a missing cell, not a zero",
       [".", ".", ".", ".", "."])
 check("a rate it did estimate survives the round trip",
       [cmp_mod.cell("0.4"), cmp_mod.cell("0")], ["0.4", "0"])
+# `copies` is the one column the converter counts rather than copies: how many
+# orthologs the reference gene has in that partner. Against a polyploid it IS the
+# ploidy, so every row of a fanned-out gene has to carry the same total — a
+# per-row count would read as "this link is one of one".
+og_src = os.path.join(tempfile.mkdtemp(), "h.tsv")
+with open(og_src, "w") as fh:
+    fh.write("gene_stable_id\tprotein_stable_id\tspecies\tidentity\thomology_type\t"
+             "homology_gene_stable_id\thomology_protein_stable_id\thomology_species\t"
+             "homology_identity\tdn\tds\tgoc_score\twga_coverage\tis_high_confidence\thomology_id\n")
+    for i, (g, o) in enumerate([("S1", "W1a"), ("S1", "W1b"), ("S1", "W1c"), ("S2", "W2")]):
+        fh.write(f"{g}\tp\tsorghum_bicolor\t80\tortholog_one2many\t{o}\tp\t"
+                 f"triticum_aestivum\t80\tNULL\tNULL\tNULL\tNULL\t1\t{i}\n")
+outdir = tempfile.mkdtemp()
+sys.argv = ["compara_to_blocks.py", og_src, "--reference", "sorghum_bicolor=sorghum",
+            "--species", "triticum_aestivum=wheat", "--outdir", outdir]
+with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+    cmp_mod.main()
+check("every row of a fanned-out gene carries the whole copy count",
+      [l.split("\t")[-1] for l in
+       open(os.path.join(outdir, "sorghum.wheat.blocks")).read().splitlines()],
+      ["3", "3", "3", "1"])
+
 # the four required BED columns are a valid BED, and only the last field carries
 # the newline — the same trap orthogroups_to_blocks.py had
 bd2 = tempfile.mkdtemp()

@@ -1,0 +1,159 @@
+{
+  "assemblies": [
+    {
+      "name": "tauschii",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "tauschii-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "tauschii.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "sorghum",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "sorghum-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "sorghum.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "wheat",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "wheat-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "wheat.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ],
+  "configuration": {},
+  "connections": [],
+  "defaultSession": {
+    "name": "Bread wheat homoeologs against a diploid grass",
+    "views": [
+      {
+        "type": "LinearSyntenyView",
+        "displayName": "Aegilops tauschii - sorghum - bread wheat",
+        "showColorLegend": true,
+        "init": {
+          "views": [
+            {
+              "assembly": "tauschii"
+            },
+            {
+              "assembly": "sorghum"
+            },
+            {
+              "assembly": "wheat"
+            }
+          ],
+          "tracks": [
+            [
+              "sorghum_tauschii"
+            ],
+            [
+              "sorghum_wheat"
+            ]
+          ],
+          "colorBy": "attribute:copies",
+          "autoDiagonalize": true
+        }
+      }
+    ]
+  },
+  "tracks": [
+    {
+      "type": "SyntenyTrack",
+      "trackId": "sorghum_tauschii",
+      "name": "Sorghum / Aegilops tauschii orthologs",
+      "assemblyNames": [
+        "tauschii",
+        "sorghum"
+      ],
+      "adapter": {
+        "type": "MCScanBlocksAdapter",
+        "uri": "sorghum.tauschii.blocks.gz",
+        "blockAssemblies": [
+          "sorghum",
+          "tauschii"
+        ],
+        "bedLocations": [
+          {
+            "uri": "sorghum.bed.gz"
+          },
+          {
+            "uri": "tauschii.bed.gz"
+          }
+        ],
+        "assemblyNames": [
+          "tauschii",
+          "sorghum"
+        ],
+        "attributeColumns": [
+          "identity",
+          "homology_identity",
+          "dn",
+          "ds",
+          "goc_score",
+          "wga_coverage",
+          "copies"
+        ]
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "sorghum_wheat",
+      "name": "Sorghum / bread wheat orthologs",
+      "assemblyNames": [
+        "sorghum",
+        "wheat"
+      ],
+      "adapter": {
+        "type": "MCScanBlocksAdapter",
+        "uri": "sorghum.wheat.blocks.gz",
+        "blockAssemblies": [
+          "sorghum",
+          "wheat"
+        ],
+        "bedLocations": [
+          {
+            "uri": "sorghum.bed.gz"
+          },
+          {
+            "uri": "wheat.bed.gz"
+          }
+        ],
+        "assemblyNames": [
+          "sorghum",
+          "wheat"
+        ],
+        "attributeColumns": [
+          "identity",
+          "homology_identity",
+          "dn",
+          "ds",
+          "goc_score",
+          "wga_coverage",
+          "copies"
+        ]
+      }
+    }
+  ]
+}
