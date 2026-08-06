@@ -97,10 +97,12 @@ const OVERRIDABLE_HOOK_KEYS = [
  * callback's parameter names), and eight slots dropped the base's `description`,
  * leaving the config editor and the generated docs blank for them.
  *
- * Merging also removes the sharpest edge for `promotable` slots: an override that
- * forgot `promotable`/`promotedBase` produced a slot that threw "not promotable"
- * on every `resolveConf` read. Now it inherits both, and a subclass that really
- * wants a plain slot says `promotable: false`.
+ * Merging also removes the sharpest edge for promotable slots: an override that
+ * forgot `promotedBase` produced a slot that threw "not promotable" on every
+ * `resolveConf` read. Now it inherits it, and a subclass that really wants a
+ * plain slot states `promotedBase: undefined` — which works *because* this is a
+ * spread: a stated `undefined` overwrites the base's value where an omitted key
+ * would inherit it.
  */
 function mergeSchemaDefinition(
   baseDefinition: ConfigurationSchemaDefinition,

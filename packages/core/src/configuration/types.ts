@@ -91,10 +91,10 @@ export type ConfigurationSlotName<SCHEMA> = SCHEMA extends undefined
 //   would only add cast ceremony on legitimately-dynamic values.
 // jexl callbacks are declared to return the slot's own type, correct here too.
 //
-// A `promotable` slot with a `promotedBase` is a *sentinel* slot: being unset is
-// the "inherit" signal, which only `resolveConf` resolves away (every promotable
-// slot is a `maybe*` type, so the sentinel is always `undefined`). So the
-// *resolved* read type drops it — `boolean | undefined` becomes `boolean`,
+// A slot declaring `promotedBase` is a *sentinel* slot: being unset is the
+// "inherit" signal, which only `resolveConf` resolves away (every promotable slot
+// is a `maybe*` type, so the sentinel is always `undefined`). So the *resolved*
+// read type drops it — `boolean | undefined` becomes `boolean`,
 // `'fixed' | 'grow' | 'fit' | undefined` becomes `'fixed' | 'grow' | 'fit'`.
 //
 // The plain `getConf` read type keeps the `undefined` (see
@@ -103,19 +103,27 @@ export type ConfigurationSlotName<SCHEMA> = SCHEMA extends undefined
 // consumer expecting a real mode, so tsc points at the call that should have
 // been `resolveConf`. A slot without `promotedBase` is unaffected either way.
 //
-// Keyed on `promotedBase` rather than `promotable` because only the former
-// survives a subclass override at the *type* level: `mergeSchemaDefinition`
-// folds an override over the base slot at runtime, but this reads the subclass's
-// literal definition, and a real override states `promotedBase` while leaving
-// `promotable` to be inherited (`LGVSyntenyDisplay`'s `colorBy`). The two keys
-// coincide everywhere else: `ConfigSlot` rejects `promotable` without
-// `promotedBase`, and `promotedBase` without a stated `promotable` — and the
-// remaining shape, an override turning an inherited slot off with
-// `promotable: false`, leaves `promotedBase` to the merge, so it is absent here
-// too and the sentinel correctly survives.
-type SlotValueResolvedFromDef<DEF> = DEF extends { promotedBase: unknown }
-  ? Exclude<SlotValueRawFromDef<DEF>, undefined>
-  : SlotValueRawFromDef<DEF>
+// `promotedBase` is the marker at runtime too now, so this mapping and
+// `ConfigSlot` finally read the same field. They never used to: a separate
+// `promotable` boolean cannot be read here at all, because this sees the
+// subclass's *literal* definition while the boolean arrives through
+// `mergeSchemaDefinition` at runtime — a real override states `promotedBase` and
+// inherits the rest (`LGVSyntenyDisplay`'s `colorBy`). Two `ConfigSlot` throws
+// existed only to force the two fields to agree; deleting the boolean deleted
+// them.
+//
+// **`promotedBase: undefined` has to be checked first, and it is not a no-op
+// branch.** It is how a subclass turns an inherited promotable slot back into a
+// plain one — the definition merge is a spread, so a stated `undefined`
+// overwrites the base's value at runtime. But `{ promotedBase: undefined }` does
+// satisfy `{ promotedBase: unknown }`, so without this branch the type would
+// keep resolving the sentinel away for exactly the slot that just stopped being
+// promotable, and `resolveConf` would throw on a read tsc had blessed.
+type SlotValueResolvedFromDef<DEF> = DEF extends { promotedBase: undefined }
+  ? SlotValueRawFromDef<DEF>
+  : DEF extends { promotedBase: unknown }
+    ? Exclude<SlotValueRawFromDef<DEF>, undefined>
+    : SlotValueRawFromDef<DEF>
 
 // A sub-schema entry, not a slot: the read yields that sub-config's snapshot.
 // Typed rather than left to fall through to `any`, so the snapshot can't be fed

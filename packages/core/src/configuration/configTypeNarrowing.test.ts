@@ -58,19 +58,16 @@ const promotableSchema = ConfigurationSchema('ConfigNarrowingPromotable', {
     model: types.enumeration('PromMode', ['a', 'b']),
     defaultValue: undefined,
     promotedBase: 'a',
-    promotable: true,
   },
   chevrons: {
     type: 'maybeBoolean',
     defaultValue: undefined,
     promotedBase: true,
-    promotable: true,
   },
   size: {
     type: 'maybeNumber',
     defaultValue: undefined,
     promotedBase: 7,
-    promotable: true,
   },
   // no `promotedBase`: an ordinary optional slot, whose read must still surface
   // `undefined` — the exclusion is keyed on `promotedBase`, not `maybe*`
@@ -82,18 +79,26 @@ const promotableSchema = ConfigurationSchema('ConfigNarrowingPromotable', {
     type: 'maybeFrozen',
     defaultValue: undefined,
     promotedBase: { type: 'normal' },
-    promotable: true,
   },
 })
 
-// A subclass turning an inherited promotable slot off states `promotable: false`
-// and leaves `promotedBase` to the runtime definition merge — so it is absent
-// from the literal read here, and the sentinel correctly survives in BOTH read
-// types. Guards the reasoning behind keying `SlotValueResolvedFromDef` on
-// `promotedBase` (see types.ts).
+// A subclass turns an inherited promotable slot off by stating
+// `promotedBase: undefined`, and the sentinel must survive in BOTH read types.
+//
+// This is the canary for the *first* branch of `SlotValueResolvedFromDef`, which
+// looks redundant and is not: `{ promotedBase: undefined }` satisfies
+// `{ promotedBase: unknown }`, so keying only on the latter would resolve the
+// sentinel away for the one slot that just stopped being promotable — tsc would
+// promise a `number` while `resolveConf` threw "not promotable" at runtime.
 const turnedOffSchema = ConfigurationSchema(
   'ConfigNarrowingTurnedOff',
-  { size: { type: 'maybeNumber', defaultValue: undefined, promotable: false } },
+  {
+    size: {
+      type: 'maybeNumber',
+      defaultValue: undefined,
+      promotedBase: undefined,
+    },
+  },
   { baseConfiguration: promotableSchema },
 )
 
@@ -178,10 +183,10 @@ describe('getConf slot-value type narrowing', () => {
   })
 
   // A subclass that turns an inherited promotable slot off states
-  // `promotable: false` and leaves `promotedBase` to the runtime definition
-  // merge, so `resolveConf` throws there — and both read types must keep the
-  // sentinel rather than promising a value that read can't produce.
-  test('a slot turned off with promotable: false keeps the sentinel', () => {
+  // `promotedBase: undefined`, so `resolveConf` throws there — and both read
+  // types must keep the sentinel rather than promising a value that read can't
+  // produce.
+  test('a slot turned off with promotedBase: undefined keeps the sentinel', () => {
     const check = (model: Instance<typeof TurnedOffContainer>) => {
       const size = resolveConf(model, 'size')
       const rawSize = getConf(model, 'size')

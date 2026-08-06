@@ -68,8 +68,8 @@ accidental.
 | Cached per-schema promotable-slot list (`promotableSlotNames`) + the raw walker `fullConfSnapshot` and its nested-schema guard | `packages/core/src/configuration/util.ts` |
 | Resolution-aware reader (`resolveConf`; `getConf` alongside it stays raw) | `packages/core/src/configuration/getConf.ts` |
 | Control builders + share/worker helpers (`make*Control`, `getConfigSnapshotWithPromotables`, `getDisplayTypeDefaultChanges`, `openPromotableDisplays`) | `packages/core/src/configuration/promotableDefaults.ts` |
-| `promotable` / `promotedBase` slot metadata + its authoring guards | `packages/core/src/configuration/configurationSlot.ts` |
-| Slot-definition inheritance (an override merges over the base slot, so `promotable` survives) | `packages/core/src/configuration/configurationSchema.ts` (`mergeSchemaDefinition`) |
+| `promotedBase` slot metadata (the promotable marker) + its authoring guards | `packages/core/src/configuration/configurationSlot.ts` |
+| Slot-definition inheritance (an override merges over the base slot, so `promotedBase` survives) | `packages/core/src/configuration/configurationSchema.ts` (`mergeSchemaDefinition`) |
 | Resolved read type (`SlotValueResolvedFromDef` excludes the sentinel for `promotedBase` slots) | `packages/core/src/configuration/types.ts` |
 | Session store (`get/setDisplayTypeDefault`) | `packages/product-core/src/Session/BaseSession.ts` |
 | Share/export bake (`bakePromotedDefaultsIntoSnapshot`) | `packages/product-core/src/Session/shareableSnapshot.ts` |
@@ -95,7 +95,7 @@ the sender-at-base case it deliberately does not cover, jbrowse-web).
 
 ### Promotable is a schema fact; the pin is a menu fact
 
-A slot's `promotable` flag travels down `baseConfiguration` to every subclass,
+A slot's `promotedBase` travels down `baseConfiguration` to every subclass,
 but the **pin** is built by whichever track menu happens to construct a row for
 that slot. A display that inherits the flag and curates its own menu therefore
 has a promotable slot with **no pin anywhere** — and since a promoted default is
@@ -136,16 +136,16 @@ lines. `trackMenuItems.test.ts` pins it at the **call site** — the shared
 builder's own test can't, since passing no factory is a legitimate call for a
 display whose slot isn't promotable.
 
-**`promotable: false` is not the fix for the synteny rows.** Those slots are read
+**Dropping `promotedBase` is not the fix for the synteny rows.** Those slots are read
 through the *shared* model's `resolveConf` getters, which throw on a
-non-promotable slot — turning the flag off breaks the display outright. Wiring
+non-promotable slot — making them plain breaks the display outright. Wiring
 the missing rows is the only fix, and it is a product decision (new pins on
 settings synteny deliberately curated out), not a cleanup.
 
 **Neither is it the fix for the two variant rows, and neither is a pin.** This
 file used to say "move the rows + getters down to `baseModel.ts` if that's
 wanted"; don't — it would put a "Show chevrons" row on every variant track menu
-for a setting that draws nothing there. `promotable: false` is the tempting other
+for a setting that draws nothing there. `promotedBase: undefined` is the tempting other
 direction and is also wrong: the base `rpcProps` ships
 `getConfigSnapshotWithPromotables(self)`, so a slot that stops being promotable
 stops being resolved and reaches the worker as its bare `undefined` sentinel,
@@ -186,7 +186,7 @@ needs two files.
 
 ## The cascade
 
-A config slot marks itself `promotable: true`, and the display's value getter
+A config slot declares a `promotedBase`, and the display's value getter
 reads it with `resolveConf(self, slot)`, which walks three tiers:
 
 ```
@@ -232,9 +232,10 @@ the strength of this path; a new object/array slot needs nothing extra.
 
 **Being unset is the sentinel.** Every promotable slot is a `maybe*` type — so
 `undefined` is the CSS `inherit` keyword — and declares `promotedBase` for what
-that resolves to (the CSS `initial`). `ConfigSlot` throws unless the type is a
-`maybe*`, `defaultValue` is `undefined`, and `promotedBase` is set, so there is
-one form and nothing to choose:
+that resolves to (the CSS `initial`). **Declaring `promotedBase` is also the only
+thing that marks a slot promotable**, so there is one field, one form, and
+nothing to choose. `ConfigSlot` throws unless the type is a `maybe*` and
+`defaultValue` is `undefined`:
 
 - `maybeNumber` — `featureHeight`/`scatterPointSize`/`lineWidth` (e.g.
   `featureHeight` → `7`).
@@ -248,9 +249,24 @@ one form and nothing to choose:
 - `maybeFrozen` — the object-valued case: `colorBy`, resolving to
   `{ type: 'normal' }`.
 
-`ConfigSlot` also rejects the mirror mistake, `promotedBase` without
-`promotable`. An explicit `promotable: false` is how a subclass turns an
-inherited promotable slot off.
+A subclass turns an inherited promotable slot back into a plain one by stating
+`promotedBase: undefined`; `mergeSchemaDefinition` is a spread, so a stated
+`undefined` overwrites the base's value where an omitted key would inherit it.
+
+**There was a separate `promotable: true` flag and it is gone.** It carried no
+information `promotedBase` didn't, and keeping the two in agreement cost two
+`ConfigSlot` throws — "promotable with no base", and the mirror mistake of a base
+on a slot that never said promotable — plus a line in all 19 declarations. The
+argument that settles it is that the *type* layer never read the flag and could
+not: `SlotValueResolvedFromDef` maps a subclass's literal definition, while a
+boolean left to be inherited arrives only through the runtime merge, so
+`promotedBase` was already the marker on that side. Deleting the flag made the
+two layers read the same field, and the throws describe states no schema can now
+express. The one place this needs care is `SlotValueResolvedFromDef`'s first
+branch: `{ promotedBase: undefined }` satisfies `{ promotedBase: unknown }`, so
+the off-switch has to be matched *before* the promotable case or tsc promises a
+resolved value for a slot `resolveConf` now refuses (canary:
+`configTypeNarrowing.test.ts`, checked by `pnpm typecheck`).
 
 It costs nothing at the read site: `resolveConf` resolves `undefined` to
 `promotedBase` and the getter never surfaces it (and `SlotValueResolvedFromDef`
@@ -703,8 +719,8 @@ pin itself to this panel is the parked "Promotable-slot UI" proposal in
 
 1. In the display's config schema, use a `maybe*` slot type
    (`maybeNumber`/`maybeBoolean`/`maybeColor`/`maybeStringEnum`/`maybeFrozen`),
-   leave `defaultValue` undefined, and add `promotable: true` plus
-   `promotedBase: <realDefault>`. `ConfigSlot` throws on any other shape, so
+   leave `defaultValue` undefined, and add `promotedBase: <realDefault>` —
+   declaring that one field is what makes the slot promotable. `ConfigSlot` throws on any other shape, so
    there's nothing to get subtly wrong. If the slot's *shape* alone can't tell a valid value from a stale one
    (e.g. a `maybeFrozen` `colorBy` whose `.type` must name a registered scheme, not just
    be some string), add a `validate: (value) => boolean` hook — it gates both a
@@ -714,10 +730,11 @@ pin itself to this panel is the parked "Promotable-slot UI" proposal in
    **Overriding an inherited promotable slot states only the difference.** A
    subclass schema that redeclares one merges field-by-field over the base's, so
    `LGVSyntenyDisplay`'s `colorBy` writes just its `promotedBase`
-   (`{type:'strand'}` rather than `normal`) and inherits `promotable`,
-   `validate` and `advanced`. Keep `type` and `defaultValue` — they're what marks
+   (`{type:'strand'}` rather than `normal`) and inherits `validate` and
+   `advanced`. Keep `type` and `defaultValue` — they're what marks
    the entry as a slot rather than a nested sub-schema. A subclass that wants a
-   genuinely plain slot writes `promotable: false`.
+   genuinely plain slot writes `promotedBase: undefined` — the merge is a
+   spread, so a stated `undefined` overwrites the inherited base.
 2. Read it on the display with **`resolveConf(self, slot)`**, not `getConf` —
    `get x(): X { return resolveConf(self, 'x') }`, no post-guard and no cast. If
    you forget, tsc usually catches it: the raw `getConf` read type is
@@ -772,7 +789,7 @@ pin itself to this panel is the parked "Promotable-slot UI" proposal in
 An earlier design layered admin/user type-default configs via extra
 `mergeTrackConfig` passes in the `SessionTracks.ts` `tracks` getter, with a
 4-part memo key to keep the hydration cache warm (also the stale block in
-`OTHER_IDEAS.md`). **Superseded**: a `promotable` slot resolves on read — no
+`OTHER_IDEAS.md`). **Superseded**: a promotable slot resolves on read — no
 tracks-getter merge, no admin config slot, no cache-key surgery. Kept the "user
 choice wins / display-type granularity" decisions; dropped the machinery.
 

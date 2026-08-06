@@ -691,8 +691,15 @@ interface SlotMeta {
   defaultValue?: string
   enumValues?: string[]
   advanced?: boolean
-  promotable?: boolean
-  // `promotedBase`: what a promotable slot resolves to when nothing overrides it
+  // What a promotable slot resolves to when nothing overrides it — **and the
+  // only marker that the slot is promotable at all** (`isPromotableSlot`).
+  // There is no `promotable` flag any more, here or in `ConfigSlotDefinition`.
+  //
+  // The key is set-but-`undefined` for a slot whose override turns promotion
+  // off, which is load-bearing: `resolveInheritedSlotMeta` layers a base and its
+  // override with a spread, so a *present* `undefined` overwrites the inherited
+  // value exactly as the runtime `mergeSchemaDefinition` spread does, while an
+  // absent key would inherit it.
   promotedBase?: string
   // `contextVariable`: the names a jexl callback on this slot receives
   contextVariable?: string[]
@@ -768,19 +775,22 @@ function applySlotProperty(
       meta.typeCode = node.getText()
     }
   } else if (
-    (key === 'advanced' || key === 'promotable') &&
+    key === 'advanced' &&
     (node.kind === ts.SyntaxKind.TrueKeyword ||
       node.kind === ts.SyntaxKind.FalseKeyword)
   ) {
     // `false` is recorded, not just skipped: an override states it to turn a
     // base slot's flag off, and that has to win over the inherited `true`
-    meta[key] = node.kind === ts.SyntaxKind.TrueKeyword
+    meta.advanced = node.kind === ts.SyntaxKind.TrueKeyword
   } else if (key === 'promotedBase') {
-    const inline = renderInlineDefault(node)
-    if (inline === undefined) {
-      meta.promotedBase = node.getText()
+    if (ts.isIdentifier(node) && node.text === 'undefined') {
+      // an override turning promotion off. Assign the key rather than leaving it
+      // absent — see `SlotMeta.promotedBase`; `renderInlineDefault` would
+      // otherwise hand back the *string* 'undefined', which reads as a promoted
+      // base whose value happens to be spelled that way.
+      meta.promotedBase = undefined
     } else {
-      meta.promotedBase = inline
+      meta.promotedBase = renderInlineDefault(node) ?? node.getText()
     }
   } else if (key === 'contextVariable') {
     const names = ts.isArrayLiteralExpression(node)
@@ -1005,6 +1015,14 @@ function slotTypeCell(meta: SlotMeta) {
       )
 }
 
+// Declaring `promotedBase` is what makes a slot promotable — the one marker, in
+// the docs generator as in `ConfigSlotDefinition`. Set-but-`undefined` means an
+// override turned promotion off, so `in` is the test rather than a truthiness
+// check on the value.
+function isPromotableSlot(meta: SlotMeta) {
+  return 'promotedBase' in meta && meta.promotedBase !== undefined
+}
+
 // The Default cell. A promotable slot's own default is a sentinel meaning
 // "unset", so it renders as what it actually resolves to.
 function slotDefaultCell(meta: SlotMeta) {
@@ -1013,8 +1031,8 @@ function slotDefaultCell(meta: SlotMeta) {
   return [
     // a promotable slot's own default is a sentinel; the value it resolves to
     // is the one a reader is after
-    codeCell(meta.promotedBase ?? value),
-    meta.promotable && '_promotable_',
+    codeCell(isPromotableSlot(meta) ? meta.promotedBase : value),
+    isPromotableSlot(meta) && '_promotable_',
   ]
     .filter(Boolean)
     .join(' ')
@@ -1173,15 +1191,15 @@ function adaptersByTrackType(configs: ConfigWithHeader[]) {
 }
 
 // The "which settings can be made the default for all tracks" table in
-// user_guides/display_defaults.md, from the `promotable: true` slots themselves —
-// the user guide used to list them by hand, which drifts the moment a display
-// promotes a slot. Rows are the display types users actually meet (those with a
-// `new DisplayType(...)` registration), each with its effective promotable slots:
-// declared on the display or inherited from a base, shadowing resolved the same
-// way the config page's "Inherited config slots" section resolves it. An
-// override counts as promotable when the slot it shadows is (LGVSyntenyDisplay's
-// `colorBy`), matching the runtime merge; to opt a slot out, state
-// `promotable: false`.
+// user_guides/display_defaults.md, from the slots declaring `promotedBase`
+// themselves — the user guide used to list them by hand, which drifts the moment
+// a display promotes a slot. Rows are the display types users actually meet
+// (those with a `new DisplayType(...)` registration), each with its effective
+// promotable slots: declared on the display or inherited from a base, shadowing
+// resolved the same way the config page's "Inherited config slots" section
+// resolves it. An override counts as promotable when the slot it shadows is
+// (LGVSyntenyDisplay's `colorBy`), matching the runtime merge; to opt a slot out,
+// state `promotedBase: undefined`.
 //
 // The column says "session-wide default", not "pin", because this is a *schema*
 // fact and the pin is a *menu* fact. A display that inherits a promotable slot
@@ -1206,7 +1224,7 @@ export function writePromotableSlotDocs(
       const seen = new Set<string>()
       const slots = [cfg, ...collectBaseConfigs(cfg, index)]
         .flatMap(c => filterUnseenByName(seen, c.slots))
-        .filter(slot => slotMetaFor(slot).meta.promotable)
+        .filter(slot => isPromotableSlot(slotMetaFor(slot).meta))
         .map(slot => slot.name)
         .sort((a, b) => a.localeCompare(b))
       return { cfg, slots }

@@ -166,28 +166,36 @@ export interface ConfigSlotDefinition {
    */
   advanced?: boolean
   /**
-   * a user can promote this slot's current value to a session-wide default for
-   * all tracks of the same display type (track menu pin). An *unset* slot
+   * **Declaring this makes the slot promotable**, and it is the only thing that
+   * does: a user can promote the slot's value to a session-wide default for all
+   * tracks of the same display type (the track-menu pin). An *unset* slot
    * follows (inherits) that promoted default; any concrete value customizes the
-   * track. Read it with `resolveConf`; see `promotableResolve.ts`.
+   * track. Read it with `resolveConf`, never `getConf`; see
+   * `promotableResolve.ts`.
+   *
+   * The value itself is what the unset state resolves to when a track inherits
+   * and nothing is promoted. This is the CSS model — being unset is the
+   * `inherit` keyword and `promotedBase` is `initial` (the value at the bottom
+   * of the cascade). Spending only `undefined` on the sentinel is what leaves
+   * every *real* value — `promotedBase` included — customizable over an opposite
+   * session default, so a track can hold `displayMode: 'normal'` under a
+   * promoted `'compact'`.
    *
    * Requires a `maybe*` slot type (whose `undefined` is the inherit sentinel)
-   * plus `promotedBase` for what inheriting resolves to.
-   */
-  promotable?: boolean
-  /**
-   * Required for a `promotable` slot: the concrete value its unset state
-   * resolves to when a track inherits and nothing is promoted.
+   * and no `defaultValue`; `ConfigSlot` throws otherwise. A subclass turns an
+   * inherited promotable slot back into a plain one by stating
+   * `promotedBase: undefined` — the definition merge is a spread, so a stated
+   * `undefined` really does overwrite the base's value.
    *
-   * This is the CSS model — being unset is the `inherit` keyword and
-   * `promotedBase` is `initial` (the value at the bottom of the cascade).
-   * Spending only `undefined` on the sentinel is what leaves every *real* value —
-   * `promotedBase` included — customizable over an opposite session default, so a
-   * track can hold `displayMode: 'normal'` under a promoted `'compact'`.
+   * There is deliberately no separate `promotable` boolean. It was one, and the
+   * two fields had to be kept in agreement by two `ConfigSlot` throws, because
+   * the type layer (`SlotValueResolvedFromDef`) keys off *this* field and always
+   * has — an override states `promotedBase` and leaves a boolean to the runtime
+   * merge, which a type mapping over the literal definition cannot see.
    */
   promotedBase?: unknown
   /**
-   * For a `promotable` slot: an extra semantic check a stored value must pass,
+   * For a promotable slot: an extra semantic check a stored value must pass,
    * on top of the built-in type-shape check, before the cascade
    * (`promotableResolve.ts`'s `isUsableValue`) treats it as usable. Applies to
    * both cascade tiers — a session-wide promoted default and a track's own saved
@@ -218,7 +226,7 @@ export interface ConfigSlotDefinition {
  * evaluated on read by `readConfObject`.
  */
 export default function ConfigSlot(definition: ConfigSlotDefinition) {
-  const { model, type, defaultValue, promotable, promotedBase } = definition
+  const { model, type, defaultValue, promotedBase } = definition
   if (!CONFIG_SLOT_TYPE_NAMES.has(type)) {
     throw new Error(
       `config slot needs a known type name, got ${JSON.stringify(type)}`,
@@ -236,26 +244,26 @@ export default function ConfigSlot(definition: ConfigSlotDefinition) {
   if (defaultValue === undefined && !MAYBE_TYPES.has(type)) {
     throw new Error("no 'defaultValue' provided")
   }
-  // A promotable slot spends being-unset on the inherit sentinel, so it must be
-  // a `maybe*` type and needs a separate `promotedBase` to say what inheriting
-  // resolves to. Any *concrete* default would double as the inherit signal,
-  // making that one value un-customizable under an opposite promoted default —
-  // an authoring mistake with no runtime symptom other than a setting that won't
+  // `promotedBase` is what makes a slot promotable, so its presence is the whole
+  // condition here — the two checks that used to reconcile it with a separate
+  // `promotable` boolean ("requires promotedBase", and the mirror mistake of
+  // `promotedBase` without the flag) describe states that can no longer be
+  // written.
+  //
+  // A promotable slot spends being-unset on the inherit sentinel, so it must be a
+  // `maybe*` type. Any *concrete* default would double as the inherit signal,
+  // making that one value un-customizable under an opposite promoted default — an
+  // authoring mistake with no runtime symptom other than a setting that won't
   // stay put, so fail at construction.
-  if (promotable) {
+  if (promotedBase !== undefined) {
     if (!MAYBE_TYPES.has(type)) {
       throw new Error(
-        `a 'promotable' slot needs a maybe* type whose undefined is the inherit sentinel, not "${type}"`,
+        `a 'promotedBase' slot needs a maybe* type whose undefined is the inherit sentinel, not "${type}"`,
       )
     }
     if (defaultValue !== undefined) {
       throw new Error(
-        "a 'promotable' slot must leave 'defaultValue' undefined — that IS the inherit sentinel",
-      )
-    }
-    if (promotedBase === undefined) {
-      throw new Error(
-        "a 'promotable' slot requires 'promotedBase' (the value its inherit sentinel resolves to)",
+        "a promotable slot must leave 'defaultValue' undefined — that IS the inherit sentinel; 'promotedBase' is what an unset slot resolves to",
       )
     }
     // The base is the bottom of the cascade: every other tier that fails
@@ -266,7 +274,7 @@ export default function ConfigSlot(definition: ConfigSlotDefinition) {
     // `model`, a non-finite number), which nothing else in the system checks.
     if (!isUsableValue(definition, promotedBase)) {
       throw new Error(
-        `a 'promotable' slot's 'promotedBase' must be a value the slot can hold: ${JSON.stringify(promotedBase)} is not a valid "${type}"`,
+        `a 'promotedBase' must be a value the slot can hold: ${JSON.stringify(promotedBase)} is not a valid "${type}"`,
       )
     }
     // The resolver hands `promotedBase` out by reference, so an object-valued one
@@ -276,16 +284,6 @@ export default function ConfigSlot(definition: ConfigSlotDefinition) {
     // the default for every other track — and for every later session, since this
     // object belongs to the schema. See `freezeDeep` for why by-reference stays.
     freezeDeep(promotedBase)
-  } else if (promotedBase !== undefined && promotable === undefined) {
-    // the mirror mistake: `promotedBase` without `promotable` builds a slot the
-    // resolver refuses ("not promotable") on every `resolveConf` read, while the
-    // resolved read type still drops the sentinel — so it type-checks and throws.
-    // An *explicit* `promotable: false` is the documented way a subclass turns an
-    // inherited promotable slot off (the definition merge carries `promotedBase`
-    // along with it), so only an unstated `promotable` is the authoring mistake.
-    throw new Error(
-      "'promotedBase' is only meaningful on a 'promotable' slot — add promotable: true, or promotable: false to turn an inherited one off",
-    )
   }
 
   return types.stripDefault(

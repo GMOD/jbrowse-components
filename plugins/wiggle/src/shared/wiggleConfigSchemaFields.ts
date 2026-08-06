@@ -101,7 +101,6 @@ export const wiggleConfigSchemaFields = {
     description:
       'Point height in px for scatterplot ("scatter"/"multiscatter") rendering. Unset (the default) follows the session-wide default for this display type, falling back to 2',
     advanced: true,
-    promotable: true,
   },
   lineWidth: {
     type: 'maybeNumber',
@@ -110,7 +109,6 @@ export const wiggleConfigSchemaFields = {
     description:
       'Line thickness in px for line ("line"/"multiline") rendering. Unset (the default) follows the session-wide default for this display type, falling back to 1',
     advanced: true,
-    promotable: true,
   },
   maxGapMultiple: {
     type: 'number',

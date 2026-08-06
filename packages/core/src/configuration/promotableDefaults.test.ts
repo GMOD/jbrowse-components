@@ -132,7 +132,6 @@ describe('apply a promoted default to open tracks', () => {
       type: 'maybeNumber',
       defaultValue: undefined,
       promotedBase: 1,
-      promotable: true,
     },
   })
 
@@ -450,7 +449,6 @@ describe('promotable maybeNumber slot', () => {
       description: 'an optional promotable height override',
       defaultValue: undefined,
       promotedBase: 1,
-      promotable: true,
     },
   })
 
@@ -496,7 +494,6 @@ describe('promotable maybeBoolean slot', () => {
       description: 'a promotable on/off setting defaulting to on',
       defaultValue: undefined,
       promotedBase: true,
-      promotable: true,
     },
   })
 
@@ -568,7 +565,6 @@ describe('promotable maybeColor slot', () => {
       description: 'a promotable color that may be unset',
       defaultValue: undefined,
       promotedBase: 'black',
-      promotable: true,
     },
   })
 
@@ -610,7 +606,6 @@ describe('getConfigSnapshotWithPromotables', () => {
       type: 'maybeBoolean',
       defaultValue: undefined,
       promotedBase: true,
-      promotable: true,
     },
     // a plain non-promotable slot, to confirm it passes through untouched
     color: {
@@ -645,7 +640,6 @@ describe('promotable frozen slot structural equality', () => {
       type: 'maybeFrozen',
       defaultValue: undefined,
       promotedBase: { type: 'normal' },
-      promotable: true,
     },
   })
 
@@ -705,7 +699,6 @@ describe('promotable slot validate hook', () => {
       type: 'maybeFrozen',
       defaultValue: undefined,
       promotedBase: { type: 'normal' },
-      promotable: true,
       validate: (value: unknown) =>
         typeof value === 'object' &&
         value !== null &&
@@ -763,7 +756,6 @@ describe('promotable sentinel slot', () => {
       model: types.enumeration('Mode', ['normal', 'compact']),
       defaultValue: undefined,
       promotedBase: 'normal',
-      promotable: true,
     },
   })
 
@@ -817,7 +809,6 @@ describe('a baked value beats the reader’s own promoted default', () => {
       model: types.enumeration('Mode', ['normal', 'compact']),
       defaultValue: undefined,
       promotedBase: 'normal',
-      promotable: true,
     },
   })
 
@@ -853,7 +844,6 @@ describe('resolveConf cascades; getConf and readConfObject stay raw', () => {
       defaultValue: undefined,
       promotedBase: 7,
       description: 'a promotable slot resolved by getConf',
-      promotable: true,
     },
     plainLabel: {
       type: 'string',
@@ -906,7 +896,6 @@ describe('promotable slot holding a stray jexl callback', () => {
       defaultValue: undefined,
       promotedBase: 7,
       description: 'a promotable slot with a hand-edited callback in it',
-      promotable: true,
     },
   })
 
@@ -975,7 +964,6 @@ describe('displays nested inside a composite view', () => {
       type: 'maybeNumber',
       defaultValue: undefined,
       promotedBase: 1,
-      promotable: true,
     },
   })
 
@@ -1049,7 +1037,6 @@ describe('the serialization-boundary guard', () => {
       type: 'maybeNumber',
       defaultValue: undefined,
       promotedBase: 7,
-      promotable: true,
     },
   })
 
@@ -1070,7 +1057,6 @@ describe('the serialization-boundary guard', () => {
           type: 'maybeNumber',
           defaultValue: undefined,
           promotedBase: 7,
-          promotable: true,
         },
       }),
     })
@@ -1090,7 +1076,6 @@ test('a promoted jexl string is rejected and falls back to the base', () => {
       type: 'maybeColor',
       defaultValue: undefined,
       promotedBase: 'black',
-      promotable: true,
     },
   })
   const { session, display } = createDisplay(schema)
@@ -1103,23 +1088,16 @@ test('a promoted jexl string is rejected and falls back to the base', () => {
   expect(resolveConf(display, 'stroke')).toBe('black')
 })
 
-// The authoring mistakes a `promotable` slot can make have no runtime symptom
+// The authoring mistakes a promotable slot can make have no runtime symptom
 // beyond "this setting won't stay put", so `ConfigSlot` rejects them at schema
 // construction rather than letting the resolver silently do the wrong thing.
+//
+// Two guards that used to live here are gone, and their absence is the point:
+// declaring `promotedBase` is now the only way to make a slot promotable, so
+// "promotable with no base" and "a base on a slot that never said promotable"
+// are states no schema can express. They existed to keep `promotedBase` and a
+// separate `promotable` boolean in agreement.
 describe('promotable slot authoring guards', () => {
-  test('rejects a promotable slot with no promotedBase', () => {
-    expect(() =>
-      ConfigurationSchema('MissingBase', {
-        mode: {
-          type: 'maybeStringEnum',
-          model: types.enumeration('MissingBaseMode', ['normal', 'compact']),
-          defaultValue: undefined,
-          promotable: true,
-        },
-      }),
-    ).toThrow(/requires 'promotedBase'/)
-  })
-
   test('rejects a non-maybe slot type', () => {
     // a plain enum has no spare value for "inherit", so `defaultValue` would
     // double as the inherit signal and 'fixed' could never be customized back
@@ -1131,36 +1109,22 @@ describe('promotable slot authoring guards', () => {
           model: types.enumeration('PlainEnumMode', ['fixed', 'fit']),
           defaultValue: 'fixed',
           promotedBase: 'fit',
-          promotable: true,
         },
       }),
     ).toThrow(/needs a maybe\* type/)
   })
 
-  // the mirror mistake: the slot builds fine, the resolved read type promises a
-  // real value, and every `resolveConf` read throws "not promotable"
-  test('rejects promotedBase on a slot that never says promotable', () => {
-    expect(() =>
-      ConfigurationSchema('OrphanBase', {
-        size: {
-          type: 'maybeNumber',
-          defaultValue: undefined,
-          promotedBase: 7,
-        },
-      }),
-    ).toThrow(/only meaningful on a 'promotable' slot/)
-  })
-
-  // ...but an explicit `promotable: false` is how a subclass turns an inherited
-  // promotable slot off, and the definition merge hands ConfigSlot the base's
-  // `promotedBase` alongside it, so that pairing has to build
-  test('accepts an inherited promotedBase turned off with promotable: false', () => {
+  // A subclass turns an inherited promotable slot back into a plain one by
+  // stating `promotedBase: undefined`. This works because `mergeSchemaDefinition`
+  // folds an override with a spread — a *stated* `undefined` overwrites the
+  // base's value, where an omitted key would inherit it — so the merged
+  // definition really has no base and the resolver refuses the slot.
+  test('a subclass turns the slot off with promotedBase: undefined', () => {
     const base = ConfigurationSchema('TurnOffBase', {
       size: {
         type: 'maybeNumber',
         defaultValue: undefined,
         promotedBase: 7,
-        promotable: true,
       },
     })
     const schema = ConfigurationSchema(
@@ -1169,15 +1133,15 @@ describe('promotable slot authoring guards', () => {
         size: {
           type: 'maybeNumber',
           defaultValue: undefined,
-          promotable: false,
+          promotedBase: undefined,
         },
       },
       { baseConfiguration: base },
     )
     const { display } = createDisplay(schema)
-    expect(getSlotDefinition(display.configuration, 'size').promotedBase).toBe(
-      7,
-    )
+    expect(
+      getSlotDefinition(display.configuration, 'size').promotedBase,
+    ).toBeUndefined()
     expect(() => resolveConf(display, 'size')).toThrow(/not promotable/)
   })
 
@@ -1192,7 +1156,6 @@ describe('promotable slot authoring guards', () => {
           model: types.enumeration('BogusBaseMode', ['normal', 'compact']),
           defaultValue: undefined,
           promotedBase: 'noSuchMode',
-          promotable: true,
         },
       }),
     ).toThrow(/must be a value the slot can hold/)
@@ -1205,7 +1168,6 @@ describe('promotable slot authoring guards', () => {
           type: 'maybeNumber',
           defaultValue: undefined,
           promotedBase: Number.NaN,
-          promotable: true,
         },
       }),
     ).toThrow(/must be a value the slot can hold/)
@@ -1218,7 +1180,6 @@ describe('promotable slot authoring guards', () => {
           type: 'maybeFrozen',
           defaultValue: undefined,
           promotedBase: { type: 'retiredScheme' },
-          promotable: true,
           validate: (value: unknown) =>
             typeof value === 'object' &&
             value !== null &&
@@ -1236,7 +1197,6 @@ describe('promotable slot authoring guards', () => {
           type: 'maybeNumber',
           defaultValue: 3,
           promotedBase: 7,
-          promotable: true,
         },
       }),
     ).toThrow(/must leave 'defaultValue' undefined/)
@@ -1252,7 +1212,6 @@ describe('promotable slot authoring guards', () => {
         type: 'maybeFrozen',
         defaultValue: undefined,
         promotedBase: { type: 'normal' },
-        promotable: true,
         validate: (value: unknown) =>
           typeof value === 'object' && value !== null && 'type' in value,
         advanced: true,
@@ -1278,8 +1237,11 @@ describe('promotable slot authoring guards', () => {
       expect(def.promotedBase).toEqual({ type: 'strand' })
     })
 
-    test('inherits the promotable machinery it left out', () => {
-      expect(def.promotable).toBe(true)
+    // `validate` is the whole of it now. This used to also assert an inherited
+    // `promotable: true` — the case that motivated the merge, since an override
+    // dropping the flag turned the slot off silently. There is no flag to drop:
+    // the override states `promotedBase`, which *is* what makes it promotable.
+    test('inherits the validate hook it left out', () => {
       expect(def.validate).toBe(
         getSlotDefinition(base.create(), 'colorBy').validate,
       )

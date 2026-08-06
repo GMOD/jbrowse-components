@@ -14,10 +14,11 @@ import type { MenuItem } from '@jbrowse/core/ui'
 // here for exactly the same reason. The reusable half is in core
 // (`promotableSlotsWithoutPin`); only the fixture list and the baseline are here.
 //
-// A promotable slot with no pin is the quietest failure this subsystem has. The
-// flag is a *schema* fact that travels down `baseConfiguration` to every
-// subclass; the pin is a *menu* fact, built by whichever `trackMenuItems()`
-// happens to construct a row for that slot. A display that inherits the flag and
+// A promotable slot with no pin is the quietest failure this subsystem has.
+// Declaring `promotedBase` is a *schema* fact that travels down
+// `baseConfiguration` to every subclass; the pin is a *menu* fact, built by
+// whichever `trackMenuItems()` happens to construct a row for that slot. A
+// display that inherits the slot and
 // curates its own menu therefore has a slot nobody can ever promote — a promoted
 // default is keyed by display type, so no other display's pin writes its key
 // either — and nothing says so: no throw, no visual difference, and the
@@ -35,8 +36,9 @@ import type { MenuItem } from '@jbrowse/core/ui'
 
 // What the pin-less list is *expected* to be, per display type. Every entry is a
 // deliberate product gap, not a bug to route around — see the reference doc for
-// why `promotable: false` is not an alternative (these slots are read through a
-// shared model's `resolveConf` getters, which throw on a non-promotable slot).
+// why `promotedBase: undefined` is not an alternative (these slots are read
+// through a shared model's `resolveConf` getters, which throw on a
+// non-promotable slot).
 const KNOWN_UNPINNED: Record<string, string[]> = {
   // Composes the alignments state model but curates its own menu, so it takes
   // only the colour, feature-height and height-mode pins. Everything below is a
@@ -55,9 +57,9 @@ const KNOWN_UNPINNED: Record<string, string[]> = {
   // transcript-structure settings (chevrons are emitted between a transcript's
   // exons, `subfeatureLabels` labels transcript children) and a VCF feature has
   // no such subfeatures. They reach this schema only via the shared canvas base.
-  // `promotable: false` is not the other-direction fix either — the base
-  // `rpcProps` resolves promotable slots for the worker, so switching the flag
-  // off ships the bare sentinel. Reference doc has the whole argument.
+  // `promotedBase: undefined` is not the other-direction fix either — the base
+  // `rpcProps` resolves promotable slots for the worker, so a slot that stops
+  // being promotable ships the bare sentinel. Reference doc has the argument.
   LinearVariantDisplay: ['displayDirectionalChevrons', 'subfeatureLabels'],
 }
 

@@ -19,8 +19,8 @@ import type { ConfigSlotDefinition } from './configurationSlot.ts'
 
 // Per-slot-type JS shape checks, for the slot types whose value needs more than
 // a `typeof` against `promotedBase`. Only the `maybe*` types appear, because
-// `ConfigSlot` admits nothing else as promotable and this table is only ever
-// consulted for a promotable slot. Any type absent here (`maybeBoolean`,
+// `ConfigSlot` rejects a `promotedBase` on anything else and this table is only
+// ever consulted for a promotable slot. Any type absent here (`maybeBoolean`,
 // `maybeColor`, `maybeFrozen`) falls through to the `promotedBase`-derived check
 // in `matchesSlotShape`.
 const SHAPE_CHECKS: Record<

@@ -16,18 +16,22 @@ Full model: `agent-docs/reference/CONFIG_PATTERN.md` and
 - **`resolveConf` is the only thing that walks a promotable slot's cascade.**
   `getConf` stays raw. Never paper over the resulting compile error with
   `?? someDefault` — that silences the check and bypasses the cascade.
-- A promotable slot must be a `maybe*` type with no `defaultValue` and a
-  `promotedBase`; `undefined` is the only inherit sentinel. Every boundary
-  serializing a display config **must flatten** (worker, shared session).
-  Resolved values are shared by reference and frozen — build a modified value by
-  copying.
+- **`promotedBase` is the one thing that makes a slot promotable** — there is no
+  `promotable` flag, and adding one back means re-adding the two `ConfigSlot`
+  throws that existed only to keep it agreeing with the base (the type layer
+  keys off `promotedBase` and can't see a boolean that arrives via the schema
+  merge). Such a slot must be a `maybe*` type with no `defaultValue`;
+  `undefined` is the only inherit sentinel. Every boundary serializing a display
+  config **must flatten** (worker, shared session). Resolved values are shared by
+  reference and frozen — build a modified value by copying.
 
 ## Slot overrides merge over `baseConfiguration`
 
 A subclass redeclaring a slot gets a field-by-field merge, so state only what
 differs. Keep `type` and `defaultValue` regardless (they're what distinguish a
-slot from a sub-schema). To turn a base field off, state it
-(`promotable: false`).
+slot from a sub-schema). The merge is a spread, so to turn a base field off,
+state it — including `promotedBase: undefined` to make an inherited promotable
+slot plain again.
 
 ## A config snapshot is transport, not a value-read API
 

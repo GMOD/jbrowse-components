@@ -78,7 +78,6 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         // resolved `heightMode` getter (resolveConf), never raw.
         defaultValue: undefined,
         promotedBase: 'fixed',
-        promotable: true,
       },
       /**
        * #slot
@@ -187,7 +186,6 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         // through the resolved `displayMode` getter (resolveConf), never raw.
         defaultValue: undefined,
         promotedBase: 'normal',
-        promotable: true,
       },
       /**
        * #slot
@@ -215,7 +213,6 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         // never raw.
         defaultValue: undefined,
         promotedBase: 'none',
-        promotable: true,
       },
       /**
        * #slot
@@ -232,7 +229,6 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         // raw. See promotableDefaults.ts.
         defaultValue: undefined,
         promotedBase: true,
-        promotable: true,
       },
       /**
        * #slot

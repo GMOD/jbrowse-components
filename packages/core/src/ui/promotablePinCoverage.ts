@@ -4,11 +4,11 @@
  * slots its track menu actually offers a pin for.
  *
  * This exists because the two halves of the feature are declared in different
- * places and nothing joins them. `promotable: true` is a **schema** fact that
- * travels down `baseConfiguration` to every subclass; the pin is a **menu** fact,
- * built by whichever `trackMenuItems()` happens to construct a row for that slot.
- * A display that inherits the flag and curates its own menu therefore ends up
- * with a promotable slot that has no pin anywhere — and since a promoted default
+ * places and nothing joins them. Declaring `promotedBase` is a **schema** fact
+ * that travels down `baseConfiguration` to every subclass; the pin is a **menu**
+ * fact, built by whichever `trackMenuItems()` happens to construct a row for that
+ * slot. A display that inherits the slot and curates its own menu therefore ends
+ * up with a promotable slot that has no pin anywhere — and since a promoted default
  * is keyed by *display type*, no other display's pin can write its key either, so
  * the slot resolves to `promotedBase` forever unless a track customizes it.
  *

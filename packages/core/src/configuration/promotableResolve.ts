@@ -12,6 +12,12 @@
  * (ADR-047) — every promotable slot is a `maybe*` type, so `undefined` is CSS
  * `inherit` and `promotedBase` is CSS `initial`, both enforced by `ConfigSlot`.
  *
+ * **Declaring `promotedBase` is what makes a slot promotable — there is no
+ * `promotable` flag.** The two coexisted, and the boolean's only job was to be
+ * kept in agreement with the base by two `ConfigSlot` throws, because the type
+ * layer keys off `promotedBase` and cannot see a boolean that arrives through the
+ * schema merge (`types.ts`, `SlotValueResolvedFromDef`).
+ *
  * Every comparison against a promoted or base value is `deepEqual`, never `===`:
  * an object-valued slot (`maybeFrozen`, e.g. alignments `colorBy`) reconstructs a
  * fresh value out of MST that is never `===` its stored twin, so `===` would read
@@ -143,15 +149,17 @@ export function resolveSlotIn(
   slot: string,
 ): SlotResolution {
   const def = getSlotDefinition(ctx.config, slot)
-  // A real slot that just isn't `promotable` would otherwise resolve silently
-  // wrong here (no `promotedBase`, so every tier collapses to `undefined`) and,
-  // through a control builder, write a promoted default nothing ever reads.
-  // `getSlotDefinition` already throws on a slot name that doesn't exist at all.
-  if (!def.promotable) {
+  // A plain slot would otherwise resolve silently wrong here — with no
+  // `promotedBase` every tier collapses to `undefined` — and, through a control
+  // builder, write a promoted default nothing ever reads. `getSlotDefinition`
+  // already throws on a slot name that doesn't exist at all.
+  //
+  // Declaring `promotedBase` is what makes a slot promotable, so its absence is
+  // the whole test; there is no separate flag that could disagree with it.
+  if (def.promotedBase === undefined) {
     throw new Error(`config slot "${slot}" is not promotable`)
   }
-  // `ConfigSlot` requires `promotedBase` on every promotable slot, so this is the
-  // slot's CSS `initial`
+  // the slot's CSS `initial`
   const base = def.promotedBase
   // a session-wide fact, and `isPromotableDefault` (the pin's filled/outline
   // state) reports on the session, not on one display's view of it

@@ -61,7 +61,7 @@ export function getConf<
  * only, and throws on a detached node) and it means something only for the ~15
  * promotable slots out of 1300-odd config reads in the repo. Hiding it inside
  * `getConf` made every one of those reads a maybe-cascade whose behavior you
- * couldn't see at the call site and which turned on a `promotable: true` flag in
+ * couldn't see at the call site and which turned on a `promotedBase` declared in
  * another file. Naming it at the call site costs one word and restores
  * `getConf` to being what everyone already believed it was.
  *

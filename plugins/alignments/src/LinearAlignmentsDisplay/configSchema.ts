@@ -95,7 +95,6 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         // default and re-inherit Compact. See promotableDefaults.ts.
         defaultValue: undefined,
         promotedBase: 7,
-        promotable: true,
       },
       /**
        * #slot
@@ -111,7 +110,6 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         // `fit`/`grow` default. See promotableDefaults.ts.
         defaultValue: undefined,
         promotedBase: 'fixed',
-        promotable: true,
       },
       /**
        * #slot
@@ -134,7 +132,6 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         // `showSashimiLabels` getter (resolveConf), never raw.
         defaultValue: undefined,
         promotedBase: false,
-        promotable: true,
       },
       /**
        * #slot
@@ -188,7 +185,6 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         // so no snapshot migration is needed.
         defaultValue: undefined,
         promotedBase: { type: 'normal' },
-        promotable: true,
         // Reject a `.type` that isn't (or no longer is) a registered scheme —
         // whether customized on this track or promoted session-wide — so a
         // stale/renamed scheme name in a saved session degrades to "not usable"
@@ -296,7 +292,6 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         // `mismatchAlpha` getter (resolveConf), never raw.
         defaultValue: undefined,
         promotedBase: false,
-        promotable: true,
       },
       /**
        * #slot
@@ -362,7 +357,6 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         // See promotableDefaults.ts.
         defaultValue: undefined,
         promotedBase: 'off',
-        promotable: true,
         description: 'Linked-read (barcode-chain) layout mode',
       },
       /**
@@ -498,7 +492,6 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         // session-wide `arc` default. See promotableDefaults.ts.
         defaultValue: undefined,
         promotedBase: 'off',
-        promotable: true,
         description:
           'Read-connection rendering mode (mate pairs + split reads)',
       },
@@ -517,7 +510,6 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         // `readConnectionsDown` getter (resolveConf), never raw.
         defaultValue: undefined,
         promotedBase: true,
-        promotable: true,
       },
       /**
        * #slot
@@ -532,7 +524,6 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         // through the resolved `showSashimiArcs` getter (resolveConf), never raw.
         defaultValue: undefined,
         promotedBase: true,
-        promotable: true,
         description: 'Draw sashimi (splice-junction) arcs',
       },
       /**
@@ -546,7 +537,6 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         // track can pin 'up' back over a session-wide 'down'/'auto' default.
         defaultValue: undefined,
         promotedBase: 'up',
-        promotable: true,
         description: 'Sashimi junction-arc placement',
       },
       /**
@@ -600,7 +590,6 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         // `showSoftClipping` getter (resolveConf), never raw.
         defaultValue: undefined,
         promotedBase: false,
-        promotable: true,
       },
     },
     {

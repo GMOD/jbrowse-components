@@ -56,7 +56,6 @@ test('facade carries promotedBase for a promotable slot, and not otherwise', () 
       type: 'maybeBoolean',
       defaultValue: undefined,
       promotedBase: true,
-      promotable: true,
     },
     plain: { type: 'boolean', defaultValue: false },
   })

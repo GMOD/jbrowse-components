@@ -19,11 +19,16 @@ tried.
 
 ## Decision
 
-**Being unset is the sentinel, always.** `ConfigSlot` throws unless a
-`promotable` slot is a `maybe*` type (`maybeNumber` / `maybeBoolean` /
-`maybeColor` / `maybeStringEnum` / `maybeFrozen`), leaves `defaultValue`
-undefined, and declares `promotedBase` for what unset resolves to. `undefined`
-is CSS `inherit`; `promotedBase` is CSS `initial`.
+**Being unset is the sentinel, always.** A promotable slot declares
+`promotedBase` for what unset resolves to, and `ConfigSlot` throws unless it is a
+`maybe*` type (`maybeNumber` / `maybeBoolean` / `maybeColor` / `maybeStringEnum` /
+`maybeFrozen`) leaving `defaultValue` undefined. `undefined` is CSS `inherit`;
+`promotedBase` is CSS `initial`.
+
+Declaring `promotedBase` is *also* what makes the slot promotable. That was a
+separate `promotable: true` flag when this ADR was first written; see
+[the mirror mistake](#the-mirror-mistake-is-also-rejected) below for why the flag
+went and what its two throws were actually holding up.
 
 There is one form and nothing to choose, which is why `isUsableValue`'s first
 check is a bare `value !== undefined` and no `defaultValue` comparison survives
@@ -58,16 +63,29 @@ Spending *only* the unset state on the sentinel is what leaves every real value,
 `promotedBase` included, customizable per-track. No slot ever used the plain
 form, so it was removed rather than kept as an option.
 
-### The mirror mistake is also rejected
+### The mirror mistake is also rejected — and then made unstatable
 
-`ConfigSlot` throws on `promotedBase` without `promotable`. That combination
-builds a slot the resolver refuses on every read ("not promotable") while the
-resolved read type still drops the sentinel — it type-checks and throws at
-runtime.
+`ConfigSlot` used to throw on `promotedBase` without `promotable`, and on
+`promotable` without `promotedBase`. Both combinations were real: one built a slot
+the resolver refuses on every read ("not promotable") while the resolved read type
+still dropped the sentinel, so it type-checked and threw at runtime; the other
+built a promotable slot with no bottom to its cascade.
 
-Only an *unstated* `promotable` is the mistake. An explicit `promotable: false`
-is how a subclass turns an inherited promotable slot off, and the definition
-merge hands `ConfigSlot` the base's `promotedBase` alongside it.
+**Superseded (2026-08): the `promotable` flag is gone, and both throws with it.**
+Declaring `promotedBase` is the one marker, so neither state can be written.
+What settles it is the last bullet under Consequences, which was already true
+when this ADR was written: the *type* layer keys on `promotedBase` and cannot see
+a boolean that arrives through the runtime definition merge. So the two fields
+were never equally authoritative — the flag was the redundant one, and its only
+job was to be reconciled with the field that actually decided.
+
+A subclass now turns an inherited promotable slot off with
+`promotedBase: undefined`. That works because `mergeSchemaDefinition` is a
+spread: a stated `undefined` overwrites the base's value where an omitted key
+inherits it. It needs one thing at the type level — `SlotValueResolvedFromDef`
+must match `{ promotedBase: undefined }` *before* `{ promotedBase: unknown }`,
+which the latter also satisfies. Canary: `configTypeNarrowing.test.ts`, checked
+by `pnpm typecheck` rather than jest.
 
 ## Consequences
 
@@ -75,9 +93,10 @@ merge hands `ConfigSlot` the base's `promotedBase` alongside it.
   alignments `colorBy`) work with nothing extra — comparisons against a promoted
   value use `deepEqual`, since a fresh MST-reconstructed value is never `===` its
   stored twin.
-- `SlotValueResolvedFromDef` keys on `promotedBase`, not `promotable` — it is the
-  one of the two that survives a real override at the *type* level, since the type
-  reads the subclass's literal definition and the definition merge is runtime-only.
+- `SlotValueResolvedFromDef` keys on `promotedBase` — the field that survives a
+  real override at the *type* level, since the type reads the subclass's literal
+  definition and the definition merge is runtime-only. This is what eventually
+  removed the `promotable` flag outright, above.
 - Adding a promotable slot to an enum-valued setting costs no enum member. If a
   future slot type seems to need an in-band sentinel, it needs a `maybe*` wrapper
   instead.

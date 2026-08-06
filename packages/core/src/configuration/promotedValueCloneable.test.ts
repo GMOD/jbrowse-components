@@ -23,7 +23,6 @@ const configSchema = ConfigurationSchema('CloneDisplay', {
     type: 'maybeFrozen',
     defaultValue: undefined,
     promotedBase: { type: 'normal' },
-    promotable: true,
   },
 })
 

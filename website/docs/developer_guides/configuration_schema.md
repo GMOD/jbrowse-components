@@ -208,7 +208,6 @@ export function configSchemaFactory() {
         // sentinel promotable slot: see promotableDefaults.ts
         defaultValue: undefined,
         promotedBase: defaultArcLineWidth,
-        promotable: true,
       },
     },
     {

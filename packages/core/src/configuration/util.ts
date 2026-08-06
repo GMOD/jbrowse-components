@@ -396,7 +396,7 @@ export function promotableSlotNames(
   const names = new Set<string>()
   const table = getConfigurationSchemaDefinition(config)
   for (const [name, def] of Object.entries(table ?? {})) {
-    if (isSlotDefinitionEntry(def) && def.promotable) {
+    if (isSlotDefinitionEntry(def) && def.promotedBase !== undefined) {
       names.add(name)
     }
   }

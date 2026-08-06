@@ -157,13 +157,13 @@ describe('slotFieldConstantPairs', () => {
         'slot-fields.ts',
         `export const WIGGLE_FIELDS_T6 = {
            minScore: { type: 'number', defaultValue: 0 },
-           lineWidth: { type: 'maybeNumber', promotable: true, promotedBase: 1 },
+           lineWidth: { type: 'maybeNumber', promotedBase: 1 },
          } as const`,
       ),
     ])
     const pairs = slotFieldConstantPairs('WIGGLE_FIELDS_T6')
     expect(pairs?.map(([name]) => name)).toEqual(['minScore', 'lineWidth'])
-    expect(pairs?.[1]?.[1]).toContain('promotable: true')
+    expect(pairs?.[1]?.[1]).toContain('promotedBase: 1')
   })
 
   test('an object of anything other than slots is not a slot table', () => {

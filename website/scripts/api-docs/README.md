@@ -278,7 +278,7 @@ pointless since regen overwrites it. They all run inside `pnpm gendocs`.
 | `#fileFormat`                              | adapter `#config` blocks            | `FILE_TYPES <group>`     | Format → adapter → track type routing, per group     |
 | `#gotcha`                                  | any `#config` block                 | `GOTCHA <ConfigName>`    | The type's caution callouts, verbatim                |
 | _(none — `new DisplayType` registrations)_ | whole repo                          | `DISPLAY_TYPES`          | Track type → display types                           |
-| _(none — `promotable: true` slots)_        | config schemas                      | `PROMOTABLE_SLOTS`       | Which settings can be pinned as a display default    |
+| _(none — slots declaring `promotedBase`)_  | config schemas                      | `PROMOTABLE_SLOTS`       | Which settings can be pinned as a display default    |
 
 The first five are also standalone scripts with a `--check` mode CI uses to fail
 when a tag changed but the docs weren't regenerated. `DISPLAY_TYPES`, `GOTCHA`
