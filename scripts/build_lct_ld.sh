@@ -171,14 +171,166 @@ for vcf in "$OUT" "$POOLED"; do
        END {printf "  %-32s %.3f  (%d pairs)\n", f, s/n, n}' block.ld
 done
 
+# ── JBrowse app ──────────────────────────────────────────────────────────────
+# Everything above is data; this turns it into something to open, the same shape
+# the other popgen build scripts end in. The assembly is the hosted UCSC hg19
+# hub's own entry copied in, so the 3 GB reference is never downloaded and the
+# hub's chromAlias is what reconciles this VCF's "2" with the "chr2" the view
+# asks for. Its relative uris are resolved against the hub before they are
+# written into a config that no longer sits beside it.
+if command -v jbrowse >/dev/null; then jb() { jbrowse "$@"; }
+else jb() { npx -y @jbrowse/cli "$@"; }; fi
+APP=jbrowse2
+[ -f "$APP/index.html" ] || jb create "$APP"
+
+# The 6-population haplotype cut the second figure reads, fetched rather than
+# rebuilt: scripts/build_lct_haploblock.sh re-derives it from the release, and
+# choosing its 150 samples is that script's subject rather than this one's.
+HAP=lct_1kg_chr2_6pop.vcf.gz
+for f in "$HAP" "$HAP.tbi"; do
+  [ -f "$f" ] || curl -fsSL -o "$f" "https://jbrowse.org/demos/popgen/$f"
+done
+
+cp "$OUT" "$OUT.tbi" "$POOLED" "$POOLED.tbi" "$FST_BW" "$HAP" "$HAP.tbi" "$APP"/
+
+python3 - "$APP/config.json" "$OUT" "$POOLED" "$FST_BW" "$HAP" "$MAF" <<'PY'
+import json, sys, urllib.parse, urllib.request
+
+path, panel, pooled, fst, hap, maf = sys.argv[1:7]
+maf = float(maf)
+HUB = 'https://jbrowse.org/ucsc/hg19/config.json'
+hub = json.load(urllib.request.urlopen(HUB))
+
+
+def absolutize(node):
+    """Rewrite the hub's relative file references against the hub's own url."""
+    if isinstance(node, dict):
+        for k, v in node.items():
+            if k in ('uri', 'chromSizes') and isinstance(v, str) and '://' not in v:
+                node[k] = urllib.parse.urljoin(HUB, v)
+            else:
+                absolutize(v)
+    elif isinstance(node, list):
+        for v in node:
+            absolutize(v)
+
+
+cfg = json.load(open(path))
+cfg['assemblies'] = hub['assemblies']
+# The two context lanes both figures carry, taken from the hub by id rather than
+# rebuilt: RefSeq genes for what the block sits on, ClinVar for where the causal
+# variant is (it is below the MAF floor, so it is never one of the LD columns).
+KEEP = ('hg19-ncbiRefSeqCurated', 'hg19-clinvarMain')
+cfg['tracks'] = [t for t in hub['tracks'] if t.get('trackId') in KEEP]
+absolutize(cfg['assemblies'])
+absolutize(cfg['tracks'])
+
+
+def ld_track(track_id, name, uri):
+    return {
+        'type': 'VariantTrack',
+        'trackId': track_id,
+        'name': name,
+        'assemblyNames': ['hg19'],
+        'adapter': {
+            'type': 'VcfTabixAdapter',
+            'uri': uri,
+            # the display correlates the genotypes themselves, so the whole
+            # window has to be fetched rather than sampled
+            'fetchSizeLimit': 500_000_000,
+        },
+        'displays': [{
+            'type': 'LDDisplay',
+            'displayId': f'{track_id}-LDDisplay',
+            'showRecombination': True,
+            'minorAlleleFrequencyFilter': maf,
+            'useGenomicPositions': True,
+            'height': 330,
+        }],
+    }
+
+
+cfg['tracks'] += [
+    ld_track('kgp_lct_pooled', 'All panels pooled (r²)', pooled),
+    ld_track('kgp_lct_panel', 'One population panel (r²)', panel),
+    {
+        'type': 'QuantitativeTrack',
+        'trackId': 'kgp_lct_fst',
+        'name': 'Fst, this panel vs the rest of the release (Weir & Cockerham)',
+        'assemblyNames': ['hg19'],
+        'adapter': {
+            'type': 'BigWigAdapter',
+            'uri': fst,
+            # raw per-site values: a bigWig zoom bin carries min/avg/max, and
+            # the average over ninety variants is the background, so a
+            # summarized lane draws the haze and drops the peak that is the
+            # whole point
+            'resolutionMultiplier': 0.001,
+        },
+    },
+    {
+        'type': 'VariantTrack',
+        'trackId': 'kgp_lct_haplotypes',
+        'name': '1000 Genomes haplotypes across LCT (one row per haplotype)',
+        'assemblyNames': ['hg19'],
+        'adapter': {
+            'type': 'VcfTabixAdapter',
+            'uri': hap,
+            'samplesTsvLocation': {
+                'uri': 'https://jbrowse.org/genomes/hg19/1000g.sorted.csv.gz',
+            },
+        },
+        'displays': [{
+            'type': 'LinearMultiSampleVariantMatrixDisplay',
+            'displayId': 'kgp_lct_haplotypes-LinearMultiSampleVariantMatrixDisplay',
+            'renderingMode': 'phased',
+            'colorBy': 'population',
+            'minorAlleleFrequencyFilter': maf,
+            'height': 700,
+        }],
+    },
+]
+
+# Opens on the same 3.1 Mb the figures frame: the block plus about a megabase of
+# unlinked sequence on each side, so it reads as bounded rather than as a
+# triangle filling the frame.
+cfg['defaultSession'] = {
+    'name': 'LCT linkage disequilibrium',
+    'views': [{
+        'type': 'LinearGenomeView',
+        'assembly': 'hg19',
+        'loc': 'chr2:134,700,000-137,800,000',
+        'tracks': [
+            'hg19-ncbiRefSeqCurated',
+            'hg19-clinvarMain',
+            'kgp_lct_fst',
+            'kgp_lct_pooled',
+            'kgp_lct_panel',
+            'kgp_lct_haplotypes',
+        ],
+    }],
+}
+json.dump(cfg, open(path, 'w'), indent=2)
+PY
+
 cat <<EOF
 
-Done. The figure reads $OUT; upload it and its .tbi beside the other popgen
-demo assets:
+Built $(pwd)/$APP/config.json, opening on chr2:134,700,000-137,800,000 with the
+two LD lanes, the per-site Fst lane and the haplotype matrix. The two triangles
+are the same locus, window and MAF floor and differ only in which samples went
+in. Cluster the matrix from its track menu (Clustering -> Cluster rows by
+genotype...) to make the swept haplotype resolve into one slab; left in file
+order it is a plaid at any row count. Serve it, e.g.:
+
+  npx --yes serve $(pwd)/$APP
+
+or open $(pwd)/$APP/config.json in JBrowse Desktop via
+File -> Session -> Open config.json or .jbrowse file...
+
+Maintainers: the hosted figure reads $OUT, so a change to what this builds needs
+it and its .tbi uploaded beside the other popgen demo assets. The bucket has no
+versioning, so an overwrite is not recoverable.
 
   aws s3 cp $OUT s3://jbrowse.org/demos/popgen/
   aws s3 cp $OUT.tbi s3://jbrowse.org/demos/popgen/
-
-$POOLED is built for the pooled-vs-panel table above and is not uploaded. The
-pooled figure reads the narrower lct_1kg_chr2.vcf.gz that is already hosted.
 EOF

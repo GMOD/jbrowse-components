@@ -50,12 +50,12 @@ at the same thing local ancestry does.
 
 Then the rest of the dog world, because two wolfdog breeds on their own can only
 show that a documented cross leaves blocks. One dog from each of the 219 breeds
-the collection sequenced four or more of goes in as well — chosen on how well
-the breed was sequenced and on nothing about the breed — so the same run also
-says what a dog with no such cross looks like, and any breed that turns out to
-carry something is found rather than nominated. Eight European gray wolves are
-held out of the wolf panel and painted as targets, which is the only thing in
-the figure that says what a correct all-wolf call looks like.
+the collection sequenced four or more of goes in as well, chosen on how well the
+breed was sequenced and on nothing about the breed, so the same run also says
+what a dog with no such cross looks like, and any breed that turns out to carry
+something is found rather than nominated. Eight European gray wolves are held
+out of the wolf panel and painted as targets, which is the only thing in the
+figure that says what a correct all-wolf call looks like.
 
 The [Dog10K consortium](https://www.dog10kgenomes.org/) publishes a phased
 reference panel of 1929 canids on the `UU_Cfam_GSD_1.0` assembly, which includes
@@ -100,7 +100,7 @@ unrepresented and ordinary dog haplotypes have nowhere to go but the wolf panel.
 
 An animal cannot be in a panel and painted against it, so both directions of
 that get handled explicitly. The eight gray wolves are **removed from the wolf
-panel** before the run — a target matched against itself paints solid by
+panel** before the run, since a target matched against itself paints solid by
 construction and says nothing. The sweep is the same problem in reverse: each
 swept animal comes out of the dog panel, but its **breed** does not, because the
 targets are drawn from breeds with several sequenced animals and the panel takes
@@ -121,7 +121,7 @@ AFGH000001	Dog
 The panel is a single 6 GB BCF, and `bcftools` reads it over HTTP by range
 request, so a chromosome costs a chromosome rather than the whole file. That
 subset splits into `chr1.ref.vcf.gz` (the two panels) and `chr1.gt.vcf.gz` (the
-targets: 243 animals — the eight wolfdogs, the Shiloh Shepherd and Tamaskan, the
+targets: 243 animals, the eight wolfdogs, the Shiloh Shepherd and Tamaskan, the
 German Shepherd lineage, eight held-out gray wolves, and the 219-breed sweep).
 
 ### The genetic map
@@ -157,7 +157,7 @@ Of the 219 swept breeds, 193 come in under 1% wolf on this chromosome, which
 gives the wolfdogs' fractions a scale to be read against: seven of the eight
 land between 15% and 45%. The eighth, Czechoslovakian 2, is at 1.5% with no
 block over 0.8 Mb, which puts it inside the range the sweep occupies. That is
-not a failure of the inference — both breeds have been bred back to dogs for
+not a failure of the inference. Both breeds have been bred back to dogs for
 decades, so how much wolf an individual carries varies, and the unit here is the
 animal rather than the breed.
 
@@ -267,7 +267,9 @@ gray wolves at the head are the other end of the same check, and they are
 painted rather than asserted: each was removed from the wolf panel before the
 run, so it is painted by the twenty-eight that remain.
 
-Six of those eight paint 98% wolf or better. **Two do not** — the two Swedish
+### Where the painting and the alleles disagree
+
+Six of those eight paint 98% wolf or better. **Two do not.** The two Swedish
 museum specimens come out about half dog, and that is a result about the method
 rather than about the animals. The build script prints a second, cruder
 measurement beside FLARE's: the fraction of chr1 sites where the two panels are
@@ -275,10 +277,10 @@ nearly fixed for different alleles at which the animal carries the wolf one. The
 two Swedish wolves score 0.92 and 0.92 there, the highest of all eight, against
 0.06 for the German Shepherd. So the alleles say plainly that they are wolves
 while the painting says half dog, and this tutorial does not resolve which part
-of the inference gives way — the two measurements ask different questions, one
+of the inference gives way: the two measurements ask different questions, one
 about alleles one at a time and one about whole haplotypes matched against a
 panel of twenty-eight. What it does settle is which way to read the
-disagreement: where a painting and the raw alleles disagree, the painting is the
+disagreement. Where a painting and the raw alleles disagree, the painting is the
 model's answer, and the reason to run the cruder measurement at all is that it
 has no model to be the answer of.
 
@@ -289,7 +291,7 @@ prints both, one line per animal, as a count of wolf blocks with their median
 and longest.
 
 The Tamaskan behaves like a dog that merely looks like a wolf. Its wolf
-assignments are many and short, and its longest is 1.5 Mb — inside the range an
+assignments are many and short, and its longest is 1.5 Mb, inside the range an
 ordinary breed reaches anyway, since the Kars, the Eurasier and the Spanish
 Mastiff all land between 1.7 and 2.0 Mb with no wolf story attached to any of
 them. That is what having 219 breeds in the run buys: "short flecks" is a

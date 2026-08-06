@@ -29,7 +29,12 @@ in _Anopheles gambiae_ spans roughly 22 Mb of chromosome arm 2L, far past what
 can be computed live from a VCF, so this LD is precomputed with PLINK and read
 through [`PlinkLDTabixAdapter`](/docs/config/plinkldtabixadapter).
 
-<Figure src="/img/ld/anopheles_2la.png" caption="Ag1000G chromosome arm 2L, the same window and settings throughout. Each population's r² heatmap sits above its own karyotype lane, one row per mosquito: 297 from Cameroon, 69 from Gabon. r² fills the published 2La extent in the Cameroon panel, whose lane shows both arrangements segregating. The Gabon panel is empty over that span, and its lane is nearly all standard homozygotes. Both panels carry a separate block at the low-coordinate end of the arm."/>
+Four lanes stack below: each population's r² heatmap over its own karyotype
+lane, one row per mosquito, 297 from Cameroon and 69 from Gabon. Both panels
+also carry a separate block at the low-coordinate end of the arm, which the next
+section returns to.
+
+<Figure src="/img/ld/anopheles_2la.png" caption="Ag1000G chromosome arm 2L, the same window and settings throughout. r² fills the published 2La extent in the Cameroon panel, which segregates both arrangements, and is empty over that span in Gabon, which is near-fixed for the standard one."/>
 
 The heatmap's block comes out at the published breakpoint coordinates, so its
 edges can be checked against them by eye, and against the karyotype lane below
@@ -64,19 +69,18 @@ What the heatmap draws is linkage, not the rearrangement. The two are worth
 keeping apart, so the same inversion can also be loaded as what it is: a
 structural variant, one `<INV>` record spanning the breakpoints, genotyped
 across every mosquito in the two panels and loaded in the
-[multi-sample variant display](/docs/user_guides/multivariant_track). A per-SNP
-view cannot hold a 22 Mb feature on screen, and one SV call sidesteps that,
-because the call is a single feature no matter how wide it is.
+[regular multi-sample variant display](/docs/user_guides/multivariant_track#regular-best-for-full-sv-detail),
+which draws each genotype at the call's true span so the carrier rows begin and
+end at the breakpoints. A per-SNP view cannot hold a 22 Mb feature on screen,
+and one SV call sidesteps that, because the call is a single feature no matter
+how wide it is. [](/docs/tutorials/population_genomics) builds the same
+one-record karyotype track for an 11 Mb Drosophila inversion.
 
-Use the regular multi-sample display rather than its matrix mode. Matrix mode
-spaces one evenly sized column per variant, which discards the call's genomic
-extent; the regular display draws each genotype at the call's true span, so the
-carrier rows begin and end at the breakpoints. That is what the karyotype lanes
-in the figure above are: cells shaded by allele dosage, each lane sorted into
-standard, heterozygous and homozygous-inverted blocks. The `karyotype` column,
-and so the legend, names those three classes by genotype: `2L+a/2L+a`
-(standard/standard, the `+` marking the non-inverted arrangement), `2La/2L+a`
-(heterozygous), `2La/2La` (inverted/inverted).
+That is what the karyotype lanes in the figure above are: cells shaded by allele
+dosage, each lane sorted into standard, heterozygous and homozygous-inverted
+blocks. The `karyotype` column, and so the legend, names those three classes by
+genotype: `2L+a/2L+a` (standard/standard, the `+` marking the non-inverted
+arrangement), `2La/2L+a` (heterozygous), `2La/2La` (inverted/inverted).
 
 Load each population as a `VariantTrack` whose adapter carries the samples TSV,
 with a `LinearMultiSampleVariantDisplay` that orders (`groupBy`) and colors
@@ -234,6 +238,8 @@ and splits it into `--r2-phased` and `--r2-unphased`.
 ## See also
 
 - [](/docs/tutorials/ld_human)
+- [](/docs/tutorials/population_genomics)
+- [](/docs/user_guides/multivariant_track)
 - [](/docs/user_guides/variant_track)
 - [Variant track configuration](/docs/config_guides/variant_track)
 - [Gallery: variants and populations](/gallery/#variants)

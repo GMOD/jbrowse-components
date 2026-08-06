@@ -281,6 +281,8 @@ sharp enough to be worth sorting the painting underneath.
 - [](/docs/tutorials/chromhmm)
 - [](/docs/tutorials/analyze_trio)
 - [](/docs/tutorials/population_genomics)
+- [Selected haplotype (Dog10K)](/docs/tutorials/dog10k_selection)
+- [](/docs/tutorials/local_ancestry)
 - [](/docs/user_guides/gwas_track)
 - [GWAS track configuration](/docs/config_guides/gwas_track)
 - [jexl](/docs/config_guides/jexl)

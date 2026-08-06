@@ -44,7 +44,8 @@ column nor a p-value. `GWASAdapter` takes the column to read as the score
 to apply to it
 ([`scoreTransform`](/docs/config/gwasadapter/#slot-scoretransform)) as separate
 settings, so a differentiation statistic loads with no reshaping. Fst is already
-on the scale the plot draws, so only the column has to be named:
+on the scale the plot draws, so only the column has to be named.
+[](/docs/tutorials/bxd_qtl) loads a LOD column through the same two slots.
 
 ```json
 {
@@ -191,11 +192,16 @@ what the figure below does.
 
 ## Reading it
 
-<Figure caption="SNVs across 320 kb at IGF1 as a matrix, one row per canid and one column per variant, with size class as the sidebar swatch, under per-site Fst between the same two panels. The upper cluster is the toy and small breeds and the lower the giants, with the wolves between. Fst is near zero at both window edges and high across the gene, so the clusters differ under it." src="/img/dog10k-igf1-haplotype.png" />
+<Figure caption="SNVs across 320 kb at IGF1 as a matrix, one row per canid and one column per variant, with size class as the sidebar swatch, under per-site Fst between the same two panels. Fst is near zero at both window edges and high across the gene, so the columns the row order keys on are the ones under the peak." src="/img/dog10k-igf1-haplotype.png" />
 
-The panel separates into two clusters that correspond to the size classes, and
-the block's boundaries fall within the window, so its extent reads against the
-gene track above it rather than being inferred.
+Clustering on genotypes alone recovers the size split without being told it: the
+two largest blocks down the size swatch are the toy and small breeds and the
+giants, and the block's boundaries fall within the window, so its extent reads
+against the gene track above it rather than being inferred. The recovery is
+partial rather than two clean bands, and that is a property of the contrast
+rather than of the clustering. The two panels differ here by a shift in allele
+frequency rather than by carrying different alleles, so the block is a run of
+columns where one class is enriched rather than a solid slab.
 
 The lane between them says which columns are doing the work. It is the same
 Hudson Fst as the genome scan, between the same two panels, but computed one
@@ -252,7 +258,10 @@ read from the figure.
   [SVs (Dog10K)](/docs/tutorials/dog10k_svs) and
   [](/docs/tutorials/local_ancestry), the other Dog10K tutorials, on the same
   assembly
+- [](/docs/tutorials/population_genomics)
+- [](/docs/tutorials/bxd_qtl)
 - [](/docs/user_guides/multivariant_track)
+- [](/docs/user_guides/gwas_track)
 - [](/docs/config_guides/variant_track)
 
 ## References

@@ -16,8 +16,12 @@ which samples went in.
 ## Prerequisites
 
 - nothing to read the figures, which load hosted data
-- `bcftools`, htslib (`tabix`), `plink` (1.9, not plink2) and `curl` for the
-  [reproduce script](#reproduce-it-end-to-end)
+- for the [reproduce script](#reproduce-it-end-to-end): `bcftools` built with
+  libcurl, htslib (`tabix`), `curl`, `python3`, and `node` for the
+  [JBrowse CLI](/docs/cli)
+- [vcftools](https://vcftools.github.io/) and
+  [`bedGraphToBigWig`](https://hgdownload.soe.ucsc.edu/admin/exe/) for the Fst
+  lane, plus `plink` (1.9, not plink2) for the r² tables the script prints
 
 ## Reading the triangle
 
@@ -25,6 +29,42 @@ Red means two variants are almost always inherited together, white means they
 are independent, so the triangle shows where a stretch of chromosome travels as
 a unit. The [`LDDisplay`](/docs/config/sharedlddisplay/) is per-population by
 construction: r² is a correlation across whatever samples you hand it.
+
+An `LDDisplay` on an ordinary `VariantTrack` is the whole setup, with no
+precomputed LD file beside it:
+
+```json
+{
+  "type": "VariantTrack",
+  "trackId": "kgp_lct_ld",
+  "name": "LCT lactase-persistence LD, 1000G European panel (r²)",
+  "assemblyNames": ["hg19"],
+  "adapter": {
+    "type": "VcfTabixAdapter",
+    "uri": "https://jbrowse.org/demos/popgen/lct_1kg_chr2_eur_wide.vcf.gz",
+    "fetchSizeLimit": 500000000
+  },
+  "displays": [
+    {
+      "type": "LDDisplay",
+      "showRecombination": true,
+      "minorAlleleFrequencyFilter": 0.35,
+      "useGenomicPositions": true,
+      "height": 360
+    }
+  ]
+}
+```
+
+[`minorAlleleFrequencyFilter`](/docs/config/sharedlddisplay/#slot-minorallelefrequencyfilter)
+thins a dense callset to the common, block-tagging variants, and
+[`useGenomicPositions`](/docs/config/sharedlddisplay/#slot-usegenomicpositions)
+sizes each cell by genomic distance, so the block's edges land under the
+coordinates they are at. Left off, the x axis is SNP index instead, and index
+density is not uniform across a window this wide.
+[`fetchSizeLimit`](/docs/config/sharedlddisplay/#slot-fetchsizelimit) is raised
+because r² is computed from the genotypes themselves, so the window's variants
+all have to be fetched.
 
 ## A sweep leaves a long haplotype
 
@@ -88,6 +128,39 @@ gives one row per chromosome and one column per variant. Its sidebar stripe is
 population, and above both lanes sit RefSeq genes and the ClinVar
 lactase-persistence records.
 
+```json
+{
+  "type": "VariantTrack",
+  "trackId": "kgp_lct_haplotypes",
+  "name": "1000 Genomes haplotypes across LCT (one row per haplotype)",
+  "assemblyNames": ["hg19"],
+  "adapter": {
+    "type": "VcfTabixAdapter",
+    "uri": "https://jbrowse.org/demos/popgen/lct_1kg_chr2_6pop.vcf.gz",
+    "samplesTsvLocation": {
+      "uri": "https://jbrowse.org/genomes/hg19/1000g.sorted.csv.gz"
+    }
+  },
+  "displays": [
+    {
+      "type": "LinearMultiSampleVariantMatrixDisplay",
+      "renderingMode": "phased",
+      "colorBy": "population",
+      "minorAlleleFrequencyFilter": 0.35,
+      "height": 700
+    }
+  ]
+}
+```
+
+The clustering is not in that config, because it is not a config slot. Run it
+from the track menu's **Clustering** → **Cluster rows by genotype...**, or bake
+it into a session with the
+[`runClustering`](/docs/models/multisamplevariantbasemodel/#property-runclustering)
+and
+[`clusterRegion`](/docs/models/multisamplevariantbasemodel/#property-clusterregion)
+model properties, which is what the figure below does.
+
 <Figure src="/img/ld/lct_haploblock.png" caption="The triangle and the haplotypes it summarises, in one view over the same window. Below the triangle, 1000 Genomes haplotypes at LCT/MCM6, one row per chromosome, clustered rather than left in file order: the pale slab across the upper rows is one haplotype carried by many chromosomes, ending either side of the highlighted gene, under the block's edges above."/>
 
 **Ordering is what makes a block visible, not colour and not row count.** Left
@@ -131,17 +204,22 @@ which panel the r² came from. See [](/docs/user_guides/gwas_track).
 ## Reproduce it end to end
 
 [`build_lct_ld.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_ld.sh)
-cuts the region out of the 1000 Genomes phase 3 callset without downloading it:
+cuts the region out of the 1000 Genomes phase 3 callset without downloading it,
+then writes a ready-to-serve config carrying both LD lanes, the Fst lane and the
+haplotype matrix:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_lct_ld.sh
-bash build_lct_ld.sh                  # writes ./lct_ld_build
+bash build_lct_ld.sh                  # builds ./lct_ld_build/jbrowse2
+npx --yes serve lct_ld_build/jbrowse2 # then open the printed URL
 ```
 
-The file it writes is genotypes; the display does the r². What the script prints
-is the two choices behind the figure, as `plink --r2` tables: r² against
-rs4988235 along the slice, and mean pairwise r² inside the block for one panel
-against the pooled release.
+The assembly is the hosted UCSC hg19 hub's own entry copied in, so the reference
+is never downloaded and the hub's chromAlias reconciles the callset's `2` with
+the `chr2` the view asks for. The files the script writes are genotypes; the
+display does the r². What it prints is the two choices behind the figure, as
+`plink --r2` tables: r² against rs4988235 along the slice, and mean pairwise r²
+inside the block for one panel against the pooled release.
 
 ## See also
 

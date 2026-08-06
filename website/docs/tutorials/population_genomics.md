@@ -9,10 +9,10 @@ tutorial_category: Population genomics
 ---
 
 **TL;DR:** compute per-window Fst, nucleotide diversity (π), and Tajima's D from
-a multi-sample VCF, load them as bigWig quantitative tracks stacked on a shared
-axis, and read where the signals line up against genes. JBrowse draws the
-windowed statistic your tool produced; it runs no population-genetic inference
-of its own.
+a multi-sample VCF, load them as bigWig quantitative tracks stacked in one view,
+each on its own y-axis, and read where the signals line up against genes.
+JBrowse draws the windowed statistic your tool produced; it runs no
+population-genetic inference of its own.
 
 ## Prerequisites
 
@@ -40,10 +40,12 @@ A population-genetic scan is a per-window statistic running along the genome:
 Fst between two groups, nucleotide diversity (π) within one, dxy between them.
 That is the shape of a wiggle track, so whatever a scanner writes per window
 loads as a [quantitative track](/docs/user_guides/quantitative_track) and reads
-against the genes underneath it.
+against the genes underneath it. Haplotype-based selection statistics (iHS,
+XP-EHH, e.g. from [selscan](https://github.com/szpiech/selscan)) capture sweeps
+that Fst misses and, being per-site or per-window scores, load the same way.
 
 No single statistic is decisive alone, so this tutorial stacks Fst, π and
-Tajima's D on a shared axis. The panel is the
+Tajima's D in one view, each scaled to its own data. The panel is the
 [Drosophila Genetic Reference Panel](https://dgrpool.epfl.ch/) (DGRP), 205
 inbred lines ([Mackay et al. 2012](https://doi.org/10.1038/nature10811)) on dm6,
 and the two signals it draws are Fst across the `In(2L)t` inversion, which
@@ -64,6 +66,8 @@ the `In(2L)t` typing of
 [Huang et al. 2015](https://doi.org/10.1534/g3.115.019554). The karyotype column
 is `0` for standard homozygotes, `2` for inverted homozygotes, and `1` for
 heterozygotes, which is what splits the panel into the two groups Fst compares.
+The heterozygotes are dropped from both groups, since contrasting homozygous
+arrangements gives the clearest inversion signal.
 
 [`build_dgrp_popgen.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dgrp_popgen.sh)
 runs the whole pipeline: it downloads both files, derives the two sample lists
@@ -74,6 +78,11 @@ nucleotide diversity and Tajima's D
 ([Tajima 1989](https://doi.org/10.1093/genetics/123.3.585)) in 2 kb windows, and
 packs each into a bigWig with `bedGraphToBigWig`. See
 [reproduce it end to end](#reproduce-it-end-to-end) for the invocation.
+
+Window size trades resolution for smoothness. 2 kb is dense enough in this panel
+that a single-gene sweep like `Cyp6g1` resolves sharply. Widen toward 5-10 kb
+for smoother genome-wide overviews, or narrow further only where SNP density
+stays high.
 
 The one thing to check yourself is chromosome naming, because a mismatch draws
 an empty track rather than an error. The bigWigs take their contig names from
@@ -191,16 +200,14 @@ The windowed Fst scan summarizes the inversion into one number per window. To
 see which lines carry it, represent the whole arrangement as a single
 structural-variant call, one `<INV>` record spanning the In(2L)t breakpoints
 (`2L:2,225,744-13,154,180`), genotyped across every karyotyped line, and load it
-in the [multi-sample variant display](/docs/user_guides/multivariant_track). A
-per-SNP view can't hold a ~11 Mb inversion on screen: zoom out far enough to see
-both breakpoints and the individual markers shrink to nothing. One SV call
-sidesteps that, because the inversion is a single feature no matter how wide it
-is.
-
-Use the regular multi-sample display here rather than its matrix mode. Matrix
-mode spaces one evenly-sized column per variant, which suits many SNPs but
-discards the call's genomic extent. The regular display draws each genotype at
-the call's true span, so the carriers line up under the Fst plateau.
+in the
+[regular multi-sample variant display](/docs/user_guides/multivariant_track#regular-best-for-full-sv-detail),
+which draws each genotype at the call's true span so the carriers line up under
+the Fst plateau. A per-SNP view can't hold a ~11 Mb inversion on screen: zoom
+out far enough to see both breakpoints and the individual markers shrink to
+nothing. One SV call sidesteps that, because the inversion is a single feature
+no matter how wide it is. [](/docs/tutorials/ld_mosquitoes) builds the same
+one-record karyotype track for a 22 Mb mosquito inversion.
 
 The build script writes both inputs: a `samples.tsv` whose first column is the
 sample name and whose other columns are attributes the display can order and
@@ -248,19 +255,6 @@ direct record of which lines carry the inversion. That ordinary SNPs across the
 region co-segregate with it, which is why the arrangement behaves as one
 recombination-suppressed block, is what the Fst scan above quantifies.
 
-## Notes
-
-- Window size trades resolution for smoothness. The scans above use 2 kb
-  windows, dense enough in this panel that a single-gene sweep like Cyp6g1
-  resolves sharply. Widen toward 5-10 kb for smoother genome-wide overviews, or
-  narrow further only where SNP density stays high.
-- Heterozygous karyotypes were dropped from both groups above. Contrasting
-  homozygous arrangements gives the clearest inversion signal.
-- Haplotype-based selection statistics (iHS, XP-EHH, e.g. from
-  [selscan](https://github.com/szpiech/selscan)) capture sweeps that Fst misses
-  and, being per-site or per-window scores, load as bigWig quantitative tracks
-  the same way.
-
 ## Reproduce it end to end
 
 Every step above (the downloads, the group split, all three scans, and the
@@ -288,10 +282,10 @@ in JBrowse Desktop.
 - [Multi-sample variant track](/docs/user_guides/multivariant_track)
 - [](/docs/user_guides/gwas_track)
 - [Configuring assemblies](/docs/config_guides/assemblies)
-- [](/docs/tutorials/ld_human), which reads the same panel-level question at a
-  scale a windowed scan cannot resolve
-- [JBrowse Jupyter](/docs/jbrowse_jupyter), which runs this compute-then-view
-  loop in Python
+- [](/docs/tutorials/ld_human)
+- [](/docs/tutorials/ld_mosquitoes)
+- [Selected haplotype (Dog10K)](/docs/tutorials/dog10k_selection)
+- [](/docs/jbrowse_jupyter)
 
 ## References
 

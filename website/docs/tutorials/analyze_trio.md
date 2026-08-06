@@ -30,8 +30,8 @@ single download from its
 ## The trio VCF
 
 A trio is a mother, father, and child sequenced together. A phased VCF tags each
-variant with the haplotype it sits on (`0|1` vs `1|0`), so you can follow which
-copy of the genome it came from.
+variant with the haplotype it sits on (`0|1` vs `1|0`), so each variant can be
+followed to the copy of the genome it came from.
 
 This page uses a pre-built phased VCF from the 1000 Genomes Project, the
 Kinh-Vietnamese trio HG02024, chr1 only:
@@ -46,8 +46,8 @@ not in a notebook.
 
 Everything here is on `hg38`. Add the VCF with `jbrowse add-track` or the in-app
 "Add track" workflow. The
-[variant track guide](/docs/config_guides/variant_track) covers both. You'll get
-this:
+[variant track guide](/docs/config_guides/variant_track) covers both. That
+gives:
 
 <Figure caption="The VCF on initial load, in the default display: one orange box per variant." src="/img/trio-basic.png"/>
 
@@ -64,7 +64,7 @@ columns back to their genomic positions.
 
 The matrix has a "phased" rendering mode under the track menu's "Rendering
 mode". It splits each sample into its two haplotypes, so the three trio members
-become six rows. You need genotypes written with the `0|1` separator rather than
+become six rows. It needs genotypes written with the `0|1` separator rather than
 `0/1`. Getting there from unphased calls takes a phasing program like SHAPEIT.
 
 <Figure caption="The phased rendering mode, and the 'Rendering mode' → 'Phased' menu item that turns it on." src="/img/trio-matrix-phased.png"/>
@@ -80,7 +80,7 @@ painted track.
 
 ## Finding the matching blocks programmatically
 
-You can compute that matching instead of eyeballing it.
+That matching can be computed rather than eyeballed.
 [hap-ibd](https://github.com/browning-lab/hap-ibd) finds "identical by descent"
 blocks. It's built for population-scale cohorts but works fine on a single trio
 VCF. It needs two things:
@@ -106,9 +106,9 @@ java -jar hap-ibd.jar \
   out=trio min-seed=1.0 min-output=1.0
 ```
 
-You get `trio.ibd.gz`, one row per shared segment, with columns sample1, hap1,
-sample2, hap2, chrom, start, end, cM-length. In a trio every segment pairs the
-child with one parent, and the child's two haplotypes split cleanly between
+The output is `trio.ibd.gz`, one row per shared segment, with columns sample1,
+hap1, sample2, hap2, chrom, start, end, cM-length. In a trio every segment pairs
+the child with one parent, and the child's two haplotypes split cleanly between
 them:
 
 | child haplotype | matches parent   | inherited copy |
@@ -158,8 +158,8 @@ the file and the order does not shift with your locale.
 
 Load the result as a `FeatureTrack` using a `LinearMultiRowFeatureDisplay`. That
 display draws one row per distinct value of `partitionField`, so pointing it at
-`parenthap` gives you the four parental-haplotype rows, and `rowOrder` sets
-their top-to-bottom order. There's no color config: a BED carrying `itemRgb` is
+`parenthap` gives the four parental-haplotype rows, and `rowOrder` sets their
+top-to-bottom order. There's no color config: a BED carrying `itemRgb` is
 painted with it automatically. Drop this into the `tracks` array of your
 `config.json`, or paste it into the add-track JSON editor in the app:
 
@@ -200,9 +200,9 @@ HG02025:
 <Figure caption="hap-ibd inheritance blocks in the multi-row feature display. Blue rows are father HG02026's two haplotypes, red rows are mother HG02025's. Each crossover is a spot where a painted block steps from one row to its partner." src="/img/trio-hapibd-painting.png"/>
 
 Read the two blue rows together as the child's paternal chromosome: exactly one
-of them is filled at any position, and that tells you which of the father's two
-copies the child got there. Every step between the blue rows is a crossover. The
-red rows work the same way for the maternal chromosome.
+of them is filled at any position, and that is which of the father's two copies
+the child got there. Every step between the blue rows is a crossover. The red
+rows work the same way for the maternal chromosome.
 
 The same display paints rows by whatever category is in the BED: point
 `partitionField` at a different column and the rows change with it. The
@@ -213,7 +213,7 @@ haplotype to paint FLARE ancestry calls, and the
 ## Relating the painting back to the genotypes
 
 Stack the painting directly above the same VCF in the **phased multi-sample
-variant display** and you can see where the blocks came from. That display draws
+variant display** to see where the blocks came from. That display draws
 genotypes at their real genomic positions. Use it rather than _matrix_ mode,
 whose evenly-spaced columns won't line up with the painting. Its six rows are
 the two haplotypes of each trio member, and the painting above is just a summary
@@ -262,15 +262,28 @@ bash build_khv_trio_hapibd.sh   # builds ./khv_trio_build/jbrowse2
 npx --yes serve khv_trio_build/jbrowse2 # then open the printed URL
 ```
 
-It needs java, python3, node, and htslib (`bgzip` and `tabix`). You can also
-open `khv_trio_build/jbrowse2/config.json` in JBrowse Desktop via **File ->
-Session -> Open config.json or .jbrowse file...** to get the same view without
-serving anything.
+It needs java, python3, node, and htslib (`bgzip` and `tabix`). Opening
+`khv_trio_build/jbrowse2/config.json` in JBrowse Desktop via **File -> Session
+-> Open config.json or .jbrowse file...** gives the same view without serving
+anything.
 
 ## See also
 
 - [](/docs/tutorials/local_ancestry)
-- [](/docs/tutorials/bxd_qtl), the same display partitioned by strain
+- [](/docs/tutorials/bxd_qtl)
 - [Multi-sample SVs (1000 Genomes)](/docs/tutorials/sv_multisamples)
+- [](/docs/tutorials/ld_human)
+- [](/docs/user_guides/multirow_feature_track)
 - [](/docs/user_guides/multivariant_track)
 - [Variant track config](/docs/config_guides/variant_track)
+
+## References
+
+- 1000 Genomes Project Consortium (2015).
+  [A global reference for human genetic variation](https://doi.org/10.1038/nature15393)
+- Zhou et al. (2020).
+  [A fast and simple method for detecting identity-by-descent segments in large-scale data](https://doi.org/10.1016/j.ajhg.2020.02.010),
+  hap-ibd
+- O'Connell et al. (2014).
+  [A general approach for haplotype phasing across the full spectrum of relatedness](https://doi.org/10.1371/journal.pgen.1004234),
+  duoHMM

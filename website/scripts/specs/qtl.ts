@@ -9,7 +9,15 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // signal above (rather than an arbitrary alphabetical jumble). No hand-baked
 // row order: the display computes it from the loaded features once the region
 // is in view (same one-shot launch-spec pattern as LinearGenomeView `init`).
-const TYRP1_PEAK = { refName: 'chr4', pos: 80_975_000 }
+// One coordinate, three consumers: the declarative sort, the right-click that
+// opens the sort menu, and the callouts that name it. They used to be a `pos`
+// here and hand-measured viewport x/y in each spec below, which is the
+// `alignments_sort_by_base` failure waiting to happen (see locusAnchor.ts) and
+// had already half-happened — both text callouts were landing on the JBrowse
+// title bar rather than near what they name.
+const TYRP1_PEAK_POS = 80_975_000
+const TYRP1_PEAK = { refName: 'chr4', pos: TYRP1_PEAK_POS }
+const TYRP1_LOCUS = `chr4:${TYRP1_PEAK_POS}`
 
 // ──────────────────────────────────────────────────────────────────────────
 // QTL / systems genetics — real GeneNetwork BXD mouse data (mm10). One track
@@ -100,11 +108,16 @@ export const qtlSpecs: ScreenshotSpec[] = [
     // gene lane(50) + manhattan(200) + full painting(460) + headers clear crop
     viewportHeight: 1000,
     settleMs: 16000,
+    // Anchored to the gene's own rendered label, which is a DOM node, so
+    // `alignX: 'right'` starts the pill at that label's right edge and the 12
+    // is a gap rather than a position. A `locus` anchor cannot do this job: a
+    // point locus resolves to a ~1px rect, which makes all three alignX values
+    // identical and leaves the pill's placement to a dx measured against the
+    // label's width — a number nothing recomputes when the label changes.
     annotations: [
       {
         type: 'text',
-        x: 560,
-        y: 66,
+        anchor: { text: 'Tyrp1', alignX: 'right', dx: 12 },
         maxWidth: 360,
         fontSize: 15,
         text: 'Tyrp1: the coat-color gene under the QTL peak',
@@ -130,17 +143,31 @@ export const qtlSpecs: ScreenshotSpec[] = [
     settleMs: 16000,
     hideTooltip: true,
     actions: [
-      // right-click on the painting track (its 420px body sits well below the
-      // manhattan track), near the Tyrp1 peak x (~52% across whole chr4), so the
-      // menu appears at the column the sort would key on
-      { type: 'rightclick', from: { x: 776, y: 430 } },
+      // Right-click the painting at the peak the sort keys on, resolved through
+      // the live view rather than measured: the menu then opens at that column
+      // whatever the window width or the track's layout.
+      {
+        type: 'rightclick',
+        anchor: {
+          track: 'bxd_chromosome_painting_mm10',
+          locus: TYRP1_LOCUS,
+          fracY: 0.25,
+        },
+      },
       { type: 'waitForText', text: 'Sort rows by color here' },
     ],
+    // The instruction sits in the painting above where the menu opens, so it
+    // neither covers the menu it is about nor drifts onto the app chrome. Both
+    // of its coordinates are resolved rather than measured: the same locus the
+    // click uses for x, a fraction of the track's own height for y.
     annotations: [
       {
         type: 'text',
-        x: 300,
-        y: 60,
+        anchor: {
+          track: 'bxd_chromosome_painting_mm10',
+          locus: TYRP1_LOCUS,
+          fracY: 0.06,
+        },
         maxWidth: 440,
         fontSize: 15,
         text: 'Right-click the painting to sort rows by genotype at that column',
