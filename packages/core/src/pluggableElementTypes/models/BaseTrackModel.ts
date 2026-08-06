@@ -5,6 +5,10 @@ import Save from '@mui/icons-material/Save'
 import { compareStructural, reaction } from 'mobx'
 
 import { ConfigurationReference, getConf } from '../../configuration/index.ts'
+import {
+  releaseAdapterSession,
+  retainAdapterSession,
+} from '../../data_adapters/adapterSessionRefcount.ts'
 import { adapterConfigCacheKey } from '../../data_adapters/dataAdapterCache.ts'
 import { getContainingView, getEnv, getSession } from '../../util/index.ts'
 import { isSessionModelWithConfigEditing } from '../../util/types/index.ts'
@@ -258,6 +262,40 @@ export function createBaseTrackModel(
         )
         addDisposer(self, () => {
           clearTimeout(timeout)
+        })
+
+        // Hold a claim on this track's rpcSessionId for as long as the track is
+        // open, so closing the last track using an adapter config evicts that
+        // adapter from the worker's dataAdapterCache. Without this nothing in
+        // the app ever reaches CoreFreeResources, and an adapter — with its
+        // parsed chunks, or in the unindexed case its whole parsed file — is
+        // reachable from module scope for as long as the worker lives, which no
+        // amount of garbage collection can help with.
+        //
+        // The id is tracked by reaction rather than captured once: rpcSessionId
+        // is derived from the adapter config, which a settings edit can change
+        // under a live track, and releasing an id we never retained would free
+        // an adapter another track is still using.
+        const { rpcManager } = getSession(self)
+        const driver = getConf(self, 'rpcDriverName')
+        let retained = self.rpcSessionId
+        retainAdapterSession(rpcManager, retained)
+        addDisposer(
+          self,
+          reaction(
+            () => self.rpcSessionId,
+            next => {
+              if (next !== retained) {
+                const previous = retained
+                retained = next
+                retainAdapterSession(rpcManager, next)
+                void releaseAdapterSession(rpcManager, previous, driver)
+              }
+            },
+          ),
+        )
+        addDisposer(self, () => {
+          void releaseAdapterSession(rpcManager, retained, driver)
         })
       },
     }))

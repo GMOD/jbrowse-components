@@ -17,10 +17,10 @@ interface AdapterCacheEntry {
   sessionIds: Set<string>
 }
 
-// Unbounded in practice: the only pruning paths are storeWithEvict (rejections
-// only) and freeAdapterResources, whose sole caller is the CoreFreeResources RPC
-// — which nothing in the app invokes. An adapter therefore lives for as long as
-// its worker does.
+// Pruned by storeWithEvict (rejections) and by freeAdapterResources, which the
+// CoreFreeResources RPC reaches when the last track holding an adapter config is
+// closed (RpcManager.releaseSession). There is still no size bound: an adapter
+// whose track stays open lives as long as its worker, by design.
 let adapterCache: Record<string, Promise<AdapterCacheEntry>> = {}
 
 /** stores a promise in the cache and auto-evicts if it rejects */
@@ -106,7 +106,21 @@ export type getSubAdapterType = (
   adapterConfigSnap: ConfigSnap,
 ) => ReturnType<typeof getAdapter>
 
-// UNUSED via its only caller, the CoreFreeResources RPC, which nothing invokes
+/**
+ * Drop this session's claim on every cached adapter, and evict the ones no
+ * other session still claims. Reached from the CoreFreeResources RPC when the
+ * last track using an adapter config closes.
+ *
+ * Deleting the key is the whole reclamation: the cache is the only strong
+ * reference to an adapter, so once it goes the instance and everything it holds
+ * — a whole parsed GFF3, a BAM chunk cache — become unreachable and are
+ * collected normally. There is nothing to free by hand.
+ *
+ * The refcount is what makes this safe to call on any track close: an adapter
+ * pulled in as a sub-adapter carries its parent's sessionId (getSubAdapter
+ * passes it straight through), so a sequence adapter shared by two alignments
+ * tracks survives either one of them closing.
+ */
 export async function freeAdapterResources(args: { sessionId?: string }) {
   const { sessionId } = args
   if (!sessionId) {

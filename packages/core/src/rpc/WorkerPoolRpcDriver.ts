@@ -129,8 +129,8 @@ export default abstract class WorkerPoolRpcDriver extends BaseRpcDriver {
 
   abstract makeWorker(): Promise<WorkerHandle>
 
-  // dead in production: only CoreFreeResources reaches this, and nothing calls
-  // that (see CoreFreeResources), so an assignment lives as long as the driver
+  // reached via CoreFreeResources when the last track holding an rpcSessionId
+  // closes, so assignments no longer accumulate for the life of the driver
   override freeSession(sessionId: string) {
     this.workerAssignments.delete(sessionId)
   }

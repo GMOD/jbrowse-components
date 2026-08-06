@@ -207,8 +207,6 @@ export default class RpcManager {
   /**
    * Drop a session's sticky worker assignment on every driver so the
    * workerAssignments map doesn't grow unboundedly as sessions are freed.
-   * Reached only via CoreFreeResources, which currently has no caller — see
-   * the note on that method.
    */
   private freeSessionOnAllDrivers(sessionId: string) {
     for (const driver of this.driverObjects.values()) {

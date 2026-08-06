@@ -4,13 +4,15 @@ import RpcMethodType from '../../pluggableElementTypes/RpcMethodType.ts'
 /**
  * Drop cached data adapters associated with the given session.
  *
- * UNUSED: nothing in the app calls this — the only callers are RpcManager tests.
- * So the worker-side adapter cache is never pruned (it has no size bound
- * either), and `RpcManager`'s CoreFreeResources special case plus every
- * driver's `freeSession` are dead in production. Wiring it up means picking a
- * teardown hook (display beforeDestroy, session switch) and relying on the
- * cache entry's `sessionIds` refcount to keep adapters shared by another
- * session alive.
+ * Reached from `RpcManager.releaseSession` when the last track model holding an
+ * rpcSessionId is destroyed — closing a track, closing its view, or switching
+ * session. `RpcManager` counts the holders because an rpcSessionId is derived
+ * from the adapter config and so is shared by every track configured alike; the
+ * cache entry's own `sessionIds` refcount then keeps an adapter alive for any
+ * *other* session still using it, which is what makes a shared sub-adapter safe.
+ *
+ * This does not bound the cache, and is not meant to: an adapter whose track is
+ * open stays cached however long that takes.
  */
 export default class CoreFreeResources extends RpcMethodType<'CoreFreeResources'> {
   name = 'CoreFreeResources'
