@@ -828,6 +828,29 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
+       * Is there anything to draw yet? The gate anything reading block geometry
+       * — a ruler, a scalebar, a display — has to pass first, because
+       * `width`/`staticBlocks` throw by design before the view has been
+       * measured and navigated.
+       *
+       * **Not `initialized`**, which is the trap this getter exists to close.
+       * That one answers "have the assembly's regions loaded", which is only
+       * the first of two async steps: navigating then populates
+       * `displayedRegions`, and in the window between the two `initialized` is
+       * already true while there is still nothing on screen. `showLoading`
+       * folds in `initPending`, the getter that exists for exactly that gap.
+       *
+       * `error` is the third outcome and is why this is not a bare
+       * `!showLoading`: a failed assembly load also ends the loading state, so
+       * that alone would mount over the wreckage. Read `error` yourself if you
+       * want to draw it.
+       */
+      get ready() {
+        return !this.showLoading && !this.error
+      },
+
+      /**
+       * #getter
        */
       get scalebarHeight() {
         return SCALE_BAR_HEIGHT + RESIZE_HANDLE_HEIGHT
