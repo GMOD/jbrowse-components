@@ -215,12 +215,22 @@ export async function waitForDisplayPhases(page: Page, timeoutMs: number) {
 // display-level wait above is silent in that state — there is nothing to be
 // loading yet — so a capture taken then lands on a bare spinner.
 //
+// The `data-view-component-pending` half is the case the phase attribute cannot
+// report: a view whose MODEL is initialized but whose lazily-imported React
+// component has not arrived, so ViewContainer publishes a non-loading phase over
+// a body that is still ViewWrapper's Suspense spinner. A session loaded at page
+// load has usually won that race by the time anything else settles; a view
+// CLICKED into existence fetches its chunk only then, and its frame is the one a
+// launch-dialog figure is about.
+//
 // NOT best-effort, unlike its neighbours: a view that never leaves `loading` has
 // no content to fall through to, so the timeout IS the diagnosis and the caller
 // should surface it.
 export function waitForViewPhases(page: Page, timeoutMs: number) {
   return page.waitForFunction(
-    () => document.querySelector('[data-view-phase="loading"]') === null,
+    () =>
+      document.querySelector('[data-view-phase="loading"]') === null &&
+      document.querySelector('[data-view-component-pending]') === null,
     { timeout: timeoutMs, polling: 500 },
   )
 }

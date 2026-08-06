@@ -21,6 +21,7 @@ import {
   findChromeExecutable,
   isBrowserConsoleNoise,
   waitForDisplayPhases,
+  waitForViewPhases,
 } from '@jbrowse/browser-test-utils'
 import { launch } from 'puppeteer'
 
@@ -410,6 +411,13 @@ async function captureEachStage(
     // shot used to race it, landing on the pre-sort order often enough to drift
     // 17% between runs. Wait for the phases the actions disturbed; a no-op when
     // the stage only opened a menu.
+    //
+    // Views before displays: an action that launches a view (every launch-dialog
+    // figure's second stage) leaves a view whose lazily-imported component is
+    // still in flight, and a display-level wait is vacuous while no display has
+    // mounted — so the shot landed on ViewWrapper's Suspense spinner and the
+    // frame published a bare "Loading" panel under a correct view header.
+    await waitForViewPhases(page, readyTimeoutOf(spec))
     await waitForDisplayPhases(page, readyTimeoutOf(spec))
     await shoot(page, spec, stage.annotations, stageFiles[i]!)
     if (!spec.crop) {
