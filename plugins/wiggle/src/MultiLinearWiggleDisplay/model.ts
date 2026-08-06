@@ -234,10 +234,31 @@ export default function stateModelFactory(
 
       // bicolorPivot is unconditional here: Multi has no global `color`
       // setting, only posColor/negColor.
+      //
+      // summaryScoreMode rides along so an adapter can skip work it cannot be
+      // asked to show. A store that keeps min/max beside each mean holds three
+      // arrays per level, and `avg` — the default — draws none of them, so
+      // sending the mode turns the common case back into one read per level
+      // instead of three, and drops the two `processFeaturesFromArrays`
+      // allocates per source per region for values it then discards.
+      //
+      // The raw slot, deliberately, and NOT effectiveSummaryScoreMode. The
+      // effective one would be tighter -- density resolves whiskers to avg, so
+      // it could skip the read there too -- but it changes when the rendering
+      // type changes, and anything in rpcProps invalidates the fetch. That
+      // would make switching to density discard the data and re-download it,
+      // on every multi-wiggle track, including the ones whose adapter gets its
+      // summary for free and gains nothing here. Over-fetching in
+      // density-with-whiskers is the cheaper mistake.
+      //
+      // In rpcProps rather than gpuProps because it changes what is fetched:
+      // switching the slot to max has to refetch, since a max nobody read
+      // cannot be drawn.
       rpcProps() {
         return {
           bicolorPivot: self.bicolorPivot,
           resolution: self.resolution,
+          summaryScoreMode: self.summaryScoreMode,
         }
       },
 

@@ -88,6 +88,10 @@ interface ExecuteParams {
     stopToken?: StopToken
     bpPerPx?: number
     resolution?: number
+    // The summary presentation the display resolved to, forwarded to the
+    // adapter so one that stores min/max separately can skip reading them.
+    // Optional: a caller that does not send it gets the summary either way.
+    summaryScoreMode?: string
     statusCallback?: StatusCallback
   }
 }
@@ -114,6 +118,7 @@ export async function executeRenderMultiWiggleData({
     stopToken,
     bpPerPx = 0,
     resolution = 1,
+    summaryScoreMode,
     statusCallback,
   } = args
 
@@ -130,10 +135,15 @@ export async function executeRenderMultiWiggleData({
     'Downloading wiggle data',
     statusCallback,
     () => {
+      // summaryScoreMode is passed through, not acted on here: an adapter that
+      // stores min/max separately can skip reading them when the rendering
+      // cannot show them, which is the default (`avg`). Adapters that get their
+      // summary for free, like a BigWig zoom record, ignore it.
       const opts = {
         bpPerPx,
         resolution,
         sources: sourcesArg,
+        summaryScoreMode,
         stopToken,
         statusCallback,
       }
