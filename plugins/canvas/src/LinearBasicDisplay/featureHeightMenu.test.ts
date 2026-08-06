@@ -129,8 +129,7 @@ describe('Feature height submenu', () => {
       radio(sizing, 'Fixed feature height + fixed track height').pin,
     ).toBeDefined()
     expect(
-      radio(sizing, 'Fixed feature height + autogrow track height')
-        .pin,
+      radio(sizing, 'Fixed feature height + autogrow track height').pin,
     ).toBeDefined()
     expect(
       radio(sizing, 'Fit feature height to track height').pin,
