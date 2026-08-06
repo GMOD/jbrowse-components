@@ -26,6 +26,13 @@ import type { Writable } from 'node:stream'
 // 13x — 3.6 Mb of a 5 Mb genome covered instead of 271 kb.
 const DEFAULT_MIN_LENGTH = 1000
 
+// Composition multiplies coverage depth, so the output grows with the square of
+// the pileup rather than with the genome. Measured on HPRC chr20 vs GRCh38:
+// 4,663 input rows compose to 225,626, of which 9,084 hold essentially all the
+// coverage. 0.5 and 0.95 pick nearly the same set, so this is not a tuned knob —
+// anything that rejects "already covered" collapses the pileup.
+const DEFAULT_MAX_COVERED = 0.5
+
 // Diagnostics go to stderr unconditionally, because the PAF itself goes to
 // stdout when --out is absent — the shape that lets this pipe straight into
 // make-pif.
@@ -62,6 +69,10 @@ export async function run(args?: string[]) {
     'min-length': {
       type: 'string',
       description: `Discard a composed alignment carrying fewer than this many aligned bases. Composition intersects two alignments, so it always leaves a tail of short pieces; this is the control on how much of that tail is kept. Defaults to ${DEFAULT_MIN_LENGTH}, deliberately low — the synteny view has its own minAlignmentLength, and a cut here is permanent while a cut there is per-view.`,
+    },
+    'max-covered': {
+      type: 'string',
+      description: `Drop a composed alignment when at least this fraction of its span is already covered by longer ones on the same pair. Composition multiplies coverage DEPTH: a repeat where two haplotypes each have 200 alignments on the reference composes to 40,000 rows stating one homology. On one chromosome of HPRC-vs-GRCh38 this turns 225,626 compositions into 9,084 carrying the same coverage. Set to 1 to keep every composition. Defaults to ${DEFAULT_MAX_COVERED}.`,
     },
     'only-composed': {
       type: 'boolean',
@@ -138,6 +149,15 @@ export async function run(args?: string[]) {
   }
   validateFileArgument(file, 'transitive-paf', 'paf')
 
+  const maxCovered =
+    flags['max-covered'] === undefined
+      ? DEFAULT_MAX_COVERED
+      : +flags['max-covered']
+  if (!Number.isFinite(maxCovered) || maxCovered <= 0 || maxCovered > 1) {
+    throw new Error(
+      `Invalid --max-covered value: ${flags['max-covered']} (expected a fraction in (0, 1])`,
+    )
+  }
   const minAligned =
     flags['min-length'] === undefined
       ? DEFAULT_MIN_LENGTH
@@ -214,16 +234,18 @@ export async function run(args?: string[]) {
 
   let discarded = 0
   for (const task of tasks) {
-    const { composed, tooShort } = await composeLegs({
+    const { composed, tooShort, redundant } = await composeLegs({
       task,
       legA: rowsByLeg.get(legKey(task.a, task.via)) ?? [],
       legB: rowsByLeg.get(legKey(task.b, task.via)) ?? [],
       minAligned,
+      maxCovered,
       emit,
     })
     discarded += tooShort
     report(
       `  ${task.a} <-> ${task.b} via ${task.via}: ${composed} composed` +
+        (redundant > 0 ? `, ${redundant} already covered` : '') +
         (tooShort > 0 ? `, ${tooShort} under --min-length` : ''),
     )
   }

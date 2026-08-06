@@ -1,5 +1,6 @@
 import { composeCoarse, composeThroughPivot, orientToPivot } from './compose.ts'
 import { panSNSample } from './paf.ts'
+import { dropRedundant } from './redundancy.ts'
 
 import type { PafRow } from './paf.ts'
 import type { Task } from './plan.ts'
@@ -51,12 +52,14 @@ export async function composeLegs({
   legA,
   legB,
   minAligned,
+  maxCovered,
   emit,
 }: {
   task: Task
   legA: PafRow[]
   legB: PafRow[]
   minAligned: number
+  maxCovered: number
   // awaited, so a caller writing to a stream can apply backpressure — one pair
   // of legs on one chromosome can compose to more rows than either leg holds
   emit: (row: PafRow) => Promise<void> | void
@@ -69,12 +72,17 @@ export async function composeLegs({
   // whose segments are shorter than it — odgi untangle's are ~4.7 kb against a
   // 5 kb default. A run that discarded most of what it built has to say so.
   let tooShort = 0
+  let redundant = 0
   for (const [contig, aRows] of aByContig) {
     const bRows = bByContig.get(contig)
     if (!bRows) {
       continue
     }
     let j = 0
+    // Held rather than emitted as they are built: the redundancy pass needs to
+    // see a whole contig's compositions to know which ground is already held.
+    // Bounded by one contig of one pair, which is where the pileup blowup lives.
+    const built: PafRow[] = []
     const active: PafRow[] = []
     for (const a of aRows) {
       while (j < bRows.length && bRows[j]!.tstart < a.tend) {
@@ -102,8 +110,7 @@ export async function composeLegs({
           ? composeCoarse({ a, b, minAligned })
           : composeThroughPivot({ a, b, minAligned })
         if (row) {
-          await emit(row)
-          composed++
+          built.push(row)
         } else if (
           // it overlapped on the pivot, so `minAligned` is what rejected it
           Math.min(a.tend, b.tend) > Math.max(a.tstart, b.tstart) &&
@@ -114,6 +121,12 @@ export async function composeLegs({
         }
       }
     }
+    const kept = dropRedundant(built, maxCovered)
+    redundant += built.length - kept.length
+    for (const row of kept) {
+      await emit(row)
+      composed++
+    }
   }
-  return { composed, tooShort }
+  return { composed, tooShort, redundant }
 }

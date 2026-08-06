@@ -676,6 +676,16 @@ Options:
                              and a cut here is permanent while a cut there is
                              per-view.
 
+      --max-covered          Drop a composed alignment when at least this
+                             fraction of its span is already covered by longer
+                             ones on the same pair. Composition multiplies
+                             coverage DEPTH: a repeat where two haplotypes each
+                             have 200 alignments on the reference composes to
+                             40,000 rows stating one homology. On one chromosome
+                             of HPRC-vs-GRCh38 this turns 225,626 compositions
+                             into 9,084 carrying the same coverage. Set to 1 to
+                             keep every composition. Defaults to 0.5.
+
       --only-composed        Write only the composed alignments, not the input
                              rows. The default writes the input through first,
                              so the output is a complete all-vs-all PAF ready
