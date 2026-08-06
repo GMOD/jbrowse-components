@@ -935,7 +935,11 @@ const SV_FILTER = ['jexl:feature.INFO.LV[0]==0 && alleleLength(feature)>=50']
 // pangenome/rgfa_segment_neighbourhood, whose subject IS rank.
 function ecoliHoverSession() {
   return sessionSpec(CONFIG, {
-    sessionTracks: [K12_GENES_SESSION_TRACK, ECOLI_SEGMENTS_SESSION_TRACK],
+    sessionTracks: [
+      K12_GENES_SESSION_TRACK,
+      ECOLI_SEGMENTS_SESSION_TRACK,
+      PGGB_MAF_SESSION_TRACK,
+    ],
     views: [
       {
         type: 'LinearGenomeView',
@@ -943,6 +947,24 @@ function ecoliHoverSession() {
         loc: PATHS_WINDOW,
         tracks: [
           { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 70 },
+          // THE ALIGNMENT, BESIDE THE GRAPH'S ANSWER (reviewer: "add maf track
+          // if it helps clarify this figure"). The band the hover draws says
+          // the graph attaches 65.4 kb of CFT073 across 2.1 kb of K12; a
+          // whole-genome alignment of the same five strains says the same
+          // event base by base, as CFT073's row dropping out over exactly that
+          // interval. It is pggb's MAF rather than minigraph's own output —
+          // this figure is on the rGFA graph, but the alignment is between the
+          // strains and is the same regardless of which graph is drawn.
+          //
+          // Same five rows in the same order as the other E. coli figures'
+          // lanes (PGGB_STRAIN_ROWS), so a strain sits in the same place on
+          // every page.
+          {
+            trackId: PGGB_MAF_TRACK,
+            type: 'LinearMafDisplay',
+            layout: PGGB_STRAIN_ROWS,
+            height: 130,
+          },
           {
             trackId: ECOLI_SEGMENTS_TRACK,
             type: 'LinearBasicDisplay',
@@ -3599,8 +3621,8 @@ export const graphSpecs: ScreenshotSpec[] = [
     viewportWidth: 1000,
     // the graph pane sizes itself to its drawing, and a force drawing is about
     // as tall as it is wide where the row stack was flat — 600px of pane under
-    // the linear view rather than 260
-    viewportHeight: 1090,
+    // the linear view rather than 260. Plus the MAF lane and its header.
+    viewportHeight: 1250,
     // The graph's own hover tooltip stays: it names the node and gives the
     // coordinates on the assembly that contributed it, which is the other half
     // of the correspondence the band shows. spec.hideTooltip does not reach it;

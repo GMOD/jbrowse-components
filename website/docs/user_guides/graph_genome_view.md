@@ -299,7 +299,7 @@ The reverse works from any track, not just the graph's own segments. A gene
 gives only a coordinate, and that is enough: rGFA segments do not overlap on a
 stable sequence, so one backbone segment covers it.
 
-<Figure caption="Hovering CFT073's allele in the graph (circled) highlights the reference interval it occupies in the linear view above, across both the gene track and the segments track. That interval is the 2 kb of K12 between the backbone segments the allele leaves and rejoins, so the node is a non-reference insertion: 65.4 kb of sequence where the reference has 2.1 kb." src="/img/pangenome/rgfa_hover_sync.png" />
+<Figure caption="Hovering CFT073's allele in the graph (circled) highlights the reference interval it occupies in the linear view above, across every track there. That interval is the 2 kb of K12 between the backbone segments the allele leaves and rejoins, so the node is a non-reference insertion: 65.4 kb of sequence where the reference has 2.1 kb. The alignment lane says the same event from the other side: CFT073 has no aligned bases across the band, and neither do IAI39 or Sakai, while NCTC86 aligns straight through it." src="/img/pangenome/rgfa_hover_sync.png" />
 
 The same event drawn as an alignment rather than as a graph is a synteny gap,
 which is what the [all-vs-all tutorial](/docs/tutorials/allvsall_synteny) puts

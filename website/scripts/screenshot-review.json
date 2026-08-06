@@ -2120,10 +2120,10 @@
   },
   "pangenome/rgfa_hover_sync": {
     "name": "pangenome/rgfa_hover_sync",
-    "status": "bad",
-    "note": "add maf track if it helps clarify this figure",
-    "reviewedAt": "2026-08-06T05:31:51.151Z",
-    "hash": "5a1f370a047e714c5dfe2fa4d71af0cefb55cfac"
+    "status": "good",
+    "note": "ADDED THE MAF LANE, and it does clarify it. The band the hover draws is the graph asserting that 65.4 kb of CFT073 attaches across 2.1 kb of K12; pggb whole-genome alignment of the same five strains says the same event base by base, and the data backs the caption (tabix over chr:1,094,245-1,097,564 returns blocks holding only K12 and NCTC86, so CFT073, IAI39 and Sakai have no aligned bases across the band while NCTC86 aligns straight through, and all five resume just past it with a 308 bp insertion on three). Same five rows in the same order as the other E. coli figures. Guide caption updated.",
+    "reviewedAt": "2026-08-06T06:58:10.720Z",
+    "hash": "483e0f2ac7f46567b64eec63b07c839ed7933219"
   },
   "pangenome/rgfa_sample_rows": {
     "name": "pangenome/rgfa_sample_rows",
