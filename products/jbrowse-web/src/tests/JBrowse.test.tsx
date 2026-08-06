@@ -89,8 +89,6 @@ xtest('nclist track test with long name', async () => {
 test('test sharing', async () => {
   jest.mocked(buildShareUrl).mockResolvedValue({
     url: 'http://localhost/?session=share-abc&password=123',
-    sessionParam: 'share-abc',
-    passwordParam: '123',
   })
   const { findByLabelText, findByText } = await createView()
   fireEvent.click(await findByText('Share'))

@@ -1,4 +1,8 @@
-import { fromUrlSafeB64, toUrlSafeB64 } from '@jbrowse/core/util'
+import {
+  ENCODED_PREFIX,
+  fromUrlSafeB64,
+  toUrlSafeB64,
+} from '@jbrowse/core/util'
 
 import { getShareableSessionSnapshot } from './Session/index.ts'
 
@@ -14,14 +18,6 @@ export interface SessionSnapshot {
 }
 
 /**
- * The prefix jbrowse-web's SessionLoader uses for an inline compressed session
- * (`?session=encoded-…`), so a link built by an embedded product opens in
- * jbrowse.org/jb2 and vice versa. The format is `encodeSessionParam`'s `long`
- * mode; sessionUrl.test.ts asserts the two stay byte-identical.
- */
-const ENCODED_PREFIX = 'encoded-'
-
-/**
  * Serialize a live session into a compact, URL-safe string for a query param or
  * hash fragment. Deflated then base64url-encoded, so it survives a URL intact
  * and stays far smaller than raw JSON.
@@ -35,6 +31,11 @@ const ENCODED_PREFIX = 'encoded-'
  * own assembly/tracks. Put the result somewhere the server never sees (the hash
  * fragment) if it may be long: a query string can exceed the request-line limit
  * and get a 414, which is why jbrowse-web moved its own there.
+ *
+ * Carries `ENCODED_PREFIX`, the same `?session=encoded-…` value jbrowse-web's
+ * SessionLoader decodes, so a link built by an embedded product opens in
+ * jbrowse.org/jb2 and vice versa. The format is `encodeSessionParam`'s `long`
+ * mode; sessionUrl.test.ts asserts the two stay byte-identical.
  */
 export async function encodeSessionToUrl(
   session: AbstractSessionModel,

@@ -141,10 +141,14 @@ export { fetchJson } from './fetchJson.ts'
 export {
   type EncodedSessionParam,
   type SessionShareMode,
+  ENCODED_PREFIX,
+  JSON_PREFIX,
+  SHARE_PREFIX,
   b64PadSuffix,
   encodeSessionParam,
   fromUrlSafeB64,
   readSessionFromDynamo,
+  shareEndpoint,
   toUrlSafeB64,
 } from './sessionSharing.ts'
 export { coarseStripHTML } from './coarseStripHTML.ts'

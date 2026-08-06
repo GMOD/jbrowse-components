@@ -47,18 +47,13 @@ describe('buildShareUrl', () => {
     setUrl('/app/?config=conf.json')
     mockEncode.mockResolvedValue({ sessionParam: 'share-abc', password: 'pw' })
 
-    const { url, passwordParam } = await buildShareUrl(
-      'short',
-      {},
-      'https://share/',
-    )
+    const { url } = await buildShareUrl('short', {}, 'https://share/')
     const u = new URL(url, window.location.origin)
     expect(u.hash).toBe('')
     const params = new URLSearchParams(u.search)
     expect(params.get('session')).toBe('share-abc')
     expect(params.get('password')).toBe('pw')
     expect(params.get('config')).toBe('conf.json')
-    expect(passwordParam).toBe('pw')
   })
 
   it('drops a stale password when switching to a long link', async () => {
@@ -96,6 +91,34 @@ describe('buildShareUrl', () => {
       expect(params.get('config')).toBe('conf.json')
     },
   )
+
+  // The referer is POSTed to the share server and stored beside the session, so
+  // it has to drop everything the shared link itself drops.
+  const referer = () => mockEncode.mock.calls.at(-1)![2].referer as string
+
+  it('never reports the admin params or a password as the referer', async () => {
+    setUrl('/app/?config=conf.json&adminKey=secret&adminServer=/upd&password=x')
+    mockEncode.mockResolvedValue({ sessionParam: 'share-abc', password: 'pw' })
+
+    await buildShareUrl('short', {}, 'https://share/')
+    expect(referer()).toContain('config=conf.json')
+    expect(referer()).not.toContain('secret')
+    expect(referer()).not.toContain('adminServer')
+    expect(referer()).not.toContain('password')
+  })
+
+  // an inline session lives in the hash precisely because a browser never sends
+  // a fragment to a server; uploading one in a form field would hand the share
+  // service the very session short mode encrypts
+  it('never reports the hash as the referer', async () => {
+    setUrl('/app/#config=conf.json&adminKey=secret&session=encoded-BIG')
+    mockEncode.mockResolvedValue({ sessionParam: 'share-abc', password: 'pw' })
+
+    await buildShareUrl('short', {}, 'https://share/')
+    expect(referer()).not.toContain('encoded-BIG')
+    expect(referer()).not.toContain('secret')
+    expect(referer()).not.toContain('#')
+  })
 
   it('carries existing hash params when the page already uses the hash', async () => {
     setUrl('/app/#config=conf.json&session=local-old')

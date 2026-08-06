@@ -7,16 +7,34 @@ import type { SessionShareMode } from '@jbrowse/core/util'
 // remembers the user's chosen share *mode* (short/long/json), not a URL
 export const SHARE_MODE_LOCALSTORAGE_KEY = 'jbrowse-shareMode'
 
-// never carried into a shared link, see buildShareUrl
+// never carried into a shared link, nor into the referer reported to the share
+// server — see buildShareUrl and refererFor
 const ADMIN_PARAMS = ['adminKey', 'adminServer']
 
 export interface ShareUrlResult {
   url: string
-  sessionParam: string
-  passwordParam: string
-  // human-readable session text shown in the dialog instead of the URL (only
+  // human-readable session text shown in the dialog alongside the URL (only
   // set for the plaintext json mode)
   plaintext?: string
+}
+
+// The page URL as it is reported to the share server. Everything the shared
+// link itself is careful not to carry has to come off here too — this string is
+// POSTed to a third-party service and stored next to the session:
+//
+// - the admin params, for the same reason as below (adminKey is the credential
+//   the admin server accepts for overwriting config.json)
+// - `password`, which would be a previous short link's decryption key
+// - the whole hash fragment, which is where an inline `encoded-`/`json-`
+//   session lives. Browsers never send a fragment to a server; uploading one in
+//   a form field would hand over the very session the short mode encrypts.
+function refererFor(locationUrl: URL) {
+  const url = new URL(locationUrl.href)
+  url.hash = ''
+  for (const key of [...ADMIN_PARAMS, 'password']) {
+    url.searchParams.delete(key)
+  }
+  return url.href
 }
 
 // Builds a self-referential jbrowse-web URL for the chosen share mode. Session
@@ -36,7 +54,7 @@ export async function buildShareUrl(
   const { sessionParam, password, plaintext } = await encodeSessionParam(
     mode,
     snap,
-    { shareURL, referer: locationUrl.href },
+    { shareURL, referer: refererFor(locationUrl) },
   )
   // carry over the page's existing params (e.g. config) from wherever they live
   // so none are lost when session is relocated, then write them all to one place
@@ -65,10 +83,5 @@ export async function buildShareUrl(
     locationUrl.search = ''
     locationUrl.hash = str
   }
-  return {
-    url: locationUrl.href,
-    sessionParam,
-    passwordParam: password ?? '',
-    plaintext,
-  }
+  return { url: locationUrl.href, plaintext }
 }

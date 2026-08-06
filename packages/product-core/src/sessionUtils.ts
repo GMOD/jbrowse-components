@@ -1,4 +1,8 @@
-import { diffTrackConfig, flattenTrackConfigDelta } from '@jbrowse/core/util'
+import {
+  SHARE_PREFIX,
+  diffTrackConfig,
+  flattenTrackConfigDelta,
+} from '@jbrowse/core/util'
 import {
   getChildType,
   getPropertyMembers,
@@ -533,7 +537,7 @@ export function buildWebExportUrl(
     params.set('password', options.password)
   }
   const str = params.toString()
-  if (sessionParam.startsWith('share-')) {
+  if (sessionParam.startsWith(SHARE_PREFIX)) {
     url.search = str
   } else {
     url.hash = str

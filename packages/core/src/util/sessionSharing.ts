@@ -66,10 +66,30 @@ export async function toUrlSafeB64(str: string) {
   const bytes = new TextEncoder().encode(str)
   const { deflate } = await import('pako-esm2')
   const deflated = deflate(bytes, undefined)
-  const encoded = btoa(bytesToBinaryString(deflated))
-  const pos = encoded.indexOf('=')
-  const unpadded = pos > 0 ? encoded.slice(0, pos) : encoded
-  return unpadded.replaceAll('+', '-').replaceAll('/', '_')
+  const encoded = btoa(bytesToBinaryString(deflated)).replace(/=+$/, '')
+  return encoded.replaceAll('+', '-').replaceAll('/', '_')
+}
+
+/**
+ * The `?session=` value prefixes, named here because this module is what
+ * produces them. The decoder half (jbrowse-web's SessionLoader) has its own
+ * list covering the two prefixes nothing here writes (`spec-`, `local-`).
+ */
+export const SHARE_PREFIX = 'share-'
+export const ENCODED_PREFIX = 'encoded-'
+export const JSON_PREFIX = 'json-'
+
+/**
+ * Joins a configured `shareURL` with one of the share service's two endpoints.
+ * A plain `${shareURL}share` silently produced `https://host/api/v1share` for
+ * the (natural) configured value without a trailing slash, and the 404 that
+ * followed read as "the share service is down". An empty shareURL is left
+ * alone: web honors an explicit empty string as "resolve relative to the page".
+ */
+export function shareEndpoint(shareURL: string, path: 'share' | 'load') {
+  return shareURL && !shareURL.endsWith('/')
+    ? `${shareURL}/${path}`
+    : `${shareURL}${path}`
 }
 
 /**
@@ -77,19 +97,18 @@ export async function toUrlSafeB64(str: string) {
  */
 async function shareSessionToDynamo(
   session: unknown,
-  url: string,
+  shareURL: string,
   referer: string,
 ) {
   const sess = await toUrlSafeB64(JSON.stringify(session))
   const password = generateUID(5)
-  const encryptedSession = await aesEncrypt(sess, password)
 
   const data = new FormData()
-  data.append('session', encryptedSession)
+  data.append('session', await aesEncrypt(sess, password))
   data.append('dateShared', `${Date.now()}`)
   data.append('referer', referer)
 
-  const response = await fetch(`${url}share`, {
+  const response = await fetch(shareEndpoint(shareURL, 'share'), {
     method: 'POST',
     mode: 'cors',
     body: data,
@@ -98,8 +117,8 @@ async function shareSessionToDynamo(
   if (!response.ok) {
     throw new Error(getErrorMsg(await response.text()))
   }
-  const json = (await response.json()) as { sessionId: string }
-  return { json, encryptedSession, password }
+  const { sessionId } = (await response.json()) as { sessionId: string }
+  return { sessionId, password }
 }
 
 export type SessionShareMode = 'short' | 'long' | 'json'
@@ -124,31 +143,45 @@ export async function encodeSessionParam(
   options: { shareURL: string; referer: string },
 ): Promise<EncodedSessionParam> {
   if (mode === 'short') {
-    const { json, password } = await shareSessionToDynamo(
+    const { sessionId, password } = await shareSessionToDynamo(
       session,
       options.shareURL,
       options.referer,
     )
-    return { sessionParam: `share-${json.sessionId}`, password }
+    return { sessionParam: `${SHARE_PREFIX}${sessionId}`, password }
   } else if (mode === 'json') {
+    // compact in the link (this mode's URL is the longest of the three
+    // already), indented in the dialog's readable-JSON panel
     return {
-      sessionParam: `json-${JSON.stringify({ session })}`,
+      sessionParam: `${JSON_PREFIX}${JSON.stringify({ session })}`,
       plaintext: JSON.stringify({ session }, null, 2),
     }
   } else {
     const encoded = await toUrlSafeB64(JSON.stringify(session))
-    return { sessionParam: `encoded-${encoded}` }
+    return { sessionParam: `${ENCODED_PREFIX}${encoded}` }
   }
 }
 
 export async function readSessionFromDynamo(
-  baseUrl: string,
+  loadUrl: string,
   sessionQueryParam: string,
   password: string,
   signal?: AbortSignal,
 ) {
-  const sessionId = sessionQueryParam.slice('share-'.length)
-  const url = `${baseUrl}?sessionId=${encodeURIComponent(sessionId)}`
+  const sessionId = sessionQueryParam.startsWith(SHARE_PREFIX)
+    ? sessionQueryParam.slice(SHARE_PREFIX.length)
+    : sessionQueryParam
+  // The password never reaches the server — it lives only in the link — so a
+  // link that lost its `&password=` (a chat client that clipped the URL, a
+  // hand-edited link) fetches fine and then fails in the cipher, where the
+  // browser's message is "The operation failed for an operation-specific
+  // reason". Say what actually went wrong instead.
+  if (!password) {
+    throw new Error(
+      'This shared session link is missing its "password" URL parameter, which is the only thing that can decrypt it',
+    )
+  }
+  const url = `${loadUrl}?sessionId=${encodeURIComponent(sessionId)}`
   const response = await fetch(url, { signal })
 
   if (!response.ok) {
@@ -161,5 +194,12 @@ export async function readSessionFromDynamo(
       'Shared session not found — the link may have expired or the id is wrong',
     )
   }
-  return aesDecrypt(json.session, password)
+  try {
+    return await aesDecrypt(json.session, password)
+  } catch (e) {
+    throw new Error(
+      'Could not decrypt the shared session — the "password" in the link is wrong or the link was truncated',
+      { cause: e },
+    )
+  }
 }

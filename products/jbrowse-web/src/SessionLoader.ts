@@ -14,9 +14,14 @@ import {
   readSessionFromStorage,
   stripPrefix,
 } from './sessionLoaderHelpers.ts'
-import { readSessionFromDynamo } from './sessionSharing.ts'
 import { arePluginsRemembered } from './trustedPlugins.ts'
-import { checkPlugins, fromUrlSafeB64, readConf } from './util.ts'
+import {
+  checkPlugins,
+  fromUrlSafeB64,
+  readConf,
+  readSessionFromDynamo,
+  shareEndpoint,
+} from './util.ts'
 
 import type { SessionSource, SessionTriagedInfo, Snap } from './types.ts'
 import type {
@@ -555,7 +560,10 @@ const SessionLoader = types
      */
     async fetchSharedSession() {
       const decrypted = await readSessionFromDynamo(
-        `${readConf(self.configSnapshot, 'shareURL', DEFAULT_SHARE_URL)}load`,
+        shareEndpoint(
+          readConf(self.configSnapshot, 'shareURL', DEFAULT_SHARE_URL),
+          'load',
+        ),
         self.sessionQuery ?? '',
         self.password ?? '',
       )
@@ -606,7 +614,10 @@ const SessionLoader = types
     decodeHubSpec() {
       self.setSessionSource({
         type: 'hub',
-        hubSpec: { hubURL: self.hubURL },
+        // detached copy: sessionSource is a types.frozen prop, so handing it
+        // self.hubURL would park a live node from this loader's own tree
+        // inside a value that is supposed to be plain JSON
+        hubSpec: { hubURL: [...(self.hubURL ?? [])] },
         // a hand-written link may carry the loc/assembly/tracks shorthand too;
         // loadHubSpec applies it on top of the hub session. Gated on loc/assembly
         // (not on the init being non-empty, as the defaultSession path is): a hub

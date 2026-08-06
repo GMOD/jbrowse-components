@@ -8,7 +8,7 @@ import {
 } from '@jbrowse/core/ui'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import ShareLinkField from '@jbrowse/core/ui/ShareLinkField'
-import { localStorageGetItem } from '@jbrowse/core/util'
+import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
 import { copyTextWithSession } from '@jbrowse/core/util/copyText'
 import { useFetch } from '@jbrowse/core/util/useFetch'
 import { getShareableSessionSnapshot } from '@jbrowse/product-core'
@@ -129,7 +129,9 @@ const ShareDialog = observer(function ShareDialog({
                 type: 'radio' as const,
                 checked: currentSetting === value,
                 onClick: () => {
-                  localStorage.setItem(SHARE_MODE_LOCALSTORAGE_KEY, value)
+                  // guarded write to match the guarded read above: a browser
+                  // with storage disabled must not throw out of a menu click
+                  localStorageSetItem(SHARE_MODE_LOCALSTORAGE_KEY, value)
                   setCurrentSetting(value)
                 },
               })),
