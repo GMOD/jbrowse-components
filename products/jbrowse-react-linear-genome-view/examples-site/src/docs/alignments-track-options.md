@@ -8,8 +8,9 @@ configured up front in `init.tracks[].displaySnapshot` (below) or via
 [`displayDefaults`](https://jbrowse.org/jb2/docs/config_guides/tracks/), and
 changeable afterwards from the track menu. The slots worth knowing:
 
-- **`colorBy`** —
-  `{ type: 'normal' | 'strand' | 'mappingQuality' | 'perBaseQuality' | 'pairOrientation' | 'insertSize' | 'insertSizeAndOrientation' | 'modifications' | 'tag', tag? }`
+- **`colorBy`** — `{ type, tag? }`, where `type` is `strand`, `pairOrientation`,
+  `insertSize`, `modifications`, `tag`, … (the enum is on the config page below;
+  restating it here would drift the first time one is added)
 - **`groupBy`** — stacked lanes, e.g. `{ type: 'tag', tag: 'HP' }`
 - **`filterBy`** — SAM flags plus read-name/tag filters, e.g.
   `{ flagInclude: 0, flagExclude: 3844 }`

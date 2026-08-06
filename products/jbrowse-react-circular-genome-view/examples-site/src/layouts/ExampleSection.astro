@@ -25,6 +25,11 @@ interface Props {
 
 const { slug, title, description, code } = Astro.props
 
+// How much source is below the fold. BYO's scalebar page is 605 lines and the
+// block is open by default, so without this a reader cannot tell a 30-line
+// example from one that fills the screen twice over until they are in it.
+const sourceLines = code.trimEnd().split('\n').length
+
 // Hold the demo's space before its island mounts, so the prose below it doesn't
 // slide down the page when it does. See `demoHeights` for where the figure
 // comes from.
@@ -55,7 +60,7 @@ const Doc = doc?.Content
     )
   }
   <details class="source" open>
-    <summary>View source</summary>
+    <summary>View source — {sourceLines} lines</summary>
     <Code code={code} lang="tsx" />
   </details>
 </section>

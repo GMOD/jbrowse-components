@@ -22,6 +22,9 @@ const pmCommands = {
   npm: 'npm install @jbrowse/react-linear-genome-view2 --legacy-peer-deps',
   pnpm: 'pnpm add @jbrowse/react-linear-genome-view2',
 }
+// see ExampleSection for why the source block advertises its length
+const sourceLines = code.trimEnd().split('\n').length
+
 ---
 
 <Shell
@@ -56,7 +59,7 @@ const pmCommands = {
       <Example client:only="react" />
     </div>
     <details class="source" open>
-      <summary>View source</summary>
+      <summary>View source — {sourceLines} lines</summary>
       <Code code={code} lang="tsx" />
     </details>
 
@@ -87,76 +90,35 @@ const pmCommands = {
       don't need it.
     </p>
 
-    <h2>Usage</h2>
+    <h2>Two things that cost people an hour</h2>
     <p>
-      The declarative <code>LinearGenomeView</code> component takes an{' '}
-      <code>assembly</code> and <code>tracks</code> as props (see the{' '}
-      <a href="https://jbrowse.org/jb2/docs/config_guide/">config guide</a> for the
-      full assembly/track config shape), plus an <code>init</code> for the starting
-      location and which tracks to show. Adapters accept a plain{' '}
-      <code>uri</code> shorthand: JBrowse derives the index file (e.g.{' '}
-      <a href="https://jbrowse.org/jb2/docs/config/bamadapter/"
-        ><code>.bam.bai</code></a
-      >,{' '}
-      <a href="https://jbrowse.org/jb2/docs/config/gff3tabixadapter/"
-        ><code>.gff3.gz.tbi</code></a
-      >) from it automatically.
-    </p>
-    <p>
-      The component uses{' '}
-      <a href="https://fonts.google.com/specimen/Roboto">Roboto</a> when available.
-      Add{' '}
-      <a href="https://www.npmjs.com/package/@fontsource/roboto"
-        ><code>@fontsource/roboto</code></a
-      >{' '}
-      to pull it in.
-    </p>
-    <p>
-      For a step-by-step walkthrough, see the{' '}
-      <a href="https://jbrowse.org/jb2/docs/tutorials/embed_linear_genome_view/"
-        >Embedding JBrowse tutorial</a
-      >. To compare the embedded packages or start from a Vite/Next.js template,
-      see the{' '}
-      <a href="https://jbrowse.org/jb2/docs/embedded_components/"
-        >embedded components page</a
-      >.
-    </p>
-
-    <h2>Bundlers and frameworks</h2>
-    <p>
-      The view needs a real DOM, so it renders on the client only — we do not
-      support server-rendering or hydrating it. In a client-rendered app (Vite,
-      rsbuild, plain script tags) it just works. In an SSR framework, mount it
-      client-side only: our Next.js demo wraps it in a <code>'use client'</code>
-      {' '}component loaded through{' '}
+      <strong>It renders on the client only.</strong> The view needs a real DOM;
+      server-rendering and hydrating it are not supported. Vite, rsbuild and plain
+      script tags just work. In an SSR framework, mount it client-side — our Next.js
+      demo wraps it in a <code>'use client'</code> component loaded through{' '}
       <a href="https://nextjs.org/docs/app/api-reference/functions/dynamic"
         ><code>next/dynamic</code></a
       >{' '}
       with <code>{'{ ssr: false }'}</code>.
     </p>
     <p>
-      We maintain a working starter repo per bundler, deployed and rebuilt each
-      release:{' '}
-      <a
-        href="https://github.com/GMOD/jbrowse-react-linear-genome-view-vite-demo"
-        >Vite</a
-      >,{' '}
-      <a
-        href="https://github.com/GMOD/jbrowse-react-linear-genome-view-rsbuild-demo"
-        >rsbuild</a
-      >,{' '}
-      <a
-        href="https://github.com/GMOD/jbrowse-react-linear-genome-view-nextjs-demo"
-        >Next.js</a
-      >, and{' '}
-      <a
-        href="https://github.com/GMOD/jbrowse-react-linear-genome-view-vanillajs-demo"
-        >vanilla JS</a
-      >. The{' '}
+      <strong>It wants Roboto.</strong> Add{' '}
+      <a href="https://www.npmjs.com/package/@fontsource/roboto"
+        ><code>@fontsource/roboto</code></a
+      >{' '}
+      or the chrome falls back to the host page's font.
+    </p>
+    <p>
+      A step-by-step build is the{' '}
+      <a href="https://jbrowse.org/jb2/docs/tutorials/embed_linear_genome_view/"
+        >embedding tutorial</a
+      >; the{' '}
       <a href="https://jbrowse.org/jb2/docs/embedded_components/"
         >embedded components page</a
       >{' '}
-      lists all of them with live deployments.
+      compares the packages and lists a deployed starter repo per bundler (Vite,
+      rsbuild, Next.js, vanilla JS). The full assembly and track config shape is the{' '}
+      <a href="https://jbrowse.org/jb2/docs/config_guide/">config guide</a>.
     </p>
   </div>
 

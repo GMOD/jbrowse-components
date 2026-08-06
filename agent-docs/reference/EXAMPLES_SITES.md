@@ -71,6 +71,23 @@ A fence that is a slice of the example file is the commonest way one of these
 pages gets long; write the fence only when it shows something the source can't —
 an alternative form, a bundler setting, a CLI invocation.
 
+### Why `ExampleSection.astro` is four copies and stays that way
+
+`Shell.astro`, `Gallery.astro` and `exampleModel.ts` live in
+`examples-site-shared/` and are symlinked in. `ExampleLayout.astro` and
+`ExampleSection.astro` look like the obvious next candidates — after the
+demo-first change three of the four differ only in whether they render a
+section `description` as a lead — and they are not, because **a symlinked file
+may have no relative imports.** `astro check` resolves one from the symlink's
+own directory and vite from the file's real path, so the two disagree.
+`exampleModel.ts` survives symlinking only because it imports nothing.
+
+`ExampleSection` reads `../siteMeta.ts` for `demoHeights` and `demoFillHeight`,
+which is per-site by construction. Routing that through props instead means
+every one of the ~40 page files threading site config into each `<Section>`,
+which is worse than four copies. Don't retry this without solving the resolver
+disagreement first.
+
 ## Pages and groups
 
 One page is one sidebar entry, and a page may stack several sections — that is

@@ -280,12 +280,55 @@ export function findLongDocs({
     ),
     limit: maxWords,
   }))
+  return splitByLimit(sized, maxWords, longWords)
+}
+
+function splitByLimit(
+  sized: LongProse[],
+  maxWords: number,
+  longWords: number,
+): { over: LongProse[]; long: LongProse[] } {
   return {
     over: sized.filter(d => d.size > maxWords).sort((a, b) => b.size - a.size),
     long: sized
       .filter(d => d.size > longWords && d.size <= maxWords)
       .sort((a, b) => b.size - a.size),
   }
+}
+
+// The same cap over the prose written directly in `src/pages/*.astro`, which is
+// almost entirely the landing page — the example pages are imports and
+// `<Section>` tags. It needs its own pass because `findLongDocs` only ever saw
+// `src/docs/*.md`, and a landing page is where a reader starts: LGV's had grown
+// to 289 words of install-and-bundler notes restating `website/docs` while the
+// docs beside it were held to 300, because nothing counted it.
+//
+// Stripped, in order: frontmatter, `<style>`/`<script>` blocks, `{…}`
+// expressions (which is how `<Code code={…}/>` and every comment leave), then
+// tags. Undercounting is the right failure here — the cap should fire on prose
+// someone typed, not on markup.
+export function findLongPages({
+  pagesDir,
+  maxWords = DEFAULT_MAX_DOC_WORDS,
+  longWords = LONG_DOC_WORDS,
+}: {
+  pagesDir: string
+  maxWords?: number
+  longWords?: number
+}): { over: LongProse[]; long: LongProse[] } {
+  const sized = listFilesRecursive(pagesDir, ['.astro']).map(file => ({
+    what: `src/pages/${path.relative(pagesDir, file)}`,
+    size: wordCount(
+      fs
+        .readFileSync(file, 'utf8')
+        .replace(/^---[\s\S]*?^---/m, '')
+        .replaceAll(/<(style|script)[\s\S]*?<\/\1>/g, '')
+        .replaceAll(/\{[\s\S]*?\}/g, ' ')
+        .replaceAll(/<[^>]+>/g, ' '),
+    ),
+    limit: maxWords,
+  }))
+  return splitByLimit(sized, maxWords, longWords)
 }
 
 // Page and section descriptions render as a single line on a gallery card or in
@@ -316,11 +359,12 @@ export function findLongDescriptions({
 }
 
 export interface DocSuggestion {
-  file: string
   // the config `type` value found, e.g. 'BigWigAdapter'
   term: string
   // matching generated pages (config and/or model), as full urls
   urls: string[]
+  // the example files using this type, as context for where to put the link
+  files: string[]
 }
 
 // Scan example source for config `type: '...'` values and map each to the
@@ -331,6 +375,13 @@ export interface DocSuggestion {
 // prose are dropped, so the output is only the links still worth adding.
 // Boilerplate types used across most examples (assembly/sequence setup) are
 // dropped via `commonTypeRatio`.
+//
+// **One suggestion per type, not per (file, type).** `existing` is the whole
+// site's prose joined, so one link anywhere satisfies a type everywhere — which
+// makes adding it a single action, and emitting a line per file that uses it
+// just multiplies one action by its callers. react-app printed 57 lines for 16
+// types that way, and an advisory that long is one nobody reads, which costs
+// you the few genuinely missing links buried in it.
 export function suggestDocLinks({
   exampleDirs,
   referenceDir,
@@ -379,19 +430,133 @@ export function suggestDocLinks({
   }
   const commonThreshold = files.length * commonTypeRatio
 
-  const suggestions: DocSuggestion[] = []
+  const filesByTerm = new Map<string, string[]>()
   for (const [file, terms] of perFileTerms) {
     for (const term of terms) {
-      const id = term.toLowerCase()
-      const urls = [...byIdSection.get(id)!]
-        .sort()
-        .map(s => `${DOCS_BASE}${s}/${id}/`)
-      const allLinked = urls.every(u => existing.includes(u))
-      const isCommon = (fileCount.get(term) ?? 0) > commonThreshold
-      if (!isCommon && !(contentDirs && allLinked)) {
-        suggestions.push({ file, term, urls })
+      filesByTerm.set(term, [...(filesByTerm.get(term) ?? []), file])
+    }
+  }
+
+  const suggestions: DocSuggestion[] = []
+  for (const [term, termFiles] of filesByTerm) {
+    const id = term.toLowerCase()
+    const urls = [...byIdSection.get(id)!]
+      .sort()
+      .map(s => `${DOCS_BASE}${s}/${id}/`)
+    const allLinked = urls.every(u => existing.includes(u))
+    // `>=`, not `>`: at exactly the ratio a type is as boilerplate as one a
+    // file over it. LinearGenomeView sat on 11 of react-app's 22 examples and
+    // survived a `>` on the nose, which is the least useful suggestion the
+    // scan can produce — it is in nearly every example because it is the view.
+    const isCommon = (fileCount.get(term) ?? 0) >= commonThreshold
+    if (!isCommon && !(contentDirs && allLinked)) {
+      suggestions.push({ term, urls, files: termFiles.sort() })
+    }
+  }
+  return suggestions.sort((a, b) => b.files.length - a.files.length)
+}
+
+// The whole `pnpm check-links` run for one examples-site: every check above,
+// printed and reduced to an exit code. Each site's scripts/check-doc-links.mjs
+// was a byte-identical 122-line copy of this — the file already carried a
+// comment saying the shared impl belongs here, and this is the rest of it
+// arriving. The two things that genuinely differ per site, its own `pages` list
+// and where it sits on disk, are the arguments.
+//
+// Returns the failure count; the caller exits on it, so this stays testable.
+export function runExamplesSiteChecks({
+  root,
+  pages,
+  referenceDir,
+  log = console.log,
+}: {
+  // the examples-site directory, i.e. the one holding src/ and scripts/
+  root: string
+  pages: {
+    slug: string
+    description?: string
+    sections: { slug: string; description?: string }[]
+  }[]
+  referenceDir: string
+  log?: (message: string) => void
+}): number {
+  const src = path.join(root, 'src')
+  const docsDir = path.join(src, 'docs')
+  const rel = (f: string) => path.relative(root, f)
+  const contentDirs = [docsDir, path.join(src, 'pages')]
+
+  const broken = findBrokenDocLinks({ contentDirs, referenceDir })
+  for (const b of broken) {
+    log(`BROKEN ${b.url}\n       in ${rel(b.file)}`)
+  }
+
+  const brokenCross = findBrokenCrossLinks({ contentDirs, pages })
+  for (const b of brokenCross) {
+    log(`BROKEN ${b.url}  (${b.reason})\n       in ${rel(b.file)}`)
+  }
+
+  const { missing, orphans } = findMissingDocs({ docsDir, pages })
+  for (const m of missing) {
+    log(
+      `NO DOC ${m.slug}  (section of page "${m.page}")\n` +
+        `       expected ${rel(m.expected)}`,
+    )
+  }
+  for (const o of orphans) {
+    log(`ORPHAN src/docs/${o}.md  (no section with that slug renders it)`)
+  }
+
+  const { over: longDocs, long: gettingLong } = findLongDocs({ docsDir })
+  // the same cap over prose written straight into a page — in practice the
+  // landing page, which findLongDocs never saw
+  const { over: longPages, long: pagesGettingLong } = findLongPages({
+    pagesDir: path.join(src, 'pages'),
+  })
+  for (const d of [...longDocs, ...longPages]) {
+    log(`TOO LONG ${d.what}  ${d.size} words (max ${d.limit})`)
+  }
+
+  const longDescriptions = findLongDescriptions({ pages })
+  for (const d of longDescriptions) {
+    log(`TOO LONG description of ${d.what}  ${d.size} chars (max ${d.limit})`)
+  }
+
+  const suggestions = suggestDocLinks({
+    exampleDirs: [path.join(src, 'examples')],
+    referenceDir,
+    contentDirs,
+  })
+  if (suggestions.length) {
+    log('\nSuggested reference links (config types not yet linked):')
+    for (const s of suggestions) {
+      // one line per type — the link only has to land in one doc to count. The
+      // files are context for which doc that should be, so show a couple and
+      // count the rest rather than listing every caller.
+      const shown = s.files.slice(0, 2).map(f => path.basename(f))
+      const more = s.files.length - shown.length
+      const where = more > 0 ? `${shown.join(', ')} +${more}` : shown.join(', ')
+      log(`  ${s.term}  (${where})`)
+      for (const u of s.urls) {
+        log(`      ${u}`)
       }
     }
   }
-  return suggestions
+
+  const advisory = [...gettingLong, ...pagesGettingLong].sort(
+    (a, b) => b.size - a.size,
+  )
+  if (advisory.length) {
+    log('\nGetting long (advisory):')
+    for (const d of advisory) {
+      log(`  ${d.what}  ${d.size} words`)
+    }
+  }
+
+  const tooLong = longDocs.length + longPages.length + longDescriptions.length
+  log(
+    `\n${broken.length + brokenCross.length} broken link(s), ` +
+      `${missing.length} missing doc(s), ${orphans.length} orphan(s), ` +
+      `${tooLong} over-long prose, ${suggestions.length} suggestion(s)`,
+  )
+  return broken.length + brokenCross.length + missing.length + tooLong
 }

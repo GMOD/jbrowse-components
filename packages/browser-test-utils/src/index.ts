@@ -12,7 +12,9 @@ export {
   findBrokenDocLinks,
   findLongDescriptions,
   findLongDocs,
+  findLongPages,
   findMissingDocs,
+  runExamplesSiteChecks,
   suggestDocLinks,
 } from './docLinks.ts'
 export { encodeSessionSpec, sessionSpecQuery } from './session.ts'
