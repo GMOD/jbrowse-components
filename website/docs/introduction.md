@@ -29,7 +29,7 @@ See the [visualization gallery](/gallery/), or hosted genomes at
 
 ## Configure and host
 
-- [](/docs/json_schema)
+- [](/docs/config_and_session_json)
 - [](/docs/config_guide)
 - [](/docs/cookbook)
 - [](/docs/config_guides/file_types)

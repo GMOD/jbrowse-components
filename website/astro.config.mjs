@@ -64,6 +64,7 @@ export default defineConfig({
   // `<meta http-equiv="refresh">`, and fixAbsoluteLinks only rewrites `<a href>`.
   redirects: {
     '/docs/jbrowse_jupyter/': `${BASE}/docs/jbrowse_anywidget/`,
+    '/docs/json_schema/': `${BASE}/docs/config_and_session_json/`,
   },
   // Astro's default HTML minifier strips whitespace-only text nodes between
   // elements, so `<strong>a</strong>\n<strong>b</strong>` renders as "ab" and

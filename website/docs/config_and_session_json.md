@@ -1,9 +1,8 @@
 ---
-title: The JSON schema
-sidebar_label: JSON schema
+title: Config and session JSON
 description:
-  One JSON format describes a whole JBrowse session, and every type in it has a
-  reference page generated from the source schemas
+  The one JSON document every JBrowse surface takes — config file, link,
+  embedded app, CLI — and where its reference, recipes, and validator live
 ---
 
 A JBrowse session is a JSON document: the genomes loaded, the tracks and where
@@ -70,9 +69,60 @@ fields beside them — `plugins`, `connections`, `internetAccounts`,
 [](/docs/config_guides/default_session) covers the session object and
 [](/docs/automating) the `init` block.
 
-Track settings — height, color-by, filters, display mode — are configuration
-slots, the same ones the track menu writes, so a view set up by clicking around
-exports to JSON and pastes back in as a `defaultSession`.
+## How the config and the session fit together
+
+They are two halves of one document, and most of what is confusing about
+JBrowse configuration is really about which half a thing belongs in.
+
+**The config is the catalog. The session says what is open.** A session does
+not repeat a track definition — it names one, by the `trackId` the config gave
+it. In the example above the whole join is one string: the `"ncbi_genes"` in
+the view's `init.tracks` is the `trackId` of the track defined above it.
+Delete that track from `tracks` and the session is left naming something that
+does not exist, which is one of the things
+[`jbrowse validate`](#checking-a-document) reports.
+
+**Write the `init` form.** The app's export-session option writes the other
+one: a raw state snapshot with every view, track and display spelled out, the
+same track named as `"configuration": "ncbi_genes"` and an `id` on everything.
+It pastes in and works, which is why it is easy to end up with, but it is
+dozens of lines for what `init` says in four, and it is far harder to edit
+afterwards. Prefer `init` for anything you write or generate yourself, and
+reach for the exported snapshot only to recover a view you built by clicking.
+
+**The config holds the settings; the session holds the state.** Color, height,
+display mode, color-by and filters are
+[configuration slots](/docs/config_guides/tracks) — they belong on the track in
+the config, under `displayDefaults`. What is open, where it is scrolled to and
+how the panels are arranged is session state. So one view has its appearance
+described in one half of the document and its position in the other.
+
+An `init` entry can still set a display option per launch: write the entry as
+an object instead of a string — `{ "trackId": "ncbi_genes", "height": 250 }` —
+and the slot is routed onto the display's config, because those entries are
+arguments to the view's launcher.
+
+That same `"height": 250` on a raw snapshot's display node does nothing at all.
+A snapshot node is instantiated by the display's **state model**, so it takes
+that model's properties — `id`, `type`, `configuration` — and drops everything
+else, and `height` is a config slot rather than a property. Nothing warns you;
+the track just opens at its default height. `jbrowse validate` reports the key
+by name and says which of the two places it belonged in. It is the sharpest
+reason to prefer `init`: the strict form is the one that fails silently.
+
+**A session can carry tracks of its own.** `sessionTracks` takes the same track
+configs the top-level `tracks` array takes, but they belong to that session:
+they travel with it when it is shared or saved, and never reach the
+`config.json` the server hands every visitor. It is how a link adds a track to
+somebody else's instance.
+
+**On desktop the halves are stored as one file.** A `.jbrowse` file is this
+same document with the session saved into it, which is why opening one restores
+the tracks and the view together.
+
+**And the two are edited the same way.** Track settings are the same slots the
+track menu writes, so a setting you find by clicking around has a name you can
+write into the config — see [](/docs/config_guides/default_session).
 
 ## Where one comes from
 
@@ -81,9 +131,10 @@ You rarely write the whole thing by hand:
 - [`@jbrowse/cli`](/docs/cli) writes it. `jbrowse add-assembly` and
   `jbrowse add-track` append to `config.json`, inferring the track type and the
   adapter from the file you hand them.
-- **The app writes the session part.** Set the view up by clicking, then use its
-  export session option and paste the exported `"session"` object in as
-  `"defaultSession"` — or have `jbrowse set-default-session` do it. See
+- **The app tells you what to put in the session part.** Set the view up by
+  clicking; the assembly, locus and track ids you land on are what an `init`
+  block needs, and the URL bar is already showing them.
+  `jbrowse set-default-session` installs a session file into a config. See
   [](/docs/config_guides/default_session).
 - **A track hub needs no config at all.** `&hubURL=` loads a
   [UCSC track hub](/docs/user_guides/hub_url) straight from a link, and

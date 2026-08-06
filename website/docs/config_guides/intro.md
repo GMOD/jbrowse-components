@@ -75,7 +75,7 @@ createViewState({
 
 ## See also
 
-- [](/docs/json_schema)
+- [](/docs/config_and_session_json)
 - [Configuring assemblies](/docs/config_guides/assemblies)
 - [Configuring tracks](/docs/config_guides/tracks)
 - [](/docs/config_guides/deploying)

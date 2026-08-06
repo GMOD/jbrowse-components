@@ -33,7 +33,7 @@
       "type": "category",
       "label": "Configuration",
       "items": [
-        "json_schema",
+        "config_and_session_json",
         "config_guide",
         "automating",
         "urlparams",

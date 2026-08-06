@@ -257,7 +257,7 @@ from
 
 ## See also
 
-- [](/docs/json_schema)
+- [](/docs/config_and_session_json)
 - [](/docs/embedded_components)
 - [](/docs/config_guides/default_session)
 - [](/docs/urlparams)
