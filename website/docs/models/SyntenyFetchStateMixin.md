@@ -19,12 +19,23 @@ Composed rather than duplicated so the two displays can't drift on what
 gets a full overlay or a corner spinner, and both views' `settled` gate (the one
 screenshot capture waits on) is written against these same three pieces.
 
-`loading`/`refetching`/`dataCurrent` themselves stay on each display: they need
-`ready` (which display holds its data in a different field) and
-`currentFetchKey` (whose inputs are view-specific), neither of which an
-empty-model mixin can see. `refetching`/`dataCurrent` are one-liners over what's
-here and are written identically in both; `loading` is not — synteny subtracts
-`fetchInert` (below) and dotplot has no inert state to subtract.
+`loading`/`refetching`/`dataCurrent`/`svgReady` themselves stay on each display,
+and the reason is **`error`**, not the inputs you would guess. `ready` (each
+display holds its data in a different field) and `currentFetchKey`
+(view-specific inputs) could both be default-false hooks here, exactly as
+`fetchInert` is. `error` could not: it is a `BaseDisplay` volatile, and three of
+those four getters read it. Declaring it here to make them type-check would put
+a second `error` in the compose chain, where one set silently wins by argument
+order — the hazard `FetchMixin` documents against ADR-041 and the thing this
+mixin exists to avoid, not reproduce.
+
+Note what is _not_ the reason, since an earlier version of this comment said it
+was: `loading` is **not** genuinely different between the two. Synteny's
+subtracts `fetchInert` and dotplot's doesn't, but the hook's default is `false`,
+so the two expressions have the same value — as do the two `svgReady`s, which
+differ only by passing that same getter as `extraTerminal`. If `error` ever
+becomes visible here, all four move up together and dotplot loses nothing by
+inheriting the `fetchInert` term.
 
 ## Volatiles
 
