@@ -413,13 +413,19 @@ function renderCard(s) {
       // the HTML parser, so a note that opens with a blank line only
       // round-trips because one is spent here.
       '<textarea class="note" rows="2" placeholder="note (optional)" onchange="saveNote(this)">\\n' + esc(v ? v.note : '') + '</textarea>' +
-      '<div class="unsaved">' + esc(draftHint(s)) + '</div>' +
       '<div class="actions">' +
         '<button class="approve ' + (status === 'good' ? 'active' : '') + '" onclick="setVerdict(this,\\'good\\')">✓ Approve</button>' +
         '<button class="deny ' + (status === 'bad' ? 'active' : '') + '" onclick="setVerdict(this,\\'bad\\')">✗ Deny</button>' +
         (v ? '<button class="clear" onclick="clearVerdict(this)">clear</button>' : '') +
         (v ? '<span class="reviewedAt">' + new Date(v.reviewedAt).toLocaleString() + '</span>' : '') +
       '</div>' +
+      // Below the buttons, not under the box it describes: this line appears
+      // the moment you type and disappears the moment the note saves, and the
+      // note saves on the blur that the Approve/Deny mousedown itself causes.
+      // Above the buttons it moved them out from under the pointer between
+      // mousedown and mouseup, so no click was dispatched at all and the first
+      // click after typing did nothing.
+      '<div class="unsaved">' + esc(draftHint(s)) + '</div>' +
       '<div class="' + msgClass(s.name) + '">' + esc(messageText(s.name)) + '</div>' +
     '</div>' +
   '</div>'

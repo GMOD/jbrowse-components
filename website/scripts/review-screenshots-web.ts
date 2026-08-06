@@ -568,13 +568,19 @@ function renderCard(spec) {
       // the leading newline is eaten by the HTML parser, so a note that opens
       // with a blank line round-trips without it unless one is spent here
       '<textarea class="note" rows="2" placeholder="note (optional)" onchange="saveNote(this)">\\n' + esc(v ? v.note : '') + '</textarea>' +
-      '<div class="unsaved">' + esc(draftHint(spec)) + '</div>' +
       '<div class="actions">' +
         '<button class="approve ' + (status === 'good' ? 'active' : '') + '" onclick="setVerdict(this,\\'good\\')">✓ Approve</button>' +
         '<button class="deny ' + (status === 'bad' ? 'active' : '') + '" onclick="setVerdict(this,\\'bad\\')">✗ Deny</button>' +
         (v ? '<button class="clear" onclick="clearVerdict(this)">clear</button>' : '') +
         (v ? '<span class="reviewedAt">' + new Date(v.reviewedAt).toLocaleString() + '</span>' : '') +
       '</div>' +
+      // Below the buttons, not under the box it describes: this line appears
+      // the moment you type and disappears the moment the note saves, and the
+      // note saves on the blur that the Approve/Deny mousedown itself causes.
+      // Above the buttons it moved them 27px out from under the pointer between
+      // mousedown and mouseup, so no click was dispatched at all and the first
+      // click after typing did nothing.
+      '<div class="unsaved">' + esc(draftHint(spec)) + '</div>' +
       '<div class="' + msgClass(spec.name) + '">' + esc(messageText(spec.name)) + '</div>' +
     '</div>' +
   '</div>'
@@ -593,7 +599,10 @@ function syncControls() {
   $('#group').value = filters.group
 }
 
-function renderCounts(q) {
+// no parameters: the shared review client calls this after every single-card
+// repaint, so it has to be able to see the search box on its own
+function renderCounts() {
+  const q = $('#search').value.toLowerCase()
   // A tab badge answers "how many cards do I get if I click this", so it counts
   // within the group/kind/search scope and on the tab's own predicate — not over
   // the whole corpus. A global 42 above a filtered view showing 3 reads as a
@@ -652,8 +661,8 @@ function matchesFilters(s, q) {
 
 function render() {
   syncControls()
+  renderCounts()
   const q = $('#search').value.toLowerCase()
-  renderCounts(q)
   let visible = data.filter(s => matchesFilters(s, q))
   if (filters.sortBy === 'recent') {
     visible = [...visible].sort((a, b) => {

@@ -22,7 +22,8 @@
 //   $ esc pill        the DOM/HTML helpers every card renderer needs
 //   cardOf cardEl     find a card element by name, or from a button inside it
 //   setVerdict saveNote clearVerdict   the inline button/field handlers
-//   updateCard        re-render one card in place
+//   updateCard        re-render one card in place, held until after the click
+//                     if a pointer is down (see the comment on it)
 //   harvestNotes applyPendingNotes     call around a full #main repaint
 //                     (applyPendingNotes also sizes the note fields to their
 //                     text, so a page that repaints #main gets that for free)
@@ -33,7 +34,9 @@
 // may appear after this block):
 //   renderCard(entry)   the HTML for one card, including a .note field, an
 //                       .unsaved flag, a .cardmsg box and data-name on the root
-//   renderCounts()      repaint whatever the header counts
+//   renderCounts()      repaint whatever the header counts. No arguments: it is
+//                       called after every single-card repaint too, so anything
+//                       it counts against it has to read for itself
 
 export interface ReviewClientOptions {
   // localStorage key this tool's note drafts live under. Distinct per tool, or
@@ -449,9 +452,54 @@ async function clearVerdict(btn) {
   })
 }
 
+// A click is a mousedown and a mouseup on the same element, and the note
+// field's change event fires on the mousedown that takes focus out of it — so a
+// note save is always in flight during the very click that triggered it, and on
+// localhost it lands well inside the ~80ms a real click is held. Swapping the
+// card in that window destroys the button the pointer is on, the browser
+// dispatches no click at all, and the reviewer's Deny silently does nothing
+// until they click again. Typing a note on a stale entry hits this every time:
+// that save makes the entry fresh, which is a repaint.
+//
+// So hold repaints while a pointer is down and run them once the click this
+// pointer is about to produce has been dispatched — a timer set during pointerup
+// runs after the click, which is dispatched in the same task as the mouseup.
+let pointerHeld = false
+const deferredCards = new Set()
+
+function flushDeferredCards() {
+  const names = [...deferredCards]
+  deferredCards.clear()
+  for (const name of names) {
+    paintCard(name)
+  }
+}
+
+// capture, so a card's own handlers cannot stop these from being seen. The flush
+// on pointerdown is the safety net for a release the page never saw — a mouseup
+// outside the window, say — which would otherwise strand a card unpainted.
+addEventListener('pointerdown', () => {
+  flushDeferredCards()
+  pointerHeld = true
+}, true)
+for (const ev of ['pointerup', 'pointercancel']) {
+  addEventListener(ev, () => {
+    pointerHeld = false
+    setTimeout(flushDeferredCards)
+  }, true)
+}
+
+function updateCard(name) {
+  if (pointerHeld) {
+    deferredCards.add(name)
+  } else {
+    paintCard(name)
+  }
+}
+
 // Re-render a single card in place rather than rebuilding all of main, so
 // acting on one card never wipes unsaved note text typed into other cards.
-function updateCard(name) {
+function paintCard(name) {
   const entry = entryOf(name)
   const el = cardOf(name)
   if (entry && el) {
