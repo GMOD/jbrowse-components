@@ -714,6 +714,17 @@ says which assembly each side belongs to. Rows carrying a CIGAR compose base by
 base; rows without one (odgi untangle projections, PIF coarse rows) compose to
 coordinates only, and the result carries no CIGAR either.
 
+This is not a replacement for impg (github.com/pangenome/impg), nor impg for
+this. impg projects a range through the alignment network to RETRIEVE homologous
+sequence, and its PAF output is "projected interval matches" — every row stays
+anchored on the sequence queried. Run it over a star-topology PAF and index the
+result and you get the same star back, with the empty band still empty (checked
+against the HPRC vs-GRCh38 alignment: zero output rows paired two non-reference
+haplotypes). Reaching A-vs-B through impg means -o fasta and realigning, or -o
+maf / -o gfa with the assembly FASTAs to hand. Use impg for retrieval,
+partitioning and graph building at pangenome scale; use this when what you want
+is the missing pairwise alignments themselves.
+
 Examples:
 
 # add every missing pair, then index the result
