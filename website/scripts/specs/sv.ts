@@ -1004,16 +1004,17 @@ export const svSpecs: ScreenshotSpec[] = [
     // No diffThreshold: back on the default gate, deliberately.
     //
     // It carried 0.02 for "remote VCF over ftp-trace, render timing jitters the
-    // circular overview", and that was never measured. `--check` on this spec
-    // (two renders, one machine) reports 0.008% run-to-run — three orders of
-    // magnitude under the raised gate — while the weekly sweep listed the figure
-    // under KEPT BEHIND A RAISED diffThreshold at 0.948%: real drift, the whole
-    // linear view below the inspector sitting lower than the committed bytes,
-    // held out of the picture by a gate raised for something else. The one
-    // reason not to lower it was that the callouts above were hand-placed, and a
-    // vertical shift is exactly what moves a callout off its target. They anchor
-    // now, so the drift and the callouts move together and the next sweep can
-    // commit both.
+    // circular overview", and that was never measured. `--check` with the
+    // anchors in place reports **0.000%** run-to-run (0.008% on an earlier
+    // measurement of the hand-placed version) — nothing about this capture is
+    // nondeterministic, including the circular overview the gate was raised for.
+    // Meanwhile the weekly sweep listed the figure under KEPT BEHIND A RAISED
+    // diffThreshold at 0.948%: real drift, the whole linear view below the
+    // inspector sitting lower than the committed bytes, held out of the picture
+    // by a gate raised for something else. The one reason not to lower it was
+    // that the callouts above were hand-placed, and a vertical shift is exactly
+    // what moves a callout off its target. They anchor now, so the drift and the
+    // callouts move together and the next sweep can commit both.
   },
 
   {
