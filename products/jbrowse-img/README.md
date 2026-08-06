@@ -28,7 +28,7 @@ ClinGen gene–disease mapping, phyloP conservation, and SKBR3 nanopore reads),
 rendered straight from public files in a single command (`--aliases` reconciles
 the `1` / `chr1` / `NC_000001.10` refname styles across the files):
 
-![A multi-track hg19 view: NCBI RefSeq genes, ClinGen gene-disease mapping, phyloP conservation, and SKBR3 nanopore reads](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/1.png)
+![A multi-track hg19 view: NCBI RefSeq genes, ClinGen gene-disease mapping, phyloP conservation, and SKBR3 nanopore reads](https://jbrowse.org/jb2/img/jbrowse-img/1.png)
 
 <!-- jb2export: 1 -->
 
@@ -88,7 +88,7 @@ jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
   --loc 1:48,683,542-48,907,531 --width 1200 --out remote_files.png
 ```
 
-![ClinVar variants above NCBI RefSeq genes across a 220 kb window of hg19 chromosome 1, every file streamed from a public URL](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/remote_files.png)
+![ClinVar variants above NCBI RefSeq genes across a 220 kb window of hg19 chromosome 1, every file streamed from a public URL](https://jbrowse.org/jb2/img/jbrowse-img/remote_files.png)
 
 ### Hosted assemblies (genomes.jbrowse.org)
 
@@ -118,7 +118,7 @@ jb2export --hub hg19 --track hg19-ncbiRefSeqCurated --track hg19-clinvarMain \
   --loc chr1:1,020,000-1,040,000 --width 1200 --out hub_tracks.png
 ```
 
-![NCBI RefSeq genes and ClinVar variants at the start of hg19 chromosome 1, both named by trackId from the hosted hg19 hub](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/hub_tracks.png)
+![NCBI RefSeq genes and ClinVar variants at the start of hg19 chromosome 1, both named by trackId from the hosted hg19 hub](https://jbrowse.org/jb2/img/jbrowse-img/hub_tracks.png)
 
 Hosted trackIds are all prefixed with the assembly name (`hg19-...`), so
 `--track` fills that in for you: `--track ncbiRefSeqCurated` resolves to
@@ -142,7 +142,7 @@ jb2export --hub hg19 --track ncbiRefSeqCurated --loc BRCA1 --width 1200 \
   --out gene_name_search.png
 ```
 
-![The BRCA1 gene, reached by typing its name instead of its coordinates](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/gene_name_search.png)
+![The BRCA1 gene, reached by typing its name instead of its coordinates](https://jbrowse.org/jb2/img/jbrowse-img/gene_name_search.png)
 
 `--loc` still takes ordinary locstrings (`chr1:1-10000`,
 `1:1,000,000-1,100,000`, or `all`); a name that isn't a locstring is looked up
@@ -230,7 +230,7 @@ jb2export --fasta data/volvox/volvox.fa --bam data/volvox/volvox-sorted.bam \
   --loc ctgA:1-20000 --width 1200 --out alignments_pileup.png
 ```
 
-![A coverage histogram over a read pileup, with mismatches highlighted](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/alignments_pileup.png)
+![A coverage histogram over a read pileup, with mismatches highlighted](https://jbrowse.org/jb2/img/jbrowse-img/alignments_pileup.png)
 
 Track modifiers color, sort, and group the reads. `sort:base` orders the pileup
 by the base each read carries at the center position: here, HG008-T PacBio HiFi
@@ -247,7 +247,7 @@ jb2export --hub hg38 --track hg38-ncbiRefSeqCurated height:55 \
   --out alignments_readgroup.png
 ```
 
-![HG008-T PacBio HiFi reads over CUZD1, sorted by the base at the center position so the reads carrying a ~1.8 kb somatic deletion cluster into one band](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/alignments_readgroup.png)
+![HG008-T PacBio HiFi reads over CUZD1, sorted by the base at the center position so the reads carrying a ~1.8 kb somatic deletion cluster into one band](https://jbrowse.org/jb2/img/jbrowse-img/alignments_readgroup.png)
 
 `group:tag:HP` splits the pileup into one stacked sub-track per haplotype. This
 HG002 ultralong-ONT example (hg19, streamed from the GIAB FTP) groups and colors
@@ -262,7 +262,7 @@ jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
   --loc 1:63,005,675-63,007,432 --width 1200 --out alignments_haplotype.png
 ```
 
-![Reads grouped and colored by haplotype (HP tag), showing a heterozygous deletion in one haplotype](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/alignments_haplotype.png)
+![Reads grouped and colored by haplotype (HP tag), showing a heterozygous deletion in one haplotype](https://jbrowse.org/jb2/img/jbrowse-img/alignments_haplotype.png)
 
 `color:methylation` paints per-base CpG methylation calls from a modified-base
 (`MM`/`ML`) BAM/CRAM: methylated cytosines red, unmethylated blue. This COLO829
@@ -280,7 +280,7 @@ jb2export --fasta https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz \
   --loc chr20:18,503,000-18,509,000 --width 1200 --out methylation.png
 ```
 
-![COLO829 nanopore reads colored by per-base CpG methylation over a CpG island](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/methylation.png)
+![COLO829 nanopore reads colored by per-base CpG methylation over a CpG island](https://jbrowse.org/jb2/img/jbrowse-img/methylation.png)
 
 `sashimi:auto` overlays splice-junction arcs on the coverage band, sized by the
 number of reads spanning each junction: the standard RNA-seq splice view.
@@ -297,7 +297,7 @@ jb2export --hub hg19 --track hg19-ncbiRefSeqCurated height:90 \
   --loc B2M --width 1400 --out sashimi_junctions.png
 ```
 
-![RNA-seq sashimi plot over B2M: splice-junction arcs on the coverage band sized by junction read depth, over the spliced read pileup](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/sashimi_junctions.png)
+![RNA-seq sashimi plot over B2M: splice-junction arcs on the coverage band sized by junction read depth, over the spliced read pileup](https://jbrowse.org/jb2/img/jbrowse-img/sashimi_junctions.png)
 
 `arcs:up` / `arcs:down` draws a read-connection arc for every split
 (supplementary) read, linking its two alignment segments; the arc color encodes
@@ -318,7 +318,7 @@ jb2export --hub hg38 \
   --loc chr1:197,786,900-197,789,700 --width 1400 --out sv_read_arcs.png
 ```
 
-![HG00151 ONT long reads over a ~1.2 kb chr1 inversion, grouped on SA-tag presence: the split reads sit in their own section under the purple junction arcs, chained so a blue reverse-strand core runs between red forward-strand flanks](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/sv_read_arcs.png)
+![HG00151 ONT long reads over a ~1.2 kb chr1 inversion, grouped on SA-tag presence: the split reads sit in their own section under the purple junction arcs, chained so a blue reverse-strand core runs between red forward-strand flanks](https://jbrowse.org/jb2/img/jbrowse-img/sv_read_arcs.png)
 
 More alignment recipes (see [Track modifiers](#track-modifiers) for all
 options):
@@ -361,7 +361,7 @@ jb2export --loc all --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
   --width 1900 --out skbr3_cov.png
 ```
 
-![SKBR3 cell-line read coverage genome-wide, log scale, showing cancer amplifications and deletions](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/skbr3_cov.png)
+![SKBR3 cell-line read coverage genome-wide, log scale, showing cancer amplifications and deletions](https://jbrowse.org/jb2/img/jbrowse-img/skbr3_cov.png)
 
 The score scaling can also autoscale: here to "localsd" (mean plus/minus three
 standard deviations) on a linear scale:
@@ -407,7 +407,7 @@ jb2export --hub hg38 --track hg38-ncbiRefSeqCurated height:60 \
   --loc chr2:162,000,000-162,300,000 --width 1400 --out scatac_multiwiggle.png
 ```
 
-![CATlas single-cell ATAC accessibility across 16 cell types over the GCG locus, with the Alpha (glucagon) row showing cell-type-specific open chromatin](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/scatac_multiwiggle.png)
+![CATlas single-cell ATAC accessibility across 16 cell types over the GCG locus, with the Alpha (glucagon) row showing cell-type-specific open chromatin](https://jbrowse.org/jb2/img/jbrowse-img/scatac_multiwiggle.png)
 
 ### Variant tracks
 
@@ -422,7 +422,7 @@ jb2export --fasta data/volvox/volvox.fa \
   --out variants.png
 ```
 
-![A variant track drawing each SNV with its reference-to-alternate change](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/variants.png)
+![A variant track drawing each SNV with its reference-to-alternate change](https://jbrowse.org/jb2/img/jbrowse-img/variants.png)
 
 ### Multi-sample variant matrix
 
@@ -443,7 +443,7 @@ jb2export --hub hg19 --track hg19-ncbiRefSeqCurated \
   --loc chr11:5,246,000-5,251,000 --width 1200 --out multisample_variants.png
 ```
 
-![The 1000 Genomes phase 3 chr11 callset (2,504 samples) as a multi-sample genotype matrix over the HBB locus, with the NCBI RefSeq gene track above](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/multisample_variants.png)
+![The 1000 Genomes phase 3 chr11 callset (2,504 samples) as a multi-sample genotype matrix over the HBB locus, with the NCBI RefSeq gene track above](https://jbrowse.org/jb2/img/jbrowse-img/multisample_variants.png)
 
 ### Hi-C tracks
 
@@ -459,7 +459,7 @@ jb2export --hub hg19 --track hg19-ncbiRefSeqCurated \
   --loc 1:2,500,000-12,500,000 --width 1200 --out hic.png
 ```
 
-![Hi-C contact matrix as a triangular heatmap showing TAD structure along hg19 chr1](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/hic.png)
+![Hi-C contact matrix as a triangular heatmap showing TAD structure along hg19 chr1](https://jbrowse.org/jb2/img/jbrowse-img/hic.png)
 
 ### Gene tracks and the reference sequence
 
@@ -480,7 +480,7 @@ jb2export --hub hg38 \
   --refseq --loc chr17:7,675,018-7,675,098 --width 1500 --out gene_track.png
 ```
 
-![A TP53 intron/CDS boundary at base level: the reference sequence's DNA bases and six-frame translation above the NCBI RefSeq gene track, whose CDS exon block begins where the intron connector ends](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/gene_track.png)
+![A TP53 intron/CDS boundary at base level: the reference sequence's DNA bases and six-frame translation above the NCBI RefSeq gene track, whose CDS exon block begins where the intron connector ends](https://jbrowse.org/jb2/img/jbrowse-img/gene_track.png)
 
 ### Themes
 
@@ -496,7 +496,7 @@ jb2export --hub hg38 --track hg38-ncbiRefSeqCurated height:100 \
   --themeName darkStock --width 1200 --out dark_theme.png
 ```
 
-![The hg38 PTEN locus: NCBI RefSeq genes over phyloP conservation, rendered with the darkStock theme](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/dark_theme.png)
+![The hg38 PTEN locus: NCBI RefSeq genes over phyloP conservation, rendered with the darkStock theme](https://jbrowse.org/jb2/img/jbrowse-img/dark_theme.png)
 
 ## Track modifiers
 
@@ -643,7 +643,7 @@ jb2export dotplot \
   --autoDiagonalize --width 1100 --out yeast_dotplot.png
 ```
 
-![Whole-genome dotplot of two yeast assemblies (R64 vs the YJM1447 strain)](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/yeast_dotplot.png)
+![Whole-genome dotplot of two yeast assemblies (R64 vs the YJM1447 strain)](https://jbrowse.org/jb2/img/jbrowse-img/yeast_dotplot.png)
 
 A linear synteny ribbon between one chromosome in each assembly (here YJM1447
 chr `I` vs R64 chr `I`, accession `NC_001133.9`). `--drawCurves` renders the
@@ -661,7 +661,7 @@ jb2export synteny \
   --drawCurves --width 1400 --out yeast_synteny.png
 ```
 
-![Linear synteny ribbon between YJM1447 chr I and R64 chr I](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/yeast_synteny.png)
+![Linear synteny ribbon between YJM1447 chr I and R64 chr I](https://jbrowse.org/jb2/img/jbrowse-img/yeast_synteny.png)
 
 Omitting `--loc`/`--loc2` shows the whole assembly on that axis (note: `dotplot`
 ignores `--loc` and always shows the whole genome). `--autoDiagonalize` and
@@ -748,7 +748,7 @@ jb2export synteny --chromSizes data/comparative/peach.chrom.sizes \
   --out grape_peach_synteny.png
 ```
 
-![Whole-genome synteny, grape vs peach, with autoDiagonalize and colorBy query](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/grape_peach_synteny.png)
+![Whole-genome synteny, grape vs peach, with autoDiagonalize and colorBy query](https://jbrowse.org/jb2/img/jbrowse-img/grape_peach_synteny.png)
 
 A mammalian-scale test: human (hs1/T2T) vs mouse (mm39) liftOver, where the
 `--minAlignmentLength 500000` filter is what keeps the plot from turning into
@@ -766,7 +766,7 @@ jb2export synteny --chromSizes data/comparative/hs1.chrom.sizes \
   --cigarMode matches --width 1400 --out hs1_mm39_synteny.png
 ```
 
-![Mammalian-scale synteny, human (hs1) vs mouse (mm39)](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/hs1_mm39_synteny.png)
+![Mammalian-scale synteny, human (hs1) vs mouse (mm39)](https://jbrowse.org/jb2/img/jbrowse-img/hs1_mm39_synteny.png)
 
 A three-level stack: hg38, hs1 (T2T), and mm39, with one ribbon per adjacent
 pair: the conserved hg38↔hs1 build liftover on top (near-vertical bands) and the
@@ -786,7 +786,7 @@ jb2export synteny --chromSizes data/comparative/hg38.chrom.sizes \
   --drawCurves --cigarMode matches --width 1400 --out hg38_hs1_mm39_synteny.png
 ```
 
-![Three-level synteny stack: hg38, hs1, and mm39](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/hg38_hs1_mm39_synteny.png)
+![Three-level synteny stack: hg38, hs1, and mm39](https://jbrowse.org/jb2/img/jbrowse-img/hg38_hs1_mm39_synteny.png)
 
 All the example images in this README (including the comparative ones above) are
 regenerated by `pnpm screenshots --filter jbrowse-img` from the repo root: see
@@ -817,7 +817,7 @@ jb2export circular --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
   --width 800 --out circular_chords.png
 ```
 
-![Circular chord plot of SKBR3 structural variants on hg19, inter-chromosomal chords marking translocations](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/circular_chords.png)
+![Circular chord plot of SKBR3 structural variants on hg19, inter-chromosomal chords marking translocations](https://jbrowse.org/jb2/img/jbrowse-img/circular_chords.png)
 
 Run `jb2export circular --help` for the full list of options.
 
@@ -861,7 +861,7 @@ jb2export --config data/volvox/config.json --assembly volvox --track volvox_sv \
   --loc ctgA:1-50,000 --width 1200 --out volvox_config.png
 ```
 
-![Structural-variant calls over 50 kb of volvox ctgA, read from a config whose VCF is a localPath rather than a URL](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/volvox_config.png)
+![Structural-variant calls over 50 kb of volvox ctgA, read from a config whose VCF is a localPath rather than a URL](https://jbrowse.org/jb2/img/jbrowse-img/volvox_config.png)
 
 The localPaths will be resolved relative to the file that is supplied so in this
 example we would resolve data/volvox/volvox.dup.vcf.gz if "localPath":
@@ -883,7 +883,7 @@ jb2export --config data/config.json --session data/skbr3/session.json \
   --assembly hg19 --width 1400 --out skbr3_session.png
 ```
 
-![SKBR3 whole-genome read coverage, restored from a saved session file rather than described on the command line](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/skbr3_session.png)
+![SKBR3 whole-genome read coverage, restored from a saved session file rather than described on the command line](https://jbrowse.org/jb2/img/jbrowse-img/skbr3_session.png)
 
 The session names its tracks by trackId, so the `--config` you pass has to be
 the one those ids come from — `data/config.json` here, which defines hg19 and
@@ -958,7 +958,7 @@ jb2export --fasta data/volvox/volvox.fa \
   --width 1200 --out snpcov.png
 ```
 
-![The same volvox alignments as a coverage histogram alone, with the read pileup hidden](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/snpcov.png)
+![The same volvox alignments as a coverage histogram alone, with the read pileup hidden](https://jbrowse.org/jb2/img/jbrowse-img/snpcov.png)
 
 ## Parameters
 

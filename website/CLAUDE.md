@@ -4,6 +4,40 @@ Astro, deployed to `s3://jbrowse.org/jb2/` on commits to `main` containing
 "update docs". `pnpm index` once for local search (`static/pagefind/` is
 gitignored). `deploy_staging.sh` wraps a staging deploy.
 
+## Figure store (`static/img/` is gitignored)
+
+Figure **bytes** live in `s3://jbrowse.org/jb2-figures/`, content-addressed and
+immutable; git tracks `figures.lock` at the repo root, one line per figure.
+`website/scripts/figure-store.ts` explains why. `pnpm figures` is the CLI.
+
+- **`pnpm figures:pull` installs them, and needs no credentials** — it is a
+  plain HTTPS GET through CloudFront, hash-verified, cached under
+  `node_modules/.cache`. `dev` and `build` run it for you.
+- **`pnpm figures:push` after a regen**, then commit `figures.lock`. It uploads
+  before it rewrites the manifest, in that order and never the other way: a
+  manifest line whose bytes were never pushed breaks `pull` for everyone. CI
+  catches that anyway — a fresh runner has no figures, so its `pull` verifies
+  every entry.
+- **A figure change is now a one-line hash swap**, so `pnpm figures:report`
+  (`--base`, `--markdown`) is how you *look* at one. Every revision ever pushed
+  is still at its own URL, so it renders before/after side by side. The `Figures
+  moved` CI job posts that to the run summary on every branch.
+- **The line carries `WxH`**, which is the one change a pixel diff cannot see —
+  `pngDiffFraction` returns null on a size mismatch. A resize shows up in
+  `git diff` as `1400x900 -> 1400x1240`.
+- **`push` is also the restore path.** It uploads any blob the store lacks, so
+  any checkout with figures on disk rebuilds the whole store in ~25s. What is
+  genuinely single-copy is *superseded* revisions, not the current set.
+- **An unpushed regen is invisible to git**, so a regen you never push means
+  everyone else keeps getting the old image with nothing saying so. CI can't
+  catch it — the evidence is a file on your disk. So a sweep ends on
+  `NOT IN THE FIGURE STORE` and the review UI banners it; both report the whole
+  worktree, not just that run, and both say so when there's nothing outstanding.
+- **Don't put a store URL in a doc or a README** — it is content-addressed, so
+  it would churn on every regen. Docs use `/img/...`; the jbrowse-img README
+  uses the stable `https://jbrowse.org/jb2/img/jbrowse-img/...` the deploy
+  publishes.
+
 ## Screenshots (`static/img/`)
 
 `scripts/generate-screenshots.ts`, run with `node` — **not `npx tsx`**, whose

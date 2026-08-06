@@ -2,9 +2,9 @@
   "name": "@jbrowse/website-astro",
   "type": "module",
   "scripts": {
-    "dev": "pnpm gen:gallery-thumbs && astro dev",
-    "build": "pnpm gen:gallery-thumbs && astro build && pagefind --site dist",
-    "index": "pnpm gen:gallery-thumbs && astro build && pagefind --site dist --output-path static/pagefind",
+    "dev": "pnpm figures:pull && pnpm gen:gallery-thumbs && astro dev",
+    "build": "pnpm figures:pull && pnpm gen:gallery-thumbs && astro build && pagefind --site dist",
+    "index": "pnpm figures:pull && pnpm gen:gallery-thumbs && astro build && pagefind --site dist --output-path static/pagefind",
     "preview": "astro preview",
     "typecheck": "astro check && node ../node_modules/typescript7/bin/tsc --noEmit -p scripts/api-docs",
     "lint-docs": "node scripts/generate-guide-indexes.ts",
@@ -32,7 +32,8 @@
     "gen:tutorial-thumbs": "node scripts/gen-tutorial-thumbs.ts",
     "gen:home-images": "node scripts/gen-home-images.ts",
     "review-screenshots-web": "node scripts/review-screenshots-web.ts",
-    "audit-figures": "node scripts/audit-figures.ts"
+    "audit-figures": "node scripts/audit-figures.ts",
+    "figures:pull": "node scripts/figures.ts pull"
   },
   "dependencies": {
     "@astrojs/markdown-remark": "^7.2.2",

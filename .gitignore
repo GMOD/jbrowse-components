@@ -3,6 +3,20 @@
 # unanchored it also swallowed website/static/img/**/ecoli_*.png, so a new
 # tutorial figure silently never got committed.
 /ecoli_*
+
+# Figure bytes live in the S3 figure store, not in git. `figures.lock` is the
+# tracked record — one line per figure — and website/scripts/figure-store.ts
+# explains the arrangement. Tracked, these cost 0.67 GiB of a 1.64 GiB pack and
+# grew ~1.4 GiB/yr, because the weekly sweep rewrites whatever the app moved
+# (4,918 figure revisions in six months) and every one is an undeltifiable blob
+# every clone keeps forever.
+#
+# `pnpm figures:pull` installs them — plain HTTPS, no credentials, and `dev` and
+# `build` run it for you. `pnpm figures:push` publishes what you regenerated and
+# rewrites figures.lock; commit that, and its diff is the record of what moved.
+website/static/img/
+products/jbrowse-img/img/
+
 website/static/video
 scripts/__pycache__
 **/.env

@@ -31,14 +31,21 @@ const imgDestDir = join(repoRoot, 'website', 'static', 'img', 'jbrowse-img')
 const githubBase =
   'https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-img'
 
-// The README points its example images at the in-repo copies via raw.github
-// URLs (so they render on npm/GitHub). For the docs site we serve them from the
-// website's own static dir instead, so the page is self-contained: versioned
-// with the docs, rendering in offline/staging builds, with no raw.github
-// runtime dependency. Astro's rehype-base-urls prefixes the `/img/...` path with
-// the site base path, matching every other figure on the site.
+// The README points its example images at the copies the website publishes, so
+// they render on npm and on GitHub. They used to be raw.github URLs into
+// products/jbrowse-img/img, which stopped working when figure bytes moved out
+// of git and into the figure store (figure-store.ts) — and a store URL is
+// content-addressed, so putting one in the README would rewrite this file on
+// every regen. `/jb2/img/jbrowse-img/<name>` is the stable path the deploy
+// already publishes to, and it survives a figure changing.
+//
+// For the docs site we serve them from the website's own static dir instead, so
+// the page is self-contained: versioned with the docs, rendering in
+// offline/staging builds, with no runtime dependency on the deployed site.
+// Astro's rehype-base-urls prefixes the `/img/...` path with the site base
+// path, matching every other figure on the site.
 const rawImgRe =
-  /https:\/\/raw\.githubusercontent\.com\/GMOD\/jbrowse-components\/main\/products\/jbrowse-img\/img\/([\w.-]+)/g
+  /https:\/\/jbrowse\.org\/jb2\/img\/jbrowse-img\/([\w.-]+)/g
 const localImgUrl = '/img/jbrowse-img/'
 
 const title = 'Static image export (@jbrowse/img)'

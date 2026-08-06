@@ -150,6 +150,15 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
+      # generate-img-doc.ts compares products/jbrowse-img/img against the
+      # website's mirror of it, so both have to be on disk. This is also the
+      # only gate that proves figures.lock is HONEST: a fresh runner has no
+      # figures, so `pull` fetches and sha256-verifies every entry, and a line
+      # whose bytes were never pushed fails here rather than on someone's
+      # machine. Deliberately not `figures:check --remote` — listing the bucket
+      # needs credentials a fork's PR does not have, while this needs none.
+      - name: Install figures
+        run: pnpm figures:pull
       - name: Check generated artifacts are up to date
         run: pnpm autogen --check
       # The fix for every failure above is `pnpm autogen`, so run it and hand the
@@ -168,6 +177,43 @@ jobs:
           name: autogen-patch
           path: autogen.patch
           retention-days: 3
+
+  # What figures this branch moves, rendered.
+  #
+  # This is the replacement for something that quietly went away: while figure
+  # bytes were tracked, GitHub's own image-diff view was the review surface for
+  # a changed screenshot. Now that they live in the S3 store, a figure change is
+  # a one-line hash swap in figures.lock — precise, reviewable as text, and
+  # completely opaque as a picture. So the run renders it.
+  #
+  # Every revision the store has ever held is still at its own immutable public
+  # URL, so BEFORE and AFTER are both just <img> tags in the step summary. That
+  # is strictly more than the old view offered: it survives rebases, it works
+  # from any commit's manifest, and it calls out resizes, which a pixel diff
+  # cannot see at all (pngDiffFraction returns null on a size mismatch).
+  #
+  # No install and no build — figures.ts imports nothing but node builtins, so
+  # this is a checkout and ~15 seconds. Never a gate: it reports, it does not
+  # judge. Whether a moved figure is right is a question for a person.
+  figures:
+    name: Figures moved
+    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+        with:
+          install: 'false'
+      # Just main's tip, not the full history — this repo's pack is ~1.6 GiB and
+      # all the report needs is one file out of one commit.
+      - name: Fetch the base manifest
+        run: git fetch --depth=1 origin main
+      - name: Report what moved
+        run: |
+          pnpm figures:report --base origin/main --markdown --out /tmp/figures.md
+          cat /tmp/figures.md >> "$GITHUB_STEP_SUMMARY"
 
   # The docs validators with no fix mode — link/reference/round-trip checks
   # where a failure needs a human. Same collect-all-failures driver shape as

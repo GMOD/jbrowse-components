@@ -11,6 +11,8 @@
 import { PENDING_DISPLAYS } from '@jbrowse/browser-test-utils'
 
 import { visibleTooltipText } from './annotations.ts'
+import { unpublishedFigures } from './figure-paths.ts'
+import { figureName } from './figure-store.ts'
 import {
   CLIP_WARN_PX,
   DEVICE_SCALE_FACTOR,
@@ -225,4 +227,31 @@ export function printSummary(totals: RunTotals) {
       ),
     )
   }
+  printUnpublished()
+}
+
+// Last, because it is the thing to act on.
+//
+// Figure bytes live in the S3 store, not in git, so a regen this run just wrote
+// is invisible to `git status` — and if it is never pushed, every other machine
+// and the published site keep serving the old image, with nothing anywhere
+// saying so. CI cannot catch it either: the evidence is a file on this disk.
+// This report is the replacement for the `M website/static/img/x.png` line that
+// used to make it obvious.
+//
+// It reports the whole worktree, not just this run: the figure worth catching
+// is usually one from an earlier run that never got published, and a --filter
+// run should still say so. Saying "nothing outstanding" out loud matters as
+// much as the warning — it is how a regen ends in a known state rather than an
+// assumed one.
+function printUnpublished() {
+  const outstanding = unpublishedFigures()
+  if (outstanding.length === 0) {
+    console.log('\nEvery figure on disk is published. Nothing to push.')
+    return
+  }
+  printReport(
+    `NOT IN THE FIGURE STORE (${outstanding.length}) — these exist only on this machine; run \`pnpm figures:push\` and commit figures.lock, or they are silently dropped`,
+    outstanding.map(p => `• ${figureName(p)}`),
+  )
 }

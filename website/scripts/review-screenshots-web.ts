@@ -10,6 +10,8 @@ import {
   sendJson,
 } from '@jbrowse/browser-test-utils'
 
+import { readManifest, unpublishedFigures } from './figure-paths.ts'
+import { figureName } from './figure-store.ts'
 import {
   collectScreenshots,
   imageHash,
@@ -66,6 +68,11 @@ function buildSpecPayload() {
   // looked like when the server started.
   refreshWorkingTreeScans()
   const report = loadReport()
+  // Figure bytes live in the S3 store, so what a reviewer sees here is the file
+  // on THIS disk, which is not necessarily what anyone else or the published
+  // site gets. An unpushed regen is invisible to git, so without this a verdict
+  // could be recorded against pixels nobody else will ever see.
+  const unpublished = new Set(unpublishedFigures().map(figureName))
   return collectScreenshots(specs).map(shot => {
     const verdict = report[shot.name]
     // the hash of the PNG as the reviewer is about to see it. It rides along so
@@ -85,10 +92,23 @@ function buildSpecPayload() {
       })),
       verdict,
       stale,
+      unpublished: unpublished.has(shot.name),
       imageHash: currentHash ?? null,
       ...(liveUrl ? { liveUrl } : {}),
     }
   })
+}
+
+// The store state for the banner. Separate from /api/specs because the count
+// includes figures no spec produces — a hand-made diagram dropped into
+// static/img is exactly the kind that goes unpushed — and the banner should
+// report the whole store, not the part that happens to have a spec.
+function buildFigureStatePayload() {
+  const outstanding = unpublishedFigures()
+  return {
+    unpublished: outstanding.map(figureName),
+    total: readManifest().size,
+  }
 }
 
 const contentTypes: Record<string, string> = {
@@ -187,6 +207,8 @@ const server = http.createServer((req, res) => {
       res.end(PAGE)
     } else if (pathname === '/api/specs') {
       sendJson(res, 200, buildSpecPayload())
+    } else if (pathname === '/api/figure-state') {
+      sendJson(res, 200, buildFigureStatePayload())
     } else if (pathname === '/api/verdict' && req.method === 'POST') {
       handleVerdict(req, res).catch((err: unknown) => {
         sendJson(res, 500, { error: `${err}` })
@@ -292,6 +314,14 @@ const PAGE = /* html */ `<!doctype html>
   .pill.manual { background: #f3e8ff; color: #6b21a8; }
   .pill.new { background: #cffafe; color: #155e63; }
   .pill.changed, .pill.stale { background: #fde68a; color: #854d0e; }
+  .pill.unpublished { background: #ffe4d5; color: #7c2d12; }
+  /* Says the answer either way. A reviewer needs to know that what they are
+     approving is what everyone else will get, and silence cannot say that. */
+  #store { padding: 8px 14px; font-size: 13px; border-bottom: 1px solid ButtonBorder; }
+  #store.ok { background: #d6f5dd; color: #14532d; }
+  #store.pending { background: #ffe4d5; color: #7c2d12; }
+  #store code { background: rgba(0,0,0,.08); padding: 1px 5px; border-radius: 4px; }
+  #store .names { margin-top: 4px; font-size: 12px; opacity: .85; }
   main { padding: 20px; display: flex; flex-direction: column; gap: 18px; max-width: 1400px; margin: 0 auto; }
   .card {
     background: Canvas; border: 1px solid ButtonBorder; border-radius: 10px; overflow: hidden;
@@ -381,6 +411,7 @@ const PAGE = /* html */ `<!doctype html>
   <button class="tab" data-toggle="changed" title="only screenshots new or changed vs origin/main">Changed vs main<span class="tabcount" data-count="changed"></span></button>
   <div class="counts" id="counts"></div>
 </header>
+<div id="store"></div>
 <main id="main"></main>
 <script>
 ${CLIENT}
@@ -488,6 +519,39 @@ async function load() {
   // canonicalize: drops a shared-URL group that no longer names a real group
   writeUrl()
   render()
+  loadStoreState()
+}
+
+// Whether the figures on this disk are the figures everyone else gets.
+//
+// This says so in both directions on purpose. A reviewer approving a figure is
+// approving pixels, and since figure bytes are gitignored there is otherwise
+// nothing on screen distinguishing "published" from "only exists here" — the
+// old world had \`git status\` for that. A silent banner would leave the good
+// case indistinguishable from a banner that failed to render.
+//
+// Fetched after render() rather than blocking it: a review page that took an
+// extra beat to appear because it was hashing 62 MB would be a bad trade.
+async function loadStoreState() {
+  const el = $('#store')
+  try {
+    const res = await fetch('/api/figure-state')
+    const s = await res.json()
+    if (!res.ok) throw new Error(s && s.error || 'HTTP ' + res.status)
+    if (!s.unpublished.length) {
+      el.className = 'ok'
+      el.innerHTML = 'All ' + s.total + ' figures are published to the store — what you see here is what everyone gets.'
+    } else {
+      el.className = 'pending'
+      el.innerHTML = '<strong>' + s.unpublished.length + ' figure(s) exist only on this machine.</strong> ' +
+        'Run <code>pnpm figures:push</code> and commit <code>figures.lock</code>, or they are silently dropped — ' +
+        'a verdict recorded now is against pixels nobody else will see.' +
+        '<div class="names">' + s.unpublished.map(esc).join(', ') + '</div>'
+    }
+  } catch (err) {
+    el.className = 'pending'
+    el.textContent = 'Could not read the figure store state: ' + err.message
+  }
 }
 
 function renderUsages(usages) {
@@ -565,7 +629,8 @@ function renderCard(spec) {
         (status === 'answered' ? ' ' + pill('answered', 'answered — reply in the note') : '') +
         (spec.stale ? ' ' + pill('stale', 'image changed since ' + status) : '') +
         (isNew(spec) ? ' ' + pill('new', 'new') : '') +
-        (isChanged(spec) ? ' ' + pill('changed', 'changed') : '') + '</h2>' +
+        (isChanged(spec) ? ' ' + pill('changed', 'changed') : '') +
+        (spec.unpublished ? ' ' + pill('unpublished', 'not pushed to the store') : '') + '</h2>' +
       renderUsages(spec.usages) +
       renderParts(spec) +
       (spec.liveUrl ? '<a class="livelink" href="' + esc(spec.liveUrl) + '" target="_blank" rel="noopener">Open live in JBrowse ↗</a>' : '') +
