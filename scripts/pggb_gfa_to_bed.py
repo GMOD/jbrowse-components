@@ -61,7 +61,16 @@ import gzip
 import sys
 
 
+# .zst as well as .gz because that is what the published human graphs are: HPRC
+# release 2 ships its per-chromosome pggb GFAs zstd-compressed. Reading it here
+# rather than asking for a decompressed copy first matters at this size — one
+# human chromosome graph is several GB decompressed and there is no reason for it
+# to touch disk.
 def open_maybe_gz(path):
+    if path.endswith(".zst"):
+        from compression import zstd
+
+        return zstd.open(path, "rt")
     return gzip.open(path, "rt") if path.endswith(".gz") else open(path)
 
 
@@ -282,4 +291,5 @@ def main():
         print(f"{skipped} links skipped: an endpoint no path visits", file=sys.stderr)
 
 
-main()
+if __name__ == "__main__":
+    main()

@@ -18,13 +18,25 @@
 #
 # Produces <prefix>.segs.bed.gz{,.tbi} and <prefix>.links.bed.gz{,.tbi}.
 #
-# Scale is the thing to check before reaching for this on a new graph. A pggb
-# graph runs ~17 bp per segment, so the index grows with total sequence rather
-# than with variation: the five-strain E. coli graph here is 606k segments and
-# 814k links, which builds in about a minute. A human pangenome at base level is
-# three orders of magnitude past that, and there the answer is still to cut a
-# window offline with `odgi extract` (or to browse the minigraph rGFA, which is
-# SV-resolution and small enough to index whole).
+# Scale is the thing to check before reaching for this on a new graph, and the
+# ceiling is lower than it looks. A pggb graph runs ~17 bp per segment, so the
+# index grows with total sequence rather than with variation: the five-strain
+# E. coli graph here is 606k segments and 814k links and builds in about a
+# minute.
+#
+# A human chromosome does not merely take longer — it does not finish. Measured
+# on HPRC release 2's per-chromosome pggb graph for chrY, which is the SMALLEST
+# of the 25 (343 MB zstd against chr21's 2.4 GB): 4.12M segments and 7.69M
+# links, and pggb_gfa_to_bed.py reached 15.2 GB resident after 93 s still in the
+# load phase, having written nothing. It holds every segment length, every link
+# and every path step in memory at once, so the requirement scales with the
+# whole graph rather than with the window you wanted.
+#
+# So for anything human-scale, cut a window offline with `odgi extract` first,
+# or browse the minigraph rGFA, which is SV-resolution and small enough to index
+# whole. Making this streaming would move the ceiling, but a 4M-segment lane is
+# not a thing the graph view can usefully draw either, so the window is the
+# answer at both ends.
 set -euo pipefail
 
 GFA="${1:?usage: build_pggb_tabix.sh <graph.gfa[.gz]> [out-prefix] [reference-sample]}"
