@@ -331,7 +331,9 @@ console.log(`  wire bytes fetched        ${mb(wireBytes)}`)
 console.log(`  worker heap, track open   ${mb(open.worker)}`)
 console.log(`  worker heap, track closed ${mb(closed.worker)}`)
 console.log(`  worker heap, tab hidden   ${mb(hidden.worker)}`)
-console.log(`  worker heap, +4 min idle  ${mb(idle.worker)}`)
+console.log(
+  `  worker heap, +${IDLE_MINUTES} min idle ${mb(idle.worker).padStart(9)}`,
+)
 console.log(`  RETAINED after close+idle ${mb(idle.worker - base.worker)}`)
 console.log(
   `  CHUNK_SIZE bufs  before pan ${mb(beforePan.exactBytes)}  ` +
