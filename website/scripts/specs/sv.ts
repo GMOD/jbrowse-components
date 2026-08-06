@@ -43,6 +43,15 @@ const MANE_TRACK = {
 // drawn on it can't drift from the radio they point at
 const SPLIT_READ_LABEL = GROUP_BY_LABELS.splitRead
 
+// SV_85's span, written the way the SV inspector's location column prints it.
+// One string does both jobs the deletion_sv_inspector_search figure needs: it
+// finds that cell in the spreadsheet by its text, and — since
+// parseAnnotationLocus takes `..` as readily as `-` — it resolves to the
+// feature's pixels in the view below through the view's own getHighlightCoords.
+// The callout on the row and the callout on the glyph therefore name the same
+// deletion and cannot drift apart.
+const SV_85_DEL = 'chr10:122,835,344..122,837,142'
+
 // hg19 main chromosomes (1..22, X, Y) in karyotype order. A plain whole-genome
 // showAllRegionsInAssembly also appends the *_hap / *_random / Un contigs, whose
 // far-right elided-block column reads as clutter in a genome-wide overview.
@@ -920,51 +929,91 @@ export const svSpecs: ScreenshotSpec[] = [
     // Pared down to the single core narrative (too many annotations):
     // search SV_85 -> one DEL row -> clicking its location link opens the region
     // below, where SVTYPE=DEL is drawn as the <DEL> ALT allele on the variant.
+    //
+    // Both halves of that narrative hang off SV_85_DEL: the spreadsheet cell by
+    // its text, the glyph by its coordinate. Nothing here is a viewport pixel,
+    // which is what this figure specifically needed — the drift it has been
+    // carrying is the whole linear view sitting lower than the day the callouts
+    // were measured, and a `dy` off the VCF track's own top edge (fracY: 0)
+    // moves with it.
     annotations: [
       {
         type: 'text',
         text: 'Searching "SV_85" filters to one DEL (a het CUZD1 deletion)',
-        x: 70,
-        y: 180,
+        // above the one row the filter leaves, starting from that row's own
+        // left edge rather than from a column of the table
+        anchor: {
+          text: SV_85_DEL,
+          alignX: 'left',
+          alignY: 'top',
+          dx: 22,
+          dy: -40,
+        },
         fontSize: 18,
         maxWidth: 420,
       },
-      { type: 'box', anchor: { text: 'chr10:122,835,344..122,837,142' } },
-      { type: 'arrow', from: { x: 185, y: 268 }, to: { x: 620, y: 730 } },
-      // box the actual SV_85 <DEL> feature glyph in the VCF track below (was
-      // floating in the blank space above it — measured from the rendered
-      // feature's bounding box, css y≈738-748)
-      { type: 'box', x: 592, y: 722, width: 112, height: 40 },
+      { type: 'box', anchor: { text: SV_85_DEL } },
+      {
+        type: 'arrow',
+        // tail below the location cell (clear of the box around it), head just
+        // above the glyph that clicking it opens
+        fromAnchor: { text: SV_85_DEL, dy: 30 },
+        anchor: {
+          view: 1,
+          track: 'GRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf',
+          locus: SV_85_DEL,
+          fracY: 0,
+          dy: 14,
+        },
+      },
+      // The SV_85 <DEL> glyph in the VCF track below. Its width is the
+      // deletion's own, so only the height is written down, and as a depth into
+      // the track rather than a viewport y: 50px from the track's top edge is
+      // the glyph row plus the "SV_85" and "<DEL> 1.8Kbp" labels the display
+      // draws under it — the second of those is what the callout beside it is
+      // pointing at, so the box has to reach it.
+      {
+        type: 'box',
+        anchor: {
+          view: 1,
+          track: 'GRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf',
+          locus: SV_85_DEL,
+          fracY: 0,
+          dy: 24,
+        },
+        height: 50,
+      },
       {
         type: 'text',
         text: 'The location link opens the region below, where SVTYPE=DEL draws as the <DEL> allele',
-        x: 745,
-        y: 738,
+        // beside the boxed glyph: anchoring to the deletion's right edge keeps
+        // the 50px gap whatever width the deletion draws at
+        anchor: {
+          view: 1,
+          track: 'GRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf',
+          locus: SV_85_DEL,
+          fracY: 0,
+          alignX: 'right',
+          dx: 50,
+          dy: 28,
+        },
         fontSize: 18,
         maxWidth: 360,
       },
     ],
-    // remote VCF over the NCBI ftp-trace server: render timing jitters the
-    // circular overview slightly, so soften the content-stable diff gate.
+    // No diffThreshold: back on the default gate, deliberately.
     //
-    // MEASURE BEFORE TRUSTING THAT. `--check` on this spec (two renders, one
-    // machine) reports 0.008% — three orders of magnitude under this gate — so
-    // whatever jitter motivated 0.02 is not reproducible here. Meanwhile the
-    // weekly sweep reports it under KEPT BEHIND A RAISED diffThreshold at
-    // 0.948%. That number is the one to trust: it comes off a clean runner
-    // building committed source. A local force-render put it at 4.95%, with the
-    // whole linear view below the inspector shifted vertically (the diff map
-    // outlines every track boundary), but that was measured in a shared worktree
-    // where another agent had DisplayChrome/PaddingBlocks/LinearGenomeView
-    // mid-refactor and had rebuilt jbrowse-web, so some of that 4.95% is
-    // plausibly theirs. Either way 0.948% is real drift held out of the figure
-    // by a gate raised for something else, the same way
-    // alignments_soft_clipped_menu kept a menu item that had moved.
-    //
-    // Not lowered here because this figure also hand-places its callouts (the
-    // `x`/`y` above), and a vertical shift is exactly what moves a callout off
-    // its target — so it wants anchors first, then a gate it can actually pass.
-    diffThreshold: 0.02,
+    // It carried 0.02 for "remote VCF over ftp-trace, render timing jitters the
+    // circular overview", and that was never measured. `--check` on this spec
+    // (two renders, one machine) reports 0.008% run-to-run — three orders of
+    // magnitude under the raised gate — while the weekly sweep listed the figure
+    // under KEPT BEHIND A RAISED diffThreshold at 0.948%: real drift, the whole
+    // linear view below the inspector sitting lower than the committed bytes,
+    // held out of the picture by a gate raised for something else. The one
+    // reason not to lower it was that the callouts above were hand-placed, and a
+    // vertical shift is exactly what moves a callout off its target. They anchor
+    // now, so the drift and the callouts move together and the next sweep can
+    // commit both.
   },
 
   {
