@@ -231,11 +231,11 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
 }: {
   model: FloatingLabelsModel
   view: LGV
-  onLabelMouseOver?: (
-    item: FlatbushItem,
-    displayedRegionIndex: number,
-    e: React.MouseEvent,
-  ) => void
+  // Just the item: the label's own hover sets the model's hover, and the
+  // tooltip's POSITION comes from the chrome's pointer tracker rather than from
+  // this event. It used to carry the region index and the event so the caller
+  // could stash `clientX`/`clientY` in React state.
+  onLabelMouseOver?: (item: FlatbushItem) => void
   onLabelMouseLeave?: () => void
 }) {
   const { classes, cx } = useStyles()
@@ -406,7 +406,7 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
       onMouseMove={e => {
         const t = resolveTarget(e)
         if (t && onLabelMouseOver) {
-          onLabelMouseOver(t.item, t.displayedRegionIndex, e)
+          onLabelMouseOver(t.item)
         }
       }}
       // A clickable label is stacked above the canvas, so entering one fires the

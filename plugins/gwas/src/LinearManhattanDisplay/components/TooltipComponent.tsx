@@ -4,6 +4,7 @@ import { toP } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
 import type { ManhattanHit } from '../findManhattanHit.ts'
+import type { MouseState } from '@jbrowse/core/ui'
 
 export interface TooltipModel {
   featureUnderMouse: ManhattanHit | undefined
@@ -19,15 +20,15 @@ function formatCoord({ start, end }: ManhattanHit) {
 
 const TooltipComponent = observer(function TooltipComponent({
   model,
-  clientMouseCoord,
+  mouseState,
 }: {
   model: TooltipModel
-  clientMouseCoord: [number, number]
+  mouseState: MouseState | undefined
 }) {
   const { featureUnderMouse } = model
-  return featureUnderMouse ? (
+  return featureUnderMouse && mouseState ? (
     <BaseTooltip
-      clientPoint={{ x: clientMouseCoord[0] + 10, y: clientMouseCoord[1] }}
+      clientPoint={{ x: mouseState.clientX, y: mouseState.clientY }}
     >
       <div>
         {featureUnderMouse.refName}:{formatCoord(featureUnderMouse)}

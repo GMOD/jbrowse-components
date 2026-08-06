@@ -2,18 +2,18 @@ import { SanitizedHTML } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { observer } from 'mobx-react'
 
-type Coord = [number, number]
+import type { MouseState } from '@jbrowse/core/ui'
 
 const FeatureTooltip = observer(function FeatureTooltip({
   info,
-  clientMouseCoord,
+  mouseState,
 }: {
   info: string | undefined
-  clientMouseCoord: Coord
+  mouseState: MouseState | undefined
 }) {
-  return info ? (
+  return info && mouseState ? (
     <BaseTooltip
-      clientPoint={{ x: clientMouseCoord[0] + 15, y: clientMouseCoord[1] }}
+      clientPoint={{ x: mouseState.clientX, y: mouseState.clientY }}
     >
       <div>
         <SanitizedHTML html={info} />

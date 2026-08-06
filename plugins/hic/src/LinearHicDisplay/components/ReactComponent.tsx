@@ -30,7 +30,7 @@ function HicTooltip({
   y: number
 }) {
   return (
-    <BaseTooltip clientPoint={{ x: x + 15, y }}>
+    <BaseTooltip clientPoint={{ x, y }}>
       <div>{formatLocus(data, item.region1Idx, item.bin1)}</div>
       <div>{formatLocus(data, item.region2Idx, item.bin2)}</div>
       <div>Score: {reducePrecision(item.counts)}</div>

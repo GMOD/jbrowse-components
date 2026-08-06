@@ -138,6 +138,13 @@ structural rather than remembered — there is no position at that level to hold
   `wiggleMouseHandlers`' click path resolves its hit the same way, from the
   click rather than from a hover a previous frame recorded (the viewport moves
   under a stationary cursor).
+- **The position travels as the `MouseState` itself**, not as `[number, number]`
+  tuples with a `[0, 0]` sentinel for "no pointer" — that sentinel reads as
+  "pointer at the origin", so every consumer needed a second guard to make it
+  safe, and the two had to agree. A tooltip takes `mouseState` and renders
+  nothing without one. `BaseTooltip` owns the gap to the cursor
+  ([ADR-028](../architecture-decision-records/adr-028-tooltip-clientpoint-vs-pointer-tracking.md#amendment-2026-08-06-clientpoint-is-the-pointer-not-the-pointer-plus-a-gap));
+  callers pass the true client point.
 - **A portaled overlay still bubbles its React events to the container** even
   though its DOM node is not a descendant, so the position would be measured
   against a box the pointer is not in. `useMouseTracking` treats that as a leave

@@ -41,6 +41,19 @@ const tooltipBaseStyle = {
   wordWrap: 'break-word',
 } as const
 
+// The gap between the cursor and the tooltip, and the ONLY place it is decided.
+// `offset()` applies it along the resolved placement axis, so it stays a gap
+// when `flip()` puts the tooltip to the LEFT of the cursor near the right edge
+// of the viewport.
+//
+// Callers pass the pointer's true client point. Eight of them used to add 5, 10
+// or 15 to `x` themselves on top of this, so the same affordance sat 20, 25 or
+// 30px from the cursor depending on which track you hovered — nobody chose
+// that, and a nudge baked into the coordinate moves the reference point rather
+// than the tooltip, so on a flipped placement it pushed the tooltip *toward*
+// the cursor instead of away. Don't reintroduce one; change this number.
+const CURSOR_GAP_PX = 15
+
 export default function BaseTooltip({
   clientPoint: clientPointCoords,
   children,
@@ -73,7 +86,7 @@ export default function BaseTooltip({
     strategy: 'fixed',
     // flip/shift keep the tooltip on-screen when the cursor is near a viewport
     // edge instead of letting it clip off the right/bottom
-    middleware: [offset(15), flip(), shift({ padding: 8 })],
+    middleware: [offset(CURSOR_GAP_PX), flip(), shift({ padding: 8 })],
   })
 
   const clientPoint = useClientPoint(context, clientPointCoords)

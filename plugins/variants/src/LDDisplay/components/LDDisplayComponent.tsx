@@ -56,7 +56,7 @@ function LDTooltip({
       : ''
 
   return (
-    <BaseTooltip clientPoint={{ x: x + 15, y }}>
+    <BaseTooltip clientPoint={{ x, y }}>
       <SnpRow snp={item.snp1} />
       <SnpRow snp={item.snp2} />
       <div>

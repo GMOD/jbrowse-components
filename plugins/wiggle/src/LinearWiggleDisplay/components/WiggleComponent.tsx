@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { Crosshairs } from '@jbrowse/core/ui'
+import { Crosshairs, useMouseState } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import {
@@ -13,10 +13,7 @@ import { observer } from 'mobx-react'
 import ScoreLegend, { scoreLegendHeight } from '../../shared/ScoreLegend.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import WiggleTooltip from '../../shared/WiggleTooltip.tsx'
-import {
-  useWiggleMouseCoords,
-  wiggleMouseHandlers,
-} from '../../shared/wiggleMouseHandlers.ts'
+import { wiggleMouseHandlers } from '../../shared/wiggleMouseHandlers.ts'
 import {
   findSourceHit,
   hitTestMouse,
@@ -105,8 +102,7 @@ const WiggleBody = observer(function WiggleBody({
 }) {
   // read here rather than beside the handlers, so a mousemove re-renders this
   // body instead of the whole DisplayChrome above it
-  const { clientMouseCoord, offsetMouseCoord } =
-    useWiggleMouseCoords(mouseTracker)
+  const mouseState = useMouseState(mouseTracker)
   return (
     <>
       <canvas
@@ -148,14 +144,10 @@ const WiggleBody = observer(function WiggleBody({
       {/* no mouseY, so no horizontal guide: y here is the score axis, which
           CrossHatches above already rules, and a second line at the cursor would
           read as another threshold */}
-      {model.featureUnderMouse ? (
-        <Crosshairs
-          mouseX={offsetMouseCoord[0]}
-          width={width}
-          height={height}
-        />
+      {model.featureUnderMouse && mouseState ? (
+        <Crosshairs mouseX={mouseState.x} width={width} height={height} />
       ) : null}
-      <WiggleTooltip model={model} clientMouseCoord={clientMouseCoord} />
+      <WiggleTooltip model={model} mouseState={mouseState} />
     </>
   )
 })

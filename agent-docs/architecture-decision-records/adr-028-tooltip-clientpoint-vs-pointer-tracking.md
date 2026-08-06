@@ -84,6 +84,23 @@ omit-the-prop behavior. The footgun is real but the surface that hits it is smal
 and now documented; a contract change is not worth breaking the working
 consumers.
 
+### Amendment (2026-08-06): `clientPoint` is the pointer, not the pointer plus a gap
+
+**Pass the true client point. `BaseTooltip` owns the distance to the cursor**, as
+`offset(CURSOR_GAP_PX)` in its middleware.
+
+Eight of the thirteen call sites used to add 5, 10 or 15 to `x` themselves —
+*on top of* that `offset(15)` — so the same affordance sat 20, 25 or 30px from
+the cursor depending on which track you hovered. Nobody chose that; the central
+`offset()` was added later and the hand-written nudges were never removed. The
+newer consumers (multirow, dotplot, MAF) already passed the true point, so the
+two conventions were live at once.
+
+It is not only cosmetic drift. A nudge baked into the coordinate moves the
+*reference point*, and only `offset()` knows the resolved placement — so when
+`flip()` puts the tooltip to the LEFT of the cursor near the right edge of the
+viewport, a `+15` on `x` pushes it *toward* the cursor rather than away.
+
 ### Companion decision: per-move highlight is an overlay, not a redraw input
 
 The same audit fixed `MafSequenceWidget`'s `SequenceCanvas`: the hovered-column

@@ -19,8 +19,6 @@ import type { LinearAlignmentsDisplayModel } from '../model.ts'
 import type { MouseTracker } from '@jbrowse/core/ui'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-const COORD0: [number, number] = [0, 0]
-
 // The tooltip, in its own component so that following the pointer re-renders
 // the tooltip and nothing else.
 //
@@ -68,13 +66,7 @@ const AlignmentsTooltipLayer = observer(function AlignmentsTooltipLayer({
   const mouseState = useMouseState(mouseTracker)
   return (
     <Suspense fallback={null}>
-      <TooltipComponent
-        model={model}
-        offsetMouseCoord={mouseState ? [mouseState.x, mouseState.y] : COORD0}
-        clientMouseCoord={
-          mouseState ? [mouseState.clientX, mouseState.clientY] : COORD0
-        }
-      />
+      <TooltipComponent model={model} mouseState={mouseState} />
     </Suspense>
   )
 })

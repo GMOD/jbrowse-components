@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { useMouseState } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import {
@@ -12,10 +13,7 @@ import { observer } from 'mobx-react'
 
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import WiggleTooltip from '../../shared/WiggleTooltip.tsx'
-import {
-  useWiggleMouseCoords,
-  wiggleMouseHandlers,
-} from '../../shared/wiggleMouseHandlers.ts'
+import { wiggleMouseHandlers } from '../../shared/wiggleMouseHandlers.ts'
 import { legendRightEdgePx } from '../../shared/wiggleComponentUtils.ts'
 import MultiWiggleOverlayLines from '../MultiWiggleOverlayLines.tsx'
 import MultiWiggleSvgScales from '../MultiWiggleSvgScales.tsx'
@@ -102,8 +100,7 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
 }) {
   // read here rather than beside the handlers, so a mousemove re-renders this
   // body instead of the whole DisplayChrome above it
-  const { clientMouseCoord, offsetMouseCoord } =
-    useWiggleMouseCoords(mouseTracker)
+  const mouseState = useMouseState(mouseTracker)
   const labelOffset = treeSidebarOffset(model)
 
   // Pin the right-aligned legends to the content's right edge, not the full
@@ -160,14 +157,14 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
       {/* the full crosshair, not just a genomic guide: cursor y picks the row
           being read in multi-row mode and a score level in overlay mode, and
           both are hard to eyeball across a tall stack of plots */}
-      {model.featureUnderMouse ? (
+      {model.featureUnderMouse && mouseState ? (
         <DisplayCrosshairs
           model={model}
-          mouseX={offsetMouseCoord[0]}
-          mouseY={offsetMouseCoord[1]}
+          mouseX={mouseState.x}
+          mouseY={mouseState.y}
         />
       ) : null}
-      <WiggleTooltip model={model} clientMouseCoord={clientMouseCoord} />
+      <WiggleTooltip model={model} mouseState={mouseState} />
     </>
   )
 })

@@ -1,11 +1,8 @@
 import { useCallback, useState } from 'react'
 
-import { ContextMenu } from '@jbrowse/core/ui'
+import { ContextMenu, useMouseState } from '@jbrowse/core/ui'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
-import {
-  useWiggleMouseCoords,
-  wiggleMouseHandlers,
-} from '@jbrowse/plugin-wiggle'
+import { wiggleMouseHandlers } from '@jbrowse/plugin-wiggle'
 import {
   CrossHatches,
   YSCALEBAR_LABEL_OFFSET,
@@ -125,7 +122,7 @@ const ManhattanBody = observer(function ManhattanBody({
 }) {
   // read here rather than beside the handlers, so a mousemove re-renders this
   // body instead of the whole DisplayChrome above it
-  const { clientMouseCoord } = useWiggleMouseCoords(mouseTracker)
+  const mouseState = useMouseState(mouseTracker)
   const { ticks, featureUnderMouse, showCrossHatches, ldColoringActive } = model
   const ldMode = ldColoringActive && model.canvasDrawn && model.showLdLegend
 
@@ -167,7 +164,7 @@ const ManhattanBody = observer(function ManhattanBody({
           offscreen={model.indexSnpOffscreen}
         />
       ) : null}
-      <TooltipComponent model={model} clientMouseCoord={clientMouseCoord} />
+      <TooltipComponent model={model} mouseState={mouseState} />
       <ContextMenu
         anchor={contextMenu?.anchor}
         menuItems={() =>

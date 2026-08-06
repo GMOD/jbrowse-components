@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useId, useState } from 'react'
+import React, { useCallback, useEffect, useId } from 'react'
 
-import { ContextMenu, VerticalScrollbar } from '@jbrowse/core/ui'
+import { ContextMenu, VerticalScrollbar, useMouseState } from '@jbrowse/core/ui'
 import { capitalizeFirst, getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useVirtualScrollWheel } from '@jbrowse/core/util/useVirtualScrollWheel'
@@ -30,6 +30,7 @@ import {
 import { FloatingLabelsLayer, HighlightLayer } from './overlayElements.tsx'
 
 import type { FlatbushItem } from '../../RenderFeatureDataRPC/rpcTypes.ts'
+import type { MouseTracker } from '@jbrowse/core/ui'
 import type { LinearCanvasBaseDisplayModel } from '../baseModel.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -140,16 +141,45 @@ const FeatureComponent = observer(function FeatureComponent({
       className={classes.root}
       style={{ height: model.height }}
     >
-      {({ canvasRef, canvas }) => (
+      {({ canvasRef, canvas, mouseTracker }) => (
         <>
           <FeatureBody model={model} canvasRef={canvasRef} canvas={canvas} />
           {/* Inside the chrome, which is the `position:relative` box it pins
               itself to. It used to sit in `DisplayContainer` one level up —
               also relative, so the geometry is unchanged. */}
           <ColorLegendOverlay model={model} />
+          {/* Its own component, and a sibling of the body rather than a child
+              of it, so that following the pointer re-renders the tooltip alone.
+              This was a `clientXY` useState inside `FeatureBody`, written from
+              the canvas's own `onMouseMove` — the last display holding a mouse
+              position in React state, which re-rendered the body and every
+              overlay under it on each raw (uncoalesced) move while a feature
+              was hovered. See `useMouseTracking`. */}
+          <FeatureTooltipLayer model={model} mouseTracker={mouseTracker} />
         </>
       )}
     </DisplayChrome>
+  )
+})
+
+// `mouseoverExtraInformation` is what decides whether there is a tooltip at
+// all — the hit test that sets it runs on the canvas's own handlers, at raw
+// event coordinates, because the click and right-click paths share it. Only the
+// *position* comes from the chrome's tracker, and client coordinates are
+// viewport-relative, so it makes no difference which element measured them.
+const FeatureTooltipLayer = observer(function FeatureTooltipLayer({
+  model,
+  mouseTracker,
+}: {
+  model: LinearCanvasBaseDisplayModel
+  mouseTracker: MouseTracker
+}) {
+  const mouseState = useMouseState(mouseTracker)
+  return (
+    <FeatureTooltip
+      info={model.mouseoverExtraInformation}
+      mouseState={mouseState}
+    />
   )
 })
 
@@ -161,9 +191,6 @@ const FeatureBody = observer(function FeatureBody({
   canvasRef: (node: HTMLCanvasElement | null) => void
   canvas: HTMLCanvasElement | null
 }) {
-  // false positive: omitting <[number,number]> widens to number[] — known tuple issue
-  // https://github.com/typescript-eslint/typescript-eslint/issues/9529
-  const [clientXY, setClientXY] = useState<[number, number]>([0, 0])
   const { classes } = useStyles()
   const canvasId = useId()
 
@@ -268,11 +295,6 @@ const FeatureBody = observer(function FeatureBody({
     }
     const result = hitTestAtEvent(e)
     if (isHitFeature(result)) {
-      // Only while something is hovered: the coordinate exists to place the
-      // tooltip, which renders nothing without a hover, so tracking it over
-      // empty track would re-render this component on every mouse move for
-      // an invisible tooltip.
-      setClientXY([e.clientX, e.clientY])
       model.setHover(
         result.feature.featureId,
         result.subfeature?.featureId ?? null,
@@ -344,12 +366,7 @@ const FeatureBody = observer(function FeatureBody({
   // the menu's target), so this needs no guard of its own — unlike
   // handleMouseMove, whose early return also skips the hit test.
   const onLabelMouseOver = useCallback(
-    (
-      item: FlatbushItem,
-      _displayedRegionIndex: number,
-      e: React.MouseEvent,
-    ) => {
-      setClientXY([e.clientX, e.clientY])
+    (item: FlatbushItem) => {
       model.setHover(item.featureId, null, item.tooltip)
     },
     [model],
@@ -423,10 +440,6 @@ const FeatureBody = observer(function FeatureBody({
         />
       </BottomRightIndicators>
 
-      <FeatureTooltip
-        info={model.mouseoverExtraInformation}
-        clientMouseCoord={clientXY}
-      />
       <ContextMenu
         anchor={model.contextMenuInfo}
         menuItems={() => model.contextMenuItems()}

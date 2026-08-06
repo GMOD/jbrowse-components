@@ -1,8 +1,4 @@
-import { useMouseState } from '@jbrowse/core/ui'
-
-import type { MouseState, MouseTracker } from '@jbrowse/core/ui'
-
-const COORD0: [number, number] = [0, 0]
+import type { MouseState } from '@jbrowse/core/ui'
 
 interface MouseTrackingModel<T> {
   setFeatureUnderMouse: (feat?: T) => void
@@ -43,18 +39,4 @@ export function wiggleMouseHandlers<T>(
       }
     },
   }
-}
-
-// The two coordinate pairs the wiggle-family bodies draw with: client-space for
-// the tooltip (which portals to the document) and container-relative for the
-// cursor guides. Call it in the body, not beside `useWiggleMouseHandlers`.
-export function useWiggleMouseCoords(mouseTracker: MouseTracker) {
-  const mouseState = useMouseState(mouseTracker)
-  const clientMouseCoord: [number, number] = mouseState
-    ? [mouseState.clientX, mouseState.clientY]
-    : COORD0
-  const offsetMouseCoord: [number, number] = mouseState
-    ? [mouseState.x, mouseState.y]
-    : COORD0
-  return { clientMouseCoord, offsetMouseCoord }
 }

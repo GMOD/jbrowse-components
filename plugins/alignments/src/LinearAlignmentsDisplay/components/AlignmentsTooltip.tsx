@@ -15,6 +15,7 @@ import type {
   InterbaseBin,
   TooltipPayload,
 } from './tooltipUtils.ts'
+import type { MouseState } from '@jbrowse/core/ui'
 import type React from 'react'
 
 const useStyles = makeStyles()(theme => ({
@@ -276,32 +277,28 @@ export function CoverageTooltipContents({
   )
 }
 
-type Coord = [number, number]
-
 /**
  * Custom Tooltip for LinearAlignmentsDisplay
  * Supports flag-style tooltip with vertical line indicator for coverage
  */
 const AlignmentsTooltip = observer(function AlignmentsTooltip({
   model,
-  clientMouseCoord,
-  offsetMouseCoord,
+  mouseState,
 }: {
   model: {
     mouseoverExtraInformation: TooltipPayload | undefined
     hoverCoverageBand: { topOffset: number; coverageHeight: number } | undefined
   }
-  offsetMouseCoord?: Coord
-  clientMouseCoord: Coord
+  mouseState: MouseState | undefined
 }) {
   const { mouseoverExtraInformation: tooltipData, hoverCoverageBand } = model
   const { classes } = useStyles()
-  const x = clientMouseCoord[0] + 5
-  const y = clientMouseCoord[1]
 
-  if (tooltipData === undefined) {
+  if (tooltipData === undefined || mouseState === undefined) {
     return null
   }
+  const x = mouseState.clientX
+  const y = mouseState.clientY
 
   if (typeof tooltipData === 'string') {
     return (
@@ -330,7 +327,7 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
             </div>
           </BaseTooltip>
           <CoverageHoverBar
-            left={offsetMouseCoord?.[0]}
+            left={mouseState.x}
             band={hoverCoverageBand}
           />
         </>
@@ -348,7 +345,7 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
             </div>
           </BaseTooltip>
           <CoverageHoverBar
-            left={offsetMouseCoord?.[0]}
+            left={mouseState.x}
             band={hoverCoverageBand}
           />
         </>

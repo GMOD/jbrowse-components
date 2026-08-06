@@ -87,9 +87,7 @@ const SequenceHoverTooltip = observer(function SequenceHoverTooltip({
     ? model.hoverAt(mouseState.x, mouseState.y)
     : undefined
   return hover && mouseState ? (
-    <BaseTooltip
-      clientPoint={{ x: mouseState.clientX + 15, y: mouseState.clientY }}
-    >
+    <BaseTooltip clientPoint={{ x: mouseState.clientX, y: mouseState.clientY }}>
       <HoverContents hover={hover} />
     </BaseTooltip>
   ) : null

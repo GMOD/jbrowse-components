@@ -6,6 +6,7 @@ import { observer } from 'mobx-react'
 import { toP } from '../util.ts'
 
 import type { WiggleFeatureUnderMouse, WiggleTooltipRow } from '../util.ts'
+import type { MouseState } from '@jbrowse/core/ui'
 
 // Overlay-mode hits collect one row per source; cap the list so a track with
 // hundreds of sources doesn't render an unbounded tooltip.
@@ -85,15 +86,15 @@ function TooltipContents({ feature }: { feature: WiggleFeatureUnderMouse }) {
 // same `featureUnderMouse` this reads.
 const WiggleTooltip = observer(function WiggleTooltip({
   model,
-  clientMouseCoord,
+  mouseState,
 }: {
   model: { featureUnderMouse?: WiggleFeatureUnderMouse }
-  clientMouseCoord: [number, number]
+  mouseState: MouseState | undefined
 }) {
   const { featureUnderMouse } = model
-  return featureUnderMouse ? (
+  return featureUnderMouse && mouseState ? (
     <BaseTooltip
-      clientPoint={{ x: clientMouseCoord[0] + 10, y: clientMouseCoord[1] }}
+      clientPoint={{ x: mouseState.clientX, y: mouseState.clientY }}
     >
       <TooltipContents feature={featureUnderMouse} />
     </BaseTooltip>
