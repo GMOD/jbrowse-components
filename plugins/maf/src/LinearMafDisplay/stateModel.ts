@@ -1918,28 +1918,12 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * The color key for whatever `activeRowRendering` is painting, or empty
-         * where the rendering needs no key (plain bases). One getter rather than
-         * a component per mode, because both the on-screen legend and the SVG
-         * export read it — an exported codon or source-chromosome figure whose
-         * swatches are its only decoder used to ship with no key at all.
-         *
-         * A dispatch, not a description: each key is built by the module that
-         * paints the rendering, out of the colors it paints with. Written out
-         * here instead, all three had drifted from the screen — the codon
-         * swatches skipped the alpha the cells are composited with, the X-Y plot
-         * got the heatmap's ramp when it paints one color and varies height, and
-         * the source-chromosome key kept adding rows past the point where its
-         * palette stops changing.
-         */
-        /**
-         * #getter
          * Titles for the stacked bands, with the y they sit at — empty unless
          * both bands draw, which is the only case they are needed for: two
          * stacked filled-histogram bands are otherwise told apart only by their
          * Y-axis units (depth vs %).
          *
-         * A getter for the same reason as `legendItems` above: the on-screen
+         * A getter for the same reason as `legendItems` below: the on-screen
          * labels and the SVG export both read it. The export had no titles at
          * all, so the one figure that needs them most — both bands drawn, and
          * an exported PNG where nothing can be hovered to disambiguate — was
@@ -1964,6 +1948,22 @@ export default function stateModelFactory(
               ]
             : []
         },
+        /**
+         * #getter
+         * The color key for whatever `activeRowRendering` is painting, or empty
+         * where the rendering needs no key (plain bases). One getter rather than
+         * a component per mode, because both the on-screen legend and the SVG
+         * export read it — an exported codon or source-chromosome figure whose
+         * swatches are its only decoder used to ship with no key at all.
+         *
+         * A dispatch, not a description: each key is built by the module that
+         * paints the rendering, out of the colors it paints with. Written out
+         * here instead, all three had drifted from the screen — the codon
+         * swatches skipped the alpha the cells are composited with, the X-Y plot
+         * got the heatmap's ramp when it paints one color and varies height, and
+         * the source-chromosome key kept adding rows past the point where its
+         * palette stops changing.
+         */
         get legendItems(): LegendItem[] {
           const view = self.lgv
           if (!view.initialized) {
