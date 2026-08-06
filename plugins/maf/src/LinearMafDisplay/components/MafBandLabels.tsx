@@ -2,16 +2,15 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { alpha } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { YSCALE_AXIS_WIDTH } from './MafYScaleGutter.tsx'
+import { BAND_LABEL_FONT_SIZE, BAND_LABEL_X } from './bandLabelLayout.ts'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
 
 const useStyles = makeStyles()(theme => ({
   label: {
     position: 'absolute',
-    // just clear of the Y-axis gutter the two bands share
-    left: YSCALE_AXIS_WIDTH + 2,
-    fontSize: 9,
+    left: BAND_LABEL_X,
+    fontSize: BAND_LABEL_FONT_SIZE,
     lineHeight: 1,
     padding: '1px 3px',
     pointerEvents: 'none',
@@ -21,34 +20,24 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-// Titles the coverage and conservation bands, shown only when both are visible
-// — that's the case where the two stacked filled-histogram bands are otherwise
-// distinguishable only by their Y-axis units (depth vs %).
+// The on-screen half of the band titles. What is titled, and when, is
+// `model.bandLabels` — read by the SVG export too, so an exported figure carries
+// the same captions rather than two unlabelled histograms.
 const MafBandLabels = observer(function MafBandLabels({
   model,
 }: {
   model: LinearMafDisplayModel
 }) {
   const { classes } = useStyles()
-  const {
-    coverageBandActive,
-    showConservation,
-    codonConservationActive,
-    coverageDisplayHeight,
-  } = model
-  return coverageBandActive && showConservation ? (
+  return (
     <>
-      <div className={classes.label} style={{ top: 0 }}>
-        Coverage
-      </div>
-      <div className={classes.label} style={{ top: coverageDisplayHeight }}>
-        {/* names what the band is actually drawing, not the requested mode */}
-        {codonConservationActive
-          ? 'Conservation (aa identity)'
-          : 'Conservation (% identity)'}
-      </div>
+      {model.bandLabels.map(({ text, top }) => (
+        <div key={text} className={classes.label} style={{ top }}>
+          {text}
+        </div>
+      ))}
     </>
-  ) : null
+  )
 })
 
 export default MafBandLabels

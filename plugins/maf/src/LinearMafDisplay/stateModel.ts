@@ -1932,6 +1932,38 @@ export default function stateModelFactory(
          * the source-chromosome key kept adding rows past the point where its
          * palette stops changing.
          */
+        /**
+         * #getter
+         * Titles for the stacked bands, with the y they sit at — empty unless
+         * both bands draw, which is the only case they are needed for: two
+         * stacked filled-histogram bands are otherwise told apart only by their
+         * Y-axis units (depth vs %).
+         *
+         * A getter for the same reason as `legendItems` above: the on-screen
+         * labels and the SVG export both read it. The export had no titles at
+         * all, so the one figure that needs them most — both bands drawn, and
+         * an exported PNG where nothing can be hovered to disambiguate — was
+         * the one shipping without them.
+         *
+         * The conservation title names what the band is *drawing*
+         * (`codonConservationActive`), not the mode that was asked for: codon
+         * mode falls back to per-base wherever frames or per-base blocks are
+         * missing, and a band captioned "aa identity" while drawing nucleotide
+         * identity is worse than no caption.
+         */
+        get bandLabels(): { text: string; top: number }[] {
+          return self.coverageBandActive && self.showConservation
+            ? [
+                { text: 'Coverage', top: 0 },
+                {
+                  text: self.codonConservationActive
+                    ? 'Conservation (aa identity)'
+                    : 'Conservation (% identity)',
+                  top: self.coverageDisplayHeight,
+                },
+              ]
+            : []
+        },
         get legendItems(): LegendItem[] {
           const view = self.lgv
           if (!view.initialized) {

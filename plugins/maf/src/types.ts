@@ -158,18 +158,26 @@ export interface MafFrameRecord {
   /** gene that defined the frame */
   name: string
   /**
-   * Reference position of the connecting base in the previous CDS exon, or -1.
-   * Used (with `nextFramePos`) to stitch a codon that straddles an exon/block
-   * boundary: the partial codon at one exon's edge is completed from the
-   * adjacent exon. `+`/`−` aware (previous = lower coords on `+`, higher on `−`).
+   * Reference position of the connecting base in the next CDS exon, or -1.
+   * `+`/`−` aware (next = higher coords on `+`, lower on `−`).
+   *
+   * How `enumerateCodons` stitches a codon across an exon boundary, and the
+   * only one of `mafFrames`' four linkage columns it needs. The *trailing*
+   * partial codon at an exon's edge is completed from here; the *leading*
+   * partial is dropped, because the previous exon's own trailing stitch is the
+   * same codon and emitting it from both sides would double it. So
+   * `prevFramePos` — which the autoSql also carries, and which this type used
+   * to declare and the RPC to ship — has no reader, and neither do
+   * `isExonStart`/`isExonEnd`: `frame` already gives the codon position of the
+   * record's first base, which is what the leading skip is computed from.
+   *
+   * The one thing the missing `prevFramePos` costs: an exon lying entirely
+   * outside the fetched region emits no trailing stitch, so the boundary codon
+   * at the region's left edge doesn't draw. The fetched region is the buffered
+   * one — half a screen wider than the view on each side — so that codon is
+   * essentially always off screen.
    */
-  prevFramePos?: number
-  /** Reference position of the connecting base in the next CDS exon, or -1. */
   nextFramePos?: number
-  /** 1 when this record's first base (transcription order) starts an exon. */
-  isExonStart?: number
-  /** 1 when this record's last base (transcription order) ends an exon. */
-  isExonEnd?: number
 }
 
 /**
