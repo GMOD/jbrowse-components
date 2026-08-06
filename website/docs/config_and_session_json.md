@@ -126,7 +126,8 @@ write into the config — see [](/docs/config_guides/default_session).
 
 ## Where one comes from
 
-You rarely write the whole thing by hand:
+It is a small enough format to write, and to generate — a track is five keys, a
+view is an `init` block. Several things will also write parts of it for you:
 
 - [`@jbrowse/cli`](/docs/cli) writes it. `jbrowse add-assembly` and
   `jbrowse add-track` append to `config.json`, inferring the track type and the
