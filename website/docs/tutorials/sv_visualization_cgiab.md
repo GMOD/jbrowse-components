@@ -70,7 +70,7 @@ of the prerequisites are release binaries rather than apt packages:
 ```bash
 wget https://github.com/ChristopherWilks/megadepth/releases/download/1.2.0/megadepth
 chmod +x megadepth && sudo mv megadepth /usr/local/bin/
-curl -L https://github.com/PacificBiosciences/HiFiCNV/releases/latest/download/hificnv-linux_x86_64.tar.gz \
+curl -L https://github.com/PacificBiosciences/HiFiCNV/releases/download/v1.0.1/hificnv-v1.0.1-x86_64-unknown-linux-gnu.tar.gz \
   | tar xz --strip-components=1 -C /usr/local/bin --wildcards '*/hificnv'
 ```
 
@@ -687,7 +687,7 @@ Within C-GIAB itself there is more on the same FTP than this tutorial loads:
 - McDaniel et al. (2025).
   [Development and Extensive Sequencing of a Broadly-Consented Genome in a Bottle Matched Tumor-Normal Pair](https://doi.org/10.1038/s41597-025-05438-2)
 - Rautiainen et al. (2023).
-  [Verkko: telomere-to-telomere assembly of diploid chromosomes](https://doi.org/10.1038/s41587-023-01662-w)
+  [Verkko: telomere-to-telomere assembly of diploid chromosomes](https://doi.org/10.1038/s41587-023-01662-6)
 - Wagner et al. (2026).
   [A complete human pancreatic cancer genome](https://doi.org/10.64898/2026.05.01.722316)
 

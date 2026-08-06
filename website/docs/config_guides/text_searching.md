@@ -10,23 +10,16 @@ guide_category: Core configuration
 once, for a genome-wide gene-name index. A **per-track index** (a track's
 `textSearching` slot) makes just one track searchable.
 
-An aggregate index looks like this:
+An aggregate index looks like this. `uri` points at the `.ix` that
+`jbrowse text-index` wrote, and the `.ixx` and `_meta.json` beside it are
+derived from that name:
 
 ```json
 {
   "aggregateTextSearchAdapters": [
     {
       "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "hg19-index",
-      "ixFilePath": {
-        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ix"
-      },
-      "ixxFilePath": {
-        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ixx"
-      },
-      "metaFilePath": {
-        "uri": "https://jbrowse.org/genomes/hg19/trix/meta.json"
-      },
+      "uri": "trix/hg19.ix",
       "assemblyNames": ["hg19"]
     }
   ]
@@ -48,10 +41,7 @@ A per-track config looks like this:
   "textSearching": {
     "textSearchAdapter": {
       "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "mytrack-index",
-      "ixFilePath": { "uri": "trix/mytrack.ix" },
-      "ixxFilePath": { "uri": "trix/mytrack.ixx" },
-      "metaFilePath": { "uri": "trix/mytrack_meta.json" },
+      "uri": "trix/mytrack.ix",
       "assemblyNames": ["hg19"]
     },
     "indexingAttributes": ["Name", "ID"],
@@ -96,12 +86,15 @@ options including CSI index support and `dontRedispatch`.
 The trix format is based on the
 [UCSC trix format](https://genome.ucsc.edu/goldenPath/help/trix.html). Use
 [jbrowse text-index](/docs/cli#jbrowse-text-index) to generate the index files
-and config automatically. The adapter (shown in the examples above) points at
-three files:
+and config automatically. The adapter reads three files, and the `uri` shorthand
+above names the first and derives the other two:
 
-- `ixFilePath` - the trix `.ix` file
-- `ixxFilePath` - the trix `.ixx` file
-- `metaFilePath` - the metadata JSON file for the index
+- `ixFilePath` - the trix `.ix` file, the one `uri` points at
+- `ixxFilePath` - the trix `.ixx` file, `uri` plus an `x`
+- `metaFilePath` - the metadata JSON, `uri` with `.ix` replaced by `_meta.json`
+
+Set the three slots individually when the files do not sit together under those
+names.
 
 See the [TrixTextSearchAdapter config docs](/docs/config/trixtextsearchadapter)
 for all options.

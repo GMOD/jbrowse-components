@@ -11,9 +11,9 @@ sidebar_label: PIF format
 Use PIF over plain PAF for anything whole-genome scale.
 
 PIF (Pairwise Indexed Format) is a tabix-indexed variant of
-[PAF](https://github.com/lh3/minimap2/blob/master/doc/minimap2.1). Plain PAF
-must be loaded entirely into memory; PIF splits each alignment into two indexed
-records (one per genome), so JBrowse fetches only the alignments overlapping the
+[PAF](https://github.com/lh3/minimap2/blob/master/minimap2.1). Plain PAF must be
+loaded entirely into memory; PIF splits each alignment into two indexed records
+(one per genome), so JBrowse fetches only the alignments overlapping the
 viewport and can query from either assembly's perspective.
 
 ## File format

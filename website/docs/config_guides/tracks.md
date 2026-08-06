@@ -31,7 +31,10 @@ track config sits:
 ```json
 {
   "assemblies": [
-    { "name": "hg19", "uri": "https://jbrowse.org/genomes/hg19/hg19.fa.gz" }
+    {
+      "name": "hg19",
+      "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+    }
   ],
   "tracks": [
     {

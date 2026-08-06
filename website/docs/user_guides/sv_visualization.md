@@ -137,8 +137,8 @@ that the strongest cue wins:
 
 The patterns below describe what each SV type typically looks like in the
 alignments track. Combine several signals (clipping, orientation, coverage,
-arcs) before calling an SV rather than relying on any one. The
-[DRAGEN SV IGV tutorial](https://help.dragen.illumina.com/product-guides/dragen-v4.5/dragen-dna-pipeline/sv-calling/sv-igv-tutorial)
+arcs) before calling an SV rather than relying on any one. IGV's
+[paired-end alignment guide](https://igv.org/doc/desktop/#UserGuide/tracks/alignments/paired_end_alignments/)
 is a useful companion reference.
 
 ### Deletion

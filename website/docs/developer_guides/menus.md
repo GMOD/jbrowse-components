@@ -147,7 +147,7 @@ attributes. Types of `MenuItem`s:
   clickable row
 
 Each shape, with the fields it requires. `icon` is any
-[MUI icon](https://mui.com/material-ui/material-ui-icons/); note `keepMenuOpen`,
+[MUI icon](https://mui.com/material-ui/material-icons/); note `keepMenuOpen`,
 which decides whether a click dismisses the menu and defaults by row type rather
 than being a plain flag:
 

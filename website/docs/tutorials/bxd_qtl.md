@@ -27,12 +27,12 @@ package is needed: the QTL scan is
 
 ## The BXD panel
 
-The [BXD family](https://www.genenetwork.org) is a panel of ~200 mouse
+The [BXD family](https://genenetwork.org) is a panel of ~200 mouse
 recombinant-inbred (RI) strains bred from a cross of C57BL/6J (the "B" parent)
 and DBA/2J (the "D" parent). Each strain's genome is a fixed pattern of B and D
 blocks, and the same strains have been phenotyped for thousands of traits at
-[GeneNetwork](https://www.genenetwork.org). That combination is what this
-tutorial visualizes: a trait scan on top, and the B/D blocks underneath it.
+[GeneNetwork](https://genenetwork.org). That combination is what this tutorial
+visualizes: a trait scan on top, and the B/D blocks underneath it.
 
 This tutorial builds two JBrowse tracks from the same BXD panel, on mm10:
 
