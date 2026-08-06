@@ -1,0 +1,101 @@
+import { composeThroughPivot, orientToPivot } from './compose.ts'
+import { panSNSample } from './paf.ts'
+
+import type { PafRow } from './paf.ts'
+import type { Task } from './plan.ts'
+
+/**
+ * Re-state a row so the `via` SAMPLE's side is the target, whichever side of the
+ * row it landed on. Composition works on a shared sequence, so what actually
+ * matters downstream is that both legs present the same pivot contig as their
+ * target axis.
+ */
+function orientToPivotSample(row: PafRow, via: string) {
+  return panSNSample(row.tname) === via
+    ? row
+    : panSNSample(row.qname) === via
+      ? orientToPivot(row, row.qname)
+      : undefined
+}
+
+/** Group a leg's rows by the pivot contig they are anchored on. */
+function byPivotContig(rows: PafRow[], via: string) {
+  const out = new Map<string, PafRow[]>()
+  for (const row of rows) {
+    const oriented = orientToPivotSample(row, via)
+    if (oriented) {
+      const bucket = out.get(oriented.tname)
+      if (bucket) {
+        bucket.push(oriented)
+      } else {
+        out.set(oriented.tname, [oriented])
+      }
+    }
+  }
+  for (const bucket of out.values()) {
+    bucket.sort((x, y) => x.tstart - y.tstart || x.tend - y.tend)
+  }
+  return out
+}
+
+/**
+ * Every pair of alignments from the two legs that overlap on the pivot, composed.
+ *
+ * A sweep rather than a nested loop: both legs are sorted by pivot start, so an
+ * alignment whose pivot end has been passed can never overlap again. The naive
+ * form is the product of the two legs' sizes, and a leg on one chromosome of a
+ * real pangenome is tens of thousands of rows.
+ */
+export async function composeLegs({
+  task,
+  legA,
+  legB,
+  minAligned,
+  emit,
+}: {
+  task: Task
+  legA: PafRow[]
+  legB: PafRow[]
+  minAligned: number
+  // awaited, so a caller writing to a stream can apply backpressure — one pair
+  // of legs on one chromosome can compose to more rows than either leg holds
+  emit: (row: PafRow) => Promise<void> | void
+}) {
+  const aByContig = byPivotContig(legA, task.via)
+  const bByContig = byPivotContig(legB, task.via)
+  let composed = 0
+  for (const [contig, aRows] of aByContig) {
+    const bRows = bByContig.get(contig)
+    if (!bRows) {
+      continue
+    }
+    let j = 0
+    const active: PafRow[] = []
+    for (const a of aRows) {
+      while (j < bRows.length && bRows[j]!.tstart < a.tend) {
+        active.push(bRows[j]!)
+        j++
+      }
+      let write = 0
+      for (const b of active) {
+        if (b.tend > a.tstart) {
+          active[write++] = b
+        }
+      }
+      active.length = write
+      for (const b of active) {
+        // A row that puts the SAME sequence on both ends is the pivot aligned to
+        // itself through itself, which states nothing
+        if (a.qname === b.qname) {
+          continue
+        }
+        const row = composeThroughPivot({ a, b, minAligned })
+        if (row) {
+          await emit(row)
+          composed++
+        }
+      }
+    }
+  }
+  return composed
+}

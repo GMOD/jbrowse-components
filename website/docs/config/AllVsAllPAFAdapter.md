@@ -40,6 +40,12 @@ are labelled by their PanSN prefix). `assemblyNames` therefore only needs to
 list the assemblies you actually load into JBrowse and want the track to appear
 on.
 
+A file that does not in fact contain every pair — a wfmash run with a `-p`
+threshold, or a star-topology "everything against the reference" mapping — draws
+an empty band for the pairs its aligner never emitted, which is
+indistinguishable from a locus with no homology. `jbrowse transitive-paf` fills
+those in by composing through a shared intermediate.
+
 ## Related links
 
 - **Track:** [SyntenyTrack](../syntenytrack)

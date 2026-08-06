@@ -64,6 +64,7 @@ COMMANDS
   admin-server         Start up a small admin server for JBrowse configuration
   upgrade              Upgrades JBrowse 2 to latest version
   make-pif             Creates pairwise indexed PAF (PIF), with bgzip and tabix
+  transitive-paf       Fill in the pairwise alignments an all-vs-all PAF is missing, by composing through a shared intermediate
   sort-gff             Helper utility to sort GFF files for tabix
   sort-bed             Helper utility to sort BED files for tabix
   add-connection       Add a connection to a JBrowse 2 configuration
@@ -650,6 +651,70 @@ $ jbrowse make-pif input.paf --coarse 0
 
 # emit only the per-row CIGAR fine tier, skipping the coarse tier
 $ jbrowse make-pif input.paf --no-coarse
+```
+
+## jbrowse transitive-paf
+
+```
+Fill in the pairwise alignments an all-vs-all PAF is missing, by composing
+through a shared intermediate
+
+Usage: jbrowse transitive-paf <file> [options]
+
+Options:
+  -h, --help                 Show help
+
+      --out                  Where to write the PAF. Writes to stdout when
+                             omitted, so this can pipe straight into make-pif.
+                             Progress and the summary always go to stderr.
+
+      --via                  Route every composition through this PanSN sample.
+                             Defaults to choosing, per missing pair, whichever
+                             sample has the most alignments to both ends of it.
+
+      --min-length           Discard a composed alignment carrying fewer than
+                             this many aligned bases. Composition through an
+                             intermediate turns two alignments into their
+                             intersection, which produces a long tail of tiny
+                             fragments; this is the control on how much of that
+                             tail is kept. Defaults to 5000.
+
+      --only-composed        Write only the composed alignments, not the input
+                             rows. The default writes the input through first,
+                             so the output is a complete all-vs-all PAF ready
+                             for make-pif.
+
+Notes:
+
+An "all-vs-all" PAF frequently is not one. wfmash with a -p threshold drops
+distant pairs, and many real files are a star: every sample aligned to one
+reference and to nothing else. JBrowse loads those without complaint and then
+draws an empty synteny band for any pair the aligner never emitted, which looks
+exactly like a locus with no homology. This composes A-vs-R and B-vs-R into the
+A-vs-B they imply, for every sample pair the file does not state directly.
+
+A composed row is derived, not measured. Its identity is the product of the two
+input identities (no sequence is available to recompute it), and it carries a
+vi:Z: tag naming the pivot contig it was routed through, so a composed alignment
+is always distinguishable from an aligned one. Sequence names must be
+PanSN-prefixed (sample#haplotype#contig) — that is what says which assembly each
+side belongs to — and rows without a CIGAR are skipped, since there is no way to
+know which bases of the pivot they pair with.
+
+Examples:
+
+# add every missing pair, then index the result
+$ jbrowse transitive-paf all_vs_all.paf --out complete.paf
+$ jbrowse make-pif complete.paf
+
+# or pipe it straight through
+$ jbrowse transitive-paf all_vs_all.paf | jbrowse make-pif --out complete.pif.gz
+
+# a star-topology mapping: everything was aligned to GRCh38, nothing to each other
+$ jbrowse transitive-paf vs_ref.paf --via GRCh38 --out complete.paf
+
+# keep more of the short tail
+$ jbrowse transitive-paf all_vs_all.paf --min-length 1000 --out complete.paf
 ```
 
 ## jbrowse sort-gff

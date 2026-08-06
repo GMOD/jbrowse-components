@@ -14,6 +14,7 @@ import { run as setDefaultSessionRun } from './commands/set-default-session.ts'
 import { run as sortBedRun } from './commands/sort-bed.ts'
 import { run as sortGffRun } from './commands/sort-gff.ts'
 import { run as textIndexRun } from './commands/text-index/index.ts'
+import { run as transitivePAFRun } from './commands/transitive-paf/index.ts'
 import { run as upgradeRun } from './commands/upgrade.ts'
 import { run as validateRun } from './commands/validate/index.ts'
 import { version } from './version.ts'
@@ -65,6 +66,12 @@ const registry: {
     name: 'make-pif',
     summary: 'Creates pairwise indexed PAF (PIF), with bgzip and tabix',
     run: makePIFRun,
+  },
+  {
+    name: 'transitive-paf',
+    summary:
+      'Fill in the pairwise alignments an all-vs-all PAF is missing, by composing through a shared intermediate',
+    run: transitivePAFRun,
   },
   {
     name: 'sort-gff',

@@ -37,6 +37,11 @@ whole-genome pangenome alignments that do not fit in memory. Semantics match
 `AllVsAllPAFAdapter`: one-vs-all in a plain LGV, single-pair when the synteny
 view supplies a `targetAssemblyName`.
 
+If the PAF does not in fact contain every pair — a wfmash run with a `-p`
+threshold, or a star-topology "everything against the reference" mapping — run
+`jbrowse transitive-paf` on it before `make-pif`, which fills the missing pairs
+in by composing through a shared intermediate.
+
 ## Related links
 
 - **Track:** [SyntenyTrack](../syntenytrack)
