@@ -1,0 +1,46 @@
+{
+  "assemblies": [
+    {
+      "name": "oat",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "oat-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "oat.chrom.sizes"
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "SyntenyTrack",
+      "trackId": "oat_homoeologs",
+      "name": "Oat homoeologs (dN/dS)",
+      "assemblyNames": ["oat", "oat"],
+      "adapter": {
+        "type": "MCScanBlocksAdapter",
+        "uri": "oat.homoeologs.blocks.gz",
+        "blockAssemblies": ["oat", "oat"],
+        "bedLocations": [{ "uri": "oat.bed.gz" }, { "uri": "oat.bed.gz" }],
+        "assemblyNames": ["oat", "oat"],
+        "attributeColumns": ["dn", "ds"]
+      }
+    }
+  ],
+  "defaultSession": {
+    "name": "Oat homoeologs by selection pressure",
+    "views": [
+      {
+        "type": "DotplotView",
+        "displayName": "Hexaploid oat against itself, coloured by dN/dS",
+        "showColorLegend": true,
+        "init": {
+          "views": [{ "assembly": "oat" }, { "assembly": "oat" }],
+          "tracks": ["oat_homoeologs"],
+          "colorBy": "dnds"
+        }
+      }
+    ]
+  }
+}
