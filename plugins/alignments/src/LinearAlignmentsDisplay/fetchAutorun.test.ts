@@ -257,9 +257,19 @@ describe('FetchVisibleRegions autorun', () => {
   // The floor short-circuits `gateActive`, which is also what stops the estimate
   // RPC — nothing downstream could act on an estimate taken below it, so paying
   // for one is pure waste.
-  it('skips the byte-estimate RPC below the AUTO_FORCE_LOAD_BP floor', async () => {
+  // Alignments sets `gateBelowForceLoadFloor`: read cost scales with depth, so a
+  // gene-sized window over an amplicon or mitochondrial pileup is tens of MB and
+  // the floor declined to look at it. The estimate is still what decides, so
+  // ordinary data at this zoom measures small and loads.
+  it('still measures below the AUTO_FORCE_LOAD_BP floor, and loads when it fits', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
-    mockRpcCall.mockResolvedValue(makeEmptyGroupedData())
+    mockRpcCall.mockImplementation((_sid: string, method: string) =>
+      Promise.resolve(
+        method === 'CoreGetRegionByteEstimate'
+          ? 50_000
+          : makeEmptyGroupedData(),
+      ),
+    )
 
     const { view, display } = createDisplay()
     view.zoomTo(1)
@@ -271,9 +281,39 @@ describe('FetchVisibleRegions autorun', () => {
     await waitFor(() => {
       expect(display.loadedRegions.size).toBe(1)
     })
-    expect(mockRpcCall.mock.calls.map(c => c[1])).not.toContain(
+    expect(mockRpcCall.mock.calls.map(c => c[1])).toContain(
       'CoreGetRegionByteEstimate',
     )
+    expect(display.regionTooLarge).toBe(false)
+  })
+
+  // The bypass the floor used to be: zooming past it downloaded exactly the
+  // bytes the gate had refused one zoom level earlier.
+  it('gates an over-budget region below the floor instead of downloading it', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockImplementation((_sid: string, method: string) =>
+      Promise.resolve(
+        method === 'CoreGetRegionByteEstimate'
+          ? 50_000_000
+          : makeEmptyGroupedData(),
+      ),
+    )
+
+    const { view, display } = createDisplay()
+    view.zoomTo(1)
+    expect(view.visibleBp).toBeLessThan(20_000)
+
+    jest.advanceTimersByTime(400)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.regionTooLarge).toBe(true)
+    })
+    // the reads themselves were never requested
+    expect(mockRpcCall.mock.calls.map(c => c[1])).not.toContain(
+      'RenderAlignmentData',
+    )
+    expect(display.loadedRegions.size).toBe(0)
   })
 
   it('does not loop after regionTooLarge is set', async () => {
@@ -342,8 +382,15 @@ describe('FetchVisibleRegions autorun', () => {
       expect(display.regionTooLarge).toBe(true)
     })
 
-    // Zoom in so the region is small enough (visibleBp < AUTO_FORCE_LOAD_BP
-    // bypasses byte check entirely)
+    // Navigate to a small region whose measurement fits. The release is the
+    // estimate, not the zoom: `gateBelowForceLoadFloor` means dropping under
+    // 20kb no longer waves the fetch through on its own.
+    mockRpcCall.mockImplementation((_sid: string, method: string) => {
+      if (method === 'CoreGetRegionByteEstimate') {
+        return Promise.resolve(50_000)
+      }
+      return Promise.resolve(makeEmptyGroupedData())
+    })
     view.setDisplayedRegions([
       {
         assemblyName: 'volvox',

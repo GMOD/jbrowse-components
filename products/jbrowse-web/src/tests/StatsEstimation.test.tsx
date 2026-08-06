@@ -18,18 +18,30 @@ beforeEach(() => {
 const delay = { timeout: 20000 }
 const o = [{}, delay]
 
-test('test stats estimation pileup, zoom in to see', async () => {
-  const { view, findAllByText, findByTestId } = await createView()
+// Alignments sets `gateBelowForceLoadFloor`, so zooming past AUTO_FORCE_LOAD_BP
+// no longer waves an over-budget pileup through. That used to be the way out
+// here, and it was never real: read cost scales with depth, and the index is
+// flat below its 16kb bins, so the same bytes come down however far you zoom.
+// The banner has to stop offering it — otherwise it prints advice that cannot
+// work. The VCF case below still covers "zoom in to see", for the displays that
+// keep the floor.
+test('test stats estimation pileup, zooming past the floor keeps the banner', async () => {
+  const { view, findAllByText, findByTestId, queryAllByText } =
+    await createView()
   view.setNewView(30, 183)
   fireEvent.click(await findByTestId(hts('volvox_cram_pileup'), ...o))
-  await findAllByText(/Requested too much data|Force load/, ...o)
+  await findAllByText(/Requested too much data/, ...o)
   const before = view.bpPerPx
   fireEvent.click(await findByTestId('zoom_in'))
   await waitFor(() => {
     expect(view.bpPerPx).toBe(before / 2)
   }, delay)
-  const display = await findByTestId('pileup-display-done', ...o)
-  expect(display.querySelector('canvas')).toBeTruthy()
+  expect(view.visibleBp).toBeLessThan(20_000)
+
+  // still gated, and now offering only the way out that actually works
+  await findAllByText(/Requested too much data/, ...o)
+  await findAllByText(/Force load/, ...o)
+  expect(queryAllByText(/Zoom in to see features/)).toHaveLength(0)
 }, 30000)
 
 test('test stats estimation pileup, force load to see', async () => {

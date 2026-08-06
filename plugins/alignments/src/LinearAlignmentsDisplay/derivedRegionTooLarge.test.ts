@@ -177,16 +177,47 @@ describe('alignments derived regionTooLarge', () => {
 
   // The AUTO_FORCE_LOAD_BP floor lives in `gateActive` — the one place that
   // answers "may anything gate right now", shared by the verdict, the pre-flight
-  // estimate RPC and canvas's worker budgets.
-  it('never gates below the AUTO_FORCE_LOAD_BP floor, however big the estimate', () => {
+  // estimate RPC and canvas's worker budgets. Alignments opts out of it
+  // (`gateBelowForceLoadFloor`): read cost scales with depth, so a gene-sized
+  // window over a deep pileup is tens of MB, and the floor declined to look at
+  // exactly that fetch.
+  it('keeps gating below the AUTO_FORCE_LOAD_BP floor', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
     display.setByteEstimate({ bytes: 1e9, measuredSpanBp: view.visibleBp })
     expect(display.regionTooLarge).toBe(true)
 
+    // 1e9 rescaled by 1/100 is still 10 Mb, over the cap — so zooming past the
+    // floor is no longer a way to download what the gate just refused.
     view.zoomTo(1)
     expect(view.visibleBp).toBeLessThan(20_000)
-    expect(display.gateActive).toBe(false)
+    expect(display.gateActive).toBe(true)
+    expect(display.regionTooLarge).toBe(true)
+  })
+
+  it('releases below the floor on the bytes, once they fit', () => {
+    const { display, view } = createTestEnvironment().createDisplay()
+    view.zoomTo(100)
+    display.setByteEstimate({ bytes: 1e9, measuredSpanBp: view.visibleBp })
+
+    // far enough in that the rescaled estimate clears the cap: the banner goes
+    // on the estimate, not on crossing a zoom threshold
+    view.zoomTo(0.01)
+    expect(view.visibleBp).toBeLessThan(20_000)
+    expect(display.gateActive).toBe(true)
+    expect(display.regionTooLarge).toBe(false)
+  })
+
+  // Ordinary depth is nowhere near the cap at gene zoom, which is what makes the
+  // opt-out safe without a coverage threshold. Measured for reference: the
+  // BAI-derived estimate is flat below the index's 16kb minimum bin, so the cap
+  // bites at roughly 5 Mb / 16 kb ≈ 300 bytes per reference base.
+  it('leaves an ordinary pileup alone below the floor', () => {
+    const { display, view } = createTestEnvironment().createDisplay()
+    view.zoomTo(1)
+    expect(view.visibleBp).toBeLessThan(20_000)
+    display.setByteEstimate({ bytes: 300_000, measuredSpanBp: view.visibleBp })
+    expect(display.gateActive).toBe(true)
     expect(display.regionTooLarge).toBe(false)
   })
 

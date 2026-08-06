@@ -338,9 +338,13 @@ line — MAF-tabix stores an entire alignment block, every species, in column 6 
 the cost is quantized by feature, not by view.
 
 **The floor half is closed.** `gateBelowForceLoadFloor` on
-`RegionTooLargeMixin` is an opt-in (default false, `LinearMafDisplay` sets it)
-that removes the floor term from `gateActive` and nothing else, so the byte axis
-is on duty at every zoom for the displays whose bytes don't follow span.
+`RegionTooLargeMixin` is an opt-in (default false; `LinearMafDisplay` and
+`LinearAlignmentsDisplay` set it) that removes the floor term from `gateActive`
+and nothing else, so the byte axis is on duty at every zoom for the displays
+whose bytes don't follow span — MAF by species count, alignments by depth. Since
+index estimates are monotone in span, the opt-in can only stop regions that
+already bannered above the floor, which is what makes it safe to hand to a third
+display without a per-format threshold.
 
 **The rescale half is open**, and it is worse than "imprecise": measurement says
 the estimate is *flat* across the whole sub-16kb range, since an index reports

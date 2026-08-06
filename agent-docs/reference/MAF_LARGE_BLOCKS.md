@@ -161,8 +161,10 @@ bug applies to any format with unbounded feature size:
   measurement taken at another zoom, so a megabase-block tabix MAF can still be
   under-reported down there.
 
-Must be an **opt-in**, not a change to the shared verdict — canvas, LD and
-alignments all compose `RegionTooLargeMixin`.
+Must be an **opt-in**, not a change to the shared verdict — canvas and LD compose
+`RegionTooLargeMixin` too. (`LinearAlignmentsDisplay` has since taken the same
+opt-in for the depth version of the same premise break; see
+REGION_TOO_LARGE.md § `gateBelowForceLoadFloor`.)
 
 Result: zooming into a megabase block shows "Requested too much data (47 Mb)"
 and the user chooses, instead of a 30-second freeze. Pair it with a cheap safety

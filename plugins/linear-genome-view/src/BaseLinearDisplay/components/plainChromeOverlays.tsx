@@ -148,7 +148,9 @@ const PlainTooLarge = observer(function PlainTooLarge({
   return (
     <div style={banner()} role="status">
       <span style={{ wordBreak: 'break-word' }}>
-        {tooLargeBannerText(model.regionTooLargeReason)}
+        {tooLargeBannerText(model.regionTooLargeReason, {
+          zoomCanRelease: model.zoomCanReleaseGate,
+        })}
       </span>
       <button
         type="button"

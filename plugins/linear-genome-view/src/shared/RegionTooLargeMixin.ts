@@ -188,13 +188,24 @@ export default function RegionTooLargeMixin() {
        * proportional to span — below 20kb the fetch is small, and a banner asking
        * permission costs more than the download.
        *
-       * A display turns it on when that premise is false for it. MAF is the case
-       * it was built for: bytes scale with span **times species count**, so a
-       * 470-way pulls megabases of aligned sequence out of a gene-sized window —
-       * the fetch the floor was least equipped to judge, and the one it declines
-       * to look at. Opting out costs nothing on a shallow alignment, since the
-       * estimate is still compared against `fetchSizeLimit` and a 26-way at the
-       * same zoom is nowhere near it.
+       * A display turns it on when that premise is false for it, which is the
+       * same shape twice so far: the file costs bytes per reference base **times
+       * a second dimension the view doesn't shrink**. MAF, species count — a
+       * 470-way pulls megabases of aligned sequence out of a gene-sized window.
+       * Alignments, depth — an amplicon or mitochondrial pileup is tens of MB in
+       * the same window. Both are the fetch the floor was least equipped to
+       * judge, and the one it declined to look at.
+       *
+       * **Turning this on cannot block anything that worked at every zoom.** The
+       * estimate comes from an index, and a wider query overlaps a superset of
+       * index bins, so it is monotone non-decreasing in span: an estimate that
+       * clears the cap below the floor cleared it at 20kb too. So every region
+       * this newly stops is one that already banners as soon as the user zooms
+       * out past the floor — which makes the floor a way to *bypass* that
+       * verdict, downloading the bytes the gate refused one zoom level earlier,
+       * rather than a policy about small fetches. Whether that argues for
+       * dropping the floor outright is open; the density axis on the canvas gate
+       * is not monotone the same way, and nothing has measured it down there.
        *
        * Deliberately narrower than it sounds: it removes the floor from
        * `gateActive` only. `aboveForceLoadFloor` keeps its own meaning, so MAF's
@@ -325,6 +336,27 @@ export default function RegionTooLargeMixin() {
           adapterFetchSizeLimit: self.adapterFetchSizeLimit,
           configFetchSizeLimit: self.configuredFetchSizeLimit,
         })
+      },
+      /**
+       * #getter
+       * Whether "zoom in to see features" is still honest advice — the banner
+       * offers that way out only when this is true, and force-load alone when it
+       * isn't.
+       *
+       * True for every display that keeps the `AUTO_FORCE_LOAD_BP` floor, since
+       * the floor guarantees the gate lets go eventually. For one that opted out,
+       * true only while still above the floor, where zooming does shrink the
+       * fetch. Below it there is nothing left for zoom to do: 20kb is roughly
+       * where a tabix/BAI index stops resolving span (16kb linear bins), so the
+       * estimate is flat and the same bytes come down however far the user goes.
+       *
+       * That the floor sits at about the index's own resolution is what made
+       * "zoom in to see features" safe to print unconditionally for as long as
+       * nothing gated below it, and why opting out of the floor has to come with
+       * this.
+       */
+      get zoomCanReleaseGate(): boolean {
+        return !self.gateBelowForceLoadFloor || self.aboveForceLoadFloor
       },
       /**
        * #getter

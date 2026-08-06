@@ -72,14 +72,29 @@ export function bytesTooLargeReason(bytes: number) {
 }
 
 // What the banner actually says: which axis tripped (empty when the display
-// gates without a reason), then the two ways out. Both chrome sets — the MUI
+// gates without a reason), then the way out. Both chrome sets — the MUI
 // `TooLargeMessage` and the dependency-free `PlainTooLarge` — render this, so
 // the wording can't drift between them, and the screenshot harness that keys
 // off the literal keeps matching whichever set is mounted.
-export function tooLargeBannerText(regionTooLargeReason: string) {
+//
+// `zoomCanRelease` decides whether "zoom in" is offered, and it has to be asked
+// because the advice is not always true. It was, once: the `AUTO_FORCE_LOAD_BP`
+// floor turned the gate off below 20kb, so zooming far enough always worked. A
+// display that opts out of the floor (`gateBelowForceLoadFloor`) has no such
+// guarantee, and below the floor it has no chance either — 20kb is about where a
+// tabix/BAI index stops resolving span at all (16kb linear bins), so the
+// estimate is flat down there and zooming changes nothing. Telling someone to
+// keep zooming into a fetch whose cost cannot fall is the one thing the banner
+// must not do.
+export function tooLargeBannerText(
+  regionTooLargeReason: string,
+  { zoomCanRelease = true }: { zoomCanRelease?: boolean } = {},
+) {
   return [
     regionTooLargeReason,
-    'Zoom in to see features, or force load this track for the rest of the session (may be slow)',
+    zoomCanRelease
+      ? 'Zoom in to see features, or force load this track for the rest of the session (may be slow)'
+      : 'Force load this track for the rest of the session (may be slow)',
   ]
     .filter(f => !!f)
     .join('. ')

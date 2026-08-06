@@ -414,15 +414,28 @@ paths can't drift apart.
   span.** The floor's premise is "a small span is a small fetch", and two things
   break it:
 
-  - **Row count.** A deep alignment costs ~N bases per reference base, so a
-    470-way is 6-8MB on the wire over a 40kb window — several MB inside a
-    gene-sized view the floor won't look at. This is fixed:
+  - **A second dimension the view doesn't shrink.** Cost is bytes per reference
+    base **times** something zoom can't reduce. Row count: a 470-way MAF is
+    6-8MB on the wire over a 40kb window. Depth: an amplicon or mitochondrial
+    pileup is tens of MB in the same window. Either way it is several MB inside
+    a gene-sized view the floor won't look at. This is fixed:
     `gateBelowForceLoadFloor` on `RegionTooLargeMixin` removes the floor from
-    `gateActive` (and only from `gateActive`), defaulting false, and
-    `LinearMafDisplay` turns it on. The verdict below the floor is still the
-    estimate against `fetchSizeLimit`, so a shallow alignment at the same zoom
-    never gates and no row-count threshold is needed to make it safe. The gate
-    keeps self-releasing on zoom-in, against the bytes rather than the floor.
+    `gateActive` (and only from `gateActive`), defaulting false, with
+    `LinearMafDisplay` and `LinearAlignmentsDisplay` turning it on. The verdict
+    below the floor is still the estimate against `fetchSizeLimit`, so a shallow
+    alignment or a 30x genome at the same zoom never gates and no row-count or
+    coverage threshold is needed to make it safe. The gate keeps self-releasing
+    on zoom-in, against the bytes rather than the floor.
+
+    **The opt-in cannot block anything that worked at every zoom**, which is the
+    argument to reach for when a third display wants it. Index estimates are
+    monotone non-decreasing in span (a wider query overlaps a superset of bins),
+    so a region that fails the cap below the floor failed it at 20kb too. Every
+    region newly stopped is one that already bannered on zoom-out — meaning the
+    floor was a **bypass** for that verdict, handing over the bytes the gate had
+    just refused, rather than a policy about small fetches. Whether that argues
+    for deleting the floor outright is open: canvas's density axis is not
+    monotone the same way and nothing has measured it down there.
   - **Index granularity.** The estimate is not merely imprecise below the floor,
     it is **flat**: an index reports whole blocks, so the same query costs the
     same bytes at every span inside one block. Measured on files in this repo
