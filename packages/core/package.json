@@ -109,6 +109,7 @@
     "./ui/palette": "./src/ui/palette.ts",
     "./ui/theme": "./src/ui/theme.ts",
     "./ui/useGraphicsCapabilities": "./src/ui/useGraphicsCapabilities.ts",
+    "./ui/useMouseTracking": "./src/ui/useMouseTracking.ts",
     "./util": "./src/util/index.ts",
     "./util/Base1DUtils": "./src/util/Base1DUtils.ts",
     "./util/Base1DViewModel": "./src/util/Base1DViewModel.ts",
@@ -582,6 +583,10 @@
       "./ui/useGraphicsCapabilities": {
         "types": "./esm/ui/useGraphicsCapabilities.d.ts",
         "import": "./esm/ui/useGraphicsCapabilities.js"
+      },
+      "./ui/useMouseTracking": {
+        "types": "./esm/ui/useMouseTracking.d.ts",
+        "import": "./esm/ui/useMouseTracking.js"
       },
       "./util": {
         "types": "./esm/util/index.d.ts",
@@ -1128,6 +1133,9 @@
         ],
         "ui/useGraphicsCapabilities": [
           "esm/ui/useGraphicsCapabilities.d.ts"
+        ],
+        "ui/useMouseTracking": [
+          "esm/ui/useMouseTracking.d.ts"
         ],
         "util": [
           "esm/util/index.d.ts"

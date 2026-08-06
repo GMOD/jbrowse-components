@@ -14,8 +14,8 @@ import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import WiggleTooltip from '../../shared/WiggleTooltip.tsx'
 import {
   useWiggleMouseCoords,
-  useWiggleMouseHandlers,
-} from '../../shared/useWiggleMouseHandlers.ts'
+  wiggleMouseHandlers,
+} from '../../shared/wiggleMouseHandlers.ts'
 import { legendRightEdgePx } from '../../shared/wiggleComponentUtils.ts'
 import MultiWiggleOverlayLines from '../MultiWiggleOverlayLines.tsx'
 import MultiWiggleSvgScales from '../MultiWiggleSvgScales.tsx'
@@ -51,19 +51,12 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
     [model, view],
   )
 
-  const {
-    containerRef,
-    mouseTracker,
-    handleMouseMove,
-    handleMouseLeave,
-    handleClick,
-  } = useWiggleMouseHandlers(model, computeHit)
+  const { onPointerPosition, onClick } = wiggleMouseHandlers(model, computeHit)
 
   return (
     <DisplayChrome
       model={model}
       factory={WiggleRenderer}
-      ref={containerRef}
       testid="multi-wiggle-display"
       // The clustered frame's only other DOM evidence is the dendrogram canvas,
       // which `showTree: false` removes — so a figure that clusters with the
@@ -78,11 +71,10 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
         whiteSpace: 'nowrap',
         textAlign: 'left',
       }}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      onClick={handleClick}
+      onPointerPosition={onPointerPosition}
+      onClick={onClick}
     >
-      {({ canvasRef }) => (
+      {({ canvasRef, mouseTracker }) => (
         <MultiWiggleBody
           model={model}
           canvasRef={canvasRef}

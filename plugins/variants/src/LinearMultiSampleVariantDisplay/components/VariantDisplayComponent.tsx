@@ -1,6 +1,4 @@
-import { useRef } from 'react'
-
-import { useMouseState, useMouseTracking } from '@jbrowse/core/ui'
+import { useMouseState } from '@jbrowse/core/ui'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { TreeSidebar } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
@@ -33,21 +31,14 @@ const VariantDisplayComponent = observer(
     model: LinearMultiSampleVariantDisplayModel
   }) {
     const { model } = props
-    const ref = useRef<HTMLDivElement>(null)
-    const { mouseTracker, handleMouseMove, handleMouseLeave } =
-      useMouseTracking(ref)
-
     return (
       <DisplayChrome
         model={model}
         factory={VariantRenderer}
-        ref={ref}
         testid="variant-display"
         style={{ height: model.height }}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
       >
-        {({ canvasRef, canvas }) => (
+        {({ canvasRef, canvas, mouseTracker }) => (
           <>
             <VariantBody model={model} canvasRef={canvasRef} canvas={canvas} />
             <VariantOverlay model={model} />

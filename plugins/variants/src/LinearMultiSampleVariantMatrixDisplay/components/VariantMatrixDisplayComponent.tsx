@@ -1,6 +1,4 @@
-import { useRef } from 'react'
-
-import { useMouseState, useMouseTracking } from '@jbrowse/core/ui'
+import { useMouseState } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { TreeSidebar } from '@jbrowse/tree-sidebar'
@@ -69,21 +67,14 @@ const VariantMatrixDisplayComponent = observer(
     const { lineZoneHeight, height } = model
     const view = getContainingView(model) as LinearGenomeViewModel
     const left = Math.max(0, -view.offsetPx)
-    const ref = useRef<HTMLDivElement>(null)
-    const { mouseTracker, handleMouseMove, handleMouseLeave } =
-      useMouseTracking(ref)
-
     return (
       <DisplayChrome
         model={model}
         factory={VariantMatrixRenderer}
-        ref={ref}
         testid="variant-matrix-display"
         style={{ height }}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
       >
-        {({ canvasRef, canvas }) => (
+        {({ canvasRef, canvas, mouseTracker }) => (
           <>
             <MatrixConnectingLines
               model={model}

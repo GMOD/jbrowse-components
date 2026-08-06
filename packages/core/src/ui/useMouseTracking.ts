@@ -86,7 +86,27 @@ export function useMouseTracking(
   storeRef.current ??= createMouseStore()
   const store = storeRef.current
 
+  const handleMouseLeave = () => {
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current)
+    }
+    store.set(undefined)
+    onMove?.(undefined)
+  }
+
   const handleMouseMove = (event: React.MouseEvent) => {
+    // An overlay portaled out of the container still *bubbles* its React events
+    // here, even though its DOM node is not a descendant — so the coordinate
+    // would be measured against a box the pointer isn't in. HiC guarded this by
+    // hand (its resolution dropdown and legend portal); it is a hazard for any
+    // display with a portaled overlay, and several have one, so the guard lives
+    // here and applies to all of them. Treated as a leave: the pointer is over
+    // something else, and the guides should drop rather than freeze.
+    const { target } = event
+    if (target instanceof Node && !event.currentTarget.contains(target)) {
+      handleMouseLeave()
+      return
+    }
     if (rafRef.current) {
       cancelAnimationFrame(rafRef.current)
     }
@@ -105,14 +125,6 @@ export function useMouseTracking(
         onMove?.(state)
       }
     })
-  }
-
-  const handleMouseLeave = () => {
-    if (rafRef.current) {
-      cancelAnimationFrame(rafRef.current)
-    }
-    store.set(undefined)
-    onMove?.(undefined)
   }
 
   return {

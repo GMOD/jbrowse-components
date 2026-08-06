@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 
-import { useMouseState, useMouseTracking } from '@jbrowse/core/ui'
+import { useMouseState } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { getBpDisplayStr } from '@jbrowse/core/util'
@@ -281,15 +281,10 @@ const LDDisplayComponent = observer(function LDDisplayComponent({
   } = model
   const containerHeight = canvasHeight + effectiveLineZoneHeight
 
-  const ref = useRef<HTMLDivElement>(null)
-  const { mouseTracker, handleMouseMove, handleMouseLeave } =
-    useMouseTracking(ref)
-
   return (
     <DisplayChrome
       model={model}
       factory={LDRenderer}
-      ref={ref}
       testid="ld-display"
       style={
         showLDTriangle
@@ -300,15 +295,17 @@ const LDDisplayComponent = observer(function LDDisplayComponent({
             }
           : { width, height: model.height }
       }
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
       onClick={event => {
         // Click a cell to pin its row SNP as focal (highlights that SNP's LD
         // with every other variant); click empty space to clear. Hit-tested
         // from the click itself, not from the hover a previous frame recorded —
         // the measurement is rAF-coalesced, so that one can be a frame stale.
-        const rect = ref.current?.getBoundingClientRect()
-        if (rect && showLDTriangle && !isLoading) {
+        //
+        // `currentTarget` is the chrome container, which is the box the canvas
+        // fills and the box the tracker measures against — the same rect a ref
+        // would give, without needing one.
+        const rect = event.currentTarget.getBoundingClientRect()
+        if (showLDTriangle && !isLoading) {
           const item = model.hitTest(
             event.clientX - rect.left,
             event.clientY - rect.top,
@@ -317,7 +314,7 @@ const LDDisplayComponent = observer(function LDDisplayComponent({
         }
       }}
     >
-      {({ canvasRef }) =>
+      {({ canvasRef, mouseTracker }) =>
         showLDTriangle ? (
           <LDCanvas
             model={model}

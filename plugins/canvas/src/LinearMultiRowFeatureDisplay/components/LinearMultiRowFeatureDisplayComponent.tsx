@@ -1,6 +1,4 @@
-import { useRef } from 'react'
-
-import { ContextMenu, useMouseState, useMouseTracking } from '@jbrowse/core/ui'
+import { ContextMenu, useMouseState } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import {
@@ -159,15 +157,6 @@ const LinearMultiRowFeatureDisplayComponent = observer(
     model: LinearMultiRowFeatureDisplayModel
   }) {
     const view = getContainingView(model) as LinearGenomeViewModel
-    const ref = useRef<HTMLDivElement>(null)
-    // One pointer source for the whole display: the hit-test, the tooltip, and
-    // the guides all come off this measurement, in one frame.
-    const { mouseTracker, handleMouseMove, handleMouseLeave } =
-      useMouseTracking(ref, state => {
-        model.setHoveredFeature(
-          state ? model.featureAt(state.x, state.y) : undefined,
-        )
-      })
     function onClick(e: React.MouseEvent<HTMLDivElement>) {
       const rect = e.currentTarget.getBoundingClientRect()
       const hit = model.featureAt(e.clientX - rect.left, e.clientY - rect.top)
@@ -201,12 +190,17 @@ const LinearMultiRowFeatureDisplayComponent = observer(
         model={model}
         factory={MultiRowRendererFactory}
         testid="multirow-display"
-        ref={ref}
         // its content is all absolutely positioned, so without a height the
         // container collapses and receives no pointer events at all
         style={{ height: model.height }}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
+        // One pointer source for the whole display: the hit-test, the tooltip
+        // and the guides all come off the chrome's single measurement, in one
+        // frame.
+        onPointerPosition={state => {
+          model.setHoveredFeature(
+            state ? model.featureAt(state.x, state.y) : undefined,
+          )
+        }}
         onClick={e => {
           onClick(e)
         }}
@@ -214,7 +208,7 @@ const LinearMultiRowFeatureDisplayComponent = observer(
           onContextMenu(e)
         }}
       >
-        {({ canvasRef }) => (
+        {({ canvasRef, mouseTracker }) => (
           <>
             <MultiRowCanvas model={model} canvasRef={canvasRef} />
             <PointerLayer model={model} mouseTracker={mouseTracker} />

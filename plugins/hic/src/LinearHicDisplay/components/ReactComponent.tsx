@@ -1,6 +1,4 @@
-import { useRef } from 'react'
-
-import { useMouseState, useMouseTracking } from '@jbrowse/core/ui'
+import { useMouseState } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { reducePrecision, toLocale } from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
@@ -74,11 +72,16 @@ function Crosshairs({
   )
 }
 
-// Thin outer: owns the chrome and the pointer measurement bound to its
-// container. There is no inner positioning div — the chrome already IS the
-// `position:relative` box its own overlays need (DisplayStatusChromeBase), so
-// sizing it here rather than nesting a second identically-sized container is
-// what lets `mouseState` be measured against the same element the canvas fills.
+// Thin outer: owns the chrome. There is no inner positioning div — the chrome
+// already IS the `position:relative` box its own overlays need
+// (DisplayStatusChromeBase), so sizing it here rather than nesting a second
+// identically-sized container is what lets `mouseState` be measured against the
+// same element the canvas fills.
+//
+// The pointer measurement is the chrome's now. This display used to hand-guard
+// the case where `HicOverlayPanel` — portaled out of the container — bubbles its
+// React events here despite not being a DOM descendant; that guard is in
+// `useMouseTracking` and applies to every display with a portaled overlay.
 const LinearHicReactComponent = observer(function LinearHicReactComponent({
   model,
 }: {
@@ -86,31 +89,14 @@ const LinearHicReactComponent = observer(function LinearHicReactComponent({
 }) {
   const { height, lgv } = model
   const width = lgv.totalWidthPx
-  const ref = useRef<HTMLDivElement>(null)
-  const { mouseTracker, handleMouseMove, handleMouseLeave } =
-    useMouseTracking(ref)
-
   return (
     <DisplayChrome
       model={model}
       factory={HicRenderer}
-      ref={ref}
       testid="hic-display"
       style={{ cursor: 'crosshair', width, height, overflow: 'hidden' }}
-      onMouseMove={event => {
-        // The overlay panel (resolution dropdown, legend) is portaled out of
-        // this container, so its React events still bubble here even though its
-        // DOM node isn't a descendant. Suppress the guide/tooltip while over it.
-        const { target } = event
-        if (target instanceof Node && event.currentTarget.contains(target)) {
-          handleMouseMove(event)
-        } else {
-          handleMouseLeave()
-        }
-      }}
-      onMouseLeave={handleMouseLeave}
     >
-      {({ canvasRef }) => (
+      {({ canvasRef, mouseTracker }) => (
         <HicBody
           model={model}
           canvasRef={canvasRef}

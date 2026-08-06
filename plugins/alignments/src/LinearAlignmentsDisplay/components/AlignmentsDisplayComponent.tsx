@@ -1,6 +1,6 @@
-import { Suspense, useRef } from 'react'
+import { Suspense } from 'react'
 
-import { ContextMenu, useMouseState, useMouseTracking } from '@jbrowse/core/ui'
+import { ContextMenu, useMouseState } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { isAlive } from '@jbrowse/mobx-state-tree'
@@ -86,8 +86,6 @@ const AlignmentsDisplayComponent = observer(
     model: LinearAlignmentsDisplayModel
   }) {
     const { classes } = useStyles()
-    const ref = useRef<HTMLDivElement>(null)
-    const { mouseTracker, handleMouseMove } = useMouseTracking(ref)
     // Hiding a track detaches this display from the MST tree, which fires MobX
     // reactions synchronously inside the click handler — this still-mounted
     // observer re-renders once (reading config-backed getters like
@@ -102,7 +100,6 @@ const AlignmentsDisplayComponent = observer(
       <DisplayChrome
         model={model}
         factory={AlignmentsRenderer}
-        ref={ref}
         // `pileup-display`, the name the screenshot specs and cypress already
         // wait on. It used to be `display-${displayId}` here with
         // `pileup-display-done` hand-written on an inner div, which is why
@@ -111,9 +108,8 @@ const AlignmentsDisplayComponent = observer(
         // display id now rides `data-display-id` on this same element.
         testid="pileup-display"
         className={classes.display}
-        onMouseMove={handleMouseMove}
       >
-        {({ canvasRef, canvas }) => (
+        {({ canvasRef, canvas, mouseTracker }) => (
           <>
             <PileupBody model={model} canvasRef={canvasRef} canvas={canvas} />
             <BottomRightIndicators>

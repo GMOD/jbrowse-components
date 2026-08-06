@@ -1,5 +1,8 @@
-import { Fragment } from 'react'
+import { Fragment, useCallback, useRef } from 'react'
 
+// deep subpath, never the `@jbrowse/core/ui` barrel: this file is the
+// toolkit-free half of the chrome and the barrel pulls in MUI
+import { useMouseTracking } from '@jbrowse/core/ui/useMouseTracking'
 import { useRenderingBackend } from '@jbrowse/render-core/useRenderingBackend'
 import { observer } from 'mobx-react'
 
@@ -7,6 +10,7 @@ import DisplayStatusChromeBase from './DisplayStatusChromeBase.tsx'
 
 import type { StatusChromeModel } from './DisplayStatusChromeBase.tsx'
 import type { DisplayChromeOverlays } from './chromeOverlays.ts'
+import type { MouseState, MouseTracker } from '@jbrowse/core/ui/useMouseTracking'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 import type { RenderLifecycleModel } from '@jbrowse/render-core/useRenderingBackend'
 import type { ComponentPropsWithRef, ReactNode } from 'react'
@@ -28,6 +32,15 @@ export type ChromeModel = {
 interface CanvasHandle {
   canvasRef: (node: HTMLCanvasElement | null) => void
   canvas: HTMLCanvasElement | null
+  /**
+   * The container-relative pointer position, published rather than held — read
+   * it with `useMouseState(mouseTracker)` **in the body**, never beside the
+   * chrome. The chrome binds the handlers itself precisely so that rule can't be
+   * got wrong: there is no longer a position to hold up here.
+   */
+  mouseTracker: MouseTracker
+  /** The chrome container, for a handler that needs its rect off-event. */
+  containerRef: React.RefObject<HTMLDivElement | null>
 }
 
 // Single home for every GPU display's render lifecycle AND status chrome.
@@ -65,20 +78,23 @@ interface CanvasHandle {
 // returns a named observer component (every display does) so observable reads
 // scope to the body rather than re-rendering the chrome.
 //
-// A hook bound to the chrome *container* (pointer tracking, maf's drag-select)
-// does have to be called in the caller, because that is where the ref is — but
-// **do not hold its per-event state there too.** Every consumer of
-// `useMouseTracking` once did, and the bill was a whole display's chrome
-// re-rendering because the cursor moved a pixel over it: this component
+// **Pointer tracking belongs to the chrome**, because the chrome owns the
+// element the position is measured against. Nine displays used to call
+// `useMouseTracking` themselves and wire three props, and the rule that keeps it
+// cheap — publish the position, never hold it at this level — survived only as
+// an identical comment copied into eight of them. Holding it here costs a whole
+// display's chrome re-rendering because the cursor moved a pixel: this component
 // (re-running `useRenderingBackend`), the status container with a fresh inline
-// `style` object, all three overlays, and only then the body that actually
-// wanted the coordinate. Publish the value and read it in the body instead —
-// `useMouseTracking` returns a `mouseTracker` for exactly this and
-// `useMouseState` reads it, which also coalesces to one update per frame.
+// `style` object, all the overlays, and only then the body that wanted the
+// coordinate. Now there is no position at this level to hold: `mouseTracker`
+// goes out through the handle and the body reads it with `useMouseState`.
 //
-// maf's `useDragSelection` is the one holdout: its pointer position shares a
-// `useState` with the drag rectangle, and `useDragSelection.test.ts` asserts on
-// that state synchronously, so splitting them needs the test reworked too.
+// A display that hit-tests as the cursor moves passes `onPointerPosition`, so its
+// hit comes off the same single measurement as its guides. A display that needs
+// the container node itself still passes a `ref` (merged, not displaced) — maf,
+// whose drag-selection resolves window-level drag coordinates against it and
+// whose `useDragSelection.test.ts` asserts synchronously on state it shares with
+// the rubberband rect.
 //
 // `testid` is the *base* first-paint selector; the chrome owns the `-done`
 // convention, appending it once `canvasDrawn` flips, so no consumer hand-writes
@@ -99,6 +115,10 @@ function DisplayChromeBaseInner<B extends { dispose(): void }>({
   factory,
   children,
   overlays,
+  onPointerPosition,
+  onMouseMove,
+  onMouseLeave,
+  ref,
   ...chromeProps
 }: {
   model: ChromeModel & RenderLifecycleModel<B>
@@ -106,6 +126,13 @@ function DisplayChromeBaseInner<B extends { dispose(): void }>({
   children: (handle: CanvasHandle) => ReactNode
   testid: string
   overlays: DisplayChromeOverlays
+  /**
+   * Called with each measured pointer position (and `undefined` on leave), for
+   * a display that hit-tests as the cursor moves. It runs off the same single
+   * measurement the tracker publishes, so a display's hit and its guides can't
+   * come from two different rects in two different frames.
+   */
+  onPointerPosition?: (state?: MouseState) => void
 } & Omit<ComponentPropsWithRef<'div'>, 'children'>) {
   // eslint-plugin-react-compiler (react-compiler@19.1.0-rc.2) thinks this
   // directive is unused, but the babel plugin (@1.0.0, the real build) DOES
@@ -115,6 +142,32 @@ function DisplayChromeBaseInner<B extends { dispose(): void }>({
   const { canvas, canvasRef, retry, canvasKey } = useRenderingBackend(
     factory,
     model,
+  )
+  // The chrome owns the pointer measurement, because it owns the element the
+  // measurement is *against*. Every display used to do this itself — `useRef` +
+  // `useMouseTracking` + three props, at nine call sites — and the rule that
+  // keeps it cheap ("publish the position, don't hold it here") survived only as
+  // an identical comment copied into eight files, with alignments having already
+  // dropped `onMouseLeave`. Owning it makes the rule structural: there is no
+  // position at this level to hold.
+  const containerRef = useRef<HTMLDivElement | null>(null)
+  const setContainer = useCallback(
+    (node: HTMLDivElement | null) => {
+      containerRef.current = node
+      // a caller may still want the node itself (maf's drag-selection binds
+      // window listeners and has to resolve coordinates against it), so its ref
+      // is merged rather than displaced
+      if (typeof ref === 'function') {
+        ref(node)
+      } else if (ref) {
+        ref.current = node
+      }
+    },
+    [ref],
+  )
+  const { mouseTracker, handleMouseMove, handleMouseLeave } = useMouseTracking(
+    containerRef,
+    onPointerPosition,
   )
   const phase = model.displayPhase
   if (phase === 'renderError') {
@@ -136,6 +189,20 @@ function DisplayChromeBaseInner<B extends { dispose(): void }>({
   return (
     <DisplayStatusChromeBase
       {...chromeProps}
+      ref={setContainer}
+      // Composed, never replacing: a caller still binding its own pointer
+      // handlers (maf's drag-selection, which owns a rubberband rect and a
+      // window-level drag) would otherwise be silently overridden by the
+      // measurement below — the handlers would just stop firing, with nothing
+      // to see but a drag that no longer drags.
+      onMouseMove={event => {
+        handleMouseMove(event)
+        onMouseMove?.(event)
+      }}
+      onMouseLeave={event => {
+        handleMouseLeave()
+        onMouseLeave?.(event)
+      }}
       model={model}
       phase={phase}
       drawn={model.painted}
@@ -158,7 +225,9 @@ function DisplayChromeBaseInner<B extends { dispose(): void }>({
           overlays deliberately sit OUTSIDE the key: remounting the loading
           scrim would reset its 250ms anti-flash timer (see
           DisplayStatusChromeBase). */}
-      <Fragment key={canvasKey}>{children({ canvasRef, canvas })}</Fragment>
+      <Fragment key={canvasKey}>
+        {children({ canvasRef, canvas, mouseTracker, containerRef })}
+      </Fragment>
     </DisplayStatusChromeBase>
   )
 }

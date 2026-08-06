@@ -1,6 +1,4 @@
-import { useRef } from 'react'
-
-import { useMouseState, useMouseTracking } from '@jbrowse/core/ui'
+import { useMouseState } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { toLocale } from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
@@ -103,27 +101,20 @@ const SequenceDisplayComponent = observer(function SequenceDisplayComponent({
   model: LinearReferenceSequenceDisplayModel
 }) {
   const { height } = model
-  const containerRef = useRef<HTMLDivElement>(null)
-  const { mouseTracker, handleMouseMove, handleMouseLeave } =
-    useMouseTracking(containerRef)
-
   return (
-    <>
-      <DisplayChrome
-        ref={containerRef}
-        model={model}
-        factory={SequenceRenderer}
-        testid="sequence-display"
-        style={{ width: '100%', height }}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-      >
-        {({ canvasRef }) => (
+    <DisplayChrome
+      model={model}
+      factory={SequenceRenderer}
+      testid="sequence-display"
+      style={{ width: '100%', height }}
+    >
+      {({ canvasRef, mouseTracker }) => (
+        <>
           <SequenceBody model={model} canvasRef={canvasRef} />
-        )}
-      </DisplayChrome>
-      <SequenceHoverTooltip model={model} mouseTracker={mouseTracker} />
-    </>
+          <SequenceHoverTooltip model={model} mouseTracker={mouseTracker} />
+        </>
+      )}
+    </DisplayChrome>
   )
 })
 

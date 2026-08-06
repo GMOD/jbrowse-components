@@ -15,8 +15,8 @@ import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import WiggleTooltip from '../../shared/WiggleTooltip.tsx'
 import {
   useWiggleMouseCoords,
-  useWiggleMouseHandlers,
-} from '../../shared/useWiggleMouseHandlers.ts'
+  wiggleMouseHandlers,
+} from '../../shared/wiggleMouseHandlers.ts'
 import {
   findSourceHit,
   hitTestMouse,
@@ -59,28 +59,20 @@ const WiggleComponent = observer(function WiggleComponent({
     [model, view],
   )
 
-  const {
-    containerRef,
-    mouseTracker,
-    handleMouseMove,
-    handleMouseLeave,
-    handleClick,
-  } = useWiggleMouseHandlers(model, computeHit)
+  const { onPointerPosition, onClick } = wiggleMouseHandlers(model, computeHit)
 
   return (
     <DisplayChrome
       model={model}
       factory={WiggleRenderer}
-      ref={containerRef}
       testid="wiggle-display"
       // whiteSpace/textAlign were inherited from `DisplayContainer` until it was
       // deleted; kept verbatim so the legend and y-axis labels lay out the same
       style={{ width, height, whiteSpace: 'nowrap', textAlign: 'left' }}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      onClick={handleClick}
+      onPointerPosition={onPointerPosition}
+      onClick={onClick}
     >
-      {({ canvasRef }) => (
+      {({ canvasRef, mouseTracker }) => (
         <WiggleBody
           model={model}
           canvasRef={canvasRef}

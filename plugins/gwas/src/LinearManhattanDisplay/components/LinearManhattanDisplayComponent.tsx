@@ -4,7 +4,7 @@ import { ContextMenu } from '@jbrowse/core/ui'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import {
   useWiggleMouseCoords,
-  useWiggleMouseHandlers,
+  wiggleMouseHandlers,
 } from '@jbrowse/plugin-wiggle'
 import {
   CrossHatches,
@@ -59,31 +59,21 @@ const LinearManhattanDisplayComponent = observer(
       [model],
     )
 
-    const {
-      containerRef,
-      mouseTracker,
-      handleMouseMove,
-      handleMouseLeave,
-      handleClick,
-    } = useWiggleMouseHandlers(model, computeHit)
+    const { onPointerPosition, onClick } = wiggleMouseHandlers(model, computeHit)
 
     function handleContextMenu(event: React.MouseEvent<HTMLDivElement>) {
-      const container = containerRef.current
-      if (container) {
-        const rect = container.getBoundingClientRect()
-        const hit = computeHit(
-          event.clientX - rect.left,
-          event.clientY - rect.top,
-        )
-        if (hit) {
-          event.preventDefault()
-          // clear the hover tooltip so it doesn't stay stuck behind the menu
-          model.setFeatureUnderMouse(undefined)
-          setContextMenu({
-            anchor: { clientX: event.clientX, clientY: event.clientY },
-            hit,
-          })
-        }
+      // `currentTarget` is the chrome container — the box the tracker measures
+      // against — so this needs no ref of its own
+      const rect = event.currentTarget.getBoundingClientRect()
+      const hit = computeHit(event.clientX - rect.left, event.clientY - rect.top)
+      if (hit) {
+        event.preventDefault()
+        // clear the hover tooltip so it doesn't stay stuck behind the menu
+        model.setFeatureUnderMouse(undefined)
+        setContextMenu({
+          anchor: { clientX: event.clientX, clientY: event.clientY },
+          hit,
+        })
       }
     }
 
@@ -91,18 +81,16 @@ const LinearManhattanDisplayComponent = observer(
       <DisplayChrome
         model={model}
         factory={ManhattanRenderer}
-        ref={containerRef}
         testid="manhattan-display"
         // inherited from `DisplayContainer` until it was deleted; kept verbatim
         style={{ width, height, whiteSpace: 'nowrap', textAlign: 'left' }}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        onClick={handleClick}
+        onPointerPosition={onPointerPosition}
+        onClick={onClick}
         onContextMenu={event => {
           handleContextMenu(event)
         }}
       >
-        {({ canvasRef }) => (
+        {({ canvasRef, mouseTracker }) => (
           <ManhattanBody
             model={model}
             canvasRef={canvasRef}

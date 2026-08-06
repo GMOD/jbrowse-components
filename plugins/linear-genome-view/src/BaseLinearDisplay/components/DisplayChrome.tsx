@@ -11,6 +11,7 @@ import DisplayStatusChromeBase from './DisplayStatusChromeBase.tsx'
 import type { ChromeModel } from './DisplayChromeBase.tsx'
 import type { StatusChromeModel } from './DisplayStatusChromeBase.tsx'
 import type { DisplayChromeOverlays } from './chromeOverlays.ts'
+import type { MouseState, MouseTracker } from '@jbrowse/core/ui/useMouseTracking'
 import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 import type { RenderLifecycleModel } from '@jbrowse/render-core/useRenderingBackend'
 import type { ComponentPropsWithRef, ReactNode } from 'react'
@@ -82,8 +83,11 @@ export default function DisplayChrome<B extends { dispose(): void }>(
     children: (handle: {
       canvasRef: (node: HTMLCanvasElement | null) => void
       canvas: HTMLCanvasElement | null
+      mouseTracker: MouseTracker
+      containerRef: React.RefObject<HTMLDivElement | null>
     }) => ReactNode
     testid: string
+    onPointerPosition?: (state?: MouseState) => void
   } & Omit<ComponentPropsWithRef<'div'>, 'children'>,
 ) {
   return <DisplayChromeBase {...props} overlays={useChromeOverlays()} />
