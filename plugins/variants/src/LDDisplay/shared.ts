@@ -5,7 +5,6 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { GRADIENT_LEGEND_SVG_AREA_WIDTH } from '@jbrowse/core/ui'
-import { checkboxItem } from '@jbrowse/core/ui/menuItems'
 import { getRpcSessionId, getSession, maxFinite } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
@@ -13,19 +12,14 @@ import {
   StaleViewportRescaleMixin,
   TrackHeightMixin,
   computeTriangleYScalar,
-  squashToHeightCheckboxItem,
 } from '@jbrowse/plugin-linear-genome-view'
-import ClearAllIcon from '@mui/icons-material/ClearAll'
-import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { isPrecomputedLDAdapter } from '../RenderLDDataRPC/types.ts'
 import { clampLineZoneHeight } from '../shared/constants.ts'
 import { genomicViewportX } from '../shared/genomicViewportX.ts'
-// lazy: this is a state model, so a dialog named here is in every host's first
-// paint — see ../shared/lazyDialogs.ts
-import { AddFiltersDialog, LDFilterDialog } from '../shared/lazyDialogs.ts'
 import { generateLDColorRamp } from './components/ldColorRamp.ts'
 import { toLDUploadData } from './components/ldRenderingBackendTypes.ts'
+import { buildLDTrackMenuItems } from './trackMenuItems.ts'
 
 import type { LDDataResult, LDFlatbushItem } from '../RenderLDDataRPC/types.ts'
 import type {
@@ -279,6 +273,18 @@ export default function sharedModelFactory(
        */
       get effectiveLdMetric(): LDMetric {
         return self.rpcData?.metric ?? getConf(self, 'ldMetric')
+      },
+      /**
+       * #getter
+       * Whether the loaded values actually carry a sign. Reads the packed
+       * matrix rather than the slot for the same reason as `effectiveLdMetric`:
+       * a pre-computed file states magnitudes and cannot honor the request, so
+       * a track configured `signedLD: true` against one would otherwise get a
+       * legend reading -1..1 and a tooltip calling r² "R" over 0..1 values. The
+       * cells already follow the data (the ramp is built from `rpcData`).
+       */
+      get effectiveSignedLD(): boolean {
+        return self.rpcData?.signedLD ?? getConf(self, 'signedLD')
       },
       /**
        * #getter
@@ -627,18 +633,14 @@ export default function sharedModelFactory(
         const y = (dataX + scaledY) / Math.SQRT2
         const { boundaries, ldValues } = data
         const n = boundaries.length - 1
-        let hitI = -1
-        let hitJ = -1
-        if (self.effectiveUseGenomicPositions) {
-          hitJ = upperBoundFloat32(boundaries, x) - 1
-          hitI = upperBoundFloat32(boundaries, y) - 1
-        } else {
-          const w = self.cellWidth
-          if (w > 0) {
-            hitJ = Math.floor(x / w)
-            hitI = Math.floor(y / w)
-          }
-        }
+        // One search for both layouts: uniform mode's boundaries ARE
+        // `i * uniformW`, so the division it used to do here is what this
+        // binary search already answers — and dividing by `uniformW` while the
+        // renderers walked `boundaries` left two ways to say which cell a pixel
+        // is in. Out-of-range x or y lands outside [0, n) and falls through the
+        // guard below.
+        const hitJ = upperBoundFloat32(boundaries, x) - 1
+        const hitI = upperBoundFloat32(boundaries, y) - 1
         if (hitI > hitJ && hitI > 0 && hitJ >= 0 && hitI < n) {
           const ldIdx = (hitI * (hitI - 1)) / 2 + hitJ
           return {
@@ -703,162 +705,7 @@ export default function sharedModelFactory(
          * #method
          */
         trackMenuItems() {
-          // One shared sentence describing how the loaded values were derived,
-          // reused across the R²/D' help so precision is stated honestly.
-          const computeNote =
-            self.ldMethod === 'phased'
-              ? 'Computed from phased genotypes as exact haplotypic LD.'
-              : self.ldMethod === 'precomputed'
-                ? 'Read directly from the pre-computed LD file.'
-                : 'Estimated from unphased genotypes with the composite (Weir) method.'
-          const plinkNote = self.isPrecomputedLD
-            ? ''
-            : ' For authoritative published LD, load PLINK-computed .ld files via the PLINK adapter.'
-          return [
-            ...superTrackMenuItems(),
-            ...(self.focalSnpIndex >= 0
-              ? [
-                  {
-                    label: 'Clear focal SNP highlight',
-                    onClick: () => {
-                      self.setFocalSnp(undefined)
-                    },
-                  },
-                ]
-              : []),
-            {
-              label: 'LD metric',
-              type: 'subMenu',
-              subMenu: [
-                {
-                  label: 'R² (squared correlation)',
-                  type: 'radio',
-                  checked: self.effectiveLdMetric === 'r2',
-                  helpText: `Squared correlation between the two variants (0-1). ${computeNote}${plinkNote}`,
-                  onClick: () => {
-                    self.setLDMetric('r2')
-                  },
-                },
-                {
-                  label: "D' (normalized D)",
-                  type: 'radio',
-                  checked: self.effectiveLdMetric === 'dprime',
-                  disabled: !self.dprimeAvailable,
-                  helpText: self.dprimeAvailable
-                    ? `Lewontin's normalized D (0-1). ${computeNote}${
-                        self.isPrecomputedLD
-                          ? ''
-                          : ' The composite estimate from unphased data can differ slightly from EM-based tools like Haploview.'
-                      }${plinkNote}`
-                    : "This LD file has no D' (DP) column",
-                  onClick: () => {
-                    self.setLDMetric('dprime')
-                  },
-                },
-                // Signed LD modifies the chosen metric (R instead of R²,
-                // signed D'), so it belongs with the metric choice rather than
-                // the visibility toggles. VCF-computed LD only.
-                ...(self.isPrecomputedLD
-                  ? []
-                  : [
-                      checkboxItem(
-                        'Show signed LD values (-1 to 1)',
-                        self.signedLD,
-                        () => {
-                          self.setSignedLD(!self.signedLD)
-                        },
-                        {
-                          helpText:
-                            "When enabled, shows R (correlation) instead of R², and preserves the sign of D'. Positive values indicate alleles tend to co-occur (coupling), negative values indicate alleles tend to be on different haplotypes (repulsion).",
-                        },
-                      ),
-                    ]),
-              ],
-            },
-            {
-              label: 'Show...',
-              icon: VisibilityIcon,
-              type: 'subMenu',
-              subMenu: [
-                checkboxItem('Show LD triangle', self.showLDTriangle, () => {
-                  self.setShowLDTriangle(!self.showLDTriangle)
-                }),
-                checkboxItem(
-                  'Show recombination track',
-                  self.showRecombination,
-                  () => {
-                    self.setShowRecombination(!self.showRecombination)
-                  },
-                  {
-                    helpText:
-                      'Displays 1-r² between neighboring SNPs only (not all pairwise comparisons). Peaks indicate haplotype block boundaries where historical recombination has broken down LD between adjacent variants.',
-                  },
-                ),
-                checkboxItem('Show legend', self.showLegend, () => {
-                  self.setShowLegend(!self.showLegend)
-                }),
-                checkboxItem('Show variant labels', self.showLabels, () => {
-                  self.setShowLabels(!self.showLabels)
-                }),
-                checkboxItem(
-                  'Show vertical guides on hover',
-                  self.showVerticalGuides,
-                  () => {
-                    self.setShowVerticalGuides(!self.showVerticalGuides)
-                  },
-                ),
-                // Layout toggles live alongside the visibility toggles in
-                // this submenu, matching the Hi-C triangular display's
-                // "Show..." grouping (plugins/hic trackMenuItems.ts) so the
-                // two contact-map displays stay consistent — the fit-to-height
-                // row is literally the same builder they share.
-                squashToHeightCheckboxItem(self),
-                checkboxItem(
-                  'Show cells with genome proportions',
-                  self.useGenomicPositions,
-                  () => {
-                    self.setUseGenomicPositions(!self.useGenomicPositions)
-                  },
-                  {
-                    helpText:
-                      'By default each cell is equal width (one column per variant). Enable to size cells proportional to the genomic distance between variants.',
-                  },
-                ),
-              ],
-            },
-            // Filters act on the genotypes LD is computed from, so a
-            // pre-computed file — already thinned by whatever produced it — has
-            // nothing here to filter and shows no menu at all
-            ...(self.isPrecomputedLD
-              ? []
-              : [
-                  {
-                    label: 'Filter by...',
-                    icon: ClearAllIcon,
-                    type: 'subMenu',
-                    subMenu: [
-                      {
-                        label: 'LD-specific filters...',
-                        onClick: () => {
-                          getSession(self).queueDialog(handleClose => [
-                            LDFilterDialog,
-                            { model: self, handleClose },
-                          ])
-                        },
-                      },
-                      {
-                        label: 'General JEXL filters...',
-                        onClick: () => {
-                          getSession(self).queueDialog(handleClose => [
-                            AddFiltersDialog,
-                            { model: self, handleClose },
-                          ])
-                        },
-                      },
-                    ],
-                  },
-                ]),
-          ]
+          return [...superTrackMenuItems(), ...buildLDTrackMenuItems(self)]
         },
 
         /**

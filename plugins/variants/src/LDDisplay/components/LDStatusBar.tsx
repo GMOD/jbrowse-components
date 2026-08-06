@@ -1,3 +1,5 @@
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
+import { colord } from '@jbrowse/core/util/colord'
 import { observer } from 'mobx-react'
 
 import { LD_FILTER_CATEGORIES } from '../../shared/ldFilterCategories.ts'
@@ -12,6 +14,9 @@ const LDStatusBar = observer(function LDStatusBar({
 }: {
   model: SharedLDModel
 }) {
+  // Themed, not hardcoded: this badge sits over the triangle, so a fixed white
+  // pill with grey text is a bright block in a dark session.
+  const palette = usePalette()
   const { filterStats, isPrecomputedLD, ldMethod } = model
   if (isPrecomputedLD || !filterStats) {
     return null
@@ -34,8 +39,10 @@ const LDStatusBar = observer(function LDStatusBar({
         bottom: 2,
         left: 4,
         fontSize: 10,
-        color: '#555',
-        background: 'rgba(255,255,255,0.75)',
+        color: palette.text.secondary,
+        background: colord(palette.background.default)
+          .alpha(0.75)
+          .toRgbString(),
         padding: '1px 4px',
         borderRadius: 3,
         pointerEvents: 'none',

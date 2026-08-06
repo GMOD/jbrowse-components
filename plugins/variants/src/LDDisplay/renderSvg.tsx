@@ -11,6 +11,7 @@ import { drawLDBlocks } from './components/Canvas2DLDRenderer.ts'
 import LDColumnZone from './components/LDColumnZone.tsx'
 import LDSVGColorLegend from './components/LDSVGColorLegend.tsx'
 import { generateLDColorRamp } from './components/ldColorRamp.ts'
+import { toLDUploadData } from './components/ldRenderingBackendTypes.ts'
 
 import type { SharedLDModel } from './shared.ts'
 import type {
@@ -36,10 +37,10 @@ function LdSvgBody({
   const {
     rpcData,
     effectiveLdMetric,
+    effectiveSignedLD,
     showLegend,
     showRecombination,
     effectiveLineZoneHeight,
-    signedLD,
   } = self
 
   // svgReady + SvgChrome already guarantee a loaded, non-terminal state here, so
@@ -49,7 +50,6 @@ function LdSvgBody({
     return null
   }
 
-  const { ldValues, boundaries, numCells, uniformW } = rpcData
   // The live canvas's own box (`canvasWidth`), not the raw viewport width —
   // otherwise the export's recombination plot and legend drift from the matrix
   // when the genome doesn't fill the viewport or spans multiple regions.
@@ -79,13 +79,13 @@ function LdSvgBody({
             // viewScale === 1 and viewOffsetX === max(0, -offsetPx) — the left
             // gap when the region doesn't reach the viewport edge — which keeps
             // the triangle aligned with the connector lines and VariantLabels.
+            // The same narrowing the live upload uses, rather than a hand-built
+            // one: assembling it here took `signedLD` off the config slot while
+            // the ramp beside it took the packed matrix's own convention, so a
+            // toggle in flight could remap the values through a ramp built for
+            // the other range.
             paint={ctx => {
-              drawLDBlocks(
-                ctx,
-                { ldValues, boundaries, numCells, signedLD, uniformW },
-                ramp,
-                self.renderState,
-              )
+              drawLDBlocks(ctx, toLDUploadData(rpcData), ramp, self.renderState)
             }}
           />
         </g>
@@ -111,7 +111,7 @@ function LdSvgBody({
         <LDSVGColorLegend
           ldMetric={effectiveLdMetric}
           width={visibleWidth}
-          signedLD={signedLD}
+          signedLD={effectiveSignedLD}
           idSuffix={self.id}
           // >0 means the container reserved a legend area to the right (it
           // maxes svgLegendWidth() across tracks). Absent/0 — a container that

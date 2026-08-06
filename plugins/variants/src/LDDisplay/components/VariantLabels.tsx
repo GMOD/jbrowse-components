@@ -1,4 +1,4 @@
-import { useTheme } from '@mui/material'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { observer } from 'mobx-react'
 
 import type { SharedLDModel } from '../shared.ts'
@@ -11,7 +11,10 @@ const VariantLabels = observer(function VariantLabels({
 }: {
   model: SharedLDModel
 }) {
-  const theme = useTheme()
+  // `usePalette`, not MUI's `useTheme`: this is display *content*, which an
+  // embedding app supplies colors for through PaletteProvider without mounting
+  // a ThemeProvider at all.
+  const palette = usePalette()
   const { connectorLineCoords, showLabels } = model
 
   return showLabels ? (
@@ -27,7 +30,7 @@ const VariantLabels = observer(function VariantLabels({
             fontSize={10}
             textAnchor="end"
             dominantBaseline="middle"
-            fill={theme.palette.text.primary}
+            fill={palette.text.primary}
             style={{ pointerEvents: 'none' }}
           >
             {label}

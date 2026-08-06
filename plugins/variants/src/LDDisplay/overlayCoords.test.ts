@@ -153,6 +153,29 @@ test('locusViewportX is the frame the connector lines land in', () => {
   expect(display.locusViewportX('ctgA', 0)).toBe(100)
 })
 
+// The hit test walks `boundaries` for both layouts — uniform mode's are just
+// `i * uniformW`. This is the genomic case, whose columns are unevenly spaced,
+// so it can only be answered by the boundary walk and not by a division.
+test('one search serves the genomic layout too', () => {
+  const { display } = loadedDisplay({
+    data: {
+      genomicMode: true,
+      boundaries: Float32Array.from([0, 10, 100, 120, 130]),
+    },
+  })
+  const hitAt = (x: number, y: number) => {
+    const screen = display.cellToScreen(x, y)
+    const hit = display.hitTest(screen.x, screen.y)
+    return [hit?.i, hit?.j]
+  }
+
+  // the narrow first column (0..10) against the third (100..120)
+  expect(hitAt(5, 110)).toEqual([2, 0])
+  // and a point inside the wide second column (10..100), which a uniform
+  // division by any single cell width would place elsewhere
+  expect(hitAt(55, 125)).toEqual([3, 1])
+})
+
 // hitTest inverts what cellToScreen does, and both overlays place themselves
 // with the forward half, so a cell center round-trips back to its own cell.
 test('cellToScreen and hitTest are inverses', () => {

@@ -21,7 +21,7 @@ type ExecuteArgs = RenderLDDataArgs & {
 // exactly when the status bar's "0 / 812 variants shown (812 MAF)" is the only
 // thing on screen explaining it.
 function emptyResult(
-  { metric, method, filterStats }: LDMatrixResult,
+  { metric, method, hasDprime, filterStats }: LDMatrixResult,
   signedLD: boolean,
 ): LDDataResult {
   return {
@@ -31,7 +31,7 @@ function emptyResult(
     uniformW: 0,
     genomicMode: false,
     metric,
-    hasDprime: true,
+    hasDprime,
     method,
     signedLD,
     snps: [],
@@ -63,6 +63,12 @@ export async function executeRenderLDData({
   } = args
 
   const isPrecomputed = isPrecomputedLDAdapter(adapterConfig.type)
+  // What the values in hand will actually be, not what was asked for: the
+  // pre-computed path reads magnitudes out of a file and has no genotypes to
+  // recover a sign from, so it cannot honor the request. Answering honestly here
+  // is what keeps the ramp, the legend and the tooltip (all of which read this
+  // back off the result) describing the same numbers.
+  const signedResult = signedLD && !isPrecomputed
   const ldData = await (isPrecomputed
     ? updateStatus('Downloading LD data', statusCallback, () =>
         getLDMatrixFromPlink({
@@ -96,7 +102,7 @@ export async function executeRenderLDData({
 
   const region = regions[0]
   if (ldData.snps.length === 0 || !region) {
-    return emptyResult(ldData, signedLD)
+    return emptyResult(ldData, signedResult)
   }
 
   // LD values themselves are orientation-free; only the axis is. A reversed
@@ -141,7 +147,7 @@ export async function executeRenderLDData({
     metric: ldData.metric,
     hasDprime: ldData.hasDprime,
     method: ldData.method,
-    signedLD,
+    signedLD: signedResult,
     snps,
     filterStats: ldData.filterStats,
     recombination,

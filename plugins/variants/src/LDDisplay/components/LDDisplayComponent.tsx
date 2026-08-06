@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 
 import { useMouseState, useMouseTracking } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { getBpDisplayStr } from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
@@ -125,12 +126,14 @@ const LDCanvas = observer(function LDCanvas({
   const view = model.lgv
   const {
     showLegend,
-    // the metric the loaded values ACTUALLY are, not the one asked for. A
-    // pre-computed file with no D' column downgrades a 'dprime' request to r²,
-    // and the cell ramp already follows the data (`d.metric`), so a label off
-    // the config would name a statistic that is not on screen.
+    // The metric and sign convention the loaded values ACTUALLY have, not the
+    // ones asked for: a pre-computed file with no D' column downgrades a
+    // 'dprime' request to r², and one that states magnitudes cannot honor a
+    // signed request at all. The cells already follow the data (the ramp is
+    // built from `rpcData`), so a label off the config would name a statistic
+    // and a range that are not on screen.
     effectiveLdMetric,
-    signedLD,
+    effectiveSignedLD,
     effectiveLineZoneHeight,
     canvasWidth: width,
     canvasHeight,
@@ -218,13 +221,13 @@ const LDCanvas = observer(function LDCanvas({
           x={mouseState.clientX}
           y={mouseState.clientY}
           ldMetric={effectiveLdMetric}
-          signedLD={signedLD}
+          signedLD={effectiveSignedLD}
         />
       ) : null}
       {showLegend ? (
         <LDColorLegend
           ldMetric={effectiveLdMetric}
-          signedLD={signedLD}
+          signedLD={effectiveSignedLD}
           idSuffix={model.id}
         />
       ) : null}
@@ -239,6 +242,7 @@ const LDCanvas = observer(function LDCanvas({
 
 // Fills the chrome, which owns the box in both branches.
 function EmptyState() {
+  const palette = usePalette()
   return (
     <div
       style={{
@@ -247,7 +251,7 @@ function EmptyState() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        color: '#666',
+        color: palette.text.secondary,
       }}
     >
       Enable LD triangle in display settings to view data
