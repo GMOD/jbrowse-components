@@ -17,6 +17,7 @@ function ldData(n: number, width: number): LDDataResult {
     boundaries: new Float32Array(n + 1),
     numCells: (n * (n - 1)) / 2,
     uniformW: width / (n * Math.SQRT2),
+    genomicMode: false,
     metric: 'r2',
     hasDprime: true,
     method: 'phased',

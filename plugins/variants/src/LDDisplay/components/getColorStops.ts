@@ -1,34 +1,16 @@
+import { ldColorStops } from './ldColorRamp.ts'
+
+/**
+ * The legend gradient's stops, evenly spaced across the same color table the
+ * cells are painted through (`ldColorStops`). Derived rather than restated: the
+ * legend used to carry its own five hand-picked colors per metric, which is a
+ * second place to edit a palette and a key that can quietly stop describing the
+ * plot beside it.
+ */
 export function getColorStops(ldMetric: string, signedLD: boolean) {
-  if (signedLD) {
-    if (ldMetric === 'dprime') {
-      // Green (negative) -> White (zero) -> Blue (positive)
-      return [
-        { offset: '0%', color: 'rgb(0,100,0)' },
-        { offset: '25%', color: 'rgb(64,192,64)' },
-        { offset: '50%', color: 'rgb(255,255,255)' },
-        { offset: '75%', color: 'rgb(128,128,255)' },
-        { offset: '100%', color: 'rgb(0,0,160)' },
-      ]
-    }
-    // Blue (negative) -> White (zero) -> Red (positive)
-    return [
-      { offset: '0%', color: 'rgb(0,0,160)' },
-      { offset: '25%', color: 'rgb(128,128,255)' },
-      { offset: '50%', color: 'rgb(255,255,255)' },
-      { offset: '75%', color: 'rgb(255,128,128)' },
-      { offset: '100%', color: 'rgb(160,0,0)' },
-    ]
-  }
-  if (ldMetric === 'dprime') {
-    return [
-      { offset: '0%', color: 'rgb(255,255,255)' },
-      { offset: '50%', color: 'rgb(128,128,255)' },
-      { offset: '100%', color: 'rgb(0,0,160)' },
-    ]
-  }
-  return [
-    { offset: '0%', color: 'rgb(255,255,255)' },
-    { offset: '50%', color: 'rgb(255,128,128)' },
-    { offset: '100%', color: 'rgb(160,0,0)' },
-  ]
+  const stops = ldColorStops(ldMetric, signedLD)
+  return stops.map(([r, g, b], i) => ({
+    offset: `${((i / (stops.length - 1)) * 100).toFixed(2)}%`,
+    color: `rgb(${r},${g},${b})`,
+  }))
 }

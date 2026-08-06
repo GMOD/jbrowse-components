@@ -1,5 +1,4 @@
 /* eslint-disable react-refresh/only-export-components */
-import { maxFinite } from '@jbrowse/core/util'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
   SvgClipRect,
@@ -44,7 +43,7 @@ function LdSvgBody({
     showRecombination,
     lineZoneHeight,
     effectiveLineZoneHeight,
-    useGenomicPositions,
+    effectiveUseGenomicPositions,
     signedLD,
   } = self
 
@@ -68,10 +67,12 @@ function LdSvgBody({
   // Match the live overlay's layout: genomic-positions mode places the
   // recombination plot at the top spanning effectiveLineZoneHeight; index
   // mode tucks it in the lower half of lineZoneHeight, above the matrix.
-  const recombTrackHeight = useGenomicPositions
+  const recombTrackHeight = effectiveUseGenomicPositions
     ? effectiveLineZoneHeight
     : lineZoneHeight / 2
-  const recombTrackYOffset = useGenomicPositions ? 0 : lineZoneHeight / 2
+  const recombTrackYOffset = effectiveUseGenomicPositions
+    ? 0
+    : lineZoneHeight / 2
 
   return (
     <>
@@ -101,7 +102,7 @@ function LdSvgBody({
             }}
           />
         </g>
-        {useGenomicPositions ? (
+        {effectiveUseGenomicPositions ? (
           <LDLabelZone model={self} exportSVG />
         ) : (
           <LinesConnectingMatrixToGenomicPosition model={self} exportSVG />
@@ -109,17 +110,15 @@ function LdSvgBody({
         {showRecombination && rpcData.recombination ? (
           <g transform={`translate(0 ${recombTrackYOffset})`}>
             <RecombinationTrack
-              recombination={rpcData.recombination}
+              points={self.recombinationCoords}
+              maxValue={self.recombinationMax}
               width={visibleWidth}
               height={recombTrackHeight}
               exportSVG
-              useGenomicPositions={useGenomicPositions}
-              region={view.dynamicBlocks.contentBlocks[0]}
-              bpPerPx={view.bpPerPx}
             />
             <RecombinationYScaleBar
               height={recombTrackHeight}
-              maxValue={maxFinite(rpcData.recombination.values, 0.1)}
+              maxValue={self.recombinationMax}
               exportSVG
             />
           </g>

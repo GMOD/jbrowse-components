@@ -2,13 +2,9 @@ import { useEffect, useRef } from 'react'
 
 import { useMouseState, useMouseTracking } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
-import {
-  getBpDisplayStr,
-  getContainingView,
-  maxFinite,
-} from '@jbrowse/core/util'
-import { bpOffsetInRegion } from '@jbrowse/core/util/Base1DUtils'
+import { getBpDisplayStr, getContainingView } from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
+import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import RecombinationTrack from '../../shared/components/RecombinationTrack.tsx'
@@ -85,17 +81,11 @@ const RecombinationOverlay = observer(function RecombinationOverlay({
   width,
   recombHeight,
   top,
-  useGenomicPositions,
-  region,
-  bpPerPx,
 }: {
   model: SharedLDModel
   width: number
   recombHeight: number
   top: number
-  useGenomicPositions: boolean
-  region?: { start: number; end: number; reversed?: boolean }
-  bpPerPx: number
 }) {
   return (
     <div
@@ -109,16 +99,14 @@ const RecombinationOverlay = observer(function RecombinationOverlay({
       }}
     >
       <RecombinationTrack
-        model={model}
+        points={model.recombinationCoords}
+        maxValue={model.recombinationMax}
         width={width}
         height={recombHeight}
-        useGenomicPositions={useGenomicPositions}
-        region={region}
-        bpPerPx={bpPerPx}
       />
       <RecombinationYScaleBar
         height={recombHeight}
-        maxValue={maxFinite(model.recombination!.values, 0.1)}
+        maxValue={model.recombinationMax}
       />
     </div>
   )
@@ -161,41 +149,54 @@ const LDCanvas = observer(function LDCanvas({
     // the config would name a statistic that is not on screen.
     effectiveLdMetric,
     lineZoneHeight,
-    useGenomicPositions,
+    // the layout the loaded matrix actually has, not the one the slot asks for
+    // — a multi-region viewport falls back to uniform cells in the worker
+    effectiveUseGenomicPositions,
     signedLD,
     effectiveLineZoneHeight,
   } = model
 
-  const region = view.dynamicBlocks.contentBlocks[0]
-  const bpPerPx = view.bpPerPx
-  const genomicX1 =
-    hoveredItem && region
-      ? bpOffsetInRegion(region, hoveredItem.snp2.start) / bpPerPx
-      : undefined
-  const genomicX2 =
-    hoveredItem && region
-      ? bpOffsetInRegion(region, hoveredItem.snp1.start) / bpPerPx
-      : undefined
+  // Through the model, in the connector lines' frame (viewport pixels): the
+  // guides, the ticks and the lines all describe the same two loci, so they
+  // have to be measured the same way — an x measured off the first content
+  // block alone lands short by the left gap, and puts a SNP from a later block
+  // nowhere near itself.
+  const genomicX1 = hoveredItem
+    ? model.locusViewportX(hoveredItem.snp2.refName, hoveredItem.snp2.start)
+    : undefined
+  const genomicX2 = hoveredItem
+    ? model.locusViewportX(hoveredItem.snp1.refName, hoveredItem.snp1.start)
+    : undefined
 
-  const { viewOffsetX } = model.renderTransform
-
+  // The guides live on the *view*, so they have to be pushed from an effect —
+  // and an autorun does its own reads, so a pan or a zoom moves them with no
+  // new mousemove to re-run a dep array on. The deps are the hovered pair
+  // itself (identities out of `rpcData`, stable while the cursor stays in one
+  // cell), so the autorun is torn down when the hover moves, not every frame.
+  // The reads inside are duplicated from the two above on purpose: the render
+  // needs the numbers for `Crosshairs`, and an autorun that took them as
+  // arguments would track nothing.
+  const hoveredSnp1 = hoveredItem?.snp1
+  const hoveredSnp2 = hoveredItem?.snp2
   useEffect(() => {
-    if (
-      genomicX1 !== undefined &&
-      genomicX2 !== undefined &&
-      model.showVerticalGuides
-    ) {
-      view.setVolatileGuides([
-        { xPos: genomicX1 + viewOffsetX },
-        { xPos: genomicX2 + viewOffsetX },
-      ])
-    } else {
-      view.setVolatileGuides([])
-    }
+    const dispose = autorun(() => {
+      const x1 = hoveredSnp2
+        ? model.locusViewportX(hoveredSnp2.refName, hoveredSnp2.start)
+        : undefined
+      const x2 = hoveredSnp1
+        ? model.locusViewportX(hoveredSnp1.refName, hoveredSnp1.start)
+        : undefined
+      view.setVolatileGuides(
+        x1 !== undefined && x2 !== undefined && model.showVerticalGuides
+          ? [{ xPos: x1 }, { xPos: x2 }]
+          : [],
+      )
+    })
     return () => {
+      dispose()
       view.setVolatileGuides([])
     }
-  }, [genomicX1, genomicX2, model.showVerticalGuides, view, viewOffsetX])
+  }, [hoveredSnp1, hoveredSnp2, model, view])
 
   return (
     <>
@@ -247,7 +248,7 @@ const LDCanvas = observer(function LDCanvas({
         />
       ) : null}
       <LDStatusBar model={model} />
-      {useGenomicPositions ? (
+      {effectiveUseGenomicPositions ? (
         <LDLabelZone model={model} />
       ) : (
         <LinesConnectingMatrixToGenomicPosition model={model} />
@@ -257,12 +258,11 @@ const LDCanvas = observer(function LDCanvas({
           model={model}
           width={width}
           recombHeight={
-            useGenomicPositions ? effectiveLineZoneHeight : lineZoneHeight / 2
+            effectiveUseGenomicPositions
+              ? effectiveLineZoneHeight
+              : lineZoneHeight / 2
           }
-          top={useGenomicPositions ? 0 : lineZoneHeight / 2}
-          useGenomicPositions={useGenomicPositions}
-          region={region}
-          bpPerPx={bpPerPx}
+          top={effectiveUseGenomicPositions ? 0 : lineZoneHeight / 2}
         />
       ) : null}
     </>

@@ -95,12 +95,11 @@ export class GpuLDRenderer
       this.hal.uploadBuffer(REGION_KEY, PASS_GENOMIC, buf, data.numCells)
     } else {
       this.hal.deleteBuffer(REGION_KEY, PASS_GENOMIC)
-      // numCells is the triangular count n*(n-1)/2; one cell means n=2 with a
-      // single pair, which is a degenerate LD display.
-      if (data.numCells < 2) {
-        this.hal.deleteRegion(REGION_KEY)
-        return
-      }
+      // No floor beyond the empty check above: numCells is the triangular count
+      // n*(n-1)/2, so a single cell is a real two-SNP matrix that the Canvas2D
+      // and SVG paths both paint. Dropping it here (an `n < 2` guard that
+      // survived the count changing shape) made the GPU backend the only one
+      // that showed nothing.
       this.hal.uploadBuffer(REGION_KEY, PASS_MAIN, data.ldValues, data.numCells)
     }
   }

@@ -4,8 +4,6 @@ import { observer } from 'mobx-react'
 import type { SharedLDModel } from '../shared.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-const SQRT2 = Math.SQRT2
-
 // Emphasizes the focal SNP's LD row+column: every pairwise cell involving the
 // focal SNP lies on the two diagonal lines meeting at its diagonal apex, so a
 // translucent band along those lines (matching cell size) highlights exactly
@@ -18,36 +16,27 @@ const FocalSnpHighlight = observer(function FocalSnpHighlight({
   height: number
 }) {
   const view = getContainingView(model) as LinearGenomeViewModel
-  const {
-    rpcData,
-    yScalar,
-    effectiveLineZoneHeight,
-    renderTransform,
-    focalSnpIndex: f,
-  } = model
+  const { rpcData, renderTransform, focalSnpIndex: f } = model
   const boundaries = rpcData?.boundaries
   if (!boundaries || f < 0 || f + 1 >= boundaries.length) {
     return null
   }
   const n = boundaries.length - 1
-  const { scale: viewScale, viewOffsetX } = renderTransform
-  const toScreen = (x: number, y: number) => ({
-    x: ((x + y) / SQRT2) * viewScale + viewOffsetX,
-    y: ((y - x) / SQRT2) * viewScale * yScalar + effectiveLineZoneHeight,
-  })
 
   const fCenter = (boundaries[f]! + boundaries[f + 1]!) / 2
-  const apex = toScreen(fCenter, fCenter)
+  const apex = model.cellToScreen(fCenter, fCenter)
   // Row cells (f, j<f) fan down-left; column cells (i>f, f) fan down-right.
   const rowEnd =
-    f > 0 ? toScreen((boundaries[0]! + boundaries[1]!) / 2, fCenter) : apex
+    f > 0
+      ? model.cellToScreen((boundaries[0]! + boundaries[1]!) / 2, fCenter)
+      : apex
   const colEnd =
     f < n - 1
-      ? toScreen(fCenter, (boundaries[n - 1]! + boundaries[n]!) / 2)
+      ? model.cellToScreen(fCenter, (boundaries[n - 1]! + boundaries[n]!) / 2)
       : apex
   const strokeWidth = Math.min(
     40,
-    Math.max(4, (boundaries[f + 1]! - boundaries[f]!) * viewScale),
+    Math.max(4, (boundaries[f + 1]! - boundaries[f]!) * renderTransform.scale),
   )
 
   return (

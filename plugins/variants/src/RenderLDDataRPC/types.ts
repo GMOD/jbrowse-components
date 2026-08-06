@@ -27,6 +27,12 @@ export interface LDDataResult {
   boundaries: Float32Array
   numCells: number
   uniformW: number
+  // Whether the cells above were actually laid out at genomic positions. A
+  // multi-region viewport has no single bp axis to lay them on, so a
+  // `useGenomicPositions` request falls back to uniform cells there — the
+  // display reads this rather than its own slot, the same requested-vs-loaded
+  // split as `metric`.
+  genomicMode: boolean
   metric: LDMetric
   // Whether D' is selectable — false only for a pre-computed file with no DP
   // column, so the display can disable the D' metric option.

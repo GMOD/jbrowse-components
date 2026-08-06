@@ -1,5 +1,4 @@
-import { getFillProps, getStrokeProps, maxFinite } from '@jbrowse/core/util'
-import { bpOffsetInRegion } from '@jbrowse/core/util/Base1DUtils'
+import { getFillProps, getStrokeProps } from '@jbrowse/core/util'
 import { YSCALEBAR_LABEL_OFFSET, gapBreakLimit } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
@@ -32,77 +31,43 @@ const STROKE_COLOR = 'rgb(59, 130, 246)'
 // unit tests can tell you.
 const RECOMBINATION_GAP_MULTIPLE = 20
 
-interface RecombinationTrackModel {
-  recombination?: { values: ArrayLike<number>; positions: number[] }
-  recombinationZoneHeight: number
-}
-
 /**
- * Recombination rate track displayed above the LD matrix
- * Shows 1 - r² between adjacent SNPs as a proxy for recombination
+ * Recombination rate track displayed above the LD matrix. Shows 1 - r² between
+ * adjacent SNPs as a proxy for recombination.
  *
- * When useGenomicPositions is false: Uses index-based uniform positioning to
- * align with the LD matrix (uniform cell widths regardless of genomic distance)
- *
- * When useGenomicPositions is true: Uses actual genomic positions to plot
- * the recombination values at their true base pair locations
+ * Takes its x coordinates already laid out (`SharedLDModel.recombinationCoords`)
+ * rather than deriving them here: index mode has to ride the matrix's own frame
+ * — the fetch-time column pitch through `renderTransform` — which is model
+ * state, and laying points out across the live width instead drifted the curve
+ * off the columns it labels.
  */
 const RecombinationTrack = observer(function RecombinationTrack({
-  model,
-  recombination: recombinationProp,
+  points,
+  maxValue,
   width,
   height,
   exportSVG,
-  useGenomicPositions,
-  region,
-  bpPerPx,
 }: {
-  model?: RecombinationTrackModel
-  recombination?: { values: ArrayLike<number>; positions: number[] }
+  // one per adjacent SNP pair, in viewport pixels; a non-finite x (off-screen
+  // locus) or value (unmeasured pair) is skipped and breaks the line
+  points: { x: number; value: number }[]
+  maxValue: number
   width: number
-  height?: number
+  height: number
   exportSVG?: boolean
-  useGenomicPositions?: boolean
-  // The displayed block the values are plotted against; reversed blocks measure
-  // from their end, so the plot tracks the ruler on a flipped view.
-  region?: { start: number; end: number; reversed?: boolean }
-  bpPerPx?: number
 }) {
-  const recombination = recombinationProp ?? model?.recombination
-  const trackHeight = height ?? model?.recombinationZoneHeight ?? 50
-
-  if (!recombination || recombination.values.length === 0) {
-    return null
-  }
-
   const topPadding = YSCALEBAR_LABEL_OFFSET
   const bottomPadding = YSCALEBAR_LABEL_OFFSET
-  const plotHeight = trackHeight - topPadding - bottomPadding
-  // Absent adjacent pairs from a thresholded pre-computed LD file are NaN
-  // (unmeasured); maxFinite ignores them so one gap can't blow up the scale.
-  const maxValue = maxFinite(recombination.values, 0.1)
-
-  // Number of SNPs = number of recombination values + 1 (n-1 values for n SNPs)
-  const numSnps = recombination.values.length + 1
+  const plotHeight = height - topPadding - bottomPadding
 
   const plotted: [number, number][] = []
-  for (let i = 0; i < recombination.values.length; i++) {
-    const value = recombination.values[i]!
+  for (const { x, value } of points) {
     // Skip unmeasured (NaN) pairs rather than plotting a spurious spike. One or
     // two skipped in a row is jitter the line should span; a long run of them is
     // a hole, which `runs` below breaks on.
-    if (!Number.isFinite(value)) {
-      continue
+    if (Number.isFinite(value) && Number.isFinite(x)) {
+      plotted.push([x, topPadding + plotHeight * (1 - value / maxValue)])
     }
-    let x: number
-    if (useGenomicPositions && region && bpPerPx) {
-      // positions[i] is already the midpoint between SNP i and SNP i+1
-      x = bpOffsetInRegion(region, recombination.positions[i]!) / bpPerPx
-    } else {
-      // Uniform positioning: midpoint at (i + 1) / numSnps
-      x = ((i + 1) * width) / numSnps
-    }
-    plotted.push([x, topPadding + plotHeight * (1 - value / maxValue)])
   }
 
   if (plotted.length < 2) {
@@ -174,7 +139,7 @@ const RecombinationTrack = observer(function RecombinationTrack({
         left: 0,
         top: 0,
         width,
-        height: trackHeight,
+        height,
         pointerEvents: 'none',
       }}
     >

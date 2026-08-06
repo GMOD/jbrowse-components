@@ -6,7 +6,7 @@ import {
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { GRADIENT_LEGEND_SVG_AREA_WIDTH } from '@jbrowse/core/ui'
 import { checkboxItem } from '@jbrowse/core/ui/menuItems'
-import { getRpcSessionId, getSession } from '@jbrowse/core/util'
+import { getRpcSessionId, getSession, maxFinite } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   GlobalDataDisplayMixin,
@@ -41,10 +41,7 @@ import type {
   LDRenderingBackend,
 } from './components/ldRenderingBackendTypes.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type {
-  ExportSvgDisplayOptions,
-  LegendItem,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 import type React from 'react'
 
 function upperBoundFloat32(arr: Float32Array, val: number) {
@@ -287,6 +284,22 @@ export default function sharedModelFactory(
       },
       /**
        * #getter
+       * Whether the loaded matrix was actually laid out at genomic positions.
+       * The worker falls back to uniform cells when the viewport holds more
+       * than one region (SNPs from the later ones would collapse onto the
+       * first's coordinates), so the raw slot can say yes while what is on
+       * screen is index-laid-out. Every consumer that branches on the layout —
+       * the hit test, the zone height, the connectors-vs-labels choice, the
+       * recombination x axis — reads this, not the slot, or it describes a
+       * matrix that isn't there. Same requested-vs-loaded split as
+       * `effectiveLdMetric`; `rpcProps` still sends the slot, which is the
+       * request.
+       */
+      get effectiveUseGenomicPositions(): boolean {
+        return self.rpcData?.genomicMode ?? getConf(self, 'useGenomicPositions')
+      },
+      /**
+       * #getter
        * Whether the D' metric can be shown — false only for a pre-computed file
        * lacking a DP column, which disables the D' option.
        */
@@ -345,7 +358,7 @@ export default function sharedModelFactory(
       // extent, so the room for them is the user's to set, not ours to measure
       // -- but with no band at all they landed on top of the triangle.
       get effectiveLineZoneHeight() {
-        return self.useGenomicPositions
+        return self.effectiveUseGenomicPositions
           ? Math.max(
               self.showRecombination ? self.recombinationZoneHeight : 0,
               self.showLabels ? self.lineZoneHeight : 0,
@@ -462,7 +475,107 @@ export default function sharedModelFactory(
               .filter(coord => coord !== undefined)
           : []
       },
-
+      /**
+       * #method
+       * Viewport x of one locus, through the same `genomicViewportX` the
+       * connector lines use. The crosshair ticks and the view's vertical
+       * guides go through this rather than measuring off
+       * `contentBlocks[0]`: that block's own left edge is only x=0 while the
+       * content reaches the viewport edge, and a SNP in any *later* block
+       * isn't measured against its own region at all. Undefined when the
+       * locus has no on-screen x, which the caller drops rather than pinning
+       * to 0.
+       */
+      locusViewportX(refName: string, coord: number): number | undefined {
+        const view = self.lgv
+        const assembly = getSession(self).assemblyManager.get(
+          view.assemblyNames[0]!,
+        )
+        return assembly
+          ? genomicViewportX(view, assembly, refName, coord)
+          : undefined
+      },
+      /**
+       * #getter
+       * The recombination curve's points in viewport pixels, one per adjacent
+       * SNP pair (`value` NaN where the pair is unmeasured, `x` NaN where the
+       * locus is off-screen; the plot skips both and breaks its line across
+       * the hole). Derived here rather than in the plot component for the same
+       * reason as `connectorLineCoords`: index mode has to ride the matrix's
+       * own frame — the fetch-time column pitch rescaled by `renderTransform`
+       * — and a component that laid points out across the live width would
+       * drift off the triangle by the left gap, and by the zoom factor for the
+       * whole debounce+RPC window.
+       */
+      get recombinationCoords(): { x: number; value: number }[] {
+        const rec = self.rpcData?.recombination
+        if (!rec) {
+          return []
+        }
+        const { values, positions } = rec
+        const out: { x: number; value: number }[] = []
+        if (self.effectiveUseGenomicPositions) {
+          // assembly hoisted, not `locusViewportX` per point: this list runs to
+          // one entry per adjacent SNP pair, and the lookup is the same for all
+          // of them (same reason as `connectorLineCoords`)
+          const view = self.lgv
+          const assembly = getSession(self).assemblyManager.get(
+            view.assemblyNames[0]!,
+          )
+          for (let i = 0; i < values.length; i++) {
+            // positions[i] is the bp midpoint of the pair (i, i+1), so it is
+            // on the left SNP's refName
+            const x = assembly
+              ? genomicViewportX(
+                  view,
+                  assembly,
+                  self.snps[i]!.refName,
+                  positions[i]!,
+                )
+              : undefined
+            out.push({ x: x ?? Number.NaN, value: values[i]! })
+          }
+        } else {
+          const { scale, viewOffsetX } = self.renderTransform
+          const pitch = self.cellWidth * Math.SQRT2
+          for (let i = 0; i < values.length; i++) {
+            // the boundary between columns i and i+1, which is where the pair
+            // they measure sits
+            out.push({
+              x: (i + 1) * pitch * scale + viewOffsetX,
+              value: values[i]!,
+            })
+          }
+        }
+        return out
+      },
+      /**
+       * #getter
+       * Top of the recombination plot's y axis. One number for the curve and
+       * its scale bar so they can't label different scales; `maxFinite`
+       * because unmeasured pairs are NaN.
+       */
+      get recombinationMax(): number {
+        return maxFinite(self.rpcData?.recombination?.values ?? [], 0.1)
+      },
+      /**
+       * #method
+       * Forward transform of the LD matrix, paired with `hitTest` below (its
+       * exact inverse): pre-rotation cell coordinates to canvas-relative
+       * pixels. The overlays that decorate individual cells — the hover
+       * crosshair, the focal-SNP band — place themselves through this, so
+       * they land on the cells the shader drew and move with the same rescale
+       * during the debounce+RPC window.
+       */
+      cellToScreen(x: number, y: number) {
+        const { scale, viewOffsetX } = self.renderTransform
+        return {
+          x: ((x + y) / Math.SQRT2) * scale + viewOffsetX,
+          y:
+            ((y - x) / Math.SQRT2) * scale * this.yScalar +
+            this.effectiveLineZoneHeight,
+        }
+      },
       /**
        * #method
        * Inverse of `renderTransform` for the LD matrix: takes mouse coords
@@ -491,7 +604,7 @@ export default function sharedModelFactory(
         const n = boundaries.length - 1
         let hitI = -1
         let hitJ = -1
-        if (self.useGenomicPositions) {
+        if (self.effectiveUseGenomicPositions) {
           hitJ = upperBoundFloat32(boundaries, x) - 1
           hitI = upperBoundFloat32(boundaries, y) - 1
         } else {
@@ -585,14 +698,6 @@ export default function sharedModelFactory(
             },
           },
         ]
-      },
-      /**
-       * #method
-       */
-      legendItems(): LegendItem[] {
-        const metric = self.effectiveLdMetric === 'dprime' ? "D'" : 'R²'
-        const range = self.signedLD ? '-1 to 1' : '0 to 1'
-        return [{ label: `${metric}: ${range}` }]
       },
       /**
        * #method

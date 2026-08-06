@@ -5,8 +5,6 @@ import type { LDFlatbushItem } from '../../RenderLDDataRPC/types.ts'
 import type { SharedLDModel } from '../shared.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-const SQRT2 = Math.SQRT2
-
 const Crosshairs = observer(function Crosshairs({
   model,
   hoveredItem,
@@ -23,11 +21,9 @@ const Crosshairs = observer(function Crosshairs({
   const view = getContainingView(model) as LinearGenomeViewModel
   const {
     rpcData,
-    yScalar,
     effectiveLineZoneHeight,
     tickHeight,
-    useGenomicPositions,
-    renderTransform,
+    effectiveUseGenomicPositions,
   } = model
   const boundaries = rpcData?.boundaries
   const { i, j } = hoveredItem
@@ -35,21 +31,15 @@ const Crosshairs = observer(function Crosshairs({
     return null
   }
 
-  const { scale: viewScale, viewOffsetX } = renderTransform
-  const toScreen = (x: number, y: number) => ({
-    x: ((x + y) / SQRT2) * viewScale + viewOffsetX,
-    y: ((y - x) / SQRT2) * viewScale * yScalar + effectiveLineZoneHeight,
-  })
-
   const jCenter = (boundaries[j]! + boundaries[j + 1]!) / 2
   const iCenter = (boundaries[i]! + boundaries[i + 1]!) / 2
-  const hoveredCenter = toScreen(jCenter, iCenter)
-  const snpJPos = useGenomicPositions
+  const hoveredCenter = model.cellToScreen(jCenter, iCenter)
+  const snpJPos = effectiveUseGenomicPositions
     ? { x: genomicX1, y: effectiveLineZoneHeight }
-    : toScreen(jCenter, jCenter)
-  const snpIPos = useGenomicPositions
+    : model.cellToScreen(jCenter, jCenter)
+  const snpIPos = effectiveUseGenomicPositions
     ? { x: genomicX2, y: effectiveLineZoneHeight }
-    : toScreen(iCenter, iCenter)
+    : model.cellToScreen(iCenter, iCenter)
 
   return (
     <svg
@@ -69,7 +59,7 @@ const Crosshairs = observer(function Crosshairs({
         d={`M ${snpJPos.x} ${snpJPos.y} L ${hoveredCenter.x} ${hoveredCenter.y} L ${snpIPos.x} ${snpIPos.y}`}
       />
       <g stroke="#e00" strokeWidth="1.5" fill="none">
-        {useGenomicPositions ? null : (
+        {effectiveUseGenomicPositions ? null : (
           <>
             <path
               d={`M ${snpJPos.x} ${snpJPos.y} L ${genomicX1} ${tickHeight}`}

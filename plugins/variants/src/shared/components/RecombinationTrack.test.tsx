@@ -2,19 +2,16 @@ import { render } from '@testing-library/react'
 
 import RecombinationTrack from './RecombinationTrack.tsx'
 
-// bpPerPx 1 over a 0..1000 region, so an x in px reads as a bp coordinate and
-// the spacing arithmetic below is legible.
-const region = { start: 0, end: 1000 }
-
+// The model lays the points out (`recombinationCoords`); at bpPerPx 1 over a
+// 0..1000 region an x in px reads as a bp coordinate, which is what keeps the
+// spacing arithmetic below legible.
 function paths(values: number[], positions: number[]) {
   const { container } = render(
     <RecombinationTrack
-      recombination={{ values: new Float32Array(values), positions }}
+      points={positions.map((x, i) => ({ x, value: values[i]! }))}
+      maxValue={0.5}
       width={1000}
       height={50}
-      useGenomicPositions
-      region={region}
-      bpPerPx={1}
     />,
   )
   const [area, line] = [...container.querySelectorAll('path')].map(
@@ -96,11 +93,31 @@ describe('RecombinationTrack gap breaks', () => {
   test('too few measured points renders nothing', () => {
     const { container } = render(
       <RecombinationTrack
-        recombination={{ values: new Float32Array([0.5]), positions: [0] }}
+        points={[{ x: 0, value: 0.5 }]}
+        maxValue={0.5}
         width={1000}
         height={50}
       />,
     )
     expect(container.querySelectorAll('path')).toHaveLength(0)
+  })
+
+  // An off-screen locus arrives as a NaN x (the model couldn't place it) and is
+  // skipped like an unmeasured value, rather than collapsing the curve onto 0.
+  test('a non-finite x is skipped', () => {
+    const positions = Array.from({ length: 10 }, (_, i) => i * 10)
+    const xs = [...positions]
+    xs[5] = Number.NaN
+    const { container } = render(
+      <RecombinationTrack
+        points={xs.map(x => ({ x, value: 0.5 }))}
+        maxValue={0.5}
+        width={1000}
+        height={50}
+      />,
+    )
+    const line = container.querySelectorAll('path')[1]!.getAttribute('d')!
+    expect(line).not.toContain('NaN')
+    expect(line.split('L').length - 1).toBe(9)
   })
 })
