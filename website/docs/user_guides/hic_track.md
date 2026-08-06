@@ -155,7 +155,7 @@ experiment, both derived from the matrix in the same track:
   further, and the file carries a color per class in its `itemRgb` column, so
   the track paints itself with no color configuration.
 
-<Figure src="/img/hic/compartment_switch.png" caption="10 Mb of chr18 with the GM12878 and K562 compartment eigenvectors on one shared scale, their subcompartment classes as colored strips between them, and the GM12878 matrix below. Over the highlighted TCF4 band the GM12878 eigenvector is negative and the K562 one positive, and the subcompartment class changes with it; the flanks, where both agree, are the control." links="Open this view=hic/compartment_switch" />
+<Figure src="/img/hic/compartment_switch.png" caption="4 Mb of chr18 with the GM12878 and K562 compartment eigenvectors on one shared scale and their subcompartment classes as colored strips between them. Over the highlighted TCF4 band the GM12878 eigenvector is negative, the B compartment, while the K562 one is positive, A, and the subcompartment class changes with it; both edges of the frame, where the two agree, are the control." links="Open this view=hic/compartment_switch" />
 
 Two things about that figure are worth copying whenever you compare compartments
 between samples, because getting either wrong produces a difference that is not
@@ -170,8 +170,10 @@ produces it is equally valid negated, so which sign means "active" is a property
 of the file, not a convention you can assume — and comparing two files means
 their orientations have to agree as well. Both are checkable against the gene
 track: A is the gene-rich compartment by definition, so the sign that coincides
-with the dense stretches of the gene track is A. In the figure above the
-positive side carries the genes in both samples.
+with the dense stretches of the gene track is A. Do that check over a whole
+chromosome rather than in one frame, since a few megabases can be gene-poor in
+both samples and settle nothing. In both files above, positive is the gene-rich
+side.
 
 The subcompartment classes need the same caution in a different place. The
 cluster numbers a caller emits are arbitrary labels rather than the published

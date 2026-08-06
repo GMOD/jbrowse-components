@@ -163,14 +163,14 @@ that call for every Hi-C experiment as a
 [compartment eigenvector and a set of subcompartment classes](/docs/user_guides/hic_track#compartments-and-subcompartments),
 both derived from the matrix already loaded.
 
-<Figure src="/img/hic/compartment_switch.png" caption="10 Mb of chr18 with the GM12878 and K562 compartment eigenvectors on one shared scale, their subcompartment classes as colored strips between them, and the GM12878 matrix below. Over the highlighted TCF4 band the GM12878 eigenvector is negative and the K562 one positive, and the subcompartment class changes with it; the flanks, where both agree, are the control." links="Open this view=hic/compartment_switch" />
+<Figure src="/img/hic/compartment_switch.png" caption="4 Mb of chr18 with the GM12878 and K562 compartment eigenvectors on one shared scale and their subcompartment classes as colored strips between them. Over the highlighted TCF4 band the GM12878 eigenvector is negative, the B compartment, while the K562 one is positive, A, and the subcompartment class changes with it; both edges of the frame, where the two agree, are the control." links="Open this view=hic/compartment_switch" />
 
 The band over _TCF4_ is in the B compartment in GM12878 and the A compartment in
 K562, and the reason to believe it is the same reason the translocation was
-believable: the flanks. Ten megabases of surrounding sequence, from the same two
-files and the same pipeline, agree. A difference that appears in one block while
-its neighbours match is a difference in the data; one that appears everywhere is
-a difference in how the two files were made.
+believable: the flanks. The sequence either side of it, from the same two files
+and the same pipeline, agrees. A difference that appears in one block while its
+neighbours match is a difference in the data; one that appears everywhere is a
+difference in how the two files were made.
 
 Two things make this comparison harder than it looks, and both are set up in the
 figure rather than left to the reader. The eigenvector tracks are pinned to one

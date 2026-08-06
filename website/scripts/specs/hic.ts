@@ -290,13 +290,9 @@ export const hicSpecs: ScreenshotSpec[] = [
   // into observed/expected and then correlated — which JBrowse does not do. Both
   // ends of the ramp were tried on this exact view: linear+percentile leaves the
   // plaid near-white, and `useLogScale` on a file this deep returns solid red.
-  // Balanced (SCALE) + linear is the best available and shows blocky texture
-  // aligned with the eigenvector, which is why the matrix is kept in frame here
-  // rather than dropped: it is the evidence for why the eigenvector track exists.
-  //
-  // Normalization is SCALE, the deliberate opposite of the translocation figure's
-  // NONE. Balancing is right for reading structure and wrong for reading
-  // rearrangements; those two figures are the two halves of that statement.
+  // Balanced (SCALE) + linear was the best available and was kept in frame for a
+  // while as the evidence for why the eigenvector track exists; that lane is now
+  // gone, see the note on the tracks below.
   //
   // THE SIGN IS ANCHORED, NOT ASSUMED. An eigenvector identifies the A
   // compartment only up to a sign, and juicer emits whichever the
@@ -316,14 +312,20 @@ export const hicSpecs: ScreenshotSpec[] = [
   // what makes it a compartment switch rather than a relabelling: a cluster
   // renumbering moves ids without moving the eigenvector, and a whole-chromosome
   // orientation difference would flip the sign everywhere while the ids agreed.
-  // The 10Mb window is deliberate: the flanks, where the two lines agree, are the
-  // control that makes the one discordant block mean something.
+  // The window is 4 Mb, down from 10 (reviewer: "there is too much going on in
+  // this image ... the subcompartments are just sort of 'noisy'"). The flanks
+  // are still the control that makes the discordant block mean something —
+  // both edges of this frame have the two eigenvectors on the same side — and
+  // at 100 kb a subcompartment strip that alternated every few pixels across
+  // 10 Mb is now blocks a reader can match to the lane above it. The two
+  // callouts name the compartment on each lane, since "positive" and
+  // "negative" is a decoding step and A and B is the answer.
   {
     mode: 'url',
     name: 'hic/compartment_switch',
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg38',
-      loc: 'chr18:51,000,000-61,000,000',
+      loc: 'chr18:54,000,000-58,000,000',
       trackLabels: 'offset',
       highlight: [
         {
@@ -368,21 +370,48 @@ export const hicSpecs: ScreenshotSpec[] = [
           minScore: -0.03,
           maxScore: 0.03,
         },
-        {
-          trackId: 'hic_gm12878_insitu',
-          type: 'LinearHicDisplay',
-          height: 300,
-          resolutionBias: 2,
-          useLogScale: false,
-          useColorPercentile: true,
-          selectedNormalization: 'SCALE',
-          squashToHeight: true,
-        },
+        // THE MATRIX LANE IS GONE (reviewer: "there is too much going on in
+        // this image and the 'squash' looks weird"). It was 300 squashed px
+        // arguing for the thing the guide's own paragraph says a raw matrix
+        // cannot show: compartments are a modulation on top of distance decay
+        // and only become a checkerboard in an observed/expected matrix, which
+        // JBrowse does not compute. So the lane was a faint plaid a reader was
+        // asked to take on trust, under four lanes that state the answer
+        // outright. The matrix is still one figure up, where its subject is
+        // something it does show.
       ],
     }),
-    viewportHeight: 968,
-    readySelector: '[data-testid="hic-display-done"]',
+    // one callout per cell line, on the lane it describes, naming the
+    // compartment rather than leaving "positive" and "negative" to be decoded
+    // (the sign convention is checked in the spec comment above and stated in
+    // the guide). Anchored to the highlighted band, so they move with it.
+    annotations: [
+      {
+        type: 'text',
+        text: 'GM12878: B compartment across TCF4',
+        anchor: {
+          track: 'hic_gm12878_compartments',
+          locus: 'chr18:55,950,000',
+          fracY: 0,
+          dy: 26,
+        },
+        fontSize: 18,
+      },
+      {
+        type: 'text',
+        text: 'K562: the same band is A',
+        anchor: {
+          track: 'hic_k562_compartments',
+          locus: 'chr18:55,950,000',
+          fracY: 0,
+          dy: 26,
+        },
+        fontSize: 18,
+      },
+    ],
+    viewportHeight: 633,
+    readySelector: '[data-testid="wiggle-display-done"]',
     readyTimeout: 240000,
-    settleMs: 20000,
+    settleMs: 12000,
   },
 ]
