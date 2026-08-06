@@ -1,9 +1,12 @@
 import {
   getConf,
   getDisplayTypeDefaultChanges,
-  openPromotableDisplays,
 } from '@jbrowse/core/configuration'
-import { getContainingTrack, mergeTrackConfig } from '@jbrowse/core/util'
+import {
+  getContainingTrack,
+  mergeTrackConfig,
+  openPromotableDisplays,
+} from '@jbrowse/core/util'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import type { AbstractSessionModel } from '@jbrowse/core/util'

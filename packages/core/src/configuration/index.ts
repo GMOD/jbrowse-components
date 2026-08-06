@@ -41,7 +41,6 @@ export {
   getDisplayTypeDefaultChanges,
   isSlotCustomized,
   makePin,
-  openPromotableDisplays,
   getConfigSnapshotWithPromotables,
   getTrackConfigWithPromotables,
 } from './promotableDefaults.ts'

@@ -67,7 +67,8 @@ accidental.
 | The usable-value gate (`isUsableValue`, `SHAPE_CHECKS`), shared by the resolver and by `ConfigSlot`'s `promotedBase` guard | `packages/core/src/configuration/slotShape.ts` |
 | Cached per-schema promotable-slot list (`promotableSlotNames`) + the raw walker `fullConfSnapshot` and its nested-schema guard | `packages/core/src/configuration/util.ts` |
 | Resolution-aware reader (`resolveConf`; `getConf` alongside it stays raw) | `packages/core/src/configuration/getConf.ts` |
-| Pin builder + share/worker helpers (`makePin`, `getConfigSnapshotWithPromotables`, `getDisplayTypeDefaultChanges`, `openPromotableDisplays`) | `packages/core/src/configuration/promotableDefaults.ts` |
+| Pin builder + share/worker helpers (`makePin`, `getConfigSnapshotWithPromotables`, `getDisplayTypeDefaultChanges`) | `packages/core/src/configuration/promotableDefaults.ts` |
+| The "every display on an open track" walk (`openPromotableDisplays`) — not a cascade concern, shared with the share/export bake | `packages/core/src/util/openDisplays.ts` |
 | `promotedBase` slot metadata (the promotable marker) + its authoring guards | `packages/core/src/configuration/configurationSlot.ts` |
 | Slot-definition inheritance (an override merges over the base slot, so `promotedBase` survives) | `packages/core/src/configuration/configurationSchema.ts` (`mergeSchemaDefinition`) |
 | Resolved read type (`SlotValueResolvedFromDef` excludes the sentinel for `promotedBase` slots) | `packages/core/src/configuration/types.ts` |

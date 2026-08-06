@@ -30,9 +30,7 @@ interface SashimiModel {
   showSashimiLabelsDisplayTypeDefault: Pin
   sashimiArcsMode: SashimiArcsMode
   setSashimiArcsMode: (mode: SashimiArcsMode) => void
-  sashimiArcsModeDisplayTypeDefault: (
-    mode: SashimiArcsMode,
-  ) => Pin
+  sashimiArcsModeDisplayTypeDefault: (mode: SashimiArcsMode) => Pin
   minSashimiScore: number
   setMinSashimiScore: (score: number) => void
 }
@@ -70,9 +68,7 @@ export function getSashimiMenuItem(model: SashimiModel) {
                 onClick: () => {
                   model.setSashimiArcsMode(option.value)
                 },
-                pin: model.sashimiArcsModeDisplayTypeDefault(
-                  option.value,
-                ),
+                pin: model.sashimiArcsModeDisplayTypeDefault(option.value),
               }),
             ),
           },

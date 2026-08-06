@@ -214,6 +214,7 @@ export { matchTrackId } from './matchTrackId.ts'
 export { drawImageOntoCanvasContext } from './offscreenCanvasPonyfill.ts'
 export { isElectron, isNode, rIC } from './environment.ts'
 export { isObject } from './objectUtils.ts'
+export { openPromotableDisplays } from './openDisplays.ts'
 export {
   type ReorderDirection,
   applyOrderWithin,

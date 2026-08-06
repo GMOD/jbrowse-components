@@ -88,3 +88,28 @@ node has no session ancestor.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
+
+## openPromotableDisplays
+
+Every display on an open track, across all open views — the reach of anything
+that acts on "the tracks the user is looking at": a promoted default's "apply to
+open tracks", and the share/export bake. One walk so those can't drift apart.
+
+Recurses into composite views. A display nested in one resolves the cascade like
+any other but was invisible to both callers, so the share/export bake didn't
+bake its inherited values and a shared session containing a breakpoint-split or
+synteny view rendered differently for the recipient. `LGVSyntenyDisplay` is only
+ever reached through this branch, so don't flatten the recursion away.
+`hasChildViews` names the one composite shape it does not cover.
+
+A view holding neither (e.g. spreadsheet) drops out via the structural guards. A
+view whose displays declare no promotable slot (e.g. dotplot, which does hold
+tracks) is walked and contributes nothing — harmless, and cheaper than asking
+each display whether it has anything to promote.
+
+```js
+// type signature
+(session: AbstractSessionModel) => ResolvableDisplay[]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/openDisplays.ts)

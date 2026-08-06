@@ -57,7 +57,7 @@ export type ResolvableDisplay = IStateTreeNode & {
  * Where the session-wide tier of the cascade is read from. Narrowed to the one
  * method so the resolver doesn't depend on the whole session type.
  */
-export interface PromotedDefaultStore {
+interface PromotedDefaultStore {
   getDisplayTypeDefault: (displayType: string, slot: string) => unknown
 }
 
