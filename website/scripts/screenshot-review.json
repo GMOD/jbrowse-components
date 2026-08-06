@@ -1573,10 +1573,10 @@
   },
   "cookbook_color_by_type": {
     "name": "cookbook_color_by_type",
-    "status": "bad",
-    "note": "unclear what the coloring is. need legend. RESOLVED. The stale 'NCBI RefSeq genes ... CDS red, exons green' caption the reviewer saw survives only in the gitignored website/dist/ build artifact; docs/cookbook.md source was already corrected (commit b3f4ec801b) to the RepeatMasker figure it actually shows (SINE red, LINE blue, LTR green, DNA purple, simple orange, low-complexity brown). The jexl lookup table sits directly above the figure and the feature labels (AluJb=SINE red, L2a=LINE blue, THE1D/LTR54B=LTR green, Tigger=DNA purple) let a reader verify the scheme, so the color meaning is documented without overbuilding a one-off legend.",
-    "reviewedAt": "2026-08-06T05:20:09.971Z",
-    "hash": "98c5b0e8460c16730e5b73a1ef451d313e07b541"
+    "status": "good",
+    "note": "FIXED: the figure carries its own key now. Nothing draws a legend for a jexl color callback, so each feature is labeled with the field the color is keyed on (labels.name = repClass): every red block reads SINE, every blue LINE, green LTR, purple DNA, orange Simple_repeat, brown Low_complexity, grey Unknown. The repeat family names it replaces (AluJb, MIR3) are still in the details popup. The stale caption the review saw survived only in the gitignored dist/ build.",
+    "reviewedAt": "2026-08-06T06:20:55.661Z",
+    "hash": "a6d21a2780532441025255b61ef8b5bd9c982bd8"
   },
   "cookbook_multiwig": {
     "name": "cookbook_multiwig",
@@ -2485,7 +2485,7 @@
     "name": "pangenome/hprc_chm13_allele",
     "status": "bad",
     "note": "if it helps make a fourth screenshot zooming out the bottom lgv farther. also, we might want to consider ways to reduce height of the graph genome viewer, it takes a lot of height. ",
-    "reviewedAt": "2026-08-06T06:00:36.049Z",
+    "reviewedAt": "2026-08-06T06:21:03.780Z",
     "hash": "8f51983bf970621888db06006a170da03710f473"
   },
   "dotplot_self_chry": {

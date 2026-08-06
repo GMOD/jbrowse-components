@@ -272,7 +272,7 @@ instance, carries a `repClass` column:
 }
 ```
 
-<Figure caption="UCSC RepeatMasker over a 17q21 window with the lookup table above: every repeat takes the color of its repClass, and classes not in the table fall through to gray." src="/img/cookbook_color_by_type.png"/>
+<Figure caption="UCSC RepeatMasker over a 17q21 window with the lookup table above: every repeat takes the color of its repClass, and classes not in the table fall through to gray. Each feature is labeled with the same repClass the color is keyed on, so the figure carries its own key — the label is set with a second callback, labels.name." src="/img/cookbook_color_by_type.png"/>
 
 A lookup table is only as good as its keys, and an annotation pipeline's own
 documentation is not always an accurate list of what it emits, since a pipeline

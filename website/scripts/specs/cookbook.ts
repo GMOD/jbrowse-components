@@ -100,7 +100,35 @@ export const cookbookSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'cookbook_color_by_type',
     url: sessionSpec(DEMO_CONFIG, {
-      sessionTracks: [HG38_RMSK_TRACK],
+      sessionTracks: [
+        {
+          ...HG38_RMSK_TRACK,
+          displays: [
+            {
+              type: 'LinearBasicDisplay',
+              color: RMSK_CLASS_COLOR,
+              // THE FIGURE IS ITS OWN LEGEND (reviewer: "unclear what the
+              // coloring is. need legend"). Nothing draws a key for a jexl
+              // color callback, and an overlay legend would be six swatches
+              // hand-placed over a layout that moves. Labelling each feature
+              // with the field the color is keyed on says the same thing from
+              // inside the app: every red block reads SINE and every blue one
+              // LINE, so the mapping is on screen beside the color. The repeat
+              // names this replaces (AluJb, MIR3, L2a) are the family, which
+              // the recipe is not about and which a non-specialist cannot
+              // decode anyway — they are still in the feature details popup.
+              //
+              // ON THE TRACK'S OWN displays, not on the view's tracks entry,
+              // which is where the color used to sit: the spec form routes an
+              // inline key onto the display config only when `isConfigurationSlot`
+              // says so, and `labels` is a sub-schema rather than a leaf slot,
+              // so written there it was dropped in silence — the regen came
+              // back with the repeat names still on it.
+              labels: { name: "jexl:get(feature,'repClass')" },
+            },
+          ],
+        },
+      ],
       views: [
         {
           type: 'LinearGenomeView',
@@ -109,11 +137,8 @@ export const cookbookSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'rmsk_hg38_ucsc',
-              // a sessionTracks entry, so the recipe builder has no track
-              // config to read the display off — name it here
               type: 'LinearBasicDisplay',
               height: 380,
-              color: RMSK_CLASS_COLOR,
             },
           ],
         },
