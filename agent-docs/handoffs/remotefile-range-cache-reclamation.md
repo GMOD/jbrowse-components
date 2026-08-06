@@ -1,6 +1,6 @@
 ---
 name: remotefile-range-cache-reclamation
-description: RemoteFileWithRangeCache holds up to 256 MB of raw file bytes per module instance — main thread plus every RPC worker — and used to reclaim none of it. Measured at 100 MB retained in one worker after one alignments track was panned and closed, still there four minutes later; a 3-minute idle sweep now returns it. Why clearCache() is not what an idle sweep should call, why neither memstress nor Runtime.getHeapUsage can see this layer, and what is still open — the tab-hidden broadcast, and whether the raw layer earns its budget at all next to @gmod/bam's parsed cache. Read before touching packages/core/src/util/io/RemoteFileWithRangeCache.ts.
+description: RemoteFileWithRangeCache holds up to 256 MB of raw file bytes per module instance — main thread plus every RPC worker — and used to reclaim none of it. Measured at 100 MB retained in one worker after one alignments track was panned and closed, still there four minutes later; a 3-minute idle sweep now returns it. Why clearCache() is not what an idle sweep should call, why neither memstress nor Runtime.getHeapUsage can see this layer, and what is still open — the tab-hidden broadcast, and the measurement showing 256 MB of budget buys one range request over 1 MB because @gmod/bam's parsed cache absorbs every revisit. Read before touching packages/core/src/util/io/RemoteFileWithRangeCache.ts.
 ---
 
 # RemoteFileWithRangeCache and the floor it used to keep
@@ -188,9 +188,9 @@ throttled and the workers are where the bytes are.
 
 ## Still open
 
-**Option 1, the tab-hidden broadcast.** A sweep bounded
-by a timer still leaves the full 256 MB alive for three minutes after a user
-tabs away, and the seam already exists: `RpcServer.handler` (`:84-97`) picks the
+**Option 1, the tab-hidden broadcast.** A sweep bounded by a timer still leaves
+the full 256 MB alive for three minutes after a user tabs away, and the seam
+already exists: `RpcServer.handler` (`:84-97`) picks the
 `stopToken` frame out of the message stream ahead of the method lookup precisely
 because it is out-of-band, and another field beside it costs a branch.
 `registerStopTokenBroadcaster` / `WorkerHandle.notifyStopToken`
@@ -205,23 +205,43 @@ track evicts chunks another live adapter is still reading. Making it correct
 needs a second refcount at URL granularity, which is more machinery than the
 3-minute sweep that reclaims the same bytes anyway.
 
-**Whether the raw layer earns 256 MB for indexed formats at all.** This is the
-question underneath "should jbrowse own the whole cache stack, bam-js's included".
-The two caches are not obviously additive: `@gmod/bam` keys *parsed features* by
-bgzf chunk, so once a chunk is parsed a repeat query is answered upstairs and
-never reaches this filehandle — which would leave the raw layer earning its keep
-only on index blocks and on 256 KB blocks straddling two bgzf chunks. If that is
-what is happening, the lever is this module's **budget**, not a merger: a much
-smaller cap would give back most of the 100 MB at no latency cost.
+**The budget does not earn its size, and the timeout is probably too short.**
+This came out of asking whether jbrowse should own the whole cache stack,
+`@gmod/bam`'s included. It should not — that library has consumers outside
+jbrowse, the two caches key on different things (byte offsets vs bgzf chunk
+identity) and size in different units (entries of compressed bytes vs
+decompressed bytes), and this module is not BAM-specific: CRAM, tabix, bigwig,
+2bit and every plain fetch sit on it. But the question underneath was worth
+measuring, and `rangecache-budget.ts` measures it — twelve 12 kb windows forward,
+the same twelve in reverse, counting bytes on the wire per pass:
 
-Do not merge the layers to find out. `@gmod/bam` has consumers outside jbrowse,
-the two caches key on different things (byte offsets vs bgzf chunk identity) and
-size in different units (entries of compressed bytes vs decompressed bytes), and
-this module is not BAM-specific — CRAM, tabix, bigwig, 2bit and every plain fetch
-sit on it. Measure the hit rate first: instrument `getCached` hit/miss per URL and
-run the probe's pan-and-return workload at `MAX_CACHE_ENTRIES` of 1000 vs
-something small, and compare bytes over the wire. A small cap that does not move
-the wire figure is the whole answer.
+| `MAX_CACHE_ENTRIES` | A cold forward | B warm reverse | C forward, 4 min idle |
+| --- | --- | --- | --- |
+| 1000 (256 MB) | 73.5 MB / 25 req | **0.0 MB / 0 req** | 73.5 MB / 23 req |
+| 4 (1 MB) | 74.8 MB / 26 req | **0.0 MB / 0 req** | not comparable, ran `SKIP_IDLE=1` |
+
+Cutting this cache from 256 MB to 1 MB cost **one extra range request and 1.3 MB**
+on a full cold pan, and nothing at all on the revisit. `@gmod/bam` caches parsed
+features by bgzf chunk, so a re-read it has already parsed is answered upstairs
+and never reaches this filehandle — column B is that, exactly. The raw layer is
+left earning its keep only on index blocks and on 256 KB blocks straddling two
+bgzf chunks, which is the ~2% in column A. Untested for bigwig, tabix and CRAM,
+whose layers above cache differently; the BAM number should not be generalized
+without re-running this against them.
+
+Column C is the other half, and it is about the sweep rather than the budget.
+73.5 MB re-downloaded after four minutes away — where before the sweep it would
+have been zero, since the raw cache never expired and only re-parsing was needed.
+That is the trade the 3-minute timeout makes, and three minutes is arguably the
+wrong number *for this layer*: raw compressed bytes are the cheapest retention in
+the stack per unit of avoided network — 73.5 MB of them covers a pan whose parsed
+form dominates a worker snapshot an order of magnitude larger. So the two knobs
+want to move in opposite directions, which the current code does not express:
+**a smaller cap with a longer idle timeout**. A 64 MB cap held for 15-30 minutes
+would cost a quarter of today's ceiling and turn "come back after ten minutes"
+from a 73.5 MB re-download into a re-parse. Not done: it changes shipped
+behaviour on a judgement about memory against re-download, and wants the bigwig
+and CRAM numbers first.
 
 ## Also still open, unrelated to this file
 
