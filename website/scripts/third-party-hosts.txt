@@ -12,7 +12,5 @@
 # Note hgdownload's real reach is wider than its own line: the hosted UCSC hub
 # configs on jbrowse.org name tracks that resolve back to hgdownload, so a spec
 # loading one pulls from UCSC without naming it here.
-1000g-ont.s3.amazonaws.com
 ftp.1000genomes.ebi.ac.uk
 hgdownload.soe.ucsc.edu
-ont-open-data.s3.amazonaws.com

@@ -69,8 +69,13 @@ export const HG002_NANOPORE_HP_TRACK = {
 // SV callers used and where the fwd/rev split at the breakpoint is visible.
 // Paired with HG00151's Illumina high-coverage CRAM (HG00151.final, in the KG
 // config) for the same-sample short-vs-long inversion figure.
+// Sliced to chr1:197,780,000-197,796,000 and re-hosted, the same treatment (and
+// for the same two reasons) as PTEN_RNASEQ_BAM below: the whole-genome file
+// lives on a bucket we do not run, and range-querying it is what a CI figure
+// sweep would depend on. 4 MB, and the slice keeps what the figures read — all
+// 87 SA-tag split alignments across the inversion, and the MM/ML calls.
 export const HG00151_ONT_1000G_BAM =
-  'https://1000g-ont.s3.amazonaws.com/PROCESSED_DATA/ALIGNED_TO_HG38/MINIMAP2_ALIGNED_BAMS/HG00151-ONT-hg38-R9-LSK110-guppy-sup-5mC.phased.bam'
+  'https://jbrowse.org/demos/ont/HG00151-ONT-hg38.chr1_inversion.bam'
 export const HG00151_ONT_1000G_ADAPTER = {
   type: 'BamAdapter',
   bamLocation: { uri: HG00151_ONT_1000G_BAM, locationType: 'UriLocation' },
@@ -1150,8 +1155,15 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '--bedgz',
     'https://jbrowse.org/ucsc/hg38/cpgIslandExt.bed.gz',
     'index:https://jbrowse.org/ucsc/hg38/cpgIslandExt.bed.gz.csi',
-    '--cram',
-    'https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829_tumor.ht.cram',
+    // Sliced to chr20:18,495,000-18,517,000 and re-hosted off ont-open-data.
+    // BAM rather than CRAM because the source CRAM's UR points at the
+    // producer's own filesystem, so decoding it needs an M5 reference lookup
+    // that a viewer should not have to make; the --cram path is still covered
+    // by the skbr3 spec above. The comment on cancer_sv's tumour track records
+    // that streaming this CRAM "failed all four sweeps of figures.yml
+    // deterministically" at a 120s timeout -- 3.4 MB does not.
+    '--bam',
+    'https://jbrowse.org/demos/ont/COLO829_tumor.ht.chr20_18.5Mb.bam',
     'color:methylation',
     'height:350',
     '--loc',
