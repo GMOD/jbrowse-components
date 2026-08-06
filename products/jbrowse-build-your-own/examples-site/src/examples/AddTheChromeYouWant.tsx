@@ -1,7 +1,9 @@
 import { Suspense, useEffect, useRef, useState } from 'react'
 
-import { setConf } from '@jbrowse/core/configuration'
-import { PaletteProvider } from '@jbrowse/core/ui/PaletteContext'
+import {
+  PaletteProvider,
+  useSessionPalette,
+} from '@jbrowse/core/ui/PaletteContext'
 import { chooseGridPitch } from '@jbrowse/core/util/chooseGridPitch'
 import { useWidthSetter } from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
@@ -102,7 +104,6 @@ function makeView() {
 }
 
 type BrowserView = ReturnType<typeof makeView>['view']
-type BrowserSession = ReturnType<typeof makeView>['session']
 
 const TrackRow = observer(function TrackRow({
   view,
@@ -312,20 +313,19 @@ function readSiteMode(): 'light' | 'dark' {
 }
 
 /**
- * Follow whatever the page around this demo is themed as.
+ * Follow whatever the page around this demo is themed as. All of this is the
+ * *host's* half, and yours will look nothing like it -- the toggle writes an
+ * attribute on <html>, the OS preference arrives as a media query, and either
+ * can move without the other, so both are watched. Swap it for however your app
+ * already knows it is in dark mode.
  *
- * **One line of this is JBrowse's half**, the `setConf`, and it is one write
- * rather than two: the config theme is what the display ships to the renderer,
- * so the feature labels baked there follow it, and `session.palette` is derived
- * from the same slot, so what React draws follows it too. Setting only a
- * React-side palette would leave the labels behind.
- *
- * The rest is this site's own theming and yours will look nothing like it -- the
- * toggle writes an attribute on <html>, the OS preference arrives as a media
- * query, and either can move without the other, so both are watched. Swap it
- * for however your app already knows it is in dark mode.
+ * JBrowse's half is one call, `useSessionPalette` below. It writes the config
+ * slot that *both* halves of the rendering derive from -- the palette React
+ * draws with, and the theme shipped to the worker that bakes feature labels
+ * into the image -- and hands back the palette. Mounting `PaletteProvider`
+ * alone would leave those baked labels in the old mode.
  */
-function useSitePalette(session: BrowserSession) {
+function useSiteMode() {
   const [mode, setMode] = useState(readSiteMode)
   useEffect(() => {
     const update = () => {
@@ -343,10 +343,7 @@ function useSitePalette(session: BrowserSession) {
       media.removeEventListener('change', update)
     }
   }, [])
-  useEffect(() => {
-    setConf(session, 'theme', { palette: { mode } })
-  }, [session, mode])
-  return session.palette
+  return mode
 }
 
 // Still needed even with the overlays swapped: the feature and alignments
@@ -357,7 +354,7 @@ const AddTheChromeYouWant = observer(function AddTheChromeYouWant() {
   const [{ view, session }] = useState(makeView)
   const ref = useWidthSetter(view)
   const { containerProps } = usePanZoom(ref, view)
-  const palette = useSitePalette(session)
+  const palette = useSessionPalette(session, useSiteMode())
 
   return (
     <PaletteProvider palette={palette}>

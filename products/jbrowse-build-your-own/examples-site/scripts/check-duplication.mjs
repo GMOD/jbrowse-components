@@ -36,6 +36,42 @@ const DIVERGES = {
     'pages with no session alias the view directly; the rest destructure it',
 }
 
+// The other half of the rule, and the one this file was missing.
+//
+// Checking that the copies are IDENTICAL says nothing about whether they should
+// exist, so a green run sat on ~1400 redundant lines and the "publish the block"
+// escape hatch in CLAUDE.md only ever fired when somebody happened to look. This
+// is the question, asked automatically: a block copied into COPY_THRESHOLD files
+// or more has to be listed here with a reason it is the reader's own to write.
+//
+// Not a line budget. A line budget fails when a page is added, which is not the
+// event worth interrupting; introducing a NEW widely-shared block is. The right
+// answer to a failure here is usually one of two things, and picking is the
+// whole point:
+//
+//   - the reader would write it themselves anyway (their box, their data, their
+//     app's dark-mode wiring) -> add it below, one line, with the reason
+//   - the reader would have to write it because JBrowse doesn't publish it ->
+//     that is a missing export, not a duplication problem. `usePanZoom` was
+//     eight hand-rolled copies, each worse than the one JBrowse already ran.
+const COPY_THRESHOLD = 3
+
+const COPIED = {
+  TrackRow:
+    "mounting a display is what the reader came to see, and the box it goes in is theirs to style — see EXAMPLES_SITES.md, 'the one good way out is to publish the block'",
+  TrackStack: 'ditto: the reader owns the column their tracks sit in',
+  readSiteMode:
+    "how a host knows its own colour mode is the host's business; JBrowse's half is useSessionPalette",
+  useSiteMode: "ditto — the watchers are this site's, not an embedder's",
+  volvox: "the page's own assembly, and bulk data by the fixture rule",
+  wiggleTrack: "the page's own track config: seeing the adapter is the point",
+  alignmentsTrack: 'ditto',
+  RegionBoundaries:
+    "the geometry moved to `view.paddingSpans`, the same getter PaddingBlocks itself reads; what is left is one absolutely-positioned div per span, which is the reader's to place",
+  SPAN_FILL:
+    "ditto — what a seam, a greyed genome end and an elided region look like is the reader's design system",
+}
+
 // Split a file into top-level declaration blocks. A block runs from its `const`
 // / `function` / `type` line to the next one (or to `export default`), so any
 // leading comment belongs to the block before it — which does not matter, since
@@ -86,7 +122,7 @@ for (const file of fs
     if (!byName.has(name)) {
       byName.set(name, [])
     }
-    byName.get(name).push({ file, code: code(lines) })
+    byName.get(name).push({ file, code: code(lines), lines: lines.length })
   }
 }
 
@@ -131,8 +167,54 @@ for (const name of unused) {
   console.log(`STALE DIVERGES entry "${name}" — no such block in any example`)
 }
 
+// Widely-copied blocks nobody has justified yet. DIVERGES entries are exempt:
+// those already carry a reason for existing in every file.
+const unjustified = []
+let redundantLines = 0
+for (const [name, entries] of byName) {
+  if (entries.length < 2) {
+    continue
+  }
+  redundantLines += entries
+    .slice(1)
+    .reduce((total, entry) => total + entry.lines, 0)
+  if (
+    entries.length >= COPY_THRESHOLD &&
+    !(name in COPIED) &&
+    !(name in DIVERGES)
+  ) {
+    unjustified.push({ name, files: entries.map(e => e.file) })
+  }
+}
+
+for (const { name, files } of unjustified) {
+  console.log(
+    `UNJUSTIFIED ${name} — copied into ${files.length} files with no COPIED entry:\n` +
+      `        ${files.join(', ')}\n` +
+      "      Either it is the reader's own to write (add it to COPIED with the\n" +
+      '      reason) or JBrowse should publish it and the examples should import\n' +
+      '      it like any reader would. See CLAUDE.md.',
+  )
+}
+
+const staleCopied = Object.keys(COPIED).filter(
+  n => (byName.get(n)?.length ?? 0) < COPY_THRESHOLD,
+)
+for (const name of staleCopied) {
+  console.log(
+    `STALE COPIED entry "${name}" — now in fewer than ${COPY_THRESHOLD} examples`,
+  )
+}
+
 console.log(
   `\n${shared} block(s) identical across files, ${drifted.length} drifted, ` +
-    `${Object.keys(DIVERGES).length - unused.length} allowed to diverge`,
+    `${Object.keys(DIVERGES).length - unused.length} allowed to diverge, ` +
+    `${Object.keys(COPIED).length - staleCopied.length} justified as the reader's own\n` +
+    `${redundantLines} redundant line(s) — copies beyond the first. Not a budget: ` +
+    'adding a page adds copies, which is the rule working.',
 )
-process.exit(drifted.length + unused.length ? 1 : 0)
+process.exit(
+  drifted.length + unused.length + unjustified.length + staleCopied.length
+    ? 1
+    : 0,
+)

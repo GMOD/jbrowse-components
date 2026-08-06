@@ -1,7 +1,9 @@
 import { Suspense, useEffect, useState } from 'react'
 
-import { setConf } from '@jbrowse/core/configuration'
-import { PaletteProvider } from '@jbrowse/core/ui/PaletteContext'
+import {
+  PaletteProvider,
+  useSessionPalette,
+} from '@jbrowse/core/ui/PaletteContext'
 import { useWidthSetter } from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
 import {
@@ -124,7 +126,6 @@ function makeView() {
 }
 
 type BrowserView = ReturnType<typeof makeView>['view']
-type BrowserSession = ReturnType<typeof makeView>['session']
 
 const TrackRow = observer(function TrackRow({
   view,
@@ -157,8 +158,18 @@ const TrackRow = observer(function TrackRow({
   )
 })
 
+// What each kind of span looks like is yours; that there are three is not. A
+// seam must be opaque -- regions are laid out contiguously, so both sides are
+// drawn right up to it and a see-through line tints two regions' features
+// instead of separating them.
+const SPAN_FILL = {
+  seam: 'color-mix(in srgb, CanvasText 45%, Canvas)',
+  boundary: 'color-mix(in srgb, CanvasText 12%, Canvas)',
+  elided: 'color-mix(in srgb, CanvasText 30%, Canvas)',
+}
+
 /**
- * The line between two displayed regions, which you have to draw.
+ * Everything along the row that is not track data, which you have to draw.
  *
  * A locstring with two regions in it gives the view two `displayedRegions`, and
  * they are laid out **contiguously** -- no gap, no marker. JBrowse's own
@@ -168,58 +179,59 @@ const TrackRow = observer(function TrackRow({
  * one-region view that scrolled somewhere strange, which is worth knowing
  * before you conclude the navigation didn't work.
  *
- * The geometry is two numbers off the view. `staticBlocks` is the block layout
- * it just rendered, in a pixel space that spans every displayed region;
- * `offsetPx` is where the viewport sits in that space. So a block's screen x is
- * `block.offsetPx - view.offsetPx`, and the blocks flagged
- * `isRightEndOfDisplayedRegion` are the region ends.
+ * `view.paddingSpans` is the geometry, already worked out: `{x, width, kind}`
+ * per span, `kind` being `seam` (a region's right edge), `boundary` (past the
+ * start of the first region or the end of the last) or `elided` (a region too
+ * narrow to draw at this zoom -- see the Every chromosome page, where that is
+ * most of a real assembly). Drawing only the seams is the mistake worth naming:
+ * it leaves the elided tail of a genome rendering as nothing at all.
  *
- * That flag is the only thing that means "the region ends here", which is worth
- * saying because `view.scalebarRegionEndPx` looks like a shortcut for the whole
- * filter and is not one. It is the rightmost edge per region of the blocks
- * *currently loaded*, and static blocks are ~800px chunks picked by window
- * rather than clipped to it -- so for a region wider than the viewport it is
- * the end of the last chunk, and a separator drawn there would sit inside a
- * region and slide as you scroll.
+ * The x values are in the **staticBlocks frame**, the same one `gridlineTicks`
+ * and `scalebarLabels` use -- a pixel space spanning every displayed region
+ * rather than the viewport. So one element translated by
+ * `staticBlocks.offsetPx - view.offsetPx` places every span at once, and a pan
+ * moves that one transform.
  *
- * The *last* region's right end is skipped, because it is not a seam between
- * two regions -- it is where the genome runs out. JBrowse marks that one too,
- * but it also greys out everything past it, so the line reads as the edge of a
- * filled area rather than as a stray rule floating in the track.
- *
- * Opaque rather than a translucent hairline, for the same reason JBrowse's is:
- * with the regions contiguous, both sides are drawn right up to the edge, so a
- * see-through line tints two regions' features instead of separating them.
+ * Deriving this yourself off `isRightEndOfDisplayedRegion` is a near miss twice
+ * over: `view.scalebarRegionEndPx` looks like the shortcut and is not one (it
+ * is the right edge of the blocks *currently loaded*, so inside a region wider
+ * than the viewport it slides as you scroll), and the flag is set on elided
+ * blocks too, where a bar per region at whole-genome zoom is a solid grey wall.
  */
 const RegionBoundaries = observer(function RegionBoundaries({
   view,
 }: {
   view: BrowserView
 }) {
-  const { staticBlocks, offsetPx, displayedRegions } = view
-  const lastRegionIndex = displayedRegions.length - 1
-  return staticBlocks.blocks
-    .filter(
-      block =>
-        block.isRightEndOfDisplayedRegion &&
-        block.displayedRegionIndex !== lastRegionIndex,
-    )
-    .map(block => (
-      <div
-        key={block.key}
-        aria-hidden
-        style={{
-          position: 'absolute',
-          top: 0,
-          bottom: 0,
-          left: block.offsetPx + block.widthPx - offsetPx - 1,
-          width: 3,
-          zIndex: 2,
-          pointerEvents: 'none',
-          background: 'color-mix(in srgb, CanvasText 45%, Canvas)',
-        }}
-      />
-    ))
+  const { paddingSpans, staticBlocks, offsetPx } = view
+  return (
+    <div
+      aria-hidden
+      style={{
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        left: 0,
+        zIndex: 2,
+        pointerEvents: 'none',
+        transform: `translateX(${Math.round(staticBlocks.offsetPx - offsetPx)}px)`,
+      }}
+    >
+      {paddingSpans.map(({ key, x, width, kind }) => (
+        <div
+          key={key}
+          style={{
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            left: x,
+            width,
+            background: SPAN_FILL[kind],
+          }}
+        />
+      ))}
+    </div>
+  )
 })
 
 /**
@@ -447,20 +459,19 @@ function readSiteMode(): 'light' | 'dark' {
 }
 
 /**
- * Follow whatever the page around this demo is themed as.
+ * Follow whatever the page around this demo is themed as. All of this is the
+ * *host's* half, and yours will look nothing like it -- the toggle writes an
+ * attribute on <html>, the OS preference arrives as a media query, and either
+ * can move without the other, so both are watched. Swap it for however your app
+ * already knows it is in dark mode.
  *
- * **One line of this is JBrowse's half**, the `setConf`, and it is one write
- * rather than two: the config theme is what the display ships to the renderer,
- * so the feature labels baked there follow it, and `session.palette` is derived
- * from the same slot, so what React draws follows it too. Setting only a
- * React-side palette would leave the labels behind.
- *
- * The rest is this site's own theming and yours will look nothing like it -- the
- * toggle writes an attribute on <html>, the OS preference arrives as a media
- * query, and either can move without the other, so both are watched. Swap it
- * for however your app already knows it is in dark mode.
+ * JBrowse's half is one call, `useSessionPalette` below. It writes the config
+ * slot that *both* halves of the rendering derive from -- the palette React
+ * draws with, and the theme shipped to the worker that bakes feature labels
+ * into the image -- and hands back the palette. Mounting `PaletteProvider`
+ * alone would leave those baked labels in the old mode.
  */
-function useSitePalette(session: BrowserSession) {
+function useSiteMode() {
   const [mode, setMode] = useState(readSiteMode)
   useEffect(() => {
     const update = () => {
@@ -478,17 +489,14 @@ function useSitePalette(session: BrowserSession) {
       media.removeEventListener('change', update)
     }
   }, [])
-  useEffect(() => {
-    setConf(session, 'theme', { palette: { mode } })
-  }, [session, mode])
-  return session.palette
+  return mode
 }
 
 const DriveItFromYourApp = observer(function DriveItFromYourApp() {
   const [{ view, session }] = useState(makeView)
   const ref = useWidthSetter(view)
   const { containerProps } = usePanZoom(ref, view)
-  const palette = useSitePalette(session)
+  const palette = useSessionPalette(session, useSiteMode())
 
   return (
     <PaletteProvider palette={palette}>

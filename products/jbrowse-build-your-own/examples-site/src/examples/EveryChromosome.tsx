@@ -1,7 +1,10 @@
 import { Suspense, useEffect, useState } from 'react'
 
-import { setConf } from '@jbrowse/core/configuration'
-import { PaletteProvider, usePalette } from '@jbrowse/core/ui/PaletteContext'
+import {
+  PaletteProvider,
+  usePalette,
+  useSessionPalette,
+} from '@jbrowse/core/ui/PaletteContext'
 import { useWidthSetter } from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
 import {
@@ -87,7 +90,6 @@ function makeView() {
 }
 
 type BrowserView = ReturnType<typeof makeView>['view']
-type BrowserSession = ReturnType<typeof makeView>['session']
 
 const TrackRow = observer(function TrackRow({
   view,
@@ -121,93 +123,105 @@ const TrackRow = observer(function TrackRow({
 })
 
 /**
- * The name on each region. See the Scalebar page, which explains the sticky
- * behaviour: the label of the region you are inside stays pinned to the left
- * edge while you pan past its start, instead of scrolling away with it.
+ * The name on each region, from `view.scalebarRefNameLabels`. See the Scalebar
+ * page for the three rules inside it. Two of them show up here rather than
+ * there: the label of the chromosome you are inside stays pinned to the left
+ * edge as you pan past its start, and the narrowest few bands lose their name
+ * entirely rather than abbreviate it -- `chr16` clipped to its own width reads
+ * as `chr1`, a different chromosome rather than a shortened one, and `2…` on
+ * two adjacent bands says nothing at all.
+ *
+ * That is JBrowse's own rule, so this page draws what the product draws. It is
+ * a real trade against the lead above: a band with no name is honest, and it is
+ * still a band with no name. Zooming in gives it back.
  */
 const RegionNames = observer(function RegionNames({
   view,
 }: {
   view: BrowserView
 }) {
-  const { staticBlocks, scalebarRegionEndPx, offsetPx } = view
   const palette = usePalette()
-  const blocks = staticBlocks.contentBlocks
-  const stickyIndex = Math.max(
-    blocks.findLastIndex(block => block.offsetPx < offsetPx),
-    0,
-  )
-  return blocks.map((block, i) => {
-    if (i !== stickyIndex && !block.isLeftEndOfDisplayedRegion) {
-      return null
-    }
-    // a content block always has an index, though the block type leaves it
-    // optional; -1 simply misses the map
-    const regionEndPx = scalebarRegionEndPx.get(
-      block.displayedRegionIndex ?? -1,
-    )
-    const left = Math.max(block.offsetPx - offsetPx, 0)
-    const maxWidth = (regionEndPx ?? 0) - offsetPx - left
-    return maxWidth > 0 ? (
+  return view.scalebarRefNameLabels.labels.map(
+    ({ key, text, transform, maxWidth, paddingLeft }) => (
       <span
-        key={block.key}
+        key={key}
         style={{
           position: 'absolute',
           top: 0,
-          left,
+          left: 0,
+          transform: `translateX(${transform}px)`,
           maxWidth,
-          padding: '0 3px',
+          paddingLeft,
+          // maxWidth is the label's whole box, paddingLeft included -- the fit
+          // test above measured it that way. Under content-box the padding
+          // comes off the text twice and every name wide enough to need the
+          // space is clipped mid-glyph.
+          boxSizing: 'border-box',
           background: palette.background.paper,
           color: palette.text.primary,
           fontWeight: 'bold',
-          // ellipsis, not a bare clip: clipped to its own width, `chr16` reads
-          // as `chr1`, which is a different chromosome rather than a shortened
-          // name. 8 of these 24 are too narrow for their label.
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
+          // clip, not ellipsis: a name that would not fit whole was already
+          // dropped, so there is nothing left to abbreviate
+          overflow: 'clip',
           whiteSpace: 'nowrap',
         }}
       >
-        {block.refName}
+        {text}
       </span>
-    ) : null
-  })
+    ),
+  )
 })
 
+// What each kind of span looks like is yours; that there are three is not. A
+// seam must be opaque -- regions are laid out contiguously, so both sides are
+// drawn right up to it and a see-through line tints two regions' features
+// instead of separating them.
+const SPAN_FILL = {
+  seam: 'color-mix(in srgb, CanvasText 45%, Canvas)',
+  boundary: 'color-mix(in srgb, CanvasText 12%, Canvas)',
+  elided: 'color-mix(in srgb, CanvasText 30%, Canvas)',
+}
+
 /**
- * The line between two displayed regions, which you have to draw. See the Drive
- * it from your app page for why it is opaque, why the last region's right end
- * is skipped, and where the geometry comes from.
+ * The spans along the row that are not track data -- region seams, the greyed
+ * ends of the genome, and regions too narrow to draw. `view.paddingSpans` is
+ * the geometry; see the Drive it from your app page for the frame it is in and
+ * for why deriving it yourself misses two cases.
  */
 const RegionBoundaries = observer(function RegionBoundaries({
   view,
 }: {
   view: BrowserView
 }) {
-  const { staticBlocks, offsetPx, displayedRegions } = view
-  const lastRegionIndex = displayedRegions.length - 1
-  return staticBlocks.blocks
-    .filter(
-      block =>
-        block.isRightEndOfDisplayedRegion &&
-        block.displayedRegionIndex !== lastRegionIndex,
-    )
-    .map(block => (
-      <div
-        key={block.key}
-        aria-hidden
-        style={{
-          position: 'absolute',
-          top: 0,
-          bottom: 0,
-          left: block.offsetPx + block.widthPx - offsetPx - 1,
-          width: 3,
-          zIndex: 2,
-          pointerEvents: 'none',
-          background: 'color-mix(in srgb, CanvasText 45%, Canvas)',
-        }}
-      />
-    ))
+  const { paddingSpans, staticBlocks, offsetPx } = view
+  return (
+    <div
+      aria-hidden
+      style={{
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        left: 0,
+        zIndex: 2,
+        pointerEvents: 'none',
+        transform: `translateX(${Math.round(staticBlocks.offsetPx - offsetPx)}px)`,
+      }}
+    >
+      {paddingSpans.map(({ key, x, width, kind }) => (
+        <div
+          key={key}
+          style={{
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            left: x,
+            width,
+            background: SPAN_FILL[kind],
+          }}
+        />
+      ))}
+    </div>
+  )
 })
 
 // A display paints no background of its own -- its labels are drawn straight
@@ -224,20 +238,19 @@ function readSiteMode(): 'light' | 'dark' {
 }
 
 /**
- * Follow whatever the page around this demo is themed as.
+ * Follow whatever the page around this demo is themed as. All of this is the
+ * *host's* half, and yours will look nothing like it -- the toggle writes an
+ * attribute on <html>, the OS preference arrives as a media query, and either
+ * can move without the other, so both are watched. Swap it for however your app
+ * already knows it is in dark mode.
  *
- * **One line of this is JBrowse's half**, the `setConf`, and it is one write
- * rather than two: the config theme is what the display ships to the renderer,
- * so the feature labels baked there follow it, and `session.palette` is derived
- * from the same slot, so what React draws follows it too. Setting only a
- * React-side palette would leave the labels behind.
- *
- * The rest is this site's own theming and yours will look nothing like it -- the
- * toggle writes an attribute on <html>, the OS preference arrives as a media
- * query, and either can move without the other, so both are watched. Swap it
- * for however your app already knows it is in dark mode.
+ * JBrowse's half is one call, `useSessionPalette` below. It writes the config
+ * slot that *both* halves of the rendering derive from -- the palette React
+ * draws with, and the theme shipped to the worker that bakes feature labels
+ * into the image -- and hands back the palette. Mounting `PaletteProvider`
+ * alone would leave those baked labels in the old mode.
  */
-function useSitePalette(session: BrowserSession) {
+function useSiteMode() {
   const [mode, setMode] = useState(readSiteMode)
   useEffect(() => {
     const update = () => {
@@ -255,17 +268,14 @@ function useSitePalette(session: BrowserSession) {
       media.removeEventListener('change', update)
     }
   }, [])
-  useEffect(() => {
-    setConf(session, 'theme', { palette: { mode } })
-  }, [session, mode])
-  return session.palette
+  return mode
 }
 
 const EveryChromosome = observer(function EveryChromosome() {
   const [{ view, session }] = useState(makeView)
   const ref = useWidthSetter(view)
   const { containerProps } = usePanZoom(ref, view)
-  const palette = useSitePalette(session)
+  const palette = useSessionPalette(session, useSiteMode())
 
   return (
     <PaletteProvider palette={palette}>

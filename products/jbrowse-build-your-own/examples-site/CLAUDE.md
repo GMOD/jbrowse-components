@@ -12,16 +12,38 @@ The published package an example may import from is
 names. This site is where the no-shared-helpers rule was learned: it was built
 with a `src/browser/` module first and had to be rewritten.
 
-## `check-duplication.mjs` holds the copy-paste rule up from the other side
+## `check-duplication.mjs` holds the copy-paste rule up from both sides
 
-Run by `pnpm check-links`, and unique to this site: two top-level blocks with
-the same name in two example files must be identical once comments are stripped.
-It exists because the cost of the rule is drift — a pan-handler fix has to land
-in five files, and the file that gets missed is a page teaching a bug with
-nothing to say so. A block that genuinely differs per page goes in the script's
-`DIVERGES` map **with a reason**. Keep that list short: if it starts growing,
-the shared surface has outgrown copy-paste and the answer is a different rule
-argued here, not more entries.
+Run by `pnpm check-links`, and unique to this site. It asks two questions, and
+they are not the same question.
+
+**Are the copies identical?** Two top-level blocks with the same name in two
+example files must match once comments are stripped. This exists because the
+cost of the rule is drift — a pan-handler fix has to land in five files, and the
+file that gets missed is a page teaching a bug with nothing to say so. A block
+that genuinely differs per page goes in `DIVERGES` **with a reason**.
+
+**Should the copies exist?** A block in `COPY_THRESHOLD` (3) files or more needs
+a `COPIED` entry saying why it is the reader's own to write. Identical-ness says
+nothing about this, so before `COPIED` existed a green run sat on ~1400
+redundant lines and the "publish the block" escape hatch fired only when someone
+happened to look. A failure here has two possible fixes and choosing between
+them _is_ the check:
+
+- the reader would write it anyway — their box, their track config, their app's
+  dark-mode wiring — so add the entry.
+- the reader would have to write it because JBrowse publishes no equivalent.
+  That is a missing export. `usePanZoom` was eight hand-rolled copies, each
+  worse than the gesture layer JBrowse already ran; `useSessionPalette` was
+  eight copies of a `setConf` that silently discarded the host's configured
+  theme colors.
+
+Deliberately **not** a redundant-line budget. Adding a page adds copies, which
+is the rule working; introducing a new widely-shared block is the event worth
+interrupting. The line total is printed for the trend, and gates nothing.
+
+Keep both lists short. If either starts growing, the shared surface has outgrown
+copy-paste and the answer is a different rule argued here, not more entries.
 
 ## Two measured claims this site makes, and both are ratchets
 
