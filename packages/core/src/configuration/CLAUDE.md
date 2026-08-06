@@ -22,8 +22,8 @@ Full model: `agent-docs/reference/CONFIG_PATTERN.md` and
   keys off `promotedBase` and can't see a boolean that arrives via the schema
   merge). Such a slot must be a `maybe*` type with no `defaultValue`;
   `undefined` is the only inherit sentinel. Every boundary serializing a display
-  config **must flatten** (worker, shared session). Resolved values are shared by
-  reference and frozen — build a modified value by copying.
+  config **must flatten** (worker, shared session). Resolved values are shared
+  by reference and frozen — build a modified value by copying.
 
 ## Slot overrides merge over `baseConfiguration`
 

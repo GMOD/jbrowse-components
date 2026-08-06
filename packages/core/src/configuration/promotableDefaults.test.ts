@@ -528,16 +528,11 @@ describe('promotable maybeBoolean slot', () => {
     const { session, display } = createDisplay(configSchema, {
       chevrons: false,
     })
-    const control = makePin(
-      display,
-      'chevrons',
-    )
+    const control = makePin(display, 'chevrons')
     expect(control.active).toBe(false)
     control.toggle()
     expect(session.getDisplayTypeDefault('TestDisplay', 'chevrons')).toBe(false)
-    expect(
-      makePin(display, 'chevrons').active,
-    ).toBe(true)
+    expect(makePin(display, 'chevrons').active).toBe(true)
 
     makePin(display, 'chevrons').toggle()
     expect(
@@ -651,9 +646,7 @@ describe('promotable frozen slot structural equality', () => {
       type: 'tag',
       tag: 'XT',
     })
-    expect(
-      makePin(display, 'colorBy').active,
-    ).toBe(true)
+    expect(makePin(display, 'colorBy').active).toBe(true)
   })
 
   test('promote-current control stores and clears a structurally-equal value', () => {
@@ -665,9 +658,7 @@ describe('promotable frozen slot structural equality', () => {
       tag: 'XT',
       type: 'tag',
     })
-    expect(
-      makePin(display, 'colorBy').active,
-    ).toBe(true)
+    expect(makePin(display, 'colorBy').active).toBe(true)
 
     makePin(display, 'colorBy').toggle()
     expect(

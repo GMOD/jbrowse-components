@@ -45,7 +45,4 @@ export {
   getConfigSnapshotWithPromotables,
   getTrackConfigWithPromotables,
 } from './promotableDefaults.ts'
-export type {
-  Pin,
-  TrackConfigWithPromotables,
-} from './promotableDefaults.ts'
+export type { Pin, TrackConfigWithPromotables } from './promotableDefaults.ts'

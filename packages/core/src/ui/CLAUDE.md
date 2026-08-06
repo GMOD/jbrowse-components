@@ -21,11 +21,11 @@ host's first paint. **Build a row from `@jbrowse/core/ui/menuItems`; render one
 from `@jbrowse/core/ui`.**
 
 The same rule inside a row: a menu item describes its trailing control
-(`pin: { control, label }`) and `menuItemAdornment.tsx` builds
-`PinAdornment` from it at draw time. `endAdornment` still takes a raw
-element, for content nothing can describe (synteny's colour swatch) — reach for
-it last, since a builder that sets it drags its whole component graph into every
-caller. `icon` is still an element type, which is the one of these left; see
+(`pin: { control, label }`) and `menuItemAdornment.tsx` builds `PinAdornment`
+from it at draw time. `endAdornment` still takes a raw element, for content
+nothing can describe (synteny's colour swatch) — reach for it last, since a
+builder that sets it drags its whole component graph into every caller. `icon`
+is still an element type, which is the one of these left; see
 `agent-docs/reference/EAGER_BUNDLE.md`.
 
 ## Colors
