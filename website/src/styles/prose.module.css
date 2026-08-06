@@ -31,3 +31,55 @@
 .prose :global(tbody tr:nth-child(even)) {
   background: var(--color-table-stripe);
 }
+
+/* Underlined in running prose, so a link isn't color-only. Chrome links — a
+   heading anchor, a figure's live link, a recipe dialog's buttons — are not in
+   a paragraph and keep whatever the surface gives them. */
+.prose :global(p a),
+.prose :global(li a),
+.prose :global(td a) {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+/* rehype-heading-links appends a "#" permalink inside every h2/h3/h4 it
+   renders, on every surface that runs the pipeline. This lived only in
+   DocsLayout's scoped styles once, so on the blog the glyph showed permanently
+   ("Downloads#") until a second copy was added there — one home for it, and
+   that can't recur. `!important` beats the `a:hover` underline in `quietLinks`
+   below, which outranks it on element count. */
+.prose :global(h2),
+.prose :global(h3),
+.prose :global(h4) {
+  position: relative;
+}
+.prose :global(.heading-anchor) {
+  opacity: 0;
+  margin-left: 0.4rem;
+  font-size: 0.8em;
+  font-weight: 400;
+  color: var(--color-accent);
+  text-decoration: none !important;
+  transition: opacity 0.15s;
+}
+.prose :global(h2:hover .heading-anchor),
+.prose :global(h3:hover .heading-anchor),
+.prose :global(h4:hover .heading-anchor) {
+  opacity: 1;
+}
+
+/* The docs' link base: color only, so the prose rule above is what adds the
+   underline and a chrome link stays clean. It has to live in this file rather
+   than in DocsLayout's scoped styles to lose to `.prose p a` — an Astro scoped
+   copy carries an extra `[data-astro-cid]` selector and would win, taking the
+   underline off every prose link. A separate class because only the docs opt
+   in; the blog leaves its non-prose links alone. */
+.quietLinks :global(a) {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+.quietLinks :global(a:hover) {
+  color: var(--color-accent-dark);
+  text-decoration: underline;
+}

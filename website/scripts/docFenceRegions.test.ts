@@ -1,3 +1,10 @@
+/// <reference types="jest" />
+// The one jest suite outside scripts/api-docs, and so the one covered by the
+// root tsconfig rather than that project's own. `astro check` sets no `types`,
+// so without the reference above every `test`/`expect` in here reads as an
+// undefined name — 44 errors that say nothing about the code and drown out the
+// ones that would.
+
 /**
  * The doc-fence slicer, whose failure mode is a page that quietly loses half a
  * section.
@@ -149,7 +156,7 @@ test('a nested region missing its endregion throws', () => {
 // The whole-file path: markers exist so *other* pages can slice, and would read
 // as noise in a fence showing the file entire.
 test('a whole-file include drops every marker and the trailing blank', () => {
-  expect(stripRegionMarkers(NESTED + '\n\n')).toBe(
+  expect(stripRegionMarkers(`${NESTED}\n\n`)).toBe(
     [
       '// a note that should not reach the guide',
       'export default class MyPlugin {',

@@ -1,10 +1,10 @@
 import { readFileSync, writeFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
 
 import { parseSessionSpecUrl } from '../../packages/app-core/src/SessionSpec/parseSessionSpecUrl.ts'
 import { parseProtocolUrl } from '../../products/jbrowse-desktop/electron/launchTarget.ts'
 import { buildRecipe } from '../src/lib/spec-recipe/recipe.ts'
+import { check } from './check-utils.ts'
 import { screenshotLiveUrls } from './screenshot-specs.ts'
 
 // Checks the figure recipes against every real figure link.
@@ -30,11 +30,7 @@ import { screenshotLiveUrls } from './screenshot-specs.ts'
 // swap (map one field, add another) — a real regression at an unchanged total.
 // The names make the regression the reviewable thing: a `+` line in the diff is
 // a figure whose recipe a reader can no longer follow, a `-` line is the win.
-const unmappedFile = join(
-  dirname(fileURLToPath(import.meta.url)),
-  'spec-recipe-unmapped.txt',
-)
-const check = process.argv.includes('--check')
+const unmappedFile = join(import.meta.dirname, 'spec-recipe-unmapped.txt')
 
 const unmappedCounts = new Map<string, number>()
 const roundTripFailures: string[] = []

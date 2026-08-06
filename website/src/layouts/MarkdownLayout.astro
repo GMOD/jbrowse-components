@@ -65,14 +65,6 @@ const currentSlug = segments.at(-1) ?? ''
     font-family: var(--font-mono);
     font-size: 0.9em;
   }
-  /* underlined in prose, so a link isn't color-only (matches the docs) */
-  .md :global(p a),
-  .md :global(li a),
-  .md :global(td a) {
-    text-decoration: underline;
-    text-decoration-thickness: 1px;
-    text-underline-offset: 2px;
-  }
   .md :global(hr) {
     margin: 2rem 0;
     border: none;

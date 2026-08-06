@@ -10,16 +10,17 @@
 //
 //   node website/scripts/check-specs.ts
 
+import { reportProblems } from './check-utils.ts'
 import { specs, validateSpecs } from './screenshot-specs.ts'
 
 const problems = validateSpecs()
 
-if (problems.length > 0) {
-  console.error(`${problems.length} screenshot spec problem(s):`)
-  for (const problem of problems) {
-    console.error(`  - ${problem}`)
-  }
-  process.exit(1)
-}
-
-console.log(`${specs.length} screenshot specs are well formed.`)
+reportProblems(
+  problems.length > 0
+    ? [
+        `${problems.length} screenshot spec problem(s):`,
+        ...problems.map(problem => `  - ${problem}`),
+      ]
+    : [],
+  `${specs.length} screenshot specs are well formed.`,
+)

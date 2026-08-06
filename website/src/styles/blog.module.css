@@ -31,41 +31,9 @@
   font-family: var(--font-mono);
   font-size: 0.9em;
 }
-/* underlined in prose, so a link isn't color-only (matches the docs) */
-.prose :global(p a),
-.prose :global(li a),
-.prose :global(td a) {
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 2px;
-}
 .prose :global(blockquote) {
   border-left: 4px solid var(--color-accent);
   margin: 1rem 0;
   padding: 0.5rem 1rem;
   color: var(--color-text-muted);
-}
-
-/* rehype-heading-links appends a "#" permalink inside every h2/h3/h4 it renders,
-   including blog posts. DocsLayout hides it until hover, but that rule is scoped
-   to .docs-content, so on the blog the glyph showed permanently ("Downloads#").
-   Both blog surfaces share .prose, so hide it here for both. */
-.prose :global(h2),
-.prose :global(h3),
-.prose :global(h4) {
-  position: relative;
-}
-.prose :global(.heading-anchor) {
-  opacity: 0;
-  margin-left: 0.4rem;
-  font-size: 0.8em;
-  font-weight: 400;
-  color: var(--color-accent);
-  text-decoration: none;
-  transition: opacity 0.15s;
-}
-.prose :global(h2:hover .heading-anchor),
-.prose :global(h3:hover .heading-anchor),
-.prose :global(h4:hover .heading-anchor) {
-  opacity: 1;
 }

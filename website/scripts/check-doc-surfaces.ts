@@ -34,14 +34,13 @@
 //
 // Run: `pnpm check-doc-surfaces`.
 import { readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
 
 import * as ts from 'typescript'
 
 import { reportProblems, walkFiles } from './check-utils.ts'
+import { repoRoot } from './paths.ts'
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const DOC = 'website/docs/urlparams.md'
 
 // One entry per registered `LaunchView-<type>`. The file is the launcher; the
@@ -173,7 +172,7 @@ function registeredViewTypes() {
   const out = new Set<string>()
   for (const dir of ['plugins', 'packages', 'products']) {
     for (const file of walkFiles(
-      join(root, dir),
+      join(repoRoot, dir),
       n => /\.tsx?$/.test(n) && !/\.test\.tsx?$/.test(n),
       new Set(['node_modules', 'dist', 'esm', 'cjs', 'build']),
     )) {
@@ -226,7 +225,7 @@ const OPTION_TYPES = [
 // vouch for itself.
 function handWrittenDocs() {
   return walkFiles(
-    join(root, 'website/docs'),
+    join(repoRoot, 'website/docs'),
     n => n.endsWith('.md'),
     new Set(['config', 'models', 'api']),
   )
@@ -234,8 +233,8 @@ function handWrittenDocs() {
     .join('\n')
 }
 
-const doc = readFileSync(join(root, DOC), 'utf8')
-const files = [...LAUNCHERS, ...OPTION_TYPES].map(l => join(root, l.file))
+const doc = readFileSync(join(repoRoot, DOC), 'utf8')
+const files = [...LAUNCHERS, ...OPTION_TYPES].map(l => join(repoRoot, l.file))
 const program = buildProgram(files)
 const checker = program.getTypeChecker()
 
@@ -243,7 +242,7 @@ const problems: string[] = []
 let checked = 0
 
 for (const { viewType, file, argsType } of LAUNCHERS) {
-  const fields = resolveFields(program, checker, join(root, file), argsType)
+  const fields = resolveFields(program, checker, join(repoRoot, file), argsType)
   if (!fields) {
     problems.push(`${file}: no type named ${argsType} — did it get renamed?`)
     continue
@@ -278,7 +277,7 @@ for (const viewType of registeredViewTypes()) {
 const allDocs = handWrittenDocs()
 
 for (const { label, file, optionsType } of OPTION_TYPES) {
-  const fields = resolveFields(program, checker, join(root, file), optionsType)
+  const fields = resolveFields(program, checker, join(repoRoot, file), optionsType)
   if (!fields) {
     problems.push(`${file}: no type named ${optionsType} — did it get renamed?`)
     continue

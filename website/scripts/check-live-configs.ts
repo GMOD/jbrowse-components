@@ -1,9 +1,10 @@
 import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
 
 import { CODE_BASE } from '../src/lib/code-base.ts'
+import { reportProblems } from './check-utils.ts'
+import { repoRoot } from './paths.ts'
 import { screenshotLiveUrls } from './screenshot-specs.ts'
 
 // Every figure's "Open this view in JBrowse" link is `<CODE_BASE>?config=…`, and
@@ -22,7 +23,6 @@ import { screenshotLiveUrls } from './screenshot-specs.ts'
 // Lives here rather than in a *.test.ts because jest doesn't cover website/, and
 // screenshot-specs.ts pulls puppeteer in through its barrel.
 
-const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../..')
 const network = process.argv.includes('--network')
 
 // Repo configs also published under jbrowse.org/demos, which is a stable URL a
@@ -128,15 +128,12 @@ if (network) {
 }
 
 const figures = Object.keys(screenshotLiveUrls).length
-if (problems.length > 0) {
-  console.error(
-    `\nconfigs that a reader's live link cannot load${network ? '' : ' (run with --network to also check they are published)'}:\n`,
-  )
-  for (const problem of problems) {
-    console.error(`  ${problem}\n`)
-  }
-  process.exit(1)
-}
-console.log(
+reportProblems(
+  problems.length > 0
+    ? [
+        `\nconfigs that a reader's live link cannot load${network ? '' : ' (run with --network to also check they are published)'}:\n`,
+        ...problems.map(problem => `  ${problem}\n`),
+      ]
+    : [],
   `\n${specsByConfig.size} configs across ${figures} figure links${network ? ` all load from ${CODE_BASE}` : ' are all tracked'}`,
 )
