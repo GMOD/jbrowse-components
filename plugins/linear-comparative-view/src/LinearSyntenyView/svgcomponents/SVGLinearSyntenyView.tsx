@@ -97,6 +97,7 @@ export async function renderToSvg(
     tracks: rowTracks.flatMap(r => r.tracks),
     trackLabels,
     fontSize,
+    fontFamily,
     session,
   })
   const w = width + trackLabelOffset

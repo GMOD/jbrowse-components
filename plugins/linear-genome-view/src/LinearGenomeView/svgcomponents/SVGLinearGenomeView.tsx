@@ -80,6 +80,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
     tracks,
     trackLabels,
     fontSize,
+    fontFamily,
     session,
   })
   const w = width + trackLabelOffset + legendWidth

@@ -61,6 +61,7 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
     tracks: rowTracks.flatMap(r => r.tracks),
     trackLabels,
     fontSize,
+    fontFamily,
     session,
   })
   const textOffset = labelOffset(trackLabels, textHeight)

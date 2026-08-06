@@ -222,20 +222,39 @@ export function svgTrackName(
 // Horizontal gutter reserved for 'left' track labels (0 in every other mode).
 // Takes an already-minimized-filtered track list, so the reserved width matches
 // the labels that actually get drawn.
+//
+// `fontFamily` is the export's own font option, and it has to reach the ruler
+// here: the labels are drawn in it (wrapSvgExport puts it on the root <svg>,
+// where every <text> inherits it), so measuring them in another font reserves
+// the wrong gutter — and this is the one measurement whose being wrong shows up
+// as ink outside its box rather than as a label dropped at an edge. Monospace
+// is the family that breaks it; see measureText.
+//
+// The export's other fit tests (tickLabelWidth for the ruler coordinates,
+// refNameLabelWidth for the chromosome names) still measure at the app font,
+// deliberately: they feed *drop* rules whose worst case is a label at the
+// viewport edge kept instead of dropped, and every one of them is drawn inside
+// a clip that bounds it either way. Their region-fit half also lives in
+// `getScalebarRefNameLabels`, an on-screen model getter, so making them
+// family-aware means threading an export option through screen state.
 export function trackLabelLeftOffset({
   tracks,
   trackLabels,
   fontSize,
+  fontFamily,
   session,
 }: {
   tracks: { configuration: AnyConfigurationModel }[]
   trackLabels: TrackLabelMode
   fontSize: number
+  fontFamily?: string
   session: AbstractSessionModel
 }) {
   return trackLabels === 'left'
     ? max(
-        tracks.map(t => measureText(svgTrackName(t, session), fontSize)),
+        tracks.map(t =>
+          measureText(svgTrackName(t, session), fontSize, fontFamily),
+        ),
         0,
       ) + TRACK_LABEL_GAP
     : 0
