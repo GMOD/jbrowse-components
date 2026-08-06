@@ -100,3 +100,32 @@ describe('the guide tree positions only while it describes the rows', () => {
     expect(rowNames(display)).toEqual(['panTro4', 'hg38'])
   })
 })
+
+// The adapter schemas advertise a per-sample `color` and the track guide calls
+// it "the row's color", but `MafSource` names the field `color` while the
+// sidebar's label half tints from `labelColor` — and an object with extra
+// properties satisfies `RowLabelSource`, so handing `sources` straight over
+// type-checked and dropped it. `labelSources` is the rename, and both the
+// on-screen labels and the SVG export read it.
+describe('the configured per-sample color reaches the sidebar', () => {
+  it('surfaces `color` as the `labelColor` the labels tint with', () => {
+    const { display } = createMafTestEnvironment().createDisplay()
+    display.setSamples({
+      samples: [
+        { id: 'hg38', label: 'Human', color: 'red' },
+        { id: 'mm10', label: 'Mouse' },
+      ],
+      treeNewick: undefined,
+      samplesCanonical: true,
+    })
+    expect(display.labelSources).toEqual([
+      { name: 'hg38', label: 'Human', labelColor: 'red' },
+      { name: 'mm10', label: 'Mouse', labelColor: undefined },
+    ])
+  })
+
+  it('is undefined before any fetch, like `sources`', () => {
+    const { display } = createMafTestEnvironment().createDisplay()
+    expect(display.labelSources).toBeUndefined()
+  })
+})
