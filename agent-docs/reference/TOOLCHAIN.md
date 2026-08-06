@@ -106,7 +106,12 @@ import statement records:
   renders through do.
 - **Implicit `@types`.** Nothing imports `@types/jsdom`; `tsc` picks it up
   because something imports `jsdom`. Check the *base* package, not the types
-  package.
+  package — and note the sharper version of that check ("is the base package
+  declared anywhere in the workspace?") has its own false positives, because the
+  base is sometimes not an installable package at all. `@types/aws-lambda` types
+  the AWS *runtime*, and `@types/hast` / `@types/mdast` type syntax-tree *specs*
+  that remark/rehype code imports as `import type { Root } from 'mdast'`. All
+  four are real; only the types package ever exists.
 - **Resolved by name at build time.** `@iconify-json/mdi` is never imported —
   `astro-icon` loads it because an `.astro` file wrote `<Icon name="mdi:github"/>`.
   A scanner sees the icon name, not the package.
