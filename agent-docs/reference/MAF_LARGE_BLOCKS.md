@@ -168,9 +168,14 @@ Independent of block size, and possibly the real cause of "crashes":
   **Done** (`perf(maf): emit worker mismatches as typed arrays instead of
   objects`). It now writes the packed arrays directly, so the per-base-per-row
   object rate in the worker is gone. Still a memory fix, not a speed one.
-- `MafTabixAdapter` has no cheap zoom-out path: `showSummary` requires a
-  `summaryAdapter`, which is BigMaf-only. Zoomed out it is gated, and force-load
-  removes the ceiling entirely rather than degrading.
+- ~~`MafTabixAdapter` has no cheap zoom-out path: `showSummary` requires a
+  `summaryAdapter`, which is BigMaf-only~~ **Done** (`feat(maf): give a tabix
+  MAF the zoom-out tier only bigMaf had`). `MafTabixAdapter` now declares the
+  same `summaryAdapter` slot and implements `getSummaryFeatures` through the
+  shared `mafSummaryFeatures`; point it at a `BedTabixAdapter` over the BED
+  `maf2bed --summary` writes in the same pass, or at a `bigMafSummary.bb`.
+  Still opt-in — a tabix track configured without the slot has no zoom-out path
+  and force-load remains the only way past the gate.
 
 ## Render cost is no longer the open question
 
@@ -335,8 +340,10 @@ the force-load floor. That is the mechanism that makes a deep alignment
 affordable, and it is already built. The two real gaps are both in it, not in
 the draw loop:
 
-- `MafTabixAdapter` has no summary tier at all (BigMaf-only), already listed
-  under "Still open" above. A 470-way tabix MAF has no cheap zoom-out path.
+- The summary tier is opt-in and unconfigured tracks don't have it. Both
+  `MafTabixAdapter` and `BigMafAdapter` now take a `summaryAdapter` slot (see
+  "Still open" above), but a 470-way tabix MAF written without one still has no
+  cheap zoom-out path — the tier exists, the file it reads has to be produced.
 - The identity plot is confined *below* the summary threshold — `showSummary`
   makes `activeRowRendering` fall back to the bases — so the per-species view
   built for "see all 470 species at once" is only available in the zoom range
