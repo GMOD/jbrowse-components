@@ -23,28 +23,69 @@ The same document is what every surface takes:
 - the config the [Jupyter widget](/docs/jbrowse_jupyter) and [](/docs/jbrowser)
   helpers build for you
 
-So a session JSON copied out of a shared URL renders as a figure from the
-command line, and a config written for jbrowse-web opens on the desktop.
-
 ## What is in it
+
+A whole config: the genome, one track, and the view to open on.
 
 ```json
 {
-  "assemblies": [/* the genomes */],
-  "tracks": [/* what data to load, and how to draw it */],
-  "defaultSession": {/* which views open, where, with which tracks */}
+  "assemblies": [
+    {
+      "name": "hg38",
+      "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+    }
+  ],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "ncbi_genes",
+      "name": "NCBI RefSeq genes",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz"
+      }
+    }
+  ],
+  "defaultSession": {
+    "name": "BRCA1",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "init": {
+          "assembly": "hg38",
+          "loc": "chr17:43,044,295-43,170,245",
+          "tracks": ["ncbi_genes"]
+        }
+      }
+    ]
+  }
 }
 ```
 
-[](/docs/config_guides/intro) covers the top-level fields, and
-[](/docs/config_guides/default_session) the session object. Track settings —
-height, color-by, filters, display mode — are configuration slots, the same ones
-the track menu writes, so a view set up by clicking around exports to JSON and
-pastes back in as a `defaultSession`.
+Save that as `hg38.json` and jbrowse-web opens on it. The same file renders a
+PNG with no browser involved:
 
-For launching a view rather than describing saved state, the `init` block takes
-an assembly, a locstring, and a track list — the same fields whether they arrive
-from a URL, a config file, or an embedded prop. See [](/docs/automating).
+```bash
+jb2export --config hg38.json --assembly hg38 \
+  --loc chr17:43,044,295-43,170,245 --track ncbi_genes --out brca1.png
+```
+
+and the `init` block is what a URL carries as parameters, so the same view is
+also a link:
+
+```
+?config=hg38.json&assembly=hg38&loc=chr17:43,044,295-43,170,245&tracks=ncbi_genes
+```
+
+[](/docs/config_guides/intro) covers the top-level fields,
+[](/docs/config_guides/default_session) the session object, and
+[](/docs/automating) the `init` block, whose fields are the same whether they
+arrive from a URL, a config file, or an embedded prop.
+
+Track settings — height, color-by, filters, display mode — are configuration
+slots, the same ones the track menu writes, so a view set up by clicking around
+exports to JSON and pastes back in as a `defaultSession`.
 
 ## The reference is generated from the source
 
