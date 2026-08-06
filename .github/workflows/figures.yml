@@ -90,8 +90,16 @@ jobs:
       # The generator shells out to ImageMagick and pngquant for the diff gate
       # and the optimizer; without them every capture would ship unquantized and
       # the content-stable gate could not run at all.
-      - name: Install ImageMagick and pngquant
-        run: sudo apt-get update && sudo apt-get -y install imagemagick pngquant
+      # librsvg2-bin is for the jb2export specs, not the diff gate: jb2export
+      # renders SVG and shells out to `rsvg-convert` whenever --out ends in
+      # .png, so without it all 26 of them die on `spawnSync rsvg-convert
+      # ENOENT`. website/docs/jbrowse-img.md has always named the package; the
+      # runner just never installed it, and the ESM build gap above was masking
+      # this one — those specs could not get far enough to reach the converter.
+      - name: Install ImageMagick, pngquant and rsvg-convert
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install imagemagick pngquant librsvg2-bin
       # Fails the run when a SPEC fails — a view that would not launch, a display
       # that never painted, an error banner in the frame. A figure that merely
       # moved is not a failure; it is the artifact below.
