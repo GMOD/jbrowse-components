@@ -4,14 +4,12 @@ import {
   pluginLabel,
   samePlugin,
 } from '@jbrowse/core/pluginDefinitions'
-import { onPatch } from '@jbrowse/mobx-state-tree'
 
 import createModel from './createModel.ts'
 
 import type { ViewModel } from './createModel.ts'
 import type { PluginsUpdate } from './rootModel/rootModel.ts'
 import type { Config, PluginInput, SessionSnapshot } from './types.ts'
-import type { IJsonPatch } from '@jbrowse/mobx-state-tree'
 
 export interface CreateViewStateOptions {
   config: Config
@@ -24,7 +22,6 @@ export interface CreateViewStateOptions {
    * state rather than to whatever was restored.
    */
   session?: SessionSnapshot
-  onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
   makeWorkerInstance?: () => Worker
   /**
    * Called when something changes the plugin set — the plugin store widget,
@@ -45,7 +42,6 @@ export default function createViewState(
     config,
     plugins = [],
     session,
-    onChange,
     onPluginsUpdated,
     makeWorkerInstance,
   } = opts
@@ -113,8 +109,5 @@ export default function createViewState(
     )
   }
 
-  if (onChange) {
-    onPatch(stateTree, onChange)
-  }
   return stateTree
 }

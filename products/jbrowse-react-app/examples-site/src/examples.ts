@@ -31,10 +31,10 @@ export const pages: ExamplePage[] = [
           'Use the built-in dark theme via the config theme palette.',
       },
       {
-        slug: 'with-on-change',
-        title: 'Observe state with onChange',
+        slug: 'observe-session',
+        title: 'Observe the session',
         description:
-          'onChange fires on every MST patch — persist the session, drive undo/redo, or sync external UI.',
+          'Wrap in mobx-react observer and read the session getters — which views are open, where each is looking.',
       },
       {
         slug: 'session-in-url',

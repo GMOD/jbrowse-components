@@ -166,9 +166,6 @@ worker, since the worker resolves its own copy.
 
 ## The remaining options
 
-`onChange` receives every MST JSON patch and its inverse, which is what you
-persist a session from, or build undo on.
-
 `disableAddTracks` hides the single-view components' own "add track"
 affordances, for a page where the track set is yours to decide rather than the
 reader's.

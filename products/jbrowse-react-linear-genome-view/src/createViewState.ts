@@ -1,5 +1,4 @@
 import { assembleLocString } from '@jbrowse/core/util'
-import { onPatch } from '@jbrowse/mobx-state-tree'
 
 import createModel from './createModel/index.ts'
 
@@ -8,7 +7,7 @@ import type {
   createSessionModel,
 } from './createModel/index.ts'
 import type { ParsedLocString } from '@jbrowse/core/util'
-import type { IJsonPatch, SnapshotIn } from '@jbrowse/mobx-state-tree'
+import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
 import type { HighlightType } from '@jbrowse/plugin-linear-genome-view'
 import type {
   PluginInput,
@@ -37,7 +36,6 @@ export interface CreateViewStateBaseOptions {
    */
   plugins?: PluginInput[]
   disableAddTracks?: boolean
-  onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
   makeWorkerInstance?: () => Worker
   drawerViewHeight?: string
 }
@@ -68,7 +66,6 @@ export default function createViewState(opts: ViewStateOptions) {
     plugins = [],
     location,
     highlight,
-    onChange,
     disableAddTracks = false,
     makeWorkerInstance,
     defaultSession,
@@ -122,9 +119,6 @@ export default function createViewState(opts: ViewStateOptions) {
         : undefined,
       highlight,
     })
-  }
-  if (onChange) {
-    onPatch(stateTree, onChange)
   }
   return stateTree
 }

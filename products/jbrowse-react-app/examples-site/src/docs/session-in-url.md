@@ -20,5 +20,6 @@ to be yours — only your app knows the URL its page is served at; pass it as
 `headerButtons` to land it where JBrowse Web puts Share.
 
 To keep a session rather than share it, send the same snapshot to
-`localStorage`; [onChange](../customizing-the-app/#with-on-change) tells you
-when it changed.
+`localStorage`. What tells you it changed is
+[observing the session](../customizing-the-app/#observe-session), not a
+callback.

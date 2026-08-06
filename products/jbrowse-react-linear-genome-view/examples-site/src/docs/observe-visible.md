@@ -17,6 +17,6 @@ frame of a drag.
 
 Anything marked `#getter` or `#property` in the
 [state model](https://jbrowse.org/jb2/docs/models/lineargenomeview/) is reactive
-and safe to read. `createViewState` also takes `onChange(patch, reversePatch)`,
-a raw MST JSON patch per change — what you'd build undo/redo on, where
-`observer` is what you want for keeping UI in sync.
+and safe to read. That is the whole read API: there is no change callback to
+subscribe to, because `observer` already re-renders exactly the components that
+read what changed.

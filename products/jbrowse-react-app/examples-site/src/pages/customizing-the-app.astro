@@ -1,8 +1,8 @@
 ---
 import DarkTheme from '../examples/DarkTheme.tsx'
 import darkThemeCode from '../examples/DarkTheme.tsx?raw'
-import WithOnChange from '../examples/WithOnChange.tsx'
-import withOnChangeCode from '../examples/WithOnChange.tsx?raw'
+import ObserveSession from '../examples/ObserveSession.tsx'
+import observeSessionCode from '../examples/ObserveSession.tsx?raw'
 import SessionInUrl from '../examples/SessionInUrl.tsx'
 import sessionInUrlCode from '../examples/SessionInUrl.tsx?raw'
 import FitToContainer from '../examples/FitToContainer.tsx'
@@ -15,7 +15,7 @@ import Section from '../layouts/ExampleSection.astro'
 
 const page = pages.find(p => p.slug === 'customizing-the-app')!
 const darkTheme = section(page, 'dark-theme')
-const withOnChange = section(page, 'with-on-change')
+const observeSession = section(page, 'observe-session')
 const sessionInUrl = section(page, 'session-in-url')
 const fitToContainer = section(page, 'fit-to-container')
 const withWebWorker = section(page, 'with-web-worker')
@@ -25,8 +25,8 @@ const withWebWorker = section(page, 'with-web-worker')
   <Section {...darkTheme} code={darkThemeCode}>
     <DarkTheme client:only="react" />
   </Section>
-  <Section {...withOnChange} code={withOnChangeCode}>
-    <WithOnChange client:only="react" />
+  <Section {...observeSession} code={observeSessionCode}>
+    <ObserveSession client:only="react" />
   </Section>
   <Section {...sessionInUrl} code={sessionInUrlCode}>
     <SessionInUrl client:only="react" />
