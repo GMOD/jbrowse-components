@@ -137,19 +137,13 @@ in the file raises an error listing the samples the file does hold, so the
 mapping can be written from what the error reports.
 
 To add the track from the command line instead of editing the config by hand,
-name the adapter with `--adapterType`. A `.paf` extension on its own is inferred
-as the pairwise `PAFAdapter`, which reads only the first two assembly names and
-drops every other strain's blocks:
-
-```bash
-jbrowse add-track all_vs_all.paf --adapterType AllVsAllPAFAdapter \
-  --trackId ecoli_ava -a K12,Sakai,CFT073,NCTC86,IAI39 --load copy
-```
-
-`-a` fills in both the track's and the adapter's `assemblyNames`. Unlike a
-pairwise PAF track, where `-a` is `query,target`, order does not matter here:
-one all-vs-all file backs every pair, so `-a` is simply the full set of
-assemblies it covers.
+use the CLI tab on the block above. It spells the adapter out with
+`--adapterType`, because a `.paf` extension on its own is inferred as the
+pairwise `PAFAdapter`, which reads only the first two assembly names and drops
+every other strain's blocks. One `--assemblyNames` fills in both the track's and
+the adapter's, and unlike a pairwise PAF track, where it is `query,target`,
+order does not matter here: one all-vs-all file backs every pair, so it is
+simply the full set of assemblies the file covers.
 
 ### Haplotype-resolved genomes
 
