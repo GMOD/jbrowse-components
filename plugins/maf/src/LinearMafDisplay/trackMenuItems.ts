@@ -4,6 +4,7 @@ import { checkboxItem } from '@jbrowse/core/ui/menuItems'
 import { getSession } from '@jbrowse/core/util'
 import {
   clearSubtreeFilterMenuItems,
+  resetRowOrderMenuItems,
   treeBranchLengthMenuItem,
 } from '@jbrowse/tree-sidebar'
 import { makeRadioSubMenu } from '@jbrowse/wiggle-core'
@@ -89,10 +90,13 @@ interface MafMenuSelf extends IStateTreeNode {
   setShowInversions: (f: boolean) => void
   setRowIdentityAutoZoom: (f: boolean) => void
   setSubtreeFilter: (names?: string[]) => void
+  // The row order the arrangement dialog writes, and the reset that drops it
+  // (`resetRowOrderMenuItems` gates on the first and calls the second).
+  layout: readonly MafSource[]
+  clearLayout: () => void
   // Consumed structurally by SetRowArrangementDialog's TreeLayoutModel<MafSource>
   // prop (model={self}), not directly in this file.
   setLayout: (s: MafSource[]) => void
-  clearLayout: () => void
   willClearTree: (s: MafSource[]) => boolean
 }
 
@@ -279,8 +283,12 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
         ])
       },
     },
-    // maf has no "Clustering" submenu to file this under (its tree is the
-    // adapter's guide tree, not a run), so it takes the shared item directly.
+    // maf has no "Clustering" submenu to file these under (its tree is the
+    // adapter's guide tree, not a run), so it takes the shared items directly.
+    // The reset is the way back from a drag-reorder in the dialog above, which
+    // until now was undoable only from inside that dialog — `clearLayout` was
+    // declared on this menu's model and called by nothing.
+    ...resetRowOrderMenuItems(self),
     ...clearSubtreeFilterMenuItems(self),
   ]
 }

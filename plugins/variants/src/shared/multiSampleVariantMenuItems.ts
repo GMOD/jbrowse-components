@@ -1,7 +1,10 @@
 import { makeSizeMenu } from '@jbrowse/core/ui'
 import { assembleLocString, getSession } from '@jbrowse/core/util'
 import { copyText } from '@jbrowse/core/util/copyText'
-import { clusteringMenuItem } from '@jbrowse/tree-sidebar'
+import {
+  clusteringMenuItem,
+  resetRowOrderMenuItems,
+} from '@jbrowse/tree-sidebar'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import FilterAltIcon from '@mui/icons-material/FilterAlt'
 import HeightIcon from '@mui/icons-material/Height'
@@ -336,6 +339,11 @@ export function variantTrackMenuItems(
         ])
       },
     },
+    // Three things write this display's row order — a clustering run, the
+    // arrangement dialog, and the right-click "Sort by genotype" below — and
+    // until now the only way back from any of them was the dialog's own reset,
+    // which is a strange place to look for the undo of a right-click.
+    ...resetRowOrderMenuItems(self),
   ]
 }
 
@@ -377,6 +385,9 @@ export function variantContextMenuItems(
             self.sortByGenotype(feat.id())
           },
         },
+        // the undo for the item above, in the menu it was invoked from — the
+        // same item the track menu spreads, so it must not read as two actions
+        ...resetRowOrderMenuItems(self),
       ]
     : []
 }

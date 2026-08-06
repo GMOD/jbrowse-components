@@ -2,6 +2,18 @@ import { rowOrderByValueAt } from './rowOrderByValueAt.ts'
 
 import type { RowValueRegion } from './rowOrderByValueAt.ts'
 
+// The rows being ordered: only `name` is read, so this stands in for the
+// display's layout-merged sources.
+function rows(...names: string[]) {
+  return names.map(name => ({ name }))
+}
+
+function order(names: string[], regions: RowValueRegion[], pos: number) {
+  return rowOrderByValueAt(rows(...names), regions, 'chr4', pos).map(
+    s => s.name,
+  )
+}
+
 function region(
   refName: string,
   feats: { start: number; end: number; color: number; row: number }[],
@@ -30,9 +42,8 @@ test('groups rows by the value at pos; absent rows sort last (stable)', () => {
       ['a', 'b', 'c'],
     ),
   ]
-  const order = rowOrderByValueAt(['a', 'b', 'c', 'd'], regions, 'chr4', 50)
   // reds (a,c) first in original order, then blue (b), then valueless (d)
-  expect(order).toEqual(['a', 'c', 'b', 'd'])
+  expect(order(['a', 'b', 'c', 'd'], regions, 50)).toEqual(['a', 'c', 'b', 'd'])
 })
 
 test('ignores regions on other refNames (numeric pos overlap)', () => {
@@ -41,9 +52,8 @@ test('ignores regions on other refNames (numeric pos overlap)', () => {
     // chr5 also spans pos 50 numerically, but must not affect a chr4 sort
     region('chr5', [{ start: 0, end: 100, color: 9, row: 0 }], ['b']),
   ]
-  const order = rowOrderByValueAt(['a', 'b'], regions, 'chr4', 50)
   // a has a chr4 value, b does not (its match is on chr5) → b sorts last
-  expect(order).toEqual(['a', 'b'])
+  expect(order(['a', 'b'], regions, 50)).toEqual(['a', 'b'])
 })
 
 test('pos outside every feature leaves the original order', () => {
@@ -57,8 +67,5 @@ test('pos outside every feature leaves the original order', () => {
       ['a', 'b'],
     ),
   ]
-  expect(rowOrderByValueAt(['a', 'b'], regions, 'chr4', 500)).toEqual([
-    'a',
-    'b',
-  ])
+  expect(order(['a', 'b'], regions, 500)).toEqual(['a', 'b'])
 })

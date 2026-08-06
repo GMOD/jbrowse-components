@@ -61,18 +61,27 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
       view.visibleRegions,
       event.clientX - rect.left,
     )
-    // preventDefault only when a menu opens, so a right-click in the
-    // inter-region gutter, or on the tree sidebar overlaying this container
-    // with its own node menu, falls through instead of being a dead zone
-    if (hit) {
+    if (!hit) {
+      return
+    }
+    // Opened first, then asked what it holds: the items are built from the
+    // position, so there is no answer before the position is set. An overlay
+    // rendering with no row order written has neither item — closing again and
+    // letting the browser menu through beats suppressing it to show nothing,
+    // which on a canvas costs the reader "Save image as...". Same reason the
+    // `hit` guard above exists for the inter-region gutter and the tree
+    // sidebar, which overlays this container and owns its own node menu.
+    model.openContextMenu({
+      clientX: event.clientX,
+      clientY: event.clientY,
+      ...hit,
+    })
+    if (model.contextMenuItems().length === 0) {
+      model.closeContextMenu()
+    } else {
       event.preventDefault()
       // the tooltip and crosshair would otherwise sit behind the menu
       model.setFeatureUnderMouse(undefined)
-      model.openContextMenu({
-        clientX: event.clientX,
-        clientY: event.clientY,
-        ...hit,
-      })
     }
   }
 

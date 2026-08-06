@@ -769,17 +769,12 @@ export default function stateModelFactory(
           ...data,
           refName: self.loadedRegions.get(index)?.refName ?? '',
         }))
-        const byName = new Map(self.editableSources.map(s => [s.name, s]))
-        const order = rowOrderByValueAt(
-          self.editableSources.map(s => s.name),
-          regions,
-          refName,
-          pos,
-        )
+        // editableSources, not `sources`: layout-merged (so a user's colors
+        // survive the reorder) and unfiltered by the subtree, so a focused
+        // clade doesn't persist itself as the whole row order and drop
+        // everything it was hiding.
         self.setLayout(
-          order
-            .map(n => byName.get(n))
-            .filter((s): s is MultiRowSource => s !== undefined),
+          rowOrderByValueAt(self.editableSources, regions, refName, pos),
         )
       },
       /**

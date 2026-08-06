@@ -104,7 +104,7 @@ for (const path of sources) {
 
 checkOrWrite({
   path: listFile,
-  content: HEADER + [...hosts].sort().join('\n') + '\n',
+  content: `${HEADER}${[...hosts].sort().join('\n')}\n`,
   label: 'third-party hosts in figure specs',
   staleHint:
     'a spec now fetches from a server we do not run. Mirror the asset onto ' +

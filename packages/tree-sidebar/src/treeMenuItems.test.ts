@@ -1,5 +1,8 @@
 import { clusterProvenanceFromRegions } from './clusterProvenance.ts'
-import { clusterProvenanceMenuItems } from './treeMenuItems.ts'
+import {
+  clusterProvenanceMenuItems,
+  resetRowOrderMenuItems,
+} from './treeMenuItems.ts'
 
 const CLUSTERED_AT = { refName: 'ctgA', start: 1000, end: 2000 }
 
@@ -36,5 +39,34 @@ describe('clusterProvenanceMenuItems', () => {
   // list rather than a disabled placeholder.
   it('contributes nothing for a tree that was not computed here', () => {
     expect(clusterProvenanceMenuItems({})).toEqual([])
+  })
+})
+
+// Four menus across four displays spread this one item — multi-wiggle's track
+// and context menus, multi-row features' pair, the two multi-sample variant
+// menus, and maf's. They used to spell it out each, held together by comments
+// asserting they were one action.
+describe('resetRowOrderMenuItems', () => {
+  it('offers the reset once a row order has been written', () => {
+    const clearLayout = jest.fn()
+    const [item] = resetRowOrderMenuItems({
+      layout: [{ name: 'b' }, { name: 'a' }],
+      clearLayout,
+    })
+
+    expect(item).toMatchObject({ label: 'Reset row order' })
+    if (item && 'onClick' in item) {
+      item.onClick()
+    }
+    expect(clearLayout).toHaveBeenCalled()
+  })
+
+  // Gated on `layout`, not on `clusterTree`: a clustering run is only one of the
+  // things that writes the order — the arrangement dialog and the right-click
+  // sorts write it with no tree at all, and this is what undoes those too.
+  it('contributes nothing while the rows are in discovered order', () => {
+    expect(
+      resetRowOrderMenuItems({ layout: [], clearLayout: jest.fn() }),
+    ).toEqual([])
   })
 })

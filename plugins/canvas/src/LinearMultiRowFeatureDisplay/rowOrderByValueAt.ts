@@ -16,12 +16,17 @@ export interface RowValueRegion {
 // coat-color QTL painting sorted at its peak resolves into one block per allele.
 // Rows with no feature at pos sort last, keeping their original relative order;
 // the sort is otherwise stable.
-export function rowOrderByValueAt(
-  sourceNames: string[],
+//
+// Returns the rows themselves rather than their names, so the caller writes the
+// result straight to `layout` — the rows it hands in are already layout-merged,
+// and a name round-trip would only re-look-up what it had. Same shape as
+// multi-wiggle's `sortSourcesByScoreAt`.
+export function rowOrderByValueAt<T extends { name: string }>(
+  sources: T[],
   regions: RowValueRegion[],
   refName: string,
   pos: number,
-): string[] {
+): T[] {
   const valueByRow = new Map<string, number>()
   for (const r of regions) {
     if (r.refName !== refName) {
@@ -37,12 +42,12 @@ export function rowOrderByValueAt(
       }
     }
   }
-  return sourceNames
-    .map((name, idx) => ({ name, idx, v: valueByRow.get(name) }))
+  return sources
+    .map((source, idx) => ({ source, idx, v: valueByRow.get(source.name) }))
     .sort((a, b) => {
-      const av = a.v ?? Infinity
-      const bv = b.v ?? Infinity
+      const av = a.v ?? Number.POSITIVE_INFINITY
+      const bv = b.v ?? Number.POSITIVE_INFINITY
       return av !== bv ? av - bv : a.idx - b.idx
     })
-    .map(x => x.name)
+    .map(x => x.source)
 }
