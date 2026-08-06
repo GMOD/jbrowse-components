@@ -50,14 +50,17 @@ const SV = 'COLO829_somatic_sv'
 // what makes the wall of clipping legible as a wall.
 const SUPER_COMPACT = { featureHeight: 1 }
 
-// The two halves of cancer_sv/multihop_reads: the evidence at one breakpoint and
-// the chain across all three loci, side by side rather than a screen of figure
-// each. `+append` needs them the same height, but not the same width, so the
-// tumour/normal half takes the narrower one: a 3.4 kb window with two pileups in
-// it says what it has to say in less page than the three-locus chain does.
-const MULTIHOP_HEIGHT = 885
-const MULTIHOP_WIDTH = 940
-const MULTIHOP_NARROW_WIDTH = 660
+// The tumour/normal contrast at one breakpoint. It used to be the left half of
+// cancer_sv/multihop_reads, whose right half was a three-panel split view built
+// from a session spec — i.e. from loci a reader could only get by reading
+// sv_multihop.py's output. That is the thing the review asked us to stop
+// teaching ("i dont like that it was manually generated like this. i want it
+// more automatic ... if that is done in cancer_sv/multihop_split_view_steps then
+// just delete this figure"), and the steps figure does do it, from the reads.
+// So the manual half and the compose are gone and this one stands alone, which
+// is also why it is no longer sized to share a height with anything.
+const MULTIHOP_HEIGHT = 875
+const MULTIHOP_WIDTH = 900
 
 // K562's Iso-Seq is ~600x over BCR and the split-read subset of it is still
 // ~250 rows, so the row height is what decides whether the pileup ends inside
@@ -359,11 +362,8 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'cancer_sv/multihop_tumour_vs_normal',
-    // this and multihop_split_view are the two halves of
-    // cancer_sv/multihop_reads, which +appends them, so the two share a HEIGHT;
-    // this half is the narrower of the two
     viewportHeight: MULTIHOP_HEIGHT,
-    viewportWidth: MULTIHOP_NARROW_WIDTH,
+    viewportWidth: MULTIHOP_WIDTH,
     url: lgvSession(CONFIG, {
       assembly: 'hg38',
       // tight enough that both chr3 breakpoints (25,359,111 and 25,359,568) sit
@@ -371,8 +371,9 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
       loc: 'chr3:25,357,600-25,361,000',
       tracks: [
         // no gene track: this window is deep inside RARB's first intron, so the
-        // glyph is a line with arrows on it, and the three-locus half of the
-        // composed figure already names every gene
+        // glyph is a line with arrows on it, and the split view one section down
+        // names every gene the chain touches
+        //
         // both breakends, not one and a half: nanomonsv calls the chr12 and the
         // chr10 hop separately here, and each draws three lines (marker, name,
         // the ALT that carries the partner locus). At 60px the second one was
@@ -386,8 +387,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         // Each track is the size of its own pileup at one row per pixel, and
         // MULTIHOP_HEIGHT is set from the total: a taller track here is blank
         // page under the reads rather than more of them. Measured off the
-        // render, the pileups draw 259px and 129px, so these are the depths plus
-        // a margin and the 70px the SV lane gained came out of the slack.
+        // render, the pileups draw 259px and 129px.
         {
           trackId: TUMOUR,
           showSoftClipping: true,
@@ -402,60 +402,6 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-  },
-
-  // The same three loci side by side. Reads that leave one panel arrive in the
-  // next, so the chain can be followed panel to panel instead of inferred from
-  // breakend brackets.
-  {
-    mode: 'url',
-    name: 'cancer_sv/multihop_split_view',
-    viewportHeight: MULTIHOP_HEIGHT,
-    viewportWidth: MULTIHOP_WIDTH,
-    url: sessionSpec(CONFIG, {
-      views: [
-        {
-          type: 'BreakpointSplitView',
-          displayName: 'RARB (chr3) - BICC1 (chr10) - TRHDE (chr12)',
-          // `views`, not `init`: the LaunchView handler a session spec goes
-          // through takes the panel list flat, while `init` is the
-          // config/defaultSession form
-          //
-          // Read-track heights follow each locus's depth (chr3 is the 200x
-          // primary tumour window, the two hops are 60-70x), so a panel is the
-          // size of its own pileup rather than 250px of white under a short one.
-          views: [
-            { loc: HOPS.rarb, readHeight: 140, geneHeight: 45 },
-            { loc: HOPS.bicc1, readHeight: 75, geneHeight: 50 },
-            // the chr12 window is the one that clears a gene's 5' end, so it
-            // stacks TRHDE over TRHDE-AS1 and needs the second row
-            { loc: HOPS.trhde, readHeight: 85, geneHeight: 75 },
-          ].map(({ loc, readHeight, geneHeight }) => ({
-            assembly: 'hg38',
-            loc,
-            tracks: [
-              { ...GENE_TRACK, height: geneHeight },
-              { trackId: TUMOUR, height: readHeight, ...SUPER_COMPACT },
-            ],
-          })),
-        },
-      ],
-    }),
-  },
-
-  // The two above as one figure, since they are one event twice: the reads clip
-  // at the chr3 breakpoint on the left, and the panels on the right are where
-  // the clipped halves went. Side by side rather than stacked, because they are
-  // alternative views of the same locus rather than steps of a procedure, and
-  // because two screens of pileup down a tutorial page is a lot of page.
-  {
-    mode: 'compose',
-    name: 'cancer_sv/multihop_reads',
-    parts: [
-      'cancer_sv/multihop_tumour_vs_normal',
-      'cancer_sv/multihop_split_view',
-    ],
-    direction: 'horizontal',
   },
 
   // How the multi-hop split view is made, since the figure above is a session

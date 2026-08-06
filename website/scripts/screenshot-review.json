@@ -2418,13 +2418,6 @@
     "reviewedAt": "2026-08-06T06:01:28.027Z",
     "hash": "0628a9092b6b806b0be019484be85d6d74b0dc55"
   },
-  "cancer_sv/multihop_reads": {
-    "name": "cancer_sv/multihop_reads",
-    "status": "bad",
-    "note": "i dont like that it was manually generated like this. i want it more automatic. similar to the reconstruct derived allele made that work, it should be able to launch  multilevel breakpoint split view automatic too. if that is done in cancer_sv/multihop_split_view_steps  then just delete this figure. HOW IT WAS GENERATED, which was the ask: a session spec, and the only route the tutorial documented was Add -> Breakpoint split view with three loci typed into the import form -- loci a reader can only get by reading sv_multihop.py's output. That is the thing you said to avoid, so instead of screenshotting the form, the dialog that already knows the answer got a second destination. WHAT WAS BUILT: 'Open as split view' in the Reconstruct derivative allele dialog (fd705fd256). The dialog already scans the reads in the window, groups them by their SA chains and ranks the routes through the reference they describe; picking one and choosing this builds a BreakpointSplitView with one panel per SEGMENT of that route, in the order the reads cross it, carrying the launching view's tracks. Nothing is typed. One panel per segment rather than per chromosome is the part a hand-filled form cannot do: this chain leaves chr3 and returns to it, so it gets four panels and a person filling in rows types three. Each panel opens on the junction its segment carries rather than on the whole segment -- an outer segment is as long as the longest read that described it, and at 200x ONT a panel over 33 kb of one is a 17 MB fetch the alignments track refuses. NEW FIGURE cancer_sv/multihop_split_view_steps, two frames driving the real UI: the dialog over the pileup it scanned, and the view it built with the reads drawn crossing between panels. The tutorial teaches that route now and mentions the import form only as the way in when you already know the loci. Tests: buildSplitViewFromPath.test.ts covers the order, the revisit case, the junction windowing and the id stripping.",
-    "reviewedAt": "2026-08-06T05:19:07.542Z",
-    "hash": "577c5578df93cbfb6e1d81817fafb396b14045cd"
-  },
   "cancer_sv/derivative_inserts": {
     "name": "cancer_sv/derivative_inserts",
     "status": "good",
@@ -2439,19 +2432,12 @@
     "reviewedAt": "2026-08-04T04:31:26.708Z",
     "hash": "0727f33eb479e2d5663e32e64940646124b48ea7"
   },
-  "cancer_sv/multihop_split_view": {
-    "name": "cancer_sv/multihop_split_view",
-    "status": "answered",
-    "note": "\"ALREADY DONE, one section down\" we might want to make it a multi-part figure then?? previous notes; it would be ideal if we could  work harder to get the derivative assembly and plot it versus the reference assembly with linearsyntenyview ALREADY DONE, one section down, and this is the tutorial that does it: scripts/sv_multihop.py derive reconstructs the derivative allele from the spanning reads and cancer_sv/derivative_synteny plots that contig against the three reference loci in a LinearSyntenyView, with cancer_sv/derivative_inserts as the base-scale zoom. This figure is the step before it -- the same event in reference coordinates -- and the prose above it now points at the synteny view as \"the next section\" rather than \"two sections down\". The split view is also what the reader can reach without running anything, which is why it stays. Its panels shrank with the composed figure (see the tumour_vs_normal note). IT ALREADY IS ONE. This spec is not published on its own: it is the wide half of cancer_sv/multihop_reads, which +appends it beside multihop_tumour_vs_normal, and that compose is the only <Figure> the section carries. Folding the derivative synteny in as a third panel is the thing not done, deliberately: derivative_synteny sits 84 lines further down under its own heading, after the section that explains reconstructing the allele, and a reader meets it there having been told what it is.",
-    "reviewedAt": "2026-08-02T23:00:02.449Z",
-    "hash": "21fcdd2149652a25ae8e654de963fec11252bdf3"
-  },
   "cancer_sv/multihop_tumour_vs_normal": {
     "name": "cancer_sv/multihop_tumour_vs_normal",
     "status": "answered",
-    "note": "Smaller as recorded, and one real defect fixed: nanomonsv calls both hops here (chr12 and chr10) and the 60px SV lane was slicing the second record through its name with the rest behind the track's own scrollbar. That lane is 130px now and the 70px came out of the two pileups' measured slack (they draw 259px and 269px), so the composed figure is the same height and the second breakend reads out in full: r_12_1 G]CHR10:58717464].",
-    "reviewedAt": "2026-08-04T21:03:35.864Z",
-    "hash": "42ed0983c919abb8253b1188fbb5186a984db6ef"
+    "note": "Now standalone, and wider (900x875) because it no longer shares a height with anything. Its other half — the three-panel split view built from a session spec, i.e. from loci a reader could only get by reading sv_multihop.py's output — is deleted along with the compose, per the multihop_reads note: the automatic route IS the figure one section down, and that section now also says every panel opens on the same span centred on its junction.",
+    "reviewedAt": "2026-08-06T06:50:33.435Z",
+    "hash": "84759584e1423d869358dc9119418ad3f2726a65"
   },
   "cancer_sv/derivative_proof": {
     "name": "cancer_sv/derivative_proof",

@@ -99,15 +99,15 @@ every read crossing the junction has its remainder aligned elsewhere. The
 matched normal at the same locus is clean, which is what separates a somatic
 event from a mapping artifact.
 
-<Figure caption="Left: COLO829 tumor above COLO829BL normal at the two chr3 breakpoints, soft clipping shown. Tumor reads clip; normal reads read through, and the nanomonsv records between them name chr12 and chr10 in their ALT. Right: the same event as a breakpoint split view over all three loci, tumor reads only, where the reads leaving the chr3 panel reappear in the chr10 and chr12 panels." src="/img/cancer_sv/multihop_reads.png" />
+<Figure caption="COLO829 tumor above COLO829BL normal at the two chr3 breakpoints, soft clipping shown. Tumor reads clip; normal reads read through, and the nanomonsv records between them name chr12 and chr10 in their ALT." src="/img/cancer_sv/multihop_tumour_vs_normal.png" />
 
 Soft clipping is off by default. Turn it on from the track menu with **Show soft
 clipping**.
 
 ## Following the chain across panels
 
-A breakpoint split view, the right half of the figure above, stacks the loci and
-draws the reads that leave one panel and arrive in another.
+A breakpoint split view stacks the loci the chain visits and draws the reads
+that leave one panel and arrive in another.
 
 The reads already know which loci those are and in what order, so the view is
 built from them rather than typed in. On the tumor track, **Launch view →
@@ -121,13 +121,13 @@ tracks that view had:
 
 One panel per segment rather than per chromosome, which is the difference
 between the two routes: this chain leaves chr3 and returns to it, so it gets two
-chr3 panels, and a form filled in by hand gets one. Each panel opens on the
-junction its segment carries rather than on the whole segment, whose length is a
-property of the reads that happened to describe it.
+chr3 panels, and a form filled in by hand gets one. Every panel opens on the
+same span, centered on the junction its segment carries — a segment's own length
+is a property of the reads that happened to describe it, and panels at different
+zooms put the connecting curves in the corners instead of across the frame.
 
 **Add → Breakpoint split view** is still there for a view whose loci you already
-know, and takes one row per panel. That is how the three-panel figure above was
-made.
+know, and takes one row per panel.
 
 One record needs no typing at all. Right-click it in the variant track and
 choose **Open breakpoint split view**: the dialog asks for the shape, two
