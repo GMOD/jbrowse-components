@@ -118,6 +118,32 @@ def carriage_tag(assemblies):
     return f"SM:Z:{','.join(assemblies)}" if assemblies else ""
 
 
+# The walk below adds each segment's full length, which is only the path's own
+# coordinate if consecutive segments do not overlap. A blunt graph states that as
+# `*` or `0M`; pggb, odgi, vg and Minigraph-Cactus all emit blunt, which is why
+# this script is scoped to them.
+#
+# Checked rather than assumed because the failure is silent and total: on a graph
+# with 5M overlaps between three segments the true path is 15 bp, and the walk
+# writes coordinates out to 25 — every segment after the first misplaced, with a
+# BED that indexes and draws. There is no version of this script that can place
+# an overlapped graph, so it says so instead of guessing.
+def is_blunt(overlap):
+    return overlap in ("", "*", "0M")
+
+
+def check_blunt(kind, name, overlaps):
+    bad = next((o for o in overlaps if not is_blunt(o)), None)
+    if bad is not None:
+        sys.exit(
+            f"{kind} {name} has a non-blunt overlap ({bad}). This script places "
+            "segments by summing their lengths along a path, which is only the "
+            "path's coordinate when consecutive segments abut. pggb, odgi, vg "
+            "and Minigraph-Cactus emit blunt graphs; blunt one first (e.g. "
+            "`vg mod -X` / `odgi build`) or use an rGFA with build_rgfa_tabix.sh."
+        )
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("gfa")
@@ -148,6 +174,8 @@ def main():
             elif kind == "P":
                 cols = line.rstrip("\n").split("\t")
                 name, base = split_range_suffix(cols[1])
+                if len(cols) > 3:
+                    check_blunt("path", cols[1], cols[3].split(","))
                 paths.append((name, base, list(parse_steps(cols[2]))))
             elif kind == "W":
                 cols = line.rstrip("\n").split("\t")
@@ -163,6 +191,8 @@ def main():
                 )
             elif kind == "L":
                 cols = line.rstrip("\n").split("\t")
+                if len(cols) > 5:
+                    check_blunt("link", f"{cols[1]}->{cols[3]}", [cols[5]])
                 links.append((cols[1], cols[2], cols[3], cols[4]))
 
     if not paths:
