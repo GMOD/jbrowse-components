@@ -1,5 +1,7 @@
 import PopoverPicker from '@jbrowse/core/ui/PopoverPicker'
 
+import { attributeColorBy } from './colorUtils.ts'
+
 import type { SyntenyColorBy } from './colorUtils.ts'
 import type { ColorableTrack } from './trackColors.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -113,6 +115,7 @@ export function colorByMenuTargetFor(
 ): ColorByMenuTarget {
   return {
     uniformColorBy: model.uniformColorBy,
+    attributes: model.colorableAttributes,
     tracks: model.colorableTracks.map(({ trackId, name, color }) => ({
       trackId,
       name,
@@ -147,6 +150,7 @@ export function colorByMenuTargetFor(
 // it, and naming either here would drag a plugin type into this package.
 export interface TrackColorsModel {
   colorableTracks: ColorableTrack[]
+  colorableAttributes: string[]
   uniformColorBy: SyntenyColorBy | undefined
   showColorLegend: boolean
   trackColorBy: { has: (trackId: string) => boolean }
@@ -163,6 +167,12 @@ export interface ColorByMenuTarget {
   /** the view-wide mode, or undefined when tracks disagree */
   uniformColorBy: SyntenyColorBy | undefined
   tracks: ColorByMenuTrack[]
+  /**
+   * numeric columns the overlaid tracks declare, each offered as its own mode.
+   * Taken from the track config rather than from the data so the menu is right
+   * before anything has loaded.
+   */
+  attributes: string[]
   /** dotplots draw flat points and have no 'reference' anchor */
   pointBased: boolean
   /** 'reference' is meaningless below two stacked levels */
@@ -175,21 +185,36 @@ export interface ColorByMenuTarget {
   setShowColorLegend: (value: boolean) => void
 }
 
+// The named presets, then one entry per numeric column the tracks declare.
+//
+// The second list is why the first one stops growing. A preset earns its name by
+// carrying domain knowledge a column name cannot — identity is a fraction, MAPQ
+// tops out at 60, dN/dS is read against 1 — and every other measurement is
+// reachable without a new enum member, menu entry, legend arm, LUT, typed array
+// and RPC transfer slot.
 function visibleModes({
   pointBased,
   showReference,
   tracks,
+  attributes,
 }: ColorByMenuTarget) {
-  return COLOR_MODES.filter(
-    m =>
-      (m.value !== 'reference' || showReference) &&
-      // one track has nothing to be told apart from
-      (m.value !== 'track' || tracks.length > 1),
-  ).map(m => ({
-    ...m,
-    helpText:
-      pointBased && m.pointBasedHelpText ? m.pointBasedHelpText : m.helpText,
-  }))
+  return [
+    ...COLOR_MODES.filter(
+      m =>
+        (m.value !== 'reference' || showReference) &&
+        // one track has nothing to be told apart from
+        (m.value !== 'track' || tracks.length > 1),
+    ).map(m => ({
+      ...m,
+      helpText:
+        pointBased && m.pointBasedHelpText ? m.pointBasedHelpText : m.helpText,
+    })),
+    ...attributes.map(attribute => ({
+      label: attribute,
+      value: attributeColorBy(attribute),
+      helpText: `Color by the ${attribute} column this track carries, on a viridis scale spanning the values in view. A relative scale: unlike the named modes above it has no declared domain, so the legend labels it with the actual numbers.`,
+    })),
+  ]
 }
 
 function perTrackSubMenu(

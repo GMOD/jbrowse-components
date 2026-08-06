@@ -130,8 +130,8 @@ carries a **Show color legend** toggle:
   per link, which
   [Ensembl Compara publishes](/docs/tutorials/multiway_synteny#from-ensembl-compara)
 
-A mode whose number a track does not carry leaves every ribbon the default
-color rather than painting them all at zero.
+A mode whose number a track does not carry leaves every ribbon the default color
+rather than painting them all at zero.
 
 **Customize per track** at the bottom of that menu overrides the choice above
 for one track at a time: each track can take its own mode, and its automatic

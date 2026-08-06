@@ -20,7 +20,7 @@ const ColorBySelector = observer(function ColorBySelector({
       data-testid="color_by_menu"
       tooltip={
         uniformColorBy
-          ? `Color by: ${colorByShortLabel[uniformColorBy]}`
+          ? `Color by: ${colorByShortLabel(uniformColorBy)}`
           : 'Color by: mixed'
       }
       menuItems={colorByMenuItems(

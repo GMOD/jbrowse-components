@@ -91,7 +91,15 @@ export const themeNames = [
 export type AssertEnumListsCoverUpstream = [
   AssertTrue<Covers<TrackLabelMode, typeof trackLabelModes>>,
   AssertTrue<Covers<CigarMode, typeof cigarModes>>,
-  AssertTrue<Covers<SyntenyColorBy, typeof syntenyColorByModes>>,
+  // Exclude(…, `attribute:${string}`): the CLI enumerates the NAMED modes, and
+  // the open attribute arm is by construction unenumerable. A new named mode
+  // still fails here, which is what this assertion is for.
+  AssertTrue<
+    Covers<
+      Exclude<SyntenyColorBy, `attribute:${string}`>,
+      typeof syntenyColorByModes
+    >
+  >,
   AssertTrue<Covers<ThemeName, typeof themeNames>>,
 ]
 

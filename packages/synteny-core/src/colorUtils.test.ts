@@ -1,7 +1,9 @@
 import {
   LEGEND_CHIP_ALPHA_FLOOR,
+  attributeColorBy,
   blendOverWhite,
   coerceColorBy,
+  colorByAttributeName,
   legendChipColor,
 } from './colorUtils.ts'
 
@@ -44,4 +46,20 @@ describe('legendChipColor', () => {
     const b = legendChipColor('#f28e2c', 0.2)
     expect(a).not.toBe(b)
   })
+})
+
+// The open arm of the mode union: stored in the same plain string the model
+// already holds, so per-track overrides and saved sessions need no new property.
+test('an attribute mode round-trips through the persisted string', () => {
+  expect(coerceColorBy(attributeColorBy('goc_score'))).toBe(
+    'attribute:goc_score',
+  )
+  expect(colorByAttributeName('attribute:goc_score')).toBe('goc_score')
+  expect(colorByAttributeName('identity')).toBeUndefined()
+})
+
+// `attribute:` naming nothing would resolve to a channel with no name, so it is
+// not a mode; falling back to 'default' is what every other unknown value does.
+test('an attribute mode with no attribute is not a mode', () => {
+  expect(coerceColorBy('attribute:')).toBe('default')
 })

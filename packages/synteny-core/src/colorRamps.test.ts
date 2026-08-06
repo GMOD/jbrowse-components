@@ -5,6 +5,7 @@ import {
   dnDsRatio,
   dndsNorm,
   rampNorm,
+  resolveContinuousMode,
 } from './colorRamps.ts'
 
 const feat = (attrs: Record<string, unknown>) => ({
@@ -69,4 +70,53 @@ test('dnDsRatio answers -1 rather than a number it cannot support', () => {
   expect(dnDsRatio(feat({}))).toBe(-1)
   expect(dnDsRatio(feat({ dn: 0.02, ds: 0 }))).toBe(-1)
   expect(dnDsRatio(feat({ dn: 0.02, ds: 'NULL' }))).toBe(-1)
+})
+
+// The point of the whole exercise: a measurement nobody anticipated is reachable
+// without an enum member, a menu entry, a legend arm, a LUT, a typed array and
+// an RPC transfer slot of its own.
+test('an attribute mode resolves for a column no preset knows about', () => {
+  const mode = resolveContinuousMode('attribute:goc_score', {
+    goc_score: { min: 0, max: 100 },
+  })
+  expect(mode?.attribute).toBe('goc_score')
+  expect(rampNorm(mode!, 50)).toBe(0.5)
+  expect(rampNorm(mode!, 100)).toBe(1)
+})
+
+// A preset is a preset because it carries a domain a column name cannot supply,
+// so naming one as an attribute must not quietly rescale it.
+test('a preset keeps its declared domain, attributes take the observed one', () => {
+  const preset = resolveContinuousMode('mappingQuality', {
+    mappingQual: { min: 55, max: 60 },
+  })
+  expect(rampNorm(preset!, 30)).toBe(0.5)
+  const observed = resolveContinuousMode('attribute:mappingQual', {
+    mappingQual: { min: 55, max: 60 },
+  })
+  expect(rampNorm(observed!, 55)).toBe(0)
+})
+
+// The legend has to say what the ramp currently means, since an attribute scale
+// is relative to what is in view.
+test('an attribute ramp is labelled with its actual numbers', () => {
+  const mode = resolveContinuousMode('attribute:dn', {
+    dn: { min: 0, max: 0.0234567 },
+  })
+  expect([mode?.minLabel, mode?.maxLabel]).toEqual(['0', '0.0235'])
+})
+
+// One distinct value, or a column nothing carried: there is no gradient to
+// place anything on, and dividing by the span would be a NaN across the view.
+test('a flat or absent domain answers 0 rather than NaN', () => {
+  const flat = resolveContinuousMode('attribute:x', { x: { min: 3, max: 3 } })
+  expect(rampNorm(flat!, 3)).toBe(0)
+  const absent = resolveContinuousMode('attribute:x')
+  expect(rampNorm(absent!, 3)).toBe(0)
+})
+
+test('the structural modes are not continuous ones', () => {
+  for (const mode of ['default', 'strand', 'query', 'target', 'track']) {
+    expect(resolveContinuousMode(mode)).toBeUndefined()
+  }
 })

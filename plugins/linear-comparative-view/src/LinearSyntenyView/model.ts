@@ -1,5 +1,6 @@
 import { lazy } from 'react'
 
+import { getConf } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
@@ -313,6 +314,23 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             const { trackId, name } = t.configuration
             return { trackId, name }
           })
+      },
+      /**
+       * #method
+       * The numeric columns the overlaid tracks declare, so the palette menu can
+       * offer one mode per measurement without any of them being a named mode.
+       * `attributeColumns` is the ortholog-table adapter's slot; a track whose
+       * adapter has no such slot contributes nothing.
+       */
+      colorableAttributeNames() {
+        return self.levels
+          .flatMap(l => l.tracks)
+          .flatMap(
+            t =>
+              (getConf(t.configuration, ['adapter', 'attributeColumns']) as
+                | string[]
+                | undefined) ?? [],
+          )
       },
     }))
     .views(self => ({

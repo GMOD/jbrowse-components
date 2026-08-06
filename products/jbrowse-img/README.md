@@ -36,7 +36,7 @@ the `1` / `chr1` / `NC_000001.10` refname styles across the files):
 jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
   --aliases https://jbrowse.org/genomes/hg19/hg19_aliases.txt \
   --gffgz https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz '{"showOnlyGenes":true}' \
-  --bigbed https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinGen/clinGenGeneDisease.bb \
+  --bigbed https://jbrowse.org/genomes/hg19/clinGen/clinGenGeneDisease.bb \
   --bigwig https://hgdownload.soe.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw \
   --cram https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.cram \
   --loc 1:19,190,000-19,240,000 --width 1200 --out 1.png
@@ -276,7 +276,7 @@ island cores, read against the annotated island boundaries:
 jb2export --fasta https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz \
   --aliases https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt \
   --bedgz https://jbrowse.org/ucsc/hg38/cpgIslandExt.bed.gz index:https://jbrowse.org/ucsc/hg38/cpgIslandExt.bed.gz.csi \
-  --cram https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829_tumor.ht.cram color:methylation height:350 \
+  --bam https://jbrowse.org/demos/ont/COLO829_tumor.ht.chr20_18.5Mb.bam color:methylation height:350 \
   --loc chr20:18,503,000-18,509,000 --width 1200 --out methylation.png
 ```
 
@@ -314,11 +314,11 @@ above the flat background pileup.
 
 ```bash
 jb2export --hub hg38 \
-  --bam https://1000g-ont.s3.amazonaws.com/PROCESSED_DATA/ALIGNED_TO_HG38/MINIMAP2_ALIGNED_BAMS/HG00151-ONT-hg38-R9-LSK110-guppy-sup-5mC.phased.bam arcs:down linkedReads:normal group:splitRead coverageHeight:80 height:560 \
+  --bam https://jbrowse.org/demos/ont/HG00151-ONT-hg38.chr1_inversion.bam arcs:down linkedReads:normal group:splitRead coverageHeight:80 height:560 \
   --loc chr1:197,786,900-197,789,700 --width 1400 --out sv_read_arcs.png
 ```
 
-![HG00151 ONT long reads over a ~1.2 kb chr1 inversion, grouped on SA-tag presence: the split reads sit in their own section under the purple junction arcs, chained so a blue reverse-strand core runs between red forward-strand flanks](https://jbrowse.org/jb2-figures/jbrowse-img/sv_read_arcs.750524b1adc2.png)
+![HG00151 ONT long reads over a ~1.2 kb chr1 inversion, grouped on SA-tag presence: the split reads sit in their own section under the purple junction arcs, chained so a blue reverse-strand core runs between red forward-strand flanks](https://jbrowse.org/jb2-figures/jbrowse-img/sv_read_arcs.d234e6996309.png)
 
 More alignment recipes (see [Track modifiers](#track-modifiers) for all
 options):
@@ -439,7 +439,7 @@ speckle:
 
 ```bash
 jb2export --hub hg19 --track hg19-ncbiRefSeqCurated \
-  --vcfgz https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.chr11.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes.vcf.gz display:multivariant height:450 force:true \
+  --vcfgz https://jbrowse.org/genomes/hg19/1000genomes/ALL.chr11.phase3_v5b.HBB_5.2-5.3Mb.vcf.gz display:multivariant height:450 force:true \
   --loc chr11:5,246,000-5,251,000 --width 1200 --out multisample_variants.png
 ```
 
@@ -1114,7 +1114,7 @@ Options:
   --loc2                Location on the second assembly
   --autoDiagonalize     Reorder the next assembly's chromosomes for least overlap (a clean diagonal) [default: false]
   --minAlignmentLength  Hide alignments shorter than N bp (de-spaghetti a busy plot)
-  --colorBy             Color synteny ribbons (e.g. "query" tints by query chromosome): default, strand, query, target, reference, identity, meanQueryIdentity, mappingQuality, or track
+  --colorBy             Color synteny ribbons (e.g. "query" tints by query chromosome): default, strand, query, target, reference, identity, meanQueryIdentity, mappingQuality, dnds, or track
   --showColorLegend     Show the floating colorBy legend [default: false]
 
 Examples:
@@ -1159,7 +1159,7 @@ Options:
   --autoDiagonalize     Reorder the next assembly's chromosomes for least overlap (a clean diagonal) [default: false]
   --drawCurves          Draw synteny ribbons as bezier curves instead of trapezoids [default: false]
   --minAlignmentLength  Hide alignments shorter than N bp (de-spaghetti a busy plot)
-  --colorBy             Color synteny ribbons (e.g. "query" tints by query chromosome): default, strand, query, target, reference, identity, meanQueryIdentity, mappingQuality, or track
+  --colorBy             Color synteny ribbons (e.g. "query" tints by query chromosome): default, strand, query, target, reference, identity, meanQueryIdentity, mappingQuality, dnds, or track
   --alpha               Ribbon opacity 0-1 (lower reveals density)
   --levelHeights        Comma-separated pixel height per level, e.g. 300,300 (one value applies to all)
   --cigarMode           CIGAR-level indel detail in synteny ribbons: 'off' (blocks only), 'matches' (indels see-through), or 'full' (indels colored) [default: full]

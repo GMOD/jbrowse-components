@@ -10,6 +10,7 @@ import {
 import { legendChipColor } from './colorUtils.ts'
 
 import type { CigarOpMask, ColorChip } from './colorLegend.ts'
+import type { AttributeRange } from './colorRamps.ts'
 import type { SyntenyColorBy } from './colorUtils.ts'
 
 const useStyles = makeStyles()(theme => ({
@@ -111,6 +112,7 @@ export function ColorByLegend({
   colorBy,
   pointBased = false,
   cigarOps,
+  attributeRanges,
   alpha = 1,
   trackChips,
   onClose,
@@ -123,6 +125,8 @@ export function ColorByLegend({
   // bitmask of indel ops actually drawn on screen; the ribbon view passes its
   // model-derived mask so the legend only lists indels the eye can find
   cigarOps?: CigarOpMask
+  /** observed span per attribute, which labels an attribute mode's ramp */
+  attributeRanges?: Record<string, AttributeRange>
   // the view's global ribbon alpha — chips are blended over white by it so the
   // key matches the on-screen (alpha-composited) ribbon colors, subject to
   // legendChipColor's legibility floor
@@ -135,8 +139,13 @@ export function ColorByLegend({
   const swatch =
     colorBy === undefined
       ? ({ kind: 'chips', chips: trackChips ?? [] } as const)
-      : getColorBySwatch(colorBy, { pointBased, cigarOps, trackChips })
-  const title = colorBy === undefined ? 'Mixed' : colorByShortLabel[colorBy]
+      : getColorBySwatch(colorBy, {
+          pointBased,
+          cigarOps,
+          trackChips,
+          attributeRanges,
+        })
+  const title = colorBy === undefined ? 'Mixed' : colorByShortLabel(colorBy)
   return (
     <div className={classes.root} data-testid="color-by-legend">
       <div className={classes.header}>

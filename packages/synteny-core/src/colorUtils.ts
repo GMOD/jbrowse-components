@@ -1,5 +1,7 @@
 import { cssColorToRgb } from '@jbrowse/core/util/colorBits'
 
+import { ATTRIBUTE_PREFIX } from './colorRamps.ts'
+
 /**
  * #api
  * `hashString` is a deterministic non-negative 32-bit hash of a string;
@@ -71,12 +73,46 @@ const syntenyColorByValues = [
   'track',
 ] as const
 
-export type SyntenyColorBy = (typeof syntenyColorByValues)[number]
+/**
+ * A color-by mode: one of the named presets, or `attribute:<name>` naming a
+ * numeric feature attribute the track happens to carry.
+ *
+ * The open arm is what keeps this list from gaining a member per measurement
+ * anyone wants to see. A preset is a preset because it carries domain knowledge
+ * a column name cannot — identity is a fraction, MAPQ tops out at 60, dN/dS
+ * pivots at 1 — not because it is the only way to paint a number.
+ */
+export type SyntenyColorBy =
+  | (typeof syntenyColorByValues)[number]
+  | `${typeof ATTRIBUTE_PREFIX}${string}`
 
 const syntenyColorBySet: ReadonlySet<string> = new Set(syntenyColorByValues)
 
 function isSyntenyColorBy(value: string): value is SyntenyColorBy {
-  return syntenyColorBySet.has(value)
+  return (
+    syntenyColorBySet.has(value) ||
+    (value.startsWith(ATTRIBUTE_PREFIX) &&
+      value.length > ATTRIBUTE_PREFIX.length)
+  )
+}
+
+/**
+ * #api
+ * The colorBy string that paints a named feature attribute.
+ */
+export function attributeColorBy(attribute: string) {
+  return `${ATTRIBUTE_PREFIX}${attribute}` as SyntenyColorBy
+}
+
+/**
+ * #api
+ * The attribute a colorBy names, or undefined for a named preset. `attribute:`
+ * with nothing after it never reaches here — coerceColorBy rejects it.
+ */
+export function colorByAttributeName(colorBy: SyntenyColorBy) {
+  return colorBy.startsWith(ATTRIBUTE_PREFIX)
+    ? colorBy.slice(ATTRIBUTE_PREFIX.length)
+    : undefined
 }
 
 /**

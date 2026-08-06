@@ -176,12 +176,12 @@ puts in the columns after the two gene columns and the adapter names with
 
 Each named column becomes a feature attribute, so it shows in the detail panel
 when a ribbon is clicked, and two of them drive the view's **Color by** menu:
-`identity` paints the viridis identity ramp, and `dn` with `ds` give
-**Color by → dN/dS**, which is the one measurement an aligner cannot produce.
-Its ramp pivots at 1, so a gene under purifying selection reads blue and one
-under positive selection reads red. `.` in a cell is a missing measurement
-rather than a zero, which matters here: Compara leaves dS unestimated for a
-distant pair, and a zero there would read as total purifying selection.
+`identity` paints the viridis identity ramp, and `dn` with `ds` give **Color by
+→ dN/dS**, which is the one measurement an aligner cannot produce. Its ramp
+pivots at 1, so a gene under purifying selection reads blue and one under
+positive selection reads red. `.` in a cell is a missing measurement rather than
+a zero, which matters here: Compara leaves dS unestimated for a distant pair,
+and a zero there would read as total purifying selection.
 
 The script keeps `ortholog_one2one` and `ortholog_one2many` by default; a
 reference gene with two orthologs becomes two rows, the same choice

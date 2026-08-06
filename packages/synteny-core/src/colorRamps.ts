@@ -14,6 +14,14 @@
 
 export type Rgb = readonly [number, number, number]
 
+/**
+ * A colorBy naming a feature attribute rather than a named mode:
+ * `attribute:goc_score`. Stored in the same plain string the model already
+ * holds, so per-track overrides, the checked state in the menu and saved
+ * sessions all keep working with no new property.
+ */
+export const ATTRIBUTE_PREFIX = 'attribute:'
+
 function lerp(a: number, b: number, t: number) {
   return a + (b - a) * t
 }
@@ -116,26 +124,122 @@ export function dndsNorm(value: number) {
     : 0.5 + 0.5 * Math.min(1, (value - DNDS_PIVOT) / (DNDS_MAX - DNDS_PIVOT))
 }
 
-// Per-mode ramp: `toRgb` maps a [0,1] normalized value to RGB; `maxValue`
-// divides the raw per-feature value into that domain *with a clamp* — this is
-// the piece the dotplot view previously omitted for MAPQ, letting MAPQ > 60
-// escape the top of the ramp while the synteny LUT clamped it. identity /
-// meanQueryIdentity are true [0,1] fractions on viridis; mappingQuality is raw
-// MAPQ capped at the minimap2 max of 60, on cividis.
+/**
+ * A continuous color-by mode: which feature attribute it paints, the colormap,
+ * and the domain that maps a raw value into it.
+ *
+ * The mode is a value rather than a switch arm, which is what stops the mode
+ * list growing by one enum member, one menu entry, one legend arm, one LUT, one
+ * typed array and one RPC transfer entry per measurement someone wants to see.
+ * A track carrying a column nobody anticipated is reached as
+ * `attribute:<column>`, built from this same shape at read time.
+ */
+export interface ContinuousMode {
+  /** the per-feature numeric attribute this reads */
+  attribute: string
+  toRgb: (norm: number) => Rgb
+  /** domain bottom; 0 unless the mode says otherwise */
+  minValue?: number
+  maxValue: number
+  /**
+   * present only where a linear span across the domain is the wrong shape,
+   * which so far means the one diverging mode
+   */
+  normalize?: (value: number) => number
+  minLabel: string
+  maxLabel: string
+}
+
+// The named presets. Each carries domain knowledge a column name cannot: that
+// identity is a fraction, that MAPQ tops out at minimap2's 60, that dN/dS is
+// read against 1 rather than against its own maximum. That is the whole reason
+// presets stay named — a generic mode scaled to the data would put dN/dS's
+// pivot wherever the visible range happened to fall.
 export const continuousRampConfig: Record<
   'identity' | 'meanQueryIdentity' | 'mappingQuality' | 'dnds',
-  {
-    toRgb: (norm: number) => Rgb
-    maxValue: number
-    // present only where dividing by maxValue is the wrong shape, which so far
-    // means the one diverging mode
-    normalize?: (value: number) => number
-  }
+  ContinuousMode
 > = {
-  identity: { toRgb: viridisRgb, maxValue: 1 },
-  meanQueryIdentity: { toRgb: viridisRgb, maxValue: 1 },
-  mappingQuality: { toRgb: cividisRgb, maxValue: 60 },
-  dnds: { toRgb: rdYlBuReversedRgb, maxValue: DNDS_MAX, normalize: dndsNorm },
+  identity: {
+    attribute: 'identity',
+    toRgb: viridisRgb,
+    maxValue: 1,
+    minLabel: '0%',
+    maxLabel: '100%',
+  },
+  meanQueryIdentity: {
+    attribute: 'meanIdentity',
+    toRgb: viridisRgb,
+    maxValue: 1,
+    minLabel: '0%',
+    maxLabel: '100%',
+  },
+  mappingQuality: {
+    attribute: 'mappingQual',
+    toRgb: cividisRgb,
+    maxValue: 60,
+    minLabel: '0',
+    maxLabel: '60',
+  },
+  dnds: {
+    attribute: 'dnds',
+    toRgb: rdYlBuReversedRgb,
+    maxValue: DNDS_MAX,
+    normalize: dndsNorm,
+    minLabel: '0',
+    maxLabel: '≥2',
+  },
+}
+
+/** The observed span of one attribute across the features in hand. */
+export interface AttributeRange {
+  min: number
+  max: number
+}
+
+// Enough significant figures to tell two legend ends apart without printing a
+// float's full tail, which is what a raw min/max off real data looks like.
+function domainLabel(value: number) {
+  return Number.isInteger(value) ? String(value) : value.toPrecision(3)
+}
+
+/**
+ * The mode a colorBy string paints with, or undefined if it is not a continuous
+ * one (strand, query, track, ...).
+ *
+ * A preset's domain is fixed and means the same thing in every view. An
+ * `attribute:<name>` mode has no such knowledge, so it takes the observed span
+ * of that attribute and says so by labelling the legend with the actual
+ * numbers — a RELATIVE scale, which is the honest reading when nothing declares
+ * what the column's range is supposed to be.
+ */
+export function resolveContinuousMode(
+  colorBy: string,
+  ranges?: Record<string, AttributeRange>,
+): ContinuousMode | undefined {
+  const preset = (continuousRampConfig as Record<string, ContinuousMode>)[
+    colorBy
+  ]
+  if (preset) {
+    return preset
+  }
+  if (!colorBy.startsWith(ATTRIBUTE_PREFIX)) {
+    return undefined
+  }
+  const attribute = colorBy.slice(ATTRIBUTE_PREFIX.length)
+  const range = ranges?.[attribute]
+  // no data yet, or an attribute nothing carried: a flat domain would divide by
+  // zero, and rampNorm answers 0 for it, so the ribbons stay at the ramp's
+  // bottom rather than painting garbage
+  const min = range?.min ?? 0
+  const max = range?.max ?? 0
+  return {
+    attribute,
+    toRgb: viridisRgb,
+    minValue: min,
+    maxValue: max,
+    minLabel: domainLabel(min),
+    maxLabel: domainLabel(max),
+  }
 }
 
 /**
@@ -146,12 +250,21 @@ export const continuousRampConfig: Record<
  * views have already had once over MAPQ scaling.
  */
 export function rampNorm(
-  config: { maxValue: number; normalize?: (value: number) => number },
+  config: {
+    minValue?: number
+    maxValue: number
+    normalize?: (value: number) => number
+  },
   value: number,
 ) {
-  return config.normalize
-    ? config.normalize(value)
-    : Math.min(1, value / config.maxValue)
+  if (config.normalize) {
+    return config.normalize(value)
+  }
+  const lo = config.minValue ?? 0
+  const span = config.maxValue - lo
+  // a flat domain (one distinct value, or an attribute with no data) has no
+  // gradient to place anything on; the ramp's bottom is the one safe answer
+  return span > 0 ? Math.max(0, Math.min(1, (value - lo) / span)) : 0
 }
 
 /**

@@ -2,14 +2,14 @@ import { category10 } from '@jbrowse/core/ui/colors'
 import { cssColorToABGR, packAbgr } from '@jbrowse/core/util/colorBits'
 import {
   colorSchemes,
-  continuousRampConfig,
   hashString,
   rampNorm,
+  resolveContinuousMode,
 } from '@jbrowse/synteny-core'
 
 import type { DotplotInstanceData } from './dotplotRenderingBackendTypes.ts'
 import type { DotplotRpcData } from './types.ts'
-import type { SyntenyColorBy } from '@jbrowse/synteny-core'
+import type { ContinuousMode, SyntenyColorBy } from '@jbrowse/synteny-core'
 
 export type DotplotColorFn = (data: DotplotRpcData, index: number) => number
 
@@ -38,25 +38,25 @@ const nameColorAbgr = category10
 // math, allocation, or destructuring in the hot loop. `max` normalizes the raw
 // value into the [0,1] LUT domain; negative values are the worker's
 // missing-data sentinel and paint red.
-function rampColorFn(
-  values: Float32Array,
-  config: (typeof continuousRampConfig)[keyof typeof continuousRampConfig],
+function continuousColorFn(
+  mode: ContinuousMode,
+  data: DotplotRpcData,
 ): DotplotColorFn {
-  const { toRgb } = config
   const missing = cssColorToABGR(colorSchemes.default.cigarColors.M)
+  const values = data.attributes[mode.attribute]
   const lut = new Uint32Array(256)
   for (let i = 0; i < 256; i++) {
-    const [r, g, b] = toRgb(i / 255)
+    const [r, g, b] = mode.toRgb(i / 255)
     lut[i] = packAbgr(r, g, b, 255)
   }
   return (_data, i) => {
-    const v = values[i]!
+    const v = values?.[i]
     // Clamp to the LUT's 0..255 domain *before* truncating: applying Math.min to
-    // the float (not to the already-`| 0`'d int) keeps a pathological v/max from
+    // the float (not to the already-`| 0`'d int) keeps a pathological value from
     // int32-overflowing to a negative index that would read past the LUT.
-    return v < 0
+    return v === undefined || v < 0
       ? missing
-      : lut[(Math.min(255, rampNorm(config, v) * 255) + 0.5) | 0]!
+      : lut[(Math.min(255, rampNorm(mode, v) * 255) + 0.5) | 0]!
   }
 }
 
@@ -85,18 +85,17 @@ function constantColorFn(packed: number): DotplotColorFn {
   return () => packed
 }
 
-function rampConfigColorFn(
-  values: Float32Array,
-  mode: keyof typeof continuousRampConfig,
-): DotplotColorFn {
-  return rampColorFn(values, continuousRampConfig[mode])
-}
-
 export function createDotplotColorFunction(
   colorBy: SyntenyColorBy,
   data: DotplotRpcData,
   trackColor: string,
 ): DotplotColorFn {
+  // Every continuous mode in one arm, preset or attribute; see the synteny
+  // renderer's counterpart for why this is not a switch case per measurement.
+  const continuous = resolveContinuousMode(colorBy, data.attributeRanges)
+  if (continuous) {
+    return continuousColorFn(continuous, data)
+  }
   switch (colorBy) {
     // One flat color for every point in this track, so overlaid tracks are told
     // apart by hue rather than all painting the conventional black.
@@ -112,17 +111,9 @@ export function createDotplotColorFunction(
       return nameColorFn((d, i) => d.refNames[i]!)
     case 'target':
       return nameColorFn((d, i) => d.mateRefNames[i]!)
-    case 'identity':
-      return rampConfigColorFn(data.identities, 'identity')
-    case 'meanQueryIdentity':
-      return rampConfigColorFn(data.meanIdentities, 'meanQueryIdentity')
-    case 'mappingQuality':
-      return rampConfigColorFn(data.mappingQuals, 'mappingQuality')
-    case 'dnds':
-      return rampConfigColorFn(data.dnds, 'dnds')
     // Dotplot keeps a plain black default (its conventional line color) rather
     // than the synteny ribbon's red.
-    case 'default':
+    default:
       return constantColorFn(cssColorToABGR(colorSchemes.default.pointColor))
   }
 }

@@ -58,8 +58,27 @@ export function TrackColorsMixin() {
       colorableTrackConfigs(): { trackId: string; name: string }[] {
         return []
       },
+      /**
+       * #method
+       * Numeric columns the overlaid tracks declare (an ortholog table's
+       * `attributeColumns`), each of which the palette menu offers as its own
+       * mode. Overridden by the composing view, which is the only thing that
+       * can reach the track configs.
+       *
+       * From the CONFIG rather than from loaded data: the menu has to be right
+       * before the first fetch, and a track that declares a column carrying no
+       * values paints the default color anyway.
+       */
+      colorableAttributeNames(): string[] {
+        return []
+      },
     }))
     .views(self => ({
+      /**
+       * #getter
+       * Distinct numeric columns across the overlaid tracks, in first-seen
+       * order — two tracks declaring `dn` offer one `dn` mode, not two.
+       */
       /**
        * #getter
        * `colorableTrackConfigs` paired with whatever color the user pinned.
@@ -67,6 +86,9 @@ export function TrackColorsMixin() {
        * palette, the legend and the palette menu all read it, so they cannot
        * disagree about which tracks are in play.
        */
+      get colorableAttributes(): string[] {
+        return [...new Set(self.colorableAttributeNames())]
+      },
       get colorableTracks(): ColorableTrack[] {
         return self.colorableTrackConfigs().map(({ trackId, name }) => ({
           trackId,

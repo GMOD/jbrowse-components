@@ -9,8 +9,11 @@ import {
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 import {
+  PRESET_ATTRIBUTES,
   bpToCumBp,
   buildBpRegionIndex,
+  createAttributeChannels,
+  declaredAttributes,
   dnDsRatio,
   syntenyPanBufferPx,
 } from '@jbrowse/synteny-core'
@@ -51,10 +54,6 @@ interface DecoratedFeature {
   mateRefName: string
   mateStart: number
   id: string
-}
-
-function getOptionalNumber(f: Feature, key: string) {
-  return (f.get(key) as number | undefined) ?? -1
 }
 
 // Fields both axes supply: the cumBp index (bpPerPx + the whole concatenated
@@ -224,10 +223,14 @@ export async function executeSyntenyFeaturesAndPositions({
   const endsArray = new Uint32Array(count)
   const mateStartsArray = new Uint32Array(count)
   const mateEndsArray = new Uint32Array(count)
-  const identitiesArray = new Float32Array(count)
-  const mappingQualsArray = new Float32Array(count)
-  const meanIdentitiesArray = new Float32Array(count)
-  const dndsArray = new Float32Array(count)
+  // Every numeric channel a continuous mode can paint, keyed by name: the four
+  // presets plus whatever the track declares. `identity` is in here too and
+  // aliases identitiesArray below, so identity fade and the detail panel keep
+  // their named field without a second copy or a second transfer.
+  const channels = createAttributeChannels(
+    [...PRESET_ATTRIBUTES, ...declaredAttributes(adapterConfig)],
+    count,
+  )
 
   const featureIds: string[] = []
   const names: string[] = []
@@ -261,6 +264,7 @@ export async function executeSyntenyFeaturesAndPositions({
   const winCumHi = (v1Offset + viewWidth + bufferPx) * v1.bpPerPx
   const windowSpan = winCumHi - winCumLo
 
+  const channelNames = Object.keys(channels.arrays)
   const stopTokenChecker = createStopTokenChecker(stopToken)
   // report() runs the throttled stop-token check itself, so it replaces the
   // per-feature checkStopTokenThrottled while also advancing the bar over whole-genome
@@ -350,10 +354,15 @@ export async function executeSyntenyFeaturesAndPositions({
     startsArray[validCount] = start
     endsArray[validCount] = end
 
-    identitiesArray[validCount] = getOptionalNumber(f, 'identity')
-    mappingQualsArray[validCount] = getOptionalNumber(f, 'mappingQual')
-    meanIdentitiesArray[validCount] = getOptionalNumber(f, 'meanIdentity')
-    dndsArray[validCount] = dnDsRatio(f)
+    for (const name of channelNames) {
+      // dnds is the one derived channel: it is a ratio of two attributes, not
+      // an attribute, so nothing on the feature answers to the name
+      channels.write(
+        validCount,
+        name,
+        name === 'dnds' ? dnDsRatio(f) : channels.read(f, name),
+      )
+    }
 
     mateStartsArray[validCount] = mate.start
     mateEndsArray[validCount] = mate.end
@@ -398,10 +407,7 @@ export async function executeSyntenyFeaturesAndPositions({
     strands: strandsArray.subarray(0, validCount),
     starts: startsArray.subarray(0, validCount),
     ends: endsArray.subarray(0, validCount),
-    identities: identitiesArray.subarray(0, validCount),
-    mappingQuals: mappingQualsArray.subarray(0, validCount),
-    meanIdentities: meanIdentitiesArray.subarray(0, validCount),
-    dnds: dndsArray.subarray(0, validCount),
+    ...channels.finish(validCount),
     featureIds,
     names,
     refNames,
@@ -445,10 +451,7 @@ export async function executeSyntenyFeaturesAndPositions({
     featureData.strands.buffer,
     featureData.starts.buffer,
     featureData.ends.buffer,
-    featureData.identities.buffer,
-    featureData.mappingQuals.buffer,
-    featureData.meanIdentities.buffer,
-    featureData.dnds.buffer,
+    ...Object.values(featureData.attributes).map(a => a.buffer),
     featureData.mateStarts.buffer,
     featureData.mateEnds.buffer,
     instanceData.bp1.buffer,

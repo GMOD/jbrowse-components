@@ -19,10 +19,13 @@ function fakeRpcData(overrides: Partial<DotplotRpcData> = {}): DotplotRpcData {
     alignmentLengths: new Uint32Array([100]),
     cigarData: new Uint32Array(0),
     cigarOffsets: new Uint32Array([0, 0]),
-    identities: new Float32Array([0.5]),
-    meanIdentities: new Float32Array([0.5]),
-    mappingQuals: new Float32Array([30]),
-    dnds: new Float32Array([-1]),
+    attributes: {
+      identity: new Float32Array([0.5]),
+      meanIdentity: new Float32Array([0.5]),
+      mappingQual: new Float32Array([30]),
+      dnds: new Float32Array([-1]),
+    },
+    attributeRanges: {},
     refNames: ['chr1'],
     mateRefNames: ['chr2'],
     totalFeatureCount: 1,
@@ -88,7 +91,7 @@ describe('createDotplotColorFunction', () => {
   // increases monotonically (the property colorblind-safe ramps must have).
   test('identity ramp is viridis (dark purple → yellow, monotonic luminance)', () => {
     const data = fakeRpcData({
-      identities: new Float32Array([0, 0.25, 0.5, 0.75, 1]),
+      attributes: { identity: new Float32Array([0, 0.25, 0.5, 0.75, 1]) },
     })
     const fn = createDotplotColorFunction('identity', data, TRACK_COLOR)
     const lum = (i: number) => {
@@ -103,7 +106,9 @@ describe('createDotplotColorFunction', () => {
   })
 
   test('missing-value sentinel (-1) returns red', () => {
-    const data = fakeRpcData({ identities: new Float32Array([-1]) })
+    const data = fakeRpcData({
+      attributes: { identity: new Float32Array([-1]) },
+    })
     const fn = createDotplotColorFunction('identity', data, TRACK_COLOR)
     expect(unpack(fn(data, 0))).toMatchObject({ r: 255, g: 0, b: 0 })
   })
@@ -156,9 +161,11 @@ describe('computeDotplotColors', () => {
       p22: new Float64Array([300, 10_300]),
       strands: new Int8Array([1, -1]),
       alignmentLengths: new Uint32Array([300, 300]),
-      identities: new Float32Array([0.5, 0.5]),
-      meanIdentities: new Float32Array([0.5, 0.5]),
-      mappingQuals: new Float32Array([30, 30]),
+      attributes: {
+        identity: new Float32Array([0.5, 0.5]),
+        meanIdentity: new Float32Array([0.5, 0.5]),
+        mappingQual: new Float32Array([30, 30]),
+      },
       refNames: ['chr1', 'chr2'],
       mateRefNames: ['ctg1', 'ctg2'],
       cigarData: new Uint32Array([M(100), M(100), M(100), M(300)]),
@@ -196,9 +203,11 @@ describe('computeDotplotColors', () => {
       p22: new Float64Array([50, 10_300]),
       strands: new Int8Array([1, -1]),
       alignmentLengths: new Uint32Array([50, 300]),
-      identities: new Float32Array([0.5, 0.5]),
-      meanIdentities: new Float32Array([0.5, 0.5]),
-      mappingQuals: new Float32Array([30, 30]),
+      attributes: {
+        identity: new Float32Array([0.5, 0.5]),
+        meanIdentity: new Float32Array([0.5, 0.5]),
+        mappingQual: new Float32Array([30, 30]),
+      },
       refNames: ['chr1', 'chr2'],
       mateRefNames: ['ctg1', 'ctg2'],
       cigarOffsets: new Uint32Array([0, 0, 0]),

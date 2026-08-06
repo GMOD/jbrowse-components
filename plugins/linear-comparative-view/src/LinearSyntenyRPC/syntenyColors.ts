@@ -3,9 +3,9 @@ import { relight } from '@jbrowse/core/util/color'
 import { cssColorToABGR, packAbgr } from '@jbrowse/core/util/colorBits'
 import {
   colorSchemes,
-  continuousRampConfig,
   hashString,
   rampNorm,
+  resolveContinuousMode,
 } from '@jbrowse/synteny-core'
 
 import {
@@ -13,7 +13,12 @@ import {
   KIND_MARKER,
 } from '../LinearSyntenyDisplay/shaders/syntenyTypes.generated.ts'
 
-import type { SyntenyColorBy } from '@jbrowse/synteny-core'
+import type {
+  AttributeRange,
+  ContinuousMode,
+  Rgb,
+  SyntenyColorBy,
+} from '@jbrowse/synteny-core'
 
 // Per-instance kind tag. Determines how the color for an instance is derived
 // from the parent feature's strand/refName/featureIdx and the current colorBy
@@ -65,35 +70,47 @@ function buildLut(toRgb: (norm: number) => readonly [number, number, number]) {
   return lut
 }
 
-// identity + meanQueryIdentity share the viridis ramp; mappingQuality uses
-// cividis. Each colormap is baked once over the normalized [0,1] domain — the
-// per-mode maxValue is applied at lookup.
-const IDENTITY_LUT = buildLut(continuousRampConfig.identity.toRgb)
-const MAPQ_LUT = buildLut(continuousRampConfig.mappingQuality.toRgb)
-const DNDS_LUT = buildLut(continuousRampConfig.dnds.toRgb)
+// One LUT per colormap, cached by the colormap function itself rather than by
+// mode: several modes share viridis, and an `attribute:<name>` mode has no fixed
+// identity to key on. Built a handful of times for the life of the worker.
+const lutCache = new Map<(norm: number) => Rgb, Uint32Array>()
 
-// `config` rather than a bare max, so a mode whose domain is not a plain divide
-// (the diverging dN/dS pivot) normalizes through the same function the dotplot
-// evaluates per feature.
-function lutLookup(
-  lut: Uint32Array,
-  value: number,
-  config: (typeof continuousRampConfig)[keyof typeof continuousRampConfig] = continuousRampConfig.identity,
-) {
-  if (value < 0) {
-    return DEFAULT_COLOR
+function lutFor(toRgb: (norm: number) => Rgb) {
+  let lut = lutCache.get(toRgb)
+  if (!lut) {
+    lut = buildLut(toRgb)
+    lutCache.set(toRgb, lut)
   }
-  return lut[Math.round(rampNorm(config, value) * 255)]!
+  return lut
+}
+
+// The whole continuous family in one function. A mode supplies its attribute,
+// its colormap and its domain, so a measurement nobody anticipated needs no arm
+// of its own — which is what stops the switch below growing once per number
+// somebody wants to see.
+//
+// A missing value is -1, and a track carrying the attribute on no feature at all
+// has no array: both paint the default color rather than the ramp's bottom, so
+// "no data" cannot be misread as "the lowest value".
+function continuousColorFunction(mode: ContinuousMode, d: ColorInputs) {
+  const values = d.attributes[mode.attribute]
+  const lut = lutFor(mode.toRgb)
+  return (index: number) => {
+    const value = values?.[index]
+    return value === undefined || value < 0
+      ? DEFAULT_COLOR
+      : lut[Math.round(rampNorm(mode, value) * 255)]!
+  }
 }
 
 interface ColorInputs {
   strands: Int8Array
   refNames: readonly string[]
   mateRefNames: readonly string[]
-  identities: Float32Array
-  mappingQuals: Float32Array
-  meanIdentities: Float32Array
-  dnds: Float32Array
+  // every numeric per-feature channel by name, which is what a continuous mode
+  // indexes. The named presets are aliases into this, not separate arrays.
+  attributes: Record<string, Float32Array>
+  attributeRanges: Record<string, AttributeRange>
 }
 
 function createColorFunction(
@@ -102,6 +119,10 @@ function createColorFunction(
   trackColor: string,
   nameOrder?: readonly string[],
 ): (index: number) => number {
+  const continuous = resolveContinuousMode(colorBy, d.attributeRanges)
+  if (continuous) {
+    return continuousColorFunction(continuous, d)
+  }
   switch (colorBy) {
     // One flat color for every alignment in this track, so overlaid tracks are
     // told apart by hue. The CIGAR indel instances below keep their own colors
@@ -110,20 +131,6 @@ function createColorFunction(
       const packed = cssColorToABGR(trackColor)
       return () => packed
     }
-    case 'identity':
-      return index => lutLookup(IDENTITY_LUT, d.identities[index]!)
-    case 'meanQueryIdentity':
-      return index => lutLookup(IDENTITY_LUT, d.meanIdentities[index]!)
-    case 'mappingQuality':
-      return index =>
-        lutLookup(
-          MAPQ_LUT,
-          d.mappingQuals[index]!,
-          continuousRampConfig.mappingQuality,
-        )
-    case 'dnds':
-      return index =>
-        lutLookup(DNDS_LUT, d.dnds[index]!, continuousRampConfig.dnds)
     case 'strand':
       return index => (d.strands[index] === -1 ? STRAND_NEG : STRAND_POS)
     case 'query':
@@ -135,7 +142,7 @@ function createColorFunction(
     // arm only guards the type union and colors by query as a safe fallback.
     case 'reference':
       return nameColorFunction(d.refNames, nameOrder)
-    case 'default':
+    default:
       return () => DEFAULT_COLOR
   }
 }
@@ -270,7 +277,10 @@ export function computeSyntenyColors({
     nameOrder,
   )
   const { I: colorI, D: colorD, N: colorN } = buildIndelColors(colorBy)
-  const { identities } = featureData
+  // identity fade is a separate channel from the color mode: a track can paint
+  // by strand and still fade by identity, so this is read directly rather than
+  // through the resolved mode
+  const identities = featureData.attributes.identity
   const out = new Uint32Array(instanceCount)
 
   for (let i = 0; i < instanceCount; i++) {
@@ -290,7 +300,7 @@ export function computeSyntenyColors({
         // Identity in [0,1] -> alpha byte in [0x4c, 0xff] (30% floor so
         // low-identity blocks remain perceptible). Unknown identity (-1)
         // gets full alpha.
-        const id = identities[f]!
+        const id = identities?.[f] ?? -1
         const alphaByte = id < 0 ? 0xff : Math.max(0x4c, Math.round(id * 255))
         out[i] = (base & 0x00ffffff) | (alphaByte << 24)
       } else {

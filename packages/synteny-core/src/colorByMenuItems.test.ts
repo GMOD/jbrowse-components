@@ -22,6 +22,7 @@ const noop = () => {}
 const target = (over: Partial<ColorByMenuTarget> = {}): ColorByMenuTarget => ({
   uniformColorBy: 'default',
   tracks: [track(0), track(1)],
+  attributes: [],
   pointBased: false,
   showReference: false,
   showColorLegend: false,
@@ -209,4 +210,38 @@ describe('per-track "Use view setting"', () => {
       true,
     )
   })
+})
+
+// The declared columns appear as modes of their own, which is what keeps the
+// named list above from gaining a member per measurement anyone wants to see.
+test('a declared numeric column is offered as its own mode', () => {
+  const picked: string[] = []
+  const items = colorByMenuItems(
+    target({
+      attributes: ['dn', 'goc_score'],
+      setColorBy: value => {
+        picked.push(value)
+      },
+    }),
+  )
+  const labels = items.map(i => ('label' in i ? i.label : undefined))
+  expect(labels).toContain('dn')
+  expect(labels).toContain('goc_score')
+  const goc = items.find(i => 'label' in i && i.label === 'goc_score')!
+  ;(goc as { onClick: () => void }).onClick()
+  expect(picked).toEqual(['attribute:goc_score'])
+})
+
+// A track pinned to an attribute mode has to show as checked, the same as a
+// preset — the mode is one string either way, which is the point of encoding it
+// in the string rather than in a sibling property.
+test('an attribute mode checks like a preset', () => {
+  const items = colorByMenuItems(
+    target({
+      attributes: ['dn'],
+      uniformColorBy: 'attribute:dn',
+    }),
+  )
+  const dn = items.find(i => 'label' in i && i.label === 'dn')!
+  expect((dn as { checked: boolean }).checked).toBe(true)
 })

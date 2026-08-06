@@ -43,8 +43,10 @@ export { default as DiagonalizeRpcBase } from './DiagonalizeRpcBase.ts'
 export { prepareDiagonalizeAdapter } from './prepareDiagonalizeAdapter.ts'
 export {
   LEGEND_CHIP_ALPHA_FLOOR,
+  attributeColorBy,
   blendOverWhite,
   coerceColorBy,
+  colorByAttributeName,
   legendChipColor,
   colorSchemes,
   defaultCigarColors,
@@ -62,8 +64,19 @@ export type {
   ColorByMenuTrack,
   TrackColorsModel,
 } from './colorByMenuItems.tsx'
-export { continuousRampConfig, dnDsRatio, rampNorm } from './colorRamps.ts'
-export type { Rgb } from './colorRamps.ts'
+export {
+  PRESET_ATTRIBUTES,
+  createAttributeChannels,
+  declaredAttributes,
+} from './attributeChannels.ts'
+export {
+  ATTRIBUTE_PREFIX,
+  continuousRampConfig,
+  dnDsRatio,
+  rampNorm,
+  resolveContinuousMode,
+} from './colorRamps.ts'
+export type { AttributeRange, ContinuousMode, Rgb } from './colorRamps.ts'
 export { ColorByLegend } from './ColorByLegend.tsx'
 export { SVGColorByLegend } from './SVGColorByLegend.tsx'
 export {

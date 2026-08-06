@@ -30,6 +30,7 @@ import type { ClickCoord } from './components/util.ts'
 import type { LinearSyntenyDisplayConfigSchema } from './configSchemaF.ts'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { AttributeRange } from '@jbrowse/synteny-core'
 import type {
   CigarOpMask,
   LodTier,
@@ -49,17 +50,16 @@ export interface SyntenyFeatureData {
   strands: Int8Array
   starts: Uint32Array
   ends: Uint32Array
-  identities: Float32Array
-  // PAF mapping-quality (column 12), -1 where missing. Float32 because the
-  // sentinel is -1 and we want to avoid an extra "valid" bitmap.
-  mappingQuals: Float32Array
-  // Adapter-computed length-weighted mean sequence identity per query/target
-  // pair, a true [0,1] fraction. -1 where missing. See
-  // PAFAdapter/util.ts:getWeightedMeans.
-  meanIdentities: Float32Array
-  // dN/dS per link, -1 where the source carried no dN and dS to divide. Ortholog
-  // tables are where this comes from; an aligner has no view on it.
-  dnds: Float32Array
+  // Every numeric channel a continuous color-by mode can paint, keyed by
+  // attribute name. Holds the four presets — `identity`, `meanIdentity`,
+  // `mappingQual`, and the derived `dnds` — plus whatever columns the track
+  // declares, so switching between them recolors on the main thread with no
+  // refetch. Float32 with -1 for missing, which is why there is no valid bitmap.
+  attributes: Record<string, Float32Array>
+  // What each channel actually spanned, ignoring the -1s. The domain an
+  // `attribute:<name>` mode scales to, and the numbers its legend is labelled
+  // with; the presets have fixed domains and ignore this.
+  attributeRanges: Record<string, AttributeRange>
   featureIds: string[]
   names: string[]
   refNames: string[]
@@ -107,7 +107,7 @@ function windowSignature(regions: Region[]) {
 }
 
 function getFeatureAtIndex(data: SyntenyFeatureData, i: number): FeatPos {
-  const identity = data.identities[i]!
+  const identity = data.attributes.identity?.[i] ?? -1
   return {
     id: data.featureIds[i]!,
     strand: data.strands[i]!,

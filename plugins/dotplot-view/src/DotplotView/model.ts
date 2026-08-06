@@ -1,5 +1,6 @@
 import { lazy } from 'react'
 
+import { getConf } from '@jbrowse/core/configuration'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import HighlightsMixin from '@jbrowse/core/pluggableElementTypes/models/HighlightsMixin'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
@@ -616,6 +617,22 @@ export default function stateModelFactory(pm: PluginManager) {
             return { trackId, name }
           })
         },
+        /**
+         * #method
+         * The numeric columns the overlaid tracks declare, so the palette menu can
+         * offer one mode per measurement without any of them being a named mode.
+         * `attributeColumns` is the ortholog-table adapter's slot; a track whose
+         * adapter has no such slot contributes nothing.
+         */
+        colorableAttributeNames() {
+          return self.tracks.flatMap(
+            t =>
+              (getConf(t.configuration, ['adapter', 'attributeColumns']) as
+                | string[]
+                | undefined) ?? [],
+          )
+        },
+
         /**
          * #getter
          * Canvas has painted and no display is still fetching, so what's on

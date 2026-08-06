@@ -10,6 +10,7 @@ import {
 import { legendChipColor } from './colorUtils.ts'
 
 import type { CigarOpMask, ColorChip } from './colorLegend.ts'
+import type { AttributeRange } from './colorRamps.ts'
 import type { SyntenyColorBy } from './colorUtils.ts'
 
 const pad = 6
@@ -47,6 +48,7 @@ export function SVGColorByLegend({
   alpha = 1,
   pointBased = false,
   cigarOps,
+  attributeRanges,
   trackChips,
 }: {
   // undefined when overlaid tracks are on different modes; the legend then
@@ -65,6 +67,8 @@ export function SVGColorByLegend({
   pointBased?: boolean
   // bitmask of indel ops actually drawn, as the ribbon legend passes on screen
   cigarOps?: CigarOpMask
+  /** observed span per attribute, which labels an attribute mode's ramp */
+  attributeRanges?: Record<string, AttributeRange>
   // one chip per overlaid track, for colorBy:'track' — the view supplies these
   trackChips?: ColorChip[]
 }) {
@@ -72,9 +76,14 @@ export function SVGColorByLegend({
   const swatch =
     colorBy === undefined
       ? ({ kind: 'chips', chips: trackChips ?? [] } as const)
-      : getColorBySwatch(colorBy, { pointBased, cigarOps, trackChips })
+      : getColorBySwatch(colorBy, {
+          pointBased,
+          cigarOps,
+          trackChips,
+          attributeRanges,
+        })
   const note = colorBy === undefined ? '' : colorByFallbackNote(colorBy)
-  const title = colorBy === undefined ? 'Mixed' : colorByShortLabel[colorBy]
+  const title = colorBy === undefined ? 'Mixed' : colorByShortLabel(colorBy)
   const text = stripAlpha(theme.palette.text.primary)
   const gradientId = `colorby-ramp-${colorBy ?? 'mixed'}`
 

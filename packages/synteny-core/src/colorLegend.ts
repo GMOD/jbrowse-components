@@ -1,7 +1,7 @@
-import { continuousRampConfig } from './colorRamps.ts'
-import { colorSchemes } from './colorUtils.ts'
+import { resolveContinuousMode } from './colorRamps.ts'
+import { colorByAttributeName, colorSchemes } from './colorUtils.ts'
 
-import type { Rgb } from './colorRamps.ts'
+import type { AttributeRange, Rgb } from './colorRamps.ts'
 import type { SyntenyColorBy } from './colorUtils.ts'
 
 const rgbCss = ([r, g, b]: Rgb) => `rgb(${r},${g},${b})`
@@ -104,8 +104,7 @@ function indelChips(
   return chips
 }
 
-// Short human-readable title for the floating legend header.
-export const colorByShortLabel: Record<SyntenyColorBy, string> = {
+const PRESET_LABELS: Record<string, string> = {
   default: 'Default',
   strand: 'Strand',
   query: 'Query name',
@@ -116,6 +115,16 @@ export const colorByShortLabel: Record<SyntenyColorBy, string> = {
   mappingQuality: 'Mapping quality',
   dnds: 'dN/dS',
   track: 'Track',
+}
+
+/**
+ * #api
+ * Short human-readable title for the floating legend header. An
+ * `attribute:<name>` mode has no title but the column's own name, which is the
+ * point of it — the reader named that column.
+ */
+export function colorByShortLabel(colorBy: SyntenyColorBy) {
+  return PRESET_LABELS[colorBy] ?? colorByAttributeName(colorBy) ?? colorBy
 }
 
 /**
@@ -145,7 +154,7 @@ export function trackLegendChips(
   return uniformColorBy === undefined
     ? tracks.map(t => ({
         color: t.colorBy === 'track' ? t.trackColor : undefined,
-        label: `${t.name} — ${colorByShortLabel[t.colorBy]}`,
+        label: `${t.name} — ${colorByShortLabel(t.colorBy)}`,
       }))
     : []
 }
@@ -171,6 +180,7 @@ export function getColorBySwatch(
     pointBased = false,
     cigarOps = DEFAULT_CIGAR_OPS,
     trackChips,
+    attributeRanges,
   }: {
     pointBased?: boolean
     cigarOps?: CigarOpMask
@@ -178,20 +188,22 @@ export function getColorBySwatch(
     // (this file can't know the track list). Absent or empty falls back to the
     // "distinct color per track" note.
     trackChips?: ColorChip[]
+    // observed span per attribute, which is the domain an `attribute:<name>`
+    // mode scales to and therefore what its ramp has to be labelled with
+    attributeRanges?: Record<string, AttributeRange>
   } = {},
 ): ColorBySwatchSpec | undefined {
   // dotplot paints flat points and never draws CIGAR ops
   const ops = pointBased ? NO_CIGAR_OPS : cigarOps
+  // Every continuous mode, preset or attribute, reads its ramp and its domain
+  // labels off the one spec the renderer paints from, so a new measurement
+  // needs no arm here at all. For the diverging preset the pivot is the ramp's
+  // own pale middle, which is what the end labels alone cannot say.
+  const continuous = resolveContinuousMode(colorBy, attributeRanges)
+  if (continuous) {
+    return ramp(continuous.toRgb, continuous.minLabel, continuous.maxLabel)
+  }
   switch (colorBy) {
-    case 'identity':
-    case 'meanQueryIdentity':
-      return ramp(continuousRampConfig.identity.toRgb, '0%', '100%')
-    case 'mappingQuality':
-      return ramp(continuousRampConfig.mappingQuality.toRgb, '0', '60')
-    // the pivot is the ramp's own pale middle, which is what a diverging scale
-    // buys and what the end labels alone cannot say
-    case 'dnds':
-      return ramp(continuousRampConfig.dnds.toRgb, '0', '≥2')
     case 'strand':
       return {
         kind: 'chips',
@@ -217,9 +229,9 @@ export function getColorBySwatch(
       return trackChips?.length
         ? { kind: 'chips', chips: trackChips }
         : undefined
-    case 'query':
-    case 'target':
-    case 'reference':
+    default:
+      // query / target / reference paint a color per sequence name, which has
+      // no fixed key
       return undefined
   }
 }

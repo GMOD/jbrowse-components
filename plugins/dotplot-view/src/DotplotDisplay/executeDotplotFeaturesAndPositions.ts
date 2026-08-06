@@ -2,7 +2,14 @@ import { parseCigar2Typed } from '@jbrowse/alignments-core'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { createProgressReporter, dedupe } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
-import { bpToCumBp, buildBpRegionIndex, dnDsRatio } from '@jbrowse/synteny-core'
+import {
+  PRESET_ATTRIBUTES,
+  bpToCumBp,
+  buildBpRegionIndex,
+  createAttributeChannels,
+  declaredAttributes,
+  dnDsRatio,
+} from '@jbrowse/synteny-core'
 
 import { cigarWorthParsing } from './dotplotCigarDetail.ts'
 
@@ -10,6 +17,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type { AttributeRange } from '@jbrowse/synteny-core'
 import type { BpIndexViewSnap } from '@jbrowse/synteny-core'
 
 // Float64 because cumBp values reach Gbp-scale, which Float32 can't represent
@@ -26,12 +34,10 @@ export interface DotplotFeaturesAndPositionsResult {
   // subtracting there sent two arrays for one derived number; same field and
   // same name LinearSyntenyDisplay's geometry already uses.
   alignmentLengths: Uint32Array
-  identities: Float32Array
-  meanIdentities: Float32Array
-  mappingQuals: Float32Array
-  // dN/dS per link, -1 where the source carried no dN and dS to divide. Comes
-  // from an ortholog table; an aligner has no view on it.
-  dnds: Float32Array
+  // every numeric channel a continuous mode can paint, keyed by attribute name:
+  // the four presets plus whatever the track declares
+  attributes: Record<string, Float32Array>
+  attributeRanges: Record<string, AttributeRange>
   refNames: string[]
   mateRefNames: string[]
   // Every feature's packed CIGAR ops concatenated into one transferable buffer,
@@ -142,10 +148,11 @@ export async function executeDotplotFeaturesAndPositions({
   const p22 = new Float64Array(count)
   const strands = new Int8Array(count)
   const alignmentLengths = new Uint32Array(count)
-  const identities = new Float32Array(count)
-  const meanIdentities = new Float32Array(count)
-  const mappingQuals = new Float32Array(count)
-  const dnds = new Float32Array(count)
+  const channels = createAttributeChannels(
+    [...PRESET_ATTRIBUTES, ...declaredAttributes(adapterConfig)],
+    count,
+  )
+  const channelNames = Object.keys(channels.arrays)
   const refNames: string[] = []
   const mateRefNames: string[] = []
   const cigarChunks: Uint32Array[] = []
@@ -218,10 +225,14 @@ export async function executeDotplotFeaturesAndPositions({
     p22[n] = c22
     strands[n] = strand
     alignmentLengths[n] = Math.abs(end - start)
-    identities[n] = (f.get('identity') as number | undefined) ?? -1
-    meanIdentities[n] = (f.get('meanIdentity') as number | undefined) ?? -1
-    mappingQuals[n] = (f.get('mappingQual') as number | undefined) ?? -1
-    dnds[n] = dnDsRatio(f)
+    for (const name of channelNames) {
+      // dnds is derived from two attributes, so nothing answers to its name
+      channels.write(
+        n,
+        name,
+        name === 'dnds' ? dnDsRatio(f) : channels.read(f, name),
+      )
+    }
     refNames.push(refName)
     mateRefNames.push(mateRefName)
     // Parse only what the geometry builder could actually walk at this zoom. A
@@ -263,10 +274,7 @@ export async function executeDotplotFeaturesAndPositions({
     p22: p22.subarray(0, n),
     strands: strands.subarray(0, n),
     alignmentLengths: alignmentLengths.subarray(0, n),
-    identities: identities.subarray(0, n),
-    meanIdentities: meanIdentities.subarray(0, n),
-    mappingQuals: mappingQuals.subarray(0, n),
-    dnds: dnds.subarray(0, n),
+    ...channels.finish(n),
     refNames,
     mateRefNames,
     cigarData,
@@ -284,10 +292,7 @@ export async function executeDotplotFeaturesAndPositions({
     result.p22.buffer,
     result.strands.buffer,
     result.alignmentLengths.buffer,
-    result.identities.buffer,
-    result.meanIdentities.buffer,
-    result.mappingQuals.buffer,
-    result.dnds.buffer,
+    ...Object.values(result.attributes).map(a => a.buffer),
     result.cigarData.buffer,
     result.cigarOffsets.buffer,
   ])
