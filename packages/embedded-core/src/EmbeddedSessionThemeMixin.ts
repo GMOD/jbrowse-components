@@ -1,10 +1,11 @@
-import { getConf } from '@jbrowse/core/configuration'
+import { getConf, setConf } from '@jbrowse/core/configuration'
 import { createJBrowseThemeFromArgs } from '@jbrowse/core/ui'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { BaseSessionModel } from '@jbrowse/product-core'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { SerializableThemeArgs } from '@jbrowse/core/ui'
+import type { PaletteInput } from '@jbrowse/core/ui/palette'
 
 /**
  * #stateModel EmbeddedSessionThemeMixin
@@ -14,38 +15,65 @@ import type { SerializableThemeArgs } from '@jbrowse/core/ui'
  * `theme` slot still applies via `configTheme`.
  */
 export function EmbeddedSessionThemeMixin(pluginManager: PluginManager) {
-  return BaseSessionModel(pluginManager).views(self => ({
-    /**
-     * #getter
-     * Serializable theme description (the canonical `themeOptions` contract
-     * shared with the app-core/web sessions). This is what crosses the RPC
-     * worker boundary — e.g. the canvas display reads
-     * `getSession(self).themeOptions` in its rpcProps so worker-baked colors
-     * (CDS frames, stroke fallback) honor the config `theme` slot.
-     */
-    get themeOptions(): SerializableThemeArgs {
-      return {
-        configTheme: getConf(self, 'theme'),
-        themeName: 'default',
-      }
-    },
-    /**
-     * #getter
-     * Every color JBrowse renders, resolved to plain strings and free of any UI
-     * toolkit. This is what rendering reads. See the canonical
-     * `ThemeManagerSessionMixin` getter of the same name.
-     */
-    get palette() {
-      return resolvePalette(this.themeOptions)
-    },
-    /**
-     * #getter
-     * Resolved MUI theme, mirroring the product's ThemeProvider. Lets
-     * headless/RPC consumers derive theme-dependent state without a mounted
-     * component. Shares its colors with `palette` by construction.
-     */
-    get theme() {
-      return createJBrowseThemeFromArgs(this.themeOptions)
-    },
-  }))
+  return BaseSessionModel(pluginManager)
+    .views(self => ({
+      /**
+       * #getter
+       * Serializable theme description (the canonical `themeOptions` contract
+       * shared with the app-core/web sessions). This is what crosses the RPC
+       * worker boundary — e.g. the canvas display reads
+       * `getSession(self).themeOptions` in its rpcProps so worker-baked colors
+       * (CDS frames, stroke fallback) honor the config `theme` slot.
+       */
+      get themeOptions(): SerializableThemeArgs {
+        return {
+          configTheme: getConf(self, 'theme'),
+          themeName: 'default',
+        }
+      },
+      /**
+       * #getter
+       * Every color JBrowse renders, resolved to plain strings and free of any UI
+       * toolkit. This is what rendering reads. See the canonical
+       * `ThemeManagerSessionMixin` getter of the same name.
+       */
+      get palette() {
+        return resolvePalette(this.themeOptions)
+      },
+      /**
+       * #getter
+       * Resolved MUI theme, mirroring the product's ThemeProvider. Lets
+       * headless/RPC consumers derive theme-dependent state without a mounted
+       * component. Shares its colors with `palette` by construction.
+       */
+      get theme() {
+        return createJBrowseThemeFromArgs(this.themeOptions)
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * Point the session at light or dark. One write, not two: the `theme`
+       * slot is what `themeOptions` ships to the renderer, so the labels baked
+       * in the worker follow it, and `palette` is derived from the same slot,
+       * so what React draws follows it too. An embedder who sets only a
+       * React-side palette leaves the baked labels behind.
+       *
+       * Merges rather than replaces, at both levels. `theme` is a frozen slot,
+       * so a bare `setConf(session, 'theme', { palette: { mode } })` — the
+       * obvious form, and what the build-your-own examples each wrote — drops
+       * every other key in it. That silently discards whatever the host passed
+       * as `createViewState`'s `configuration.theme` (a brand `primary`, say)
+       * the first time their dark-mode toggle fires. `resolvePalette` spreads
+       * `configTheme.palette` over the preset shallowly, so `mode` and
+       * `primary` are siblings and both levels have to survive.
+       */
+      setThemeMode(mode: 'light' | 'dark') {
+        const theme: { palette?: PaletteInput } = getConf(self, 'theme') ?? {}
+        setConf(self, 'theme', {
+          ...theme,
+          palette: { ...theme.palette, mode },
+        })
+      },
+    }))
 }
