@@ -794,10 +794,11 @@ narrow: `tabix ecoli_pggb.segs.bed.gz` returns 32 backbone segments over this
 A row's bar is drawn over the **reference it replaces**, never over its own
 sequence length. An insertion adds bp that a reference axis has no room for, so
 length lives in the tooltip instead. That is why CFT073's row carries one long
-bar labelled `93 bp` running off the left edge: its segment links to
-`K12:1,004,686` inside the window and to `K12:997,574` 7.1 kb upstream of it, so
-93 bp of CFT073 stands in for 7.1 kb of K12 and the bar is that 7.1 kb. It is a
-deletion, not a loop, and most of it is outside the frame.
+bar labelled `7 kb deletion` running off the left edge: its segment is 75 bp on
+CFT073's own contig, and its two links land on `K12:1,004,667` inside the window
+and on `K12:997,574` 7.1 kb upstream, so those 75 bp stand in for 7.1 kb of K12
+and the bar is that 7.1 kb. It is a deletion, not a loop, and most of it is
+outside the frame.
 
 In **Sample rows** the lanes take the MAF's own rows and order: the top row is
 the K12 backbone, and below it each strain's marks are the segments it takes
@@ -822,6 +823,28 @@ an rGFA has to use: there `SR` is build order, so it names whichever assembly
 minigraph added the segment first and says nothing about the rest.
 
 <Figure caption="A 59 bp backbone segment at chr:1,004,605-1,004,663 clicked in the graph. carriedBy lists K12, Sakai, NCTC86 and IAI39 but not CFT073, which is the same absence the sample-rows figure above draws as a gap; contributingAssembly says only K12, which is all an rGFA of the same five strains could report." src="/img/pangenome/pggb_carriage.png" />
+
+#### Out of the graph, into the strain
+
+A segment the reference never visits sits on **its own carrier's coordinates**,
+which is what lets the graph open the strain rather than a projection of it.
+Right-click that 75 bp CFT073 segment → **Launch view → Linear genome view →
+CFT073** and it opens CFT073 at `1,048,515`, its own offset, carrying CFT073's
+gene track.
+
+That is the deletion read from the donor's side, and it is checkable against
+annotation neither the graph nor the index has seen. The two links bridge
+`K12:997,574` to `K12:1,004,667`, and seven K12 genes sit inside that span —
+`elfA`, `elfD`, `elfC`, `elfG`, `ycbU`, `ycbV`, `ycbF`, the _elf_ fimbrial
+operon and its neighbours — with `ssuE` ending just before it and `pyrD`
+starting just after. So if the graph is right, CFT073 should run `ssuE` straight
+into `pyrD`. It does.
+
+<Figure caption="The 75 bp CFT073 segment ringed in the graph, and the linear view its menu entry opens: CFT073 on its own coordinates, carrying CFT073's genes. ssuE runs into pyrD with nothing between them, where K12 has seven genes across 7.1 kb. The graph stated that as a link between two coordinates; this is the same event on the assembly that carries it." src="/img/pangenome/pggb_strain_launch.png" />
+
+The [graph genome view guide](/docs/user_guides/graph_genome_view#from-a-node-back-to-a-genome)
+covers the rest of that menu, including the synteny entry that opens every
+contributing strain at once.
 
 #### Where this stops, and what to do instead
 

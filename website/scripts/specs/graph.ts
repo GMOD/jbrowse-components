@@ -1973,6 +1973,85 @@ export const graphSpecs: ScreenshotSpec[] = [
   // holding them to the reference axis, so the bubbles are visible as bubbles.
   // Same window, same tracks, same colors, differing only in layoutMode, which
   // is what makes the pair readable as one graph rather than two.
+  // Out of the graph and into the strain that carries the allele — the pggb
+  // counterpart of rgfa_strain_launch, and the mirror case.
+  //
+  // That figure launches an INSERTION: CFT073 carries 58.6 kb at K12's tRNA
+  // cluster that the reference lacks. This one launches a DELETION, which is the
+  // harder direction to see on a reference axis and the one this window already
+  // has. s118465 is 75 bp on CFT073#1#chr:1,048,515, and its two links land on
+  // K12 at 997,574 and 1,004,667 (`tabix ecoli_pggb.links.bed.gz`), so CFT073
+  // carries 75 bp where K12 carries 7.1 kb. Launching it opens CFT073 at its own
+  // coordinates, where that sequence is contiguous and carries its own genes —
+  // the graph's claim checked against the donor's assembly rather than restated.
+  //
+  // Why this is possible at all, since the prose nearby says the opposite about
+  // DRAWING: the 7.1 kb span cannot be cut as a graph (a base-level pggb graph
+  // is ~17 bp per segment, so that window is thousands of nodes), but the launch
+  // cuts nothing — it opens a linear view on the donor's coordinates, and the
+  // node it starts from sits in a 460 bp window that draws fine. Of the 61 nodes
+  // in this cut, 21 are off-reference and carry a donor coordinate like this one.
+  //
+  // ONE frame, not the two rgfa_strain_launch uses. That figure has to show the
+  // menu because it is the one that documents the mechanism; here the mechanism
+  // is already documented and what is new is the result, so the menu is driven
+  // and dismissed and the frame is the graph beside what it opened.
+  {
+    mode: 'url',
+    name: 'pangenome/pggb_strain_launch',
+    // ECOLI_PANGENOME_CONFIG, not the CONFIG the other pggb figures use: that
+    // fixture loads K12 alone, and the launch menu only offers assemblies the
+    // session actually has, so the node menu came up with `Open in K12 — around
+    // this node` as its only target and nothing to click. This one carries all
+    // five, which is also what puts CFT073's genes in the launched view.
+    url: sessionSpec(ECOLI_PANGENOME_CONFIG, {
+      sessionTracks: [PGGB_SEGMENTS_SESSION_TRACK],
+      views: [
+        {
+          // pinned so the menu clicks scope to the graph rather than to the
+          // linear view the launch adds under it
+          id: 'pggb_launch_graph',
+          type: 'GraphGenomeView',
+          loadedTrackId: PGGB_SEGMENTS_TRACK,
+          loadedRegion: PGGB_ROWS_LOCUS,
+          layoutMode: 'force',
+          colorScheme: 'stable-rank',
+        },
+      ],
+    }),
+    readySelector: TOOLBAR_READY,
+    readyTimeout: 120000,
+    settleMs: 8000,
+    viewportWidth: 1100,
+    viewportHeight: 1000,
+    hideTooltip: true,
+    actions: [
+      // right-click the allele itself rather than using the view menu: that is
+      // what scopes the launch to ONE segment's donor coordinates instead of the
+      // whole window's.
+      //
+      // The node menu is FLAT — `Node details` then one `Open in <assembly> —
+      // <locus>` row per launchable target (graphMenuItems.ts). It is not the
+      // `Launch view` submenu the view and track menus carry, so there is no
+      // cascade to drive here.
+      { type: 'rightclick', anchor: { view: 0, graphNode: '118465-' } },
+      { type: 'waitForText', text: 'Open in CFT073' },
+      { type: 'click', text: 'Open in CFT073' },
+      // gate on the launched view's own gene track drawing, not on a delay: the
+      // launch carries the session's annotation for the assembly it opens, and a
+      // frame captured before that lands is a figure of an empty browser
+      { type: 'waitForText', text: 'CFT073 genes' },
+      { type: 'delay', ms: 4000 },
+    ],
+    annotations: [
+      {
+        type: 'circle',
+        anchor: { view: 0, graphNode: '118465-' },
+        radius: 20,
+      },
+    ],
+  },
+
   // Carriage, which is the one statement a pggb index makes that an rGFA cannot
   // and that NO linear projection on this page can make at all.
   //
