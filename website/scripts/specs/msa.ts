@@ -11,15 +11,13 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // path, so nothing here pins a plugin version and a plugin release reaches
 // these figures with no config change.
 //
-// NOT YET REGENERATED: the Orthologs tab ships in the release AFTER
-// jbrowse-plugin-msaview 2.7.3, and until that is published to the plugin store
-// `latest/` still serves the BLAST-only dialog. Stage 2 would find no such tab
-// and stage 3 would wait out its timeout with no alignment to gate on. Run this
-// spec after the release, not before it.
-//
-// The genomes_msa tutorial card has no gen-tutorial-thumbs entry yet for the
-// same reason: that script renders its crop from a committed PNG, so the entry
-// goes in together with the figure this spec produces, not ahead of it.
+// The Orthologs tab shipped in the release after jbrowse-plugin-msaview 2.7.3,
+// and the plugin store `latest/` bundle this config loads now serves it: every
+// label the stages gate on ("Orthologs (fast)", "Query species", "Species to
+// include") is a literal in that bundle. Before that release the store served a
+// BLAST-only dialog, stage 2 found no such tab, and stage 3 waited out its
+// timeout with no alignment to gate on. A stage that fails that way is the
+// store lagging a release, not a broken spec.
 //
 // NLRP1 (hg38 chr17:5,501,396-5,584,509, minus strand, per NCBI Datasets), not a
 // housekeeping gene: the overlay only says something when the rows differ.
@@ -70,12 +68,31 @@ export const msaSpecs: ScreenshotSpec[] = [
             anchor: {
               track: 'hg38-ncbiRefSeqCurated',
               locus: 'chr17:5,543,000',
-              fracY: 0.5,
+              // near the top of the band, not its middle. `longestCoding` draws
+              // this locus as a single gene row, so the lower two thirds of a
+              // 60px track are empty canvas: a centered right-click opens the
+              // view's own menu with no feature items in it, and the stage then
+              // fails on the launcher it was waiting for rather than on the
+              // click that missed.
+              fracY: 0.2,
             },
           },
           { type: 'waitForText', text: 'Launch MSA view' },
         ],
-        annotations: [{ type: 'box', anchor: { text: 'Launch MSA view' } }],
+        // Both boxes are assertions, not decoration: an anchor that resolves to
+        // nothing throws. genomes.jbrowse.org loads protein3d beside msaview,
+        // so one right-click on a gene offers both, and the tutorial says so.
+        // If `Launch protein view` ever stops resolving here, that sentence is
+        // what has gone stale.
+        annotations: [
+          { type: 'box', anchor: { text: 'Launch MSA view' } },
+          { type: 'box', anchor: { text: 'Launch protein view' } },
+        ],
+        // the one-track view plus the menu it opens, and nothing under them.
+        // At the spec's own 900 this frame was more empty page than figure, and
+        // it is the top third of a three-frame stack, so the whitespace pushed
+        // the alignment below the fold on the page that embeds it.
+        viewportHeight: 540,
       },
       {
         actions: [
@@ -89,12 +106,24 @@ export const msaSpecs: ScreenshotSpec[] = [
           {
             type: 'waitForSelector',
             selector: 'button:not([disabled])::-p-text(Submit)',
+            // Longer than the 30s default, because what gates it is a range
+            // read out of hgdownload's hg38.2bit for the transcript's CDS.
+            // hgdownload is the slowest host any of these figures touch, and at
+            // 30s this stage failed on a pending 2bit request often enough to
+            // read as a broken selector.
+            timeout: 120000,
           },
         ],
         annotations: [
           { type: 'box', anchor: { text: 'Orthologs (fast)' } },
           { type: 'box', anchor: { text: 'Species to include' } },
         ],
+        // Declared, not inherited. A stage without its own height keeps
+        // whatever the previous one resized to, so leaving this off gave the
+        // dialog the 540 the menu frame above wanted and cut it off below the
+        // species checkboxes: no isoform selector, no Submit, in the frame
+        // whose whole subject is that dialog.
+        viewportHeight: 880,
       },
       {
         // Submit, then wait out a live NCBI lookup plus an EBI Clustal Omega
@@ -103,18 +132,46 @@ export const msaSpecs: ScreenshotSpec[] = [
         // after the alignment itself lands.
         actions: [
           { type: 'click', selector: 'button::-p-text(Submit)' },
-          // Gate on the RESULT, not on a timer. The domain legend renders only
-          // once the alignment has loaded AND its CDD annotations have come
-          // back, so its first entry appearing is the end state this frame is
-          // of. NACHT is in every NLRP1 ortholog, which is what makes it a safe
-          // thing to wait for; the pyrin entry is not, since only some rows
-          // have one.
-          { type: 'waitForText', text: 'NACHT', timeout: 180000 },
+          // Gate on the RESULT, not on a timer, and specifically on the entry
+          // this figure is OF. The legend lists one row per domain type present
+          // anywhere in the alignment, and the human row is the only one with a
+          // pyrin, so `Pyrin_NALPs` appears only once NCBI has returned the
+          // human protein record. A looser gate on NACHT passes without it:
+          // eutils answers a burst of these runs with HTTP 429, the human row
+          // silently loses its domain calls, and the frame is a whole-protein
+          // overlay missing the one block the page is about. Which is what it
+          // shipped as, once.
+          { type: 'waitForText', text: 'Pyrin_NALPs', timeout: 180000 },
+          // The view opens at colWidth 12, which is residue zoom: about a
+          // hundred columns of a ~1500-column alignment, and none of the domain
+          // blocks the figure is of. Fit horizontally is the one action that
+          // puts the whole protein on screen, and it computes the width instead
+          // of stepping 0.75x per click toward a floor that would still leave
+          // the C terminus off the right edge.
+          //
+          // The selector is the toolbar button's `tooltip` prop, which msaview
+          // passes straight through to the MUI IconButton and React therefore
+          // renders as a DOM attribute. That is the only thing distinguishing
+          // this button from the five icon buttons beside it, which carry no
+          // aria-label; if the plugin ever wraps it in a real MUI Tooltip the
+          // attribute goes away and this stage fails on the selector.
+          {
+            type: 'click',
+            selector: 'button[tooltip="Fit / zoom options"]',
+          },
+          { type: 'click', text: 'Fit horizontally' },
+          { type: 'delay', ms: 1000 },
         ],
-        viewportHeight: 1000,
+        // the MSA view opens at a fixed height, so this is the LGV above it
+        // plus that view plus nothing: the run's own
+        // `blank below the last content` said 122 css px at 1000
+        viewportHeight: 878,
       },
     ],
     hideTooltip: true,
     viewportHeight: 900,
+    // the UCSC hub config is ~570 tracks and pulls four remote plugins, the
+    // same reason genomes_synteny raises this
+    readyTimeout: 120000,
   },
 ]

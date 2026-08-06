@@ -56,7 +56,9 @@ hovering synchronized across all three.
 Both plugins are also preconfigured on the public browsers at
 [genomes.jbrowse.org](https://genomes.jbrowse.org). Pick a genome such as
 [hg38](https://jbrowse.org/code/jb2/latest/?config=/ucsc/hg38/config.json),
-search for a gene, and right-click it to launch either view.
+search for a gene, and right-click it: **Launch protein view** is this page's
+subject, and **Launch MSA view** beside it is walked through on one gene in
+[](/docs/tutorials/genomes_msa).
 
 This session opens human TP53 as a connected pair of views: the AlphaFold
 structure of UniProt P04637 beside a genome view of its locus with NCBI RefSeq
@@ -124,14 +126,15 @@ loaded track serves. See the parameters and further example URLs in the
 
 ## Viewing a multiple sequence alignment
 
-Right-click a gene and launch the MSA view to load a precomputed alignment and
-phylogenetic tree, or run a fresh NCBI BLAST query. As with the structure view,
-genomic positions map onto alignment columns, so you can relate variants to
-residues conserved across species.
+Right-click a gene and launch the MSA view to build an alignment from NCBI's
+precomputed orthologs, or to run a fresh NCBI BLAST query. As with the structure
+view, genomic positions map onto alignment columns, so you can relate variants
+to residues conserved across species.
 
-See the
+[](/docs/tutorials/genomes_msa) walks the ortholog path end to end on one gene,
+including the conserved-domain overlay that is drawn over the alignment. See the
 [MSAView user guide](https://github.com/GMOD/JBrowseMSA/blob/main/docs/user_guide.md)
-for details.
+for the rest of the view's options.
 
 ## How positions are mapped
 
@@ -179,6 +182,7 @@ account.
 
 ## See also
 
+- [](/docs/tutorials/genomes_msa)
 - [JBrowseMSA Gene Explorer](https://gmod.org/JBrowseMSA/gene-explorer/)
 - [Proteins in the Genome Browser](https://github.com/GMOD/proteinbrowser)
 - [Proteins in the Genome Browser paper](https://doi.org/10.1016/j.jmb.2026.169645)

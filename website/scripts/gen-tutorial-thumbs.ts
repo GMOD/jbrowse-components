@@ -262,6 +262,20 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     // the app header, which also carries the figure's baked-in callout text
     band: [0.28, 0.95],
   },
+  genomes_msa: {
+    // The last of the click-path figure's three frames: the ortholog alignment
+    // with NCBI's domain blocks over it. The two frames above it are a context
+    // menu and a dialog, which read as app chrome on a card.
+    src: 'genomes_msa/launch_sequence.png',
+    // The gene in the linear view AND the alignment under it, which is the
+    // pairing the page is about; the MSA panel alone is a short wide strip of
+    // domain blocks over a tall empty canvas, and cover-cropping that to 5:3
+    // keeps only the species tree. Starts below the app header, ends just past
+    // the domain rows. `position: 'left'` drops the right edge, which is the
+    // floating domain legend, unreadable at card size.
+    band: [0.655, 0.86],
+    position: 'left',
+  },
   pangenome_hprc: {
     // The classic Bandage force-directed picture of the C4 subgraph, past the
     // view chrome and the LGV/bubbles lanes above it.

@@ -7,12 +7,12 @@ guide_category: Tutorials
 tutorial_category: Transcriptomics & proteins
 ---
 
-**TL;DR:** genomes.jbrowse.org loads the MSA plugin, so any gene in a linear
-genome view can be turned into a cross-species protein alignment without
-preparing anything. The alignment is built from NCBI's precomputed orthologs
-rather than from a similarity search, so there is no job to queue, its rows are
-labelled by species, and NCBI's conserved-domain annotations are drawn on top of
-it.
+**TL;DR:** genomes.jbrowse.org loads both protein plugins, so any gene in a
+linear genome view can be turned into a cross-species protein alignment or a 3D
+structure without preparing anything. The alignment is built from NCBI's
+precomputed orthologs rather than from a similarity search, so there is no job
+to queue, its rows are labelled by species, and NCBI's conserved-domain
+annotations are drawn on top of it.
 
 ## Prerequisites
 
@@ -21,18 +21,15 @@ it.
 
 ## Orthologs, not a search
 
-A similarity search answers "what looks like this sequence". An alignment wants
-a different answer: "what is this gene in each species". Those are not the same
-question, and the second one has already been computed. NCBI publishes one
-ortholog gene per species for most annotated genes, so the plugin looks the
-answer up instead of submitting a job.
+NCBI publishes one ortholog gene per species for most annotated genes, so the
+plugin can look up what this gene is in each species instead of submitting a
+similarity search for what looks like this sequence. The lookup returns
+immediately, which leaves the multiple alignment itself as the only step that
+takes real time; a `blastp` submission has to queue and run before an alignment
+can start.
 
-The practical difference is the wait. A lookup returns immediately, so the only
-step that costs real time is the multiple alignment itself. A `blastp`
-submission has to queue and run before an alignment can even start.
-
-The BLAST tab is still there, and it is the right tab when a gene has no
-resolvable symbol, which is the case a search handles and a lookup cannot.
+The dialog's **NCBI BLAST query** tab is the route for a gene with no resolvable
+symbol, which is the case a search handles and a lookup cannot.
 
 ## Opening the gene
 
@@ -46,24 +43,34 @@ is for.
 
 ## Launching the alignment
 
-Right-click the gene and choose **Launch MSA view**. The dialog opens on the
-**Orthologs (fast)** tab.
+Right-click the gene. The menu carries one launcher from each of the two protein
+plugins the site loads: **Launch MSA view** from msaview, and **Launch protein
+view** from protein3d, covered
+[further down](#the-structure-view-on-the-same-menu). Choose **Launch MSA
+view**, and the dialog opens on its **Orthologs (fast)** tab.
 
-Three things on that tab matter:
+Three fields on that tab matter:
 
 - **Query species** is the species the gene came from, human here.
-- **Species to include** is the panel of rows to build. Species with no ortholog
-  for this gene are skipped rather than erroring, so leaving them all ticked
-  costs nothing.
-- The **isoform** selector picks which transcript becomes the query row. That
-  row is the one the genome view stays linked to, so hovering the alignment
-  highlights the matching codons back in the linear view.
+- **Species to include** is the panel of rows to build. As its label says,
+  species with no ortholog for this gene are skipped rather than erroring, so
+  leaving them all ticked costs nothing.
+- **Choose isoform** picks which transcript becomes the query row. That row is
+  the one the genome view stays linked to, so hovering the alignment highlights
+  the matching codons back in the linear view.
+
+**MSA Algorithm** is what EBI is asked to run, Clustal Omega by default, and is
+the step the wait is actually in.
 
 Press **Submit**. A multiple sequence alignment view opens below the genome
 view, with a tree on the left, the alignment beside it, and the conserved-domain
 overlay drawn over the residues once NCBI returns it.
 
-<Figure src="/img/genomes_msa/launch_sequence.png" caption="The whole path on NLRP1: the right-click menu, the Launch MSA view dialog on its Orthologs tab, and the alignment that Submit builds, with NCBI conserved domains overlaid." />
+The view opens at residue zoom, which on a protein this long is a window on its
+N terminus. **Fit horizontally**, under the toolbar's fit and zoom button, puts
+the whole alignment on screen, which is the zoom the domain blocks read at.
+
+<Figure src="/img/genomes_msa/launch_sequence.png" caption="The whole path on NLRP1: the right-click menu with both plugins' launchers boxed, the Launch MSA view dialog on its Orthologs tab, and the alignment Submit builds, fitted to the width. The pyrin block sits on the human query row alone; the NACHT-to-CARD core below it is in every row." />
 
 ## Reading the overlay
 
@@ -72,23 +79,25 @@ rather than at each protein's own residue positions. That is what makes the rows
 comparable: the same domain lands in the same column in every row that has it,
 however different the proteins are in length.
 
-Human _NLRP1_ carries a pyrin (PYD) death-fold domain at its N terminus. Mouse
-_Nlrp1a_ does not. Everything after it is shared, so the overlay reads as one
-missing block on the left and a matching stack of blocks to the right of it.
+Human _NLRP1_ carries a pyrin (PYD) death-fold domain at its N terminus, and no
+other row in this panel does, mouse _Nlrp1a_ included. Everything after it is
+shared, so the overlay reads as one block on the left that only the query row
+has, and a matching stack of blocks to the right of it that every row has.
 
-## The control
+That shared core is the control. NACHT, the winged helix, HD2, FIIND and CARD
+are present in every row, so they have to line up in the same columns; a missing
+block only means something because the blocks around it agree.
 
-The shared core is the control. NACHT, the winged helix, HD2, FIIND and CARD are
-present in every row, so they have to line up in the same columns. If they did
-not, the alignment would be wrong and nothing else on the page would be worth
-reading. A missing block only means something because the blocks around it
-agree.
+The calls ride along on NCBI's own protein records, so they arrive with the
+sequences and cost no extra step. For a protein NCBI has no calls for, the view
+menu offers **Open domains...** to read them from a file and **Query
+InterProScan for domains...** to compute them.
 
 ## Checking it against the raw alignment
 
 A whole-protein view cannot tell "no domain annotated" from "no sequence", so
-read the residues. Use the alignment's **Zoom in** button on the columns under
-the pyrin block until the letters are legible.
+read the residues. Scroll to the columns under the pyrin block and use the
+alignment's **Zoom in** button until the letters are legible again.
 
 The rows without a pyrin domain are not empty there. Several of them carry
 ordinary sequence in those columns with no domain called over it, which is a
@@ -102,17 +111,36 @@ the whole panel, while a fast-evolving one like _NLRP1_ returns orthologs for
 only part of it. Genes annotated with an Ensembl identifier and no symbol fall
 through to the BLAST tab.
 
+## The structure view on the same menu
+
+**Launch protein view**, the protein3d item on the same right-click menu, opens
+a dialog whose **Launch 3D protein structure view** renders the AlphaFold model
+of the same protein, mapped back to the genome the way the alignment is. On a
+protein AlphaFold also publishes its input alignment for, that dialog offers
+**Launch MSA view** and **Launch 3D structure + MSA view**, which build an MSA
+view from that alignment rather than from orthologs.
+
+The two alignments answer different questions. The ortholog panel is one row per
+named species, which is what makes a present-or-absent domain call readable
+across the tree. AlphaFold's is the deep unlabelled alignment its own pipeline
+folded from, so it shows what the structure prediction had to work with, and it
+is a much larger download.
+
+Both views map a genomic position to a residue the same way, described under
+[](/docs/tutorials/protein_structure#how-positions-are-mapped).
+
 ## See also
 
-- [](/docs/tutorials/genomes_synteny), the other hosted click-path on the same
-  site
+- [](/docs/tutorials/protein_structure)
+- [](/docs/tutorials/genomes_synteny)
 - [](/docs/user_guides/gene_track)
 - [](/docs/user_guides/plugin_store)
-- [react-msaview](https://gmod.org/JBrowseMSA/), the viewer this plugin embeds
+- [JBrowseMSA](https://gmod.org/JBrowseMSA/)
 
 ## References
 
 - [NCBI Datasets gene orthologs](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/reference-docs/rest-api/)
 - [NCBI Conserved Domain Database](https://www.ncbi.nlm.nih.gov/Structure/cdd/cdd.shtml)
+- [AlphaFold DB](https://alphafold.ebi.ac.uk/)
 - Broz P, Dixit VM. Inflammasomes: mechanism of assembly, regulation and
   signalling. _Nat Rev Immunol_ 2016.
