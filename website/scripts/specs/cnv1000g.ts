@@ -120,7 +120,7 @@ const CNV_CONFIG = 'test_data/1000g_cnv/config.json'
 // adapter is asked, so it has to be spelled the assembly's way. Spelled wrong,
 // the view launches with no regions and the capture is blank rather than an
 // error naming the contig.
-const CHR1 = ['1']
+const CHR1 = [...Array.from({ length: 22 }, (_, i) => String(i + 1)), 'X', 'Y']
 
 export const cnv1000gSpecs: ScreenshotSpec[] = [
   // The hero figure. 104 individuals as one row each, clustered on this window
