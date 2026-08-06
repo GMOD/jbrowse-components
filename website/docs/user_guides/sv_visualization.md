@@ -87,11 +87,13 @@ inversion arc. The figure below shows this ~1.2 kb inversion in one 1000 Genomes
 sample (HG00151) with Oxford Nanopore long reads, the 1KGP ensemble SV call
 marking the locus above.
 
-In the split section each read's reverse-strand middle (blue) paints between its
-forward-strand ends (red), and the magenta arc joins the two breakpoints; the
-section below it spans the locus without splitting.
+**Group by... → Split read (SA tag)** in the track menu puts the reads carrying
+a supplementary alignment in their own section. In that section each read's
+reverse-strand middle (blue) paints between its forward-strand ends (red), and
+the magenta arc joins the two breakpoints; the section below it spans the locus
+without splitting.
 
-<Figure caption="Group by... → Split read (SA tag) (top) and the grouping it produces (bottom): the same inversion (HGSV_10047, chr1:197,787,660-197,788,855) in HG00151 Oxford Nanopore long reads, with the 1KGP ensemble VCF call above." src="/img/inversion_long_read.png" />
+<Figure caption="The reads grouped by Group by... → Split read (SA tag): the same inversion (HGSV_10047, chr1:197,787,660-197,788,855) in HG00151 Oxford Nanopore long reads, with the 1KGP ensemble VCF call above. The reads that cross the breakpoints are the upper section, the ones that do not are below it." src="/img/inversion_long_read.png" />
 
 ### Insert size color scheme
 

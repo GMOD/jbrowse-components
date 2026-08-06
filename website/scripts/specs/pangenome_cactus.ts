@@ -189,13 +189,57 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     }),
     readySelector: displayReady('multi-wiggle-display'),
     readyTimeout: 90000,
-    viewportWidth: 1000,
+    // 1200 rather than 1000: the two callouts below sit in the right flank, and
+    // at 1000 a pill wide enough to hold a sentence starts on top of the plateau
+    // it is explaining. The extra 200px go into the flanks, since the operon is
+    // a fixed number of bases in the middle.
+    viewportWidth: 1200,
     // the gene lane plus the whole 300px two-row stack, with room for the
     // bottom row's 0 tick (640 left it on the frame edge)
     viewportHeight: 690,
     settleMs: 15000,
     hideTooltip: true,
     actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
+    // One callout per row, saying why THAT row does what it does (reviewer:
+    // "consider adding red annotation text boxes to both to explain why this
+    // happened to each"). The band already names the operon and the caption
+    // already explains path steps; what neither says on the image is that the
+    // two rows differ because of what the builder did with the copies, which is
+    // the whole figure.
+    //
+    // Both sit in the right flank, anchored to the track and to a K12
+    // coordinate rather than to a measured pixel, and `textAlign: 'end'` ends
+    // each pill at the same place — the pill's own width is only known once the
+    // text is measured in the page. They are drawn over the flat part of each
+    // curve on purpose: a pill is opaque, and the flank is a wall of one value,
+    // so it covers no shape. fracY is a fraction of the 300px track, i.e. 0.25
+    // is the middle of the upper row and 0.75 the middle of the lower one.
+    annotations: [
+      {
+        type: 'text',
+        text: 'The rRNA operon occurs in several near-identical copies per genome, and seqwish folds them onto one run of nodes. Depth counts path steps, so every copy walks that one run and the row climbs past the strain count.',
+        maxWidth: 430,
+        fontSize: 16,
+        textAlign: 'end',
+        anchor: {
+          track: 'ecoli_depth_by_builder',
+          locus: 'chr:3,954,300',
+          fracY: 0.12,
+        },
+      },
+      {
+        type: 'text',
+        text: 'Minigraph-Cactus builds outward from the reference and keeps each copy at its own position, so the copies never share nodes. Every strain walks this stretch once and the row does not move.',
+        maxWidth: 430,
+        fontSize: 16,
+        textAlign: 'end',
+        anchor: {
+          track: 'ecoli_depth_by_builder',
+          locus: 'chr:3,954,300',
+          fracY: 0.62,
+        },
+      },
+    ],
   },
 
   // Projection 3: the graph's whole-genome alignment (the HAL) projected onto K12

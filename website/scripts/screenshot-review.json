@@ -1004,8 +1004,8 @@
     "name": "jbrowse-img/methylation",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-27T04:21:49.505Z",
-    "hash": "7d90fc1be96509ba0c446eaf8edc9125a978d938"
+    "reviewedAt": "2026-08-06T18:39:44.560Z",
+    "hash": "e41af8ad5a7e3e859f578385eb1509195e379549"
   },
   "jbrowse-img/hs1_mm39_synteny": {
     "name": "jbrowse-img/hs1_mm39_synteny",
@@ -1313,10 +1313,10 @@
   },
   "inversion_long_read": {
     "name": "inversion_long_read",
-    "status": "good",
-    "note": "please make this a single frame picture, potentially extra-wide screenshot",
-    "reviewedAt": "2026-07-31T02:53:12.050Z",
-    "hash": "ef33c0b3ae0e0739bef41319b9544b60de4058f8"
+    "status": "answered",
+    "note": "One frame now, 1800px wide, and the menu stage is gone. The session already carried groupBy:splitRead — which the live link has to open — so the menu frame showed the radio checked over the applied result and both frames were the same picture; the menu path is now a sentence in the section above the figure.",
+    "reviewedAt": "2026-08-06T19:42:31.500Z",
+    "hash": "84fa8f598968fe1a232035a5a91e81e7b5dc3786"
   },
   "methylation/chromatin_accessibility_6ma": {
     "name": "methylation/chromatin_accessibility_6ma",
@@ -1390,9 +1390,9 @@
   "qtl/bxd_tyrp1_locus": {
     "name": "qtl/bxd_tyrp1_locus",
     "status": "good",
-    "note": "DONE, gene track added and filtered to Tyrp1 as suggested. The lane is one gene: a jexl filter (get(feature,'name')=='Tyrp1') on the config's mm10 NCBI RefSeq track, which is what makes a gene track possible here at all — whole chr4 is 180,400 GTF records that gate on byte size and would draw as a solid bar (forceLoad lifts the gate, which runs before any filter). So the figure now says where on chr4 Tyrp1 is, in the same x as the Manhattan apex above it and the B/D split below, instead of asserting it in an overlay. showOnlyGenes because 17.6 kb of exon structure is a fifth of a pixel at 156 kb/px.",
-    "reviewedAt": "2026-08-04T18:17:20.706Z",
-    "hash": "0397f098c2e5977e95cdcad74df087e742eed670"
+    "note": "",
+    "reviewedAt": "2026-08-06T18:41:16.444Z",
+    "hash": "94df902c485570c2488a0944cf3b2628640eb6d0"
   },
   "encode_hic_loops_arcs": {
     "name": "encode_hic_loops_arcs",
@@ -1429,9 +1429,9 @@
   "jbrowse-img/sv_read_arcs": {
     "name": "jbrowse-img/sv_read_arcs",
     "status": "good",
-    "note": "consider adding the groupBy similar to inversion_long_read DONE: group:splitRead added (jb2export supports it), so the SA-tag reads get their own labelled section under the arcs and the flat background pileup sits below, as in inversion_long_read. Height dropped 820->560 since grouping truncates the Not split lane at a row boundary; the old figure was a third empty. Docs + README command line updated to match.",
-    "reviewedAt": "2026-07-30T20:34:32.405Z",
-    "hash": "a99f35568c1fbe17f44c26ff73803b715ffd0977"
+    "note": "",
+    "reviewedAt": "2026-08-06T18:39:53.060Z",
+    "hash": "d09af6afae805803150be9df293b7ec4121cb4b2"
   },
   "methylation/arabidopsis_wgbs_contexts": {
     "name": "methylation/arabidopsis_wgbs_contexts",
@@ -1506,8 +1506,8 @@
     "name": "qtl/bxd_painting_sorted",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-04T17:39:34.264Z",
-    "hash": "4921c9f0e6c1ae0ea1456feb4f41c57b5b0c7853"
+    "reviewedAt": "2026-08-06T18:41:06.949Z",
+    "hash": "56e188a41789fd4e19016b117f6fd1bb56a56b3c"
   },
   "rnaseq/pkm_mutually_exclusive": {
     "name": "rnaseq/pkm_mutually_exclusive",
@@ -1662,23 +1662,23 @@
   "pangenome_cactus/maf": {
     "name": "pangenome_cactus/maf",
     "status": "good",
-    "note": "DONE as asked: off the gallery. The Minigraph-Cactus card now takes pangenome_cactus/graph_correspondence, the odgi-viz picture rebuilt on K12 coordinates in the raster's own row order and colors -- a card-legible whole-chromosome frame, and a capability no other card carries. The MAF figure stays in pangenome_cactus.md where its 6 kb of alignment rows is the point; it just does not survive being shrunk to 594x260.",
-    "reviewedAt": "2026-08-01T14:41:55.976Z",
-    "hash": "67dff07b3ae48d18f7dec5902d07486161d2b428"
+    "note": "",
+    "reviewedAt": "2026-08-06T18:40:32.285Z",
+    "hash": "79f7521ac841ebdccc0ba20efe520cabec7be572"
   },
   "pangenome_cactus/pav": {
     "name": "pangenome_cactus/pav",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-01T15:00:10.761Z",
-    "hash": "c7aee04b9f32fae0fa87744671bb14f55144ce90"
+    "reviewedAt": "2026-08-06T18:40:36.674Z",
+    "hash": "0b1a8e726b09bba71c97b2e4dfba0e48c54193b6"
   },
   "pangenome_cactus/synteny": {
     "name": "pangenome_cactus/synteny",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-01T14:11:16.922Z",
-    "hash": "bc89cb17c94b4c04126675f44b0813d077815e60"
+    "reviewedAt": "2026-08-06T18:40:38.464Z",
+    "hash": "a53819bb6435e436a2ce20ba2d370dbcf6321cd3"
   },
   "pangenome_cactus/variant_matrix": {
     "name": "pangenome_cactus/variant_matrix",
@@ -1740,8 +1740,8 @@
     "name": "pangenome_cactus/graph_correspondence",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-03T13:15:38.592Z",
-    "hash": "a863dd9a37140148d908395f909c1ee2bb94171e"
+    "reviewedAt": "2026-08-06T18:40:26.163Z",
+    "hash": "fbe58f78e464cb8092aed3fda061b478eb936784"
   },
   "alignments/height_mode_fit": {
     "name": "alignments/height_mode_fit",
@@ -2024,8 +2024,8 @@
     "name": "pangenome/hprc_mhc_anchored",
     "status": "good",
     "note": "Absorbed pangenome/hprc_node_menu: the force half now also shows the right-click route and the band it writes, so the MHC subgraph is drawn once in that tutorial rather than twice.",
-    "reviewedAt": "2026-08-06T06:53:37.256Z",
-    "hash": "5ffe8983ef4188be90cf57f9d0091fee1704fe83"
+    "reviewedAt": "2026-08-06T18:40:40.837Z",
+    "hash": "42f885073a806d7b7531194834d394f05552b801"
   },
   "pangenome/hprc_mhc_sample_rows": {
     "name": "pangenome/hprc_mhc_sample_rows",
@@ -2329,10 +2329,10 @@
   },
   "pangenome/pggb_untangle": {
     "name": "pangenome/pggb_untangle",
-    "status": "good",
-    "note": "this screenshot doesn't look very good or interesting. anything better? . agent notes: REFRAMED and put in docs. The whole-genome stack was a second copy of the wfmash picture, which is why it read as insignificant -- on a near-colinear bacterial pangenome the two projections agree everywhere except at a repeat. So the figure is now the repeat: K12 chr:3,941,447-3,946,786, the rrnC operon (rrsC/rrlC/rrfC in the K12 gene lane), with NCTC86 above and Sakai below framed on BOTH of their copies. Each band draws two ribbons converging on the one reference span, which is the thing untangle says and a pairwise PAF cannot. The locus was read off the file, not chosen by eye: it is the only span more than one segment of a query lands on, and three of the four strains do it there (Sakai 4,735,016 + 4,975,690, NCTC86 4,313,805 + 4,538,509, IAI39 3,134,233 + 4,546,355). pangenome_ecoli.md gained the figure plus the one-liner that finds such a locus in any untangle pif.",
-    "reviewedAt": "2026-08-04T08:12:13.889Z",
-    "hash": "79cfe6af1ab9f66c509cc9a3ea694679364f7cdb"
+    "status": "answered",
+    "note": "Reframed onto ONE strain's two copies: Sakai's rrnC operon on top, K12 in the middle, Sakai's rrnB operon underneath, so both bands narrow onto the same K12 span. The old framing put both copies of a strain in one 240kb window, where a 5.3kb segment is a 25px sliver and each band drew a washed-out fan. All three rows now carry a gene lane, which is what names the two copies (rrsC/gltU/rrlC/rrfC above, rrsB/gltT/rrlB/rrfB below) and the one K12 span they land on.",
+    "reviewedAt": "2026-08-06T19:42:44.543Z",
+    "hash": "3dd4b21c5c9b15aa5bfb541fc8793632988d6e20"
   },
   "tcga/mutations_cdh1_histology": {
     "name": "tcga/mutations_cdh1_histology",
@@ -2428,9 +2428,9 @@
   "cancer_sv/multihop_tumour_vs_normal": {
     "name": "cancer_sv/multihop_tumour_vs_normal",
     "status": "answered",
-    "note": "Now standalone, and wider (900x875) because it no longer shares a height with anything. Its other half — the three-panel split view built from a session spec, i.e. from loci a reader could only get by reading sv_multihop.py's output — is deleted along with the compose, per the multihop_reads note: the automatic route IS the figure one section down, and that section now also says every panel opens on the same span centred on its junction.",
-    "reviewedAt": "2026-08-06T06:50:33.435Z",
-    "hash": "84759584e1423d869358dc9119418ad3f2726a65"
+    "note": "Un-split: cancer_sv/multihop_reads is back as one figure, the tumour/normal pileup beside the multi-hop chain. The right half is no longer hand-authored — it is the split view the app builds itself through Launch view -> Reconstruct derivative allele... -> Replace with split view, with no locus typed, captured as one frame. The two-frame steps figure is deleted: its result frame IS that half, and its dialog frame was the same dialog over the same pileup as derivative_autogenerated's first frame. Heights are each half's own (1095 vs 1190), so +append pads rather than crops.",
+    "reviewedAt": "2026-08-06T19:42:44.830Z",
+    "hash": "088da2ead775b91007208de5fadef0bc7a2ad633"
   },
   "cancer_sv/derivative_proof": {
     "name": "cancer_sv/derivative_proof",
@@ -2518,10 +2518,10 @@
   },
   "pangenome_cactus/builders": {
     "name": "pangenome_cactus/builders",
-    "status": "good",
-    "note": "DONE, both halves. IN-FIGURE: the rrnC operon is a highlight band across the frame now, labeled, on the same span the pggb tutorial's untangle figure uses, so the raised pggb plateau and the flat Minigraph-Cactus row under it are visibly the same interval rather than a coincidence of x. CAPTION: it now carries the mechanism rather than only the observation. Depth counts path STEPS, not strains: seqwish folds a strain's several near-identical rRNA copies onto one run of nodes, so each copy walks that run and the pggb row rises past the strain count, while the reference-first graph keeps the copies at their own loci and never exceeds it anywhere on the chromosome. That reasoning was already in the prose above the figure; the figure and its caption were the two places it was missing.",
-    "reviewedAt": "2026-08-04T18:47:38.948Z",
-    "hash": "59c2075570108d7717f609ac57472b0dd39ddcb5"
+    "status": "answered",
+    "note": "A red callout on each row saying why that row does what it does: seqwish folds the rRNA copies onto one run of nodes and depth counts path steps, against Minigraph-Cactus keeping each copy at its own reference position. Both anchored to the track and a K12 coordinate, in the right flank where they cover no shape; viewport widened to 1200 so a pill wide enough for a sentence starts clear of the plateau. Caption no longer repeats them.",
+    "reviewedAt": "2026-08-06T19:42:31.801Z",
+    "hash": "71403849e25b9779a51392563df42155ec03cbb1"
   },
   "pangenome/long_reads": {
     "name": "pangenome/long_reads",
@@ -2578,13 +2578,6 @@
     "note": "layoutQuality 3 landed: both halves draw as smooth arcs, the pggb beads read as beads, and the caption sits inside the arc",
     "reviewedAt": "2026-08-06T05:41:08.980Z",
     "hash": "62f77cee48c91bb600ae98a495028d5d5631a91d"
-  },
-  "cancer_sv/multihop_split_view_steps": {
-    "name": "cancer_sv/multihop_split_view_steps",
-    "status": "good",
-    "note": "FIXED IN THE LAUNCHER, twice over. (1) EVERY PANEL IS ONE SPAN NOW. buildSplitViewFromPath sized each panel to its own segment, so a 199bp interior segment got a 199bp panel between two 10kb ones — fifty times closer in. The connecting curves are drawn BETWEEN panels, so at mismatched zooms every read left its panel in a corner and the fan ran off the frame, which is what you saw. Each panel is windowSize wide and centred on the junction it carries, so the four read as one route. (2) AN INVERTED SEGMENT IS ANCHORED ON THE END THE PATH REACHES: a -1 segment is crossed high-to-low, so a path arriving at an inverted last segment arrives at its end, and anchoring on start regardless opened that panel a segment-length away from where its reads land — the fourth panel of this very figure drew no connections at all. Both covered by tests.",
-    "reviewedAt": "2026-08-06T06:42:44.995Z",
-    "hash": "1eb40d2df166339d86c8d9e1db19ce96ffbd6f75"
   },
   "cancer_sv/realigned_reads": {
     "name": "cancer_sv/realigned_reads",

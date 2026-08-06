@@ -247,9 +247,11 @@ zcat ecoli_pggb_untangle.pif.gz | awk -F'\t' 'substr($1,1,1)=="q"' \
 ```
 
 In this graph that is `chr:3,941,447-3,946,786` on K12, the _rrnC_ operon, where
-Sakai, NCTC86 and IAI39 each land twice.
+Sakai, NCTC86 and IAI39 each land twice. Put the same strain in the rows above
+and below K12, each opened on one of its two copies, and both bands narrow onto
+the one K12 span.
 
-<Figure caption="An rRNA operon in the graph, K12 between NCTC86 and Sakai. Each strain's window holds both of its copies, and both send a ribbon to the one K12 span carrying rrsC, rrlC and rrfC: seqwish collapsed the copies into one set of nodes, so the graph has one place where each genome has two." src="/img/pangenome/pggb_untangle.png" />
+<Figure caption="Sakai's rrnC operon above K12 and its rrnB operon below, both drawn against the same K12 span. The gene lanes name the two copies (rrsC/gltU/rrlC/rrfC and rrsB/gltT/rrlB/rrfB) and the K12 span they both land on: seqwish collapsed them into one set of nodes, so the graph has one place where the genome has several." src="/img/pangenome/pggb_untangle.png" />
 
 A pairwise PAF has no way to say this. Its records are one query interval
 against one target interval, so a collapsed repeat is either dropped or

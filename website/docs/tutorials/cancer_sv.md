@@ -99,15 +99,16 @@ every read crossing the junction has its remainder aligned elsewhere. The
 matched normal at the same locus is clean, which is what separates a somatic
 event from a mapping artifact.
 
-<Figure caption="COLO829 tumor above COLO829BL normal at the two chr3 breakpoints, soft clipping shown. Tumor reads clip; normal reads read through, and the nanomonsv records between them name chr12 and chr10 in their ALT." src="/img/cancer_sv/multihop_tumour_vs_normal.png" />
+<Figure caption="Left: COLO829 tumor above COLO829BL normal at the two chr3 breakpoints, soft clipping shown. Tumor reads clip; normal reads read through, and the nanomonsv records between them name chr12 and chr10 in their ALT. Right: the same event as a breakpoint split view over every locus the chain visits, tumor reads only, where the reads leaving the chr3 panel reappear in the chr10 and chr12 panels and come back to chr3." src="/img/cancer_sv/multihop_reads.png" />
 
 Soft clipping is off by default. Turn it on from the track menu with **Show soft
-clipping**.
+clipping**. These pileups are deep enough that the track asks before downloading
+the window; **Force load** approves it for the rest of the session.
 
 ## Following the chain across panels
 
-A breakpoint split view stacks the loci the chain visits and draws the reads
-that leave one panel and arrive in another.
+A breakpoint split view, the right half of the figure above, stacks the loci the
+chain visits and draws the reads that leave one panel and arrive in another.
 
 The reads already know which loci those are and in what order, so the view is
 built from them rather than typed in. On the tumor track, **Launch view →
@@ -115,9 +116,9 @@ Reconstruct derivative allele...** groups the reads in the window by their split
 alignments and lists the routes through the reference they describe; picking one
 and choosing **Replace with split view** puts a panel per segment of that route
 in the launching view's place, in the order the reads cross it, carrying the
-tracks that view had:
-
-<Figure caption="Top: the reconstruction dialog over the chr3 pileup, listing the routes the reads there describe, ranked by how many reads describe each. Bottom: the split view the top route becomes, one panel per segment in the order the reads cross them, with the reads that leave one panel and arrive in the next drawn between them." src="/img/cancer_sv/multihop_split_view_steps.png" />
+tracks that view had. That is how the panels above were made, with no locus
+typed anywhere; the dialog itself is the top frame of
+[the reconstruction figure below](#reconstructing-the-derivative-allele-in-the-browser).
 
 One panel per segment rather than per chromosome, which is the difference
 between the two routes: this chain leaves chr3 and returns to it, so it gets two

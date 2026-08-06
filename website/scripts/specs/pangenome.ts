@@ -186,10 +186,30 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
   // span. It is an rRNA operon: seqwish collapsed the copies into one set of
   // nodes, so the graph has one place where the genome has several.
   //
-  // Sakai and NCTC86 flank K12 because their two copies are ~230 kb apart and so
-  // fit one window each; IAI39's are 1.4 Mb apart and would need a window wide
-  // enough to make both slivers subpixel. Each flanking row frames both of its
-  // copies and K12 frames the shared span, so each band draws the fan.
+  // ONE STRAIN, TWICE: Sakai's rrnC copy on top, K12 in the middle, Sakai's
+  // rrnB copy underneath. The same assembly fills two rows, each opened on one
+  // of the two places its path lands on the shared K12 span, and both bands
+  // draw a wedge that narrows onto the same third of the K12 row.
+  //
+  // It used to be NCTC86 and Sakai flanking K12, each on a window wide enough to
+  // hold BOTH of that strain's copies (238 kb and 254 kb). That is what made the
+  // figure unreadable (reviewer: "doesn't look very good or interesting"): a
+  // 5.3 kb segment inside a 250 kb window is a 25 px sliver, so each band drew a
+  // pale trapezoid from a sliver to the full width of the K12 row and the figure
+  // was two washed-out fans with nothing to anchor them.
+  //
+  // The gene lanes are what make it self-explaining, and they are on all three
+  // rows now rather than K12 alone: Sakai's copies carry rrsC/gltU/rrlC/rrfC and
+  // rrsB/gltT/rrlB/rrfB, so the rows name the two operons the graph folded
+  // together, and K12's lane names the one place they both land on.
+  //
+  // Window widths are set from the block rather than round: 6.6 kb on the Sakai
+  // rows is the 5.34 kb segment with a flank either side, and 16 kb on K12
+  // leaves it a third of the middle row, so each band is a wedge narrowing onto
+  // the same third of K12 rather than a slab filling its band. The Sakai windows
+  // stop just past their block on purpose — Sakai 4,740,356 onwards continues
+  // colinearly onto K12 3,946,786 onwards, and a window wide enough to include
+  // much of that joins the wedge to a second ribbon that fills the top band.
   {
     mode: 'url',
     name: 'pangenome/pggb_untangle',
@@ -198,34 +218,50 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearSyntenyView',
           views: [
-            { assembly: 'NCTC86', loc: 'chr:4,310,000-4,548,000' },
+            {
+              assembly: 'Sakai',
+              loc: 'chr:4,734,390-4,740,990',
+              tracks: [
+                {
+                  trackId: 'Sakai_genes',
+                  type: 'LinearBasicDisplay',
+                  height: 70,
+                },
+              ],
+            },
             {
               assembly: 'K12',
-              loc: 'chr:3,940,800-3,947,400',
-              // the gene lane names the repeat rather than leaving the caption
-              // to assert it: the shared span carries rrsC/rrlC and their tRNAs
-              tracks: [{ trackId: 'K12_genes' }],
+              loc: 'chr:3,936,100-3,952,100',
+              tracks: [
+                {
+                  trackId: 'K12_genes',
+                  type: 'LinearBasicDisplay',
+                  height: 130,
+                },
+              ],
             },
-            { assembly: 'Sakai', loc: 'chr:4,731,000-4,985,000' },
+            {
+              assembly: 'Sakai',
+              loc: 'chr:4,975,060-4,981,660',
+              tracks: [
+                {
+                  trackId: 'Sakai_genes',
+                  type: 'LinearBasicDisplay',
+                  height: 70,
+                },
+              ],
+            },
           ],
           tracks: [['ecoli_pggb_untangle'], ['ecoli_pggb_untangle']],
           drawCurves: false,
           colorBy: 'default',
-          levelHeights: [140, 140],
-          // Only the K12 row carries a track here, so without this the two
-          // flanking rows each draw a "No tracks active / OPEN TRACK SELECTOR"
-          // block where their scalebar should be — two thirds of the figure's
-          // rows advertising an empty browser, in a figure whose subject is the
-          // ribbons between them.
-          collapseEmptyRows: true,
+          levelHeights: [150, 150],
         },
       ],
     }),
-    // two collapsed flanking scalebar rows, the K12 row with its gene lane, two
-    // 140px bands. 646 rather than the 735 this carried while the flanking rows
-    // still drew a "No tracks active" block each, from the run's own
-    // "89 css px of blank below the last content".
-    viewportHeight: 646,
+    // three rows with a gene lane each plus two 150px bands, from the run's own
+    // "79 css px of page below the viewport" at 800
+    viewportHeight: 880,
     readySelector: '[data-testid="synteny_canvas_done"]',
     readyTimeout: 120000,
     settleMs: 15000,

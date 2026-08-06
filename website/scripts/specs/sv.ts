@@ -1,4 +1,3 @@
-import { GROUP_BY_LABELS } from '../../../plugins/alignments/src/shared/groupByLabels.ts'
 import {
   DEMO_CONFIG,
   HG00151_ONT_1000G_ADAPTER,
@@ -9,13 +8,10 @@ import {
   HG008_T_PACBIO_BAM,
   PARK_CURSOR,
   VOLVOX,
-  cascadeBoxes,
   cgiabUrl,
   kgUrl,
   lgvSession,
-  menuCascade,
   sessionSpec,
-  trackMenuIcon,
 } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
@@ -38,10 +34,6 @@ const MANE_TRACK = {
     },
   },
 }
-
-// straight from the menu's own label table, so the click path and the boxes
-// drawn on it can't drift from the radio they point at
-const SPLIT_READ_LABEL = GROUP_BY_LABELS.splitRead
 
 // SV_85's span, written the way the SV inspector's location column prints it.
 // One string does both jobs the deletion_sv_inspector_search figure needs: it
@@ -631,45 +623,27 @@ export const svSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'HG00151 Nanopore',
     readyTimeout: 90000,
+    // ONE FRAME, and a wide one (reviewer: "please make this a single frame
+    // picture, potentially extra-wide screenshot. it is also groupby sa in both
+    // first and second screenshots, should be only in second"). It used to be
+    // two stages, the Group by menu over the pileup and then the grouping — but
+    // the session already carries `groupBy: splitRead`, which is what the live
+    // link has to open, so the menu frame showed the radio checked over the
+    // applied result and both frames were the same picture. The menu path is a
+    // sentence, and the section under the figure is where it belongs.
+    //
+    // 1800 rather than the default 1500: the extra 300px go into the 5.5 kb
+    // window, so a read's forward flank / reverse core / forward flank is three
+    // wider blocks rather than three narrower ones, which is the thing to see.
+    viewportWidth: 1800,
     // tall enough to clear the whole 620px track plus the second section's own
     // coverage lane and divider, which grouping adds (the pileup used to run off
     // the bottom edge — reviewer: increase browser height)
     viewportHeight: 960,
     settleMs: 40000,
-    // the track menu icon keeps its "Track settings" tooltip after the menu is
-    // dismissed, and the cursor parks over the pileup, which raises the read
-    // tooltip — neither belongs in the result frame
-    hideSelectors: ['.MuiTooltip-popper'],
+    // the cursor would otherwise park over the pileup and raise the read tooltip
     hideTooltip: true,
-    // Two-stage figure: the menu path that produces the grouping, then the
-    // grouping itself. The session already carries `groupBy: splitRead`, so
-    // frame one shows the radio *checked* over the applied result rather than a
-    // before-state — the live link opens the grouped view either way, which a
-    // click-only capture would lose.
-    stages: [
-      {
-        actions: [
-          trackMenuIcon('HG00151_ONT_1000g'),
-          ...menuCascade(['Group by...', SPLIT_READ_LABEL]),
-        ],
-        annotations: cascadeBoxes(['Group by...', SPLIT_READ_LABEL]),
-      },
-      {
-        // Escape twice: the Group by submenu, then the track menu. Then park
-        // the cursor on empty app-bar space — Escape leaves it over the radio,
-        // i.e. over the pileup the menu was covering. NOT a click on `body`:
-        // that lands mid-page on a read, which opens the feature-details drawer
-        // and narrows the view (the capture came back rezoomed to 4.08kb).
-        actions: [
-          { type: 'press', key: 'Escape' },
-          { type: 'press', key: 'Escape' },
-          { type: 'waitForText', text: SPLIT_READ_LABEL, hidden: true },
-          { type: 'waitForText', text: 'Group by...', hidden: true },
-          PARK_CURSOR,
-          { type: 'delay', ms: 1500 },
-        ],
-      },
-    ],
+    actions: [PARK_CURSOR, { type: 'delay', ms: 1500 }],
   },
 
   // C-GIAB live demo screenshots (load from jbrowse.org, not local test data)
