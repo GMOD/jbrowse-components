@@ -100,15 +100,27 @@ const CLUSTERED_READY =
 // graphgenomeviewer, so the figures below need network for the plugin itself.
 const CNV_CONFIG = 'test_data/1000g_cnv/config.json'
 
-// The 24 contigs the whole-genome store actually covers, chr-prefixed to match
-// that config's hg38 (the bgzip FASTA) and the store's own refNames. Passed as
-// `displayedRegionNames` so the view holds these rather than every unplaced
-// contig, whose elided far-right column is clutter in a genome-wide overview.
-const HG38_MAIN_CHROMS = [
-  ...Array.from({ length: 22 }, (_, i) => `chr${i + 1}`),
-  'chrX',
-  'chrY',
-]
+// One chromosome, not the whole genome, and chr1 because it is the longest: the
+// view's bp-per-pixel is fixed by what it holds, so this is the coarsest level
+// a single region can reach (bin100000, where a 20-50kb event is a fifth of its
+// bin and the mean genuinely dilutes it).
+//
+// Whole-genome would be coarser still and was tried first. It cannot be
+// captured: the multi-source interface returns one RawFeatureArrays per sample
+// PER REGION, so 24 contigs x 2504 samples is ~60,000 objects and ~300,000
+// typed arrays for one frame, and the tab dies. That is not a Zarr limit and
+// not new here — a 2504-BigWig track has the same shape, worse — but summary
+// levels raise the per-object count from three arrays to five, so it is closer
+// to the edge than it was.
+//
+// Unprefixed, which this config's filename argues against: its assembly is
+// hg38.prefix.fa.gz, whose index reads `1`, `10`, `11`, not `chr1`. The store's
+// own refNames ARE chr-prefixed and refNameAliases reconcile them per query,
+// but `displayedRegionNames` resolves against the assembly's regions before any
+// adapter is asked, so it has to be spelled the assembly's way. Spelled wrong,
+// the view launches with no regions and the capture is blank rather than an
+// error naming the contig.
+const CHR1 = ['1']
 
 export const cnv1000gSpecs: ScreenshotSpec[] = [
   // The hero figure. 104 individuals as one row each, clustered on this window
@@ -265,11 +277,10 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
   // The two halves of the summary-bin figure. Same store, same window, same
   // settings, one slot apart: the top reads each bin's mean, the bottom its max.
   //
-  // Genome-wide is the only zoom where this can be shown at all. The adapter
+  // A wide view is the only zoom where this can be shown at all. The adapter
   // takes the coarsest level whose bins fit in a pixel, so anything narrower
-  // than about 42Mb lands on a level with no summary and the two halves would
-  // be identical. Here it reads bin1000000, where one bin is 100 of the store's
-  // own finest bins and a 20kb amplification is 1/50th of the average.
+  // than about 42Mb lands on the base level, which has no summary arrays, and
+  // the two halves would be identical.
   ...(['avg', 'max'] as const).map(mode => ({
     mode: 'url' as const,
     name: `cnv1000g/genome_${mode}`,
@@ -278,7 +289,7 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          displayedRegionNames: HG38_MAIN_CHROMS,
+          displayedRegionNames: CHR1,
           tracks: [
             {
               ...CN_HEATMAP_SETTINGS,
