@@ -49,8 +49,15 @@ const DOT_CODE = 46 // '.'
  * read `.length` off undefined and take the whole LD track down with a
  * TypeError; the second split to `['']`, which is neither '.' nor '0', so it
  * counted as a called alt allele and encoded the sample hom-alt.
+ *
+ * Exported for `getLDMatrix.test.ts`, which is the only caller outside this
+ * file. It is worth the export: this encoding is the one piece of the LD path
+ * the plugin owns (the statistics themselves live in `@jbrowse/ld-core` and are
+ * tested there), and the test that used to cover it was a hand-copied
+ * reimplementation that had already drifted — it read `./1` as a het where this
+ * reads it as missing.
  */
-function fillEncoded(
+export function fillEncoded(
   out: Int8Array,
   genotypes: Record<string, string>,
   samples: string[],

@@ -67,3 +67,25 @@ test('getExportData round-trips header plus overlapping variant lines', async ()
   // non-vcf formats aren't supported
   expect(await adapter.getExportData([region], 'gff3')).toBeUndefined()
 })
+
+// `vcfGzLocationMap` is a frozen slot, so nothing validates its keys at load.
+// The usual mistake is keying it in the other refName convention from the
+// assembly, and both paths below used to surface that as a bare
+// "Cannot read properties of undefined (reading 'uri')" naming neither the
+// contig nor the slot.
+test('a contig missing from the location map names itself and the alternatives', async () => {
+  await expect(
+    firstValueFrom(
+      makeAdapter()
+        .getFeatures({ ...region, refName: 'chrA' })
+        .pipe(toArray()),
+    ),
+  ).rejects.toThrow(/no vcfGzLocationMap entry for "chrA".*ctgA/s)
+})
+
+test('an empty location map is reported rather than read as undefined', async () => {
+  const adapter = new Adapter(
+    configSchema.create({ vcfGzLocationMap: {}, indexType: 'TBI' }),
+  )
+  await expect(adapter.getSources()).rejects.toThrow(/empty vcfGzLocationMap/)
+})

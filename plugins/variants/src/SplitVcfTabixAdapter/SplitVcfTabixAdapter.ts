@@ -25,10 +25,30 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVc
   // index" for a contig already loaded
   private readyRefs = new Set<string>()
 
+  // Which contigs this adapter has a file for. `vcfGzLocationMap` is a frozen
+  // slot, so nothing validates its shape at load (the keys are whatever the
+  // config author typed) and every read has to treat a miss as a real outcome.
+  private locationMap(): Record<string, { uri?: string }> {
+    return this.getConf('vcfGzLocationMap')
+  }
+
   private configureOnce(refName: string) {
     if (!this.configuredByRef.has(refName)) {
       const indexType = this.getConf('indexType')
-      const vcfGzLocation = this.getConf('vcfGzLocationMap')[refName]
+      const locationMap = this.locationMap()
+      const vcfGzLocation = locationMap[refName]
+      // Named, rather than left to fail as `undefined.uri` two lines down. The
+      // usual cause is a map keyed in the other refName convention from the
+      // assembly ('1' against a 'chr'-prefixed one, or the reverse), which
+      // aliasing resolves everywhere else — so the bare TypeError named neither
+      // the contig, the adapter, nor the slot to go fix.
+      if (!vcfGzLocation) {
+        throw new Error(
+          `SplitVcfTabixAdapter has no vcfGzLocationMap entry for "${refName}". Available: ${
+            Object.keys(locationMap).join(', ') || '(none)'
+          }`,
+        )
+      }
       const indexLocation = this.getConf('indexLocationMap')[refName] ?? {
         uri: `${vcfGzLocation.uri}.${indexType.toLowerCase()}`,
       }
@@ -73,7 +93,7 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVc
   }
 
   public async getRefNames() {
-    return Object.keys(this.getConf('vcfGzLocationMap'))
+    return Object.keys(this.locationMap())
   }
 
   // Index-only compressed-byte estimate (no feature download). Each refName is
@@ -140,9 +160,17 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVc
     return exportLines.join('\n')
   }
 
+  // The sample list is the VCF header's, and every file in the map shares it, so
+  // any one of them answers. Unlike getFeatures this is not reached through
+  // getRefNames — the multi-sample displays call it once per adapter — so an
+  // empty map arrives here first, and `configure(undefined!)` turned that into
+  // the same anonymous `undefined.uri` TypeError.
   async getSources() {
-    const [refName] = Object.keys(this.getConf('vcfGzLocationMap'))
-    const { parser } = await this.configure(refName!)
+    const [refName] = Object.keys(this.locationMap())
+    if (refName === undefined) {
+      throw new Error('SplitVcfTabixAdapter has an empty vcfGzLocationMap')
+    }
+    const { parser } = await this.configure(refName)
     return getVcfSources(
       this.getConf('samplesTsvLocation'),
       parser,
