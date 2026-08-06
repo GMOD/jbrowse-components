@@ -831,6 +831,34 @@ check("column_names drops the proteome file's extensions",
 check("column_names applies --assembly to the raw or stripped name",
       og.column_names(["rice.pep.fa", "Zm-B73.pep"], {"Zm-B73": "maize"}),
       ["rice", "maize"])
+# The four required BED columns are a valid BED, and the adapter reads one, so
+# the id check has to. Only the last field carries the line ending, which put it
+# on the name and resolved every id in that column to nothing.
+bd = tempfile.mkdtemp()
+minimal = os.path.join(bd, "minimal.bed")
+with open(minimal, "w") as fh:
+    fh.write("# a comment\ntrack name=genes\nchr1\t100\t200\tOs01g1\n"
+             "chr1\t300\t400\tOs01g2\t0\t+\n")
+check("read_bed_names reads a four-column BED, and skips its header lines",
+      og.read_bed_names(minimal), {"Os01g1", "Os01g2"})
+# The share is what makes "near zero" readable; a bare count is not, and an
+# unchecked column must not print as one that resolved.
+placed, dead = og.report_columns(
+    ["rice", "maize", "sorghum"], {"rice": "rice.bed", "maize": "maize.bed"},
+    [{"Os1", "Os2"}, {"Zm1", "Zm2"}, {"Sb1"}], [{"Os1"}, set(), set()])
+check("a column resolving none of its ids is named as an id mismatch",
+      dead, ["maize"])
+check("the per-column report gives the share, and marks an unchecked column",
+      placed.splitlines(),
+      ["  rice: 1/2 ids (50%) placed by rice.bed",
+       "  maize: 0/2 ids (0%) placed by maize.bed",
+       "  sorghum: 1 ids, unchecked (pass --bed sorghum=FILE)"])
+# distinct ids, not output cells: `expand` repeats the single-copy gene once per
+# copy beside it, so counting cells reports more rice genes than the table holds
+_, seen, resolved, _ = og.build_rows(
+    ["OG1\tOs01g1\tZm01a, Zm01b\n"], ["rice", "maize"], "expand", [None] * 2, 4)
+check("the placed count is distinct ids, not the rows expansion wrote",
+      [len(seen[0]), len(resolved[0])], [1, 1])
 
 # The one line on stdout is a contract: build_orthofinder_synteny.sh captures it
 # and hands it to three consumers, which position blockAssemblies/bedLocations

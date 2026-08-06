@@ -23,10 +23,14 @@ empty.
 `--pick single` empties any multi-gene cell instead, for a strictly one-to-one
 table; `--pick first` is the arbitrary choice, if you want the coverage.
 
-`--bed NAME=FILE` reports how many of each column's ids the BED resolves and
+`--bed NAME=FILE` reports what share of each column's ids the BED resolves and
 drops the rest. OrthoFinder ids come from the protein FASTA headers, so they are
 whatever those headers led with, and a table whose ids resolve nowhere loads
-without an error and draws nothing. That is the failure this makes visible.
+without an error and draws nothing. That is the failure this makes visible: a
+column resolving none of its ids is an id mismatch rather than a biological
+result, so it exits non-zero instead of writing a table with one dead genome in
+it. The share needs both numbers to be readable, which is why a column with no
+`--bed` is reported as unchecked rather than as a count that looks the same.
 
 Requires: python3 only.
 Usage:
@@ -52,8 +56,20 @@ def parse_kv(values, what):
 
 
 def read_bed_names(path):
+    """Column 4 of a BED, the field the table's ids have to match.
+
+    Stripped, and the line ending taken off before the split: only the last
+    field carries the newline, so a BED with the four required columns and no
+    score/strand put it on the name and resolved every id in that column to
+    nothing, which is the exact failure this check exists to report."""
+    names = set()
     with opener(path) as fh:
-        return {f[3] for f in (line.split("\t") for line in fh) if len(f) > 3}
+        for line in fh:
+            if not line.startswith(("#", "track ", "browser ")):
+                fields = line.rstrip("\r\n").split("\t")
+                if len(fields) > 3 and fields[3].strip():
+                    names.add(fields[3].strip())
+    return names
 
 
 def column_names(header, assemblies):
@@ -92,22 +108,56 @@ def orthogroup_rows(cells, pick, max_copies, beds):
     return [r for r in rows if sum(g != "." for g in r) > 1]
 
 
-def build_rows(lines, pick, beds, max_copies):
-    """([row, ...], counts) from the lines of an Orthogroups.tsv, header first."""
-    header = next(lines).rstrip("\n").split("\t")[1:]
+def build_rows(lines, columns, pick, beds, max_copies):
+    """([row, ...], seen, resolved, counts) from an Orthogroups.tsv body.
+
+    `seen` and `resolved` are per column and hold DISTINCT gene ids: the ids the
+    table offers, and the subset its BED places. Counting output cells instead
+    over-reports, because `expand` repeats a single-copy gene once per copy of
+    the duplicated column beside it, and gives a bare number with nothing to
+    read it against — the share is the diagnostic, so both halves are kept."""
     rows = []
-    counts = {"orthogroups": 0, "expanded": 0, "resolved": [0] * len(header)}
+    seen = [set() for _ in columns]
+    resolved = [set() for _ in columns]
+    counts = {"orthogroups": 0, "expanded": 0}
     for line in lines:
         cells = line.rstrip("\n").split("\t")[1:]
-        cells += [""] * (len(header) - len(cells))
+        cells += [""] * (len(columns) - len(cells))
         counts["orthogroups"] += 1
+        for i, cell in enumerate(cells[: len(columns)]):
+            for gene in (g.strip() for g in cell.split(",")):
+                if gene:
+                    seen[i].add(gene)
+                    if beds[i] is None or gene in beds[i]:
+                        resolved[i].add(gene)
         new = orthogroup_rows(cells, pick, max_copies, beds)
         counts["expanded"] += len(new) > 1
-        for row in new:
-            for i, gene in enumerate(row):
-                counts["resolved"][i] += gene != "."
         rows += new
-    return rows, header, counts
+    return rows, seen, resolved, counts
+
+
+def report_columns(columns, bed_files, seen, resolved):
+    """The per-column line to read before loading anything, and the columns that
+    are an id mismatch rather than a result.
+
+    A column whose BED places none of its ids still loads: the other columns
+    resolve, so the track draws and only that genome's bands are empty. Nothing
+    downstream can tell that from a genome with no orthologs here, so it is
+    settled at the one point that can see both numbers."""
+    lines = []
+    dead = []
+    for i, column in enumerate(columns):
+        if column not in bed_files:
+            lines.append(f"  {column}: {len(seen[i])} ids, unchecked "
+                         f"(pass --bed {column}=FILE)")
+            continue
+        total, kept = len(seen[i]), len(resolved[i])
+        share = f"{kept * 100 // total}%" if total else "no ids"
+        lines.append(f"  {column}: {kept}/{total} ids ({share}) placed by "
+                     f"{bed_files[column]}")
+        if total and not kept:
+            dead.append(column)
+    return "\n".join(lines), dead
 
 
 def main():
@@ -136,16 +186,27 @@ def main():
                 sys.exit(f"--bed {name!r} is not one of the columns {columns}")
         beds = [read_bed_names(bed_files[c]) if c in bed_files else None
                 for c in columns]
-        fh.seek(0)
-        rows, _, counts = build_rows(iter(fh), args.pick, beds, args.max_copies)
+        # the header is already consumed, so the rest of the handle is the body
+        rows, seen, resolved, counts = build_rows(
+            fh, columns, args.pick, beds, args.max_copies)
+
+    placed, dead = report_columns(columns, bed_files, seen, resolved)
+    if dead:
+        sys.exit(f"genes placed per column:\n{placed}\n\n"
+                 f"{', '.join(dead)}: the BED places none of the ids this "
+                 f"column holds, which is an id mismatch and not a biological "
+                 f"result. OrthoFinder takes an id from the first token of a "
+                 f"protein FASTA header; BED column 4 has to carry that same "
+                 f"id byte for byte. Nothing downstream can report this - the "
+                 f"other columns resolve, so the track loads and only this "
+                 f"genome's bands are empty.")
 
     with open(args.out, "w") as fh:
         fh.writelines("\t".join(r) + "\n" for r in rows)
 
-    resolved = ", ".join(f"{c} {n}" for c, n in zip(columns, counts["resolved"]))
     print(f"wrote {args.out}: {len(rows)} rows from {counts['orthogroups']} "
           f"orthogroups, {counts['expanded']} of which hold a duplicated gene "
-          f"and became several rows\ngenes resolved per column: {resolved}\n"
+          f"and became several rows\ngenes placed per column:\n{placed}\n"
           f"blockAssemblies: {columns}", file=sys.stderr)
     # The one line on stdout: the resolved column order, for a caller building a
     # blockAssemblies/bedLocations list to capture instead of assuming its own

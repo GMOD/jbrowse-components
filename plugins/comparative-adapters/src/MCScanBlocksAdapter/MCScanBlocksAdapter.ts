@@ -11,36 +11,113 @@ import type { MCScanBlocksAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, FileLocation, Region } from '@jbrowse/core/util'
 
-// A table where no row resolves on any pair of columns is a misconfiguration,
-// and overwhelmingly one particular misconfiguration: blockAssemblies and
-// bedLocations are positional against the FILE's column order, so a config
-// listing them in the order the genomes are displayed in, or the order they
-// were passed to whatever wrote the table, looks every gene up in another
-// genome's BED. That resolved nothing and drew an empty track, which is
-// indistinguishable from a region with no orthologs in it.
+// Per column: how many cells name a gene, and how many of those its BED places.
+// Both come out of one pass, and the two numbers are what tells apart the two
+// ways this config goes wrong. Neither one draws anything, and neither one used
+// to say so.
 //
-// Scoped to the whole table rather than to one pair on purpose: two particular
-// genomes filling no common row is possible, a table filling none anywhere is
-// not. Stops at the first row that joins, so a healthy file pays for one row.
-function checkAnyColumnsJoined(
+// EVERY column dead is overwhelmingly one mistake: blockAssemblies and
+// bedLocations are positional against the FILE's column order, so a config
+// listing them in the order the genomes are displayed in, or the order they were
+// passed to whatever wrote the table, looks every gene up in another genome's
+// BED.
+//
+// ONE column dead is the other, and it is the quieter of the two: that genome's
+// ids were written by a different tool than its BED (an isoform suffix, an
+// Ensembl `gene:` namespace, a FASTA header truncated at the first space). The
+// remaining columns still resolve, so the track loads and most bands draw, and
+// only the ones touching that genome are empty — which reads exactly like a
+// genome with no orthologs in view. Nothing downstream can distinguish those,
+// because by then the column is gone; here both numbers are still in hand.
+//
+// Rows sampled when working out which BED each column's genes actually live in.
+// That search is n^2 in the column count, and a permutation shows itself in the
+// first handful of rows, so there is nothing to buy by reading a whole table.
+const PERMUTATION_SAMPLE_ROWS = 2000
+
+// Which bedLocations entry each column's genes are actually in, when that is a
+// permutation of the columns and every column has one. Runs only on the failure
+// path, and turns "nothing resolves" into the reordering that fixes it —
+// otherwise a puzzle the reader has to solve against a file's column order they
+// may never have looked at. Anything that is not a clean permutation returns
+// nothing rather than a guess, since a wrong suggestion is worse than none.
+function findColumnBedPermutation(
+  blockLines: string[][],
+  bedMaps: Map<string, BareFeature>[],
+) {
+  const n = bedMaps.length
+  const sample = blockLines.slice(0, PERMUTATION_SAMPLE_ROWS)
+  const best: number[] = []
+  for (let i = 0; i < n; i++) {
+    const hits = new Array<number>(n).fill(0)
+    for (const cols of sample) {
+      const name = cols[i]
+      if (name && name !== '.') {
+        for (let j = 0; j < n; j++) {
+          if (bedMaps[j]!.has(name)) {
+            hits[j]!++
+          }
+        }
+      }
+    }
+    const top = hits.indexOf(Math.max(...hits))
+    if (hits[top] === 0) {
+      return undefined
+    }
+    best.push(top)
+  }
+  return new Set(best).size === n ? best : undefined
+}
+
+// A file where every column resolves stops as soon as each has placed one gene,
+// so the healthy path still costs a handful of rows. Only a file with something
+// to report reads to the end, which is where the exact per-column counts the
+// message needs come from.
+function checkColumnsResolve(
   blockLines: string[][],
   bedMaps: Map<string, BareFeature>[],
   blockAssemblies: string[],
 ) {
+  const named = new Array<number>(bedMaps.length).fill(0)
+  const placed = new Array<number>(bedMaps.length).fill(0)
+  let resolving = 0
   for (const cols of blockLines) {
-    let joined = 0
     for (let i = 0; i < bedMaps.length; i++) {
       const name = cols[i]
-      if (name && bedMaps[i]!.has(name) && ++joined > 1) {
-        return
+      // `.` is the file's own "no ortholog here", not an unresolvable id
+      if (name && name !== '.') {
+        named[i]!++
+        if (bedMaps[i]!.has(name)) {
+          resolving += placed[i]! === 0 ? 1 : 0
+          placed[i]!++
+        }
       }
     }
+    if (resolving === bedMaps.length) {
+      return
+    }
   }
-  if (blockLines.length > 0) {
+  // a column of nothing but `.` is a legitimate column with no claim to check
+  const filled = bedMaps.map((_, i) => i).filter(i => named[i]! > 0)
+  const dead = filled.filter(i => placed[i] === 0)
+  if (!dead.length) {
+    return
+  }
+  if (dead.length === filled.length) {
+    const permutation = findColumnBedPermutation(blockLines, bedMaps)
+    const fix = permutation
+      ? ` Each column's genes are in another column's BED (${permutation.map((j, i) => `column ${i} in bedLocations[${j}]`).join(', ')}), so putting bedLocations in the file's column order fixes it.`
+      : ''
     throw new Error(
-      `none of the ${blockLines.length} rows in this .blocks file name genes present in two of its BED files; blockAssemblies ${JSON.stringify(blockAssemblies)} and bedLocations have to be in the file's own column order, which is not necessarily the order assemblyNames lists`,
+      `none of the ${blockLines.length} rows in this .blocks file name genes present in its BED files; blockAssemblies ${JSON.stringify(blockAssemblies)} and bedLocations have to be in the file's own column order, which is not necessarily the order assemblyNames lists.${fix}`,
     )
   }
+  const which = dead
+    .map(i => `${blockAssemblies[i]} (column ${i}, ${named[i]} gene ids)`)
+    .join(', ')
+  throw new Error(
+    `this .blocks file's ${which} names no gene present in that column's bedLocations entry, while its other columns resolve — so that BED is keyed on different ids, not on a genome without orthologs here. A gene is matched against BED column 4 byte for byte, and the usual culprits are an isoform suffix, an Ensembl \`gene:\` prefix on one side only, or a FASTA header truncated at the first space.`,
+  )
 }
 
 // A .blocks file has one column per genome (column 0 is the reference). Because
@@ -86,8 +163,15 @@ export default class MCScanBlocksAdapter extends BaseFeatureDataAdapter<MCScanBl
       .split(/\n|\r\n|\r/)
       .filter(f => !!f)
       .map(l => l.split('\t'))
-    checkAnyColumnsJoined(blockLines, bedMaps, blockAssemblies)
-    return { blockAssemblies, bedMaps, blockLines }
+    checkColumnsResolve(blockLines, bedMaps, blockAssemblies)
+    // The joined rows per ordered column pair, filled on first use. A band
+    // fetches one region at a time and a stacked view has one band per adjacent
+    // pair, so without this a six-genome whole-genome view re-joined the whole
+    // table once per chromosome per band — the same Map lookups and the same
+    // row objects, thrown away and rebuilt on every pan. The pairs are bounded
+    // by the column count, and each holds what the file already holds.
+    const pairRows = new Map<string, BlockRow[]>()
+    return { blockAssemblies, bedMaps, blockLines, pairRows }
   }
 
   async hasDataForRefName() {
@@ -97,26 +181,38 @@ export default class MCScanBlocksAdapter extends BaseFeatureDataAdapter<MCScanBl
     return true
   }
 
-  // Join the two columns of a pair into gene-link rows (both sides present).
-  private buildPairRows(
+  // The two columns of a pair joined into gene-link rows (both sides present),
+  // built once per ordered pair and held on the shared setup. The join depends
+  // on nothing but the file, so it is the same answer for every region and every
+  // band that asks for that pair.
+  private pairRows(
     colA: number,
     colB: number,
-    bedMaps: Map<string, BareFeature>[],
-    blockLines: string[][],
+    {
+      bedMaps,
+      blockLines,
+      pairRows,
+    }: Awaited<ReturnType<typeof this.setupPre>>,
   ) {
-    return blockLines
-      .map((cols, rowNum) => {
-        const pair = joinBedPair(
-          bedMaps[colA]!,
-          bedMaps[colB]!,
-          cols[colA],
-          cols[colB],
-        )
-        return pair === undefined
-          ? undefined
-          : { ...pair, rowNum, strand: pair.a.strand * pair.b.strand }
-      })
-      .filter((f): f is BlockRow => f !== undefined)
+    const key = `${colA}-${colB}`
+    let rows = pairRows.get(key)
+    if (!rows) {
+      rows = blockLines
+        .map((cols, rowNum) => {
+          const pair = joinBedPair(
+            bedMaps[colA]!,
+            bedMaps[colB]!,
+            cols[colA],
+            cols[colB],
+          )
+          return pair === undefined
+            ? undefined
+            : { ...pair, rowNum, strand: pair.a.strand * pair.b.strand }
+        })
+        .filter((f): f is BlockRow => f !== undefined)
+      pairRows.set(key, rows)
+    }
+    return rows
   }
 
   // The columns a query draws against: the single band target when a view
@@ -136,7 +232,8 @@ export default class MCScanBlocksAdapter extends BaseFeatureDataAdapter<MCScanBl
   }
 
   async getRefNames(opts: BaseOptions = {}) {
-    const { blockAssemblies, bedMaps, blockLines } = await this.setup(opts)
+    const setup = await this.setup(opts)
+    const { blockAssemblies, bedMaps, blockLines } = setup
     const { assemblyName, targetAssemblyName } = opts
     const col =
       assemblyName === undefined ? -1 : blockAssemblies.indexOf(assemblyName)
@@ -149,12 +246,7 @@ export default class MCScanBlocksAdapter extends BaseFeatureDataAdapter<MCScanBl
       // when a target is given, scope to that pair (rows where both are present);
       // otherwise (e.g. the assembly-swap check) report across all pairs
       if (targetAssemblyName !== undefined && tcol !== -1) {
-        for (const { a } of this.buildPairRows(
-          col,
-          tcol,
-          bedMaps,
-          blockLines,
-        )) {
+        for (const { a } of this.pairRows(col, tcol, setup)) {
           set.add(a.refName)
         }
       } else if (targetAssemblyName === undefined) {
@@ -172,7 +264,8 @@ export default class MCScanBlocksAdapter extends BaseFeatureDataAdapter<MCScanBl
 
   getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      const { blockAssemblies, bedMaps, blockLines } = await this.setup(opts)
+      const setup = await this.setup(opts)
+      const { blockAssemblies } = setup
       const queryAssembly = region.assemblyName
       const mateAssemblies = this.mateAssemblies(
         queryAssembly,
@@ -191,7 +284,7 @@ export default class MCScanBlocksAdapter extends BaseFeatureDataAdapter<MCScanBl
             `blockAssemblies ${JSON.stringify(blockAssemblies)} must contain both ${queryAssembly} and ${mateAssembly}, with matching bedLocations`,
           )
         }
-        const rows = this.buildPairRows(colA, colB, bedMaps, blockLines)
+        const rows = this.pairRows(colA, colB, setup)
         // the mate column keys the ids apart, so the same source row joined to
         // two different genomes stays two features
         for (const feat of makeBlockFeatures(

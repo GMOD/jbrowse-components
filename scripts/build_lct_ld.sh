@@ -41,9 +41,11 @@ set -euo pipefail
 # Captured before the cd below, and the helper is fetched next to this file when
 # absent, so a bare `curl -fO` of this one script behaves like a repo checkout.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-[ -f "$SCRIPT_DIR/hosted_assembly.py" ] || curl -fsSL \
-  -o "$SCRIPT_DIR/hosted_assembly.py" \
-  "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/hosted_assembly.py"
+HELPERS=(hosted_assembly.py)
+for h in "${HELPERS[@]}"; do
+  [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
+    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
+done
 
 OUTDIR="${1:-lct_ld_build}"
 PLINK="${PLINK:-plink}"

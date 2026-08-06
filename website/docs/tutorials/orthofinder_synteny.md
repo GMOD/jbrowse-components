@@ -195,13 +195,15 @@ headers led with, while a BED built from the GFF3 is likely keyed on the gene.
 The build script settles this by renaming each protein to its gene id when it
 prepares the proteomes, so both sides speak gene ids.
 
-Pass `--bed name=file` per column and the script reports how many ids each one
-resolved, and drops the rest from the table rather than writing a row that
-cannot be drawn. That per-column count is the thing to read before loading
-anything: a column reporting near zero is an id mismatch, not a biological
-result, and it is the case the browser cannot warn about, since the other
-columns still resolve and the track loads. The same line reports how many
-orthogroups held a duplicated gene and became several rows.
+Pass `--bed name=file` per column and the script reports what share of each
+column's ids that BED places, and drops the rest from the table rather than
+writing a row that cannot be drawn. That per-column share is the thing to read
+before loading anything: a column placing near none of its ids is an id
+mismatch, not a biological result. A column placing none of them stops the
+conversion, since the table it would write has one genome in it that draws
+nothing. A column given no `--bed` is reported as unchecked rather than as a
+number that looks the same. The same output reports how many orthogroups held a
+duplicated gene and became several rows.
 
 ## Loading it
 

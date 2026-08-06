@@ -186,6 +186,60 @@ test('throws when the BEDs are permuted against the file columns', async () => {
   await expect(firstValueFrom(obs.pipe(toArray()))).rejects.toThrow(
     /have to be in the file's own column order/,
   )
+  // and the reordering that fixes it, which the reader would otherwise have to
+  // work out against a column order they may never have looked at
+  await expect(firstValueFrom(obs.pipe(toArray()))).rejects.toThrow(
+    /column 0 in bedLocations\[2\], column 1 in bedLocations\[0\], column 2 in bedLocations\[1\]/,
+  )
+})
+
+// The quieter half of the same failure, and the one nothing downstream could
+// report: only ONE column's BED is keyed on other ids (peach's slot points at
+// cacao.bed here). Grape and cacao still resolve, so the track used to load and
+// draw, with every band touching peach silently empty — which reads as a genome
+// with no orthologs in view rather than as a broken config.
+test('throws when one column resolves nothing while the others do', async () => {
+  const oneDead = new Adapter(
+    configSchema.create({
+      mcscanBlocksLocation: bed('grape.blocks'),
+      blockAssemblies: ['grape', 'peach', 'cacao'],
+      bedLocations: [bed('grape.bed'), bed('cacao.bed'), bed('cacao.bed')],
+      assemblyNames: ['grape', 'peach', 'cacao'],
+    }),
+  )
+  const obs = oneDead.getFeatures({
+    refName: 'chr1',
+    start: 0,
+    end: 1000,
+    assemblyName: 'grape',
+  })
+  // named, not just "something is wrong": the column is the whole fix
+  await expect(firstValueFrom(obs.pipe(toArray()))).rejects.toThrow(
+    /peach \(column 1, 3 gene ids\) names no gene present/,
+  )
+})
+
+// The joined rows are built once per ordered pair and shared by every region
+// and band that asks for that pair, so a consumer mutating or draining them
+// would corrupt the next fetch rather than its own.
+test('a pair joined once still answers a second, different region', async () => {
+  const adapter = makeAdapter(['grape', 'peach'])
+  const region = (start: number, end: number) => ({
+    refName: 'chr1',
+    start,
+    end,
+    assemblyName: 'grape',
+  })
+  const wide = await firstValueFrom(
+    adapter.getFeatures(region(0, 1000) as never).pipe(toArray()),
+  )
+  const narrow = await firstValueFrom(
+    adapter.getFeatures(region(0, 450) as never).pipe(toArray()),
+  )
+  const again = await firstValueFrom(
+    adapter.getFeatures(region(0, 1000) as never).pipe(toArray()),
+  )
+  expect([wide.length, narrow.length, again.length]).toEqual([3, 2, 3])
 })
 
 // One genome pair sharing no row is not the same failure, and must not throw:

@@ -159,22 +159,31 @@ distinction below applies to any table built this way.
 
 ### BED files
 
-Only the first six BED fields are read, and only the fourth (name) has to match
-the table. From a GFF3:
+Only the first six BED fields are read. From a GFF3:
 
 ```bash
-awk -F'\t' -v OFS='\t' '$3 == "gene" {
-  match($9, /ID=[^;]+/)
-  print $1, $4 - 1, $5, substr($9, RSTART + 3, RLENGTH - 3), 0, $7
+awk -F'\t' -v OFS='\t' '$3 == "gene" && match($9, /ID=[^;]+/) {
+  id = substr($9, RSTART + 3, RLENGTH - 3)
+  sub(/^gene:/, "", id)
+  print $1, $4 - 1, $5, id, 0, $7
 }' grape.gff3 > grape.bed
 ```
 
-Column 1 must use the same sequence names as the JBrowse assembly, and column 4
-must match the table's gene ids byte for byte. Ids get mangled by isoform
-suffixes, by BLAST truncating a FASTA header at the first space, and by jcvi
-stripping suffixes unless run with `--no_strip_names` (which is why the
-[script](#reproduce-it-end-to-end) passes it). A table that resolves nowhere
-fails the track rather than drawing empty, and the
+Ensembl namespaces its GFF3 ids (`ID=gene:VIT_00000001`) where its proteomes do
+not, so the `sub` is what makes an Ensembl BED match an ortholog table built
+from Ensembl proteins.
+
+Three of the six fields have a job. Column 1 must use the same sequence names as
+the JBrowse assembly. Column 4 must match the table's gene ids byte for byte;
+ids get mangled by isoform suffixes, by BLAST truncating a FASTA header at the
+first space, and by jcvi stripping suffixes unless run with `--no_strip_names`
+(which is why the [script](#reproduce-it-end-to-end) passes it). Column 6 is
+each gene's strand, and a ribbon is drawn inverted when the two ends disagree,
+so a BED written without it draws every ribbon as if the gene pair were
+collinear.
+
+A column whose BED places none of its ids fails the track naming that column,
+and so does a table that resolves nowhere; the
 [adapter's gotchas](/docs/config_guides/synteny_track#gene-ids-are-the-join-in-the-mcscan-adapters)
 cover which mismatches are loud and which are not.
 

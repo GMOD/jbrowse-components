@@ -41,22 +41,28 @@ cacao  Theobroma_cacao  Theobroma_cacao_20110822
 EOF
 
 # ── jcvi: GFF3 -> BED (one primary isoform/gene) + CDS matching the BED names ─
+# Every derive step below is guarded on its output file, the same as the
+# downloads above: the LAST alignment inside `catalog ortholog` is the long step
+# here, and a re-run that redoes it pays for the whole pipeline again.
 for sp in grape peach cacao; do
-  python -m jcvi.formats.gff bed --type=mRNA --key=transcript_id \
-    --primary_only "$sp.gff3.gz" -o "$sp.bed"
-  python -m jcvi.formats.fasta format "$sp.cds.fa.gz" "$sp.cds"
+  [ -f "$sp.bed" ] || python -m jcvi.formats.gff bed --type=mRNA \
+    --key=transcript_id --primary_only "$sp.gff3.gz" -o "$sp.bed"
+  [ -f "$sp.cds" ] || python -m jcvi.formats.fasta format "$sp.cds.fa.gz" "$sp.cds"
 done
 
 # ── jcvi: orthologs vs grape, MCScan each pair, join into one .blocks table ───
 # cut drops col 3, the duplicate grape column the join emits from the 2nd table.
-python -m jcvi.compara.catalog ortholog --no_strip_names grape peach
-python -m jcvi.compara.catalog ortholog --no_strip_names grape cacao
-python -m jcvi.compara.synteny mcscan grape.bed grape.peach.lifted.anchors \
-  --iter=1 -o grape.peach.i1.blocks
-python -m jcvi.compara.synteny mcscan grape.bed grape.cacao.lifted.anchors \
-  --iter=1 -o grape.cacao.i1.blocks
-python -m jcvi.formats.base join grape.peach.i1.blocks grape.cacao.i1.blocks \
-  --noheader | cut -f1,2,4 > grape.blocks
+for sp in peach cacao; do
+  [ -f "grape.$sp.lifted.anchors" ] || \
+    python -m jcvi.compara.catalog ortholog --no_strip_names grape "$sp"
+  [ -f "grape.$sp.i1.blocks" ] || \
+    python -m jcvi.compara.synteny mcscan grape.bed "grape.$sp.lifted.anchors" \
+      --iter=1 -o "grape.$sp.i1.blocks"
+done
+if [ ! -f grape.blocks ]; then
+  python -m jcvi.formats.base join grape.peach.i1.blocks grape.cacao.i1.blocks \
+    --noheader | cut -f1,2,4 > grape.blocks
+fi
 
 # ── Compress blocks + BEDs (the adapter reads plain or gzipped) ──────────────
 gzip -kf grape.blocks grape.bed peach.bed cacao.bed
@@ -81,8 +87,10 @@ done
 
 # Per-genome gene tracks, so "Show only genes" has something to draw
 for sp in grape peach cacao; do
-  gunzip -c "$sp.gff3.gz" | jb sort-gff | bgzip > "$sp.sorted.gff3.gz"
-  tabix -f -p gff "$sp.sorted.gff3.gz"
+  if [ ! -f "$sp.sorted.gff3.gz.tbi" ]; then
+    gunzip -c "$sp.gff3.gz" | jb sort-gff | bgzip > "$sp.sorted.gff3.gz"
+    tabix -f -p gff "$sp.sorted.gff3.gz"
+  fi
   jb add-track "$sp.sorted.gff3.gz" -a "$sp" --name "$sp genes" \
     --trackId "${sp}_genes" --load copy --force --out "$APP"
 done
@@ -96,7 +104,7 @@ cat > blocks_track.json <<'JSON'
   "assemblyNames": ["grape", "peach", "cacao"],
   "adapter": {
     "type": "MCScanBlocksAdapter",
-    "mcscanBlocksLocation": { "uri": "grape.blocks.gz" },
+    "uri": "grape.blocks.gz",
     "blockAssemblies": ["grape", "peach", "cacao"],
     "bedLocations": [
       { "uri": "grape.bed.gz" },
@@ -107,7 +115,9 @@ cat > blocks_track.json <<'JSON'
   }
 }
 JSON
-jb add-track-json blocks_track.json --out "$APP"
+# --update, so a second run overwrites the track rather than failing the build
+# on "a track with that trackId already exists"
+jb add-track-json blocks_track.json --update --out "$APP"
 
 # Default session: stack the three genomes peach - cacao - grape
 cat > session.json <<'JSON'
