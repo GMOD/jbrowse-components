@@ -8,6 +8,7 @@ import MafFeature from '../MafFeature.ts'
 import { buildSampleFilter, getSamplesMemoized } from '../util/getSamples.ts'
 import { lazyInit } from '../util/loadSubAdapter.ts'
 import { makeSourceResolver } from '../util/parseAssemblyName.ts'
+import { readTaiSlice, taiRegionByteSize } from '../util/taiSlice.ts'
 import {
   filterFirstLineInstructions,
   parseRowInstructions,
@@ -18,7 +19,7 @@ import {
   parseBasesColumn,
   parseCoordinatesAndEstablishBlock,
 } from './tafParsing.ts'
-import { parseTaiIndex, queryBlockSpan } from './taiIndex.ts'
+import { parseTaiIndex } from './taiIndex.ts'
 
 import type { MafAdapterOptions } from '../types.ts'
 import type { SamplesHolder } from '../util/getSamples.ts'
@@ -201,44 +202,18 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
       const { index, runLengthEncodeBases } = await this.setup(opts)
       const resolver = makeSourceResolver(buildSampleFilter(opts))
 
-      // Byte range for this query — the same span `getRegionByteSize`
-      // estimates from, so the gate can't disagree with the download.
-      const span = queryBlockSpan(index, query.refName, query.start, query.end)
-      if (!span) {
+      const slice = await readTaiSlice({
+        index,
+        refName: query.refName,
+        start: query.start,
+        end: query.end,
+        location: this.getConf('tafGzLocation'),
+        statusCallback,
+      })
+      if (!slice) {
         observer.complete()
         return
       }
-      const {
-        firstEntry,
-        nextEntry,
-        ranPastEnd,
-        startBlock,
-        endBlock,
-        readLength,
-      } = span
-
-      // Read and decompress the data
-      const file = openLocation(this.getConf('tafGzLocation'))
-
-      const response = await updateStatus(
-        'Downloading alignments',
-        statusCallback,
-        () => file.read(readLength, startBlock),
-      )
-      const buffer = await unzip(response)
-
-      const startOffset = firstEntry.virtualOffset.dataPosition
-      const nextOffset = nextEntry?.virtualOffset.dataPosition ?? 0
-      // Trim to the cushion entry only for interior reads sharing the start
-      // block; a past-the-end read keeps everything decoded to the chr end.
-      const endOffset =
-        !ranPastEnd && endBlock === startBlock && nextOffset > startOffset
-          ? nextOffset
-          : buffer.length
-
-      // subarray (not slice) — TextDecoder.decode handles either, and
-      // subarray avoids a Uint8Array copy of what can be a sizable chunk.
-      const slice = buffer.subarray(startOffset, endOffset)
 
       // Stream features using generator - no caching, immediate GC eligible
       for (const feat of this.parseTafBlocksStreaming(
@@ -281,24 +256,8 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
     )
   }
 
-  // Byte budget from the .tai index alone: exactly the `readLength`
-  // `getFeatures` above passes to `file.read`, via the same `queryBlockSpan`.
-  // No block download. A chromosome absent from the index resolves no span and
-  // so costs nothing, which is the only case that reports 0.
   async getRegionByteSize(regions: Region[]) {
     const { index } = await this.setup()
-    let bytes = 0
-    for (const region of regions) {
-      const span = queryBlockSpan(
-        index,
-        region.refName,
-        region.start,
-        region.end,
-      )
-      if (span) {
-        bytes += span.readLength
-      }
-    }
-    return bytes
+    return taiRegionByteSize(index, regions)
   }
 }

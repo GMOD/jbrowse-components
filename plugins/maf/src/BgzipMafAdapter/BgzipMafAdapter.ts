@@ -1,14 +1,14 @@
-import { unzip } from '@gmod/bgzf-filehandle'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import { parseTaiIndex, queryBlockSpan } from '../BgzipTaffyAdapter/taiIndex.ts'
+import { parseTaiIndex } from '../BgzipTaffyAdapter/taiIndex.ts'
 import MafFeature from '../MafFeature.ts'
 import { buildSampleFilter, getSamplesMemoized } from '../util/getSamples.ts'
 import { lazyInit } from '../util/loadSubAdapter.ts'
 import { makeSourceResolver } from '../util/parseAssemblyName.ts'
+import { readTaiSlice, taiRegionByteSize } from '../util/taiSlice.ts'
 import { parseMafBlocks } from './mafParsing.ts'
 
 import type { IndexData } from '../BgzipTaffyAdapter/types.ts'
@@ -73,36 +73,19 @@ export default class BgzipMafAdapter extends BaseFeatureDataAdapter {
       const index = await this.setup(opts)
       const resolver = makeSourceResolver(buildSampleFilter(opts))
 
-      const span = queryBlockSpan(index, query.refName, query.start, query.end)
-      if (!span) {
+      const slice = await readTaiSlice({
+        index,
+        refName: query.refName,
+        start: query.start,
+        end: query.end,
+        location: this.getConf('mafGzLocation'),
+        statusCallback,
+      })
+      if (!slice) {
         observer.complete()
         return
       }
-      const {
-        firstEntry,
-        nextEntry,
-        ranPastEnd,
-        startBlock,
-        endBlock,
-        readLength,
-      } = span
-
-      const file = openLocation(this.getConf('mafGzLocation'))
-      const response = await updateStatus(
-        'Downloading alignments',
-        statusCallback,
-        () => file.read(readLength, startBlock),
-      )
-      const buffer = await unzip(response)
-
-      const startOffset = firstEntry.virtualOffset.dataPosition
-      const nextOffset = nextEntry?.virtualOffset.dataPosition ?? 0
-      const endOffset =
-        !ranPastEnd && endBlock === startBlock && nextOffset > startOffset
-          ? nextOffset
-          : buffer.length
-
-      const text = this.decoder.decode(buffer.subarray(startOffset, endOffset))
+      const text = this.decoder.decode(slice)
 
       for (const feat of parseMafBlocks(text, resolver.resolve)) {
         if (feat.end > query.start && feat.start < query.end) {
@@ -134,22 +117,7 @@ export default class BgzipMafAdapter extends BaseFeatureDataAdapter {
     )
   }
 
-  // Byte budget from the .tai alone — exactly the `readLength` getFeatures
-  // passes to `file.read`, via the same `queryBlockSpan`. No block download.
   async getRegionByteSize(regions: Region[]) {
-    const index = await this.setup()
-    let bytes = 0
-    for (const region of regions) {
-      const span = queryBlockSpan(
-        index,
-        region.refName,
-        region.start,
-        region.end,
-      )
-      if (span) {
-        bytes += span.readLength
-      }
-    }
-    return bytes
+    return taiRegionByteSize(await this.setup(), regions)
   }
 }
