@@ -239,6 +239,15 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.14, 0.545],
     xband: [0, 0.36],
   },
+  homoeolog_synteny: {
+    // The dotplot itself, past the app chrome and the coordinate readout. A
+    // dotplot card wants the plot area and nothing else: the scattered segments
+    // are the whole shape, and they read at card size where the axis labels do
+    // not. Cropped short of the rotated x labels along the bottom for the same
+    // reason.
+    src: 'homoeolog_synteny/oat_homoeologs.png',
+    band: [0.152, 0.86],
+  },
   orthofinder_synteny: {
     // Left third only, same reason as multiway_synteny below: the per-row "No
     // tracks active / Open track selector" chip is horizontally centered, so a

@@ -442,6 +442,8 @@ It needs everything under [Prerequisites](#prerequisites) on your `PATH`.
 ## See also
 
 - [All-vs-all synteny](/docs/tutorials/allvsall_synteny)
+- [](/docs/tutorials/homoeolog_synteny) - the same self-comparison with the
+  pairs computed rather than downloaded, so it runs on any assembly
 - [Synteny visualization](/docs/tutorials/synteny_visualization)
 - [](/docs/tutorials/genomes_synteny) for hosted pairwise alignments with no
   setup

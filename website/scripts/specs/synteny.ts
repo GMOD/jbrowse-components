@@ -687,6 +687,60 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 767,
   },
 
+  // homoeolog_synteny.md: hexaploid oat against itself, on the same shape as
+  // the wheat figure above and showing the opposite karyotype. Wheat's three
+  // subgenomes are near-collinear apart from 4A; oat's have exchanged whole
+  // arms, which is what the assembly paper means by a mosaic genome, and here
+  // it is a plot whose segments repeatedly leave their homoeologous group.
+  //
+  // Nothing here comes from a homology database. Compara curates homoeolog
+  // calls only for the assembly it hosts, which for oat is neither the newest
+  // nor the most contiguous, so the anchors are computed: DIAMOND self-
+  // alignment, jcvi chaining, and scripts/kaks_from_pairs.py for the colour.
+  // The assembly is GCA_951802345.1 (cv. Williams), the most contiguous oat
+  // there is, annotated by Ensembl Plants because NCBI carries gene models for
+  // no oat assembly at all.
+  {
+    mode: 'url',
+    name: 'homoeolog_synteny/oat_homoeologs',
+    url: sessionSpec(
+      encodeURIComponent('https://jbrowse.org/demos/oat_homoeologs/config.json'),
+      {
+        views: [
+          {
+            // A dotplot for the same reason as wheat: both axes are one genome
+            // in one order, so as stacked rows every link is near-vertical and
+            // the table reads as a barcode.
+            type: 'DotplotView',
+            showColorLegend: true,
+            views: [{ assembly: 'oat' }, { assembly: 'oat' }],
+            tracks: ['oat_homoeologs'],
+            colorBy: 'dnds',
+          },
+        ],
+      },
+    ),
+    readySelector: '[data-testid="dotplot_webgl_canvas_done"]',
+    readyTimeout: 300000,
+    settleMs: 15000,
+    viewportHeight: 767,
+  },
+
+  // The two hexaploid cereals side by side, which is the one framing that makes
+  // either plot mean anything without knowing the genomes: wheat's subgenomes
+  // step up the diagonal in near-collinear threes, oat's are scattered. Same
+  // view type, same colour mode, same viewport height, so a reader compares
+  // across rather than down.
+  {
+    mode: 'compose',
+    name: 'homoeolog_synteny/wheat_vs_oat',
+    parts: [
+      'multiway_synteny/wheat_homoeolog_selection',
+      'homoeolog_synteny/oat_homoeologs',
+    ],
+    direction: 'horizontal',
+  },
+
   // orthofinder_synteny.md: human/chicken/frog/spotted gar/zebrafish, stacked
   // on OrthoFinder orthogroups rather than a whole-genome aligner. One
   // vertebrates_orthogroups track (MCScanBlocksAdapter) backs all four bands.
