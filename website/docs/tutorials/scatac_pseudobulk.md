@@ -46,7 +46,7 @@ are ordered by lineage, so the two markers land in different blocks.
 
 The pseudobulk step runs in the same environment your clustering does, so the
 BigWigs it writes can also be viewed inline through the
-[JBrowse Jupyter / anywidget interface](/docs/jbrowse_jupyter) (or
+[Python anywidget interface](/docs/jbrowse_anywidget) (or
 [](/docs/jbrowser)) without leaving the session.
 
 ## Generating per-group BigWigs

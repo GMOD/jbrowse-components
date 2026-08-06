@@ -247,5 +247,5 @@ Notes:
 - [Configuring assemblies](/docs/config_guides/assemblies)
 - [Configuring tracks](/docs/config_guides/tracks)
 - [LGV storybook](https://jbrowse.org/storybook/lgv/)
-- [JBrowse Jupyter](/docs/jbrowse_jupyter) (Python equivalent)
+- [](/docs/jbrowse_anywidget) (Python equivalent)
 - [](/docs/jbrowser) (R/Shiny equivalent)

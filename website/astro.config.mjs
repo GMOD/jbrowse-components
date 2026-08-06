@@ -57,6 +57,14 @@ export default defineConfig({
   base: BASE,
   publicDir: './static',
   trailingSlash: 'always',
+  // Renamed docs pages keep their old URL working. The site has no other
+  // redirect layer (S3 + CloudFront serve the built files as-is), so without an
+  // entry here a rename silently 404s every external link to the old slug.
+  // The destination carries BASE itself: Astro writes it verbatim into the
+  // `<meta http-equiv="refresh">`, and fixAbsoluteLinks only rewrites `<a href>`.
+  redirects: {
+    '/docs/jbrowse_jupyter/': `${BASE}/docs/jbrowse_anywidget/`,
+  },
   // Astro's default HTML minifier strips whitespace-only text nodes between
   // elements, so `<strong>a</strong>\n<strong>b</strong>` renders as "ab" and
   // authoring needs ugly {' '} spacers. Turning it off keeps normal HTML

@@ -19,7 +19,7 @@ them is not rewritten for the next:
 | a link to jbrowse-web                                   | `&session=`, or the per-view parameters in [](/docs/urlparams)   |
 | [jbrowse-desktop](/docs/quickstart_desktop)             | an opened `.jbrowse` file: the same format with a session in it  |
 | [embedded components](/docs/embedded_components)        | the object passed to `createViewState`                           |
-| [](/docs/jbrowser) and the [Python anywidget](/docs/jbrowse_jupyter) | what the helper functions assemble for you          |
+| [](/docs/jbrowser) and [](/docs/jbrowse_anywidget)      | what the helper functions assemble for you                       |
 | [@jbrowse/img](/docs/jbrowse-img)                       | `--config`, and `--spec` for a whole session                     |
 
 ## What is in it

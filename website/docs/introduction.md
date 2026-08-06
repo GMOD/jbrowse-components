@@ -41,7 +41,7 @@ See the [visualization gallery](/gallery/), or hosted genomes at
 - [](/docs/automating)
 - [](/docs/urlparams)
 - [](/docs/jbrowser)
-- [JBrowse Jupyter](/docs/jbrowse_jupyter)
+- [](/docs/jbrowse_anywidget)
 - [@jbrowse/img](/docs/jbrowse-img)
 
 ## Extend it

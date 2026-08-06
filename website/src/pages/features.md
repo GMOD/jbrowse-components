@@ -178,7 +178,7 @@ views can be packaged as prop-driven components for other applications.
 - **R** - genome views as an htmlwidget in Shiny, R Markdown, or the console
   with [JBrowseR](/docs/jbrowser)
 - **Python** - genome views as an anywidget in Jupyter, Colab, VS Code, or
-  marimo with [JBrowse Jupyter](/docs/jbrowse_jupyter)
+  marimo with [jbrowse-anywidget](/docs/jbrowse_anywidget)
 - **Automation** - drive URL, embedded, and session launches from a shared
   [init spec](/docs/automating)
 

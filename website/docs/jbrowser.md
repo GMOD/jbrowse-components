@@ -11,7 +11,7 @@ description:
 view, drawn on the GPU, as an [htmlwidget](https://www.htmlwidgets.org/). Embed
 a full genome browser in an R Markdown document or Shiny app, or launch one from
 the R console. It shares the same framework-agnostic view core as the
-[Python/Jupyter anywidget](/docs/jbrowse_jupyter), so both stay in step.
+[Python anywidget](/docs/jbrowse_anywidget), so both stay in step.
 
 ## Install
 
@@ -99,5 +99,5 @@ Full documentation is at
 
 ## See also
 
-- [JBrowse Jupyter](/docs/jbrowse_jupyter): Python equivalent
+- [](/docs/jbrowse_anywidget): Python equivalent
 - [](/docs/embedded_components): the JS/React view this wraps

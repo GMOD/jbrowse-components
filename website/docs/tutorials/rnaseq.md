@@ -156,5 +156,5 @@ strand-specific BigWig from the aligner, loads separately as a
 - [](/docs/user_guides/alignments_track)
 - [](/docs/user_guides/quantitative_track)
 - [Gene tracks](/docs/user_guides/gene_track)
-- [JBrowse Jupyter / anywidget](/docs/jbrowse_jupyter)
+- [](/docs/jbrowse_anywidget)
 - [Gallery: alignments and long reads](/gallery/#alignments)

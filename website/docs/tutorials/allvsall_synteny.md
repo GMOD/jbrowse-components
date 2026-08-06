@@ -482,5 +482,5 @@ counterpart at all. The gap in the figure is the gap in the file.
 - [AllVsAllPAFAdapter config](/docs/config/allvsallpafadapter)
 - [AllVsAllIndexedPAFAdapter config](/docs/config/allvsallindexedpafadapter)
 - [PIF format](/docs/developer_guides/pif_format)
-- [](/docs/jbrowse_jupyter)
+- [](/docs/jbrowse_anywidget)
 - [](/docs/jbrowser)

@@ -192,7 +192,7 @@ The same packages mount imperatively, with no React root for you to manage:
 `createLinearGenomeView(element, options)` returns a controller, and
 `createApp(element, options)` does the same for the whole app. React and
 react-dom are still peer dependencies — this saves you the JSX, not React. It is
-what the [Jupyter anywidget](/docs/jbrowse_jupyter), R htmlwidgets, and plain
+what the [Python anywidget](/docs/jbrowse_anywidget), R htmlwidgets, and plain
 `<script>` pages are built on.
 
 ```js
@@ -257,6 +257,6 @@ Not sure if you want an embedded view or the full app? See the
 
 - [](/docs/automating)
 - [](/docs/tutorials/embed_linear_genome_view)
-- [JBrowse Jupyter](/docs/jbrowse_jupyter): Python equivalent
+- [](/docs/jbrowse_anywidget): Python equivalent
 - [](/docs/jbrowser): R/Shiny equivalent
 - [FAQ: embedded views vs. full app](/docs/faq#embedded-views-versus-full-jbrowse-app)

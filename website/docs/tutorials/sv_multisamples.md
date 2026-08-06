@@ -172,4 +172,4 @@ For more on navigating it, see
 - [](/docs/tutorials/dog10k_svs)
 - [](/docs/tutorials/population_cnv)
 - [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab)
-- [](/docs/jbrowse_jupyter)
+- [](/docs/jbrowse_anywidget)

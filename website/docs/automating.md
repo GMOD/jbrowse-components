@@ -13,7 +13,7 @@ fields and links to the reference for each one.
 
 This page covers launching and presetting views. For headless static-image
 export see [@jbrowse/img](/docs/jbrowse-img); for the Python/notebook API see
-[JBrowse Jupyter](/docs/jbrowse_jupyter).
+[](/docs/jbrowse_anywidget).
 
 ## The `init` fields
 

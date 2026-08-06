@@ -285,7 +285,7 @@ in JBrowse Desktop.
 - [](/docs/tutorials/ld_human)
 - [](/docs/tutorials/ld_mosquitoes)
 - [Selected haplotype (Dog10K)](/docs/tutorials/dog10k_selection)
-- [](/docs/jbrowse_jupyter)
+- [](/docs/jbrowse_anywidget)
 
 ## References
 

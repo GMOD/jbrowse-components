@@ -89,7 +89,7 @@
     },
     "embedded_components",
     "jbrowser",
-    "jbrowse_jupyter",
+    "jbrowse_anywidget",
     "cli",
     "jbrowse-img",
     "agents",

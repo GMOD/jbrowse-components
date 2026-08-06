@@ -947,4 +947,4 @@ them from code.
 Embedded components are designed for web developers to build custom systems
 around, so features like sessions and track manipulation can be implemented by
 the embedding application. If your app is Python or R rather than JavaScript,
-[](/docs/jbrowse_jupyter) and [](/docs/jbrowser) wrap the same views.
+[](/docs/jbrowse_anywidget) and [](/docs/jbrowser) wrap the same views.

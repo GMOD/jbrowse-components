@@ -924,7 +924,7 @@ the genome count, and `odgi untangle` indexes every step of every path.
 - [](/docs/user_guides/maf_track)
 - [](/docs/user_guides/multivariant_track)
 - [](/docs/developer_guides/pif_format)
-- [](/docs/jbrowse_jupyter)
+- [](/docs/jbrowse_anywidget)
 - [](/docs/jbrowser)
 - [pggb](https://github.com/pangenome/pggb)
 - [odgi](https://odgi.readthedocs.io/)
