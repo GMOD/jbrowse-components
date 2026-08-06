@@ -12,7 +12,6 @@ import {
   getSession,
   isSessionWithAddTracks,
   isSessionWithViewReplacement,
-  toLocale,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
@@ -26,11 +25,13 @@ import {
 import { when } from 'mobx'
 import { observer } from 'mobx-react'
 
+import DerivativePathStrip from './DerivativePathStrip.tsx'
 import {
   buildDerivativeVsRefSpec,
   derivativePathLabel,
 } from './buildDerivativeVsRefSpec.ts'
 import { buildSplitViewFromPath } from './buildSplitViewFromPath.ts'
+import { segmentSizeSummary } from './derivativePathStrip.ts'
 
 import type { AbstractTrackModel, AbstractViewModel } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -43,8 +44,19 @@ const useStyles = makeStyles()(theme => ({
   path: {
     fontWeight: 'bold',
   },
+  row: {
+    // the strip is the row's width, so give it room to breathe from the radio
+    // and from the next candidate
+    paddingBlock: theme.spacing(0.5),
+  },
   detail: {
     color: theme.palette.text.secondary,
+  },
+  // A radio with one option is a control that cannot be operated. The single
+  // candidate — which is what a clean event looks like — is drawn as the row it
+  // already is, with the buttons below acting on it.
+  soleCandidate: {
+    marginTop: theme.spacing(1),
   },
   caveat: {
     color: theme.palette.text.secondary,
@@ -106,12 +118,25 @@ function showWhenMeasured(panel: SyntenyPanel, show: () => void) {
   )
 }
 
-function segmentSummary(candidate: DerivativeCandidate) {
-  const total = candidate.segments.reduce(
-    (sum, seg) => sum + (seg.end - seg.start),
-    0,
+// One candidate: what it is, what it looks like, and what backs it. The strip
+// carries the shape and the size list the exact figures, which between them are
+// the evidence the caveat above the list asks a reader to weigh — the path's
+// total span, which this row used to print instead, is the same ~60kb whether
+// the path is one 52kb arm carrying three sub-kilobase inserts or four
+// read-length fragments an aligner split apart.
+function CandidateRow({ candidate }: { candidate: DerivativeCandidate }) {
+  const { classes } = useStyles()
+  return (
+    <div className={classes.row}>
+      <div className={classes.path}>{derivativePathLabel(candidate)}</div>
+      <DerivativePathStrip segments={candidate.segments} />
+      <div className={classes.detail}>
+        {candidate.readCount} reads · {candidate.segments.length} segments ·{' '}
+        {segmentSizeSummary(candidate.segments)}
+        {candidate.extendsOffScreen ? ' · extends beyond this window' : ''}
+      </div>
+    </div>
   )
-  return `${candidate.segments.length} segments, ${toLocale(total)} bp`
 }
 
 // The picker for "Reconstruct derivative allele". Every row is a path some set
@@ -367,46 +392,46 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
               which row a reader picks.
             */}
             <Typography>
-              Each route below is one that this many reads cross in the same
-              order and orientation.
+              {candidates.length === 1
+                ? 'One route through the reference, crossed in the same order and orientation by the reads counted below.'
+                : 'Each route below is one that this many reads cross in the same order and orientation.'}
             </Typography>
             <Typography className={classes.caveat}>
               Read counts rank them; they do not vouch for them. A route whose
               segments are all about one read long is an aligner splitting a
-              short read rather than an allele, which is what the size beside
-              each row is for.
+              short read rather than an allele, which is what the strip and the
+              sizes beside each row are for.
             </Typography>
-            <RadioGroup
-              // the real result of the reconstruction pass, so a screenshot
-              // spec (and a test) can wait on the candidates existing rather
-              // than on a timeout
-              data-testid="derivative-path-candidates"
-              value={selected}
-              onChange={event => {
-                setSelected(+event.target.value)
-              }}
-            >
-              {candidates.map((candidate, idx) => (
-                <FormControlLabel
-                  key={candidate.locString}
-                  value={idx}
-                  control={<Radio />}
-                  label={
-                    <div>
-                      <div className={classes.path}>
-                        {derivativePathLabel(candidate)}
-                      </div>
-                      <div className={classes.detail}>
-                        {candidate.readCount} reads, {segmentSummary(candidate)}
-                        {candidate.extendsOffScreen
-                          ? ', extends beyond this window'
-                          : ''}
-                      </div>
-                    </div>
-                  }
-                />
-              ))}
-            </RadioGroup>
+            {candidates.length === 1 ? (
+              <div
+                // the real result of the reconstruction pass, so a screenshot
+                // spec (and a test) can wait on the candidates existing rather
+                // than on a timeout. Same testid on both shapes: what a caller
+                // waits for is that the pass produced rows, not which control
+                // it drew them in.
+                data-testid="derivative-path-candidates"
+                className={classes.soleCandidate}
+              >
+                <CandidateRow candidate={candidates[0]!} />
+              </div>
+            ) : (
+              <RadioGroup
+                data-testid="derivative-path-candidates"
+                value={selected}
+                onChange={event => {
+                  setSelected(+event.target.value)
+                }}
+              >
+                {candidates.map((candidate, idx) => (
+                  <FormControlLabel
+                    key={candidate.locString}
+                    value={idx}
+                    control={<Radio />}
+                    label={<CandidateRow candidate={candidate} />}
+                  />
+                ))}
+              </RadioGroup>
+            )}
             {ranked.length > candidates.length ? (
               <Typography className={classes.caveat}>
                 {ranked.length - candidates.length} further paths are supported
