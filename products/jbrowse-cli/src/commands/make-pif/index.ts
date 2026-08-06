@@ -10,6 +10,7 @@ import {
   DEFAULT_COARSE_SPLIT_GAP,
   createPIF,
   getOutputFilename,
+  missingPairs,
   spawnSortProcess,
 } from './pif-generator.ts'
 
@@ -108,13 +109,10 @@ export async function run(args?: string[]) {
   const stdin = child.stdin
   // end stdin even if createPIF throws, otherwise the spawned sort/index child
   // is left running with an open stdin
-  const { samples, rows, skipped } = await createPIF(
-    file,
-    stdin,
-    coarseSplitGap,
-  ).finally(() => {
+  const stats = await createPIF(file, stdin, coarseSplitGap).finally(() => {
     stdin.end()
   })
+  const { samples, rows, skipped } = stats
   // no SIGPIPE exemption here (unlike sort-gff/sort-bed): this pipeline's output
   // is the .pif.gz file, so anything that killed it early left that file broken
   const exit = await waitForProcessClose(child)
@@ -133,6 +131,28 @@ export async function run(args?: string[]) {
   if (skipped > 0) {
     console.warn(
       `Warning: skipped ${skipped} of ${rows + skipped} line(s) with fewer than the 12 mandatory PAF columns`,
+    )
+  }
+
+  // An all-vs-all PAF that does not state every pair indexes perfectly well and
+  // then draws an empty synteny band for each pair the aligner never emitted,
+  // which reads as "no homology here" rather than as "never computed". This is
+  // the moment someone is looking at the file, and the census it needs was
+  // already taken on the pass above.
+  const missing = missingPairs(stats)
+  if (missing.length > 0) {
+    const shown = missing
+      .slice(0, 5)
+      .map(([a, b]) => `${a}<->${b}`)
+      .join(', ')
+    const rest = missing.length - Math.min(missing.length, 5)
+    console.warn(
+      `Warning: this file has ${samples.size} samples but states only ` +
+        `${(samples.size * (samples.size - 1)) / 2 - missing.length} of their ` +
+        `${(samples.size * (samples.size - 1)) / 2} pairs. Synteny bands for the ` +
+        `missing pairs (${shown}${rest > 0 ? `, and ${rest} more` : ''}) will draw ` +
+        `empty.\n  To fill them in by composing through a shared intermediate:\n` +
+        `    jbrowse transitive-paf ${file ?? '<input.paf>'} --out complete.paf && jbrowse make-pif complete.paf`,
     )
   }
 

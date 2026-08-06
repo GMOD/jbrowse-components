@@ -173,17 +173,42 @@ export default class AllVsAllIndexedPAFAdapter extends BaseFeatureDataAdapter<Al
 
       // Resolve the anchor (assembly, refName) to its PanSN seqid(s); one contig
       // can map to several when the sample is multi-haplotype.
-      const byContig = (await this.seqIndex(opts)).get(anchorPrefix)
+      const seqIndex = await this.seqIndex(opts)
+      const byContig = seqIndex.get(anchorPrefix)
       // A prefix present but holding no such contig is ordinary — a contig with
       // no alignments. A prefix the file has never heard of is a misconfigured
       // track that would otherwise draw nothing and say nothing; see
-      // noPanSNMatchError.
+      // noPanSNMatchError. The target is checked too, so a band naming a
+      // mistyped assembly says which end is wrong instead of drawing empty.
+      //
+      // Unlike the in-memory adapter this cannot go on to say "both ends are
+      // present but nothing aligns them" (see noSuchPairError): that is a fact
+      // about the rows, and the seqid list is all this has without a scan. The
+      // make-pif warning covers the same ground at build time.
+      for (const [name, prefix] of [
+        [assemblyName, anchorPrefix],
+        [opts.targetAssemblyName, targetPrefix],
+      ] as const) {
+        if (
+          name !== undefined &&
+          prefix !== undefined &&
+          !seqIndex.has(prefix)
+        ) {
+          throw noPanSNMatchError({
+            assemblyName: name,
+            prefix,
+            inventory: panSNInventory(
+              // the tier letter (t/q/T/Q) is not part of the name
+              (await this.refSeqNames(opts)).map(n => n.slice(1)),
+            ),
+          })
+        }
+      }
       if (byContig === undefined) {
         throw noPanSNMatchError({
           assemblyName,
           prefix: anchorPrefix,
           inventory: panSNInventory(
-            // the tier letter (t/q/T/Q) is not part of the name
             (await this.refSeqNames(opts)).map(name => name.slice(1)),
           ),
         })

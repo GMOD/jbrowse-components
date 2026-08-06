@@ -17,6 +17,7 @@ import {
   isSelfDiagonal,
   markReciprocalDuplicates,
   noPanSNMatchError,
+  noSuchPairError,
   panSNInventory,
   resolvePanSNPrefix,
   sideDraws,
@@ -118,8 +119,14 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllP
     // which depth the config named. Keyed on the anchor's own name, since that is
     // what a query's (assembly, refName) resolves to.
     const index = new Map<string, Map<string, number[]>>()
+    // Which anchor prefixes the file states an alignment TO, at every depth
+    // either side is addressable by. A synteny band asks exactly this question
+    // and the answer is a property of the file, so it is answered here rather
+    // than by discovering at draw time that a band came back empty.
+    const matesByPrefix = new Map<string, Set<string>>()
     for (const [i, side] of kept.entries()) {
       const contig = panSNContig(side.refName)
+      const matePrefixes = panSNPrefixes(side.mateRefName)
       for (const prefix of panSNPrefixes(side.refName)) {
         let byContig = index.get(prefix)
         if (!byContig) {
@@ -132,10 +139,24 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllP
         } else {
           byContig.set(contig, [i])
         }
+        let mates = matesByPrefix.get(prefix)
+        if (!mates) {
+          mates = new Set()
+          matesByPrefix.set(prefix, mates)
+        }
+        for (const matePrefix of matePrefixes) {
+          mates.add(matePrefix)
+        }
       }
     }
 
-    return { records, sides: kept, index, panSN: panSNInventory(seqNames) }
+    return {
+      records,
+      sides: kept,
+      index,
+      matesByPrefix,
+      panSN: panSNInventory(seqNames),
+    }
   }
 
   // Exactly the contigs `getFeatures` can emit for: the same `sideDraws` gate
@@ -157,23 +178,45 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllP
 
   getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      const { records, sides, index, panSN } = await this.setup(opts)
+      const { records, sides, index, matesByPrefix, panSN } =
+        await this.setup(opts)
       const { start: qstart, end: qend, refName: qref, assemblyName } = query
+      const { targetAssemblyName } = opts
       const asmByPrefix = this.asmByPrefix()
       const anchorPrefix = resolvePanSNPrefix(this, assemblyName)
-      const targetPrefix = resolvePanSNPrefix(this, opts.targetAssemblyName)
+      const targetPrefix = resolvePanSNPrefix(this, targetAssemblyName)
 
       // An assembly the file has never heard of is a misconfigured track that
       // would otherwise draw nothing and say nothing; see noPanSNMatchError.
       // Tested against the inventory rather than the index, because a prefix
       // whose every alignment was a self-diagonal IS in the file and legitimately
       // draws nothing.
-      if (!panSN.prefixes.has(anchorPrefix)) {
-        throw noPanSNMatchError({
-          assemblyName,
-          prefix: anchorPrefix,
-          inventory: panSN,
-        })
+      for (const [name, prefix] of [
+        [assemblyName, anchorPrefix],
+        [targetAssemblyName, targetPrefix],
+      ] as const) {
+        if (
+          name !== undefined &&
+          prefix !== undefined &&
+          !panSN.prefixes.has(prefix)
+        ) {
+          throw noPanSNMatchError({
+            assemblyName: name,
+            prefix,
+            inventory: panSN,
+          })
+        }
+      }
+      // Both ends are in the file but nothing aligns them: an incomplete
+      // all-vs-all rather than a misconfigured track, so it names its own remedy.
+      // Answered off the whole file, not this window — a window with no
+      // alignments is ordinary and must stay silent.
+      if (
+        targetAssemblyName !== undefined &&
+        targetPrefix !== undefined &&
+        !matesByPrefix.get(anchorPrefix)?.has(targetPrefix)
+      ) {
+        throw noSuchPairError({ assemblyName, targetAssemblyName })
       }
 
       // Only the anchor's own sides on the queried contig can satisfy the query,

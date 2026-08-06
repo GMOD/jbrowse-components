@@ -179,6 +179,30 @@ export function noPanSNMatchError({
   )
 }
 
+/**
+ * What an all-vs-all adapter raises when both assemblies of a synteny band are
+ * in the file but the file states no alignment between them.
+ *
+ * Distinct from {@link noPanSNMatchError}, which is a misconfigured track. This
+ * one is a correctly configured track over a file that is not the complete
+ * all-vs-all it is being read as: wfmash with a `-p` threshold drops distant
+ * pairs, and a star-topology mapping states only the reference's pairs. Same
+ * reason it throws rather than returning empty — the band would otherwise draw
+ * nothing and say nothing, which is exactly what a locus with no homology looks
+ * like — but the remedy is different, so it names the remedy.
+ */
+export function noSuchPairError({
+  assemblyName,
+  targetAssemblyName,
+}: {
+  assemblyName: string
+  targetAssemblyName: string
+}) {
+  return new Error(
+    `This file contains no alignments between "${assemblyName}" and "${targetAssemblyName}", though both are in it. That usually means the PAF is not a complete all-vs-all — an aligner run with an identity threshold, or one that mapped everything to a single reference. Run \`jbrowse transitive-paf\` on the PAF to fill in the missing pairs by composing through a shared intermediate.`,
+  )
+}
+
 export function parseBed(text: string) {
   const result = new Map<string, BareFeature>()
   for (const line of text.split(/\n|\r\n|\r/)) {

@@ -449,6 +449,75 @@ describe('an assembly the file has never heard of', () => {
     ).rejects.toThrow(/carry no PanSN sample prefix/)
   })
 
+  // A correctly configured track over a file that is not the complete
+  // all-vs-all it is being read as. Distinct from the errors above — nothing is
+  // misconfigured — so it names its own remedy rather than assemblyNameToPanSN.
+  describe('an incomplete all-vs-all', () => {
+    // a star: both derivatives align to the reference, neither to each other
+    const starPaf = () =>
+      writePaf([
+        'A#1#chr1\t1000\t100\t200\t+\tR#1#chr1\t1000\t100\t200\t95\t100\t60',
+        'B#1#chr1\t1000\t300\t400\t+\tR#1#chr1\t1000\t300\t400\t95\t100\t60',
+      ])
+
+    test('a band between two unaligned assemblies says so, and how to fix it', async () => {
+      await expect(
+        feats(
+          makeAdapter(['A', 'B', 'R'], {}, starPaf()),
+          { refName: 'chr1', start: 0, end: 2000, assemblyName: 'A' },
+          { targetAssemblyName: 'B' },
+        ),
+      ).rejects.toThrow(
+        /no alignments between "A" and "B".*not a complete all-vs-all.*jbrowse transitive-paf/s,
+      )
+    })
+
+    // the pairs the file DOES state keep working
+    test('a band the file does state still draws', async () => {
+      const fa = await feats(
+        makeAdapter(['A', 'B', 'R'], {}, starPaf()),
+        { refName: 'chr1', start: 0, end: 2000, assemblyName: 'A' },
+        { targetAssemblyName: 'R' },
+      )
+      expect(fa.length).toBe(1)
+    })
+
+    // and a plain LGV, which asks for no particular pair, is unaffected
+    test('one-vs-all on the same file is not an error', async () => {
+      const fa = await feats(makeAdapter(['A', 'B', 'R'], {}, starPaf()), {
+        refName: 'chr1',
+        start: 0,
+        end: 2000,
+        assemblyName: 'A',
+      })
+      expect(fa.length).toBe(1)
+    })
+
+    // The window matters for neither check: an empty window is ordinary and has
+    // to stay silent, while a stated pair stays stated.
+    test('a window with no alignments is still empty, not an error', async () => {
+      expect(
+        await feats(
+          makeAdapter(['A', 'B', 'R'], {}, starPaf()),
+          { refName: 'chr1', start: 900, end: 1000, assemblyName: 'A' },
+          { targetAssemblyName: 'R' },
+        ),
+      ).toEqual([])
+    })
+  })
+
+  // the target end used to go unchecked entirely, so a typo there drew an empty
+  // band while the same typo on the query end raised
+  test('a mistyped target assembly names the target, not the query', async () => {
+    await expect(
+      feats(
+        makeAdapter(['grape', 'peach']),
+        { refName: 'chr1', start: 0, end: 2000, assemblyName: 'grape' },
+        { targetAssemblyName: 'peahc' },
+      ),
+    ).rejects.toThrow(/belong to assembly "peahc"/)
+  })
+
   // the ordinary case this must not fire on: the prefix is present, the contig
   // simply has no alignments
   test('a known assembly on a contig with no alignments is still empty, not an error', async () => {

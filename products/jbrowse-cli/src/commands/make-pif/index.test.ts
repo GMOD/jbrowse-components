@@ -426,3 +426,76 @@ test('make pif with CSI', async () => {
     expect(exists(`${fn}.csi`)).toBeTruthy()
   })
 })
+
+// A PAF whose sequence names are PanSN but which does not state every sample
+// pair indexes perfectly well and then draws an empty synteny band for each pair
+// the aligner never emitted. Building the file is the one moment anyone is
+// looking at it, and the census the warning needs was already being taken.
+const avaFixture = path.join(
+  __dirname,
+  '..',
+  '..',
+  '..',
+  '..',
+  '..',
+  'test_data',
+  'volvox',
+  'volvox_all_vs_all.paf',
+)
+
+const dropPair = (from: string, pair: string) =>
+  fs
+    .readFileSync(from, 'utf8')
+    .split('\n')
+    .filter(Boolean)
+    .filter(l => {
+      const p = l.split('\t')
+      return (
+        [p[0]!.split('#')[0], p[5]!.split('#')[0]].sort().join('-') !== pair
+      )
+    })
+    .join('\n')
+
+test('warns when an all-vs-all PAF does not state every sample pair', async () => {
+  await runInTmpDir(async () => {
+    fs.writeFileSync(
+      'star.paf',
+      `${dropPair(avaFixture, 'volvox_del-volvox_ins')}\n`,
+    )
+    const { warnings } = await runCommand([
+      'make-pif',
+      'star.paf',
+      '--out',
+      'star.pif.gz',
+    ])
+    expect(warnings).toMatch(/states only 2 of their 3 pairs/)
+    expect(warnings).toMatch(/volvox_del<->volvox_ins/)
+    // and names the command that fixes it, on the file it was actually given
+    expect(warnings).toMatch(/jbrowse transitive-paf star\.paf/)
+  })
+})
+
+test('a complete all-vs-all draws no such warning', async () => {
+  await runInTmpDir(async () => {
+    const { warnings } = await runCommand([
+      'make-pif',
+      avaFixture,
+      '--out',
+      'full.pif.gz',
+    ])
+    expect(warnings).not.toMatch(/pairs/)
+  })
+})
+
+// a pairwise PAF has no PanSN names, so there are no sample pairs to be missing
+test('a pairwise PAF draws no such warning', async () => {
+  await runInTmpDir(async () => {
+    const { warnings } = await runCommand([
+      'make-pif',
+      simplePaf,
+      '--out',
+      'pairwise.pif.gz',
+    ])
+    expect(warnings).not.toMatch(/pairs/)
+  })
+})

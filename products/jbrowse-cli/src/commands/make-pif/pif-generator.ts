@@ -31,14 +31,54 @@ export const DEFAULT_COARSE_SPLIT_GAP = 10_000
 // and a success message.
 export interface PifStats {
   samples: Set<string>
+  // Which pairs of DISTINCT samples the file actually states, order-independent.
+  // An "all-vs-all" PAF often is not one — wfmash with a -p threshold drops
+  // distant pairs, and a star-topology mapping states only the reference's
+  // pairs — and the resulting track draws an empty synteny band for every pair
+  // the aligner never emitted, which is indistinguishable from a locus with no
+  // homology. Collected on the pass already being made so the command can say so
+  // at the moment the file is built, which is the only moment anyone is looking.
+  pairs: Set<string>
   rows: number
   skipped: number
 }
 
-function addPanSNSample(stats: PifStats, refName: string) {
-  if (refName.includes('#')) {
-    stats.samples.add(refName.slice(0, refName.indexOf('#')))
+function panSNSample(refName: string) {
+  const i = refName.indexOf('#')
+  return i === -1 ? undefined : refName.slice(0, i)
+}
+
+function addPanSNPair(stats: PifStats, c1: string, c2: string) {
+  const a = panSNSample(c1)
+  const b = panSNSample(c2)
+  if (a !== undefined) {
+    stats.samples.add(a)
   }
+  if (b !== undefined) {
+    stats.samples.add(b)
+  }
+  if (a !== undefined && b !== undefined && a !== b) {
+    stats.pairs.add(a < b ? `${a}\u0000${b}` : `${b}\u0000${a}`)
+  }
+}
+
+/**
+ * The sample pairs a complete all-vs-all would state but this file does not.
+ * Empty for a pairwise PAF (no PanSN names) and for a genuinely complete file.
+ */
+export function missingPairs({ samples, pairs }: PifStats) {
+  const sorted = [...samples].sort()
+  const out: [string, string][] = []
+  for (let i = 0; i < sorted.length; i++) {
+    for (let j = i + 1; j < sorted.length; j++) {
+      const a = sorted[i]!
+      const b = sorted[j]!
+      if (!pairs.has(`${a}\u0000${b}`)) {
+        out.push([a, b])
+      }
+    }
+  }
+  return out
 }
 
 // One piece of a row's coarse tier: its bounds plus the num_matches/block_len it
@@ -174,8 +214,7 @@ function processLine(
   stats.rows++
   // rest[0]=num_matches, rest[1]=block_len, rest[2]=mapq, rest[3+]=optional tags
   const [c1, l1, s1, e1, strand, c2, l2, s2, e2, ...rest] = parts
-  addPanSNSample(stats, c1!)
-  addPanSNSample(stats, c2!)
+  addPanSNPair(stats, c1!, c2!)
 
   const { tags, cigarIdx } = foldCsIntoCg(rest)
   const cigar = cigarIdx === -1 ? undefined : tags[cigarIdx]!.slice(5)
@@ -305,7 +344,12 @@ export async function createPIF(
   stream: Writable,
   coarseSplitGap?: number,
 ): Promise<PifStats> {
-  const stats: PifStats = { samples: new Set(), rows: 0, skipped: 0 }
+  const stats: PifStats = {
+    samples: new Set(),
+    pairs: new Set(),
+    rows: 0,
+    skipped: 0,
+  }
   const transform = makePifTransform(coarseSplitGap, stats)
   if (filename) {
     const source = createReadStream(filename)
