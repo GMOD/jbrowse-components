@@ -43,10 +43,20 @@ esac
 # figures are about, which is what the 1kb windowed store is for. Syncing one
 # over the other would also strand chunks, since only the windowed store has a
 # bin1000 level and the bucket has no versioning.
+#
+# Only whole-genome rounds. The windowed store is 1.4 MB, so halving it buys
+# nothing, and leaving its values alone keeps its bin1000/bin10000 chunks
+# byte-identical to what is already published: a republish then only *adds* the
+# new summary arrays instead of overwriting position-named chunks in a bucket
+# with no versioning, and the command in the tutorial still reproduces the
+# bytes behind its figures.
 if [ "$WHOLE_GENOME" = 1 ]; then
   REGIONS=()
   LEVELS=10000,30000,100000,300000,1000000
   STORE_NAME=qm2_cn_wg_10kb.zarr
+  # 87% of the panel is exactly 2, and the digits past this are counting noise
+  # under a heatmap pinned to 0-4. Roughly halves the store.
+  DECIMALS=(--decimals 2)
 else
   # The windows the figures visit: CCL3L1/CCL4L1 and UGT2B17 for the CNV
   # tutorial, and RHD for the SV-multisamples one, where the panel's copy
@@ -58,6 +68,7 @@ else
   )
   LEVELS=1000,10000
   STORE_NAME=qm2_cn_1kb.zarr
+  DECIMALS=()
 fi
 
 HERE=$(cd "$(dirname "$0")" && pwd)
@@ -98,19 +109,12 @@ curl -sfL "$TRACKDB" |
     >"$SAMPLES"
 echo "$(wc -l <"$SAMPLES") samples -> $SAMPLES"
 
-# QuicK-mer2 reports copy number to more digits than it can distinguish: the
-# panel is 87% exactly 2, and the rest is an estimate whose last few decimals
-# are counting noise, not copies. Storing two of them costs nothing anyone can
-# see on a heatmap pinned to 0-4, and it roughly halves the store, because gzip
-# on this layout is matching repeated values rather than modelling a
-# distribution. `decimals` is recorded in the store metadata so the precision
-# stays an answerable question.
 node "$HERE/build_signal_zarr.ts" \
   --samples "$SAMPLES" \
   --out "$OUT" \
   "${REGIONS[@]}" \
   --levels "$LEVELS" \
-  --decimals 2 \
+  "${DECIMALS[@]}" \
   --concurrency 32
 
 du -sh "$OUT"
