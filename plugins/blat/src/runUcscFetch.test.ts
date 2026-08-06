@@ -5,12 +5,28 @@
  * makes that safe is the "cannot serve" test: retrying a query UCSC would also
  * refuse just spends the CAPTCHA-solving user's patience twice.
  */
-import { BlatChallengeError } from './blatQuery.ts'
+import {
+  BlatChallengeError,
+  DEFAULT_BLAT_URL,
+  UCSC_BLAT_URL,
+} from './blatQuery.ts'
+import { DEFAULT_ISPCR_URL, UCSC_ISPCR_URL } from './ispcrQuery.ts'
 import { runUcscFetch } from './useUcscQuery.ts'
 
 const PROXY = 'https://api.jbrowse.org/ucsc/v1/blat'
 const DIRECT = 'https://genome.ucsc.edu/cgi-bin/hgBlat'
 const BODY = 'userSeq=ACGT&db=hg38'
+
+// The whole policy rests on the default being a different host from the direct
+// one: the dialog arms the fallback, and moves the server field on an apiKey, by
+// comparing the two. A default that resolved to UCSC itself collapsed both — the
+// fallback re-sent the identical request and the apiKey move was a no-op — and
+// it did so in silence, since every URL involved was still a working one.
+test('the default server is the shared proxy, not the direct UCSC CGI', () => {
+  expect(DEFAULT_BLAT_URL).toBe(PROXY)
+  expect(DEFAULT_BLAT_URL).not.toBe(UCSC_BLAT_URL)
+  expect(DEFAULT_ISPCR_URL).not.toBe(UCSC_ISPCR_URL)
+})
 
 const identity = (text: string) => text
 

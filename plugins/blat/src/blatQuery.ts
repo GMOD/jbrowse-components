@@ -1,5 +1,3 @@
-import { isElectron } from '@jbrowse/core/util'
-
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 // UCSC hgBlat with output=json returns a fixed set of PSL columns plus the
@@ -135,6 +133,14 @@ function pslRow(row: (string | number)[], col: Record<string, number>): PslRow {
 // Sorted by score descending, matching the order hgBlat lists its hit table in,
 // so consumers can treat the first row as the best placement of the query.
 export function parsePslRows(data: BlatJsonResponse): PslRow[] {
+  // JSON that is not a PSL table at all — a proxy or mirror relaying its own
+  // envelope, a kent JSON error — otherwise reached `.map` on undefined and
+  // surfaced a TypeError where the server's own words belong
+  if (!Array.isArray(data.fields) || !Array.isArray(data.blat)) {
+    throw new Error(
+      'BLAT server returned JSON without the expected fields/blat columns',
+    )
+  }
   const col = Object.fromEntries(data.fields.map((f, i) => [f, i]))
   return data.blat
     .map(row => pslRow(row, col))
@@ -192,12 +198,18 @@ export const MAXIMUM_BLAT_QUERIES = 25
 // verbatim: hgBlat parses FASTA and labels each hit with its record's name, so
 // stripping headers here would fuse a multi-record paste into one chimeric
 // query and throw away the names that tell the hits apart.
+//
+// Letters only, which is what kent's FASTA reader counts and therefore what the
+// limits are stated in — a sequence pasted with line numbers or alignment-gap
+// dashes is fewer bases to BLAT than it has characters. Counting whitespace out
+// but digits in measured a 25kb-limited query against a number the server does
+// not use. Same rule as parseQuerySequences, which has to agree with `qSize`.
 export function stripFasta(seq: string) {
   return seq
     .split('\n')
     .filter(line => !line.startsWith('>'))
     .join('')
-    .replaceAll(/\s/g, '')
+    .replaceAll(/[^A-Za-z]/g, '')
 }
 
 // hgBlat places each FASTA record separately, so records are queries
@@ -311,18 +323,20 @@ export function parseBlatResponse(text: string): PslRow[] {
 export const UCSC_BLAT_URL = 'https://genome.ucsc.edu/cgi-bin/hgBlat'
 
 /**
- * Where the dialog points when the user has not typed a server of their own.
+ * Where the dialog points when the user has not typed a server of their own:
+ * the jbrowse.org proxy, which injects a UCSC apiKey server-side and meters the
+ * budget everyone using it shares (`products/aws/blat-proxy`). That is what makes
+ * a first BLAT work with no key and no CAPTCHA.
  *
- * Desktop goes straight to UCSC: `blatFetch` runs in the main process, so there
- * is no CORS to route around, and a user with their own apiKey should spend it
- * rather than the shared one. A browser cannot call genome.ucsc.edu at all
- * (no CORS headers) and must not carry a key in a public bundle, so it gets the
- * jbrowse.org proxy, which injects the key server-side and meters the budget
- * that every browser user shares (`products/aws/blat-proxy`).
+ * A browser has nowhere else to go — it cannot call genome.ucsc.edu at all (no
+ * CORS headers) and must not carry a key in a public bundle. Desktop can reach
+ * UCSC itself, since `blatFetch` runs in the main process, so it keeps
+ * {@link UCSC_BLAT_URL} in reserve two ways: as the fallback when the proxy is
+ * out of budget or down, and as where the server field moves outright once the
+ * user supplies an apiKey of their own. The proxy overwrites a client key with
+ * its own, so a key only ever spends against UCSC direct.
  *
- * Either default is only a default — the dialog's server field overrides it,
+ * Either way this is only a default — the dialog's server field overrides it,
  * which is how someone runs their own proxy or their own gfServer.
  */
-export const DEFAULT_BLAT_URL = isElectron
-  ? UCSC_BLAT_URL
-  : 'https://api.jbrowse.org/ucsc/v1/blat'
+export const DEFAULT_BLAT_URL = 'https://api.jbrowse.org/ucsc/v1/blat'

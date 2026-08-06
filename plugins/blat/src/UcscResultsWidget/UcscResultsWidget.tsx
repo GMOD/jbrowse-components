@@ -7,12 +7,12 @@ import { hitSummary } from './hitSummary.ts'
 
 import type { UcscResultsWidgetModel } from './stateModel.ts'
 
-// The hit list for a BLAT / in-silico PCR query. The query itself navigates to
-// the best hit; this keeps the rest of them readable after the dialog closes,
-// which the snackbar naming only the best one could not. Each location is a link
-// that navigates the open view, so a second-best placement is one click away
-// rather than a re-run. A list rather than a table because the drawer is narrow
-// and a hit's numbers read fine on one line under its coordinates.
+// The hit list for a BLAT / in-silico PCR query. The query deliberately does not
+// navigate (see addResultTrack), so this is where the results become reachable:
+// every hit is a link that takes the open view there, best-first, and going to
+// one is a click rather than a re-run. A list rather than a table because the
+// drawer is narrow and a hit's numbers read fine on one line under its
+// coordinates.
 const UcscResultsWidget = observer(function UcscResultsWidget({
   model,
 }: {

@@ -20,7 +20,7 @@
 import { revcom } from '@jbrowse/core/util'
 
 import {
-  DEFAULT_ISPCR_URL,
+  UCSC_ISPCR_URL,
   buildIsPcrBody,
   parseIsPcrProducts,
   parseIsPcrResponse,
@@ -46,7 +46,10 @@ const PRIMER_LENGTH = 22
 const RATE_LIMIT_MS = 16000
 
 async function runIsPcrRaw(forwardPrimer: string, reversePrimer: string) {
-  const res = await fetch(DEFAULT_ISPCR_URL, {
+  // UCSC itself, not DEFAULT_ISPCR_URL: the default is the shared proxy, which
+  // overwrites the client's apiKey with its own — liveProxy.test.ts is what
+  // covers that path
+  const res = await fetch(UCSC_ISPCR_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: buildIsPcrBody({ db: DB, forwardPrimer, reversePrimer, apiKey }),

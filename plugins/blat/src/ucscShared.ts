@@ -49,8 +49,6 @@ export function resolveUcscDb(session: AbstractSessionModel, name: string) {
   return stamped ? stamped : assemblyToUcscDb(name)
 }
 
-// Builds a locstring from a feature. Feature coordinates are interbase, so the
-// start needs +1 to become the 1-based coordinate a locstring names.
 /**
  * Whether this host can draw a hit as an alignment rather than as plain blocks.
  *
@@ -70,6 +68,8 @@ export function canRenderAlignments(session: AbstractSessionModel) {
   )
 }
 
+// Builds a locstring from a feature. Feature coordinates are interbase, so the
+// start needs +1 to become the 1-based coordinate a locstring names.
 export function featureLocString(feature: SimpleFeatureSerialized) {
   return `${feature.refName}:${feature.start + 1}-${feature.end}`
 }

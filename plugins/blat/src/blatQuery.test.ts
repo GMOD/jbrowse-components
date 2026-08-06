@@ -143,6 +143,14 @@ test('reports query coverage alongside identity', () => {
   expect(byRefName('chr6').queryName).toBe('YourSeq')
 })
 
+// a mirror or proxy relaying its own JSON envelope reached `.map` on undefined,
+// so the user was shown a TypeError where the server's own words belong
+test('rejects JSON that is not a PSL table with a readable message', () => {
+  expect(() => parseBlatResponse('{"error":"no such database"}')).toThrow(
+    /without the expected fields\/blat columns/,
+  )
+})
+
 test('surfaces a kent errAbort message from an HTML error page', () => {
   expect(() =>
     parseBlatResponse(
@@ -170,6 +178,18 @@ test('counts a bare sequence as one query', () => {
 
 test('measures residues without the headers', () => {
   expect(stripFasta(multiFasta)).toHaveLength(40)
+})
+
+// the length limits are stated in the bases hgBlat counts, and kent's FASTA
+// reader keeps letters only — measuring the line numbers of a pasted GenBank
+// block, or alignment-gap dashes, holds the query to a length the server never
+// applies. parseQuerySequences already agreed with the server; this is the same
+// rule on the validating side.
+test('counts only letters as residues', () => {
+  expect(stripFasta('   1 acgtacgtac  gtacgtacgt\n  21 ACGT\n')).toBe(
+    'acgtacgtacgtacgtacgtACGT',
+  )
+  expect(stripFasta('>gapped\nACGT--ACGT\n')).toBe('ACGTACGT')
 })
 
 test('names the track after the first FASTA record', () => {

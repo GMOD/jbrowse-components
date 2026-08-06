@@ -133,7 +133,7 @@ const BlatDialog = observer(function BlatDialog({
           error={!!seqError}
           helperText={
             seqError ||
-            'DNA, or FASTA with up to 25 records, 25 kb total. Hits are added as a track and the view jumps to the best one.'
+            'DNA, or FASTA with up to 25 records, 25 kb total. Hits are added as a track, and listed best-first in a panel where each one is a link.'
           }
         />
         <UcscQueryFields

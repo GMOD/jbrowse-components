@@ -130,6 +130,18 @@ test('a query gap is an I and a target gap a D', () => {
   expect(pslToCigar(rows([reverse])[0]!)).toBe('31M1I6D101M131D13M1S')
 })
 
+// a row with no blocks describes no alignment; the loop used to build the empty
+// string for it, which is not a CIGAR column any reader accepts
+test('a blockless row states no CIGAR rather than an empty one', () => {
+  expect(
+    pslToCigar(
+      rows([
+        withFields(forward, { blockSizes: '', qStarts: '', tStarts: '' }),
+      ])[0]!,
+    ),
+  ).toBe('*')
+})
+
 // the two lengths a CIGAR states have to match the spans PSL states, or the
 // alignment would draw at the wrong width or run off its read
 test.each([

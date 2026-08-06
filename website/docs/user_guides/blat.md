@@ -65,10 +65,17 @@ exact pattern without involving UCSC at all.
 
 ### CAPTCHA and apiKeys
 
-The UCSC BLAT server is length-limited, and public requests are gated behind a
-CAPTCHA. You can either solve the CAPTCHA in the dialog, or paste a UCSC apiKey
-(generate one from a UCSC Genome Browser account under Hub Development → API
-key) to skip it. A proxy that injects a key server-side also avoids the CAPTCHA.
+The UCSC BLAT server is length-limited, and public requests to it are gated
+behind a CAPTCHA. Both dialogs default to a jbrowse.org proxy that supplies an
+apiKey server-side, so an ordinary search meets neither the CAPTCHA nor a key —
+at the cost of a request budget every user of that proxy shares.
+
+You meet the CAPTCHA by pointing the server field at UCSC yourself, or on
+desktop when the shared budget is spent and the search falls back to UCSC. Solve
+it in the window that opens, or paste a UCSC apiKey (generate one from a UCSC
+Genome Browser account under Hub Development → API key) to skip it. On desktop,
+entering a key moves the server field to UCSC, because the proxy replaces a key
+you send with its own — so a key only spends against UCSC directly.
 
 <Figure src="/img/desktop-blat-search.png" caption="The BLAT search dialog on hg19. Paste a DNA sequence or FASTA and pick the assembly; 'Show advanced settings' reveals the UCSC database, server URL, and apiKey field."/>
 

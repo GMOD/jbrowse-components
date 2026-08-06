@@ -1,5 +1,3 @@
-import { isElectron } from '@jbrowse/core/util'
-
 import { challengeError, isChallengePage } from './blatQuery.ts'
 
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
@@ -15,11 +13,10 @@ const AMPLICON_HEADER =
 
 export const UCSC_ISPCR_URL = 'https://genome.ucsc.edu/cgi-bin/hgPcr'
 
-// Desktop reaches UCSC directly, the browser goes through the jbrowse.org
-// proxy. Same split, and same reasons, as DEFAULT_BLAT_URL.
-export const DEFAULT_ISPCR_URL = isElectron
-  ? UCSC_ISPCR_URL
-  : 'https://api.jbrowse.org/ucsc/v1/ispcr'
+// The jbrowse.org proxy, for the same reasons as DEFAULT_BLAT_URL: it holds the
+// apiKey, so a first query costs neither a key nor a CAPTCHA, and desktop keeps
+// UCSC_ISPCR_URL in reserve for when the proxy cannot serve.
+export const DEFAULT_ISPCR_URL = 'https://api.jbrowse.org/ucsc/v1/ispcr'
 
 // hgPcr's default cap; also the server-side max the CGI accepts without error
 export const DEFAULT_MAX_PRODUCT_SIZE = 4000
@@ -50,10 +47,11 @@ export interface PcrProduct {
  * on a plus product the forward primer sits at the low end, on a minus product
  * it sits at the high end.
  *
- * Each footprint also carries the reference's own plus-strand bases there, which
- * is what lets a mismatch between primer and template be drawn: a primer at the
- * low end matches the plus strand as submitted, one at the high end is the
- * reverse complement of it.
+ * Each footprint carries the primer's own bases, which is what lets a mismatch
+ * against the template be drawn rather than a perfect anneal assumed. They are
+ * as submitted, i.e. 5'->3' on the strand that primer anneals to, so a footprint
+ * at the low end reads on the reference's plus strand and one at the high end
+ * has to be reverse-complemented to sit on it ({@link ispcrToSam} does that).
  */
 export function productFootprints(product: PcrProduct) {
   const { start, end, strand, forwardPrimer, reversePrimer } = product

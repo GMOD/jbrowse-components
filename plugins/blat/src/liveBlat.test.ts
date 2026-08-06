@@ -13,11 +13,7 @@
  * UCSC rate-limits a key to one hgBlat hit per 15s, so all four queries go in
  * one multi-record FASTA — the same path a user pasting a multi-FASTA takes.
  */
-import {
-  DEFAULT_BLAT_URL,
-  buildBlatBody,
-  parseBlatResponse,
-} from './blatQuery.ts'
+import { UCSC_BLAT_URL, buildBlatBody, parseBlatResponse } from './blatQuery.ts'
 import { parseQuerySequences, pslToSam } from './pslToSam.ts'
 
 const apiKey = process.env.UCSC_API_KEY
@@ -96,7 +92,10 @@ describe.skip('live UCSC BLAT round-trip', () => {
       '',
     ].join('\n')
 
-    const res = await fetch(DEFAULT_BLAT_URL, {
+    // UCSC itself, not DEFAULT_BLAT_URL: the default is the shared proxy, which
+    // overwrites the client's apiKey with its own, so pointing there would
+    // measure the proxy rather than the key this test exists to exercise
+    const res = await fetch(UCSC_BLAT_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: buildBlatBody({ db: DB, seq: query, apiKey }),

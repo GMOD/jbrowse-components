@@ -29,6 +29,12 @@ export function pslToCigar({
   tStarts: number[]
   qSize: number
 }) {
+  // a row stating no blocks describes no alignment; '*' is SAM's word for that,
+  // where the empty string the loop would otherwise build is an unparseable
+  // CIGAR column
+  if (!blockSizes.length) {
+    return '*'
+  }
   const ops: string[] = []
   const leadingClip = qStarts[0] ?? 0
   if (leadingClip > 0) {

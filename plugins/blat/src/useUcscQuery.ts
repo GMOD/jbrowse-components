@@ -147,7 +147,13 @@ export function useUcscQuery({
   const [db, setDb] = useState(() =>
     resolveUcscDb(session, assemblyNames[0] ?? ''),
   )
-  const [urlBase, setUrlBase] = useState(defaultUrl)
+  // mirrors changeApiKey for a key saved by an earlier run: the shared proxy
+  // overwrites a client key with its own, so a stored key is only worth
+  // anything against UCSC, and starting there is what spends the user's own key
+  // rather than the shared budget
+  const [urlBase, setUrlBase] = useState(() =>
+    isElectron && localStorageGetItem(API_KEY_STORAGE) ? directUrl : defaultUrl,
+  )
   const [apiKey, setApiKey] = useState(
     () => localStorageGetItem(API_KEY_STORAGE) ?? '',
   )
@@ -176,9 +182,14 @@ export function useUcscQuery({
     setDb(resolveUcscDb(session, name))
   }
 
-  // `fetchResult` returns the hit list (which drives navigation and the results
-  // widget) and, optionally, how to display it — a BLAT query returns a SAM
-  // alignments track rather than the default feature track.
+  // only the untouched shared-proxy default falls back: an explicitly chosen
+  // server, and the browser (which cannot reach UCSC), get one attempt
+  const fallbackUrl =
+    isElectron && urlBase === defaultUrl ? directUrl : undefined
+
+  // `fetchResult` returns the hit list (which the results widget lists) and,
+  // optionally, how to display it — a BLAT query returns a SAM alignments track
+  // rather than the default feature track.
   async function runQuery({
     fetchResult,
     trackIdPrefix,
@@ -227,19 +238,19 @@ export function useUcscQuery({
     }
   }
 
+  // The window has to open on whichever host issued the challenge, because the
+  // cf_clearance cookie a solve leaves behind is that host's. When the fallback
+  // is armed the proxy is in front, and it answers a challenge of its own with a
+  // 502 the fetch retries past — so a challenge that reaches the user at all was
+  // served by the fallback, not by `urlBase`.
   async function solveChallenge(retry: () => void) {
-    const solved = await openBlatChallenge(urlBase)
+    const solved = await openBlatChallenge(fallbackUrl ?? urlBase)
     if (solved) {
       retry()
     } else {
       session.notify('CAPTCHA window closed before it was solved', 'warning')
     }
   }
-
-  // only the untouched shared-proxy default falls back: an explicitly chosen
-  // server, and the browser (which cannot reach UCSC), get one attempt
-  const fallbackUrl =
-    isElectron && urlBase === defaultUrl ? directUrl : undefined
 
   return {
     assembly,
