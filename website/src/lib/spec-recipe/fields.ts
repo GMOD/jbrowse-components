@@ -1206,16 +1206,26 @@ export const trackFields: Record<string, FieldRecipe> = {
           note: 'Orders the rows by how alike they are across the region in view, and draws the tree it built beside them. It clusters over what is displayed, so the same menu item somewhere else gives a different order.',
         }
       : undefined,
-  sortRowsBy: value => {
+  // Two displays carry this property and each names its own menu item and its
+  // own value, so the note is written per display rather than for whichever one
+  // came first — the reason FieldContext carries `displayType` at all.
+  sortRowsBy: (value, { displayType }) => {
     const at = asRecord(value)
     const refName = asString(at?.refName)
     const pos = at?.pos
-    return refName && typeof pos === 'number'
+    if (!refName || typeof pos !== 'number') {
+      return undefined
+    }
+    const where = `${refName}:${pos.toLocaleString('en-US')}`
+    return displayType === 'MultiLinearWiggleDisplay'
       ? {
-          path: 'Right-click the track at the column to sort on → Sort rows by color here',
-          note: `Reorders the rows by the value each one carries at a single position (${refName}:${pos.toLocaleString('en-US')} in this figure), which is how a painting is lined up under a peak. "Reset row order" in the same menu undoes it.`,
+          path: 'Right-click the track at the column to sort on → Sort rows by score here',
+          note: `Ranks the subtracks by the score each one carries at a single base (${where} in this figure), highest at the top, which is how a cohort is read at a candidate locus. "Reset row order" in the same menu undoes it.`,
         }
-      : undefined
+      : {
+          path: 'Right-click the track at the column to sort on → Sort rows by color here',
+          note: `Reorders the rows by the value each one carries at a single position (${where} in this figure), which is how a painting is lined up under a peak. "Reset row order" in the same menu undoes it.`,
+        }
   },
 }
 

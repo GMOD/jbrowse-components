@@ -4315,7 +4315,8 @@ export const configManifest: ConfigManifest = {
         "subtreeFilter",
         "configuration",
         "runClustering",
-        "clusterRegion"
+        "clusterRegion",
+        "sortRowsBy"
       ]
     },
     "LinearGCContentDisplay": {

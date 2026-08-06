@@ -140,12 +140,16 @@ export function findMultiWiggleHit(
       )
 }
 
-// Where a right-click landed: which loaded region, and the base under the
-// cursor. Deliberately not the hovered feature — in row mode that names the one
-// source the cursor is over, and the row-order sort ranks every source at the
-// same column, which it reads back out of that region's data.
+// Where a right-click landed, as a genomic coordinate rather than as which
+// loaded region it fell in: that is what the sort takes, so the same position
+// works from the menu and from a session's `sortRowsBy`, and it stays meaningful
+// after the fetch that produced the region is gone.
+//
+// Deliberately not the hovered feature — in row mode that names the one source
+// the cursor is over, and the row-order sort ranks every source at the same
+// column, which it reads back out of the region's data.
 export interface MultiWiggleContextHit {
-  displayedRegionIndex: number
+  refName: string
   bp: number
 }
 
@@ -166,7 +170,5 @@ export function findMultiWiggleContextHit(
     return undefined
   }
   const hit = hitTestMouse(regions, model.rpcDataMap, offsetX)
-  return hit
-    ? { displayedRegionIndex: hit.region.displayedRegionIndex, bp: hit.bp }
-    : undefined
+  return hit ? { refName: hit.region.refName, bp: hit.bp } : undefined
 }

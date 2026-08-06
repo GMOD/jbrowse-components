@@ -11,18 +11,41 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 
 ## Example usage
 
+The two row-ordering triggers are display _properties_, not config slots, so
+they go on the display node in a session — `defaultSession` here, and the same
+shape a `session=spec-` link carries. Written on the track config's own
+`displays` entry they would be dropped as unknown slots.
+
 `runClustering` is a transient declarative launch spec, the same idea as
-`LinearGenomeView`'s `init`: set it to run the real "Cluster columns" RPC once
-automatically (no dialog) as soon as subtrack data is available, and it clears
-itself afterwards so a saved session never re-triggers it.
+`LinearGenomeView`'s `init`: it runs the real "Cluster columns" RPC once
+automatically (no dialog) as soon as subtrack data is available, then clears
+itself so a saved session never re-triggers it. `sortRowsBy` is the other one,
+and the declarative form of the right-click "Sort rows by score here" — where
+clustering orders rows by the whole region in view, this ranks them by the score
+each carries at one base, so a cohort can open already ranked at a candidate
+locus with the surrounding context still on screen. Use one or the other;
+whichever applies last owns the row order.
 
 ```js
-displays: [
-  {
-    type: 'MultiLinearWiggleDisplay',
-    runClustering: true,
-  },
-]
+defaultSession: {
+  name: 'Copy number at CCL3L1',
+  views: [
+    {
+      type: 'LinearGenomeView',
+      init: {
+        assembly: 'hg38',
+        loc: 'chr17:36,080,000-36,270,000',
+        tracks: [
+          {
+            trackId: 'pur_copynumber_1000g',
+            type: 'MultiLinearWiggleDisplay',
+            sortRowsBy: { refName: 'chr17', pos: 36180000 },
+          },
+        ],
+      },
+    },
+  ],
+}
 ```
 
 Wiggle display overlaying/stacking multiple quantitative subtracks in one area,
@@ -43,6 +66,7 @@ the whole surface.
 | <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(configSchema)</code> |  | MultiLinearWiggleDisplay |
 | <span id="property-runclustering">**runClustering**</span><br><code>runClustering: types.maybe(types.boolean)</code> |  | MultiLinearWiggleDisplay |
 | <span id="property-clusterregion">**clusterRegion**</span><br><code>clusterRegion: types.maybe(types.string)</code> |  | MultiLinearWiggleDisplay |
+| <span id="property-sortrowsby">**sortRowsBy**</span><br><code>sortRowsBy: types.maybe(types.frozen&lt;RowSortSpec&gt;())</code> | Transient declarative launch spec, the same idea as `runClustering`: set `{refName, pos}` to rank the rows once by the score each subtrack carries at that base — the session-expressible form of the right-click "Sort rows by score here". `setupRowSortAutorun` applies it once the region containing it has loaded and then clears it, so the row order persists but a saved session never re-sorts.<br><br>This is what lets a figure show a cohort ranked at a candidate CNV: clustering orders rows by the whole region in view, `layout` states an order outright, and only this one says "rank them here". | MultiLinearWiggleDisplay |
 | <span id="property-id">**id**</span><br><code>id: ElementId</code> |  | [BaseDisplay](../basedisplay#property-id) |
 | <span id="property-rpcdrivername">**rpcDriverName**</span><br><code>rpcDriverName: types.maybe(types.string)</code> |  | [BaseDisplay](../basedisplay#property-rpcdrivername) |
 | <span id="property-resolution">**resolution**</span><br><code>resolution: types.stripDefault(types.number, 1)</code> |  | [WiggleCommonMixin](../wigglecommonmixin#property-resolution) |
@@ -215,7 +239,8 @@ the whole surface.
 | <span id="action-setshowbranchlength">**setShowBranchLength**</span><br><code>(arg: boolean) =&gt; void</code> |  | MultiLinearWiggleDisplay |
 | <span id="action-setshowrowseparators">**setShowRowSeparators**</span><br><code>(arg: boolean) =&gt; void</code> |  | MultiLinearWiggleDisplay |
 | <span id="action-setshowlegend">**setShowLegend**</span><br><code>(arg: boolean) =&gt; void</code> |  | MultiLinearWiggleDisplay |
-| <span id="action-sortrowsbyscoreat">**sortRowsByScoreAt**</span><br><code>({ displayedRegionIndex, bp }: MultiWiggleContextHit) =&gt; void</code> | Reorder the rows by each source's score at the clicked column. Reads the region data already in hand — no refetch, no RPC — and writes the order through `layout`, the same channel clustering and the arrangement dialog write, so "Reset row order" undoes all three. | MultiLinearWiggleDisplay |
+| <span id="action-sortrowsbyscoreat">**sortRowsByScoreAt**</span><br><code>(refName: string, pos: number) =&gt; void</code> | Rank the rows by each source's score at one genomic base. Reads the region data already in hand — no refetch, no RPC — and writes the order through `layout`, the same channel clustering and the arrangement dialog write, so "Reset row order" undoes all three.<br><br>Named by coordinate rather than by loaded-region index because both entry points are: the right-click hit resolves to one, and a session's `sortRowsBy` carries one across a reload. The region is looked up here, and a position no loaded region covers is left alone rather than sorted against nothing (which would rank every row equally and read as the sort having silently done nothing). | MultiLinearWiggleDisplay |
+| <span id="action-setsortrowsby">**setSortRowsBy**</span><br><code>(arg?: RowSortSpec &#124; undefined) =&gt; void</code> | Trigger (or clear) a one-shot declarative row sort; consumed and reset by `setupRowSortAutorun`. The right-click menu calls `sortRowsByScoreAt` directly (instant, the data is already loaded); this prop is the session-level entry point. | MultiLinearWiggleDisplay |
 | <span id="action-opencontextmenu">**openContextMenu**</span><br><code>(info: ContextMenuAnchor &amp; MultiWiggleContextHit) =&gt; void</code> |  | MultiLinearWiggleDisplay |
 | <span id="action-closecontextmenu">**closeContextMenu**</span><br><code>() =&gt; void</code> |  | MultiLinearWiggleDisplay |
 | <span id="action-setrunclustering">**setRunClustering**</span><br><code>(arg?: boolean &#124; undefined) =&gt; void</code> |  | MultiLinearWiggleDisplay |

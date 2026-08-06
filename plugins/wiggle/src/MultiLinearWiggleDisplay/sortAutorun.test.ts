@@ -1,0 +1,70 @@
+import { waitFor } from '@testing-library/react'
+
+import { createTestEnvironment, makeSource } from './testEnv.ts'
+
+beforeEach(() => {
+  jest.useFakeTimers()
+})
+
+afterEach(() => {
+  jest.useRealTimers()
+})
+
+// One source covering the whole test region at a flat score, so the ranking at
+// any base in it is unambiguous.
+function scored(name: string, score: number) {
+  return {
+    ...makeSource(name),
+    featurePositions: new Uint32Array([0, 10_000]),
+    featureScores: new Float32Array([score]),
+    numFeatures: 1,
+  }
+}
+
+function environmentWith(scores: Record<string, number>) {
+  const env = createTestEnvironment()
+  env.mockRpcCall.mockImplementation(() =>
+    Promise.resolve([
+      { sources: Object.entries(scores).map(([name, s]) => scored(name, s)) },
+    ]),
+  )
+  return env
+}
+
+describe('MultiLinearWiggleDisplay declarative sortRowsBy', () => {
+  it('ranks the rows at the named position once its region loads, then clears the flag', async () => {
+    const { createDisplay } = environmentWith({ a: 1, b: 5, c: 3 })
+    const { display } = createDisplay({
+      // inside the first loaded window — the test view is 800px wide, so the
+      // fetch covers roughly ctgA:0-1200 rather than the whole contig
+      sortRowsBy: { refName: 'ctgA', pos: 600 },
+    })
+
+    jest.advanceTimersByTime(700)
+    await waitFor(() => {
+      expect(display.sources.map(s => s.name)).toEqual(['b', 'c', 'a'])
+    })
+
+    // one-shot: the trigger clears itself, so a saved session keeps the row
+    // order it produced without re-sorting on every load
+    expect(display.sortRowsBy).toBeUndefined()
+    expect(display.layout.map(s => s.name)).toEqual(['b', 'c', 'a'])
+  })
+
+  it('holds the trigger rather than spending it on a region that never loads', async () => {
+    // sorting against no data ranks every row equally — it would clear the flag
+    // and leave a figure showing unsorted rows with nothing to say why
+    const { createDisplay } = environmentWith({ a: 1, b: 5 })
+    const { display } = createDisplay({
+      sortRowsBy: { refName: 'ctgB', pos: 600 },
+    })
+
+    jest.advanceTimersByTime(700)
+    await waitFor(() => {
+      expect(display.sourcesVolatile.length).toBe(2)
+    })
+
+    expect(display.layout).toEqual([])
+    expect(display.sortRowsBy).toEqual({ refName: 'ctgB', pos: 600 })
+  })
+})

@@ -14,11 +14,20 @@ function scored(name: string, score: number) {
 
 // Driven off a real display, like trackMenuItems.test.ts: the menu's gates read
 // getters (`isOverlay`, `numSources`, `layout`) a stub would have to restate.
+//
+// The region is registered alongside its data, as a real fetch does: the sort
+// names a coordinate, so it resolves which loaded region covers it.
 function makeDisplay(scores: Record<string, number>, renderingType?: string) {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
   display.setRpcData(0, {
     sources: Object.entries(scores).map(([name, s]) => scored(name, s)),
+  })
+  display.setLoadedRegion(0, {
+    refName: 'ctgA',
+    start: 0,
+    end: 10_000,
+    assemblyName: 'volvox',
   })
   if (renderingType) {
     display.setRenderingType(renderingType)
@@ -50,7 +59,7 @@ test('sorts the rows by their score at the clicked column', () => {
   display.openContextMenu({
     clientX: 0,
     clientY: 0,
-    displayedRegionIndex: 0,
+    refName: 'ctgA',
     bp: 50,
   })
 
@@ -66,7 +75,7 @@ test('acts on the column the menu was opened over, not the one it is closed from
   display.openContextMenu({
     clientX: 0,
     clientY: 0,
-    displayedRegionIndex: 0,
+    refName: 'ctgA',
     bp: 50,
   })
   const items = display.contextMenuItems()
@@ -86,7 +95,7 @@ test('keeps a per-source color across the reorder', () => {
   display.openContextMenu({
     clientX: 0,
     clientY: 0,
-    displayedRegionIndex: 0,
+    refName: 'ctgA',
     bp: 50,
   })
 
@@ -103,7 +112,7 @@ test('offers the reset only once an order has been written', () => {
   display.openContextMenu({
     clientX: 0,
     clientY: 0,
-    displayedRegionIndex: 0,
+    refName: 'ctgA',
     bp: 50,
   })
   expect(labels(display.contextMenuItems())).toEqual([
@@ -125,7 +134,7 @@ test('drops the sort in an overlay mode, which has no row axis to rank down', ()
   display.openContextMenu({
     clientX: 0,
     clientY: 0,
-    displayedRegionIndex: 0,
+    refName: 'ctgA',
     bp: 50,
   })
 
@@ -137,13 +146,23 @@ test('does nothing when the clicked region has since been discarded', () => {
   display.openContextMenu({
     clientX: 0,
     clientY: 0,
-    displayedRegionIndex: 0,
+    refName: 'ctgA',
     bp: 50,
   })
   const items = display.contextMenuItems()
   display.clearDisplaySpecificData()
 
   click(items, 'Sort rows by score here')
+
+  expect(display.layout).toEqual([])
+})
+
+test('leaves the rows alone at a position no loaded region covers', () => {
+  // ranking every row as "no score" would reorder nothing but still write a
+  // layout, so the reset item would appear for a sort that never happened
+  const display = makeDisplay({ a: 1, b: 5 })
+
+  display.sortRowsByScoreAt('ctgB', 50)
 
   expect(display.layout).toEqual([])
 })

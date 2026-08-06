@@ -21,6 +21,7 @@ import {
   clusteringMenuItem,
   computeClusterHierarchy,
   resetRowOrderMenuItems,
+  setupRowSortAutorun,
 } from '@jbrowse/tree-sidebar'
 import {
   computeYTicks,
@@ -61,6 +62,7 @@ import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
+import type { RowSortSpec } from '@jbrowse/tree-sidebar'
 import type { WiggleRenderingBackend } from '@jbrowse/wiggle-core'
 
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
@@ -75,17 +77,40 @@ const WiggleClusterDialog = lazy(
  * area, with optional clustering and a tree sidebar.
  *
  * #example
+ * The two row-ordering triggers are display *properties*, not config slots, so
+ * they go on the display node in a session — `defaultSession` here, and the
+ * same shape a `session=spec-` link carries. Written on the track config's own
+ * `displays` entry they would be dropped as unknown slots.
+ *
  * `runClustering` is a transient declarative launch spec, the same idea as
- * `LinearGenomeView`'s `init`: set it to run the real "Cluster columns" RPC
- * once automatically (no dialog) as soon as subtrack data is available, and
- * it clears itself afterwards so a saved session never re-triggers it.
+ * `LinearGenomeView`'s `init`: it runs the real "Cluster columns" RPC once
+ * automatically (no dialog) as soon as subtrack data is available, then clears
+ * itself so a saved session never re-triggers it. `sortRowsBy` is the other
+ * one, and the declarative form of the right-click "Sort rows by score here" —
+ * where clustering orders rows by the whole region in view, this ranks them by
+ * the score each carries at one base, so a cohort can open already ranked at a
+ * candidate locus with the surrounding context still on screen. Use one or the
+ * other; whichever applies last owns the row order.
  * ```js
- * displays: [
- *   {
- *     type: 'MultiLinearWiggleDisplay',
- *     runClustering: true,
- *   },
- * ]
+ * defaultSession: {
+ *   name: 'Copy number at CCL3L1',
+ *   views: [
+ *     {
+ *       type: 'LinearGenomeView',
+ *       init: {
+ *         assembly: 'hg38',
+ *         loc: 'chr17:36,080,000-36,270,000',
+ *         tracks: [
+ *           {
+ *             trackId: 'pur_copynumber_1000g',
+ *             type: 'MultiLinearWiggleDisplay',
+ *             sortRowsBy: { refName: 'chr17', pos: 36180000 },
+ *           },
+ *         ],
+ *       },
+ *     },
+ *   ],
+ * }
  * ```
  */
 export default function stateModelFactory(
@@ -116,6 +141,20 @@ export default function stateModelFactory(
         // comes from the named span rather than from the view's zoom, since the
         // columns are pixel bins (clusterScoreMatrixArgs).
         clusterRegion: types.maybe(types.string),
+        /**
+         * #property
+         * Transient declarative launch spec, the same idea as `runClustering`:
+         * set `{refName, pos}` to rank the rows once by the score each subtrack
+         * carries at that base — the session-expressible form of the right-click
+         * "Sort rows by score here". `setupRowSortAutorun` applies it once the
+         * region containing it has loaded and then clears it, so the row order
+         * persists but a saved session never re-sorts.
+         *
+         * This is what lets a figure show a cohort ranked at a candidate CNV:
+         * clustering orders rows by the whole region in view, `layout` states an
+         * order outright, and only this one says "rank them here".
+         */
+        sortRowsBy: types.maybe(types.frozen<RowSortSpec>()),
       }),
     )
     .volatile(() => ({
@@ -421,20 +460,47 @@ export default function stateModelFactory(
 
         /**
          * #action
-         * Reorder the rows by each source's score at the clicked column. Reads
-         * the region data already in hand — no refetch, no RPC — and writes the
+         * Rank the rows by each source's score at one genomic base. Reads the
+         * region data already in hand — no refetch, no RPC — and writes the
          * order through `layout`, the same channel clustering and the
          * arrangement dialog write, so "Reset row order" undoes all three.
+         *
+         * Named by coordinate rather than by loaded-region index because both
+         * entry points are: the right-click hit resolves to one, and a session's
+         * `sortRowsBy` carries one across a reload. The region is looked up
+         * here, and a position no loaded region covers is left alone rather than
+         * sorted against nothing (which would rank every row equally and read as
+         * the sort having silently done nothing).
          */
-        sortRowsByScoreAt({ displayedRegionIndex, bp }: MultiWiggleContextHit) {
-          const data = self.rpcDataMap.get(displayedRegionIndex)
-          if (data) {
-            // editableSources, not `sources`: layout-merged (so a user's colors
-            // survive the reorder) and unfiltered by the subtree, so a focused
-            // clade doesn't persist itself as the whole row order and drop
-            // everything it was hiding.
-            self.setLayout(sortSourcesByScoreAt(self.editableSources, data, bp))
+        sortRowsByScoreAt(refName: string, pos: number) {
+          for (const [index, data] of self.rpcDataMap.entries()) {
+            const region = self.loadedRegions.get(index)
+            if (
+              region?.refName === refName &&
+              region.start <= pos &&
+              pos < region.end
+            ) {
+              // editableSources, not `sources`: layout-merged (so a user's
+              // colors survive the reorder) and unfiltered by the subtree, so a
+              // focused clade doesn't persist itself as the whole row order and
+              // drop everything it was hiding.
+              self.setLayout(
+                sortSourcesByScoreAt(self.editableSources, data, pos),
+              )
+              return
+            }
           }
+        },
+
+        /**
+         * #action
+         * Trigger (or clear) a one-shot declarative row sort; consumed and reset
+         * by `setupRowSortAutorun`. The right-click menu calls
+         * `sortRowsByScoreAt` directly (instant, the data is already loaded);
+         * this prop is the session-level entry point.
+         */
+        setSortRowsBy(arg?: RowSortSpec) {
+          self.sortRowsBy = arg
         },
 
         /**
@@ -511,6 +577,16 @@ export default function stateModelFactory(
         // afterAttachAutoChain.test.ts). An explicit call would double-install
         // its fetch autoruns.
         async afterAttach() {
+          // mobx-only and already bundled (the barrel is a static import
+          // above), so it installs synchronously — unlike the two below, which
+          // genuinely code-split d3/clustering code
+          setupRowSortAutorun(self, {
+            name: 'MultiWiggleSortRows',
+            sortRows: (refName, pos) => {
+              self.sortRowsByScoreAt(refName, pos)
+            },
+          })
+
           try {
             const { setupTreeDrawingAutorun } =
               await import('@jbrowse/tree-sidebar')
@@ -639,7 +715,7 @@ export default function stateModelFactory(
                   label: 'Sort rows by score here',
                   icon: SwapVertIcon,
                   onClick: () => {
-                    self.sortRowsByScoreAt(info)
+                    self.sortRowsByScoreAt(info.refName, info.bp)
                   },
                 },
               ]

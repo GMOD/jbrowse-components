@@ -23,6 +23,7 @@ import {
   filterRowsBySubtree,
   reconcileLayout,
   resetRowOrderMenuItems,
+  setupRowSortAutorun,
   treeSidebarOffset,
   treeSidebarRightEdge,
 } from '@jbrowse/tree-sidebar'
@@ -33,7 +34,6 @@ import { observable } from 'mobx'
 import { fetchCanvasFeatureDetails } from '../LinearBasicDisplay/baseModelHelpers.ts'
 import CanvasFeatureGateMixin from '../shared/CanvasFeatureGateMixin.ts'
 import { fetchMultiRowFeatures } from './fetchMultiRowFeatures.ts'
-import { getMultiRowSortAutorun } from './getMultiRowSortAutorun.ts'
 import { blockScreenRect } from './rendering/blockScreenRect.ts'
 import {
   buildColorLegend,
@@ -135,9 +135,9 @@ export default function stateModelFactory(
          * Transient declarative launch spec (like `runClustering`): set
          * `{refName, pos}` to sort the rows once by the value each carries at
          * that genomic position — the in-app, session-expressible equivalent of a
-         * hand-computed `rowOrder`. getMultiRowSortAutorun applies it (once the
-         * region is loaded) and clears it, so the resulting `layout` persists but
-         * the trigger never re-fires.
+         * hand-computed `rowOrder`. tree-sidebar's `setupRowSortAutorun` applies
+         * it (once the region is loaded) and clears it, so the resulting
+         * `layout` persists but the trigger never re-fires.
          */
         // #region frozenProp
         sortRowsBy: types.maybe(
@@ -750,8 +750,8 @@ export default function stateModelFactory(
       },
       /**
        * #action
-       * Trigger (or clear) a one-shot declarative row sort; consumed and reset by
-       * getMultiRowSortAutorun. The right-click menu calls `sortRowsByValueAt`
+       * Trigger (or clear) a one-shot declarative row sort; consumed and reset
+       * by `setupRowSortAutorun`. The right-click menu calls `sortRowsByValueAt`
        * directly (instant, data already loaded); this prop is the session-level
        * entry point.
        */
@@ -944,7 +944,12 @@ export default function stateModelFactory(
 
           // Light autorun (mobx-only, already bundled): install synchronously.
           // The two below genuinely code-split heavy d3/clustering code.
-          getMultiRowSortAutorun(self)
+          setupRowSortAutorun(self, {
+            name: 'MultiRowFeatureSortRows',
+            sortRows: (refName, pos) => {
+              self.sortRowsByValueAt(refName, pos)
+            },
+          })
 
           try {
             const { setupTreeDrawingAutorun } =
