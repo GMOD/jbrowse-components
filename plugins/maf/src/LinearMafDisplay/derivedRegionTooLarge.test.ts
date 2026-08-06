@@ -59,6 +59,103 @@ describe('MAF summary swap vs the force-load floor', () => {
   })
 })
 
+// MAF opts out of the AUTO_FORCE_LOAD_BP floor (`gateBelowForceLoadFloor`),
+// because its bytes scale with span *times row count* — a 470-way pulls
+// megabytes out of a gene-sized window, which is the fetch the floor declines to
+// look at. These pin that the opt-out moved the gate and nothing else: the
+// summary swap still happens at 20kb, and the verdict is still the estimate
+// against the cap rather than a blanket "always gate when zoomed in".
+describe('MAF gating below the force-load floor', () => {
+  it('gates on an over-budget estimate even below the floor', () => {
+    const { display, view } = createMafTestEnvironment().createDisplay()
+
+    view.zoomTo(20) // visibleBp = 16_000 < AUTO_FORCE_LOAD_BP
+    expect(view.visibleBp).toBeLessThan(20_000)
+    expect(display.aboveForceLoadFloor).toBe(false)
+
+    // what the floor used to hide: a deep alignment is still megabytes here
+    display.setByteEstimate({
+      bytes: 3_000_000,
+      measuredSpanBp: view.visibleBp,
+    })
+    expect(display.gateActive).toBe(true)
+    expect(display.regionTooLarge).toBe(true)
+    expect(display.regionTooLargeReason).toBe('Requested too much data (3 Mb)')
+  })
+
+  it('still releases below the floor once the scaled estimate fits the cap', () => {
+    const { display, view } = createMafTestEnvironment().createDisplay()
+
+    view.zoomTo(20)
+    display.setByteEstimate({
+      bytes: 3_000_000,
+      measuredSpanBp: view.visibleBp,
+    })
+    expect(display.regionTooLarge).toBe(true)
+
+    // a quarter of the span → 750kB < the 1MB cap. The gate is still live down
+    // here (that is the point of the opt-out), so this clears on the bytes, not
+    // by falling off a threshold.
+    view.zoomTo(5)
+    expect(view.visibleBp).toBeLessThan(20_000)
+    expect(display.gateActive).toBe(true)
+    expect(display.regionTooLarge).toBe(false)
+  })
+
+  it('is the estimate that decides, so a shallow alignment never gates down here', () => {
+    const { display, view } = createMafTestEnvironment().createDisplay()
+
+    view.zoomTo(20)
+    // a 26-way over the same window: two orders of magnitude under the cap
+    display.setByteEstimate({ bytes: 40_000, measuredSpanBp: view.visibleBp })
+    expect(display.gateActive).toBe(true)
+    expect(display.regionTooLarge).toBe(false)
+  })
+
+  it('leaves the summary swap point at 20kb', () => {
+    const { display, view } = createMafTestEnvironment({
+      summaryAdapter: { type: 'BigBedAdapter' },
+    }).createDisplay()
+
+    // below the floor the gate is now live, but the summary tier is not: where
+    // the cheap tier draws a better picture is a rendering question and did not
+    // move with the byte gate.
+    view.zoomTo(20)
+    expect(display.showSummary).toBe(false)
+    expect(display.gateActive).toBe(true)
+
+    // and summary mode still outranks it — the zoom-reduced read is cheap and
+    // must never be blocked
+    view.zoomTo(100)
+    expect(display.showSummary).toBe(true)
+    expect(display.gateActive).toBe(false)
+  })
+
+  it('force-load still clears it below the floor', () => {
+    const { display, view } = createMafTestEnvironment().createDisplay()
+
+    view.zoomTo(20)
+    display.setByteEstimate({
+      bytes: 3_000_000,
+      measuredSpanBp: view.visibleBp,
+    })
+    expect(display.regionTooLarge).toBe(true)
+
+    display.setForceLoadTrack(true)
+    expect(display.gateActive).toBe(false)
+    expect(display.regionTooLarge).toBe(false)
+  })
+
+  it('gates nothing before the view is measured', () => {
+    const { display } = createMafTestEnvironment().createDisplay({
+      skipWidth: true,
+    })
+    expect(display.gateBelowForceLoadFloor).toBe(true)
+    expect(display.gateActive).toBe(false)
+    expect(display.regionTooLarge).toBe(false)
+  })
+})
+
 describe('MAF derived regionTooLarge', () => {
   it('is false with no estimate yet', () => {
     const { display } = createMafTestEnvironment().createDisplay()

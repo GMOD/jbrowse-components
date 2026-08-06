@@ -153,6 +153,30 @@ export default function RegionTooLargeMixin() {
       },
       /**
        * #getter
+       * Opt out of the `AUTO_FORCE_LOAD_BP` floor: keep gating however far in the
+       * user zooms, and let the byte estimate alone decide. Off by default,
+       * because the floor is right for every format whose bytes really are
+       * proportional to span — below 20kb the fetch is small, and a banner asking
+       * permission costs more than the download.
+       *
+       * A display turns it on when that premise is false for it. MAF is the case
+       * it was built for: bytes scale with span **times species count**, so a
+       * 470-way pulls megabases of aligned sequence out of a gene-sized window —
+       * the fetch the floor was least equipped to judge, and the one it declines
+       * to look at. Opting out costs nothing on a shallow alignment, since the
+       * estimate is still compared against `fetchSizeLimit` and a 26-way at the
+       * same zoom is nowhere near it.
+       *
+       * Deliberately narrower than it sounds: it removes the floor from
+       * `gateActive` only. `aboveForceLoadFloor` keeps its own meaning, so MAF's
+       * summary swap still happens at 20kb — the zoom where the cheap tier starts
+       * paying off is a rendering question and has no reason to move with this.
+       */
+      get gateBelowForceLoadFloor(): boolean {
+        return false
+      },
+      /**
+       * #getter
        * The adapter's own `fetchSizeLimit` slot (undefined when the adapter type
        * declares none); `resolveByteLimit` prefers it over the display config.
        * Read on the main thread, and only here — the estimate that crosses the
@@ -289,9 +313,15 @@ export default function RegionTooLargeMixin() {
         // The view is consulted only past the two cheap terms, so a display that
         // never gates — including a non-LGV consumer of this mixin — never
         // touches `getContainingView`.
-        return self.derivedRegionTooLargeEnabled && !self.byteGateExempt
-          ? self.aboveForceLoadFloor
-          : false
+        if (!self.derivedRegionTooLargeEnabled || self.byteGateExempt) {
+          return false
+        }
+        // A floor opt-out still requires a measured view: with no `visibleBp`
+        // there is nothing to rescale the estimate to, so the verdict would be
+        // false anyway and the pre-flight RPC would be issued for nothing.
+        return self.gateBelowForceLoadFloor
+          ? self.gateVisibleBp !== undefined
+          : self.aboveForceLoadFloor
       },
     }))
     .views(self => ({

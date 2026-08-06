@@ -137,12 +137,20 @@ One smaller wire: `onRegionTooLarge()` fires on the false→true transition
 (alignments overrides it to clear its hover).
 
 **The `AUTO_FORCE_LOAD_BP` comparison lives in `aboveForceLoadFloor`, and only
-there.** `gateActive` adds the opt-in and exemption terms on top of it, and the
-verdict, the pre-flight (no estimate RPC below the floor) and the two worker
-budgets (`resolvedByteLimit()` on this mixin, `maxFeatureDensity` on the canvas
-gate, which go undefined together) all read `gateActive`. It used to be spelled
-out separately in `evaluateRegionTooLarge`, `checkByteEstimate` and a
-canvas-local `gateInactive` — three layers that had to agree by hand.
+there.** `gateActive` adds the opt-in and exemption terms on top of it — and,
+for a display that sets `gateBelowForceLoadFloor`, drops the floor term
+altogether — and the verdict, the pre-flight (no estimate RPC when nothing could
+gate) and the two worker budgets (`resolvedByteLimit()` on this mixin,
+`maxFeatureDensity` on the canvas gate, which go undefined together) all read
+`gateActive`. It used to be spelled out separately in `evaluateRegionTooLarge`,
+`checkByteEstimate` and a canvas-local `gateInactive` — three layers that had to
+agree by hand.
+
+`aboveForceLoadFloor` keeps its own meaning either way, which is what lets MAF
+opt out of the floor for gating while its `showSummary` swap stays pinned to
+20kb: the zoom where a cheap summary tier draws the better picture is a
+rendering question, and the two only ever coincided because the gate had nothing
+to say below the floor.
 `evaluateRegionTooLarge` now only compares (bytes vs limit, then density), and
 knows nothing about the floor or force-load. The constant itself sits with the
 gate (`shared/regionTooLargeUtils.ts`), not on the view, which never reads it.
@@ -162,8 +170,9 @@ property you're giving up.
 
 **Neither worker budget may be an RPC cache key.** Both `resolvedByteLimit()` and
 canvas's `maxFeatureDensity` are resolved values that swing on the viewport —
-`gateActive` folds in `AUTO_FORCE_LOAD_BP`, so both go undefined the instant the
-span drops under 20 kb. Canvas passes them as call-site arguments to
+`gateActive` folds in `AUTO_FORCE_LOAD_BP` for every display that doesn't opt
+out, so for canvas both go undefined the instant the span drops under 20 kb.
+Canvas passes them as call-site arguments to
 `RenderFeatureData` / `MultiRowGetFeatures`; they are deliberately **not** in
 `rpcProps()`. `maxFeatureDensity` used to be, and that made zooming across the
 floor a full `SettingsInvalidate` → `clearAllRpcData()` → refetch, blanking the
@@ -375,21 +384,33 @@ The derived gate and canvas's in-RPC short-circuit differ only in how they
 measure. The verdict, the threshold, and the banner text live here so the two
 paths can't drift apart.
 
-- `AUTO_FORCE_LOAD_BP` is the floor below which nothing gates. It lives here
-  rather than on the LGV model — the view never read it — and
-  `aboveForceLoadFloor` is its only comparison. It is not exported from the
-  plugin: MAF, the one out-of-plugin reader, reads that getter instead.
+- `AUTO_FORCE_LOAD_BP` is the floor below which nothing gates **unless the
+  display opts out**. It lives here rather than on the LGV model — the view never
+  read it — and `aboveForceLoadFloor` is its only comparison. It is not exported
+  from the plugin: MAF, the one out-of-plugin reader, reads that getter instead.
 
   **Both the floor and the rescaling below assume bytes are proportional to
-  span, which is false for any format whose feature size is unbounded.** Tabix
-  returns whole overlapping lines, and MAF-tabix puts an entire alignment block
-  (every species' sequence) on one line — so zooming into a megabase block
-  rescales the estimate toward zero while the real cost is unchanged, and the
-  20kb floor means the gate isn't consulted at all. The gate under-reports
-  exactly the fetch that needs stopping. See
-  [MAF_LARGE_BLOCKS.md](MAF_LARGE_BLOCKS.md) for the failure mode and
-  the opt-out sketch (re-measure instead of rescale; let the byte axis fire
-  below the floor). Unfixed as of 2026-07-29.
+  span.** The floor's premise is "a small span is a small fetch", and two things
+  break it:
+
+  - **Row count.** A deep alignment costs ~N bases per reference base, so a
+    470-way is 6-8MB on the wire over a 40kb window — several MB inside a
+    gene-sized view the floor won't look at. This is fixed:
+    `gateBelowForceLoadFloor` on `RegionTooLargeMixin` removes the floor from
+    `gateActive` (and only from `gateActive`), defaulting false, and
+    `LinearMafDisplay` turns it on. The verdict below the floor is still the
+    estimate against `fetchSizeLimit`, so a shallow alignment at the same zoom
+    never gates and no row-count threshold is needed to make it safe. The gate
+    keeps self-releasing on zoom-in, against the bytes rather than the floor.
+  - **Unbounded feature size.** Tabix returns whole overlapping lines, and
+    MAF-tabix puts an entire alignment block (every species' sequence) on one
+    line — so zooming into a megabase block rescales the estimate toward zero
+    while the real cost is unchanged. **Still unfixed** (the rescaling half of
+    [MAF_LARGE_BLOCKS.md](MAF_LARGE_BLOCKS.md)'s option 3: re-measure instead of
+    rescale, by invalidating the cached estimate on view change). Note the fix
+    above does not address this one — it puts the gate on duty down there, but
+    the number it is comparing is still a rescale of a measurement taken
+    elsewhere.
 - `resolveByteLimit({ adapterFetchSizeLimit, configFetchSizeLimit })` is the one
   place a byte budget gets resolved: the adapter's limit, else the display config.
   Those two arguments are the only byte-budget *inputs* in the system — force-load

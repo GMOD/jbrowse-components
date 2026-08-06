@@ -60,13 +60,20 @@ rescales linearly — `bytes * visibleBp / measuredSpanBp`
 With block-quantized formats they are not: zooming 100x into a megabase block
 divides the *estimate* by 100 while the real cost is unchanged.
 
-On top of that, `gateActive` (`RegionTooLargeMixin.ts:288`) requires
+On top of that, `gateActive` (`RegionTooLargeMixin.ts`) required
 `aboveForceLoadFloor` — `visibleBp >= AUTO_FORCE_LOAD_BP` (20kb,
 `regionTooLargeUtils.ts:9`). The floor's premise is "a small span is a small
 fetch," which is exactly what a long block violates.
 
-Net: the gate reports "tiny" precisely when the fetch is catastrophic, and it
-isn't consulted anyway. **There is no ceiling on the one path that needs one.**
+Net: the gate reported "tiny" precisely when the fetch was catastrophic, and it
+wasn't consulted anyway.
+
+**The second half of that is fixed** — `LinearMafDisplay` sets
+`gateBelowForceLoadFloor`, so the gate is now on duty at every zoom (option 3
+below). The first half is not: the number it compares down there is still a
+linear rescale, so on a block-quantized file it can still be an under-report.
+The fix helps the common case regardless, because for a deep alignment the
+rescale is roughly right and the estimate is genuinely large.
 
 ## Rejected: clip blocks to the visible region
 
@@ -143,8 +150,17 @@ bug applies to any format with unbounded feature size:
 - **Opt out of rescaling.** Invalidate the cached `byteEstimate` on view change
   so the pre-flight re-runs and `measuredSpanBp == visibleBp`. `bytesForRegions`
   is index-only, so this costs no data download and is truthful at any zoom.
-- **Let the gate fire below `AUTO_FORCE_LOAD_BP`** when the estimate is over
-  budget.
+  **Still unbuilt.**
+- ~~**Let the gate fire below `AUTO_FORCE_LOAD_BP`** when the estimate is over
+  budget.~~ **Done** — `gateBelowForceLoadFloor` on `RegionTooLargeMixin`, an
+  opt-in defaulting false that removes the floor term from `gateActive` and
+  nothing else; `LinearMafDisplay` sets it. Note this landed for the **row-count**
+  reason rather than the block-size one (see "Fetch dominates at 470-way" below):
+  a 470-way is several MB inside a gene-sized window whatever its block size, and
+  that is the common case. It does not fix the rescaling half above — the gate is
+  now on duty below the floor, but the number it compares is still a rescale of a
+  measurement taken at another zoom, so a megabase-block tabix MAF can still be
+  under-reported down there.
 
 Must be an **opt-in**, not a change to the shared verdict — canvas, LD and
 alignments all compose `RegionTooLargeMixin`.
