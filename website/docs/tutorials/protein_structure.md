@@ -33,7 +33,12 @@ Two plugins provide this:
   and UniProt
 - [jbrowse-plugin-msaview](https://github.com/GMOD/jbrowse-plugin-msaview) -
   embeds [react-msaview](https://github.com/GMOD/react-msaview) for MSA and tree
-  views, and can run NCBI BLAST
+  views, builds alignments from NCBI's precomputed orthologs, and can run NCBI
+  BLAST
+
+They are worth installing together rather than picking one: protein3d checks at
+runtime whether msaview is loaded, and grows two extra launch options when it
+is.
 
 Both add new view types, launched from a gene's right-click menu in JBrowse Web
 and Desktop. The single-view embedded components host only a linear genome view,
@@ -98,9 +103,10 @@ Only needed to add these views to your own JBrowse:
 
 ## Viewing a 3D structure
 
-Right-click a gene and launch the protein-structure view from its menu. The
-plugin looks up a structure for that gene's protein in AlphaFold DB or UniProt
-and renders it with Mol\*.
+Right-click a gene and choose **Launch protein view**. The plugin looks up a
+structure for that gene's protein in AlphaFold DB or UniProt, and the dialog
+that opens offers **Launch 3D protein structure view**, which renders it with
+Mol\*.
 
 The lookup needs a gene feature carrying a recognizable protein or transcript ID
 (the RefSeq gene tracks on the public browsers have them), so a feature track
@@ -111,6 +117,24 @@ highlights the matching residue on the structure and its sequence alignment, and
 hovering the structure highlights the genomic position.
 
 <Figure caption="A connected session on human TP53 (UniProt P04637). The genome view (left) shows the NCBI RefSeq gene models and ClinVar variants, while the protein view (right) shows the AlphaFold structure together with the genome-to-structure sequence alignment and per-residue tracks (pLDDT confidence, domains, helices, hydrophobicity). Hovering a variant in the genome highlights the matching residue on the structure." src="/img/protein/connected.png" />
+
+### The other things that dialog launches
+
+**Launch 1D protein annotation view** opens a linear genome view whose genome is
+the protein: the plugin registers the UniProt accession as a temporary assembly
+whose reference sequence is the amino-acid sequence, then turns on one track per
+UniProt feature type over it, plus Antigen, Variation, AlphaFold confidence
+(pLDDT) and AlphaMissense scores. Coordinates are residues, so it is the view to
+take when the question is where along the chain something falls rather than how
+the chain folds. It needs a session it can add tracks to, which is why it does
+not appear in the single-view embedded components.
+
+**Launch MSA view** and **Launch 3D structure + MSA view** appear only when
+msaview is loaded in the same session, which protein3d checks for at menu-build
+time. They build the view from the alignment AlphaFold's own pipeline folded
+from, when AlphaFold publishes one for that accession. That alignment is deep
+and its rows are not species-labelled, the opposite trade from the ortholog
+panel in [](/docs/tutorials/genomes_msa), and a much larger download.
 
 ### Sharing a connected view as a URL
 
@@ -159,11 +183,12 @@ differ, will run Smith-Waterman alignment") and the plugin aligns them in the
 browser with BLOSUM62 and EMBOSS-style gap penalties. Residue positions are then
 mapped through the alignment columns, and positions falling in a gap are left
 unmapped, which is what you are seeing when hovering a variant highlights
-nothing. The gear beside that notice switches between Smith-Waterman (local, the
-default, good for a structure covering only part of the protein) and
-Needleman-Wunsch (global), or takes a precomputed pairwise alignment pasted in
-Clustal format. The same options are available afterwards under **Advanced** in
-the view menu.
+nothing. The gear beside that notice opens **Alignment settings**, which
+switches between **Smith-Waterman (local alignment)** (the default, good for a
+structure covering only part of the protein) and **Needleman-Wunsch (global
+alignment)**; **Import manual alignment...** beside them takes a precomputed
+pairwise alignment pasted in Clustal format instead. The same options are
+available afterwards under **Advanced...** in the view menu.
 
 You can inspect the mapping yourself: the **Pairwise alignment** panel below the
 structure shows the transcript row against the structure row with a consensus
@@ -171,9 +196,10 @@ line, so you can check it is sane before trusting a residue highlight. If you
 need exact correspondence, fold the transcript's own sequence with AlphaFold
 instead of using a database structure.
 
-When you open a structure of your own, the transcript picker uses this same
-comparison, listing isoforms whose translation exactly matches the structure
-sequence ahead of those that do not.
+When you open a structure of your own, **Choose transcript isoform** uses this
+same comparison: isoforms whose translation exactly matches the structure
+sequence are listed first and tagged **(matches structure residues)**, then
+those that do not, then any with no protein sequence at all, greyed out.
 
 In the MSA view the second step is a column lookup rather than an alignment:
 genome to protein position with g2p_mapper, then that position to a column of

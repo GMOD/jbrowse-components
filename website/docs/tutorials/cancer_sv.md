@@ -296,7 +296,11 @@ This allele carries RARB's first coding exon and its start codon, then the 183
 bp of chr12 that the second junction splices in, which is TRHDE coding sequence
 in reverse, then RARB again inverted.
 
-<Figure caption="The reconstructed derivative against its three source loci: RefSeq genes on the reference row, the same annotation projected onto the allele on the derivative row, with each segment labelled with the interval it came from. RARB's transcript starts partway along the allele and is cut off at the first junction. Ribbons are colored by the reference chromosome they come from, so the wide green one is the chr3 arm and the crossing ribbons at right are the chr10 and chr12 inserts with chr3 returning inverted." src="/img/cancer_sv/derivative_synteny.png" />
+Ribbons below are colored by the reference chromosome they come from, so the
+wide green one is the chr3 arm and the crossing ribbons at right are the chr10
+and chr12 inserts with chr3 returning inverted.
+
+<Figure caption="The reconstructed derivative against its three source loci: RefSeq genes on the reference row, the same annotation projected onto the allele on the derivative row, with each segment labelled with the interval it came from. RARB's transcript starts partway along the allele and is cut off at the first junction." src="/img/cancer_sv/derivative_synteny.png" />
 
 ## Checking the reconstruction
 
