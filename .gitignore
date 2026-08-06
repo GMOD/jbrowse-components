@@ -111,7 +111,11 @@ scripts/build_dog10k_cyp1a2_cn.sh
 test_data/dog10k/dog10k_fgf4_cohort_samples.tsv
 
 # derived from the Kidd lab trackDb by scripts/build_1000g_cnv_zarr.sh on every
-# run, and only ever an input to the converter. The browser reads the store
-# beside it, which is committed. Tracking this would pin a 2504-row copy of
-# somebody else's manifest that nothing revalidates.
+# run, and only ever an input to the converter. Nothing in the browser reads it:
+# test_data/1000g_cnv/config.json names the hosted store at
+# jbrowse.org/demos/1000g, whose sample list is an attribute of the store
+# itself. The build writes into the gitignored 1000g_cnv_build/ now, so this
+# line only catches the copy older runs left here, plus a SAMPLES= override.
+# Tracking it would pin a 2504-row copy of somebody else's manifest that nothing
+# revalidates.
 test_data/1000g_cnv/samples.tsv
