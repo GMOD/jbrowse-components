@@ -525,9 +525,9 @@ export default function MultiRegionDisplayMixin() {
               // (RegionTooLargeMixin §"Measurement follows the viewport").
               //
               // So the fetch runs once per settled viewport while blocked, and
-              // that costs an index read rather than a download: every gated
-              // display's fetch measures first and stops there when the answer
-              // is over budget. See `gateMeasurementStale`.
+              // it stops at whichever gate rejected it: an index read and no
+              // features on the byte axis, canvas's 1kb density probe on the
+              // other. See `gateMeasurementStale`.
               if (self.regionTooLarge && !self.gateMeasurementStale) {
                 return
               }

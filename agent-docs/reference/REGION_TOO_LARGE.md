@@ -20,8 +20,9 @@ different axis (`densityTooLarge`).
 `byteEstimate.bytes` is the last thing an adapter said, and `regionTooLarge`
 compares it against the budget. What keeps it describing the viewport you are
 actually looking at is that a blocked display **keeps fetching, once per settled
-viewport** — and a blocked fetch stops at the measurement, so that costs an index
-read and never a download. See § Measurement follows the viewport.
+viewport** — and a blocked fetch stops at the gate that rejected it, so on the
+byte axis that is one index read and no features. See § Measurement follows the
+viewport, which prices the density axis too.
 
 There used to be a second, derived number — `estimatedBytesForVisibleSpan`, this
 one scaled by `visibleBp / measuredSpanBp` — and it was the only thing that ever
@@ -230,9 +231,16 @@ new one get taken*. Two states, and the answer in both is "the fetch takes it":
   `byteGateBlocksFetch`, or `measureRegionBytes` ahead of `getFeaturesArray` in
   canvas's own feature RPC.
 - **Gated** — the fetch autoruns run that same fetch **once per settled
-  viewport**, and it stops at the measurement, because that is what a fetch does
-  when the answer is over budget. So a blocked track costs one index read per
-  settled pan or zoom and never a download.
+  viewport**, and it stops at whichever gate rejected it, because that is what a
+  fetch does when the answer is over budget.
+
+  What a blocked track costs per settled pan or zoom, precisely: on the **byte**
+  axis, one index read and no features, on both paths. On canvas's **density**
+  axis, the pre-fetch probe `samplePreFetchDensity` — a 1kb sample window,
+  doubling until it has seen 70 features — and then the short-circuit. A region
+  dense enough to be density-blocked satisfies that on the first window, so it is
+  small and bounded, but it is not nothing, and it is a cost that did not exist
+  when the blocked branch was a dead end.
 
 The gated half is one condition, in the two fetch autoruns:
 

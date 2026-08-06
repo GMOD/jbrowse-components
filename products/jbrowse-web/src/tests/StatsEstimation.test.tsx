@@ -19,30 +19,50 @@ const delay = { timeout: 20000 }
 const o = [{}, delay]
 
 // The byte gate has no span floor, so zooming past 20kb no longer waves an
-// over-budget pileup through. That used to be the way out here, and it was never
-// real: read cost scales with depth, and a BAI quotes whole blocks, so the same
-// bytes come down however far you zoom. The banner stops offering zoom once two
-// measurements say it does not move the number — otherwise it prints advice that
-// cannot work. The VCF case below still covers "zoom in to see", where zooming
-// really does shrink the fetch.
+// over-budget pileup through — the point of this test, and the reason the CRAM
+// stays gated below. What the banner offers as a way out is now *measured*:
+// `zoomCanReleaseGate` drops "Zoom in to see features" once a measurement at a
+// materially smaller span comes back materially unchanged.
+//
+// Which is why the advice survives the first zoom and not the second. This CRAM
+// really is flat — 125,172 bytes at every span from 24kb down, because a CRAI
+// quotes whole containers — but at the moment of the first zoom the only
+// measurement in hand was taken at the span the user just left, and one point is
+// not evidence. The second measurement is, and it costs one settled fetch cycle
+// to get. That is the honest price of evidence over the threshold this replaced,
+// which guessed the same answer from a 20kb floor and guessed wrong for every
+// display that kept it.
 test('test stats estimation pileup, zooming past the floor keeps the banner', async () => {
   const { view, findAllByText, findByTestId, queryAllByText } =
     await createView()
   view.setNewView(30, 183)
   fireEvent.click(await findByTestId(hts('volvox_cram_pileup'), ...o))
   await findAllByText(/Requested too much data/, ...o)
-  const before = view.bpPerPx
-  fireEvent.click(await findByTestId('zoom_in'))
-  await waitFor(() => {
-    expect(view.bpPerPx).toBe(before / 2)
-  }, delay)
-  expect(view.visibleBp).toBeLessThan(20_000)
 
-  // still gated, and now offering only the way out that actually works
+  async function zoomIn() {
+    const before = view.bpPerPx
+    fireEvent.click(await findByTestId('zoom_in'))
+    await waitFor(() => {
+      expect(view.bpPerPx).toBe(before / 2)
+    }, delay)
+  }
+
+  await zoomIn()
+  expect(view.visibleBp).toBeLessThan(20_000)
+  // still gated below the floor, which is the whole point
   await findAllByText(/Requested too much data/, ...o)
   await findAllByText(/Force load/, ...o)
-  expect(queryAllByText(/Zoom in to see features/)).toHaveLength(0)
-}, 30000)
+
+  // ...and once a second measurement lands at half the span with the same
+  // bytes, the banner stops offering a way out that cannot work. This is also
+  // the end-to-end pin that a blocked display keeps re-measuring at all: nothing
+  // else re-runs while the banner holds, so the advice could never change.
+  await zoomIn()
+  await waitFor(() => {
+    expect(queryAllByText(/Zoom in to see features/)).toHaveLength(0)
+  }, delay)
+  await findAllByText(/Force load/, ...o)
+}, 60000)
 
 test('test stats estimation pileup, force load to see', async () => {
   const { view, findAllByText, findByTestId } = await createView()

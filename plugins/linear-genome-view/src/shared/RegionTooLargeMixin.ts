@@ -59,10 +59,18 @@ function host(self: object) {
  *   `installGlobalFetchAutorun` used to return early on `regionTooLarge`, which
  *   froze the estimate at the viewport it was captured over; they skip on
  *   `regionTooLarge && !gateMeasurementStale` instead. So a blocked display runs
- *   one fetch per settled viewport, and that fetch stops at the measurement —
- *   an index read, no download — which is what releases the banner. No second,
+ *   one fetch per settled viewport, and that fetch stops at whichever gate
+ *   rejected it — which is what releases the banner. No second,
  *   measurement-only RPC path exists, and canvas therefore keeps the single-call
  *   fetch it was built around.
+ *
+ *   What that costs, precisely, because "it re-fetches while blocked" reads
+ *   alarming: on the **byte** axis, one index read and no features, on both
+ *   paths. On canvas's **density** axis, the pre-fetch probe
+ *   (`samplePreFetchDensity`) — a 1kb sample window, doubling until it has seen
+ *   70 features — and then the short-circuit. A region dense enough to be
+ *   density-blocked is exactly the region that satisfies that on the first
+ *   window, so it is small and bounded, but it is not nothing.
  *
  * There used to be a third thing, a derived `estimatedBytesForVisibleSpan` that
  * scaled the stored bytes by `visibleBp / measuredSpanBp`, and it was the
@@ -384,11 +392,12 @@ export default function RegionTooLargeMixin() {
        * per settled viewport while blocked, and none once that viewport has been
        * measured.
        *
-       * Running the ordinary fetch is the whole re-measure, and costs an index
-       * read rather than a download, because every gated display's fetch begins
-       * by measuring and stops there when the answer is over budget — the
-       * pre-flight in `byteGateBlocksFetch`, or `measureRegionBytes` ahead of
-       * `getFeaturesArray` in canvas's own feature RPC. Adding a second,
+       * Running the ordinary fetch is the whole re-measure, because every gated
+       * display's fetch begins by measuring and stops there when the answer is
+       * over budget — the pre-flight in `byteGateBlocksFetch`, or
+       * `measureRegionBytes` ahead of `getFeaturesArray` in canvas's own feature
+       * RPC. On the byte axis that is one index read and no features; on canvas's
+       * density axis it is the 1kb pre-fetch probe. Adding a second,
        * measurement-only RPC path would have bought nothing and given canvas the
        * two-call coordination it exists to avoid.
        */

@@ -199,9 +199,10 @@ export function installGlobalFetchAutorun(
       // The too-large skip lives here rather than in each composer's
       // `shouldFetch`, because it is not "don't fetch" — it is "don't fetch a
       // viewport you have already measured". A blocked display still runs its
-      // fetch once per settled viewport, which costs an index read rather than a
-      // download (`byteGateBlocksFetch` measures and stops), and that is the only
-      // thing that ever re-measures while the banner holds. Skipping
+      // fetch once per settled viewport, which costs one index read and no
+      // features (`byteGateBlocksFetch` measures and stops — this family has no
+      // density axis), and that is the only thing that ever re-measures while the
+      // banner holds. Skipping
       // unconditionally, which is what the composers used to do, froze the
       // estimate at the viewport it was captured over. See RegionTooLargeMixin
       // §"Measurement follows the viewport". A display with no byte gate reads

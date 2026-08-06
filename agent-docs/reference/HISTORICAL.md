@@ -97,9 +97,9 @@ densest files.
 
 The fix was to notice that the skip and the staleness were the same thing. The
 fetch autoruns now skip on `regionTooLarge && !gateMeasurementStale`, so a
-blocked display runs one fetch per settled viewport; that fetch stops at the
-measurement (an index read, no download) because every gated display measures
-before it fetches. Which retires the rate, the floor on the byte axis, and the
+blocked display runs one fetch per settled viewport; that fetch stops at the gate
+that rejected it (an index read and no features, on the byte axis) because every
+gated display measures before it fetches. Which retires the rate, the floor on the byte axis, and the
 opt-in — see REGION_TOO_LARGE.md § "Measurement follows the viewport".
 
 Two proposals that were costed and did not survive it. **A curve instead of a
