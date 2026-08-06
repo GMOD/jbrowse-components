@@ -248,3 +248,16 @@ test('SVG export labels ruler coordinates when many regions are visible', async 
   await view.exportSvg({ rasterizeLayers: false })
   expect(rulerLabelXs(getSavedSvg()).length).toBeGreaterThan(0)
 }, 45000)
+
+test('SVG export of a view holding no regions says so instead of saving a blank canvas', async () => {
+  const { view } = await createView()
+  // `initialized` folds in the assemblies, not the navigation, so a view on its
+  // import form (or emptied by clearView) sails past awaitViewInitialized with
+  // nothing to draw. It used to save the header's reserved height as a blank
+  // themed rectangle — and headlessly, a blank image with a zero exit code.
+  view.clearView()
+
+  await expect(view.exportSvg({ rasterizeLayers: false })).rejects.toThrow(
+    /no regions are displayed/,
+  )
+}, 45000)

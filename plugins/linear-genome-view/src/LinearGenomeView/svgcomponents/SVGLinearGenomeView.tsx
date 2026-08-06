@@ -21,6 +21,17 @@ type LGV = LinearGenomeViewModel
 
 export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   await awaitViewInitialized(model)
+  // `initialized` only answers "have the assemblies loaded" — navigating is the
+  // second async step, so an initialized view can still hold no regions: one
+  // sitting on its import form, or one a `clearView` emptied. There is no
+  // ruler, no scalebar and no track content to draw there, and the export used
+  // to save the header's reserved height as a blank themed rectangle. Say why
+  // instead, which the dialog shows as an error banner and a headless caller
+  // (jbrowse-img) gets as a nonzero exit rather than a blank image. Same guard,
+  // and the same reason, as the circular view's import-form export.
+  if (!model.hasDisplayedRegions) {
+    throw new Error('Cannot export: no regions are displayed')
+  }
   const {
     fontSize = 13,
     // the label band scales with the font it holds; destructured after
