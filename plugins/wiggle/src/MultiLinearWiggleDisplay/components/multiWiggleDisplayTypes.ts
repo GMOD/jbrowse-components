@@ -1,6 +1,8 @@
 import type { ScoreRamp } from '../../shared/ScoreLegend.tsx'
 import type { WiggleGpuProps } from '../../shared/buildSourceRenderData.ts'
 import type { WiggleDataResult, WiggleFeatureUnderMouse } from '../../util.ts'
+import type { MultiWiggleContextHit } from './findHit.ts'
+import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type {
   ClusterHierarchyNode,
   HoveredTreeNode,
@@ -47,4 +49,8 @@ export interface MultiWiggleDisplayModel
   setSubtreeFilter: (names?: string[]) => void
   setFeatureUnderMouse: (feat?: WiggleFeatureUnderMouse) => void
   selectFeature: (feat: WiggleFeatureUnderMouse) => void
+  contextMenuInfo?: ContextMenuAnchor & MultiWiggleContextHit
+  openContextMenu: (info: ContextMenuAnchor & MultiWiggleContextHit) => void
+  closeContextMenu: () => void
+  contextMenuItems: () => MenuItem[]
 }

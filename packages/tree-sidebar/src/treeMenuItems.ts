@@ -112,10 +112,13 @@ interface ClusteringMenuModel
 // branch lengths, clearing the subtree filter) is identical and lives here, so
 // the three menus can't drift into three different layouts for one concept.
 //
-// `extraItems` land after the run item, for a display that can also undo the
-// clustering itself (multi-wiggle's "Clear clustering"). The multi-row display
-// instead resets from one top-level item, since clustering is only one of the
-// three things that write its row order.
+// Undoing a run is deliberately NOT here. A display that clusters also writes
+// its row order from an arrangement dialog and (multi-row features, multi-
+// wiggle) a right-click sort, and only a run leaves a `clusterTree` — so a
+// reset filed under "Clustering" and gated on that tree undoes one of the three
+// and looks like it undoes all of them. It belongs top-level, gated on `layout`
+// (`clearLayout` resets any of them), which is where both of those displays
+// keep theirs.
 //
 // `showTreeToggle` is opt-out because `showTree` does not mean the same thing
 // everywhere: on variants and wiggle it reveals only the dendrogram, so it
@@ -133,11 +136,9 @@ export function clusteringMenuItem(
   self: ClusteringMenuModel,
   runItem: MenuItem,
   {
-    extraItems = [],
     showTreeToggle = true,
     treeApplies = true,
   }: {
-    extraItems?: MenuItem[]
     showTreeToggle?: boolean
     treeApplies?: boolean
   } = {},
@@ -148,7 +149,6 @@ export function clusteringMenuItem(
     type: 'subMenu',
     subMenu: [
       runItem,
-      ...extraItems,
       ...clusterProvenanceMenuItems(self),
       ...(showTreeToggle && treeApplies
         ? [

@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useMouseState } from '@jbrowse/core/ui'
+import { ContextMenu, useMouseState } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import {
@@ -19,11 +19,12 @@ import MultiWiggleOverlayLines from '../MultiWiggleOverlayLines.tsx'
 import MultiWiggleSvgScales from '../MultiWiggleSvgScales.tsx'
 import MultiWiggleHint from './MultiWiggleHint.tsx'
 import MultiWiggleLegendOverlay from './MultiWiggleLegendOverlay.tsx'
-import { findMultiWiggleHit } from './findHit.ts'
+import { findMultiWiggleContextHit, findMultiWiggleHit } from './findHit.ts'
 
 import type { MultiWiggleDisplayModel } from './multiWiggleDisplayTypes.ts'
 import type { MouseTracker } from '@jbrowse/core/ui'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type React from 'react'
 
 export type { MultiWiggleDisplayModel } from './multiWiggleDisplayTypes.ts'
 
@@ -51,6 +52,31 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
 
   const { onPointerPosition, onClick } = wiggleMouseHandlers(model, computeHit)
 
+  // Resolved from the click, like `onClick` above — the hover a previous frame
+  // recorded can be stale, and in row mode it names one source anyway, where
+  // the sort ranks all of them at one column.
+  function onContextMenu(event: React.MouseEvent) {
+    const rect = event.currentTarget.getBoundingClientRect()
+    const hit = findMultiWiggleContextHit(
+      model,
+      view.visibleRegions,
+      event.clientX - rect.left,
+    )
+    // preventDefault only when a menu opens, so a right-click in the
+    // inter-region gutter, or on the tree sidebar overlaying this container
+    // with its own node menu, falls through instead of being a dead zone
+    if (hit) {
+      event.preventDefault()
+      // the tooltip and crosshair would otherwise sit behind the menu
+      model.setFeatureUnderMouse(undefined)
+      model.openContextMenu({
+        clientX: event.clientX,
+        clientY: event.clientY,
+        ...hit,
+      })
+    }
+  }
+
   return (
     <DisplayChrome
       model={model}
@@ -71,15 +97,25 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
       }}
       onPointerPosition={onPointerPosition}
       onClick={onClick}
+      onContextMenu={onContextMenu}
     >
       {({ canvasRef, mouseTracker }) => (
-        <MultiWiggleBody
-          model={model}
-          canvasRef={canvasRef}
-          totalWidth={totalWidth}
-          height={height}
-          mouseTracker={mouseTracker}
-        />
+        <>
+          <MultiWiggleBody
+            model={model}
+            canvasRef={canvasRef}
+            totalWidth={totalWidth}
+            height={height}
+            mouseTracker={mouseTracker}
+          />
+          <ContextMenu
+            anchor={model.contextMenuInfo}
+            menuItems={() => model.contextMenuItems()}
+            onClose={() => {
+              model.closeContextMenu()
+            }}
+          />
+        </>
       )}
     </DisplayChrome>
   )

@@ -27,6 +27,8 @@ import {
   makeShowSubMenu,
 } from '@jbrowse/wiggle-core'
 import PaletteIcon from '@mui/icons-material/Palette'
+import RestartAltIcon from '@mui/icons-material/RestartAlt'
+import SwapVertIcon from '@mui/icons-material/SwapVert'
 
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { installWiggleRenderingBackend } from '../shared/installWiggleRenderingBackend.ts'
@@ -43,6 +45,7 @@ import {
   makeWiggleScoreSubMenu,
 } from '../shared/wiggleMenuItems.tsx'
 import { MULTI_WIGGLE_RENDERING_GROUPS } from '../util.ts'
+import { rowOrderByScoreAt } from './rowOrderByScoreAt.ts'
 import {
   buildEditableSources,
   buildSources,
@@ -51,9 +54,10 @@ import {
 
 import type { SatisfiesComponentContract } from '../shared/componentContract.ts'
 import type { Source, SourceInfo, WiggleDataResult } from '../util.ts'
+import type { MultiWiggleContextHit } from './components/findHit.ts'
 import type { MultiWiggleDisplayModel } from './components/multiWiggleDisplayTypes.ts'
 import type { MultiLinearWiggleDisplayConfigModel } from './configSchema.ts'
-import type { MenuItem } from '@jbrowse/core/ui'
+import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
@@ -116,6 +120,15 @@ export default function stateModelFactory(
     )
     .volatile(() => ({
       sourcesVolatile: [] as SourceInfo[],
+      /**
+       * #volatile
+       * Where the right-click menu opens (viewport coords) plus the genomic
+       * column it was opened over, as one value — the menu's open-ness and the
+       * position its items act on can't disagree. Undefined = closed.
+       */
+      contextMenuInfo: undefined as
+        | (ContextMenuAnchor & MultiWiggleContextHit)
+        | undefined,
     }))
     .views(self => ({
       // overrides WiggleScoreConfigMixin's `false` base, which is what its
@@ -406,6 +419,49 @@ export default function stateModelFactory(
           setConf(self, 'showLegend', arg)
         },
 
+        /**
+         * #action
+         * Reorder the rows by each source's score at the clicked column. Reads
+         * the region data already in hand — no refetch, no RPC — and writes the
+         * order through `layout`, the same channel clustering and the
+         * arrangement dialog write, so "Reset row order" undoes all three.
+         */
+        sortRowsByScoreAt({ displayedRegionIndex, bp }: MultiWiggleContextHit) {
+          const data = self.rpcDataMap.get(displayedRegionIndex)
+          if (!data) {
+            return
+          }
+          // editableSources, not `sources`: layout-merged (so a user's colors
+          // survive the reorder) and unfiltered by the subtree, so a focused
+          // clade doesn't persist itself as the whole row order and drop
+          // everything it was hiding.
+          const byName = new Map(self.editableSources.map(s => [s.name, s]))
+          const order = rowOrderByScoreAt(
+            self.editableSources.map(s => s.name),
+            data,
+            bp,
+          )
+          self.setLayout(
+            order
+              .map(n => byName.get(n))
+              .filter((s): s is Source => s !== undefined),
+          )
+        },
+
+        /**
+         * #action
+         */
+        openContextMenu(info: ContextMenuAnchor & MultiWiggleContextHit) {
+          self.contextMenuInfo = info
+        },
+
+        /**
+         * #action
+         */
+        closeContextMenu() {
+          self.contextMenuInfo = undefined
+        },
+
         setRunClustering(arg?: boolean) {
           self.runClustering = arg
         },
@@ -540,23 +596,29 @@ export default function stateModelFactory(
               },
             },
             {
-              // the row order clustering wrote is otherwise only undoable from
-              // the color/arrangement dialog's reset
-              extraItems: self.clusterTree
-                ? [
-                    {
-                      label: 'Clear clustering (reset row order)',
-                      onClick: () => {
-                        self.clearLayout()
-                      },
-                    },
-                  ]
-                : [],
               // overlay draws no dendrogram (see the `hierarchy` getter), so
               // neither tree-display control has a subject there
               treeApplies: !self.isOverlay,
             },
           ),
+          // Top-level rather than inside the Clustering submenu, where it used
+          // to sit as "Clear clustering": three things now write the row order
+          // — clustering, the arrangement dialog, and the right-click score
+          // sort — and only the first leaves a `clusterTree`, so a
+          // clustering-gated reset couldn't undo the other two. Same label and
+          // icon as the context menu's copy (and as the multi-row feature
+          // display's), because it is one action reachable from two places.
+          ...(self.layout.length
+            ? [
+                {
+                  label: 'Reset row order',
+                  icon: RestartAltIcon,
+                  onClick: () => {
+                    self.clearLayout()
+                  },
+                },
+              ]
+            : []),
           ...makeResolutionSubMenu(self),
           makeWiggleScoreSubMenu(self),
           ...makeShowSubMenu(showItems),
@@ -579,6 +641,48 @@ export default function stateModelFactory(
               ])
             },
           },
+        ]
+      },
+
+      /**
+       * #method
+       * Right-click menu, built from the column the click landed on. The
+       * position is captured here rather than read inside the onClick, because
+       * `closeContextMenu` runs first when an item is clicked.
+       */
+      contextMenuItems(): MenuItem[] {
+        const info = self.contextMenuInfo
+        if (!info) {
+          return []
+        }
+        return [
+          // needs rows to reorder, and at least two of them: overlay collapses
+          // every source onto one plot, so there is no row axis for a ranking
+          // to be read down
+          ...(!self.isOverlay && self.numSources > 1
+            ? [
+                {
+                  label: 'Sort rows by score here',
+                  icon: SwapVertIcon,
+                  onClick: () => {
+                    self.sortRowsByScoreAt(info)
+                  },
+                },
+              ]
+            : []),
+          // stays in an overlay mode, where the sort doesn't: an order set in a
+          // row mode is still what that display comes back to
+          ...(self.layout.length
+            ? [
+                {
+                  label: 'Reset row order',
+                  icon: RestartAltIcon,
+                  onClick: () => {
+                    self.clearLayout()
+                  },
+                },
+              ]
+            : []),
         ]
       },
     }))

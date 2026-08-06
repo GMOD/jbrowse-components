@@ -100,6 +100,32 @@ export interface MultiWiggleHitModel {
 // positions over them are excluded here. Doing it at the hit (rather than hiding
 // the tooltip downstream) is what keeps a click on a tree node from also opening
 // a feature widget behind the node menu.
+// Where a right-click landed: which loaded region, and the base under the
+// cursor. Deliberately not the hovered feature — in row mode that resolves the
+// one source the cursor is over, and the row-order sort needs every source's
+// score at the same column, which it reads back out of the region's data.
+export interface MultiWiggleContextHit {
+  displayedRegionIndex: number
+  bp: number
+}
+
+// The genomic column a right-click names, or undefined when the click wasn't
+// over loaded data. Same tree-sidebar exclusion as findMultiWiggleHit: the
+// sidebar overlays the left of this container and owns its own node menu.
+export function findMultiWiggleContextHit(
+  model: MultiWiggleHitModel,
+  regions: MouseRegion[],
+  offsetX: number,
+): MultiWiggleContextHit | undefined {
+  if (offsetX < treeSidebarRightEdge(model)) {
+    return undefined
+  }
+  const hit = hitTestMouse(regions, model.rpcDataMap, offsetX)
+  return hit
+    ? { displayedRegionIndex: hit.region.displayedRegionIndex, bp: hit.bp }
+    : undefined
+}
+
 export function findMultiWiggleHit(
   model: MultiWiggleHitModel,
   regions: MouseRegion[],

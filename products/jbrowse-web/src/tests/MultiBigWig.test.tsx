@@ -9,6 +9,10 @@ import {
   setup,
 } from './util.tsx'
 
+// `view.tracks[0].displays[0]` is untyped; annotating it makes a getter that
+// doesn't exist on the model a typecheck error rather than a silent undefined.
+import type { MultiWiggleDisplayModel } from '@jbrowse/plugin-wiggle'
+
 setup()
 
 beforeEach(() => {
@@ -67,4 +71,34 @@ test('open a multibigwig multirowline track', async () => {
   expectCanvasMatch(
     findCanvasIn(await findByTestId('multi-wiggle-display-done', ...opts)),
   )
+}, 60000)
+
+// The row-order sort itself is unit-tested (rowOrderByScoreAt, contextMenu);
+// what only the real display can answer is whether the right-click reaches it —
+// the handler rides `DisplayChrome`'s prop spread onto the same container the
+// pointer measurement uses, and nothing else in the wiggle family binds one.
+test('right-click offers the row-order sort, and the reset once it has run', async () => {
+  const { view, findByTestId, findByText } = await createView()
+  view.setNewView(5, 0)
+  fireEvent.click(
+    await findByTestId(hts('volvox_microarray_multi_multirowxy'), ...opts),
+  )
+  const container = await findByTestId('multi-wiggle-display-done', ...opts)
+  const display: MultiWiggleDisplayModel = view.tracks[0].displays[0]
+  const before = display.sources.map(s => s.name)
+
+  // jsdom reports a zero rect, so clientX lands as the track-local offset
+  fireEvent.contextMenu(container, { clientX: 400, clientY: 50 })
+  fireEvent.click(await findByText('Sort rows by score here', ...opts))
+
+  // the resulting order is whatever the scores at that column say — what this
+  // asserts is that a real one was written, over the same rows
+  expect(display.sources.map(s => s.name).toSorted()).toEqual(before.toSorted())
+
+  // "Reset row order" is gated on a written `layout`, so its appearing is the
+  // proof the sort landed
+  fireEvent.contextMenu(container, { clientX: 400, clientY: 50 })
+  fireEvent.click(await findByText('Reset row order', ...opts))
+
+  expect(display.sources.map(s => s.name)).toEqual(before)
 }, 60000)

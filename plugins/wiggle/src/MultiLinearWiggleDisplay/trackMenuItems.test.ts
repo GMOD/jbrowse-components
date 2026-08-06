@@ -83,12 +83,12 @@ describe('multi-wiggle Clustering submenu', () => {
     // the tree is hidden because overlay collapses every source onto one row —
     // `hierarchy` is the gate, and these controls follow it
     expect(display.hierarchy).toBeUndefined()
-    // "Clear clustering" stays: it resets the row order, which still matters for
-    // the row mode the user will switch back to
     expect(labels(subMenuOf(display.trackMenuItems(), 'Clustering'))).toEqual([
       'Cluster rows by score...',
-      'Clear clustering (reset row order)',
     ])
+    // the reset stays reachable: it resets the row order, which still matters
+    // for the row mode the user will switch back to
+    expect(labels(display.trackMenuItems())).toContain('Reset row order')
   })
 
   it('keeps the tree controls once a clustered row mode comes back', () => {
@@ -133,20 +133,23 @@ describe('multi-wiggle Clustering submenu', () => {
     })
   })
 
-  it('offers a way out of a clustered row order only once there is one', () => {
+  it('offers a way out of a written row order only once there is one', () => {
     const { display } = makeDisplay({ renderingType: 'multirowxy' })
-    expect(
-      labels(subMenuOf(display.trackMenuItems(), 'Clustering')),
-    ).not.toContain('Clear clustering (reset row order)')
+    expect(labels(display.trackMenuItems())).not.toContain('Reset row order')
 
-    display.setClusterTree('(b,a);')
-    const subMenu = subMenuOf(display.trackMenuItems(), 'Clustering')
-    expect(labels(subMenu)).toContain('Clear clustering (reset row order)')
+    // gated on `layout`, not on the tree: the score sort and the arrangement
+    // dialog write an order without one, and this is what undoes those too
+    display.setLayout([
+      { name: 'b', source: 'b' },
+      { name: 'a', source: 'a' },
+    ])
+    expect(labels(display.trackMenuItems())).toContain('Reset row order')
 
-    const item = itemIn(subMenu, 'Clear clustering (reset row order)')
+    const item = itemIn(display.trackMenuItems(), 'Reset row order')
     if ('onClick' in item) {
       item.onClick()
     }
+    expect(display.layout).toEqual([])
     expect(display.clusterTree).toBeUndefined()
   })
 })
