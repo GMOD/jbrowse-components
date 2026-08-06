@@ -1,12 +1,10 @@
-import { onPatch } from '@jbrowse/mobx-state-tree'
-
 import createModel from './createModel/index.ts'
 
 import type {
   createConfigModel,
   createSessionModel,
 } from './createModel/index.ts'
-import type { IJsonPatch, SnapshotIn } from '@jbrowse/mobx-state-tree'
+import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
 import type {
   PluginInput,
   SessionSnapshot as RestoredSessionSnapshot,
@@ -34,7 +32,6 @@ export interface CreateViewStateBaseOptions {
    */
   plugins?: PluginInput[]
   makeWorkerInstance?: () => Worker
-  onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
 }
 
 // the imperative API adds a full session snapshot; the managed
@@ -60,7 +57,6 @@ export default function createViewState(opts: ViewStateOptions) {
     aggregateTextSearchAdapters,
     plugins = [],
     makeWorkerInstance,
-    onChange,
   } = opts
   const { model, pluginManager } = createModel(plugins, makeWorkerInstance)
   const stateTree = model.create(
@@ -99,9 +95,6 @@ export default function createViewState(opts: ViewStateOptions) {
     // view's init autorun sets displayedRegions once the assembly loads, then
     // clears init. a session that already has displayedRegions is left as-is
     view.setInit({ assembly: assembly.name })
-  }
-  if (onChange) {
-    onPatch(stateTree, onChange)
   }
   return stateTree
 }

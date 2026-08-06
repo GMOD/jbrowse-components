@@ -128,9 +128,14 @@ export interface CreateLinearGenomeViewOptions {
 }
 
 export interface LinearGenomeViewController {
-  /** the underlying MST model, or `undefined` until the first build resolves */
-  readonly viewState: ViewModel | undefined
-  /** resolves with the model once the build settles */
+  /**
+   * The underlying MST model, once the build settles. This is the whole read
+   * API: every `#getter` and `#property` on the view and session models is a
+   * MobX observable, so a host reads state from the model rather than from a
+   * callback per fact. Awaiting it is the only way to hold it — there is no
+   * synchronous accessor, because there is exactly one engine per controller
+   * and a host that has awaited this already has it.
+   */
   whenReady(): Promise<ViewModel>
   setLocation(location: string): Promise<void>
   addTrack(track: TrackInput): void
@@ -315,9 +320,6 @@ export function createLinearGenomeView(
   ready.catch(onError)
 
   return {
-    get viewState() {
-      return current
-    },
     whenReady() {
       return ready
     },

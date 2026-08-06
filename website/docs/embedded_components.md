@@ -206,10 +206,18 @@ view.destroy()
 
 The remount rule above applies here too, and the controller is deliberately
 small enough to make that obvious. The genome, the session and the track list
-are what a browser is *built from*, so changing one is a new browser: `destroy()`
-the controller and create another. The methods are the things that are not a
-rebuild — `setLocation`, `addTrack`, `removeTrack`, `addLocalFiles` — plus
-`whenReady()`, which resolves once the build settles, and `viewState`.
+are what a browser is _built from_, so changing one is a new browser:
+`destroy()` the controller and create another. What the controller offers is the
+things that are not a rebuild — `setLocation`, `addTrack`, `removeTrack`,
+`addLocalFiles` — plus `whenReady()`, which resolves with the model once the
+build settles.
+
+`whenReady()` is the whole read API, and there is deliberately nothing beside
+it. The model it hands back is MobX-observable throughout: every `#getter` and
+`#property` on the view and session models is reactive, so a JS host reads state
+off the model rather than subscribing to a callback per fact. The three `on…`
+options below exist for the hosts that _cannot_ do that — a notebook kernel or
+an R session, whose state lives in another process.
 
 `assembly` takes four shapes — a sequence file URL (`.fa.gz`, `.2bit`), a hub
 name like `'hg38'` or a GenArk accession, a whole hub config, or a bare assembly
@@ -219,10 +227,16 @@ React root, the RPC workers, and the MST tree's autoruns, which a bare React
 unmount does not — a host that swaps genomes without it orphans a worker pool
 per swap.
 
-Data going the other way is two callbacks rather than a subscription:
+Data going the other way is three callbacks rather than a subscription.
 `onLocationChange` fires with the visible region as the user pans and zooms
-(throttled), and `onFeatureSelect` with the serialized feature when one is
-clicked. Those are what a notebook cell or a Shiny input reads.
+(throttled); `onFeatureSelect` with the serialized feature when one is clicked;
+and `onSessionChange` with a plain-JSON snapshot of the layout the user built,
+in the shape the `session` option takes — so "save this arrangement" is storing
+that value and reopening it is passing it back. All three ride a coarse signal
+that settles after a gesture instead of firing per frame, because each crossing
+of a notebook's or a Shiny app's wire costs a round trip. `onError` is the
+fourth: the build is async, so a failure has nowhere else to go but the console
+unless the host takes it.
 
 `localFiles` is the option that makes a host with no web server work at all: a
 map of `name -> bytes` that `tracks` may then refer to by that name as if it
