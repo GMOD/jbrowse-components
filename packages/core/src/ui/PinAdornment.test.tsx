@@ -10,10 +10,7 @@ const theme = createJBrowseTheme()
 
 // test double: the pin reads `active` and calls `toggle` on click — never
 // `slot`, which only a menu-wide pin-coverage walk reads
-function fakeControl(
-  active: boolean,
-  toggle: () => void = () => {},
-): Pin {
+function fakeControl(active: boolean, toggle: () => void = () => {}): Pin {
   return { slot: 'unused', active, toggle }
 }
 

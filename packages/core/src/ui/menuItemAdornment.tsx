@@ -23,9 +23,7 @@ export function menuItemAdornment(item: MenuItem) {
   if ('endAdornment' in item && item.endAdornment) {
     return item.endAdornment
   }
-  return 'pin' in item && item.pin ? (
-    <PinAdornment pin={item.pin} />
-  ) : undefined
+  return 'pin' in item && item.pin ? <PinAdornment pin={item.pin} /> : undefined
 }
 
 /**
