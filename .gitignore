@@ -83,6 +83,11 @@ test_data/hprc/*.paf.gz.tbi
 !test_data/hprc/hprc-v1.1-mc-grch38-chr20.synteny.paf.gz
 !test_data/hprc/hprc-v1.1-mc-grch38-chr20.synteny.paf.gz.tbi
 test_data/volvox/*.og
+# Hand-assembled link to the jb2bench alignment corpus (hundreds of MB of BAM /
+# CRAM, generated not downloaded). memsticky.ts and rangecache-probe.ts both
+# read a config from here; neither is part of the suite, and neither dataset is
+# small enough to commit.
+test_data/jb2bench_link/
 # Local agent settings stay untracked, but the jbrowse-authoring skill is a
 # shared tool (its validate-config.mjs is what the FAQ tells people to run), so
 # it is committed. Re-including a path needs its parent directories un-ignored
