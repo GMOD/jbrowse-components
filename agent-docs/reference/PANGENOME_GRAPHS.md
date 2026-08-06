@@ -93,6 +93,22 @@ ever regresses, that A/B is the check — the unit tests cover the segs row → 
 synthesized S-line → the parser → `node.samples`, and the end-to-end one is
 `rgfaBed.test.ts`'s "SM:Z: on a segs row reaches GraphNode.samples".
 
+**The linear side landed 2026-08-06 too.** `getFeatures` parsed the tag column
+and then dropped it, so the whole tag route ended at the graph view and a
+LinearGenomeView lane colored by carriage was not expressible. `segmentSamples`
+in `rgfaBed.ts` now puts `samples` (the haplotype list) and `carriers` (its
+length) on every feature, so a `color` jexl reads `feature.carriers` directly
+rather than counting a list through a member access. Absent, not 0, on an rGFA.
+`demos/ecoli_pangenome/config.json` carries the lane as `ecoli_pggb_carriage`,
+and its fixture is `pggb_ecoli.segs.bed.gz` in the plugin's `RgfaTabixAdapter`
+test_data: 24 real segments around the IS5 element at K12 chr:1,299,499-1,300,693
+spanning every carrier count from 1 to 5.
+
+Why a lane and not just the popup: `odgi depth` answers the same core/accessory
+question as a mean over fixed windows, so an accessory stretch shorter than one
+window is averaged into its neighbours. The lane is one box per segment, which is
+the unit the graph actually states carriage in.
+
 **Carriage is per haplotype**, written `HG002.1`. Keying it on the PanSN sample
 alone merged a diploid sample's two haplotypes, so a segment carried only on the
 maternal copy read as "HG002 carries it". On haploid input the `.1` is accurate
@@ -242,7 +258,9 @@ about this, and the two workarounds are:
   delta pathLen refLen alleles nonRef path`); columns 1-14 are stable.
 - **a path GFA**, where every path visiting a segment is stated. The walk
   records it as an `SM:Z:` tag, per haplotype, and it reaches
-  `GraphNode.tags.SM`. See "The tag column is the extension point" above.
+  `GraphNode.tags.SM` in the graph view and `feature.carriers` /
+  `feature.samples` on the linear track. See "The tag column is the extension
+  point" above.
 
 `--call` traps, each a wrong first attempt:
 

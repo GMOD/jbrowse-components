@@ -80,23 +80,30 @@ a ~670 KB read.
 
 ## Open threads
 
-**The carriage lane, and it is the interesting one.** `segs.bed` from
-`pggb_gfa_to_bed.py` carries `SM:Z:` — which haplotypes carry each segment,
-which rGFA structurally cannot say (its `SR` is build order). On the E. coli
-graph that is a clean core/accessory split: 3.50 Mb carried by all 5 strains on
-the reference, 2.97 Mb strain-private off it, and zero rank-1 segments carried by
-all 5 (right, and a good consistency check on the walk). A LinearGenomeView lane
-coloured by carrier count would show membership where the existing `odgi depth`
-bigWig shows only a smoothed count.
+**The carriage lane. Built 2026-08-06; what is left is two deploys.** The
+blocking unknown had a plain answer: `RgfaTabixAdapter.getFeatures` parsed the
+tag column and then dropped it, so `SM:Z:` reached `GraphNode.tags` through
+`getSubgraph` and nothing else. `BedTabixAdapter` with `columnNames` was not
+needed — the adapter now emits `samples` and `carriers` on every feature
+(plugin `rgfaBed.ts`, `segmentSamples`), and `demos/ecoli_pangenome/config.json`
+carries the lane as `ecoli_pggb_carriage`, colored by `feature.carriers` with a
+legend, beside the depth track it improves on. Verified in the app: the IS5
+element at K12 chr:1,299,499-1,300,693 draws as one 1,199 bp private box with
+`samples: K12.1` in its detail panel, against a core band either side.
 
-Blocked on one unknown: the demo already renders these segments via
-`RgfaTabixAdapter` (`ecoli_pggb_segments`), but whether that adapter exposes
-`SM:Z:` as a *feature attribute* — rather than only as `GraphNode.tags` in the
-graph view — is a question for `jbrowse-plugin-graphgenomeview`. The alternative
-is `BedTabixAdapter` with `columnNames` (column 6 is `SM:Z:` sitting in BED's
-strand slot), which additionally needs `refNameAliases` because `segs.bed` chrom
-is `K12#1#chr` while the assembly's refName is `chr`. Cheapest next step: load
-the existing demo track and inspect one feature.
+Two outward-facing steps remain, in this order, and nothing shows until both:
+
+1. `pnpm betabuild` in `jbrowse-plugin-graphgenomeview` publishes the bundle the
+   unpinned demo `esmUrl` serves. Without it the lane draws flat in the fallback
+   color, since `carriers` is simply absent.
+2. `scripts/deploy-demo.sh ecoli_pangenome/config.json`, from the repo copy.
+
+Then the figure, which was deliberately not captured against a bundle that
+cannot draw it: a spec on the carriage lane over the IS5 window with the depth
+track above it, and the `test_data/graphgenomeview/*.json` pin bumped in the
+same commit per that directory's README. Note those fixtures still pin
+`aee5e17f4b2c` while `bfe47428e7ae` is what is published, so the bump is already
+one revision behind before this lands.
 
 **Launching the graph view from a clicked segment.** The data side is ready —
 `links.bed` states both endpoints in full precisely so a reference segment can

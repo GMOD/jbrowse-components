@@ -824,6 +824,51 @@ minigraph added the segment first and says nothing about the rest.
 
 <Figure caption="A 59 bp backbone segment at chr:1,004,605-1,004,663 clicked in the graph. carriedBy lists K12, Sakai, NCTC86 and IAI39 but not CFT073, which is the same absence the sample-rows figure above draws as a gap; contributingAssembly says only K12, which is all an rGFA of the same five strains could report." src="/img/pangenome/pggb_carriage.png" />
 
+#### Carriage as a linear lane
+
+The same tag reaches the segments track as feature attributes, so carriage can
+be read along K12 rather than one node at a time. `samples` is the haplotype
+list and `carriers` is its length, which is the one a color expression wants:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "ecoli_pggb_carriage",
+  "name": "pggb graph: segment carriage",
+  "assemblyNames": ["K12"],
+  "adapter": {
+    "type": "RgfaTabixAdapter",
+    "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb"
+  },
+  "displays": [
+    {
+      "type": "LinearBasicDisplay",
+      "displayId": "ecoli_pggb_carriage-LinearBasicDisplay",
+      "displayMode": "collapsed",
+      "showLabels": false,
+      "color": "jexl:feature.carriers==1?'#e31a1c':feature.carriers==2?'#fd8d3c':feature.carriers==3?'#feb24c':feature.carriers==4?'#fed976':feature.carriers==5?'#bdbdbd':'#eeeeee'",
+      "legend": [
+        { "label": "All 5 strains (core)", "color": "#bdbdbd" },
+        { "label": "4 strains", "color": "#fed976" },
+        { "label": "3 strains", "color": "#feb24c" },
+        { "label": "2 strains", "color": "#fd8d3c" },
+        { "label": "1 strain (private)", "color": "#e31a1c" }
+      ]
+    }
+  ]
+}
+```
+
+Read it against the [depth track](#pangenome-depth-projection-core-vs-accessory).
+Both answer core versus accessory, and they differ in unit: depth is a mean over
+the windows tiled above, so an accessory stretch shorter than one window is
+averaged into its neighbours, while the lane is one box per segment, which is
+where the graph states carriage in the first place.
+
+The last color in the chain is the fallback. An rGFA has no tag column at all,
+so `carriers` is absent rather than 0 and the whole lane comes out in that
+color; the popup's `contributingAssembly` is all such a graph can report.
+
 #### Out of the graph, into the strain
 
 A segment the reference never visits sits on **its own carrier's coordinates**,
