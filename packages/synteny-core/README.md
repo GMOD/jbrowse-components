@@ -29,6 +29,17 @@ identity. Anything worth keeping gets pinned.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/trackColors.ts)
 
+### attributeColorBy
+
+The colorBy string that paints a named feature attribute.
+
+```js
+// type signature
+(attribute: string) => SyntenyColorBy
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorUtils.ts)
+
 ### coerceColorBy
 
 Coerce a persisted colorBy string (stored as plain `types.string` for
@@ -38,7 +49,19 @@ sessions keep rendering instead of hitting an unhandled switch case.
 
 ```js
 // type signature
-(value: string | undefined) => "track" | "default" | "strand" | "query" | "target" | "reference" | "identity" | "meanQueryIdentity" | "mappingQuality" | "dnds"
+(value: string | undefined) => SyntenyColorBy
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorUtils.ts)
+
+### colorByAttributeName
+
+The attribute a colorBy names, or undefined for a named preset. `attribute:`
+with nothing after it never reaches here — coerceColorBy rejects it.
+
+```js
+// type signature
+(colorBy: SyntenyColorBy) => string | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorUtils.ts)
@@ -69,6 +92,19 @@ lambdas.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorByMenuItems.tsx)
+
+### colorByShortLabel
+
+Short human-readable title for the floating legend header. An `attribute:<name>`
+mode has no title but the column's own name, which is the point of it — the
+reader named that column.
+
+```js
+// type signature
+(colorBy: SyntenyColorBy) => string
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorLegend.ts)
 
 ### LEGEND_CHIP_ALPHA_FLOOR
 
@@ -109,7 +145,7 @@ Any other uniform mode has a fixed legend of its own and returns nothing.
 
 ```js
 // type signature
-(tracks: readonly {…}[], uniformColorBy: "track" | ... 9 more ... | undefined) => ColorChip[]
+(tracks: readonly { name: string; colorBy: SyntenyColorBy; trackColor: string; }[], uniformColorBy: SyntenyColorBy | undefined) => ColorChip[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorLegend.ts)
