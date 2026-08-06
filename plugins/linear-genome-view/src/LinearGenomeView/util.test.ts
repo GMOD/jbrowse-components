@@ -195,6 +195,26 @@ describe('tick calculation', () => {
       { type: 'minor', base: 79 },
     ])
   })
+
+  // Major ticks carry the scalebar's coordinate labels, so their pitch is what
+  // the reader sees as "the numbers go up by N". Marking majors at two
+  // chooseGridPitch pitches instead of one used to yield 4×10ⁿ — a scalebar
+  // numbered 4000/8000/12000, which reads as an arbitrary interval next to the
+  // 5000/10000/15000 every other ruler in the app shows.
+  test.each([0.05, 0.1, 0.25, 0.5, 1, 2, 5, 10, 25, 50, 100, 250, 1000, 5000])(
+    'major pitch stays on the 1/2/5 ladder at %p bp/px',
+    bpPerPx => {
+      const majors = makeTicks(0, 100_000_000, bpPerPx, true, false)
+        .map(t => t.base + 1)
+        .filter(base => base > 0)
+      const pitch = majors[1]! - majors[0]!
+      // 1, 2 or 5 times a power of ten
+      const mantissa = pitch / 10 ** Math.floor(Math.log10(pitch))
+      expect([1, 2, 5]).toContain(Math.round(mantissa))
+      // and spaced for reading: wide enough that a coordinate label fits
+      expect(pitch / bpPerPx).toBeGreaterThanOrEqual(120)
+    },
+  )
 })
 
 describe('makeBlockTicks', () => {

@@ -49,6 +49,16 @@ export function makeOverviewTicks(
   bpPerPx: number,
   reversed = false,
 ) {
+  // A zero (or negative) scale has no tick pitch to speak of, and this loop is
+  // sized in bp: chooseGridPitch bottoms out at 5bp, so a chromosome-length
+  // region would ask for tens of millions of ticks and hang. createOverviewLayout
+  // reports bpPerPx 0 whenever the overview's width collapses to 0 or less —
+  // a view narrower than its own chromosome-name gutter, or a caller that sets
+  // width directly (jbrowse-img) rather than through useWidthSetter, which
+  // filters 0 out.
+  if (!(bpPerPx > 0)) {
+    return []
+  }
   const { majorPitch } = chooseGridPitch(bpPerPx, 120, 15)
   const firstTick = reversed
     ? Math.floor((end - 1) / majorPitch) * majorPitch
@@ -78,7 +88,14 @@ export function makeTicks(
   emitMajor = true,
   emitMinor = true,
 ): Tick[] {
-  const { majorPitch, minorPitch } = chooseGridPitch(bpPerPx, 60, 15)
+  // Ask for the ~200px spacing this ruler actually wants, and mark majors at
+  // that pitch. This used to ask for 60px and then mark majors every *two*
+  // pitches, which spaced them the same but off chooseGridPitch's 1/2/5 ladder:
+  // doubling a ladder value yields 4×10ⁿ half the time, so the scalebar numbered
+  // 4000/8000/12000 rather than 5000/10000/15000. The overview scalebar
+  // (makeOverviewTicks) and the dotplot's ruler both already read majorPitch
+  // straight, which is the contract chooseGridPitch documents.
+  const { majorPitch, minorPitch } = chooseGridPitch(bpPerPx, 120, 15)
 
   // pad 20px on each side so label ends that spill slightly outside the region
   // still draw
@@ -87,16 +104,15 @@ export function makeTicks(
   const maxBase = end + margin + 1
 
   const iterPitch = minorPitch || majorPitch
-  const majorInterval = majorPitch * 2
   const ticks: Tick[] = []
   for (
     let base = Math.floor(minBase / iterPitch) * iterPitch;
     base < Math.ceil(maxBase / iterPitch) * iterPitch + 1;
     base += iterPitch
   ) {
-    if (emitMinor && base % majorInterval) {
+    if (emitMinor && base % majorPitch) {
       ticks.push({ type: 'minor', base: base - 1 })
-    } else if (emitMajor && !(base % majorInterval)) {
+    } else if (emitMajor && !(base % majorPitch)) {
       ticks.push({ type: 'major', base: base - 1 })
     }
   }
@@ -403,6 +419,22 @@ export function overviewRefNameLabelWidth(refName: string) {
     refNameLabelWidth(refName) +
     REF_NAME_LABEL_INSET_PX
   )
+}
+
+/**
+ * Breathing room between the chromosome name and the ideogram to its right, on
+ * top of the space the name itself needs.
+ */
+const CYTOBAND_LABEL_GAP_PX = 9
+
+/**
+ * How far right the ideogram starts, i.e. the gutter the chromosome name drawn
+ * to its left gets to itself. Shares overviewRefNameLabelWidth with the tick
+ * labels that dodge the same name, rather than measuring it again at a font size
+ * (12) the label is not actually drawn at (REF_NAME_LABEL_FONT_SIZE).
+ */
+export function cytobandLabelGutterWidth(refName: string) {
+  return overviewRefNameLabelWidth(refName) + CYTOBAND_LABEL_GAP_PX
 }
 
 /**

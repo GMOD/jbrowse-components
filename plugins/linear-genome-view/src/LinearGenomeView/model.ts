@@ -15,7 +15,6 @@ import {
   isSessionModelWithWidgets,
   localStorageGetBoolean,
   localStorageGetItem,
-  measureText,
   springAnimate,
   sum,
 } from '@jbrowse/core/util'
@@ -68,6 +67,7 @@ import {
 import {
   MIN_TICK_LABELS_PER_BLOCK,
   calculateVisibleLocStrings,
+  cytobandLabelGutterWidth,
   expandRegion,
   generateLocations,
   groupContiguousBlocks,
@@ -1656,7 +1656,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       get cytobandOffset() {
         return this.effectiveShowCytobands
-          ? measureText(self.displayedRegions[0]?.refName || '', 12) + 15
+          ? cytobandLabelGutterWidth(self.displayedRegions[0]?.refName || '')
           : 0
       },
       /**
