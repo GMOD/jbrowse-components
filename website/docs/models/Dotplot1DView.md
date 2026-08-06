@@ -11,8 +11,7 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 
 one axis of a dotplot. categorized General rather than View because it is not a
 pluggable view type, which the name-suffix heuristic would otherwise assume ref
-https://@jbrowse/mobx-state-tree.js.org/concepts/volatiles on volatile state
-used here
+https://mobx-state-tree.js.org/concepts/volatiles on volatile state used here
 
 ## Getters
 

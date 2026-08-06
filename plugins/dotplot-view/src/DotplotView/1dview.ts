@@ -9,7 +9,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * #category general
  * one axis of a dotplot. categorized General rather than View because it is not
  * a pluggable view type, which the name-suffix heuristic would otherwise assume
- * ref https://@jbrowse/mobx-state-tree.js.org/concepts/volatiles on volatile state used here
+ * ref https://mobx-state-tree.js.org/concepts/volatiles on volatile state used here
  */
 const Dotplot1DView = Base1DView.extend(self => {
   return {

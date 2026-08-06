@@ -675,7 +675,7 @@ export function isAbstractMenuManager(
 }
 
 // Empty interfaces required by @jbrowse/mobx-state-tree
-// See https://@jbrowse/mobx-state-tree.js.org/tips/typescript#using-a-mst-type-at-design-time
+// See https://mobx-state-tree.js.org/tips/typescript#using-a-mst-type-at-design-time
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface NoAssemblyRegion extends SnapshotIn<
   typeof MUNoAssemblyRegion
