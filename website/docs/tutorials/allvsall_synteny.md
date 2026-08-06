@@ -458,8 +458,8 @@ counterpart at all. The gap in the figure is the gap in the file.
 
 ## See also
 
-- [Pangenome graphs (pggb)](/docs/tutorials/pangenome_ecoli)
-- [Pangenome graphs (Minigraph-Cactus)](/docs/tutorials/pangenome_cactus)
+- [](/docs/tutorials/pangenome_ecoli)
+- [](/docs/tutorials/pangenome_cactus)
 - [Synteny visualization](/docs/tutorials/synteny_visualization)
 - [Synteny from ortholog tables](/docs/tutorials/multiway_synteny)
 - [](/docs/user_guides/dotplot_view)

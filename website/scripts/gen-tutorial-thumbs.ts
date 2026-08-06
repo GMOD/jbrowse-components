@@ -249,7 +249,10 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
   pangenome_ecoli: {
     // Per-strain presence/absence, the projection that replaced the genotype
     // matrix on this card (see gallery.ts). Framed past the app chrome and
-    // coordinate ruler, row labels kept on the left.
+    // coordinate ruler, row labels kept on the left. The source figure now
+    // carries the aggregate depth curve above those rows, and the band takes in
+    // the bottom of it: a dark curve over four blue rows is a card with a shape,
+    // where the rows alone were a flat blue rectangle.
     src: 'pangenome/pav.png',
     band: [0.29, 1],
     position: 'left',
@@ -286,11 +289,14 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
   // per strain, under the K12 gene lane. It used to be this tutorial's variant
   // matrix, deliberately echoing the pggb card — but the two cards then read as
   // the same genotype grid, and the base-level MAF is the projection only the
-  // Cactus pipeline has. Frame the gene lane down through the strain rows, left
-  // half only so their labels stay in.
+  // Cactus pipeline has. Frame the conservation band down through the strain
+  // rows, left half only so their labels stay in — NOT from the gene lane down,
+  // which is what [0.4, 0.98] did: three gene bars over a lot of white filled
+  // half the card, and the alignment rows the card is about were a thin strip at
+  // the bottom.
   pangenome_cactus: {
     src: 'pangenome_cactus/maf.png',
-    band: [0.4, 0.98],
+    band: [0.62, 0.96],
     xband: [0, 0.47],
     position: 'left',
   },

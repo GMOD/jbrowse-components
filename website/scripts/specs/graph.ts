@@ -1897,6 +1897,16 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
     // the anchored pane grew past the 775 this used to need. Its label goes in
     // the block under the low-rank rows, which carry a label and almost no
     // nodes, and clear of the row labels' own column.
+    //
+    // DO NOT try to square the composite by raising this to the force half's
+    // 1055. `+append` pads the shorter panel, so the pair does carry a white
+    // slab under this side — but the slab is the graph PANE being shorter, not
+    // the capture being shorter, and the pane sizes itself to its own content.
+    // Rendered at 1055: the composite came out pixel-identical in its app frames
+    // and the extra 265 css px landed as blank page inside this part, which the
+    // run then reports as "blank below the last content". It also does not buy
+    // the zoom this half would like — the anchored layout stayed at 1.2%,
+    // because it fits to the pane and the pane did not grow.
     part(
       'pangenome/hprc_mhc_layout_anchored',
       'auto',
@@ -1979,7 +1989,14 @@ export const graphSpecs: ScreenshotSpec[] = [
     settleMs: 5000,
     // half the composed width each
     viewportWidth: 830,
-    // the two lanes plus the graph's five rows, and nothing under them
+    // the two lanes plus the graph's five rows, and nothing under them.
+    //
+    // DO NOT raise this to the force half's 1230 to square the composite. The
+    // white slab `+append` leaves under this side is the sample-rows PANE being
+    // shorter, not the capture; the pane sizes itself to its five rows, so at
+    // 1230 the app frames came out identical and the extra 335 css px landed as
+    // blank page inside this part, which the run then reports as "blank below
+    // the last content". Rendered both ways.
     viewportHeight: 895,
     hideTooltip: true,
   },

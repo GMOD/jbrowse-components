@@ -37,11 +37,6 @@ CLI and `bedGraphToBigWig` are each a
 comes from [nodejs.org](https://nodejs.org/). Everything else runs inside the
 pggb image.
 
-The image is the route here because it pins all five tools the pipeline is made
-of at once; pggb's
-[installation docs](https://pggb.readthedocs.io/en/latest/rst/installation.html)
-cover the alternatives.
-
 ## The linear projections
 
 A pangenome graph collapses many genomes into one structure: shared sequence is
@@ -100,11 +95,14 @@ bgzip all.fa
 samtools faidx all.fa.gz
 ```
 
-Then run pggb. `-V K12:10000` decomposes the graph into a VCF against the K12
-path, and `-M` writes the multiple alignment as a MAF. The image also carries
-[odgi](https://github.com/pangenome/odgi), which the untangle, depth, presence
-and subgraph sections below reuse, so wrap the `docker run` once and call it
-`in_pggb`:
+Then run pggb. The image is the route here because it pins all five tools the
+pipeline is made of at once; pggb's
+[installation docs](https://pggb.readthedocs.io/en/latest/rst/installation.html)
+cover the alternatives. `-V K12:10000` decomposes the graph into a VCF against
+the K12 path, and `-M` writes the multiple alignment as a MAF. The image also
+carries [odgi](https://github.com/pangenome/odgi), which the untangle, depth,
+presence and subgraph sections below reuse, so wrap the `docker run` once and
+call it `in_pggb`:
 
 ```bash
 in_pggb() {
@@ -294,12 +292,14 @@ its genomic position:
 }
 ```
 
-Stack the MAF alignment (below) in the same window and each variant row sits
-above the per-strain alignment it was decomposed from, which is the figure under
-[Whole-genome alignment (MAF) projection](#whole-genome-alignment-maf-projection):
-the same track over the same coordinates as the alignment rows the calls came
-out of. On its own the tier reads as a barcode; over the alignment, a strain's
-no-call block and the gap it has in the alignment are the same event twice.
+Stack the MAF alignment (below) in the same window and the calls sit over the
+alignment they were decomposed from, which is the figure under
+[Whole-genome alignment (MAF) projection](#whole-genome-alignment-maf-projection).
+Read that figure down a column rather than across a row: the two lanes share
+coordinates but not row order, since the variant lane follows the VCF's sample
+columns and the MAF lane follows the tree the track loads. On its own the tier
+reads as a barcode; over the alignment, a strain's no-call block and the gap it
+has in the alignment are the same event twice.
 
 ### Why the reference path takes a length
 
@@ -416,7 +416,7 @@ python3 odgi_similarity_to_newick.py ecoli_pggb_similarity.tsv ecoli_pggb.nh
 }
 ```
 
-<Figure caption="The graph's whole-genome alignment projected onto K12 across 60 kb: the coverage band on top, then one row per strain (K12 first), each colored where it differs from K12, with the variant calls above. A blank row is a strain with no alignment to K12 there, so accessory structure and SNP divergence read in one picture." src="/img/pangenome/maf.png" />
+<Figure caption="The graph's whole-genome alignment projected onto K12 across 60 kb: the coverage band on top, then one row per strain in the tree's order, each colored where it differs from K12, with the variant calls above. A blank row is a strain with no alignment to K12 there, so accessory structure and SNP divergence read in one picture." src="/img/pangenome/maf.png" />
 
 `samples` still names and labels the rows, so a tree that fails to build leaves
 the track working.
@@ -492,9 +492,11 @@ and MAF projections zoom into.
 <Figure caption="odgi depth over the whole K12 chromosome: a plateau near the strain count over core sequence, troughs at 1 over the stretches only K12 carries, and spikes past the strain count over the rRNA operons the graph collapses into one copy." src="/img/pangenome/depth.png" />
 
 The troughs sit at depth 1 where no other strain traverses the graph. Those
-stretches are K12's private sequence, and the gene lane names what is in them:
-mostly cryptic prophages and IS elements, which is where a bacterial accessory
-genome usually lives.
+stretches are K12's private sequence: mostly cryptic prophages and IS elements,
+which is where a bacterial accessory genome usually lives. There is no gene lane
+at this zoom, since 4.6 Mb of K12 is more features than a `FeatureTrack` will
+draw; zoom into one trough and the lane names it, which is what the figure below
+does for the widest of them.
 
 An unrelated isolate's long reads say the same thing without the graph. These
 are nanopore reads from _E. coli_ E146
@@ -502,7 +504,11 @@ are nanopore reads from _E. coli_ E146
 carbapenem-resistant clinical isolate that is not one of the five, mapped
 straight onto K12 with `minimap2 -ax map-ont`:
 
-<Figure caption="Nanopore reads from an unrelated E. coli isolate over one K12 depth trough, with the graph's depth curve and its MAF below. Coverage stops dead at the edges of the cryptic prophage CPZ-55, and reads long enough to cross the element carry it as a single labelled deletion; the reads are drawn with supplementary segments linked, so a read split at the boundary is joined to its other half rather than read as two. The depth curve steps 5 to 1 over the same span and all four non-K12 MAF rows go blank across it. Four files, one event." src="/img/pangenome/long_reads.png" />
+The pileup is drawn with supplementary segments linked, so a read split at the
+prophage boundary is joined to its other half rather than read as two, and reads
+long enough to cross the element carry it as a single labelled deletion.
+
+<Figure caption="Nanopore reads from an unrelated E. coli isolate over one K12 depth trough, with the graph's depth curve and its MAF below. Coverage stops dead at the edges of the cryptic prophage CPZ-55, the depth curve steps 5 to 1 across the same span, and all four non-K12 MAF rows go blank there. Four files, one event." src="/img/pangenome/long_reads.png" />
 
 Nothing in that picture came from the pangenome graph, which is what makes it a
 check on the projection rather than a restatement of it. It also shows the thing
@@ -571,13 +577,13 @@ done
 }
 ```
 
-Where the aggregate curve dips, this track shows which strain is missing: one
-row falls to 0 over its own accessory stretch while the others hold at 1. Each
-strain is absent from a different several percent of the windows. The windows
-where all four rows are absent at once are the K12-private islands the depth
-track bottoms out over.
+Draw it under the aggregate curve rather than beside it. Where that curve dips,
+these rows say which strain is missing: one falls to 0 over its own accessory
+stretch while the others hold at 1. Each strain is absent from a different
+several percent of the windows, and the windows where all four are absent at
+once are the K12-private islands the depth curve bottoms out over.
 
-<Figure caption="odgi pav over the same K12 windows, one row per non-K12 strain, near 1 where that strain is present and 0 over its own accessory stretches. The gap patterns differ per strain, so a single dip in the aggregate depth curve resolves into which strain accounts for it." src="/img/pangenome/pav.png" />
+<Figure caption="Both odgi projections over all of K12. On top, the aggregate depth curve again. Below it, odgi pav over the same windows, one row per non-K12 strain, near 1 where that strain is present and 0 over its own accessory stretches, so each dip in the curve above resolves into the strain that accounts for it." src="/img/pangenome/pav.png" />
 
 ## Compared to `odgi viz`
 
@@ -599,7 +605,10 @@ reference.
 do, but its horizontal axis is the graph's node order (the "pangenome
 sequence"), not any genome's coordinates. Sequence every strain walks is a
 filled column across all rows; accessory sequence is a gap in the rows that skip
-it. That is the graph's real structure, but no gene is numbered in node order.
+it. The brackets under the rows are the graph's links, each spanning the stretch
+of node order it jumps; a near-colinear bacterial graph has few long ones, so
+that band is mostly empty here. All of it is the graph's real structure, but no
+gene is numbered in node order.
 
 The JBrowse projections keep the one-row-per-strain idea and re-draw everything
 on K12's coordinates. Depth is the raster's column coverage summed into one
@@ -698,7 +707,7 @@ bar labelled `93 bp` running off the left edge: its segment links to
 93 bp of CFT073 stands in for 7.1 kb of K12 and the bar is that 7.1 kb. It is a
 deletion, not a loop, and most of it is outside the frame.
 
-<Figure caption="460 bp at the ycbF/pyrD boundary, the same graph in both layouts under the same MAF lane. Left, Sample rows in the MAF's five rows and order: the top row is the K12 backbone, and below it each strain's marks are the segments it takes instead. The MAF row above says the same thing base by base. Right, the same nodes force-directed, where the bubbles those rows flatten are visible as bubbles." src="/img/pangenome/pggb_locus_sample_rows.png" links="Sample rows=pangenome/pggb_locus_sample_rows_rows,Force-directed=pangenome/pggb_locus_sample_rows_force" />
+<Figure caption="460 bp at the ycbF/pyrD boundary, the same graph in both layouts under the same MAF lane. Left, Sample rows in the MAF's five rows and order: the top row is the K12 backbone, and below it each strain's marks are the segments it takes instead. The MAF row above says the same thing base by base. Right, the same nodes with the reference axis let go, where the 93 bp segment CFT073 takes instead of 7 kb of K12 is the one branch off the chain." src="/img/pangenome/pggb_locus_sample_rows.png" links="Sample rows=pangenome/pggb_locus_sample_rows_rows,Force-directed=pangenome/pggb_locus_sample_rows_force" />
 
 #### Where this stops, and what to do instead
 
@@ -900,16 +909,14 @@ the genome count, and `odgi untangle` indexes every step of every path.
 
 ## See also
 
-- [Pangenome graph view](/docs/user_guides/graph_genome_view), which draws this
-  graph as a graph and covers the view's layouts and menus
-- [Minigraph-Cactus pangenomes](/docs/tutorials/pangenome_cactus)
-- [All-vs-all synteny](/docs/tutorials/allvsall_synteny)
+- [](/docs/user_guides/graph_genome_view)
+- [](/docs/tutorials/pangenome_cactus)
+- [](/docs/tutorials/pangenome_hprc)
+- [](/docs/tutorials/allvsall_synteny)
 - [](/docs/user_guides/maf_track)
-- [Multi-sample variant track](/docs/user_guides/multivariant_track)
-- [PIF format](/docs/developer_guides/pif_format)
-- [JBrowse Jupyter / anywidget](/docs/jbrowse_jupyter), which stacks these same
-  strains from the all-vs-all PAF in a notebook
-- [](/docs/jbrowser), the same in R
+- [](/docs/user_guides/multivariant_track)
+- [](/docs/developer_guides/pif_format)
+- [](/docs/jbrowse_jupyter)
+- [](/docs/jbrowser)
 - [pggb](https://github.com/pangenome/pggb)
-- [odgi](https://odgi.readthedocs.io/), whose `untangle`, `similarity`, `depth`
-  and `pav` commands produce most of the tracks on this page
+- [odgi](https://odgi.readthedocs.io/)

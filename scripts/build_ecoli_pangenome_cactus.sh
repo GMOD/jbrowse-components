@@ -220,7 +220,9 @@ done
 # ecoli_cactus_graph_boxes.png (below) is what ships as
 # website/static/img/pangenome_cactus/graph.png.
 #
-# -y is the LINK band, not the path rows. This bacterial graph is near-colinear
+# -y is the TOTAL image height, not the link band, but odgi expands past it to
+# fit the path rows, so in practice it sets how much room is left underneath
+# them for the links. This bacterial graph is near-colinear
 # and has almost no long-range links, so the old -y 200 spent 54% of the figure
 # (measured: rows end at y=165 of 365) on an empty band. 20 keeps the band
 # present — it is real graph structure when there is any — without letting

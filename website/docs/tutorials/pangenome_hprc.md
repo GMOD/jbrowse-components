@@ -272,7 +272,14 @@ on that haplotype's assembly.
 Chromosome size does not enter into any of this. The amylase locus sits on chr1,
 the longest human chromosome, and the graph holds 464 haplotypes of it. Only the
 window is cut, so an allele whose interior falls outside it draws as a short arm
-off the backbone rather than as a closed loop:
+off the backbone rather than as a closed loop.
+
+The figure below is cut from `chr1:103,500,000-103,850,000`, wider than the
+amylase entry in the table further down and deliberately so: at the table's
+window the bubble filled the pane and had no flank to be localized against, so
+the drawing said nothing about where in the locus the complexity sits. Widening
+until the backbone chain is in frame is generally the move when a graph comes
+back as one tangle.
 
 <Figure caption="The amylase locus on chr1 as a force-directed graph, under the RefSeq genes and the rGFA segments for the same window. The flanks draw as one chain of backbone segments, and every crossing in the 126-node drawing is inside the amylase bubble at the end of that chain, so the window says where the complexity is as well as what it is." src="/img/pangenome/hprc_amylase_graph.png" />
 
@@ -418,7 +425,7 @@ rather than hundreds, the same menu opens any of them, or all at once as a
 synteny view. See the
 [graph genome view guide](/docs/user_guides/graph_genome_view#from-a-node-back-to-a-genome).
 
-### The one donor worth loading
+## The one donor worth loading
 
 On this graph exactly one contributor can be loaded as an assembly: CHM13. The
 haplotypes name their contigs by GenBank accession (`CM102524.1`), and there are
@@ -649,11 +656,10 @@ way the inversion does, so the script keeps only haplotypes whose alignments
 inside the drawn window are the inversion and its two forward flanks.
 
 Each haplotype row carries its own CAT gene annotation, which states the same
-event a second way: the named genes inside the boxed span run PPIAL4F, RNVU1-28,
-RNVU1-2A, RNVU1-26, NBPF15, RNVU1-15, PPIAL4E down the carrier, and PPIAL4E
-through PPIAL4F, the reference's order, down the non-carrier.
+event a second way and without reference to the ribbon: the genes named inside
+the boxed span run in opposite orders down the two rows.
 
-<Figure caption="The 1q21.1 bubble the graph flags as an inversion, drawn as alignments. Between the two haplotype rows are the RefSeq genes, the bubble lane cut to inversion-flagged bubbles with the boxed one the subject, and the rGFA segments. The top row is HG01891 hap 1: its ribbon crosses inside the boxed span, runs parallel either side of it, and its own genes run backwards through it. The bottom row is HG02698 hap 2, one forward ribbon and reference gene order across the whole window." src="/img/pangenome/hprc_inversion.png" />
+<Figure caption="The 1q21.1 bubble the graph flags as an inversion, drawn as alignments. Between the two haplotype rows are the RefSeq genes, the bubble lane cut to inversion-flagged bubbles, and the rGFA segments. HG01891 hap 1 on top: its ribbon crosses inside the boxed span and its own genes run backwards through it. HG02698 hap 2 below: one forward ribbon, reference gene order." src="/img/pangenome/hprc_inversion.png" />
 
 The [allele inventory](#the-allele-inventory) has nothing for them by
 construction, since a mixed-orientation pair of backbone segments is a
@@ -897,7 +903,7 @@ crosses the genes, the segments lane and the genotype matrix in one column, and
 the reference-position ramp gives the graph's backbone at that position the same
 hue as the segments above it.
 
-<Figure caption="One window, both products. The band marks one deletion site from the callset: the matrix below it, all 464 haplotypes clustered by genotype, colors the clade carrying the deletion, and the segments lane above it is the graph's own sequence there. The force-directed graph has no coordinate axis to draw the band on, so an arrow runs from it to a ring on the reference node the deletion removes." src="/img/pangenome/hprc_graph_vs_callset.png" />
+<Figure caption="One window, both products. The band is one 14.6 kb deletion site from the callset, and the matrix below it, all 464 haplotypes clustered by genotype, colors the clade carrying it. The force graph has no coordinate axis to draw the band on, so an arrow runs from the band to a ring on the reference node the deletion removes: the 12.3 kb one, not the 1.5 kb edge labelled beside it." src="/img/pangenome/hprc_graph_vs_callset.png" />
 
 ## Reproduce it end to end
 
@@ -978,11 +984,8 @@ gene lane per haplotype.
 
 ## See also
 
-- [Pangenome graphs (Minigraph-Cactus)](/docs/tutorials/pangenome_cactus), which
-  builds a graph of this kind from five _E. coli_ strains, small enough to run
-  end to end yourself
-- [Pangenome graphs (pggb)](/docs/tutorials/pangenome_ecoli) for what each
-  linear projection of a graph means
-- [Multi-sample variant track](/docs/user_guides/multivariant_track) for the
-  callset display used here
+- [](/docs/tutorials/pangenome_cactus)
+- [](/docs/tutorials/pangenome_ecoli)
+- [](/docs/user_guides/graph_genome_view)
+- [](/docs/user_guides/multivariant_track)
 - [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710)

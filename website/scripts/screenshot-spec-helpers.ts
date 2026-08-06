@@ -463,6 +463,23 @@ export const openFeatureHeightSubmenu = (): ScreenshotAction[] => [
   { type: 'waitForText', text: 'Super-compact' },
 ]
 
+// Park the mouse somewhere that cannot react to it, so no overview-ruler
+// position readout or feature hover is left hanging in the capture.
+//
+// The JBrowse wordmark in the app bar, by its own `aria-label`, rather than the
+// `{ x: 950, y: 60 }` this idiom used to be written as. That point was described
+// in every copy as "the inert app header" and is nothing of the sort: at
+// viewportWidth 1000 it lands in the *view's* title bar a few px from the
+// minimize button, so it was one toolbar tweak away from parking the cursor on a
+// control and one narrower viewport away from parking it on the canvas. The
+// wordmark is the only thing up there that is guaranteed inert — it is an svg
+// with no handlers — and it moves with the layout instead of having to be
+// re-measured when the layout moves.
+export const PARK_CURSOR: ScreenshotAction = {
+  type: 'hover',
+  selector: '[aria-label="JBrowse"]',
+}
+
 // A stage that ends with its submenu open must be fully dismissed before the
 // next stage clicks a different track's menu, or the lingering menu's backdrop
 // swallows that click and it lands on the wrong track. Escape does NOT close

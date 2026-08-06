@@ -353,9 +353,18 @@ done
 # — the tutorial contrasts this graph-native axis against the four reference-
 # anchored projections. Copy ecoli_pggb_graph.png into website/static/img/
 # pangenome/graph.png to render that figure.
-# -a 40 makes each of the (few) strain rows tall enough to read; the small -y
-# keeps the link band below them slim so the path rows dominate the figure.
-in_pggb odgi viz -i "/data/$GFA" -o /data/ecoli_pggb_graph.png -x 1500 -a 40 -y 260
+# -a 40 makes each of the (few) strain rows tall enough to read. -y is the TOTAL
+# image height and odgi expands past it to fit the path rows, so in practice it
+# sets how much room is left underneath them for the link band. This graph is
+# near-colinear and has almost no long-range links, so -y 260 spent most of the
+# figure on a band with nothing in it: measured on the shipped
+# static/img/pangenome/graph.png, the five path rows end at y=198 of 448, so 56%
+# of the picture was empty brackets. 20 keeps the band present — it is real
+# graph structure when there is any — without letting emptiness dominate a
+# figure whose point is the five strain rows. Same value and same reasoning as
+# build_ecoli_pangenome_cactus.sh; the shipped PNG still predates this and needs
+# a pggb rebuild to catch up.
+in_pggb odgi viz -i "/data/$GFA" -o /data/ecoli_pggb_graph.png -x 1500 -a 40 -y 20
 
 # ── Graph-view assets: two subgraphs for the Graph genome view ────────────────
 # Neither is a JBrowse track: both are GFA files the graph genome view plugin

@@ -15,8 +15,8 @@ mapped through it.
 
 :::caution Experimental
 
-This tutorial covers experimental ideas, and the graph view it links to is a
-beta plugin. We welcome your [feedback](/contact).
+The graph view is a beta plugin, and this tutorial covers experimental ideas. We
+welcome your [feedback](/contact).
 
 :::
 
@@ -38,11 +38,6 @@ CLI and `bedGraphToBigWig` are each a
 [single-binary download](https://hgdownload.soe.ucsc.edu/admin/exe/); and `node`
 comes from [nodejs.org](https://nodejs.org/). Everything else runs inside the
 cactus image.
-
-The image is used here because the projections below need odgi, halSynteny,
-hal2maf and `vg`, and it carries all four. On a machine with no container
-runtime at all, Cactus also ships a statically linked
-[binary release](https://github.com/ComparativeGenomicsToolkit/cactus/blob/master/BIN-INSTALL.md).
 
 ## Cactus against pggb
 
@@ -94,6 +89,10 @@ Contigs keep their plain names here (`chr`). Cactus applies
 naming to the graph internally, so there is no pre-naming step. (pggb is
 different: it wants a PanSN-named concatenated FASTA up front.)
 
+The image is used here because the projections below need odgi, halSynteny,
+hal2maf and `vg`, and it carries all four. On a machine with no container
+runtime at all, Cactus also ships a statically linked
+[binary release](https://github.com/ComparativeGenomicsToolkit/cactus/blob/master/BIN-INSTALL.md).
 Every later step runs in the same image, so wrap the `docker run` once and call
 it `in_cactus`:
 
@@ -139,40 +138,6 @@ One run produces everything the sections below use:
 
 The image also carries [odgi](https://github.com/pangenome/odgi), `halSynteny`,
 and `hal2maf`, so the projections need no other tool.
-
-## Drawing this graph as a graph
-
-The projections below flatten the graph onto K12. JBrowse can also draw it as a
-graph, through the
-[graph genome view plugin](/docs/user_guides/graph_genome_view).
-
-`mc/ecoli.gfa.gz` carries no `SN`/`SO`/`SR` tags, so nothing reads a reference
-position straight off a segment the way it does for a minigraph rGFA. Its `P`
-and `W` records hold the same information in a different encoding: walking a
-path in step order gives every segment it visits an interval on that path's own
-sequence. `build_pggb_tabix.sh` does that walk offline and writes the two
-tabix-indexed BEDs `RgfaTabixAdapter` reads, which makes the whole graph
-queryable by locus with no per-window extraction step:
-
-```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_pggb_tabix.sh
-bash build_pggb_tabix.sh mc/ecoli.gfa.gz ecoli_cactus K12
-```
-
-Cactus writes the reference as a `P` line and the haplotypes as `W` lines, and
-the walk reads both in file order, so the third argument anchors rank 0 on the
-K12 path and every other path contributes the segments no earlier path reached,
-on its own coordinates. The non-reference paths carry a trailing subpath tag
-(`Sakai#0#chr#0`), which changes nothing here: PanSN still resolves the sample,
-and off-reference segments are reached from a K12 query through the links file
-either way.
-
-The
-[pggb tutorial](/docs/tutorials/pangenome_ecoli#browsing-the-whole-graph-by-locus)
-covers the track config this produces, the two decisions in the walk that decide
-what it can be trusted for, and the graph size past which indexing stops being
-the answer. For a graph too large to index, or a window someone hands you, cut a
-file offline with `odgi extract` instead, which that page also covers.
 
 ## All-vs-all synteny projection
 
@@ -478,6 +443,40 @@ sorting the pileup.
 `.min` and `.zipcodes` built from it, so a second run refuses to start on an
 index that only looks stale. `touch` the two derived files before re-mapping.
 
+## Drawing this graph as a graph
+
+Every projection above flattens the graph onto K12. JBrowse can also draw it as
+a graph, through the
+[graph genome view plugin](/docs/user_guides/graph_genome_view).
+
+`mc/ecoli.gfa.gz` carries no `SN`/`SO`/`SR` tags, so nothing reads a reference
+position straight off a segment the way it does for a minigraph rGFA. Its `P`
+and `W` records hold the same information in a different encoding: walking a
+path in step order gives every segment it visits an interval on that path's own
+sequence. `build_pggb_tabix.sh` does that walk offline and writes the two
+tabix-indexed BEDs `RgfaTabixAdapter` reads, which makes the whole graph
+queryable by locus with no per-window extraction step:
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_pggb_tabix.sh
+bash build_pggb_tabix.sh mc/ecoli.gfa.gz ecoli_cactus K12
+```
+
+Cactus writes the reference as a `P` line and the haplotypes as `W` lines, and
+the walk reads both in file order, so the third argument anchors rank 0 on the
+K12 path and every other path contributes the segments no earlier path reached,
+on its own coordinates. The non-reference paths carry a trailing subpath tag
+(`Sakai#0#chr#0`), which changes nothing here: PanSN still resolves the sample,
+and off-reference segments are reached from a K12 query through the links file
+either way.
+
+The
+[pggb tutorial](/docs/tutorials/pangenome_ecoli#browsing-the-whole-graph-by-locus)
+covers the track config this produces, the two decisions in the walk that decide
+what it can be trusted for, and the graph size past which indexing stops being
+the answer. For a graph too large to index, or a window someone hands you, cut a
+file offline with `odgi extract` instead, which that page also covers.
+
 ## Compared to `odgi viz`
 
 `--viz` already wrote `mc/ecoli.viz/chr.full.viz.png`, the same
@@ -541,9 +540,9 @@ singularity or apptainer. Force one with `CONTAINER=singularity`.
 
 ## See also
 
-- [Pangenome graphs (pggb)](/docs/tutorials/pangenome_ecoli)
-- [HPRC pangenome](/docs/tutorials/pangenome_hprc), a Minigraph-Cactus graph of
-  464 human haplotypes, opened from hosted files rather than built here
-- [All-vs-all synteny](/docs/tutorials/allvsall_synteny)
+- [](/docs/tutorials/pangenome_ecoli)
+- [](/docs/tutorials/pangenome_hprc)
+- [](/docs/tutorials/allvsall_synteny)
+- [](/docs/user_guides/graph_genome_view)
 - [](/docs/user_guides/maf_track)
 - [Minigraph-Cactus](https://github.com/ComparativeGenomicsToolkit/cactus/blob/master/doc/pangenome.md)

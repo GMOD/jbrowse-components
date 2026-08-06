@@ -499,6 +499,6 @@ lacked the sequence. Use the per-strain route when you have the assemblies.
 - [](/docs/user_guides/alignments_track)
 - [](/docs/tutorials/pangenome_ecoli)
 - [](/docs/tutorials/pangenome_hprc)
-- [Minigraph-Cactus pangenomes](/docs/tutorials/pangenome_cactus)
+- [](/docs/tutorials/pangenome_cactus)
 - [Configuring plugins](/docs/config_guides/plugins)
 - [Gallery: pangenomes](/gallery/#pangenome)

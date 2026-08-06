@@ -1,4 +1,8 @@
-import { displayReady, sessionSpec } from '../screenshot-spec-helpers.ts'
+import {
+  PARK_CURSOR,
+  displayReady,
+  sessionSpec,
+} from '../screenshot-spec-helpers.ts'
 import { ECOLI_DEMO_BASE } from './demoBase.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
@@ -159,9 +163,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
       // the regen, so this cannot fail into a silently clipped legend the way a
       // hideSelectors rule would.
       { type: 'click', selector: '[title="Hide legend"]' },
-      // park the cursor over the inert app header so no overview-ruler position
-      // tooltip or feature hover lingers in the capture
-      { type: 'hover', from: { x: 950, y: 60 } },
+      PARK_CURSOR,
       { type: 'delay', ms: 2000 },
     ],
   },
@@ -210,11 +212,20 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
           drawCurves: false,
           colorBy: 'default',
           levelHeights: [140, 140],
+          // Only the K12 row carries a track here, so without this the two
+          // flanking rows each draw a "No tracks active / OPEN TRACK SELECTOR"
+          // block where their scalebar should be — two thirds of the figure's
+          // rows advertising an empty browser, in a figure whose subject is the
+          // ribbons between them.
+          collapseEmptyRows: true,
         },
       ],
     }),
-    // two flanking scalebar rows, the K12 row with its gene lane, two 140px bands
-    viewportHeight: 735,
+    // two collapsed flanking scalebar rows, the K12 row with its gene lane, two
+    // 140px bands. 646 rather than the 735 this carried while the flanking rows
+    // still drew a "No tracks active" block each, from the run's own
+    // "89 css px of blank below the last content".
+    viewportHeight: 646,
     readySelector: '[data-testid="synteny_canvas_done"]',
     readyTimeout: 120000,
     settleMs: 15000,
@@ -257,18 +268,22 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     viewportHeight: 400,
     settleMs: 15000,
     hideTooltip: true,
-    actions: [
-      // park the cursor over the inert app header so no overview-ruler position
-      // tooltip or feature hover lingers in the capture
-      { type: 'hover', from: { x: 950, y: 60 } },
-      { type: 'delay', ms: 2000 },
-    ],
+    actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
   },
 
   // Projection 4b: per-strain presence from `odgi pav` as a MultiQuantitativeTrack
   // — one bigWig subtrack per non-K12 strain, whole-chromosome so each strain's
-  // accessory dips read at a glance beside the aggregate depth curve. No gene
-  // lane, same as the depth figure above.
+  // accessory dips read at a glance. No gene lane, same as the depth figure
+  // above.
+  //
+  // The aggregate depth curve rides on top, which is the whole claim the section
+  // makes: "where the aggregate curve dips, this track shows which strain is
+  // missing". Alone, the pav rows are a wall of blue with hairline gaps and the
+  // dip they explain is in a different figure eighty lines up, so the reader is
+  // asked to hold two whole-chromosome pictures in their head and align them by
+  // eye. The Minigraph-Cactus page already draws it this way
+  // (pangenome_cactus/pav) for exactly this reason; this is that fix
+  // back-ported, at the same two heights so the builders stay comparable.
   {
     mode: 'url',
     name: 'pangenome/pav',
@@ -280,9 +295,16 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
           loc: 'chr:1-4,641,652',
           tracks: [
             {
+              trackId: 'ecoli_pggb_depth',
+              type: 'LinearWiggleDisplay',
+              height: 150,
+            },
+            {
               trackId: 'ecoli_pggb_pav',
               type: 'MultiLinearWiggleDisplay',
-              height: 320,
+              // 4 strains at 60px a row, enough for the accessory dips to read
+              // without the stack dominating the frame
+              height: 240,
             },
           ],
         },
@@ -291,15 +313,11 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     readyText: 'per-strain presence',
     readyTimeout: 90000,
     viewportWidth: 1000,
-    viewportHeight: 530,
+    // fits the 150px depth track plus the whole 240px stack
+    viewportHeight: 640,
     settleMs: 15000,
     hideTooltip: true,
-    actions: [
-      // park the cursor over the inert app header so no overview-ruler position
-      // tooltip or feature hover lingers in the capture
-      { type: 'hover', from: { x: 950, y: 60 } },
-      { type: 'delay', ms: 2000 },
-    ],
+    actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
   },
 
   // What a depth trough IS, at single-read resolution. The depth and pav tracks
@@ -386,9 +404,6 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     viewportHeight: 865,
     settleMs: 20000,
     hideTooltip: true,
-    actions: [
-      { type: 'hover', from: { x: 950, y: 60 } },
-      { type: 'delay', ms: 2000 },
-    ],
+    actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
   },
 ]

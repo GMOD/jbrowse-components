@@ -1,4 +1,8 @@
-import { displayReady, sessionSpec } from '../screenshot-spec-helpers.ts'
+import {
+  PARK_CURSOR,
+  displayReady,
+  sessionSpec,
+} from '../screenshot-spec-helpers.ts'
 import { ECOLI_DEMO_BASE } from './demoBase.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
@@ -59,11 +63,17 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
           colorBy: 'default',
           minAlignmentLength: 10000,
           levelHeights: [110, 110, 110, 110],
+          // same as the pggb stack: no row carries a track, so each one
+          // collapses to a bare scalebar instead of a "No tracks active /
+          // OPEN TRACK SELECTOR" block. Without it this figure shipped five of
+          // them down its middle, which reads as an empty browser.
+          collapseEmptyRows: true,
         },
       ],
     }),
-    // five rows and four 110px bands
-    viewportHeight: 1030,
+    // five collapsed scalebar rows and four 110px bands, matching the pggb
+    // figure's framing so the two builders are comparable line for line
+    viewportHeight: 715,
     readySelector: '[data-testid="synteny_canvas_done"]',
     readyTimeout: 120000,
     settleMs: 15000,
@@ -185,10 +195,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     viewportHeight: 690,
     settleMs: 15000,
     hideTooltip: true,
-    actions: [
-      { type: 'hover', from: { x: 950, y: 60 } },
-      { type: 'delay', ms: 2000 },
-    ],
+    actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
   },
 
   // Projection 3: the graph's whole-genome alignment (the HAL) projected onto K12
@@ -217,10 +224,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     viewportHeight: 480,
     settleMs: 15000,
     hideTooltip: true,
-    actions: [
-      { type: 'hover', from: { x: 950, y: 60 } },
-      { type: 'delay', ms: 2000 },
-    ],
+    actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
   },
 
   // The JBrowse half of the odgi-viz correspondence pair: the same locus the
@@ -318,10 +322,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     viewportHeight: 380,
     settleMs: 15000,
     hideTooltip: true,
-    actions: [
-      { type: 'hover', from: { x: 990, y: 60 } },
-      { type: 'delay', ms: 2000 },
-    ],
+    actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
   },
 
   // Projection 4: the two odgi projections in one whole-chromosome view — the
@@ -362,9 +363,6 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     viewportHeight: 640,
     settleMs: 15000,
     hideTooltip: true,
-    actions: [
-      { type: 'hover', from: { x: 950, y: 60 } },
-      { type: 'delay', ms: 2000 },
-    ],
+    actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
   },
 ]
