@@ -143,6 +143,18 @@ test('reports query coverage alongside identity', () => {
   expect(byRefName('chr6').queryName).toBe('YourSeq')
 })
 
+// The assumption behind the dialog's calm "No BLAT hits found in hg38": in JSON
+// mode a query that matched nothing answers with an empty table, not with a kent
+// errAbort page. If UCSC ever changed that, this would still pass while the
+// dialog turned red — and browser users would get the proxy's reading of any
+// HTML at all, "the apiKey may be invalid or rate-limited", for a query that
+// simply had no hits. This is the line to come back to.
+test('a query that matched nothing parses as no hits, not an error', () => {
+  expect(parseBlatResponse(JSON.stringify({ ...response, blat: [] }))).toEqual(
+    [],
+  )
+})
+
 // a mirror or proxy relaying its own JSON envelope reached `.map` on undefined,
 // so the user was shown a TypeError where the server's own words belong
 test('rejects JSON that is not a PSL table with a readable message', () => {

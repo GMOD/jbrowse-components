@@ -80,6 +80,23 @@ AGTTTCCATAGGTCTGAAAATGtttcctgactcagagggggctcgacgct
   expect(parseIsPcrResponse(live)).toHaveLength(1)
 })
 
+// The header used to have to start its line, which held whether a product was
+// found at all hostage to where the surrounding markup happened to break. Both
+// of these are the same amplicon as the test above, moved by markup alone.
+test.each([
+  ['PRE opens on the header line', '<HTML><BODY><PRE>&gt;chr17:7676521'],
+  ['the block is indented', '<HTML><BODY><PRE>\n   &gt;chr17:7676521'],
+])(
+  'parses an amplicon header that does not start its line (%s)',
+  (_n, head) => {
+    expect(
+      parseIsPcrResponse(
+        `${head}+7676667 147bp AGTTTCCATAGGTCTGAAAATG GGGTTGGAAGTGTCTCATGCTG\nACGT\n</PRE></BODY></HTML>`,
+      ),
+    ).toMatchObject([{ refName: 'chr17', start: 7676520, end: 7676667 }])
+  },
+)
+
 // an ordinary UCSC page carries a nav link to FAQdownloads.html#CAPTCHA, which
 // must not read as a challenge when the real problem is that nothing parsed
 test('a result page mentioning the CAPTCHA FAQ is not a challenge', () => {

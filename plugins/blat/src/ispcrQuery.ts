@@ -8,8 +8,16 @@ import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 //   >chr9:132576352+132576623 272bp GTGACGTCG... CCTAGGTTG...
 // where the sign between the two 1-based coordinates is the product strand and
 // the two trailing tokens are the forward and reverse primers as submitted.
+//
+// Not anchored to the start of a line. The whole shape — a '>', a locus with a
+// strand sign inside it, a bp count, two primers — is specific enough on its
+// own, and the anchor was a standing bet that markup never precedes the '>' on
+// its line. `<PRE>` opening on the same line as the first amplicon is all it
+// would take to lose that product, and this parser has already shipped one
+// silent zero-products bug of exactly that kind (see the anchored-header test).
+// A '>' still may not reach across a newline to claim a header below it.
 const AMPLICON_HEADER =
-  /^>\s*(\S+):(\d+)([+-])(\d+)\s+(\d+)bp\s+(\S+)\s+(\S+)/gm
+  />[^\S\n]*(\S+):(\d+)([+-])(\d+)\s+(\d+)bp\s+(\S+)\s+(\S+)/g
 
 export const UCSC_ISPCR_URL = 'https://genome.ucsc.edu/cgi-bin/hgPcr'
 
