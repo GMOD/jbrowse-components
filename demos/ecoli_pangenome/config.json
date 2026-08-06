@@ -314,6 +314,27 @@
       }
     },
     {
+      "type": "FeatureTrack",
+      "trackId": "ecoli_pggb_untangle_rows",
+      "name": "pggb graph: untangle per strain (orientation, vs K12)",
+      "assemblyNames": ["K12"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "uri": "ecoli_pggb_untangle_rows.bed.gz"
+      },
+      "displays": [
+        {
+          "type": "LinearMultiRowFeatureDisplay",
+          "partitionField": "strain",
+          "rowOrder": ["Sakai", "CFT073", "NCTC86", "IAI39"],
+          "legend": [
+            { "label": "Same orientation as K12", "color": "rgb(153,153,153)" },
+            { "label": "Inverted", "color": "rgb(214,39,40)" }
+          ]
+        }
+      ]
+    },
+    {
       "type": "VariantTrack",
       "trackId": "ecoli_pggb_variants",
       "name": "pggb graph: pangenome variants (vs K12)",

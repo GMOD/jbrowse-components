@@ -234,6 +234,14 @@ jbrowse make-pif ecoli_pggb_ava.paf   # -> ecoli_pggb_ava.pif.gz (+ .tbi)
 # every SNP node starts a new one), -j keeps mappings at or above a jaccard, and
 # -p asks for PAF so `make-pif` reads it with nothing in between.
 #
+# -e 5000 IS LOAD-BEARING, and it costs 2m13s on this graph. untangle starts a
+# segment where the graph stops agreeing, which on a near-colinear bacterial
+# pangenome is rare: without it this file is 174 records for all four pairs, so
+# every ribbon spans the frame and nothing about the projection is legible. -e
+# forces a boundary every N bp of the sorted graph, which takes it to 3,923 --
+# ~980 per strain, a regular grid on the reference. That is also what makes the
+# per-strain lane below worth drawing: 174 blocks cannot carry orientation.
+#
 # untangle leaves PAF column 10 (residue matches) at 0 and writes no CIGAR --
 # it reports a jaccard over graph steps, not a base alignment -- so a consumer
 # that derives percent identity from col10/col11 reads every block as 0%. It
@@ -247,7 +255,7 @@ if [ ! -f ecoli_pggb_untangle.paf ]; then
     [ "$strain" = "$REF" ] || printf '%s#1#chr\n' "$strain" >> untangle_query.txt
   done
   in_pggb odgi untangle -i "/data/$OG" -R /data/untangle_target.txt \
-    -Q /data/untangle_query.txt -m 1000 -j 0.5 -p -t "$(nproc)" \
+    -Q /data/untangle_query.txt -m 1000 -j 0.5 -e 5000 -p -t "$(nproc)" \
     | awk -F'\t' -v OFS='\t' '
         { id = ""
           for (i = 13; i <= NF; i++) if ($i ~ /^id:f:/) { id = substr($i, 6) }
@@ -257,6 +265,23 @@ if [ ! -f ecoli_pggb_untangle.paf ]; then
   mv ecoli_pggb_untangle.paf.tmp ecoli_pggb_untangle.paf
 fi
 jbrowse make-pif ecoli_pggb_untangle.paf
+
+# The same file as one lane per strain on REF's own axis, rather than as ribbons
+# between two genome rows. Two things a ribbon cannot show become readable there:
+# the strand each segment traverses the reference in (a large inversion is a long
+# contiguous run of them -- here 310 of IAI39's 956 segments, in five runs, and
+# none at all in Sakai or NCTC86, which is the negative control in the same
+# picture), and untangle's `sc:f:` self-coverage, above 1 exactly where the graph
+# collapsed a repeat.
+python3 "$SCRIPT_DIR/untangle_to_bed.py" ecoli_pggb_untangle.paf chr \
+  > ecoli_pggb_untangle_rows.bed.tmp
+# keep the header first, sort the rest
+(head -1 ecoli_pggb_untangle_rows.bed.tmp
+ tail -n +2 ecoli_pggb_untangle_rows.bed.tmp | sort -k1,1 -k2,2n) \
+  > ecoli_pggb_untangle_rows.bed
+rm -f ecoli_pggb_untangle_rows.bed.tmp
+bgzip -f ecoli_pggb_untangle_rows.bed
+tabix -f -p bed ecoli_pggb_untangle_rows.bed.gz
 
 # ── Projection 2: pangenome variants (rename the REF path to the assembly chr) ─
 # pggb writes the VCF CHROM as the PanSN reference path (K12#1#chr); JBrowse needs
@@ -559,6 +584,37 @@ cat > untangle_track.json <<JSON
 }
 JSON
 jb add-track-json untangle_track.json --update --out "$APP"
+
+# projection 1c: the same untangle file as one lane per strain on REF's axis.
+# `partitionField` gives each strain its own row and the BED's own itemRgb colors
+# each block by orientation, so the track needs no color config; `legend` states
+# what the two colors mean, since the category lives only in the color.
+cp ecoli_pggb_untangle_rows.bed.gz ecoli_pggb_untangle_rows.bed.gz.tbi "$APP/"
+cat > untangle_rows_track.json <<JSON
+{
+  "type": "FeatureTrack",
+  "trackId": "ecoli_pggb_untangle_rows",
+  "name": "pggb graph: untangle per strain (orientation, vs $REF)",
+  "assemblyNames": ["$REF"],
+  "adapter": {
+    "type": "BedTabixAdapter",
+    "uri": "ecoli_pggb_untangle_rows.bed.gz"
+  },
+  "displays": [
+    {
+      "type": "LinearMultiRowFeatureDisplay",
+      "partitionField": "strain",
+      "rowOrder": [$(echo "$STRAINS" | tr ' ' '\n' | grep -v "^$REF$" \
+        | paste -sd' ' - | sed 's/ /", "/g; s/^/"/; s/$/"/')],
+      "legend": [
+        { "label": "Same orientation as $REF", "color": "rgb(153,153,153)" },
+        { "label": "Inverted", "color": "rgb(214,39,40)" }
+      ]
+    }
+  ]
+}
+JSON
+jb add-track-json untangle_rows_track.json --update --out "$APP"
 
 # projection 2: pangenome variants, the decomposed tier (matrix display by
 # default), plus the raw snarl tree as a second track for the LV/PS discussion.
