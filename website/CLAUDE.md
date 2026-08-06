@@ -8,13 +8,9 @@ gitignored). `deploy_staging.sh` wraps a staging deploy.
 
 `scripts/generate-screenshots.ts`, run with `node` — **not `npx tsx`**, whose
 `keepNames` breaks `page.evaluate`'d functions. Specs in
-`scripts/screenshot-specs.ts`. The generator is the pipeline and the run pool;
-its neighbours own one concern each — `screenshot-options` (the CLI and what it
-derives), `-ready` (getting a page to the state a figure shows), `-asserts` (the
-gates a frame passes before it may exist), `-page` (per-page setup, network
-diagnosis), `-report` (what the run noticed and how it says so), `-embedded`.
-Adding a module means adding it to `GLOBAL_TRIGGERS` in `screenshot-impact.ts`,
-or `--affected` will not know it changes every capture.
+`scripts/screenshot-specs.ts`. A new `screenshot-*` module must be added to
+`GLOBAL_TRIGGERS` in `screenshot-impact.ts`, or `--affected` will not know it
+changes every capture.
 
 - **Display config in a session spec goes on the track**, inside its own
   `displays: [{ type, ...slots }]`. Slots on the view's `tracks` entry are
@@ -24,45 +20,33 @@ or `--affected` will not know it changes every capture.
   that names its specs rewrites them, since the gate's 0.5% is wider than a
   renamed label. If an unfiltered sweep says unchanged where you expected a
   change, `--force` and diff the two rather than trusting the gate.
-- **`--affected` narrows a sweep to what a change could have moved**, mapping
-  changed file → workspace package → reverse-dependency closure → plugins → the
-  type names those plugins own → specs whose session names them
-  (`scripts/screenshot-impact.ts`, runnable on its own to see the reasoning). It
-  narrows only — it does **not** imply `--force`, so the diff gate still decides
-  what gets rewritten, and it intersects with `--filter`. It is an approximation
-  with a known conservative floor (~45 specs that resolve to no in-repo type are
-  always selected). **The unfiltered sweep is its oracle**: a PNG a full regen
+- **`--affected` narrows a sweep to what a change could have moved**
+  (`scripts/screenshot-impact.ts`, runnable on its own to see its reasoning). It
+  narrows only — it does **not** imply `--force`, and it intersects with
+  `--filter`. **The unfiltered sweep is its oracle**: a PNG a full regen
   rewrites that `--affected` would not have selected is a bug in the map, not an
-  acceptable miss. Measured over 60 real commits: 42% select nothing (exit 0, no
-  render), 10% narrow (median 60 specs), and **48% select everything** —
-  honestly so, since a `packages/core` change can move any figure. Plan for that
-  half rather than being surprised by it.
+  acceptable miss. Expect it to select everything about half the time — honestly
+  so, since a `packages/core` change can move any figure.
 - **`--cover` answers a different question from `--affected`**: not "which
   figures moved" but "does every type still launch, paint and settle". It
   renders the smallest set of specs that still puts every declared type on
-  screen — 22 of 329, a greedy set cover over the same fingerprints. Reach for
-  it before pushing a change under `packages/core`, where `--affected` can only
-  say "all". It proves **nothing** about whether a figure is out of date; only a
-  sweep does.
-- **None of this can be a PR gate, and that is a measurement.** 318 of the 329
-  specs fetch from jbrowse.org, hgdownload or an ENCODE bucket, so a required
-  check built on them fails on somebody else's outage rather than on the change
-  under review — the trap `cross_backend_gate` describes, whose predecessor
-  "published a drift log nobody read". Scoping the cover to specs that touch no
-  remote data leaves 11 specs reaching 6 of 56 types, which is not a gate
-  either. So the sweep runs weekly off the PR path
-  (`.github/workflows/figures.yml`, `workflow_dispatch` for on demand) and its
-  artifact is the list of figures that moved; `--cover` and `--affected` are
-  what you run locally to avoid paying 30 minutes to learn that nothing did.
+  screen. Reach for it before pushing a change under `packages/core`, where
+  `--affected` can only say "all". It proves **nothing** about whether a figure
+  is out of date; only a sweep does.
+- **Don't propose making any of this a PR gate.** Nearly every spec fetches from
+  jbrowse.org, hgdownload or an ENCODE bucket, so a required check built on them
+  fails on somebody else's outage rather than on the change under review, and
+  the remote-free subset is far too small to gate on. The sweep runs weekly off
+  the PR path (`.github/workflows/figures.yml`, `workflow_dispatch` for on
+  demand); `--cover` and `--affected` are what you run locally to avoid paying
+  30 minutes to learn that nothing moved.
 - **A spec's own `diffThreshold` is a last resort**, and the run says so: a keep
   that only happened because of a raised gate is reported under
   `KEPT BEHIND A RAISED diffThreshold`, because a deliberate recolor of one bar
   moves ~2.4% of pixels and a 2% allowance would silently keep the old image.
-  Nine specs raise it today (0.02–0.03), all for jitter that is genuinely
-  irreducible from here — dense per-base glyphs, a multiscatter cloud whose
-  points land on a different BigWig zoom level run to run, remote-fetch timing.
-  Anything else is a bug in whatever is producing the nondeterminism; fix that
-  first.
+  The few that raise it are irreducible jitter — dense per-base glyphs,
+  remote-fetch timing. Anything else is a bug in whatever is producing the
+  nondeterminism; fix that first.
 - **Size a figure from the run's own two reports, not from the PNG.**
   `CONTENT CLIPPED BELOW THE FOLD` gives the exact css px to raise
   `viewportHeight` by and `blank below the last content` the px to lower it.

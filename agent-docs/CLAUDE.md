@@ -10,19 +10,16 @@ Everything else is filed:
 - `architecture-decision-records/` — *why*, one decision per file. Its README
   index is **generated** by `website/scripts/generate-adr-index.ts`; don't hand-
   edit the block between the marker comments.
-
-`pnpm autogen` sweeps this tree for marker pairs the same way it sweeps
-`website/docs`, so a table here can be generated from source rather than
-maintained: `ARCHITECTURE.md` gets its display-foundation and fetch-autorun
-tables that way, from the same scan that fills the public guides' versions.
-Anything between a `<!-- NAME START -->` / `<!-- NAME END -->` pair is
-overwritten on regen — if a table here restates something a reader could check
-against the code, write the generator instead of the table.
 - `handoffs/` — where a session leaves the state of an unfinished thread: what
   was measured, what the next agent should not re-derive, and the decision left
   open. Read the matching handoff before picking a thread back up; **delete one
   once its thread closes** — if what it holds is durable, that means moving it
   into `reference/` or an ADR first, not summarizing it into a commit message.
+
+`pnpm autogen` sweeps this tree for `<!-- NAME START -->` / `<!-- NAME END -->`
+pairs the same way it sweeps `website/docs`, and overwrites whatever is between
+them. If a table here restates something a reader could check against the code,
+write the generator instead of the table.
 
 **Every doc outside `architecture-decision-records/` carries `name:` /
 `description:` frontmatter, and that is load-bearing.** It is how you find the
@@ -48,13 +45,11 @@ parked proposal often already contains the reasoning that kills the obvious
 version of the idea, which is why re-proposing without reading it wastes a
 session.
 
-There was a `guides/` split (how-tos) alongside `reference/` (how it works) and
-it was collapsed, because in practice nothing landed on the line: a doc opening
-"design notes for unfinished work" was filed as a guide, a `CLUSTERING_WORKFLOW`
-as reference, and `SCREENSHOT_CAPTURE_RACE`/`SCREENSHOT_PERF` ended up in
-different folders. Since you `ls` both anyway, the split cost a filing decision
-and bought nothing at read time. Don't reintroduce it; if `reference/` gets hard
-to scan, the fix is better `description:` lines or an index, not more folders.
+There was a `guides/` (how-tos) split alongside `reference/` (how it works) and
+it was collapsed: nothing landed cleanly on the line, and since you `ls` both
+anyway it cost a filing decision and bought nothing at read time. Don't
+reintroduce it — if `reference/` gets hard to scan, the fix is better
+`description:` lines, not more folders.
 
 ## Invariants — violations cause silent bugs, not crashes
 

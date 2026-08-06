@@ -20,18 +20,18 @@ off `panelViewAssignments` and then renders those views **in `session.views`
 order**, so the assignment array's own order carries no meaning and nothing may
 read it as one.
 
-It used to. Two arrays each claiming to be the order meant one user intent
-needed two implementations picked by mode — `moveViewUp` / `moveViewDown` /
-`moveViewToTop` reordering `session.views` for the classic stack,
-`moveViewInPanel` reordering the assignment for a workspace — and any operation
-_below_ that fork could not express itself to whichever ordering happened to be
-live. `replaceView` (put a new view where an old one was) was the first to hit
-it, and the fix was not a third case but deleting the second ordering.
+It used to, and two arrays each claiming to be the order meant one user intent
+needed two implementations picked by mode. `replaceView` (put a new view where
+an old one was) was the first operation that could not express itself to
+whichever ordering happened to be live, and the fix was not a third case but
+deleting the second ordering.
 
 So the mode now decides the **scope** of a move and nothing else:
-`reorderWithin(views, idx, direction, inScope)` moves past the previous view _in
-this panel_, leaving out-of-scope views pinned in their slots. `ViewMenu` passes
-the panel's members as the scope, or nothing at all in the classic stack.
+`reorderWithin(views, idx, direction, inScope)` — `@jbrowse/core/util/reorder`,
+driven from product-core's `Session/MultipleViews.ts`, not from here — moves
+past the previous view _in this panel_, leaving out-of-scope views pinned in
+their slots. `ViewMenu` passes the panel's members as the scope, or nothing at
+all in the classic stack.
 
 An order arriving in another vocabulary lands in `session.views` too: a session
 spec's `layout` lists views per panel, top to bottom, and `applyInitLayout`

@@ -75,8 +75,10 @@ and `ClusterProvenanceHint` draws on screen **only when the view has drifted off
 the clustered span**. It used to draw in the quiet state too, and that is text
 over the first row of every captured figure stating what a reader already
 assumes ("i dont want the tree 'context' text to be displayed", review). Drift
-is an overlap fraction rather than an equality test, which is what makes the
-quiet state safe to drop: the chip appearing now always means something.
+is an overlap fraction (`clusterProvenanceOverlap`), never an equality test —
+`contentBlocks` shift a sub-bp amount on any pan, so equality would flag a stale
+tree constantly and train the reader to ignore it. That is what makes the quiet
+state safe to drop: the chip appearing now always means something.
 
 The invariant is not that it is present but that it is never **wrong**: it may
 only describe the tree currently loaded. So every write touching `clusterTree`
@@ -85,11 +87,6 @@ sets or clears it in the same action — `setLayoutAndClusterTree` takes it,
 supplied `.nh` phylogeny) clears it, since captioning a phylogeny with the
 previous run's region is worse than no caption. A tree with no provenance is
 therefore also the signal that it was supplied rather than computed.
-
-Drift is an **overlap fraction, not an equality test**: `contentBlocks` shift a
-sub-bp amount on any pan or zoom, so equality would flag a stale tree constantly
-and train the reader to ignore it. `clusterProvenanceOverlap` asks how much of
-the clustered span is still on screen.
 
 ## `subtreeFilter` goes with the row _names_, not with the tree
 
@@ -207,25 +204,18 @@ and the component tests are unchanged.
 
 `lineZoneHeight` is the same idea — px reserved above the rows — and maf's
 `rowsTopOffset` is exactly that number, so setting it looks like the obvious
-tidy-up. **It would be applied twice.** maf's sidebar sits inside its rows
-container, which is _already_ translated by `rowsTopOffset`; the internals then
-offset by `lineZoneHeight` again. Only the portaled half escapes that container
-and needs to be told, which is what `top` is.
+tidy-up. **It would be applied twice**: maf's sidebar sits inside its rows
+container, which is _already_ translated by `rowsTopOffset`. Only the portaled
+half escapes that container and needs to be told, which is what `top` is.
 
 Nor can the sidebar simply move to the display root the way every other
 display's does: maf binds its wheel-to-scroll listener to that rows element by
 DOM node, deliberately, so a wheel over the species names scrolls the rows it
 labels rather than falling through to the view. Moving the inline layer out
-takes the hit box with it.
-
-The cost of leaving it is that `treeContentHeight` is the display height rather
-than maf's rows viewport, so the panel, the dendrogram canvas and the hit box
-all run `rowsTopOffset` px past the last row — measured, a 195px canvas under a
-150px rows area. All of it is clipped by `TrackRenderingContainer`'s
-`contain: strict`, so it is invisible and untouchable and costs only the
-oversized backing store. Buying that back means growing this component an API
-for maf to re-bind its wheel through, which is the more expensive side of the
-trade.
+takes the hit box with it. The cost of leaving it — the panel, canvas and hit
+box running `rowsTopOffset` px past the last row — is clipped away by
+`TrackRenderingContainer`'s `contain: strict`, and buying it back means growing
+this component an API for maf to re-bind its wheel through.
 
 ## SVG export: use `SvgTreeSidebar`, never `SvgRowLabels` alone
 

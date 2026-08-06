@@ -4,8 +4,8 @@ Data is fetched in RPC workers, rendered on the main thread (WebGPU, with WebGL
 and Canvas2D fallbacks). Worker output is **absolute genomic uint32** — no
 regionStart-relative arithmetic crosses the worker boundary.
 
-Background lives in `agent-docs/` (start at `ARCHITECTURE.md`, then
-`reference/`, `guides/`, and the ADRs).
+Background lives in `agent-docs/` (start at `ARCHITECTURE.md`, then `reference/`
+and the ADRs).
 
 ## MST
 
@@ -47,7 +47,8 @@ Background lives in `agent-docs/` (start at `ARCHITECTURE.md`, then
 
 ## Tooling
 
-- Run `pnpm test <directory>`, not the full suite. Lint with `--fix`.
+- Avoid running tests frequently, they are slow. Use `pnpm test <directory>`,
+  not the full suite. Lint with `--fix`.
 - **`pnpm autogen` rewrites every generated-and-committed artifact** and is the
   answer to almost any "X is out of date" CI failure. It owns `package.json`
   `exports` maps, `tsconfig.build.esm.json` `references`, and the doc tables
@@ -63,8 +64,7 @@ Background lives in `agent-docs/` (start at `ARCHITECTURE.md`, then
   plugins resolve against, guarded by `ReExports/abi.test.ts` against
   `abiBaseline.json`. Removals fail there; additions don't. To drop a name,
   delete it from the baseline in the same commit and say in the message which
-  published plugins you checked. (Replaced `util/publicApi.test.ts`, which
-  guarded the util barrel alone.)
+  published plugins you checked.
 - **The session is a second plugin-facing surface, and it fails quieter.** A
   plugin looks its members up at runtime, often behind `'x' in session`, so
   removing one throws nothing — the plugin just stops asking and silently does
