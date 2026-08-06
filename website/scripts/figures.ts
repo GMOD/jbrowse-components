@@ -141,16 +141,60 @@ async function fetchBlob(entry: FigureEntry): Promise<Buffer> {
   return buf
 }
 
+// Whether the bytes currently on disk are in the store — i.e. whether replacing
+// them can lose anything. One HEAD per file, but only ever for files that
+// already differ from the manifest, which is normally a handful.
+async function isPublished(path: string, sha256: string): Promise<boolean> {
+  try {
+    return (await fetch(storeUrl({ path, sha256 }), { method: 'HEAD' })).ok
+  } catch {
+    // Offline, or the store is unreachable. Treat as unpublished: the cost is
+    // keeping a figure that did not need keeping, which is recoverable, versus
+    // overwriting one that did, which is not.
+    return false
+  }
+}
+
 async function pull() {
   const manifest = readManifest()
   const force = flag('force')
   const state = inspectWorktree(manifest)
-  const wanted = [...state.missing, ...(force ? state.modified : [])]
 
-  if (state.modified.length && !force) {
+  // "Differs from the manifest" is two situations that need opposite handling,
+  // and telling them apart is what makes this safe to run from `pnpm build`.
+  //
+  // A CHECKOUT left figures from another commit on disk. Those bytes are in the
+  // store, so replacing them loses nothing and NOT replacing them is the bug:
+  // the build would publish a figure belonging to a different commit, silently.
+  // Refusing to touch these is what the naive version did, and switching
+  // branches is far commoner than hand-editing a figure.
+  //
+  // A REGEN you have not pushed is bytes that exist nowhere else. Overwriting
+  // those destroys work, and no amount of convenience justifies it.
+  //
+  // The store answers which is which, exactly: published bytes are recoverable
+  // forever at their own immutable URL, unpublished bytes are not.
+  const classified = await mapLimit(state.modified, 8, async path => ({
+    path,
+    published: await isPublished(path, describeFile(path).sha256),
+  }))
+  const stale = classified.filter(c => c.published).map(c => c.path)
+  const precious = classified.filter(c => !c.published).map(c => c.path)
+  const wanted = [...state.missing, ...(force ? state.modified : stale)]
+
+  if (stale.length) {
     console.log(
-      `keeping ${state.modified.length} locally modified figure(s) — --force to overwrite`,
+      `replacing ${stale.length} figure(s) left by another commit (their bytes are in the store)`,
     )
+  }
+  if (precious.length && !force) {
+    console.log(
+      `keeping ${precious.length} figure(s) that exist only here — ` +
+        '`pnpm figures:push` to publish them, or --force to discard:',
+    )
+    for (const p of precious) {
+      console.log(`  ${figureName(p)}`)
+    }
   }
   if (!wanted.length) {
     console.log(`${state.ok.length} figure(s) already present`)
