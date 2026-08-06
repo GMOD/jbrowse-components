@@ -136,6 +136,33 @@ a shared sequence adapter, would mean one track closing evicts chunks another li
 adapter is still reading. Correctness needs a second refcount at URL granularity,
 for reclamation the sweep already performs.
 
+## Re-running the measurements
+
+Both probes read `test_data/jb2bench_link/mem_config.json`, and that directory is
+gitignored — hundreds of MB of BAM/CRAM, generated rather than downloaded. The
+setup lives here rather than in a README inside it, because a README inside an
+ignored directory is only readable by someone who already has the directory.
+
+Hard-link (don't symlink — `serve-handler` 404s a symlinked file) from a
+[jb2bench](https://github.com/cmdcolin/jb2bench) data directory:
+
+```
+mkdir -p test_data/jb2bench_link && cd test_data/jb2bench_link
+for f in hg19mod.fa hg19mod.fa.fai 1000x.shortread.bam 1000x.shortread.bam.bai \
+         1000x.longread.bam 1000x.longread.bam.bai; do ln ../../../jb2bench/data/$f .; done
+```
+
+Then a `mem_config.json` beside them with an `hg19mod` assembly
+(`IndexedFastaAdapter` over that fa/fai — one contig, `chr22_mask`, 250001 bp) and
+an `AlignmentsTrack` per BAM whose `BamAdapter` carries
+`"fetchSizeLimit": 20000000`, so a 12 kb window of 1000x coverage loads instead of
+banner-ing. Build `products/jbrowse-web` first; the probes serve `build/`.
+
+`rangecache-probe.ts` answers what is retained (`IDLE_MINUTES` must exceed the
+timeout plus a sweep interval, hence its default of 19). `rangecache-budget.ts`
+answers what the retention buys, and takes `LABEL` so two runs against two builds
+can be told apart.
+
 ## A trap for anyone measuring this again
 
 `Runtime.getHeapUsage` — what `memstress.ts` reports as its floor — **does not

@@ -14,14 +14,20 @@
 //
 //   A  pan forward over N windows          — cold, both caches empty
 //   B  pan back over the same N windows    — warm, both caches hot
-//   C  idle out the 3-minute sweeps, pan forward again — both caches swept
+//   C  idle four minutes, pan forward again
 //
 // Run it against two builds, one with the stock MAX_CACHE_ENTRIES and one with a
 // tiny one. If A and B barely move between them, the budget is not buying
-// anything and should be cut. C is the cost side of the idle sweep: what a user
-// who tabs away for four minutes now re-downloads.
+// anything. They didn't: 1000 entries to 4 cost one extra request and 1.3 MB on
+// A, and nothing on B — but see ADR-059 before concluding the cap is too big,
+// because that run never pushed @gmod/bam past its own budget.
 //
-// Needs test_data/jb2bench_link and a built products/jbrowse-web.
+// C is about the timeout rather than the budget. Four minutes clears @gmod/bam's
+// 3-minute sweep but not this module's 15, which is the asymmetry ADR-059 argues
+// for: C was 73.5 MB when the two matched, and is 0.0 MB now.
+//
+// Needs test_data/jb2bench_link and a built products/jbrowse-web; ADR-059 has the
+// setup, since that directory is gitignored.
 // Env: HEADLESS=0, TRACK, WINDOWS, WIN_KB, LABEL, SKIP_IDLE=1.
 import { encodeSessionSpec } from '@jbrowse/browser-test-utils'
 

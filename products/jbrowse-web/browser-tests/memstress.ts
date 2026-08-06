@@ -11,6 +11,13 @@
 // growth across rounds = a real leak; transient garbage is collected away.
 //
 // Env: HEADLESS=0 to watch, ROUNDS=n, SEED=n for a reproducible action stream.
+//
+// Two things it cannot answer, so don't spend a session re-deriving them.
+// `Runtime.getHeapUsage` does NOT count external ArrayBuffers, so any cache
+// holding big typed arrays is invisible to the floor below — a worker reported
+// here at 7.3 MB was measured holding 214.7 MB. And volvox is a few MB of data
+// end to end, too small for a byte cache to show up as anything even with a
+// correct instrument. For those, see rangecache-probe.ts, which snapshots.
 import { encodeSessionSpec } from '@jbrowse/browser-test-utils'
 
 import {

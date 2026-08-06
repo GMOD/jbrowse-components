@@ -13,8 +13,9 @@
 // by counting buffers of exactly CHUNK_SIZE (262144) bytes, which is a shape
 // nothing else in the stack allocates.
 //
-// Needs test_data/jb2bench_link (see mem_config.json there) and a built
-// products/jbrowse-web. Env: HEADLESS=0, TRACK, WINDOWS, WIN_KB, IDLE_MINUTES, SKIP_IDLE=1.
+// Needs test_data/jb2bench_link and a built products/jbrowse-web; ADR-059 has the
+// setup, since that directory is gitignored.
+// Env: HEADLESS=0, TRACK, WINDOWS, WIN_KB, IDLE_MINUTES, SKIP_IDLE=1.
 import { encodeSessionSpec } from '@jbrowse/browser-test-utils'
 
 import {
