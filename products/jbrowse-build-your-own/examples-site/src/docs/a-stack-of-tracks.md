@@ -1,6 +1,4 @@
-A wiggle canvas, a feature layout and an alignments pileup in one column — a
-BigWig at summary resolution, a Tabix'd GFF3 laid out into rows, a BAM piled up
-and mismatched against the reference. Every track exposes a
+A BigWig, a Tabix'd GFF3 and a BAM in one column. Every track exposes a
 `RenderingComponent`, so the mounting code doesn't know which is which and a
 fourth track is one more string in a list of ids.
 
@@ -14,16 +12,20 @@ pileup's scrollbar paints over the track below.
 
 A feature or alignments display reads a palette to colour its own content — the
 highlight behind a searched feature, the reading frames a CDS renderer paints.
-That is a plain object of colour strings from `resolvePalette`, through
-`PaletteProvider`; no UI toolkit involved. A wiggle track needs none, which is
-why the earlier pages supply none.
+Plain colour strings through `PaletteProvider`, no UI toolkit. A wiggle track
+needs none, which is why the earlier pages supply none.
 
-Following a light/dark toggle is **one write, not two**: set the mode on the
-session's _config_ theme. That is what a display ships to its renderer, so
-labels baked into the canvas follow, and `session.palette` derives from the same
-slot so React follows too. Set only a React-side palette and the labels stay in
-the old mode — and since a display paints no background, a light-theme label on
-a dark page is near-black on near-black.
+Following your app's light/dark toggle is one call,
+`useSessionPalette(session, mode)`; how the host knows its own mode is the
+host's business, and the hook deliberately doesn't ask.
+
+**Mounting `PaletteProvider` alone is the trap it exists to close.** The palette
+is what _React_ draws with, while the config `theme` slot is also what ships to
+the worker, where feature labels are baked into the image. Supply only the first
+and those labels stay in the old mode with no error anywhere — and since a
+display paints no background, a light-theme label on a dark page is near-black
+on near-black. `useSessionPalette` writes the one slot both derive from, which
+is why it hands back the palette rather than taking one.
 
 Hovering still gets you Material UI in the bottom-right corner: the track-sizing
 button and the isoform notice. Deliberately, so the
