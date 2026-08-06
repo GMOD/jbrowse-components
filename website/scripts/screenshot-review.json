@@ -1574,9 +1574,9 @@
   "cookbook_color_by_type": {
     "name": "cookbook_color_by_type",
     "status": "good",
-    "note": "FIXED: the figure carries its own key now. Nothing draws a legend for a jexl color callback, so each feature is labeled with the field the color is keyed on (labels.name = repClass): every red block reads SINE, every blue LINE, green LTR, purple DNA, orange Simple_repeat, brown Low_complexity, grey Unknown. The repeat family names it replaces (AluJb, MIR3) are still in the details popup. The stale caption the review saw survived only in the gitignored dist/ build.",
-    "reviewedAt": "2026-08-06T06:20:55.661Z",
-    "hash": "a6d21a2780532441025255b61ef8b5bd9c982bd8"
+    "note": "LEGEND, for real this time. The earlier answer (relabel every feature with its repClass) said the same thing six hundred times and threw the repeat family names away; the reviewer left it denied. LinearBasicDisplay now has a `legend` config slot — an explicit {label,color} key, drawn by the canvas body's existing colorLegend hook, so it appears on screen (dismissable) and in an SVG export. That slot is the missing half of a jexl color table: the expression's keys live in the config, so the drawn block carries the color and nothing carries its meaning. The cookbook recipe now shows one whole track config carrying both the expression and the key it declares.",
+    "reviewedAt": "2026-08-06T06:26:06.914Z",
+    "hash": "85ef9202cf7d2a9e04327751cfb023eb0b35dbec"
   },
   "cookbook_multiwig": {
     "name": "cookbook_multiwig",

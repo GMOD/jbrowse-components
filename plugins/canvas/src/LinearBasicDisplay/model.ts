@@ -29,6 +29,7 @@ import { GENE_GLYPH_MODE_OPTIONS } from './geneGlyphMode.ts'
 import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { LinearBasicDisplayConfigModel } from './configSchema.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
 const CollapseIntronsDialog = lazy(
   () => import('./CollapseIntronsDialog/CollapseIntronsDialog.tsx'),
@@ -112,6 +113,9 @@ export default function stateModelFactory(
       // click away); it never changes the collapse itself. Volatile, so a
       // reload is the natural reset boundary.
       geneGlyphNoticeDismissed: false,
+
+      // Same reset boundary for the declared color key's "×".
+      colorLegendDismissed: false,
     }))
     .views(self => ({
       // Promotable sentinel enum (see baseConfigSchema.ts): getConf walks
@@ -208,6 +212,10 @@ export default function stateModelFactory(
         self.geneGlyphNoticeDismissed = true
       },
 
+      dismissColorLegend() {
+        self.colorLegendDismissed = true
+      },
+
       setShowOnlyGenes(value: boolean) {
         setConf(self, 'showOnlyGenes', value)
       },
@@ -233,6 +241,26 @@ export default function stateModelFactory(
               setMode: self.setGeneGlyphMode,
               dismiss: self.dismissGeneGlyphNotice,
             }
+          : undefined
+      },
+
+      /**
+       * #getter
+       * This display's answer to the base's `colorLegend` chrome hook, from the
+       * `legend` config slot. A `jexl:` color expression is a lookup table whose
+       * keys are readable only in the config, so the drawn feature carries the
+       * color and nothing carries its meaning; declaring the vocabulary is the
+       * only place that can come from. Empty slot draws nothing, so a track that
+       * declares no key is unaffected.
+       *
+       * Not auto-derived: the color a feature is painted has no name attached to
+       * it, and guessing one from a feature field would name whichever field
+       * happened to correlate.
+       */
+      get colorLegend() {
+        const items = getConf(self, 'legend') as LegendItem[]
+        return items.length > 0 && !self.colorLegendDismissed
+          ? { items, dismiss: self.dismissColorLegend }
           : undefined
       },
     }))

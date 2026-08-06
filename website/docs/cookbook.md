@@ -263,16 +263,36 @@ a BED9). Write a callback only when you want to override those.
 [](/docs/config_guides/customizing_feature_colors) covers BED column naming and
 moving an outgrown callback into a plugin.
 
-The lookup table can key on any field the track exposes. UCSC RepeatMasker, for
-instance, carries a `repClass` column:
+The lookup table can key on any field the track exposes — UCSC RepeatMasker, for
+instance, carries a `repClass` column. And a lookup table is only readable to
+whoever wrote it: the drawn feature carries the color, but nothing on screen
+carries what the color means. The `legend` slot declares that vocabulary beside
+the expression that paints it, and the display draws it as a dismissable key
+over the track (and into an SVG export).
 
-```json
+```json addtrack
 {
-  "color": "jexl:{SINE:'#e41a1c',LINE:'#377eb8',LTR:'#4daf4a',DNA:'#984ea3',Simple_repeat:'#ff7f00',Low_complexity:'#a65628'}[feature.repClass] || 'gray'"
+  "type": "FeatureTrack",
+  "trackId": "rmsk_hg38",
+  "name": "RepeatMasker",
+  "assemblyNames": ["hg38"],
+  "adapter": { "type": "BedTabixAdapter", "uri": "rmsk.bed.gz" },
+  "displayDefaults": {
+    "color": "jexl:{SINE:'#e41a1c',LINE:'#377eb8',LTR:'#4daf4a',DNA:'#984ea3',Simple_repeat:'#ff7f00',Low_complexity:'#a65628'}[feature.repClass] || 'gray'",
+    "legend": [
+      { "label": "SINE", "color": "#e41a1c" },
+      { "label": "LINE", "color": "#377eb8" },
+      { "label": "LTR", "color": "#4daf4a" },
+      { "label": "DNA", "color": "#984ea3" },
+      { "label": "Simple repeat", "color": "#ff7f00" },
+      { "label": "Low complexity", "color": "#a65628" },
+      { "label": "other", "color": "gray" }
+    ]
+  }
 }
 ```
 
-<Figure caption="UCSC RepeatMasker over a 17q21 window with the lookup table above: every repeat takes the color of its repClass, and classes not in the table fall through to gray. Each feature is labeled with the same repClass the color is keyed on, so the figure carries its own key — the label is set with a second callback, labels.name." src="/img/cookbook_color_by_type.png"/>
+<Figure caption="UCSC RepeatMasker over a 17q21 window with the lookup table above: every repeat takes the color of its repClass, and classes not in the table fall through to gray. The key over the track is the legend slot, spelling out what each color stands for." src="/img/cookbook_color_by_type.png"/>
 
 A lookup table is only as good as its keys, and an annotation pipeline's own
 documentation is not always an accurate list of what it emits, since a pipeline

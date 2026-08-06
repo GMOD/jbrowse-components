@@ -42,7 +42,12 @@ build reads as "write one line here".
 - **Write `displayDefaults`, not a `displays` array**, unless the example
   selects a non-default display type or needs real `displayId`s.
 - **Show a whole track config, not a fragment** — a reader has to be able to
-  paste it.
+  paste it. That means the `type`/`trackId`/`name`/`assemblyNames`/`adapter` and
+  the slot in its `displayDefaults`, tagged ```json addtrack, **however small
+  the point being made is**: a bare `{ "color": … }` or `{ "legend": […] }` blob
+  is the tempting shape when a paragraph is about one slot, and it is the one
+  shape a reader cannot use. Two slots that belong to the same recipe go in one
+  config, not one fence each. `pnpm check-config-blocks` enforces it.
 - **Write jexl the short way**: `feature.rank` over `get(feature,'rank')`.
 - **`user_guides/` drives the UI, `config_guides/` shows the JSON.** When a
   config guide starts explaining a concept, that section belongs in the user

@@ -99,6 +99,37 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
         type: 'boolean',
         defaultValue: false,
       },
+      /**
+       * #slot
+       * Explicit color key drawn over the track: an array of
+       * `{ label, color }`. A `jexl:` `color` expression is a lookup table only
+       * its author can read — the drawn feature carries the color but nothing
+       * carries what the color MEANS — so the config declares the vocabulary
+       * beside the expression that paints it. `color` is any CSS color and
+       * should be the same string the expression returns.
+       *
+       * Empty (the default) draws nothing. Dismissable on screen, like every
+       * other floating key.
+       *
+       * #example
+       * ```js
+       * {
+       *   type: 'LinearBasicDisplay',
+       *   color:
+       *     "jexl:{SINE:'#e41a1c',LINE:'#377eb8'}[feature.repClass] || 'gray'",
+       *   legend: [
+       *     { label: 'SINE', color: '#e41a1c' },
+       *     { label: 'LINE', color: '#377eb8' },
+       *   ],
+       * }
+       * ```
+       */
+      legend: {
+        type: 'frozen',
+        defaultValue: [],
+        description:
+          'explicit {label,color} color key for a jexl-colored track; empty draws none',
+      },
     },
     {
       /**

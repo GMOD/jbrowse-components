@@ -107,24 +107,33 @@ export const cookbookSpecs: ScreenshotSpec[] = [
             {
               type: 'LinearBasicDisplay',
               color: RMSK_CLASS_COLOR,
-              // THE FIGURE IS ITS OWN LEGEND (reviewer: "unclear what the
-              // coloring is. need legend"). Nothing draws a key for a jexl
-              // color callback, and an overlay legend would be six swatches
-              // hand-placed over a layout that moves. Labelling each feature
-              // with the field the color is keyed on says the same thing from
-              // inside the app: every red block reads SINE and every blue one
-              // LINE, so the mapping is on screen beside the color. The repeat
-              // names this replaces (AluJb, MIR3, L2a) are the family, which
-              // the recipe is not about and which a non-specialist cannot
-              // decode anyway — they are still in the feature details popup.
+              // A REAL LEGEND (reviewer: "unclear what the coloring is. need
+              // legend"), from the display's own `legend` slot rather than an
+              // overlay this spec hand-places over a layout that moves. That
+              // slot is new and exists for exactly this: a jexl color
+              // expression is a lookup table whose keys live in the config, so
+              // the drawn block carries the color and nothing carries what it
+              // MEANS. The entries repeat the expression's own colors, which is
+              // the point — the config declares the vocabulary beside the
+              // expression that paints it.
               //
-              // ON THE TRACK'S OWN displays, not on the view's tracks entry,
-              // which is where the color used to sit: the spec form routes an
-              // inline key onto the display config only when `isConfigurationSlot`
-              // says so, and `labels` is a sub-schema rather than a leaf slot,
-              // so written there it was dropped in silence — the regen came
-              // back with the repeat names still on it.
-              labels: { name: "jexl:get(feature,'repClass')" },
+              // The previous answer was to relabel every feature with its
+              // repClass, which said the same thing six hundred times and threw
+              // away the repeat family names in the process.
+              //
+              // ON THE TRACK'S OWN displays, not on the view's tracks entry:
+              // the spec form routes an inline key onto the display config only
+              // when `isConfigurationSlot` says so, so anything else is dropped
+              // in silence.
+              legend: [
+                { label: 'SINE', color: '#e41a1c' },
+                { label: 'LINE', color: '#377eb8' },
+                { label: 'LTR', color: '#4daf4a' },
+                { label: 'DNA', color: '#984ea3' },
+                { label: 'Simple repeat', color: '#ff7f00' },
+                { label: 'Low complexity', color: '#a65628' },
+                { label: 'other', color: 'gray' },
+              ],
             },
           ],
         },

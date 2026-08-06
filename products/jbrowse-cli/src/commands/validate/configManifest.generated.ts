@@ -2831,6 +2831,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "showOnlyGenes",
           "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "legend",
+          "type": "(JexlString | frozen)"
         }
       ],
       "legacyKeys": [
