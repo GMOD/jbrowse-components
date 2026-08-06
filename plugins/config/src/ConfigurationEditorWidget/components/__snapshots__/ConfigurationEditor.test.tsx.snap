@@ -185,7 +185,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                         aria-label="url"
                         aria-pressed="true"
                         class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root Mui-selected MuiToggleButton-sizeSmall MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-lastButton css-ll6l22-MuiButtonBase-root-MuiToggleButton-root"
-                        tabindex="0"
+                        tabindex="-1"
                         type="button"
                         value="url"
                       >
