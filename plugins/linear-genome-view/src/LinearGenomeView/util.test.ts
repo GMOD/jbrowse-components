@@ -826,6 +826,49 @@ describe('getScalebarRefNameLabels', () => {
     expect(refNameLabelFitsInView(chr14!, 840)).toBe(true)
     expect(refNameLabelFitsInView(chr1!, 820)).toBe(true)
   })
+
+  // A run of one refName is deduped so collapsed introns don't repeat the name
+  // at every region boundary. An elided block between two of them is not that
+  // case: it stands for whole chromosomes squeezed out of the layout, so the
+  // name on its far side is a fresh region, and leaving it unlabeled reads as
+  // one long chr1 with a grey stripe through it.
+  test('an elided run between two same-name regions ends the run', () => {
+    const same = (i: number, offsetPx: number) =>
+      refBlock({
+        key: `r${i}`,
+        refName: 'chr1',
+        displayedRegionIndex: i,
+        offsetPx,
+        widthPx: 800,
+        isLeftEndOfDisplayedRegion: true,
+      })
+    const args = {
+      offsetPx: 0,
+      prefix: '',
+    }
+
+    const adjacent = [same(0, 0), same(1, 800)]
+    expect(
+      getScalebarRefNameLabels({
+        ...args,
+        blocks: adjacent,
+        regionEndPx: regionEnds(adjacent),
+      }).labels.map(l => l.key),
+    ).toEqual(['r0'])
+
+    const separated = [
+      same(0, 0),
+      { type: 'ElidedBlock' as const, key: 'e', offsetPx: 800, widthPx: 3 },
+      same(2, 803),
+    ]
+    expect(
+      getScalebarRefNameLabels({
+        ...args,
+        blocks: separated,
+        regionEndPx: regionEnds(separated),
+      }).labels.map(l => l.key),
+    ).toEqual(['r0', 'r2'])
+  })
 })
 
 describe('regionMoveActions', () => {

@@ -128,8 +128,14 @@ export function getBlockRefName(block: BaseBlock) {
  * For blocks in display order, returns whether each block's refName should be
  * labeled: true only for the first block of each run of same-refName regions,
  * so a refName is shown once instead of repeated at every region boundary (e.g.
- * collapsed introns produce many adjacent same-refName regions). Blocks whose
- * getRefName is undefined (non-content) map to false without breaking a run.
+ * collapsed introns produce many adjacent same-refName regions).
+ *
+ * A block with no refName ends the run. What an elided block hides is *other
+ * chromosomes*, so the same name reappearing on its far side starts a region the
+ * reader needs named again, not a continuation of the one before it. Regions lay
+ * out contiguously, so an elided run is the only nameless block that can fall
+ * between two content blocks — the boundary pads only bracket the whole set,
+ * where ending a run changes nothing.
  */
 export function showRefNameLabels<T>(
   blocks: T[],
@@ -139,9 +145,7 @@ export function showRefNameLabels<T>(
   return blocks.map(block => {
     const refName = getRefName(block)
     const show = refName !== undefined && refName !== prev
-    if (refName !== undefined) {
-      prev = refName
-    }
+    prev = refName
     return show
   })
 }
