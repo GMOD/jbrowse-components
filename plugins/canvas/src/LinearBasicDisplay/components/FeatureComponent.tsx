@@ -151,10 +151,12 @@ const FeatureComponent = observer(function FeatureComponent({
           {/* Its own component, and a sibling of the body rather than a child
               of it, so that following the pointer re-renders the tooltip alone.
               This was a `clientXY` useState inside `FeatureBody`, written from
-              the canvas's own `onMouseMove` — the last display holding a mouse
-              position in React state, which re-rendered the body and every
-              overlay under it on each raw (uncoalesced) move while a feature
-              was hovered. See `useMouseTracking`. */}
+              the canvas's own `onMouseMove`, which re-rendered the body and
+              every overlay under it on each raw (uncoalesced) move while a
+              feature was hovered. See `useMouseTracking`. maf is the one
+              display still doing this — `useDragSelection` holds the live
+              position because the rubberband rect needs it as state, and the
+              hover half rides along. */}
           <FeatureTooltipLayer model={model} mouseTracker={mouseTracker} />
         </>
       )}
