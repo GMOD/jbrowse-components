@@ -77,8 +77,17 @@ teaching him to.
 
 `jbrowse-build-your-own` asks this question automatically now — see its
 `CLAUDE.md` for the `COPIED` list, where a block copied into three or more files
-has to carry the reason it is the reader's own to write. It is the only site
-with that check; the rule applies to all four.
+has to carry the reason it is the reader's own to write.
+
+**It stays the only site with that check, and porting it to the other three was
+measured and rejected.** The rule applies to all four, but only this site
+repeats *behaviour*: it is the one whose pages draw their own chrome, so a
+gesture layer or a piece of block geometry can end up hand-rolled in five files.
+What the other three repeat is assemblies, track configs and `ViewState` type
+aliases — bulk data by the fixture rule, and correctly copied. A `COPIED` list
+there would name those and find nothing, which is the "more entries rather than
+a better rule" failure this doctrine warns about two sections up. Re-run the
+experiment only if one of them starts drawing its own chrome.
 
 ## The demo comes first on the page
 
