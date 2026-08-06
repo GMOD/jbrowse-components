@@ -492,3 +492,75 @@ test('a stitched codon paints one cell per exon piece, glyph on the wider', () =
   expect(m.map(x => x.drawGlyph)).toEqual([true, false])
   expect(m.map(x => x.width)).toEqual([20, 10]) // scale=10: 2 bases vs 1 base
 })
+
+// The frames and the alignment are both fetched for the *buffered* region,
+// which is roughly twice the visible span, so about half of what
+// `enumerateCodons` yields is off screen — and resolving one costs three binary
+// searches plus a per-row byte gather. Every sibling marker walk culls against
+// the visible region's `[bpLo, bpHi)`; the codon spine was the one left that
+// resolved (and emitted) the lot.
+describe('the codon spine culls to the visible region', () => {
+  // 300bp of blocks against a view showing [100, 130) — the same `view` above,
+  // whose slack at 0.1 bp/px is under 3bp.
+  const wideRegion: MafRegionData = {
+    blocks: [
+      {
+        startBp: 100,
+        endBp: 400,
+        refSeqBytes: b('ATG'.repeat(100)),
+        rows: [{ rowIndex: 0, alignmentBytes: b('ATG'.repeat(100)) }],
+        empties: [],
+      },
+    ],
+    coverage: emptyMafCoverage(100),
+  }
+  // one CDS spanning every block: 100 codons, only ~10 of them on screen
+  const wideFrames: MafFrameRecord[] = [
+    {
+      refName: 'chr',
+      start: 100,
+      end: 400,
+      src: 'ref',
+      frame: 0,
+      strand: 1,
+      name: 'g',
+    },
+  ]
+
+  it('resolves only the codons the view can show', () => {
+    const located = locate(
+      new Map([[0, wideRegion]]),
+      new Map([[0, wideFrames]]),
+    )
+    // [100, 130) is ten codons; the cull is padded by the shared slack, so
+    // allow an edge codon either side rather than pinning the exact count
+    expect(located.length).toBeGreaterThanOrEqual(10)
+    expect(located.length).toBeLessThanOrEqual(12)
+    for (const c of located) {
+      expect(c.codon.positions[2]).toBeGreaterThanOrEqual(100)
+      expect(c.codon.positions[0]).toBeLessThan(133)
+    }
+  })
+
+  it('keeps a codon that only overlaps the view at one end', () => {
+    // stitched across an exon boundary: one piece far to the left of the view,
+    // the other inside it. Both pieces draw a cell, so the codon must survive.
+    const straddling: MafFrameRecord[] = [
+      {
+        refName: 'chr',
+        start: 110,
+        end: 112,
+        src: 'ref',
+        frame: 0,
+        strand: 1,
+        name: 'g',
+        nextFramePos: 200,
+      },
+    ]
+    const located = locate(
+      new Map([[0, wideRegion]]),
+      new Map([[0, straddling]]),
+    )
+    expect(located.map(c => c.codon.positions)).toEqual([[110, 111, 200]])
+  })
+})

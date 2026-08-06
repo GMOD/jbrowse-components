@@ -357,6 +357,8 @@ function* eachLocatedCodon(
     data: regionData,
     bpToPx,
     displayedRegionIndex,
+    bpLo,
+    bpHi,
   } of eachVisibleRegion(view, rpcDataMap)) {
     const frames = framesDataMap.get(displayedRegionIndex)
     if (!frames) {
@@ -370,6 +372,20 @@ function* eachLocatedCodon(
     const refColumnsPerBlock = blocks.map(bl => buildRefColumns(bl.refSeqBytes))
     const rowMapsPerBlock = blocks.map(rowByteMap)
     for (const codon of codons) {
+      // Both the frames and the alignment are fetched for the *buffered*
+      // region, so about half of what `enumerateCodons` yields is off screen —
+      // and resolving one is three binary searches plus a per-row byte gather,
+      // the most expensive per-item work of any of these walks. This is the
+      // `bpLo`/`bpHi` cull every sibling overlay already applies
+      // (`computeVisibleInsertions` and friends); the codon spine got
+      // `blockIndexAtBp` in the same pass and was the one walk left without it.
+      // Positions are ascending, so the codon spans `[positions[0],
+      // positions[2] + 1)` — which for a codon stitched across an exon boundary
+      // is its whole span including the intron, deliberately: it draws a cell at
+      // each end and either can be the visible one.
+      if (codon.positions[2] < bpLo || codon.positions[0] >= bpHi) {
+        continue
+      }
       const locs = locateCodon(codon.positions, blocks, refColumnsPerBlock)
       if (!locs) {
         continue
