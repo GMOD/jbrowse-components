@@ -61,18 +61,6 @@ The genome, a track, and the view to open on:
 }
 ```
 
-Save it as `hg38.json` and jbrowse-web opens on it, `jb2export` draws it without
-a browser, and a URL carries the same `init` fields as parameters:
-
-```bash
-jb2export --config hg38.json --assembly hg38 \
-  --loc chr17:43,044,295-43,170,245 --track ncbi_genes --out brca1.png
-```
-
-```
-?config=hg38.json&assembly=hg38&loc=chr17:43,044,295-43,170,245&tracks=ncbi_genes
-```
-
 [](/docs/config_guides/intro) covers the top-level fields,
 [](/docs/config_guides/default_session) the session object, and
 [](/docs/automating) the `init` block.
@@ -80,6 +68,24 @@ jb2export --config hg38.json --assembly hg38 \
 Track settings — height, color-by, filters, display mode — are configuration
 slots, the same ones the track menu writes, so a view set up by clicking around
 exports to JSON and pastes back in as a `defaultSession`.
+
+## Opening it, from a file or a link
+
+Save that as `hg38.json` next to jbrowse-web and it opens on it: the
+`defaultSession` is the view you land on.
+
+That fixes the view in the file. To send someone a different gene, or a
+different set of tracks, without editing the file, the same fields go on the URL
+instead — `init` names an assembly, a location and a list of tracks, and
+jbrowse-web reads all three as query parameters.
+
+```
+?config=hg38.json&assembly=hg38&loc=chr17:43,044,295-43,170,245&tracks=ncbi_genes
+```
+
+The config still supplies the assemblies and the track definitions; the URL says
+which of them to open, and where. [](/docs/urlparams) lists every parameter and
+[](/docs/automating) covers the `init` fields they set.
 
 ## The reference is generated from the source
 
@@ -109,6 +115,17 @@ The [](/docs/cookbook) is whole configs short enough to copy, and the
 Nearly every figure on this site is rendered from one of these documents, which
 is why most carry an "Open this view in JBrowse" link: the image and the live
 session come from the same spec.
+
+## Drawing one as a static image
+
+The same document renders headlessly. `jb2export`, the command installed by
+[@jbrowse/img](/docs/jbrowse-img), takes the same config and the same assembly,
+location and tracks, and writes SVG, PNG or PDF with no browser in the loop:
+
+```bash
+jb2export --config hg38.json --assembly hg38 \
+  --loc chr17:43,044,295-43,170,245 --track ncbi_genes --out brca1.png
+```
 
 ## See also
 
