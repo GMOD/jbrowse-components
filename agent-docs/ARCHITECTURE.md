@@ -1085,7 +1085,8 @@ that is what makes them worth listing rather than trusting to review.
 - Don't compose `HeightModeMixin()` before `TrackHeightMixin()`. It overrides
   that mixin's `height` and `resizeHeight`, and `types.compose` gives the
   collision to the later argument, so the wrong order silently drops grow mode.
-  Nothing checks this one yet —
+  Reported at attach off `supportsHeightModes`, which differs by construction
+  where the two `height` getters do not —
   [ordering is the contract](reference/ARCHITECTURAL_LIMITS.md#ordering-is-the-contract).
 - Don't chain to `super` in a display's own `afterAttach`. Our MST fork
   auto-chains lifecycle hooks, so calling it installs every fetch autorun twice;

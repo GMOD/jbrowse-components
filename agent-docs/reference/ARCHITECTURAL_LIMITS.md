@@ -497,13 +497,19 @@ is dropped, which would hide the very violation being reported.
   answer. Was a hand-copied `getMembers(display).actions` assertion per display
   family; now checked once for every display that composes the foundation,
   including ones not yet written.
+- **`HeightModeMixin()` must compose after `TrackHeightMixin()`**, whose `height`
+  and `resizeHeight` it overrides, so the wrong order silently leaves grow mode
+  inert. This looked uncheckable — both members are legitimately defined on both
+  sides, and the two `height` getters agree in fixed mode, so no *value*
+  distinguishes the orders. What distinguishes them is a flag that differs by
+  construction: `supportsHeightModes` (false on the base, true on the mode
+  mixin), read back in `HeightModeMixin`'s own `afterAttach`, exactly as the gate
+  case reads `gateFoldedIntoFetch`. **The general move: when a collision has no
+  natural opt-in to probe, add the flag rather than concluding the order can't
+  report itself.** Pinned both ways in `TrackHeightMixin.test.ts`.
 
 **Still silent:**
 
-- **`HeightModeMixin()` must compose after `TrackHeightMixin()`**, which it
-  overrides `height` and `resizeHeight` on. Not yet checked — unlike the gate
-  case there is no opt-in flag to read back, since both members are legitimately
-  defined on both sides.
 - **`installGlobalFetchAutorun` must read its triggers above the `shouldFetch`
   gate.** MobX rebuilds the dep set per run, so a read under the gate drops out
   of it. Arc shipped a dead `reload()` from exactly this (ARCHITECTURE.md §"The
@@ -517,7 +523,7 @@ is dropped, which would hide the very violation being reported.
   `fetchLifecycle.test.ts` / `fetchAutorun.test.ts` would also have to declare —
   otherwise the check is console noise in the test suite rather than a signal.
 
-**Retire when** the remaining three become explicit data: a `deps()` callback the
+**Retire when** the remaining two become explicit data: a `deps()` callback the
 global-fetch helper reads unconditionally, a required `rpcProps` (or the explicit
 opt-out above), and a marker the height mixins can compare composition order on.
 
