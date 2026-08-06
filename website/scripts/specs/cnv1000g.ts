@@ -105,13 +105,13 @@ const CNV_CONFIG = 'test_data/1000g_cnv/config.json'
 // a single region can reach (bin100000, where a 20-50kb event is a fifth of its
 // bin and the mean genuinely dilutes it).
 //
-// Whole-genome would be coarser still and was tried first. It cannot be
-// captured: the multi-source interface returns one RawFeatureArrays per sample
-// PER REGION, so 24 contigs x 2504 samples is ~60,000 objects and ~300,000
-// typed arrays for one frame, and the tab dies. That is not a Zarr limit and
-// not new here — a 2504-BigWig track has the same shape, worse — but summary
-// levels raise the per-object count from three arrays to five, so it is closer
-// to the edge than it was.
+// Whole-genome would be coarser still and was tried first. It renders fine in a
+// real browser, on WebGL and on WebGPU, and it is only this harness that cannot
+// capture it: the capture runs headless on swiftshader, and 2504 rows x ~3100
+// bins is ~7.8M quads into a 1400x420 box, which a software rasterizer will not
+// finish (34 minutes, then puppeteer's protocolTimeout). Don't read the missing
+// figure as a limit users hit — check `--use-angle=gl` (cancel-bench.ts does)
+// before believing any "this is too much data to draw" story told by a capture.
 //
 // Unprefixed, which this config's filename argues against: its assembly is
 // hg38.prefix.fa.gz, whose index reads `1`, `10`, `11`, not `chr1`. The store's
