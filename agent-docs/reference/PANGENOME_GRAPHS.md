@@ -79,13 +79,19 @@ links, 14.7 s, 4.9 MB + 21 MB), so `demos/ecoli_pangenome/ecoli_pggb.segs.bed.gz
 now carries `SM:Z:K12.1,Sakai.1,NCTC86.1,IAI39.1` per haplotype where it used to
 carry a bare `CFT073,NCTC86` that the grammar check dropped.
 
-**The display side is still open, and this is the thing to know before claiming
-carriage works on the indexed route.** `node.samples` — what the popup renders as
-`carriedBy` — is populated only in `pathAnchoring.ts`, the in-app P/W walk used
-when a GFA is loaded as a **file**. Nothing maps `tags.SM` onto it, so the tabix
-route has the data in hand and shows none of it. Verified in the plugin source
-2026-08-06, not inferred from the handoff. That is handoff §3's "show it" bullet
-and it is still the cheap win.
+**The display side is done too, 2026-08-06** (plugin `418bf7c`, published as
+`bfe47428e7ae`). `gfaConverter.makeNode` reads `SM:Z:` into `GraphNode.samples`,
+which `model.ts` already rendered as `carriedBy`. Precedence is walk-first:
+`pathAnchoring.anchorNode` rebuilds `samples` from path visits whenever there are
+any, so a file-loaded graph keeps the authoritative set and the tag is only what
+an indexed cut falls back to.
+
+Measured in the app rather than inferred, on `pangenome/pggb_locus_graph` against
+the hosted index: **0 of 53 nodes** carried samples on the previously published
+bundle, **53 of 53** after, spelled per haplotype (`CFT073.1, IAI39.1`). If this
+ever regresses, that A/B is the check — the unit tests cover the segs row → the
+synthesized S-line → the parser → `node.samples`, and the end-to-end one is
+`rgfaBed.test.ts`'s "SM:Z: on a segs row reaches GraphNode.samples".
 
 **Carriage is per haplotype**, written `HG002.1`. Keying it on the PanSN sample
 alone merged a diploid sample's two haplotypes, so a segment carried only on the

@@ -823,12 +823,11 @@ The window that draws is also small, because of the graph rather than the index.
 At 17 bp per segment, 1 kb is around 150 nodes and 3 kb is a solid braid, and
 the view declines past its node budget rather than drawing something unreadable.
 Finally, a segment carried by several assemblies draws on one row: sample rows
-put it on the first path that walks it. The index does record the rest —
-`build_pggb_tabix.sh` writes every carrier of a segment as an `SM:Z:` tag, per
-haplotype — but the view does not read that tag into its node popup yet, so on
-this route the other carriers are in the file rather than on screen. Cutting the
-same window as a [file](#a-window-as-a-file) is where carriage is currently
-visible, because the P lines come with it.
+put it on the first path that walks it, and the rest are in the node popup under
+`carriedBy`. That works here because `build_pggb_tabix.sh` writes every carrier
+of a segment into the index as an `SM:Z:` tag, per haplotype, which is the one
+thing an rGFA cannot state: there `SR` is build order, so the popup reports
+`contributingAssembly` instead and means "first contributed", not "carried by".
 
 The two panes are comparable but two orders of magnitude apart in span: the
 minigraph side covers three whole backbone segments, the pggb side the stretch

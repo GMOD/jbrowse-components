@@ -17,10 +17,18 @@ its premise corrected — it is not a drop-in). Open: §4 colour/legend, §6 the
 axis, §7 in-view navigation, §8 the UI debts, and the demo list. Nothing is
 blocked.
 
-**Before the next graph figure ships, the plugin needs a `pnpm betabuild`** —
-`e0bc34a` (the tier fix) is built locally but not published, so the pinned
-bundle in the three fixtures predates it. Bump the pin and regenerate the graph
-figures in the same commit, per §2.
+**Published 2026-08-06 as `bfe47428e7ae`**, which clears the betabuild this file
+had been asking for: the tier fix, two dependency bumps, the hoverSync
+registration fix, the drawing-pane ceiling and the carriage read (§3) all went
+out together, and the unversioned entry point now serves them.
+
+**Still owed: bump the pin in the three fixtures and regenerate the graph figures
+in the same commit, per §2.** Not done here because the jbrowse-components
+worktree had 45 uncommitted source files from other agents at the time — a regen
+against that tree bakes somebody else's work in progress into the published
+figure set, which is exactly what a pin exists to prevent. The test for whether a
+given figure is safe to regenerate is whether an unfiltered sweep moves it at
+all: the graph figures all moved, so all of them are blocked on a clean tree.
 
 Durable spillover from §5 lives outside this file and should not be copied back
 in: the wasm string-decode defect it turned up is ADR 0002 in the
@@ -96,8 +104,11 @@ a real defect on any diploid graph.
 
 Left to do:
 
-- **show it.** The node popup lists `carriedBy` when set. Nothing yet maps
-  `tags.SM` onto it, which is the cheap win.
+- ~~**show it.**~~ Done 2026-08-06, plugin `418bf7c`. `gfaConverter.makeNode`
+  reads `SM:Z:` into `GraphNode.samples`, which `model.ts` already rendered as
+  `carriedBy`. Walk-first precedence, three tests, and an in-app A/B (0 of 53
+  nodes before, 53 of 53 after) recorded in
+  [reference/PANGENOME_GRAPHS.md](../reference/PANGENOME_GRAPHS.md).
 - ~~**rebuild and rehost the E. coli pggb pair**~~ done 2026-08-06. The hosted
   pair now carries `SM:Z:` per haplotype; see the tag section in
   [reference/PANGENOME_GRAPHS.md](../reference/PANGENOME_GRAPHS.md). This makes
