@@ -38,7 +38,7 @@ sessions keep rendering instead of hitting an unhandled switch case.
 
 ```js
 // type signature
-(value: string | undefined) => "track" | "default" | "strand" | "query" | "target" | "reference" | "identity" | "meanQueryIdentity" | "mappingQuality"
+(value: string | undefined) => "track" | "default" | "strand" | "mappingQuality" | "target" | "query" | "reference" | "identity" | "meanQueryIdentity"
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorUtils.ts)
