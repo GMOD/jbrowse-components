@@ -1,0 +1,47 @@
+{
+  "assemblies": [
+    {
+      "name": "wheat",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "wheat-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "wheat.chrom.sizes"
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "SyntenyTrack",
+      "trackId": "wheat_homoeologs",
+      "name": "Bread wheat homoeologs (Ka/Ks)",
+      "assemblyNames": ["wheat", "wheat"],
+      "adapter": {
+        "type": "MCScanBlocksAdapter",
+        "uri": "wheat.homoeologs.blocks.gz",
+        "blockAssemblies": ["wheat", "wheat"],
+        "bedLocations": [{ "uri": "wheat.bed.gz" }, { "uri": "wheat.bed.gz" }],
+        "assemblyNames": ["wheat", "wheat"],
+        "attributeColumns": ["dn", "ds"]
+      }
+    }
+  ],
+  "defaultSession": {
+    "name": "Bread wheat homoeologs by selection pressure",
+    "views": [
+      {
+        "type": "LinearSyntenyView",
+        "displayName": "Bread wheat against itself, coloured by dN/dS",
+        "showColorLegend": true,
+        "init": {
+          "views": [{ "assembly": "wheat" }, { "assembly": "wheat" }],
+          "tracks": [["wheat_homoeologs"]],
+          "colorBy": "dnds",
+          "alpha": 0.15
+        }
+      }
+    ]
+  }
+}

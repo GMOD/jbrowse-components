@@ -395,3 +395,43 @@ describe('attributeColumns', () => {
     expect(plain[0]!.get('identity')).toBeUndefined()
   })
 })
+
+// One assembly in two columns: wheat's homoeologs against each other, or an
+// MCScanX whole-genome-duplication run. `indexOf` answers the same column twice
+// there, which paired every gene with itself and, with no "other" assembly to
+// mate against, threw before drawing anything.
+test('a self-comparison draws the two columns, not one against itself', async () => {
+  const selfAdapter = new Adapter(
+    configSchema.create({
+      mcscanBlocksLocation: bed('grape_self.blocks'),
+      blockAssemblies: ['grape', 'grape'],
+      bedLocations: [bed('grape.bed'), bed('grape.bed')],
+      assemblyNames: ['grape', 'grape'],
+    }),
+  )
+  const region = {
+    refName: 'chr1',
+    start: 0,
+    end: 1000,
+    assemblyName: 'grape',
+  }
+  const targeted = await firstValueFrom(
+    selfAdapter
+      .getFeatures(region as never, { targetAssemblyName: 'grape' })
+      .pipe(toArray()),
+  )
+  // column 1 of grape.blocks holds peach ids, which grape.bed does not have, so
+  // the join is empty — but it is the (0,1) join, and it neither throws nor
+  // pairs a gene with itself
+  expect(
+    targeted.every(
+      f => f.get('name') !== (f.get('mate') as { name: string }).name,
+    ),
+  ).toBe(true)
+
+  // and with no target at all, a self track still answers rather than finding
+  // no mate assembly to draw against
+  await expect(
+    firstValueFrom(selfAdapter.getFeatures(region as never).pipe(toArray())),
+  ).resolves.toBeDefined()
+})

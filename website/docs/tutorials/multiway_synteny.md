@@ -133,66 +133,85 @@ a six-genome view this way and covers both choices.
 
 ### From Ensembl Compara
 
-Compara publishes one TSV per species holding that species' homologies against
-every other, so a two-genome ortholog track is a download rather than an
-all-against-all protein search:
+Compara publishes one TSV per species holding its homologies against every
+other, so an ortholog table is a download rather than an all-against-all protein
+search. This one takes sorghum against bread wheat and against Aegilops
+tauschii, writing a table per pair:
 
 ```bash
-curl -fO https://ftp.ensembl.org/pub/release-113/tsv/ensembl-compara/homologies/homo_sapiens/Compara.113.protein_default.homologies.tsv
+curl -fO https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-63/tsv/ensembl-compara/homologies/sorghum_bicolor/Compara.116.protein_default.homologies.tsv.gz
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/compara_to_blocks.py
-python3 compara_to_blocks.py Compara.113.protein_default.homologies.tsv \
-  --reference homo_sapiens=human --species mus_musculus=mouse \
-  --bed human=human.bed --bed mouse=mouse.bed
+python3 compara_to_blocks.py Compara.116.protein_default.homologies.tsv.gz \
+  --reference sorghum_bicolor=sorghum \
+  --species triticum_aestivum=wheat --species aegilops_tauschii=tauschii \
+  --bed sorghum=sorghum.bed --bed wheat=wheat.bed --bed tauschii=tauschii.bed
 ```
 
-That writes `human.mouse.blocks`. Unlike a table whose cells are bare gene ids,
-each row also carries what the orthology inference measured, which the script
-puts in the columns after the two gene columns and the adapter names with
-`attributeColumns`:
+An export covers a fixed set of partner species rather than every genome in the
+division, and they are not reciprocal: sorghum's file carries both bread wheat
+and tauschii, while bread wheat's carries neither. Naming a partner the file
+does not have exits with the list of the ones it does.
+
+Each row carries what the inference measured, plus a `copies` column the script
+counts: how many orthologs the reference gene has in that partner. The adapter
+names them with `attributeColumns`:
 
 ```json
 {
   "type": "SyntenyTrack",
-  "trackId": "human_mouse_compara",
-  "name": "Human / mouse orthologs (Ensembl Compara)",
-  "assemblyNames": ["human", "mouse"],
+  "trackId": "sorghum_wheat",
+  "name": "Sorghum / bread wheat orthologs",
+  "assemblyNames": ["sorghum", "wheat"],
   "adapter": {
     "type": "MCScanBlocksAdapter",
-    "uri": "human.mouse.blocks.gz",
-    "blockAssemblies": ["human", "mouse"],
-    "bedLocations": [{ "uri": "human.bed.gz" }, { "uri": "mouse.bed.gz" }],
-    "assemblyNames": ["human", "mouse"],
-    "attributeColumns": [
-      "identity",
-      "homology_identity",
-      "dn",
-      "ds",
-      "goc_score",
-      "wga_coverage"
-    ]
+    "uri": "sorghum.wheat.blocks.gz",
+    "blockAssemblies": ["sorghum", "wheat"],
+    "bedLocations": [{ "uri": "sorghum.bed.gz" }, { "uri": "wheat.bed.gz" }],
+    "assemblyNames": ["sorghum", "wheat"],
+    "attributeColumns": ["identity", "homology_identity", "goc_score", "copies"]
   }
 }
 ```
 
 Each named column becomes a feature attribute, so it shows in the detail panel
-when a ribbon is clicked, and two of them drive the view's **Color by** menu:
-`identity` paints the viridis identity ramp, and `dn` with `ds` give **Color by
-→ dN/dS**, which is the one measurement an aligner cannot produce. Its ramp
-pivots at 1, so a gene under purifying selection reads blue and one under
-positive selection reads red. `.` in a cell is a missing measurement rather than
-a zero, which matters here: Compara leaves dS unestimated for a distant pair,
-and a zero there would read as total purifying selection.
+when a ribbon is clicked, and each is offered in the view's **Color by** menu
+under its own name. `identity` has a named mode with a fixed 0-100% domain; the
+rest scale to the values in view.
 
-The script keeps `ortholog_one2one` and `ortholog_one2many` by default; a
-reference gene with two orthologs becomes two rows, the same choice
-`orthogroups_to_blocks.py` makes. `--high-confidence-only` keeps just the pairs
-Compara flags, and `--homology-type` selects others, including
-`within_species_paralog` for a self-comparison.
+A column describes the **row**, so it is meaningful where a row is one link,
+which is why the script writes one table per pair rather than one for the set.
+That is not a limit on stacking genomes: a synteny view takes one entry per
+band, so an N-genome stack uses N-1 pairwise tracks, each carrying its own
+measurements.
 
-These columns describe the **row**, so they are meaningful where a row is one
-link. A table spanning N genomes has a row per orthogroup covering several
-pairs, with no single dN/dS, which is why the script writes one table per pair
-rather than one for the set.
+#### Selection pressure between a polyploid's own copies
+
+Bread wheat is an allohexaploid, carrying three near-complete copies of its
+genome, so almost every gene exists three times. Compara types those trios as
+`homoeolog_one2one`, which makes bread wheat against *itself* a comparison of
+69,940 gene pairs:
+
+```bash
+python3 compara_to_blocks.py Compara.116.protein_default.homologies.tsv.gz \
+  --reference triticum_aestivum=wheat --species triticum_aestivum=wheat \
+  --homology-type homoeolog_one2one --bed wheat=wheat.bed
+```
+
+One assembly named twice is a self-comparison, and `blockAssemblies` lists it
+once per column so the two sides stay distinguishable.
+
+Nothing publishes dN/dS for those pairs, so it is computed:
+[`kaks_from_pairs.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/kaks_from_pairs.py)
+aligns each pair in codon space and runs Nei-Gojobori, writing the `dn` and `ds`
+columns **Color by → dN/dS** divides. Homoeologs are recent enough that dS stays
+near 0.05, well short of where the method saturates.
+
+<Figure caption="Bread wheat against itself: 68,710 homoeolog pairs coloured by dN/dS on a ramp pivoted at 1, where blue is purifying selection and red positive. Each homoeologous group makes three parallel segments, one per pair of subgenomes. The segments breaking that pattern at 4A are the 4AL/5AL and 4AL/7BS translocations." src="/img/multiway_synteny/wheat_homoeolog_selection.png" />
+
+Three things read off one plot: the subgenome structure as parallel segments,
+the 4A translocations as segments leaving their group, and per-gene selection as
+colour. 4A carries 359 links to 5D and 199 to 7D where an unrearranged
+chromosome carries about 20.
 
 ### From reciprocal best BLAST hits
 

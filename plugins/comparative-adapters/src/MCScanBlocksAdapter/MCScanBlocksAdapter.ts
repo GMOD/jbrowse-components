@@ -150,6 +150,27 @@ function parseRowAttrs(
   return attrs
 }
 
+// The two columns a pair draws from. Normally one lookup each, but a
+// self-comparison lists ONE assembly in two columns — wheat's homoeologs against
+// each other, or an MCScanX whole-genome-duplication run — and there `indexOf`
+// answers the same column twice, which pairs every gene with itself. The mate's
+// column is then the assembly's SECOND appearance. `mcscanUtil.facingSides`
+// already anticipates this shape for the anchors adapters; this was the one
+// blocks-shaped hole in it.
+function pairColumns(
+  blockAssemblies: string[],
+  queryAssembly: string,
+  mateAssembly: string,
+) {
+  const colA = blockAssemblies.indexOf(queryAssembly)
+  return [
+    colA,
+    queryAssembly === mateAssembly
+      ? blockAssemblies.indexOf(mateAssembly, colA + 1)
+      : blockAssemblies.indexOf(mateAssembly),
+  ] as const
+}
+
 // A .blocks file has one column per genome (column 0 is the reference). Because
 // it describes N genomes at once, one track can back every band of a multi-way
 // view: parse all columns + BEDs once, then resolve which pair to draw per query
@@ -270,9 +291,14 @@ export default class MCScanBlocksAdapter extends BaseFeatureDataAdapter<MCScanBl
   // entries in assemblyNames, the legacy shape) is unaffected — that list is
   // what bounds this.
   private mateAssemblies(queryAssembly: string, targetAssemblyName?: string) {
-    return targetAssemblyName === undefined
-      ? this.getConf('assemblyNames').filter(n => n !== queryAssembly)
-      : [targetAssemblyName]
+    if (targetAssemblyName !== undefined) {
+      return [targetAssemblyName]
+    }
+    const names = this.getConf('assemblyNames')
+    const others = names.filter(n => n !== queryAssembly)
+    // A self-comparison names one assembly twice, so "every other assembly" is
+    // empty and the track would answer nothing at all. Its mate is itself.
+    return others.length ? others : names.slice(0, 1)
   }
 
   async getRefNames(opts: BaseOptions = {}) {
@@ -290,7 +316,12 @@ export default class MCScanBlocksAdapter extends BaseFeatureDataAdapter<MCScanBl
       // when a target is given, scope to that pair (rows where both are present);
       // otherwise (e.g. the assembly-swap check) report across all pairs
       if (targetAssemblyName !== undefined && tcol !== -1) {
-        for (const { a } of this.pairRows(col, tcol, setup)) {
+        const [qcol, mcol] = pairColumns(
+          blockAssemblies,
+          assemblyName!,
+          targetAssemblyName,
+        )
+        for (const { a } of this.pairRows(qcol, mcol, setup)) {
           set.add(a.refName)
         }
       } else if (targetAssemblyName === undefined) {
@@ -322,7 +353,11 @@ export default class MCScanBlocksAdapter extends BaseFeatureDataAdapter<MCScanBl
         )
       }
       for (const mateAssembly of mateAssemblies) {
-        const colB = blockAssemblies.indexOf(mateAssembly)
+        const [, colB] = pairColumns(
+          blockAssemblies,
+          queryAssembly,
+          mateAssembly,
+        )
         if (colB === -1) {
           throw new Error(
             `blockAssemblies ${JSON.stringify(blockAssemblies)} must contain both ${queryAssembly} and ${mateAssembly}, with matching bedLocations`,

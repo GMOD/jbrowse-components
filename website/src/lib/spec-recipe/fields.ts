@@ -1453,9 +1453,17 @@ export const viewFields: Record<string, FieldRecipe> = {
             ? value.slice(SYNTENY_ATTRIBUTE_PREFIX.length)
             : undefined))
         : undefined
-    return label && viewType === 'LinearSyntenyView'
+    // Both comparative views carry the same palette button; only the header it
+    // sits in differs, the same split showColorLegend makes.
+    const header =
+      viewType === 'LinearSyntenyView'
+        ? 'Synteny view header'
+        : viewType === 'DotplotView'
+          ? 'Dotplot header'
+          : undefined
+    return label && header
       ? {
-          path: `Synteny view header → palette button → ${label}`,
+          path: `${header} → palette button → ${label}`,
           note:
             value === 'reference'
               ? 'The palette button\'s tooltip reads "Color by: ...". Reference is offered only in a stacked view of three or more genomes, where there is a shared reference to trace.'

@@ -1,10 +1,10 @@
-# Figure store manifest — the bytes live in S3, this file is what git tracks.
 #
+#
+# <path> <width>x<height> <bytes> <sha256>
+# Figure store manifest — the bytes live in S3, this file is what git tracks.
 # One line per figure, sorted by path, so a commit that changes three figures
 # changes three lines. Run `pnpm figures` for the CLI; `pnpm figures:report`
 # renders what moved, with before/after images, against any base ref.
-#
-# <path> <width>x<height> <bytes> <sha256>
 products/jbrowse-img/img/1.png 1200x713 83273 325b21c2873e0e871e609fe580fe3978d03bfe6a5a61926ebdcc9a1b223f677c
 products/jbrowse-img/img/alignments_haplotype.png 1200x514 40157 070a6f6821a3751da32b2efea59abd1ca23f8f3aebf229de2c70c89aa783e656
 products/jbrowse-img/img/alignments_pileup.png 1200x375 44051 de1a3ac6c0a26d19916d38791168299b0f314342ca649ecd56fac5542c29f3bd
@@ -259,6 +259,7 @@ website/static/img/multiway_synteny/ecoli_pangenome.png 3000x1430 369806 219f222
 website/static/img/multiway_synteny/ecoli_stx_island.png 3000x1120 117558 3efa4cc88b22733a94d3352d705462569bd96d8ef9e76f99a143d371db28b994
 website/static/img/multiway_synteny/grape_peach_cacao.png 3000x1600 473734 65dcd650085554d4a76ab9f26e08c8c695f9c621f75b2c9008c6b78c040ee975
 website/static/img/multiway_synteny/grape_peach_cacao_gene_orthologs.png 3000x1624 188438 a703594d95c032ed7fb69975a78ad17b8d7bc7e63416af4e46340031f1e54597
+website/static/img/multiway_synteny/wheat_homoeolog_selection.png 3000x1534 251311 25a7a93cda86bc9fed6757a2b05ebf8620d7542d596b2b83a2149aa5f4525a4e
 website/static/img/multiway_synteny/wheat_homoeologs.png 3000x1344 1470799 4f0cafc4a096639394af16ba32f339ed29cd71d43d2086d7b81c3b041a745d72
 website/static/img/multiwig/addtrack.png 2600x2080 120620 7f23c3dc82645ef335f73c6a0d64711dba07f63052d8c1d23333f4c085f1d36d
 website/static/img/multiwig/cluster_dialog.png 3000x2480 140037 82b7fe4035b1d9bb43839689249457a198585e3d23caefa76b570b38155d1d3b

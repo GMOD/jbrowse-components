@@ -638,6 +638,55 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 428,
   },
 
+  // Bread wheat against itself: it carries three near-complete copies of its
+  // genome, so almost every gene exists three times, and Compara curates those
+  // trios as `homoeolog_one2one` — 69,940 pairs, every one within a
+  // homoeologous group (2A-2B, 2A-2D, 2B-2D and so on).
+  //
+  // The colour is dN/dS, computed rather than downloaded: no source publishes
+  // it (Ensembl declares the two columns and fills neither), so
+  // scripts/kaks_from_pairs.py aligns each pair in codon space and runs
+  // Nei-Gojobori. 68,710 of the 69,940 pairs resolved, only 58 past saturation,
+  // because homoeologs are recent enough that dS stays near 0.05.
+  //
+  // Measured off that table: median 0.207, quartiles 0.112 and 0.347, and 839
+  // pairs above 1. The fixed 0..2 domain pivoted at 1 is what makes it read —
+  // the bulk shades through blue across a 3x interquartile range, and the 839
+  // genes under positive selection are the only warm ribbons in the frame. An
+  // auto-scaled attribute mode would stretch to the 7.05 outlier and flatten
+  // all of it.
+  {
+    mode: 'url',
+    name: 'multiway_synteny/wheat_homoeolog_selection',
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/wheat_homoeolog_selection/config.json',
+      ),
+      {
+        views: [
+          {
+            // A DOTPLOT, not stacked rows. Both axes are the same genome in
+            // the same order, so as two linear rows every link is near-vertical
+            // and 68k of them read as a barcode with no structure. On two axes
+            // the same links resolve into the 21x21 grid the subgenomes make:
+            // each homoeologous group is a block off the diagonal, three
+            // subgenomes against each other.
+            type: 'DotplotView',
+            showColorLegend: true,
+            views: [{ assembly: 'wheat' }, { assembly: 'wheat' }],
+            tracks: ['wheat_homoeologs'],
+            colorBy: 'dnds',
+          },
+        ],
+      },
+    ),
+    readySelector: '[data-testid="dotplot_webgl_canvas_done"]',
+    readyTimeout: 300000,
+    settleMs: 15000,
+    // 1000 left 233 css px of blank under the plot, per the run's own report
+    viewportHeight: 767,
+  },
+
   // orthofinder_synteny.md: human/chicken/frog/spotted gar/zebrafish, stacked
   // on OrthoFinder orthogroups rather than a whole-genome aligner. One
   // vertebrates_orthogroups track (MCScanBlocksAdapter) backs all four bands.
