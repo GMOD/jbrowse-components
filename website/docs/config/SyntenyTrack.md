@@ -35,10 +35,10 @@ _See the **Config slots** section below for all available configuration fields._
 
 ## Related links
 
-- **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
-  ([state model](../../models/lgvsyntenydisplay))
 - **Display:** [DotplotDisplay](../dotplotdisplay)
   ([state model](../../models/dotplotdisplay))
+- **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
+  ([state model](../../models/lgvsyntenydisplay))
 - **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)
   ([state model](../../models/linearsyntenydisplay))
 - **Adapter:** [AllVsAllIndexedPAFAdapter](../allvsallindexedpafadapter)

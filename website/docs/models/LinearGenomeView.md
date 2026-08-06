@@ -232,7 +232,7 @@ the whole surface.
 | <span id="action-movetracktobottom">**moveTrackToBottom**</span><br><code>(id: string) =&gt; void</code> |  | LinearGenomeView |
 | <span id="action-movetrack">**moveTrack**</span><br><code>(movingId: string, targetId: string) =&gt; void</code> |  | LinearGenomeView |
 | <span id="action-toggletrack">**toggleTrack**</span><br><code>(trackId: string) =&gt; boolean</code> |  | LinearGenomeView |
-| <span id="action-settracklabels">**setTrackLabels**</span><br><code>(setting: "overlapping" &#124; "offset" &#124; "hidden") =&gt; void</code> |  | LinearGenomeView |
+| <span id="action-settracklabels">**setTrackLabels**</span><br><code>(setting: "offset" &#124; "hidden" &#124; "overlapping") =&gt; void</code> |  | LinearGenomeView |
 | <span id="action-setshowcenterline">**setShowCenterLine**</span><br><code>(b: boolean) =&gt; void</code> |  | LinearGenomeView |
 | <span id="action-setdisplayedregions">**setDisplayedRegions**</span><br><code>(regions: Region[]) =&gt; void</code> |  | LinearGenomeView |
 | <span id="action-activatetrackselector">**activateTrackSelector**</span><br><code>() =&gt; Widget</code> |  | LinearGenomeView |

@@ -33,8 +33,8 @@ used to load UCSC chain alignment files (query and target assembly required)
 ## Related links
 
 - **Track:** [SyntenyTrack](../syntenytrack)
-- **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
 - **Display:** [DotplotDisplay](../dotplotdisplay)
+- **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
 - **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)
 
 ## Config slots
