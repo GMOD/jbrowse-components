@@ -14,7 +14,7 @@
 // nothing else in the stack allocates.
 //
 // Needs test_data/jb2bench_link (see mem_config.json there) and a built
-// products/jbrowse-web. Env: HEADLESS=0, TRACK, WINDOWS, WIN_KB.
+// products/jbrowse-web. Env: HEADLESS=0, TRACK, WINDOWS, WIN_KB, IDLE_MINUTES, SKIP_IDLE=1.
 import { encodeSessionSpec } from '@jbrowse/browser-test-utils'
 
 import {
@@ -278,6 +278,12 @@ await sleep(1500)
 const open = await floor('after pan, track open')
 const panSnapshot = await snapshotStats('worker, after pan')
 
+// Don't read the "after CLOSING" row as a clean close-time measurement: the
+// snapshot above streams over a gigabyte of JSON and can take minutes, which
+// makes it an uncontrolled idle period. Runs where it overran @gmod/bam's
+// 3-minute sweep report a worker that had already dropped its parsed cache
+// before the close, and runs where it didn't report one that hadn't. The rows
+// that mean something are the peak and the post-idle one.
 await hideTrack(page, TRACK)
 await sleep(2000)
 await waitQuiet(page)
@@ -294,22 +300,26 @@ await page.evaluate(() => {
 await sleep(3000)
 const hidden = await floor('after tab hidden')
 
-// Wait out @gmod/bam's idle sweep (3 min + up to a 45 s interval) before
-// reading the residue.
+// Wait out BOTH idle sweeps before reading the residue. They are not the same
+// length on purpose (ADR-059): @gmod/bam's parsed cache goes at three minutes,
+// this module's raw chunks at fifteen, because raw bytes are the cheap layer and
+// the only one still helping once the parsed cache has expired. So the default
+// here has to clear fifteen plus a sweep interval, or it reports a cache that is
+// simply not due yet as one that never reclaims.
 //
-// Dropping the adapterCache key does NOT make its BamFile collectable at once:
-// SharedReadCache runs its sweep on a setInterval whose callback closes over the
-// cache, and a pending timer is a GC root — so the parsed chunks stay reachable
-// through the timer until the sweep empties the cache and stops itself. Anything
-// still held after that has no timer of its own, which is the layer this probe
-// is about.
+// Dropping the adapterCache key does NOT make a BamFile collectable at once
+// either: SharedReadCache runs its sweep on a setInterval whose callback closes
+// over the cache, and a pending timer is a GC root — so the parsed chunks stay
+// reachable through the timer until that sweep empties the cache and stops
+// itself.
+const IDLE_MINUTES = Number(process.env.IDLE_MINUTES || 19)
 if (process.env.SKIP_IDLE !== '1') {
-  console.log('  ...waiting out the 3-minute @gmod/bam idle sweep')
-  for (let i = 0; i < 8; i++) {
+  console.log(`  ...waiting out ${IDLE_MINUTES} min of idle sweeps`)
+  for (let i = 0; i < IDLE_MINUTES * 2; i++) {
     await sleep(30000)
   }
 }
-const idle = await floor('after 4 min idle')
+const idle = await floor(`after ${IDLE_MINUTES} min idle`)
 
 console.log('\n=== attribution (heap snapshots) ===')
 const afterPan = panSnapshot

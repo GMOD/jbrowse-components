@@ -9,9 +9,10 @@ import {
 fetchMock.disableMocks()
 
 const CHUNK = 256 * 1024
-// the sweep runs at a quarter of the idle timeout, so advancing by timeout +
+// mirrors CACHE_IDLE_TIMEOUT_MS and its interval; advancing by timeout +
 // interval guarantees at least one sweep has seen an entry as idle
-const SWEEP_INTERVAL = (3 * 60 * 1000) / 4
+const IDLE_TIMEOUT = 15 * 60 * 1000
+const SWEEP_INTERVAL = IDLE_TIMEOUT / 4
 
 // Deterministic 1MB "file" where each byte equals its position mod 256
 const FILE_SIZE = 2 * 1024 * 1024
@@ -922,7 +923,7 @@ describe('RemoteFileWithRangeCache aborted-chunk sharing', () => {
 // cover the sweep that fixes that, including the property the whole design rests
 // on — that evicting under a live read is harmless.
 describe('RemoteFileWithRangeCache idle sweep', () => {
-  const IDLE = 3 * 60 * 1000
+  const IDLE = IDLE_TIMEOUT
 
   afterEach(() => {
     jest.useRealTimers()
@@ -958,9 +959,9 @@ describe('RemoteFileWithRangeCache idle sweep', () => {
     await fetchRange(file, 0, 99)
     expect(calls).toHaveLength(1)
 
-    // eight minutes of wall clock, but never three without a read
+    // well over an hour of wall clock, but never a whole timeout without a read
     for (let i = 0; i < 8; i++) {
-      jest.advanceTimersByTime(60 * 1000)
+      jest.advanceTimersByTime(IDLE_TIMEOUT - SWEEP_INTERVAL)
       await fetchRange(file, 0, 99)
     }
     expect(calls).toHaveLength(1)

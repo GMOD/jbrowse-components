@@ -1,26 +1,38 @@
 import { RemoteFile } from 'generic-filehandle2'
 
 const CHUNK_SIZE = 256 * 1024
+
 // Cached chunks own their bytes (see fetchRun), so this entry count is a true
 // bound on retained memory: MAX_CACHE_ENTRIES * CHUNK_SIZE = 256 MB per module
 // instance, and the main thread and each RPC worker have their own.
+//
+// It looks oversized and is not. Panning twelve windows of a 105 MB BAM and
+// panning back issues *zero* requests on the second pass — a region @gmod/bam has
+// already parsed never reaches this layer — and on that workload dropping this
+// to 4 entries cost one extra range request and 1.3 MB. But that measurement was
+// taken with @gmod/bam's parsed cache under its 1 GB budget, so it never evicted.
+// On the data this browser is actually pointed at, it does: a single 1000x track
+// panned across a 250 kb contig already peaks past that. Once the layer above is
+// evicting, a re-read falls through to here, and this is the only thing between
+// it and the network. Do not shrink it on the strength of a workload that stayed
+// inside the parsed budget.
 const MAX_CACHE_ENTRIES = 1000
-const MAX_CONCURRENT = 20
 
-// Drop a chunk nothing has read for three minutes.
+// Drop a chunk nothing has read for fifteen minutes.
 //
-// The entry cap above bounds this cache but never lowers it, and closing a track
-// lowers it by nothing at all: measured, one alignments track panned across
-// twenty windows of a 250 kb contig left 400 chunks — 100 MB, every byte it had
-// fetched — resident in its worker, still there after the track closed and after
-// four minutes idle. Every layer above this one already sweeps on the same three
-// minutes (@gmod/bam, @gmod/cram, @gmod/tabix all take a cacheIdleTimeoutMs);
-// this was the last one that never gave anything back.
+// Longer than the three minutes every parsed cache above uses (@gmod/bam,
+// @gmod/cram, @gmod/tabix all take a cacheIdleTimeoutMs), and deliberately so:
+// this is the cheap layer. Raw compressed bytes cost roughly an order of
+// magnitude less per unit of genomic coverage than the parsed features above
+// them, and they are what stands between a re-read and a re-download once those
+// caches expire. Matching their three minutes meant expiring at the exact moment
+// this became the only thing helping — measured, a reader who stepped away for
+// four minutes re-downloaded all 73.5 MB of a pan.
 //
-// Three minutes rather than seconds for the reason those libraries pick it: the
-// point is to catch a reader who has gone away, not one looking at the screen. A
-// pan back a minute later should still hit.
-const CACHE_IDLE_TIMEOUT_MS = 3 * 60 * 1000
+// Fifteen rather than forever because forever is what this was, and what the
+// whole sweep exists to end: 100 MB per worker, resident after the track closed,
+// after the tab hid, and after four minutes idle.
+const CACHE_IDLE_TIMEOUT_MS = 15 * 60 * 1000
 // A quarter of the timeout, so the lag between a chunk going idle and being
 // dropped is ~1.25x it rather than 2x.
 //
@@ -29,6 +41,8 @@ const CACHE_IDLE_TIMEOUT_MS = 3 * 60 * 1000
 // not throttled, and the workers are where the bytes are. On the main thread it
 // costs some lag on a cache measured holding no chunks at all.
 const SWEEP_INTERVAL_MS = CACHE_IDLE_TIMEOUT_MS / 4
+
+const MAX_CONCURRENT = 20
 
 interface ChunkRun {
   start: number
