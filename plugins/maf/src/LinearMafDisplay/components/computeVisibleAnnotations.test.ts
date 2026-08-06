@@ -149,3 +149,26 @@ describe('findFrameAt', () => {
     expect(findFrameAt(undefined, 105, 1, rowIndexBySrc)).toBeUndefined()
   })
 })
+
+// One record per CDS exon per species over the *buffered* region, so a
+// gene-dense window across a deep alignment produces a lot of them and about
+// half sit off screen. Same `[bpLo, bpHi)` cull the block overlays apply.
+test('skips frame records outside the visible span', () => {
+  const markers = computeVisibleAnnotations({
+    view,
+    framesDataMap: {
+      get: () => [
+        rec({ start: 0, end: 50 }),
+        rec({ start: 120, end: 130 }),
+        rec({ start: 400, end: 500 }),
+      ],
+    },
+    rowIndexBySrc,
+    rowHeight: 20,
+    rowProportion: 0.8,
+    scrollTop: 0,
+    viewportHeight: 1000,
+  })
+  expect(markers).toHaveLength(1)
+  expect(markers[0]!.xLeft).toBe(20)
+})

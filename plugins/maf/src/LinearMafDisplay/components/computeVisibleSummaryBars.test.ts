@@ -119,3 +119,27 @@ test('emits nothing when a region has no fetched summary', () => {
   })
   expect(bars).toHaveLength(0)
 })
+
+// The records are the *buffered* region's — one per block per species — while
+// `visibleRegions` covers only what is on screen, so at the zoom this path
+// exists for roughly half of them position a bar nothing can show. Same
+// `[bpLo, bpHi)` cull the block overlays apply.
+test('skips records outside the visible span', () => {
+  const bars = computeVisibleSummaryBars({
+    view,
+    summaryDataMap: {
+      get: () => [
+        rec({ src: 'mm10', start: 0, end: 50 }), // left of the visible span
+        rec({ src: 'mm10', start: 120, end: 130 }), // inside
+        rec({ src: 'mm10', start: 400, end: 500 }), // right of it
+      ],
+    },
+    rowIndexBySrc,
+    rowHeight: 15,
+    rowProportion: 0.8,
+    scrollTop: 0,
+    viewportHeight: 1000,
+  })
+  expect(bars).toHaveLength(1)
+  expect(bars[0]!.x).toBe(20)
+})

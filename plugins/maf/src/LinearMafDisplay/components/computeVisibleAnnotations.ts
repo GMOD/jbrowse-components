@@ -87,11 +87,18 @@ export function computeVisibleAnnotations(
   const stripH = Math.max(2, Math.round(h * 0.25))
   const stripOffset = offset + h - stripH
 
-  for (const { data: records, bpToPx } of eachVisibleRegion(
+  for (const { data: records, bpToPx, bpLo, bpHi } of eachVisibleRegion(
     view,
     framesDataMap,
   )) {
     for (const r of records) {
+      // One record per CDS exon per species over the *buffered* region, so a
+      // gene-dense window across a deep alignment is a lot of them and about
+      // half are off screen. Same `[bpLo, bpHi)` cull as the block overlays,
+      // tested before the `src` lookup it skips.
+      if (r.end <= bpLo || r.start >= bpHi) {
+        continue
+      }
       const rowIndex = rowIndexBySrc.get(r.src)
       if (rowIndex !== undefined && rowIndex >= firstRow && rowIndex < endRow) {
         const { xLeft, width } = bpSpanPx(bpToPx, r.start, r.end)

@@ -69,11 +69,19 @@ export function computeVisibleSummaryBars(
     viewportHeight,
   )
 
-  for (const { data: records, bpToPx } of eachVisibleRegion(
+  for (const { data: records, bpToPx, bpLo, bpHi } of eachVisibleRegion(
     view,
     summaryDataMap,
   )) {
     for (const r of records) {
+      // The bp test first, and before the `src` lookup: the records are the
+      // *buffered* region's — one per block per species, so the deepest
+      // alignments produce the most of them at exactly the zoom this path
+      // exists for — and two comparisons are cheaper than the map hit they
+      // skip. Same `[bpLo, bpHi)` cull as the block overlays.
+      if (r.end <= bpLo || r.start >= bpHi) {
+        continue
+      }
       const rowIndex = rowIndexBySrc.get(r.src)
       if (rowIndex !== undefined && rowIndex >= firstRow && rowIndex < endRow) {
         const { xLeft, width } = bpSpanPx(bpToPx, r.start, r.end)
