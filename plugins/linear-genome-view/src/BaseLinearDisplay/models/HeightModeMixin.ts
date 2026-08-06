@@ -8,6 +8,11 @@ import type { HeightMode } from './heightMode.ts'
 import type { ResolvableDisplay } from '@jbrowse/core/configuration'
 import type { IReactionDisposer } from 'mobx'
 
+// This ESM package builds without @types/node, but consuming bundlers
+// (webpack/vite) still string-replace `process.env.NODE_ENV`, so keep the
+// reference and give it a minimal module-scoped type for tsc.
+declare const process: { env: { NODE_ENV?: string } }
+
 // The mixin's own `self` is the empty model it declares, so it can't see the
 // props the concrete display supplies. `ResolvableDisplay` is what the promotable
 // `heightMode` read needs (type + configuration); every display composing this is

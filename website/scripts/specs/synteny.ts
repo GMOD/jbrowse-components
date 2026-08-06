@@ -859,7 +859,15 @@ export const syntenySpecs: ScreenshotSpec[] = [
       },
     ),
     readySelector: '[data-testid="synteny_canvas_done"]',
-    readyTimeout: 120000,
+    // The heaviest figure in the set, and the only one of the three OrthoFinder
+    // specs that does not finish in 120s on a CI runner — it was the sole
+    // synteny failure on the first sweeps of .github/workflows/figures.yml,
+    // while grasses and vertebrates passed at the same 120000. Six assemblies
+    // against one 106,156-row orthogroup table is ~500k ribbons, and a GitHub
+    // runner has no GPU to draw them with. The wait itself is declarative
+    // (`synteny_canvas_done`), so this only raises the ceiling; it does not
+    // sleep, and a render that never completes still fails, just later.
+    readyTimeout: 300000,
     settleMs: 15000,
     // six collapsed scalebar rows and five 170px bands. 1120 cut the bottom
     // row's scalebar in half, which is the row that names timopheevii's

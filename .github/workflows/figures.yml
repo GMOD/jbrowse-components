@@ -80,6 +80,13 @@ jobs:
       # app; it does not produce esm/.
       - name: Build the ESM output the jb2export specs resolve against
         run: pnpm build:esm
+      # `embedded` specs screenshot the react-linear-genome-view component out
+      # of its UMD bundle rather than the app, and fail with "Embedded UMD not
+      # found" without it. This is the second half of what website's
+      # `screenshots:build` script already does locally; the workflow had only
+      # the first.
+      - name: Build the embedded UMD bundle
+        run: pnpm --filter @jbrowse/react-linear-genome-view2 build:webpack
       # The generator shells out to ImageMagick and pngquant for the diff gate
       # and the optimizer; without them every capture would ship unquantized and
       # the content-stable gate could not run at all.
