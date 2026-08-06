@@ -67,12 +67,17 @@ curl -sfL "$TRACKDB" |
     >"$SAMPLES"
 echo "$(wc -l <"$SAMPLES") samples -> $SAMPLES"
 
-# The tutorial's store covers the two loci its figures visit. Whole genomes work
-# the same way but hold the full base-resolution matrix in memory while
-# building, which at panel scale wants a machine with room for it.
+# Only the finest level is held whole in memory, so the two modes differ in
+# their pyramid as much as in their extent: over hg38 this panel is ~31 GB of
+# matrix at the BigWigs' own 1kb bins, which no machine here has, and a few GB
+# at 10kb. Whole-genome therefore starts the pyramid coarse and spends the
+# levels it saves on depth instead, ~3x apart as build_signal_zarr.ts asks
+# (10x leaves a view just under a level fetching 10x the bins it can draw).
 if [ "$WHOLE_GENOME" = 1 ]; then
   REGIONS=()
+  LEVELS=10000,30000,100000,300000,1000000
 else
+  LEVELS=1000,10000
   # The windows the figures visit: CCL3L1/CCL4L1 and UGT2B17 for the CNV
   # tutorial, and RHD for the SV-multisamples one, where the panel's copy
   # number is read beside the same cohort's ensemble SV calls.
@@ -87,7 +92,7 @@ node "$HERE/build_signal_zarr.ts" \
   --samples "$SAMPLES" \
   --out "$OUT" \
   "${REGIONS[@]}" \
-  --levels 1000,10000 \
+  --levels "$LEVELS" \
   --concurrency 32
 
 du -sh "$OUT"

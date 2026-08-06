@@ -249,14 +249,25 @@ node build_signal_zarr.ts \
 ```
 
 That is the command behind this tutorial's figures, all 2504 samples over the
-two windows the page visits. The converter prints the sizes as it writes; this
-store lands at 1.4 MB. Drop the `--region` flags to convert whole genomes
-instead.
+windows the page visits. The converter prints the sizes as it writes; this store
+lands at 1.4 MB.
 
-`--levels` is the one flag worth thinking about. Give it your input's bin size
-first, then a coarser one: `1000,10000` keeps the 1 kb values and adds a 10 kb
-average of them, and a zoomed-out view reads the coarse copy rather than every
-bin. Everything else is chosen for you.
+`--levels` is the one flag worth thinking about, and it is the resolution
+pyramid: one samples-by-bins array per entry, coarser ones averaged from the
+finest. The adapter reads the coarsest level whose bins are still no wider than
+a screen pixel, so a whole-chromosome view costs the same couple of requests the
+CCL3L1 window does rather than every bin under it. Give it your input's bin size
+first, then steps of roughly 3x: `10000,30000,100000` rather than
+`10000,100000`, since a 10x gap leaves a view landing just under a level
+fetching 10x the bins it can draw.
+
+The finest level is the one to choose deliberately, because it is the only one
+held whole in memory while the rest derive from it. That, rather than the
+genome, is what a whole-genome build runs into: drop the `--region` flags and
+this panel is a few GB of matrix at 10 kb bins and about 31 GB at the BigWigs'
+own 1 kb, so a whole-genome pyramid starts coarse and spends the levels it saves
+on depth. The converter prints the size of that level before it allocates, and
+refuses when it will not fit rather than leaving it to the OOM killer.
 
 The output is an ordinary folder of files. Copy it to any static host with CORS
 enabled and point a track at it, the same way you would host a BigWig. Nothing
@@ -307,8 +318,8 @@ one download is the whole setup:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_1000g_cnv_zarr.sh
-bash build_1000g_cnv_zarr.sh                # the tutorial's window, into ./1000g_cnv_build
-bash build_1000g_cnv_zarr.sh --whole-genome # every main contig
+bash build_1000g_cnv_zarr.sh                # the tutorial's windows, 1kb base, into ./1000g_cnv_build
+bash build_1000g_cnv_zarr.sh --whole-genome # every main contig, 10kb base and five levels
 ```
 
 ## See also

@@ -32,6 +32,7 @@
 // keeps the build free of a wasm codec while producing exactly what the browser
 // reads back.
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { totalmem } from 'node:os'
 import { dirname, join } from 'node:path'
 import { parseArgs } from 'node:util'
 import { gunzipSync, gzipSync } from 'node:zlib'
@@ -311,9 +312,39 @@ function layoutLevel(binSize: number) {
 }
 
 const baseLayout = layoutLevel(baseBinSize)
+const baseBytes = samples.length * baseLayout.totalBins * 4
 console.log(
-  `${samples.length} samples x ${baseLayout.totalBins} bins of ${baseBinSize}bp = ${((samples.length * baseLayout.totalBins * 4) / 1e6).toFixed(1)} MB uncompressed`,
+  `${samples.length} samples x ${baseLayout.totalBins} bins of ${baseBinSize}bp = ${(baseBytes / 1e6).toFixed(1)} MB uncompressed`,
 )
+
+// Only the FINEST level is held whole, so the first entry of --levels is what
+// decides whether a run is possible at all, and dropping --region without
+// touching it is the way to find that out the hard way: over hg38 a 2504-sample
+// panel is a few GB of matrix at 10kb bins and ~31 GB at 1kb. Refused here
+// rather than left to the OOM killer, which reports a dead process and nothing
+// about which knob turns it. Half of RAM because the coarser levels allocate
+// their own output beside this one while it is still live.
+const memBudget = totalmem() / 2
+if (baseBytes > memBudget) {
+  let suggestion: number | undefined
+  for (let decade = baseBinSize; !suggestion && decade <= 1e9; decade *= 10) {
+    for (const step of [1, 2, 5]) {
+      const bin = decade * step
+      if (
+        bin > baseBinSize &&
+        samples.length * layoutLevel(bin).totalBins * 4 <= memBudget
+      ) {
+        suggestion = bin
+        break
+      }
+    }
+  }
+  console.error(
+    `the ${baseBinSize}bp level is ${(baseBytes / 1e9).toFixed(1)} GB and is held whole in memory, over this machine's ${(memBudget / 1e9).toFixed(1)} GB budget.
+Coarsen the finest level (or narrow the input with --region):${suggestion ? ` --levels ${[suggestion, suggestion * 3, suggestion * 10].join(',')}` : ' no bin size up to 1Gb fits, so use --region'}`,
+  )
+  process.exit(1)
+}
 
 // The full base-resolution matrix, C order: sample-major rows of the flat bin
 // axis. Held in memory because every coarser level is derived from it and the
