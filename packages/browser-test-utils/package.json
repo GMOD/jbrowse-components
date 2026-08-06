@@ -11,7 +11,7 @@
     "./annotationOverlay": "./src/annotationOverlay.ts"
   },
   "dependencies": {
-    "puppeteer": "^25.4.0",
+    "puppeteer": "^25.5.0",
     "serve-handler": "^6.1.7"
   },
   "devDependencies": {
