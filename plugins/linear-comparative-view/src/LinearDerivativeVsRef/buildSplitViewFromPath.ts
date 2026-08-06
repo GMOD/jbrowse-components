@@ -49,12 +49,18 @@ export function buildSplitViewFromPath({
   candidate: DerivativeCandidate
   tracks: TrackSnapshot[]
   /**
-   * How much of a segment to show either side of the junction it carries. A
-   * path's outer segments are as long as the reads that described them happened
-   * to be, and a panel opened on the whole of one is both mostly not about the
-   * event and, with an alignments track carried onto it, a fetch large enough
-   * for the track to refuse it and draw `force load` instead. The junctions are
-   * what this view type is for, so that is what a panel opens on.
+   * The span EVERY panel opens on, centred on the junction it carries.
+   *
+   * Two things make it one span rather than a per-segment fit. A path's outer
+   * segments are as long as the reads that described them happened to be, so a
+   * panel over the whole of one is mostly not about the event and, with an
+   * alignments track carried onto it, a fetch large enough for the track to
+   * refuse it and draw `force load` instead. And a short interior segment — 199
+   * bp between two junctions is ordinary — drawn at its own length puts that
+   * panel fifty times closer in than its neighbours, which is what the
+   * connecting curves are drawn between: at mismatched zooms every read leaves
+   * one panel in a corner and the fan runs off the frame rather than reading as
+   * one route through the reference (reviewer, on exactly that figure).
    */
   windowSize?: number
 }): SplitViewFromPathSpec {
@@ -74,21 +80,37 @@ export function buildSplitViewFromPath({
     // the formatted spelling carries thousand separators that move with the
     // numberGrouping display preference.
     locStrings: segments.map((seg, idx) => {
-      // Which end of this segment is a junction: the first segment leads into
-      // the path, the last is led into, and an interior one is pinned at both
-      // ends (and is short for that reason, so it is shown whole).
-      const [start, end] =
-        seg.end - seg.start <= windowSize
-          ? [seg.start, seg.end]
-          : idx === 0
-            ? [seg.end - windowSize, seg.end]
-            : idx === segments.length - 1
-              ? [seg.start, seg.start + windowSize]
-              : [
-                  Math.floor((seg.start + seg.end - windowSize) / 2),
-                  Math.floor((seg.start + seg.end + windowSize) / 2),
-                ]
-      return `${seg.refName}:${Math.max(1, start + 1)}-${end}`
+      // Which base this panel is about: the first segment leads into the path,
+      // so its junction is the end the path LEAVES it by; the last is led into,
+      // so its junction is the end the path ARRIVES at; an interior one is
+      // pinned at both ends, so its centre is.
+      //
+      // Which reference coordinate that is depends on the strand, and getting it
+      // wrong is invisible rather than loud: an inverted segment is crossed from
+      // its high coordinate to its low one, so a path arriving at an inverted
+      // last segment arrives at `end`. Anchored on `start` regardless, the panel
+      // opened a segment-length away from where the reads actually land, and the
+      // curves into it had nothing on screen to attach to — the last panel of a
+      // four-segment fold-back simply drew no connections at all.
+      //
+      // Centred rather than butted against the junction, which put every
+      // attachment on a panel edge and every curve in a corner. The flank past
+      // a junction is reference the derivative does not carry, and showing it is
+      // the point: it is where the reads stop.
+      const reversed = seg.strand === -1
+      const anchor =
+        idx === 0
+          ? reversed
+            ? seg.start
+            : seg.end
+          : idx === segments.length - 1
+            ? reversed
+              ? seg.end
+              : seg.start
+            : Math.floor((seg.start + seg.end) / 2)
+      const half = Math.floor(windowSize / 2)
+      const start = Math.max(0, anchor - half)
+      return `${seg.refName}:${start + 1}-${start + windowSize}`
     }),
   }
 }

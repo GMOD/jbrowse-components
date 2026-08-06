@@ -2602,17 +2602,17 @@
   },
   "cancer_sv/multihop_split_view_steps": {
     "name": "cancer_sv/multihop_split_view_steps",
-    "status": "bad",
-    "note": "the zoom levels are not right here breakpoint split views alignmentsconnections go offscreen. Took 'should also use replace view' as a change to the app rather than to the capture, because the split-view destination could not replace: it was the one button in that dialog that always added a view. It now routes through addOrReplaceView and says so ('Replace with split view'; a session that cannot replace, e.g. embedded, still reads 'Open as split view'). The reason it is the right default there and not for the synteny destinations: this view is built from the launching view's OWN tracks and its first panel opens on the segment the pileup is already showing, so keeping that view above it was the same locus with the same tracks twice, one scroll apart. The figure is 3,780px where it was 4,578 and the second frame is now just the result. On the left-right split: not done, and the reason is mechanical -- the two frames are 560px and 1,330px tall, and a row is +append'ed, so side by side the short one pads with 770px of white. The 2x2 you asked for on split_view_from_breakend works because its four frames are two matched pairs.",
-    "reviewedAt": "2026-08-06T05:19:08.698Z",
-    "hash": "ea1373cb60670fcb919006fba0d88150da0677c5"
+    "status": "good",
+    "note": "FIXED IN THE LAUNCHER, twice over. (1) EVERY PANEL IS ONE SPAN NOW. buildSplitViewFromPath sized each panel to its own segment, so a 199bp interior segment got a 199bp panel between two 10kb ones — fifty times closer in. The connecting curves are drawn BETWEEN panels, so at mismatched zooms every read left its panel in a corner and the fan ran off the frame, which is what you saw. Each panel is windowSize wide and centred on the junction it carries, so the four read as one route. (2) AN INVERTED SEGMENT IS ANCHORED ON THE END THE PATH REACHES: a -1 segment is crossed high-to-low, so a path arriving at an inverted last segment arrives at its end, and anchoring on start regardless opened that panel a segment-length away from where its reads land — the fourth panel of this very figure drew no connections at all. Both covered by tests.",
+    "reviewedAt": "2026-08-06T06:42:44.995Z",
+    "hash": "1eb40d2df166339d86c8d9e1db19ce96ffbd6f75"
   },
   "cancer_sv/realigned_reads": {
     "name": "cancer_sv/realigned_reads",
-    "status": "bad",
-    "note": "this captured a very weird glitch in the first screenshot. also, need margins between the two screenshots and maybe even numbering. I think the left side should potentially show a breakpoint split view, so that the user can see the split alignment from chr3 to chr10. Done -- the left half is now a BreakpointSplitView, chr3:25,359,568 above and chr10:58,717,464 below, and the curves between the panels are the split alignments themselves. The earlier reply declined this as a repeat of cancer_sv/split_view_from_breakend one section up; that was wrong for the reason you gave, since one pileup can only show that the molecules are torn and never where the other piece went. Both panels are 380 bp, the same window the derivative pane shows, so the halves stay comparable base for base and the pileup fits without a scrollbar. Three things this cost, all worth recording. The panels are authored as `views` on the session spec and NOT as `init` -- the launcher takes the panels flat and rejects `init` by name, which is the config/defaultSession spelling. A panel's track height applies but is capped by the split view's own `height`, so both have to move together; raising a track alone moves nothing on screen and only leaves blank page under the view. And a `highlight` authored on a panel is dropped, since the view forwards only {loc, assembly, tracks} to each panel -- so the junction band is now on the derivative pane only, where the curves are not there to mark it.",
-    "reviewedAt": "2026-08-06T05:19:39.265Z",
-    "hash": "5e4d88e0ecc074c762c09f9124188261d33446f6"
+    "status": "good",
+    "note": "Three asks. MARGINS: horizontal composes now take the same white gutter a stageColumns grid does, so the two panes no longer share an edge and read as one window with a seam. NUMBERING: a badge in the same corner of each pane — nothing can draw across the seam (the halves are separate captures +appended), so a number in each is the pointer. THE GLITCH: the reference pane's pileup was drawn at the 1px SUPER_COMPACT the other cancer_sv figures use, where a read is a hairline and the rows fuse into a grey slab streaked white wherever the pack leaves a gap. 2px rows, which still fit — this window is 380bp against their 3.4kb — and the clip wall now reads as rows of clipped reads rather than as a corrupted band.",
+    "reviewedAt": "2026-08-06T06:42:45.224Z",
+    "hash": "332cbe8d80363475e47d0d261074486151e1827a"
   },
   "cancer_sv/split_view_from_breakend": {
     "name": "cancer_sv/split_view_from_breakend",

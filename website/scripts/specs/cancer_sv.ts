@@ -179,7 +179,13 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
   const BREAKPOINT_READS = {
     trackId: TUMOUR,
     showSoftClipping: true,
-    ...SUPER_COMPACT,
+    // 2px rows, not the 1px SUPER_COMPACT the other cancer_sv pileups take: at
+    // 1px a read is a hairline and the rows fuse into a grey slab with white
+    // streaks where the pack happens to leave a gap, which reads as a rendering
+    // fault rather than as a pileup (reviewer: "captured a very weird glitch").
+    // 2px still fits every row in the panel here, since this window is 380bp
+    // rather than the 3.4kb the other two draw.
+    featureHeight: 2,
   }
   return [
     {
@@ -246,6 +252,18 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
       // question "aligned to WHAT?" comes up. Anchored to the track band so the
       // pill follows the pileup rather than a measured y.
       annotations: [
+        // A NUMBER on each half (reviewer: "maybe even numbering"). The two are
+        // separate captures `+append`ed afterwards, so nothing can draw across
+        // the seam to say "this pane, then that one"; a badge in the same
+        // corner of each says it in the order a reader reads.
+        {
+          type: 'circle',
+          text: '1',
+          anchor: { view: [0, 0], track: TUMOUR, fracY: 0, alignX: 'left' },
+          radius: 15,
+          dx: 24,
+          dy: 78,
+        },
         {
           type: 'text',
           text: 'aligned to hg38',
@@ -304,6 +322,16 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
       // caption and in the tutorial's Reproduce section, which is where a
       // sentence belongs; a callout is a label.
       annotations: [
+        // the other half of the pair's numbering, in the same corner of the
+        // pane and at the same offset below its label
+        {
+          type: 'circle',
+          text: '2',
+          anchor: { track: 'reads_vs_der3', fracY: 0, alignX: 'left' },
+          radius: 15,
+          dx: 24,
+          dy: 78,
+        },
         {
           type: 'text',
           text: 'realigned to the derived contig',

@@ -29,12 +29,13 @@ test('one panel per segment, in path order', () => {
       { refName: 'chr12', start: 72273112, end: 72273294 },
     ]),
     tracks: [track],
+    windowSize: 10000,
   })
   expect(viewSnapshot.views).toHaveLength(3)
   expect(locStrings).toEqual([
-    'chr3:25352001-25359568',
-    'chr10:58717465-58717662',
-    'chr12:72273113-72273294',
+    'chr3:25354569-25364568',
+    'chr10:58712564-58722563',
+    'chr12:72268113-72278112',
   ])
 })
 
@@ -47,13 +48,40 @@ test('a path that revisits a chromosome gets a panel per visit', () => {
       { refName: 'chr9', start: 28059142, end: 28061000, strand: -1 },
     ]),
     tracks: [track],
+    windowSize: 10000,
   })
   expect(viewSnapshot.views).toHaveLength(2)
   expect(locStrings).toEqual([
-    'chr9:28030001-28031837',
-    'chr9:28059143-28061000',
+    'chr9:28026838-28036837',
+    // arrived at inverted, so the path lands on this segment's END
+    'chr9:28056001-28066000',
   ])
   expect(viewSnapshot.displayName).toBe('chr9 → chr9 (inverted)')
+})
+
+// An inverted segment is crossed from its high coordinate to its low one, so
+// the junction a path arrives at is its `end`. Anchoring on `start` regardless
+// put the last panel a segment-length away from where its reads land, and the
+// curves into it had nothing on screen to attach to.
+test('an inverted segment is anchored on the end the path reaches', () => {
+  const forward = buildSplitViewFromPath({
+    candidate: candidate([
+      { refName: 'chr3', start: 25326821, end: 25359568 },
+      { refName: 'chr3', start: 25350000, end: 25358430 },
+    ]),
+    tracks: [],
+    windowSize: 10000,
+  }).locStrings
+  const inverted = buildSplitViewFromPath({
+    candidate: candidate([
+      { refName: 'chr3', start: 25326821, end: 25359568 },
+      { refName: 'chr3', start: 25350000, end: 25358430, strand: -1 },
+    ]),
+    tracks: [],
+    windowSize: 10000,
+  }).locStrings
+  expect(forward[1]).toBe('chr3:25345001-25355000')
+  expect(inverted[1]).toBe('chr3:25353431-25363430')
 })
 
 test('carries the launching view tracks onto every panel, without their ids', () => {
@@ -74,10 +102,28 @@ test('carries the launching view tracks onto every panel, without their ids', ()
   }
 })
 
-test('a long outer segment opens on its junction end, not on all of it', () => {
-  // What the reads happened to reach is not the event: an outer segment is as
-  // long as the longest read that described it, and a panel over all of it is a
-  // fetch the alignments track refuses.
+// The connecting curves are drawn between panels, so the panels have to be at
+// one zoom or the fan runs off the frame — which is what a per-segment fit did,
+// giving a 199bp interior segment its own 199bp panel between two 10kb ones.
+test('every panel is the same span, whatever the segments measure', () => {
+  const { locStrings } = buildSplitViewFromPath({
+    candidate: candidate([
+      { refName: 'chr3', start: 25326821, end: 25359568 },
+      { refName: 'chr10', start: 58717464, end: 58717662 },
+      { refName: 'chr12', start: 72273112, end: 72290000 },
+    ]),
+    tracks: [],
+    windowSize: 10000,
+  })
+  const spans = locStrings.map(l => {
+    const [, range] = l.split(':')
+    const [start, end] = range!.split('-').map(Number)
+    return end! - start! + 1
+  })
+  expect(spans).toEqual([10000, 10000, 10000])
+})
+
+test('each panel centres on the junction it carries', () => {
   const { locStrings } = buildSplitViewFromPath({
     candidate: candidate([
       { refName: 'chr3', start: 25326821, end: 25359568 },
@@ -89,22 +135,24 @@ test('a long outer segment opens on its junction end, not on all of it', () => {
   })
   expect(locStrings).toEqual([
     // leads into the path, so its junction is its end
-    'chr3:25349569-25359568',
-    // short enough to show whole
-    'chr10:58717465-58717662',
+    'chr3:25354569-25364568',
+    // pinned at both ends, so its centre is the junction
+    'chr10:58712564-58722563',
     // led into, so its junction is its start
-    'chr12:72273113-72283112',
+    'chr12:72268113-72278112',
   ])
 })
 
+// A junction near the start of a contig can't be centred; the panel keeps its
+// span and butts against base 1 rather than asking for a negative coordinate.
 test('a locstring never runs off the start of a contig', () => {
   const { locStrings } = buildSplitViewFromPath({
     candidate: candidate([
-      { refName: 'chr3', start: 0, end: 40000 },
+      { refName: 'chr3', start: 0, end: 4000 },
       { refName: 'chr10', start: 5, end: 50 },
     ]),
     tracks: [],
     windowSize: 60000,
   })
-  expect(locStrings[0]).toBe('chr3:1-40000')
+  expect(locStrings[0]).toBe('chr3:1-60000')
 })
