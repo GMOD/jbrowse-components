@@ -194,10 +194,28 @@ Not something to fix by "not using wasm-bindgen" — it is vendored inside
 `DecompressionStream`/pako fallback for *non*-BGZF input, which a bgzf file
 never takes.
 
+**That defect is now fixed at source** (we own the repo):
+`gmod/bgzf-filehandle` `0057909` patches `getStringFromWasm0` to copy, in
+`crate/build-wasm.sh` so it survives wasm-bindgen regeneration, with
+`test/resizable-buffer.test.ts` pinning both halves. Applying that fix into the
+plugin's tree and re-running the tier probe **still gives the same error**, so
+bgzf is eliminated on the string path too. Worth landing regardless: it means
+bam-js, tabix-js and cram-js can report wasm errors in Chrome at all.
+
 So the source is something else in the worker handing `TextDecoder` a view over
-a resizable buffer. Next step is a **devtools breakpoint on
-`TextDecoder.prototype.decode` in the worker**, checking `input.buffer.resizable`
-— one session closes it, where nine rounds of file-level bisection did not.
+a resizable buffer. `tabix-js`'s own decode sites are the remaining suspects
+(`src/util.ts:243` for index refNames, `src/tabixIndexedFile.ts:615` for data
+lines, plus the two header decodes) — all checked out at `~/src/gmod/tabix-js`,
+so a fix there is ours to make too.
+
+**Instrument, do not bisect** — nine rounds of file-level A/B eliminated eight
+hypotheses and never located it. Wrap `TextDecoder.prototype.decode` to log a
+stack when `input.buffer.resizable`, then read the frame. One gotcha already
+paid for: patching it from the plugin's `src/index.ts` **does not fire**, because
+the RPC worker does not run the plugin entry's top-level side effects. Put the
+wrapper where the worker actually executes — inside the adapter module, or in
+jbrowse-web's own worker bootstrap — or use a real devtools breakpoint on the
+worker context.
 
 Rebuild the inputs in about a minute — none of this needs the 842 MB graph:
 
