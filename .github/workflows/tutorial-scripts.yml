@@ -20,12 +20,14 @@ name: Tutorial scripts
 # The GDC also rate-limits, which would make it flaky on a busy PR queue in a
 # way that teaches reviewers to ignore it.
 #
-# ONLY THE SCRIPTS WITH A SMOKE PATH. A `LIMIT` argument that fetches the first
-# N tumors is what makes a 10-to-20-minute cohort build a 2-minute one, and only
-# the two TCGA scripts take one. The rest are all-or-nothing and are not run
-# here; giving one a limit argument is what it takes to add it below, and is
-# worth doing for any script whose reproduce section a reader is likely to
-# follow.
+# WHAT QUALIFIES FOR THE MATRIX is a script that finishes in a few minutes on
+# tools a runner can apt-install. Two ways to get there: a `LIMIT` argument that
+# fetches the first N tumors, which is what turns a 10-to-20-minute cohort build
+# into a 2-minute one (the two TCGA scripts), or simply being small already
+# (bxd_build_demo.sh, ~25s end to end). Most of the rest are excluded by their
+# dependencies rather than their runtime — a UCSC static binary, plink, FLARE,
+# a bcftools built against libcurl — and adding one means installing those in a
+# step here, not just adding a row.
 #
 # WHAT IT ASSERTS is that the script exits 0 and leaves a config.json the
 # jbrowse-cli validator passes with the data files beside it. It does NOT assert
@@ -59,22 +61,31 @@ jobs:
         include:
           - script: build_tcga_cohort_mutations.sh
             args: TCGA-BRCA 20
+            config: jbrowse2/config.json
           - script: build_tcga_cohort_cnv.sh
             args: TCGA-BRCA 20
+            config: jbrowse2/config.json
+          # No limit argument and none needed; it also exercises a different
+          # path from the two above, reaching GeneNetwork's API rather than the
+          # GDC and building a multi-row painting rather than a variant matrix.
+          - script: bxd_build_demo.sh
+            args: ''
+            config: bxd_demo/jbrowse2/config.json
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
-      # htslib, which every one of these scripts uses to compress and index what
-      # it builds. Not in the base image.
-      - name: Install htslib
-        run: sudo apt-get update && sudo apt-get -y install tabix
+      # htslib for the bgzip/tabix every one of these runs, jq for the script
+      # that reshapes GeneNetwork's scan. Neither is in the base image.
+      - name: Install htslib and jq
+        run: sudo apt-get update && sudo apt-get -y install tabix jq
       - name: Run ${{ matrix.script }}
         run: bash "$GITHUB_WORKSPACE/scripts/${{ matrix.script }}" ${{ matrix.args }}
         working-directory: ${{ runner.temp }}
       # The script's own success is not the whole assertion: it can exit 0
       # having written a config JBrowse would refuse. This is the same checker
-      # `jbrowse validate` runs.
+      # `jbrowse validate` runs, plus a check that the data files the config
+      # names came along with it.
       - name: Validate the config it wrote
-        run: node scripts/validate-built-config.ts "${{ runner.temp }}/jbrowse2/config.json"
+        run: node scripts/validate-built-config.ts "${{ runner.temp }}/${{ matrix.config }}"
