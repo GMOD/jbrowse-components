@@ -106,6 +106,12 @@ const VALIDATORS: Validator[] = [
     argv: web('check-captions.ts', '--check'),
   },
   {
+    // Same ratchet shape, guarding what a scheduled figure sweep will fetch:
+    // `--check` fails when a spec newly points at a server we do not run.
+    name: 'no new third-party hosts in figure specs',
+    argv: web('check-remote-hosts.ts', '--check'),
+  },
+  {
     name: 'tutorial build scripts are valid',
     argv: ['python3', 'scripts/check-build-scripts.py'],
   },

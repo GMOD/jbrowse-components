@@ -12,6 +12,7 @@
     "check-sidebar": "node scripts/check-sidebar.ts",
     "check-wiki-titles": "node scripts/check-wiki-titles.ts",
     "check-captions": "node scripts/check-captions.ts",
+    "check-remote-hosts": "node scripts/check-remote-hosts.ts",
     "check-links": "node scripts/check-links.ts",
     "check-menu-paths": "node scripts/check-menu-paths.ts",
     "check-menu-labels": "node scripts/check-menu-labels.ts",
