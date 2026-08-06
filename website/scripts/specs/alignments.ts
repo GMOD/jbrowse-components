@@ -251,7 +251,14 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'ctgA',
     // wider + taller per reviewer request so the menu cascade and result-frame
-    // pileup both have room
+    // pileup both have room.
+    //
+    // DO NOT TRIM THIS ON THE RUN'S "blank below the last content" REPORT. That
+    // measurement looks at the app window, and both menus here are MUI portals
+    // drawn over it, so the report sees an empty pileup where the figure's whole
+    // subject is. It asked for 141 px at 620 and another 71 at 550; taking the
+    // second cut off the bottom of the track menu, losing Sashimi arcs and
+    // Launch view. Rendered at all three.
     viewportWidth: 1100,
     viewportHeight: 620,
     settleMs: 4000,
