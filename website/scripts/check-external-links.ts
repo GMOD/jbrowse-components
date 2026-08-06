@@ -40,7 +40,18 @@ const UA =
 
 // Not a URL: a stand-in the reader is meant to replace.
 const PLACEHOLDER =
-  /localhost|127\.0\.0\.1|0\.0\.0\.0|example\.(com|org)|yourhost|yourserver|yourremote|myhost|mybucket|myuniversity|myinstitution|somesite|sample\.com|my-plugin|<|\{|\$|…|%s|MYSITE|host\/jbrowse/i
+  /localhost|127\.0\.0\.1|0\.0\.0\.0|example\.(com|org)|yourhost|yourserver|yourremote|myhost|mybucket|myuniversity|myinstitution|somesite|sample\.com|my-plugin|your-|yoursite|<|\{|\$|…|%s|MYSITE|host\/jbrowse/i
+
+// An IRI, not a link. RDF identifiers are spelled as URLs and are not expected
+// to resolve to anything — `purl.obolibrary.org/obo/so#` names the Sequence
+// Ontology in the SPARQL demo's data, it does not fetch it.
+const IRI_NAMESPACE =
+  /^https?:\/\/(identifiers\.org|purl\.obolibrary\.org|semanticscience\.org|www\.w3\.org|schema\.org)\//
+
+// A test's fake URL is not a link either — checkPlugins.test.ts asserts that
+// `https://evil.com/...` is rejected, and half the UCSC hub tests point at
+// `x.org`. Fixtures under a CLI's own test/data are the same thing in JSON.
+const IS_TEST = /\.test\.[jt]sx?$|__mocks__|\/test\/data\//
 
 // A URL we write that is a prefix rather than a fetchable object, mapped to a
 // child that must exist. Probing the child is the real check: it catches the
@@ -52,6 +63,35 @@ const PREFIXES: [string, string][] = [
   // zarr store roots — the adapter reads objects inside
   ['https://jbrowse.org/demos/tcga/tcga_brca_cnv.zarr', '/zarr.json'],
   ['https://jbrowse.org/demos/1000g/qm2_cn_1kb.zarr', '/zarr.json'],
+  ['https://jbrowse.org/demos/1000g/qm2_cn_wg_10kb.zarr', '/zarr.json'],
+  ['https://jbrowse.org/demos/scrna_pbmc5k/percell.zarr', '/zarr.json'],
+  ['https://jbrowse.org/demos/ecoli_pangenome/ecoli_minigraph', '.segs.bed.gz'],
+  // a demo's asset directory, named as a base a spec or script appends to
+  ['https://jbrowse.org/demos/cancer_sv', '/config.json'],
+  ['https://jbrowse.org/demos/cancer_sv/', 'config.json'],
+  // the desktop updater's release-page base, built up with a version
+  ['https://github.com/GMOD/jbrowse-components/releases/tag/v', '3.0.0'],
+  ['https://jbrowse.org/demos/tcga', '/tcga_brca_clinical.tsv'],
+  ['https://jbrowse.org/demos/popgen', '/lct_1kg_chr2_6pop.vcf.gz'],
+  ['https://jbrowse.org/demos/gwas', '/plink.ld.tab.gz'],
+  ['https://jbrowse.org/demos/scrna_pbmc5k', '/percell.zarr/zarr.json'],
+  ['https://jbrowse.org/genomes/potato/', 'config.json'],
+  [
+    'https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv',
+    '/PUR/HG00553.qm2.CN.1k.bw',
+  ],
+  [
+    'https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/',
+    'PUR/HG00553.qm2.CN.1k.bw',
+  ],
+  [
+    'https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR',
+    '/HG00553.qm2.CN.1k.bw',
+  ],
+  // the deployed app's bundled test data, which examples and the quickstart
+  // script point at by directory
+  ['https://jbrowse.org/code/jb2/main/test_data/volvox', '/volvox.fa'],
+  ['https://jbrowse.org/code/jb2/latest/test_data/volvox', '/volvox.fa'],
   // a tutorial's $BASE, appended with a script name
   [
     'https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts',
@@ -64,11 +104,45 @@ const PREFIXES: [string, string][] = [
 // real objects has no listing. Each is here because the thing it fronts was
 // verified to work, not because the code was noisy.
 const EXPECTED_NON_2XX = new Set([
+  // POST endpoints, and API bases a script appends a path or query to
   'https://api.dropbox.com/oauth2/token',
+  'https://api.dropboxapi.com/2/sharing/get_shared_link_metadata',
+  'https://api.gdc.cancer.gov',
+  'https://api.genome.ucsc.edu/getData/sequence',
+  'https://api.jbrowse.org/ucsc/v1/blat',
+  'https://api.jbrowse.org/ucsc/v1/ispcr',
+  'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi',
+  'https://rest.ensembl.org/lookup/symbol/homo_sapiens',
   'https://share.jbrowse.org/api/v1/',
-  'https://jbrowse.org/plugins/',
-  'https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/',
+  'https://www.ebi.ac.uk/rdf/services/sparql',
   'https://genenetwork.org/api/v_pre1/mapping?db=BXDPublish&method=gemma',
+  // bucket prefixes a script builds object keys under: the objects are there,
+  // the prefix is not an object
+  'https://encode-public.s3.amazonaws.com/2021/10/28',
+  'https://ont-open-data.s3.amazonaws.com/colo829_2024.03',
+  'https://pan-ukb-us-east-1.s3.amazonaws.com/sumstats_flat_files',
+  'https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2',
+  'https://s3.amazonaws.com/genomeark/species',
+  'https://sra-pub-run-odp.s3.amazonaws.com/sra',
+  'https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR029/DRR029742/DRR029742',
+  'https://raw.githubusercontent.com/rrlove/compkaryo/master/compkaryo/targets',
+  // our own bucket, where a listing is denied but the objects under it serve
+  'https://jbrowse.org/plugins/',
+  // written as an illustration of a URL shape rather than as a link: somewhere
+  // to host demo files, the prefix a prerelease uploads to, a video not yet up
+  'https://jbrowse.org/demos/arabidopsis/',
+  'https://jbrowse.org/code/jb2/v5.0.0-beta.1/',
+  'https://jbrowse.org/video/volvox_tour.mp4',
+  'https://jbrowse.org/ucsc/',
+  // an external site that reorganized, kept as the provenance note for a demo
+  // track whose data we mirror
+  'http://bioinformatics.uni-muenster.de/share/NanoPipe_test_data/?lang=en',
+  // a changelog credit for a GitHub account that no longer exists: history,
+  // not a link to maintain
+  'https://github.com/carolinebridge-oicr',
+  // deliberately absent: the example is about what a failed track fetch looks
+  // like, so a 404 is the point of it
+  'https://jbrowse.org/code/jb2/main/test_data/volvox/does-not-exist.bw',
 ])
 
 // Hosts that serve a scripted request an error and a browser a page. Their
@@ -99,7 +173,11 @@ function collectUrls() {
   )
     .trim()
     .split('\n')
-    .filter(f => !/node_modules|-lock\.(json|yaml)$|\/dist\//.test(f))
+    .filter(
+      f =>
+        !/node_modules|-lock\.(json|yaml)$|\/dist\//.test(f) &&
+        !IS_TEST.test(f),
+    )
 
   const hits = new Map<string, string[]>()
   for (const rel of files) {
@@ -114,8 +192,24 @@ function collectUrls() {
     }
     text.split('\n').forEach((line, i) => {
       for (const m of line.matchAll(/https?:\/\/[^\s"'`)<>\]\\,]+/g)) {
-        const url = m[0].replace(/[.,;:]+$/, '')
-        if (PLACEHOLDER.test(url)) {
+        // `?config=https://host/x.json&session=…` is one match from the
+        // inner URL on: the outer `?` was already consumed, so everything from
+        // `&` on belongs to the outer query string, not to this URL.
+        const raw = m[0].replace(/[.,;:]+$/, '')
+        const url = raw.includes('?') ? raw : raw.split('&')[0]!
+        // A hostname with no dot in it is a stand-in, not a host: `https://host`,
+        // `http://`, and the `https://x}` a template literal leaves behind.
+        let host: string
+        try {
+          host = new URL(url).hostname
+        } catch {
+          continue
+        }
+        if (
+          !host.includes('.') ||
+          PLACEHOLDER.test(url) ||
+          IRI_NAMESPACE.test(url)
+        ) {
           continue
         }
         const at = `${rel}:${i + 1}`
@@ -161,9 +255,18 @@ async function status(url: string): Promise<string> {
   }
   const code = await run(false)
   // A server that refuses a range or throttles a burst may still answer HEAD.
-  return ['000', '403', '405', '429', '501'].includes(code)
-    ? await run(true)
-    : code
+  if (['000', '403', '405', '429', '501'].includes(code)) {
+    return run(true)
+  }
+  // Confirm a failure before reporting it. NCBI answers a burst of scripted
+  // requests with 404s — the accession in the dog10k tutorial came back dead on
+  // one run and 200 on the next — and a plain GET a moment later separates that
+  // from a page that is actually gone. A real 404 fails twice.
+  if (['400', '404', '410'].includes(code)) {
+    await new Promise(res => setTimeout(res, 2000))
+    return run(true)
+  }
+  return code
 }
 
 async function probeAll(urls: string[], hits: Map<string, string[]>) {
@@ -200,11 +303,38 @@ console.log(`probing ${targets.length} external urls`)
 const results = await probeAll(targets, hits)
 const label = (p: Probe) => asWritten.get(p.url) ?? p.url
 
+// A link into our own repo at `main` that 404s, whose path is in the local
+// HEAD, is not rot: it is a commit that has not been pushed yet. CI runs on the
+// pushed tree and will see it; a developer running this locally wants to be
+// told which docs are ahead of the remote, not that a file is missing.
+function pendingPush(url: string) {
+  const m =
+    /raw\.githubusercontent\.com\/GMOD\/jbrowse-components\/[^/]+\/(.+)$/.exec(
+      url,
+    ) ?? /github\.com\/GMOD\/jbrowse-components\/blob\/[^/]+\/(.+)$/.exec(url)
+  if (!m) {
+    return false
+  }
+  try {
+    execFileSync('git', ['cat-file', '-e', `HEAD:${m[1]}`], {
+      cwd: repoRoot,
+      stdio: 'ignore',
+    })
+    return true
+  } catch {
+    return false
+  }
+}
+
 const dead = results.filter(
   p =>
     /^(400|404|410)$/.test(p.code) &&
     !EXPECTED_NON_2XX.has(label(p)) &&
-    !EXPECTED_NON_2XX.has(p.url),
+    !EXPECTED_NON_2XX.has(p.url) &&
+    !pendingPush(label(p)),
+)
+const pending = results.filter(
+  p => /^(400|404|410)$/.test(p.code) && pendingPush(label(p)),
 )
 const blocked = results.filter(
   p => BOT_BLOCKED.test(p.code) && !dead.includes(p),
@@ -217,6 +347,11 @@ if (process.argv.includes('--json')) {
 
 for (const p of unreachable) {
   console.log(`unreachable  ${label(p)}\n             ${p.where.join(' ')}`)
+}
+for (const p of pending) {
+  console.log(
+    `pending push  ${label(p)}\n              in HEAD, not on the remote yet: ${p.where.join(' ')}`,
+  )
 }
 console.log(
   `\n${results.length - dead.length - blocked.length - unreachable.length} ok, ` +
