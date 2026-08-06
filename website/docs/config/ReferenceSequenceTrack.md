@@ -38,6 +38,8 @@ that identifies it (not one of the config slots below).
 
 ## Related links
 
+- **Display:** [LinearGCContentDisplay](../lineargccontentdisplay)
+  ([state model](../../models/lineargccontentdisplay))
 - **Display:**
   [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)
   ([state model](../../models/linearreferencesequencedisplay))

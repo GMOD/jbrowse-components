@@ -34,8 +34,8 @@ auto-resolves the `.tbi` index (pass `csi: true` for a `.csi` index).
 ## Related links
 
 - **Track:** [SyntenyTrack](../syntenytrack)
-- **Display:** [DotplotDisplay](../dotplotdisplay)
 - **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
+- **Display:** [DotplotDisplay](../dotplotdisplay)
 - **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)
 
 ## Config slots

@@ -49,8 +49,8 @@ covers converting an MCScanX run into these files.
 ## Related links
 
 - **Track:** [SyntenyTrack](../syntenytrack)
-- **Display:** [DotplotDisplay](../dotplotdisplay)
 - **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
+- **Display:** [DotplotDisplay](../dotplotdisplay)
 - **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)
 
 ## Config slots

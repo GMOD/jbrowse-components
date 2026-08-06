@@ -42,6 +42,9 @@ its own track):
 used on GCContentTrack, separately from the display type on the
 ReferenceSequenceTrack
 
+The configuration slots for this model are documented on its
+[config schema page](../../config/lineargccontenttrackdisplay).
+
 Members a composed model contributes are listed here too, so these tables are
 the whole surface.
 

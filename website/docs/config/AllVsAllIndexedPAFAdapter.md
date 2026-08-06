@@ -40,8 +40,8 @@ view supplies a `targetAssemblyName`.
 ## Related links
 
 - **Track:** [SyntenyTrack](../syntenytrack)
-- **Display:** [DotplotDisplay](../dotplotdisplay)
 - **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
+- **Display:** [DotplotDisplay](../dotplotdisplay)
 - **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)
 
 ## Config slots

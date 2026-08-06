@@ -1,39 +1,75 @@
 ---
-id: sharedgccontentdisplay
-title: SharedGCContentDisplay
-sidebar_label: Display -> SharedGCContentDisplay
+id: lineargccontentdisplay
+title: LinearGCContentDisplay
+sidebar_label: Display -> LinearGCContentDisplay
 ---
 
 Auto-generated config schema for the current JBrowse release — see the
 [config guide](/docs/config_guide) for concepts. Provided by the `gccontent`
 plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gccontent/src/LinearGCContentDisplay/sharedConfigSchema.ts).
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gccontent/src/LinearGCContentDisplay/configSchemaReferenceSequence.ts).
 
-Shared config for the two GC content displays: `LinearGCContentDisplay` (on a
-`ReferenceSequenceTrack`, deriving GC from the track's own sequence adapter) and
-`LinearGCContentTrackDisplay` (on a standalone `GCContentTrack`). Both register
-the same slots against different track types, so the slots live here once; a
-config always names one of the two concrete types.
+## Example usage
+
+`gcMode` is `content` for GC percentage or `skew` for (G-C)/(G+C):
+
+```js
+{
+  type: 'ReferenceSequenceTrack',
+  trackId: 'refseq',
+  name: 'Reference sequence',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'IndexedFastaAdapter',
+    uri: 'https://example.com/genome.fa',
+  },
+  displays: [
+    {
+      type: 'LinearGCContentDisplay',
+      displayId: 'refseq-LinearGCContentDisplay',
+      windowSize: 100,
+      windowDelta: 100,
+      gcMode: 'content',
+    },
+  ],
+}
+```
+
+_See the **Config slots** section below for all available configuration fields._
+
+GC content computed from a `ReferenceSequenceTrack`'s own sequence adapter, so
+there is no second adapter to configure. Use a `GCContentTrack` with
+[](/docs/config/lineargccontenttrackdisplay) instead when GC should be its own
+track rather than a display on the sequence.
+
+Every slot comes from the shared base below; this display adds none of its own.
 
 ## Related links
 
-- **Extended by:** [LinearGCContentDisplay](../lineargccontentdisplay)
-- **Extended by:** [LinearGCContentTrackDisplay](../lineargccontenttrackdisplay)
-- **Base config:** [LinearWiggleDisplay](../linearwiggledisplay)
+- **Adapter:** [FromConfigRegionsAdapter](../fromconfigregionsadapter)
+- **Adapter:** [FromConfigSequenceAdapter](../fromconfigsequenceadapter)
+- **Adapter:** [BgzipFastaAdapter](../bgzipfastaadapter)
+- **Adapter:** [ChromSizesAdapter](../chromsizesadapter)
+- **Adapter:** [IndexedFastaAdapter](../indexedfastaadapter)
+- **Adapter:** [TwoBitAdapter](../twobitadapter)
+- **Adapter:** [UnindexedFastaAdapter](../unindexedfastaadapter)
+- **State model:** [runtime API](../../models/lineargccontentdisplay)
+- **Base config:** [SharedGCContentDisplay](../sharedgccontentdisplay)
 
 ## Config slots
 
-`SharedGCContentDisplay` is a shared base schema, not a type you name in a
-config. Set these slots on one of the configs under **Extended by** above, each
-of which lists them as inherited and shows the shape in its own example. Slot
-types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types). Slots a base
-configuration contributes are listed here too, so this table is the whole
+These slots go on a display entry:
+`"displays": [{ "type": "LinearGCContentDisplay", ... }]`, or in the track's
+[`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this
+is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained
+in the [config slot types reference](/docs/config_guides/slot_types). Slots a
+base configuration contributes are listed here too, so this table is the whole
 surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
+| <span class="slot-group">Inherited from [SharedGCContentDisplay](../sharedgccontentdisplay)</span> | <span class="slot-group-count">4 slots</span> |
 | <span id="slot-windowsize">**windowSize**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | Number of bases per GC measurement window. |
 | <span id="slot-windowdelta">**windowDelta**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | Step between successive windows; smaller than `windowSize` means overlapping windows (a smoother signal). |
 | <span id="slot-gcmode">**gcMode**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (content, skew) = <code>'content'</code> | `content` for GC percentage, `skew` for (G-C)/(G+C) strand skew. |

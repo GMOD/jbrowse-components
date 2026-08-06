@@ -39,6 +39,9 @@ track's own sequence adapter, so no extra adapter is needed. `gcMode` is
 
 base model `SharedGCContentModel`
 
+The configuration slots for this model are documented on its
+[config schema page](../../config/lineargccontentdisplay).
+
 Members a composed model contributes are listed here too, so these tables are
 the whole surface.
 

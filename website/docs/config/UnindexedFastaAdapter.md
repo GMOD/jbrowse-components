@@ -30,6 +30,7 @@ sequence into memory, so prefer the IndexedFastaAdapter for large genomes.
 ## Related links
 
 - **Track:** [ReferenceSequenceTrack](../referencesequencetrack)
+- **Display:** [LinearGCContentDisplay](../lineargccontentdisplay)
 - **Display:**
   [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)
 

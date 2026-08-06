@@ -3199,6 +3199,17 @@ export const graphSpecs: ScreenshotSpec[] = [
           loadedRegion: CHM13_REGION,
           layoutMode: 'force',
           colorScheme: 'reference-position',
+          // 420 rather than the 600 px ceiling this pane pinned (reviewer: "we
+          // might want to consider ways to reduce height of the graph genome
+          // viewer, it takes a lot of height"). The pane is as tall as the
+          // drawing's own aspect ratio, and one 142 kb node among sub-kb ones
+          // makes that ratio all arc, so most of the 600 went to the loop with
+          // the chain squashed along the bottom edge. Measured at 420: the
+          // drawing scales 24.6% to 16.1%, the boxed arc is still what the eye
+          // lands on and the chain stays legible. `paneHeight` is a plugin prop
+          // (published bundle 35eccae5db30); the floor at MIN_CANVAS_HEIGHT
+          // still wins, so this cannot squeeze the pane below hover height.
+          paneHeight: 420,
         },
         {
           type: 'LinearGenomeView',
@@ -3227,9 +3238,10 @@ export const graphSpecs: ScreenshotSpec[] = [
     // view's nodePositions, so a shorter settle can capture before there are any
     settleMs: 14000,
     viewportWidth: 1000,
-    // +115 over the 1380 this was: the repeat lane grows to its own row count
-    // (see repeatLane), which is 8 rows here rather than the 5 a 90px band held.
-    viewportHeight: 1495,
+    // 1495 minus the 180 px the graph pane gave back at paneHeight 420. The
+    // repeat lane still grows to its own row count (see repeatLane), 8 rows
+    // here rather than the 5 a 90px band held.
+    viewportHeight: 1315,
     hideTooltip: true,
     annotations: [
       {

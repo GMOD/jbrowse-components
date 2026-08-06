@@ -12,8 +12,8 @@ Auto-generated config schema for the current JBrowse release — see the
 ## Related links
 
 - **Track:** [SyntenyTrack](../syntenytrack)
-- **Display:** [DotplotDisplay](../dotplotdisplay)
 - **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
+- **Display:** [DotplotDisplay](../dotplotdisplay)
 - **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)
 
 ## Config slots

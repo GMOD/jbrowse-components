@@ -34,6 +34,7 @@ bases for its region
 ## Related links
 
 - **Track:** [ReferenceSequenceTrack](../referencesequencetrack)
+- **Display:** [LinearGCContentDisplay](../lineargccontentdisplay)
 - **Display:**
   [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)
 

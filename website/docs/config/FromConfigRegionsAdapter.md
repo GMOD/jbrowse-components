@@ -35,6 +35,7 @@ used for specifying refNames+sizes of an assembly
 ## Related links
 
 - **Track:** [ReferenceSequenceTrack](../referencesequencetrack)
+- **Display:** [LinearGCContentDisplay](../lineargccontentdisplay)
 - **Display:**
   [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)
 
