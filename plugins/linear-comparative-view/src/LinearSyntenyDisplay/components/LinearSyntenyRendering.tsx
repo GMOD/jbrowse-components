@@ -1,4 +1,4 @@
-import { LoadingOverlay, ProgressChip } from '@jbrowse/core/ui'
+import { ComparativeFetchStatus } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
 import SyntenyContextMenu from './SyntenyContextMenu.tsx'
@@ -13,32 +13,14 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
 }: {
   model: LinearSyntenyDisplayModel
 }) {
-  const {
-    tooltipText,
-    statusMessage,
-    statusProgress,
-    loading,
-    refetching,
-    contextMenuAnchor,
-  } = model
+  const { tooltipText, contextMenuAnchor } = model
 
   return (
     <>
-      {/* First load: full striped overlay with the determinate progress bar. */}
-      <LoadingOverlay
-        statusMessage={statusMessage}
-        progress={statusProgress}
-        isVisible={loading}
-        immediate
-      />
-      {/* Refetch: stale ribbons stay on screen, so a small shared corner chip
-          carries the same statusCallback message + determinate fraction. */}
-      {refetching ? (
-        <ProgressChip
-          statusMessage={statusMessage}
-          statusProgress={statusProgress}
-        />
-      ) : null}
+      {/* First load gets the full striped overlay, a refetch the corner chip —
+          shared with dotplot so the two views can't show different things for
+          the same state. */}
+      <ComparativeFetchStatus display={model} />
       {tooltipText ? <SyntenyTooltip title={tooltipText} /> : null}
       {contextMenuAnchor ? (
         <SyntenyContextMenu
