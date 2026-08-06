@@ -3,6 +3,7 @@
  */
 import {
   alignmentBlocks,
+  composeCoarse,
   composeThroughPivot,
   orientToPivot,
 } from './compose.ts'
@@ -244,5 +245,61 @@ describe('orientToPivot', () => {
     expect(
       orientToPivot(row('A 200 0 100 + B 200 0 100 100 100 60', '100M'), 'R'),
     ).toBeUndefined()
+  })
+})
+
+// odgi untangle emits projections with no CIGAR at all, and unequal spans on
+// the two sides (the indels are folded into the endpoints). Those used to be
+// rejected outright, which meant the one real star-topology pangenome dataset in
+// this repo was the one dataset the command could not touch.
+describe('composeCoarse', () => {
+  // an untangle-shaped pair: no CIGAR, spans that do not match
+  const legA = row('A 6000 0 4672 + R 5000 0 3961 4174 4672 255', '')
+  const legB = row('B 6000 0 4900 + R 5000 0 3961 4200 4900 255', '')
+  const noCigar = (r: PafRow) => ({ ...r, cigar: undefined })
+
+  test('composes two coordinate-only legs across their pivot overlap', () => {
+    const c = composeCoarse({ a: noCigar(legA), b: noCigar(legB) })!
+    expect(c).toBeDefined()
+    expect([c.qname, c.tname]).toEqual(['A', 'B'])
+    expect([c.qstart, c.qend]).toEqual([0, 4672])
+    expect([c.tstart, c.tend]).toEqual([0, 4900])
+    // neither input stated base-level structure, so neither does the output
+    expect(c.cigar).toBeUndefined()
+  })
+
+  test('interpolates a partial pivot overlap proportionally', () => {
+    // B covers only the upper half of the pivot, so only A's upper half composes
+    const half = { ...noCigar(legB), tstart: 1980, qstart: 2450 }
+    const c = composeCoarse({ a: noCigar(legA), b: half })!
+    // 1980/3961 of the way along the pivot is ~half of A's 4672 bp
+    expect(c.qstart).toBeGreaterThan(2300)
+    expect(c.qstart).toBeLessThan(2400)
+    expect(c.qend).toBe(4672)
+  })
+
+  test('a reverse leg flips the composed strand', () => {
+    const c = composeCoarse({
+      a: noCigar(legA),
+      b: { ...noCigar(legB), strand: '-' as const },
+    })!
+    expect(c.strand).toBe('-')
+  })
+
+  test('legs that do not meet on the pivot compose to nothing', () => {
+    const c = composeCoarse({
+      a: noCigar(legA),
+      b: { ...noCigar(legB), tstart: 4500, tend: 4900 },
+    })
+    expect(c).toBeUndefined()
+  })
+
+  test('carries the pivot tag and the lower-bound identity like any composition', () => {
+    const c = composeCoarse({
+      a: { ...noCigar(legA), identity: 0.9 },
+      b: { ...noCigar(legB), identity: 0.8 },
+    })!
+    expect(c.identity).toBeCloseTo(0.72)
+    expect(c.tags).toContain('vi:Z:R')
   })
 })

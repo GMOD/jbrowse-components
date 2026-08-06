@@ -184,15 +184,43 @@ test('a non-PanSN file says so rather than composing nothing', async () => {
   })
 })
 
-test('a PAF with no CIGARs says so rather than composing nothing', async () => {
+// odgi untangle projects every genome onto one reference and emits no CIGAR at
+// all — a star topology, which is precisely the shape this command exists for,
+// and which it used to reject outright as unparseable.
+test('composes a CIGAR-less star, and the result carries no CIGAR either', async () => {
   await runInTmpDir(async () => {
     fs.writeFileSync(
-      'nocigar.paf',
-      'a#1#c\t100\t0\t50\t+\tb#1#c\t100\t0\t50\t50\t50\t60\n',
+      'untangle.paf',
+      // A and B each projected onto R, spans unequal (indels folded into the
+      // endpoints), no cg:Z: anywhere
+      'A#1#c\t9000\t0\t4672\t+\tR#1#c\t5000\t0\t3961\t4174\t4672\t255\tid:f:89.3\n' +
+        'B#1#c\t9000\t0\t4900\t+\tR#1#c\t5000\t0\t3961\t4200\t4900\t255\tid:f:91.1\n',
     )
-    expect(
-      (await runCommand(['transitive-paf', 'nocigar.paf'])).error?.message,
-    ).toMatch(/cg:Z:/)
+    await runCommand([
+      'transitive-paf',
+      'untangle.paf',
+      '--out',
+      'full.paf',
+      '--only-composed',
+      '--min-length',
+      '1000',
+    ])
+    const out = fs.readFileSync('full.paf', 'utf8').split('\n').filter(Boolean)
+    expect(out).toHaveLength(1)
+    expect(samplesOf(out[0]!)).toBe('A-B')
+    expect(out[0]).toMatch(/vi:Z:R#1#c/)
+    // nothing stated base-level structure, so nothing invents it
+    expect(out[0]).not.toMatch(/cg:Z:/)
+  })
+})
+
+// and a CIGAR-less row that is merely passed through keeps its exact shape
+test('passes a CIGAR-less row through without inventing an empty CIGAR', async () => {
+  await runInTmpDir(async () => {
+    const line = 'a#1#c\t100\t0\t50\t+\tb#1#c\t100\t0\t50\t50\t50\t60\tid:f:99'
+    fs.writeFileSync('nocigar.paf', `${line}\n`)
+    await runCommand(['transitive-paf', 'nocigar.paf', '--out', 'out.paf'])
+    expect(fs.readFileSync('out.paf', 'utf8')).toBe(`${line}\n`)
   })
 })
 

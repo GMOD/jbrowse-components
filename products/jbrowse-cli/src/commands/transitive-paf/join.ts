@@ -1,4 +1,4 @@
-import { composeThroughPivot, orientToPivot } from './compose.ts'
+import { composeCoarse, composeThroughPivot, orientToPivot } from './compose.ts'
 import { panSNSample } from './paf.ts'
 
 import type { PafRow } from './paf.ts'
@@ -64,6 +64,11 @@ export async function composeLegs({
   const aByContig = byPivotContig(legA, task.via)
   const bByContig = byPivotContig(legB, task.via)
   let composed = 0
+  // Counted, not silently swallowed: `--min-length` is the one knob between a
+  // useful result and an empty one, and its default is wrong for any dataset
+  // whose segments are shorter than it — odgi untangle's are ~4.7 kb against a
+  // 5 kb default. A run that discarded most of what it built has to say so.
+  let tooShort = 0
   for (const [contig, aRows] of aByContig) {
     const bRows = bByContig.get(contig)
     if (!bRows) {
@@ -89,13 +94,26 @@ export async function composeLegs({
         if (a.qname === b.qname) {
           continue
         }
-        const row = composeThroughPivot({ a, b, minAligned })
+        // Base-level composition needs base-level input. With a CIGAR missing
+        // on either side the most that can be said is where the overlap starts
+        // and ends on each, which is also all either input said.
+        const coarse = a.cigar === undefined || b.cigar === undefined
+        const row = coarse
+          ? composeCoarse({ a, b, minAligned })
+          : composeThroughPivot({ a, b, minAligned })
         if (row) {
           await emit(row)
           composed++
+        } else if (
+          // it overlapped on the pivot, so `minAligned` is what rejected it
+          Math.min(a.tend, b.tend) > Math.max(a.tstart, b.tstart) &&
+          (coarse ? composeCoarse({ a, b }) : composeThroughPivot({ a, b })) !==
+            undefined
+        ) {
+          tooShort++
         }
       }
     }
   }
-  return composed
+  return { composed, tooShort }
 }

@@ -21,10 +21,15 @@ export interface PafRow {
   numMatches: number
   blockLen: number
   mappingQual: number
-  // always a cg-style CIGAR: a cs is folded into one on parse, the same way
-  // make-pif does, since a composition has to walk ops and cs would need
-  // reverse-complementing to reorient
-  cigar: string
+  // A cg-style CIGAR; a cs is folded into one on parse, the same way make-pif
+  // does, since a composition walks ops and a cs would need
+  // reverse-complementing to reorient.
+  //
+  // Undefined for a row that states only its endpoints — odgi untangle's
+  // projections are the case in hand, and PIF's coarse tier is the same shape.
+  // Such a row is a proportional mapping between its two spans (which need not
+  // be equal), so it composes to coordinates and no more; see composeCoarse.
+  cigar?: string
   // resolved once here off the row's own tags (de:f:, then odgi's id:f:, then
   // num_matches/block_len), so a composition multiplies the same number the
   // adapters read
@@ -40,9 +45,10 @@ export function panSNSample(name: string) {
 
 /**
  * Parse a PAF line. Returns undefined for anything without the 12 mandatory
- * columns (blank, comment, truncated) and for a row with no CIGAR — a row whose
- * alignment is not spelled out cannot be composed through, since there is no way
- * to know which bases of the pivot it pairs with.
+ * columns (blank, comment, truncated). A row with no CIGAR is kept: it still
+ * states where it starts and ends on both sequences, which is enough to compose
+ * a coordinate-only alignment (see composeCoarse) and is all that odgi
+ * untangle's projections ever carry.
  */
 export function parsePafRow(line: string): PafRow | undefined {
   if (line.startsWith('#')) {
@@ -65,9 +71,6 @@ export function parsePafRow(line: string): PafRow | undefined {
     } else {
       kept.push(tag)
     }
-  }
-  if (cigar === undefined) {
-    return undefined
   }
   const numMatches = +p[9]!
   const blockLen = +p[10]!
@@ -110,7 +113,10 @@ export function formatPafRow(r: PafRow) {
     r.blockLen,
     r.mappingQual,
     ...r.tags,
-    `cg:Z:${r.cigar}`,
+    // a row that carried no alignment string must not gain an empty one, or a
+    // pass-through would turn `cg`-less input into `cg:Z:` and every reader
+    // downstream would parse a zero-op CIGAR over a real span
+    ...(r.cigar === undefined ? [] : [`cg:Z:${r.cigar}`]),
   ].join('\t')}\n`
 }
 
