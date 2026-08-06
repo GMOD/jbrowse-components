@@ -2672,10 +2672,10 @@
   },
   "hic/loops_and_domains": {
     "name": "hic/loops_and_domains",
-    "status": "bad",
-    "note": "the loops are just noisy and non-sense. the contact domains are also. its just everywhere. where is the 'logic'? need publication quality loops that have a story",
-    "reviewedAt": "2026-08-06T05:23:54.750Z",
-    "hash": "c342c69cbf29209f20a841898637eb45d023987d"
+    "status": "good",
+    "note": "REBUILT ON A LOCUS CHOSEN FROM THE CALL FILES. The chr18 window was 2.4 Mb of whatever the callers had there — every Arrowhead domain in frame was wider than the frame, so the lane was bars edge to edge, and ~40 HiCCUPS calls fanned across the arc lane with nothing under them. scripts/hic_pick_loop.py (new) scores every 250-900 kb domain against the strongest loop sitting on its two corners: 1,142 domains carry one, and chr8:127,735,000-128,335,000 ranks 15th (observed 1062) and is the first whose anchor is a gene most readers know — MYC, with PVT1 and the lymphoid enhancers inside the domain. The window frames that domain so both drawn domains stay whole, the domain is banded across every lane, and loops under observed 200 are transparent (the arc display has no filter slot), leaving one dark arc over the block it bounds.",
+    "reviewedAt": "2026-08-06T06:30:47.041Z",
+    "hash": "390c3a510ffcc4af7ff6b60b4cf4fafb23957e22"
   },
   "jbrowse-img/gene_name_search": {
     "name": "jbrowse-img/gene_name_search",

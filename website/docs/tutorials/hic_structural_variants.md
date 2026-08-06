@@ -34,21 +34,31 @@ annotation files derived from the same matrix:
   of convergent CTCF sites. ENCODE calls them with
   [HiCCUPS](https://github.com/aidenlab/juicer/wiki/HiCCUPS), also a BEDPE.
 
-<Figure src="/img/hic/loops_and_domains.png" caption="GM12878 in situ Hi-C on 2.4 Mb of chr18 at 10 kb bins, with the Arrowhead contact domains and HiCCUPS loops called from it stacked above. Loops are colored by contact count: the one dark red arc spans the same interval as the matrix's largest block, and its two feet sit on that block's corner. MANE genes on top." links="Open this view=hic/loops_and_domains" />
+<Figure src="/img/hic/loops_and_domains.png" caption="GM12878 in situ Hi-C over 1 Mb of chr8 in coarse bins, with the Arrowhead contact domains and HiCCUPS loops called from the same matrix stacked above. The banded interval is a 600 kb contact domain whose left anchor is MYC; the dark red arc above it is the HiCCUPS loop between its two corners, and the block it bounds is the denser triangle in the matrix below. MANE genes on top." links="Open this view=hic/loops_and_domains" />
 
 The dark arc is the point of the figure. A contact domain and the loop at its
 corner are the same object seen two ways. The block in the matrix and the arc
 above it end at the same two coordinates, because the loop is what holds the
 domain together.
 
-Getting that picture at all depends on one setting. JBrowse picks a binsize from
-the file's own resolution list, choosing the largest that is no coarser than
-twice the current bp-per-pixel. Over 2.4 Mb that lands on 2 kb bins, and at 2 kb
-each bin of an inter-chromosomal matrix holds almost nothing, so the triangle
-renders as red speckle with no visible domain edges. The figure above sets
+The window is one such pair rather than a slice of chromosome chosen for its
+genes. Over a whole cell line the two files hold thousands of calls each, and a
+megabase taken at random draws domains wider than the frame and a fan of arcs
+with nothing under them. Score the two files against each other instead, taking
+every Arrowhead domain whose two corners carry a HiCCUPS loop and ranking by
+that loop's contact count, and this one comes fifteenth of the 1,142 domains
+that carry one. Its left anchor is _MYC_. The
+[scoring script](https://github.com/GMOD/jbrowse-components/blob/main/scripts/hic_pick_loop.py)
+prints that ranking, and prints what a candidate window contains.
+
+Which bins the matrix is drawn in decides whether any of it is visible. JBrowse
+picks a binsize from the file's own resolution list, choosing the largest that
+is no coarser than twice the current bp-per-pixel. At this width that lands on
+bins so fine that each holds almost nothing, and the triangle renders as red
+speckle with no visible domain edges. The figure above sets
 [`resolutionBias`](/docs/config/linearhicdisplay/#slot-resolutionbias) to `2`,
-stepping two levels coarser to 10 kb, which is where blocks appear. If a Hi-C
-track looks like noise, this is the first thing to change. See
+stepping two levels coarser, which is where the blocks appear. If a Hi-C track
+looks like noise, this is the first thing to change. See
 [adjusting resolution](/docs/user_guides/hic_track#adjusting-resolution).
 
 ## Two chromosomes in one view

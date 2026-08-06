@@ -183,17 +183,55 @@ export const hicSpecs: ScreenshotSpec[] = [
   // contact domains are the blocks they bound (an arc spanning each domain), so
   // the arc feet land on the matrix features they were called from.
   //
-  // 10kb bins, which is the whole reason this reads as blocks. At 2.4Mb across
-  // ~1980px the auto-pick is the largest binsize <= 2*bpPerPx, i.e. 2kb, and at
-  // 2kb each bin is nearly empty and the matrix renders as speckle with no
+  // Coarser bins than the auto-pick, which is the whole reason this reads as
+  // blocks. At this width the auto-pick is the largest binsize <= 2*bpPerPx,
+  // where each bin is nearly empty and the matrix renders as speckle with no
   // domain edges at all. `resolutionBias: 2` steps two levels coarser.
+  //
+  // THE WINDOW IS ONE LOOP, CHOSEN FROM THE TWO FILES RATHER THAN FROM A GENE
+  // LIST (reviewer: "the loops are just noisy and non-sense. the contact
+  // domains are also. its just everywhere. where is the 'logic'? need
+  // publication quality loops that have a story"). The old chr18 window was
+  // 2.4 Mb of whatever the callers had there: every Arrowhead domain in frame
+  // was wider than the frame, so the lane was four bars running edge to edge,
+  // and 40-odd HiCCUPS calls fanned across the arc lane with no matrix feature
+  // to land on.
+  //
+  // Scored instead, by scripts/hic_pick_loop.py: for every Arrowhead domain of
+  // 250-900 kb, the strongest HiCCUPS loop whose two anchors sit within 25 kb
+  // of the domain's two corners — i.e. the loop the domain is bounded BY. 1,142
+  // domains carry one; chr8:127,735,000-128,335,000 ranks 15th by that loop's
+  // contact count (observed 1062) and is the first in the ranking whose anchor
+  // is a gene most readers know, MYC, with the 600 kb of lymphoid enhancers and
+  // PVT1 it contacts held inside the domain.
+  //
+  // The window is that domain with ~115 kb of flank on the left and ~285 kb on
+  // the right, which `--window` on the same script says is the framing that
+  // keeps both drawn domains whole: the 555 kb neighbour ending at 127,725,000
+  // falls out of frame rather than drawing as a bar across it, and what is left
+  // is the 600 kb domain and the 240 kb one nested inside it. Loops under
+  // `observed` 200 are drawn fully transparent — that display has no filter
+  // slot, and 14 of the 15 calls with an anchor in this window are weak ones
+  // whose other anchor is megabases away, i.e. the fan the review objected to.
   {
     mode: 'url',
     name: 'hic/loops_and_domains',
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg38',
-      loc: 'chr18:47,900,000-50,300,000',
+      loc: 'chr8:127,620,000-128,620,000',
       trackLabels: 'offset',
+      // the looped domain itself, banded across every lane, so the arc, the
+      // Arrowhead box, the matrix triangle and the genes inside it are one
+      // object rather than four coincidences
+      highlight: [
+        {
+          refName: 'chr8',
+          start: 127_735_000,
+          end: 128_335_000,
+          label: 'MYC contact domain',
+          color: 'rgba(30,110,190,0.13)',
+        },
+      ],
       tracks: [
         {
           trackId: 'mane_hg38',
@@ -213,21 +251,21 @@ export const hicSpecs: ScreenshotSpec[] = [
           type: 'LinearBasicDisplay',
           height: 62,
         },
-        // Colour the arcs by contact strength instead of drawing 40 equal ones:
-        // HiCCUPS' `observed` column is the raw count at the loop's pixel, and
-        // the strong calls are the ones with a visible corner dot in the matrix
-        // below. Without this the lane is an undifferentiated fan and the
-        // arc-foot-to-corner-dot correspondence is unreadable.
+        // Colour is the filter here, because LinearPairedArcDisplay has no
+        // filter slot: HiCCUPS' `observed` column is the raw count at the
+        // loop's pixel, and everything under 200 is drawn fully transparent. In
+        // this window that leaves the one call that bounds the domain and drops
+        // the calls whose other anchor is off-frame, which are the arcs that
+        // read as a fan going nowhere.
         //
         // `observed` arrives as a STRING (bedpe columns past 10 are unparsed),
         // which compares fine here only because JS relational operators coerce
-        // it — `'263.0' > 300` is a numeric comparison. Don't switch this to a
+        // it — `'263.0' > 200` is a numeric comparison. Don't switch this to a
         // jexl `==`, which would not.
         {
           trackId: 'hic_gm12878_loops',
           height: 84,
-          color:
-            "jexl:get(feature,'observed')>300?'#8b1a1a':'rgba(90,90,90,0.28)'",
+          color: "jexl:get(feature,'observed')>200?'#8b1a1a':'rgba(0,0,0,0)'",
         },
         {
           trackId: 'hic_gm12878_insitu',
