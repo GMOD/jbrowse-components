@@ -243,7 +243,7 @@ argument now says what the longer name said.
 ### openPromotableDisplays
 
 Every display on an open track, across all open views — the reach of anything
-that acts on "the tracks the user is looking at": the cascade's own "apply to
+that acts on "the tracks the user is looking at": a promoted default's "apply to
 open tracks", and the share/export bake. One walk so those can't drift apart.
 
 Recurses into composite views. A display nested in one resolves the cascade like
@@ -263,7 +263,7 @@ each display whether it has anything to promote.
 (session: AbstractSessionModel) => ResolvableDisplay[]
 ```
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/openDisplays.ts)
 
 ### Pin
 
