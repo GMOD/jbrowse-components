@@ -82,11 +82,17 @@ function resolveTracks(
 export interface CreateLinearGenomeViewOptions {
   assembly: AssemblyInput
   /** tracks to open (full configs, bare data-file URLs, or `{ uri, index? }`); a
-   * `defaultSession` owns display instead when given */
+   * `session` owns display instead when given */
   tracks?: TrackInput[]
   /** a serialized view; when present it owns the initial location and layout */
-  defaultSession?: SessionSnapshot
-  /** e.g. `chr1:1-1000` or a gene name; ignored when a `defaultSession` positions the view */
+  /**
+   * A saved session to open instead of `tracks`/`location` — what
+   * `onSessionChange` handed you, or a {@link decodeSession} of a URL param.
+   * Named for what it is: this is the restore slot, not a default the user's
+   * own state layers on top of. `createApp` calls it the same thing.
+   */
+  session?: SessionSnapshot
+  /** e.g. `chr1:1-1000` or a gene name; ignored when a `session` positions the view */
   location?: string
   /**
    * In-memory files, `name -> bytes`, that `tracks` may then refer to by that
@@ -109,7 +115,7 @@ export interface CreateLinearGenomeViewOptions {
   onFeatureSelect?: (feature: unknown) => void
   /**
    * fires with the layout as plain JSON when it settles, in the shape
-   * `defaultSession`/`setSession` takes — for a host offering "save this view"
+   * the `session` option takes — for a host offering "save this view"
    */
   onSessionChange?: SessionObservers['onSessionChange']
   /**
@@ -241,7 +247,7 @@ export function createLinearGenomeView(
       typeof resolved.assembly.name === 'string'
         ? resolved.assembly.name
         : undefined
-    const hasSession = opts.defaultSession !== undefined
+    const hasSession = opts.session !== undefined
     const viewState = createViewState({
       assembly: resolved.assembly,
       // only full configs seed the config catalog; loose specs need the
@@ -259,7 +265,7 @@ export function createLinearGenomeView(
       plugins: opts.plugins,
       makeWorkerInstance: opts.makeWorkerInstance,
       configuration: opts.configuration,
-      session: opts.defaultSession,
+      session: opts.session,
       // a session already positions the view; only route location
       // through createViewState's init flow (spinner while loading) otherwise
       location: hasSession ? undefined : location,
@@ -274,7 +280,7 @@ export function createLinearGenomeView(
       return viewState
     }
     assemblyName = name
-    // a defaultSession owns the initial track layout; without one, open the
+    // a restored session owns the initial track layout; without one, open the
     // configured tracks so they actually display
     if (!hasSession) {
       reconcileTracks(
