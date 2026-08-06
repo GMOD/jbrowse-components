@@ -2010,6 +2010,28 @@ export const graphSpecs: ScreenshotSpec[] = [
             assemblyNameToPanSN: { hg38: 'GRCh38' },
           },
         },
+        // The same bubble file the tier was built FROM, as a curve. This costs
+        // no new data and no new code: MinigraphBubbleAdapter already sets
+        // `score` to the bubble's segment count, and it extends
+        // BaseFeatureDataAdapter, which supplies getRegionQuantitativeStats off
+        // `scoresToStats` — so a wiggle display gets its axis by scanning the
+        // features it already reads. The only change is the track TYPE, since a
+        // FeatureTrack does not offer a wiggle display to choose.
+        //
+        // 9,444 bubbles on chr1, segment counts into the hundreds, so at 249 Mb
+        // each pixel aggregates a handful and the profile is real rather than
+        // sampled.
+        {
+          type: 'QuantitativeTrack',
+          trackId: 'hprc_bubble_score',
+          name: 'HPRC release 2 graph: variability (segments per bubble)',
+          assemblyNames: ['hg38'],
+          adapter: {
+            type: 'MinigraphBubbleAdapter',
+            uri: 'https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.bubbles.bed.gz',
+            assemblyNameToPanSN: { hg38: 'GRCh38' },
+          },
+        },
       ],
       views: [
         {
@@ -2017,6 +2039,11 @@ export const graphSpecs: ScreenshotSpec[] = [
           assembly: 'hg38',
           loc: 'chr1',
           tracks: [
+            {
+              trackId: 'hprc_bubble_score',
+              type: 'LinearWiggleDisplay',
+              height: 110,
+            },
             {
               trackId: 'hprc_tier',
               type: 'LinearBasicDisplay',
@@ -2045,9 +2072,8 @@ export const graphSpecs: ScreenshotSpec[] = [
     readyTimeout: 300000,
     settleMs: 15000,
     viewportWidth: 1400,
-    // the tier lane plus a two-row anchored drawing and nothing under it, from
-    // the run's own "263 css px of blank below the last content" at 800
-    viewportHeight: 540,
+    // the variability curve, the tier lane, and a two-row anchored drawing
+    viewportHeight: 660,
     hideTooltip: true,
   },
 

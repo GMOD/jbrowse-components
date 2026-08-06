@@ -659,7 +659,26 @@ proxy for node count and a fair one at segment granularity — but a tier breaks
 the proxy, so a view pointed at one raises **`maxRegionBp`**. The real ceiling
 is unchanged: `maxGraphNodes` counts what actually came back.
 
-<Figure caption="All 249 Mb of GRCh38 chr1 as a graph: 474 nodes against about 751,000 segments in the graph itself, laid out in 18 ms. The chain alternates 237 backbone nodes, labelled with the megabases they span, and 237 bubbles on the row below. The stretch with no bubbles under it is one 18.7 Mb backbone node covering the centromere and the 1q12 heterochromatin, where nothing varies by enough to pass the threshold." src="/img/pangenome/hprc_whole_chromosome.png" />
+The same bubble file also plots directly as a curve, which is where the graph
+varies and by how much. `MinigraphBubbleAdapter` already reports each bubble's
+segment count as its `score`, so the only change is the track type — a
+`FeatureTrack` does not offer a wiggle display to pick:
+
+```json addtrack
+{
+  "type": "QuantitativeTrack",
+  "trackId": "hprc_bubble_score",
+  "name": "HPRC release 2 graph: variability (segments per bubble)",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "MinigraphBubbleAdapter",
+    "uri": "https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.bubbles.bed.gz",
+    "assemblyNameToPanSN": { "hg38": "GRCh38" }
+  }
+}
+```
+
+<Figure caption="All 249 Mb of GRCh38 chr1 in three lanes off two files. Top, the bubble file as a curve: segments per bubble, a variability profile. Middle, the same bubbles as the tier's segments lane. Bottom, the tier as a graph — 474 nodes against about 751,000 segments in the graph itself, laid out in 18 ms, alternating 237 backbone nodes labelled with the megabases they span and 237 bubbles. All three go quiet across the same stretch: the curve has no bubbles there, and the graph spends one 18.7 Mb backbone node on it, the centromere and the 1q12 heterochromatin." src="/img/pangenome/hprc_whole_chromosome.png" />
 
 The chain alternates strictly, 237 of each, because `gfatools bubble` reports
 top-level bubbles only and those never overlap — which is what makes one flat
