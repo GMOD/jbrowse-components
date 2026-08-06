@@ -2595,15 +2595,19 @@ never an upload.
 Clusters big enough to carry a page, with the assembly traps that will otherwise
 eat a session:
 
-- **Mappability, blacklists and segdups as a QC layer under a call.** Not in the
-  2026-07 list. Eight mappability bigWigs (CRG 24/36/40/50/75/100mer, Duke
-  20/35bp), the Duke and DAC excludable BEDs, `segdups_ucsc_hg19`, `dgvGold`,
-  `dgvMerged_hg19`, `dgvSupporting_hg19` — all unused. The workflow is "why this
-  CNV or SV call is an artifact": lay the layer under a callset and the true call
-  in unique sequence sits in the same figure as the false one in a segdup, so the
-  control the house style asks for is intrinsic and free. **hg19 only** — hg38
-  has `segdups_ucsc_hg38` and the two DGV tracks but no mappability bigWig, so
-  either the page is hg19 or a hg38 mappability track gets hosted first.
+- ~~**Mappability, blacklists and segdups as a QC layer under a call.**~~ Built
+  2026-08-06 as `tutorials/mappability_qc.md`, and **not off this config** —
+  which is the part worth carrying forward. The proposal was going to run on
+  hg19 because `config_demo.json` has eight mappability bigWigs there and none
+  on hg38. The hosted hg38 hub already carries a better version of the whole
+  layer: Umap and Bismap at four k-mer lengths, single- and multi-read, the
+  GIAB low-mappability/segdup regions **and their complement**, ENCODE Blacklist
+  V2, GRC exclusions, UCSC unusual regions, panmask, segdups, and gnomAD's
+  coverage over 76,156 genomes to read against them. So the page is a click-path
+  on genomes.jbrowse.org with no hosting of our own. Check `~/src/jb2hubs`
+  (`ucsc2jbrowse/configs/<db>.json`) before proposing to host a track for hg38 —
+  the hub carries roughly 600 of them, and `config_demo.json` is the older and
+  thinner of the two catalogs.
 - **UniProt protein features on the genome.** 34 tracks (17 hg19, 17 hg38),
   zero uses: domains, disulfide bonds, transmembrane segments, modified
   residues, variants, chains, splice isoforms. They are genomic-coordinate
@@ -2639,14 +2643,20 @@ the hg19 COLO829 MinION pair** listed under "Workflow and admin" below.
 and putting the germline-vs-somatic page on the older hg19 alignments splits one
 cell line across two assemblies for no gain.
 
-**Demos are the cheap half of all of this.** Every cluster above is remote URLs
-plus a `demos/<name>/config.json` and a `scripts/deploy-demo.sh` run, with no
-data upload — which is unlike the ten demos we have, all of which carry hosted
-assets. The four worth having, in order: `variant_interpretation` (hg38, the
-ClinVar / ClinGen / MANE / cCRE stack open at one locus), `mappability_qc`
-(hg19, the QC layer under a DGV callset), `uniprot_hg38` (34 tracks in a
-category tree, one click), `directrna_isoforms`. A demo also derisks the
-matching tutorial: it is the config the page would have to write anyway.
+**On hg38, reach for the hub before hosting anything.** The mappability page
+above is the worked example: what looked like an hg19-only story off
+`config_demo.json` is a richer hg38 one off `jbrowse.org/ucsc/hg38/config.json`,
+with no config of ours in the loop at all. `jb2export --hub hg38 --track
+hg38-<id>` is the same catalog from the CLI, and `specs/ld.ts`, `specs/popgen.ts`
+and `specs/qc.ts` show the spec form (`?config=` + the encoded hub URL). The
+demand cases left above are mostly hg38, so most of them should be hub-backed
+too — **`variant_interpretation` in particular**, since the hub carries ClinVar,
+ClinGen, MANE, cCREs, dbVar's curated SV sets and gnomAD v4.1, which is more
+than the `config_demo.json` inventory that idea was written against.
+
+Where a `demos/<name>/config.json` still earns its keep is a set the hub does
+not assemble for you: `uniprot_hg38` (34 tracks in one category tree, one click)
+and `directrna_isoforms` (a jbrowse.org-hosted BAM, not a hub track).
 
 ### Workflow and admin
 
