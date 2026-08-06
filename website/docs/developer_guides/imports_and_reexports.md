@@ -161,6 +161,7 @@ externalize anything, so it pulls re-exported modules at runtime with
 
 <!-- include: test_data/no_build_plugin/esmplugin.js#jbrequire -->
 
+<!-- prettier-ignore -->
 ```js
 const { ConfigurationSchema } = pluginManager.jbrequire(
   '@jbrowse/core/configuration',
@@ -168,7 +169,9 @@ const { ConfigurationSchema } = pluginManager.jbrequire(
 const WidgetType = pluginManager.jbrequire(
   '@jbrowse/core/pluggableElementTypes/WidgetType',
 )
-const { ElementId } = pluginManager.jbrequire('@jbrowse/core/util/types/mst')
+const { ElementId } = pluginManager.jbrequire(
+  '@jbrowse/core/util/types/mst',
+)
 const { types } = pluginManager.jbrequire('@jbrowse/mobx-state-tree')
 
 const React = pluginManager.jbrequire('react')

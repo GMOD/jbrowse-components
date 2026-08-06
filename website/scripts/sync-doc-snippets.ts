@@ -91,8 +91,17 @@ for (const path of docFiles(docsDir)) {
     // prettier puts a blank line between the marker and the fence, so skip
     // blanks rather than silently ignoring the marker (which would leave a
     // stale fence passing --check — the exact drift this script prevents).
+    // Other HTML comments are skipped for the same reason, and one of them is
+    // load-bearing: a region's body is dedented, so a source line that only
+    // wrapped because of its indentation fits on one line in the fence, and
+    // oxfmt formats fenced code. That reflow then fails `--check` here, and
+    // undoing it fails check-format — the two cannot both pass without
+    // `<!-- prettier-ignore -->` sitting between the marker and the fence.
     let openAt = i + 1
-    while (lines[openAt]?.trim() === '') {
+    while (
+      lines[openAt]?.trim() === '' ||
+      lines[openAt]?.trim().startsWith('<!--')
+    ) {
       openAt++
     }
     if (!lines[openAt]?.startsWith('```')) {

@@ -119,10 +119,22 @@ export function countUnIncludedFences(text: string) {
     if (inGenerated) {
       return
     }
-    // the marker sits one or two lines up (the formatter inserts a blank line)
-    const marked = [1, 2].some(k =>
-      INCLUDE_MARKER.test((lines[i - k] ?? '').trim()),
-    )
+    // The marker sits above the fence with a formatter-inserted blank line, and
+    // sometimes a `<!-- prettier-ignore -->` in between (see sync-doc-snippets
+    // for why a generated fence ever needs one), so walk back over blanks and
+    // comments rather than counting lines. A previous fence's closing ``` is
+    // neither, so this cannot reach up to the marker of the block above.
+    let marked = false
+    for (let k = i - 1; k >= 0; k--) {
+      const above = (lines[k] ?? '').trim()
+      if (INCLUDE_MARKER.test(above)) {
+        marked = true
+        break
+      }
+      if (above !== '' && !above.startsWith('<!--')) {
+        break
+      }
+    }
     if (!marked && CODE_FENCE_LANGS.has(fence[1]!.toLowerCase())) {
       count++
     }
