@@ -1,0 +1,68 @@
+digraph gpu_display_lifecycle {
+  rankdir=LR
+  labelloc=t
+  fontname="Helvetica"
+  fontsize=18
+  label="GPU display: worker data to a drawn frame"
+  nodesep=0.35
+  ranksep=0.6
+
+  node [shape=box, fontname="Helvetica", fontsize=12, style=filled, fillcolor="#ffffff"]
+  edge [fontname="Helvetica", fontsize=10, color="#555555"]
+
+  // ── Worker ───────────────────────────────────────────────────────
+  subgraph cluster_worker {
+    label="Worker (RPC)"
+    labelloc=t
+    fontname="Helvetica"
+    fontsize=13
+    style=filled
+    fillcolor="#e3f2fd"
+    color="#90caf9"
+
+    exec [label="executeRender()\nfetch + pack, absolute uint32 bp"]
+  }
+
+  // ── Main thread ──────────────────────────────────────────────────
+  subgraph cluster_main {
+    label="Main thread (MST model)"
+    labelloc=t
+    fontname="Helvetica"
+    fontsize=13
+    style=filled
+    fillcolor="#f1f8e9"
+    color="#aed581"
+
+    rpcdata [label="rpcDataMap\none entry per region", fillcolor="#dcedc8"]
+    renderstate [label="renderState\nframe uniforms, no fetch"]
+    uploadrun [label="upload autorun\nper region key", shape=ellipse]
+    renderrun [label="render autorun", shape=ellipse]
+  }
+
+  // ── GPU / Canvas ─────────────────────────────────────────────────
+  subgraph cluster_gpu {
+    label="GPU / Canvas (the HAL)"
+    labelloc=t
+    fontname="Helvetica"
+    fontsize=13
+    style=filled
+    fillcolor="#fff3e0"
+    color="#ffcc80"
+
+    upload [label="backend.uploadRegion()"]
+    render [label="backend.renderBlocks()"]
+    frame [label="frame", fillcolor="#ffe0b2", peripheries=2]
+    hal [label="WebGPU  |  WebGL2  |  Canvas2D\nchosen at runtime", shape=box, style="filled,dashed", fillcolor="#fff8e1"]
+  }
+
+  exec -> rpcdata [label="structured clone"]
+
+  rpcdata -> uploadrun [label="entry changed"]
+  uploadrun -> upload
+  upload -> renderstate [label="renderTick++", style=dashed, constraint=false]
+
+  renderstate -> renderrun [label="tick, or scroll"]
+  renderrun -> render
+  render -> frame
+  render -> hal [style=dashed, label="dispatch"]
+}

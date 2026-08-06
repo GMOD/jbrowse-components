@@ -1,0 +1,50 @@
+digraph feature_plotting_threads {
+  rankdir=LR
+  labelloc=t
+  fontname="Helvetica"
+  fontsize=18
+  label="Plotting features: the worker returns data, the main thread draws"
+  nodesep=0.35
+  ranksep=0.6
+
+  node [shape=box, fontname="Helvetica", fontsize=12, style=filled, fillcolor="#ffffff"]
+  edge [fontname="Helvetica", fontsize=10, color="#555555"]
+
+  // ── Worker ───────────────────────────────────────────────────────
+  subgraph cluster_worker {
+    label="Worker (RPC)"
+    labelloc=t
+    fontname="Helvetica"
+    fontsize=13
+    style=filled
+    fillcolor="#e3f2fd"
+    color="#90caf9"
+
+    adapter [label="fetch features\nfrom the adapter"]
+    pack [label="pack into plain\nor typed arrays", fillcolor="#e1f5fe"]
+  }
+
+  // ── Main thread ──────────────────────────────────────────────────
+  subgraph cluster_main {
+    label="Main thread (MST model + Canvas2D)"
+    labelloc=t
+    fontname="Helvetica"
+    fontsize=13
+    style=filled
+    fillcolor="#f1f8e9"
+    color="#aed581"
+
+    rpcdata [label="rpcDataMap\none entry per region", fillcolor="#dcedc8"]
+    renderstate [label="renderState\nrecomputed each frame, no fetch"]
+    draw [label="drawScore()\npure draw function"]
+    canvas [label="<canvas>\nvisible blocks", peripheries=2, fillcolor="#e1f5fe"]
+    svg [label="SVG export", style="filled,dashed", fillcolor="#f3e5f5"]
+  }
+
+  adapter -> pack
+  pack -> rpcdata [label="structured clone\nabsolute uint32 bp"]
+  rpcdata -> renderstate
+  renderstate -> draw [label="per frame"]
+  draw -> canvas
+  draw -> svg [style=dashed, label="same function"]
+}

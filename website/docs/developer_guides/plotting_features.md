@@ -29,13 +29,7 @@ first publishes in the next release; until then, build against a
 
 Rendering splits across two threads:
 
-```
-Worker (RPC)                     Main thread (MST model + Canvas2D)
-────────────                     ──────────────────────────────────
-fetch features from adapter  →   store per region in rpcDataMap
-pack into plain/typed data       compute renderState each frame (no fetch)
-return (absolute uint32 bp)  →   draw the visible blocks into a <canvas>
-```
+<Figure caption="The worker fetches and packs, the main thread stores per region and draws. The pure draw function backs both the canvas and SVG export." src="/img/feature_plotting_threads.png" />
 
 The worker returns compact data, never pixels, with all genomic positions
 absolute (not region-relative). The model owns the fetched data (`rpcDataMap`),
