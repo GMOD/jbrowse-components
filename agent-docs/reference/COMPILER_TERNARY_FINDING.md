@@ -60,8 +60,8 @@ alignment, not a guarantee.
 
 ## Live status
 
-- `DisplayChromeInner` carries `'use no memo'` — the only compiled `observer` in
-  the codebase. Its early-`return` terminal branches are now a style choice, not
+- `DisplayChromeBaseInner` carries `'use no memo'` — the only compiled
+  `observer` in the codebase. Its early-`return` terminal branches are now a style choice, not
   a correctness requirement; `DisplayChrome.test.tsx` guards the behavior.
 - `useOverlayState` → `getTrackOverlayData()` (breakpoint-split-view) shipped a
   real bug from this — panning froze the overlay connectors, zooming threw them

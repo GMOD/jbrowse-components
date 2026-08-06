@@ -725,9 +725,9 @@ re-attaches on force-load. What makes it the right shape:
   `loading` as a thunk and calls it only after ruling out the terminal flags, so
   when a banner is up the chrome's observer tracks only that flag, not the
   view's churning `visibleRegions`/`loadedRegions`.
-- **React Compiler opt-out.** `DisplayChromeInner` carries `'use no memo'`, so
-  babel-plugin-react-compiler doesn't compile it and can't memoize a MobX read on
-  `model`'s stable identity. That opt-out is also why `return`-vs-ternary is now
+- **React Compiler opt-out.** `DisplayChromeBaseInner` carries `'use no memo'`,
+  so babel-plugin-react-compiler doesn't compile it and can't memoize a MobX read
+  on `model`'s stable identity. That opt-out is also why `return`-vs-ternary is now
   a style choice: what stays load-bearing is *replacing the subtree*, not how the
   replacement is spelled. Full analysis:
   [reference/COMPILER_TERNARY_FINDING.md](reference/COMPILER_TERNARY_FINDING.md).

@@ -25,10 +25,11 @@ export interface ComparativeStatusModel {
  * to retire on the LGV side. Same model getters, same three states, two
  * different first-load appearances.
  *
- * Both are mounted unconditionally and gate on their own flag, which is
- * load-bearing for the overlay: its anti-flash delay is component state, so
- * mounting it only while loading restarts the timer on every activation and the
- * delay never elapses. Same rule the LGV chrome's overlay set carries.
+ * The overlay is mounted unconditionally and gates on `isVisible` itself, which
+ * is load-bearing: its anti-flash delay is component state, so mounting it only
+ * while loading restarts the timer on every activation and the delay never
+ * elapses. Same rule the LGV chrome's overlay set carries. The chip has no such
+ * timer and is mounted conditionally.
  *
  * `immediate` because `loading` is `!ready` — always a first load, with nothing
  * on screen for the indicator to flash over.

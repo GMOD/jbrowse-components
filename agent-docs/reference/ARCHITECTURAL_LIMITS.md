@@ -539,8 +539,9 @@ is dropped, which would hide the very violation being reported.
   otherwise the check is console noise in the test suite rather than a signal.
 
 **Retire when** the remaining two become explicit data: a `deps()` callback the
-global-fetch helper reads unconditionally, a required `rpcProps` (or the explicit
-opt-out above), and a marker the height mixins can compare composition order on.
+global-fetch helper reads unconditionally, and a required `rpcProps` (or the
+explicit opt-out above). The third condition this used to name — a marker the
+height mixins can compare composition order on — is `supportsHeightModes`, above.
 
 ### LDDisplay is multi-region on the fetch side and single-region on the axis
 

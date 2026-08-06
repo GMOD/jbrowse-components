@@ -75,7 +75,7 @@ export function useOverlayState({
 }: OverlayProps) {
   // eslint-plugin-react-compiler (react-compiler@19.1.0-rc.2) thinks this
   // directive is unused, but the babel plugin (@1.0.0, the real build) DOES
-  // compile this hook — version skew, same as DisplayChromeInner. Keep it.
+  // compile this hook — version skew, same as DisplayChromeBaseInner. Keep it.
   // eslint-disable-next-line react-compiler/react-compiler
   'use no memo'
   const session = getSession(model)
