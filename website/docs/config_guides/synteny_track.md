@@ -188,6 +188,45 @@ of them:
   `bed2`), which are intermediate outputs of the
   [MCScan workflow](<https://github.com/tanghaibao/jcvi/wiki/MCscan-(Python-version)>).
 
+### PanSN depth: sample or haplotype
+
+The two all-vs-all adapters match a JBrowse assembly to PAF records by the
+[PanSN](https://github.com/pangenome/PanSN-spec) prefix on each sequence name,
+assuming by default that the assembly name is the sample name. Where the two
+differ, `assemblyNameToPanSN` maps one to the other, and the prefix it maps to
+may name a whole sample (`grape`) or a single haplotype (`grape#1`):
+
+```json addtrack
+{
+  "type": "SyntenyTrack",
+  "trackId": "grape_peach_haps_ava",
+  "name": "Grape/peach haplotypes all-vs-all",
+  "assemblyNames": ["grape_hap1", "grape_hap2", "peach_hap1", "peach_hap2"],
+  "adapter": {
+    "type": "AllVsAllPAFAdapter",
+    "uri": "all_vs_all.paf",
+    "assemblyNames": ["grape_hap1", "grape_hap2", "peach_hap1", "peach_hap2"],
+    "assemblyNameToPanSN": {
+      "grape_hap1": "grape#1",
+      "grape_hap2": "grape#2",
+      "peach_hap1": "peach#1",
+      "peach_hap2": "peach#2"
+    }
+  }
+}
+```
+
+Mapping to `grape` makes the sample one assembly, and an alignment between its
+haplotypes then reads as paralogy. Mapping to `grape#1` gives each haplotype its
+own row, so hap1 against hap2 becomes a synteny band. Mates are labelled at the
+most specific depth you listed, so a sample-level track still says `grape`. A
+prefix only matches at a `#` boundary, so `grape` cannot pick up
+`grapefruit#1#chr1`.
+
+An alignment between two haplotypes of one sample is kept even where they are
+identical: only a true self-diagonal, the same PanSN sequence against itself at
+the same coordinates, is dropped.
+
 A gene-level MCScan track, showing the BED files and the two-assembly pairing:
 
 ```json addtrack

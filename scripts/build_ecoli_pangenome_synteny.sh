@@ -106,8 +106,11 @@ done
 # names and drops every other strain's blocks. Note --config REPLACES the
 # inferred adapter rather than merging into it, so pafLocation has to be
 # restated here; naming only the type would leave an adapter with no file.
-# (Newer CLI builds also accept `--adapterType AllVsAllPAFAdapter`, but that
-# flag is not in any released @jbrowse/cli yet, so this script does not use it.)
+# This is DELIBERATELY behind the tutorial, which now shows the one-line
+# `--adapterType AllVsAllPAFAdapter` form. That flag landed after the v4.3.0
+# tag, and this script runs against whatever `npx @jbrowse/cli` resolves to, so
+# it stays on --config until --adapterType is in a published release. Collapse
+# the two once it is.
 CSV="$(echo $STRAINS | tr ' ' ,)"
 JSON_NAMES="$(echo $STRAINS | tr ' ' '\n' | sed 's/.*/"&"/' | paste -sd, -)"
 jb add-track all_vs_all.paf \

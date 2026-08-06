@@ -22,18 +22,13 @@ On Debian/Ubuntu, `apt install minimap2 samtools tabix unzip` covers most of
 these. The NCBI `datasets` CLI is a single-binary download, and `node` comes
 from [nodejs.org](https://nodejs.org/).
 
-## Stacking N genomes from one file
+## One file, N genome rows
 
 A linear synteny view can stack more than two genomes: N genome rows with a
 synteny "ribbon" band between each adjacent pair. When the genomes are closely
 related (strains or accessions of one species), the most convenient source is a
 single all-vs-all PAF, with every genome aligned to every other. This tutorial
 builds a five-strain _E. coli_ pangenome view from one such file.
-
-This same five-strain view also builds in Python or R: a `synteny_view` inside
-`JBrowseApp` ([JBrowse Jupyter / anywidget](/docs/jbrowse_jupyter)) or
-`JBrowseRApp` ([](/docs/jbrowser)) stacks the strains from one all-vs-all PAF,
-using the same hosted data as this tutorial.
 
 For cross-species comparisons built from gene-level ortholog tables instead, see
 [Synteny from ortholog tables](/docs/tutorials/multiway_synteny).
@@ -89,14 +84,14 @@ minimap2 -c -x asm20 -X all.fa all.fa > all_vs_all.paf
 
 `-c` emits the base-level CIGAR the linear synteny view needs.
 
-`-X` is required here. Each sequence's best hit is its own perfect diagonal, and
-that hit outranks every cross-strain alignment as a secondary, so without `-X`
+`-X` is required here. Each sequence's best hit is its own perfect diagonal,
+which demotes every cross-strain alignment to a secondary, so without `-X`
 minimap2 reports one row per genome: a five-line PAF and an empty synteny view.
-`-X` skips those diagonals, and the reciprocal copy of each pair with them,
-leaving every cross-strain pair once. It does not remove paralogy, since a match
-between two different loci in one genome is not a self-diagonal. That is what
-lets the [one-vs-all](#one-strain-against-all-the-others) mode below draw a
-strain's own repeats (rRNA operons, IS elements) as its own lane.
+`-X` skips those diagonals and the reciprocal copy of each pair with them,
+leaving every cross-strain pair once. It leaves paralogy alone, since a match
+between two different loci in one genome is not a self-diagonal, which is what
+the [one-vs-all](#one-strain-against-all-the-others) mode below reads as a
+strain's own repeats (rRNA operons, IS elements).
 
 ## Setting up the five assemblies
 
@@ -150,59 +145,29 @@ in the file raises an error listing the samples the file does hold, so the
 mapping can be written from what the error reports.
 
 To add the track from the command line instead of editing the config by hand,
-spell the adapter out in `--config`. A `.paf` extension on its own is inferred
+name the adapter with `--adapterType`. A `.paf` extension on its own is inferred
 as the pairwise `PAFAdapter`, which reads only the first two assembly names and
-drops every other strain's blocks. `--config` replaces the inferred adapter
-rather than merging into it, so `uri` has to be restated alongside the type:
+drops every other strain's blocks:
 
 ```bash
-jbrowse add-track all_vs_all.paf \
-  --config '{"adapter":{"type":"AllVsAllPAFAdapter","uri":"all_vs_all.paf","assemblyNames":["K12","Sakai","CFT073","NCTC86","IAI39"]}}' \
+jbrowse add-track all_vs_all.paf --adapterType AllVsAllPAFAdapter \
   --trackId ecoli_ava -a K12,Sakai,CFT073,NCTC86,IAI39 --load copy
 ```
 
-Both the track and the adapter get all five `assemblyNames`. Unlike a pairwise
-PAF track, where `-a` is `query,target`, order does not matter here: one
-all-vs-all file backs every pair, so `-a` is simply the full set of assemblies
-it covers.
+`-a` fills in both the track's and the adapter's `assemblyNames`. Unlike a
+pairwise PAF track, where `-a` is `query,target`, order does not matter here:
+one all-vs-all file backs every pair, so `-a` is simply the full set of
+assemblies it covers.
 
 ### Haplotype-resolved genomes
 
 These five strains are haploid, so each PanSN prefix is a whole sample and `K12`
-covers everything named `K12#1#...`. A haplotype-resolved pangenome normally
-loads each haplotype as its own JBrowse assembly, and then an assembly maps to a
-`sample#haplotype` prefix rather than to a sample:
-
-```json
-{
-  "type": "SyntenyTrack",
-  "trackId": "grape_peach_haps_ava",
-  "name": "Grape/peach haplotypes all-vs-all",
-  "assemblyNames": ["grape_hap1", "grape_hap2", "peach_hap1", "peach_hap2"],
-  "adapter": {
-    "type": "AllVsAllPAFAdapter",
-    "uri": "all_vs_all.paf",
-    "assemblyNames": ["grape_hap1", "grape_hap2", "peach_hap1", "peach_hap2"],
-    "assemblyNameToPanSN": {
-      "grape_hap1": "grape#1",
-      "grape_hap2": "grape#2",
-      "peach_hap1": "peach#1",
-      "peach_hap2": "peach#2"
-    }
-  }
-}
-```
-
-Both depths work, and you choose per track. Mapping to `grape` makes the sample
-one assembly, with an alignment between its haplotypes reading as paralogy.
-Mapping to `grape#1` gives each haplotype its own row, so hap1 against hap2
-becomes a synteny band in its own right. Mates are labelled at the most specific
-depth you listed, so a sample-level track still says `grape`. A prefix only
-matches at a `#` boundary, so `grape` cannot pick up `grapefruit#1#chr1`.
-
-An alignment between two haplotypes of one sample is kept even where they are
-identical: only a true self-diagonal, the same PanSN sequence against itself at
-the same coordinates, is dropped.
+covers everything named `K12#1#...`. A haplotype-resolved pangenome can instead
+load each haplotype as its own assembly and map it to a `sample#haplotype`
+prefix, which turns hap1 against hap2 into a synteny band in its own right. Both
+depths work and you pick one per track: the
+[synteny track config guide](/docs/config_guides/synteny_track#pansn-depth-sample-or-haplotype)
+has the mapping and what changes between them.
 
 ## Large files: index with make-pif
 
@@ -246,7 +211,9 @@ from the un-indexed version above:
 The `.pif.gz` keeps its PanSN sequence names, and `make-pif` emits a coarse
 zoomed-out tier by default so whole-genome views stay responsive. `--coarse`
 tunes that tier and `--csi` swaps the TBI index for sequences longer than ~512
-Mb (not an issue for _E. coli_).
+Mb (not an issue for _E. coli_). Raising `--coarse` means raising the adapter's
+[`coarseBpPerPxThreshold`](/docs/config/allvsallindexedpafadapter#slot-coarsebpperpxthreshold)
+with it, or the coarse ribbons draw straight across indels wide enough to see.
 
 ## Stacking the genomes
 
@@ -332,29 +299,24 @@ its prophage Shiga-toxin genes, and CFT073's are its own pathogenicity islands.
 
 A gap is an absence of ribbon, so it reports that the strains differ without
 saying what they differ by. The annotations downloaded alongside each genome
-answer that. They need the same two adjustments the FASTA got: the GFF's seqid
-is the chromosome accession, which has to become `chr` to match the assembly,
-and the plasmid features have to be dropped rather than renamed, since the
-assembly kept only the chromosome:
+answer that. Each GFF first needs the same two adjustments the FASTA got, both
+done by the [script](#reproduce-it-end-to-end): its seqid is the chromosome
+accession and has to become `chr` to match the assembly, and its plasmid
+features have to be dropped rather than renamed, since the assembly kept only
+the chromosome. Skipping that second filter is the common mistake, since Sakai's
+two plasmids contribute features that would otherwise land on `chr` at
+coordinates that mean nothing.
 
 ```bash
 for strain in K12 Sakai CFT073 NCTC86 IAI39; do
-  # the chromosome is the FASTA's first record, whose accession is the seqid to keep
-  acc=$(awk '/^>/{print substr($1, 2); exit}' "$strain"/ncbi_dataset/data/*/*.fna)
-  # -F'\t': without it, awk also splits on the spaces inside GFF attributes
-  awk -F'\t' -v acc="$acc" -v OFS='\t' '$1 == acc {$1 = "chr"; print}' \
-    "$strain"/ncbi_dataset/data/*/genomic.gff > "$strain.gff"
-
   jbrowse sort-gff "$strain.gff" | bgzip > "$strain.gff.gz"
   tabix "$strain.gff.gz"
   jbrowse add-track "$strain.gff.gz" -a "$strain" --name "$strain genes" --load copy
 done
 ```
 
-Each track is added to one strain's assembly, so it rides along with that
-strain's row in the stacked view. Skipping the plasmid filter is a common
-mistake, since Sakai's two plasmids contribute features that would otherwise
-land on `chr` at coordinates that mean nothing.
+`-a "$strain"` is what matters here: each track is added to one strain's
+assembly, so it rides along with that strain's row in the stacked view.
 
 With genes loaded, the gaps become readable. Navigate Sakai's row to
 `chr:1,267,000-1,268,400` and the gap holds `stx2A` and `stx2B`, the Shiga-toxin
@@ -391,22 +353,22 @@ darker rather than growing a row per hit, so one repeat family cannot push the
 synteny you are reading off the screen. Untick **Show... > Collapse groups to
 one row** to stack every lane instead, or expand one lane from its label.
 
-One of those lanes is the assembly you are viewing, and it can never hold a
-self-alignment, since `minimap2 -X` skipped each genome's own diagonal. All that
-draws there is K-12's internal paralogy, the IS-element copies that hit a dozen
-loci apiece, which reads as missing data rather than as a result. **Group by...
-→ Hide self-alignment lane** drops it, and the figures below have it ticked.
+One of those lanes is the assembly you are viewing, which is this run's built-in
+control: it can never hold a self-alignment, since `minimap2 -X` skipped each
+genome's own diagonal, so a K-12 lane that filled up with K-12 would mean the
+PAF was built wrong. All that legitimately draws there is K-12's internal
+paralogy, the IS-element copies that hit a dozen loci apiece, which reads as
+missing data rather than as a result. **Group by... → Hide self-alignment lane**
+drops it, and the figures below have it ticked.
 
 A synteny track in a plain view renders through the same display as a read
 pileup, so the rest of that menu is the one you already know from alignments:
 **Show... → Show coverage**, for instance, adds a histogram of how many other
 strains cover each base of the strain you are viewing.
 
-A lane can only say where a strain stops. What that strain carries instead is
-not in the PAF at all, since sequence absent from the alignment is absent from
-the file, so the figure below carries a second pane: the same window in the
-pangenome graph of these strains, where the island is a segment and the strains
-that skip it take an arm around it.
+A lane can only say where a strain stops, so the figure below carries a second
+pane, the same window in the pangenome graph of these strains, which
+[the next section](#the-same-gap-drawn-as-a-graph) picks up.
 
 <Figure caption="Above, one track with one lane per strain: K-12 against every other sample in the file, grouped by mate assembly, K-12's own lane hidden. The shaded band is K-12's phenylacetate (paa) operon, and Sakai, CFT073 and IAI39 all stop at its left edge where NCTC86 runs through. Below, the same window as a graph: the ringed node is the 21.8 kb segment carrying the operon, and the short arm beside it is the detour the other three take." src="/img/multiway_synteny/ecoli_one_vs_all.png" />
 
@@ -422,11 +384,10 @@ range query instead:
 
 ### The same gap, drawn as a graph
 
-The pane under the lanes above is that graph, and it is worth a section of its
-own. A PAF says where a lane stops; it cannot say what the strains that stop
-there carry instead, because sequence absent from the alignment is absent from
-the file. A pangenome graph does say it: the island is a segment, and each
-strain's walk either goes through that segment or takes a detour around it.
+A PAF says where a lane stops; it cannot say what the strains that stop there
+carry instead, because sequence absent from the alignment is absent from the
+file. A pangenome graph does say it: the island is a segment, and each strain's
+walk either goes through that segment or takes a detour around it.
 
 The E. coli tutorials build that minigraph graph of the same five strains, and
 the [graph genome view](/docs/user_guides/graph_genome_view) opens a window of
@@ -477,33 +438,49 @@ npx --yes serve ecoli_pangenome_build/jbrowse2 # then open the printed URL
 It downloads the five RefSeq genomes, self-aligns them into the all-vs-all PAF,
 downloads JBrowse, and writes a `config.json` with the five assemblies, the
 per-strain gene tracks, the all-vs-all synteny track, and a default session that
-opens on the stacked view. It needs the NCBI
-[`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
-CLI, `minimap2`, `samtools`, htslib (`bgzip`, `tabix`), `unzip`, and `node` on
-your `PATH`.
+opens on the stacked view. It needs everything under
+[Prerequisites](#prerequisites) on your `PATH`.
 
 For a whole-genome pangenome, swap the `add-track` step for the `make-pif` +
 `AllVsAllIndexedPAFAdapter` path from
 [Large files](#large-files-index-with-make-pif).
 
-## Where to go next
+## Checking a gap against the PAF
 
-The same track works in **Add → Dotplot view**, which shows whole-genome
-structure (inversions, translocations) that the stacked ribbons compress into
-crossings.
+Every coordinate above is read off `all_vs_all.paf`, so the file can be asked
+directly. Print the Sakai side of every Sakai/K-12 alignment near the stx2
+island, taking the coordinates from whichever column Sakai landed in, since `-X`
+emits each pair once and in either direction:
 
-Five strains fit in memory comfortably, but a real pangenome of hundreds does
-not. [Index it with `make-pif`](#large-files-index-with-make-pif) and switch to
-`AllVsAllIndexedPAFAdapter`, as above.
+```bash
+awk -F'\t' -v OFS='\t' '
+  $1 ~ /^Sakai#/ && $6 ~ /^K12#/ { print $3, $4; next }
+  $1 ~ /^K12#/   && $6 ~ /^Sakai#/ { print $8, $9 }
+' all_vs_all.paf | sort -n | awk '$1 < 1300000 && $2 > 1200000'
+```
+
+```
+1207288	1207877
+1210882	1246166
+1251954	1252260
+1274685	1275548
+```
+
+The block on the second line is the shared backbone the ribbon in the figure
+draws, and it ends at 1,246,166. Past a short scrap nothing aligns again until
+1,274,685, so `stx2A` and `stx2B` fall in a stretch of Sakai with no K-12
+counterpart at all. The gap in the figure is the gap in the file.
 
 ## See also
 
-- [Pangenome graphs (pggb)](/docs/tutorials/pangenome_ecoli) and
-  [Pangenome graphs (Minigraph-Cactus)](/docs/tutorials/pangenome_cactus), which
-  collapse these same five strains into a graph instead of aligning them
-  pairwise, then project it back onto the K12 axis this tutorial uses
+- [Pangenome graphs (pggb)](/docs/tutorials/pangenome_ecoli)
+- [Pangenome graphs (Minigraph-Cactus)](/docs/tutorials/pangenome_cactus)
 - [Synteny visualization](/docs/tutorials/synteny_visualization)
 - [Synteny from ortholog tables](/docs/tutorials/multiway_synteny)
+- [](/docs/user_guides/dotplot_view)
+- [Synteny track config guide](/docs/config_guides/synteny_track)
 - [AllVsAllPAFAdapter config](/docs/config/allvsallpafadapter)
 - [AllVsAllIndexedPAFAdapter config](/docs/config/allvsallindexedpafadapter)
 - [PIF format](/docs/developer_guides/pif_format)
+- [](/docs/jbrowse_jupyter)
+- [](/docs/jbrowser)
